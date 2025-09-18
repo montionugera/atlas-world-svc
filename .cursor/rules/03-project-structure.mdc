@@ -1,0 +1,51 @@
+## 📁 Project Structure Rules
+
+### Root Layout
+```
+atlas-world-svc/
+├── .cursor/
+│   ├── plans/           # Implementation plans
+│   └── rules/           # Development rules
+├── modules/ts/
+│   ├── src/
+│   │   ├── index.ts     # Module registration
+│   │   ├── matches/     # Match handlers
+│   │   ├── physics/     # Physics systems
+│   │   ├── net/         # Networking layer
+│   │   ├── systems/     # Game systems
+│   │   ├── events/      # Event handling
+│   │   └── metrics/     # Observability
+│   ├── tests/           # Test files
+│   ├── package.json
+│   └── tsconfig.json
+├── docker-compose.yml
+├── local.yml           # Nakama config
+└── server_spec.md      # Technical spec
+```
+
+### Module Organization
+- **matches/**: Match lifecycle, state management
+- **physics/**: Planck.js worlds, bodies, collisions
+- **net/**: AOI, codec, transport layer
+- **systems/**: Movement, AI, AoE, portals
+- **events/**: Reliable events, broadcasting
+- **metrics/**: Prometheus integration
+
+### File Naming
+- **Handlers**: `{feature}Handler.ts`
+- **Managers**: `{feature}Manager.ts`
+- **Systems**: `{feature}System.ts`
+- **Utils**: `{feature}Utils.ts`
+- **Types**: `{feature}Types.ts`
+
+### Import Structure
+- **Relative imports** within modules
+- **Absolute imports** from index files
+- **Barrel exports** for clean APIs
+- **No circular dependencies**
+
+### Configuration Management
+- **Environment variables** for secrets
+- **Static config** files for game constants
+- **Runtime config** validation
+- **Hot reload** support for development

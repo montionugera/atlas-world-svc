@@ -1,0 +1,49 @@
+## 🧪 Testing & Quality Assurance Rules
+
+### Test Categories
+- **Unit Tests**: Individual functions, classes
+- **Integration Tests**: System interactions
+- **Load Tests**: Performance under load
+- **Chaos Tests**: Failure scenarios
+
+### Test Coverage Requirements
+- **Core systems**: 80%+ coverage
+- **Networking**: 90%+ coverage
+- **Physics**: 85%+ coverage
+- **Critical paths**: 95%+ coverage
+
+### Performance Testing
+- **Bot harness**: 30-60Hz input simulation
+- **Load scenarios**: 150-300 concurrent players
+- **Hotspot testing**: Entity clustering
+- **AoE spam testing**: High-frequency effects
+
+### Quality Gates
+- **All tests pass** before merge
+- **Performance regression** checks
+- **Memory leak detection**
+- **Linting compliance**
+
+### Monitoring Requirements
+- **Prometheus metrics** for all systems
+- **Grafana dashboards** for key metrics
+- **Alerting** for performance thresholds
+- **Log aggregation** with structured data
+
+### Benchmarking
+- **Tick time profiling**
+- **Memory usage tracking**
+- **Network bandwidth monitoring**
+- **GC pause analysis**
+
+### Chaos Engineering
+- **Latency injection**: 50-200ms delays
+- **Packet loss**: 1-5% drop rates
+- **Connection failures**: Random disconnects
+- **Resource exhaustion**: Memory/CPU stress
+
+### Documentation Requirements
+- **API documentation** for all public interfaces
+- **Performance characteristics** documented
+- **Failure modes** and recovery procedures
+- **Configuration parameters** explained

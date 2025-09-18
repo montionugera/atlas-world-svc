@@ -1,0 +1,173 @@
+# TypeScript Development Rules for Nakama
+
+## Compilation Target
+- **Target**: ES2020
+- **Module**: None (plain JavaScript output)
+- **Output**: `build/index.js` (single file)
+- **No CommonJS**: Nakama expects plain JavaScript
+- **No ES Modules**: Use global functions only
+
+## TypeScript Configuration
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "None",
+    "lib": ["ES2020"],
+    "outDir": "./build",
+    "rootDir": "./src",
+    "strict": true,
+    "sourceMap": false,
+    "removeComments": false
+  }
+}
+```
+
+## Global Function Requirements
+- **InitModule**: Must be defined globally (not exported)
+- **Match handlers**: Must be global functions
+- **RPC functions**: Must be global functions
+- **No imports/exports**: All functions must be accessible globally
+- **No module wrappers**: Plain JavaScript only
+
+## Function Naming Conventions
+- **Match handlers**: `atlasMovementMatch*` (e.g., `atlasMovementMatchInit`)
+- **RPC functions**: `*Rpc` suffix (e.g., `createMovementMatchRpc`)
+- **Utility functions**: camelCase (e.g., `createMob`, `updateMob`)
+- **Types**: PascalCase (e.g., `Player`, `Mob`, `MatchState`)
+
+## Type Definitions
+- **Define types locally** in the same file
+- **Use explicit types** for better development experience
+- **Avoid `any`** when possible, use specific types
+- **Prefix unused parameters** with `_` to avoid TypeScript errors
+
+## Common Type Patterns
+```typescript
+type Player = { 
+  id: string; 
+  username: string; 
+  x: number; 
+  y: number; 
+  vx: number; 
+  vy: number; 
+  dir: number; 
+  lastInputSeq: number; 
+  joinTime: number 
+};
+
+type Mob = { 
+  id: string; 
+  type: 'mob'; 
+  x: number; 
+  y: number; 
+  vx: number; 
+  vy: number; 
+  dir: number; 
+  speed: number; 
+  thinkCooldown: number 
+};
+
+type MatchState = { 
+  players: Map<string, Player>; 
+  mobs: Map<string, Mob>; 
+  tick: number; 
+  startTime: number; 
+  lastSnapshotTick: number 
+};
+```
+
+## Function Signatures
+- **Match handlers**: Follow Nakama's expected signatures
+- **RPC functions**: `(_ctx: any, logger: any, nk: any, _payload?: string)`
+- **InitModule**: `(_ctx: any, logger: any, _nk: any, initializer: any)`
+- **Use `_` prefix** for unused parameters
+
+## Common Patterns
+
+### Match Handler Structure
+```typescript
+function atlasMovementMatchInit(_ctx: any, logger: any, _nk: any, _params: any) {
+  logger.info('🎮 Atlas Movement Match - Initializing...');
+  const state = { /* match state */ };
+  return { state, tickRate: 30, label: 'atlas_movement' };
+}
+
+function atlasMovementMatchJoin(_ctx: any, logger: any, _nk: any, dispatcher: any, _tick: number, state: any, presences: any[]) {
+  logger.info('Player joined match');
+  // Send welcome message
+  const snapshot = JSON.stringify({ /* snapshot data */ });
+  dispatcher.broadcastMessage(11, snapshot, presences);
+  return { state };
+}
+```
+
+### RPC Function Structure
+```typescript
+function createMovementMatchRpc(_ctx: any, logger: any, nk: any, _payload?: string) {
+  logger.info('createMovementMatchRpc called');
+  const matchId = nk.matchCreate('atlas_movement', {});
+  return JSON.stringify({ matchId, success: true });
+}
+```
+
+### InitModule Structure
+```typescript
+function InitModule(_ctx: any, logger: any, _nk: any, initializer: any) {
+  logger.info('🚀 Atlas World Server - Module Loaded');
+  
+  // Register match handler
+  const AtlasMovementMatch = {
+    matchInit: atlasMovementMatchInit,
+    matchJoinAttempt: atlasMovementMatchJoinAttempt,
+    matchJoin: atlasMovementMatchJoin,
+    matchLeave: atlasMovementMatchLeave,
+    matchLoop: atlasMovementMatchLoop,
+    matchTerminate: atlasMovementMatchTerminate,
+    matchSignal: atlasMovementMatchSignal
+  };
+  initializer.registerMatch('atlas_movement', AtlasMovementMatch);
+  
+  // Register RPCs
+  initializer.registerRpc('test_rpc', testRpc);
+  initializer.registerRpc('create_movement_match', createMovementMatchRpc);
+}
+```
+
+## Build Process
+1. **Edit TypeScript** files in `src/`
+2. **Run build**: `pnpm run build`
+3. **Check output**: Verify `build/index.js` is generated
+4. **Restart server**: `docker-compose restart atlas-server`
+5. **Check logs**: `docker-compose logs atlas-server`
+
+## Common Issues
+
+### "InitModule not found"
+- Ensure `InitModule` is defined globally (not exported)
+- Check that function is not wrapped in module code
+- Verify `module: "None"` in `tsconfig.json`
+
+### "Match handler not found"
+- Ensure match handlers are registered in `InitModule`
+- Check function names match exactly
+- Verify all required handler functions are defined
+
+### "exports is not defined"
+- Remove any `export` statements
+- Use `module: "None"` in `tsconfig.json`
+- Ensure all functions are global
+
+### TypeScript compilation errors
+- Check for unused parameters (prefix with `_`)
+- Verify all required properties are defined
+- Use proper type annotations
+
+## Best Practices
+- **Keep functions simple** and focused
+- **Use descriptive names** for functions and variables
+- **Add logging** for debugging
+- **Handle errors gracefully**
+- **Use consistent formatting**
+- **Test frequently** during development
+- **Document complex logic** with comments

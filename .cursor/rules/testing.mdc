@@ -1,0 +1,130 @@
+# Testing Rules for Atlas World Server
+
+## Test Structure
+- **Unit tests** go in `src/logic/*.test.ts`
+- **Integration tests** go in `src/integration/*.int.test.ts`
+- **Smoke tests** go in `src/integration/smoke-test.ts`
+- **Test files** must end with `.test.ts` or `.int.test.ts`
+
+## Test Categories
+
+### Unit Tests
+- **Purpose**: Test pure logic functions (movement, calculations, utilities)
+- **Location**: `src/logic/*.test.ts`
+- **Run with**: `pnpm test`
+- **Examples**: Movement logic, collision detection, math functions
+
+### RPC Integration Tests
+- **Purpose**: Test HTTP RPC functionality against running server
+- **Location**: `src/integration/rpc-only.int.test.ts`
+- **Run with**: `pnpm run test:integration:rpc`
+- **Requirements**: Server must be running via `docker-compose`
+
+### WebSocket Integration Tests
+- **Purpose**: Test WebSocket connections and real-time functionality
+- **Location**: `src/integration/websocket.int.test.ts`
+- **Run with**: `pnpm run test:integration:websocket`
+- **Requirements**: Server must be running via `docker-compose`
+
+### Simple Integration Tests
+- **Purpose**: Test full WebSocket match functionality
+- **Location**: `src/integration/simple.int.test.ts`
+- **Run with**: `pnpm run test:integration:simple`
+- **Requirements**: Server must have working match handlers
+
+## Test Setup Requirements
+
+### Before Running Integration Tests
+1. **Start server**: `docker-compose up -d`
+2. **Wait for startup**: `sleep 10`
+3. **Check status**: `docker-compose ps`
+4. **Run tests**: `pnpm run test:integration:*`
+
+### Test Timeouts
+- **Unit tests**: 5 seconds (default)
+- **Integration tests**: 30 seconds (timeout 30)
+- **WebSocket tests**: 15 seconds (timeout 15)
+
+## Test Data Management
+- **Use unique device IDs** for each test run
+- **Clean up resources** after each test
+- **Use descriptive test names** that explain what's being tested
+- **Group related tests** in describe blocks
+
+## Common Test Patterns
+
+### RPC Testing
+```typescript
+async function testRpc(token: string): Promise<any> {
+  const res = await fetch(`${HTTP_HOST}/v2/rpc/test_rpc`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: '"{}"'
+  });
+  const body = await res.json() as any;
+  return JSON.parse(body.payload);
+}
+```
+
+### WebSocket Testing
+```typescript
+const ws = new WebSocket(`${WS_HOST}/ws?token=${token}`);
+await new Promise<void>((resolve, reject) => {
+  const timeout = setTimeout(() => reject(new Error('Timeout')), 5000);
+  ws.on('open', () => {
+    clearTimeout(timeout);
+    ws.close();
+    resolve();
+  });
+  ws.on('error', reject);
+});
+```
+
+### Authentication Testing
+```typescript
+async function authDevice(deviceId: string): Promise<string> {
+  const res = await fetch(`${HTTP_HOST}/v2/account/authenticate/device?create=true`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Basic ' + Buffer.from('defaultkey:').toString('base64')
+    },
+    body: JSON.stringify({ id: deviceId })
+  });
+  const body = await res.json() as any;
+  return body.token;
+}
+```
+
+## Test Environment
+- **HTTP Host**: `http://localhost:7350`
+- **WebSocket Host**: `ws://localhost:7350`
+- **Authentication**: Device-based with `defaultkey`
+- **Database**: CockroachDB via Docker Compose
+
+## Test Commands
+- **All tests**: `pnpm test`
+- **Unit tests only**: `pnpm test --testPathPattern="\.test\.ts$"`
+- **Integration tests only**: `pnpm test --testPathPattern="\.int\.test\.ts$"`
+- **RPC tests**: `pnpm run test:integration:rpc`
+- **WebSocket tests**: `pnpm run test:integration:websocket`
+- **Simple tests**: `pnpm run test:integration:simple`
+
+## Debugging Tests
+- **Check server logs**: `docker-compose logs atlas-server`
+- **Check server status**: `docker-compose ps`
+- **Restart server**: `docker-compose restart atlas-server`
+- **View test output**: Add `console.log` statements
+- **Use Jest debug mode**: `pnpm test --verbose`
+
+## Test Best Practices
+- **Test one thing at a time** - each test should have a single responsibility
+- **Use descriptive test names** - explain what the test is verifying
+- **Clean up after tests** - close WebSocket connections, clean up resources
+- **Handle timeouts gracefully** - use appropriate timeout values
+- **Mock external dependencies** when possible
+- **Test error conditions** - not just happy paths
+- **Use proper assertions** - be specific about what you're testing

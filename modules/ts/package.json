@@ -1,0 +1,47 @@
+{
+  "name": "atlas-world-server",
+  "version": "0.1.0",
+  "description": "Realtime 2.5D game server for Atlas World",
+  "main": "build/index.js",
+  "packageManager": "pnpm@8.15.0",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf build",
+    "test": "jest -c jest.config.cjs",
+    "test:watch": "jest -c jest.config.cjs --watch",
+    "test:integration": "jest -c jest.config.cjs --testPathPattern=integration",
+    "test:integration:simple": "jest -c jest.config.cjs --testPathPattern=simple.int.test",
+    "test:integration:rpc": "jest -c jest.config.cjs --testPathPattern=rpc-only.int.test",
+    "test:integration:websocket": "jest -c jest.config.cjs --testPathPattern=websocket.int.test",
+    "test:smoke": "ts-node src/integration/smoke-test.ts",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "install:all": "pnpm install",
+    "dev": "pnpm run watch"
+  },
+  "dependencies": {
+    "planck-js": "^0.3.28"
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.0",
+    "@types/jest": "^29.5.12",
+    "@types/ws": "^8.5.10",
+    "@types/node-fetch": "^2.6.11",
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
+    "eslint": "^8.40.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.4",
+    "esbuild": "^0.21.5",
+    "ts-node": "^10.9.1",
+    "ws": "^8.16.0",
+    "node-fetch": "^2.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Atlas World Team",
+  "license": "MIT"
+}

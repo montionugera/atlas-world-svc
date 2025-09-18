@@ -1,0 +1,90 @@
+
+services:
+  atlas-server:
+    image: heroiclabs/nakama:3.15.0
+    container_name: atlas-world-server
+    ports:
+      - "7349:7349"        # Nakama server
+      - "7350:7350"        # Console (HTTP)
+      - "7351:7351"        # Console (HTTPS)
+      - "9090:9090"        # Metrics (Prometheus)
+    environment:
+      - DATABASE_HOST=atlas-database
+      - DATABASE_PORT=26257
+      - RUNTIME_PATH=/nakama/modules
+      - RUNTIME_ENV=development
+      - LOG_LEVEL=DEBUG
+      - CONSOLE_USER=admin
+      - CONSOLE_PASS=p@ssw0rd1234
+    entrypoint: ["/nakama-entrypoint.sh"]
+    volumes:
+      - ./data:/data
+      - ./modules/ts/build:/nakama/modules
+      - ./nakama-entrypoint.sh:/nakama-entrypoint.sh
+    depends_on:
+      atlas-database:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - atlas-network
+
+  atlas-database:
+    image: cockroachdb/cockroach:latest
+    container_name: atlas-world-database
+    command: start-single-node --insecure --host=0.0.0.0
+    ports:
+      - "26257:26257"
+    volumes:
+      - atlas_database_data:/cockroach/cockroach-data
+    healthcheck:
+      test: ["CMD", "cockroach", "sql", "--insecure", "--host=localhost:26257", "--execute=SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - atlas-network
+
+  atlas-metrics:
+    image: prom/prometheus:latest
+    container_name: atlas-world-metrics
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - atlas_metrics_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - atlas-network
+
+  atlas-monitoring:
+    image: grafana/grafana:latest
+    container_name: atlas-world-monitoring
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - atlas_monitoring_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    restart: unless-stopped
+    networks:
+      - atlas-network
+
+volumes:
+  atlas_database_data:
+  atlas_metrics_data:
+  atlas_monitoring_data:
+
+networks:
+  atlas-network:
+    driver: bridge

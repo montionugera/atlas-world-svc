@@ -1,0 +1,40 @@
+## 🚀 Development Workflow Rules
+
+### Branch Strategy
+- **main**: Production-ready, always deployable
+- **feature/**: New features, fixes, docs
+- **hotfix/**: Urgent production fixes
+
+### Commit Policy
+- Keep messages short, no newlines or special chars
+- Example: `feat: add player movement prediction`
+- Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`
+
+### PR Requirements
+- **Required**: Pass all CI checks
+- **Required**: At least one review approval
+- **Required**: Squash merge only
+- **Required**: Clean, linear history
+
+### Code Quality
+- TypeScript strict mode enabled
+- No any types without justification
+- Comprehensive error handling
+- Unit tests for critical paths
+
+### Performance Standards
+- Tick time: ≤7ms p50, ≤20ms p95
+- Physics step: ≤5ms p50
+- Memory: No leaks, efficient pooling
+- Network: <800B snapshots, 20-40KB/s per client
+
+### Testing Requirements
+- Unit tests for all systems
+- Integration tests for networking
+- Load tests with bot harness
+- Chaos testing (latency/loss injection)
+
+### Documentation
+- Update plans in `.cursor/plans/` for changes
+- Document breaking changes
+- Keep server_spec.md current

@@ -1,0 +1,112 @@
+# Docker Compose Rules for Atlas World Server
+
+## Service Architecture
+- **atlas-server**: Nakama game server (port 7349, 7350, 7351)
+- **atlas-database**: CockroachDB database (port 26257)
+- **atlas-metrics**: Prometheus monitoring (port 9091)
+- **atlas-monitoring**: Grafana dashboards (port 3000)
+
+## Service Dependencies
+- **atlas-server** depends on **atlas-database** (health check)
+- **atlas-metrics** and **atlas-monitoring** are independent
+- **All services** use `atlas-network` for communication
+
+## Database Configuration
+- **Type**: CockroachDB (not PostgreSQL)
+- **Connection**: `atlas-database:26257`
+- **User**: `root`
+- **Password**: `""` (empty string)
+- **Database**: `nakama`
+- **Mode**: Single node, insecure (development only)
+
+## Nakama Server Configuration
+- **Runtime Path**: `/nakama/modules` (mounted from `modules/ts/build/`)
+- **Entrypoint**: `/nakama-entrypoint.sh` (custom script)
+- **Environment**: Development mode with DEBUG logging
+- **Console**: Admin access with credentials
+
+## Volume Mounts
+- **Data persistence**: `./data:/data`
+- **Runtime modules**: `./modules/ts/build:/nakama/modules`
+- **Entrypoint script**: `./nakama-entrypoint.sh:/nakama-entrypoint.sh`
+
+## Health Checks
+- **Database**: SQL query to verify readiness
+- **Server**: HTTP health check endpoint
+- **Startup order**: Database must be healthy before server starts
+
+## Port Mappings
+- **7349**: Nakama server (WebSocket)
+- **7350**: Nakama HTTP API
+- **7351**: Nakama console (HTTPS)
+- **26257**: CockroachDB
+- **9091**: Prometheus metrics
+- **3000**: Grafana dashboards
+
+## Environment Variables
+```yaml
+DATABASE_HOST: atlas-database
+DATABASE_PORT: 26257
+RUNTIME_PATH: /nakama/modules
+RUNTIME_ENV: development
+LOG_LEVEL: DEBUG
+CONSOLE_USER: admin
+CONSOLE_PASS: p@ssw0rd1234
+```
+
+## Common Commands
+- **Start all services**: `docker-compose up -d`
+- **Stop all services**: `docker-compose down`
+- **Restart server**: `docker-compose restart atlas-server`
+- **View logs**: `docker-compose logs atlas-server`
+- **Check status**: `docker-compose ps`
+- **Follow logs**: `docker-compose logs -f atlas-server`
+
+## Troubleshooting
+
+### Server Won't Start
+1. **Check database**: `docker-compose logs atlas-database`
+2. **Check server logs**: `docker-compose logs atlas-server`
+3. **Verify modules**: Ensure `modules/ts/build/index.js` exists
+4. **Check permissions**: Ensure entrypoint script is executable
+
+### Database Issues
+1. **Check CockroachDB logs**: `docker-compose logs atlas-database`
+2. **Verify connection**: Test with `cockroach sql --insecure --host=localhost:26257`
+3. **Reset database**: `docker-compose down -v && docker-compose up -d`
+
+### Module Loading Issues
+1. **Check build**: Run `pnpm run build` in `modules/ts/`
+2. **Verify file exists**: Check `modules/ts/build/index.js`
+3. **Check syntax**: Ensure JavaScript is valid
+4. **Restart server**: `docker-compose restart atlas-server`
+
+### Port Conflicts
+1. **Check what's using ports**: `lsof -i :7350`
+2. **Kill conflicting processes**: `kill -9 <PID>`
+3. **Change ports** in `docker-compose.yml` if needed
+
+## Development Workflow
+1. **Start services**: `docker-compose up -d`
+2. **Wait for startup**: `sleep 10`
+3. **Check status**: `docker-compose ps`
+4. **Make changes**: Edit TypeScript files
+5. **Build modules**: `pnpm run build`
+6. **Restart server**: `docker-compose restart atlas-server`
+7. **Test changes**: Run integration tests
+
+## Production Considerations
+- **Use PostgreSQL** instead of CockroachDB for production
+- **Set secure passwords** for console access
+- **Use proper SSL certificates** for HTTPS
+- **Configure proper logging levels**
+- **Set up proper monitoring** and alerting
+- **Use secrets management** for sensitive data
+- **Configure proper resource limits**
+
+## Monitoring Setup
+- **Prometheus**: Collects metrics from Nakama
+- **Grafana**: Visualizes metrics and dashboards
+- **Access Grafana**: http://localhost:3000
+- **Default credentials**: admin/admin
+- **Access Prometheus**: http://localhost:9091
