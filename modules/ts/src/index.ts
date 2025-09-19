@@ -1,18 +1,64 @@
 // Minimal working Nakama runtime module with RPC-based match simulation
-function testRpc(_ctx: any, logger: any, _nk: any, _payload?: string) {
+function testRpc(_ctx: any, logger: any, nk: any, _payload?: string) {
     logger.info('Test RPC called');
-    return JSON.stringify({ status: 'ok', message: 'Hello from Atlas World!' });
+    
+    // Test storage access
+    try {
+        logger.info('Testing storage access...');
+        nk.storageWrite([{
+            collection: 'test',
+            key: 'test-key',
+            userId: '00000000-0000-0000-0000-000000000000',
+            value: { test: 'data' }
+        }]);
+        logger.info('Storage write successful');
+        
+        const objects = nk.storageRead([{
+            collection: 'test',
+            key: 'test-key',
+            userId: '00000000-0000-0000-0000-000000000000'
+        }]);
+        logger.info('Storage read successful:', objects);
+        
+        return JSON.stringify({ status: 'ok', message: 'Hello from Atlas World!', storage: 'working' });
+    } catch (error) {
+        logger.error('Storage test failed:', error);
+        return JSON.stringify({ status: 'ok', message: 'Hello from Atlas World!', storage: 'failed', error: String(error) });
+    }
 }
 
-// Global match state storage (persists across RPC calls in same process)
-const matchStates = new Map<string, any>();
+// Match state storage using Nakama's storage system
+const SYSTEM_USER_ID = '00000000-0000-0000-0000-000000000000';
 
-function getMatchState(_nk: any, matchId: string): any | null {
-    return matchStates.get(matchId) || null;
+function getMatchState(nk: any, matchId: string): any | null {
+    try {
+        const objects = nk.storageRead([{
+            collection: 'match_states',
+            key: matchId,
+            userId: SYSTEM_USER_ID
+        }]);
+        if (objects && objects.length > 0) {
+            return objects[0].value;
+        }
+        return null;
+    } catch (error) {
+        console.error('Storage read error:', error);
+        return null;
+    }
 }
 
-function saveMatchState(_nk: any, matchId: string, state: any): void {
-    matchStates.set(matchId, state);
+function saveMatchState(nk: any, matchId: string, state: any): void {
+    try {
+        nk.storageWrite([{
+            collection: 'match_states',
+            key: matchId,
+            userId: SYSTEM_USER_ID,
+            value: state
+        }]);
+    } catch (error) {
+        console.error('Storage write error:', error);
+        throw error;
+    }
 }
 
 // Mob AI simulation
@@ -53,8 +99,19 @@ function createMovementMatchRpc(_ctx: any, logger: any, nk: any, _payload?: stri
             mobs: [],
             createdAt: Date.now()
         };
+        
+        logger.info(`Saving match state for: ${matchId}`);
         saveMatchState(nk, matchId, matchState);
         logger.info(`Created simulated match: ${matchId}`);
+        
+        // Verify the save worked
+        const savedState = getMatchState(nk, matchId);
+        if (savedState) {
+            logger.info(`Match state verified: ${savedState.id}`);
+        } else {
+            logger.error(`Failed to verify match state for: ${matchId}`);
+        }
+        
         return JSON.stringify({ matchId, success: true, type: 'simulated' });
     } catch (error) {
         logger.error('Error in createMovementMatchRpc:', error);
