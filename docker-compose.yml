@@ -1,7 +1,7 @@
 
 services:
   atlas-server:
-    image: heroiclabs/nakama:3.13.0
+    image: heroiclabs/nakama:3.15.0
     container_name: atlas-world-server
     ports:
       - "7349:7349"        # Nakama server

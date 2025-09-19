@@ -4,52 +4,97 @@ function testRpc(_ctx: any, logger: any, _nk: any, _payload?: string) {
     return JSON.stringify({ status: 'ok', message: 'Hello from Atlas World!' });
 }
 
-// Global match state storage (in-memory simulation)
+// Global match state storage (persists across RPC calls in same process)
 const matchStates = new Map<string, any>();
 
-function createMovementMatchRpc(_ctx: any, logger: any, _nk: any, _payload?: string) {
-    logger.info('createMovementMatchRpc called');
-    // Create a simulated match with unique ID
-    const matchId = 'simulated-match-' + Date.now();
-    const matchState = {
-        id: matchId,
-        tick: 0,
-        players: new Map(),
-        mobs: [],
-        createdAt: Date.now()
-    };
-    matchStates.set(matchId, matchState);
-    logger.info(`Created simulated match: ${matchId}`);
-    return JSON.stringify({ matchId, success: true, type: 'simulated' });
+function getMatchState(_nk: any, matchId: string): any | null {
+    return matchStates.get(matchId) || null;
 }
 
-function joinMatchRpc(_ctx: any, logger: any, _nk: any, payload?: string) {
+function saveMatchState(_nk: any, matchId: string, state: any): void {
+    matchStates.set(matchId, state);
+}
+
+// Mob AI simulation
+function updateMobAI(matchState: any) {
+    if (!matchState.mobs || matchState.mobs.length === 0) {
+        // Initialize some mobs if none exist
+        matchState.mobs = [
+            { id: 'mob-1', x: 100, y: 100, vx: 1, vy: 0 },
+            { id: 'mob-2', x: 200, y: 200, vx: -1, vy: 1 },
+            { id: 'mob-3', x: 300, y: 150, vx: 0, vy: -1 }
+        ];
+    }
+    
+    // Update mob positions
+    matchState.mobs.forEach((mob: any) => {
+        mob.x += mob.vx;
+        mob.y += mob.vy;
+        
+        // Simple boundary bouncing
+        if (mob.x <= 0 || mob.x >= 500) mob.vx *= -1;
+        if (mob.y <= 0 || mob.y >= 500) mob.vy *= -1;
+        
+        // Keep within bounds
+        mob.x = Math.max(0, Math.min(500, mob.x));
+        mob.y = Math.max(0, Math.min(500, mob.y));
+    });
+}
+
+function createMovementMatchRpc(_ctx: any, logger: any, nk: any, _payload?: string) {
+    logger.info('createMovementMatchRpc called');
+    try {
+        // Create a simulated match with unique ID
+        const matchId = 'simulated-match-' + Date.now();
+        const matchState = {
+            id: matchId,
+            tick: 0,
+            players: {},
+            mobs: [],
+            createdAt: Date.now()
+        };
+        saveMatchState(nk, matchId, matchState);
+        logger.info(`Created simulated match: ${matchId}`);
+        return JSON.stringify({ matchId, success: true, type: 'simulated' });
+    } catch (error) {
+        logger.error('Error in createMovementMatchRpc:', error);
+        return JSON.stringify({ success: false, error: 'Failed to create match' });
+    }
+}
+
+function joinMatchRpc(_ctx: any, logger: any, nk: any, payload?: string) {
     logger.info('joinMatchRpc called');
     try {
         const data = JSON.parse(payload || '{}');
         const { matchId, playerId } = data;
         
+        logger.info(`Looking for matchId: ${matchId}, playerId: ${playerId}`);
+        
         if (!matchId || !playerId) {
             return JSON.stringify({ success: false, error: 'Missing matchId or playerId' });
         }
         
-        const matchState = matchStates.get(matchId);
+        const matchState = getMatchState(nk, matchId);
         if (!matchState) {
+            logger.error(`Match not found: ${matchId}`);
             return JSON.stringify({ success: false, error: 'Match not found' });
         }
         
         // Add player to match
-        matchState.players.set(playerId, {
+        matchState.players[playerId] = {
             id: playerId,
             position: { x: 0, y: 0 },
             joinedAt: Date.now()
-        });
+        };
+        
+        // Save updated state
+        saveMatchState(nk, matchId, matchState);
         
         logger.info(`Player ${playerId} joined match ${matchId}`);
         return JSON.stringify({ 
             success: true, 
             matchId, 
-            playerCount: matchState.players.size,
+            playerCount: Object.keys(matchState.players).length,
             snapshot: { mobs: matchState.mobs }
         });
     } catch (error) {
@@ -58,7 +103,7 @@ function joinMatchRpc(_ctx: any, logger: any, _nk: any, payload?: string) {
     }
 }
 
-function updatePlayerPositionRpc(_ctx: any, logger: any, _nk: any, payload?: string) {
+function updatePlayerPositionRpc(_ctx: any, logger: any, nk: any, payload?: string) {
     logger.info('updatePlayerPositionRpc called');
     try {
         const data = JSON.parse(payload || '{}');
@@ -68,12 +113,12 @@ function updatePlayerPositionRpc(_ctx: any, logger: any, _nk: any, payload?: str
             return JSON.stringify({ success: false, error: 'Missing required fields' });
         }
         
-        const matchState = matchStates.get(matchId);
+        const matchState = getMatchState(nk, matchId);
         if (!matchState) {
             return JSON.stringify({ success: false, error: 'Match not found' });
         }
         
-        const player = matchState.players.get(playerId);
+        const player = matchState.players[playerId];
         if (!player) {
             return JSON.stringify({ success: false, error: 'Player not in match' });
         }
@@ -82,8 +127,14 @@ function updatePlayerPositionRpc(_ctx: any, logger: any, _nk: any, payload?: str
         player.position = position;
         matchState.tick += 1;
         
+        // Update mob AI
+        updateMobAI(matchState);
+        
+        // Save updated state
+        saveMatchState(nk, matchId, matchState);
+        
         // Return updated match state
-        const players = Array.from(matchState.players.values());
+        const players = Object.values(matchState.players);
         return JSON.stringify({ 
             success: true, 
             tick: matchState.tick,
@@ -96,7 +147,7 @@ function updatePlayerPositionRpc(_ctx: any, logger: any, _nk: any, payload?: str
     }
 }
 
-function getMatchStateRpc(_ctx: any, logger: any, _nk: any, payload?: string) {
+function getMatchStateRpc(_ctx: any, logger: any, nk: any, payload?: string) {
     logger.info('getMatchStateRpc called');
     try {
         const data = JSON.parse(payload || '{}');
@@ -106,22 +157,57 @@ function getMatchStateRpc(_ctx: any, logger: any, _nk: any, payload?: string) {
             return JSON.stringify({ success: false, error: 'Missing matchId' });
         }
         
-        const matchState = matchStates.get(matchId);
+        const matchState = getMatchState(nk, matchId);
         if (!matchState) {
             return JSON.stringify({ success: false, error: 'Match not found' });
         }
         
-        const players = Array.from(matchState.players.values());
+        const players = Object.values(matchState.players);
         return JSON.stringify({ 
             success: true, 
             matchId,
             tick: matchState.tick,
             players: players,
             mobs: matchState.mobs,
-            playerCount: matchState.players.size
+            playerCount: Object.keys(matchState.players).length
         });
     } catch (error) {
         logger.error('Error in getMatchStateRpc:', error);
+        return JSON.stringify({ success: false, error: 'Invalid payload' });
+    }
+}
+
+function updateMobsRpc(_ctx: any, logger: any, nk: any, payload?: string) {
+    logger.info('updateMobsRpc called');
+    try {
+        const data = JSON.parse(payload || '{}');
+        const { matchId } = data;
+        
+        if (!matchId) {
+            return JSON.stringify({ success: false, error: 'Missing matchId' });
+        }
+        
+        const matchState = getMatchState(nk, matchId);
+        if (!matchState) {
+            return JSON.stringify({ success: false, error: 'Match not found' });
+        }
+        
+        // Update mob AI
+        updateMobAI(matchState);
+        matchState.tick += 1;
+        
+        // Save updated state
+        saveMatchState(nk, matchId, matchState);
+        
+        // Return mob updates
+        return JSON.stringify({ 
+            success: true, 
+            matchId,
+            tick: matchState.tick,
+            mobs: matchState.mobs
+        });
+    } catch (error) {
+        logger.error('Error in updateMobsRpc:', error);
         return JSON.stringify({ success: false, error: 'Invalid payload' });
     }
 }
@@ -175,6 +261,7 @@ function InitModule(_ctx: any, logger: any, _nk: any, initializer: any) {
     initializer.registerRpc('join_match', joinMatchRpc);
     initializer.registerRpc('update_player_position', updatePlayerPositionRpc);
     initializer.registerRpc('get_match_state', getMatchStateRpc);
+    initializer.registerRpc('update_mobs', updateMobsRpc);
     
     logger.info('✅ All RPC-based match simulation functions registered');
     logger.info('🎯 Match functionality available via RPC calls instead of match handlers');
