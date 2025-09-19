@@ -41,6 +41,22 @@ async function createMovementMatchRpc(token: string): Promise<any> {
   return JSON.parse(body.payload);
 }
 
+async function rpcCall(token: string, rpcName: string, payload: any): Promise<any> {
+  const res = await fetch(`${HTTP_HOST}/v2/rpc/${rpcName}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(JSON.stringify(payload))
+  });
+  const body = await res.json() as any;
+  if (!body.payload) {
+    throw new Error(`RPC call failed: ${JSON.stringify(body)}`);
+  }
+  return JSON.parse(body.payload);
+}
+
 describe('RPC-Only Integration Tests (Docker Compose)', () => {
   test('server health check', async () => {
     const res = await fetch(`${HTTP_HOST}/healthcheck`);
@@ -69,7 +85,8 @@ describe('RPC-Only Integration Tests (Docker Compose)', () => {
     
     expect(result).toBeDefined();
     expect(result.success).toBe(true);
-    expect(result.matchId).toBe('dummy-match-id');
+    expect(result.matchId).toMatch(/^simulated-match-\d+$/);
+    expect(result.type).toBe('simulated');
   });
 
   test('multiple RPC calls work', async () => {
@@ -81,5 +98,36 @@ describe('RPC-Only Integration Tests (Docker Compose)', () => {
     
     expect(testResult.status).toBe('ok');
     expect(matchResult.success).toBe(true);
+  });
+
+  test('RPC-based match simulation works', async () => {
+    const token = await authDevice('rpc-test-device-5');
+    
+    // Create a match
+    const createResult = await createMovementMatchRpc(token);
+    expect(createResult.success).toBe(true);
+    const matchId = createResult.matchId;
+    
+    // Join the match
+    const joinResult = await rpcCall(token, 'join_match', { matchId, playerId: 'test-player-1' });
+    expect(joinResult.success).toBe(true);
+    expect(joinResult.playerCount).toBe(1);
+    
+    // Update player position
+    const updateResult = await rpcCall(token, 'update_player_position', {
+      matchId,
+      playerId: 'test-player-1',
+      position: { x: 100, y: 200 }
+    });
+    expect(updateResult.success).toBe(true);
+    expect(updateResult.tick).toBe(1);
+    expect(updateResult.players).toHaveLength(1);
+    expect(updateResult.players[0].position).toEqual({ x: 100, y: 200 });
+    
+    // Get match state
+    const stateResult = await rpcCall(token, 'get_match_state', { matchId });
+    expect(stateResult.success).toBe(true);
+    expect(stateResult.matchId).toBe(matchId);
+    expect(stateResult.playerCount).toBe(1);
   });
 });

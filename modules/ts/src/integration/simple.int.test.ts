@@ -1,4 +1,5 @@
 // Simple integration test using docker-compose (more reliable than Testcontainers)
+// @ts-ignore
 import WebSocket from 'ws';
 import fetch from 'node-fetch';
 
