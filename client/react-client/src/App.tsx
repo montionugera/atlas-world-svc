@@ -37,6 +37,10 @@ function App() {
     connect,
     createMatch,
     joinMatch,
+    enterMap,
+    updateMap,
+    updatePlayerInput,
+    getMapState,
     startSimulation,
     stopSimulation,
     trackFrame
@@ -92,6 +96,38 @@ function App() {
     addLog('⏹️ Simulation stopped');
     stopSimulation();
   }, [stopSimulation, addLog]);
+
+  // --- Map Flow Handlers ---
+  const mapId = 'map-01-sector-a';
+  const mapIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleEnterMap = useCallback(async () => {
+    try {
+      addLog(`🗺️ Entering map: ${mapId}`);
+      const resp = await enterMap(mapId, { x: 100, y: 100 });
+      if (resp.success) addLog('✅ Entered map');
+      else addLog(`❌ enter_map failed: ${resp.error}`, 'error');
+    } catch (e) {
+      addLog(`❌ enter_map error: ${e}`, 'error');
+    }
+  }, [enterMap, addLog]);
+
+  const handleStartMap = useCallback(() => {
+    if (mapIntervalRef.current) return;
+    addLog('▶️ Starting map polling (50ms)');
+    mapIntervalRef.current = setInterval(() => {
+      updateMap(mapId).catch(err => addLog(`update_map error: ${err}`, 'error'));
+      // Optionally move player every 2s
+    }, 50);
+  }, [updateMap, addLog]);
+
+  const handleStopMap = useCallback(() => {
+    if (mapIntervalRef.current) {
+      clearInterval(mapIntervalRef.current);
+      mapIntervalRef.current = null;
+      addLog('⏹️ Stopped map polling');
+    }
+  }, [addLog]);
   
   // Add logs for game state changes
   React.useEffect(() => {
@@ -118,6 +154,9 @@ function App() {
             onJoinMatch={handleJoinMatch}
             onStartSimulation={handleStartSimulation}
             onStopSimulation={handleStopSimulation}
+            onEnterMap={handleEnterMap}
+            onStartMap={handleStartMap}
+            onStopMap={handleStopMap}
           />
         </div>
         

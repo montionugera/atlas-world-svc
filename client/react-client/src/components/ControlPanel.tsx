@@ -11,6 +11,10 @@ interface ControlPanelProps {
   onJoinMatch: () => void;
   onStartSimulation: () => void;
   onStopSimulation: () => void;
+  // Map flow (optional)
+  onEnterMap?: () => void;
+  onStartMap?: () => void;
+  onStopMap?: () => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -21,7 +25,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onCreateMatch,
   onJoinMatch,
   onStartSimulation,
-  onStopSimulation
+  onStopSimulation,
+  onEnterMap,
+  onStartMap,
+  onStopMap
 }) => {
   return (
     <div className="control-panel">
@@ -64,6 +71,31 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           className="btn btn-danger"
         >
           ⏹️ Stop Simulation
+        </button>
+      </div>
+
+      <div className="control-group" style={{ marginTop: 12 }}>
+        <button 
+          onClick={onEnterMap}
+          disabled={!isConnected}
+          className="btn btn-secondary"
+        >
+          🗺️ Enter Map
+        </button>
+
+        <button 
+          onClick={onStartMap}
+          disabled={!isConnected}
+          className="btn btn-success"
+          >
+          ▶️ Start Map Updates
+        </button>
+
+        <button 
+          onClick={onStopMap}
+          className="btn btn-danger"
+        >
+          ⏹️ Stop Map Updates
         </button>
       </div>
     </div>
