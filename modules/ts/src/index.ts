@@ -76,6 +76,7 @@ interface MapState {
     players: Record<string, Player>;
     mobs: Mob[];
     createdAt: number;
+    lastUpdatedAt?: number;
 }
 
 interface CreateMatchResponse extends RpcResponse {
@@ -264,6 +265,22 @@ function updateMapMobAI(mapState: MapState): void {
         updateMobPosition(mob);
         applyBoundaryPhysics(mob);
     });
+}
+
+function advanceMapByElapsed(mapState: MapState, nowMs: number): number {
+    const last = mapState.lastUpdatedAt || mapState.createdAt;
+    const elapsed = Math.max(0, nowMs - last);
+    const stepMs = CONFIG.MATCH.MOB_UPDATE_INTERVAL;
+    const steps = Math.floor(elapsed / stepMs);
+    if (steps <= 0) {
+        return 0;
+    }
+    for (let i = 0; i < steps; i++) {
+        updateMapMobAI(mapState);
+        mapState.tick += 1;
+    }
+    mapState.lastUpdatedAt = last + steps * stepMs;
+    return steps;
 }
 
 function updateMobPosition(mob: any): void {
@@ -510,13 +527,15 @@ function enterMapRpc(_ctx: any, logger: any, nk: any, payload?: string): string 
         }
 
         let mapState = getMapState(nk, mapId, log);
+        const now = Date.now();
         if (!mapState) {
             mapState = {
                 id: mapId,
                 tick: 0,
                 players: {},
                 mobs: [],
-                createdAt: Date.now()
+                createdAt: now,
+                lastUpdatedAt: now
             };
         }
 
@@ -531,6 +550,8 @@ function enterMapRpc(_ctx: any, logger: any, nk: any, payload?: string): string 
             mapState.mobs = initializeMobs();
         }
 
+        // Advance simulation by elapsed time so env progresses independently of client polling
+        advanceMapByElapsed(mapState, now);
         saveMapState(nk, mapId, mapState, log);
 
         return JSON.stringify({
@@ -557,8 +578,15 @@ function updateMapRpc(_ctx: any, logger: any, nk: any, payload?: string): string
         if (!mapState) {
             return JSON.stringify({ success: false, error: 'Map not found' });
         }
-        updateMapMobAI(mapState);
-        mapState.tick += 1;
+        const now = Date.now();
+        // Advance based on elapsed time
+        const advanced = advanceMapByElapsed(mapState, now);
+        if (advanced === 0) {
+            // Ensure at least one step for responsiveness
+            updateMapMobAI(mapState);
+            mapState.tick += 1;
+            mapState.lastUpdatedAt = now;
+        }
         saveMapState(nk, mapId, mapState, log);
         return JSON.stringify({ success: true, mapId, tick: mapState.tick, mobs: mapState.mobs });
     } catch (error) {
@@ -584,8 +612,13 @@ function updatePlayerInputRpc(_ctx: any, logger: any, nk: any, payload?: string)
             return JSON.stringify({ success: false, error: 'Player not in map' });
         }
         player.position = position;
-        updateMapMobAI(mapState);
-        mapState.tick += 1;
+        const now = Date.now();
+        const advanced = advanceMapByElapsed(mapState, now);
+        if (advanced === 0) {
+            updateMapMobAI(mapState);
+            mapState.tick += 1;
+            mapState.lastUpdatedAt = now;
+        }
         saveMapState(nk, mapId, mapState, log);
         return JSON.stringify({ success: true, tick: mapState.tick, mobs: mapState.mobs, players: Object.values(mapState.players) });
     } catch (error) {
