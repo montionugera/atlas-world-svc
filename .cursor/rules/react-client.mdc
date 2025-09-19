@@ -1,0 +1,225 @@
+# React TypeScript Client Rules
+
+## Overview
+Modern React TypeScript client for Atlas World Server with real-time mob simulation visualization.
+
+## Architecture
+
+### Project Structure
+```
+client/react-client/
+├── src/
+│   ├── components/          # React components
+│   │   ├── ControlPanel.tsx
+│   │   ├── GameCanvas.tsx
+│   │   ├── LogPanel.tsx
+│   │   ├── StatsPanel.tsx
+│   │   └── StatusPanel.tsx
+│   ├── hooks/              # Custom React hooks
+│   │   └── useAtlasClient.ts
+│   ├── types/              # TypeScript type definitions
+│   │   └── game.ts
+│   ├── App.tsx             # Main application
+│   ├── App.css             # Styling
+│   └── index.tsx           # Entry point
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+## Development Guidelines
+
+### TypeScript Best Practices
+- **Strict typing**: Use explicit types for all props and state
+- **Interface definitions**: Define clear interfaces for all data structures
+- **Generic types**: Use generics for reusable components
+- **Type safety**: Avoid `any` types, use proper type guards
+
+### React Patterns
+- **Functional components**: Use function components with hooks
+- **Custom hooks**: Extract reusable logic into custom hooks
+- **useCallback**: Wrap event handlers and functions passed as props
+- **useEffect**: Handle side effects and cleanup properly
+- **useRef**: Use refs for DOM access and persistent values
+
+### Performance Optimization
+- **60fps target**: Maintain smooth 60fps rendering
+- **requestAnimationFrame**: Use for smooth animations
+- **Interpolation**: Smooth position transitions between updates
+- **Debouncing**: Prevent excessive API calls
+- **Memoization**: Use React.memo for expensive components
+
+### State Management
+- **Local state**: Use useState for component-specific state
+- **Custom hooks**: Centralize complex state logic
+- **Persistence**: Use localStorage for connection state
+- **Error handling**: Graceful error states and recovery
+
+## Component Guidelines
+
+### GameCanvas
+- **Canvas rendering**: Use 2D canvas for game visualization
+- **Smooth animation**: Implement position interpolation
+- **Performance**: Optimize for 60fps rendering
+- **Responsive**: Handle different screen sizes
+
+### ControlPanel
+- **Button states**: Disable buttons based on connection state
+- **Loading states**: Show loading indicators during operations
+- **Error handling**: Display error messages clearly
+- **Accessibility**: Proper ARIA labels and keyboard navigation
+
+### StatsPanel
+- **Real-time metrics**: Display FPS, update rate, tick count
+- **Performance data**: Show mob count, player count, updates
+- **Visual indicators**: Use colors to indicate status
+- **Responsive layout**: Adapt to different screen sizes
+
+### LogPanel
+- **Scroll behavior**: Auto-scroll to latest entries
+- **Log levels**: Color-code different log types
+- **Performance**: Limit log entries to prevent memory issues
+- **Filtering**: Allow filtering by log type
+
+## Performance Targets
+
+### Update Rate
+- **Target**: 20 updates per second
+- **Client polling**: Every 50ms
+- **Server processing**: Every 50ms
+- **Visual smoothness**: 60fps rendering
+
+### Mob Movement
+- **Speed**: 6x faster than original
+- **Smoothness**: Position interpolation between updates
+- **Physics**: Proper boundary bouncing and clamping
+- **Visual feedback**: Velocity indicators and smooth transitions
+
+### UI Responsiveness
+- **FPS**: Maintain 60fps during simulation
+- **Input lag**: < 16ms response time
+- **Memory**: Efficient state management
+- **Battery**: Optimize for mobile devices
+
+## Error Handling
+
+### Connection Errors
+- **Retry logic**: Automatic reconnection attempts
+- **User feedback**: Clear error messages
+- **Graceful degradation**: Fallback to offline mode
+- **Logging**: Detailed error logging for debugging
+
+### State Errors
+- **Validation**: Validate all incoming data
+- **Fallbacks**: Provide default values for missing data
+- **Recovery**: Automatic state recovery mechanisms
+- **User notification**: Inform users of issues
+
+## Testing
+
+### Unit Tests
+- **Component testing**: Test individual components
+- **Hook testing**: Test custom hooks in isolation
+- **Utility functions**: Test helper functions
+- **Mocking**: Mock external dependencies
+
+### Integration Tests
+- **API integration**: Test server communication
+- **User flows**: Test complete user journeys
+- **Performance**: Test performance under load
+- **Error scenarios**: Test error handling
+
+### E2E Tests
+- **Full workflow**: Test complete application flow
+- **Cross-browser**: Test on different browsers
+- **Mobile**: Test on mobile devices
+- **Performance**: Test real-world performance
+
+## Common Patterns
+
+### Custom Hooks
+```typescript
+// Example: useAtlasClient hook
+export const useAtlasClient = (config: ClientConfig) => {
+  const [state, setState] = useState(initialState);
+  
+  const action = useCallback(async () => {
+    // Implementation
+  }, [dependencies]);
+  
+  return { state, action };
+};
+```
+
+### Component Props
+```typescript
+// Example: Component with proper typing
+interface ComponentProps {
+  data: DataType;
+  onUpdate: (value: string) => void;
+  isLoading?: boolean;
+}
+
+export const Component: React.FC<ComponentProps> = ({ 
+  data, 
+  onUpdate, 
+  isLoading = false 
+}) => {
+  // Implementation
+};
+```
+
+### Error Boundaries
+```typescript
+// Example: Error boundary for graceful error handling
+export class ErrorBoundary extends React.Component {
+  // Implementation
+}
+```
+
+## Development Workflow
+
+### Setup
+```bash
+cd client/react-client
+npm install
+npm start
+```
+
+### Development
+1. **Edit components** in `src/components/`
+2. **Update hooks** in `src/hooks/`
+3. **Modify types** in `src/types/`
+4. **Test changes** in browser
+5. **Check performance** metrics
+
+### Building
+```bash
+npm run build
+```
+
+### Testing
+```bash
+npm test
+npm run test:coverage
+```
+
+## Troubleshooting
+
+### Common Issues
+1. **TypeScript errors**: Check type definitions
+2. **Performance issues**: Check FPS and update rate
+3. **Connection problems**: Check server status
+4. **Rendering issues**: Check canvas context
+
+### Debug Tools
+- **React DevTools**: Component inspection
+- **Performance tab**: FPS and rendering metrics
+- **Network tab**: API call monitoring
+- **Console**: Error logging and debugging
+
+### Performance Monitoring
+- **FPS counter**: Real-time frame rate
+- **Update rate**: Server update frequency
+- **Memory usage**: Component memory consumption
+- **Network latency**: API response times

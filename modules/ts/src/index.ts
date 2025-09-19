@@ -17,22 +17,22 @@ const CONFIG = {
         SYSTEM_USER_ID: '00000000-0000-0000-0000-000000000000'
     },
     
-    // Match settings
-    MATCH: {
-        TICK_RATE: 30,
-        MAX_PLAYERS: 10,
-        MOB_UPDATE_INTERVAL: 200 // ms
-    },
+           // Match settings
+           MATCH: {
+               TICK_RATE: 30,
+               MAX_PLAYERS: 10,
+               MOB_UPDATE_INTERVAL: 50 // ms - ultra fast updates for very smooth movement
+           },
     
-    // Mob configuration
-    MOBS: {
-        DEFAULT_COUNT: 3,
-        INITIAL_POSITIONS: [
-            { x: 100, y: 100, vx: 1, vy: 0 },    // Horizontal right
-            { x: 200, y: 200, vx: -1, vy: 1 },   // Diagonal left-down
-            { x: 300, y: 150, vx: 0, vy: -1 }    // Vertical up
-        ]
-    }
+           // Mob configuration
+           MOBS: {
+               DEFAULT_COUNT: 3,
+               INITIAL_POSITIONS: [
+                   { x: 100, y: 100, vx: 6, vy: 0 },    // Horizontal right (ultra fast)
+                   { x: 200, y: 200, vx: -6, vy: 6 },   // Diagonal left-down (ultra fast)
+                   { x: 300, y: 150, vx: 0, vy: -6 }    // Vertical up (ultra fast)
+               ]
+           }
 };
 
 // Type definitions

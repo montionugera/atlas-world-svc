@@ -1,4 +1,4 @@
-// Game types matching the server-side definitions
+// Game types for React client
 
 export interface Position {
   x: number;
@@ -25,6 +25,7 @@ export interface MatchState {
   players: Record<string, Player>;
   mobs: Mob[];
   createdAt: number;
+  playerCount: number;
 }
 
 export interface RpcResponse {
