@@ -653,6 +653,130 @@ function getMapStateRpc(_ctx: any, logger: any, nk: any, payload?: string): stri
     }
 }
 
+// RPC: Create WS Map Match
+function createWsMapRpc(_ctx: any, logger: any, nk: any, payload?: string): string {
+    const log = createLogger(logger, 'CreateWsMapRPC');
+    try {
+        const data = JSON.parse(payload || '{}');
+        const mapId = data.mapId || 'map-01-sector-a';
+        const matchId = nk.matchCreate('atlas_map', { mapId });
+        return JSON.stringify({ success: true, matchId });
+    } catch (error) {
+        log.error('Error createWsMap', error);
+        return JSON.stringify({ success: false, error: 'Failed to create ws map' });
+    }
+}
+// -----------------------------
+// WebSocket Match (Minimal)
+// -----------------------------
+// Simple real-time match for a single map, broadcasting periodic deltas.
+const OPCODES = {
+    JOIN_ACK: 1,
+    SNAPSHOT: 10,
+    DELTA: 11,
+    PLAYER_INPUT: 20,
+    ERROR: 90
+} as const;
+
+type Presence = { userId: string; sessionId: string; username?: string };
+type Dispatcher = { broadcastMessage: (op: number, data: string | Uint8Array, presences?: Presence[], reliable?: boolean) => void };
+
+interface MatchStateWS {
+    mapId: string;
+    tick: number;
+    players: Record<string, Player>;
+    mobs: Mob[];
+    createdAt: number;
+    lastUpdatedAt: number;
+    presences: Record<string, Presence>;
+}
+
+function wsAdvance(state: MatchStateWS, now: number): void {
+    const elapsed = Math.max(0, now - state.lastUpdatedAt);
+    const stepMs = CONFIG.MATCH.MOB_UPDATE_INTERVAL;
+    const steps = Math.floor(elapsed / stepMs);
+    if (steps <= 0) return;
+    for (let i = 0; i < steps; i++) {
+        const temp: MapState = {
+            id: state.mapId,
+            tick: state.tick,
+            players: state.players,
+            mobs: state.mobs,
+            createdAt: state.createdAt,
+            lastUpdatedAt: state.lastUpdatedAt
+        };
+        updateMapMobAI(temp);
+        state.mobs = temp.mobs;
+        state.tick += 1;
+        state.lastUpdatedAt += stepMs;
+    }
+}
+
+const AtlasMapMatch = {
+    matchInit: function(_ctx: any, log: any, _nk: any, params: { mapId?: string }) {
+        const mapId = params && params.mapId ? params.mapId : 'map-01-sector-a';
+        const now = Date.now();
+        const state: MatchStateWS = {
+            mapId,
+            tick: 0,
+            players: {},
+            mobs: initializeMobs(),
+            createdAt: now,
+            lastUpdatedAt: now,
+            presences: {}
+        };
+        log.info(`[WS] matchInit for ${mapId}`);
+        return { state, tickRate: CONFIG.MATCH.TICK_RATE, label: mapId };
+    },
+
+    matchJoinAttempt: function(_ctx: any, _log: any, _nk: any, _dispatcher: Dispatcher, _tick: number, state: MatchStateWS, _presence: Presence, _metadata: any) {
+        return { state, accept: true, rejectMessage: '' };
+    },
+
+    matchJoin: function(_ctx: any, log: any, _nk: any, dispatcher: Dispatcher, _tick: number, state: MatchStateWS, presences: Presence[]) {
+        presences.forEach(p => {
+            state.presences[p.userId] = p;
+            state.players[p.userId] = { id: p.userId, position: { x: 0, y: 0 }, joinedAt: Date.now() };
+        });
+        const snapshot = JSON.stringify({ mapId: state.mapId, tick: state.tick, mobs: state.mobs, players: Object.values(state.players) });
+        dispatcher.broadcastMessage(OPCODES.SNAPSHOT, snapshot, undefined, true);
+        log.info(`[WS] Players joined: ${presences.map(p => p.userId).join(',')}`);
+        return { state };
+    },
+
+    matchLeave: function(_ctx: any, log: any, _nk: any, _dispatcher: Dispatcher, _tick: number, state: MatchStateWS, presences: Presence[]) {
+        presences.forEach(p => { delete state.presences[p.userId]; delete state.players[p.userId]; });
+        log.info(`[WS] Players left: ${presences.map(p => p.userId).join(',')}`);
+        return { state };
+    },
+
+    matchLoop: function(_ctx: any, _log: any, _nk: any, dispatcher: Dispatcher, _tick: number, state: MatchStateWS, messages: any[]) {
+        // Inputs
+        for (const m of messages || []) {
+            if (m.opCode === OPCODES.PLAYER_INPUT) {
+                try {
+                    const raw = typeof m.data === 'string' ? m.data : String.fromCharCode.apply(null, m.data as any);
+                    const data = JSON.parse(raw || '{}');
+                    const { userId, position } = data || {};
+                    if (userId && position && state.players[userId]) {
+                        state.players[userId].position = position;
+                    }
+                } catch {}
+            }
+        }
+        // Advance and delta
+        wsAdvance(state, Date.now());
+        const delta = JSON.stringify({ mapId: state.mapId, tick: state.tick, mobs: state.mobs });
+        dispatcher.broadcastMessage(OPCODES.DELTA, delta, undefined, false);
+        return { state };
+    },
+
+    matchTerminate: function(_ctx: any, log: any, _nk: any, _dispatcher: Dispatcher, _tick: number, state: MatchStateWS, _graceSeconds: number) {
+        log.info(`[WS] matchTerminate for ${state.mapId}`);
+        return { state };
+    }
+};
+
 function InitModule(_ctx: any, logger: any, _nk: any, initializer: any) {
     logger.info('🚀 Atlas World Server - RPC-Based Match Simulation Module Loaded');
     logger.info('✅ Test module initialized successfully');
@@ -668,7 +792,15 @@ function InitModule(_ctx: any, logger: any, _nk: any, initializer: any) {
     initializer.registerRpc('update_map', updateMapRpc);
     initializer.registerRpc('update_player_input', updatePlayerInputRpc);
     initializer.registerRpc('get_map_state', getMapStateRpc);
+    initializer.registerRpc('create_ws_map', createWsMapRpc);
     
-    logger.info('✅ All RPC-based match simulation functions registered');
-    logger.info('🎯 Match functionality available via RPC calls instead of match handlers');
+    // Register WS match
+    try {
+        initializer.registerMatch('atlas_map', AtlasMapMatch);
+        logger.info('✅ WebSocket match registered: atlas_map');
+    } catch (e) {
+        logger.error('❌ Failed to register WebSocket match', e);
+    }
+    
+    logger.info('✅ RPC endpoints registered; WS match enabled');
 }
