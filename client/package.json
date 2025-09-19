@@ -1,0 +1,25 @@
+{
+  "name": "atlas-world-client",
+  "version": "1.0.0",
+  "description": "TypeScript client for Atlas World Server with mob simulation",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch",
+    "test": "node dist/test-client.js",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@heroiclabs/nakama-js": "^2.7.0",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": ["nakama", "game-server", "mob-simulation", "atlas-world", "typescript"],
+  "author": "Atlas World Team",
+  "license": "MIT"
+}
