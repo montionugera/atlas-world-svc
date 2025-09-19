@@ -10,7 +10,11 @@ import {
   UpdatePositionResponse, 
   GetMatchStateResponse, 
   UpdateMobsResponse,
-  Position
+  Position,
+  EnterMapResponse,
+  UpdateMapResponse,
+  UpdatePlayerInputResponse,
+  MapStateResponse
 } from '../types/game';
 
 export interface UseAtlasClientReturn {
@@ -31,6 +35,11 @@ export interface UseAtlasClientReturn {
   updatePlayerPosition: (position: Position) => Promise<UpdatePositionResponse>;
   getMatchState: () => Promise<GetMatchStateResponse>;
   updateMobs: () => Promise<UpdateMobsResponse>;
+  // Map flow
+  enterMap: (mapId: string, spawn?: Position) => Promise<EnterMapResponse>;
+  updateMap: (mapId: string) => Promise<UpdateMapResponse>;
+  updatePlayerInput: (mapId: string, position: Position) => Promise<UpdatePlayerInputResponse>;
+  getMapState: (mapId: string) => Promise<MapStateResponse>;
   startSimulation: () => void;
   stopSimulation: () => void;
   
@@ -225,6 +234,56 @@ export const useAtlasClient = (config: ClientConfig): UseAtlasClientReturn => {
     
     return response;
   }, [matchId]);
+
+  // --- Map Flow ---
+  const enterMap = useCallback(async (mapId: string, spawn?: Position): Promise<EnterMapResponse> => {
+    if (!clientRef.current || !sessionRef.current) throw new Error('Not connected');
+    const payload: any = { mapId, playerId };
+    if (spawn) payload.spawn = spawn;
+    const result = await clientRef.current.rpc(sessionRef.current, 'enter_map', payload);
+    const response: EnterMapResponse = typeof result.payload === 'string' ? JSON.parse(result.payload) : result.payload;
+    return response;
+  }, [playerId]);
+
+  const updateMap = useCallback(async (mapId: string): Promise<UpdateMapResponse> => {
+    if (!clientRef.current || !sessionRef.current) throw new Error('Not connected');
+    const result = await clientRef.current.rpc(sessionRef.current, 'update_map', { mapId });
+    const response: UpdateMapResponse = typeof result.payload === 'string' ? JSON.parse(result.payload) : result.payload;
+    if (response.success) {
+      const now = Date.now();
+      const dt = now - lastUpdateTimeRef.current;
+      lastUpdateTimeRef.current = now;
+      setUpdateRate(dt > 0 ? Math.round(1000 / dt) : 0);
+      setGameState(prev => ({ ...prev!, tick: response.tick || 0, mobs: response.mobs || [], playerCount: prev?.playerCount || 0 }));
+      setUpdateCount(prev => prev + 1);
+    }
+    return response;
+  }, []);
+
+  const updatePlayerInput = useCallback(async (mapId: string, position: Position): Promise<UpdatePlayerInputResponse> => {
+    if (!clientRef.current || !sessionRef.current) throw new Error('Not connected');
+    const result = await clientRef.current.rpc(sessionRef.current, 'update_player_input', { mapId, playerId, position });
+    const response: UpdatePlayerInputResponse = typeof result.payload === 'string' ? JSON.parse(result.payload) : result.payload;
+    if (response.success) {
+      const now = Date.now();
+      const dt = now - lastUpdateTimeRef.current;
+      lastUpdateTimeRef.current = now;
+      setUpdateRate(dt > 0 ? Math.round(1000 / dt) : 0);
+      setGameState(prev => ({ ...prev!, tick: response.tick || 0, mobs: response.mobs || [], players: (response.players || []) as any, playerCount: (response.players || []).length }));
+      setUpdateCount(prev => prev + 1);
+    }
+    return response;
+  }, [playerId]);
+
+  const getMapState = useCallback(async (mapId: string): Promise<MapStateResponse> => {
+    if (!clientRef.current || !sessionRef.current) throw new Error('Not connected');
+    const result = await clientRef.current.rpc(sessionRef.current, 'get_map_state', { mapId });
+    const response: MapStateResponse = typeof result.payload === 'string' ? JSON.parse(result.payload) : result.payload;
+    if (response.success) {
+      setGameState(prev => ({ ...prev!, tick: response.tick || 0, mobs: response.mobs || [], players: (response.players || []) as any, playerCount: response.playerCount || 0 }));
+    }
+    return response;
+  }, []);
   
   // Start simulation
   const startSimulation = useCallback(() => {
@@ -338,6 +397,11 @@ export const useAtlasClient = (config: ClientConfig): UseAtlasClientReturn => {
     updatePlayerPosition,
     getMatchState,
     updateMobs,
+    // Map flow
+    enterMap,
+    updateMap,
+    updatePlayerInput,
+    getMapState,
     startSimulation,
     stopSimulation,
     

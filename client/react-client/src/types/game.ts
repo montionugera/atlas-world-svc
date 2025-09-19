@@ -70,3 +70,31 @@ export interface ClientConfig {
   serverKey: string;
   useSSL: boolean;
 }
+
+// Map-based types (MMO map flow)
+export interface MapStateResponse extends RpcResponse {
+  mapId?: string;
+  tick?: number;
+  players?: Player[];
+  mobs?: Mob[];
+  playerCount?: number;
+  snapshot?: { mobs: Mob[]; players: Player[] };
+}
+
+export interface EnterMapResponse extends RpcResponse {
+  mapId?: string;
+  tick?: number;
+  snapshot?: { mobs: Mob[]; players: Player[] };
+}
+
+export interface UpdateMapResponse extends RpcResponse {
+  mapId?: string;
+  tick?: number;
+  mobs?: Mob[];
+}
+
+export interface UpdatePlayerInputResponse extends RpcResponse {
+  tick?: number;
+  players?: Player[];
+  mobs?: Mob[];
+}
