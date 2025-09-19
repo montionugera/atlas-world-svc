@@ -1,7 +1,7 @@
 // React hook for Atlas World Client
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Client, Socket } from '@heroiclabs/nakama-js';
+import { Client } from '@heroiclabs/nakama-js';
 import { 
   ClientConfig, 
   MatchState, 
@@ -40,10 +40,6 @@ export interface UseAtlasClientReturn {
   updateMap: (mapId: string) => Promise<UpdateMapResponse>;
   updatePlayerInput: (mapId: string, position: Position) => Promise<UpdatePlayerInputResponse>;
   getMapState: (mapId: string) => Promise<MapStateResponse>;
-  // WebSocket flow
-  connectWs: () => Promise<void>;
-  createWsMapMatch: (mapId?: string) => Promise<string>;
-  sendWsPlayerInput: (position: Position) => Promise<void>;
   startSimulation: () => void;
   stopSimulation: () => void;
   
@@ -66,8 +62,6 @@ export const useAtlasClient = (config: ClientConfig): UseAtlasClientReturn => {
   // Refs
   const clientRef = useRef<Client | null>(null);
   const sessionRef = useRef<any>(null);
-  const socketRef = useRef<Socket | null>(null);
-  const wsMatchIdRef = useRef<string | null>(null);
   const simulationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const mobUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastUpdateTimeRef = useRef<number>(0);
@@ -99,55 +93,6 @@ export const useAtlasClient = (config: ClientConfig): UseAtlasClientReturn => {
       throw error;
     }
   }, [config, playerId]);
-
-  // Connect WebSocket
-  const connectWs = useCallback(async () => {
-    if (!clientRef.current || !sessionRef.current) throw new Error('Not connected');
-    const socket = clientRef.current.createSocket(config.useSSL, false);
-    await socket.connect(sessionRef.current, true);
-    socketRef.current = socket;
-    socket.onmatchdata = (result: any) => {
-      const op = result.opCode;
-      try {
-        const data = typeof result.data === 'string' ? JSON.parse(result.data) : JSON.parse(new TextDecoder().decode(result.data));
-        if (op === 10) {
-          // Snapshot
-          setGameState(prev => ({ ...prev!, tick: data.tick || 0, mobs: data.mobs || [], players: (data.players || []) as any, playerCount: (data.players || []).length }));
-        } else if (op === 11) {
-          // Delta
-          const now = Date.now();
-          const dt = now - lastUpdateTimeRef.current;
-          lastUpdateTimeRef.current = now;
-          setUpdateRate(dt > 0 ? Math.round(1000 / dt) : 0);
-          setGameState(prev => ({ ...prev!, tick: data.tick || 0, mobs: data.mobs || [], playerCount: prev?.playerCount || 0 }));
-          setUpdateCount(prev => prev + 1);
-        }
-      } catch (e) { console.error('WS parse error', e); }
-    };
-  }, [config.useSSL, config.serverHost, config.serverPort, setGameState]);
-
-  const createWsMapMatch = useCallback(async (mapId?: string): Promise<string> => {
-    if (!clientRef.current || !sessionRef.current) throw new Error('Not connected');
-    // Ensure match exists server-side via RPC
-    const rpcRes = await clientRef.current.rpc(sessionRef.current, 'create_ws_map', { mapId });
-    const payload = typeof rpcRes.payload === 'string' ? JSON.parse(rpcRes.payload) : rpcRes.payload;
-    if (!payload.success) throw new Error(payload.error || 'create_ws_map failed');
-    const matchId: string = payload.matchId;
-    if (!socketRef.current) await connectWs();
-    if (!socketRef.current) throw new Error('WebSocket not connected');
-    const match = await socketRef.current.joinMatch(matchId);
-    // nakama-js returns snake_case fields
-    // @ts-ignore
-    wsMatchIdRef.current = match.match_id || match.matchId || matchId;
-    // @ts-ignore
-    return wsMatchIdRef.current;
-  }, []);
-
-  const sendWsPlayerInput = useCallback(async (position: Position) => {
-    if (!socketRef.current || !wsMatchIdRef.current) throw new Error('WS match not active');
-    const payload = JSON.stringify({ userId: playerId, position });
-    await socketRef.current.sendMatchState(wsMatchIdRef.current, 20, payload);
-  }, [playerId]);
   
   // Create match
   const createMatch = useCallback(async (): Promise<string> => {
@@ -401,11 +346,6 @@ export const useAtlasClient = (config: ClientConfig): UseAtlasClientReturn => {
     stopSimulation();
     clientRef.current = null;
     sessionRef.current = null;
-    if (socketRef.current) {
-      try { socketRef.current.disconnect(true); } catch {}
-      socketRef.current = null;
-      wsMatchIdRef.current = null;
-    }
     setIsConnected(false);
     setMatchId(null);
     setGameState(null);
@@ -462,10 +402,6 @@ export const useAtlasClient = (config: ClientConfig): UseAtlasClientReturn => {
     updateMap,
     updatePlayerInput,
     getMapState,
-    // WebSocket flow
-    connectWs,
-    createWsMapMatch,
-    sendWsPlayerInput,
     startSimulation,
     stopSimulation,
     
