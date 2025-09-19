@@ -69,6 +69,15 @@ interface RpcResponse {
     error?: string;
 }
 
+// Map-based state (MMO style single persistent map)
+interface MapState {
+    id: string; // mapId
+    tick: number;
+    players: Record<string, Player>;
+    mobs: Mob[];
+    createdAt: number;
+}
+
 interface CreateMatchResponse extends RpcResponse {
     matchId?: string;
     type?: string;
@@ -175,6 +184,52 @@ function saveMatchState(nk: any, matchId: string, state: MatchState, logger?: an
     }
 }
 
+// Map storage helpers
+function getMapState(nk: any, mapId: string, logger?: any): MapState | null {
+    try {
+        const objects = nk.storageRead([
+            {
+                collection: CONFIG.STORAGE.COLLECTION,
+                key: `map:${mapId}`,
+                userId: CONFIG.STORAGE.SYSTEM_USER_ID
+            }
+        ]);
+        if (objects && objects.length > 0) {
+            return objects[0].value;
+        }
+        return null;
+    } catch (error) {
+        const errorMsg = `Storage read error for map ${mapId}`;
+        if (logger) {
+            logger.error(errorMsg, error);
+        } else {
+            console.error(errorMsg, error);
+        }
+        return null;
+    }
+}
+
+function saveMapState(nk: any, mapId: string, state: MapState, logger?: any): void {
+    try {
+        nk.storageWrite([
+            {
+                collection: CONFIG.STORAGE.COLLECTION,
+                key: `map:${mapId}`,
+                userId: CONFIG.STORAGE.SYSTEM_USER_ID,
+                value: state
+            }
+        ]);
+    } catch (error) {
+        const errorMsg = `Storage write error for map ${mapId}`;
+        if (logger) {
+            logger.error(errorMsg, error);
+        } else {
+            console.error(errorMsg, error);
+        }
+        throw error;
+    }
+}
+
 // Mob AI functions
 function initializeMobs() {
     return CONFIG.MOBS.INITIAL_POSITIONS.map((pos, index) => ({
@@ -194,6 +249,18 @@ function updateMobAI(matchState: MatchState): void {
     
     // Update each mob's position and physics
     matchState.mobs.forEach(mob => {
+        updateMobPosition(mob);
+        applyBoundaryPhysics(mob);
+    });
+}
+
+// Overload to support MapState as well
+function updateMapMobAI(mapState: MapState): void {
+    // Initialize mobs if none exist
+    if (!mapState.mobs || mapState.mobs.length === 0) {
+        mapState.mobs = initializeMobs();
+    }
+    mapState.mobs.forEach(mob => {
         updateMobPosition(mob);
         applyBoundaryPhysics(mob);
     });
@@ -432,6 +499,127 @@ function updateMobsRpc(_ctx: any, logger: any, nk: any, payload?: string): strin
     }
 }
 
+// Map RPCs (MMO single-map flow)
+function enterMapRpc(_ctx: any, logger: any, nk: any, payload?: string): string {
+    const log = createLogger(logger, 'EnterMapRPC');
+    try {
+        const data = JSON.parse(payload || '{}');
+        const { mapId, playerId, spawn } = data;
+        if (!mapId || !playerId) {
+            return JSON.stringify({ success: false, error: 'Missing mapId or playerId' });
+        }
+
+        let mapState = getMapState(nk, mapId, log);
+        if (!mapState) {
+            mapState = {
+                id: mapId,
+                tick: 0,
+                players: {},
+                mobs: [],
+                createdAt: Date.now()
+            };
+        }
+
+        mapState.players[playerId] = {
+            id: playerId,
+            position: spawn || { x: 0, y: 0 },
+            joinedAt: Date.now()
+        };
+
+        // Initialize mobs on first enter
+        if (!mapState.mobs || mapState.mobs.length === 0) {
+            mapState.mobs = initializeMobs();
+        }
+
+        saveMapState(nk, mapId, mapState, log);
+
+        return JSON.stringify({
+            success: true,
+            mapId,
+            tick: mapState.tick,
+            snapshot: { mobs: mapState.mobs, players: Object.values(mapState.players) }
+        });
+    } catch (error) {
+        log.error('Error enterMap', error);
+        return JSON.stringify({ success: false, error: 'Invalid payload' });
+    }
+}
+
+function updateMapRpc(_ctx: any, logger: any, nk: any, payload?: string): string {
+    const log = createLogger(logger, 'UpdateMapRPC');
+    try {
+        const data = JSON.parse(payload || '{}');
+        const { mapId } = data;
+        if (!mapId) {
+            return JSON.stringify({ success: false, error: 'Missing mapId' });
+        }
+        const mapState = getMapState(nk, mapId, log);
+        if (!mapState) {
+            return JSON.stringify({ success: false, error: 'Map not found' });
+        }
+        updateMapMobAI(mapState);
+        mapState.tick += 1;
+        saveMapState(nk, mapId, mapState, log);
+        return JSON.stringify({ success: true, mapId, tick: mapState.tick, mobs: mapState.mobs });
+    } catch (error) {
+        log.error('Error updateMap', error);
+        return JSON.stringify({ success: false, error: 'Invalid payload' });
+    }
+}
+
+function updatePlayerInputRpc(_ctx: any, logger: any, nk: any, payload?: string): string {
+    const log = createLogger(logger, 'UpdatePlayerInputRPC');
+    try {
+        const data = JSON.parse(payload || '{}');
+        const { mapId, playerId, position } = data;
+        if (!mapId || !playerId || !position) {
+            return JSON.stringify({ success: false, error: 'Missing required fields' });
+        }
+        const mapState = getMapState(nk, mapId, log);
+        if (!mapState) {
+            return JSON.stringify({ success: false, error: 'Map not found' });
+        }
+        const player = mapState.players[playerId];
+        if (!player) {
+            return JSON.stringify({ success: false, error: 'Player not in map' });
+        }
+        player.position = position;
+        updateMapMobAI(mapState);
+        mapState.tick += 1;
+        saveMapState(nk, mapId, mapState, log);
+        return JSON.stringify({ success: true, tick: mapState.tick, mobs: mapState.mobs, players: Object.values(mapState.players) });
+    } catch (error) {
+        log.error('Error updatePlayerInput', error);
+        return JSON.stringify({ success: false, error: 'Invalid payload' });
+    }
+}
+
+function getMapStateRpc(_ctx: any, logger: any, nk: any, payload?: string): string {
+    const log = createLogger(logger, 'GetMapStateRPC');
+    try {
+        const data = JSON.parse(payload || '{}');
+        const { mapId } = data;
+        if (!mapId) {
+            return JSON.stringify({ success: false, error: 'Missing mapId' });
+        }
+        const mapState = getMapState(nk, mapId, log);
+        if (!mapState) {
+            return JSON.stringify({ success: false, error: 'Map not found' });
+        }
+        return JSON.stringify({
+            success: true,
+            mapId,
+            tick: mapState.tick,
+            players: Object.values(mapState.players),
+            mobs: mapState.mobs,
+            playerCount: Object.keys(mapState.players).length
+        });
+    } catch (error) {
+        log.error('Error getMapState', error);
+        return JSON.stringify({ success: false, error: 'Invalid payload' });
+    }
+}
+
 function InitModule(_ctx: any, logger: any, _nk: any, initializer: any) {
     logger.info('🚀 Atlas World Server - RPC-Based Match Simulation Module Loaded');
     logger.info('✅ Test module initialized successfully');
@@ -442,6 +630,11 @@ function InitModule(_ctx: any, logger: any, _nk: any, initializer: any) {
     initializer.registerRpc('update_player_position', updatePlayerPositionRpc);
     initializer.registerRpc('get_match_state', getMatchStateRpc);
     initializer.registerRpc('update_mobs', updateMobsRpc);
+    // Map RPCs
+    initializer.registerRpc('enter_map', enterMapRpc);
+    initializer.registerRpc('update_map', updateMapRpc);
+    initializer.registerRpc('update_player_input', updatePlayerInputRpc);
+    initializer.registerRpc('get_map_state', getMapStateRpc);
     
     logger.info('✅ All RPC-based match simulation functions registered');
     logger.info('🎯 Match functionality available via RPC calls instead of match handlers');
