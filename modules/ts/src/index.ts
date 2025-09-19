@@ -1,31 +1,4 @@
 // Minimal working Nakama runtime module with RPC-based match simulation
-function testRpc(_ctx: any, logger: any, nk: any, _payload?: string) {
-    logger.info('Test RPC called');
-    
-    // Test storage access
-    try {
-        logger.info('Testing storage access...');
-        nk.storageWrite([{
-            collection: 'test',
-            key: 'test-key',
-            userId: '00000000-0000-0000-0000-000000000000',
-            value: { test: 'data' }
-        }]);
-        logger.info('Storage write successful');
-        
-        const objects = nk.storageRead([{
-            collection: 'test',
-            key: 'test-key',
-            userId: '00000000-0000-0000-0000-000000000000'
-        }]);
-        logger.info('Storage read successful:', objects);
-        
-        return JSON.stringify({ status: 'ok', message: 'Hello from Atlas World!', storage: 'working' });
-    } catch (error) {
-        logger.error('Storage test failed:', error);
-        return JSON.stringify({ status: 'ok', message: 'Hello from Atlas World!', storage: 'failed', error: String(error) });
-    }
-}
 
 // Match state storage using Nakama's storage system
 const SYSTEM_USER_ID = '00000000-0000-0000-0000-000000000000';
@@ -269,51 +242,12 @@ function updateMobsRpc(_ctx: any, logger: any, nk: any, payload?: string) {
     }
 }
 
-// ---- Minimal Match Handler ----
-
-function atlasMovementMatchInit(_ctx: any, logger: any, _nk: any, _params: any) {
-    logger.info('🎮 Atlas Movement Match - Initializing...');
-    const state = { tick: 0 };
-    const tickRate = 30;
-    return { state, tickRate };
-}
-
-function atlasMovementMatchJoinAttempt(_ctx: any, _logger: any, _nk: any, _dispatcher: any, _tick: number, state: any, _presence: any, _metadata: any) {
-    return { state, accept: true };
-}
-
-function atlasMovementMatchJoin(_ctx: any, logger: any, _nk: any, dispatcher: any, _tick: number, state: any, presences: any[]) {
-    logger.info('Player(s) joined movement match');
-    const snapshot = JSON.stringify({ mobs: [] });
-    dispatcher.broadcastMessage(11, snapshot, presences);
-    return { state };
-}
-
-function atlasMovementMatchLeave(_ctx: any, _logger: any, _nk: any, _dispatcher: any, _tick: number, state: any, _presences: any[]) {
-    return { state };
-}
-
-function atlasMovementMatchLoop(_ctx: any, _logger: any, _nk: any, dispatcher: any, _tick: number, state: any, _messages: any[]) {
-    state.tick += 1;
-    const update = JSON.stringify({ mobs: [] });
-    dispatcher.broadcastMessage(10, update);
-    return { state };
-}
-
-function atlasMovementMatchTerminate(_ctx: any, _logger: any, _nk: any, _dispatcher: any, _tick: number, state: any, _graceSeconds: number) {
-    return { state };
-}
-
-function atlasMovementMatchSignal(_ctx: any, _logger: any, _nk: any, _dispatcher: any, _tick: number, state: any, _data: string) {
-    return { state };
-}
 
 function InitModule(_ctx: any, logger: any, _nk: any, initializer: any) {
     logger.info('🚀 Atlas World Server - RPC-Based Match Simulation Module Loaded');
     logger.info('✅ Test module initialized successfully');
 
     // Register RPC-based match simulation (workaround for Nakama runtime issues)
-    initializer.registerRpc('test_rpc', testRpc);
     initializer.registerRpc('create_movement_match', createMovementMatchRpc);
     initializer.registerRpc('join_match', joinMatchRpc);
     initializer.registerRpc('update_player_position', updatePlayerPositionRpc);

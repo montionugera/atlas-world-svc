@@ -16,7 +16,7 @@ async function authDevice(deviceId: string): Promise<string> {
 }
 
 async function rpcTest(token: string): Promise<any> {
-  const res = await fetch(`${HTTP_HOST}/v2/rpc/test_rpc`, {
+  const res = await fetch(`${HTTP_HOST}/v2/rpc/create_movement_match`, {
     method: 'POST',
     headers: { 
       'Content-Type': 'application/json', 
@@ -47,7 +47,7 @@ async function testRpcCall(): Promise<boolean> {
     
     console.log('📞 RPC test result:', result);
     
-    return result.status === 'ok' && result.message === 'Hello from Atlas World!';
+    return result.success === true && result.type === 'simulated';
   } catch (error) {
     console.error('RPC test failed:', error);
     return false;

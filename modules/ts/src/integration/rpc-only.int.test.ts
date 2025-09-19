@@ -15,18 +15,6 @@ async function authDevice(deviceId: string): Promise<string> {
   return body.token;
 }
 
-async function testRpc(token: string): Promise<any> {
-  const res = await fetch(`${HTTP_HOST}/v2/rpc/test_rpc`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: '"{}"'
-  });
-  const body = await res.json() as any;
-  return JSON.parse(body.payload);
-}
 
 async function createMovementMatchRpc(token: string): Promise<any> {
   const res = await fetch(`${HTTP_HOST}/v2/rpc/create_movement_match`, {
@@ -70,14 +58,6 @@ describe('RPC-Only Integration Tests (Docker Compose)', () => {
     expect(token.length).toBeGreaterThan(0);
   });
 
-  test('test RPC works', async () => {
-    const token = await authDevice('rpc-test-device-2');
-    const result = await testRpc(token);
-    
-    expect(result).toBeDefined();
-    expect(result.status).toBe('ok');
-    expect(result.message).toBe('Hello from Atlas World!');
-  });
 
   test('create movement match RPC works', async () => {
     const token = await authDevice('rpc-test-device-3');
@@ -92,11 +72,9 @@ describe('RPC-Only Integration Tests (Docker Compose)', () => {
   test('multiple RPC calls work', async () => {
     const token = await authDevice('rpc-test-device-4');
     
-    // Test both RPCs
-    const testResult = await testRpc(token);
+    // Test match creation
     const matchResult = await createMovementMatchRpc(token);
     
-    expect(testResult.status).toBe('ok');
     expect(matchResult.success).toBe(true);
   });
 

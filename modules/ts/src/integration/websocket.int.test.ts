@@ -115,7 +115,7 @@ describe('WebSocket Integration Tests (Docker Compose)', () => {
     });
     
     // Then test RPC
-    const res = await fetch(`${HTTP_HOST}/v2/rpc/test_rpc`, {
+    const res = await fetch(`${HTTP_HOST}/v2/rpc/create_movement_match`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ describe('WebSocket Integration Tests (Docker Compose)', () => {
     const body = await res.json() as any;
     const result = JSON.parse(body.payload);
     
-    expect(result.status).toBe('ok');
-    expect(result.message).toBe('Hello from Atlas World!');
+    expect(result.success).toBe(true);
+    expect(result.type).toBe('simulated');
   });
 });
