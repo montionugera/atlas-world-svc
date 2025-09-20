@@ -6,30 +6,37 @@ atlas-world-svc/
 ├── .cursor/
 │   ├── plans/           # Implementation plans
 │   └── rules/           # Development rules
-├── modules/ts/
+├── colyseus-server/
 │   ├── src/
-│   │   ├── index.ts     # Module registration
-│   │   ├── matches/     # Match handlers
-│   │   ├── physics/     # Physics systems
-│   │   ├── net/         # Networking layer
-│   │   ├── systems/     # Game systems
-│   │   ├── events/      # Event handling
-│   │   └── metrics/     # Observability
+│   │   ├── index.ts     # Server entry point
+│   │   ├── rooms/       # Game room handlers
+│   │   ├── schemas/     # Colyseus schemas
+│   │   └── types/       # TypeScript types
+│   ├── generated/csharp/ # C# Unity client
+│   ├── docs/            # API documentation
 │   ├── tests/           # Test files
 │   ├── package.json
-│   └── tsconfig.json
+│   ├── tsconfig.json
+│   └── Dockerfile
+├── client/
+│   └── react-client/    # React WebSocket client
 ├── docker-compose.yml
-├── local.yml           # Nakama config
-└── server_spec.md      # Technical spec
+└── README.md
 ```
 
-### Module Organization
-- **matches/**: Match lifecycle, state management
-- **physics/**: Planck.js worlds, bodies, collisions
-- **net/**: AOI, codec, transport layer
-- **systems/**: Movement, AI, AoE, portals
-- **events/**: Reliable events, broadcasting
-- **metrics/**: Prometheus integration
+### Colyseus Server Organization
+- **rooms/**: Game room handlers and logic
+- **schemas/**: Colyseus state schemas (Player, Mob, GameState)
+- **types/**: Shared TypeScript interfaces
+- **index.ts**: Server configuration and startup
+- **generated/csharp/**: C# Unity client library
+- **docs/**: API documentation (HTML, AsyncAPI)
+
+### React Client Organization
+- **components/**: React UI components
+- **hooks/**: Custom React hooks (useColyseusClient)
+- **types/**: Client-side TypeScript types
+- **utils/**: Helper functions and utilities
 
 ### File Naming
 - **Handlers**: `{feature}Handler.ts`

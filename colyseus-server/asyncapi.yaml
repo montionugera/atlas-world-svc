@@ -1,0 +1,138 @@
+asyncapi: 2.6.0
+info:
+  title: Atlas World Colyseus Server
+  version: 1.0.0
+  description: Real-time multiplayer game server using Colyseus WebSocket framework
+  contact:
+    name: Atlas World Team
+    email: team@atlasworld.com
+  license:
+    name: MIT
+
+servers:
+  development:
+    url: ws://localhost:2567
+    protocol: ws
+    description: Development server
+
+channels:
+  game_room:
+    description: Main game room for multiplayer gameplay
+    publish:
+      message:
+        $ref: '#/components/messages/PlayerInput'
+    subscribe:
+      message:
+        $ref: '#/components/messages/StateChange'
+
+components:
+  messages:
+    PlayerInput:
+      name: PlayerInput
+      title: Player Input
+      summary: Player movement input (velocity)
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          vx:
+            type: number
+            description: Velocity on X axis (-1 to 1)
+            minimum: -1
+            maximum: 1
+          vy:
+            type: number
+            description: Velocity on Y axis (-1 to 1)
+            minimum: -1
+            maximum: 1
+        required:
+          - vx
+          - vy
+
+    StateChange:
+      name: StateChange
+      title: Game State Change
+      summary: Real-time game state updates
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          players:
+            type: object
+            description: Map of players by session ID
+            additionalProperties:
+              $ref: '#/components/schemas/Player'
+          mobs:
+            type: array
+            items:
+              $ref: '#/components/schemas/Mob'
+          tick:
+            type: number
+            description: Game tick counter
+          mapId:
+            type: string
+            description: Current map ID
+        required:
+          - players
+          - mobs
+          - tick
+          - mapId
+
+  schemas:
+    Player:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Player ID
+        sessionId:
+          type: string
+          description: WebSocket session ID
+        x:
+          type: number
+          description: X coordinate
+        y:
+          type: number
+          description: Y coordinate
+        vx:
+          type: number
+          description: Velocity on X axis
+        vy:
+          type: number
+          description: Velocity on Y axis
+        name:
+          type: string
+          description: Player display name
+      required:
+        - id
+        - sessionId
+        - x
+        - y
+        - vx
+        - vy
+        - name
+
+    Mob:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Mob ID
+        x:
+          type: number
+          description: X coordinate
+        y:
+          type: number
+          description: Y coordinate
+        vx:
+          type: number
+          description: Velocity on X axis
+        vy:
+          type: number
+          description: Velocity on Y axis
+      required:
+        - id
+        - x
+        - y
+        - vx
+        - vy

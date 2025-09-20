@@ -1,24 +1,24 @@
-# Atlas World Server - Cursor Rules
+# Atlas World - Cursor Rules
 
-This directory contains Cursor rules for the Atlas World Nakama server project. These rules help maintain consistency and provide guidance for development.
+This directory contains Cursor rules for the Atlas World Colyseus multiplayer game project. These rules help maintain consistency and provide guidance for development.
 
 ## Rule Files
 
-### `nakama-server.mdc`
-Core development rules for Nakama server development:
-- Project structure and file organization
-- TypeScript development guidelines
-- Nakama runtime requirements
-- Docker development workflow
-- Common issues and solutions
+### `colyseus-server.mdc`
+Core development rules for Colyseus server development:
+- Room-based architecture patterns
+- Schema design and state management
+- WebSocket communication
+- Performance optimization
+- Real-time game development
 
 ### `react-client.mdc`
-React TypeScript client development:
-- Modern React patterns and hooks
-- TypeScript best practices
-- Real-time performance optimization
-- UI/UX guidelines
-- State management patterns
+React TypeScript client development for Colyseus:
+- WebSocket client patterns
+- Real-time state synchronization
+- Game canvas rendering
+- Performance optimization
+- Colyseus integration patterns
 
 ### `testing.mdc`
 Comprehensive testing guidelines:
@@ -30,16 +30,16 @@ Comprehensive testing guidelines:
 
 ### `docker-compose.mdc`
 Docker Compose service management:
-- Service architecture and dependencies
-- Database configuration (CockroachDB)
+- Colyseus server containerization
 - Port mappings and environment variables
-- Troubleshooting common issues
+- Health checks and monitoring
 - Development workflow
+- Production deployment
 
 ### `typescript.mdc`
-TypeScript development for Nakama:
+TypeScript development for Colyseus:
 - Compilation target and configuration
-- Global function requirements
+- Colyseus Schema patterns
 - Type definitions and naming conventions
 - Common patterns and best practices
 - Build process and common issues
@@ -48,29 +48,26 @@ TypeScript development for Nakama:
 
 ### Start Development
 ```bash
-# Start all services
-docker-compose up -d
+# Start Colyseus server
+cd colyseus-server && npm run dev
 
-# Wait for startup
-sleep 10
+# Or use Docker
+docker-compose up -d atlas-colyseus-server
 
-# Check status
-docker-compose ps
-
-# View logs
-docker-compose logs atlas-server
+# Start React client
+cd client/react-client && npm start
 ```
 
 ### Build and Deploy
 ```bash
-# Build TypeScript server
-cd modules/ts && pnpm run build
+# Build Colyseus server
+cd colyseus-server && npm run build
 
-# Restart server
-cd ../.. && docker-compose restart atlas-server
+# Start production server
+cd colyseus-server && npm start
 
-# Start React client
-cd client/react-client && npm start
+# Build React client
+cd client/react-client && npm run build
 ```
 
 ### Run Tests
@@ -106,82 +103,83 @@ cd client/react-client && npm start
 ## Project Status
 
 ### ✅ Working
-- Docker Compose infrastructure
-- TypeScript build process
-- RPC-based match simulation
+- Colyseus WebSocket server
+- Real-time state synchronization
 - React TypeScript client
-- Real-time mob movement (20 updates/sec)
+- Live mob simulation (20 FPS)
+- Multiplayer support
+- Docker containerization
 - Performance metrics (FPS, update rate)
-- State persistence
-- Unit tests
-- Integration tests
+- Room-based architecture
+- TypeScript build process
 
 ### 🚧 In Progress
-- WebSocket-based real-time updates
-- Advanced match features
+- Enhanced game features
+- Performance optimizations
 
 ### 📋 Next Steps
-- Implement WebSocket match handlers
-- Add real-time WebSocket updates
-- Enhanced match features
-- Multiplayer optimizations
+- Player customization
+- Multiple game maps
+- Advanced mob AI
+- Performance monitoring
+- Database integration
 
 ## Architecture
 
-### Server (Nakama)
-- **Location**: `modules/ts/`
-- **Language**: TypeScript
-- **Runtime**: Nakama JavaScript runtime
-- **Features**: RPC-based match simulation, state persistence
-- **Performance**: 20 updates/second, ultra-fast mob movement
+### Server (Colyseus)
+- **Location**: `colyseus-server/`
+- **Language**: TypeScript + Node.js
+- **Runtime**: Colyseus WebSocket server
+- **Features**: Real-time state sync, room management, mob simulation
+- **Performance**: 20 FPS simulation, WebSocket communication
 
 ### Client (React)
 - **Location**: `client/react-client/`
 - **Language**: TypeScript + React
-- **Features**: Real-time visualization, performance metrics, responsive UI
+- **Features**: Real-time visualization, WebSocket client, game canvas
 - **Performance**: 60fps rendering, smooth interpolation
 
-### Monitoring
-- **Grafana**: `http://localhost:3000`
-- **Prometheus**: `http://localhost:9091`
+### Services
+- **Colyseus Server**: `ws://localhost:2567`
+- **React Client**: `http://localhost:3001`
 
 ## Development Tips
 
-1. **Always edit `src/` files**, never `build/` files
-2. **Use `pnpm run build`** to compile TypeScript server
+1. **Always edit `src/` files**, never `dist/` files
+2. **Use `npm run build`** to compile TypeScript server
 3. **Use `npm start`** for React client development
 4. **Check server logs** when things don't work
 5. **Test frequently** during development
 6. **Use descriptive names** for functions and variables
-7. **Handle errors gracefully** in match handlers
+7. **Handle errors gracefully** in room handlers
 8. **Keep functions simple** and focused
 9. **Document complex logic** with comments
-10. **Optimize for performance** - 20 updates/sec target
+10. **Optimize for performance** - 20 FPS simulation target
 
 ## Troubleshooting
 
 ### Server Won't Start
-1. Check `docker-compose logs atlas-server`
-2. Verify `modules/ts/build/index.js` exists
-3. Run `pnpm run build` to compile
+1. Check `npm run dev` output for errors
+2. Verify `colyseus-server/dist/index.js` exists
+3. Run `npm run build` to compile
 4. Check for TypeScript errors
 
 ### React Client Issues
-1. Ensure server is running (`docker-compose ps`)
+1. Ensure Colyseus server is running (port 2567)
 2. Check `npm start` output for errors
-3. Verify connection to localhost:7350
+3. Verify WebSocket connection to ws://localhost:2567
 4. Check browser console for errors
 
 ### Tests Fail
-1. Ensure server is running (`docker-compose ps`)
+1. Ensure Colyseus server is running
 2. Check server logs for errors
 3. Verify test data and expectations
 4. Use appropriate timeouts
 
 ### Performance Issues
-1. Check update rate in React client stats
-2. Verify server is processing 20 updates/sec
-3. Check FPS in client (should be ~60fps)
+1. Check FPS in React client stats
+2. Verify server is processing 20 FPS simulation
+3. Check WebSocket connection stability
 4. Monitor server logs for bottlenecks
 
 ## Contributing
@@ -191,6 +189,7 @@ When making changes:
 2. Update tests as needed
 3. Check that all tests pass
 4. Update documentation if necessary
-5. Test with both RPC and React client
-6. Maintain 20 updates/sec performance target
+5. Test with both Colyseus server and React client
+6. Maintain 20 FPS simulation performance target
 7. Ensure 60fps client rendering
+8. Test WebSocket connection stability

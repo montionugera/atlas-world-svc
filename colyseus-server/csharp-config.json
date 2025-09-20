@@ -1,0 +1,18 @@
+{
+  "namespace": "AtlasWorld.Client",
+  "packageName": "AtlasWorld.Client",
+  "packageVersion": "1.0.0",
+  "packageCompany": "Joymify Team",
+  "packageDescription": "C# client for Atlas World multiplayer game",
+  "packageAuthors": "Atlas World Team",
+  "packageCopyright": "Atlas World Team",
+  "packageTags": "game, multiplayer, websocket, colyseus, joymify",
+  "packageProjectUrl": "https://github.com/atlasworld/client-csharp",
+  "packageLicenseUrl": "https://opensource.org/licenses/MIT",
+  "generateModels": true,
+  "generateClient": true,
+  "generateInterfaces": true,
+  "useSystemTextJson": true,
+  "nullableReferenceTypes": true,
+  "targetFramework": "net6.0"
+}

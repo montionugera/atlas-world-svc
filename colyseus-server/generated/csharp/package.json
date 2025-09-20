@@ -1,0 +1,27 @@
+{
+  "name": "com.atlasworld.client",
+  "version": "1.0.0",
+  "displayName": "Atlas World Client",
+  "description": "C# client library for Atlas World multiplayer game server",
+  "unity": "2021.3",
+  "author": {
+    "name": "Atlas World Team",
+    "email": "team@atlasworld.com"
+  },
+  "keywords": [
+    "game",
+    "multiplayer",
+    "websocket",
+    "colyseus",
+    "networking"
+  ],
+  "dependencies": {},
+  "unity": "2021.3",
+  "samples": [
+    {
+      "displayName": "Basic Usage Example",
+      "description": "Shows how to connect and send messages",
+      "path": "Samples~/BasicExample"
+    }
+  ]
+}

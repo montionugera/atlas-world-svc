@@ -1,7 +1,7 @@
-# React TypeScript Client Rules
+# React TypeScript Client Rules - Colyseus
 
 ## Overview
-Modern React TypeScript client for Atlas World Server with real-time mob simulation visualization.
+Modern React TypeScript client for Atlas World Colyseus Server with real-time WebSocket communication and live game visualization.
 
 ## Architecture
 
@@ -10,15 +10,12 @@ Modern React TypeScript client for Atlas World Server with real-time mob simulat
 client/react-client/
 ├── src/
 │   ├── components/          # React components
-│   │   ├── ControlPanel.tsx
-│   │   ├── GameCanvas.tsx
-│   │   ├── LogPanel.tsx
-│   │   ├── StatsPanel.tsx
-│   │   └── StatusPanel.tsx
+│   │   ├── ColyseusGameCanvas.tsx  # Main game canvas
+│   │   └── LogPanel.tsx     # Game log display
 │   ├── hooks/              # Custom React hooks
-│   │   └── useAtlasClient.ts
+│   │   └── useColyseusClient.ts    # Colyseus WebSocket hook
 │   ├── types/              # TypeScript type definitions
-│   │   └── game.ts
+│   │   └── game.ts         # Game state types
 │   ├── App.tsx             # Main application
 │   ├── App.css             # Styling
 │   └── index.tsx           # Entry point
@@ -139,15 +136,18 @@ client/react-client/
 
 ### Custom Hooks
 ```typescript
-// Example: useAtlasClient hook
-export const useAtlasClient = (config: ClientConfig) => {
-  const [state, setState] = useState(initialState);
+// Example: useColyseusClient hook
+export const useColyseusClient = (config: ColyseusClientConfig) => {
+  const [isConnected, setIsConnected] = useState(false);
+  const [gameState, setGameState] = useState<GameState | null>(null);
   
-  const action = useCallback(async () => {
-    // Implementation
-  }, [dependencies]);
+  const connect = useCallback(async () => {
+    const client = new Client(endpoint);
+    const room = await client.joinOrCreate('game_room', options);
+    room.onStateChange((state) => setGameState(state));
+  }, [config]);
   
-  return { state, action };
+  return { isConnected, gameState, connect };
 };
 ```
 

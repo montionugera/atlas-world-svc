@@ -1,0 +1,66 @@
+## 🎮 Colyseus Server Rules
+
+### Architecture Principles
+- **Room-based** - Each game session is a separate room
+- **Schema-driven** - Use Colyseus Schema for state synchronization
+- **Real-time** - WebSocket-based communication
+- **TypeScript-first** - Strict typing throughout
+
+### Room Management
+```typescript
+// Room lifecycle
+onCreate() -> onJoin() -> onMessage() -> onLeave() -> onDispose()
+
+// State updates
+this.state.updateMobs()  // 20 FPS simulation
+this.state.players.set() // Player management
+```
+
+### Schema Design
+- **@type decorators** - Required for all properties
+- **Immutable updates** - Use proper Colyseus patterns
+- **Nested objects** - Use MapSchema and ArraySchema
+- **Validation** - Type-safe state changes
+
+### Performance Guidelines
+- **20 FPS simulation** - Balance performance vs smoothness
+- **Efficient updates** - Only sync changed properties
+- **Memory management** - Clean up on room disposal
+- **Error handling** - Graceful degradation
+
+### Code Standards
+```typescript
+// Room class structure
+export class GameRoom extends Room<GameState> {
+  maxClients = 20;
+  
+  onCreate(options: any) {
+    this.setState(new GameState());
+    this.startSimulation();
+  }
+  
+  onJoin(client: Client, options: any) {
+    this.state.addPlayer(client.sessionId, options.name);
+  }
+  
+  onMessage(type: string, client: Client, data: any) {
+    // Handle client messages
+  }
+  
+  onLeave(client: Client, consented: boolean) {
+    this.state.removePlayer(client.sessionId);
+  }
+}
+```
+
+### Testing Strategy
+- **Unit tests** - Individual room methods
+- **Integration tests** - Full room lifecycle
+- **Load tests** - Multiple concurrent rooms
+- **WebSocket tests** - Client-server communication
+
+### Deployment
+- **Docker** - Containerized deployment
+- **Health checks** - `/health` endpoint
+- **Logging** - Structured JSON logs
+- **Monitoring** - Performance metrics

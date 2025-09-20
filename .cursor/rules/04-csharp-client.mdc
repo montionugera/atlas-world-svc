@@ -1,0 +1,61 @@
+## 🎮 C# Client Development Rules
+
+### Unity Compatibility
+- **Use Unity's JsonUtility** - No external JSON libraries
+- **Public fields** - Not properties for serialization
+- **Lowercase field names** - JSON compatibility
+- **`[System.Serializable]`** - Required for Unity
+
+### Code Structure
+```csharp
+[System.Serializable]
+public class PlayerInput
+{
+    public float vx;  // ✅ Public field, lowercase
+    public float vy;  // ✅ Public field, lowercase
+}
+
+// ❌ Avoid properties for Unity JsonUtility
+public class BadExample
+{
+    public float Vx { get; set; }  // ❌ Properties don't work
+    public float Vy { get; set; }  // ❌ Uppercase doesn't work
+}
+```
+
+### Message Serialization
+- **Use JsonUtility.ToJson()** - Unity built-in
+- **Use JsonUtility.FromJson()** - Unity built-in
+- **Create wrapper classes** - For complex message types
+- **Handle null values** - Check for null before access
+
+### Unity Client Features
+- **MonoBehaviour** - For Unity integration
+- **Event-driven** - Use C# events for callbacks
+- **Auto-reconnection** - Handle connection drops
+- **Debug logging** - Use Unity's Debug.Log
+- **Inspector settings** - Public fields for configuration
+
+### Error Handling
+- **Try-catch blocks** - Around JSON operations
+- **Null checks** - Before accessing properties
+- **Connection validation** - Check WebSocket state
+- **Graceful degradation** - Handle missing data
+
+### Performance
+- **Async/await** - For non-blocking operations
+- **Efficient serialization** - Minimal JSON overhead
+- **Connection pooling** - Reuse WebSocket connections
+- **Memory management** - Dispose resources properly
+
+### Testing
+- **Unit tests** - For message serialization
+- **Integration tests** - With mock server
+- **Unity tests** - In Unity Test Runner
+- **Manual testing** - With real server
+
+### Documentation
+- **XML comments** - For IntelliSense
+- **Usage examples** - In README files
+- **API reference** - Generated from comments
+- **Troubleshooting** - Common issues and fixes
