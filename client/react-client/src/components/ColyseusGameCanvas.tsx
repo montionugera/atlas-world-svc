@@ -5,6 +5,7 @@ import { GameRenderer } from './GameRenderer';
 import { GameHUD } from './GameHUD';
 import { GameControls } from './GameControls';
 import { GameInstructions } from './GameInstructions';
+import { CANVAS_CONFIG } from '../config/gameConfig';
 
 interface ColyseusGameCanvasProps {
   config: ColyseusClientConfig;
@@ -58,13 +59,13 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }
       <div style={{ position: 'relative' }}>
         <canvas
           ref={canvasRef}
-          width={800}
-          height={600}
+          width={CANVAS_CONFIG.width}
+          height={CANVAS_CONFIG.height}
           style={{
-            border: '3px solid #00ff00',
-            backgroundColor: '#1a1a1a',
-            cursor: 'crosshair',
-            borderRadius: '10px'
+            border: `${CANVAS_CONFIG.borderWidth}px solid ${CANVAS_CONFIG.borderColor}`,
+            backgroundColor: CANVAS_CONFIG.backgroundColor,
+            cursor: CANVAS_CONFIG.cursor,
+            borderRadius: CANVAS_CONFIG.borderRadius
           }}
         />
         
