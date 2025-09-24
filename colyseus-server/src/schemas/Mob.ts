@@ -23,7 +23,7 @@ export class Mob extends Schema {
   }
 
   // Helper method to apply boundary physics
-  applyBoundaryPhysics(width: number = 400, height: number = 300) {
+  applyBoundaryPhysics(width: number = 20, height: number = 20) {
     // Bounce off walls
     if (this.x <= 0 || this.x >= width) {
       this.vx = -this.vx;

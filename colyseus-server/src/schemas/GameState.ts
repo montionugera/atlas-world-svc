@@ -4,11 +4,11 @@ import { Player } from "./Player";
 
 export class GameState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>();
-  @type([Mob]) mobs = new ArraySchema<Mob>();
+  @type({ map: Mob }) mobs = new MapSchema<Mob>();
   @type("number") tick: number = 0;
   @type("string") mapId: string = "map-01-sector-a";
-  @type("number") width: number = 800;
-  @type("number") height: number = 600;
+  @type("number") width: number = 100;
+  @type("number") height: number = 100;
 
   constructor(mapId: string = "map-01-sector-a") {
     super();
@@ -27,7 +27,8 @@ export class GameState extends Schema {
       const vx = (Math.random() - 0.5) * 6; // -3 to 3
       const vy = (Math.random() - 0.5) * 6; // -3 to 3
       
-      this.mobs.push(new Mob(`mob-${i}`, x, y, vx, vy));
+      const mobId = `mob-${i}`;
+      this.mobs.set(mobId, new Mob(mobId, x, y, vx, vy));
     }
   }
 
@@ -50,7 +51,7 @@ export class GameState extends Schema {
 
   // Update mob AI and physics
   updateMobs() {
-    for (const mob of this.mobs) {
+    for (const mob of this.mobs.values()) {
       mob.updatePosition();
       mob.applyBoundaryPhysics(this.width, this.height);
     }

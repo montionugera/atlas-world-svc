@@ -91,7 +91,7 @@ export class GameRoom extends Room<GameState> {
       roomId: this.roomId,
       mapId: this.state.mapId,
       playerCount: this.state.players.size,
-      mobCount: this.state.mobs.length,
+      mobCount: this.state.mobs.size,
       tick: this.state.tick
     };
   }

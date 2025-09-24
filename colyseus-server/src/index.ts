@@ -3,7 +3,6 @@ import { createServer } from "http";
 import express from "express";
 import cors from "cors";
 import { GameRoom } from "./rooms/GameRoom";
-import { setupSwagger } from "./swagger";
 
 const app = express();
 const server = createServer(app);

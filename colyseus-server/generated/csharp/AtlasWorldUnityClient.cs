@@ -1,51 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Net.WebSockets;
-using System.Text;
-// Using Unity's built-in JsonUtility instead of external libraries
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
+using Colyseus;
+using AtlasWorld.Models;
 
 namespace AtlasWorld.Client
 {
-    // JSON serializable classes for Unity JsonUtility
-    [System.Serializable]
-    public class JoinMessage
-    {
-        public string type = "join";
-        public string room = "game_room";
-        public JoinOptions options = new JoinOptions();
-    }
-
-    [System.Serializable]
-    public class JoinOptions
-    {
-        public string mapId = "map-01-sector-a";
-    }
-
-    [System.Serializable]
-    public class PlayerInputMessage
-    {
-        public string type = "player_input";
-        public PlayerInput data = new PlayerInput();
-    }
-
-    [System.Serializable]
-    public class PlayerPositionMessage
-    {
-        public string type = "player_position";
-        public PlayerPosition data = new PlayerPosition();
-    }
-
-    [System.Serializable]
-    public class MessageWrapper
-    {
-        public string type;
-    }
-
     /// <summary>
-    /// Unity-optimized client for Atlas World multiplayer game server
+    /// Unity client for Atlas World multiplayer game server using official Colyseus SDK
     /// </summary>
     public class AtlasWorldUnityClient : MonoBehaviour
     {
@@ -62,13 +24,13 @@ namespace AtlasWorld.Client
         public event Action? OnDisconnected;
         public event Action<string>? OnError;
         public event Action<WelcomeMessage>? OnWelcome;
-        public event Action<StateChangeMessage>? OnStateChange;
+        public event Action<GameState>? OnStateChange;
         
         // Private fields
-        private ClientWebSocket? _webSocket;
-        private CancellationTokenSource? _cancellationTokenSource;
-        private bool _disposed = false;
+        private ColyseusClient? _client;
+        private ColyseusRoom<GameState>? _room;
         private bool _isConnected = false;
+        private bool _isConnecting = false;
         private int _reconnectAttempts = 0;
         
         // Unity lifecycle
@@ -79,7 +41,7 @@ namespace AtlasWorld.Client
         
         void OnDestroy()
         {
-            DisconnectAsync().Wait();
+            DisconnectAsync();
         }
         
         void OnApplicationPause(bool pauseStatus)
@@ -88,41 +50,52 @@ namespace AtlasWorld.Client
             {
                 DisconnectAsync();
             }
-            else
+            else if (!_isConnected && !_isConnecting)
             {
                 ConnectAsync();
             }
         }
         
         /// <summary>
-        /// Connect to the game server
+        /// Connect to the game server using official Colyseus SDK
         /// </summary>
         public async void ConnectAsync()
         {
-            if (_isConnected) return;
+            if (_isConnected || _isConnecting) return;
+            
+            _isConnecting = true;
             
             try
             {
-                _webSocket = new ClientWebSocket();
-                _cancellationTokenSource = new CancellationTokenSource();
-
-                var uri = new Uri(serverUrl);
-                await _webSocket.ConnectAsync(uri, _cancellationTokenSource.Token);
-
+                Debug.Log("🔌 Connecting to Atlas World server...");
+                
+                // Disconnect any existing connection first
+                DisconnectAsync();
+                
+                // Initialize Colyseus client
+                _client = new ColyseusClient(serverUrl);
+                
+                // Join or create room with options
+                var roomOptions = new Dictionary<string, object>
+                {
+                    ["mapId"] = mapId,
+                    ["name"] = "UnityPlayer"
+                };
+                
+                _room = await _client.JoinOrCreate<GameState>("game_room", roomOptions);
+                
+                // Set up room event handlers
+                SetupRoomEventHandlers();
+                
                 _isConnected = true;
+                _isConnecting = false;
                 _reconnectAttempts = 0;
                 OnConnected?.Invoke();
                 Debug.Log("✅ Connected to Atlas World server");
-
-                // Start listening for messages
-                _ = Task.Run(ListenForMessages);
-                
-                // Join game room after connection
-                await Task.Delay(1000);
-                await JoinGameRoomAsync();
             }
             catch (Exception ex)
             {
+                _isConnecting = false;
                 Debug.LogError($"❌ Connection failed: {ex.Message}");
                 OnError?.Invoke($"Connection failed: {ex.Message}");
                 
@@ -137,235 +110,96 @@ namespace AtlasWorld.Client
         }
 
         /// <summary>
-        /// Join the game room
+        /// Set up room event handlers
         /// </summary>
-        public async Task JoinGameRoomAsync()
+        private void SetupRoomEventHandlers()
         {
-            if (_webSocket?.State != WebSocketState.Open)
-            {
-                throw new InvalidOperationException("WebSocket is not connected");
-            }
-
-            var joinMessage = new JoinMessage
-            {
-                options = new JoinOptions { mapId = this.mapId }
+            if (_room == null) return;
+            
+            // Set up room state change handler
+            _room.OnStateChange += (state, isFirstState) => {
+                Debug.Log($"🔄 State Update - Players: {state.players?.Count ?? 0}, Mobs: {state.mobs?.Count ?? 0}");
+                OnStateChange?.Invoke(state);
             };
-
-            await SendMessageAsync(JsonUtility.ToJson(joinMessage));
-            Debug.Log($"🚪 Joining game room: {mapId}");
+            
+            // Set up message handlers for Colyseus events
+            _room.OnMessage<WelcomeMessage>("welcome", OnWelcomeMessage);
+            
+            // Set up connection event handlers
+            _room.OnLeave += (code) => {
+                Debug.Log($"👋 Left room with code: {code}");
+                OnDisconnected?.Invoke();
+            };
+            
+            _room.OnError += (code, message) => {
+                Debug.LogError($"❌ Room error {code}: {message}");
+                OnError?.Invoke($"Room error {code}: {message}");
+            };
         }
 
         /// <summary>
         /// Send player input (velocity)
         /// </summary>
-        public async void SendPlayerInputAsync(PlayerInput input)
+        public void SendPlayerInput(PlayerInput input)
         {
-            if (_webSocket?.State != WebSocketState.Open)
+            if (_room == null)
             {
-                Debug.LogWarning("WebSocket is not connected");
+                Debug.LogWarning("Room is not connected");
                 return;
             }
 
-            var message = new PlayerInputMessage
-            {
-                data = input
-            };
-
-            await SendMessageAsync(JsonUtility.ToJson(message));
+            _room.Send("player_input", input);
         }
 
         /// <summary>
         /// Send player position update
         /// </summary>
-        public async void SendPlayerPositionAsync(PlayerPosition position)
+        public void SendPlayerPosition(PlayerPosition position)
         {
-            if (_webSocket?.State != WebSocketState.Open)
+            if (_room == null)
             {
-                Debug.LogWarning("WebSocket is not connected");
+                Debug.LogWarning("Room is not connected");
                 return;
             }
 
-            var message = new PlayerPositionMessage
-            {
-                data = position
-            };
-
-            await SendMessageAsync(JsonUtility.ToJson(message));
-        }
-
-        private async Task SendMessageAsync(string message)
-        {
-            if (_webSocket?.State != WebSocketState.Open)
-                return;
-
-            var bytes = Encoding.UTF8.GetBytes(message);
-            await _webSocket.SendAsync(
-                new ArraySegment<byte>(bytes),
-                WebSocketMessageType.Text,
-                true,
-                _cancellationTokenSource?.Token ?? CancellationToken.None
-            );
-        }
-
-        private async Task ListenForMessages()
-        {
-            var buffer = new byte[4096];
-            var messageBuffer = new List<byte>();
-
-            try
-            {
-                while (_webSocket?.State == WebSocketState.Open && !_cancellationTokenSource?.Token.IsCancellationRequested == true)
-                {
-                    var result = await _webSocket.ReceiveAsync(
-                        new ArraySegment<byte>(buffer),
-                        _cancellationTokenSource?.Token ?? CancellationToken.None
-                    );
-
-                    if (result.MessageType == WebSocketMessageType.Text)
-                    {
-                        messageBuffer.AddRange(buffer[..result.Count]);
-
-                        if (result.EndOfMessage)
-                        {
-                            var message = Encoding.UTF8.GetString(messageBuffer.ToArray());
-                            await ProcessMessageAsync(message);
-                            messageBuffer.Clear();
-                        }
-                    }
-                    else if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        _isConnected = false;
-                        OnDisconnected?.Invoke();
-                        Debug.Log("❌ WebSocket closed by server");
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"❌ Error listening for messages: {ex.Message}");
-                OnError?.Invoke($"Error listening for messages: {ex.Message}");
-                _isConnected = false;
-                OnDisconnected?.Invoke();
-            }
-        }
-
-        private async Task ProcessMessageAsync(string message)
-        {
-            try
-            {
-                // First, get the message type using a simple wrapper
-                var messageWrapper = JsonUtility.FromJson<MessageWrapper>(message);
-                string messageType = messageWrapper.type;
-
-                switch (messageType)
-                {
-                    case "welcome":
-                        var welcome = JsonUtility.FromJson<WelcomeMessage>(message);
-                        OnWelcome?.Invoke(welcome);
-                        Debug.Log($"🎉 Welcome: {welcome.message}");
-                        break;
-
-                    case "state_change":
-                        var stateChange = JsonUtility.FromJson<StateChangeMessage>(message);
-                        OnStateChange?.Invoke(stateChange);
-                        break;
-
-                    default:
-                        Debug.Log($"Unknown message type: {messageType}");
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"❌ Error processing message: {ex.Message}");
-                OnError?.Invoke($"Error processing message: {ex.Message}");
-            }
+            _room.Send("player_position", position);
         }
 
         /// <summary>
         /// Disconnect from the server
         /// </summary>
-        public async Task DisconnectAsync()
+        public async void DisconnectAsync()
         {
-            if (_webSocket?.State == WebSocketState.Open)
-            {
-                await _webSocket.CloseAsync(
-                    WebSocketCloseStatus.NormalClosure,
-                    "Client disconnecting",
-                    CancellationToken.None
-                );
-            }
-
-            _cancellationTokenSource?.Cancel();
             _isConnected = false;
+            _isConnecting = false;
+            
+            if (_room != null)
+            {
+                await _room.Leave();
+                _room = null;
+            }
+            
+            if (_client != null)
+            {
+                _client = null;
+            }
+            
             OnDisconnected?.Invoke();
             Debug.Log("👋 Disconnected from server");
         }
 
+        // Message Event Handlers
+
+        private void OnWelcomeMessage(WelcomeMessage message)
+        {
+            Debug.Log($"🎉 Welcome: {message.message}");
+            OnWelcome?.Invoke(message);
+        }
+
+
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                _cancellationTokenSource?.Cancel();
-                _webSocket?.Dispose();
-                _cancellationTokenSource?.Dispose();
-                _disposed = true;
-            }
+            DisconnectAsync();
         }
-    }
-
-    // Message Models - Unity JsonUtility compatible
-    [System.Serializable]
-    public class PlayerInput
-    {
-        public float vx;
-        public float vy;
-    }
-
-    [System.Serializable]
-    public class PlayerPosition
-    {
-        public float x;
-        public float y;
-    }
-
-    [System.Serializable]
-    public class WelcomeMessage
-    {
-        public string message;
-        public string playerId;
-        public string mapId;
-    }
-
-    [System.Serializable]
-    public class StateChangeMessage
-    {
-        public PlayerData[] players;
-        public MobData[] mobs;
-        public int tick;
-        public string mapId;
-    }
-
-    [System.Serializable]
-    public class PlayerData
-    {
-        public string id;
-        public string sessionId;
-        public float x;
-        public float y;
-        public float vx;
-        public float vy;
-        public string name;
-    }
-
-    [System.Serializable]
-    public class MobData
-    {
-        public string id;
-        public float x;
-        public float y;
-        public float vx;
-        public float vy;
     }
 }

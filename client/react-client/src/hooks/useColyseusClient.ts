@@ -88,7 +88,7 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
       });
       
       roomRef.current = room;
-      setRoomId(room.id);
+      setRoomId(room.roomId);
       
       // Handle room state changes
       room.onStateChange((state) => {
@@ -120,7 +120,7 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
         setGameState(null);
       });
       
-      console.log(`🎮 Joined room ${room.id} on map ${mapId}`);
+      console.log(`🎮 Joined room ${room.roomId} on map ${mapId}`);
       
     } catch (error) {
       console.error('Failed to join room:', error);

@@ -1,4 +1,5 @@
 using UnityEngine;
+using AtlasWorld.Models;
 using System.Threading.Tasks;
 using AtlasWorld.Client;
 
@@ -9,12 +10,9 @@ namespace AtlasWorld.Examples
     /// </summary>
     public class AtlasWorldExample : MonoBehaviour
     {
-        [Header("Server Settings")]
-        public string serverUrl = "ws://localhost:2567";
-        public string mapId = "map-01-sector-a";
-        
-        [Header("Player Settings")]
-        public string playerName = "UnityPlayer";
+    public string serverUrl = "ws://localhost:2567";
+    public string mapId = "map-01-sector-a";
+    public string playerName = "UnityPlayer";
         
         private AtlasWorldClient? _client;
         private bool _isConnected = false;

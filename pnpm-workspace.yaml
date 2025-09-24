@@ -1,2 +1,3 @@
 packages:
-  - 'modules/ts'
+  - 'colyseus-server'
+  - 'client'

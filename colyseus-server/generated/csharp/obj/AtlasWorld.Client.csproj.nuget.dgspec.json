@@ -1,0 +1,74 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/pasitnusso/workspace/repos/atlas-world-svc/colyseus-server/generated/csharp/AtlasWorld.Client.csproj": {}
+  },
+  "projects": {
+    "/Users/pasitnusso/workspace/repos/atlas-world-svc/colyseus-server/generated/csharp/AtlasWorld.Client.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/pasitnusso/workspace/repos/atlas-world-svc/colyseus-server/generated/csharp/AtlasWorld.Client.csproj",
+        "projectName": "AtlasWorld.Client",
+        "projectPath": "/Users/pasitnusso/workspace/repos/atlas-world-svc/colyseus-server/generated/csharp/AtlasWorld.Client.csproj",
+        "packagesPath": "/Users/pasitnusso/.nuget/packages/",
+        "outputPath": "/Users/pasitnusso/workspace/repos/atlas-world-svc/colyseus-server/generated/csharp/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/pasitnusso/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "dependencies": {
+            "Colyseus": {
+              "target": "Package",
+              "version": "[0.15.0, )"
+            },
+            "System.Net.WebSockets.Client": {
+              "target": "Package",
+              "version": "[4.3.2, )"
+            },
+            "UnityEngine": {
+              "target": "Package",
+              "version": "[1.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/6.0.202/RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+/Users/pasitnusso/workspace/repos/atlas-world-svc/colyseus-server/generated/csharp/obj/Debug/net6.0/AtlasWorld.Client.csproj.AssemblyReference.cache
+/Users/pasitnusso/workspace/repos/atlas-world-svc/colyseus-server/generated/csharp/obj/Debug/net6.0/AtlasWorld.Client.GeneratedMSBuildEditorConfig.editorconfig
+/Users/pasitnusso/workspace/repos/atlas-world-svc/colyseus-server/generated/csharp/obj/Debug/net6.0/AtlasWorld.Client.AssemblyInfoInputs.cache
+/Users/pasitnusso/workspace/repos/atlas-world-svc/colyseus-server/generated/csharp/obj/Debug/net6.0/AtlasWorld.Client.AssemblyInfo.cs
+/Users/pasitnusso/workspace/repos/atlas-world-svc/colyseus-server/generated/csharp/obj/Debug/net6.0/AtlasWorld.Client.csproj.CoreCompileInputs.cache

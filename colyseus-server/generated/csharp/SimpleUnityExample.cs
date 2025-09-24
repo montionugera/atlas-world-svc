@@ -1,4 +1,5 @@
 using UnityEngine;
+using AtlasWorld.Models;
 using AtlasWorld.Client;
 
 /// <summary>
@@ -7,11 +8,8 @@ using AtlasWorld.Client;
 /// </summary>
 public class SimpleUnityExample : MonoBehaviour
 {
-    [Header("Server Settings")]
     public string serverUrl = "ws://localhost:2567";
     public string mapId = "map-01-sector-a";
-    
-    [Header("Player Settings")]
     public string playerName = "UnityPlayer";
     
     private AtlasWorldUnityClient? _client;
