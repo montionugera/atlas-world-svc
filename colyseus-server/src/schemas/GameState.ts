@@ -7,8 +7,8 @@ export class GameState extends Schema {
   @type({ map: Mob }) mobs = new MapSchema<Mob>();
   @type("number") tick: number = 0;
   @type("string") mapId: string = "map-01-sector-a";
-  @type("number") width: number = 100;
-  @type("number") height: number = 100;
+  @type("number") width: number = 800;
+  @type("number") height: number = 600;
 
   constructor(mapId: string = "map-01-sector-a") {
     super();
@@ -20,12 +20,12 @@ export class GameState extends Schema {
   private initializeMobs() {
     this.mobs.clear();
     
-    const mobCount = 3;
+    const mobCount = 8; // More mobs for better visibility
     for (let i = 1; i <= mobCount; i++) {
-      const x = Math.random() * (this.width - 50) + 25;
-      const y = Math.random() * (this.height - 50) + 25;
-      const vx = (Math.random() - 0.5) * 6; // -3 to 3
-      const vy = (Math.random() - 0.5) * 6; // -3 to 3
+      const x = Math.random() * (this.width - 100) + 50; // Keep away from edges
+      const y = Math.random() * (this.height - 100) + 50;
+      const vx = (Math.random() - 0.5) * 4; // -2 to 2 (slower movement)
+      const vy = (Math.random() - 0.5) * 4;
       
       const mobId = `mob-${i}`;
       this.mobs.set(mobId, new Mob(mobId, x, y, vx, vy));
