@@ -1,0 +1,296 @@
+# Atlas World Project Rules
+
+## 🎮 Project Overview
+Real-time multiplayer game using Colyseus WebSocket server with React client.
+
+## 📁 Project Structure
+```
+atlas-world-svc/
+├── colyseus-server/          # Game server (Node.js + TypeScript)
+│   ├── src/
+│   │   ├── config/          # Server configuration constants
+│   │   ├── schemas/         # Game state schemas (Player, Mob, GameState)
+│   │   ├── rooms/           # Game room logic
+│   │   └── index.ts         # Server entry point
+│   └── generated/csharp/    # Auto-generated C# client
+├── client/
+│   ├── react-client/        # React frontend
+│   │   ├── src/
+│   │   │   ├── components/  # React components
+│   │   │   ├── hooks/       # Custom React hooks
+│   │   │   ├── renderers/   # Canvas rendering modules
+│   │   │   ├── utils/       # Utility functions
+│   │   │   ├── config/      # Client configuration
+│   │   │   └── types/     # TypeScript types
+│   │   └── dist/            # Built client
+└── docker-compose.yml       # Development setup
+```
+
+## 🏗️ Architecture Principles
+
+### Server-Side (Game Logic)
+- **All game logic runs on server** - physics, movement, collisions
+- **Client is view-only** - displays server state, sends input
+- **No client-side calculations** - positions, velocities, game rules
+- **Server authoritative** - single source of truth for game state
+
+### Client-Side (Display Layer)
+- **Reactive rendering** - updates when server sends new state
+- **Input handling** - keyboard/mouse events sent to server
+- **Canvas rendering** - draws game objects at server positions
+- **No game logic** - pure display layer
+
+## 🎯 Code Organization
+
+### Server Configuration
+```typescript
+// colyseus-server/src/config/gameConfig.ts
+export const GAME_CONFIG = {
+  serverFPS: 20,
+  tickRate: 50, // ms per tick
+  worldWidth: 100,
+  worldHeight: 100,
+  mobCount: 5,
+  mobSpeedRange: 2, // pixels per second
+  mobSpawnMargin: 10,
+} as const;
+```
+
+### Client Configuration
+```typescript
+// client/react-client/src/config/gameConfig.ts
+export const CANVAS_CONFIG = {
+  width: 800,
+  height: 600,
+  backgroundColor: '#1a1a1a',
+  borderColor: '#00ff00',
+  borderWidth: 3,
+} as const;
+```
+
+## 🔧 Development Rules
+
+### File Organization
+- **Keep files small** - max 100 lines per file
+- **Single responsibility** - one purpose per file
+- **Split large components** - extract into focused modules
+- **Use constants** - no magic numbers, centralized config
+
+### Naming Conventions
+- **Components**: PascalCase (`GameRenderer.tsx`)
+- **Hooks**: camelCase with `use` prefix (`useColyseusClient.ts`)
+- **Utils**: camelCase (`drawingUtils.ts`)
+- **Config**: UPPER_SNAKE_CASE (`GAME_CONFIG`)
+
+### Import Organization
+```typescript
+// 1. React imports
+import React, { useEffect, useRef } from 'react';
+
+// 2. Third-party imports
+import { Client, Room } from 'colyseus.js';
+
+// 3. Local imports (relative paths)
+import { GameState } from '../types/game';
+import { CANVAS_CONFIG } from '../config/gameConfig';
+```
+
+## 🎮 Game Mechanics
+
+### Velocity Units
+- **Server**: pixels per tick (20 FPS = 50ms per tick)
+- **Client**: pixels per second (multiply by 20 for display)
+- **Rendering**: scaled for visibility (velocityVectorScale: 5)
+
+### State Synchronization
+- **Server updates**: 20 FPS (50ms intervals)
+- **Client rendering**: 60+ FPS (requestAnimationFrame)
+- **Network**: WebSocket real-time updates
+- **State**: Colyseus Schema for efficient serialization
+
+## 🚀 Development Workflow
+
+### Server Development
+```bash
+cd colyseus-server
+npm run build    # Compile TypeScript
+npm start        # Run server
+npm run dev      # Development mode
+```
+
+### Client Development
+```bash
+cd client/react-client
+npm start        # Development server
+npm run build    # Production build
+```
+
+### Testing
+- **Server**: Jest tests for game logic
+- **Client**: React Testing Library for components
+- **Integration**: Manual testing with multiple clients
+
+## 📝 Commit Guidelines
+
+### Commit Message Format
+```
+type: short description
+
+- Keep under 50 characters
+- Use imperative mood
+- No newlines or special characters
+```
+
+### Types
+- `feat:` - New features
+- `fix:` - Bug fixes
+- `refactor:` - Code restructuring
+- `docs:` - Documentation updates
+- `style:` - Code formatting
+- `test:` - Test additions
+
+### Examples
+```
+feat: add player movement controls
+fix: resolve mob collision detection
+refactor: split GameRenderer into smaller modules
+docs: update API documentation
+```
+
+## 🔄 Branching Strategy
+
+### Trunk-Based Development
+- **Main branch**: Always production-ready
+- **Feature branches**: Short-lived, focused changes
+- **No direct commits** to main (except hotfixes)
+
+### Branch Naming
+- `feature/player-movement`
+- `fix/collision-detection`
+- `refactor/renderer-split`
+- `docs/api-updates`
+
+### Merge Strategy
+- **Always squash and merge** to main
+- **Clean linear history**
+- **One commit per feature**
+
+## 🎯 Performance Targets
+
+### Server Performance
+- **Tick Rate**: 20 FPS (50ms)
+- **Memory**: Efficient Schema serialization
+- **Network**: WebSocket optimization
+- **Clients**: Support 20+ concurrent players
+
+### Client Performance
+- **Rendering**: 60+ FPS smooth animation
+- **Network**: Real-time state synchronization
+- **Memory**: Efficient React rendering
+- **Responsiveness**: <16ms input lag
+
+## 🛠️ Tools & Dependencies
+
+### Server Stack
+- **Node.js** + **TypeScript**
+- **Colyseus** - WebSocket game server
+- **Express** - HTTP server
+- **Jest** - Testing framework
+
+### Client Stack
+- **React** + **TypeScript**
+- **Canvas API** - 2D rendering
+- **Colyseus.js** - WebSocket client
+- **React Testing Library** - Component testing
+
+## 🎨 Rendering Architecture
+
+### Component Hierarchy
+```
+ColyseusGameCanvas
+├── GameControls (buttons)
+├── GameHUD (status overlay)
+├── GameRenderer (canvas rendering)
+└── GameInstructions (help text)
+```
+
+### Renderer Modules
+- `mapRenderer.ts` - Map boundaries
+- `mobRenderer.ts` - Mob entities + velocity vectors
+- `playerRenderer.ts` - Player entities + names
+- `hudRenderer.ts` - Statistics display
+
+### Drawing Utilities
+- `drawingUtils.ts` - Reusable canvas functions
+- `calculateScale()` - World-to-canvas scaling
+- `drawCircle()`, `drawLine()`, `drawText()` - Primitive shapes
+
+## 🔧 Configuration Management
+
+### Server Constants
+- **Game logic** - tick rates, world size, entity counts
+- **Physics** - collision detection, movement speeds
+- **Networking** - room limits, message handling
+
+### Client Constants
+- **Rendering** - canvas size, colors, fonts
+- **UI** - button styles, layout spacing
+- **Performance** - animation settings, update rates
+
+## 📊 Monitoring & Debugging
+
+### Server Metrics
+- **Tick Rate**: 20 FPS consistency
+- **Memory Usage**: Schema serialization efficiency
+- **Network**: WebSocket connection health
+- **Game State**: Player/mob counts, room activity
+
+### Client Metrics
+- **FPS**: Rendering performance
+- **Update Rate**: Server synchronization frequency
+- **Network**: Connection status, latency
+- **Rendering**: Canvas performance, memory usage
+
+## 🚨 Common Issues
+
+### Server Issues
+- **Tick rate drops** - Check CPU usage, optimize game logic
+- **Memory leaks** - Schema cleanup, room disposal
+- **Network lag** - WebSocket optimization, state compression
+
+### Client Issues
+- **Rendering lag** - Canvas optimization, React re-renders
+- **Sync issues** - State update handling, network reliability
+- **Input lag** - Event handling, server communication
+
+## 🎯 Best Practices
+
+### Code Quality
+- **TypeScript strict mode** - Catch errors early
+- **ESLint + Prettier** - Consistent code style
+- **Small functions** - Single responsibility principle
+- **Clear naming** - Self-documenting code
+
+### Performance
+- **Server optimization** - Efficient game loops, minimal allocations
+- **Client optimization** - Canvas rendering, React performance
+- **Network optimization** - State compression, delta updates
+
+### Maintainability
+- **Modular design** - Small, focused files
+- **Clear separation** - Server logic vs client display
+- **Documentation** - Code comments, README updates
+- **Testing** - Unit tests for critical logic
+
+## 🔄 Deployment
+
+### Development
+- **Local development** - npm scripts for server/client
+- **Hot reloading** - React dev server, TypeScript compilation
+- **Debugging** - Browser dev tools, server logs
+
+### Production
+- **Build process** - TypeScript compilation, React build
+- **Docker** - Containerized deployment
+- **Environment** - Configuration management
+- **Monitoring** - Performance metrics, error tracking

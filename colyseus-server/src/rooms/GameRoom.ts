@@ -1,6 +1,7 @@
 import { Room, Client } from "colyseus";
 import { GameState } from "../schemas/GameState";
 import { Player } from "../schemas/Player";
+import { GAME_CONFIG } from "../config/gameConfig";
 
 export class GameRoom extends Room<GameState> {
   // Room configuration
@@ -8,7 +9,6 @@ export class GameRoom extends Room<GameState> {
 
   // Simulation settings
   private simulationInterval?: NodeJS.Timeout;
-  private readonly SIMULATION_RATE = 50; // 20 FPS (50ms)
 
   onCreate(options: any) {
     console.log(`🎮 GameRoom created with mapId: ${options.mapId || 'map-01-sector-a'}`);
@@ -74,7 +74,7 @@ export class GameRoom extends Room<GameState> {
         player.updatePosition();
         player.applyBoundaryPhysics(this.state.width, this.state.height);
       });
-    }, this.SIMULATION_RATE);
+    }, GAME_CONFIG.tickRate);
   }
 
   // Stop the game simulation loop

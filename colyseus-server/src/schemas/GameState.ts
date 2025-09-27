@@ -1,14 +1,15 @@
 import { Schema, MapSchema, ArraySchema, type } from "@colyseus/schema";
 import { Mob } from "./Mob";
 import { Player } from "./Player";
+import { GAME_CONFIG } from "../config/gameConfig";
 
 export class GameState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>();
   @type({ map: Mob }) mobs = new MapSchema<Mob>();
   @type("number") tick: number = 0;
   @type("string") mapId: string = "map-01-sector-a";
-  @type("number") width: number = 800;
-  @type("number") height: number = 600;
+  @type("number") width: number = GAME_CONFIG.worldWidth;
+  @type("number") height: number = GAME_CONFIG.worldHeight;
 
   constructor(mapId: string = "map-01-sector-a") {
     super();
@@ -20,12 +21,11 @@ export class GameState extends Schema {
   private initializeMobs() {
     this.mobs.clear();
     
-    const mobCount = 8; // More mobs for better visibility
-    for (let i = 1; i <= mobCount; i++) {
-      const x = Math.random() * (this.width - 100) + 50; // Keep away from edges
-      const y = Math.random() * (this.height - 100) + 50;
-      const vx = (Math.random() - 0.5) * 4; // -2 to 2 (slower movement)
-      const vy = (Math.random() - 0.5) * 4;
+    for (let i = 1; i <= GAME_CONFIG.mobCount; i++) {
+      const x = Math.random() * (this.width - GAME_CONFIG.mobSpawnMargin * 2) + GAME_CONFIG.mobSpawnMargin;
+      const y = Math.random() * (this.height - GAME_CONFIG.mobSpawnMargin * 2) + GAME_CONFIG.mobSpawnMargin;
+      const vx = (Math.random() - 0.5) * GAME_CONFIG.mobSpeedRange;
+      const vy = (Math.random() - 0.5) * GAME_CONFIG.mobSpeedRange;
       
       const mobId = `mob-${i}`;
       this.mobs.set(mobId, new Mob(mobId, x, y, vx, vy));
