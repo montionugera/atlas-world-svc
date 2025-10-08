@@ -35,14 +35,22 @@ describe('Mob-centric AI decisions', () => {
     expect(mob.behaviorLockedUntil).toBe(lockedUntil);
   });
 
-  test('computeDesiredVelocity heads toward player when chase/attack', () => {
+  test('computeDesiredVelocity heads toward player when chase, stops when attack', () => {
     const mob = new Mob({ id: 'm3', x: 0, y: 0, vx: 0, vy: 0 });
+    
+    // Test chase behavior - should move toward player
     mob.currentBehavior = 'chase';
-    const desired = mob.computeDesiredVelocity({ nearestPlayer: { x: 10, y: 0 }, distanceToNearestPlayer: 10, maxSpeed: 12 });
-    expect(desired.x).toBeGreaterThan(0);
-    expect(Math.abs(desired.y)).toBeLessThan(1e-6);
+    const chaseDesired = mob.computeDesiredVelocity({ nearestPlayer: { x: 10, y: 0 }, distanceToNearestPlayer: 10, maxSpeed: 12 });
+    expect(chaseDesired.x).toBeGreaterThan(0);
+    expect(Math.abs(chaseDesired.y)).toBeLessThan(1e-6);
     // For chase, speed uses 0.8 * maxSpeed per implementation
-    expect(Math.hypot(desired.x, desired.y)).toBeCloseTo(9.6, 1);
+    expect(Math.hypot(chaseDesired.x, chaseDesired.y)).toBeCloseTo(9.6, 1);
+    
+    // Test attack behavior - should stop moving
+    mob.currentBehavior = 'attack';
+    const attackDesired = mob.computeDesiredVelocity({ nearestPlayer: { x: 10, y: 0 }, distanceToNearestPlayer: 10, maxSpeed: 12 });
+    expect(attackDesired.x).toBe(0);
+    expect(attackDesired.y).toBe(0);
   });
 
   test('decideBehavior picks boundaryAware when near edge', () => {

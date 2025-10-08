@@ -115,16 +115,24 @@ export class Mob extends Schema {
     maxSpeed?: number;
   }): { x: number; y: number } {
     const maxSpeed = env.maxSpeed ?? 24;
-    if (this.currentBehavior === "attack" || this.currentBehavior === "chase") {
+    
+    // Attack behavior: stop moving (stand and attack)
+    if (this.currentBehavior === "attack") {
+      return { x: 0, y: 0 };
+    }
+    
+    // Chase behavior: move toward player
+    if (this.currentBehavior === "chase") {
       const target = env.nearestPlayer;
       if (target) {
         const dx = target.x - this.x;
         const dy = target.y - this.y;
         const m = Math.hypot(dx, dy) || 1;
-        const speed = this.currentBehavior === "attack" ? Math.min(maxSpeed, 32) : Math.min(maxSpeed * 0.8, 24);
+        const speed = Math.min(maxSpeed * 0.8, 24);
         return { x: (dx / m) * speed, y: (dy / m) * speed };
       }
     }
+    
     // Wander fallback: keep current velocity with slight damping
     return { x: this.vx, y: this.vy };
   }
