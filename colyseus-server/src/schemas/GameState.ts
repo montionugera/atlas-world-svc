@@ -2,6 +2,9 @@ import { Schema, MapSchema, ArraySchema, type } from "@colyseus/schema";
 import { Mob } from "./Mob";
 import { Player } from "./Player";
 import { GAME_CONFIG } from "../config/gameConfig";
+import * as planck from "planck";
+import { MobAIModule } from "../ai/MobAIModule";
+import { AIWorldInterface } from "../ai/AIWorldInterface";
 
 export class GameState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>();
@@ -11,9 +14,22 @@ export class GameState extends Schema {
   @type("number") width: number = GAME_CONFIG.worldWidth;
   @type("number") height: number = GAME_CONFIG.worldHeight;
 
+  private aiModule: MobAIModule;
+  public worldInterface: AIWorldInterface;
+
   constructor(mapId: string = "map-01-sector-a") {
     super();
     this.mapId = mapId;
+    this.width = GAME_CONFIG.worldWidth;
+    this.height = GAME_CONFIG.worldHeight;
+    this.tick = 0;
+    
+    // Initialize AI module
+    this.worldInterface = new AIWorldInterface(this);
+    this.aiModule = new MobAIModule(this.worldInterface);
+    this.aiModule.start();
+    
+    // Initialize mobs and register with AI
     this.initializeMobs();
   }
 
@@ -22,19 +38,59 @@ export class GameState extends Schema {
     this.mobs.clear();
     
     for (let i = 1; i <= GAME_CONFIG.mobCount; i++) {
-      const x = Math.random() * (this.width - GAME_CONFIG.mobSpawnMargin * 2) + GAME_CONFIG.mobSpawnMargin;
-      const y = Math.random() * (this.height - GAME_CONFIG.mobSpawnMargin * 2) + GAME_CONFIG.mobSpawnMargin;
+      // Spawn mobs spread out across the map with more margin from boundaries
+      const x = Math.random() * (this.width - 40) + 20; // More margin from boundaries
+      const y = Math.random() * (this.height - 40) + 20; // More margin from boundaries
       const vx = (Math.random() - 0.5) * GAME_CONFIG.mobSpeedRange;
       const vy = (Math.random() - 0.5) * GAME_CONFIG.mobSpeedRange;
       
-      const mobId = `mob-${i}`;
-      this.mobs.set(mobId, new Mob(mobId, x, y, vx, vy));
+      const rand2 = Math.random().toString(36).slice(2, 4); // 2 random chars
+      const mobId = `mob-${i}-${rand2}`; // index + 2 random chars
+      const radius = 1 + 3 * Math.random(); // example variability
+      
+      // Create different mob types with different ranges
+      const mobType = Math.random();
+      let attackRange = 20;
+      let chaseRange = 50;
+      
+      if (mobType < 0.3) {
+        // Aggressive mobs - longer ranges
+        attackRange = 25;
+        chaseRange = 60;
+      } else if (mobType < 0.6) {
+        // Defensive mobs - shorter ranges
+        attackRange = 15;
+        chaseRange = 40;
+      }
+      // Default ranges for balanced mobs (0.6-1.0)
+      
+      const mob = new Mob({ 
+        id: mobId, 
+        x, 
+        y, 
+        vx, 
+        vy, 
+        radius,
+        attackRange,
+        chaseRange
+      });
+      this.mobs.set(mobId, mob);
+      
+      // Register mob with AI module
+      this.aiModule.registerMob(mob, {
+        behaviors: ['attack', 'chase', 'wander', 'boundaryAware', 'idle'],
+        perception: { range: 50, fov: 120 },
+        memory: { duration: 5000 }
+      });
     }
   }
 
   // Add a player to the game
   addPlayer(sessionId: string, name: string) {
-    const player = new Player(sessionId, name);
+    // Spawn new players at map center for visibility
+    const spawnX = this.width / 2;
+    const spawnY = this.height / 2;
+    const player = new Player(sessionId, name, spawnX, spawnY);
     this.players.set(sessionId, player);
     return player;
   }
@@ -49,13 +105,143 @@ export class GameState extends Schema {
     return this.players.get(sessionId);
   }
 
-  // Update mob AI and physics
-  updateMobs() {
+  // Update mobs (physics-based movement for collision detection)
+  updateMobs(physicsManager?: any) {
     for (const mob of this.mobs.values()) {
-      mob.updatePosition();
-      mob.applyBoundaryPhysics(this.width, this.height);
+      // Update mob AI behavior first (changes mob.vx, mob.vy)
+      this.updateMobAI(mob);
+      
+      if (physicsManager) {
+        const mobBody = physicsManager.getBody(mob.id);
+        if (mobBody) {
+          // Steering impulse: let mob compute based on current/desired velocity
+        const currentVel = mobBody.getLinearVelocity();
+          const desired = { x: mob.desiredVx, y: mob.desiredVy };
+          const mass = mob.mass = mobBody.getMass();
+          const impulse = mob.computeSteeringImpulse({
+            currentVelocity: { x: currentVel.x, y: currentVel.y },
+            desiredVelocity: desired,
+            mass,
+            gain: 0.2,
+            maxImpulsePerTick: mass * 1.0
+          });
+          mobBody.applyLinearImpulse(planck.Vec2(impulse.x, impulse.y), mobBody.getWorldCenter(), true);
+          
+          // Update mob position from physics body
+          const pos = mobBody.getPosition();
+          mob.x = pos.x;
+          mob.y = pos.y;
+          
+          // Update mob velocity from physics with max speed limit
+          const vel = mobBody.getLinearVelocity();
+          const maxSpeed = 10; // Maximum speed for mobs
+          const currentSpeed = Math.hypot(vel.x, vel.y);
+          
+          if (currentSpeed > maxSpeed) {
+            // Cap velocity to max speed
+            const scale = maxSpeed / currentSpeed;
+            mob.vx = vel.x * scale;
+            mob.vy = vel.y * scale;
+            // Apply the capped velocity back to physics body
+            mobBody.setLinearVelocity(planck.Vec2(mob.vx, mob.vy));
+          } else {
+            mob.vx = vel.x;
+            mob.vy = vel.y;
+          }
+          
+               // Log mob movement every 500 ticks to reduce spam
+               if (this.tick % 500 === 0) {
+                 console.log(`🏃 MOB ${mob.id}: pos(${mob.x.toFixed(1)}, ${mob.y.toFixed(1)}) vel(${mob.vx.toFixed(1)}, ${mob.vy.toFixed(1)})`);
+               }
+        }
+      } else {
+        // Fallback to traditional movement if no physics
+        mob.updatePosition();
+        mob.applyBoundaryPhysics(this.width, this.height);
+      }
     }
+    
+    
     this.tick++;
+  }
+
+
+  // Main AI update method - decides which behavior to use
+  private updateMobAI(mob: Mob) {
+    // For now, use wander behavior (random movement)
+    // Can be extended to use different behaviors based on conditions
+    this.updateMobWanderBehavior(mob);
+  }
+
+  // Advanced AI: Chase nearest player
+  private updateMobChaseBehavior(mob: Mob) {
+    const nearestPlayer = this.findNearestPlayer(mob);
+    if (nearestPlayer) {
+      const dx = nearestPlayer.x - mob.x;
+      const dy = nearestPlayer.y - mob.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance > 0) {
+        // Normalize direction and apply speed
+        const speed = GAME_CONFIG.mobSpeedRange;
+        mob.vx = (dx / distance) * speed;
+        mob.vy = (dy / distance) * speed;
+      }
+    }
+  }
+
+  // Advanced AI: Wander behavior
+  private updateMobWanderBehavior(mob: Mob) {
+    // Add some randomness to current velocity
+    mob.vx += (Math.random() - 0.5) * 0.1;
+    mob.vy += (Math.random() - 0.5) * 0.1;
+    
+    // Limit speed
+    const speed = Math.sqrt(mob.vx * mob.vx + mob.vy * mob.vy);
+    const maxSpeed = GAME_CONFIG.mobSpeedRange;
+    if (speed > maxSpeed) {
+      mob.vx = (mob.vx / speed) * maxSpeed;
+      mob.vy = (mob.vy / speed) * maxSpeed;
+    }
+  }
+
+  // Find nearest player to a mob
+  private findNearestPlayer(mob: Mob): Player | null {
+    let nearestPlayer: Player | null = null;
+    let nearestDistance = Infinity;
+
+    for (const player of this.players.values()) {
+      const dx = player.x - mob.x;
+      const dy = player.y - mob.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestPlayer = player;
+      }
+    }
+
+    return nearestPlayer;
+  }
+
+
+
+  // Enable different AI behaviors for mobs
+  enableMobChaseBehavior() {
+    // Update all mobs to use chase behavior
+    for (const mob of this.mobs.values()) {
+      // This would be called in updateMobAI
+      // For now, just a placeholder for future implementation
+    }
+  }
+
+  // Enable wander behavior for mobs
+  enableMobWanderBehavior() {
+    // Update all mobs to use wander behavior
+    for (const mob of this.mobs.values()) {
+      // This would be called in updateMobAI
+      // For now, just a placeholder for future implementation
+    }
   }
 
   // Update player position
@@ -71,8 +257,8 @@ export class GameState extends Schema {
   updatePlayerInput(sessionId: string, vx: number, vy: number) {
     const player = this.getPlayer(sessionId);
     if (player) {
-      player.vx = vx;
-      player.vy = vy;
+      player.inputX = vx;
+      player.inputY = vy;
     }
   }
 }

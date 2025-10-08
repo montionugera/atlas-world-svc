@@ -26,7 +26,7 @@ export const drawHUD = (
   const hudData = [
     `Map: ${gameState.mapId}`,
     `Players: ${gameState.players.size}`,
-    `Mobs: ${gameState.mobs.length}`,
+    `Mobs: ${gameState.mobs.size}`,
     `Tick: ${gameState.tick}`,
     `Updates: ${updateCount}`,
     `FPS: ${fps}`,

@@ -48,14 +48,19 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
   // Refs
   const clientRef = useRef<Client | null>(null);
   const roomRef = useRef<Room<GameState> | null>(null);
+  const isJoiningRef = useRef<boolean>(false);
   const simulationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastUpdateTimeRef = useRef<number>(0);
   const frameCountRef = useRef<number>(0);
   const lastFpsTimeRef = useRef<number>(performance.now());
+  const updateTimesRef = useRef<number[]>([]);
   
   // Connect to server
   const connect = useCallback(async () => {
     try {
+      if (clientRef.current) {
+        return; // already connected
+      }
       const protocol = config.useSSL ? 'wss' : 'ws';
       const endpoint = `${protocol}://${config.serverHost}:${config.serverPort}`;
       
@@ -82,6 +87,19 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     }
     
     try {
+      if (isJoiningRef.current) {
+        console.warn('⏳ Already joining a room, skipping duplicate join');
+        return;
+      }
+      isJoiningRef.current = true;
+      // Leave existing room before joining another to prevent double subscriptions
+      if (roomRef.current) {
+        const existingId = roomRef.current.roomId;
+        await roomRef.current.leave();
+        roomRef.current = null;
+        setRoomId(null);
+        console.log(`🔄 Left previous room ${existingId} before joining a new one`);
+      }
       const room = await clientRef.current.joinOrCreate<GameState>('game_room', {
         mapId,
         name: `Player-${playerId.substring(0, 8)}`
@@ -94,12 +112,22 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
       room.onStateChange((state) => {
         setGameState(state);
         setUpdateCount(prev => prev + 1);
+        // Expose for quick debug
+        (window as any).__gameState = state;
         
-        // Calculate update rate
+        // Calculate update rate using a sliding window
         const now = Date.now();
-        const timeSinceLastUpdate = now - lastUpdateTimeRef.current;
-        lastUpdateTimeRef.current = now;
-        const currentUpdateRate = timeSinceLastUpdate > 0 ? Math.round(1000 / timeSinceLastUpdate) : 0;
+        updateTimesRef.current.push(now);
+        
+        // Keep only the last 10 seconds of update times
+        const tenSecondsAgo = now - 10000;
+        updateTimesRef.current = updateTimesRef.current.filter(time => time > tenSecondsAgo);
+        
+        // Calculate rate: updates per second over the last 10 seconds
+        const currentUpdateRate = updateTimesRef.current.length > 1 
+          ? Math.round((updateTimesRef.current.length - 1) * 1000 / (updateTimesRef.current[updateTimesRef.current.length - 1] - updateTimesRef.current[0]))
+          : 0;
+        
         setUpdateRate(currentUpdateRate);
       });
       
@@ -118,12 +146,14 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
         console.log('👋 Left room:', code);
         setRoomId(null);
         setGameState(null);
+        (window as any).__gameState = null;
       });
       
       console.log(`🎮 Joined room ${room.roomId} on map ${mapId}`);
-      
+      isJoiningRef.current = false;
     } catch (error) {
       console.error('Failed to join room:', error);
+      isJoiningRef.current = false;
       throw error;
     }
   }, [playerId]);

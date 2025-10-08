@@ -11,10 +11,10 @@ export const CANVAS_CONFIG = {
 } as const;
 
 export const RENDER_CONFIG = {
-  mobRadius: 8,
-  playerRadius: 10,
+  mobRadius: 4,
+  playerRadius: 4,
   velocityVectorScale: 5,
-  hudBackground: '#000',
+  hudBackground: 'rgba(0, 0, 0, 0.45)',
   hudTextColor: '#fff',
   hudFont: 'bold 16px Arial',
   playerNameFont: '12px Arial',

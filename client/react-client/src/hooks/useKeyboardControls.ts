@@ -6,40 +6,37 @@ interface UseKeyboardControlsProps {
 
 export const useKeyboardControls = ({ updatePlayerInput }: UseKeyboardControlsProps) => {
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const speed = 2;
+    const pressedKeys = new Set<string>();
+    const speed = 2;
+    
+    const updateMovement = () => {
       let vx = 0, vy = 0;
       
-      switch (event.key) {
-        case 'ArrowUp':
-        case 'w':
-        case 'W':
-          vy = -speed;
-          break;
-        case 'ArrowDown':
-        case 's':
-        case 'S':
-          vy = speed;
-          break;
-        case 'ArrowLeft':
-        case 'a':
-        case 'A':
-          vx = -speed;
-          break;
-        case 'ArrowRight':
-        case 'd':
-        case 'D':
-          vx = speed;
-          break;
+      // Check all currently pressed keys
+      if (pressedKeys.has('ArrowUp') || pressedKeys.has('w') || pressedKeys.has('W')) {
+        vy = -speed;
+      }
+      if (pressedKeys.has('ArrowDown') || pressedKeys.has('s') || pressedKeys.has('S')) {
+        vy = speed;
+      }
+      if (pressedKeys.has('ArrowLeft') || pressedKeys.has('a') || pressedKeys.has('A')) {
+        vx = -speed;
+      }
+      if (pressedKeys.has('ArrowRight') || pressedKeys.has('d') || pressedKeys.has('D')) {
+        vx = speed;
       }
       
-      if (vx !== 0 || vy !== 0) {
-        updatePlayerInput(vx, vy);
-      }
+      updatePlayerInput(vx, vy);
     };
     
-    const handleKeyUp = () => {
-      updatePlayerInput(0, 0);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      pressedKeys.add(event.key);
+      updateMovement();
+    };
+    
+    const handleKeyUp = (event: KeyboardEvent) => {
+      pressedKeys.delete(event.key);
+      updateMovement();
     };
     
     window.addEventListener('keydown', handleKeyDown);

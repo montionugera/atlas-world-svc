@@ -11,6 +11,8 @@ export interface Mob {
   y: number;
   vx: number;
   vy: number;
+  radius: number; // Receive radius from server
+  tag: string; // Current behavior tag
 }
 
 export interface Player {
@@ -25,7 +27,7 @@ export interface Player {
 
 export interface GameState {
   players: Map<string, Player>;
-  mobs: Mob[];
+  mobs: Map<string, Mob>;
   tick: number;
   mapId: string;
   width: number;

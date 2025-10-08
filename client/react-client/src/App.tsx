@@ -67,7 +67,7 @@ function App() {
   // Add logs for game state changes
   React.useEffect(() => {
     if (client.gameState?.mobs) {
-      addLog(`🔄 Mob update - Tick: ${client.gameState.tick}, Mobs: ${client.gameState.mobs.length}`, 'mob');
+      addLog(`🔄 Mob update - Tick: ${client.gameState.tick}, Mobs: ${client.gameState.mobs.size}`, 'mob');
     }
   }, [client.gameState?.tick, client.gameState?.mobs, addLog]);
   

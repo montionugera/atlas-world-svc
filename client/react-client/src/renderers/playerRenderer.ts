@@ -14,8 +14,16 @@ export const drawPlayers = (
     const x = player.x * scale;
     const y = player.y * scale;
     
-    // Draw player circle
-    drawCircle(ctx, x, y, RENDER_CONFIG.playerRadius, COLORS.player);
+    // Draw player circle (scaled to match world/canvas ratio)
+    const radius = RENDER_CONFIG.playerRadius * scale;
+    drawCircle(ctx, x, y, radius, COLORS.player);
+
+    // Always draw a visible outline so players stand out
+    ctx.beginPath();
+    ctx.arc(x, y, radius + 1, 0, Math.PI * 2);
+    ctx.strokeStyle = COLORS.playerHighlight;
+    ctx.lineWidth = 2;
+    ctx.stroke();
     
     // Draw player name
     drawText(
@@ -29,6 +37,9 @@ export const drawPlayers = (
     
     // Highlight current player
     if (sessionId === currentPlayerId) {
+      // Stronger highlight for the local player
+      ctx.beginPath();
+      ctx.arc(x, y, radius + 3, 0, Math.PI * 2);
       ctx.strokeStyle = COLORS.playerHighlight;
       ctx.lineWidth = 3;
       ctx.stroke();
