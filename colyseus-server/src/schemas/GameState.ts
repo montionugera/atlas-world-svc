@@ -50,16 +50,16 @@ export class GameState extends Schema {
       
       // Create different mob types with different ranges
       const mobType = Math.random();
-      let attackRange = 20;
+      let attackRange = 1.5; // Default attack range buffer
       let chaseRange = 50;
       
       if (mobType < 0.3) {
-        // Aggressive mobs - longer ranges
-        attackRange = 25;
+        // Aggressive mobs - longer attack range and chase range
+        attackRange = 2.5;
         chaseRange = 60;
       } else if (mobType < 0.6) {
-        // Defensive mobs - shorter ranges
-        attackRange = 15;
+        // Defensive mobs - shorter attack range and chase range
+        attackRange = 1.0;
         chaseRange = 40;
       }
       // Default ranges for balanced mobs (0.6-1.0)

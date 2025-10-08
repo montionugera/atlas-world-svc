@@ -16,7 +16,7 @@ export class Mob extends Schema {
   desiredVy: number = 0;
   desiredBehavior: string = "idle";
   decisionTimestamp: number = 0;
-  attackRange: number = 20; // AI behavior range for attacking
+  attackRange: number = 1.5; // Actual attack range buffer (not AI detection range)
   chaseRange: number = 50; // AI behavior range for chasing
   
   // Physics properties
@@ -76,7 +76,7 @@ export class Mob extends Schema {
     }
 
     // Calculate effective attack range based on mob radius + attack buffer + player radius
-    const effectiveAttackRange = this.radius + 1.5 + 2; // mob radius + attack range + player radius
+    const effectiveAttackRange = this.radius + this.attackRange + 2; // mob radius + attack range + player radius
     
     // Attack lock example: if very close
     if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveAttackRange) {
