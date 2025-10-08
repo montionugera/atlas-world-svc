@@ -17,7 +17,7 @@ export class Mob extends Schema {
   desiredBehavior: string = "idle";
   decisionTimestamp: number = 0;
   attackRange: number = 1.5; // Actual attack range buffer (not AI detection range)
-  chaseRange: number = 50; // AI behavior range for chasing
+  chaseRange: number = 15; // Chase range buffer (will be calculated with radius)
   
   // Physics properties
   @type("string") physicsBodyId: string = "";
@@ -78,6 +78,9 @@ export class Mob extends Schema {
     // Calculate effective attack range based on mob radius + attack buffer + player radius
     const effectiveAttackRange = this.radius + this.attackRange + 2; // mob radius + attack range + player radius
     
+    // Calculate effective chase range based on mob radius + chase buffer + player radius
+    const effectiveChaseRange = this.radius + this.chaseRange + 2; // mob radius + chase range + player radius
+    
     // PRIORITY 1: Attack if very close to player (highest priority)
     if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveAttackRange) {
       this.currentBehavior = "attack";
@@ -86,15 +89,15 @@ export class Mob extends Schema {
       return this.currentBehavior;
     }
 
-    // PRIORITY 2: Chase if within chase range
-    if ((env.distanceToNearestPlayer ?? Infinity) <= this.chaseRange && (env.distanceToNearestPlayer ?? Infinity) >= 10) {
+    // PRIORITY 2: Chase if within chase range but outside attack range
+    if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveChaseRange && (env.distanceToNearestPlayer ?? Infinity) > effectiveAttackRange) {
       this.currentBehavior = "chase";
       this.tag = this.currentBehavior;
       return this.currentBehavior;
     }
 
     // PRIORITY 3: Boundary awareness (only if no player nearby)
-    if (env.nearBoundary && (env.distanceToNearestPlayer ?? Infinity) > this.chaseRange) {
+    if (env.nearBoundary && (env.distanceToNearestPlayer ?? Infinity) > effectiveChaseRange) {
       this.currentBehavior = "boundaryAware";
       this.tag = this.currentBehavior;
       return this.currentBehavior;
