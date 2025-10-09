@@ -14,7 +14,7 @@ describe('Mob-centric AI decisions', () => {
     const chosen = mob.decideBehavior(envClose);
     expect(chosen).toBe('attack');
     expect(mob.currentBehavior).toBe('attack');
-    expect(mob.behaviorLockedUntil).toBeGreaterThanOrEqual(now + 4900);
+    expect(mob.behaviorLockedUntil).toBeGreaterThanOrEqual(now + 2900); // 3 second lock
   });
 
   test('locked behavior remains attack even if player moves away briefly', () => {

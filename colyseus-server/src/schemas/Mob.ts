@@ -70,13 +70,23 @@ export class Mob extends Schema {
     nearBoundary?: boolean;
   }) {
     const now = Date.now();
+    
+    // Calculate effective attack range based on mob radius + attack buffer + player radius
+    const effectiveAttackRange = this.radius + this.attackRange + 2; // mob radius + attack range + player radius
+    
+    // PRIORITY 0: Attack if extremely close (override any lock)
+    if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveAttackRange * 0.5) {
+      this.currentBehavior = "attack";
+      this.behaviorLockedUntil = now + 3000; // 3 second lock for attack
+      this.tag = this.currentBehavior;
+      return this.currentBehavior;
+    }
+    
+    // Check behavior lock (but allow attack override above)
     if (this.behaviorLockedUntil && now < this.behaviorLockedUntil) {
       this.tag = this.currentBehavior;
       return this.currentBehavior;
     }
-
-    // Calculate effective attack range based on mob radius + attack buffer + player radius
-    const effectiveAttackRange = this.radius + this.attackRange + 2; // mob radius + attack range + player radius
     
     // Calculate effective chase range based on mob radius + chase buffer + player radius
     const effectiveChaseRange = this.radius + this.chaseRange + 2; // mob radius + chase range + player radius
@@ -84,7 +94,7 @@ export class Mob extends Schema {
     // PRIORITY 1: Attack if very close to player (highest priority)
     if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveAttackRange) {
       this.currentBehavior = "attack";
-      this.behaviorLockedUntil = now + 5000;
+      this.behaviorLockedUntil = now + 3000; // 3 second lock for attack
       this.tag = this.currentBehavior;
       return this.currentBehavior;
     }
@@ -92,6 +102,7 @@ export class Mob extends Schema {
     // PRIORITY 2: Chase if within chase range but outside attack range
     if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveChaseRange && (env.distanceToNearestPlayer ?? Infinity) > effectiveAttackRange) {
       this.currentBehavior = "chase";
+      this.behaviorLockedUntil = now + 2000; // 2 second lock for chase
       this.tag = this.currentBehavior;
       return this.currentBehavior;
     }
