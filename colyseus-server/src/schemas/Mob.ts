@@ -1,11 +1,7 @@
-import { Schema, type } from "@colyseus/schema";
+import { type } from "@colyseus/schema";
+import { Entity } from "./Entity";
 
-export class Mob extends Schema {
-  @type("string") id: string;
-  @type("number") x: number;
-  @type("number") y: number;
-  @type("number") vx: number;
-  @type("number") vy: number;
+export class Mob extends Entity {
   @type("number") radius: number = 4;
   @type("string") tag: string = "idle"; // Current behavior tag for debugging/UI // Send radius to client
   @type("string") currentBehavior: string = "idle";
@@ -18,12 +14,6 @@ export class Mob extends Schema {
   decisionTimestamp: number = 0;
   attackRange: number = 1.5; // Actual attack range buffer (not AI detection range)
   chaseRange: number = 15; // Chase range buffer (will be calculated with radius)
-  
-  // Physics properties
-  @type("string") physicsBodyId: string = "";
-  @type("number") angle: number = 0;
-  @type("number") angularVelocity: number = 0;
-  @type("boolean") isStatic: boolean = false;
 
   constructor(options: { 
     id: string; 
@@ -35,12 +25,7 @@ export class Mob extends Schema {
     attackRange?: number;
     chaseRange?: number;
   }) {
-    super();
-    this.id = options.id;
-    this.x = options.x;
-    this.y = options.y;
-    this.vx = options.vx ?? 0;
-    this.vy = options.vy ?? 0;
+    super(options.id, options.x, options.y, options.vx ?? 0, options.vy ?? 0, ["mob"]);
     if (options.radius !== undefined) {
       this.radius = options.radius;
     }
@@ -72,15 +57,8 @@ export class Mob extends Schema {
     const now = Date.now();
     
     // Calculate effective attack range based on mob radius + attack buffer + player radius
-    const effectiveAttackRange = this.radius + this.attackRange + 2; // mob radius + attack range + player radius
+    const effectiveAttackRange = this.radius + this.attackRange + 4; // mob radius + attack range + player radius
     
-    // PRIORITY 0: Attack if extremely close (override any lock)
-    if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveAttackRange * 0.5) {
-      this.currentBehavior = "attack";
-      this.behaviorLockedUntil = now + 3000; // 3 second lock for attack
-      this.tag = this.currentBehavior;
-      return this.currentBehavior;
-    }
     
     // Check behavior lock (but allow attack override above)
     if (this.behaviorLockedUntil && now < this.behaviorLockedUntil) {
@@ -89,12 +67,12 @@ export class Mob extends Schema {
     }
     
     // Calculate effective chase range based on mob radius + chase buffer + player radius
-    const effectiveChaseRange = this.radius + this.chaseRange + 2; // mob radius + chase range + player radius
+    const effectiveChaseRange = this.radius + this.chaseRange + 4; // mob radius + chase range + player radius
     
     // PRIORITY 1: Attack if very close to player (highest priority)
     if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveAttackRange) {
       this.currentBehavior = "attack";
-      this.behaviorLockedUntil = now + 3000; // 3 second lock for attack
+      this.behaviorLockedUntil = now + 1000; // 3 second lock for attack
       this.tag = this.currentBehavior;
       return this.currentBehavior;
     }
@@ -102,7 +80,6 @@ export class Mob extends Schema {
     // PRIORITY 2: Chase if within chase range but outside attack range
     if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveChaseRange && (env.distanceToNearestPlayer ?? Infinity) > effectiveAttackRange) {
       this.currentBehavior = "chase";
-      this.behaviorLockedUntil = now + 2000; // 2 second lock for chase
       this.tag = this.currentBehavior;
       return this.currentBehavior;
     }
@@ -148,12 +125,6 @@ export class Mob extends Schema {
     return { x: this.vx, y: this.vy };
   }
 
-  // Helper method to update position
-  updatePosition() {
-    this.x += this.vx;
-    this.y += this.vy;
-  }
-
   // Compute steering impulse to move current physics velocity toward desired velocity
   // Returns an impulse vector already scaled by mass and clamped
   computeSteeringImpulse(params: {
@@ -179,7 +150,7 @@ export class Mob extends Schema {
     return { x: impulseX, y: impulseY };
   }
 
-  // Helper method to apply boundary physics
+  // Override boundary physics for mobs (bounce instead of clamp)
   applyBoundaryPhysics(width: number = 20, height: number = 20) {
     // Bounce off walls
     if (this.x <= 0 || this.x >= width) {
@@ -190,24 +161,5 @@ export class Mob extends Schema {
       this.vy = -this.vy;
       this.y = Math.max(0, Math.min(height, this.y));
     }
-  }
-
-  // Physics helper methods
-  updateFromPhysicsBody(physicsBody: any) {
-    this.x = physicsBody.position.x;
-    this.y = physicsBody.position.y;
-    this.vx = physicsBody.velocity.x;
-    this.vy = physicsBody.velocity.y;
-    this.angle = physicsBody.angle;
-    this.angularVelocity = physicsBody.angularVelocity;
-  }
-
-  syncToPhysicsBody(physicsBody: any) {
-    physicsBody.position.x = this.x;
-    physicsBody.position.y = this.y;
-    physicsBody.velocity.x = this.vx;
-    physicsBody.velocity.y = this.vy;
-    physicsBody.angle = this.angle;
-    physicsBody.angularVelocity = this.angularVelocity;
   }
 }

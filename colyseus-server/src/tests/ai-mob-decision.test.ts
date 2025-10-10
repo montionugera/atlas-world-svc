@@ -1,7 +1,7 @@
 import { Mob } from '../schemas/Mob';
 
 describe('Mob-centric AI decisions', () => {
-  test('decideBehavior selects attack within 20 and locks for 5s', () => {
+  test('decideBehavior selects attack within 20 and locks briefly', () => {
     const mob = new Mob({ id: 'm1', x: 0, y: 0, vx: 0, vy: 0 });
     const now = Date.now();
 
@@ -14,7 +14,8 @@ describe('Mob-centric AI decisions', () => {
     const chosen = mob.decideBehavior(envClose);
     expect(chosen).toBe('attack');
     expect(mob.currentBehavior).toBe('attack');
-    expect(mob.behaviorLockedUntil).toBeGreaterThanOrEqual(now + 2900); // 3 second lock
+    // Current implementation uses ~1s lock
+    expect(mob.behaviorLockedUntil).toBeGreaterThanOrEqual(now + 900);
   });
 
   test('locked behavior remains attack even if player moves away briefly', () => {
