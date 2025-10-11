@@ -1,5 +1,5 @@
 import { RENDER_CONFIG, COLORS } from '../config/gameConfig';
-import { drawCircle, drawLine, drawText } from '../utils/drawingUtils';
+import { drawCircle, drawLine, drawText, drawHealthBarCustom } from '../utils/drawingUtils';
 
 /**
  * Draw all mobs with their velocity vectors
@@ -11,6 +11,23 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
     
     // Draw mob circle using server-provided radius (scale already applied to position)
     drawCircle(ctx, x, y, mob.radius * scale, COLORS.mob);
+    
+    // Draw health bar for mobs
+    if (mob.maxHealth && mob.currentHealth !== undefined) {
+      drawHealthBarCustom(
+        ctx,
+        x,
+        y,
+        mob.currentHealth,
+        mob.maxHealth,
+        30, // smaller width for mobs
+        3,  // smaller height for mobs
+        scale,
+        '#ff4444', // darker red background
+        '#44ff44', // brighter green for health
+        '#000000'  // black border
+      );
+    }
     
     // Draw mob id/name and behavior tag above the circle
     drawText(

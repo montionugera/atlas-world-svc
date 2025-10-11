@@ -1,5 +1,5 @@
 import { RENDER_CONFIG, COLORS } from '../config/gameConfig';
-import { drawCircle, drawText } from '../utils/drawingUtils';
+import { drawCircle, drawText, drawHealthBar } from '../utils/drawingUtils';
 
 /**
  * Draw all players with their names and highlight current player
@@ -24,6 +24,20 @@ export const drawPlayers = (
     ctx.strokeStyle = COLORS.playerHighlight;
     ctx.lineWidth = 2;
     ctx.stroke();
+    
+    // Draw health bar
+    if (player.maxHealth && player.currentHealth !== undefined) {
+      drawHealthBar(
+        ctx,
+        x,
+        y,
+        player.currentHealth,
+        player.maxHealth,
+        40, // width
+        4,  // height
+        scale
+      );
+    }
     
     // Draw player name
     drawText(

@@ -70,3 +70,80 @@ export const drawText = (
   ctx.font = font;
   ctx.fillText(text, x, y);
 };
+
+/**
+ * Draw a health bar above an entity
+ */
+export const drawHealthBar = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  currentHealth: number,
+  maxHealth: number,
+  width: number = 40,
+  height: number = 4,
+  scale: number = 1
+): void => {
+  if (maxHealth <= 0) return;
+  
+  const scaledWidth = width * scale;
+  const scaledHeight = height * scale;
+  const healthPercentage = currentHealth / maxHealth;
+  
+  // Position health bar above the entity
+  const barX = x - scaledWidth / 2;
+  const barY = y - 20 * scale; // 20 pixels above entity
+  
+  // Draw background (red)
+  ctx.fillStyle = '#ff0000';
+  ctx.fillRect(barX, barY, scaledWidth, scaledHeight);
+  
+  // Draw current health (green)
+  ctx.fillStyle = '#00ff00';
+  ctx.fillRect(barX, barY, scaledWidth * healthPercentage, scaledHeight);
+  
+  // Draw border
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(barX, barY, scaledWidth, scaledHeight);
+};
+
+/**
+ * Draw a health bar with custom colors
+ */
+export const drawHealthBarCustom = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  currentHealth: number,
+  maxHealth: number,
+  width: number = 40,
+  height: number = 4,
+  scale: number = 1,
+  backgroundColor: string = '#ff0000',
+  healthColor: string = '#00ff00',
+  borderColor: string = '#000000'
+): void => {
+  if (maxHealth <= 0) return;
+  
+  const scaledWidth = width * scale;
+  const scaledHeight = height * scale;
+  const healthPercentage = currentHealth / maxHealth;
+  
+  // Position health bar above the entity
+  const barX = x - scaledWidth / 2;
+  const barY = y - 20 * scale; // 20 pixels above entity
+  
+  // Draw background
+  ctx.fillStyle = backgroundColor;
+  ctx.fillRect(barX, barY, scaledWidth, scaledHeight);
+  
+  // Draw current health
+  ctx.fillStyle = healthColor;
+  ctx.fillRect(barX, barY, scaledWidth * healthPercentage, scaledHeight);
+  
+  // Draw border
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(barX, barY, scaledWidth, scaledHeight);
+};
