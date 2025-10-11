@@ -149,7 +149,8 @@ export class GameState extends Schema {
             mob.vy = vel.y;
           }
           
-          // Update mob heading based on movement
+          // Update mob heading based on AI desired direction (not just velocity)
+          mob.updateHeadingFromAI(mob.desiredVx, mob.desiredVy);
           mob.update(GAME_CONFIG.tickRate);
           
                // Log mob movement every 500 ticks to reduce spam
@@ -161,7 +162,8 @@ export class GameState extends Schema {
         // Fallback to traditional movement if no physics
         mob.updatePosition();
         mob.applyBoundaryPhysics(this.width, this.height);
-        // Update mob heading for non-physics movement too
+        // Update mob heading based on AI desired direction
+        mob.updateHeadingFromAI(mob.desiredVx, mob.desiredVy);
         mob.update(GAME_CONFIG.tickRate);
       }
     }

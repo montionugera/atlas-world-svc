@@ -171,6 +171,14 @@ export abstract class WorldLife extends WorldObject {
     }
   }
 
+  // Update heading based on AI desired direction (for mobs)
+  updateHeadingFromAI(desiredVx: number, desiredVy: number): void {
+    const magnitude = Math.hypot(desiredVx, desiredVy);
+    if (magnitude > 0.1) { // Only update if AI has a direction
+      this.heading = Math.atan2(desiredVy, desiredVx);
+    }
+  }
+
   // Update method for server-side logic
   update(deltaTime: number): void {
     // Update invulnerability
