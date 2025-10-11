@@ -80,32 +80,34 @@ export const drawHealthBar = (
   y: number,
   currentHealth: number,
   maxHealth: number,
-  width: number = 40,
-  height: number = 4,
+  entityRadius: number,
   scale: number = 1
 ): void => {
   if (maxHealth <= 0) return;
   
-  const scaledWidth = width * scale;
-  const scaledHeight = height * scale;
+  const scaledRadius = entityRadius * scale;
   const healthPercentage = currentHealth / maxHealth;
   
+  // Calculate health bar size based on entity radius
+  const barWidth = scaledRadius * 2.5; // 2.5x the radius width
+  const barHeight = Math.max(2, scaledRadius * 0.3); // 30% of radius height, min 2px
+  
   // Position health bar above the entity
-  const barX = x - scaledWidth / 2;
-  const barY = y - 15 * scale; // 15 pixels above entity
+  const barX = x - barWidth / 2;
+  const barY = y - scaledRadius - 8; // One radius above entity + 8px gap
   
   // Draw background (red)
   ctx.fillStyle = '#ff0000';
-  ctx.fillRect(barX, barY, scaledWidth, scaledHeight);
+  ctx.fillRect(barX, barY, barWidth, barHeight);
   
   // Draw current health (green)
   ctx.fillStyle = '#00ff00';
-  ctx.fillRect(barX, barY, scaledWidth * healthPercentage, scaledHeight);
+  ctx.fillRect(barX, barY, barWidth * healthPercentage, barHeight);
   
   // Draw border
   ctx.strokeStyle = '#000000';
   ctx.lineWidth = 1;
-  ctx.strokeRect(barX, barY, scaledWidth, scaledHeight);
+  ctx.strokeRect(barX, barY, barWidth, barHeight);
 };
 
 /**
@@ -117,8 +119,7 @@ export const drawHealthBarCustom = (
   y: number,
   currentHealth: number,
   maxHealth: number,
-  width: number = 40,
-  height: number = 4,
+  entityRadius: number,
   scale: number = 1,
   backgroundColor: string = '#ff0000',
   healthColor: string = '#00ff00',
@@ -126,24 +127,27 @@ export const drawHealthBarCustom = (
 ): void => {
   if (maxHealth <= 0) return;
   
-  const scaledWidth = width * scale;
-  const scaledHeight = height * scale;
+  const scaledRadius = entityRadius * scale;
   const healthPercentage = currentHealth / maxHealth;
   
+  // Calculate health bar size based on entity radius
+  const barWidth = scaledRadius * 2.5; // 2.5x the radius width
+  const barHeight = Math.max(2, scaledRadius * 0.3); // 30% of radius height, min 2px
+  
   // Position health bar above the entity
-  const barX = x - scaledWidth / 2;
-  const barY = y - 15 * scale; // 15 pixels above entity
+  const barX = x - barWidth / 2;
+  const barY = y - scaledRadius - 8; // One radius above entity + 8px gap
   
   // Draw background
   ctx.fillStyle = backgroundColor;
-  ctx.fillRect(barX, barY, scaledWidth, scaledHeight);
+  ctx.fillRect(barX, barY, barWidth, barHeight);
   
   // Draw current health
   ctx.fillStyle = healthColor;
-  ctx.fillRect(barX, barY, scaledWidth * healthPercentage, scaledHeight);
+  ctx.fillRect(barX, barY, barWidth * healthPercentage, barHeight);
   
   // Draw border
   ctx.strokeStyle = borderColor;
   ctx.lineWidth = 1;
-  ctx.strokeRect(barX, barY, scaledWidth, scaledHeight);
+  ctx.strokeRect(barX, barY, barWidth, barHeight);
 };

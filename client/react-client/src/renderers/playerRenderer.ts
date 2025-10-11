@@ -33,8 +33,7 @@ export const drawPlayers = (
         y,
         player.currentHealth,
         player.maxHealth,
-        24, // smaller width
-        3,  // smaller height
+        radius, // use player radius for proportional sizing
         scale
       );
     }
