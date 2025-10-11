@@ -149,12 +149,18 @@ export class GameState extends Schema {
             mob.vy = vel.y;
           }
           
-          // Update mob heading based on AI desired direction (fallback to velocity if desired is zero)
+          // Update mob heading based on actual movement (not AI intent when being pushed)
+          const velocityMagnitude = Math.hypot(mob.vx, mob.vy);
           const desiredMagnitude = Math.hypot(mob.desiredVx, mob.desiredVy);
-          if (desiredMagnitude > 0.1) {
+          
+          // If mob is moving fast (being pushed by physics), show actual direction
+          if (velocityMagnitude > 2.0) {
+            mob.updateHeading(mob.vx, mob.vy);
+          } else if (desiredMagnitude > 0.1) {
+            // If not being pushed, show AI intent
             mob.updateHeadingFromAI(mob.desiredVx, mob.desiredVy);
           } else {
-            // Fallback to actual velocity if no desired direction
+            // Fallback to actual velocity
             mob.updateHeading(mob.vx, mob.vy);
           }
           mob.update(GAME_CONFIG.tickRate);

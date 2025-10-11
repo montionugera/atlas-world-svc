@@ -55,7 +55,7 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
         x,
         y,
         mob.heading,
-        mob.radius,
+        mob.radius+2,
         scale,
         '#ffffff', // white arrow for mobs
         3 // thicker line
