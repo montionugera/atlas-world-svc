@@ -153,7 +153,8 @@ export class GameState extends Schema {
           const velocityMagnitude = Math.hypot(mob.vx, mob.vy);
           const desiredMagnitude = Math.hypot(mob.desiredVx, mob.desiredVy);
           
-          // Special case: During attack behavior, always point toward the specific attack target
+          // PRIORITY 1: During attack behavior, ALWAYS point toward the specific attack target
+          // This takes precedence over physics collisions
           if (mob.currentBehavior === "attack") {
             // Find the specific player being attacked
             const attackTarget = this.players.get(mob.currentAttackTarget);
@@ -181,14 +182,14 @@ export class GameState extends Schema {
               }
             }
           }
-          // If mob is moving fast (being pushed by physics), show actual direction
+          // PRIORITY 2: If mob is moving fast (being pushed by physics), show actual direction
           else if (velocityMagnitude > 2.0) {
             mob.updateHeading(mob.vx, mob.vy);
           } else if (desiredMagnitude > 0.1) {
-            // If not being pushed, show AI intent
+            // PRIORITY 3: If not being pushed, show AI intent
             mob.updateHeadingFromAI(mob.desiredVx, mob.desiredVy);
           } else {
-            // Fallback to actual velocity
+            // PRIORITY 4: Fallback to actual velocity
             mob.updateHeading(mob.vx, mob.vy);
           }
           mob.update(GAME_CONFIG.tickRate);
