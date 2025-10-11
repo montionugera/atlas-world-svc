@@ -33,11 +33,21 @@ export const drawPlayers = (
         y,
         player.currentHealth,
         player.maxHealth,
-        radius * 0.5, // 50% smaller than mob health bars
+        radius,
         scale,
         '#ff0000', // red background
         '#00ff00', // green health
-        '#000000'  // black border
+        '#000000', // black border
+        {
+          minWidth: 6,
+          maxWidth: 24, // smaller max width for players
+          minHeight: 2,
+          maxHeight: 4, // smaller max height for players
+          minOffset: 4,
+          maxOffset: 12,
+          widthMultiplier: 1.2, // much smaller multiplier
+          heightMultiplier: 0.2
+        }
       );
     }
     

@@ -24,7 +24,17 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
         scale,
         '#ff4444', // darker red background
         '#44ff44', // brighter green for health
-        '#000000'  // black border
+        '#000000', // black border
+        {
+          minWidth: 8,
+          maxWidth: 40, // larger max width for mobs
+          minHeight: 2,
+          maxHeight: 6, // larger max height for mobs
+          minOffset: 4,
+          maxOffset: 16,
+          widthMultiplier: 2.0, // standard multiplier for mobs
+          heightMultiplier: 0.25
+        }
       );
     }
     

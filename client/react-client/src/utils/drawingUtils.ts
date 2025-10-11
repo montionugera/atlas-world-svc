@@ -72,7 +72,7 @@ export const drawText = (
 };
 
 /**
- * Draw a health bar above an entity with customizable colors
+ * Draw a health bar above an entity with customizable colors and size constraints
  */
 export const drawHealthBar = (
   ctx: CanvasRenderingContext2D,
@@ -84,20 +84,49 @@ export const drawHealthBar = (
   scale: number = 1,
   backgroundColor: string = '#ff0000',
   healthColor: string = '#00ff00',
-  borderColor: string = '#000000'
+  borderColor: string = '#000000',
+  options: {
+    minWidth?: number;
+    maxWidth?: number;
+    minHeight?: number;
+    maxHeight?: number;
+    minOffset?: number;
+    maxOffset?: number;
+    widthMultiplier?: number;
+    heightMultiplier?: number;
+  } = {}
 ): void => {
   if (maxHealth <= 0) return;
   
   const scaledRadius = entityRadius * scale;
   const healthPercentage = currentHealth / maxHealth;
   
-  // Calculate health bar size based on entity radius
-  const barWidth = scaledRadius * 2.5; // 2.5x the radius width
-  const barHeight = Math.max(2, scaledRadius * 0.3); // 30% of radius height, min 2px
+  // Default constraints
+  const {
+    minWidth = 8,
+    maxWidth = 60,
+    minHeight = 2,
+    maxHeight = 8,
+    minOffset = 4,
+    maxOffset = 20,
+    widthMultiplier = 2.5,
+    heightMultiplier = 0.3
+  } = options;
+  
+  // Calculate health bar size based on entity radius with constraints
+  const baseWidth = scaledRadius * widthMultiplier;
+  const baseHeight = scaledRadius * heightMultiplier;
+  
+  const barWidth = Math.max(minWidth, Math.min(maxWidth, baseWidth));
+  const barHeight = Math.max(minHeight, Math.min(maxHeight, baseHeight));
+  
+  // Calculate offset with constraints
+  const baseOffset = scaledRadius + 8;
+  const offset = Math.max(minOffset, Math.min(maxOffset, baseOffset));
   
   // Position health bar above the entity
   const barX = x - barWidth / 2;
-  const barY = y - scaledRadius - 8; // One radius above entity + 8px gap
+  const barY = y - offset;
   
   // Draw background
   ctx.fillStyle = backgroundColor;
