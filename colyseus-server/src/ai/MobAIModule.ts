@@ -88,7 +88,7 @@ export class MobAIModule {
         mob.decideBehavior(env);
         // Compute desired velocity based on behavior
         const desired = mob.computeDesiredVelocity({
-          nearestPlayer: env.nearestPlayer ? { x: env.nearestPlayer.x, y: env.nearestPlayer.y } : null,
+          nearestPlayer: env.nearestPlayer ? { x: env.nearestPlayer.x, y: env.nearestPlayer.y, id: env.nearestPlayer.id } : null,
           distanceToNearestPlayer: env.distanceToNearestPlayer,
           maxSpeed: 24
         });

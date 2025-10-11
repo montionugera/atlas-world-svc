@@ -153,20 +153,32 @@ export class GameState extends Schema {
           const velocityMagnitude = Math.hypot(mob.vx, mob.vy);
           const desiredMagnitude = Math.hypot(mob.desiredVx, mob.desiredVy);
           
-          // Special case: During attack behavior, always point toward nearest player
+          // Special case: During attack behavior, always point toward the specific attack target
           if (mob.currentBehavior === "attack") {
-            const nearestPlayer = this.findNearestPlayer(mob);
-            if (nearestPlayer) {
-              const dx = nearestPlayer.x - mob.x;
-              const dy = nearestPlayer.y - mob.y;
+            // Find the specific player being attacked
+            const attackTarget = this.players.get(mob.currentAttackTarget);
+            if (attackTarget) {
+              const dx = attackTarget.x - mob.x;
+              const dy = attackTarget.y - mob.y;
               const distance = Math.hypot(dx, dy);
               if (distance > 0) {
-                // Point toward player during attack
+                // Point toward the specific attack target
                 mob.updateHeading(dx, dy);
               }
             } else {
-              // Fallback to actual velocity if no player found
-              mob.updateHeading(mob.vx, mob.vy);
+              // Fallback to nearest player if attack target not found
+              const nearestPlayer = this.findNearestPlayer(mob);
+              if (nearestPlayer) {
+                const dx = nearestPlayer.x - mob.x;
+                const dy = nearestPlayer.y - mob.y;
+                const distance = Math.hypot(dx, dy);
+                if (distance > 0) {
+                  mob.updateHeading(dx, dy);
+                }
+              } else {
+                // Final fallback to actual velocity
+                mob.updateHeading(mob.vx, mob.vy);
+              }
             }
           }
           // If mob is moving fast (being pushed by physics), show actual direction

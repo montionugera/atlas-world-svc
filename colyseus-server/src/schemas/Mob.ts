@@ -13,6 +13,7 @@ export class Mob extends WorldLife {
   desiredBehavior: string = "idle";
   decisionTimestamp: number = 0;
   chaseRange: number = 15; // Chase range buffer (will be calculated with radius)
+  currentAttackTarget: string = ""; // ID of the player currently being attacked
 
   constructor(options: { 
     id: string; 
@@ -56,7 +57,7 @@ export class Mob extends WorldLife {
     if (env && delegate) {
       delegate.decideBehavior(this, env);
       const desired = this.computeDesiredVelocity({
-        nearestPlayer: env.nearestPlayer ? { x: env.nearestPlayer.x, y: env.nearestPlayer.y } : null,
+        nearestPlayer: env.nearestPlayer ? { x: env.nearestPlayer.x, y: env.nearestPlayer.y, id: env.nearestPlayer.id } : null,
         distanceToNearestPlayer: env.distanceToNearestPlayer,
         maxSpeed: 24
       });
@@ -66,7 +67,7 @@ export class Mob extends WorldLife {
 
   // Decide behavior based on simple priorities; respects lock window
   decideBehavior(env: {
-    nearestPlayer?: { x: number; y: number } | null;
+    nearestPlayer?: { x: number; y: number; id: string } | null;
     distanceToNearestPlayer?: number;
     nearBoundary?: boolean;
   }) {
@@ -88,7 +89,11 @@ export class Mob extends WorldLife {
     // PRIORITY 1: Attack if very close to player (highest priority)
     if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveAttackRange) {
       this.currentBehavior = "attack";
-      this.behaviorLockedUntil = now + 1000; // 3 second lock for attack
+      this.behaviorLockedUntil = now + 1000; // 1 second lock for attack
+      // Set the attack target to the nearest player
+      if (env.nearestPlayer) {
+        this.currentAttackTarget = env.nearestPlayer.id || "unknown";
+      }
       this.tag = this.currentBehavior;
       return this.currentBehavior;
     }
@@ -96,6 +101,7 @@ export class Mob extends WorldLife {
     // PRIORITY 2: Chase if within chase range but outside attack range
     if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveChaseRange && (env.distanceToNearestPlayer ?? Infinity) > effectiveAttackRange) {
       this.currentBehavior = "chase";
+      this.currentAttackTarget = ""; // Clear attack target when switching to chase
       this.tag = this.currentBehavior;
       return this.currentBehavior;
     }
@@ -103,18 +109,20 @@ export class Mob extends WorldLife {
     // PRIORITY 3: Boundary awareness (only if no player nearby)
     if (env.nearBoundary && (env.distanceToNearestPlayer ?? Infinity) > effectiveChaseRange) {
       this.currentBehavior = "boundaryAware";
+      this.currentAttackTarget = ""; // Clear attack target when switching to boundary awareness
       this.tag = this.currentBehavior;
       return this.currentBehavior;
     }
 
     this.currentBehavior = "wander";
+    this.currentAttackTarget = ""; // Clear attack target when switching to wander
     this.tag = this.currentBehavior;
     return this.currentBehavior;
   }
 
   // Compute desired velocity based on currentBehavior
   computeDesiredVelocity(env: {
-    nearestPlayer?: { x: number; y: number } | null;
+    nearestPlayer?: { x: number; y: number; id: string } | null;
     distanceToNearestPlayer?: number;
     maxSpeed?: number;
   }): { x: number; y: number } {
