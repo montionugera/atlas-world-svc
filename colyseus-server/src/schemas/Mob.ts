@@ -1,7 +1,7 @@
 import { type } from "@colyseus/schema";
-import { WorldObject } from "./WorldObject";
+import { WorldLife } from "./WorldLife";
 
-export class Mob extends WorldObject {
+export class Mob extends WorldLife {
   @type("number") radius: number = 4;
   @type("string") tag: string = "idle"; // Current behavior tag for debugging/UI // Send radius to client
   @type("string") currentBehavior: string = "idle";
@@ -12,7 +12,6 @@ export class Mob extends WorldObject {
   desiredVy: number = 0;
   desiredBehavior: string = "idle";
   decisionTimestamp: number = 0;
-  attackRange: number = 1.5; // Actual attack range buffer (not AI detection range)
   chaseRange: number = 15; // Chase range buffer (will be calculated with radius)
 
   constructor(options: { 
@@ -24,28 +23,45 @@ export class Mob extends WorldObject {
     radius?: number;
     attackRange?: number;
     chaseRange?: number;
+    maxHealth?: number;
+    attackDamage?: number;
+    attackSpeed?: number;
   }) {
-    super(options.id, options.x, options.y, options.vx ?? 0, options.vy ?? 0, ["mob"]);
+    super(
+      options.id, 
+      options.x, 
+      options.y, 
+      options.vx ?? 0, 
+      options.vy ?? 0, 
+      ["mob"],
+      options.maxHealth ?? 50, // Mobs have less health than players
+      options.attackDamage ?? 15, // Mobs deal more damage
+      options.attackRange ?? 5, // Use WorldLife attackRange
+      options.attackSpeed ?? 2000 // Mobs attack slower
+    );
     if (options.radius !== undefined) {
       this.radius = options.radius;
-    }
-    if (options.attackRange !== undefined) {
-      this.attackRange = options.attackRange;
     }
     if (options.chaseRange !== undefined) {
       this.chaseRange = options.chaseRange;
     }
   }
 
-  // World-driven update using a delegate (behavior orchestrator)
-  update(env: any, delegate: { decideBehavior: (mob: Mob, env: any) => void; applyDecision: (mobId: string, velocity: { x: number; y: number }, behavior: string) => void }) {
-    delegate.decideBehavior(this, env);
-    const desired = this.computeDesiredVelocity({
-      nearestPlayer: env.nearestPlayer ? { x: env.nearestPlayer.x, y: env.nearestPlayer.y } : null,
-      distanceToNearestPlayer: env.distanceToNearestPlayer,
-      maxSpeed: 24
-    });
-    delegate.applyDecision(this.id, desired, this.currentBehavior);
+  // Override WorldLife update to include AI behavior
+  update(deltaTime: number, env?: any, delegate?: { decideBehavior: (mob: Mob, env: any) => void; applyDecision: (mobId: string, velocity: { x: number; y: number }, behavior: string) => void }) {
+    // Call parent update for health/invulnerability logic
+    super.update(deltaTime);
+    
+    // AI behavior logic (if delegate provided)
+    if (env && delegate) {
+      delegate.decideBehavior(this, env);
+      const desired = this.computeDesiredVelocity({
+        nearestPlayer: env.nearestPlayer ? { x: env.nearestPlayer.x, y: env.nearestPlayer.y } : null,
+        distanceToNearestPlayer: env.distanceToNearestPlayer,
+        maxSpeed: 24
+      });
+      delegate.applyDecision(this.id, desired, this.currentBehavior);
+    }
   }
 
   // Decide behavior based on simple priorities; respects lock window
