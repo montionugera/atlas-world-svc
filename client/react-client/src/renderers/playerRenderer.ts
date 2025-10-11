@@ -61,7 +61,7 @@ export const drawPlayers = (
       RENDER_CONFIG.playerNameFont
     );
     
-    // Draw heading indicator
+    // Draw heading indicator (smaller for player)
     if (player.heading !== undefined) {
       drawHeading(
         ctx,
@@ -71,7 +71,8 @@ export const drawPlayers = (
         radius,
         scale,
         '#ffffff', // white arrow
-        3 // thicker line
+        2, // thinner line for player
+        0.3 // smaller arrow (30% of radius)
       );
     }
     
