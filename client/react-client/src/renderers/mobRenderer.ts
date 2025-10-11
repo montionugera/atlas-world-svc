@@ -1,5 +1,5 @@
 import { RENDER_CONFIG, COLORS } from '../config/gameConfig';
-import { drawCircle, drawLine, drawText, drawHealthBar } from '../utils/drawingUtils';
+import { drawCircle, drawLine, drawText, drawHealthBar, drawHeading } from '../utils/drawingUtils';
 
 /**
  * Draw all mobs with their velocity vectors
@@ -48,6 +48,20 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
       RENDER_CONFIG.playerNameFont
     );
 
+    // Draw heading indicator
+    if (mob.angle !== undefined) {
+      drawHeading(
+        ctx,
+        x,
+        y,
+        mob.angle,
+        mob.radius,
+        scale,
+        '#ff6666', // red arrow for mobs
+        2
+      );
+    }
+    
     // Draw velocity vector
     drawLine(
       ctx,

@@ -56,6 +56,54 @@ export const drawLine = (
 };
 
 /**
+ * Draw a heading indicator (arrow) showing entity direction
+ */
+export const drawHeading = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  angle: number,
+  radius: number,
+  scale: number = 1,
+  color: string = '#ffffff',
+  lineWidth: number = 2
+): void => {
+  const scaledRadius = radius * scale;
+  const arrowLength = scaledRadius * 0.8; // 80% of entity radius
+  
+  // Calculate arrow tip position
+  const tipX = x + Math.cos(angle) * arrowLength;
+  const tipY = y + Math.sin(angle) * arrowLength;
+  
+  // Calculate arrow base positions (slightly shorter)
+  const baseLength = arrowLength * 0.6;
+  const baseX = x + Math.cos(angle) * baseLength;
+  const baseY = y + Math.sin(angle) * baseLength;
+  
+  // Calculate arrow wing positions
+  const wingLength = scaledRadius * 0.3;
+  const wingAngle1 = angle + Math.PI * 0.8; // 144 degrees
+  const wingAngle2 = angle - Math.PI * 0.8; // -144 degrees
+  
+  const wing1X = baseX + Math.cos(wingAngle1) * wingLength;
+  const wing1Y = baseY + Math.sin(wingAngle1) * wingLength;
+  const wing2X = baseX + Math.cos(wingAngle2) * wingLength;
+  const wing2Y = baseY + Math.sin(wingAngle2) * wingLength;
+  
+  // Draw arrow
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(tipX, tipY);
+  ctx.moveTo(baseX, baseY);
+  ctx.lineTo(wing1X, wing1Y);
+  ctx.moveTo(baseX, baseY);
+  ctx.lineTo(wing2X, wing2Y);
+  ctx.stroke();
+};
+
+/**
  * Draw text at the specified position
  */
 export const drawText = (

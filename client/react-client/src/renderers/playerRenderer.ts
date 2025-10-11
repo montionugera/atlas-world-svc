@@ -1,5 +1,5 @@
 import { RENDER_CONFIG, COLORS } from '../config/gameConfig';
-import { drawCircle, drawText, drawHealthBar } from '../utils/drawingUtils';
+import { drawCircle, drawText, drawHealthBar, drawHeading } from '../utils/drawingUtils';
 
 /**
  * Draw all players with their names and highlight current player
@@ -60,6 +60,20 @@ export const drawPlayers = (
       COLORS.hudText,
       RENDER_CONFIG.playerNameFont
     );
+    
+    // Draw heading indicator
+    if (player.angle !== undefined) {
+      drawHeading(
+        ctx,
+        x,
+        y,
+        player.angle,
+        radius,
+        scale,
+        '#ffffff', // white arrow
+        2
+      );
+    }
     
     // Highlight current player
     if (sessionId === currentPlayerId) {
