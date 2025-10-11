@@ -71,14 +71,14 @@ export const drawHeading = (
   const scaledRadius = radius * scale;
   
   // Main line length - ensure tip is well within the circle
-  const mainLineLength = scaledRadius * 0.4; // 40% of radius
+  const mainLineLength = scaledRadius * 0.3; // 30% of radius
   
   // Calculate the tip of the arrow
   const tipX = x + Math.cos(angle) * mainLineLength;
   const tipY = y + Math.sin(angle) * mainLineLength;
   
   // Calculate points for the base of the arrowhead, slightly behind the tip
-  const arrowHeadBaseLength = scaledRadius * 0.25; // 25% of radius
+  const arrowHeadBaseLength = scaledRadius * 0.2; // 20% of radius
   const basePointX = x + Math.cos(angle) * arrowHeadBaseLength;
   const basePointY = y + Math.sin(angle) * arrowHeadBaseLength;
 
