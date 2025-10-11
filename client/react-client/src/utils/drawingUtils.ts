@@ -66,24 +66,24 @@ export const drawHeading = (
   radius: number,
   scale: number = 1,
   color: string = '#ffffff',
-  lineWidth: number = 2
+  lineWidth: number = 1
 ): void => {
   const scaledRadius = radius * scale;
-  const arrowLength = scaledRadius * 0.8; // 80% of entity radius
+  const arrowLength = scaledRadius * 0.6; // 60% of entity radius (inside circle)
   
   // Calculate arrow tip position
   const tipX = x + Math.cos(angle) * arrowLength;
   const tipY = y + Math.sin(angle) * arrowLength;
   
-  // Calculate arrow base positions (slightly shorter)
-  const baseLength = arrowLength * 0.6;
+  // Calculate arrow base positions (shorter for thinner arrow)
+  const baseLength = arrowLength * 0.3;
   const baseX = x + Math.cos(angle) * baseLength;
   const baseY = y + Math.sin(angle) * baseLength;
   
-  // Calculate arrow wing positions
-  const wingLength = scaledRadius * 0.3;
-  const wingAngle1 = angle + Math.PI * 0.8; // 144 degrees
-  const wingAngle2 = angle - Math.PI * 0.8; // -144 degrees
+  // Calculate arrow wing positions (smaller wings)
+  const wingLength = scaledRadius * 0.15; // Smaller wings
+  const wingAngle1 = angle + Math.PI * 0.7; // 126 degrees
+  const wingAngle2 = angle - Math.PI * 0.7; // -126 degrees
   
   const wing1X = baseX + Math.cos(wingAngle1) * wingLength;
   const wing1Y = baseY + Math.sin(wingAngle1) * wingLength;
@@ -94,7 +94,7 @@ export const drawHeading = (
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth;
   ctx.beginPath();
-  ctx.moveTo(x, y);
+  ctx.moveTo(baseX, baseY);
   ctx.lineTo(tipX, tipY);
   ctx.moveTo(baseX, baseY);
   ctx.lineTo(wing1X, wing1Y);

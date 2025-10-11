@@ -71,7 +71,7 @@ export const drawPlayers = (
         radius,
         scale,
         '#ffffff', // white arrow
-        2
+        1 // thinner line
       );
     }
     
