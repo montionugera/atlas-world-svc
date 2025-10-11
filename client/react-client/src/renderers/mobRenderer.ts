@@ -55,7 +55,7 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
       const arrowY = y + Math.sin(mob.heading) * arrowLength;
       
       // Draw main arrow line
-      ctx.strokeStyle = '#ff6666'; // red for mobs
+      ctx.strokeStyle = '#ffffff'; // white arrows inside red circles
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -72,7 +72,7 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
       const head2X = arrowX + Math.cos(headAngle2) * headSize;
       const head2Y = arrowY + Math.sin(headAngle2) * headSize;
       
-      ctx.fillStyle = '#ff6666';
+      ctx.fillStyle = '#ffffff'; // white arrow head
       ctx.beginPath();
       ctx.moveTo(arrowX, arrowY);
       ctx.lineTo(head1X, head1Y);
