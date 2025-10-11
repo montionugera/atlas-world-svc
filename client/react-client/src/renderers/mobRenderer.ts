@@ -48,18 +48,37 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
       RENDER_CONFIG.playerNameFont
     );
 
-    // Draw heading indicator
+    // Draw AI direction arrow (like player but for mobs)
     if (mob.heading !== undefined) {
-      drawHeading(
-        ctx,
-        x,
-        y,
-        mob.heading,
-        mob.radius,
-        scale,
-        '#ff6666', // red arrow for mobs
-        3 // thicker line
-      );
+      const arrowLength = (mob.radius * scale) * 0.3; // 30% of mob radius
+      const arrowX = x + Math.cos(mob.heading) * arrowLength;
+      const arrowY = y + Math.sin(mob.heading) * arrowLength;
+      
+      // Draw main arrow line
+      ctx.strokeStyle = '#ff6666'; // red for mobs
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(arrowX, arrowY);
+      ctx.stroke();
+      
+      // Draw arrow head (triangle)
+      const headSize = (mob.radius * scale) * 0.1;
+      const headAngle1 = mob.heading - Math.PI * 0.3;
+      const headAngle2 = mob.heading + Math.PI * 0.3;
+      
+      const head1X = arrowX + Math.cos(headAngle1) * headSize;
+      const head1Y = arrowY + Math.sin(headAngle1) * headSize;
+      const head2X = arrowX + Math.cos(headAngle2) * headSize;
+      const head2Y = arrowY + Math.sin(headAngle2) * headSize;
+      
+      ctx.fillStyle = '#ff6666';
+      ctx.beginPath();
+      ctx.moveTo(arrowX, arrowY);
+      ctx.lineTo(head1X, head1Y);
+      ctx.lineTo(head2X, head2Y);
+      ctx.closePath();
+      ctx.fill();
     }
     
     // Draw velocity vector

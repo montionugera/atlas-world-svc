@@ -149,8 +149,8 @@ export class GameState extends Schema {
             mob.vy = vel.y;
           }
           
-          // Update mob heading based on AI impulse direction (the actual force being applied)
-          mob.updateHeadingFromAI(impulse.x, impulse.y);
+          // Update mob heading based on AI desired direction (simpler approach)
+          mob.updateHeadingFromAI(mob.desiredVx, mob.desiredVy);
           mob.update(GAME_CONFIG.tickRate);
           
                // Log mob movement every 500 ticks to reduce spam
