@@ -149,13 +149,19 @@ export class GameState extends Schema {
             mob.vy = vel.y;
           }
           
-          // Update mob heading based on AI desired direction (simpler approach)
-          mob.updateHeadingFromAI(mob.desiredVx, mob.desiredVy);
+          // Update mob heading based on AI desired direction (fallback to velocity if desired is zero)
+          const desiredMagnitude = Math.hypot(mob.desiredVx, mob.desiredVy);
+          if (desiredMagnitude > 0.1) {
+            mob.updateHeadingFromAI(mob.desiredVx, mob.desiredVy);
+          } else {
+            // Fallback to actual velocity if no desired direction
+            mob.updateHeading(mob.vx, mob.vy);
+          }
           mob.update(GAME_CONFIG.tickRate);
           
                // Log mob movement every 500 ticks to reduce spam
                if (this.tick % 500 === 0) {
-                 console.log(`🏃 MOB ${mob.id}: pos(${mob.x.toFixed(1)}, ${mob.y.toFixed(1)}) vel(${mob.vx.toFixed(1)}, ${mob.vy.toFixed(1)}) heading(${mob.heading.toFixed(2)})`);
+                 console.log(`🏃 MOB ${mob.id}: pos(${mob.x.toFixed(1)}, ${mob.y.toFixed(1)}) vel(${mob.vx.toFixed(1)}, ${mob.vy.toFixed(1)}) desired(${mob.desiredVx.toFixed(1)}, ${mob.desiredVy.toFixed(1)}) heading(${mob.heading.toFixed(2)})`);
                }
         }
       } else {
