@@ -14,6 +14,7 @@ export class Mob extends WorldLife {
   decisionTimestamp: number = 0;
   chaseRange: number = 15; // Chase range buffer (will be calculated with radius)
   currentAttackTarget: string = ""; // ID of the player currently being attacked
+  currentChaseTarget: string = ""; // ID of the player currently being chased
 
   constructor(options: { 
     id: string; 
@@ -94,6 +95,7 @@ export class Mob extends WorldLife {
       if (env.nearestPlayer) {
         this.currentAttackTarget = env.nearestPlayer.id || "unknown";
       }
+      this.currentChaseTarget = ""; // Clear chase target when switching to attack
       this.tag = this.currentBehavior;
       return this.currentBehavior;
     }
@@ -102,6 +104,10 @@ export class Mob extends WorldLife {
     if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveChaseRange && (env.distanceToNearestPlayer ?? Infinity) > effectiveAttackRange) {
       this.currentBehavior = "chase";
       this.currentAttackTarget = ""; // Clear attack target when switching to chase
+      // Set the chase target to the nearest player
+      if (env.nearestPlayer) {
+        this.currentChaseTarget = env.nearestPlayer.id || "unknown";
+      }
       this.tag = this.currentBehavior;
       return this.currentBehavior;
     }
@@ -110,12 +116,14 @@ export class Mob extends WorldLife {
     if (env.nearBoundary && (env.distanceToNearestPlayer ?? Infinity) > effectiveChaseRange) {
       this.currentBehavior = "boundaryAware";
       this.currentAttackTarget = ""; // Clear attack target when switching to boundary awareness
+      this.currentChaseTarget = ""; // Clear chase target when switching to boundary awareness
       this.tag = this.currentBehavior;
       return this.currentBehavior;
     }
 
     this.currentBehavior = "wander";
     this.currentAttackTarget = ""; // Clear attack target when switching to wander
+    this.currentChaseTarget = ""; // Clear chase target when switching to wander
     this.tag = this.currentBehavior;
     return this.currentBehavior;
   }

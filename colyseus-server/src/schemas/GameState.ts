@@ -182,6 +182,34 @@ export class GameState extends Schema {
               }
             }
           }
+          // PRIORITY 1.5: During chase behavior, point toward the specific chase target
+          else if (mob.currentBehavior === "chase") {
+            // Find the specific player being chased
+            const chaseTarget = this.players.get(mob.currentChaseTarget);
+            if (chaseTarget) {
+              const dx = chaseTarget.x - mob.x;
+              const dy = chaseTarget.y - mob.y;
+              const distance = Math.hypot(dx, dy);
+              if (distance > 0) {
+                // Point toward the specific chase target
+                mob.updateHeading(dx, dy);
+              }
+            } else {
+              // Fallback to nearest player if chase target not found
+              const nearestPlayer = this.findNearestPlayer(mob);
+              if (nearestPlayer) {
+                const dx = nearestPlayer.x - mob.x;
+                const dy = nearestPlayer.y - mob.y;
+                const distance = Math.hypot(dx, dy);
+                if (distance > 0) {
+                  mob.updateHeading(dx, dy);
+                }
+              } else {
+                // Final fallback to actual velocity
+                mob.updateHeading(mob.vx, mob.vy);
+              }
+            }
+          }
           // PRIORITY 2: If mob is moving fast (being pushed by physics), show actual direction
           else if (velocityMagnitude > 2.0) {
             mob.updateHeading(mob.vx, mob.vy);
