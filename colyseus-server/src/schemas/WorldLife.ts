@@ -15,7 +15,7 @@ export abstract class WorldLife extends WorldObject {
   // Attack system
   @type("number") attackDamage: number = 10;
   @type("number") attackRange: number = 5;
-  @type("number") attackSpeed: number = 1000; // milliseconds between attacks
+  @type("number") attackDelay: number = 1000; // milliseconds between attacks
   @type("number") lastAttackTime: number = 0;
   
   // Movement and combat state
@@ -38,14 +38,14 @@ export abstract class WorldLife extends WorldObject {
     maxHealth: number = 100,
     attackDamage: number = 10,
     attackRange: number = 5,
-    attackSpeed: number = 1000
+    attackDelay: number = 1000
   ) {
     super(id, x, y, vx, vy, tags);
     this.maxHealth = maxHealth;
     this.currentHealth = maxHealth;
     this.attackDamage = attackDamage;
     this.attackRange = attackRange;
-    this.attackSpeed = attackSpeed;
+    this.attackDelay = attackDelay;
     this.lastAttackTime = 0;
   }
   
@@ -109,7 +109,7 @@ export abstract class WorldLife extends WorldObject {
     const now = Date.now();
     const timeSinceLastAttack = now - this.lastAttackTime;
     
-    return timeSinceLastAttack >= this.attackSpeed;
+    return timeSinceLastAttack >= this.attackDelay;
   }
   
   attack(target: WorldLife): boolean {

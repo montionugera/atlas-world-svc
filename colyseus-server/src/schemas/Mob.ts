@@ -25,7 +25,7 @@ export class Mob extends WorldLife {
     chaseRange?: number;
     maxHealth?: number;
     attackDamage?: number;
-    attackSpeed?: number;
+    attackDelay?: number;
   }) {
     super(
       options.id, 
@@ -37,7 +37,7 @@ export class Mob extends WorldLife {
       options.maxHealth ?? 50, // Mobs have less health than players
       options.attackDamage ?? 15, // Mobs deal more damage
       options.attackRange ?? 5, // Use WorldLife attackRange
-      options.attackSpeed ?? 2000 // Mobs attack slower
+      options.attackDelay ?? 2000 // Mobs attack slower
     );
     if (options.radius !== undefined) {
       this.radius = options.radius;
