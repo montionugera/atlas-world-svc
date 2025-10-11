@@ -45,11 +45,16 @@ export class GameRoom extends Room<GameState> {
       this.state.updatePlayerInput(client.sessionId, vx, vy);
     });
 
-    this.onMessage("player_position", (client: Client, data: { x: number; y: number }) => {
+    // REMOVED: player_position handler - SECURITY VULNERABILITY!
+    // Direct position setting allows teleportation hacks
+    // Players should only use player_input for movement
+
+    // Handle player action input
+    this.onMessage("player_action", (client: Client, data: { action: string; pressed: boolean }) => {
       const player = this.state.getPlayer(client.sessionId);
-      if (player) {
-        this.state.updatePlayerPosition(client.sessionId, data.x, data.y);
-      }
+      if (!player) return;
+      const { action, pressed } = data || { action: "", pressed: false };
+      this.state.updatePlayerAction(client.sessionId, action, pressed);
     });
 
     // Handle mob AI control messages
@@ -110,7 +115,7 @@ export class GameRoom extends Room<GameState> {
       try {
         // Apply continuous player input as forces before physics step
         this.state.players.forEach((player) => {
-          const inputMagnitude = Math.hypot(player.inputX, player.inputY);
+          const inputMagnitude = player.input.getMovementMagnitude();
           const playerBody = this.physicsManager.getBody(player.id);
           
           if (playerBody) {
@@ -123,9 +128,12 @@ export class GameRoom extends Room<GameState> {
               const maxSpeed = 20; // units per second
               const acceleration = 15; // units per second squared
               
+              // Get normalized movement direction
+              const normalized = player.input.getNormalizedMovement();
+              
               // Target velocity (capped at max speed)
-              const targetVx = (player.inputX / inputMagnitude) * maxSpeed;
-              const targetVy = (player.inputY / inputMagnitude) * maxSpeed;
+              const targetVx = normalized.x * maxSpeed;
+              const targetVy = normalized.y * maxSpeed;
               
               // Calculate force needed: F = m * a
               forceX = mass * acceleration * (targetVx - currentVel.x);

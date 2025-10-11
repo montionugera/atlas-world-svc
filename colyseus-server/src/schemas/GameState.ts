@@ -253,12 +253,19 @@ export class GameState extends Schema {
     }
   }
 
-  // Update player input (velocity)
+  // Update player input (movement)
   updatePlayerInput(sessionId: string, vx: number, vy: number) {
     const player = this.getPlayer(sessionId);
     if (player) {
-      player.inputX = vx;
-      player.inputY = vy;
+      player.input.setMovement(vx, vy);
+    }
+  }
+  
+  // Update player action input
+  updatePlayerAction(sessionId: string, action: string, pressed: boolean) {
+    const player = this.getPlayer(sessionId);
+    if (player) {
+      player.input.setAction(action, pressed);
     }
   }
 }
