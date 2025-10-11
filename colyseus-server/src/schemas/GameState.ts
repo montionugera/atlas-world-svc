@@ -149,12 +149,28 @@ export class GameState extends Schema {
             mob.vy = vel.y;
           }
           
-          // Update mob heading based on actual movement (not AI intent when being pushed)
+          // Update mob heading based on behavior and movement
           const velocityMagnitude = Math.hypot(mob.vx, mob.vy);
           const desiredMagnitude = Math.hypot(mob.desiredVx, mob.desiredVy);
           
+          // Special case: During attack behavior, always point toward nearest player
+          if (mob.currentBehavior === "attack") {
+            const nearestPlayer = this.findNearestPlayer(mob);
+            if (nearestPlayer) {
+              const dx = nearestPlayer.x - mob.x;
+              const dy = nearestPlayer.y - mob.y;
+              const distance = Math.hypot(dx, dy);
+              if (distance > 0) {
+                // Point toward player during attack
+                mob.updateHeading(dx, dy);
+              }
+            } else {
+              // Fallback to actual velocity if no player found
+              mob.updateHeading(mob.vx, mob.vy);
+            }
+          }
           // If mob is moving fast (being pushed by physics), show actual direction
-          if (velocityMagnitude > 2.0) {
+          else if (velocityMagnitude > 2.0) {
             mob.updateHeading(mob.vx, mob.vy);
           } else if (desiredMagnitude > 0.1) {
             // If not being pushed, show AI intent
