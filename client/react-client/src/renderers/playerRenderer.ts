@@ -25,7 +25,7 @@ export const drawPlayers = (
     ctx.lineWidth = 2;
     ctx.stroke();
     
-    // Draw health bar (much smaller for players)
+    // Draw health bar (same size as mobs)
     if (player.maxHealth && player.currentHealth !== undefined) {
       drawHealthBar(
         ctx,
@@ -39,14 +39,14 @@ export const drawPlayers = (
         '#00ff00', // green health
         '#000000', // black border
         {
-          minWidth: 6,
-          maxWidth: 24, // smaller max width for players
+          minWidth: 8,
+          maxWidth: 40, // same as mobs
           minHeight: 2,
-          maxHeight: 4, // smaller max height for players
+          maxHeight: 6, // same as mobs
           minOffset: 4,
-          maxOffset: 12,
-          widthMultiplier: 1.2, // much smaller multiplier
-          heightMultiplier: 0.2
+          maxOffset: 16,
+          widthMultiplier: 2.0, // same as mobs
+          heightMultiplier: 0.25
         }
       );
     }
