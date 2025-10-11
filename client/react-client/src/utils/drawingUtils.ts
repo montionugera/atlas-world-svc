@@ -69,7 +69,7 @@ export const drawHeading = (
   lineWidth: number = 3
 ): void => {
   const scaledRadius = radius * scale;
-  const arrowLength = scaledRadius * 0.7; // 70% of entity radius (inside circle)
+  const arrowLength = scaledRadius * 0.5; // 50% of entity radius (inside circle)
   
   // Calculate arrow tip position (from center)
   const tipX = x + Math.cos(angle) * arrowLength;
@@ -79,8 +79,8 @@ export const drawHeading = (
   const baseX = x;
   const baseY = y;
   
-  // Calculate arrow wing positions (larger wings for thicker arrow)
-  const wingLength = scaledRadius * 0.25; // Larger wings
+  // Calculate arrow wing positions (smaller wings to stay inside)
+  const wingLength = scaledRadius * 0.15; // Smaller wings
   const wingAngle1 = angle + Math.PI * 0.6; // 108 degrees
   const wingAngle2 = angle - Math.PI * 0.6; // -108 degrees
   
