@@ -33,8 +33,8 @@ export const drawPlayers = (
         y,
         player.currentHealth,
         player.maxHealth,
-        40, // width
-        4,  // height
+        24, // smaller width
+        3,  // smaller height
         scale
       );
     }

@@ -92,7 +92,7 @@ export const drawHealthBar = (
   
   // Position health bar above the entity
   const barX = x - scaledWidth / 2;
-  const barY = y - 20 * scale; // 20 pixels above entity
+  const barY = y - 15 * scale; // 15 pixels above entity
   
   // Draw background (red)
   ctx.fillStyle = '#ff0000';
@@ -132,7 +132,7 @@ export const drawHealthBarCustom = (
   
   // Position health bar above the entity
   const barX = x - scaledWidth / 2;
-  const barY = y - 20 * scale; // 20 pixels above entity
+  const barY = y - 15 * scale; // 15 pixels above entity
   
   // Draw background
   ctx.fillStyle = backgroundColor;

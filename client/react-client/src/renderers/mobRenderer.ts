@@ -20,8 +20,8 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
         y,
         mob.currentHealth,
         mob.maxHealth,
-        30, // smaller width for mobs
-        3,  // smaller height for mobs
+        20, // even smaller width for mobs
+        2,  // even smaller height for mobs
         scale,
         '#ff4444', // darker red background
         '#44ff44', // brighter green for health
