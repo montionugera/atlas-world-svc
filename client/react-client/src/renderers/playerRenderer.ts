@@ -62,12 +62,12 @@ export const drawPlayers = (
     );
     
     // Draw heading indicator
-    if (player.angle !== undefined) {
+    if (player.heading !== undefined) {
       drawHeading(
         ctx,
         x,
         y,
-        player.angle,
+        player.heading,
         radius,
         scale,
         '#ffffff', // white arrow

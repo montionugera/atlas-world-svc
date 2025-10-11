@@ -156,6 +156,11 @@ export class GameRoom extends Room<GameState> {
         // Update entities from physics bodies
         this.updateEntitiesFromPhysics();
         
+        // Update player headings and other logic
+        this.state.players.forEach((player) => {
+          player.update(GAME_CONFIG.tickRate);
+        });
+        
         // Update mobs with physics collision detection
         this.state.updateMobs(this.physicsManager);
         

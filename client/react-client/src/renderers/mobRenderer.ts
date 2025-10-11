@@ -49,12 +49,12 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
     );
 
     // Draw heading indicator
-    if (mob.angle !== undefined) {
+    if (mob.heading !== undefined) {
       drawHeading(
         ctx,
         x,
         y,
-        mob.angle,
+        mob.heading,
         mob.radius,
         scale,
         '#ff6666', // red arrow for mobs

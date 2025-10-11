@@ -18,10 +18,13 @@ export abstract class WorldLife extends WorldObject {
   @type("number") attackDelay: number = 1000; // milliseconds between attacks
   @type("number") lastAttackTime: number = 0;
   
-  // Movement and combat state
-  @type("boolean") isAttacking: boolean = false;
-  @type("boolean") isMoving: boolean = false;
-  @type("string") lastAttackedTarget: string = "";
+    // Movement and combat state
+    @type("boolean") isAttacking: boolean = false;
+    @type("boolean") isMoving: boolean = false;
+    @type("string") lastAttackedTarget: string = "";
+    
+    // Heading direction (in radians) - based on latest movement
+    @type("number") heading: number = 0;
   
   // Server-only properties (not synced to clients)
   attackCooldown: number = 0;
@@ -160,6 +163,14 @@ export abstract class WorldLife extends WorldObject {
     }, duration);
   }
   
+  // Update heading based on movement direction
+  updateHeading(vx: number, vy: number): void {
+    const magnitude = Math.hypot(vx, vy);
+    if (magnitude > 0.1) { // Only update if moving with some speed
+      this.heading = Math.atan2(vy, vx);
+    }
+  }
+
   // Update method for server-side logic
   update(deltaTime: number): void {
     // Update invulnerability
@@ -176,8 +187,9 @@ export abstract class WorldLife extends WorldObject {
       this.attackCooldown -= deltaTime;
     }
     
-    // Update movement state
+    // Update movement state and heading
     this.isMoving = Math.hypot(this.vx, this.vy) > 0;
+    this.updateHeading(this.vx, this.vy);
   }
   
   // Override applyBoundaryPhysics for living entities
