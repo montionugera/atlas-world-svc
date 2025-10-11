@@ -66,39 +66,38 @@ export const drawHeading = (
   radius: number,
   scale: number = 1,
   color: string = '#ffffff',
-  lineWidth: number = 1
+  lineWidth: number = 3
 ): void => {
   const scaledRadius = radius * scale;
-  const arrowLength = scaledRadius * 0.6; // 60% of entity radius (inside circle)
+  const arrowLength = scaledRadius * 0.7; // 70% of entity radius (inside circle)
   
-  // Calculate arrow tip position
+  // Calculate arrow tip position (from center)
   const tipX = x + Math.cos(angle) * arrowLength;
   const tipY = y + Math.sin(angle) * arrowLength;
   
-  // Calculate arrow base positions (shorter for thinner arrow)
-  const baseLength = arrowLength * 0.3;
-  const baseX = x + Math.cos(angle) * baseLength;
-  const baseY = y + Math.sin(angle) * baseLength;
+  // Arrow starts from center
+  const baseX = x;
+  const baseY = y;
   
-  // Calculate arrow wing positions (smaller wings)
-  const wingLength = scaledRadius * 0.15; // Smaller wings
-  const wingAngle1 = angle + Math.PI * 0.7; // 126 degrees
-  const wingAngle2 = angle - Math.PI * 0.7; // -126 degrees
+  // Calculate arrow wing positions (larger wings for thicker arrow)
+  const wingLength = scaledRadius * 0.25; // Larger wings
+  const wingAngle1 = angle + Math.PI * 0.6; // 108 degrees
+  const wingAngle2 = angle - Math.PI * 0.6; // -108 degrees
   
-  const wing1X = baseX + Math.cos(wingAngle1) * wingLength;
-  const wing1Y = baseY + Math.sin(wingAngle1) * wingLength;
-  const wing2X = baseX + Math.cos(wingAngle2) * wingLength;
-  const wing2Y = baseY + Math.sin(wingAngle2) * wingLength;
+  const wing1X = tipX + Math.cos(wingAngle1) * wingLength;
+  const wing1Y = tipY + Math.sin(wingAngle1) * wingLength;
+  const wing2X = tipX + Math.cos(wingAngle2) * wingLength;
+  const wing2Y = tipY + Math.sin(wingAngle2) * wingLength;
   
   // Draw arrow
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth;
   ctx.beginPath();
-  ctx.moveTo(baseX, baseY);
-  ctx.lineTo(tipX, tipY);
-  ctx.moveTo(baseX, baseY);
+  ctx.moveTo(baseX, baseY); // Start from center
+  ctx.lineTo(tipX, tipY);   // Main arrow line
+  ctx.moveTo(tipX, tipY);   // Wings from tip
   ctx.lineTo(wing1X, wing1Y);
-  ctx.moveTo(baseX, baseY);
+  ctx.moveTo(tipX, tipY);
   ctx.lineTo(wing2X, wing2Y);
   ctx.stroke();
 };
