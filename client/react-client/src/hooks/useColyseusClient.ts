@@ -24,7 +24,6 @@ export interface UseColyseusClientReturn {
   // Actions
   connect: () => Promise<void>;
   joinRoom: (mapId?: string) => Promise<void>;
-  updatePlayerPosition: (x: number, y: number) => void;
   updatePlayerInput: (vx: number, vy: number) => void;
   startSimulation: () => void;
   stopSimulation: () => void;
@@ -158,17 +157,14 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     }
   }, [playerId]);
   
-  // Update player position
-  const updatePlayerPosition = useCallback((x: number, y: number) => {
-    if (roomRef.current) {
-      roomRef.current.send('player_position', { x, y });
-    }
-  }, []);
+  // REMOVED: updatePlayerPosition - SECURITY VULNERABILITY!
+  // Direct position setting allows teleportation hacks
+  // Players should only use player_input_move for movement
   
   // Update player input (velocity)
   const updatePlayerInput = useCallback((vx: number, vy: number) => {
     if (roomRef.current) {
-      roomRef.current.send('player_input', { vx, vy });
+      roomRef.current.send('player_input_move', { vx, vy });
     }
   }, []);
   
@@ -178,23 +174,23 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     
     setIsSimulating(true);
     
-    // Start player movement simulation
+    // Start player movement simulation using input instead of direct position
     simulationIntervalRef.current = setInterval(() => {
-      const positions = [
-        { x: 100, y: 100 },
-        { x: 200, y: 100 },
-        { x: 200, y: 200 },
-        { x: 100, y: 200 }
+      const movements = [
+        { vx: 1, vy: 0 },   // Move right
+        { vx: 0, vy: 1 },   // Move down
+        { vx: -1, vy: 0 },  // Move left
+        { vx: 0, vy: -1 }   // Move up
       ];
       
-      const step = Math.floor(updateCount / 2) % positions.length;
-      const position = positions[step];
+      const step = Math.floor(updateCount / 2) % movements.length;
+      const movement = movements[step];
       
-      updatePlayerPosition(position.x, position.y);
+      updatePlayerInput(movement.vx, movement.vy);
     }, 2000);
     
     console.log('🚀 Started simulation');
-  }, [isSimulating, updateCount, updatePlayerPosition]);
+  }, [isSimulating, updateCount, updatePlayerInput]);
   
   // Stop simulation
   const stopSimulation = useCallback(() => {
@@ -276,7 +272,6 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     // Actions
     connect,
     joinRoom,
-    updatePlayerPosition,
     updatePlayerInput,
     startSimulation,
     stopSimulation,

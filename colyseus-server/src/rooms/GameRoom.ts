@@ -37,8 +37,8 @@ export class GameRoom extends Room<GameState> {
     // Start simulation loop
     this.startSimulation();
 
-    // Handle player input → apply force to physics body (authoritative physics)
-    this.onMessage("player_input", (client: Client, data: { vx: number; vy: number }) => {
+    // Handle player movement input → apply force to physics body (authoritative physics)
+    this.onMessage("player_input_move", (client: Client, data: { vx: number; vy: number }) => {
       const player = this.state.getPlayer(client.sessionId);
       if (!player) return;
       const { vx, vy } = data || { vx: 0, vy: 0 };
@@ -47,10 +47,10 @@ export class GameRoom extends Room<GameState> {
 
     // REMOVED: player_position handler - SECURITY VULNERABILITY!
     // Direct position setting allows teleportation hacks
-    // Players should only use player_input for movement
+    // Players should only use player_input_move for movement
 
     // Handle player action input
-    this.onMessage("player_action", (client: Client, data: { action: string; pressed: boolean }) => {
+    this.onMessage("player_input_action", (client: Client, data: { action: string; pressed: boolean }) => {
       const player = this.state.getPlayer(client.sessionId);
       if (!player) return;
       const { action, pressed } = data || { action: "", pressed: false };
