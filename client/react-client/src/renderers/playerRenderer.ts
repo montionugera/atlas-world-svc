@@ -25,7 +25,7 @@ export const drawPlayers = (
     ctx.lineWidth = 2;
     ctx.stroke();
     
-    // Draw health bar (smaller for players)
+    // Draw health bar (much smaller for players)
     if (player.maxHealth && player.currentHealth !== undefined) {
       drawHealthBar(
         ctx,
@@ -33,7 +33,7 @@ export const drawPlayers = (
         y,
         player.currentHealth,
         player.maxHealth,
-        radius * 0.8, // 20% smaller than mob health bars
+        radius * 0.5, // 50% smaller than mob health bars
         scale,
         '#ff0000', // red background
         '#00ff00', // green health
