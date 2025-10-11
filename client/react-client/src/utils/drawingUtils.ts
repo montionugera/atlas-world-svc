@@ -72,48 +72,9 @@ export const drawText = (
 };
 
 /**
- * Draw a health bar above an entity
+ * Draw a health bar above an entity with customizable colors
  */
 export const drawHealthBar = (
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  currentHealth: number,
-  maxHealth: number,
-  entityRadius: number,
-  scale: number = 1
-): void => {
-  if (maxHealth <= 0) return;
-  
-  const scaledRadius = entityRadius * scale;
-  const healthPercentage = currentHealth / maxHealth;
-  
-  // Calculate health bar size based on entity radius
-  const barWidth = scaledRadius * 2.5; // 2.5x the radius width
-  const barHeight = Math.max(2, scaledRadius * 0.3); // 30% of radius height, min 2px
-  
-  // Position health bar above the entity
-  const barX = x - barWidth / 2;
-  const barY = y - scaledRadius - 8; // One radius above entity + 8px gap
-  
-  // Draw background (red)
-  ctx.fillStyle = '#ff0000';
-  ctx.fillRect(barX, barY, barWidth, barHeight);
-  
-  // Draw current health (green)
-  ctx.fillStyle = '#00ff00';
-  ctx.fillRect(barX, barY, barWidth * healthPercentage, barHeight);
-  
-  // Draw border
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(barX, barY, barWidth, barHeight);
-};
-
-/**
- * Draw a health bar with custom colors
- */
-export const drawHealthBarCustom = (
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,

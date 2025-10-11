@@ -1,5 +1,5 @@
 import { RENDER_CONFIG, COLORS } from '../config/gameConfig';
-import { drawCircle, drawLine, drawText, drawHealthBarCustom } from '../utils/drawingUtils';
+import { drawCircle, drawLine, drawText, drawHealthBar } from '../utils/drawingUtils';
 
 /**
  * Draw all mobs with their velocity vectors
@@ -14,7 +14,7 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
     
     // Draw health bar for mobs
     if (mob.maxHealth && mob.currentHealth !== undefined) {
-      drawHealthBarCustom(
+      drawHealthBar(
         ctx,
         x,
         y,
