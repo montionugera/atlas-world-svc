@@ -149,15 +149,20 @@ export class GameState extends Schema {
             mob.vy = vel.y;
           }
           
+          // Update mob heading based on movement
+          mob.update(GAME_CONFIG.tickRate);
+          
                // Log mob movement every 500 ticks to reduce spam
                if (this.tick % 500 === 0) {
-                 console.log(`🏃 MOB ${mob.id}: pos(${mob.x.toFixed(1)}, ${mob.y.toFixed(1)}) vel(${mob.vx.toFixed(1)}, ${mob.vy.toFixed(1)})`);
+                 console.log(`🏃 MOB ${mob.id}: pos(${mob.x.toFixed(1)}, ${mob.y.toFixed(1)}) vel(${mob.vx.toFixed(1)}, ${mob.vy.toFixed(1)}) heading(${mob.heading.toFixed(2)})`);
                }
         }
       } else {
         // Fallback to traditional movement if no physics
         mob.updatePosition();
         mob.applyBoundaryPhysics(this.width, this.height);
+        // Update mob heading for non-physics movement too
+        mob.update(GAME_CONFIG.tickRate);
       }
     }
     
