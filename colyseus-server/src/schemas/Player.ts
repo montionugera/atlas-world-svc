@@ -1,7 +1,7 @@
 import { type } from "@colyseus/schema";
-import { Entity } from "./Entity";
+import { WorldObject } from "./WorldObject";
 
-export class Player extends Entity {
+export class Player extends WorldObject {
   @type("string") sessionId: string;
   @type("string") name: string;
   

@@ -1,7 +1,7 @@
 import { type } from "@colyseus/schema";
-import { Entity } from "./Entity";
+import { WorldObject } from "./WorldObject";
 
-export class Mob extends Entity {
+export class Mob extends WorldObject {
   @type("number") radius: number = 4;
   @type("string") tag: string = "idle"; // Current behavior tag for debugging/UI // Send radius to client
   @type("string") currentBehavior: string = "idle";

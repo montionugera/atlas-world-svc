@@ -1,6 +1,6 @@
 import { Schema, type, ArraySchema } from "@colyseus/schema";
 
-export abstract class Entity extends Schema {
+export abstract class WorldObject extends Schema {
   @type("string") id: string;
   @type("number") x: number;
   @type("number") y: number;
