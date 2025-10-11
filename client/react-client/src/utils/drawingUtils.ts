@@ -69,37 +69,44 @@ export const drawHeading = (
   lineWidth: number = 3
 ): void => {
   const scaledRadius = radius * scale;
-  const arrowLength = scaledRadius * 0.2; // 20% of entity radius (very short)
   
-  // Calculate arrow tip position (from center)
-  const tipX = x + Math.cos(angle) * arrowLength;
-  const tipY = y + Math.sin(angle) * arrowLength;
+  // Main line length - ensure tip is well within the circle
+  const mainLineLength = scaledRadius * 0.4; // 40% of radius
   
-  // Arrow starts from center
-  const baseX = x;
-  const baseY = y;
+  // Calculate the tip of the arrow
+  const tipX = x + Math.cos(angle) * mainLineLength;
+  const tipY = y + Math.sin(angle) * mainLineLength;
   
-  // Calculate arrow wing positions (very small wings to stay inside)
-  const wingLength = scaledRadius * 0.05; // Very small wings
-  const wingAngle1 = angle + Math.PI * 0.4; // 72 degrees
-  const wingAngle2 = angle - Math.PI * 0.4; // -72 degrees
+  // Calculate points for the base of the arrowhead, slightly behind the tip
+  const arrowHeadBaseLength = scaledRadius * 0.25; // 25% of radius
+  const basePointX = x + Math.cos(angle) * arrowHeadBaseLength;
+  const basePointY = y + Math.sin(angle) * arrowHeadBaseLength;
+
+  // Calculate the perpendicular offset for the wings
+  const wingWidth = scaledRadius * 0.08; // 8% of radius for wing spread
   
-  const wing1X = tipX + Math.cos(wingAngle1) * wingLength;
-  const wing1Y = tipY + Math.sin(wingAngle1) * wingLength;
-  const wing2X = tipX + Math.cos(wingAngle2) * wingLength;
-  const wing2Y = tipY + Math.sin(wingAngle2) * wingLength;
+  const wing1X = basePointX + Math.cos(angle - Math.PI / 2) * wingWidth; // Perpendicular to main line
+  const wing1Y = basePointY + Math.sin(angle - Math.PI / 2) * wingWidth;
   
-  // Draw arrow
+  const wing2X = basePointX + Math.cos(angle + Math.PI / 2) * wingWidth; // Perpendicular to main line
+  const wing2Y = basePointY + Math.sin(angle + Math.PI / 2) * wingWidth;
+  
+  // Draw main line
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth;
   ctx.beginPath();
-  ctx.moveTo(baseX, baseY); // Start from center
-  ctx.lineTo(tipX, tipY);   // Main arrow line
-  ctx.moveTo(tipX, tipY);   // Wings from tip
-  ctx.lineTo(wing1X, wing1Y);
+  ctx.moveTo(x, y); // Start from center
+  ctx.lineTo(tipX, tipY); // Draw main line
+  ctx.stroke(); // Stroke the main line
+
+  // Draw arrowhead as a filled triangle for a cleaner look
+  ctx.fillStyle = color;
+  ctx.beginPath();
   ctx.moveTo(tipX, tipY);
+  ctx.lineTo(wing1X, wing1Y);
   ctx.lineTo(wing2X, wing2Y);
-  ctx.stroke();
+  ctx.closePath();
+  ctx.fill(); // Fill the arrowhead
 };
 
 /**
