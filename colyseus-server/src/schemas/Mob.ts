@@ -76,6 +76,7 @@ export class Mob extends WorldLife {
     nearestPlayer?: { x: number; y: number; id: string } | null;
     distanceToNearestPlayer?: number;
     nearBoundary?: boolean;
+    worldBounds?: { width: number; height: number };
   }) {
     const now = Date.now();
     
