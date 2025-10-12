@@ -159,8 +159,8 @@ export class GameState extends Schema {
               const dy = attackTarget.y - mob.y;
               if (Math.hypot(dx, dy) > 0) {
                 mob.updateHeading(dx, dy);
-                // Log heading change for attack behavior (only very significant changes)
-                if (Math.abs(mob.heading - oldHeading) > 1.5) {
+             // Log heading change for attack behavior (only very significant changes)
+             if (Math.abs(mob.heading - oldHeading) > 2.5) {
                   const headingDiff = mob.heading - oldHeading;
                   const headingDiffDegrees = (headingDiff * 180 / Math.PI).toFixed(1);
                   const lockStatus = mob.behaviorLockedUntil > Date.now() ? 'LOCKED' : 'FREE';
@@ -175,8 +175,8 @@ export class GameState extends Schema {
               const dy = chaseTarget.y - mob.y;
               if (Math.hypot(dx, dy) > 0) {
                 mob.updateHeading(dx, dy);
-                // Log heading change for chase behavior (only very significant changes)
-                if (Math.abs(mob.heading - oldHeading) > 1.5) {
+             // Log heading change for chase behavior (only very significant changes)
+             if (Math.abs(mob.heading - oldHeading) > 2.5) {
                   const headingDiff = mob.heading - oldHeading;
                   const headingDiffDegrees = (headingDiff * 180 / Math.PI).toFixed(1);
                   const lockStatus = mob.behaviorLockedUntil > Date.now() ? 'LOCKED' : 'FREE';
