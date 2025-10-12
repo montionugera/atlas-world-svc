@@ -211,7 +211,8 @@ export class GameState extends Schema {
             }
           }
           // PRIORITY 2: If mob is moving fast (being pushed by physics), show actual direction
-          else if (velocityMagnitude > 2.0) {
+          // BUT: During attack behavior, always point toward target regardless of physics bounce
+          else if (velocityMagnitude > 2.0 && mob.currentBehavior !== "attack") {
             mob.updateHeading(mob.vx, mob.vy);
           } else if (desiredMagnitude > 0.1) {
             // PRIORITY 3: If not being pushed, show AI intent
