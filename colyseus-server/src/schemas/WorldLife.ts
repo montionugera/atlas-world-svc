@@ -7,6 +7,9 @@ import { Schema, type, ArraySchema } from "@colyseus/schema";
 import { WorldObject } from "./WorldObject";
 
 export abstract class WorldLife extends WorldObject {
+  // Physical properties
+  @type("number") radius: number = 4;
+  
   // Health system
   @type("number") maxHealth: number = 100;
   @type("number") currentHealth: number = 100;
@@ -17,6 +20,13 @@ export abstract class WorldLife extends WorldObject {
   @type("number") attackRange: number = 5;
   @type("number") attackDelay: number = 1000; // milliseconds between attacks
   @type("number") lastAttackTime: number = 0;
+  
+  // Defense system
+  @type("number") defense: number = 0; // Reduces incoming damage
+  @type("number") armor: number = 0; // Additional damage reduction
+  
+  // Impulse system (calculated from damage)
+  @type("number") density: number = 1; // Material density for mass calculation
   
     // Movement and combat state
     @type("boolean") isAttacking: boolean = false;
@@ -31,6 +41,27 @@ export abstract class WorldLife extends WorldObject {
   isInvulnerable: boolean = false;
   invulnerabilityDuration: number = 0;
   
+  // Calculate mass from radius and density (mass = volume * density)
+  getMass(): number {
+    // Volume of sphere = (4/3) * π * r³
+    const volume = (4/3) * Math.PI * Math.pow(this.radius, 3);
+    return volume * this.density;
+  }
+  
+  // Calculate attack impulse from damage
+  getAttackImpulse(): number {
+    const { GAME_CONFIG } = require('../config/gameConfig');
+    const impulse = this.attackDamage * GAME_CONFIG.attackImpulseMultiplier;
+    return Math.max(GAME_CONFIG.minImpulse, Math.min(impulse, GAME_CONFIG.maxImpulse));
+  }
+  
+  // Calculate recoil impulse from damage
+  getRecoilImpulse(): number {
+    const { GAME_CONFIG } = require('../config/gameConfig');
+    const impulse = this.attackDamage * GAME_CONFIG.recoilImpulseMultiplier;
+    return Math.max(GAME_CONFIG.minImpulse, Math.min(impulse, GAME_CONFIG.maxImpulse));
+  }
+  
   constructor(
     id: string,
     x: number,
@@ -38,25 +69,38 @@ export abstract class WorldLife extends WorldObject {
     vx: number = 0,
     vy: number = 0,
     tags: string[] = [],
+    radius: number = 4,
     maxHealth: number = 100,
     attackDamage: number = 10,
     attackRange: number = 5,
-    attackDelay: number = 1000
+    attackDelay: number = 1000,
+    defense: number = 0,
+    armor: number = 0,
+    density: number = 1
   ) {
     super(id, x, y, vx, vy, tags);
+    this.radius = radius;
     this.maxHealth = maxHealth;
     this.currentHealth = maxHealth;
     this.attackDamage = attackDamage;
     this.attackRange = attackRange;
     this.attackDelay = attackDelay;
+    this.defense = defense;
+    this.armor = armor;
+    this.density = density;
     this.lastAttackTime = 0;
   }
   
-  // Health management
+  // Health management with defense calculations
   takeDamage(damage: number, attacker?: WorldLife): boolean {
     if (!this.isAlive || this.isInvulnerable) return false;
     
-    this.currentHealth = Math.max(0, this.currentHealth - damage);
+    // Calculate damage reduction from defense and armor
+    const totalDefense = this.defense + this.armor;
+    const damageReduction = Math.min(totalDefense, damage * 0.8); // Cap at 80% reduction
+    const finalDamage = Math.max(1, damage - damageReduction); // Minimum 1 damage
+    
+    this.currentHealth = Math.max(0, this.currentHealth - finalDamage);
     
     if (this.currentHealth <= 0) {
       this.die();
@@ -64,7 +108,7 @@ export abstract class WorldLife extends WorldObject {
     }
     
     // Trigger invulnerability frames (optional)
-    if (damage > 0) {
+    if (finalDamage > 0) {
       this.triggerInvulnerability(500); // 500ms invulnerability
     }
     
@@ -126,8 +170,35 @@ export abstract class WorldLife extends WorldObject {
     this.lastAttackedTarget = target.id;
     this.isAttacking = true;
     
-    // Apply damage to target
+    // Calculate attack direction for impulse
+    const dx = target.x - this.x;
+    const dy = target.y - this.y;
+    const distanceToTarget = Math.hypot(dx, dy) || 1;
+    const attackDirection = {
+      x: dx / distanceToTarget,
+      y: dy / distanceToTarget
+    };
+    
+    // Apply damage to target (with defense calculation)
     const targetDied = target.takeDamage(this.attackDamage, this);
+    
+    // Apply impulse to target (knockback) - calculated from damage
+    const attackImpulse = this.getAttackImpulse();
+    if (attackImpulse > 0) {
+      const targetMass = target.getMass(); // Calculate target mass from size and density
+      const targetImpulse = attackImpulse / targetMass; // Heavier targets resist more
+      target.vx += attackDirection.x * targetImpulse;
+      target.vy += attackDirection.y * targetImpulse;
+    }
+    
+    // Apply recoil impulse to attacker (knockback) - calculated from damage
+    const recoilImpulse = this.getRecoilImpulse();
+    if (recoilImpulse > 0) {
+      const attackerMass = this.getMass(); // Calculate attacker mass from size and density
+      const attackerImpulse = recoilImpulse / attackerMass; // Heavier attackers resist more
+      this.vx -= attackDirection.x * attackerImpulse;
+      this.vy -= attackDirection.y * attackerImpulse;
+    }
     
     // Reset attacking state after a brief moment
     setTimeout(() => {

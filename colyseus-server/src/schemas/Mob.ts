@@ -33,6 +33,9 @@ export class Mob extends WorldLife {
     maxHealth?: number;
     attackDamage?: number;
     attackDelay?: number;
+    defense?: number;
+    armor?: number;
+    density?: number;
   }) {
     super(
       options.id, 
@@ -41,10 +44,14 @@ export class Mob extends WorldLife {
       options.vx ?? 0, 
       options.vy ?? 0, 
       ["mob"],
+      options.radius ?? 4, // Mob radius
       options.maxHealth ?? 50, // Mobs have less health than players
       options.attackDamage ?? 15, // Mobs deal more damage
       options.attackRange ?? 5, // Use WorldLife attackRange
-      options.attackDelay ?? 2000 // Mobs attack slower
+      options.attackDelay ?? 2000, // Mobs attack slower
+      options.defense ?? 2, // Mobs have some defense
+      options.armor ?? 1, // Mobs have some armor
+      options.density ?? 1.2 // Mobs are denser than players
     );
     if (options.radius !== undefined) {
       this.radius = options.radius;
@@ -153,7 +160,7 @@ export class Mob extends WorldLife {
       
            // Calculate avoidance force based on distance to each boundary
            let avoidX = 0, avoidY = 0;
-           const boundaryBuffer = 5; // Buffer distance from wall
+           const boundaryBuffer = 1; // Buffer distance from wall
            const effectiveThreshold = boundaryBuffer + this.radius; // Account for mob size
       
       // Avoid left boundary

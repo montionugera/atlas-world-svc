@@ -21,10 +21,14 @@ export class Player extends WorldLife {
       0, 
       0, 
       ["player"],
+      4,   // Player radius
       100, // Players have more health
       8,   // Players deal less damage
       3,   // Players have shorter attack range
-      1000 // Players attack faster
+      1000, // Players attack faster
+      1,   // Players have low defense
+      0,   // Players have no armor
+      0.8  // Players are less dense than mobs
     );
     this.sessionId = sessionId;
     this.name = name;
