@@ -2,7 +2,6 @@ import { type } from "@colyseus/schema";
 import { WorldLife } from "./WorldLife";
 
 export class Mob extends WorldLife {
-  @type("number") radius: number = 4;
   @type("string") tag: string = "idle"; // Current behavior tag for debugging/UI // Send radius to client
   @type("string") currentBehavior: string = "idle";
   @type("number") behaviorLockedUntil: number = 0; // epoch ms; 0 means unlocked
