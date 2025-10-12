@@ -149,76 +149,27 @@ export class GameState extends Schema {
             mob.vy = vel.y;
           }
           
-          // Update mob heading based on behavior and movement
-          const velocityMagnitude = Math.hypot(mob.vx, mob.vy);
-          const desiredMagnitude = Math.hypot(mob.desiredVx, mob.desiredVy);
-          
-          // PRIORITY 1: During attack behavior, ALWAYS point toward the specific attack target
-          // This takes precedence over physics collisions
-          if (mob.currentBehavior === "attack") {
-            // Find the specific player being attacked
+          // Update mob heading: simple rule - if chasing/attacking, point toward target, otherwise use velocity
+          if (mob.currentBehavior === "attack" && mob.currentAttackTarget) {
             const attackTarget = this.players.get(mob.currentAttackTarget);
             if (attackTarget) {
               const dx = attackTarget.x - mob.x;
               const dy = attackTarget.y - mob.y;
-              const distance = Math.hypot(dx, dy);
-              if (distance > 0) {
-                // Point toward the specific attack target
+              if (Math.hypot(dx, dy) > 0) {
                 mob.updateHeading(dx, dy);
               }
-            } else {
-              // Fallback to nearest player if attack target not found
-              const nearestPlayer = this.findNearestPlayer(mob);
-              if (nearestPlayer) {
-                const dx = nearestPlayer.x - mob.x;
-                const dy = nearestPlayer.y - mob.y;
-                const distance = Math.hypot(dx, dy);
-                if (distance > 0) {
-                  mob.updateHeading(dx, dy);
-                }
-              } else {
-                // Final fallback to actual velocity
-                mob.updateHeading(mob.vx, mob.vy);
-              }
             }
-          }
-          // PRIORITY 1.5: During chase behavior, point toward the specific chase target
-          else if (mob.currentBehavior === "chase") {
-            // Find the specific player being chased
+          } else if (mob.currentBehavior === "chase" && mob.currentChaseTarget) {
             const chaseTarget = this.players.get(mob.currentChaseTarget);
             if (chaseTarget) {
               const dx = chaseTarget.x - mob.x;
               const dy = chaseTarget.y - mob.y;
-              const distance = Math.hypot(dx, dy);
-              if (distance > 0) {
-                // Point toward the specific chase target
+              if (Math.hypot(dx, dy) > 0) {
                 mob.updateHeading(dx, dy);
               }
-            } else {
-              // Fallback to nearest player if chase target not found
-              const nearestPlayer = this.findNearestPlayer(mob);
-              if (nearestPlayer) {
-                const dx = nearestPlayer.x - mob.x;
-                const dy = nearestPlayer.y - mob.y;
-                const distance = Math.hypot(dx, dy);
-                if (distance > 0) {
-                  mob.updateHeading(dx, dy);
-                }
-              } else {
-                // Final fallback to actual velocity
-                mob.updateHeading(mob.vx, mob.vy);
-              }
             }
-          }
-          // PRIORITY 2: If mob is moving fast (being pushed by physics), show actual direction
-          // BUT: During attack behavior, always point toward target regardless of physics bounce
-          else if (velocityMagnitude > 2.0 && mob.currentBehavior !== "attack") {
-            mob.updateHeading(mob.vx, mob.vy);
-          } else if (desiredMagnitude > 0.1) {
-            // PRIORITY 3: If not being pushed, show AI intent
-            mob.updateHeadingFromAI(mob.desiredVx, mob.desiredVy);
           } else {
-            // PRIORITY 4: Fallback to actual velocity
+            // Default: use actual velocity direction
             mob.updateHeading(mob.vx, mob.vy);
           }
           mob.update(GAME_CONFIG.tickRate);
