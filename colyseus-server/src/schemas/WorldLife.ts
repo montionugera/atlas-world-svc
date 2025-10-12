@@ -164,7 +164,7 @@ export abstract class WorldLife extends WorldObject {
   }
   
   // Smart heading update - automatically chooses best source
-  updateHeading(vx?: number, vy?: number): void {
+updateHeading(vx?: number, vy?: number): void {
     let sourceVx: number, sourceVy: number, threshold: number;
     
     if (vx !== undefined && vy !== undefined) {
@@ -210,7 +210,15 @@ export abstract class WorldLife extends WorldObject {
     
     // Update movement state and heading
     this.isMoving = Math.hypot(this.vx, this.vy) > 0;
-    this.updateHeading(this.vx, this.vy);
+    
+    // Use appropriate heading update method
+    if ('updateHeadingToTarget' in this) {
+      // Mob: use target-based heading
+      (this as any).updateHeadingToTarget();
+    } else {
+      // Player: use velocity-based heading
+      this.updateHeading();
+    }
   }
   
   // Override applyBoundaryPhysics for living entities

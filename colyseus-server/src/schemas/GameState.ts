@@ -149,30 +149,27 @@ export class GameState extends Schema {
             mob.vy = vel.y;
           }
           
-          // Update mob heading: simple rule - if chasing/attacking, point toward target, otherwise use velocity
+          // Update mob target positions for heading calculation
           const oldHeading = mob.heading;
           
           if (mob.currentBehavior === "attack" && mob.currentAttackTarget) {
             const attackTarget = this.players.get(mob.currentAttackTarget);
             if (attackTarget) {
-              // Update target position and calculate heading directly
+              // Set target position for heading calculation
               mob.targetX = attackTarget.x;
               mob.targetY = attackTarget.y;
-              mob.updateHeadingToTarget();
             }
           } else if (mob.currentBehavior === "chase" && mob.currentChaseTarget) {
             const chaseTarget = this.players.get(mob.currentChaseTarget);
             if (chaseTarget) {
-              // Update target position and calculate heading directly
+              // Set target position for heading calculation
               mob.targetX = chaseTarget.x;
               mob.targetY = chaseTarget.y;
-              mob.updateHeadingToTarget();
             }
           } else if (mob.currentBehavior === "wander") {
             // Wander behavior: use wander target
             mob.targetX = mob.wanderTargetX;
             mob.targetY = mob.wanderTargetY;
-            mob.updateHeadingToTarget();
           }
           
           // Detect physics-induced heading anomalies (check if heading changed but no AI behavior change)
