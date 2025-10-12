@@ -15,6 +15,8 @@ export class Mob extends WorldLife {
   chaseRange: number = 15; // Chase range buffer (will be calculated with radius)
   currentAttackTarget: string = ""; // ID of the player currently being attacked
   currentChaseTarget: string = ""; // ID of the player currently being chased
+  targetX: number = 0; // Current target position X
+  targetY: number = 0; // Current target position Y
 
   constructor(options: { 
     id: string; 
@@ -180,6 +182,16 @@ export class Mob extends WorldLife {
     if (this.y <= 0 || this.y >= height) {
       this.vy = -this.vy;
       this.y = Math.max(0, Math.min(height, this.y));
+    }
+  }
+
+  // Update heading directly from target position
+  updateHeadingToTarget(): void {
+    const dx = this.targetX - this.x;
+    const dy = this.targetY - this.y;
+    const magnitude = Math.hypot(dx, dy);
+    if (magnitude > 0.01) { // Always show intent to target
+      this.heading = Math.atan2(dy, dx);
     }
   }
 }

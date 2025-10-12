@@ -155,22 +155,18 @@ export class GameState extends Schema {
           if (mob.currentBehavior === "attack" && mob.currentAttackTarget) {
             const attackTarget = this.players.get(mob.currentAttackTarget);
             if (attackTarget) {
-              const dx = attackTarget.x - mob.x;
-              const dy = attackTarget.y - mob.y;
-              if (Math.hypot(dx, dy) > 0) {
-                mob.updateHeading(dx, dy);
-             // No logging during normal attack tracking - only log behavior changes
-              }
+              // Update target position and calculate heading directly
+              mob.targetX = attackTarget.x;
+              mob.targetY = attackTarget.y;
+              mob.updateHeadingToTarget();
             }
           } else if (mob.currentBehavior === "chase" && mob.currentChaseTarget) {
             const chaseTarget = this.players.get(mob.currentChaseTarget);
             if (chaseTarget) {
-              const dx = chaseTarget.x - mob.x;
-              const dy = chaseTarget.y - mob.y;
-              if (Math.hypot(dx, dy) > 0) {
-                mob.updateHeading(dx, dy);
-             // No logging during normal chase tracking - only log behavior changes
-              }
+              // Update target position and calculate heading directly
+              mob.targetX = chaseTarget.x;
+              mob.targetY = chaseTarget.y;
+              mob.updateHeadingToTarget();
             }
           }
           
