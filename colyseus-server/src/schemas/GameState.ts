@@ -159,13 +159,13 @@ export class GameState extends Schema {
               mob.targetX = attackTarget.x;
               mob.targetY = attackTarget.y;
               
-              // Attempt to attack the target (only if not on cooldown)
-              if (mob.canAttack()) {
+              // Attempt to attack the target (only if not on cooldown and not already attacking)
+              if (mob.canAttack() && !mob.isAttacking) {
                 const attackSuccess = mob.attack(attackTarget);
                 if (attackSuccess) {
-                  console.log(`⚔️ ATTACK: ${mob.id} killed ${attackTarget.id}!`);
+                  console.log(`⚔️ KILL: ${mob.id} killed ${attackTarget.id}!`);
                 } else {
-                  console.log(`⚔️ ATTACK: ${mob.id} attacked ${attackTarget.id} for ${mob.attackDamage} damage!`);
+                  console.log(`⚔️ HIT: ${mob.id} hit ${attackTarget.id} for ${mob.attackDamage} damage!`);
                 }
               }
             }

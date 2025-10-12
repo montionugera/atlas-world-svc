@@ -100,7 +100,10 @@ export abstract class WorldLife extends WorldObject {
     const damageReduction = Math.min(totalDefense, damage * 0.8); // Cap at 80% reduction
     const finalDamage = Math.max(1, damage - damageReduction); // Minimum 1 damage
     
-    console.log(`💔 DAMAGE: ${this.id} took ${finalDamage} damage (${damage} - ${damageReduction} reduction), HP: ${this.currentHealth} → ${this.currentHealth - finalDamage}`);
+    // Log damage only for significant health changes
+    if (finalDamage >= 5 || this.currentHealth - finalDamage <= 20) {
+      console.log(`💔 DAMAGE: ${this.id} took ${finalDamage} damage, HP: ${this.currentHealth} → ${this.currentHealth - finalDamage}`);
+    }
     
     this.currentHealth = Math.max(0, this.currentHealth - finalDamage);
     
