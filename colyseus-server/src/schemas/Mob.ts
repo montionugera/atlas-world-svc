@@ -17,6 +17,9 @@ export class Mob extends WorldLife {
   currentChaseTarget: string = ""; // ID of the player currently being chased
   targetX: number = 0; // Current target position X
   targetY: number = 0; // Current target position Y
+  wanderTargetX: number = 0; // Wander target position X
+  wanderTargetY: number = 0; // Wander target position Y
+  lastWanderTargetTime: number = 0; // When wander target was last set
 
   constructor(options: { 
     id: string; 
@@ -143,8 +146,31 @@ export class Mob extends WorldLife {
       }
     }
     
-    // Wander fallback: keep current velocity with slight damping
-    return { x: this.vx, y: this.vy };
+    // Wander behavior: move toward wander target
+    if (this.currentBehavior === "wander") {
+      const now = Date.now();
+      const wanderCooldown = 2000; // 2 seconds
+      
+      // Generate new wander target if needed
+      if (now - this.lastWanderTargetTime > wanderCooldown || 
+          Math.hypot(this.wanderTargetX - this.x, this.wanderTargetY - this.y) < 5) {
+        this.generateWanderTarget();
+        this.lastWanderTargetTime = now;
+      }
+      
+      // Move toward wander target
+      const dx = this.wanderTargetX - this.x;
+      const dy = this.wanderTargetY - this.y;
+      const distance = Math.hypot(dx, dy);
+      
+      if (distance > 0.1) {
+        const speed = Math.min(maxSpeed * 0.6, 15); // Slower wander speed
+        return { x: (dx / distance) * speed, y: (dy / distance) * speed };
+      }
+    }
+    
+    // Fallback: keep current velocity with slight damping
+    return { x: this.vx * 0.9, y: this.vy * 0.9 };
   }
 
   // Compute steering impulse to move current physics velocity toward desired velocity
@@ -193,5 +219,23 @@ export class Mob extends WorldLife {
     if (magnitude > 0.01) { // Always show intent to target
       this.heading = Math.atan2(dy, dx);
     }
+  }
+
+  // Generate a random wander target
+  private generateWanderTarget(): void {
+    const wanderRadius = 30;
+    const wanderDistance = 20;
+    const wanderJitter = 10;
+    
+    // Generate random point around current position
+    const angle = Math.random() * Math.PI * 2;
+    const distance = wanderDistance + Math.random() * wanderJitter;
+    
+    this.wanderTargetX = this.x + Math.cos(angle) * distance;
+    this.wanderTargetY = this.y + Math.sin(angle) * distance;
+    
+    // Keep within world bounds (assuming 400x300 world)
+    this.wanderTargetX = Math.max(20, Math.min(380, this.wanderTargetX));
+    this.wanderTargetY = Math.max(20, Math.min(280, this.wanderTargetY));
   }
 }

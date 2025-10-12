@@ -168,9 +168,11 @@ export class GameState extends Schema {
               mob.targetY = chaseTarget.y;
               mob.updateHeadingToTarget();
             }
-          } else {
-            // Wander behavior: use AI desired direction
-            mob.updateHeading();
+          } else if (mob.currentBehavior === "wander") {
+            // Wander behavior: use wander target
+            mob.targetX = mob.wanderTargetX;
+            mob.targetY = mob.wanderTargetY;
+            mob.updateHeadingToTarget();
           }
           
           // Detect physics-induced heading anomalies (check if heading changed but no AI behavior change)
