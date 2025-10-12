@@ -66,26 +66,35 @@ export class Mob extends WorldLife {
     }
   }
 
-  // Simple behavior: just distance-based
+  // Simple behavior: just distance-based with cooldown
   decideBehavior(env: {
     nearestPlayer?: { x: number; y: number; id: string } | null;
     distanceToNearestPlayer?: number;
     nearBoundary?: boolean;
   }) {
+    const now = Date.now();
+    
+    // Simple cooldown to prevent rapid switching
+    if (this.behaviorLockedUntil && now < this.behaviorLockedUntil) {
+      return this.currentBehavior;
+    }
+    
     const distance = env.distanceToNearestPlayer ?? Infinity;
     const oldBehavior = this.currentBehavior;
     
-    // Simple distance-based behavior
-    if (distance <= 15) {
-      // Close: Attack
+    // Simple distance-based behavior with wider gaps
+    if (distance <= 12) {
+      // Very close: Attack
       this.currentBehavior = "attack";
+      this.behaviorLockedUntil = now + 1000; // 1 second lock
       if (env.nearestPlayer) {
         this.currentAttackTarget = env.nearestPlayer.id || "unknown";
       }
       this.currentChaseTarget = "";
-    } else if (distance <= 30) {
+    } else if (distance <= 25) {
       // Medium: Chase  
       this.currentBehavior = "chase";
+      this.behaviorLockedUntil = now + 800; // 0.8 second lock
       if (env.nearestPlayer) {
         this.currentChaseTarget = env.nearestPlayer.id || "unknown";
       }
