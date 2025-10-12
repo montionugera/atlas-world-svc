@@ -215,8 +215,11 @@ updateHeading(vx?: number, vy?: number): void {
     if ('updateHeadingToTarget' in this) {
       // Mob: use target-based heading
       (this as any).updateHeadingToTarget();
+    } else if ('updateHeadingFromInput' in this) {
+      // Player: use input-based heading
+      (this as any).updateHeadingFromInput();
     } else {
-      // Player: use velocity-based heading
+      // Fallback: use velocity-based heading
       this.updateHeading();
     }
   }
