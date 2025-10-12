@@ -151,7 +151,6 @@ export class GameState extends Schema {
           
           // Update mob heading: simple rule - if chasing/attacking, point toward target, otherwise use velocity
           const oldHeading = mob.heading;
-          const oldVelocity = { x: mob.vx, y: mob.vy };
           
           if (mob.currentBehavior === "attack" && mob.currentAttackTarget) {
             const attackTarget = this.players.get(mob.currentAttackTarget);
@@ -160,8 +159,8 @@ export class GameState extends Schema {
               const dy = attackTarget.y - mob.y;
               if (Math.hypot(dx, dy) > 0) {
                 mob.updateHeading(dx, dy);
-                // Log heading change for attack behavior (only significant changes)
-                if (Math.abs(mob.heading - oldHeading) > 0.5) {
+                // Log heading change for attack behavior (only very significant changes)
+                if (Math.abs(mob.heading - oldHeading) > 1.5) {
                   const headingDiff = mob.heading - oldHeading;
                   const headingDiffDegrees = (headingDiff * 180 / Math.PI).toFixed(1);
                   const lockStatus = mob.behaviorLockedUntil > Date.now() ? 'LOCKED' : 'FREE';
@@ -176,8 +175,8 @@ export class GameState extends Schema {
               const dy = chaseTarget.y - mob.y;
               if (Math.hypot(dx, dy) > 0) {
                 mob.updateHeading(dx, dy);
-                // Log heading change for chase behavior (only significant changes)
-                if (Math.abs(mob.heading - oldHeading) > 0.5) {
+                // Log heading change for chase behavior (only very significant changes)
+                if (Math.abs(mob.heading - oldHeading) > 1.5) {
                   const headingDiff = mob.heading - oldHeading;
                   const headingDiffDegrees = (headingDiff * 180 / Math.PI).toFixed(1);
                   const lockStatus = mob.behaviorLockedUntil > Date.now() ? 'LOCKED' : 'FREE';
@@ -185,19 +184,16 @@ export class GameState extends Schema {
                 }
               }
             }
-          } else {
-            // Default: use actual velocity direction
-            // mob.updateHeading(mob.vx, mob.vy);
           }
           
-          // Detect physics-induced heading anomalies
+          // Detect physics-induced heading anomalies (check if heading changed but no AI behavior change)
           const headingChange = Math.abs(mob.heading - oldHeading);
-          const velocityChange = Math.hypot(mob.vx - oldVelocity.x, mob.vy - oldVelocity.y);
+          const velocityMagnitude = Math.hypot(mob.vx, mob.vy);
           
-          // Log if heading changed significantly due to physics collision
-          if (headingChange > 1.0 && velocityChange > 5.0) {
+          // Log if heading changed significantly but mob is not in attack/chase behavior
+          if (headingChange > 1.0 && velocityMagnitude > 3.0 && mob.currentBehavior === "wander") {
             const headingDiffDegrees = ((mob.heading - oldHeading) * 180 / Math.PI).toFixed(1);
-            console.log(`💥 PHYSICS COLLISION: ${mob.id} heading changed ${headingDiffDegrees}° due to velocity change ${velocityChange.toFixed(1)} (${mob.currentBehavior})`);
+            console.log(`💥 PHYSICS COLLISION: ${mob.id} heading changed ${headingDiffDegrees}° due to physics (velocity: ${velocityMagnitude.toFixed(1)})`);
           }
           
           mob.update(GAME_CONFIG.tickRate);
