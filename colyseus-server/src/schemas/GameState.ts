@@ -159,13 +159,7 @@ export class GameState extends Schema {
               const dy = attackTarget.y - mob.y;
               if (Math.hypot(dx, dy) > 0) {
                 mob.updateHeading(dx, dy);
-             // Log heading change for attack behavior (only very significant changes)
-             if (Math.abs(mob.heading - oldHeading) > 2.5) {
-                  const headingDiff = mob.heading - oldHeading;
-                  const headingDiffDegrees = (headingDiff * 180 / Math.PI).toFixed(1);
-                  const lockStatus = mob.behaviorLockedUntil > Date.now() ? 'LOCKED' : 'FREE';
-                  console.log(`🎯 ATTACK HEADING: ${mob.id} → ${mob.currentAttackTarget} (${mob.heading.toFixed(2)} rad, ${(mob.heading * 180 / Math.PI).toFixed(1)}°) [Δ${headingDiffDegrees}°] [${lockStatus}]`);
-                }
+             // No logging during normal attack tracking - only log behavior changes
               }
             }
           } else if (mob.currentBehavior === "chase" && mob.currentChaseTarget) {
@@ -175,13 +169,7 @@ export class GameState extends Schema {
               const dy = chaseTarget.y - mob.y;
               if (Math.hypot(dx, dy) > 0) {
                 mob.updateHeading(dx, dy);
-             // Log heading change for chase behavior (only very significant changes)
-             if (Math.abs(mob.heading - oldHeading) > 2.5) {
-                  const headingDiff = mob.heading - oldHeading;
-                  const headingDiffDegrees = (headingDiff * 180 / Math.PI).toFixed(1);
-                  const lockStatus = mob.behaviorLockedUntil > Date.now() ? 'LOCKED' : 'FREE';
-                  console.log(`🏃 CHASE HEADING: ${mob.id} → ${mob.currentChaseTarget} (${mob.heading.toFixed(2)} rad, ${(mob.heading * 180 / Math.PI).toFixed(1)}°) [Δ${headingDiffDegrees}°] [${lockStatus}]`);
-                }
+             // No logging during normal chase tracking - only log behavior changes
               }
             }
           }
