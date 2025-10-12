@@ -159,8 +159,8 @@ export class GameState extends Schema {
               const dy = attackTarget.y - mob.y;
               if (Math.hypot(dx, dy) > 0) {
                 mob.updateHeading(dx, dy);
-                // Log heading change for attack behavior
-                if (Math.abs(mob.heading - oldHeading) > 0.1) {
+                // Log heading change for attack behavior (only significant changes)
+                if (Math.abs(mob.heading - oldHeading) > 0.5) {
                   console.log(`🎯 ATTACK HEADING: ${mob.id} → ${mob.currentAttackTarget} (${mob.heading.toFixed(2)} rad, ${(mob.heading * 180 / Math.PI).toFixed(1)}°)`);
                 }
               }
@@ -172,8 +172,8 @@ export class GameState extends Schema {
               const dy = chaseTarget.y - mob.y;
               if (Math.hypot(dx, dy) > 0) {
                 mob.updateHeading(dx, dy);
-                // Log heading change for chase behavior
-                if (Math.abs(mob.heading - oldHeading) > 0.1) {
+                // Log heading change for chase behavior (only significant changes)
+                if (Math.abs(mob.heading - oldHeading) > 0.5) {
                   console.log(`🏃 CHASE HEADING: ${mob.id} → ${mob.currentChaseTarget} (${mob.heading.toFixed(2)} rad, ${(mob.heading * 180 / Math.PI).toFixed(1)}°)`);
                 }
               }
@@ -184,8 +184,8 @@ export class GameState extends Schema {
           }
           mob.update(GAME_CONFIG.tickRate);
           
-               // Log mob movement every 500 ticks to reduce spam
-               if (this.tick % 500 === 0) {
+               // Log mob movement every 2000 ticks to reduce spam
+               if (this.tick % 2000 === 0) {
                  console.log(`🏃 MOB ${mob.id}: pos(${mob.x.toFixed(1)}, ${mob.y.toFixed(1)}) vel(${mob.vx.toFixed(1)}, ${mob.vy.toFixed(1)}) desired(${mob.desiredVx.toFixed(1)}, ${mob.desiredVy.toFixed(1)}) heading(${mob.heading.toFixed(2)})`);
                }
         }
