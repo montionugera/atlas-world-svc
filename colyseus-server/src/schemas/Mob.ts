@@ -87,11 +87,19 @@ export class Mob extends WorldLife {
     const distance = env.distanceToNearestPlayer ?? Infinity;
     const oldBehavior = this.currentBehavior;
     
-    // Check boundary first (highest priority)
-    if (env.nearBoundary) {
-      // Near boundary: Avoid boundary behavior
+    // Check boundary only when very close to boundary (not just near)
+    const boundaryThreshold = 15; // Reduced from 30 to be less aggressive
+    const worldWidth = env.worldBounds?.width ?? 400;
+    const worldHeight = env.worldBounds?.height ?? 300;
+    const veryNearBoundary = this.x < boundaryThreshold || 
+                            this.x > worldWidth - boundaryThreshold ||
+                            this.y < boundaryThreshold || 
+                            this.y > worldHeight - boundaryThreshold;
+    
+    if (veryNearBoundary) {
+      // Very close to boundary: Avoid boundary behavior
       this.currentBehavior = "avoidBoundary";
-      this.behaviorLockedUntil = now + 500; // 0.5 second lock
+      this.behaviorLockedUntil = now + 300; // Shorter lock time
       this.currentAttackTarget = "";
       this.currentChaseTarget = "";
     } else if (distance <= 12) {
@@ -143,7 +151,7 @@ export class Mob extends WorldLife {
       
       // Calculate avoidance force based on distance to each boundary
       let avoidX = 0, avoidY = 0;
-      const boundaryThreshold = 30;
+      const boundaryThreshold = 15; // Match the detection threshold
       
       // Avoid left boundary
       if (this.x < boundaryThreshold) {
@@ -168,7 +176,7 @@ export class Mob extends WorldLife {
       // Normalize and apply speed
       const magnitude = Math.hypot(avoidX, avoidY);
       if (magnitude > 0) {
-        const speed = Math.min(maxSpeed * 0.7, 20); // Moderate speed for avoidance
+        const speed = Math.min(maxSpeed * 0.4, 12); // Gentle speed for avoidance
         return { 
           x: (avoidX / magnitude) * speed, 
           y: (avoidY / magnitude) * speed 
