@@ -66,114 +66,42 @@ export class Mob extends WorldLife {
     }
   }
 
-  // Decide behavior based on simple priorities; respects lock window
+  // Simple behavior: just distance-based
   decideBehavior(env: {
     nearestPlayer?: { x: number; y: number; id: string } | null;
     distanceToNearestPlayer?: number;
     nearBoundary?: boolean;
   }) {
-    const now = Date.now();
+    const distance = env.distanceToNearestPlayer ?? Infinity;
+    const oldBehavior = this.currentBehavior;
     
-    // Calculate effective attack range based on mob radius + attack buffer + player radius
-    const effectiveAttackRange = this.radius + this.attackRange + 4; // mob radius + attack range + player radius
-    
-    
-    // Check behavior lock - prevent rapid switching with longer cooldown
-    if (this.behaviorLockedUntil && now < this.behaviorLockedUntil) {
-      this.tag = this.currentBehavior;
-      return this.currentBehavior;
-    }
-    
-    // Calculate effective chase range based on mob radius + chase buffer + player radius
-    const effectiveChaseRange = this.radius + this.chaseRange + 4; // mob radius + chase range + player radius
-    
-    // PRIORITY 1: Attack if very close to player (highest priority)
-    // Use hysteresis: enter attack at close range, exit attack at much farther range
-    const attackEnterRange = effectiveAttackRange;
-    const attackExitRange = effectiveAttackRange + 8; // 8 units of hysteresis for stability
-    
-    if (this.currentBehavior === "attack") {
-      // Already attacking - only exit if player moves far enough away
-      if ((env.distanceToNearestPlayer ?? Infinity) > attackExitRange) {
-        const oldBehavior = this.currentBehavior;
-        this.currentBehavior = "chase"; // Switch to chase when exiting attack
-        this.currentAttackTarget = ""; // Clear attack target
-        if (env.nearestPlayer) {
-          this.currentChaseTarget = env.nearestPlayer.id || "unknown";
-        }
-        this.tag = this.currentBehavior;
-        
-        console.log(`🏃 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → CHASE (target: ${this.currentChaseTarget}) - exited attack range`);
-        return this.currentBehavior;
-      }
-    } else if ((env.distanceToNearestPlayer ?? Infinity) <= attackEnterRange) {
-      // Enter attack mode
-      const oldBehavior = this.currentBehavior;
+    // Simple distance-based behavior
+    if (distance <= 15) {
+      // Close: Attack
       this.currentBehavior = "attack";
-      this.behaviorLockedUntil = now + 2000; // 2 second lock for attack to prevent rapid switching
       if (env.nearestPlayer) {
         this.currentAttackTarget = env.nearestPlayer.id || "unknown";
       }
-      this.currentChaseTarget = ""; // Clear chase target when switching to attack
-      this.tag = this.currentBehavior;
-      
-      if (oldBehavior !== "attack") {
-        console.log(`🔥 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → ATTACK (target: ${this.currentAttackTarget})`);
-      }
-      return this.currentBehavior;
-    }
-
-    // PRIORITY 2: Chase if within chase range but outside attack range
-    // Use hysteresis: enter chase at medium range, exit chase at much farther range
-    const chaseEnterRange = effectiveChaseRange;
-    const chaseExitRange = effectiveChaseRange + 10; // 10 units of hysteresis for stability
-    
-    if (this.currentBehavior === "chase") {
-      // Already chasing - only exit if player moves far enough away
-      if ((env.distanceToNearestPlayer ?? Infinity) > chaseExitRange) {
-        const oldBehavior = this.currentBehavior;
-        this.currentBehavior = "wander";
-        this.currentChaseTarget = ""; // Clear chase target
-        this.tag = this.currentBehavior;
-        
-        console.log(`🚶 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → WANDER - exited chase range`);
-        return this.currentBehavior;
-      }
-    } else if ((env.distanceToNearestPlayer ?? Infinity) <= chaseEnterRange && (env.distanceToNearestPlayer ?? Infinity) > attackExitRange) {
-      // Enter chase mode (but not if we're already in attack)
-      const oldBehavior = this.currentBehavior;
+      this.currentChaseTarget = "";
+    } else if (distance <= 30) {
+      // Medium: Chase  
       this.currentBehavior = "chase";
-      this.behaviorLockedUntil = now + 1500; // 1.5 second lock for chase to prevent rapid switching
-      this.currentAttackTarget = ""; // Clear attack target when switching to chase
       if (env.nearestPlayer) {
         this.currentChaseTarget = env.nearestPlayer.id || "unknown";
       }
-      this.tag = this.currentBehavior;
-      
-      if (oldBehavior !== "chase") {
-        console.log(`🏃 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → CHASE (target: ${this.currentChaseTarget})`);
-      }
-      return this.currentBehavior;
+      this.currentAttackTarget = "";
+    } else {
+      // Far: Wander
+      this.currentBehavior = "wander";
+      this.currentAttackTarget = "";
+      this.currentChaseTarget = "";
     }
-
-    // PRIORITY 3: Boundary awareness (only if no player nearby)
-    if (env.nearBoundary && (env.distanceToNearestPlayer ?? Infinity) > effectiveChaseRange) {
-      this.currentBehavior = "boundaryAware";
-      this.currentAttackTarget = ""; // Clear attack target when switching to boundary awareness
-      this.currentChaseTarget = ""; // Clear chase target when switching to boundary awareness
-      this.tag = this.currentBehavior;
-      return this.currentBehavior;
-    }
-
-    const oldBehavior = this.currentBehavior;
-    this.currentBehavior = "wander";
-    this.currentAttackTarget = ""; // Clear attack target when switching to wander
-    this.currentChaseTarget = ""; // Clear chase target when switching to wander
+    
     this.tag = this.currentBehavior;
     
-    // Log behavior change to idle/wander
-    if (oldBehavior !== "wander") {
-      console.log(`🚶 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → WANDER`);
+    // Log only when behavior actually changes
+    if (oldBehavior !== this.currentBehavior) {
+      console.log(`🔄 BEHAVIOR: ${this.id} ${oldBehavior} → ${this.currentBehavior.toUpperCase()}`);
     }
     
     return this.currentBehavior;
