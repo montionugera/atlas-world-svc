@@ -103,9 +103,7 @@ export class Mob extends WorldLife {
         }
         this.tag = this.currentBehavior;
         
-        if (oldBehavior !== "chase") {
-          console.log(`🏃 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → CHASE (target: ${this.currentChaseTarget}) - exited attack range`);
-        }
+        console.log(`🏃 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → CHASE (target: ${this.currentChaseTarget}) - exited attack range`);
         return this.currentBehavior;
       }
     } else if ((env.distanceToNearestPlayer ?? Infinity) <= attackEnterRange) {
@@ -138,9 +136,7 @@ export class Mob extends WorldLife {
         this.currentChaseTarget = ""; // Clear chase target
         this.tag = this.currentBehavior;
         
-        if (oldBehavior !== "wander") {
-          console.log(`🚶 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → WANDER - exited chase range`);
-        }
+        console.log(`🚶 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → WANDER - exited chase range`);
         return this.currentBehavior;
       }
     } else if ((env.distanceToNearestPlayer ?? Infinity) <= chaseEnterRange && (env.distanceToNearestPlayer ?? Infinity) > attackExitRange) {
