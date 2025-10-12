@@ -100,6 +100,8 @@ export abstract class WorldLife extends WorldObject {
     const damageReduction = Math.min(totalDefense, damage * 0.8); // Cap at 80% reduction
     const finalDamage = Math.max(1, damage - damageReduction); // Minimum 1 damage
     
+    console.log(`💔 DAMAGE: ${this.id} took ${finalDamage} damage (${damage} - ${damageReduction} reduction), HP: ${this.currentHealth} → ${this.currentHealth - finalDamage}`);
+    
     this.currentHealth = Math.max(0, this.currentHealth - finalDamage);
     
     if (this.currentHealth <= 0) {
@@ -109,7 +111,7 @@ export abstract class WorldLife extends WorldObject {
     
     // Trigger invulnerability frames (optional)
     if (finalDamage > 0) {
-      this.triggerInvulnerability(500); // 500ms invulnerability
+      this.triggerInvulnerability(100); // 100ms invulnerability (reduced from 500ms)
     }
     
     return false; // Entity survived
