@@ -174,8 +174,15 @@ export abstract class WorldLife extends WorldObject {
       threshold = 0.1; // Higher threshold for explicit directions
     } else {
       // Use AI desired direction (for mobs) or actual velocity (for players)
-      sourceVx = this.vx;
-      sourceVy = this.vy;
+      if ('desiredVx' in this && 'desiredVy' in this) {
+        // Mob: use AI desired direction
+        sourceVx = (this as any).desiredVx;
+        sourceVy = (this as any).desiredVy;
+      } else {
+        // Player: use actual velocity
+        sourceVx = this.vx;
+        sourceVy = this.vy;
+      }
       threshold = 0.01; // Lower threshold for AI intent
     }
     
