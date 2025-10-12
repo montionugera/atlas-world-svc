@@ -88,41 +88,74 @@ export class Mob extends WorldLife {
     const effectiveChaseRange = this.radius + this.chaseRange + 4; // mob radius + chase range + player radius
     
     // PRIORITY 1: Attack if very close to player (highest priority)
-    if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveAttackRange) {
+    // Use hysteresis: enter attack at close range, exit attack at slightly farther range
+    const attackEnterRange = effectiveAttackRange;
+    const attackExitRange = effectiveAttackRange + 2; // 2 units of hysteresis
+    
+    if (this.currentBehavior === "attack") {
+      // Already attacking - only exit if player moves far enough away
+      if ((env.distanceToNearestPlayer ?? Infinity) > attackExitRange) {
+        const oldBehavior = this.currentBehavior;
+        this.currentBehavior = "chase"; // Switch to chase when exiting attack
+        this.currentAttackTarget = ""; // Clear attack target
+        if (env.nearestPlayer) {
+          this.currentChaseTarget = env.nearestPlayer.id || "unknown";
+        }
+        this.tag = this.currentBehavior;
+        
+        if (oldBehavior !== "chase") {
+          console.log(`🏃 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → CHASE (target: ${this.currentChaseTarget}) - exited attack range`);
+        }
+        return this.currentBehavior;
+      }
+    } else if ((env.distanceToNearestPlayer ?? Infinity) <= attackEnterRange) {
+      // Enter attack mode
       const oldBehavior = this.currentBehavior;
       this.currentBehavior = "attack";
       this.behaviorLockedUntil = now + 1000; // 1 second lock for attack
-      // Set the attack target to the nearest player
       if (env.nearestPlayer) {
         this.currentAttackTarget = env.nearestPlayer.id || "unknown";
       }
       this.currentChaseTarget = ""; // Clear chase target when switching to attack
       this.tag = this.currentBehavior;
       
-      // Log behavior change
       if (oldBehavior !== "attack") {
         console.log(`🔥 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → ATTACK (target: ${this.currentAttackTarget})`);
       }
-      
       return this.currentBehavior;
     }
 
     // PRIORITY 2: Chase if within chase range but outside attack range
-    if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveChaseRange && (env.distanceToNearestPlayer ?? Infinity) > effectiveAttackRange) {
+    // Use hysteresis: enter chase at medium range, exit chase at farther range
+    const chaseEnterRange = effectiveChaseRange;
+    const chaseExitRange = effectiveChaseRange + 3; // 3 units of hysteresis
+    
+    if (this.currentBehavior === "chase") {
+      // Already chasing - only exit if player moves far enough away
+      if ((env.distanceToNearestPlayer ?? Infinity) > chaseExitRange) {
+        const oldBehavior = this.currentBehavior;
+        this.currentBehavior = "wander";
+        this.currentChaseTarget = ""; // Clear chase target
+        this.tag = this.currentBehavior;
+        
+        if (oldBehavior !== "wander") {
+          console.log(`🚶 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → WANDER - exited chase range`);
+        }
+        return this.currentBehavior;
+      }
+    } else if ((env.distanceToNearestPlayer ?? Infinity) <= chaseEnterRange && (env.distanceToNearestPlayer ?? Infinity) > attackExitRange) {
+      // Enter chase mode (but not if we're already in attack)
       const oldBehavior = this.currentBehavior;
       this.currentBehavior = "chase";
       this.currentAttackTarget = ""; // Clear attack target when switching to chase
-      // Set the chase target to the nearest player
       if (env.nearestPlayer) {
         this.currentChaseTarget = env.nearestPlayer.id || "unknown";
       }
       this.tag = this.currentBehavior;
       
-      // Log behavior change
       if (oldBehavior !== "chase") {
         console.log(`🏃 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → CHASE (target: ${this.currentChaseTarget})`);
       }
-      
       return this.currentBehavior;
     }
 
