@@ -88,8 +88,8 @@ export class Mob extends WorldLife {
     const distance = env.distanceToNearestPlayer ?? Infinity;
     const oldBehavior = this.currentBehavior;
     
-    // Check boundary only when very close to boundary (not just near)
-    const boundaryThreshold = 15; // Reduced from 30 to be less aggressive
+    // Check boundary only when extremely close (2px excluding radius)
+    const boundaryThreshold = 2; // Very close to boundary
     const worldWidth = env.worldBounds?.width ?? 400;
     const worldHeight = env.worldBounds?.height ?? 300;
     const veryNearBoundary = this.x < boundaryThreshold || 
@@ -97,13 +97,7 @@ export class Mob extends WorldLife {
                             this.y < boundaryThreshold || 
                             this.y > worldHeight - boundaryThreshold;
     
-    if (veryNearBoundary) {
-      // Very close to boundary: Avoid boundary behavior
-      this.currentBehavior = "avoidBoundary";
-      this.behaviorLockedUntil = now + 300; // Shorter lock time
-      this.currentAttackTarget = "";
-      this.currentChaseTarget = "";
-    } else if (distance <= 12) {
+    if (distance <= 12) {
       // Very close: Attack
       this.currentBehavior = "attack";
       this.behaviorLockedUntil = now + 1000; // 1 second lock
@@ -119,6 +113,12 @@ export class Mob extends WorldLife {
         this.currentChaseTarget = env.nearestPlayer.id || "unknown";
       }
       this.currentAttackTarget = "";
+    } else if (veryNearBoundary) {
+      // Very close to boundary: Avoid boundary behavior (only when not attacking/chasing)
+      this.currentBehavior = "avoidBoundary";
+      this.behaviorLockedUntil = now + 200; // Short lock time
+      this.currentAttackTarget = "";
+      this.currentChaseTarget = "";
     } else {
       // Far: Wander
       this.currentBehavior = "wander";
@@ -150,9 +150,9 @@ export class Mob extends WorldLife {
       const worldWidth = env.worldBounds?.width ?? 400;
       const worldHeight = env.worldBounds?.height ?? 300;
       
-      // Calculate avoidance force based on distance to each boundary
-      let avoidX = 0, avoidY = 0;
-      const boundaryThreshold = 15; // Match the detection threshold
+           // Calculate avoidance force based on distance to each boundary
+           let avoidX = 0, avoidY = 0;
+           const boundaryThreshold = 2; // Match the detection threshold
       
       // Avoid left boundary
       if (this.x < boundaryThreshold) {

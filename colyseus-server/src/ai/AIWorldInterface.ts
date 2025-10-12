@@ -91,7 +91,7 @@ export class AIWorldInterface {
   }
 
   // Helper: is mob near world boundary
-  isNearBoundary(mob: Mob, threshold: number = 15): boolean {
+  isNearBoundary(mob: Mob, threshold: number = 2): boolean {
     const { width, height } = this.gameState;
     const left = mob.x;
     const right = width - mob.x;
