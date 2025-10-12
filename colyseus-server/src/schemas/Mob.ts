@@ -89,6 +89,7 @@ export class Mob extends WorldLife {
     
     // PRIORITY 1: Attack if very close to player (highest priority)
     if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveAttackRange) {
+      const oldBehavior = this.currentBehavior;
       this.currentBehavior = "attack";
       this.behaviorLockedUntil = now + 1000; // 1 second lock for attack
       // Set the attack target to the nearest player
@@ -97,11 +98,18 @@ export class Mob extends WorldLife {
       }
       this.currentChaseTarget = ""; // Clear chase target when switching to attack
       this.tag = this.currentBehavior;
+      
+      // Log behavior change
+      if (oldBehavior !== "attack") {
+        console.log(`🔥 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → ATTACK (target: ${this.currentAttackTarget})`);
+      }
+      
       return this.currentBehavior;
     }
 
     // PRIORITY 2: Chase if within chase range but outside attack range
     if ((env.distanceToNearestPlayer ?? Infinity) <= effectiveChaseRange && (env.distanceToNearestPlayer ?? Infinity) > effectiveAttackRange) {
+      const oldBehavior = this.currentBehavior;
       this.currentBehavior = "chase";
       this.currentAttackTarget = ""; // Clear attack target when switching to chase
       // Set the chase target to the nearest player
@@ -109,6 +117,12 @@ export class Mob extends WorldLife {
         this.currentChaseTarget = env.nearestPlayer.id || "unknown";
       }
       this.tag = this.currentBehavior;
+      
+      // Log behavior change
+      if (oldBehavior !== "chase") {
+        console.log(`🏃 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → CHASE (target: ${this.currentChaseTarget})`);
+      }
+      
       return this.currentBehavior;
     }
 
@@ -121,10 +135,17 @@ export class Mob extends WorldLife {
       return this.currentBehavior;
     }
 
+    const oldBehavior = this.currentBehavior;
     this.currentBehavior = "wander";
     this.currentAttackTarget = ""; // Clear attack target when switching to wander
     this.currentChaseTarget = ""; // Clear chase target when switching to wander
     this.tag = this.currentBehavior;
+    
+    // Log behavior change to idle/wander
+    if (oldBehavior !== "wander") {
+      console.log(`🚶 BEHAVIOR CHANGE: ${this.id} ${oldBehavior} → WANDER`);
+    }
+    
     return this.currentBehavior;
   }
 

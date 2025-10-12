@@ -115,7 +115,7 @@ export class GameState extends Schema {
         const mobBody = physicsManager.getBody(mob.id);
         if (mobBody) {
           // Steering impulse: let mob compute based on current/desired velocity
-        const currentVel = mobBody.getLinearVelocity();
+          const currentVel = mobBody.getLinearVelocity();
           const desired = { x: mob.desiredVx, y: mob.desiredVy };
           const mass = mob.mass = mobBody.getMass();
           const impulse = mob.computeSteeringImpulse({
@@ -150,6 +150,8 @@ export class GameState extends Schema {
           }
           
           // Update mob heading: simple rule - if chasing/attacking, point toward target, otherwise use velocity
+          const oldHeading = mob.heading;
+          
           if (mob.currentBehavior === "attack" && mob.currentAttackTarget) {
             const attackTarget = this.players.get(mob.currentAttackTarget);
             if (attackTarget) {
@@ -157,6 +159,10 @@ export class GameState extends Schema {
               const dy = attackTarget.y - mob.y;
               if (Math.hypot(dx, dy) > 0) {
                 mob.updateHeading(dx, dy);
+                // Log heading change for attack behavior
+                if (Math.abs(mob.heading - oldHeading) > 0.1) {
+                  console.log(`🎯 ATTACK HEADING: ${mob.id} → ${mob.currentAttackTarget} (${mob.heading.toFixed(2)} rad, ${(mob.heading * 180 / Math.PI).toFixed(1)}°)`);
+                }
               }
             }
           } else if (mob.currentBehavior === "chase" && mob.currentChaseTarget) {
@@ -166,11 +172,15 @@ export class GameState extends Schema {
               const dy = chaseTarget.y - mob.y;
               if (Math.hypot(dx, dy) > 0) {
                 mob.updateHeading(dx, dy);
+                // Log heading change for chase behavior
+                if (Math.abs(mob.heading - oldHeading) > 0.1) {
+                  console.log(`🏃 CHASE HEADING: ${mob.id} → ${mob.currentChaseTarget} (${mob.heading.toFixed(2)} rad, ${(mob.heading * 180 / Math.PI).toFixed(1)}°)`);
+                }
               }
             }
           } else {
             // Default: use actual velocity direction
-            mob.updateHeading(mob.vx, mob.vy);
+            // mob.updateHeading(mob.vx, mob.vy);
           }
           mob.update(GAME_CONFIG.tickRate);
           
