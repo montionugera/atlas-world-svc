@@ -61,8 +61,8 @@ export const drawPlayers = (
       RENDER_CONFIG.playerNameFont
     );
     
-    // Draw heading indicator (smaller for player)
-    if (player.heading !== undefined) {
+    // Draw heading indicator (smaller for player) - only when moving
+    if (player.heading !== undefined && (player.vx !== 0 || player.vy !== 0)) {
       drawHeading(
         ctx,
         x,
