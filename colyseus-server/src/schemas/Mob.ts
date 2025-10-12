@@ -88,14 +88,15 @@ export class Mob extends WorldLife {
     const distance = env.distanceToNearestPlayer ?? Infinity;
     const oldBehavior = this.currentBehavior;
     
-    // Check boundary only when extremely close (2px excluding radius)
-    const boundaryThreshold = 2; // Very close to boundary
+    // Check boundary with buffer + radius to prevent wall hitting
+    const boundaryBuffer = 5; // Buffer distance from wall
     const worldWidth = env.worldBounds?.width ?? 400;
     const worldHeight = env.worldBounds?.height ?? 300;
-    const veryNearBoundary = this.x < boundaryThreshold || 
-                            this.x > worldWidth - boundaryThreshold ||
-                            this.y < boundaryThreshold || 
-                            this.y > worldHeight - boundaryThreshold;
+    const effectiveThreshold = boundaryBuffer + this.radius; // Account for mob size
+    const veryNearBoundary = this.x < effectiveThreshold || 
+                            this.x > worldWidth - effectiveThreshold ||
+                            this.y < effectiveThreshold || 
+                            this.y > worldHeight - effectiveThreshold;
     
     if (distance <= 12) {
       // Very close: Attack
@@ -152,26 +153,27 @@ export class Mob extends WorldLife {
       
            // Calculate avoidance force based on distance to each boundary
            let avoidX = 0, avoidY = 0;
-           const boundaryThreshold = 2; // Match the detection threshold
+           const boundaryBuffer = 5; // Buffer distance from wall
+           const effectiveThreshold = boundaryBuffer + this.radius; // Account for mob size
       
       // Avoid left boundary
-      if (this.x < boundaryThreshold) {
-        avoidX += (boundaryThreshold - this.x) / boundaryThreshold;
+      if (this.x < effectiveThreshold) {
+        avoidX += (effectiveThreshold - this.x) / effectiveThreshold;
       }
       
       // Avoid right boundary
-      if (this.x > worldWidth - boundaryThreshold) {
-        avoidX -= (this.x - (worldWidth - boundaryThreshold)) / boundaryThreshold;
+      if (this.x > worldWidth - effectiveThreshold) {
+        avoidX -= (this.x - (worldWidth - effectiveThreshold)) / effectiveThreshold;
       }
       
       // Avoid top boundary
-      if (this.y < boundaryThreshold) {
-        avoidY += (boundaryThreshold - this.y) / boundaryThreshold;
+      if (this.y < effectiveThreshold) {
+        avoidY += (effectiveThreshold - this.y) / effectiveThreshold;
       }
       
       // Avoid bottom boundary
-      if (this.y > worldHeight - boundaryThreshold) {
-        avoidY -= (this.y - (worldHeight - boundaryThreshold)) / boundaryThreshold;
+      if (this.y > worldHeight - effectiveThreshold) {
+        avoidY -= (this.y - (worldHeight - effectiveThreshold)) / effectiveThreshold;
       }
       
       // Normalize and apply speed
