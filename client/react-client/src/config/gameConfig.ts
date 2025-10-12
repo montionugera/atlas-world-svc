@@ -24,6 +24,17 @@ export const RENDER_CONFIG = {
   hudLineSpacing: 20
 } as const;
 
+export const GRID_CONFIG = {
+  enabled: true,
+  size: 10, // Grid cell size in game units (10x10 grid for 100x100 world)
+  color: 'rgba(255, 255, 255, 0.1)',
+  lineWidth: 1,
+  showCoordinates: true,
+  coordinateFont: '10px Arial',
+  coordinateColor: 'rgba(255, 255, 255, 0.3)',
+  coordinateOffset: 5
+} as const;
+
 export const COLORS = {
   mob: '#ff6b6b',
   player: '#4ecdc4',

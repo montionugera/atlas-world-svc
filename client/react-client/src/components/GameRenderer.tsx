@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { GameState } from '../types/game';
 import { calculateScale, clearCanvas } from '../utils/drawingUtils';
+import { drawGrid } from '../utils/gridUtils';
 import { drawMap } from '../renderers/mapRenderer';
 import { drawMobs } from '../renderers/mobRenderer';
 import { drawPlayers } from '../renderers/playerRenderer';
@@ -45,6 +46,7 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
       if (gameState) {
         const scale = calculateScale(gameState, canvas);
         drawMap(ctx, gameState, scale);
+        drawGrid(ctx, canvas.width, canvas.height, scale);
         drawMobs(ctx, gameState.mobs, scale);
         drawPlayers(ctx, gameState.players, playerId, scale);
         drawHUD(ctx, gameState, updateCount, fps, updateRate, roomId);
