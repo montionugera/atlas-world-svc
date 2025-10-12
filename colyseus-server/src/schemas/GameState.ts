@@ -161,7 +161,8 @@ export class GameState extends Schema {
                 mob.updateHeading(dx, dy);
                 // Log heading change for attack behavior (only significant changes)
                 if (Math.abs(mob.heading - oldHeading) > 0.5) {
-                  console.log(`🎯 ATTACK HEADING: ${mob.id} → ${mob.currentAttackTarget} (${mob.heading.toFixed(2)} rad, ${(mob.heading * 180 / Math.PI).toFixed(1)}°)`);
+                  const lockStatus = mob.behaviorLockedUntil > Date.now() ? 'LOCKED' : 'FREE';
+                  console.log(`🎯 ATTACK HEADING: ${mob.id} → ${mob.currentAttackTarget} (${mob.heading.toFixed(2)} rad, ${(mob.heading * 180 / Math.PI).toFixed(1)}°) [${lockStatus}]`);
                 }
               }
             }
@@ -174,7 +175,8 @@ export class GameState extends Schema {
                 mob.updateHeading(dx, dy);
                 // Log heading change for chase behavior (only significant changes)
                 if (Math.abs(mob.heading - oldHeading) > 0.5) {
-                  console.log(`🏃 CHASE HEADING: ${mob.id} → ${mob.currentChaseTarget} (${mob.heading.toFixed(2)} rad, ${(mob.heading * 180 / Math.PI).toFixed(1)}°)`);
+                  const lockStatus = mob.behaviorLockedUntil > Date.now() ? 'LOCKED' : 'FREE';
+                  console.log(`🏃 CHASE HEADING: ${mob.id} → ${mob.currentChaseTarget} (${mob.heading.toFixed(2)} rad, ${(mob.heading * 180 / Math.PI).toFixed(1)}°) [${lockStatus}]`);
                 }
               }
             }
