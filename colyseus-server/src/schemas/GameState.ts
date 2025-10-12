@@ -168,6 +168,9 @@ export class GameState extends Schema {
               mob.targetY = chaseTarget.y;
               mob.updateHeadingToTarget();
             }
+          } else {
+            // Wander behavior: use AI desired direction
+            mob.updateHeading();
           }
           
           // Detect physics-induced heading anomalies (check if heading changed but no AI behavior change)
@@ -191,8 +194,7 @@ export class GameState extends Schema {
         // Fallback to traditional movement if no physics
         mob.updatePosition();
         mob.applyBoundaryPhysics(this.width, this.height);
-        // Update mob heading based on AI desired direction (no physics impulse in this case)
-        mob.updateHeading();
+        // Mob heading is already updated by updateHeadingToTarget() above
         mob.update(GAME_CONFIG.tickRate);
       }
     }
