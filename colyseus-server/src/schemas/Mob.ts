@@ -78,7 +78,7 @@ export class Mob extends WorldLife {
     const effectiveAttackRange = this.radius + this.attackRange + 4; // mob radius + attack range + player radius
     
     
-    // Check behavior lock (but allow attack override above)
+    // Check behavior lock - prevent rapid switching with longer cooldown
     if (this.behaviorLockedUntil && now < this.behaviorLockedUntil) {
       this.tag = this.currentBehavior;
       return this.currentBehavior;
@@ -88,9 +88,9 @@ export class Mob extends WorldLife {
     const effectiveChaseRange = this.radius + this.chaseRange + 4; // mob radius + chase range + player radius
     
     // PRIORITY 1: Attack if very close to player (highest priority)
-    // Use hysteresis: enter attack at close range, exit attack at slightly farther range
+    // Use hysteresis: enter attack at close range, exit attack at much farther range
     const attackEnterRange = effectiveAttackRange;
-    const attackExitRange = effectiveAttackRange + 2; // 2 units of hysteresis
+    const attackExitRange = effectiveAttackRange + 8; // 8 units of hysteresis for stability
     
     if (this.currentBehavior === "attack") {
       // Already attacking - only exit if player moves far enough away
@@ -110,7 +110,7 @@ export class Mob extends WorldLife {
       // Enter attack mode
       const oldBehavior = this.currentBehavior;
       this.currentBehavior = "attack";
-      this.behaviorLockedUntil = now + 1000; // 1 second lock for attack
+      this.behaviorLockedUntil = now + 2000; // 2 second lock for attack to prevent rapid switching
       if (env.nearestPlayer) {
         this.currentAttackTarget = env.nearestPlayer.id || "unknown";
       }
@@ -124,9 +124,9 @@ export class Mob extends WorldLife {
     }
 
     // PRIORITY 2: Chase if within chase range but outside attack range
-    // Use hysteresis: enter chase at medium range, exit chase at farther range
+    // Use hysteresis: enter chase at medium range, exit chase at much farther range
     const chaseEnterRange = effectiveChaseRange;
-    const chaseExitRange = effectiveChaseRange + 3; // 3 units of hysteresis
+    const chaseExitRange = effectiveChaseRange + 10; // 10 units of hysteresis for stability
     
     if (this.currentBehavior === "chase") {
       // Already chasing - only exit if player moves far enough away
@@ -143,6 +143,7 @@ export class Mob extends WorldLife {
       // Enter chase mode (but not if we're already in attack)
       const oldBehavior = this.currentBehavior;
       this.currentBehavior = "chase";
+      this.behaviorLockedUntil = now + 1500; // 1.5 second lock for chase to prevent rapid switching
       this.currentAttackTarget = ""; // Clear attack target when switching to chase
       if (env.nearestPlayer) {
         this.currentChaseTarget = env.nearestPlayer.id || "unknown";
