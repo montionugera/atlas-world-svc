@@ -87,8 +87,14 @@ export class Mob extends WorldLife {
     const distance = env.distanceToNearestPlayer ?? Infinity;
     const oldBehavior = this.currentBehavior;
     
-    // Simple distance-based behavior with wider gaps
-    if (distance <= 12) {
+    // Check boundary first (highest priority)
+    if (env.nearBoundary) {
+      // Near boundary: Avoid boundary behavior
+      this.currentBehavior = "avoidBoundary";
+      this.behaviorLockedUntil = now + 500; // 0.5 second lock
+      this.currentAttackTarget = "";
+      this.currentChaseTarget = "";
+    } else if (distance <= 12) {
       // Very close: Attack
       this.currentBehavior = "attack";
       this.behaviorLockedUntil = now + 1000; // 1 second lock
@@ -126,8 +132,62 @@ export class Mob extends WorldLife {
     nearestPlayer?: { x: number; y: number; id: string } | null;
     distanceToNearestPlayer?: number;
     maxSpeed?: number;
+    worldBounds?: { width: number; height: number };
   }): { x: number; y: number } {
     const maxSpeed = env.maxSpeed ?? 24;
+    
+    // Avoid boundary behavior: move away from nearest boundary
+    if (this.currentBehavior === "avoidBoundary") {
+      const worldWidth = env.worldBounds?.width ?? 400;
+      const worldHeight = env.worldBounds?.height ?? 300;
+      
+      // Calculate avoidance force based on distance to each boundary
+      let avoidX = 0, avoidY = 0;
+      const boundaryThreshold = 30;
+      
+      // Avoid left boundary
+      if (this.x < boundaryThreshold) {
+        avoidX += (boundaryThreshold - this.x) / boundaryThreshold;
+      }
+      
+      // Avoid right boundary
+      if (this.x > worldWidth - boundaryThreshold) {
+        avoidX -= (this.x - (worldWidth - boundaryThreshold)) / boundaryThreshold;
+      }
+      
+      // Avoid top boundary
+      if (this.y < boundaryThreshold) {
+        avoidY += (boundaryThreshold - this.y) / boundaryThreshold;
+      }
+      
+      // Avoid bottom boundary
+      if (this.y > worldHeight - boundaryThreshold) {
+        avoidY -= (this.y - (worldHeight - boundaryThreshold)) / boundaryThreshold;
+      }
+      
+      // Normalize and apply speed
+      const magnitude = Math.hypot(avoidX, avoidY);
+      if (magnitude > 0) {
+        const speed = Math.min(maxSpeed * 0.7, 20); // Moderate speed for avoidance
+        return { 
+          x: (avoidX / magnitude) * speed, 
+          y: (avoidY / magnitude) * speed 
+        };
+      }
+      
+      // If no clear direction, move toward center
+      const centerX = worldWidth / 2;
+      const centerY = worldHeight / 2;
+      const dx = centerX - this.x;
+      const dy = centerY - this.y;
+      const distance = Math.hypot(dx, dy);
+      if (distance > 0) {
+        const speed = Math.min(maxSpeed * 0.5, 15);
+        return { x: (dx / distance) * speed, y: (dy / distance) * speed };
+      }
+      
+      return { x: 0, y: 0 };
+    }
     
     // Attack behavior: stop moving (stand and attack)
     if (this.currentBehavior === "attack") {

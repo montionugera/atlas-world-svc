@@ -90,7 +90,8 @@ export class MobAIModule {
         const desired = mob.computeDesiredVelocity({
           nearestPlayer: env.nearestPlayer ? { x: env.nearestPlayer.x, y: env.nearestPlayer.y, id: env.nearestPlayer.id } : null,
           distanceToNearestPlayer: env.distanceToNearestPlayer,
-          maxSpeed: 24
+          maxSpeed: 24,
+          worldBounds: env.worldBounds
         });
         // Apply decision to world
         this.worldInterface.applyAIDecision(mob.id, {
