@@ -158,6 +158,14 @@ export class GameState extends Schema {
               // Set target position for heading calculation
               mob.targetX = attackTarget.x;
               mob.targetY = attackTarget.y;
+              
+              // Attempt to attack the target
+              const attackSuccess = mob.attack(attackTarget);
+              if (attackSuccess) {
+                console.log(`⚔️ ATTACK: ${mob.id} killed ${attackTarget.id}!`);
+              } else if (mob.canAttack()) {
+                console.log(`⚔️ ATTACK: ${mob.id} attacked ${attackTarget.id} for ${mob.attackDamage} damage!`);
+              }
             }
           } else if (mob.currentBehavior === "chase" && mob.currentChaseTarget) {
             const chaseTarget = this.players.get(mob.currentChaseTarget);
