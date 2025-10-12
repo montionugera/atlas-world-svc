@@ -196,7 +196,7 @@ export class GameState extends Schema {
         mob.updatePosition();
         mob.applyBoundaryPhysics(this.width, this.height);
         // Update mob heading based on AI desired direction (no physics impulse in this case)
-        mob.updateHeadingFromAI(mob.desiredVx, mob.desiredVy);
+        mob.updateHeading();
         mob.update(GAME_CONFIG.tickRate);
       }
     }

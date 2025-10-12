@@ -163,19 +163,25 @@ export abstract class WorldLife extends WorldObject {
     }, duration);
   }
   
-  // Update heading based on movement direction
-  updateHeading(vx: number, vy: number): void {
-    const magnitude = Math.hypot(vx, vy);
-    if (magnitude > 0.1) { // Only update if moving with some speed
-      this.heading = Math.atan2(vy, vx);
+  // Smart heading update - automatically chooses best source
+  updateHeading(vx?: number, vy?: number): void {
+    let sourceVx: number, sourceVy: number, threshold: number;
+    
+    if (vx !== undefined && vy !== undefined) {
+      // Use provided direction (e.g., target direction)
+      sourceVx = vx;
+      sourceVy = vy;
+      threshold = 0.1; // Higher threshold for explicit directions
+    } else {
+      // Use AI desired direction (for mobs) or actual velocity (for players)
+      sourceVx = this.vx;
+      sourceVy = this.vy;
+      threshold = 0.01; // Lower threshold for AI intent
     }
-  }
-
-  // Update heading based on AI desired direction (for mobs)
-  updateHeadingFromAI(desiredVx: number, desiredVy: number): void {
-    const magnitude = Math.hypot(desiredVx, desiredVy);
-    if (magnitude > 0.01) { // Lower threshold for AI decisions - mobs should always show intent
-      this.heading = Math.atan2(desiredVy, desiredVx);
+    
+    const magnitude = Math.hypot(sourceVx, sourceVy);
+    if (magnitude > threshold) {
+      this.heading = Math.atan2(sourceVy, sourceVx);
     }
   }
 
