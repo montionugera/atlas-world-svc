@@ -151,6 +151,7 @@ export class GameState extends Schema {
           
           // Update mob heading: simple rule - if chasing/attacking, point toward target, otherwise use velocity
           const oldHeading = mob.heading;
+          const oldVelocity = { x: mob.vx, y: mob.vy };
           
           if (mob.currentBehavior === "attack" && mob.currentAttackTarget) {
             const attackTarget = this.players.get(mob.currentAttackTarget);
@@ -188,6 +189,17 @@ export class GameState extends Schema {
             // Default: use actual velocity direction
             // mob.updateHeading(mob.vx, mob.vy);
           }
+          
+          // Detect physics-induced heading anomalies
+          const headingChange = Math.abs(mob.heading - oldHeading);
+          const velocityChange = Math.hypot(mob.vx - oldVelocity.x, mob.vy - oldVelocity.y);
+          
+          // Log if heading changed significantly due to physics collision
+          if (headingChange > 1.0 && velocityChange > 5.0) {
+            const headingDiffDegrees = ((mob.heading - oldHeading) * 180 / Math.PI).toFixed(1);
+            console.log(`💥 PHYSICS COLLISION: ${mob.id} heading changed ${headingDiffDegrees}° due to velocity change ${velocityChange.toFixed(1)} (${mob.currentBehavior})`);
+          }
+          
           mob.update(GAME_CONFIG.tickRate);
           
                // Log mob movement every 2000 ticks to reduce spam
