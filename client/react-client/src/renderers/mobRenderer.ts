@@ -48,8 +48,8 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
       RENDER_CONFIG.playerNameFont
     );
 
-    // Draw heading indicator (same as player) - only when moving
-    if (mob.heading !== undefined && (mob.vx !== 0 || mob.vy !== 0)) {
+    // Draw heading indicator (same as player)
+    if (mob.heading !== undefined) {
       drawHeading(
         ctx,
         x,
