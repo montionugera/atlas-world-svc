@@ -89,7 +89,7 @@ export class BattleModule implements BattleActionProcessor {
 
   // Check if attacker can attack target
   canAttack(attacker: WorldLife, target: WorldLife): boolean {
-    if (!attacker.isAlive || !target.isAlive) return false
+    if (!target.isAlive) return false
 
     // Check attack cooldown using high-precision timing
     if (!attacker.canAttack()) {
@@ -97,7 +97,7 @@ export class BattleModule implements BattleActionProcessor {
     }
 
     // Check range
-    const distance = this.getDistance(attacker, target)
+    const distance = attacker.getDistanceTo(target)
     const effectiveRange = attacker.attackRange + (attacker as any).radius + (target as any).radius
     if (distance > effectiveRange) {
       console.log(
@@ -327,7 +327,7 @@ export class BattleModule implements BattleActionProcessor {
 
     // Check range if direction is provided
     if (payload.direction) {
-      const distance = this.getDistance(actor, target)
+      const distance = actor.getDistanceTo(target)
       if (distance > payload.range) {
         console.log(
           `🎯 BATTLE: ${actor.id} attack out of range (${distance.toFixed(1)} > ${payload.range})`
@@ -449,11 +449,7 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Private helper methods
-  private getDistance(entity1: WorldLife, entity2: WorldLife): number {
-    const dx = entity1.x - entity2.x
-    const dy = entity1.y - entity2.y
-    return Math.sqrt(dx * dx + dy * dy)
-  }
+  // Distance handled by WorldObject.getDistanceTo()
 
   private addAttackEvent(event: AttackEvent): void {
     this.attackEvents.push(event)

@@ -62,4 +62,11 @@ export abstract class WorldObject extends Schema {
     physicsBody.angle = this.angle
     physicsBody.angularVelocity = this.angularVelocity
   }
+
+  // Distance helper
+  getDistanceTo(other: WorldObject): number {
+    const dx = this.x - other.x
+    const dy = this.y - other.y
+    return Math.sqrt(dx * dx + dy * dy)
+  }
 }
