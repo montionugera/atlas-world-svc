@@ -175,10 +175,9 @@ export class Mob extends WorldLife {
   computeDesiredVelocity(env: {
     nearestPlayer?: { x: number; y: number; id: string; radius: number } | null
     distanceToNearestPlayer?: number
-    maxSpeed?: number
     worldBounds?: { width: number; height: number }
   }): { x: number; y: number } {
-    const maxSpeed = env.maxSpeed ?? this.maxMoveSpeed
+    const maxSpeed = this.maxMoveSpeed
 
     // Avoid boundary behavior: move away from nearest boundary
     if (this.currentBehavior === 'avoidBoundary') {

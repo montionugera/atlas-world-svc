@@ -30,6 +30,9 @@ export class GameRoom extends Room<GameState> {
 
     // Initialize physics manager
     this.physicsManager = new PlanckPhysicsManager()
+    
+    // Set room ID for physics manager to enable event listening
+    this.physicsManager.setRoomId(this.roomId)
 
     // Initialize game state with room ID
     var gameState = new GameState(options.mapId || 'map-01-sector-a', this.roomId)
@@ -226,6 +229,16 @@ export class GameRoom extends Room<GameState> {
       clearInterval(this.simulationInterval)
       this.simulationInterval = undefined
     }
+  }
+
+  // Create impact effect at specified location
+  public createImpactEffect(x: number, y: number, radius: number, forceIntensity: number, sourceId: string): void {
+    eventBus.emitRoomEvent(this.roomId, RoomEventType.PHYSICS_IMPACT, {
+      area: { x, y, radius },
+      forceIntensity,
+      sourceId,
+      roomId: this.roomId
+    })
   }
 
   // Enable mob chase behavior

@@ -99,7 +99,6 @@ export class MobAIModule {
               }
             : null,
           distanceToNearestPlayer: env.distanceToNearestPlayer,
-          maxSpeed: 24,
           worldBounds: env.worldBounds,
         })
         // Apply decision to world - but respect mob's behavior decision

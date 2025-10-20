@@ -9,6 +9,7 @@ export enum RoomEventType {
   MOB_REMOVED = 'mob:removed',
   BATTLE_ATTACK = 'battle:attack',
   BATTLE_HEAL = 'battle:heal',
+  PHYSICS_IMPACT = 'physics:impact',
 }
 
 export interface PlayerJoinedData {
@@ -43,7 +44,18 @@ export interface BattleHealData {
   roomId: string
 }
 
-export type RoomEventData = PlayerJoinedData | PlayerLeftData | MobSpawnedData | MobRemovedData | BattleAttackData | BattleHealData
+export interface ImpactEffectData {
+  area: {
+    x: number
+    y: number
+    radius: number
+  }
+  forceIntensity: number // 0.5 (basic), 3 (large), 10 (epic)
+  sourceId: string
+  roomId: string
+}
+
+export type RoomEventData = PlayerJoinedData | PlayerLeftData | MobSpawnedData | MobRemovedData | BattleAttackData | BattleHealData | ImpactEffectData
 
 export interface RoomEventPayload {
   eventType: RoomEventType
@@ -158,6 +170,18 @@ export class EventBus extends EventEmitter {
     this.on(eventKey, (payload: RoomEventPayload) => {
       if (payload.eventType === RoomEventType.BATTLE_HEAL) {
         callback(payload.data as BattleHealData)
+      }
+    })
+  }
+
+  /**
+   * Listen to physics impact events
+   */
+  public onRoomEventPhysicsImpact(roomId: string, callback: (data: ImpactEffectData) => void): void {
+    const eventKey = `room-${roomId}:entity-event`
+    this.on(eventKey, (payload: RoomEventPayload) => {
+      if (payload.eventType === RoomEventType.PHYSICS_IMPACT) {
+        callback(payload.data as ImpactEffectData)
       }
     })
   }

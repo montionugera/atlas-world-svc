@@ -82,7 +82,7 @@ export class GameState extends Schema {
         radius,
         attackRange,
         chaseRange,
-        maxMoveSpeed: 20,
+        maxMoveSpeed: 8,
       })
       this.mobs.set(mobId, mob)
 
