@@ -23,6 +23,7 @@ export class Mob extends WorldLife {
   wanderTargetX: number = 0 // Wander target position X
   wanderTargetY: number = 0 // Wander target position Y
   lastWanderTargetTime: number = 0 // When wander target was last set
+  @type('number') maxMoveSpeed: number = 20 // synced to clients; mob movement cap
 
   constructor(options: {
     id: string
@@ -39,6 +40,7 @@ export class Mob extends WorldLife {
     defense?: number
     armor?: number
     density?: number
+    maxMoveSpeed?: number
   }) {
     super({
       id: options.id,
@@ -61,6 +63,9 @@ export class Mob extends WorldLife {
     }
     if (options.chaseRange !== undefined) {
       this.chaseRange = options.chaseRange
+    }
+    if (options.maxMoveSpeed !== undefined) {
+      this.maxMoveSpeed = options.maxMoveSpeed
     }
   }
 
@@ -173,7 +178,7 @@ export class Mob extends WorldLife {
     maxSpeed?: number
     worldBounds?: { width: number; height: number }
   }): { x: number; y: number } {
-    const maxSpeed = env.maxSpeed ?? 24
+    const maxSpeed = env.maxSpeed ?? this.maxMoveSpeed
 
     // Avoid boundary behavior: move away from nearest boundary
     if (this.currentBehavior === 'avoidBoundary') {
@@ -209,7 +214,7 @@ export class Mob extends WorldLife {
       // Normalize and apply speed
       const magnitude = Math.hypot(avoidX, avoidY)
       if (magnitude > 0) {
-        const speed = Math.min(maxSpeed * 0.4, 12) // Gentle speed for avoidance
+        const speed = Math.min(maxSpeed) // Gentle speed for avoidance
         return {
           x: (avoidX / magnitude) * speed,
           y: (avoidY / magnitude) * speed,
@@ -223,7 +228,7 @@ export class Mob extends WorldLife {
       const dy = centerY - this.y
       const distance = Math.hypot(dx, dy)
       if (distance > 0) {
-        const speed = Math.min(maxSpeed * 0.5, 15)
+        const speed = Math.min(maxSpeed)
         return { x: (dx / distance) * speed, y: (dy / distance) * speed }
       }
 
@@ -255,12 +260,12 @@ export class Mob extends WorldLife {
         const maxStoppingSpeed = 3 // Maximum speed that can stop in 50ms with accel 5
 
         // If distance to target (minus mob radius) > 8, use normal chase speed
-        if (effectiveDistance > 5) {
-          const speed = Math.min(maxSpeed * 0.8, 8) // Moderate chase speed
+        if (effectiveDistance > 3) {
+          const speed = Math.min(maxSpeed, this.maxMoveSpeed) // Respect mob cap
           return { x: direction.x * speed, y: direction.y * speed }
         } else {
           // Close to target: use speed that allows stopping in 50ms
-          const speed = Math.min(maxStoppingSpeed, maxSpeed * 0.3)
+          const speed = Math.min(maxStoppingSpeed, this.maxMoveSpeed)
           return { x: direction.x * speed, y: direction.y * speed }
         }
       }
@@ -286,7 +291,7 @@ export class Mob extends WorldLife {
       const distance = Math.hypot(dx, dy)
 
       if (distance > 0.1) {
-        const speed = Math.min(maxSpeed * 0.6, 15) // Slower wander speed
+        const speed = Math.min(maxSpeed * 0.6, this.maxMoveSpeed) // Slower wander speed capped by mob
         return { x: (dx / distance) * speed, y: (dy / distance) * speed }
       }
     }
