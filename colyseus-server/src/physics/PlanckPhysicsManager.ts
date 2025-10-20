@@ -2,7 +2,7 @@ import * as planck from 'planck'
 import { PHYSICS_CONFIG } from '../config/physicsConfig'
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
-import { eventBus, RoomEventType, ImpactEffectData } from '../events/EventBus'
+import { eventBus, RoomEventType, DamageProducedData } from '../events/EventBus'
 
 export class PlanckPhysicsManager {
   private world: planck.World
@@ -450,62 +450,34 @@ export class PlanckPhysicsManager {
   private setupImpactEventListeners(): void {
     if (!this.roomId) return
 
-    // Listen for physics impact events
-    eventBus.onRoomEventPhysicsImpact(this.roomId, (data: ImpactEffectData) => {
-      console.log(`💥 PHYSICS IMPACT: ${data.sourceId} at (${data.area.x}, ${data.area.y}) with intensity ${data.forceIntensity}`)
-      this.applyImpactEffect(data)
+    // Listen for damage-produced events to apply small knockback
+    eventBus.onRoomEventBattleDamageProduced(this.roomId, (data: DamageProducedData) => {
+      this.applyDamageKnockback(data)
     })
   }
 
-  // Apply impact effect to bodies in the area
-  private applyImpactEffect(data: ImpactEffectData): void {
-    const { area, forceIntensity, sourceId } = data
-    const impactPosition = planck.Vec2(area.x, area.y)
-    
-    // Find all bodies within the impact radius
-    const affectedBodies: Array<{ body: planck.Body; entityId: string; distance: number }> = []
-    
-    for (const [entityId, body] of this.bodies) {
-      const bodyPosition = body.getPosition()
-      const distance = Math.sqrt(
-        Math.pow(bodyPosition.x - area.x, 2) + Math.pow(bodyPosition.y - area.y, 2)
-      )
-      
-      if (distance <= area.radius) {
-        affectedBodies.push({ body, entityId, distance })
-      }
-    }
-    
-    // Apply impulse forces to affected bodies
-    for (const { body, entityId, distance } of affectedBodies) {
-      // Skip the source entity to avoid self-impulse
-      if (entityId === sourceId) continue
-      
-      const bodyPosition = body.getPosition()
-      const direction = planck.Vec2(
-        bodyPosition.x - area.x,
-        bodyPosition.y - area.y
-      )
-      
-      // Normalize direction and apply distance-based force reduction
-      const directionLength = Math.sqrt(direction.x * direction.x + direction.y * direction.y)
-      if (directionLength > 0) {
-        const normalizedX = direction.x / directionLength
-        const normalizedY = direction.y / directionLength
-        const distanceFactor = Math.max(0, 1 - (distance / area.radius)) // Linear falloff
-        const impulseMagnitude = forceIntensity * distanceFactor
-        
-        // Apply impulse in the direction away from impact center
-        const impulse = planck.Vec2(
-          normalizedX * impulseMagnitude,
-          normalizedY * impulseMagnitude
-        )
-        
-        body.applyLinearImpulse(impulse, body.getWorldCenter())
-        
-        console.log(`💥 IMPACT: Applied ${impulseMagnitude.toFixed(2)} impulse to ${entityId} at distance ${distance.toFixed(2)}`)
-      }
-    }
+  // Apply knockback to taker away from attacker (~2 units impulse)
+  private applyDamageKnockback(data: DamageProducedData): void {
+    const { attacker, taker } = data
+    const takerBody = this.bodies.get(taker.id)
+    if (!takerBody) return
+
+    const dirX = taker.x - attacker.x
+    const dirY = taker.y - attacker.y
+    const len = Math.sqrt(dirX * dirX + dirY * dirY) || 1
+    const nx = dirX / len
+    const ny = dirY / len
+
+    const impulseMagnitude = 2 // ~2 units as requested
+    const impulse = planck.Vec2(nx * impulseMagnitude, ny * impulseMagnitude)
+    takerBody.applyLinearImpulse(impulse, takerBody.getWorldCenter())
+
+    // Debug: knockback application
+    console.log(
+      `💥 KNOCKBACK: attacker=${attacker.id} -> taker=${taker.id} dir=(${nx.toFixed(2)}, ${ny.toFixed(
+        2
+      )}) impulse=(${impulse.x.toFixed(2)}, ${impulse.y.toFixed(2)})`
+    )
   }
 
   // Get all bodies count
