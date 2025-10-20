@@ -90,16 +90,9 @@ export class BattleModule implements BattleActionProcessor {
   // Check if attacker can attack target
   canAttack(attacker: WorldLife, target: WorldLife): boolean {
     if (!attacker.isAlive || !target.isAlive) return false
-    if (attacker.isInvulnerable) return false
 
     // Check attack cooldown using high-precision timing
-    const now = performance.now()
-    const timeSinceLastAttack = now - attacker.lastAttackTime
-    if (timeSinceLastAttack < attacker.attackDelay) {
-      // Debug: cooldown not ready
-      console.log(
-        `⏱️ BATTLE: ${attacker.id} cooldown ${timeSinceLastAttack.toFixed(1)}ms / ${attacker.attackDelay}ms`
-      )
+    if (!attacker.canAttack()) {
       return false
     }
 
