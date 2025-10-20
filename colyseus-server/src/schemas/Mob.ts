@@ -410,46 +410,22 @@ export class Mob extends WorldLife {
       return { attacked: false }
     }
 
-    // Attempt to attack if conditions are met
-    if (this.canAttack() && !this.isAttacking) {
-      // Emit battle attack event to event bus
-      const attackData: BattleAttackData = {
-        actorId: this.id,
-        targetId: attackTarget.id,
-        damage: this.attackDamage,
-        range: this.attackRange,
-        roomId: roomId || ''
-      }
-
-      // Emit the battle attack event
-      eventBus.emitRoomEvent(roomId || '', RoomEventType.BATTLE_ATTACK, attackData)
-      console.log(
-        `📡 MOB ${this.id} emitted battle attack event for ${attackTarget.id}`
-      )
-
-      // Debug once per attempt
-      const dx = attackTarget.x - this.x
-      const dy = attackTarget.y - this.y
-      const dist = Math.sqrt(dx * dx + dy * dy)
-      const effRange = this.attackRange + (this as any).radius + (attackTarget as any).radius
-      console.log(
-        `🗡️ MOB ATTACK TRY: ${this.id} -> ${attackTarget.id} dist=${dist.toFixed(2)} effRange=${effRange.toFixed(2)} cdReady=${performance.now() - this.lastAttackTime >= this.attackDelay}`
-      )
-
-      // Update mob state
-      this.lastAttackTime = performance.now()
-      this.lastAttackedTarget = attackTarget.id
-      this.isAttacking = true
-
-      // Reset attacking state after animation
-      setTimeout(() => {
-        this.isAttacking = false
-      }, 200)
-
-      return { attacked: true, targetId: attackTarget.id, eventEmitted: true }
+    // Emit attack event - let BattleManager handle all battle logic
+    const attackData: BattleAttackData = {
+      actorId: this.id,
+      targetId: attackTarget.id,
+      damage: this.attackDamage,
+      range: this.attackRange,
+      roomId: roomId || ''
     }
 
-    return { attacked: false }
+    // Emit the battle attack event
+    eventBus.emitRoomEvent(roomId || '', RoomEventType.BATTLE_ATTACK, attackData)
+    console.log(
+      `📡 MOB ${this.id} emitted battle attack event for ${attackTarget.id}`
+    )
+
+    return { attacked: true, targetId: attackTarget.id, eventEmitted: true }
   }
 
   // Generate a random wander target

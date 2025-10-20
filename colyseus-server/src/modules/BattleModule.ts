@@ -45,7 +45,7 @@ export class BattleModule implements BattleActionProcessor {
     this.gameState = gameState
   }
 
-  // Process an attack between two entities
+  // Process a direct attack between two entities (core attack logic)
   processAttack(attacker: WorldLife, target: WorldLife): AttackEvent | null {
     // Validate attack conditions
     if (!this.canAttack(attacker, target)) {
@@ -283,7 +283,7 @@ export class BattleModule implements BattleActionProcessor {
 
       switch (message.actionKey) {
         case 'attack':
-          return this.processAttackAction(
+          return this.handleAttackMessage(
             actor,
             target,
             message.actionPayload as AttackActionPayload
@@ -319,8 +319,8 @@ export class BattleModule implements BattleActionProcessor {
     }
   }
 
-  // Process attack action message
-  private processAttackAction(
+  // Handle attack message from message system (wrapper around processAttack)
+  private handleAttackMessage(
     actor: WorldLife,
     target: WorldLife | null,
     payload: AttackActionPayload
