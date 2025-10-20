@@ -208,11 +208,11 @@ export class PlanckPhysicsManager {
 
   // Update physics simulation with player forces and mob physics
   update(deltaTime: number, players: Map<string, any>, mobs: Map<string, any>) {
-    // Apply player movement forces
-    this.applyPlayerForces(players)
+    // Process player input and apply movement forces
+    this.processPlayerInput(players)
 
-    // Apply mob steering forces
-    this.applyMobForces(mobs)
+    // Process mob steering and apply forces
+    this.processMobSteering(mobs)
 
     // Step the physics simulation
     this.world.step(deltaTime / 1000) // Convert to seconds
@@ -288,8 +288,8 @@ export class PlanckPhysicsManager {
     }
   }
 
-  // Apply player movement forces
-  private applyPlayerForces(players: Map<string, any>) {
+  // Process player input and apply movement forces
+  private processPlayerInput(players: Map<string, any>) {
     players.forEach(player => {
       const movementInputMagnitude = player.input.getMovementMagnitude()
       const body = this.getBody(player.id)
@@ -331,8 +331,8 @@ export class PlanckPhysicsManager {
     })
   }
 
-  // Apply mob steering forces
-  private applyMobForces(mobs: Map<string, any>) {
+  // Process mob steering and apply forces
+  private processMobSteering(mobs: Map<string, any>) {
     mobs.forEach(mob => {
       const body = this.getBody(mob.id)
       if (body) {
