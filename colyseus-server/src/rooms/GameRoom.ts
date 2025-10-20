@@ -1,290 +1,240 @@
-import { Room, Client } from "colyseus";
-import { GameState } from "../schemas/GameState";
-import { Player } from "../schemas/Player";
-import { GAME_CONFIG } from "../config/gameConfig";
-import { PlanckPhysicsManager } from "../physics/PlanckPhysicsManager";
-import { MAP_CONFIG } from "../config/mapConfig";
-import * as planck from "planck"; // For planck.Vec2
+import { Room, Client } from 'colyseus'
+import { GameState } from '../schemas/GameState'
+import { Player } from '../schemas/Player'
+import { Mob } from '../schemas/Mob'
+import { GAME_CONFIG } from '../config/gameConfig'
+import { PlanckPhysicsManager } from '../physics/PlanckPhysicsManager'
+import { BattleManager } from '../modules/BattleManager'
+import { eventBus, RoomEventType } from '../events/EventBus'
+
+export interface GameRoomOptions {
+  mapId?: string
+  name?: string
+}
 
 export class GameRoom extends Room<GameState> {
   // Room configuration
-  maxClients = 1;
+  maxClients = 1
 
   // Simulation settings
-  private simulationInterval?: NodeJS.Timeout;
-  
-  // Physics engine
-  private physicsManager!: PlanckPhysicsManager;
+  private simulationInterval?: NodeJS.Timeout
 
-  onCreate(options: any) {
-    console.log(`🎮 GameRoom created with mapId: ${options.mapId || 'map-01-sector-a'}`);
-    
+  // Physics engine
+  private physicsManager!: PlanckPhysicsManager
+
+  // Battle manager for this room
+  private battleManager!: BattleManager
+
+  onCreate(options: GameRoomOptions) {
+    console.log(`🎮 GameRoom created with mapId: ${options.mapId || 'map-01-sector-a'}`)
+
     // Initialize physics manager
-    this.physicsManager = new PlanckPhysicsManager();
-    
-    // Initialize game state
-    this.setState(new GameState(options.mapId || 'map-01-sector-a'));
+    this.physicsManager = new PlanckPhysicsManager()
+
+    // Initialize game state with room ID
+    var gameState = new GameState(options.mapId || 'map-01-sector-a', this.roomId)
+    this.setState(gameState)
+
+    // Initialize battle manager with game state
+    this.battleManager = new BattleManager(this.roomId, this.state)
+
+    // Set battle manager reference for GameState
+    this.state.battleManager = this.battleManager
 
     // Connect physics manager to AI interface
-    this.state.worldInterface.setPhysicsManager(this.physicsManager);
+    this.state.worldInterface.setPhysicsManager(this.physicsManager)
 
-    // Set up physics bodies for existing mobs
-    this.initializePhysicsBodies();
+    // Set up event listeners for entity lifecycle events
+    this.setupEventListeners()
 
-         // Set up collision callbacks for logging only (no manual physics)
-         this.setupCollisionCallbacks();
+    gameState.reInitializeMobs()
 
+    // Collision callbacks are now set up in PlanckPhysicsManager constructor
     // Start simulation loop
-    this.startSimulation();
+    this.startSimulation()
 
     // Handle player movement input → apply force to physics body (authoritative physics)
-    this.onMessage("player_input_move", (client: Client, data: { vx: number; vy: number }) => {
-      const player = this.state.getPlayer(client.sessionId);
-      if (!player) return;
-      const { vx, vy } = data || { vx: 0, vy: 0 };
-      this.state.updatePlayerInput(client.sessionId, vx, vy);
-    });
+    this.onMessage('player_input_move', (client: Client, data: { vx: number; vy: number }) => {
+      const player = this.state.getPlayer(client.sessionId)
+      if (!player) return
+      const { vx, vy } = data || { vx: 0, vy: 0 }
+      this.state.updatePlayerInput(client.sessionId, vx, vy)
+    })
 
     // REMOVED: player_position handler - SECURITY VULNERABILITY!
     // Direct position setting allows teleportation hacks
     // Players should only use player_input_move for movement
 
     // Handle player action input
-    this.onMessage("player_input_action", (client: Client, data: { action: string; pressed: boolean }) => {
-      const player = this.state.getPlayer(client.sessionId);
-      if (!player) return;
-      const { action, pressed } = data || { action: "", pressed: false };
-      this.state.updatePlayerAction(client.sessionId, action, pressed);
-    });
-
-    // Handle mob AI control messages
-    this.onMessage("enable_mob_chase", (client: Client) => {
-      this.enableMobChaseBehavior();
-      console.log(`🎯 Mob chase behavior enabled by ${client.sessionId}`);
-    });
-
-    this.onMessage("enable_mob_wander", (client: Client) => {
-      this.enableMobWanderBehavior();
-      console.log(`🚶 Mob wander behavior enabled by ${client.sessionId}`);
-    });
+    this.onMessage(
+      'player_input_action',
+      (client: Client, data: { action: string; pressed: boolean }) => {
+        const player = this.state.getPlayer(client.sessionId)
+        if (!player) return
+        const { action, pressed } = data || { action: '', pressed: false }
+        this.state.updatePlayerAction(client.sessionId, action, pressed)
+      }
+    )
   }
 
-  onJoin(client: Client, options: any) {
-    console.log(`👤 Player ${client.sessionId} joined the game`);
-    
+  /**
+   * Set up event listeners for entity lifecycle events
+   */
+  private setupEventListeners(): void {
+    // Player events
+    eventBus.onRoomEventPlayerJoin(this.roomId, data => {
+      console.log(`🎯 EVENT HANDLER: Player joined ${data.player.sessionId}`)
+      this.handlePlayerJoined(data.player)
+    })
+
+    eventBus.onRoomEventPlayerLeft(this.roomId, data => {
+      console.log(`🎯 EVENT HANDLER: Player left ${data.player.sessionId}`)
+      this.handlePlayerLeft(data.player)
+    })
+
+    // Mob events
+    eventBus.onRoomEventMobSpawn(this.roomId, data => {
+      console.log(`🎯 EVENT HANDLER: Mob spawned ${data.mob.id}`)
+      this.handleMobSpawned(data.mob)
+    })
+
+    eventBus.onRoomEventMobRemove(this.roomId, data => {
+      console.log(`🎯 EVENT HANDLER: Mob removed ${data.mob.id}`)
+      this.handleMobRemoved(data.mob)
+    })
+  }
+
+  /**
+   * Handle player joined event - setup physics
+   */
+  private handlePlayerJoined(player: Player): void {
+    console.log(`👤 PLAYER JOINED: ${player.sessionId} - Setting up physics`)
+    this.physicsManager.createPlayerBody(player)
+    console.log(`✅ PLAYER SETUP COMPLETE: ${player.sessionId}`)
+  }
+
+  /**
+   * Handle player left event - cleanup physics
+   */
+  private handlePlayerLeft(player: Player): void {
+    console.log(`👤 PLAYER LEFT: ${player.sessionId} - Cleaning up physics`)
+    this.physicsManager.removeBody(player.id)
+    console.log(`✅ PLAYER CLEANUP COMPLETE: ${player.sessionId}`)
+  }
+
+  /**
+   * Handle mob spawned event - setup physics
+   */
+  private handleMobSpawned(mob: Mob): void {
+    console.log(`👹 MOB SPAWNED: ${mob.id} - Setting up physics`)
+    this.physicsManager.createMobBody(mob)
+    console.log(`✅ MOB SETUP COMPLETE: ${mob.id}`)
+  }
+
+  /**
+   * Handle mob removed event - cleanup physics
+   */
+  private handleMobRemoved(mob: Mob): void {
+    console.log(`👹 MOB REMOVED: ${mob.id} - Cleaning up physics`)
+    this.physicsManager.removeBody(mob.id)
+    console.log(`✅ MOB CLEANUP COMPLETE: ${mob.id}`)
+  }
+
+  onJoin(client: Client, options: GameRoomOptions) {
+    console.log(`👤 Player ${client.sessionId} joined the game`)
+
     // Add player to game state
-    const playerName = options.name || `Player-${client.sessionId.substring(0, 8)}`;
-    const player = this.state.addPlayer(client.sessionId, playerName);
-    
-    // Create physics body for player
-    if (player) {
-      this.physicsManager.createPlayerBody(player);
-    }
-    
+    const playerName = options.name || `Player-${client.sessionId.substring(0, 8)}`
+    const player = this.state.addPlayer(client.sessionId, playerName)
+
+    // Physics body creation is now handled by event handlers
+    // The addPlayer method will emit a PLAYER_JOINED event
+
     // Send welcome message
-    client.send("welcome", {
+    client.send('welcome', {
       message: `Welcome to ${this.state.mapId}!`,
       playerId: client.sessionId,
-      mapId: this.state.mapId
-    });
+      mapId: this.state.mapId,
+    })
   }
 
   onLeave(client: Client, consented: boolean) {
-    console.log(`👋 Player ${client.sessionId} left the game`);
-    
+    console.log(`👋 Player ${client.sessionId} left the game`)
+
     // Remove physics body for player
-    this.physicsManager.removeBody(client.sessionId);
-    
+    this.physicsManager.removeBody(client.sessionId)
+
     // Remove player from game state
-    this.state.removePlayer(client.sessionId);
+    this.state.removePlayer(client.sessionId)
   }
 
   onDispose() {
-    console.log(`🗑️ GameRoom disposed`);
-    
+    console.log(`🗑️ GameRoom disposed`)
+
     // Stop simulation
-    this.stopSimulation();
-    
+    this.stopSimulation()
+
     // Clean up physics manager
-    this.physicsManager.destroy();
+    this.physicsManager.destroy()
   }
 
   // Start the game simulation loop
   private startSimulation() {
     this.simulationInterval = setInterval(() => {
       try {
-        // Apply continuous player input as forces before physics step
-        this.state.players.forEach((player) => {
-          const inputMagnitude = player.input.getMovementMagnitude();
-          const playerBody = this.physicsManager.getBody(player.id);
-          
-          if (playerBody) {
-            const currentVel = playerBody.getLinearVelocity();
-            const mass = playerBody.getMass();
-            let forceX = 0, forceY = 0;
-            
-            if (inputMagnitude > 0) {
-              // Player is pressing keys - apply movement force
-              const maxSpeed = 20; // units per second
-              const acceleration = 15; // units per second squared
-              
-              // Get normalized movement direction
-              const normalized = player.input.getNormalizedMovement();
-              
-              // Target velocity (capped at max speed)
-              const targetVx = normalized.x * maxSpeed;
-              const targetVy = normalized.y * maxSpeed;
-              
-              // Calculate force needed: F = m * a
-              forceX = mass * acceleration * (targetVx - currentVel.x);
-              forceY = mass * acceleration * (targetVy - currentVel.y);
-            } else {
-              // No input - apply friction force against current velocity
-              // Get friction based on player position
-              const frictionCoefficient = MAP_CONFIG.getFrictionAtPosition(player.x, player.y);
-              forceX = -currentVel.x * mass * frictionCoefficient;
-              forceY = -currentVel.y * mass * frictionCoefficient;
-            }
-            
-            this.physicsManager.applyForceToBody(player.id, { x: forceX, y: forceY });
-          }
-        });
+        // Update physics simulation (handles all forces and sync)
+        this.physicsManager.update(GAME_CONFIG.tickRate, this.state.players, this.state.mobs)
 
-        // Update physics simulation
-        this.physicsManager.update(GAME_CONFIG.tickRate);
-        
-        // Update entities from physics bodies
-        this.updateEntitiesFromPhysics();
-        
         // Update player headings and other logic
-        this.state.players.forEach((player) => {
-          player.update(GAME_CONFIG.tickRate);
-        });
-        
-        // Update mobs with physics collision detection
-        this.state.updateMobs(this.physicsManager);
-        
+        this.state.players.forEach(player => {
+          player.update(GAME_CONFIG.tickRate)
+        })
+
+        // Update mobs (AI + combat only; physics already applied above)
+        this.state.updateMobs()
+
+        // Process battle action messages via BattleManager instance
+        this.battleManager.processActionMessages().then((processedCount: number) => {
+          if (processedCount > 0) {
+            console.log(`⚔️ BATTLE: Processed ${processedCount} action messages`)
+          }
+        })
+
         // Log simulation health every 1000 ticks
         if (this.state.tick % 1000 === 0) {
-          console.log(`🔄 SIMULATION HEALTH: tick=${this.state.tick}, mobs=${this.state.mobs.size}, players=${this.state.players.size}`);
+          // Check if mobs have physics bodies
+          let mobsWithBodies = 0
+          for (const mob of this.state.mobs.values()) {
+            if (this.physicsManager.getBody(mob.id)) {
+              mobsWithBodies++
+            }
+          }
+          console.log(
+            `🔄 SIMULATION HEALTH: tick=${this.state.tick}, mobs=${this.state.mobs.size}, mobsWithBodies=${mobsWithBodies}, players=${this.state.players.size}`
+          )
         }
       } catch (error) {
-        console.error(`❌ SIMULATION ERROR:`, error);
+        console.error(`❌ SIMULATION ERROR:`, error)
         // Don't stop the simulation on error, just log it
       }
-    }, GAME_CONFIG.tickRate);
+    }, GAME_CONFIG.tickRate)
   }
 
   // Stop the game simulation loop
   private stopSimulation() {
     if (this.simulationInterval) {
-      clearInterval(this.simulationInterval);
-      this.simulationInterval = undefined;
+      clearInterval(this.simulationInterval)
+      this.simulationInterval = undefined
     }
-  }
-
-  // Initialize physics bodies for existing entities
-  private initializePhysicsBodies() {
-    // Create physics bodies for mobs (collision detection only)
-    this.state.mobs.forEach((mob) => {
-      const body = this.physicsManager.createMobBody(mob);
-      // Initialize mob mass from physics body immediately
-      mob.mass = body.getMass();
-    });
-  }
-
-  // Update entities from physics bodies
-  private updateEntitiesFromPhysics() {
-    // Update players from physics
-    this.state.players.forEach((player) => {
-      this.physicsManager.updateEntityFromBody(player, player.id);
-    });
-
-    // Mobs don't use physics - they use traditional movement
-  }
-
-  // Apply force to player
-  applyForceToPlayer(sessionId: string, forceX: number, forceY: number) {
-    this.physicsManager.applyForceToBody(sessionId, { x: forceX, y: forceY });
-  }
-
-  // Apply impulse to player
-  applyImpulseToPlayer(sessionId: string, impulseX: number, impulseY: number) {
-    this.physicsManager.applyImpulseToBody(sessionId, { x: impulseX, y: impulseY });
   }
 
   // Enable mob chase behavior
   enableMobChaseBehavior() {
-    this.state.enableMobChaseBehavior();
+    this.state.enableMobChaseBehavior()
   }
 
   // Enable mob wander behavior
   enableMobWanderBehavior() {
-    this.state.enableMobWanderBehavior();
-  }
-
-  // Get room info for debugging
-  getRoomInfo() {
-    return {
-      roomId: this.roomId,
-      mapId: this.state.mapId,
-      playerCount: this.state.players.size,
-      mobCount: this.state.mobs.size,
-      tick: this.state.tick,
-      physicsBodies: this.physicsManager.getAllBodies().length
-    };
-  }
-
-  // Set up collision callbacks for logging and debugging
-  private setupCollisionCallbacks() {
-    // Collision debug disabled by default
-    
-    let collisionCount = 0;
-    
-           // Mob-Mob collisions: Log only (let physics handle bouncing)
-           this.physicsManager.onCollision('mob', 'mob', (bodyA, bodyB) => {
-             // Get entity data from the physics manager
-             const entityA = this.physicsManager.getEntityDataFromBody(bodyA);
-             const entityB = this.physicsManager.getEntityDataFromBody(bodyB);
-             
-             if (entityA && entityB) {
-               collisionCount++;
-               // Only log every 10th collision to reduce spam
-              // if (collisionCount % 50 === 0) console.log(`🔥 COLLISION #${collisionCount}: ${entityA.id} hit ${entityB.id}`);
-               // Let physics engine handle the bouncing automatically
-             } else {
-               console.log(`❌ COLLISION CALLBACK: Missing entity data A=${!!entityA}, B=${!!entityB}`);
-             }
-           });
-
-           // Player-Mob collisions: Log collision (both directions)
-           this.physicsManager.onCollision('player', 'mob', (bodyA, bodyB) => {
-             const entityA = this.physicsManager.getEntityDataFromBody(bodyA);
-             const entityB = this.physicsManager.getEntityDataFromBody(bodyB);
-      
-      // if (entityA && entityB) console.log(`🎯 PLAYER COLLISION: ${entityA.id} hit ${entityB.id}`);
-    });
-
-           // Mob-Player collisions: Same callback (reverse order)
-           this.physicsManager.onCollision('mob', 'player', (bodyA, bodyB) => {
-             const entityA = this.physicsManager.getEntityDataFromBody(bodyA);
-             const entityB = this.physicsManager.getEntityDataFromBody(bodyB);
-      
-      // if (entityA && entityB) console.log(`🎯 PLAYER COLLISION: ${entityA.id} hit ${entityB.id}`);
-    });
-
-           // Mob-Boundary collisions: Log only (let physics handle bouncing)
-           this.physicsManager.onCollision('mob', 'boundary', (bodyA, bodyB) => {
-             const entityA = this.physicsManager.getEntityDataFromBody(bodyA);
-             
-            // if (entityA) console.log(`🚧 BOUNDARY COLLISION: ${entityA.id} hit boundary`);
-           });
-
-           // Boundary-Mob collisions: Same callback (reverse order)
-           this.physicsManager.onCollision('boundary', 'mob', (bodyA, bodyB) => {
-             const entityB = this.physicsManager.getEntityDataFromBody(bodyB);
-             
-            // if (entityB) console.log(`🚧 BOUNDARY COLLISION: ${entityB.id} hit boundary`);
-           });
+    this.state.enableMobWanderBehavior()
   }
 }

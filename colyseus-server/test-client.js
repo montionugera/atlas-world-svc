@@ -17,8 +17,8 @@ async function testColyseusServer() {
     console.log("✅ Successfully joined room:", room.id);
     console.log("📊 Room state:", {
       mapId: room.state.mapId,
-      playerCount: room.state.players.size,
-      mobCount: room.state.mobs.length,
+      playerCount: room.state.players ? room.state.players.size : 'undefined',
+      mobCount: room.state.mobs ? room.state.mobs.size : 'undefined',
       tick: room.state.tick
     });
     
