@@ -25,6 +25,7 @@ export interface UseColyseusClientReturn {
   connect: () => Promise<void>;
   joinRoom: (mapId?: string) => Promise<void>;
   updatePlayerInput: (vx: number, vy: number) => void;
+  sendPlayerAction: (action: string, pressed: boolean) => void;
   startSimulation: () => void;
   stopSimulation: () => void;
   
@@ -168,6 +169,13 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     }
   }, []);
   
+  // Send player action (attack, etc.)
+  const sendPlayerAction = useCallback((action: string, pressed: boolean) => {
+    if (roomRef.current) {
+      roomRef.current.send('player_input_action', { action, pressed });
+    }
+  }, []);
+  
   // Start simulation
   const startSimulation = useCallback(() => {
     if (isSimulating) return;
@@ -273,6 +281,7 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     connect,
     joinRoom,
     updatePlayerInput,
+    sendPlayerAction,
     startSimulation,
     stopSimulation,
     

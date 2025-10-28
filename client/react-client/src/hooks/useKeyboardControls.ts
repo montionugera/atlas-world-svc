@@ -2,9 +2,10 @@ import { useEffect } from 'react';
 
 interface UseKeyboardControlsProps {
   updatePlayerInput: (vx: number, vy: number) => void;
+  sendPlayerAction?: (action: string, pressed: boolean) => void;
 }
 
-export const useKeyboardControls = ({ updatePlayerInput }: UseKeyboardControlsProps) => {
+export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction }: UseKeyboardControlsProps) => {
   useEffect(() => {
     const pressedKeys = new Set<string>();
     const speed = 2;
@@ -32,11 +33,22 @@ export const useKeyboardControls = ({ updatePlayerInput }: UseKeyboardControlsPr
     const handleKeyDown = (event: KeyboardEvent) => {
       pressedKeys.add(event.key);
       updateMovement();
+      
+      // Handle attack input
+      if (event.code === 'Space' && sendPlayerAction) {
+        event.preventDefault(); // Prevent page scroll
+        sendPlayerAction('attack', true);
+      }
     };
     
     const handleKeyUp = (event: KeyboardEvent) => {
       pressedKeys.delete(event.key);
       updateMovement();
+      
+      // Handle attack release
+      if (event.code === 'Space' && sendPlayerAction) {
+        sendPlayerAction('attack', false);
+      }
     };
     
     window.addEventListener('keydown', handleKeyDown);

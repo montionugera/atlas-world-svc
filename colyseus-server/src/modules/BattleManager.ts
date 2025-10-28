@@ -110,21 +110,6 @@ export class BattleManager {
     }
   }
 
-  static createDamageMessage(actorId: string, targetId: string, amount: number, damageType: string = 'physical', source?: string): BattleActionMessage {
-    return {
-      actorId,
-      actionKey: 'damage',
-      actionPayload: {
-        amount,
-        damageType,
-        source,
-      } as DamageActionPayload,
-      targetId,
-      timestamp: Date.now(),
-      priority: 1,
-    }
-  }
-
   // Add action message to queue
   addActionMessage(message: BattleActionMessage): void {
     this.actionQueue.addMessage(message)

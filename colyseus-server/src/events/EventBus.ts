@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
+import { WorldLife } from '../schemas/WorldLife'
 
 export enum RoomEventType {
   PLAYER_JOINED = 'player:joined',
@@ -9,7 +10,7 @@ export enum RoomEventType {
   MOB_REMOVED = 'mob:removed',
   BATTLE_ATTACK = 'battle:attack',
   BATTLE_HEAL = 'battle:heal',
-  PHYSICS_IMPACT = 'physics:impact',
+  BATTLE_DAMAGE_PRODUCED = 'battle:dmgProduced',
 }
 
 export interface PlayerJoinedData {
@@ -44,18 +45,19 @@ export interface BattleHealData {
   roomId: string
 }
 
-export interface ImpactEffectData {
-  area: {
-    x: number
-    y: number
-    radius: number
-  }
-  forceIntensity: number // 0.5 (basic), 3 (large), 10 (epic)
-  sourceId: string
-  roomId: string
+export interface DamageProducedData {
+  attacker: WorldLife
+  taker: WorldLife
 }
 
-export type RoomEventData = PlayerJoinedData | PlayerLeftData | MobSpawnedData | MobRemovedData | BattleAttackData | BattleHealData | ImpactEffectData
+export type RoomEventData =
+  | PlayerJoinedData
+  | PlayerLeftData
+  | MobSpawnedData
+  | MobRemovedData
+  | BattleAttackData
+  | BattleHealData
+  | DamageProducedData
 
 export interface RoomEventPayload {
   eventType: RoomEventType
@@ -175,13 +177,16 @@ export class EventBus extends EventEmitter {
   }
 
   /**
-   * Listen to physics impact events
+   * Listen to battle damage produced events
    */
-  public onRoomEventPhysicsImpact(roomId: string, callback: (data: ImpactEffectData) => void): void {
+  public onRoomEventBattleDamageProduced(
+    roomId: string,
+    callback: (data: DamageProducedData) => void
+  ): void {
     const eventKey = `room-${roomId}:entity-event`
     this.on(eventKey, (payload: RoomEventPayload) => {
-      if (payload.eventType === RoomEventType.PHYSICS_IMPACT) {
-        callback(payload.data as ImpactEffectData)
+      if (payload.eventType === RoomEventType.BATTLE_DAMAGE_PRODUCED) {
+        callback(payload.data as DamageProducedData)
       }
     })
   }

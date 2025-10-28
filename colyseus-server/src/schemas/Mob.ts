@@ -385,7 +385,7 @@ export class Mob extends WorldLife {
     roomId?: string
   ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
     // Only process attacks if we're in attack behavior
-    if (this.currentBehavior !== 'attack' || !this.currentAttackTarget) {
+    if (this.currentBehavior !== 'attack' || !this.currentAttackTarget || !this.canAttack()) {
       return { attacked: false }
     }
 

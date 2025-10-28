@@ -20,10 +20,10 @@ export interface AIConfig {
 export class MobAIModule {
   private worldInterface: AIWorldInterface
   private mobs: Map<string, { mob: Mob; config: AIConfig; lastUpdate: number }> = new Map()
-  private updateInterval: NodeJS.Timeout | null = null
   private isRunning = false
   private updateFrequency = 20 // 20 FPS
   private performanceMonitor: AIPerformanceMonitor
+  private lastUpdateTime = 0
 
   constructor(worldInterface: AIWorldInterface) {
     this.worldInterface = worldInterface
@@ -32,30 +32,15 @@ export class MobAIModule {
     console.log(`🧠 Mob AI Module initialized`)
   }
 
-  // Start AI module
+  // Start AI module (optional - for backward compatibility)
   start(): void {
-    if (this.isRunning) return
-
     this.isRunning = true
-    this.updateInterval = setInterval(() => {
-      this.update()
-    }, 1000 / this.updateFrequency)
-    // Avoid keeping Node event loop alive in tests
-    if (this.updateInterval.unref) this.updateInterval.unref()
-
-    console.log(`🧠 Mob AI Module started at ${this.updateFrequency} FPS`)
+    console.log(`🧠 Mob AI Module started (tick-driven)`)
   }
 
   // Stop AI module
   stop(): void {
-    if (!this.isRunning) return
-
     this.isRunning = false
-    if (this.updateInterval) {
-      clearInterval(this.updateInterval)
-      this.updateInterval = null
-    }
-
     console.log(`🧠 Mob AI Module stopped`)
   }
 
@@ -70,13 +55,28 @@ export class MobAIModule {
     this.mobs.delete(mobId)
   }
 
-  // Update all mob AI (public method for testing)
-  updateAll(): void {
-    this.update()
+  // Update all mob AI (public method for tick-driven updates)
+  update(deltaTime: number): void {
+    if (!this.isRunning) return
+
+    const now = performance.now()
+    const timeSinceLastUpdate = now - this.lastUpdateTime
+    const targetInterval = 1000 / this.updateFrequency // 50ms for 20 FPS
+
+    // Only update if enough time has passed
+    if (timeSinceLastUpdate < targetInterval) return
+
+    this.lastUpdateTime = now
+    this.updateAI()
   }
 
-  // Update all mob AI
-  private update(): void {
+  // Update all mob AI (public method for testing)
+  updateAll(): void {
+    this.updateAI()
+  }
+
+  // Internal AI update logic
+  private updateAI(): void {
     const startTime = performance.now()
 
     try {

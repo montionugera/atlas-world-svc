@@ -196,3 +196,65 @@ export const drawHealthBar = (
   ctx.lineWidth = 1;
   ctx.strokeRect(barX, barY, barWidth, barHeight);
 };
+
+/**
+ * Draw an attack cone showing the attack direction and range
+ */
+export const drawAttackCone = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  heading: number,
+  range: number,
+  scale: number = 1,
+  color: string = '#ff4444',
+  alpha: number = 0.3
+): void => {
+  const scaledRange = range * scale;
+  const coneAngle = Math.PI / 4; // 45-degree attack cone
+  
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  
+  // Start from player center
+  ctx.moveTo(x, y);
+  
+  // Calculate cone edges
+  const leftAngle = heading - coneAngle / 2;
+  const rightAngle = heading + coneAngle / 2;
+  
+  // Draw arc from left edge to right edge
+  ctx.arc(x, y, scaledRange, leftAngle, rightAngle);
+  ctx.lineTo(x, y); // Close the cone
+  ctx.fill();
+  
+  ctx.restore();
+};
+
+/**
+ * Draw an attack slash effect
+ */
+export const drawAttackSlash = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  heading: number,
+  playerScaledRadius: number,
+  color: string = '#ffff00',
+  lineWidth: number = 10
+): void => {
+  // Calculate slash line endpoints - shorter arc
+  const startX = x ;
+  const startY = y ;
+  const endX = x + Math.cos(heading)*playerScaledRadius*2.2 ;
+  const endY = y + Math.sin(heading)*playerScaledRadius*2.2;
+  
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.beginPath();
+  ctx.moveTo(startX, startY);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+};

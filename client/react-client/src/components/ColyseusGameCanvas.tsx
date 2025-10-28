@@ -27,6 +27,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }
     connect,
     joinRoom,
     updatePlayerInput,
+    sendPlayerAction,
     startSimulation,
     stopSimulation,
     disconnect,
@@ -34,7 +35,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }
   } = useColyseusClient(config);
 
   // Handle keyboard controls
-  useKeyboardControls({ updatePlayerInput });
+  useKeyboardControls({ updatePlayerInput, sendPlayerAction });
 
   // Handle connection
   useEffect(() => {

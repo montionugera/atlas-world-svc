@@ -1,5 +1,5 @@
 import { RENDER_CONFIG, COLORS } from '../config/gameConfig';
-import { drawCircle, drawText, drawHealthBar, drawHeading } from '../utils/drawingUtils';
+import { drawCircle, drawText, drawHealthBar, drawHeading, drawAttackCone, drawAttackSlash } from '../utils/drawingUtils';
 
 /**
  * Draw all players with their names and highlight current player
@@ -15,7 +15,7 @@ export const drawPlayers = (
     const y = player.y * scale;
     
     // Draw player circle (scaled to match world/canvas ratio)
-    const radius = RENDER_CONFIG.playerRadius * scale;
+    const radius = player.radius * scale;
     drawCircle(ctx, x, y, radius, COLORS.player);
 
     // Always draw a visible outline so players stand out
@@ -73,6 +73,32 @@ export const drawPlayers = (
         '#ffffff', // white arrow
         2, // thinner line for player
         0.3 // smaller arrow (30% of radius)
+      );
+    }
+    
+    // Draw attack visualization if player is attacking
+    if (player.isAttacking && player.heading !== undefined) {
+      // Draw attack cone
+      drawAttackCone(
+        ctx,
+        x,
+        y,
+        player.heading,
+        player.attackRange || 3,
+        scale,
+        '#ff4444', // red cone
+        0.4 // semi-transparent
+      );
+      
+      // Draw attack slash effect
+      drawAttackSlash(
+        ctx,
+        x,
+        y,
+        player.heading,
+        radius,
+        '#ffff00', // yellow slash
+        7 // thicker line for slash
       );
     }
     

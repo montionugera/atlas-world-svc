@@ -26,10 +26,10 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
         '#44ff44', // brighter green for health
         '#000000', // black border
         {
-          minWidth: 8,
+          minWidth: 25,
           maxWidth: 40, // larger max width for mobs
-          minHeight: 2,
-          maxHeight: 6, // larger max height for mobs
+          minHeight: 4,
+          maxHeight: 8, // larger max height for mobs
           minOffset: 4,
           maxOffset: 16,
           widthMultiplier: 2.0, // standard multiplier for mobs

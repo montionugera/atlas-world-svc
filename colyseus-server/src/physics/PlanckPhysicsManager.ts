@@ -468,7 +468,7 @@ export class PlanckPhysicsManager {
     const nx = dirX / len
     const ny = dirY / len
 
-    const impulseMagnitude = 2 // ~2 units as requested
+    const impulseMagnitude = 200 // ~2 units as requested
     const impulse = planck.Vec2(nx * impulseMagnitude, ny * impulseMagnitude)
     takerBody.applyLinearImpulse(impulse, takerBody.getWorldCenter())
 

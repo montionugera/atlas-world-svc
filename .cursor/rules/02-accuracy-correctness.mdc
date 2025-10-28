@@ -1,0 +1,74 @@
+# 02-accuracy-correctness
+
+Title: Accuracy, Correctness, and Consistency Rules
+
+Objective
+- Ensure deterministic logic, correct physics/render coupling, safe networking, and single-path APIs.
+- Prevent regressions via clear timing semantics, rendering scale usage, and centralized battle logic.
+
+Scope
+- Applies to server (`colyseus-server/`) and client (`client/react-client/`).
+- Covers timing, rendering scale, API shape, eventing, and tests.
+
+Hard Rules
+1) Timing Source Consistency
+   - Use `performance.now()` for gameplay timing/cooldowns on server and client.
+   - Do not mix `Date.now()` with `performance.now()` for deltas.
+   - Cooldowns and comparisons MUST use the same source end-to-end.
+
+2) Rendering Scale Correctness
+   - World → canvas conversion MUST multiply by `scale` for positions and sizes.
+   - World radii MUST be multiplied by `scale` before drawing.
+   - UI offsets must be derived from scaled radii (see `drawHealthBar`).
+
+3) Heading Semantics
+   - `heading` represents a direction as an angle in radians.
+   - When a vector is required, convert with `(cos(heading), sin(heading))` (unit vector).
+   - Attack/aim systems MUST center cones on `heading` and use normalized angle-diff.
+
+4) Single-Path APIs (aligns with 01-apis-and-constructors)
+   - Constructors/methods accept one options object; no positional overloads.
+   - No boolean flag parameters that branch behavior; prefer explicit keys.
+   - Combat logic centralized in `BattleModule`/`BattleManager`; do not duplicate.
+
+5) Networking Authority & Security
+   - Never accept direct position/velocity from clients.
+   - Client sends input intents only: movement vectors, discrete actions.
+   - All combat/HP updates occur server-side; clients are observers only.
+
+6) Event Bus Usage
+   - Emit room-scoped events with the correct `roomId` (never `sessionId`).
+   - Prefer typed payloads; include `actorId`, `targetId`, and context (e.g., `range`).
+   - Hand off to `BattleManager` to enqueue/process; do not apply damage directly in emitters.
+
+7) Physics/Rendering Coupling
+   - Physics lives in world units; rendering converts using `scale`.
+   - Do not apply pixel units to physics; keep concerns separate.
+
+8) Visual Indicators
+   - Any visual indicator derived from world units (e.g., cones, slashes) must be scaled.
+   - Keep effects bounded near the entity: prefer fractions of scaled radius for lengths.
+
+9) Tests & Determinism
+   - Unit tests must use `performance.now()` semantics where applicable.
+   - Avoid time flakiness: inject or mock timing when needed.
+   - Add tests for cone-angle math (wrapping), range checks, and cooldowns.
+
+10) Schema Sync & Server-only State
+   - Explicitly annotate synced vs server-only fields in schemas.
+   - Do not sync internal cooldowns/flags unless required by the client.
+
+Defaults & Patterns
+- Favor explicit `range`, `angle`, `durationMs` keys in options.
+- Normalize angles using `min(diff, 2π - diff)` for directional checks.
+- Use clear, proportional constants based on scaled radii for visuals.
+
+Review Checklist
+- [ ] Timing uses `performance.now()` consistently
+- [ ] Rendering applies `scale` to positions and radii
+- [ ] Heading used as angle; vectors computed from it
+- [ ] No duplicate combat logic; events → BattleManager
+- [ ] Room events use correct `roomId`
+- [ ] Client sends intents only; server authoritative
+- [ ] Visuals bounded (no oversized lines/effects)
+- [ ] Tests cover cooldowns, cones, range, and angle wrapping

@@ -5,6 +5,7 @@
 
 import { WorldLife } from '../schemas/WorldLife'
 import { GameState } from '../schemas/GameState'
+import { eventBus, RoomEventType } from '../events/EventBus'
 import {
   BattleActionMessage,
   BattleActionProcessor,
@@ -61,6 +62,14 @@ export class BattleModule implements BattleActionProcessor {
 
     // Apply damage to target
     const targetDied = this.applyDamage(target, damage)
+
+    // Emit battle damage produced event for knockback/FX
+    try {
+      eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
+        attacker,
+        taker: target,
+      })
+    } catch {}
 
     // Update attacker's last attack time using high-precision timing
     attacker.lastAttackTime = performance.now()
@@ -398,6 +407,13 @@ export class BattleModule implements BattleActionProcessor {
     }
 
     const died = this.applyDamage(target, payload.amount)
+    // Emit battle damage produced event
+    try {
+      eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
+        attacker: actor,
+        taker: target,
+      })
+    } catch {}
     console.log(
       `💔 BATTLE: ${actor.id} dealt ${payload.amount} ${payload.damageType || 'physical'} damage to ${target.id}`
     )

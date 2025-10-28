@@ -47,6 +47,9 @@ export class GameRoom extends Room<GameState> {
     // Connect physics manager to AI interface
     this.state.worldInterface.setPhysicsManager(this.physicsManager)
 
+    // Start AI module (tick-driven)
+    this.state.aiModule.start()
+
     // Set up event listeners for entity lifecycle events
     this.setupEventListeners()
 
@@ -174,6 +177,9 @@ export class GameRoom extends Room<GameState> {
   onDispose() {
     console.log(`🗑️ GameRoom disposed`)
 
+    // Stop AI module
+    this.state.aiModule.stop()
+
     // Stop simulation
     this.stopSimulation()
 
@@ -191,7 +197,16 @@ export class GameRoom extends Room<GameState> {
         // Update player headings and other logic
         this.state.players.forEach(player => {
           player.update(GAME_CONFIG.tickRate)
+          
+          // Process player attack input
+          if (player.processAttackInput(this.state.mobs, this.roomId)) {
+            // Attack was processed, reset attack input to prevent spam
+            player.input.attack = false
+          }
         })
+
+        // Update AI module (tick-driven)
+        this.state.aiModule.update(GAME_CONFIG.tickRate)
 
         // Update mobs (AI + combat only; physics already applied above)
         this.state.updateMobs()
@@ -231,15 +246,7 @@ export class GameRoom extends Room<GameState> {
     }
   }
 
-  // Create impact effect at specified location
-  public createImpactEffect(x: number, y: number, radius: number, forceIntensity: number, sourceId: string): void {
-    eventBus.emitRoomEvent(this.roomId, RoomEventType.PHYSICS_IMPACT, {
-      area: { x, y, radius },
-      forceIntensity,
-      sourceId,
-      roomId: this.roomId
-    })
-  }
+  // Deprecated: impact effects moved to battle damage-produced events
 
   // Enable mob chase behavior
   enableMobChaseBehavior() {

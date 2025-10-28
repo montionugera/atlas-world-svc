@@ -89,7 +89,7 @@ export abstract class WorldLife extends WorldObject {
     this.defense = opts.defense ?? 0
     this.armor = opts.armor ?? 0
     this.density = opts.density ?? 1
-    this.lastAttackTime = 0
+    this.lastAttackTime = performance.now() - this.attackDelay - 1 // Allow immediate first attack
   }
 
   // Health management with defense calculations
