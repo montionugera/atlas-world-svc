@@ -16,7 +16,7 @@ export class GameState extends Schema {
   @type('number') width: number = GAME_CONFIG.worldWidth
   @type('number') height: number = GAME_CONFIG.worldHeight
 
-  private aiModule: MobAIModule
+  public aiModule: MobAIModule
   public worldInterface: AIWorldInterface
   public battleManager: any // BattleManager instance
 

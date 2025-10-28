@@ -46,9 +46,8 @@ describe('Mob-centric AI decisions', () => {
     // Test chase behavior - should move toward player
     mob.currentBehavior = 'chase'
     const chaseDesired = mob.computeDesiredVelocity({
-      nearestPlayer: { x: 10, y: 0, id: 'player1' },
+      nearestPlayer: { x: 10, y: 0, id: 'player1', radius: 4 },
       distanceToNearestPlayer: 10,
-      maxSpeed: 12,
     })
     expect(chaseDesired.x).toBeGreaterThan(0)
     expect(Math.abs(chaseDesired.y)).toBeLessThan(1e-6)
@@ -58,9 +57,8 @@ describe('Mob-centric AI decisions', () => {
     // Test attack behavior - should stop moving
     mob.currentBehavior = 'attack'
     const attackDesired = mob.computeDesiredVelocity({
-      nearestPlayer: { x: 10, y: 0, id: 'player1' },
+      nearestPlayer: { x: 10, y: 0, id: 'player1', radius: 4 },
       distanceToNearestPlayer: 10,
-      maxSpeed: 12,
     })
     expect(attackDesired.x).toBe(0)
     expect(attackDesired.y).toBe(0)

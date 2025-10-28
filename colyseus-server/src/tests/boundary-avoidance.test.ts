@@ -109,7 +109,6 @@ describe('Boundary Avoidance Tests', () => {
       const velocity = testMob.computeDesiredVelocity({
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
-        maxSpeed: 24,
         worldBounds: { width: 400, height: 300 },
       })
 
@@ -125,7 +124,6 @@ describe('Boundary Avoidance Tests', () => {
       const velocity = testMob.computeDesiredVelocity({
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
-        maxSpeed: 24,
         worldBounds: { width: 400, height: 300 },
       })
 
@@ -142,7 +140,6 @@ describe('Boundary Avoidance Tests', () => {
       const velocity = testMob.computeDesiredVelocity({
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
-        maxSpeed: 24,
         worldBounds: { width: 400, height: 300 },
       })
 
@@ -159,7 +156,6 @@ describe('Boundary Avoidance Tests', () => {
       const velocity = testMob.computeDesiredVelocity({
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
-        maxSpeed: 24,
         worldBounds: { width: 400, height: 300 },
       })
 
@@ -176,7 +172,6 @@ describe('Boundary Avoidance Tests', () => {
       const velocity = testMob.computeDesiredVelocity({
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
-        maxSpeed: 24,
         worldBounds: { width: 400, height: 300 },
       })
 
@@ -245,7 +240,6 @@ describe('Boundary Avoidance Tests', () => {
       const velocity = testMob.computeDesiredVelocity({
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
-        maxSpeed: 24,
         worldBounds: { width: 400, height: 300 },
       })
 
@@ -261,7 +255,6 @@ describe('Boundary Avoidance Tests', () => {
       const velocity = testMob.computeDesiredVelocity({
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
-        maxSpeed: 24,
         worldBounds: { width: 400, height: 300 },
       })
 
@@ -278,7 +271,6 @@ describe('Boundary Avoidance Tests', () => {
       const velocity = testMob.computeDesiredVelocity({
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
-        maxSpeed: 24,
         worldBounds: { width: 20, height: 20 },
       })
 

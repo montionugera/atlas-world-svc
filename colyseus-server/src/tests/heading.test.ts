@@ -211,7 +211,7 @@ describe('Heading System Tests', () => {
       // Create a custom entity that extends WorldLife but has neither method
       class CustomEntity extends WorldLife {
         constructor() {
-          super('custom', 50, 50)
+          super({ id: 'custom', x: 50, y: 50 })
         }
       }
 
