@@ -3,7 +3,7 @@ import { Mob } from '../schemas/Mob'
 describe('Mob-centric AI decisions', () => {
   test('decideBehavior selects attack within 20 and locks briefly', () => {
     const mob = new Mob({ id: 'm1', x: 0, y: 0, vx: 0, vy: 0 })
-    const now = Date.now()
+    const now = performance.now()
 
     const envClose = {
       nearestPlayer: { x: 5, y: 0, id: 'player1' },
@@ -14,8 +14,8 @@ describe('Mob-centric AI decisions', () => {
     const chosen = mob.decideBehavior(envClose)
     expect(chosen).toBe('attack')
     expect(mob.currentBehavior).toBe('attack')
-    // Current implementation uses ~1s lock
-    expect(mob.behaviorLockedUntil).toBeGreaterThanOrEqual(now + 900)
+    // Current implementation uses 500ms lock
+    expect(mob.behaviorLockedUntil).toBeGreaterThanOrEqual(now + 400)
   })
 
   test('locked behavior remains attack even if player moves away briefly', () => {
@@ -28,6 +28,7 @@ describe('Mob-centric AI decisions', () => {
     })
     const lockedUntil = mob.behaviorLockedUntil
     expect(mob.currentBehavior).toBe('attack')
+    expect(lockedUntil).toBeGreaterThan(0)
 
     // Now far away but still within lock window
     const envFar = {
@@ -51,8 +52,8 @@ describe('Mob-centric AI decisions', () => {
     })
     expect(chaseDesired.x).toBeGreaterThan(0)
     expect(Math.abs(chaseDesired.y)).toBeLessThan(1e-6)
-    // For chase, speed uses 0.8 * maxSpeed per implementation
-    expect(Math.hypot(chaseDesired.x, chaseDesired.y)).toBeCloseTo(9.6, 1)
+    // For chase, speed is limited by maxStoppingSpeed when close to target
+    expect(Math.hypot(chaseDesired.x, chaseDesired.y)).toBeCloseTo(3, 1)
 
     // Test attack behavior - should stop moving
     mob.currentBehavior = 'attack'
@@ -64,7 +65,7 @@ describe('Mob-centric AI decisions', () => {
     expect(attackDesired.y).toBe(0)
   })
 
-  test('decideBehavior picks boundaryAware when near edge', () => {
+  test('decideBehavior picks avoidBoundary when near edge', () => {
     const mob = new Mob({ id: 'm4', x: 5, y: 5, vx: 0, vy: 0 })
     const env = {
       nearestPlayer: null as any,
@@ -72,8 +73,8 @@ describe('Mob-centric AI decisions', () => {
       nearBoundary: true,
     }
     const chosen = mob.decideBehavior(env)
-    expect(chosen).toBe('boundaryAware')
-    expect(mob.tag).toBe('boundaryAware')
+    expect(chosen).toBe('avoidBoundary')
+    expect(mob.tag).toBe('avoidBoundary')
   })
 
   test('decideBehavior defaults to wander when nothing else applies', () => {

@@ -30,7 +30,7 @@ export class GameRoom extends Room<GameState> {
 
     // Initialize physics manager
     this.physicsManager = new PlanckPhysicsManager()
-    
+
     // Set room ID for physics manager to enable event listening
     this.physicsManager.setRoomId(this.roomId)
 
@@ -197,7 +197,7 @@ export class GameRoom extends Room<GameState> {
         // Update player headings and other logic
         this.state.players.forEach(player => {
           player.update(GAME_CONFIG.tickRate)
-          
+
           // Process player attack input
           if (player.processAttackInput(this.state.mobs, this.roomId)) {
             // Attack was processed, reset attack input to prevent spam
@@ -206,7 +206,7 @@ export class GameRoom extends Room<GameState> {
         })
 
         // Update AI module (tick-driven)
-        this.state.aiModule.update(GAME_CONFIG.tickRate)
+        this.state.aiModule.update()
 
         // Update mobs (AI + combat only; physics already applied above)
         this.state.updateMobs()

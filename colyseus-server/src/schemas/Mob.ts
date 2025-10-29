@@ -114,11 +114,14 @@ export class Mob extends WorldLife {
     const worldWidth = env.worldBounds?.width ?? 400
     const worldHeight = env.worldBounds?.height ?? 300
     const effectiveThreshold = boundaryBuffer + this.radius // Account for mob size
-    const veryNearBoundary =
+    
+    // Use environment flag if provided, otherwise calculate from position
+    const veryNearBoundary = env.nearBoundary ?? (
       this.x < effectiveThreshold ||
       this.x > worldWidth - effectiveThreshold ||
       this.y < effectiveThreshold ||
       this.y > worldHeight - effectiveThreshold
+    )
 
     // Use actual attack range + mob radius + player radius for collision-based attack range
     const playerRadius = 4 // Default player radius (from Player.ts)
@@ -132,7 +135,13 @@ export class Mob extends WorldLife {
       )
     }
 
-    if (distance <= effectiveAttackRange) {
+    if (veryNearBoundary) {
+      // Very close to boundary: Avoid boundary behavior (highest priority)
+      this.currentBehavior = 'avoidBoundary'
+      this.behaviorLockedUntil = now + 200 // Short lock time
+      this.currentAttackTarget = ''
+      this.currentChaseTarget = ''
+    } else if (distance <= effectiveAttackRange) {
       // Very close: Attack
       this.currentBehavior = 'attack'
       this.behaviorLockedUntil = now + 500 // 0.5 second lock
@@ -148,12 +157,6 @@ export class Mob extends WorldLife {
         this.currentChaseTarget = env.nearestPlayer.id || 'unknown'
       }
       this.currentAttackTarget = ''
-    } else if (veryNearBoundary) {
-      // Very close to boundary: Avoid boundary behavior (only when not attacking/chasing)
-      this.currentBehavior = 'avoidBoundary'
-      this.behaviorLockedUntil = now + 200 // Short lock time
-      this.currentAttackTarget = ''
-      this.currentChaseTarget = ''
     } else {
       // Far: Wander
       this.currentBehavior = 'wander'

@@ -56,7 +56,7 @@ export class MobAIModule {
   }
 
   // Update all mob AI (public method for tick-driven updates)
-  update(deltaTime: number): void {
+  update(): void {
     if (!this.isRunning) return
 
     const now = performance.now()
@@ -65,18 +65,17 @@ export class MobAIModule {
 
     // Only update if enough time has passed
     if (timeSinceLastUpdate < targetInterval) return
-
     this.lastUpdateTime = now
-    this.updateAI()
+    this.updateAIDecision()
   }
 
   // Update all mob AI (public method for testing)
   updateAll(): void {
-    this.updateAI()
+    this.updateAIDecision()
   }
 
   // Internal AI update logic
-  private updateAI(): void {
+  private updateAIDecision(): void {
     const startTime = performance.now()
 
     try {
