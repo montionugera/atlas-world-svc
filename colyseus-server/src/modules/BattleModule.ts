@@ -49,7 +49,8 @@ export class BattleModule implements BattleActionProcessor {
   // Process a direct attack between two entities (core attack logic)
   processAttack(attacker: WorldLife, target: WorldLife): AttackEvent | null {
     // Validate attack conditions
-    if (!this.canAttack(attacker, target)) {
+    const attackCheck = this.canAttack(attacker, target)
+    if (!attackCheck.canAttack) {
       return null
     }
 
@@ -97,25 +98,37 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Check if attacker can attack target
-  canAttack(attacker: WorldLife, target: WorldLife): boolean {
-    if (!target.isAlive) return false
+  canAttack(attacker: WorldLife, target: WorldLife): { canAttack: boolean; reason?: string } {
+    if (!target.isAlive) {
+      return { canAttack: false, reason: `target ${target.id} is not alive` }
+    }
+
+    if (!attacker.isAlive) {
+      return { canAttack: false, reason: `attacker ${attacker.id} is not alive` }
+    }
 
     // Check attack cooldown using high-precision timing
     if (!attacker.canAttack()) {
-      return false
+      const now = performance.now()
+      const timeSinceLastAttack = now - attacker.lastAttackTime
+      const remaining = attacker.attackDelay - timeSinceLastAttack
+      return {
+        canAttack: false,
+        reason: `cooldown not ready (elapsed: ${timeSinceLastAttack.toFixed(0)}ms, delay: ${attacker.attackDelay}ms, remaining: ${remaining.toFixed(0)}ms)`
+      }
     }
 
     // Check range
     const distance = attacker.getDistanceTo(target)
     const effectiveRange = attacker.attackRange + (attacker as any).radius + (target as any).radius
     if (distance > effectiveRange) {
-      console.log(
-        `📏 BATTLE: ${attacker.id} → ${target.id} out of range: dist=${distance.toFixed(2)} > effRange=${effectiveRange.toFixed(2)} (base=${attacker.attackRange}, radii=${(attacker as any).radius}+${(target as any).radius})`
-      )
-      return false
+      return {
+        canAttack: false,
+        reason: `out of range (distance: ${distance.toFixed(2)}, effectiveRange: ${effectiveRange.toFixed(2)}, baseRange: ${attacker.attackRange}, radii: ${(attacker as any).radius}+${(target as any).radius})`
+      }
     }
 
-    return true
+    return { canAttack: true }
   }
 
   // Calculate damage with defense calculations
@@ -142,7 +155,7 @@ export class BattleModule implements BattleActionProcessor {
     target.currentHealth = Math.max(0, target.currentHealth - damage)
 
     if (target.currentHealth <= 0) {
-      this.killEntity(target)
+      target.die() // Entity state transition (sets diedAt timestamp for cleanup)
       console.log(`💀 KILL: ${target.id} has been killed`)
       return true // Entity died
     }
@@ -153,16 +166,6 @@ export class BattleModule implements BattleActionProcessor {
     }
 
     return false // Entity survived
-  }
-
-  // Kill an entity
-  killEntity(entity: WorldLife): void {
-    entity.isAlive = false
-    entity.currentHealth = 0
-    entity.isAttacking = false
-    entity.isMoving = false
-    entity.vx = 0
-    entity.vy = 0
   }
 
   // Heal an entity
@@ -334,19 +337,14 @@ export class BattleModule implements BattleActionProcessor {
 
     console.log(`📨 BATTLE: Processing attack action from ${actor.id} to ${target.id}`)
 
-    // Check range if direction is provided
-    if (payload.direction) {
-      const distance = actor.getDistanceTo(target)
-      if (distance > payload.range) {
-        console.log(
-          `🎯 BATTLE: ${actor.id} attack out of range (${distance.toFixed(1)} > ${payload.range})`
-        )
-        return false
-      }
-    }
-
-    // Process the attack
+    // Process the attack (processAttack already validates range via canAttack())
     const attackEvent = this.processAttack(actor, target)
+    if (attackEvent) {
+      console.log(`✅ BATTLE: Attack processed successfully, ${attackEvent.damage} damage dealt`)
+    } else {
+      const attackCheck = this.canAttack(actor, target)
+      console.log(`❌ BATTLE: Attack failed - ${attackCheck.reason || 'unknown reason'}`)
+    }
     return attackEvent !== null
   }
 
@@ -371,7 +369,7 @@ export class BattleModule implements BattleActionProcessor {
       return false
     }
 
-    this.killEntity(target)
+    target.die() // Entity state transition (sets diedAt timestamp for cleanup)
     console.log(`💀 BATTLE: ${actor.id} killed ${target.id} (${payload.reason || 'no reason'})`)
     return true
   }

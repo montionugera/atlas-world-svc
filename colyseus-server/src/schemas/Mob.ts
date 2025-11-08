@@ -1,14 +1,18 @@
 import { type } from '@colyseus/schema'
 import { WorldLife } from './WorldLife'
 import { GameState } from './GameState'
+import { Player } from './Player'
 import { BattleManager } from '../modules/BattleManager'
 import { eventBus, RoomEventType, BattleAttackData } from '../events/EventBus'
+import { MOB_STATS } from '../config/combatConfig'
+import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 // Removed global BattleManager singleton - now using room-scoped instances
 
 export class Mob extends WorldLife {
   @type('string') tag: string = 'idle' // Current behavior tag for debugging/UI // Send radius to client
   @type('string') currentBehavior: string = 'idle'
   @type('number') behaviorLockedUntil: number = 0 // epoch ms; 0 means unlocked
+  @type('boolean') isWindingUp: boolean = false // Synced: wind-up state for client animation
   // Server-only fields (not synced to clients)
   mass: number = 1 // cached mass for steering calculations
   desiredVx: number = 0
@@ -24,6 +28,60 @@ export class Mob extends WorldLife {
   wanderTargetY: number = 0 // Wander target position Y
   lastWanderTargetTime: number = 0 // When wander target was last set
   @type('number') maxMoveSpeed: number = 20 // synced to clients; mob movement cap
+  
+  // Attack strategy system (server-only)
+  attackStrategies: AttackStrategy[] = []
+  currentAttackStrategy: AttackStrategy | null = null
+  windUpStartTime: number = 0
+  
+  // Debug logging throttling (server-only)
+  lastCooldownState: boolean = false // Track cooldown state to reduce log spam
+  lastDebugLogTime: number = 0 // Throttle debug logs
+  
+  // Cleanup attributes (server-only)
+  cantRespawn: boolean = false // Flag: this mob cannot be respawned
+  readyToRemove: boolean = false // Flag: trigger immediate removal
+
+  /**
+   * Check if mob is ready to be permanently removed
+   * @param respawnDelayMs - Respawn delay in milliseconds
+   * @returns true if mob should be removed from game
+   */
+  readyToBeRemoved(respawnDelayMs: number): boolean {
+    // Immediate removal trigger
+    if (this.readyToRemove) return true
+    
+    // Dead mobs past respawn delay
+    if (!this.isAlive && this.diedAt > 0) {
+      const timeDead = Date.now() - this.diedAt
+      return timeDead >= respawnDelayMs
+    }
+    
+    return false
+  }
+
+  /**
+   * Check if mob can be respawned (for resurrection mechanics)
+   * @returns true if mob is dead but can be respawned
+   */
+  canRespawn(): boolean {
+    return !this.isAlive && !this.cantRespawn && this.diedAt > 0
+  }
+
+  /**
+   * Mark mob for immediate removal (bypasses respawn delay)
+   * Call this from game logic when special removal is needed
+   */
+  markForRemoval(): void {
+    this.readyToRemove = true
+  }
+
+  /**
+   * Clear removal flag (used when mob is respawned)
+   */
+  clearRemovalFlag(): void {
+    this.readyToRemove = false
+  }
 
   constructor(options: {
     id: string
@@ -41,6 +99,7 @@ export class Mob extends WorldLife {
     armor?: number
     density?: number
     maxMoveSpeed?: number
+    attackStrategies?: AttackStrategy[]
   }) {
     super({
       id: options.id,
@@ -49,14 +108,14 @@ export class Mob extends WorldLife {
       vx: options.vx ?? 0,
       vy: options.vy ?? 0,
       tags: ['mob'],
-      radius: options.radius ?? 4, // Mob radius
-      maxHealth: options.maxHealth ?? 100, // Mobs have less health than players
-      attackDamage: options.attackDamage ?? 2, // Mobs deal more damage
-      attackRange: options.attackRange ?? 1.5, // Use WorldLife attackRange
-      attackDelay: options.attackDelay ?? 2000, // Mobs attack slower
-      defense: options.defense ?? 2, // Mobs have some defense
-      armor: options.armor ?? 1, // Mobs have some armor
-      density: options.density ?? 1.2, // Mobs are denser than players
+      radius: options.radius ?? MOB_STATS.radius,
+      maxHealth: options.maxHealth ?? MOB_STATS.maxHealth,
+      attackDamage: options.attackDamage ?? MOB_STATS.attackDamage,
+      attackRange: options.attackRange ?? MOB_STATS.attackRange,
+      attackDelay: options.attackDelay ?? MOB_STATS.attackDelay,
+      defense: options.defense ?? MOB_STATS.defense,
+      armor: options.armor ?? MOB_STATS.armor,
+      density: options.density ?? MOB_STATS.density,
     })
     if (options.radius !== undefined) {
       this.radius = options.radius
@@ -66,6 +125,14 @@ export class Mob extends WorldLife {
     }
     if (options.maxMoveSpeed !== undefined) {
       this.maxMoveSpeed = options.maxMoveSpeed
+    }
+    
+    // Initialize attack strategies (default to melee if none provided)
+    if (options.attackStrategies && options.attackStrategies.length > 0) {
+      this.attackStrategies = options.attackStrategies
+    } else {
+      // Default: melee attack strategy (will be set up later if needed)
+      this.attackStrategies = []
     }
   }
 
@@ -123,15 +190,27 @@ export class Mob extends WorldLife {
       this.y > worldHeight - effectiveThreshold
     )
 
-    // Use actual attack range + mob radius + player radius for collision-based attack range
+    // Determine effective attack range
+    // For ranged attacks (spears), use maxRange directly without adding radii
+    // For melee attacks, add radii for collision-based range
     const playerRadius = 4 // Default player radius (from Player.ts)
-    const effectiveAttackRange = this.attackRange + this.radius + playerRadius
+    let effectiveAttackRange: number
+    
+    // Check if mob has spear throw strategy (ranged attack)
+    const spearStrategy = this.attackStrategies.find(s => s.name === 'spearThrow')
+    if (spearStrategy && (spearStrategy as any).maxRange) {
+      // Ranged attack: use maxRange directly (no radius addition needed)
+      effectiveAttackRange = (spearStrategy as any).maxRange
+    } else {
+      // Melee attack: add radii for collision-based range
+      effectiveAttackRange = this.attackRange + this.radius + playerRadius
+    }
 
     // Debug: Log distance and attack range occasionally
     if (Math.random() < 0.01) {
       // 1% chance
       console.log(
-        `🎯 MOB ${this.id}: distance=${distance.toFixed(2)}, attackRange=${this.attackRange}, mobRadius=${this.radius}, playerRadius=${playerRadius}, effectiveRange=${effectiveAttackRange.toFixed(2)}`
+        `🎯 MOB ${this.id}: distance=${distance.toFixed(2)}, attackRange=${this.attackRange}, mobRadius=${this.radius}, playerRadius=${playerRadius}, effectiveRange=${effectiveAttackRange.toFixed(2)}, hasSpear=${!!spearStrategy}`
       )
     }
 
@@ -382,34 +461,46 @@ export class Mob extends WorldLife {
     return { moved: false }
   }
 
-  // Update attack logic - emits battle events to event bus
+  // Update attack logic - uses attack strategies if available, otherwise falls back to legacy behavior
   updateAttack(
     players: Map<string, any>,
     roomId?: string
   ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
     // Only process attacks if we're in attack behavior
-    if (this.currentBehavior !== 'attack' || !this.currentAttackTarget || !this.canAttack()) {
+    if (this.currentBehavior !== 'attack' || !this.currentAttackTarget) {
       return { attacked: false }
     }
 
-    const attackTarget = players.get(this.currentAttackTarget)
-    if (!attackTarget || !attackTarget.isAlive) {
+    const targetPlayer = players.get(this.currentAttackTarget)
+    if (!targetPlayer || !targetPlayer.isAlive) {
       // Target is dead or doesn't exist, clear attack target
       this.currentAttackTarget = ''
       this.currentBehavior = 'wander' // Fallback to wander
+      this.isWindingUp = false
+      this.windUpStartTime = 0
       return { attacked: false }
     }
 
     // Update target position for heading calculation
-    this.targetX = attackTarget.x
-    this.targetY = attackTarget.y
+    this.targetX = targetPlayer.x
+    this.targetY = targetPlayer.y
 
-    // Check if target is still in range
-    const distance = this.getDistanceTo(attackTarget)
-    if (distance > this.attackRange + this.radius + attackTarget.radius) {
+    // Use attack strategies if available
+    if (this.attackStrategies.length > 0) {
+      return this.updateAttackWithStrategies(targetPlayer, roomId || '')
+    }
+
+    // Legacy behavior: melee attack (for backward compatibility)
+    if (!this.canAttack()) {
+      return { attacked: false }
+    }
+
+    const distanceToTargetPlayer = this.getDistanceTo(targetPlayer)
+    const effectiveMeleeRange = this.attackRange + this.radius + targetPlayer.radius
+    if (distanceToTargetPlayer > effectiveMeleeRange) {
       // Target moved out of range, switch to chase behavior
       console.log(
-        `🎯 MOB ${this.id}: Target out of range (${distance.toFixed(2)} > ${this.attackRange}), switching to chase`
+        `🎯 MOB ${this.id}: Target out of range (${distanceToTargetPlayer.toFixed(2)} > ${effectiveMeleeRange.toFixed(2)}), switching to chase`
       )
       this.currentBehavior = 'chase'
       this.currentChaseTarget = this.currentAttackTarget
@@ -420,7 +511,7 @@ export class Mob extends WorldLife {
     // Emit attack event - let BattleManager handle all battle logic
     const attackData: BattleAttackData = {
       actorId: this.id,
-      targetId: attackTarget.id,
+      targetId: targetPlayer.id,
       damage: this.attackDamage,
       range: this.attackRange,
       roomId: roomId || ''
@@ -429,10 +520,137 @@ export class Mob extends WorldLife {
     // Emit the battle attack event
     eventBus.emitRoomEvent(roomId || '', RoomEventType.BATTLE_ATTACK, attackData)
     console.log(
-      `📡 MOB ${this.id} emitted battle attack event for ${attackTarget.id}`
+      `📡 MOB ${this.id} emitted battle attack event for ${targetPlayer.id}`
     )
 
-    return { attacked: true, targetId: attackTarget.id, eventEmitted: true }
+    return { attacked: true, targetId: targetPlayer.id, eventEmitted: true }
+  }
+
+  // Update attack using attack strategies
+  private updateAttackWithStrategies(
+    targetPlayer: Player,
+    roomId: string
+  ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
+    const currentTimeMs = Date.now() // For wind-up timing (milliseconds since epoch)
+    const currentTimePerf = performance.now() // For attack cooldown timing (high precision)
+
+    // Check if we're in wind-up phase
+    if (this.isWindingUp && this.windUpStartTime > 0) {
+      const windUpDurationMs = this.currentAttackStrategy?.getWindUpTime() || 0
+      const windUpElapsedMs = currentTimeMs - this.windUpStartTime
+
+      if (windUpElapsedMs >= windUpDurationMs) {
+        // Wind-up complete, execute attack
+        this.isWindingUp = false
+        if (this.currentAttackStrategy) {
+          console.log(`🎯 DEBUG: ${this.id} wind-up complete, executing ${this.currentAttackStrategy.name} attack`)
+          const attackExecuted = this.currentAttackStrategy.execute(this, targetPlayer, roomId)
+          if (attackExecuted) {
+            this.lastAttackTime = performance.now()
+            this.isAttacking = true
+            // Reset attacking state after animation
+            setTimeout(() => {
+              this.isAttacking = false
+            }, 200)
+            return { attacked: true, targetId: targetPlayer.id, eventEmitted: true }
+          } else {
+            console.log(`❌ DEBUG: ${this.id} strategy.execute() returned false`)
+          }
+        }
+        this.windUpStartTime = 0
+        this.currentAttackStrategy = null
+      } else {
+        // Still in wind-up
+        return { attacked: false }
+      }
+    }
+
+    // Find first strategy that can execute
+    // Sort strategies by priority: melee first (shorter range), then ranged
+    const strategiesByPriority = [...this.attackStrategies].sort((strategyA, strategyB) => {
+      // Melee strategies (0 wind-up) should be checked first
+      if (strategyA.getWindUpTime() === 0 && strategyB.getWindUpTime() > 0) return -1
+      if (strategyA.getWindUpTime() > 0 && strategyB.getWindUpTime() === 0) return 1
+      // If both same wind-up, prefer shorter range (melee typically has shorter range)
+      const strategyARange = strategyA.name === 'melee' 
+        ? this.attackRange + this.radius + targetPlayer.radius
+        : (strategyA as any).maxRange || this.attackRange
+      const strategyBRange = strategyB.name === 'melee'
+        ? this.attackRange + this.radius + targetPlayer.radius
+        : (strategyB as any).maxRange || this.attackRange
+      return strategyARange - strategyBRange
+    })
+    
+    // Check attack cooldown status
+    const isCooldownReady = this.canAttack()
+    const cooldownElapsedMs = currentTimePerf - this.lastAttackTime
+    const cooldownRemainingMs = Math.max(0, this.attackDelay - cooldownElapsedMs)
+    const distanceToTargetPlayer = this.getDistanceTo(targetPlayer)
+    
+    console.log(`🔍 DEBUG: ${this.id} checking ${strategiesByPriority.length} strategies`)
+    console.log(`  📊 Cooldown: ready=${isCooldownReady}, elapsed=${cooldownElapsedMs.toFixed(0)}ms, delay=${this.attackDelay}ms, remaining=${cooldownRemainingMs.toFixed(0)}ms`)
+    console.log(`  📏 Distance: ${distanceToTargetPlayer.toFixed(2)} units to target`)
+    
+    for (const strategy of strategiesByPriority) {
+      const strategyCanExecute = strategy.canExecute(this, targetPlayer)
+      const strategyDistanceToTargetPlayer = this.getDistanceTo(targetPlayer)
+      const strategyEffectiveRange = strategy.name === 'melee' 
+        ? this.attackRange + this.radius + targetPlayer.radius
+        : (strategy as any).maxRange || this.attackRange
+      const strategyWindUpMs = strategy.getWindUpTime()
+      
+      console.log(`  🔍 Strategy "${strategy.name}": canExecute=${strategyCanExecute}, distance=${strategyDistanceToTargetPlayer.toFixed(2)}, effectiveRange=${strategyEffectiveRange.toFixed(2)}, windUp=${strategyWindUpMs}ms`)
+      
+      if (strategyCanExecute) {
+        if (strategyWindUpMs > 0) {
+          // Start wind-up
+          console.log(`⏳ DEBUG: ${this.id} starting wind-up for ${strategy.name} (${strategyWindUpMs}ms)`)
+          this.isWindingUp = true
+          this.windUpStartTime = currentTimeMs
+          this.currentAttackStrategy = strategy
+          return { attacked: false }
+        } else {
+          // Instant attack
+          console.log(`⚡ DEBUG: ${this.id} executing instant ${strategy.name} attack`)
+          const attackExecuted = strategy.execute(this, targetPlayer, roomId)
+          if (attackExecuted) {
+            // Don't set lastAttackTime here - BattleModule will set it after validating the attack
+            // Setting it here causes canAttack() to fail in BattleModule.processAttack()
+            this.isAttacking = true
+            this.lastCooldownState = false // Cooldown will start after BattleModule processes attack
+            setTimeout(() => {
+              this.isAttacking = false
+            }, 200)
+            return { attacked: true, targetId: targetPlayer.id, eventEmitted: true }
+          } else {
+            console.log(`❌ DEBUG: ${this.id} ${strategy.name}.execute() returned false`)
+          }
+        }
+      }
+    }
+
+    // No strategy can execute - check if target out of range
+    const distanceToTargetForBehaviorCheck = this.getDistanceTo(targetPlayer)
+    const maxAttackRange = Math.max(...this.attackStrategies.map(strategy => {
+      if (strategy.name === 'spearThrow') {
+        return (strategy as any).maxRange || this.attackRange
+      }
+      return this.attackRange + this.radius + targetPlayer.radius
+    }))
+
+    if (distanceToTargetForBehaviorCheck > maxAttackRange) {
+      // Target moved out of range, switch to chase behavior
+      console.log(`🎯 DEBUG: ${this.id} target out of range (${distanceToTargetForBehaviorCheck.toFixed(2)} > ${maxAttackRange.toFixed(2)}), switching to chase`)
+      this.currentBehavior = 'chase'
+      this.currentChaseTarget = this.currentAttackTarget
+      this.currentAttackTarget = ''
+      this.isWindingUp = false
+      this.windUpStartTime = 0
+      return { attacked: false }
+    }
+
+    console.log(`⚠️ DEBUG: ${this.id} no strategy can execute, but target is in range`)
+    return { attacked: false }
   }
 
   // Generate a random wander target
