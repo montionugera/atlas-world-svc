@@ -38,3 +38,44 @@
 - Update plans in `.cursor/plans/` for changes
 - Document breaking changes
 - Keep server_spec.md current
+
+### Plan Management
+
+#### Updating Plans
+- **Regular Reviews**: Conduct periodic reviews of all active plans to ensure they are up-to-date and reflect current project requirements
+- **Status Indicators**: Use clear status markers:
+  - ✅ Done - Task/phase completed
+  - 🚧 In Progress - Currently being worked on
+  - ⏳ Pending - Not yet started
+- **Update Requirements**: When working on features, update related plans:
+  - Mark completed tasks with `[x]`
+  - Update status indicators
+  - Add implementation notes if needed
+  - Document any deviations from plan
+
+#### Completion Criteria
+A plan is considered "finished" when:
+1. All checkboxes are checked `[x]`
+2. Contains completion markers ("✅ COMPLETED", "ACHIEVED", "Ready for Production")
+3. Code validation confirms features are implemented (check for related code files)
+4. Manual review confirms no remaining work
+
+#### Plan Cleanup Process
+1. **Run Validation**: Use `.cursor/scripts/validate-plans.js` to identify finished plans
+2. **Manual Review**: Review flagged plans to verify completion
+3. **Code Verification**: Check if plan features are actually implemented in codebase
+4. **Delete Finished Plans**: Remove confirmed finished plans (no archiving needed)
+5. **Update Rules**: Update workflow rules if patterns change
+
+#### Plan Lifecycle
+- **Active**: Plan is being worked on or contains pending tasks
+- **Review**: Plan appears finished but needs verification
+- **Finished**: All criteria met, ready for deletion
+- **Deleted**: Removed after confirmation
+
+#### Best Practices
+- Keep plans focused and specific
+- Update plans as work progresses
+- Delete finished plans promptly to reduce clutter
+- Use consistent status indicators across all plans
+- Link plans to related code/features when possible

@@ -19,6 +19,8 @@ describe('Mob Movement and Steering', () => {
   })
 
   afterEach(() => {
+    // Clean up BattleManager event listeners
+    battleManager.cleanup()
     // Clean up physics manager
     physicsManager.destroy()
     // Stop AI module to prevent background timers

@@ -4,6 +4,7 @@ import { calculateScale, clearCanvas } from '../utils/drawingUtils';
 import { drawGrid } from '../utils/gridUtils';
 import { drawMap } from '../renderers/mapRenderer';
 import { drawMobs } from '../renderers/mobRenderer';
+import { drawProjectiles } from '../renderers/projectileRenderer';
 import { drawPlayers } from '../renderers/playerRenderer';
 import { drawHUD } from '../renderers/hudRenderer';
 
@@ -49,6 +50,10 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         drawGrid(ctx, canvas.width, canvas.height, scale);
         drawMobs(ctx, gameState.mobs, scale);
         drawPlayers(ctx, gameState.players, playerId, scale);
+        // Draw projectiles (spears)
+        if (gameState.projectiles) {
+          drawProjectiles(ctx, gameState.projectiles, scale);
+        }
         drawHUD(ctx, gameState, updateCount, fps, updateRate, roomId);
       }
       

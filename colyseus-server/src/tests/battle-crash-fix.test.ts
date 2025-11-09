@@ -18,6 +18,8 @@ describe('Battle System Crash Fix', () => {
   })
 
   afterEach(() => {
+    // Clean up BattleManager event listeners
+    battleManager.cleanup()
     // Stop AI module to prevent background timers
     gameState.stopAI()
   })

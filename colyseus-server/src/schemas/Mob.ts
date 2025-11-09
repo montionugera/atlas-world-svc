@@ -584,12 +584,18 @@ export class Mob extends WorldLife {
     // Check attack cooldown status
     const isCooldownReady = this.canAttack()
     const cooldownElapsedMs = currentTimePerf - this.lastAttackTime
-    const cooldownRemainingMs = Math.max(0, this.attackDelay - cooldownElapsedMs)
     const distanceToTargetPlayer = this.getDistanceTo(targetPlayer)
     
-    console.log(`🔍 DEBUG: ${this.id} checking ${strategiesByPriority.length} strategies`)
-    console.log(`  📊 Cooldown: ready=${isCooldownReady}, elapsed=${cooldownElapsedMs.toFixed(0)}ms, delay=${this.attackDelay}ms, remaining=${cooldownRemainingMs.toFixed(0)}ms`)
-    console.log(`  📏 Distance: ${distanceToTargetPlayer.toFixed(2)} units to target`)
+    // Only log when cooldown becomes ready (state change from false to true) or when attack is attempted
+    const cooldownStateChanged = isCooldownReady !== this.lastCooldownState
+    const shouldLogDebug = cooldownStateChanged && isCooldownReady // Only log when cooldown becomes ready
+    
+    if (shouldLogDebug) {
+      console.log(`🔍 DEBUG: ${this.id} cooldown ready, checking ${strategiesByPriority.length} strategies`)
+      console.log(`  📊 Cooldown: elapsed=${cooldownElapsedMs.toFixed(0)}ms, delay=${this.attackDelay}ms`)
+      console.log(`  📏 Distance: ${distanceToTargetPlayer.toFixed(2)} units to target`)
+      this.lastCooldownState = isCooldownReady
+    }
     
     for (const strategy of strategiesByPriority) {
       const strategyCanExecute = strategy.canExecute(this, targetPlayer)
@@ -599,7 +605,10 @@ export class Mob extends WorldLife {
         : (strategy as any).maxRange || this.attackRange
       const strategyWindUpMs = strategy.getWindUpTime()
       
-      console.log(`  🔍 Strategy "${strategy.name}": canExecute=${strategyCanExecute}, distance=${strategyDistanceToTargetPlayer.toFixed(2)}, effectiveRange=${strategyEffectiveRange.toFixed(2)}, windUp=${strategyWindUpMs}ms`)
+      // Only log strategy details when attack is actually attempted
+      if (strategyCanExecute && shouldLogDebug) {
+        console.log(`  🔍 Strategy "${strategy.name}": canExecute=true, distance=${strategyDistanceToTargetPlayer.toFixed(2)}, effectiveRange=${strategyEffectiveRange.toFixed(2)}, windUp=${strategyWindUpMs}ms`)
+      }
       
       if (strategyCanExecute) {
         if (strategyWindUpMs > 0) {
@@ -618,6 +627,7 @@ export class Mob extends WorldLife {
             // Setting it here causes canAttack() to fail in BattleModule.processAttack()
             this.isAttacking = true
             this.lastCooldownState = false // Cooldown will start after BattleModule processes attack
+            this.lastDebugLogTime = currentTimeMs // Reset debug log timer
             setTimeout(() => {
               this.isAttacking = false
             }, 200)
@@ -646,16 +656,25 @@ export class Mob extends WorldLife {
       this.currentAttackTarget = ''
       this.isWindingUp = false
       this.windUpStartTime = 0
+      this.lastCooldownState = false // Reset cooldown state tracking
       return { attacked: false }
     }
 
-    console.log(`⚠️ DEBUG: ${this.id} no strategy can execute, but target is in range`)
+    // Only log warning when cooldown becomes ready (not every tick)
+    if (shouldLogDebug) {
+      console.log(`⚠️ DEBUG: ${this.id} no strategy can execute, but target is in range`)
+    }
+    
+    // Update cooldown state tracking even if we don't log
+    if (cooldownStateChanged) {
+      this.lastCooldownState = isCooldownReady
+    }
+    
     return { attacked: false }
   }
 
   // Generate a random wander target
   private generateWanderTarget(): void {
-    const wanderRadius = 30
     const wanderDistance = 20
     const wanderJitter = 10
 

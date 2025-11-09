@@ -25,7 +25,7 @@ export abstract class WorldLife extends WorldObject {
   @type('number') defense: number = 0 // Reduces incoming damage
   @type('number') armor: number = 0 // Additional damage reduction
 
-  // Impulse system (calculated from damage)
+// Impulse system (calculated from damage)
   @type('number') density: number = 1 // Material density for mass calculation
 
   // Movement and combat state
@@ -40,6 +40,7 @@ export abstract class WorldLife extends WorldObject {
   attackCooldown: number = 0
   isInvulnerable: boolean = false
   invulnerabilityDuration: number = 0
+  diedAt: number = 0 // Timestamp when entity died (0 = alive or not set)
 
   // Calculate mass from radius and density (mass = volume * density)
   getMass(): number {
@@ -137,6 +138,7 @@ export abstract class WorldLife extends WorldObject {
     this.isMoving = false
     this.vx = 0
     this.vy = 0
+    this.diedAt = Date.now() // Record death timestamp for respawn delay
   }
 
   respawn(x?: number, y?: number): void {
@@ -150,11 +152,21 @@ export abstract class WorldLife extends WorldObject {
     this.attackCooldown = 0
     this.isInvulnerable = false
     this.invulnerabilityDuration = 0
+    this.diedAt = 0 // Reset death timestamp
+    // Note: Mob-specific flags (cantRespawn, readyToRemove) are handled in Mob class
+    // Mob class should override respawn() to call clearRemovalFlag()
 
     if (x !== undefined && y !== undefined) {
       this.x = x
       this.y = y
     }
+  }
+
+  // Deprecated: Use Mob.readyToBeRemoved() instead
+  // Kept for backward compatibility
+  canBeRemoved(respawnDelayMs: number): boolean {
+    if (this.isAlive || this.diedAt === 0) return false
+    return Date.now() - this.diedAt >= respawnDelayMs
   }
 
   // Attack system with anti-spam protection

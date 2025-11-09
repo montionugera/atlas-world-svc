@@ -56,6 +56,9 @@ describe('Room-Scoped Battle Manager', () => {
   })
 
   afterEach(() => {
+    // Clean up BattleManager event listeners
+    room1BattleManager.cleanup()
+    room2BattleManager.cleanup()
     // Stop AI modules to prevent background timers
     room1GameState.stopAI()
     room2GameState.stopAI()

@@ -25,9 +25,21 @@ export interface Player {
   name: string;
 }
 
+export interface Projectile {
+  id: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  ownerId: string;
+  isStuck: boolean;
+}
+
 export interface GameState {
   players: Map<string, Player>;
   mobs: Map<string, Mob>;
+  projectiles?: Map<string, Projectile>;
   tick: number;
   mapId: string;
   width: number;

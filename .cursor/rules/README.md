@@ -44,6 +44,14 @@ TypeScript development for Colyseus:
 - Common patterns and best practices
 - Build process and common issues
 
+### `05-entity-lifecycle.mdc`
+Entity lifecycle and state management:
+- Death handling patterns (always use `die()` method)
+- Counting semantics (total vs alive counts)
+- State vs lifecycle distinction
+- Cleanup and removal patterns
+- Common mistakes and anti-patterns
+
 ## Quick Reference
 
 ### Start Development

@@ -81,6 +81,9 @@ export class MobAIModule {
     try {
       // Update all mob AI (inline engine logic)
       for (const { mob, config } of this.mobs.values()) {
+        // Skip dead mobs - lifecycle manager will remove them
+        if (!mob.isAlive) continue
+
         const env: MobEnvironment = this.worldInterface.buildMobEnvironment(
           mob,
           config?.perception?.range ?? 50

@@ -33,6 +33,8 @@ describe('Battle System', () => {
   })
 
   afterEach(() => {
+    // Clean up BattleManager event listeners
+    battleManager.cleanup()
     // Stop AI module to prevent background timers
     gameState.stopAI()
   })

@@ -9,6 +9,17 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
     const x = mob.x * scale;
     const y = mob.y * scale;
     
+    // Draw wind-up animation if mob is winding up
+    if (mob.isWindingUp) {
+      // Draw pulsing glow effect
+      const pulseTime = Date.now() % 1000; // 1 second pulse cycle
+      const pulseAlpha = 0.3 + (Math.sin(pulseTime / 1000 * Math.PI * 2) * 0.2);
+      ctx.fillStyle = `rgba(255, 200, 0, ${pulseAlpha})`; // Yellow glow
+      ctx.beginPath();
+      ctx.arc(x, y, (mob.radius + 2) * scale, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
     // Draw mob circle using server-provided radius (scale already applied to position)
     drawCircle(ctx, x, y, mob.radius * scale, COLORS.mob);
     

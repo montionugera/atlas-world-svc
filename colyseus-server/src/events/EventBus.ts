@@ -69,6 +69,13 @@ export interface RoomEventPayload {
 export class EventBus extends EventEmitter {
   private static instance: EventBus | null = null
 
+  constructor() {
+    super()
+    // Increase max listeners for tests (default is 10)
+    // Individual tests should still clean up their listeners
+    this.setMaxListeners(50)
+  }
+
   public static getInstance(): EventBus {
     if (!EventBus.instance) {
       EventBus.instance = new EventBus()
@@ -197,6 +204,15 @@ export class EventBus extends EventEmitter {
   public offRoomEvent(roomId: string, callback: (payload: RoomEventPayload) => void): void {
     const eventKey = `room-${roomId}:entity-event`
     this.off(eventKey, callback)
+  }
+
+  /**
+   * Remove all listeners for a specific room
+   * Useful for cleanup in tests
+   */
+  public removeRoomListeners(roomId: string): void {
+    const eventKey = `room-${roomId}:entity-event`
+    this.removeAllListeners(eventKey)
   }
 
   /**

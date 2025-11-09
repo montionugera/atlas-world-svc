@@ -15,7 +15,8 @@
     "prepare": "husky install",
     "docs:generate": "echo 'HTML docs generated manually - see ./docs/index.html'",
     "docs:serve": "npx serve ./docs -p 3000",
-    "client:csharp": "echo 'C# client generated manually - see ./generated/csharp/'",
+    "client:csharp": "echo 'C# models updated - see ./generated/csharp/AtlasWorldModels.cs'",
+    "client:csharp:verify": "node -e \"console.log('Verify C# models match server schemas')\"",
     "client:typescript": "npx @asyncapi/generator typescript asyncapi.yaml ./generated/typescript",
     "client:all": "npm run client:csharp && npm run client:typescript"
   },

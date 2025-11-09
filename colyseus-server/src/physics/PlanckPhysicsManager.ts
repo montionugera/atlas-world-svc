@@ -1,7 +1,8 @@
 import * as planck from 'planck'
-import { PHYSICS_CONFIG } from '../config/physicsConfig'
+import { PHYSICS_CONFIG, PROJECTILE_GRAVITY } from '../config/physicsConfig'
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
+import { Projectile } from '../schemas/Projectile'
 import { eventBus, RoomEventType, DamageProducedData } from '../events/EventBus'
 
 export class PlanckPhysicsManager {
@@ -193,6 +194,62 @@ export class PlanckPhysicsManager {
     return body
   }
 
+  // Create physics body for projectile (sensor mode - no physics bounce)
+  createProjectileBody(projectile: Projectile): planck.Body {
+    const body = this.world.createBody({
+      type: 'dynamic',
+      position: planck.Vec2(projectile.x, projectile.y),
+      linearDamping: 0, // No damping - maintain velocity
+      angularDamping: 0,
+    })
+
+    // Set initial velocity
+    body.setLinearVelocity(planck.Vec2(projectile.vx, projectile.vy))
+
+    body.createFixture({
+      shape: planck.Circle(projectile.radius || PHYSICS_CONFIG.entities.projectile.radius),
+      isSensor: true, // Sensor mode - detect collisions but don't affect physics
+      density: PHYSICS_CONFIG.entities.projectile.density,
+      friction: PHYSICS_CONFIG.entities.projectile.friction,
+      restitution: PHYSICS_CONFIG.entities.projectile.restitution,
+      filterCategoryBits: PHYSICS_CONFIG.entities.projectile.collisionFilter.category,
+      filterMaskBits: PHYSICS_CONFIG.entities.projectile.collisionFilter.mask,
+    })
+
+    // Store entity data
+    const entityData = { type: 'projectile', id: projectile.id }
+    this.entityDataByBody.set(body, entityData)
+
+    this.bodies.set(projectile.id, body)
+    return body
+  }
+
+  // Update projectile physics (apply gravity, cap speed, track distance)
+  updateProjectile(projectile: Projectile, deltaTime: number, gravity: number = PROJECTILE_GRAVITY, maxSpeed: number = 36): void {
+    if (projectile.isStuck) return // Don't update stuck projectiles
+
+    const body = this.getBody(projectile.id)
+    if (!body) return
+
+    // Apply gravity (simulated in 2D top-down)
+    projectile.vy += gravity * (deltaTime / 1000) // Convert ms to seconds
+
+    // Cap max speed (configurable)
+    const speed = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy)
+    if (speed > maxSpeed) {
+      const scale = maxSpeed / speed
+      projectile.vx *= scale
+      projectile.vy *= scale
+    }
+
+    // Track distance traveled
+    const distance = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy) * (deltaTime / 1000)
+    projectile.distanceTraveled += distance
+
+    // Update physics body velocity
+    body.setLinearVelocity(planck.Vec2(projectile.vx, projectile.vy))
+  }
+
   // Remove physics body
   removeBody(entityId: string) {
     const body = this.bodies.get(entityId)
@@ -336,6 +393,16 @@ export class PlanckPhysicsManager {
   // Process mob steering and apply forces
   private processMobSteering(mobs: Map<string, any>) {
     mobs.forEach(mob => {
+      // Skip dead mobs - they shouldn't move
+      if (!mob.isAlive) {
+        // Stop dead mobs from moving
+        const body = this.getBody(mob.id)
+        if (body) {
+          body.setLinearVelocity(planck.Vec2(0, 0))
+        }
+        return
+      }
+
       const body = this.getBody(mob.id)
       if (body) {
         // Apply steering impulse if mob has desired velocity

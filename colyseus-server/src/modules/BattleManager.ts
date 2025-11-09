@@ -12,6 +12,8 @@ export class BattleManager {
   private battleModule: BattleModule
   private actionQueue: BattleActionQueue
   private roomId: string
+  private attackListener: ((data: BattleAttackData) => void) | null = null
+  private healListener: ((data: BattleHealData) => void) | null = null
 
   constructor(roomId: string, gameState: GameState) {
     this.roomId = roomId
@@ -22,7 +24,7 @@ export class BattleManager {
 
   private setupEventListeners(): void {
     // Listen for battle attack events
-    eventBus.onRoomEventBattleAttack(this.roomId, (data: BattleAttackData) => {
+    this.attackListener = (data: BattleAttackData) => {
       console.log(`⚔️ BATTLE EVENT: Attack from ${data.actorId} to ${data.targetId} (${data.damage} damage)`)
       
       const attackMessage = BattleManager.createAttackMessage(
@@ -33,10 +35,11 @@ export class BattleManager {
       )
       
       this.addActionMessage(attackMessage)
-    })
+    }
+    eventBus.onRoomEventBattleAttack(this.roomId, this.attackListener)
 
     // Listen for battle heal events
-    eventBus.onRoomEventBattleHeal(this.roomId, (data: BattleHealData) => {
+    this.healListener = (data: BattleHealData) => {
       console.log(`💚 BATTLE EVENT: Heal from ${data.actorId} to ${data.targetId} (${data.amount} heal)`)
       
       const healMessage = BattleManager.createHealMessage(
@@ -47,7 +50,23 @@ export class BattleManager {
       )
       
       this.addActionMessage(healMessage)
-    })
+    }
+    eventBus.onRoomEventBattleHeal(this.roomId, this.healListener)
+  }
+
+  /**
+   * Clean up event listeners
+   * Call this when BattleManager is no longer needed (e.g., in tests)
+   */
+  public cleanup(): void {
+    if (this.attackListener) {
+      eventBus.offRoomEvent(this.roomId, this.attackListener as any)
+      this.attackListener = null
+    }
+    if (this.healListener) {
+      eventBus.offRoomEvent(this.roomId, this.healListener as any)
+      this.healListener = null
+    }
   }
 
   // Static factory methods for creating action messages

@@ -1,15 +1,19 @@
 import { Schema, MapSchema, ArraySchema, type } from '@colyseus/schema'
 import { Mob } from './Mob'
 import { Player } from './Player'
+import { Projectile } from './Projectile'
 import { GAME_CONFIG } from '../config/gameConfig'
 import { MobAIModule } from '../ai/MobAIModule'
 import { AIWorldInterface } from '../ai/AIWorldInterface'
 // Removed global BattleManager singleton - now using room-scoped instances
 import { eventBus, RoomEventType } from '../events/EventBus'
+import { MOB_STATS, MOB_TYPE_STATS } from '../config/combatConfig'
+import { MeleeAttackStrategy } from '../ai/strategies/MeleeAttackStrategy'
 
 export class GameState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>()
   @type({ map: Mob }) mobs = new MapSchema<Mob>()
+  @type({ map: Projectile }) projectiles = new MapSchema<Projectile>()
   @type('number') tick: number = 0
   @type('string') mapId: string = 'map-01-sector-a'
   @type('string') roomId: string = ''
@@ -19,6 +23,7 @@ export class GameState extends Schema {
   public aiModule: MobAIModule
   public worldInterface: AIWorldInterface
   public battleManager: any // BattleManager instance
+  public mobLifeCycleManager: any // MobLifeCycleManager instance
 
   constructor(mapId: string = 'map-01-sector-a', roomId: string = '') {
     super()
@@ -42,8 +47,16 @@ export class GameState extends Schema {
     this.mobs.clear()
   }
 
-  // Initialize mobs with random positions and velocities
+  // Initialize mobs - delegates to MobLifeCycleManager if available
   public reInitializeMobs() {
+    if (this.mobLifeCycleManager) {
+      // Use lifecycle manager for map-based spawn settings
+      this.mobLifeCycleManager.seedInitial()
+      return
+    }
+
+    // Fallback: legacy behavior using GAME_CONFIG.mobCount
+    // (Kept for backward compatibility or when manager not initialized)
     this.clearAllMobs()
 
     for (let i = 1; i <= GAME_CONFIG.mobCount; i++) {
@@ -59,20 +72,21 @@ export class GameState extends Schema {
 
       // Create different mob types with different ranges
       const mobType = Math.random()
-      let attackRange = 1.5 // Default attack range buffer
-      let chaseRange = 15 // Default chase range buffer
+      let attackRange = MOB_STATS.attackRange
+      let chaseRange = MOB_STATS.chaseRange
 
       if (mobType < 0.3) {
         // Aggressive mobs - longer attack range and chase range
-        attackRange = 2.5
-        chaseRange = 25
+        attackRange = MOB_TYPE_STATS.aggressive.attackRange
+        chaseRange = MOB_TYPE_STATS.aggressive.chaseRange
       } else if (mobType < 0.6) {
         // Defensive mobs - shorter attack range and chase range
-        attackRange = 1.0
-        chaseRange = 10
+        attackRange = MOB_TYPE_STATS.defensive.attackRange
+        chaseRange = MOB_TYPE_STATS.defensive.chaseRange
       }
       // Default ranges for balanced mobs (0.6-1.0)
 
+      // Ensure all mobs have at least melee attack strategy
       const mob = new Mob({
         id: mobId,
         x,
@@ -82,7 +96,8 @@ export class GameState extends Schema {
         radius,
         attackRange,
         chaseRange,
-        maxMoveSpeed: 8,
+        maxMoveSpeed: MOB_STATS.maxMoveSpeed,
+        attackStrategies: [new MeleeAttackStrategy()],
       })
       this.mobs.set(mobId, mob)
 
@@ -131,6 +146,9 @@ export class GameState extends Schema {
   // Update mobs (AI + combat only; physics handled in GameRoom)
   updateMobs() {
     for (const mob of this.mobs.values()) {
+      // Skip dead mobs - lifecycle manager will remove them
+      if (!mob.isAlive) continue
+
       // AI is handled by MobAIModule (already running)
       // Update mob: cooldowns, position, heading, and attack logic
       // Attack events are now emitted to event bus in updateAttack
@@ -168,6 +186,21 @@ export class GameState extends Schema {
   stopAI() {
     if (this.aiModule) {
       this.aiModule.stop()
+    }
+  }
+
+  // Update projectiles (cleanup and despawn)
+  updateProjectiles(deltaTime: number): void {
+    const toRemove: string[] = []
+    
+    for (const [id, projectile] of this.projectiles.entries()) {
+      if (projectile.shouldDespawn()) {
+        toRemove.push(id)
+      }
+    }
+    
+    for (const id of toRemove) {
+      this.projectiles.delete(id)
     }
   }
 }

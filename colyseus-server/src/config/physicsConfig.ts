@@ -1,8 +1,11 @@
+// Global gravity constant for projectile physics (simulated in 2D top-down)
+export const PROJECTILE_GRAVITY = 7 // units/sec²
+
 // Physics engine configuration constants
 export const PHYSICS_CONFIG = {
   // Planck.js engine settings
   engine: {
-    gravity: { x: 0, y: 0 }, // Zero gravity for top-down game
+    gravity: { x: 0, y: 0 }, // Zero gravity for top-down game (Planck world)
     timeStep: 1 / 60, // 60 FPS physics step
     velocityIterations: 6,
     positionIterations: 2,
@@ -47,7 +50,20 @@ export const PHYSICS_CONFIG = {
       isStatic: true,
       collisionFilter: {
         category: 0x0004, // BOUNDARY category
-        mask: 0x0001 | 0x0002, // Collide with PLAYER and MOB
+        mask: 0x0001 | 0x0002 | 0x0008, // Collide with PLAYER, MOB, and PROJECTILE
+        group: 0,
+      },
+    },
+    projectile: {
+      radius: 0.5,
+      mass: 0.1,
+      friction: 0,
+      frictionAir: 0,
+      restitution: 0, // No bounce
+      density: 0.1,
+      collisionFilter: {
+        category: 0x0008, // PROJECTILE category
+        mask: 0x0001 | 0x0004, // Collide with PLAYER and BOUNDARY (not MOB to avoid friendly fire)
         group: 0,
       },
     },

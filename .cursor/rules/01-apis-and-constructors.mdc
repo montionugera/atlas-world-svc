@@ -9,76 +9,21 @@ Objective
 - Make intent explicit and code generation consistent.
 
 Hard Rules
-1) Constructors MUST accept a single options object (no positional overloads).
-   - Good: new Thing({ id, x, y, vx, tags })
-   - Bad: new Thing(id, x, y, vx, tags)
+1) **Single options object** (no positional params)
+   - ✅ `new Thing({ id, x, y })` ❌ `new Thing(id, x, y)`
 
-2) Do NOT implement multiple overloads for the same method.
-   - Prefer one canonical signature with an options object and defaults.
+2) **No method overloads** → one signature with options + defaults
 
-3) Avoid boolean/flag parameters that create code branches.
-   - Replace with explicit keys in the options object (e.g., mode: "attack" | "chase").
+3) **No boolean flags** → explicit keys: `mode: "attack" | "chase"`
 
-4) No duplicate flows for the same responsibility.
-   - Centralize logic in one module (e.g., BattleManager for combat) and call it everywhere.
+4) **No duplicate flows** → centralize logic, call everywhere
+   - ✅ `entity.die()` ❌ `killEntity() { entity.die() }` (unless adds value)
 
-5) Prefer explicit names over implicit ordering.
-   - options.maxLinearSpeed over a magic number.
+5) **Explicit names** → `maxLinearSpeed` not magic numbers
 
-6) Server-only vs synced fields must be explicit.
-   - Document which fields sync to clients; keep server-only state internal or clearly marked.
-
-Defaults & Patterns
-- Options object should provide sensible defaults in the callee.
-- Use readonly/const assertions where possible to minimize accidental branching.
-- Any new entity base (e.g., WorldLife) MUST follow the options-object pattern.
-
-Migration Guidance
-- When replacing overloads/positional APIs, keep a shim temporarily only if required.
-- Prefer immediate refactors to options-object use across call sites.
+6) **Explicit sync** → document server-only vs synced fields
 
 Review Checklist
-- [ ] Single constructor/method signature
-- [ ] Options object used, with defaults
-- [ ] No boolean flags creating hidden branches
-- [ ] Logic centralized (no redundant alternative paths)
-Title: Single-Path APIs (No Multi-Branch Constructors)
-
-Objective
-- Eliminate ambiguous API entry points and constructor overload branches.
-- Make intent explicit and code generation consistent.
-
-Hard Rules
-1) Constructors MUST accept a single options object (no positional overloads).
-   - Good: new Thing({ id, x, y, vx, tags })
-   - Bad: new Thing(id, x, y, vx, tags)
-
-2) Do NOT implement multiple overloads for the same method.
-   - Prefer one canonical signature with an options object and defaults.
-
-3) Avoid boolean/flag parameters that create code branches.
-   - Replace with explicit keys in the options object (e.g., mode: "attack" | "chase").
-
-4) No duplicate flows for the same responsibility.
-   - Centralize logic in one module (e.g., BattleManager for combat) and call it everywhere.
-
-5) Prefer explicit names over implicit ordering.
-   - options.maxLinearSpeed over a magic number.
-
-6) Server-only vs synced fields must be explicit.
-   - Document which fields sync to clients; keep server-only state internal or clearly marked.
-
-Defaults & Patterns
-- Options object should provide sensible defaults in the callee.
-- Use readonly/const assertions where possible to minimize accidental branching.
-- Any new entity base (e.g., WorldLife) MUST follow the options-object pattern.
-
-Migration Guidance
-- When replacing overloads/positional APIs, keep a shim temporarily only if required.
-- Prefer immediate refactors to options-object use across call sites.
-
-Review Checklist
-- [ ] Single constructor/method signature
-- [ ] Options object used, with defaults
-- [ ] No boolean flags creating hidden branches
-- [ ] Logic centralized (no redundant alternative paths)
+- [ ] Single signature, options object, defaults
+- [ ] No boolean flags, no redundant wrappers
+- [ ] Logic centralized, explicit sync

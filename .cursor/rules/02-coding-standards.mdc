@@ -18,6 +18,8 @@
 - **Composition over inheritance**
 - **Dependency injection** for testability
 - **Observer pattern** for events
+- **Prefer simplicity**: Avoid unnecessary indirection and redundant wrapper methods
+  - Call methods directly unless wrapper adds clear value (events, stats, validation)
 
 ### Error Handling
 - **Never swallow errors** without logging

@@ -1,6 +1,7 @@
 import { type } from '@colyseus/schema'
 import { WorldLife } from './WorldLife'
 import { PlayerInput } from './PlayerInput'
+import { PLAYER_STATS } from '../config/combatConfig'
 
 export class Player extends WorldLife {
   @type('string') sessionId: string
@@ -26,14 +27,14 @@ export class Player extends WorldLife {
       vx: 0,
       vy: 0,
       tags: ['player'],
-      radius: 4, // Player radius
-      maxHealth: 100, // Players have more health
-      attackDamage: 8, // Players deal less damage
-      attackRange: 3, // Players have shorter attack range
-      attackDelay: 1000, // Players attack faster
-      defense: 1, // Players have low defense
-      armor: 0, // Players have no armor
-      density: 0.8, // Players are less dense than mobs
+      radius: PLAYER_STATS.radius,
+      maxHealth: PLAYER_STATS.maxHealth,
+      attackDamage: PLAYER_STATS.attackDamage,
+      attackRange: PLAYER_STATS.attackRange,
+      attackDelay: PLAYER_STATS.attackDelay,
+      defense: PLAYER_STATS.defense,
+      armor: PLAYER_STATS.armor,
+      density: PLAYER_STATS.density,
     })
     this.sessionId = sessionId
     this.name = name

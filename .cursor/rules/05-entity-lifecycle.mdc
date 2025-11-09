@@ -1,0 +1,91 @@
+---
+globs: *.ts
+alwaysApply: false
+---
+Title: Entity Lifecycle & State Management
+
+Objective
+- Consistent state transitions and lifecycle management.
+- Prevent bugs from manual manipulation and incorrect counting.
+
+Core Principles
+
+1) **Use transition methods, never manual field manipulation**
+   - ✅ `entity.die()` → sets all state atomically (timestamps, flags, side effects)
+   - ❌ `entity.isAlive = false` → bypasses transition logic
+
+2) **Count the right thing for the right purpose**
+   - **Creation**: Count TOTAL (active + inactive) → prevents over-creation
+   - **Capacity**: Count ACTIVE → only entities consuming resources
+   - **Cleanup**: Check state + timestamps + flags
+   - **Rule**: Match metric to decision. Inactive entities still exist until removed.
+
+3) **Distinguish behavioral state from lifecycle presence**
+   - **Behavioral** (`isAlive`, `isActive`): Can perform actions?
+   - **Lifecycle** (`diedAt`, `removedAt`): Still in system?
+   - **Key**: Inactive entities exist until removed → count appropriately
+
+4) **Prefer simplicity: avoid redundant wrappers**
+   - ✅ `target.die()` (direct call)
+   - ❌ `killEntity() { entity.die() }` (no added value)
+   - **Exception**: Wrappers OK if they add logic (events, stats, validation)
+
+5) **Timestamps must be atomic with state transitions**
+   - Set on state change, clear on revert
+   - Never manipulate manually → use transition methods
+
+6) **Cleanup checks verify ALL conditions**
+   - State + time + flags → use helper methods, not inline checks
+
+Examples
+
+### State Transitions
+```typescript
+// ✅ Direct call
+target.die() // Sets all state atomically
+
+// ❌ Manual manipulation
+target.isAlive = false // Missing: diedAt timestamp!
+
+// ❌ Redundant wrapper
+killEntity(e) { e.die() } // No added value
+
+// ✅ Wrapper with value
+killEntity(e) { e.die(); this.emitEvent(e); this.updateStats(e) }
+```
+
+### Counting Semantics
+```typescript
+// ✅ Creation: total count (includes inactive)
+if (getTotalCount() < max) spawn() // Waits for inactive removal
+
+// ❌ Creation: active count only
+if (getActiveCount() < max) spawn() // Spawns immediately (bug!)
+
+// ✅ Capacity: active count
+if (getActiveCount() > max) remove() // Only active consume resources
+```
+
+### Cleanup
+```typescript
+// ✅ Helper method (checks all conditions)
+if (entity.readyToBeRemoved(delay)) remove()
+
+// ❌ Inline check (misses conditions)
+if (!entity.isActive) remove() // Missing: delay, timestamp!
+```
+
+Review Checklist
+- [ ] Transitions use methods (not manual fields)
+- [ ] Counting matches purpose (total vs active)
+- [ ] Timestamps set/cleared atomically
+- [ ] Cleanup uses helper methods (all conditions)
+- [ ] No redundant wrappers
+- [ ] Inactive entities counted until removed
+
+Common Mistakes
+- ❌ Manual field manipulation (`isAlive = false`)
+- ❌ Active count for creation (use total)
+- ❌ Immediate removal (check delay/timestamps)
+- ❌ Inline cleanup checks (use helpers)
+- ❌ Redundant wrappers (call directly)
