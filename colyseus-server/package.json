@@ -10,6 +10,8 @@
     "dev:watch": "nodemon --exec ts-node src/index.ts --watch src --ext ts,js",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:coverage:ci": "jest --coverage --coverageReporters=text --coverageReporters=lcov",
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
     "prepare": "husky install",

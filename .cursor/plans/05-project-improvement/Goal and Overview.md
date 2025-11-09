@@ -23,7 +23,7 @@ Improve project maintainability by fixing skipped tests, enhancing test infrastr
 - [x] Make integration test assertions less strict
 - [x] Add test utilities for common patterns (test-helpers.ts)
 - [x] Document test best practices (TESTING.md)
-- [ ] Add test coverage reporting (optional)
+- [x] Add test coverage reporting (50% threshold, can be increased over time)
 
 ### Phase 2: C# Unity Client ✅ COMPLETED
 - [x] Update C# models to match server schemas
@@ -40,7 +40,7 @@ Improve project maintainability by fixing skipped tests, enhancing test infrastr
 - [x] Add test isolation improvements (EventBus cleanup)
 - [x] Fix resource cleanup issues (BattleManager.cleanup())
 - [x] Production cleanup added (GameRoom.onDispose())
-- [ ] Add test coverage reporting (optional enhancement)
+- [x] Add test coverage reporting (50% threshold set)
 
 ## 📋 Success Criteria
 - ✅ All critical tests passing

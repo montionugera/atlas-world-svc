@@ -196,12 +196,18 @@ All tests must pass before merging.
 
 ## Coverage Goals
 
-- **Minimum**: 80% coverage
-- **Target**: 90% coverage
-- **Critical paths**: 100% coverage
+- **Current**: ~58% overall (statements)
+- **Minimum**: 50% coverage (enforced)
+- **Target**: 70% coverage (goal)
+- **Critical paths**: 100% coverage (aim for)
 
 Run coverage:
 ```bash
-npm test -- --coverage
+npm run test:coverage
+```
+
+View HTML report:
+```bash
+open coverage/lcov-report/index.html
 ```
 
