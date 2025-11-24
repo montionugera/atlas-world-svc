@@ -1,0 +1,284 @@
+.player-data-table {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 12px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #e0e0e0;
+  font-size: 12px;
+}
+
+.player-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #333;
+}
+
+.player-table-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.refresh-btn {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #e0e0e0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: #3a3a3a;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.data-source-badge {
+  background: #1a3a1a;
+  border: 1px solid #4caf50;
+  color: #4caf50;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.debug-info {
+  font-size: 9px;
+  color: #666;
+  margin-top: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+.player-table-error {
+  padding: 8px;
+  background: #3a1f1f;
+  border: 1px solid #5a2f2f;
+  border-radius: 4px;
+  color: #ff6b6b;
+  margin-bottom: 8px;
+}
+
+.player-table-empty {
+  padding: 20px;
+  text-align: center;
+  color: #888;
+}
+
+.player-table-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.player-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.player-table thead {
+  position: sticky;
+  top: 0;
+  background: #1e1e1e;
+  z-index: 10;
+}
+
+.player-table th {
+  text-align: left;
+  padding: 6px 8px;
+  font-weight: 600;
+  color: #aaa;
+  border-bottom: 2px solid #333;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.player-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.player-table tbody tr {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.player-table tbody tr:hover {
+  background: #2a2a2a;
+}
+
+.player-table tbody tr.selected {
+  background: #2d3a4a;
+  border-left: 3px solid #4a9eff;
+}
+
+.player-id {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: #888;
+}
+
+.player-name {
+  color: #4a9eff;
+  font-weight: 500;
+}
+
+.player-health {
+  min-width: 100px;
+}
+
+.health-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.health-bar {
+  height: 16px;
+  min-width: 40px;
+  border-radius: 2px;
+  transition: width 0.3s, background-color 0.3s;
+}
+
+.health-text {
+  font-size: 10px;
+  color: #aaa;
+  white-space: nowrap;
+}
+
+.player-status {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.status-badge {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.status-badge.alive {
+  background: #1a3a1a;
+  color: #4caf50;
+}
+
+.status-badge.dead {
+  background: #3a1a1a;
+  color: #f44336;
+}
+
+.status-badge.attacking {
+  background: #3a2a1a;
+  color: #ff9800;
+}
+
+.player-speed {
+  color: #aaa;
+  font-family: 'Courier New', monospace;
+}
+
+.player-details {
+  margin-top: 12px;
+  padding: 12px;
+  background: #252525;
+  border: 1px solid #333;
+  border-radius: 6px;
+  border-top: 2px solid #4a9eff;
+}
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.player-details h4 {
+  margin: 0;
+  font-size: 13px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.close-btn:hover {
+  background: #333;
+  color: #fff;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-label {
+  font-size: 9px;
+  color: #888;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 11px;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+}
+
+/* Scrollbar styling */
+.player-table-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.player-table-content::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.player-table-content::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+}
+
+.player-table-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+

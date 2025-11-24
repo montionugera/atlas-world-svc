@@ -1,3 +1,11 @@
+---
+globs: 
+  - "client/react-client/**/*.ts"
+  - "client/react-client/**/*.tsx"
+alwaysApply: false
+context: "When editing React client code"
+---
+
 # React TypeScript Client Rules - Colyseus
 
 ## Overview
