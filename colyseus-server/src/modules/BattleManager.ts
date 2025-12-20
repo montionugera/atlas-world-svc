@@ -25,11 +25,15 @@ export class BattleManager {
   private setupEventListeners(): void {
     // Listen for battle attack events
     this.attackListener = (data: BattleAttackData) => {
-      console.log(`⚔️ BATTLE EVENT: Attack from ${data.actorId} to ${data.targetId} (${data.damage} damage)`)
+      if (data.targetId) {
+        console.log(`⚔️ BATTLE EVENT: Attack from ${data.actorId} to ${data.targetId} (${data.damage} damage)`)
+      } else {
+        console.log(`⚔️ BATTLE EVENT: Attack from ${data.actorId} (no target)`)
+      }
       
       const attackMessage = BattleManager.createAttackMessage(
         data.actorId,
-        data.targetId,
+        data.targetId || '', // Use empty string if no target
         data.damage,
         data.range
       )

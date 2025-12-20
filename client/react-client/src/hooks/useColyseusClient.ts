@@ -26,19 +26,23 @@ export interface UseColyseusClientReturn {
   joinRoom: (mapId?: string) => Promise<void>;
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction: (action: string, pressed: boolean) => void;
+  toggleBotMode: (enabled: boolean) => void;
+  respawn: () => void;
   startSimulation: () => void;
   stopSimulation: () => void;
   
   // Utilities
   disconnect: () => void;
   trackFrame: () => void;
+  debugTeleport: (x: number, y: number) => void;
+  debugSpawnMob: (x: number, y: number) => void;
 }
 
 export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClientReturn => {
   // State
   const [isConnected, setIsConnected] = useState(false);
   const [roomId, setRoomId] = useState<string | null>(null);
-  const [playerId] = useState(`react-player-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  const [playerId, setPlayerId] = useState(`react-player-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [updateCount, setUpdateCount] = useState(0);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -67,6 +71,20 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
       const client = new Client(endpoint);
       clientRef.current = client;
       setIsConnected(true);
+      
+      // Expose client to window for debugging
+      (window as any).client = {
+        debugTeleport: (x: number, y: number) => {
+          if (roomRef.current) {
+            roomRef.current.send('debug_teleport', { x, y });
+          }
+        },
+        debugSpawnMob: (x: number, y: number) => {
+          if (roomRef.current) {
+            roomRef.current.send('debug_spawn_mob', { x, y });
+          }
+        }
+      };
       
       // Store connection state in localStorage
       localStorage.setItem('atlas-world-colyseus-connected', 'true');
@@ -107,9 +125,11 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
       
       roomRef.current = room;
       setRoomId(room.roomId);
+      setPlayerId(room.sessionId);
       
       // Handle room state changes
       room.onStateChange((state) => {
+        console.log('State changed', state.tick)
         setGameState(state);
         setUpdateCount(prev => prev + 1);
         // Expose for quick debug
@@ -282,11 +302,31 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     joinRoom,
     updatePlayerInput,
     sendPlayerAction,
+    toggleBotMode: (enabled: boolean) => {
+      if (roomRef.current) {
+        roomRef.current.send('player_toggle_bot', { enabled });
+      }
+    },
+    respawn: () => {
+      if (roomRef.current) {
+        roomRef.current.send('player_respawn');
+      }
+    },
     startSimulation,
     stopSimulation,
     
     // Utilities
     disconnect,
-    trackFrame
+    trackFrame,
+    debugTeleport: (x: number, y: number) => {
+      if (roomRef.current) {
+        roomRef.current.send('debug_teleport', { x, y });
+      }
+    },
+    debugSpawnMob: (x: number, y: number) => {
+      if (roomRef.current) {
+        roomRef.current.send('debug_spawn_mob', { x, y });
+      }
+    }
   };
 };

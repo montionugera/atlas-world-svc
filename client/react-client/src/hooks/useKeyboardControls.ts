@@ -35,7 +35,8 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction }: Use
       updateMovement();
       
       // Handle attack input
-      if (event.code === 'Space' && sendPlayerAction) {
+      // Handle attack input
+      if ((event.code === 'Space' || event.key === ' ') && sendPlayerAction) {
         event.preventDefault(); // Prevent page scroll
         sendPlayerAction('attack', true);
       }
@@ -46,7 +47,7 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction }: Use
       updateMovement();
       
       // Handle attack release
-      if (event.code === 'Space' && sendPlayerAction) {
+      if ((event.code === 'Space' || event.key === ' ') && sendPlayerAction) {
         sendPlayerAction('attack', false);
       }
     };
@@ -58,5 +59,5 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction }: Use
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [updatePlayerInput]);
+  }, [updatePlayerInput, sendPlayerAction]);
 };

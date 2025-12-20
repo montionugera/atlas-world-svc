@@ -6,6 +6,7 @@ import { GameHUD } from './GameHUD';
 import { GameControls } from './GameControls';
 import { GameInstructions } from './GameInstructions';
 import { CANVAS_CONFIG } from '../config/gameConfig';
+import { useGameStateContext } from '../contexts/GameStateContext';
 
 interface ColyseusGameCanvasProps {
   config: ColyseusClientConfig;
@@ -14,6 +15,7 @@ interface ColyseusGameCanvasProps {
 export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const { setGameState } = useGameStateContext();
   
   const {
     isConnected: clientConnected,
@@ -31,8 +33,16 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }
     startSimulation,
     stopSimulation,
     disconnect,
-    trackFrame
+    toggleBotMode,
+    trackFrame,
+    respawn
   } = useColyseusClient(config);
+
+  // Update context when gameState or roomId changes
+  // Track tick to ensure updates even when Colyseus updates in-place
+  useEffect(() => {
+    setGameState(gameState, roomId, clientConnected);
+  }, [gameState?.tick, gameState, roomId, clientConnected, setGameState]);
 
   // Handle keyboard controls
   useKeyboardControls({ updatePlayerInput, sendPlayerAction });
@@ -55,9 +65,17 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }
         onStartSimulation={startSimulation}
         onStopSimulation={stopSimulation}
         onDisconnect={disconnect}
+        isBotMode={gameState?.players.get(playerId)?.isBotMode || false}
+        onToggleBotMode={() => {
+          const currentMode = gameState?.players.get(playerId)?.isBotMode || false;
+          toggleBotMode(!currentMode);
+        }}
+        onAttack={() => sendPlayerAction('attack', true)}
+        isDead={!gameState?.players.get(playerId)?.isAlive && !!gameState?.players.get(playerId)}
+        onRespawn={respawn}
       />
       
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', display: 'inline-block' }}>
         <canvas
           ref={canvasRef}
           width={CANVAS_CONFIG.width}
@@ -66,7 +84,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }
             border: `${CANVAS_CONFIG.borderWidth}px solid ${CANVAS_CONFIG.borderColor}`,
             backgroundColor: CANVAS_CONFIG.backgroundColor,
             cursor: CANVAS_CONFIG.cursor,
-            borderRadius: CANVAS_CONFIG.borderRadius
+            borderRadius: CANVAS_CONFIG.borderRadius,
+            display: 'block'
           }}
         />
         

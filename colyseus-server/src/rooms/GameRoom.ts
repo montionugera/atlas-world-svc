@@ -10,6 +10,7 @@ import { BattleModule } from '../modules/BattleModule'
 import { ProjectileManager } from '../modules/ProjectileManager'
 import { eventBus, RoomEventType } from '../events/EventBus'
 import { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
+import { registerRoom, unregisterRoom } from '../api'
 
 export interface GameRoomOptions {
   mapId?: string
@@ -34,6 +35,9 @@ export class GameRoom extends Room<GameState> {
 
   onCreate(options: GameRoomOptions) {
     console.log(`🎮 GameRoom created with mapId: ${options.mapId || 'map-01-sector-a'}`)
+
+    // Register room for REST API access
+    registerRoom(this)
 
     // Initialize physics manager
     this.physicsManager = new PlanckPhysicsManager()
@@ -78,12 +82,22 @@ export class GameRoom extends Room<GameState> {
 
     // Collision callbacks are now set up in PlanckPhysicsManager constructor
     // Start simulation loop
+    this.setPatchRate(50);
     this.startSimulation()
 
     // Handle player movement input → apply force to physics body (authoritative physics)
     this.onMessage('player_input_move', (client: Client, data: { vx: number; vy: number }) => {
+      console.log(`🎮 MOVE: ${client.sessionId} ${data?.vx} ${data?.vy}`)
       const player = this.state.getPlayer(client.sessionId)
       if (!player) return
+      
+      // Prevent dead players from moving
+      if (!player.isAlive) {
+        // Clear input to stop any movement
+        this.state.updatePlayerInput(client.sessionId, 0, 0)
+        return
+      }
+      
       const { vx, vy } = data || { vx: 0, vy: 0 }
       this.state.updatePlayerInput(client.sessionId, vx, vy)
     })
@@ -98,10 +112,89 @@ export class GameRoom extends Room<GameState> {
       (client: Client, data: { action: string; pressed: boolean }) => {
         const player = this.state.getPlayer(client.sessionId)
         if (!player) return
+        
         const { action, pressed } = data || { action: '', pressed: false }
         this.state.updatePlayerAction(client.sessionId, action, pressed)
       }
     )
+
+    // Handle bot mode toggle
+    this.onMessage('player_toggle_bot', (client: Client, data: { enabled: boolean }) => {
+      const player = this.state.getPlayer(client.sessionId)
+      if (!player) return
+      
+      const enabled = data?.enabled ?? false
+      console.log(`🤖 PLAYER BOT MODE: ${client.sessionId} set to ${enabled}`)
+      player.setBotMode(enabled)
+
+      if (enabled) {
+        // Register player with AI module
+        this.state.aiModule.registerAgent(player, {
+          behaviors: ['attack', 'chase', 'wander', 'avoidBoundary'],
+          perception: { range: 300 }, // Player has larger perception
+          behaviorPriorities: {
+            avoidBoundary: 10,
+            attack: 8,
+            chase: 5,
+            wander: 1
+          }
+        })
+      } else {
+        // Unregister player from AI module
+        this.state.aiModule.unregisterAgent(player.id)
+      }
+    })
+
+    // Debug: Teleport player
+    this.onMessage('debug_teleport', (client: Client, data: { x: number; y: number }) => {
+      const player = this.state.getPlayer(client.sessionId)
+      if (!player) return
+      
+      console.log(`⚡ DEBUG TELEPORT: ${client.sessionId} to ${data.x}, ${data.y}`)
+      
+      // Update physics body position
+      const body = this.physicsManager.getBody(client.sessionId)
+      if (body) {
+        body.setPosition(new (require('planck')).Vec2(data.x, data.y))
+        // Reset velocity
+        body.setLinearVelocity(new (require('planck')).Vec2(0, 0))
+      }
+      
+      // Update state position (will be synced next tick)
+      player.x = data.x
+      player.y = data.y
+    })
+
+    // Debug: Spawn Mob
+    this.onMessage('debug_spawn_mob', (client: Client, data: { x: number; y: number }) => {
+      console.log(`⚡ DEBUG SPAWN MOB: near ${client.sessionId} at ${data.x}, ${data.y}`)
+      this.mobLifeCycleManager.spawnMobAt(data.x, data.y)
+    })
+
+    // Player Respawn
+    this.onMessage('player_respawn', (client: Client) => {
+      const player = this.state.getPlayer(client.sessionId)
+      if (!player) return
+      
+      // Optionally check if player is dead?
+      // if (player.isAlive) return
+      
+      console.log(`♻️ PLAYER RESPAWN: ${client.sessionId}`)
+      
+      // Respawn at fixed location for now (could be dynamic)
+      const respawnX = 200
+      const respawnY = 200
+      
+      player.respawn(respawnX, respawnY)
+      
+      // Update physics body
+      const body = this.physicsManager.getBody(client.sessionId)
+      if (body) {
+         body.setPosition(new (require('planck')).Vec2(respawnX, respawnY))
+         body.setLinearVelocity(new (require('planck')).Vec2(0, 0))
+         // Reset any forces?
+      }
+    })
   }
 
   /**
@@ -216,10 +309,16 @@ export class GameRoom extends Room<GameState> {
 
     // Remove player from game state
     this.state.removePlayer(client.sessionId)
+    
+    // Unregister from AI module (if registered)
+    this.state.aiModule.unregisterAgent(client.sessionId)
   }
 
   onDispose() {
     console.log(`🗑️ GameRoom disposed`)
+
+    // Unregister room from REST API
+    unregisterRoom(this.roomId)
 
     // Stop AI module
     this.state.aiModule.stop()
@@ -239,7 +338,13 @@ export class GameRoom extends Room<GameState> {
 
   // Start the game simulation loop
   private startSimulation() {
-    this.simulationInterval = setInterval(() => {
+    // Use Colyseus's built-in simulation loop
+    this.setSimulationInterval((deltaTime) => this.update(deltaTime));
+  }
+
+  // Main update loop
+  update(deltaTime: number) {
+      // console.log(`[Tick Start] ${this.state.tick}`)
       try {
         // Create physics bodies for new projectiles
         for (const projectile of this.state.projectiles.values()) {
@@ -249,18 +354,29 @@ export class GameRoom extends Room<GameState> {
         }
 
         // Update physics simulation (handles all forces and sync)
-        this.physicsManager.update(GAME_CONFIG.tickRate, this.state.players, this.state.mobs)
+        this.physicsManager.update(deltaTime, this.state.players, this.state.mobs)
 
         // Update projectiles (gravity, speed cap, distance tracking)
         this.projectileManager.updateProjectiles(
           this.state.projectiles,
-          GAME_CONFIG.tickRate,
+          deltaTime,
           this.physicsManager
         )
 
         // Update player headings and other logic
         this.state.players.forEach(player => {
-          player.update(GAME_CONFIG.tickRate)
+          // Skip dead players for updates
+          if (!player.isAlive) {
+            // Clear input for dead players
+            player.input.clear()
+            return
+          }
+
+          player.update(deltaTime, this.state)
+
+          if (player.isBotMode && Math.random() < 0.01) {
+             console.log(`[Server] Player ${player.sessionId} pos: ${player.x}, ${player.y}`)
+          }
 
           // Process player attack input
           if (player.processAttackInput(this.state.mobs, this.roomId)) {
@@ -291,7 +407,7 @@ export class GameRoom extends Room<GameState> {
         }
 
         // Update projectiles (cleanup despawned - removes from map)
-        this.state.updateProjectiles(GAME_CONFIG.tickRate)
+        this.state.updateProjectiles(deltaTime)
 
         // Process battle action messages via BattleManager instance
         this.battleManager.processActionMessages().then((processedCount: number) => {
@@ -301,7 +417,7 @@ export class GameRoom extends Room<GameState> {
         })
 
         // Log simulation health every 1000 ticks
-        if (this.state.tick % 1000 === 0) {
+        if (this.state.tick % 1000 === 0) { // Revert to 1000
           // Check if mobs have physics bodies
           let mobsWithBodies = 0
           for (const mob of this.state.mobs.values()) {
@@ -317,8 +433,10 @@ export class GameRoom extends Room<GameState> {
         console.error(`❌ SIMULATION ERROR:`, error)
         // Don't stop the simulation on error, just log it
       }
-    }, GAME_CONFIG.tickRate)
+      // console.log(`[Tick End] ${this.state.tick}`)
   }
+
+
 
   // Check for projectile deflection when player attacks
   private checkProjectileDeflection(player: Player): void {

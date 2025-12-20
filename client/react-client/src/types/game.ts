@@ -23,6 +23,12 @@ export interface Player {
   vx: number;
   vy: number;
   name: string;
+  isBotMode?: boolean; // Synced from server
+  currentBehavior?: string;
+  currentAttackTarget?: string;
+  isAlive?: boolean;
+  health?: number;
+  maxHealth?: number;
 }
 
 export interface Projectile {
@@ -42,6 +48,7 @@ export interface GameState {
   projectiles?: Map<string, Projectile>;
   tick: number;
   mapId: string;
+  roomId?: string; // Room ID from server (synced via Colyseus)
   width: number;
   height: number;
 }

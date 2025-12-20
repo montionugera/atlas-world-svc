@@ -2,11 +2,14 @@ import { type } from '@colyseus/schema'
 import { WorldLife } from './WorldLife'
 import { PlayerInput } from './PlayerInput'
 import { PLAYER_STATS } from '../config/combatConfig'
+import { IAgent } from '../ai/interfaces/IAgent'
+import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 
-export class Player extends WorldLife {
+export class Player extends WorldLife implements IAgent {
   @type('string') sessionId: string
   @type('string') name: string
   @type('number') maxLinearSpeed: number = 20 // synced to clients
+  @type('boolean') isBotMode: boolean = false // Synced: indicates if player is in bot mode
 
   // Input state (server-only, not synced to clients)
   input: PlayerInput = new PlayerInput()
@@ -19,7 +22,20 @@ export class Player extends WorldLife {
   desiredVx: number = 0
   desiredVy: number = 0
 
+  // AI Agent properties
+  @type('string') currentBehavior: string = 'idle'
+  @type('number') behaviorLockedUntil: number = 0
+  @type('number') maxMoveSpeed: number = 20 // Same as maxLinearSpeed, for AI interface
+  
+  @type('string') currentAttackTarget: string = ''
+  currentChaseTarget: string = ''
+  attackStrategies: AttackStrategy[] = []
+  decisionTimestamp: number = 0
+
   constructor(sessionId: string, name: string, x: number = 200, y: number = 150) {
+    // Ensure player radius never exceeds 1.3
+    const playerRadius = Math.min(PLAYER_STATS.radius, 1.3)
+    
     super({
       id: sessionId,
       x,
@@ -27,7 +43,7 @@ export class Player extends WorldLife {
       vx: 0,
       vy: 0,
       tags: ['player'],
-      radius: PLAYER_STATS.radius,
+      radius: playerRadius,
       maxHealth: PLAYER_STATS.maxHealth,
       attackDamage: PLAYER_STATS.attackDamage,
       attackRange: PLAYER_STATS.attackRange,
@@ -38,10 +54,73 @@ export class Player extends WorldLife {
     })
     this.sessionId = sessionId
     this.name = name
+    this.maxMoveSpeed = this.maxLinearSpeed
+    
+    // Validate radius after construction
+    if (this.radius > 1.3) {
+      console.warn(`⚠️ Player ${this.id} radius ${this.radius} exceeds maximum of 1.3, clamping to 1.3`)
+      this.radius = 1.3
+    }
   }
+
+  // Toggle bot mode
+  setBotMode(enabled: boolean) {
+    this.isBotMode = enabled
+    if (!enabled) {
+      // Reset AI state when disabling
+      this.currentBehavior = 'idle'
+      this.desiredVx = 0
+      this.desiredVy = 0
+      this.desiredVx = 0
+      this.desiredVy = 0
+    }
+  }
+
+  // Respawn player
+  respawn(x: number, y: number) {
+    super.respawn(x, y)
+    this.input.clear()
+    this.currentBehavior = 'idle'
+    this.currentAttackTarget = ''
+    this.currentChaseTarget = ''
+  }
+
+  // AI Interface: Apply behavior decision
+  applyBehaviorDecision(decision: {
+    behavior: string
+    behaviorLockedUntil: number
+    currentAttackTarget: string
+    currentChaseTarget: string
+    desiredVelocity?: { x: number; y: number }
+  }): void {
+    this.currentBehavior = decision.behavior
+    this.behaviorLockedUntil = decision.behaviorLockedUntil
+    this.currentAttackTarget = decision.currentAttackTarget
+    this.currentChaseTarget = decision.currentChaseTarget
+    
+    // Apply desired velocity from decision
+    if (decision.desiredVelocity) {
+      this.desiredVx = decision.desiredVelocity.x
+      this.desiredVy = decision.desiredVelocity.y
+    } else {
+      this.desiredVx = 0
+      this.desiredVy = 0
+    }
+  }
+
+  // AI Interface: Compute desired velocity
+  // Deprecated: Velocity is now calculated by behaviors and passed via applyBehaviorDecision
+  // Removed unused method
+
+  // Generate a random wander target
+  // Deprecated: Logic moved to WanderBehavior
+  // Removed unused method
 
   // Update heading based on input direction (not physics velocity)
   updateHeadingFromInput(): void {
+    // Dead players don't update heading
+    if (!this.isAlive) return
+    
     const inputMagnitude = this.input.getMovementMagnitude()
     if (inputMagnitude > 0.01) {
       // Use input direction for heading
@@ -85,13 +164,27 @@ export class Player extends WorldLife {
   }
 
   // Process attack input and find target
+  // Allows attacks even without targets (for visual feedback/practice)
   processAttackInput(mobs: Map<string, any>, roomId: string): boolean {
-    if (!this.input.attack || !this.canAttack()) return false
+    // Dead players cannot attack
+    if (!this.isAlive) return false
+    
+    // If in bot mode, AI handles attacks
+    if (this.isBotMode) {
+        return false
+    }
 
+    if (!this.input.attack) return false
+    
+    if (!this.canAttack()) {
+        return false
+    }
+    
     const target = this.findTargetInDirection(mobs)
+    const { eventBus, RoomEventType } = require('../events/EventBus')
+    
     if (target) {
-      // Emit attack event - let BattleManager handle the rest
-      const { eventBus, RoomEventType } = require('../events/EventBus')
+      // Emit attack event with target - let BattleManager handle the rest
       const attackData = {
         actorId: this.id,
         targetId: target.id,
@@ -103,8 +196,88 @@ export class Player extends WorldLife {
       eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData)
       console.log(`⚔️ PLAYER ${this.id} attacking ${target.id} in heading direction`)
       return true
+    } else {
+      // No target found, but still allow attack (for visual feedback)
+      // Update attack cooldown and animation state
+      this.lastAttackTime = performance.now()
+      this.isAttacking = true
+      this.attackAnimationStartTime = performance.now()
+      
+      // Emit attack event without target
+      const attackData = {
+        actorId: this.id,
+        // targetId omitted - no target
+        damage: this.attackDamage,
+        range: this.attackRange,
+        roomId: roomId
+      }
+
+      eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData)
+      console.log(`⚔️ PLAYER ${this.id} attacking (no target) in heading direction ${this.heading.toFixed(2)}`)
+      return true
+    }
+  }
+  
+  // Execute attack for bot mode
+  executeBotAttack(mobs: Map<string, any>, roomId: string): void {
+    if (!this.canAttack()) return
+
+    const { eventBus, RoomEventType } = require('../events/EventBus')
+    
+    // 1. Try to get target from AI decision
+    let target = this.currentAttackTarget ? mobs.get(this.currentAttackTarget) : null
+    
+    // 2. If valid target, attack it
+    if (target && target.isAlive) {
+        const attackData = {
+            actorId: this.id,
+            targetId: target.id,
+            damage: this.attackDamage,
+            range: this.attackRange,
+            roomId: roomId
+        }
+        eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData)
+        // console.log(`⚔️ BOT PLAYER ${this.id} attacking ${target.id}`)
+    } else {
+        // 3. If no target (e.g. just attacking direction), or target lost
+        // Try to find one in direction
+        target = this.findTargetInDirection(mobs)
+        
+        const attackData = {
+            actorId: this.id,
+            targetId: target ? target.id : undefined,
+            damage: this.attackDamage,
+            range: this.attackRange,
+            roomId: roomId
+        }
+        eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData)
+        // console.log(`⚔️ BOT PLAYER ${this.id} attacking (dir)`)
     }
 
-    return false
+    // this.lastAttackTime = performance.now() // DELEGATED TO BATTLE MODULE
+    this.isAttacking = true
+    this.attackAnimationStartTime = performance.now()
+  }
+
+  // Override update to handle bot mode
+  update(deltaTime: number, gameState?: any) {
+    if (this.isBotMode) {
+      // In bot mode, we use desiredVx/Vy from AI
+      
+      // Update heading based on movement
+      if (Math.abs(this.desiredVx) > 0.1 || Math.abs(this.desiredVy) > 0.1) {
+        this.heading = Math.atan2(this.desiredVy, this.desiredVx)
+      }
+
+      // Handle Bot Attack
+      if (this.currentBehavior === 'attack' && gameState) {
+          this.executeBotAttack(gameState.mobs, gameState.roomId)
+      }
+
+    } else {
+      this.updateHeadingFromInput()
+    }
+    
+    super.update(deltaTime)
   }
 }
