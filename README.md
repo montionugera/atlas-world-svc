@@ -128,6 +128,9 @@ docker-compose exec atlas-database psql -U nakama -d nakama
 - **Mob AI** - Red circles with autonomous movement
 - **Player controls** - WASD/Arrow key movement
 - **Real-time physics** - Boundary collision detection
+- **Dynamic Camera** - Smooth camera following player with 50x50 viewport
+- **Mini-Map** - Real-time full world view
+- **UI Scaling** - Inverse scaling for consistent UI size at any zoom
 - **Live statistics** - FPS, tick count, player count
 - **Room management** - Automatic room creation/joining
 

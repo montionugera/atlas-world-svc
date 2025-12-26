@@ -5,6 +5,7 @@ import { PLAYER_STATS } from '../config/combatConfig'
 import { IAgent } from '../ai/interfaces/IAgent'
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { PlayerSettingGameplay } from './PlayerSettingGameplay'
+import { GAME_CONFIG } from '../config/gameConfig'
 
 export class Player extends WorldLife implements IAgent {
   @type('string') sessionId: string
@@ -33,9 +34,9 @@ export class Player extends WorldLife implements IAgent {
   @type('string') currentAttackTarget: string = ''
   currentChaseTarget: string = ''
   attackStrategies: AttackStrategy[] = []
-  decisionTimestamp: number = 0
+  decisionTimestamp: number = 0 
 
-  constructor(sessionId: string, name: string, x: number = 200, y: number = 150) {
+  constructor(sessionId: string, name: string, x: number = GAME_CONFIG.worldWidth / 2, y: number = GAME_CONFIG.worldHeight / 2) {
     // Ensure player radius never exceeds 1.3
     const playerRadius = Math.min(PLAYER_STATS.radius, 1.3)
     

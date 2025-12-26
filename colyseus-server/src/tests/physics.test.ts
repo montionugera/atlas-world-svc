@@ -104,7 +104,7 @@ describe('Physics System Tests', () => {
         const dt = GAME_CONFIG.tickRate / 1000 // Convert to seconds
         mob.x += mob.vx * dt
         mob.y += mob.vy * dt
-        mob.applyBoundaryPhysics(100, 100) // Use correct world size
+        mob.applyBoundaryPhysics(GAME_CONFIG.worldWidth, GAME_CONFIG.worldHeight) // Use correct world size
 
         // Sync position to physics body
         body.setPosition(planck.Vec2(mob.x, mob.y))
@@ -157,7 +157,7 @@ describe('Physics System Tests', () => {
     })
 
     test('should bounce off bottom boundary', () => {
-      const mob = new Mob({ id: 'test-mob', x: 50, y: 95, vx: 0, vy: 5 }) // Moving down towards bottom
+      const mob = new Mob({ id: 'test-mob', x: 50, y: GAME_CONFIG.worldHeight - 5, vx: 0, vy: 5 }) // Moving down towards bottom
       const body = physicsManager.createMobBody(mob)
 
       const initialVel = body.getLinearVelocity()
@@ -191,7 +191,7 @@ describe('Physics System Tests', () => {
     })
 
     test('should bounce off right boundary', () => {
-      const mob = new Mob({ id: 'test-mob', x: 95, y: 50, vx: 5, vy: 0 }) // Moving right
+      const mob = new Mob({ id: 'test-mob', x: GAME_CONFIG.worldWidth - 5, y: 50, vx: 5, vy: 0 }) // Moving right
       const body = physicsManager.createMobBody(mob)
 
       const initialVel = body.getLinearVelocity()
@@ -370,9 +370,9 @@ describe('Physics System Tests', () => {
 
         // Mob should be within bounds (main test - physics working correctly)
         expect(pos.x).toBeGreaterThan(0)
-        expect(pos.x).toBeLessThan(100)
+        expect(pos.x).toBeLessThan(GAME_CONFIG.worldWidth)
         expect(pos.y).toBeGreaterThan(0)
-        expect(pos.y).toBeLessThan(100)
+        expect(pos.y).toBeLessThan(GAME_CONFIG.worldHeight)
         
         // Mob should have valid position (not NaN or Infinity)
         expect(Number.isFinite(pos.x)).toBe(true)
@@ -622,7 +622,7 @@ describe('Physics System Tests', () => {
         const speed = Math.sqrt(vel.x * vel.x + vel.y * vel.y)
 
         // Check if near boundary
-        if (pos.x < 10 || pos.x > 90 || pos.y < 10 || pos.y > 90) {
+        if (pos.x < 10 || pos.x > GAME_CONFIG.worldWidth - 10 || pos.y < 10 || pos.y > GAME_CONFIG.worldHeight - 10) {
           boundaryCollisions++
 
           // Check if stuck near boundary
