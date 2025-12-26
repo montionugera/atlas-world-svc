@@ -12,6 +12,12 @@ interface EntityCardProps {
   state?: string; // e.g. "idle", "attack"
   target?: string;
   avatarColor?: string;
+  isCurrentPlayer?: boolean;
+  isDead?: boolean;
+  onToggleBot?: () => void;
+  onAttack?: () => void;
+  onForceDie?: () => void;
+  onRespawn?: () => void;
 }
 
 export const EntityCard: React.FC<EntityCardProps> = ({
@@ -26,10 +32,16 @@ export const EntityCard: React.FC<EntityCardProps> = ({
   state,
   target,
   avatarColor,
+  isCurrentPlayer,
+  isDead,
+  onToggleBot,
+  onAttack,
+  onForceDie,
+  onRespawn
 }) => {
   const isPlayer = type === 'player';
   const bgColor = isPlayer ? '#2c3e50' : '#8e44ad'; // distinct colors
-  const borderColor = isPlayer ? '#3498db' : '#9b59b6';
+  const borderColor = isPlayer ? (isCurrentPlayer ? '#f1c40f' : '#3498db') : '#9b59b6'; // Gold border for current player
 
   const cardStyle: React.CSSProperties = {
     backgroundColor: bgColor,
@@ -68,8 +80,8 @@ export const EntityCard: React.FC<EntityCardProps> = ({
     borderRadius: '12px',
     textTransform: 'uppercase',
     fontWeight: 'bold',
-    backgroundColor: isPlayer ? 'rgba(52, 152, 219, 0.3)' : 'rgba(155, 89, 182, 0.3)',
-    color: isPlayer ? '#3498db' : '#dda0dd'
+    backgroundColor: isCurrentPlayer ? '#f1c40f' : (isPlayer ? 'rgba(52, 152, 219, 0.3)' : 'rgba(155, 89, 182, 0.3)'),
+    color: isCurrentPlayer ? '#2c3e50' : (isPlayer ? '#3498db' : '#dda0dd')
   };
 
   const rowStyle: React.CSSProperties = {
@@ -87,6 +99,52 @@ export const EntityCard: React.FC<EntityCardProps> = ({
     color: '#ecf0f1'
   };
 
+  const actionGroupStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '8px',
+    marginTop: '12px',
+    paddingTop: '12px',
+    borderTop: '1px solid rgba(255,255,255,0.1)'
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    padding: '6px 12px',
+    borderRadius: '6px',
+    border: 'none',
+    cursor: 'pointer',
+    fontWeight: 600,
+    fontSize: '0.8rem',
+    transition: 'all 0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '4px'
+  };
+  
+  const botBtnStyle: React.CSSProperties = {
+     ...buttonStyle,
+     backgroundColor: isBot ? '#e67e22' : '#2ecc71',
+     color: 'white',
+     gridColumn: '1 / -1'
+  };
+  
+  const attackBtnStyle: React.CSSProperties = {
+     ...buttonStyle,
+     backgroundColor: '#e74c3c',
+     color: 'white',
+     opacity: (isBot || isDead) ? 0.5 : 1,
+     cursor: (isBot || isDead) ? 'not-allowed' : 'pointer'
+  };
+  
+  const dieRespawnBtnStyle: React.CSSProperties = {
+      ...buttonStyle,
+      backgroundColor: isDead ? '#2ecc71' : '#34495e',
+      color: isDead ? 'white' : '#fab1a0',
+      border: isDead ? 'none' : '1px solid #c0392b'
+  };
+
+
   return (
     <div style={cardStyle}>
       <div style={headerStyle}>
@@ -95,9 +153,9 @@ export const EntityCard: React.FC<EntityCardProps> = ({
             {avatarColor && (
                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: avatarColor}}></div>
             )}
-            <span style={nameStyle}>{name || (isPlayer ? 'Unknown Player' : 'Mob')}</span>
+            <span style={/*isCurrentPlayer ? { ...nameStyle, color: '#f1c40f' } :*/ nameStyle}>{name || (isPlayer ? 'Unknown Player' : 'Mob')}</span>
         </div>
-        <span style={typeBadgeStyle}>{type}</span>
+        <span style={typeBadgeStyle}>{isCurrentPlayer ? 'YOU' : type}</span>
       </div>
 
       <div style={rowStyle}>
@@ -126,7 +184,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({
         </div>
       )}
 
-      {isBot !== undefined && (
+      {isBot !== undefined && !isCurrentPlayer && (
          <div style={rowStyle}>
           <span style={labelStyle}>Mode</span>
           <span style={{ ...valueStyle, color: isBot ? '#2ecc71' : '#95a5a6' }}>
@@ -149,6 +207,45 @@ export const EntityCard: React.FC<EntityCardProps> = ({
                       transition: 'width 0.3s ease'
                    }} />
               </div>
+          </div>
+      )}
+
+      {/* Action Buttons for Current Player */}
+      {isCurrentPlayer && (
+          <div style={actionGroupStyle}>
+              {onToggleBot && (
+                  <button style={botBtnStyle} onClick={onToggleBot}>
+                      {isBot ? '🛑 Disable Bot' : '🤖 Enable Bot'}
+                  </button>
+              )}
+              
+              {onAttack && (
+                  <button 
+                      style={attackBtnStyle} 
+                      onClick={onAttack}
+                      disabled={isBot || isDead}
+                  >
+                      ⚔️ Attack
+                  </button>
+              )}
+
+              {!isDead && onForceDie && (
+                   <button 
+                      style={dieRespawnBtnStyle}
+                      onClick={onForceDie}
+                   >
+                       💀 Kill Me
+                   </button>
+              )}
+              
+              {isDead && onRespawn && (
+                  <button
+                      style={dieRespawnBtnStyle}
+                      onClick={onRespawn}
+                  >
+                      ♻️ Respawn
+                  </button>
+              )}
           </div>
       )}
     </div>

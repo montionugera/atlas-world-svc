@@ -5,9 +5,21 @@ interface EntityGridProps {
   players?: any[]; // Using any for flexibility with Colyseus schema types
   mobs?: any[];
   currentPlayerId?: string;
+  onToggleBot?: () => void;
+  onAttack?: () => void;
+  onForceDie?: () => void;
+  onRespawn?: () => void;
 }
 
-export const EntityGrid: React.FC<EntityGridProps> = ({ players = [], mobs = [], currentPlayerId }) => {
+export const EntityGrid: React.FC<EntityGridProps> = ({ 
+    players = [], 
+    mobs = [], 
+    currentPlayerId,
+    onToggleBot,
+    onAttack,
+    onForceDie,
+    onRespawn
+}) => {
   const gridStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
@@ -33,20 +45,29 @@ export const EntityGrid: React.FC<EntityGridProps> = ({ players = [], mobs = [],
           <>
             <h3 style={sectionHeaderStyle}>Players ({players.length})</h3>
             <div style={gridStyle}>
-                {players.map(p => (
-                <EntityCard
-                    key={p.sessionId || p.id}
-                    id={p.sessionId || p.id}
-                    type="player"
-                    name={p.sessionId === currentPlayerId ? `${p.name} (YOU)` : p.name}
-                    x={p.x}
-                    y={p.y}
-                    isBot={p.isBotMode}
-                    state={p.currentBehavior}
-                    target={p.currentAttackTarget}
-                    avatarColor={p.color} 
-                />
-                ))}
+                {players.map(p => {
+                    const isCurrentPlayer = p.sessionId === currentPlayerId;
+                    return (
+                        <EntityCard
+                            key={p.sessionId || p.id}
+                            id={p.sessionId || p.id}
+                            type="player"
+                            name={isCurrentPlayer ? `${p.name} (YOU)` : p.name}
+                            x={p.x}
+                            y={p.y}
+                            isBot={p.isBotMode}
+                            state={p.currentBehavior}
+                            target={p.currentAttackTarget}
+                            avatarColor={p.color}
+                            isCurrentPlayer={isCurrentPlayer}
+                            isDead={!p.isAlive}
+                            onToggleBot={isCurrentPlayer ? onToggleBot : undefined}
+                            onAttack={isCurrentPlayer ? onAttack : undefined}
+                            onForceDie={isCurrentPlayer ? onForceDie : undefined}
+                            onRespawn={isCurrentPlayer ? onRespawn : undefined}
+                        />
+                    );
+                })}
             </div>
           </>
       )}

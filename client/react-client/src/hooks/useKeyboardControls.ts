@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface UseKeyboardControlsProps {
   updatePlayerInput: (vx: number, vy: number) => void;
@@ -6,35 +6,44 @@ interface UseKeyboardControlsProps {
 }
 
 export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction }: UseKeyboardControlsProps) => {
+  const pressedKeysRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
-    const pressedKeys = new Set<string>();
-    const speed = 2;
+    const speed = 1; // Normalized speed, let server/physics handle magnitude
     
     const updateMovement = () => {
       let vx = 0, vy = 0;
+      const keys = pressedKeysRef.current;
       
       // Check all currently pressed keys
-      if (pressedKeys.has('ArrowUp') || pressedKeys.has('w') || pressedKeys.has('W')) {
-        vy = -speed;
+      if (keys.has('ArrowUp') || keys.has('w') || keys.has('W')) {
+        vy = -1;
       }
-      if (pressedKeys.has('ArrowDown') || pressedKeys.has('s') || pressedKeys.has('S')) {
-        vy = speed;
+      if (keys.has('ArrowDown') || keys.has('s') || keys.has('S')) {
+        vy = 1;
       }
-      if (pressedKeys.has('ArrowLeft') || pressedKeys.has('a') || pressedKeys.has('A')) {
-        vx = -speed;
+      if (keys.has('ArrowLeft') || keys.has('a') || keys.has('A')) {
+        vx = -1;
       }
-      if (pressedKeys.has('ArrowRight') || pressedKeys.has('d') || pressedKeys.has('D')) {
-        vx = speed;
+      if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) {
+        vx = 1;
       }
       
-      updatePlayerInput(vx, vy);
+      // Normalize vector if moving diagonally
+      if (vx !== 0 && vy !== 0) {
+        const length = Math.sqrt(vx * vx + vy * vy);
+        vx /= length;
+        vy /= length;
+      }
+      
+      updatePlayerInput(vx * 2, vy * 2); // Apply speed multiplier here
     };
     
     const handleKeyDown = (event: KeyboardEvent) => {
-      pressedKeys.add(event.key);
+      if (event.repeat) return; // Ignore repeat events to prevent spamming
+      pressedKeysRef.current.add(event.key);
       updateMovement();
       
-      // Handle attack input
       // Handle attack input
       if ((event.code === 'Space' || event.key === ' ') && sendPlayerAction) {
         event.preventDefault(); // Prevent page scroll
@@ -43,7 +52,7 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction }: Use
     };
     
     const handleKeyUp = (event: KeyboardEvent) => {
-      pressedKeys.delete(event.key);
+      pressedKeysRef.current.delete(event.key);
       updateMovement();
       
       // Handle attack release

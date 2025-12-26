@@ -6,7 +6,6 @@ import { drawMap } from '../renderers/mapRenderer';
 import { drawMobs } from '../renderers/mobRenderer';
 import { drawProjectiles } from '../renderers/projectileRenderer';
 import { drawPlayers } from '../renderers/playerRenderer';
-import { drawHUD } from '../renderers/hudRenderer';
 
 interface GameRendererProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -54,7 +53,8 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         if (gameState.projectiles) {
           drawProjectiles(ctx, gameState.projectiles, scale);
         }
-        drawHUD(ctx, gameState, updateCount, fps, updateRate, roomId);
+        // HUD is now rendered outside the canvas
+        // drawHUD(ctx, gameState, updateCount, fps, updateRate, roomId);
       }
       
       animationFrameRef.current = requestAnimationFrame(animate);

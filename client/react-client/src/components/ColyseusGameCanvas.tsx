@@ -2,9 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { UseColyseusClientReturn } from '../hooks/useColyseusClient';
 import { useKeyboardControls } from '../hooks/useKeyboardControls';
 import { GameRenderer } from './GameRenderer';
-import { GameHUD } from './GameHUD';
-import { GameHoverMenu } from './GameHoverMenu';
-import { GameInstructions } from './GameInstructions';
 import { CANVAS_CONFIG } from '../config/gameConfig';
 import { useGameStateContext } from '../contexts/GameStateContext';
 
@@ -66,26 +63,6 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ client }
           }}
         />
         
-        <GameHUD
-          isConnected={clientConnected}
-          playerId={playerId}
-          roomId={roomId}
-        />
-
-        {/* Bottom: Hover Action Menu */}
-        <GameHoverMenu 
-            isConnected={clientConnected}
-            isBotMode={gameState?.players.get(playerId)?.isBotMode || false}
-            onToggleBotMode={() => {
-              const currentMode = gameState?.players.get(playerId)?.isBotMode || false;
-              toggleBotMode(!currentMode);
-            }}
-            onAttack={() => sendPlayerAction('attack', true)}
-            isDead={!gameState?.players.get(playerId)?.isAlive && !!gameState?.players.get(playerId)}
-            onRespawn={respawn}
-            onForceDie={forceDie}
-        />
-        
         <GameRenderer
           canvasRef={canvasRef}
           gameState={gameState}
@@ -97,8 +74,6 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ client }
           trackFrame={trackFrame}
         />
       </div>
-      
-      <GameInstructions />
     </div>
   );
 };

@@ -3,6 +3,8 @@ import { useColyseusClient, ColyseusClientConfig } from './hooks/useColyseusClie
 import { ColyseusGameCanvas } from './components/ColyseusGameCanvas';
 import { LogPanel } from './components/LogPanel';
 import { EntityGrid } from './components/EntityGrid';
+import { GameStats } from './components/GameStats';
+import { ControlsHelp } from './components/ControlsHelp';
 import { GameStateProvider } from './contexts/GameStateContext';
 import './App.css';
 
@@ -51,12 +53,6 @@ function App() {
   }, [filterDep(client)]); // only run once on mount effectively, or when client changes (unlikely)
 
   function filterDep(c: any) {
-      // Just a helper to force effect to depend on client existence but not its internal state changes
-      // Actually we can just depend on empty array if client is stable, but client comes from hook.
-      // useColyseusClient returns new object on re-renders? 
-      // Checking hook source: "return { ... }" -> Yes it returns new object every render.
-      // So we need to be careful with dependency array.
-      // The `connect` function is memoized with useCallback.
       return c.connect;
   }
   
@@ -66,11 +62,10 @@ function App() {
     }
   }, [client.isConnected, addLog]);
 
-  // Log specialized game events (throttled or filtered to avoid spam)
+  // Log specialized game events
   useEffect(() => {
     if (client.gameState?.tick && client.gameState.tick % 100 === 0) {
-        // Log every 100 ticks just as a heartbeat
-       // addLog(`Tick: ${client.gameState.tick}`, 'info');
+        // Heartbeat log
     }
   }, [client.gameState?.tick, addLog]);
   
@@ -78,6 +73,8 @@ function App() {
   // Prepare data for EntityGrid
   const players = client.gameState?.players ? Array.from(client.gameState.players.values()) : [];
   const mobs = client.gameState?.mobs ? Array.from(client.gameState.mobs.values()) : [];
+  
+  const [showHelp, setShowHelp] = useState(false);
 
   return (
     <GameStateProvider 
@@ -87,12 +84,38 @@ function App() {
     >
       <div className="App">
         <header className="app-header">
-          <h1>🌍 Atlas World - Real-time Multiplayer</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <h1>🌍 Atlas World</h1>
+              <button 
+                onClick={() => setShowHelp(true)}
+                style={{
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    color: '#fff',
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+              >
+                  ❓ Controls
+              </button>
+          </div>
+          
           <div className='header-status'>
              <span>{client.isConnected ? '🟢 Online' : '🔴 Offline'}</span>
              {client.roomId && <span>Room: {client.roomId}</span>}
           </div>
         </header>
+        
+        <ControlsHelp isOpen={showHelp} onClose={() => setShowHelp(false)} />
         
         <main className="app-main">
           {/* Left Column: Game Canvas */}
@@ -100,13 +123,33 @@ function App() {
             <ColyseusGameCanvas client={client} />
           </div>
           
-          {/* Right Column: Unified Entity Panel & Logs */}
+          {/* Right Column: unified Info Panel */}
           <div className="info-section">
              <div className="entity-panel">
+                <GameStats 
+                   mapId={client.gameState?.mapId}
+                   fps={client.fps}
+                   tick={client.gameState?.tick || 0}
+                   updateRate={client.updateRate}
+                   playerCount={players.length}
+                   mobCount={mobs.length}
+                   roomId={client.roomId}
+                   isConnected={client.isConnected}
+                />
+                
                 <EntityGrid 
                   players={players} 
                   mobs={mobs} 
                   currentPlayerId={client.playerId}
+                  onToggleBot={() => {
+                      const player = client.gameState?.players.get(client.playerId);
+                      if (player) {
+                          client.toggleBotMode(!player.isBotMode);
+                      }
+                  }}
+                  onAttack={() => client.sendPlayerAction('attack', true)}
+                  onForceDie={client.forceDie}
+                  onRespawn={client.respawn}
                 />
              </div>
              
