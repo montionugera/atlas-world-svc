@@ -1,9 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useColyseusClient, ColyseusClientConfig } from './hooks/useColyseusClient';
 import { ColyseusGameCanvas } from './components/ColyseusGameCanvas';
 import { LogPanel } from './components/LogPanel';
-import { MobDataTable } from './components/MobDataTable'
-import { PlayerDataTable } from './components/PlayerDataTable';
+import { EntityGrid } from './components/EntityGrid';
 import { GameStateProvider } from './contexts/GameStateContext';
 import './App.css';
 
@@ -36,44 +35,50 @@ function App() {
     setLogs(prev => [...prev.slice(-49), log]); // Keep last 50 logs
   }, []);
   
-  const handleConnect = useCallback(async () => {
-    try {
-      addLog('🔌 Connecting to Colyseus Server...');
-      await client.connect();
-      addLog('✅ Connected successfully!');
-    } catch (error) {
-      addLog(`❌ Connection failed: ${error}`, 'error');
+  // Connection helpers
+   useEffect(() => {
+    // Auto-connect when app starts
+    if (!client.isConnected) {
+       addLog('🔌 Connecting to Colyseus Server...', 'info');
+       client.connect().then(() => {
+          client.joinRoom('map-01-sector-a');
+       }).catch(e => {
+          addLog(`❌ Detailed connection error: ${e.message}`, 'error');
+       });
+    } else {
+       // Already connected
     }
-  }, [client, addLog]);
-  
-  const handleJoinRoom = useCallback(async () => {
-    try {
-      addLog('🚪 Joining Colyseus room...');
-      await client.joinRoom('map-01-sector-a');
-      addLog('✅ Joined room successfully!');
-    } catch (error) {
-      addLog(`❌ Failed to join room: ${error}`, 'error');
-    }
-  }, [client, addLog]);
-  
-  const handleStartSimulation = useCallback(() => {
-    addLog('🤖 Starting mob simulation...');
-    client.startSimulation();
-  }, [client, addLog]);
-  
-  const handleStopSimulation = useCallback(() => {
-    addLog('⏹️ Simulation stopped');
-    client.stopSimulation();
-  }, [client, addLog]);
+  }, [filterDep(client)]); // only run once on mount effectively, or when client changes (unlikely)
 
+  function filterDep(c: any) {
+      // Just a helper to force effect to depend on client existence but not its internal state changes
+      // Actually we can just depend on empty array if client is stable, but client comes from hook.
+      // useColyseusClient returns new object on re-renders? 
+      // Checking hook source: "return { ... }" -> Yes it returns new object every render.
+      // So we need to be careful with dependency array.
+      // The `connect` function is memoized with useCallback.
+      return c.connect;
+  }
   
-  // Add logs for game state changes
-  React.useEffect(() => {
-    if (client.gameState?.mobs) {
-      addLog(`🔄 Mob update - Tick: ${client.gameState.tick}, Mobs: ${client.gameState.mobs.size}`, 'mob');
+  useEffect(() => {
+    if (client.isConnected) {
+       addLog('✅ Connected and joined room successfully!', 'info');
     }
-  }, [client.gameState?.tick, client.gameState?.mobs, addLog]);
+  }, [client.isConnected, addLog]);
+
+  // Log specialized game events (throttled or filtered to avoid spam)
+  useEffect(() => {
+    if (client.gameState?.tick && client.gameState.tick % 100 === 0) {
+        // Log every 100 ticks just as a heartbeat
+       // addLog(`Tick: ${client.gameState.tick}`, 'info');
+    }
+  }, [client.gameState?.tick, addLog]);
   
+  
+  // Prepare data for EntityGrid
+  const players = client.gameState?.players ? Array.from(client.gameState.players.values()) : [];
+  const mobs = client.gameState?.mobs ? Array.from(client.gameState.mobs.values()) : [];
+
   return (
     <GameStateProvider 
       initialGameState={client.gameState} 
@@ -83,35 +88,31 @@ function App() {
       <div className="App">
         <header className="app-header">
           <h1>🌍 Atlas World - Real-time Multiplayer</h1>
-          <p>Colyseus WebSocket Client with Live Game Simulation</p>
+          <div className='header-status'>
+             <span>{client.isConnected ? '🟢 Online' : '🔴 Offline'}</span>
+             {client.roomId && <span>Room: {client.roomId}</span>}
+          </div>
         </header>
         
         <main className="app-main">
-          <div className="mobs-section">
-            <MobDataTable 
-              roomId={client.roomId} 
-              gameState={client.gameState}
-              refreshInterval={2000} 
-            />
-          </div>
-          
-          <div className="players-section">
-            <PlayerDataTable 
-              roomId={client.roomId} 
-              gameState={client.gameState}
-              refreshInterval={2000}
-              onDebugTeleport={client.debugTeleport}
-              onDebugSpawnMob={client.debugSpawnMob}
-              updateCount={client.updateCount}
-            />
-          </div>
-          
+          {/* Left Column: Game Canvas */}
           <div className="game-section">
-            <ColyseusGameCanvas config={colyseusConfig} />
+            <ColyseusGameCanvas client={client} />
           </div>
           
-          <div className="log-section">
-            <LogPanel logs={logs} />
+          {/* Right Column: Unified Entity Panel & Logs */}
+          <div className="info-section">
+             <div className="entity-panel">
+                <EntityGrid 
+                  players={players} 
+                  mobs={mobs} 
+                  currentPlayerId={client.playerId}
+                />
+             </div>
+             
+             <div className="log-section">
+               <LogPanel logs={logs} />
+             </div>
           </div>
         </main>
       </div>
@@ -120,3 +121,4 @@ function App() {
 }
 
 export default App;
+

@@ -1,21 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useColyseusClient, ColyseusClientConfig } from '../hooks/useColyseusClient';
+import React, { useEffect, useRef } from 'react';
+import { UseColyseusClientReturn } from '../hooks/useColyseusClient';
 import { useKeyboardControls } from '../hooks/useKeyboardControls';
 import { GameRenderer } from './GameRenderer';
 import { GameHUD } from './GameHUD';
 import { GameHoverMenu } from './GameHoverMenu';
-import { PlayerDataTable } from './PlayerDataTable/PlayerDataTable';
 import { GameInstructions } from './GameInstructions';
 import { CANVAS_CONFIG } from '../config/gameConfig';
 import { useGameStateContext } from '../contexts/GameStateContext';
 
 interface ColyseusGameCanvasProps {
-  config: ColyseusClientConfig;
+  client: UseColyseusClientReturn;
 }
 
-export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }) => {
+export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ client }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isConnected, setIsConnected] = useState(false);
   const { setGameState } = useGameStateContext();
   
   const {
@@ -24,21 +22,15 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }
     playerId,
     gameState,
     updateCount,
-    isSimulating,
     fps,
     updateRate,
-    connect,
-    joinRoom,
     updatePlayerInput,
     sendPlayerAction,
-    startSimulation,
-    stopSimulation,
-    disconnect,
     toggleBotMode,
     trackFrame,
     respawn,
     forceDie
-  } = useColyseusClient(config);
+  } = client;
 
   // Update context when gameState or roomId changes
   // Track tick to ensure updates even when Colyseus updates in-place
@@ -49,16 +41,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }
   // Handle keyboard controls
   useKeyboardControls({ updatePlayerInput, sendPlayerAction });
 
-  // Handle connection
-  useEffect(() => {
-    if (!isConnected && !clientConnected) {
-      connect().then(() => {
-        setIsConnected(true);
-        joinRoom('map-01-sector-a');
-      }).catch(console.error);
-    }
-  }, [isConnected, clientConnected, connect, joinRoom]);
-
+  // Connection logic is now handled by the parent (App.tsx)
+  
   const containerStyle: React.CSSProperties = {
      position: 'relative', 
      display: 'inline-block',
@@ -81,23 +65,6 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }
             display: 'block'
           }}
         />
-        
-        {/* Top Left: Player Debug Panel Overlay */}
-        <div style={{ 
-          position: 'absolute', 
-          top: 20, 
-          left: 20, 
-          zIndex: 10,
-          maxHeight: '600px',
-          overflowY: 'auto',
-          maxWidth: '300px'
-        }}>
-           <PlayerDataTable 
-             roomId={roomId}
-             gameState={gameState}
-             updateCount={updateCount}
-           />
-        </div>
         
         <GameHUD
           isConnected={clientConnected}
