@@ -1,16 +1,28 @@
-import { AttackStrategy } from './AttackStrategy'
+import { AttackStrategy, AttackExecutionResult } from './AttackStrategy'
 import { Mob } from '../../schemas/Mob'
 import { Player } from '../../schemas/Player'
-import { eventBus, RoomEventType, BattleAttackData } from '../../events/EventBus'
+import { ProjectileManager } from '../../modules/ProjectileManager'
+import { GameState } from '../../schemas/GameState'
 
 /**
  * Melee Attack Strategy
- * Close-range instant attack (existing behavior)
+ * Close-range attack using projectile system (unified flow)
+ * Creates short-range, fast projectiles for near-instant hits
  */
 export class MeleeAttackStrategy implements AttackStrategy {
   name = 'melee'
+  private projectileManager: ProjectileManager | null
+  private gameState: GameState | null
 
-  getWindUpTime(): number {
+  constructor(
+    projectileManager?: ProjectileManager,
+    gameState?: GameState
+  ) {
+    this.projectileManager = projectileManager || null
+    this.gameState = gameState || null
+  }
+
+  getCastTime(): number {
     return 0 // Instant attack
   }
 
@@ -29,18 +41,44 @@ export class MeleeAttackStrategy implements AttackStrategy {
       return false
     }
 
-    // Emit battle attack event
-    const attackData: BattleAttackData = {
-      actorId: mob.id,
-      targetId: target.id,
-      damage: mob.attackDamage,
-      range: mob.attackRange,
-      roomId: roomId,
+    // Require projectileManager and gameState for unified projectile flow
+    if (!this.projectileManager || !this.gameState) {
+      console.error(`❌ MELEE: ${mob.id} cannot execute - projectileManager or gameState not provided`)
+      return false
     }
 
-    console.log(`🗡️ MELEE: ${mob.id} executing melee attack on ${target.id}, emitting BATTLE_ATTACK event`)
-    eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData)
+    // Calculate target position (lead target if moving)
+    const targetX = target.x + target.vx * 0.05 // Small lead for melee
+    const targetY = target.y + target.vy * 0.05
+
+    // Create melee projectile (short range, fast speed)
+    const projectile = this.projectileManager.createMelee(
+      mob,
+      targetX,
+      targetY,
+      mob.attackDamage
+    )
+
+    // Add to game state (synced to clients)
+    this.gameState.projectiles.set(projectile.id, projectile)
+
+    console.log(`🗡️ MELEE: ${mob.id} executing melee attack on ${target.id}, created projectile ${projectile.id}`)
     return true
+  }
+
+  attemptExecute(mob: Mob, target: Player, roomId: string): AttackExecutionResult {
+    if (!this.canExecute(mob, target)) {
+      return { canExecute: false, needsCasting: false, executed: false }
+    }
+
+    // Melee is instant (castTime = 0), so execute immediately
+    const executed = this.execute(mob, target, roomId)
+    return {
+      canExecute: true,
+      needsCasting: false,
+      executed,
+      targetId: executed ? target.id : undefined,
+    }
   }
 }
 

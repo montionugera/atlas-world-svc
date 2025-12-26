@@ -21,7 +21,7 @@ export const PHYSICS_CONFIG = {
   // Entity physics properties
   entities: {
     player: {
-      radius: 4,
+      radius: 1.3, // Player radius must not exceed 1.3
       mass: 1,
       friction: 0.1,
       frictionAir: 0.01,

@@ -12,7 +12,7 @@ describe('Player Attack System', () => {
 
   beforeEach(() => {
     testPlayer = new Player('test-session', 'TestPlayer', 50, 50)
-    testMob = new Mob({ id: 'mob-1', x: 60, y: 50 }) // 10 units away, directly to the right
+    testMob = new Mob({ id: 'mob-1', x: 53, y: 50 }) // 3 units away, directly to the right
   })
 
   describe('Target Detection', () => {
@@ -48,7 +48,7 @@ describe('Player Attack System', () => {
     })
 
     test('should find nearest target when multiple targets in range', () => {
-      const mob2 = new Mob({ id: 'mob-2', x: 55, y: 50 }) // closer to player
+      const mob2 = new Mob({ id: 'mob-2', x: 52, y: 50 }) // closer to player
       const mob3 = new Mob({ id: 'mob-3', x: 70, y: 50 }) // farther from player
       
       testPlayer.heading = 0 // facing right
@@ -83,13 +83,17 @@ describe('Player Attack System', () => {
       expect(result).toBe(true)
     })
 
-    test('should not process attack when no target found', () => {
+    test('should process attack even when no target found (for visual feedback)', () => {
       testPlayer.heading = Math.PI // facing left (away from mob)
       testPlayer.input.attack = true
       
       const result = testPlayer.processAttackInput(new Map([['mob-1', testMob]]), 'test-room')
       
-      expect(result).toBe(false)
+      // Now returns true even without target (allows attack animation/visual feedback)
+      expect(result).toBe(true)
+      // Attack state should be updated
+      expect(testPlayer.isAttacking).toBe(true)
+      expect(testPlayer.lastAttackTime).toBeGreaterThan(0)
     })
 
     test('should not process attack when on cooldown', () => {
@@ -129,7 +133,7 @@ describe('Player Attack System', () => {
   describe('Attack Range and Cone', () => {
     test('should calculate correct attack range', () => {
       const maxRange = testPlayer.attackRange + testPlayer.radius
-      expect(maxRange).toBe(7) // 3 + 4
+      expect(maxRange).toBeCloseTo(4.3) // 3 + 1.3 (player radius max is 1.3)
     })
 
     test('should use correct attack cone angle', () => {

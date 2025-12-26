@@ -5,10 +5,14 @@
 
 import { Mob } from '../schemas/Mob'
 import { GameState } from '../schemas/GameState'
+import { AIModule } from '../ai/AIModule'
+import { Player } from '../schemas/Player'
+import { AvoidBoundaryBehavior } from '../ai/behaviors/AgentBehaviors'
 
 describe('Boundary Avoidance Tests', () => {
   let gameState: GameState
   let testMob: Mob
+  let aiModule: AIModule
 
   beforeEach(() => {
     gameState = new GameState()
@@ -21,6 +25,8 @@ describe('Boundary Avoidance Tests', () => {
     })
 
     gameState.mobs.set(testMob.id, testMob)
+    aiModule = gameState.aiModule
+    aiModule.registerMob(testMob, {})
   })
 
   describe('Boundary Detection', () => {
@@ -31,10 +37,13 @@ describe('Boundary Avoidance Tests', () => {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
         nearBoundary: true,
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
       }
 
-      testMob.decideBehavior(env)
+      const decision = aiModule.decideBehavior(testMob, env)
+      testMob.applyBehaviorDecision(decision)
 
       expect(testMob.currentBehavior).toBe('avoidBoundary')
     })
@@ -46,10 +55,13 @@ describe('Boundary Avoidance Tests', () => {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
         nearBoundary: true,
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
       }
 
-      testMob.decideBehavior(env)
+      const decision = aiModule.decideBehavior(testMob, env)
+      testMob.applyBehaviorDecision(decision)
 
       expect(testMob.currentBehavior).toBe('avoidBoundary')
     })
@@ -61,10 +73,13 @@ describe('Boundary Avoidance Tests', () => {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
         nearBoundary: true,
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
       }
 
-      testMob.decideBehavior(env)
+      const decision = aiModule.decideBehavior(testMob, env)
+      testMob.applyBehaviorDecision(decision)
 
       expect(testMob.currentBehavior).toBe('avoidBoundary')
     })
@@ -76,10 +91,13 @@ describe('Boundary Avoidance Tests', () => {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
         nearBoundary: true,
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
       }
 
-      testMob.decideBehavior(env)
+      const decision = aiModule.decideBehavior(testMob, env)
+      testMob.applyBehaviorDecision(decision)
 
       expect(testMob.currentBehavior).toBe('avoidBoundary')
     })
@@ -91,11 +109,14 @@ describe('Boundary Avoidance Tests', () => {
       const env = {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         nearBoundary: false,
-        worldBounds: { width: 400, height: 300 },
+        worldBounds: { width: 800, height: 600 },
       }
 
-      testMob.decideBehavior(env)
+      const decision = aiModule.decideBehavior(testMob, env)
+      testMob.applyBehaviorDecision(decision)
 
       expect(testMob.currentBehavior).toBe('wander')
     })
@@ -104,13 +125,18 @@ describe('Boundary Avoidance Tests', () => {
   describe('Boundary Avoidance Movement', () => {
     test('should move away from left boundary', () => {
       testMob.x = 10 // Very close to left boundary
-      testMob.currentBehavior = 'avoidBoundary'
-
-      const velocity = testMob.computeDesiredVelocity({
+      const behavior = new AvoidBoundaryBehavior()
+      const env = {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
+        nearBoundary: true,
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
-      })
+      }
+
+      const decision = behavior.getDecision(testMob, env, Date.now())
+      const velocity = decision.desiredVelocity || { x: 0, y: 0 }
 
       // Should move right (positive X)
       expect(velocity.x).toBeGreaterThan(0)
@@ -119,13 +145,18 @@ describe('Boundary Avoidance Tests', () => {
 
     test('should move away from right boundary', () => {
       testMob.x = 390 // Very close to right boundary
-      testMob.currentBehavior = 'avoidBoundary'
-
-      const velocity = testMob.computeDesiredVelocity({
+      const behavior = new AvoidBoundaryBehavior()
+      const env = {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
+        nearBoundary: true,
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
-      })
+      }
+
+      const decision = behavior.getDecision(testMob, env, Date.now())
+      const velocity = decision.desiredVelocity || { x: 0, y: 0 }
 
       // Should move left (negative X)
       expect(velocity.x).toBeLessThan(0)
@@ -135,13 +166,18 @@ describe('Boundary Avoidance Tests', () => {
     test('should move away from top boundary', () => {
       testMob.x = 200 // Center horizontally to avoid left/right boundary effects
       testMob.y = 10 // Very close to top boundary
-      testMob.currentBehavior = 'avoidBoundary'
-
-      const velocity = testMob.computeDesiredVelocity({
+      const behavior = new AvoidBoundaryBehavior()
+      const env = {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
+        nearBoundary: true,
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
-      })
+      }
+
+      const decision = behavior.getDecision(testMob, env, Date.now())
+      const velocity = decision.desiredVelocity || { x: 0, y: 0 }
 
       // Should move down (positive Y)
       expect(velocity.y).toBeGreaterThan(0)
@@ -151,13 +187,18 @@ describe('Boundary Avoidance Tests', () => {
     test('should move away from bottom boundary', () => {
       testMob.x = 200 // Center horizontally to avoid left/right boundary effects
       testMob.y = 290 // Very close to bottom boundary
-      testMob.currentBehavior = 'avoidBoundary'
-
-      const velocity = testMob.computeDesiredVelocity({
+      const behavior = new AvoidBoundaryBehavior()
+      const env = {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
+        nearBoundary: true,
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
-      })
+      }
+
+      const decision = behavior.getDecision(testMob, env, Date.now())
+      const velocity = decision.desiredVelocity || { x: 0, y: 0 }
 
       // Should move up (negative Y)
       expect(velocity.y).toBeLessThan(0)
@@ -167,13 +208,18 @@ describe('Boundary Avoidance Tests', () => {
     test('should move toward center when in corner', () => {
       testMob.x = 5 // Very close to left boundary
       testMob.y = 5 // Very close to top boundary
-      testMob.currentBehavior = 'avoidBoundary'
-
-      const velocity = testMob.computeDesiredVelocity({
+      const behavior = new AvoidBoundaryBehavior()
+      const env = {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
+        nearBoundary: true,
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
-      })
+      }
+
+      const decision = behavior.getDecision(testMob, env, Date.now())
+      const velocity = decision.desiredVelocity || { x: 0, y: 0 }
 
       // Should move toward center (positive X and Y)
       expect(velocity.x).toBeGreaterThan(0)
@@ -185,14 +231,17 @@ describe('Boundary Avoidance Tests', () => {
     test('boundary avoidance should have higher priority than attack', () => {
       testMob.x = 10 // Near boundary
 
-      const env = {
-        nearestPlayer: { x: 15, y: 150, id: 'player1' },
-        distanceToNearestPlayer: 5, // Very close (would normally trigger attack)
-        nearBoundary: true,
-        worldBounds: { width: 400, height: 300 },
-      }
+      // Create a test player
+      const testPlayer = new Player('player1', 'TestPlayer', 15, 150)
+      gameState.players.set('player1', testPlayer)
 
-      testMob.decideBehavior(env)
+      // Use AIWorldInterface to build proper environment
+      const env = gameState.worldInterface.buildMobEnvironment(testMob, 50)
+      // Override nearBoundary for test
+      env.nearBoundary = true
+
+      const decision = aiModule.decideBehavior(testMob, env)
+      testMob.applyBehaviorDecision(decision)
 
       // Should choose boundary avoidance over attack
       expect(testMob.currentBehavior).toBe('avoidBoundary')
@@ -201,14 +250,17 @@ describe('Boundary Avoidance Tests', () => {
     test('boundary avoidance should have higher priority than chase', () => {
       testMob.x = 10 // Near boundary
 
-      const env = {
-        nearestPlayer: { x: 20, y: 150, id: 'player1' },
-        distanceToNearestPlayer: 15, // Medium distance (would normally trigger chase)
-        nearBoundary: true,
-        worldBounds: { width: 400, height: 300 },
-      }
+      // Create a test player
+      const testPlayer2 = new Player('player2', 'TestPlayer', 20, 150)
+      gameState.players.set('player2', testPlayer2)
 
-      testMob.decideBehavior(env)
+      // Use AIWorldInterface to build proper environment
+      const env = gameState.worldInterface.buildMobEnvironment(testMob, 50)
+      // Override nearBoundary for test
+      env.nearBoundary = true
+
+      const decision = aiModule.decideBehavior(testMob, env)
+      testMob.applyBehaviorDecision(decision)
 
       // Should choose boundary avoidance over chase
       expect(testMob.currentBehavior).toBe('avoidBoundary')
@@ -218,14 +270,17 @@ describe('Boundary Avoidance Tests', () => {
       testMob.x = 200 // Center of world
       testMob.y = 150
 
-      const env = {
-        nearestPlayer: { x: 20, y: 150, id: 'player1' },
-        distanceToNearestPlayer: 15, // Medium distance
-        nearBoundary: false,
-        worldBounds: { width: 400, height: 300 },
-      }
+      // Create a test player (close enough for chase)
+      const testPlayer = new Player('test-session', 'TestPlayer', 215, 150)
+      gameState.players.set('test-session', testPlayer)
 
-      testMob.decideBehavior(env)
+      // Use AIWorldInterface to build proper environment
+      const env = gameState.worldInterface.buildMobEnvironment(testMob, 50)
+      // Ensure not near boundary
+      env.nearBoundary = false
+
+      const decision = aiModule.decideBehavior(testMob, env)
+      testMob.applyBehaviorDecision(decision)
 
       // Should choose chase (normal behavior)
       expect(testMob.currentBehavior).toBe('chase')
@@ -235,13 +290,18 @@ describe('Boundary Avoidance Tests', () => {
   describe('Edge Cases', () => {
     test('should handle mob at exact boundary', () => {
       testMob.x = 0 // Exactly at left boundary
-      testMob.currentBehavior = 'avoidBoundary'
-
-      const velocity = testMob.computeDesiredVelocity({
+      const behavior = new AvoidBoundaryBehavior()
+      const env = {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
+        nearBoundary: true,
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
-      })
+      }
+
+      const decision = behavior.getDecision(testMob, env, Date.now())
+      const velocity = decision.desiredVelocity || { x: 0, y: 0 }
 
       // Should have strong rightward movement
       expect(velocity.x).toBeGreaterThan(10)
@@ -250,13 +310,18 @@ describe('Boundary Avoidance Tests', () => {
     test('should handle mob at world center', () => {
       testMob.x = 200 // Center
       testMob.y = 150
-      testMob.currentBehavior = 'avoidBoundary'
-
-      const velocity = testMob.computeDesiredVelocity({
+      const behavior = new AvoidBoundaryBehavior()
+      const env = {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
+        nearBoundary: true, // Force behavior to run
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
-      })
+      }
+
+      const decision = behavior.getDecision(testMob, env, Date.now())
+      const velocity = decision.desiredVelocity || { x: 0, y: 0 }
 
       // Should move toward center (no movement needed)
       expect(velocity.x).toBeCloseTo(0, 1)
@@ -266,13 +331,18 @@ describe('Boundary Avoidance Tests', () => {
     test('should handle very small world bounds', () => {
       testMob.x = 5
       testMob.y = 5
-      testMob.currentBehavior = 'avoidBoundary'
-
-      const velocity = testMob.computeDesiredVelocity({
+      const behavior = new AvoidBoundaryBehavior()
+      const env = {
         nearestPlayer: null,
         distanceToNearestPlayer: Infinity,
+        nearBoundary: true,
+        nearestMob: null,
+        distanceToNearestMob: Infinity,
         worldBounds: { width: 20, height: 20 },
-      })
+      }
+
+      const decision = behavior.getDecision(testMob, env, Date.now())
+      const velocity = decision.desiredVelocity || { x: 0, y: 0 }
 
       // Should still work with small bounds
       expect(velocity.x).toBeGreaterThan(0)

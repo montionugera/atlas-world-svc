@@ -46,7 +46,7 @@ describe('MobLifeCycleManager', () => {
       })
 
       expect(gameState.mobs.size).toBe(1)
-      expect(gameState.aiModule['mobs'].has(mob.id)).toBe(true)
+      expect(gameState.aiModule['agents'].has(mob.id)).toBe(true)
 
       // Kill the mob
       mob.die()
@@ -59,7 +59,7 @@ describe('MobLifeCycleManager', () => {
       lifecycleManager.update()
 
       expect(gameState.mobs.size).toBe(0)
-      expect(gameState.aiModule['mobs'].has(mob.id)).toBe(false)
+      expect(gameState.aiModule['agents'].has(mob.id)).toBe(false)
       
       // Restore auto-spawn
       lifecycleManager['settings'].autoSpawn = true
@@ -230,13 +230,13 @@ describe('MobLifeCycleManager', () => {
         perception: { range: 50 },
       })
 
-      expect(gameState.aiModule['mobs'].has(mob.id)).toBe(true)
+      expect(gameState.aiModule['agents'].has(mob.id)).toBe(true)
 
       mob.die()
       mob.readyToRemove = true // Immediate removal for testing
       lifecycleManager.update()
 
-      expect(gameState.aiModule['mobs'].has(mob.id)).toBe(false)
+      expect(gameState.aiModule['agents'].has(mob.id)).toBe(false)
     })
   })
 
@@ -448,7 +448,7 @@ describe('MobLifeCycleManager', () => {
       lifecycleManager.seedInitial()
 
       for (const mob of gameState.mobs.values()) {
-        expect(gameState.aiModule['mobs'].has(mob.id)).toBe(true)
+        expect(gameState.aiModule['agents'].has(mob.id)).toBe(true)
       }
     })
   })

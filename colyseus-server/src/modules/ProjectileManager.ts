@@ -4,8 +4,9 @@ import { Player } from '../schemas/Player'
 import { WorldLife } from '../schemas/WorldLife'
 import { BattleModule } from './BattleModule'
 import { GameState } from '../schemas/GameState'
-import { SPEAR_THROWER_STATS } from '../config/combatConfig'
+import { SPEAR_THROWER_STATS, MELEE_PROJECTILE_STATS } from '../config/combatConfig'
 import { PROJECTILE_GRAVITY } from '../config/physicsConfig'
+import { eventBus, RoomEventType } from '../events/EventBus'
 
 export class ProjectileManager {
   private gameState: GameState
@@ -16,6 +17,43 @@ export class ProjectileManager {
   constructor(gameState: GameState, battleModule: BattleModule) {
     this.gameState = gameState
     this.battleModule = battleModule
+  }
+
+  /**
+   * Create a melee projectile from mob to target
+   * Short range, fast speed for near-instant hits
+   */
+  createMelee(mob: Mob, targetX: number, targetY: number, damage: number): Projectile {
+    const dx = targetX - mob.x
+    const dy = targetY - mob.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
+    
+    // Calculate angle to target
+    const angle = Math.atan2(dy, dx)
+    
+    // Use melee projectile speed (very fast for near-instant hit)
+    const speed = MELEE_PROJECTILE_STATS.meleeSpeed
+    
+    // Calculate initial velocity components
+    const vx = speed * Math.cos(angle)
+    const vy = speed * Math.sin(angle)
+    
+    // Create projectile with melee stats
+    const projectileId = `projectile-melee-${this.gameState.tick}-${Math.random().toString(36).slice(2, 4)}`
+    const projectile = new Projectile(
+      projectileId,
+      mob.x,
+      mob.y,
+      vx,
+      vy,
+      mob.id,
+      damage,
+      MELEE_PROJECTILE_STATS.meleeMaxRange,
+      MELEE_PROJECTILE_STATS.projectileRadius,
+      MELEE_PROJECTILE_STATS.projectileLifetime
+    )
+    
+    return projectile
   }
 
   /**
@@ -91,6 +129,14 @@ export class ProjectileManager {
         player
       )
       const targetDied = this.battleModule.applyDamage(player, damage)
+      
+      // Emit battle damage produced event for knockback/FX (same as melee attacks)
+      try {
+        eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
+          attacker,
+          taker: player,
+        })
+      } catch {}
       
       if (targetDied) {
         console.log(`💀 PROJECTILE: ${projectile.id} killed ${player.id}`)

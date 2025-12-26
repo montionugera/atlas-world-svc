@@ -197,7 +197,10 @@ describe('Battle Message System', () => {
       battleManager.addActionMessage(invalidMessage)
       const processedCount = await battleManager.processActionMessages()
 
-      expect(processedCount).toBe(0)
+      // Now attacks without valid targets are allowed (for visual feedback)
+      // The attack will be processed but won't deal damage since target doesn't exist
+      // This allows players to attack even when no monsters are nearby
+      expect(processedCount).toBe(1) // Attack is processed (no damage, but state updated)
     })
   })
 })

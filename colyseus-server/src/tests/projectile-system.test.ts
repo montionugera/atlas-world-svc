@@ -72,19 +72,28 @@ describe('Projectile System', () => {
   })
 
   describe('Projectile Physics', () => {
-    test('should apply gravity to projectile', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 10)
+    test('should maintain velocity (no gravity in top-down 2D)', () => {
+      const { PlanckPhysicsManager } = require('../physics/PlanckPhysicsManager')
+      const physicsManager = new PlanckPhysicsManager()
+      
+      const projectile = new Projectile('proj-1', 100, 100, 10, 5, 'mob-1', 5, 10)
       gameState.projectiles.set(projectile.id, projectile)
+      
+      // Create physics body for projectile
+      physicsManager.createProjectileBody(projectile)
 
+      const initialVx = projectile.vx
       const initialVy = projectile.vy
-      projectileManager.updateProjectiles(gameState.projectiles, 100, {
-        updateProjectile: (p: Projectile, dt: number) => {
-          p.vy += PROJECTILE_GRAVITY * (dt / 1000) // Gravity
-        },
-        getBody: () => null,
-      } as any)
+      
+      // Update projectile using real physics manager (should not apply gravity)
+      projectileManager.updateProjectiles(gameState.projectiles, 100, physicsManager)
 
-      expect(projectile.vy).toBeGreaterThan(initialVy)
+      // Velocity should remain unchanged (no gravity applied in top-down 2D)
+      expect(projectile.vx).toBe(initialVx)
+      expect(projectile.vy).toBe(initialVy)
+      
+      // Cleanup
+      physicsManager.removeBody(projectile.id)
     })
 
     test('should cap projectile speed at max', () => {
@@ -198,7 +207,7 @@ describe('Projectile System', () => {
       player.isAttacking = true
       player.heading = 0 // Facing right (toward projectile)
       player.attackRange = 5
-      player.radius = 4
+      player.radius = 1.3 // Player radius max is 1.3
 
       const initialVx = projectile.vx
       const deflected = projectileManager.checkDeflection(projectile, player)
@@ -242,7 +251,7 @@ describe('Projectile System', () => {
       player.isAttacking = true
       player.heading = 0
       player.attackRange = 5
-      player.radius = 4
+      player.radius = 1.3 // Player radius max is 1.3
 
       const deflected = projectileManager.checkDeflection(projectile, player)
       expect(deflected).toBe(false)
@@ -250,14 +259,14 @@ describe('Projectile System', () => {
   })
 
   describe('Attack Strategies', () => {
-    test('SpearThrowAttackStrategy should have 500ms wind-up', () => {
+    test('SpearThrowAttackStrategy should have 500ms cast time', () => {
       const strategy = new SpearThrowAttackStrategy(projectileManager, gameState)
-      expect(strategy.getWindUpTime()).toBe(500)
+      expect(strategy.getCastTime()).toBe(500)
     })
 
-    test('MeleeAttackStrategy should have 0ms wind-up', () => {
-      const strategy = new MeleeAttackStrategy()
-      expect(strategy.getWindUpTime()).toBe(0)
+    test('MeleeAttackStrategy should have 0ms cast time', () => {
+      const strategy = new MeleeAttackStrategy(projectileManager, gameState)
+      expect(strategy.getCastTime()).toBe(0)
     })
 
     test('SpearThrowAttackStrategy should check range correctly', () => {
@@ -298,7 +307,8 @@ describe('Projectile System', () => {
       mob.currentAttackTarget = player.id
       
       // Reset cooldown and place mob in range
-      mob.lastAttackTime = 0
+      // Set lastAttackTime to well in the past to ensure cooldown is ready
+      mob.lastAttackTime = performance.now() - 2000 // 2 seconds ago
       mob.attackDelay = 1000 // Set attack delay
       mob.x = 100
       mob.y = 100
@@ -308,19 +318,19 @@ describe('Projectile System', () => {
 
       mob.updateAttack(gameState.players, 'test-room')
 
-      // Should start wind-up (strategy canExecute checks canAttack internally)
-      expect(mob.isWindingUp).toBe(true)
-      expect(mob.windUpStartTime).toBeGreaterThan(0)
+      // Should start casting (strategy canExecute checks canAttack internally)
+      expect(mob.isCasting).toBe(true)
+      expect(mob.castStartTime).toBeGreaterThan(0)
     })
 
-    test('mob should execute attack after wind-up', () => {
+    test('mob should execute attack after casting', () => {
       const strategy = new SpearThrowAttackStrategy(projectileManager, gameState)
       mob.attackStrategies = [strategy]
       mob.currentAttackStrategy = strategy
       mob.currentBehavior = 'attack'
       mob.currentAttackTarget = player.id
-      mob.isWindingUp = true
-      mob.windUpStartTime = Date.now() - 600 // 600ms ago (past 500ms wind-up)
+      mob.isCasting = true
+      mob.castStartTime = Date.now() - 600 // 600ms ago (past 500ms cast time)
       
       // Place mob in range
       mob.x = 100
@@ -332,11 +342,11 @@ describe('Projectile System', () => {
 
       // Should have created projectile
       expect(gameState.projectiles.size).toBe(1)
-      expect(mob.isWindingUp).toBe(false)
+      expect(mob.isCasting).toBe(false)
     })
 
     test('mob should prefer melee when in melee range', () => {
-      const meleeStrategy = new MeleeAttackStrategy()
+      const meleeStrategy = new MeleeAttackStrategy(projectileManager, gameState)
       const spearStrategy = new SpearThrowAttackStrategy(projectileManager, gameState)
       mob.attackStrategies = [meleeStrategy, spearStrategy]
       mob.currentBehavior = 'attack'
@@ -350,9 +360,14 @@ describe('Projectile System', () => {
 
       mob.updateAttack(gameState.players, 'test-room')
 
-      // Should use melee (instant, no wind-up)
-      expect(mob.isWindingUp).toBe(false)
-      expect(gameState.projectiles.size).toBe(0) // No projectile created
+      // Should use melee (instant, no cast time, but creates projectile for unified flow)
+      expect(mob.isCasting).toBe(false)
+      expect(gameState.projectiles.size).toBe(1) // Melee now creates projectile (unified flow)
+      
+      // Verify it's a melee projectile (short range, fast speed)
+      const projectile = Array.from(gameState.projectiles.values())[0]
+      expect(projectile.ownerId).toBe(mob.id)
+      expect(projectile.maxRange).toBeLessThanOrEqual(5) // Melee max range
     })
   })
 

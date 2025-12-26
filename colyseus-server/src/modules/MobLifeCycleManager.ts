@@ -3,11 +3,15 @@ import { Mob } from '../schemas/Mob'
 import { eventBus, RoomEventType } from '../events/EventBus'
 import { GAME_CONFIG } from '../config/gameConfig'
 import { getMobSettingsForMap, MobSpawnSettings } from '../config/mobSpawnConfig'
-import { MOB_STATS, MOB_TYPE_STATS, SPEAR_THROWER_STATS, calculateSpearMaxRange } from '../config/combatConfig'
-import { PROJECTILE_GRAVITY } from '../config/physicsConfig'
-import { MeleeAttackStrategy } from '../ai/strategies/MeleeAttackStrategy'
-import { SpearThrowAttackStrategy } from '../ai/strategies/SpearThrowAttackStrategy'
+import { MOB_STATS } from '../config/combatConfig'
 import { ProjectileManager } from './ProjectileManager'
+import {
+  selectMobType,
+  calculateMobRadius,
+  type MobTypeConfig,
+} from '../config/mobTypesConfig'
+import { createAttackStrategies } from '../config/attackStrategyFactory'
+import { MeleeAttackStrategy } from '../ai/strategies/MeleeAttackStrategy'
 
 interface SpawnContext {
   x: number
@@ -126,77 +130,31 @@ export class MobLifeCycleManager {
     return this.state.mobs.size
   }
 
-  private spawnOne(): void {
-    const { x, y } = this.pickSpawnPosition()
-
+  // Spawn a mob at a specific location (for debugging/events)
+  spawnMobAt(x: number, y: number): void {
     const rand2 = Math.random().toString(36).slice(2, 4)
     const mobId = `mob-${this.state.tick}-${rand2}`
 
-    // Simple randomized stats from config
-    const radius = 1 + 3 * Math.random()
-    const mobType = Math.random()
-    let attackRange = MOB_STATS.attackRange
-    let chaseRange = MOB_STATS.chaseRange
-    let attackStrategies: any[] = []
+    // Select mob type using weighted random selection
+    const mobTypeConfig = selectMobType()
     
-    // Calculate spear max range based on this mob's radius (visual height = radius * 2)
-    const visualHeight = radius * 2
-    const calculatedMaxRange = calculateSpearMaxRange(
-      visualHeight,
-      PROJECTILE_GRAVITY,
-      SPEAR_THROWER_STATS.spearSpeed
-    )
+    // Calculate radius for this mob
+    const radius = calculateMobRadius(mobTypeConfig)
     
-    // Determine mob type and attack strategies
-    if (mobType < 0.2) {
-      // Spear thrower (only spear strategy)
-      attackRange = calculatedMaxRange // Use calculated max range for attack decision
-      chaseRange = MOB_STATS.chaseRange
-      if (this.projectileManager) {
-        attackStrategies = [
-          new SpearThrowAttackStrategy(
-            this.projectileManager,
-            this.state,
-            {
-              damage: SPEAR_THROWER_STATS.spearDamage,
-              maxRange: calculatedMaxRange,
-            }
-          ),
-        ]
-      }
-    } else if (mobType < 0.4) {
-      // Hybrid (melee + spear, choose by distance)
-      attackRange = MOB_STATS.attackRange
-      chaseRange = MOB_STATS.chaseRange
-      if (this.projectileManager) {
-        attackStrategies = [
-          new MeleeAttackStrategy(),
-          new SpearThrowAttackStrategy(
-            this.projectileManager,
-            this.state,
-            {
-              damage: SPEAR_THROWER_STATS.spearDamage,
-              maxRange: calculatedMaxRange,
-            }
-          ),
-        ]
-      } else {
-        attackStrategies = [new MeleeAttackStrategy()]
-      }
-    } else if (mobType < 0.7) {
-      // Aggressive mobs (melee only)
-      attackRange = MOB_TYPE_STATS.aggressive.attackRange
-      chaseRange = MOB_TYPE_STATS.aggressive.chaseRange
-      attackStrategies = [new MeleeAttackStrategy()]
-    } else if (mobType < 0.9) {
-      // Defensive mobs (melee only)
-      attackRange = MOB_TYPE_STATS.defensive.attackRange
-      chaseRange = MOB_TYPE_STATS.defensive.chaseRange
-      attackStrategies = [new MeleeAttackStrategy()]
-    }
-    // Balanced mobs (0.9-1.0) use default MOB_STATS values, melee only
-    if (attackStrategies.length === 0) {
-      attackStrategies = [new MeleeAttackStrategy()]
+    // Build attack strategies based on mob type config
+    const attackStrategies = this.buildAttackStrategies(mobTypeConfig, radius)
+    
+    // Merge stats from config with defaults
+    const stats = {
+      attackRange: mobTypeConfig.stats.attackRange ?? MOB_STATS.attackRange,
+      chaseRange: mobTypeConfig.stats.chaseRange ?? MOB_STATS.chaseRange,
+      maxHealth: mobTypeConfig.stats.maxHealth ?? MOB_STATS.maxHealth,
+      attackDamage: mobTypeConfig.stats.attackDamage ?? MOB_STATS.attackDamage,
+      attackDelay: mobTypeConfig.stats.attackDelay ?? MOB_STATS.attackDelay,
+      defense: mobTypeConfig.stats.defense ?? MOB_STATS.defense,
+      armor: mobTypeConfig.stats.armor ?? MOB_STATS.armor,
+      density: mobTypeConfig.stats.density ?? MOB_STATS.density,
+      maxMoveSpeed: mobTypeConfig.stats.maxMoveSpeed ?? MOB_STATS.maxMoveSpeed,
     }
 
     const mob = new Mob({
@@ -206,10 +164,17 @@ export class MobLifeCycleManager {
       vx: 0,
       vy: 0,
       radius,
-      attackRange,
-      chaseRange,
-      maxMoveSpeed: MOB_STATS.maxMoveSpeed,
+      attackRange: stats.attackRange,
+      chaseRange: stats.chaseRange,
+      maxHealth: stats.maxHealth,
+      attackDamage: stats.attackDamage,
+      attackDelay: stats.attackDelay,
+      defense: stats.defense,
+      armor: stats.armor,
+      density: stats.density,
+      maxMoveSpeed: stats.maxMoveSpeed,
       attackStrategies,
+      mobTypeId: mobTypeConfig.id, // Store mob type ID for UI/debugging
     })
 
     this.state.mobs.set(mobId, mob)
@@ -220,6 +185,41 @@ export class MobLifeCycleManager {
     })
 
     eventBus.emitRoomEvent(this.roomId, RoomEventType.MOB_SPAWNED, { mob })
+  }
+
+  private spawnOne(): void {
+    const { x, y } = this.pickSpawnPosition()
+    this.spawnMobAt(x, y)
+  }
+
+  /**
+   * Build attack strategies for a mob type
+   */
+  private buildAttackStrategies(mobTypeConfig: MobTypeConfig, radius: number): any[] {
+    if (!this.projectileManager) {
+      console.warn(`⚠️ MobLifeCycleManager: projectileManager not set, skipping ${mobTypeConfig.name} spawn`)
+      return []
+    }
+
+    const strategies: any[] = []
+
+    // Create strategies from the new config structure
+    for (const strategyConfig of mobTypeConfig.atkStrategies) {
+      const createdStrategies = createAttackStrategies(
+        strategyConfig,
+        radius,
+        this.projectileManager,
+        this.state
+      )
+      strategies.push(...createdStrategies)
+    }
+
+    // Fallback: if no strategies were created, add melee as default
+    if (strategies.length === 0) {
+      strategies.push(new MeleeAttackStrategy(this.projectileManager, this.state))
+    }
+
+    return strategies
   }
 
   private removeExtraMobs(count: number): void {

@@ -3,7 +3,7 @@ import { Mob } from './Mob'
 import { Player } from './Player'
 import { Projectile } from './Projectile'
 import { GAME_CONFIG } from '../config/gameConfig'
-import { MobAIModule } from '../ai/MobAIModule'
+import { AIModule } from '../ai/AIModule'
 import { AIWorldInterface } from '../ai/AIWorldInterface'
 // Removed global BattleManager singleton - now using room-scoped instances
 import { eventBus, RoomEventType } from '../events/EventBus'
@@ -20,7 +20,7 @@ export class GameState extends Schema {
   @type('number') width: number = GAME_CONFIG.worldWidth
   @type('number') height: number = GAME_CONFIG.worldHeight
 
-  public aiModule: MobAIModule
+  public aiModule: AIModule
   public worldInterface: AIWorldInterface
   public battleManager: any // BattleManager instance
   public mobLifeCycleManager: any // MobLifeCycleManager instance
@@ -37,7 +37,7 @@ export class GameState extends Schema {
 
     // Initialize AI module
     this.worldInterface = new AIWorldInterface(this)
-    this.aiModule = new MobAIModule(this.worldInterface)
+    this.aiModule = new AIModule(this.worldInterface)
     this.aiModule.start()
   }
   public clearAllMobs() {
@@ -86,7 +86,10 @@ export class GameState extends Schema {
       }
       // Default ranges for balanced mobs (0.6-1.0)
 
-      // Ensure all mobs have at least melee attack strategy
+      // Fallback path: mobs need projectileManager for unified projectile flow
+      // This path should rarely be used (mobLifeCycleManager should be set in GameRoom)
+      // Skip mob creation if projectileManager not available
+      // Note: In production, mobLifeCycleManager should always be set, so this is just a safety check
       const mob = new Mob({
         id: mobId,
         x,
@@ -97,7 +100,7 @@ export class GameState extends Schema {
         attackRange,
         chaseRange,
         maxMoveSpeed: MOB_STATS.maxMoveSpeed,
-        attackStrategies: [new MeleeAttackStrategy()],
+        attackStrategies: [], // Empty - will use legacy attack behavior in Mob.updateAttack()
       })
       this.mobs.set(mobId, mob)
 
@@ -118,8 +121,19 @@ export class GameState extends Schema {
     // Spawn new players at map center for visibility
     const spawnX = this.width / 2
     const spawnY = this.height / 2
+    
+    // Player constructor now initializes PlayerSettingGameplay with these coords
     const player = new Player(sessionId, name, spawnX, spawnY)
     this.players.set(sessionId, player)
+
+    // Register player with AI module (initially in manual mode, but ready for bot mode)
+    // We give them similar behaviors to mobs for now
+    this.aiModule.registerAgent(player, {
+      behaviors: ['attack', 'chase', 'wander', 'boundaryAware', 'idle'],
+      perception: { range: 50, fov: 120 },
+      memory: { duration: 5000 },
+      aggression: 0.5 // Balanced aggression
+    })
 
     // Emit event for room to handle side effects (physics, battle registration)
     eventBus.emitRoomEvent(this.roomId, RoomEventType.PLAYER_JOINED, { player })
@@ -131,6 +145,9 @@ export class GameState extends Schema {
   removePlayer(sessionId: string) {
     const player = this.players.get(sessionId)
     if (player) {
+      // Unregister from AI module
+      this.aiModule.unregisterAgent(sessionId)
+      
       // Emit event for room to handle side effects (physics cleanup, battle unregistration)
       eventBus.emitRoomEvent(this.roomId, RoomEventType.PLAYER_LEFT, { player })
     }
@@ -149,7 +166,7 @@ export class GameState extends Schema {
       // Skip dead mobs - lifecycle manager will remove them
       if (!mob.isAlive) continue
 
-      // AI is handled by MobAIModule (already running)
+      // AI is handled by AIModule (already running)
       // Update mob: cooldowns, position, heading, and attack logic
       // Attack events are now emitted to event bus in updateAttack
       mob.update(GAME_CONFIG.tickRate, this)

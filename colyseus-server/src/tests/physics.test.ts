@@ -277,7 +277,9 @@ describe('Physics System Tests', () => {
       player.x = 50
       player.y = 50
       
-      const mob = new Mob({ id: 'test-mob', x: 58, y: 50, vx: -5, vy: 0 }) // Moving towards player
+      const mob = new Mob({ id: 'test-mob', x: 56, y: 50, vx: -5, vy: 0 }) // Moving towards player
+      mob.desiredVx = -5
+      mob.desiredVy = 0
 
       testPhysicsManager.createPlayerBody(player)
       testPhysicsManager.createMobBody(mob)

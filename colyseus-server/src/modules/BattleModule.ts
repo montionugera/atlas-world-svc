@@ -53,10 +53,6 @@ export class BattleModule implements BattleActionProcessor {
     if (!attackCheck.canAttack) {
       return null
     }
-
-    // Log attack attempt
-    console.log(`⚔️ ATTACK: ${attacker.id} attacking ${target.id}`)
-
     // Calculate damage with defense
     const damage = this.calculateDamage(attacker, target)
     console.log(`🎯 ATTACK: ${attacker.id} deals ${damage} damage to ${target.id}`)
@@ -75,6 +71,7 @@ export class BattleModule implements BattleActionProcessor {
     // Update attacker's last attack time using high-precision timing
     attacker.lastAttackTime = performance.now()
     attacker.isAttacking = true
+    attacker.attackAnimationStartTime = performance.now() // Track animation start for update loop
     attacker.lastAttackedTarget = target.id
 
     // Create attack event
@@ -88,11 +85,6 @@ export class BattleModule implements BattleActionProcessor {
 
     // Store event
     this.addAttackEvent(attackEvent)
-
-    // Reset attacking state after animation
-    setTimeout(() => {
-      attacker.isAttacking = false
-    }, 200)
 
     return attackEvent
   }
@@ -147,12 +139,16 @@ export class BattleModule implements BattleActionProcessor {
   applyDamage(target: WorldLife, damage: number): boolean {
     if (!target.isAlive || target.isInvulnerable) return false
 
-    // Log all damage (not just significant damage)
+    // Validate damage (must be non-negative)
+    const validDamage = Math.max(0, damage)
+    if (validDamage === 0) return false // No damage to apply
+
+    // Log damage
     console.log(
-      `💔 DAMAGE: ${target.id} took ${damage} damage, HP: ${target.currentHealth} → ${target.currentHealth - damage}`
+      `💔 DAMAGE: ${target.id} took ${validDamage} damage, HP: ${target.currentHealth} → ${target.currentHealth - validDamage}`
     )
 
-    target.currentHealth = Math.max(0, target.currentHealth - damage)
+    target.currentHealth = Math.max(0, target.currentHealth - validDamage)
 
     if (target.currentHealth <= 0) {
       target.die() // Entity state transition (sets diedAt timestamp for cleanup)
@@ -160,10 +156,8 @@ export class BattleModule implements BattleActionProcessor {
       return true // Entity died
     }
 
-    // Trigger invulnerability frames
-    if (damage > 0) {
+    // Trigger invulnerability frames (only for positive damage)
       this.triggerInvulnerability(target, 100)
-    }
 
     return false // Entity survived
   }
@@ -186,15 +180,10 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Trigger invulnerability frames
+  // Duration is managed by entity.update() loop - no setTimeout needed
   triggerInvulnerability(entity: WorldLife, duration: number): void {
     entity.isInvulnerable = true
     entity.invulnerabilityDuration = duration
-
-    // Use high-precision timing for invulnerability frames
-    setTimeout(() => {
-      entity.isInvulnerable = false
-      entity.invulnerabilityDuration = 0
-    }, duration)
   }
 
   // Respawn an entity
@@ -202,6 +191,7 @@ export class BattleModule implements BattleActionProcessor {
     entity.isAlive = true
     entity.currentHealth = entity.maxHealth
     entity.isAttacking = false
+    entity.attackAnimationStartTime = 0 // Reset animation timestamp
     entity.isMoving = false
     entity.vx = 0
     entity.vy = 0
@@ -325,14 +315,20 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Handle attack message from message system (wrapper around processAttack)
+  // Supports attacks without targets (for visual feedback/practice swings)
   private handleAttackMessage(
     actor: WorldLife,
     target: WorldLife | null,
     payload: AttackActionPayload
   ): boolean {
     if (!target) {
-      console.warn(`⚠️ BATTLE: Attack action requires target`)
-      return false
+      // No target - just update attack state for visual feedback
+      // This allows players to "swing" their weapon even without hitting anything
+      actor.lastAttackTime = performance.now()
+      actor.isAttacking = true
+      actor.attackAnimationStartTime = performance.now()
+      console.log(`📨 BATTLE: ${actor.id} attacking (no target) - attack animation triggered`)
+      return true
     }
 
     console.log(`📨 BATTLE: Processing attack action from ${actor.id} to ${target.id}`)

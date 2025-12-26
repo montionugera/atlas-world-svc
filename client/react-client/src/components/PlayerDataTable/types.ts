@@ -8,6 +8,9 @@ export interface PlayerDataTableProps {
   roomId: string | null
   gameState?: GameState | null
   refreshInterval?: number
+  onDebugTeleport?: (x: number, y: number) => void
+  onDebugSpawnMob?: (x: number, y: number) => void
+  updateCount?: number
 }
 
 /**

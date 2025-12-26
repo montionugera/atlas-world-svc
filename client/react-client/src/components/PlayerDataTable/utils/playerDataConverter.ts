@@ -28,6 +28,14 @@ export function playerFromGameState(gamePlayer: any): PlayerInstance {
     density: gamePlayer.density ?? 1,
     isAttacking: gamePlayer.isAttacking ?? false,
     lastAttackedTarget: gamePlayer.lastAttackedTarget || '',
+    // AI & Physics fields
+    isBotMode: gamePlayer.isBotMode ?? false,
+    currentBehavior: gamePlayer.currentBehavior || 'idle',
+    currentAttackTarget: gamePlayer.currentAttackTarget || '',
+    x: gamePlayer.x ?? 0,
+    y: gamePlayer.y ?? 0,
+    vx: gamePlayer.vx ?? 0,
+    vy: gamePlayer.vy ?? 0,
   }
 }
 

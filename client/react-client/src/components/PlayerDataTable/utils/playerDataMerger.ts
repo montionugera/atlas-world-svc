@@ -40,6 +40,11 @@ export function mergePlayerData(
     // Type assertion: gamePlayer from Colyseus may have more properties than the typed interface
     const playerData = gamePlayer as any
     
+    // DEBUG: Log first player's position occasionally
+    if (id.startsWith('react-player')) {
+       console.log(`[Merger] Player ${id} pos: ${playerData.x}, ${playerData.y} vel: ${playerData.vx}, ${playerData.vy}`)
+    }
+
     if (existing) {
       // Merge: keep metadata, update with real-time fields from gameState
       merged.set(id, {
@@ -49,6 +54,14 @@ export function mergePlayerData(
         isAlive: playerData.isAlive ?? existing.isAlive,
         isAttacking: playerData.isAttacking ?? existing.isAttacking,
         lastAttackedTarget: playerData.lastAttackedTarget || existing.lastAttackedTarget,
+        // AI & Physics fields
+        isBotMode: playerData.isBotMode ?? existing.isBotMode,
+        currentBehavior: playerData.currentBehavior ?? existing.currentBehavior,
+        currentAttackTarget: playerData.currentAttackTarget ?? existing.currentAttackTarget,
+        x: playerData.x ?? existing.x,
+        y: playerData.y ?? existing.y,
+        vx: playerData.vx ?? existing.vx,
+        vy: playerData.vy ?? existing.vy,
       })
     } else {
       // New player in gameState but not in metadata yet - convert from gameState

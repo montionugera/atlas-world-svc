@@ -142,8 +142,11 @@ export class PlanckPhysicsManager {
 
     // Player body creation debug disabled by default
 
+    // Use player's actual radius (must not exceed 1.3)
+    const playerRadius = Math.min(player.radius, 1.3)
+    
     body.createFixture({
-      shape: planck.Circle(PHYSICS_CONFIG.entities.player.radius),
+      shape: planck.Circle(playerRadius),
       density: PHYSICS_CONFIG.entities.player.mass,
       friction: PHYSICS_CONFIG.entities.player.friction,
       restitution: PHYSICS_CONFIG.entities.player.restitution,
@@ -224,15 +227,13 @@ export class PlanckPhysicsManager {
     return body
   }
 
-  // Update projectile physics (apply gravity, cap speed, track distance)
+  // Update projectile physics (cap speed, track distance)
+  // Note: No gravity applied - projectiles travel in straight lines in top-down 2D view
   updateProjectile(projectile: Projectile, deltaTime: number, gravity: number = PROJECTILE_GRAVITY, maxSpeed: number = 36): void {
     if (projectile.isStuck) return // Don't update stuck projectiles
 
     const body = this.getBody(projectile.id)
     if (!body) return
-
-    // Apply gravity (simulated in 2D top-down)
-    projectile.vy += gravity * (deltaTime / 1000) // Convert ms to seconds
 
     // Cap max speed (configurable)
     const speed = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy)
@@ -350,7 +351,19 @@ export class PlanckPhysicsManager {
   // Process player input and apply movement forces
   private processPlayerInput(players: Map<string, any>) {
     players.forEach(player => {
-      const movementInputMagnitude = player.input.getMovementMagnitude()
+      // Skip dead players - they cannot move
+      if (!player.isAlive) {
+        // Stop any existing velocity for dead players
+        const body = this.getBody(player.id)
+        if (body) {
+          body.setLinearVelocity(planck.Vec2(0, 0))
+        }
+        // Clear desired velocity
+        player.desiredVx = 0
+        player.desiredVy = 0
+        return
+      }
+
       const body = this.getBody(player.id)
 
       if (body) {
@@ -358,22 +371,37 @@ export class PlanckPhysicsManager {
         const bodyMass = body.getMass()
         let accumulatedForceX = 0,
           accumulatedForceY = 0
+          
+        // Determine desired velocity based on mode
+        let desiredVx = 0
+        let desiredVy = 0
+        let hasInput = false
+        
+        if (player.isBotMode) {
+          // In Bot Mode, use AI-determined desired velocity
+          desiredVx = player.desiredVx || 0
+          desiredVy = player.desiredVy || 0
+          // Consider it "input" if desired velocity is non-zero
+          hasInput = Math.abs(desiredVx) > 0.01 || Math.abs(desiredVy) > 0.01
+        } else {
+          // In Manual Mode, use player input
+          const movementInputMagnitude = player.input.getMovementMagnitude()
+          if (movementInputMagnitude > 0) {
+            const maxLinearSpeed = player.maxLinearSpeed
+            const inputDir = player.input.getNormalizedMovement()
+            desiredVx = inputDir.x * maxLinearSpeed
+            desiredVy = inputDir.y * maxLinearSpeed
+            hasInput = true
+            
+            // Update player's desired velocity property for consistency/debugging
+            player.desiredVx = desiredVx
+            player.desiredVy = desiredVy
+          }
+        }
 
-        if (movementInputMagnitude > 0) {
-          // Player is pressing keys - apply movement force
-          const maxLinearSpeed = player.maxLinearSpeed
+        if (hasInput) {
+          // Apply movement force toward desired velocity
           const accelerationGain = 15
-
-          // Get normalized movement direction
-          const inputDir = player.input.getNormalizedMovement()
-
-          // Desired velocity (capped at max speed)
-          const desiredVx = inputDir.x * maxLinearSpeed
-          const desiredVy = inputDir.y * maxLinearSpeed
-
-          // Expose on player for debugging/telemetry
-          player.desiredVx = desiredVx
-          player.desiredVy = desiredVy
 
           // Calculate force needed: F = m * a toward desired velocity
           accumulatedForceX = bodyMass * accelerationGain * (desiredVx - bodyVelocity.x)
@@ -383,6 +411,12 @@ export class PlanckPhysicsManager {
           const surfaceFriction = 0.95 // Default friction
           accumulatedForceX = -bodyVelocity.x * bodyMass * surfaceFriction
           accumulatedForceY = -bodyVelocity.y * bodyMass * surfaceFriction
+          
+          // Clear desired velocity property if no input
+          if (!player.isBotMode) {
+            player.desiredVx = 0
+            player.desiredVy = 0
+          }
         }
 
         this.applyForceToBody(player.id, { x: accumulatedForceX, y: accumulatedForceY })

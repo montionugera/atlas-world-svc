@@ -12,7 +12,7 @@ export const CANVAS_CONFIG = {
 
 export const RENDER_CONFIG = {
   mobRadius: 4,
-  playerRadius: 4,
+  playerRadius: 1.3, // Player radius must not exceed 1.3 (matches server config)
   velocityVectorScale: 5,
   hudBackground: 'rgba(0, 0, 0, 0.45)',
   hudTextColor: '#fff',

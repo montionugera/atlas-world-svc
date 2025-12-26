@@ -6,13 +6,15 @@ import { BattleManager } from '../modules/BattleManager'
 import { eventBus, RoomEventType, BattleAttackData } from '../events/EventBus'
 import { MOB_STATS } from '../config/combatConfig'
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
+import { IAgent } from '../ai/interfaces/IAgent'
 // Removed global BattleManager singleton - now using room-scoped instances
 
-export class Mob extends WorldLife {
+export class Mob extends WorldLife implements IAgent {
   @type('string') tag: string = 'idle' // Current behavior tag for debugging/UI // Send radius to client
   @type('string') currentBehavior: string = 'idle'
   @type('number') behaviorLockedUntil: number = 0 // epoch ms; 0 means unlocked
-  @type('boolean') isWindingUp: boolean = false // Synced: wind-up state for client animation
+  @type('boolean') isCasting: boolean = false // Synced: casting state for client animation
+  @type('string') mobTypeId: string = '' // Mob type identifier (synced to clients for UI/debugging)
   // Server-only fields (not synced to clients)
   mass: number = 1 // cached mass for steering calculations
   desiredVx: number = 0
@@ -32,7 +34,7 @@ export class Mob extends WorldLife {
   // Attack strategy system (server-only)
   attackStrategies: AttackStrategy[] = []
   currentAttackStrategy: AttackStrategy | null = null
-  windUpStartTime: number = 0
+  castStartTime: number = 0
   
   // Debug logging throttling (server-only)
   lastCooldownState: boolean = false // Track cooldown state to reduce log spam
@@ -100,6 +102,7 @@ export class Mob extends WorldLife {
     density?: number
     maxMoveSpeed?: number
     attackStrategies?: AttackStrategy[]
+    mobTypeId?: string
   }) {
     super({
       id: options.id,
@@ -125,6 +128,11 @@ export class Mob extends WorldLife {
     }
     if (options.maxMoveSpeed !== undefined) {
       this.maxMoveSpeed = options.maxMoveSpeed
+    }
+    
+    // Set mob type ID
+    if (options.mobTypeId !== undefined) {
+      this.mobTypeId = options.mobTypeId
     }
     
     // Initialize attack strategies (default to melee if none provided)
@@ -159,226 +167,55 @@ export class Mob extends WorldLife {
     return { attacked: false }
   }
 
-  // Simple behavior: just distance-based with cooldown
-  decideBehavior(env: {
-    nearestPlayer?: { x: number; y: number; id: string } | null
-    distanceToNearestPlayer?: number
-    nearBoundary?: boolean
-    worldBounds?: { width: number; height: number }
-  }) {
-    const now = performance.now()
-
-    // Simple cooldown to prevent rapid switching
-    if (this.behaviorLockedUntil && now < this.behaviorLockedUntil) {
-      return this.currentBehavior
-    }
-
-    const distance = env.distanceToNearestPlayer ?? Infinity
+  /**
+   * Apply behavior decision from AI module (state transition)
+   * AI module decides, Mob applies - separation of concerns
+   */
+  applyBehaviorDecision(decision: {
+    behavior: string
+    behaviorLockedUntil: number
+    currentAttackTarget: string
+    currentChaseTarget: string
+    desiredVelocity?: { x: number; y: number }
+  }): void {
     const oldBehavior = this.currentBehavior
 
-    // Check boundary with buffer + radius to prevent wall hitting
-    const boundaryBuffer = 5 // Buffer distance from wall
-    const worldWidth = env.worldBounds?.width ?? 400
-    const worldHeight = env.worldBounds?.height ?? 300
-    const effectiveThreshold = boundaryBuffer + this.radius // Account for mob size
-    
-    // Use environment flag if provided, otherwise calculate from position
-    const veryNearBoundary = env.nearBoundary ?? (
-      this.x < effectiveThreshold ||
-      this.x > worldWidth - effectiveThreshold ||
-      this.y < effectiveThreshold ||
-      this.y > worldHeight - effectiveThreshold
-    )
-
-    // Determine effective attack range
-    // For ranged attacks (spears), use maxRange directly without adding radii
-    // For melee attacks, add radii for collision-based range
-    const playerRadius = 4 // Default player radius (from Player.ts)
-    let effectiveAttackRange: number
-    
-    // Check if mob has spear throw strategy (ranged attack)
-    const spearStrategy = this.attackStrategies.find(s => s.name === 'spearThrow')
-    if (spearStrategy && (spearStrategy as any).maxRange) {
-      // Ranged attack: use maxRange directly (no radius addition needed)
-      effectiveAttackRange = (spearStrategy as any).maxRange
-    } else {
-      // Melee attack: add radii for collision-based range
-      effectiveAttackRange = this.attackRange + this.radius + playerRadius
-    }
-
-    // Debug: Log distance and attack range occasionally
-    if (Math.random() < 0.01) {
-      // 1% chance
-      console.log(
-        `🎯 MOB ${this.id}: distance=${distance.toFixed(2)}, attackRange=${this.attackRange}, mobRadius=${this.radius}, playerRadius=${playerRadius}, effectiveRange=${effectiveAttackRange.toFixed(2)}, hasSpear=${!!spearStrategy}`
-      )
-    }
-
-    if (veryNearBoundary) {
-      // Very close to boundary: Avoid boundary behavior (highest priority)
-      this.currentBehavior = 'avoidBoundary'
-      this.behaviorLockedUntil = now + 200 // Short lock time
-      this.currentAttackTarget = ''
-      this.currentChaseTarget = ''
-    } else if (distance <= effectiveAttackRange) {
-      // Very close: Attack
-      this.currentBehavior = 'attack'
-      this.behaviorLockedUntil = now + 500 // 0.5 second lock
-      if (env.nearestPlayer) {
-        this.currentAttackTarget = env.nearestPlayer.id || 'unknown'
-      }
-      this.currentChaseTarget = ''
-    } else if (distance <= 25) {
-      // Medium: Chase
-      this.currentBehavior = 'chase'
-      this.behaviorLockedUntil = now // not lock
-      if (env.nearestPlayer) {
-        this.currentChaseTarget = env.nearestPlayer.id || 'unknown'
-      }
-      this.currentAttackTarget = ''
-    } else {
-      // Far: Wander
-      this.currentBehavior = 'wander'
-      this.currentAttackTarget = ''
-      this.currentChaseTarget = ''
-    }
-
+    // Apply state transition
+    this.currentBehavior = decision.behavior
+    this.behaviorLockedUntil = decision.behaviorLockedUntil
+    this.currentAttackTarget = decision.currentAttackTarget
+    this.currentChaseTarget = decision.currentChaseTarget
     this.tag = this.currentBehavior
+
+    // Apply desired velocity from decision
+    if (decision.desiredVelocity) {
+      this.desiredVx = decision.desiredVelocity.x
+      this.desiredVy = decision.desiredVelocity.y
+    } else {
+      this.desiredVx = 0
+      this.desiredVy = 0
+    }
 
     // Log only when behavior actually changes
     if (oldBehavior !== this.currentBehavior) {
       console.log(`🔄 BEHAVIOR: ${this.id} ${oldBehavior} → ${this.currentBehavior.toUpperCase()}`)
     }
-
-    return this.currentBehavior
   }
 
-  // Compute desired velocity based on currentBehavior
-  computeDesiredVelocity(env: {
-    nearestPlayer?: { x: number; y: number; id: string; radius: number } | null
-    distanceToNearestPlayer?: number
-    worldBounds?: { width: number; height: number }
-  }): { x: number; y: number } {
-    const maxSpeed = this.maxMoveSpeed
+  // Helper: Calculate movement direction toward target
+  private calculateDirectionToTarget(target: { x: number; y: number }): { x: number; y: number } {
+    const dx = target.x - this.x
+    const dy = target.y - this.y
+    const distance = Math.hypot(dx, dy) || 1
+    return { x: dx / distance, y: dy / distance }
+  }
 
-    // Avoid boundary behavior: move away from nearest boundary
-    if (this.currentBehavior === 'avoidBoundary') {
-      const worldWidth = env.worldBounds?.width ?? 400
-      const worldHeight = env.worldBounds?.height ?? 300
-
-      // Calculate avoidance force based on distance to each boundary
-      let avoidX = 0,
-        avoidY = 0
-      const boundaryBuffer = 1 // Buffer distance from wall
-      const effectiveThreshold = boundaryBuffer + this.radius // Account for mob size
-
-      // Avoid left boundary
-      if (this.x < effectiveThreshold) {
-        avoidX += (effectiveThreshold - this.x) / effectiveThreshold
-      }
-
-      // Avoid right boundary
-      if (this.x > worldWidth - effectiveThreshold) {
-        avoidX -= (this.x - (worldWidth - effectiveThreshold)) / effectiveThreshold
-      }
-
-      // Avoid top boundary
-      if (this.y < effectiveThreshold) {
-        avoidY += (effectiveThreshold - this.y) / effectiveThreshold
-      }
-
-      // Avoid bottom boundary
-      if (this.y > worldHeight - effectiveThreshold) {
-        avoidY -= (this.y - (worldHeight - effectiveThreshold)) / effectiveThreshold
-      }
-
-      // Normalize and apply speed
-      const magnitude = Math.hypot(avoidX, avoidY)
-      if (magnitude > 0) {
-        const speed = Math.min(maxSpeed) // Gentle speed for avoidance
-        return {
-          x: (avoidX / magnitude) * speed,
-          y: (avoidY / magnitude) * speed,
-        }
-      }
-
-      // If no clear direction, move toward center
-      const centerX = worldWidth / 2
-      const centerY = worldHeight / 2
-      const dx = centerX - this.x
-      const dy = centerY - this.y
-      const distance = Math.hypot(dx, dy)
-      if (distance > 0) {
-        const speed = Math.min(maxSpeed)
-        return { x: (dx / distance) * speed, y: (dy / distance) * speed }
-      }
-
-      return { x: 0, y: 0 }
-    }
-
-    // Attack behavior: stop moving (stand and attack)
-    if (this.currentBehavior === 'attack') {
-      // Debug: Log when mob is in attack behavior
-      if (Math.random() < 0.01) {
-        // 1% chance
-        console.log(`🗡️ MOB ${this.id} in ATTACK behavior - should be stopped`)
-      }
-      return { x: 0, y: 0 }
-    }
-
-    // Chase behavior: move toward player
-    if (this.currentBehavior === 'chase') {
-      const target = env.nearestPlayer
-      if (target) {
-        const dx = target.x - this.x
-        const dy = target.y - this.y
-        const rawDistance = Math.hypot(dx, dy) || 1
-        const effectiveDistance = rawDistance - this.radius - target.radius
-        const direction = { x: dx / rawDistance, y: dy / rawDistance }
-
-        // Calculate stopping distance: v² = 2as, so s = v²/(2a)
-        // With acceleration 5 and time 50ms (0.05s), max speed = a * t = 5 * 0.05 = 0.25
-        const maxStoppingSpeed = 3 // Maximum speed that can stop in 50ms with accel 5
-
-        // If distance to target (minus mob radius) > 8, use normal chase speed
-        if (effectiveDistance > 3) {
-          const speed = Math.min(maxSpeed, this.maxMoveSpeed) // Respect mob cap
-          return { x: direction.x * speed, y: direction.y * speed }
-        } else {
-          // Close to target: use speed that allows stopping in 50ms
-          const speed = Math.min(maxStoppingSpeed, this.maxMoveSpeed)
-          return { x: direction.x * speed, y: direction.y * speed }
-        }
-      }
-    }
-
-    // Wander behavior: move toward wander target
-    if (this.currentBehavior === 'wander') {
-      const now = performance.now()
-      const wanderCooldown = 8000 // 5 seconds
-
-      // Generate new wander target if needed
-      if (
-        now - this.lastWanderTargetTime > wanderCooldown ||
-        Math.hypot(this.wanderTargetX - this.x, this.wanderTargetY - this.y) < 5
-      ) {
-        this.generateWanderTarget()
-        this.lastWanderTargetTime = now
-      }
-
-      // Move toward wander target
-      const dx = this.wanderTargetX - this.x
-      const dy = this.wanderTargetY - this.y
-      const distance = Math.hypot(dx, dy)
-
-      if (distance > 0.1) {
-        const speed = Math.min(maxSpeed * 0.6, this.maxMoveSpeed) // Slower wander speed capped by mob
-        return { x: (dx / distance) * speed, y: (dy / distance) * speed }
-      }
-    }
-
-    // Fallback: keep current velocity with slight damping
-    return { x: this.vx * 0.8, y: this.vy * 0.8 }
+  // Helper: Calculate movement direction away from target
+  private calculateDirectionAwayFromTarget(target: { x: number; y: number }): { x: number; y: number } {
+    const dx = this.x - target.x
+    const dy = this.y - target.y
+    const distance = Math.hypot(dx, dy) || 1
+    return { x: dx / distance, y: dy / distance }
   }
 
   // Compute steering impulse to move current physics velocity toward desired velocity
@@ -476,8 +313,8 @@ export class Mob extends WorldLife {
       // Target is dead or doesn't exist, clear attack target
       this.currentAttackTarget = ''
       this.currentBehavior = 'wander' // Fallback to wander
-      this.isWindingUp = false
-      this.windUpStartTime = 0
+      this.isCasting = false
+      this.castStartTime = 0
       return { attacked: false }
     }
 
@@ -526,167 +363,198 @@ export class Mob extends WorldLife {
     return { attacked: true, targetId: targetPlayer.id, eventEmitted: true }
   }
 
+  // Helper: Calculate melee effective range (includes mob and target radii)
+  private calculateMeleeRange(target: Player): number {
+    return this.attackRange + this.radius + target.radius
+  }
+
+  // Helper: Get strategy's effective range
+  private getStrategyRange(strategy: AttackStrategy, target: Player): number {
+    if (strategy.name === 'melee') {
+      return this.calculateMeleeRange(target)
+    }
+    return (strategy as any).maxRange || this.attackRange
+  }
+
+  // Helper: Sort strategies by priority (melee first, then by range)
+  private sortStrategiesByPriority(strategies: AttackStrategy[], target: Player): AttackStrategy[] {
+    return [...strategies].sort((a, b) => {
+      // Instant attacks (0 cast time) have priority
+      const aIsInstant = a.getCastTime() === 0
+      const bIsInstant = b.getCastTime() === 0
+      if (aIsInstant && !bIsInstant) return -1
+      if (!aIsInstant && bIsInstant) return 1
+      
+      // If same cast time, prefer shorter range (melee typically shorter)
+      const aRange = this.getStrategyRange(a, target)
+      const bRange = this.getStrategyRange(b, target)
+      return aRange - bRange
+    })
+  }
+
+  // Helper: Handle casting phase completion
+  private handleCastingComplete(
+    targetPlayer: Player,
+    roomId: string,
+    currentTimeMs: number
+  ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } | null {
+    if (!this.currentAttackStrategy) return null
+
+    console.log(`🎯 DEBUG: ${this.id} casting complete, executing ${this.currentAttackStrategy.name} attack`)
+    const attackExecuted = this.currentAttackStrategy.execute(this, targetPlayer, roomId)
+    
+    if (attackExecuted) {
+      this.isCasting = false
+      this.castStartTime = 0
+      this.currentAttackStrategy = null
+      this.lastAttackTime = performance.now()
+      this.isAttacking = true
+      this.attackAnimationStartTime = performance.now()
+      return { attacked: true, targetId: targetPlayer.id, eventEmitted: true }
+    } else {
+      console.log(`❌ DEBUG: ${this.id} strategy.execute() returned false`)
+      this.isCasting = false
+      this.castStartTime = 0
+      this.currentAttackStrategy = null
+      return null
+    }
+  }
+
+  // Helper: Check if casting is complete
+  private checkCastingPhase(
+    targetPlayer: Player,
+    roomId: string
+  ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } | null {
+    if (!this.isCasting || this.castStartTime === 0) return null
+
+    const currentTimeMs = Date.now()
+    const castDurationMs = this.currentAttackStrategy?.getCastTime() || 0
+    const castElapsedMs = currentTimeMs - this.castStartTime
+
+    if (castElapsedMs >= castDurationMs) {
+      return this.handleCastingComplete(targetPlayer, roomId, currentTimeMs)
+    }
+
+    // Still casting
+    return { attacked: false }
+  }
+
+  // State transition: Start casting for a strategy
+  private startCasting(strategy: AttackStrategy, currentTimeMs: number): void {
+    const castTime = strategy.getCastTime()
+    console.log(`⏳ DEBUG: ${this.id} starting casting for ${strategy.name} (${castTime}ms)`)
+    this.isCasting = true
+    this.castStartTime = currentTimeMs
+    this.currentAttackStrategy = strategy
+  }
+
+  // State transition: Start attacking (instant attack executed)
+  private startAttacking(targetId?: string, currentTimeMs?: number): void {
+    console.log(`⚡ DEBUG: ${this.id} executing instant attack`)
+    this.isAttacking = true
+    this.attackAnimationStartTime = performance.now()
+    this.lastAttackTime = performance.now() // Update cooldown timer for instant attacks
+    this.lastCooldownState = false
+    if (currentTimeMs !== undefined) {
+      this.lastDebugLogTime = currentTimeMs
+    }
+  }
+
+  // Helper: Check if target is out of attack range
+  private checkTargetOutOfRange(targetPlayer: Player): boolean {
+    const distance = this.getDistanceTo(targetPlayer)
+    const maxRange = Math.max(
+      ...this.attackStrategies.map(s => this.getStrategyRange(s, targetPlayer))
+    )
+    
+    if (distance > maxRange) {
+      console.log(`🎯 DEBUG: ${this.id} target out of range (${distance.toFixed(2)} > ${maxRange.toFixed(2)}), switching to chase`)
+      this.currentBehavior = 'chase'
+      this.currentChaseTarget = this.currentAttackTarget
+      this.currentAttackTarget = ''
+      this.isCasting = false
+      this.castStartTime = 0
+      this.lastCooldownState = false
+      return true
+    }
+    return false
+  }
+
   // Update attack using attack strategies
   private updateAttackWithStrategies(
     targetPlayer: Player,
     roomId: string
   ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
-    const currentTimeMs = Date.now() // For wind-up timing (milliseconds since epoch)
-    const currentTimePerf = performance.now() // For attack cooldown timing (high precision)
+    const currentTimeMs = Date.now()
+    const currentTimePerf = performance.now()
 
-    // Check if we're in wind-up phase
-    if (this.isWindingUp && this.windUpStartTime > 0) {
-      const windUpDurationMs = this.currentAttackStrategy?.getWindUpTime() || 0
-      const windUpElapsedMs = currentTimeMs - this.windUpStartTime
+    // Check casting phase first
+    const castingResult = this.checkCastingPhase(targetPlayer, roomId)
+    if (castingResult !== null) {
+      return castingResult
+    }
 
-      if (windUpElapsedMs >= windUpDurationMs) {
-        // Wind-up complete, execute attack
-        this.isWindingUp = false
-        if (this.currentAttackStrategy) {
-          console.log(`🎯 DEBUG: ${this.id} wind-up complete, executing ${this.currentAttackStrategy.name} attack`)
-          const attackExecuted = this.currentAttackStrategy.execute(this, targetPlayer, roomId)
-          if (attackExecuted) {
-            this.lastAttackTime = performance.now()
-            this.isAttacking = true
-            // Reset attacking state after animation
-            setTimeout(() => {
-              this.isAttacking = false
-            }, 200)
-            return { attacked: true, targetId: targetPlayer.id, eventEmitted: true }
-          } else {
-            console.log(`❌ DEBUG: ${this.id} strategy.execute() returned false`)
-          }
-        }
-        this.windUpStartTime = 0
-        this.currentAttackStrategy = null
+    // Sort strategies by priority
+    const strategiesByPriority = this.sortStrategiesByPriority(this.attackStrategies, targetPlayer)
+    
+    // Check cooldown and prepare debug logging
+    const isCooldownReady = this.canAttack()
+    const cooldownStateChanged = isCooldownReady !== this.lastCooldownState
+    const shouldLogDebug = cooldownStateChanged && isCooldownReady
+    
+    if (shouldLogDebug) {
+      const cooldownElapsed = currentTimePerf - this.lastAttackTime
+      const distance = this.getDistanceTo(targetPlayer)
+      console.log(`🔍 DEBUG: ${this.id} cooldown ready, checking ${strategiesByPriority.length} strategies`)
+      console.log(`  📊 Cooldown: elapsed=${cooldownElapsed.toFixed(0)}ms, delay=${this.attackDelay}ms`)
+      console.log(`  📏 Distance: ${distance.toFixed(2)} units to target`)
+      this.lastCooldownState = isCooldownReady
+    }
+    
+    // Try each strategy in priority order
+    for (const strategy of strategiesByPriority) {
+      const result = strategy.attemptExecute(this, targetPlayer, roomId)
+      
+      if (!result.canExecute) {
+        continue // Try next strategy
+      }
+
+      // Log strategy details if debug logging is enabled
+      if (shouldLogDebug) {
+        const distance = this.getDistanceTo(targetPlayer)
+        const range = this.getStrategyRange(strategy, targetPlayer)
+        const castTime = strategy.getCastTime()
+        console.log(`  🔍 Strategy "${strategy.name}": canExecute=true, distance=${distance.toFixed(2)}, effectiveRange=${range.toFixed(2)}, castTime=${castTime}ms`)
+      }
+
+      // Apply state transitions based on strategy result
+      if (result.needsCasting) {
+        this.startCasting(strategy, currentTimeMs)
+        return { attacked: false }
+      } else if (result.executed) {
+        this.startAttacking(result.targetId, currentTimeMs)
+        return { attacked: true, targetId: result.targetId, eventEmitted: true }
       } else {
-        // Still in wind-up
+        // Strategy can execute but didn't (shouldn't happen, but handle gracefully)
+        console.log(`❌ DEBUG: ${this.id} ${strategy.name}.attemptExecute() returned canExecute=true but executed=false`)
         return { attacked: false }
       }
     }
 
-    // Find first strategy that can execute
-    // Sort strategies by priority: melee first (shorter range), then ranged
-    const strategiesByPriority = [...this.attackStrategies].sort((strategyA, strategyB) => {
-      // Melee strategies (0 wind-up) should be checked first
-      if (strategyA.getWindUpTime() === 0 && strategyB.getWindUpTime() > 0) return -1
-      if (strategyA.getWindUpTime() > 0 && strategyB.getWindUpTime() === 0) return 1
-      // If both same wind-up, prefer shorter range (melee typically has shorter range)
-      const strategyARange = strategyA.name === 'melee' 
-        ? this.attackRange + this.radius + targetPlayer.radius
-        : (strategyA as any).maxRange || this.attackRange
-      const strategyBRange = strategyB.name === 'melee'
-        ? this.attackRange + this.radius + targetPlayer.radius
-        : (strategyB as any).maxRange || this.attackRange
-      return strategyARange - strategyBRange
-    })
-    
-    // Check attack cooldown status
-    const isCooldownReady = this.canAttack()
-    const cooldownElapsedMs = currentTimePerf - this.lastAttackTime
-    const distanceToTargetPlayer = this.getDistanceTo(targetPlayer)
-    
-    // Only log when cooldown becomes ready (state change from false to true) or when attack is attempted
-    const cooldownStateChanged = isCooldownReady !== this.lastCooldownState
-    const shouldLogDebug = cooldownStateChanged && isCooldownReady // Only log when cooldown becomes ready
-    
-    if (shouldLogDebug) {
-      console.log(`🔍 DEBUG: ${this.id} cooldown ready, checking ${strategiesByPriority.length} strategies`)
-      console.log(`  📊 Cooldown: elapsed=${cooldownElapsedMs.toFixed(0)}ms, delay=${this.attackDelay}ms`)
-      console.log(`  📏 Distance: ${distanceToTargetPlayer.toFixed(2)} units to target`)
-      this.lastCooldownState = isCooldownReady
-    }
-    
-    for (const strategy of strategiesByPriority) {
-      const strategyCanExecute = strategy.canExecute(this, targetPlayer)
-      const strategyDistanceToTargetPlayer = this.getDistanceTo(targetPlayer)
-      const strategyEffectiveRange = strategy.name === 'melee' 
-        ? this.attackRange + this.radius + targetPlayer.radius
-        : (strategy as any).maxRange || this.attackRange
-      const strategyWindUpMs = strategy.getWindUpTime()
-      
-      // Only log strategy details when attack is actually attempted
-      if (strategyCanExecute && shouldLogDebug) {
-        console.log(`  🔍 Strategy "${strategy.name}": canExecute=true, distance=${strategyDistanceToTargetPlayer.toFixed(2)}, effectiveRange=${strategyEffectiveRange.toFixed(2)}, windUp=${strategyWindUpMs}ms`)
-      }
-      
-      if (strategyCanExecute) {
-        if (strategyWindUpMs > 0) {
-          // Start wind-up
-          console.log(`⏳ DEBUG: ${this.id} starting wind-up for ${strategy.name} (${strategyWindUpMs}ms)`)
-          this.isWindingUp = true
-          this.windUpStartTime = currentTimeMs
-          this.currentAttackStrategy = strategy
-          return { attacked: false }
-        } else {
-          // Instant attack
-          console.log(`⚡ DEBUG: ${this.id} executing instant ${strategy.name} attack`)
-          const attackExecuted = strategy.execute(this, targetPlayer, roomId)
-          if (attackExecuted) {
-            // Don't set lastAttackTime here - BattleModule will set it after validating the attack
-            // Setting it here causes canAttack() to fail in BattleModule.processAttack()
-            this.isAttacking = true
-            this.lastCooldownState = false // Cooldown will start after BattleModule processes attack
-            this.lastDebugLogTime = currentTimeMs // Reset debug log timer
-            setTimeout(() => {
-              this.isAttacking = false
-            }, 200)
-            return { attacked: true, targetId: targetPlayer.id, eventEmitted: true }
-          } else {
-            console.log(`❌ DEBUG: ${this.id} ${strategy.name}.execute() returned false`)
-          }
-        }
-      }
-    }
-
     // No strategy can execute - check if target out of range
-    const distanceToTargetForBehaviorCheck = this.getDistanceTo(targetPlayer)
-    const maxAttackRange = Math.max(...this.attackStrategies.map(strategy => {
-      if (strategy.name === 'spearThrow') {
-        return (strategy as any).maxRange || this.attackRange
-      }
-      return this.attackRange + this.radius + targetPlayer.radius
-    }))
-
-    if (distanceToTargetForBehaviorCheck > maxAttackRange) {
-      // Target moved out of range, switch to chase behavior
-      console.log(`🎯 DEBUG: ${this.id} target out of range (${distanceToTargetForBehaviorCheck.toFixed(2)} > ${maxAttackRange.toFixed(2)}), switching to chase`)
-      this.currentBehavior = 'chase'
-      this.currentChaseTarget = this.currentAttackTarget
-      this.currentAttackTarget = ''
-      this.isWindingUp = false
-      this.windUpStartTime = 0
-      this.lastCooldownState = false // Reset cooldown state tracking
+    if (this.checkTargetOutOfRange(targetPlayer)) {
       return { attacked: false }
     }
 
-    // Only log warning when cooldown becomes ready (not every tick)
+    // Target in range but no strategy can execute (e.g., cooldown not ready)
     if (shouldLogDebug) {
       console.log(`⚠️ DEBUG: ${this.id} no strategy can execute, but target is in range`)
     }
     
-    // Update cooldown state tracking even if we don't log
     if (cooldownStateChanged) {
       this.lastCooldownState = isCooldownReady
     }
     
     return { attacked: false }
-  }
-
-  // Generate a random wander target
-  private generateWanderTarget(): void {
-    const wanderDistance = 20
-    const wanderJitter = 10
-
-    // Generate random point around current position
-    const angle = Math.random() * Math.PI * 2
-    const distance = wanderDistance + Math.random() * wanderJitter
-
-    this.wanderTargetX = this.x + Math.cos(angle) * distance
-    this.wanderTargetY = this.y + Math.sin(angle) * distance
-
-    // Keep within world bounds (assuming 400x300 world)
-    this.wanderTargetX = Math.max(20, Math.min(380, this.wanderTargetX))
-    this.wanderTargetY = Math.max(20, Math.min(280, this.wanderTargetY))
   }
 }

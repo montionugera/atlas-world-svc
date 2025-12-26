@@ -41,6 +41,7 @@ export abstract class WorldLife extends WorldObject {
   isInvulnerable: boolean = false
   invulnerabilityDuration: number = 0
   diedAt: number = 0 // Timestamp when entity died (0 = alive or not set)
+  attackAnimationStartTime: number = 0 // Timestamp when attack animation started (0 = not attacking)
 
   // Calculate mass from radius and density (mass = volume * density)
   getMass(): number {
@@ -93,32 +94,18 @@ export abstract class WorldLife extends WorldObject {
     this.lastAttackTime = performance.now() - this.attackDelay - 1 // Allow immediate first attack
   }
 
-  // Health management with defense calculations
+  // Health management - simple health setter
+  // NOTE: Defense calculations and invulnerability are handled by BattleModule.applyDamage()
+  // This method is kept for internal use only. All external damage should go through BattleModule.
   takeDamage(damage: number, attacker?: WorldLife): boolean {
     if (!this.isAlive || this.isInvulnerable) return false
 
-    // Calculate damage reduction from defense and armor
-    const totalDefense = this.defense + this.armor
-    const damageReduction = Math.min(totalDefense, damage * 0.8) // Cap at 80% reduction
-    const finalDamage = Math.max(1, damage - damageReduction) // Minimum 1 damage
-
-    // Log damage only for significant health changes
-    if (finalDamage >= 5 || this.currentHealth - finalDamage <= 20) {
-      console.log(
-        `💔 DAMAGE: ${this.id} took ${finalDamage} damage, HP: ${this.currentHealth} → ${this.currentHealth - finalDamage}`
-      )
-    }
-
-    this.currentHealth = Math.max(0, this.currentHealth - finalDamage)
+    // Simple health reduction (defense calculation should be done by BattleModule before calling this)
+    this.currentHealth = Math.max(0, this.currentHealth - damage)
 
     if (this.currentHealth <= 0) {
       this.die()
       return true // Entity died
-    }
-
-    // Trigger invulnerability frames (optional)
-    if (finalDamage > 0) {
-      this.triggerInvulnerability(100) // 100ms invulnerability (reduced from 500ms)
     }
 
     return false // Entity survived
@@ -135,6 +122,7 @@ export abstract class WorldLife extends WorldObject {
     this.isAlive = false
     this.currentHealth = 0
     this.isAttacking = false
+    this.attackAnimationStartTime = 0 // Reset animation timestamp
     this.isMoving = false
     this.vx = 0
     this.vy = 0
@@ -145,6 +133,7 @@ export abstract class WorldLife extends WorldObject {
     this.isAlive = true
     this.currentHealth = this.maxHealth
     this.isAttacking = false
+    this.attackAnimationStartTime = 0 // Reset animation timestamp
     this.isMoving = false
     this.vx = 0
     this.vy = 0
@@ -179,60 +168,6 @@ export abstract class WorldLife extends WorldObject {
     return timeSinceLastAttack >= this.attackDelay
   }
 
-  // Legacy attack method - now delegates to BattleManager
-  // This method is kept for backward compatibility
-  attack(target: WorldLife): boolean {
-    // This method should be replaced by BattleManager.attack()
-    // Keeping for backward compatibility during transition
-    console.warn(`⚠️ DEPRECATED: Using legacy attack method. Use BattleManager.attack() instead.`)
-
-    if (!this.canAttack() || !target.isAlive) return false
-
-    const distance = this.getDistanceTo(target)
-    if (distance > this.attackRange) return false
-
-    const now = performance.now()
-    this.lastAttackTime = now
-    this.lastAttackedTarget = target.id
-    this.isAttacking = true
-
-    // Calculate attack direction for impulse
-    const dx = target.x - this.x
-    const dy = target.y - this.y
-    const distanceToTarget = Math.hypot(dx, dy) || 1
-    const attackDirection = {
-      x: dx / distanceToTarget,
-      y: dy / distanceToTarget,
-    }
-
-    // Apply damage to target (with defense calculation)
-    const targetDied = target.takeDamage(this.attackDamage, this)
-
-    // Apply impulse to target (knockback) - calculated from damage
-    const attackImpulse = this.getAttackImpulse()
-    if (attackImpulse > 0) {
-      const targetMass = target.getMass() // Calculate target mass from size and density
-      const targetImpulse = attackImpulse / targetMass // Heavier targets resist more
-      target.vx += attackDirection.x * targetImpulse
-      target.vy += attackDirection.y * targetImpulse
-    }
-
-    // Apply recoil impulse to attacker (knockback) - calculated from damage
-    const recoilImpulse = this.getRecoilImpulse()
-    if (recoilImpulse > 0) {
-      const attackerMass = this.getMass() // Calculate attacker mass from size and density
-      const attackerImpulse = recoilImpulse / attackerMass // Heavier attackers resist more
-      this.vx -= attackDirection.x * attackerImpulse
-      this.vy -= attackDirection.y * attackerImpulse
-    }
-
-    // Reset attacking state after a brief moment
-    setTimeout(() => {
-      this.isAttacking = false
-    }, 200) // 200ms attack animation
-
-    return targetDied
-  }
 
   // Utility methods
   getDistanceTo(other: WorldLife): number {
@@ -250,14 +185,10 @@ export abstract class WorldLife extends WorldObject {
   }
 
   // Invulnerability system
+  // Duration is managed by update() loop - no setTimeout needed
   triggerInvulnerability(duration: number): void {
     this.isInvulnerable = true
     this.invulnerabilityDuration = duration
-
-    setTimeout(() => {
-      this.isInvulnerable = false
-      this.invulnerabilityDuration = 0
-    }, duration)
   }
 
   // Smart heading update - automatically chooses best source
@@ -303,6 +234,15 @@ export abstract class WorldLife extends WorldObject {
     // Update attack cooldown
     if (this.attackCooldown > 0) {
       this.attackCooldown -= deltaTime
+    }
+
+    // Update attack animation state (200ms duration)
+    if (this.isAttacking && this.attackAnimationStartTime > 0) {
+      const animationElapsedMs = performance.now() - this.attackAnimationStartTime
+      if (animationElapsedMs >= 200) {
+        this.isAttacking = false
+        this.attackAnimationStartTime = 0
+      }
     }
 
     // Update movement state and heading

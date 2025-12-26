@@ -2,8 +2,6 @@ import { Room, Client } from 'colyseus'
 import { GameState } from '../schemas/GameState'
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
-import { Projectile } from '../schemas/Projectile'
-import { GAME_CONFIG } from '../config/gameConfig'
 import { PlanckPhysicsManager } from '../physics/PlanckPhysicsManager'
 import { BattleManager } from '../modules/BattleManager'
 import { BattleModule } from '../modules/BattleModule'
@@ -11,6 +9,7 @@ import { ProjectileManager } from '../modules/ProjectileManager'
 import { eventBus, RoomEventType } from '../events/EventBus'
 import { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
 import { registerRoom, unregisterRoom } from '../api'
+import * as planck from 'planck'
 
 export interface GameRoomOptions {
   mapId?: string
@@ -155,9 +154,9 @@ export class GameRoom extends Room<GameState> {
       // Update physics body position
       const body = this.physicsManager.getBody(client.sessionId)
       if (body) {
-        body.setPosition(new (require('planck')).Vec2(data.x, data.y))
+        body.setPosition(planck.Vec2(data.x, data.y))
         // Reset velocity
-        body.setLinearVelocity(new (require('planck')).Vec2(0, 0))
+        body.setLinearVelocity(planck.Vec2(0, 0))
       }
       
       // Update state position (will be synced next tick)
@@ -171,6 +170,15 @@ export class GameRoom extends Room<GameState> {
       this.mobLifeCycleManager.spawnMobAt(data.x, data.y)
     })
 
+    // Debug: Force Die
+    this.onMessage('debug_force_die', (client: Client) => {
+      const player = this.state.getPlayer(client.sessionId)
+      if (player) {
+         console.log(`💀 DEBUG: Force die for ${client.sessionId}`)
+         player.die()
+      }
+    })
+
     // Player Respawn
     this.onMessage('player_respawn', (client: Client) => {
       const player = this.state.getPlayer(client.sessionId)
@@ -181,18 +189,20 @@ export class GameRoom extends Room<GameState> {
       
       console.log(`♻️ PLAYER RESPAWN: ${client.sessionId}`)
       
-      // Respawn at fixed location for now (could be dynamic)
-      const respawnX = 200
-      const respawnY = 200
+      // Respawn at stored spawn location (from gameplay settings)
+      const respawnX = player.settingGameplay.spawnX
+      const respawnY = player.settingGameplay.spawnY
       
       player.respawn(respawnX, respawnY)
       
       // Update physics body
       const body = this.physicsManager.getBody(client.sessionId)
       if (body) {
-         body.setPosition(new (require('planck')).Vec2(respawnX, respawnY))
-         body.setLinearVelocity(new (require('planck')).Vec2(0, 0))
-         // Reset any forces?
+         body.setPosition(planck.Vec2(respawnX, respawnY))
+         body.setLinearVelocity(planck.Vec2(0, 0))
+         body.setAwake(true)
+         body.setActive(true) // Ensure body is active
+         body.setAngularVelocity(0)
       }
     })
   }

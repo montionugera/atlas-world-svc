@@ -48,36 +48,59 @@ body {
 
 .app-main {
   flex: 1;
-  padding: 2rem;
+  padding: 1.5rem;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto 1fr auto;
-  gap: 1.5rem;
-  max-width: 1400px;
+  grid-template-columns: 280px 280px 1fr 320px;
+  grid-template-rows: auto;
+  gap: 1rem;
+  max-width: 1900px;
   margin: 0 auto;
   width: 100%;
+  height: calc(100vh - 200px);
 }
 
-.control-section {
-  grid-column: 1 / -1;
+@media (max-width: 1600px) {
+  .app-main {
+    grid-template-columns: 260px 260px 1fr 300px;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
 }
 
-.status-section {
-  grid-column: 1 / -1;
+@media (max-width: 1400px) {
+  .app-main {
+    grid-template-columns: 240px 240px 1fr 280px;
+  }
+}
+
+.mobs-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+}
+
+.players-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
 }
 
 .game-section {
-  grid-column: 1 / -1;
   display: flex;
   justify-content: center;
-}
-
-.stats-section {
-  grid-column: 1;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
 }
 
 .log-section {
-  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
 }
 
 /* Control Panel */
@@ -323,10 +346,26 @@ body {
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .app-main {
+    grid-template-columns: 280px 1fr 350px;
+  }
+}
+
 @media (max-width: 768px) {
   .app-main {
     grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
     padding: 1rem;
+    height: auto;
+  }
+  
+  .mobs-section {
+    height: 400px;
+  }
+  
+  .log-section {
+    height: 400px;
   }
   
   .control-group {
@@ -339,9 +378,5 @@ body {
   
   .stats-panel {
     grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .log-section {
-    grid-column: 1;
   }
 }

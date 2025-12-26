@@ -2,6 +2,9 @@ import React, { useState, useCallback } from 'react';
 import { useColyseusClient, ColyseusClientConfig } from './hooks/useColyseusClient';
 import { ColyseusGameCanvas } from './components/ColyseusGameCanvas';
 import { LogPanel } from './components/LogPanel';
+import { MobDataTable } from './components/MobDataTable'
+import { PlayerDataTable } from './components/PlayerDataTable';
+import { GameStateProvider } from './contexts/GameStateContext';
 import './App.css';
 
 interface LogEntry {
@@ -72,22 +75,47 @@ function App() {
   }, [client.gameState?.tick, client.gameState?.mobs, addLog]);
   
   return (
-    <div className="App">
-      <header className="app-header">
-        <h1>🌍 Atlas World - Real-time Multiplayer</h1>
-        <p>Colyseus WebSocket Client with Live Game Simulation</p>
-      </header>
-      
-      <main className="app-main">
-        <div className="game-section">
-          <ColyseusGameCanvas config={colyseusConfig} />
-        </div>
+    <GameStateProvider 
+      initialGameState={client.gameState} 
+      initialRoomId={client.roomId} 
+      initialIsConnected={client.isConnected}
+    >
+      <div className="App">
+        <header className="app-header">
+          <h1>🌍 Atlas World - Real-time Multiplayer</h1>
+          <p>Colyseus WebSocket Client with Live Game Simulation</p>
+        </header>
         
-        <div className="log-section">
-          <LogPanel logs={logs} />
-        </div>
-      </main>
-    </div>
+        <main className="app-main">
+          <div className="mobs-section">
+            <MobDataTable 
+              roomId={client.roomId} 
+              gameState={client.gameState}
+              refreshInterval={2000} 
+            />
+          </div>
+          
+          <div className="players-section">
+            <PlayerDataTable 
+              roomId={client.roomId} 
+              gameState={client.gameState}
+              refreshInterval={2000}
+              onDebugTeleport={client.debugTeleport}
+              onDebugSpawnMob={client.debugSpawnMob}
+              updateCount={client.updateCount}
+            />
+          </div>
+          
+          <div className="game-section">
+            <ColyseusGameCanvas config={colyseusConfig} />
+          </div>
+          
+          <div className="log-section">
+            <LogPanel logs={logs} />
+          </div>
+        </main>
+      </div>
+    </GameStateProvider>
   );
 }
 

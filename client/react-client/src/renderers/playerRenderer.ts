@@ -60,6 +60,18 @@ export const drawPlayers = (
       COLORS.hudText,
       RENDER_CONFIG.playerNameFont
     );
+
+    // Draw BOT label if in bot mode
+    if (player.isBotMode) {
+      drawText(
+        ctx,
+        '[BOT]',
+        x - 15,
+        y - 30,
+        '#ff9f43',
+        '10px Arial'
+      );
+    }
     
     // Draw heading indicator (smaller for player) - always show heading
     if (player.heading !== undefined) {

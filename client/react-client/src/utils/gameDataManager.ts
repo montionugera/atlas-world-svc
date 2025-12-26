@@ -54,6 +54,10 @@ export interface PlayerInstance {
   id: string
   sessionId: string
   name: string
+  x?: number
+  y?: number
+  vx?: number
+  vy?: number
   maxLinearSpeed: number
   radius: number
   maxHealth: number
@@ -67,6 +71,9 @@ export interface PlayerInstance {
   density: number
   isAttacking: boolean
   lastAttackedTarget: string
+  currentBehavior?: string
+  currentAttackTarget?: string
+  isBotMode?: boolean
 }
 
 class GameDataManager {

@@ -4,12 +4,15 @@ import { PlayerInput } from './PlayerInput'
 import { PLAYER_STATS } from '../config/combatConfig'
 import { IAgent } from '../ai/interfaces/IAgent'
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
+import { PlayerSettingGameplay } from './PlayerSettingGameplay'
 
 export class Player extends WorldLife implements IAgent {
   @type('string') sessionId: string
   @type('string') name: string
   @type('number') maxLinearSpeed: number = 20 // synced to clients
   @type('boolean') isBotMode: boolean = false // Synced: indicates if player is in bot mode
+  
+  @type(PlayerSettingGameplay) settingGameplay: PlayerSettingGameplay
 
   // Input state (server-only, not synced to clients)
   input: PlayerInput = new PlayerInput()
@@ -61,6 +64,9 @@ export class Player extends WorldLife implements IAgent {
       console.warn(`⚠️ Player ${this.id} radius ${this.radius} exceeds maximum of 1.3, clamping to 1.3`)
       this.radius = 1.3
     }
+
+    // Initialize gameplay settings (defaults will be set in its constructor)
+    this.settingGameplay = new PlayerSettingGameplay(x, y)
   }
 
   // Toggle bot mode

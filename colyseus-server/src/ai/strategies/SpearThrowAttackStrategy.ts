@@ -1,4 +1,4 @@
-import { AttackStrategy } from './AttackStrategy'
+import { AttackStrategy, AttackExecutionResult } from './AttackStrategy'
 import { Mob } from '../../schemas/Mob'
 import { Player } from '../../schemas/Player'
 import { ProjectileManager } from '../../modules/ProjectileManager'
@@ -7,7 +7,7 @@ import { SPEAR_THROWER_STATS } from '../../config/combatConfig'
 
 /**
  * Spear Throw Attack Strategy
- * Ranged attack with configurable wind-up time
+ * Ranged attack with configurable cast time
  */
 export class SpearThrowAttackStrategy implements AttackStrategy {
   name = 'spearThrow'
@@ -15,7 +15,7 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
   private gameState: GameState
   private damage: number = SPEAR_THROWER_STATS.spearDamage
   public maxRange: number = SPEAR_THROWER_STATS.spearMaxRange
-  private windUpTime: number = SPEAR_THROWER_STATS.windUpTime
+  private castTime: number = SPEAR_THROWER_STATS.castTime
 
   constructor(
     projectileManager: ProjectileManager,
@@ -23,7 +23,7 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
     options?: {
       damage?: number
       maxRange?: number
-      windUpTime?: number
+      castTime?: number
     }
   ) {
     this.projectileManager = projectileManager
@@ -31,12 +31,12 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
     if (options) {
       this.damage = options.damage ?? this.damage
       this.maxRange = options.maxRange ?? this.maxRange
-      this.windUpTime = options.windUpTime ?? this.windUpTime
+      this.castTime = options.castTime ?? this.castTime
     }
   }
 
-  getWindUpTime(): number {
-    return this.windUpTime
+  getCastTime(): number {
+    return this.castTime
   }
 
   canExecute(mob: Mob, target: Player): boolean {
@@ -68,6 +68,30 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
 
     // Create physics body (will be handled by GameRoom)
     return true
+  }
+
+  attemptExecute(mob: Mob, target: Player, roomId: string): AttackExecutionResult {
+    if (!this.canExecute(mob, target)) {
+      return { canExecute: false, needsCasting: false, executed: false }
+    }
+
+    // Spear throw needs casting (castTime > 0)
+    if (this.castTime > 0) {
+      return {
+        canExecute: true,
+        needsCasting: true,
+        executed: false,
+      }
+    }
+
+    // If somehow castTime is 0, execute immediately
+    const executed = this.execute(mob, target, roomId)
+    return {
+      canExecute: true,
+      needsCasting: false,
+      executed,
+      targetId: executed ? target.id : undefined,
+    }
   }
 }
 

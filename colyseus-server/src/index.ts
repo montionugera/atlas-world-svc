@@ -3,6 +3,7 @@ import { createServer } from "http";
 import express from "express";
 import cors from "cors";
 import { GameRoom } from "./rooms/GameRoom";
+import { createApiRouter } from "./api";
 
 const app = express();
 const server = createServer(app);
@@ -15,6 +16,9 @@ app.use(express.json());
 const gameServer = new Server({
   server,
 });
+
+// REST API routes for static game data (requires gameServer for room access)
+app.use("/api", createApiRouter(gameServer));
 
 // Register room handlers
 gameServer.define("game_room", GameRoom);
@@ -44,6 +48,9 @@ gameServer.listen(Number(PORT)).then(() => {
   console.log(`🎮 Game rooms available at ws://localhost:${PORT}`);
   console.log(`📊 Health check at http://localhost:${PORT}/health`);
   console.log(`📋 Room info at http://localhost:${PORT}/rooms`);
+  console.log(`🌐 REST API available at http://localhost:${PORT}/api`);
+  console.log(`   - GET /api/rooms/:roomId/mobs - List mobs in room`);
+  console.log(`   - GET /api/rooms/:roomId/mobs/:mobId - Get mob instance data`);
 }).catch((error) => {
   console.error("❌ Failed to start server:", error);
   process.exit(1);

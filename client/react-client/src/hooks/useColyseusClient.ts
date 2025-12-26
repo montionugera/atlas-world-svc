@@ -36,6 +36,7 @@ export interface UseColyseusClientReturn {
   trackFrame: () => void;
   debugTeleport: (x: number, y: number) => void;
   debugSpawnMob: (x: number, y: number) => void;
+  forceDie: () => void;
 }
 
 export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClientReturn => {
@@ -326,6 +327,11 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     debugSpawnMob: (x: number, y: number) => {
       if (roomRef.current) {
         roomRef.current.send('debug_spawn_mob', { x, y });
+      }
+    },
+    forceDie: () => {
+      if (roomRef.current) {
+        roomRef.current.send('debug_force_die');
       }
     }
   };

@@ -31,7 +31,7 @@ export interface MobRemovedData {
 
 export interface BattleAttackData {
   actorId: string
-  targetId: string
+  targetId?: string // Optional - allows attacks without targets (e.g., player swinging weapon)
   damage: number
   range: number
   roomId: string

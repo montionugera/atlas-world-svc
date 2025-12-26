@@ -35,13 +35,13 @@ export const PLAYER_STATS: PlayerCombatStats = {
   attackDelay: 1000,
   defense: 1,
   armor: 0,
-  radius: 4,
+  radius: 1.3, // Player radius must not exceed 1.3
   density: 0.8,
 } as const
 
 export const MOB_STATS: MobCombatStats = {
   maxHealth: 100,
-  attackDamage: 2,
+  attackDamage: 20,
   attackRange: 1.5,
   attackDelay: 2000,
   defense: 2,
@@ -94,10 +94,18 @@ export const SPEAR_THROWER_STATS = {
   // Default visual height = 2 * default mob radius (4) = 8
   // This is used for both attack decision range and projectile max travel distance
   spearMaxRange: calculateSpearMaxRange(2 * MOB_STATS.radius, PROJECTILE_GRAVITY, 36),
-  windUpTime: 500, // ms
+  castTime: 500, // ms
   projectileRadius: 0.5, // collision radius
   projectileLifetime: 2000, // ms before despawn after sticking
   deflectionSpeedBoost: 1.2, // multiplier when projectile is deflected (20% boost)
   deflectionConeAngle: Math.PI / 4, // 45 degrees in radians
+} as const
+
+// Melee projectile stats (short range, fast speed for near-instant hits)
+export const MELEE_PROJECTILE_STATS = {
+  meleeSpeed: 100, // Very fast speed for near-instant hit
+  meleeMaxRange: 5, // Short range - just enough to hit target
+  projectileRadius: 0.3, // Smaller collision radius
+  projectileLifetime: 500, // Short lifetime (despawns quickly if it misses)
 } as const
 

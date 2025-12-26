@@ -11,6 +11,7 @@ A high-performance real-time multiplayer game built with Colyseus, featuring liv
 
 ### Performance Features
 - **Real-time WebSocket** - Instant state synchronization
+- **REST API** - Static data offloaded from real-time sync (~90% bandwidth reduction)
 - **20 FPS simulation** - Smooth mob movement and physics
 - **Automatic state sync** - No polling required
 - **Built for games** - Purpose-built for multiplayer gaming
@@ -59,6 +60,7 @@ cp -r colyseus-server/generated/csharp/* /path/to/your/unity/project/Assets/Scri
 | Service | URL | Purpose | Credentials |
 |---------|-----|---------|-------------|
 | **Colyseus Server** | ws://localhost:2567 | WebSocket game server | - |
+| **REST API** | http://localhost:2567/api | Static game data (mob types, config) | - |
 | **React Client** | http://localhost:3001 | Game client interface | - |
 | **API Documentation** | http://localhost:3000 | WebSocket API docs | - |
 | **C# Unity Client** | Generated files | Unity-compatible client | - |
@@ -159,7 +161,31 @@ docker-compose exec atlas-database psql -U nakama -d nakama
 
 ## 📚 API Reference
 
-### WebSocket Messages
+### REST API (Static Data)
+Offloads rarely-changing data from real-time sync for better performance.
+
+**Endpoints:**
+- `GET /api/mob-types` - List all mob types
+- `GET /api/mob-types/:id` - Get mob type details
+- `GET /api/mob-types/:id/stats` - Get mob combat stats
+- `GET /api/game-config` - Get game configuration
+- `GET /api/mob-stats/default` - Get default mob stats
+
+**Client Usage:**
+```typescript
+import { gameDataManager } from './utils/gameDataManager'
+
+// Fetch mob types
+const mobTypes = await gameDataManager.getMobTypesList()
+const mobType = await gameDataManager.getMobType('spear_thrower')
+
+// Fetch game config
+const config = await gameDataManager.getGameConfig()
+```
+
+**Full Documentation:** See `colyseus-server/docs/API.md`
+
+### WebSocket Messages (Real-time)
 - `player_input` - Player movement (vx, vy)
 - `player_position` - Direct position updates (x, y)
 - `welcome` - Server welcome message

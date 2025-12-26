@@ -6,6 +6,7 @@
 import { GameState } from '../schemas/GameState'
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
+import { IAgent } from './interfaces/IAgent'
 import { AIDecision } from './core/AIBehavior'
 
 export interface WorldData {
@@ -54,13 +55,16 @@ export class AIWorldInterface {
   getNearbyEntities(
     position: { x: number; y: number },
     range: number,
-    excludeMobId?: string
+    excludeAgentId?: string
   ): NearbyEntities {
     const nearbyPlayers: Player[] = []
     const nearbyMobs: Mob[] = []
 
-    // Check players
+    // Check players (only alive players)
     for (const player of this.gameState.players.values()) {
+      if (!player.isAlive) continue
+      if (excludeAgentId && player.id === excludeAgentId) continue
+
       const distance = this.calculateDistance(position, player)
       if (distance <= range) {
         nearbyPlayers.push(player)
@@ -69,7 +73,7 @@ export class AIWorldInterface {
 
     // Check other mobs (excluding the requesting mob if specified)
     for (const otherMob of this.gameState.mobs.values()) {
-      if (!excludeMobId || otherMob.id !== excludeMobId) {
+      if (!excludeAgentId || otherMob.id !== excludeAgentId) {
         const distance = this.calculateDistance(position, otherMob)
         if (distance <= range) {
           nearbyMobs.push(otherMob)
@@ -80,14 +84,38 @@ export class AIWorldInterface {
     return { nearbyPlayers, nearbyMobs }
   }
 
-  // Helper: get nearest player to a position
-  getNearestPlayer(position: { x: number; y: number }): Player | null {
+  // Helper: get nearest player to a position (only alive players)
+  getNearestPlayer(position: { x: number; y: number }, excludeId?: string): Player | null {
     let nearest: Player | null = null
     let nearestDist = Infinity
     for (const player of this.gameState.players.values()) {
+      // Only consider alive players
+      if (!player.isAlive) continue
+      // Don't find self if agent is a player
+      if (excludeId && player.id === excludeId) continue
+      
       const d = this.calculateDistance(position, player)
       if (d < nearestDist) {
         nearest = player
+        nearestDist = d
+      }
+    }
+    return nearest
+  }
+
+  // Helper: get nearest mob to a position (only alive mobs)
+  getNearestMob(position: { x: number; y: number }, excludeId?: string): IAgent | null {
+    let nearest: IAgent | null = null
+    let nearestDist = Infinity
+    for (const mob of this.gameState.mobs.values()) {
+      // Only consider alive mobs
+      if (!mob.isAlive) continue
+      // Don't find self if agent is a mob
+      if (excludeId && mob.id === excludeId) continue
+      
+      const d = this.calculateDistance(position, mob)
+      if (d < nearestDist) {
+        nearest = mob
         nearestDist = d
       }
     }
@@ -104,72 +132,103 @@ export class AIWorldInterface {
     return left < threshold || right < threshold || top < threshold || bottom < threshold
   }
 
-  // Build a compact environment snapshot for a mob
-  buildMobEnvironment(
-    mob: Mob,
+  // Build a compact environment snapshot for an agent
+  buildAgentEnvironment(
+    agent: IAgent,
     perceptionRange: number
   ): {
     nearestPlayer: Player | null
     distanceToNearestPlayer: number
+    nearestMob: IAgent | null
+    distanceToNearestMob: number
     nearBoundary: boolean
     worldBounds: { width: number; height: number }
   } {
-    const position = { x: mob.x, y: mob.y }
-    const nearestPlayerRaw = this.getNearestPlayer(position)
-    const distanceRaw = nearestPlayerRaw
+    const position = { x: agent.x, y: agent.y }
+    
+    // Find nearest player
+    const nearestPlayerRaw = this.getNearestPlayer(position, agent.id)
+    const distancePlayerRaw = nearestPlayerRaw
       ? this.calculateDistance(position, nearestPlayerRaw)
       : Infinity
-    const inRange = distanceRaw <= (perceptionRange ?? Infinity)
-    const nearestPlayer = inRange ? nearestPlayerRaw : null
-    const distanceToNearestPlayer = inRange ? distanceRaw : Infinity
+    const inRangePlayer = distancePlayerRaw <= (perceptionRange ?? Infinity)
+    const nearestPlayer = inRangePlayer ? nearestPlayerRaw : null
+    const distanceToNearestPlayer = inRangePlayer ? distancePlayerRaw : Infinity
+
+    // Find nearest mob
+    const nearestMobRaw = this.getNearestMob(position, agent.id)
+    const distanceMobRaw = nearestMobRaw
+      ? this.calculateDistance(position, nearestMobRaw)
+      : Infinity
+    const inRangeMob = distanceMobRaw <= (perceptionRange ?? Infinity)
+    const nearestMob = inRangeMob ? nearestMobRaw : null
+    const distanceToNearestMob = inRangeMob ? distanceMobRaw : Infinity
+
     const nearBoundary = this.isNearBoundary(position)
     return {
       nearestPlayer,
       distanceToNearestPlayer,
+      nearestMob,
+      distanceToNearestMob,
       nearBoundary,
       worldBounds: { width: this.gameState.width, height: this.gameState.height },
     }
   }
 
-  // Apply AI decision to mob
-  applyAIDecision(mobId: string, decision: AIDecision): void {
-    this.aiDecisions.set(mobId, decision)
-    const mob = this.gameState.mobs.get(mobId)
-    if (mob) {
-      // Check if mob is in attack behavior - if so, force it to stop moving
-      if (mob.currentBehavior === 'attack') {
-        // Mob should stop moving when attacking
-        mob.desiredVx = 0
-        mob.desiredVy = 0
-        mob.desiredBehavior = 'attack'
-        mob.decisionTimestamp = decision.timestamp
+  // Backwards compatibility
+  buildMobEnvironment(mob: Mob, perceptionRange: number) {
+    return this.buildAgentEnvironment(mob, perceptionRange)
+  }
 
-        // If no physics manager/body, reflect desired velocity directly
-        if (
-          !this.physicsManager ||
-          !this.physicsManager.getBody ||
-          !this.physicsManager.getBody(mobId)
-        ) {
-          mob.vx = 0
-          mob.vy = 0
-        }
-        return
+  // Apply AI decision to agent
+  applyAIDecision(agentId: string, decision: AIDecision): void {
+    this.aiDecisions.set(agentId, decision)
+    
+    // Try to find agent in mobs first
+    let agent: IAgent | undefined = this.gameState.mobs.get(agentId)
+    
+    // If not found, try players
+    if (!agent) {
+      const player = this.gameState.players.get(agentId)
+      // Only control players if they are in bot mode
+      if (player && (player as any).isBotMode) {
+        agent = player as unknown as IAgent
+      }
+    }
+
+    if (agent) {
+      // Apply AI decision (including attack behavior - computeDesiredVelocity handles movement logic)
+      // Attack behavior may move closer if outside melee range, or stop if within melee range
+      // We need to cast to any to access desiredVx/Vy as they might not be on IAgent interface but are on implementations
+      // Or we should add them to IAgent? For now, let's assume implementations have them.
+      // Actually, IAgent doesn't specify how velocity is stored, but Mob has desiredVx/Vy.
+      // Let's check if the agent has these properties.
+      
+      if ('desiredVx' in agent) {
+        (agent as any).desiredVx = decision.velocity.x;
+        (agent as any).desiredVy = decision.velocity.y;
+      }
+      
+      if ('desiredBehavior' in agent) {
+        (agent as any).desiredBehavior = decision.behavior;
+      }
+      
+      if ('decisionTimestamp' in agent) {
+        (agent as any).decisionTimestamp = decision.timestamp;
       }
 
-      // Apply AI decision for other behaviors
-      mob.desiredVx = decision.velocity.x
-      mob.desiredVy = decision.velocity.y
-      mob.desiredBehavior = decision.behavior
-      mob.decisionTimestamp = decision.timestamp
-
       // If no physics manager/body, reflect desired velocity directly to maintain legacy behavior
+      // This is mostly for mobs without physics bodies or simple movement
       if (
         !this.physicsManager ||
         !this.physicsManager.getBody ||
-        !this.physicsManager.getBody(mobId)
+        !this.physicsManager.getBody(agentId)
       ) {
-        mob.vx = decision.velocity.x
-        mob.vy = decision.velocity.y
+        if ('vx' in agent && 'vy' in agent) {
+            // Type assertion to write to readonly properties if they are readonly in schema (they are not)
+            (agent as any).vx = decision.velocity.x;
+            (agent as any).vy = decision.velocity.y;
+        }
       }
     }
   }

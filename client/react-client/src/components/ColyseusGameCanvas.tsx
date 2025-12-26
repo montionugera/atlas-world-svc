@@ -3,7 +3,8 @@ import { useColyseusClient, ColyseusClientConfig } from '../hooks/useColyseusCli
 import { useKeyboardControls } from '../hooks/useKeyboardControls';
 import { GameRenderer } from './GameRenderer';
 import { GameHUD } from './GameHUD';
-import { GameControls } from './GameControls';
+import { GameHoverMenu } from './GameHoverMenu';
+import { PlayerDataTable } from './PlayerDataTable/PlayerDataTable';
 import { GameInstructions } from './GameInstructions';
 import { CANVAS_CONFIG } from '../config/gameConfig';
 import { useGameStateContext } from '../contexts/GameStateContext';
@@ -35,7 +36,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }
     disconnect,
     toggleBotMode,
     trackFrame,
-    respawn
+    respawn,
+    forceDie
   } = useColyseusClient(config);
 
   // Update context when gameState or roomId changes
@@ -57,42 +59,64 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ config }
     }
   }, [isConnected, clientConnected, connect, joinRoom]);
 
+  const containerStyle: React.CSSProperties = {
+     position: 'relative', 
+     display: 'inline-block',
+     borderRadius: CANVAS_CONFIG.borderRadius,
+     overflow: 'hidden', 
+     boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-      <GameControls
-        isSimulating={isSimulating}
-        isConnected={clientConnected}
-        onStartSimulation={startSimulation}
-        onStopSimulation={stopSimulation}
-        onDisconnect={disconnect}
-        isBotMode={gameState?.players.get(playerId)?.isBotMode || false}
-        onToggleBotMode={() => {
-          const currentMode = gameState?.players.get(playerId)?.isBotMode || false;
-          toggleBotMode(!currentMode);
-        }}
-        onAttack={() => sendPlayerAction('attack', true)}
-        isDead={!gameState?.players.get(playerId)?.isAlive && !!gameState?.players.get(playerId)}
-        onRespawn={respawn}
-      />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', padding: '20px' }}>
       
-      <div style={{ position: 'relative', display: 'inline-block' }}>
+      <div style={containerStyle}>
         <canvas
           ref={canvasRef}
           width={CANVAS_CONFIG.width}
           height={CANVAS_CONFIG.height}
           style={{
-            border: `${CANVAS_CONFIG.borderWidth}px solid ${CANVAS_CONFIG.borderColor}`,
             backgroundColor: CANVAS_CONFIG.backgroundColor,
             cursor: CANVAS_CONFIG.cursor,
-            borderRadius: CANVAS_CONFIG.borderRadius,
             display: 'block'
           }}
         />
+        
+        {/* Top Left: Player Debug Panel Overlay */}
+        <div style={{ 
+          position: 'absolute', 
+          top: 20, 
+          left: 20, 
+          zIndex: 10,
+          maxHeight: '600px',
+          overflowY: 'auto',
+          maxWidth: '300px'
+        }}>
+           <PlayerDataTable 
+             roomId={roomId}
+             gameState={gameState}
+             updateCount={updateCount}
+           />
+        </div>
         
         <GameHUD
           isConnected={clientConnected}
           playerId={playerId}
           roomId={roomId}
+        />
+
+        {/* Bottom: Hover Action Menu */}
+        <GameHoverMenu 
+            isConnected={clientConnected}
+            isBotMode={gameState?.players.get(playerId)?.isBotMode || false}
+            onToggleBotMode={() => {
+              const currentMode = gameState?.players.get(playerId)?.isBotMode || false;
+              toggleBotMode(!currentMode);
+            }}
+            onAttack={() => sendPlayerAction('attack', true)}
+            isDead={!gameState?.players.get(playerId)?.isAlive && !!gameState?.players.get(playerId)}
+            onRespawn={respawn}
+            onForceDie={forceDie}
         />
         
         <GameRenderer

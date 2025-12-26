@@ -5,13 +5,13 @@
 
 import { GameState } from '../schemas/GameState'
 import { Mob } from '../schemas/Mob'
-import { MobAIModule } from '../ai/MobAIModule'
+import { AIModule } from '../ai/AIModule'
 import { PlanckPhysicsManager } from '../physics/PlanckPhysicsManager'
 import { GAME_CONFIG } from '../config/gameConfig'
 
 describe('Mob Death Handling', () => {
   let gameState: GameState
-  let aiModule: MobAIModule
+  let aiModule: AIModule
   let physicsManager: PlanckPhysicsManager
 
   beforeEach(() => {

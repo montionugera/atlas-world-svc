@@ -8,6 +8,7 @@ import { BattleModule } from '../modules/BattleModule'
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
 import { GameState } from '../schemas/GameState'
+import { eventBus, RoomEventType } from '../events/EventBus'
 
 describe('Battle System', () => {
   let battleManager: BattleManager
@@ -120,6 +121,35 @@ describe('Battle System', () => {
       battleModule.applyDamage(player, 10)
       expect(player.isInvulnerable).toBe(true)
       expect(player.invulnerabilityDuration).toBeGreaterThan(0)
+    })
+
+    test('should emit BATTLE_DAMAGE_PRODUCED event when processing attack', () => {
+      let eventEmitted = false
+      let eventData: any = null
+
+      // Listen for damage produced event
+      const listener = (payload: any) => {
+        if (payload.eventType === RoomEventType.BATTLE_DAMAGE_PRODUCED) {
+          eventEmitted = true
+          eventData = payload.data
+        }
+      }
+      eventBus.onRoomEvent('room-1', listener)
+
+      // Process attack
+      mob.lastAttackTime = 0
+      mob.attackDelay = 100
+      const attackEvent = battleModule.processAttack(mob, player)
+
+      // Verify event was emitted
+      expect(attackEvent).not.toBeNull()
+      expect(eventEmitted).toBe(true)
+      expect(eventData).not.toBeNull()
+      expect(eventData.attacker.id).toBe(mob.id)
+      expect(eventData.taker.id).toBe(player.id)
+
+      // Clean up
+      eventBus.offRoomEvent('room-1', listener)
     })
   })
 
