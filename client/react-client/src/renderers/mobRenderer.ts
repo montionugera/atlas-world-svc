@@ -4,7 +4,17 @@ import { drawCircle, drawLine, drawText, drawHealthBar, drawHeading } from '../u
 /**
  * Draw all mobs with their velocity vectors
  */
-export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, scale: number): void => {
+/**
+ * Draw all mobs with their velocity vectors
+ */
+export const drawMobs = (
+  ctx: CanvasRenderingContext2D, 
+  mobs: Map<string, any>, 
+  scale: number,
+  viewScale: number = 1 // New parameter
+): void => {
+  const inverseScale = 1 / viewScale;
+
   mobs.forEach(mob => {
     const x = mob.x * scale;
     const y = mob.y * scale;
@@ -45,18 +55,20 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
           maxOffset: 16,
           widthMultiplier: 2.0, // standard multiplier for mobs
           heightMultiplier: 0.25
-        }
+        },
+        viewScale // Pass viewScale
       );
     }
     
     // Draw mob id/name and behavior tag above the circle
+    const fontSize = 12 * inverseScale;
     drawText(
       ctx,
       `${mob.id || 'mob'} (${mob.tag || 'idle'})`,
-      x - 12,
-      y - (mob.radius * scale) - 6,
+      x - (12 * inverseScale),
+      y - (mob.radius * scale) - (6 * inverseScale),
       COLORS.hudText,
-      RENDER_CONFIG.playerNameFont
+      `${fontSize}px Arial`
     );
 
     // Draw heading indicator (same as player)
@@ -69,18 +81,22 @@ export const drawMobs = (ctx: CanvasRenderingContext2D, mobs: Map<string, any>, 
         mob.radius+2,
         scale,
         '#ffffff', // white arrow for mobs
-        3 // thicker line
+        3, // thicker line
+        0.6,
+        viewScale
       );
     }
     
     // Draw velocity vector
+    ctx.lineWidth = 2 * inverseScale;
     drawLine(
       ctx,
       x,
       y,
       x + mob.vx * RENDER_CONFIG.velocityVectorScale,
       y + mob.vy * RENDER_CONFIG.velocityVectorScale,
-      COLORS.mob
+      COLORS.mob,
+      2 * inverseScale
     );
   });
 };

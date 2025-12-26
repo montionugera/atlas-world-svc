@@ -4,8 +4,8 @@ const serverFPS = 1000 / 50
 export const GAME_CONFIG = {
   serverFPS,
   tickRate, // ms per tick (1000 / serverFPS)
-  worldWidth: 100,
-  worldHeight: 100,
+  worldWidth: 500,
+  worldHeight: 500,
   mobCount: 1, // Reduced for debugging
   mobSpeedRange: 60, // pixels per second (3x faster)
   mobSpawnMargin: 10, // pixels from edges

@@ -41,6 +41,7 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction }: Use
     
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.repeat) return; // Ignore repeat events to prevent spamming
+      console.log('🔽 KeyDown:', event.key);
       pressedKeysRef.current.add(event.key);
       updateMovement();
       

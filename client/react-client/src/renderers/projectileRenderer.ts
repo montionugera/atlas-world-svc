@@ -4,7 +4,9 @@ import { drawCircle, drawLine } from '../utils/drawingUtils';
 /**
  * Draw all projectiles (spears)
  */
-export const drawProjectiles = (ctx: CanvasRenderingContext2D, projectiles: Map<string, any>, scale: number): void => {
+export const drawProjectiles = (ctx: CanvasRenderingContext2D, projectiles: Map<string, any>, scale: number, viewScale: number = 1): void => {
+  const inverseScale = 1 / viewScale;
+
   projectiles.forEach(projectile => {
     if (projectile.isStuck) {
       // Draw stuck projectile as a small circle (semi-transparent)
@@ -31,7 +33,7 @@ export const drawProjectiles = (ctx: CanvasRenderingContext2D, projectiles: Map<
     
     // Draw spear body
     ctx.strokeStyle = '#ffaa00'; // Orange/yellow for spear
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * inverseScale;
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(endX, endY);

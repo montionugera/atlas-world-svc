@@ -1,14 +1,21 @@
 import { GameState } from '../types/game';
 import { CANVAS_CONFIG } from '../config/gameConfig';
 
+export interface Camera {
+  x: number;
+  y: number;
+  scale: number;
+}
+
 /**
  * Calculate the scale factor to fit the game world into the canvas
- * while maintaining aspect ratio
+ * while maintaining aspect ratio, OR for fixed viewport size
  */
-export const calculateScale = (gameState: GameState, canvas: HTMLCanvasElement): number => {
-  const scaleX = canvas.width / gameState.width;
-  const scaleY = canvas.height / gameState.height;
-  return Math.min(scaleX, scaleY); // Use smaller scale to maintain aspect ratio
+export const calculateScale = (gameState: GameState, canvas: HTMLCanvasElement, viewportSize: number = 50): number => {
+  // If viewportSize is provided, scale is based on fitting that many units into the smaller canvas dimension
+  const scaleX = canvas.width / viewportSize;
+  const scaleY = canvas.height / viewportSize;
+  return Math.min(scaleX, scaleY);
 };
 
 /**
@@ -67,7 +74,8 @@ export const drawHeading = (
   scale: number = 1,
   color: string = '#ffffff',
   lineWidth: number = 3,
-  sizeMultiplier: number = 0.6
+  sizeMultiplier: number = 0.6,
+  viewScale: number = 1 // New parameter for inverse scaling
 ): void => {
   const scaledRadius = radius * scale;
   
@@ -94,7 +102,7 @@ export const drawHeading = (
   
   // Draw main line
   ctx.strokeStyle = color;
-  ctx.lineWidth = lineWidth;
+  ctx.lineWidth = lineWidth / viewScale; // Inverse scale line width
   ctx.beginPath();
   ctx.moveTo(x, y); // Start from center
   ctx.lineTo(tipX, tipY); // Draw main line
@@ -149,24 +157,34 @@ export const drawHealthBar = (
     maxOffset?: number;
     widthMultiplier?: number;
     heightMultiplier?: number;
-  } = {}
+  } = {},
+  viewScale: number = 1 // New parameter for inverse scaling
 ): void => {
   if (maxHealth <= 0) return;
   
   const scaledRadius = entityRadius * scale;
   const healthPercentage = currentHealth / maxHealth;
+  const inverseScale = 1 / viewScale;
   
-  // Default constraints
+  // Destructure options with defaults (these are unscaled base values)
   const {
-    minWidth = 8,
-    maxWidth = 60,
-    minHeight = 2,
-    maxHeight = 8,
-    minOffset = 4,
-    maxOffset = 20,
+    minWidth: baseMinWidth = 8,
+    maxWidth: baseMaxWidth = 60,
+    minHeight: baseMinHeight = 2,
+    maxHeight: baseMaxHeight = 8,
+    minOffset: baseMinOffset = 4,
+    maxOffset: baseMaxOffset = 20,
     widthMultiplier = 2.5,
     heightMultiplier = 0.3
   } = options;
+
+  // Apply inverse scaling to all dimensional constraints so they remain constant in screen space
+  const minWidth = baseMinWidth * inverseScale;
+  const maxWidth = baseMaxWidth * inverseScale;
+  const minHeight = baseMinHeight * inverseScale;
+  const maxHeight = baseMaxHeight * inverseScale;
+  const minOffset = baseMinOffset * inverseScale;
+  const maxOffset = baseMaxOffset * inverseScale;
   
   // Calculate health bar size based on entity radius with constraints
   const baseWidth = scaledRadius * widthMultiplier;
@@ -176,7 +194,7 @@ export const drawHealthBar = (
   const barHeight = Math.max(minHeight, Math.min(maxHeight, baseHeight));
   
   // Calculate offset with constraints
-  const baseOffset = scaledRadius + 8;
+  const baseOffset = scaledRadius + (8 * inverseScale); // Base offset relative to radius
   const offset = Math.max(minOffset, Math.min(maxOffset, baseOffset));
   
   // Position health bar above the entity
@@ -193,7 +211,7 @@ export const drawHealthBar = (
   
   // Draw border
   ctx.strokeStyle = borderColor;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 1 * inverseScale;
   ctx.strokeRect(barX, barY, barWidth, barHeight);
 };
 
@@ -243,7 +261,8 @@ export const drawAttackSlash = (
   heading: number,
   playerScaledRadius: number,
   color: string = '#ffff00',
-  lineWidth: number = 10
+  lineWidth: number = 10,
+  viewScale: number = 1
 ): void => {
   // Calculate slash line endpoints - shorter arc
   const startX = x ;
@@ -252,7 +271,7 @@ export const drawAttackSlash = (
   const endY = y + Math.sin(heading)*playerScaledRadius*2.2;
   
   ctx.strokeStyle = color;
-  ctx.lineWidth = lineWidth;
+  ctx.lineWidth = lineWidth / viewScale;
   ctx.beginPath();
   ctx.moveTo(startX, startY);
   ctx.lineTo(endX, endY);

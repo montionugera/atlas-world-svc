@@ -7,31 +7,36 @@ export const drawGrid = (
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
-  scale: number = 1
+  scale: number = 1,
+  viewScale: number = 1 // New parameter
 ): void => {
   if (!GRID_CONFIG.enabled) return;
+  const inverseScale = 1 / viewScale;
 
   ctx.save();
   ctx.strokeStyle = GRID_CONFIG.color;
-  ctx.lineWidth = GRID_CONFIG.lineWidth;
-  ctx.font = GRID_CONFIG.coordinateFont;
+  ctx.lineWidth = GRID_CONFIG.lineWidth * inverseScale; // Inverse scale line width
+  
+  // Inverse scale font size
+  const fontSize = 10 * inverseScale;
+  ctx.font = `${fontSize}px Arial`;
+  
   ctx.fillStyle = GRID_CONFIG.coordinateColor;
 
   // Grid size in pixels (game units * scale)
   const gridSizePixels = GRID_CONFIG.size * scale;
   
-  // Calculate how many grid lines we need for the world (100x100 game units)
-  const worldWidth = 100; // Game world width in units
-  const worldHeight = 100; // Game world height in units
-  const gridLinesX = Math.ceil(worldWidth / GRID_CONFIG.size);
-  const gridLinesY = Math.ceil(worldHeight / GRID_CONFIG.size);
+  // Calculate how many grid lines we need for the world
+  // width/height passed in arguments are in game units
+  const gridLinesX = Math.ceil(width / GRID_CONFIG.size);
+  const gridLinesY = Math.ceil(height / GRID_CONFIG.size);
 
   // Draw vertical lines
   for (let i = 0; i <= gridLinesX; i++) {
     const x = i * gridSizePixels;
     ctx.beginPath();
     ctx.moveTo(x, 0);
-    ctx.lineTo(x, worldHeight * scale);
+    ctx.lineTo(x, height * scale);
     ctx.stroke();
   }
 
@@ -40,26 +45,26 @@ export const drawGrid = (
     const y = i * gridSizePixels;
     ctx.beginPath();
     ctx.moveTo(0, y);
-    ctx.lineTo(worldWidth * scale, y);
+    ctx.lineTo(width * scale, y);
     ctx.stroke();
   }
 
   // Draw coordinates if enabled
   if (GRID_CONFIG.showCoordinates) {
-    const offset = GRID_CONFIG.coordinateOffset;
+    const offset = GRID_CONFIG.coordinateOffset * inverseScale; // Scale offset
     
     // Draw X coordinates (top) - show game units
     for (let i = 0; i <= gridLinesX; i++) {
       const x = i * gridSizePixels;
       const gameUnit = i * GRID_CONFIG.size;
-      ctx.fillText(gameUnit.toString(), x + offset, 15);
+      ctx.fillText(gameUnit.toString(), x + offset, 15 * inverseScale);
     }
 
     // Draw Y coordinates (left) - show game units
     for (let i = 0; i <= gridLinesY; i++) {
       const y = i * gridSizePixels;
       const gameUnit = i * GRID_CONFIG.size;
-      ctx.fillText(gameUnit.toString(), 5, y - offset);
+      ctx.fillText(gameUnit.toString(), 5 * inverseScale, y - offset);
     }
   }
 

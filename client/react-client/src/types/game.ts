@@ -13,6 +13,7 @@ export interface Mob {
   vy: number;
   radius: number; // Receive radius from server
   tag: string; // Current behavior tag
+  isAlive?: boolean;
 }
 
 export interface Player {

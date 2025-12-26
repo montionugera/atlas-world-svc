@@ -8,8 +8,11 @@ export const drawPlayers = (
   ctx: CanvasRenderingContext2D, 
   players: Map<string, any>, 
   currentPlayerId: string, 
-  scale: number
+  scale: number,
+  viewScale: number = 1 // New parameter
 ): void => {
+  const inverseScale = 1 / viewScale;
+
   players.forEach((player, sessionId) => {
     const x = player.x * scale;
     const y = player.y * scale;
@@ -20,9 +23,9 @@ export const drawPlayers = (
 
     // Always draw a visible outline so players stand out
     ctx.beginPath();
-    ctx.arc(x, y, radius + 1, 0, Math.PI * 2);
+    ctx.arc(x, y, radius + (1 * inverseScale), 0, Math.PI * 2);
     ctx.strokeStyle = COLORS.playerHighlight;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * inverseScale;
     ctx.stroke();
     
     // Draw health bar (same size as mobs)
@@ -47,18 +50,20 @@ export const drawPlayers = (
           maxOffset: 16,
           widthMultiplier: 2.0, // same as mobs
           heightMultiplier: 0.25
-        }
+        },
+        viewScale // Pass viewScale for inverse scaling
       );
     }
     
     // Draw player name
+    const fontSize = 12 * inverseScale;
     drawText(
       ctx,
       player.name,
-      x - 20,
-      y - 15,
+      x - (20 * inverseScale),
+      y - (15 * inverseScale),
       COLORS.hudText,
-      RENDER_CONFIG.playerNameFont
+      `${fontSize}px Arial`
     );
 
     // Draw BOT label if in bot mode
@@ -66,10 +71,10 @@ export const drawPlayers = (
       drawText(
         ctx,
         '[BOT]',
-        x - 15,
-        y - 30,
+        x - (15 * inverseScale),
+        y - (30 * inverseScale),
         '#ff9f43',
-        '10px Arial'
+        `${10 * inverseScale}px Arial`
       );
     }
     
@@ -83,8 +88,9 @@ export const drawPlayers = (
         radius,
         scale,
         '#ffffff', // white arrow
-        2, // thinner line for player
-        0.3 // smaller arrow (30% of radius)
+        2, // thicker line will be inversely scaled inside this function
+        0.3, // smaller arrow (30% of radius)
+        viewScale
       );
     }
     
@@ -99,7 +105,8 @@ export const drawPlayers = (
         player.attackRange || 3,
         scale,
         '#ff4444', // red cone
-        0.4 // semi-transparent
+        0.4, // semi-transparent
+        // Attack cone does not need inverse scaling as it represents physical area
       );
       
       // Draw attack slash effect
@@ -110,7 +117,8 @@ export const drawPlayers = (
         player.heading,
         radius,
         '#ffff00', // yellow slash
-        7 // thicker line for slash
+        7, // thicker line for slash
+        viewScale
       );
     }
     
@@ -118,9 +126,9 @@ export const drawPlayers = (
     if (sessionId === currentPlayerId) {
       // Stronger highlight for the local player
       ctx.beginPath();
-      ctx.arc(x, y, radius + 3, 0, Math.PI * 2);
+      ctx.arc(x, y, radius + (3 * inverseScale), 0, Math.PI * 2);
       ctx.strokeStyle = COLORS.playerHighlight;
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 3 * inverseScale;
       ctx.stroke();
     }
   });

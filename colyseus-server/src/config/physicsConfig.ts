@@ -1,3 +1,5 @@
+import { GAME_CONFIG } from './gameConfig'
+
 // Global gravity constant for projectile physics (simulated in 2D top-down)
 export const PROJECTILE_GRAVITY = 7 // units/sec²
 
@@ -13,8 +15,8 @@ export const PHYSICS_CONFIG = {
 
   // World boundaries
   world: {
-    width: 100,
-    height: 100,
+    width: GAME_CONFIG.worldWidth,
+    height: GAME_CONFIG.worldHeight,
     boundaryThickness: 5,
   },
 
