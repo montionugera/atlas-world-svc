@@ -149,8 +149,17 @@ export class Mob extends WorldLife implements IAgent {
     deltaTime: number,
     gameState?: GameState
   ): { attacked: boolean; targetId?: string; messageCreated?: boolean; message?: any } {
-    // Call parent update for health/invulnerability logic
+    // Call parent update for health/invulnerability/status effects logic
     super.update(deltaTime)
+
+    // Status Effect Check: If frozen or stunned, stop all movement and actions
+    if (this.isFrozen || this.isStunned) {
+        this.vx = 0
+        this.vy = 0
+        this.isMoving = false
+        this.isCasting = false // Interrupt casting
+        return { attacked: false }
+    }
 
     // Game logic: position, heading, and attack (if gameState provided)
     if (gameState) {
@@ -258,6 +267,9 @@ export class Mob extends WorldLife implements IAgent {
 
   // Update heading directly from target position
   updateHeadingToTarget(): void {
+    // If casting, heading is locked (cannot rotate)
+    if (this.isCasting) return
+
     const dx = this.targetX - this.x
     const dy = this.targetY - this.y
     const magnitude = Math.hypot(dx, dy)

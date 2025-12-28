@@ -43,9 +43,14 @@ function App() {
     if (!client.isConnected) {
        addLog('🔌 Connecting to Colyseus Server...', 'info');
        client.connect().then(() => {
-          client.joinRoom('map-01-sector-a');
+          return client.joinRoom('map-01-sector-a');
        }).catch(e => {
-          addLog(`❌ Detailed connection error: ${e.message}`, 'error');
+          let errorMessage = e.message || 'Unknown error';
+          if (e instanceof ProgressEvent || e.type === 'error') {
+             errorMessage = 'Connection failed (Server might be offline or schema mismatch)';
+          }
+          addLog(`❌ Detailed connection error: ${errorMessage}`, 'error');
+          console.error(e);
        });
     } else {
        // Already connected

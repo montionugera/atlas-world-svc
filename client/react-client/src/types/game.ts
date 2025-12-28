@@ -5,6 +5,17 @@ export interface Position {
   y: number;
 }
 
+export interface Trap {
+  id: string;
+  x: number;
+  y: number;
+  ownerId: string;
+  effectType: 'damage' | 'freeze' | 'stun';
+  effectValue: number;
+  triggerRadius: number;
+  isArmed: boolean;
+}
+
 export interface Mob {
   id: string;
   x: number;
@@ -14,6 +25,9 @@ export interface Mob {
   radius: number; // Receive radius from server
   tag: string; // Current behavior tag
   isAlive?: boolean;
+  // Status Effects
+  isFrozen?: boolean;
+  isStunned?: boolean;
 }
 
 export interface Player {
@@ -30,6 +44,9 @@ export interface Player {
   isAlive?: boolean;
   health?: number;
   maxHealth?: number;
+  // Status Effects
+  isFrozen?: boolean;
+  isStunned?: boolean;
 }
 
 export interface Projectile {
@@ -47,6 +64,7 @@ export interface GameState {
   players: Map<string, Player>;
   mobs: Map<string, Mob>;
   projectiles?: Map<string, Projectile>;
+  traps?: Map<string, Trap>;
   tick: number;
   mapId: string;
   roomId?: string; // Room ID from server (synced via Colyseus)

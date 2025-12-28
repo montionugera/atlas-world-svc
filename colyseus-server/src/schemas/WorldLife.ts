@@ -36,6 +36,12 @@ export abstract class WorldLife extends WorldObject {
   // Heading direction (in radians) - based on latest movement
   @type('number') heading: number = 0
 
+  // Status Effects
+  @type('boolean') isFrozen: boolean = false
+  @type('number') freezeDuration: number = 0
+  @type('boolean') isStunned: boolean = false
+  @type('number') stunDuration: number = 0
+
   // Server-only properties (not synced to clients)
   attackCooldown: number = 0
   isInvulnerable: boolean = false
@@ -127,6 +133,11 @@ export abstract class WorldLife extends WorldObject {
     this.vx = 0
     this.vy = 0
     this.diedAt = Date.now() // Record death timestamp for respawn delay
+    // Clear status effects
+    this.isFrozen = false
+    this.freezeDuration = 0
+    this.isStunned = false
+    this.stunDuration = 0
   }
 
   respawn(x?: number, y?: number): void {
@@ -142,6 +153,12 @@ export abstract class WorldLife extends WorldObject {
     this.isInvulnerable = false
     this.invulnerabilityDuration = 0
     this.diedAt = 0 // Reset death timestamp
+    // Clear status effects
+    this.isFrozen = false
+    this.freezeDuration = 0
+    this.isStunned = false
+    this.stunDuration = 0
+    
     // Note: Mob-specific flags (cantRespawn, readyToRemove) are handled in Mob class
     // Mob class should override respawn() to call clearRemovalFlag()
 
@@ -161,6 +178,8 @@ export abstract class WorldLife extends WorldObject {
   // Attack system with anti-spam protection
   canAttack(): boolean {
     if (!this.isAlive) return false
+    // Cannot attack if frozen or stunned
+    if (this.isFrozen || this.isStunned) return false
 
     const now = performance.now()
     const timeSinceLastAttack = now - this.lastAttackTime
@@ -231,6 +250,25 @@ export abstract class WorldLife extends WorldObject {
       }
     }
 
+    // Update Status Effects
+    if (this.isFrozen) {
+        this.freezeDuration -= deltaTime
+        if (this.freezeDuration <= 0) {
+            this.isFrozen = false
+            this.freezeDuration = 0
+            console.log(`❄️ THAW: ${this.id} is no longer frozen`)
+        }
+    }
+
+    if (this.isStunned) {
+        this.stunDuration -= deltaTime
+        if (this.stunDuration <= 0) {
+            this.isStunned = false
+            this.stunDuration = 0
+            console.log(`💫 RECOVER: ${this.id} is no longer stunned`)
+        }
+    }
+
     // Update attack cooldown
     if (this.attackCooldown > 0) {
       this.attackCooldown -= deltaTime
@@ -246,7 +284,13 @@ export abstract class WorldLife extends WorldObject {
     }
 
     // Update movement state and heading
-    this.isMoving = Math.hypot(this.vx, this.vy) > 0
+    // If frozen or stunned, force moving to false
+    if (this.isFrozen || this.isStunned) {
+        this.isMoving = false
+        // Note: Velocity should be zeroed in specific update loops (Mob/Player)
+    } else {
+        this.isMoving = Math.hypot(this.vx, this.vy) > 0
+    }
 
     // Use appropriate heading update method
     if ('updateHeadingToTarget' in this) {

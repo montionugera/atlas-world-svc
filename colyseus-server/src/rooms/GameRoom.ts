@@ -6,6 +6,7 @@ import { PlanckPhysicsManager } from '../physics/PlanckPhysicsManager'
 import { BattleManager } from '../modules/BattleManager'
 import { BattleModule } from '../modules/BattleModule'
 import { ProjectileManager } from '../modules/ProjectileManager'
+import { TrapManager } from '../modules/TrapManager'
 import { eventBus, RoomEventType } from '../events/EventBus'
 import { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
 import { registerRoom, unregisterRoom } from '../api'
@@ -31,6 +32,7 @@ export class GameRoom extends Room<GameState> {
   private battleModule!: BattleModule
   private projectileManager!: ProjectileManager
   private mobLifeCycleManager!: MobLifeCycleManager
+  public trapManager!: TrapManager
 
   onCreate(options: GameRoomOptions) {
     console.log(`🎮 GameRoom created with mapId: ${options.mapId || 'map-01-sector-a'}`)
@@ -59,6 +61,9 @@ export class GameRoom extends Room<GameState> {
 
     // Initialize projectile manager
     this.projectileManager = new ProjectileManager(this.state, this.battleModule)
+
+    // Initialize trap manager
+    this.trapManager = new TrapManager(this.state, this.battleModule)
 
     // Initialize mob lifecycle manager
     this.mobLifeCycleManager = new MobLifeCycleManager(this.roomId, this.state)
@@ -114,6 +119,28 @@ export class GameRoom extends Room<GameState> {
         
         const { action, pressed } = data || { action: '', pressed: false }
         this.state.updatePlayerAction(client.sessionId, action, pressed)
+
+        // Handle direct actions (one-shot triggers)
+        if (pressed && action === 'useItem') {
+           // Basic Trap Placement
+           const now = Date.now()
+           if (now - player.lastTrapTime >= player.trapCooldown) {
+               console.log(`🧨 ACTION: Player ${player.id} placing trap`)
+               const trap = this.trapManager.createTrap(
+                 player.x,
+                 player.y,
+                 player.id,
+                 'damage', // Default to damage trap for now
+                 20,
+                 2
+               )
+               this.state.traps.set(trap.id, trap)
+               player.lastTrapTime = now
+           } else {
+               const remaining = Math.ceil((player.trapCooldown - (now - player.lastTrapTime)) / 1000)
+               console.log(`⏳ ACTION: Trap cooldown not ready (${remaining}s)`)
+           }
+        }
       }
     )
 
@@ -142,6 +169,26 @@ export class GameRoom extends Room<GameState> {
         // Unregister player from AI module
         this.state.aiModule.unregisterAgent(player.id)
       }
+    })
+
+    // Debug: Spawn Trap
+    this.onMessage('debug_spawn_trap', (client: Client, data: { type: string }) => {
+      const player = this.state.getPlayer(client.sessionId)
+      if (!player) return
+      
+      const type = (data && data.type) || 'damage'
+      console.log(`⚡ DEBUG SPAWN TRAP: near ${client.sessionId}`)
+      
+      const trap = this.trapManager.createTrap(
+        player.x, 
+        player.y, 
+        player.id, 
+        type as any, 
+        type === 'damage' ? 20 : 3000, // 20 dmg or 3s duration
+        2.5 // radius
+      )
+      
+      this.state.traps.set(trap.id, trap)
     })
 
     // Debug: Teleport player
@@ -418,6 +465,9 @@ export class GameRoom extends Room<GameState> {
 
         // Update projectiles (cleanup despawned - removes from map)
         this.state.updateProjectiles(deltaTime)
+
+        // Update traps
+        this.trapManager.update(this.state.traps)
 
         // Process battle action messages via BattleManager instance
         this.battleManager.processActionMessages().then((processedCount: number) => {

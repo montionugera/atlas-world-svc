@@ -50,9 +50,11 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
   execute(mob: Mob, target: Player, roomId: string): boolean {
     if (!this.canExecute(mob, target)) return false
 
-    // Calculate target position (lead target if moving)
-    const targetX = target.x + target.vx * 0.1 // Small lead
-    const targetY = target.y + target.vy * 0.1
+    // Calculate target position based on heading
+    // Currently aiming relies on heading which is locked during casting
+    const heading = mob.heading
+    const targetX = mob.x + Math.cos(heading) * this.maxRange
+    const targetY = mob.y + Math.sin(heading) * this.maxRange
 
     // Create projectile
     const projectile = this.projectileManager.createSpear(

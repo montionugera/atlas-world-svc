@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { GameState } from '../types/game';
 import { calculateScale, clearCanvas } from '../utils/drawingUtils';
-import { drawGrid } from '../utils/gridUtils';
+import { drawGrid, drawGridCoordinates } from '../utils/gridUtils';
 import { drawMap } from '../renderers/mapRenderer';
 import { drawMobs } from '../renderers/mobRenderer';
 import { drawProjectiles } from '../renderers/projectileRenderer';
@@ -82,6 +82,18 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         }
         
         ctx.restore();
+
+        // Draw HUD-style Grid Coordinates
+        drawGridCoordinates(
+          ctx, 
+          cameraX, 
+          cameraY, 
+          scale, 
+          canvas.width, 
+          canvas.height, 
+          gameState.width, 
+          gameState.height
+        );
 
         // --- 2. Mini Map Overlay ---
         const miniMapSize = 150;

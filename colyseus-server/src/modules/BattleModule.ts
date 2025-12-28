@@ -179,6 +179,29 @@ export class BattleModule implements BattleActionProcessor {
     return false
   }
 
+  // Apply a status effect to an entity
+  applyStatusEffect(entity: WorldLife, type: 'freeze' | 'stun', duration: number): boolean {
+    if (!entity.isAlive || entity.isInvulnerable) return false
+
+    switch (type) {
+        case 'freeze':
+            entity.isFrozen = true
+            entity.freezeDuration = Math.max(entity.freezeDuration, duration) // Extend if already frozen
+            console.log(`❄️ FREEZE: ${entity.id} frozen for ${duration}ms`)
+            return true
+        
+        case 'stun':
+            entity.isStunned = true
+            entity.stunDuration = Math.max(entity.stunDuration, duration)
+            console.log(`💫 STUN: ${entity.id} stunned for ${duration}ms`)
+            return true
+            
+        default:
+            console.warn(`⚠️ BATTLE: Unknown status effect type: ${type}`)
+            return false
+    }
+  }
+
   // Trigger invulnerability frames
   // Duration is managed by entity.update() loop - no setTimeout needed
   triggerInvulnerability(entity: WorldLife, duration: number): void {

@@ -8,63 +8,106 @@ export const drawGrid = (
   width: number,
   height: number,
   scale: number = 1,
-  viewScale: number = 1 // New parameter
+  viewScale: number = 1
 ): void => {
   if (!GRID_CONFIG.enabled) return;
+  
+  // Inverse scale line width to maintain constant 1px on screen
   const inverseScale = 1 / viewScale;
 
   ctx.save();
   ctx.strokeStyle = GRID_CONFIG.color;
-  ctx.lineWidth = GRID_CONFIG.lineWidth * inverseScale; // Inverse scale line width
+  ctx.lineWidth = GRID_CONFIG.lineWidth * inverseScale;
   
-  // Inverse scale font size
-  const fontSize = 10 * inverseScale;
-  ctx.font = `${fontSize}px Arial`;
+  // Grid size in World Units
+  const gridSize = GRID_CONFIG.size;
   
-  ctx.fillStyle = GRID_CONFIG.coordinateColor;
-
-  // Grid size in pixels (game units * scale)
-  const gridSizePixels = GRID_CONFIG.size * scale;
-  
-  // Calculate how many grid lines we need for the world
-  // width/height passed in arguments are in game units
-  const gridLinesX = Math.ceil(width / GRID_CONFIG.size);
-  const gridLinesY = Math.ceil(height / GRID_CONFIG.size);
+  const gridLinesX = Math.ceil(width / gridSize);
+  const gridLinesY = Math.ceil(height / gridSize);
 
   // Draw vertical lines
   for (let i = 0; i <= gridLinesX; i++) {
-    const x = i * gridSizePixels;
+    const x = i * gridSize;
     ctx.beginPath();
     ctx.moveTo(x, 0);
-    ctx.lineTo(x, height * scale);
+    ctx.lineTo(x, height);
     ctx.stroke();
   }
 
   // Draw horizontal lines
   for (let i = 0; i <= gridLinesY; i++) {
-    const y = i * gridSizePixels;
+    const y = i * gridSize;
     ctx.beginPath();
     ctx.moveTo(0, y);
-    ctx.lineTo(width * scale, y);
+    ctx.lineTo(width, y);
     ctx.stroke();
   }
 
-  // Draw coordinates if enabled
-  if (GRID_CONFIG.showCoordinates) {
-    const offset = GRID_CONFIG.coordinateOffset * inverseScale; // Scale offset
-    
-    // Draw X coordinates (top) - show game units
-    for (let i = 0; i <= gridLinesX; i++) {
-      const x = i * gridSizePixels;
-      const gameUnit = i * GRID_CONFIG.size;
-      ctx.fillText(gameUnit.toString(), x + offset, 15 * inverseScale);
-    }
+  ctx.restore();
+};
 
-    // Draw Y coordinates (left) - show game units
-    for (let i = 0; i <= gridLinesY; i++) {
-      const y = i * gridSizePixels;
-      const gameUnit = i * GRID_CONFIG.size;
-      ctx.fillText(gameUnit.toString(), 5 * inverseScale, y - offset);
+/**
+ * Draw grid coordinates in Screen Space (HUD overlay style)
+ * Should be called AFTER restoring camera transform
+ */
+export const drawGridCoordinates = (
+  ctx: CanvasRenderingContext2D,
+  cameraX: number,
+  cameraY: number,
+  scale: number,
+  canvasWidth: number,
+  canvasHeight: number,
+  worldWidth: number,
+  worldHeight: number
+): void => {
+  if (!GRID_CONFIG.enabled || !GRID_CONFIG.showCoordinates) return;
+
+  ctx.save();
+  ctx.fillStyle = GRID_CONFIG.coordinateColor;
+  ctx.font = GRID_CONFIG.coordinateFont;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+
+  const gridSize = GRID_CONFIG.size;
+  const gridLinesX = Math.ceil(worldWidth / gridSize);
+  const gridLinesY = Math.ceil(worldHeight / gridSize);
+
+  // Draw X coordinates (along top edge)
+  for (let i = 0; i <= gridLinesX; i++) {
+    const worldX = i * gridSize;
+    // Project to Screen
+    const screenX = (worldX - cameraX) * scale + canvasWidth / 2;
+    
+    // Only draw if within horizontal bounds
+    if (screenX >= -20 && screenX <= canvasWidth + 20) {
+      ctx.fillText(worldX.toString(), screenX + GRID_CONFIG.coordinateOffset, GRID_CONFIG.coordinateOffset);
+      
+      // Draw small tick mark at the edge
+      ctx.beginPath();
+      ctx.moveTo(screenX, 0);
+      ctx.lineTo(screenX, 5);
+      ctx.strokeStyle = GRID_CONFIG.coordinateColor;
+      ctx.stroke();
+    }
+  }
+
+  // Draw Y coordinates (along left edge)
+  for (let i = 0; i <= gridLinesY; i++) {
+    const worldY = i * gridSize;
+    // Project to Screen
+    const screenY = (worldY - cameraY) * scale + canvasHeight / 2;
+    
+    // Only draw if within vertical bounds
+    if (screenY >= -20 && screenY <= canvasHeight + 20) {
+        // Draw text slightly offset from left
+        ctx.fillText(worldY.toString(), GRID_CONFIG.coordinateOffset, screenY + GRID_CONFIG.coordinateOffset);
+        
+        // Draw small tick mark
+        ctx.beginPath();
+        ctx.moveTo(0, screenY);
+        ctx.lineTo(5, screenY);
+        ctx.strokeStyle = GRID_CONFIG.coordinateColor;
+        ctx.stroke();
     }
   }
 

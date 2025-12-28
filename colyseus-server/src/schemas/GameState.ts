@@ -2,6 +2,7 @@ import { Schema, MapSchema, ArraySchema, type } from '@colyseus/schema'
 import { Mob } from './Mob'
 import { Player } from './Player'
 import { Projectile } from './Projectile'
+import { Trap } from './Trap'
 import { GAME_CONFIG } from '../config/gameConfig'
 import { AIModule } from '../ai/AIModule'
 import { AIWorldInterface } from '../ai/AIWorldInterface'
@@ -14,6 +15,7 @@ export class GameState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>()
   @type({ map: Mob }) mobs = new MapSchema<Mob>()
   @type({ map: Projectile }) projectiles = new MapSchema<Projectile>()
+  @type({ map: Trap }) traps = new MapSchema<Trap>()
   @type('number') tick: number = 0
   @type('string') mapId: string = 'map-01-sector-a'
   @type('string') roomId: string = ''
@@ -169,6 +171,7 @@ export class GameState extends Schema {
       // AI is handled by AIModule (already running)
       // Update mob: cooldowns, position, heading, and attack logic
       // Attack events are now emitted to event bus in updateAttack
+      // @ts-ignore - Mob.update signature mismatch due to circular dependency
       mob.update(GAME_CONFIG.tickRate, this)
     }
 

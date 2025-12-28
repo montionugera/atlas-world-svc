@@ -26,6 +26,10 @@ export class Player extends WorldLife implements IAgent {
   desiredVx: number = 0
   desiredVy: number = 0
 
+  // Cooldowns
+  lastTrapTime: number = 0
+  trapCooldown: number = 5000 // 5 seconds
+
   // AI Agent properties
   @type('string') currentBehavior: string = 'idle'
   @type('number') behaviorLockedUntil: number = 0
@@ -140,6 +144,9 @@ export class Player extends WorldLife implements IAgent {
   findTargetInDirection(mobs: Map<string, any>): any | null {
     if (!this.canAttack()) return null
 
+    // Block targeting if frozen or stunned
+    if (this.isFrozen || this.isStunned) return null
+
     const attackCone = Math.PI / 4 // 45-degree attack cone
     const maxRange = this.attackRange + this.radius
     let nearestTarget: any = null
@@ -183,6 +190,9 @@ export class Player extends WorldLife implements IAgent {
 
     if (!this.input.attack) return false
     
+    // Status effect check
+    if (this.isFrozen || this.isStunned) return false
+
     if (!this.canAttack()) {
         return false
     }
@@ -228,6 +238,9 @@ export class Player extends WorldLife implements IAgent {
   // Execute attack for bot mode
   executeBotAttack(mobs: Map<string, any>, roomId: string): void {
     if (!this.canAttack()) return
+    
+    // Status effect check
+    if (this.isFrozen || this.isStunned) return
 
     const { eventBus, RoomEventType } = require('../events/EventBus')
     
