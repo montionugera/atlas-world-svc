@@ -117,11 +117,7 @@ describe('Battle System', () => {
       expect(player.isAlive).toBe(false)
     })
 
-    test('should trigger invulnerability frames', () => {
-      battleModule.applyDamage(player, 10)
-      expect(player.isInvulnerable).toBe(true)
-      expect(player.invulnerabilityDuration).toBeGreaterThan(0)
-    })
+
 
     test('should emit BATTLE_DAMAGE_PRODUCED event when processing attack', () => {
       let eventEmitted = false

@@ -33,13 +33,21 @@ export interface CombatStats {
   defense: number
   armor: number
   isAlive: boolean
-  isInvulnerable: boolean
-  invulnerabilityDuration: number
+
+  // isInvulnerable removed
 }
 
 export class BattleModule implements BattleActionProcessor {
   private attackEvents: AttackEvent[] = []
   private maxEventHistory = 100 // Keep last 100 events
+  private processedIdsCleanupInterval = 5000 // Cleanup every 5s
+
+
+  private lastCleanupTime = 0
+  
+  // Centralized Event Tracking: Map<EntityId, Map<EventId, Timestamp>>
+  private processedEventsByEntityId: Map<string, Map<string, number>> = new Map()
+  
   private gameState: GameState
 
   constructor(gameState: GameState) {
@@ -136,8 +144,16 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Apply damage to target
-  applyDamage(target: WorldLife, damage: number): boolean {
-    if (!target.isAlive || target.isInvulnerable) return false
+  applyDamage(target: WorldLife, damage: number, options?: { eventId?: string }): boolean {
+    if (!target.isAlive) return false
+
+    // Event Validation
+    if (options?.eventId) {
+        if (!this.validateEvent(target, options.eventId)) {
+            // Already processed this event
+            return false;
+        }
+    }
 
     // Validate damage (must be non-negative)
     const validDamage = Math.max(0, damage)
@@ -156,8 +172,8 @@ export class BattleModule implements BattleActionProcessor {
       return true // Entity died
     }
 
-    // Trigger invulnerability frames (only for positive damage)
-      this.triggerInvulnerability(target, 100)
+    // Invulnerability removed
+    // this.triggerInvulnerability(target, 100)
 
     return false // Entity survived
   }
@@ -180,33 +196,103 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Apply a status effect to an entity
-  applyStatusEffect(entity: WorldLife, type: 'freeze' | 'stun', duration: number): boolean {
-    if (!entity.isAlive || entity.isInvulnerable) return false
-
-    switch (type) {
-        case 'freeze':
-            entity.isFrozen = true
-            entity.freezeDuration = Math.max(entity.freezeDuration, duration) // Extend if already frozen
-            console.log(`❄️ FREEZE: ${entity.id} frozen for ${duration}ms`)
-            return true
-        
-        case 'stun':
-            entity.isStunned = true
-            entity.stunDuration = Math.max(entity.stunDuration, duration)
-            console.log(`💫 STUN: ${entity.id} stunned for ${duration}ms`)
-            return true
-            
-        default:
-            console.warn(`⚠️ BATTLE: Unknown status effect type: ${type}`)
-            return false
+  applyStatusEffect(entity: WorldLife, type: string, duration: number, baseChance: number = 1.0, options?: { bypassInvulnerability?: boolean, eventId?: string }): boolean {
+    if (!entity.isAlive) return false
+    
+    // Event Validation
+    if (options?.eventId) {
+        if (!this.validateEvent(entity, options.eventId)) {
+            return false;
+        }
     }
+
+    // bypassInvulnerability is now deprecated/redundant with Event ID system but kept for signature compat if needed
+    // if (entity.isInvulnerable ... ) // Removed
+    
+    // Calculate Chance
+    const resistance = entity.getResistance(type);
+    
+    // Final Chance = Base * (1 - Resistance)
+    // Resistance 1.0 = Immune (Chance 0)
+    // Resistance 0.0 = Base Chance
+    // Resistance -0.5 = 1.5x Chance (Vulnerable)
+    const chance = Math.max(0, Math.min(1, baseChance * (1 - resistance)));
+    
+    // Roll
+    if (Math.random() > chance) {
+        console.log(`🛡️ RESIST: ${entity.id} resisted '${type}' (Chance: ${(chance*100).toFixed(1)}%, Resistance: ${(resistance*100).toFixed(1)}%)`);
+        return false;
+    }
+    
+    // Status Logic
+    const now = Date.now()
+    const currentExpiry = entity.battleStatuses.get(type) || now
+    const newExpiry = Math.max(currentExpiry, now + duration)
+    
+    entity.battleStatuses.set(type, newExpiry)
+    console.log(`✨ STATUS: ${entity.id} applied '${type}' for ${duration}ms (Until: ${newExpiry})`)
+    
+    return true
   }
 
-  // Trigger invulnerability frames
-  // Duration is managed by entity.update() loop - no setTimeout needed
+  // Validate if event should be processed
+  // Returns TRUE if event is new and should process
+  // Returns FALSE if event was already processed
+  // Validate if event should be processed
+  // Returns TRUE if event is new and should process
+  // Returns FALSE if event was already processed
+  private validateEvent(entity: WorldLife, eventId: string): boolean {
+      let entityEvents = this.processedEventsByEntityId.get(entity.id);
+      if (!entityEvents) {
+          entityEvents = new Map<string, number>();
+          this.processedEventsByEntityId.set(entity.id, entityEvents);
+      }
+      
+      if (entityEvents.has(eventId)) {
+          return false;
+      }
+      entityEvents.set(eventId, Date.now());
+      return true;
+  }
+
+  // Cleanup processed events (call this periodically)
+  cleanupProcessedEvents(entityId: string) {
+      const entityEvents = this.processedEventsByEntityId.get(entityId);
+      if (!entityEvents) return;
+
+      const now = Date.now();
+      const expiration = 2000; // 2 seconds retention
+      
+      const toRemove: string[] = [];
+      entityEvents.forEach((timestamp, id) => {
+          if (now - timestamp > expiration) {
+              toRemove.push(id);
+          }
+      });
+      
+      toRemove.forEach(id => entityEvents.delete(id));
+      
+      // If empty, remove the entity map entirely to save memory
+      if (entityEvents.size === 0) {
+          this.processedEventsByEntityId.delete(entityId);
+      }
+  }
+
+  // Helper to trigger cleanup globally
+  cleanupAllEvents() {
+      const now = Date.now();
+      if (now - this.lastCleanupTime < this.processedIdsCleanupInterval) return;
+      this.lastCleanupTime = now;
+      
+      // Iterate all tracked entities
+      for (const entityId of this.processedEventsByEntityId.keys()) {
+          this.cleanupProcessedEvents(entityId);
+      }
+  }
+
+  // Trigger invulnerability frames - REMOVED/DEPRECATED
   triggerInvulnerability(entity: WorldLife, duration: number): void {
-    entity.isInvulnerable = true
-    entity.invulnerabilityDuration = duration
+    // No-op
   }
 
   // Respawn an entity
@@ -220,8 +306,10 @@ export class BattleModule implements BattleActionProcessor {
     entity.vy = 0
     entity.lastAttackTime = 0
     entity.attackCooldown = 0
-    entity.isInvulnerable = false
-    entity.invulnerabilityDuration = 0
+
+    this.processedEventsByEntityId.delete(entity.id) // Clear old events on respawn
+    // entity.isInvulnerable = false // Removed
+    // entity.invulnerabilityDuration = 0 // Removed
 
     if (x !== undefined && y !== undefined) {
       entity.x = x
@@ -238,23 +326,20 @@ export class BattleModule implements BattleActionProcessor {
       attackRange: entity.attackRange,
       attackDelay: entity.attackDelay,
       defense: entity.defense,
+
       armor: entity.armor,
       isAlive: entity.isAlive,
-      isInvulnerable: entity.isInvulnerable,
-      invulnerabilityDuration: entity.invulnerabilityDuration,
+
+
     }
   }
 
-  // Update entity combat state (invulnerability, cooldowns)
+  // Update entity combat state (cooldowns)
   updateCombatState(entity: WorldLife, deltaTime: number): void {
-    // Update invulnerability
-    if (entity.isInvulnerable && entity.invulnerabilityDuration > 0) {
-      entity.invulnerabilityDuration -= deltaTime
-      if (entity.invulnerabilityDuration <= 0) {
-        entity.isInvulnerable = false
-        entity.invulnerabilityDuration = 0
-      }
-    }
+    // Invulnerability update removed
+    
+    // Periodically cleanup events? Or do it in main loop.
+    // For now we'll do global cleanup in loop.
 
     // Update attack cooldown
     if (entity.attackCooldown > 0) {

@@ -128,7 +128,7 @@ export class ProjectileManager {
         { attackDamage: projectile.damage } as WorldLife,
         player
       )
-      const targetDied = this.battleModule.applyDamage(player, damage)
+      const targetDied = this.battleModule.applyDamage(player, damage, { eventId: projectile.id })
       
       // Emit battle damage produced event for knockback/FX (same as melee attacks)
       try {

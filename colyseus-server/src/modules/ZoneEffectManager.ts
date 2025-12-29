@@ -16,8 +16,7 @@ export class ZoneEffectManager {
     x: number,
     y: number,
     ownerId: string,
-    effectType: 'damage' | 'freeze' | 'stun' | 'heal',
-    effectValue: number,
+    effects: { type: string, value: number, chance?: number }[],
     radius: number = 2,
     castTime: number = 1000,
     duration: number = 5000,
@@ -25,20 +24,20 @@ export class ZoneEffectManager {
   ): ZoneEffect {
     const id = `zone-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
     
+    // Pass effects array to constructor
     const zone = new ZoneEffect(
       id, 
       x, 
       y, 
       ownerId, 
-      effectType, 
-      effectValue, 
+      effects, 
       radius, 
       castTime, 
       duration, 
       tickRate
     )
     
-    console.log(`🌀 ZONE CREATED: ${id} at ${x},${y} type=${effectType} cast=${castTime}ms dur=${duration}ms tick=${tickRate}ms`)
+    console.log(`🌀 ZONE CREATED: ${id} at ${x},${y} cast=${castTime}ms dur=${duration}ms tick=${tickRate}ms`)
     return zone
   }
 
@@ -67,8 +66,6 @@ export class ZoneEffectManager {
       }
 
       // 3. Ticking Logic
-      // If tickRate is 0, it hits once and stays active until duration (or removed if intended to be one-shot logic handled elsewhere)
-      // If tickRate > 0, checks periodic application
       let shouldProc = false
       if (zone.tickRate > 0) {
         if (now - zone.lastTickTime >= zone.tickRate) {
@@ -77,17 +74,19 @@ export class ZoneEffectManager {
         }
       } else {
         // Continuous/One-shot logic:
-        // If it's pure one-shot with no duration, we remove it. 
-        // If it has duration but no ticks (e.g. constant slow field), we might apply every frame or just once.
-        // For 'damage' with 0 tickRate, we assume instant trigger and remove.
-        if (zone.effectType === 'damage') {
+        // If it has 'damage' effect and tickRate 0, assume instantaneous and remove
+        const hasDamage = zone.effects.some(e => e.type === 'damage');
+        if (hasDamage) {
            shouldProc = true
            toRemove.push(id) // Remove after one hit
         }
       }
 
       if (shouldProc) {
-         this.procEffect(zone)
+         // UNIQUE EVENT ID generation for this tick
+         // Format: zoneId-tickTimestamp-random to ensure uniqueness across ticks
+         const eventId = `${zone.id}-tick-${Date.now()}-${Math.random().toString(36).slice(2,4)}`;
+         this.procEffect(zone, eventId)
       }
     }
 
@@ -97,12 +96,12 @@ export class ZoneEffectManager {
     }
   }
 
-  private procEffect(zone: ZoneEffect) {
+  private procEffect(zone: ZoneEffect, eventId: string) {
       // Check players
       for (const player of this.gameState.players.values()) {
          if (!player.isAlive) continue
          if (zone.shouldTrigger(player)) {
-             this.applyZoneEffect(zone, player)
+             this.applyZoneEffect(zone, player, eventId)
          }
       }
       
@@ -110,27 +109,44 @@ export class ZoneEffectManager {
       for (const mob of this.gameState.mobs.values()) {
          if (!mob.isAlive) continue
          if (zone.shouldTrigger(mob)) {
-             this.applyZoneEffect(zone, mob)
+             this.applyZoneEffect(zone, mob, eventId)
          }
       }
   }
 
-  private applyZoneEffect(zone: ZoneEffect, target: any) {
-    // Determine visual event type
-    let procType = zone.effectType
-    
-    // Apply effect
-    if (zone.effectType === 'damage') {
-        this.battleModule.applyDamage(target, zone.effectValue)
-    } else if (zone.effectType === 'heal') {
-        this.battleModule.healEntity(target, zone.effectValue)
-    } else if (zone.effectType === 'freeze' || zone.effectType === 'stun') {
-        this.battleModule.applyStatusEffect(target, zone.effectType, zone.effectValue)
-    }
+  private applyZoneEffect(zone: ZoneEffect, target: any, eventId: string) {
+    // Iterate through all effects
+    // 1. Apply Status Effects & Heals FIRST
+    // This allows simultaneous application with same Event ID
+    zone.effects.forEach(effect => {
+        if (effect.type === 'damage') return; // Skip damage for now
+
+        if (effect.type === 'heal') {
+            this.battleModule.healEntity(target, effect.value)
+        } else {
+            switch (effect.type) {
+                case 'freeze':
+                case 'stun':
+                    // Pass chance and eventId (unique per effect type to allow simultaneous application)
+                    this.battleModule.applyStatusEffect(target, effect.type, effect.value, effect.chance, { eventId: `${eventId}-status-${effect.type}` });
+                    break;
+            }
+        }
+    });
+
+    // 2. Apply Damage LAST
+    zone.effects.forEach(effect => {
+        if (effect.type === 'damage') {
+            this.battleModule.applyDamage(target, effect.value, { eventId: `${eventId}-damage` })
+        }
+    });
+
+    // Determine primary type for visuals (first effect)
+    const primaryType = zone.effects.length > 0 ? zone.effects[0].type : 'unknown';
 
     // Emit event for visuals (throttled logs)
     if (Math.random() < 0.1) {
-        // console.log(`💥 ZONE PROC: ${zone.id} hit ${target.id} (${zone.effectType})`)
+        // console.log(`💥 ZONE PROC: ${zone.id} hit ${target.id} (${primaryType})`)
     }
     
     eventBus.emitRoomEvent(this.gameState.roomId, 'trap:triggered' as any, { 
@@ -138,7 +154,7 @@ export class ZoneEffectManager {
         targetId: target.id,
         x: zone.x,
         y: zone.y,
-        type: zone.effectType
+        type: primaryType
     } as any)
   }
 }

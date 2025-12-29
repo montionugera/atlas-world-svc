@@ -3,7 +3,7 @@
  * Represents entities that can move, have health, and can attack
  */
 
-import { Schema, type, ArraySchema } from '@colyseus/schema'
+import { Schema, type, ArraySchema, MapSchema } from '@colyseus/schema'
 import { WorldObject } from './WorldObject'
 
 export abstract class WorldLife extends WorldObject {
@@ -24,6 +24,21 @@ export abstract class WorldLife extends WorldObject {
   // Defense system
   @type('number') defense: number = 0 // Reduces incoming damage
   @type('number') armor: number = 0 // Additional damage reduction
+  
+  // Resistance System (Map: Type -> Resistance Value 0.0-1.0)
+  @type({ map: "number" }) resistances = new MapSchema<number>();
+
+
+
+  // Helper to get resistance safely
+  getResistance(type: string): number {
+      return this.resistances.get(type) || 0;
+  }
+  
+  // Helper to set resistance
+  setResistance(type: string, value: number) {
+      this.resistances.set(type, value);
+  }
 
 // Impulse system (calculated from damage)
   @type('number') density: number = 1 // Material density for mass calculation
@@ -36,16 +51,24 @@ export abstract class WorldLife extends WorldObject {
   // Heading direction (in radians) - based on latest movement
   @type('number') heading: number = 0
 
-  // Status Effects
-  @type('boolean') isFrozen: boolean = false
-  @type('number') freezeDuration: number = 0
-  @type('boolean') isStunned: boolean = false
-  @type('number') stunDuration: number = 0
+  // Status Effects System
+  @type({ map: "number" }) battleStatuses = new MapSchema<number>(); // Type -> Expiration Timestamp
+
+  // Getters for common statuses (Backward Compatibility)
+  get isFrozen(): boolean { return this.battleStatuses.has('freeze'); }
+  get isStunned(): boolean { return this.battleStatuses.has('stun'); }
+
+  set isFrozen(val: boolean) { 
+      if (!val) this.battleStatuses.delete('freeze'); 
+      // Setting true without duration is ambiguous in new system, ignore or default
+  }
+  set isStunned(val: boolean) {
+      if (!val) this.battleStatuses.delete('stun');
+  }
+
 
   // Server-only properties (not synced to clients)
   attackCooldown: number = 0
-  isInvulnerable: boolean = false
-  invulnerabilityDuration: number = 0
   diedAt: number = 0 // Timestamp when entity died (0 = alive or not set)
   attackAnimationStartTime: number = 0 // Timestamp when attack animation started (0 = not attacking)
 
@@ -98,13 +121,23 @@ export abstract class WorldLife extends WorldObject {
     this.armor = opts.armor ?? 0
     this.density = opts.density ?? 1
     this.lastAttackTime = performance.now() - this.attackDelay - 1 // Allow immediate first attack
+    
+    // Initialize resistances (default 0)
+    // You can pass a map or object of resistances in options if needed, 
+    // but for now we default to empty (0)
+    if ((opts as any).resistances) {
+        const initialResists = (opts as any).resistances;
+        for (const key in initialResists) {
+            this.resistances.set(key, initialResists[key]);
+        }
+    }
   }
 
   // Health management - simple health setter
-  // NOTE: Defense calculations and invulnerability are handled by BattleModule.applyDamage()
+  // NOTE: Defense calculations and validation are handled by BattleModule.applyDamage()
   // This method is kept for internal use only. All external damage should go through BattleModule.
   takeDamage(damage: number, attacker?: WorldLife): boolean {
-    if (!this.isAlive || this.isInvulnerable) return false
+    if (!this.isAlive) return false
 
     // Simple health reduction (defense calculation should be done by BattleModule before calling this)
     this.currentHealth = Math.max(0, this.currentHealth - damage)
@@ -134,10 +167,7 @@ export abstract class WorldLife extends WorldObject {
     this.vy = 0
     this.diedAt = Date.now() // Record death timestamp for respawn delay
     // Clear status effects
-    this.isFrozen = false
-    this.freezeDuration = 0
-    this.isStunned = false
-    this.stunDuration = 0
+    this.battleStatuses.clear();
   }
 
   respawn(x?: number, y?: number): void {
@@ -149,15 +179,13 @@ export abstract class WorldLife extends WorldObject {
     this.vx = 0
     this.vy = 0
     this.lastAttackTime = 0
+    this.lastAttackTime = 0
     this.attackCooldown = 0
-    this.isInvulnerable = false
-    this.invulnerabilityDuration = 0
+    // this.processedEvents.clear() // Removed, handled centrally in BattleModule
+
     this.diedAt = 0 // Reset death timestamp
     // Clear status effects
-    this.isFrozen = false
-    this.freezeDuration = 0
-    this.isStunned = false
-    this.stunDuration = 0
+    this.battleStatuses.clear();
     
     // Note: Mob-specific flags (cantRespawn, readyToRemove) are handled in Mob class
     // Mob class should override respawn() to call clearRemovalFlag()
@@ -203,11 +231,10 @@ export abstract class WorldLife extends WorldObject {
     return this.getDistanceTo(target) <= this.attackRange
   }
 
-  // Invulnerability system
-  // Duration is managed by update() loop - no setTimeout needed
+  // Invulnerability system REMOVED
+  // Validation is now done via processedEvents in BattleModule
   triggerInvulnerability(duration: number): void {
-    this.isInvulnerable = true
-    this.invulnerabilityDuration = duration
+     // Deprecated/No-op
   }
 
   // Smart heading update - automatically chooses best source
@@ -241,32 +268,34 @@ export abstract class WorldLife extends WorldObject {
 
   // Update method for server-side logic
   update(deltaTime: number): void {
-    // Update invulnerability
-    if (this.isInvulnerable && this.invulnerabilityDuration > 0) {
-      this.invulnerabilityDuration -= deltaTime
-      if (this.invulnerabilityDuration <= 0) {
-        this.isInvulnerable = false
-        this.invulnerabilityDuration = 0
-      }
-    }
+    // Invulnerability update removed
+
 
     // Update Status Effects
-    if (this.isFrozen) {
-        this.freezeDuration -= deltaTime
-        if (this.freezeDuration <= 0) {
-            this.isFrozen = false
-            this.freezeDuration = 0
-            console.log(`❄️ THAW: ${this.id} is no longer frozen`)
+    if (this.battleStatuses) {
+        const now = Date.now();
+        // Use forEach directly on MapSchema if possible, or keys
+        this.battleStatuses.forEach((expiresAt, key) => {
+             if (now >= expiresAt) {
+                // We shouldn't delete while iterating in some collections, 
+                // but MapSchema forEach is usually safe? 
+                // Safer to collect keys first.
+             }
+        });
+        
+        // Use manual key iteration for safety
+        const keysToRemove: string[] = [];
+        for (const key of this.battleStatuses.keys()) {
+             const expiresAt = this.battleStatuses.get(key);
+             if (expiresAt && now >= expiresAt) {
+                 keysToRemove.push(key);
+             }
         }
-    }
-
-    if (this.isStunned) {
-        this.stunDuration -= deltaTime
-        if (this.stunDuration <= 0) {
-            this.isStunned = false
-            this.stunDuration = 0
-            console.log(`💫 RECOVER: ${this.id} is no longer stunned`)
-        }
+        
+        keysToRemove.forEach(key => {
+            this.battleStatuses.delete(key);
+            console.log(`✨ EXPIRE: ${this.id} status '${key}' expired`);
+        });
     }
 
     // Update attack cooldown
