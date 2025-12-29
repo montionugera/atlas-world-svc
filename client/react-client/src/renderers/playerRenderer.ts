@@ -12,6 +12,7 @@ export const drawPlayers = (
   viewScale: number = 1 // New parameter
 ): void => {
   const inverseScale = 1 / viewScale;
+  const now = Date.now();
 
   players.forEach((player, sessionId) => {
     const x = player.x * scale;
@@ -28,8 +29,16 @@ export const drawPlayers = (
     ctx.lineWidth = 2 * inverseScale;
     ctx.stroke();
     
-    // Draw health bar (same size as mobs)
+    // UI Vertical Offset stacking
+    // Start strictly above the player radius
+    let uiYOffset = y - radius; 
+
+    // 1. Health Bar (Bottom of stack)
     if (player.maxHealth && player.currentHealth !== undefined) {
+      // Pass PIXEL values for dimensions. drawHealthBar handles the inverse scaling conversion to world units.
+      const healthBarHeight = 10; // pixels
+      const healthBarMargin = 10; // pixels above radius
+      
       drawHealthBar(
         ctx,
         x,
@@ -42,26 +51,64 @@ export const drawPlayers = (
         '#00ff00', // green health
         '#000000', // black border
         {
-          minWidth: 8,
-          maxWidth: 40, // same as mobs
-          minHeight: 2,
-          maxHeight: 6, // same as mobs
-          minOffset: 4,
-          maxOffset: 16,
-          widthMultiplier: 2.0, // same as mobs
-          heightMultiplier: 0.25
+          minWidth: 24,
+          maxWidth: 64, // Fixed pixel width (larger)
+          minHeight: 4,
+          maxHeight: healthBarHeight, // Fixed pixel height
+          minOffset: healthBarMargin,
+          maxOffset: 500, // Large enough so it doesn't clamp inside the player radius
+          widthMultiplier: 2.6, 
+          heightMultiplier: 0.35
         },
-        viewScale // Pass viewScale for inverse scaling
+        viewScale 
       );
+      
+      // Update Y offset for next elements
+      // Health bar is from (y - offset) downwards
+      // We want next element above (y - offset).
+      // Effective offset used by util is roughly (radius + margin).
+      uiYOffset -= ((healthBarMargin + healthBarHeight + 4) * inverseScale);
+    } else {
+        // Base margin if no health bar
+        uiYOffset -= (10 * inverseScale);
+    }
+
+    // 2. Casting Bar (Above Health Bar if present)
+    if (player.castingUntil && player.castingUntil > now) {
+        const remaining = player.castingUntil - now;
+        const total = 500; 
+        const progress = Math.max(0, remaining / total); 
+        const fillPct = 1 - progress; 
+
+        const barWidth = 40 * inverseScale;
+        const barHeight = 5 * inverseScale;
+        
+        // Draw centered above previous UI element
+        // uiYOffset is the bottom line for this element
+        const castBarBottom = uiYOffset;
+        const castBarTop = castBarBottom - barHeight;
+        
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.fillRect(x - barWidth/2, castBarTop, barWidth, barHeight);
+        
+        ctx.fillStyle = '#ffffff'; // White cast bar
+        ctx.fillRect(x - barWidth/2, castBarTop, barWidth * fillPct, barHeight);
+        
+        // Shift stack up
+        uiYOffset -= (barHeight + 4 * inverseScale); 
     }
     
-    // Draw player name
+    // 3. Name Label (Top of stack)
     const fontSize = 12 * inverseScale;
+    
+    // Position name based on accumulated offset
+    const nameY = uiYOffset - (2 * inverseScale); 
+    
     drawText(
       ctx,
       player.name,
-      x - (20 * inverseScale),
-      y - (15 * inverseScale),
+      x - (25 * inverseScale), // Rough centering offset (text width dependent)
+      nameY,
       COLORS.hudText,
       `${fontSize}px Arial`
     );
@@ -72,7 +119,7 @@ export const drawPlayers = (
         ctx,
         '[BOT]',
         x - (15 * inverseScale),
-        y - (30 * inverseScale),
+        nameY - (14 * inverseScale),
         '#ff9f43',
         `${10 * inverseScale}px Arial`
       );
@@ -106,7 +153,6 @@ export const drawPlayers = (
         scale,
         '#ff4444', // red cone
         0.4, // semi-transparent
-        // Attack cone does not need inverse scaling as it represents physical area
       );
       
       // Draw attack slash effect

@@ -26,6 +26,8 @@ export class Player extends WorldLife implements IAgent {
   desiredVx: number = 0
   desiredVy: number = 0
 
+  @type('number') castingUntil: number = 0 // Server-only, blocks movement
+
   // Cooldowns
   lastTrapTime: number = 0
   trapCooldown: number = 5000 // 5 seconds

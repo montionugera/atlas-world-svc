@@ -101,6 +101,10 @@ export class GameRoom extends Room<GameState> {
         this.state.updatePlayerInput(client.sessionId, 0, 0)
         return
       }
+      // Prevent moving while casting
+      if (Date.now() < player.castingUntil) {
+          return
+      }
       
       const { vx, vy } = data || { vx: 0, vy: 0 }
       this.state.updatePlayerInput(client.sessionId, vx, vy)
@@ -138,8 +142,13 @@ export class GameRoom extends Room<GameState> {
                  5000, // Duration: 5s
                  200   // Tick rate: 200ms
                )
+                
+               // Force stop movement immediately
+               this.state.updatePlayerInput(client.sessionId, 0, 0)
+               
                this.state.zoneEffects.set(zone.id, zone)
                player.lastTrapTime = now
+               player.castingUntil = now + 500 // Lock movement for cast time (500ms)
            } else {
                const remaining = Math.ceil((player.trapCooldown - (now - player.lastTrapTime)) / 1000)
                console.log(`⏳ ACTION: Trap cooldown not ready (${remaining}s)`)

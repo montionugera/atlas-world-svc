@@ -53,6 +53,7 @@ export interface Player {
   isAlive?: boolean;
   health?: number;
   maxHealth?: number;
+  castingUntil?: number; // Synced from server
   // Status Effects
   isFrozen?: boolean;
   isStunned?: boolean;

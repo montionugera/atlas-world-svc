@@ -1,9 +1,11 @@
 import { ZoneEffect } from '../types/game'
 
-export const drawZoneEffects = (ctx: CanvasRenderingContext2D, zoneEffects?: Map<string, ZoneEffect>) => {
+export const drawZoneEffects = (ctx: CanvasRenderingContext2D, zoneEffects?: Map<string, ZoneEffect>, viewScale: number = 1) => {
   if (!zoneEffects) return
 
   const now = Date.now()
+  // Line width should be inversely proportional to scale so it's constant on screen
+  const baseLineWidth = 2 / viewScale
 
   zoneEffects.forEach((zone) => {
     ctx.save()
@@ -34,46 +36,33 @@ export const drawZoneEffects = (ctx: CanvasRenderingContext2D, zoneEffects?: Map
 
     // Casting State
     if (!zone.isActive) {
-        // Draw casting indicator (dashed outline, pulsing)
+        // Draw casting indicator:
+        // 1. Dashed boundary ring (fixed radius)
         const pulse = (Math.sin(now / 100) + 1) / 2 // 0 to 1
         const alpha = 0.3 + (pulse * 0.4) // 0.3 to 0.7
         
         ctx.beginPath()
-        ctx.arc(0, 0, zone.radius * 20, 0, Math.PI * 2) // Radius is in physics units usually, *20 for pixels if needed, or if radius is already pixels... 
-        // Wait, radius in game.ts seems to be physics units (2). 2 * 20 = 40 pixels? 
-        // Let's assume standard scaling if GameRenderer handles camera transform.
-        // Usually rendering assumes untransformed coordinates if camera is applied globally.
-        // But here we are drawing in world space.
-        
-        // CHECK SCALE: Map logic usually treats 1 unit as significant. 2.5 is typical radius.
-        // If other renderers use direct values, we use direct.
-        // Let's stick to direct radius, assuming context is scaled or radius is large enough.
-        // Actually, previous trap renderer likely used fixed size or scaled.
-        // Let's use `zone.radius` directly if scale is handled by canvas transform, 
-        // OR multiply if physics units are small.
-        // Standard Planck/Box2d: 1 unit = 1 meter. 
-        // Looking at GameConfig, world is 2000 wide. 
-        // Player radius is ~1.3. 
-        // So radius 2.5 is decent size (double player size).
-        // If the canvas is NOT scaled, we need to multiply. 
-        // Let's look at GameRenderer later. For now, use radius.
+        ctx.arc(0, 0, zone.radius, 0, Math.PI * 2) 
         
         ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`
-        ctx.lineWidth = 2
-        ctx.setLineDash([5, 5])
+        ctx.lineWidth = baseLineWidth
+        ctx.setLineDash([5 / viewScale, 5 / viewScale]) // Dash size also scaled
         ctx.stroke()
         
-        // Timer progress (arc)
+        // 2. Filling animation (Growing circle from center)
+        // This visualizes "loading" better than a sector? Or maybe a sector is better?
+        // Let's try growing circle - it shows the area being prepared.
         const progress = Math.min(1, (now - zone.createdAt) / zone.castTime)
+        
         ctx.beginPath()
-        ctx.arc(0, 0, zone.radius - 2, 0, Math.PI * 2 * progress)
-        ctx.setLineDash([])
-        ctx.strokeStyle = strokeColor
-        ctx.stroke()
+        ctx.arc(0, 0, zone.radius * progress, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(255, 255, 255, 0.2)`
+        ctx.fill()
+        
+        // Timer progress ring (optional, maybe too cluttered)
         
     } else {
         // Active State
-        // Draw solid zone
         ctx.beginPath()
         ctx.arc(0, 0, zone.radius, 0, Math.PI * 2)
         ctx.fillStyle = color
@@ -81,8 +70,9 @@ export const drawZoneEffects = (ctx: CanvasRenderingContext2D, zoneEffects?: Map
         
         // Pulse outline
         const pulse = (Math.sin(now / 200) + 1) / 2
-        ctx.lineWidth = 2 + pulse * 2
+        ctx.lineWidth = baseLineWidth + (pulse * 2 / viewScale)
         ctx.strokeStyle = strokeColor
+        ctx.setLineDash([])
         ctx.stroke()
     }
 

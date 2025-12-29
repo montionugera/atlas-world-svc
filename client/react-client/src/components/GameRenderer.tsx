@@ -77,7 +77,7 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
 
         drawGrid(ctx, gameState.width, gameState.height, 1, scale); // Pass viewScale
         if (gameState.zoneEffects) {
-          drawZoneEffects(ctx, gameState.zoneEffects);
+          drawZoneEffects(ctx, gameState.zoneEffects, scale);
         }
         drawMobs(ctx, gameState.mobs, 1, scale);
         drawPlayers(ctx, gameState.players, playerId, 1, scale);
