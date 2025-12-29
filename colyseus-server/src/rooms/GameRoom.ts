@@ -6,7 +6,7 @@ import { PlanckPhysicsManager } from '../physics/PlanckPhysicsManager'
 import { BattleManager } from '../modules/BattleManager'
 import { BattleModule } from '../modules/BattleModule'
 import { ProjectileManager } from '../modules/ProjectileManager'
-import { TrapManager } from '../modules/TrapManager'
+import { ZoneEffectManager } from '../modules/ZoneEffectManager'
 import { eventBus, RoomEventType } from '../events/EventBus'
 import { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
 import { registerRoom, unregisterRoom } from '../api'
@@ -32,7 +32,7 @@ export class GameRoom extends Room<GameState> {
   private battleModule!: BattleModule
   private projectileManager!: ProjectileManager
   private mobLifeCycleManager!: MobLifeCycleManager
-  public trapManager!: TrapManager
+  public zoneEffectManager!: ZoneEffectManager
 
   onCreate(options: GameRoomOptions) {
     console.log(`🎮 GameRoom created with mapId: ${options.mapId || 'map-01-sector-a'}`)
@@ -62,8 +62,8 @@ export class GameRoom extends Room<GameState> {
     // Initialize projectile manager
     this.projectileManager = new ProjectileManager(this.state, this.battleModule)
 
-    // Initialize trap manager
-    this.trapManager = new TrapManager(this.state, this.battleModule)
+    // Initialize zone effect manager
+    this.zoneEffectManager = new ZoneEffectManager(this.state, this.battleModule)
 
     // Initialize mob lifecycle manager
     this.mobLifeCycleManager = new MobLifeCycleManager(this.roomId, this.state)
@@ -125,16 +125,20 @@ export class GameRoom extends Room<GameState> {
            // Basic Trap Placement
            const now = Date.now()
            if (now - player.lastTrapTime >= player.trapCooldown) {
-               console.log(`🧨 ACTION: Player ${player.id} placing trap`)
-               const trap = this.trapManager.createTrap(
+               console.log(`🧨 ACTION: Player ${player.id} placing zone effect`)
+               // 1s cast, 5s duration, 1s tick
+               const zone = this.zoneEffectManager.createZoneEffect(
                  player.x,
                  player.y,
                  player.id,
-                 'damage', // Default to damage trap for now
-                 20,
-                 2
+                 'damage', 
+                 5,
+                 2,
+                 500,  // Cast time: 500ms
+                 5000, // Duration: 5s
+                 200   // Tick rate: 200ms
                )
-               this.state.traps.set(trap.id, trap)
+               this.state.zoneEffects.set(zone.id, zone)
                player.lastTrapTime = now
            } else {
                const remaining = Math.ceil((player.trapCooldown - (now - player.lastTrapTime)) / 1000)
@@ -179,16 +183,19 @@ export class GameRoom extends Room<GameState> {
       const type = (data && data.type) || 'damage'
       console.log(`⚡ DEBUG SPAWN TRAP: near ${client.sessionId}`)
       
-      const trap = this.trapManager.createTrap(
+      const zone = this.zoneEffectManager.createZoneEffect(
         player.x, 
         player.y, 
         player.id, 
         type as any, 
-        type === 'damage' ? 20 : 3000, // 20 dmg or 3s duration
-        2.5 // radius
+        type === 'damage' ? 5 : 3000, 
+        2.5, // radius
+        500,
+        5000,
+        200
       )
       
-      this.state.traps.set(trap.id, trap)
+      this.state.zoneEffects.set(zone.id, zone)
     })
 
     // Debug: Teleport player
@@ -466,8 +473,8 @@ export class GameRoom extends Room<GameState> {
         // Update projectiles (cleanup despawned - removes from map)
         this.state.updateProjectiles(deltaTime)
 
-        // Update traps
-        this.trapManager.update(this.state.traps)
+        // Update zone effects
+        this.zoneEffectManager.update(this.state.zoneEffects)
 
         // Process battle action messages via BattleManager instance
         this.battleManager.processActionMessages().then((processedCount: number) => {

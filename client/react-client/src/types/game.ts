@@ -5,15 +5,24 @@ export interface Position {
   y: number;
 }
 
-export interface Trap {
+export interface ZoneEffect {
   id: string;
   x: number;
   y: number;
   ownerId: string;
-  effectType: 'damage' | 'freeze' | 'stun';
+  radius: number;
+  effectType: 'damage' | 'freeze' | 'stun' | 'heal';
   effectValue: number;
-  triggerRadius: number;
-  isArmed: boolean;
+  
+  // Timing
+  castTime: number;
+  duration: number;
+  tickRate: number;
+  
+  // State
+  isActive: boolean;
+  createdAt: number;
+  activatedAt: number;
 }
 
 export interface Mob {
@@ -64,7 +73,7 @@ export interface GameState {
   players: Map<string, Player>;
   mobs: Map<string, Mob>;
   projectiles?: Map<string, Projectile>;
-  traps?: Map<string, Trap>;
+  zoneEffects?: Map<string, ZoneEffect>; // Changed from traps
   tick: number;
   mapId: string;
   roomId?: string; // Room ID from server (synced via Colyseus)

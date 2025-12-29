@@ -2,7 +2,7 @@ import { Schema, MapSchema, ArraySchema, type } from '@colyseus/schema'
 import { Mob } from './Mob'
 import { Player } from './Player'
 import { Projectile } from './Projectile'
-import { Trap } from './Trap'
+import { ZoneEffect } from './ZoneEffect'
 import { GAME_CONFIG } from '../config/gameConfig'
 import { AIModule } from '../ai/AIModule'
 import { AIWorldInterface } from '../ai/AIWorldInterface'
@@ -15,7 +15,7 @@ export class GameState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>()
   @type({ map: Mob }) mobs = new MapSchema<Mob>()
   @type({ map: Projectile }) projectiles = new MapSchema<Projectile>()
-  @type({ map: Trap }) traps = new MapSchema<Trap>()
+  @type({ map: ZoneEffect }) zoneEffects = new MapSchema<ZoneEffect>()
   @type('number') tick: number = 0
   @type('string') mapId: string = 'map-01-sector-a'
   @type('string') roomId: string = ''
