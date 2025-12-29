@@ -45,10 +45,16 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction }: Use
       pressedKeysRef.current.add(event.key);
       updateMovement();
       
+      
       // Handle attack input
       if ((event.code === 'Space' || event.key === ' ') && sendPlayerAction) {
         event.preventDefault(); // Prevent page scroll
         sendPlayerAction('attack', true);
+      }
+
+      // Handle trap placement
+      if ((event.key === 'f' || event.key === 'F') && sendPlayerAction) {
+        sendPlayerAction('useItem', true);
       }
     };
     
@@ -59,6 +65,11 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction }: Use
       // Handle attack release
       if ((event.code === 'Space' || event.key === ' ') && sendPlayerAction) {
         sendPlayerAction('attack', false);
+      }
+      
+      // Handle trap release
+      if ((event.key === 'f' || event.key === 'F') && sendPlayerAction) {
+        sendPlayerAction('useItem', false);
       }
     };
     

@@ -41,14 +41,17 @@ export class Trap extends WorldObject {
     return false
   }
 
-  // Check if target is within trigger radius
-  shouldTrigger(target: { x: number; y: number }): boolean {
+  // Check if target is within trigger radius (edge-to-edge)
+  shouldTrigger(target: { x: number; y: number; radius?: number }): boolean {
     if (!this.isArmed) return false
     
     const dx = this.x - target.x
     const dy = this.y - target.y
     const distance = Math.sqrt(dx * dx + dy * dy)
     
-    return distance <= this.triggerRadius
+    // Check if distance is less than sum of radii (edge-to-edge collision)
+    // If target has no radius, default to 0 (point check)
+    const targetRadius = target.radius || 0
+    return distance <= (this.triggerRadius + targetRadius)
   }
 }

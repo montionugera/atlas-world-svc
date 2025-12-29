@@ -116,4 +116,25 @@ describe('Trap System and Status Effects', () => {
          player.update(60, gameState)
          expect(player.isStunned).toBe(false)
     })
+
+    test('should trigger with edge-to-edge collision', () => {
+        // Trap at 0,0 with radius 2
+        const trap = trapManager.createTrap(0, 0, 'p1', 'damage', 10, 2, 0)
+        gameState.traps.set(trap.id, trap)
+        trap.isArmed = true
+        
+        // Mob radius is 4 (default)
+        // Position mob at x=5, y=0. Distance = 5.
+        // Trap Radius (2) + Mob Radius (4) = 6.
+        // Distance (5) <= 6 -> Should trigger
+        
+        mob.x = 5
+        mob.y = 0
+        mob.radius = 4
+        
+        trapManager.update(gameState.traps)
+        
+        // Trap should be triggered and removed
+        expect(gameState.traps.get(trap.id)).toBeUndefined()
+    })
 })

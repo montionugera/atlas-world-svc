@@ -81,6 +81,9 @@ export const ControlsHelp: React.FC<ControlsHelpProps> = ({ isOpen, onClose }) =
               <div style={{ marginBottom: '8px' }}>
                   <strong>⚔️ Attack:</strong> Press <span style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em' }}>SPACE</span> or use the Attack button on your card.
               </div>
+              <div style={{ marginBottom: '8px' }}>
+                  <strong>💣 Trap:</strong> Press <span style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em' }}>F</span> to place a trap.
+              </div>
               <div>
                   <strong>🤖 Auto-Play:</strong> Toggle "Enable Bot" on your card to let AI take over.
               </div>

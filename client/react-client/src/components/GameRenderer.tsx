@@ -5,6 +5,7 @@ import { drawGrid, drawGridCoordinates } from '../utils/gridUtils';
 import { drawMap } from '../renderers/mapRenderer';
 import { drawMobs } from '../renderers/mobRenderer';
 import { drawProjectiles } from '../renderers/projectileRenderer';
+import { drawTraps } from '../renderers/trapRenderer';
 import { drawPlayers } from '../renderers/playerRenderer';
 
 interface GameRendererProps {
@@ -75,6 +76,9 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
         ctx.strokeRect(0, 0, gameState.width, gameState.height);
 
         drawGrid(ctx, gameState.width, gameState.height, 1, scale); // Pass viewScale
+        if (gameState.traps) {
+          drawTraps(ctx, gameState.traps, scale);
+        }
         drawMobs(ctx, gameState.mobs, 1, scale);
         drawPlayers(ctx, gameState.players, playerId, 1, scale);
         if (gameState.projectiles) {
