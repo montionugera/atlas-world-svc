@@ -5,6 +5,7 @@
 
 import { Schema, type, ArraySchema, MapSchema } from '@colyseus/schema'
 import { WorldObject } from './WorldObject'
+import { BattleStatus } from './BattleStatus'
 
 export abstract class WorldLife extends WorldObject {
   // Physical properties
@@ -52,7 +53,7 @@ export abstract class WorldLife extends WorldObject {
   @type('number') heading: number = 0
 
   // Status Effects System
-  @type({ map: "number" }) battleStatuses = new MapSchema<number>(); // Type -> Expiration Timestamp
+  @type({ map: BattleStatus }) battleStatuses = new MapSchema<BattleStatus>(); // Type -> BattleStatus Object
 
   // Getters for common statuses (Backward Compatibility)
   get isFrozen(): boolean { return this.battleStatuses.has('freeze'); }
@@ -66,6 +67,11 @@ export abstract class WorldLife extends WorldObject {
       if (!val) this.battleStatuses.delete('stun');
   }
 
+  // Get speed multiplier based on active statuses
+  getSpeedMultiplier(): number {
+      if (this.isFrozen) return 0.2; // 80% Slow
+      return 1.0;
+  }
 
   // Server-only properties (not synced to clients)
   attackCooldown: number = 0
@@ -271,28 +277,28 @@ export abstract class WorldLife extends WorldObject {
     // Invulnerability update removed
 
 
-    // Update Status Effects
+// Update Status Effects
     if (this.battleStatuses) {
         const now = Date.now();
-        // Use forEach directly on MapSchema if possible, or keys
-        this.battleStatuses.forEach((expiresAt, key) => {
-             if (now >= expiresAt) {
-                // We shouldn't delete while iterating in some collections, 
-                // but MapSchema forEach is usually safe? 
-                // Safer to collect keys first.
+        const keysToRemove: string[] = [];
+        
+        // We can't iterate MapSchema safely while modifying it reliably in all versions,
+        // so collect keys to remove first
+        this.battleStatuses.forEach((status, key) => {
+             // Check expiration
+             if (now >= status.expiresAt) {
+                 keysToRemove.push(key);
+             } else {
+                 // Process Ticks (DOTs)
+                 // Note: actual logic call moved to BattleModule.processStatusUpdates(entity)
+                 // But if we wanted to do it here, we'd need access to BattleModule.
+                 // Ideally WorldLife shouldn't know about BattleModule logic, 
+                 // so the main loop should call BattleModule.update(entity)
              }
         });
         
-        // Use manual key iteration for safety
-        const keysToRemove: string[] = [];
-        for (const key of this.battleStatuses.keys()) {
-             const expiresAt = this.battleStatuses.get(key);
-             if (expiresAt && now >= expiresAt) {
-                 keysToRemove.push(key);
-             }
-        }
-        
         keysToRemove.forEach(key => {
+            const status = this.battleStatuses.get(key);
             this.battleStatuses.delete(key);
             console.log(`✨ EXPIRE: ${this.id} status '${key}' expired`);
         });
@@ -313,10 +319,11 @@ export abstract class WorldLife extends WorldObject {
     }
 
     // Update movement state and heading
-    // If frozen or stunned, force moving to false
-    if (this.isFrozen || this.isStunned) {
+    // If stunned, force moving to false and ZERO velocity to physically stop them
+    if (this.isStunned) {
         this.isMoving = false
-        // Note: Velocity should be zeroed in specific update loops (Mob/Player)
+        this.vx = 0
+        this.vy = 0
     } else {
         this.isMoving = Math.hypot(this.vx, this.vy) > 0
     }

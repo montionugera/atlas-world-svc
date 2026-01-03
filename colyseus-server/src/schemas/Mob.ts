@@ -152,8 +152,9 @@ export class Mob extends WorldLife implements IAgent {
     // Call parent update for health/invulnerability/status effects logic
     super.update(deltaTime)
 
-    // Status Effect Check: If frozen or stunned, stop all movement and actions
-    if (this.isFrozen || this.isStunned) {
+    // Status Effect Check: If stunned, stop all movement and actions
+    // Note: 'Freeze' is now a slow effect, so it doesn't stop action
+    if (this.isStunned) {
         this.vx = 0
         this.vy = 0
         this.isMoving = false
@@ -197,9 +198,10 @@ export class Mob extends WorldLife implements IAgent {
     this.tag = this.currentBehavior
 
     // Apply desired velocity from decision
+    const speedMultiplier = this.getSpeedMultiplier()
     if (decision.desiredVelocity) {
-      this.desiredVx = decision.desiredVelocity.x
-      this.desiredVy = decision.desiredVelocity.y
+      this.desiredVx = decision.desiredVelocity.x * speedMultiplier
+      this.desiredVy = decision.desiredVelocity.y * speedMultiplier
     } else {
       this.desiredVx = 0
       this.desiredVy = 0

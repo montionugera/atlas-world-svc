@@ -76,8 +76,8 @@ export const drawPlayers = (
     // 2. Casting Bar (Above Health Bar if present)
     if (player.castingUntil && player.castingUntil > now) {
         const remaining = player.castingUntil - now;
-        const total = 500; 
-        const progress = Math.max(0, remaining / total); 
+        const total = player.castDuration || 500; 
+        const progress = Math.min(1, Math.max(0, remaining / total)); // Clamp to 0-1
         const fillPct = 1 - progress; 
 
         const barWidth = 40 * inverseScale;
@@ -125,6 +125,20 @@ export const drawPlayers = (
       );
     }
     
+    // Draw Status Effects (Freeze/Stun)
+    if (player.battleStatuses) {
+        if (player.battleStatuses.has('freeze')) {
+            ctx.fillStyle = 'rgba(100, 200, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(x, y, radius + (6 * inverseScale), 0, Math.PI * 2);
+            ctx.fill();
+            drawText(ctx, "❄️", x - (4*inverseScale), y - (radius + 25*inverseScale), '#fff', `${12 * inverseScale}px Arial`);
+        }
+        if (player.battleStatuses.has('stun')) {
+            drawText(ctx, "💫", x - (4*inverseScale), y - (radius + 25*inverseScale), '#fff', `${12 * inverseScale}px Arial`);
+        }
+    }
+
     // Draw heading indicator (smaller for player) - always show heading
     if (player.heading !== undefined) {
       drawHeading(

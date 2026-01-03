@@ -25,7 +25,7 @@ export interface UseColyseusClientReturn {
   connect: () => Promise<void>;
   joinRoom: (mapId?: string) => Promise<void>;
   updatePlayerInput: (vx: number, vy: number) => void;
-  sendPlayerAction: (action: string, pressed: boolean) => void;
+  sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
   toggleBotMode: (enabled: boolean) => void;
   respawn: () => void;
   startSimulation: () => void;
@@ -191,9 +191,9 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
   }, []);
   
   // Send player action (attack, etc.)
-  const sendPlayerAction = useCallback((action: string, pressed: boolean) => {
+  const sendPlayerAction = useCallback((action: string, pressed: boolean, options?: any) => {
     if (roomRef.current) {
-      roomRef.current.send('player_input_action', { action, pressed });
+      roomRef.current.send('player_input_action', { action, pressed, ...options });
     }
   }, []);
   

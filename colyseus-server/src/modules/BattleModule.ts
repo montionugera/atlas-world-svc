@@ -4,6 +4,7 @@
  */
 
 import { WorldLife } from '../schemas/WorldLife'
+import { BattleStatus } from '../schemas/BattleStatus'
 import { GameState } from '../schemas/GameState'
 import { eventBus, RoomEventType } from '../events/EventBus'
 import {
@@ -196,7 +197,13 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Apply a status effect to an entity
-  applyStatusEffect(entity: WorldLife, type: string, duration: number, baseChance: number = 1.0, options?: { bypassInvulnerability?: boolean, eventId?: string }): boolean {
+  applyStatusEffect(entity: WorldLife, type: string, duration: number, baseChance: number = 1.0, options?: { 
+      bypassInvulnerability?: boolean, 
+      eventId?: string,
+      sourceId?: string,
+      value?: number,
+      interval?: number 
+  }): boolean {
     if (!entity.isAlive) return false
     
     // Event Validation
@@ -206,16 +213,8 @@ export class BattleModule implements BattleActionProcessor {
         }
     }
 
-    // bypassInvulnerability is now deprecated/redundant with Event ID system but kept for signature compat if needed
-    // if (entity.isInvulnerable ... ) // Removed
-    
     // Calculate Chance
     const resistance = entity.getResistance(type);
-    
-    // Final Chance = Base * (1 - Resistance)
-    // Resistance 1.0 = Immune (Chance 0)
-    // Resistance 0.0 = Base Chance
-    // Resistance -0.5 = 1.5x Chance (Vulnerable)
     const chance = Math.max(0, Math.min(1, baseChance * (1 - resistance)));
     
     // Roll
@@ -226,11 +225,31 @@ export class BattleModule implements BattleActionProcessor {
     
     // Status Logic
     const now = Date.now()
-    const currentExpiry = entity.battleStatuses.get(type) || now
-    const newExpiry = Math.max(currentExpiry, now + duration)
+    const currentStatus = entity.battleStatuses.get(type)
     
-    entity.battleStatuses.set(type, newExpiry)
-    console.log(`✨ STATUS: ${entity.id} applied '${type}' for ${duration}ms (Until: ${newExpiry})`)
+    if (currentStatus) {
+        // Extend duration
+        currentStatus.expiresAt = Math.max(currentStatus.expiresAt, now + duration)
+        // Update value/interval if provided (could be smarter logic here, e.g. overwrite vs stack)
+        // For now, we overwrite with latest application values if provided
+        if (options?.value !== undefined) currentStatus.value = options.value
+        if (options?.interval !== undefined) currentStatus.interval = options.interval
+        if (options?.sourceId !== undefined) currentStatus.sourceId = options.sourceId
+        
+        console.log(`✨ STATUS REFRESH: ${entity.id} refreshed '${type}' for ${duration}ms`)
+    } else {
+        // Create new
+        const newStatus = new BattleStatus(
+            `${type}-${now}`, // ID
+            type,
+            duration,
+            options?.sourceId,
+            options?.value,
+            options?.interval
+        )
+        entity.battleStatuses.set(type, newStatus)
+        console.log(`✨ STATUS: ${entity.id} applied '${type}' for ${duration}ms (Val: ${options?.value}, Int: ${options?.interval})`)
+    }
     
     return true
   }
@@ -345,6 +364,37 @@ export class BattleModule implements BattleActionProcessor {
     if (entity.attackCooldown > 0) {
       entity.attackCooldown -= deltaTime
     }
+
+    // Process Status Effects (DOTs etc)
+    this.processStatusTicks(entity);
+  }
+
+  // Process status ticks (DOTs)
+  processStatusTicks(entity: WorldLife): void {
+      if (!entity.isAlive || !entity.battleStatuses) return;
+      
+      const now = Date.now();
+      
+      entity.battleStatuses.forEach((status) => {
+          // Check if it has an interval (is a DOT/HOT)
+          if (status.interval > 0) {
+              // Check if ready to tick
+              if (now - status.lastTick >= status.interval) {
+                  // Apply Effect
+                  // TODO: Use a map of handlers for different types?
+                  // For now, hardcode 'burn', 'poison', 'regen' logic or generic 'damage'/'heal'
+                  
+                  if (status.type === 'burn' || status.type === 'poison') {
+                      this.applyDamage(entity, status.value);
+                      console.log(`🔥 DOT: ${entity.id} took ${status.value} damage from ${status.type}`);
+                  } else if (status.type === 'regen') {
+                      this.healEntity(entity, status.value);
+                  }
+                  
+                  status.lastTick = now;
+              }
+          }
+      });
   }
 
   // Get recent attack events

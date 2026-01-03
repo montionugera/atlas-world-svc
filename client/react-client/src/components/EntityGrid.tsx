@@ -65,6 +65,8 @@ export const EntityGrid: React.FC<EntityGridProps> = ({
                             onAttack={isCurrentPlayer ? onAttack : undefined}
                             onForceDie={isCurrentPlayer ? onForceDie : undefined}
                             onRespawn={isCurrentPlayer ? onRespawn : undefined}
+                            battleStatuses={p.battleStatuses}
+                            resistances={p.resistances}
                         />
                     );
                 })}
@@ -87,6 +89,8 @@ export const EntityGrid: React.FC<EntityGridProps> = ({
                     health={m.health}
                     maxHealth={m.maxHealth}
                     state={m.behaviorType} // Assuming behaviorType is the state for mobs
+                    battleStatuses={m.battleStatuses}
+                    resistances={m.resistances}
                 />
                 ))}
             </div>

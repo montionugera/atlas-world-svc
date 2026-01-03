@@ -364,6 +364,19 @@ export class PlanckPhysicsManager {
         return
       }
 
+      // Check Stun Status
+      if (player.isStunned) {
+          const body = this.getBody(player.id)
+          if (body) {
+              // Force stop
+              body.setLinearVelocity(planck.Vec2(0, 0))
+              body.setAngularVelocity(0)
+          }
+          player.desiredVx = 0
+          player.desiredVy = 0
+          return // Skip processing input
+      }
+
       const body = this.getBody(player.id)
 
       if (body) {
@@ -387,7 +400,7 @@ export class PlanckPhysicsManager {
           // In Manual Mode, use player input
           const movementInputMagnitude = player.input.getMovementMagnitude()
           if (movementInputMagnitude > 0) {
-            const maxLinearSpeed = player.maxLinearSpeed
+            const maxLinearSpeed = player.maxLinearSpeed * player.getSpeedMultiplier()
             const inputDir = player.input.getNormalizedMovement()
             desiredVx = inputDir.x * maxLinearSpeed
             desiredVy = inputDir.y * maxLinearSpeed
@@ -435,6 +448,15 @@ export class PlanckPhysicsManager {
           body.setLinearVelocity(planck.Vec2(0, 0))
         }
         return
+      }
+
+      // Check Stun Status
+      if (mob.isStunned) {
+          const body = this.getBody(mob.id)
+          if (body) {
+              body.setLinearVelocity(planck.Vec2(0, 0))
+          }
+          return // Skip steering
       }
 
       const body = this.getBody(mob.id)

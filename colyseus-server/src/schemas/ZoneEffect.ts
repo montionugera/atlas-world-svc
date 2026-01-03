@@ -1,11 +1,22 @@
-import { type } from '@colyseus/schema'
+
+import { type, Schema, ArraySchema } from '@colyseus/schema'
 import { WorldObject } from './WorldObject'
+
+export class ZoneEffectEffect extends Schema {
+    @type('string') type: string = 'damage'
+    @type('number') value: number = 0
+    @type('number') chance: number = 1.0 // Default 100% chance
+    @type('number') interval: number = 0 // Tick interval for DOTs (0 = no DOT)
+    @type('number') duration: number = 0 // Duration of status effect (ms)
+}
 
 export class ZoneEffect extends WorldObject {
   @type('string') ownerId: string
+  @type('string') skillId: string = ""
   @type('number') radius: number = 2
-  @type('string') effectType: string = 'damage' // 'damage', 'freeze', 'stun'
-  @type('number') effectValue: number = 0 
+  
+  // Multiple effects support
+  @type([ZoneEffectEffect]) effects = new ArraySchema<ZoneEffectEffect>()
   
   // Timing properties
   @type('number') castTime: number = 1000 // Time before activation (ms)
@@ -25,8 +36,7 @@ export class ZoneEffect extends WorldObject {
     x: number,
     y: number,
     ownerId: string,
-    effectType: string = 'damage',
-    effectValue: number = 10,
+    effects: { type: string, value: number, chance?: number, interval?: number, duration?: number }[] = [],
     radius: number = 2,
     castTime: number = 1000,
     duration: number = 5000,
@@ -34,8 +44,18 @@ export class ZoneEffect extends WorldObject {
   ) {
     super(id, x, y, 0, 0, ['zone-effect'])
     this.ownerId = ownerId
-    this.effectType = effectType
-    this.effectValue = effectValue
+    
+    // Initialize effects schema array
+    effects.forEach(eff => {
+        const effectSchema = new ZoneEffectEffect();
+        effectSchema.type = eff.type;
+        effectSchema.value = eff.value;
+        effectSchema.chance = eff.chance ?? 1.0;
+        effectSchema.interval = eff.interval ?? 0;
+        effectSchema.duration = eff.duration ?? 0;
+        this.effects.push(effectSchema);
+    });
+
     this.radius = radius
     
     this.castTime = castTime

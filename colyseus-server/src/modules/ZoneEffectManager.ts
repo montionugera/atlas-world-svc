@@ -2,6 +2,8 @@ import { GameState } from '../schemas/GameState'
 import { BattleModule } from './BattleModule'
 import { ZoneEffect } from '../schemas/ZoneEffect'
 import { eventBus } from '../events/EventBus'
+import * as crypto from 'crypto'
+import { SKILLS } from '../config/skills'
 
 export class ZoneEffectManager {
   private gameState: GameState
@@ -16,13 +18,14 @@ export class ZoneEffectManager {
     x: number,
     y: number,
     ownerId: string,
-    effects: { type: string, value: number, chance?: number }[],
+    skillId: string,
+    effects: { type: string, value: number, chance?: number, interval?: number, duration?: number }[],
     radius: number = 2,
     castTime: number = 1000,
     duration: number = 5000,
     tickRate: number = 0
   ): ZoneEffect {
-    const id = `zone-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+    const id = `zone-${crypto.randomUUID()}`
     
     // Pass effects array to constructor
     const zone = new ZoneEffect(
@@ -36,7 +39,18 @@ export class ZoneEffectManager {
       duration, 
       tickRate
     )
+    zone.skillId = skillId
     
+    // Set casting state on owner if it's a player
+    if (castTime > 0) {
+        const owner = this.battleModule.getEntity(ownerId);
+        if (owner && (owner as any).isCasting !== undefined) {
+            (owner as any).isCasting = true;
+            (owner as any).castingUntil = Date.now() + castTime;
+            (owner as any).castDuration = castTime;
+        }
+    }
+
     console.log(`🌀 ZONE CREATED: ${id} at ${x},${y} cast=${castTime}ms dur=${duration}ms tick=${tickRate}ms`)
     return zone
   }
@@ -49,10 +63,50 @@ export class ZoneEffectManager {
       // 1. Casting Logic
       if (!zone.isActive) {
         if (now - zone.createdAt >= zone.castTime) {
+           // Interruption Logic: Check if owner is stunned or dead
+           const ownerStart = this.battleModule.getEntity(zone.ownerId);
+           if (ownerStart && (!ownerStart.isAlive || ownerStart.isStunned)) {
+               console.log(`🚫 ZONE INTERRUPTED: ${id} owner ${ownerStart.id} is stunned/dead`);
+               
+               // Reset Casting State on Owner to update Client UI
+               if ((ownerStart as any).castDuration !== undefined) {
+                   (ownerStart as any).castDuration = 0;
+                   (ownerStart as any).castingUntil = 0;
+                   if ((ownerStart as any).isCasting !== undefined) {
+                      (ownerStart as any).isCasting = false;
+                   }
+               }
+               
+               toRemove.push(id);
+               continue;
+           }
+
            zone.isActive = true
            zone.activatedAt = now
-           zone.lastTickTime = now - zone.tickRate // Allow immediate tick if needed
+           
+           // Clear Casting State on Owner
+           if (zone.castTime > 0) {
+               const ownerEnd = this.battleModule.getEntity(zone.ownerId);
+               if (ownerEnd && (ownerEnd as any).isCasting !== undefined) {
+                   (ownerEnd as any).isCasting = false;
+                   // console.log(`✨ CAST COMPLETE: ${ownerEnd.id}`);
+               }
+           }
+           
+           // Initialize lastTickTime to 0 to ensure one-shot logic works (0 < activatedAt)
+           zone.lastTickTime = 0 
            console.log(`⚠️ ZONE ACTIVATED: ${id}`)
+           
+           // Trigger Cooldowns on Owner
+           // Only for players as mobs use AI cooldowns
+           const ownerEntity = this.battleModule.getEntity(zone.ownerId);
+           if (ownerEntity && (ownerEntity as any).performAction && zone.skillId) {
+               const skill = SKILLS[zone.skillId];
+               if (skill) {
+                   (ownerEntity as any).performAction(skill.id, skill.cooldown, skill.gcd);
+                   // console.log(`⏳ COOLDOWN STARTED: ${skill.id} for ${ownerEntity.id} (after cast)`);
+               }
+           }
         } else {
            continue // Still casting
         }
@@ -68,24 +122,34 @@ export class ZoneEffectManager {
       // 3. Ticking Logic
       let shouldProc = false
       if (zone.tickRate > 0) {
+        // Continuous DOT logic
+        // For first tick: lastTickTime is 0. 0 + tickRate might use 'now' logic?
+        // Wait, if lastTickTime is 0, now - 0 >= tickRate is TRUE. So it ticks immediately.
+        // That is correct for DOTs usually (tick on start).
+        // But for one-shot, we check (lastTickTime < activatedAt).
+        
         if (now - zone.lastTickTime >= zone.tickRate) {
            shouldProc = true
            zone.lastTickTime = now
         }
       } else {
-        // Continuous/One-shot logic:
-        // If it has 'damage' effect and tickRate 0, assume instantaneous and remove
-        const hasDamage = zone.effects.some(e => e.type === 'damage');
-        if (hasDamage) {
+        // Continuous/One-shot logic (TickRate == 0)
+        // Only proc if we haven't procced since activation
+        if (zone.lastTickTime < zone.activatedAt) {
            shouldProc = true
-           toRemove.push(id) // Remove after one hit
+           // Note: We do NOT remove here automatically anymore.
+           // Removal is strictly handled by Duration Logic or specific 'Instant' flag if we had one.
+           // If duration is 0 or small, it will be removed by block 2.
+           zone.lastTickTime = now // Mark as processed
         }
       }
 
       if (shouldProc) {
          // UNIQUE EVENT ID generation for this tick
          // Format: zoneId-tickTimestamp-random to ensure uniqueness across ticks
-         const eventId = `${zone.id}-tick-${Date.now()}-${Math.random().toString(36).slice(2,4)}`;
+         // UNIQUE EVENT ID generation for this tick
+         // Format: zoneId-tickTimestamp-shortUUID to ensure uniqueness
+         const eventId = `${zone.id}-tick-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
          this.procEffect(zone, eventId)
       }
     }
@@ -127,8 +191,22 @@ export class ZoneEffectManager {
             switch (effect.type) {
                 case 'freeze':
                 case 'stun':
-                    // Pass chance and eventId (unique per effect type to allow simultaneous application)
-                    this.battleModule.applyStatusEffect(target, effect.type, effect.value, effect.chance, { eventId: `${eventId}-status-${effect.type}` });
+                case 'burn':
+                case 'poison':
+                case 'regen':
+                    // Pass full options for DOTs/Statuses
+                    this.battleModule.applyStatusEffect(
+                        target, 
+                        effect.type, 
+                        effect.duration || 1000, // Use effect duration as 3rd arg
+                        effect.chance, 
+                        { 
+                            eventId: `${eventId}-status-${effect.type}`,
+                            interval: effect.interval,
+                            value: effect.value, // Pass value as 'value' (magnitude) for DOT
+                            sourceId: zone.ownerId
+                        }
+                    );
                     break;
             }
         }

@@ -13,6 +13,7 @@ export interface PlayerCombatStats {
   armor: number
   radius: number
   density: number
+  // Resistances are now dynamic via MapSchema, not hardcoded statistics interfaces
 }
 
 export interface MobCombatStats {
@@ -26,13 +27,14 @@ export interface MobCombatStats {
   density: number
   chaseRange: number
   maxMoveSpeed: number
+  // Resistances are now dynamic via MapSchema
 }
 
 export const PLAYER_STATS: PlayerCombatStats = {
   maxHealth: 100,
   attackDamage: 25,
   attackRange: 3,
-  attackDelay: 1000,
+  attackDelay: 300,
   defense: 1,
   armor: 0,
   radius: 1.3, // Player radius must not exceed 1.3

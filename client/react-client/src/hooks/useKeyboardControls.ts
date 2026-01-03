@@ -2,15 +2,14 @@ import { useEffect, useRef } from 'react';
 
 interface UseKeyboardControlsProps {
   updatePlayerInput: (vx: number, vy: number) => void;
-  sendPlayerAction?: (action: string, pressed: boolean) => void;
+  sendPlayerAction?: (action: string, pressed: boolean, options?: any) => void;
+  mousePositionRef?: React.MutableRefObject<{ x: number, y: number }>;
 }
 
-export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction }: UseKeyboardControlsProps) => {
+export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction, mousePositionRef }: UseKeyboardControlsProps) => {
   const pressedKeysRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    const speed = 1; // Normalized speed, let server/physics handle magnitude
-    
     const updateMovement = () => {
       let vx = 0, vy = 0;
       const keys = pressedKeysRef.current;
@@ -52,9 +51,44 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction }: Use
         sendPlayerAction('attack', true);
       }
 
-      // Handle trap placement
-      if ((event.key === 'f' || event.key === 'F') && sendPlayerAction) {
-        sendPlayerAction('useItem', true);
+      // Handle Skill 1 (Key 1)
+      if (event.key === '1' && sendPlayerAction) {
+        const mousePos = mousePositionRef?.current;
+        sendPlayerAction('useSkill', true, { 
+            skillId: 'skill_1',
+            x: mousePos?.x,
+            y: mousePos?.y
+        });
+      }
+
+      // Handle Skill 2 (Key 2)
+      if (event.key === '2' && sendPlayerAction) {
+        const mousePos = mousePositionRef?.current;
+        sendPlayerAction('useSkill', true, { 
+            skillId: 'skill_2',
+            x: mousePos?.x,
+            y: mousePos?.y
+        });
+      }
+      
+      // Handle Skill 3 (Key 3)
+      if (event.key === '3' && sendPlayerAction) {
+        const mousePos = mousePositionRef?.current;
+        sendPlayerAction('useSkill', true, { 
+            skillId: 'skill_3',
+            x: mousePos?.x,
+            y: mousePos?.y
+        });
+      }
+
+      // Handle Skill 4 (Key 4)
+      if (event.key === '4' && sendPlayerAction) {
+        const mousePos = mousePositionRef?.current;
+        sendPlayerAction('useSkill', true, { 
+            skillId: 'skill_4',
+            x: mousePos?.x,
+            y: mousePos?.y
+        });
       }
     };
     
@@ -80,5 +114,5 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction }: Use
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [updatePlayerInput, sendPlayerAction]);
+  }, [updatePlayerInput, sendPlayerAction, mousePositionRef]);
 };

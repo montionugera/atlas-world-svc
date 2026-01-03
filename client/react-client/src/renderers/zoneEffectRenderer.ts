@@ -1,4 +1,5 @@
 import { ZoneEffect } from '../types/game'
+import { SKILL_NAMES } from '../config/skills'
 
 export const drawZoneEffects = (ctx: CanvasRenderingContext2D, zoneEffects?: Map<string, ZoneEffect>, viewScale: number = 1) => {
   if (!zoneEffects) return
@@ -11,11 +12,13 @@ export const drawZoneEffects = (ctx: CanvasRenderingContext2D, zoneEffects?: Map
     ctx.save()
     ctx.translate(zone.x, zone.y)
 
-    // Determine color based on effect type
+    // Determine color based on primary effect type
     let color = 'rgba(255, 255, 255, 0.5)' // Default
     let strokeColor = 'white'
     
-    switch (zone.effectType) {
+    const primaryEffect = (zone.effects && zone.effects.length > 0) ? zone.effects[0] : { type: 'damage' };
+    
+    switch (primaryEffect.type) {
       case 'damage':
         color = 'rgba(255, 50, 50, 0.4)' // Red
         strokeColor = '#ff4444'
@@ -74,6 +77,20 @@ export const drawZoneEffects = (ctx: CanvasRenderingContext2D, zoneEffects?: Map
         ctx.strokeStyle = strokeColor
         ctx.setLineDash([])
         ctx.stroke()
+    }
+
+    // Draw Skill ID text
+    // Draw Skill ID text
+    if (zone.skillId) {
+        const name = SKILL_NAMES[zone.skillId] || zone.skillId;
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+        // Use font size relative to radius (e.g., 40% of radius or fixed small world unit)
+        // zone.radius is in world units. 
+        const fontSize = Math.max(0.5, zone.radius * 0.4);
+        ctx.font = `bold ${fontSize}px Arial`
+        ctx.fillText(name, 0, 0)
     }
 
     ctx.restore()

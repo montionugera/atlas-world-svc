@@ -11,6 +11,7 @@ import { eventBus, RoomEventType } from '../events/EventBus'
 import { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
 import { registerRoom, unregisterRoom } from '../api'
 import * as planck from 'planck'
+import { SKILLS } from '../config/skills'
 
 export interface GameRoomOptions {
   mapId?: string
@@ -125,33 +126,77 @@ export class GameRoom extends Room<GameState> {
         this.state.updatePlayerAction(client.sessionId, action, pressed)
 
         // Handle direct actions (one-shot triggers)
-        if (pressed && action === 'useItem') {
-           // Basic Trap Placement
-           const now = Date.now()
-           if (now - player.lastTrapTime >= player.trapCooldown) {
-               console.log(`🧨 ACTION: Player ${player.id} placing zone effect`)
-               // 1s cast, 5s duration, 1s tick
+        // Handle direct actions (one-shot triggers)
+        if (pressed && action === 'useSkill') {
+           const inputData = data as any;
+           const skillId = inputData.skillId;
+           const skill = SKILLS[skillId];
+
+           if (!skill) {
+               console.warn(`⚠️ ACTION: Invalid skillId '${skillId}' from player ${player.id}`);
+               return;
+           }
+
+           // Check Cooldowns
+           // Note: Cooldowns are now triggered upon successful activation (in ZoneEffectManager),
+           // but we still check readiness here to prevent starting a cast if not ready.
+           if (player.canPerformAction(skill.id)) {
+               // Double check: Prevent casting if already casting
+               if (Date.now() < player.castingUntil) {
+                   console.log(`⏳ ACTION: Already casting, ignored ${skill.id} for player ${player.id}`);
+                   return;
+               }
+
+               console.log(`✨ ACTION: Player ${player.id} casting ${skill.name} (${skill.id})`)
+               
+               // Target Position Logic
+               let targetX = player.x;
+               let targetY = player.y;
+               
+               if (typeof inputData.x === 'number' && typeof inputData.y === 'number') {
+                   // Calculate vector from player to target
+                   const dx = inputData.x - player.x;
+                   const dy = inputData.y - player.y;
+                   const dist = Math.sqrt(dx * dx + dy * dy);
+                   const maxRange = 16;
+                   
+                   if (dist <= maxRange) {
+                       targetX = inputData.x;
+                       targetY = inputData.y;
+                   } else {
+                       // Clamp to max range
+                       const ratio = maxRange / dist;
+                       targetX = player.x + dx * ratio;
+                       targetY = player.y + dy * ratio;
+                   }
+               }
+               
+               // Create Zone Effect based on Skill Stats
                const zone = this.zoneEffectManager.createZoneEffect(
-                 player.x,
-                 player.y,
+                 targetX,
+                 targetY,
                  player.id,
-                 'damage', 
-                 5,
-                 2,
-                 500,  // Cast time: 500ms
-                 5000, // Duration: 5s
-                 200   // Tick rate: 200ms
+                 skill.id,
+                 skill.effects,
+                 skill.radius,
+                 skill.castTime,
+                 skill.duration,
+                 skill.tickRate
                )
                 
                // Force stop movement immediately
                this.state.updatePlayerInput(client.sessionId, 0, 0)
                
                this.state.zoneEffects.set(zone.id, zone)
-               player.lastTrapTime = now
-               player.castingUntil = now + 500 // Lock movement for cast time (500ms)
+               
+               // Trigger Cooldowns from Skill Stats - MOVED TO ZONE ACTIVATION
+               // player.performAction(skill.id, skill.cooldown, skill.gcd)
+               
+               player.castingUntil = Date.now() + skill.castTime // Lock movement for cast time
+               player.castDuration = skill.castTime // Sync duration to client
            } else {
-               const remaining = Math.ceil((player.trapCooldown - (now - player.lastTrapTime)) / 1000)
-               console.log(`⏳ ACTION: Trap cooldown not ready (${remaining}s)`)
+               // Optional: Send cooldown notification to client
+               console.log(`⏳ ACTION: Cooldown active for ${skill.name} on player ${player.id}`)
            }
         }
       }
@@ -196,8 +241,8 @@ export class GameRoom extends Room<GameState> {
         player.x, 
         player.y, 
         player.id, 
-        type as any, 
-        type === 'damage' ? 5 : 3000, 
+        'debug_trap',
+        [{ type: type, value: type === 'damage' ? 5 : 3000 }], 
         2.5, // radius
         500,
         5000,
@@ -372,6 +417,14 @@ export class GameRoom extends Room<GameState> {
       playerId: client.sessionId,
       mapId: this.state.mapId,
     })
+
+    // Apply "Entering Game Duty" (safe period/delay)
+    // We can use the battleModule helper if available, or just set it directly on the shared map
+    // Since BattleModule logic might be complex to invoke here without an action, let's set it directly
+    // checking if we have access to battleModule... yes we do this.battleModule
+    
+    // Duration: 2000ms
+    this.battleModule.applyStatusEffect(player, 'entering', 2000)
   }
 
   onLeave(client: Client, consented: boolean) {

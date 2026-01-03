@@ -1,4 +1,4 @@
-import { type } from '@colyseus/schema'
+import { type, MapSchema } from '@colyseus/schema'
 import { WorldLife } from './WorldLife'
 import { PlayerInput } from './PlayerInput'
 import { PLAYER_STATS } from '../config/combatConfig'
@@ -12,6 +12,7 @@ export class Player extends WorldLife implements IAgent {
   @type('string') name: string
   @type('number') maxLinearSpeed: number = 20 // synced to clients
   @type('boolean') isBotMode: boolean = false // Synced: indicates if player is in bot mode
+  @type('boolean') isCasting: boolean = false // Synced: indicates if player is currently casting
   
   @type(PlayerSettingGameplay) settingGameplay: PlayerSettingGameplay
 
@@ -27,10 +28,13 @@ export class Player extends WorldLife implements IAgent {
   desiredVy: number = 0
 
   @type('number') castingUntil: number = 0 // Server-only, blocks movement
+  @type('number') castDuration: number = 0 // Synced: Total duration of current cast
 
-  // Cooldowns
-  lastTrapTime: number = 0
-  trapCooldown: number = 5000 // 5 seconds
+
+
+  // Cooldown System
+  @type({ map: "number" }) cooldowns = new MapSchema<number>(); // Action ID -> Timestamp when ready
+  @type("number") globalCooldownUntil: number = 0; // Timestamp when GCD expires
 
   // AI Agent properties
   @type('string') currentBehavior: string = 'idle'
@@ -96,6 +100,53 @@ export class Player extends WorldLife implements IAgent {
     this.currentBehavior = 'idle'
     this.currentAttackTarget = ''
     this.currentChaseTarget = ''
+    // Reset cooldowns on respawn? Maybe not necessary, but clean.
+    this.cooldowns.clear()
+    this.globalCooldownUntil = 0
+  }
+
+  /**
+   * Check if an action is ready (specific cooldown AND global cooldown)
+   */
+  canPerformAction(actionId: string): boolean {
+      const now = Date.now();
+      
+      // 1. Check Global Cooldown
+      if (now < this.globalCooldownUntil) {
+          // console.log(`[CD] GCD Active. Now: ${now}, GCD_Until: ${this.globalCooldownUntil}, Diff: ${this.globalCooldownUntil - now}`)
+          return false;
+      }
+      
+      // 2. Check Specific Cooldown
+      const readyAt = this.cooldowns.get(actionId);
+      if (readyAt && now < readyAt) {
+          console.log(`[CD] Specific Active for ${actionId}. Now: ${now}, ReadyAt: ${readyAt}, Diff: ${readyAt - now}`)
+          return false;
+      }
+      
+      // console.log(`[CD] Action ${actionId} READY.`)
+      return true;
+  }
+
+  /**
+   * Trigger cooldowns for an action
+   * @param actionId The specific action ID
+   * @param duration The cooldown duration for this specific action (ms)
+   * @param gcdDuration Optional Global Cooldown duration (ms)
+   */
+  performAction(actionId: string, duration: number, gcdDuration: number = 0): void {
+      const now = Date.now();
+      
+      // Set Specific Cooldown
+      const readyAt = now + duration;
+      this.cooldowns.set(actionId, readyAt);
+      console.log(`[CD] SET ${actionId} cooldown to ${duration}ms. ReadyAt: ${readyAt}`)
+      
+      // Set Global Cooldown
+      if (gcdDuration > 0) {
+          this.globalCooldownUntil = Math.max(this.globalCooldownUntil, now + gcdDuration);
+          // console.log(`[CD] SET GCD to ${gcdDuration}ms. Until: ${this.globalCooldownUntil}`)
+      }
   }
 
   // AI Interface: Apply behavior decision
@@ -146,8 +197,8 @@ export class Player extends WorldLife implements IAgent {
   findTargetInDirection(mobs: Map<string, any>): any | null {
     if (!this.canAttack()) return null
 
-    // Block targeting if frozen or stunned
-    if (this.isFrozen || this.isStunned) return null
+    // Block targeting if stunned (Frozen allows targeting/attacking now)
+    if (this.isStunned) return null
 
     const attackCone = Math.PI / 4 // 45-degree attack cone
     const maxRange = this.attackRange + this.radius
@@ -193,7 +244,10 @@ export class Player extends WorldLife implements IAgent {
     if (!this.input.attack) return false
     
     // Status effect check
-    if (this.isFrozen || this.isStunned) return false
+    if (this.isStunned) return false
+    
+    // Casting check - prevent attack while casting
+    if (this.isCasting) return false
 
     if (!this.canAttack()) {
         return false
@@ -241,8 +295,8 @@ export class Player extends WorldLife implements IAgent {
   executeBotAttack(mobs: Map<string, any>, roomId: string): void {
     if (!this.canAttack()) return
     
-    // Status effect check
-    if (this.isFrozen || this.isStunned) return
+    // Status effect check (Stun blocks, Freeze slows)
+    if (this.isStunned) return
 
     const { eventBus, RoomEventType } = require('../events/EventBus')
     

@@ -1,4 +1,28 @@
 import React from 'react';
+import {
+  CardContainer,
+  Header,
+  NameGroup,
+  Avatar,
+  Name,
+  TypeBadge,
+  Row,
+  Label,
+  Value,
+  HealthBarContainer,
+  HealthLabelRow,
+  HealthTrack,
+  HealthFill,
+  Section,
+  StatusGrid,
+  StatusBadge,
+  PlaceholderText,
+  ResistanceSection,
+  ResistanceGrid,
+  SectionTitle,
+  ActionGroup,
+  ActionButton
+} from './EntityCard.styles';
 
 interface EntityCardProps {
   id: string;
@@ -18,6 +42,8 @@ interface EntityCardProps {
   onAttack?: () => void;
   onForceDie?: () => void;
   onRespawn?: () => void;
+  battleStatuses?: Map<string, number>;
+  resistances?: Map<string, number>;
 }
 
 export const EntityCard: React.FC<EntityCardProps> = ({
@@ -37,217 +63,175 @@ export const EntityCard: React.FC<EntityCardProps> = ({
   onToggleBot,
   onAttack,
   onForceDie,
-  onRespawn
+  onRespawn,
+  battleStatuses,
+  resistances
 }) => {
   const isPlayer = type === 'player';
-  const bgColor = isPlayer ? '#2c3e50' : '#8e44ad'; // distinct colors
-  const borderColor = isPlayer ? (isCurrentPlayer ? '#f1c40f' : '#3498db') : '#9b59b6'; // Gold border for current player
+  const bgColor = isPlayer ? '#2c3e50' : '#8e44ad';
+  const borderColor = isPlayer ? (isCurrentPlayer ? '#f1c40f' : '#3498db') : '#9b59b6';
 
-  const cardStyle: React.CSSProperties = {
-    backgroundColor: bgColor,
-    color: '#ecf0f1',
-    borderRadius: '12px',
-    padding: '16px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    borderLeft: `5px solid ${borderColor}`,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    minWidth: '250px',
-    fontFamily: '"Inter", sans-serif',
-    position: 'relative',
-    overflow: 'hidden'
-  };
-
-  const headerStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '8px',
-    borderBottom: '1px solid rgba(255,255,255,0.1)',
-    paddingBottom: '8px'
-  };
-
-  const nameStyle: React.CSSProperties = {
-    fontWeight: 700,
-    fontSize: '1.1rem',
-    color: '#fff'
-  };
-
-  const typeBadgeStyle: React.CSSProperties = {
-    fontSize: '0.7rem',
-    padding: '4px 8px',
-    borderRadius: '12px',
-    textTransform: 'uppercase',
-    fontWeight: 'bold',
-    backgroundColor: isCurrentPlayer ? '#f1c40f' : (isPlayer ? 'rgba(52, 152, 219, 0.3)' : 'rgba(155, 89, 182, 0.3)'),
-    color: isCurrentPlayer ? '#2c3e50' : (isPlayer ? '#3498db' : '#dda0dd')
-  };
-
-  const rowStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    fontSize: '0.9rem'
-  };
-
-  const labelStyle: React.CSSProperties = {
-    color: '#bdc3c7',
-  };
-
-  const valueStyle: React.CSSProperties = {
-    fontWeight: 500,
-    color: '#ecf0f1'
-  };
-
-  const actionGroupStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '8px',
-    marginTop: '12px',
-    paddingTop: '12px',
-    borderTop: '1px solid rgba(255,255,255,0.1)'
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    padding: '6px 12px',
-    borderRadius: '6px',
-    border: 'none',
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: '0.8rem',
-    transition: 'all 0.2s',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '4px'
-  };
-  
-  const botBtnStyle: React.CSSProperties = {
-     ...buttonStyle,
-     backgroundColor: isBot ? '#e67e22' : '#2ecc71',
-     color: 'white',
-     gridColumn: '1 / -1'
-  };
-  
-  const attackBtnStyle: React.CSSProperties = {
-     ...buttonStyle,
-     backgroundColor: '#e74c3c',
-     color: 'white',
-     opacity: (isBot || isDead) ? 0.5 : 1,
-     cursor: (isBot || isDead) ? 'not-allowed' : 'pointer'
-  };
-  
-  const dieRespawnBtnStyle: React.CSSProperties = {
-      ...buttonStyle,
-      backgroundColor: isDead ? '#2ecc71' : '#34495e',
-      color: isDead ? 'white' : '#fab1a0',
-      border: isDead ? 'none' : '1px solid #c0392b'
-  };
-
+  // Badge Colors
+  let badgeBg = 'rgba(155, 89, 182, 0.3)';
+  let badgeCol = '#dda0dd';
+  if (isCurrentPlayer) {
+    badgeBg = '#f1c40f';
+    badgeCol = '#2c3e50';
+  } else if (isPlayer) {
+    badgeBg = 'rgba(52, 152, 219, 0.3)';
+    badgeCol = '#3498db';
+  }
 
   return (
-    <div style={cardStyle}>
-      <div style={headerStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-             {/* Small avatar or icon could go here */}
-            {avatarColor && (
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: avatarColor}}></div>
-            )}
-            <span style={/*isCurrentPlayer ? { ...nameStyle, color: '#f1c40f' } :*/ nameStyle}>{name || (isPlayer ? 'Unknown Player' : 'Mob')}</span>
-        </div>
-        <span style={typeBadgeStyle}>{isCurrentPlayer ? 'YOU' : type}</span>
-      </div>
+    <CardContainer $bgColor={bgColor} $borderColor={borderColor}>
+      <Header>
+        <NameGroup>
+          {avatarColor && <Avatar $color={avatarColor} />}
+          <Name>{name || (isPlayer ? 'Unknown Player' : 'Mob')}</Name>
+        </NameGroup>
+        <TypeBadge $bgColor={badgeBg} $color={badgeCol}>
+          {isCurrentPlayer ? 'YOU' : type}
+        </TypeBadge>
+      </Header>
 
-      <div style={rowStyle}>
-        <span style={labelStyle}>ID</span>
-        <span style={valueStyle} title={id}>{id.substring(0, 8)}...</span>
-      </div>
+      <Row>
+        <Label>ID</Label>
+        <Value title={id}>{id.substring(0, 8)}...</Value>
+      </Row>
 
-       <div style={rowStyle}>
-        <span style={labelStyle}>Position</span>
-        <span style={valueStyle}>{x.toFixed(1)}, {y.toFixed(1)}</span>
-      </div>
+      <Row>
+        <Label>Position</Label>
+        <Value>{x.toFixed(1)}, {y.toFixed(1)}</Value>
+      </Row>
 
       {state && (
-        <div style={rowStyle}>
-          <span style={labelStyle}>State</span>
-          <span style={{ ...valueStyle, color: state === 'attack' ? '#e74c3c' : '#bdc3c7' }}>
-              {state.toUpperCase()}
-          </span>
-        </div>
+        <Row>
+          <Label>State</Label>
+          <Value style={{ color: state === 'attack' ? '#e74c3c' : '#bdc3c7' }}>
+            {state.toUpperCase()}
+          </Value>
+        </Row>
       )}
-      
-       {target && (
-        <div style={rowStyle}>
-          <span style={labelStyle}>Target</span>
-          <span style={valueStyle}>{target.substring(0, 8)}...</span>
-        </div>
+
+      {target && (
+        <Row>
+          <Label>Target</Label>
+          <Value>{target.substring(0, 8)}...</Value>
+        </Row>
       )}
 
       {isBot !== undefined && !isCurrentPlayer && (
-         <div style={rowStyle}>
-          <span style={labelStyle}>Mode</span>
-          <span style={{ ...valueStyle, color: isBot ? '#2ecc71' : '#95a5a6' }}>
-             {isBot ? 'BOT' : 'MANUAL'}
-          </span>
-        </div>
+        <Row>
+          <Label>Mode</Label>
+          <Value style={{ color: isBot ? '#2ecc71' : '#95a5a6' }}>
+            {isBot ? 'BOT' : 'MANUAL'}
+          </Value>
+        </Row>
       )}
 
       {health !== undefined && maxHealth !== undefined && (
-          <div style={{ marginTop: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '2px' }}>
-                  <span style={labelStyle}>HP</span>
-                  <span style={valueStyle}>{Math.ceil(health)}/{maxHealth}</span>
-              </div>
-              <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ 
-                      width: `${(health / maxHealth) * 100}%`, 
-                      height: '100%', 
-                      backgroundColor: health < maxHealth * 0.3 ? '#e74c3c' : '#2ecc71',
-                      transition: 'width 0.3s ease'
-                   }} />
-              </div>
-          </div>
+        <HealthBarContainer>
+          <HealthLabelRow>
+            <Label>HP</Label>
+            <Value>{Math.ceil(health)}/{maxHealth}</Value>
+          </HealthLabelRow>
+          <HealthTrack>
+            <HealthFill 
+              $percentage={(health / maxHealth) * 100} 
+              $isLow={health < maxHealth * 0.3} 
+            />
+          </HealthTrack>
+        </HealthBarContainer>
+      )}
+
+      {/* Status Effects Section - Always Visible */}
+      <Section>
+        <SectionTitle style={{ fontSize: '0.7rem', color: '#bdc3c7' }}>Status Effects</SectionTitle>
+        <StatusGrid>
+            {(!battleStatuses || battleStatuses.size === 0) ? (
+                <PlaceholderText>- No Active Effects -</PlaceholderText>
+            ) : (
+                Array.from(battleStatuses.entries()).map(([type, expiry]) => {
+                    const now = Date.now();
+                    const msLeft = expiry - now;
+                    // Force show even if expired (negative msLeft) for debugging/sync check
+                    const isExpired = msLeft <= 0;
+                    
+                    return (
+                        <StatusBadge key={type} $isExpired={isExpired}>
+                            <span>
+                                {type === 'freeze' ? '❄️' : 
+                                 type === 'stun' ? '💫' : 
+                                 type === 'fire' ? '🔥' : 
+                                 type === 'entering' ? '⏳' : '✨'}
+                            </span>
+                            <span>{type.toUpperCase()} ({Math.round(msLeft/1000)}s)</span>
+                        </StatusBadge>
+                    );
+                })
+            )}
+        </StatusGrid>
+      </Section>
+
+      {/* Resistances Display */}
+      {resistances && resistances.size > 0 && (
+          <ResistanceSection>
+             <SectionTitle>Resistances</SectionTitle>
+             <ResistanceGrid>
+                 {Array.from(resistances.entries()).map(([type, value]) => (
+                     <span key={type} title={`${type}: ${(value * 100).toFixed(0)}%`}>
+                         {type === 'freeze' ? '❄️' : type === 'stun' ? '💫' : type === 'fire' ? '🔥' : '🛡️'} 
+                         {Math.round(value * 100)}%
+                     </span>
+                 ))}
+             </ResistanceGrid>
+          </ResistanceSection>
       )}
 
       {/* Action Buttons for Current Player */}
       {isCurrentPlayer && (
-          <div style={actionGroupStyle}>
+          <ActionGroup>
               {onToggleBot && (
-                  <button style={botBtnStyle} onClick={onToggleBot}>
+                  <ActionButton 
+                    $variant="bot" 
+                    $isActive={isBot} 
+                    onClick={onToggleBot}
+                  >
                       {isBot ? '🛑 Disable Bot' : '🤖 Enable Bot'}
-                  </button>
+                  </ActionButton>
               )}
               
               {onAttack && (
-                  <button 
-                      style={attackBtnStyle} 
-                      onClick={onAttack}
-                      disabled={isBot || isDead}
+                  <ActionButton 
+                    $variant="attack"
+                    $isDisabled={isBot || isDead}
+                    onClick={onAttack}
                   >
                       ⚔️ Attack
-                  </button>
+                  </ActionButton>
               )}
 
               {!isDead && onForceDie && (
-                   <button 
-                      style={dieRespawnBtnStyle}
+                   <ActionButton 
+                      $variant="die"
+                      $isActive={false} // Kill me state (dark)
                       onClick={onForceDie}
                    >
                        💀 Kill Me
-                   </button>
+                   </ActionButton>
               )}
               
               {isDead && onRespawn && (
-                  <button
-                      style={dieRespawnBtnStyle}
+                  <ActionButton 
+                      $variant="die"
+                      $isActive={true} // Respawn state (green)
                       onClick={onRespawn}
                   >
                       ♻️ Respawn
-                  </button>
+                  </ActionButton>
               )}
-          </div>
+          </ActionGroup>
       )}
-    </div>
+    </CardContainer>
   );
 };

@@ -27,7 +27,7 @@ describe('Zone Effect System', () => {
 
     test('should create and cast zone effect correctly', () => {
         // Create zone: 1s cast, 5s duration, 1s tick
-        const zone = zoneManager.createZoneEffect(50, 50, 'p1', [{type: 'damage', value: 20}], 5, 1000, 5000, 1000)
+        const zone = zoneManager.createZoneEffect(50, 50, 'p1', 'test_skill', [{type: 'damage', value: 20}], 5, 1000, 5000, 1000)
         gameState.zoneEffects.set(zone.id, zone)
 
         expect(zone).toBeDefined()
@@ -54,7 +54,7 @@ describe('Zone Effect System', () => {
 
     test('should apply ticking damage', () => {
         // Create an ACTIVE zone directly
-        const zone = zoneManager.createZoneEffect(100, 100, 'm1', [{type: 'damage', value: 10}], 5, 0, 5000, 1000)
+        const zone = zoneManager.createZoneEffect(100, 100, 'm1', 'test_skill', [{type: 'damage', value: 10}], 5, 0, 5000, 1000)
         zone.isActive = true 
         zone.activatedAt = Date.now()
         // lastTickTime defaults to 0, so first update (if now > 1000) will proc.
@@ -86,7 +86,7 @@ describe('Zone Effect System', () => {
     })
 
     test('should expire after duration', () => {
-        const zone = zoneManager.createZoneEffect(50, 50, 'p1', [{type: 'damage', value: 10}], 5, 0, 2000, 1000)
+        const zone = zoneManager.createZoneEffect(50, 50, 'p1', 'test_skill', [{type: 'damage', value: 10}], 5, 0, 2000, 1000)
         zone.isActive = true
         zone.activatedAt = Date.now()
         gameState.zoneEffects.set(zone.id, zone)
@@ -101,7 +101,7 @@ describe('Zone Effect System', () => {
     })
 
     test('should trigger with edge-to-edge collision (from previous refactor)', () => {
-        const zone = zoneManager.createZoneEffect(0, 0, 'p1', [{type: 'damage', value: 10}], 2, 0, 5000, 1000)
+        const zone = zoneManager.createZoneEffect(0, 0, 'p1', 'test_skill', [{type: 'damage', value: 10}], 2, 0, 5000, 1000)
         zone.isActive = true
         zone.activatedAt = Date.now()
         zone.lastTickTime = Date.now() - 1000 // Ready
@@ -121,7 +121,7 @@ describe('Zone Effect System', () => {
     })
 
     test('should apply status effect AND damage simultaneously', () => {
-        const zone = zoneManager.createZoneEffect(0, 0, 'p1', [
+        const zone = zoneManager.createZoneEffect(0, 0, 'p1', 'test_skill', [
             {type: 'damage', value: 10},
             {type: 'freeze', value: 2000, chance: 1.0}
         ], 2, 0, 5000, 1000)
@@ -143,6 +143,58 @@ describe('Zone Effect System', () => {
         
         // Status check
         expect(mob.isFrozen).toBe(true)
+    })
+
+    test('should apply BURN DOT effect correctly', () => {
+        // Create Burn Zone: 10 dmg per tick, 100 duration? No, 1000 interval. 
+        // usage: {type: 'burn', value: 5 (dmg), duration: 5000, interval: 1000}
+        const zone = zoneManager.createZoneEffect(0, 0, 'p1', 'test_skill', [
+            {type: 'burn', value: 5, duration: 3000, interval: 1000}
+        ], 2, 0, 5000, 1000)
+        
+        zone.isActive = true
+        zone.activatedAt = Date.now()
+        zone.lastTickTime = Date.now() - 1000 // Ready
+        gameState.zoneEffects.set(zone.id, zone)
+        
+        mob.x = 0
+        mob.y = 0
+        const initialHp = mob.currentHealth
+        
+        // 1. First Tick (Zone applies status)
+        zoneManager.update(gameState.zoneEffects)
+        
+        // Status should be applied, but no damage YET (ticks happen on interval)
+        const burnStatus = mob.battleStatuses.get('burn')
+        expect(burnStatus).toBeDefined()
+        expect(burnStatus?.value).toBe(5)
+        expect(burnStatus?.interval).toBe(1000)
+        
+        // Advance time by 500ms (no tick yet)
+        const time1 = Date.now() + 500
+        jest.spyOn(Date, 'now').mockReturnValue(time1)
+        
+        // Update battle state (WorldLife updates usually handle this via BattleModule)
+        // Since we refactored WorldLife to rely on BattleModule, we must ensure it's called.
+        // In this test env, we manually call battleModule.updateCombatState(mob, 500)
+        battleModule.updateCombatState(mob, 500)
+        
+        expect(mob.currentHealth).toBe(initialHp) // No damage yet
+        
+        // Advance time by another 600ms (Total 1100ms > 1000ms interval)
+        const time2 = time1 + 600
+        jest.spyOn(Date, 'now').mockReturnValue(time2)
+        
+        battleModule.updateCombatState(mob, 600)
+        
+        // Should have taken damage: 1 tick * 5 dmg
+        expect(mob.currentHealth).toBe(initialHp - 5)
+        
+        // Advance another 1000ms
+        const time3 = time2 + 1000
+        jest.spyOn(Date, 'now').mockReturnValue(time3)
+        battleModule.updateCombatState(mob, 1000)
+        expect(mob.currentHealth).toBe(initialHp - 10)
     })
 
     test('should prevent double damage from SAME event ID', () => {
@@ -170,5 +222,25 @@ describe('Zone Effect System', () => {
         // Apply damage with ID "hit-2" IMMEDIATELY (no wait)
         battleModule.applyDamage(mobCombo, 10, { eventId: 'hit-2' })
         expect(mobCombo.currentHealth).toBe(80) // Should reduce again
+    })
+    test('should apply SLOW effect when Frozen', () => {
+        // Freeze the mob
+        battleModule.applyStatusEffect(mob, 'freeze', 1000)
+        
+        expect(mob.isFrozen).toBe(true)
+        expect(mob.getSpeedMultiplier()).toBe(0.2) // 80% reduction
+        
+        // Ensure isMoving is NOT forced to false (unless vx/vy are 0)
+        mob.vx = 10
+        mob.vy = 0
+        mob.update(16) // update loop
+        expect(mob.isMoving).toBe(true) // Should be moving
+        
+        // Advance time to expire freeze
+        jest.spyOn(Date, 'now').mockReturnValue(Date.now() + 1500)
+        mob.update(16) // update loop (cleans up status)
+        
+        expect(mob.isFrozen).toBe(false)
+        expect(mob.getSpeedMultiplier()).toBe(1.0) // Back to normal
     })
 })

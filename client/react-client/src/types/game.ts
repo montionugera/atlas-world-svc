@@ -5,14 +5,25 @@ export interface Position {
   y: number;
 }
 
+export interface BattleStatus {
+  id: string;
+  type: string;
+  expiresAt: number;
+  sourceId: string;
+  value: number;
+  interval: number;
+  lastTick: number;
+}
+
 export interface ZoneEffect {
   id: string;
   x: number;
   y: number;
+
   ownerId: string;
+  skillId?: string; // Synced from server
   radius: number;
-  effectType: 'damage' | 'freeze' | 'stun' | 'heal';
-  effectValue: number;
+  effects: { type: string, value: number, chance?: number }[];
   
   // Timing
   castTime: number;
@@ -35,8 +46,12 @@ export interface Mob {
   tag: string; // Current behavior tag
   isAlive?: boolean;
   // Status Effects
-  isFrozen?: boolean;
-  isStunned?: boolean;
+  // Status Effects
+  battleStatuses?: Map<string, BattleStatus>; // Synced: Status Type -> BattleStatus Object
+  
+  // Resistances
+  freezeResist?: number;
+  stunResist?: number;
 }
 
 export interface Player {
@@ -54,9 +69,15 @@ export interface Player {
   health?: number;
   maxHealth?: number;
   castingUntil?: number; // Synced from server
+  castDuration?: number; // Synced from server
+  cooldowns?: Map<string, number>; // Synced Action ID -> Timestamp
+  globalCooldownUntil?: number; // Synced Timestamp
   // Status Effects
-  isFrozen?: boolean;
-  isStunned?: boolean;
+  // Status Effects
+  battleStatuses?: Map<string, BattleStatus>; // Synced: Status Type -> BattleStatus Object
+  
+  // Resistances
+  resistances?: Map<string, number>; // Synced: Type -> Value (0-1)
 }
 
 export interface Projectile {
