@@ -23,7 +23,14 @@ export class ProjectileManager {
    * Create a melee projectile from mob to target
    * Short range, fast speed for near-instant hits
    */
-  createMelee(mob: Mob, targetX: number, targetY: number, damage: number): Projectile {
+  createMelee(
+    mob: Mob, 
+    targetX: number, 
+    targetY: number, 
+    damage: number,
+    maxRange: number = MELEE_PROJECTILE_STATS.meleeMaxRange,
+    radius: number = MELEE_PROJECTILE_STATS.projectileRadius
+  ): Projectile {
     const dx = targetX - mob.x
     const dy = targetY - mob.y
     const distance = Math.sqrt(dx * dx + dy * dy)
@@ -37,19 +44,24 @@ export class ProjectileManager {
     // Calculate initial velocity components
     const vx = speed * Math.cos(angle)
     const vy = speed * Math.sin(angle)
+
+    // Spawn at edge of mob + small offset
+    const spawnOffset = (mob.radius || 1) + 0.5
+    const spawnX = mob.x + Math.cos(angle) * spawnOffset
+    const spawnY = mob.y + Math.sin(angle) * spawnOffset
     
     // Create projectile with melee stats
     const projectileId = `projectile-melee-${this.gameState.tick}-${Math.random().toString(36).slice(2, 4)}`
     const projectile = new Projectile(
       projectileId,
-      mob.x,
-      mob.y,
+      spawnX,
+      spawnY,
       vx,
       vy,
       mob.id,
       damage,
-      MELEE_PROJECTILE_STATS.meleeMaxRange,
-      MELEE_PROJECTILE_STATS.projectileRadius,
+      maxRange,
+      radius,
       MELEE_PROJECTILE_STATS.projectileLifetime
     )
     
@@ -60,7 +72,14 @@ export class ProjectileManager {
    * Create a spear projectile from mob to target
    * Calculates trajectory based on configurable physics
    */
-  createSpear(mob: Mob, targetX: number, targetY: number, damage: number, maxRange: number = SPEAR_THROWER_STATS.spearMaxRange): Projectile {
+  createSpear(
+    mob: Mob, 
+    targetX: number, 
+    targetY: number, 
+    damage: number, 
+    maxRange: number = SPEAR_THROWER_STATS.spearMaxRange,
+    radius: number = SPEAR_THROWER_STATS.projectileRadius
+  ): Projectile {
     const dx = targetX - mob.x
     const dy = targetY - mob.y
     const distance = Math.sqrt(dx * dx + dy * dy)
@@ -74,19 +93,24 @@ export class ProjectileManager {
     // Calculate initial velocity components
     const vx = maxSpeed * Math.cos(angle)
     const vy = maxSpeed * Math.sin(angle)
+
+    // Spawn at edge of mob
+    const spawnOffset = (mob.radius || 1) + 0.5
+    const spawnX = mob.x + Math.cos(angle) * spawnOffset
+    const spawnY = mob.y + Math.sin(angle) * spawnOffset
     
     // Create projectile with configurable radius
     const projectileId = `projectile-${this.gameState.tick}-${Math.random().toString(36).slice(2, 4)}`
     const projectile = new Projectile(
       projectileId,
-      mob.x,
-      mob.y,
+      spawnX,
+      spawnY,
       vx,
       vy,
       mob.id,
       damage,
       maxRange,
-      SPEAR_THROWER_STATS.projectileRadius,
+      radius,
       SPEAR_THROWER_STATS.projectileLifetime
     )
     

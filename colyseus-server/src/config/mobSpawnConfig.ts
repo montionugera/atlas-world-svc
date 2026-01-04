@@ -20,8 +20,8 @@ const DEFAULT_SETTINGS: MobSpawnSettings = {
 // Per-map overrides
 const MAP_MOB_SETTINGS: Record<string, Partial<MobSpawnSettings>> = {
   'map-01-sector-a': {
-    desiredCount: 1, // DEBUG: Only 1 mob for debugging
-    maxMobs: 1, // DEBUG: Only 1 mob for debugging
+    desiredCount: 5,
+    maxMobs: 8,
     spawnIntervalMs: 800,
     respawnDelayMs: 5000, // 5 seconds for this map
   },

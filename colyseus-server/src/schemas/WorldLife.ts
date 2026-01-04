@@ -213,7 +213,7 @@ export abstract class WorldLife extends WorldObject {
   canAttack(): boolean {
     if (!this.isAlive) return false
     // Cannot attack if frozen or stunned
-    if (this.isFrozen || this.isStunned) return false
+    if (this.isStunned) return false
 
     const now = performance.now()
     const timeSinceLastAttack = now - this.lastAttackTime

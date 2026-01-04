@@ -1,5 +1,6 @@
 import React from 'react';
 import { EntityCard } from './EntityCard';
+import { getMobDisplayName } from '../utils/mobUtils';
 
 interface EntityGridProps {
   players?: any[]; // Using any for flexibility with Colyseus schema types
@@ -83,7 +84,7 @@ export const EntityGrid: React.FC<EntityGridProps> = ({
                     key={m.id}
                     id={m.id}
                     type="mob"
-                    name={m.type || 'Unknown Mob'}
+                    name={getMobDisplayName(m)}
                     x={m.x}
                     y={m.y}
                     health={m.health}

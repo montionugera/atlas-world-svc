@@ -44,6 +44,7 @@ export interface Mob {
   vy: number;
   radius: number; // Receive radius from server
   tag: string; // Current behavior tag
+  mobTypeId?: string; // Synced from server for UI display
   isAlive?: boolean;
   // Status Effects
   // Status Effects

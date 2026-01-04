@@ -7,12 +7,38 @@ import { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
 import { GameState } from '../schemas/GameState'
 import { Mob } from '../schemas/Mob'
 import { eventBus, RoomEventType } from '../events/EventBus'
+import { MAP_CONFIG } from '../config/mapConfig'
 
 describe('MobLifeCycleManager', () => {
   let gameState: GameState
   let lifecycleManager: MobLifeCycleManager
   const roomId = 'test-room'
   let mobRemoveListener: ((data: any) => void) | null = null
+
+  // Helper to calculate total desired spawn count from map config
+  const getRandomTotalDesiredCount = () => {
+    return (MAP_CONFIG.mobSpawnAreas || []).reduce((sum, area) => sum + area.count, 0)
+  }
+
+  // Helper to force spawn readiness
+  const forceSpawnReady = () => {
+    const map = lifecycleManager['lastSpawnAtByArea'] as Map<string, number>
+    // If map is empty (e.g. before initial seed), we might need to rely on init logic,
+    // but usually seedInitial populates it.
+    // If we want to force updates, we can just iterate the config areas
+    for (const area of MAP_CONFIG.mobSpawnAreas) {
+        map.set(area.id, Date.now() - (area.spawnIntervalMs || 10000))
+    }
+  }
+
+    // Helper to force spawn readiness in the past (to prevent spawn)
+    const forceSpawnNotReady = () => {
+        const map = lifecycleManager['lastSpawnAtByArea'] as Map<string, number>
+        for (const area of MAP_CONFIG.mobSpawnAreas) {
+            map.set(area.id, Date.now() + 10000)
+        }
+    }
+
 
   beforeEach(() => {
     gameState = new GameState('map-01-sector-a', roomId)
@@ -149,7 +175,7 @@ describe('MobLifeCycleManager', () => {
   describe('Alive Mob Counting', () => {
     test('should count total mobs (alive + dead) for spawn decisions', () => {
       // Spawn desired count
-      const desiredCount = lifecycleManager['settings'].desiredCount
+      const desiredCount = getRandomTotalDesiredCount()
       lifecycleManager.seedInitial()
       expect(gameState.mobs.size).toBe(desiredCount)
 
@@ -163,9 +189,9 @@ describe('MobLifeCycleManager', () => {
       expect(aliveMobs.length).toBe(desiredCount - 1)
       
       // Fast-forward spawn timer to allow respawn
-      lifecycleManager['lastSpawnAt'] = Date.now() - 2000
+      forceSpawnReady()
       
-      // Update should NOT spawn yet (dead mob still counts toward total)
+      // Update should NOT spawn yet (dead mob still counts toward total for that area)
       lifecycleManager.update()
       expect(gameState.mobs.size).toBe(desiredCount) // Still desiredCount (dead mob not removed yet)
       
@@ -180,7 +206,7 @@ describe('MobLifeCycleManager', () => {
     })
 
     test('should spawn new mobs when below desired count (after dead mobs removed)', () => {
-      const desiredCount = lifecycleManager['settings'].desiredCount
+      const desiredCount = getRandomTotalDesiredCount()
       lifecycleManager.seedInitial()
       expect(gameState.mobs.size).toBe(desiredCount)
 
@@ -190,8 +216,8 @@ describe('MobLifeCycleManager', () => {
         mob.readyToRemove = true // Bypass delay
       }
 
-      // Fast-forward spawn timer by setting lastSpawnAt to past
-      lifecycleManager['lastSpawnAt'] = 0
+      // Fast-forward spawn timer
+      forceSpawnReady()
 
       // Update - should remove dead and spawn replacements
       lifecycleManager.update()
@@ -268,6 +294,7 @@ describe('MobLifeCycleManager', () => {
         setTimeout(() => {
           lifecycleManager.update()
           expect(gameState.mobs.size).toBe(0)
+            // Restore auto-spawn
           lifecycleManager['settings'].autoSpawn = true
           resolve(undefined)
         }, 150) // Slightly more than 100ms delay
@@ -343,7 +370,7 @@ describe('MobLifeCycleManager', () => {
       }
 
       // Fast-forward spawn timer
-      lifecycleManager['lastSpawnAt'] = Date.now() - 2000
+      forceSpawnReady()
 
       // Update should remove dead and spawn new
       lifecycleManager.update()
@@ -354,7 +381,7 @@ describe('MobLifeCycleManager', () => {
 
     test('should NOT spawn until dead mobs are removed', () => {
       lifecycleManager.seedInitial()
-      const desiredCount = lifecycleManager['settings'].desiredCount
+      const desiredCount = getRandomTotalDesiredCount()
       
       // Kill one mob (but don't mark for removal - let it wait for delay)
       const mobsBefore = Array.from(gameState.mobs.values())
@@ -364,10 +391,9 @@ describe('MobLifeCycleManager', () => {
       
       // Count mobs before update
       const totalBeforeUpdate = gameState.mobs.size
-      const aliveBeforeUpdate = mobsBefore.filter(m => m.isAlive).length
       
       // Fast-forward spawn timer to allow spawning
-      lifecycleManager['lastSpawnAt'] = Date.now() - 2000
+      forceSpawnReady()
 
       // Update - should NOT spawn yet (dead mob still in game, total count includes dead)
       lifecycleManager.update()
@@ -386,7 +412,6 @@ describe('MobLifeCycleManager', () => {
       if (mobToRemove) {
         mobToRemove.readyToRemove = true
       }
-      const totalBeforeRemoval = gameState.mobs.size
       lifecycleManager.update()
       
       // After removal, dead mob should be gone
@@ -413,6 +438,9 @@ describe('MobLifeCycleManager', () => {
 
       const countAfterRemoval = Array.from(gameState.mobs.values()).filter(m => m.isAlive).length
 
+      // Force spawn NOT ready
+      forceSpawnNotReady()
+
       // Update immediately - should not spawn yet (interval not elapsed)
       lifecycleManager.update()
 
@@ -421,7 +449,7 @@ describe('MobLifeCycleManager', () => {
       expect(countAfterImmediateUpdate).toBe(countAfterRemoval)
 
       // Fast-forward time
-      lifecycleManager['lastSpawnAt'] = Date.now() - 2000
+      forceSpawnReady()
       lifecycleManager.update()
 
       // Should have spawned
@@ -439,7 +467,7 @@ describe('MobLifeCycleManager', () => {
       lifecycleManager.seedInitial()
 
       // Should have cleared old and spawned new
-      const desiredCount = lifecycleManager['settings'].desiredCount
+      const desiredCount = getRandomTotalDesiredCount()
       expect(gameState.mobs.has('old-mob')).toBe(false)
       expect(gameState.mobs.size).toBe(desiredCount)
     })
@@ -453,4 +481,3 @@ describe('MobLifeCycleManager', () => {
     })
   })
 })
-

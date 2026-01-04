@@ -1,5 +1,6 @@
 import { RENDER_CONFIG, COLORS } from '../config/gameConfig';
-import { drawCircle, drawLine, drawText, drawHealthBar, drawHeading } from '../utils/drawingUtils';
+import { drawCircle, drawLine, drawText, drawHealthBar, drawHeading, drawAttackCone, drawAttackSlash } from '../utils/drawingUtils';
+import { getMobDisplayName, getMobStatusText } from '../utils/mobUtils';
 
 /**
  * Draw all mobs with their velocity vectors
@@ -60,16 +61,32 @@ export const drawMobs = (
       );
     }
     
-    // Draw mob id/name and behavior tag above the circle
+    // Draw mob name and status
     const fontSize = 12 * inverseScale;
+    const name = getMobDisplayName(mob);
+    const status = getMobStatusText(mob);
+    
+    // Draw Name
     drawText(
       ctx,
-      `${mob.id || 'mob'} (${mob.tag || 'idle'})`,
+      name,
       x - (12 * inverseScale),
-      y - (mob.radius * scale) - (6 * inverseScale),
+      y - (mob.radius * scale) - (18 * inverseScale), // Higher up
       COLORS.hudText,
       `${fontSize}px Arial`
     );
+
+    // Draw Status (if any)
+    if (status) {
+        drawText(
+          ctx,
+          status,
+          x - (12 * inverseScale),
+          y - (mob.radius * scale) - (6 * inverseScale),
+          '#ff4444', // Red for status/behavior
+          `${fontSize * 0.9}px Arial` // Slightly smaller
+        );
+    }
 
     // Draw heading indicator (same as player)
     if (mob.heading !== undefined) {
@@ -87,6 +104,33 @@ export const drawMobs = (
       );
     }
     
+    // Draw attack visualization if mob is attacking
+    if (mob.isAttacking && mob.heading !== undefined) {
+      // Draw attack cone
+      drawAttackCone(
+        ctx,
+        x,
+        y,
+        mob.heading,
+        mob.attackRange || 1.5,
+        scale,
+        '#ff4444', // red cone
+        0.4, // semi-transparent
+      );
+      
+      // Draw attack slash effect
+      drawAttackSlash(
+        ctx,
+        x,
+        y,
+        mob.heading,
+        mob.radius * scale,
+        '#ffff00', // yellow slash
+        7, // thicker line for slash
+        viewScale
+      );
+    }
+
     // Draw velocity vector
     ctx.lineWidth = 2 * inverseScale;
     drawLine(

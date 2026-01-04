@@ -63,20 +63,11 @@ export class ZoneEffectManager {
       // 1. Casting Logic
       if (!zone.isActive) {
         if (now - zone.createdAt >= zone.castTime) {
-           // Interruption Logic: Check if owner is stunned or dead
+           // Interruption Logic: Check if owner is stunned or dead (Final Check)
            const ownerStart = this.battleModule.getEntity(zone.ownerId);
            if (ownerStart && (!ownerStart.isAlive || ownerStart.isStunned)) {
-               console.log(`🚫 ZONE INTERRUPTED: ${id} owner ${ownerStart.id} is stunned/dead`);
-               
-               // Reset Casting State on Owner to update Client UI
-               if ((ownerStart as any).castDuration !== undefined) {
-                   (ownerStart as any).castDuration = 0;
-                   (ownerStart as any).castingUntil = 0;
-                   if ((ownerStart as any).isCasting !== undefined) {
-                      (ownerStart as any).isCasting = false;
-                   }
-               }
-               
+               console.log(`🚫 ZONE INTERRUPTED (Final Check): ${id} owner ${ownerStart.id} is stunned/dead`);
+               this.cleanupCastingState(ownerStart);
                toRemove.push(id);
                continue;
            }
@@ -108,7 +99,14 @@ export class ZoneEffectManager {
                }
            }
         } else {
-           continue // Still casting
+           // Still Casting: Immediate Interruption Check
+           const ownerCasting = this.battleModule.getEntity(zone.ownerId);
+           if (ownerCasting && (!ownerCasting.isAlive || ownerCasting.isStunned)) {
+               console.log(`🚫 ZONE INTERRUPTED (Immediate): ${id} owner ${ownerCasting.id} is stunned/dead`);
+               this.cleanupCastingState(ownerCasting);
+               toRemove.push(id);
+           }
+           continue 
         }
       }
 
@@ -234,5 +232,16 @@ export class ZoneEffectManager {
         y: zone.y,
         type: primaryType
     } as any)
+  }
+
+  private cleanupCastingState(owner: any) {
+       // Reset Casting State on Owner to update Client UI
+       if ((owner as any).castDuration !== undefined) {
+           (owner as any).castDuration = 0;
+           (owner as any).castingUntil = 0;
+           if ((owner as any).isCasting !== undefined) {
+              (owner as any).isCasting = false;
+           }
+       }
   }
 }

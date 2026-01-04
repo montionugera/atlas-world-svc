@@ -204,15 +204,7 @@ export class AIWorldInterface {
       // Actually, IAgent doesn't specify how velocity is stored, but Mob has desiredVx/Vy.
       // Let's check if the agent has these properties.
       
-      if ('desiredVx' in agent) {
-        (agent as any).desiredVx = decision.velocity.x;
-        (agent as any).desiredVy = decision.velocity.y;
-      }
-      
-      if ('desiredBehavior' in agent) {
-        (agent as any).desiredBehavior = decision.behavior;
-      }
-      
+      // Update desire timestamp if available
       if ('decisionTimestamp' in agent) {
         (agent as any).decisionTimestamp = decision.timestamp;
       }
@@ -224,11 +216,9 @@ export class AIWorldInterface {
         !this.physicsManager.getBody ||
         !this.physicsManager.getBody(agentId)
       ) {
-        if ('vx' in agent && 'vy' in agent) {
-            // Type assertion to write to readonly properties if they are readonly in schema (they are not)
-            (agent as any).vx = decision.velocity.x;
-            (agent as any).vy = decision.velocity.y;
-        }
+         // Only apply if agent doesn't have its own velocity application logic
+         // For simple agents, we might still need this.
+         // But for Mob/Player, they handle it in applyBehaviorDecision
       }
     }
   }

@@ -163,9 +163,10 @@ export class Player extends WorldLife implements IAgent {
     this.currentChaseTarget = decision.currentChaseTarget
     
     // Apply desired velocity from decision
+    const speedMultiplier = this.getSpeedMultiplier()
     if (decision.desiredVelocity) {
-      this.desiredVx = decision.desiredVelocity.x
-      this.desiredVy = decision.desiredVelocity.y
+      this.desiredVx = decision.desiredVelocity.x * speedMultiplier
+      this.desiredVy = decision.desiredVelocity.y * speedMultiplier
     } else {
       this.desiredVx = 0
       this.desiredVy = 0

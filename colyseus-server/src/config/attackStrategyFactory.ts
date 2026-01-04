@@ -6,6 +6,7 @@
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { MeleeAttackStrategy } from '../ai/strategies/MeleeAttackStrategy'
 import { SpearThrowAttackStrategy } from '../ai/strategies/SpearThrowAttackStrategy'
+import { DoubleAttackStrategy } from '../ai/strategies/DoubleAttackStrategy'
 import { ProjectileManager } from '../modules/ProjectileManager'
 import { GameState } from '../schemas/GameState'
 import {
@@ -60,26 +61,14 @@ export function createAttackStrategies(
     }
 
     case 'doubleAttack': {
-      // Create multiple strategies for double attack
-      // First attack (instant)
-      const firstAttack = strategyConfig.attacks[0]
-      if (firstAttack && firstAttack.atkCharacteristic.type === AttackCharacteristicType.PROJECTILE) {
-        strategies.push(
-          new MeleeAttackStrategy(projectileManager, gameState)
+      // Create DoubleAttackStrategy with all configured attacks
+      strategies.push(
+        new DoubleAttackStrategy(
+            projectileManager, 
+            gameState,
+            strategyConfig.attacks
         )
-      }
-
-      // Second attack (delayed) - reuse melee strategy but with different timing
-      // Note: The actual double-attack logic would need to be handled in the strategy itself
-      // For now, we create a second melee strategy
-      const secondAttack = strategyConfig.attacks[1]
-      if (secondAttack && secondAttack.atkCharacteristic.type === AttackCharacteristicType.PROJECTILE) {
-        // TODO: Create a DoubleAttackStrategy that handles multiple attacks
-        // For now, just add another melee strategy
-        strategies.push(
-          new MeleeAttackStrategy(projectileManager, gameState)
-        )
-      }
+      )
       break
     }
 

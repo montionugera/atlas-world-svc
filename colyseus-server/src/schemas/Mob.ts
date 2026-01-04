@@ -15,6 +15,7 @@ export class Mob extends WorldLife implements IAgent {
   @type('number') behaviorLockedUntil: number = 0 // epoch ms; 0 means unlocked
   @type('boolean') isCasting: boolean = false // Synced: casting state for client animation
   @type('string') mobTypeId: string = '' // Mob type identifier (synced to clients for UI/debugging)
+  @type('string') spawnAreaId: string = '' // ID of the area this mob was spawned from
   // Server-only fields (not synced to clients)
   mass: number = 1 // cached mass for steering calculations
   desiredVx: number = 0
@@ -103,6 +104,7 @@ export class Mob extends WorldLife implements IAgent {
     maxMoveSpeed?: number
     attackStrategies?: AttackStrategy[]
     mobTypeId?: string
+    spawnAreaId?: string
   }) {
     super({
       id: options.id,
@@ -133,6 +135,10 @@ export class Mob extends WorldLife implements IAgent {
     // Set mob type ID
     if (options.mobTypeId !== undefined) {
       this.mobTypeId = options.mobTypeId
+    }
+    
+    if (options.spawnAreaId !== undefined) {
+      this.spawnAreaId = options.spawnAreaId
     }
     
     // Initialize attack strategies (default to melee if none provided)

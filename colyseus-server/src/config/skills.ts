@@ -54,9 +54,9 @@ export const SKILLS: Record<string, SkillDefinition> = {
        { type: 'freeze', duration: 5000, value: 0.2, chance: 1 } // ❄️ 100% chance to freeze for 10s. Value 0.2 = Speed Multiplier
     ],
     tickRate: 200,
-    castTime: 2000, // 2s cast
-    duration: 10000, // 10s duration
-    cooldown: 20000, // 20s cooldown
+    castTime: 1000, // 2s cast
+    duration: 3000, // 10s duration
+    cooldown: 4000, // 20s cooldown
     gcd: 1500
   },
   'skill_4': {

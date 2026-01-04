@@ -9,7 +9,71 @@ export interface TerrainZone {
   name: string
 }
 
+export interface MobSpawnArea {
+  id: string
+  x: number
+  y: number
+  width: number
+  height: number
+  mobType: string // Must match an id in mobTypesConfig
+  count: number // Number of mobs to maintain in this area
+  spawnIntervalMs?: number // Optional override for spawn timing
+}
+
 export const MAP_CONFIG = {
+  // Define mob spawn areas
+  mobSpawnAreas: [
+    // Center area - balanced mobs
+    {
+      id: 'center_courtyard',
+      x: 350,
+      y: 250,
+      width: 300,
+      height: 300,
+      mobType: 'balanced',
+      count: 3
+    },
+    {
+      id: 'boss_area',
+      x: 450,
+      y: 350,
+      width: 100,
+      height: 100,
+      mobType: 'double_attacker',
+      count: 3
+    },
+    // North icy area - aggressive mobs
+    {
+      id: 'north_ice_fields',
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 200,
+      mobType: 'aggressive',
+      count: 2
+    },
+    // South mud pit - defensive mobs
+    {
+      id: 'south_mud_pit',
+      x: 100,
+      y: 700,
+      width: 250,
+      height: 200,
+      mobType: 'defensive',
+      count: 2
+    },
+    // East sand dunes - spear throwers
+    {
+      id: 'east_dunes',
+      x: 700,
+      y: 300,
+      width: 200,
+      height: 400,
+      mobType: 'spear_thrower',
+      count: 4
+    }
+  ] as MobSpawnArea[],
+
   // Define different terrain zones on the map
   terrainZones: [
     // Ice zone (low friction)

@@ -499,6 +499,9 @@ export class GameRoom extends Room<GameState> {
           }
 
           player.update(deltaTime, this.state)
+          
+          // Update combat state (cooldowns, status effects/DOTs)
+          this.battleModule.updateCombatState(player, deltaTime)
 
           if (player.isBotMode && Math.random() < 0.01) {
              console.log(`[Server] Player ${player.sessionId} pos: ${player.x}, ${player.y}`)
@@ -522,6 +525,13 @@ export class GameRoom extends Room<GameState> {
 
         // Update mobs (AI + combat only; physics already applied above)
         this.state.updateMobs()
+        
+        // Update mob combat states (status effects/DOTs)
+        this.state.mobs.forEach(mob => {
+            if (mob.isAlive) {
+                this.battleModule.updateCombatState(mob, deltaTime)
+            }
+        })
 
         // Remove physics bodies for projectiles that should despawn (before they're removed from map)
         const toDespawn: string[] = []

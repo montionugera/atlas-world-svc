@@ -72,10 +72,11 @@ export interface MobTypeConfig {
   id: string
   /** Display name */
   name: string
-  /** Spawn weight (higher = more likely to spawn) */
-  spawnWeight: number
+
+  /** Mob Health Points (overrides stats.maxHealth) */
+  hp?: number
   /** Body radius of the mob */
-  bodyRadius?: number | [number, number] // Single value or [min, max] range
+  radius?: number | [number, number] // Single value or [min, max] range
   /** Base combat stats (overrides MOB_STATS defaults) */
   stats: Partial<MobCombatStats>
   /** Attack strategies this mob can use */
@@ -90,7 +91,9 @@ export const MOB_TYPES: MobTypeConfig[] = [
   {
     id: 'spear_thrower',
     name: 'Spear Thrower',
-    spawnWeight: 20,
+
+    hp: 80,
+    radius: 3,
     stats: {
       attackRange: MOB_STATS.attackRange,
       chaseRange: 20, // Longer chase range - prefers ranged combat
@@ -137,7 +140,9 @@ export const MOB_TYPES: MobTypeConfig[] = [
   {
     id: 'hybrid',
     name: 'Hybrid Fighter',
-    spawnWeight: 20,
+
+    hp: 120,
+    radius: 4,
     stats: {
       attackRange: MOB_STATS.attackRange,
       chaseRange: MOB_STATS.chaseRange,
@@ -184,7 +189,9 @@ export const MOB_TYPES: MobTypeConfig[] = [
   {
     id: 'aggressive',
     name: 'Aggressive Mob',
-    spawnWeight: 30,
+
+    hp: 90,
+    radius: 3.5,
     stats: {
       attackRange: MOB_TYPE_STATS.aggressive.attackRange,
       chaseRange: MOB_TYPE_STATS.aggressive.chaseRange,
@@ -213,7 +220,9 @@ export const MOB_TYPES: MobTypeConfig[] = [
   {
     id: 'defensive',
     name: 'Defensive Mob',
-    spawnWeight: 20,
+
+    hp: 150,
+    radius: 5,
     stats: {
       attackRange: MOB_TYPE_STATS.defensive.attackRange,
       chaseRange: MOB_TYPE_STATS.defensive.chaseRange,
@@ -242,7 +251,9 @@ export const MOB_TYPES: MobTypeConfig[] = [
   {
     id: 'balanced',
     name: 'Balanced Mob',
-    spawnWeight: 10,
+
+    hp: 100,
+    radius: 4,
     stats: {
       attackRange: MOB_TYPE_STATS.balanced.attackRange,
       chaseRange: MOB_TYPE_STATS.balanced.chaseRange,
@@ -272,7 +283,9 @@ export const MOB_TYPES: MobTypeConfig[] = [
   {
     id: 'double_attacker',
     name: 'Double Attacker',
-    spawnWeight: 5,
+
+    hp: 810,
+    radius: 8,
     stats: {
       attackRange: MOB_STATS.attackRange,
       chaseRange: MOB_STATS.chaseRange,
@@ -283,8 +296,8 @@ export const MOB_TYPES: MobTypeConfig[] = [
         attacks: [
           {
             atkBaseDmg: MOB_STATS.attackDamage,
-            atkRadius: 0.3,
-            castingTimeInMs: 0,
+            atkRadius: 1.3,
+            castingTimeInMs: 500,
             atkCharacteristic: {
               type: AttackCharacteristicType.PROJECTILE,
               projectile: {
@@ -296,12 +309,12 @@ export const MOB_TYPES: MobTypeConfig[] = [
           },
           {
             atkBaseDmg: MOB_STATS.attackDamage * 0.8, // Second hit does less damage
-            atkRadius: 0.3,
-            castingTimeInMs: 200, // Second attack has delay
+            atkRadius: 2.3,
+            castingTimeInMs: 550, // Second attack has delay
             atkCharacteristic: {
               type: AttackCharacteristicType.PROJECTILE,
               projectile: {
-                speedUnitsPerSec: 100,
+                speedUnitsPerSec: 500,
                 projectileRadius: 0.3,
                 atkRange: MOB_STATS.attackRange,
               },
@@ -313,31 +326,7 @@ export const MOB_TYPES: MobTypeConfig[] = [
   },
 ]
 
-/**
- * Get total spawn weight for weighted random selection
- */
-function getTotalSpawnWeight(): number {
-  return MOB_TYPES.reduce((sum, type) => sum + type.spawnWeight, 0)
-}
 
-/**
- * Select a mob type based on weighted random selection
- * @returns Selected mob type config
- */
-export function selectMobType(): MobTypeConfig {
-  const totalWeight = getTotalSpawnWeight()
-  let random = Math.random() * totalWeight
-  return MOB_TYPES[0]
-//   for (const mobType of MOB_TYPES) {
-//     random -= mobType.spawnWeight
-//     if (random <= 0) {
-//       return mobType
-//     }
-//   }
-
-//   // Fallback to first type (should never happen)
-//   return MOB_TYPES[0]
-}
 
 /**
  * Get mob type by ID
@@ -350,17 +339,17 @@ export function getMobTypeById(id: string): MobTypeConfig | undefined {
  * Calculate radius for a mob type
  */
 export function calculateMobRadius(mobType: MobTypeConfig): number {
-  if (mobType.bodyRadius === undefined) {
+  if (mobType.radius === undefined) {
     // Default: random radius between 1-4
     return 1 + 3 * Math.random()
   }
 
-  if (typeof mobType.bodyRadius === 'number') {
-    return mobType.bodyRadius
+  if (typeof mobType.radius === 'number') {
+    return mobType.radius
   }
 
   // Array [min, max]
-  const [min, max] = mobType.bodyRadius
+  const [min, max] = mobType.radius
   return min + Math.random() * (max - min)
 }
 

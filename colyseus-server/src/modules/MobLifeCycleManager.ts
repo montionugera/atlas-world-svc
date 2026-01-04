@@ -6,10 +6,11 @@ import { getMobSettingsForMap, MobSpawnSettings } from '../config/mobSpawnConfig
 import { MOB_STATS } from '../config/combatConfig'
 import { ProjectileManager } from './ProjectileManager'
 import {
-  selectMobType,
+  getMobTypeById,
   calculateMobRadius,
   type MobTypeConfig,
 } from '../config/mobTypesConfig'
+import { MAP_CONFIG, MobSpawnArea } from '../config/mapConfig'
 import { createAttackStrategies } from '../config/attackStrategyFactory'
 import { MeleeAttackStrategy } from '../ai/strategies/MeleeAttackStrategy'
 
@@ -22,7 +23,8 @@ export class MobLifeCycleManager {
   private readonly state: GameState
   private readonly roomId: string
   private readonly settings: MobSpawnSettings
-  private lastSpawnAt = 0
+  // Track last spawn time per area ID
+  private lastSpawnAtByArea: Map<string, number> = new Map()
   private projectileManager: ProjectileManager | null = null
 
   constructor(roomId: string, state: GameState) {
@@ -36,15 +38,19 @@ export class MobLifeCycleManager {
     this.projectileManager = projectileManager
   }
 
-  // Seed initial mobs up to desiredCount
+  // Seed initial mobs for all defined areas
   seedInitial(): void {
     // Clear existing via GameState helper (emits removal events)
     this.state.clearAllMobs()
-    const target = this.settings.desiredCount
-    for (let i = 0; i < target; i++) {
-      this.spawnOne()
+    
+    // Spawn initial mobs for each area
+    const areas = MAP_CONFIG.mobSpawnAreas || []
+    for (const area of areas) {
+      for (let i = 0; i < area.count; i++) {
+        this.spawnMobInArea(area)
+      }
+      this.lastSpawnAtByArea.set(area.id, Date.now())
     }
-    this.lastSpawnAt = Date.now()
   }
 
   // Called by GameRoom every tick
@@ -52,35 +58,41 @@ export class MobLifeCycleManager {
     // Clean up mobs ready to be removed (new simple cleanup system)
     this.cleanupReadyMobs()
 
-    // Count only alive mobs
-    const aliveMobs = this.getAliveMobCount()
-
-    // Remove excess mobs if over max
-    const maxAllowed = this.settings.maxMobs ?? this.settings.desiredCount
-    if (aliveMobs > maxAllowed) {
-      const toRemove = aliveMobs - maxAllowed
-      this.removeExtraMobs(toRemove)
-    }
-
-    // Spawn if under target and interval elapsed
-    // Use TOTAL count (alive + dead) so we don't spawn until dead mobs are removed
     if (!this.settings.autoSpawn) return
-
-    const target = this.settings.desiredCount
-    const totalMobs = this.getTotalMobCount() // Count all mobs (alive + dead)
-    if (totalMobs >= target) return // Wait until dead mobs are removed
-
+    
+    // Check each spawn area
+    const areas = MAP_CONFIG.mobSpawnAreas || []
     const now = Date.now()
-    if (now - this.lastSpawnAt < this.settings.spawnIntervalMs) return
-
-    const numToSpawn = Math.min(
-      target - totalMobs,
-      this.settings.batchSize ?? 1
-    )
-    for (let i = 0; i < numToSpawn; i++) {
-      this.spawnOne()
+    
+    for (const area of areas) {
+      this.maintainAreaPopulation(area, now)
     }
-    this.lastSpawnAt = now
+  }
+
+  // Maintain population for a specific area
+  private maintainAreaPopulation(area: MobSpawnArea, now: number): void {
+    const areaId = area.id
+    const desiredCount = area.count
+    const interval = area.spawnIntervalMs ?? this.settings.spawnIntervalMs
+    
+    // Count existing mobs in this area (alive + dead but not removed)
+    // We count total mobs to prevent overspawning while dead bodies linger
+    let currentCount = 0
+    for (const mob of this.state.mobs.values()) {
+        if (mob.spawnAreaId === areaId) {
+            currentCount++
+        }
+    }
+    
+    if (currentCount >= desiredCount) return
+
+    // Check spawn interval
+    const lastSpawn = this.lastSpawnAtByArea.get(areaId) || 0
+    if (now - lastSpawn < interval) return
+
+    // Spawn one mob
+    this.spawnMobInArea(area)
+    this.lastSpawnAtByArea.set(areaId, now)
   }
 
   // Clean up mobs that are ready to be removed (simple cleanup system)
@@ -115,28 +127,45 @@ export class MobLifeCycleManager {
     eventBus.emitRoomEvent(this.roomId, RoomEventType.MOB_REMOVED, { mob })
   }
 
-  // Get count of alive mobs only
-  private getAliveMobCount(): number {
-    let count = 0
-    for (const mob of this.state.mobs.values()) {
-      if (mob.isAlive) count++
-    }
-    return count
-  }
-
-  // Get total count of all mobs (alive + dead)
-  // Used for spawn decisions to prevent spawning until dead mobs are removed
-  private getTotalMobCount(): number {
-    return this.state.mobs.size
-  }
-
   // Spawn a mob at a specific location (for debugging/events)
   spawnMobAt(x: number, y: number): void {
-    const rand2 = Math.random().toString(36).slice(2, 4)
-    const mobId = `mob-${this.state.tick}-${rand2}`
+    // For debug spawns, we use a random mob type or specific logic?
+    // Let's keep it simple and just use a default type or random one from old logic 
+    // IF we want to keep `spawnMobAt` working for debug commands.
+    // For now, let's use a "balanced" mob type as default for debug spawns
+    const mobTypeConfig = getMobTypeById('balanced')
+    if (!mobTypeConfig) return
 
-    // Select mob type using weighted random selection
-    const mobTypeConfig = selectMobType()
+    const rand2 = Math.random().toString(36).slice(2, 4)
+    const mobId = `mob-debug-${this.state.tick}-${rand2}`
+    
+    this.createAndRegisterMob(mobId, x, y, mobTypeConfig, 'debug_spawn')
+  }
+
+  // Spawn a mob in a specific area
+  private spawnMobInArea(area: MobSpawnArea): void {
+    const mobTypeConfig = getMobTypeById(area.mobType)
+    if (!mobTypeConfig) {
+      console.warn(`⚠️ MobLifeCycleManager: Unknown mob type '${area.mobType}' for area '${area.id}'`)
+      return
+    }
+
+    const { x, y } = this.pickSpawnPositionInArea(area)
+    
+    const rand2 = Math.random().toString(36).slice(2, 4)
+    const mobId = `mob-${area.id}-${this.state.tick}-${rand2}`
+
+    this.createAndRegisterMob(mobId, x, y, mobTypeConfig, area.id)
+  }
+
+  // Core logic to create mob instance and register it
+  private createAndRegisterMob(
+    id: string, 
+    x: number, 
+    y: number, 
+    mobTypeConfig: MobTypeConfig, 
+    spawnAreaId: string
+  ): void {
     
     // Calculate radius for this mob
     const radius = calculateMobRadius(mobTypeConfig)
@@ -148,7 +177,7 @@ export class MobLifeCycleManager {
     const stats = {
       attackRange: mobTypeConfig.stats.attackRange ?? MOB_STATS.attackRange,
       chaseRange: mobTypeConfig.stats.chaseRange ?? MOB_STATS.chaseRange,
-      maxHealth: mobTypeConfig.stats.maxHealth ?? MOB_STATS.maxHealth,
+      maxHealth: mobTypeConfig.hp ?? mobTypeConfig.stats.maxHealth ?? MOB_STATS.maxHealth,
       attackDamage: mobTypeConfig.stats.attackDamage ?? MOB_STATS.attackDamage,
       attackDelay: mobTypeConfig.stats.attackDelay ?? MOB_STATS.attackDelay,
       defense: mobTypeConfig.stats.defense ?? MOB_STATS.defense,
@@ -158,7 +187,7 @@ export class MobLifeCycleManager {
     }
 
     const mob = new Mob({
-      id: mobId,
+      id: id,
       x,
       y,
       vx: 0,
@@ -174,22 +203,19 @@ export class MobLifeCycleManager {
       density: stats.density,
       maxMoveSpeed: stats.maxMoveSpeed,
       attackStrategies,
-      mobTypeId: mobTypeConfig.id, // Store mob type ID for UI/debugging
+      mobTypeId: mobTypeConfig.id,
+      spawnAreaId: spawnAreaId,
     })
 
-    this.state.mobs.set(mobId, mob)
+    this.state.mobs.set(id, mob)
     this.state.aiModule.registerMob(mob, {
       behaviors: ['attack', 'chase', 'wander', 'boundaryAware', 'idle'],
-      perception: { range: 50, fov: 120 },
+      // Increase perception so they can find players in their zone easier
+      perception: { range: 100, fov: 140 }, 
       memory: { duration: 5000 },
     })
 
     eventBus.emitRoomEvent(this.roomId, RoomEventType.MOB_SPAWNED, { mob })
-  }
-
-  private spawnOne(): void {
-    const { x, y } = this.pickSpawnPosition()
-    this.spawnMobAt(x, y)
   }
 
   /**
@@ -222,18 +248,10 @@ export class MobLifeCycleManager {
     return strategies
   }
 
-  private removeExtraMobs(count: number): void {
-    // Simple policy: remove oldest by id lexicographic (stable)
-    const ids = Array.from(this.state.mobs.keys()).sort()
-    for (let i = 0; i < count && i < ids.length; i++) {
-      this.removeMob(ids[i])
-    }
-  }
-
-  private pickSpawnPosition(): SpawnContext {
-    const margin = this.settings.spawnMargin ?? GAME_CONFIG.mobSpawnMargin
-    const x = Math.random() * (this.state.width - 2 * margin) + margin
-    const y = Math.random() * (this.state.height - 2 * margin) + margin
+  private pickSpawnPositionInArea(area: MobSpawnArea): SpawnContext {
+    // Random position within area bounds
+    const x = area.x + Math.random() * area.width
+    const y = area.y + Math.random() * area.height
     return { x, y }
   }
 }
