@@ -7,6 +7,7 @@ import { eventBus, RoomEventType, BattleAttackData } from '../events/EventBus'
 import { MOB_STATS } from '../config/combatConfig'
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { IAgent } from '../ai/interfaces/IAgent'
+import { AttackDefinition, calculateEffectiveAttackRange } from '../config/mobTypesConfig'
 // Removed global BattleManager singleton - now using room-scoped instances
 
 export class Mob extends WorldLife implements IAgent {
@@ -36,6 +37,18 @@ export class Mob extends WorldLife implements IAgent {
   attackStrategies: AttackStrategy[] = []
   currentAttackStrategy: AttackStrategy | null = null
   castStartTime: number = 0
+  baseWindDownTime: number = 1000 // Store default wind-down to reset after overrides
+  
+  // Rotation configuration
+  @type('number') rotationSpeed: number = Math.PI // Rad/sec (default 180 deg/sec)
+  
+  // Attack Queue System
+  attackQueue: { 
+      executionTime: number; 
+      attackDef: AttackDefinition; 
+      strategy: AttackStrategy;
+      targetId: string 
+  }[] = []
   
   // Debug logging throttling (server-only)
   lastCooldownState: boolean = false // Track cooldown state to reduce log spam
@@ -97,7 +110,7 @@ export class Mob extends WorldLife implements IAgent {
     chaseRange?: number
     maxHealth?: number
     attackDamage?: number
-    attackDelay?: number
+    atkWindDownTime?: number
     defense?: number
     armor?: number
     density?: number
@@ -105,6 +118,7 @@ export class Mob extends WorldLife implements IAgent {
     attackStrategies?: AttackStrategy[]
     mobTypeId?: string
     spawnAreaId?: string
+    rotationSpeed?: number
   }) {
     super({
       id: options.id,
@@ -117,7 +131,7 @@ export class Mob extends WorldLife implements IAgent {
       maxHealth: options.maxHealth ?? MOB_STATS.maxHealth,
       attackDamage: options.attackDamage ?? MOB_STATS.attackDamage,
       attackRange: options.attackRange ?? MOB_STATS.attackRange,
-      attackDelay: options.attackDelay ?? MOB_STATS.attackDelay,
+      attackDelay: (options.atkWindDownTime ?? MOB_STATS.atkWindDownTime), // Initial default, refined later
       defense: options.defense ?? MOB_STATS.defense,
       armor: options.armor ?? MOB_STATS.armor,
       density: options.density ?? MOB_STATS.density,
@@ -148,6 +162,13 @@ export class Mob extends WorldLife implements IAgent {
       // Default: melee attack strategy (will be set up later if needed)
       this.attackStrategies = []
     }
+    
+    // Initialize base wind down from options or default
+    this.baseWindDownTime = options.atkWindDownTime ?? MOB_STATS.atkWindDownTime
+
+    if (options.rotationSpeed !== undefined) {
+      this.rotationSpeed = options.rotationSpeed
+    }
   }
 
   // Override WorldLife update to include game logic
@@ -165,6 +186,15 @@ export class Mob extends WorldLife implements IAgent {
         this.vy = 0
         this.isMoving = false
         this.isCasting = false // Interrupt casting
+        
+        // 🛑 FIX: Clear attack queue and reset attack state
+        // This prevents attacks from firing immediately after stun ends
+        if (this.attackQueue.length > 0) {
+            this.attackQueue.length = 0 // Clear array
+            this.currentAttackStrategy = null
+            this.castStartTime = 0
+        }
+        
         return { attacked: false }
     }
 
@@ -174,7 +204,7 @@ export class Mob extends WorldLife implements IAgent {
       this.updateMobPosition(gameState.players)
 
       // Update heading based on current target
-      this.updateHeadingToTarget()
+      this.updateHeadingToTarget(deltaTime)
 
       // Update attack logic and return result
       return this.updateAttack(gameState.players, gameState.roomId)
@@ -196,6 +226,21 @@ export class Mob extends WorldLife implements IAgent {
   }): void {
     const oldBehavior = this.currentBehavior
 
+    // 🔒 MOVEMENT LOCK: If casting, ignore AI behavior changes and stop movement
+    // behaviorLockedUntil is usually for "committed" animations, but casting is a specialized state
+    if (this.isCasting) {
+        // Force zero velocity
+        this.desiredVx = 0
+        this.desiredVy = 0
+        
+        // Allow target updates if still in attack mode, but DO NOT switch behavior
+        // If the decision tries to switch to 'chase', we ignore it to finish the cast.
+        if (decision.behavior !== 'attack' && this.currentBehavior === 'attack') {
+             console.log(`🛡️ IGNORED behavior switch to ${decision.behavior} during CAST`)
+             return 
+        }
+    }
+
     // Apply state transition
     this.currentBehavior = decision.behavior
     this.behaviorLockedUntil = decision.behaviorLockedUntil
@@ -204,13 +249,16 @@ export class Mob extends WorldLife implements IAgent {
     this.tag = this.currentBehavior
 
     // Apply desired velocity from decision
-    const speedMultiplier = this.getSpeedMultiplier()
-    if (decision.desiredVelocity) {
-      this.desiredVx = decision.desiredVelocity.x * speedMultiplier
-      this.desiredVy = decision.desiredVelocity.y * speedMultiplier
-    } else {
-      this.desiredVx = 0
-      this.desiredVy = 0
+    // (If casting, we already zeroed it above, so we skip setting it from decision)
+    if (!this.isCasting) {
+        const speedMultiplier = this.getSpeedMultiplier()
+        if (decision.desiredVelocity) {
+          this.desiredVx = decision.desiredVelocity.x * speedMultiplier
+          this.desiredVy = decision.desiredVelocity.y * speedMultiplier
+        } else {
+          this.desiredVx = 0
+          this.desiredVy = 0
+        }
     }
 
     // Log only when behavior actually changes
@@ -274,16 +322,53 @@ export class Mob extends WorldLife implements IAgent {
   }
 
   // Update heading directly from target position
-  updateHeadingToTarget(): void {
-    // If casting, heading is locked (cannot rotate)
-    if (this.isCasting) return
-
+  updateHeadingToTarget(deltaTime: number): void {
     const dx = this.targetX - this.x
     const dy = this.targetY - this.y
     const magnitude = Math.hypot(dx, dy)
-    if (magnitude > 0.01) {
-      // Always show intent to target
-      this.heading = Math.atan2(dy, dx)
+    
+    // Valid target vector check
+    if (magnitude <= 0.01) return
+
+    const targetHeading = Math.atan2(dy, dx)
+    
+    // Calculate rotation speed based on state
+    // Default: 100% speed
+    let currentRotationSpeed = this.rotationSpeed
+    
+    // If attacking or casting, reduce to 10% speed
+    if (this.isCasting || this.isAttacking) {
+        currentRotationSpeed = this.rotationSpeed * 0.1
+    }
+    
+    // Smooth rotation (interpolate towards target heading)
+    // We use the shortest angle difference logic
+    let diff = targetHeading - this.heading
+    
+    // Normalize difference to [-PI, PI] to rotate shortest way
+    while (diff < -Math.PI) diff += Math.PI * 2
+    while (diff > Math.PI) diff -= Math.PI * 2
+    
+    // Max rotation for this frame
+    // deltaTime is in ms, convert to seconds
+    const maxRotate = currentRotationSpeed * (deltaTime / 1000)
+
+    // DEBUG: Log rotation
+    // if (this.isCasting) {
+    //    console.log(`Mob ${this.id} rot: speed=${currentRotationSpeed.toFixed(2)}, max=${maxRotate.toFixed(4)}, diff=${diff.toFixed(4)}`)
+    // }
+    
+    if (Math.abs(diff) <= maxRotate) {
+        // Close enough, snap to target
+        this.heading = targetHeading
+    } else {
+        // Rotate towards target
+        this.heading += Math.sign(diff) * maxRotate
+        
+        // Normalize heading to keep it clean (though likely handled elsewhere or not strictly needed if we just use cos/sin)
+        // But good practice to keep in [-PI, PI] or [0, 2PI]
+        if (this.heading > Math.PI) this.heading -= Math.PI * 2
+        else if (this.heading < -Math.PI) this.heading += Math.PI * 2
     }
   }
 
@@ -344,7 +429,7 @@ export class Mob extends WorldLife implements IAgent {
 
     // Use attack strategies if available
     if (this.attackStrategies.length > 0) {
-      return this.updateAttackWithStrategies(targetPlayer, roomId || '')
+      return this.updateAttackWithStrategies(targetPlayer, roomId || '', players)
     }
 
     // Legacy behavior: melee attack (for backward compatibility)
@@ -460,10 +545,11 @@ export class Mob extends WorldLife implements IAgent {
   }
 
   // State transition: Start casting for a strategy
-  private startCasting(strategy: AttackStrategy, currentTimeMs: number): void {
+  public startCasting(strategy: AttackStrategy, currentTimeMs: number): void {
     const castTime = strategy.getCastTime()
     console.log(`⏳ DEBUG: ${this.id} starting casting for ${strategy.name} (${castTime}ms)`)
     this.isCasting = true
+    this.isAttacking = false // Cancel any previous attack animation (combo flow)
     this.castStartTime = currentTimeMs
     this.currentAttackStrategy = strategy
   }
@@ -480,8 +566,107 @@ export class Mob extends WorldLife implements IAgent {
     }
   }
 
+  // Add attacks to the timeline
+  public enqueueAttacks(
+      strategy: AttackStrategy, 
+      targetId: string, 
+      attacks: AttackDefinition[], 
+      startTime: number
+  ): void {
+      this.attackQueue = [] // Clear existing queue (new combo overrides old)
+      let currentTime = startTime
+
+      attacks.forEach((attack, index) => {
+          // Calculate when this attack should actually fire (end of its cast)
+          const fireTime = currentTime + attack.atkWindUpTime
+          
+          this.attackQueue.push({
+              executionTime: fireTime,
+              attackDef: attack,
+              strategy: strategy,
+              targetId: targetId
+          })
+
+          // Next attack starts after this one finishes (fireTime becomes start of next cast)
+          // (assuming sequential casting. If there are delays, they should be in castingTimeInMs of the *next* attack or separate delay)
+          // For now, based on DoubleAttack, the delay IS the cast time of the second attack.
+          currentTime = fireTime
+      })
+
+      // Set initial casting state if we have a queue
+      if (this.attackQueue.length > 0) {
+          const firstAttack = this.attackQueue[0]
+          // If the first attack is in the future, we are casting
+          if (firstAttack.executionTime > Date.now()) {
+             this.isCasting = true
+             this.castStartTime = Date.now()
+             this.currentAttackStrategy = strategy
+             this.isAttacking = false
+          }
+      }
+  }
+
+  // Process the attack queue
+  private processAttackQueue(players: Map<string, any>, roomId: string): { attacked: boolean; targetId?: string; eventEmitted?: boolean } | null {
+      if (this.attackQueue.length === 0) return null
+
+      const now = Date.now()
+      const nextAttack = this.attackQueue[0] // Peek
+
+      // Check if it's time to fire
+      if (now >= nextAttack.executionTime) {
+          // Dequeue
+          this.attackQueue.shift()
+          
+          const targetPlayer = players.get(nextAttack.targetId) as Player
+          if (targetPlayer /* && targetPlayer.isAlive */) { 
+               // Execute
+               if (typeof (nextAttack.strategy as any).performAttack === 'function') {
+                   (nextAttack.strategy as any).performAttack(this, targetPlayer, nextAttack.attackDef)
+               } else {
+                   console.warn(`⚠️ Mob ${this.id}: Strategy ${nextAttack.strategy.name} does not support queued execution via performAttack`)
+               }
+
+               this.lastAttackTime = performance.now()
+               this.isAttacking = true
+               this.attackAnimationStartTime = performance.now()
+
+               // Update attack delay for the NEXT attack cycle based on this attack's cooldown
+               // If cooldown is defined, use it directly (it's the full cycle time)
+               // Otherwise, calculate Total Delay = WindUp + WindDown
+               if (nextAttack.attackDef.cooldown !== undefined) {
+                   this.attackDelay = nextAttack.attackDef.cooldown
+               } else {
+                   const windUp = nextAttack.attackDef.atkWindUpTime || 0
+                   this.attackDelay = windUp + this.baseWindDownTime
+               }
+          }
+
+          // Update State for NEXT attack
+          if (this.attackQueue.length > 0) {
+              // Still have attacks pending
+              this.isCasting = true
+              this.castStartTime = now // Start casting the next one
+          } else {
+              // Queue empty
+              this.isCasting = false
+              this.currentAttackStrategy = null
+          }
+
+          return { attacked: true, targetId: nextAttack.targetId, eventEmitted: true }
+      } else {
+          // Waiting for attack time
+          this.isCasting = true // Ensure casting is true while waiting
+          return { attacked: false }
+      }
+  }
+
   // Helper: Check if target is out of attack range
   private checkTargetOutOfRange(targetPlayer: Player): boolean {
+    // If we are currently casting, DO NOT check range or switch behavior
+    // We want the cast to finish regardless of where the target moves
+    if (this.isCasting) return false
+
     const distance = this.getDistanceTo(targetPlayer)
     const maxRange = Math.max(
       ...this.attackStrategies.map(s => this.getStrategyRange(s, targetPlayer))
@@ -503,12 +688,23 @@ export class Mob extends WorldLife implements IAgent {
   // Update attack using attack strategies
   private updateAttackWithStrategies(
     targetPlayer: Player,
-    roomId: string
+    roomId: string,
+    players: Map<string, any>
   ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
     const currentTimeMs = Date.now()
     const currentTimePerf = performance.now()
 
-    // Check casting phase first
+    // 1. Process Attack Queue (High Priority)
+    const queueResult = this.processAttackQueue(players, roomId)
+    if (queueResult !== null) {
+        // If queue returns a result (attacked OR waiting), we respect it.
+        // If it returns {attacked: false} it means we are "casting/waiting" for queue.
+        return queueResult
+    }
+
+    // Check casting phase first (Legacy/Fallback for non-queue strategies)
+    // If I use queue for everything eventually, this can go.
+    // For now, keep it for other strategies not using queue yet.
     const castingResult = this.checkCastingPhase(targetPlayer, roomId)
     if (castingResult !== null) {
       return castingResult

@@ -14,16 +14,22 @@ export class MeleeAttackStrategy implements AttackStrategy {
   private projectileManager: ProjectileManager | null
   private gameState: GameState | null
 
+  private castTime: number = 0
+  
   constructor(
     projectileManager?: ProjectileManager,
-    gameState?: GameState
+    gameState?: GameState,
+    options?: { castTime?: number }
   ) {
     this.projectileManager = projectileManager || null
     this.gameState = gameState || null
+    if (options?.castTime) {
+      this.castTime = options.castTime
+    }
   }
 
   getCastTime(): number {
-    return 0 // Instant attack
+    return this.castTime
   }
 
   canExecute(mob: Mob, target: Player): boolean {
@@ -69,6 +75,15 @@ export class MeleeAttackStrategy implements AttackStrategy {
   attemptExecute(mob: Mob, target: Player, roomId: string): AttackExecutionResult {
     if (!this.canExecute(mob, target)) {
       return { canExecute: false, needsCasting: false, executed: false }
+    }
+
+    // Check if casting is needed
+    if (this.castTime > 0) {
+      return {
+        canExecute: true,
+        needsCasting: true,
+        executed: false,
+      }
     }
 
     // Melee is instant (castTime = 0), so execute immediately

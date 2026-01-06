@@ -78,7 +78,11 @@ export class BattleModule implements BattleActionProcessor {
     } catch {}
 
     // Update attacker's last attack time using high-precision timing
-    attacker.lastAttackTime = performance.now()
+    // Only for non-players (Players manage their own timing via CombatSystem)
+    if (!attacker.tags.includes('player')) {
+        attacker.lastAttackTime = performance.now()
+    }
+    
     attacker.isAttacking = true
     attacker.attackAnimationStartTime = performance.now() // Track animation start for update loop
     attacker.lastAttackedTarget = target.id
@@ -109,14 +113,17 @@ export class BattleModule implements BattleActionProcessor {
     }
 
     // Check attack cooldown using high-precision timing
-    if (!attacker.canAttack()) {
-      const now = performance.now()
-      const timeSinceLastAttack = now - attacker.lastAttackTime
-      const remaining = attacker.attackDelay - timeSinceLastAttack
-      return {
-        canAttack: false,
-        reason: `cooldown not ready (elapsed: ${timeSinceLastAttack.toFixed(0)}ms, delay: ${attacker.attackDelay}ms, remaining: ${remaining.toFixed(0)}ms)`
-      }
+    // Bypass for Players: PlayerCombatSystem handles throttling authoritatively
+    if (!attacker.tags.includes('player')) {
+        if (!attacker.canAttack()) {
+          const now = performance.now()
+          const timeSinceLastAttack = now - attacker.lastAttackTime
+          const remaining = attacker.attackDelay - timeSinceLastAttack
+          return {
+            canAttack: false,
+            reason: `cooldown not ready (elapsed: ${timeSinceLastAttack.toFixed(0)}ms, delay: ${attacker.attackDelay}ms, remaining: ${remaining.toFixed(0)}ms)`
+          }
+        }
     }
 
     // Check range

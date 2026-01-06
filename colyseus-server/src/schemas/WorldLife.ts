@@ -331,10 +331,10 @@ export abstract class WorldLife extends WorldObject {
     // Use appropriate heading update method
     if ('updateHeadingToTarget' in this) {
       // Mob: use target-based heading
-      ;(this as any).updateHeadingToTarget()
+      ;(this as any).updateHeadingToTarget(deltaTime)
     } else if ('updateHeadingFromInput' in this) {
       // Player: use input-based heading
-      ;(this as any).updateHeadingFromInput()
+      ;(this as any).updateHeadingFromInput(deltaTime)
     } else {
       // Fallback: use velocity-based heading
       this.updateHeading()

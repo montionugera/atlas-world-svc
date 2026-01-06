@@ -179,7 +179,7 @@ export class GameRoom extends Room<GameState> {
                  skill.id,
                  skill.effects,
                  skill.radius,
-                 skill.castTime,
+                 skill.skillCastingTime,
                  skill.duration,
                  skill.tickRate
                )
@@ -192,8 +192,8 @@ export class GameRoom extends Room<GameState> {
                // Trigger Cooldowns from Skill Stats - MOVED TO ZONE ACTIVATION
                // player.performAction(skill.id, skill.cooldown, skill.gcd)
                
-               player.castingUntil = Date.now() + skill.castTime // Lock movement for cast time
-               player.castDuration = skill.castTime // Sync duration to client
+               player.castingUntil = Date.now() + skill.skillCastingTime // Lock movement for cast time
+               player.castDuration = skill.skillCastingTime // Sync duration to client
            } else {
                // Optional: Send cooldown notification to client
                console.log(`⏳ ACTION: Cooldown active for ${skill.name} on player ${player.id}`)

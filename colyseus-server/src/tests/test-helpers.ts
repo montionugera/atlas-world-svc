@@ -47,7 +47,7 @@ export function createTestMob(options: {
     maxHealth: MOB_STATS.maxHealth,
     attackDamage: MOB_STATS.attackDamage,
     attackRange: MOB_STATS.attackRange,
-    attackDelay: MOB_STATS.attackDelay,
+    atkWindDownTime: MOB_STATS.atkWindDownTime,
   })
 }
 

@@ -18,6 +18,7 @@ describe('Heading System Tests', () => {
         y: 50,
         vx: 0,
         vy: 0,
+        rotationSpeed: 1000 // Fast rotation for instant-snap tests
       })
     })
 
@@ -27,7 +28,7 @@ describe('Heading System Tests', () => {
       testMob.targetY = 100
 
       // Update heading
-      testMob.updateHeadingToTarget()
+      testMob.updateHeadingToTarget(16)
 
       // Calculate expected heading (45 degrees = π/4 radians)
       const expectedHeading = Math.atan2(50, 50) // dy=50, dx=50
@@ -41,7 +42,7 @@ describe('Heading System Tests', () => {
       testMob.targetY = 50
 
       const originalHeading = testMob.heading
-      testMob.updateHeadingToTarget()
+      testMob.updateHeadingToTarget(16)
 
       // Heading should remain unchanged when target is at current position
       expect(testMob.heading).toBe(originalHeading)
@@ -51,25 +52,25 @@ describe('Heading System Tests', () => {
       // Test right direction (0 degrees)
       testMob.targetX = 100
       testMob.targetY = 50
-      testMob.updateHeadingToTarget()
+      testMob.updateHeadingToTarget(16)
       expect(testMob.heading).toBeCloseTo(0, 5)
 
       // Test down direction (90 degrees)
       testMob.targetX = 50
       testMob.targetY = 100
-      testMob.updateHeadingToTarget()
+      testMob.updateHeadingToTarget(16)
       expect(testMob.heading).toBeCloseTo(Math.PI / 2, 5)
 
       // Test left direction (180 degrees)
       testMob.targetX = 0
       testMob.targetY = 50
-      testMob.updateHeadingToTarget()
+      testMob.updateHeadingToTarget(16)
       expect(testMob.heading).toBeCloseTo(Math.PI, 5)
 
       // Test up direction (270 degrees)
       testMob.targetX = 50
       testMob.targetY = 0
-      testMob.updateHeadingToTarget()
+      testMob.updateHeadingToTarget(16)
       expect(testMob.heading).toBeCloseTo(-Math.PI / 2, 5)
     })
 
@@ -81,7 +82,7 @@ describe('Heading System Tests', () => {
       // Update target position and heading
       testMob.targetX = testMob.wanderTargetX
       testMob.targetY = testMob.wanderTargetY
-      testMob.updateHeadingToTarget()
+      testMob.updateHeadingToTarget(16)
 
       const expectedHeading = Math.atan2(-25, 25) // dy=-25, dx=25
       expect(testMob.heading).toBeCloseTo(expectedHeading, 5)
@@ -172,7 +173,7 @@ describe('Heading System Tests', () => {
     let testPlayer: Player
 
     beforeEach(() => {
-      testMob = new Mob({ id: 'test-mob', x: 50, y: 50 })
+      testMob = new Mob({ id: 'test-mob', x: 50, y: 50, rotationSpeed: 1000 })
       testPlayer = new Player('test-session', 'TestPlayer', 50, 50)
     })
 
@@ -234,7 +235,7 @@ describe('Heading System Tests', () => {
     let testPlayer: Player
 
     beforeEach(() => {
-      testMob = new Mob({ id: 'test-mob', x: 50, y: 50 })
+      testMob = new Mob({ id: 'test-mob', x: 50, y: 50, rotationSpeed: 1000 })
       testPlayer = new Player('test-session', 'TestPlayer', 50, 50)
     })
 
@@ -248,7 +249,7 @@ describe('Heading System Tests', () => {
       testMob.vy = 5 // Physics collision pushes down
 
       // Update heading (should use target, not velocity)
-      testMob.updateHeadingToTarget()
+      testMob.updateHeadingToTarget(16)
 
       // Should point at target (right), not physics velocity (left-down)
       expect(testMob.heading).toBeCloseTo(0, 5) // Should point right (0 degrees)
@@ -283,7 +284,7 @@ describe('Heading System Tests', () => {
         testMob.vy = (Math.random() - 0.5) * 20
 
         // Update heading
-        testMob.updateHeadingToTarget()
+        testMob.updateHeadingToTarget(16)
         headings.push(testMob.heading)
       }
 
@@ -300,7 +301,7 @@ describe('Heading System Tests', () => {
     let testPlayer: Player
 
     beforeEach(() => {
-      testMob = new Mob({ id: 'test-mob', x: 50, y: 50 })
+      testMob = new Mob({ id: 'test-mob', x: 50, y: 50, rotationSpeed: 1000 })
       testPlayer = new Player('test-session', 'TestPlayer', 50, 50)
     })
 
@@ -309,7 +310,7 @@ describe('Heading System Tests', () => {
       testMob.targetY = 50
 
       // Should not crash
-      expect(() => testMob.updateHeadingToTarget()).not.toThrow()
+      expect(() => testMob.updateHeadingToTarget(16)).not.toThrow()
     })
 
     test('should handle infinite target positions', () => {
@@ -317,14 +318,14 @@ describe('Heading System Tests', () => {
       testMob.targetY = 50
 
       // Should not crash
-      expect(() => testMob.updateHeadingToTarget()).not.toThrow()
+      expect(() => testMob.updateHeadingToTarget(16)).not.toThrow()
     })
 
     test('should handle very large distances', () => {
       testMob.targetX = 1e6
       testMob.targetY = 1e6
 
-      testMob.updateHeadingToTarget()
+      testMob.updateHeadingToTarget(16)
 
       // Should still calculate heading correctly
       const expectedHeading = Math.atan2(1e6 - 50, 1e6 - 50)

@@ -4,23 +4,12 @@
  */
 import { PROJECTILE_GRAVITY } from './physicsConfig'
 
-export interface PlayerCombatStats {
+export interface CombatStats {
   maxHealth: number
   attackDamage: number
   attackRange: number
-  attackDelay: number // milliseconds
-  defense: number
-  armor: number
-  radius: number
-  density: number
-  // Resistances are now dynamic via MapSchema, not hardcoded statistics interfaces
-}
-
-export interface MobCombatStats {
-  maxHealth: number
-  attackDamage: number
-  attackRange: number
-  attackDelay: number // milliseconds
+  atkWindDownTime: number // milliseconds (recovery after attack)
+  atkWindUpTime: number // Delay before attack executes
   defense: number
   armor: number
   radius: number
@@ -30,22 +19,29 @@ export interface MobCombatStats {
   // Resistances are now dynamic via MapSchema
 }
 
+export type PlayerCombatStats = CombatStats
+export type MobCombatStats = CombatStats
+
 export const PLAYER_STATS: PlayerCombatStats = {
   maxHealth: 100,
   attackDamage: 25,
   attackRange: 3,
-  attackDelay: 300,
+  atkWindDownTime: 800, // recovery time (Total Cycle ~900ms)
+  atkWindUpTime: 100, // 200ms wind-up (updated to 100 per previous edit)
   defense: 1,
   armor: 0,
   radius: 1.3, // Player radius must not exceed 1.3
   density: 0.8,
+  chaseRange: 15,
+  maxMoveSpeed: 20,
 } as const
 
 export const MOB_STATS: MobCombatStats = {
   maxHealth: 100,
   attackDamage: 20,
   attackRange: 1.5,
-  attackDelay: 2000,
+  atkWindDownTime: 2000,
+  atkWindUpTime: 0, // Mobs usually use strategy-specific windups
   defense: 2,
   armor: 1,
   radius: 4,
@@ -62,11 +58,11 @@ export const MOB_TYPE_STATS = {
   },
   defensive: {
     attackRange: 1.0,
-    chaseRange: 10,
+    chaseRange: 15,
   },
   balanced: {
     attackRange: 1.5,
-    chaseRange: 15,
+    chaseRange: 20,
   },
 } as const
 

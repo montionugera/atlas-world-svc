@@ -34,7 +34,7 @@ describe('Room-Scoped Battle Manager', () => {
       id: 'mob-1',
       x: 101,
       y: 101,
-      attackDelay: 100, // Very short attack delay for testing
+      atkWindDownTime: 100, // Very short attack delay for testing
     }) // Very close to player
 
     // Create entities for room 2 (close together for attack range)
@@ -45,7 +45,7 @@ describe('Room-Scoped Battle Manager', () => {
       id: 'mob-2',
       x: 201,
       y: 201,
-      attackDelay: 100, // Very short attack delay for testing
+      atkWindDownTime: 100, // Very short attack delay for testing
     }) // Very close to player
 
     // Add entities to their respective game states

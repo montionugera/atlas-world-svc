@@ -179,7 +179,7 @@ export class MobLifeCycleManager {
       chaseRange: mobTypeConfig.stats.chaseRange ?? MOB_STATS.chaseRange,
       maxHealth: mobTypeConfig.hp ?? mobTypeConfig.stats.maxHealth ?? MOB_STATS.maxHealth,
       attackDamage: mobTypeConfig.stats.attackDamage ?? MOB_STATS.attackDamage,
-      attackDelay: mobTypeConfig.stats.attackDelay ?? MOB_STATS.attackDelay,
+      atkWindDownTime: mobTypeConfig.stats.atkWindDownTime ?? MOB_STATS.atkWindDownTime,
       defense: mobTypeConfig.stats.defense ?? MOB_STATS.defense,
       armor: mobTypeConfig.stats.armor ?? MOB_STATS.armor,
       density: mobTypeConfig.stats.density ?? MOB_STATS.density,
@@ -197,7 +197,7 @@ export class MobLifeCycleManager {
       chaseRange: stats.chaseRange,
       maxHealth: stats.maxHealth,
       attackDamage: stats.attackDamage,
-      attackDelay: stats.attackDelay,
+      atkWindDownTime: stats.atkWindDownTime,
       defense: stats.defense,
       armor: stats.armor,
       density: stats.density,
@@ -205,6 +205,7 @@ export class MobLifeCycleManager {
       attackStrategies,
       mobTypeId: mobTypeConfig.id,
       spawnAreaId: spawnAreaId,
+      rotationSpeed: mobTypeConfig.rotationSpeed,
     })
 
     this.state.mobs.set(id, mob)

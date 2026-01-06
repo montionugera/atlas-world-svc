@@ -38,7 +38,9 @@ export function createAttackStrategies(
       const attack = strategyConfig.attacks[0]
       if (attack && attack.atkCharacteristic.type === AttackCharacteristicType.PROJECTILE) {
         strategies.push(
-          new MeleeAttackStrategy(projectileManager, gameState)
+          new MeleeAttackStrategy(projectileManager, gameState, {
+            castTime: attack.atkWindUpTime
+          })
         )
       }
       break
@@ -53,7 +55,7 @@ export function createAttackStrategies(
           new SpearThrowAttackStrategy(projectileManager, gameState, {
             damage: attack.atkBaseDmg,
             maxRange: effectiveRange,
-            castTime: attack.castingTimeInMs,
+            castTime: attack.atkWindUpTime,
           })
         )
       }
@@ -78,10 +80,12 @@ export function createAttackStrategies(
         if (attack.atkCharacteristic.type === AttackCharacteristicType.PROJECTILE) {
           const effectiveRange = calculateEffectiveAttackRange(attack, mobRadius)
           
-          if (attack.castingTimeInMs === 0) {
+          if (attack.atkWindUpTime === 0) {
             // Instant attack = melee
             strategies.push(
-              new MeleeAttackStrategy(projectileManager, gameState)
+              new MeleeAttackStrategy(projectileManager, gameState, {
+                castTime: attack.atkWindUpTime
+              })
             )
           } else {
             // Ranged attack = spear-like
@@ -89,7 +93,7 @@ export function createAttackStrategies(
               new SpearThrowAttackStrategy(projectileManager, gameState, {
                 damage: attack.atkBaseDmg,
                 maxRange: effectiveRange,
-                castTime: attack.castingTimeInMs,
+                castTime: attack.atkWindUpTime,
               })
             )
           }

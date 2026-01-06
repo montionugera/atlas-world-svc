@@ -48,7 +48,10 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
   }
 
   execute(mob: Mob, target: Player, roomId: string): boolean {
-    if (!this.canExecute(mob, target)) return false
+    // Only check if target exists/alive and mob can attack
+    // We do NOT check range here again, to allow "committed" attacks to finish
+    if (!target || !target.isAlive) return false
+    if (!mob.canAttack()) return false
 
     // Calculate target position based on heading
     // Currently aiming relies on heading which is locked during casting

@@ -6,6 +6,8 @@ import { IAgent } from '../ai/interfaces/IAgent'
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { PlayerSettingGameplay } from './PlayerSettingGameplay'
 import { GAME_CONFIG } from '../config/gameConfig'
+import { PlayerCombatSystem } from '../systems/PlayerCombatSystem'
+import { PlayerBotController } from '../systems/PlayerBotController'
 
 export class Player extends WorldLife implements IAgent {
   @type('string') sessionId: string
@@ -30,8 +32,6 @@ export class Player extends WorldLife implements IAgent {
   @type('number') castingUntil: number = 0 // Server-only, blocks movement
   @type('number') castDuration: number = 0 // Synced: Total duration of current cast
 
-
-
   // Cooldown System
   @type({ map: "number" }) cooldowns = new MapSchema<number>(); // Action ID -> Timestamp when ready
   @type("number") globalCooldownUntil: number = 0; // Timestamp when GCD expires
@@ -40,11 +40,21 @@ export class Player extends WorldLife implements IAgent {
   @type('string') currentBehavior: string = 'idle'
   @type('number') behaviorLockedUntil: number = 0
   @type('number') maxMoveSpeed: number = 20 // Same as maxLinearSpeed, for AI interface
+  chaseRange: number = 15 // Server-only AI property
   
   @type('string') currentAttackTarget: string = ''
   currentChaseTarget: string = ''
   attackStrategies: AttackStrategy[] = []
   decisionTimestamp: number = 0 
+
+  // Attack Wind-up State
+  @type('boolean') pendingAttack: boolean = false
+  @type('number') attackExecuteTime: number = 0
+  @type('string') pendingAttackTargetId: string = '' 
+
+  // Systems
+  private combatSystem: PlayerCombatSystem
+  private botController: PlayerBotController
 
   constructor(sessionId: string, name: string, x: number = GAME_CONFIG.worldWidth / 2, y: number = GAME_CONFIG.worldHeight / 2) {
     // Ensure player radius never exceeds 1.3
@@ -61,14 +71,16 @@ export class Player extends WorldLife implements IAgent {
       maxHealth: PLAYER_STATS.maxHealth,
       attackDamage: PLAYER_STATS.attackDamage,
       attackRange: PLAYER_STATS.attackRange,
-      attackDelay: PLAYER_STATS.attackDelay,
+      attackDelay: PLAYER_STATS.atkWindUpTime + PLAYER_STATS.atkWindDownTime,
       defense: PLAYER_STATS.defense,
       armor: PLAYER_STATS.armor,
       density: PLAYER_STATS.density,
     })
     this.sessionId = sessionId
     this.name = name
-    this.maxMoveSpeed = this.maxLinearSpeed
+    this.maxMoveSpeed = PLAYER_STATS.maxMoveSpeed || 20
+    this.maxLinearSpeed = this.maxMoveSpeed // Sync physics limit
+    this.chaseRange = PLAYER_STATS.chaseRange || 15
     
     // Validate radius after construction
     if (this.radius > 1.3) {
@@ -78,6 +90,10 @@ export class Player extends WorldLife implements IAgent {
 
     // Initialize gameplay settings (defaults will be set in its constructor)
     this.settingGameplay = new PlayerSettingGameplay(x, y)
+    
+    // Initialize Systems
+    this.combatSystem = new PlayerCombatSystem(this)
+    this.botController = new PlayerBotController(this, this.combatSystem)
   }
 
   // Toggle bot mode
@@ -86,8 +102,6 @@ export class Player extends WorldLife implements IAgent {
     if (!enabled) {
       // Reset AI state when disabling
       this.currentBehavior = 'idle'
-      this.desiredVx = 0
-      this.desiredVy = 0
       this.desiredVx = 0
       this.desiredVy = 0
     }
@@ -100,56 +114,24 @@ export class Player extends WorldLife implements IAgent {
     this.currentBehavior = 'idle'
     this.currentAttackTarget = ''
     this.currentChaseTarget = ''
-    // Reset cooldowns on respawn? Maybe not necessary, but clean.
+    
     this.cooldowns.clear()
     this.globalCooldownUntil = 0
+    this.pendingAttack = false
+    this.attackExecuteTime = 0
   }
 
-  /**
-   * Check if an action is ready (specific cooldown AND global cooldown)
-   */
+  // Delegate Cooldown Checks to CombatSystem
   canPerformAction(actionId: string): boolean {
-      const now = Date.now();
-      
-      // 1. Check Global Cooldown
-      if (now < this.globalCooldownUntil) {
-          // console.log(`[CD] GCD Active. Now: ${now}, GCD_Until: ${this.globalCooldownUntil}, Diff: ${this.globalCooldownUntil - now}`)
-          return false;
-      }
-      
-      // 2. Check Specific Cooldown
-      const readyAt = this.cooldowns.get(actionId);
-      if (readyAt && now < readyAt) {
-          console.log(`[CD] Specific Active for ${actionId}. Now: ${now}, ReadyAt: ${readyAt}, Diff: ${readyAt - now}`)
-          return false;
-      }
-      
-      // console.log(`[CD] Action ${actionId} READY.`)
-      return true;
+      return this.combatSystem.canPerformAction(actionId)
   }
 
-  /**
-   * Trigger cooldowns for an action
-   * @param actionId The specific action ID
-   * @param duration The cooldown duration for this specific action (ms)
-   * @param gcdDuration Optional Global Cooldown duration (ms)
-   */
+  // Delegate Cooldown Sets to CombatSystem
   performAction(actionId: string, duration: number, gcdDuration: number = 0): void {
-      const now = Date.now();
-      
-      // Set Specific Cooldown
-      const readyAt = now + duration;
-      this.cooldowns.set(actionId, readyAt);
-      console.log(`[CD] SET ${actionId} cooldown to ${duration}ms. ReadyAt: ${readyAt}`)
-      
-      // Set Global Cooldown
-      if (gcdDuration > 0) {
-          this.globalCooldownUntil = Math.max(this.globalCooldownUntil, now + gcdDuration);
-          // console.log(`[CD] SET GCD to ${gcdDuration}ms. Until: ${this.globalCooldownUntil}`)
-      }
+      this.combatSystem.performAction(actionId, duration, gcdDuration)
   }
 
-  // AI Interface: Apply behavior decision
+  // AI Interface: Apply behavior decision (Used by BotController logic mostly, but state stored here)
   applyBehaviorDecision(decision: {
     behavior: string
     behaviorLockedUntil: number
@@ -173,14 +155,6 @@ export class Player extends WorldLife implements IAgent {
     }
   }
 
-  // AI Interface: Compute desired velocity
-  // Deprecated: Velocity is now calculated by behaviors and passed via applyBehaviorDecision
-  // Removed unused method
-
-  // Generate a random wander target
-  // Deprecated: Logic moved to WanderBehavior
-  // Removed unused method
-
   // Update heading based on input direction (not physics velocity)
   updateHeadingFromInput(): void {
     // Dead players don't update heading
@@ -194,166 +168,27 @@ export class Player extends WorldLife implements IAgent {
     }
   }
 
-  // Find target in attack direction (heading-based)
+  // findTargetInDirection DELEGATED via combatSystem
   findTargetInDirection(mobs: Map<string, any>): any | null {
-    if (!this.canAttack()) return null
-
-    // Block targeting if stunned (Frozen allows targeting/attacking now)
-    if (this.isStunned) return null
-
-    const attackCone = Math.PI / 4 // 45-degree attack cone
-    const maxRange = this.attackRange + this.radius
-    let nearestTarget: any = null
-    let nearestDistance = Infinity
-
-    for (const mob of mobs.values()) {
-      if (!mob.isAlive) continue
-
-      const distance = this.getDistanceTo(mob)
-      if (distance > maxRange + mob.radius) continue
-
-      // Calculate angle between player heading and direction to mob
-      const dx = mob.x - this.x
-      const dy = mob.y - this.y
-      const angleToMob = Math.atan2(dy, dx)
-      const angleDiff = Math.abs(this.heading - angleToMob)
-
-      // Check if mob is within attack cone (handle angle wrapping)
-      const normalizedAngleDiff = Math.min(angleDiff, 2 * Math.PI - angleDiff)
-      if (normalizedAngleDiff <= attackCone) {
-        if (distance < nearestDistance) {
-          nearestTarget = mob
-          nearestDistance = distance
-        }
-      }
-    }
-
-    return nearestTarget
+      return this.combatSystem.findTargetInDirection(mobs)
   }
 
-  // Process attack input and find target
-  // Allows attacks even without targets (for visual feedback/practice)
+  // Delegate Attack Processing
   processAttackInput(mobs: Map<string, any>, roomId: string): boolean {
-    // Dead players cannot attack
-    if (!this.isAlive) return false
-    
-    // If in bot mode, AI handles attacks
-    if (this.isBotMode) {
-        return false
-    }
-
-    if (!this.input.attack) return false
-    
-    // Status effect check
-    if (this.isStunned) return false
-    
-    // Casting check - prevent attack while casting
-    if (this.isCasting) return false
-
-    if (!this.canAttack()) {
-        return false
-    }
-    
-    const target = this.findTargetInDirection(mobs)
-    const { eventBus, RoomEventType } = require('../events/EventBus')
-    
-    if (target) {
-      // Emit attack event with target - let BattleManager handle the rest
-      const attackData = {
-        actorId: this.id,
-        targetId: target.id,
-        damage: this.attackDamage,
-        range: this.attackRange,
-        roomId: roomId
-      }
-
-      eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData)
-      console.log(`⚔️ PLAYER ${this.id} attacking ${target.id} in heading direction`)
-      return true
-    } else {
-      // No target found, but still allow attack (for visual feedback)
-      // Update attack cooldown and animation state
-      this.lastAttackTime = performance.now()
-      this.isAttacking = true
-      this.attackAnimationStartTime = performance.now()
-      
-      // Emit attack event without target
-      const attackData = {
-        actorId: this.id,
-        // targetId omitted - no target
-        damage: this.attackDamage,
-        range: this.attackRange,
-        roomId: roomId
-      }
-
-      eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData)
-      console.log(`⚔️ PLAYER ${this.id} attacking (no target) in heading direction ${this.heading.toFixed(2)}`)
-      return true
-    }
-  }
-  
-  // Execute attack for bot mode
-  executeBotAttack(mobs: Map<string, any>, roomId: string): void {
-    if (!this.canAttack()) return
-    
-    // Status effect check (Stun blocks, Freeze slows)
-    if (this.isStunned) return
-
-    const { eventBus, RoomEventType } = require('../events/EventBus')
-    
-    // 1. Try to get target from AI decision
-    let target = this.currentAttackTarget ? mobs.get(this.currentAttackTarget) : null
-    
-    // 2. If valid target, attack it
-    if (target && target.isAlive) {
-        const attackData = {
-            actorId: this.id,
-            targetId: target.id,
-            damage: this.attackDamage,
-            range: this.attackRange,
-            roomId: roomId
-        }
-        eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData)
-        // console.log(`⚔️ BOT PLAYER ${this.id} attacking ${target.id}`)
-    } else {
-        // 3. If no target (e.g. just attacking direction), or target lost
-        // Try to find one in direction
-        target = this.findTargetInDirection(mobs)
-        
-        const attackData = {
-            actorId: this.id,
-            targetId: target ? target.id : undefined,
-            damage: this.attackDamage,
-            range: this.attackRange,
-            roomId: roomId
-        }
-        eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData)
-        // console.log(`⚔️ BOT PLAYER ${this.id} attacking (dir)`)
-    }
-
-    // this.lastAttackTime = performance.now() // DELEGATED TO BATTLE MODULE
-    this.isAttacking = true
-    this.attackAnimationStartTime = performance.now()
+      return this.combatSystem.processAttackInput(mobs, roomId)
   }
 
-  // Override update to handle bot mode
+  // Override update to handle systems
   update(deltaTime: number, gameState?: any) {
+    // Delegate to Bot Controller
     if (this.isBotMode) {
-      // In bot mode, we use desiredVx/Vy from AI
-      
-      // Update heading based on movement
-      if (Math.abs(this.desiredVx) > 0.1 || Math.abs(this.desiredVy) > 0.1) {
-        this.heading = Math.atan2(this.desiredVy, this.desiredVx)
-      }
-
-      // Handle Bot Attack
-      if (this.currentBehavior === 'attack' && gameState) {
-          this.executeBotAttack(gameState.mobs, gameState.roomId)
-      }
-
+      this.botController.update(deltaTime, gameState?.mobs, gameState?.roomId)
     } else {
       this.updateHeadingFromInput()
     }
+    
+    // Delegate to Combat System (Wind-up checks)
+    this.combatSystem.update(deltaTime, gameState?.mobs, gameState?.roomId)
     
     super.update(deltaTime)
   }

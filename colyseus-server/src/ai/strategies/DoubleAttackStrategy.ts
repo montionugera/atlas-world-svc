@@ -21,12 +21,6 @@ export class DoubleAttackStrategy implements AttackStrategy {
     this.gameState = gameState
     this.attacks = attacks
   }
-
-  getCastTime(): number {
-    // Use the cast time of the first attack to start the combo
-    return this.attacks[0]?.castingTimeInMs || 0
-  }
-
   canExecute(mob: Mob, target: Player): boolean {
     if (!target.isAlive) return false
     if (!mob.canAttack()) return false
@@ -40,41 +34,40 @@ export class DoubleAttackStrategy implements AttackStrategy {
     
     return distance <= effectiveRange
   }
-
+  getCastTime(): number {
+    // Return cast time for the current step in the combo
+    // For Queue System: Return 0 because the "setup" is instant.
+    // The actual delays are handled by the queue.
+    return 0
+  }
   execute(mob: Mob, target: Player, roomId: string): boolean {
-    if (!this.canExecute(mob, target)) return false
+    // Safety check
+    if (!target || !target.isAlive) return false
     if (this.attacks.length === 0) return false
 
-    // Execute first attack immediately (as cast time is already handled by Mob)
-    this.performAttack(mob, target, this.attacks[0])
-
-    // Schedule subsequent attacks
-    // We start from index 1
-    let accumulatedDelay = 0
-    for (let i = 1; i < this.attacks.length; i++) {
-        const attack = this.attacks[i]
-        // Use the attack's castingTimeInMs as the delay between hits
-        accumulatedDelay += attack.castingTimeInMs
-        
-        setTimeout(() => {
-            if (mob.isAlive && target.isAlive) {
-                 this.performAttack(mob, target, attack)
-            }
-        }, accumulatedDelay)
-    }
-
+    
+    // Pass strictly the current time as start time
+    mob.enqueueAttacks(this, target.id, this.attacks, Date.now())
+    
     return true
   }
 
-  private performAttack(mob: Mob, target: Player, attack: AttackDefinition): void {
+  public performAttack(mob: Mob, target: Player, attack: AttackDefinition): void {
       if (attack.atkCharacteristic.type === AttackCharacteristicType.PROJECTILE) {
           const char = attack.atkCharacteristic.projectile
+          
+          // Calculate target position based on heading
+          // This ensures the projectile flies in the direction the mob is facing (supports dodgeable attacks)
+          const heading = mob.heading
+          const range = char.atkRange || 10
+          const targetX = mob.x + Math.cos(heading) * range
+          const targetY = mob.y + Math.sin(heading) * range
           
           if (char.speedUnitsPerSec >= 80) {
               const projectile = this.projectileManager.createMelee(
                   mob,
-                  target.x,
-                  target.y,
+                  targetX,
+                  targetY,
                   attack.atkBaseDmg,
                   char.atkRange || 10,
                   char.projectileRadius
@@ -83,8 +76,8 @@ export class DoubleAttackStrategy implements AttackStrategy {
           } else {
               const projectile = this.projectileManager.createSpear(
                   mob,
-                  target.x,
-                  target.y,
+                  targetX,
+                  targetY,
                   attack.atkBaseDmg,
                   char.atkRange || 10,
                   char.projectileRadius
@@ -99,19 +92,14 @@ export class DoubleAttackStrategy implements AttackStrategy {
       return { canExecute: false, needsCasting: false, executed: false }
     }
 
-    const castTime = this.getCastTime()
-    if (castTime > 0) {
-      return {
-        canExecute: true,
-        needsCasting: true,
-        executed: false,
-      }
-    }
-
+    // For Queue System: We always "execute" immediately to populate the queue.
+    // The queue then manages the "casting" state internally in Mob.ts.
+    // So we tell Mob.ts "we executed" and "no casting needed from you".
     const executed = this.execute(mob, target, roomId)
+    
     return {
       canExecute: true,
-      needsCasting: false,
+      needsCasting: false, 
       executed,
       targetId: executed ? target.id : undefined,
     }

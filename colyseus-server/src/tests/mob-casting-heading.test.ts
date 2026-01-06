@@ -65,11 +65,22 @@ describe('Mob Casting Heading Behavior', () => {
     // Check heading
     const newDx = player.x - mob.x
     const newDy = player.y - mob.y
-    const expectedNewHeading = Math.atan2(newDy, newDx)
+    const targetHeading = Math.atan2(newDy, newDx) // Approx 1.57 (PI/2)
     
-    // CURRENT BEHAVIOR: Heading updates to follow target
-    // FIXED BEHAVIOR: Heading stays the same (locked)
-    expect(mob.heading).toBeCloseTo(expectedInitialHeading)
-    expect(mob.heading).not.toBeCloseTo(expectedNewHeading)
+    // Expected behavior: Mob rotates slowly towards target
+    // Max rotation = limited speed * delta
+    // limited speed = Math.PI * 0.1 = ~0.314 rad/sec
+    // delta = 0.016 sec
+    // max change ~= 0.005 rad
+    
+    // Should have moved from 0 towards 1.57, but only slightly
+    expect(mob.heading).toBeGreaterThan(expectedInitialHeading)
+    expect(mob.heading).toBeLessThan(targetHeading)
+    
+    // Verify exact-ish amount
+    // Allow small margin for floating point
+    // Note: Mob default in Mob.ts line 43 is now Math.PI.
+    const expectedHeadingChange = (mob.rotationSpeed * 0.1) * (16 / 1000)
+    expect(mob.heading).toBeCloseTo(expectedInitialHeading + expectedHeadingChange, 4)
   })
 })
