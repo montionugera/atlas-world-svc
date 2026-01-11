@@ -42,9 +42,30 @@ export class MeleeAttackStrategy implements AttackStrategy {
   }
 
   execute(mob: Mob, target: Player, roomId: string): boolean {
-    if (!this.canExecute(mob, target)) {
-      console.log(`⚠️ MELEE: ${mob.id} can't execute melee attack on ${target.id}`)
-      return false
+    // Basic validation first
+    if (!target.isAlive || !mob.canAttack()) {
+       return false
+    }
+
+    // RANGE CHECK LOGIC:
+    // 1. If instant attack (castTime === 0): Strict range check required.
+    // 2. If committed attack (castTime > 0): Relaxed check. We allow it to fire even if out of range,
+    //    as long as it was valid when we started casting (checked in attemptExecute).
+    const isCommitted = this.castTime > 0
+    
+    if (!isCommitted) {
+        // Strict check for instant attacks
+        if (!this.canExecute(mob, target)) {
+            console.log(`⚠️ MELEE: ${mob.id} can't execute instant melee attack on ${target.id} (out of range/condition)`)
+            return false
+        }
+    } else {
+        // Warning if out of range but allowing it
+        const distance = mob.getDistanceTo(target)
+        const effectiveRange = mob.attackRange + mob.radius + target.radius
+        if (distance > effectiveRange) {
+             console.log(`⚠️ MELEE: ${mob.id} target out of range (${distance.toFixed(1)} > ${effectiveRange.toFixed(1)}) but committed (cast=${this.castTime}ms). Executing anyway.`)
+        }
     }
 
     // Require projectileManager and gameState for unified projectile flow
