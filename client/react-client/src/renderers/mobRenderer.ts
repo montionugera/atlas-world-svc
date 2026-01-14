@@ -20,15 +20,31 @@ export const drawMobs = (
     const x = mob.x * scale;
     const y = mob.y * scale;
     
-    // Draw wind-up animation if mob is winding up
-    if (mob.isWindingUp) {
-      // Draw pulsing glow effect
-      const pulseTime = Date.now() % 1000; // 1 second pulse cycle
-      const pulseAlpha = 0.3 + (Math.sin(pulseTime / 1000 * Math.PI * 2) * 0.2);
-      ctx.fillStyle = `rgba(255, 200, 0, ${pulseAlpha})`; // Yellow glow
+    // Draw wind-up animation if mob is casting (winding up)
+    if (mob.isCasting) {
+      // Draw pulsing glow effect (Blinking)
+      const pulseTime = Date.now() % 500; // 0.5 second pulse cycle (faster)
+      const pulsePhase = pulseTime / 500; // 0 to 1
+      
+      // Flash between transparent and semi-transparent yellow
+      // Sine wave for smooth but fast pulse
+      const pulseAlpha = 0.2 + (Math.sin(pulsePhase * Math.PI * 2) * 0.3);
+      
+      ctx.save();
+      ctx.fillStyle = `rgba(255, 220, 50, ${pulseAlpha})`; // Bright Yellow glow
       ctx.beginPath();
-      ctx.arc(x, y, (mob.radius + 2) * scale, 0, Math.PI * 2);
+      // Radius slightly pulsating too
+      const radiusPulse = 1 + (Math.sin(pulsePhase * Math.PI * 2) * 0.1);
+      ctx.arc(x, y, (mob.radius + 4) * scale * radiusPulse, 0, Math.PI * 2);
       ctx.fill();
+      
+      // Add a stroke ring that expands
+      ctx.strokeStyle = `rgba(255, 200, 0, ${1 - pulsePhase})`; // Fades out as it expands
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, (mob.radius + 2 + (pulsePhase * 10)) * scale, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
     }
     
     // Draw mob circle using server-provided radius (scale already applied to position)

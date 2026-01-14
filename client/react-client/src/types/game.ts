@@ -46,6 +46,7 @@ export interface Mob {
   tag: string; // Current behavior tag
   mobTypeId?: string; // Synced from server for UI display
   isAlive?: boolean;
+  isCasting?: boolean; // Synced: casting state for client animation
   // Status Effects
   // Status Effects
   battleStatuses?: Map<string, BattleStatus>; // Synced: Status Type -> BattleStatus Object

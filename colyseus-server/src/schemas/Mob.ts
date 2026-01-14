@@ -14,6 +14,7 @@ export class Mob extends WorldLife implements IAgent {
   @type('string') tag: string = 'idle' // Current behavior tag for debugging/UI // Send radius to client
   @type('string') currentBehavior: string = 'idle'
   @type('number') behaviorLockedUntil: number = 0 // epoch ms; 0 means unlocked
+  @type('number') castDuration: number = 0 // Synced: duration of current cast/windup
   @type('boolean') isCasting: boolean = false // Synced: casting state for client animation
   @type('string') mobTypeId: string = '' // Mob type identifier (synced to clients for UI/debugging)
   @type('string') spawnAreaId: string = '' // ID of the area this mob was spawned from
@@ -67,11 +68,6 @@ export class Mob extends WorldLife implements IAgent {
     // Immediate removal trigger
     if (this.readyToRemove) return true
     
-    // Dead mobs past respawn delay
-    if (!this.isAlive && this.diedAt > 0) {
-      const timeDead = Date.now() - this.diedAt
-      return timeDead >= respawnDelayMs
-    }
     
     return false
   }
@@ -186,6 +182,7 @@ export class Mob extends WorldLife implements IAgent {
         this.vy = 0
         this.isMoving = false
         this.isCasting = false // Interrupt casting
+        this.castDuration = 0
         
         // 🛑 FIX: Clear attack queue and reset attack state
         // This prevents attacks from firing immediately after stun ends
@@ -419,6 +416,7 @@ export class Mob extends WorldLife implements IAgent {
       this.currentAttackTarget = ''
       this.currentBehavior = 'wander' // Fallback to wander
       this.isCasting = false
+      this.castDuration = 0
       this.castStartTime = 0
       return { attacked: false }
     }
@@ -510,6 +508,7 @@ export class Mob extends WorldLife implements IAgent {
     
     if (attackExecuted) {
       this.isCasting = false
+      this.castDuration = 0
       this.castStartTime = 0
       this.currentAttackStrategy = null
       this.lastAttackTime = performance.now()
@@ -519,6 +518,7 @@ export class Mob extends WorldLife implements IAgent {
     } else {
       console.log(`❌ DEBUG: ${this.id} strategy.execute() returned false`)
       this.isCasting = false
+      this.castDuration = 0
       this.castStartTime = 0
       this.currentAttackStrategy = null
       return null
@@ -549,6 +549,7 @@ export class Mob extends WorldLife implements IAgent {
     const castTime = strategy.getCastTime()
     console.log(`⏳ DEBUG: ${this.id} starting casting for ${strategy.name} (${castTime}ms)`)
     this.isCasting = true
+    this.castDuration = castTime
     this.isAttacking = false // Cancel any previous attack animation (combo flow)
     this.castStartTime = currentTimeMs
     this.currentAttackStrategy = strategy
@@ -599,6 +600,7 @@ export class Mob extends WorldLife implements IAgent {
           // If the first attack is in the future, we are casting
           if (firstAttack.executionTime > Date.now()) {
              this.isCasting = true
+             this.castDuration = firstAttack.attackDef.atkWindUpTime || 0
              this.castStartTime = Date.now()
              this.currentAttackStrategy = strategy
              this.isAttacking = false
@@ -647,9 +649,11 @@ export class Mob extends WorldLife implements IAgent {
               // Still have attacks pending
               this.isCasting = true
               this.castStartTime = now // Start casting the next one
+              this.castDuration = this.attackQueue[0].attackDef.atkWindUpTime || 0
           } else {
               // Queue empty
               this.isCasting = false
+              this.castDuration = 0
               this.currentAttackStrategy = null
           }
 
@@ -678,6 +682,7 @@ export class Mob extends WorldLife implements IAgent {
       this.currentChaseTarget = this.currentAttackTarget
       this.currentAttackTarget = ''
       this.isCasting = false
+      this.castDuration = 0
       this.castStartTime = 0
       this.lastCooldownState = false
       return true
