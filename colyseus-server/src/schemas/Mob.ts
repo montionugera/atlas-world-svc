@@ -8,11 +8,12 @@ import { MOB_STATS } from '../config/combatConfig'
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { IAgent } from '../ai/interfaces/IAgent'
 import { AttackDefinition, calculateEffectiveAttackRange } from '../config/mobTypesConfig'
+import { BehaviorState } from '../ai/behaviors/BehaviorState'
 // Removed global BattleManager singleton - now using room-scoped instances
 
 export class Mob extends WorldLife implements IAgent {
-  @type('string') tag: string = 'idle' // Current behavior tag for debugging/UI // Send radius to client
-  @type('string') currentBehavior: string = 'idle'
+  @type('string') tag: string = BehaviorState.IDLE // Current behavior tag for debugging/UI // Send radius to client
+  @type('string') currentBehavior: BehaviorState = BehaviorState.IDLE
   @type('number') behaviorLockedUntil: number = 0 // epoch ms; 0 means unlocked
   @type('number') castDuration: number = 0 // Synced: duration of current cast/windup
   @type('boolean') isCasting: boolean = false // Synced: casting state for client animation
@@ -22,7 +23,7 @@ export class Mob extends WorldLife implements IAgent {
   mass: number = 1 // cached mass for steering calculations
   desiredVx: number = 0
   desiredVy: number = 0
-  desiredBehavior: string = 'idle'
+  desiredBehavior: string = BehaviorState.IDLE
   decisionTimestamp: number = 0
   chaseRange: number = 15 // Chase range buffer (will be calculated with radius)
   currentAttackTarget: string = '' // ID of the player currently being attacked
@@ -215,7 +216,7 @@ export class Mob extends WorldLife implements IAgent {
    * AI module decides, Mob applies - separation of concerns
    */
   applyBehaviorDecision(decision: {
-    behavior: string
+    behavior: BehaviorState
     behaviorLockedUntil: number
     currentAttackTarget: string
     currentChaseTarget: string
@@ -232,7 +233,7 @@ export class Mob extends WorldLife implements IAgent {
         
         // Allow target updates if still in attack mode, but DO NOT switch behavior
         // If the decision tries to switch to 'chase', we ignore it to finish the cast.
-        if (decision.behavior !== 'attack' && this.currentBehavior === 'attack') {
+        if (decision.behavior !== BehaviorState.ATTACK && this.currentBehavior === BehaviorState.ATTACK) {
              console.log(`🛡️ IGNORED behavior switch to ${decision.behavior} during CAST`)
              return 
         }
@@ -376,21 +377,21 @@ export class Mob extends WorldLife implements IAgent {
     targetY?: number
   } {
     // Update target positions for heading calculation based on current behavior
-    if (this.currentBehavior === 'attack' && this.currentAttackTarget) {
+    if (this.currentBehavior === BehaviorState.ATTACK && this.currentAttackTarget) {
       const attackTarget = players.get(this.currentAttackTarget)
       if (attackTarget && attackTarget.isAlive) {
         this.targetX = attackTarget.x
         this.targetY = attackTarget.y
         return { moved: true, targetX: this.targetX, targetY: this.targetY }
       }
-    } else if (this.currentBehavior === 'chase' && this.currentChaseTarget) {
+    } else if (this.currentBehavior === BehaviorState.CHASE && this.currentChaseTarget) {
       const chaseTarget = players.get(this.currentChaseTarget)
       if (chaseTarget && chaseTarget.isAlive) {
         this.targetX = chaseTarget.x
         this.targetY = chaseTarget.y
         return { moved: true, targetX: this.targetX, targetY: this.targetY }
       }
-    } else if (this.currentBehavior === 'wander') {
+    } else if (this.currentBehavior === BehaviorState.WANDER) {
       // Wander behavior: use wander target
       this.targetX = this.wanderTargetX
       this.targetY = this.wanderTargetY
@@ -406,7 +407,7 @@ export class Mob extends WorldLife implements IAgent {
     roomId?: string
   ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
     // Only process attacks if we're in attack behavior
-    if (this.currentBehavior !== 'attack' || !this.currentAttackTarget) {
+    if (this.currentBehavior !== BehaviorState.ATTACK || !this.currentAttackTarget) {
       return { attacked: false }
     }
 
@@ -414,7 +415,7 @@ export class Mob extends WorldLife implements IAgent {
     if (!targetPlayer || !targetPlayer.isAlive) {
       // Target is dead or doesn't exist, clear attack target
       this.currentAttackTarget = ''
-      this.currentBehavior = 'wander' // Fallback to wander
+      this.currentBehavior = BehaviorState.WANDER // Fallback to wander
       this.isCasting = false
       this.castDuration = 0
       this.castStartTime = 0
@@ -442,7 +443,7 @@ export class Mob extends WorldLife implements IAgent {
       console.log(
         `🎯 MOB ${this.id}: Target out of range (${distanceToTargetPlayer.toFixed(2)} > ${effectiveMeleeRange.toFixed(2)}), switching to chase`
       )
-      this.currentBehavior = 'chase'
+      this.currentBehavior = BehaviorState.CHASE
       this.currentChaseTarget = this.currentAttackTarget
       this.currentAttackTarget = ''
       return { attacked: false }
@@ -678,7 +679,7 @@ export class Mob extends WorldLife implements IAgent {
     
     if (distance > maxRange) {
       console.log(`🎯 DEBUG: ${this.id} target out of range (${distance.toFixed(2)} > ${maxRange.toFixed(2)}), switching to chase`)
-      this.currentBehavior = 'chase'
+      this.currentBehavior = BehaviorState.CHASE
       this.currentChaseTarget = this.currentAttackTarget
       this.currentAttackTarget = ''
       this.isCasting = false

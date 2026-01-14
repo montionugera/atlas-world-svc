@@ -5,10 +5,11 @@
 
 import { AIContext } from './AIContext';
 import { Mob } from '../../schemas/Mob';
+import { BehaviorState } from '../behaviors/BehaviorState';
 
 export interface AIDecision {
   velocity: { x: number; y: number };
-  behavior: string;
+  behavior: BehaviorState;
   timestamp: number;
 }
 

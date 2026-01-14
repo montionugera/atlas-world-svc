@@ -5,6 +5,7 @@
 
 import { IAgent } from '../interfaces/IAgent'
 import { Player } from '../../schemas/Player'
+import { BehaviorState } from './BehaviorState'
 
 export type AgentEnvironment = {
   nearestPlayer?: Player | null
@@ -16,7 +17,7 @@ export type AgentEnvironment = {
 }
 
 export interface BehaviorDecision {
-  behavior: string
+  behavior: BehaviorState
   behaviorLockedUntil: number
   currentAttackTarget: string
   currentChaseTarget: string
@@ -37,6 +38,7 @@ export interface AgentBehavior {
 export class AvoidBoundaryBehavior implements AgentBehavior {
   readonly name = 'avoidBoundary'
   readonly priority: number
+
 
   constructor(priority: number = 10) {
     this.priority = priority
@@ -97,7 +99,7 @@ export class AvoidBoundaryBehavior implements AgentBehavior {
     }
 
     return {
-      behavior: 'avoidBoundary',
+      behavior: BehaviorState.AVOID_BOUNDARY,
       behaviorLockedUntil: now + 200, // Short lock time
       currentAttackTarget: '',
       currentChaseTarget: '',
@@ -200,7 +202,7 @@ export class AttackBehavior implements AgentBehavior {
     }
 
     return {
-      behavior: 'attack',
+      behavior: BehaviorState.ATTACK,
       behaviorLockedUntil: now + 500, // 0.5 second lock
       currentAttackTarget: target?.id || '',
       currentChaseTarget: '',
@@ -259,7 +261,7 @@ export class ChaseBehavior implements AgentBehavior {
     }
 
     return {
-      behavior: 'chase',
+      behavior: BehaviorState.CHASE,
       behaviorLockedUntil: now, // No lock
       currentAttackTarget: '',
       currentChaseTarget: target?.id || '',
@@ -332,7 +334,7 @@ export class WanderBehavior implements AgentBehavior {
     }
 
     return {
-      behavior: 'wander',
+      behavior: BehaviorState.WANDER,
       currentAttackTarget: '',
       currentChaseTarget: '',
       behaviorLockedUntil: now,

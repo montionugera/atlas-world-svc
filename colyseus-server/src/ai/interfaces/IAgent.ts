@@ -1,4 +1,5 @@
 import { AttackStrategy } from '../strategies/AttackStrategy'
+import { BehaviorState } from '../behaviors/BehaviorState'
 
 export interface IAgent {
   // Identity
@@ -11,7 +12,7 @@ export interface IAgent {
   radius: number
   
   // AI State
-  currentBehavior: string
+  currentBehavior: BehaviorState
   behaviorLockedUntil: number
   currentAttackTarget: string
   currentChaseTarget: string
@@ -30,7 +31,7 @@ export interface IAgent {
   
   // Methods required by AI
   applyBehaviorDecision(decision: {
-    behavior: string
+    behavior: BehaviorState
     behaviorLockedUntil: number
     currentAttackTarget: string
     currentChaseTarget: string
