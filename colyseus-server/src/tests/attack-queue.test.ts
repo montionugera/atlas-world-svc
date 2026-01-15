@@ -53,13 +53,11 @@ describe('Attack Queue System', () => {
         const attacks: AttackDefinition[] = [
             {
                 atkBaseDmg: 10,
-                atkRadius: 2,
                 atkWindUpTime: 200, // 200ms cast
                 atkCharacteristic: { type: AttackCharacteristicType.PROJECTILE, projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 } }
             },
             {
                 atkBaseDmg: 20,
-                atkRadius: 2,
                 atkWindUpTime: 300, // 300ms delay/cast
                 atkCharacteristic: { type: AttackCharacteristicType.PROJECTILE, projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 } }
             }
@@ -88,6 +86,7 @@ describe('Attack Queue System', () => {
         expect(result.executed).toBe(true)
         expect(mob.attackQueue.length).toBe(2)
         expect(mob.isCasting).toBe(true) 
+        expect(mob.castDuration).toBe(200) // First attack windup
         
         // Queue Item 1 execution time: Now + 200
         const now = Date.now()
@@ -99,6 +98,7 @@ describe('Attack Queue System', () => {
         mob.updateAttack(currentPlayers, 'room-1')
         expect(mob.attackQueue.length).toBe(2)
         expect(mob.isCasting).toBe(true)
+        expect(mob.castDuration).toBe(200) // Still winding up first attack
         
         // 4. Advance time by 100ms (Total 200ms)
         jest.setSystemTime(now + 200)
@@ -108,11 +108,14 @@ describe('Attack Queue System', () => {
         expect(mob.attackQueue.length).toBe(1) // Dequeued
         expect(projectileManager.createSpear).toHaveBeenCalledTimes(1)
         expect(mob.isCasting).toBe(true)
+        expect(mob.castDuration).toBe(300) // Second attack windup (from definition)
+
         // 5. Advance time by 299ms (Total 499ms)
         jest.setSystemTime(now + 499)
         mob.updateAttack(currentPlayers, 'room-1')
         expect(mob.isCasting).toBe(true)
         expect(mob.attackQueue.length).toBe(1)
+        expect(mob.castDuration).toBe(300)
         
         // 6. Advance time by 1ms (Total 500ms)
         jest.setSystemTime(now + 500)
@@ -166,7 +169,6 @@ describe('Attack Queue System', () => {
         // Override mock implementation for this test
         const attackDef: AttackDefinition = {
             atkBaseDmg: 10,
-            atkRadius: 2,
             atkWindUpTime: 0,
             atkCharacteristic: { type: AttackCharacteristicType.PROJECTILE, projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 } }
         }

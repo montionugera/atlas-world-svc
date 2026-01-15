@@ -12,7 +12,7 @@ export class ProjectileManager {
   private gameState: GameState
   private battleModule: BattleModule
   private gravity: number = PROJECTILE_GRAVITY
-  private maxSpeed: number = SPEAR_THROWER_STATS.spearSpeed
+  private maxSpeed: number = 2000 // Raised from 36 to support fast projectiles
 
   constructor(gameState: GameState, battleModule: BattleModule) {
     this.gameState = gameState
@@ -29,7 +29,8 @@ export class ProjectileManager {
     targetY: number, 
     damage: number,
     maxRange: number = MELEE_PROJECTILE_STATS.meleeMaxRange,
-    radius: number = MELEE_PROJECTILE_STATS.projectileRadius
+    radius: number = MELEE_PROJECTILE_STATS.projectileRadius,
+    speed: number = MELEE_PROJECTILE_STATS.meleeSpeed
   ): Projectile {
     const dx = targetX - mob.x
     const dy = targetY - mob.y
@@ -37,9 +38,6 @@ export class ProjectileManager {
     
     // Calculate angle to target
     const angle = Math.atan2(dy, dx)
-    
-    // Use melee projectile speed (very fast for near-instant hit)
-    const speed = MELEE_PROJECTILE_STATS.meleeSpeed
     
     // Calculate initial velocity components
     const vx = speed * Math.cos(angle)

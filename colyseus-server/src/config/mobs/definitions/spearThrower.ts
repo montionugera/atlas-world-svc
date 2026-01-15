@@ -19,7 +19,6 @@ export const spearThrower: MobTypeConfig = {
       attacks: [
         {
           atkBaseDmg: MOB_STATS.attackDamage,
-          atkRadius: 0.3,
           atkWindUpTime: 0, // Instant
           atkCharacteristic: {
             type: AttackCharacteristicType.PROJECTILE,
@@ -37,7 +36,6 @@ export const spearThrower: MobTypeConfig = {
       attacks: [
         {
           atkBaseDmg: SPEAR_THROWER_STATS.spearDamage + 1,
-          atkRadius: SPEAR_THROWER_STATS.projectileRadius,
           atkWindUpTime: SPEAR_THROWER_STATS.castTime,
           atkCharacteristic: {
             type: AttackCharacteristicType.PROJECTILE,

@@ -70,7 +70,8 @@ export class DoubleAttackStrategy implements AttackStrategy {
                   targetY,
                   attack.atkBaseDmg,
                   char.atkRange || 10,
-                  char.projectileRadius
+                  char.projectileRadius,
+                  char.speedUnitsPerSec
               )
               this.gameState.projectiles.set(projectile.id, projectile)
           } else {

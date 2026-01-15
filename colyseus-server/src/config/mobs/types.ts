@@ -37,8 +37,7 @@ export type AttackCharacteristic =
 export interface AttackDefinition {
   /** Base damage of this attack */
   atkBaseDmg: number
-  /** Radius of the attack (projectile radius or area radius) */
-  atkRadius: number
+
   /** Casting time (wind up) in milliseconds before attack executes */
   atkWindUpTime: number
   /** Optional: Cooldown in milliseconds after this specific attack (overrides mob's default attackDelay) */

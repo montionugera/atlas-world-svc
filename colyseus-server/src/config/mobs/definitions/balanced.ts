@@ -18,7 +18,6 @@ export const balanced: MobTypeConfig = {
       attacks: [
         {
           atkBaseDmg: MOB_STATS.attackDamage,
-          atkRadius: 0.3,
           atkWindUpTime: 500, // 0.5s telegraph
           atkCharacteristic: {
             type: AttackCharacteristicType.PROJECTILE,

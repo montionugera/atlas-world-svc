@@ -69,8 +69,9 @@ export class Mob extends WorldLife implements IAgent {
     // Immediate removal trigger
     if (this.readyToRemove) return true
     
-    
-    return false
+    // Check if enough time has passed since death (respawn delay)
+    if (this.isAlive || this.diedAt === 0) return false
+    return Date.now() - this.diedAt >= respawnDelayMs
   }
 
   /**

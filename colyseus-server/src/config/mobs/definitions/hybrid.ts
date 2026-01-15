@@ -18,7 +18,6 @@ export const hybrid: MobTypeConfig = {
       attacks: [
         {
           atkBaseDmg: MOB_STATS.attackDamage,
-          atkRadius: 0.3,
           atkWindUpTime: 0,
           atkCharacteristic: {
             type: AttackCharacteristicType.PROJECTILE,
@@ -36,7 +35,6 @@ export const hybrid: MobTypeConfig = {
       attacks: [
         {
           atkBaseDmg: SPEAR_THROWER_STATS.spearDamage,
-          atkRadius: SPEAR_THROWER_STATS.projectileRadius,
           atkWindUpTime: SPEAR_THROWER_STATS.castTime,
           atkCharacteristic: {
             type: AttackCharacteristicType.PROJECTILE,
