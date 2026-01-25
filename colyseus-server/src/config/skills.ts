@@ -1,5 +1,6 @@
 export interface SkillEffect {
-  type: 'damage' | 'heal' | 'freeze' | 'stun';
+
+  type: 'damage' | 'heal' | 'freeze' | 'stun' | 'impulse_caster';
   value: number;
   chance?: number; // 0.0 to 1.0 (default 1.0)
   duration?: number;
@@ -14,9 +15,24 @@ export interface SkillDefinition {
   tickRate: number;
   skillCastingTime: number; // ms
   duration: number; // ms
-  cooldown: number; // ms
-  gcd: number; // ms
+  
+  // New Cooldown System
+  // Keys to check: fail if ANY are active
+  consideringCooldown: string[]; 
+  // Keys to set: map KEY -> DURATION (ms)
+  cooldownSetting: Record<string, number>;
 }
+
+export const GLOBAL_MAGIC_CD_KEY = 'global_magic_cd';
+
+// Helper to standard magic setup
+const standardMagicConfig = (skillId: string, cooldown: number, gcd: number) => ({
+    consideringCooldown: [skillId, GLOBAL_MAGIC_CD_KEY],
+    cooldownSetting: { 
+        [skillId]: cooldown, 
+        [GLOBAL_MAGIC_CD_KEY]: gcd 
+    }
+});
 
 export const SKILLS: Record<string, SkillDefinition> = {
   'skill_1': {
@@ -29,8 +45,7 @@ export const SKILLS: Record<string, SkillDefinition> = {
     tickRate: 200,
     skillCastingTime: 1500, // 1.5s
     duration: 5000, // 5s
-    cooldown: 5000, 
-    gcd: 5000
+    ...standardMagicConfig('skill_1', 5000, 5000)
   },
   'skill_2': {
     id: 'skill_2',
@@ -42,8 +57,7 @@ export const SKILLS: Record<string, SkillDefinition> = {
     tickRate: 200,
     skillCastingTime: 1000, // 1s
     duration: 5000, // 5s
-    cooldown: 2000,
-    gcd: 1000
+    ...standardMagicConfig('skill_2', 2000, 1000)
   },
   'skill_3': {
     id: 'skill_3',
@@ -56,8 +70,7 @@ export const SKILLS: Record<string, SkillDefinition> = {
     tickRate: 200,
     skillCastingTime: 1000, // 2s cast
     duration: 3000, // 10s duration
-    cooldown: 4000, // 20s cooldown
-    gcd: 1500
+    ...standardMagicConfig('skill_3', 4000, 1500)
   },
   'skill_4': {
     id: 'skill_4',
@@ -70,7 +83,22 @@ export const SKILLS: Record<string, SkillDefinition> = {
     tickRate: 2000,   // Instant hit (no DOT)
     skillCastingTime: 500, // 0.5s cast
     duration: 15000, // Short duration just for visuals
-    cooldown: 5000,
-    gcd: 1000
+    ...standardMagicConfig('skill_4', 5000, 1000)
+  },
+  'skill_dash': {
+    id: 'skill_dash',
+    name: 'Dash',
+    radius: 0, 
+    effects: [
+       { type: 'impulse_caster', value: 160 } // Impulse multiplier
+    ],
+    tickRate: 0,
+    skillCastingTime: 0, // Instant
+    duration: 0,
+    // DASH CONFIG: Only cares about its own cooldown. Ignores Magic GCD.
+    consideringCooldown: ['skill_dash'],
+    cooldownSetting: {
+        'skill_dash': 500
+    }
   }
 };

@@ -7,6 +7,7 @@ export class Projectile extends WorldObject {
   @type('number') radius: number = SPEAR_THROWER_STATS.projectileRadius
   @type('string') ownerId: string = ''
   @type('boolean') isStuck: boolean = false
+  @type('string') type: string = 'spear' // 'spear', 'melee', etc. for client rendering
 
   // Server-only properties
   damage: number = 0
@@ -26,6 +27,7 @@ export class Projectile extends WorldObject {
     vy: number,
     ownerId: string,
     damage: number,
+    type: string = 'spear',
     maxRange: number = SPEAR_THROWER_STATS.spearMaxRange,
     radius: number = SPEAR_THROWER_STATS.projectileRadius,
     lifetime: number = SPEAR_THROWER_STATS.projectileLifetime
@@ -33,6 +35,7 @@ export class Projectile extends WorldObject {
     super(id, x, y, vx, vy, ['projectile'])
     this.ownerId = ownerId
     this.damage = damage
+    this.type = type
     this.maxRange = maxRange
     this.radius = radius
     this.lifetime = lifetime

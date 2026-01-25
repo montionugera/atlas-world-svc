@@ -26,19 +26,21 @@ export const doubleAttacker: MobTypeConfig = {
               speedUnitsPerSec: 30,
               projectileRadius: 1.3,
               atkRange: 15,
+              projectileType: 'melee',
             },
           },
         },
         {
           atkBaseDmg: MOB_STATS.attackDamage * 2, // Second hit does less damage
-          atkWindUpTime: 300, // Second attack has windup
-          cooldown: 300,
+          atkWindUpTime: 500, // Second attack has windup
+          cooldown: 200,
           atkCharacteristic: {
             type: AttackCharacteristicType.PROJECTILE,
             projectile: {
               speedUnitsPerSec: 150,
               projectileRadius: 1.3,
-              atkRange: 89,
+              atkRange: 159,
+              projectileType: 'spear',
             },
           },
         },

@@ -34,7 +34,7 @@ export class Player extends WorldLife implements IAgent {
 
   // Cooldown System
   @type({ map: "number" }) cooldowns = new MapSchema<number>(); // Action ID -> Timestamp when ready
-  @type("number") globalCooldownUntil: number = 0; // Timestamp when GCD expires
+
 
   // AI Agent properties
   @type('string') currentBehavior: string = 'idle'
@@ -116,19 +116,19 @@ export class Player extends WorldLife implements IAgent {
     this.currentChaseTarget = ''
     
     this.cooldowns.clear()
-    this.globalCooldownUntil = 0
+    this.cooldowns.clear()
     this.pendingAttack = false
     this.attackExecuteTime = 0
   }
 
   // Delegate Cooldown Checks to CombatSystem
-  canPerformAction(actionId: string): boolean {
-      return this.combatSystem.canPerformAction(actionId)
+  canPerformAction(cooldownKeys: string[]): boolean {
+      return this.combatSystem.canPerformAction(cooldownKeys)
   }
 
   // Delegate Cooldown Sets to CombatSystem
-  performAction(actionId: string, duration: number, gcdDuration: number = 0): void {
-      this.combatSystem.performAction(actionId, duration, gcdDuration)
+  performAction(settings: Record<string, number>): void {
+      this.combatSystem.performAction(settings)
   }
 
   // AI Interface: Apply behavior decision (Used by BotController logic mostly, but state stored here)

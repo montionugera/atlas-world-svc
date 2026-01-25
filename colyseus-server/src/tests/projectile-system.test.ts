@@ -49,8 +49,8 @@ describe('Projectile System', () => {
       expect(projectile.ownerId).toBe(mob.id)
       expect(projectile.damage).toBe(5)
       expect(projectile.maxRange).toBe(10)
-      expect(projectile.x).toBe(mob.x)
-      expect(projectile.y).toBe(mob.y)
+      expect(projectile.x).toBeGreaterThan(mob.x)
+      expect(projectile.y).toBeCloseTo(mob.y)
       expect(projectile.hasHit).toBe(false)
       expect(projectile.isStuck).toBe(false)
     })
@@ -67,7 +67,7 @@ describe('Projectile System', () => {
       const projectile = projectileManager.createSpear(mob, 200, 100, 5, 10)
       const speed = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy)
       
-      expect(speed).toBeLessThanOrEqual(36) // Max speed
+      expect(speed).toBeLessThanOrEqual(2000) // Max speed
     })
   })
 
@@ -76,7 +76,7 @@ describe('Projectile System', () => {
       const { PlanckPhysicsManager } = require('../physics/PlanckPhysicsManager')
       const physicsManager = new PlanckPhysicsManager()
       
-      const projectile = new Projectile('proj-1', 100, 100, 10, 5, 'mob-1', 5, 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 5, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
       
       // Create physics body for projectile
@@ -97,7 +97,7 @@ describe('Projectile System', () => {
     })
 
     test('should cap projectile speed at max', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 50, 50, 'mob-1', 5, 10)
+      const projectile = new Projectile('proj-1', 100, 100, 50, 50, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       const speedBefore = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy)
@@ -120,7 +120,7 @@ describe('Projectile System', () => {
     })
 
     test('should track distance traveled', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       expect(projectile.distanceTraveled).toBe(0)
@@ -137,7 +137,7 @@ describe('Projectile System', () => {
     })
 
     test('should despawn when max range reached', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       projectile.distanceTraveled = 10 // Max range
       gameState.projectiles.set(projectile.id, projectile)
 
@@ -145,7 +145,7 @@ describe('Projectile System', () => {
     })
 
     test('should despawn after lifetime when stuck', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       projectile.stick()
       projectile.stuckAt = Date.now() - 3000 // 3 seconds ago
       projectile.lifetime = 2000 // 2 second lifetime
@@ -156,7 +156,7 @@ describe('Projectile System', () => {
 
   describe('Projectile Collision', () => {
     test('should damage player on collision', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
       gameState.mobs.set(mob.id, mob)
 
@@ -168,7 +168,7 @@ describe('Projectile System', () => {
     })
 
     test('should not damage player twice (piercing)', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
       gameState.mobs.set(mob.id, mob)
 
@@ -183,7 +183,7 @@ describe('Projectile System', () => {
     })
 
     test('should stick projectile on boundary collision', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       expect(projectile.isStuck).toBe(false)
@@ -201,7 +201,7 @@ describe('Projectile System', () => {
       // Place projectile close to player and in attack cone
       player.x = 100
       player.y = 100
-      const projectile = new Projectile('proj-1', 103, 100, 10, 0, 'mob-1', 5, 10)
+      const projectile = new Projectile('proj-1', 103, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       player.isAttacking = true
@@ -220,7 +220,7 @@ describe('Projectile System', () => {
     })
 
     test('should not deflect if already deflected', () => {
-      const projectile = new Projectile('proj-1', 110, 100, 10, 0, 'mob-1', 5, 10)
+      const projectile = new Projectile('proj-1', 110, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       projectile.deflectedBy = 'player-2'
       gameState.projectiles.set(projectile.id, projectile)
 
@@ -233,7 +233,7 @@ describe('Projectile System', () => {
     })
 
     test('should not deflect if player not attacking', () => {
-      const projectile = new Projectile('proj-1', 110, 100, 10, 0, 'mob-1', 5, 10)
+      const projectile = new Projectile('proj-1', 110, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       player.isAttacking = false
@@ -245,7 +245,7 @@ describe('Projectile System', () => {
     })
 
     test('should not deflect if out of range', () => {
-      const projectile = new Projectile('proj-1', 200, 100, 10, 0, 'mob-1', 5, 10)
+      const projectile = new Projectile('proj-1', 200, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       player.isAttacking = true

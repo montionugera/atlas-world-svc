@@ -4,6 +4,7 @@ import { useKeyboardControls } from '../hooks/useKeyboardControls';
 import { GameRenderer } from './GameRenderer';
 import { CANVAS_CONFIG } from '../config/gameConfig';
 import { useGameStateContext } from '../contexts/GameStateContext';
+import { InputDebugPanel } from './InputDebugPanel';
 import { calculateScale } from '../utils/drawingUtils';
 
 interface ColyseusGameCanvasProps {
@@ -37,7 +38,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ client }
   }, [gameState?.tick, gameState, roomId, clientConnected, setGameState]);
 
   // Handle keyboard controls
-  useKeyboardControls({ updatePlayerInput, sendPlayerAction, mousePositionRef });
+  const { pressedKeys } = useKeyboardControls({ updatePlayerInput, sendPlayerAction, mousePositionRef });
   
   // Handle mouse tracking to update mousePositionRef with World Coordinates
   useEffect(() => {
@@ -140,6 +141,8 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ client }
             display: 'block'
           }}
         />
+        
+        <InputDebugPanel pressedKeysRef={pressedKeys} />
         
         <GameRenderer
           canvasRef={canvasRef}

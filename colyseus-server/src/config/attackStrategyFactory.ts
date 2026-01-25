@@ -56,6 +56,7 @@ export function createAttackStrategies(
             damage: attack.atkBaseDmg,
             maxRange: effectiveRange,
             castTime: attack.atkWindUpTime,
+            speed: attack.atkCharacteristic.projectile?.speedUnitsPerSec
           })
         )
       }
@@ -94,6 +95,7 @@ export function createAttackStrategies(
                 damage: attack.atkBaseDmg,
                 maxRange: effectiveRange,
                 castTime: attack.atkWindUpTime,
+                speed: attack.atkCharacteristic.projectile?.speedUnitsPerSec
               })
             )
           }

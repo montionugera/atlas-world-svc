@@ -13,20 +13,20 @@ export class PlayerCombatSystem {
     }
 
     /**
-     * Check if an action is ready (specific cooldown AND global cooldown)
+     * Check if an action is ready (checks ALL specified cooldown keys)
+     * @param cooldownKeys Array of cooldown keys to check (e.g. ['skill_1', 'global_magic_cd'])
+     * @returns true if ALL keys are ready (not on cooldown)
      */
-    canPerformAction(actionId: string): boolean {
+    canPerformAction(cooldownKeys: string[]): boolean {
         const now = Date.now();
         
-        // 1. Check Global Cooldown
-        if (now < this.player.globalCooldownUntil) {
-            return false;
-        }
-        
-        // 2. Check Specific Cooldown
-        const readyAt = this.player.cooldowns.get(actionId);
-        if (readyAt && now < readyAt) {
-            return false;
+        // Check all keys in the list
+        for (const key of cooldownKeys) {
+            const readyAt = this.player.cooldowns.get(key);
+            if (readyAt && now < readyAt) {
+                // If ANY key is on cooldown, action cannot be performed
+                return false;
+            }
         }
         
         return true;
@@ -34,21 +34,17 @@ export class PlayerCombatSystem {
 
     /**
      * Trigger cooldowns for an action
-     * @param actionId The specific action ID
-     * @param duration The cooldown duration for this specific action (ms)
-     * @param gcdDuration Optional Global Cooldown duration (ms)
+     * @param settings Map of cooldown keys to duration (ms) (e.g. { 'skill_dash': 500, 'global_cd': 1000 })
      */
-    performAction(actionId: string, duration: number, gcdDuration: number = 0): void {
+    performAction(settings: Record<string, number>): void {
         const now = Date.now();
         
-        // Set Specific Cooldown
-        const readyAt = now + duration;
-        this.player.cooldowns.set(actionId, readyAt);
-        // console.log(`[CD] SET ${actionId} cooldown to ${duration}ms. ReadyAt: ${readyAt}`)
-        
-        // Set Global Cooldown
-        if (gcdDuration > 0) {
-            this.player.globalCooldownUntil = Math.max(this.player.globalCooldownUntil, now + gcdDuration);
+        for (const [key, duration] of Object.entries(settings)) {
+            const readyAt = now + duration;
+            // Key logic: We only EXTEND the cooldown. If it's already on a longer cooldown, keep it.
+            // (Standard MMO behavior for shared cooldowns, though usually setting a fresh CD overwrites.
+            // Let's overwrite for responsiveness, trusting the config is correct).
+            this.player.cooldowns.set(key, readyAt);
         }
     }
 

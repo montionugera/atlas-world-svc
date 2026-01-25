@@ -18,6 +18,7 @@ export interface AttackProjectile {
   projectileRadius: number
   /** Maximum range (0 = calculate from physics based on speedUnitsPerSec and gravity) */
   atkRange: number
+  projectileType?: 'melee' | 'projectile' | 'spear'
 }
 
 export interface AttackArea {

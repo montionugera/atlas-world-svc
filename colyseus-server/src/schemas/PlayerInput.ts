@@ -14,6 +14,7 @@ export class PlayerInput {
   useItem: boolean = false
   interact: boolean = false
 
+
   // Camera input (for future use)
   lookX: number = 0
   lookY: number = 0
@@ -49,6 +50,7 @@ export class PlayerInput {
       case 'interact':
         this.interact = pressed
         break
+
     }
     this.lastInputTime = performance.now()
   }
@@ -76,6 +78,7 @@ export class PlayerInput {
     this.attack = false
     this.useItem = false
     this.interact = false
+
     this.lookX = 0
     this.lookY = 0
     this.isMoving = false

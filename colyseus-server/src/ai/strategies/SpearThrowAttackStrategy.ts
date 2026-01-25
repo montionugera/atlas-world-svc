@@ -16,6 +16,7 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
   private damage: number = SPEAR_THROWER_STATS.spearDamage
   public maxRange: number = SPEAR_THROWER_STATS.spearMaxRange
   private castTime: number = SPEAR_THROWER_STATS.castTime
+  private speed: number = SPEAR_THROWER_STATS.spearSpeed
 
   constructor(
     projectileManager: ProjectileManager,
@@ -24,6 +25,7 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
       damage?: number
       maxRange?: number
       castTime?: number
+      speed?: number
     }
   ) {
     this.projectileManager = projectileManager
@@ -32,6 +34,7 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
       this.damage = options.damage ?? this.damage
       this.maxRange = options.maxRange ?? this.maxRange
       this.castTime = options.castTime ?? this.castTime
+      this.speed = options.speed ?? this.speed
     }
   }
 
@@ -65,7 +68,9 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
       targetX,
       targetY,
       this.damage,
-      this.maxRange
+      this.maxRange,
+      undefined, // Default radius
+      this.speed
     )
 
     // Add to game state

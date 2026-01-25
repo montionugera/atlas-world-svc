@@ -69,11 +69,23 @@ export class BattleModule implements BattleActionProcessor {
     // Apply damage to target
     const targetDied = this.applyDamage(target, damage)
 
+    // Calculate impulse vector
+    // Force is applied in direction of attacker to target
+    const dx = target.x - attacker.x
+    const dy = target.y - attacker.y
+    const len = Math.sqrt(dx * dx + dy * dy) || 1
+    const nx = dx / len
+    const ny = dy / len
+    
+    const impulseMagnitude = attacker.getAttackImpulse()
+    const impulse = { x: nx * impulseMagnitude, y: ny * impulseMagnitude }
+
     // Emit battle damage produced event for knockback/FX
     try {
       eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
         attacker,
         taker: target,
+        impulse,
       })
     } catch {}
 
@@ -566,11 +578,23 @@ export class BattleModule implements BattleActionProcessor {
     }
 
     const died = this.applyDamage(target, payload.amount)
+    // Calculate impulse vector (approximate based on positions if available)
+    const dx = target.x - actor.x
+    const dy = target.y - actor.y
+    const len = Math.sqrt(dx * dx + dy * dy) || 1
+    const nx = dx / len
+    const ny = dy / len
+    
+    // Use actor's attack impulse calculation
+    const impulseMagnitude = actor.getAttackImpulse()
+    const impulse = { x: nx * impulseMagnitude, y: ny * impulseMagnitude }
+
     // Emit battle damage produced event
     try {
       eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
         attacker: actor,
         taker: target,
+        impulse,
       })
     } catch {}
     console.log(

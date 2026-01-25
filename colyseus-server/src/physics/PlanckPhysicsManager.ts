@@ -416,14 +416,23 @@ export class PlanckPhysicsManager {
           // Apply movement force toward desired velocity
           const accelerationGain = 15
 
-          // Calculate force needed: F = m * a toward desired velocity
+          // Standard P-Controller: simply try to reach desired velocity
+          // This naturally provides braking if we are going faster than desired (e.g. after a dash impulse)
           accumulatedForceX = bodyMass * accelerationGain * (desiredVx - bodyVelocity.x)
           accumulatedForceY = bodyMass * accelerationGain * (desiredVy - bodyVelocity.y)
         } else {
           // No input - apply friction force against current velocity
-          const surfaceFriction = 0.95 // Default friction
-          accumulatedForceX = -bodyVelocity.x * bodyMass * surfaceFriction
-          accumulatedForceY = -bodyVelocity.y * bodyMass * surfaceFriction
+          const friction = 10.0 // Strong friction for snappy stopping
+          
+          accumulatedForceX = -bodyVelocity.x * bodyMass * friction
+          accumulatedForceY = -bodyVelocity.y * bodyMass * friction
+
+          // Safety Cap: If velocity is extremely high (bug/glitch), hard clamp it
+          // This prevents "infinite slide" if impulse was too strong for the physics step
+          // Increased limit to 400 to support high-power dashes (160 impulse)
+          if (Math.abs(bodyVelocity.x) > 400 || Math.abs(bodyVelocity.y) > 400) {
+               body.setLinearVelocity(planck.Vec2(bodyVelocity.x * 0.5, bodyVelocity.y * 0.5))
+          }
           
           // Clear desired velocity property if no input
           if (!player.isBotMode) {
@@ -591,8 +600,22 @@ export class PlanckPhysicsManager {
     const nx = dirX / len
     const ny = dirY / len
 
-    const impulseMagnitude = 200 // ~2 units as requested
-    const impulse = planck.Vec2(nx * impulseMagnitude, ny * impulseMagnitude)
+    let impulseX, impulseY;
+
+    if (data.impulse) {
+        impulseX = data.impulse.x
+        impulseY = data.impulse.y
+    } else {
+        // Fallback if no impulse provided (legacy behavior, but using config)
+        const impulseMagnitude = PHYSICS_CONFIG.entities.player.mass * 200 // Legacy hardcoded 200 was high, assuming mass 1?
+        // Actually, the original code was just 200. Planck units are usually kg*m/s.
+        // Let's stick to the 200 constant as a fallback for now to match behavior if event data missing
+        const fallbackMagnitude = 200 
+        impulseX = nx * fallbackMagnitude
+        impulseY = ny * fallbackMagnitude
+    }
+
+    const impulse = planck.Vec2(impulseX, impulseY)
     takerBody.applyLinearImpulse(impulse, takerBody.getWorldCenter())
 
     // Debug: knockback application

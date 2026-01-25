@@ -94,7 +94,7 @@ export class ZoneEffectManager {
            if (ownerEntity && (ownerEntity as any).performAction && zone.skillId) {
                const skill = SKILLS[zone.skillId];
                if (skill) {
-                   (ownerEntity as any).performAction(skill.id, skill.cooldown, skill.gcd);
+                   (ownerEntity as any).performAction(skill.cooldownSetting);
                    // console.log(`⏳ COOLDOWN STARTED: ${skill.id} for ${ownerEntity.id} (after cast)`);
                }
            }

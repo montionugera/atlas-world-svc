@@ -48,6 +48,7 @@ export interface BattleHealData {
 export interface DamageProducedData {
   attacker: WorldLife
   taker: WorldLife
+  impulse?: { x: number; y: number }
 }
 
 export type RoomEventData =

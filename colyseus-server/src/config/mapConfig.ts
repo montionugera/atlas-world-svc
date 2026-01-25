@@ -23,52 +23,52 @@ export interface MobSpawnArea {
 export const MAP_CONFIG = {
   // Define mob spawn areas
   mobSpawnAreas: [
-    // Center area - balanced mobs
+    // Center area - balanced mobs (Target 500,500)
     {
       id: 'center_courtyard',
-      x: 350,
-      y: 250,
-      width: 300,
-      height: 300,
+      x: 400,
+      y: 400,
+      width: 200,
+      height: 200,
       mobType: 'balanced',
       count: 3
     },
     {
       id: 'boss_area',
       x: 450,
-      y: 350,
+      y: 450,
       width: 100,
       height: 100,
       mobType: 'double_attacker',
       count: 3
     },
-    // North icy area - aggressive mobs
+    // North icy area - aggressive mobs (Just North)
     {
       id: 'north_ice_fields',
-      x: 100,
-      y: 100,
+      x: 400,
+      y: 250,
       width: 200,
-      height: 200,
+      height: 150,
       mobType: 'aggressive',
       count: 2
     },
-    // South mud pit - defensive mobs
+    // South mud pit - defensive mobs (Just South)
     {
       id: 'south_mud_pit',
-      x: 100,
-      y: 700,
-      width: 250,
-      height: 200,
+      x: 400,
+      y: 600,
+      width: 200,
+      height: 150,
       mobType: 'defensive',
       count: 2
     },
-    // East sand dunes - spear throwers
+    // East sand dunes - spear throwers (Just East)
     {
       id: 'east_dunes',
-      x: 700,
-      y: 300,
-      width: 200,
-      height: 400,
+      x: 550,
+      y: 400,
+      width: 150,
+      height: 200,
       mobType: 'spear_thrower',
       count: 4
     }

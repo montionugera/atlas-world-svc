@@ -63,7 +63,9 @@ export class DoubleAttackStrategy implements AttackStrategy {
           const targetX = mob.x + Math.cos(heading) * range
           const targetY = mob.y + Math.sin(heading) * range
           
-          if (char.speedUnitsPerSec >= 80) {
+          const projectileType = char.projectileType || 'spear'
+
+          if (projectileType === 'melee') {
               const projectile = this.projectileManager.createMelee(
                   mob,
                   targetX,
@@ -75,13 +77,16 @@ export class DoubleAttackStrategy implements AttackStrategy {
               )
               this.gameState.projectiles.set(projectile.id, projectile)
           } else {
+              // Default to 'spear' (projectile)
               const projectile = this.projectileManager.createSpear(
                   mob,
                   targetX,
                   targetY,
                   attack.atkBaseDmg,
                   char.atkRange || 10,
-                  char.projectileRadius
+                  char.projectileRadius,
+                  char.speedUnitsPerSec,
+                  projectileType
               )
               this.gameState.projectiles.set(projectile.id, projectile)
           }

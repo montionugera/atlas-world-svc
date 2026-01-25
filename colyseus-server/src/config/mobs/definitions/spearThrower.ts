@@ -42,7 +42,7 @@ export const spearThrower: MobTypeConfig = {
             projectile: {
               speedUnitsPerSec: SPEAR_THROWER_STATS.spearSpeed,
               projectileRadius: SPEAR_THROWER_STATS.projectileRadius,
-              atkRange: 0, // Will be calculated based on radius and physics
+              atkRange: SPEAR_THROWER_STATS.spearMaxRange,
             },
           },
         },

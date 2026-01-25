@@ -5,10 +5,12 @@ import { Player } from './Player'
 import { BattleManager } from '../modules/BattleManager'
 import { eventBus, RoomEventType, BattleAttackData } from '../events/EventBus'
 import { MOB_STATS } from '../config/combatConfig'
+import { GAME_CONFIG } from '../config/gameConfig'
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { IAgent } from '../ai/interfaces/IAgent'
 import { AttackDefinition, calculateEffectiveAttackRange } from '../config/mobTypesConfig'
 import { BehaviorState } from '../ai/behaviors/BehaviorState'
+import { MobCombatSystem } from '../systems/MobCombatSystem'
 // Removed global BattleManager singleton - now using room-scoped instances
 
 export class Mob extends WorldLife implements IAgent {
@@ -59,6 +61,9 @@ export class Mob extends WorldLife implements IAgent {
   // Cleanup attributes (server-only)
   cantRespawn: boolean = false // Flag: this mob cannot be respawned
   readyToRemove: boolean = false // Flag: trigger immediate removal
+  
+  // Systems
+  combatSystem: MobCombatSystem
 
   /**
    * Check if mob is ready to be permanently removed
@@ -164,9 +169,13 @@ export class Mob extends WorldLife implements IAgent {
     // Initialize base wind down from options or default
     this.baseWindDownTime = options.atkWindDownTime ?? MOB_STATS.atkWindDownTime
 
+
     if (options.rotationSpeed !== undefined) {
       this.rotationSpeed = options.rotationSpeed
     }
+
+    // Initialize systems
+    this.combatSystem = new MobCombatSystem(this)
   }
 
   // Override WorldLife update to include game logic
@@ -266,46 +275,11 @@ export class Mob extends WorldLife implements IAgent {
     }
   }
 
-  // Helper: Calculate movement direction toward target
-  private calculateDirectionToTarget(target: { x: number; y: number }): { x: number; y: number } {
-    const dx = target.x - this.x
-    const dy = target.y - this.y
-    const distance = Math.hypot(dx, dy) || 1
-    return { x: dx / distance, y: dy / distance }
-  }
 
-  // Helper: Calculate movement direction away from target
-  private calculateDirectionAwayFromTarget(target: { x: number; y: number }): { x: number; y: number } {
-    const dx = this.x - target.x
-    const dy = this.y - target.y
-    const distance = Math.hypot(dx, dy) || 1
-    return { x: dx / distance, y: dy / distance }
-  }
 
-  // Compute steering impulse to move current physics velocity toward desired velocity
-  // Returns an impulse vector already scaled by mass and clamped
-  computeSteeringImpulse(params: {
-    currentVelocity: { x: number; y: number }
-    desiredVelocity: { x: number; y: number }
-    mass: number
-    gain?: number // tuning factor for responsiveness
-    maxImpulsePerTick?: number // safety clamp
-  }): { x: number; y: number } {
-    const { currentVelocity, desiredVelocity, mass } = params
-    const gain = params.gain ?? 0.2
-    const maxImpulse = params.maxImpulsePerTick ?? mass * 1.0
-    const steerX = desiredVelocity.x - currentVelocity.x
-    const steerY = desiredVelocity.y - currentVelocity.y
-    let impulseX = steerX * mass * gain
-    let impulseY = steerY * mass * gain
-    const mag = Math.hypot(impulseX, impulseY)
-    if (mag > maxImpulse) {
-      const s = maxImpulse / (mag || 1)
-      impulseX *= s
-      impulseY *= s
-    }
-    return { x: impulseX, y: impulseY }
-  }
+
+
+
 
   // Override boundary physics for mobs (bounce instead of clamp)
   applyBoundaryPhysics(width: number = 20, height: number = 20) {
@@ -407,167 +381,11 @@ export class Mob extends WorldLife implements IAgent {
     players: Map<string, any>,
     roomId?: string
   ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
-    // Only process attacks if we're in attack behavior
-    if (this.currentBehavior !== BehaviorState.ATTACK || !this.currentAttackTarget) {
-      return { attacked: false }
-    }
-
-    const targetPlayer = players.get(this.currentAttackTarget)
-    if (!targetPlayer || !targetPlayer.isAlive) {
-      // Target is dead or doesn't exist, clear attack target
-      this.currentAttackTarget = ''
-      this.currentBehavior = BehaviorState.WANDER // Fallback to wander
-      this.isCasting = false
-      this.castDuration = 0
-      this.castStartTime = 0
-      return { attacked: false }
-    }
-
-    // Update target position for heading calculation
-    this.targetX = targetPlayer.x
-    this.targetY = targetPlayer.y
-
-    // Use attack strategies if available
-    if (this.attackStrategies.length > 0) {
-      return this.updateAttackWithStrategies(targetPlayer, roomId || '', players)
-    }
-
-    // Legacy behavior: melee attack (for backward compatibility)
-    if (!this.canAttack()) {
-      return { attacked: false }
-    }
-
-    const distanceToTargetPlayer = this.getDistanceTo(targetPlayer)
-    const effectiveMeleeRange = this.attackRange + this.radius + targetPlayer.radius
-    if (distanceToTargetPlayer > effectiveMeleeRange) {
-      // Target moved out of range, switch to chase behavior
-      console.log(
-        `🎯 MOB ${this.id}: Target out of range (${distanceToTargetPlayer.toFixed(2)} > ${effectiveMeleeRange.toFixed(2)}), switching to chase`
-      )
-      this.currentBehavior = BehaviorState.CHASE
-      this.currentChaseTarget = this.currentAttackTarget
-      this.currentAttackTarget = ''
-      return { attacked: false }
-    }
-
-    // Emit attack event - let BattleManager handle all battle logic
-    const attackData: BattleAttackData = {
-      actorId: this.id,
-      targetId: targetPlayer.id,
-      damage: this.attackDamage,
-      range: this.attackRange,
-      roomId: roomId || ''
-    }
-
-    // Emit the battle attack event
-    eventBus.emitRoomEvent(roomId || '', RoomEventType.BATTLE_ATTACK, attackData)
-    console.log(
-      `📡 MOB ${this.id} emitted battle attack event for ${targetPlayer.id}`
-    )
-
-    return { attacked: true, targetId: targetPlayer.id, eventEmitted: true }
+    return this.combatSystem.update(GAME_CONFIG.tickRate, players, roomId || '')
   }
 
-  // Helper: Calculate melee effective range (includes mob and target radii)
-  private calculateMeleeRange(target: Player): number {
-    return this.attackRange + this.radius + target.radius
-  }
 
-  // Helper: Get strategy's effective range
-  private getStrategyRange(strategy: AttackStrategy, target: Player): number {
-    if (strategy.name === 'melee') {
-      return this.calculateMeleeRange(target)
-    }
-    return (strategy as any).maxRange || this.attackRange
-  }
 
-  // Helper: Sort strategies by priority (melee first, then by range)
-  private sortStrategiesByPriority(strategies: AttackStrategy[], target: Player): AttackStrategy[] {
-    return [...strategies].sort((a, b) => {
-      // Instant attacks (0 cast time) have priority
-      const aIsInstant = a.getCastTime() === 0
-      const bIsInstant = b.getCastTime() === 0
-      if (aIsInstant && !bIsInstant) return -1
-      if (!aIsInstant && bIsInstant) return 1
-      
-      // If same cast time, prefer shorter range (melee typically shorter)
-      const aRange = this.getStrategyRange(a, target)
-      const bRange = this.getStrategyRange(b, target)
-      return aRange - bRange
-    })
-  }
-
-  // Helper: Handle casting phase completion
-  private handleCastingComplete(
-    targetPlayer: Player,
-    roomId: string,
-    currentTimeMs: number
-  ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } | null {
-    if (!this.currentAttackStrategy) return null
-
-    console.log(`🎯 DEBUG: ${this.id} casting complete, executing ${this.currentAttackStrategy.name} attack`)
-    const attackExecuted = this.currentAttackStrategy.execute(this, targetPlayer, roomId)
-    
-    if (attackExecuted) {
-      this.isCasting = false
-      this.castDuration = 0
-      this.castStartTime = 0
-      this.currentAttackStrategy = null
-      this.lastAttackTime = performance.now()
-      this.isAttacking = true
-      this.attackAnimationStartTime = performance.now()
-      return { attacked: true, targetId: targetPlayer.id, eventEmitted: true }
-    } else {
-      console.log(`❌ DEBUG: ${this.id} strategy.execute() returned false`)
-      this.isCasting = false
-      this.castDuration = 0
-      this.castStartTime = 0
-      this.currentAttackStrategy = null
-      return null
-    }
-  }
-
-  // Helper: Check if casting is complete
-  private checkCastingPhase(
-    targetPlayer: Player,
-    roomId: string
-  ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } | null {
-    if (!this.isCasting || this.castStartTime === 0) return null
-
-    const currentTimeMs = Date.now()
-    const castDurationMs = this.currentAttackStrategy?.getCastTime() || 0
-    const castElapsedMs = currentTimeMs - this.castStartTime
-
-    if (castElapsedMs >= castDurationMs) {
-      return this.handleCastingComplete(targetPlayer, roomId, currentTimeMs)
-    }
-
-    // Still casting
-    return { attacked: false }
-  }
-
-  // State transition: Start casting for a strategy
-  public startCasting(strategy: AttackStrategy, currentTimeMs: number): void {
-    const castTime = strategy.getCastTime()
-    console.log(`⏳ DEBUG: ${this.id} starting casting for ${strategy.name} (${castTime}ms)`)
-    this.isCasting = true
-    this.castDuration = castTime
-    this.isAttacking = false // Cancel any previous attack animation (combo flow)
-    this.castStartTime = currentTimeMs
-    this.currentAttackStrategy = strategy
-  }
-
-  // State transition: Start attacking (instant attack executed)
-  private startAttacking(targetId?: string, currentTimeMs?: number): void {
-    console.log(`⚡ DEBUG: ${this.id} executing instant attack`)
-    this.isAttacking = true
-    this.attackAnimationStartTime = performance.now()
-    this.lastAttackTime = performance.now() // Update cooldown timer for instant attacks
-    this.lastCooldownState = false
-    if (currentTimeMs !== undefined) {
-      this.lastDebugLogTime = currentTimeMs
-    }
-  }
 
   // Add attacks to the timeline
   public enqueueAttacks(
@@ -576,208 +394,10 @@ export class Mob extends WorldLife implements IAgent {
       attacks: AttackDefinition[], 
       startTime: number
   ): void {
-      this.attackQueue = [] // Clear existing queue (new combo overrides old)
-      let currentTime = startTime
-
-      attacks.forEach((attack, index) => {
-          // Calculate when this attack should actually fire (end of its cast)
-          const fireTime = currentTime + attack.atkWindUpTime
-          
-          this.attackQueue.push({
-              executionTime: fireTime,
-              attackDef: attack,
-              strategy: strategy,
-              targetId: targetId
-          })
-
-          // Next attack starts after this one finishes (fireTime becomes start of next cast)
-          // (assuming sequential casting. If there are delays, they should be in castingTimeInMs of the *next* attack or separate delay)
-          // For now, based on DoubleAttack, the delay IS the cast time of the second attack.
-          currentTime = fireTime
-      })
-
-      // Set initial casting state if we have a queue
-      if (this.attackQueue.length > 0) {
-          const firstAttack = this.attackQueue[0]
-          // If the first attack is in the future, we are casting
-          if (firstAttack.executionTime > Date.now()) {
-             this.isCasting = true
-             this.castDuration = firstAttack.attackDef.atkWindUpTime || 0
-             this.castStartTime = Date.now()
-             this.currentAttackStrategy = strategy
-             this.isAttacking = false
-          }
-      }
+      this.combatSystem.enqueueAttacks(strategy, targetId, attacks, startTime)
   }
 
-  // Process the attack queue
-  private processAttackQueue(players: Map<string, any>, roomId: string): { attacked: boolean; targetId?: string; eventEmitted?: boolean } | null {
-      if (this.attackQueue.length === 0) return null
 
-      const now = Date.now()
-      const nextAttack = this.attackQueue[0] // Peek
 
-      // Check if it's time to fire
-      if (now >= nextAttack.executionTime) {
-          // Dequeue
-          this.attackQueue.shift()
-          
-          const targetPlayer = players.get(nextAttack.targetId) as Player
-          if (targetPlayer /* && targetPlayer.isAlive */) { 
-               // Execute
-               if (typeof (nextAttack.strategy as any).performAttack === 'function') {
-                   (nextAttack.strategy as any).performAttack(this, targetPlayer, nextAttack.attackDef)
-               } else {
-                   console.warn(`⚠️ Mob ${this.id}: Strategy ${nextAttack.strategy.name} does not support queued execution via performAttack`)
-               }
 
-               this.lastAttackTime = performance.now()
-               this.isAttacking = true
-               this.attackAnimationStartTime = performance.now()
-
-               // Update attack delay for the NEXT attack cycle based on this attack's cooldown
-               // If cooldown is defined, use it directly (it's the full cycle time)
-               // Otherwise, calculate Total Delay = WindUp + WindDown
-               if (nextAttack.attackDef.cooldown !== undefined) {
-                   this.attackDelay = nextAttack.attackDef.cooldown
-               } else {
-                   const windUp = nextAttack.attackDef.atkWindUpTime || 0
-                   this.attackDelay = windUp + this.baseWindDownTime
-               }
-          }
-
-          // Update State for NEXT attack
-          if (this.attackQueue.length > 0) {
-              // Still have attacks pending
-              this.isCasting = true
-              this.castStartTime = now // Start casting the next one
-              this.castDuration = this.attackQueue[0].attackDef.atkWindUpTime || 0
-          } else {
-              // Queue empty
-              this.isCasting = false
-              this.castDuration = 0
-              this.currentAttackStrategy = null
-          }
-
-          return { attacked: true, targetId: nextAttack.targetId, eventEmitted: true }
-      } else {
-          // Waiting for attack time
-          this.isCasting = true // Ensure casting is true while waiting
-          return { attacked: false }
-      }
-  }
-
-  // Helper: Check if target is out of attack range
-  private checkTargetOutOfRange(targetPlayer: Player): boolean {
-    // If we are currently casting, DO NOT check range or switch behavior
-    // We want the cast to finish regardless of where the target moves
-    if (this.isCasting) return false
-
-    const distance = this.getDistanceTo(targetPlayer)
-    const maxRange = Math.max(
-      ...this.attackStrategies.map(s => this.getStrategyRange(s, targetPlayer))
-    )
-    
-    if (distance > maxRange) {
-      console.log(`🎯 DEBUG: ${this.id} target out of range (${distance.toFixed(2)} > ${maxRange.toFixed(2)}), switching to chase`)
-      this.currentBehavior = BehaviorState.CHASE
-      this.currentChaseTarget = this.currentAttackTarget
-      this.currentAttackTarget = ''
-      this.isCasting = false
-      this.castDuration = 0
-      this.castStartTime = 0
-      this.lastCooldownState = false
-      return true
-    }
-    return false
-  }
-
-  // Update attack using attack strategies
-  private updateAttackWithStrategies(
-    targetPlayer: Player,
-    roomId: string,
-    players: Map<string, any>
-  ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
-    const currentTimeMs = Date.now()
-    const currentTimePerf = performance.now()
-
-    // 1. Process Attack Queue (High Priority)
-    const queueResult = this.processAttackQueue(players, roomId)
-    if (queueResult !== null) {
-        // If queue returns a result (attacked OR waiting), we respect it.
-        // If it returns {attacked: false} it means we are "casting/waiting" for queue.
-        return queueResult
-    }
-
-    // Check casting phase first (Legacy/Fallback for non-queue strategies)
-    // If I use queue for everything eventually, this can go.
-    // For now, keep it for other strategies not using queue yet.
-    const castingResult = this.checkCastingPhase(targetPlayer, roomId)
-    if (castingResult !== null) {
-      return castingResult
-    }
-
-    // Sort strategies by priority
-    const strategiesByPriority = this.sortStrategiesByPriority(this.attackStrategies, targetPlayer)
-    
-    // Check cooldown and prepare debug logging
-    const isCooldownReady = this.canAttack()
-    const cooldownStateChanged = isCooldownReady !== this.lastCooldownState
-    const shouldLogDebug = cooldownStateChanged && isCooldownReady
-    
-    if (shouldLogDebug) {
-      const cooldownElapsed = currentTimePerf - this.lastAttackTime
-      const distance = this.getDistanceTo(targetPlayer)
-      console.log(`🔍 DEBUG: ${this.id} cooldown ready, checking ${strategiesByPriority.length} strategies`)
-      console.log(`  📊 Cooldown: elapsed=${cooldownElapsed.toFixed(0)}ms, delay=${this.attackDelay}ms`)
-      console.log(`  📏 Distance: ${distance.toFixed(2)} units to target`)
-      this.lastCooldownState = isCooldownReady
-    }
-    
-    // Try each strategy in priority order
-    for (const strategy of strategiesByPriority) {
-      const result = strategy.attemptExecute(this, targetPlayer, roomId)
-      
-      if (!result.canExecute) {
-        continue // Try next strategy
-      }
-
-      // Log strategy details if debug logging is enabled
-      if (shouldLogDebug) {
-        const distance = this.getDistanceTo(targetPlayer)
-        const range = this.getStrategyRange(strategy, targetPlayer)
-        const castTime = strategy.getCastTime()
-        console.log(`  🔍 Strategy "${strategy.name}": canExecute=true, distance=${distance.toFixed(2)}, effectiveRange=${range.toFixed(2)}, castTime=${castTime}ms`)
-      }
-
-      // Apply state transitions based on strategy result
-      if (result.needsCasting) {
-        this.startCasting(strategy, currentTimeMs)
-        return { attacked: false }
-      } else if (result.executed) {
-        this.startAttacking(result.targetId, currentTimeMs)
-        return { attacked: true, targetId: result.targetId, eventEmitted: true }
-      } else {
-        // Strategy can execute but didn't (shouldn't happen, but handle gracefully)
-        console.log(`❌ DEBUG: ${this.id} ${strategy.name}.attemptExecute() returned canExecute=true but executed=false`)
-        return { attacked: false }
-      }
-    }
-
-    // No strategy can execute - check if target out of range
-    if (this.checkTargetOutOfRange(targetPlayer)) {
-      return { attacked: false }
-    }
-
-    // Target in range but no strategy can execute (e.g., cooldown not ready)
-    if (shouldLogDebug) {
-      console.log(`⚠️ DEBUG: ${this.id} no strategy can execute, but target is in range`)
-    }
-    
-    if (cooldownStateChanged) {
-      this.lastCooldownState = isCooldownReady
-    }
-    
-    return { attacked: false }
-  }
 }

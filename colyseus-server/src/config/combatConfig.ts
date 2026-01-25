@@ -86,15 +86,15 @@ export function calculateSpearMaxRange(
 
 // Spear thrower mob stats
 export const SPEAR_THROWER_STATS = {
-  spearSpeed: 36, // max units/second
+  spearSpeed: 25, // max units/second (Reduced to ~30% of 80 per user request)
   spearDamage: 5,
   // Calculate max range using physics: sqrt(2 * h / g) * v
   // Default visual height = 2 * default mob radius (4) = 8
   // This is used for both attack decision range and projectile max travel distance
-  spearMaxRange: calculateSpearMaxRange(2 * MOB_STATS.radius, PROJECTILE_GRAVITY, 36),
+  spearMaxRange: calculateSpearMaxRange(2 * MOB_STATS.radius, PROJECTILE_GRAVITY, 25),
   castTime: 500, // ms
   projectileRadius: 0.5, // collision radius
-  projectileLifetime: 2000, // ms before despawn after sticking
+  projectileLifetime: 3000, // ms before despawn after sticking
   deflectionSpeedBoost: 1.2, // multiplier when projectile is deflected (20% boost)
   deflectionConeAngle: Math.PI / 4, // 45 degrees in radians
 } as const

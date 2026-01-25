@@ -58,6 +58,7 @@ export class ProjectileManager {
       vy,
       mob.id,
       damage,
+      'melee', // type
       maxRange,
       radius,
       MELEE_PROJECTILE_STATS.projectileLifetime
@@ -76,7 +77,9 @@ export class ProjectileManager {
     targetY: number, 
     damage: number, 
     maxRange: number = SPEAR_THROWER_STATS.spearMaxRange,
-    radius: number = SPEAR_THROWER_STATS.projectileRadius
+    radius: number = SPEAR_THROWER_STATS.projectileRadius,
+    speed: number = this.maxSpeed,
+    type: string = 'spear'
   ): Projectile {
     const dx = targetX - mob.x
     const dy = targetY - mob.y
@@ -85,8 +88,8 @@ export class ProjectileManager {
     // Calculate angle to target
     const angle = Math.atan2(dy, dx)
     
-    // Use configurable max speed
-    const maxSpeed = this.maxSpeed
+    // Use provided speed
+    const maxSpeed = speed
     
     // Calculate initial velocity components
     const vx = maxSpeed * Math.cos(angle)
@@ -107,6 +110,7 @@ export class ProjectileManager {
       vy,
       mob.id,
       damage,
+      type,
       maxRange,
       radius,
       SPEAR_THROWER_STATS.projectileLifetime

@@ -13,6 +13,7 @@ import { registerRoom, unregisterRoom } from '../api'
 import * as planck from 'planck'
 import { SKILLS } from '../config/skills'
 
+
 export interface GameRoomOptions {
   mapId?: string
   name?: string
@@ -137,18 +138,40 @@ export class GameRoom extends Room<GameState> {
                return;
            }
 
-           // Check Cooldowns
-           // Note: Cooldowns are now triggered upon successful activation (in ZoneEffectManager),
-           // but we still check readiness here to prevent starting a cast if not ready.
-           if (player.canPerformAction(skill.id)) {
+           // Check Cooldowns (checks all potential blockers like self-CD and GCD)
+           if (player.canPerformAction(skill.consideringCooldown)) {
                // Double check: Prevent casting if already casting
                if (Date.now() < player.castingUntil) {
                    console.log(`⏳ ACTION: Already casting, ignored ${skill.id} for player ${player.id}`);
                    return;
                }
 
+
+
                console.log(`✨ ACTION: Player ${player.id} casting ${skill.name} (${skill.id})`)
                
+               // Check for Instant Physics Effects (like Impulse/Dash)
+               const impulseEffect = skill.effects.find(e => e.type === 'impulse_caster');
+               if (impulseEffect) {
+                   // Apply Impulse immediately
+                   const body = this.physicsManager.getBody(player.id)
+                   if (body) {
+                       const mass = body.getMass()
+                       const impulseMagnitude = mass * impulseEffect.value
+                       // Use heading (or input direction if valid?)
+                       // For consistency with typical dashes, use facing direction
+                       const impulseX = Math.cos(player.heading) * impulseMagnitude
+                       const impulseY = Math.sin(player.heading) * impulseMagnitude
+                       
+                       this.physicsManager.applyImpulseToBody(player.id, { x: impulseX, y: impulseY })
+                       console.log(`💨 SKILL DASH: Player ${player.id} dashed with impulse ${impulseEffect.value}`)
+                   }
+                   
+                   // Trigger Cooldowns Immediately for instant skills (Apply all cooldown settings)
+                   player.performAction(skill.cooldownSetting)
+                   return; // Skip Zone Effect creation for instant self-physics skills
+               }
+
                // Target Position Logic
                let targetX = player.x;
                let targetY = player.y;
@@ -189,14 +212,16 @@ export class GameRoom extends Room<GameState> {
                
                this.state.zoneEffects.set(zone.id, zone)
                
-               // Trigger Cooldowns from Skill Stats - MOVED TO ZONE ACTIVATION
-               // player.performAction(skill.id, skill.cooldown, skill.gcd)
+               // Trigger Cooldowns from Skill Stats - MOVED TO ZONE ACTIVATION?
+               // Wait, ZoneEffectManager handles *effects*, but Cooldowns are player state.
+               // We should set cooldowns HERE on success.
+               player.performAction(skill.cooldownSetting)
                
                player.castingUntil = Date.now() + skill.skillCastingTime // Lock movement for cast time
                player.castDuration = skill.skillCastingTime // Sync duration to client
            } else {
                // Optional: Send cooldown notification to client
-               console.log(`⏳ ACTION: Cooldown active for ${skill.name} on player ${player.id}`)
+               // console.log(`⏳ ACTION: Cooldown active for ${skill.name} on player ${player.id}`)
            }
         }
       }
