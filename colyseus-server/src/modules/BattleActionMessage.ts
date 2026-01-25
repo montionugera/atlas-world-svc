@@ -12,11 +12,21 @@ export interface BattleActionMessage {
   priority?: number // Action priority (higher = more important)
 }
 
+export interface ProjectileDetail {
+  id: string
+  type: string
+  damage: number
+  speed?: number
+  vx?: number
+  vy?: number
+}
+
 export interface AttackActionPayload {
   damage: number
   range: number
   direction?: { x: number; y: number }
   attackType?: string // melee, ranged, magic, etc.
+  projectileDetail?: ProjectileDetail
 }
 
 export interface HealActionPayload {

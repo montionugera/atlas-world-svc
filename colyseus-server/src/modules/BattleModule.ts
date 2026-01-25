@@ -56,9 +56,9 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Process a direct attack between two entities (core attack logic)
-  processAttack(attacker: WorldLife, target: WorldLife): AttackEvent | null {
+  processAttack(attacker: WorldLife, target: WorldLife, payload?: AttackActionPayload): AttackEvent | null {
     // Validate attack conditions
-    const attackCheck = this.canAttack(attacker, target)
+    const attackCheck = this.canAttack(attacker, target, payload)
     if (!attackCheck.canAttack) {
       return null
     }
@@ -70,14 +70,29 @@ export class BattleModule implements BattleActionProcessor {
     const targetDied = this.applyDamage(target, damage)
 
     // Calculate impulse vector
-    // Force is applied in direction of attacker to target
-    const dx = target.x - attacker.x
-    const dy = target.y - attacker.y
-    const len = Math.sqrt(dx * dx + dy * dy) || 1
-    const nx = dx / len
-    const ny = dy / len
+    let nx, ny;
     
-    const impulseMagnitude = attacker.getAttackImpulse()
+    // Scale impulse with actual damage dealt
+    const { GAME_CONFIG } = require('../config/gameConfig')
+    const rawImpulse = damage * GAME_CONFIG.attackImpulseMultiplier
+    const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse))
+    
+    if (payload?.projectileDetail?.vx !== undefined && payload?.projectileDetail?.vy !== undefined) {
+        // Use projectile velocity for impulse direction
+        const vx = payload.projectileDetail.vx
+        const vy = payload.projectileDetail.vy
+        const speed = Math.sqrt(vx * vx + vy * vy) || 1
+        nx = vx / speed
+        ny = vy / speed
+    } else {
+        // Fallback to attacker->target direction
+        const dx = target.x - attacker.x
+        const dy = target.y - attacker.y
+        const len = Math.sqrt(dx * dx + dy * dy) || 1
+        nx = dx / len
+        ny = dy / len
+    }
+    
     const impulse = { x: nx * impulseMagnitude, y: ny * impulseMagnitude }
 
     // Emit battle damage produced event for knockback/FX
@@ -115,13 +130,18 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Check if attacker can attack target
-  canAttack(attacker: WorldLife, target: WorldLife): { canAttack: boolean; reason?: string } {
+  canAttack(attacker: WorldLife, target: WorldLife, payload?: AttackActionPayload): { canAttack: boolean; reason?: string } {
     if (!target.isAlive) {
       return { canAttack: false, reason: `target ${target.id} is not alive` }
     }
 
     if (!attacker.isAlive) {
       return { canAttack: false, reason: `attacker ${attacker.id} is not alive` }
+    }
+    
+    // Skip range/cooldown checks for projectiles (already validated by collision)
+    if (payload?.attackType === 'projectile' || payload?.projectileDetail) {
+        return { canAttack: true }
     }
 
     // Check attack cooldown using high-precision timing
@@ -511,11 +531,11 @@ export class BattleModule implements BattleActionProcessor {
     console.log(`📨 BATTLE: Processing attack action from ${actor.id} to ${target.id}`)
 
     // Process the attack (processAttack already validates range via canAttack())
-    const attackEvent = this.processAttack(actor, target)
+    const attackEvent = this.processAttack(actor, target, payload)
     if (attackEvent) {
       console.log(`✅ BATTLE: Attack processed successfully, ${attackEvent.damage} damage dealt`)
     } else {
-      const attackCheck = this.canAttack(actor, target)
+      const attackCheck = this.canAttack(actor, target, payload)
       console.log(`❌ BATTLE: Attack failed - ${attackCheck.reason || 'unknown reason'}`)
     }
     return attackEvent !== null

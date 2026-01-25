@@ -15,6 +15,10 @@ export class BattleManager {
   private attackListener: ((data: BattleAttackData) => void) | null = null
   private healListener: ((data: BattleHealData) => void) | null = null
 
+  // Batch processing configuration
+  private batchInterval = 100 // Reduced to 100ms per user request (was 200)
+  private lastProcessTime = 0
+
   constructor(roomId: string, gameState: GameState) {
     this.roomId = roomId
     this.battleModule = new BattleModule(gameState)
@@ -140,10 +144,21 @@ export class BattleManager {
 
   // Process all pending action messages
   async processActionMessages(): Promise<number> {
+    const now = Date.now()
+    if (now - this.lastProcessTime < this.batchInterval) {
+      return 0
+    }
+    this.lastProcessTime = now
+
     const messages = this.actionQueue.getAllMessages()
     if (messages.length === 0) return 0
 
     let processedCount = 0
+    
+    // Sort messages by priority (higher priority first)
+    // 3: Kill, 2: Heal/Respawn, 1: Attack
+    messages.sort((a, b) => (b.priority || 0) - (a.priority || 0))
+
     for (const message of messages) {
       try {
         const success = await this.battleModule.processAction(message)

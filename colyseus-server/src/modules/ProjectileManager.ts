@@ -3,6 +3,7 @@ import { Mob } from '../schemas/Mob'
 import { Player } from '../schemas/Player'
 import { WorldLife } from '../schemas/WorldLife'
 import { BattleModule } from './BattleModule'
+import { BattleManager } from './BattleManager'
 import { GameState } from '../schemas/GameState'
 import { SPEAR_THROWER_STATS, MELEE_PROJECTILE_STATS } from '../config/combatConfig'
 import { PROJECTILE_GRAVITY } from '../config/physicsConfig'
@@ -14,9 +15,12 @@ export class ProjectileManager {
   private gravity: number = PROJECTILE_GRAVITY
   private maxSpeed: number = 2000 // Raised from 36 to support fast projectiles
 
-  constructor(gameState: GameState, battleModule: BattleModule) {
+  private battleManager?: BattleManager
+
+  constructor(gameState: GameState, battleModule: BattleModule, battleManager?: BattleManager) {
     this.gameState = gameState
     this.battleModule = battleModule
+    this.battleManager = battleManager
   }
 
   /**
@@ -146,29 +150,70 @@ export class ProjectileManager {
   handlePlayerCollision(projectile: Projectile, player: Player): void {
     if (projectile.hasHit) return // Already hit this target
     
-    // Apply damage directly via BattleModule
     const attacker = this.gameState.mobs.get(projectile.ownerId)
-    if (attacker && attacker.isAlive) {
-      // Use BattleModule to apply damage
-      const damage = this.battleModule.calculateDamage(
-        { attackDamage: projectile.damage } as WorldLife,
-        player
-      )
-      const targetDied = this.battleModule.applyDamage(player, damage, { eventId: projectile.id })
-      
-      // Emit battle damage produced event for knockback/FX (same as melee attacks)
-      try {
-        eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
-          attacker,
-          taker: player,
-        })
-      } catch {}
-      
-      if (targetDied) {
-        console.log(`💀 PROJECTILE: ${projectile.id} killed ${player.id}`)
-      } else {
-        console.log(`⚔️ PROJECTILE: ${projectile.id} hit ${player.id} for ${damage} damage`)
-      }
+    
+    // Route damage through BattleManager queue if available (throttled)
+    if (this.battleManager) {
+        // Create attack message
+        const message = BattleManager.createAttackMessage(
+            projectile.ownerId,
+            player.id,
+            projectile.damage,
+            projectile.radius * 2 // approx range
+        )
+        
+        // Add projectile info to payload
+        const payload = message.actionPayload as any
+        payload.projectileDetail = {
+            id: projectile.id,
+            type: projectile.type,
+            damage: projectile.damage,
+            vx: projectile.vx,
+            vy: projectile.vy
+        }
+        payload.attackType = 'projectile' 
+        
+        console.log(`📨 PROJECTILE: Queuing hit ${projectile.id} on ${player.id}`)
+        this.battleManager.addActionMessage(message)
+        
+    } else {
+        // Fallback: Apply damage directly via BattleModule (legacy/unthrottled)
+        if (attacker && attacker.isAlive) {
+          // Use BattleModule to apply damage
+          const damage = this.battleModule.calculateDamage(
+            { attackDamage: projectile.damage } as WorldLife,
+            player
+          )
+          const targetDied = this.battleModule.applyDamage(player, damage, { eventId: projectile.id })
+          
+          // Calculate impulse vector from projectile velocity
+          const vx = projectile.vx
+          const vy = projectile.vy
+          const speed = Math.sqrt(vx * vx + vy * vy) || 1
+          const nx = vx / speed
+          const ny = vy / speed
+            
+          const { GAME_CONFIG } = require('../config/gameConfig')
+          const rawImpulse = damage * GAME_CONFIG.attackImpulseMultiplier
+          const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse))
+          
+          const impulse = { x: nx * impulseMagnitude, y: ny * impulseMagnitude }
+
+          // Emit battle damage produced event for knockback/FX (same as melee attacks)
+          try {
+            eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
+              attacker,
+              taker: player,
+              impulse,
+            })
+          } catch {}
+          
+          if (targetDied) {
+            console.log(`💀 PROJECTILE: ${projectile.id} killed ${player.id}`)
+          } else {
+            console.log(`⚔️ PROJECTILE: ${projectile.id} hit ${player.id} for ${damage} damage`)
+          }
+        }
     }
     
     // Mark as hit (pierces through, but won't damage again)

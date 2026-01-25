@@ -11,8 +11,9 @@ export const GAME_CONFIG = {
   mobSpawnMargin: 10, // pixels from edges
 
   // Impulse calculation constants
-  attackImpulseMultiplier: 0.5, // Impulse = damage * multiplier
-  recoilImpulseMultiplier: 0.2, // Recoil = damage * multiplier
+  // Impulse calculation constants
+  attackImpulseMultiplier: 20, // Impulse = damage * multiplier (Doubled to 20 for impactful knockback)
+  recoilImpulseMultiplier: 10, // Recoil = damage * multiplier
   minImpulse: 1, // Minimum impulse force
-  maxImpulse: 20, // Maximum impulse force
+  maxImpulse: 2000, // Maximum impulse force
 } as const

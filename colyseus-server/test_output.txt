@@ -1,0 +1,83 @@
+  console.log
+    🧠 AI Module initialized
+
+      at console.log (src/tests/setup.ts:15:5)
+
+  console.log
+    🧠 AI Module started (tick-driven)
+
+      at console.log (src/tests/setup.ts:15:5)
+
+  console.log
+    💔 DAMAGE: player-1 took 9 damage, HP: 100 → 91
+
+      at console.log (src/tests/setup.ts:15:5)
+
+  console.log
+    ⚔️ PROJECTILE: proj-1 hit player-1 for 9 damage
+
+      at console.log (src/tests/setup.ts:15:5)
+
+  console.log
+    🧠 AI Module initialized
+
+      at console.log (src/tests/setup.ts:15:5)
+
+  console.log
+    🧠 AI Module started (tick-driven)
+
+      at console.log (src/tests/setup.ts:15:5)
+
+  console.log
+    💔 DAMAGE: player-1 took 9 damage, HP: 100 → 91
+
+      at console.log (src/tests/setup.ts:15:5)
+
+  console.log
+    ⚔️ PROJECTILE: proj-weird hit player-1 for 9 damage
+
+      at console.log (src/tests/setup.ts:15:5)
+
+FAIL src/tests/projectile-impulse.test.ts
+  Projectile Impulse Integration
+    ✕ should use projectile velocity for impulse direction (19 ms)
+    ✕ should use projectile velocity even if attacker direction disagrees (2 ms)
+
+  ● Projectile Impulse Integration › should use projectile velocity for impulse direction
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "test-room", "battle:dmgProduced", ObjectContaining {"attacker": ObjectContaining {"id": "mob-1"}, "impulse": ObjectContaining {"x": Any<Number>, "y": Any<Number>}, "taker": ObjectContaining {"id": "player-1"}}
+    Received: "test-room", "battle:dmgProduced", {"attacker": {"angle": 0, "angularVelocity": 0, "armor": 1, "attackDamage": 20, "attackDelay": 2000, "attackRange": 1.5, "battleStatuses": {}, "behaviorLockedUntil": 0, "castDuration": 0, "currentBehavior": "idle", "currentHealth": 100, "defense": 2, "density": 1.2, "heading": 0, "id": "mob-1", "isAlive": true, "isAttacking": false, "isCasting": false, "isMoving": false, "isStatic": false, "lastAttackTime": -1349.5330410000001, "lastAttackedTarget": "", "maxHealth": 100, "maxMoveSpeed": 20, "mobTypeId": "", "physicsBodyId": "", "radius": 4, "resistances": {}, "rotationSpeed": 3.141592653589793, "spawnAreaId": "", "tag": "idle", "tags": ["mob"], "vx": 0, "vy": 0, "x": 0, "y": 0}, "taker": {"angle": 0, "angularVelocity": 0, "armor": 0, "attackDamage": 25, "attackDelay": 900, "attackExecuteTime": 0, "attackRange": 3, "battleStatuses": {}, "behaviorLockedUntil": 0, "castDuration": 0, "castingUntil": 0, "cooldowns": {}, "currentAttackTarget": "", "currentBehavior": "idle", "currentHealth": 91, "defense": 1, "density": 0.8, "heading": 0, "id": "player-1", "isAlive": true, "isAttacking": false, "isBotMode": false, "isCasting": false, "isMoving": false, "isStatic": false, "lastAttackTime": -249.315791, "lastAttackedTarget": "", "maxHealth": 100, "maxLinearSpeed": 20, "maxMoveSpeed": 20, "name": "TestPlayer", "pendingAttack": false, "pendingAttackTargetId": "", "physicsBodyId": "", "radius": 1.3, "resistances": {}, "sessionId": "player-1", "settingGameplay": {"spawnX": 20, "spawnY": 0}, "tags": ["player"], "vx": 0, "vy": 0, "x": 20, "y": 0}}
+
+    Number of calls: 1
+
+      48 |         
+      49 |         // Verify event was emitted
+    > 50 |         expect(eventSpy).toHaveBeenCalledWith(
+         |                          ^
+      51 |             'test-room',
+      52 |             RoomEventType.BATTLE_DAMAGE_PRODUCED,
+      53 |             expect.objectContaining({
+
+      at Object.<anonymous> (src/tests/projectile-impulse.test.ts:50:26)
+
+  ● Projectile Impulse Integration › should use projectile velocity even if attacker direction disagrees
+
+    TypeError: Cannot read properties of undefined (reading 'x')
+
+      91 |         // Impulse should follow projectile velocity (Right, Positive X)
+      92 |         // Ignoring Attacker->Player direction (Up, Positive Y)
+    > 93 |         expect(eventData.impulse.x).toBeGreaterThan(0)
+         |                                  ^
+      94 |         expect(eventData.impulse.y).toBeCloseTo(0)
+      95 |     })
+      96 | })
+
+      at Object.<anonymous> (src/tests/projectile-impulse.test.ts:93:34)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 2 total
+Snapshots:   0 total
+Time:        0.539 s, estimated 1 s
+Ran all test suites matching /src\/tests\/projectile-impulse.test.ts/i.

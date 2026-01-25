@@ -62,7 +62,7 @@ export class GameRoom extends Room<GameState> {
     this.battleModule = new BattleModule(this.state)
 
     // Initialize projectile manager
-    this.projectileManager = new ProjectileManager(this.state, this.battleModule)
+    this.projectileManager = new ProjectileManager(this.state, this.battleModule, this.battleManager)
 
     // Initialize zone effect manager
     this.zoneEffectManager = new ZoneEffectManager(this.state, this.battleModule)
