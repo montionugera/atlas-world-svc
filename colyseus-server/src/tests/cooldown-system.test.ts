@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'bun:test'
+import { describe, it, expect, beforeEach } from '@jest/globals'
 import { Player } from '../schemas/Player'
 import { PlayerCombatSystem } from '../systems/PlayerCombatSystem'
 

@@ -208,17 +208,15 @@ export class AIWorldInterface {
       if ('decisionTimestamp' in agent) {
         (agent as any).decisionTimestamp = decision.timestamp;
       }
-
-      // If no physics manager/body, reflect desired velocity directly to maintain legacy behavior
-      // This is mostly for mobs without physics bodies or simple movement
-      if (
-        !this.physicsManager ||
-        !this.physicsManager.getBody ||
-        !this.physicsManager.getBody(agentId)
-      ) {
-         // Only apply if agent doesn't have its own velocity application logic
-         // For simple agents, we might still need this.
-         // But for Mob/Player, they handle it in applyBehaviorDecision
+      
+      // Apply desired velocity and behavior
+      if ('desiredVx' in agent) {
+        (agent as any).desiredVx = decision.velocity.x;
+        (agent as any).desiredVy = decision.velocity.y;
+      }
+      
+      if ('desiredBehavior' in agent) {
+        (agent as any).desiredBehavior = decision.behavior;
       }
     }
   }

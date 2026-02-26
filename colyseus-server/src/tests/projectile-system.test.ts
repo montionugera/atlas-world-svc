@@ -155,31 +155,82 @@ describe('Projectile System', () => {
   })
 
   describe('Projectile Collision', () => {
-    test('should damage player on collision', () => {
+    test('should damage entity on collision', () => {
       const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
       gameState.mobs.set(mob.id, mob)
 
       const initialHealth = player.currentHealth
-      projectileManager.handlePlayerCollision(projectile, player)
+      projectileManager.handleEntityCollision(projectile, player)
 
       expect(player.currentHealth).toBeLessThan(initialHealth)
       expect(projectile.hasHit).toBe(true)
     })
 
-    test('should not damage player twice (piercing)', () => {
+    test('should not damage entity twice (piercing)', () => {
       const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
       gameState.mobs.set(mob.id, mob)
 
       const initialHealth = player.currentHealth
-      projectileManager.handlePlayerCollision(projectile, player)
+      projectileManager.handleEntityCollision(projectile, player)
       const healthAfterFirst = player.currentHealth
 
       // Second collision should not damage
-      projectileManager.handlePlayerCollision(projectile, player)
+      projectileManager.handleEntityCollision(projectile, player)
 
       expect(player.currentHealth).toBe(healthAfterFirst)
+    })
+
+    test('should not damage owner', () => {
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'spear', 10)
+      gameState.projectiles.set(projectile.id, projectile)
+      gameState.mobs.set(mob.id, mob)
+
+      const initialHealth = mob.currentHealth
+      projectileManager.handleEntityCollision(projectile, mob)
+
+      // Owner should not take damage
+      expect(mob.currentHealth).toBe(initialHealth)
+      expect(projectile.hasHit).toBe(false)
+    })
+
+    test('should not damage entity in the same team', () => {
+      const alliedMob = new Mob({ id: 'mob-2', x: 105, y: 100 })
+      alliedMob.teamId = 'team-a'
+      mob.teamId = 'team-a'
+
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, mob.teamId)
+      
+      gameState.projectiles.set(projectile.id, projectile)
+      gameState.mobs.set(mob.id, mob)
+      gameState.mobs.set(alliedMob.id, alliedMob)
+
+      const initialHealth = alliedMob.currentHealth
+      projectileManager.handleEntityCollision(projectile, alliedMob)
+
+      // Ally should not take damage
+      expect(alliedMob.currentHealth).toBe(initialHealth)
+      expect(projectile.hasHit).toBe(false)
+    })
+
+    test('should damage entity in different team', () => {
+      const enemyMob = new Mob({ id: 'mob-3', x: 105, y: 100 })
+      enemyMob.teamId = 'team-b'
+      mob.teamId = 'team-a'
+
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, mob.teamId)
+      
+      gameState.projectiles.set(projectile.id, projectile)
+      gameState.mobs.set(mob.id, mob)
+      gameState.mobs.set(enemyMob.id, enemyMob)
+
+      const initialHealth = enemyMob.currentHealth
+      projectileManager.handleEntityCollision(projectile, enemyMob)
+
+      // Enemy should take damage
+      expect(enemyMob.currentHealth).toBeLessThan(initialHealth)
+      expect(projectile.hasHit).toBe(true)
     })
 
     test('should stick projectile on boundary collision', () => {
@@ -193,6 +244,32 @@ describe('Projectile System', () => {
       expect(projectile.vx).toBe(0)
       expect(projectile.vy).toBe(0)
       expect(projectile.stuckAt).toBeGreaterThan(0)
+    })
+
+    test('projectiles from same team should ignore each other', () => {
+      const projA = new Projectile('proj-A', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha')
+      const projB = new Projectile('proj-B', 100, 100, -10, 0, 'mob-2', 5, 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha')
+      
+      projectileManager.handleProjectileCollision(projA, projB)
+
+      expect(projA.hasHit).toBe(false)
+      expect(projB.hasHit).toBe(false)
+      expect(projA.isStuck).toBe(false)
+      expect(projB.isStuck).toBe(false)
+    })
+
+    test('projectiles from different teams should clash and stick', () => {
+      const projA = new Projectile('proj-A', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha')
+      const projB = new Projectile('proj-B', 100, 100, -10, 0, 'player-1', 5, 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-beta')
+      
+      projectileManager.handleProjectileCollision(projA, projB)
+
+      expect(projA.hasHit).toBe(true)
+      expect(projB.hasHit).toBe(true)
+      expect(projA.isStuck).toBe(true)
+      expect(projB.isStuck).toBe(true)
+      expect(projA.vx).toBe(0)
+      expect(projB.vx).toBe(0)
     })
   })
 

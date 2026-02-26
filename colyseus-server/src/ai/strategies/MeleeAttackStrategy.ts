@@ -38,7 +38,17 @@ export class MeleeAttackStrategy implements AttackStrategy {
 
     const distance = mob.getDistanceTo(target)
     const effectiveRange = mob.attackRange + mob.radius + target.radius
-    return distance <= effectiveRange
+    if (distance > effectiveRange) return false
+    
+    // Check if facing target (within ~30 degrees or 0.5 rads)
+    const targetHeading = Math.atan2(target.y - mob.y, target.x - mob.x)
+    let diff = targetHeading - mob.heading
+    while (diff < -Math.PI) diff += Math.PI * 2
+    while (diff > Math.PI) diff -= Math.PI * 2
+    
+    if (Math.abs(diff) > 0.5) return false
+
+    return true
   }
 
   execute(mob: Mob, target: Player, roomId: string): boolean {

@@ -5,7 +5,7 @@ import { PLAYER_STATS } from '../config/combatConfig'
 import { IAgent } from '../ai/interfaces/IAgent'
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { PlayerSettingGameplay } from './PlayerSettingGameplay'
-import { GAME_CONFIG } from '../config/gameConfig'
+import { GAME_CONFIG, TEAMS } from '../config/gameConfig'
 import { PlayerCombatSystem } from '../systems/PlayerCombatSystem'
 import { PlayerBotController } from '../systems/PlayerBotController'
 
@@ -81,6 +81,7 @@ export class Player extends WorldLife implements IAgent {
     this.maxMoveSpeed = PLAYER_STATS.maxMoveSpeed || 20
     this.maxLinearSpeed = this.maxMoveSpeed // Sync physics limit
     this.chaseRange = PLAYER_STATS.chaseRange || 15
+    this.teamId = TEAMS.IRON_HAMMER // Default Player faction
     
     // Validate radius after construction
     if (this.radius > 1.3) {

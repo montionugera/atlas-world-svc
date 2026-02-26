@@ -5,7 +5,7 @@ import { Player } from './Player'
 import { BattleManager } from '../modules/BattleManager'
 import { eventBus, RoomEventType, BattleAttackData } from '../events/EventBus'
 import { MOB_STATS } from '../config/combatConfig'
-import { GAME_CONFIG } from '../config/gameConfig'
+import { GAME_CONFIG, TEAMS } from '../config/gameConfig'
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { IAgent } from '../ai/interfaces/IAgent'
 import { AttackDefinition, calculateEffectiveAttackRange } from '../config/mobTypesConfig'
@@ -142,6 +142,7 @@ export class Mob extends WorldLife implements IAgent {
     if (options.radius !== undefined) {
       this.radius = options.radius
     }
+    this.teamId = TEAMS.BLACK_WING // Default Mob faction
     if (options.chaseRange !== undefined) {
       this.chaseRange = options.chaseRange
     }

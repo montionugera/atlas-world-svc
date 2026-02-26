@@ -16,6 +16,9 @@ export abstract class WorldLife extends WorldObject {
   @type('number') currentHealth: number = 100
   @type('boolean') isAlive: boolean = true
 
+  // Team/Party System
+  @type('string') teamId: string = ''
+
   // Attack system
   @type('number') attackDamage: number = 10
   @type('number') attackRange: number = 5

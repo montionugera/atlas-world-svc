@@ -17,18 +17,34 @@ describe('Player Bot Attack Execution', () => {
     gameState.mobs.set(mob.id, mob)
   })
 
+  afterEach(() => {
+    if (gameState) {
+      gameState.stopAI()
+    }
+    jest.clearAllMocks()
+    jest.useRealTimers()
+  })
+
   test('should execute attack when behavior is attack', () => {
     // Mock EventBus
     const emitSpy = jest.spyOn(eventBus, 'emitRoomEvent')
     
+    jest.useFakeTimers()
+    jest.setSystemTime(Date.now())
+    
     // Set player behavior to attack
     player.currentBehavior = 'attack'
     player.currentAttackTarget = mob.id
+    player.heading = 0 // Face the mob
+    player.lastAttackTime = -99999 // Bypass cooldown
     
-    // Update player with game state
-    player.update(16, gameState)
-    
-    // Verify attack event emitted
+    // Update player with game state (Starts wind-up)
+    player.update(16, { mobs: gameState.mobs, roomId: gameState.roomId })
+    // Verify attack event emitted - wait for wind-up
+    // Advance time past the wind up (100ms)
+    jest.setSystemTime(Date.now() + 150)
+    player.update(16, { mobs: gameState.mobs, roomId: gameState.roomId })
+
     expect(emitSpy).toHaveBeenCalledWith(
       'test-room',
       RoomEventType.BATTLE_ATTACK,
@@ -41,6 +57,7 @@ describe('Player Bot Attack Execution', () => {
     expect(player.isAttacking).toBe(true)
     
     emitSpy.mockRestore()
+    jest.useRealTimers()
   })
 
   test('should not attack if cooldown active', () => {
@@ -50,7 +67,7 @@ describe('Player Bot Attack Execution', () => {
     player.currentAttackTarget = mob.id
     player.lastAttackTime = performance.now() // Just attacked
     
-    player.update(16, gameState)
+    player.update(16, { mobs: gameState.mobs, roomId: gameState.roomId })
     
     expect(emitSpy).not.toHaveBeenCalled()
     

@@ -1,5 +1,5 @@
 
-import { describe, it, expect, beforeEach } from 'bun:test'
+import { describe, it, expect, beforeEach } from '@jest/globals'
 import { ZoneEffectManager } from '../modules/ZoneEffectManager'
 import { ZoneEffect } from '../schemas/ZoneEffect'
 import { GameState } from '../schemas/GameState'

@@ -27,7 +27,8 @@ describe('Manual Attack Input Tests', () => {
   test('Should allow manual attack when Bot Mode is DISABLED', () => {
     player.setBotMode(false)
     player.input.attack = true
-    player.heading = 0 // Facing right towards mob
+    // Mock facing towards the mob
+    player.heading = Math.atan2(mob.y - player.y, mob.x - player.x)
     
     // Mock canAttack to return true
     jest.spyOn(player, 'canAttack').mockReturnValue(true)
@@ -35,6 +36,12 @@ describe('Manual Attack Input Tests', () => {
     const result = player.processAttackInput(new Map([['mob-1', mob]]), 'room-1')
     
     expect(result).toBe(true)
+    
+    jest.useFakeTimers()
+    jest.setSystemTime(Date.now() + 150)
+    player.update(150, { mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
+    jest.useRealTimers()
+    
     expect(mockEmitRoomEvent).toHaveBeenCalled()
   })
 
@@ -65,9 +72,19 @@ describe('Manual Attack Input Tests', () => {
     // Disable bot mode
     player.setBotMode(false)
     
+    // Mock facing towards the mob
+    player.heading = Math.atan2(mob.y - player.y, mob.x - player.x)
+    player.input.attack = true // Ensure attack input is still true after bot mode change
+    
     // Try attack again
     result = player.processAttackInput(new Map([['mob-1', mob]]), 'room-1')
     expect(result).toBe(true)
+    
+    jest.useFakeTimers()
+    jest.setSystemTime(Date.now() + 150)
+    player.update(150, { mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
+    jest.useRealTimers()
+    
     expect(mockEmitRoomEvent).toHaveBeenCalled()
   })
 })

@@ -8,6 +8,7 @@ export class Projectile extends WorldObject {
   @type('string') ownerId: string = ''
   @type('boolean') isStuck: boolean = false
   @type('string') type: string = 'spear' // 'spear', 'melee', etc. for client rendering
+  @type('string') teamId: string = ''
 
   // Server-only properties
   damage: number = 0
@@ -30,7 +31,8 @@ export class Projectile extends WorldObject {
     type: string = 'spear',
     maxRange: number = SPEAR_THROWER_STATS.spearMaxRange,
     radius: number = SPEAR_THROWER_STATS.projectileRadius,
-    lifetime: number = SPEAR_THROWER_STATS.projectileLifetime
+    lifetime: number = SPEAR_THROWER_STATS.projectileLifetime,
+    teamId: string = ''
   ) {
     super(id, x, y, vx, vy, ['projectile'])
     this.ownerId = ownerId
@@ -40,6 +42,7 @@ export class Projectile extends WorldObject {
     this.radius = radius
     this.lifetime = lifetime
     this.createdAt = Date.now()
+    this.teamId = teamId
   }
 
   // Check if projectile should be despawned

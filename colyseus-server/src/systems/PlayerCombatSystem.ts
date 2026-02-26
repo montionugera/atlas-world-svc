@@ -136,8 +136,13 @@ export class PlayerCombatSystem {
     executeAttack(mobs: Map<string, any>, roomId: string): boolean {
         const { eventBus, RoomEventType } = require('../events/EventBus');
         
-        // Re-acquire target logic
-        const target = this.findTargetInDirection(mobs);
+        // Re-acquire target logic (Bots already set pendingAttackTargetId)
+        let target = null;
+        if (this.player.isBotMode && this.player.pendingAttackTargetId) {
+            target = mobs.get(this.player.pendingAttackTargetId);
+        } else {
+            target = this.findTargetInDirection(mobs);
+        }
         
         if (target) {
           // Emit attack event with target - let BattleManager handle the rest
@@ -149,6 +154,8 @@ export class PlayerCombatSystem {
             roomId: roomId
           };
 
+          this.player.isAttacking = true;
+          this.player.attackAnimationStartTime = performance.now();
           eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData);
           console.log(`⚔️ PLAYER ${this.player.id} attacking ${target.id} in heading direction`);
           return true;

@@ -136,6 +136,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
           if (firstAttack.executionTime > Date.now()) {
              this.mob.isCasting = true
              this.mob.castStartTime = Date.now()
+             this.mob.castDuration = firstAttack.executionTime - this.mob.castStartTime
              this.mob.currentAttackStrategy = strategy
              this.mob.isAttacking = false
           }
@@ -181,6 +182,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
               // Still have attacks pending
               this.mob.isCasting = true
               this.mob.castStartTime = now // Start casting the next one
+              this.mob.castDuration = this.mob.attackQueue[0].executionTime - now
           } else {
               // Queue empty
               this.mob.isCasting = false

@@ -45,7 +45,7 @@ describe('Projectile Impulse Integration', () => {
         gameState.projectiles.set(projectile.id, projectile)
         
         // Setup player collision with the projectile
-        projectileManager.handlePlayerCollision(projectile, player)
+        projectileManager.handleEntityCollision(projectile, player)
         
         // Verify event was emitted
         expect(eventSpy).toHaveBeenCalledWith(
@@ -80,7 +80,7 @@ describe('Projectile Impulse Integration', () => {
         const weirdProjectile = new Projectile('proj-weird', 0, 20, 100, 0, mob.id, 10) 
         gameState.projectiles.set(weirdProjectile.id, weirdProjectile)
         
-        projectileManager.handlePlayerCollision(weirdProjectile, player)
+        projectileManager.handleEntityCollision(weirdProjectile, player)
         
         const callArgs = eventSpy.mock.calls.find(call => 
             call[1] === RoomEventType.BATTLE_DAMAGE_PRODUCED
@@ -141,7 +141,7 @@ describe('Projectile Impulse Integration (Queue Path)', () => {
         gameState.projectiles.set(projectile.id, projectile)
         
         // 1. Queue collision
-        projectileManager.handlePlayerCollision(projectile, player)
+        projectileManager.handleEntityCollision(projectile, player)
         
         // 2. Process Queue
         await battleManager.processActionMessages()

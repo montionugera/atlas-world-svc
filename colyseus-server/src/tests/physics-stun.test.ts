@@ -1,5 +1,5 @@
 
-import { describe, it, expect, beforeEach } from 'bun:test'
+import { describe, it, expect, beforeEach } from '@jest/globals'
 import { PlanckPhysicsManager } from '../physics/PlanckPhysicsManager'
 import { GameState } from '../schemas/GameState'
 import { Player } from '../schemas/Player'

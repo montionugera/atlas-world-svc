@@ -65,7 +65,8 @@ export class ProjectileManager {
       'melee', // type
       maxRange,
       radius,
-      MELEE_PROJECTILE_STATS.projectileLifetime
+      MELEE_PROJECTILE_STATS.projectileLifetime,
+      mob.teamId
     )
     
     return projectile
@@ -117,7 +118,8 @@ export class ProjectileManager {
       type,
       maxRange,
       radius,
-      SPEAR_THROWER_STATS.projectileLifetime
+      SPEAR_THROWER_STATS.projectileLifetime,
+      mob.teamId
     )
     
     return projectile
@@ -144,20 +146,26 @@ export class ProjectileManager {
   }
 
   /**
-   * Handle projectile collision with player
+   * Handle projectile collision with living entities (Players or Mobs)
    * Projectiles pierce through (don't stop), but only damage once per target
    */
-  handlePlayerCollision(projectile: Projectile, player: Player): void {
+  handleEntityCollision(projectile: Projectile, target: WorldLife): void {
     if (projectile.hasHit) return // Already hit this target
     
-    const attacker = this.gameState.mobs.get(projectile.ownerId)
+    // 1. Ignore if target is the owner (shooter)
+    if (projectile.ownerId === target.id) return
+    
+    // 2. Ignore if target is on the same team (and a team is actually set)
+    if (projectile.teamId && target.teamId && projectile.teamId === target.teamId) return
+    
+    const attacker = this.gameState.mobs.get(projectile.ownerId) || this.gameState.players.get(projectile.ownerId)
     
     // Route damage through BattleManager queue if available (throttled)
     if (this.battleManager) {
         // Create attack message
         const message = BattleManager.createAttackMessage(
             projectile.ownerId,
-            player.id,
+            target.id,
             projectile.damage,
             projectile.radius * 2 // approx range
         )
@@ -173,7 +181,7 @@ export class ProjectileManager {
         }
         payload.attackType = 'projectile' 
         
-        console.log(`📨 PROJECTILE: Queuing hit ${projectile.id} on ${player.id}`)
+        console.log(`📨 PROJECTILE: Queuing hit ${projectile.id} on ${target.id}`)
         this.battleManager.addActionMessage(message)
         
     } else {
@@ -182,9 +190,9 @@ export class ProjectileManager {
           // Use BattleModule to apply damage
           const damage = this.battleModule.calculateDamage(
             { attackDamage: projectile.damage } as WorldLife,
-            player
+            target
           )
-          const targetDied = this.battleModule.applyDamage(player, damage, { eventId: projectile.id })
+          const targetDied = this.battleModule.applyDamage(target, damage, { eventId: projectile.id })
           
           // Calculate impulse vector from projectile velocity
           const vx = projectile.vx
@@ -203,21 +211,41 @@ export class ProjectileManager {
           try {
             eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
               attacker,
-              taker: player,
+              taker: target,
               impulse,
             })
           } catch {}
           
           if (targetDied) {
-            console.log(`💀 PROJECTILE: ${projectile.id} killed ${player.id}`)
+            console.log(`💀 PROJECTILE: ${projectile.id} killed ${target.id}`)
           } else {
-            console.log(`⚔️ PROJECTILE: ${projectile.id} hit ${player.id} for ${damage} damage`)
+            console.log(`⚔️ PROJECTILE: ${projectile.id} hit ${target.id} for ${damage} damage`)
           }
         }
     }
     
     // Mark as hit (pierces through, but won't damage again)
     projectile.hasHit = true
+  }
+
+  /**
+   * Handle projectile collision with another projectile
+   * Projectiles from different teams cancel each other out
+   */
+  handleProjectileCollision(projectileA: Projectile, projectileB: Projectile): void {
+    if (projectileA.hasHit || projectileB.hasHit) return // Already hit something
+    
+    // Ignore if targets are on the same team
+    if (projectileA.teamId && projectileB.teamId && projectileA.teamId === projectileB.teamId) return
+    
+    // Different teams: they clash and cancel each other out
+    projectileA.hasHit = true
+    projectileB.hasHit = true
+    
+    projectileA.stick()
+    projectileB.stick()
+    
+    console.log(`💥 PROJECTILE CLASH: ${projectileA.id} vs ${projectileB.id}`)
   }
 
   /**

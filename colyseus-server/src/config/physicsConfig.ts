@@ -3,6 +3,15 @@ import { GAME_CONFIG } from './gameConfig'
 // Global gravity constant for projectile physics (simulated in 2D top-down)
 export const PROJECTILE_GRAVITY = 7 // units/sec²
 
+// Collision categories (bit flags)
+export const COLLISION_CATEGORIES = {
+  PLAYER: 0x0001,
+  MOB: 0x0002,
+  BOUNDARY: 0x0004,
+  PROJECTILE: 0x0008,
+  POWERUP: 0x0010,
+} as const
+
 // Physics engine configuration constants
 export const PHYSICS_CONFIG = {
   // Planck.js engine settings
@@ -30,8 +39,8 @@ export const PHYSICS_CONFIG = {
       restitution: 0.3, // Bounce factor
       density: 0.001,
       collisionFilter: {
-        category: 0x0001, // PLAYER category
-        mask: 0x0002 | 0x0004, // Collide with MOB and BOUNDARY
+        category: COLLISION_CATEGORIES.PLAYER,
+        mask: COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE,
         group: 0,
       },
     },
@@ -43,16 +52,16 @@ export const PHYSICS_CONFIG = {
       restitution: 0.8, // High bounce for collision response
       density: 1.0,
       collisionFilter: {
-        category: 0x0002, // MOB category
-        mask: 0x0001 | 0x0004, // Collide with PLAYER and BOUNDARY
+        category: COLLISION_CATEGORIES.MOB,
+        mask: COLLISION_CATEGORIES.PLAYER | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE,
         group: 0,
       },
     },
     boundary: {
       isStatic: true,
       collisionFilter: {
-        category: 0x0004, // BOUNDARY category
-        mask: 0x0001 | 0x0002 | 0x0008, // Collide with PLAYER, MOB, and PROJECTILE
+        category: COLLISION_CATEGORIES.BOUNDARY,
+        mask: COLLISION_CATEGORIES.PLAYER | COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.PROJECTILE,
         group: 0,
       },
     },
@@ -64,21 +73,15 @@ export const PHYSICS_CONFIG = {
       restitution: 0, // No bounce
       density: 0.1,
       collisionFilter: {
-        category: 0x0008, // PROJECTILE category
-        mask: 0x0001 | 0x0004, // Collide with PLAYER and BOUNDARY (not MOB to avoid friendly fire)
+        category: COLLISION_CATEGORIES.PROJECTILE,
+        mask: COLLISION_CATEGORIES.PLAYER | COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE,
         group: 0,
       },
     },
   },
 
   // Collision categories (bit flags)
-  collisionCategories: {
-    PLAYER: 0x0001,
-    MOB: 0x0002,
-    BOUNDARY: 0x0004,
-    PROJECTILE: 0x0008,
-    POWERUP: 0x0010,
-  },
+  collisionCategories: COLLISION_CATEGORIES,
 
   // Physics update settings
   update: {

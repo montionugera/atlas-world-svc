@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach } from 'bun:test'
+import { describe, expect, test, beforeEach } from '@jest/globals'
 import { Mob } from '../schemas/Mob'
 import { BattleStatus } from '../schemas/BattleStatus'
 import { BattleModule } from '../modules/BattleModule'
@@ -84,7 +84,8 @@ describe('Mob Status Effects', () => {
     test('Stun should interrupt active casting (Mob internal)', () => {
         // Arrange: Start casting
         // We force casting state
-        (mob as any).startCasting(new MockStrategy(), Date.now())
+        mob.isCasting = true
+        ;(mob as any).castingUntil = Date.now() + 1000
         expect(mob.isCasting).toBe(true)
         
         // Act: Apply Stun and Update

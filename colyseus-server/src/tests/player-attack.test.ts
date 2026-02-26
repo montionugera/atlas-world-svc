@@ -84,16 +84,41 @@ describe('Player Attack System', () => {
     })
 
     test('should process attack even when no target found (for visual feedback)', () => {
+      jest.useFakeTimers()
+      jest.setSystemTime(Date.now())
+      
+      const originalNow = performance.now
+      performance.now = jest.fn(() => Date.now())
+      
       testPlayer.heading = Math.PI // facing left (away from mob)
       testPlayer.input.attack = true
       
+      // Mock canAttack to avoid performance.now() issues with fake timers
+      jest.spyOn(testPlayer, 'canAttack').mockReturnValue(true)
+      
+      // Mock the event bus
+      const mockEmitRoomEvent = jest.fn()
+      jest.doMock('../events/EventBus', () => ({
+        eventBus: { emitRoomEvent: mockEmitRoomEvent },
+        RoomEventType: { BATTLE_ATTACK: 'BATTLE_ATTACK' }
+      }))
+      
       const result = testPlayer.processAttackInput(new Map([['mob-1', testMob]]), 'test-room')
       
-      // Now returns true even without target (allows attack animation/visual feedback)
+      // Starts wind-up and returns true
       expect(result).toBe(true)
+      
+      // Advance time past wind-up to trigger execution
+      jest.setSystemTime(Date.now() + 150)
+      testPlayer.update(150, { mobs: new Map(), roomId: 'test-room' })
+      
       // Attack state should be updated
+      expect(testPlayer.isCasting).toBe(false)
       expect(testPlayer.isAttacking).toBe(true)
       expect(testPlayer.lastAttackTime).toBeGreaterThan(0)
+      
+      performance.now = originalNow
+      jest.useRealTimers()
     })
 
     test('should not process attack when on cooldown', () => {
