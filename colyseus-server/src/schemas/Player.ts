@@ -175,21 +175,21 @@ export class Player extends WorldLife implements IAgent {
   }
 
   // Delegate Attack Processing
-  processAttackInput(mobs: Map<string, any>, roomId: string): boolean {
-      return this.combatSystem.processAttackInput(mobs, roomId)
+  processAttackInput(context: any): boolean {
+      return this.combatSystem.processAttackInput(context)
   }
 
   // Override update to handle systems
-  update(deltaTime: number, gameState?: any) {
+  update(deltaTime: number, context?: any) {
     // Delegate to Bot Controller
     if (this.isBotMode) {
-      this.botController.update(deltaTime, gameState?.mobs, gameState?.roomId)
+      this.botController.update(deltaTime, context)
     } else {
       this.updateHeadingFromInput()
     }
     
     // Delegate to Combat System (Wind-up checks)
-    this.combatSystem.update(deltaTime, gameState?.mobs, gameState?.roomId)
+    this.combatSystem.update(deltaTime, context)
     
     super.update(deltaTime)
   }

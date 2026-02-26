@@ -54,7 +54,7 @@ describe('Projectile Deflection System', () => {
     test('Dead projectile should not trigger collision again', () => {
         const pDead = new Projectile('dead', 0, 0, 0, 0, 'owner1', 10, 'spear', 100, 4, 1000, 'team1')
         pDead.stick() // Already dead
-        pDead.hasHit = true // Marks it as having already resolved collision
+        pDead.hitTargets.add('clash') // Marks it as having already resolved collision
         
         const pLive = new Projectile('live', 0, 0, 0, 0, 'owner2', 10, 'spear', 100, 4, 1000, 'team2')
         

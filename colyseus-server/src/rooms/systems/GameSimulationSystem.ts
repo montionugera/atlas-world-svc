@@ -49,14 +49,21 @@ export class GameSimulationSystem {
         return
       }
 
-      player.update(deltaTime, this.room.state)
+      const context = {
+        mobs: this.room.state.mobs,
+        roomId: this.room.roomId,
+        projectileManager: this.room.projectileManager,
+        gameState: this.room.state
+      };
+      
+      player.update(deltaTime, context)
       this.room.battleModule.updateCombatState(player, deltaTime)
 
       if (player.isBotMode && Math.random() < 0.01) {
          console.log(`[Server] Player ${player.sessionId} pos: ${player.x}, ${player.y}`)
       }
 
-      if (player.processAttackInput(this.room.state.mobs, this.room.roomId)) {
+      if (player.processAttackInput(context)) {
         player.input.attack = false
         this.checkProjectileDeflection(player)
       }

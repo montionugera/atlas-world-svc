@@ -17,7 +17,7 @@ export class PlayerBotController {
     /**
      * Update loop for bot behavior
      */
-    update(deltaTime: number, mobs?: Map<string, any>, roomId?: string): void {
+    update(deltaTime: number, context?: any): void {
         if (!this.player.isBotMode) return;
 
         // Update heading based on movement (from AI desired velocity)
@@ -26,16 +26,17 @@ export class PlayerBotController {
         }
 
         // Handle Bot Attack
-        if (this.player.currentBehavior === 'attack' && mobs && roomId) {
-            this.executeBotAttack(mobs, roomId);
+        if (this.player.currentBehavior === 'attack' && context?.mobs && context?.roomId) {
+            this.executeBotAttack(context);
         }
     }
 
     /**
      * Execute attack for bot mode
      */
-    executeBotAttack(mobs: Map<string, any>, roomId: string): void {
+    executeBotAttack(context: any): void {
         const { eventBus, RoomEventType } = require('../events/EventBus');
+        const mobs = context.mobs;
         
         // 1. Try to get target from AI decision
         let target = this.player.currentAttackTarget ? mobs.get(this.player.currentAttackTarget) : null;
@@ -48,6 +49,6 @@ export class PlayerBotController {
         }
         
         // 3. Attempt attack via shared combat system (Wait for Wind-Up, use Cooldowns, emit events)
-        this.combatSystem.attemptAttack(mobs, roomId);
+        this.combatSystem.attemptAttack(context);
     }
 }

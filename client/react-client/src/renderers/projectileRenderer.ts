@@ -54,6 +54,13 @@ export const drawProjectiles = (ctx: CanvasRenderingContext2D, projectiles: Map<
     );
     ctx.closePath();
     ctx.fill();
+
+    // Draw collision radius for debugging
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)'; // Semi-transparent red
+    ctx.lineWidth = inverseScale;
+    ctx.beginPath();
+    ctx.arc(x, y, projectile.radius * scale, 0, Math.PI * 2);
+    ctx.stroke();
   });
 };
 

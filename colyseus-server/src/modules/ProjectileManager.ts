@@ -28,7 +28,7 @@ export class ProjectileManager {
    * Short range, fast speed for near-instant hits
    */
   createMelee(
-    mob: Mob, 
+    actor: WorldLife, 
     targetX: number, 
     targetY: number, 
     damage: number,
@@ -36,8 +36,8 @@ export class ProjectileManager {
     radius: number = MELEE_PROJECTILE_STATS.projectileRadius,
     speed: number = MELEE_PROJECTILE_STATS.meleeSpeed
   ): Projectile {
-    const dx = targetX - mob.x
-    const dy = targetY - mob.y
+    const dx = targetX - actor.x
+    const dy = targetY - actor.y
     const distance = Math.sqrt(dx * dx + dy * dy)
     
     // Calculate angle to target
@@ -47,10 +47,10 @@ export class ProjectileManager {
     const vx = speed * Math.cos(angle)
     const vy = speed * Math.sin(angle)
 
-    // Spawn at edge of mob + small offset
-    const spawnOffset = (mob.radius || 1) + 0.5
-    const spawnX = mob.x + Math.cos(angle) * spawnOffset
-    const spawnY = mob.y + Math.sin(angle) * spawnOffset
+    // Spawn at edge of actor + small offset
+    const spawnOffset = ((actor as any).radius || 1) + 0.5
+    const spawnX = actor.x + Math.cos(angle) * spawnOffset
+    const spawnY = actor.y + Math.sin(angle) * spawnOffset
     
     // Create projectile with melee stats
     const projectileId = `projectile-melee-${this.gameState.tick}-${Math.random().toString(36).slice(2, 4)}`
@@ -60,14 +60,16 @@ export class ProjectileManager {
       spawnY,
       vx,
       vy,
-      mob.id,
+      actor.id,
       damage,
       'melee', // type
       maxRange,
       radius,
       MELEE_PROJECTILE_STATS.projectileLifetime,
-      mob.teamId
+      actor.teamId
     )
+    
+    projectile.piercing = true; // Melee attacks cleave through multiple enemies!
     
     return projectile
   }
@@ -150,7 +152,8 @@ export class ProjectileManager {
    * Projectiles pierce through (don't stop), but only damage once per target
    */
   handleEntityCollision(projectile: Projectile, target: WorldLife): void {
-    if (projectile.hasHit) return // Already hit this target
+    if (!projectile.piercing && projectile.hitTargets.size > 0) return // Non-piercing hit its limit
+    if (projectile.hitTargets.has(target.id)) return // Already hit this target
     
     // 1. Ignore if target is the owner (shooter)
     if (projectile.ownerId === target.id) return
@@ -224,8 +227,8 @@ export class ProjectileManager {
         }
     }
     
-    // Mark as hit (pierces through, but won't damage again)
-    projectile.hasHit = true
+    // Track hit to prevent hitting the same target multiple times per swing
+    projectile.hitTargets.add(target.id)
   }
 
   /**
@@ -233,14 +236,16 @@ export class ProjectileManager {
    * Projectiles from different teams cancel each other out
    */
   handleProjectileCollision(projectileA: Projectile, projectileB: Projectile): void {
-    if (projectileA.hasHit || projectileB.hasHit) return // Already hit something
+    // Check if either projectile is already "spent" (if not piercing)
+    if (!projectileA.piercing && projectileA.hitTargets.size > 0) return
+    if (!projectileB.piercing && projectileB.hitTargets.size > 0) return
     
     // Ignore if targets are on the same team
     if (projectileA.teamId && projectileB.teamId && projectileA.teamId === projectileB.teamId) return
     
     // Different teams: they clash and cancel each other out
-    projectileA.hasHit = true
-    projectileB.hasHit = true
+    projectileA.hitTargets.add('clash')
+    projectileB.hitTargets.add('clash')
     
     projectileA.stick()
     projectileB.stick()
@@ -286,7 +291,7 @@ export class ProjectileManager {
     projectile.vx = -projectile.vx * SPEAR_THROWER_STATS.deflectionSpeedBoost
     projectile.vy = -projectile.vy * SPEAR_THROWER_STATS.deflectionSpeedBoost
     projectile.ownerId = attacker.id
-    projectile.hasHit = false // Can damage again after deflection
+    projectile.hitTargets.clear() // Can damage again after deflection
     projectile.deflectedBy = attacker.id
     
     return true

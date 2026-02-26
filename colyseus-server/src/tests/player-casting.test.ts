@@ -48,7 +48,7 @@ describe('Player Casting State Verification', () => {
       // Mock mobs map
       const mobs = new Map<string, any>()
       
-      const result = player.processAttackInput(mobs, 'room-1')
+      const result = player.processAttackInput({ mobs, roomId: 'room-1' })
       
       expect(result).toBe(false)
   })
@@ -63,7 +63,7 @@ describe('Player Casting State Verification', () => {
       // Ensure cooldowns are clear
       player.canAttack = () => true; 
       
-      const result = player.processAttackInput(mobs, 'room-1')
+      const result = player.processAttackInput({ mobs, roomId: 'room-1' })
       
       // Might be true or false depending on target, but should pass the casting check
       // With no target it might still return true for "miss" animation if implemented

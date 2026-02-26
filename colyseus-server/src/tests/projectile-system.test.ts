@@ -51,7 +51,7 @@ describe('Projectile System', () => {
       expect(projectile.maxRange).toBe(10)
       expect(projectile.x).toBeGreaterThan(mob.x)
       expect(projectile.y).toBeCloseTo(mob.y)
-      expect(projectile.hasHit).toBe(false)
+      expect(projectile.hitTargets.size).toBe(0)
       expect(projectile.isStuck).toBe(false)
     })
 
@@ -164,10 +164,10 @@ describe('Projectile System', () => {
       projectileManager.handleEntityCollision(projectile, player)
 
       expect(player.currentHealth).toBeLessThan(initialHealth)
-      expect(projectile.hasHit).toBe(true)
+      expect(projectile.hitTargets.size).toBeGreaterThan(0)
     })
 
-    test('should not damage entity twice (piercing)', () => {
+    test('non-piercing projectile should only damage one entity', () => {
       const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
       gameState.mobs.set(mob.id, mob)
@@ -182,6 +182,32 @@ describe('Projectile System', () => {
       expect(player.currentHealth).toBe(healthAfterFirst)
     })
 
+    test('piercing projectile should damage multiple different entities', () => {
+      const projectile = new Projectile('proj-pierce', 100, 100, 10, 0, 'mob-1', 5, 'melee', 10)
+      projectile.piercing = true
+      projectile.teamId = 'team-a'
+      gameState.projectiles.set(projectile.id, projectile)
+      gameState.mobs.set(mob.id, mob)
+
+      const enemyMob1 = new Mob({ id: 'enemy-1', x: 105, y: 100 })
+      enemyMob1.teamId = 'team-b'
+      const enemyMob2 = new Mob({ id: 'enemy-2', x: 105, y: 105 })
+      enemyMob2.teamId = 'team-b'
+      
+      gameState.mobs.set(enemyMob1.id, enemyMob1)
+      gameState.mobs.set(enemyMob2.id, enemyMob2)
+
+      const initialHealth1 = enemyMob1.currentHealth
+      const initialHealth2 = enemyMob2.currentHealth
+
+      projectileManager.handleEntityCollision(projectile, enemyMob1)
+      projectileManager.handleEntityCollision(projectile, enemyMob2)
+
+      expect(enemyMob1.currentHealth).toBeLessThan(initialHealth1)
+      expect(enemyMob2.currentHealth).toBeLessThan(initialHealth2)
+      expect(projectile.hitTargets.size).toBe(2)
+    })
+
     test('should not damage owner', () => {
       const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
@@ -192,7 +218,7 @@ describe('Projectile System', () => {
 
       // Owner should not take damage
       expect(mob.currentHealth).toBe(initialHealth)
-      expect(projectile.hasHit).toBe(false)
+      expect(projectile.hitTargets.size).toBe(0)
     })
 
     test('should not damage entity in the same team', () => {
@@ -211,7 +237,7 @@ describe('Projectile System', () => {
 
       // Ally should not take damage
       expect(alliedMob.currentHealth).toBe(initialHealth)
-      expect(projectile.hasHit).toBe(false)
+      expect(projectile.hitTargets.size).toBe(0)
     })
 
     test('should damage entity in different team', () => {
@@ -230,7 +256,7 @@ describe('Projectile System', () => {
 
       // Enemy should take damage
       expect(enemyMob.currentHealth).toBeLessThan(initialHealth)
-      expect(projectile.hasHit).toBe(true)
+      expect(projectile.hitTargets.size).toBeGreaterThan(0)
     })
 
     test('should stick projectile on boundary collision', () => {
@@ -252,8 +278,8 @@ describe('Projectile System', () => {
       
       projectileManager.handleProjectileCollision(projA, projB)
 
-      expect(projA.hasHit).toBe(false)
-      expect(projB.hasHit).toBe(false)
+      expect(projA.hitTargets.size).toBe(0)
+      expect(projB.hitTargets.size).toBe(0)
       expect(projA.isStuck).toBe(false)
       expect(projB.isStuck).toBe(false)
     })
@@ -264,8 +290,8 @@ describe('Projectile System', () => {
       
       projectileManager.handleProjectileCollision(projA, projB)
 
-      expect(projA.hasHit).toBe(true)
-      expect(projB.hasHit).toBe(true)
+      expect(projA.hitTargets.size).toBeGreaterThan(0)
+      expect(projB.hitTargets.size).toBeGreaterThan(0)
       expect(projA.isStuck).toBe(true)
       expect(projB.isStuck).toBe(true)
       expect(projA.vx).toBe(0)
@@ -292,7 +318,7 @@ describe('Projectile System', () => {
       expect(deflected).toBe(true)
       expect(projectile.vx).toBeLessThan(0) // Reversed direction
       expect(projectile.ownerId).toBe(player.id)
-      expect(projectile.hasHit).toBe(false) // Can damage again
+      expect(projectile.hitTargets.size).toBe(0) // Can damage again
       expect(projectile.deflectedBy).toBe(player.id)
     })
 

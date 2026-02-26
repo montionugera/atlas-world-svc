@@ -78,9 +78,48 @@ describe('Player Attack System', () => {
         }
       }))
       
-      const result = testPlayer.processAttackInput(new Map([['mob-1', testMob]]), 'test-room')
+      const result = testPlayer.processAttackInput({ mobs: new Map([['mob-1', testMob]]), roomId: 'test-room' })
       
       expect(result).toBe(true)
+    })
+
+    test('should create melee projectile upon attack execution', () => {
+      jest.useFakeTimers()
+      jest.setSystemTime(Date.now())
+      
+      testPlayer.heading = 0
+      testPlayer.input.attack = true
+      
+      const mockEmitRoomEvent = jest.fn()
+      jest.doMock('../events/EventBus', () => ({
+        eventBus: { emitRoomEvent: mockEmitRoomEvent },
+        RoomEventType: { BATTLE_ATTACK: 'BATTLE_ATTACK' }
+      }))
+      
+      const mockCreateMelee = jest.fn().mockImplementation(() => {
+        return { id: 'test-projectile-id' }
+      })
+      const mockProjectileManager = {
+        createMelee: mockCreateMelee
+      }
+      
+      const mockGameState = {
+        projectiles: new Map()
+      }
+      
+      // Mock canAttack to avoid performance.now() issues with fake timers
+      jest.spyOn(testPlayer, 'canAttack').mockReturnValue(true)
+      
+      testPlayer.processAttackInput({ mobs: new Map(), roomId: 'test-room', projectileManager: mockProjectileManager, gameState: mockGameState })
+      
+      // Advance time past wind-up to trigger execution
+      jest.setSystemTime(Date.now() + 150)
+      testPlayer.update(150, { mobs: new Map(), roomId: 'test-room', projectileManager: mockProjectileManager, gameState: mockGameState })
+      
+      expect(mockCreateMelee).toHaveBeenCalled()
+      expect(mockGameState.projectiles.has('test-projectile-id')).toBe(true)
+      
+      jest.useRealTimers()
     })
 
     test('should process attack even when no target found (for visual feedback)', () => {
@@ -103,7 +142,7 @@ describe('Player Attack System', () => {
         RoomEventType: { BATTLE_ATTACK: 'BATTLE_ATTACK' }
       }))
       
-      const result = testPlayer.processAttackInput(new Map([['mob-1', testMob]]), 'test-room')
+      const result = testPlayer.processAttackInput({ mobs: new Map([['mob-1', testMob]]), roomId: 'test-room' })
       
       // Starts wind-up and returns true
       expect(result).toBe(true)
@@ -126,7 +165,7 @@ describe('Player Attack System', () => {
       testPlayer.input.attack = true
       testPlayer.lastAttackTime = Date.now() // Recent attack
       
-      const result = testPlayer.processAttackInput(new Map([['mob-1', testMob]]), 'test-room')
+      const result = testPlayer.processAttackInput({ mobs: new Map([['mob-1', testMob]]), roomId: 'test-room' })
       
       expect(result).toBe(false)
     })
@@ -135,7 +174,7 @@ describe('Player Attack System', () => {
       testPlayer.heading = 0
       testPlayer.input.attack = false
       
-      const result = testPlayer.processAttackInput(new Map([['mob-1', testMob]]), 'test-room')
+      const result = testPlayer.processAttackInput({ mobs: new Map([['mob-1', testMob]]), roomId: 'test-room' })
       
       expect(result).toBe(false)
     })

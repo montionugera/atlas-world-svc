@@ -51,7 +51,7 @@ export class PlayerCombatSystem {
     /**
      * Update loop for combat state (wind-up execution)
      */
-    update(deltaTime: number, mobs?: Map<string, any>, roomId?: string): void {
+    update(deltaTime: number, context?: any): void {
         // Check pending attack execution (Wind-up complete)
         if (this.player.pendingAttack && this.player.isAlive) {
             if (Date.now() >= this.player.attackExecuteTime) {
@@ -61,8 +61,8 @@ export class PlayerCombatSystem {
                 this.player.pendingAttack = false;
                 
                 // Execute
-                if (mobs && roomId) {
-                   this.executeAttack(mobs, roomId);
+                if (context) {
+                   this.executeAttack(context);
                 }
             }
         }
@@ -71,7 +71,7 @@ export class PlayerCombatSystem {
     /**
      * Process attack input and initiate wind-up
      */
-    processAttackInput(mobs: Map<string, any>, roomId: string): boolean {
+    processAttackInput(context: any): boolean {
         // Dead players cannot attack
         if (!this.player.isAlive) return false;
         
@@ -82,13 +82,13 @@ export class PlayerCombatSystem {
 
         if (!this.player.input.attack) return false;
         
-        return this.attemptAttack(mobs, roomId);
+        return this.attemptAttack(context);
     }
 
     /**
      * Try to initiate an attack (checked by both Manual and Bot)
      */
-    public attemptAttack(mobs: Map<string, any>, roomId: string): boolean {
+    public attemptAttack(context: any): boolean {
         if (!this.player.isAlive) return false;
 
         // Status effect check
@@ -110,7 +110,7 @@ export class PlayerCombatSystem {
         
         // If no wind-up, execute immediately
         if (windUpTime <= 0) {
-           return this.executeAttack(mobs, roomId);
+           return this.executeAttack(context);
         }
 
         // Start wind-up
@@ -123,7 +123,7 @@ export class PlayerCombatSystem {
         
         // Pre-calculate target
         // NOTE: For bots, they must ensure heading is correct BEFORE calling this
-        const target = this.findTargetInDirection(mobs);
+        const target = this.findTargetInDirection(context?.mobs || new Map());
         this.player.pendingAttackTargetId = target ? target.id : '';
 
         console.log(`⚔️ PLAYER ${this.player.id} starting attack wind-up (${windUpTime}ms)`);
@@ -133,50 +133,53 @@ export class PlayerCombatSystem {
     /**
      * Execute the actual attack effect (after wind-up or instant)
      */
-    executeAttack(mobs: Map<string, any>, roomId: string): boolean {
+    executeAttack(context: any): boolean {
         const { eventBus, RoomEventType } = require('../events/EventBus');
+        const roomId = context?.roomId;
+        const projectileManager = context?.projectileManager;
+        const gameState = context?.gameState;
         
-        // Re-acquire target logic (Bots already set pendingAttackTargetId)
-        let target = null;
-        if (this.player.isBotMode && this.player.pendingAttackTargetId) {
-            target = mobs.get(this.player.pendingAttackTargetId);
-        } else {
-            target = this.findTargetInDirection(mobs);
+        // Spawn melee projectile
+        if (projectileManager && gameState) {
+            const range = this.player.attackRange + this.player.radius;
+            // Target is just a direction point to feed into createMelee
+            const targetX = this.player.x + Math.cos(this.player.heading) * range;
+            const targetY = this.player.y + Math.sin(this.player.heading) * range;
+            
+            // Sweep radius (roughly equal to the old cone logic, 2 units is good)
+            const pRadius = 2.0;
+            
+            const projectile = projectileManager.createMelee(
+                this.player,
+                targetX,
+                targetY,
+                this.player.attackDamage,
+                range, // maxRange
+                pRadius, // radius
+                40 // fast speed
+            );
+            
+            gameState.projectiles.set(projectile.id, projectile);
+        }
+
+        // Emit BATTLE_ATTACK for client animation (no specific target needed anymore)
+        const attackData = {
+          actorId: this.player.id,
+          targetId: '', // Cleaving hitboxes don't have a single explicit target upfront
+          damage: this.player.attackDamage,
+          range: this.player.attackRange,
+          roomId: roomId
+        };
+
+        this.player.isAttacking = true;
+        this.player.attackAnimationStartTime = performance.now();
+        
+        if (roomId) {
+            eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData);
         }
         
-        if (target) {
-          // Emit attack event with target - let BattleManager handle the rest
-          const attackData = {
-            actorId: this.player.id,
-            targetId: target.id,
-            damage: this.player.attackDamage,
-            range: this.player.attackRange,
-            roomId: roomId
-          };
-
-          this.player.isAttacking = true;
-          this.player.attackAnimationStartTime = performance.now();
-          eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData);
-          console.log(`⚔️ PLAYER ${this.player.id} attacking ${target.id} in heading direction`);
-          return true;
-        } else {
-          // No target found, but still allow attack (for visual feedback)
-          this.player.isAttacking = true;
-          this.player.attackAnimationStartTime = performance.now();
-          
-          // Emit attack event without target
-          const attackData = {
-            actorId: this.player.id,
-            // targetId omitted - no target
-            damage: this.player.attackDamage,
-            range: this.player.attackRange,
-            roomId: roomId
-          };
-
-          eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData);
-          console.log(`⚔️ PLAYER ${this.player.id} attacking (no target) in heading direction ${this.player.heading.toFixed(2)}`);
-          return true;
-        }
+        console.log(`⚔️ PLAYER ${this.player.id} attacking (melee projectile) in heading direction ${this.player.heading.toFixed(2)}`);
+        return true;
     }
 
     /**

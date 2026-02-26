@@ -33,7 +33,7 @@ describe('Manual Attack Input Tests', () => {
     // Mock canAttack to return true
     jest.spyOn(player, 'canAttack').mockReturnValue(true)
     
-    const result = player.processAttackInput(new Map([['mob-1', mob]]), 'room-1')
+    const result = player.processAttackInput({ mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
     
     expect(result).toBe(true)
     
@@ -52,7 +52,7 @@ describe('Manual Attack Input Tests', () => {
     
     jest.spyOn(player, 'canAttack').mockReturnValue(true)
     
-    const result = player.processAttackInput(new Map([['mob-1', mob]]), 'room-1')
+    const result = player.processAttackInput({ mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
     
     expect(result).toBe(false)
     expect(mockEmitRoomEvent).not.toHaveBeenCalled()
@@ -65,7 +65,7 @@ describe('Manual Attack Input Tests', () => {
     
     jest.spyOn(player, 'canAttack').mockReturnValue(true)
     
-    let result = player.processAttackInput(new Map([['mob-1', mob]]), 'room-1')
+    let result = player.processAttackInput({ mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
     expect(result).toBe(false)
     expect(mockEmitRoomEvent).not.toHaveBeenCalled()
     
@@ -77,7 +77,7 @@ describe('Manual Attack Input Tests', () => {
     player.input.attack = true // Ensure attack input is still true after bot mode change
     
     // Try attack again
-    result = player.processAttackInput(new Map([['mob-1', mob]]), 'room-1')
+    result = player.processAttackInput({ mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
     expect(result).toBe(true)
     
     jest.useFakeTimers()

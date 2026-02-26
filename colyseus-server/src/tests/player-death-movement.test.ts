@@ -95,7 +95,7 @@ describe('Player Death Movement Prevention', () => {
       
       // Try to attack
       player.input.attack = true
-      const result = player.processAttackInput(new Map(), 'test-room')
+      const result = player.processAttackInput({ mobs: new Map(), roomId: 'test-room' })
       
       expect(result).toBe(false)
     })

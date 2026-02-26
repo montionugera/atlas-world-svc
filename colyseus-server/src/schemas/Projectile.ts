@@ -14,7 +14,8 @@ export class Projectile extends WorldObject {
   damage: number = 0
   maxRange: number = SPEAR_THROWER_STATS.spearMaxRange
   distanceTraveled: number = 0
-  hasHit: boolean = false
+  hitTargets: Set<string> = new Set()
+  piercing: boolean = false
   stuckAt: number = 0
   lifetime: number = SPEAR_THROWER_STATS.projectileLifetime
   deflectedBy: string = '' // ID of entity that deflected, prevents re-deflection

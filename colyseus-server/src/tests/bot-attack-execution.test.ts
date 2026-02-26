@@ -50,7 +50,7 @@ describe('Player Bot Attack Execution', () => {
       RoomEventType.BATTLE_ATTACK,
       expect.objectContaining({
         actorId: player.id,
-        targetId: mob.id
+        targetId: ''
       })
     )
     
