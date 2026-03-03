@@ -1,6 +1,6 @@
 # Phase 1: Test Infrastructure Improvements
 
-## ✅ Completed
+## ✅ Done
 
 ### 1. Fixed Hardcoded Test Values
 - **File**: `mob-lifecycle.test.ts`
@@ -23,7 +23,7 @@
 - **Change**: Added try-catch in `afterAll` to handle cleanup errors gracefully
 - **Result**: Prevents test isolation failures
 
-## ✅ Completed
+## ✅ Done
 
 ### 4. Test Utilities ✅
 - [x] Created `test-helpers.ts` with common utilities:

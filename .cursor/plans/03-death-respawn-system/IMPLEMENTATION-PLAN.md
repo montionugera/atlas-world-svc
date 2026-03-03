@@ -2,7 +2,7 @@
 
 ## Status Overview
 
-### ✅ Completed
+### ✅ Done
 - [x] Added `diedAt: number` field to WorldLife
 - [x] Updated `die()` to set `diedAt = Date.now()`
 - [x] Updated `respawn()` to clear `diedAt = 0`

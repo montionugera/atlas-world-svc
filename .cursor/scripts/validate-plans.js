@@ -87,7 +87,7 @@ function analyzePlanDirectory(dirPath) {
   for (const entry of entries) {
     const fullPath = path.join(dirPath, entry.name);
     
-    if (entry.isFile() && entry.name.endsWith('.md')) {
+    if (entry.isFile() && entry.name.endsWith('.md') && entry.name !== 'README.md') {
       const analysis = analyzePlanFile(fullPath);
       results.files.push(analysis);
       results.summary.totalFiles++;
