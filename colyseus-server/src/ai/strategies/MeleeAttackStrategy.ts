@@ -1,6 +1,5 @@
 import { AttackStrategy, AttackExecutionResult } from './AttackStrategy'
-import { Mob } from '../../schemas/Mob'
-import { Player } from '../../schemas/Player'
+import { WorldLife } from '../../schemas/WorldLife'
 import { ProjectileManager } from '../../modules/ProjectileManager'
 import { GameState } from '../../schemas/GameState'
 
@@ -32,17 +31,17 @@ export class MeleeAttackStrategy implements AttackStrategy {
     return this.castTime
   }
 
-  canExecute(mob: Mob, target: Player): boolean {
+  canExecute(attacker: any, target: any): boolean {
     if (!target.isAlive) return false
-    if (!mob.canAttack()) return false
+    if (!attacker.canAttack || !attacker.canAttack()) return false
 
-    const distance = mob.getDistanceTo(target)
-    const effectiveRange = mob.attackRange + mob.radius + target.radius
+    const distance = attacker.getDistanceTo(target)
+    const effectiveRange = attacker.attackRange + attacker.radius + target.radius
     if (distance > effectiveRange) return false
     
     // Check if facing target (within ~30 degrees or 0.5 rads)
-    const targetHeading = Math.atan2(target.y - mob.y, target.x - mob.x)
-    let diff = targetHeading - mob.heading
+    const targetHeading = Math.atan2(target.y - attacker.y, target.x - attacker.x)
+    let diff = targetHeading - attacker.heading
     while (diff < -Math.PI) diff += Math.PI * 2
     while (diff > Math.PI) diff -= Math.PI * 2
     
@@ -51,9 +50,9 @@ export class MeleeAttackStrategy implements AttackStrategy {
     return true
   }
 
-  execute(mob: Mob, target: Player, roomId: string): boolean {
+  execute(attacker: any, target: any, roomId: string): boolean {
     // Basic validation first
-    if (!target.isAlive || !mob.canAttack()) {
+    if (!target.isAlive || (attacker.canAttack && !attacker.canAttack())) {
        return false
     }
 
@@ -65,46 +64,46 @@ export class MeleeAttackStrategy implements AttackStrategy {
     
     if (!isCommitted) {
         // Strict check for instant attacks
-        if (!this.canExecute(mob, target)) {
-            console.log(`⚠️ MELEE: ${mob.id} can't execute instant melee attack on ${target.id} (out of range/condition)`)
+        if (!this.canExecute(attacker, target)) {
+            console.log(`⚠️ MELEE: ${attacker.id} can't execute instant melee attack on ${target.id} (out of range/condition)`)
             return false
         }
     } else {
         // Warning if out of range but allowing it
-        const distance = mob.getDistanceTo(target)
-        const effectiveRange = mob.attackRange + mob.radius + target.radius
+        const distance = attacker.getDistanceTo(target)
+        const effectiveRange = attacker.attackRange + attacker.radius + target.radius
         if (distance > effectiveRange) {
-             console.log(`⚠️ MELEE: ${mob.id} target out of range (${distance.toFixed(1)} > ${effectiveRange.toFixed(1)}) but committed (cast=${this.castTime}ms). Executing anyway.`)
+             console.log(`⚠️ MELEE: ${attacker.id} target out of range (${distance.toFixed(1)} > ${effectiveRange.toFixed(1)}) but committed (cast=${this.castTime}ms). Executing anyway.`)
         }
     }
 
     // Require projectileManager and gameState for unified projectile flow
     if (!this.projectileManager || !this.gameState) {
-      console.error(`❌ MELEE: ${mob.id} cannot execute - projectileManager or gameState not provided`)
+      console.error(`❌ MELEE: ${attacker.id} cannot execute - projectileManager or gameState not provided`)
       return false
     }
 
     // Calculate target position (lead target if moving)
-    const targetX = target.x + target.vx * 0.05 // Small lead for melee
-    const targetY = target.y + target.vy * 0.05
+    const targetX = target.x + (target.vx || 0) * 0.05 // Small lead for melee
+    const targetY = target.y + (target.vy || 0) * 0.05
 
     // Create melee projectile (short range, fast speed)
     const projectile = this.projectileManager.createMelee(
-      mob,
+      attacker,
       targetX,
       targetY,
-      mob.attackDamage
+      attacker.attackDamage
     )
 
     // Add to game state (synced to clients)
     this.gameState.projectiles.set(projectile.id, projectile)
 
-    console.log(`🗡️ MELEE: ${mob.id} executing melee attack on ${target.id}, created projectile ${projectile.id}`)
+    console.log(`🗡️ MELEE: ${attacker.id} executing melee attack on ${target.id}, created projectile ${projectile.id}`)
     return true
   }
 
-  attemptExecute(mob: Mob, target: Player, roomId: string): AttackExecutionResult {
-    if (!this.canExecute(mob, target)) {
+  attemptExecute(attacker: any, target: any, roomId: string): AttackExecutionResult {
+    if (!this.canExecute(attacker, target)) {
       return { canExecute: false, needsCasting: false, executed: false }
     }
 
@@ -118,7 +117,7 @@ export class MeleeAttackStrategy implements AttackStrategy {
     }
 
     // Melee is instant (castTime = 0), so execute immediately
-    const executed = this.execute(mob, target, roomId)
+    const executed = this.execute(attacker, target, roomId)
     return {
       canExecute: true,
       needsCasting: false,

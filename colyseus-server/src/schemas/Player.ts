@@ -16,6 +16,8 @@ export class Player extends WorldLife implements IAgent {
   @type('boolean') isBotMode: boolean = false // Synced: indicates if player is in bot mode
   @type('boolean') isCasting: boolean = false // Synced: indicates if player is currently casting
   
+  @type('string') activeNPCId: string = '' // NPC linked to this player
+
   @type(PlayerSettingGameplay) settingGameplay: PlayerSettingGameplay
 
   // Input state (server-only, not synced to clients)

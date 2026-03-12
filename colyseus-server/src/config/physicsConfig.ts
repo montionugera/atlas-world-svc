@@ -10,6 +10,7 @@ export const COLLISION_CATEGORIES = {
   BOUNDARY: 0x0004,
   PROJECTILE: 0x0008,
   POWERUP: 0x0010,
+  NPC: 0x0020,
 } as const
 
 // Physics engine configuration constants
@@ -53,7 +54,20 @@ export const PHYSICS_CONFIG = {
       density: 1.0,
       collisionFilter: {
         category: COLLISION_CATEGORIES.MOB,
-        mask: COLLISION_CATEGORIES.PLAYER | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE,
+        mask: COLLISION_CATEGORIES.PLAYER | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE | COLLISION_CATEGORIES.NPC,
+        group: 0,
+      },
+    },
+    npc: {
+      radius: 3,
+      mass: 0.8,
+      friction: 0.1,
+      frictionAir: 0.01,
+      restitution: 0.3, // Match player bounce
+      density: 1.0,
+      collisionFilter: {
+        category: COLLISION_CATEGORIES.NPC,
+        mask: COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE, // No PLAYER collision
         group: 0,
       },
     },

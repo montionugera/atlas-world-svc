@@ -22,6 +22,7 @@ export class GameSimulationSystem {
       this.room.mobLifeCycleManager.update()
       
       this.updateMobs(deltaTime)
+      this.updateNPCs(deltaTime)
       this.cleanupDespawnedProjectiles(deltaTime)
       
       this.room.zoneEffectManager.update(this.room.state.zoneEffects)
@@ -80,6 +81,35 @@ export class GameSimulationSystem {
     })
   }
 
+  private updateNPCs(deltaTime: number) {
+    const now = Date.now()
+    
+    this.room.state.npcs.forEach(npc => {
+        if (npc.isAlive) {
+            npc.update(deltaTime, this.room.state)
+            this.room.battleModule.updateCombatState(npc, deltaTime)
+        } else {
+            // Respawn logic
+            if (npc.diedAt > 0 && now - npc.diedAt >= npc.respawnTimeMs) {
+                const owner = this.room.state.players.get(npc.ownerId)
+                if (owner && owner.isAlive) {
+                    const spawnX = owner.x + 10
+                    const spawnY = owner.y + 10
+                    
+                    // Respawn the entity (resets health, alive state, etc)
+                    this.room.battleModule.respawnEntity(npc, spawnX, spawnY)
+                    
+                    // Re-create physics body after death removal
+                    this.room.physicsManager.removeBody(npc.id) 
+                    this.room.physicsManager.createNPCBody(npc)
+                    
+                    console.log(`🐾 NPC RESPAWNED: ${npc.id} near ${owner.id}`)
+                }
+            }
+        }
+    })
+  }
+
   private cleanupDespawnedProjectiles(deltaTime: number) {
     const toDespawn: string[] = []
     for (const [id, projectile] of this.room.state.projectiles.entries()) {
@@ -120,7 +150,7 @@ export class GameSimulationSystem {
         }
       }
       console.log(
-        `🔄 SIMULATION HEALTH: tick=${this.room.state.tick}, mobs=${this.room.state.mobs.size}, mobsWithBodies=${mobsWithBodies}, players=${this.room.state.players.size}`
+        `🔄 SIMULATION HEALTH: tick=${this.room.state.tick}, mobs=${this.room.state.mobs.size}, mobsWithBodies=${mobsWithBodies}, npcs=${this.room.state.npcs.size}, players=${this.room.state.players.size}`
       )
     }
   }

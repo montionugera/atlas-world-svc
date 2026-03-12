@@ -34,6 +34,7 @@ Sent by the server immediately after a client successfully joins a room.
 | `player_input_move` | `{ vx: number, vy: number }` | Authoritative movement input request |
 | `player_input_action` | `{ action: string, pressed: boolean }` | Action request (e.g. 'attack') |
 | `player_toggle_bot` | `{ enabled: boolean }` | Toggle bot mode for the player |
+| `companion_command` | `{ command: string, targetId?: string }` | Issue a command to a companion |
 | `player_respawn` | `null` | Request respawn |
 
 ---
@@ -55,3 +56,10 @@ Used for fetching static or rarely changing data.
 
 `GET /rooms/:roomId/players/:playerId`
 - Returns details of a specific player.
+
+### Companions
+`GET /rooms/:roomId/companions`
+- Returns list of all active companions in the room.
+
+`GET /rooms/:roomId/companions/:companionId`
+- Returns details of a specific companion.

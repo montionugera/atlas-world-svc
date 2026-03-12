@@ -17,6 +17,11 @@ import {
   WanderBehavior,
 } from './behaviors/AgentBehaviors'
 
+import {
+  NPCFollowBehavior,
+  NPCAttackBehavior,
+} from './behaviors/NPCBehaviors'
+
 type AgentEnvironmentFromInterface = ReturnType<AIWorldInterface['buildAgentEnvironment']>
 
 export interface AIConfig {
@@ -29,6 +34,8 @@ export interface AIConfig {
     attack?: number
     chase?: number
     wander?: number
+    npcFollow?: number
+    npcAttack?: number
   }
 }
 
@@ -100,6 +107,54 @@ export class AIModule {
     this.updateAIDecision()
   }
 
+  // Calculate separation velocity to prevent agent clustering
+  private calculateSeparation(agent: IAgent): { x: number; y: number } {
+    let sepX = 0
+    let sepY = 0
+    let count = 0
+    
+    const minSeparationRadius = 0.1
+    // Weight must be strong enough to keep mobs apart before physical collision kicks in.
+    // 1.5x was too weak when multiple mobs cluster — 4x deflects without killing chase intent.
+    const separationWeightBase = agent.maxMoveSpeed * 4.0
+
+    for (const { agent: other } of this.agents.values()) {
+      if (!other.isAlive || other.id === agent.id) continue
+
+      // Only separate agents on the same team (optional, but good for reducing friendly clustering)
+      // or optionally, all agents pushing each other
+      if (agent.teamId && other.teamId && agent.teamId !== other.teamId) continue
+
+      const dx = agent.x - other.x
+      const dy = agent.y - other.y
+      const distanceSq = dx * dx + dy * dy
+      
+      // Separation must start BEFORE physical overlap (padding > collision gap).
+      // Padding = 15 gives mobs time to steer apart before Planck's restitution launches them.
+      const separationRadius = (agent.radius || 4) + (other.radius || 4) + 15
+
+      if (distanceSq > 0 && distanceSq < separationRadius * separationRadius) {
+        const distance = Math.max(Math.sqrt(distanceSq), minSeparationRadius)
+        
+        // Repulsion is stronger the closer they are
+        // We scale the strength additionally by how much they are overlapping into their separation threshold
+        const strength = separationWeightBase * (1 - distance / separationRadius)
+        
+        // Normalize the direction vector and scale by strength
+        sepX += (dx / distance) * strength
+        sepY += (dy / distance) * strength
+        count++
+      }
+    }
+
+    if (count > 0) {
+      sepX /= count
+      sepY /= count
+    }
+
+    return { x: sepX, y: sepY }
+  }
+
   // Internal AI update logic
   private updateAIDecision(): void {
     const startTime = performance.now()
@@ -122,7 +177,31 @@ export class AIModule {
         agent.applyBehaviorDecision(behaviorDecision)
         
         // Use desired velocity from decision (or zero if not provided)
-        const desired = behaviorDecision.desiredVelocity || { x: 0, y: 0 }
+        let desired = behaviorDecision.desiredVelocity || { x: 0, y: 0 }
+        
+        // --- CASTING OVERRIDE ---
+        // If the agent is casting, the AI MUST NOT output a movement velocity, 
+        // to prevent overriding the animation lock down the pipeline.
+        if (agent.isCasting) {
+          desired = { x: 0, y: 0 }
+        }
+        
+        // --- SEPARATION STEERING ---
+        // Apply separation as long as they aren't completely animation locked casting an ability
+        if (!agent.isCasting) {
+           const separation = this.calculateSeparation(agent)
+           desired.x += separation.x
+           desired.y += separation.y
+           
+           // Cap the combined sequence to the maximum move speed to prevent crazy speeds
+           const speedSq = desired.x * desired.x + desired.y * desired.y
+           const maxSpeed = agent.maxMoveSpeed
+           if (speedSq > maxSpeed * maxSpeed && speedSq > 0.001) {
+             const speed = Math.sqrt(speedSq)
+             desired.x = (desired.x / speed) * maxSpeed
+             desired.y = (desired.y / speed) * maxSpeed
+           }
+        }
         
         // Apply decision to world - but respect agent's behavior decision
         this.worldInterface.applyAIDecision(agent.id, {
@@ -232,6 +311,7 @@ export class AIModule {
       distanceToNearestMob: env.distanceToNearestMob,
       nearBoundary: env.nearBoundary,
       worldBounds: env.worldBounds,
+      ownerPlayer: (env as any).ownerPlayer || null,
     }
 
     // Sort behaviors by priority (highest first)
@@ -270,13 +350,25 @@ export class AIModule {
     attack?: number
     chase?: number
     wander?: number
+    npcFollow?: number
+    npcAttack?: number
   }): AgentBehavior[] {
-    return [
+    const behaviors: AgentBehavior[] = [
       new AvoidBoundaryBehavior(priorities.avoidBoundary),
       new AttackBehavior(priorities.attack),
       new ChaseBehavior(priorities.chase),
       new WanderBehavior(priorities.wander),
     ]
+
+    // Only add npc behaviors if they hold priority meaning they are configured
+    if (priorities.npcFollow !== undefined) {
+      behaviors.push(new NPCFollowBehavior(priorities.npcFollow))
+    }
+    if (priorities.npcAttack !== undefined) {
+      behaviors.push(new NPCAttackBehavior(priorities.npcAttack))
+    }
+
+    return behaviors
   }
 }
 

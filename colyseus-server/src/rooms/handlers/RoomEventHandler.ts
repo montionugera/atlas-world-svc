@@ -2,6 +2,7 @@ import { GameRoom } from '../GameRoom'
 import { eventBus } from '../../events/EventBus'
 import { Player } from '../../schemas/Player'
 import { Mob } from '../../schemas/Mob'
+import { MeleeAttackStrategy } from '../../ai/strategies/MeleeAttackStrategy'
 
 export class RoomEventHandler {
   constructor(private room: GameRoom) {}
@@ -32,6 +33,17 @@ export class RoomEventHandler {
     eventBus.onRoomEventMobRemove(this.room.roomId, data => {
       console.log(`🎯 EVENT HANDLER: Mob removed ${data.mob.id}`)
       this.handleMobRemoved(data.mob)
+    })
+
+    // NPC events
+    eventBus.onRoomEventNPCSpawn(this.room.roomId, data => {
+      console.log(`🎯 EVENT HANDLER: NPC spawned ${data.npc.id}`)
+      this.handleNPCSpawned(data.npc)
+    })
+
+    eventBus.onRoomEventNPCRemove(this.room.roomId, data => {
+      console.log(`🎯 EVENT HANDLER: NPC removed ${data.npc.id}`)
+      this.handleNPCRemoved(data.npc)
     })
   }
 
@@ -111,5 +123,19 @@ export class RoomEventHandler {
     console.log(`👹 MOB REMOVED: ${mob.id} - Cleaning up physics`)
     this.room.physicsManager.removeBody(mob.id)
     console.log(`✅ MOB CLEANUP COMPLETE: ${mob.id}`)
+  }
+
+  private handleNPCSpawned(npc: any): void {
+    console.log(`🐾 NPC SPAWNED: ${npc.id} - Setting up physics and combat`)
+    this.room.physicsManager.createNPCBody(npc)
+    // Equip npc with melee attack strategy
+    npc.attackStrategies = [new MeleeAttackStrategy(this.room.projectileManager, this.room.state)]
+    console.log(`✅ NPC SETUP COMPLETE: ${npc.id}`)
+  }
+
+  private handleNPCRemoved(npc: any): void {
+    console.log(`🐾 NPC REMOVED: ${npc.id} - Cleaning up physics`)
+    this.room.physicsManager.removeBody(npc.id)
+    console.log(`✅ NPC CLEANUP COMPLETE: ${npc.id}`)
   }
 }

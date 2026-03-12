@@ -28,10 +28,10 @@ export class Mob extends WorldLife implements IAgent {
   desiredBehavior: string = BehaviorState.IDLE
   decisionTimestamp: number = 0
   chaseRange: number = 15 // Chase range buffer (will be calculated with radius)
-  currentAttackTarget: string = '' // ID of the player currently being attacked
-  currentChaseTarget: string = '' // ID of the player currently being chased
-  targetX: number = 0 // Current target position X
-  targetY: number = 0 // Current target position Y
+  @type('string') currentAttackTarget: string = '' // ID of the player currently being attacked
+  @type('string') currentChaseTarget: string = '' // ID of the player currently being chased
+  @type('number') targetX: number = 0 // Current target position X
+  @type('number') targetY: number = 0 // Current target position Y
   wanderTargetX: number = 0 // Wander target position X
   wanderTargetY: number = 0 // Wander target position Y
   lastWanderTargetTime: number = 0 // When wander target was last set
@@ -310,9 +310,9 @@ export class Mob extends WorldLife implements IAgent {
     // Default: 100% speed
     let currentRotationSpeed = this.rotationSpeed
     
-    // If attacking or casting, reduce to 10% speed
+    // If attacking or casting, allow them to still track the target reasonably well
     if (this.isCasting || this.isAttacking) {
-        currentRotationSpeed = this.rotationSpeed * 0.1
+        currentRotationSpeed = this.rotationSpeed * 0.5
     }
     
     // Smooth rotation (interpolate towards target heading)

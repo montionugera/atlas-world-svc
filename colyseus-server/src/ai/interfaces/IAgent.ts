@@ -5,6 +5,7 @@ export interface IAgent {
   // Identity
   id: string
   tags?: string[]
+  teamId?: string
   
   // Physics & Position
   x: number
@@ -24,6 +25,7 @@ export interface IAgent {
   
   // Movement
   maxMoveSpeed: number
+  isCasting?: boolean
   
   // Combat
   attackStrategies: AttackStrategy[]

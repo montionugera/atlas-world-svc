@@ -14,6 +14,7 @@ export type AgentEnvironment = {
   distanceToNearestMob?: number
   nearBoundary?: boolean
   worldBounds?: { width: number; height: number }
+  ownerPlayer?: Player | null
 }
 
 export interface BehaviorDecision {
@@ -149,8 +150,8 @@ export class AttackBehavior implements AgentBehavior {
       if (strategy.name === 'melee') {
         // Melee: add radii for collision-based range
         strategyRange = agent.attackRange + agent.radius + targetRadius
-      } else if (strategy.name === 'spearThrow' && (strategy as any).maxRange) {
-        // Ranged attack: use maxRange directly
+      } else if ((strategy as any).maxRange) {
+        // Ranged/Combo attack: use maxRange directly
         strategyRange = (strategy as any).maxRange
       } else {
         // Unknown strategy: fallback to agent.attackRange
@@ -235,7 +236,27 @@ export class ChaseBehavior implements AgentBehavior {
     // Don't chase dead targets
     if (!target.isAlive) return false
     
-    return distance <= this.chaseRange
+    // Determine effective attack range from actual strategies to ensure chaseRange isn't smaller
+    const targetRadius = target.radius ?? 4
+    let maxEffectiveAttackRange = agent.attackRange + agent.radius + targetRadius
+    
+    for (const strategy of agent.attackStrategies) {
+      let strategyRange: number
+      if (strategy.name === 'melee') {
+        strategyRange = agent.attackRange + agent.radius + targetRadius
+      } else if ((strategy as any).maxRange) {
+        strategyRange = (strategy as any).maxRange
+      } else {
+        strategyRange = agent.attackRange + agent.radius + targetRadius
+      }
+      maxEffectiveAttackRange = Math.max(maxEffectiveAttackRange, strategyRange)
+    }
+
+    // Chase range must slightly exceed attack range to absorb separation physics pushback.
+    // +15 is enough — the large +150 buffer caused all mobs to mass-converge on the player.
+    const effectiveChaseRange = Math.max(this.chaseRange, maxEffectiveAttackRange + 15)
+    
+    return distance <= effectiveChaseRange
   }
 
   getDecision(agent: IAgent, env: AgentEnvironment, now: number): BehaviorDecision {

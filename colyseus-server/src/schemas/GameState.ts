@@ -1,6 +1,7 @@
 import { Schema, MapSchema, ArraySchema, type } from '@colyseus/schema'
 import { Mob } from './Mob'
 import { Player } from './Player'
+import { NPC } from './NPC'
 import { Projectile } from './Projectile'
 import { ZoneEffect } from './ZoneEffect'
 import { GAME_CONFIG } from '../config/gameConfig'
@@ -14,6 +15,7 @@ import { MeleeAttackStrategy } from '../ai/strategies/MeleeAttackStrategy'
 export class GameState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>()
   @type({ map: Mob }) mobs = new MapSchema<Mob>()
+  @type({ map: NPC }) npcs = new MapSchema<NPC>()
   @type({ map: Projectile }) projectiles = new MapSchema<Projectile>()
   @type({ map: ZoneEffect }) zoneEffects = new MapSchema<ZoneEffect>()
   @type('number') tick: number = 0
@@ -140,6 +142,35 @@ export class GameState extends Schema {
     // Emit event for room to handle side effects (physics, battle registration)
     eventBus.emitRoomEvent(this.roomId, RoomEventType.PLAYER_JOINED, { player })
 
+    // Spawn npc
+    const npcId = `comp-${sessionId}`
+    const npc = new NPC({
+      id: npcId,
+      ownerId: sessionId,
+      name: `${name}'s NPC`,
+      x: spawnX + 10,
+      y: spawnY + 10
+    })
+    this.npcs.set(npcId, npc)
+    player.activeNPCId = npcId
+
+    this.aiModule.registerAgent(npc, {
+      behaviorPriorities: {
+        avoidBoundary: 10,
+        npcAttack: 8,
+        npcFollow: 5,
+        wander: 0,
+        attack: -1,
+        chase: -1
+      },
+      perception: { range: 60, fov: 360 },
+      memory: { duration: 5000 },
+      aggression: 0.8
+    })
+
+    // Emit event for room to handle side effects (physics body creation)
+    eventBus.emitRoomEvent(this.roomId, RoomEventType.NPC_SPAWNED, { npc })
+
     return player
   }
 
@@ -147,6 +178,16 @@ export class GameState extends Schema {
   removePlayer(sessionId: string) {
     const player = this.players.get(sessionId)
     if (player) {
+      if (player.activeNPCId) {
+        const npc = this.npcs.get(player.activeNPCId)
+        this.aiModule.unregisterAgent(player.activeNPCId)
+        this.npcs.delete(player.activeNPCId)
+        
+        if (npc) {
+          eventBus.emitRoomEvent(this.roomId, RoomEventType.NPC_REMOVED, { npc })
+        }
+      }
+
       // Unregister from AI module
       this.aiModule.unregisterAgent(sessionId)
       
@@ -177,6 +218,8 @@ export class GameState extends Schema {
 
     this.tick++
   }
+
+
   // Update player input (movement)
   updatePlayerInput(sessionId: string, vx: number, vy: number) {
     const player = this.getPlayer(sessionId)

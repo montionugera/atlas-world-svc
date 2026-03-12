@@ -1,5 +1,4 @@
-import { Mob } from '../../schemas/Mob'
-import { Player } from '../../schemas/Player'
+import { WorldLife } from '../../schemas/WorldLife'
 
 /**
  * Result of attempting to execute an attack strategy
@@ -17,14 +16,14 @@ export interface AttackExecutionResult {
  */
 export interface AttackStrategy {
   name: string
-  canExecute(mob: Mob, target: Player): boolean
-  execute(mob: Mob, target: Player, roomId: string): boolean
+  canExecute(attacker: any, target: any): boolean
+  execute(attacker: any, target: any, roomId: string): boolean
   getCastTime(): number // ms before attack executes
   
   /**
    * Attempt to execute the strategy
    * Returns execution result indicating if casting is needed or if attack executed immediately
    */
-  attemptExecute(mob: Mob, target: Player, roomId: string): AttackExecutionResult
+  attemptExecute(attacker: any, target: any, roomId: string): AttackExecutionResult
 }
 

@@ -8,6 +8,8 @@ export enum RoomEventType {
   PLAYER_LEFT = 'player:left',
   MOB_SPAWNED = 'mob:spawned',
   MOB_REMOVED = 'mob:removed',
+  NPC_SPAWNED = 'npc:spawned',
+  NPC_REMOVED = 'npc:removed',
   BATTLE_ATTACK = 'battle:attack',
   BATTLE_HEAL = 'battle:heal',
   BATTLE_DAMAGE_PRODUCED = 'battle:dmgProduced',
@@ -27,6 +29,14 @@ export interface MobSpawnedData {
 
 export interface MobRemovedData {
   mob: Mob
+}
+
+export interface NPCSpawnedData {
+  npc: any // Using any to avoid circular import since we didn't import NPC here yet
+}
+
+export interface NPCRemovedData {
+  npc: any
 }
 
 export interface BattleAttackData {
@@ -56,6 +66,8 @@ export type RoomEventData =
   | PlayerLeftData
   | MobSpawnedData
   | MobRemovedData
+  | NPCSpawnedData
+  | NPCRemovedData
   | BattleAttackData
   | BattleHealData
   | DamageProducedData
@@ -156,6 +168,30 @@ export class EventBus extends EventEmitter {
     this.on(eventKey, (payload: RoomEventPayload) => {
       if (payload.eventType === RoomEventType.MOB_REMOVED) {
         callback(payload.data as MobRemovedData)
+      }
+    })
+  }
+
+  /**
+   * Listen to npc spawned events
+   */
+  public onRoomEventNPCSpawn(roomId: string, callback: (data: NPCSpawnedData) => void): void {
+    const eventKey = `room-${roomId}:entity-event`
+    this.on(eventKey, (payload: RoomEventPayload) => {
+      if (payload.eventType === RoomEventType.NPC_SPAWNED) {
+        callback(payload.data as NPCSpawnedData)
+      }
+    })
+  }
+
+  /**
+   * Listen to npc removed events
+   */
+  public onRoomEventNPCRemove(roomId: string, callback: (data: NPCRemovedData) => void): void {
+    const eventKey = `room-${roomId}:entity-event`
+    this.on(eventKey, (payload: RoomEventPayload) => {
+      if (payload.eventType === RoomEventType.NPC_REMOVED) {
+        callback(payload.data as NPCRemovedData)
       }
     })
   }

@@ -2,6 +2,7 @@ import * as planck from 'planck'
 import { PHYSICS_CONFIG, PROJECTILE_GRAVITY } from '../config/physicsConfig'
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
+import { NPC } from '../schemas/NPC'
 import { Projectile } from '../schemas/Projectile'
 import { eventBus, RoomEventType, DamageProducedData } from '../events/EventBus'
 
@@ -164,21 +165,22 @@ export class PlanckPhysicsManager {
   // Create physics body for mob (collision detection only)
   createMobBody(mob: Mob): planck.Body {
     const body = this.world.createBody({
-      type: 'dynamic', // Dynamic bodies for automatic collision response
+      type: 'dynamic',
       position: planck.Vec2(mob.x, mob.y),
-      linearDamping: 0, // NO damping - maintain velocity
+      // Damping dissipates velocity so bouncing mobs settle instead of jiggling perpetually.
+      linearDamping: 0.3,
       angularDamping: 0,
     })
 
-    // Set initial velocity on the physics body
     body.setLinearVelocity(planck.Vec2(mob.vx, mob.vy))
 
     body.createFixture({
-      shape: planck.Circle(mob.radius || PHYSICS_CONFIG.entities.mob.radius), // Use per-mob radius
-      isSensor: false, // Enable collision response
-      density: 1.0, // Normal density for physics
-      friction: 0.1, // Lower friction for better bouncing
-      restitution: 0.8, // Higher bounce for better collision response
+      shape: planck.Circle(mob.radius || PHYSICS_CONFIG.entities.mob.radius),
+      isSensor: false,
+      density: 1.0,
+      friction: 0.1,
+      // Low restitution — mobs should deflect, not pinball off each other.
+      restitution: 0.1,
     })
 
     // Store entity data in our map
@@ -194,6 +196,36 @@ export class PlanckPhysicsManager {
       // ignore if mass not available yet
     }
     // Mob body creation debug disabled by default
+    return body
+  }
+
+  // Create physics body for npc
+  createNPCBody(npc: NPC): planck.Body {
+    const body = this.world.createBody({
+      type: 'dynamic', // Dynamic bodies for automatic collision response
+      position: planck.Vec2(npc.x, npc.y),
+      linearDamping: 0, // NO damping - maintain velocity
+      angularDamping: 0,
+    })
+
+    // Set initial velocity on the physics body
+    body.setLinearVelocity(planck.Vec2(npc.vx, npc.vy))
+
+    body.createFixture({
+      shape: planck.Circle(npc.radius || PHYSICS_CONFIG.entities.npc.radius),
+      isSensor: false, // Enable collision response
+      density: PHYSICS_CONFIG.entities.npc.density,
+      friction: PHYSICS_CONFIG.entities.npc.friction,
+      restitution: PHYSICS_CONFIG.entities.npc.restitution,
+      filterCategoryBits: PHYSICS_CONFIG.entities.npc.collisionFilter.category,
+      filterMaskBits: PHYSICS_CONFIG.entities.npc.collisionFilter.mask,
+    })
+
+    // Store entity data
+    const entityData = { type: 'npc', id: npc.id }
+    this.entityDataByBody.set(body, entityData)
+
+    this.bodies.set(npc.id, body)
     return body
   }
 
@@ -267,18 +299,23 @@ export class PlanckPhysicsManager {
   }
 
   // Update physics simulation with player forces and mob physics
-  update(deltaTime: number, players: Map<string, any>, mobs: Map<string, any>) {
+  update(deltaTime: number, players: Map<string, any>, mobs: Map<string, any>, npcs?: Map<string, any>) {
     // Process player input and apply movement forces
     this.processPlayerInput(players)
 
     // Process mob steering and apply forces
     this.processMobSteering(mobs)
+    
+    // Process npc steering and apply forces
+    if (npcs) {
+      this.processNPCSteering(npcs)
+    }
 
     // Step the physics simulation
     this.world.step(deltaTime / 1000) // Convert to seconds
 
     // Sync all entities from physics bodies
-    this.syncAllEntitiesFromPhysics(players, mobs)
+    this.syncAllEntitiesFromPhysics(players, mobs, npcs)
   }
 
   // Update entity from physics body
@@ -505,8 +542,45 @@ export class PlanckPhysicsManager {
     })
   }
 
+  // Process npc steering and apply forces
+  private processNPCSteering(npcs: Map<string, any>) {
+    npcs.forEach(npc => {
+      // Skip dead npcs
+      if (!npc.isAlive) {
+        const body = this.getBody(npc.id)
+        if (body) {
+          body.setLinearVelocity(planck.Vec2(0, 0))
+        }
+        return
+      }
+
+      // Check Stun Status
+      if (npc.isStunned) {
+          const body = this.getBody(npc.id)
+          if (body) {
+              body.setLinearVelocity(planck.Vec2(0, 0))
+          }
+          return // Skip steering
+      }
+
+      const body = this.getBody(npc.id)
+      if (body) {
+        if (npc.desiredVx !== undefined && npc.desiredVy !== undefined) {
+          const currentVelocity = body.getLinearVelocity()
+          const mass = npc.getMass ? npc.getMass() : 1
+          const steeringAcceleration = 2
+          let steeringForce = {
+            x: (npc.desiredVx - currentVelocity.x) * steeringAcceleration * mass,
+            y: (npc.desiredVy - currentVelocity.y) * steeringAcceleration * mass,
+          }
+          this.applyForceToBody(npc.id, steeringForce)
+        }
+      }
+    })
+  }
+
   // Sync all entities from physics bodies
-  private syncAllEntitiesFromPhysics(players: Map<string, any>, mobs: Map<string, any>) {
+  private syncAllEntitiesFromPhysics(players: Map<string, any>, mobs: Map<string, any>, npcs?: Map<string, any>) {
     // Sync players
     players.forEach(player => {
       this.updateEntityFromBody(player, player.id)
@@ -516,6 +590,13 @@ export class PlanckPhysicsManager {
     mobs.forEach(mob => {
       this.updateEntityFromBody(mob, mob.id)
     })
+    
+    // Sync npcs
+    if (npcs) {
+      npcs.forEach(npc => {
+        this.updateEntityFromBody(npc, npc.id)
+      })
+    }
   }
 
   // Set up collision callbacks for logging and debugging

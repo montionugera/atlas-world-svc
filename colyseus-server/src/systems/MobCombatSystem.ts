@@ -276,12 +276,15 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     if (this.mob.isCasting) return false
 
     const distance = this.mob.getDistanceTo(targetPlayer)
+    // Use edge-to-edge distance so we don't drop aggro just from being physically blocked by another mob
+    const edgeToEdgeDistance = Math.max(0, distance - this.mob.radius - (targetPlayer.radius || 4))
+    
     const maxRange = Math.max(
       ...this.mob.attackStrategies.map(s => this.getStrategyRange(s, targetPlayer))
     )
     
-    if (distance > maxRange) {
-      console.log(`🎯 DEBUG: ${this.mob.id} target out of range (${distance.toFixed(2)} > ${maxRange.toFixed(2)}), switching to chase`)
+    if (edgeToEdgeDistance > maxRange) {
+      console.log(`🎯 DEBUG: ${this.mob.id} target out of range (${edgeToEdgeDistance.toFixed(2)} > ${maxRange.toFixed(2)}), switching to chase`)
       this.mob.currentBehavior = 'chase'
       this.mob.currentChaseTarget = this.mob.currentAttackTarget
       this.mob.currentAttackTarget = ''

@@ -8,10 +8,12 @@ import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
 import { IAgent } from './interfaces/IAgent'
 import { AIDecision } from './core/AIBehavior'
+import { NPC } from '../schemas/NPC'
 
 export interface WorldData {
   players: Player[]
   mobs: Mob[]
+  npcs: NPC[]
   worldBounds: { width: number; height: number }
   physicsManager?: any
 }
@@ -43,6 +45,7 @@ export class AIWorldInterface {
     return {
       players: Array.from(this.gameState.players.values()),
       mobs: Array.from(this.gameState.mobs.values()),
+      npcs: Array.from(this.gameState.npcs.values()),
       worldBounds: {
         width: this.gameState.width,
         height: this.gameState.height,
@@ -68,6 +71,18 @@ export class AIWorldInterface {
       const distance = this.calculateDistance(position, player)
       if (distance <= range) {
         nearbyPlayers.push(player)
+      }
+    }
+
+    // Check npcs (treat as players for mob aggro)
+    for (const npc of this.gameState.npcs.values()) {
+      if (!npc.isAlive) continue
+      if (excludeAgentId && npc.id === excludeAgentId) continue
+
+      const distance = this.calculateDistance(position, npc)
+      if (distance <= range) {
+        // We push them to nearbyPlayers so mobs can target them like players
+        nearbyPlayers.push(npc as any)
       }
     }
 
@@ -100,6 +115,19 @@ export class AIWorldInterface {
         nearestDist = d
       }
     }
+    
+    // Check npcs too
+    for (const npc of this.gameState.npcs.values()) {
+      if (!npc.isAlive) continue
+      if (excludeId && npc.id === excludeId) continue
+      
+      const d = this.calculateDistance(position, npc)
+      if (d < nearestDist) {
+        nearest = npc as any
+        nearestDist = d
+      }
+    }
+    
     return nearest
   }
 
@@ -143,6 +171,7 @@ export class AIWorldInterface {
     distanceToNearestMob: number
     nearBoundary: boolean
     worldBounds: { width: number; height: number }
+    ownerPlayer: Player | null
   } {
     const position = { x: agent.x, y: agent.y }
     
@@ -165,6 +194,13 @@ export class AIWorldInterface {
     const distanceToNearestMob = inRangeMob ? distanceMobRaw : Infinity
 
     const nearBoundary = this.isNearBoundary(position)
+    
+    // Check owner if agent is a npc
+    let ownerPlayer = null
+    if ('ownerId' in agent && agent.ownerId) {
+      ownerPlayer = this.gameState.players.get((agent as any).ownerId) || null
+    }
+    
     return {
       nearestPlayer,
       distanceToNearestPlayer,
@@ -172,6 +208,7 @@ export class AIWorldInterface {
       distanceToNearestMob,
       nearBoundary,
       worldBounds: { width: this.gameState.width, height: this.gameState.height },
+      ownerPlayer,
     }
   }
 
@@ -186,6 +223,11 @@ export class AIWorldInterface {
     
     // Try to find agent in mobs first
     let agent: IAgent | undefined = this.gameState.mobs.get(agentId)
+    
+    // If not found, try npcs
+    if (!agent) {
+      agent = this.gameState.npcs.get(agentId)
+    }
     
     // If not found, try players
     if (!agent) {

@@ -4,6 +4,7 @@ import { calculateScale, clearCanvas } from '../utils/drawingUtils';
 import { drawGrid, drawGridCoordinates } from '../utils/gridUtils';
 import { drawMap } from '../renderers/mapRenderer';
 import { drawMobs } from '../renderers/mobRenderer';
+import { drawCompanions } from '../renderers/companionRenderer';
 import { drawProjectiles } from '../renderers/projectileRenderer';
 import { drawZoneEffects } from '../renderers/zoneEffectRenderer';
 import { drawPlayers } from '../renderers/playerRenderer';
@@ -80,6 +81,11 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
           drawZoneEffects(ctx, gameState.zoneEffects, scale);
         }
         drawMobs(ctx, gameState.mobs, 1, scale);
+        
+        if (gameState.companions) {
+          drawCompanions(ctx, gameState.companions, 1, scale);
+        }
+        
         drawPlayers(ctx, gameState.players, playerId, 1, scale);
         if (gameState.projectiles) {
           drawProjectiles(ctx, gameState.projectiles, 1, scale);
@@ -127,6 +133,17 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
             ctx.arc(mob.x, mob.y, mob.radius * 2, 0, Math.PI * 2); // Larger dots
             ctx.fill();
         });
+
+        // Companions (Orange dots)
+        if (gameState.companions) {
+            ctx.fillStyle = '#ffa500';
+            gameState.companions.forEach(comp => {
+                if (!comp.isAlive) return;
+                ctx.beginPath();
+                ctx.arc(comp.x, comp.y, comp.radius * 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
 
         // Other Players (Blue dots)
         ctx.fillStyle = '#4444ff';

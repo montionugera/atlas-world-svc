@@ -1,6 +1,5 @@
 import { AttackStrategy, AttackExecutionResult } from './AttackStrategy'
-import { Mob } from '../../schemas/Mob'
-import { Player } from '../../schemas/Player'
+import { WorldLife } from '../../schemas/WorldLife'
 import { ProjectileManager } from '../../modules/ProjectileManager'
 import { GameState } from '../../schemas/GameState'
 import { SPEAR_THROWER_STATS } from '../../config/combatConfig'
@@ -42,29 +41,29 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
     return this.castTime
   }
 
-  canExecute(mob: Mob, target: Player): boolean {
+  canExecute(attacker: any, target: any): boolean {
     if (!target.isAlive) return false
-    if (!mob.canAttack()) return false
+    if (!attacker.canAttack || !attacker.canAttack()) return false
 
-    const distance = mob.getDistanceTo(target)
+    const distance = attacker.getDistanceTo(target)
     return distance <= this.maxRange
   }
 
-  execute(mob: Mob, target: Player, roomId: string): boolean {
-    // Only check if target exists/alive and mob can attack
+  execute(attacker: any, target: any, roomId: string): boolean {
+    // Only check if target exists/alive and attacker can attack
     // We do NOT check range here again, to allow "committed" attacks to finish
     if (!target || !target.isAlive) return false
-    if (!mob.canAttack()) return false
+    if (!attacker.canAttack || !attacker.canAttack()) return false
 
     // Calculate target position based on heading
     // Currently aiming relies on heading which is locked during casting
-    const heading = mob.heading
-    const targetX = mob.x + Math.cos(heading) * this.maxRange
-    const targetY = mob.y + Math.sin(heading) * this.maxRange
+    const heading = attacker.heading
+    const targetX = attacker.x + Math.cos(heading) * this.maxRange
+    const targetY = attacker.y + Math.sin(heading) * this.maxRange
 
     // Create projectile
     const projectile = this.projectileManager.createSpear(
-      mob,
+      attacker,
       targetX,
       targetY,
       this.damage,
@@ -80,8 +79,8 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
     return true
   }
 
-  attemptExecute(mob: Mob, target: Player, roomId: string): AttackExecutionResult {
-    if (!this.canExecute(mob, target)) {
+  attemptExecute(attacker: any, target: any, roomId: string): AttackExecutionResult {
+    if (!this.canExecute(attacker, target)) {
       return { canExecute: false, needsCasting: false, executed: false }
     }
 
@@ -95,7 +94,7 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
     }
 
     // If somehow castTime is 0, execute immediately
-    const executed = this.execute(mob, target, roomId)
+    const executed = this.execute(attacker, target, roomId)
     return {
       canExecute: true,
       needsCasting: false,

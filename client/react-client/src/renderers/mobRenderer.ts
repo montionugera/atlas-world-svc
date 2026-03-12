@@ -104,6 +104,29 @@ export const drawMobs = (
         );
     }
 
+    // Debug tracking overlay (Distance & Target)
+    if (mob.currentAttackTarget || mob.currentChaseTarget || mob.targetX) {
+        let debugText = '';
+        if (mob.currentAttackTarget) debugText = `🗡️ ${mob.currentAttackTarget.substring(0, 4)}`;
+        else if (mob.currentChaseTarget) debugText = `👀 ${mob.currentChaseTarget.substring(0, 4)}`;
+        else debugText = `📍 WANDER`;
+        
+        // Calculate distance from synced targetX/Y and client-side x/y
+        if (mob.targetX !== undefined && mob.targetY !== undefined) {
+            const dist = Math.hypot(mob.targetX - mob.x, mob.targetY - mob.y);
+            debugText += ` | Dist: ${dist.toFixed(1)}`;
+        }
+        
+        drawText(
+          ctx,
+          debugText,
+          x - (12 * inverseScale),
+          y - (mob.radius * scale) + (8 * inverseScale), // Right below the health bar/mob top
+          '#ffff00', // Yellow debug text
+          `${fontSize * 0.8}px Courier New` 
+        );
+    }
+
     // Draw heading indicator (same as player)
     if (mob.heading !== undefined) {
       drawHeading(

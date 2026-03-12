@@ -12,7 +12,7 @@ Authoritative realtime simulator responsible for match/map instances. Implements
 
 ## 1) Responsibilities & Boundaries
 **Owns**
-- Authoritative state for one *map instance* (players, monsters, AoEs).
+- Authoritative state for one *map instance* (players, monsters, companions, AoEs).
 - Physics & collision (Planck.js per floor).
 - AOI filtering, delta snapshots, reliable events.
 - Skill/cooldown rules, damage application.
@@ -76,7 +76,7 @@ u32 serverTimeMs
   u16 count
   repeat count:
     u32 id
-    u8  kind     // 0 player,1 monster,2 aoe
+    u8  kind     // 0 player, 1 monster, 2 aoe, 3 companion
     u8  floor
     i16 xQ, i16 yQ       // pos * 10 (decimeters)
     i16 dirQ             // radians * 100
@@ -131,6 +131,7 @@ u32 serverTimeMs
 ### 5.1 Runtime State (RAM)
 - `players: Map<userId, PlayerState>`
 - `monsters: Map<u32, MonsterState>`
+- `companions: Map<u32, CompanionState>`
 - `aoes: Map<u32, AoEState>`
 - `worlds: Map<floor, planck.World>`
 - `aoi: Map<floor, GridIndex>`
@@ -154,8 +155,10 @@ u32 serverTimeMs
 - AoE represented as 2D circle/box/cone; pulses on cadence.
 - Overlap tests limited to AOI cells only.
 
-### 6.3 AI
+### 6.3 AI & Companions
 - Perception via AOI; simple FSM (idle→chase→attack).
+- **Monsters:** Target players/companions based on proximity/aggro.
+- **Companions:** Locked to an `ownerId`, follow owner logic, attack hostiles dynamically.
 - 2D navmesh per floor (optional); portals as nav links.
 - Runs 6–10 Hz, never every tick.
 

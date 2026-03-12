@@ -1,7 +1,7 @@
 # 🎮 Realtime Game Server — Server-Side Spec (2.5D Layered)
 
 ## 🎯 Scope & Targets
-- **Per map:** 150–300 players, ~100 monsters, ~200 active AoEs
+- **Per map:** 150–300 players, ~100 monsters, ~50 companions, ~200 active AoEs
 - **Authoritative:** movement, collisions, skills, cooldowns, floor changes
 - **Timings:** 30 Hz server tick, 60 Hz physics sub-step, ~25 Hz AOI snapshots
 - **Latency feel:** <120 ms perceived (prediction + 100–150 ms interp buffer)
@@ -106,6 +106,16 @@ export interface PlayerState {
 
 export interface MonsterState { /* similar minimal fields */ }
 
+export interface CompanionState {
+  id: string; ownerId: string; floor: number;
+  x: number; y: number;            // 2D plane (XZ)
+  vx: number; vy: number;
+  dir: number;                      // radians (yaw projected)
+  hp: number; flags: number;
+  currentBehavior: string;          // FSM state (idle, chase, attack)
+  currentAttackTarget: string;
+}
+
 export interface AoEState {
   id: number; floor: number;
   kind: "circle" | "box" | "cone";
@@ -121,6 +131,7 @@ export interface MatchState {
   aoi: AoiIndexByFloor;             // floor → grid index
   players: Map<string, PlayerState>;
   monsters: Map<number, MonsterState>;
+  companions: Map<string, CompanionState>;
   aoes: Map<number, AoEState>;
   slopes: SlopesBundle;
   portals: PortalsBundle;
@@ -163,7 +174,7 @@ export interface MatchState {
 
 ## 🧮 Physics
 - Static: colliders from 2D footprints
-- Dynamic: players = circles, monsters = circles/boxes
+- Dynamic: players/companions = circles, monsters = circles/boxes
 - AoEs = simple geometry checks
 - Slopes = modifiers only (not colliders)
 
@@ -172,7 +183,7 @@ export interface MatchState {
 - Portals: trigger → lock input → transfer
 - Slopes: speed mul, elevation audit
 - AoE: pulses query AOI, apply damage
-- AI: FSM, path on floor navmesh, 6–10 Hz
+- AI: FSM, path on floor navmesh, 6–10 Hz (Monsters & Companions)
 
 ## 🔒 Security
 - Server authoritative
