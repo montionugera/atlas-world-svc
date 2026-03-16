@@ -419,7 +419,7 @@ describe('Projectile System', () => {
       player.y = 100
       player.isAlive = true
 
-      mob.updateAttack(gameState.players, 'test-room')
+      mob.updateAttack(gameState, 'test-room')
 
       // Should start casting (strategy canExecute checks canAttack internally)
       expect(mob.isCasting).toBe(true)
@@ -441,7 +441,7 @@ describe('Projectile System', () => {
       player.x = 110
       player.y = 100
 
-      mob.updateAttack(gameState.players, 'test-room')
+      mob.updateAttack(gameState, 'test-room')
 
       // Should have created projectile
       expect(gameState.projectiles.size).toBe(1)
@@ -461,7 +461,7 @@ describe('Projectile System', () => {
       player.x = 102 // Very close
       player.y = 100
 
-      mob.updateAttack(gameState.players, 'test-room')
+      mob.updateAttack(gameState, 'test-room')
 
       // Should use melee (instant, no cast time, but creates projectile for unified flow)
       expect(mob.isCasting).toBe(false)

@@ -82,6 +82,7 @@ export class GameRoom extends Room<GameState> {
     // Start AI & Mobs logic
     this.state.aiModule.start()
     this.state.reInitializeMobs()
+    this.state.seedDemoNPCs()
 
     // Start simulation loop
     this.setPatchRate(50)

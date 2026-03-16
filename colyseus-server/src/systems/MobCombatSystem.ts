@@ -1,11 +1,17 @@
 import { Mob } from '../schemas/Mob'
 import { Player } from '../schemas/Player'
+import { GameState } from '../schemas/GameState'
+import { WorldLife } from '../schemas/WorldLife'
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { AttackDefinition } from '../config/mobTypesConfig'
 import { eventBus, RoomEventType, BattleAttackData } from '../events/EventBus'
 import { MOB_STATS } from '../config/combatConfig'
 
 import { BaseCombatSystem } from './BaseCombatSystem'
+
+function getTargetFromGameState(gameState: GameState, id: string): WorldLife | undefined {
+  return gameState.players.get(id) ?? gameState.npcs.get(id)
+}
 
 export class MobCombatSystem extends BaseCombatSystem<Mob> {
   constructor(mob: Mob) {
@@ -18,48 +24,42 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
   }
 
   /**
-   * Main update loop for combat logic
+   * Main update loop for combat logic. Target can be player or NPC (from gameState.players or gameState.npcs).
    */
   update(
     deltaTime: number,
-    players: Map<string, any>,
+    gameState: GameState,
     roomId: string
   ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
-    // Only process attacks if we're in attack behavior
     if (this.mob.currentBehavior !== 'attack' || !this.mob.currentAttackTarget) {
       return { attacked: false }
     }
 
-    const targetPlayer = players.get(this.mob.currentAttackTarget)
-    if (!targetPlayer || !targetPlayer.isAlive) {
-      // Target is dead or doesn't exist, clear attack target
+    const target = getTargetFromGameState(gameState, this.mob.currentAttackTarget)
+    if (!target || !target.isAlive) {
       this.mob.currentAttackTarget = ''
-      this.mob.currentBehavior = 'wander' // Fallback to wander
+      this.mob.currentBehavior = 'wander'
       this.mob.isCasting = false
       this.mob.castStartTime = 0
       return { attacked: false }
     }
 
-    // Update target position directly on mob (used by movement system)
-    this.mob.targetX = targetPlayer.x
-    this.mob.targetY = targetPlayer.y
+    this.mob.targetX = target.x
+    this.mob.targetY = target.y
 
-    // Use attack strategies if available
     if (this.mob.attackStrategies.length > 0) {
-      return this.updateAttackWithStrategies(targetPlayer, roomId, players)
+      return this.updateAttackWithStrategies(target, roomId, gameState)
     }
 
-    // Legacy behavior: melee attack (for backward compatibility)
     if (!this.canAttack()) {
       return { attacked: false }
     }
 
-    const distanceToTargetPlayer = this.mob.getDistanceTo(targetPlayer)
-    const effectiveMeleeRange = this.mob.attackRange + this.mob.radius + targetPlayer.radius
-    if (distanceToTargetPlayer > effectiveMeleeRange) {
-      // Target moved out of range, switch to chase behavior
+    const distanceToTarget = this.mob.getDistanceTo(target)
+    const effectiveMeleeRange = this.mob.attackRange + this.mob.radius + target.radius
+    if (distanceToTarget > effectiveMeleeRange) {
       console.log(
-        `🎯 MOB ${this.mob.id}: Target out of range (${distanceToTargetPlayer.toFixed(2)} > ${effectiveMeleeRange.toFixed(2)}), switching to chase`
+        `🎯 MOB ${this.mob.id}: Target out of range (${distanceToTarget.toFixed(2)} > ${effectiveMeleeRange.toFixed(2)}), switching to chase`
       )
       this.mob.currentBehavior = 'chase'
       this.mob.currentChaseTarget = this.mob.currentAttackTarget
@@ -67,25 +67,18 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
       return { attacked: false }
     }
 
-    // Emit attack event - let BattleManager handle all battle logic
     const attackData: BattleAttackData = {
       actorId: this.mob.id,
-      targetId: targetPlayer.id,
+      targetId: target.id,
       damage: this.mob.attackDamage,
       range: this.mob.attackRange,
       roomId: roomId
     }
-
-    // Emit the battle attack event
     eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData)
-    console.log(
-      `📡 MOB ${this.mob.id} emitted battle attack event for ${targetPlayer.id}`
-    )
+    console.log(`📡 MOB ${this.mob.id} emitted battle attack event for ${target.id}`)
 
-    // Update cooldown
     this.mob.lastAttackTime = performance.now()
-    
-    return { attacked: true, targetId: targetPlayer.id, eventEmitted: true }
+    return { attacked: true, targetId: target.id, eventEmitted: true }
   }
 
   /**
@@ -143,23 +136,20 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
       }
   }
 
-  // Process the attack queue
-  private processAttackQueue(players: Map<string, any>, roomId: string): { attacked: boolean; targetId?: string; eventEmitted?: boolean } | null {
+  // Process the attack queue (target can be player or NPC)
+  private processAttackQueue(gameState: GameState, roomId: string): { attacked: boolean; targetId?: string; eventEmitted?: boolean } | null {
       if (this.mob.attackQueue.length === 0) return null
 
       const now = Date.now()
-      const nextAttack = this.mob.attackQueue[0] // Peek
+      const nextAttack = this.mob.attackQueue[0]
 
-      // Check if it's time to fire
       if (now >= nextAttack.executionTime) {
-          // Dequeue
           this.mob.attackQueue.shift()
-          
-          const targetPlayer = players.get(nextAttack.targetId) as Player
-          if (targetPlayer /* && targetPlayer.isAlive */) { 
-               // Execute
+
+          const target = getTargetFromGameState(gameState, nextAttack.targetId)
+          if (target) { 
                if (typeof (nextAttack.strategy as any).performAttack === 'function') {
-                   (nextAttack.strategy as any).performAttack(this.mob, targetPlayer, nextAttack.attackDef)
+                   (nextAttack.strategy as any).performAttack(this.mob, target, nextAttack.attackDef)
                } else {
                    console.warn(`⚠️ Mob ${this.mob.id}: Strategy ${nextAttack.strategy.name} does not support queued execution via performAttack`)
                }
@@ -197,54 +187,47 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
       }
   }
 
-  // Update attack using attack strategies
+  // Update attack using attack strategies (target can be player or NPC)
   private updateAttackWithStrategies(
-    targetPlayer: Player,
+    target: WorldLife,
     roomId: string,
-    players: Map<string, any>
+    gameState: GameState
   ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
     const currentTimeMs = Date.now()
     const currentTimePerf = performance.now()
 
-    // 1. Process Attack Queue (High Priority)
-    const queueResult = this.processAttackQueue(players, roomId)
+    const queueResult = this.processAttackQueue(gameState, roomId)
     if (queueResult !== null) {
         return queueResult
     }
 
-    // Check casting phase first (Legacy/Fallback for non-queue strategies)
-    const castingResult = this.checkWindUpPhase(targetPlayer, roomId)
+    const castingResult = this.checkWindUpPhase(target, roomId)
     if (castingResult !== null) {
       return castingResult
     }
 
-    // Sort strategies by priority
-    const strategiesByPriority = this.sortStrategiesByPriority(this.mob.attackStrategies, targetPlayer)
-    
-    // Check cooldown and prepare debug logging
+    const strategiesByPriority = this.sortStrategiesByPriority(this.mob.attackStrategies, target)
+
     const isCooldownReady = this.canAttack()
     const cooldownStateChanged = isCooldownReady !== this.mob.lastCooldownState
     const shouldLogDebug = cooldownStateChanged && isCooldownReady
-    
+
     if (shouldLogDebug) {
-      const cooldownElapsed = currentTimePerf - this.mob.lastAttackTime
-      const distance = this.mob.getDistanceTo(targetPlayer)
+      const distance = this.mob.getDistanceTo(target)
       console.log(`🔍 DEBUG: ${this.mob.id} cooldown ready, checking ${strategiesByPriority.length} strategies`)
       this.mob.lastCooldownState = isCooldownReady
     }
-    
-    // Try each strategy in priority order
+
     for (const strategy of strategiesByPriority) {
-      const result = strategy.attemptExecute(this.mob, targetPlayer, roomId)
-      
+      const result = strategy.attemptExecute(this.mob, target as Player, roomId)
+
       if (!result.canExecute) {
-        continue // Try next strategy
+        continue
       }
 
-      // Log strategy details if debug logging is enabled
       if (shouldLogDebug) {
-        const distance = this.mob.getDistanceTo(targetPlayer)
-        const range = this.getStrategyRange(strategy, targetPlayer)
+        const distance = this.mob.getDistanceTo(target)
+        const range = this.getStrategyRange(strategy, target as Player)
         console.log(`  🔍 Strategy "${strategy.name}": canExecute=true, distance=${distance.toFixed(2)}, effectiveRange=${range.toFixed(2)}`)
       }
 
@@ -258,8 +241,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
       }
     }
 
-    // No strategy can execute - check if target out of range
-    if (this.checkTargetOutOfRange(targetPlayer)) {
+    if (this.checkTargetOutOfRange(target)) {
       return { attacked: false }
     }
 
@@ -270,17 +252,14 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     return { attacked: false }
   }
 
-  // Helper: Check if target is out of attack range
-  private checkTargetOutOfRange(targetPlayer: Player): boolean {
-    // If we are currently casting, DO NOT check range or switch behavior
+  private checkTargetOutOfRange(target: WorldLife): boolean {
     if (this.mob.isCasting) return false
 
-    const distance = this.mob.getDistanceTo(targetPlayer)
-    // Use edge-to-edge distance so we don't drop aggro just from being physically blocked by another mob
-    const edgeToEdgeDistance = Math.max(0, distance - this.mob.radius - (targetPlayer.radius || 4))
-    
+    const distance = this.mob.getDistanceTo(target)
+    const edgeToEdgeDistance = Math.max(0, distance - this.mob.radius - (target.radius || 4))
+
     const maxRange = Math.max(
-      ...this.mob.attackStrategies.map(s => this.getStrategyRange(s, targetPlayer))
+      ...this.mob.attackStrategies.map(s => this.getStrategyRange(s, target as Player))
     )
     
     if (edgeToEdgeDistance > maxRange) {
@@ -296,16 +275,14 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     return false
   }
 
-  // Helper: Get strategy's effective range
-  public getStrategyRange(strategy: AttackStrategy, target: Player): number {
+  public getStrategyRange(strategy: AttackStrategy, target: WorldLife): number {
     if (strategy.name === 'melee') {
       return this.mob.attackRange + this.mob.radius + target.radius
     }
     return (strategy as any).maxRange || this.mob.attackRange
   }
 
-  // Helper: Sort strategies by priority
-  private sortStrategiesByPriority(strategies: AttackStrategy[], target: Player): AttackStrategy[] {
+  private sortStrategiesByPriority(strategies: AttackStrategy[], target: WorldLife): AttackStrategy[] {
     return [...strategies].sort((a, b) => {
       // Instant attacks (0 cast time) have priority
       const aIsInstant = a.getCastTime() === 0
@@ -342,9 +319,8 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     }
   }
 
-  // Helper: Check if casting is complete
   private checkWindUpPhase(
-    targetPlayer: Player,
+    target: WorldLife,
     roomId: string
   ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } | null {
     if (!this.mob.isCasting || this.mob.castStartTime === 0) return null
@@ -357,8 +333,8 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
         if (!this.mob.currentAttackStrategy) return null
 
         console.log(`🎯 DEBUG: ${this.mob.id} windup complete, executing ${this.mob.currentAttackStrategy.name} attack`)
-        const attackExecuted = this.mob.currentAttackStrategy.execute(this.mob, targetPlayer, roomId)
-        
+        const attackExecuted = this.mob.currentAttackStrategy.execute(this.mob, target as Player, roomId)
+
         if (attackExecuted) {
           this.mob.isCasting = false
           this.mob.castStartTime = 0
@@ -366,7 +342,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
           this.mob.lastAttackTime = performance.now()
           this.mob.isAttacking = true
           this.mob.attackAnimationStartTime = performance.now()
-          return { attacked: true, targetId: targetPlayer.id, eventEmitted: true }
+          return { attacked: true, targetId: target.id, eventEmitted: true }
         } else {
           console.log(`❌ DEBUG: ${this.mob.id} strategy.execute() returned false`)
           this.mob.isCasting = false

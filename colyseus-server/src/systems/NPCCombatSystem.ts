@@ -4,6 +4,15 @@ import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { AttackDefinition } from '../config/mobTypesConfig'
 import { eventBus, RoomEventType, BattleAttackData } from '../events/EventBus'
 import { BaseCombatSystem } from './BaseCombatSystem'
+import { BehaviorState } from '../ai/behaviors/BehaviorState'
+import { processAttackQueue } from './attackQueue'
+
+export interface NPCAttackQueueItem {
+  executionTime: number
+  attackDef: AttackDefinition
+  strategy: AttackStrategy
+  targetId: string
+}
 
 export class NPCCombatSystem extends BaseCombatSystem<any> {
   constructor(npc: NPC) {
@@ -19,15 +28,15 @@ export class NPCCombatSystem extends BaseCombatSystem<any> {
     mobs: Map<string, Mob>,
     roomId: string
   ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
-    // NPC AI behavior for attacking is "npcAttack"
-    if (this.npc.currentBehavior !== 'npcAttack' || !this.npc.currentAttackTarget) {
+    if (this.npc.currentBehavior !== BehaviorState.ATTACK || !this.npc.currentAttackTarget) {
       return { attacked: false }
     }
 
     const targetMob = mobs.get(this.npc.currentAttackTarget)
     if (!targetMob || !targetMob.isAlive) {
       this.npc.currentAttackTarget = ''
-      this.npc.currentBehavior = 'followPlayer' // Fallback
+      this.npc.currentBehavior = BehaviorState.CHASE
+      if (this.npc.ownerId) this.npc.currentChaseTarget = this.npc.ownerId
       this.npc.isCasting = false
       this.npc.castStartTime = 0
       return { attacked: false }
@@ -40,17 +49,16 @@ export class NPCCombatSystem extends BaseCombatSystem<any> {
       return this.updateAttackWithStrategies(targetMob, roomId, mobs)
     }
 
-    // Basic Melee fallback
     if (!this.canAttack()) {
       return { attacked: false }
     }
 
     const distanceToTarget = this.npc.getDistanceTo(targetMob)
     const effectiveMeleeRange = this.npc.attackRange + this.npc.radius + targetMob.radius
-    
+
     if (distanceToTarget > effectiveMeleeRange) {
-      this.npc.currentBehavior = 'followPlayer'
-      this.npc.currentChaseTarget = this.npc.ownerId
+      this.npc.currentBehavior = BehaviorState.CHASE
+      if (this.npc.ownerId) this.npc.currentChaseTarget = this.npc.ownerId
       this.npc.currentAttackTarget = ''
       return { attacked: false }
     }
@@ -115,43 +123,44 @@ export class NPCCombatSystem extends BaseCombatSystem<any> {
       if (this.npc.attackQueue.length === 0) return null
 
       const now = Date.now()
-      const nextAttack = this.npc.attackQueue[0]
+      let lastResult: { attacked: boolean; targetId?: string; eventEmitted?: boolean } | null = null
 
-      if (now >= nextAttack.executionTime) {
-          this.npc.attackQueue.shift()
-          
-          const targetMob = mobs.get(nextAttack.targetId)
-          if (targetMob) { 
-               if (typeof (nextAttack.strategy as any).performAttack === 'function') {
-                   (nextAttack.strategy as any).performAttack(this.npc, targetMob, nextAttack.attackDef)
-               }
-
-               this.npc.lastAttackTime = performance.now()
-               this.npc.isAttacking = true
-               this.npc.attackAnimationStartTime = performance.now()
-
-               if (nextAttack.attackDef.cooldown !== undefined) {
-                   this.npc.attackDelay = nextAttack.attackDef.cooldown
-               } else {
-                   const windUp = nextAttack.attackDef.atkWindUpTime || 0
-                   this.npc.attackDelay = windUp + this.npc.baseWindDownTime
-               }
+      processAttackQueue(
+          this.npc.attackQueue as NPCAttackQueueItem[],
+          now,
+          (item) => item.executionTime,
+          (item: NPCAttackQueueItem) => {
+              const targetMob = mobs.get(item.targetId)
+              if (targetMob) {
+                  if (typeof (item.strategy as any).performAttack === 'function') {
+                      (item.strategy as any).performAttack(this.npc, targetMob, item.attackDef)
+                  }
+                  this.npc.lastAttackTime = performance.now()
+                  this.npc.isAttacking = true
+                  this.npc.attackAnimationStartTime = performance.now()
+                  if (item.attackDef.cooldown !== undefined) {
+                      this.npc.attackDelay = item.attackDef.cooldown
+                  } else {
+                      const windUp = item.attackDef.atkWindUpTime || 0
+                      this.npc.attackDelay = windUp + this.npc.baseWindDownTime
+                  }
+              }
+              lastResult = { attacked: true, targetId: item.targetId, eventEmitted: true }
           }
+      )
 
-          if (this.npc.attackQueue.length > 0) {
-              this.npc.isCasting = true
-              this.npc.castStartTime = now
-              this.npc.castDuration = this.npc.attackQueue[0].executionTime - now
-          } else {
-              this.npc.isCasting = false
-              this.npc.currentAttackStrategy = null
-          }
-
-          return { attacked: true, targetId: nextAttack.targetId, eventEmitted: true }
-      } else {
+      const next = this.npc.attackQueue[0] as NPCAttackQueueItem | undefined
+      if (next) {
           this.npc.isCasting = true
-          return { attacked: false }
+          this.npc.castStartTime = now
+          this.npc.castDuration = next.executionTime - now
+          this.npc.currentAttackStrategy = next.strategy
+      } else {
+          this.npc.isCasting = false
+          this.npc.currentAttackStrategy = null
       }
+
+      return lastResult ?? (this.npc.attackQueue.length > 0 ? { attacked: false } : null)
   }
 
   private updateAttackWithStrategies(
@@ -205,8 +214,8 @@ export class NPCCombatSystem extends BaseCombatSystem<any> {
     )
     
     if (distance > maxRange) {
-      this.npc.currentBehavior = 'followPlayer'
-      this.npc.currentChaseTarget = this.npc.ownerId
+      this.npc.currentBehavior = BehaviorState.CHASE
+      if (this.npc.ownerId) this.npc.currentChaseTarget = this.npc.ownerId
       this.npc.currentAttackTarget = ''
       this.npc.isCasting = false
       this.npc.castStartTime = 0

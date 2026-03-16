@@ -6,9 +6,10 @@
 import { GameState } from '../schemas/GameState'
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
+import { NPC } from '../schemas/NPC'
+import { WorldLife } from '../schemas/WorldLife'
 import { IAgent } from './interfaces/IAgent'
 import { AIDecision } from './core/AIBehavior'
-import { NPC } from '../schemas/NPC'
 
 export interface WorldData {
   players: Player[]
@@ -99,35 +100,62 @@ export class AIWorldInterface {
     return { nearbyPlayers, nearbyMobs }
   }
 
-  // Helper: get nearest player to a position (only alive players)
-  getNearestPlayer(position: { x: number; y: number }, excludeId?: string): Player | null {
+  /** Nearest alive entity with a different teamId (players, NPCs, mobs). Used for chase/attack targeting. */
+  getNearestOppositeTeam(
+    position: { x: number; y: number },
+    myTeamId: string | undefined,
+    excludeId?: string
+  ): WorldLife | null {
+    let nearest: WorldLife | null = null
+    let nearestDist = Infinity
+
+    const consider = (other: WorldLife) => {
+      if (!other.isAlive) return
+      if (excludeId && other.id === excludeId) return
+      if (myTeamId && other.teamId && myTeamId === other.teamId) return
+      const d = this.calculateDistance(position, other)
+      if (d < nearestDist) {
+        nearest = other
+        nearestDist = d
+      }
+    }
+
+    for (const p of this.gameState.players.values()) consider(p)
+    for (const n of this.gameState.npcs.values()) consider(n)
+    for (const m of this.gameState.mobs.values()) consider(m)
+
+    return nearest
+  }
+
+  // Legacy: nearest player only (no NPCs). Prefer getNearestOppositeTeam for targeting.
+  getNearestPlayerOnly(position: { x: number; y: number }, excludeId?: string): Player | null {
     let nearest: Player | null = null
     let nearestDist = Infinity
     for (const player of this.gameState.players.values()) {
-      // Only consider alive players
       if (!player.isAlive) continue
-      // Don't find self if agent is a player
       if (excludeId && player.id === excludeId) continue
-      
       const d = this.calculateDistance(position, player)
       if (d < nearestDist) {
         nearest = player
         nearestDist = d
       }
     }
-    
-    // Check npcs too
+    return nearest
+  }
+
+  // Legacy: nearest player or NPC. Prefer getNearestOppositeTeam for targeting.
+  getNearestPlayer(position: { x: number; y: number }, excludeId?: string): Player | null {
+    let nearest = this.getNearestPlayerOnly(position, excludeId)
+    let nearestDist = nearest ? this.calculateDistance(position, nearest) : Infinity
     for (const npc of this.gameState.npcs.values()) {
       if (!npc.isAlive) continue
       if (excludeId && npc.id === excludeId) continue
-      
       const d = this.calculateDistance(position, npc)
       if (d < nearestDist) {
         nearest = npc as any
         nearestDist = d
       }
     }
-    
     return nearest
   }
 
@@ -174,23 +202,25 @@ export class AIWorldInterface {
     ownerPlayer: Player | null
   } {
     const position = { x: agent.x, y: agent.y }
-    
-    // Find nearest player
-    const nearestPlayerRaw = this.getNearestPlayer(position, agent.id)
-    const distancePlayerRaw = nearestPlayerRaw
-      ? this.calculateDistance(position, nearestPlayerRaw)
-      : Infinity
-    const inRangePlayer = distancePlayerRaw <= (perceptionRange ?? Infinity)
-    const nearestPlayer = inRangePlayer ? nearestPlayerRaw : null
-    const distanceToNearestPlayer = inRangePlayer ? distancePlayerRaw : Infinity
+    const myTeamId = agent.teamId
 
-    // Find nearest mob
-    const nearestMobRaw = this.getNearestMob(position, agent.id)
-    const distanceMobRaw = nearestMobRaw
-      ? this.calculateDistance(position, nearestMobRaw)
-      : Infinity
+    // Chase/attack target = nearest opposite team (player, NPC, or mob by teamId).
+    const nearestEnemy = this.getNearestOppositeTeam(position, myTeamId, agent.id)
+    const distanceEnemy = nearestEnemy ? this.calculateDistance(position, nearestEnemy) : Infinity
+    const inRangeEnemy = distanceEnemy <= (perceptionRange ?? Infinity)
+
+    const isPlayerOrNpc =
+      nearestEnemy && (this.gameState.players.has(nearestEnemy.id) || this.gameState.npcs.has(nearestEnemy.id))
+    const isMobEnemy = nearestEnemy && this.gameState.mobs.has(nearestEnemy.id)
+
+    const nearestPlayer = inRangeEnemy && isPlayerOrNpc ? (nearestEnemy as Player) : null
+    const distanceToNearestPlayer = nearestPlayer ? distanceEnemy : Infinity
+
+    const nearestMobRaw =
+      inRangeEnemy && isMobEnemy ? nearestEnemy : this.getNearestMob(position, agent.id)
+    const distanceMobRaw = nearestMobRaw ? this.calculateDistance(position, nearestMobRaw) : Infinity
     const inRangeMob = distanceMobRaw <= (perceptionRange ?? Infinity)
-    const nearestMob = inRangeMob ? nearestMobRaw : null
+    const nearestMob: IAgent | null = inRangeMob ? (nearestMobRaw as IAgent) : null
     const distanceToNearestMob = inRangeMob ? distanceMobRaw : Infinity
 
     const nearBoundary = this.isNearBoundary(position)

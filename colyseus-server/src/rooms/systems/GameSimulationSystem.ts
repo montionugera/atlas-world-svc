@@ -8,7 +8,7 @@ export class GameSimulationSystem {
     try {
       this.updatePhysicsBodies()
       
-      this.room.physicsManager.update(deltaTime, this.room.state.players, this.room.state.mobs)
+      this.room.physicsManager.update(deltaTime, this.room.state.players, this.room.state.mobs, this.room.state.npcs)
       
       this.room.projectileManager.updateProjectiles(
         this.room.state.projectiles,

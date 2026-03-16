@@ -48,15 +48,15 @@ export class RoomEventHandler {
   }
 
   private setupCollisionCallbacks() {
-    // Projectile vs Player
+    // Projectile vs Player or NPC (NPC uses same collision category as player)
     this.room.physicsManager.onCollision('projectile', 'player', (bodyA, bodyB) => {
       const projectileData = this.room.physicsManager.getEntityDataFromBody(bodyA)
-      const playerData = this.room.physicsManager.getEntityDataFromBody(bodyB)
-      if (projectileData && playerData) {
+      const targetData = this.room.physicsManager.getEntityDataFromBody(bodyB)
+      if (projectileData && targetData) {
         const projectile = this.room.state.projectiles.get(projectileData.id)
-        const player = this.room.state.players.get(playerData.id)
-        if (projectile && player) {
-          this.room.projectileManager.handleEntityCollision(projectile, player)
+        const target = this.room.state.players.get(targetData.id) ?? this.room.state.npcs.get(targetData.id)
+        if (projectile && target) {
+          this.room.projectileManager.handleEntityCollision(projectile, target)
         }
       }
     })

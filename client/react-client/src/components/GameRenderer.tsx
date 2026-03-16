@@ -81,11 +81,12 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
           drawZoneEffects(ctx, gameState.zoneEffects, scale);
         }
         drawMobs(ctx, gameState.mobs, 1, scale);
-        
-        if (gameState.companions) {
-          drawCompanions(ctx, gameState.companions, 1, scale);
+
+        const npcsMap = gameState.npcs ?? gameState.companions;
+        if (npcsMap && npcsMap.size > 0) {
+          drawCompanions(ctx, npcsMap, 1, scale);
         }
-        
+
         drawPlayers(ctx, gameState.players, playerId, 1, scale);
         if (gameState.projectiles) {
           drawProjectiles(ctx, gameState.projectiles, 1, scale);
@@ -134,15 +135,16 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
             ctx.fill();
         });
 
-        // Companions (Orange dots)
-        if (gameState.companions) {
-            ctx.fillStyle = '#ffa500';
-            gameState.companions.forEach(comp => {
-                if (!comp.isAlive) return;
-                ctx.beginPath();
-                ctx.arc(comp.x, comp.y, comp.radius * 2, 0, Math.PI * 2);
-                ctx.fill();
-            });
+        // NPCs / Companions (Purple dots)
+        const npcsForMinimap = gameState.npcs ?? gameState.companions;
+        if (npcsForMinimap) {
+          ctx.fillStyle = '#9b59b6';
+          npcsForMinimap.forEach((comp: { x: number; y: number; radius: number; isAlive?: boolean }) => {
+            if (!comp.isAlive) return;
+            ctx.beginPath();
+            ctx.arc(comp.x, comp.y, comp.radius * 2, 0, Math.PI * 2);
+            ctx.fill();
+          });
         }
 
         // Other Players (Blue dots)

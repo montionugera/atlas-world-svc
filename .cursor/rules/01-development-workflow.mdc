@@ -37,7 +37,7 @@
 ### Documentation
 - Update plans in `.cursor/plans/` for changes
 - Document breaking changes
-- Keep server_spec.md current
+- Keep flow docs and key specs current (e.g. docs/event-flow.spec.md, docs/game-server.spec.md, docs/companion.spec.md)
 
 ### Plan Management
 

@@ -67,9 +67,9 @@ describe('Mob Casting Heading Behavior', () => {
     const newDy = player.y - mob.y
     const targetHeading = Math.atan2(newDy, newDx) // Approx 1.57 (PI/2)
     
-    // Expected behavior: Mob rotates slowly towards target
+    // Expected behavior: Mob rotates towards target even while casting, but at reduced speed.
     // Max rotation = limited speed * delta
-    // limited speed = Math.PI * 0.1 = ~0.314 rad/sec
+    // limited speed = Math.PI * 0.5 = ~1.57 rad/sec
     // delta = 0.016 sec
     // max change ~= 0.005 rad
     
@@ -79,8 +79,8 @@ describe('Mob Casting Heading Behavior', () => {
     
     // Verify exact-ish amount
     // Allow small margin for floating point
-    // Note: Mob default in Mob.ts line 43 is now Math.PI.
-    const expectedHeadingChange = (mob.rotationSpeed * 0.1) * (16 / 1000)
+    // Note: Mob default rotationSpeed in Mob.ts is Math.PI and casting uses 0.5x speed.
+    const expectedHeadingChange = (mob.rotationSpeed * 0.5) * (16 / 1000)
     expect(mob.heading).toBeCloseTo(expectedInitialHeading + expectedHeadingChange, 4)
   })
 })

@@ -3,14 +3,13 @@ import { GAME_CONFIG } from './gameConfig'
 // Global gravity constant for projectile physics (simulated in 2D top-down)
 export const PROJECTILE_GRAVITY = 7 // units/sec²
 
-// Collision categories (bit flags)
+// Collision categories (bit flags). NPC uses PLAYER category to share collision behavior.
 export const COLLISION_CATEGORIES = {
   PLAYER: 0x0001,
   MOB: 0x0002,
   BOUNDARY: 0x0004,
   PROJECTILE: 0x0008,
   POWERUP: 0x0010,
-  NPC: 0x0020,
 } as const
 
 // Physics engine configuration constants
@@ -54,7 +53,7 @@ export const PHYSICS_CONFIG = {
       density: 1.0,
       collisionFilter: {
         category: COLLISION_CATEGORIES.MOB,
-        mask: COLLISION_CATEGORIES.PLAYER | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE | COLLISION_CATEGORIES.NPC,
+        mask: COLLISION_CATEGORIES.PLAYER | COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE,
         group: 0,
       },
     },
@@ -63,11 +62,11 @@ export const PHYSICS_CONFIG = {
       mass: 0.8,
       friction: 0.1,
       frictionAir: 0.01,
-      restitution: 0.3, // Match player bounce
+      restitution: 0.3,
       density: 1.0,
       collisionFilter: {
-        category: COLLISION_CATEGORIES.NPC,
-        mask: COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE, // No PLAYER collision
+        category: COLLISION_CATEGORIES.PLAYER,
+        mask: COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE,
         group: 0,
       },
     },

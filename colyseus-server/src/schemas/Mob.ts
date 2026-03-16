@@ -209,14 +209,9 @@ export class Mob extends WorldLife implements IAgent {
 
     // Game logic: position, heading, and attack (if gameState provided)
     if (gameState) {
-      // Update position logic and target tracking
-      this.updateMobPosition(gameState.players)
-
-      // Update heading based on current target
+      this.updateMobPosition(gameState)
       this.updateHeadingToTarget(deltaTime)
-
-      // Update attack logic and return result
-      return this.updateAttack(gameState.players, gameState.roomId)
+      return this.updateAttack(gameState, gameState.roomId)
     }
 
     return { attacked: false }
@@ -346,22 +341,26 @@ export class Mob extends WorldLife implements IAgent {
     }
   }
 
+  // Resolve target id from players or npcs (mobs can attack either)
+  private getTargetFromGameState(gameState: GameState, id: string): WorldLife | undefined {
+    return gameState.players.get(id) ?? gameState.npcs.get(id)
+  }
+
   // Update position logic - handles movement, target tracking, and heading updates
-  updateMobPosition(players: Map<string, any>): {
+  updateMobPosition(gameState: GameState): {
     moved: boolean
     targetX?: number
     targetY?: number
   } {
-    // Update target positions for heading calculation based on current behavior
     if (this.currentBehavior === BehaviorState.ATTACK && this.currentAttackTarget) {
-      const attackTarget = players.get(this.currentAttackTarget)
+      const attackTarget = this.getTargetFromGameState(gameState, this.currentAttackTarget)
       if (attackTarget && attackTarget.isAlive) {
         this.targetX = attackTarget.x
         this.targetY = attackTarget.y
         return { moved: true, targetX: this.targetX, targetY: this.targetY }
       }
     } else if (this.currentBehavior === BehaviorState.CHASE && this.currentChaseTarget) {
-      const chaseTarget = players.get(this.currentChaseTarget)
+      const chaseTarget = this.getTargetFromGameState(gameState, this.currentChaseTarget)
       if (chaseTarget && chaseTarget.isAlive) {
         this.targetX = chaseTarget.x
         this.targetY = chaseTarget.y
@@ -378,11 +377,8 @@ export class Mob extends WorldLife implements IAgent {
   }
 
   // Update attack logic - uses attack strategies if available, otherwise falls back to legacy behavior
-  updateAttack(
-    players: Map<string, any>,
-    roomId?: string
-  ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
-    return this.combatSystem.update(GAME_CONFIG.tickRate, players, roomId || '')
+  updateAttack(gameState: GameState, roomId?: string): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
+    return this.combatSystem.update(GAME_CONFIG.tickRate, gameState, roomId ?? gameState.roomId ?? '')
   }
 
 

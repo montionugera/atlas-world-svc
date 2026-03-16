@@ -177,10 +177,11 @@ export class PlanckPhysicsManager {
     body.createFixture({
       shape: planck.Circle(mob.radius || PHYSICS_CONFIG.entities.mob.radius),
       isSensor: false,
-      density: 1.0,
-      friction: 0.1,
-      // Low restitution — mobs should deflect, not pinball off each other.
-      restitution: 0.1,
+      density: PHYSICS_CONFIG.entities.mob.density,
+      friction: PHYSICS_CONFIG.entities.mob.friction,
+      restitution: PHYSICS_CONFIG.entities.mob.restitution,
+      filterCategoryBits: PHYSICS_CONFIG.entities.mob.collisionFilter.category,
+      filterMaskBits: PHYSICS_CONFIG.entities.mob.collisionFilter.mask,
     })
 
     // Store entity data in our map
@@ -221,8 +222,8 @@ export class PlanckPhysicsManager {
       filterMaskBits: PHYSICS_CONFIG.entities.npc.collisionFilter.mask,
     })
 
-    // Store entity data
-    const entityData = { type: 'npc', id: npc.id }
+    // Store entity data (type 'player' so projectile–player callback handles both players and NPCs)
+    const entityData = { type: 'player', id: npc.id }
     this.entityDataByBody.set(body, entityData)
 
     this.bodies.set(npc.id, body)
@@ -591,10 +592,15 @@ export class PlanckPhysicsManager {
       this.updateEntityFromBody(mob, mob.id)
     })
     
-    // Sync npcs
+    // Sync npcs (position/velocity from body; heading from velocity when moving)
     if (npcs) {
       npcs.forEach(npc => {
         this.updateEntityFromBody(npc, npc.id)
+        const vx = npc.vx ?? 0
+        const vy = npc.vy ?? 0
+        if (vx * vx + vy * vy > 0.01) {
+          npc.heading = Math.atan2(vy, vx)
+        }
       })
     }
   }

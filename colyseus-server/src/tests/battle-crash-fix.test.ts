@@ -59,7 +59,7 @@ describe('Battle System Crash Fix', () => {
         gameState.mobs.set(mob.id, mob)
         
         // Simulate mob attack (this is how it actually works now)
-        mob.updateAttack(gameState.players, gameState.roomId)
+        mob.updateAttack(gameState)
       }).not.toThrow()
     })
 
@@ -76,7 +76,7 @@ describe('Battle System Crash Fix', () => {
       gameState.mobs.set(mob.id, mob)
       
       // Use the real event-driven flow instead of direct message creation
-      mob.updateAttack(gameState.players, gameState.roomId)
+      mob.updateAttack(gameState)
 
       expect(async () => {
         const processedCount = await battleManager.processActionMessages()
@@ -129,7 +129,7 @@ describe('Battle System Crash Fix', () => {
           mob.lastAttackTime = 0 // Allow attack
 
           // Call updateAttack
-          const result = mob.updateAttack(new Map([[player.id, player]]), 'room-1')
+          const result = mob.updateAttack(gameState, 'room-1')
           expect(result).toBeDefined()
         }).not.toThrow()
       }
@@ -160,7 +160,7 @@ describe('Battle System Crash Fix', () => {
       
       expect(() => {
         // Use real event-driven flow
-        mob.updateAttack(gameState.players, gameState.roomId)
+        mob.updateAttack(gameState)
       }).not.toThrow()
     })
   })
@@ -179,7 +179,7 @@ describe('Battle System Crash Fix', () => {
       
       expect(() => {
         // Try to attack non-existent player
-        mob.updateAttack(gameState.players, gameState.roomId)
+        mob.updateAttack(gameState)
       }).not.toThrow()
     })
 

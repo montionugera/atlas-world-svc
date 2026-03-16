@@ -1,12 +1,14 @@
 import { Player } from '../schemas/Player';
 import { PLAYER_STATS } from '../config/combatConfig';
+import { ScheduledAttack, processAttackQueue } from './attackQueue';
 
 /**
  * PlayerCombatSystem
- * Handles attack logic, cooldowns, targeting, and wind-up phases for a Player.
+ * Handles attack logic, cooldowns, targeting, and wind-up via shared attack queue.
  */
 export class PlayerCombatSystem {
     private player: Player;
+    private attackQueue: ScheduledAttack[] = [];
 
     constructor(player: Player) {
         this.player = player;
@@ -49,22 +51,35 @@ export class PlayerCombatSystem {
     }
 
     /**
-     * Update loop for combat state (wind-up execution)
+     * Update loop: process attack queue (shared pipeline), then sync casting state for client.
      */
     update(deltaTime: number, context?: any): void {
-        // Check pending attack execution (Wind-up complete)
-        if (this.player.pendingAttack && this.player.isAlive) {
-            if (Date.now() >= this.player.attackExecuteTime) {
-                // Wind-up complete!
-                // First, clear casting state so we can execute
-                this.player.isCasting = false;
-                this.player.pendingAttack = false;
-                
-                // Execute
-                if (context) {
-                   this.executeAttack(context);
-                }
-            }
+        const now = Date.now();
+        if (this.player.isAlive && context) {
+            processAttackQueue(
+                this.attackQueue,
+                now,
+                (item) => item.executeTime,
+                () => this.executeAttack(context)
+            );
+        }
+        this.syncCastingStateFromQueue(now);
+    }
+
+    private syncCastingStateFromQueue(now: number): void {
+        const next = this.attackQueue[0];
+        if (next && next.executeTime > now) {
+            this.player.isCasting = true;
+            this.player.castingUntil = next.executeTime;
+            this.player.castDuration = next.executeTime - now;
+            this.player.pendingAttack = true;
+            this.player.attackExecuteTime = next.executeTime;
+            this.player.pendingAttackTargetId = next.targetId ?? '';
+        } else {
+            this.player.isCasting = false;
+            this.player.pendingAttack = false;
+            this.player.attackExecuteTime = 0;
+            this.player.pendingAttackTargetId = '';
         }
     }
 
@@ -101,30 +116,23 @@ export class PlayerCombatSystem {
             return false;
         }
 
-        // WIND-UP LOGIC: Start "casting" the attack
         const windUpTime = PLAYER_STATS.atkWindUpTime || 0;
-        
-        // Mark attack start time for cooldown consistency
-        // effective start of the "attack cycle"
         this.player.lastAttackTime = performance.now();
-        
-        // If no wind-up, execute immediately
+
+        const target = this.findTargetInDirection(context?.mobs || new Map());
+        const targetId = target ? target.id : '';
+
         if (windUpTime <= 0) {
-           return this.executeAttack(context);
+            return this.executeAttack(context);
         }
 
-        // Start wind-up
-        this.player.isCasting = true;
-        this.player.castingUntil = Date.now() + windUpTime;
-        this.player.castDuration = windUpTime;
-        
-        this.player.pendingAttack = true;
-        this.player.attackExecuteTime = this.player.castingUntil;
-        
-        // Pre-calculate target
-        // NOTE: For bots, they must ensure heading is correct BEFORE calling this
-        const target = this.findTargetInDirection(context?.mobs || new Map());
-        this.player.pendingAttackTargetId = target ? target.id : '';
+        const executeTime = Date.now() + windUpTime;
+        this.attackQueue.push({
+            executeTime,
+            targetId,
+            kind: 'melee',
+        });
+        this.syncCastingStateFromQueue(Date.now());
 
         console.log(`⚔️ PLAYER ${this.player.id} starting attack wind-up (${windUpTime}ms)`);
         return true;
