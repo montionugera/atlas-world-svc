@@ -1,6 +1,5 @@
 import { AttackStrategy, AttackExecutionResult } from './AttackStrategy'
-import { Mob } from '../../schemas/Mob'
-import { Player } from '../../schemas/Player'
+import { WorldLife } from '../../schemas/WorldLife'
 import { ProjectileManager } from '../../modules/ProjectileManager'
 import { GameState } from '../../schemas/GameState'
 import { AttackDefinition, AttackCharacteristicType } from '../../config/mobTypesConfig'
@@ -8,6 +7,7 @@ import { calculateEffectiveAttackRange } from '../../config/mobTypesConfig'
 
 export class DoubleAttackStrategy implements AttackStrategy {
   name = 'doubleAttack'
+  public maxRange: number
   private projectileManager: ProjectileManager
   private gameState: GameState
   private attacks: AttackDefinition[]
@@ -20,19 +20,31 @@ export class DoubleAttackStrategy implements AttackStrategy {
     this.projectileManager = projectileManager
     this.gameState = gameState
     this.attacks = attacks
+    // Set maxRange based on the first attack
+    if (this.attacks.length > 0) {
+      // Default fallback size 4 for radius calculation if radius isn't strictly known here
+      this.maxRange = calculateEffectiveAttackRange(this.attacks[0], 4)
+    } else {
+      this.maxRange = 10
+    }
   }
-  canExecute(mob: Mob, target: Player): boolean {
+  canExecute(attacker: any, target: any): boolean {
     if (!target.isAlive) return false
-    if (!mob.canAttack()) return false
+    if (!attacker.canAttack || !attacker.canAttack()) return false
 
     // Check range for the first attack
     const firstAttack = this.attacks[0]
     if (!firstAttack) return false
 
-    const distance = mob.getDistanceTo(target)
-    const effectiveRange = calculateEffectiveAttackRange(firstAttack, mob.radius) + mob.radius + target.radius
+    const distance = attacker.getDistanceTo(target)
     
-    return distance <= effectiveRange
+    // Calculate edge-to-edge distance to be physically accurate even when clustered
+    const edgeToEdgeDistance = Math.max(0, distance - attacker.radius - (target.radius || 4))
+    
+    // Compare against the strictly configured range of the attack itself
+    const effectiveRange = calculateEffectiveAttackRange(firstAttack, 0)
+    
+    return edgeToEdgeDistance <= effectiveRange
   }
   getCastTime(): number {
     // Return cast time for the current step in the combo
@@ -40,34 +52,38 @@ export class DoubleAttackStrategy implements AttackStrategy {
     // The actual delays are handled by the queue.
     return 0
   }
-  execute(mob: Mob, target: Player, roomId: string): boolean {
+  execute(attacker: any, target: any, roomId: string): boolean {
     // Safety check
     if (!target || !target.isAlive) return false
     if (this.attacks.length === 0) return false
 
     
     // Pass strictly the current time as start time
-    mob.enqueueAttacks(this, target.id, this.attacks, Date.now())
+    if (!attacker.combatSystem || typeof attacker.combatSystem.enqueueAttacks !== 'function') {
+        attacker.enqueueAttacks(this, target.id, this.attacks, Date.now())
+    } else {
+        attacker.combatSystem.enqueueAttacks(this, target.id, this.attacks, Date.now())
+    }
     
     return true
   }
 
-  public performAttack(mob: Mob, target: Player, attack: AttackDefinition): void {
+  public performAttack(attacker: any, target: any, attack: AttackDefinition): void {
       if (attack.atkCharacteristic.type === AttackCharacteristicType.PROJECTILE) {
           const char = attack.atkCharacteristic.projectile
           
           // Calculate target position based on heading
-          // This ensures the projectile flies in the direction the mob is facing (supports dodgeable attacks)
-          const heading = mob.heading
+          // This ensures the projectile flies in the direction the attacker is facing (supports dodgeable attacks)
+          const heading = attacker.heading
           const range = char.atkRange || 10
-          const targetX = mob.x + Math.cos(heading) * range
-          const targetY = mob.y + Math.sin(heading) * range
+          const targetX = attacker.x + Math.cos(heading) * range
+          const targetY = attacker.y + Math.sin(heading) * range
           
           const projectileType = char.projectileType || 'spear'
 
           if (projectileType === 'melee') {
               const projectile = this.projectileManager.createMelee(
-                  mob,
+                  attacker,
                   targetX,
                   targetY,
                   attack.atkBaseDmg,
@@ -79,7 +95,7 @@ export class DoubleAttackStrategy implements AttackStrategy {
           } else {
               // Default to 'spear' (projectile)
               const projectile = this.projectileManager.createSpear(
-                  mob,
+                  attacker,
                   targetX,
                   targetY,
                   attack.atkBaseDmg,
@@ -93,15 +109,15 @@ export class DoubleAttackStrategy implements AttackStrategy {
       }
   }
 
-  attemptExecute(mob: Mob, target: Player, roomId: string): AttackExecutionResult {
-    if (!this.canExecute(mob, target)) {
+  attemptExecute(attacker: any, target: any, roomId: string): AttackExecutionResult {
+    if (!this.canExecute(attacker, target)) {
       return { canExecute: false, needsCasting: false, executed: false }
     }
 
     // For Queue System: We always "execute" immediately to populate the queue.
     // The queue then manages the "casting" state internally in Mob.ts.
-    // So we tell Mob.ts "we executed" and "no casting needed from you".
-    const executed = this.execute(mob, target, roomId)
+    // So we tell the actor "we executed" and "no casting needed from you".
+    const executed = this.execute(attacker, target, roomId)
     
     return {
       canExecute: true,

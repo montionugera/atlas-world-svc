@@ -7,6 +7,7 @@ interface GameStatsProps {
   updateRate: number;
   playerCount: number;
   mobCount: number;
+  companionCount: number;
   roomId: string | null;
   isConnected: boolean;
 }
@@ -18,6 +19,7 @@ export const GameStats: React.FC<GameStatsProps> = ({
   updateRate,
   playerCount,
   mobCount,
+  companionCount,
   roomId,
   isConnected
 }) => {
@@ -96,6 +98,10 @@ export const GameStats: React.FC<GameStatsProps> = ({
         <div style={itemStyle}>
              <span style={labelStyle}>Mobs</span>
              <span style={valueStyle}>{mobCount}</span>
+        </div>
+        <div style={itemStyle}>
+             <span style={labelStyle}>Companions</span>
+             <span style={valueStyle}>{companionCount}</span>
         </div>
       </div>
       

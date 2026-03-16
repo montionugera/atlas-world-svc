@@ -4,53 +4,27 @@ This directory contains Cursor rules for the Atlas World Colyseus multiplayer ga
 
 ## Rule Files
 
-### `colyseus-server.mdc`
-Core development rules for Colyseus server development:
-- Room-based architecture patterns
-- Schema design and state management
-- WebSocket communication
-- Performance optimization
-- Real-time game development
+### Workflow and standards
+- **01-development-workflow.mdc** — Branch strategy, commits, PRs, performance, docs, plan management
+- **02-coding-standards.mdc** — TypeScript config, naming, error handling, performance
+- **03-project-structure.mdc** — Root layout, colyseus-server and react-client organization
+- **01-apis-and-constructors.mdc** — Single-path APIs, options objects, no overloads (globs: `*.ts`)
+- **02-accuracy-correctness.mdc** — Timing, rendering scale, heading, authority, event bus, tests
+- **05-entity-lifecycle.mdc** — Use `die()` and transition methods; total vs active counts (globs: `*.ts`)
 
-### `react-client.mdc`
-React TypeScript client development for Colyseus:
-- WebSocket client patterns
-- Real-time state synchronization
-- Game canvas rendering
-- Performance optimization
-- Colyseus integration patterns
+### Server and client
+- **colyseus-server.mdc** — Room lifecycle, schema design, 20 FPS simulation
+- **react-client.mdc** — React + Colyseus client (globs: `client/react-client/**/*.ts(x)`)
+- **typescript.mdc** — Colyseus server TypeScript (ES2020, CommonJS, Schema)
+- **docker-compose.mdc** — Colyseus service (atlas-colyseus-server, port 2567)
 
-### `testing.mdc`
-Comprehensive testing guidelines:
-- Test structure and categories
-- Unit tests vs integration tests
-- Test setup requirements
-- Common test patterns
-- Debugging and troubleshooting
+### Testing and QA
+- **testing.mdc** — Jest tests in `colyseus-server/src/tests/*.test.ts`, commands
+- **04-testing-qa.mdc** — Coverage targets, chaos, monitoring
+- **04-csharp-client.mdc** — Unity/C# client (generated/csharp or Unity projects)
 
-### `docker-compose.mdc`
-Docker Compose service management:
-- Colyseus server containerization
-- Port mappings and environment variables
-- Health checks and monitoring
-- Development workflow
-- Production deployment
-
-### `typescript.mdc`
-TypeScript development for Colyseus:
-- Compilation target and configuration
-- Colyseus Schema patterns
-- Type definitions and naming conventions
-- Common patterns and best practices
-- Build process and common issues
-
-### `05-entity-lifecycle.mdc`
-Entity lifecycle and state management:
-- Death handling patterns (always use `die()` method)
-- Counting semantics (total vs alive counts)
-- State vs lifecycle distinction
-- Cleanup and removal patterns
-- Common mistakes and anti-patterns
+### Docs
+- Project docs: **docs/README.md** (flow order: event-flow → spawn → player → mob-movement → attack → ai → companion; then api, game-server, networking)
 
 ## Quick Reference
 
@@ -80,14 +54,9 @@ cd client/react-client && npm run build
 
 ### Run Tests
 ```bash
-# All tests
-pnpm test
-
-# RPC integration tests
-pnpm run test:integration:rpc
-
-# WebSocket integration tests
-pnpm run test:integration:websocket
+cd colyseus-server
+npm test                  # all Jest tests
+npm test -- --runInBand   # single-thread
 ```
 
 ### Common Commands
@@ -96,13 +65,16 @@ pnpm run test:integration:websocket
 docker-compose ps
 
 # View server logs
-docker-compose logs atlas-server
+docker-compose logs atlas-colyseus-server
 
 # Restart server
-docker-compose restart atlas-server
+docker-compose restart atlas-colyseus-server
 
 # Stop all services
 docker-compose down
+
+# Run server tests
+cd colyseus-server && npm test
 
 # Start React client
 cd client/react-client && npm start
@@ -148,8 +120,8 @@ cd client/react-client && npm start
 - **Performance**: 60fps rendering, smooth interpolation
 
 ### Services
-- **Colyseus Server**: `ws://localhost:2567`
-- **React Client**: `http://localhost:3001`
+- **Colyseus Server**: `ws://localhost:2567` (HTTP same port)
+- **React Client**: `http://localhost:3000` (or port from react-scripts)
 
 ## Development Tips
 
@@ -189,6 +161,11 @@ cd client/react-client && npm start
 2. Verify server is processing 20 FPS simulation
 3. Check WebSocket connection stability
 4. Monitor server logs for bottlenecks
+
+## Maintaining rules
+- Keep rules aligned with the codebase (Colyseus server, React client, docs under `docs/`).
+- After architecture changes, update 03-project-structure and relevant domain rules.
+- Plan cleanup: run `.cursor/scripts/validate-plans.js`, then `.cursor/scripts/cleanup-plans.sh` for finished plans.
 
 ## Contributing
 

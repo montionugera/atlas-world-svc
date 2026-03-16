@@ -8,12 +8,13 @@ import { AIModule } from '../ai/AIModule'
 import { AIWorldInterface } from '../ai/AIWorldInterface'
 // Removed global BattleManager singleton - now using room-scoped instances
 import { eventBus, RoomEventType } from '../events/EventBus'
-import { MOB_STATS, MOB_TYPE_STATS } from '../config/combatConfig'
-import { MeleeAttackStrategy } from '../ai/strategies/MeleeAttackStrategy'
+import { MOB_STATS, MOB_TYPE_STATS, PLAYER_STATS } from '../config/combatConfig'
+import { NPC, type NPCOptions } from './NPC'
 
 export class GameState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>()
   @type({ map: Mob }) mobs = new MapSchema<Mob>()
+  @type({ map: NPC }) npcs = new MapSchema<NPC>()
   @type({ map: Projectile }) projectiles = new MapSchema<Projectile>()
   @type({ map: ZoneEffect }) zoneEffects = new MapSchema<ZoneEffect>()
   @type('number') tick: number = 0
@@ -118,42 +119,98 @@ export class GameState extends Schema {
     }
   }
 
+  /**
+   * Add an NPC (standalone or owned by a player). Uses player-like stats from PLAYER_STATS when stats not provided.
+   */
+  addNPC(options: NPCOptions): NPC {
+    const npc = new NPC({
+      ...options,
+      stats: options.stats ?? {}, // NPC constructor uses PLAYER_STATS as default
+    })
+    this.npcs.set(npc.id, npc)
+    if (options.ownerId) {
+      const owner = this.players.get(options.ownerId)
+      if (owner) {
+        owner.companionIds.push(npc.id)
+        if (!owner.activeNPCId) owner.activeNPCId = npc.id
+      }
+    }
+    this.aiModule.registerAgent(npc, {
+      behaviorPriorities: {
+        avoidBoundary: 10,
+        attack: 8,
+        chase: 5,
+        wander: 1,
+      },
+      perception: { range: 60, fov: 360 },
+      memory: { duration: 5000 },
+      aggression: 0.8,
+    })
+    eventBus.emitRoomEvent(this.roomId, RoomEventType.NPC_SPAWNED, { npc })
+    return npc
+  }
+
   // Add a player to the game
   addPlayer(sessionId: string, name: string) {
-    // Spawn new players at map center for visibility
     const spawnX = this.width / 2
     const spawnY = this.height / 2
-    
-    // Player constructor now initializes PlayerSettingGameplay with these coords
+
     const player = new Player(sessionId, name, spawnX, spawnY)
     this.players.set(sessionId, player)
 
-    // Register player with AI module (initially in manual mode, but ready for bot mode)
-    // We give them similar behaviors to mobs for now
     this.aiModule.registerAgent(player, {
       behaviors: ['attack', 'chase', 'wander', 'boundaryAware', 'idle'],
       perception: { range: 50, fov: 120 },
       memory: { duration: 5000 },
-      aggression: 0.5 // Balanced aggression
+      aggression: 0.5,
     })
 
-    // Emit event for room to handle side effects (physics, battle registration)
     eventBus.emitRoomEvent(this.roomId, RoomEventType.PLAYER_JOINED, { player })
 
     return player
+  }
+
+  /**
+   * Spawn demo NPCs for this room (not tied to any player). Call once per room, e.g. from GameRoom onCreate.
+   */
+  seedDemoNPCs(): void {
+    const count = 5
+    const centerX = this.width / 2
+    const centerY = this.height / 2
+    const offset = 8
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2
+      const x = centerX + offset + Math.cos(angle) * 6
+      const y = centerY + offset + Math.sin(angle) * 6
+      this.addNPC({
+        id: `npc-demo-${i}`,
+        name: `NPC ${i + 1}`,
+        x,
+        y,
+      })
+    }
   }
 
   // Remove a player from the game
   removePlayer(sessionId: string) {
     const player = this.players.get(sessionId)
     if (player) {
-      // Unregister from AI module
+      const toRemove: string[] = []
+      this.npcs.forEach((npc, id) => {
+        if (npc.ownerId === sessionId) toRemove.push(id)
+      })
+      for (const id of toRemove) {
+        const npc = this.npcs.get(id)
+        this.aiModule.unregisterAgent(id)
+        this.npcs.delete(id)
+        if (npc) eventBus.emitRoomEvent(this.roomId, RoomEventType.NPC_REMOVED, { npc })
+      }
+      player.activeNPCId = ''
+      while (player.companionIds.length > 0) player.companionIds.pop()
+
       this.aiModule.unregisterAgent(sessionId)
-      
-      // Emit event for room to handle side effects (physics cleanup, battle unregistration)
       eventBus.emitRoomEvent(this.roomId, RoomEventType.PLAYER_LEFT, { player })
     }
-
     this.players.delete(sessionId)
   }
 
@@ -177,6 +234,8 @@ export class GameState extends Schema {
 
     this.tick++
   }
+
+
   // Update player input (movement)
   updatePlayerInput(sessionId: string, vx: number, vy: number) {
     const player = this.getPlayer(sessionId)

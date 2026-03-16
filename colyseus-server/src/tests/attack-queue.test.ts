@@ -95,7 +95,7 @@ describe('Attack Queue System', () => {
         // 3. Advance time by 100ms
         jest.setSystemTime(now + 100)
         
-        mob.updateAttack(currentPlayers, 'room-1')
+        mob.updateAttack(gameState, 'room-1')
         expect(mob.attackQueue.length).toBe(2)
         expect(mob.isCasting).toBe(true)
         expect(mob.castDuration).toBe(200) // Still winding up first attack
@@ -103,7 +103,7 @@ describe('Attack Queue System', () => {
         // 4. Advance time by 100ms (Total 200ms)
         jest.setSystemTime(now + 200)
         console.log(`Debug Time: ${Date.now()}, Next Execution: ${mob.attackQueue[0]?.executionTime}`)
-        mob.updateAttack(currentPlayers, 'room-1')
+        mob.updateAttack(gameState, 'room-1')
         
         expect(mob.attackQueue.length).toBe(1) // Dequeued
         expect(projectileManager.createSpear).toHaveBeenCalledTimes(1)
@@ -112,14 +112,14 @@ describe('Attack Queue System', () => {
 
         // 5. Advance time by 299ms (Total 499ms)
         jest.setSystemTime(now + 499)
-        mob.updateAttack(currentPlayers, 'room-1')
+        mob.updateAttack(gameState, 'room-1')
         expect(mob.isCasting).toBe(true)
         expect(mob.attackQueue.length).toBe(1)
         expect(mob.castDuration).toBe(300)
         
         // 6. Advance time by 1ms (Total 500ms)
         jest.setSystemTime(now + 500)
-        mob.updateAttack(currentPlayers, 'room-1')
+        mob.updateAttack(gameState, 'room-1')
         
         expect(mob.attackQueue.length).toBe(0)
         expect(projectileManager.createSpear).toHaveBeenCalledTimes(2)
@@ -132,13 +132,13 @@ describe('Attack Queue System', () => {
     test('should clear attack queue when mob is stunned', () => {
         const now = Date.now()
         // 1. Start the attack
-        mob.updateAttack(currentPlayers, 'room-1')
+        mob.updateAttack(gameState, 'room-1')
         expect(mob.attackQueue.length).toBe(2)
         expect(mob.isCasting).toBe(true)
 
         // 2. Advance time partially (e.g. 100ms)
         jest.setSystemTime(now + 100)
-        mob.updateAttack(currentPlayers, 'room-1')
+        mob.updateAttack(gameState, 'room-1')
 
         // 3. Apply Stun
         // mob.isStunned is a getter based on battleStatuses map

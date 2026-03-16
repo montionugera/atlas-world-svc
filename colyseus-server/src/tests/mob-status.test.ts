@@ -73,7 +73,7 @@ describe('Mob Status Effects', () => {
         
         // Act: Apply Stun
         battleModule.applyStatusEffect(mob, 'stun', 5000)
-        const result = mob.updateAttack(gameState.players, 'room1')
+        const result = mob.updateAttack(gameState, 'room1')
         
         // Assert
         expect(mob.isStunned).toBe(true)

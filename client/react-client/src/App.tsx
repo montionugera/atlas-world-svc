@@ -78,6 +78,8 @@ function App() {
   // Prepare data for EntityGrid
   const players = client.gameState?.players ? Array.from(client.gameState.players.values()) : [];
   const mobs = client.gameState?.mobs ? Array.from(client.gameState.mobs.values()) : [];
+  const npcsMap = client.gameState?.npcs ?? client.gameState?.companions;
+  const companions = npcsMap ? Array.from(npcsMap.values()) : [];
   
   const [showHelp, setShowHelp] = useState(false);
 
@@ -138,6 +140,7 @@ function App() {
                    updateRate={client.updateRate}
                    playerCount={players.length}
                    mobCount={mobs.length}
+                   companionCount={companions.length}
                    roomId={client.roomId}
                    isConnected={client.isConnected}
                 />

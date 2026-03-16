@@ -1,4 +1,4 @@
-import { type, MapSchema } from '@colyseus/schema'
+import { type, MapSchema, ArraySchema } from '@colyseus/schema'
 import { WorldLife } from './WorldLife'
 import { PlayerInput } from './PlayerInput'
 import { PLAYER_STATS } from '../config/combatConfig'
@@ -16,6 +16,9 @@ export class Player extends WorldLife implements IAgent {
   @type('boolean') isBotMode: boolean = false // Synced: indicates if player is in bot mode
   @type('boolean') isCasting: boolean = false // Synced: indicates if player is currently casting
   
+  @type('string') activeNPCId: string = '' // First/primary companion (backward compat)
+  @type(['string']) companionIds: ArraySchema<string> = new ArraySchema<string>() // All owned NPC ids
+
   @type(PlayerSettingGameplay) settingGameplay: PlayerSettingGameplay
 
   // Input state (server-only, not synced to clients)

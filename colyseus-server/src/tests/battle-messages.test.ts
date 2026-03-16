@@ -153,7 +153,7 @@ describe('Battle Message System', () => {
       mob.attackDelay = 100 // Reduce attack delay for testing
 
       // Call mob updateAttack (emits BATTLE_ATTACK event)
-      const result = mob.updateAttack(new Map([[player.id, player]]), 'room-1')
+      const result = mob.updateAttack(gameState, 'room-1')
 
       expect(result.attacked).toBe(true)
       expect(result.eventEmitted).toBe(true)
@@ -164,7 +164,7 @@ describe('Battle Message System', () => {
       mob.currentBehavior = 'wander'
       mob.currentAttackTarget = ''
 
-      const result = mob.updateAttack(new Map([[player.id, player]]), 'room-1')
+      const result = mob.updateAttack(gameState, 'room-1')
 
       expect(result.attacked).toBe(false)
       expect(result.eventEmitted).toBeUndefined()

@@ -642,14 +642,12 @@ export class BattleModule implements BattleActionProcessor {
 
   // Get entity by ID from GameState
   getEntity(entityId: string): WorldLife | undefined {
-    // Check players first
     const player = this.gameState.players.get(entityId)
     if (player) return player
-    
-    // Check mobs
     const mob = this.gameState.mobs.get(entityId)
     if (mob) return mob
-    
+    const npc = this.gameState.npcs.get(entityId)
+    if (npc) return npc
     return undefined
   }
 

@@ -6,15 +6,16 @@ atlas-world-svc/
 ├── .cursor/
 │   ├── plans/           # Implementation plans
 │   └── rules/           # Development rules
+├── docs/                # Project docs (flow specs, api, networking)
 ├── colyseus-server/
 │   ├── src/
 │   │   ├── index.ts     # Server entry point
 │   │   ├── rooms/       # Game room handlers
 │   │   ├── schemas/     # Colyseus schemas
-│   │   └── types/       # TypeScript types
-│   ├── generated/csharp/ # C# Unity client
-│   ├── docs/            # API documentation
-│   ├── tests/           # Test files
+│   │   ├── ai/          # AI module, behaviors, strategies
+│   │   ├── physics/     # Planck physics
+│   │   └── tests/       # Jest unit/integration tests
+│   ├── generated/csharp/ # C# Unity client (generated)
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── Dockerfile
@@ -25,12 +26,12 @@ atlas-world-svc/
 ```
 
 ### Colyseus Server Organization
-- **rooms/**: Game room handlers and logic
-- **schemas/**: Colyseus state schemas (Player, Mob, GameState)
-- **types/**: Shared TypeScript interfaces
-- **index.ts**: Server configuration and startup
-- **generated/csharp/**: C# Unity client library
-- **docs/**: API documentation (HTML, AsyncAPI)
+- **rooms/**: GameRoom, handlers, GameSimulationSystem
+- **schemas/**: Colyseus state schemas (Player, Mob, NPC, GameState)
+- **ai/**: AIModule, behaviors, AIWorldInterface
+- **physics/**: PlanckPhysicsManager
+- **src/tests/**: Jest tests (*.test.ts)
+- **generated/csharp/**: C# Unity client library (generated)
 
 ### React Client Organization
 - **components/**: React UI components

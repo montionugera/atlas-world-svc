@@ -51,9 +51,22 @@ export interface Mob {
   // Status Effects
   battleStatuses?: Map<string, BattleStatus>; // Synced: Status Type -> BattleStatus Object
   
+  // Combat and Visuals
+  currentHealth?: number;
+  maxHealth?: number;
+  heading?: number;
+  isAttacking?: boolean;
+  attackRange?: number;
+
   // Resistances
   freezeResist?: number;
   stunResist?: number;
+}
+
+export interface Companion extends Mob {
+  ownerId: string;
+  respawnTimeMs: number;
+  diedAt: number;
 }
 
 export interface Player {
@@ -96,11 +109,15 @@ export interface Projectile {
 export interface GameState {
   players: Map<string, Player>;
   mobs: Map<string, Mob>;
+  /** Server sends npcs (MapSchema). Use this for companion/NPC list. */
+  npcs?: Map<string, Companion>;
+  /** @deprecated Prefer npcs. Kept for backward compat. */
+  companions?: Map<string, Companion>;
   projectiles?: Map<string, Projectile>;
-  zoneEffects?: Map<string, ZoneEffect>; // Changed from traps
+  zoneEffects?: Map<string, ZoneEffect>;
   tick: number;
   mapId: string;
-  roomId?: string; // Room ID from server (synced via Colyseus)
+  roomId?: string;
   width: number;
   height: number;
 }

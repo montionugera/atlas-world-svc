@@ -28,10 +28,10 @@ export class Mob extends WorldLife implements IAgent {
   desiredBehavior: string = BehaviorState.IDLE
   decisionTimestamp: number = 0
   chaseRange: number = 15 // Chase range buffer (will be calculated with radius)
-  currentAttackTarget: string = '' // ID of the player currently being attacked
-  currentChaseTarget: string = '' // ID of the player currently being chased
-  targetX: number = 0 // Current target position X
-  targetY: number = 0 // Current target position Y
+  @type('string') currentAttackTarget: string = '' // ID of the player currently being attacked
+  @type('string') currentChaseTarget: string = '' // ID of the player currently being chased
+  @type('number') targetX: number = 0 // Current target position X
+  @type('number') targetY: number = 0 // Current target position Y
   wanderTargetX: number = 0 // Wander target position X
   wanderTargetY: number = 0 // Wander target position Y
   lastWanderTargetTime: number = 0 // When wander target was last set
@@ -209,14 +209,9 @@ export class Mob extends WorldLife implements IAgent {
 
     // Game logic: position, heading, and attack (if gameState provided)
     if (gameState) {
-      // Update position logic and target tracking
-      this.updateMobPosition(gameState.players)
-
-      // Update heading based on current target
+      this.updateMobPosition(gameState)
       this.updateHeadingToTarget(deltaTime)
-
-      // Update attack logic and return result
-      return this.updateAttack(gameState.players, gameState.roomId)
+      return this.updateAttack(gameState, gameState.roomId)
     }
 
     return { attacked: false }
@@ -310,9 +305,9 @@ export class Mob extends WorldLife implements IAgent {
     // Default: 100% speed
     let currentRotationSpeed = this.rotationSpeed
     
-    // If attacking or casting, reduce to 10% speed
+    // If attacking or casting, allow them to still track the target reasonably well
     if (this.isCasting || this.isAttacking) {
-        currentRotationSpeed = this.rotationSpeed * 0.1
+        currentRotationSpeed = this.rotationSpeed * 0.5
     }
     
     // Smooth rotation (interpolate towards target heading)
@@ -346,22 +341,26 @@ export class Mob extends WorldLife implements IAgent {
     }
   }
 
+  // Resolve target id from players or npcs (mobs can attack either)
+  private getTargetFromGameState(gameState: GameState, id: string): WorldLife | undefined {
+    return gameState.players.get(id) ?? gameState.npcs.get(id)
+  }
+
   // Update position logic - handles movement, target tracking, and heading updates
-  updateMobPosition(players: Map<string, any>): {
+  updateMobPosition(gameState: GameState): {
     moved: boolean
     targetX?: number
     targetY?: number
   } {
-    // Update target positions for heading calculation based on current behavior
     if (this.currentBehavior === BehaviorState.ATTACK && this.currentAttackTarget) {
-      const attackTarget = players.get(this.currentAttackTarget)
+      const attackTarget = this.getTargetFromGameState(gameState, this.currentAttackTarget)
       if (attackTarget && attackTarget.isAlive) {
         this.targetX = attackTarget.x
         this.targetY = attackTarget.y
         return { moved: true, targetX: this.targetX, targetY: this.targetY }
       }
     } else if (this.currentBehavior === BehaviorState.CHASE && this.currentChaseTarget) {
-      const chaseTarget = players.get(this.currentChaseTarget)
+      const chaseTarget = this.getTargetFromGameState(gameState, this.currentChaseTarget)
       if (chaseTarget && chaseTarget.isAlive) {
         this.targetX = chaseTarget.x
         this.targetY = chaseTarget.y
@@ -378,11 +377,8 @@ export class Mob extends WorldLife implements IAgent {
   }
 
   // Update attack logic - uses attack strategies if available, otherwise falls back to legacy behavior
-  updateAttack(
-    players: Map<string, any>,
-    roomId?: string
-  ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
-    return this.combatSystem.update(GAME_CONFIG.tickRate, players, roomId || '')
+  updateAttack(gameState: GameState, roomId?: string): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
+    return this.combatSystem.update(GAME_CONFIG.tickRate, gameState, roomId ?? gameState.roomId ?? '')
   }
 
 

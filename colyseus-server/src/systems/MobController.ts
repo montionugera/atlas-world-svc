@@ -40,16 +40,10 @@ export class MobController {
         return { attacked: false }
     }
 
-    // Game logic: position, heading, and attack (if gameState provided)
     if (gameState) {
-      // Update position logic and target tracking
-      this.updateMobPosition(gameState.players)
-
-      // Update heading based on current target
+      this.updateMobPosition(gameState)
       this.updateHeadingToTarget(deltaTime)
-
-      // Update attack logic via CombatSystem
-      return this.combatSystem.update(deltaTime, gameState.players, gameState.roomId)
+      return this.combatSystem.update(deltaTime, gameState, gameState.roomId)
     }
 
     return { attacked: false }
@@ -125,22 +119,21 @@ export class MobController {
     }
   }
 
-  // Update position logic - handles movement tracking
-  updateMobPosition(players: Map<string, any>): {
+  updateMobPosition(gameState: { players: Map<string, any>; npcs: Map<string, any> }): {
     moved: boolean
     targetX?: number
     targetY?: number
   } {
-    // Update target positions for heading calculation based on current behavior
+    const getTarget = (id: string) => gameState.players.get(id) ?? gameState.npcs.get(id)
     if (this.mob.currentBehavior === 'attack' && this.mob.currentAttackTarget) {
-      const attackTarget = players.get(this.mob.currentAttackTarget)
+      const attackTarget = getTarget(this.mob.currentAttackTarget)
       if (attackTarget && attackTarget.isAlive) {
         this.mob.targetX = attackTarget.x
         this.mob.targetY = attackTarget.y
         return { moved: true, targetX: this.mob.targetX, targetY: this.mob.targetY }
       }
     } else if (this.mob.currentBehavior === 'chase' && this.mob.currentChaseTarget) {
-      const chaseTarget = players.get(this.mob.currentChaseTarget)
+      const chaseTarget = getTarget(this.mob.currentChaseTarget)
       if (chaseTarget && chaseTarget.isAlive) {
         this.mob.targetX = chaseTarget.x
         this.mob.targetY = chaseTarget.y

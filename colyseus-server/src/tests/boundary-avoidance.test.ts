@@ -40,6 +40,7 @@ describe('Boundary Avoidance Tests', () => {
         nearestMob: null,
         distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
+        ownerPlayer: null,
       }
 
       const decision = aiModule.decideBehavior(testMob, env)
@@ -58,6 +59,7 @@ describe('Boundary Avoidance Tests', () => {
         nearestMob: null,
         distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
+        ownerPlayer: null,
       }
 
       const decision = aiModule.decideBehavior(testMob, env)
@@ -76,6 +78,7 @@ describe('Boundary Avoidance Tests', () => {
         nearestMob: null,
         distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
+        ownerPlayer: null,
       }
 
       const decision = aiModule.decideBehavior(testMob, env)
@@ -94,6 +97,7 @@ describe('Boundary Avoidance Tests', () => {
         nearestMob: null,
         distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
+        ownerPlayer: null,
       }
 
       const decision = aiModule.decideBehavior(testMob, env)
@@ -113,6 +117,7 @@ describe('Boundary Avoidance Tests', () => {
         distanceToNearestMob: Infinity,
         nearBoundary: false,
         worldBounds: { width: 800, height: 600 },
+        ownerPlayer: null,
       }
 
       const decision = aiModule.decideBehavior(testMob, env)
@@ -133,6 +138,7 @@ describe('Boundary Avoidance Tests', () => {
         nearestMob: null,
         distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
+        ownerPlayer: null,
       }
 
       const decision = behavior.getDecision(testMob, env, Date.now())
@@ -153,6 +159,7 @@ describe('Boundary Avoidance Tests', () => {
         nearestMob: null,
         distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
+        ownerPlayer: null,
       }
 
       const decision = behavior.getDecision(testMob, env, Date.now())
@@ -174,6 +181,7 @@ describe('Boundary Avoidance Tests', () => {
         nearestMob: null,
         distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
+        ownerPlayer: null,
       }
 
       const decision = behavior.getDecision(testMob, env, Date.now())
@@ -195,6 +203,7 @@ describe('Boundary Avoidance Tests', () => {
         nearestMob: null,
         distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
+        ownerPlayer: null,
       }
 
       const decision = behavior.getDecision(testMob, env, Date.now())
@@ -216,6 +225,7 @@ describe('Boundary Avoidance Tests', () => {
         nearestMob: null,
         distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
+        ownerPlayer: null,
       }
 
       const decision = behavior.getDecision(testMob, env, Date.now())
@@ -298,6 +308,7 @@ describe('Boundary Avoidance Tests', () => {
         nearestMob: null,
         distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
+        ownerPlayer: null,
       }
 
       const decision = behavior.getDecision(testMob, env, Date.now())
@@ -318,6 +329,7 @@ describe('Boundary Avoidance Tests', () => {
         nearestMob: null,
         distanceToNearestMob: Infinity,
         worldBounds: { width: 400, height: 300 },
+        ownerPlayer: null,
       }
 
       const decision = behavior.getDecision(testMob, env, Date.now())
@@ -339,6 +351,7 @@ describe('Boundary Avoidance Tests', () => {
         nearestMob: null,
         distanceToNearestMob: Infinity,
         worldBounds: { width: 20, height: 20 },
+        ownerPlayer: null,
       }
 
       const decision = behavior.getDecision(testMob, env, Date.now())

@@ -2,7 +2,7 @@
 
 ### TypeScript Configuration
 - **Target**: ES2020
-- **Module**: CommonJS (Nakama requirement)
+- **Module**: CommonJS (Colyseus server)
 - **Strict**: All strict checks enabled
 - **No implicit**: any, returns, this
 
