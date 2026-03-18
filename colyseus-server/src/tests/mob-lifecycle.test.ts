@@ -15,7 +15,8 @@ const MOCK_MAP_CONFIG = {
 
 // Mock mapConfig
 jest.mock('../config/mapConfig', () => ({
-  MAP_CONFIG: MOCK_MAP_CONFIG
+  MAP_CONFIG: MOCK_MAP_CONFIG,
+  getMobSpawnAreasForMap: jest.fn((mapId: string) => MOCK_MAP_CONFIG.mobSpawnAreas),
 }))
 
 // Mock mobTypesConfig to handle 'test-mob'

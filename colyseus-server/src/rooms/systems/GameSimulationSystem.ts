@@ -137,6 +137,9 @@ export class GameSimulationSystem {
       if (projectile.isStuck) continue
       if (this.room.projectileManager.checkDeflection(projectile, player)) {
         console.log(`🛡️ DEFLECT: Player ${player.id} deflected projectile ${projectile.id}`)
+        // Important: checkDeflection flips projectile.vx/vy, but physics body velocity was already synced this tick.
+        // Sync the physics body immediately so client sees the deflection direction and it doesn't get reverted next tick.
+        this.room.physicsManager.syncEntityToBody(projectile, projectile.id)
       }
     }
   }

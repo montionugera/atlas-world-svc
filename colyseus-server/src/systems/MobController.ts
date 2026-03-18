@@ -22,21 +22,21 @@ export class MobController {
     deltaTime: number,
     gameState?: GameState
   ): { attacked: boolean; targetId?: string; messageCreated?: boolean; message?: any } {
-    
+
     // Status Effect Check: If stunned, stop all movement and actions
     if (this.mob.isStunned) {
         this.mob.vx = 0
         this.mob.vy = 0
         this.mob.isMoving = false
         this.mob.isCasting = false // Interrupt casting
-        
+
         // Clear attack queue and reset attack state
         if (this.mob.attackQueue.length > 0) {
-            this.mob.attackQueue.length = 0 
+            this.mob.attackQueue.length = 0
             this.mob.currentAttackStrategy = null
             this.mob.castStartTime = 0
         }
-        
+
         return { attacked: false }
     }
 
@@ -65,32 +65,23 @@ export class MobController {
     const dx = this.mob.targetX - this.mob.x
     const dy = this.mob.targetY - this.mob.y
     const magnitude = Math.hypot(dx, dy)
-    
+
     // Valid target vector check
     if (magnitude <= 0.01) return
 
     const targetHeading = Math.atan2(dy, dx)
-    
-    // Calculate rotation speed based on state
-    // Default: 100% speed
-    let currentRotationSpeed = this.mob.rotationSpeed
-    
-    // If attacking or casting, allow full rotation (or slight reduction if needed)
-    // User reported "white arrow not move", likely due to 0.1 multiplier being too slow
-    // We restore full tracking during windup (casting) to ensure aim is correct
-    if (this.mob.isCasting) {
-        currentRotationSpeed = this.mob.rotationSpeed // Full speed during windup
-    } else if (this.mob.isAttacking) {
-        currentRotationSpeed = this.mob.rotationSpeed * 0.5 // 50% speed during recovery
-    }
-    
+
+    // Rotation speed is handled by the Mob (see Mob.updateHeadingToTarget).
+    // MobController here only provides geometric turning toward the target point.
+    const currentRotationSpeed = this.mob.rotationSpeed
+
     // Smooth rotation (interpolate towards target heading)
     let diff = targetHeading - this.mob.heading
-    
+
     // Normalize difference to [-PI, PI] to rotate shortest way
     while (diff < -Math.PI) diff += Math.PI * 2
     while (diff > Math.PI) diff -= Math.PI * 2
-    
+
     // Max rotation for this frame
     const maxRotate = currentRotationSpeed * (deltaTime / 1000)
 
@@ -100,7 +91,7 @@ export class MobController {
     } else {
         // Rotate towards target
         this.mob.heading += Math.sign(diff) * maxRotate
-        
+
         // Normalize heading
         if (this.mob.heading > Math.PI) this.mob.heading -= Math.PI * 2
         else if (this.mob.heading < -Math.PI) this.mob.heading += Math.PI * 2

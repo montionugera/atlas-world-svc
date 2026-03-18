@@ -78,12 +78,22 @@ export class BattleModule implements BattleActionProcessor {
     const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse))
     
     if (payload?.projectileDetail?.vx !== undefined && payload?.projectileDetail?.vy !== undefined) {
-        // Use projectile velocity for impulse direction
+        // Use projectile velocity for impulse direction.
+        // If vx/vy are effectively zero (stale replication or sensor collision), fall back to attacker->target.
         const vx = payload.projectileDetail.vx
         const vy = payload.projectileDetail.vy
-        const speed = Math.sqrt(vx * vx + vy * vy) || 1
-        nx = vx / speed
-        ny = vy / speed
+        const speedSq = vx * vx + vy * vy
+        if (speedSq > 0.0001) {
+            const speed = Math.sqrt(speedSq)
+            nx = vx / speed
+            ny = vy / speed
+        } else {
+            const dx = target.x - attacker.x
+            const dy = target.y - attacker.y
+            const len = Math.sqrt(dx * dx + dy * dy) || 1
+            nx = dx / len
+            ny = dy / len
+        }
     } else {
         // Fallback to attacker->target direction
         const dx = target.x - attacker.x

@@ -69,6 +69,8 @@ describe('Attack Queue System', () => {
         // Ensure Mob is in attack mode
         mob.currentBehavior = 'attack'
         mob.currentAttackTarget = player.sessionId
+        // Ensure mob is facing the target so queued ranged attacks can start.
+        mob.heading = Math.atan2(player.y - mob.y, player.x - mob.x)
     })
 
     afterEach(() => {

@@ -174,6 +174,9 @@ export class GameState extends Schema {
    * Spawn demo NPCs for this room (not tied to any player). Call once per room, e.g. from GameRoom onCreate.
    */
   seedDemoNPCs(): void {
+    // Map-specific: projectile-only test playground should have no NPCs.
+    if (this.mapId === 'map-for-test-projectile') return
+
     const count = 5
     const centerX = this.width / 2
     const centerY = this.height / 2

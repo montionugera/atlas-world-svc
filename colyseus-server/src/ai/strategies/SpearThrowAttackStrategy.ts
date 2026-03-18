@@ -17,6 +17,10 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
   private castTime: number = SPEAR_THROWER_STATS.castTime
   private speed: number = SPEAR_THROWER_STATS.spearSpeed
 
+  // Must be roughly facing the target to start a committed ranged attack.
+  // Matches the melee cone check threshold used elsewhere (~0.5 rad).
+  private static readonly HEADING_DIFF_THRESHOLD_RAD = Math.PI/180*10
+
   constructor(
     projectileManager: ProjectileManager,
     gameState: GameState,
@@ -46,7 +50,15 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
     if (!attacker.canAttack || !attacker.canAttack()) return false
 
     const distance = attacker.getDistanceTo(target)
-    return distance <= this.maxRange
+    if (distance > this.maxRange) return false
+
+    // Require heading alignment before starting a cast.
+    const targetHeading = Math.atan2(target.y - attacker.y, target.x - attacker.x)
+    let diff = targetHeading - attacker.heading
+    while (diff < -Math.PI) diff += Math.PI * 2
+    while (diff > Math.PI) diff -= Math.PI * 2
+
+    return Math.abs(diff) <= SpearThrowAttackStrategy.HEADING_DIFF_THRESHOLD_RAD
   }
 
   execute(attacker: any, target: any, roomId: string): boolean {

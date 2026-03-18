@@ -25,6 +25,10 @@ function App() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   
   const client = useColyseusClient(colyseusConfig);
+
+  // Frontend map picker (decides which server-side room to join).
+  const AVAILABLE_MAP_IDS = ['map-for-play', 'map-for-test-projectile'] as const
+  const [selectedMapId, setSelectedMapId] = useState<(typeof AVAILABLE_MAP_IDS)[number]>(AVAILABLE_MAP_IDS[0])
   
   const addLog = useCallback((message: string, type: LogEntry['type'] = 'info') => {
     const log: LogEntry = {
@@ -43,7 +47,8 @@ function App() {
     if (!client.isConnected) {
        addLog('🔌 Connecting to Colyseus Server...', 'info');
        client.connect().then(() => {
-          return client.joinRoom('map-01-sector-a');
+          // Default initial join; user can switch maps from the UI.
+          return client.joinRoom(selectedMapId);
        }).catch(e => {
           let errorMessage = e.message || 'Unknown error';
           if (e instanceof ProgressEvent || e.type === 'error') {
@@ -56,6 +61,18 @@ function App() {
        // Already connected
     }
   }, [filterDep(client)]); // only run once on mount effectively, or when client changes (unlikely)
+
+  const joinMap = useCallback(async (mapId: string) => {
+    try {
+      if (!client.isConnected) return
+      // Update dropdown selection first, so UI and join decision stay in sync.
+      setSelectedMapId(mapId as any)
+      await client.joinRoom(mapId)
+    } catch (e: any) {
+      console.error(e)
+      addLog(`❌ Failed to join map ${mapId}: ${e?.message || e}`, 'error')
+    }
+  }, [client, addLog])
 
   function filterDep(c: any) {
       return c.connect;
@@ -133,6 +150,78 @@ function App() {
           {/* Right Column: unified Info Panel */}
           <div className="info-section">
              <div className="entity-panel">
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+                  <label style={{ color: '#fff', fontWeight: 700 }}>Map</label>
+                  <select
+                    value={selectedMapId}
+                    onChange={(e) => setSelectedMapId(e.target.value as any)}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: 8,
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      color: '#fff',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                    }}
+                  >
+                    {AVAILABLE_MAP_IDS.map((id) => (
+                      <option key={id} value={id} style={{ color: '#000' }}>
+                        {id}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => joinMap(selectedMapId)}
+                    disabled={!client.isConnected}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: 10,
+                      cursor: client.isConnected ? 'pointer' : 'not-allowed',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      backgroundColor: client.isConnected ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
+                      color: '#fff',
+                      fontWeight: 800,
+                    }}
+                  >
+                    🎮 Join
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                  <button
+                    onClick={() => joinMap('map-for-play')}
+                    disabled={!client.isConnected}
+                    style={{
+                      flex: 1,
+                      padding: '8px 10px',
+                      borderRadius: 10,
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      backgroundColor: selectedMapId === 'map-for-play' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)',
+                      color: '#fff',
+                      fontWeight: 900,
+                      cursor: client.isConnected ? 'pointer' : 'not-allowed',
+                    }}
+                  >
+                    Play
+                  </button>
+                  <button
+                    onClick={() => joinMap('map-for-test-projectile')}
+                    disabled={!client.isConnected}
+                    style={{
+                      flex: 1,
+                      padding: '8px 10px',
+                      borderRadius: 10,
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      backgroundColor:
+                        selectedMapId === 'map-for-test-projectile' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)',
+                      color: '#fff',
+                      fontWeight: 900,
+                      cursor: client.isConnected ? 'pointer' : 'not-allowed',
+                    }}
+                  >
+                    Projectile
+                  </button>
+                </div>
+
                 <GameStats 
                    mapId={client.gameState?.mapId}
                    fps={client.fps}

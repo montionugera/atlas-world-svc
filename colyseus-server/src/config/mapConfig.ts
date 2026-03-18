@@ -135,3 +135,27 @@ export const MAP_CONFIG = {
     return 'default'
   },
 }
+
+/**
+ * Per-map mob spawn areas.
+ * Used by MobLifeCycleManager so we can control which mob types appear on each mapId.
+ */
+export function getMobSpawnAreasForMap(mapId: string): MobSpawnArea[] {
+  // Projectile-only playground map: spawn only projectile-capable mob types.
+  if (mapId === 'map-for-test-projectile') {
+    return [
+      {
+        id: 'proj_spear_thrower_area',
+        x: 400,
+        y: 400,
+        width: 200,
+        height: 200,
+        mobType: 'spear_thrower',
+        count: 6,
+      },
+    ]
+  }
+
+  // Default: use the shared spawn areas for all other maps.
+  return MAP_CONFIG.mobSpawnAreas
+}

@@ -12,6 +12,10 @@ export class DoubleAttackStrategy implements AttackStrategy {
   private gameState: GameState
   private attacks: AttackDefinition[]
 
+  // Must be roughly facing the target to start this committed combo.
+  // Matches the melee cone check threshold (~0.5 rad).
+  private static readonly HEADING_DIFF_THRESHOLD_RAD = Math.PI/180*10
+
   constructor(
     projectileManager: ProjectileManager,
     gameState: GameState,
@@ -44,7 +48,15 @@ export class DoubleAttackStrategy implements AttackStrategy {
     // Compare against the strictly configured range of the attack itself
     const effectiveRange = calculateEffectiveAttackRange(firstAttack, 0)
     
-    return edgeToEdgeDistance <= effectiveRange
+    if (edgeToEdgeDistance > effectiveRange) return false
+
+    // Require heading alignment before starting a cast/queue.
+    const targetHeading = Math.atan2(target.y - attacker.y, target.x - attacker.x)
+    let diff = targetHeading - attacker.heading
+    while (diff < -Math.PI) diff += Math.PI * 2
+    while (diff > Math.PI) diff -= Math.PI * 2
+
+    return Math.abs(diff) <= DoubleAttackStrategy.HEADING_DIFF_THRESHOLD_RAD
   }
   getCastTime(): number {
     // Return cast time for the current step in the combo

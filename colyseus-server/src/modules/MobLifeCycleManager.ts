@@ -10,7 +10,7 @@ import {
   calculateMobRadius,
   type MobTypeConfig,
 } from '../config/mobTypesConfig'
-import { MAP_CONFIG, MobSpawnArea } from '../config/mapConfig'
+import { MobSpawnArea, getMobSpawnAreasForMap } from '../config/mapConfig'
 import { createAttackStrategies } from '../config/attackStrategyFactory'
 import { MeleeAttackStrategy } from '../ai/strategies/MeleeAttackStrategy'
 
@@ -23,6 +23,7 @@ export class MobLifeCycleManager {
   private readonly state: GameState
   private readonly roomId: string
   private readonly settings: MobSpawnSettings
+  private readonly spawnAreas: MobSpawnArea[]
   // Track last spawn time per area ID
   private lastSpawnAtByArea: Map<string, number> = new Map()
   private projectileManager: ProjectileManager | null = null
@@ -31,6 +32,7 @@ export class MobLifeCycleManager {
     this.roomId = roomId
     this.state = state
     this.settings = getMobSettingsForMap(state.mapId)
+    this.spawnAreas = getMobSpawnAreasForMap(state.mapId)
   }
 
   // Set projectile manager (called from GameRoom after initialization)
@@ -44,8 +46,7 @@ export class MobLifeCycleManager {
     this.state.clearAllMobs()
     
     // Spawn initial mobs for each area
-    const areas = MAP_CONFIG.mobSpawnAreas || []
-    for (const area of areas) {
+    for (const area of this.spawnAreas) {
       for (let i = 0; i < area.count; i++) {
         this.spawnMobInArea(area)
       }
@@ -61,10 +62,9 @@ export class MobLifeCycleManager {
     if (!this.settings.autoSpawn) return
     
     // Check each spawn area
-    const areas = MAP_CONFIG.mobSpawnAreas || []
     const now = Date.now()
     
-    for (const area of areas) {
+    for (const area of this.spawnAreas) {
       this.maintainAreaPopulation(area, now)
     }
   }

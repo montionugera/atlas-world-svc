@@ -158,4 +158,28 @@ describe('Projectile Impulse Integration (Queue Path)', () => {
         expect(eventData.impulse.x).toBeGreaterThan(0)
         expect(eventData.impulse.y).toBeCloseTo(0)
     })
+
+    test('should fallback to attacker->target direction if projectile vx/vy are ~zero (queue path)', async () => {
+        // Projectile has zero velocity at collision moment (stale vx/vy).
+        // We still expect knockback direction to be attacker->target.
+        const zeroProjectile = new Projectile('proj-zero-q', 10, 0, 0, 0, mob.id, 10)
+        gameState.projectiles.set(zeroProjectile.id, zeroProjectile)
+
+        // Put player at (0, 20) so mob->player points up.
+        player.x = 0
+        player.y = 20
+
+        projectileManager.handleEntityCollision(zeroProjectile, player)
+
+        await battleManager.processActionMessages()
+
+        const callArgs = eventSpy.mock.calls.find(call => 
+            call[1] === RoomEventType.BATTLE_DAMAGE_PRODUCED
+        )
+        expect(callArgs).toBeDefined()
+        const eventData = callArgs![2]
+
+        // Mob is at (0,0), player at (0,20) => impulse.y should be positive.
+        expect(eventData.impulse.y).toBeGreaterThan(0)
+    })
 })

@@ -302,12 +302,13 @@ export class Mob extends WorldLife implements IAgent {
     const targetHeading = Math.atan2(dy, dx)
     
     // Calculate rotation speed based on state
-    // Default: 100% speed
+    // Heavy feel: slow turn during casting, slightly faster in recovery
     let currentRotationSpeed = this.rotationSpeed
     
-    // If attacking or casting, allow them to still track the target reasonably well
-    if (this.isCasting || this.isAttacking) {
-        currentRotationSpeed = this.rotationSpeed * 0.5
+    if (this.isCasting) {
+        currentRotationSpeed = this.rotationSpeed * 0.15
+    } else if (this.isAttacking) {
+        currentRotationSpeed = this.rotationSpeed * 0.3
     }
     
     // Smooth rotation (interpolate towards target heading)

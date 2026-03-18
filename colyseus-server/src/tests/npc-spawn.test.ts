@@ -18,6 +18,15 @@ describe('NPC spawn (room demo and addNPC)', () => {
     }
   })
 
+  test('seedDemoNPCs does not create NPCs on map-for-test-projectile', () => {
+    const gameState = new GameState('map-for-test-projectile', 'test-room')
+    expect(gameState.npcs.size).toBe(0)
+
+    gameState.seedDemoNPCs()
+
+    expect(gameState.npcs.size).toBe(0)
+  })
+
   test('addNPC without ownerId creates standalone NPC', () => {
     const gameState = new GameState('map-01-sector-a', 'test-room')
     const npc = gameState.addNPC({ id: 'standalone-1', x: 10, y: 10 })

@@ -200,9 +200,22 @@ export class ProjectileManager {
           // Calculate impulse vector from projectile velocity
           const vx = projectile.vx
           const vy = projectile.vy
-          const speed = Math.sqrt(vx * vx + vy * vy) || 1
-          const nx = vx / speed
-          const ny = vy / speed
+          const speedSq = vx * vx + vy * vy
+          let nx: number
+          let ny: number
+          // If vx/vy are effectively zero (stale replication / sensor-collision moment),
+          // derive knockback direction from attacker -> target.
+          if (speedSq > 0.0001) {
+            const speed = Math.sqrt(speedSq) || 1
+            nx = vx / speed
+            ny = vy / speed
+          } else {
+            const dx = target.x - attacker.x
+            const dy = target.y - attacker.y
+            const len = Math.sqrt(dx * dx + dy * dy) || 1
+            nx = dx / len
+            ny = dy / len
+          }
             
           const { GAME_CONFIG } = require('../config/gameConfig')
           const rawImpulse = damage * GAME_CONFIG.attackImpulseMultiplier
@@ -291,8 +304,15 @@ export class ProjectileManager {
     projectile.vx = -projectile.vx * SPEAR_THROWER_STATS.deflectionSpeedBoost
     projectile.vy = -projectile.vy * SPEAR_THROWER_STATS.deflectionSpeedBoost
     projectile.ownerId = attacker.id
+    // Make the projectile belong to the deflecting actor's team going forward.
+    // This prevents immediate "same-team" filtering issues and keeps collision rules consistent.
+    ;(projectile as any).teamId = (attacker as any).teamId ?? projectile.teamId
     projectile.hitTargets.clear() // Can damage again after deflection
     projectile.deflectedBy = attacker.id
+
+    // Ensure Colyseus marks the projectile as changed for replication.
+    // (Some engines miss property-only changes on nested objects unless the map is touched.)
+    this.gameState.projectiles.set(projectile.id, projectile)
     
     return true
   }
