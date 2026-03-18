@@ -3,6 +3,8 @@ import { ProjectileManager } from '../modules/ProjectileManager'
 import { BattleModule } from '../modules/BattleModule'
 import { GameState } from '../schemas/GameState'
 import { eventBus } from '../events/EventBus'
+import { Player } from '../schemas/Player'
+import { PlanckPhysicsManager } from '../physics/PlanckPhysicsManager'
 
 describe('Projectile Deflection System', () => {
     let gameState: GameState
@@ -12,7 +14,7 @@ describe('Projectile Deflection System', () => {
     beforeEach(() => {
         gameState = new GameState('test-map', 'test-room-deflect')
         battleModule = new BattleModule(gameState)
-        projectileManager = new ProjectileManager(gameState, battleModule)
+    projectileManager = new ProjectileManager(gameState, battleModule)
         
         // Mock event bus to avoid errors
         jest.spyOn(eventBus, 'emitRoomEvent').mockImplementation(() => {})
@@ -63,4 +65,43 @@ describe('Projectile Deflection System', () => {
         // Live should remain live
         expect(pLive.stuckAt).toBe(0)
     })
+
+  test('syncEntityToBody keeps physics body velocity aligned after deflect', () => {
+    const physicsManager = new PlanckPhysicsManager()
+
+    // Create a projectile with an associated physics body
+    const projectile = new Projectile('proj-sync', 0, 0, 5, 0, 'owner1', 10)
+    gameState.projectiles.set(projectile.id, projectile)
+    physicsManager.createProjectileBody(projectile)
+
+    // Player attacker that can deflect
+    const attacker = new Player('player-1', 'TestPlayer', 0, 0)
+    attacker.heading = 0
+    attacker.isAttacking = true
+    attacker.attackRange = 5
+    attacker.radius = 1
+    attacker.teamId = 'team-a'
+
+    // Place projectile within range/cone
+    projectile.x = 3
+    projectile.y = 0
+
+    const vxBefore = projectile.vx
+
+    const deflected = projectileManager.checkDeflection(projectile, attacker)
+    expect(deflected).toBe(true)
+    expect(projectile.vx).not.toBe(vxBefore)
+
+    // Sync physics body to new projectile velocity
+    physicsManager.syncEntityToBody(projectile, projectile.id)
+
+    const body = physicsManager.getBody(projectile.id)
+    const bodyVel = body!.getLinearVelocity()
+
+    // Body velocity should match projectile velocity after sync
+    expect(bodyVel.x).toBeCloseTo(projectile.vx)
+    expect(bodyVel.y).toBeCloseTo(projectile.vy)
+
+    physicsManager.removeBody(projectile.id)
+  })
 })

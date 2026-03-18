@@ -13,6 +13,7 @@ import { SpearThrowAttackStrategy } from '../ai/strategies/SpearThrowAttackStrat
 import { MeleeAttackStrategy } from '../ai/strategies/MeleeAttackStrategy'
 import { SPEAR_THROWER_STATS } from '../config/combatConfig'
 import { PROJECTILE_GRAVITY } from '../config/physicsConfig'
+import { PlanckPhysicsManager } from '../physics/PlanckPhysicsManager'
 
 describe('Projectile System', () => {
   let gameState: GameState
@@ -73,7 +74,6 @@ describe('Projectile System', () => {
 
   describe('Projectile Physics', () => {
     test('should maintain velocity (no gravity in top-down 2D)', () => {
-      const { PlanckPhysicsManager } = require('../physics/PlanckPhysicsManager')
       const physicsManager = new PlanckPhysicsManager()
       
       const projectile = new Projectile('proj-1', 100, 100, 10, 5, 'mob-1', 5, 'spear', 10)
@@ -322,6 +322,49 @@ describe('Projectile System', () => {
       expect(projectile.deflectedBy).toBe(player.id)
     })
 
+    test('deflected projectile should keep traveling and not instantly despawn', () => {
+      const physicsManager = new PlanckPhysicsManager()
+
+      // Place player and projectile within deflection cone/range
+      player.x = 100
+      player.y = 100
+      player.heading = 0
+      player.attackRange = 5
+      player.radius = 1.3
+      player.isAttacking = true
+
+      const projectile = new Projectile('proj-deflect', 103, 100, 10, 0, 'mob-1', 5, 'spear', 10)
+      // Simulate projectile already having traveled close to its max range
+      projectile.distanceTraveled = 9.5
+
+      gameState.projectiles.set(projectile.id, projectile)
+
+      // Create physics body so distanceTraveled updates during flight
+      physicsManager.createProjectileBody(projectile)
+
+      // First: deflect
+      const deflected = projectileManager.checkDeflection(projectile, player)
+      expect(deflected).toBe(true)
+
+      // After deflect, projectile should be reset to continue flying
+      expect(projectile.distanceTraveled).toBeLessThan(1)
+      expect(projectile.isStuck).toBe(false)
+
+      // Simulate a few ticks of projectile updates
+      for (let i = 0; i < 3; i++) {
+        projectileManager.updateProjectiles(gameState.projectiles, 100, physicsManager)
+      }
+
+      // Projectile should still be in the map (not despawned by range)
+      expect(gameState.projectiles.has(projectile.id)).toBe(true)
+      expect(projectile.shouldDespawn()).toBe(false)
+
+      // And it should still be moving (non-zero velocity)
+      expect(Math.abs(projectile.vx) + Math.abs(projectile.vy)).toBeGreaterThan(0)
+
+      physicsManager.removeBody(projectile.id)
+    })
+
     test('should not deflect if already deflected', () => {
       const projectile = new Projectile('proj-1', 110, 100, 10, 0, 'mob-1', 5, 'spear', 10)
       projectile.deflectedBy = 'player-2'
@@ -500,6 +543,57 @@ describe('Projectile System', () => {
 
       expect(spearMob.attackStrategies.length).toBe(1)
       expect(spearMob.attackStrategies[0].name).toBe('spearThrow')
+    })
+
+    test('deflected spear remains in game state and moves over multiple ticks', () => {
+      const physicsManager = new PlanckPhysicsManager()
+
+      // Minimal setup: one mob (spear thrower) and one player
+      mob.id = 'mob-thrower'
+      mob.x = 100
+      mob.y = 100
+      mob.teamId = 'team-enemy'
+
+      player.id = 'player-1'
+      player.x = 110
+      player.y = 100
+      player.teamId = 'team-player'
+      player.radius = 1.3
+      player.attackRange = 5
+      player.heading = Math.PI // Face left, toward incoming spear
+
+      gameState.mobs.set(mob.id, mob)
+      gameState.players.set(player.id, player)
+
+      // Create an incoming spear from the mob towards the player
+      const incoming = projectileManager.createSpear(mob, player.x, player.y, 5, 10)
+      gameState.projectiles.set(incoming.id, incoming)
+      physicsManager.createProjectileBody(incoming)
+
+      // Simulate a bit of flight so it's mid-air
+      for (let i = 0; i < 3; i++) {
+        projectileManager.updateProjectiles(gameState.projectiles, 50, physicsManager)
+      }
+
+      // Player performs an attack and deflects the spear
+      player.isAttacking = true
+      const deflected = projectileManager.checkDeflection(incoming, player)
+      expect(deflected).toBe(true)
+
+      // Sync physics body to new direction (server does this in GameSimulationSystem)
+      physicsManager.syncEntityToBody(incoming, incoming.id)
+
+      // Now run several full projectile update ticks
+      for (let i = 0; i < 5; i++) {
+        projectileManager.updateProjectiles(gameState.projectiles, 100, physicsManager)
+      }
+
+      // Projectile should still exist and be moving in the reversed direction
+      expect(gameState.projectiles.has(incoming.id)).toBe(true)
+      const proj = gameState.projectiles.get(incoming.id)!
+      expect(Math.abs(proj.vx) + Math.abs(proj.vy)).toBeGreaterThan(0)
+
+      physicsManager.removeBody(incoming.id)
     })
   })
 })

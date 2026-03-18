@@ -310,6 +310,12 @@ export class ProjectileManager {
     projectile.hitTargets.clear() // Can damage again after deflection
     projectile.deflectedBy = attacker.id
 
+    // Reset travel and lifetime-related state so the deflected projectile
+    // gets a fresh visible flight phase.
+    projectile.distanceTraveled = 0
+    projectile.isStuck = false
+    projectile.stuckAt = 0
+
     // Ensure Colyseus marks the projectile as changed for replication.
     // (Some engines miss property-only changes on nested objects unless the map is touched.)
     this.gameState.projectiles.set(projectile.id, projectile)

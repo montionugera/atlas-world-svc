@@ -4,10 +4,25 @@ import { drawCircle, drawLine } from '../utils/drawingUtils';
 /**
  * Draw all projectiles (spears)
  */
-export const drawProjectiles = (ctx: CanvasRenderingContext2D, projectiles: Map<string, any>, scale: number, viewScale: number = 1): void => {
+const ENABLE_PROJECTILE_DEBUG_LOG = false
+
+export const drawProjectiles = (
+  ctx: CanvasRenderingContext2D,
+  projectiles: Map<string, { id: string; x: number; y: number; vx: number; vy: number; radius: number; ownerId: string; isStuck: boolean; teamId?: string }>,
+  scale: number,
+  viewScale: number = 1
+): void => {
   const inverseScale = 1 / viewScale;
 
   projectiles.forEach(projectile => {
+    if (ENABLE_PROJECTILE_DEBUG_LOG) {
+      // Lightweight debug hook to inspect projectile state client-side
+      console.log(
+        `[Projectile] id=${projectile.id} owner=${projectile.ownerId} team=${projectile.teamId ?? 'none'} stuck=${projectile.isStuck} pos=(${projectile.x.toFixed(
+          2
+        )},${projectile.y.toFixed(2)}) vel=(${projectile.vx.toFixed(2)},${projectile.vy.toFixed(2)})`
+      )
+    }
     if (projectile.isStuck) {
       // Draw stuck projectile as a small circle (semi-transparent)
       const x = projectile.x * scale;
