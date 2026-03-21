@@ -4,6 +4,7 @@ import { ProjectileManager } from '../../modules/ProjectileManager'
 import { GameState } from '../../schemas/GameState'
 import { AttackDefinition, AttackCharacteristicType } from '../../config/mobTypesConfig'
 import { calculateEffectiveAttackRange } from '../../config/mobTypesConfig'
+import { ProjectileType } from '../../config/combatConfig'
 
 export class DoubleAttackStrategy implements AttackStrategy {
   name = 'doubleAttack'
@@ -114,7 +115,7 @@ export class DoubleAttackStrategy implements AttackStrategy {
                   char.atkRange || 10,
                   char.projectileRadius,
                   char.speedUnitsPerSec,
-                  projectileType
+                  projectileType as ProjectileType
               )
               this.gameState.projectiles.set(projectile.id, projectile)
           }

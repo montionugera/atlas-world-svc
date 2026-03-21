@@ -5,7 +5,7 @@ import { WorldLife } from '../schemas/WorldLife'
 import { BattleModule } from './BattleModule'
 import { BattleManager } from './BattleManager'
 import { GameState } from '../schemas/GameState'
-import { SPEAR_THROWER_STATS, MELEE_PROJECTILE_STATS, PROJECTILE_INTERACTIONS } from '../config/combatConfig'
+import { SPEAR_THROWER_STATS, MELEE_PROJECTILE_STATS, PROJECTILE_INTERACTIONS, ProjectileType } from '../config/combatConfig'
 import { PROJECTILE_GRAVITY } from '../config/physicsConfig'
 import { eventBus, RoomEventType } from '../events/EventBus'
 
@@ -86,7 +86,7 @@ export class ProjectileManager {
     maxRange: number = SPEAR_THROWER_STATS.spearMaxRange,
     radius: number = SPEAR_THROWER_STATS.projectileRadius,
     speed: number = this.maxSpeed,
-    type: string = 'spear'
+    type: ProjectileType = 'spear'
   ): Projectile {
     const dx = targetX - mob.x
     const dy = targetY - mob.y
@@ -368,7 +368,7 @@ export class ProjectileManager {
 
     // Resolve the weapon type the attacker is currently swinging
     // By default, assuming generic 'melee' backward compatibility if nothing active is found
-    let deflectorWeaponType = 'melee'; 
+    let deflectorWeaponType: ProjectileType = 'melee'; 
     for (const p of this.gameState.projectiles.values()) {
         if (p.ownerId === attacker.id && PROJECTILE_INTERACTIONS[p.type]?.canDeflectOthers) {
             deflectorWeaponType = p.type;

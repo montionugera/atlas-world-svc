@@ -119,7 +119,7 @@ export interface ProjectileDeflectionConfig {
   deflectedRangeMultiplier: number; 
 }
 
-export const PROJECTILE_INTERACTIONS: Record<string, ProjectileDeflectionConfig> = {
+export const PROJECTILE_INTERACTIONS = {
   'smallMeelee': {
     canDeflectOthers: true,
     absorbImpulseMultiplier: 0.20,
@@ -177,5 +177,7 @@ export const PROJECTILE_INTERACTIONS: Record<string, ProjectileDeflectionConfig>
     deflectionBehavior: 'bounce',
     deflectedRangeMultiplier: 1.0, 
   }
-};
+} as const satisfies Record<string, ProjectileDeflectionConfig>;
+
+export type ProjectileType = keyof typeof PROJECTILE_INTERACTIONS;
 

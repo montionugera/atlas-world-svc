@@ -1,13 +1,13 @@
 import { type } from '@colyseus/schema'
 import { WorldObject } from './WorldObject'
-import { SPEAR_THROWER_STATS } from '../config/combatConfig'
+import { SPEAR_THROWER_STATS, ProjectileType } from '../config/combatConfig'
 
 export class Projectile extends WorldObject {
   // Synced to client
   @type('number') radius: number = SPEAR_THROWER_STATS.projectileRadius
   @type('string') ownerId: string = ''
   @type('boolean') isStuck: boolean = false
-  @type('string') type: string = 'spear' // 'spear', 'melee', etc. for client rendering
+  @type('string') type: ProjectileType
   @type('string') teamId: string = ''
 
   // Server-only properties
@@ -29,7 +29,7 @@ export class Projectile extends WorldObject {
     vy: number,
     ownerId: string,
     damage: number,
-    type: string = 'spear',
+    type: ProjectileType = 'spear',
     maxRange: number = SPEAR_THROWER_STATS.spearMaxRange,
     radius: number = SPEAR_THROWER_STATS.projectileRadius,
     lifetime: number = SPEAR_THROWER_STATS.projectileLifetime,
