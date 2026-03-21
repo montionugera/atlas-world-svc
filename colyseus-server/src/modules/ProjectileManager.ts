@@ -5,7 +5,7 @@ import { WorldLife } from '../schemas/WorldLife'
 import { BattleModule } from './BattleModule'
 import { BattleManager } from './BattleManager'
 import { GameState } from '../schemas/GameState'
-import { SPEAR_THROWER_STATS, MELEE_PROJECTILE_STATS } from '../config/combatConfig'
+import { SPEAR_THROWER_STATS, MELEE_PROJECTILE_STATS, PROJECTILE_INTERACTIONS } from '../config/combatConfig'
 import { PROJECTILE_GRAVITY } from '../config/physicsConfig'
 import { eventBus, RoomEventType } from '../events/EventBus'
 
@@ -255,11 +255,19 @@ export class ProjectileManager {
    * Projectiles from different teams cancel each other out
    */
   handleProjectileCollision(projectileA: Projectile, projectileB: Projectile): void {
-    // Allow melee attacks to cleanly pass through spears so the player's checkDeflection cone can reflect them properly.
-    // If they clash here, the spear dies and falls to the ground instead of bouncing back.
-    const hasSpear = projectileA.type === 'spear' || projectileB.type === 'spear';
-    const hasMelee = projectileA.type === 'melee' || projectileB.type === 'melee';
-    if (hasSpear && hasMelee) return;
+    const configA = PROJECTILE_INTERACTIONS[projectileA.type];
+    const configB = PROJECTILE_INTERACTIONS[projectileB.type];
+
+    // If a type is undocumented in the new matrix, ignore physical clashes safely
+    if (!configA || !configB) return;
+
+    // Check for clean parry/bounce bypass
+    // If one weapon acts as a "Deflector" and the other weapon wants to "Bounce", 
+    // we purposefully BYPASS the physical clashing here so `checkDeflection` can cleanly bounce it!
+    const aBouncesB = configA.canDeflectOthers && configB.canBeDeflected && configB.deflectionBehavior === 'bounce';
+    const bBouncesA = configB.canDeflectOthers && configA.canBeDeflected && configA.deflectionBehavior === 'bounce';
+    
+    if (aBouncesB || bBouncesA) return;
 
     // Check if either projectile is already "spent" (if not piercing)
     if (!projectileA.piercing && projectileA.hitTargets.size > 0) return
@@ -283,10 +291,11 @@ export class ProjectileManager {
   }
 
   /**
-   * Applies a 20% recoil knockback to the owner of a melee weapon when it successfully clashes/parries
+   * Applies config-driven recoil knockback to the owner of a weapon when it successfully clashes/parries
    */
   private applyClashKnockback(defenderProj: Projectile, attackerProj: Projectile): void {
-    if (defenderProj.type !== 'melee') return; // Only melee swings feel clash impact
+    const config = PROJECTILE_INTERACTIONS[defenderProj.type];
+    if (!config || !config.canDeflectOthers) return; // Only deflection-capable swings feel clash impact
     
     let defender: WorldLife | undefined = this.gameState.players.get(defenderProj.ownerId) 
       || this.gameState.mobs.get(defenderProj.ownerId)
@@ -323,8 +332,11 @@ export class ProjectileManager {
 
     const { GAME_CONFIG } = require('../config/gameConfig');
     const rawImpulse = attackerProj.damage * GAME_CONFIG.attackImpulseMultiplier;
-    // Cap normal impulse, then multiply by 20% to represent the absorbed "block" impact
-    const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse)) * 0.20;
+    
+    // Cap normal impulse, then multiply by the config's absorption rate (e.g., 20% or 0%)
+    const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse)) * config.absorbImpulseMultiplier;
+    
+    if (impulseMagnitude <= 0) return; // Perfect block! No recoil feels.
 
     const impulse = { x: nx * impulseMagnitude, y: ny * impulseMagnitude };
 
@@ -347,12 +359,25 @@ export class ProjectileManager {
   }
 
   /**
-   * Check if projectile can be deflected by attacker
+   * Check if projectile can be deflected by attacker and reflects it using configuration rules
    * Returns true if deflected, false otherwise
    */
   checkDeflection(projectile: Projectile, attacker: WorldLife): boolean {
-    // Only allow deflecting 'spear' type projectiles
-    if (projectile.type !== 'spear') return false
+    const incomingConfig = PROJECTILE_INTERACTIONS[projectile.type];
+    if (!incomingConfig || !incomingConfig.canBeDeflected) return false;
+
+    // Resolve the weapon type the attacker is currently swinging
+    // By default, assuming generic 'melee' backward compatibility if nothing active is found
+    let deflectorWeaponType = 'melee'; 
+    for (const p of this.gameState.projectiles.values()) {
+        if (p.ownerId === attacker.id && PROJECTILE_INTERACTIONS[p.type]?.canDeflectOthers) {
+            deflectorWeaponType = p.type;
+            break;
+        }
+    }
+
+    const defenderConfig = PROJECTILE_INTERACTIONS[deflectorWeaponType];
+    if (!defenderConfig || !defenderConfig.canDeflectOthers) return false;
 
     // Can't deflect if already deflected by someone
     if (projectile.deflectedBy) return false
@@ -402,9 +427,17 @@ export class ProjectileManager {
       newVy = ny * speed
     }
 
-    // Apply speed boost
-    projectile.vx = newVx * SPEAR_THROWER_STATS.deflectionSpeedBoost
-    projectile.vy = newVy * SPEAR_THROWER_STATS.deflectionSpeedBoost
+    // Apply config-driven speed boost and range scaling
+    const speedBoost = Math.max(0.1, defenderConfig.deflectPowerMultiplier);
+    projectile.vx = newVx * speedBoost;
+    projectile.vy = newVy * speedBoost;
+    
+    projectile.maxRange = Math.max(1, projectile.maxRange * incomingConfig.deflectedRangeMultiplier);
+    // Refresh max distance capability since it's practically a new projectile
+    if (projectile.maxRange <= projectile.distanceTraveled) {
+        // Give it at least some distance if it was already maxed out
+        projectile.maxRange += 10;
+    }
     projectile.ownerId = attacker.id
     // Make the projectile belong to the deflecting actor's team going forward.
     // This prevents immediate "same-team" filtering issues and keeps collision rules consistent.
@@ -418,21 +451,23 @@ export class ProjectileManager {
     projectile.isStuck = false
     projectile.stuckAt = 0
 
-    // Apply 20% recoil impulse to the deflector for "catching" the heavy spear
+    // Apply recoil impulse to the deflector based on config absorption rate
     const { GAME_CONFIG } = require('../config/gameConfig')
     const rawImpulse = projectile.damage * GAME_CONFIG.attackImpulseMultiplier
-    const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse)) * 0.20
+    const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse)) * defenderConfig.absorbImpulseMultiplier
     
-    // Knockback direction is AWAY from the impact normal (pushing the player backward)
-    const impulse = { x: -nx * impulseMagnitude, y: -ny * impulseMagnitude }
+    if (impulseMagnitude > 0) {
+      // Knockback direction is AWAY from the impact normal (pushing the player backward)
+      const impulse = { x: -nx * impulseMagnitude, y: -ny * impulseMagnitude }
 
-    try {
-      eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
-        attacker: this.gameState.mobs.get(projectile.ownerId) || this.gameState.players.get(projectile.ownerId) || attacker,
-        taker: attacker,
-        impulse,
-      })
-    } catch {}
+      try {
+        eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
+          attacker: this.gameState.mobs.get(projectile.ownerId) || this.gameState.players.get(projectile.ownerId) || attacker,
+          taker: attacker,
+          impulse,
+        })
+      } catch {}
+    }
 
     return true
   }

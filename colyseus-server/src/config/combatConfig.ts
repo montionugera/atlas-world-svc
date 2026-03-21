@@ -107,3 +107,75 @@ export const MELEE_PROJECTILE_STATS = {
   projectileLifetime: 500, // Short lifetime (despawns quickly if it misses)
 } as const
 
+export interface ProjectileDeflectionConfig {
+  // Defensive stats (when this projectile/weapon is used to parry/deflect something else)
+  canDeflectOthers: boolean;
+  absorbImpulseMultiplier: number; 
+  deflectPowerMultiplier: number;  
+  
+  // Offensive stats (when this projectile is flying and gets parried by a defender)
+  canBeDeflected: boolean;         
+  deflectionBehavior: 'bounce' | 'clash'; 
+  deflectedRangeMultiplier: number; 
+}
+
+export const PROJECTILE_INTERACTIONS: Record<string, ProjectileDeflectionConfig> = {
+  'smallMeelee': {
+    canDeflectOthers: true,
+    absorbImpulseMultiplier: 0.20,
+    deflectPowerMultiplier: 0.50,
+    canBeDeflected: true,
+    deflectionBehavior: 'clash',
+    deflectedRangeMultiplier: 0,
+  },
+  'largeMeelee': {
+    canDeflectOthers: true,
+    absorbImpulseMultiplier: 0.0,
+    deflectPowerMultiplier: 0.80,
+    canBeDeflected: true,
+    deflectionBehavior: 'clash',
+    deflectedRangeMultiplier: 0,
+  },
+  'physicSpear': {
+    canDeflectOthers: false,
+    absorbImpulseMultiplier: 1.0, 
+    deflectPowerMultiplier: 1.0,
+    canBeDeflected: true,
+    deflectionBehavior: 'bounce',
+    deflectedRangeMultiplier: 0.80,
+  },
+  'arrow': {
+    canDeflectOthers: false,
+    absorbImpulseMultiplier: 1.0,
+    deflectPowerMultiplier: 1.0,
+    canBeDeflected: true,
+    deflectionBehavior: 'bounce',
+    deflectedRangeMultiplier: 0.30,
+  },
+  'magicSpear': {
+    canDeflectOthers: false,
+    absorbImpulseMultiplier: 1.0,
+    deflectPowerMultiplier: 1.0,
+    canBeDeflected: false,
+    deflectionBehavior: 'clash',
+    deflectedRangeMultiplier: 0.30,
+  },
+  // Default fallbacks for currently hardcoded types in tests
+  'melee': { // Backwards compatibility for existing tests/code
+    canDeflectOthers: true,
+    absorbImpulseMultiplier: 0.20,
+    deflectPowerMultiplier: 1.2, 
+    canBeDeflected: true,
+    deflectionBehavior: 'clash',
+    deflectedRangeMultiplier: 0,
+  },
+  'spear': { // Backwards compatibility for existing tests/code
+    canDeflectOthers: false,
+    absorbImpulseMultiplier: 1.0, 
+    deflectPowerMultiplier: 1.0,
+    canBeDeflected: true,
+    deflectionBehavior: 'bounce',
+    deflectedRangeMultiplier: 1.0, 
+  }
+};
+
