@@ -161,6 +161,12 @@ export class ProjectileManager {
     // 2. Ignore if target is on the same team (and a team is actually set)
     if (projectile.teamId && target.teamId && projectile.teamId === target.teamId) return
     
+    // 3. Last-ditch deflection: If the physics tick ran before updatePlayers, a fast spear might hit the body.
+    // Allow the target to instantly deflect it if they are actively attacking in the correct direction!
+    if (projectile.type === 'spear' && this.checkDeflection(projectile, target)) {
+        return; // Deflection successful, skip taking damage
+    }
+    
     const attacker = this.gameState.mobs.get(projectile.ownerId) || this.gameState.players.get(projectile.ownerId)
     
     // Route damage through BattleManager queue if available (throttled)
@@ -249,6 +255,12 @@ export class ProjectileManager {
    * Projectiles from different teams cancel each other out
    */
   handleProjectileCollision(projectileA: Projectile, projectileB: Projectile): void {
+    // Allow melee attacks to cleanly pass through spears so the player's checkDeflection cone can reflect them properly.
+    // If they clash here, the spear dies and falls to the ground instead of bouncing back.
+    const hasSpear = projectileA.type === 'spear' || projectileB.type === 'spear';
+    const hasMelee = projectileA.type === 'melee' || projectileB.type === 'melee';
+    if (hasSpear && hasMelee) return;
+
     // Check if either projectile is already "spent" (if not piercing)
     if (!projectileA.piercing && projectileA.hitTargets.size > 0) return
     if (!projectileB.piercing && projectileB.hitTargets.size > 0) return
