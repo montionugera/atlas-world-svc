@@ -370,7 +370,7 @@ export class BattleModule implements BattleActionProcessor {
     entity.vx = 0
     entity.vy = 0
     entity.lastAttackTime = 0
-    entity.attackCooldown = 0
+    entity.lastAttackTime = 0
 
     this.processedEventsByEntityId.delete(entity.id) // Clear old events on respawn
     // entity.isInvulnerable = false // Removed
@@ -405,11 +405,6 @@ export class BattleModule implements BattleActionProcessor {
     
     // Periodically cleanup events? Or do it in main loop.
     // For now we'll do global cleanup in loop.
-
-    // Update attack cooldown
-    if (entity.attackCooldown > 0) {
-      entity.attackCooldown -= deltaTime
-    }
 
     // Process Status Effects (DOTs etc)
     this.processStatusTicks(entity);

@@ -77,7 +77,7 @@ export abstract class WorldLife extends WorldObject {
   }
 
   // Server-only properties (not synced to clients)
-  attackCooldown: number = 0
+
   diedAt: number = 0 // Timestamp when entity died (0 = alive or not set)
   attackAnimationStartTime: number = 0 // Timestamp when attack animation started (0 = not attacking)
 
@@ -189,7 +189,7 @@ export abstract class WorldLife extends WorldObject {
     this.vy = 0
     this.lastAttackTime = 0
     this.lastAttackTime = 0
-    this.attackCooldown = 0
+
     // this.processedEvents.clear() // Removed, handled centrally in BattleModule
 
     this.diedAt = 0 // Reset death timestamp
@@ -307,10 +307,7 @@ export abstract class WorldLife extends WorldObject {
         });
     }
 
-    // Update attack cooldown
-    if (this.attackCooldown > 0) {
-      this.attackCooldown -= deltaTime
-    }
+
 
     // Update attack animation state (200ms duration)
     if (this.isAttacking && this.attackAnimationStartTime > 0) {
