@@ -418,6 +418,22 @@ export class ProjectileManager {
     projectile.isStuck = false
     projectile.stuckAt = 0
 
+    // Apply 20% recoil impulse to the deflector for "catching" the heavy spear
+    const { GAME_CONFIG } = require('../config/gameConfig')
+    const rawImpulse = projectile.damage * GAME_CONFIG.attackImpulseMultiplier
+    const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse)) * 0.20
+    
+    // Knockback direction is AWAY from the impact normal (pushing the player backward)
+    const impulse = { x: -nx * impulseMagnitude, y: -ny * impulseMagnitude }
+
+    try {
+      eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
+        attacker: this.gameState.mobs.get(projectile.ownerId) || this.gameState.players.get(projectile.ownerId) || attacker,
+        taker: attacker,
+        impulse,
+      })
+    } catch {}
+
     return true
   }
 }
