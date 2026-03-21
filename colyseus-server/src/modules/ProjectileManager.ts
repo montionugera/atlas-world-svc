@@ -263,8 +263,68 @@ export class ProjectileManager {
     projectileA.stick()
     projectileB.stick()
     
+    // Apply 20% recoil impulse to whoever successfully parried
+    this.applyClashKnockback(projectileA, projectileB)
+    this.applyClashKnockback(projectileB, projectileA)
+    
     console.log(`💥 PROJECTILE CLASH: ${projectileA.id} vs ${projectileB.id}`)
   }
+
+  /**
+   * Applies a 20% recoil knockback to the owner of a melee weapon when it successfully clashes/parries
+   */
+  private applyClashKnockback(defenderProj: Projectile, attackerProj: Projectile): void {
+    if (defenderProj.type !== 'melee') return; // Only melee swings feel clash impact
+    
+    let defender: WorldLife | undefined = this.gameState.players.get(defenderProj.ownerId) 
+      || this.gameState.mobs.get(defenderProj.ownerId)
+      || this.gameState.npcs.get(defenderProj.ownerId);
+      
+    if (!defender || !defender.isAlive) return;
+
+    let attacker: WorldLife | undefined = this.gameState.players.get(attackerProj.ownerId) 
+      || this.gameState.mobs.get(attackerProj.ownerId)
+      || this.gameState.npcs.get(attackerProj.ownerId);
+
+    // Calculate knockback direction: from the incoming projectile, or fallback to attacker->defender pos
+    const vx = attackerProj.vx;
+    const vy = attackerProj.vy;
+    const speedSq = vx * vx + vy * vy;
+    let nx: number;
+    let ny: number;
+    
+    if (speedSq > 0.0001) {
+      const speed = Math.sqrt(speedSq);
+      nx = vx / speed;
+      ny = vy / speed;
+    } else {
+      if (attacker) {
+        const dx = defender.x - attacker.x;
+        const dy = defender.y - attacker.y;
+        const len = Math.sqrt(dx * dx + dy * dy) || 1;
+        nx = dx / len;
+        ny = dy / len;
+      } else {
+        nx = 0; ny = 0;
+      }
+    }
+
+    const { GAME_CONFIG } = require('../config/gameConfig');
+    const rawImpulse = attackerProj.damage * GAME_CONFIG.attackImpulseMultiplier;
+    // Cap normal impulse, then multiply by 20% to represent the absorbed "block" impact
+    const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse)) * 0.20;
+
+    const impulse = { x: nx * impulseMagnitude, y: ny * impulseMagnitude };
+
+    try {
+      eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
+        attacker: attacker || defender,
+        taker: defender,
+        impulse,
+      });
+    } catch {}
+  }
+
 
   /**
    * Handle projectile collision with boundary
