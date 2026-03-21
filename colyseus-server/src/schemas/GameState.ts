@@ -4,6 +4,7 @@ import { Player } from './Player'
 import { Projectile } from './Projectile'
 import { ZoneEffect } from './ZoneEffect'
 import { GAME_CONFIG } from '../config/gameConfig'
+import { getMapDimensions } from '../config/mapConfig'
 import { AIModule } from '../ai/AIModule'
 import { AIWorldInterface } from '../ai/AIWorldInterface'
 // Removed global BattleManager singleton - now using room-scoped instances
@@ -32,8 +33,9 @@ export class GameState extends Schema {
     super()
     this.mapId = mapId
     this.roomId = roomId
-    this.width = GAME_CONFIG.worldWidth
-    this.height = GAME_CONFIG.worldHeight
+    const { width, height } = getMapDimensions(mapId)
+    this.width = width
+    this.height = height
     this.tick = 0
 
     // BattleManager is now room-scoped, not global singleton
@@ -174,8 +176,8 @@ export class GameState extends Schema {
    * Spawn demo NPCs for this room (not tied to any player). Call once per room, e.g. from GameRoom onCreate.
    */
   seedDemoNPCs(): void {
-    // Map-specific: projectile-only test playground should have no NPCs.
-    if (this.mapId === 'map-for-test-projectile') return
+    // Map-specific: test playgrounds should have no demo NPCs.
+    if (this.mapId === 'map-for-test-projectile' || this.mapId === 'map-for-test-deflect') return
 
     const count = 5
     const centerX = this.width / 2

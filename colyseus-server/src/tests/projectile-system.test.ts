@@ -304,7 +304,8 @@ describe('Projectile System', () => {
       // Place projectile close to player and in attack cone
       player.x = 100
       player.y = 100
-      const projectile = new Projectile('proj-1', 103, 100, 10, 0, 'mob-1', 5, 'spear', 10)
+      // Incoming projectile: velocity of -10 moving toward player
+      const projectile = new Projectile('proj-1', 103, 100, -10, 0, 'mob-1', 5, 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       player.isAttacking = true
@@ -316,7 +317,7 @@ describe('Projectile System', () => {
       const deflected = projectileManager.checkDeflection(projectile, player)
 
       expect(deflected).toBe(true)
-      expect(projectile.vx).toBeLessThan(0) // Reversed direction
+      expect(projectile.vx).toBeGreaterThan(0) // Reversed direction (was negative, now bounces away as positive)
       expect(projectile.ownerId).toBe(player.id)
       expect(projectile.hitTargets.size).toBe(0) // Can damage again
       expect(projectile.deflectedBy).toBe(player.id)

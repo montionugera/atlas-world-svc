@@ -50,8 +50,8 @@ export class GameRoom extends Room<GameState> {
     const gameState = new GameState(options.mapId || 'map-01-sector-a', this.roomId)
     this.setState(gameState)
 
-    // Initialize Core Managers
-    this.physicsManager = new PlanckPhysicsManager()
+    // Initialize Core Managers (physics uses map dimensions from state)
+    this.physicsManager = new PlanckPhysicsManager(this.state.width, this.state.height)
     this.physicsManager.setRoomId(this.roomId)
     
     this.battleManager = new BattleManager(this.roomId, this.state)

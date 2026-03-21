@@ -279,11 +279,20 @@ export class ProjectileManager {
    * Returns true if deflected, false otherwise
    */
   checkDeflection(projectile: Projectile, attacker: WorldLife): boolean {
+    // Only allow deflecting 'spear' type projectiles
+    if (projectile.type !== 'spear') return false
+
     // Can't deflect if already deflected by someone
     if (projectile.deflectedBy) return false
     
-    // Attacker must be attacking
-    if (!attacker.isAttacking) return false
+    // Attacker must be attacking or in wind-up phase
+    if (!attacker.isAttacking && !(attacker as any).pendingAttack) return false
+
+    // Ignore if attacker is the owner (shooter)
+    if (projectile.ownerId === attacker.id) return false
+    
+    // Ignore if on the same team (and a team is actually set)
+    if (projectile.teamId && (attacker as any).teamId && projectile.teamId === (attacker as any).teamId) return false
     
     // Check if projectile is in attack range (calculate distance directly)
     const dx = projectile.x - attacker.x
@@ -300,9 +309,30 @@ export class ProjectileManager {
     
     if (normalizedDiff > coneAngle) return false
     
-    // Deflect: reverse velocity with configurable speed boost
-    projectile.vx = -projectile.vx * SPEAR_THROWER_STATS.deflectionSpeedBoost
-    projectile.vy = -projectile.vy * SPEAR_THROWER_STATS.deflectionSpeedBoost
+    // Calculate contact point normal (outward from player to projectile)
+    const nx = distance > 0 ? dx / distance : 1
+    const ny = distance > 0 ? dy / distance : 0
+    
+    // Dot product to determine if incoming or outgoing
+    const dot = projectile.vx * nx + projectile.vy * ny
+    
+    let newVx = projectile.vx
+    let newVy = projectile.vy
+    
+    if (dot < 0) {
+      // Incoming projectile: true geometric reflection across the normal
+      newVx = projectile.vx - 2 * dot * nx
+      newVy = projectile.vy - 2 * dot * ny
+    } else {
+      // Outgoing projectile: push it radially outward if hit from behind
+      const speed = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy)
+      newVx = nx * speed
+      newVy = ny * speed
+    }
+
+    // Apply speed boost
+    projectile.vx = newVx * SPEAR_THROWER_STATS.deflectionSpeedBoost
+    projectile.vy = newVy * SPEAR_THROWER_STATS.deflectionSpeedBoost
     projectile.ownerId = attacker.id
     // Make the projectile belong to the deflecting actor's team going forward.
     // This prevents immediate "same-team" filtering issues and keeps collision rules consistent.
@@ -316,10 +346,6 @@ export class ProjectileManager {
     projectile.isStuck = false
     projectile.stuckAt = 0
 
-    // Ensure Colyseus marks the projectile as changed for replication.
-    // (Some engines miss property-only changes on nested objects unless the map is touched.)
-    this.gameState.projectiles.set(projectile.id, projectile)
-    
     return true
   }
 }

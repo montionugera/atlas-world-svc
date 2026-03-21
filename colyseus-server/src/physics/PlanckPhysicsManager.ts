@@ -13,8 +13,14 @@ export class PlanckPhysicsManager {
   private collisionCallbacks: Map<string, (bodyA: planck.Body, bodyB: planck.Body) => void> =
     new Map()
   private roomId: string | null = null
+  private worldWidth: number
+  private worldHeight: number
 
-  constructor() {
+  constructor(worldWidth?: number, worldHeight?: number) {
+    const { width: defaultW, height: defaultH } = PHYSICS_CONFIG.world
+    this.worldWidth = worldWidth ?? defaultW
+    this.worldHeight = worldHeight ?? defaultH
+
     const ENABLE_PHYSICS_DEBUG = false // set true to debug physics logs
     // Create Planck world with NO gravity
     this.world = planck.World({
@@ -33,7 +39,9 @@ export class PlanckPhysicsManager {
 
   // Create world boundaries
   private createWorldBoundaries() {
-    const { width, height, boundaryThickness } = PHYSICS_CONFIG.world
+    const { boundaryThickness } = PHYSICS_CONFIG.world
+    const width = this.worldWidth
+    const height = this.worldHeight
 
     // Create boundary walls
     const walls = [

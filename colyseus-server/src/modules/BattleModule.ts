@@ -114,14 +114,11 @@ export class BattleModule implements BattleActionProcessor {
       })
     } catch {}
 
-    // Update attacker's last attack time using high-precision timing
-    // Only for non-players (Players manage their own timing via CombatSystem)
-    if (!attacker.tags.includes('player')) {
-        attacker.lastAttackTime = performance.now()
-    }
+    // Note: Animation (isAttacking) and cooldown (lastAttackTime) are strictly managed 
+    // by the entity's native CombatSystem (e.g. PlayerCombatSystem) at the exact moment of cast.
+    // BattleModule is a hit-resolution queue, so setting them here would cause latency 
+    // ghosting and duplicate animations upon hit confirmation!
     
-    attacker.isAttacking = true
-    attacker.attackAnimationStartTime = performance.now() // Track animation start for update loop
     attacker.lastAttackedTarget = target.id
 
     // Create attack event
@@ -529,12 +526,9 @@ export class BattleModule implements BattleActionProcessor {
     payload: AttackActionPayload
   ): boolean {
     if (!target) {
-      // No target - just update attack state for visual feedback
-      // This allows players to "swing" their weapon even without hitting anything
-      actor.lastAttackTime = performance.now()
-      actor.isAttacking = true
-      actor.attackAnimationStartTime = performance.now()
-      console.log(`📨 BATTLE: ${actor.id} attacking (no target) - attack animation triggered`)
+      // No target - combat system already natively handled the attack animation execution.
+      // We don't need to manually override the state here.
+      console.log(`📨 BATTLE: ${actor.id} attacking (no target) - ignoring redundant state update`)
       return true
     }
 

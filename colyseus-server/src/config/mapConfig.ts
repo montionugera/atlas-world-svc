@@ -1,5 +1,21 @@
 // Map configuration with different terrain types and friction zones
 
+import { GAME_CONFIG } from './gameConfig'
+
+/** Per-map world dimensions. Fallback to GAME_CONFIG when not set. */
+export const MAP_DIMENSIONS: Record<string, { width: number; height: number }> = {
+  'map-for-test-deflect': { width: 100, height: 100 },
+}
+
+export function getMapDimensions(mapId: string): { width: number; height: number } {
+  return (
+    MAP_DIMENSIONS[mapId] ?? {
+      width: GAME_CONFIG.worldWidth,
+      height: GAME_CONFIG.worldHeight,
+    }
+  )
+}
+
 export interface TerrainZone {
   x: number
   y: number
@@ -141,6 +157,21 @@ export const MAP_CONFIG = {
  * Used by MobLifeCycleManager so we can control which mob types appear on each mapId.
  */
 export function getMobSpawnAreasForMap(mapId: string): MobSpawnArea[] {
+  // Small test map: one spear thrower for deflection/projectile testing.
+  if (mapId === 'map-for-test-deflect') {
+    return [
+      {
+        id: 'deflect_single_mob',
+        x: 30,
+        y: 30,
+        width: 40,
+        height: 40,
+        mobType: 'spear_thrower',
+        count: 1,
+      },
+    ]
+  }
+
   // Projectile-only playground map: spawn only projectile-capable mob types.
   if (mapId === 'map-for-test-projectile') {
     return [

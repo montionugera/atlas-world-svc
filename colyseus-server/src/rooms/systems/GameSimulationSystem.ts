@@ -66,7 +66,11 @@ export class GameSimulationSystem {
 
       if (player.processAttackInput(context)) {
         player.input.attack = false
-        this.checkProjectileDeflection(player)
+      }
+      
+      // Continuously check for deflection while the player is in the attack or wind-up state
+      if (player.isAttacking || player.pendingAttack) {
+         this.checkProjectileDeflection(player)
       }
     })
   }

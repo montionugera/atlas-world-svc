@@ -104,4 +104,66 @@ describe('Projectile Deflection System', () => {
 
     physicsManager.removeBody(projectile.id)
   })
+
+  test('removeBody + createProjectileBody keeps physics body aligned after deflect', () => {
+    const physicsManager = new PlanckPhysicsManager()
+
+    const projectile = new Projectile('proj-recreate', 0, 0, 5, 0, 'owner1', 10)
+    gameState.projectiles.set(projectile.id, projectile)
+    physicsManager.createProjectileBody(projectile)
+
+    const attacker = new Player('player-1', 'TestPlayer', 0, 0)
+    attacker.heading = 0
+    attacker.isAttacking = true
+    attacker.attackRange = 5
+    attacker.radius = 1
+    attacker.teamId = 'team-a'
+
+    projectile.x = 3
+    projectile.y = 0
+
+    const deflected = projectileManager.checkDeflection(projectile, attacker)
+    expect(deflected).toBe(true)
+
+    // Apply the runtime change: destroy stale body and recreate it from deflected fields.
+    physicsManager.removeBody(projectile.id)
+    physicsManager.createProjectileBody(projectile)
+
+    const body = physicsManager.getBody(projectile.id)
+    expect(body).toBeDefined()
+
+    const bodyVel = body!.getLinearVelocity()
+    expect(bodyVel.x).toBeCloseTo(projectile.vx)
+    expect(bodyVel.y).toBeCloseTo(projectile.vy)
+
+    physicsManager.removeBody(projectile.id)
+  })
+
+  test('geometric contact-point reflection correctly deflects projectile diagonally', () => {
+    const projectile = new Projectile('proj-angle', 3, 4, -3, -4, 'owner1', 10, 'spear')
+    gameState.projectiles.set(projectile.id, projectile)
+
+    const attacker = new Player('player-1', 'TestPlayer', 0, 0)
+    // Needs to face the projectile to satisfy the cone angle check
+    attacker.heading = Math.atan2(4, 3) 
+    attacker.isAttacking = true
+    attacker.attackRange = 5
+    attacker.radius = 1
+    attacker.teamId = 'team-a'
+
+    // Projectile is at (3, 4) moving toward (0, 0) with velocity (-3, -4)
+    // Distance from player (0,0) is 5.
+    // Normal vector is (3/5, 4/5) = (0.6, 0.8)
+    // Velocity is (-3, -4)
+    // dot = (-3)*(0.6) + (-4)*(0.8) = -1.8 - 3.2 = -5.0
+    // Vector reflection: V_new = (-3, -4) - 2*(-5)*(0.6, 0.8) 
+    // V_new = (-3, -4) + 10*(0.6, 0.8) = (-3, -4) + (6, 8) = (3, 4)
+    // Speed boost 1.2 applies -> vx = 3.6, vy = 4.8
+    
+    const deflected = projectileManager.checkDeflection(projectile, attacker)
+    expect(deflected).toBe(true)
+    
+    expect(projectile.vx).toBeCloseTo(3.6, 1)
+    expect(projectile.vy).toBeCloseTo(4.8, 1)
+  })
 })

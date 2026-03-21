@@ -16,6 +16,7 @@ const MOCK_MAP_CONFIG = {
 // Mock mapConfig
 jest.mock('../config/mapConfig', () => ({
   MAP_CONFIG: MOCK_MAP_CONFIG,
+  getMapDimensions: jest.fn((_mapId: string) => ({ width: 1000, height: 1000 })),
   getMobSpawnAreasForMap: jest.fn((mapId: string) => MOCK_MAP_CONFIG.mobSpawnAreas),
 }))
 
@@ -93,7 +94,7 @@ describe('MobLifeCycleManager', () => {
     }
     // Remove all listeners for this room
     eventBus.removeRoomListeners(roomId)
-    gameState.stopAI()
+    if (gameState) gameState.stopAI()
     jest.clearAllMocks()
   })
 

@@ -39,6 +39,13 @@ const MAP_MOB_SETTINGS: Record<string, Partial<MobSpawnSettings>> = {
     spawnIntervalMs: 900,
     respawnDelayMs: 5000,
   },
+  // Small test map: exactly one mob for deflection/projectile testing
+  'map-for-test-deflect': {
+    desiredCount: 1,
+    maxMobs: 1,
+    spawnIntervalMs: 30000,
+    respawnDelayMs: 5000,
+  },
 }
 
 export function getMobSettingsForMap(mapId: string): MobSpawnSettings {
