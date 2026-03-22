@@ -17,7 +17,7 @@ export const hybrid: MobTypeConfig = {
       id: 'melee',
       attacks: [
         {
-          atkBaseDmg: MOB_STATS.attackDamage,
+          atkBaseDmg: MOB_STATS.pAtk,
           atkWindUpTime: 0,
           atkCharacteristic: {
             type: AttackCharacteristicType.PROJECTILE,

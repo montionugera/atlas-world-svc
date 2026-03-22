@@ -5,6 +5,13 @@ import { drawCircle, drawLine } from '../utils/drawingUtils';
  * Draw all projectiles (spears)
  */
 const ENABLE_PROJECTILE_DEBUG_LOG = false
+// Enable temporary projectile debug logs (console) for deflection visibility debugging.
+// Throttled to avoid console spam (logs every N frames, max few per frame).
+const PROJECTILE_DEBUG_LOG_EVERY_N_FRAMES = 15
+const PROJECTILE_DEBUG_LOG_MAX_PER_FRAME = 3
+
+let debugDrawFrame = 0
+const lastProjectileDebugLogFrameById = new Map<string, number>()
 
 export const drawProjectiles = (
   ctx: CanvasRenderingContext2D,
@@ -13,15 +20,35 @@ export const drawProjectiles = (
   viewScale: number = 1
 ): void => {
   const inverseScale = 1 / viewScale;
+  debugDrawFrame += 1
+  const shouldThrottle = ENABLE_PROJECTILE_DEBUG_LOG && debugDrawFrame % PROJECTILE_DEBUG_LOG_EVERY_N_FRAMES !== 0
+  let loggedThisFrame = 0
 
   projectiles.forEach(projectile => {
     if (ENABLE_PROJECTILE_DEBUG_LOG) {
-      // Lightweight debug hook to inspect projectile state client-side
-      console.log(
-        `[Projectile] id=${projectile.id} owner=${projectile.ownerId} team=${projectile.teamId ?? 'none'} stuck=${projectile.isStuck} pos=(${projectile.x.toFixed(
-          2
-        )},${projectile.y.toFixed(2)}) vel=(${projectile.vx.toFixed(2)},${projectile.vy.toFixed(2)})`
-      )
+      const canLog =
+        !shouldThrottle && loggedThisFrame < PROJECTILE_DEBUG_LOG_MAX_PER_FRAME
+
+      if (canLog) {
+        const lastFrame = lastProjectileDebugLogFrameById.get(projectile.id)
+        // Also prevent noisy repeats when projectiles persist for a long time.
+        if (
+          lastFrame === undefined ||
+          debugDrawFrame - lastFrame >= PROJECTILE_DEBUG_LOG_EVERY_N_FRAMES
+        ) {
+          lastProjectileDebugLogFrameById.set(projectile.id, debugDrawFrame)
+
+          // Lightweight debug hook to inspect projectile state client-side
+          console.log(
+            `[Projectile] id=${projectile.id} owner=${projectile.ownerId} team=${
+              projectile.teamId ?? 'none'
+            } stuck=${projectile.isStuck} pos=(${projectile.x.toFixed(2)},${projectile.y.toFixed(
+              2
+            )}) vel=(${projectile.vx.toFixed(2)},${projectile.vy.toFixed(2)})`
+          )
+          loggedThisFrame += 1
+        }
+      }
     }
     if (projectile.isStuck) {
       // Draw stuck projectile as a small circle (semi-transparent)

@@ -70,7 +70,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     const attackData: BattleAttackData = {
       actorId: this.mob.id,
       targetId: target.id,
-      damage: this.mob.attackDamage,
+      damage: this.mob.pAtk,
       range: this.mob.attackRange,
       roomId: roomId
     }

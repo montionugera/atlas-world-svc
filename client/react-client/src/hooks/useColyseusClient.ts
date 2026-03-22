@@ -39,6 +39,8 @@ export interface UseColyseusClientReturn {
   forceDie: () => void;
 }
 
+const ENABLE_STATE_DEBUG_LOG = false;
+
 export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClientReturn => {
   // State
   const [isConnected, setIsConnected] = useState(false);
@@ -130,7 +132,9 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
       
       // Handle room state changes
       room.onStateChange((state) => {
-        console.log('State changed', state.tick)
+        if (ENABLE_STATE_DEBUG_LOG) {
+          console.log('State changed', state.tick);
+        }
         setGameState(state);
         setUpdateCount(prev => prev + 1);
         // Expose for quick debug

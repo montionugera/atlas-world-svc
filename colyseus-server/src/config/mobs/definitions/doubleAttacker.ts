@@ -1,5 +1,6 @@
 
-import { MOB_STATS } from '../../combatConfig'
+import { Projectile } from '../../../schemas/Projectile'
+import { MOB_STATS, WEAPON_TYPES } from '../../combatConfig'
 import { AttackCharacteristicType, MobTypeConfig } from '../types'
 
 export const doubleAttacker: MobTypeConfig = {
@@ -18,7 +19,7 @@ export const doubleAttacker: MobTypeConfig = {
       id: 'doubleAttack',
       attacks: [
         {
-          atkBaseDmg: MOB_STATS.attackDamage,
+          atkBaseDmg: MOB_STATS.pAtk,
           atkWindUpTime: 600,
           atkCharacteristic: {
             type: AttackCharacteristicType.PROJECTILE,
@@ -26,12 +27,12 @@ export const doubleAttacker: MobTypeConfig = {
               speedUnitsPerSec: 30,
               projectileRadius: 1.3,
               atkRange: 15,
-              projectileType: 'melee',
+              projectileType: WEAPON_TYPES.LARGE_MELEE,
             },
           },
         },
         {
-          atkBaseDmg: MOB_STATS.attackDamage * 2, // Second hit does less damage
+          atkBaseDmg: MOB_STATS.pAtk * 2, // Second hit does less damage
           atkWindUpTime: 500, // Second attack has windup
           cooldown: 200,
           atkCharacteristic: {
@@ -40,7 +41,7 @@ export const doubleAttacker: MobTypeConfig = {
               speedUnitsPerSec: 150,
               projectileRadius: 1.3,
               atkRange: 159,
-              projectileType: 'spear',
+              projectileType: WEAPON_TYPES.LARGE_MELEE,
             },
           },
         },

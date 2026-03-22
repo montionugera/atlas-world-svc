@@ -51,7 +51,7 @@ describe('Battle System Crash Fix', () => {
           x: 105,
           y: 100,
           attackRange: 10,
-          attackDamage: 20,
+          pAtk: 20,
         })
         
         // Add entities to game state
@@ -70,7 +70,7 @@ describe('Battle System Crash Fix', () => {
         x: 105,
         y: 100,
         attackRange: 10,
-        attackDamage: 20,
+        pAtk: 20,
       })
       gameState.players.set(player.id, player)
       gameState.mobs.set(mob.id, mob)
@@ -152,7 +152,7 @@ describe('Battle System Crash Fix', () => {
         x: 105,
         y: 100,
         attackRange: 10,
-        attackDamage: 20,
+        pAtk: 20,
       })
       
       gameState.players.set(player.id, player)
@@ -172,7 +172,7 @@ describe('Battle System Crash Fix', () => {
         x: 105,
         y: 100,
         attackRange: 10,
-        attackDamage: 20,
+        pAtk: 20,
       })
       
       gameState.mobs.set(mob.id, mob)

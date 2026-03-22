@@ -17,7 +17,7 @@ export const balanced: MobTypeConfig = {
       id: 'melee',
       attacks: [
         {
-          atkBaseDmg: MOB_STATS.attackDamage,
+          atkBaseDmg: MOB_STATS.pAtk,
           atkWindUpTime: 500, // 0.5s telegraph
           atkCharacteristic: {
             type: AttackCharacteristicType.PROJECTILE,

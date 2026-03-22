@@ -16,6 +16,7 @@ export interface ProjectileDetail {
   id: string
   type: string
   damage: number
+  damageType?: 'physical' | 'magical'
   speed?: number
   vx?: number
   vy?: number
@@ -23,6 +24,7 @@ export interface ProjectileDetail {
 
 export interface AttackActionPayload {
   damage: number
+  damageType?: 'physical' | 'magical'
   range: number
   direction?: { x: number; y: number }
   attackType?: string // melee, ranged, magic, etc.

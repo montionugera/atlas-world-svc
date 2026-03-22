@@ -24,7 +24,7 @@ describe('Battle Message System', () => {
       x: 105, // Close to player
       y: 100,
       attackRange: 10,
-      attackDamage: 20,
+      pAtk: 20,
     })
 
     // Add entities to game state (no registration needed)

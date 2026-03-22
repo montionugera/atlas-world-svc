@@ -11,7 +11,7 @@ import { Player } from '../schemas/Player'
 import { BattleModule } from '../modules/BattleModule'
 import { SpearThrowAttackStrategy } from '../ai/strategies/SpearThrowAttackStrategy'
 import { MeleeAttackStrategy } from '../ai/strategies/MeleeAttackStrategy'
-import { SPEAR_THROWER_STATS } from '../config/combatConfig'
+import { SPEAR_THROWER_STATS, WEAPON_TYPES } from '../config/combatConfig'
 import { PROJECTILE_GRAVITY } from '../config/physicsConfig'
 import { PlanckPhysicsManager } from '../physics/PlanckPhysicsManager'
 
@@ -44,7 +44,7 @@ describe('Projectile System', () => {
 
   describe('Projectile Creation', () => {
     test('should create projectile with correct initial properties', () => {
-      const projectile = projectileManager.createSpear(mob, 150, 100, 5, 10)
+      const projectile = projectileManager.createSpear(mob, 150, 100, 5, 'physical', 10)
 
       expect(projectile.id).toContain('projectile-')
       expect(projectile.ownerId).toBe(mob.id)
@@ -57,7 +57,7 @@ describe('Projectile System', () => {
     })
 
     test('should calculate correct trajectory angle', () => {
-      const projectile = projectileManager.createSpear(mob, 150, 100, 5, 10)
+      const projectile = projectileManager.createSpear(mob, 150, 100, 5, 'physical', 10)
 
       // Target is to the right (0 degrees)
       expect(projectile.vx).toBeGreaterThan(0)
@@ -65,7 +65,7 @@ describe('Projectile System', () => {
     })
 
     test('should set velocity within max speed limit', () => {
-      const projectile = projectileManager.createSpear(mob, 200, 100, 5, 10)
+      const projectile = projectileManager.createSpear(mob, 200, 100, 5, 'physical', 10)
       const speed = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy)
       
       expect(speed).toBeLessThanOrEqual(2000) // Max speed
@@ -76,7 +76,7 @@ describe('Projectile System', () => {
     test('should maintain velocity (no gravity in top-down 2D)', () => {
       const physicsManager = new PlanckPhysicsManager()
       
-      const projectile = new Projectile('proj-1', 100, 100, 10, 5, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 5, 'mob-1', 5, 'physical', 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
       
       // Create physics body for projectile
@@ -97,7 +97,7 @@ describe('Projectile System', () => {
     })
 
     test('should cap projectile speed at max', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 50, 50, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 100, 100, 50, 50, 'mob-1', 5, 'physical', 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       const speedBefore = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy)
@@ -120,7 +120,7 @@ describe('Projectile System', () => {
     })
 
     test('should track distance traveled', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       expect(projectile.distanceTraveled).toBe(0)
@@ -137,7 +137,7 @@ describe('Projectile System', () => {
     })
 
     test('should despawn when max range reached', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10)
       projectile.distanceTraveled = 10 // Max range
       gameState.projectiles.set(projectile.id, projectile)
 
@@ -145,7 +145,7 @@ describe('Projectile System', () => {
     })
 
     test('should despawn after lifetime when stuck', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10)
       projectile.stick()
       projectile.stuckAt = Date.now() - 3000 // 3 seconds ago
       projectile.lifetime = 2000 // 2 second lifetime
@@ -156,7 +156,7 @@ describe('Projectile System', () => {
 
   describe('Projectile Collision', () => {
     test('should damage entity on collision', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
       gameState.mobs.set(mob.id, mob)
 
@@ -168,7 +168,7 @@ describe('Projectile System', () => {
     })
 
     test('non-piercing projectile should only damage one entity', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
       gameState.mobs.set(mob.id, mob)
 
@@ -183,7 +183,7 @@ describe('Projectile System', () => {
     })
 
     test('piercing projectile should damage multiple different entities', () => {
-      const projectile = new Projectile('proj-pierce', 100, 100, 10, 0, 'mob-1', 5, 'melee', 10)
+      const projectile = new Projectile('proj-pierce', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'melee', 10)
       projectile.piercing = true
       projectile.teamId = 'team-a'
       gameState.projectiles.set(projectile.id, projectile)
@@ -209,7 +209,7 @@ describe('Projectile System', () => {
     })
 
     test('should not damage owner', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'physical', 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
       gameState.mobs.set(mob.id, mob)
 
@@ -226,7 +226,7 @@ describe('Projectile System', () => {
       alliedMob.teamId = 'team-a'
       mob.teamId = 'team-a'
 
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, mob.teamId)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, mob.teamId)
       
       gameState.projectiles.set(projectile.id, projectile)
       gameState.mobs.set(mob.id, mob)
@@ -245,7 +245,7 @@ describe('Projectile System', () => {
       enemyMob.teamId = 'team-b'
       mob.teamId = 'team-a'
 
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, mob.teamId)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, mob.teamId)
       
       gameState.projectiles.set(projectile.id, projectile)
       gameState.mobs.set(mob.id, mob)
@@ -260,7 +260,7 @@ describe('Projectile System', () => {
     })
 
     test('should stick projectile on boundary collision', () => {
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       expect(projectile.isStuck).toBe(false)
@@ -273,8 +273,8 @@ describe('Projectile System', () => {
     })
 
     test('projectiles from same team should ignore each other', () => {
-      const projA = new Projectile('proj-A', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha')
-      const projB = new Projectile('proj-B', 100, 100, -10, 0, 'mob-2', 5, 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha')
+      const projA = new Projectile('proj-A', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha')
+      const projB = new Projectile('proj-B', 100, 100, -10, 0, 'mob-2', 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha')
       
       projectileManager.handleProjectileCollision(projA, projB)
 
@@ -285,8 +285,8 @@ describe('Projectile System', () => {
     })
 
     test('projectiles from different teams should clash and stick', () => {
-      const projA = new Projectile('proj-A', 100, 100, 10, 0, 'mob-1', 5, 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha')
-      const projB = new Projectile('proj-B', 100, 100, -10, 0, 'player-1', 5, 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-beta')
+      const projA = new Projectile('proj-A', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha')
+      const projB = new Projectile('proj-B', 100, 100, -10, 0, 'player-1', 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-beta')
       
       projectileManager.handleProjectileCollision(projA, projB)
 
@@ -305,7 +305,7 @@ describe('Projectile System', () => {
       player.x = 100
       player.y = 100
       // Incoming projectile: velocity of -10 moving toward player
-      const projectile = new Projectile('proj-1', 103, 100, -10, 0, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 103, 100, -10, 0, 'mob-1', 5, 'physical', 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       player.isAttacking = true
@@ -323,6 +323,37 @@ describe('Projectile System', () => {
       expect(projectile.deflectedBy).toBe(player.id)
     })
 
+    test('deflect scales damage by deflectedDamageMultiplier for physicSpear', () => {
+      player.x = 100
+      player.y = 100
+      player.isAttacking = true
+      player.heading = 0
+      player.attackRange = 5
+      player.radius = 1.3
+
+      const meleeSwing = new Projectile('swing', 100, 100, 0, 0, player.id, 0, 'physical', WEAPON_TYPES.MELEE, 3)
+      gameState.projectiles.set(meleeSwing.id, meleeSwing)
+
+      const spear = new Projectile(
+        'spear-in',
+        103,
+        100,
+        -10,
+        0,
+        'mob-1',
+        10,
+        'physical',
+        WEAPON_TYPES.PHYSIC_SPEAR,
+        20
+      )
+      gameState.projectiles.set(spear.id, spear)
+
+      expect(projectileManager.checkDeflection(spear, player)).toBe(true)
+      expect(spear.damage).toBe(8) // 10 * 0.80 deflectedDamageMultiplier
+
+      gameState.projectiles.delete(meleeSwing.id)
+    })
+
     test('deflected projectile should keep traveling and not instantly despawn', () => {
       const physicsManager = new PlanckPhysicsManager()
 
@@ -334,7 +365,7 @@ describe('Projectile System', () => {
       player.radius = 1.3
       player.isAttacking = true
 
-      const projectile = new Projectile('proj-deflect', 103, 100, 10, 0, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-deflect', 103, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10)
       // Simulate projectile already having traveled close to its max range
       projectile.distanceTraveled = 9.5
 
@@ -367,7 +398,7 @@ describe('Projectile System', () => {
     })
 
     test('should not deflect if already deflected', () => {
-      const projectile = new Projectile('proj-1', 110, 100, 10, 0, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 110, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10)
       projectile.deflectedBy = 'player-2'
       gameState.projectiles.set(projectile.id, projectile)
 
@@ -380,7 +411,7 @@ describe('Projectile System', () => {
     })
 
     test('should not deflect if player not attacking', () => {
-      const projectile = new Projectile('proj-1', 110, 100, 10, 0, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 110, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       player.isAttacking = false
@@ -392,7 +423,7 @@ describe('Projectile System', () => {
     })
 
     test('should not deflect if out of range', () => {
-      const projectile = new Projectile('proj-1', 200, 100, 10, 0, 'mob-1', 5, 'spear', 10)
+      const projectile = new Projectile('proj-1', 200, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10)
       gameState.projectiles.set(projectile.id, projectile)
 
       player.isAttacking = true
@@ -567,7 +598,7 @@ describe('Projectile System', () => {
       gameState.players.set(player.id, player)
 
       // Create an incoming spear from the mob towards the player
-      const incoming = projectileManager.createSpear(mob, player.x, player.y, 5, 10)
+      const incoming = projectileManager.createSpear(mob, player.x, player.y, 5, 'physical', 10)
       gameState.projectiles.set(incoming.id, incoming)
       physicsManager.createProjectileBody(incoming)
 

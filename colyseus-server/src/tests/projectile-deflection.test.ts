@@ -32,8 +32,8 @@ describe('Projectile Deflection System', () => {
     })
 
     test('Different teams projectiles are destroyed', () => {
-        const pStrong = new Projectile('strong', 0, 0, 0, 0, 'owner1', 10, 'spear', 100, 4, 1000, 'team1')
-        const pWeak = new Projectile('weak', 0, 0, 0, 0, 'owner2', 10, 'spear', 100, 4, 1000, 'team2')
+        const pStrong = new Projectile('strong', 0, 0, 0, 0, 'owner1', 10, 'physical', 'spear', 100, 4, 1000, 'team1')
+        const pWeak = new Projectile('weak', 0, 0, 0, 0, 'owner2', 10, 'physical', 'spear', 100, 4, 1000, 'team2')
 
         projectileManager.handleProjectileCollision(pStrong, pWeak)
 
@@ -43,8 +43,8 @@ describe('Projectile Deflection System', () => {
     })
 
     test('Same team projectiles ignore each other', () => {
-        const pStrong = new Projectile('strong', 0, 0, 0, 0, 'owner1', 10, 'spear', 100, 4, 1000, 'team1')
-        const pWeak = new Projectile('weak', 0, 0, 0, 0, 'owner2', 10, 'spear', 100, 4, 1000, 'team1')
+        const pStrong = new Projectile('strong', 0, 0, 0, 0, 'owner1', 10, 'physical', 'spear', 100, 4, 1000, 'team1')
+        const pWeak = new Projectile('weak', 0, 0, 0, 0, 'owner2', 10, 'physical', 'spear', 100, 4, 1000, 'team1')
 
         // Swap arguments
         projectileManager.handleProjectileCollision(pWeak, pStrong)
@@ -54,11 +54,11 @@ describe('Projectile Deflection System', () => {
     })
     
     test('Dead projectile should not trigger collision again', () => {
-        const pDead = new Projectile('dead', 0, 0, 0, 0, 'owner1', 10, 'spear', 100, 4, 1000, 'team1')
+        const pDead = new Projectile('dead', 0, 0, 0, 0, 'owner1', 10, 'physical', 'spear', 100, 4, 1000, 'team1')
         pDead.stick() // Already dead
         pDead.hitTargets.add('clash') // Marks it as having already resolved collision
         
-        const pLive = new Projectile('live', 0, 0, 0, 0, 'owner2', 10, 'spear', 100, 4, 1000, 'team2')
+        const pLive = new Projectile('live', 0, 0, 0, 0, 'owner2', 10, 'physical', 'spear', 100, 4, 1000, 'team2')
         
         projectileManager.handleProjectileCollision(pDead, pLive)
         
@@ -140,7 +140,7 @@ describe('Projectile Deflection System', () => {
   })
 
   test('geometric contact-point reflection correctly deflects projectile diagonally', () => {
-    const projectile = new Projectile('proj-angle', 3, 4, -3, -4, 'owner1', 10, 'spear')
+    const projectile = new Projectile('proj-angle', 3, 4, -3, -4, 'owner1', 10, 'physical', 'spear')
     gameState.projectiles.set(projectile.id, projectile)
 
     const attacker = new Player('player-1', 'TestPlayer', 0, 0)

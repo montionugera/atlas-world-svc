@@ -1,5 +1,5 @@
 
-import { SPEAR_THROWER_STATS, MOB_STATS } from '../../combatConfig'
+import { SPEAR_THROWER_STATS, MOB_STATS, WEAPON_TYPES } from '../../combatConfig'
 import { AttackCharacteristicType, MobTypeConfig } from '../types'
 
 export const spearThrower: MobTypeConfig = {
@@ -18,7 +18,7 @@ export const spearThrower: MobTypeConfig = {
       id: 'melee',
       attacks: [
         {
-          atkBaseDmg: MOB_STATS.attackDamage,
+          atkBaseDmg: MOB_STATS.pAtk,
           atkWindUpTime: 0, // Instant
           atkCharacteristic: {
             type: AttackCharacteristicType.PROJECTILE,
@@ -26,6 +26,7 @@ export const spearThrower: MobTypeConfig = {
               speedUnitsPerSec: 100,
               projectileRadius: 0.3,
               atkRange: MOB_STATS.attackRange,
+              projectileType: WEAPON_TYPES.PHYSIC_SPEAR,
             },
           },
         },
@@ -35,7 +36,7 @@ export const spearThrower: MobTypeConfig = {
       id: 'spear',
       attacks: [
         {
-          atkBaseDmg: SPEAR_THROWER_STATS.spearDamage + 1,
+          atkBaseDmg: SPEAR_THROWER_STATS.spearDamage,
           atkWindUpTime: SPEAR_THROWER_STATS.castTime,
           atkCharacteristic: {
             type: AttackCharacteristicType.PROJECTILE,
@@ -43,6 +44,7 @@ export const spearThrower: MobTypeConfig = {
               speedUnitsPerSec: SPEAR_THROWER_STATS.spearSpeed,
               projectileRadius: SPEAR_THROWER_STATS.projectileRadius,
               atkRange: SPEAR_THROWER_STATS.spearMaxRange,
+              projectileType: WEAPON_TYPES.PHYSIC_SPEAR,
             },
           },
         },

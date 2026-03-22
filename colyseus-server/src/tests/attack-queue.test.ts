@@ -36,10 +36,11 @@ describe('Attack Queue System', () => {
             y: 0,
             radius: 1,
             maxHealth: 100,
-            attackDamage: 10,
+            pAtk: 10,
             attackRange: 10,
             atkWindDownTime: 2000,
-            defense: 0,
+            pDef: 0,
+            mDef: 0,
             armor: 0,
             density: 1
         });

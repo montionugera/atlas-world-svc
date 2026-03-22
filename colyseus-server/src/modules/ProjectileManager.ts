@@ -436,7 +436,11 @@ export class ProjectileManager {
     projectile.vx = newVx * speedBoost;
     projectile.vy = newVy * speedBoost;
     
-    projectile.maxRange = Math.max(1, projectile.maxRange * incomingConfig.deflectedRangeMultiplier);
+    projectile.maxRange = Math.max(1, projectile.maxRange * incomingConfig.deflectedRangeMultiplier)
+
+    const dmgMult = incomingConfig.deflectedDamageMultiplier
+    projectile.damage = Math.max(1, Math.floor(projectile.damage * dmgMult))
+
     // Refresh max distance capability since it's practically a new projectile
     if (projectile.maxRange <= projectile.distanceTraveled) {
         // Give it at least some distance if it was already maxed out

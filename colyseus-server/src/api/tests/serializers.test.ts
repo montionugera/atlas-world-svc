@@ -48,7 +48,7 @@ describe('Data Serializers', () => {
         y: 75,
         radius: 4,
         maxHealth: 100,
-        attackDamage: 10,
+        pAtk: 10,
       })
       
       const serialized = serializeMobData(mob)
@@ -56,7 +56,7 @@ describe('Data Serializers', () => {
       expect(serialized.id).toBe('mob-2')
       expect(serialized.radius).toBe(4)
       expect(serialized.maxHealth).toBe(100)
-      expect(serialized.attackDamage).toBe(10)
+      expect(serialized.pAtk).toBe(10)
       expect(serialized).not.toHaveProperty('x')
       expect(serialized).not.toHaveProperty('y')
     })

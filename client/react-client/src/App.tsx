@@ -26,9 +26,23 @@ function App() {
   
   const client = useColyseusClient(colyseusConfig);
 
-  // Frontend map picker (decides which server-side room to join).
-  const AVAILABLE_MAP_IDS = ['map-for-play', 'map-for-test-projectile'] as const
-  const [selectedMapId, setSelectedMapId] = useState<(typeof AVAILABLE_MAP_IDS)[number]>(AVAILABLE_MAP_IDS[0])
+  // Frontend map picker (decides which server-side room to join). Use tabs/radio, not dropdown.
+  const AVAILABLE_MAP_IDS = ['map-for-play', 'map-for-test-projectile', 'map-for-test-deflect'] as const
+  const MAP_LABELS: Record<(typeof AVAILABLE_MAP_IDS)[number], string> = {
+    'map-for-play': 'Play',
+    'map-for-test-projectile': 'Projectile',
+    'map-for-test-deflect': 'Deflect test',
+  }
+  const getInitialSelectedMapId = (): (typeof AVAILABLE_MAP_IDS)[number] => {
+    if (typeof window === 'undefined') return AVAILABLE_MAP_IDS[0]
+    const params = new URLSearchParams(window.location.search)
+    const mapParam = params.get('map')
+    if (mapParam && (AVAILABLE_MAP_IDS as readonly string[]).includes(mapParam)) {
+      return mapParam as (typeof AVAILABLE_MAP_IDS)[number]
+    }
+    return AVAILABLE_MAP_IDS[0]
+  }
+  const [selectedMapId, setSelectedMapId] = useState<(typeof AVAILABLE_MAP_IDS)[number]>(() => getInitialSelectedMapId())
   
   const addLog = useCallback((message: string, type: LogEntry['type'] = 'info') => {
     const log: LogEntry = {
@@ -65,8 +79,7 @@ function App() {
   const joinMap = useCallback(async (mapId: string) => {
     try {
       if (!client.isConnected) return
-      // Update dropdown selection first, so UI and join decision stay in sync.
-      setSelectedMapId(mapId as any)
+      setSelectedMapId(mapId as (typeof AVAILABLE_MAP_IDS)[number])
       await client.joinRoom(mapId)
     } catch (e: any) {
       console.error(e)
@@ -150,29 +163,49 @@ function App() {
           {/* Right Column: unified Info Panel */}
           <div className="info-section">
              <div className="entity-panel">
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+                <div style={{ marginBottom: 12 }}>
                   <label style={{ color: '#fff', fontWeight: 700 }}>Map</label>
-                  <select
-                    value={selectedMapId}
-                    onChange={(e) => setSelectedMapId(e.target.value as any)}
+                  <fieldset
                     style={{
-                      padding: '6px 10px',
-                      borderRadius: 8,
-                      backgroundColor: 'rgba(0,0,0,0.3)',
-                      color: '#fff',
-                      border: '1px solid rgba(255,255,255,0.2)',
+                      border: 'none',
+                      margin: 0,
+                      marginTop: 6,
+                      padding: 0,
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 8,
                     }}
+                    role="radiogroup"
+                    aria-label="Select map"
                   >
                     {AVAILABLE_MAP_IDS.map((id) => (
-                      <option key={id} value={id} style={{ color: '#000' }}>
-                        {id}
-                      </option>
+                      <label
+                        key={id}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          cursor: 'pointer',
+                          color: '#fff',
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="map"
+                          value={id}
+                          checked={selectedMapId === id}
+                          onChange={() => setSelectedMapId(id)}
+                          style={{ accentColor: 'rgba(255,255,255,0.8)' }}
+                        />
+                        <span>{MAP_LABELS[id]}</span>
+                      </label>
                     ))}
-                  </select>
+                  </fieldset>
                   <button
                     onClick={() => joinMap(selectedMapId)}
                     disabled={!client.isConnected}
                     style={{
+                      marginTop: 8,
                       padding: '8px 14px',
                       borderRadius: 10,
                       cursor: client.isConnected ? 'pointer' : 'not-allowed',
@@ -182,43 +215,7 @@ function App() {
                       fontWeight: 800,
                     }}
                   >
-                    🎮 Join
-                  </button>
-                </div>
-
-                <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-                  <button
-                    onClick={() => joinMap('map-for-play')}
-                    disabled={!client.isConnected}
-                    style={{
-                      flex: 1,
-                      padding: '8px 10px',
-                      borderRadius: 10,
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      backgroundColor: selectedMapId === 'map-for-play' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)',
-                      color: '#fff',
-                      fontWeight: 900,
-                      cursor: client.isConnected ? 'pointer' : 'not-allowed',
-                    }}
-                  >
-                    Play
-                  </button>
-                  <button
-                    onClick={() => joinMap('map-for-test-projectile')}
-                    disabled={!client.isConnected}
-                    style={{
-                      flex: 1,
-                      padding: '8px 10px',
-                      borderRadius: 10,
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      backgroundColor:
-                        selectedMapId === 'map-for-test-projectile' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)',
-                      color: '#fff',
-                      fontWeight: 900,
-                      cursor: client.isConnected ? 'pointer' : 'not-allowed',
-                    }}
-                  >
-                    Projectile
+                    Join
                   </button>
                 </div>
 

@@ -93,7 +93,8 @@ export function calculateSpearMaxRange(
 // Spear thrower mob stats
 export const SPEAR_THROWER_STATS = {
   spearSpeed: 25, // max units/second (Reduced to ~30% of 80 per user request)
-  spearDamage: 5,
+  /** Thrown spear uses mob physical attack so hits feel consistent with melee P.Atk. */
+  spearDamage: MOB_STATS.pAtk,
   // Calculate max range using physics: sqrt(2 * h / g) * v
   // Default visual height = 2 * default mob radius (4) = 8
   // This is used for both attack decision range and projectile max travel distance
@@ -120,9 +121,11 @@ export interface ProjectileDeflectionConfig {
   deflectPowerMultiplier: number;  
   
   // Offensive stats (when this projectile is flying and gets parried by a defender)
-  canBeDeflected: boolean;         
-  deflectionBehavior: 'bounce' | 'clash'; 
-deflectedRangeMultiplier: number; 
+  canBeDeflected: boolean
+  deflectionBehavior: 'bounce' | 'clash'
+  deflectedRangeMultiplier: number
+  /** Multiplier applied to projectile.damage after a successful parry (server-only). */
+  deflectedDamageMultiplier: number
 }
 
 export const WEAPON_TYPES = {
@@ -145,6 +148,7 @@ export const PROJECTILE_INTERACTIONS = {
     canBeDeflected: true,
     deflectionBehavior: 'clash',
     deflectedRangeMultiplier: 0,
+    deflectedDamageMultiplier: 1.0,
   },
   [WEAPON_TYPES.LARGE_MELEE]: {
     canDeflectOthers: true,
@@ -153,14 +157,16 @@ export const PROJECTILE_INTERACTIONS = {
     canBeDeflected: true,
     deflectionBehavior: 'clash',
     deflectedRangeMultiplier: 0,
+    deflectedDamageMultiplier: 1.0,
   },
   [WEAPON_TYPES.PHYSIC_SPEAR]: {
     canDeflectOthers: false,
-    absorbImpulseMultiplier: 1.0, 
+    absorbImpulseMultiplier: 1.0,
     deflectPowerMultiplier: 1.0,
     canBeDeflected: true,
     deflectionBehavior: 'bounce',
-    deflectedRangeMultiplier: 0.80,
+    deflectedRangeMultiplier: 0.10,
+    deflectedDamageMultiplier: 0.80,
   },
   [WEAPON_TYPES.ARROW]: {
     canDeflectOthers: false,
@@ -169,6 +175,7 @@ export const PROJECTILE_INTERACTIONS = {
     canBeDeflected: true,
     deflectionBehavior: 'bounce',
     deflectedRangeMultiplier: 0.30,
+    deflectedDamageMultiplier: 0.30,
   },
   [WEAPON_TYPES.MAGIC_SPEAR]: {
     canDeflectOthers: false,
@@ -177,24 +184,27 @@ export const PROJECTILE_INTERACTIONS = {
     canBeDeflected: false,
     deflectionBehavior: 'clash',
     deflectedRangeMultiplier: 0.30,
+    deflectedDamageMultiplier: 0.30,
   },
   // Default fallbacks for currently hardcoded types in tests
   [WEAPON_TYPES.MELEE]: { // Backwards compatibility for existing tests/code
     canDeflectOthers: true,
     absorbImpulseMultiplier: 0.20,
-    deflectPowerMultiplier: 1.2, 
+    deflectPowerMultiplier: 1.2,
     canBeDeflected: true,
     deflectionBehavior: 'clash',
     deflectedRangeMultiplier: 0,
+    deflectedDamageMultiplier: 1.0,
   },
   [WEAPON_TYPES.SPEAR]: { // Backwards compatibility for existing tests/code
     canDeflectOthers: false,
-    absorbImpulseMultiplier: 1.0, 
+    absorbImpulseMultiplier: 1.0,
     deflectPowerMultiplier: 1.0,
     canBeDeflected: true,
     deflectionBehavior: 'bounce',
-    deflectedRangeMultiplier: 1.0, 
-  }
+    deflectedRangeMultiplier: 0.7,
+    deflectedDamageMultiplier: 0.3,
+  },
 } as const satisfies Record<ProjectileType, ProjectileDeflectionConfig>;
 
 export interface WeaponConfig {

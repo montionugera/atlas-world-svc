@@ -45,7 +45,7 @@ export function createTestMob(options: {
     vy,
     radius: MOB_STATS.radius,
     maxHealth: MOB_STATS.maxHealth,
-    attackDamage: MOB_STATS.attackDamage,
+    pAtk: MOB_STATS.pAtk,
     attackRange: MOB_STATS.attackRange,
     atkWindDownTime: MOB_STATS.atkWindDownTime,
   })

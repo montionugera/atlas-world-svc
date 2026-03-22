@@ -66,7 +66,7 @@ export class NPCCombatSystem extends BaseCombatSystem<any> {
     const attackData: BattleAttackData = {
       actorId: this.npc.id,
       targetId: targetMob.id,
-      damage: this.npc.attackDamage,
+      damage: this.npc.pAtk,
       range: this.npc.attackRange,
       roomId: roomId
     }

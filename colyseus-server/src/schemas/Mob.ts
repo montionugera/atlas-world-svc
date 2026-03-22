@@ -112,9 +112,10 @@ export class Mob extends WorldLife implements IAgent {
     attackRange?: number
     chaseRange?: number
     maxHealth?: number
-    attackDamage?: number
+    pAtk?: number
     atkWindDownTime?: number
-    defense?: number
+    pDef?: number
+    mDef?: number
     armor?: number
     density?: number
     maxMoveSpeed?: number
@@ -132,10 +133,11 @@ export class Mob extends WorldLife implements IAgent {
       tags: ['mob'],
       radius: options.radius ?? MOB_STATS.radius,
       maxHealth: options.maxHealth ?? MOB_STATS.maxHealth,
-      attackDamage: options.attackDamage ?? MOB_STATS.attackDamage,
+      pAtk: options.pAtk ?? MOB_STATS.pAtk,
       attackRange: options.attackRange ?? MOB_STATS.attackRange,
       attackDelay: (options.atkWindDownTime ?? MOB_STATS.atkWindDownTime), // Initial default, refined later
-      defense: options.defense ?? MOB_STATS.defense,
+      pDef: options.pDef ?? MOB_STATS.pDef,
+      mDef: options.mDef ?? MOB_STATS.mDef,
       armor: options.armor ?? MOB_STATS.armor,
       density: options.density ?? MOB_STATS.density,
     })

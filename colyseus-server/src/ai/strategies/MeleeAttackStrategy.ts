@@ -92,7 +92,7 @@ export class MeleeAttackStrategy implements AttackStrategy {
       attacker,
       targetX,
       targetY,
-      attacker.attackDamage
+      attacker.pAtk
     )
 
     // Add to game state (synced to clients)

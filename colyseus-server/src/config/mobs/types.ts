@@ -1,5 +1,5 @@
 
-import { MobCombatStats } from '../combatConfig'
+import { MobCombatStats, ProjectileType } from '../combatConfig'
 
 /**
  * Attack Characteristic Type Enum
@@ -18,7 +18,7 @@ export interface AttackProjectile {
   projectileRadius: number
   /** Maximum range (0 = calculate from physics based on speedUnitsPerSec and gravity) */
   atkRange: number
-  projectileType?: 'melee' | 'projectile' | 'spear'
+  projectileType?: ProjectileType
 }
 
 export interface AttackArea {
