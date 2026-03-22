@@ -1,11 +1,10 @@
 import { Projectile } from '../schemas/Projectile'
-import { Mob } from '../schemas/Mob'
 import { Player } from '../schemas/Player'
 import { WorldLife } from '../schemas/WorldLife'
 import { BattleModule } from './BattleModule'
 import { BattleManager } from './BattleManager'
 import { GameState } from '../schemas/GameState'
-import { SPEAR_THROWER_STATS, MELEE_PROJECTILE_STATS, PROJECTILE_INTERACTIONS, ProjectileType } from '../config/combatConfig'
+import { SPEAR_THROWER_STATS, MELEE_PROJECTILE_STATS, PROJECTILE_INTERACTIONS, ProjectileType, WEAPON_TYPES } from '../config/combatConfig'
 import { PROJECTILE_GRAVITY } from '../config/physicsConfig'
 import { eventBus, RoomEventType } from '../events/EventBus'
 
@@ -24,7 +23,7 @@ export class ProjectileManager {
   }
 
   /**
-   * Create a melee projectile from mob to target
+   * Create a melee projectile from actor to target
    * Short range, fast speed for near-instant hits
    */
   createMelee(
@@ -32,6 +31,7 @@ export class ProjectileManager {
     targetX: number, 
     targetY: number, 
     damage: number,
+    damageType: 'physical' | 'magical' = 'physical',
     maxRange: number = MELEE_PROJECTILE_STATS.meleeMaxRange,
     radius: number = MELEE_PROJECTILE_STATS.projectileRadius,
     speed: number = MELEE_PROJECTILE_STATS.meleeSpeed
@@ -62,6 +62,7 @@ export class ProjectileManager {
       vy,
       actor.id,
       damage,
+      damageType,
       'melee', // type
       maxRange,
       radius,
@@ -75,18 +76,19 @@ export class ProjectileManager {
   }
 
   /**
-   * Create a spear projectile from mob to target
+   * Create a spear projectile from attacker to target
    * Calculates trajectory based on configurable physics
    */
   createSpear(
-    mob: Mob, 
+    mob: WorldLife,
     targetX: number, 
     targetY: number, 
     damage: number, 
+    damageType: 'physical' | 'magical' = 'physical',
     maxRange: number = SPEAR_THROWER_STATS.spearMaxRange,
     radius: number = SPEAR_THROWER_STATS.projectileRadius,
     speed: number = this.maxSpeed,
-    type: ProjectileType = 'spear'
+    type: ProjectileType = WEAPON_TYPES.SPEAR
   ): Projectile {
     const dx = targetX - mob.x
     const dy = targetY - mob.y
@@ -117,6 +119,7 @@ export class ProjectileManager {
       vy,
       mob.id,
       damage,
+      damageType,
       type,
       maxRange,
       radius,
@@ -163,7 +166,7 @@ export class ProjectileManager {
     
     // 3. Last-ditch deflection: If the physics tick ran before updatePlayers, a fast spear might hit the body.
     // Allow the target to instantly deflect it if they are actively attacking in the correct direction!
-    if (projectile.type === 'spear' && this.checkDeflection(projectile, target)) {
+    if (projectile.type === WEAPON_TYPES.SPEAR && this.checkDeflection(projectile, target)) {
         return; // Deflection successful, skip taking damage
     }
     
@@ -198,7 +201,8 @@ export class ProjectileManager {
         if (attacker && attacker.isAlive) {
           // Use BattleModule to apply damage
           const damage = this.battleModule.calculateDamage(
-            { attackDamage: projectile.damage } as WorldLife,
+            projectile.damage,
+            projectile.damageType,
             target
           )
           const targetDied = this.battleModule.applyDamage(target, damage, { eventId: projectile.id })
@@ -368,7 +372,7 @@ export class ProjectileManager {
 
     // Resolve the weapon type the attacker is currently swinging
     // By default, assuming generic 'melee' backward compatibility if nothing active is found
-    let deflectorWeaponType: ProjectileType = 'melee'; 
+    let deflectorWeaponType: ProjectileType = WEAPON_TYPES.MELEE; 
     for (const p of this.gameState.projectiles.values()) {
         if (p.ownerId === attacker.id && PROJECTILE_INTERACTIONS[p.type]?.canDeflectOthers) {
             deflectorWeaponType = p.type;

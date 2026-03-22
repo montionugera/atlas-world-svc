@@ -25,7 +25,7 @@ describe('Battle System', () => {
       x: 105, // Close to player
       y: 100,
       attackRange: 10,
-      attackDamage: 20,
+      pAtk: 20,
     })
     
     // Add entities to game state
@@ -91,11 +91,11 @@ describe('Battle System', () => {
     })
 
     test('should calculate damage with defense', () => {
-      player.defense = 5
+      player.pDef = 5
       player.armor = 3
 
-      const damage = battleModule.calculateDamage(mob, player)
-      expect(damage).toBeLessThan(mob.attackDamage)
+      const damage = battleModule.calculateDamage(mob.pAtk, 'physical', player)
+      expect(damage).toBeLessThan(mob.pAtk)
       expect(damage).toBeGreaterThan(0)
     })
 

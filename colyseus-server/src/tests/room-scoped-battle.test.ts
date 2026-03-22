@@ -88,8 +88,8 @@ describe('Room-Scoped Battle Manager', () => {
     // Room 1: mob attacks player
     room1BattleManager.addActionMessage(BattleManager.createAttackMessage('mob-1', 'player-1', 20, 10))
 
-    // Room 2: mob attacks player
-    room2BattleManager.addActionMessage(BattleManager.createAttackMessage('mob-2', 'player-2', 15, 8))
+    // Room 2: mob attacks player (same base damage as room 1 so isolation is apples-to-apples)
+    room2BattleManager.addActionMessage(BattleManager.createAttackMessage('mob-2', 'player-2', 20, 8))
 
     // Process attacks in both rooms
     await room1BattleManager.processActionMessages()

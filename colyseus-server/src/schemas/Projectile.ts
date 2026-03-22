@@ -1,6 +1,7 @@
 import { type } from '@colyseus/schema'
 import { WorldObject } from './WorldObject'
 import { SPEAR_THROWER_STATS, ProjectileType } from '../config/combatConfig'
+import type { AttackKind } from '../combat/attackDamage'
 
 export class Projectile extends WorldObject {
   // Synced to client
@@ -12,6 +13,9 @@ export class Projectile extends WorldObject {
 
   // Server-only properties
   damage: number = 0
+  damageType: 'physical' | 'magical' = 'physical'
+  /** Server-only: how this hit was classified (not synced). */
+  attackKind: AttackKind | '' = ''
   maxRange: number = SPEAR_THROWER_STATS.spearMaxRange
   distanceTraveled: number = 0
   hitTargets: Set<string> = new Set()
@@ -29,6 +33,7 @@ export class Projectile extends WorldObject {
     vy: number,
     ownerId: string,
     damage: number,
+    damageType: 'physical' | 'magical' = 'physical',
     type: ProjectileType = 'spear',
     maxRange: number = SPEAR_THROWER_STATS.spearMaxRange,
     radius: number = SPEAR_THROWER_STATS.projectileRadius,
@@ -38,6 +43,7 @@ export class Projectile extends WorldObject {
     super(id, x, y, vx, vy, ['projectile'])
     this.ownerId = ownerId
     this.damage = damage
+    this.damageType = damageType
     this.type = type
     this.maxRange = maxRange
     this.radius = radius

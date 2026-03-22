@@ -1,5 +1,6 @@
 import { Player } from '../schemas/Player';
-import { PLAYER_STATS } from '../config/combatConfig';
+import { PLAYER_STATS, WEAPON_TYPES } from '../config/combatConfig';
+import { resolveWeaponBasicProjectileParams } from '../combat/attackDamage';
 import { ScheduledAttack, processAttackQueue } from './attackQueue';
 
 /**
@@ -147,26 +148,26 @@ export class PlayerCombatSystem {
         const projectileManager = context?.projectileManager;
         const gameState = context?.gameState;
         
-        // Spawn melee projectile
-        if (projectileManager && gameState) {
-            const range = this.player.attackRange + this.player.radius;
-            // Target is just a direction point to feed into createMelee
-            const targetX = this.player.x + Math.cos(this.player.heading) * range;
-            const targetY = this.player.y + Math.sin(this.player.heading) * range;
-            
-            // Sweep radius (roughly equal to the old cone logic, 2 units is good)
-            const pRadius = 2.0;
-            
-            const projectile = projectileManager.createMelee(
-                this.player,
-                targetX,
-                targetY,
-                this.player.attackDamage,
-                range, // maxRange
-                pRadius, // radius
-                40 // fast speed
-            );
-            
+        // Spawn melee / weapon projectile (params from central resolver)
+        if (projectileManager && gameState && roomId) {
+            const w = resolveWeaponBasicProjectileParams(this.player);
+            const { projectileType, damage, damageType, atkRange, pRadius, atkSpeed, attackKind } = w;
+
+            const targetX = this.player.x + Math.cos(this.player.heading) * atkRange;
+            const targetY = this.player.y + Math.sin(this.player.heading) * atkRange;
+
+            let projectile;
+            if (projectileType === WEAPON_TYPES.MELEE || projectileType === WEAPON_TYPES.SMALL_MELEE || projectileType === WEAPON_TYPES.LARGE_MELEE) {
+                projectile = projectileManager.createMelee(
+                    this.player, targetX, targetY, damage, damageType, atkRange, pRadius, atkSpeed
+                );
+            } else {
+                projectile = projectileManager.createSpear(
+                    this.player, targetX, targetY, damage, damageType, atkRange, pRadius, atkSpeed, projectileType
+                );
+            }
+            projectile.attackKind = attackKind;
+
             gameState.projectiles.set(projectile.id, projectile);
         }
 
@@ -174,7 +175,7 @@ export class PlayerCombatSystem {
         const attackData = {
           actorId: this.player.id,
           targetId: '', // Cleaving hitboxes don't have a single explicit target upfront
-          damage: this.player.attackDamage,
+          damage: this.player.pAtk, // just for visual numbers/logs
           range: this.player.attackRange,
           roomId: roomId
         };

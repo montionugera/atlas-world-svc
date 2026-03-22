@@ -79,6 +79,7 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
       targetX,
       targetY,
       this.damage,
+      'physical',
       this.maxRange,
       undefined, // Default radius
       this.speed

@@ -20,13 +20,16 @@ export abstract class WorldLife extends WorldObject {
   @type('string') teamId: string = ''
 
   // Attack system
-  @type('number') attackDamage: number = 10
+  @type('number') pAtk: number = 10 // Legacy/client sync
+  mAtk: number = 0 // server-only; total magic attack (base + gear)
   @type('number') attackRange: number = 5
   @type('number') attackDelay: number = 1000 // milliseconds between attacks
   @type('number') lastAttackTime: number = 0
 
   // Defense system
-  @type('number') defense: number = 0 // Reduces incoming damage
+  @type('number') defense: number = 0 // Legacy/client sync
+  pDef: number = 0 // Reduces incoming physical damage
+  mDef: number = 0 // Reduces incoming magical damage
   @type('number') armor: number = 0 // Additional damage reduction
   
   // Resistance System (Map: Type -> Resistance Value 0.0-1.0)
@@ -91,14 +94,16 @@ export abstract class WorldLife extends WorldObject {
   // Calculate attack impulse from damage
   getAttackImpulse(): number {
     const { GAME_CONFIG } = require('../config/gameConfig')
-    const impulse = this.attackDamage * GAME_CONFIG.attackImpulseMultiplier
+    const baseDamage = Math.max(this.pAtk, this.mAtk)
+    const impulse = baseDamage * GAME_CONFIG.attackImpulseMultiplier
     return Math.max(GAME_CONFIG.minImpulse, Math.min(impulse, GAME_CONFIG.maxImpulse))
   }
 
   // Calculate recoil impulse from damage
   getRecoilImpulse(): number {
     const { GAME_CONFIG } = require('../config/gameConfig')
-    const impulse = this.attackDamage * GAME_CONFIG.recoilImpulseMultiplier
+    const baseDamage = Math.max(this.pAtk, this.mAtk)
+    const impulse = baseDamage * GAME_CONFIG.recoilImpulseMultiplier
     return Math.max(GAME_CONFIG.minImpulse, Math.min(impulse, GAME_CONFIG.maxImpulse))
   }
 
@@ -111,10 +116,12 @@ export abstract class WorldLife extends WorldObject {
     tags?: string[]
     radius?: number
     maxHealth?: number
-    attackDamage?: number
+    pAtk?: number
+    mAtk?: number
     attackRange?: number
     attackDelay?: number
-    defense?: number
+    pDef?: number
+    mDef?: number
     armor?: number
     density?: number
   }) {
@@ -123,10 +130,13 @@ export abstract class WorldLife extends WorldObject {
     this.radius = opts.radius ?? 4
     this.maxHealth = opts.maxHealth ?? 100
     this.currentHealth = this.maxHealth
-    this.attackDamage = opts.attackDamage ?? 10
+    this.pAtk = opts.pAtk ?? 10
+    this.mAtk = opts.mAtk ?? 0
     this.attackRange = opts.attackRange ?? 5
     this.attackDelay = opts.attackDelay ?? 1000
-    this.defense = opts.defense ?? 0
+    this.defense = opts.pDef ?? 0
+    this.pDef = opts.pDef ?? 0
+    this.mDef = opts.mDef ?? 0
     this.armor = opts.armor ?? 0
     this.density = opts.density ?? 1
     this.lastAttackTime = performance.now() - this.attackDelay - 1 // Allow immediate first attack
@@ -187,7 +197,6 @@ export abstract class WorldLife extends WorldObject {
     this.isMoving = false
     this.vx = 0
     this.vy = 0
-    this.lastAttackTime = 0
     this.lastAttackTime = 0
 
     // this.processedEvents.clear() // Removed, handled centrally in BattleModule

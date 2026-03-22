@@ -3,6 +3,7 @@ import { ProjectileManager } from '../modules/ProjectileManager'
 import { GameState } from '../schemas/GameState'
 import { Player } from '../schemas/Player'
 import { BattleModule } from '../modules/BattleModule'
+import { WEAPON_TYPES } from '../config/combatConfig'
 
 describe('Configuration-Driven Projectile Interactions', () => {
   let gameState: GameState
@@ -32,11 +33,11 @@ describe('Configuration-Driven Projectile Interactions', () => {
 
   test('smallMeelee deflecting arrow: bounces arrow back, 50% power return', () => {
     // P1 swings smallMeelee
-    const swing = new Projectile('swing-1', 10, 10, 0, 0, player1.id, 10, 'smallMeelee', 10)
+    const swing = new Projectile('swing-1', 10, 10, 0, 0, player1.id, 10, 'physical', WEAPON_TYPES.SMALL_MELEE, 10)
     gameState.projectiles.set(swing.id, swing)
     
     // P2 shoots arrow
-    const arrow = new Projectile('arrow-1', 12, 10, -20, 0, player2.id, 10, 'arrow', 10)
+    const arrow = new Projectile('arrow-1', 12, 10, -20, 0, player2.id, 10, 'physical', WEAPON_TYPES.ARROW, 10)
     gameState.projectiles.set(arrow.id, arrow)
     
     player1.isAttacking = true;
@@ -53,11 +54,11 @@ describe('Configuration-Driven Projectile Interactions', () => {
 
   test('largeMeelee hit by magicSpear: physical clash stops dead, no bounce', () => {
     // P1 swings largeMeelee
-    const swing = new Projectile('swing-2', 10, 10, 10, 0, player1.id, 10, 'largeMeelee', 10)
+    const swing = new Projectile('swing-2', 10, 10, 10, 0, player1.id, 10, 'physical', WEAPON_TYPES.LARGE_MELEE, 10)
     gameState.projectiles.set(swing.id, swing)
     
     // P2 shoots magicSpear
-    const magicSpear = new Projectile('magic-1', 11, 10, -10, 0, player2.id, 10, 'magicSpear', 10)
+    const magicSpear = new Projectile('magic-1', 11, 10, -10, 0, player2.id, 10, 'magical', WEAPON_TYPES.MAGIC_SPEAR, 10)
     gameState.projectiles.set(magicSpear.id, magicSpear)
     
     // Simulate game physics engine attempting a collision

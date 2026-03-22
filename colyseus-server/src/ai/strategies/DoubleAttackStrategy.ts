@@ -4,7 +4,7 @@ import { ProjectileManager } from '../../modules/ProjectileManager'
 import { GameState } from '../../schemas/GameState'
 import { AttackDefinition, AttackCharacteristicType } from '../../config/mobTypesConfig'
 import { calculateEffectiveAttackRange } from '../../config/mobTypesConfig'
-import { ProjectileType } from '../../config/combatConfig'
+import { ProjectileType, WEAPON_TYPES } from '../../config/combatConfig'
 
 export class DoubleAttackStrategy implements AttackStrategy {
   name = 'doubleAttack'
@@ -92,14 +92,15 @@ export class DoubleAttackStrategy implements AttackStrategy {
           const targetX = attacker.x + Math.cos(heading) * range
           const targetY = attacker.y + Math.sin(heading) * range
           
-          const projectileType = char.projectileType || 'spear'
+          const projectileType = char.projectileType || WEAPON_TYPES.SPEAR
 
-          if (projectileType === 'melee') {
+          if (projectileType === WEAPON_TYPES.MELEE) {
               const projectile = this.projectileManager.createMelee(
                   attacker,
                   targetX,
                   targetY,
                   attack.atkBaseDmg,
+                  'physical',
                   char.atkRange || 10,
                   char.projectileRadius,
                   char.speedUnitsPerSec
@@ -112,6 +113,7 @@ export class DoubleAttackStrategy implements AttackStrategy {
                   targetX,
                   targetY,
                   attack.atkBaseDmg,
+                  'physical',
                   char.atkRange || 10,
                   char.projectileRadius,
                   char.speedUnitsPerSec,

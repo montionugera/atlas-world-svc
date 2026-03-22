@@ -28,10 +28,12 @@ export interface AttackEvent {
 export interface CombatStats {
   maxHealth: number
   currentHealth: number
-  attackDamage: number
+  pAtk: number
+  mAtk: number
   attackRange: number
   attackDelay: number
-  defense: number
+  pDef: number
+  mDef: number
   armor: number
   isAlive: boolean
 
@@ -62,9 +64,19 @@ export class BattleModule implements BattleActionProcessor {
     if (!attackCheck.canAttack) {
       return null
     }
+
+    // Determine damage based on payload or use fallback
+    let baseDamage = attacker.pAtk; // Default fallback to physical pAtk
+    let damageType: 'physical' | 'magical' = 'physical';
+
+    if (payload) {
+      baseDamage = payload.damage;
+      damageType = payload.damageType || 'physical';
+    }
+
     // Calculate damage with defense
-    const damage = this.calculateDamage(attacker, target)
-    console.log(`🎯 ATTACK: ${attacker.id} deals ${damage} damage to ${target.id}`)
+    const damage = this.calculateDamage(baseDamage, damageType, target)
+    console.log(`🎯 ATTACK: ${attacker.id} deals ${damage} ${damageType} damage to ${target.id}`)
 
     // Apply damage to target
     const targetDied = this.applyDamage(target, damage)
@@ -179,9 +191,9 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Calculate damage with defense calculations
-  calculateDamage(attacker: WorldLife, target: WorldLife): number {
-    const baseDamage = attacker.attackDamage
-    const totalDefense = target.defense + target.armor
+  calculateDamage(baseDamage: number, damageType: 'physical' | 'magical', target: WorldLife): number {
+    const primaryDefense = damageType === 'magical' ? target.mDef : target.pDef
+    const totalDefense = primaryDefense + target.armor
 
     // Cap defense at 80% damage reduction
     const damageReduction = Math.min(totalDefense, baseDamage * 0.8)
@@ -370,7 +382,6 @@ export class BattleModule implements BattleActionProcessor {
     entity.vx = 0
     entity.vy = 0
     entity.lastAttackTime = 0
-    entity.lastAttackTime = 0
 
     this.processedEventsByEntityId.delete(entity.id) // Clear old events on respawn
     // entity.isInvulnerable = false // Removed
@@ -387,10 +398,12 @@ export class BattleModule implements BattleActionProcessor {
     return {
       maxHealth: entity.maxHealth,
       currentHealth: entity.currentHealth,
-      attackDamage: entity.attackDamage,
+      pAtk: entity.pAtk,
+      mAtk: entity.mAtk,
       attackRange: entity.attackRange,
       attackDelay: entity.attackDelay,
-      defense: entity.defense,
+      pDef: entity.pDef,
+      mDef: entity.mDef,
 
       armor: entity.armor,
       isAlive: entity.isAlive,
@@ -461,7 +474,7 @@ export class BattleModule implements BattleActionProcessor {
   // No need for manual registration/unregistration
 
   // Process action message (implements BattleActionProcessor)
-  async processAction(message: BattleActionMessage): Promise<boolean> {
+async processAction(message: BattleActionMessage): Promise<boolean> {
     try {
       const actor = this.getEntity(message.actorId)
       const target: WorldLife | null = message.targetId

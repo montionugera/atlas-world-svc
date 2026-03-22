@@ -1,7 +1,7 @@
 import { type, MapSchema, ArraySchema } from '@colyseus/schema'
 import { WorldLife } from './WorldLife'
 import { PlayerInput } from './PlayerInput'
-import { PLAYER_STATS } from '../config/combatConfig'
+import { DEFAULT_PLAYER_WEAPON_ID, PLAYER_STATS, WEAPONS } from '../config/combatConfig'
 import { IAgent } from '../ai/interfaces/IAgent'
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { PlayerSettingGameplay } from './PlayerSettingGameplay'
@@ -55,6 +55,28 @@ export class Player extends WorldLife implements IAgent {
   @type('number') attackExecuteTime: number = 0
   @type('string') pendingAttackTargetId: string = '' 
 
+  equippedWeaponId: string = ''
+
+  // Set the equipped weapon and recalculate total stats
+  equipWeapon(weaponId: string) {
+    this.equippedWeaponId = weaponId;
+    this.recalculateStats();
+  }
+
+  recalculateStats() {
+    let wPAtk = 0
+    let wMAtk = 0
+    if (this.equippedWeaponId) {
+      const weapon = WEAPONS[this.equippedWeaponId]
+      if (weapon) {
+        wPAtk = weapon.pAtk || 0
+        wMAtk = weapon.mAtk || 0
+      }
+    }
+    this.pAtk = PLAYER_STATS.pAtk + wPAtk
+    this.mAtk = PLAYER_STATS.mAtk + wMAtk
+  }
+
   // Systems
   private combatSystem: PlayerCombatSystem
   private botController: PlayerBotController
@@ -72,10 +94,12 @@ export class Player extends WorldLife implements IAgent {
       tags: ['player'],
       radius: playerRadius,
       maxHealth: PLAYER_STATS.maxHealth,
-      attackDamage: PLAYER_STATS.attackDamage,
+      pAtk: PLAYER_STATS.pAtk,
+      mAtk: PLAYER_STATS.mAtk,
       attackRange: PLAYER_STATS.attackRange,
       attackDelay: PLAYER_STATS.atkWindUpTime + PLAYER_STATS.atkWindDownTime,
-      defense: PLAYER_STATS.defense,
+      pDef: PLAYER_STATS.pDef,
+      mDef: PLAYER_STATS.mDef,
       armor: PLAYER_STATS.armor,
       density: PLAYER_STATS.density,
     })
@@ -98,6 +122,8 @@ export class Player extends WorldLife implements IAgent {
     // Initialize Systems
     this.combatSystem = new PlayerCombatSystem(this)
     this.botController = new PlayerBotController(this, this.combatSystem)
+
+    this.equipWeapon(DEFAULT_PLAYER_WEAPON_ID)
   }
 
   // Toggle bot mode
