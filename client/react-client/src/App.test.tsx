@@ -28,10 +28,13 @@ const mockClient = {
   },
   fps: 60,
   updateRate: 20,
+  equippedWeaponId: '',
   connect: jest.fn().mockResolvedValue(undefined),
   joinRoom: jest.fn().mockResolvedValue(true),
   leaveRoom: jest.fn(),
   sendPlayerAction: jest.fn(),
+  switchWeapon: jest.fn(),
+  requestLoadout: jest.fn(),
   forceDie: jest.fn(),
   respawn: jest.fn(),
   toggleBotMode: jest.fn()

@@ -93,6 +93,13 @@ describe('Data Serializers', () => {
       expect(serialized.currentHealth).toBe(90)
     })
 
+    it('should merge equippedWeaponId from instance (not schema @type)', () => {
+      const player = new Player('session-w', 'Wielder', 0, 0)
+      player.equipWeapon('basic_sword')
+      const serialized = serializePlayerData(player)
+      expect(serialized.equippedWeaponId).toBe('basic_sword')
+    })
+
     it('should handle player with all fields', () => {
       const player = new Player('session-2', 'Player2', 200, 300)
       player.maxLinearSpeed = 25

@@ -20,12 +20,16 @@ export interface UseColyseusClientReturn {
   isSimulating: boolean;
   fps: number;
   updateRate: number;
-  
+  /** Local loadout from WS (welcome / weapon_equipped / loadout); not on synced schema. */
+  equippedWeaponId: string;
+
   // Actions
   connect: () => Promise<void>;
   joinRoom: (mapId?: string) => Promise<void>;
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
+  switchWeapon: (weaponId: string) => void;
+  requestLoadout: () => void;
   toggleBotMode: (enabled: boolean) => void;
   respawn: () => void;
   startSimulation: () => void;
@@ -51,7 +55,8 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
   const [isSimulating, setIsSimulating] = useState(false);
   const [fps, setFps] = useState(0);
   const [updateRate, setUpdateRate] = useState(0);
-  
+  const [equippedWeaponId, setEquippedWeaponId] = useState('');
+
   // Refs
   const clientRef = useRef<Client | null>(null);
   const roomRef = useRef<Room<GameState> | null>(null);
@@ -113,6 +118,7 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
         return;
       }
       isJoiningRef.current = true;
+      setEquippedWeaponId('');
       // Leave existing room before joining another to prevent double subscriptions
       if (roomRef.current) {
         const existingId = roomRef.current.roomId;
@@ -157,8 +163,23 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
       });
       
       // Handle room messages
-      room.onMessage('welcome', (message) => {
+      room.onMessage('welcome', (message: any) => {
         console.log('🎉 Welcome message:', message);
+        if (message && typeof message.equippedWeaponId === 'string') {
+          setEquippedWeaponId(message.equippedWeaponId);
+        }
+      });
+
+      room.onMessage('weapon_equipped', (message: { weaponId?: string }) => {
+        if (message && typeof message.weaponId === 'string') {
+          setEquippedWeaponId(message.weaponId);
+        }
+      });
+
+      room.onMessage('loadout', (message: { equippedWeaponId?: string }) => {
+        if (message && typeof message.equippedWeaponId === 'string') {
+          setEquippedWeaponId(message.equippedWeaponId);
+        }
       });
       
       // Handle room errors
@@ -171,6 +192,7 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
         console.log('👋 Left room:', code);
         setRoomId(null);
         setGameState(null);
+        setEquippedWeaponId('');
         (window as any).__gameState = null;
       });
       
@@ -198,6 +220,18 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
   const sendPlayerAction = useCallback((action: string, pressed: boolean, options?: any) => {
     if (roomRef.current) {
       roomRef.current.send('player_input_action', { action, pressed, ...options });
+    }
+  }, []);
+
+  const switchWeapon = useCallback((weaponId: string) => {
+    if (roomRef.current) {
+      roomRef.current.send('player_switch_weapon', { weaponId });
+    }
+  }, []);
+
+  const requestLoadout = useCallback(() => {
+    if (roomRef.current) {
+      roomRef.current.send('player_request_loadout', {});
     }
   }, []);
   
@@ -262,7 +296,8 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     setRoomId(null);
     setGameState(null);
     setUpdateCount(0);
-    
+    setEquippedWeaponId('');
+
     // Clear localStorage
     localStorage.removeItem('atlas-world-colyseus-connected');
     localStorage.removeItem('atlas-world-colyseus-player-id');
@@ -301,12 +336,15 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     isSimulating,
     fps,
     updateRate,
-    
+    equippedWeaponId,
+
     // Actions
     connect,
     joinRoom,
     updatePlayerInput,
     sendPlayerAction,
+    switchWeapon,
+    requestLoadout,
     toggleBotMode: (enabled: boolean) => {
       if (roomRef.current) {
         roomRef.current.send('player_toggle_bot', { enabled });

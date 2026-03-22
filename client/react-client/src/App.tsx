@@ -5,6 +5,7 @@ import { LogPanel } from './components/LogPanel';
 import { EntityGrid } from './components/EntityGrid';
 import { GameStats } from './components/GameStats';
 import { ControlsHelp } from './components/ControlsHelp';
+import { PLAYER_WEAPON_OPTIONS } from './config/playerWeapons';
 import { GameStateProvider } from './contexts/GameStateContext';
 import './App.css';
 
@@ -107,6 +108,7 @@ function App() {
   
   // Prepare data for EntityGrid
   const players = client.gameState?.players ? Array.from(client.gameState.players.values()) : [];
+  const equippedWeaponId = client.equippedWeaponId;
   const mobs = client.gameState?.mobs ? Array.from(client.gameState.mobs.values()) : [];
   const npcsMap = client.gameState?.npcs ?? client.gameState?.companions;
   const companions = npcsMap ? Array.from(npcsMap.values()) : [];
@@ -217,6 +219,40 @@ function App() {
                   >
                     Join
                   </button>
+                </div>
+
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ color: '#fff', fontWeight: 700 }}>Weapon</label>
+                  <div style={{ marginTop: 6, color: '#bdc3c7', fontSize: 12 }}>
+                    Equipped: <strong style={{ color: '#fff' }}>{equippedWeaponId || '—'}</strong>
+                    <span style={{ marginLeft: 8, opacity: 0.85 }}>(hotkeys 5–7)</span>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                    {PLAYER_WEAPON_OPTIONS.map((w) => (
+                      <button
+                        key={w.id}
+                        type="button"
+                        disabled={!client.isConnected}
+                        onClick={() => client.switchWeapon(w.id)}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: 8,
+                          cursor: client.isConnected ? 'pointer' : 'not-allowed',
+                          border:
+                            equippedWeaponId === w.id
+                              ? '2px solid #9b59b6'
+                              : '1px solid rgba(255,255,255,0.25)',
+                          backgroundColor:
+                            equippedWeaponId === w.id ? 'rgba(155,89,182,0.25)' : 'rgba(255,255,255,0.06)',
+                          color: '#fff',
+                          fontWeight: 600,
+                          fontSize: 12,
+                        }}
+                      >
+                        {w.label} [{w.hotkey}]
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <GameStats 
