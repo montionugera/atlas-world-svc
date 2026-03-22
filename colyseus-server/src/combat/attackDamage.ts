@@ -59,6 +59,9 @@ export function resolveWeaponBasicProjectileParams(player: Player): WeaponBasicP
       damageType = 'magical'
       pRadius = 0.5
       atkSpeed = 100
+    } else if (weapon.projectileType === WEAPON_TYPES.ARROW) {
+      pRadius = 0.25
+      atkSpeed = 85
     }
   }
 

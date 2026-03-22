@@ -3,6 +3,11 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Client, Room } from 'colyseus.js';
 import { GameState } from '../types/game';
+import {
+  emptyEquipmentSnapshot,
+  snapshotFromEquipmentPayload,
+  type EquipmentSnapshot,
+} from '../config/equipmentSlots';
 
 export interface ColyseusClientConfig {
   serverHost: string;
@@ -20,7 +25,11 @@ export interface UseColyseusClientReturn {
   isSimulating: boolean;
   fps: number;
   updateRate: number;
-  /** Local loadout from WS (welcome / weapon_equipped / loadout); not on synced schema. */
+  /** Full equipment snapshot from WS (welcome / equipment); not on synced schema. */
+  equipment: EquipmentSnapshot;
+  /** True after requestEquipment() until the next equipment snapshot message. */
+  equipmentRequestPending: boolean;
+  /** mainHand slot; convenience for HUD. */
   equippedWeaponId: string;
 
   // Actions
@@ -29,6 +38,8 @@ export interface UseColyseusClientReturn {
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction: (action: string, pressed: boolean, options?: any) => void;
   switchWeapon: (weaponId: string) => void;
+  requestEquipment: () => void;
+  /** @deprecated use requestEquipment */
   requestLoadout: () => void;
   toggleBotMode: (enabled: boolean) => void;
   respawn: () => void;
@@ -55,7 +66,8 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
   const [isSimulating, setIsSimulating] = useState(false);
   const [fps, setFps] = useState(0);
   const [updateRate, setUpdateRate] = useState(0);
-  const [equippedWeaponId, setEquippedWeaponId] = useState('');
+  const [equipment, setEquipment] = useState<EquipmentSnapshot>(() => emptyEquipmentSnapshot());
+  const [equipmentRequestPending, setEquipmentRequestPending] = useState(false);
 
   // Refs
   const clientRef = useRef<Client | null>(null);
@@ -118,7 +130,8 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
         return;
       }
       isJoiningRef.current = true;
-      setEquippedWeaponId('');
+      setEquipment(emptyEquipmentSnapshot());
+      setEquipmentRequestPending(false);
       // Leave existing room before joining another to prevent double subscriptions
       if (roomRef.current) {
         const existingId = roomRef.current.roomId;
@@ -165,20 +178,16 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
       // Handle room messages
       room.onMessage('welcome', (message: any) => {
         console.log('🎉 Welcome message:', message);
-        if (message && typeof message.equippedWeaponId === 'string') {
-          setEquippedWeaponId(message.equippedWeaponId);
+        if (message?.equipment != null) {
+          setEquipment(snapshotFromEquipmentPayload(message.equipment));
+          setEquipmentRequestPending(false);
         }
       });
 
-      room.onMessage('weapon_equipped', (message: { weaponId?: string }) => {
-        if (message && typeof message.weaponId === 'string') {
-          setEquippedWeaponId(message.weaponId);
-        }
-      });
-
-      room.onMessage('loadout', (message: { equippedWeaponId?: string }) => {
-        if (message && typeof message.equippedWeaponId === 'string') {
-          setEquippedWeaponId(message.equippedWeaponId);
+      room.onMessage('equipment', (message: { equipment?: unknown }) => {
+        if (message?.equipment != null) {
+          setEquipment(snapshotFromEquipmentPayload(message.equipment));
+          setEquipmentRequestPending(false);
         }
       });
       
@@ -192,7 +201,8 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
         console.log('👋 Left room:', code);
         setRoomId(null);
         setGameState(null);
-        setEquippedWeaponId('');
+        setEquipment(emptyEquipmentSnapshot());
+        setEquipmentRequestPending(false);
         (window as any).__gameState = null;
       });
       
@@ -229,11 +239,16 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     }
   }, []);
 
-  const requestLoadout = useCallback(() => {
+  const requestEquipment = useCallback(() => {
     if (roomRef.current) {
-      roomRef.current.send('player_request_loadout', {});
+      setEquipmentRequestPending(true);
+      roomRef.current.send('player_request_equipment', {});
     }
   }, []);
+
+  const requestLoadout = useCallback(() => {
+    requestEquipment();
+  }, [requestEquipment]);
   
   // Start simulation
   const startSimulation = useCallback(() => {
@@ -296,7 +311,8 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     setRoomId(null);
     setGameState(null);
     setUpdateCount(0);
-    setEquippedWeaponId('');
+    setEquipment(emptyEquipmentSnapshot());
+    setEquipmentRequestPending(false);
 
     // Clear localStorage
     localStorage.removeItem('atlas-world-colyseus-connected');
@@ -336,7 +352,9 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     isSimulating,
     fps,
     updateRate,
-    equippedWeaponId,
+    equipment,
+    equipmentRequestPending,
+    equippedWeaponId: equipment.mainHand,
 
     // Actions
     connect,
@@ -344,6 +362,7 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
     updatePlayerInput,
     sendPlayerAction,
     switchWeapon,
+    requestEquipment,
     requestLoadout,
     toggleBotMode: (enabled: boolean) => {
       if (roomRef.current) {

@@ -2,6 +2,7 @@ import { Client } from 'colyseus'
 import { GameRoom } from '../GameRoom'
 import { SKILLS } from '../../config/skills'
 import { isValidPlayerWeaponId } from '../../config/combatConfig'
+import { buildEquipmentSnapshotFromPlayer } from '../../config/combat/equipmentSlots'
 import * as planck from 'planck'
 
 export class PlayerInputHandler {
@@ -12,7 +13,14 @@ export class PlayerInputHandler {
     this.room.onMessage('player_input_action', this.handleAction.bind(this))
     this.room.onMessage('player_toggle_bot', this.handleBotToggle.bind(this))
     this.room.onMessage('player_switch_weapon', this.handleSwitchWeapon.bind(this))
-    this.room.onMessage('player_request_loadout', this.handleRequestLoadout.bind(this))
+    this.room.onMessage('player_request_equipment', this.handleRequestEquipment.bind(this))
+    this.room.onMessage('player_request_loadout', this.handleRequestEquipment.bind(this))
+  }
+
+  private sendEquipmentSnapshot(client: Client) {
+    const player = this.room.state.getPlayer(client.sessionId)
+    if (!player) return
+    client.send('equipment', { equipment: buildEquipmentSnapshotFromPlayer(player) })
   }
 
   private handleMove(client: Client, data: { vx: number; vy: number }) {
@@ -146,13 +154,11 @@ export class PlayerInputHandler {
 
     player.equipWeapon(weaponId)
     console.log(`⚔️ SWITCH_WEAPON: ${player.id} -> ${weaponId}`)
-    client.send('weapon_equipped', { weaponId: player.equippedWeaponId })
+    this.sendEquipmentSnapshot(client)
   }
 
-  private handleRequestLoadout(client: Client) {
-    const player = this.room.state.getPlayer(client.sessionId)
-    if (!player) return
-    client.send('loadout', { equippedWeaponId: player.equippedWeaponId })
+  private handleRequestEquipment(client: Client) {
+    this.sendEquipmentSnapshot(client)
   }
 
   private handleBotToggle(client: Client, data: { enabled: boolean }) {

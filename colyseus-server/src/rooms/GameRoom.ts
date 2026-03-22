@@ -7,6 +7,7 @@ import { ProjectileManager } from '../modules/ProjectileManager'
 import { ZoneEffectManager } from '../modules/ZoneEffectManager'
 import { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
 import { registerRoom, unregisterRoom } from '../api'
+import { buildEquipmentSnapshotFromPlayer } from '../config/combat/equipmentSlots'
 
 // Handlers & Systems
 import { PlayerInputHandler } from './handlers/PlayerInputHandler'
@@ -96,12 +97,12 @@ export class GameRoom extends Room<GameState> {
     const playerName = options.name || `Player-${client.sessionId.substring(0, 8)}`
     const player = this.state.addPlayer(client.sessionId, playerName)
 
-    // Send welcome message
+    // Send welcome message (Policy A: include equipment snapshot for HUD)
     client.send('welcome', {
       message: `Welcome to ${this.state.mapId}!`,
       playerId: client.sessionId,
       mapId: this.state.mapId,
-      equippedWeaponId: player.equippedWeaponId,
+      equipment: buildEquipmentSnapshotFromPlayer(player),
     })
 
     // Apply "Entering Game Duty" safe period

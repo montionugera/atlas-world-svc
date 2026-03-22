@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import App from './App';
 import * as ColyseusClientHook from './hooks/useColyseusClient';
+import { emptyEquipmentSnapshot } from './config/equipmentSlots';
 
 // Mock the hook
 jest.mock('./hooks/useColyseusClient');
@@ -28,12 +29,15 @@ const mockClient = {
   },
   fps: 60,
   updateRate: 20,
+  equipment: emptyEquipmentSnapshot(),
+  equipmentRequestPending: false,
   equippedWeaponId: '',
   connect: jest.fn().mockResolvedValue(undefined),
   joinRoom: jest.fn().mockResolvedValue(true),
   leaveRoom: jest.fn(),
   sendPlayerAction: jest.fn(),
   switchWeapon: jest.fn(),
+  requestEquipment: jest.fn(),
   requestLoadout: jest.fn(),
   forceDie: jest.fn(),
   respawn: jest.fn(),

@@ -3,10 +3,11 @@ import { useEffect, useRef } from 'react';
 interface UseKeyboardControlsProps {
   updatePlayerInput: (vx: number, vy: number) => void;
   sendPlayerAction?: (action: string, pressed: boolean, options?: any) => void;
+  switchWeapon?: (weaponId: string) => void;
   mousePositionRef?: React.MutableRefObject<{ x: number, y: number }>;
 }
 
-export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction, mousePositionRef }: UseKeyboardControlsProps) => {
+export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction, switchWeapon, mousePositionRef }: UseKeyboardControlsProps) => {
   const pressedKeysRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -93,6 +94,13 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction, mouse
         });
       }
 
+      // Weapons 5 / 6 / 7 (skills use 1–4)
+      if (switchWeapon) {
+        if (key === '5') switchWeapon('basic_sword');
+        if (key === '6') switchWeapon('magic_staff');
+        if (key === '7') switchWeapon('great_bow');
+      }
+
       // Handle Dash (Shift) -> Now triggers skill_dash
       if (key === 'shift' && sendPlayerAction) {
          sendPlayerAction('useSkill', true, { skillId: 'skill_dash' })
@@ -144,7 +152,7 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction, mouse
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleBlur);
     };
-  }, [updatePlayerInput, sendPlayerAction, mousePositionRef]);
+  }, [updatePlayerInput, sendPlayerAction, switchWeapon, mousePositionRef]);
 
   // Return debug info
   return {

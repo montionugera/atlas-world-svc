@@ -5,7 +5,7 @@ import {
   isWeaponMagicalPrimary,
   resolveWeaponBasicProjectileParams,
 } from '../combat/attackDamage'
-import { WEAPONS } from '../config/combatConfig'
+import { WEAPONS, WEAPON_TYPES } from '../config/combatConfig'
 import { PLAYER_STATS } from '../config/combatConfig'
 
 describe('attackDamage', () => {
@@ -16,6 +16,16 @@ describe('attackDamage', () => {
     expect(r.attackKind).toBe(ATTACK_KIND.WEAPON_BASIC)
     expect(r.damageType).toBe('physical')
     expect(r.damage).toBe(PLAYER_STATS.pAtk + WEAPONS.basic_sword.pAtk)
+  })
+
+  test('great_bow uses ARROW projectile and physical totals', () => {
+    const p = new Player('s-bow', 'T', 0, 0)
+    p.equipWeapon('great_bow')
+    const r = resolveWeaponBasicProjectileParams(p)
+    expect(r.projectileType).toBe(WEAPON_TYPES.ARROW)
+    expect(r.damageType).toBe('physical')
+    expect(r.damage).toBe(PLAYER_STATS.pAtk + WEAPONS.great_bow.pAtk)
+    expect(r.atkRange).toBe(WEAPONS.great_bow.range + p.radius)
   })
 
   test('magic_staff favors mAtk and magical damage', () => {

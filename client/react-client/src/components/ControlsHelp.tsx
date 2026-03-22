@@ -88,6 +88,17 @@ export const ControlsHelp: React.FC<ControlsHelpProps> = ({ isOpen, onClose }) =
                   <strong>🤖 Auto-Play:</strong> Toggle "Enable Bot" on your card to let AI take over.
               </div>
           </div>
+
+          <div style={{ marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '8px', color: '#9b59b6' }}>Weapons</h3>
+              <div style={{ marginBottom: '8px' }}>
+                  <strong>Switch loadout:</strong>{' '}
+                  <span style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em' }}>5</span> Sword,{' '}
+                  <span style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em' }}>6</span> Staff,{' '}
+                  <span style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em' }}>7</span> Bow — or use the weapon buttons in the panel.
+              </div>
+              <div style={{ fontSize: '0.9rem', color: '#bdc3c7' }}>Skills stay on keys 1–4 and Shift (dash).</div>
+          </div>
           
            <div style={{ marginTop: '24px', fontSize: '0.9rem', color: '#95a5a6', fontStyle: 'italic', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
                Tip: You can find your player controls on the card labeled "YOU" in the right panel.

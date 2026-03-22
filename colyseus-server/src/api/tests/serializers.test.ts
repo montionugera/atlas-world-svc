@@ -100,6 +100,15 @@ describe('Data Serializers', () => {
       expect(serialized.equippedWeaponId).toBe('basic_sword')
     })
 
+    it('should include equipment snapshot with mainHand mirroring weapon', () => {
+      const player = new Player('session-e', 'Equip', 0, 0)
+      player.equipWeapon('basic_sword')
+      const serialized = serializePlayerData(player)
+      expect(serialized.equipment).toBeDefined()
+      expect(serialized.equipment.mainHand).toBe('basic_sword')
+      expect(serialized.equipment.head).toBe('')
+    })
+
     it('should handle player with all fields', () => {
       const player = new Player('session-2', 'Player2', 200, 300)
       player.maxLinearSpeed = 25

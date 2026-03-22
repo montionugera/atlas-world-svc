@@ -6,6 +6,7 @@ import { EntityGrid } from './components/EntityGrid';
 import { GameStats } from './components/GameStats';
 import { ControlsHelp } from './components/ControlsHelp';
 import { PLAYER_WEAPON_OPTIONS } from './config/playerWeapons';
+import { EQUIPMENT_SLOT_IDS } from './config/equipmentSlots';
 import { GameStateProvider } from './contexts/GameStateContext';
 import './App.css';
 
@@ -20,6 +21,19 @@ const colyseusConfig: ColyseusClientConfig = {
   serverHost: 'localhost',
   serverPort: 2567,
   useSSL: false
+};
+
+const EQUIPMENT_SLOT_LABELS: Record<(typeof EQUIPMENT_SLOT_IDS)[number], string> = {
+  head: 'Head',
+  midHead: 'Mid head',
+  lowerHead: 'Lower head',
+  body: 'Body',
+  mainHand: 'Main hand',
+  offHand: 'Off hand',
+  outerwear: 'Outerwear',
+  feet: 'Feet',
+  accessory1: 'Accessory 1',
+  accessory2: 'Accessory 2',
 };
 
 function App() {
@@ -114,6 +128,13 @@ function App() {
   const companions = npcsMap ? Array.from(npcsMap.values()) : [];
   
   const [showHelp, setShowHelp] = useState(false);
+  const [showEquipmentModal, setShowEquipmentModal] = useState(false);
+
+  useEffect(() => {
+    if (showEquipmentModal && client.isConnected) {
+      client.requestEquipment();
+    }
+  }, [showEquipmentModal, client.isConnected, client.requestEquipment]);
 
   return (
     <GameStateProvider 
@@ -155,6 +176,80 @@ function App() {
         </header>
         
         <ControlsHelp isOpen={showHelp} onClose={() => setShowHelp(false)} />
+
+        {showEquipmentModal && (
+          <div
+            role="presentation"
+            onClick={() => setShowEquipmentModal(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.55)',
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 16,
+            }}
+          >
+            <div
+              role="dialog"
+              aria-labelledby="equipment-modal-title"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#1e272e',
+                borderRadius: 12,
+                padding: 20,
+                maxWidth: 420,
+                width: '100%',
+                maxHeight: '80vh',
+                overflow: 'auto',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: '#ecf0f1',
+              }}
+            >
+              <h2 id="equipment-modal-title" style={{ margin: '0 0 12px', fontSize: 18 }}>
+                Equipment
+              </h2>
+              <p style={{ margin: '0 0 12px', fontSize: 12, opacity: 0.85 }}>
+                {client.equipmentRequestPending ? 'Syncing with server…' : 'Slots (switch main hand with weapon buttons below).'}
+              </p>
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0, fontSize: 13 }}>
+                {EQUIPMENT_SLOT_IDS.map((slot) => (
+                  <li
+                    key={slot}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                      padding: '6px 0',
+                      borderBottom: '1px solid rgba(255,255,255,0.08)',
+                    }}
+                  >
+                    <span>{EQUIPMENT_SLOT_LABELS[slot]}</span>
+                    <code style={{ color: '#9b59b6' }}>{client.equipment[slot] || '—'}</code>
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                onClick={() => setShowEquipmentModal(false)}
+                style={{
+                  marginTop: 16,
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.08)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
         
         <main className="app-main">
           {/* Left Column: Game Canvas */}
@@ -227,6 +322,24 @@ function App() {
                     Equipped: <strong style={{ color: '#fff' }}>{equippedWeaponId || '—'}</strong>
                     <span style={{ marginLeft: 8, opacity: 0.85 }}>(hotkeys 5–7)</span>
                   </div>
+                  <button
+                    type="button"
+                    disabled={!client.isConnected}
+                    onClick={() => setShowEquipmentModal(true)}
+                    style={{
+                      marginTop: 8,
+                      padding: '6px 12px',
+                      borderRadius: 8,
+                      cursor: client.isConnected ? 'pointer' : 'not-allowed',
+                      border: '1px solid rgba(255,255,255,0.25)',
+                      backgroundColor: 'rgba(255,255,255,0.08)',
+                      color: '#fff',
+                      fontWeight: 600,
+                      fontSize: 12,
+                    }}
+                  >
+                    All slots…
+                  </button>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                     {PLAYER_WEAPON_OPTIONS.map((w) => (
                       <button

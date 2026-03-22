@@ -26,6 +26,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ client }
     updateRate,
     updatePlayerInput,
     sendPlayerAction,
+    switchWeapon,
     toggleBotMode,
     trackFrame,
     respawn,
@@ -38,7 +39,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({ client }
   }, [gameState?.tick, gameState, roomId, clientConnected, setGameState]);
 
   // Handle keyboard controls
-  const { pressedKeys } = useKeyboardControls({ updatePlayerInput, sendPlayerAction, mousePositionRef });
+  const { pressedKeys } = useKeyboardControls({ updatePlayerInput, sendPlayerAction, switchWeapon, mousePositionRef });
   
   // Handle mouse tracking to update mousePositionRef with World Coordinates
   useEffect(() => {
