@@ -55,6 +55,7 @@ export class Player extends WorldLife implements IAgent {
   @type('number') attackExecuteTime: number = 0
   @type('string') pendingAttackTargetId: string = '' 
 
+  /** Server-only; not Colyseus-synced. Client learns value via welcome / weapon_equipped / loadout WS messages. */
   equippedWeaponId: string = ''
 
   // Set the equipped weapon and recalculate total stats

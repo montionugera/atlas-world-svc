@@ -101,6 +101,7 @@ export class GameRoom extends Room<GameState> {
       message: `Welcome to ${this.state.mapId}!`,
       playerId: client.sessionId,
       mapId: this.state.mapId,
+      equippedWeaponId: player.equippedWeaponId,
     })
 
     // Apply "Entering Game Duty" safe period

@@ -42,6 +42,8 @@ export function serializeMobData(mob: Mob): any {
  */
 export function serializePlayerData(player: Player): any {
   const serialized = player.toJSON()
-  return removeRealtimeFields(serialized)
+  const base = removeRealtimeFields(serialized)
+  // equippedWeaponId is not a @type field (WS-only); merge for REST consumers
+  return { ...base, equippedWeaponId: player.equippedWeaponId }
 }
 
