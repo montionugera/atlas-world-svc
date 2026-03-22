@@ -4,6 +4,9 @@
 import { PROJECTILE_GRAVITY } from '../physicsConfig'
 import { MOB_STATS } from './combatStats'
 
+/** Floor for `maxRange` after deflection (and any similar clamps) so tiny ranges stay valid. */
+export const PROJECTILE_MIN_MAX_RANGE = 0.25
+
 /**
  * Calculate spear max range based on physics: sqrt(2 * h / g) * v
  */

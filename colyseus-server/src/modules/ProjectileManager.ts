@@ -4,7 +4,14 @@ import { WorldLife } from '../schemas/WorldLife'
 import { BattleModule } from './BattleModule'
 import { BattleManager } from './BattleManager'
 import { GameState } from '../schemas/GameState'
-import { SPEAR_THROWER_STATS, MELEE_PROJECTILE_STATS, PROJECTILE_INTERACTIONS, ProjectileType, WEAPON_TYPES } from '../config/combatConfig'
+import {
+  SPEAR_THROWER_STATS,
+  MELEE_PROJECTILE_STATS,
+  PROJECTILE_INTERACTIONS,
+  PROJECTILE_MIN_MAX_RANGE,
+  ProjectileType,
+  WEAPON_TYPES,
+} from '../config/combatConfig'
 import { PROJECTILE_GRAVITY } from '../config/physicsConfig'
 import { eventBus, RoomEventType } from '../events/EventBus'
 
@@ -436,7 +443,10 @@ export class ProjectileManager {
     projectile.vx = newVx * speedBoost;
     projectile.vy = newVy * speedBoost;
     
-    projectile.maxRange = Math.max(1, projectile.maxRange * incomingConfig.deflectedRangeMultiplier)
+    projectile.maxRange = Math.max(
+      PROJECTILE_MIN_MAX_RANGE,
+      projectile.maxRange * incomingConfig.deflectedRangeMultiplier
+    )
 
     const dmgMult = incomingConfig.deflectedDamageMultiplier
     projectile.damage = Math.max(1, Math.floor(projectile.damage * dmgMult))
