@@ -3,8 +3,7 @@ import { WorldLife } from '../../schemas/WorldLife'
 import { ProjectileManager } from '../../modules/ProjectileManager'
 import { GameState } from '../../schemas/GameState'
 import type { AttackDefinition } from '../../config/mobTypesConfig'
-import { PLAYER_STATS } from '../../config/combatConfig'
-import { agiForMeleeTiming, resolveMeleeAttackTiming } from '../../combat/meleeAttackSpeed'
+import { resolveMeleeAttackTiming } from '../../combat/meleeAttackSpeed'
 
 /**
  * Melee Attack Strategy
@@ -36,8 +35,11 @@ export class MeleeAttackStrategy implements AttackStrategy {
 
   getCastTime(attacker?: WorldLife): number {
     if (attacker && this.timingBands) {
-      const agi = agiForMeleeTiming(attacker, PLAYER_STATS.baseAgi)
-      const t = resolveMeleeAttackTiming(agi, this.timingBands.aspdMin, this.timingBands.aspdMax)
+      const t = resolveMeleeAttackTiming(
+        attacker.stat.agi,
+        this.timingBands.aspdMin,
+        this.timingBands.aspdMax
+      )
       if (t) return t.windUpMs
     }
     return this.castTime

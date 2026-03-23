@@ -2,6 +2,30 @@
  * Base combat stats for players and mobs (HP, atk/def, movement).
  */
 
+export type BaseStat = {
+  agi: number
+  str: number
+  vit: number
+  dex: number
+}
+
+const PRIMARY_MIN = 1
+const PRIMARY_MAX = 99
+
+export function clampPrimaryStat(n: number): number {
+  return Math.min(PRIMARY_MAX, Math.max(PRIMARY_MIN, Math.floor(n)))
+}
+
+/** Apply partial overrides to defaults; every field is clamped 1–99. */
+export function mergeBaseStat(defaults: BaseStat, partial?: Partial<BaseStat>): BaseStat {
+  return {
+    agi: clampPrimaryStat(partial?.agi ?? defaults.agi),
+    str: clampPrimaryStat(partial?.str ?? defaults.str),
+    vit: clampPrimaryStat(partial?.vit ?? defaults.vit),
+    dex: clampPrimaryStat(partial?.dex ?? defaults.dex),
+  }
+}
+
 export interface CombatStats {
   maxHealth: number
   pAtk: number
@@ -18,8 +42,11 @@ export interface CombatStats {
   maxMoveSpeed: number
 }
 
-export type PlayerCombatStats = CombatStats & { baseAgi: number }
-export type MobCombatStats = CombatStats & { baseAgi: number }
+export type PlayerCombatStats = CombatStats & { baseStat: BaseStat }
+export type MobCombatStats = CombatStats & { baseStat: BaseStat }
+
+const PLAYER_BASE_STAT: BaseStat = { agi: 10, str: 10, vit: 10, dex: 10 }
+const MOB_BASE_STAT: BaseStat = { agi: 10, str: 10, vit: 10, dex: 10 }
 
 export const PLAYER_STATS: PlayerCombatStats = {
   maxHealth: 100,
@@ -27,7 +54,7 @@ export const PLAYER_STATS: PlayerCombatStats = {
   mAtk: 10,
   attackRange: 3,
   atkWindDownTime: 800, // recovery time (Total Cycle ~900ms)
-  atkWindUpTime: 100, // 200ms wind-up (updated to 100 per previous edit)
+  atkWindUpTime: 100,
   pDef: 1,
   mDef: 1,
   armor: 0,
@@ -35,7 +62,7 @@ export const PLAYER_STATS: PlayerCombatStats = {
   density: 0.8,
   chaseRange: 15,
   maxMoveSpeed: 20,
-  baseAgi: 10,
+  baseStat: PLAYER_BASE_STAT,
 } as const
 
 export const MOB_STATS: MobCombatStats = {
@@ -52,7 +79,7 @@ export const MOB_STATS: MobCombatStats = {
   density: 1.2,
   chaseRange: 15,
   maxMoveSpeed: 8,
-  baseAgi: 10,
+  baseStat: MOB_BASE_STAT,
 } as const
 
 export const MOB_TYPE_STATS = {

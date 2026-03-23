@@ -3,6 +3,7 @@
  * Entity-agnostic; use for players (via equipped weapon) and mobs (via attack def ASPD bands).
  */
 import { PLAYER_STATS, WEAPONS } from '../config/combatConfig'
+import type { WorldLife } from '../schemas/WorldLife'
 
 export const ASPD_EPS = 0.2
 
@@ -83,23 +84,11 @@ export function resolveMeleeAttackTiming(
   }
 }
 
-export function resolvePlayerMeleeAttackTiming(player: {
-  agi: number
-  equippedWeaponId: string
-}): MeleeAttackTiming | null {
-  if (!player.equippedWeaponId) return null
-  const weapon = WEAPONS[player.equippedWeaponId]
+export function resolvePlayerMeleeAttackTiming(
+  entity: WorldLife & { equippedWeaponId: string }
+): MeleeAttackTiming | null {
+  if (!entity.equippedWeaponId) return null
+  const weapon = WEAPONS[entity.equippedWeaponId]
   if (!weapon) return null
-  return resolveMeleeAttackTiming(player.agi, weapon.aspdMin, weapon.aspdMax)
-}
-
-/** AGI for timing when the attacker has no synced field (e.g. some NPCs). */
-export function agiForMeleeTiming(attacker: unknown, fallbackAgi: number): number {
-  if (attacker && typeof attacker === 'object' && 'agi' in attacker) {
-    const v = (attacker as { agi: unknown }).agi
-    if (typeof v === 'number' && !Number.isNaN(v)) {
-      return v
-    }
-  }
-  return fallbackAgi
+  return resolveMeleeAttackTiming(entity.stat.agi, weapon.aspdMin, weapon.aspdMax)
 }

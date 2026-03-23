@@ -6,6 +6,7 @@
 import { Mob } from '../schemas/Mob'
 import { Player } from '../schemas/Player'
 import { WorldLife } from '../schemas/WorldLife'
+import { mergeBaseStat, MOB_STATS } from '../config/combatConfig'
 
 describe('Heading System Tests', () => {
   describe('Mob Target-Based Heading', () => {
@@ -212,7 +213,12 @@ describe('Heading System Tests', () => {
       // Create a custom entity that extends WorldLife but has neither method
       class CustomEntity extends WorldLife {
         constructor() {
-          super({ id: 'custom', x: 50, y: 50 })
+          super({
+            id: 'custom',
+            x: 50,
+            y: 50,
+            stat: mergeBaseStat({ ...MOB_STATS.baseStat }),
+          })
         }
       }
 

@@ -25,7 +25,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
   }
 
   private windUpMsForAttack(attack: AttackDefinition): number {
-    const timing = resolveMeleeAttackTiming(this.mob.agi, attack.aspdMin, attack.aspdMax)
+    const timing = resolveMeleeAttackTiming(this.mob.stat.agi, attack.aspdMin, attack.aspdMax)
     return timing?.windUpMs ?? attack.atkWindUpTime
   }
 
@@ -169,7 +169,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
                    this.mob.attackDelay = nextAttack.attackDef.cooldown
                } else {
                    const timing = resolveMeleeAttackTiming(
-                     this.mob.agi,
+                     this.mob.stat.agi,
                      nextAttack.attackDef.aspdMin,
                      nextAttack.attackDef.aspdMax
                    )

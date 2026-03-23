@@ -57,8 +57,6 @@ export interface Mob {
   heading?: number;
   isAttacking?: boolean;
   attackRange?: number;
-  /** Synced from server (1–99); ASPD scaling for mobs with attack ASPD bands. */
-  agi?: number;
 
   // Resistances
   freezeResist?: number;
@@ -85,8 +83,6 @@ export interface Player {
   isAlive?: boolean;
   health?: number;
   maxHealth?: number;
-  /** Synced from server (1–99) for ASPD / HUD. */
-  agi?: number;
   castingUntil?: number; // Synced from server
   castDuration?: number; // Synced from server
   cooldowns?: Map<string, number>; // Synced Action ID -> Timestamp

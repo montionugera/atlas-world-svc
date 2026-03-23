@@ -4,7 +4,7 @@ import { GameState } from './GameState'
 import { Player } from './Player'
 import { BattleManager } from '../modules/BattleManager'
 import { eventBus, RoomEventType, BattleAttackData } from '../events/EventBus'
-import { MOB_STATS } from '../config/combatConfig'
+import { mergeBaseStat, MOB_STATS, type BaseStat } from '../config/combatConfig'
 import { GAME_CONFIG, TEAMS } from '../config/gameConfig'
 import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { IAgent } from '../ai/interfaces/IAgent'
@@ -36,8 +36,6 @@ export class Mob extends WorldLife implements IAgent {
   wanderTargetY: number = 0 // Wander target position Y
   lastWanderTargetTime: number = 0 // When wander target was last set
   @type('number') maxMoveSpeed: number = 20 // synced to clients; mob movement cap
-  /** Synced: 1–99; used with optional attack ASPD bands for wind-up/cycle. */
-  @type('number') agi: number = MOB_STATS.baseAgi
   
   // Attack strategy system (server-only)
   attackStrategies: AttackStrategy[] = []
@@ -125,8 +123,17 @@ export class Mob extends WorldLife implements IAgent {
     mobTypeId?: string
     spawnAreaId?: string
     rotationSpeed?: number
+    /** @deprecated Prefer `stat`; kept for tests / simple spawns. */
     agi?: number
+    stat?: Partial<BaseStat>
   }) {
+    const mobStat = mergeBaseStat(
+      { ...MOB_STATS.baseStat },
+      {
+        ...options.stat,
+        ...(options.agi !== undefined ? { agi: options.agi } : {}),
+      }
+    )
     super({
       id: options.id,
       x: options.x,
@@ -143,6 +150,7 @@ export class Mob extends WorldLife implements IAgent {
       mDef: options.mDef ?? MOB_STATS.mDef,
       armor: options.armor ?? MOB_STATS.armor,
       density: options.density ?? MOB_STATS.density,
+      stat: mobStat,
     })
     if (options.radius !== undefined) {
       this.radius = options.radius
@@ -179,9 +187,6 @@ export class Mob extends WorldLife implements IAgent {
     if (options.rotationSpeed !== undefined) {
       this.rotationSpeed = options.rotationSpeed
     }
-
-    const rawAgi = options.agi ?? MOB_STATS.baseAgi
-    this.agi = Math.min(99, Math.max(1, Math.floor(rawAgi)))
 
     // Initialize systems
     this.combatSystem = new MobCombatSystem(this)

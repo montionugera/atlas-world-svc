@@ -64,7 +64,7 @@ describe('meleeAttackSpeed', () => {
     p.equipWeapon('basic_sword')
     p.agiFromEquipment = 60
     p.recalculateStats()
-    expect(p.agi).toBe(70)
+    expect(p.stat.agi).toBe(70)
     const t = resolvePlayerMeleeAttackTiming(p)!
     expect(t.gapFill).toBeCloseTo(0.63, 4)
     expect(t.effectiveAspd).toBeCloseTo(2.39, 2)

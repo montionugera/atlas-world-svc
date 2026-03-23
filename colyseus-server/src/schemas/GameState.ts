@@ -9,7 +9,7 @@ import { AIModule } from '../ai/AIModule'
 import { AIWorldInterface } from '../ai/AIWorldInterface'
 // Removed global BattleManager singleton - now using room-scoped instances
 import { eventBus, RoomEventType } from '../events/EventBus'
-import { MOB_STATS, MOB_TYPE_STATS, PLAYER_STATS } from '../config/combatConfig'
+import { mergeBaseStat, MOB_STATS, MOB_TYPE_STATS, PLAYER_STATS } from '../config/combatConfig'
 import { NPC, type NPCOptions } from './NPC'
 
 export class GameState extends Schema {
@@ -106,6 +106,7 @@ export class GameState extends Schema {
         chaseRange,
         maxMoveSpeed: MOB_STATS.maxMoveSpeed,
         attackStrategies: [], // Empty - will use legacy attack behavior in Mob.updateAttack()
+        stat: mergeBaseStat({ ...MOB_STATS.baseStat }),
       })
       this.mobs.set(mobId, mob)
 

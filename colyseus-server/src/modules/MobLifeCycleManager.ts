@@ -3,7 +3,7 @@ import { Mob } from '../schemas/Mob'
 import { eventBus, RoomEventType } from '../events/EventBus'
 import { GAME_CONFIG } from '../config/gameConfig'
 import { getMobSettingsForMap, MobSpawnSettings } from '../config/mobSpawnConfig'
-import { MOB_STATS } from '../config/combatConfig'
+import { mergeBaseStat, MOB_STATS } from '../config/combatConfig'
 import { ProjectileManager } from './ProjectileManager'
 import {
   getMobTypeById,
@@ -185,8 +185,9 @@ export class MobLifeCycleManager {
       armor: mobTypeConfig.stats.armor ?? MOB_STATS.armor,
       density: mobTypeConfig.stats.density ?? MOB_STATS.density,
       maxMoveSpeed: mobTypeConfig.stats.maxMoveSpeed ?? MOB_STATS.maxMoveSpeed,
-      baseAgi: mobTypeConfig.stats.baseAgi ?? MOB_STATS.baseAgi,
     }
+
+    const mobStat = mergeBaseStat({ ...MOB_STATS.baseStat }, mobTypeConfig.stats.baseStat)
 
     const mob = new Mob({
       id: id,
@@ -209,7 +210,7 @@ export class MobLifeCycleManager {
       mobTypeId: mobTypeConfig.id,
       spawnAreaId: spawnAreaId,
       rotationSpeed: mobTypeConfig.rotationSpeed,
-      agi: stats.baseAgi,
+      stat: mobStat,
     })
 
     this.state.mobs.set(id, mob)

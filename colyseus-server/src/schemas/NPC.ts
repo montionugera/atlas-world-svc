@@ -6,7 +6,7 @@ import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { NPCCombatSystem } from '../systems/NPCCombatSystem'
 import { TEAMS } from '../config/gameConfig'
 import { GameState } from './GameState'
-import { PLAYER_STATS, type PlayerCombatStats } from '../config/combatConfig'
+import { mergeBaseStat, PLAYER_STATS, type PlayerCombatStats } from '../config/combatConfig'
 
 export interface NPCOptions {
   id: string
@@ -31,7 +31,6 @@ const DEFAULT_NPC_STATS = {
   density: PLAYER_STATS.density,
   chaseRange: PLAYER_STATS.chaseRange,
   maxMoveSpeed: PLAYER_STATS.maxMoveSpeed,
-  baseAgi: PLAYER_STATS.baseAgi,
 } as const
 
 export class NPC extends WorldLife implements IAgent {
@@ -70,8 +69,10 @@ export class NPC extends WorldLife implements IAgent {
   combatSystem: NPCCombatSystem
 
   constructor(options: NPCOptions) {
-    const stats = { ...DEFAULT_NPC_STATS, ...options.stats }
+    const { baseStat: baseStatOverride, ...statsRest } = options.stats ?? {}
+    const stats = { ...DEFAULT_NPC_STATS, ...statsRest }
     const attackDelay = (stats.atkWindUpTime ?? PLAYER_STATS.atkWindUpTime) + (stats.atkWindDownTime ?? PLAYER_STATS.atkWindDownTime)
+    const stat = mergeBaseStat({ ...PLAYER_STATS.baseStat }, baseStatOverride)
     super({
       id: options.id,
       x: options.x,
@@ -86,6 +87,7 @@ export class NPC extends WorldLife implements IAgent {
       armor: stats.armor,
       density: stats.density,
       tags: ['npc', 'player'], // 'player' for AI: target mobs like bot player
+      stat,
     })
     this.ownerId = options.ownerId ?? ''
     this.name = options.name ?? 'NPC'

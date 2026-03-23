@@ -6,6 +6,7 @@
 import { Schema, type, ArraySchema, MapSchema } from '@colyseus/schema'
 import { WorldObject } from './WorldObject'
 import { BattleStatus } from './BattleStatus'
+import { mergeBaseStat, type BaseStat } from '../config/combat/combatStats'
 
 export abstract class WorldLife extends WorldObject {
   // Physical properties
@@ -81,6 +82,9 @@ export abstract class WorldLife extends WorldObject {
 
   // Server-only properties (not synced to clients)
 
+  /** Primary stats (not Colyseus-synced). */
+  stat!: BaseStat
+
   diedAt: number = 0 // Timestamp when entity died (0 = alive or not set)
   attackAnimationStartTime: number = 0 // Timestamp when attack animation started (0 = not attacking)
 
@@ -124,6 +128,8 @@ export abstract class WorldLife extends WorldObject {
     mDef?: number
     armor?: number
     density?: number
+    /** Merged + clamped primary stats (subclass supplies via mergeBaseStat). */
+    stat: BaseStat
   }) {
     const opts = options
     super(opts.id, opts.x, opts.y, opts.vx ?? 0, opts.vy ?? 0, opts.tags ?? [])
@@ -140,7 +146,9 @@ export abstract class WorldLife extends WorldObject {
     this.armor = opts.armor ?? 0
     this.density = opts.density ?? 1
     this.lastAttackTime = performance.now() - this.attackDelay - 1 // Allow immediate first attack
-    
+
+    this.stat = mergeBaseStat(opts.stat)
+
     // Initialize resistances (default 0)
     // You can pass a map or object of resistances in options if needed, 
     // but for now we default to empty (0)
