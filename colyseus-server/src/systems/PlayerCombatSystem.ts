@@ -1,7 +1,7 @@
 import { Player } from '../schemas/Player';
 import { PLAYER_STATS, WEAPON_TYPES } from '../config/combatConfig';
 import { resolveWeaponBasicProjectileParams } from '../combat/attackDamage';
-import { resolvePlayerMeleeAttackTiming } from '../combat/playerAttackSpeed';
+import { resolvePlayerMeleeAttackTiming } from '../combat/meleeAttackSpeed';
 import { ScheduledAttack, processAttackQueue } from './attackQueue';
 
 /**

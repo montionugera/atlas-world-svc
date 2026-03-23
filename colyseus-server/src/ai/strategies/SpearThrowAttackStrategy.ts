@@ -2,7 +2,9 @@ import { AttackStrategy, AttackExecutionResult } from './AttackStrategy'
 import { WorldLife } from '../../schemas/WorldLife'
 import { ProjectileManager } from '../../modules/ProjectileManager'
 import { GameState } from '../../schemas/GameState'
-import { SPEAR_THROWER_STATS } from '../../config/combatConfig'
+import { PLAYER_STATS, SPEAR_THROWER_STATS } from '../../config/combatConfig'
+import type { AttackDefinition } from '../../config/mobTypesConfig'
+import { agiForMeleeTiming, resolveMeleeAttackTiming } from '../../combat/meleeAttackSpeed'
 
 /**
  * Spear Throw Attack Strategy
@@ -16,6 +18,7 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
   public maxRange: number = SPEAR_THROWER_STATS.spearMaxRange
   private castTime: number = SPEAR_THROWER_STATS.castTime
   private speed: number = SPEAR_THROWER_STATS.spearSpeed
+  private timingBands?: Pick<AttackDefinition, 'aspdMin' | 'aspdMax'>
 
   // Must be roughly facing the target to start a committed ranged attack.
   // Matches the melee cone check threshold used elsewhere (~0.5 rad).
@@ -29,6 +32,7 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
       maxRange?: number
       castTime?: number
       speed?: number
+      attack?: AttackDefinition
     }
   ) {
     this.projectileManager = projectileManager
@@ -38,10 +42,18 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
       this.maxRange = options.maxRange ?? this.maxRange
       this.castTime = options.castTime ?? this.castTime
       this.speed = options.speed ?? this.speed
+      if (options.attack) {
+        this.timingBands = options.attack
+      }
     }
   }
 
-  getCastTime(): number {
+  getCastTime(attacker?: WorldLife): number {
+    if (attacker && this.timingBands) {
+      const agi = agiForMeleeTiming(attacker, PLAYER_STATS.baseAgi)
+      const t = resolveMeleeAttackTiming(agi, this.timingBands.aspdMin, this.timingBands.aspdMax)
+      if (t) return t.windUpMs
+    }
     return this.castTime
   }
 

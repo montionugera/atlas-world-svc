@@ -6,6 +6,7 @@ import { AttackStrategy } from '../ai/strategies/AttackStrategy'
 import { AttackDefinition } from '../config/mobTypesConfig'
 import { eventBus, RoomEventType, BattleAttackData } from '../events/EventBus'
 import { MOB_STATS } from '../config/combatConfig'
+import { resolveMeleeAttackTiming } from '../combat/meleeAttackSpeed'
 
 import { BaseCombatSystem } from './BaseCombatSystem'
 
@@ -21,6 +22,11 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
   // Helper alias for backward compatibility or convenience
   private get mob(): Mob {
     return this.entity
+  }
+
+  private windUpMsForAttack(attack: AttackDefinition): number {
+    const timing = resolveMeleeAttackTiming(this.mob.agi, attack.aspdMin, attack.aspdMax)
+    return timing?.windUpMs ?? attack.atkWindUpTime
   }
 
   /**
@@ -109,7 +115,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
 
       attacks.forEach((attack, index) => {
           // Calculate when this attack should actually fire (end of its cast)
-          const fireTime = currentTime + attack.atkWindUpTime
+          const fireTime = currentTime + this.windUpMsForAttack(attack)
           
           this.mob.attackQueue.push({
               executionTime: fireTime,
@@ -162,8 +168,17 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
                if (nextAttack.attackDef.cooldown !== undefined) {
                    this.mob.attackDelay = nextAttack.attackDef.cooldown
                } else {
-                   const windUp = nextAttack.attackDef.atkWindUpTime || 0
-                   this.mob.attackDelay = windUp + this.mob.baseWindDownTime
+                   const timing = resolveMeleeAttackTiming(
+                     this.mob.agi,
+                     nextAttack.attackDef.aspdMin,
+                     nextAttack.attackDef.aspdMax
+                   )
+                   if (timing) {
+                     this.mob.attackDelay = timing.attackDelayMs
+                   } else {
+                     const windUp = nextAttack.attackDef.atkWindUpTime || 0
+                     this.mob.attackDelay = windUp + this.mob.baseWindDownTime
+                   }
                }
           }
 
@@ -285,8 +300,8 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
   private sortStrategiesByPriority(strategies: AttackStrategy[], target: WorldLife): AttackStrategy[] {
     return [...strategies].sort((a, b) => {
       // Instant attacks (0 cast time) have priority
-      const aIsInstant = a.getCastTime() === 0
-      const bIsInstant = b.getCastTime() === 0
+      const aIsInstant = a.getCastTime(this.mob) === 0
+      const bIsInstant = b.getCastTime(this.mob) === 0
       if (aIsInstant && !bIsInstant) return -1
       if (!aIsInstant && bIsInstant) return 1
       
@@ -299,7 +314,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
 
   // State transition: Start casting
   public startWindUp(strategy: AttackStrategy, currentTimeMs: number): void {
-    const castTime = strategy.getCastTime()
+    const castTime = strategy.getCastTime(this.mob)
     console.log(`⏳ DEBUG: ${this.mob.id} starting windup for ${strategy.name} (${castTime}ms)`)
     this.mob.isCasting = true
     this.mob.isAttacking = false 
@@ -326,7 +341,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     if (!this.mob.isCasting || this.mob.castStartTime === 0) return null
 
     const currentTimeMs = Date.now()
-    const castDurationMs = this.mob.currentAttackStrategy?.getCastTime() || 0
+    const castDurationMs = this.mob.currentAttackStrategy?.getCastTime(this.mob) || 0
     const castElapsedMs = currentTimeMs - this.mob.castStartTime
 
     if (castElapsedMs >= castDurationMs) {

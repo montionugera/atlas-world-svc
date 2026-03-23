@@ -1,15 +1,18 @@
 import { Player } from '../schemas/Player'
+import { Mob } from '../schemas/Mob'
 import { WEAPONS } from '../config/combatConfig'
 import {
   ASPD_EPS,
   computeAgiGapFill,
   computeEffectiveAspd,
   computeMeleeCycleMs,
+  resolveMeleeAttackTiming,
   resolvePlayerMeleeAttackTiming,
   splitWindUpDown,
-} from '../combat/playerAttackSpeed'
+} from '../combat/meleeAttackSpeed'
+import { AttackCharacteristicType, type AttackDefinition } from '../config/mobTypesConfig'
 
-describe('playerAttackSpeed', () => {
+describe('meleeAttackSpeed', () => {
   test('computeAgiGapFill(70) matches tiered example', () => {
     expect(computeAgiGapFill(70)).toBeCloseTo(0.63, 6)
   })
@@ -81,5 +84,23 @@ describe('playerAttackSpeed', () => {
     p2.recalculateStats()
 
     expect(p1.attackDelay).toBeLessThan(p2.attackDelay)
+  })
+
+  test('mob attack queue uses ASPD wind-up when attack def has bands', () => {
+    const mob = new Mob({ id: 'm-aspd', x: 0, y: 0, agi: 70 })
+    const attack: AttackDefinition = {
+      atkBaseDmg: 10,
+      atkWindUpTime: 999,
+      aspdMin: 0.5,
+      aspdMax: 3.5,
+      atkCharacteristic: {
+        type: AttackCharacteristicType.PROJECTILE,
+        projectile: { speedUnitsPerSec: 100, projectileRadius: 1, atkRange: 5 },
+      },
+    }
+    const strategy = { name: 'doubleAttack' } as any
+    mob.combatSystem.enqueueAttacks(strategy, 'target-1', [attack], 0)
+    const expected = resolveMeleeAttackTiming(70, 0.5, 3.5)!.windUpMs
+    expect(mob.attackQueue[0].executionTime).toBe(expected)
   })
 })

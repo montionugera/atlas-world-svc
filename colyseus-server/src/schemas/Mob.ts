@@ -36,6 +36,8 @@ export class Mob extends WorldLife implements IAgent {
   wanderTargetY: number = 0 // Wander target position Y
   lastWanderTargetTime: number = 0 // When wander target was last set
   @type('number') maxMoveSpeed: number = 20 // synced to clients; mob movement cap
+  /** Synced: 1–99; used with optional attack ASPD bands for wind-up/cycle. */
+  @type('number') agi: number = MOB_STATS.baseAgi
   
   // Attack strategy system (server-only)
   attackStrategies: AttackStrategy[] = []
@@ -123,6 +125,7 @@ export class Mob extends WorldLife implements IAgent {
     mobTypeId?: string
     spawnAreaId?: string
     rotationSpeed?: number
+    agi?: number
   }) {
     super({
       id: options.id,
@@ -176,6 +179,9 @@ export class Mob extends WorldLife implements IAgent {
     if (options.rotationSpeed !== undefined) {
       this.rotationSpeed = options.rotationSpeed
     }
+
+    const rawAgi = options.agi ?? MOB_STATS.baseAgi
+    this.agi = Math.min(99, Math.max(1, Math.floor(rawAgi)))
 
     // Initialize systems
     this.combatSystem = new MobCombatSystem(this)

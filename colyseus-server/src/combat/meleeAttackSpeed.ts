@@ -1,22 +1,24 @@
 /**
- * Player AGI → gap fill → effective ASPD (attacks/sec) → wind-up / wind-down ms.
+ * AGI → gap fill → effective ASPD (attacks/sec) → wind-up / wind-down ms.
+ * Entity-agnostic; use for players (via equipped weapon) and mobs (via attack def ASPD bands).
  */
-import type { Player } from '../schemas/Player'
-import { PLAYER_STATS } from '../config/combatConfig'
-import { getWeaponConfigForPlayer } from './attackDamage'
+import { PLAYER_STATS, WEAPONS } from '../config/combatConfig'
 
 export const ASPD_EPS = 0.2
 
 const AGI_MIN = 1
 const AGI_MAX = 99
 
-export type PlayerMeleeAttackTiming = {
+export type MeleeAttackTiming = {
   windUpMs: number
   windDownMs: number
   attackDelayMs: number
   effectiveAspd: number
   gapFill: number
 }
+
+/** @deprecated Use MeleeAttackTiming */
+export type PlayerMeleeAttackTiming = MeleeAttackTiming
 
 export function computeAgiGapFill(agi: number): number {
   const a = Math.min(AGI_MAX, Math.max(AGI_MIN, Math.floor(agi)))
@@ -54,18 +56,21 @@ export function splitWindUpDown(
   return { windUpMs, windDownMs }
 }
 
-export function resolvePlayerMeleeAttackTiming(player: Player): PlayerMeleeAttackTiming | null {
-  const weapon = getWeaponConfigForPlayer(player)
-  if (
-    !weapon ||
-    weapon.aspdMin === undefined ||
-    weapon.aspdMax === undefined
-  ) {
+/**
+ * When both ASPD bands are set, returns wind-up/down from AGI-scaled attack rate.
+ * Otherwise returns null (caller uses static wind-up / legacy delays).
+ */
+export function resolveMeleeAttackTiming(
+  agi: number,
+  aspdMin?: number,
+  aspdMax?: number
+): MeleeAttackTiming | null {
+  if (aspdMin === undefined || aspdMax === undefined) {
     return null
   }
 
-  const gapFill = computeAgiGapFill(player.agi)
-  const effectiveAspd = computeEffectiveAspd(player.agi, weapon.aspdMin, weapon.aspdMax)
+  const gapFill = computeAgiGapFill(agi)
+  const effectiveAspd = computeEffectiveAspd(agi, aspdMin, aspdMax)
   const cycleMs = computeMeleeCycleMs(effectiveAspd)
   const { windUpMs, windDownMs } = splitWindUpDown(cycleMs, defaultWindUpRatio())
 
@@ -76,4 +81,25 @@ export function resolvePlayerMeleeAttackTiming(player: Player): PlayerMeleeAttac
     effectiveAspd,
     gapFill,
   }
+}
+
+export function resolvePlayerMeleeAttackTiming(player: {
+  agi: number
+  equippedWeaponId: string
+}): MeleeAttackTiming | null {
+  if (!player.equippedWeaponId) return null
+  const weapon = WEAPONS[player.equippedWeaponId]
+  if (!weapon) return null
+  return resolveMeleeAttackTiming(player.agi, weapon.aspdMin, weapon.aspdMax)
+}
+
+/** AGI for timing when the attacker has no synced field (e.g. some NPCs). */
+export function agiForMeleeTiming(attacker: unknown, fallbackAgi: number): number {
+  if (attacker && typeof attacker === 'object' && 'agi' in attacker) {
+    const v = (attacker as { agi: unknown }).agi
+    if (typeof v === 'number' && !Number.isNaN(v)) {
+      return v
+    }
+  }
+  return fallbackAgi
 }

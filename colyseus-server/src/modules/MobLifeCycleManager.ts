@@ -185,6 +185,7 @@ export class MobLifeCycleManager {
       armor: mobTypeConfig.stats.armor ?? MOB_STATS.armor,
       density: mobTypeConfig.stats.density ?? MOB_STATS.density,
       maxMoveSpeed: mobTypeConfig.stats.maxMoveSpeed ?? MOB_STATS.maxMoveSpeed,
+      baseAgi: mobTypeConfig.stats.baseAgi ?? MOB_STATS.baseAgi,
     }
 
     const mob = new Mob({
@@ -208,6 +209,7 @@ export class MobLifeCycleManager {
       mobTypeId: mobTypeConfig.id,
       spawnAreaId: spawnAreaId,
       rotationSpeed: mobTypeConfig.rotationSpeed,
+      agi: stats.baseAgi,
     })
 
     this.state.mobs.set(id, mob)

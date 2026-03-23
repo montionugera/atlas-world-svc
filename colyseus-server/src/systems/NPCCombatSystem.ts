@@ -234,8 +234,8 @@ export class NPCCombatSystem extends BaseCombatSystem<any> {
 
   private sortStrategiesByPriority(strategies: AttackStrategy[], target: Mob): AttackStrategy[] {
     return [...strategies].sort((a, b) => {
-      const aIsInstant = a.getCastTime() === 0
-      const bIsInstant = b.getCastTime() === 0
+      const aIsInstant = a.getCastTime(this.npc) === 0
+      const bIsInstant = b.getCastTime(this.npc) === 0
       if (aIsInstant && !bIsInstant) return -1
       if (!aIsInstant && bIsInstant) return 1
       return this.getStrategyRange(a, target) - this.getStrategyRange(b, target)
@@ -263,7 +263,7 @@ export class NPCCombatSystem extends BaseCombatSystem<any> {
     if (!this.npc.isCasting || this.npc.castStartTime === 0) return null
 
     const currentTimeMs = Date.now()
-    const castDurationMs = this.npc.currentAttackStrategy?.getCastTime() || 0
+    const castDurationMs = this.npc.currentAttackStrategy?.getCastTime(this.npc) || 0
     const castElapsedMs = currentTimeMs - this.npc.castStartTime
 
     if (castElapsedMs >= castDurationMs) {

@@ -59,7 +59,7 @@ export class DoubleAttackStrategy implements AttackStrategy {
 
     return Math.abs(diff) <= DoubleAttackStrategy.HEADING_DIFF_THRESHOLD_RAD
   }
-  getCastTime(): number {
+  getCastTime(_attacker?: WorldLife): number {
     // Return cast time for the current step in the combo
     // For Queue System: Return 0 because the "setup" is instant.
     // The actual delays are handled by the queue.

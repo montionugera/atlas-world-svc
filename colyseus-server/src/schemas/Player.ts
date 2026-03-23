@@ -8,7 +8,7 @@ import { PlayerSettingGameplay } from './PlayerSettingGameplay'
 import { GAME_CONFIG, TEAMS } from '../config/gameConfig'
 import { PlayerCombatSystem } from '../systems/PlayerCombatSystem'
 import { PlayerBotController } from '../systems/PlayerBotController'
-import { resolvePlayerMeleeAttackTiming } from '../combat/playerAttackSpeed'
+import { resolvePlayerMeleeAttackTiming } from '../combat/meleeAttackSpeed'
 
 export class Player extends WorldLife implements IAgent {
   @type('string') sessionId: string

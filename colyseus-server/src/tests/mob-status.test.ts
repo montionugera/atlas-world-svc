@@ -15,7 +15,7 @@ class MockStrategy implements AttackStrategy {
     
     constructor() {} 
     
-    getCastTime(): number { return this.castTime }
+    getCastTime(_attacker?: unknown): number { return this.castTime }
     
     canExecute(mob: any, target: any): boolean { return true }
     

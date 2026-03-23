@@ -41,6 +41,9 @@ export interface AttackDefinition {
 
   /** Casting time (wind up) in milliseconds before attack executes */
   atkWindUpTime: number
+  /** Optional attacks/sec band; when both set, wind-up/cycle use AGI gap-fill (same formula as players). */
+  aspdMin?: number
+  aspdMax?: number
   /** Optional: Cooldown in milliseconds after this specific attack (overrides mob's default attackDelay) */
   cooldown?: number
   /** Attack characteristic (projectile or area) - contains range information */

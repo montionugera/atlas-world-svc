@@ -39,7 +39,8 @@ export function createAttackStrategies(
       if (attack && attack.atkCharacteristic.type === AttackCharacteristicType.PROJECTILE) {
         strategies.push(
           new MeleeAttackStrategy(projectileManager, gameState, {
-            castTime: attack.atkWindUpTime
+            castTime: attack.atkWindUpTime,
+            attack,
           })
         )
       }
@@ -56,7 +57,8 @@ export function createAttackStrategies(
             damage: attack.atkBaseDmg,
             maxRange: effectiveRange,
             castTime: attack.atkWindUpTime,
-            speed: attack.atkCharacteristic.projectile?.speedUnitsPerSec
+            speed: attack.atkCharacteristic.projectile?.speedUnitsPerSec,
+            attack,
           })
         )
       }
@@ -85,7 +87,8 @@ export function createAttackStrategies(
             // Instant attack = melee
             strategies.push(
               new MeleeAttackStrategy(projectileManager, gameState, {
-                castTime: attack.atkWindUpTime
+                castTime: attack.atkWindUpTime,
+                attack,
               })
             )
           } else {
@@ -95,7 +98,8 @@ export function createAttackStrategies(
                 damage: attack.atkBaseDmg,
                 maxRange: effectiveRange,
                 castTime: attack.atkWindUpTime,
-                speed: attack.atkCharacteristic.projectile?.speedUnitsPerSec
+                speed: attack.atkCharacteristic.projectile?.speedUnitsPerSec,
+                attack,
               })
             )
           }
