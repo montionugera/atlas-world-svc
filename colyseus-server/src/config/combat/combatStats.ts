@@ -26,13 +26,27 @@ export function mergeBaseStat(defaults: BaseStat, partial?: Partial<BaseStat>): 
   }
 }
 
+/** Player default wind segment lengths; single source for ratio fallback and PLAYER_STATS fields. */
+export const PLAYER_DEFAULT_WIND_MS = {
+  windUpMs: 100,
+  windDownMs: 800,
+} as const
+
 export interface CombatStats {
   maxHealth: number
   pAtk: number
   mAtk: number
   attackRange: number
-  atkWindDownTime: number // milliseconds (recovery after attack)
-  atkWindUpTime: number // Delay before attack executes
+  /**
+   * Recovery ms after an attack (global default). With `atkWindUpTime`, defines total cycle when
+   * AGI/ASPD melee timing does not apply (e.g. bow/staff). Also used for NPC/mob baselines.
+   */
+  atkWindDownTime: number
+  /**
+   * Wind-up ms before the hit when not using an ASPD-based split. Together with `atkWindDownTime`,
+   * defines the default wind-up **ratio** for AGI/ASPD cycle split when a weapon or mob omits `windUpRatio`.
+   */
+  atkWindUpTime: number
   pDef: number
   mDef: number
   armor: number
@@ -53,8 +67,8 @@ export const PLAYER_STATS: PlayerCombatStats = {
   pAtk: 25,
   mAtk: 10,
   attackRange: 3,
-  atkWindDownTime: 800, // recovery time (Total Cycle ~900ms)
-  atkWindUpTime: 100,
+  atkWindDownTime: PLAYER_DEFAULT_WIND_MS.windDownMs,
+  atkWindUpTime: PLAYER_DEFAULT_WIND_MS.windUpMs,
   pDef: 1,
   mDef: 1,
   armor: 0,

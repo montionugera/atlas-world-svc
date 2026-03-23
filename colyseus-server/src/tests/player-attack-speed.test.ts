@@ -9,6 +9,7 @@ import {
   resolveMeleeAttackTiming,
   resolvePlayerMeleeAttackTiming,
   splitWindUpDown,
+  windUpRatioFromPlayerStats,
 } from '../combat/meleeAttackSpeed'
 import { AttackCharacteristicType, type AttackDefinition } from '../config/mobTypesConfig'
 
@@ -42,10 +43,18 @@ describe('meleeAttackSpeed', () => {
   })
 
   test('splitWindUpDown sums to rounded cycle', () => {
-    const { windUpMs, windDownMs } = splitWindUpDown(418.4, 100 / 900)
+    const { windUpMs, windDownMs } = splitWindUpDown(418.4, windUpRatioFromPlayerStats())
     expect(windUpMs + windDownMs).toBe(Math.round(418.4))
     expect(windUpMs).toBeGreaterThanOrEqual(1)
     expect(windDownMs).toBeGreaterThanOrEqual(1)
+  })
+
+  test('dagger windUpRatio is lower than global default for same cycle length', () => {
+    const cycle = 300
+    const dagger = splitWindUpDown(cycle, WEAPONS.dagger.windUpRatio!)
+    const global = splitWindUpDown(cycle, windUpRatioFromPlayerStats())
+    expect(dagger.windUpMs).toBeLessThan(global.windUpMs)
+    expect(dagger.windUpMs + dagger.windDownMs).toBe(cycle)
   })
 
   test('computeMeleeCycleMs respects ASPD_EPS', () => {

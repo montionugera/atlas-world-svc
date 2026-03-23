@@ -16,6 +16,11 @@ export interface WeaponConfig {
   /** Attacks/sec band for AGI-scaled melee cadence (omit for bow/staff → global wind times). */
   aspdMin?: number
   aspdMax?: number
+  /**
+   * Fraction of total ASPD cycle spent in wind-up (0–1). Omit to use global ratio from
+   * PLAYER_STATS atkWindUpTime / (atkWindUpTime + atkWindDownTime).
+   */
+  windUpRatio?: number
 }
 
 export const DEFAULT_PLAYER_WEAPON_ID = 'basic_sword' as const
@@ -35,6 +40,7 @@ export const WEAPONS: Record<string, WeaponConfig> = {
     pRadius: 1.0,
     aspdMin: 0.5,
     aspdMax: 3.5,
+    windUpRatio: 100 / 900,
   },
   'magic_staff': {
     id: 'magic_staff',
@@ -62,6 +68,7 @@ export const WEAPONS: Record<string, WeaponConfig> = {
     pRadius: 0.3,
     aspdMin: 1,
     aspdMax: 6,
+    windUpRatio: 0.08,
   },
   'scythe': {
     id: 'scythe',
@@ -73,5 +80,6 @@ export const WEAPONS: Record<string, WeaponConfig> = {
     pRadius: 2.55,
     aspdMin: 0.3,
     aspdMax: 1,
+    windUpRatio: 0.22,
   },
 }
