@@ -123,17 +123,9 @@ export class Mob extends WorldLife implements IAgent {
     mobTypeId?: string
     spawnAreaId?: string
     rotationSpeed?: number
-    /** @deprecated Prefer `stat`; kept for tests / simple spawns. */
-    agi?: number
     stat?: Partial<BaseStat>
   }) {
-    const mobStat = mergeBaseStat(
-      { ...MOB_STATS.baseStat },
-      {
-        ...options.stat,
-        ...(options.agi !== undefined ? { agi: options.agi } : {}),
-      }
-    )
+    const mobStat = mergeBaseStat({ ...MOB_STATS.baseStat }, options.stat)
     super({
       id: options.id,
       x: options.x,

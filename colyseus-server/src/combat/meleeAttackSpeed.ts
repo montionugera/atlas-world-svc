@@ -18,9 +18,6 @@ export type MeleeAttackTiming = {
   gapFill: number
 }
 
-/** @deprecated Use MeleeAttackTiming */
-export type PlayerMeleeAttackTiming = MeleeAttackTiming
-
 export function computeAgiGapFill(agi: number): number {
   const a = Math.min(AGI_MAX, Math.max(AGI_MIN, Math.floor(agi)))
   const t1 = Math.floor(a / 3) * 0.01

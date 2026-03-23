@@ -87,7 +87,7 @@ describe('meleeAttackSpeed', () => {
   })
 
   test('mob attack queue uses ASPD wind-up when attack def has bands', () => {
-    const mob = new Mob({ id: 'm-aspd', x: 0, y: 0, agi: 70 })
+    const mob = new Mob({ id: 'm-aspd', x: 0, y: 0, stat: { agi: 70 } })
     const attack: AttackDefinition = {
       atkBaseDmg: 10,
       atkWindUpTime: 999,
