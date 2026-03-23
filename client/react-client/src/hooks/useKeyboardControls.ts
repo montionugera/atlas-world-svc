@@ -94,11 +94,13 @@ export const useKeyboardControls = ({ updatePlayerInput, sendPlayerAction, switc
         });
       }
 
-      // Weapons 5 / 6 / 7 (skills use 1–4)
+      // Weapons 5–9 (skills use 1–4)
       if (switchWeapon) {
         if (key === '5') switchWeapon('basic_sword');
         if (key === '6') switchWeapon('magic_staff');
         if (key === '7') switchWeapon('great_bow');
+        if (key === '8') switchWeapon('scythe');
+        if (key === '9') switchWeapon('dagger');
       }
 
       // Handle Dash (Shift) -> Now triggers skill_dash

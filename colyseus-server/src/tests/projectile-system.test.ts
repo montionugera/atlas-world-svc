@@ -370,9 +370,7 @@ describe('Projectile System', () => {
       player.heading = 0
       player.attackRange = 5
       player.radius = 1.3
-
-      const meleeSwing = new Projectile('swing', 100, 100, 0, 0, player.id, 0, 'physical', WEAPON_TYPES.MELEE, 3)
-      gameState.projectiles.set(meleeSwing.id, meleeSwing)
+      player.equipWeapon('basic_sword')
 
       const spear = new Projectile(
         'spear-in',
@@ -391,8 +389,30 @@ describe('Projectile System', () => {
       expect(projectileManager.checkDeflection(spear, player)).toBe(true)
       // 10 * 0.80 physicSpear deflectedDamage * 1.2 MELEE deflectPower (damage only)
       expect(spear.damage).toBe(9)
+    })
 
-      gameState.projectiles.delete(meleeSwing.id)
+    test('deflect damage uses defender deflectPowerMultiplier (sword vs dagger)', () => {
+      player.x = 100
+      player.y = 100
+      player.isAttacking = true
+      player.heading = 0
+      player.attackRange = 5
+      player.radius = 1.3
+
+      const makeSpear = (id: string) =>
+        new Projectile(id, 103, 100, -10, 0, 'mob-1', 10, 'physical', WEAPON_TYPES.PHYSIC_SPEAR, 20)
+
+      player.equipWeapon('basic_sword')
+      const spearSword = makeSpear('spear-sword')
+      gameState.projectiles.set(spearSword.id, spearSword)
+      expect(projectileManager.checkDeflection(spearSword, player)).toBe(true)
+      expect(spearSword.damage).toBe(9) // floor(10 * 0.8 * 1.2)
+
+      player.equipWeapon('dagger')
+      const spearDagger = makeSpear('spear-dag')
+      gameState.projectiles.set(spearDagger.id, spearDagger)
+      expect(projectileManager.checkDeflection(spearDagger, player)).toBe(true)
+      expect(spearDagger.damage).toBe(4) // floor(10 * 0.8 * 0.5)
     })
 
     test('deflected projectile should keep traveling and not instantly despawn', () => {

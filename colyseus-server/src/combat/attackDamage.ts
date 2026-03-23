@@ -71,12 +71,14 @@ export function resolveWeaponBasicProjectileParams(player: Player): WeaponBasicP
     } else if (weapon.projectileType === WEAPON_TYPES.ARROW) {
       pRadius = 0.25
       atkSpeed = 85
+    } else if (weapon.projectileType === WEAPON_TYPES.MELEE) {
+      pRadius = weapon.pRadius ?? 2.0
     } else if (weapon.projectileType === WEAPON_TYPES.SMALL_MELEE) {
-      pRadius = 0.35
+      pRadius = weapon.pRadius ?? 1.0
       atkSpeed = 115
       meleeLifetimeMs = 220
     } else if (weapon.projectileType === WEAPON_TYPES.LARGE_MELEE) {
-      pRadius = 0.6
+      pRadius = weapon.pRadius ?? 1.55
       atkSpeed = 85
       meleeLifetimeMs = 360
     }

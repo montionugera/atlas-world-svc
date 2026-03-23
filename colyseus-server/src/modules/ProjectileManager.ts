@@ -462,6 +462,7 @@ export class ProjectileManager {
       projectile.maxRange * incomingConfig.deflectedRangeMultiplier
     )
 
+    // Post-parry damage: incoming deflectedDamageMultiplier × defender deflectPowerMultiplier (not velocity).
     const dmgMult =
       incomingConfig.deflectedDamageMultiplier * Math.max(0.1, defenderConfig.deflectPowerMultiplier)
     projectile.damage = Math.max(1, Math.floor(projectile.damage * dmgMult))

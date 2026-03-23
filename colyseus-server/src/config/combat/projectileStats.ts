@@ -33,7 +33,8 @@ export const SPEAR_THROWER_STATS = {
 
 export const MELEE_PROJECTILE_STATS = {
   meleeSpeed: 100, // Very fast speed for near-instant hit
-  meleeMaxRange: 5, // Short range - just enough to hit target
+  /** @deprecated Travel distance is derived in createMelee (spawn→target); kept for reference only */
+  meleeMaxRange: 5,
   projectileRadius: 0.3, // Smaller collision radius
   projectileLifetime: 500, // Short lifetime (despawns quickly if it misses)
 } as const

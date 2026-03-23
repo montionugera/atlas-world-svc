@@ -1,5 +1,4 @@
-import { RENDER_CONFIG, COLORS } from '../config/gameConfig';
-import { drawCircle, drawLine } from '../utils/drawingUtils';
+import { drawCircle } from '../utils/drawingUtils';
 
 /**
  * Draw all projectiles (spears)
@@ -15,7 +14,21 @@ const lastProjectileDebugLogFrameById = new Map<string, number>()
 
 export const drawProjectiles = (
   ctx: CanvasRenderingContext2D,
-  projectiles: Map<string, { id: string; x: number; y: number; vx: number; vy: number; radius: number; ownerId: string; isStuck: boolean; teamId?: string }>,
+  projectiles: Map<
+    string,
+    {
+      id: string
+      x: number
+      y: number
+      vx: number
+      vy: number
+      radius: number
+      ownerId: string
+      isStuck: boolean
+      type?: string
+      teamId?: string
+    }
+  >,
   scale: number,
   viewScale: number = 1
 ): void => {
@@ -97,7 +110,7 @@ export const drawProjectiles = (
     ctx.closePath();
     ctx.fill();
 
-    // Draw collision radius for debugging
+    // Draw collision radius (synced `Projectile.radius` from server)
     ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)'; // Semi-transparent red
     ctx.lineWidth = inverseScale;
     ctx.beginPath();

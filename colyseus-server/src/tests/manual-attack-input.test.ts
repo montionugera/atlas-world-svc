@@ -2,7 +2,7 @@ import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
 import { eventBus } from '../events/EventBus'
 import { PLAYER_STATS } from '../config/combatConfig'
-import { resolvePlayerMeleeAttackTiming } from '../combat/playerAttackSpeed'
+import { resolvePlayerMeleeAttackTiming } from '../combat/meleeAttackSpeed'
 
 // Mock event bus
 jest.mock('../events/EventBus', () => ({

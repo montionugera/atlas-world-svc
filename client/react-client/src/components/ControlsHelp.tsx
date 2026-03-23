@@ -95,7 +95,9 @@ export const ControlsHelp: React.FC<ControlsHelpProps> = ({ isOpen, onClose }) =
                   <strong>Switch loadout:</strong>{' '}
                   <span style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em' }}>5</span> Sword,{' '}
                   <span style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em' }}>6</span> Staff,{' '}
-                  <span style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em' }}>7</span> Bow — or use the weapon buttons in the panel.
+                  <span style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em' }}>7</span> Bow,{' '}
+                  <span style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em' }}>8</span> Scythe,{' '}
+                  <span style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em' }}>9</span> Dagger — or use the weapon buttons in the panel.
               </div>
               <div style={{ fontSize: '0.9rem', color: '#bdc3c7' }}>Skills stay on keys 1–4 and Shift (dash).</div>
           </div>

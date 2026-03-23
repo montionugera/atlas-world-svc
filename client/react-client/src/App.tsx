@@ -320,7 +320,7 @@ function App() {
                   <label style={{ color: '#fff', fontWeight: 700 }}>Weapon</label>
                   <div style={{ marginTop: 6, color: '#bdc3c7', fontSize: 12 }}>
                     Equipped: <strong style={{ color: '#fff' }}>{equippedWeaponId || '—'}</strong>
-                    <span style={{ marginLeft: 8, opacity: 0.85 }}>(hotkeys 5–7)</span>
+                    <span style={{ marginLeft: 8, opacity: 0.85 }}>(hotkeys 5–9)</span>
                   </div>
                   <button
                     type="button"

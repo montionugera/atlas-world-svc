@@ -6,7 +6,7 @@
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
 import { PLAYER_STATS } from '../config/combatConfig'
-import { resolvePlayerMeleeAttackTiming } from '../combat/playerAttackSpeed'
+import { resolvePlayerMeleeAttackTiming } from '../combat/meleeAttackSpeed'
 
 describe('Player Attack System', () => {
   let testPlayer: Player

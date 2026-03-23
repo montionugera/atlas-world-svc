@@ -3,7 +3,7 @@ import { GameState } from '../schemas/GameState'
 import { Mob } from '../schemas/Mob'
 import { eventBus, RoomEventType } from '../events/EventBus'
 import { PLAYER_STATS } from '../config/combatConfig'
-import { resolvePlayerMeleeAttackTiming } from '../combat/playerAttackSpeed'
+import { resolvePlayerMeleeAttackTiming } from '../combat/meleeAttackSpeed'
 
 describe('Player Bot Attack Execution', () => {
   let player: Player
