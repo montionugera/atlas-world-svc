@@ -8,6 +8,7 @@ import { PlayerSettingGameplay } from './PlayerSettingGameplay'
 import { GAME_CONFIG, TEAMS } from '../config/gameConfig'
 import { PlayerCombatSystem } from '../systems/PlayerCombatSystem'
 import { PlayerBotController } from '../systems/PlayerBotController'
+import { resolvePlayerMeleeAttackTiming } from '../combat/playerAttackSpeed'
 
 export class Player extends WorldLife implements IAgent {
   @type('string') sessionId: string
@@ -55,6 +56,11 @@ export class Player extends WorldLife implements IAgent {
   @type('number') attackExecuteTime: number = 0
   @type('string') pendingAttackTargetId: string = '' 
 
+  @type('number') agi: number = 10
+
+  /** Server-only bonus toward AGI cap (gear); recalculateStats sets `agi` from base + this. */
+  agiFromEquipment: number = 0
+
   /** Server-only; not Colyseus-synced. Client learns loadout via welcome / equipment WS messages (see equipmentSlots snapshot). */
   equippedWeaponId: string = ''
 
@@ -76,6 +82,14 @@ export class Player extends WorldLife implements IAgent {
     }
     this.pAtk = PLAYER_STATS.pAtk + wPAtk
     this.mAtk = PLAYER_STATS.mAtk + wMAtk
+    this.agi = Math.min(99, Math.max(1, Math.floor(PLAYER_STATS.baseAgi + this.agiFromEquipment)))
+
+    const meleeTiming = resolvePlayerMeleeAttackTiming(this)
+    if (meleeTiming) {
+      this.attackDelay = meleeTiming.attackDelayMs
+    } else {
+      this.attackDelay = PLAYER_STATS.atkWindUpTime + PLAYER_STATS.atkWindDownTime
+    }
   }
 
   // Systems

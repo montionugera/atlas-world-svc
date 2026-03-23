@@ -1,6 +1,7 @@
 import { Player } from '../schemas/Player';
 import { PLAYER_STATS, WEAPON_TYPES } from '../config/combatConfig';
 import { resolveWeaponBasicProjectileParams } from '../combat/attackDamage';
+import { resolvePlayerMeleeAttackTiming } from '../combat/playerAttackSpeed';
 import { ScheduledAttack, processAttackQueue } from './attackQueue';
 
 /**
@@ -117,7 +118,8 @@ export class PlayerCombatSystem {
             return false;
         }
 
-        const windUpTime = PLAYER_STATS.atkWindUpTime || 0;
+        const meleeTiming = resolvePlayerMeleeAttackTiming(this.player);
+        const windUpTime = meleeTiming?.windUpMs ?? (PLAYER_STATS.atkWindUpTime || 0);
         this.player.lastAttackTime = performance.now();
 
         const target = this.findTargetInDirection(context?.mobs || new Map());
@@ -151,7 +153,7 @@ export class PlayerCombatSystem {
         // Spawn melee / weapon projectile (params from central resolver)
         if (projectileManager && gameState && roomId) {
             const w = resolveWeaponBasicProjectileParams(this.player);
-            const { projectileType, damage, damageType, atkRange, pRadius, atkSpeed, attackKind } = w;
+            const { projectileType, damage, damageType, atkRange, pRadius, atkSpeed, attackKind, meleeLifetimeMs } = w;
 
             const targetX = this.player.x + Math.cos(this.player.heading) * atkRange;
             const targetY = this.player.y + Math.sin(this.player.heading) * atkRange;
@@ -159,7 +161,7 @@ export class PlayerCombatSystem {
             let projectile;
             if (projectileType === WEAPON_TYPES.MELEE || projectileType === WEAPON_TYPES.SMALL_MELEE || projectileType === WEAPON_TYPES.LARGE_MELEE) {
                 projectile = projectileManager.createMelee(
-                    this.player, targetX, targetY, damage, damageType, atkRange, pRadius, atkSpeed
+                    this.player, targetX, targetY, damage, damageType, pRadius, atkSpeed, projectileType, meleeLifetimeMs
                 );
             } else {
                 projectile = projectileManager.createSpear(

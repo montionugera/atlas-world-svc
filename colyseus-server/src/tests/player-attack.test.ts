@@ -5,6 +5,8 @@
 
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
+import { PLAYER_STATS } from '../config/combatConfig'
+import { resolvePlayerMeleeAttackTiming } from '../combat/playerAttackSpeed'
 
 describe('Player Attack System', () => {
   let testPlayer: Player
@@ -66,6 +68,7 @@ describe('Player Attack System', () => {
     test('should process attack when target is found', () => {
       testPlayer.heading = 0
       testPlayer.input.attack = true
+      jest.spyOn(testPlayer, 'canAttack').mockReturnValue(true)
       
       // Mock the event bus
       const mockEmitRoomEvent = jest.fn()
@@ -113,8 +116,11 @@ describe('Player Attack System', () => {
       testPlayer.processAttackInput({ mobs: new Map(), roomId: 'test-room', projectileManager: mockProjectileManager, gameState: mockGameState })
       
       // Advance time past wind-up to trigger execution
-      jest.setSystemTime(Date.now() + 150)
-      testPlayer.update(150, { mobs: new Map(), roomId: 'test-room', projectileManager: mockProjectileManager, gameState: mockGameState })
+      const windUp =
+        resolvePlayerMeleeAttackTiming(testPlayer)?.windUpMs ?? PLAYER_STATS.atkWindUpTime
+      const advance = windUp + 50
+      jest.setSystemTime(Date.now() + advance)
+      testPlayer.update(advance, { mobs: new Map(), roomId: 'test-room', projectileManager: mockProjectileManager, gameState: mockGameState })
       
       expect(mockCreateMelee).toHaveBeenCalled()
       expect(mockGameState.projectiles.has('test-projectile-id')).toBe(true)
@@ -148,8 +154,11 @@ describe('Player Attack System', () => {
       expect(result).toBe(true)
       
       // Advance time past wind-up to trigger execution
-      jest.setSystemTime(Date.now() + 150)
-      testPlayer.update(150, { mobs: new Map(), roomId: 'test-room' })
+      const windUp2 =
+        resolvePlayerMeleeAttackTiming(testPlayer)?.windUpMs ?? PLAYER_STATS.atkWindUpTime
+      const advance2 = windUp2 + 50
+      jest.setSystemTime(Date.now() + advance2)
+      testPlayer.update(advance2, { mobs: new Map(), roomId: 'test-room' })
       
       // Attack state should be updated
       expect(testPlayer.isCasting).toBe(false)

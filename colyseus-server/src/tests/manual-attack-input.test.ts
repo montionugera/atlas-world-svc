@@ -1,6 +1,8 @@
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
 import { eventBus } from '../events/EventBus'
+import { PLAYER_STATS } from '../config/combatConfig'
+import { resolvePlayerMeleeAttackTiming } from '../combat/playerAttackSpeed'
 
 // Mock event bus
 jest.mock('../events/EventBus', () => ({
@@ -38,8 +40,11 @@ describe('Manual Attack Input Tests', () => {
     expect(result).toBe(true)
     
     jest.useFakeTimers()
-    jest.setSystemTime(Date.now() + 150)
-    player.update(150, { mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
+    const windUp =
+      resolvePlayerMeleeAttackTiming(player)?.windUpMs ?? PLAYER_STATS.atkWindUpTime
+    const advance = windUp + 50
+    jest.setSystemTime(Date.now() + advance)
+    player.update(advance, { mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
     jest.useRealTimers()
     
     expect(mockEmitRoomEvent).toHaveBeenCalled()
@@ -81,8 +86,11 @@ describe('Manual Attack Input Tests', () => {
     expect(result).toBe(true)
     
     jest.useFakeTimers()
-    jest.setSystemTime(Date.now() + 150)
-    player.update(150, { mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
+    const windUp2 =
+      resolvePlayerMeleeAttackTiming(player)?.windUpMs ?? PLAYER_STATS.atkWindUpTime
+    const advance2 = windUp2 + 50
+    jest.setSystemTime(Date.now() + advance2)
+    player.update(advance2, { mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
     jest.useRealTimers()
     
     expect(mockEmitRoomEvent).toHaveBeenCalled()

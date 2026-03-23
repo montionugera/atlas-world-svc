@@ -83,6 +83,8 @@ export interface Player {
   isAlive?: boolean;
   health?: number;
   maxHealth?: number;
+  /** Synced from server (1–99) for ASPD / HUD. */
+  agi?: number;
   castingUntil?: number; // Synced from server
   castDuration?: number; // Synced from server
   cooldowns?: Map<string, number>; // Synced Action ID -> Timestamp
@@ -104,6 +106,9 @@ export interface Projectile {
   radius: number;
   ownerId: string;
   isStuck: boolean;
+  /** Synced from server `Projectile.type` (e.g. melee, smallMeelee, largeMeelee). */
+  type?: string;
+  teamId?: string;
 }
 
 export interface GameState {

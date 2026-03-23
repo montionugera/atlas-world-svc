@@ -32,8 +32,8 @@ describe('Projectile Deflection System', () => {
     })
 
     test('Different teams projectiles are destroyed', () => {
-        const pStrong = new Projectile('strong', 0, 0, 0, 0, 'owner1', 10, 'physical', 'spear', 100, 4, 1000, 'team1')
-        const pWeak = new Projectile('weak', 0, 0, 0, 0, 'owner2', 10, 'physical', 'spear', 100, 4, 1000, 'team2')
+        const pStrong = new Projectile('strong', 0, 0, 0, 0, 'owner1', 10, 'physical', 'spear', 100, 4, 1000, 'team1', 0)
+        const pWeak = new Projectile('weak', 0, 0, 0, 0, 'owner2', 10, 'physical', 'spear', 100, 4, 1000, 'team2', 0)
 
         projectileManager.handleProjectileCollision(pStrong, pWeak)
 
@@ -43,8 +43,8 @@ describe('Projectile Deflection System', () => {
     })
 
     test('Same team projectiles ignore each other', () => {
-        const pStrong = new Projectile('strong', 0, 0, 0, 0, 'owner1', 10, 'physical', 'spear', 100, 4, 1000, 'team1')
-        const pWeak = new Projectile('weak', 0, 0, 0, 0, 'owner2', 10, 'physical', 'spear', 100, 4, 1000, 'team1')
+        const pStrong = new Projectile('strong', 0, 0, 0, 0, 'owner1', 10, 'physical', 'spear', 100, 4, 1000, 'team1', 0)
+        const pWeak = new Projectile('weak', 0, 0, 0, 0, 'owner2', 10, 'physical', 'spear', 100, 4, 1000, 'team1', 0)
 
         // Swap arguments
         projectileManager.handleProjectileCollision(pWeak, pStrong)
@@ -54,11 +54,11 @@ describe('Projectile Deflection System', () => {
     })
     
     test('Dead projectile should not trigger collision again', () => {
-        const pDead = new Projectile('dead', 0, 0, 0, 0, 'owner1', 10, 'physical', 'spear', 100, 4, 1000, 'team1')
+        const pDead = new Projectile('dead', 0, 0, 0, 0, 'owner1', 10, 'physical', 'spear', 100, 4, 1000, 'team1', 0)
         pDead.stick() // Already dead
         pDead.hitTargets.add('clash') // Marks it as having already resolved collision
         
-        const pLive = new Projectile('live', 0, 0, 0, 0, 'owner2', 10, 'physical', 'spear', 100, 4, 1000, 'team2')
+        const pLive = new Projectile('live', 0, 0, 0, 0, 'owner2', 10, 'physical', 'spear', 100, 4, 1000, 'team2', 0)
         
         projectileManager.handleProjectileCollision(pDead, pLive)
         
@@ -69,8 +69,8 @@ describe('Projectile Deflection System', () => {
   test('syncEntityToBody keeps physics body velocity aligned after deflect', () => {
     const physicsManager = new PlanckPhysicsManager()
 
-    // Create a projectile with an associated physics body
-    const projectile = new Projectile('proj-sync', 0, 0, 5, 0, 'owner1', 10)
+    // Incoming toward player along +x normal so reflection flips vx sign
+    const projectile = new Projectile('proj-sync', 0, 0, -5, 0, 'owner1', 10)
     gameState.projectiles.set(projectile.id, projectile)
     physicsManager.createProjectileBody(projectile)
 
@@ -108,7 +108,7 @@ describe('Projectile Deflection System', () => {
   test('removeBody + createProjectileBody keeps physics body aligned after deflect', () => {
     const physicsManager = new PlanckPhysicsManager()
 
-    const projectile = new Projectile('proj-recreate', 0, 0, 5, 0, 'owner1', 10)
+    const projectile = new Projectile('proj-recreate', 0, 0, -5, 0, 'owner1', 10)
     gameState.projectiles.set(projectile.id, projectile)
     physicsManager.createProjectileBody(projectile)
 
@@ -158,12 +158,12 @@ describe('Projectile Deflection System', () => {
     // dot = (-3)*(0.6) + (-4)*(0.8) = -1.8 - 3.2 = -5.0
     // Vector reflection: V_new = (-3, -4) - 2*(-5)*(0.6, 0.8) 
     // V_new = (-3, -4) + 10*(0.6, 0.8) = (-3, -4) + (6, 8) = (3, 4)
-    // Speed boost 1.2 applies -> vx = 3.6, vy = 4.8
-    
+    // Preserve speed magnitude (5); reflected direction (3, 4), no defender power on velocity.
+
     const deflected = projectileManager.checkDeflection(projectile, attacker)
     expect(deflected).toBe(true)
-    
-    expect(projectile.vx).toBeCloseTo(3.6, 1)
-    expect(projectile.vy).toBeCloseTo(4.8, 1)
+
+    expect(projectile.vx).toBeCloseTo(3, 1)
+    expect(projectile.vy).toBeCloseTo(4, 1)
   })
 })

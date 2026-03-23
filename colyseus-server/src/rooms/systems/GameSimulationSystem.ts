@@ -135,8 +135,6 @@ export class GameSimulationSystem {
   }
 
   private checkProjectileDeflection(player: Player): void {
-    if (!player.isAttacking) return
-
     for (const projectile of this.room.state.projectiles.values()) {
       if (projectile.isStuck) continue
       if (this.room.projectileManager.checkDeflection(projectile, player)) {

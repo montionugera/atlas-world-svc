@@ -152,6 +152,46 @@ describe('Projectile System', () => {
 
       expect(projectile.shouldDespawn()).toBe(true)
     })
+
+    test('should despawn when maxAirLifeMs elapsed while flying', () => {
+      const projectile = new Projectile(
+        'air-cap',
+        0,
+        0,
+        1,
+        0,
+        'o',
+        1,
+        'physical',
+        'melee',
+        500,
+        0.3,
+        500,
+        '',
+        80
+      )
+      projectile.createdAt = Date.now() - 100
+      expect(projectile.shouldDespawn()).toBe(true)
+
+      const fresh = new Projectile(
+        'air-cap2',
+        0,
+        0,
+        1,
+        0,
+        'o',
+        1,
+        'physical',
+        'melee',
+        500,
+        0.3,
+        500,
+        '',
+        80
+      )
+      fresh.createdAt = Date.now() - 10
+      expect(fresh.shouldDespawn()).toBe(false)
+    })
   })
 
   describe('Projectile Collision', () => {
@@ -226,7 +266,7 @@ describe('Projectile System', () => {
       alliedMob.teamId = 'team-a'
       mob.teamId = 'team-a'
 
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, mob.teamId)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, mob.teamId, 0)
       
       gameState.projectiles.set(projectile.id, projectile)
       gameState.mobs.set(mob.id, mob)
@@ -245,7 +285,7 @@ describe('Projectile System', () => {
       enemyMob.teamId = 'team-b'
       mob.teamId = 'team-a'
 
-      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, mob.teamId)
+      const projectile = new Projectile('proj-1', 100, 100, 10, 0, mob.id, 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, mob.teamId, 0)
       
       gameState.projectiles.set(projectile.id, projectile)
       gameState.mobs.set(mob.id, mob)
@@ -273,8 +313,8 @@ describe('Projectile System', () => {
     })
 
     test('projectiles from same team should ignore each other', () => {
-      const projA = new Projectile('proj-A', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha')
-      const projB = new Projectile('proj-B', 100, 100, -10, 0, 'mob-2', 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha')
+      const projA = new Projectile('proj-A', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha', 0)
+      const projB = new Projectile('proj-B', 100, 100, -10, 0, 'mob-2', 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha', 0)
       
       projectileManager.handleProjectileCollision(projA, projB)
 
@@ -285,8 +325,8 @@ describe('Projectile System', () => {
     })
 
     test('projectiles from different teams should clash and stick', () => {
-      const projA = new Projectile('proj-A', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha')
-      const projB = new Projectile('proj-B', 100, 100, -10, 0, 'player-1', 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-beta')
+      const projA = new Projectile('proj-A', 100, 100, 10, 0, 'mob-1', 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-alpha', 0)
+      const projB = new Projectile('proj-B', 100, 100, -10, 0, 'player-1', 5, 'physical', 'spear', 10, SPEAR_THROWER_STATS.projectileRadius, SPEAR_THROWER_STATS.projectileLifetime, 'team-beta', 0)
       
       projectileManager.handleProjectileCollision(projA, projB)
 
@@ -349,7 +389,8 @@ describe('Projectile System', () => {
       gameState.projectiles.set(spear.id, spear)
 
       expect(projectileManager.checkDeflection(spear, player)).toBe(true)
-      expect(spear.damage).toBe(8) // 10 * 0.80 deflectedDamageMultiplier
+      // 10 * 0.80 physicSpear deflectedDamage * 1.2 MELEE deflectPower (damage only)
+      expect(spear.damage).toBe(9)
 
       gameState.projectiles.delete(meleeSwing.id)
     })

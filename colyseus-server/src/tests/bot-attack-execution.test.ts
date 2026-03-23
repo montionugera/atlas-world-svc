@@ -2,6 +2,8 @@ import { Player } from '../schemas/Player'
 import { GameState } from '../schemas/GameState'
 import { Mob } from '../schemas/Mob'
 import { eventBus, RoomEventType } from '../events/EventBus'
+import { PLAYER_STATS } from '../config/combatConfig'
+import { resolvePlayerMeleeAttackTiming } from '../combat/playerAttackSpeed'
 
 describe('Player Bot Attack Execution', () => {
   let player: Player
@@ -40,9 +42,9 @@ describe('Player Bot Attack Execution', () => {
     
     // Update player with game state (Starts wind-up)
     player.update(16, { mobs: gameState.mobs, roomId: gameState.roomId })
-    // Verify attack event emitted - wait for wind-up
-    // Advance time past the wind up (100ms)
-    jest.setSystemTime(Date.now() + 150)
+    const windUp =
+      resolvePlayerMeleeAttackTiming(player)?.windUpMs ?? PLAYER_STATS.atkWindUpTime
+    jest.setSystemTime(Date.now() + windUp + 50)
     player.update(16, { mobs: gameState.mobs, roomId: gameState.roomId })
 
     expect(emitSpy).toHaveBeenCalledWith(

@@ -101,7 +101,6 @@ export class DoubleAttackStrategy implements AttackStrategy {
                   targetY,
                   attack.atkBaseDmg,
                   'physical',
-                  char.atkRange || 10,
                   char.projectileRadius,
                   char.speedUnitsPerSec
               )

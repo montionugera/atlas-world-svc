@@ -31,25 +31,25 @@ describe('Configuration-Driven Projectile Interactions', () => {
     gameState.stopAI()
   })
 
-  test('smallMeelee deflecting arrow: bounces arrow back, 50% power return', () => {
-    // P1 swings smallMeelee
+  test('smallMeelee deflecting arrow: preserves speed; damage uses deflectPowerMultiplier', () => {
+    player1.equipWeapon('dagger')
+
     const swing = new Projectile('swing-1', 10, 10, 0, 0, player1.id, 10, 'physical', WEAPON_TYPES.SMALL_MELEE, 10)
     gameState.projectiles.set(swing.id, swing)
-    
-    // P2 shoots arrow
+
     const arrow = new Projectile('arrow-1', 12, 10, -20, 0, player2.id, 10, 'physical', WEAPON_TYPES.ARROW, 10)
     gameState.projectiles.set(arrow.id, arrow)
-    
-    player1.isAttacking = true;
-    player1.heading = 0; // facing right, arrow coming from right
-    
+
+    player1.isAttacking = true
+    player1.heading = 0
+
     const deflected = projectileManager.checkDeflection(arrow, player1)
-    
+
     expect(deflected).toBe(true)
-    
-    // Power multiplier for smallMeelee is 0.50
-    expect(arrow.vx).toBeGreaterThan(0) // Reversed direction (back to the right)
-    expect(arrow.vx).toBeCloseTo(10) // base speed 20 * 0.50 = 10
+
+    expect(arrow.vx).toBeGreaterThan(0)
+    expect(Math.hypot(arrow.vx, arrow.vy)).toBeCloseTo(20, 1)
+    expect(arrow.damage).toBe(1) // floor(10 * 0.3 * 0.5)
   })
 
   test('largeMeelee hit by magicSpear: physical clash stops dead, no bounce', () => {

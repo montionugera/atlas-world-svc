@@ -18,7 +18,7 @@ export interface CombatStats {
   maxMoveSpeed: number
 }
 
-export type PlayerCombatStats = CombatStats
+export type PlayerCombatStats = CombatStats & { baseAgi: number }
 export type MobCombatStats = CombatStats
 
 export const PLAYER_STATS: PlayerCombatStats = {
@@ -35,6 +35,7 @@ export const PLAYER_STATS: PlayerCombatStats = {
   density: 0.8,
   chaseRange: 15,
   maxMoveSpeed: 20,
+  baseAgi: 10,
 } as const
 
 export const MOB_STATS: MobCombatStats = {

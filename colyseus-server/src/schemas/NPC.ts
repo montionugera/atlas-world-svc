@@ -31,6 +31,7 @@ const DEFAULT_NPC_STATS = {
   density: PLAYER_STATS.density,
   chaseRange: PLAYER_STATS.chaseRange,
   maxMoveSpeed: PLAYER_STATS.maxMoveSpeed,
+  baseAgi: PLAYER_STATS.baseAgi,
 } as const
 
 export class NPC extends WorldLife implements IAgent {

@@ -2,7 +2,13 @@
  * Server-only attack classification and damage resolution.
  * Player.pAtk / Player.mAtk are totals (base + weapon); skills use the appropriate total.
  */
-import { WEAPONS, WEAPON_TYPES, type ProjectileType, type WeaponConfig } from '../config/combatConfig'
+import {
+  WEAPONS,
+  WEAPON_TYPES,
+  MELEE_PROJECTILE_STATS,
+  type ProjectileType,
+  type WeaponConfig,
+} from '../config/combatConfig'
 import type { Player } from '../schemas/Player'
 
 export const ATTACK_KIND = {
@@ -39,6 +45,8 @@ export type WeaponBasicProjectileParams = {
   atkRange: number
   pRadius: number
   atkSpeed: number
+  /** Melee: stick lifetime + flying cap (see Projectile.maxAirLifeMs). Ranged: unused. */
+  meleeLifetimeMs: number
 }
 
 /** Resolves weapon basic attack projectile parameters from equipped weapon + player totals. */
@@ -50,6 +58,7 @@ export function resolveWeaponBasicProjectileParams(player: Player): WeaponBasicP
   let atkRange = player.attackRange + player.radius
   let pRadius = 2.0
   let atkSpeed = 40
+  let meleeLifetimeMs: number = MELEE_PROJECTILE_STATS.projectileLifetime
 
   if (weapon) {
     projectileType = weapon.projectileType
@@ -62,6 +71,14 @@ export function resolveWeaponBasicProjectileParams(player: Player): WeaponBasicP
     } else if (weapon.projectileType === WEAPON_TYPES.ARROW) {
       pRadius = 0.25
       atkSpeed = 85
+    } else if (weapon.projectileType === WEAPON_TYPES.SMALL_MELEE) {
+      pRadius = 0.35
+      atkSpeed = 115
+      meleeLifetimeMs = 220
+    } else if (weapon.projectileType === WEAPON_TYPES.LARGE_MELEE) {
+      pRadius = 0.6
+      atkSpeed = 85
+      meleeLifetimeMs = 360
     }
   }
 
@@ -73,5 +90,6 @@ export function resolveWeaponBasicProjectileParams(player: Player): WeaponBasicP
     atkRange,
     pRadius,
     atkSpeed,
+    meleeLifetimeMs,
   }
 }

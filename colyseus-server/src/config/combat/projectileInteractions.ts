@@ -5,6 +5,7 @@
 export interface ProjectileDeflectionConfig {
   canDeflectOthers: boolean
   absorbImpulseMultiplier: number
+  /** Parry damage modifier (defender weapon). Applied to projectile damage after deflect; does not change velocity. */
   deflectPowerMultiplier: number
   canBeDeflected: boolean
   deflectionBehavior: 'bounce' | 'clash'

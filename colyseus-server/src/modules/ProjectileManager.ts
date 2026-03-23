@@ -14,6 +14,7 @@ import {
 } from '../config/combatConfig'
 import { PROJECTILE_GRAVITY } from '../config/physicsConfig'
 import { eventBus, RoomEventType } from '../events/EventBus'
+import { resolveWeaponBasicProjectileParams } from '../combat/attackDamage'
 
 export class ProjectileManager {
   private gameState: GameState
@@ -29,23 +30,31 @@ export class ProjectileManager {
     this.battleManager = battleManager
   }
 
+  /** Defender parry row: players use equipped weapon projectile type; others default to generic melee. */
+  private resolveDeflectorWeaponType(attacker: WorldLife): ProjectileType {
+    if (attacker instanceof Player) {
+      return resolveWeaponBasicProjectileParams(attacker).projectileType
+    }
+    return WEAPON_TYPES.MELEE
+  }
+
   /**
    * Create a melee projectile from actor to target
    * Short range, fast speed for near-instant hits
    */
   createMelee(
-    actor: WorldLife, 
-    targetX: number, 
-    targetY: number, 
+    actor: WorldLife,
+    targetX: number,
+    targetY: number,
     damage: number,
     damageType: 'physical' | 'magical' = 'physical',
-    maxRange: number = MELEE_PROJECTILE_STATS.meleeMaxRange,
     radius: number = MELEE_PROJECTILE_STATS.projectileRadius,
-    speed: number = MELEE_PROJECTILE_STATS.meleeSpeed
+    speed: number = MELEE_PROJECTILE_STATS.meleeSpeed,
+    meleeProjectileType: ProjectileType = WEAPON_TYPES.MELEE,
+    lifetimeMs: number = MELEE_PROJECTILE_STATS.projectileLifetime
   ): Projectile {
     const dx = targetX - actor.x
     const dy = targetY - actor.y
-    const distance = Math.sqrt(dx * dx + dy * dy)
     
     // Calculate angle to target
     const angle = Math.atan2(dy, dx)
@@ -58,6 +67,12 @@ export class ProjectileManager {
     const spawnOffset = ((actor as any).radius || 1) + 0.5
     const spawnX = actor.x + Math.cos(angle) * spawnOffset
     const spawnY = actor.y + Math.sin(angle) * spawnOffset
+
+    // Travel budget must be spawn→target, not center→target, or the hitbox flies past the intended reach.
+    const travelMaxRange = Math.max(
+      PROJECTILE_MIN_MAX_RANGE,
+      Math.hypot(targetX - spawnX, targetY - spawnY)
+    )
     
     // Create projectile with melee stats
     const projectileId = `projectile-melee-${this.gameState.tick}-${Math.random().toString(36).slice(2, 4)}`
@@ -70,11 +85,12 @@ export class ProjectileManager {
       actor.id,
       damage,
       damageType,
-      'melee', // type
-      maxRange,
+      meleeProjectileType,
+      travelMaxRange,
       radius,
-      MELEE_PROJECTILE_STATS.projectileLifetime,
-      actor.teamId
+      lifetimeMs,
+      actor.teamId,
+      lifetimeMs
     )
     
     projectile.piercing = true; // Melee attacks cleave through multiple enemies!
@@ -131,7 +147,8 @@ export class ProjectileManager {
       maxRange,
       radius,
       SPEAR_THROWER_STATS.projectileLifetime,
-      mob.teamId
+      mob.teamId,
+      0
     )
     
     return projectile
@@ -171,10 +188,10 @@ export class ProjectileManager {
     // 2. Ignore if target is on the same team (and a team is actually set)
     if (projectile.teamId && target.teamId && projectile.teamId === target.teamId) return
     
-    // 3. Last-ditch deflection: If the physics tick ran before updatePlayers, a fast spear might hit the body.
-    // Allow the target to instantly deflect it if they are actively attacking in the correct direction!
-    if (projectile.type === WEAPON_TYPES.SPEAR && this.checkDeflection(projectile, target)) {
-        return; // Deflection successful, skip taking damage
+    // 3. Last-ditch deflection: same rules as tick scan — any deflectable incoming type, one code path.
+    const incomingCfg = PROJECTILE_INTERACTIONS[projectile.type]
+    if (incomingCfg?.canBeDeflected && this.checkDeflection(projectile, target)) {
+      return
     }
     
     const attacker = this.gameState.mobs.get(projectile.ownerId) || this.gameState.players.get(projectile.ownerId)
@@ -377,15 +394,7 @@ export class ProjectileManager {
     const incomingConfig = PROJECTILE_INTERACTIONS[projectile.type];
     if (!incomingConfig || !incomingConfig.canBeDeflected) return false;
 
-    // Resolve the weapon type the attacker is currently swinging
-    // By default, assuming generic 'melee' backward compatibility if nothing active is found
-    let deflectorWeaponType: ProjectileType = WEAPON_TYPES.MELEE; 
-    for (const p of this.gameState.projectiles.values()) {
-        if (p.ownerId === attacker.id && PROJECTILE_INTERACTIONS[p.type]?.canDeflectOthers) {
-            deflectorWeaponType = p.type;
-            break;
-        }
-    }
+    const deflectorWeaponType = this.resolveDeflectorWeaponType(attacker)
 
     const defenderConfig = PROJECTILE_INTERACTIONS[deflectorWeaponType];
     if (!defenderConfig || !defenderConfig.canDeflectOthers) return false;
@@ -438,17 +447,23 @@ export class ProjectileManager {
       newVy = ny * speed
     }
 
-    // Apply config-driven speed boost and range scaling
-    const speedBoost = Math.max(0.1, defenderConfig.deflectPowerMultiplier);
-    projectile.vx = newVx * speedBoost;
-    projectile.vy = newVy * speedBoost;
+    const speedBefore = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy)
+    const reflectedLen = Math.sqrt(newVx * newVx + newVy * newVy)
+    if (reflectedLen > 1e-6 && speedBefore > 1e-6) {
+      const scale = speedBefore / reflectedLen
+      newVx *= scale
+      newVy *= scale
+    }
+    projectile.vx = newVx
+    projectile.vy = newVy
     
     projectile.maxRange = Math.max(
       PROJECTILE_MIN_MAX_RANGE,
       projectile.maxRange * incomingConfig.deflectedRangeMultiplier
     )
 
-    const dmgMult = incomingConfig.deflectedDamageMultiplier
+    const dmgMult =
+      incomingConfig.deflectedDamageMultiplier * Math.max(0.1, defenderConfig.deflectPowerMultiplier)
     projectile.damage = Math.max(1, Math.floor(projectile.damage * dmgMult))
 
     // Refresh max distance capability since it's practically a new projectile

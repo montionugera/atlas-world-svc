@@ -22,6 +22,8 @@ export class Projectile extends WorldObject {
   piercing: boolean = false
   stuckAt: number = 0
   lifetime: number = SPEAR_THROWER_STATS.projectileLifetime
+  /** If > 0, flying projectile despawns after this many ms from creation (melee flicker). */
+  maxAirLifeMs: number = 0
   deflectedBy: string = '' // ID of entity that deflected, prevents re-deflection
   createdAt: number = Date.now()
 
@@ -38,7 +40,8 @@ export class Projectile extends WorldObject {
     maxRange: number = SPEAR_THROWER_STATS.spearMaxRange,
     radius: number = SPEAR_THROWER_STATS.projectileRadius,
     lifetime: number = SPEAR_THROWER_STATS.projectileLifetime,
-    teamId: string = ''
+    teamId: string = '',
+    maxAirLifeMs: number = 0
   ) {
     super(id, x, y, vx, vy, ['projectile'])
     this.ownerId = ownerId
@@ -48,6 +51,7 @@ export class Projectile extends WorldObject {
     this.maxRange = maxRange
     this.radius = radius
     this.lifetime = lifetime
+    this.maxAirLifeMs = maxAirLifeMs
     this.createdAt = Date.now()
     this.teamId = teamId
   }
@@ -56,6 +60,9 @@ export class Projectile extends WorldObject {
   shouldDespawn(): boolean {
     if (this.isStuck && this.stuckAt > 0) {
       return Date.now() - this.stuckAt >= this.lifetime
+    }
+    if (this.maxAirLifeMs > 0 && Date.now() - this.createdAt >= this.maxAirLifeMs) {
+      return true
     }
     return this.distanceTraveled >= this.maxRange
   }
