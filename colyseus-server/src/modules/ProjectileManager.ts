@@ -176,7 +176,8 @@ export class ProjectileManager {
 
   /**
    * Handle projectile collision with living entities (Players or Mobs)
-   * Projectiles pierce through (don't stop), but only damage once per target
+   * Piercing: keeps flying; can damage multiple targets (melee cleave).
+   * Non-piercing: damages once per target cap, then `stick()` — stops at hit, despawn after `lifetime`.
    */
   handleEntityCollision(projectile: Projectile, target: WorldLife): void {
     if (!projectile.piercing && projectile.hitTargets.size > 0) return // Non-piercing hit its limit
@@ -276,6 +277,10 @@ export class ProjectileManager {
     
     // Track hit to prevent hitting the same target multiple times per swing
     projectile.hitTargets.add(target.id)
+
+    if (!projectile.piercing) {
+      projectile.stick()
+    }
   }
 
   /**

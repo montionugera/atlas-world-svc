@@ -205,6 +205,7 @@ describe('Projectile System', () => {
 
       expect(player.currentHealth).toBeLessThan(initialHealth)
       expect(projectile.hitTargets.size).toBeGreaterThan(0)
+      expect(projectile.isStuck).toBe(true)
     })
 
     test('non-piercing projectile should only damage one entity', () => {
@@ -215,6 +216,7 @@ describe('Projectile System', () => {
       const initialHealth = player.currentHealth
       projectileManager.handleEntityCollision(projectile, player)
       const healthAfterFirst = player.currentHealth
+      expect(projectile.isStuck).toBe(true)
 
       // Second collision should not damage
       projectileManager.handleEntityCollision(projectile, player)
@@ -246,6 +248,7 @@ describe('Projectile System', () => {
       expect(enemyMob1.currentHealth).toBeLessThan(initialHealth1)
       expect(enemyMob2.currentHealth).toBeLessThan(initialHealth2)
       expect(projectile.hitTargets.size).toBe(2)
+      expect(projectile.isStuck).toBe(false)
     })
 
     test('should not damage owner', () => {

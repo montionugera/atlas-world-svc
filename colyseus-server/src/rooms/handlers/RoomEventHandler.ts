@@ -1,5 +1,6 @@
 import { GameRoom } from '../GameRoom'
 import { eventBus } from '../../events/EventBus'
+import { Projectile } from '../../schemas/Projectile'
 import { Player } from '../../schemas/Player'
 import { Mob } from '../../schemas/Mob'
 import { MeleeAttackStrategy } from '../../ai/strategies/MeleeAttackStrategy'
@@ -47,6 +48,12 @@ export class RoomEventHandler {
     })
   }
 
+  /** After `stick()` on hit, push zero velocity to Planck so the body does not keep sliding. */
+  private syncStuckProjectileBody(projectile: Projectile): void {
+    if (!projectile.isStuck) return
+    this.room.physicsManager.syncEntityToBody(projectile, projectile.id)
+  }
+
   private setupCollisionCallbacks() {
     // Projectile vs Player or NPC (NPC uses same collision category as player)
     this.room.physicsManager.onCollision('projectile', 'player', (bodyA, bodyB) => {
@@ -57,6 +64,7 @@ export class RoomEventHandler {
         const target = this.room.state.players.get(targetData.id) ?? this.room.state.npcs.get(targetData.id)
         if (projectile && target) {
           this.room.projectileManager.handleEntityCollision(projectile, target)
+          this.syncStuckProjectileBody(projectile)
         }
       }
     })
@@ -70,6 +78,7 @@ export class RoomEventHandler {
         const mob = this.room.state.mobs.get(mobData.id)
         if (projectile && mob) {
           this.room.projectileManager.handleEntityCollision(projectile, mob)
+          this.syncStuckProjectileBody(projectile)
         }
       }
     })
@@ -81,6 +90,7 @@ export class RoomEventHandler {
         const projectile = this.room.state.projectiles.get(projectileData.id)
         if (projectile) {
           this.room.projectileManager.handleBoundaryCollision(projectile)
+          this.syncStuckProjectileBody(projectile)
         }
       }
     })
