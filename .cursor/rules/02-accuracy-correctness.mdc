@@ -44,6 +44,7 @@ Hard Rules
 7) Physics/Rendering Coupling
    - Physics lives in world units; rendering converts using `scale`.
    - Do not apply pixel units to physics; keep concerns separate.
+   - When `Projectile.stick()` zeroes schema velocity, sync the Planck body in the same collision path (`syncEntityToBody`) so the body does not keep sliding until the next tick.
 
 8) Visual Indicators
    - Any visual indicator derived from world units (e.g., cones, slashes) must be scaled.

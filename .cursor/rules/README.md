@@ -13,7 +13,7 @@ This directory contains Cursor rules for the Atlas World Colyseus multiplayer ga
 - **05-entity-lifecycle.mdc** — Use `die()` and transition methods; total vs active counts (globs: `*.ts`)
 
 ### Server and client
-- **colyseus-server.mdc** — Room lifecycle, schema design, 20 FPS simulation
+- **colyseus-server.mdc** — Rooms, schema, projectiles (piercing vs `stick()`, despawn, physics sync); globs `colyseus-server/**/*.ts`
 - **react-client.mdc** — React + Colyseus client (globs: `client/react-client/**/*.ts(x)`)
 - **typescript.mdc** — Colyseus server TypeScript (ES2020, CommonJS, Schema)
 - **docker-compose.mdc** — Colyseus service (atlas-colyseus-server, port 2567)

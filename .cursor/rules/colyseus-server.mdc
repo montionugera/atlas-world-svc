@@ -1,66 +1,33 @@
-## 🎮 Colyseus Server Rules
+---
+description: Colyseus server — rooms, schema, simulation, projectiles, combat (atlas-world-svc)
+globs: colyseus-server/**/*.ts
+alwaysApply: false
+---
 
-### Architecture Principles
-- **Room-based** - Each game session is a separate room
-- **Schema-driven** - Use Colyseus Schema for state synchronization
-- **Real-time** - WebSocket-based communication
-- **TypeScript-first** - Strict typing throughout
+## Colyseus server rules
 
-### Room Management
-```typescript
-// Room lifecycle
-onCreate() -> onJoin() -> onMessage() -> onLeave() -> onDispose()
+### Architecture
+- **Room-based** — one session per room; state in `GameState` schemas.
+- **Schema-driven** — `@colyseus/schema` for replicated fields; server-only fields stay off sync where possible.
+- **Real-time** — WebSocket; simulation tick in `GameSimulationSystem` (see project for current FPS targets).
 
-// State updates
-this.state.updateMobs()  // 20 FPS simulation
-this.state.players.set() // Player management
-```
+### Room lifecycle
+`onCreate` → `onJoin` / `onMessage` → `onLeave` → `onDispose`. Dispose must remove physics bodies and stop subsystems (AI, etc.).
 
-### Schema Design
-- **@type decorators** - Required for all properties
-- **Immutable updates** - Use proper Colyseus patterns
-- **Nested objects** - Use MapSchema and ArraySchema
-- **Validation** - Type-safe state changes
+### Projectiles (authoritative behavior)
+- **Factories** — `ProjectileManager.createMelee` sets `piercing = true` (cleave). `createSpear` / ranged defaults leave `piercing = false` unless you set it.
+- **Hits** — `handleEntityCollision`: damage path runs, then `hitTargets` is updated. **Non-piercing** projectiles call `stick()` after a valid hit so they stop at the target; **piercing** continues flying.
+- **Despawn** — `Projectile.shouldDespawn()`: stuck + `lifetime` elapsed; or `maxAirLifeMs` (melee flicker); or `distanceTraveled >= maxRange`. Hits do not remove piercing/non-stuck projectiles except by these rules.
+- **Physics** — After `stick()`, call `physicsManager.syncEntityToBody(projectile, projectile.id)` from collision handlers (`RoomEventHandler`) so Planck linear velocity matches zeroed `vx`/`vy` (entity + boundary hits).
 
-### Performance Guidelines
-- **20 FPS simulation** - Balance performance vs smoothness
-- **Efficient updates** - Only sync changed properties
-- **Memory management** - Clean up on room disposal
-- **Error handling** - Graceful degradation
+### Schema & performance
+- Use `@type` for synced fields; prefer `MapSchema` for dynamic collections.
+- Avoid syncing internal combat-only flags unless the client needs them.
+- Clean up entities and bodies on room dispose; no orphaned Planck bodies.
 
-### Code Standards
-```typescript
-// Room class structure
-export class GameRoom extends Room<GameState> {
-  maxClients = 20;
-  
-  onCreate(options: any) {
-    this.setState(new GameState());
-    this.startSimulation();
-  }
-  
-  onJoin(client: Client, options: any) {
-    this.state.addPlayer(client.sessionId, options.name);
-  }
-  
-  onMessage(type: string, client: Client, data: any) {
-    // Handle client messages
-  }
-  
-  onLeave(client: Client, consented: boolean) {
-    this.state.removePlayer(client.sessionId);
-  }
-}
-```
-
-### Testing Strategy
-- **Unit tests** - Individual room methods
-- **Integration tests** - Full room lifecycle
-- **Load tests** - Multiple concurrent rooms
-- **WebSocket tests** - Client-server communication
+### Testing
+- Prefer tests under `colyseus-server/src/tests/*.test.ts` for projectile/combat changes.
+- Integration: room lifecycle, collision → damage queue, deflection/clash where relevant.
 
 ### Deployment
-- **Docker** - Containerized deployment
-- **Health checks** - `/health` endpoint
-- **Logging** - Structured JSON logs
-- **Monitoring** - Performance metrics
+- Docker health checks, structured logs — align with `docker-compose.mdc` and ops docs.
