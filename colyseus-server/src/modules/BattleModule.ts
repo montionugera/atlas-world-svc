@@ -7,6 +7,7 @@ import { WorldLife } from '../schemas/WorldLife'
 import { BattleStatus } from '../schemas/BattleStatus'
 import { GameState } from '../schemas/GameState'
 import { eventBus, RoomEventType } from '../events/EventBus'
+import { GAME_CONFIG } from '../config/gameConfig'
 import {
   BattleActionMessage,
   BattleActionProcessor,
@@ -85,7 +86,6 @@ export class BattleModule implements BattleActionProcessor {
     let nx, ny;
     
     // Scale impulse with actual damage dealt
-    const { GAME_CONFIG } = require('../config/gameConfig')
     const rawImpulse = damage * GAME_CONFIG.attackImpulseMultiplier
     const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse))
     
@@ -124,9 +124,11 @@ export class BattleModule implements BattleActionProcessor {
         taker: target,
         impulse,
       })
-    } catch {}
+    } catch (err) {
+      console.warn(`⚠️ BATTLE: failed to emit BATTLE_DAMAGE_PRODUCED (attack): ${err instanceof Error ? err.message : String(err)}`)
+    }
 
-    // Note: Animation (isAttacking) and cooldown (lastAttackTime) are strictly managed 
+    // Note: Animation (isAttacking) and cooldown (lastAttackTime) are strictly managed
     // by the entity's native CombatSystem (e.g. PlayerCombatSystem) at the exact moment of cast.
     // BattleModule is a hit-resolution queue, so setting them here would cause latency 
     // ghosting and duplicate animations upon hit confirmation!
@@ -372,25 +374,14 @@ export class BattleModule implements BattleActionProcessor {
     // No-op
   }
 
-  // Respawn an entity
+  // Respawn an entity.
+  // Delegates the entity state transition to entity.respawn() (atomic: resets health,
+  // alive flag, velocity, lastAttackTime, diedAt and clears status effects — plus any
+  // subclass override such as Mob.clearRemovalFlag()). BattleModule only layers on its
+  // own concern: clearing the per-entity processed-event dedup cache.
   respawnEntity(entity: WorldLife, x?: number, y?: number): void {
-    entity.isAlive = true
-    entity.currentHealth = entity.maxHealth
-    entity.isAttacking = false
-    entity.attackAnimationStartTime = 0 // Reset animation timestamp
-    entity.isMoving = false
-    entity.vx = 0
-    entity.vy = 0
-    entity.lastAttackTime = 0
-
-    this.processedEventsByEntityId.delete(entity.id) // Clear old events on respawn
-    // entity.isInvulnerable = false // Removed
-    // entity.invulnerabilityDuration = 0 // Removed
-
-    if (x !== undefined && y !== undefined) {
-      entity.x = x
-      entity.y = y
-    }
+    entity.respawn(x, y)
+    this.processedEventsByEntityId.delete(entity.id) // Clear old combat events on respawn
   }
 
   // Get combat stats for an entity
@@ -628,7 +619,9 @@ async processAction(message: BattleActionMessage): Promise<boolean> {
         taker: target,
         impulse,
       })
-    } catch {}
+    } catch (err) {
+      console.warn(`⚠️ BATTLE: failed to emit BATTLE_DAMAGE_PRODUCED (damage action): ${err instanceof Error ? err.message : String(err)}`)
+    }
     console.log(
       `💔 BATTLE: ${actor.id} dealt ${payload.amount} ${payload.damageType || 'physical'} damage to ${target.id}`
     )

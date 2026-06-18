@@ -1,5 +1,8 @@
 # Dependencies
 node_modules/
+# also ignore node_modules when it is a symlink (e.g. a dev worktree linking the
+# primary checkout's modules) — the trailing-slash rule above only matches dirs
+node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

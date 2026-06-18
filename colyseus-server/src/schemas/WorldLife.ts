@@ -7,6 +7,7 @@ import { Schema, type, ArraySchema, MapSchema } from '@colyseus/schema'
 import { WorldObject } from './WorldObject'
 import { BattleStatus } from './BattleStatus'
 import { mergeBaseStat, type BaseStat } from '../config/combat/combatStats'
+import { GAME_CONFIG } from '../config/gameConfig'
 
 export abstract class WorldLife extends WorldObject {
   // Physical properties
@@ -97,7 +98,6 @@ export abstract class WorldLife extends WorldObject {
 
   // Calculate attack impulse from damage
   getAttackImpulse(): number {
-    const { GAME_CONFIG } = require('../config/gameConfig')
     const baseDamage = Math.max(this.pAtk, this.mAtk)
     const impulse = baseDamage * GAME_CONFIG.attackImpulseMultiplier
     return Math.max(GAME_CONFIG.minImpulse, Math.min(impulse, GAME_CONFIG.maxImpulse))
@@ -105,7 +105,6 @@ export abstract class WorldLife extends WorldObject {
 
   // Calculate recoil impulse from damage
   getRecoilImpulse(): number {
-    const { GAME_CONFIG } = require('../config/gameConfig')
     const baseDamage = Math.max(this.pAtk, this.mAtk)
     const impulse = baseDamage * GAME_CONFIG.recoilImpulseMultiplier
     return Math.max(GAME_CONFIG.minImpulse, Math.min(impulse, GAME_CONFIG.maxImpulse))

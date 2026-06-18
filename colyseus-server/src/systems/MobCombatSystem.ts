@@ -208,8 +208,13 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     roomId: string,
     gameState: GameState
   ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
+    // Timing-clock convention (intentional — do not "unify" without rewriting the tests):
+    //   • Cast/queue scheduling uses Date.now() so the jest fake-timer suite
+    //     (jest.useFakeTimers + setSystemTime) can drive it deterministically.
+    //   • Cooldown anti-spam (lastAttackTime / canAttack) uses performance.now()
+    //     for monotonic real-time precision.
+    // The two clocks are never cross-subtracted, so they stay independently consistent.
     const currentTimeMs = Date.now()
-    const currentTimePerf = performance.now()
 
     const queueResult = this.processAttackQueue(gameState, roomId)
     if (queueResult !== null) {

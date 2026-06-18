@@ -11,6 +11,10 @@ import { AIWorldInterface } from '../ai/AIWorldInterface'
 import { eventBus, RoomEventType } from '../events/EventBus'
 import { mergeBaseStat, MOB_STATS, MOB_TYPE_STATS, PLAYER_STATS } from '../config/combatConfig'
 import { NPC, type NPCOptions } from './NPC'
+// Type-only imports: erased at compile time, so they introduce no runtime require()
+// cycle even though BattleManager / MobLifeCycleManager import GameState back.
+import type { BattleManager } from '../modules/BattleManager'
+import type { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
 
 export class GameState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>()
@@ -26,8 +30,8 @@ export class GameState extends Schema {
 
   public aiModule: AIModule
   public worldInterface: AIWorldInterface
-  public battleManager: any // BattleManager instance
-  public mobLifeCycleManager: any // MobLifeCycleManager instance
+  public battleManager!: BattleManager
+  public mobLifeCycleManager!: MobLifeCycleManager
 
   constructor(mapId: string = 'map-01-sector-a', roomId: string = '') {
     super()

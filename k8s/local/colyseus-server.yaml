@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: colyseus-server
+  namespace: atlas-world
+  labels:
+    app: colyseus-server
+spec:
+  # One match = one room = one pod. AOI/multi-room scaling is handled by Agones
+  # in real deployments; locally we run a single replica.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: colyseus-server
+  template:
+    metadata:
+      labels:
+        app: colyseus-server
+    spec:
+      containers:
+        - name: colyseus-server
+          # Built locally by scripts/deploy-local.sh; never pulled from a registry.
+          image: atlas-world-colyseus-server:local
+          imagePullPolicy: Never
+          ports:
+            - name: ws
+              containerPort: 2567
+          envFrom:
+            - configMapRef:
+                name: colyseus-server-config
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: ws
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: ws
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: colyseus-server
+  namespace: atlas-world
+  labels:
+    app: colyseus-server
+spec:
+  # LoadBalancer resolves to localhost on docker-desktop / OrbStack. On kind or
+  # any cluster without a LB controller, use the port-forward the deploy script
+  # prints instead.
+  type: LoadBalancer
+  selector:
+    app: colyseus-server
+  ports:
+    - name: ws
+      port: 2567
+      targetPort: ws

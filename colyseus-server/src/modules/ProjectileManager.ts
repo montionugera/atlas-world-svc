@@ -15,6 +15,7 @@ import {
 import { PROJECTILE_GRAVITY } from '../config/physicsConfig'
 import { eventBus, RoomEventType } from '../events/EventBus'
 import { resolveWeaponBasicProjectileParams } from '../combat/attackDamage'
+import { GAME_CONFIG } from '../config/gameConfig'
 
 export class ProjectileManager {
   private gameState: GameState
@@ -252,10 +253,9 @@ export class ProjectileManager {
             ny = dy / len
           }
             
-          const { GAME_CONFIG } = require('../config/gameConfig')
           const rawImpulse = damage * GAME_CONFIG.attackImpulseMultiplier
           const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse))
-          
+
           const impulse = { x: nx * impulseMagnitude, y: ny * impulseMagnitude }
 
           // Emit battle damage produced event for knockback/FX (same as melee attacks)
@@ -265,7 +265,9 @@ export class ProjectileManager {
               taker: target,
               impulse,
             })
-          } catch {}
+          } catch (err) {
+            console.warn(`⚠️ PROJECTILE: failed to emit BATTLE_DAMAGE_PRODUCED (hit): ${err instanceof Error ? err.message : String(err)}`)
+          }
           
           if (targetDied) {
             console.log(`💀 PROJECTILE: ${projectile.id} killed ${target.id}`)
@@ -363,9 +365,8 @@ export class ProjectileManager {
       }
     }
 
-    const { GAME_CONFIG } = require('../config/gameConfig');
     const rawImpulse = attackerProj.damage * GAME_CONFIG.attackImpulseMultiplier;
-    
+
     // Cap normal impulse, then multiply by the config's absorption rate (e.g., 20% or 0%)
     const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse)) * config.absorbImpulseMultiplier;
     
@@ -379,7 +380,9 @@ export class ProjectileManager {
         taker: defender,
         impulse,
       });
-    } catch {}
+    } catch (err) {
+      console.warn(`⚠️ PROJECTILE: failed to emit BATTLE_DAMAGE_PRODUCED (clash): ${err instanceof Error ? err.message : String(err)}`)
+    }
   }
 
 
@@ -491,7 +494,6 @@ export class ProjectileManager {
     projectile.stuckAt = 0
 
     // Apply recoil impulse to the deflector based on config absorption rate
-    const { GAME_CONFIG } = require('../config/gameConfig')
     const rawImpulse = projectile.damage * GAME_CONFIG.attackImpulseMultiplier
     const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse)) * defenderConfig.absorbImpulseMultiplier
     
@@ -505,7 +507,9 @@ export class ProjectileManager {
           taker: attacker,
           impulse,
         })
-      } catch {}
+      } catch (err) {
+        console.warn(`⚠️ PROJECTILE: failed to emit BATTLE_DAMAGE_PRODUCED (deflect recoil): ${err instanceof Error ? err.message : String(err)}`)
+      }
     }
 
     return true

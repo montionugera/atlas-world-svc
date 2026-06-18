@@ -8,7 +8,12 @@ import { AIWorldInterface } from '../ai/AIWorldInterface'
 import { GameState } from '../schemas/GameState'
 import { Mob } from '../schemas/Mob'
 
-describe('AI Performance Tests', () => {
+// These assert wall-clock budgets (ms per N updates) and are inherently flaky on
+// loaded / CI machines — they verify nothing about correctness. Opt in explicitly:
+//   RUN_PERF_TESTS=1 npm test
+const describePerf = process.env.RUN_PERF_TESTS === '1' ? describe : describe.skip
+
+describePerf('AI Performance Tests', () => {
   let gameState: GameState
   let aiModule: AIModule
   let worldInterface: AIWorldInterface

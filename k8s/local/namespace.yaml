@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: atlas-world
+  labels:
+    app.kubernetes.io/part-of: atlas-world
+    environment: local

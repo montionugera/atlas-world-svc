@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: colyseus-server-config
+  namespace: atlas-world
+  labels:
+    app: colyseus-server
+data:
+  # See README "Configuration & Environment Variables".
+  NODE_ENV: "production"
+  PORT: "2567"
+  MAP_KEY: "TowerF5"
+  CAPACITY: "300"
