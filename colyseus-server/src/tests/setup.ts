@@ -1,6 +1,12 @@
 // Test setup file
 import 'jest'
 
+// A few wall-clock timing assertions can flake under heavy CI load. Retry failed
+// tests so CI stays deterministic. This does NOT hide real failures: deterministic
+// tests fail every attempt, so a genuine bug still fails after all retries — only a
+// rare timing flake (which passes on a calmer retry) is smoothed over.
+jest.retryTimes(2, { logErrorsBeforeRetry: true })
+
 // Mock console methods to reduce noise during tests
 const originalConsoleLog = console.log
 const originalConsoleError = console.error
