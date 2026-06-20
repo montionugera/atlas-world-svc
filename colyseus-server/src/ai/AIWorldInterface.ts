@@ -10,6 +10,7 @@ import { NPC } from '../schemas/NPC'
 import { WorldLife } from '../schemas/WorldLife'
 import { IAgent } from './interfaces/IAgent'
 import { AIDecision } from './core/AIBehavior'
+import { IAgentRuntime } from './interfaces/IAgentRuntime'
 
 export interface WorldData {
   players: Player[]
@@ -263,7 +264,7 @@ export class AIWorldInterface {
     if (!agent) {
       const player = this.gameState.players.get(agentId)
       // Only control players if they are in bot mode
-      if (player && (player as any).isBotMode) {
+      if (player && player.isBotMode) {
         agent = player as unknown as IAgent
       }
     }
@@ -276,19 +277,21 @@ export class AIWorldInterface {
       // Actually, IAgent doesn't specify how velocity is stored, but Mob has desiredVx/Vy.
       // Let's check if the agent has these properties.
       
+      const runtime = agent as unknown as IAgentRuntime
+
       // Update desire timestamp if available
       if ('decisionTimestamp' in agent) {
-        (agent as any).decisionTimestamp = decision.timestamp;
+        runtime.decisionTimestamp = decision.timestamp;
       }
-      
+
       // Apply desired velocity and behavior
       if ('desiredVx' in agent) {
-        (agent as any).desiredVx = decision.velocity.x;
-        (agent as any).desiredVy = decision.velocity.y;
+        runtime.desiredVx = decision.velocity.x;
+        runtime.desiredVy = decision.velocity.y;
       }
-      
+
       if ('desiredBehavior' in agent) {
-        (agent as any).desiredBehavior = decision.behavior;
+        runtime.desiredBehavior = decision.behavior;
       }
     }
   }

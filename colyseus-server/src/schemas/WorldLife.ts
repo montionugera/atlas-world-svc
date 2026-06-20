@@ -8,6 +8,7 @@ import { WorldObject } from './WorldObject'
 import { BattleStatus } from './BattleStatus'
 import { mergeBaseStat, type BaseStat } from '../config/combat/combatStats'
 import { GAME_CONFIG } from '../config/gameConfig'
+import { IAgentRuntime } from '../ai/interfaces/IAgentRuntime'
 
 export abstract class WorldLife extends WorldObject {
   // Physical properties
@@ -275,8 +276,9 @@ export abstract class WorldLife extends WorldObject {
       // Use AI desired direction (for mobs) or actual velocity (for players)
       if ('desiredVx' in this && 'desiredVy' in this) {
         // Mob: use AI desired direction
-        sourceVx = (this as any).desiredVx
-        sourceVy = (this as any).desiredVy
+        const agent = this as unknown as IAgentRuntime
+        sourceVx = agent.desiredVx
+        sourceVy = agent.desiredVy
       } else {
         // Player: use actual velocity
         sourceVx = this.vx

@@ -65,7 +65,7 @@ export class ProjectileManager {
     const vy = speed * Math.sin(angle)
 
     // Spawn at edge of actor + small offset
-    const spawnOffset = ((actor as any).radius || 1) + 0.5
+    const spawnOffset = (actor.radius || 1) + 0.5
     const spawnX = actor.x + Math.cos(angle) * spawnOffset
     const spawnY = actor.y + Math.sin(angle) * spawnOffset
 
@@ -410,20 +410,22 @@ export class ProjectileManager {
     // Can't deflect if already deflected by someone
     if (projectile.deflectedBy) return false
     
-    // Attacker must be attacking or in wind-up phase
-    if (!attacker.isAttacking && !(attacker as any).pendingAttack) return false
+    // Attacker must be attacking or in wind-up phase.
+    // pendingAttack only exists on Player; for other WorldLife subclasses it is absent (treated as false).
+    const hasPendingAttack = 'pendingAttack' in attacker && (attacker as Player).pendingAttack
+    if (!attacker.isAttacking && !hasPendingAttack) return false
 
     // Ignore if attacker is the owner (shooter)
     if (projectile.ownerId === attacker.id) return false
     
     // Ignore if on the same team (and a team is actually set)
-    if (projectile.teamId && (attacker as any).teamId && projectile.teamId === (attacker as any).teamId) return false
+    if (projectile.teamId && attacker.teamId && projectile.teamId === attacker.teamId) return false
     
     // Check if projectile is in attack range (calculate distance directly)
     const dx = projectile.x - attacker.x
     const dy = projectile.y - attacker.y
     const distance = Math.sqrt(dx * dx + dy * dy)
-    const effectiveRange = attacker.attackRange + (attacker as any).radius + projectile.radius
+    const effectiveRange = attacker.attackRange + attacker.radius + projectile.radius
     if (distance > effectiveRange) return false
     
     // Check if projectile is in attack cone (configurable angle)
@@ -483,7 +485,7 @@ export class ProjectileManager {
     projectile.ownerId = attacker.id
     // Make the projectile belong to the deflecting actor's team going forward.
     // This prevents immediate "same-team" filtering issues and keeps collision rules consistent.
-    ;(projectile as any).teamId = (attacker as any).teamId ?? projectile.teamId
+    projectile.teamId = attacker.teamId ?? projectile.teamId
     projectile.hitTargets.clear() // Can damage again after deflection
     projectile.deflectedBy = attacker.id
 

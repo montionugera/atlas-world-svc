@@ -181,11 +181,11 @@ export class BattleModule implements BattleActionProcessor {
 
     // Check range
     const distance = attacker.getDistanceTo(target)
-    const effectiveRange = attacker.attackRange + (attacker as any).radius + (target as any).radius
+    const effectiveRange = attacker.attackRange + attacker.radius + target.radius
     if (distance > effectiveRange) {
       return {
         canAttack: false,
-        reason: `out of range (distance: ${distance.toFixed(2)}, effectiveRange: ${effectiveRange.toFixed(2)}, baseRange: ${attacker.attackRange}, radii: ${(attacker as any).radius}+${(target as any).radius})`
+        reason: `out of range (distance: ${distance.toFixed(2)}, effectiveRange: ${effectiveRange.toFixed(2)}, baseRange: ${attacker.attackRange}, radii: ${attacker.radius}+${target.radius})`
       }
     }
 
