@@ -8,7 +8,7 @@ import { eventBus, RoomEventType, BattleAttackData } from '../events/EventBus'
 import { MOB_STATS } from '../config/combatConfig'
 import { resolveMeleeAttackTiming } from '../combat/meleeAttackSpeed'
 
-import { BaseCombatSystem } from './BaseCombatSystem'
+import { BaseCombatSystem, CombatResult } from './BaseCombatSystem'
 
 function getTargetFromGameState(gameState: GameState, id: string): WorldLife | undefined {
   return gameState.players.get(id) ?? gameState.npcs.get(id)
@@ -24,9 +24,64 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     return this.entity
   }
 
-  private windUpMsForAttack(attack: AttackDefinition): number {
+  // ── Hooks for the Mob-specific seams ─────────────────────────────────────
+
+  protected resolveTarget(id: string, world: GameState): WorldLife | undefined {
+    return getTargetFromGameState(world, id)
+  }
+
+  // Lost-target fallback used when a queued/attack target is gone (dead/missing).
+  protected onTargetLost(): void {
+    this.mob.currentAttackTarget = ''
+    this.mob.currentBehavior = 'wander'
+    this.mob.isCasting = false
+    this.mob.castStartTime = 0
+  }
+
+  // Mob queues use ASPD-derived wind-up (falls back to atkWindUpTime).
+  protected windUpMsForAttack(attack: AttackDefinition): number {
     const timing = resolveMeleeAttackTiming(this.mob.stat.agi, attack.aspdMin, attack.aspdMax)
     return timing?.windUpMs ?? attack.atkWindUpTime
+  }
+
+  // Next attackDelay after a queued attack fires (ASPD timing, then wind-up + wind-down).
+  protected nextAttackDelay(attackDef: AttackDefinition): number {
+    if (attackDef.cooldown !== undefined) {
+      return attackDef.cooldown
+    }
+    const timing = resolveMeleeAttackTiming(this.mob.stat.agi, attackDef.aspdMin, attackDef.aspdMax)
+    if (timing) {
+      return timing.attackDelayMs
+    }
+    const windUp = attackDef.atkWindUpTime || 0
+    return windUp + this.mob.baseWindDownTime
+  }
+
+  // Mob processes at most one due attack per update() tick — preserving its
+  // original hand-rolled loop (single `if (now >= executionTime) { shift; return }`).
+  // NPC/Player keep the unbounded default and drain every due attack.
+  protected maxAttacksPerTick(): number {
+    return 1
+  }
+
+  // Debug-log seams (preserve Mob's existing log output).
+  protected onWindUpStarted(strategy: AttackStrategy, castTime: number): void {
+    console.log(`⏳ DEBUG: ${this.mob.id} starting windup for ${strategy.name} (${castTime}ms)`)
+  }
+
+  protected onAttackingStarted(currentTimeMs?: number): void {
+    console.log(`⚡ DEBUG: ${this.mob.id} executing instant attack`)
+    if (currentTimeMs !== undefined) {
+      this.mob.lastDebugLogTime = currentTimeMs
+    }
+  }
+
+  protected onWindUpComplete(): void {
+    console.log(`🎯 DEBUG: ${this.mob.id} windup complete, executing ${this.mob.currentAttackStrategy?.name} attack`)
+  }
+
+  protected onWindUpExecuteFailed(): void {
+    console.log(`❌ DEBUG: ${this.mob.id} strategy.execute() returned false`)
   }
 
   /**
@@ -36,17 +91,14 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     deltaTime: number,
     gameState: GameState,
     roomId: string
-  ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
+  ): CombatResult {
     if (this.mob.currentBehavior !== 'attack' || !this.mob.currentAttackTarget) {
       return { attacked: false }
     }
 
     const target = getTargetFromGameState(gameState, this.mob.currentAttackTarget)
     if (!target || !target.isAlive) {
-      this.mob.currentAttackTarget = ''
-      this.mob.currentBehavior = 'wander'
-      this.mob.isCasting = false
-      this.mob.castStartTime = 0
+      this.onTargetLost()
       return { attacked: false }
     }
 
@@ -94,112 +146,11 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
       if (!this.mob.isAlive) return false
       // Cannot attack if frozen or stunned
       if (this.mob.isStunned) return false
-  
+
       const now = performance.now()
       const timeSinceLastAttack = now - this.mob.lastAttackTime
-  
+
       return timeSinceLastAttack >= this.mob.attackDelay
-  }
-
-  /**
-   * Add attacks to the timeline
-   */
-  public enqueueAttacks(
-      strategy: AttackStrategy, 
-      targetId: string, 
-      attacks: AttackDefinition[], 
-      startTime: number
-  ): void {
-      this.mob.attackQueue = [] // Clear existing queue (new combo overrides old)
-      let currentTime = startTime
-
-      attacks.forEach((attack, index) => {
-          // Calculate when this attack should actually fire (end of its cast)
-          const fireTime = currentTime + this.windUpMsForAttack(attack)
-          
-          this.mob.attackQueue.push({
-              executionTime: fireTime,
-              attackDef: attack,
-              strategy: strategy,
-              targetId: targetId
-          })
-
-          // Next attack starts after this one finishes
-          currentTime = fireTime
-      })
-
-      // Set initial casting state if we have a queue
-      if (this.mob.attackQueue.length > 0) {
-          const firstAttack = this.mob.attackQueue[0]
-          // If the first attack is in the future, we are casting
-          if (firstAttack.executionTime > Date.now()) {
-             this.mob.isCasting = true
-             this.mob.castStartTime = Date.now()
-             this.mob.castDuration = firstAttack.executionTime - this.mob.castStartTime
-             this.mob.currentAttackStrategy = strategy
-             this.mob.isAttacking = false
-          }
-      }
-  }
-
-  // Process the attack queue (target can be player or NPC)
-  private processAttackQueue(gameState: GameState, roomId: string): { attacked: boolean; targetId?: string; eventEmitted?: boolean } | null {
-      if (this.mob.attackQueue.length === 0) return null
-
-      const now = Date.now()
-      const nextAttack = this.mob.attackQueue[0]
-
-      if (now >= nextAttack.executionTime) {
-          this.mob.attackQueue.shift()
-
-          const target = getTargetFromGameState(gameState, nextAttack.targetId)
-          if (target) { 
-               if (typeof (nextAttack.strategy as any).performAttack === 'function') {
-                   (nextAttack.strategy as any).performAttack(this.mob, target, nextAttack.attackDef)
-               } else {
-                   console.warn(`⚠️ Mob ${this.mob.id}: Strategy ${nextAttack.strategy.name} does not support queued execution via performAttack`)
-               }
-
-               this.mob.lastAttackTime = performance.now()
-               this.mob.isAttacking = true
-               this.mob.attackAnimationStartTime = performance.now()
-
-               // Update attack delay for the NEXT attack cycle based on this attack's cooldown
-               if (nextAttack.attackDef.cooldown !== undefined) {
-                   this.mob.attackDelay = nextAttack.attackDef.cooldown
-               } else {
-                   const timing = resolveMeleeAttackTiming(
-                     this.mob.stat.agi,
-                     nextAttack.attackDef.aspdMin,
-                     nextAttack.attackDef.aspdMax
-                   )
-                   if (timing) {
-                     this.mob.attackDelay = timing.attackDelayMs
-                   } else {
-                     const windUp = nextAttack.attackDef.atkWindUpTime || 0
-                     this.mob.attackDelay = windUp + this.mob.baseWindDownTime
-                   }
-               }
-          }
-
-          // Update State for NEXT attack
-          if (this.mob.attackQueue.length > 0) {
-              // Still have attacks pending
-              this.mob.isCasting = true
-              this.mob.castStartTime = now // Start casting the next one
-              this.mob.castDuration = this.mob.attackQueue[0].executionTime - now
-          } else {
-              // Queue empty
-              this.mob.isCasting = false
-              this.mob.currentAttackStrategy = null
-          }
-
-          return { attacked: true, targetId: nextAttack.targetId, eventEmitted: true }
-      } else {
-          // Waiting for attack time
-          this.mob.isCasting = true // Ensure casting is true while waiting
-          return { attacked: false }
-      }
   }
 
   // Update attack using attack strategies (target can be player or NPC)
@@ -207,7 +158,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     target: WorldLife,
     roomId: string,
     gameState: GameState
-  ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
+  ): CombatResult {
     // Timing-clock convention (intentional — do not "unify" without rewriting the tests):
     //   • Cast/queue scheduling uses Date.now() so the jest fake-timer suite
     //     (jest.useFakeTimers + setSystemTime) can drive it deterministically.
@@ -216,7 +167,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     // The two clocks are never cross-subtracted, so they stay independently consistent.
     const currentTimeMs = Date.now()
 
-    const queueResult = this.processAttackQueue(gameState, roomId)
+    const queueResult = this.processAttackQueue(gameState)
     if (queueResult !== null) {
         return queueResult
     }
@@ -268,7 +219,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     if (cooldownStateChanged) {
       this.mob.lastCooldownState = isCooldownReady
     }
-    
+
     return { attacked: false }
   }
 
@@ -281,7 +232,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     const maxRange = Math.max(
       ...this.mob.attackStrategies.map(s => this.getStrategyRange(s, target as Player))
     )
-    
+
     if (edgeToEdgeDistance > maxRange) {
       console.log(`🎯 DEBUG: ${this.mob.id} target out of range (${edgeToEdgeDistance.toFixed(2)} > ${maxRange.toFixed(2)}), switching to chase`)
       this.mob.currentBehavior = 'chase'
@@ -300,79 +251,5 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
       return this.mob.attackRange + this.mob.radius + target.radius
     }
     return (strategy as any).maxRange || this.mob.attackRange
-  }
-
-  private sortStrategiesByPriority(strategies: AttackStrategy[], target: WorldLife): AttackStrategy[] {
-    return [...strategies].sort((a, b) => {
-      // Instant attacks (0 cast time) have priority
-      const aIsInstant = a.getCastTime(this.mob) === 0
-      const bIsInstant = b.getCastTime(this.mob) === 0
-      if (aIsInstant && !bIsInstant) return -1
-      if (!aIsInstant && bIsInstant) return 1
-      
-      // If same cast time, prefer shorter range
-      const aRange = this.getStrategyRange(a, target)
-      const bRange = this.getStrategyRange(b, target)
-      return aRange - bRange
-    })
-  }
-
-  // State transition: Start casting
-  public startWindUp(strategy: AttackStrategy, currentTimeMs: number): void {
-    const castTime = strategy.getCastTime(this.mob)
-    console.log(`⏳ DEBUG: ${this.mob.id} starting windup for ${strategy.name} (${castTime}ms)`)
-    this.mob.isCasting = true
-    this.mob.isAttacking = false 
-    this.mob.castStartTime = currentTimeMs
-    this.mob.currentAttackStrategy = strategy
-  }
-
-  // State transition: Start attacking
-  private startAttacking(targetId?: string, currentTimeMs?: number): void {
-    console.log(`⚡ DEBUG: ${this.mob.id} executing instant attack`)
-    this.mob.isAttacking = true
-    this.mob.attackAnimationStartTime = performance.now()
-    this.mob.lastAttackTime = performance.now()
-    this.mob.lastCooldownState = false
-    if (currentTimeMs !== undefined) {
-      this.mob.lastDebugLogTime = currentTimeMs
-    }
-  }
-
-  private checkWindUpPhase(
-    target: WorldLife,
-    roomId: string
-  ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } | null {
-    if (!this.mob.isCasting || this.mob.castStartTime === 0) return null
-
-    const currentTimeMs = Date.now()
-    const castDurationMs = this.mob.currentAttackStrategy?.getCastTime(this.mob) || 0
-    const castElapsedMs = currentTimeMs - this.mob.castStartTime
-
-    if (castElapsedMs >= castDurationMs) {
-        if (!this.mob.currentAttackStrategy) return null
-
-        console.log(`🎯 DEBUG: ${this.mob.id} windup complete, executing ${this.mob.currentAttackStrategy.name} attack`)
-        const attackExecuted = this.mob.currentAttackStrategy.execute(this.mob, target as Player, roomId)
-
-        if (attackExecuted) {
-          this.mob.isCasting = false
-          this.mob.castStartTime = 0
-          this.mob.currentAttackStrategy = null
-          this.mob.lastAttackTime = performance.now()
-          this.mob.isAttacking = true
-          this.mob.attackAnimationStartTime = performance.now()
-          return { attacked: true, targetId: target.id, eventEmitted: true }
-        } else {
-          console.log(`❌ DEBUG: ${this.mob.id} strategy.execute() returned false`)
-          this.mob.isCasting = false
-          this.mob.castStartTime = 0
-          this.mob.currentAttackStrategy = null
-          return null
-        }
-    }
-
-    // Still casting
-    return { attacked: false }
   }
 }
