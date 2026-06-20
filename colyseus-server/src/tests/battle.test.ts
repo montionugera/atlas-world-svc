@@ -27,7 +27,7 @@ describe('Battle System', () => {
       attackRange: 10,
       pAtk: 20,
     })
-    
+
     // Add entities to game state
     gameState.players.set(player.id, player)
     gameState.mobs.set(mob.id, mob)
@@ -45,11 +45,9 @@ describe('Battle System', () => {
       // Reset attack cooldown for testing
       mob.lastAttackTime = 0
       mob.attackDelay = 100 // Short delay for testing
-      
+
       const initial = player.currentHealth
-      battleManager.addActionMessage(
-        BattleManager.createAttackMessage(mob.id, player.id, 20, 10)
-      )
+      battleManager.addActionMessage(BattleManager.createAttackMessage(mob.id, player.id, 20, 10))
       const processed = await battleManager.processActionMessages()
       expect(processed).toBe(1)
       expect(player.currentHealth).toBeLessThan(initial)
@@ -59,14 +57,10 @@ describe('Battle System', () => {
       // Reset attack cooldown for testing
       mob.lastAttackTime = 0
       mob.attackDelay = 100 // Short delay for testing
-      
+
       const initial = player.currentHealth
-      battleManager.addActionMessage(
-        BattleManager.createAttackMessage(mob.id, player.id, 20, 10)
-      )
-      battleManager.addActionMessage(
-        BattleManager.createAttackMessage(mob.id, player.id, 20, 10)
-      )
+      battleManager.addActionMessage(BattleManager.createAttackMessage(mob.id, player.id, 20, 10))
+      battleManager.addActionMessage(BattleManager.createAttackMessage(mob.id, player.id, 20, 10))
       const processed = await battleManager.processActionMessages()
       expect(processed).toBeGreaterThan(0)
       expect(player.currentHealth).toBeLessThan(initial)
@@ -116,8 +110,6 @@ describe('Battle System', () => {
       expect(player.currentHealth).toBe(0)
       expect(player.isAlive).toBe(false)
     })
-
-
 
     test('should emit BATTLE_DAMAGE_PRODUCED event when processing attack', () => {
       let eventEmitted = false

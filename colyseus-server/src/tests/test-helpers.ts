@@ -22,20 +22,16 @@ export function createTestGameState(
 /**
  * Create a test Mob with default values
  */
-export function createTestMob(options: {
-  id?: string
-  x?: number
-  y?: number
-  vx?: number
-  vy?: number
-} = {}): Mob {
-  const {
-    id = `test-mob-${Date.now()}`,
-    x = 50,
-    y = 50,
-    vx = 0,
-    vy = 0,
-  } = options
+export function createTestMob(
+  options: {
+    id?: string
+    x?: number
+    y?: number
+    vx?: number
+    vy?: number
+  } = {}
+): Mob {
+  const { id = `test-mob-${Date.now()}`, x = 50, y = 50, vx = 0, vy = 0 } = options
 
   return new Mob({
     id,
@@ -54,12 +50,14 @@ export function createTestMob(options: {
 /**
  * Create a test Player with default values
  */
-export function createTestPlayer(options: {
-  sessionId?: string
-  name?: string
-  x?: number
-  y?: number
-} = {}): Player {
+export function createTestPlayer(
+  options: {
+    sessionId?: string
+    name?: string
+    x?: number
+    y?: number
+  } = {}
+): Player {
   const {
     sessionId = `test-session-${Date.now()}`,
     name = 'TestPlayer',
@@ -121,11 +119,14 @@ export function fastForwardTime(
 /**
  * Create multiple test mobs
  */
-export function createTestMobs(count: number, options: {
-  x?: number
-  y?: number
-  spacing?: number
-} = {}): Mob[] {
+export function createTestMobs(
+  count: number,
+  options: {
+    x?: number
+    y?: number
+    spacing?: number
+  } = {}
+): Mob[] {
   const { x = 50, y = 50, spacing = 20 } = options
   const mobs: Mob[] = []
 
@@ -141,4 +142,3 @@ export function createTestMobs(count: number, options: {
 
   return mobs
 }
-

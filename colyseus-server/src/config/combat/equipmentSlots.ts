@@ -28,7 +28,9 @@ export function emptyEquipmentSnapshot(): EquipmentSnapshot {
   return snap
 }
 
-export function buildEquipmentSnapshotFromPlayer(player: { equippedWeaponId: string }): EquipmentSnapshot {
+export function buildEquipmentSnapshotFromPlayer(player: {
+  equippedWeaponId: string
+}): EquipmentSnapshot {
   const snap = emptyEquipmentSnapshot()
   snap.mainHand = player.equippedWeaponId ?? ''
   return snap

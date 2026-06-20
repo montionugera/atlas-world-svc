@@ -61,7 +61,8 @@ export class RoomEventHandler {
       const targetData = this.room.physicsManager.getEntityDataFromBody(bodyB)
       if (projectileData && targetData) {
         const projectile = this.room.state.projectiles.get(projectileData.id)
-        const target = this.room.state.players.get(targetData.id) ?? this.room.state.npcs.get(targetData.id)
+        const target =
+          this.room.state.players.get(targetData.id) ?? this.room.state.npcs.get(targetData.id)
         if (projectile && target) {
           this.room.projectileManager.handleEntityCollision(projectile, target)
           this.syncStuckProjectileBody(projectile)

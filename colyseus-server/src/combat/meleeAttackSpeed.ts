@@ -78,7 +78,8 @@ export function resolveMeleeAttackTiming(
     return null
   }
 
-  const ratio = windUpRatio !== undefined ? clampWindUpRatio(windUpRatio) : windUpRatioFromPlayerStats()
+  const ratio =
+    windUpRatio !== undefined ? clampWindUpRatio(windUpRatio) : windUpRatioFromPlayerStats()
 
   const gapFill = computeAgiGapFill(agi)
   const effectiveAspd = computeEffectiveAspd(agi, aspdMin, aspdMax)
@@ -100,7 +101,6 @@ export function resolvePlayerMeleeAttackTiming(
   if (!entity.equippedWeaponId) return null
   const weapon = WEAPONS[entity.equippedWeaponId]
   if (!weapon) return null
-  const ratio =
-    weapon.windUpRatio !== undefined ? weapon.windUpRatio : windUpRatioFromPlayerStats()
+  const ratio = weapon.windUpRatio !== undefined ? weapon.windUpRatio : windUpRatioFromPlayerStats()
   return resolveMeleeAttackTiming(entity.stat.agi, weapon.aspdMin, weapon.aspdMax, ratio)
 }

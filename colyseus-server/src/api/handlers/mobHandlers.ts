@@ -15,14 +15,14 @@ import { handleError, handleNotFound } from '../middleware/errorHandler'
 export async function getMobs(req: Request, res: Response): Promise<void> {
   try {
     const room = (req as any).room as GameRoom
-    
+
     // Get room's state and serialize mobs
     const mobs = Array.from(room.state.mobs.values()).map(mob => serializeMobData(mob))
-    
-    res.json({ 
+
+    res.json({
       roomId: room.roomId,
       mobs,
-      count: mobs.length 
+      count: mobs.length,
     })
   } catch (error) {
     handleError(error, req, res, 500)
@@ -37,24 +37,17 @@ export async function getMobById(req: Request, res: Response): Promise<void> {
   try {
     const room = (req as any).room as GameRoom
     const { mobId } = req.params
-    
+
     const mob = room.state.mobs.get(mobId)
-    
+
     if (!mob) {
-      return handleNotFound(
-        req,
-        res,
-        'Mob',
-        mobId,
-        Array.from(room.state.mobs.keys())
-      )
+      return handleNotFound(req, res, 'Mob', mobId, Array.from(room.state.mobs.keys()))
     }
-    
+
     res.json({
-      mob: serializeMobData(mob)
+      mob: serializeMobData(mob),
     })
   } catch (error) {
     handleError(error, req, res, 500)
   }
 }
-

@@ -1,4 +1,3 @@
-
 import { MobTypeConfig } from './types'
 import { spearThrower } from './definitions/spearThrower'
 import { hybrid } from './definitions/hybrid'

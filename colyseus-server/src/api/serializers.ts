@@ -19,7 +19,9 @@ const REALTIME_FIELDS = ['x', 'y', 'vx', 'vy', 'heading', 'isMoving'] as const
  * @param serialized - Serialized object from Colyseus schema
  * @returns Object without real-time fields
  */
-function removeRealtimeFields<T extends Record<string, any>>(serialized: T): Omit<T, typeof REALTIME_FIELDS[number]> {
+function removeRealtimeFields<T extends Record<string, any>>(
+  serialized: T
+): Omit<T, (typeof REALTIME_FIELDS)[number]> {
   const { x, y, vx, vy, heading, isMoving, ...nonRealtimeData } = serialized
   return nonRealtimeData
 }
@@ -48,4 +50,3 @@ export function serializePlayerData(player: Player): any {
   // equippedWeaponId is not a @type field; merge for REST consumers (mirrors mainHand)
   return { ...base, equippedWeaponId: player.equippedWeaponId, equipment }
 }
-

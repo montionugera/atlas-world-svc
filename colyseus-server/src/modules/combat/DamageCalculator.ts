@@ -6,7 +6,11 @@ import { WorldLife } from '../../schemas/WorldLife'
 
 export class DamageCalculator {
   // Calculate damage with defense calculations
-  static calculate(baseDamage: number, damageType: 'physical' | 'magical', target: WorldLife): number {
+  static calculate(
+    baseDamage: number,
+    damageType: 'physical' | 'magical',
+    target: WorldLife
+  ): number {
     const primaryDefense = damageType === 'magical' ? target.mDef : target.pDef
     const totalDefense = primaryDefense + target.armor
 

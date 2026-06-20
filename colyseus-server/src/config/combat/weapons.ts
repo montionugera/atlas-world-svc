@@ -30,7 +30,7 @@ export function isValidPlayerWeaponId(id: string): boolean {
 }
 
 export const WEAPONS: Record<string, WeaponConfig> = {
-  'basic_sword': {
+  basic_sword: {
     id: 'basic_sword',
     name: 'Basic Sword',
     pAtk: 10,
@@ -42,7 +42,7 @@ export const WEAPONS: Record<string, WeaponConfig> = {
     aspdMax: 3.5,
     windUpRatio: 100 / 900,
   },
-  'magic_staff': {
+  magic_staff: {
     id: 'magic_staff',
     name: 'Magic Staff',
     pAtk: 2,
@@ -50,7 +50,7 @@ export const WEAPONS: Record<string, WeaponConfig> = {
     projectileType: WEAPON_TYPES.MAGIC_SPEAR,
     range: 15,
   },
-  'great_bow': {
+  great_bow: {
     id: 'great_bow',
     name: 'Great Bow',
     pAtk: 16,
@@ -58,7 +58,7 @@ export const WEAPONS: Record<string, WeaponConfig> = {
     projectileType: WEAPON_TYPES.ARROW,
     range: 22,
   },
-  'dagger': {
+  dagger: {
     id: 'dagger',
     name: 'Dagger',
     pAtk: 6,
@@ -70,7 +70,7 @@ export const WEAPONS: Record<string, WeaponConfig> = {
     aspdMax: 6,
     windUpRatio: 0.08,
   },
-  'scythe': {
+  scythe: {
     id: 'scythe',
     name: 'Scythe',
     pAtk: 18,

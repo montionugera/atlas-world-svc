@@ -153,7 +153,7 @@ export class PlanckPhysicsManager {
 
     // Use player's actual radius (must not exceed 1.3)
     const playerRadius = Math.min(player.radius, 1.3)
-    
+
     body.createFixture({
       shape: planck.Circle(playerRadius),
       density: PHYSICS_CONFIG.entities.player.mass,
@@ -270,7 +270,12 @@ export class PlanckPhysicsManager {
 
   // Update projectile physics (cap speed, track distance)
   // Note: No gravity applied - projectiles travel in straight lines in top-down 2D view
-  updateProjectile(projectile: Projectile, deltaTime: number, gravity: number = PROJECTILE_GRAVITY, maxSpeed: number = 36): void {
+  updateProjectile(
+    projectile: Projectile,
+    deltaTime: number,
+    gravity: number = PROJECTILE_GRAVITY,
+    maxSpeed: number = 36
+  ): void {
     if (projectile.isStuck) return // Don't update stuck projectiles
 
     const body = this.getBody(projectile.id)
@@ -285,7 +290,8 @@ export class PlanckPhysicsManager {
     }
 
     // Track distance traveled
-    const distance = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy) * (deltaTime / 1000)
+    const distance =
+      Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy) * (deltaTime / 1000)
     projectile.distanceTraveled += distance
 
     // Update physics body velocity
@@ -308,13 +314,18 @@ export class PlanckPhysicsManager {
   }
 
   // Update physics simulation with player forces and mob physics
-  update(deltaTime: number, players: Map<string, any>, mobs: Map<string, any>, npcs?: Map<string, any>) {
+  update(
+    deltaTime: number,
+    players: Map<string, any>,
+    mobs: Map<string, any>,
+    npcs?: Map<string, any>
+  ) {
     // Process player input and apply movement forces
     this.processPlayerInput(players)
 
     // Process mob steering and apply forces
     this.processMobSteering(mobs)
-    
+
     // Process npc steering and apply forces
     if (npcs) {
       this.processNPCSteering(npcs)
@@ -412,15 +423,15 @@ export class PlanckPhysicsManager {
 
       // Check Stun Status
       if (player.isStunned) {
-          const body = this.getBody(player.id)
-          if (body) {
-              // Force stop
-              body.setLinearVelocity(planck.Vec2(0, 0))
-              body.setAngularVelocity(0)
-          }
-          player.desiredVx = 0
-          player.desiredVy = 0
-          return // Skip processing input
+        const body = this.getBody(player.id)
+        if (body) {
+          // Force stop
+          body.setLinearVelocity(planck.Vec2(0, 0))
+          body.setAngularVelocity(0)
+        }
+        player.desiredVx = 0
+        player.desiredVy = 0
+        return // Skip processing input
       }
 
       const body = this.getBody(player.id)
@@ -430,12 +441,12 @@ export class PlanckPhysicsManager {
         const bodyMass = body.getMass()
         let accumulatedForceX = 0,
           accumulatedForceY = 0
-          
+
         // Determine desired velocity based on mode
         let desiredVx = 0
         let desiredVy = 0
         let hasInput = false
-        
+
         if (player.isBotMode) {
           // In Bot Mode, use AI-determined desired velocity
           desiredVx = player.desiredVx || 0
@@ -451,7 +462,7 @@ export class PlanckPhysicsManager {
             desiredVx = inputDir.x * maxLinearSpeed
             desiredVy = inputDir.y * maxLinearSpeed
             hasInput = true
-            
+
             // Update player's desired velocity property for consistency/debugging
             player.desiredVx = desiredVx
             player.desiredVy = desiredVy
@@ -469,7 +480,7 @@ export class PlanckPhysicsManager {
         } else {
           // No input - apply friction force against current velocity
           const friction = 10.0 // Strong friction for snappy stopping
-          
+
           accumulatedForceX = -bodyVelocity.x * bodyMass * friction
           accumulatedForceY = -bodyVelocity.y * bodyMass * friction
 
@@ -477,9 +488,9 @@ export class PlanckPhysicsManager {
           // This prevents "infinite slide" if impulse was too strong for the physics step
           // Increased limit to 400 to support high-power dashes (160 impulse)
           if (Math.abs(bodyVelocity.x) > 400 || Math.abs(bodyVelocity.y) > 400) {
-               body.setLinearVelocity(planck.Vec2(bodyVelocity.x * 0.5, bodyVelocity.y * 0.5))
+            body.setLinearVelocity(planck.Vec2(bodyVelocity.x * 0.5, bodyVelocity.y * 0.5))
           }
-          
+
           // Clear desired velocity property if no input
           if (!player.isBotMode) {
             player.desiredVx = 0
@@ -507,11 +518,11 @@ export class PlanckPhysicsManager {
 
       // Check Stun Status
       if (mob.isStunned) {
-          const body = this.getBody(mob.id)
-          if (body) {
-              body.setLinearVelocity(planck.Vec2(0, 0))
-          }
-          return // Skip steering
+        const body = this.getBody(mob.id)
+        if (body) {
+          body.setLinearVelocity(planck.Vec2(0, 0))
+        }
+        return // Skip steering
       }
 
       const body = this.getBody(mob.id)
@@ -565,11 +576,11 @@ export class PlanckPhysicsManager {
 
       // Check Stun Status
       if (npc.isStunned) {
-          const body = this.getBody(npc.id)
-          if (body) {
-              body.setLinearVelocity(planck.Vec2(0, 0))
-          }
-          return // Skip steering
+        const body = this.getBody(npc.id)
+        if (body) {
+          body.setLinearVelocity(planck.Vec2(0, 0))
+        }
+        return // Skip steering
       }
 
       const body = this.getBody(npc.id)
@@ -589,7 +600,11 @@ export class PlanckPhysicsManager {
   }
 
   // Sync all entities from physics bodies
-  private syncAllEntitiesFromPhysics(players: Map<string, any>, mobs: Map<string, any>, npcs?: Map<string, any>) {
+  private syncAllEntitiesFromPhysics(
+    players: Map<string, any>,
+    mobs: Map<string, any>,
+    npcs?: Map<string, any>
+  ) {
     // Sync players
     players.forEach(player => {
       this.updateEntityFromBody(player, player.id)
@@ -599,7 +614,7 @@ export class PlanckPhysicsManager {
     mobs.forEach(mob => {
       this.updateEntityFromBody(mob, mob.id)
     })
-    
+
     // Sync npcs (position/velocity from body; heading from velocity when moving)
     if (npcs) {
       npcs.forEach(npc => {
@@ -695,19 +710,19 @@ export class PlanckPhysicsManager {
     const nx = dirX / len
     const ny = dirY / len
 
-    let impulseX, impulseY;
+    let impulseX, impulseY
 
     if (data.impulse) {
-        impulseX = data.impulse.x
-        impulseY = data.impulse.y
+      impulseX = data.impulse.x
+      impulseY = data.impulse.y
     } else {
-        // Fallback if no impulse provided (legacy behavior, but using config)
-        const impulseMagnitude = PHYSICS_CONFIG.entities.player.mass * 200 // Legacy hardcoded 200 was high, assuming mass 1?
-        // Actually, the original code was just 200. Planck units are usually kg*m/s.
-        // Let's stick to the 200 constant as a fallback for now to match behavior if event data missing
-        const fallbackMagnitude = 200 
-        impulseX = nx * fallbackMagnitude
-        impulseY = ny * fallbackMagnitude
+      // Fallback if no impulse provided (legacy behavior, but using config)
+      const impulseMagnitude = PHYSICS_CONFIG.entities.player.mass * 200 // Legacy hardcoded 200 was high, assuming mass 1?
+      // Actually, the original code was just 200. Planck units are usually kg*m/s.
+      // Let's stick to the 200 constant as a fallback for now to match behavior if event data missing
+      const fallbackMagnitude = 200
+      impulseX = nx * fallbackMagnitude
+      impulseY = ny * fallbackMagnitude
     }
 
     const impulse = planck.Vec2(impulseX, impulseY)

@@ -61,12 +61,16 @@ export class BattleModule implements BattleActionProcessor {
     this.statusManager = new StatusEffectManager(
       this.eventTracker,
       (e, a) => this.applyDamage(e, a),
-      (e, a) => this.healEntity(e, a),
+      (e, a) => this.healEntity(e, a)
     )
   }
 
   // Process a direct attack between two entities (core attack logic)
-  processAttack(attacker: WorldLife, target: WorldLife, payload?: AttackActionPayload): AttackEvent | null {
+  processAttack(
+    attacker: WorldLife,
+    target: WorldLife,
+    payload?: AttackActionPayload
+  ): AttackEvent | null {
     // Validate attack conditions
     const attackCheck = this.canAttack(attacker, target, payload)
     if (!attackCheck.canAttack) {
@@ -74,12 +78,12 @@ export class BattleModule implements BattleActionProcessor {
     }
 
     // Determine damage based on payload or use fallback
-    let baseDamage = attacker.pAtk; // Default fallback to physical pAtk
-    let damageType: 'physical' | 'magical' = 'physical';
+    let baseDamage = attacker.pAtk // Default fallback to physical pAtk
+    let damageType: 'physical' | 'magical' = 'physical'
 
     if (payload) {
-      baseDamage = payload.damage;
-      damageType = payload.damageType || 'physical';
+      baseDamage = payload.damage
+      damageType = payload.damageType || 'physical'
     }
 
     // Calculate damage with defense
@@ -90,38 +94,44 @@ export class BattleModule implements BattleActionProcessor {
     const targetDied = this.applyDamage(target, damage)
 
     // Calculate impulse vector
-    let nx, ny;
-    
+    let nx, ny
+
     // Scale impulse with actual damage dealt
     const rawImpulse = damage * GAME_CONFIG.attackImpulseMultiplier
-    const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse))
-    
-    if (payload?.projectileDetail?.vx !== undefined && payload?.projectileDetail?.vy !== undefined) {
-        // Use projectile velocity for impulse direction.
-        // If vx/vy are effectively zero (stale replication or sensor collision), fall back to attacker->target.
-        const vx = payload.projectileDetail.vx
-        const vy = payload.projectileDetail.vy
-        const speedSq = vx * vx + vy * vy
-        if (speedSq > 0.0001) {
-            const speed = Math.sqrt(speedSq)
-            nx = vx / speed
-            ny = vy / speed
-        } else {
-            const dx = target.x - attacker.x
-            const dy = target.y - attacker.y
-            const len = Math.sqrt(dx * dx + dy * dy) || 1
-            nx = dx / len
-            ny = dy / len
-        }
-    } else {
-        // Fallback to attacker->target direction
+    const impulseMagnitude = Math.max(
+      GAME_CONFIG.minImpulse,
+      Math.min(rawImpulse, GAME_CONFIG.maxImpulse)
+    )
+
+    if (
+      payload?.projectileDetail?.vx !== undefined &&
+      payload?.projectileDetail?.vy !== undefined
+    ) {
+      // Use projectile velocity for impulse direction.
+      // If vx/vy are effectively zero (stale replication or sensor collision), fall back to attacker->target.
+      const vx = payload.projectileDetail.vx
+      const vy = payload.projectileDetail.vy
+      const speedSq = vx * vx + vy * vy
+      if (speedSq > 0.0001) {
+        const speed = Math.sqrt(speedSq)
+        nx = vx / speed
+        ny = vy / speed
+      } else {
         const dx = target.x - attacker.x
         const dy = target.y - attacker.y
         const len = Math.sqrt(dx * dx + dy * dy) || 1
         nx = dx / len
         ny = dy / len
+      }
+    } else {
+      // Fallback to attacker->target direction
+      const dx = target.x - attacker.x
+      const dy = target.y - attacker.y
+      const len = Math.sqrt(dx * dx + dy * dy) || 1
+      nx = dx / len
+      ny = dy / len
     }
-    
+
     const impulse = { x: nx * impulseMagnitude, y: ny * impulseMagnitude }
 
     // Emit battle damage produced event for knockback/FX
@@ -132,14 +142,16 @@ export class BattleModule implements BattleActionProcessor {
         impulse,
       })
     } catch (err) {
-      console.warn(`⚠️ BATTLE: failed to emit BATTLE_DAMAGE_PRODUCED (attack): ${err instanceof Error ? err.message : String(err)}`)
+      console.warn(
+        `⚠️ BATTLE: failed to emit BATTLE_DAMAGE_PRODUCED (attack): ${err instanceof Error ? err.message : String(err)}`
+      )
     }
 
     // Note: Animation (isAttacking) and cooldown (lastAttackTime) are strictly managed
     // by the entity's native CombatSystem (e.g. PlayerCombatSystem) at the exact moment of cast.
-    // BattleModule is a hit-resolution queue, so setting them here would cause latency 
+    // BattleModule is a hit-resolution queue, so setting them here would cause latency
     // ghosting and duplicate animations upon hit confirmation!
-    
+
     attacker.lastAttackedTarget = target.id
 
     // Create attack event
@@ -158,7 +170,11 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Check if attacker can attack target
-  canAttack(attacker: WorldLife, target: WorldLife, payload?: AttackActionPayload): { canAttack: boolean; reason?: string } {
+  canAttack(
+    attacker: WorldLife,
+    target: WorldLife,
+    payload?: AttackActionPayload
+  ): { canAttack: boolean; reason?: string } {
     if (!target.isAlive) {
       return { canAttack: false, reason: `target ${target.id} is not alive` }
     }
@@ -166,24 +182,24 @@ export class BattleModule implements BattleActionProcessor {
     if (!attacker.isAlive) {
       return { canAttack: false, reason: `attacker ${attacker.id} is not alive` }
     }
-    
+
     // Skip range/cooldown checks for projectiles (already validated by collision)
     if (payload?.attackType === 'projectile' || payload?.projectileDetail) {
-        return { canAttack: true }
+      return { canAttack: true }
     }
 
     // Check attack cooldown using high-precision timing
     // Bypass for Players: PlayerCombatSystem handles throttling authoritatively
     if (!attacker.tags.includes('player')) {
-        if (!attacker.canAttack()) {
-          const now = performance.now()
-          const timeSinceLastAttack = now - attacker.lastAttackTime
-          const remaining = attacker.attackDelay - timeSinceLastAttack
-          return {
-            canAttack: false,
-            reason: `cooldown not ready (elapsed: ${timeSinceLastAttack.toFixed(0)}ms, delay: ${attacker.attackDelay}ms, remaining: ${remaining.toFixed(0)}ms)`
-          }
+      if (!attacker.canAttack()) {
+        const now = performance.now()
+        const timeSinceLastAttack = now - attacker.lastAttackTime
+        const remaining = attacker.attackDelay - timeSinceLastAttack
+        return {
+          canAttack: false,
+          reason: `cooldown not ready (elapsed: ${timeSinceLastAttack.toFixed(0)}ms, delay: ${attacker.attackDelay}ms, remaining: ${remaining.toFixed(0)}ms)`,
         }
+      }
     }
 
     // Check range
@@ -192,7 +208,7 @@ export class BattleModule implements BattleActionProcessor {
     if (distance > effectiveRange) {
       return {
         canAttack: false,
-        reason: `out of range (distance: ${distance.toFixed(2)}, effectiveRange: ${effectiveRange.toFixed(2)}, baseRange: ${attacker.attackRange}, radii: ${attacker.radius}+${target.radius})`
+        reason: `out of range (distance: ${distance.toFixed(2)}, effectiveRange: ${effectiveRange.toFixed(2)}, baseRange: ${attacker.attackRange}, radii: ${attacker.radius}+${target.radius})`,
       }
     }
 
@@ -200,7 +216,11 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Calculate damage with defense calculations (delegates to DamageCalculator)
-  calculateDamage(baseDamage: number, damageType: 'physical' | 'magical', target: WorldLife): number {
+  calculateDamage(
+    baseDamage: number,
+    damageType: 'physical' | 'magical',
+    target: WorldLife
+  ): number {
     return DamageCalculator.calculate(baseDamage, damageType, target)
   }
 
@@ -210,10 +230,10 @@ export class BattleModule implements BattleActionProcessor {
 
     // Event Validation
     if (options?.eventId) {
-        if (!this.eventTracker.validate(target.id, options.eventId)) {
-            // Already processed this event
-            return false;
-        }
+      if (!this.eventTracker.validate(target.id, options.eventId)) {
+        // Already processed this event
+        return false
+      }
     }
 
     // Validate damage (must be non-negative)
@@ -257,19 +277,25 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Apply a status effect to an entity (delegates to StatusEffectManager)
-  applyStatusEffect(entity: WorldLife, type: string, duration: number, baseChance: number = 1.0, options?: {
-      bypassInvulnerability?: boolean,
-      eventId?: string,
-      sourceId?: string,
-      value?: number,
+  applyStatusEffect(
+    entity: WorldLife,
+    type: string,
+    duration: number,
+    baseChance: number = 1.0,
+    options?: {
+      bypassInvulnerability?: boolean
+      eventId?: string
+      sourceId?: string
+      value?: number
       interval?: number
-  }): boolean {
+    }
+  ): boolean {
     return this.statusManager.applyStatusEffect(entity, type, duration, baseChance, options)
   }
 
   // Helper to trigger cleanup globally (delegates to the event tracker)
   cleanupAllEvents() {
-      this.eventTracker.cleanupExpired()
+    this.eventTracker.cleanupExpired()
   }
 
   // Trigger invulnerability frames - REMOVED/DEPRECATED
@@ -301,25 +327,23 @@ export class BattleModule implements BattleActionProcessor {
 
       armor: entity.armor,
       isAlive: entity.isAlive,
-
-
     }
   }
 
   // Update entity combat state (cooldowns)
   updateCombatState(entity: WorldLife, deltaTime: number): void {
     // Invulnerability update removed
-    
+
     // Periodically cleanup events? Or do it in main loop.
     // For now we'll do global cleanup in loop.
 
     // Process Status Effects (DOTs etc)
-    this.processStatusTicks(entity);
+    this.processStatusTicks(entity)
   }
 
   // Process status ticks (DOTs) (delegates to StatusEffectManager)
   processStatusTicks(entity: WorldLife): void {
-      this.statusManager.processStatusTicks(entity)
+    this.statusManager.processStatusTicks(entity)
   }
 
   // Get recent attack events
@@ -345,7 +369,7 @@ export class BattleModule implements BattleActionProcessor {
   // No need for manual registration/unregistration
 
   // Process action message (implements BattleActionProcessor)
-async processAction(message: BattleActionMessage): Promise<boolean> {
+  async processAction(message: BattleActionMessage): Promise<boolean> {
     try {
       const actor = this.getEntity(message.actorId)
       const target: WorldLife | null = message.targetId
@@ -487,7 +511,7 @@ async processAction(message: BattleActionMessage): Promise<boolean> {
     const len = Math.sqrt(dx * dx + dy * dy) || 1
     const nx = dx / len
     const ny = dy / len
-    
+
     // Use actor's attack impulse calculation
     const impulseMagnitude = actor.getAttackImpulse()
     const impulse = { x: nx * impulseMagnitude, y: ny * impulseMagnitude }
@@ -500,7 +524,9 @@ async processAction(message: BattleActionMessage): Promise<boolean> {
         impulse,
       })
     } catch (err) {
-      console.warn(`⚠️ BATTLE: failed to emit BATTLE_DAMAGE_PRODUCED (damage action): ${err instanceof Error ? err.message : String(err)}`)
+      console.warn(
+        `⚠️ BATTLE: failed to emit BATTLE_DAMAGE_PRODUCED (damage action): ${err instanceof Error ? err.message : String(err)}`
+      )
     }
     console.log(
       `💔 BATTLE: ${actor.id} dealt ${payload.amount} ${payload.damageType || 'physical'} damage to ${target.id}`
@@ -511,17 +537,17 @@ async processAction(message: BattleActionMessage): Promise<boolean> {
   // Get all entities from GameState
   getAllEntities(): WorldLife[] {
     const entities: WorldLife[] = []
-    
+
     // Add all players
     for (const player of this.gameState.players.values()) {
       entities.push(player)
     }
-    
+
     // Add all mobs
     for (const mob of this.gameState.mobs.values()) {
       entities.push(mob)
     }
-    
+
     return entities
   }
 

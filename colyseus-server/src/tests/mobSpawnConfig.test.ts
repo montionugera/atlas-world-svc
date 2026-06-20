@@ -25,4 +25,3 @@ describe('mobSpawnConfig', () => {
     expect(settings.spawnIntervalMs).toBe(1000)
   })
 })
-

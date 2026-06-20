@@ -14,6 +14,8 @@
     "test:coverage:ci": "jest --coverage --coverageReporters=text --coverageReporters=lcov",
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit && prettier --check src/**/*.ts",
     "prepare": "husky install",
     "docs:generate": "echo 'HTML docs generated manually - see ./docs/index.html'",
     "docs:serve": "npx serve ./docs -p 3000",
@@ -34,6 +36,7 @@
   "devDependencies": {
     "@asyncapi/generator": "^1.9.0",
     "@asyncapi/html-template": "^1.0.0",
+    "@jest/globals": "^29.7.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.8",

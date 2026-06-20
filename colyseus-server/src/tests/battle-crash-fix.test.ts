@@ -53,11 +53,11 @@ describe('Battle System Crash Fix', () => {
           attackRange: 10,
           pAtk: 20,
         })
-        
+
         // Add entities to game state
         gameState.players.set(player.id, player)
         gameState.mobs.set(mob.id, mob)
-        
+
         // Simulate mob attack (this is how it actually works now)
         mob.updateAttack(gameState)
       }).not.toThrow()
@@ -74,7 +74,7 @@ describe('Battle System Crash Fix', () => {
       })
       gameState.players.set(player.id, player)
       gameState.mobs.set(mob.id, mob)
-      
+
       // Use the real event-driven flow instead of direct message creation
       mob.updateAttack(gameState)
 
@@ -154,10 +154,10 @@ describe('Battle System Crash Fix', () => {
         attackRange: 10,
         pAtk: 20,
       })
-      
+
       gameState.players.set(player.id, player)
       gameState.mobs.set(mob.id, mob)
-      
+
       expect(() => {
         // Use real event-driven flow
         mob.updateAttack(gameState)
@@ -174,9 +174,9 @@ describe('Battle System Crash Fix', () => {
         attackRange: 10,
         pAtk: 20,
       })
-      
+
       gameState.mobs.set(mob.id, mob)
-      
+
       expect(() => {
         // Try to attack non-existent player
         mob.updateAttack(gameState)

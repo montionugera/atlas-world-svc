@@ -276,7 +276,7 @@ describe('Physics System Tests', () => {
       const player = new Player('test-player', 'TestPlayer')
       player.x = 50
       player.y = 50
-      
+
       const mob = new Mob({ id: 'test-mob', x: 56, y: 50, vx: -5, vy: 0 }) // Moving towards player
       mob.desiredVx = -5
       mob.desiredVy = 0
@@ -290,7 +290,11 @@ describe('Physics System Tests', () => {
 
       // Simulate until collision (should happen within 2-3 steps)
       for (let i = 0; i < 50; i++) {
-        testPhysicsManager.update(GAME_CONFIG.tickRate, new Map([[player.id, player]]), new Map([[mob.id, mob]]))
+        testPhysicsManager.update(
+          GAME_CONFIG.tickRate,
+          new Map([[player.id, player]]),
+          new Map([[mob.id, mob]])
+        )
         if (collisionDetected) break
       }
 
@@ -313,7 +317,7 @@ describe('Physics System Tests', () => {
       const player = new Player('test-player', 'TestPlayer')
       player.x = 50
       player.y = 50
-      
+
       const mob = new Mob({ id: 'test-mob', x: 52, y: 50, vx: 0, vy: 0 }) // Overlapping
 
       testPhysicsManager.createPlayerBody(player)
@@ -324,7 +328,11 @@ describe('Physics System Tests', () => {
       testPhysicsManager.syncEntityToBody(mob, mob.id)
 
       // Simulate one step - collision should be detected immediately
-      testPhysicsManager.update(GAME_CONFIG.tickRate, new Map([[player.id, player]]), new Map([[mob.id, mob]]))
+      testPhysicsManager.update(
+        GAME_CONFIG.tickRate,
+        new Map([[player.id, player]]),
+        new Map([[mob.id, mob]])
+      )
 
       expect(collisionDetected).toBe(true)
     })
@@ -375,7 +383,7 @@ describe('Physics System Tests', () => {
         expect(pos.x).toBeLessThan(GAME_CONFIG.worldWidth)
         expect(pos.y).toBeGreaterThan(0)
         expect(pos.y).toBeLessThan(GAME_CONFIG.worldHeight)
-        
+
         // Mob should have valid position (not NaN or Infinity)
         expect(Number.isFinite(pos.x)).toBe(true)
         expect(Number.isFinite(pos.y)).toBe(true)
@@ -658,7 +666,12 @@ describe('Physics System Tests', () => {
         const speed = Math.sqrt(vel.x * vel.x + vel.y * vel.y)
 
         // Check if near boundary
-        if (pos.x < 10 || pos.x > GAME_CONFIG.worldWidth - 10 || pos.y < 10 || pos.y > GAME_CONFIG.worldHeight - 10) {
+        if (
+          pos.x < 10 ||
+          pos.x > GAME_CONFIG.worldWidth - 10 ||
+          pos.y < 10 ||
+          pos.y > GAME_CONFIG.worldHeight - 10
+        ) {
           boundaryCollisions++
 
           // Check if stuck near boundary

@@ -12,7 +12,7 @@ describe('MeleeAttackStrategy', () => {
   beforeEach(() => {
     // Mock GameState
     mockGameState = {
-      projectiles: new Map()
+      projectiles: new Map(),
     }
 
     // Mock ProjectileManager
@@ -23,9 +23,9 @@ describe('MeleeAttackStrategy', () => {
           ownerId: owner.id,
           x: x,
           y: y,
-          damage: damage
+          damage: damage,
         }
-      })
+      }),
     }
 
     strategy = new MeleeAttackStrategy(mockProjectileManager, mockGameState)
@@ -34,12 +34,12 @@ describe('MeleeAttackStrategy', () => {
     mob = new Mob({ id: 'mob-1', x: 100, y: 100, radius: 10, attackRange: 20 })
     player = new Player('player-1', 'Player 1', 110, 100) // Within range (10 distance < 10+20+radius)
     player.radius = 5
-    
+
     // Ensure mob can attack (cooldowns reset)
     mob.lastAttackTime = 0
     mob.isAlive = true
     player.isAlive = true
-    
+
     // Mock canAttack to true by default
     mob.canAttack = jest.fn().mockReturnValue(true)
   })
@@ -68,15 +68,15 @@ describe('MeleeAttackStrategy', () => {
       // But we mocked it to return true.
       // We should mock it to return false OR checking isAlive inside Strategy?
       // Strategy.canExecute check: if (!target.isAlive) ... if (!mob.canAttack()) ...
-      
+
       // So if we want to test "mob cannot attack", we set mock to false.
-      (mob.canAttack as jest.Mock).mockReturnValue(false)
+      ;(mob.canAttack as jest.Mock).mockReturnValue(false)
       expect(strategy.canExecute(mob, player)).toBe(false)
     })
-    
+
     test('should return false when mob cannot attack (cooldown)', () => {
-       (mob.canAttack as jest.Mock).mockReturnValue(false)
-       expect(strategy.canExecute(mob, player)).toBe(false)
+      ;(mob.canAttack as jest.Mock).mockReturnValue(false)
+      expect(strategy.canExecute(mob, player)).toBe(false)
     })
 
     test('should return false when out of range', () => {
@@ -90,10 +90,10 @@ describe('MeleeAttackStrategy', () => {
       const brokenStrategy = new MeleeAttackStrategy(undefined, undefined)
       expect(brokenStrategy.execute(mob, player, 'room-1')).toBe(false)
     })
-    
+
     test('should execute and create projectile', () => {
       const result = strategy.execute(mob, player, 'room-1')
-      
+
       expect(result).toBe(true)
       expect(mockProjectileManager.createMelee).toHaveBeenCalled()
       expect(mockGameState.projectiles.size).toBe(1)
@@ -101,21 +101,21 @@ describe('MeleeAttackStrategy', () => {
   })
 
   describe('attemptExecute', () => {
-     test('should return executed=true for valid attack', () => {
-        const result = strategy.attemptExecute(mob, player, 'room-1')
-        
-        expect(result.canExecute).toBe(true)
-        expect(result.executed).toBe(true)
-        expect(result.needsCasting).toBe(false)
-        expect(result.targetId).toBe(player.id)
-     })
-     
-     test('should return failed result when cannot execute', () => {
-         player.x = 999
-         const result = strategy.attemptExecute(mob, player, 'room-1')
-         
-         expect(result.canExecute).toBe(false)
-         expect(result.executed).toBe(false)
-     })
+    test('should return executed=true for valid attack', () => {
+      const result = strategy.attemptExecute(mob, player, 'room-1')
+
+      expect(result.canExecute).toBe(true)
+      expect(result.executed).toBe(true)
+      expect(result.needsCasting).toBe(false)
+      expect(result.targetId).toBe(player.id)
+    })
+
+    test('should return failed result when cannot execute', () => {
+      player.x = 999
+      const result = strategy.attemptExecute(mob, player, 'room-1')
+
+      expect(result.canExecute).toBe(false)
+      expect(result.executed).toBe(false)
+    })
   })
 })

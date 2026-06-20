@@ -72,7 +72,7 @@ export class ProjectileFactory {
       lifetimeMs
     )
 
-    projectile.piercing = true; // Melee attacks cleave through multiple enemies!
+    projectile.piercing = true // Melee attacks cleave through multiple enemies!
 
     return projectile
   }

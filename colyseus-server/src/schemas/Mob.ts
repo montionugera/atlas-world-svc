@@ -36,32 +36,32 @@ export class Mob extends WorldLife implements IAgent {
   wanderTargetY: number = 0 // Wander target position Y
   lastWanderTargetTime: number = 0 // When wander target was last set
   @type('number') maxMoveSpeed: number = 20 // synced to clients; mob movement cap
-  
+
   // Attack strategy system (server-only)
   attackStrategies: AttackStrategy[] = []
   currentAttackStrategy: AttackStrategy | null = null
   castStartTime: number = 0
   baseWindDownTime: number = 1000 // Store default wind-down to reset after overrides
-  
+
   // Rotation configuration
   @type('number') rotationSpeed: number = Math.PI // Rad/sec (default 180 deg/sec)
-  
+
   // Attack Queue System
-  attackQueue: { 
-      executionTime: number; 
-      attackDef: AttackDefinition; 
-      strategy: AttackStrategy;
-      targetId: string 
+  attackQueue: {
+    executionTime: number
+    attackDef: AttackDefinition
+    strategy: AttackStrategy
+    targetId: string
   }[] = []
-  
+
   // Debug logging throttling (server-only)
   lastCooldownState: boolean = false // Track cooldown state to reduce log spam
   lastDebugLogTime: number = 0 // Throttle debug logs
-  
+
   // Cleanup attributes (server-only)
   cantRespawn: boolean = false // Flag: this mob cannot be respawned
   readyToRemove: boolean = false // Flag: trigger immediate removal
-  
+
   // Systems
   combatSystem: MobCombatSystem
 
@@ -73,7 +73,7 @@ export class Mob extends WorldLife implements IAgent {
   readyToBeRemoved(respawnDelayMs: number): boolean {
     // Immediate removal trigger
     if (this.readyToRemove) return true
-    
+
     // Check if enough time has passed since death (respawn delay)
     if (this.isAlive || this.diedAt === 0) return false
     return Date.now() - this.diedAt >= respawnDelayMs
@@ -137,7 +137,7 @@ export class Mob extends WorldLife implements IAgent {
       maxHealth: options.maxHealth ?? MOB_STATS.maxHealth,
       pAtk: options.pAtk ?? MOB_STATS.pAtk,
       attackRange: options.attackRange ?? MOB_STATS.attackRange,
-      attackDelay: (options.atkWindDownTime ?? MOB_STATS.atkWindDownTime), // Initial default, refined later
+      attackDelay: options.atkWindDownTime ?? MOB_STATS.atkWindDownTime, // Initial default, refined later
       pDef: options.pDef ?? MOB_STATS.pDef,
       mDef: options.mDef ?? MOB_STATS.mDef,
       armor: options.armor ?? MOB_STATS.armor,
@@ -154,16 +154,16 @@ export class Mob extends WorldLife implements IAgent {
     if (options.maxMoveSpeed !== undefined) {
       this.maxMoveSpeed = options.maxMoveSpeed
     }
-    
+
     // Set mob type ID
     if (options.mobTypeId !== undefined) {
       this.mobTypeId = options.mobTypeId
     }
-    
+
     if (options.spawnAreaId !== undefined) {
       this.spawnAreaId = options.spawnAreaId
     }
-    
+
     // Initialize attack strategies (default to melee if none provided)
     if (options.attackStrategies && options.attackStrategies.length > 0) {
       this.attackStrategies = options.attackStrategies
@@ -171,10 +171,9 @@ export class Mob extends WorldLife implements IAgent {
       // Default: melee attack strategy (will be set up later if needed)
       this.attackStrategies = []
     }
-    
+
     // Initialize base wind down from options or default
     this.baseWindDownTime = options.atkWindDownTime ?? MOB_STATS.atkWindDownTime
-
 
     if (options.rotationSpeed !== undefined) {
       this.rotationSpeed = options.rotationSpeed
@@ -195,21 +194,21 @@ export class Mob extends WorldLife implements IAgent {
     // Status Effect Check: If stunned, stop all movement and actions
     // Note: 'Freeze' is now a slow effect, so it doesn't stop action
     if (this.isStunned) {
-        this.vx = 0
-        this.vy = 0
-        this.isMoving = false
-        this.isCasting = false // Interrupt casting
-        this.castDuration = 0
-        
-        // 🛑 FIX: Clear attack queue and reset attack state
-        // This prevents attacks from firing immediately after stun ends
-        if (this.attackQueue.length > 0) {
-            this.attackQueue.length = 0 // Clear array
-            this.currentAttackStrategy = null
-            this.castStartTime = 0
-        }
-        
-        return { attacked: false }
+      this.vx = 0
+      this.vy = 0
+      this.isMoving = false
+      this.isCasting = false // Interrupt casting
+      this.castDuration = 0
+
+      // 🛑 FIX: Clear attack queue and reset attack state
+      // This prevents attacks from firing immediately after stun ends
+      if (this.attackQueue.length > 0) {
+        this.attackQueue.length = 0 // Clear array
+        this.currentAttackStrategy = null
+        this.castStartTime = 0
+      }
+
+      return { attacked: false }
     }
 
     // Game logic: position, heading, and attack (if gameState provided)
@@ -238,16 +237,19 @@ export class Mob extends WorldLife implements IAgent {
     // 🔒 MOVEMENT LOCK: If casting, ignore AI behavior changes and stop movement
     // behaviorLockedUntil is usually for "committed" animations, but casting is a specialized state
     if (this.isCasting) {
-        // Force zero velocity
-        this.desiredVx = 0
-        this.desiredVy = 0
-        
-        // Allow target updates if still in attack mode, but DO NOT switch behavior
-        // If the decision tries to switch to 'chase', we ignore it to finish the cast.
-        if (decision.behavior !== BehaviorState.ATTACK && this.currentBehavior === BehaviorState.ATTACK) {
-             console.log(`🛡️ IGNORED behavior switch to ${decision.behavior} during CAST`)
-             return 
-        }
+      // Force zero velocity
+      this.desiredVx = 0
+      this.desiredVy = 0
+
+      // Allow target updates if still in attack mode, but DO NOT switch behavior
+      // If the decision tries to switch to 'chase', we ignore it to finish the cast.
+      if (
+        decision.behavior !== BehaviorState.ATTACK &&
+        this.currentBehavior === BehaviorState.ATTACK
+      ) {
+        console.log(`🛡️ IGNORED behavior switch to ${decision.behavior} during CAST`)
+        return
+      }
     }
 
     // Apply state transition
@@ -260,14 +262,14 @@ export class Mob extends WorldLife implements IAgent {
     // Apply desired velocity from decision
     // (If casting, we already zeroed it above, so we skip setting it from decision)
     if (!this.isCasting) {
-        const speedMultiplier = this.getSpeedMultiplier()
-        if (decision.desiredVelocity) {
-          this.desiredVx = decision.desiredVelocity.x * speedMultiplier
-          this.desiredVy = decision.desiredVelocity.y * speedMultiplier
-        } else {
-          this.desiredVx = 0
-          this.desiredVy = 0
-        }
+      const speedMultiplier = this.getSpeedMultiplier()
+      if (decision.desiredVelocity) {
+        this.desiredVx = decision.desiredVelocity.x * speedMultiplier
+        this.desiredVy = decision.desiredVelocity.y * speedMultiplier
+      } else {
+        this.desiredVx = 0
+        this.desiredVy = 0
+      }
     }
 
     // Log only when behavior actually changes
@@ -275,12 +277,6 @@ export class Mob extends WorldLife implements IAgent {
       console.log(`🔄 BEHAVIOR: ${this.id} ${oldBehavior} → ${this.currentBehavior.toUpperCase()}`)
     }
   }
-
-
-
-
-
-
 
   // Override boundary physics for mobs (bounce instead of clamp)
   applyBoundaryPhysics(width: number = 20, height: number = 20) {
@@ -300,30 +296,30 @@ export class Mob extends WorldLife implements IAgent {
     const dx = this.targetX - this.x
     const dy = this.targetY - this.y
     const magnitude = Math.hypot(dx, dy)
-    
+
     // Valid target vector check
     if (magnitude <= 0.01) return
 
     const targetHeading = Math.atan2(dy, dx)
-    
+
     // Calculate rotation speed based on state
     // Heavy feel: slow turn during casting, slightly faster in recovery
     let currentRotationSpeed = this.rotationSpeed
-    
+
     if (this.isCasting) {
-        currentRotationSpeed = this.rotationSpeed * 0.15
+      currentRotationSpeed = this.rotationSpeed * 0.15
     } else if (this.isAttacking) {
-        currentRotationSpeed = this.rotationSpeed * 0.3
+      currentRotationSpeed = this.rotationSpeed * 0.3
     }
-    
+
     // Smooth rotation (interpolate towards target heading)
     // We use the shortest angle difference logic
     let diff = targetHeading - this.heading
-    
+
     // Normalize difference to [-PI, PI] to rotate shortest way
     while (diff < -Math.PI) diff += Math.PI * 2
     while (diff > Math.PI) diff -= Math.PI * 2
-    
+
     // Max rotation for this frame
     // deltaTime is in ms, convert to seconds
     const maxRotate = currentRotationSpeed * (deltaTime / 1000)
@@ -332,18 +328,18 @@ export class Mob extends WorldLife implements IAgent {
     // if (this.isCasting) {
     //    console.log(`Mob ${this.id} rot: speed=${currentRotationSpeed.toFixed(2)}, max=${maxRotate.toFixed(4)}, diff=${diff.toFixed(4)}`)
     // }
-    
+
     if (Math.abs(diff) <= maxRotate) {
-        // Close enough, snap to target
-        this.heading = targetHeading
+      // Close enough, snap to target
+      this.heading = targetHeading
     } else {
-        // Rotate towards target
-        this.heading += Math.sign(diff) * maxRotate
-        
-        // Normalize heading to keep it clean (though likely handled elsewhere or not strictly needed if we just use cos/sin)
-        // But good practice to keep in [-PI, PI] or [0, 2PI]
-        if (this.heading > Math.PI) this.heading -= Math.PI * 2
-        else if (this.heading < -Math.PI) this.heading += Math.PI * 2
+      // Rotate towards target
+      this.heading += Math.sign(diff) * maxRotate
+
+      // Normalize heading to keep it clean (though likely handled elsewhere or not strictly needed if we just use cos/sin)
+      // But good practice to keep in [-PI, PI] or [0, 2PI]
+      if (this.heading > Math.PI) this.heading -= Math.PI * 2
+      else if (this.heading < -Math.PI) this.heading += Math.PI * 2
     }
   }
 
@@ -383,24 +379,24 @@ export class Mob extends WorldLife implements IAgent {
   }
 
   // Update attack logic - uses attack strategies if available, otherwise falls back to legacy behavior
-  updateAttack(gameState: GameState, roomId?: string): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
-    return this.combatSystem.update(GAME_CONFIG.tickRate, gameState, roomId ?? gameState.roomId ?? '')
+  updateAttack(
+    gameState: GameState,
+    roomId?: string
+  ): { attacked: boolean; targetId?: string; eventEmitted?: boolean } {
+    return this.combatSystem.update(
+      GAME_CONFIG.tickRate,
+      gameState,
+      roomId ?? gameState.roomId ?? ''
+    )
   }
-
-
-
 
   // Add attacks to the timeline
   public enqueueAttacks(
-      strategy: AttackStrategy, 
-      targetId: string, 
-      attacks: AttackDefinition[], 
-      startTime: number
+    strategy: AttackStrategy,
+    targetId: string,
+    attacks: AttackDefinition[],
+    startTime: number
   ): void {
-      this.combatSystem.enqueueAttacks(strategy, targetId, attacks, startTime)
+    this.combatSystem.enqueueAttacks(strategy, targetId, attacks, startTime)
   }
-
-
-
-
 }

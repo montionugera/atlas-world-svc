@@ -8,7 +8,7 @@ describe('Projectile Collision Configuration', () => {
     // Check strict bitmask logic
     // shouldCollide returns true if (catA & maskB) && (catB & maskA)
     const collides = shouldCollide(projCategory, projCategory, projMask, projMask)
-    
+
     expect(collides).toBe(true)
   })
 
@@ -20,7 +20,7 @@ describe('Projectile Collision Configuration', () => {
     const playerMask = PHYSICS_CONFIG.entities.player.collisionFilter.mask
 
     const collides = shouldCollide(projCategory, playerCategory, projMask, playerMask)
-    
+
     expect(collides).toBe(true)
   })
 
@@ -32,7 +32,7 @@ describe('Projectile Collision Configuration', () => {
     const mobMask = PHYSICS_CONFIG.entities.mob.collisionFilter.mask
 
     const collides = shouldCollide(projCategory, mobCategory, projMask, mobMask)
-    
+
     expect(collides).toBe(true)
   })
 
@@ -44,7 +44,7 @@ describe('Projectile Collision Configuration', () => {
     const boundaryMask = PHYSICS_CONFIG.entities.boundary.collisionFilter.mask
 
     const collides = shouldCollide(projCategory, boundaryCategory, projMask, boundaryMask)
-    
+
     expect(collides).toBe(true)
   })
 })

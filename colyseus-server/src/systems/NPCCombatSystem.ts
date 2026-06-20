@@ -61,11 +61,7 @@ export class NPCCombatSystem extends BaseCombatSystem<NPC> {
     }
   }
 
-  update(
-    deltaTime: number,
-    mobs: Map<string, Mob>,
-    roomId: string
-  ): CombatResult {
+  update(deltaTime: number, mobs: Map<string, Mob>, roomId: string): CombatResult {
     if (this.npc.currentBehavior !== BehaviorState.ATTACK || !this.npc.currentAttackTarget) {
       return { attacked: false }
     }
@@ -102,7 +98,7 @@ export class NPCCombatSystem extends BaseCombatSystem<NPC> {
       targetId: targetMob.id,
       damage: this.npc.pAtk,
       range: this.npc.attackRange,
-      roomId: roomId
+      roomId: roomId,
     }
 
     eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData)
@@ -112,13 +108,13 @@ export class NPCCombatSystem extends BaseCombatSystem<NPC> {
   }
 
   canAttack(): boolean {
-      if (!this.npc.isAlive) return false
-      if (this.npc.isStunned) return false
+    if (!this.npc.isAlive) return false
+    if (this.npc.isStunned) return false
 
-      const now = performance.now()
-      const timeSinceLastAttack = now - (this.npc.lastAttackTime || 0)
+    const now = performance.now()
+    const timeSinceLastAttack = now - (this.npc.lastAttackTime || 0)
 
-      return timeSinceLastAttack >= this.npc.attackDelay
+    return timeSinceLastAttack >= this.npc.attackDelay
   }
 
   private updateAttackWithStrategies(

@@ -77,7 +77,9 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
   }
 
   protected onWindUpComplete(): void {
-    console.log(`🎯 DEBUG: ${this.mob.id} windup complete, executing ${this.mob.currentAttackStrategy?.name} attack`)
+    console.log(
+      `🎯 DEBUG: ${this.mob.id} windup complete, executing ${this.mob.currentAttackStrategy?.name} attack`
+    )
   }
 
   protected onWindUpExecuteFailed(): void {
@@ -87,11 +89,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
   /**
    * Main update loop for combat logic. Target can be player or NPC (from gameState.players or gameState.npcs).
    */
-  update(
-    deltaTime: number,
-    gameState: GameState,
-    roomId: string
-  ): CombatResult {
+  update(deltaTime: number, gameState: GameState, roomId: string): CombatResult {
     if (this.mob.currentBehavior !== 'attack' || !this.mob.currentAttackTarget) {
       return { attacked: false }
     }
@@ -130,7 +128,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
       targetId: target.id,
       damage: this.mob.pAtk,
       range: this.mob.attackRange,
-      roomId: roomId
+      roomId: roomId,
     }
     eventBus.emitRoomEvent(roomId, RoomEventType.BATTLE_ATTACK, attackData)
     console.log(`📡 MOB ${this.mob.id} emitted battle attack event for ${target.id}`)
@@ -143,14 +141,14 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
    * Check if mob can attack (cooldown check)
    */
   canAttack(): boolean {
-      if (!this.mob.isAlive) return false
-      // Cannot attack if frozen or stunned
-      if (this.mob.isStunned) return false
+    if (!this.mob.isAlive) return false
+    // Cannot attack if frozen or stunned
+    if (this.mob.isStunned) return false
 
-      const now = performance.now()
-      const timeSinceLastAttack = now - this.mob.lastAttackTime
+    const now = performance.now()
+    const timeSinceLastAttack = now - this.mob.lastAttackTime
 
-      return timeSinceLastAttack >= this.mob.attackDelay
+    return timeSinceLastAttack >= this.mob.attackDelay
   }
 
   // Update attack using attack strategies (target can be player or NPC)
@@ -169,7 +167,7 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
 
     const queueResult = this.processAttackQueue(gameState)
     if (queueResult !== null) {
-        return queueResult
+      return queueResult
     }
 
     const castingResult = this.checkWindUpPhase(target, roomId)
@@ -185,7 +183,9 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
 
     if (shouldLogDebug) {
       const distance = this.mob.getDistanceTo(target)
-      console.log(`🔍 DEBUG: ${this.mob.id} cooldown ready, checking ${strategiesByPriority.length} strategies`)
+      console.log(
+        `🔍 DEBUG: ${this.mob.id} cooldown ready, checking ${strategiesByPriority.length} strategies`
+      )
       this.mob.lastCooldownState = isCooldownReady
     }
 
@@ -199,7 +199,9 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
       if (shouldLogDebug) {
         const distance = this.mob.getDistanceTo(target)
         const range = this.getStrategyRange(strategy, target as Player)
-        console.log(`  🔍 Strategy "${strategy.name}": canExecute=true, distance=${distance.toFixed(2)}, effectiveRange=${range.toFixed(2)}`)
+        console.log(
+          `  🔍 Strategy "${strategy.name}": canExecute=true, distance=${distance.toFixed(2)}, effectiveRange=${range.toFixed(2)}`
+        )
       }
 
       // Apply state transitions based on strategy result
@@ -234,7 +236,9 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
     )
 
     if (edgeToEdgeDistance > maxRange) {
-      console.log(`🎯 DEBUG: ${this.mob.id} target out of range (${edgeToEdgeDistance.toFixed(2)} > ${maxRange.toFixed(2)}), switching to chase`)
+      console.log(
+        `🎯 DEBUG: ${this.mob.id} target out of range (${edgeToEdgeDistance.toFixed(2)} > ${maxRange.toFixed(2)}), switching to chase`
+      )
       this.mob.currentBehavior = 'chase'
       this.mob.currentChaseTarget = this.mob.currentAttackTarget
       this.mob.currentAttackTarget = ''

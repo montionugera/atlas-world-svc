@@ -71,7 +71,9 @@ export class NPC extends WorldLife implements IAgent {
   constructor(options: NPCOptions) {
     const { baseStat: baseStatOverride, ...statsRest } = options.stats ?? {}
     const stats = { ...DEFAULT_NPC_STATS, ...statsRest }
-    const attackDelay = (stats.atkWindUpTime ?? PLAYER_STATS.atkWindUpTime) + (stats.atkWindDownTime ?? PLAYER_STATS.atkWindDownTime)
+    const attackDelay =
+      (stats.atkWindUpTime ?? PLAYER_STATS.atkWindUpTime) +
+      (stats.atkWindDownTime ?? PLAYER_STATS.atkWindDownTime)
     const stat = mergeBaseStat({ ...PLAYER_STATS.baseStat }, baseStatOverride)
     super({
       id: options.id,
@@ -127,7 +129,10 @@ export class NPC extends WorldLife implements IAgent {
     }
   }
 
-  update(deltaTime: number, gameState?: GameState): { attacked: boolean; targetId?: string; messageCreated?: boolean; message?: any } {
+  update(
+    deltaTime: number,
+    gameState?: GameState
+  ): { attacked: boolean; targetId?: string; messageCreated?: boolean; message?: any } {
     super.update(deltaTime)
 
     if (this.isStunned) {
@@ -191,11 +196,11 @@ export class NPC extends WorldLife implements IAgent {
 
   // Add attacks to the timeline
   public enqueueAttacks(
-      strategy: AttackStrategy, 
-      targetId: string, 
-      attacks: any[], 
-      startTime: number
+    strategy: AttackStrategy,
+    targetId: string,
+    attacks: any[],
+    startTime: number
   ): void {
-      this.combatSystem.enqueueAttacks(strategy, targetId, attacks, startTime)
+    this.combatSystem.enqueueAttacks(strategy, targetId, attacks, startTime)
   }
 }

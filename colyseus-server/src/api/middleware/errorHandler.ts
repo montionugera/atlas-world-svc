@@ -21,14 +21,14 @@ export function handleError(
 ): void {
   const errorMessage = error instanceof Error ? error.message : 'Unknown error'
   const errorName = error instanceof Error ? error.name : 'Error'
-  
+
   console.error(`API Error [${req.method} ${req.path}]:`, error)
-  
+
   const errorResponse: ApiErrorResponse = {
     error: errorName,
     message: errorMessage,
   }
-  
+
   res.status(statusCode).json(errorResponse)
 }
 
@@ -51,11 +51,10 @@ export function handleNotFound(
     error: `${resource} not found`,
     [resource.toLowerCase() + 'Id']: resourceId,
   }
-  
+
   if (availableResources) {
     errorResponse[`available${resource}s`] = availableResources
   }
-  
+
   res.status(404).json(errorResponse)
 }
-

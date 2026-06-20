@@ -30,8 +30,18 @@ describe('NPCCombatSystem', () => {
     jest.useFakeTimers()
     npc = new NPC({ id: 'npc-1', ownerId: 'owner-1', x: 0, y: 0 })
     targetMob = new Mob({
-      id: 'mob-1', x: 1, y: 0, radius: 1, maxHealth: 100, pAtk: 5,
-      attackRange: 5, atkWindDownTime: 1000, pDef: 0, mDef: 0, armor: 0, density: 1,
+      id: 'mob-1',
+      x: 1,
+      y: 0,
+      radius: 1,
+      maxHealth: 100,
+      pAtk: 5,
+      attackRange: 5,
+      atkWindDownTime: 1000,
+      pDef: 0,
+      mDef: 0,
+      armor: 0,
+      density: 1,
     })
     mobs = new Map([[targetMob.id, targetMob]])
 

@@ -1,4 +1,3 @@
-
 /**
  * Mob Types Configuration
  * Defines mob archetypes with their attributes and spawn weights
@@ -17,5 +16,5 @@ import { MOB_TYPES } from './mobs'
 import { MobTypeConfig } from './mobs/types'
 
 export function getMobTypeById(id: string): MobTypeConfig | undefined {
-  return MOB_TYPES.find((type) => type.id === id)
+  return MOB_TYPES.find(type => type.id === id)
 }

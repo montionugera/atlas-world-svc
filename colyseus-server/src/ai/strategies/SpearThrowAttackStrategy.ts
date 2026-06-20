@@ -22,7 +22,7 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
 
   // Must be roughly facing the target to start a committed ranged attack.
   // Matches the melee cone check threshold used elsewhere (~0.5 rad).
-  private static readonly HEADING_DIFF_THRESHOLD_RAD = Math.PI/180*10
+  private static readonly HEADING_DIFF_THRESHOLD_RAD = (Math.PI / 180) * 10
 
   constructor(
     projectileManager: ProjectileManager,
@@ -131,4 +131,3 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
     }
   }
 }
-

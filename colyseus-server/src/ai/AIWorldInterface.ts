@@ -169,7 +169,7 @@ export class AIWorldInterface {
       if (!mob.isAlive) continue
       // Don't find self if agent is a mob
       if (excludeId && mob.id === excludeId) continue
-      
+
       const d = this.calculateDistance(position, mob)
       if (d < nearestDist) {
         nearest = mob
@@ -211,7 +211,8 @@ export class AIWorldInterface {
     const inRangeEnemy = distanceEnemy <= (perceptionRange ?? Infinity)
 
     const isPlayerOrNpc =
-      nearestEnemy && (this.gameState.players.has(nearestEnemy.id) || this.gameState.npcs.has(nearestEnemy.id))
+      nearestEnemy &&
+      (this.gameState.players.has(nearestEnemy.id) || this.gameState.npcs.has(nearestEnemy.id))
     const isMobEnemy = nearestEnemy && this.gameState.mobs.has(nearestEnemy.id)
 
     const nearestPlayer = inRangeEnemy && isPlayerOrNpc ? (nearestEnemy as Player) : null
@@ -219,19 +220,21 @@ export class AIWorldInterface {
 
     const nearestMobRaw =
       inRangeEnemy && isMobEnemy ? nearestEnemy : this.getNearestMob(position, agent.id)
-    const distanceMobRaw = nearestMobRaw ? this.calculateDistance(position, nearestMobRaw) : Infinity
+    const distanceMobRaw = nearestMobRaw
+      ? this.calculateDistance(position, nearestMobRaw)
+      : Infinity
     const inRangeMob = distanceMobRaw <= (perceptionRange ?? Infinity)
     const nearestMob: IAgent | null = inRangeMob ? (nearestMobRaw as IAgent) : null
     const distanceToNearestMob = inRangeMob ? distanceMobRaw : Infinity
 
     const nearBoundary = this.isNearBoundary(position)
-    
+
     // Check owner if agent is a npc
     let ownerPlayer = null
     if ('ownerId' in agent && agent.ownerId) {
       ownerPlayer = this.gameState.players.get((agent as any).ownerId) || null
     }
-    
+
     return {
       nearestPlayer,
       distanceToNearestPlayer,
@@ -251,15 +254,15 @@ export class AIWorldInterface {
   // Apply AI decision to agent
   applyAIDecision(agentId: string, decision: AIDecision): void {
     this.aiDecisions.set(agentId, decision)
-    
+
     // Try to find agent in mobs first
     let agent: IAgent | undefined = this.gameState.mobs.get(agentId)
-    
+
     // If not found, try npcs
     if (!agent) {
       agent = this.gameState.npcs.get(agentId)
     }
-    
+
     // If not found, try players
     if (!agent) {
       const player = this.gameState.players.get(agentId)
@@ -276,22 +279,22 @@ export class AIWorldInterface {
       // Or we should add them to IAgent? For now, let's assume implementations have them.
       // Actually, IAgent doesn't specify how velocity is stored, but Mob has desiredVx/Vy.
       // Let's check if the agent has these properties.
-      
+
       const runtime = agent as unknown as IAgentRuntime
 
       // Update desire timestamp if available
       if ('decisionTimestamp' in agent) {
-        runtime.decisionTimestamp = decision.timestamp;
+        runtime.decisionTimestamp = decision.timestamp
       }
 
       // Apply desired velocity and behavior
       if ('desiredVx' in agent) {
-        runtime.desiredVx = decision.velocity.x;
-        runtime.desiredVy = decision.velocity.y;
+        runtime.desiredVx = decision.velocity.x
+        runtime.desiredVy = decision.velocity.y
       }
 
       if ('desiredBehavior' in agent) {
-        runtime.desiredBehavior = decision.behavior;
+        runtime.desiredBehavior = decision.behavior
       }
     }
   }

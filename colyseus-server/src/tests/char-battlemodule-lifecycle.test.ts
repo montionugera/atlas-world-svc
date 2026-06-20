@@ -5,12 +5,28 @@ import { Mob } from '../schemas/Mob'
 describe('char: BattleModule applyDamage / respawn', () => {
   let bm: BattleModule
   let state: GameState
-  const mob = () => new Mob({
-    id: 't', x: 0, y: 0, radius: 1, maxHealth: 100, pAtk: 10, attackRange: 5,
-    atkWindDownTime: 1000, pDef: 0, mDef: 0, armor: 0, density: 1,
+  const mob = () =>
+    new Mob({
+      id: 't',
+      x: 0,
+      y: 0,
+      radius: 1,
+      maxHealth: 100,
+      pAtk: 10,
+      attackRange: 5,
+      atkWindDownTime: 1000,
+      pDef: 0,
+      mDef: 0,
+      armor: 0,
+      density: 1,
+    })
+  beforeEach(() => {
+    state = new GameState('m', 'r')
+    bm = new BattleModule(state)
   })
-  beforeEach(() => { state = new GameState('m', 'r'); bm = new BattleModule(state) })
-  afterEach(() => { state.stopAI() })
+  afterEach(() => {
+    state.stopAI()
+  })
 
   it('non-lethal damage reduces HP and returns false', () => {
     const t = mob()

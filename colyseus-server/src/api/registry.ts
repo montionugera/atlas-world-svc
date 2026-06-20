@@ -58,4 +58,3 @@ export function getAllRoomIds(): string[] {
 export function clearRegistry(): void {
   roomRegistry.clear()
 }
-

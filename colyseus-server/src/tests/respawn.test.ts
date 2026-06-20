@@ -12,10 +12,10 @@ describe('Player Respawn', () => {
     gameState = new GameState('test-map', 'test-room')
     physicsManager = new PlanckPhysicsManager()
     physicsManager.setRoomId('test-room')
-    
+
     player = new Player('session-1', 'TestPlayer', 100, 100)
     gameState.players.set('session-1', player)
-    
+
     // Create physics body for player
     physicsManager.createPlayerBody(player)
   })
@@ -65,10 +65,10 @@ describe('Player Respawn', () => {
 
     // Set movement input
     player.input.setMovement(5, 5)
-    
+
     // Process physics
     physicsManager.update(GAME_CONFIG.tickRate, gameState.players, gameState.mobs)
-    
+
     // Check velocity
     const body = physicsManager.getBody(player.id)
     if (body) {

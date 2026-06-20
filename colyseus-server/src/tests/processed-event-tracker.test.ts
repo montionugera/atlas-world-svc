@@ -22,7 +22,7 @@ describe('ProcessedEventTracker', () => {
     expect(tracker.validate('e1', 'evt-a')).toBe(false)
   })
 
-  it('clear removes an entity\'s tracked events so they validate again', () => {
+  it("clear removes an entity's tracked events so they validate again", () => {
     expect(tracker.validate('e1', 'evt-a')).toBe(true)
     tracker.clear('e1')
     expect(tracker.validate('e1', 'evt-a')).toBe(true)

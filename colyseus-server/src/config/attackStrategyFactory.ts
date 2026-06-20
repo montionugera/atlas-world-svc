@@ -68,11 +68,7 @@ export function createAttackStrategies(
     case 'doubleAttack': {
       // Create DoubleAttackStrategy with all configured attacks
       strategies.push(
-        new DoubleAttackStrategy(
-            projectileManager, 
-            gameState,
-            strategyConfig.attacks
-        )
+        new DoubleAttackStrategy(projectileManager, gameState, strategyConfig.attacks)
       )
       break
     }
@@ -82,7 +78,7 @@ export function createAttackStrategies(
       for (const attack of strategyConfig.attacks) {
         if (attack.atkCharacteristic.type === AttackCharacteristicType.PROJECTILE) {
           const effectiveRange = calculateEffectiveAttackRange(attack, mobRadius)
-          
+
           if (attack.atkWindUpTime === 0) {
             // Instant attack = melee
             strategies.push(
@@ -114,4 +110,3 @@ export function createAttackStrategies(
 
   return strategies
 }
-

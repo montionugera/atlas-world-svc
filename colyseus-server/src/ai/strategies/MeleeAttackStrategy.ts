@@ -17,7 +17,7 @@ export class MeleeAttackStrategy implements AttackStrategy {
 
   private castTime: number = 0
   private timingBands?: Pick<AttackDefinition, 'aspdMin' | 'aspdMax'>
-  
+
   constructor(
     projectileManager?: ProjectileManager,
     gameState?: GameState,
@@ -52,13 +52,13 @@ export class MeleeAttackStrategy implements AttackStrategy {
     const distance = attacker.getDistanceTo(target)
     const effectiveRange = attacker.attackRange + attacker.radius + target.radius
     if (distance > effectiveRange) return false
-    
+
     // Check if facing target (within ~30 degrees or 0.5 rads)
     const targetHeading = Math.atan2(target.y - attacker.y, target.x - attacker.x)
     let diff = targetHeading - attacker.heading
     while (diff < -Math.PI) diff += Math.PI * 2
     while (diff > Math.PI) diff -= Math.PI * 2
-    
+
     if (Math.abs(diff) > 0.5) return false
 
     return true
@@ -67,7 +67,7 @@ export class MeleeAttackStrategy implements AttackStrategy {
   execute(attacker: any, target: any, roomId: string): boolean {
     // Basic validation first
     if (!target.isAlive || (attacker.canAttack && !attacker.canAttack())) {
-       return false
+      return false
     }
 
     // RANGE CHECK LOGIC:
@@ -75,25 +75,31 @@ export class MeleeAttackStrategy implements AttackStrategy {
     // 2. If committed attack (castTime > 0): Relaxed check. We allow it to fire even if out of range,
     //    as long as it was valid when we started casting (checked in attemptExecute).
     const isCommitted = this.castTime > 0
-    
+
     if (!isCommitted) {
-        // Strict check for instant attacks
-        if (!this.canExecute(attacker, target)) {
-            console.log(`⚠️ MELEE: ${attacker.id} can't execute instant melee attack on ${target.id} (out of range/condition)`)
-            return false
-        }
+      // Strict check for instant attacks
+      if (!this.canExecute(attacker, target)) {
+        console.log(
+          `⚠️ MELEE: ${attacker.id} can't execute instant melee attack on ${target.id} (out of range/condition)`
+        )
+        return false
+      }
     } else {
-        // Warning if out of range but allowing it
-        const distance = attacker.getDistanceTo(target)
-        const effectiveRange = attacker.attackRange + attacker.radius + target.radius
-        if (distance > effectiveRange) {
-             console.log(`⚠️ MELEE: ${attacker.id} target out of range (${distance.toFixed(1)} > ${effectiveRange.toFixed(1)}) but committed (cast=${this.castTime}ms). Executing anyway.`)
-        }
+      // Warning if out of range but allowing it
+      const distance = attacker.getDistanceTo(target)
+      const effectiveRange = attacker.attackRange + attacker.radius + target.radius
+      if (distance > effectiveRange) {
+        console.log(
+          `⚠️ MELEE: ${attacker.id} target out of range (${distance.toFixed(1)} > ${effectiveRange.toFixed(1)}) but committed (cast=${this.castTime}ms). Executing anyway.`
+        )
+      }
     }
 
     // Require projectileManager and gameState for unified projectile flow
     if (!this.projectileManager || !this.gameState) {
-      console.error(`❌ MELEE: ${attacker.id} cannot execute - projectileManager or gameState not provided`)
+      console.error(
+        `❌ MELEE: ${attacker.id} cannot execute - projectileManager or gameState not provided`
+      )
       return false
     }
 
@@ -102,17 +108,14 @@ export class MeleeAttackStrategy implements AttackStrategy {
     const targetY = target.y + (target.vy || 0) * 0.05
 
     // Create melee projectile (short range, fast speed)
-    const projectile = this.projectileManager.createMelee(
-      attacker,
-      targetX,
-      targetY,
-      attacker.pAtk
-    )
+    const projectile = this.projectileManager.createMelee(attacker, targetX, targetY, attacker.pAtk)
 
     // Add to game state (synced to clients)
     this.gameState.projectiles.set(projectile.id, projectile)
 
-    console.log(`🗡️ MELEE: ${attacker.id} executing melee attack on ${target.id}, created projectile ${projectile.id}`)
+    console.log(
+      `🗡️ MELEE: ${attacker.id} executing melee attack on ${target.id}, created projectile ${projectile.id}`
+    )
     return true
   }
 
@@ -140,4 +143,3 @@ export class MeleeAttackStrategy implements AttackStrategy {
     }
   }
 }
-

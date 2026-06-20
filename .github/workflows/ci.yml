@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs on the same ref (e.g. rapid pushes to a PR).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  colyseus-server:
+    name: colyseus-server (typecheck · format · test)
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: "0" # skip husky install in CI (no git hooks needed)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      # Node 18 matches colyseus-server/Dockerfile so CI runs the deployment runtime.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: pnpm
+
+      # Workspace install at the repo root (pnpm-workspace.yaml lives here).
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck (tsc --noEmit)
+        run: pnpm --filter atlas-world-colyseus-server run typecheck
+
+      - name: Format check (prettier)
+        run: pnpm --filter atlas-world-colyseus-server run format:check
+
+      - name: Test (jest)
+        run: pnpm --filter atlas-world-colyseus-server run test

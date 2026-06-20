@@ -15,7 +15,7 @@ export class DoubleAttackStrategy implements AttackStrategy {
 
   // Must be roughly facing the target to start this committed combo.
   // Matches the melee cone check threshold (~0.5 rad).
-  private static readonly HEADING_DIFF_THRESHOLD_RAD = Math.PI/180*10
+  private static readonly HEADING_DIFF_THRESHOLD_RAD = (Math.PI / 180) * 10
 
   constructor(
     projectileManager: ProjectileManager,
@@ -42,13 +42,13 @@ export class DoubleAttackStrategy implements AttackStrategy {
     if (!firstAttack) return false
 
     const distance = attacker.getDistanceTo(target)
-    
+
     // Calculate edge-to-edge distance to be physically accurate even when clustered
     const edgeToEdgeDistance = Math.max(0, distance - attacker.radius - (target.radius || 4))
-    
+
     // Compare against the strictly configured range of the attack itself
     const effectiveRange = calculateEffectiveAttackRange(firstAttack, 0)
-    
+
     if (edgeToEdgeDistance > effectiveRange) return false
 
     // Require heading alignment before starting a cast/queue.
@@ -70,57 +70,56 @@ export class DoubleAttackStrategy implements AttackStrategy {
     if (!target || !target.isAlive) return false
     if (this.attacks.length === 0) return false
 
-    
     // Pass strictly the current time as start time
     if (!attacker.combatSystem || typeof attacker.combatSystem.enqueueAttacks !== 'function') {
-        attacker.enqueueAttacks(this, target.id, this.attacks, Date.now())
+      attacker.enqueueAttacks(this, target.id, this.attacks, Date.now())
     } else {
-        attacker.combatSystem.enqueueAttacks(this, target.id, this.attacks, Date.now())
+      attacker.combatSystem.enqueueAttacks(this, target.id, this.attacks, Date.now())
     }
-    
+
     return true
   }
 
   public performAttack(attacker: any, target: any, attack: AttackDefinition): void {
-      if (attack.atkCharacteristic.type === AttackCharacteristicType.PROJECTILE) {
-          const char = attack.atkCharacteristic.projectile
-          
-          // Calculate target position based on heading
-          // This ensures the projectile flies in the direction the attacker is facing (supports dodgeable attacks)
-          const heading = attacker.heading
-          const range = char.atkRange || 10
-          const targetX = attacker.x + Math.cos(heading) * range
-          const targetY = attacker.y + Math.sin(heading) * range
-          
-          const projectileType = char.projectileType || WEAPON_TYPES.SPEAR
+    if (attack.atkCharacteristic.type === AttackCharacteristicType.PROJECTILE) {
+      const char = attack.atkCharacteristic.projectile
 
-          if (projectileType === WEAPON_TYPES.MELEE) {
-              const projectile = this.projectileManager.createMelee(
-                  attacker,
-                  targetX,
-                  targetY,
-                  attack.atkBaseDmg,
-                  'physical',
-                  char.projectileRadius,
-                  char.speedUnitsPerSec
-              )
-              this.gameState.projectiles.set(projectile.id, projectile)
-          } else {
-              // Default to 'spear' (projectile)
-              const projectile = this.projectileManager.createSpear(
-                  attacker,
-                  targetX,
-                  targetY,
-                  attack.atkBaseDmg,
-                  'physical',
-                  char.atkRange || 10,
-                  char.projectileRadius,
-                  char.speedUnitsPerSec,
-                  projectileType as ProjectileType
-              )
-              this.gameState.projectiles.set(projectile.id, projectile)
-          }
+      // Calculate target position based on heading
+      // This ensures the projectile flies in the direction the attacker is facing (supports dodgeable attacks)
+      const heading = attacker.heading
+      const range = char.atkRange || 10
+      const targetX = attacker.x + Math.cos(heading) * range
+      const targetY = attacker.y + Math.sin(heading) * range
+
+      const projectileType = char.projectileType || WEAPON_TYPES.SPEAR
+
+      if (projectileType === WEAPON_TYPES.MELEE) {
+        const projectile = this.projectileManager.createMelee(
+          attacker,
+          targetX,
+          targetY,
+          attack.atkBaseDmg,
+          'physical',
+          char.projectileRadius,
+          char.speedUnitsPerSec
+        )
+        this.gameState.projectiles.set(projectile.id, projectile)
+      } else {
+        // Default to 'spear' (projectile)
+        const projectile = this.projectileManager.createSpear(
+          attacker,
+          targetX,
+          targetY,
+          attack.atkBaseDmg,
+          'physical',
+          char.atkRange || 10,
+          char.projectileRadius,
+          char.speedUnitsPerSec,
+          projectileType as ProjectileType
+        )
+        this.gameState.projectiles.set(projectile.id, projectile)
       }
+    }
   }
 
   attemptExecute(attacker: any, target: any, roomId: string): AttackExecutionResult {
@@ -132,10 +131,10 @@ export class DoubleAttackStrategy implements AttackStrategy {
     // The queue then manages the "casting" state internally in Mob.ts.
     // So we tell the actor "we executed" and "no casting needed from you".
     const executed = this.execute(attacker, target, roomId)
-    
+
     return {
       canExecute: true,
-      needsCasting: false, 
+      needsCasting: false,
       executed,
       targetId: executed ? target.id : undefined,
     }

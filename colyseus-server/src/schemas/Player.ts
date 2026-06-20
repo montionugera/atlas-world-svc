@@ -22,7 +22,7 @@ export class Player extends WorldLife implements IAgent {
   @type('number') maxLinearSpeed: number = 20 // synced to clients
   @type('boolean') isBotMode: boolean = false // Synced: indicates if player is in bot mode
   @type('boolean') isCasting: boolean = false // Synced: indicates if player is currently casting
-  
+
   @type('string') activeNPCId: string = '' // First/primary companion (backward compat)
   @type(['string']) companionIds: ArraySchema<string> = new ArraySchema<string>() // All owned NPC ids
 
@@ -43,24 +43,23 @@ export class Player extends WorldLife implements IAgent {
   @type('number') castDuration: number = 0 // Synced: Total duration of current cast
 
   // Cooldown System
-  @type({ map: "number" }) cooldowns = new MapSchema<number>(); // Action ID -> Timestamp when ready
-
+  @type({ map: 'number' }) cooldowns = new MapSchema<number>() // Action ID -> Timestamp when ready
 
   // AI Agent properties
   @type('string') currentBehavior: string = 'idle'
   @type('number') behaviorLockedUntil: number = 0
   @type('number') maxMoveSpeed: number = 20 // Same as maxLinearSpeed, for AI interface
   chaseRange: number = 15 // Server-only AI property
-  
+
   @type('string') currentAttackTarget: string = ''
   currentChaseTarget: string = ''
   attackStrategies: AttackStrategy[] = []
-  decisionTimestamp: number = 0 
+  decisionTimestamp: number = 0
 
   // Attack Wind-up State
   @type('boolean') pendingAttack: boolean = false
   @type('number') attackExecuteTime: number = 0
-  @type('string') pendingAttackTargetId: string = '' 
+  @type('string') pendingAttackTargetId: string = ''
 
   /** Server-only bonus toward AGI cap (gear); recalculateStats sets `stat.agi` from base + this. */
   agiFromEquipment: number = 0
@@ -70,8 +69,8 @@ export class Player extends WorldLife implements IAgent {
 
   // Set the equipped weapon and recalculate total stats
   equipWeapon(weaponId: string) {
-    this.equippedWeaponId = weaponId;
-    this.recalculateStats();
+    this.equippedWeaponId = weaponId
+    this.recalculateStats()
   }
 
   recalculateStats() {
@@ -100,10 +99,15 @@ export class Player extends WorldLife implements IAgent {
   private combatSystem: PlayerCombatSystem
   private botController: PlayerBotController
 
-  constructor(sessionId: string, name: string, x: number = GAME_CONFIG.worldWidth / 2, y: number = GAME_CONFIG.worldHeight / 2) {
+  constructor(
+    sessionId: string,
+    name: string,
+    x: number = GAME_CONFIG.worldWidth / 2,
+    y: number = GAME_CONFIG.worldHeight / 2
+  ) {
     // Ensure player radius never exceeds 1.3
     const playerRadius = Math.min(PLAYER_STATS.radius, 1.3)
-    
+
     super({
       id: sessionId,
       x,
@@ -129,16 +133,18 @@ export class Player extends WorldLife implements IAgent {
     this.maxLinearSpeed = this.maxMoveSpeed // Sync physics limit
     this.chaseRange = PLAYER_STATS.chaseRange || 15
     this.teamId = TEAMS.IRON_HAMMER // Default Player faction
-    
+
     // Validate radius after construction
     if (this.radius > 1.3) {
-      console.warn(`⚠️ Player ${this.id} radius ${this.radius} exceeds maximum of 1.3, clamping to 1.3`)
+      console.warn(
+        `⚠️ Player ${this.id} radius ${this.radius} exceeds maximum of 1.3, clamping to 1.3`
+      )
       this.radius = 1.3
     }
 
     // Initialize gameplay settings (defaults will be set in its constructor)
     this.settingGameplay = new PlayerSettingGameplay(x, y)
-    
+
     // Initialize Systems
     this.combatSystem = new PlayerCombatSystem(this)
     this.botController = new PlayerBotController(this, this.combatSystem)
@@ -164,7 +170,7 @@ export class Player extends WorldLife implements IAgent {
     this.currentBehavior = 'idle'
     this.currentAttackTarget = ''
     this.currentChaseTarget = ''
-    
+
     this.cooldowns.clear()
     this.cooldowns.clear()
     this.pendingAttack = false
@@ -173,12 +179,12 @@ export class Player extends WorldLife implements IAgent {
 
   // Delegate Cooldown Checks to CombatSystem
   canPerformAction(cooldownKeys: string[]): boolean {
-      return this.combatSystem.canPerformAction(cooldownKeys)
+    return this.combatSystem.canPerformAction(cooldownKeys)
   }
 
   // Delegate Cooldown Sets to CombatSystem
   performAction(settings: Record<string, number>): void {
-      this.combatSystem.performAction(settings)
+    this.combatSystem.performAction(settings)
   }
 
   // AI Interface: Apply behavior decision (Used by BotController logic mostly, but state stored here)
@@ -193,7 +199,7 @@ export class Player extends WorldLife implements IAgent {
     this.behaviorLockedUntil = decision.behaviorLockedUntil
     this.currentAttackTarget = decision.currentAttackTarget
     this.currentChaseTarget = decision.currentChaseTarget
-    
+
     // Apply desired velocity from decision
     const speedMultiplier = this.getSpeedMultiplier()
     if (decision.desiredVelocity) {
@@ -209,7 +215,7 @@ export class Player extends WorldLife implements IAgent {
   updateHeadingFromInput(): void {
     // Dead players don't update heading
     if (!this.isAlive) return
-    
+
     const inputMagnitude = this.input.getMovementMagnitude()
     if (inputMagnitude > 0.01) {
       // Use input direction for heading
@@ -220,12 +226,12 @@ export class Player extends WorldLife implements IAgent {
 
   // findTargetInDirection DELEGATED via combatSystem
   findTargetInDirection(mobs: Map<string, any>): any | null {
-      return this.combatSystem.findTargetInDirection(mobs)
+    return this.combatSystem.findTargetInDirection(mobs)
   }
 
   // Delegate Attack Processing
   processAttackInput(context: any): boolean {
-      return this.combatSystem.processAttackInput(context)
+    return this.combatSystem.processAttackInput(context)
   }
 
   // Override update to handle systems
@@ -236,10 +242,10 @@ export class Player extends WorldLife implements IAgent {
     } else {
       this.updateHeadingFromInput()
     }
-    
+
     // Delegate to Combat System (Wind-up checks)
     this.combatSystem.update(deltaTime, context)
-    
+
     super.update(deltaTime)
   }
 }

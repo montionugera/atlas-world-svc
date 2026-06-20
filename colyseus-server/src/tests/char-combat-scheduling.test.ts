@@ -45,8 +45,18 @@ describe('char: combat scheduling seams (Mob)', () => {
     jest.useFakeTimers()
     gameState = new GameState('map-test', 'room-1')
     mob = new Mob({
-      id: 'mob-1', x: 0, y: 0, radius: 1, maxHealth: 100, pAtk: 10,
-      attackRange: 10, atkWindDownTime: 2000, pDef: 0, mDef: 0, armor: 0, density: 1,
+      id: 'mob-1',
+      x: 0,
+      y: 0,
+      radius: 1,
+      maxHealth: 100,
+      pAtk: 10,
+      attackRange: 10,
+      atkWindDownTime: 2000,
+      pDef: 0,
+      mDef: 0,
+      armor: 0,
+      density: 1,
     })
     ;(mob as any).state = gameState
     player = new Player('p1', 'Player 1', 5, 0)
@@ -105,8 +115,22 @@ describe('char: combat scheduling seams (Mob)', () => {
     const now = Date.now()
     const strategy = mockStrategy({ name: 'combo' })
     const attacks: AttackDefinition[] = [
-      { atkBaseDmg: 10, atkWindUpTime: 200, atkCharacteristic: { type: AttackCharacteristicType.PROJECTILE, projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 } } },
-      { atkBaseDmg: 20, atkWindUpTime: 300, atkCharacteristic: { type: AttackCharacteristicType.PROJECTILE, projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 } } },
+      {
+        atkBaseDmg: 10,
+        atkWindUpTime: 200,
+        atkCharacteristic: {
+          type: AttackCharacteristicType.PROJECTILE,
+          projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 },
+        },
+      },
+      {
+        atkBaseDmg: 20,
+        atkWindUpTime: 300,
+        atkCharacteristic: {
+          type: AttackCharacteristicType.PROJECTILE,
+          projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 },
+        },
+      },
     ]
     mob.combatSystem.enqueueAttacks(strategy, 'p1', attacks, now)
 
@@ -130,8 +154,22 @@ describe('char: combat scheduling seams (Mob)', () => {
     mob.attackStrategies.push(strategy)
 
     const attacks: AttackDefinition[] = [
-      { atkBaseDmg: 10, atkWindUpTime: 200, atkCharacteristic: { type: AttackCharacteristicType.PROJECTILE, projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 } } },
-      { atkBaseDmg: 20, atkWindUpTime: 300, atkCharacteristic: { type: AttackCharacteristicType.PROJECTILE, projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 } } },
+      {
+        atkBaseDmg: 10,
+        atkWindUpTime: 200,
+        atkCharacteristic: {
+          type: AttackCharacteristicType.PROJECTILE,
+          projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 },
+        },
+      },
+      {
+        atkBaseDmg: 20,
+        atkWindUpTime: 300,
+        atkCharacteristic: {
+          type: AttackCharacteristicType.PROJECTILE,
+          projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 },
+        },
+      },
     ]
     // Schedules executionTimes at now+200 and now+500.
     mob.combatSystem.enqueueAttacks(strategy, 'p1', attacks, now)
@@ -156,7 +194,10 @@ describe('char: combat scheduling seams (NPC)', () => {
   const attackDef: AttackDefinition = {
     atkBaseDmg: 10,
     atkWindUpTime: 200,
-    atkCharacteristic: { type: AttackCharacteristicType.PROJECTILE, projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 } },
+    atkCharacteristic: {
+      type: AttackCharacteristicType.PROJECTILE,
+      projectile: { speedUnitsPerSec: 10, projectileRadius: 1, atkRange: 10 },
+    },
   }
 
   beforeEach(() => {

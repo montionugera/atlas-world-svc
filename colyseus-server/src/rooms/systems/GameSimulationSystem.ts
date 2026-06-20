@@ -7,9 +7,14 @@ export class GameSimulationSystem {
   update(deltaTime: number) {
     try {
       this.updatePhysicsBodies()
-      
-      this.room.physicsManager.update(deltaTime, this.room.state.players, this.room.state.mobs, this.room.state.npcs)
-      
+
+      this.room.physicsManager.update(
+        deltaTime,
+        this.room.state.players,
+        this.room.state.mobs,
+        this.room.state.npcs
+      )
+
       this.room.projectileManager.updateProjectiles(
         this.room.state.projectiles,
         deltaTime,
@@ -20,11 +25,11 @@ export class GameSimulationSystem {
 
       this.room.state.aiModule.update()
       this.room.mobLifeCycleManager.update()
-      
+
       this.updateMobs(deltaTime)
       this.updateNPCs(deltaTime)
       this.cleanupDespawnedProjectiles(deltaTime)
-      
+
       this.room.zoneEffectManager.update(this.room.state.zoneEffects)
 
       this.processBattleMessages()
@@ -54,63 +59,63 @@ export class GameSimulationSystem {
         mobs: this.room.state.mobs,
         roomId: this.room.roomId,
         projectileManager: this.room.projectileManager,
-        gameState: this.room.state
-      };
-      
+        gameState: this.room.state,
+      }
+
       player.update(deltaTime, context)
       this.room.battleModule.updateCombatState(player, deltaTime)
 
       if (player.isBotMode && Math.random() < 0.01) {
-         console.log(`[Server] Player ${player.sessionId} pos: ${player.x}, ${player.y}`)
+        console.log(`[Server] Player ${player.sessionId} pos: ${player.x}, ${player.y}`)
       }
 
       if (player.processAttackInput(context)) {
         player.input.attack = false
       }
-      
+
       // Continuously check for deflection while the player is in the attack or wind-up state
       if (player.isAttacking || player.pendingAttack) {
-         this.checkProjectileDeflection(player)
+        this.checkProjectileDeflection(player)
       }
     })
   }
 
   private updateMobs(deltaTime: number) {
     this.room.state.updateMobs()
-    
+
     this.room.state.mobs.forEach(mob => {
-        if (mob.isAlive) {
-            this.room.battleModule.updateCombatState(mob, deltaTime)
-        }
+      if (mob.isAlive) {
+        this.room.battleModule.updateCombatState(mob, deltaTime)
+      }
     })
   }
 
   private updateNPCs(deltaTime: number) {
     const now = Date.now()
-    
+
     this.room.state.npcs.forEach(npc => {
-        if (npc.isAlive) {
-            npc.update(deltaTime, this.room.state)
-            this.room.battleModule.updateCombatState(npc, deltaTime)
-        } else {
-            // Respawn logic
-            if (npc.diedAt > 0 && now - npc.diedAt >= npc.respawnTimeMs) {
-                const owner = this.room.state.players.get(npc.ownerId)
-                if (owner && owner.isAlive) {
-                    const spawnX = owner.x + 10
-                    const spawnY = owner.y + 10
-                    
-                    // Respawn the entity (resets health, alive state, etc)
-                    this.room.battleModule.respawnEntity(npc, spawnX, spawnY)
-                    
-                    // Re-create physics body after death removal
-                    this.room.physicsManager.removeBody(npc.id) 
-                    this.room.physicsManager.createNPCBody(npc)
-                    
-                    console.log(`🐾 NPC RESPAWNED: ${npc.id} near ${owner.id}`)
-                }
-            }
+      if (npc.isAlive) {
+        npc.update(deltaTime, this.room.state)
+        this.room.battleModule.updateCombatState(npc, deltaTime)
+      } else {
+        // Respawn logic
+        if (npc.diedAt > 0 && now - npc.diedAt >= npc.respawnTimeMs) {
+          const owner = this.room.state.players.get(npc.ownerId)
+          if (owner && owner.isAlive) {
+            const spawnX = owner.x + 10
+            const spawnY = owner.y + 10
+
+            // Respawn the entity (resets health, alive state, etc)
+            this.room.battleModule.respawnEntity(npc, spawnX, spawnY)
+
+            // Re-create physics body after death removal
+            this.room.physicsManager.removeBody(npc.id)
+            this.room.physicsManager.createNPCBody(npc)
+
+            console.log(`🐾 NPC RESPAWNED: ${npc.id} near ${owner.id}`)
+          }
         }
+      }
     })
   }
 

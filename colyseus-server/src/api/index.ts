@@ -30,4 +30,3 @@ export function createApiRouter(gameServer: Server): Router {
 
 // Re-export registry functions for use in GameRoom
 export { registerRoom, unregisterRoom } from './registry'
-

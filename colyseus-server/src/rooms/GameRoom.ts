@@ -54,14 +54,18 @@ export class GameRoom extends Room<GameState> {
     // Initialize Core Managers (physics uses map dimensions from state)
     this.physicsManager = new PlanckPhysicsManager(this.state.width, this.state.height)
     this.physicsManager.setRoomId(this.roomId)
-    
+
     this.battleManager = new BattleManager(this.roomId, this.state)
     this.state.battleManager = this.battleManager
-    
+
     this.battleModule = new BattleModule(this.state)
-    this.projectileManager = new ProjectileManager(this.state, this.battleModule, this.battleManager)
+    this.projectileManager = new ProjectileManager(
+      this.state,
+      this.battleModule,
+      this.battleManager
+    )
     this.zoneEffectManager = new ZoneEffectManager(this.state, this.battleModule)
-    
+
     this.mobLifeCycleManager = new MobLifeCycleManager(this.roomId, this.state)
     this.mobLifeCycleManager.setProjectileManager(this.projectileManager)
     this.state.mobLifeCycleManager = this.mobLifeCycleManager
@@ -124,13 +128,13 @@ export class GameRoom extends Room<GameState> {
     this.state.aiModule.stop()
     this.stopSimulation()
     this.battleManager.cleanup()
-    
+
     // Physics Event listeners managed inside physicsManager are destroyed here
     this.physicsManager.destroy()
   }
 
   private startSimulation() {
-    this.setSimulationInterval((deltaTime) => this.simulationSystem.update(deltaTime))
+    this.setSimulationInterval(deltaTime => this.simulationSystem.update(deltaTime))
   }
 
   private stopSimulation() {

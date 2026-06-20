@@ -45,7 +45,7 @@ describe('Mob-centric AI decisions', () => {
     mob.radius = 4
     gameState.mobs.set(mob.id, mob)
     aiModule.registerMob(mob, {})
-    
+
     // Enter attack state (very close to mob - same position, distance = 0)
     const testPlayer1 = new Player('player1', 'TestPlayer', 200, 150)
     gameState.players.set('player1', testPlayer1)
@@ -72,19 +72,19 @@ describe('Mob-centric AI decisions', () => {
 
   test('behaviors produce correct desired velocity', () => {
     const mob = new Mob({ id: 'm3', x: 0, y: 0, vx: 0, vy: 0 })
-    
+
     // Test ChaseBehavior
     const chaseBehavior = new ChaseBehavior()
     const chaseEnv = {
       nearestPlayer: { x: 5, y: 0, id: 'player1', radius: 1.3 } as any,
       distanceToNearestPlayer: 5,
       nearBoundary: false,
-      worldBounds: { width: 400, height: 300 }
+      worldBounds: { width: 400, height: 300 },
     }
-    
+
     const chaseDecision = chaseBehavior.getDecision(mob, chaseEnv, Date.now())
     const chaseDesired = chaseDecision.desiredVelocity || { x: 0, y: 0 }
-    
+
     expect(chaseDesired.x).toBeGreaterThan(0)
     expect(Math.abs(chaseDesired.y)).toBeLessThan(1e-6)
     // For chase, speed is limited by maxStoppingSpeed when close to target
@@ -94,32 +94,32 @@ describe('Mob-centric AI decisions', () => {
     const attackBehavior = new AttackBehavior()
     mob.attackRange = 1.5 // MOB_STATS.attackRange
     mob.radius = 4
-    
+
     // Test: outside melee range (10 units > 6.8 melee range with player radius 1.3) - should move closer
     const attackEnvFar = {
       nearestPlayer: { x: 10, y: 0, id: 'player1', radius: 1.3 } as any,
       distanceToNearestPlayer: 10,
       nearBoundary: false,
-      worldBounds: { width: 400, height: 300 }
+      worldBounds: { width: 400, height: 300 },
     }
-    
+
     const attackDecisionFar = attackBehavior.getDecision(mob, attackEnvFar, Date.now())
     const attackDesiredFar = attackDecisionFar.desiredVelocity || { x: 0, y: 0 }
-    
+
     expect(attackDesiredFar.x).toBeGreaterThan(0) // Should move toward player
     expect(Math.abs(attackDesiredFar.y)).toBeLessThan(1e-6)
-    
+
     // Test: within melee range (5 units < 6.8 melee range with player radius 1.3) - should stop
     const attackEnvClose = {
       nearestPlayer: { x: 5, y: 0, id: 'player1', radius: 1.3 } as any,
       distanceToNearestPlayer: 5,
       nearBoundary: false,
-      worldBounds: { width: 400, height: 300 }
+      worldBounds: { width: 400, height: 300 },
     }
-    
+
     const attackDecisionClose = attackBehavior.getDecision(mob, attackEnvClose, Date.now())
     const attackDesiredClose = attackDecisionClose.desiredVelocity || { x: 0, y: 0 }
-    
+
     expect(attackDesiredClose.x).toBe(0)
     expect(attackDesiredClose.y).toBe(0)
   })
@@ -128,7 +128,7 @@ describe('Mob-centric AI decisions', () => {
     const mob = new Mob({ id: 'm4', x: 5, y: 5, vx: 0, vy: 0 })
     gameState.mobs.set(mob.id, mob)
     aiModule.registerMob(mob, {})
-    
+
     const env = gameState.worldInterface.buildMobEnvironment(mob, 50)
     // Override nearBoundary for test
     env.nearBoundary = true
@@ -142,7 +142,7 @@ describe('Mob-centric AI decisions', () => {
     const mob = new Mob({ id: 'm5', x: 200, y: 150, vx: 1, vy: 0 }) // Center of world
     gameState.mobs.set(mob.id, mob)
     aiModule.registerMob(mob, {})
-    
+
     // Use AIWorldInterface to build proper environment
     const env = gameState.worldInterface.buildMobEnvironment(mob, 50)
     // Explicitly set nearBoundary to false
@@ -173,7 +173,7 @@ describe('Mob-centric AI decisions', () => {
     // Mob should not choose attack behavior for dead player
     const decision = aiModule.decideBehavior(mob, env)
     mob.applyBehaviorDecision(decision)
-    
+
     expect(decision.behavior).not.toBe('attack')
     expect(decision.currentAttackTarget).toBe('')
     // Should default to wander since no alive players nearby

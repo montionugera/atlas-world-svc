@@ -16,10 +16,10 @@ describe('Player Death Movement Prevention', () => {
     gameState = new GameState('test-map', 'test-room')
     physicsManager = new PlanckPhysicsManager()
     physicsManager.setRoomId('test-room')
-    
+
     player = new Player('session-1', 'TestPlayer', 100, 100)
     gameState.players.set('session-1', player)
-    
+
     // Create physics body for player
     physicsManager.createPlayerBody(player)
   })
@@ -36,10 +36,10 @@ describe('Player Death Movement Prevention', () => {
 
       // Try to set movement input
       player.input.setMovement(5, 5)
-      
+
       // Process physics - dead player should not move
       physicsManager.update(GAME_CONFIG.tickRate, gameState.players, gameState.mobs)
-      
+
       // Get body velocity - should be zero
       const body = physicsManager.getBody(player.id)
       if (body) {
@@ -53,20 +53,20 @@ describe('Player Death Movement Prevention', () => {
       // Player is alive and moving
       player.input.setMovement(5, 5)
       physicsManager.update(GAME_CONFIG.tickRate, gameState.players, gameState.mobs)
-      
+
       // Get initial velocity (should be non-zero)
       const body = physicsManager.getBody(player.id)
       if (body) {
         const initialVelocity = body.getLinearVelocity()
         const hasVelocity = Math.abs(initialVelocity.x) > 0.1 || Math.abs(initialVelocity.y) > 0.1
-        
+
         // Kill the player
         player.die()
         expect(player.isAlive).toBe(false)
-        
+
         // Process physics again - should stop velocity
         physicsManager.update(GAME_CONFIG.tickRate, gameState.players, gameState.mobs)
-        
+
         const finalVelocity = body.getLinearVelocity()
         expect(finalVelocity.x).toBe(0)
         expect(finalVelocity.y).toBe(0)
@@ -77,13 +77,13 @@ describe('Player Death Movement Prevention', () => {
       // Set movement input
       player.input.setMovement(5, 5)
       expect(player.input.getMovementMagnitude()).toBeGreaterThan(0)
-      
+
       // Kill player
       player.die()
-      
+
       // Clear input (simulating what happens in GameRoom)
       player.input.clear()
-      
+
       expect(player.input.getMovementMagnitude()).toBe(0)
     })
   })
@@ -92,11 +92,11 @@ describe('Player Death Movement Prevention', () => {
     it('should prevent dead players from attacking', () => {
       player.die()
       expect(player.isAlive).toBe(false)
-      
+
       // Try to attack
       player.input.attack = true
       const result = player.processAttackInput({ mobs: new Map(), roomId: 'test-room' })
-      
+
       expect(result).toBe(false)
     })
   })
@@ -104,17 +104,16 @@ describe('Player Death Movement Prevention', () => {
   describe('Heading Update Blocking', () => {
     it('should prevent dead players from updating heading', () => {
       const initialHeading = player.heading
-      
+
       player.die()
       expect(player.isAlive).toBe(false)
-      
+
       // Try to update heading
       player.input.setMovement(5, 5)
       player.updateHeadingFromInput()
-      
+
       // Heading should not change
       expect(player.heading).toBe(initialHeading)
     })
   })
 })
-

@@ -75,4 +75,3 @@ export class Projectile extends WorldObject {
     this.vy = 0
   }
 }
-

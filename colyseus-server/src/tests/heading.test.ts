@@ -19,7 +19,7 @@ describe('Heading System Tests', () => {
         y: 50,
         vx: 0,
         vy: 0,
-        rotationSpeed: 1000 // Fast rotation for instant-snap tests
+        rotationSpeed: 1000, // Fast rotation for instant-snap tests
       })
     })
 

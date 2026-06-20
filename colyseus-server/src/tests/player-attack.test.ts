@@ -21,9 +21,9 @@ describe('Player Attack System', () => {
     test('should find target in heading direction', () => {
       // Set player heading to face right (towards mob)
       testPlayer.heading = 0 // 0 radians = right
-      
+
       const target = testPlayer.findTargetInDirection(new Map([['mob-1', testMob]]))
-      
+
       expect(target).toBe(testMob)
     })
 
@@ -31,10 +31,10 @@ describe('Player Attack System', () => {
       // Move mob far away
       testMob.x = 200
       testMob.y = 50
-      
+
       testPlayer.heading = 0
       const target = testPlayer.findTargetInDirection(new Map([['mob-1', testMob]]))
-      
+
       expect(target).toBeNull()
     })
 
@@ -42,24 +42,26 @@ describe('Player Attack System', () => {
       // Place mob behind player
       testMob.x = 40
       testMob.y = 50
-      
+
       testPlayer.heading = 0 // facing right
       const target = testPlayer.findTargetInDirection(new Map([['mob-1', testMob]]))
-      
+
       expect(target).toBeNull()
     })
 
     test('should find nearest target when multiple targets in range', () => {
       const mob2 = new Mob({ id: 'mob-2', x: 52, y: 50 }) // closer to player
       const mob3 = new Mob({ id: 'mob-3', x: 70, y: 50 }) // farther from player
-      
+
       testPlayer.heading = 0 // facing right
-      const target = testPlayer.findTargetInDirection(new Map([
-        ['mob-1', testMob],
-        ['mob-2', mob2],
-        ['mob-3', mob3]
-      ]))
-      
+      const target = testPlayer.findTargetInDirection(
+        new Map([
+          ['mob-1', testMob],
+          ['mob-2', mob2],
+          ['mob-3', mob3],
+        ])
+      )
+
       expect(target).toBe(mob2) // Should find the closest one
     })
   })
@@ -69,102 +71,118 @@ describe('Player Attack System', () => {
       testPlayer.heading = 0
       testPlayer.input.attack = true
       jest.spyOn(testPlayer, 'canAttack').mockReturnValue(true)
-      
+
       // Mock the event bus
       const mockEmitRoomEvent = jest.fn()
       jest.doMock('../events/EventBus', () => ({
         eventBus: {
-          emitRoomEvent: mockEmitRoomEvent
+          emitRoomEvent: mockEmitRoomEvent,
         },
         RoomEventType: {
-          BATTLE_ATTACK: 'BATTLE_ATTACK'
-        }
+          BATTLE_ATTACK: 'BATTLE_ATTACK',
+        },
       }))
-      
-      const result = testPlayer.processAttackInput({ mobs: new Map([['mob-1', testMob]]), roomId: 'test-room' })
-      
+
+      const result = testPlayer.processAttackInput({
+        mobs: new Map([['mob-1', testMob]]),
+        roomId: 'test-room',
+      })
+
       expect(result).toBe(true)
     })
 
     test('should create melee projectile upon attack execution', () => {
       jest.useFakeTimers()
       jest.setSystemTime(Date.now())
-      
+
       testPlayer.heading = 0
       testPlayer.input.attack = true
-      
+
       const mockEmitRoomEvent = jest.fn()
       jest.doMock('../events/EventBus', () => ({
         eventBus: { emitRoomEvent: mockEmitRoomEvent },
-        RoomEventType: { BATTLE_ATTACK: 'BATTLE_ATTACK' }
+        RoomEventType: { BATTLE_ATTACK: 'BATTLE_ATTACK' },
       }))
-      
+
       const mockCreateMelee = jest.fn().mockImplementation(() => {
         return { id: 'test-projectile-id' }
       })
       const mockProjectileManager = {
-        createMelee: mockCreateMelee
+        createMelee: mockCreateMelee,
       }
-      
+
       const mockGameState = {
-        projectiles: new Map()
+        projectiles: new Map(),
       }
-      
+
       // Mock canAttack to avoid performance.now() issues with fake timers
       jest.spyOn(testPlayer, 'canAttack').mockReturnValue(true)
-      
-      testPlayer.processAttackInput({ mobs: new Map(), roomId: 'test-room', projectileManager: mockProjectileManager, gameState: mockGameState })
-      
+
+      testPlayer.processAttackInput({
+        mobs: new Map(),
+        roomId: 'test-room',
+        projectileManager: mockProjectileManager,
+        gameState: mockGameState,
+      })
+
       // Advance time past wind-up to trigger execution
       const windUp =
         resolvePlayerMeleeAttackTiming(testPlayer)?.windUpMs ?? PLAYER_STATS.atkWindUpTime
       const advance = windUp + 50
       jest.setSystemTime(Date.now() + advance)
-      testPlayer.update(advance, { mobs: new Map(), roomId: 'test-room', projectileManager: mockProjectileManager, gameState: mockGameState })
-      
+      testPlayer.update(advance, {
+        mobs: new Map(),
+        roomId: 'test-room',
+        projectileManager: mockProjectileManager,
+        gameState: mockGameState,
+      })
+
       expect(mockCreateMelee).toHaveBeenCalled()
       expect(mockGameState.projectiles.has('test-projectile-id')).toBe(true)
-      
+
       jest.useRealTimers()
     })
 
     test('should process attack even when no target found (for visual feedback)', () => {
       jest.useFakeTimers()
       jest.setSystemTime(Date.now())
-      
+
       const originalNow = performance.now
       performance.now = jest.fn(() => Date.now())
-      
+
       testPlayer.heading = Math.PI // facing left (away from mob)
       testPlayer.input.attack = true
-      
+
       // Mock canAttack to avoid performance.now() issues with fake timers
       jest.spyOn(testPlayer, 'canAttack').mockReturnValue(true)
-      
+
       // Mock the event bus
       const mockEmitRoomEvent = jest.fn()
       jest.doMock('../events/EventBus', () => ({
         eventBus: { emitRoomEvent: mockEmitRoomEvent },
-        RoomEventType: { BATTLE_ATTACK: 'BATTLE_ATTACK' }
+        RoomEventType: { BATTLE_ATTACK: 'BATTLE_ATTACK' },
       }))
-      
-      const result = testPlayer.processAttackInput({ mobs: new Map([['mob-1', testMob]]), roomId: 'test-room' })
-      
+
+      const result = testPlayer.processAttackInput({
+        mobs: new Map([['mob-1', testMob]]),
+        roomId: 'test-room',
+      })
+
       // Starts wind-up and returns true
       expect(result).toBe(true)
-      
+
       // Advance time past wind-up to trigger execution
       const windUp2 =
         resolvePlayerMeleeAttackTiming(testPlayer)?.windUpMs ?? PLAYER_STATS.atkWindUpTime
       const advance2 = windUp2 + 50
       jest.setSystemTime(Date.now() + advance2)
       testPlayer.update(advance2, { mobs: new Map(), roomId: 'test-room' })
-      
+
       // Attack state should be updated
       expect(testPlayer.isCasting).toBe(false)
       expect(testPlayer.isAttacking).toBe(true)
       expect(testPlayer.lastAttackTime).toBeGreaterThan(0)
-      
+
       performance.now = originalNow
       jest.useRealTimers()
     })
@@ -173,18 +191,24 @@ describe('Player Attack System', () => {
       testPlayer.heading = 0
       testPlayer.input.attack = true
       testPlayer.lastAttackTime = Date.now() // Recent attack
-      
-      const result = testPlayer.processAttackInput({ mobs: new Map([['mob-1', testMob]]), roomId: 'test-room' })
-      
+
+      const result = testPlayer.processAttackInput({
+        mobs: new Map([['mob-1', testMob]]),
+        roomId: 'test-room',
+      })
+
       expect(result).toBe(false)
     })
 
     test('should not process attack when attack input is false', () => {
       testPlayer.heading = 0
       testPlayer.input.attack = false
-      
-      const result = testPlayer.processAttackInput({ mobs: new Map([['mob-1', testMob]]), roomId: 'test-room' })
-      
+
+      const result = testPlayer.processAttackInput({
+        mobs: new Map([['mob-1', testMob]]),
+        roomId: 'test-room',
+      })
+
       expect(result).toBe(false)
     })
   })
@@ -192,13 +216,13 @@ describe('Player Attack System', () => {
   describe('Attack Cooldown', () => {
     test('should respect attack delay', () => {
       testPlayer.lastAttackTime = performance.now()
-      
+
       expect(testPlayer.canAttack()).toBe(false)
     })
 
     test('should allow attack after delay', () => {
       testPlayer.lastAttackTime = performance.now() - 2000 // 2 seconds ago
-      
+
       expect(testPlayer.canAttack()).toBe(true)
     })
   })

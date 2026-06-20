@@ -1,4 +1,3 @@
-
 import { SPEAR_THROWER_STATS, calculateSpearMaxRange, MOB_STATS } from '../combatConfig'
 import { PROJECTILE_GRAVITY } from '../physicsConfig'
 import { AttackCharacteristicType, AttackDefinition, MobTypeConfig } from './types'
@@ -24,7 +23,10 @@ export function calculateMobRadius(mobType: MobTypeConfig): number {
 /**
  * Calculate spear max range for a mob based on its radius
  */
-export function calculateSpearRangeForMob(radius: number, speedUnitsPerSec: number = SPEAR_THROWER_STATS.spearSpeed): number {
+export function calculateSpearRangeForMob(
+  radius: number,
+  speedUnitsPerSec: number = SPEAR_THROWER_STATS.spearSpeed
+): number {
   const visualHeight = radius * 2
   return calculateSpearMaxRange(visualHeight, PROJECTILE_GRAVITY, speedUnitsPerSec)
 }
@@ -33,10 +35,7 @@ export function calculateSpearRangeForMob(radius: number, speedUnitsPerSec: numb
  * Calculate effective attack range for an attack definition
  * For projectile attacks with atkRange=0, calculates based on physics
  */
-export function calculateEffectiveAttackRange(
-  attack: AttackDefinition,
-  mobRadius: number
-): number {
+export function calculateEffectiveAttackRange(attack: AttackDefinition, mobRadius: number): number {
   // Calculate range for projectile attacks
   if (attack.atkCharacteristic.type === AttackCharacteristicType.PROJECTILE) {
     const projectile = attack.atkCharacteristic.projectile

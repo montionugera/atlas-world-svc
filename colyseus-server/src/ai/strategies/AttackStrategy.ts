@@ -20,11 +20,10 @@ export interface AttackStrategy {
   execute(attacker: any, target: any, roomId: string): boolean
   /** @param attacker Optional; strategies with ASPD bands use attacker.stat.agi when present. */
   getCastTime(attacker?: WorldLife): number // ms before attack executes
-  
+
   /**
    * Attempt to execute the strategy
    * Returns execution result indicating if casting is needed or if attack executed immediately
    */
   attemptExecute(attacker: any, target: any, roomId: string): AttackExecutionResult
 }
-

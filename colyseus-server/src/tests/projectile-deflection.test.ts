@@ -7,64 +7,154 @@ import { Player } from '../schemas/Player'
 import { PlanckPhysicsManager } from '../physics/PlanckPhysicsManager'
 
 describe('Projectile Deflection System', () => {
-    let gameState: GameState
-    let battleModule: BattleModule
-    let projectileManager: ProjectileManager
+  let gameState: GameState
+  let battleModule: BattleModule
+  let projectileManager: ProjectileManager
 
-    beforeEach(() => {
-        gameState = new GameState('test-map', 'test-room-deflect')
-        battleModule = new BattleModule(gameState)
+  beforeEach(() => {
+    gameState = new GameState('test-map', 'test-room-deflect')
+    battleModule = new BattleModule(gameState)
     projectileManager = new ProjectileManager(gameState, battleModule)
-        
-        // Mock event bus to avoid errors
-        jest.spyOn(eventBus, 'emitRoomEvent').mockImplementation(() => {})
-    })
 
-    test('Equal Level: Both projectiles are destroyed', () => {
-        const p1 = new Projectile('p1', 0, 0, 0, 0, 'owner1', 10)
-        const p2 = new Projectile('p2', 0, 0, 0, 0, 'owner2', 10)
+    // Mock event bus to avoid errors
+    jest.spyOn(eventBus, 'emitRoomEvent').mockImplementation(() => {})
+  })
 
-        projectileManager.handleProjectileCollision(p1, p2)
+  test('Equal Level: Both projectiles are destroyed', () => {
+    const p1 = new Projectile('p1', 0, 0, 0, 0, 'owner1', 10)
+    const p2 = new Projectile('p2', 0, 0, 0, 0, 'owner2', 10)
 
-        // stuckAt > 0 implies destroyed/stopped
-        expect(p1.stuckAt).toBeGreaterThan(0)
-        expect(p2.stuckAt).toBeGreaterThan(0)
-    })
+    projectileManager.handleProjectileCollision(p1, p2)
 
-    test('Different teams projectiles are destroyed', () => {
-        const pStrong = new Projectile('strong', 0, 0, 0, 0, 'owner1', 10, 'physical', 'spear', 100, 4, 1000, 'team1', 0)
-        const pWeak = new Projectile('weak', 0, 0, 0, 0, 'owner2', 10, 'physical', 'spear', 100, 4, 1000, 'team2', 0)
+    // stuckAt > 0 implies destroyed/stopped
+    expect(p1.stuckAt).toBeGreaterThan(0)
+    expect(p2.stuckAt).toBeGreaterThan(0)
+  })
 
-        projectileManager.handleProjectileCollision(pStrong, pWeak)
+  test('Different teams projectiles are destroyed', () => {
+    const pStrong = new Projectile(
+      'strong',
+      0,
+      0,
+      0,
+      0,
+      'owner1',
+      10,
+      'physical',
+      'spear',
+      100,
+      4,
+      1000,
+      'team1',
+      0
+    )
+    const pWeak = new Projectile(
+      'weak',
+      0,
+      0,
+      0,
+      0,
+      'owner2',
+      10,
+      'physical',
+      'spear',
+      100,
+      4,
+      1000,
+      'team2',
+      0
+    )
 
-        // Both are destroyed because they clash
-        expect(pStrong.stuckAt).toBeGreaterThan(0)
-        expect(pWeak.stuckAt).toBeGreaterThan(0)
-    })
+    projectileManager.handleProjectileCollision(pStrong, pWeak)
 
-    test('Same team projectiles ignore each other', () => {
-        const pStrong = new Projectile('strong', 0, 0, 0, 0, 'owner1', 10, 'physical', 'spear', 100, 4, 1000, 'team1', 0)
-        const pWeak = new Projectile('weak', 0, 0, 0, 0, 'owner2', 10, 'physical', 'spear', 100, 4, 1000, 'team1', 0)
+    // Both are destroyed because they clash
+    expect(pStrong.stuckAt).toBeGreaterThan(0)
+    expect(pWeak.stuckAt).toBeGreaterThan(0)
+  })
 
-        // Swap arguments
-        projectileManager.handleProjectileCollision(pWeak, pStrong)
+  test('Same team projectiles ignore each other', () => {
+    const pStrong = new Projectile(
+      'strong',
+      0,
+      0,
+      0,
+      0,
+      'owner1',
+      10,
+      'physical',
+      'spear',
+      100,
+      4,
+      1000,
+      'team1',
+      0
+    )
+    const pWeak = new Projectile(
+      'weak',
+      0,
+      0,
+      0,
+      0,
+      'owner2',
+      10,
+      'physical',
+      'spear',
+      100,
+      4,
+      1000,
+      'team1',
+      0
+    )
 
-        expect(pStrong.stuckAt).toBe(0)
-        expect(pWeak.stuckAt).toBe(0)
-    })
-    
-    test('Dead projectile should not trigger collision again', () => {
-        const pDead = new Projectile('dead', 0, 0, 0, 0, 'owner1', 10, 'physical', 'spear', 100, 4, 1000, 'team1', 0)
-        pDead.stick() // Already dead
-        pDead.hitTargets.add('clash') // Marks it as having already resolved collision
-        
-        const pLive = new Projectile('live', 0, 0, 0, 0, 'owner2', 10, 'physical', 'spear', 100, 4, 1000, 'team2', 0)
-        
-        projectileManager.handleProjectileCollision(pDead, pLive)
-        
-        // Live should remain live
-        expect(pLive.stuckAt).toBe(0)
-    })
+    // Swap arguments
+    projectileManager.handleProjectileCollision(pWeak, pStrong)
+
+    expect(pStrong.stuckAt).toBe(0)
+    expect(pWeak.stuckAt).toBe(0)
+  })
+
+  test('Dead projectile should not trigger collision again', () => {
+    const pDead = new Projectile(
+      'dead',
+      0,
+      0,
+      0,
+      0,
+      'owner1',
+      10,
+      'physical',
+      'spear',
+      100,
+      4,
+      1000,
+      'team1',
+      0
+    )
+    pDead.stick() // Already dead
+    pDead.hitTargets.add('clash') // Marks it as having already resolved collision
+
+    const pLive = new Projectile(
+      'live',
+      0,
+      0,
+      0,
+      0,
+      'owner2',
+      10,
+      'physical',
+      'spear',
+      100,
+      4,
+      1000,
+      'team2',
+      0
+    )
+
+    projectileManager.handleProjectileCollision(pDead, pLive)
+
+    // Live should remain live
+    expect(pLive.stuckAt).toBe(0)
+  })
 
   test('syncEntityToBody keeps physics body velocity aligned after deflect', () => {
     const physicsManager = new PlanckPhysicsManager()
@@ -145,7 +235,7 @@ describe('Projectile Deflection System', () => {
 
     const attacker = new Player('player-1', 'TestPlayer', 0, 0)
     // Needs to face the projectile to satisfy the cone angle check
-    attacker.heading = Math.atan2(4, 3) 
+    attacker.heading = Math.atan2(4, 3)
     attacker.isAttacking = true
     attacker.attackRange = 5
     attacker.radius = 1
@@ -156,7 +246,7 @@ describe('Projectile Deflection System', () => {
     // Normal vector is (3/5, 4/5) = (0.6, 0.8)
     // Velocity is (-3, -4)
     // dot = (-3)*(0.6) + (-4)*(0.8) = -1.8 - 3.2 = -5.0
-    // Vector reflection: V_new = (-3, -4) - 2*(-5)*(0.6, 0.8) 
+    // Vector reflection: V_new = (-3, -4) - 2*(-5)*(0.6, 0.8)
     // V_new = (-3, -4) + 10*(0.6, 0.8) = (-3, -4) + (6, 8) = (3, 4)
     // Preserve speed magnitude (5); reflected direction (3, 4), no defender power on velocity.
 

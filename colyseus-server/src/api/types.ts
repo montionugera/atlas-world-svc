@@ -31,4 +31,3 @@ export type RouteHandler = (req: Request, res: Response) => Promise<void> | void
 export interface ParsedPlayerIds {
   ids: string[] | null
 }
-

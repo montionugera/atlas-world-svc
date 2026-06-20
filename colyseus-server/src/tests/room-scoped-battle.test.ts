@@ -86,10 +86,14 @@ describe('Room-Scoped Battle Manager', () => {
     expect(room2GameState.players.get('player-2')).toBeDefined()
 
     // Room 1: mob attacks player
-    room1BattleManager.addActionMessage(BattleManager.createAttackMessage('mob-1', 'player-1', 20, 10))
+    room1BattleManager.addActionMessage(
+      BattleManager.createAttackMessage('mob-1', 'player-1', 20, 10)
+    )
 
     // Room 2: mob attacks player (same base damage as room 1 so isolation is apples-to-apples)
-    room2BattleManager.addActionMessage(BattleManager.createAttackMessage('mob-2', 'player-2', 20, 8))
+    room2BattleManager.addActionMessage(
+      BattleManager.createAttackMessage('mob-2', 'player-2', 20, 8)
+    )
 
     // Process attacks in both rooms
     await room1BattleManager.processActionMessages()
@@ -116,8 +120,12 @@ describe('Room-Scoped Battle Manager', () => {
 
   test('should have independent attack event histories', () => {
     // Create attacks in both rooms
-    room1BattleManager.addActionMessage(BattleManager.createAttackMessage('mob-1', 'player-1', 20, 10))
-    room2BattleManager.addActionMessage(BattleManager.createAttackMessage('mob-2', 'player-2', 15, 8))
+    room1BattleManager.addActionMessage(
+      BattleManager.createAttackMessage('mob-1', 'player-1', 20, 10)
+    )
+    room2BattleManager.addActionMessage(
+      BattleManager.createAttackMessage('mob-2', 'player-2', 15, 8)
+    )
 
     // Process the messages to create events
     room1BattleManager.processActionMessages()
@@ -144,7 +152,9 @@ describe('Room-Scoped Battle Manager', () => {
 
   test('should not allow cross-room attacks', async () => {
     // Try to attack player in room 2 from room 1
-    room1BattleManager.addActionMessage(BattleManager.createAttackMessage('mob-1', 'player-2', 20, 10))
+    room1BattleManager.addActionMessage(
+      BattleManager.createAttackMessage('mob-1', 'player-2', 20, 10)
+    )
 
     // Process the attack
     await room1BattleManager.processActionMessages()

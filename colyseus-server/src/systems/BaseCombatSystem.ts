@@ -17,10 +17,10 @@ export abstract class BaseCombatSystem<T extends WorldLife & CombatantFields> {
    * Check if the entity can perform an attack (Generic checks)
    */
   canAttack(): boolean {
-      if (!this.entity.isAlive) return false
-      if (this.entity.isStunned) return false
-      // Additional checks can be added here
-      return true
+    if (!this.entity.isAlive) return false
+    if (this.entity.isStunned) return false
+    // Additional checks can be added here
+    return true
   }
 
   /**
@@ -32,7 +32,7 @@ export abstract class BaseCombatSystem<T extends WorldLife & CombatantFields> {
    * Helper to measure time consistently
    */
   protected now(): number {
-      return performance.now()
+    return performance.now()
   }
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ export abstract class BaseCombatSystem<T extends WorldLife & CombatantFields> {
    * original one-attack-per-tick loop semantics.
    */
   protected maxAttacksPerTick(): number {
-      return Infinity
+    return Infinity
   }
 
   // Optional debug-logging seams (default no-op; Mob overrides to preserve logs).
@@ -82,41 +82,41 @@ export abstract class BaseCombatSystem<T extends WorldLife & CombatantFields> {
    * first attack lands in the future.
    */
   public enqueueAttacks(
-      strategy: AttackStrategy,
-      targetId: string,
-      attacks: AttackDefinition[],
-      startTime: number
+    strategy: AttackStrategy,
+    targetId: string,
+    attacks: AttackDefinition[],
+    startTime: number
   ): void {
-      this.entity.attackQueue = [] // Clear existing queue (new combo overrides old)
-      let currentTime = startTime
+    this.entity.attackQueue = [] // Clear existing queue (new combo overrides old)
+    let currentTime = startTime
 
-      attacks.forEach((attack) => {
-          // Calculate when this attack should actually fire (end of its cast)
-          const fireTime = currentTime + this.windUpMsForAttack(attack)
+    attacks.forEach(attack => {
+      // Calculate when this attack should actually fire (end of its cast)
+      const fireTime = currentTime + this.windUpMsForAttack(attack)
 
-          this.entity.attackQueue.push({
-              executionTime: fireTime,
-              attackDef: attack,
-              strategy: strategy,
-              targetId: targetId
-          })
-
-          // Next attack starts after this one finishes
-          currentTime = fireTime
+      this.entity.attackQueue.push({
+        executionTime: fireTime,
+        attackDef: attack,
+        strategy: strategy,
+        targetId: targetId,
       })
 
-      // Set initial casting state if we have a queue
-      if (this.entity.attackQueue.length > 0) {
-          const firstAttack = this.entity.attackQueue[0]
-          // If the first attack is in the future, we are casting
-          if (firstAttack.executionTime > Date.now()) {
-             this.entity.isCasting = true
-             this.entity.castStartTime = Date.now()
-             this.entity.castDuration = firstAttack.executionTime - this.entity.castStartTime
-             this.entity.currentAttackStrategy = strategy
-             this.entity.isAttacking = false
-          }
+      // Next attack starts after this one finishes
+      currentTime = fireTime
+    })
+
+    // Set initial casting state if we have a queue
+    if (this.entity.attackQueue.length > 0) {
+      const firstAttack = this.entity.attackQueue[0]
+      // If the first attack is in the future, we are casting
+      if (firstAttack.executionTime > Date.now()) {
+        this.entity.isCasting = true
+        this.entity.castStartTime = Date.now()
+        this.entity.castDuration = firstAttack.executionTime - this.entity.castStartTime
+        this.entity.currentAttackStrategy = strategy
+        this.entity.isAttacking = false
       }
+    }
   }
 
   /**
@@ -128,37 +128,39 @@ export abstract class BaseCombatSystem<T extends WorldLife & CombatantFields> {
    *          but none were due, or null when the queue is empty.
    */
   protected processAttackQueue(world: any): CombatResult | null {
-      if (this.entity.attackQueue.length === 0) return null
+    if (this.entity.attackQueue.length === 0) return null
 
-      const now = Date.now()
-      let lastResult: CombatResult | null = null
+    const now = Date.now()
+    let lastResult: CombatResult | null = null
 
-      const executed = processAttackQueue(
-          this.entity.attackQueue,
-          now,
-          (item) => item.executionTime,
-          (item) => {
-              const target = this.resolveTarget(item.targetId, world)
-              if (target) {
-                  if (typeof (item.strategy as any).performAttack === 'function') {
-                      ;(item.strategy as any).performAttack(this.entity, target, item.attackDef)
-                  } else {
-                      console.warn(`⚠️ ${this.entity.id}: Strategy ${item.strategy.name} does not support queued execution via performAttack`)
-                  }
+    const executed = processAttackQueue(
+      this.entity.attackQueue,
+      now,
+      item => item.executionTime,
+      item => {
+        const target = this.resolveTarget(item.targetId, world)
+        if (target) {
+          if (typeof (item.strategy as any).performAttack === 'function') {
+            ;(item.strategy as any).performAttack(this.entity, target, item.attackDef)
+          } else {
+            console.warn(
+              `⚠️ ${this.entity.id}: Strategy ${item.strategy.name} does not support queued execution via performAttack`
+            )
+          }
 
-                  this.entity.lastAttackTime = performance.now()
-                  this.entity.isAttacking = true
-                  this.entity.attackAnimationStartTime = performance.now()
-                  this.entity.attackDelay = this.nextAttackDelay(item.attackDef)
-              }
-              lastResult = { attacked: true, targetId: item.targetId, eventEmitted: true }
-          },
-          this.maxAttacksPerTick()
-      )
+          this.entity.lastAttackTime = performance.now()
+          this.entity.isAttacking = true
+          this.entity.attackAnimationStartTime = performance.now()
+          this.entity.attackDelay = this.nextAttackDelay(item.attackDef)
+        }
+        lastResult = { attacked: true, targetId: item.targetId, eventEmitted: true }
+      },
+      this.maxAttacksPerTick()
+    )
 
-      this.applyPostQueueCastState(executed, now)
+    this.applyPostQueueCastState(executed, now)
 
-      return lastResult ?? (this.entity.attackQueue.length > 0 ? { attacked: false } : null)
+    return lastResult ?? (this.entity.attackQueue.length > 0 ? { attacked: false } : null)
   }
 
   /**
@@ -176,25 +178,28 @@ export abstract class BaseCombatSystem<T extends WorldLife & CombatantFields> {
    * @param now Date.now() captured at the start of processing
    */
   protected applyPostQueueCastState(executed: number, now: number): void {
-      if (executed === 0) {
-          // Waiting for the next attack time — keep casting, don't reschedule.
-          this.entity.isCasting = true
-          return
-      }
+    if (executed === 0) {
+      // Waiting for the next attack time — keep casting, don't reschedule.
+      this.entity.isCasting = true
+      return
+    }
 
-      const next = this.entity.attackQueue[0]
-      if (next) {
-          this.entity.isCasting = true
-          this.entity.castStartTime = now // Start casting the next one
-          this.entity.castDuration = next.executionTime - now
-      } else {
-          this.entity.isCasting = false
-          this.entity.currentAttackStrategy = null
-      }
+    const next = this.entity.attackQueue[0]
+    if (next) {
+      this.entity.isCasting = true
+      this.entity.castStartTime = now // Start casting the next one
+      this.entity.castDuration = next.executionTime - now
+    } else {
+      this.entity.isCasting = false
+      this.entity.currentAttackStrategy = null
+    }
   }
 
   /** Order strategies: instant (0 cast) first, then by ascending effective range. */
-  protected sortStrategiesByPriority(strategies: AttackStrategy[], target: WorldLife): AttackStrategy[] {
+  protected sortStrategiesByPriority(
+    strategies: AttackStrategy[],
+    target: WorldLife
+  ): AttackStrategy[] {
     return [...strategies].sort((a, b) => {
       // Instant attacks (0 cast time) have priority
       const aIsInstant = a.getCastTime(this.entity) === 0
@@ -240,26 +245,30 @@ export abstract class BaseCombatSystem<T extends WorldLife & CombatantFields> {
     const castElapsedMs = currentTimeMs - this.entity.castStartTime
 
     if (castElapsedMs >= castDurationMs) {
-        if (!this.entity.currentAttackStrategy) return null
+      if (!this.entity.currentAttackStrategy) return null
 
-        this.onWindUpComplete()
-        const attackExecuted = this.entity.currentAttackStrategy.execute(this.entity, target as any, roomId)
+      this.onWindUpComplete()
+      const attackExecuted = this.entity.currentAttackStrategy.execute(
+        this.entity,
+        target as any,
+        roomId
+      )
 
-        if (attackExecuted) {
-          this.entity.isCasting = false
-          this.entity.castStartTime = 0
-          this.entity.currentAttackStrategy = null
-          this.entity.lastAttackTime = performance.now()
-          this.entity.isAttacking = true
-          this.entity.attackAnimationStartTime = performance.now()
-          return { attacked: true, targetId: target.id, eventEmitted: true }
-        } else {
-          this.onWindUpExecuteFailed()
-          this.entity.isCasting = false
-          this.entity.castStartTime = 0
-          this.entity.currentAttackStrategy = null
-          return null
-        }
+      if (attackExecuted) {
+        this.entity.isCasting = false
+        this.entity.castStartTime = 0
+        this.entity.currentAttackStrategy = null
+        this.entity.lastAttackTime = performance.now()
+        this.entity.isAttacking = true
+        this.entity.attackAnimationStartTime = performance.now()
+        return { attacked: true, targetId: target.id, eventEmitted: true }
+      } else {
+        this.onWindUpExecuteFailed()
+        this.entity.isCasting = false
+        this.entity.castStartTime = 0
+        this.entity.currentAttackStrategy = null
+        return null
+      }
     }
 
     // Still casting

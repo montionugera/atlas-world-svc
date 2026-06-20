@@ -10,10 +10,21 @@ describe('char: ProjectileManager.handleEntityCollision', () => {
   let pm: ProjectileManager
   let battleManager: BattleManager
 
-  const target = () => new Mob({
-    id: 'target', x: 0, y: 0, radius: 1, maxHealth: 100, pAtk: 10, attackRange: 5,
-    atkWindDownTime: 1000, pDef: 0, mDef: 0, armor: 0, density: 1,
-  })
+  const target = () =>
+    new Mob({
+      id: 'target',
+      x: 0,
+      y: 0,
+      radius: 1,
+      maxHealth: 100,
+      pAtk: 10,
+      attackRange: 5,
+      atkWindDownTime: 1000,
+      pDef: 0,
+      mDef: 0,
+      armor: 0,
+      density: 1,
+    })
 
   beforeEach(() => {
     state = new GameState('m', 'r')
@@ -21,7 +32,11 @@ describe('char: ProjectileManager.handleEntityCollision', () => {
     state.battleManager = battleManager
     pm = new ProjectileManager(state, new BattleModule(state), battleManager)
   })
-  afterEach(() => { battleManager.cleanup(); state.stopAI(); jest.restoreAllMocks() })
+  afterEach(() => {
+    battleManager.cleanup()
+    state.stopAI()
+    jest.restoreAllMocks()
+  })
 
   it('routes a hit through the BattleManager queue and records the target', () => {
     const spy = jest.spyOn(battleManager, 'addActionMessage')

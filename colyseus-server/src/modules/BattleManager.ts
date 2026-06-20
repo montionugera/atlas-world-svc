@@ -4,7 +4,15 @@
  */
 
 import { BattleModule } from './BattleModule'
-import { BattleActionMessage, BattleActionQueue, AttackActionPayload, HealActionPayload, KillActionPayload, RespawnActionPayload, DamageActionPayload } from './BattleActionMessage'
+import {
+  BattleActionMessage,
+  BattleActionQueue,
+  AttackActionPayload,
+  HealActionPayload,
+  KillActionPayload,
+  RespawnActionPayload,
+  DamageActionPayload,
+} from './BattleActionMessage'
 import { eventBus, RoomEventType, BattleAttackData, BattleHealData } from '../events/EventBus'
 import { GameState } from '../schemas/GameState'
 
@@ -19,7 +27,6 @@ export class BattleManager {
   private batchInterval = 100 // Reduced to 100ms per user request (was 200)
   private lastProcessTime = 0
 
-
   constructor(roomId: string, gameState: GameState) {
     this.roomId = roomId
     this.battleModule = new BattleModule(gameState)
@@ -31,33 +38,37 @@ export class BattleManager {
     // Listen for battle attack events
     this.attackListener = (data: BattleAttackData) => {
       if (data.targetId) {
-        console.log(`⚔️ BATTLE EVENT: Attack from ${data.actorId} to ${data.targetId} (${data.damage} damage)`)
+        console.log(
+          `⚔️ BATTLE EVENT: Attack from ${data.actorId} to ${data.targetId} (${data.damage} damage)`
+        )
       } else {
         console.log(`⚔️ BATTLE EVENT: Attack from ${data.actorId} (no target)`)
       }
-      
+
       const attackMessage = BattleManager.createAttackMessage(
         data.actorId,
         data.targetId || '', // Use empty string if no target
         data.damage,
         data.range
       )
-      
+
       this.addActionMessage(attackMessage)
     }
     eventBus.onRoomEventBattleAttack(this.roomId, this.attackListener)
 
     // Listen for battle heal events
     this.healListener = (data: BattleHealData) => {
-      console.log(`💚 BATTLE EVENT: Heal from ${data.actorId} to ${data.targetId} (${data.amount} heal)`)
-      
+      console.log(
+        `💚 BATTLE EVENT: Heal from ${data.actorId} to ${data.targetId} (${data.amount} heal)`
+      )
+
       const healMessage = BattleManager.createHealMessage(
         data.actorId,
         data.targetId,
         data.amount,
         data.healType
       )
-      
+
       this.addActionMessage(healMessage)
     }
     eventBus.onRoomEventBattleHeal(this.roomId, this.healListener)
@@ -79,7 +90,13 @@ export class BattleManager {
   }
 
   // Static factory methods for creating action messages
-  static createAttackMessage(actorId: string, targetId: string, damage: number, range: number, direction?: { x: number; y: number }): BattleActionMessage {
+  static createAttackMessage(
+    actorId: string,
+    targetId: string,
+    damage: number,
+    range: number,
+    direction?: { x: number; y: number }
+  ): BattleActionMessage {
     return {
       actorId,
       actionKey: 'attack',
@@ -95,7 +112,12 @@ export class BattleManager {
     }
   }
 
-  static createHealMessage(actorId: string, targetId: string, amount: number, healType: string = 'natural'): BattleActionMessage {
+  static createHealMessage(
+    actorId: string,
+    targetId: string,
+    amount: number,
+    healType: string = 'natural'
+  ): BattleActionMessage {
     return {
       actorId,
       actionKey: 'heal',
@@ -109,7 +131,11 @@ export class BattleManager {
     }
   }
 
-  static createKillMessage(actorId: string, targetId: string, reason?: string): BattleActionMessage {
+  static createKillMessage(
+    actorId: string,
+    targetId: string,
+    reason?: string
+  ): BattleActionMessage {
     return {
       actorId,
       actionKey: 'kill',
@@ -123,7 +149,13 @@ export class BattleManager {
     }
   }
 
-  static createRespawnMessage(actorId: string, targetId: string, x?: number, y?: number, health?: number): BattleActionMessage {
+  static createRespawnMessage(
+    actorId: string,
+    targetId: string,
+    x?: number,
+    y?: number,
+    health?: number
+  ): BattleActionMessage {
     return {
       actorId,
       actionKey: 'respawn',
@@ -155,7 +187,7 @@ export class BattleManager {
     if (messages.length === 0) return 0
 
     let processedCount = 0
-    
+
     // Sort messages by priority (higher priority first)
     // 3: Kill, 2: Heal/Respawn, 1: Attack
     messages.sort((a, b) => (b.priority || 0) - (a.priority || 0))

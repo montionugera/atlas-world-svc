@@ -1,7 +1,7 @@
 // Global Team Identifiers
 export const TEAMS = {
   IRON_HAMMER: 'IRON_HAMMER', // Default Player Team
-  BLACK_WING: 'BLACK_WING',   // Default Mob/Monster Team
+  BLACK_WING: 'BLACK_WING', // Default Mob/Monster Team
 } as const
 
 // Game configuration constants

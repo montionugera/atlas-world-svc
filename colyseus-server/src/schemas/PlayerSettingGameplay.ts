@@ -7,8 +7,8 @@ export class PlayerSettingGameplay extends Schema {
   @type('number') spawnY: number
 
   constructor(
-      spawnX: number = GAME_CONFIG.worldWidth / 2, 
-      spawnY: number = GAME_CONFIG.worldHeight / 2
+    spawnX: number = GAME_CONFIG.worldWidth / 2,
+    spawnY: number = GAME_CONFIG.worldHeight / 2
   ) {
     super()
     this.spawnX = spawnX

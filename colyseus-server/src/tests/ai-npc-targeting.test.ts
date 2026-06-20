@@ -58,4 +58,3 @@ describe('AI targeting with companion NPCs', () => {
     expect(env.nearestPlayer).toBeNull()
   })
 })
-

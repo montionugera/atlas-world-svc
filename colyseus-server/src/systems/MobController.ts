@@ -22,22 +22,21 @@ export class MobController {
     deltaTime: number,
     gameState?: GameState
   ): { attacked: boolean; targetId?: string; messageCreated?: boolean; message?: any } {
-
     // Status Effect Check: If stunned, stop all movement and actions
     if (this.mob.isStunned) {
-        this.mob.vx = 0
-        this.mob.vy = 0
-        this.mob.isMoving = false
-        this.mob.isCasting = false // Interrupt casting
+      this.mob.vx = 0
+      this.mob.vy = 0
+      this.mob.isMoving = false
+      this.mob.isCasting = false // Interrupt casting
 
-        // Clear attack queue and reset attack state
-        if (this.mob.attackQueue.length > 0) {
-            this.mob.attackQueue.length = 0
-            this.mob.currentAttackStrategy = null
-            this.mob.castStartTime = 0
-        }
+      // Clear attack queue and reset attack state
+      if (this.mob.attackQueue.length > 0) {
+        this.mob.attackQueue.length = 0
+        this.mob.currentAttackStrategy = null
+        this.mob.castStartTime = 0
+      }
 
-        return { attacked: false }
+      return { attacked: false }
     }
 
     if (gameState) {
@@ -86,15 +85,15 @@ export class MobController {
     const maxRotate = currentRotationSpeed * (deltaTime / 1000)
 
     if (Math.abs(diff) <= maxRotate) {
-        // Close enough, snap to target
-        this.mob.heading = targetHeading
+      // Close enough, snap to target
+      this.mob.heading = targetHeading
     } else {
-        // Rotate towards target
-        this.mob.heading += Math.sign(diff) * maxRotate
+      // Rotate towards target
+      this.mob.heading += Math.sign(diff) * maxRotate
 
-        // Normalize heading
-        if (this.mob.heading > Math.PI) this.mob.heading -= Math.PI * 2
-        else if (this.mob.heading < -Math.PI) this.mob.heading += Math.PI * 2
+      // Normalize heading
+      if (this.mob.heading > Math.PI) this.mob.heading -= Math.PI * 2
+      else if (this.mob.heading < -Math.PI) this.mob.heading += Math.PI * 2
     }
   }
 

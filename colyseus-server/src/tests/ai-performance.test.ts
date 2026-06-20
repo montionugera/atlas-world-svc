@@ -185,7 +185,7 @@ describePerf('AI Performance Tests', () => {
           const endTime = performance.now()
           times.push(endTime - startTime)
         }
-        
+
         // Use median instead of average to reduce impact of outliers
         times.sort((a, b) => a - b)
         const medianTime = times[Math.floor(times.length / 2)]

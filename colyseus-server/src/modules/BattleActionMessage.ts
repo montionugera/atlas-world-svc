@@ -53,7 +53,6 @@ export interface DamageActionPayload {
   source?: string
 }
 
-
 // Action message processor interface
 export interface BattleActionProcessor {
   processAction(message: BattleActionMessage): Promise<boolean>

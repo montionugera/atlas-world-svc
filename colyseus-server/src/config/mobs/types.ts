@@ -1,4 +1,3 @@
-
 import { MobCombatStats, ProjectileType } from '../combatConfig'
 
 /**
@@ -27,7 +26,7 @@ export interface AttackArea {
   atkRange: number
 }
 
-export type AttackCharacteristic = 
+export type AttackCharacteristic =
   | { type: AttackCharacteristicType.PROJECTILE; projectile: AttackProjectile }
   | { type: AttackCharacteristicType.AREA; area: AttackArea }
 

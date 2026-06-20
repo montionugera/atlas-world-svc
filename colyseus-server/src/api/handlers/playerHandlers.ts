@@ -18,19 +18,20 @@ import { ParsedPlayerIds } from '../types'
  */
 function parsePlayerIds(ids: any): string[] | null {
   if (!ids) return null
-  
+
   if (Array.isArray(ids)) {
     // Handle ids[]=id1&ids[]=id2 format
-    return ids
-      .filter(id => typeof id === 'string' && id.trim().length > 0)
-      .map(id => id.trim())
+    return ids.filter(id => typeof id === 'string' && id.trim().length > 0).map(id => id.trim())
   }
-  
+
   if (typeof ids === 'string') {
     // Handle ids=id1,id2,id3 format
-    return ids.split(',').map(id => id.trim()).filter(id => id.length > 0)
+    return ids
+      .split(',')
+      .map(id => id.trim())
+      .filter(id => id.length > 0)
   }
-  
+
   return null
 }
 
@@ -46,10 +47,10 @@ export async function getPlayers(req: Request, res: Response): Promise<void> {
   try {
     const room = (req as any).room as GameRoom
     const { ids } = req.query
-    
+
     // Parse player IDs from query parameters
     const playerIds = parsePlayerIds(ids)
-    
+
     let players: any[]
     if (playerIds && playerIds.length > 0) {
       // Fetch specific players by IDs
@@ -61,17 +62,17 @@ export async function getPlayers(req: Request, res: Response): Promise<void> {
       // Fetch all players
       players = Array.from(room.state.players.values()).map(player => serializePlayerData(player))
     }
-    
-    const response: any = { 
+
+    const response: any = {
       roomId: room.roomId,
       players,
-      count: players.length
+      count: players.length,
     }
-    
+
     if (playerIds) {
       response.requestedIds = playerIds
     }
-    
+
     res.json(response)
   } catch (error) {
     handleError(error, req, res, 500)
@@ -86,24 +87,17 @@ export async function getPlayerById(req: Request, res: Response): Promise<void> 
   try {
     const room = (req as any).room as GameRoom
     const { playerId } = req.params
-    
+
     const player = room.state.players.get(playerId)
-    
+
     if (!player) {
-      return handleNotFound(
-        req,
-        res,
-        'Player',
-        playerId,
-        Array.from(room.state.players.keys())
-      )
+      return handleNotFound(req, res, 'Player', playerId, Array.from(room.state.players.keys()))
     }
-    
+
     res.json({
-      player: serializePlayerData(player)
+      player: serializePlayerData(player),
     })
   } catch (error) {
     handleError(error, req, res, 500)
   }
 }
-

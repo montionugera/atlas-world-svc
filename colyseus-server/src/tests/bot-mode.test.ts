@@ -15,7 +15,7 @@ describe('Bot Mode Tests', () => {
     gameState = new GameState('test-map', 'test-room')
     worldInterface = new AIWorldInterface(gameState)
     aiModule = new AIModule(worldInterface)
-    
+
     // Create player
     player = new Player('session-1', 'Test Player', 100, 100)
     gameState.players.set(player.sessionId, player)
@@ -37,10 +37,10 @@ describe('Bot Mode Tests', () => {
 
   test('setBotMode should toggle isBotMode flag', () => {
     expect(player.isBotMode).toBe(false)
-    
+
     player.setBotMode(true)
     expect(player.isBotMode).toBe(true)
-    
+
     player.setBotMode(false)
     expect(player.isBotMode).toBe(false)
   })
@@ -50,9 +50,9 @@ describe('Bot Mode Tests', () => {
     player.currentBehavior = 'chase'
     player.desiredVx = 10
     player.desiredVy = 10
-    
+
     player.setBotMode(false)
-    
+
     expect(player.currentBehavior).toBe('idle')
     expect(player.desiredVx).toBe(0)
     expect(player.desiredVy).toBe(0)
@@ -62,7 +62,7 @@ describe('Bot Mode Tests', () => {
     aiModule.registerAgent(player, {
       behaviors: ['idle'],
       perception: { range: 100, fov: 120 },
-      memory: { duration: 1000 }
+      memory: { duration: 1000 },
     })
 
     // Access private agents map via any cast for testing
@@ -83,19 +83,19 @@ describe('Bot Mode Tests', () => {
     player.setBotMode(true)
     player.desiredVx = 10
     player.desiredVy = 0
-    
+
     // Mock updateHeading (since it might rely on internal logic we changed)
     // Actually we verified updateHeading logic in previous step, let's test if heading updates
-    
+
     player.update(16)
-    
+
     // Heading should point right (0 radians)
     expect(player.heading).toBeCloseTo(0)
-    
+
     player.desiredVx = 0
     player.desiredVy = 10
     player.update(16)
-    
+
     // Heading should point down (PI/2 radians)
     expect(player.heading).toBeCloseTo(Math.PI / 2)
   })
@@ -104,12 +104,12 @@ describe('Bot Mode Tests', () => {
     player.setBotMode(false)
     player.desiredVx = 10 // Should be ignored
     player.desiredVy = 0
-    
+
     // Set input
     player.input.setMovement(0, -1) // Move up
-    
+
     player.update(16)
-    
+
     // Heading should point up (-PI/2 radians)
     expect(player.heading).toBeCloseTo(-Math.PI / 2)
   })

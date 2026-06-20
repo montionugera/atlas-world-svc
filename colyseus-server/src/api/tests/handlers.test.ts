@@ -19,25 +19,25 @@ describe('API Handlers', () => {
 
   beforeEach(() => {
     clearRegistry()
-    
+
     mockState = new GameState('test-map', 'test-room')
     mockRoom = {
       roomId: 'test-room',
       state: mockState,
     } as GameRoom
-    
+
     registerRoom(mockRoom)
-    
+
     mockReq = {
       method: 'GET',
       path: '/api/test',
       params: { roomId: 'test-room' },
       query: {},
     } as any
-    
+
     // Attach room to request (as middleware would)
     ;(mockReq as any).room = mockRoom
-    
+
     mockRes = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
@@ -60,7 +60,7 @@ describe('API Handlers', () => {
     describe('getMobs', () => {
       it('should return all mobs', async () => {
         await getMobs(mockReq as Request, mockRes as Response)
-        
+
         expect(mockRes.json).toHaveBeenCalledWith({
           roomId: 'test-room',
           mobs: expect.arrayContaining([
@@ -73,9 +73,9 @@ describe('API Handlers', () => {
 
       it('should return empty array when no mobs', async () => {
         mockState.mobs.clear()
-        
+
         await getMobs(mockReq as Request, mockRes as Response)
-        
+
         expect(mockRes.json).toHaveBeenCalledWith({
           roomId: 'test-room',
           mobs: [],
@@ -85,10 +85,10 @@ describe('API Handlers', () => {
 
       it('should exclude real-time fields', async () => {
         await getMobs(mockReq as Request, mockRes as Response)
-        
+
         const callArgs = (mockRes.json as jest.Mock).mock.calls[0][0]
         const mob = callArgs.mobs[0]
-        
+
         expect(mob).not.toHaveProperty('x')
         expect(mob).not.toHaveProperty('y')
         expect(mob).not.toHaveProperty('vx')
@@ -101,9 +101,9 @@ describe('API Handlers', () => {
     describe('getMobById', () => {
       it('should return specific mob', async () => {
         mockReq.params = { roomId: 'test-room', mobId: 'mob-1' }
-        
+
         await getMobById(mockReq as Request, mockRes as Response)
-        
+
         expect(mockRes.json).toHaveBeenCalledWith({
           mob: expect.objectContaining({ id: 'mob-1' }),
         })
@@ -111,9 +111,9 @@ describe('API Handlers', () => {
 
       it('should return 404 for non-existent mob', async () => {
         mockReq.params = { roomId: 'test-room', mobId: 'non-existent' }
-        
+
         await getMobById(mockReq as Request, mockRes as Response)
-        
+
         expect(mockRes.status).toHaveBeenCalledWith(404)
         expect(mockRes.json).toHaveBeenCalledWith({
           error: 'Mob not found',
@@ -136,7 +136,7 @@ describe('API Handlers', () => {
     describe('getPlayers', () => {
       it('should return all players when no IDs specified', async () => {
         await getPlayers(mockReq as Request, mockRes as Response)
-        
+
         expect(mockRes.json).toHaveBeenCalledWith({
           roomId: 'test-room',
           players: expect.arrayContaining([
@@ -149,9 +149,9 @@ describe('API Handlers', () => {
 
       it('should return specific players by comma-separated IDs', async () => {
         mockReq.query = { ids: 'session-1,session-2' }
-        
+
         await getPlayers(mockReq as Request, mockRes as Response)
-        
+
         expect(mockRes.json).toHaveBeenCalledWith({
           roomId: 'test-room',
           players: expect.arrayContaining([
@@ -165,9 +165,9 @@ describe('API Handlers', () => {
 
       it('should return specific players by array IDs', async () => {
         mockReq.query = { ids: ['session-1', 'session-2'] }
-        
+
         await getPlayers(mockReq as Request, mockRes as Response)
-        
+
         expect(mockRes.json).toHaveBeenCalledWith({
           roomId: 'test-room',
           players: expect.arrayContaining([
@@ -181,9 +181,9 @@ describe('API Handlers', () => {
 
       it('should filter out non-existent player IDs', async () => {
         mockReq.query = { ids: 'session-1,non-existent' }
-        
+
         await getPlayers(mockReq as Request, mockRes as Response)
-        
+
         expect(mockRes.json).toHaveBeenCalledWith({
           roomId: 'test-room',
           players: [expect.objectContaining({ id: 'session-1' })],
@@ -194,10 +194,10 @@ describe('API Handlers', () => {
 
       it('should exclude real-time fields', async () => {
         await getPlayers(mockReq as Request, mockRes as Response)
-        
+
         const callArgs = (mockRes.json as jest.Mock).mock.calls[0][0]
         const player = callArgs.players[0]
-        
+
         expect(player).not.toHaveProperty('x')
         expect(player).not.toHaveProperty('y')
         expect(player).not.toHaveProperty('vx')
@@ -210,9 +210,9 @@ describe('API Handlers', () => {
     describe('getPlayerById', () => {
       it('should return specific player', async () => {
         mockReq.params = { roomId: 'test-room', playerId: 'session-1' }
-        
+
         await getPlayerById(mockReq as Request, mockRes as Response)
-        
+
         expect(mockRes.json).toHaveBeenCalledWith({
           player: expect.objectContaining({ id: 'session-1' }),
         })
@@ -220,9 +220,9 @@ describe('API Handlers', () => {
 
       it('should return 404 for non-existent player', async () => {
         mockReq.params = { roomId: 'test-room', playerId: 'non-existent' }
-        
+
         await getPlayerById(mockReq as Request, mockRes as Response)
-        
+
         expect(mockRes.status).toHaveBeenCalledWith(404)
         expect(mockRes.json).toHaveBeenCalledWith({
           error: 'Player not found',
@@ -233,4 +233,3 @@ describe('API Handlers', () => {
     })
   })
 })
-

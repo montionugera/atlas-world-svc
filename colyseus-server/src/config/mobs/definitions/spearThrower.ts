@@ -1,4 +1,3 @@
-
 import { SPEAR_THROWER_STATS, MOB_STATS, WEAPON_TYPES } from '../../combatConfig'
 import { AttackCharacteristicType, MobTypeConfig } from '../types'
 

@@ -52,5 +52,3 @@ export function getMobSettingsForMap(mapId: string): MobSpawnSettings {
   const override = MAP_MOB_SETTINGS[mapId] || {}
   return { ...DEFAULT_SETTINGS, ...override }
 }
-
-

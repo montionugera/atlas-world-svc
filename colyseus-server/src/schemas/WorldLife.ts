@@ -34,23 +34,21 @@ export abstract class WorldLife extends WorldObject {
   pDef: number = 0 // Reduces incoming physical damage
   mDef: number = 0 // Reduces incoming magical damage
   @type('number') armor: number = 0 // Additional damage reduction
-  
+
   // Resistance System (Map: Type -> Resistance Value 0.0-1.0)
-  @type({ map: "number" }) resistances = new MapSchema<number>();
-
-
+  @type({ map: 'number' }) resistances = new MapSchema<number>()
 
   // Helper to get resistance safely
   getResistance(type: string): number {
-      return this.resistances.get(type) || 0;
-  }
-  
-  // Helper to set resistance
-  setResistance(type: string, value: number) {
-      this.resistances.set(type, value);
+    return this.resistances.get(type) || 0
   }
 
-// Impulse system (calculated from damage)
+  // Helper to set resistance
+  setResistance(type: string, value: number) {
+    this.resistances.set(type, value)
+  }
+
+  // Impulse system (calculated from damage)
   @type('number') density: number = 1 // Material density for mass calculation
 
   // Movement and combat state
@@ -62,24 +60,28 @@ export abstract class WorldLife extends WorldObject {
   @type('number') heading: number = 0
 
   // Status Effects System
-  @type({ map: BattleStatus }) battleStatuses = new MapSchema<BattleStatus>(); // Type -> BattleStatus Object
+  @type({ map: BattleStatus }) battleStatuses = new MapSchema<BattleStatus>() // Type -> BattleStatus Object
 
   // Getters for common statuses (Backward Compatibility)
-  get isFrozen(): boolean { return this.battleStatuses.has('freeze'); }
-  get isStunned(): boolean { return this.battleStatuses.has('stun'); }
+  get isFrozen(): boolean {
+    return this.battleStatuses.has('freeze')
+  }
+  get isStunned(): boolean {
+    return this.battleStatuses.has('stun')
+  }
 
-  set isFrozen(val: boolean) { 
-      if (!val) this.battleStatuses.delete('freeze'); 
-      // Setting true without duration is ambiguous in new system, ignore or default
+  set isFrozen(val: boolean) {
+    if (!val) this.battleStatuses.delete('freeze')
+    // Setting true without duration is ambiguous in new system, ignore or default
   }
   set isStunned(val: boolean) {
-      if (!val) this.battleStatuses.delete('stun');
+    if (!val) this.battleStatuses.delete('stun')
   }
 
   // Get speed multiplier based on active statuses
   getSpeedMultiplier(): number {
-      if (this.isFrozen) return 0.2; // 80% Slow
-      return 1.0;
+    if (this.isFrozen) return 0.2 // 80% Slow
+    return 1.0
   }
 
   // Server-only properties (not synced to clients)
@@ -150,13 +152,13 @@ export abstract class WorldLife extends WorldObject {
     this.stat = mergeBaseStat(opts.stat)
 
     // Initialize resistances (default 0)
-    // You can pass a map or object of resistances in options if needed, 
+    // You can pass a map or object of resistances in options if needed,
     // but for now we default to empty (0)
     if ((opts as any).resistances) {
-        const initialResists = (opts as any).resistances;
-        for (const key in initialResists) {
-            this.resistances.set(key, initialResists[key]);
-        }
+      const initialResists = (opts as any).resistances
+      for (const key in initialResists) {
+        this.resistances.set(key, initialResists[key])
+      }
     }
   }
 
@@ -194,7 +196,7 @@ export abstract class WorldLife extends WorldObject {
     this.vy = 0
     this.diedAt = Date.now() // Record death timestamp for respawn delay
     // Clear status effects
-    this.battleStatuses.clear();
+    this.battleStatuses.clear()
   }
 
   respawn(x?: number, y?: number): void {
@@ -211,8 +213,8 @@ export abstract class WorldLife extends WorldObject {
 
     this.diedAt = 0 // Reset death timestamp
     // Clear status effects
-    this.battleStatuses.clear();
-    
+    this.battleStatuses.clear()
+
     // Note: Mob-specific flags (cantRespawn, readyToRemove) are handled in Mob class
     // Mob class should override respawn() to call clearRemovalFlag()
 
@@ -241,7 +243,6 @@ export abstract class WorldLife extends WorldObject {
     return timeSinceLastAttack >= this.attackDelay
   }
 
-
   // Utility methods
   getDistanceTo(other: WorldLife): number {
     const dx = this.x - other.x
@@ -260,7 +261,7 @@ export abstract class WorldLife extends WorldObject {
   // Invulnerability system REMOVED
   // Validation is now done via processedEvents in BattleModule
   triggerInvulnerability(duration: number): void {
-     // Deprecated/No-op
+    // Deprecated/No-op
   }
 
   // Smart heading update - automatically chooses best source
@@ -297,35 +298,32 @@ export abstract class WorldLife extends WorldObject {
   update(deltaTime: number): void {
     // Invulnerability update removed
 
-
-// Update Status Effects
+    // Update Status Effects
     if (this.battleStatuses) {
-        const now = Date.now();
-        const keysToRemove: string[] = [];
-        
-        // We can't iterate MapSchema safely while modifying it reliably in all versions,
-        // so collect keys to remove first
-        this.battleStatuses.forEach((status, key) => {
-             // Check expiration
-             if (now >= status.expiresAt) {
-                 keysToRemove.push(key);
-             } else {
-                 // Process Ticks (DOTs)
-                 // Note: actual logic call moved to BattleModule.processStatusUpdates(entity)
-                 // But if we wanted to do it here, we'd need access to BattleModule.
-                 // Ideally WorldLife shouldn't know about BattleModule logic, 
-                 // so the main loop should call BattleModule.update(entity)
-             }
-        });
-        
-        keysToRemove.forEach(key => {
-            const status = this.battleStatuses.get(key);
-            this.battleStatuses.delete(key);
-            console.log(`✨ EXPIRE: ${this.id} status '${key}' expired`);
-        });
+      const now = Date.now()
+      const keysToRemove: string[] = []
+
+      // We can't iterate MapSchema safely while modifying it reliably in all versions,
+      // so collect keys to remove first
+      this.battleStatuses.forEach((status, key) => {
+        // Check expiration
+        if (now >= status.expiresAt) {
+          keysToRemove.push(key)
+        } else {
+          // Process Ticks (DOTs)
+          // Note: actual logic call moved to BattleModule.processStatusUpdates(entity)
+          // But if we wanted to do it here, we'd need access to BattleModule.
+          // Ideally WorldLife shouldn't know about BattleModule logic,
+          // so the main loop should call BattleModule.update(entity)
+        }
+      })
+
+      keysToRemove.forEach(key => {
+        const status = this.battleStatuses.get(key)
+        this.battleStatuses.delete(key)
+        console.log(`✨ EXPIRE: ${this.id} status '${key}' expired`)
+      })
     }
-
-
 
     // Update attack animation state (200ms duration)
     if (this.isAttacking && this.attackAnimationStartTime > 0) {
@@ -339,11 +337,11 @@ export abstract class WorldLife extends WorldObject {
     // Update movement state and heading
     // If stunned, force moving to false and ZERO velocity to physically stop them
     if (this.isStunned) {
-        this.isMoving = false
-        this.vx = 0
-        this.vy = 0
+      this.isMoving = false
+      this.vx = 0
+      this.vy = 0
     } else {
-        this.isMoving = Math.hypot(this.vx, this.vy) > 0
+      this.isMoving = Math.hypot(this.vx, this.vy) > 0
     }
 
     // Use appropriate heading update method

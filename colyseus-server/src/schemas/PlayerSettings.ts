@@ -10,8 +10,8 @@ export class PlayerSettings extends Schema {
   // e.g. uiTheme, soundVolume, autoRetaliate, etc.
 
   constructor(
-      spawnX: number = GAME_CONFIG.worldWidth / 2, 
-      spawnY: number = GAME_CONFIG.worldHeight / 2
+    spawnX: number = GAME_CONFIG.worldWidth / 2,
+    spawnY: number = GAME_CONFIG.worldHeight / 2
   ) {
     super()
     this.spawnX = spawnX

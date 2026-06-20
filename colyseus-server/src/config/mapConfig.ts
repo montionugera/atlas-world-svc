@@ -47,7 +47,7 @@ export const MAP_CONFIG = {
       width: 200,
       height: 200,
       mobType: 'balanced',
-      count: 3
+      count: 3,
     },
     {
       id: 'boss_area',
@@ -56,7 +56,7 @@ export const MAP_CONFIG = {
       width: 100,
       height: 100,
       mobType: 'double_attacker',
-      count: 3
+      count: 3,
     },
     // North icy area - aggressive mobs (Just North)
     {
@@ -66,7 +66,7 @@ export const MAP_CONFIG = {
       width: 200,
       height: 150,
       mobType: 'aggressive',
-      count: 2
+      count: 2,
     },
     // South mud pit - defensive mobs (Just South)
     {
@@ -76,7 +76,7 @@ export const MAP_CONFIG = {
       width: 200,
       height: 150,
       mobType: 'defensive',
-      count: 2
+      count: 2,
     },
     // East sand dunes - spear throwers (Just East)
     {
@@ -86,8 +86,8 @@ export const MAP_CONFIG = {
       width: 150,
       height: 200,
       mobType: 'spear_thrower',
-      count: 4
-    }
+      count: 4,
+    },
   ] as MobSpawnArea[],
 
   // Define different terrain zones on the map

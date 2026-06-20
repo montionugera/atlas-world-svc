@@ -245,7 +245,6 @@ export class GameState extends Schema {
     this.tick++
   }
 
-
   // Update player input (movement)
   updatePlayerInput(sessionId: string, vx: number, vy: number) {
     const player = this.getPlayer(sessionId)
@@ -281,13 +280,13 @@ export class GameState extends Schema {
   // Update projectiles (cleanup and despawn)
   updateProjectiles(deltaTime: number): void {
     const toRemove: string[] = []
-    
+
     for (const [id, projectile] of this.projectiles.entries()) {
       if (projectile.shouldDespawn()) {
         toRemove.push(id)
       }
     }
-    
+
     for (const id of toRemove) {
       this.projectiles.delete(id)
     }

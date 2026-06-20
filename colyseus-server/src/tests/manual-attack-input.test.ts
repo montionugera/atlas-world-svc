@@ -7,11 +7,11 @@ import { resolvePlayerMeleeAttackTiming } from '../combat/meleeAttackSpeed'
 // Mock event bus
 jest.mock('../events/EventBus', () => ({
   eventBus: {
-    emitRoomEvent: jest.fn()
+    emitRoomEvent: jest.fn(),
   },
   RoomEventType: {
-    BATTLE_ATTACK: 'BATTLE_ATTACK'
-  }
+    BATTLE_ATTACK: 'BATTLE_ATTACK',
+  },
 }))
 
 const mockEmitRoomEvent = eventBus.emitRoomEvent as jest.Mock
@@ -31,22 +31,21 @@ describe('Manual Attack Input Tests', () => {
     player.input.attack = true
     // Mock facing towards the mob
     player.heading = Math.atan2(mob.y - player.y, mob.x - player.x)
-    
+
     // Mock canAttack to return true
     jest.spyOn(player, 'canAttack').mockReturnValue(true)
-    
+
     const result = player.processAttackInput({ mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
-    
+
     expect(result).toBe(true)
-    
+
     jest.useFakeTimers()
-    const windUp =
-      resolvePlayerMeleeAttackTiming(player)?.windUpMs ?? PLAYER_STATS.atkWindUpTime
+    const windUp = resolvePlayerMeleeAttackTiming(player)?.windUpMs ?? PLAYER_STATS.atkWindUpTime
     const advance = windUp + 50
     jest.setSystemTime(Date.now() + advance)
     player.update(advance, { mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
     jest.useRealTimers()
-    
+
     expect(mockEmitRoomEvent).toHaveBeenCalled()
   })
 
@@ -54,11 +53,11 @@ describe('Manual Attack Input Tests', () => {
     player.setBotMode(true)
     player.input.attack = true
     player.heading = 0
-    
+
     jest.spyOn(player, 'canAttack').mockReturnValue(true)
-    
+
     const result = player.processAttackInput({ mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
-    
+
     expect(result).toBe(false)
     expect(mockEmitRoomEvent).not.toHaveBeenCalled()
   })
@@ -67,32 +66,31 @@ describe('Manual Attack Input Tests', () => {
     // Enable bot mode first
     player.setBotMode(true)
     player.input.attack = true
-    
+
     jest.spyOn(player, 'canAttack').mockReturnValue(true)
-    
+
     let result = player.processAttackInput({ mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
     expect(result).toBe(false)
     expect(mockEmitRoomEvent).not.toHaveBeenCalled()
-    
+
     // Disable bot mode
     player.setBotMode(false)
-    
+
     // Mock facing towards the mob
     player.heading = Math.atan2(mob.y - player.y, mob.x - player.x)
     player.input.attack = true // Ensure attack input is still true after bot mode change
-    
+
     // Try attack again
     result = player.processAttackInput({ mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
     expect(result).toBe(true)
-    
+
     jest.useFakeTimers()
-    const windUp2 =
-      resolvePlayerMeleeAttackTiming(player)?.windUpMs ?? PLAYER_STATS.atkWindUpTime
+    const windUp2 = resolvePlayerMeleeAttackTiming(player)?.windUpMs ?? PLAYER_STATS.atkWindUpTime
     const advance2 = windUp2 + 50
     jest.setSystemTime(Date.now() + advance2)
     player.update(advance2, { mobs: new Map([['mob-1', mob]]), roomId: 'room-1' })
     jest.useRealTimers()
-    
+
     expect(mockEmitRoomEvent).toHaveBeenCalled()
   })
 })

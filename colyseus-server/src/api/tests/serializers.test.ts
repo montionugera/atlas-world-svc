@@ -16,14 +16,14 @@ describe('Data Serializers', () => {
         vx: 5,
         vy: 10,
       })
-      
+
       mob.heading = 1.5
       mob.isMoving = true
       mob.currentHealth = 80
       mob.maxHealth = 100
-      
+
       const serialized = serializeMobData(mob)
-      
+
       // Should exclude real-time fields
       expect(serialized).not.toHaveProperty('x')
       expect(serialized).not.toHaveProperty('y')
@@ -31,7 +31,7 @@ describe('Data Serializers', () => {
       expect(serialized).not.toHaveProperty('vy')
       expect(serialized).not.toHaveProperty('heading')
       expect(serialized).not.toHaveProperty('isMoving')
-      
+
       // Should include non-real-time fields
       expect(serialized).toHaveProperty('id')
       expect(serialized).toHaveProperty('currentHealth')
@@ -50,9 +50,9 @@ describe('Data Serializers', () => {
         maxHealth: 100,
         pAtk: 10,
       })
-      
+
       const serialized = serializeMobData(mob)
-      
+
       expect(serialized.id).toBe('mob-2')
       expect(serialized.radius).toBe(4)
       expect(serialized.maxHealth).toBe(100)
@@ -65,15 +65,15 @@ describe('Data Serializers', () => {
   describe('serializePlayerData', () => {
     it('should serialize player data excluding real-time fields', () => {
       const player = new Player('session-1', 'Player1', 150, 250)
-      
+
       player.vx = 3
       player.vy = 4
       player.heading = 0.5
       player.isMoving = true
       player.currentHealth = 90
-      
+
       const serialized = serializePlayerData(player)
-      
+
       // Should exclude real-time fields
       expect(serialized).not.toHaveProperty('x')
       expect(serialized).not.toHaveProperty('y')
@@ -81,7 +81,7 @@ describe('Data Serializers', () => {
       expect(serialized).not.toHaveProperty('vy')
       expect(serialized).not.toHaveProperty('heading')
       expect(serialized).not.toHaveProperty('isMoving')
-      
+
       // Should include non-real-time fields
       expect(serialized).toHaveProperty('id')
       expect(serialized).toHaveProperty('sessionId')
@@ -113,9 +113,9 @@ describe('Data Serializers', () => {
       const player = new Player('session-2', 'Player2', 200, 300)
       player.maxLinearSpeed = 25
       player.radius = 1.3
-      
+
       const serialized = serializePlayerData(player)
-      
+
       expect(serialized.id).toBe('session-2')
       expect(serialized.sessionId).toBe('session-2')
       expect(serialized.name).toBe('Player2')
@@ -126,4 +126,3 @@ describe('Data Serializers', () => {
     })
   })
 })
-

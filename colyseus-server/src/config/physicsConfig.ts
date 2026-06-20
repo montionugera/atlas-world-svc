@@ -40,7 +40,10 @@ export const PHYSICS_CONFIG = {
       density: 0.001,
       collisionFilter: {
         category: COLLISION_CATEGORIES.PLAYER,
-        mask: COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE,
+        mask:
+          COLLISION_CATEGORIES.MOB |
+          COLLISION_CATEGORIES.BOUNDARY |
+          COLLISION_CATEGORIES.PROJECTILE,
         group: 0,
       },
     },
@@ -53,7 +56,11 @@ export const PHYSICS_CONFIG = {
       density: 1.0,
       collisionFilter: {
         category: COLLISION_CATEGORIES.MOB,
-        mask: COLLISION_CATEGORIES.PLAYER | COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE,
+        mask:
+          COLLISION_CATEGORIES.PLAYER |
+          COLLISION_CATEGORIES.MOB |
+          COLLISION_CATEGORIES.BOUNDARY |
+          COLLISION_CATEGORIES.PROJECTILE,
         group: 0,
       },
     },
@@ -66,7 +73,10 @@ export const PHYSICS_CONFIG = {
       density: 1.0,
       collisionFilter: {
         category: COLLISION_CATEGORIES.PLAYER,
-        mask: COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE,
+        mask:
+          COLLISION_CATEGORIES.MOB |
+          COLLISION_CATEGORIES.BOUNDARY |
+          COLLISION_CATEGORIES.PROJECTILE,
         group: 0,
       },
     },
@@ -74,7 +84,8 @@ export const PHYSICS_CONFIG = {
       isStatic: true,
       collisionFilter: {
         category: COLLISION_CATEGORIES.BOUNDARY,
-        mask: COLLISION_CATEGORIES.PLAYER | COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.PROJECTILE,
+        mask:
+          COLLISION_CATEGORIES.PLAYER | COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.PROJECTILE,
         group: 0,
       },
     },
@@ -87,7 +98,11 @@ export const PHYSICS_CONFIG = {
       density: 0.1,
       collisionFilter: {
         category: COLLISION_CATEGORIES.PROJECTILE,
-        mask: COLLISION_CATEGORIES.PLAYER | COLLISION_CATEGORIES.MOB | COLLISION_CATEGORIES.BOUNDARY | COLLISION_CATEGORIES.PROJECTILE,
+        mask:
+          COLLISION_CATEGORIES.PLAYER |
+          COLLISION_CATEGORIES.MOB |
+          COLLISION_CATEGORIES.BOUNDARY |
+          COLLISION_CATEGORIES.PROJECTILE,
         group: 0,
       },
     },

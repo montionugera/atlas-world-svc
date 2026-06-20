@@ -32,7 +32,12 @@ export class ProjectileManager {
     this.battleManager = battleManager
     this.factory = new ProjectileFactory(gameState)
     this.deflectionResolver = new DeflectionResolver(gameState)
-    this.collisionResolver = new ProjectileCollisionResolver(gameState, battleModule, battleManager, this.deflectionResolver)
+    this.collisionResolver = new ProjectileCollisionResolver(
+      gameState,
+      battleModule,
+      battleManager,
+      this.deflectionResolver
+    )
   }
 
   /**
@@ -94,13 +99,17 @@ export class ProjectileManager {
   /**
    * Update all projectiles: apply gravity, cap speed, track distance
    */
-  updateProjectiles(projectiles: Map<string, Projectile>, deltaTime: number, physicsManager: any): void {
+  updateProjectiles(
+    projectiles: Map<string, Projectile>,
+    deltaTime: number,
+    physicsManager: any
+  ): void {
     for (const projectile of projectiles.values()) {
       if (projectile.isStuck) continue
-      
+
       // Update physics (gravity, speed cap, distance tracking) - uses configurable values
       physicsManager.updateProjectile(projectile, deltaTime, this.gravity, this.maxSpeed)
-      
+
       // Sync position from physics body
       const body = physicsManager.getBody(projectile.id)
       if (body) {
@@ -144,4 +153,3 @@ export class ProjectileManager {
     return this.deflectionResolver.checkDeflection(projectile, attacker)
   }
 }
-

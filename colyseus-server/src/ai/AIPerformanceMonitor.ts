@@ -54,4 +54,3 @@ export class AIPerformanceMonitor {
     return this.updateTimes.reduce((sum, time) => sum + time, 0) / this.updateTimes.length
   }
 }
-

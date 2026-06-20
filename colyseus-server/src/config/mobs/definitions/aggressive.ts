@@ -1,4 +1,3 @@
-
 import { MOB_STATS, MOB_TYPE_STATS } from '../../combatConfig'
 import { AttackCharacteristicType, MobTypeConfig } from '../types'
 

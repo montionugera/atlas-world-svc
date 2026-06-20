@@ -33,13 +33,13 @@ export class DeflectionResolver {
    * Returns true if deflected, false otherwise
    */
   checkDeflection(projectile: Projectile, attacker: WorldLife): boolean {
-    const incomingConfig = PROJECTILE_INTERACTIONS[projectile.type];
-    if (!incomingConfig || !incomingConfig.canBeDeflected) return false;
+    const incomingConfig = PROJECTILE_INTERACTIONS[projectile.type]
+    if (!incomingConfig || !incomingConfig.canBeDeflected) return false
 
     const deflectorWeaponType = this.resolveDeflectorWeaponType(attacker)
 
-    const defenderConfig = PROJECTILE_INTERACTIONS[deflectorWeaponType];
-    if (!defenderConfig || !defenderConfig.canDeflectOthers) return false;
+    const defenderConfig = PROJECTILE_INTERACTIONS[deflectorWeaponType]
+    if (!defenderConfig || !defenderConfig.canDeflectOthers) return false
 
     // Can't deflect if already deflected by someone
     if (projectile.deflectedBy) return false
@@ -108,13 +108,14 @@ export class DeflectionResolver {
 
     // Post-parry damage: incoming deflectedDamageMultiplier × defender deflectPowerMultiplier (not velocity).
     const dmgMult =
-      incomingConfig.deflectedDamageMultiplier * Math.max(0.1, defenderConfig.deflectPowerMultiplier)
+      incomingConfig.deflectedDamageMultiplier *
+      Math.max(0.1, defenderConfig.deflectPowerMultiplier)
     projectile.damage = Math.max(1, Math.floor(projectile.damage * dmgMult))
 
     // Refresh max distance capability since it's practically a new projectile
     if (projectile.maxRange <= projectile.distanceTraveled) {
-        // Give it at least some distance if it was already maxed out
-        projectile.maxRange += 10;
+      // Give it at least some distance if it was already maxed out
+      projectile.maxRange += 10
     }
     projectile.ownerId = attacker.id
     // Make the projectile belong to the deflecting actor's team going forward.
@@ -131,7 +132,9 @@ export class DeflectionResolver {
 
     // Apply recoil impulse to the deflector based on config absorption rate
     const rawImpulse = projectile.damage * GAME_CONFIG.attackImpulseMultiplier
-    const impulseMagnitude = Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse)) * defenderConfig.absorbImpulseMultiplier
+    const impulseMagnitude =
+      Math.max(GAME_CONFIG.minImpulse, Math.min(rawImpulse, GAME_CONFIG.maxImpulse)) *
+      defenderConfig.absorbImpulseMultiplier
 
     if (impulseMagnitude > 0) {
       // Knockback direction is AWAY from the impact normal (pushing the player backward)
@@ -139,12 +142,17 @@ export class DeflectionResolver {
 
       try {
         eventBus.emitRoomEvent(this.gameState.roomId, RoomEventType.BATTLE_DAMAGE_PRODUCED, {
-          attacker: this.gameState.mobs.get(projectile.ownerId) || this.gameState.players.get(projectile.ownerId) || attacker,
+          attacker:
+            this.gameState.mobs.get(projectile.ownerId) ||
+            this.gameState.players.get(projectile.ownerId) ||
+            attacker,
           taker: attacker,
           impulse,
         })
       } catch (err) {
-        console.warn(`⚠️ PROJECTILE: failed to emit BATTLE_DAMAGE_PRODUCED (deflect recoil): ${err instanceof Error ? err.message : String(err)}`)
+        console.warn(
+          `⚠️ PROJECTILE: failed to emit BATTLE_DAMAGE_PRODUCED (deflect recoil): ${err instanceof Error ? err.message : String(err)}`
+        )
       }
     }
 
