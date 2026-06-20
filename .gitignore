@@ -106,3 +106,6 @@ data/
 # ps-release-workflow (gitignored state)
 .claude/state/
 .claude/worktrees/
+
+# Rendered spec/plan view artifacts (local only)
+docs/superpowers/**/*.html
