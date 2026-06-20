@@ -1,0 +1,30 @@
+import { DamageCalculator } from '../modules/combat/DamageCalculator'
+import { Mob } from '../schemas/Mob'
+
+// Mirrors the Phase 0 damage table (char-battlemodule-damage) directly against
+// DamageCalculator: finalDamage = floor(max(1, base - min(totalDef, base*0.8)))
+// where totalDef = (magical ? mDef : pDef) + armor.
+describe('DamageCalculator.calculate', () => {
+  const target = (over: Partial<{ pDef: number; mDef: number; armor: number }>) =>
+    new Mob({
+      id: 't', x: 0, y: 0, radius: 1, maxHealth: 100, pAtk: 10, attackRange: 5,
+      atkWindDownTime: 1000, pDef: over.pDef ?? 0, mDef: over.mDef ?? 0,
+      armor: over.armor ?? 0, density: 1,
+    })
+
+  it('physical: subtracts pDef + armor', () => {
+    expect(DamageCalculator.calculate(100, 'physical', target({ pDef: 10, armor: 5 }))).toBe(85)
+  })
+  it('magical: subtracts mDef + armor (ignores pDef)', () => {
+    expect(DamageCalculator.calculate(100, 'magical', target({ pDef: 999, mDef: 4, armor: 5 }))).toBe(91)
+  })
+  it('caps reduction at 80% of base damage', () => {
+    expect(DamageCalculator.calculate(100, 'physical', target({ pDef: 500 }))).toBe(20)
+  })
+  it('never reduces below 1', () => {
+    expect(DamageCalculator.calculate(1, 'physical', target({ pDef: 500 }))).toBe(1)
+  })
+  it('floors fractional results', () => {
+    expect(DamageCalculator.calculate(10, 'physical', target({ pDef: 0.5 }))).toBe(9)
+  })
+})

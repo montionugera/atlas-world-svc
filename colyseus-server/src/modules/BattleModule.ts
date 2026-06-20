@@ -4,7 +4,6 @@
  */
 
 import { WorldLife } from '../schemas/WorldLife'
-import { BattleStatus } from '../schemas/BattleStatus'
 import { GameState } from '../schemas/GameState'
 import { eventBus, RoomEventType } from '../events/EventBus'
 import { GAME_CONFIG } from '../config/gameConfig'
@@ -17,6 +16,9 @@ import {
   RespawnActionPayload,
   DamageActionPayload,
 } from './BattleActionMessage'
+import { ProcessedEventTracker } from './combat/ProcessedEventTracker'
+import { DamageCalculator } from './combat/DamageCalculator'
+import { StatusEffectManager } from './combat/StatusEffectManager'
 
 export interface AttackEvent {
   attackerId: string
@@ -44,18 +46,23 @@ export interface CombatStats {
 export class BattleModule implements BattleActionProcessor {
   private attackEvents: AttackEvent[] = []
   private maxEventHistory = 100 // Keep last 100 events
-  private processedIdsCleanupInterval = 5000 // Cleanup every 5s
 
+  // Centralized event-dedup cache (owns the per-entity processed-event map + TTL logic)
+  private eventTracker = new ProcessedEventTracker()
 
-  private lastCleanupTime = 0
-  
-  // Centralized Event Tracking: Map<EntityId, Map<EventId, Timestamp>>
-  private processedEventsByEntityId: Map<string, Map<string, number>> = new Map()
-  
+  // Status effect application + DOT/HOT ticks. Injected applyDamage/healEntity route
+  // back to BattleModule's real methods so the DOT-tick death (die()) path is identical.
+  private statusManager: StatusEffectManager
+
   private gameState: GameState
 
   constructor(gameState: GameState) {
     this.gameState = gameState
+    this.statusManager = new StatusEffectManager(
+      this.eventTracker,
+      (e, a) => this.applyDamage(e, a),
+      (e, a) => this.healEntity(e, a),
+    )
   }
 
   // Process a direct attack between two entities (core attack logic)
@@ -192,16 +199,9 @@ export class BattleModule implements BattleActionProcessor {
     return { canAttack: true }
   }
 
-  // Calculate damage with defense calculations
+  // Calculate damage with defense calculations (delegates to DamageCalculator)
   calculateDamage(baseDamage: number, damageType: 'physical' | 'magical', target: WorldLife): number {
-    const primaryDefense = damageType === 'magical' ? target.mDef : target.pDef
-    const totalDefense = primaryDefense + target.armor
-
-    // Cap defense at 80% damage reduction
-    const damageReduction = Math.min(totalDefense, baseDamage * 0.8)
-    const finalDamage = Math.max(1, baseDamage - damageReduction)
-
-    return Math.floor(finalDamage)
+    return DamageCalculator.calculate(baseDamage, damageType, target)
   }
 
   // Apply damage to target
@@ -210,7 +210,7 @@ export class BattleModule implements BattleActionProcessor {
 
     // Event Validation
     if (options?.eventId) {
-        if (!this.validateEvent(target, options.eventId)) {
+        if (!this.eventTracker.validate(target.id, options.eventId)) {
             // Already processed this event
             return false;
         }
@@ -256,117 +256,20 @@ export class BattleModule implements BattleActionProcessor {
     return false
   }
 
-  // Apply a status effect to an entity
-  applyStatusEffect(entity: WorldLife, type: string, duration: number, baseChance: number = 1.0, options?: { 
-      bypassInvulnerability?: boolean, 
+  // Apply a status effect to an entity (delegates to StatusEffectManager)
+  applyStatusEffect(entity: WorldLife, type: string, duration: number, baseChance: number = 1.0, options?: {
+      bypassInvulnerability?: boolean,
       eventId?: string,
       sourceId?: string,
       value?: number,
-      interval?: number 
+      interval?: number
   }): boolean {
-    if (!entity.isAlive) return false
-    
-    // Event Validation
-    if (options?.eventId) {
-        if (!this.validateEvent(entity, options.eventId)) {
-            return false;
-        }
-    }
-
-    // Calculate Chance
-    const resistance = entity.getResistance(type);
-    const chance = Math.max(0, Math.min(1, baseChance * (1 - resistance)));
-    
-    // Roll
-    if (Math.random() > chance) {
-        console.log(`🛡️ RESIST: ${entity.id} resisted '${type}' (Chance: ${(chance*100).toFixed(1)}%, Resistance: ${(resistance*100).toFixed(1)}%)`);
-        return false;
-    }
-    
-    // Status Logic
-    const now = Date.now()
-    const currentStatus = entity.battleStatuses.get(type)
-    
-    if (currentStatus) {
-        // Extend duration
-        currentStatus.expiresAt = Math.max(currentStatus.expiresAt, now + duration)
-        // Update value/interval if provided (could be smarter logic here, e.g. overwrite vs stack)
-        // For now, we overwrite with latest application values if provided
-        if (options?.value !== undefined) currentStatus.value = options.value
-        if (options?.interval !== undefined) currentStatus.interval = options.interval
-        if (options?.sourceId !== undefined) currentStatus.sourceId = options.sourceId
-        
-        console.log(`✨ STATUS REFRESH: ${entity.id} refreshed '${type}' for ${duration}ms`)
-    } else {
-        // Create new
-        const newStatus = new BattleStatus(
-            `${type}-${now}`, // ID
-            type,
-            duration,
-            options?.sourceId,
-            options?.value,
-            options?.interval
-        )
-        entity.battleStatuses.set(type, newStatus)
-        console.log(`✨ STATUS: ${entity.id} applied '${type}' for ${duration}ms (Val: ${options?.value}, Int: ${options?.interval})`)
-    }
-    
-    return true
+    return this.statusManager.applyStatusEffect(entity, type, duration, baseChance, options)
   }
 
-  // Validate if event should be processed
-  // Returns TRUE if event is new and should process
-  // Returns FALSE if event was already processed
-  // Validate if event should be processed
-  // Returns TRUE if event is new and should process
-  // Returns FALSE if event was already processed
-  private validateEvent(entity: WorldLife, eventId: string): boolean {
-      let entityEvents = this.processedEventsByEntityId.get(entity.id);
-      if (!entityEvents) {
-          entityEvents = new Map<string, number>();
-          this.processedEventsByEntityId.set(entity.id, entityEvents);
-      }
-      
-      if (entityEvents.has(eventId)) {
-          return false;
-      }
-      entityEvents.set(eventId, Date.now());
-      return true;
-  }
-
-  // Cleanup processed events (call this periodically)
-  cleanupProcessedEvents(entityId: string) {
-      const entityEvents = this.processedEventsByEntityId.get(entityId);
-      if (!entityEvents) return;
-
-      const now = Date.now();
-      const expiration = 2000; // 2 seconds retention
-      
-      const toRemove: string[] = [];
-      entityEvents.forEach((timestamp, id) => {
-          if (now - timestamp > expiration) {
-              toRemove.push(id);
-          }
-      });
-      
-      toRemove.forEach(id => entityEvents.delete(id));
-      
-      // If empty, remove the entity map entirely to save memory
-      if (entityEvents.size === 0) {
-          this.processedEventsByEntityId.delete(entityId);
-      }
-  }
-
-  // Helper to trigger cleanup globally
+  // Helper to trigger cleanup globally (delegates to the event tracker)
   cleanupAllEvents() {
-      const now = Date.now();
-      if (now - this.lastCleanupTime < this.processedIdsCleanupInterval) return;
-      this.lastCleanupTime = now;
-      
-      // Iterate all tracked entities
-      for (const entityId of this.processedEventsByEntityId.keys()) {
-          this.cleanupProcessedEvents(entityId);
-      }
+      this.eventTracker.cleanupExpired()
   }
 
   // Trigger invulnerability frames - REMOVED/DEPRECATED
@@ -381,7 +284,7 @@ export class BattleModule implements BattleActionProcessor {
   // own concern: clearing the per-entity processed-event dedup cache.
   respawnEntity(entity: WorldLife, x?: number, y?: number): void {
     entity.respawn(x, y)
-    this.processedEventsByEntityId.delete(entity.id) // Clear old combat events on respawn
+    this.eventTracker.clear(entity.id) // Clear old combat events on respawn
   }
 
   // Get combat stats for an entity
@@ -414,32 +317,9 @@ export class BattleModule implements BattleActionProcessor {
     this.processStatusTicks(entity);
   }
 
-  // Process status ticks (DOTs)
+  // Process status ticks (DOTs) (delegates to StatusEffectManager)
   processStatusTicks(entity: WorldLife): void {
-      if (!entity.isAlive || !entity.battleStatuses) return;
-      
-      const now = Date.now();
-      
-      entity.battleStatuses.forEach((status) => {
-          // Check if it has an interval (is a DOT/HOT)
-          if (status.interval > 0) {
-              // Check if ready to tick
-              if (now - status.lastTick >= status.interval) {
-                  // Apply Effect
-                  // TODO: Use a map of handlers for different types?
-                  // For now, hardcode 'burn', 'poison', 'regen' logic or generic 'damage'/'heal'
-                  
-                  if (status.type === 'burn' || status.type === 'poison') {
-                      this.applyDamage(entity, status.value);
-                      console.log(`🔥 DOT: ${entity.id} took ${status.value} damage from ${status.type}`);
-                  } else if (status.type === 'regen') {
-                      this.healEntity(entity, status.value);
-                  }
-                  
-                  status.lastTick = now;
-              }
-          }
-      });
+      this.statusManager.processStatusTicks(entity)
   }
 
   // Get recent attack events
