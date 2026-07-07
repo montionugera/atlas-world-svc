@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
-import { isolateSchemas } from '../../../scripts/codegen/isolate-schemas'
+import { isolateSchemas } from '../../codegen/isolate-schemas'
 
 function tmp(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'iso-'))
@@ -12,21 +12,25 @@ describe('isolateSchemas', () => {
     const inDir = tmp()
     const outDir = tmp()
     // A fat class like Mob: runtime imports + methods + non-@type fields
-    fs.writeFileSync(path.join(inDir, 'Base.ts'),
+    fs.writeFileSync(
+      path.join(inDir, 'Base.ts'),
       `import { Schema, type } from '@colyseus/schema'\n` +
-      `export class Base extends Schema {\n` +
-      `  @type('string') id: string = ''\n` +
-      `}\n`)
-    fs.writeFileSync(path.join(inDir, 'Fat.ts'),
+        `export class Base extends Schema {\n` +
+        `  @type('string') id: string = ''\n` +
+        `}\n`
+    )
+    fs.writeFileSync(
+      path.join(inDir, 'Fat.ts'),
       `import { type } from '@colyseus/schema'\n` +
-      `import { Base } from './Base'\n` +
-      `import { EventBus } from '../events/EventBus'\n` +
-      `export class Fat extends Base {\n` +
-      `  @type('string') tag: string = ''\n` +
-      `  combatSystem: EventBus\n` +
-      `  @type('number') speed: number = 5\n` +
-      `  update(): void { this.combatSystem.emit() }\n` +
-      `}\n`)
+        `import { Base } from './Base'\n` +
+        `import { EventBus } from '../events/EventBus'\n` +
+        `export class Fat extends Base {\n` +
+        `  @type('string') tag: string = ''\n` +
+        `  combatSystem: EventBus\n` +
+        `  @type('number') speed: number = 5\n` +
+        `  update(): void { this.combatSystem.emit() }\n` +
+        `}\n`
+    )
 
     const written = isolateSchemas(inDir, outDir)
 

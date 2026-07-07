@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 function hasTypeDecorator(prop: PropertyDeclaration): boolean {
-  return prop.getDecorators().some((d) => d.getName() === 'type')
+  return prop.getDecorators().some(d => d.getName() === 'type')
 }
 
 // Collect identifiers referenced inside the @type(...) decorator (class args like
@@ -12,8 +12,8 @@ function typeClassRefs(prop: PropertyDeclaration): string[] {
   const refs: string[] = []
   for (const d of prop.getDecorators()) {
     if (d.getName() !== 'type') continue
-    d.getArguments().forEach((arg) => {
-      arg.getDescendantsOfKind(SyntaxKind.Identifier).forEach((id) => {
+    d.getArguments().forEach(arg => {
+      arg.getDescendantsOfKind(SyntaxKind.Identifier).forEach(id => {
         const t = id.getText()
         if (/^[A-Z]/.test(t)) refs.push(t) // PascalCase => a schema class
       })
@@ -30,14 +30,14 @@ export function isolateSchemas(inputDir: string, outputDir: string): string[] {
   // Names of all schema classes across the input (to know which imports to keep).
   const schemaClassNames = new Set<string>()
   for (const sf of project.getSourceFiles()) {
-    sf.getClasses().forEach((c) => {
+    sf.getClasses().forEach(c => {
       if (c.getExtends()) schemaClassNames.add(c.getName() || '')
     })
   }
 
   const written: string[] = []
   for (const sf of project.getSourceFiles()) {
-    const classes = sf.getClasses().filter((c) => c.getExtends())
+    const classes = sf.getClasses().filter(c => c.getExtends())
     if (classes.length === 0) continue
 
     const keptSchemaImports = new Set<string>() // sibling schema class names to import
@@ -53,7 +53,10 @@ export function isolateSchemas(inputDir: string, outputDir: string): string[] {
       for (const prop of cls.getProperties()) {
         if (!hasTypeDecorator(prop)) continue
         // Preserve the decorator + declaration, drop any initializer that references runtime.
-        const decos = prop.getDecorators().map((d) => `@${d.getText().replace(/^@/, '')}`).join(' ')
+        const decos = prop
+          .getDecorators()
+          .map(d => `@${d.getText().replace(/^@/, '')}`)
+          .join(' ')
         const propName = prop.getName()
         const typeNode = prop.getTypeNode()?.getText()
         // Detect collection types to emit valid initializers/types.
@@ -61,7 +64,9 @@ export function isolateSchemas(inputDir: string, outputDir: string): string[] {
           if (/ArraySchema/.test(typeNode!)) primitives.add('ArraySchema')
           if (/MapSchema/.test(typeNode!)) primitives.add('MapSchema')
         }
-        typeClassRefs(prop).forEach((r) => { if (schemaClassNames.has(r)) keptSchemaImports.add(r) })
+        typeClassRefs(prop).forEach(r => {
+          if (schemaClassNames.has(r)) keptSchemaImports.add(r)
+        })
         const typeStr = typeNode ? `: ${typeNode}` : ''
         fieldLines.push(`  ${decos} ${propName}${typeStr}`)
       }
@@ -74,7 +79,7 @@ export function isolateSchemas(inputDir: string, outputDir: string): string[] {
       `import { ${[...primitives].join(', ')} } from '@colyseus/schema'`,
     ]
     for (const dep of keptSchemaImports) {
-      if (classes.some((c) => c.getName() === dep)) continue // self
+      if (classes.some(c => c.getName() === dep)) continue // self
       importLines.push(`import { ${dep} } from './${dep}'`)
     }
 
