@@ -1,2 +1,6 @@
 
 generated/.schema-src/
+
+# .NET build artifacts (old csproj client — removed; never re-commit)
+generated/csharp/obj/
+generated/csharp/bin/
