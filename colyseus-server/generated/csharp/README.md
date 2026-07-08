@@ -1,143 +1,37 @@
-# Atlas World C# Client
+# Atlas World Contracts
 
-C# client library for connecting to the Atlas World multiplayer game server.
+Generated C# schema models for the Atlas World Colyseus server.
 
-## Features
+> **Auto-generated — do not edit by hand.** Everything in `Runtime/` is produced by
+> `colyseus-server`'s codegen (`npm run client:csharp`) from `src/schemas/*.ts`.
+> Edits will be overwritten on the next generation and will fail the CI drift check.
 
-- ✅ **WebSocket Connection** - Real-time communication with game server
-- ✅ **Event-Driven** - Easy message handling with events
-- ✅ **Async/Await** - Modern async programming patterns
-- ✅ **Strongly Typed** - Full IntelliSense support
-- ✅ **JSON Serialization** - Built-in System.Text.Json support
-- ✅ **Nullable Reference Types** - C# 8+ null safety
+## Install (Unity Package Manager)
 
-## Installation
+Add to your Unity project's `Packages/manifest.json`, pinned to a released tag:
 
-### NuGet Package
+```json
+"com.atlasworld.contracts": "https://github.com/montionugera/atlas-world-svc.git?path=colyseus-server/generated/csharp#contracts-v0.1.0"
+```
+
+## Runtime dependency
+
+These are **models only**. Decoding/networking comes from the official
+**Colyseus Unity SDK**, which you must add separately. The SDK version must be
+wire-compatible with the server's `@colyseus/schema` (currently generated with
+**`@colyseus/schema` 3.0.x**). Confirm the matching Colyseus Unity SDK release for
+schema v3 before pinning — see https://github.com/colyseus/colyseus-unity-sdk/releases.
+
+## Contents
+
+- `Runtime/*.cs` — generated `@colyseus/schema` models, namespace `AtlasWorld.Schema`
+- `AtlasWorld.Contracts.asmdef` — assembly definition
+- `package.json` — UPM manifest
+
+## Regenerating
+
+From `colyseus-server/`:
+
 ```bash
-dotnet add package AtlasWorld.Client
+npm run client:csharp
 ```
-
-### Manual Installation
-1. Copy `AtlasWorldClient.cs` to your project
-2. Add required NuGet packages:
-```bash
-dotnet add package System.Net.WebSockets.Client
-dotnet add package System.Text.Json
-```
-
-## Quick Start
-
-```csharp
-using AtlasWorld.Client;
-
-var client = new AtlasWorldClient("ws://localhost:2567");
-
-// Set up event handlers
-client.OnConnected += () => Console.WriteLine("Connected!");
-client.OnWelcome += (welcome) => Console.WriteLine($"Welcome: {welcome.Message}");
-client.OnStateChange += (state) => Console.WriteLine($"Tick: {state.Tick}");
-
-// Connect and join game
-await client.ConnectAsync();
-await client.JoinGameRoomAsync();
-
-// Send player input
-await client.SendPlayerInputAsync(new PlayerInput { Vx = 0.5, Vy = -0.3 });
-
-// Clean up
-await client.DisconnectAsync();
-client.Dispose();
-```
-
-## API Reference
-
-### AtlasWorldClient
-
-#### Constructor
-```csharp
-AtlasWorldClient(string serverUrl = "ws://localhost:2567")
-```
-
-#### Methods
-```csharp
-// Connection
-Task ConnectAsync()
-Task DisconnectAsync()
-
-// Game Room
-Task JoinGameRoomAsync(string mapId = "map-01-sector-a")
-
-// Player Actions
-Task SendPlayerInputAsync(PlayerInput input)
-Task SendPlayerPositionAsync(PlayerPosition position)
-```
-
-#### Events
-```csharp
-event Action? OnConnected
-event Action? OnDisconnected
-event Action<string>? OnError
-event Action<WelcomeMessage>? OnWelcome
-event Action<StateChangeMessage>? OnStateChange
-```
-
-### Message Models
-
-#### PlayerInput
-```csharp
-public class PlayerInput
-{
-    public double Vx { get; set; }  // Velocity X (-1 to 1)
-    public double Vy { get; set; }  // Velocity Y (-1 to 1)
-}
-```
-
-#### PlayerPosition
-```csharp
-public class PlayerPosition
-{
-    public double X { get; set; }   // X coordinate
-    public double Y { get; set; }   // Y coordinate
-}
-```
-
-#### WelcomeMessage
-```csharp
-public class WelcomeMessage
-{
-    public string Message { get; set; }   // Welcome message
-    public string PlayerId { get; set; }  // Your session ID
-    public string MapId { get; set; }     // Current map
-}
-```
-
-#### StateChangeMessage
-```csharp
-public class StateChangeMessage
-{
-    public Dictionary<string, Player> Players { get; set; }  // All players
-    public List<Mob> Mobs { get; set; }                     // All mobs
-    public int Tick { get; set; }                           // Game tick
-    public string MapId { get; set; }                       // Current map
-}
-```
-
-## Example Usage
-
-See `Example.cs` for a complete working example.
-
-## Requirements
-
-- .NET 6.0 or later
-- System.Net.WebSockets.Client
-- System.Text.Json
-
-## License
-
-MIT License - see LICENSE file for details.
-
-## Support
-
-- GitHub Issues: [atlasworld/client-csharp](https://github.com/atlasworld/client-csharp)
-- Email: team@atlasworld.com

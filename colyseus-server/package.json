@@ -19,7 +19,8 @@
     "prepare": "husky install",
     "docs:generate": "echo 'HTML docs generated manually - see ./docs/index.html'",
     "docs:serve": "npx serve ./docs -p 3000",
-    "client:csharp": "echo 'C# models updated - see ./generated/csharp/AtlasWorldModels.cs'",
+    "client:csharp": "bash scripts/codegen/gen-csharp.sh",
+    "test:contracts": "bash scripts/test_contracts.sh",
     "client:csharp:verify": "node -e \"console.log('Verify C# models match server schemas')\"",
     "client:typescript": "npx @asyncapi/generator typescript asyncapi.yaml ./generated/typescript",
     "client:all": "npm run client:csharp && npm run client:typescript"
@@ -47,6 +48,7 @@
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "ts-jest": "^29.1.0",
+    "ts-morph": "^28.0.0",
     "ts-node": "^10.9.0",
     "typescript": "^5.3.0"
   },

@@ -1,0 +1,6 @@
+{
+  "name": "AtlasWorld.Contracts",
+  "rootNamespace": "AtlasWorld.Schema",
+  "references": [],
+  "autoReferenced": true
+}
