@@ -38,7 +38,9 @@ describe('NakamaMetaBackend', () => {
         return
       }
       res.writeHead(200, { 'Content-Type': 'application/json' })
-      res.end(JSON.stringify({ status: 'ok' }))
+      // Real report_match_events shape (nakama/src/rpc/reportMatchEvents.ts),
+      // not the fabricated { status: ... } shape the RPC never returns.
+      res.end(JSON.stringify({ deduped: false, progressed: [], completedNow: [] }))
     })
     server = started.server
 
@@ -58,6 +60,53 @@ describe('NakamaMetaBackend', () => {
 
     expect(result).toBe('ok')
     expect(calls).toBe(3)
+  })
+
+  it("parses { deduped: true } as 'deduped'", async () => {
+    const started = await startServer((req, res) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ deduped: true }))
+    })
+    server = started.server
+
+    const backend = new NakamaMetaBackend({
+      baseUrl: `http://localhost:${started.port}`,
+      httpKey: 'atlas_dev_http_key',
+      timeoutMs: 500,
+    })
+
+    const result = await backend.reportMatchEvents({
+      matchId: 'match-1',
+      seq: 0,
+      userId: 'user-1',
+      events: [],
+    })
+
+    expect(result).toBe('deduped')
+  })
+
+  it('fails closed on an unrecognized/malformed response body', async () => {
+    const started = await startServer((req, res) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      // Fabricated shape the real RPC never returns — must not be treated as success.
+      res.end(JSON.stringify({ status: 'ok' }))
+    })
+    server = started.server
+
+    const backend = new NakamaMetaBackend({
+      baseUrl: `http://localhost:${started.port}`,
+      httpKey: 'atlas_dev_http_key',
+      timeoutMs: 500,
+    })
+
+    const result = await backend.reportMatchEvents({
+      matchId: 'match-1',
+      seq: 0,
+      userId: 'user-1',
+      events: [],
+    })
+
+    expect(result).toBe('failed')
   })
 
   it("returns 'failed' after exhausting retries", async () => {

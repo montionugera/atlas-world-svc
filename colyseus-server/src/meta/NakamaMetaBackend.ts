@@ -61,8 +61,15 @@ export class NakamaMetaBackend implements IMetaBackend {
     const body = await this.rpc(RPC.reportMatchEvents, batch)
     if (body === null) return 'failed'
 
-    const status = (body as { status?: unknown }).status
-    return status === 'deduped' ? 'deduped' : 'ok'
+    // Real report_match_events response shape (see
+    // nakama/src/rpc/reportMatchEvents.ts): { deduped: true } or
+    // { deduped: false, progressed, completedNow }. Anything else is
+    // unrecognized/malformed — fail CLOSED so the batch is retried rather
+    // than silently dropped.
+    const deduped = (body as { deduped?: unknown }).deduped
+    if (deduped === true) return 'deduped'
+    if (deduped === false) return 'ok'
+    return 'failed'
   }
 
   private async rpc(id: string, payload: unknown): Promise<unknown | null> {
