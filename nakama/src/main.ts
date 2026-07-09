@@ -1,3 +1,6 @@
+import { RPC } from '@atlas/contracts';
+import { grantXp } from './rpc/grantXp';
+
 /**
  * healthcheck RPC — trivial liveness probe for the bundle + wiring, no auth
  * required. Returns a fixed JSON payload. Not part of contracts RPC ids
@@ -20,6 +23,7 @@ function InitModule(
   initializer: nkruntime.Initializer,
 ): void {
   initializer.registerRpc('healthcheck', healthcheck);
+  initializer.registerRpc(RPC.grantXp, grantXp);
   logger.info('atlas-nakama TS runtime module loaded');
 }
 

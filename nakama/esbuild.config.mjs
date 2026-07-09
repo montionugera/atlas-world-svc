@@ -6,6 +6,12 @@
 // no top-level `import`/`export`). Since src/main.ts declares InitModule as
 // a bare function declaration and exports nothing, esbuild's ESM output
 // format emits flat code with no wrapper as long as nothing is exported.
+//
+// platform:'node' (not 'neutral') so esbuild resolves @atlas/contracts via
+// its package.json "main" field; we don't use any Node builtins so this
+// stays safe for goja. Verified live: zod (pulled in transitively via
+// @atlas/contracts' defaultDoc/DEFAULT_PROFILE) executes fine in goja at
+// target es2019 — no Proxy/WeakRef/process usage in its module-init path.
 import { build } from 'esbuild';
 
 await build({
@@ -13,7 +19,7 @@ await build({
   bundle: true,
   outfile: 'build/index.js',
   format: 'esm',
-  platform: 'neutral',
+  platform: 'node',
   target: 'es2019',
   legalComments: 'none',
   logLevel: 'info',
