@@ -1,6 +1,7 @@
 import { LoadoutSnapshot, derivedStats } from '@atlas/contracts'
 import { Player } from '../schemas/Player'
 import { IMetaBackend } from './IMetaBackend'
+import { clampPrimaryStat } from '../config/combatConfig'
 
 /** Applies a loadout snapshot's derived combat stats to a joined player. */
 export function applyLoadout(player: Player, snap: LoadoutSnapshot): void {
@@ -18,6 +19,15 @@ export function applyLoadout(player: Player, snap: LoadoutSnapshot): void {
   player.mDef = stats.mDef
   player.maxMoveSpeed = stats.maxMoveSpeed
   player.maxLinearSpeed = stats.maxMoveSpeed
+
+  // Primary stats also drive derived combat timing (e.g. attack speed reads
+  // player.stat.agi — see Player.recalculateStats/meleeAttackSpeed), so the
+  // loadout's allocated points must land on player.stat, not just the
+  // pre-derived combat fields above. @atlas/contracts' PrimaryStats has no
+  // `dex` field — leave player.stat.dex at its config default.
+  player.stat.agi = clampPrimaryStat(snap.profile.allocated.agi)
+  player.stat.str = clampPrimaryStat(snap.profile.allocated.str)
+  player.stat.vit = clampPrimaryStat(snap.profile.allocated.vit)
 }
 
 export interface LoadPlayerLoadoutParams {

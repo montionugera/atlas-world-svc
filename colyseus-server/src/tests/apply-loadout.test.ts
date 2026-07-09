@@ -42,6 +42,17 @@ describe('applyLoadout', () => {
     expect(player.maxMoveSpeed).toBe(expected.maxMoveSpeed)
     expect(player.maxLinearSpeed).toBe(expected.maxMoveSpeed)
   })
+
+  it('maps allocated agi/str/vit onto player.stat so attack speed reflects the loadout', () => {
+    const player = new Player('p1', 'Tester')
+    const snapshot = buildSnapshot({ allocated: { str: 8, agi: 42, int: 3, vit: 10 } })
+
+    applyLoadout(player, snapshot)
+
+    expect(player.stat.agi).toBe(42)
+    expect(player.stat.str).toBe(8)
+    expect(player.stat.vit).toBe(10)
+  })
 })
 
 describe('loadPlayerLoadout', () => {

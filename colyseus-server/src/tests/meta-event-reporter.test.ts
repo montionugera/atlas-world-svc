@@ -128,6 +128,23 @@ describe('MetaEventReporter', () => {
     expect(calls[1].events.map(e => e.targetId)).toEqual(['mob-b'])
   })
 
+  it('console.errors once when a buffer has mixed userIds, still attributing to the first', async () => {
+    const backend = new FakeMetaBackend()
+    const reporter = new MetaEventReporter({ backend, matchId: 'match-1' })
+    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    reporter.record(mobKilled('mob-a', 'user-1'))
+    reporter.record(mobKilled('mob-b', 'user-2'))
+    await reporter.flush()
+
+    expect(errSpy).toHaveBeenCalledTimes(1)
+    expect(errSpy.mock.calls[0][0]).toContain('mixed userIds')
+    expect(backend.batches).toHaveLength(1)
+    expect(backend.batches[0].userId).toBe('user-1')
+
+    errSpy.mockRestore()
+  })
+
   it('start() schedules periodic flushes and stop() cancels them', async () => {
     jest.useFakeTimers()
     const backend = new FakeMetaBackend()

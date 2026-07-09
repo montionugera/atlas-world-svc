@@ -97,6 +97,19 @@ export class MetaEventReporter {
     const events = [...this.buffer]
     const userId = events[0].userId
 
+    // Defense-in-depth: this reporter is one-per-room and the batch userId is
+    // taken from the first buffered event, which is only correct for today's
+    // 1 match = 1 room = 1 player model. If maxClients ever rises without
+    // updating this reporter, silently attributing every event to the first
+    // player's userId would be silent cross-account data corruption — surface
+    // it loudly instead.
+    if (events.some(e => e.userId !== userId)) {
+      console.error(
+        `[meta] MetaEventReporter: mixed userIds in one buffer for matchId=${this.matchId} — ` +
+          `attributing the whole batch to the first event's userId (${userId}), other events may be misattributed`
+      )
+    }
+
     let result: 'ok' | 'deduped' | 'failed'
     try {
       result = await this.backend.reportMatchEvents({
