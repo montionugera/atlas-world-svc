@@ -200,12 +200,17 @@ export class GameRoom extends Room<GameState, any, any, GameRoomAuthData> {
     this.battleManager.cleanup()
 
     // Stop scheduling further flushes, then drain whatever is still buffered
-    // so match events aren't lost on room teardown.
+    // so match events aren't lost on room teardown. flush() itself already
+    // waits out any in-flight periodic flush and re-flushes anything
+    // recorded since (see MetaEventReporter.flush) — wrap it in try/finally
+    // so physics cleanup below always runs even if the final flush rejects.
     this.metaEventReporter.stop()
-    await this.metaEventReporter.flush()
-
-    // Physics Event listeners managed inside physicsManager are destroyed here
-    this.physicsManager.destroy()
+    try {
+      await this.metaEventReporter.flush()
+    } finally {
+      // Physics Event listeners managed inside physicsManager are destroyed here
+      this.physicsManager.destroy()
+    }
   }
 
   private startSimulation() {
