@@ -26,6 +26,7 @@
     "client:all": "npm run client:csharp && npm run client:typescript"
   },
   "dependencies": {
+    "@atlas/contracts": "workspace:*",
     "@colyseus/schema": "^3.0.0",
     "@types/matter-js": "^0.20.2",
     "colyseus": "^0.16.4",
