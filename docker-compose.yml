@@ -44,6 +44,7 @@ services:
         exec /nakama/nakama --config /nakama/data/local.yml --database.address root@atlas-database:26257
     volumes:
       - ./nakama:/nakama/data
+      - ./nakama/build:/nakama/data/modules
     ports:
       - "7349:7349"        # Nakama gRPC
       - "7350:7350"        # Nakama HTTP API
