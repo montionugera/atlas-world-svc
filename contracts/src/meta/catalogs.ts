@@ -54,8 +54,8 @@ export const itemDefSchema = z
     name: z.string(),
     kind: z.enum(["weapon", "armor", "accessory", "consumable", "material"]),
     stackable: z.boolean(),
-    pAtk: z.number().optional(),
-    mAtk: z.number().optional(),
+    pAtk: z.number().int().nonnegative().optional(),
+    mAtk: z.number().int().nonnegative().optional(),
   })
   .strict() satisfies z.ZodType<ItemDef>;
 
@@ -63,7 +63,7 @@ export const skillDefSchema = z
   .object({
     id: z.string(),
     name: z.string(),
-    maxLevel: z.number(),
+    maxLevel: z.number().int().positive(),
     requires: z.array(z.string()),
   })
   .strict() satisfies z.ZodType<SkillDef>;
@@ -73,7 +73,7 @@ export const questObjectiveSchema = z
     id: z.string(),
     type: z.enum(MATCH_EVENT_TYPES),
     targetId: z.string(),
-    required: z.number(),
+    required: z.number().int().positive(),
   })
   .strict() satisfies z.ZodType<QuestObjective>;
 
@@ -83,9 +83,11 @@ export const questDefSchema = z
     objectives: z.array(questObjectiveSchema),
     rewards: z
       .object({
-        xp: z.number(),
+        xp: z.number().int().nonnegative(),
         items: z.array(
-          z.object({ itemId: z.string(), qty: z.number() }).strict(),
+          z
+            .object({ itemId: z.string(), qty: z.number().int().positive() })
+            .strict(),
         ),
       })
       .strict(),
@@ -125,3 +127,52 @@ export const SKILLS_BY_ID: Record<string, SkillDef> = Object.fromEntries(
 export const QUESTS_BY_ID: Record<string, QuestDef> = Object.fromEntries(
   QUESTS.map((quest) => [quest.id, quest]),
 );
+
+/**
+ * Cross-catalog referential-integrity checks that a per-file zod schema can't
+ * express on its own (a quest's reward itemId must exist in the item
+ * catalog, a skill's prerequisites must be real skill ids, an objective's
+ * targetId must be non-empty). Throws a clear error naming the offending id
+ * on the first violation found. Exported so tests can exercise it directly
+ * against synthetic bad data without needing a bad file on disk.
+ */
+export function validateCatalogIntegrity(
+  items: ItemDef[],
+  skills: SkillDef[],
+  quests: QuestDef[],
+): void {
+  const itemIds = new Set(items.map((item) => item.id));
+  const skillIds = new Set(skills.map((skill) => skill.id));
+
+  for (const skill of skills) {
+    for (const requiredSkillId of skill.requires) {
+      if (!skillIds.has(requiredSkillId)) {
+        throw new Error(
+          `catalogs: skill "${skill.id}" requires unknown skill id "${requiredSkillId}"`,
+        );
+      }
+    }
+  }
+
+  for (const quest of quests) {
+    for (const rewardItem of quest.rewards.items) {
+      if (!itemIds.has(rewardItem.itemId)) {
+        throw new Error(
+          `catalogs: quest "${quest.id}" rewards unknown item id "${rewardItem.itemId}"`,
+        );
+      }
+    }
+    for (const objective of quest.objectives) {
+      if (objective.targetId.trim().length === 0) {
+        throw new Error(
+          `catalogs: quest "${quest.id}" objective "${objective.id}" has an empty targetId`,
+        );
+      }
+    }
+  }
+}
+
+// Enforced at import time, matching loadCatalog's own "throws immediately on
+// malformed content" intent — a broken cross-reference must fail the module
+// load, not silently pass until some later runtime lookup returns undefined.
+validateCatalogIntegrity(ITEMS, SKILLS, QUESTS);
