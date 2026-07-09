@@ -6,10 +6,15 @@ ROOT="$(cd "$SCRIPTS/.." && pwd)"
 cd "$ROOT"
 JEST="./node_modules/.bin/jest"
 
-echo "▶ codegen";       bash scripts/codegen/gen-csharp.sh;                     GEN=$?
-echo "▶ smoke";         bash scripts/codegen/smoke_contracts.sh;               SMOKE=$?
+# Drift checks run BEFORE codegen on purpose: gen-csharp.sh (and its
+# gen-csharp-meta.sh stage) overwrite the committed generated/csharp/Runtime/
+# tree in place. If codegen ran first, the drift checks would always diff a
+# just-regenerated file against itself and could never detect real drift
+# (stale committed output, or a hand-edit that was never regenerated).
 echo "▶ drift";         bash scripts/codegen/check_drift.sh;                   DRIFT=$?
 echo "▶ drift(meta)";   bash scripts/codegen/check_drift_meta.sh;              DRIFT_META=$?
+echo "▶ codegen";       bash scripts/codegen/gen-csharp.sh;                     GEN=$?
+echo "▶ smoke";         bash scripts/codegen/smoke_contracts.sh;               SMOKE=$?
 echo "▶ schema jest";   "$JEST" src/tests --silent;                           JEST_RC=$?
 echo "▶ package shape"; "$JEST" src/tests/codegen/package-shape.test.ts --silent; PKG=$?
 
@@ -18,10 +23,10 @@ echo "==========================================="
 echo "   Contracts Test Summary"
 echo "==========================================="
 row() { [ "$2" -eq 0 ] && echo "✅ $1" || echo "❌ $1"; }
-row "codegen        " $GEN
-row "smoke fields   " $SMOKE
 row "drift check    " $DRIFT
 row "drift check meta" $DRIFT_META
+row "codegen        " $GEN
+row "smoke fields   " $SMOKE
 row "schema jest    " $JEST_RC
 row "package shape  " $PKG
 

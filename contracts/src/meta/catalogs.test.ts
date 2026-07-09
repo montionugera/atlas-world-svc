@@ -6,6 +6,10 @@ import {
   itemDefSchema,
   skillDefSchema,
   questDefSchema,
+  validateCatalogIntegrity,
+  type ItemDef,
+  type SkillDef,
+  type QuestDef,
 } from "./catalogs";
 
 test("items.json parses against itemDefSchema and has at least 5 entries", () => {
@@ -59,17 +63,28 @@ test("q_boar_5 exists: kill 5 boars -> 100 xp + a potion", () => {
   );
 });
 
-test("two weapon items (basic_sword, magic_staff) carry pAtk/mAtk for derivedStats lookup", () => {
-  expect(ITEMS_BY_ID["basic_sword"]).toMatchObject({
-    kind: "weapon",
-    pAtk: 10,
-    mAtk: 0,
-  });
-  expect(ITEMS_BY_ID["magic_staff"]).toMatchObject({
-    kind: "weapon",
-    pAtk: 2,
-    mAtk: 15,
-  });
+// Source of truth for these stats: colyseus-server/src/config/combat/weapons.ts
+// (the WEAPONS map). Cross-package import into this test was avoided (separate
+// tsconfig/jest project); keep this list in sync by hand whenever weapons.ts
+// changes. This directly guards derivedStats()'s ITEMS_BY_ID weapon lookup —
+// a weapon id missing here (or present but with wrong pAtk/mAtk) silently
+// contributes 0 to a player's derived pAtk/mAtk instead of erroring.
+const EXPECTED_WEAPONS: Record<string, { pAtk: number; mAtk: number }> = {
+  basic_sword: { pAtk: 10, mAtk: 0 },
+  magic_staff: { pAtk: 2, mAtk: 15 },
+  great_bow: { pAtk: 16, mAtk: 0 },
+  dagger: { pAtk: 6, mAtk: 0 },
+  scythe: { pAtk: 18, mAtk: 0 },
+};
+
+test("every equippable weapon in weapons.ts exists in items.json with matching pAtk/mAtk", () => {
+  for (const [id, stats] of Object.entries(EXPECTED_WEAPONS)) {
+    expect(ITEMS_BY_ID[id]).toMatchObject({
+      kind: "weapon",
+      pAtk: stats.pAtk,
+      mAtk: stats.mAtk,
+    });
+  }
 });
 
 test("loaders throw on bad data (strict schema rejects unknown/malformed shape)", () => {
@@ -92,4 +107,107 @@ test("loaders throw on bad data (strict schema rejects unknown/malformed shape)"
       rewards: { xp: 0, items: [] },
     }),
   ).toThrow(); // objective type must be a valid MatchEventType
+});
+
+test("negative/zero counts are rejected by the tightened numeric schemas", () => {
+  const validItem = { id: "x", name: "X", kind: "weapon", stackable: false };
+  expect(() => itemDefSchema.parse({ ...validItem, pAtk: -1 })).toThrow(); // negative pAtk
+  expect(() => itemDefSchema.parse({ ...validItem, pAtk: 1.5 })).toThrow(); // non-integer pAtk
+
+  const validObjective = {
+    id: "o",
+    type: "MOB_KILLED",
+    targetId: "t",
+    required: 1,
+  };
+  expect(() =>
+    questDefSchema.parse({
+      id: "q",
+      objectives: [{ ...validObjective, required: 0 }],
+      rewards: { xp: 0, items: [] },
+    }),
+  ).toThrow(); // required must be positive, not just non-negative
+
+  expect(() =>
+    questDefSchema.parse({
+      id: "q",
+      objectives: [validObjective],
+      rewards: { xp: 0, items: [{ itemId: "potion_minor", qty: -1 }] },
+    }),
+  ).toThrow(); // negative qty rejected
+
+  expect(() =>
+    questDefSchema.parse({
+      id: "q",
+      objectives: [validObjective],
+      rewards: { xp: -10, items: [] },
+    }),
+  ).toThrow(); // negative xp rejected
+
+  expect(() =>
+    skillDefSchema.parse({
+      id: "s",
+      name: "S",
+      maxLevel: 0,
+      requires: [],
+    }),
+  ).toThrow(); // maxLevel must be positive
+});
+
+describe("validateCatalogIntegrity (cross-catalog referential checks)", () => {
+  const item = (id: string): ItemDef => ({
+    id,
+    name: id,
+    kind: "consumable",
+    stackable: true,
+  });
+  const skill = (id: string, requires: string[] = []): SkillDef => ({
+    id,
+    name: id,
+    maxLevel: 1,
+    requires,
+  });
+  const quest = (
+    id: string,
+    rewardItemIds: string[],
+    targetId = "t",
+  ): QuestDef => ({
+    id,
+    objectives: [
+      { id: `${id}_obj`, type: "MOB_KILLED", targetId, required: 1 },
+    ],
+    rewards: { xp: 10, items: rewardItemIds.map((itemId) => ({ itemId, qty: 1 })) },
+  });
+
+  test("passes for internally-consistent catalogs", () => {
+    expect(() =>
+      validateCatalogIntegrity(
+        [item("potion")],
+        [skill("a"), skill("b", ["a"])],
+        [quest("q1", ["potion"])],
+      ),
+    ).not.toThrow();
+  });
+
+  test("a quest referencing a nonexistent reward itemId throws at load", () => {
+    expect(() =>
+      validateCatalogIntegrity([], [], [quest("q1", ["no_such_item"])]),
+    ).toThrow(/quest "q1" rewards unknown item id "no_such_item"/);
+  });
+
+  test("a skill requiring a nonexistent skill throws at load", () => {
+    expect(() =>
+      validateCatalogIntegrity([], [skill("a", ["no_such_skill"])], []),
+    ).toThrow(/skill "a" requires unknown skill id "no_such_skill"/);
+  });
+
+  test("an objective with an empty targetId throws at load", () => {
+    expect(() =>
+      validateCatalogIntegrity([], [], [quest("q1", [], "")]),
+    ).toThrow(/quest "q1" objective "q1_obj" has an empty targetId/);
+  });
+
+  test("the real committed catalogs pass validateCatalogIntegrity as-is", () => {
+    expect(() => validateCatalogIntegrity(ITEMS, SKILLS, QUESTS)).not.toThrow();
+  });
 });
