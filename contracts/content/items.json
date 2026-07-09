@@ -1,0 +1,36 @@
+[
+  {
+    "id": "basic_sword",
+    "name": "Basic Sword",
+    "kind": "weapon",
+    "stackable": false,
+    "pAtk": 10,
+    "mAtk": 0
+  },
+  {
+    "id": "magic_staff",
+    "name": "Magic Staff",
+    "kind": "weapon",
+    "stackable": false,
+    "pAtk": 2,
+    "mAtk": 15
+  },
+  {
+    "id": "potion_minor",
+    "name": "Minor Healing Potion",
+    "kind": "consumable",
+    "stackable": true
+  },
+  {
+    "id": "leather_armor",
+    "name": "Leather Armor",
+    "kind": "armor",
+    "stackable": false
+  },
+  {
+    "id": "iron_ore",
+    "name": "Iron Ore",
+    "kind": "material",
+    "stackable": true
+  }
+]

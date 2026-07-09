@@ -1,0 +1,26 @@
+[
+  {
+    "id": "power_strike",
+    "name": "Power Strike",
+    "maxLevel": 5,
+    "requires": []
+  },
+  {
+    "id": "fireball",
+    "name": "Fireball",
+    "maxLevel": 5,
+    "requires": []
+  },
+  {
+    "id": "iron_skin",
+    "name": "Iron Skin",
+    "maxLevel": 3,
+    "requires": []
+  },
+  {
+    "id": "cleave",
+    "name": "Cleave",
+    "maxLevel": 5,
+    "requires": ["power_strike"]
+  }
+]
