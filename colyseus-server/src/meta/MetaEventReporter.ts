@@ -25,7 +25,10 @@ export class MetaEventReporter {
   private buffer: MatchEvent[] = []
   private droppedSinceWarn = 0
   private timer: ReturnType<typeof setInterval> | undefined
-  private flushing = false
+  /** The currently in-flight flush, if any. Lets a caller (e.g. dispose) wait
+   * for it rather than silently no-op, then flush again to drain anything
+   * recorded since the in-flight snapshot was taken. */
+  private inFlight: Promise<void> | null = null
 
   constructor(options: MetaEventReporterOptions) {
     this.backend = options.backend
@@ -60,37 +63,75 @@ export class MetaEventReporter {
   }
 
   /**
-   * Report the currently buffered events. Safe to call concurrently — a flush
-   * already in flight is skipped rather than overlapped. Note: this reporter
-   * is constructed one-per-room; the batch's required `userId` is taken from
-   * the first buffered event (this codebase currently runs 1 match = 1 room =
-   * 1 player, see GameRoom.maxClients).
+   * Report the currently buffered events. Safe to call concurrently — a call
+   * made while a flush is already in flight waits for it, then re-checks the
+   * buffer and flushes again if more events were recorded in the meantime
+   * (rather than silently no-op'ing and stranding them — see dispose-time
+   * usage in GameRoom.onDispose). Note: this reporter is constructed
+   * one-per-room; the batch's required `userId` is taken from the first
+   * buffered event (this codebase currently runs 1 match = 1 room = 1
+   * player, see GameRoom.maxClients).
    */
   async flush(): Promise<void> {
     this.warnDroppedIfAny()
 
-    if (this.flushing || this.buffer.length === 0) return
-    this.flushing = true
+    // Wait out any flush already in progress instead of no-op'ing — the
+    // synchronous section below (up to the first `await` inside doFlush())
+    // guarantees only one flush is ever actually in flight at a time.
+    while (this.inFlight) {
+      await this.inFlight
+    }
+
+    if (this.buffer.length === 0) return
+
+    const promise = this.doFlush()
+    this.inFlight = promise
     try {
-      const events = [...this.buffer]
-      const userId = events[0].userId
-      const result = await this.backend.reportMatchEvents({
+      await promise
+    } finally {
+      if (this.inFlight === promise) this.inFlight = null
+    }
+  }
+
+  private async doFlush(): Promise<void> {
+    const events = [...this.buffer]
+    const userId = events[0].userId
+
+    // Defense-in-depth: this reporter is one-per-room and the batch userId is
+    // taken from the first buffered event, which is only correct for today's
+    // 1 match = 1 room = 1 player model. If maxClients ever rises without
+    // updating this reporter, silently attributing every event to the first
+    // player's userId would be silent cross-account data corruption — surface
+    // it loudly instead.
+    if (events.some(e => e.userId !== userId)) {
+      console.error(
+        `[meta] MetaEventReporter: mixed userIds in one buffer for matchId=${this.matchId} — ` +
+          `attributing the whole batch to the first event's userId (${userId}), other events may be misattributed`
+      )
+    }
+
+    let result: 'ok' | 'deduped' | 'failed'
+    try {
+      result = await this.backend.reportMatchEvents({
         matchId: this.matchId,
         seq: this.seq,
         userId,
         events,
       })
-
-      if (result === 'ok' || result === 'deduped') {
-        // Only remove the events we actually sent — record() may have pushed
-        // more onto the buffer while this flush was in flight.
-        this.buffer.splice(0, events.length)
-        this.seq += 1
-      }
-      // 'failed': leave the buffer untouched so the next flush retries verbatim.
-    } finally {
-      this.flushing = false
+    } catch (err) {
+      // A thrown error is exactly as retryable as a 'failed' result — never
+      // let it escape and skip the buffer-retention logic below.
+      console.error('[meta] reportMatchEvents threw', err)
+      result = 'failed'
     }
+
+    if (result === 'ok' || result === 'deduped') {
+      // Only remove the events we actually sent — record() may have pushed
+      // more onto the buffer while this flush was in flight.
+      this.buffer.splice(0, events.length)
+      this.seq += 1
+    }
+    // 'failed': leave the buffer untouched so the next flush retries verbatim.
   }
 
   private warnDroppedIfAny(): void {

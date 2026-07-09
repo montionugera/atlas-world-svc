@@ -153,6 +153,8 @@ describe('GameSimulationSystem (integration): meta event flow', () => {
     const env = buildRoom()
     env.state.addPlayer('p1', 'Player One')
     const player = env.state.getPlayer('p1')!
+    // Mirrors GameRoom.onJoin: userId is set from verified auth, not sessionId.
+    player.userId = 'p1'
 
     const mob = new Mob({ id: 'mob-test', x: player.x, y: player.y, radius: 1 })
     mob.mobTypeId = 'goblin'

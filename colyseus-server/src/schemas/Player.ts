@@ -70,6 +70,14 @@ export class Player extends WorldLife implements IAgent {
   /** Server-only; not Colyseus-synced. True when join-time loadout fetch failed and the player is running on ephemeral/default stats (see meta/applyLoadout.ts). */
   isEphemeral: boolean = false
 
+  /**
+   * Server-only; not Colyseus-synced (deliberately no @type decorator). The
+   * real Nakama user id resolved by GameRoom.onAuth. Never synced to clients
+   * and never sourced from client-supplied options — see GameRoom.onJoin.
+   * Use `sessionId` for Colyseus routing; use `userId` only for meta events.
+   */
+  userId: string = ''
+
   // Set the equipped weapon and recalculate total stats
   equipWeapon(weaponId: string) {
     this.equippedWeaponId = weaponId

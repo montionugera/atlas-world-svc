@@ -5,6 +5,8 @@ export interface NakamaMetaBackendOptions {
   baseUrl: string
   httpKey: string
   timeoutMs?: number
+  // TODO(F-001 followup): `retries` is really "total attempts" (the loop runs
+  // this many times total, not this many retries after the first try) — rename for clarity.
   retries?: number
 }
 
@@ -61,8 +63,15 @@ export class NakamaMetaBackend implements IMetaBackend {
     const body = await this.rpc(RPC.reportMatchEvents, batch)
     if (body === null) return 'failed'
 
-    const status = (body as { status?: unknown }).status
-    return status === 'deduped' ? 'deduped' : 'ok'
+    // Real report_match_events response shape (see
+    // nakama/src/rpc/reportMatchEvents.ts): { deduped: true } or
+    // { deduped: false, progressed, completedNow }. Anything else is
+    // unrecognized/malformed — fail CLOSED so the batch is retried rather
+    // than silently dropped.
+    const deduped = (body as { deduped?: unknown }).deduped
+    if (deduped === true) return 'deduped'
+    if (deduped === false) return 'ok'
+    return 'failed'
   }
 
   private async rpc(id: string, payload: unknown): Promise<unknown | null> {
@@ -88,6 +97,14 @@ export class NakamaMetaBackend implements IMetaBackend {
       try {
         const res = await fetch(url, { ...init, signal: controller.signal })
         if (res.ok) return res
+
+        // A 4xx (other than 429 rate-limiting) is not transient — e.g. an
+        // expired/invalid session token will never succeed on retry. Fail
+        // fast instead of burning the backoff budget on a guaranteed repeat.
+        if (res.status >= 400 && res.status < 500 && res.status !== 429) {
+          return null
+        }
+        // else: 5xx, 429, or other retryable status — fall through to retry/backoff
       } catch {
         // network error or abort — fall through to retry/backoff
       } finally {
