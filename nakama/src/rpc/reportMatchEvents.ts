@@ -1,6 +1,6 @@
 import { COLLECTIONS, STORAGE_KEY } from '@atlas/contracts';
 import type { MatchEvent, MatchEventType } from '@atlas/contracts';
-import { readDoc, writeDoc } from '../storage';
+import { readDoc } from '../storage';
 import { applyEvents } from '../questEngine';
 import { TEST_QUESTS } from '../questCatalog';
 
@@ -97,6 +97,16 @@ export const reportMatchEvents: nkruntime.RpcFunction = function (
   }
   const { userId, matchId, seq, events } = parsePayload(payload);
 
+  // Defense-in-depth against a caller attribution bug (e.g. Colyseus
+  // reporting under the wrong player's session): every event in the batch
+  // must target the same user this batch is being applied to.
+  const mismatched = events.find((event) => event.userId !== userId);
+  if (mismatched) {
+    throw new Error(
+      `report_match_events: event.userId (${mismatched.userId}) does not match batch userId (${userId})`,
+    );
+  }
+
   const seqRead = readSeqDoc(nk, userId);
   const lastSeq = seqRead.doc[matchId] ?? -1;
   if (seq <= lastSeq) {
@@ -105,20 +115,37 @@ export const reportMatchEvents: nkruntime.RpcFunction = function (
 
   const questsRead = readDoc(nk, userId, COLLECTIONS.quests);
   const { doc: updatedQuests, progressed, completedNow } = applyEvents(questsRead.doc, TEST_QUESTS, events);
-  writeDoc(nk, userId, COLLECTIONS.quests, updatedQuests, questsRead.version);
-
   const updatedSeqDoc: SeqDoc = { ...seqRead.doc, [matchId]: seq };
-  nk.storageWrite([
-    {
-      collection: QUESTS_SEQ_COLLECTION,
-      key: STORAGE_KEY,
-      userId,
-      value: updatedSeqDoc,
-      version: seqRead.version,
-      permissionRead: 0,
-      permissionWrite: 0,
-    },
-  ]);
+
+  // Both writes must land together — an independent partial failure + retry
+  // of just one of them (quests progress without the seq bump, or vice
+  // versa) would let a replayed batch double-apply quest progress. A single
+  // multiUpdate makes them atomic (same pattern as quests.ts claimQuestReward).
+  nk.multiUpdate(
+    null,
+    [
+      {
+        collection: COLLECTIONS.quests,
+        key: STORAGE_KEY,
+        userId,
+        value: updatedQuests as unknown as { [key: string]: unknown },
+        version: questsRead.version,
+        permissionRead: 2,
+        permissionWrite: 0,
+      },
+      {
+        collection: QUESTS_SEQ_COLLECTION,
+        key: STORAGE_KEY,
+        userId,
+        value: updatedSeqDoc as unknown as { [key: string]: unknown },
+        version: seqRead.version,
+        permissionRead: 0,
+        permissionWrite: 0,
+      },
+    ],
+    null,
+    null,
+  );
 
   for (const questId of progressed) {
     const objectives = updatedQuests.active.find((q) => q.questId === questId)?.objectives ?? {};
