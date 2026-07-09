@@ -1,0 +1,23 @@
+{
+  "name": "@atlas/nakama-runtime",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@atlas/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20.10.0",
+    "esbuild": "^0.28.1",
+    "jest": "^29.7.0",
+    "nakama-runtime": "github:heroiclabs/nakama-common#v1.31.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.3.0"
+  }
+}

@@ -10,3 +10,4 @@ session:
 
 runtime:
   http_key: "atlas_dev_http_key"
+  js_entrypoint: "index.js"
