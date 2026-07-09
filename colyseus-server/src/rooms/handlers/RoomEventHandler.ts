@@ -1,16 +1,22 @@
 import { GameRoom } from '../GameRoom'
-import { eventBus } from '../../events/EventBus'
+import { eventBus, DamageProducedData } from '../../events/EventBus'
 import { Projectile } from '../../schemas/Projectile'
 import { Player } from '../../schemas/Player'
 import { Mob } from '../../schemas/Mob'
 import { MeleeAttackStrategy } from '../../ai/strategies/MeleeAttackStrategy'
 
 export class RoomEventHandler {
+  // Guards against reporting the same mob kill more than once — a single
+  // BATTLE_DAMAGE_PRODUCED event confirms the kill, but corpse hits (e.g. AOE
+  // overlap) can still fire the event again for an already-dead mob.
+  private reportedMobKills = new Set<string>()
+
   constructor(private room: GameRoom) {}
 
   register() {
     this.setupLifecycleEvents()
     this.setupCollisionCallbacks()
+    this.setupMetaEvents()
   }
 
   private setupLifecycleEvents() {
@@ -107,6 +113,34 @@ export class RoomEventHandler {
           this.room.projectileManager.handleProjectileCollision(projA, projB)
         }
       }
+    })
+  }
+
+  /**
+   * Reports a MOB_KILLED match event the instant a player's hit brings a mob's
+   * HP to 0 — BattleModule.applyDamage() calls target.die() *before* emitting
+   * BATTLE_DAMAGE_PRODUCED, so `taker.isAlive === false` here reliably marks
+   * the killing blow (not just any hit).
+   */
+  private setupMetaEvents() {
+    eventBus.onRoomEventBattleDamageProduced(this.room.roomId, data => {
+      this.handleDamageProduced(data)
+    })
+  }
+
+  private handleDamageProduced(data: DamageProducedData): void {
+    const { attacker, taker } = data
+    if (taker.isAlive) return
+    if (!(taker instanceof Mob)) return
+    if (!(attacker instanceof Player)) return
+    if (this.reportedMobKills.has(taker.id)) return
+
+    this.reportedMobKills.add(taker.id)
+    this.room.metaEventReporter.record({
+      type: 'MOB_KILLED',
+      userId: attacker.sessionId,
+      targetId: taker.mobTypeId,
+      count: 1,
     })
   }
 

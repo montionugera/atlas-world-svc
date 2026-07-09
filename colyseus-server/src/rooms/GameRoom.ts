@@ -15,6 +15,11 @@ import { DebugCommandHandler } from './handlers/DebugCommandHandler'
 import { RoomEventHandler } from './handlers/RoomEventHandler'
 import { GameSimulationSystem } from './systems/GameSimulationSystem'
 
+// Meta systems (Nakama-backed profile/loadout/match-event reporting)
+import { IMetaBackend } from '../meta/IMetaBackend'
+import { NakamaMetaBackend } from '../meta/NakamaMetaBackend'
+import { MetaEventReporter } from '../meta/MetaEventReporter'
+
 export interface GameRoomOptions {
   mapId?: string
   name?: string
@@ -34,6 +39,10 @@ export class GameRoom extends Room<GameState> {
   public projectileManager!: ProjectileManager
   public mobLifeCycleManager!: MobLifeCycleManager
   public zoneEffectManager!: ZoneEffectManager
+
+  // Meta systems (Nakama-backed; see IMetaBackend)
+  public metaBackend!: IMetaBackend
+  public metaEventReporter!: MetaEventReporter
 
   // Extracted Handlers
   private playerInputHandler!: PlayerInputHandler
@@ -73,6 +82,17 @@ export class GameRoom extends Room<GameState> {
     // Connect dependencies
     this.state.worldInterface.setPhysicsManager(this.physicsManager)
 
+    // Meta systems: report match events (e.g. MOB_KILLED) to Nakama for
+    // profile/quest progress. Env-configurable, defaults match local dev.
+    this.metaBackend = new NakamaMetaBackend({
+      baseUrl: process.env.NAKAMA_HTTP_URL || 'http://localhost:7350',
+      httpKey: process.env.NAKAMA_HTTP_KEY || 'atlas_dev_http_key',
+    })
+    this.metaEventReporter = new MetaEventReporter({
+      backend: this.metaBackend,
+      matchId: this.roomId,
+    })
+
     // Initialize Extracted Handlers & Systems
     this.playerInputHandler = new PlayerInputHandler(this)
     this.debugCommandHandler = new DebugCommandHandler(this)
@@ -92,6 +112,7 @@ export class GameRoom extends Room<GameState> {
     // Start simulation loop
     this.setPatchRate(50)
     this.startSimulation()
+    this.metaEventReporter.start()
   }
 
   onJoin(client: Client, options: GameRoomOptions) {
@@ -121,13 +142,18 @@ export class GameRoom extends Room<GameState> {
     this.state.aiModule.unregisterAgent(client.sessionId)
   }
 
-  onDispose() {
+  async onDispose() {
     console.log(`🗑️ GameRoom disposed`)
 
     unregisterRoom(this.roomId)
     this.state.aiModule.stop()
     this.stopSimulation()
     this.battleManager.cleanup()
+
+    // Stop scheduling further flushes, then drain whatever is still buffered
+    // so match events aren't lost on room teardown.
+    this.metaEventReporter.stop()
+    await this.metaEventReporter.flush()
 
     // Physics Event listeners managed inside physicsManager are destroyed here
     this.physicsManager.destroy()
