@@ -1,6 +1,7 @@
 import { LoadoutSnapshot, derivedStats } from '@atlas/contracts'
 import { Player } from '../schemas/Player'
 import { FakeMetaBackend } from '../meta/FakeMetaBackend'
+import { IMetaBackend } from '../meta/IMetaBackend'
 import { applyLoadout, loadPlayerLoadout } from '../meta/applyLoadout'
 
 function buildSnapshot(overrides: Partial<LoadoutSnapshot['profile']> = {}): LoadoutSnapshot {
@@ -86,6 +87,26 @@ describe('loadPlayerLoadout', () => {
     expect(player.maxHealth).toBe(defaultMaxHealth)
     expect(player.pAtk).toBe(defaultPAtk)
     expect(errSpy).toHaveBeenCalledWith('[meta] ephemeral join', 'unknown-user')
+
+    errSpy.mockRestore()
+  })
+
+  it('marks the player ephemeral and keeps defaults when getLoadout throws, without the exception escaping', async () => {
+    const backend: IMetaBackend = {
+      verifySession: async () => null,
+      getLoadout: async () => {
+        throw new Error('backend unreachable')
+      },
+      reportMatchEvents: async () => 'failed',
+    }
+    const player = new Player('p1', 'Tester')
+    const defaultMaxHealth = player.maxHealth
+    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    await expect(loadPlayerLoadout({ player, backend, userId: 'user-1' })).resolves.toBeUndefined()
+
+    expect(player.isEphemeral).toBe(true)
+    expect(player.maxHealth).toBe(defaultMaxHealth)
 
     errSpy.mockRestore()
   })

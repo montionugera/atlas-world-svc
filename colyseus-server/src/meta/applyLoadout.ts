@@ -38,16 +38,24 @@ export interface LoadPlayerLoadoutParams {
 
 /**
  * Fetches the player's loadout from the meta backend and applies it. If the
- * backend is unavailable (getLoadout resolves null — NakamaMetaBackend has
- * already retried internally), the player stays on its ephemeral/default
- * stats so a meta-systems outage never blocks a match from starting.
+ * backend is unavailable — getLoadout resolves null (NakamaMetaBackend has
+ * already retried internally) or THROWS — the player stays on its
+ * ephemeral/default stats so a meta-systems outage never blocks a match from
+ * starting.
  */
 export async function loadPlayerLoadout({
   player,
   backend,
   userId,
 }: LoadPlayerLoadoutParams): Promise<void> {
-  const snapshot = await backend.getLoadout(userId)
+  let snapshot: LoadoutSnapshot | null
+  try {
+    snapshot = await backend.getLoadout(userId)
+  } catch (err) {
+    console.error('[meta] getLoadout threw', userId, err)
+    snapshot = null
+  }
+
   if (!snapshot) {
     player.isEphemeral = true
     console.error('[meta] ephemeral join', userId)

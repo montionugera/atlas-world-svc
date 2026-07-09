@@ -95,6 +95,14 @@ export class NakamaMetaBackend implements IMetaBackend {
       try {
         const res = await fetch(url, { ...init, signal: controller.signal })
         if (res.ok) return res
+
+        // A 4xx (other than 429 rate-limiting) is not transient — e.g. an
+        // expired/invalid session token will never succeed on retry. Fail
+        // fast instead of burning the backoff budget on a guaranteed repeat.
+        if (res.status >= 400 && res.status < 500 && res.status !== 429) {
+          return null
+        }
+        // else: 5xx, 429, or other retryable status — fall through to retry/backoff
       } catch {
         // network error or abort — fall through to retry/backoff
       } finally {
