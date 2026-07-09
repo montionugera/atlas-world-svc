@@ -6,6 +6,7 @@ import { allocateStats } from './rpc/allocateStats';
 import { setSkillLoadout } from './rpc/setSkillLoadout';
 import { acceptQuest, claimQuestReward } from './rpc/quests';
 import { reportMatchEvents } from './rpc/reportMatchEvents';
+import { getLoadout } from './rpc/getLoadout';
 
 /**
  * healthcheck RPC — trivial liveness probe for the bundle + wiring, no auth
@@ -36,6 +37,7 @@ const SET_SKILL_LOADOUT_RPC_ID = RPC.setSkillLoadout;
 const ACCEPT_QUEST_RPC_ID = RPC.acceptQuest;
 const CLAIM_QUEST_REWARD_RPC_ID = RPC.claimQuestReward;
 const REPORT_MATCH_EVENTS_RPC_ID = RPC.reportMatchEvents;
+const GET_LOADOUT_RPC_ID = RPC.getLoadout;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function InitModule(
@@ -53,6 +55,7 @@ function InitModule(
   initializer.registerRpc(ACCEPT_QUEST_RPC_ID, acceptQuest);
   initializer.registerRpc(CLAIM_QUEST_REWARD_RPC_ID, claimQuestReward);
   initializer.registerRpc(REPORT_MATCH_EVENTS_RPC_ID, reportMatchEvents);
+  initializer.registerRpc(GET_LOADOUT_RPC_ID, getLoadout);
   logger.info('atlas-nakama TS runtime module loaded');
 }
 
