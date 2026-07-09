@@ -59,17 +59,28 @@ test("q_boar_5 exists: kill 5 boars -> 100 xp + a potion", () => {
   );
 });
 
-test("two weapon items (basic_sword, magic_staff) carry pAtk/mAtk for derivedStats lookup", () => {
-  expect(ITEMS_BY_ID["basic_sword"]).toMatchObject({
-    kind: "weapon",
-    pAtk: 10,
-    mAtk: 0,
-  });
-  expect(ITEMS_BY_ID["magic_staff"]).toMatchObject({
-    kind: "weapon",
-    pAtk: 2,
-    mAtk: 15,
-  });
+// Source of truth for these stats: colyseus-server/src/config/combat/weapons.ts
+// (the WEAPONS map). Cross-package import into this test was avoided (separate
+// tsconfig/jest project); keep this list in sync by hand whenever weapons.ts
+// changes. This directly guards derivedStats()'s ITEMS_BY_ID weapon lookup —
+// a weapon id missing here (or present but with wrong pAtk/mAtk) silently
+// contributes 0 to a player's derived pAtk/mAtk instead of erroring.
+const EXPECTED_WEAPONS: Record<string, { pAtk: number; mAtk: number }> = {
+  basic_sword: { pAtk: 10, mAtk: 0 },
+  magic_staff: { pAtk: 2, mAtk: 15 },
+  great_bow: { pAtk: 16, mAtk: 0 },
+  dagger: { pAtk: 6, mAtk: 0 },
+  scythe: { pAtk: 18, mAtk: 0 },
+};
+
+test("every equippable weapon in weapons.ts exists in items.json with matching pAtk/mAtk", () => {
+  for (const [id, stats] of Object.entries(EXPECTED_WEAPONS)) {
+    expect(ITEMS_BY_ID[id]).toMatchObject({
+      kind: "weapon",
+      pAtk: stats.pAtk,
+      mAtk: stats.mAtk,
+    });
+  }
 });
 
 test("loaders throw on bad data (strict schema rejects unknown/malformed shape)", () => {
