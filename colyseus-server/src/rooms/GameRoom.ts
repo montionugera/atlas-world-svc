@@ -19,10 +19,13 @@ import { GameSimulationSystem } from './systems/GameSimulationSystem'
 import { IMetaBackend } from '../meta/IMetaBackend'
 import { NakamaMetaBackend } from '../meta/NakamaMetaBackend'
 import { MetaEventReporter } from '../meta/MetaEventReporter'
+import { loadPlayerLoadout } from '../meta/applyLoadout'
 
 export interface GameRoomOptions {
   mapId?: string
   name?: string
+  /** Nakama user id for loadout lookup; falls back to the Colyseus sessionId when absent. */
+  userId?: string
 }
 
 export class GameRoom extends Room<GameState> {
@@ -115,12 +118,17 @@ export class GameRoom extends Room<GameState> {
     this.metaEventReporter.start()
   }
 
-  onJoin(client: Client, options: GameRoomOptions) {
+  async onJoin(client: Client, options: GameRoomOptions) {
     console.log(`👤 Player ${client.sessionId} joined the game`)
 
     // Add player to game state
     const playerName = options.name || `Player-${client.sessionId.substring(0, 8)}`
     const player = this.state.addPlayer(client.sessionId, playerName)
+
+    // Fetch & apply the player's loadout snapshot (profile-derived combat stats).
+    // Falls back to ephemeral defaults if the meta backend is unavailable.
+    const userId = options.userId || client.sessionId
+    await loadPlayerLoadout({ player, backend: this.metaBackend, userId })
 
     // Send welcome message (Policy A: include equipment snapshot for HUD)
     client.send('welcome', {

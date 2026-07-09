@@ -67,6 +67,9 @@ export class Player extends WorldLife implements IAgent {
   /** Server-only; not Colyseus-synced. Client learns loadout via welcome / equipment WS messages (see equipmentSlots snapshot). */
   equippedWeaponId: string = ''
 
+  /** Server-only; not Colyseus-synced. True when join-time loadout fetch failed and the player is running on ephemeral/default stats (see meta/applyLoadout.ts). */
+  isEphemeral: boolean = false
+
   // Set the equipped weapon and recalculate total stats
   equipWeapon(weaponId: string) {
     this.equippedWeaponId = weaponId

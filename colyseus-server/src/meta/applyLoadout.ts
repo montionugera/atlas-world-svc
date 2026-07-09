@@ -1,0 +1,49 @@
+import { LoadoutSnapshot } from '@atlas/contracts'
+import { Player } from '../schemas/Player'
+import { IMetaBackend } from './IMetaBackend'
+import { derivedStats } from './derivedStats.local'
+// TODO(integration): replace with { derivedStats } from '@atlas/contracts' after Lane C merges
+
+/** Applies a loadout snapshot's derived combat stats to a joined player. */
+export function applyLoadout(player: Player, snap: LoadoutSnapshot): void {
+  const stats = derivedStats({
+    level: snap.profile.level,
+    allocated: snap.profile.allocated,
+    weaponItemId: snap.equippedItemIds.weapon,
+  })
+
+  player.maxHealth = stats.maxHealth
+  player.currentHealth = stats.maxHealth
+  player.pAtk = stats.pAtk
+  player.mAtk = stats.mAtk
+  player.pDef = stats.pDef
+  player.mDef = stats.mDef
+  player.maxMoveSpeed = stats.maxMoveSpeed
+  player.maxLinearSpeed = stats.maxMoveSpeed
+}
+
+export interface LoadPlayerLoadoutParams {
+  player: Player
+  backend: IMetaBackend
+  userId: string
+}
+
+/**
+ * Fetches the player's loadout from the meta backend and applies it. If the
+ * backend is unavailable (getLoadout resolves null — NakamaMetaBackend has
+ * already retried internally), the player stays on its ephemeral/default
+ * stats so a meta-systems outage never blocks a match from starting.
+ */
+export async function loadPlayerLoadout({
+  player,
+  backend,
+  userId,
+}: LoadPlayerLoadoutParams): Promise<void> {
+  const snapshot = await backend.getLoadout(userId)
+  if (!snapshot) {
+    player.isEphemeral = true
+    console.error('[meta] ephemeral join', userId)
+    return
+  }
+  applyLoadout(player, snapshot)
+}
