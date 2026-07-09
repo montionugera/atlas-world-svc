@@ -1,8 +1,6 @@
-import { LoadoutSnapshot } from '@atlas/contracts'
+import { LoadoutSnapshot, derivedStats } from '@atlas/contracts'
 import { Player } from '../schemas/Player'
 import { IMetaBackend } from './IMetaBackend'
-import { derivedStats } from './derivedStats.local'
-// TODO(integration): replace with { derivedStats } from '@atlas/contracts' after Lane C merges
 
 /** Applies a loadout snapshot's derived combat stats to a joined player. */
 export function applyLoadout(player: Player, snap: LoadoutSnapshot): void {

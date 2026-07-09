@@ -1,8 +1,7 @@
-import { LoadoutSnapshot } from '@atlas/contracts'
+import { LoadoutSnapshot, derivedStats } from '@atlas/contracts'
 import { Player } from '../schemas/Player'
 import { FakeMetaBackend } from '../meta/FakeMetaBackend'
 import { applyLoadout, loadPlayerLoadout } from '../meta/applyLoadout'
-import { derivedStats } from '../meta/derivedStats.local'
 
 function buildSnapshot(overrides: Partial<LoadoutSnapshot['profile']> = {}): LoadoutSnapshot {
   return {
