@@ -138,7 +138,9 @@ export class RoomEventHandler {
     this.reportedMobKills.add(taker.id)
     this.room.metaEventReporter.record({
       type: 'MOB_KILLED',
-      userId: attacker.sessionId,
+      // Real Nakama userId (server-verified in GameRoom.onAuth), not the
+      // Colyseus sessionId — sessionId is for routing only.
+      userId: attacker.userId,
       targetId: taker.mobTypeId,
       count: 1,
     })
