@@ -5,6 +5,8 @@ export interface NakamaMetaBackendOptions {
   baseUrl: string
   httpKey: string
   timeoutMs?: number
+  // TODO(F-001 followup): `retries` is really "total attempts" (the loop runs
+  // this many times total, not this many retries after the first try) — rename for clarity.
   retries?: number
 }
 
