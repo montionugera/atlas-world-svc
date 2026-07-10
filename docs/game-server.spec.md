@@ -6,6 +6,8 @@ Authoritative realtime simulator for one map instance. Current runtime: **Colyse
 
 **Delegates:** Auth, matchmaking, storage → Nakama. Pod lifecycle, capacity → Agones.
 
+**Meta systems (S2S → Nakama):** `GameRoom.onAuth` verifies the join's Nakama session token (`GET /v2/account`, Bearer) before allocating a seat; `onJoin` fetches the player's `LoadoutSnapshot` (`get_loadout`, S2S http_key) and applies its derived stats, falling back to ephemeral defaults if Nakama is unavailable. During the match, `MetaEventReporter` buffers gameplay events (e.g. `MOB_KILLED`) and periodically reports them (`report_match_events`, S2S http_key, idempotent by `matchId`+`seq`). Full RPC table, storage shapes, and failure semantics: [meta-systems.spec.md](./meta-systems.spec.md).
+
 **Lifecycle:** Boot → Agones Ready → Allocated (accept joins) → Run (tick loop) → Shutdown (drain, optional match summary).
 
 **Config (env):** `MAP_KEY`, `REGION`, `BUILD_ID`, `CAPACITY`, `TICK_RATE`, `PORT`, `METRICS_PORT`, `HEALTH_PORT`; token verify via `TOKEN_PUBLIC_KEY` or `TOKEN_HMAC_SECRET`.
@@ -39,4 +41,4 @@ Authoritative realtime simulator for one map instance. Current runtime: **Colyse
 
 **Simulation detail:** [event-flow.spec.md](./event-flow.spec.md) → [spawn.spec.md](./spawn.spec.md) → [player.spec.md](./player.spec.md) → [mob-movement.spec.md](./mob-movement.spec.md) → [attack.spec.md](./attack.spec.md) → [ai.spec.md](./ai.spec.md) → [companion.spec.md](./companion.spec.md).
 
-**API:** [api.md](./api.md). **Networking:** [networking.spec.md](./networking.spec.md).
+**API:** [api.md](./api.md). **Networking:** [networking.spec.md](./networking.spec.md). **Meta systems:** [meta-systems.spec.md](./meta-systems.spec.md).
