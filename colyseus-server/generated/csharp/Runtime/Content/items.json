@@ -1,0 +1,60 @@
+[
+  {
+    "id": "basic_sword",
+    "name": "Basic Sword",
+    "kind": "weapon",
+    "stackable": false,
+    "pAtk": 10,
+    "mAtk": 0
+  },
+  {
+    "id": "magic_staff",
+    "name": "Magic Staff",
+    "kind": "weapon",
+    "stackable": false,
+    "pAtk": 2,
+    "mAtk": 15
+  },
+  {
+    "id": "great_bow",
+    "name": "Great Bow",
+    "kind": "weapon",
+    "stackable": false,
+    "pAtk": 16,
+    "mAtk": 0
+  },
+  {
+    "id": "dagger",
+    "name": "Dagger",
+    "kind": "weapon",
+    "stackable": false,
+    "pAtk": 6,
+    "mAtk": 0
+  },
+  {
+    "id": "scythe",
+    "name": "Scythe",
+    "kind": "weapon",
+    "stackable": false,
+    "pAtk": 18,
+    "mAtk": 0
+  },
+  {
+    "id": "potion_minor",
+    "name": "Minor Healing Potion",
+    "kind": "consumable",
+    "stackable": true
+  },
+  {
+    "id": "leather_armor",
+    "name": "Leather Armor",
+    "kind": "armor",
+    "stackable": false
+  },
+  {
+    "id": "iron_ore",
+    "name": "Iron Ore",
+    "kind": "material",
+    "stackable": true
+  }
+]

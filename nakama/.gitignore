@@ -1,0 +1,7 @@
+# Nakama runtime artifacts (generated at boot)
+.cookie
+
+# TS runtime build tooling
+node_modules/
+build/
+coverage/

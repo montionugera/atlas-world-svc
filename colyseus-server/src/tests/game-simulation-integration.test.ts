@@ -7,6 +7,11 @@ import { ZoneEffectManager } from '../modules/ZoneEffectManager'
 import { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
 import { GameSimulationSystem } from '../rooms/systems/GameSimulationSystem'
 import { Projectile } from '../schemas/Projectile'
+import { Mob } from '../schemas/Mob'
+import { RoomEventHandler } from '../rooms/handlers/RoomEventHandler'
+import { eventBus } from '../events/EventBus'
+import { FakeMetaBackend } from '../meta/FakeMetaBackend'
+import { MetaEventReporter } from '../meta/MetaEventReporter'
 
 /**
  * Integration test for the per-tick simulation loop (GameSimulationSystem) wired
@@ -129,5 +134,74 @@ describe('GameSimulationSystem (integration)', () => {
     expect(player!.isAlive).toBe(true)
     expect(Number.isFinite(player!.x)).toBe(true)
     expect(Number.isFinite(player!.y)).toBe(true)
+  })
+})
+
+/**
+ * Meta event flow (B4): a player killing a mob over real simulation ticks must
+ * reach the meta backend as a MOB_KILLED match event, and a dispose-time flush
+ * (mirrors GameRoom.onDispose: stop() then flush()) must drain the buffer.
+ */
+describe('GameSimulationSystem (integration): meta event flow', () => {
+  afterEach(() => {
+    // RoomEventHandler registers on the shared eventBus singleton keyed by
+    // ROOM_ID; clear listeners between tests so they don't pile up.
+    eventBus.removeRoomListeners(ROOM_ID)
+  })
+
+  it('reports MOB_KILLED with seq 0 when a player kills a mob, and a dispose-flush drains the buffer', async () => {
+    const env = buildRoom()
+    env.state.addPlayer('p1', 'Player One')
+    const player = env.state.getPlayer('p1')!
+    // Mirrors GameRoom.onJoin: userId is set from verified auth, not sessionId.
+    player.userId = 'p1'
+
+    const mob = new Mob({ id: 'mob-test', x: player.x, y: player.y, radius: 1 })
+    mob.mobTypeId = 'goblin'
+    env.state.mobs.set(mob.id, mob)
+
+    const backend = new FakeMetaBackend()
+    const metaEventReporter = new MetaEventReporter({ backend, matchId: ROOM_ID })
+    ;(env.room as unknown as { metaEventReporter: MetaEventReporter }).metaEventReporter =
+      metaEventReporter
+
+    const roomEventHandler = new RoomEventHandler(env.room as any)
+    roomEventHandler.register()
+
+    // Lethal hit — BattleModule.applyDamage() calls target.die() before
+    // BATTLE_DAMAGE_PRODUCED is emitted, so RoomEventHandler sees the kill.
+    const attackEvent = env.room.battleModule.processAttack(player, mob, {
+      damage: 9999,
+      damageType: 'physical',
+      range: 10,
+    })
+    expect(attackEvent?.targetDied).toBe(true)
+    expect(mob.isAlive).toBe(false)
+
+    // Drive real ticks after the kill, as in a live match.
+    for (let i = 0; i < 3; i++) env.sim.update(50)
+
+    await metaEventReporter.flush()
+
+    expect(backend.batches).toHaveLength(1)
+    expect(backend.batches[0].seq).toBe(0)
+    expect(backend.batches[0].events).toContainEqual({
+      type: 'MOB_KILLED',
+      userId: 'p1',
+      targetId: 'goblin',
+      count: 1,
+    })
+
+    // Simulate more activity buffered right up to room teardown, then the
+    // dispose-time stop()+flush() sequence — the buffer must drain.
+    metaEventReporter.record({ type: 'MOB_KILLED', userId: 'p1', targetId: 'goblin', count: 1 })
+    metaEventReporter.stop()
+    await metaEventReporter.flush()
+
+    expect(backend.batches).toHaveLength(2)
+    expect(backend.batches[1].seq).toBe(1)
+
+    env.state.stopAI()
+    env.physicsManager.destroy()
   })
 })

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "q_boar_5",
+    "objectives": [
+      { "id": "kill_boars", "type": "MOB_KILLED", "targetId": "boar", "required": 5 }
+    ],
+    "rewards": {
+      "xp": 100,
+      "items": [{ "itemId": "potion_minor", "qty": 1 }]
+    }
+  },
+  {
+    "id": "q_gather_ore",
+    "objectives": [
+      { "id": "gather_ore", "type": "ITEM_PICKED_UP", "targetId": "iron_ore", "required": 10 }
+    ],
+    "rewards": {
+      "xp": 50,
+      "items": []
+    }
+  },
+  {
+    "id": "q_explore_forest",
+    "objectives": [
+      { "id": "enter_forest", "type": "ZONE_ENTERED", "targetId": "forest_zone", "required": 1 }
+    ],
+    "rewards": {
+      "xp": 30,
+      "items": [{ "itemId": "potion_minor", "qty": 1 }]
+    }
+  }
+]

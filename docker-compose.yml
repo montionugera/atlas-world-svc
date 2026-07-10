@@ -1,4 +1,3 @@
-
 services:
   atlas-colyseus-server:
     build: ./colyseus-server
@@ -8,6 +7,54 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=2567
+    restart: unless-stopped
+    networks:
+      - atlas-network
+
+  atlas-database:
+    image: cockroachdb/cockroach:latest-v23.1
+    container_name: atlas-world-database
+    command: start-single-node --insecure --store=attrs=ssd,path=/var/lib/cockroach/
+    volumes:
+      - atlas_database_data:/var/lib/cockroach
+    ports:
+      - "26257:26257"      # CockroachDB SQL
+      - "8081:8080"        # CockroachDB admin UI (host 8081 to avoid collisions)
+    healthcheck:
+      test: ["CMD", "/cockroach/cockroach", "node", "status", "--insecure", "--host=localhost:26257"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - atlas-network
+
+  atlas-nakama:
+    image: heroiclabs/nakama:3.21.1
+    container_name: atlas-world-nakama
+    depends_on:
+      atlas-database:
+        condition: service_healthy
+    entrypoint:
+      - "/bin/sh"
+      - "-ecx"
+      - >
+        /nakama/nakama migrate up --database.address root@atlas-database:26257 &&
+        exec /nakama/nakama --config /nakama/data/local.yml --database.address root@atlas-database:26257
+    volumes:
+      - ./nakama:/nakama/data
+      - ./nakama/build:/nakama/data/modules
+    ports:
+      - "7349:7349"        # Nakama gRPC
+      - "7350:7350"        # Nakama HTTP API
+      - "7351:7351"        # Nakama console
+    healthcheck:
+      test: ["CMD", "/nakama/nakama", "healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
     restart: unless-stopped
     networks:
       - atlas-network
