@@ -1,25 +1,17 @@
-/**
- * TODO(I1): replace TEST_ITEMS with the real @atlas/contracts catalog
- * (contracts/content/items.json + contracts/src/meta/catalogs.ts) once Lane
- * C ships it. This is an explicit, temporary stand-in — not a silent stub —
- * so inventory/equipment RPCs have something to validate itemIds and
- * stackability against in the meantime.
- */
-export const TEST_ITEMS: Record<string, { stackable: boolean }> = {
-  wooden_sword: { stackable: false },
-  iron_sword: { stackable: false },
-  leather_armor: { stackable: false },
-  health_potion: { stackable: true },
-  mana_potion: { stackable: true },
-  wolf_pelt: { stackable: true },
-};
+import { ITEMS_BY_ID } from '@atlas/contracts';
 
+/**
+ * Real item catalog, sourced from @atlas/contracts (contracts/content/items.json,
+ * validated at import time via itemDefSchema + validateCatalogIntegrity). No
+ * local stub — this is the single source of truth shared with colyseus-server
+ * and the generated C# client content.
+ */
 export function isKnownItem(itemId: string): boolean {
-  return Object.prototype.hasOwnProperty.call(TEST_ITEMS, itemId);
+  return Object.prototype.hasOwnProperty.call(ITEMS_BY_ID, itemId);
 }
 
 export function isStackable(itemId: string): boolean {
-  const item = TEST_ITEMS[itemId];
+  const item = ITEMS_BY_ID[itemId];
   if (!item) {
     throw new Error(`unknown itemId: ${itemId}`);
   }

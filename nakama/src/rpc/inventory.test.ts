@@ -3,30 +3,30 @@ import { addLoot, equip } from './inventoryHelpers';
 
 describe('addLoot', () => {
   it('merges qty into an existing stackable entry', () => {
-    const inv = { ...defaultDoc(COLLECTIONS.inventory), stackables: [{ itemId: 'health_potion', qty: 2 }] };
-    const result = addLoot(inv, { itemId: 'health_potion', qty: 3, generateInstanceId: () => 'unused' });
-    expect(result.stackables).toEqual([{ itemId: 'health_potion', qty: 5 }]);
+    const inv = { ...defaultDoc(COLLECTIONS.inventory), stackables: [{ itemId: 'potion_minor', qty: 2 }] };
+    const result = addLoot(inv, { itemId: 'potion_minor', qty: 3, generateInstanceId: () => 'unused' });
+    expect(result.stackables).toEqual([{ itemId: 'potion_minor', qty: 5 }]);
   });
 
   it('adds a new stackable entry when the item is not yet held', () => {
     const inv = defaultDoc(COLLECTIONS.inventory);
-    const result = addLoot(inv, { itemId: 'mana_potion', qty: 1, generateInstanceId: () => 'unused' });
-    expect(result.stackables).toEqual([{ itemId: 'mana_potion', qty: 1 }]);
+    const result = addLoot(inv, { itemId: 'iron_ore', qty: 1, generateInstanceId: () => 'unused' });
+    expect(result.stackables).toEqual([{ itemId: 'iron_ore', qty: 1 }]);
   });
 
   it('grants a unique item with an injected instanceId', () => {
     const inv = defaultDoc(COLLECTIONS.inventory);
-    const result = addLoot(inv, { itemId: 'wooden_sword', qty: 1, generateInstanceId: () => 'fixed-id-1' });
-    expect(result.uniques).toEqual([{ instanceId: 'fixed-id-1', itemId: 'wooden_sword' }]);
+    const result = addLoot(inv, { itemId: 'basic_sword', qty: 1, generateInstanceId: () => 'fixed-id-1' });
+    expect(result.uniques).toEqual([{ instanceId: 'fixed-id-1', itemId: 'basic_sword' }]);
   });
 
   it('grants multiple unique instances when qty > 1, one instanceId each', () => {
     const inv = defaultDoc(COLLECTIONS.inventory);
     let n = 0;
-    const result = addLoot(inv, { itemId: 'wooden_sword', qty: 2, generateInstanceId: () => `id-${n++}` });
+    const result = addLoot(inv, { itemId: 'basic_sword', qty: 2, generateInstanceId: () => `id-${n++}` });
     expect(result.uniques).toEqual([
-      { instanceId: 'id-0', itemId: 'wooden_sword' },
-      { instanceId: 'id-1', itemId: 'wooden_sword' },
+      { instanceId: 'id-0', itemId: 'basic_sword' },
+      { instanceId: 'id-1', itemId: 'basic_sword' },
     ]);
   });
 
@@ -40,7 +40,7 @@ describe('addLoot', () => {
   it('does not mutate the input doc', () => {
     const inv = defaultDoc(COLLECTIONS.inventory);
     const before = JSON.parse(JSON.stringify(inv));
-    addLoot(inv, { itemId: 'health_potion', qty: 1, generateInstanceId: () => 'x' });
+    addLoot(inv, { itemId: 'potion_minor', qty: 1, generateInstanceId: () => 'x' });
     expect(inv).toEqual(before);
   });
 });

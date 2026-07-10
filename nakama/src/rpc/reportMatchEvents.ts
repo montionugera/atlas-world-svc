@@ -1,8 +1,7 @@
-import { COLLECTIONS, STORAGE_KEY } from '@atlas/contracts';
+import { COLLECTIONS, STORAGE_KEY, QUESTS } from '@atlas/contracts';
 import type { MatchEvent, MatchEventType } from '@atlas/contracts';
 import { readDoc } from '../storage';
 import { applyEvents } from '../questEngine';
-import { TEST_QUESTS } from '../questCatalog';
 
 /**
  * Internal-only bookkeeping collection (not one of contracts.COLLECTIONS —
@@ -114,7 +113,7 @@ export const reportMatchEvents: nkruntime.RpcFunction = function (
   }
 
   const questsRead = readDoc(nk, userId, COLLECTIONS.quests);
-  const { doc: updatedQuests, progressed, completedNow } = applyEvents(questsRead.doc, TEST_QUESTS, events);
+  const { doc: updatedQuests, progressed, completedNow } = applyEvents(questsRead.doc, QUESTS, events);
   const updatedSeqDoc: SeqDoc = { ...seqRead.doc, [matchId]: seq };
 
   // Both writes must land together — an independent partial failure + retry

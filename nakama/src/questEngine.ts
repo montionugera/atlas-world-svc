@@ -1,22 +1,6 @@
-import type { MatchEvent, MatchEventType, QuestsDoc } from '@atlas/contracts';
+import type { MatchEvent, QuestsDoc, QuestDef } from '@atlas/contracts';
 
-/**
- * QuestDef — pinned locally to match Lane C's C2 catalog shape
- * (contracts/src/meta/catalogs.ts). Not yet exported from @atlas/contracts;
- * swapped for the real import in Phase 2 Task I1.
- */
-export interface QuestObjectiveDef {
-  id: string;
-  type: MatchEventType;
-  targetId: string;
-  required: number;
-}
-
-export interface QuestDef {
-  id: string;
-  objectives: QuestObjectiveDef[];
-  rewards: { xp: number; items: { itemId: string; qty: number }[] };
-}
+export type { QuestDef };
 
 export interface ApplyEventsResult {
   doc: QuestsDoc;

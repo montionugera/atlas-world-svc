@@ -1,5 +1,3 @@
-import * as fs from "fs";
-import * as path from "path";
 import { z } from "zod";
 import type { MatchEventType } from "./types";
 
@@ -95,26 +93,40 @@ export const questDefSchema = z
   .strict() satisfies z.ZodType<QuestDef>;
 
 /**
- * Reads and validates a catalog JSON file at import time — throws immediately
- * on malformed content instead of deferring the failure to first use.
+ * Catalog JSON is pulled in via plain `require(...)` (NOT an `import`
+ * statement) so that neither `fs` nor `path` ever appears in this module.
+ * That matters beyond Node: this package is also bundled straight into the
+ * Nakama runtime (goja via esbuild), which has no `fs` — a top-level
+ * `import ... from "fs"` here would crash Nakama's InitModule at load time
+ * the moment ANY file imports anything from "@atlas/contracts" (this module
+ * is eagerly evaluated by the package's barrel `export *`). A relative
+ * `require("*.json")` is resolved by Node natively at runtime and inlined
+ * as a plain object by esbuild's built-in JSON loader when bundled — no
+ * `fs`/`path` involved either way. Using `require` (not `import ... from
+ * ".json"`) also sidesteps tsc's `rootDir` restriction, since
+ * `contracts/content/` sits outside `rootDir: "./src"`.
  */
-function loadCatalog<T>(fileName: string, schema: z.ZodType<T[]>): T[] {
-  const filePath = path.join(__dirname, "../../content", fileName);
-  const raw = fs.readFileSync(filePath, "utf8");
-  const json: unknown = JSON.parse(raw);
+/* eslint-disable @typescript-eslint/no-var-requires */
+const itemsJson: unknown = require("../../content/items.json");
+const skillsJson: unknown = require("../../content/skills.json");
+const questsJson: unknown = require("../../content/quests.json");
+/* eslint-enable @typescript-eslint/no-var-requires */
+
+/**
+ * Validates already-loaded catalog JSON — throws immediately on malformed
+ * content instead of deferring the failure to first use.
+ */
+function loadCatalog<T>(json: unknown, schema: z.ZodType<T[]>): T[] {
   return schema.parse(json);
 }
 
-export const ITEMS: ItemDef[] = loadCatalog(
-  "items.json",
-  z.array(itemDefSchema),
-);
+export const ITEMS: ItemDef[] = loadCatalog(itemsJson, z.array(itemDefSchema));
 export const SKILLS: SkillDef[] = loadCatalog(
-  "skills.json",
+  skillsJson,
   z.array(skillDefSchema),
 );
 export const QUESTS: QuestDef[] = loadCatalog(
-  "quests.json",
+  questsJson,
   z.array(questDefSchema),
 );
 
