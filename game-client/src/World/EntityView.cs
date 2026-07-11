@@ -4,35 +4,43 @@ using AtlasWorld.Contracts;
 namespace AtlasWorld.Client.World
 {
     /// <summary>
-    /// A single rendered entity. Its visuals are a PURE FUNCTION of the synced schema
-    /// fields — team → tint, hp → bar, isAlive → death, heading/angle → Y-rotation,
-    /// position → interpolation target. It never sends anything and never reads input;
-    /// it only reflects authoritative server state.
+    /// A single rendered entity. Its VISUALS are a pure function of the synced schema
+    /// fields — team → tint, hp → bar, isAlive → death. Its POSE (position + facing) is no
+    /// longer read here: the <c>SnapshotInterpolator</c> is the single source of the
+    /// rendered pose and drives it via <see cref="ApplyPose"/> every frame. This view
+    /// never sends anything and never reads input; it only reflects server state.
     /// </summary>
     public sealed class EntityView
     {
         private readonly EntityVisualParts _parts;
-        private readonly float _groundHeight;
 
         public Node3D Root => _parts.Root;
-        public Vector3 TargetPosition { get; private set; }
 
         /// <summary>False once the server reports the entity dead (life entities only).</summary>
         public bool Alive { get; private set; } = true;
 
-        private const float LerpRate = 12f; // frame-rate independent smoothing
-
         public EntityView(EntityKind kind)
         {
             _parts = EntityVisuals.CreateView(kind);
-            _groundHeight = EntityVisuals.GroundHeight(kind);
         }
 
-        /// <summary>Apply a life entity (Player / Mob / NPC).</summary>
+        /// <summary>
+        /// Drive the rendered pose from an interpolated snapshot sample. This is the ONLY
+        /// path that writes position/rotation — called each frame by the EntityManager.
+        /// </summary>
+        public void ApplyPose(Vector3 pos, float headingRadians)
+        {
+            if (!IsInstanceValid(_parts.Root))
+                return;
+            _parts.Root.Position = pos;
+            // heading is an angle in the server XY plane; rotate about world Y. Placeholder
+            // primitives are radially symmetric, so exact facing is cosmetic today.
+            _parts.Root.Rotation = new Vector3(0f, -headingRadians, 0f);
+        }
+
+        /// <summary>Apply a life entity's VISUAL state (Player / Mob / NPC) — no pose here.</summary>
         public void ApplyLife(WorldLife e)
         {
-            SetTargetFromPosition(e.x, e.y);
-            SetHeading(e.heading);
             Alive = e.isAlive;
 
             _parts.Material.AlbedoColor = TeamTint(e.teamId, _parts.Material.AlbedoColor);
@@ -52,42 +60,6 @@ namespace AtlasWorld.Client.World
 
             if (!Alive)
                 _parts.Body.Visible = false; // simple death; EntityManager frees the view
-        }
-
-        /// <summary>Apply a non-life object (Projectile / ZoneEffect).</summary>
-        public void ApplyObject(WorldObject e)
-        {
-            SetTargetFromPosition(e.x, e.y);
-            SetHeading(e.angle);
-        }
-
-        /// <summary>Frame-rate independent lerp toward the latest server position.</summary>
-        public void Tick(float delta)
-        {
-            if (!IsInstanceValid(_parts.Root))
-                return;
-            float t = 1f - Mathf.Exp(-LerpRate * delta);
-            _parts.Root.Position = _parts.Root.Position.Lerp(TargetPosition, t);
-        }
-
-        public void SnapToTarget()
-        {
-            if (IsInstanceValid(_parts.Root))
-                _parts.Root.Position = TargetPosition;
-        }
-
-        private void SetTargetFromPosition(float x, float y)
-        {
-            // Server ships a 2D position (x, y) in world units → 3D (x, height, y).
-            TargetPosition = new Vector3(x, _groundHeight, y);
-        }
-
-        private void SetHeading(float headingRadians)
-        {
-            // heading is an angle in the server's XY plane; rotate about world Y.
-            // Placeholder primitives are radially symmetric, so exact facing is cosmetic.
-            if (IsInstanceValid(_parts.Root))
-                _parts.Root.Rotation = new Vector3(0f, -headingRadians, 0f);
         }
 
         private static bool IsInstanceValid(GodotObject o) => GodotObject.IsInstanceValid(o);
