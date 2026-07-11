@@ -33,12 +33,24 @@ export interface GameRoomOptions {
   devBypass?: boolean
 }
 
-/** Auth data resolved by `onAuth` and handed to `onJoin` as its 3rd argument. */
+/**
+ * Auth data resolved by `onAuth`. In Colyseus 0.17 the value returned by
+ * `onAuth` is auto-attached to `client.auth` (typed via the Client generic),
+ * which is what `onJoin` reads for the server-verified identity.
+ */
 export interface GameRoomAuthData {
   userId: string
 }
 
-export class GameRoom extends Room<GameState, any, any, GameRoomAuthData> {
+/**
+ * Client type for this room. In 0.17 the auth-data type flows via the single
+ * `Client<{ auth }>` generic (the 0.16 `Client<UserData, AuthData>` 2-arg form
+ * is gone), and threading it through the Room generic's `client` field makes
+ * `client.auth` typed as `GameRoomAuthData` in every lifecycle method.
+ */
+type GameRoomClient = Client<{ auth: GameRoomAuthData }>
+
+export class GameRoom extends Room<{ state: GameState; client: GameRoomClient }> {
   // Room configuration
   maxClients = 1
 
@@ -130,15 +142,12 @@ export class GameRoom extends Room<GameState, any, any, GameRoomAuthData> {
 
   /**
    * Verifies the caller's identity before the seat reservation is consumed.
-   * On success, the returned auth data is handed to `onJoin` as its 3rd
-   * argument (`client.auth`) — never trust `options.userId` from the client.
-   * Rejects (throws) when neither a valid Nakama session token nor the
-   * non-production dev bypass is present.
+   * On success, the returned auth data is auto-attached by Colyseus to
+   * `client.auth`, which `onJoin` reads — never trust `options.userId` from
+   * the client. Rejects (throws) when neither a valid Nakama session token nor
+   * the non-production dev bypass is present (fail-closed).
    */
-  async onAuth(
-    client: Client<any, GameRoomAuthData>,
-    options: GameRoomOptions
-  ): Promise<GameRoomAuthData> {
+  async onAuth(client: GameRoomClient, options: GameRoomOptions): Promise<GameRoomAuthData> {
     if (options.token) {
       const verified = await this.metaBackend.verifySession(options.token)
       if (verified) return verified
@@ -152,19 +161,22 @@ export class GameRoom extends Room<GameState, any, any, GameRoomAuthData> {
     throw new Error('unauthorized: missing or invalid Nakama session token')
   }
 
-  async onJoin(
-    client: Client<any, GameRoomAuthData>,
-    options: GameRoomOptions,
-    auth: GameRoomAuthData
-  ) {
+  async onJoin(client: GameRoomClient, options: GameRoomOptions) {
     console.log(`👤 Player ${client.sessionId} joined the game`)
+
+    // Server-verified identity from onAuth (auto-attached to client.auth in
+    // 0.17) — never trust client-supplied ids. The onJoin 3rd `auth` param is
+    // deprecated in 0.17; read client.auth instead. onAuth is fail-closed, so
+    // this is guaranteed set here; guard anyway so a missing identity fails the
+    // join (fail-closed) rather than seating a player with userId=undefined.
+    const userId = client.auth?.userId
+    if (!userId) {
+      throw new Error('unauthorized: missing verified identity in onJoin')
+    }
 
     // Add player to game state
     const playerName = options.name || `Player-${client.sessionId.substring(0, 8)}`
     const player = this.state.addPlayer(client.sessionId, playerName)
-
-    // Server-verified identity from onAuth — never trust client-supplied ids.
-    const userId = auth.userId
     player.userId = userId
 
     // Fetch & apply the player's loadout snapshot (profile-derived combat stats).
@@ -183,7 +195,7 @@ export class GameRoom extends Room<GameState, any, any, GameRoomAuthData> {
     this.battleModule.applyStatusEffect(player, 'entering', 2000)
   }
 
-  onLeave(client: Client, consented: boolean) {
+  onLeave(client: GameRoomClient, code?: number) {
     console.log(`👋 Player ${client.sessionId} left the game`)
 
     // Physics cleanup is handled by RoomEventHandler via EventBus 'playerLeft'

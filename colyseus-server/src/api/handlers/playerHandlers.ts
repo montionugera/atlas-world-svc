@@ -86,7 +86,7 @@ export async function getPlayers(req: Request, res: Response): Promise<void> {
 export async function getPlayerById(req: Request, res: Response): Promise<void> {
   try {
     const room = (req as any).room as GameRoom
-    const { playerId } = req.params
+    const playerId = String(req.params.playerId)
 
     const player = room.state.players.get(playerId)
 

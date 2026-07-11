@@ -10,8 +10,8 @@ import { FakeMetaBackend } from '../meta/FakeMetaBackend'
  * reservation, and rejects the join when it throws (see @colyseus/core
  * Room.js `_consumeSeatReservation`).
  */
-function fakeClient(sessionId: string): Client<any, GameRoomAuthData> {
-  return { sessionId } as unknown as Client<any, GameRoomAuthData>
+function fakeClient(sessionId: string): Client<{ auth: GameRoomAuthData }> {
+  return { sessionId } as unknown as Client<{ auth: GameRoomAuthData }>
 }
 
 describe('GameRoom.onAuth', () => {
