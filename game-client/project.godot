@@ -1,0 +1,20 @@
+; Godot 4.7 project manifest — Atlas World game-client (production Godot↔Colyseus client).
+; Forward+ (Vulkan desktop) renderer with a 'mobile' Vulkan override for mobile perf.
+; Ported and restructured from the proven godot-client-spike (Phase B / F-B).
+
+config_version=5
+
+[application]
+
+config/name="AtlasWorldClient"
+run/main_scene="res://Main.tscn"
+config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+
+[dotnet]
+
+project/assembly_name="GameClient"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+renderer/rendering_method.mobile="mobile"

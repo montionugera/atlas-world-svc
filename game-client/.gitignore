@@ -1,0 +1,7 @@
+# Godot 4 + .NET
+.godot/
+.mono/
+bin/
+obj/
+*.tmp
+export_presets.cfg
