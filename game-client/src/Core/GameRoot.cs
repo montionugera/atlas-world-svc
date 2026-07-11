@@ -4,7 +4,7 @@ using AtlasWorld.Contracts;
 using AtlasWorld.Client.Net;
 using AtlasWorld.Client.World;
 using AtlasWorld.Client.Input;
-using AtlasWorld.Client.Meta;
+using AtlasWorld.Client.UI.Panels;
 
 namespace AtlasWorld.Client.Core
 {
@@ -47,8 +47,9 @@ namespace AtlasWorld.Client.Core
             // Input
             AddChild(new PlayerController(_inputSender) { Name = "PlayerController" });
 
-            // Meta (Nakama seed — off-thread, CallDeferred inside)
-            AddChild(new MetaService(_config) { Name = "MetaService" });
+            // Meta UI (B2). The MetaGateway autoload owns all Nakama awaiting; MetaShell is
+            // a pure signal-driven overlay. Toggle with Tab, close with Esc.
+            AddChild(new MetaShell());
 
             // On every (re)connect: reset the entity pool, then (re)wire schema callbacks.
             _connection.Connected += OnConnected;
