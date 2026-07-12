@@ -238,7 +238,10 @@ export class GameRoom extends Room<{ state: GameState; client: GameRoomClient }>
     // otherwise leaks into every integration step, making per-tick positions unevenly
     // spaced — which no client-side interpolation can fully smooth. Fixed timestep is
     // also what the entity updates already assume (mob.update(GAME_CONFIG.tickRate)).
-    this.setSimulationInterval(() => this.simulationSystem.update(GAME_CONFIG.tickRate), GAME_CONFIG.tickRate)
+    this.setSimulationInterval(
+      () => this.simulationSystem.update(GAME_CONFIG.tickRate),
+      GAME_CONFIG.tickRate
+    )
   }
 
   private stopSimulation() {
