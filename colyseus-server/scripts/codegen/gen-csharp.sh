@@ -29,3 +29,7 @@ echo "codegen: wrote C# to $OUT"
 # 3. also generate the meta-system DTOs (LoadoutSnapshot, docs, MatchEvent/Batch)
 #    from contracts/src/meta/types.ts, plus mirror the starter content catalogs.
 bash "$HERE/gen-csharp-meta.sh"
+
+# 4. emit the renderable/audible asset key set (generated/asset-keys.json) — the
+#    single source of truth for the client asset manifest + CI drift-gate.
+bash "$HERE/gen-asset-keys.sh"
