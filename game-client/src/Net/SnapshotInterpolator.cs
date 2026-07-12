@@ -20,6 +20,14 @@ namespace AtlasWorld.Client.Net
         /// <summary>How far in the past remote entities are rendered — one 50 ms patch of slack, doubled.</summary>
         public const int InterpolationDelayMs = 100;
 
+        /// <summary>
+        /// Own-player render delay: one patch, so the cursor sits BETWEEN samples
+        /// (interpolating) instead of ahead of the newest (extrapolate-then-correct,
+        /// which reads as 20 Hz jitter on the entity the player stares at). Half the
+        /// remote delay keeps input feel snappy.
+        /// </summary>
+        public const int OwnPlayerDelayMs = 50;
+
         /// <summary>Cap on velocity extrapolation past the newest sample before hold-freezing.</summary>
         public const int MaxExtrapolationMs = 250;
 

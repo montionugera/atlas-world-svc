@@ -132,12 +132,13 @@ namespace AtlasWorld.Client.World
         {
             long now = MonotonicClock.NowMs;
             long delayedCursor = now - SnapshotInterpolator.InterpolationDelayMs;
+            long ownCursor = now - SnapshotInterpolator.OwnPlayerDelayMs;
 
             foreach (KeyValuePair<string, EntityView> kv in _views)
             {
-                // Local player renders at the newest snapshot (no 100 ms delay = no input lag);
-                // everyone else renders at the delayed cursor for smooth interpolation.
-                long cursor = kv.Key == _ownPlayerId ? now : delayedCursor;
+                // Local player renders one patch in the past (interpolating, not
+                // extrapolate-and-correct); everyone else at the full delayed cursor.
+                long cursor = kv.Key == _ownPlayerId ? ownCursor : delayedCursor;
                 if (_interp.TrySamplePose(kv.Key, cursor, out Vector3 pos, out float heading))
                     kv.Value.ApplyPose(pos, heading);
             }
@@ -168,7 +169,7 @@ namespace AtlasWorld.Client.World
             foreach (KeyValuePair<string, EntityView> kv in _views)
             {
                 bool isOwn = kv.Key == _ownPlayerId;
-                long cursor = isOwn ? now : delayedCursor;
+                long cursor = isOwn ? now - SnapshotInterpolator.OwnPlayerDelayMs : delayedCursor;
                 if (_interp.TrySamplePose(kv.Key, cursor, out Vector3 interp, out _) &&
                     _interp.TryGetNewestRaw(kv.Key, out Vector3 raw))
                 {
