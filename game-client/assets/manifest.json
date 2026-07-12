@@ -1,4 +1,61 @@
 {
   "version": 1,
-  "entries": {}
+  "entries": {
+    "player": {
+      "scene": "res://assets/characters/character-male-a.glb",
+      "source": "market",
+      "license": "CC0 (Kenney Mini Characters)",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "npc": {
+      "scene": "res://assets/characters/character-female-a.glb",
+      "source": "market",
+      "license": "CC0 (Kenney Mini Characters)",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:aggressive": {
+      "scene": "res://assets/characters/character-male-b.glb",
+      "source": "market",
+      "license": "CC0 (Kenney Mini Characters)",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:balanced": {
+      "scene": "res://assets/characters/character-female-b.glb",
+      "source": "market",
+      "license": "CC0 (Kenney Mini Characters)",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:defensive": {
+      "scene": "res://assets/characters/character-male-d.glb",
+      "source": "market",
+      "license": "CC0 (Kenney Mini Characters)",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:double_attacker": {
+      "scene": "res://assets/characters/character-female-c.glb",
+      "source": "market",
+      "license": "CC0 (Kenney Mini Characters)",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:hybrid": {
+      "scene": "res://assets/characters/character-male-e.glb",
+      "source": "market",
+      "license": "CC0 (Kenney Mini Characters)",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:spear_thrower": {
+      "scene": "res://assets/characters/character-male-c.glb",
+      "source": "market",
+      "license": "CC0 (Kenney Mini Characters)",
+      "tier": "seed",
+      "kind": "character"
+    }
+  }
 }

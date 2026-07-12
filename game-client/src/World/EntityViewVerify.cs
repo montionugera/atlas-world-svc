@@ -14,10 +14,17 @@ namespace AtlasWorld.Client.World
     ///
     /// Proves, without a live server: (1) the key mapping from a live entity to its registry
     /// key is correct for all five kinds; (2) spawning through the real <see cref="EntityManager"/>
-    /// resolves the visual node via <c>AssetRegistry.Resolve(typeId)</c> — with the empty
-    /// Stage-0 manifest that is the capsule tier — yielding the right primitive per kind and
-    /// never throwing; (3) each view gets its OWN body material, so tinting one entity does
-    /// not bleed into a sibling that instanced the same cached capsule scene.
+    /// resolves the visual node via <c>AssetRegistry.Resolve(typeId)</c> — honoring the real,
+    /// committed manifest, so a mapped character key yields the loaded seed glTF and a
+    /// still-unmapped key (Stage 0.5: projectiles/zones) yields the capsule tier — and never
+    /// throws; (3) each view gets its OWN body material, so tinting one entity does not bleed
+    /// into a sibling that instanced the same cached capsule scene.
+    ///
+    /// Task 7 note: the committed manifest now maps <c>player</c>, <c>npc</c>, and all six
+    /// <c>mob:*</c> keys to real CC0 seed characters. Cases that need to exercise the
+    /// CAPSULE fallback path deliberately use type ids the manifest does NOT cover (still
+    /// the right kind, just an id that was never registered) so that coverage of the
+    /// "unknown/unmapped id never breaks" contract survives the seed set landing.
     /// </summary>
     public static class EntityViewVerify
     {
@@ -43,28 +50,37 @@ namespace AtlasWorld.Client.World
                 return 1;
             }
 
-            // With the committed empty manifest, every threaded key resolves to the capsule
-            // tier — the exact evidence that Resolve is invoked with the threaded id.
-            failures += Report("mob key → capsule tier", ResolvesToCapsule(reg, EntityKeys.Mob("spear_thrower")));
+            // A mapped character key (Task 7 seed set) resolves to the Seed tier — never the
+            // capsule — proving the manifest is actually wired through, not just present.
+            failures += Report("mob:spear_thrower (mapped) → seed tier", ResolvesToSeed(reg, EntityKeys.Mob("spear_thrower")));
+
+            // Keys the manifest does NOT cover — Stage 0.5 projectiles/zones, plus a
+            // deliberately-unregistered mob id — still resolve to the capsule tier.
+            failures += Report("mob key (unmapped) → capsule tier", ResolvesToCapsule(reg, EntityKeys.Mob("unmapped_probe_only")));
             failures += Report("projectile key → capsule tier", ResolvesToCapsule(reg, EntityKeys.Projectile("arrow")));
             failures += Report("zone key → capsule tier", ResolvesToCapsule(reg, EntityKeys.Zone("freeze")));
 
-            // Part 2 — spawn through the real EntityManager and confirm each view's visual node
-            // is the resolved capsule primitive for its kind, with a mesh body, no throw.
+            // Part 2 — spawn through the real EntityManager. player/npc/mob:spear_thrower are
+            // now mapped to real seed glTF scenes (Task 7): confirm each spawns the LOADED
+            // scene, not the capsule. projectile:arrow and zone:freeze — plus a deliberately
+            // unmapped mob id — remain on the capsule path (Stage 0.5); confirm that still works.
             var mgr = new EntityManager { Name = "VerifyEntityManager" };
             host.AddChild(mgr);
 
-            failures += SpawnCase(mgr, "p1", EntityKind.Player, EntityKeys.Player, typeof(CapsuleMesh), "player");
-            failures += SpawnCase(mgr, "n1", EntityKind.Npc, EntityKeys.Npc, typeof(CapsuleMesh), "npc");
-            failures += SpawnCase(mgr, "m1", EntityKind.Mob, EntityKeys.Mob("spear_thrower"), typeof(BoxMesh), "mob");
+            failures += SpawnSeedCase(mgr, "p1", EntityKind.Player, EntityKeys.Player, "player");
+            failures += SpawnSeedCase(mgr, "n1", EntityKind.Npc, EntityKeys.Npc, "npc");
+            failures += SpawnSeedCase(mgr, "m1", EntityKind.Mob, EntityKeys.Mob("spear_thrower"), "mob:spear_thrower");
+            failures += SpawnCase(mgr, "m0", EntityKind.Mob, EntityKeys.Mob("unmapped_probe_only"), typeof(BoxMesh), "mob (still-unmapped capsule fallback)");
             failures += SpawnCase(mgr, "pr1", EntityKind.Projectile, EntityKeys.Projectile("arrow"), typeof(BoxMesh), "projectile");
             failures += SpawnCase(mgr, "z1", EntityKind.ZoneEffect, EntityKeys.Zone("freeze"), typeof(CylinderMesh), "zone");
 
             // Part 3 — per-entity material isolation: two mobs, tinted to different teams, must
             // end with DIFFERENT body colors (a shared cached material would make them equal).
-            mgr.Spawn("ma", EntityKind.Mob, EntityKeys.Mob("aggressive"));
+            // Uses type ids OUTSIDE the manifest on purpose — seed/bespoke scenes may not carry
+            // a "Body" node at all, so tinting them is a documented no-op (not what this proves).
+            mgr.Spawn("ma", EntityKind.Mob, EntityKeys.Mob("aggressive_capsule_probe"));
             Node3D? rootA = LastSpawned(mgr);
-            mgr.Spawn("mb", EntityKind.Mob, EntityKeys.Mob("balanced"));
+            mgr.Spawn("mb", EntityKind.Mob, EntityKeys.Mob("balanced_capsule_probe"));
             Node3D? rootB = LastSpawned(mgr);
 
             mgr.ApplyLife("ma", NewLife("player"));   // → blue
@@ -98,6 +114,46 @@ namespace AtlasWorld.Client.World
         {
             PackedScene scene = reg.Resolve(typeId, out ResolveTier tier);
             return scene != null && tier == ResolveTier.Capsule;
+        }
+
+        private static bool ResolvesToSeed(AssetRegistry reg, string typeId)
+        {
+            PackedScene scene = reg.Resolve(typeId, out ResolveTier tier);
+            return scene != null && tier == ResolveTier.Seed;
+        }
+
+        /// <summary>
+        /// Spawn a mapped character key and confirm the view root is the LOADED seed glTF
+        /// scene, not our procedural capsule. Doesn't assume anything about the imported
+        /// model's internal node names (no-magic) — instead it proves the negative: the
+        /// spawned root carries at least one mesh, but none of them is the "Body" node with
+        /// one of our own procedural primitive mesh types, which is the exact, exclusive
+        /// signature <see cref="EntityVisuals.CreateView"/> stamps onto every capsule tier.
+        /// </summary>
+        private static int SpawnSeedCase(EntityManager mgr, string id, EntityKind kind, string typeId, string label)
+        {
+            mgr.Spawn(id, kind, typeId);
+            Node3D? root = LastSpawned(mgr);
+            bool ok = root != null && HasAnyMesh(root) && !IsCapsuleShaped(root);
+            return Report($"spawn {label} ({typeId}) → real seed glTF (not capsule)", ok);
+        }
+
+        private static bool IsCapsuleShaped(Node3D? root)
+        {
+            Mesh? mesh = root?.GetNodeOrNull<MeshInstance3D>("Body")?.Mesh;
+            return mesh is BoxMesh or CapsuleMesh or CylinderMesh;
+        }
+
+        private static bool HasAnyMesh(Node? node)
+        {
+            if (node == null)
+                return false;
+            if (node is MeshInstance3D)
+                return true;
+            foreach (Node child in node.GetChildren())
+                if (HasAnyMesh(child))
+                    return true;
+            return false;
         }
 
         private static Node3D? LastSpawned(EntityManager mgr)
