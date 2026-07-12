@@ -1,6 +1,10 @@
-; Godot 4.7 project manifest — Atlas World game-client (production Godot↔Colyseus client).
-; Forward+ (Vulkan desktop) renderer with a 'mobile' Vulkan override for mobile perf.
-; Ported and restructured from the proven godot-client-spike (Phase B / F-B).
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -10,15 +14,13 @@ config/name="AtlasWorldClient"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 
+[autoload]
+
+MetaGateway="*res://src/Meta/MetaGateway.cs"
+
 [dotnet]
 
 project/assembly_name="GameClient"
-
-[autoload]
-
-; MetaGateway owns ALL Nakama awaiting and re-emits results as signals via
-; CallDeferred; UI panels read MetaGateway.Instance and are pure listeners.
-MetaGateway="*res://src/Meta/MetaGateway.cs"
 
 [rendering]
 

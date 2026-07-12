@@ -31,6 +31,9 @@ namespace AtlasWorld.Client.Net
         /// <summary>The live room, or null while (re)connecting / after a clean leave.</summary>
         public Room<GameState>? Room { get; private set; }
 
+        /// <summary>The mapId sent in join options (rooms are 1-client, so ours = the room's).</summary>
+        public string MapId { get; private set; }
+
         /// <summary>Fires on the main thread once a room is joined (initial or reconnect).</summary>
         public event Action<Room<GameState>>? Connected;
 
@@ -46,9 +49,14 @@ namespace AtlasWorld.Client.Net
         private const double BaseBackoffSeconds = 0.5;
         private const double MaxBackoffSeconds = 8.0;
 
+        // Set while an on-purpose leave (map switch / exit) is in flight so OnRoomLeave
+        // doesn't treat it as a drop and start reconnecting.
+        private bool _intentionalLeave;
+
         public ColyseusConnection(Config config)
         {
             _config = config;
+            MapId = config.MapId;
         }
 
         /// <summary>Start the initial connection. Called by GameRoot after wiring listeners.</summary>
@@ -63,11 +71,11 @@ namespace AtlasWorld.Client.Net
             {
                 _client ??= new Colyseus.Client(_config.ColyseusEndpoint);
 
-                Dictionary<string, object>? options = null;
+                var options = new Dictionary<string, object> { { "mapId", MapId } };
                 if (!string.IsNullOrEmpty(_config.AuthToken))
                 {
                     // Threaded into server-side onAuth. Empty token = bare join (dev path).
-                    options = new Dictionary<string, object> { { "token", _config.AuthToken } };
+                    options["token"] = _config.AuthToken;
                 }
 
                 Room<GameState> room = await _client.JoinOrCreate<GameState>(
@@ -100,11 +108,53 @@ namespace AtlasWorld.Client.Net
             Room = null;
             Disconnected?.Invoke();
 
-            // 1000 = normal closure (we asked to leave). Anything else = unexpected drop → reconnect.
-            if (code == 1000)
+            // 1000 = normal closure, 4000 = 0.17 consented leave (we asked to leave),
+            // and _intentionalLeave covers a switch already in flight. Anything else =
+            // unexpected drop → reconnect.
+            if (code == 1000 || code == 4000 || _intentionalLeave)
                 return;
 
             ScheduleReconnect(fromToken: true);
+        }
+
+        /// <summary>
+        /// Leave the current room (if any) and join a fresh one on <paramref name="mapId"/>.
+        /// No-op when already on that map.
+        /// </summary>
+        public void SwitchMap(string mapId)
+        {
+            if (mapId == MapId && Room != null)
+                return;
+            MapId = mapId;
+            _ = SwitchAsync();
+        }
+
+        private async Task SwitchAsync()
+        {
+            _intentionalLeave = true;
+            try
+            {
+                Room<GameState>? room = Room;
+                if (room != null)
+                {
+                    // Keep the pump running while the leave round-trips: the SDK routes
+                    // its close callback through the same dispatch queue, so stopping the
+                    // pump here would deadlock the await. OnRoomLeave nulls Room.
+                    await room.Leave();
+                }
+            }
+            catch (Exception e)
+            {
+                GD.Print($"[Colyseus] leave before switch failed (continuing): {e.Message}");
+            }
+            finally
+            {
+                _intentionalLeave = false;
+            }
+
+            Room = null; // belt-and-braces if the close callback never dispatched
+            _reconnectAttempt = 0;
+            await ConnectAsync();
         }
 
         public override void _Process(double delta)
@@ -124,7 +174,8 @@ namespace AtlasWorld.Client.Net
                 GD.PushError($"[Colyseus] dispatch pump threw: {e.Message}");
                 Room = null;
                 Disconnected?.Invoke();
-                ScheduleReconnect(fromToken: true);
+                if (!_intentionalLeave)
+                    ScheduleReconnect(fromToken: true);
             }
         }
 

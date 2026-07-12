@@ -12,7 +12,6 @@ namespace AtlasWorld.Client.World
     {
         private readonly Camera3D _camera;
         private readonly EntityManager _entities;
-        private readonly MeshInstance3D? _ground;
 
         private float _yaw = 0.6f;   // radians around world Y
         private float _pitch = 0.5f; // radians above the horizon
@@ -24,16 +23,15 @@ namespace AtlasWorld.Client.World
         private const float MinPitch = 0.05f;
         private const float MaxPitch = 1.5f;
         private const float MinDistance = 3f;
-        private const float MaxDistance = 60f;
+        private const float MaxDistance = 140f; // enough to see whole terrain zones on the 1000-map
         private const float OrbitSpeed = 0.01f;
         private const float ZoomStep = 1.5f;
         private const float FollowRate = 12f;
 
-        public CameraRig(Camera3D camera, EntityManager entities, MeshInstance3D? ground)
+        public CameraRig(Camera3D camera, EntityManager entities)
         {
             _camera = camera;
             _entities = entities;
-            _ground = ground;
         }
 
         public override void _Ready() => UpdateCamera();
@@ -67,14 +65,12 @@ namespace AtlasWorld.Client.World
                 // Snap on first sight so we don't glide from the origin.
                 _target = flat;
                 _hasCentered = true;
-                MoveGround(flat);
                 UpdateCamera();
                 return;
             }
 
             float t = 1f - Mathf.Exp(-FollowRate * (float)delta);
             _target = _target.Lerp(flat, t);
-            MoveGround(_target);
             UpdateCamera();
         }
 
@@ -82,12 +78,6 @@ namespace AtlasWorld.Client.World
         {
             _distance = Mathf.Clamp(_distance + delta, MinDistance, MaxDistance);
             UpdateCamera();
-        }
-
-        private void MoveGround(Vector3 flat)
-        {
-            if (_ground != null && GodotObject.IsInstanceValid(_ground))
-                _ground.Position = new Vector3(flat.X, 0f, flat.Z);
         }
 
         private void UpdateCamera()

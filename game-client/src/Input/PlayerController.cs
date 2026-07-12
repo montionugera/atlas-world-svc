@@ -53,6 +53,24 @@ namespace AtlasWorld.Client.Input
             }
         }
 
+        // Discrete actions — skills (1-4 + Shift dash) and respawn (R). Edge-triggered
+        // so each key press fires once. Intents only; the server owns all outcomes.
+        public override void _UnhandledInput(InputEvent @event)
+        {
+            if (@event is not InputEventKey k || !k.Pressed || k.Echo)
+                return;
+
+            switch (k.PhysicalKeycode)
+            {
+                case Key.Key1: _input.SendCastSkill("skill_1"); break;
+                case Key.Key2: _input.SendCastSkill("skill_2"); break;
+                case Key.Key3: _input.SendCastSkill("skill_3"); break;
+                case Key.Key4: _input.SendCastSkill("skill_4"); break;
+                case Key.Shift: _input.SendCastSkill("skill_dash"); break;
+                case Key.R: _input.SendRespawn(); break;
+            }
+        }
+
         private static bool AnyPressed(Key[] keys)
         {
             foreach (Key k in keys)

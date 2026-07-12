@@ -15,6 +15,9 @@ namespace AtlasWorld.Client.Core
         /// <summary>Colyseus room name to join.</summary>
         public string RoomName { get; private init; } = "game_room";
 
+        /// <summary>Initial mapId sent in the join options (the map picker can switch later).</summary>
+        public string MapId { get; private init; } = "map-for-play";
+
         /// <summary>Nakama scheme/host/port/serverKey for the meta seam.</summary>
         public string NakamaScheme { get; private init; } = "http";
         public string NakamaHost { get; private init; } = "127.0.0.1";
@@ -42,6 +45,7 @@ namespace AtlasWorld.Client.Core
             {
                 ColyseusEndpoint = Env("ATLAS_COLYSEUS_ENDPOINT", "ws://127.0.0.1:2568"),
                 RoomName = Env("ATLAS_ROOM_NAME", "game_room"),
+                MapId = Env("ATLAS_MAP_ID", "map-for-play"),
                 NakamaScheme = Env("ATLAS_NAKAMA_SCHEME", "http"),
                 NakamaHost = Env("ATLAS_NAKAMA_HOST", "127.0.0.1"),
                 NakamaPort = EnvInt("ATLAS_NAKAMA_PORT", 7350),

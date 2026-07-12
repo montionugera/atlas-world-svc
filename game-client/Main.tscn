@@ -1,12 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://batlasworldclient01"]
+[gd_scene load_steps=5 format=3 uid="uid://batlasworldclient01"]
 
 [ext_resource type="Script" path="res://src/Core/GameRoot.cs" id="1_root"]
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
-size = Vector2(50, 50)
-
-[sub_resource type="StandardMaterial3D" id="Mat_ground"]
-albedo_color = Color(0.2, 0.23, 0.26, 1)
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 
@@ -21,10 +15,6 @@ tonemap_mode = 2
 
 [node name="GameRoot" type="Node3D"]
 script = ExtResource("1_root")
-
-[node name="Ground" type="MeshInstance3D" parent="."]
-mesh = SubResource("PlaneMesh_ground")
-surface_material_override/0 = SubResource("Mat_ground")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.6, 0.8, 0, -0.8, 0.6, 0, 8, 0)

@@ -36,6 +36,15 @@ namespace AtlasWorld.Client.Net
             _connection.Room?.Send("player_input_action",
                 new { action = "useSkill", pressed = true, skillId, x, y });
 
+        /// <summary>Cast a skill in the player's facing direction (server uses heading; no explicit target).</summary>
+        public void SendCastSkill(string skillId) =>
+            _connection.Room?.Send("player_input_action",
+                new { action = "useSkill", pressed = true, skillId });
+
+        /// <summary>Respawn at the stored spawn point (server DebugCommandHandler.player_respawn).</summary>
+        public void SendRespawn() =>
+            _connection.Room?.Send("player_respawn");
+
         public void SendToggleBot(bool enabled) =>
             _connection.Room?.Send("player_toggle_bot", new { enabled });
 
