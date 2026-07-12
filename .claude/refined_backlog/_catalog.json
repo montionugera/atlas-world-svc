@@ -10,5 +10,14 @@
     "claimed_at": "2026-07-09T16:00:53.976340+00:00",
     "shipped_at": "2026-07-10T11:58:46.043338+00:00",
     "promoted_at": "2026-07-12T08:29:44.369104+00:00"
+  },
+  {
+    "id": "F-002",
+    "title": "Asset build pipeline: content registry + storybook + CC0 seed set",
+    "from_idea": "I-003",
+    "created_at": "2026-07-12T08:58:09.880458+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
