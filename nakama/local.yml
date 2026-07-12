@@ -1,0 +1,13 @@
+name: atlas-nakama
+
+console:
+  username: admin
+  password: password
+
+session:
+  encryption_key: "atlas_dev_session_key_change_me_please_32"
+  token_expiry_sec: 7200
+
+runtime:
+  http_key: "atlas_dev_http_key"
+  js_entrypoint: "index.js"

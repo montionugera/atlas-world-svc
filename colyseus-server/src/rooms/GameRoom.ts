@@ -15,12 +15,43 @@ import { DebugCommandHandler } from './handlers/DebugCommandHandler'
 import { RoomEventHandler } from './handlers/RoomEventHandler'
 import { GameSimulationSystem } from './systems/GameSimulationSystem'
 
+// Meta systems (Nakama-backed profile/loadout/match-event reporting)
+import { IMetaBackend } from '../meta/IMetaBackend'
+import { NakamaMetaBackend } from '../meta/NakamaMetaBackend'
+import { MetaEventReporter } from '../meta/MetaEventReporter'
+import { loadPlayerLoadout } from '../meta/applyLoadout'
+import { GAME_CONFIG } from '../config/gameConfig'
+
 export interface GameRoomOptions {
   mapId?: string
   name?: string
+  /** Nakama session token, verified server-side in onAuth to resolve the real userId. */
+  token?: string
+  /**
+   * Dev-only escape hatch for the React debug client: joins as `client.sessionId`
+   * without a verified token. Only honored when `NODE_ENV !== 'production'`.
+   */
+  devBypass?: boolean
 }
 
-export class GameRoom extends Room<GameState> {
+/**
+ * Auth data resolved by `onAuth`. In Colyseus 0.17 the value returned by
+ * `onAuth` is auto-attached to `client.auth` (typed via the Client generic),
+ * which is what `onJoin` reads for the server-verified identity.
+ */
+export interface GameRoomAuthData {
+  userId: string
+}
+
+/**
+ * Client type for this room. In 0.17 the auth-data type flows via the single
+ * `Client<{ auth }>` generic (the 0.16 `Client<UserData, AuthData>` 2-arg form
+ * is gone), and threading it through the Room generic's `client` field makes
+ * `client.auth` typed as `GameRoomAuthData` in every lifecycle method.
+ */
+type GameRoomClient = Client<{ auth: GameRoomAuthData }>
+
+export class GameRoom extends Room<{ state: GameState; client: GameRoomClient }> {
   // Room configuration
   maxClients = 1
 
@@ -34,6 +65,10 @@ export class GameRoom extends Room<GameState> {
   public projectileManager!: ProjectileManager
   public mobLifeCycleManager!: MobLifeCycleManager
   public zoneEffectManager!: ZoneEffectManager
+
+  // Meta systems (Nakama-backed; see IMetaBackend)
+  public metaBackend!: IMetaBackend
+  public metaEventReporter!: MetaEventReporter
 
   // Extracted Handlers
   private playerInputHandler!: PlayerInputHandler
@@ -73,6 +108,17 @@ export class GameRoom extends Room<GameState> {
     // Connect dependencies
     this.state.worldInterface.setPhysicsManager(this.physicsManager)
 
+    // Meta systems: report match events (e.g. MOB_KILLED) to Nakama for
+    // profile/quest progress. Env-configurable, defaults match local dev.
+    this.metaBackend = new NakamaMetaBackend({
+      baseUrl: process.env.NAKAMA_HTTP_URL || 'http://localhost:7350',
+      httpKey: process.env.NAKAMA_HTTP_KEY || 'atlas_dev_http_key',
+    })
+    this.metaEventReporter = new MetaEventReporter({
+      backend: this.metaBackend,
+      matchId: this.roomId,
+    })
+
     // Initialize Extracted Handlers & Systems
     this.playerInputHandler = new PlayerInputHandler(this)
     this.debugCommandHandler = new DebugCommandHandler(this)
@@ -92,14 +138,51 @@ export class GameRoom extends Room<GameState> {
     // Start simulation loop
     this.setPatchRate(50)
     this.startSimulation()
+    this.metaEventReporter.start()
   }
 
-  onJoin(client: Client, options: GameRoomOptions) {
+  /**
+   * Verifies the caller's identity before the seat reservation is consumed.
+   * On success, the returned auth data is auto-attached by Colyseus to
+   * `client.auth`, which `onJoin` reads — never trust `options.userId` from
+   * the client. Rejects (throws) when neither a valid Nakama session token nor
+   * the non-production dev bypass is present (fail-closed).
+   */
+  async onAuth(client: GameRoomClient, options: GameRoomOptions): Promise<GameRoomAuthData> {
+    if (options.token) {
+      const verified = await this.metaBackend.verifySession(options.token)
+      if (verified) return verified
+    }
+
+    if (process.env.NODE_ENV !== 'production' && options.devBypass === true) {
+      console.warn('[meta] dev bypass join', client.sessionId)
+      return { userId: client.sessionId }
+    }
+
+    throw new Error('unauthorized: missing or invalid Nakama session token')
+  }
+
+  async onJoin(client: GameRoomClient, options: GameRoomOptions) {
     console.log(`👤 Player ${client.sessionId} joined the game`)
+
+    // Server-verified identity from onAuth (auto-attached to client.auth in
+    // 0.17) — never trust client-supplied ids. The onJoin 3rd `auth` param is
+    // deprecated in 0.17; read client.auth instead. onAuth is fail-closed, so
+    // this is guaranteed set here; guard anyway so a missing identity fails the
+    // join (fail-closed) rather than seating a player with userId=undefined.
+    const userId = client.auth?.userId
+    if (!userId) {
+      throw new Error('unauthorized: missing verified identity in onJoin')
+    }
 
     // Add player to game state
     const playerName = options.name || `Player-${client.sessionId.substring(0, 8)}`
     const player = this.state.addPlayer(client.sessionId, playerName)
+    player.userId = userId
+
+    // Fetch & apply the player's loadout snapshot (profile-derived combat stats).
+    // Falls back to ephemeral defaults if the meta backend is unavailable.
+    await loadPlayerLoadout({ player, backend: this.metaBackend, userId })
 
     // Send welcome message (Policy A: include equipment snapshot for HUD)
     client.send('welcome', {
@@ -113,7 +196,7 @@ export class GameRoom extends Room<GameState> {
     this.battleModule.applyStatusEffect(player, 'entering', 2000)
   }
 
-  onLeave(client: Client, consented: boolean) {
+  onLeave(client: GameRoomClient, code?: number) {
     console.log(`👋 Player ${client.sessionId} left the game`)
 
     // Physics cleanup is handled by RoomEventHandler via EventBus 'playerLeft'
@@ -121,7 +204,7 @@ export class GameRoom extends Room<GameState> {
     this.state.aiModule.unregisterAgent(client.sessionId)
   }
 
-  onDispose() {
+  async onDispose() {
     console.log(`🗑️ GameRoom disposed`)
 
     unregisterRoom(this.roomId)
@@ -129,12 +212,36 @@ export class GameRoom extends Room<GameState> {
     this.stopSimulation()
     this.battleManager.cleanup()
 
-    // Physics Event listeners managed inside physicsManager are destroyed here
-    this.physicsManager.destroy()
+    // Stop scheduling further flushes, then drain whatever is still buffered
+    // so match events aren't lost on room teardown. flush() itself already
+    // waits out any in-flight periodic flush and re-flushes anything
+    // recorded since (see MetaEventReporter.flush) — wrap it in try/finally
+    // so physics cleanup below always runs even if the final flush rejects.
+    this.metaEventReporter.stop()
+    try {
+      await this.metaEventReporter.flush()
+    } finally {
+      // Physics Event listeners managed inside physicsManager are destroyed here
+      this.physicsManager.destroy()
+    }
   }
 
   private startSimulation() {
-    this.setSimulationInterval(deltaTime => this.simulationSystem.update(deltaTime))
+    // Fixed-timestep sim at the configured tick interval.
+    //
+    // The interval must be passed explicitly: without it Colyseus falls back to its
+    // ~16.6 ms default, silently running the sim at 3× the designed 20 Hz — the tick
+    // counter then beats against the 50 ms patch timer (client-visible timing wobble)
+    // and per-tick updates receive tickRate=50 ms while being called every ~17 ms.
+    //
+    // The delta is FIXED (not the timer's real elapsed time): timer jitter (±3 ms)
+    // otherwise leaks into every integration step, making per-tick positions unevenly
+    // spaced — which no client-side interpolation can fully smooth. Fixed timestep is
+    // also what the entity updates already assume (mob.update(GAME_CONFIG.tickRate)).
+    this.setSimulationInterval(
+      () => this.simulationSystem.update(GAME_CONFIG.tickRate),
+      GAME_CONFIG.tickRate
+    )
   }
 
   private stopSimulation() {

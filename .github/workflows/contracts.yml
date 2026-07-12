@@ -1,7 +1,8 @@
 name: contracts
 
-# Regenerate the C# schema contracts and fail on any drift, smoke, or codegen
-# regression. Mirrors ci.yml's toolchain (pnpm · Node 18 · --filter).
+# Run @atlas/contracts' own unit tests, then regenerate the C# schema
+# contracts and fail on any drift, smoke, or codegen regression.
+# Mirrors ci.yml's toolchain (pnpm · Node 18 · --filter).
 on:
   pull_request:
     paths:
@@ -9,6 +10,8 @@ on:
       - 'colyseus-server/src/codegen/**'
       - 'colyseus-server/scripts/codegen/**'
       - 'colyseus-server/generated/csharp/**'
+      - 'contracts/**'
+      - '.github/workflows/contracts.yml'
 
 concurrency:
   group: contracts-${{ github.ref }}
@@ -16,7 +19,7 @@ concurrency:
 
 jobs:
   contracts:
-    name: contracts (codegen · drift · smoke)
+    name: contracts (unit tests · codegen · drift · smoke)
     runs-on: ubuntu-latest
     env:
       HUSKY: "0"
@@ -37,6 +40,15 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      # Build @atlas/contracts first: it resolves from dist and has no prepare
+      # hook, so its own tests (and the server's test:contracts) can't resolve
+      # the '@atlas/contracts' self-import on a clean install until it's built.
+      - name: Build contracts (@atlas/contracts)
+        run: pnpm --filter @atlas/contracts run build
+
+      - name: Contracts unit tests (@atlas/contracts)
+        run: pnpm --filter @atlas/contracts test
 
       - name: Contracts suite (codegen · smoke · drift · jest · package shape)
         run: pnpm --filter atlas-world-colyseus-server run test:contracts

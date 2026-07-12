@@ -36,7 +36,7 @@ export async function getMobs(req: Request, res: Response): Promise<void> {
 export async function getMobById(req: Request, res: Response): Promise<void> {
   try {
     const room = (req as any).room as GameRoom
-    const { mobId } = req.params
+    const mobId = String(req.params.mobId)
 
     const mob = room.state.mobs.get(mobId)
 

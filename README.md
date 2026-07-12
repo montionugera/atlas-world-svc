@@ -66,6 +66,10 @@ Attach the `AtlasWorldUnityClient` to a Unity GameObject and configure the serve
 | ---| --- | --- |
 | **Colyseus Server (WS)** | `ws://localhost:2567/game` | Binary websocket connection |
 | **REST API (Static Data)** | `http://localhost:2567/api` | Mob types, configs, stats |
+| **Nakama HTTP API** | `http://localhost:7350` | Auth, meta-systems RPCs (profile/inventory/quests) — see [meta-systems.spec.md](./docs/meta-systems.spec.md) |
+| **Nakama Console** | `http://localhost:7351` | Admin UI (admin/password, see `nakama/local.yml`) |
+| **CockroachDB (SQL)** | `localhost:26257` | Nakama's database |
+| **CockroachDB (Admin UI)** | `http://localhost:8081` | DB admin UI (host port 8081, avoids the 8080 collision) |
 | **Metrics (Prometheus)** | `http://localhost:9091/metrics`| Raw diagnostic metrics |
 | **Dashboards (Grafana)** | `http://localhost:3000` | Analytics dashboards (admin/admin) |
 | **React Interface** | `http://localhost:3001` | Browser-based generic client |

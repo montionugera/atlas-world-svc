@@ -1,4 +1,5 @@
 import { Server } from 'colyseus'
+import { WebSocketTransport } from '@colyseus/ws-transport'
 import { createServer } from 'http'
 import express from 'express'
 import cors from 'cors'
@@ -12,9 +13,11 @@ const server = createServer(app)
 app.use(cors())
 app.use(express.json())
 
-// Create Colyseus server
+// Create Colyseus server.
+// Colyseus 0.17 requires an explicit transport; WebSocketTransport wraps our
+// existing http.Server so the F-001 express app + REST routes stay unchanged.
 const gameServer = new Server({
-  server,
+  transport: new WebSocketTransport({ server }),
 })
 
 // REST API routes for static game data (requires gameServer for room access)
