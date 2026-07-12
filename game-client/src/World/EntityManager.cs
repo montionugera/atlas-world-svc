@@ -82,6 +82,13 @@ namespace AtlasWorld.Client.World
             long tick = (long)state.tick;
             long nowMs = MonotonicClock.NowMs;
 
+            if (_debugSmooth)
+            {
+                if (_lastIngestMs > 0)
+                    _ingestDeltas.Add(nowMs - _lastIngestMs);
+                _lastIngestMs = nowMs;
+            }
+
             state.players?.ForEach((id, p) => PushLife(id, p, EntityKind.Player, tick, nowMs));
             state.mobs?.ForEach((id, m) => PushLife(id, m, EntityKind.Mob, tick, nowMs));
             state.npcs?.ForEach((id, n) => PushLife(id, n, EntityKind.Npc, tick, nowMs));
@@ -131,8 +138,9 @@ namespace AtlasWorld.Client.World
         public override void _Process(double delta)
         {
             long now = MonotonicClock.NowMs;
-            long delayedCursor = now - SnapshotInterpolator.InterpolationDelayMs;
-            long ownCursor = now - SnapshotInterpolator.OwnPlayerDelayMs;
+            // Cursors live on the SERVER tick timeline (see SnapshotInterpolator.ToCursor).
+            long delayedCursor = _interp.ToCursor(now, SnapshotInterpolator.InterpolationDelayMs);
+            long ownCursor = _interp.ToCursor(now, SnapshotInterpolator.OwnPlayerDelayMs);
 
             foreach (KeyValuePair<string, EntityView> kv in _views)
             {
@@ -147,6 +155,60 @@ namespace AtlasWorld.Client.World
 
             if (_debugInterp)
                 DebugTick(delta, now, delayedCursor);
+            if (_debugSmooth)
+                SmoothTick(delta);
+        }
+
+        // ---- Smoothness instrumentation (ATLAS_DEBUG_SMOOTH=1) --------------------------
+        // Quantifies the two candidate jitter sources: (1) per-frame rendered SPEED of the
+        // own player (constant input ⇒ should be near-constant; σ is the felt jitter) and
+        // (2) snapshot ARRIVAL cadence (should be the 50 ms patch rate; σ is timeline noise).
+        private readonly bool _debugSmooth = OS.GetEnvironment("ATLAS_DEBUG_SMOOTH") == "1";
+        private Vector3 _smoothLastPos;
+        private bool _smoothHasLast;
+        private readonly List<float> _frameSpeeds = new();
+        private long _lastIngestMs;
+        private readonly List<float> _ingestDeltas = new();
+        private double _smoothAccum;
+
+        private void SmoothTick(double delta)
+        {
+            if (_ownPlayerId.Length > 0 && _views.TryGetValue(_ownPlayerId, out EntityView? own) &&
+                GodotObject.IsInstanceValid(own.Root))
+            {
+                Vector3 p = own.Root.Position;
+                if (_smoothHasLast && delta > 0.0)
+                    _frameSpeeds.Add(p.DistanceTo(_smoothLastPos) / (float)delta);
+                _smoothLastPos = p;
+                _smoothHasLast = true;
+            }
+
+            _smoothAccum += delta;
+            if (_smoothAccum < 2.0)
+                return;
+            _smoothAccum = 0.0;
+
+            GD.Print($"[Smooth] ownSpeed {Stats(_frameSpeeds)} u/s | ingest {Stats(_ingestDeltas)} ms | msPerTick={_interp.MsPerTickEstimate:0.00}");
+            _frameSpeeds.Clear();
+            _ingestDeltas.Clear();
+        }
+
+        private static string Stats(List<float> v)
+        {
+            if (v.Count == 0)
+                return "n=0";
+            float mean = 0f;
+            foreach (float x in v) mean += x;
+            mean /= v.Count;
+            float var = 0f, max = float.MinValue, min = float.MaxValue;
+            foreach (float x in v)
+            {
+                var += (x - mean) * (x - mean);
+                if (x > max) max = x;
+                if (x < min) min = x;
+            }
+            float sd = Mathf.Sqrt(var / v.Count);
+            return $"n={v.Count} mean={mean:0.00} sd={sd:0.00} min={min:0.00} max={max:0.00}";
         }
 
         // Gated diagnostic (ATLAS_DEBUG_INTERP=1): proves the interpolator is actively
@@ -169,7 +231,9 @@ namespace AtlasWorld.Client.World
             foreach (KeyValuePair<string, EntityView> kv in _views)
             {
                 bool isOwn = kv.Key == _ownPlayerId;
-                long cursor = isOwn ? now - SnapshotInterpolator.OwnPlayerDelayMs : delayedCursor;
+                long cursor = _interp.ToCursor(now, isOwn
+                    ? SnapshotInterpolator.OwnPlayerDelayMs
+                    : SnapshotInterpolator.InterpolationDelayMs);
                 if (_interp.TrySamplePose(kv.Key, cursor, out Vector3 interp, out _) &&
                     _interp.TryGetNewestRaw(kv.Key, out Vector3 raw))
                 {
