@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "entries": {
+    "mob:spear_thrower": {
+      "scene": "res://assets/characters/spear_thrower.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "projectile:spear": {
+      "scene": "res://assets/vfx/spear.glb",
+      "source": "ai",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "vfx"
+    }
+  }
+}

@@ -5,6 +5,7 @@ using AtlasWorld.Client.Net;
 using AtlasWorld.Client.World;
 using AtlasWorld.Client.Input;
 using AtlasWorld.Client.UI.Panels;
+using AtlasWorld.Client.Content;
 
 namespace AtlasWorld.Client.Core
 {
@@ -29,6 +30,16 @@ namespace AtlasWorld.Client.Core
 
         public override void _Ready()
         {
+            // Env-gated offline verify probe (ATLAS_VERIFY_MANIFEST=1): exercises the
+            // AssetManifest loader against fixtures, prints PASS/FAIL, and quits BEFORE
+            // any networking. Lets CI/headless prove the loader without a live server.
+            if (OS.GetEnvironment("ATLAS_VERIFY_MANIFEST") == "1")
+            {
+                int code = ManifestVerify.Run();
+                GetTree().Quit(code);
+                return;
+            }
+
             _config = Config.Load();
             GD.Print($"[GameRoot] endpoint={_config.ColyseusEndpoint} room={_config.RoomName} map={_config.MapId}");
 

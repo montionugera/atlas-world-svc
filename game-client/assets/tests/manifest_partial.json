@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "entries": {
+    "npc:elder": {
+      "scene": "res://assets/characters/elder.glb"
+    }
+  }
+}
