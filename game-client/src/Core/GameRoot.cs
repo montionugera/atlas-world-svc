@@ -40,6 +40,16 @@ namespace AtlasWorld.Client.Core
                 return;
             }
 
+            // Env-gated offline verify probe (ATLAS_VERIFY_REGISTRY=1): exercises the
+            // AssetRegistry three-tier resolve against fixtures, prints PASS/FAIL, and quits
+            // BEFORE any networking. Proves bespoke→seed→capsule fallback without a server.
+            if (OS.GetEnvironment("ATLAS_VERIFY_REGISTRY") == "1")
+            {
+                int code = RegistryVerify.Run();
+                GetTree().Quit(code);
+                return;
+            }
+
             _config = Config.Load();
             GD.Print($"[GameRoot] endpoint={_config.ColyseusEndpoint} room={_config.RoomName} map={_config.MapId}");
 
