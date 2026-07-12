@@ -50,6 +50,17 @@ namespace AtlasWorld.Client.Core
                 return;
             }
 
+            // Env-gated offline verify probe (ATLAS_VERIFY_ENTITYVIEW=1): spawns entities via
+            // the real EntityManager and proves the specific server type id is threaded into
+            // AssetRegistry.Resolve (capsule fallback under the empty manifest), then quits
+            // BEFORE any networking. Proves Task 4 wiring without a live server.
+            if (OS.GetEnvironment("ATLAS_VERIFY_ENTITYVIEW") == "1")
+            {
+                int code = EntityViewVerify.Run(this);
+                GetTree().Quit(code);
+                return;
+            }
+
             _config = Config.Load();
             GD.Print($"[GameRoot] endpoint={_config.ColyseusEndpoint} room={_config.RoomName} map={_config.MapId}");
 

@@ -42,7 +42,7 @@ namespace AtlasWorld.Client.Net
             // --- players (WorldLife) — the one we own drives the camera ---
             cb.OnAdd(s => s.players, (string id, Player p) =>
             {
-                _entities.Spawn(id, EntityKind.Player);
+                _entities.Spawn(id, EntityKind.Player, EntityKeys.Player);
                 _entities.ApplyLife(id, p);
                 if (id == ownSessionId)
                     _entities.SetOwnPlayer(id);
@@ -53,7 +53,7 @@ namespace AtlasWorld.Client.Net
             // --- mobs (WorldLife) ---
             cb.OnAdd(s => s.mobs, (string id, Mob m) =>
             {
-                _entities.Spawn(id, EntityKind.Mob);
+                _entities.Spawn(id, EntityKind.Mob, EntityKeys.Mob(m.mobTypeId));
                 _entities.ApplyLife(id, m);
                 cb.OnChange(m, () => _entities.ApplyLife(id, m));
             });
@@ -62,7 +62,7 @@ namespace AtlasWorld.Client.Net
             // --- npcs (WorldLife) ---
             cb.OnAdd(s => s.npcs, (string id, NPC n) =>
             {
-                _entities.Spawn(id, EntityKind.Npc);
+                _entities.Spawn(id, EntityKind.Npc, EntityKeys.Npc);
                 _entities.ApplyLife(id, n);
                 cb.OnChange(n, () => _entities.ApplyLife(id, n));
             });
@@ -71,16 +71,26 @@ namespace AtlasWorld.Client.Net
             // --- projectiles (WorldObject — no health) ---
             // Objects have no per-field visual state beyond pose, and pose now flows through
             // the interpolator (IngestSnapshot), so OnAdd only needs to spawn the view.
-            cb.OnAdd(s => s.projectiles, (string id, Projectile _) =>
-                _entities.Spawn(id, EntityKind.Projectile));
+            cb.OnAdd(s => s.projectiles, (string id, Projectile pr) =>
+                _entities.Spawn(id, EntityKind.Projectile, EntityKeys.Projectile(pr.type)));
             cb.OnRemove(s => s.projectiles, (string id, Projectile _) => _entities.Despawn(id));
 
             // --- zoneEffects (WorldObject — the 5th map, unwired in the spike) ---
-            cb.OnAdd(s => s.zoneEffects, (string id, ZoneEffect _) =>
-                _entities.Spawn(id, EntityKind.ZoneEffect));
+            // A zone's asset is keyed by its first effect's type (zone:<ZoneEffectEffect.type>);
+            // an empty effects array falls back to the plain zone capsule.
+            cb.OnAdd(s => s.zoneEffects, (string id, ZoneEffect z) =>
+                _entities.Spawn(id, EntityKind.ZoneEffect, EntityKeys.Zone(FirstEffectType(z))));
             cb.OnRemove(s => s.zoneEffects, (string id, ZoneEffect _) => _entities.Despawn(id));
 
             GD.Print("[EntitySync] bound callbacks for 5 maps (players/mobs/npcs/projectiles/zoneEffects)");
+        }
+
+        /// <summary>The type of a zone's first effect, or "" when it has none yet.</summary>
+        private static string FirstEffectType(ZoneEffect z)
+        {
+            if (z.effects != null && z.effects.Count > 0)
+                return z.effects[0].type;
+            return "";
         }
     }
 }

@@ -31,7 +31,9 @@ namespace AtlasWorld.Client.World
         public static EntityVisualParts CreateView(EntityKind kind)
         {
             var root = new Node3D();
-            var body = new MeshInstance3D();
+            // Named so a view rebuilt from a packed/instanced PackedScene (the AssetRegistry
+            // capsule tier) can rediscover the mutable body by name and re-tint it.
+            var body = new MeshInstance3D { Name = "Body" };
             var mat = new StandardMaterial3D();
 
             switch (kind)
@@ -85,6 +87,7 @@ namespace AtlasWorld.Client.World
                 };
                 var bar = new MeshInstance3D
                 {
+                    Name = "HpBar",
                     Mesh = new BoxMesh { Size = new Vector3(1f, 0.12f, 0.08f) },
                     MaterialOverride = barMat,
                     Position = new Vector3(0f, GroundHeight(kind) + 1.4f, 0f),
