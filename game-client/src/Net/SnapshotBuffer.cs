@@ -79,6 +79,9 @@ namespace AtlasWorld.Client.Net
         /// <summary>Newest accepted pose (raw, un-interpolated). Valid only when <see cref="Count"/> &gt; 0.</summary>
         public PoseSample Newest => At(_count - 1).Sample;
 
+        /// <summary>Server-timeline stamp of the newest sample. Valid only when <see cref="Count"/> &gt; 0.</summary>
+        public long NewestTimeMs => At(_count - 1).TimeMs;
+
         private Entry At(int i) => _ring[(_head + i) % Capacity];
 
         /// <summary>

@@ -24,6 +24,7 @@ namespace AtlasWorld.Client.World
     {
         private readonly Dictionary<string, EntityView> _views = new();
         private readonly SnapshotInterpolator _interp = new();
+        private readonly OwnPoseSmoother _ownSmoother = new();
 
         private string _ownPlayerId = "";
         private readonly bool _debugInterp = OS.GetEnvironment("ATLAS_DEBUG_INTERP") == "1";
@@ -65,7 +66,12 @@ namespace AtlasWorld.Client.World
                 view.Root.QueueFree();
         }
 
-        public void SetOwnPlayer(string id) => _ownPlayerId = id;
+        public void SetOwnPlayer(string id)
+        {
+            if (id != _ownPlayerId)
+                _ownSmoother.Reset();
+            _ownPlayerId = id;
+        }
 
         /// <summary>
         /// Push one <see cref="PoseSample"/> per entity from the just-applied snapshot into
@@ -132,22 +138,31 @@ namespace AtlasWorld.Client.World
             }
             _views.Clear();
             _interp.Clear();
+            _ownSmoother.Reset();
             _ownPlayerId = "";
         }
 
         public override void _Process(double delta)
         {
             long now = MonotonicClock.NowMs;
-            // Cursors live on the SERVER tick timeline (see SnapshotInterpolator.ToCursor).
+            // Remote cursor lives on the SERVER tick timeline (see SnapshotInterpolator.ToCursor).
             long delayedCursor = _interp.ToCursor(now, SnapshotInterpolator.InterpolationDelayMs);
-            long ownCursor = _interp.ToCursor(now, SnapshotInterpolator.OwnPlayerDelayMs);
 
             foreach (KeyValuePair<string, EntityView> kv in _views)
             {
-                // Local player renders one patch in the past (interpolating, not
-                // extrapolate-and-correct); everyone else at the full delayed cursor.
-                long cursor = kv.Key == _ownPlayerId ? ownCursor : delayedCursor;
-                if (_interp.TrySamplePose(kv.Key, cursor, out Vector3 pos, out float heading))
+                if (kv.Key == _ownPlayerId)
+                {
+                    // Own player: dead reckoning (server velocity + smoothed error
+                    // correction) — zero added latency, C¹-continuous motion.
+                    if (_interp.TryGetNewest(kv.Key, now, out PoseSample newest, out float ageSec))
+                    {
+                        (Vector3 opos, float ohead) = _ownSmoother.Step(newest, ageSec, (float)delta);
+                        kv.Value.ApplyPose(opos, ohead);
+                    }
+                    continue;
+                }
+
+                if (_interp.TrySamplePose(kv.Key, delayedCursor, out Vector3 pos, out float heading))
                     kv.Value.ApplyPose(pos, heading);
             }
 

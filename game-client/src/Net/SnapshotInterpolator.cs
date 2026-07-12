@@ -55,6 +55,7 @@ namespace AtlasWorld.Client.Net
         // omits the interval and gets Colyseus' ~16.6 ms default (≈3 ticks per patch).
         private double _msPerTick;
         private bool _hasRate;
+        private int _rateObsCount;
         private const double RateEmaAlpha = 0.02;  // ~2.5 s time constant at 20 Hz
 
         private double _timelineMs;                // stamp for the CURRENT snapshot
@@ -84,7 +85,11 @@ namespace AtlasWorld.Client.Net
                     double inst = (sample.RecvMs - _lastRecvMs) / (double)dTick;
                     if (inst > 1.0 && inst < 1000.0) // sanity: skip pauses/hiccups
                     {
-                        _msPerTick = _hasRate ? _msPerTick + RateEmaAlpha * (inst - _msPerTick) : inst;
+                        // Running mean until 1/n drops below the EMA alpha (fast, unbiased
+                        // warm-up), then a fixed-alpha EMA (drift tracking).
+                        _rateObsCount++;
+                        double alpha = System.Math.Max(RateEmaAlpha, 1.0 / _rateObsCount);
+                        _msPerTick = _hasRate ? _msPerTick + alpha * (inst - _msPerTick) : inst;
                         _hasRate = true;
                     }
                     _timelineMs += dTick * _msPerTick; // stamp advances by ideal step
@@ -146,6 +151,25 @@ namespace AtlasWorld.Client.Net
                 return true;
             }
             pos = Vector3.Zero;
+            return false;
+        }
+
+        /// <summary>
+        /// Newest sample plus its age on the render clock (seconds; ≥0). Feeds the own
+        /// player's dead-reckoning path (<c>OwnPoseSmoother</c>), which needs the latest
+        /// authoritative pose + velocity rather than a cursor-interpolated one.
+        /// </summary>
+        public bool TryGetNewest(string id, long nowMs, out PoseSample sample, out float ageSec)
+        {
+            if (_buffers.TryGetValue(id, out SnapshotBuffer? buffer) && buffer.Count > 0)
+            {
+                sample = buffer.Newest;
+                long age = ToCursor(nowMs, 0) - buffer.NewestTimeMs;
+                ageSec = age > 0 ? age / 1000f : 0f;
+                return true;
+            }
+            sample = default;
+            ageSec = 0f;
             return false;
         }
 
