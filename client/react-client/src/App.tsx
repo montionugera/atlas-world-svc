@@ -19,7 +19,7 @@ interface LogEntry {
 
 const colyseusConfig: ColyseusClientConfig = {
   serverHost: 'localhost',
-  serverPort: 2567,
+  serverPort: Number(process.env.REACT_APP_SERVER_PORT) || 2567,
   useSSL: false
 };
 

@@ -1,7 +1,7 @@
 // React hook for Atlas World Colyseus Client
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Client, Room } from 'colyseus.js';
+import { Client, Room } from '@colyseus/sdk';
 import { GameState } from '../types/game';
 import {
   emptyEquipmentSnapshot,
@@ -140,7 +140,7 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
         setRoomId(null);
         console.log(`🔄 Left previous room ${existingId} before joining a new one`);
       }
-      const room = await clientRef.current.joinOrCreate<GameState>('game_room', {
+      const room = await clientRef.current.joinOrCreate('game_room', {
         mapId,
         name: `Player-${playerId.substring(0, 8)}`
       });
@@ -150,7 +150,7 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
       setPlayerId(room.sessionId);
       
       // Handle room state changes
-      room.onStateChange((state) => {
+      room.onStateChange((state: GameState) => {
         if (ENABLE_STATE_DEBUG_LOG) {
           console.log('State changed', state.tick);
         }
@@ -192,12 +192,12 @@ export const useColyseusClient = (config: ColyseusClientConfig): UseColyseusClie
       });
       
       // Handle room errors
-      room.onError((code, message) => {
+      room.onError((code: number, message?: string) => {
         console.error('❌ Room error:', code, message);
       });
       
       // Handle room leave
-      room.onLeave((code) => {
+      room.onLeave((code: number) => {
         console.log('👋 Left room:', code);
         setRoomId(null);
         setGameState(null);
