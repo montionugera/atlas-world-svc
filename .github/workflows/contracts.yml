@@ -10,8 +10,8 @@ on:
       - 'colyseus-server/src/codegen/**'
       - 'colyseus-server/scripts/codegen/**'
       - 'colyseus-server/generated/csharp/**'
-      - 'contracts/src/meta/**'
-      - 'contracts/content/**'
+      - 'contracts/**'
+      - '.github/workflows/contracts.yml'
 
 concurrency:
   group: contracts-${{ github.ref }}
@@ -40,6 +40,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      # Build @atlas/contracts first: it resolves from dist and has no prepare
+      # hook, so its own tests (and the server's test:contracts) can't resolve
+      # the '@atlas/contracts' self-import on a clean install until it's built.
+      - name: Build contracts (@atlas/contracts)
+        run: pnpm --filter @atlas/contracts run build
 
       - name: Contracts unit tests (@atlas/contracts)
         run: pnpm --filter @atlas/contracts test

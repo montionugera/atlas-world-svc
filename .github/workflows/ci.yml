@@ -36,6 +36,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # @atlas/contracts resolves from dist (main/types → dist/) and has no
+      # prepare hook, so a clean install leaves it unbuilt. The server's
+      # src/meta/* import it, so build it before typecheck/test or module
+      # resolution fails.
+      - name: Build contracts (@atlas/contracts)
+        run: pnpm --filter @atlas/contracts run build
+
       - name: Typecheck (tsc --noEmit)
         run: pnpm --filter atlas-world-colyseus-server run typecheck
 
