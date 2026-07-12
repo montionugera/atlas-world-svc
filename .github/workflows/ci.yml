@@ -51,3 +51,15 @@ jobs:
 
       - name: Test (jest)
         run: pnpm --filter atlas-world-colyseus-server run test
+
+      # Asset pipeline drift-gate (F-002): the client manifest must stay
+      # consistent with the codegen-emitted key set and the files on disk.
+      # Refresh generated/asset-keys.json from the live server config FIRST
+      # (contracts already built above) so the gate checks current keys, not a
+      # stale committed snapshot; then run the checker. Stage-0: unmapped keys
+      # are warnings, broken paths / missing licenses are hard failures.
+      - name: Codegen asset keys (refresh generated/asset-keys.json)
+        run: bash colyseus-server/scripts/codegen/gen-asset-keys.sh
+
+      - name: Asset manifest drift-gate (keys ↔ manifest ↔ files ↔ license)
+        run: node scripts/check_asset_manifest.mjs
