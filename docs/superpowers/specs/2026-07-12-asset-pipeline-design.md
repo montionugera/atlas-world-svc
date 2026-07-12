@@ -1,6 +1,6 @@
 # Asset Build Pipeline — Design Spec (I-003)
 
-> **Status:** Design approved in brainstorming (2026-07-12). Ready for `writing-plans` on Stage 0 + 0.5.
+> **Status:** Design approved in brainstorming (2026-07-12); open decisions D1–D3 resolved (2026-07-12). Ready for `writing-plans` on Stage 0 + 0.5.
 > **Scope:** The Godot 4 (C#) client's asset pipeline — intake, normalization, a content registry bound to server type ids, a preview "storybook", a CI drift-gate, and a CC0 seed set so the system is never empty. Server is unchanged (assets are a pure client concern).
 > **Line:** `release/1.2`, idea `I-003`.
 
@@ -76,7 +76,7 @@ mob:spear_thrower → {
 
 **Key insight:** the server already owns every type id (`mobTypesConfig`, skills, projectiles), and those already generate C# contracts. So the **expected key-set is generated from the contracts** — the CI gate is literally "every server type has a manifest entry whose asset file exists," the `@atlas/contracts` drift-gate applied to art.
 
-> Open decision (D1): manifest as **JSON** (diff-friendly, tool-agnostic, matches the contracts-JSON precedent) vs a Godot **`Resource` (.tres)** (editor-native, typed). *Recommendation: JSON* — it round-trips with the contracts tooling and is trivial to validate in a Node/CI script.
+> **D1 — RESOLVED: JSON.** Diff-friendly, tool-agnostic, matches the contracts-JSON precedent; round-trips with the contracts tooling and is trivial to validate in a Node/CI script. (Godot `Resource`/`.tres` rejected — editor-native but harder to gate in CI.)
 
 ### 2. AssetRegistry (autoload) — three-tier resolve
 
@@ -97,7 +97,7 @@ This is what makes "staged" real: every type falls back safely, so bespoke art r
 
 Because assets arrive heterogeneous (mixed formats, scales, orientations, quality), intake is the pipeline's core value:
 
-- **`art-source/`** (Git LFS, in-repo or a sibling repo — Open decision D2) holds raw delivered originals + a per-asset license record. The game repo commits only the **baked** `res://` assets.
+- **`art-source/`** (**D2 — RESOLVED: Git LFS in-repo**) holds raw delivered originals + a per-asset license record. The game repo commits only the **baked** `res://` assets; raw originals are LFS-tracked so the working tree stays lean.
 - A documented **ingest checklist** (+ a small Godot editor tool in a later stage) conforms each asset:
   - **scale to 1 unit = 1 m** — critical: server runs in world units, rendering multiplies by `scale`; a mis-scaled marketplace model renders wrong-sized.
   - orientation (Godot −Z forward), pivot (feet for characters, center for props), naming convention, per-type import preset.
@@ -165,11 +165,11 @@ Both ship glTF/`.glb` → straight into the `.glb` import path. Blending Kenney 
 - **Units assertion:** a normalized seed character's bounding height is within tolerance of its declared world-unit size.
 - **Storybook (Stage 1):** headless launch of `AssetGallery`, assert it enumerates the full manifest with no load errors.
 
-## Open decisions (resolve during planning)
+## Resolved decisions (2026-07-12)
 
-- **D1 — manifest format:** JSON *(recommended)* vs Godot `Resource`.
-- **D2 — `art-source/` location:** Git LFS in-repo vs a sibling `atlas-art-source` repo. (Sibling repo keeps the game repo lean; in-repo LFS is simpler to start.)
-- **D3 — contract→manifest key generation:** extend the existing codegen to emit the expected key-list, vs a standalone script reading the generated C#/JSON.
+- **D1 — manifest format: JSON.** Diff-friendly, CI-validatable, matches the contracts-JSON precedent.
+- **D2 — `art-source/` location: Git LFS in-repo.** Raw originals tracked via LFS in this repo (no sibling repo); working tree stays lean, one clone gets everything.
+- **D3 — key generation: extend the existing codegen.** The contracts codegen additionally emits the expected manifest key-list (the set of renderable/audible server type ids), so the manifest and the CI drift-gate share one generated source of truth — no separate parser to drift.
 
 ---
 
