@@ -20,6 +20,7 @@ import { IMetaBackend } from '../meta/IMetaBackend'
 import { NakamaMetaBackend } from '../meta/NakamaMetaBackend'
 import { MetaEventReporter } from '../meta/MetaEventReporter'
 import { loadPlayerLoadout } from '../meta/applyLoadout'
+import { GAME_CONFIG } from '../config/gameConfig'
 
 export interface GameRoomOptions {
   mapId?: string
@@ -226,7 +227,18 @@ export class GameRoom extends Room<{ state: GameState; client: GameRoomClient }>
   }
 
   private startSimulation() {
-    this.setSimulationInterval(deltaTime => this.simulationSystem.update(deltaTime))
+    // Fixed-timestep sim at the configured tick interval.
+    //
+    // The interval must be passed explicitly: without it Colyseus falls back to its
+    // ~16.6 ms default, silently running the sim at 3× the designed 20 Hz — the tick
+    // counter then beats against the 50 ms patch timer (client-visible timing wobble)
+    // and per-tick updates receive tickRate=50 ms while being called every ~17 ms.
+    //
+    // The delta is FIXED (not the timer's real elapsed time): timer jitter (±3 ms)
+    // otherwise leaks into every integration step, making per-tick positions unevenly
+    // spaced — which no client-side interpolation can fully smooth. Fixed timestep is
+    // also what the entity updates already assume (mob.update(GAME_CONFIG.tickRate)).
+    this.setSimulationInterval(() => this.simulationSystem.update(GAME_CONFIG.tickRate), GAME_CONFIG.tickRate)
   }
 
   private stopSimulation() {
