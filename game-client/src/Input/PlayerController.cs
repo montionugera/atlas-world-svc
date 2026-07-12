@@ -16,6 +16,11 @@ namespace AtlasWorld.Client.Input
     public sealed partial class PlayerController : Node
     {
         private readonly InputSender _input;
+        private readonly World.EntityManager _entities;
+
+        // Headless probe (ATLAS_DEBUG_MOVE=1): behave exactly as if →/D were held, so
+        // measurements exercise the real input path (send-on-change + intent gate).
+        private readonly bool _debugAutoMove = OS.GetEnvironment("ATLAS_DEBUG_MOVE") == "1";
         private float _lastVx;
         private float _lastVy;
         private bool _hasSent;
@@ -25,10 +30,18 @@ namespace AtlasWorld.Client.Input
         private static readonly Key[] Up = { Key.W, Key.Up };
         private static readonly Key[] Down = { Key.S, Key.Down };
 
-        public PlayerController(InputSender input)
+        public PlayerController(InputSender input, World.EntityManager entities)
         {
             _input = input;
+            _entities = entities;
         }
+
+        /// <summary>
+        /// Called by GameRoot on every (re)join: sends before a room exists are silently
+        /// dropped (Room?.Send), and a fresh room starts with zero input server-side — so
+        /// forget the dedup state and let the next frame re-send the current intent.
+        /// </summary>
+        public void NotifyJoined() => _hasSent = false;
 
         public override void _Process(double delta)
         {
@@ -43,6 +56,15 @@ namespace AtlasWorld.Client.Input
                 vx *= 0.7071f;
                 vy *= 0.7071f;
             }
+
+            if (_debugAutoMove)
+            {
+                vx = 1f;
+                vy = 0f;
+            }
+
+            // Local intent gates the own player's dead reckoning (instant stop on release).
+            _entities.SetLocalMoveHeld(vx != 0f || vy != 0f);
 
             if (!_hasSent || vx != _lastVx || vy != _lastVy)
             {

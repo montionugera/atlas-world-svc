@@ -37,10 +37,16 @@ namespace AtlasWorld.Client.World
         /// <summary>
         /// Advance one frame. <paramref name="ageSec"/> is how old the newest sample is on
         /// the render clock (used to project the correction target forward along velocity).
+        /// <paramref name="moveHeld"/> is the LOCAL input intent: on key release the motion
+        /// term dies immediately — before the server's stop confirmation — so the stop
+        /// settles with a small FORWARD glide instead of the classic dead-reckoning
+        /// overshoot-then-backward-slide. (Server-driven motion with no input held, e.g.
+        /// knockback, renders through the correction term: slightly softened, never lost.)
         /// </summary>
-        public (Vector3 Pos, float Heading) Step(in PoseSample newest, float ageSec, float dt)
+        public (Vector3 Pos, float Heading) Step(in PoseSample newest, float ageSec, float dt, bool moveHeld)
         {
-            Vector3 target = newest.Pos + newest.Vel * Mathf.Min(ageSec, MaxTargetAgeSec);
+            Vector3 vel = moveHeld ? newest.Vel : Vector3.Zero;
+            Vector3 target = newest.Pos + vel * Mathf.Min(ageSec, MaxTargetAgeSec);
 
             if (!_init || _pos.DistanceTo(target) > SnapDistance)
             {
@@ -50,9 +56,8 @@ namespace AtlasWorld.Client.World
                 return (_pos, _heading);
             }
 
-            // Server velocity carries the motion; the error term gently steers onto truth.
-            Vector3 vel = newest.Vel + (target - _pos) * CorrectionGain;
-            _pos += vel * dt;
+            // Input-gated server velocity carries the motion; the error term steers onto truth.
+            _pos += (vel + (target - _pos) * CorrectionGain) * dt;
             _heading = Mathf.LerpAngle(_heading, newest.Heading, 1f - Mathf.Exp(-12f * dt));
             return (_pos, _heading);
         }

@@ -25,6 +25,7 @@ namespace AtlasWorld.Client.Core
         private InputSender _inputSender = null!;
         private MapVisuals _mapVisuals = null!;
         private MapPickerPanel _mapPicker = null!;
+        private PlayerController _playerController = null!;
 
         public override void _Ready()
         {
@@ -47,7 +48,8 @@ namespace AtlasWorld.Client.Core
             _inputSender = new InputSender(_connection);
 
             // Input
-            AddChild(new PlayerController(_inputSender) { Name = "PlayerController" });
+            _playerController = new PlayerController(_inputSender, _entities) { Name = "PlayerController" };
+            AddChild(_playerController);
 
             // Meta UI (B2). The MetaGateway autoload owns all Nakama awaiting; MetaShell is
             // a pure signal-driven overlay. Toggle with Tab, close with Esc.
@@ -77,13 +79,10 @@ namespace AtlasWorld.Client.Core
             // requested IS the room's map — rebuild ground detail + picker state from it.
             _mapVisuals.Rebuild(_connection.MapId);
             _mapPicker.SetCurrent(_connection.MapId);
+            _playerController.NotifyJoined(); // re-send current input intent to the new room
 
-            // Optional headless input round-trip probe (Gate B #4): the server logs a MOVE.
-            if (OS.GetEnvironment("ATLAS_DEBUG_MOVE") == "1")
-            {
-                _inputSender.SendMove(1f, 0f);
-                GD.Print("[GameRoot] ATLAS_DEBUG_MOVE sent player_input_move {vx:1,vy:0}");
-            }
+            // ATLAS_DEBUG_MOVE (headless probes) is handled by PlayerController: it fakes a
+            // held right-arrow so the full input path (send + local intent gate) is exercised.
         }
 
         // Gated visual probe (ATLAS_DEBUG_SHOT=/path.png): saves the rendered viewport

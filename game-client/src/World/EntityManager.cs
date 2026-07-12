@@ -27,6 +27,7 @@ namespace AtlasWorld.Client.World
         private readonly OwnPoseSmoother _ownSmoother = new();
 
         private string _ownPlayerId = "";
+        private bool _localMoveHeld;
         private readonly bool _debugInterp = OS.GetEnvironment("ATLAS_DEBUG_INTERP") == "1";
         private double _debugAccum;
 
@@ -65,6 +66,9 @@ namespace AtlasWorld.Client.World
             if (GodotObject.IsInstanceValid(view.Root))
                 view.Root.QueueFree();
         }
+
+        /// <summary>Local move-input intent (from PlayerController) — gates own-player dead reckoning.</summary>
+        public void SetLocalMoveHeld(bool held) => _localMoveHeld = held;
 
         public void SetOwnPlayer(string id)
         {
@@ -156,7 +160,7 @@ namespace AtlasWorld.Client.World
                     // correction) — zero added latency, C¹-continuous motion.
                     if (_interp.TryGetNewest(kv.Key, now, out PoseSample newest, out float ageSec))
                     {
-                        (Vector3 opos, float ohead) = _ownSmoother.Step(newest, ageSec, (float)delta);
+                        (Vector3 opos, float ohead) = _ownSmoother.Step(newest, ageSec, (float)delta, _localMoveHeld);
                         kv.Value.ApplyPose(opos, ohead);
                     }
                     continue;
