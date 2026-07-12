@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>atlas-world-svc — Asset Storybook</title>
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-elev: #12151d;
+    --bg-card: #171b26;
+    --border: #262c3a;
+    --border-hover: #3a4256;
+    --text: #e7e9ee;
+    --text-dim: #9aa1b2;
+    --text-faint: #656d80;
+    --accent: #7c9eff;
+    --accent-dim: #3a4a7a;
+    --tier-seed: #f2b84b;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 15% -10%, #1a2036 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 2.5rem 2rem 1.75rem;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  header .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.6rem;
+  }
+
+  header h1 {
+    margin: 0 0 0.6rem;
+    font-size: 1.9rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+
+  header p {
+    margin: 0;
+    max-width: 60ch;
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--text-faint);
+  }
+
+  .stat b {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  nav.filters {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 2rem 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-dim);
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 0.95rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .filter-btn:hover { border-color: var(--border-hover); color: var(--text); }
+
+  .filter-btn.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: #dce4ff;
+  }
+
+  .filter-btn .count {
+    font-family: var(--mono);
+    color: var(--text-faint);
+    margin-left: 0.35rem;
+  }
+
+  .filter-btn.active .count { color: #b9c6ff; }
+
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 2rem 4rem;
+  }
+
+  section.kind-section {
+    margin-bottom: 2.5rem;
+  }
+
+  section.kind-section h2 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-faint);
+    font-weight: 600;
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.1rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+  }
+
+  .card .viewport {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    background:
+      radial-gradient(circle at 50% 30%, #1e2434 0%, #0f121a 75%);
+    position: relative;
+  }
+
+  model-viewer {
+    width: 100%;
+    height: 100%;
+    --poster-color: transparent;
+  }
+
+  .load-state {
+    position: absolute;
+    inset: auto 0.6rem 0.6rem auto;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 5px;
+    background: rgba(0,0,0,0.55);
+    color: var(--text-faint);
+    pointer-events: none;
+  }
+
+  .load-state.ok { color: #7ee787; }
+  .load-state.err { color: #ff7b72; }
+
+  .card .meta {
+    padding: 0.9rem 1rem 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .card .key {
+    font-family: var(--mono);
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 0.35rem;
+    word-break: break-all;
+  }
+
+  .card .filename {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    margin: 0 0 0.55rem;
+    word-break: break-all;
+  }
+
+  .badges {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 0.18rem 0.55rem;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  .badge.tier-seed {
+    color: var(--tier-seed);
+    border-color: #5c4a22;
+    background: rgba(242, 184, 75, 0.08);
+  }
+
+  .badge.license {
+    color: var(--text-faint);
+  }
+
+  .empty-state {
+    color: var(--text-faint);
+    font-size: 0.9rem;
+    padding: 2rem 0;
+    text-align: center;
+  }
+
+  footer {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 2rem 3rem;
+    color: var(--text-faint);
+    font-size: 0.75rem;
+    font-family: var(--mono);
+  }
+
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">atlas-world-svc &middot; asset storybook</p>
+  <h1>Seed Asset Gallery</h1>
+  <p>
+    Live preview of the game's baked seed-tier 3D assets, rendered client-side with
+    <code>&lt;model-viewer&gt;</code> straight from <code>game-client/assets/</code>. Entries and their
+    server type-id keys are read from <code>manifest.json</code> at load time — this page never
+    hand-invents the mapping. Drag to orbit, scroll to zoom.
+  </p>
+  <div class="stat-row">
+    <div class="stat">manifest version: <b id="stat-version">&hellip;</b></div>
+    <div class="stat">entries: <b id="stat-total">&hellip;</b></div>
+    <div class="stat">characters rendered: <b id="stat-characters">&hellip;</b></div>
+  </div>
+</header>
+
+<nav class="filters" id="filters"></nav>
+
+<main id="main">
+  <div class="empty-state" id="loading">Loading manifest.json&hellip;</div>
+</main>
+
+<footer>
+  Source: <a href="../../game-client/assets/manifest.json">game-client/assets/manifest.json</a>
+  &middot; served locally, not sandboxed &middot; model-viewer via unpkg CDN
+</footer>
+
+<script>
+  const MANIFEST_URL = "../../game-client/assets/manifest.json";
+  const ASSET_ROOT = "../../game-client/"; // scene paths are "res://assets/..." relative to game-client/
+
+  function resolveSceneSrc(scenePath) {
+    return ASSET_ROOT + scenePath.replace(/^res:\/\//, "");
+  }
+
+  function filenameOf(scenePath) {
+    return scenePath.split("/").pop();
+  }
+
+  function buildCard(key, entry) {
+    const src = resolveSceneSrc(entry.scene);
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.kind = entry.kind || "unknown";
+
+    const viewport = document.createElement("div");
+    viewport.className = "viewport";
+
+    const mv = document.createElement("model-viewer");
+    mv.setAttribute("src", src);
+    mv.setAttribute("alt", key);
+    mv.setAttribute("auto-rotate", "");
+    mv.setAttribute("camera-controls", "");
+    mv.setAttribute("shadow-intensity", "1");
+    mv.setAttribute("exposure", "1");
+    mv.setAttribute("environment-image", "neutral");
+
+    const loadState = document.createElement("div");
+    loadState.className = "load-state";
+    loadState.textContent = "loading…";
+    mv.addEventListener("load", () => {
+      loadState.textContent = "loaded ✓";
+      loadState.classList.add("ok");
+    });
+    mv.addEventListener("error", (e) => {
+      loadState.textContent = "load error";
+      loadState.classList.add("err");
+      console.error("[asset-storybook] model failed to load:", key, src, e);
+    });
+
+    viewport.appendChild(mv);
+    viewport.appendChild(loadState);
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+
+    const keyEl = document.createElement("p");
+    keyEl.className = "key";
+    keyEl.textContent = key;
+
+    const fileEl = document.createElement("p");
+    fileEl.className = "filename";
+    fileEl.textContent = filenameOf(entry.scene);
+
+    const badges = document.createElement("div");
+    badges.className = "badges";
+
+    const tierBadge = document.createElement("span");
+    tierBadge.className = "badge tier-" + (entry.tier || "unknown");
+    tierBadge.textContent = entry.tier || "unknown tier";
+    badges.appendChild(tierBadge);
+
+    const kindBadge = document.createElement("span");
+    kindBadge.className = "badge kind";
+    kindBadge.textContent = entry.kind || "unknown kind";
+    badges.appendChild(kindBadge);
+
+    const licenseBadge = document.createElement("span");
+    licenseBadge.className = "badge license";
+    licenseBadge.textContent = entry.license || "unknown license";
+    badges.appendChild(licenseBadge);
+
+    meta.appendChild(keyEl);
+    meta.appendChild(fileEl);
+    meta.appendChild(badges);
+
+    card.appendChild(viewport);
+    card.appendChild(meta);
+    return card;
+  }
+
+  function groupByKind(entries) {
+    const groups = new Map();
+    for (const [key, entry] of entries) {
+      const kind = entry.kind || "unknown";
+      if (!groups.has(kind)) groups.set(kind, []);
+      groups.get(kind).push([key, entry]);
+    }
+    return groups;
+  }
+
+  function setActiveFilter(kind) {
+    document.querySelectorAll(".filter-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.filter === kind);
+    });
+    document.querySelectorAll("section.kind-section").forEach((sec) => {
+      sec.style.display = kind === "all" || sec.dataset.kind === kind ? "" : "none";
+    });
+  }
+
+  async function init() {
+    const main = document.getElementById("main");
+    const filters = document.getElementById("filters");
+
+    let manifest;
+    try {
+      const res = await fetch(MANIFEST_URL);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      manifest = await res.json();
+    } catch (err) {
+      main.innerHTML =
+        '<div class="empty-state">Failed to load manifest.json: ' +
+        String(err) +
+        "</div>";
+      console.error("[asset-storybook] manifest fetch failed:", err);
+      return;
+    }
+
+    const entries = Object.entries(manifest.entries || {});
+    document.getElementById("stat-version").textContent = manifest.version ?? "?";
+    document.getElementById("stat-total").textContent = entries.length;
+
+    const characterEntries = entries.filter(([, e]) => e.kind === "character");
+    document.getElementById("stat-characters").textContent = characterEntries.length;
+
+    const groups = groupByKind(entries);
+
+    // Filter bar: "All" plus one button per kind present in the manifest.
+    const allBtn = document.createElement("button");
+    allBtn.className = "filter-btn active";
+    allBtn.dataset.filter = "all";
+    allBtn.innerHTML = "All <span class=\"count\">" + entries.length + "</span>";
+    allBtn.onclick = () => setActiveFilter("all");
+    filters.appendChild(allBtn);
+
+    for (const [kind, list] of groups) {
+      const btn = document.createElement("button");
+      btn.className = "filter-btn";
+      btn.dataset.filter = kind;
+      btn.innerHTML =
+        kind + " <span class=\"count\">" + list.length + "</span>";
+      btn.onclick = () => setActiveFilter(kind);
+      filters.appendChild(btn);
+    }
+
+    main.innerHTML = "";
+
+    for (const [kind, list] of groups) {
+      const section = document.createElement("section");
+      section.className = "kind-section";
+      section.dataset.kind = kind;
+
+      const h2 = document.createElement("h2");
+      h2.textContent = kind + " (" + list.length + ")";
+      section.appendChild(h2);
+
+      const grid = document.createElement("div");
+      grid.className = "grid";
+
+      if (kind === "character") {
+        for (const [key, entry] of list) {
+          grid.appendChild(buildCard(key, entry));
+        }
+      } else {
+        const placeholder = document.createElement("div");
+        placeholder.className = "empty-state";
+        placeholder.textContent =
+          "No renderer wired up yet for kind \"" + kind + "\" — " + list.length + " entr" +
+          (list.length === 1 ? "y" : "ies") + " pending.";
+        grid.appendChild(placeholder);
+      }
+
+      section.appendChild(grid);
+      main.appendChild(section);
+    }
+  }
+
+  init();
+</script>
+
+</body>
+</html>
