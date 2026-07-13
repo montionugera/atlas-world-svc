@@ -1,472 +1,1030 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>atlas-world-svc — Asset Storybook</title>
-<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-<style>
-  :root {
-    --bg: #0b0d12;
-    --bg-elev: #12151d;
-    --bg-card: #171b26;
-    --border: #262c3a;
-    --border-hover: #3a4256;
-    --text: #e7e9ee;
-    --text-dim: #9aa1b2;
-    --text-faint: #656d80;
-    --accent: #7c9eff;
-    --accent-dim: #3a4a7a;
-    --tier-seed: #f2b84b;
-    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  }
-
-  * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    background: radial-gradient(1200px 600px at 15% -10%, #1a2036 0%, var(--bg) 55%);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-  }
-
-  header {
-    padding: 2.5rem 2rem 1.75rem;
-    max-width: 1280px;
-    margin: 0 auto;
-  }
-
-  header .eyebrow {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin: 0 0 0.6rem;
-  }
-
-  header h1 {
-    margin: 0 0 0.6rem;
-    font-size: 1.9rem;
-    font-weight: 650;
-    letter-spacing: -0.01em;
-  }
-
-  header p {
-    margin: 0;
-    max-width: 60ch;
-    color: var(--text-dim);
-    font-size: 0.95rem;
-    line-height: 1.55;
-  }
-
-  .stat-row {
-    display: flex;
-    gap: 1.5rem;
-    margin-top: 1.25rem;
-    flex-wrap: wrap;
-  }
-
-  .stat {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    color: var(--text-faint);
-  }
-
-  .stat b {
-    color: var(--text);
-    font-weight: 600;
-  }
-
-  nav.filters {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 2rem 1.5rem;
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .filter-btn {
-    font-family: var(--sans);
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: var(--text-dim);
-    background: var(--bg-elev);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.4rem 0.95rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-
-  .filter-btn:hover { border-color: var(--border-hover); color: var(--text); }
-
-  .filter-btn.active {
-    background: var(--accent-dim);
-    border-color: var(--accent);
-    color: #dce4ff;
-  }
-
-  .filter-btn .count {
-    font-family: var(--mono);
-    color: var(--text-faint);
-    margin-left: 0.35rem;
-  }
-
-  .filter-btn.active .count { color: #b9c6ff; }
-
-  main {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 2rem 4rem;
-  }
-
-  section.kind-section {
-    margin-bottom: 2.5rem;
-  }
-
-  section.kind-section h2 {
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-faint);
-    font-weight: 600;
-    margin: 0 0 1rem;
-    padding-bottom: 0.6rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.1rem;
-  }
-
-  .card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: border-color 0.15s ease, transform 0.15s ease;
-  }
-
-  .card:hover {
-    border-color: var(--border-hover);
-    transform: translateY(-2px);
-  }
-
-  .card .viewport {
-    aspect-ratio: 1 / 1;
-    width: 100%;
-    background:
-      radial-gradient(circle at 50% 30%, #1e2434 0%, #0f121a 75%);
-    position: relative;
-  }
-
-  model-viewer {
-    width: 100%;
-    height: 100%;
-    --poster-color: transparent;
-  }
-
-  .load-state {
-    position: absolute;
-    inset: auto 0.6rem 0.6rem auto;
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    padding: 0.15rem 0.5rem;
-    border-radius: 5px;
-    background: rgba(0,0,0,0.55);
-    color: var(--text-faint);
-    pointer-events: none;
-  }
-
-  .load-state.ok { color: #7ee787; }
-  .load-state.err { color: #ff7b72; }
-
-  .card .meta {
-    padding: 0.9rem 1rem 1rem;
-    border-top: 1px solid var(--border);
-  }
-
-  .card .key {
-    font-family: var(--mono);
-    font-size: 0.86rem;
-    font-weight: 600;
-    color: var(--text);
-    margin: 0 0 0.35rem;
-    word-break: break-all;
-  }
-
-  .card .filename {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--text-faint);
-    margin: 0 0 0.55rem;
-    word-break: break-all;
-  }
-
-  .badges {
-    display: flex;
-    gap: 0.4rem;
-    flex-wrap: wrap;
-  }
-
-  .badge {
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    padding: 0.18rem 0.55rem;
-    border-radius: 5px;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-  }
-
-  .badge.tier-seed {
-    color: var(--tier-seed);
-    border-color: #5c4a22;
-    background: rgba(242, 184, 75, 0.08);
-  }
-
-  .badge.license {
-    color: var(--text-faint);
-  }
-
-  .empty-state {
-    color: var(--text-faint);
-    font-size: 0.9rem;
-    padding: 2rem 0;
-    text-align: center;
-  }
-
-  footer {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 2rem 3rem;
-    color: var(--text-faint);
-    font-size: 0.75rem;
-    font-family: var(--mono);
-  }
-
-  a { color: var(--accent); }
-</style>
-</head>
-<body>
-
-<header>
-  <p class="eyebrow">atlas-world-svc &middot; asset storybook</p>
-  <h1>Seed Asset Gallery</h1>
-  <p>
-    Live preview of the game's baked seed-tier 3D assets, rendered client-side with
-    <code>&lt;model-viewer&gt;</code> straight from <code>game-client/assets/</code>. Entries and their
-    server type-id keys are read from <code>manifest.json</code> at load time — this page never
-    hand-invents the mapping. Drag to orbit, scroll to zoom.
-  </p>
-  <div class="stat-row">
-    <div class="stat">manifest version: <b id="stat-version">&hellip;</b></div>
-    <div class="stat">entries: <b id="stat-total">&hellip;</b></div>
-    <div class="stat">characters rendered: <b id="stat-characters">&hellip;</b></div>
-  </div>
-</header>
-
-<nav class="filters" id="filters"></nav>
-
-<main id="main">
-  <div class="empty-state" id="loading">Loading manifest.json&hellip;</div>
-</main>
-
-<footer>
-  Source: <a href="../../game-client/assets/manifest.json">game-client/assets/manifest.json</a>
-  &middot; served locally, not sandboxed &middot; model-viewer via unpkg CDN
-</footer>
-
-<script>
-  const MANIFEST_URL = "../../game-client/assets/manifest.json";
-  const ASSET_ROOT = "../../game-client/"; // scene paths are "res://assets/..." relative to game-client/
-
-  function resolveSceneSrc(scenePath) {
-    return ASSET_ROOT + scenePath.replace(/^res:\/\//, "");
-  }
-
-  function filenameOf(scenePath) {
-    return scenePath.split("/").pop();
-  }
-
-  function buildCard(key, entry) {
-    const src = resolveSceneSrc(entry.scene);
-    const card = document.createElement("div");
-    card.className = "card";
-    card.dataset.kind = entry.kind || "unknown";
-
-    const viewport = document.createElement("div");
-    viewport.className = "viewport";
-
-    const mv = document.createElement("model-viewer");
-    mv.setAttribute("src", src);
-    mv.setAttribute("alt", key);
-    mv.setAttribute("auto-rotate", "");
-    mv.setAttribute("camera-controls", "");
-    mv.setAttribute("shadow-intensity", "1");
-    mv.setAttribute("exposure", "1");
-    mv.setAttribute("environment-image", "neutral");
-
-    const loadState = document.createElement("div");
-    loadState.className = "load-state";
-    loadState.textContent = "loading…";
-    mv.addEventListener("load", () => {
-      loadState.textContent = "loaded ✓";
-      loadState.classList.add("ok");
-    });
-    mv.addEventListener("error", (e) => {
-      loadState.textContent = "load error";
-      loadState.classList.add("err");
-      console.error("[asset-storybook] model failed to load:", key, src, e);
-    });
-
-    viewport.appendChild(mv);
-    viewport.appendChild(loadState);
-
-    const meta = document.createElement("div");
-    meta.className = "meta";
-
-    const keyEl = document.createElement("p");
-    keyEl.className = "key";
-    keyEl.textContent = key;
-
-    const fileEl = document.createElement("p");
-    fileEl.className = "filename";
-    fileEl.textContent = filenameOf(entry.scene);
-
-    const badges = document.createElement("div");
-    badges.className = "badges";
-
-    const tierBadge = document.createElement("span");
-    tierBadge.className = "badge tier-" + (entry.tier || "unknown");
-    tierBadge.textContent = entry.tier || "unknown tier";
-    badges.appendChild(tierBadge);
-
-    const kindBadge = document.createElement("span");
-    kindBadge.className = "badge kind";
-    kindBadge.textContent = entry.kind || "unknown kind";
-    badges.appendChild(kindBadge);
-
-    const licenseBadge = document.createElement("span");
-    licenseBadge.className = "badge license";
-    licenseBadge.textContent = entry.license || "unknown license";
-    badges.appendChild(licenseBadge);
-
-    meta.appendChild(keyEl);
-    meta.appendChild(fileEl);
-    meta.appendChild(badges);
-
-    card.appendChild(viewport);
-    card.appendChild(meta);
-    return card;
-  }
-
-  function groupByKind(entries) {
-    const groups = new Map();
-    for (const [key, entry] of entries) {
-      const kind = entry.kind || "unknown";
-      if (!groups.has(kind)) groups.set(kind, []);
-      groups.get(kind).push([key, entry]);
-    }
-    return groups;
-  }
-
-  function setActiveFilter(kind) {
-    document.querySelectorAll(".filter-btn").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.filter === kind);
-    });
-    document.querySelectorAll("section.kind-section").forEach((sec) => {
-      sec.style.display = kind === "all" || sec.dataset.kind === kind ? "" : "none";
-    });
-  }
-
-  async function init() {
-    const main = document.getElementById("main");
-    const filters = document.getElementById("filters");
-
-    let manifest;
-    try {
-      const res = await fetch(MANIFEST_URL);
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      manifest = await res.json();
-    } catch (err) {
-      main.innerHTML =
-        '<div class="empty-state">Failed to load manifest.json: ' +
-        String(err) +
-        "</div>";
-      console.error("[asset-storybook] manifest fetch failed:", err);
-      return;
-    }
-
-    const entries = Object.entries(manifest.entries || {});
-    document.getElementById("stat-version").textContent = manifest.version ?? "?";
-    document.getElementById("stat-total").textContent = entries.length;
-
-    const characterEntries = entries.filter(([, e]) => e.kind === "character");
-    document.getElementById("stat-characters").textContent = characterEntries.length;
-
-    const groups = groupByKind(entries);
-
-    // Filter bar: "All" plus one button per kind present in the manifest.
-    const allBtn = document.createElement("button");
-    allBtn.className = "filter-btn active";
-    allBtn.dataset.filter = "all";
-    allBtn.innerHTML = "All <span class=\"count\">" + entries.length + "</span>";
-    allBtn.onclick = () => setActiveFilter("all");
-    filters.appendChild(allBtn);
-
-    for (const [kind, list] of groups) {
-      const btn = document.createElement("button");
-      btn.className = "filter-btn";
-      btn.dataset.filter = kind;
-      btn.innerHTML =
-        kind + " <span class=\"count\">" + list.length + "</span>";
-      btn.onclick = () => setActiveFilter(kind);
-      filters.appendChild(btn);
-    }
-
-    main.innerHTML = "";
-
-    for (const [kind, list] of groups) {
-      const section = document.createElement("section");
-      section.className = "kind-section";
-      section.dataset.kind = kind;
-
-      const h2 = document.createElement("h2");
-      h2.textContent = kind + " (" + list.length + ")";
-      section.appendChild(h2);
-
-      const grid = document.createElement("div");
-      grid.className = "grid";
-
-      if (kind === "character") {
-        for (const [key, entry] of list) {
-          grid.appendChild(buildCard(key, entry));
-        }
-      } else {
-        const placeholder = document.createElement("div");
-        placeholder.className = "empty-state";
-        placeholder.textContent =
-          "No renderer wired up yet for kind \"" + kind + "\" — " + list.length + " entr" +
-          (list.length === 1 ? "y" : "ies") + " pending.";
-        grid.appendChild(placeholder);
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>atlas-world-svc — Asset Storybook</title>
+    <script
+      type="module"
+      src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
+    ></script>
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --bg-elev: #12151d;
+        --bg-card: #171b26;
+        --border: #262c3a;
+        --border-hover: #3a4256;
+        --text: #e7e9ee;
+        --text-dim: #9aa1b2;
+        --text-faint: #656d80;
+        --accent: #7c9eff;
+        --accent-dim: #3a4a7a;
+        --tier-seed: #f2b84b;
+        --ok: #7ee787;
+        --err: #ff7b72;
+        --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        --sans:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
       }
 
-      section.appendChild(grid);
-      main.appendChild(section);
-    }
-  }
+      * {
+        box-sizing: border-box;
+      }
 
-  init();
-</script>
+      html,
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+      }
 
-</body>
+      body {
+        display: flex;
+        align-items: flex-start;
+        min-height: 100vh;
+        background: radial-gradient(
+          1200px 600px at 15% -10%,
+          #1a2036 0%,
+          var(--bg) 55%
+        );
+      }
+
+      /* ---------- sidebar ---------- */
+
+      .sidebar {
+        flex: 0 0 240px;
+        width: 240px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        background: var(--bg-elev);
+        border-right: 1px solid var(--border);
+        padding: 1.25rem 0 2rem;
+      }
+
+      .sidebar-brand {
+        padding: 0 1.1rem 1.1rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 0.75rem;
+      }
+
+      .sidebar-brand .eyebrow {
+        font-family: var(--mono);
+        font-size: 0.66rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 0.35rem;
+      }
+
+      .sidebar-brand strong {
+        display: block;
+        font-size: 0.95rem;
+        font-weight: 650;
+      }
+
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        padding: 0 0.6rem;
+      }
+
+      .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        width: 100%;
+        text-align: left;
+        font-family: var(--sans);
+        font-size: 0.84rem;
+        font-weight: 500;
+        color: var(--text-dim);
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 0.5rem 0.6rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .sidebar-item:hover {
+        background: var(--bg-card);
+        color: var(--text);
+      }
+
+      .sidebar-item.active {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: #dce4ff;
+      }
+
+      .sidebar-item .label {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-transform: capitalize;
+      }
+
+      .sidebar-item .count {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-faint);
+      }
+
+      .sidebar-item.active .count {
+        color: #b9c6ff;
+      }
+
+      .health-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex: 0 0 7px;
+        background: var(--text-faint);
+      }
+
+      .health-dot.ok {
+        background: var(--ok);
+      }
+      .health-dot.err {
+        background: var(--err);
+      }
+
+      .sidebar-hint {
+        margin: 1rem 0.6rem 0;
+        padding-top: 0.9rem;
+        border-top: 1px solid var(--border);
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        line-height: 1.5;
+        color: var(--text-faint);
+      }
+
+      /* ---------- content ---------- */
+
+      .content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      header {
+        padding: 2.5rem 2rem 1.75rem;
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+
+      header .eyebrow {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 0.6rem;
+      }
+
+      header h1 {
+        margin: 0 0 0.6rem;
+        font-size: 1.9rem;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+
+      header p {
+        margin: 0;
+        max-width: 60ch;
+        color: var(--text-dim);
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+
+      .stat-row {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 1.25rem;
+        flex-wrap: wrap;
+      }
+
+      .stat {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--text-faint);
+      }
+
+      .stat b {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      main {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 2rem 4rem;
+      }
+
+      section.kind-section {
+        margin-bottom: 2.5rem;
+        scroll-margin-top: 1.5rem;
+      }
+
+      section.kind-section h2 {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-faint);
+        font-weight: 600;
+        margin: 0 0 1rem;
+        padding-bottom: 0.6rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.1rem;
+      }
+
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition:
+          border-color 0.15s ease,
+          transform 0.15s ease;
+      }
+
+      .card:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-2px);
+      }
+
+      .card .viewport {
+        aspect-ratio: 1 / 1;
+        width: 100%;
+        background: radial-gradient(circle at 50% 30%, #1e2434 0%, #0f121a 75%);
+        position: relative;
+      }
+
+      model-viewer {
+        width: 100%;
+        height: 100%;
+        --poster-color: transparent;
+      }
+
+      .load-state {
+        position: absolute;
+        inset: auto 0.6rem 0.6rem auto;
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 5px;
+        background: rgba(0, 0, 0, 0.55);
+        color: var(--text-faint);
+        pointer-events: none;
+      }
+
+      .load-state.ok {
+        color: var(--ok);
+      }
+      .load-state.err {
+        color: var(--err);
+      }
+
+      .anim-picker {
+        position: absolute;
+        inset: 0.6rem auto auto 0.6rem;
+        max-width: calc(100% - 1.2rem);
+      }
+
+      .anim-picker select {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--text);
+        background: rgba(10, 12, 18, 0.72);
+        border: 1px solid var(--border-hover);
+        border-radius: 6px;
+        padding: 0.22rem 0.4rem;
+        max-width: 100%;
+        cursor: pointer;
+      }
+
+      .anim-picker select:disabled {
+        color: var(--text-faint);
+        cursor: default;
+      }
+
+      .card .meta {
+        padding: 0.9rem 1rem 1rem;
+        border-top: 1px solid var(--border);
+      }
+
+      .card .key {
+        font-family: var(--mono);
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0 0 0.35rem;
+        word-break: break-all;
+      }
+
+      .card .filename {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-faint);
+        margin: 0 0 0.55rem;
+        word-break: break-all;
+      }
+
+      .badges {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+      }
+
+      .badge {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        padding: 0.18rem 0.55rem;
+        border-radius: 5px;
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+      }
+
+      .badge.tier-seed {
+        color: var(--tier-seed);
+        border-color: #5c4a22;
+        background: rgba(242, 184, 75, 0.08);
+      }
+
+      .badge.license {
+        color: var(--text-faint);
+      }
+
+      .badge.event-key {
+        color: var(--accent);
+        border-color: var(--accent-dim);
+        background: rgba(124, 158, 255, 0.1);
+        font-family: var(--mono);
+      }
+
+      .empty-state {
+        color: var(--text-faint);
+        font-size: 0.9rem;
+        padding: 2rem 0;
+        text-align: center;
+      }
+
+      /* ---------- soundboard ---------- */
+
+      .soundboard {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .sound-row {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.6rem 0.9rem;
+      }
+
+      .sound-row.mapped {
+        border-color: var(--accent-dim);
+        background: linear-gradient(
+          90deg,
+          rgba(124, 158, 255, 0.06),
+          transparent 60%
+        );
+      }
+
+      .sound-row .sound-name {
+        font-family: var(--mono);
+        font-size: 0.82rem;
+        color: var(--text);
+        flex: 0 0 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .sound-row audio {
+        flex: 1;
+        min-width: 0;
+        height: 32px;
+      }
+
+      .sound-row .sound-size {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-faint);
+        flex: 0 0 auto;
+        width: 4.5rem;
+        text-align: right;
+      }
+
+      .sound-row .sound-state {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--text-faint);
+        flex: 0 0 8px;
+      }
+
+      .sound-row .sound-state.ok {
+        background: var(--ok);
+      }
+      .sound-row .sound-state.err {
+        background: var(--err);
+      }
+
+      footer {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 2rem 3rem;
+        color: var(--text-faint);
+        font-size: 0.75rem;
+        font-family: var(--mono);
+      }
+
+      a {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <p class="eyebrow">atlas-world-svc</p>
+        <strong>Asset Classes</strong>
+      </div>
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+      <p class="sidebar-hint">
+        Classes are read from manifest.json <code>kind</code>s and the audio
+        manifest at load time — nothing here is hardcoded.
+      </p>
+    </aside>
+
+    <div class="content">
+      <header>
+        <p class="eyebrow">asset storybook</p>
+        <h1>Seed Asset Gallery</h1>
+        <p>
+          Live preview of the game's baked seed-tier assets, rendered
+          client-side with
+          <code>&lt;model-viewer&gt;</code> and native
+          <code>&lt;audio&gt;</code>, straight from
+          <code>game-client/assets/</code> and <code>art-source/</code>.
+          Entries, keys, and file lists are read from the manifests at load time
+          — this page never hand-invents the mapping. Drag a model to orbit,
+          scroll to zoom, pick a clip from the animation dropdown to preview it.
+        </p>
+        <div class="stat-row">
+          <div class="stat">
+            manifest version: <b id="stat-version">&hellip;</b>
+          </div>
+          <div class="stat">
+            visual entries: <b id="stat-total">&hellip;</b>
+          </div>
+          <div class="stat">
+            characters rendered: <b id="stat-characters">&hellip;</b>
+          </div>
+          <div class="stat">seed sounds: <b id="stat-sounds">&hellip;</b></div>
+        </div>
+      </header>
+
+      <main id="main">
+        <div class="empty-state" id="loading">Loading manifests&hellip;</div>
+      </main>
+
+      <footer>
+        Sources:
+        <a href="../../game-client/assets/manifest.json">manifest.json</a>,
+        <a href="../../game-client/assets/audio-manifest.json"
+          >audio-manifest.json</a
+        >, <a href="./audio-index.json">audio-index.json</a> (generated by
+        <code>scripts/gen_audio_index.mjs</code> from
+        <code>art-source/seed/audio/kenney-rpg-audio/</code>) &middot; served
+        locally, not sandboxed &middot; model-viewer via unpkg CDN
+      </footer>
+    </div>
+
+    <script>
+      const MANIFEST_URL = "../../game-client/assets/manifest.json";
+      const AUDIO_MANIFEST_URL = "../../game-client/assets/audio-manifest.json";
+      const AUDIO_INDEX_URL = "./audio-index.json";
+      const ASSET_ROOT = "../../game-client/"; // scene/stream paths are "res://assets/..." relative to game-client/
+      const RAW_AUDIO_ROOT = "../../art-source/seed/audio/kenney-rpg-audio/";
+
+      const SFX_CLASS = "sfx"; // synthetic kind for the audio soundboard (not present in manifest.json)
+
+      // health[kind] = { total, ok, err } — updated as models/audio finish loading,
+      // sidebar badges re-render on every update.
+      const health = {};
+
+      function resolveSceneSrc(scenePath) {
+        return ASSET_ROOT + scenePath.replace(/^res:\/\//, "");
+      }
+
+      function filenameOf(path) {
+        return path.split("/").pop();
+      }
+
+      function bumpHealth(kind, delta) {
+        if (!health[kind]) health[kind] = { total: 0, ok: 0, err: 0 };
+        health[kind].ok += delta.ok || 0;
+        health[kind].err += delta.err || 0;
+        renderSidebarBadge(kind);
+      }
+
+      function initHealth(kind, total) {
+        health[kind] = { total, ok: 0, err: 0 };
+      }
+
+      // ---------- 3D character cards (with animation dropdown) ----------
+
+      function buildCard(key, entry) {
+        const src = resolveSceneSrc(entry.scene);
+        const card = document.createElement("div");
+        card.className = "card";
+        card.dataset.kind = entry.kind || "unknown";
+
+        const viewport = document.createElement("div");
+        viewport.className = "viewport";
+
+        const mv = document.createElement("model-viewer");
+        mv.setAttribute("src", src);
+        mv.setAttribute("alt", key);
+        mv.setAttribute("auto-rotate", "");
+        mv.setAttribute("camera-controls", "");
+        mv.setAttribute("shadow-intensity", "1");
+        mv.setAttribute("exposure", "1");
+        mv.setAttribute("environment-image", "neutral");
+        mv.setAttribute("autoplay", "");
+
+        const loadState = document.createElement("div");
+        loadState.className = "load-state";
+        loadState.textContent = "loading…";
+
+        // Animation dropdown — populated from model-viewer's own
+        // `availableAnimations` once the glTF has loaded. Defaults to "idle"
+        // when present, else the first clip.
+        const animPicker = document.createElement("div");
+        animPicker.className = "anim-picker";
+        const animSelect = document.createElement("select");
+        animSelect.disabled = true;
+        const placeholderOpt = document.createElement("option");
+        placeholderOpt.textContent = "no clips";
+        animSelect.appendChild(placeholderOpt);
+        animPicker.appendChild(animSelect);
+
+        animSelect.addEventListener("change", () => {
+          mv.animationName = animSelect.value;
+          mv.currentTime = 0;
+          mv.play();
+        });
+
+        mv.addEventListener("load", () => {
+          loadState.textContent = "loaded ✓";
+          loadState.classList.add("ok");
+          bumpHealth(entry.kind || "unknown", { ok: 1 });
+
+          const clips = mv.availableAnimations || [];
+          animSelect.innerHTML = "";
+          if (clips.length === 0) {
+            const opt = document.createElement("option");
+            opt.textContent = "no clips";
+            animSelect.appendChild(opt);
+            animSelect.disabled = true;
+            return;
+          }
+          for (const clip of clips) {
+            const opt = document.createElement("option");
+            opt.value = clip;
+            opt.textContent = clip;
+            animSelect.appendChild(opt);
+          }
+          animSelect.disabled = false;
+          const defaultClip = clips.includes("idle") ? "idle" : clips[0];
+          animSelect.value = defaultClip;
+          mv.animationName = defaultClip;
+          mv.play();
+        });
+        mv.addEventListener("error", (e) => {
+          loadState.textContent = "load error";
+          loadState.classList.add("err");
+          bumpHealth(entry.kind || "unknown", { err: 1 });
+          console.error("[asset-storybook] model failed to load:", key, src, e);
+        });
+
+        viewport.appendChild(mv);
+        viewport.appendChild(animPicker);
+        viewport.appendChild(loadState);
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+
+        const keyEl = document.createElement("p");
+        keyEl.className = "key";
+        keyEl.textContent = key;
+
+        const fileEl = document.createElement("p");
+        fileEl.className = "filename";
+        fileEl.textContent = filenameOf(entry.scene);
+
+        const badges = document.createElement("div");
+        badges.className = "badges";
+
+        const tierBadge = document.createElement("span");
+        tierBadge.className = "badge tier-" + (entry.tier || "unknown");
+        tierBadge.textContent = entry.tier || "unknown tier";
+        badges.appendChild(tierBadge);
+
+        const kindBadge = document.createElement("span");
+        kindBadge.className = "badge kind";
+        kindBadge.textContent = entry.kind || "unknown kind";
+        badges.appendChild(kindBadge);
+
+        const licenseBadge = document.createElement("span");
+        licenseBadge.className = "badge license";
+        licenseBadge.textContent = entry.license || "unknown license";
+        badges.appendChild(licenseBadge);
+
+        meta.appendChild(keyEl);
+        meta.appendChild(fileEl);
+        meta.appendChild(badges);
+
+        card.appendChild(viewport);
+        card.appendChild(meta);
+        return card;
+      }
+
+      // ---------- soundboard ----------
+
+      async function loadAudioAsBlob(url) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const blob = await res.blob();
+        return URL.createObjectURL(blob);
+      }
+
+      // Cap concurrent blob fetches so 51 soundboard rows don't starve the
+      // character glTF loads for bandwidth/CPU on first paint. Small, sequential
+      // batches instead of one big fan-out.
+      const BLOB_FETCH_CONCURRENCY = 4;
+      let activeBlobFetches = 0;
+      const blobFetchQueue = [];
+
+      function scheduleBlobFetch(task) {
+        blobFetchQueue.push(task);
+        pumpBlobFetchQueue();
+      }
+
+      function pumpBlobFetchQueue() {
+        while (
+          activeBlobFetches < BLOB_FETCH_CONCURRENCY &&
+          blobFetchQueue.length > 0
+        ) {
+          const task = blobFetchQueue.shift();
+          activeBlobFetches++;
+          task().finally(() => {
+            activeBlobFetches--;
+            pumpBlobFetchQueue();
+          });
+        }
+      }
+
+      function buildSoundboard(audioFiles, audioManifestEntries) {
+        // Map raw filename -> [{ eventKey, license }] for the curated event keys
+        // in audio-manifest.json, so rows can be visually distinguished.
+        const mappedByFile = new Map();
+        for (const [eventKey, entry] of Object.entries(audioManifestEntries)) {
+          if (!entry || typeof entry.stream !== "string") continue;
+          const file = filenameOf(entry.stream);
+          if (!mappedByFile.has(file)) mappedByFile.set(file, []);
+          mappedByFile.get(file).push({ eventKey, license: entry.license });
+        }
+
+        const board = document.createElement("div");
+        board.className = "soundboard";
+
+        for (const file of audioFiles) {
+          const mapped = mappedByFile.get(file.name) || [];
+          const row = document.createElement("div");
+          row.className = "sound-row" + (mapped.length > 0 ? " mapped" : "");
+
+          const state = document.createElement("span");
+          state.className = "sound-state";
+          row.appendChild(state);
+
+          const nameEl = document.createElement("span");
+          nameEl.className = "sound-name";
+          nameEl.textContent = file.name;
+          nameEl.title = file.name;
+          row.appendChild(nameEl);
+
+          const audioEl = document.createElement("audio");
+          audioEl.setAttribute("controls", "");
+          audioEl.addEventListener("loadedmetadata", () => {
+            state.classList.add("ok");
+            bumpHealth(SFX_CLASS, { ok: 1 });
+          });
+          audioEl.addEventListener("error", () => {
+            state.classList.add("err");
+            bumpHealth(SFX_CLASS, { err: 1 });
+            console.error("[asset-storybook] audio failed to load:", file.name);
+          });
+          row.appendChild(audioEl);
+
+          // Load via fetch()+blob rather than a plain `src` URL: a bare static
+          // file server (e.g. `python3 -m http.server`, used for local
+          // verification) doesn't support HTTP Range requests, and Chrome's
+          // native <audio> resource-loading algorithm stalls indefinitely
+          // against a server that ignores Range (readyState never leaves
+          // HAVE_NOTHING). A blob URL is fully buffered locally, so playback
+          // and seeking work regardless of what the server supports. Queued
+          // (not fired all 51 at once) so it doesn't starve the character
+          // glTF loads for bandwidth/CPU.
+          scheduleBlobFetch(() =>
+            loadAudioAsBlob(RAW_AUDIO_ROOT + file.name)
+              .then((objectUrl) => {
+                audioEl.src = objectUrl;
+              })
+              .catch((err) => {
+                state.classList.add("err");
+                bumpHealth(SFX_CLASS, { err: 1 });
+                console.error(
+                  "[asset-storybook] audio fetch failed:",
+                  file.name,
+                  err,
+                );
+              }),
+          );
+
+          const sizeEl = document.createElement("span");
+          sizeEl.className = "sound-size";
+          sizeEl.textContent = file.bytes
+            ? (file.bytes / 1024).toFixed(1) + " KB"
+            : "";
+          row.appendChild(sizeEl);
+
+          if (mapped.length > 0) {
+            const badges = document.createElement("div");
+            badges.className = "badges";
+            for (const m of mapped) {
+              const badge = document.createElement("span");
+              badge.className = "badge event-key";
+              badge.textContent = m.eventKey;
+              badge.title = m.license;
+              badges.appendChild(badge);
+            }
+            row.appendChild(badges);
+          }
+
+          board.appendChild(row);
+        }
+
+        return board;
+      }
+
+      // ---------- sidebar ----------
+
+      function classLabel(kind) {
+        if (kind === "all") return "All";
+        if (kind === SFX_CLASS) return "SFX";
+        return kind.charAt(0).toUpperCase() + kind.slice(1) + "s";
+      }
+
+      function renderSidebarBadge(kind) {
+        const dot = document.querySelector(
+          '.sidebar-item[data-class="' + kind + '"] .health-dot',
+        );
+        const countEl = document.querySelector(
+          '.sidebar-item[data-class="' + kind + '"] .count',
+        );
+        if (!dot || !health[kind]) return;
+        const h = health[kind];
+        const missing = h.total - h.ok;
+        const settled = h.ok + h.err >= h.total && h.total > 0;
+        if (settled && h.err > 0) {
+          dot.classList.remove("ok");
+          dot.classList.add("err");
+          dot.title = missing + " missing";
+        } else if (settled) {
+          dot.classList.add("ok");
+          dot.classList.remove("err");
+          dot.title = "loaded ✓";
+        } else {
+          dot.title = "loading…";
+        }
+        if (countEl) countEl.textContent = h.total;
+      }
+
+      function setActiveClass(cls) {
+        document.querySelectorAll(".sidebar-item").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.class === cls);
+        });
+        document.querySelectorAll("section.kind-section").forEach((sec) => {
+          sec.style.display =
+            cls === "all" || sec.dataset.kind === cls ? "" : "none";
+        });
+      }
+
+      function buildSidebarItem(cls, total) {
+        const btn = document.createElement("button");
+        btn.className = "sidebar-item";
+        btn.dataset.class = cls;
+
+        const dot = document.createElement("span");
+        dot.className = "health-dot";
+        dot.title = "loading…";
+
+        const label = document.createElement("span");
+        label.className = "label";
+        label.textContent = classLabel(cls);
+
+        const count = document.createElement("span");
+        count.className = "count";
+        count.textContent = total;
+
+        btn.appendChild(dot);
+        btn.appendChild(label);
+        btn.appendChild(count);
+
+        btn.addEventListener("click", () => {
+          setActiveClass(cls);
+          if (cls !== "all") {
+            const target = document.getElementById("section-" + cls);
+            if (target)
+              target.scrollIntoView({ behavior: "smooth", block: "start" });
+          } else {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        });
+
+        return btn;
+      }
+
+      function groupByKind(entries) {
+        const groups = new Map();
+        for (const [key, entry] of entries) {
+          const kind = entry.kind || "unknown";
+          if (!groups.has(kind)) groups.set(kind, []);
+          groups.get(kind).push([key, entry]);
+        }
+        return groups;
+      }
+
+      async function fetchJson(url, label) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(label + ": HTTP " + res.status);
+        return res.json();
+      }
+
+      async function init() {
+        const main = document.getElementById("main");
+        const sidebarNav = document.getElementById("sidebar-nav");
+
+        let manifest, audioManifest, audioIndex;
+        try {
+          [manifest, audioManifest, audioIndex] = await Promise.all([
+            fetchJson(MANIFEST_URL, "manifest"),
+            fetchJson(AUDIO_MANIFEST_URL, "audio-manifest"),
+            fetchJson(AUDIO_INDEX_URL, "audio-index"),
+          ]);
+        } catch (err) {
+          main.innerHTML =
+            '<div class="empty-state">Failed to load manifests: ' +
+            String(err) +
+            "</div>";
+          console.error("[asset-storybook] manifest fetch failed:", err);
+          return;
+        }
+
+        const entries = Object.entries(manifest.entries || {});
+        document.getElementById("stat-version").textContent =
+          manifest.version ?? "?";
+        document.getElementById("stat-total").textContent = entries.length;
+
+        const characterEntries = entries.filter(
+          ([, e]) => e.kind === "character",
+        );
+        document.getElementById("stat-characters").textContent =
+          characterEntries.length;
+
+        const audioFiles = audioIndex.files || [];
+        document.getElementById("stat-sounds").textContent = audioFiles.length;
+
+        const groups = groupByKind(entries);
+
+        // --- sidebar: "All" + one item per visual kind present + SFX ---
+        const allBtn = buildSidebarItem(
+          "all",
+          entries.length + audioFiles.length,
+        );
+        allBtn.classList.add("active");
+        sidebarNav.appendChild(allBtn);
+
+        for (const kind of groups.keys()) {
+          initHealth(kind, groups.get(kind).length);
+          sidebarNav.appendChild(
+            buildSidebarItem(kind, groups.get(kind).length),
+          );
+          renderSidebarBadge(kind);
+        }
+
+        if (audioFiles.length > 0) {
+          initHealth(SFX_CLASS, audioFiles.length);
+          sidebarNav.appendChild(
+            buildSidebarItem(SFX_CLASS, audioFiles.length),
+          );
+          renderSidebarBadge(SFX_CLASS);
+        }
+
+        main.innerHTML = "";
+
+        // --- visual kind sections (characters today; other kinds auto-appear
+        //     the moment manifest.json grows entries for them) ---
+        for (const [kind, list] of groups) {
+          const section = document.createElement("section");
+          section.className = "kind-section";
+          section.id = "section-" + kind;
+          section.dataset.kind = kind;
+
+          const h2 = document.createElement("h2");
+          h2.textContent = classLabel(kind) + " (" + list.length + ")";
+          section.appendChild(h2);
+
+          const grid = document.createElement("div");
+          grid.className = "grid";
+
+          if (kind === "character") {
+            for (const [key, entry] of list) {
+              grid.appendChild(buildCard(key, entry));
+            }
+          } else {
+            const placeholder = document.createElement("div");
+            placeholder.className = "empty-state";
+            placeholder.textContent =
+              'No renderer wired up yet for kind "' +
+              kind +
+              '" — ' +
+              list.length +
+              " entr" +
+              (list.length === 1 ? "y" : "ies") +
+              " pending.";
+            grid.appendChild(placeholder);
+          }
+
+          section.appendChild(grid);
+          main.appendChild(section);
+        }
+
+        // --- soundboard section ---
+        if (audioFiles.length > 0) {
+          const section = document.createElement("section");
+          section.className = "kind-section";
+          section.id = "section-" + SFX_CLASS;
+          section.dataset.kind = SFX_CLASS;
+
+          const h2 = document.createElement("h2");
+          h2.textContent = "SFX (" + audioFiles.length + ")";
+          section.appendChild(h2);
+
+          const note = document.createElement("p");
+          note.className = "empty-state";
+          note.style.padding = "0 0 1rem";
+          note.style.textAlign = "left";
+          const mappedCount = Object.keys(audioManifest.entries || {}).length;
+          note.textContent =
+            "Full raw seed pack from art-source/seed/audio/kenney-rpg-audio/ (CC0, Kenney RPG Audio). " +
+            mappedCount +
+            " of " +
+            audioFiles.length +
+            " are currently wired to gameplay events (audio-manifest.json) — highlighted below.";
+          section.appendChild(note);
+
+          section.appendChild(
+            buildSoundboard(audioFiles, audioManifest.entries || {}),
+          );
+          main.appendChild(section);
+        }
+      }
+
+      init();
+    </script>
+  </body>
 </html>

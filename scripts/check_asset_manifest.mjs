@@ -8,15 +8,24 @@
 // Inputs (defaults resolve relative to the repo root):
 //   - colyseus-server/generated/asset-keys.json  { version, keys: [{ id, kind }] }
 //   - game-client/assets/manifest.json           { version, entries: { <id>: { scene, source, license, tier, kind } } }
-//   - res:// scene paths resolve against game-client/ (the Godot project root).
+//   - game-client/assets/audio-manifest.json     { version, entries: { <event>: { stream, license } } }
+//   - res:// scene/stream paths resolve against game-client/ (the Godot project root).
 //
-// Rules:
+// Rules (visual manifest):
 //   FAILURE  — manifest/keys file missing or malformed
 //   FAILURE  — an entry's `scene` is not a res:// path, or the resolved file is missing
 //   FAILURE  — an entry's `license` is empty/whitespace
 //   FAILURE  — an entry's `source` is empty/whitespace
 //   WARNING  — a key present in asset-keys.json has no manifest entry (UNMAPPED)
 //   WARNING  — a manifest entry whose id is not a known asset key (UNKNOWN)
+//
+// Rules (audio manifest — event keys like `sfx:attack` are a curated set, not
+// codegen-derived, so this only checks the manifest is internally consistent,
+// not that it maps 1:1 onto some generated key list):
+//   FAILURE  — audio-manifest.json missing or malformed
+//   FAILURE  — an entry's `stream` is not a res:// path, or the resolved file is
+//              missing / not a regular file / zero bytes
+//   FAILURE  — an entry's `license` is empty/whitespace
 //
 // Stage-0 default: unmapped keys are warnings (the manifest ships empty and
 // fills in over Stage 0.5). Pass --require-complete to make unmapped keys a
@@ -29,6 +38,7 @@
 //   --require-complete       unmapped keys become failures
 //   --keys <path>            override asset-keys.json path (testing)
 //   --manifest <path>        override manifest.json path (testing)
+//   --audio-manifest <path>  override audio-manifest.json path (testing)
 //   --game-client <dir>      override the res:// root dir (testing)
 
 import { readFileSync, existsSync, statSync } from "node:fs";
@@ -43,6 +53,7 @@ function parseArgs(argv) {
     requireComplete: false,
     keys: join(REPO_ROOT, "colyseus-server/generated/asset-keys.json"),
     manifest: join(REPO_ROOT, "game-client/assets/manifest.json"),
+    audioManifest: join(REPO_ROOT, "game-client/assets/audio-manifest.json"),
     gameClient: join(REPO_ROOT, "game-client"),
   };
   for (let i = 0; i < argv.length; i++) {
@@ -50,6 +61,7 @@ function parseArgs(argv) {
     if (a === "--require-complete") opts.requireComplete = true;
     else if (a === "--keys") opts.keys = resolve(argv[++i]);
     else if (a === "--manifest") opts.manifest = resolve(argv[++i]);
+    else if (a === "--audio-manifest") opts.audioManifest = resolve(argv[++i]);
     else if (a === "--game-client") opts.gameClient = resolve(argv[++i]);
     else {
       console.error(`Unknown argument: ${a}`);
@@ -97,6 +109,10 @@ function main() {
   const opts = parseArgs(process.argv.slice(2));
   const failures = [];
   const warnings = [];
+
+  // Audio manifest validation is independent of the visual manifest/keys —
+  // run it unconditionally so it isn't skipped by an early bail-out below.
+  validateAudioManifest(opts, failures, warnings);
 
   const keysDoc = readJson(opts.keys, "asset-keys", failures);
   const manifestDoc = readJson(opts.manifest, "manifest", failures);
@@ -151,9 +167,7 @@ function main() {
     // A manifest entry for an id the codegen doesn't know about is drift —
     // warn (not fatal), since it points at a stale/renamed key.
     if (!keyIds.has(id)) {
-      warnings.push(
-        `entry "${id}": not a known asset key (stale or renamed?)`,
-      );
+      warnings.push(`entry "${id}": not a known asset key (stale or renamed?)`);
     }
   }
 
@@ -170,22 +184,61 @@ function main() {
   return report(failures, warnings, opts);
 }
 
+function validateAudioManifest(opts, failures, warnings) {
+  const audioDoc = readJson(opts.audioManifest, "audio-manifest", failures);
+  if (audioDoc === null) return;
+
+  const entries =
+    audioDoc.entries && typeof audioDoc.entries === "object"
+      ? audioDoc.entries
+      : null;
+  if (entries === null) {
+    failures.push("audio-manifest: expected an `entries` object");
+    return;
+  }
+
+  for (const [id, entry] of Object.entries(entries)) {
+    if (!entry || typeof entry !== "object") {
+      failures.push(`audio entry "${id}": not an object`);
+      continue;
+    }
+
+    const fsPath = resolveResPath(entry.stream, opts.gameClient);
+    if (fsPath === null) {
+      failures.push(
+        `audio entry "${id}": stream must be a res:// path (got ${JSON.stringify(entry.stream)})`,
+      );
+    } else if (!existsSync(fsPath) || !statSync(fsPath).isFile()) {
+      failures.push(
+        `audio entry "${id}": stream file not found — ${entry.stream} → ${fsPath}`,
+      );
+    } else if (statSync(fsPath).size === 0) {
+      failures.push(
+        `audio entry "${id}": stream file is empty — ${entry.stream} → ${fsPath}`,
+      );
+    }
+
+    if (!isNonEmpty(entry.license)) {
+      failures.push(`audio entry "${id}": license is empty`);
+    }
+  }
+}
+
 function report(failures, warnings, opts) {
   console.log("asset-manifest drift-gate");
   console.log(
     `  mode: ${opts.requireComplete ? "require-complete (Stage 0.5+)" : "stage-0 (unmapped = warning)"}`,
   );
-  console.log(`  keys:     ${opts.keys}`);
-  console.log(`  manifest: ${opts.manifest}`);
+  console.log(`  keys:           ${opts.keys}`);
+  console.log(`  manifest:       ${opts.manifest}`);
+  console.log(`  audio-manifest: ${opts.audioManifest}`);
   console.log("");
 
   for (const w of warnings) console.log(`  ⚠️  WARN  ${w}`);
   for (const f of failures) console.log(`  ❌ FAIL  ${f}`);
 
   console.log("");
-  console.log(
-    `  ${warnings.length} warning(s), ${failures.length} failure(s)`,
-  );
+  console.log(`  ${warnings.length} warning(s), ${failures.length} failure(s)`);
 
   if (failures.length > 0) {
     console.log("❌ asset-manifest drift-gate FAILED");
