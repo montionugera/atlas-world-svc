@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using AtlasWorld.Client.Audio;
 
 namespace AtlasWorld.Client.World
 {
@@ -20,6 +21,13 @@ namespace AtlasWorld.Client.World
     /// the logical state actually changes, so one-shot clips (die, attack) are not
     /// restarted every frame while the state persists, and looping clips (idle/walk/sprint)
     /// are left alone — untouched — once started.</para>
+    ///
+    /// <para>Positional combat SFX PoC: the SAME state-change edge that drives clip
+    /// selection also fires <see cref="AudioRegistry.Play"/> for the attack/death states
+    /// (<c>sfx:attack</c> / <c>sfx:death</c>) — no second edge-detector is built for
+    /// audio. This fires even for entities with no <see cref="AnimationPlayer"/> (the
+    /// procedural capsule tier), since the state machine itself doesn't need one; only
+    /// the clip playback below does.</para>
     /// </summary>
     public sealed class AnimationController
     {
@@ -48,9 +56,20 @@ namespace AtlasWorld.Client.World
         private const double LoopBlendSec = 0.15;
         private const double OneShotBlendSec = 0.05;
 
+        /// <summary>Combat-event SFX keys — see <c>assets/audio-manifest.json</c>.</summary>
+        private const string SfxAttack = "sfx:attack";
+        private const string SfxDeath = "sfx:death";
+
         private readonly AnimationPlayer? _player;
         private readonly IReadOnlyDictionary<string, string> _clipMap;
         private readonly HashSet<string> _warnedMissingClips = new();
+
+        /// <summary>
+        /// The view's visual root, kept ONLY to read a world position at the moment an
+        /// audio-bearing state edge fires (see <see cref="FireAudioForState"/>). Not used
+        /// for anything animation-related — <see cref="_player"/> already owns that.
+        /// </summary>
+        private readonly Node3D? _modelRoot;
 
         private string _lastState = "";
 
@@ -58,6 +77,7 @@ namespace AtlasWorld.Client.World
         /// <param name="clipOverrides">Optional per-entry overrides layered over <see cref="DefaultClipMap"/>.</param>
         public AnimationController(Node modelRoot, IReadOnlyDictionary<string, string>? clipOverrides = null)
         {
+            _modelRoot = modelRoot as Node3D;
             _player = FindAnimationPlayer(modelRoot);
             _clipMap = MergeClipMap(clipOverrides);
 
@@ -79,15 +99,39 @@ namespace AtlasWorld.Client.World
         /// </summary>
         public void Update(bool isAlive, Vector3 velocity, bool isAttacking = false)
         {
-            if (_player == null || !GodotObject.IsInstanceValid(_player))
-                return;
-
             string state = ResolveState(isAlive, velocity, isAttacking);
             if (state == _lastState)
                 return; // edge-triggered: one-shots don't restart, loops keep looping
 
             _lastState = state;
+            FireAudioForState(state); // same edge, independent of whether a clip exists
+
+            if (_player == null || !GodotObject.IsInstanceValid(_player))
+                return; // no AnimationPlayer (e.g. capsule fallback) — nothing left to do
+
             PlayState(state);
+        }
+
+        /// <summary>
+        /// Positional combat SFX PoC: on the attack/death state edge, play the mapped
+        /// event at the entity's current world position. Any other state (idle/walk/run)
+        /// is not mapped and is a no-op. Safe if the <see cref="AudioRegistry"/> autoload
+        /// isn't up yet (isolated/verify contexts) or the model root was freed.
+        /// </summary>
+        private void FireAudioForState(string state)
+        {
+            string? eventKey = state switch
+            {
+                StateAttack => SfxAttack,
+                StateDeath => SfxDeath,
+                _ => null,
+            };
+            if (eventKey == null)
+                return;
+            if (_modelRoot == null || !GodotObject.IsInstanceValid(_modelRoot))
+                return;
+
+            AudioRegistry.Instance?.Play(eventKey, _modelRoot.GlobalPosition);
         }
 
         private static string ResolveState(bool isAlive, Vector3 velocity, bool isAttacking)

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Godot;
 using AtlasWorld.Contracts;
 using AtlasWorld.Client.Content;
+using AtlasWorld.Client.Audio;
 
 namespace AtlasWorld.Client.World
 {
@@ -29,6 +30,15 @@ namespace AtlasWorld.Client.World
 
         /// <summary>Cached from the most recent <see cref="ApplyLife"/> — animation reads it every frame.</summary>
         private bool _isAttacking;
+
+        /// <summary>
+        /// Combat SFX PoC: last-seen HP, used ONLY to detect a "hit" edge (a decrease)
+        /// in <see cref="ApplyLife"/> — attack/death reuse <see cref="AnimationController"/>'s
+        /// existing state-change edge, but nothing already tracks HP deltas, so this is
+        /// the one small edge this PoC adds. -1 sentinel = "no baseline yet" (spawn),
+        /// so the very first snapshot never falsely reads as a hit.
+        /// </summary>
+        private float _lastHealth = -1f;
 
         public Node3D Root => _root;
 
@@ -115,6 +125,15 @@ namespace AtlasWorld.Client.World
         {
             Alive = e.isAlive;
             _isAttacking = e.isAttacking;
+
+            // "hit" edge: HP dropped since the last life update (and the entity was, and
+            // still is, alive — death already plays its own sfx via AnimationController).
+            if (_lastHealth >= 0f && e.isAlive && e.currentHealth < _lastHealth &&
+                IsInstanceValid(_root))
+            {
+                AudioRegistry.Instance?.Play("sfx:hit", _root.GlobalPosition);
+            }
+            _lastHealth = e.currentHealth;
 
             if (_material != null)
                 _material.AlbedoColor = TeamTint(e.teamId, _material.AlbedoColor);

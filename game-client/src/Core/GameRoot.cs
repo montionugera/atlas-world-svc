@@ -6,6 +6,7 @@ using AtlasWorld.Client.World;
 using AtlasWorld.Client.Input;
 using AtlasWorld.Client.UI.Panels;
 using AtlasWorld.Client.Content;
+using AtlasWorld.Client.Audio;
 
 namespace AtlasWorld.Client.Core
 {
@@ -68,6 +69,17 @@ namespace AtlasWorld.Client.Core
             if (OS.GetEnvironment("ATLAS_VERIFY_ANIM") == "1")
             {
                 int code = AnimationVerify.Run(this);
+                GetTree().Quit(code);
+                return;
+            }
+
+            // Env-gated offline verify probe (ATLAS_VERIFY_SFX=1): exercises the
+            // AudioRegistry against the committed audio manifest — resolves each combat
+            // event to a real stream, proves Play() spawns a positioned/playing one-shot,
+            // proves an unknown key safely no-ops — then quits BEFORE any networking.
+            if (OS.GetEnvironment("ATLAS_VERIFY_SFX") == "1")
+            {
+                int code = AudioVerify.Run();
                 GetTree().Quit(code);
                 return;
             }

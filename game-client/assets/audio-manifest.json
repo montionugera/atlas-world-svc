@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "entries": {
+    "sfx:attack": {
+      "stream": "res://assets/audio/chop.ogg",
+      "license": "CC0 (Kenney RPG Audio)"
+    },
+    "sfx:hit": {
+      "stream": "res://assets/audio/knifeSlice.ogg",
+      "license": "CC0 (Kenney RPG Audio)"
+    },
+    "sfx:death": {
+      "stream": "res://assets/audio/metalLatch.ogg",
+      "license": "CC0 (Kenney RPG Audio) -- no dedicated death/impact sample in the seed pack; reusing the heaviest-sounding clip (a metal latch clunk) as a deliberate PoC stand-in."
+    }
+  }
+}

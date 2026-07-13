@@ -18,6 +18,7 @@ config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 
 MetaGateway="*res://src/Meta/MetaGateway.cs"
 AssetRegistry="*res://src/Content/AssetRegistry.cs"
+AudioRegistry="*res://src/Audio/AudioRegistry.cs"
 
 [dotnet]
 
