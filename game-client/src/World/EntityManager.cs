@@ -167,12 +167,20 @@ namespace AtlasWorld.Client.World
                     {
                         (Vector3 opos, float ohead) = _ownSmoother.Step(newest, ageSec, (float)delta, _localMoveHeld);
                         kv.Value.ApplyPose(opos, ohead);
+                        // Animation gait reads the raw server velocity (not the smoothed
+                        // render pose delta) — same source dead reckoning itself extrapolates from.
+                        kv.Value.UpdateAnimation(newest.Vel);
                     }
                     continue;
                 }
 
                 if (_interp.TrySamplePose(kv.Key, delayedCursor, out Vector3 pos, out float heading))
                     kv.Value.ApplyPose(pos, heading);
+                // Animation state is driven from the newest RAW sample's velocity, independent
+                // of the delayed interpolation cursor used for position — gait should react to
+                // "is the server telling us this entity is moving right now", not the render lag.
+                if (_interp.TryGetNewest(kv.Key, now, out PoseSample newestRemote, out _))
+                    kv.Value.UpdateAnimation(newestRemote.Vel);
             }
 
             _interp.TickCleanup(now);

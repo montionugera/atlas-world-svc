@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 using AtlasWorld.Contracts;
 using AtlasWorld.Client.Content;
@@ -24,6 +25,10 @@ namespace AtlasWorld.Client.World
         private readonly StandardMaterial3D? _material;
         private readonly MeshInstance3D? _hpBar;
         private readonly StandardMaterial3D? _hpBarMaterial;
+        private readonly AnimationController _animController;
+
+        /// <summary>Cached from the most recent <see cref="ApplyLife"/> — animation reads it every frame.</summary>
+        private bool _isAttacking;
 
         public Node3D Root => _root;
 
@@ -38,6 +43,12 @@ namespace AtlasWorld.Client.World
         public EntityView(EntityKind kind, string typeId)
         {
             _root = BuildVisualRoot(kind, typeId);
+
+            // Same seam as the visual node itself: ask the registry for any per-entry clip
+            // overrides for this type id. Null/empty when there is no manifest entry (or no
+            // "anims" object on it) — the controller then just uses the shared Kenney default.
+            IReadOnlyDictionary<string, string>? animOverrides = AssetRegistry.Instance?.ResolveAnimOverrides(typeId);
+            _animController = new AnimationController(_root, animOverrides);
 
             // Rediscover the mutable capsule-tier parts by name. They exist on the procedural
             // capsule (player/npc/mob carry an HpBar); bespoke/seed scenes may omit them, in
@@ -92,10 +103,18 @@ namespace AtlasWorld.Client.World
             _root.Rotation = new Vector3(0f, -headingRadians, 0f);
         }
 
+        /// <summary>
+        /// Drive this frame's animation from the entity's velocity. Alive/attacking state is
+        /// read from the cache kept up to date by <see cref="ApplyLife"/> — this method only
+        /// needs the per-frame velocity, which lives with pose (interpolator), not life.
+        /// </summary>
+        public void UpdateAnimation(Vector3 velocity) => _animController.Update(Alive, velocity, _isAttacking);
+
         /// <summary>Apply a life entity's VISUAL state (Player / Mob / NPC) — no pose here.</summary>
         public void ApplyLife(WorldLife e)
         {
             Alive = e.isAlive;
+            _isAttacking = e.isAttacking;
 
             if (_material != null)
                 _material.AlbedoColor = TeamTint(e.teamId, _material.AlbedoColor);

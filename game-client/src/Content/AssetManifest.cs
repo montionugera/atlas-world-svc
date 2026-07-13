@@ -32,6 +32,14 @@ namespace AtlasWorld.Client.Content
 
         /// <summary>Content class: <c>character | prop | vfx | audio</c>.</summary>
         public string Kind { get; init; } = "";
+
+        /// <summary>
+        /// Optional per-entry override of the shared logical-state → clip-name animation
+        /// map (see <c>AnimationController.DefaultClipMap</c>), e.g. <c>{"attack": "attack-kick-right"}</c>.
+        /// Empty (never null) when the manifest entry has no <c>anims</c> object — the
+        /// controller then falls back to the shared Kenney default for every state.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> Anims { get; init; } = new Dictionary<string, string>();
     }
 
     /// <summary>
@@ -154,6 +162,7 @@ namespace AtlasWorld.Client.Content
                         License = d.License ?? "",
                         Tier = d.Tier ?? "",
                         Kind = d.Kind ?? "",
+                        Anims = d.Anims ?? new Dictionary<string, string>(),
                     };
                 }
             }
@@ -195,6 +204,9 @@ namespace AtlasWorld.Client.Content
 
             [JsonPropertyName("kind")]
             public string? Kind { get; set; }
+
+            [JsonPropertyName("anims")]
+            public Dictionary<string, string>? Anims { get; set; }
         }
     }
 }

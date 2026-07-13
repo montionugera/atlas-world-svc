@@ -93,6 +93,22 @@ namespace AtlasWorld.Client.Content
         }
 
         /// <summary>
+        /// Look up a manifest entry's optional per-entry animation clip overrides (the
+        /// <c>anims</c> object) for a type id. Empty (never null) when there is no manifest,
+        /// no entry for this id, or the entry has no <c>anims</c> object — callers (currently
+        /// <see cref="World.EntityView"/>'s <see cref="World.AnimationController"/>) then just
+        /// fall back to the shared Kenney default clip map. Total, never throws.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> ResolveAnimOverrides(string typeId)
+        {
+            if (_manifest != null && _manifest.TryGet(typeId, out AssetEntry entry))
+                return entry.Anims;
+            return EmptyAnims;
+        }
+
+        private static readonly Dictionary<string, string> EmptyAnims = new();
+
+        /// <summary>
         /// Load a <see cref="PackedScene"/> by <c>res://</c> path, cached. Returns null (no
         /// throw, no error spam) for a blank or nonexistent path — the caller falls back.
         /// </summary>

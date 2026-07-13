@@ -61,6 +61,17 @@ namespace AtlasWorld.Client.Core
                 return;
             }
 
+            // Env-gated offline verify probe (ATLAS_VERIFY_ANIM=1): drives AnimationController
+            // with synthetic synced states against a real seed glTF's AnimationPlayer, asserts
+            // the expected clip is playing for idle/walk/sprint/attack/die, then quits BEFORE
+            // any networking. Proves the character animation PoC without a live server.
+            if (OS.GetEnvironment("ATLAS_VERIFY_ANIM") == "1")
+            {
+                int code = AnimationVerify.Run(this);
+                GetTree().Quit(code);
+                return;
+            }
+
             _config = Config.Load();
             GD.Print($"[GameRoot] endpoint={_config.ColyseusEndpoint} room={_config.RoomName} map={_config.MapId}");
 
