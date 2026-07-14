@@ -7,15 +7,27 @@ namespace AtlasWorld.Client.World
     /// each frame the orbit target eases onto the owned player's position (the world is
     /// 1000×1000 and players spawn far from the origin, so an origin-locked camera would
     /// show nothing). Extracted from the spike's Main.cs.
+    ///
+    /// <para>Default distance/pitch: entities DO correctly rotate to face their heading
+    /// (<see cref="EntityView.ApplyPose"/> — verified this is never clobbered by
+    /// <see cref="AnimationController"/>, and heading itself correctly tracks movement
+    /// direction server-side). The old defaults (distance=14, pitch=0.5, a fairly distant,
+    /// steep near-top-down view) rendered the Kenney character models small enough, and
+    /// from a shallow enough angle, that the turn — while numerically correct — was not
+    /// perceptible: the model's silhouette is dominated by a large dark hair/head blob
+    /// that looks similar from many yaw angles at that scale. Bringing the camera closer
+    /// and a bit more level makes the same, already-correct rotation visibly read as a
+    /// turn. Still fully player-adjustable via the mouse wheel (<see cref="MinDistance"/>/
+    /// <see cref="MaxDistance"/> unchanged).</para>
     /// </summary>
     public sealed partial class CameraRig : Node
     {
         private readonly Camera3D _camera;
         private readonly EntityManager _entities;
 
-        private float _yaw = 0.6f;   // radians around world Y
-        private float _pitch = 0.5f; // radians above the horizon
-        private float _distance = 14f;
+        private float _yaw = 0.6f;    // radians around world Y
+        private float _pitch = 0.35f; // radians above the horizon
+        private float _distance = 7f;
         private Vector3 _target = Vector3.Zero;
         private bool _dragging;
         private bool _hasCentered;

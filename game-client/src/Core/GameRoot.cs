@@ -84,6 +84,16 @@ namespace AtlasWorld.Client.Core
                 return;
             }
 
+            // Env-gated offline verify probe (ATLAS_VERIFY_FACING=1): proves a character's
+            // rendered rotation tracks its heading and is never clobbered by the gait/attack
+            // animation, then quits BEFORE any networking.
+            if (OS.GetEnvironment("ATLAS_VERIFY_FACING") == "1")
+            {
+                int code = FacingVerify.Run(this);
+                GetTree().Quit(code);
+                return;
+            }
+
             _config = Config.Load();
             GD.Print($"[GameRoot] endpoint={_config.ColyseusEndpoint} room={_config.RoomName} map={_config.MapId}");
 
