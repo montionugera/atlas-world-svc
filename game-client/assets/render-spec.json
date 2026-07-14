@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "renderers": {
+    "model3d": {
+      "pathField": "scene",
+      "sceneLoadable": true,
+      "exts": [".glb", ".gltf", ".tscn", ".scn", ".res", ".escn"],
+      "require": ["license", "source"]
+    },
+    "image": {
+      "pathField": "scene",
+      "sceneLoadable": false,
+      "exts": [".png", ".jpg", ".jpeg", ".webp", ".svg"],
+      "require": ["license", "source"]
+    },
+    "spritesheet": {
+      "pathField": "scene",
+      "sceneLoadable": false,
+      "exts": [".png", ".webp"],
+      "require": ["license", "source"],
+      "oneOf": [["frame", "frames"], ["atlas"], ["frame", "animations"]],
+      "optionalPaths": ["atlas"]
+    },
+    "tileset": {
+      "pathField": "scene",
+      "sceneLoadable": false,
+      "exts": [".png"],
+      "require": ["license", "source", "tileSize"]
+    },
+    "ninepatch": {
+      "pathField": "scene",
+      "sceneLoadable": false,
+      "exts": [".png", ".webp"],
+      "require": ["license", "source", "patchMargins"]
+    },
+    "font": {
+      "pathField": "scene",
+      "sceneLoadable": false,
+      "exts": [".ttf", ".otf", ".woff", ".woff2"],
+      "require": ["license", "source", "family"]
+    },
+    "theme": {
+      "pathField": "scene",
+      "sceneLoadable": false,
+      "exts": [".tres"],
+      "require": ["license", "source", "preview", "previewHashOf"],
+      "optionalPaths": ["preview"],
+      "bakedPreview": true
+    },
+    "material": {
+      "pathField": "scene",
+      "sceneLoadable": false,
+      "exts": [".tres", ".material", ".gdshader"],
+      "require": ["license", "source", "preview", "previewHashOf"],
+      "optionalPaths": ["preview"],
+      "bakedPreview": true
+    },
+    "texturemap": {
+      "pathField": "scene",
+      "sceneLoadable": false,
+      "exts": [".png", ".webp"],
+      "require": ["license", "source", "role"]
+    },
+    "skybox": {
+      "pathField": "scene",
+      "sceneLoadable": false,
+      "exts": [".hdr", ".exr", ".png"],
+      "require": ["license", "source"]
+    },
+    "video": {
+      "pathField": "scene",
+      "sceneLoadable": false,
+      "exts": [".webm", ".mp4", ".ogv"],
+      "require": ["license", "source"],
+      "optionalPaths": ["poster"]
+    },
+    "json": {
+      "pathField": "scene",
+      "sceneLoadable": false,
+      "exts": [".json"],
+      "require": ["license", "source"]
+    },
+    "godotres": {
+      "pathField": "scene",
+      "sceneLoadable": false,
+      "exts": [".tres", ".res"],
+      "require": ["license", "source"]
+    },
+    "audio": {
+      "pathField": "stream",
+      "sceneLoadable": false,
+      "exts": [".ogg", ".wav", ".mp3"],
+      "require": ["license"]
+    },
+    "music": {
+      "pathField": "stream",
+      "sceneLoadable": false,
+      "exts": [".ogg", ".mp3"],
+      "require": ["license"]
+    }
+  },
+  "kindDefaultRender": { "character": "model3d", "audio": "audio" },
+  "extRender": {
+    ".glb": "model3d",
+    ".gltf": "model3d",
+    ".tscn": "model3d",
+    ".scn": "model3d",
+    ".png": "image",
+    ".webp": "image",
+    ".jpg": "image",
+    ".jpeg": "image",
+    ".svg": "image",
+    ".ttf": "font",
+    ".otf": "font",
+    ".hdr": "skybox",
+    ".exr": "skybox",
+    ".ogg": "audio",
+    ".wav": "audio",
+    ".mp3": "audio",
+    ".webm": "video",
+    ".ogv": "video",
+    ".mp4": "video",
+    ".json": "json"
+  },
+  "codegenReservedNamespaces": ["player", "npc", "mob:", "projectile:", "zone:", "item:"]
+}

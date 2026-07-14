@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "entries": {
     "player": {
       "scene": "res://assets/characters/character-male-a.glb",

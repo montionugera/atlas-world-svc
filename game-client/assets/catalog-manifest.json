@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "entries": {
+    "icon:health_potion": {
+      "scene": "res://assets/icons/icon-health-potion.svg",
+      "render": "image",
+      "kind": "prop",
+      "source": "hand",
+      "license": "CC0 (hand-authored placeholder)",
+      "tier": "seed",
+      "label": "Health Potion"
+    },
+    "icon:mana_potion": {
+      "scene": "res://assets/icons/icon-mana-potion.svg",
+      "render": "image",
+      "kind": "prop",
+      "source": "hand",
+      "license": "CC0 (hand-authored placeholder)",
+      "tier": "seed",
+      "label": "Mana Potion"
+    }
+  }
+}

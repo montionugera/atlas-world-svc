@@ -6,7 +6,7 @@
     <title>atlas-world-svc — Asset Storybook</title>
     <script
       type="module"
-      src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
+      src="https://unpkg.com/@google/model-viewer@4.3.1/dist/model-viewer.min.js"
     ></script>
     <style>
       :root {
@@ -384,71 +384,215 @@
         text-align: center;
       }
 
-      /* ---------- soundboard ---------- */
+      /* ---------- image renderer (2D icons/sprites) ---------- */
 
-      .soundboard {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .sound-row {
+      .viewport.image-viewport {
         display: flex;
         align-items: center;
-        gap: 0.85rem;
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 0.6rem 0.9rem;
+        justify-content: center;
+        background-image:
+          linear-gradient(45deg, #1c2130 25%, transparent 25%),
+          linear-gradient(-45deg, #1c2130 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #1c2130 75%),
+          linear-gradient(-45deg, transparent 75%, #1c2130 75%);
+        background-size: 16px 16px;
+        background-position:
+          0 0,
+          0 8px,
+          8px -8px,
+          -8px 0px;
+        background-color: #12151d;
       }
 
-      .sound-row.mapped {
+      .viewport.image-viewport img {
+        max-width: 60%;
+        max-height: 60%;
+        /* Seed pack is low-res pixel art — never let the browser smooth it. */
+        image-rendering: pixelated;
+      }
+
+      /* ---------- __unknown renderer (LOUD failure card) ---------- */
+
+      .viewport.unknown-viewport {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 123, 114, 0.12);
+      }
+
+      .unknown-msg {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--err);
+        text-align: center;
+        padding: 0 1rem;
+      }
+
+      .card.missing-entry {
+        border-color: rgba(255, 123, 114, 0.4);
+      }
+
+      /* ---------- soundboard (hover-to-play grid) ---------- */
+
+      .soundboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 0.7rem;
+      }
+
+      .sound-tile {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        min-height: 96px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.75rem 0.8rem 0.7rem;
+        cursor: pointer;
+        user-select: none;
+        outline: none;
+        transition:
+          border-color 0.15s ease,
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .sound-tile:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-2px);
+      }
+
+      .sound-tile.mapped {
         border-color: var(--accent-dim);
         background: linear-gradient(
-          90deg,
-          rgba(124, 158, 255, 0.06),
-          transparent 60%
+          160deg,
+          rgba(124, 158, 255, 0.08),
+          transparent 65%
         );
       }
 
-      .sound-row .sound-name {
+      .sound-tile.playing {
+        border-color: var(--accent);
+        box-shadow:
+          0 0 0 1px var(--accent),
+          0 6px 22px rgba(124, 158, 255, 0.22);
+      }
+
+      .sound-tile.pinned {
+        border-color: var(--ok);
+        box-shadow:
+          0 0 0 1px var(--ok),
+          0 6px 22px rgba(126, 231, 135, 0.18);
+      }
+
+      .sound-tile .tile-top {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+
+      .sound-tile .wave {
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        height: 16px;
+        flex: 0 0 auto;
+      }
+
+      .sound-tile .wave span {
+        width: 3px;
+        height: 5px;
+        border-radius: 2px;
+        background: var(--text-faint);
+        transition: background 0.15s ease;
+      }
+
+      .sound-tile.playing .wave span {
+        background: var(--accent);
+        animation: eq 0.9s ease-in-out infinite;
+      }
+
+      .sound-tile.pinned .wave span {
+        background: var(--ok);
+        animation: eq 0.9s ease-in-out infinite;
+      }
+
+      .sound-tile .wave span:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .sound-tile .wave span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .sound-tile .wave span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .sound-tile .wave span:nth-child(4) {
+        animation-delay: 0.45s;
+      }
+
+      @keyframes eq {
+        0%,
+        100% {
+          height: 5px;
+        }
+        50% {
+          height: 15px;
+        }
+      }
+
+      .sound-tile .sound-state {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--text-faint);
+        margin-left: auto;
+        flex: 0 0 7px;
+      }
+
+      .sound-tile .sound-state.ok {
+        background: var(--ok);
+      }
+      .sound-tile .sound-state.err {
+        background: var(--err);
+      }
+
+      .sound-tile .sound-name {
         font-family: var(--mono);
-        font-size: 0.82rem;
+        font-size: 0.74rem;
         color: var(--text);
-        flex: 0 0 200px;
+        line-height: 1.35;
+        word-break: break-all;
+      }
+
+      .sound-tile .tile-bot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.4rem;
+        margin-top: auto;
+      }
+
+      .sound-tile .sound-size {
+        font-family: var(--mono);
+        font-size: 0.66rem;
+        color: var(--text-faint);
+        flex: 0 0 auto;
+      }
+
+      .sound-tile .event-key {
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        color: var(--accent);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-      }
-
-      .sound-row audio {
-        flex: 1;
-        min-width: 0;
-        height: 32px;
-      }
-
-      .sound-row .sound-size {
-        font-family: var(--mono);
-        font-size: 0.68rem;
-        color: var(--text-faint);
-        flex: 0 0 auto;
-        width: 4.5rem;
+        max-width: 62%;
         text-align: right;
-      }
-
-      .sound-row .sound-state {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--text-faint);
-        flex: 0 0 8px;
-      }
-
-      .sound-row .sound-state.ok {
-        background: var(--ok);
-      }
-      .sound-row .sound-state.err {
-        background: var(--err);
       }
 
       footer {
@@ -484,13 +628,14 @@
         <h1>Seed Asset Gallery</h1>
         <p>
           Live preview of the game's baked seed-tier assets, rendered
-          client-side with
-          <code>&lt;model-viewer&gt;</code> and native
-          <code>&lt;audio&gt;</code>, straight from
-          <code>game-client/assets/</code> and <code>art-source/</code>.
-          Entries, keys, and file lists are read from the manifests at load time
-          — this page never hand-invents the mapping. Drag a model to orbit,
-          scroll to zoom, pick a clip from the animation dropdown to preview it.
+          client-side by a pluggable render-type registry — today
+          <code>&lt;model-viewer&gt;</code> (3D), native
+          <code>&lt;img&gt;</code> (2D icons), and WebAudio (SFX) — straight
+          from <code>game-client/assets/</code> and <code>art-source/</code>.
+          Entries, keys, and render-type rules are read from the manifests and
+          <code>render-spec.json</code> at load time — this page never
+          hand-invents the mapping. Drag a model to orbit, scroll to zoom,
+          pick a clip from the animation dropdown to preview it.
         </p>
         <div class="stat-row">
           <div class="stat">
@@ -502,6 +647,7 @@
           <div class="stat">
             characters rendered: <b id="stat-characters">&hellip;</b>
           </div>
+          <div class="stat">icons rendered: <b id="stat-icons">&hellip;</b></div>
           <div class="stat">seed sounds: <b id="stat-sounds">&hellip;</b></div>
         </div>
       </header>
@@ -513,23 +659,42 @@
       <footer>
         Sources:
         <a href="../../game-client/assets/manifest.json">manifest.json</a>,
+        <a href="../../game-client/assets/catalog-manifest.json"
+          >catalog-manifest.json</a
+        >,
         <a href="../../game-client/assets/audio-manifest.json"
           >audio-manifest.json</a
-        >, <a href="./audio-index.json">audio-index.json</a> (generated by
-        <code>scripts/gen_audio_index.mjs</code> from
+        >,
+        <a href="../../game-client/assets/render-spec.json"
+          >render-spec.json</a
+        >
+        (render-type contract, shared with
+        <code>scripts/check_asset_manifest.mjs</code>),
+        <a href="../../colyseus-server/generated/asset-keys.json"
+          >asset-keys.json</a
+        >
+        (Coverage panel), <a href="./audio-index.json">audio-index.json</a>
+        (generated by <code>scripts/gen_audio_index.mjs</code> from
         <code>art-source/seed/audio/kenney-rpg-audio/</code>) &middot; served
-        locally, not sandboxed &middot; model-viewer via unpkg CDN
+        locally, not sandboxed &middot; model-viewer via unpkg CDN, pinned
+        @4.3.1
       </footer>
     </div>
 
     <script>
       const MANIFEST_URL = "../../game-client/assets/manifest.json";
+      const CATALOG_MANIFEST_URL =
+        "../../game-client/assets/catalog-manifest.json";
       const AUDIO_MANIFEST_URL = "../../game-client/assets/audio-manifest.json";
+      const RENDER_SPEC_URL = "../../game-client/assets/render-spec.json";
+      const ASSET_KEYS_URL =
+        "../../colyseus-server/generated/asset-keys.json";
       const AUDIO_INDEX_URL = "./audio-index.json";
       const ASSET_ROOT = "../../game-client/"; // scene/stream paths are "res://assets/..." relative to game-client/
       const RAW_AUDIO_ROOT = "../../art-source/seed/audio/kenney-rpg-audio/";
 
-      const SFX_CLASS = "sfx"; // synthetic kind for the audio soundboard (not present in manifest.json)
+      const SFX_CLASS = "sfx"; // synthetic class for the audio soundboard (not present in any manifest)
+      const COVERAGE_CLASS = "coverage"; // synthetic class for unmapped-codegen-key cards (§8 Phase 1c)
 
       // health[kind] = { total, ok, err } — updated as models/audio finish loading,
       // sidebar badges re-render on every update.
@@ -554,13 +719,109 @@
         health[kind] = { total, ok: 0, err: 0 };
       }
 
-      // ---------- 3D character cards (with animation dropdown) ----------
+      // ---------- render-type resolution (§4.1) ----------
+      //
+      // Mirrored byte-for-byte in scripts/check_asset_manifest.mjs so the
+      // gate and this page can never disagree on what a given entry renders
+      // as. `render` is optional and authoritative when present; otherwise
+      // resolve by kind-default → extension-sniff → "unknown".
 
-      function buildCard(key, entry) {
-        const src = resolveSceneSrc(entry.scene);
+      function primaryPath(entry) {
+        return entry.scene ?? entry.stream ?? "";
+      }
+
+      function resolveRender(entry, spec) {
+        if (entry.render) return entry.render; // 1. explicit — authoritative
+        if (entry.kind && spec.kindDefaultRender[entry.kind])
+          return spec.kindDefaultRender[entry.kind]; // 2. unambiguous kind default
+        const path = primaryPath(entry);
+        const dot = path.lastIndexOf(".");
+        const ext = dot === -1 ? "" : path.slice(dot).toLowerCase();
+        return spec.extRender[ext] || "unknown"; // 3. ext sniff → 4. unknown
+      }
+
+      // ---------- shared card chrome ----------
+      //
+      // Every render-type builder returns just the `.viewport` contents;
+      // this wraps it in the same key/filename/badges footer every card has
+      // always had, so plugging in a new renderer never touches this shell.
+
+      function buildCardShell(key, entry, render, viewportEl) {
         const card = document.createElement("div");
         card.className = "card";
         card.dataset.kind = entry.kind || "unknown";
+        card.dataset.render = render;
+        card.appendChild(viewportEl);
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+
+        const keyEl = document.createElement("p");
+        keyEl.className = "key";
+        keyEl.textContent = key;
+
+        const fileEl = document.createElement("p");
+        fileEl.className = "filename";
+        fileEl.textContent = filenameOf(primaryPath(entry));
+
+        const badges = document.createElement("div");
+        badges.className = "badges";
+
+        const tierBadge = document.createElement("span");
+        tierBadge.className = "badge tier-" + (entry.tier || "unknown");
+        tierBadge.textContent = entry.tier || "unknown tier";
+        badges.appendChild(tierBadge);
+
+        const kindBadge = document.createElement("span");
+        kindBadge.className = "badge kind";
+        kindBadge.textContent = entry.kind || "unknown kind";
+        badges.appendChild(kindBadge);
+
+        const licenseBadge = document.createElement("span");
+        licenseBadge.className = "badge license";
+        licenseBadge.textContent = entry.license || "unknown license";
+        badges.appendChild(licenseBadge);
+
+        meta.appendChild(keyEl);
+        meta.appendChild(fileEl);
+        meta.appendChild(badges);
+
+        card.appendChild(meta);
+        return card;
+      }
+
+      // ---------- render-type registry ----------
+      //
+      // render-type → builder(key, entry, render) → viewport element.
+      // Plugging in a new renderer = one row in render-spec.json (so the
+      // gate validates it too) + one build fn registered here — no other
+      // code path changes.
+      //
+      // `audio` is deliberately NOT in this map: buildAudio() builds the
+      // whole SFX section from the raw audio-index.json pack listing (a
+      // bespoke, whole-pack browser, not a per-entry card — §5's decision to
+      // keep the raw-pack view alive rather than shrink it to the 3 curated
+      // audio-manifest.json entries), so its signature doesn't match the
+      // single-entry builder(key, entry, render) contract every RENDERERS
+      // entry must honor. It's called directly from init() instead.
+
+      const RENDERERS = {
+        model3d: buildModel3d,
+        image: buildImage,
+        __unknown: buildUnknown,
+      };
+
+      function renderEntry(key, entry, spec) {
+        const render = resolveRender(entry, spec);
+        const build = RENDERERS[render] || RENDERERS.__unknown;
+        const viewportEl = build(key, entry, render);
+        return buildCardShell(key, entry, render, viewportEl);
+      }
+
+      // ---------- 3D character cards (with animation dropdown) ----------
+
+      function buildModel3d(key, entry, render) {
+        const src = resolveSceneSrc(entry.scene);
 
         const viewport = document.createElement("div");
         viewport.className = "viewport";
@@ -600,7 +861,7 @@
         mv.addEventListener("load", () => {
           loadState.textContent = "loaded ✓";
           loadState.classList.add("ok");
-          bumpHealth(entry.kind || "unknown", { ok: 1 });
+          bumpHealth(render, { ok: 1 });
 
           const clips = mv.availableAnimations || [];
           animSelect.innerHTML = "";
@@ -626,88 +887,131 @@
         mv.addEventListener("error", (e) => {
           loadState.textContent = "load error";
           loadState.classList.add("err");
-          bumpHealth(entry.kind || "unknown", { err: 1 });
+          bumpHealth(render, { err: 1 });
           console.error("[asset-storybook] model failed to load:", key, src, e);
         });
 
         viewport.appendChild(mv);
         viewport.appendChild(animPicker);
         viewport.appendChild(loadState);
+        return viewport;
+      }
 
-        const meta = document.createElement("div");
-        meta.className = "meta";
+      // ---------- 2D image cards (icons/sprites) ----------
 
-        const keyEl = document.createElement("p");
-        keyEl.className = "key";
-        keyEl.textContent = key;
+      function buildImage(key, entry, render) {
+        const src = resolveSceneSrc(entry.scene);
 
-        const fileEl = document.createElement("p");
-        fileEl.className = "filename";
-        fileEl.textContent = filenameOf(entry.scene);
+        const viewport = document.createElement("div");
+        viewport.className = "viewport image-viewport";
 
-        const badges = document.createElement("div");
-        badges.className = "badges";
+        const img = document.createElement("img");
+        img.setAttribute("alt", key);
+        img.setAttribute("src", src);
 
-        const tierBadge = document.createElement("span");
-        tierBadge.className = "badge tier-" + (entry.tier || "unknown");
-        tierBadge.textContent = entry.tier || "unknown tier";
-        badges.appendChild(tierBadge);
+        const loadState = document.createElement("div");
+        loadState.className = "load-state";
+        loadState.textContent = "loading…";
 
-        const kindBadge = document.createElement("span");
-        kindBadge.className = "badge kind";
-        kindBadge.textContent = entry.kind || "unknown kind";
-        badges.appendChild(kindBadge);
+        img.addEventListener("load", () => {
+          loadState.textContent = "loaded ✓";
+          loadState.classList.add("ok");
+          bumpHealth(render, { ok: 1 });
+        });
+        img.addEventListener("error", (e) => {
+          loadState.textContent = "load error";
+          loadState.classList.add("err");
+          bumpHealth(render, { err: 1 });
+          console.error("[asset-storybook] image failed to load:", key, src, e);
+        });
 
-        const licenseBadge = document.createElement("span");
-        licenseBadge.className = "badge license";
-        licenseBadge.textContent = entry.license || "unknown license";
-        badges.appendChild(licenseBadge);
+        viewport.appendChild(img);
+        viewport.appendChild(loadState);
+        return viewport;
+      }
 
-        meta.appendChild(keyEl);
-        meta.appendChild(fileEl);
-        meta.appendChild(badges);
+      // ---------- __unknown renderer (LOUD failure card, never silent) ----------
+      //
+      // Fallback for any render-type with no registered builder — either
+      // resolveRender() fell all the way through to "unknown", or the entry
+      // named a render-type render-spec.json knows about but this page
+      // hasn't implemented a builder for yet (future phases). Either way,
+      // per §1 goal 4: never silently show nothing.
 
-        card.appendChild(viewport);
-        card.appendChild(meta);
-        return card;
+      function buildUnknown(key, entry, render) {
+        const viewport = document.createElement("div");
+        viewport.className = "viewport unknown-viewport";
+
+        const msg = document.createElement("div");
+        msg.className = "unknown-msg";
+        msg.textContent = 'no renderer for render="' + render + '"';
+        viewport.appendChild(msg);
+
+        // Synchronous, immediate failure — there's no async load to wait on.
+        bumpHealth(render, { err: 1 });
+        return viewport;
       }
 
       // ---------- soundboard ----------
 
-      async function loadAudioAsBlob(url) {
+      // Playback uses the WebAudio API (decodeAudioData + AudioBufferSourceNode)
+      // rather than a native <audio> element. The element's resource-loading
+      // path stalls indefinitely against a bare static file server that ignores
+      // HTTP Range requests (e.g. `python3 -m http.server`, used for local
+      // verification) — readyState never leaves HAVE_NOTHING. Fetching the whole
+      // file and decoding it into an AudioBuffer sidesteps that entirely and
+      // gives sample-accurate looping for the short one-shot SFX.
+      let audioCtx = null;
+      function getAudioCtx() {
+        if (!audioCtx)
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        return audioCtx;
+      }
+
+      // Browsers gate audio behind a user gesture: the context starts
+      // "suspended" until the first interaction. Resume it on the first pointer
+      // or key event anywhere on the page so hover-to-play works thereafter.
+      function primeAudio() {
+        const ctx = getAudioCtx();
+        if (ctx.state === "suspended") ctx.resume();
+      }
+      window.addEventListener("pointerdown", primeAudio);
+      window.addEventListener("keydown", primeAudio);
+
+      async function loadAudioBuffer(url) {
         const res = await fetch(url);
         if (!res.ok) throw new Error("HTTP " + res.status);
-        const blob = await res.blob();
-        return URL.createObjectURL(blob);
+        const bytes = await res.arrayBuffer();
+        return getAudioCtx().decodeAudioData(bytes);
       }
 
-      // Cap concurrent blob fetches so 51 soundboard rows don't starve the
-      // character glTF loads for bandwidth/CPU on first paint. Small, sequential
-      // batches instead of one big fan-out.
-      const BLOB_FETCH_CONCURRENCY = 4;
-      let activeBlobFetches = 0;
-      const blobFetchQueue = [];
+      // Cap concurrent fetch+decode so 51 sounds don't starve the character
+      // glTF loads for bandwidth/CPU on first paint. Small batches, not one
+      // big fan-out.
+      const AUDIO_DECODE_CONCURRENCY = 4;
+      let activeDecodes = 0;
+      const decodeQueue = [];
 
-      function scheduleBlobFetch(task) {
-        blobFetchQueue.push(task);
-        pumpBlobFetchQueue();
+      function scheduleDecode(task) {
+        decodeQueue.push(task);
+        pumpDecodeQueue();
       }
 
-      function pumpBlobFetchQueue() {
+      function pumpDecodeQueue() {
         while (
-          activeBlobFetches < BLOB_FETCH_CONCURRENCY &&
-          blobFetchQueue.length > 0
+          activeDecodes < AUDIO_DECODE_CONCURRENCY &&
+          decodeQueue.length > 0
         ) {
-          const task = blobFetchQueue.shift();
-          activeBlobFetches++;
+          const task = decodeQueue.shift();
+          activeDecodes++;
           task().finally(() => {
-            activeBlobFetches--;
-            pumpBlobFetchQueue();
+            activeDecodes--;
+            pumpDecodeQueue();
           });
         }
       }
 
-      function buildSoundboard(audioFiles, audioManifestEntries) {
+      function buildAudio(audioFiles, audioManifestEntries) {
         // Map raw filename -> [{ eventKey, license }] for the curated event keys
         // in audio-manifest.json, so rows can be visually distinguished.
         const mappedByFile = new Map();
@@ -723,78 +1027,133 @@
 
         for (const file of audioFiles) {
           const mapped = mappedByFile.get(file.name) || [];
-          const row = document.createElement("div");
-          row.className = "sound-row" + (mapped.length > 0 ? " mapped" : "");
+          const tile = document.createElement("div");
+          tile.className = "sound-tile" + (mapped.length > 0 ? " mapped" : "");
+          tile.tabIndex = 0;
+          tile.title = "Hover to preview (loops) · click to pin";
 
+          // top: equalizer glyph (animates while playing) + health dot
+          const top = document.createElement("div");
+          top.className = "tile-top";
+          const wave = document.createElement("div");
+          wave.className = "wave";
+          for (let i = 0; i < 4; i++)
+            wave.appendChild(document.createElement("span"));
+          top.appendChild(wave);
           const state = document.createElement("span");
           state.className = "sound-state";
-          row.appendChild(state);
+          top.appendChild(state);
+          tile.appendChild(top);
 
-          const nameEl = document.createElement("span");
+          const nameEl = document.createElement("div");
           nameEl.className = "sound-name";
           nameEl.textContent = file.name;
-          nameEl.title = file.name;
-          row.appendChild(nameEl);
+          tile.appendChild(nameEl);
 
-          const audioEl = document.createElement("audio");
-          audioEl.setAttribute("controls", "");
-          audioEl.addEventListener("loadedmetadata", () => {
-            state.classList.add("ok");
-            bumpHealth(SFX_CLASS, { ok: 1 });
-          });
-          audioEl.addEventListener("error", () => {
-            state.classList.add("err");
-            bumpHealth(SFX_CLASS, { err: 1 });
-            console.error("[asset-storybook] audio failed to load:", file.name);
-          });
-          row.appendChild(audioEl);
+          // bottom: size + first mapped event key (title lists all)
+          const bot = document.createElement("div");
+          bot.className = "tile-bot";
+          const sizeEl = document.createElement("span");
+          sizeEl.className = "sound-size";
+          sizeEl.textContent = file.bytes
+            ? (file.bytes / 1024).toFixed(1) + " KB"
+            : "";
+          bot.appendChild(sizeEl);
+          if (mapped.length > 0) {
+            const keyEl = document.createElement("span");
+            keyEl.className = "event-key";
+            keyEl.textContent =
+              mapped.length > 1
+                ? mapped[0].eventKey + " +" + (mapped.length - 1)
+                : mapped[0].eventKey;
+            keyEl.title = mapped
+              .map((m) => m.eventKey + (m.license ? " (" + m.license + ")" : ""))
+              .join(", ");
+            bot.appendChild(keyEl);
+          }
+          tile.appendChild(bot);
 
-          // Load via fetch()+blob rather than a plain `src` URL: a bare static
-          // file server (e.g. `python3 -m http.server`, used for local
-          // verification) doesn't support HTTP Range requests, and Chrome's
-          // native <audio> resource-loading algorithm stalls indefinitely
-          // against a server that ignores Range (readyState never leaves
-          // HAVE_NOTHING). A blob URL is fully buffered locally, so playback
-          // and seeking work regardless of what the server supports. Queued
-          // (not fired all 51 at once) so it doesn't starve the character
-          // glTF loads for bandwidth/CPU.
-          scheduleBlobFetch(() =>
-            loadAudioAsBlob(RAW_AUDIO_ROOT + file.name)
-              .then((objectUrl) => {
-                audioEl.src = objectUrl;
+          // Playback engine: an AudioBuffer decoded once, replayed via a fresh
+          // AudioBufferSourceNode each time (source nodes are single-use).
+          // Looped so a short SFX stays audible while the pointer rests.
+          let buffer = null;
+          let source = null;
+          let pinned = false;
+
+          function stopSource() {
+            if (source) {
+              try {
+                source.stop();
+              } catch (e) {
+                /* already stopped — ignore */
+              }
+              source.disconnect();
+              source = null;
+            }
+          }
+
+          function play() {
+            if (!buffer) return;
+            const ctx = getAudioCtx();
+            if (ctx.state === "suspended") ctx.resume();
+            stopSource();
+            source = ctx.createBufferSource();
+            source.buffer = buffer;
+            source.loop = true;
+            source.connect(ctx.destination);
+            source.start();
+            tile.classList.add("playing");
+          }
+
+          function stop() {
+            stopSource();
+            tile.classList.remove("playing");
+          }
+
+          tile.addEventListener("mouseenter", play);
+          tile.addEventListener("mouseleave", () => {
+            if (!pinned) stop();
+          });
+          tile.addEventListener("focus", play);
+          tile.addEventListener("blur", () => {
+            if (!pinned) stop();
+          });
+          // Click pins the loop so it keeps playing after the mouse leaves;
+          // click again to release (keeps playing if still hovered).
+          tile.addEventListener("click", () => {
+            pinned = !pinned;
+            tile.classList.toggle("pinned", pinned);
+            if (pinned) play();
+            else if (!tile.matches(":hover")) stop();
+          });
+          tile.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              tile.click();
+            }
+          });
+
+          scheduleDecode(() =>
+            loadAudioBuffer(RAW_AUDIO_ROOT + file.name)
+              .then((decoded) => {
+                buffer = decoded;
+                state.classList.add("ok");
+                bumpHealth(SFX_CLASS, { ok: 1 });
+                // If the user is already hovering/pinned while it was decoding.
+                if (pinned || tile.matches(":hover")) play();
               })
               .catch((err) => {
                 state.classList.add("err");
                 bumpHealth(SFX_CLASS, { err: 1 });
                 console.error(
-                  "[asset-storybook] audio fetch failed:",
+                  "[asset-storybook] audio decode failed:",
                   file.name,
                   err,
                 );
               }),
           );
 
-          const sizeEl = document.createElement("span");
-          sizeEl.className = "sound-size";
-          sizeEl.textContent = file.bytes
-            ? (file.bytes / 1024).toFixed(1) + " KB"
-            : "";
-          row.appendChild(sizeEl);
-
-          if (mapped.length > 0) {
-            const badges = document.createElement("div");
-            badges.className = "badges";
-            for (const m of mapped) {
-              const badge = document.createElement("span");
-              badge.className = "badge event-key";
-              badge.textContent = m.eventKey;
-              badge.title = m.license;
-              badges.appendChild(badge);
-            }
-            row.appendChild(badges);
-          }
-
-          board.appendChild(row);
+          board.appendChild(tile);
         }
 
         return board;
@@ -802,10 +1161,25 @@
 
       // ---------- sidebar ----------
 
-      function classLabel(kind) {
-        if (kind === "all") return "All";
-        if (kind === SFX_CLASS) return "SFX";
-        return kind.charAt(0).toUpperCase() + kind.slice(1) + "s";
+      // Sections are now grouped by resolved render-type, not raw `kind`
+      // (§3.2: "sidebar sections ... are computed off whatever render-types
+      // actually appear"). Today that's a 1:1 relabel of the old kind-based
+      // headers (model3d ⇔ character, image ⇔ prop icons) because no
+      // render-type spans multiple kinds yet; §2 documents that model3d will
+      // later also cover vfx scenes, at which point this label map — not the
+      // grouping logic — is what needs to evolve.
+      const RENDER_LABELS = {
+        model3d: "Characters",
+        image: "Icons",
+        __unknown: "Unknown",
+      };
+
+      function classLabel(cls) {
+        if (cls === "all") return "All";
+        if (cls === SFX_CLASS) return "SFX";
+        if (cls === COVERAGE_CLASS) return "Coverage";
+        if (RENDER_LABELS[cls]) return RENDER_LABELS[cls];
+        return cls.charAt(0).toUpperCase() + cls.slice(1) + "s";
       }
 
       function renderSidebarBadge(kind) {
@@ -878,12 +1252,12 @@
         return btn;
       }
 
-      function groupByKind(entries) {
+      function groupByRender(entries, spec) {
         const groups = new Map();
         for (const [key, entry] of entries) {
-          const kind = entry.kind || "unknown";
-          if (!groups.has(kind)) groups.set(kind, []);
-          groups.get(kind).push([key, entry]);
+          const render = resolveRender(entry, spec);
+          if (!groups.has(render)) groups.set(render, []);
+          groups.get(render).push([key, entry]);
         }
         return groups;
       }
@@ -894,17 +1268,85 @@
         return res.json();
       }
 
+      // ---------- coverage panel ----------
+      //
+      // Codegen asset keys (asset-keys.json) with no manifest entry yet.
+      // Distinct from the __unknown renderer: __unknown fires when an entry
+      // EXISTS but its render-type has no builder; this fires when the
+      // codegen key has no entry AT ALL. Both are LOUD red cards — §1 goal 4
+      // ("never silently show nothing, never silently pass drift").
+
+      function buildMissingEntryCard(id, kind) {
+        const viewport = document.createElement("div");
+        viewport.className = "viewport unknown-viewport";
+        const msg = document.createElement("div");
+        msg.className = "unknown-msg";
+        msg.textContent = "MISSING ENTRY";
+        viewport.appendChild(msg);
+
+        const card = document.createElement("div");
+        card.className = "card missing-entry";
+        card.dataset.kind = kind || "unknown";
+        card.appendChild(viewport);
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const keyEl = document.createElement("p");
+        keyEl.className = "key";
+        keyEl.textContent = id;
+        const fileEl = document.createElement("p");
+        fileEl.className = "filename";
+        fileEl.textContent = "no manifest entry — kind: " + (kind || "unknown");
+        meta.appendChild(keyEl);
+        meta.appendChild(fileEl);
+        card.appendChild(meta);
+        return card;
+      }
+
+      function buildCoverageSection(missingKeys) {
+        const section = document.createElement("section");
+        section.className = "kind-section";
+        section.id = "section-" + COVERAGE_CLASS;
+        section.dataset.kind = COVERAGE_CLASS;
+
+        const h2 = document.createElement("h2");
+        h2.textContent =
+          "Coverage — Missing Entries (" + missingKeys.length + ")";
+        section.appendChild(h2);
+
+        const note = document.createElement("p");
+        note.className = "empty-state";
+        note.style.padding = "0 0 1rem";
+        note.style.textAlign = "left";
+        note.textContent =
+          "Codegen asset keys (colyseus-server/generated/asset-keys.json) with " +
+          "no manifest entry yet — same set the drift-gate reports as UNMAPPED. " +
+          "Never silently missing: each renders as a LOUD red card until a real entry lands.";
+        section.appendChild(note);
+
+        const grid = document.createElement("div");
+        grid.className = "grid";
+        for (const k of missingKeys) {
+          grid.appendChild(buildMissingEntryCard(k.id, k.kind));
+        }
+        section.appendChild(grid);
+        return section;
+      }
+
       async function init() {
         const main = document.getElementById("main");
         const sidebarNav = document.getElementById("sidebar-nav");
 
-        let manifest, audioManifest, audioIndex;
+        let manifest, catalogManifest, audioManifest, renderSpec, audioIndex;
         try {
-          [manifest, audioManifest, audioIndex] = await Promise.all([
-            fetchJson(MANIFEST_URL, "manifest"),
-            fetchJson(AUDIO_MANIFEST_URL, "audio-manifest"),
-            fetchJson(AUDIO_INDEX_URL, "audio-index"),
-          ]);
+          [manifest, catalogManifest, audioManifest, renderSpec, audioIndex] =
+            await Promise.all([
+              fetchJson(MANIFEST_URL, "manifest"),
+              fetchJson(CATALOG_MANIFEST_URL, "catalog-manifest"),
+              fetchJson(AUDIO_MANIFEST_URL, "audio-manifest"),
+              fetchJson(RENDER_SPEC_URL, "render-spec"),
+              fetchJson(AUDIO_INDEX_URL, "audio-index"),
+            ]);
         } catch (err) {
           main.innerHTML =
             '<div class="empty-state">Failed to load manifests: ' +
@@ -914,7 +1356,27 @@
           return;
         }
 
-        const entries = Object.entries(manifest.entries || {});
+        // asset-keys.json only powers the Coverage panel — its absence
+        // shouldn't take down the rest of the page, so it's fetched
+        // independently of the critical Promise.all above.
+        let assetKeys = null;
+        try {
+          assetKeys = await fetchJson(ASSET_KEYS_URL, "asset-keys");
+        } catch (err) {
+          console.warn(
+            "[asset-storybook] asset-keys.json unavailable — Coverage panel disabled:",
+            err,
+          );
+        }
+
+        // manifest.json (codegen-keyed) + catalog-manifest.json (curated) —
+        // merged into one entry list the same way the storybook has always
+        // treated "everything with a scene/stream" (§4.4: keyspaces are
+        // disjoint by construction, enforced by the drift-gate's guard G).
+        const entries = [
+          ...Object.entries(manifest.entries || {}),
+          ...Object.entries(catalogManifest.entries || {}),
+        ];
         document.getElementById("stat-version").textContent =
           manifest.version ?? "?";
         document.getElementById("stat-total").textContent = entries.length;
@@ -925,12 +1387,25 @@
         document.getElementById("stat-characters").textContent =
           characterEntries.length;
 
+        const iconEntries = entries.filter(
+          ([, e]) => resolveRender(e, renderSpec) === "image",
+        );
+        document.getElementById("stat-icons").textContent = iconEntries.length;
+
         const audioFiles = audioIndex.files || [];
         document.getElementById("stat-sounds").textContent = audioFiles.length;
 
-        const groups = groupByKind(entries);
+        const groups = groupByRender(entries, renderSpec);
 
-        // --- sidebar: "All" + one item per visual kind present + SFX ---
+        const missingKeys = [];
+        if (assetKeys) {
+          const entryIds = new Set(entries.map(([key]) => key));
+          for (const k of assetKeys.keys || []) {
+            if (k && k.id && !entryIds.has(k.id)) missingKeys.push(k);
+          }
+        }
+
+        // --- sidebar: "All" + one item per render-type present + SFX + Coverage ---
         const allBtn = buildSidebarItem(
           "all",
           entries.length + audioFiles.length,
@@ -938,12 +1413,12 @@
         allBtn.classList.add("active");
         sidebarNav.appendChild(allBtn);
 
-        for (const kind of groups.keys()) {
-          initHealth(kind, groups.get(kind).length);
+        for (const render of groups.keys()) {
+          initHealth(render, groups.get(render).length);
           sidebarNav.appendChild(
-            buildSidebarItem(kind, groups.get(kind).length),
+            buildSidebarItem(render, groups.get(render).length),
           );
-          renderSidebarBadge(kind);
+          renderSidebarBadge(render);
         }
 
         if (audioFiles.length > 0) {
@@ -954,46 +1429,42 @@
           renderSidebarBadge(SFX_CLASS);
         }
 
+        if (missingKeys.length > 0) {
+          initHealth(COVERAGE_CLASS, missingKeys.length);
+          sidebarNav.appendChild(
+            buildSidebarItem(COVERAGE_CLASS, missingKeys.length),
+          );
+          for (const k of missingKeys) bumpHealth(COVERAGE_CLASS, { err: 1 });
+        }
+
         main.innerHTML = "";
 
-        // --- visual kind sections (characters today; other kinds auto-appear
-        //     the moment manifest.json grows entries for them) ---
-        for (const [kind, list] of groups) {
+        // --- render-type sections — every group renders through the
+        //     registry now; no more silent "no renderer wired up" text.
+        //     A render-type nobody's implemented a builder for yet falls
+        //     through renderEntry() to buildUnknown() and shows up as its
+        //     own LOUD-red section instead of vanishing (§1 goal 4). ---
+        for (const [render, list] of groups) {
           const section = document.createElement("section");
           section.className = "kind-section";
-          section.id = "section-" + kind;
-          section.dataset.kind = kind;
+          section.id = "section-" + render;
+          section.dataset.kind = render;
 
           const h2 = document.createElement("h2");
-          h2.textContent = classLabel(kind) + " (" + list.length + ")";
+          h2.textContent = classLabel(render) + " (" + list.length + ")";
           section.appendChild(h2);
 
           const grid = document.createElement("div");
           grid.className = "grid";
-
-          if (kind === "character") {
-            for (const [key, entry] of list) {
-              grid.appendChild(buildCard(key, entry));
-            }
-          } else {
-            const placeholder = document.createElement("div");
-            placeholder.className = "empty-state";
-            placeholder.textContent =
-              'No renderer wired up yet for kind "' +
-              kind +
-              '" — ' +
-              list.length +
-              " entr" +
-              (list.length === 1 ? "y" : "ies") +
-              " pending.";
-            grid.appendChild(placeholder);
+          for (const [key, entry] of list) {
+            grid.appendChild(renderEntry(key, entry, renderSpec));
           }
-
           section.appendChild(grid);
           main.appendChild(section);
         }
 
-        // --- soundboard section ---
+        // --- soundboard section (bespoke, driven by audio-index.json — not
+        //     the registry; see the RENDERERS comment above) ---
         if (audioFiles.length > 0) {
           const section = document.createElement("section");
           section.className = "kind-section";
@@ -1014,13 +1485,18 @@
             mappedCount +
             " of " +
             audioFiles.length +
-            " are currently wired to gameplay events (audio-manifest.json) — highlighted below.";
+            " are currently wired to gameplay events (audio-manifest.json) — highlighted below. Hover a tile to preview (loops); click to pin.";
           section.appendChild(note);
 
           section.appendChild(
-            buildSoundboard(audioFiles, audioManifest.entries || {}),
+            buildAudio(audioFiles, audioManifest.entries || {}),
           );
           main.appendChild(section);
+        }
+
+        // --- coverage panel: codegen keys with no manifest entry ---
+        if (missingKeys.length > 0) {
+          main.appendChild(buildCoverageSection(missingKeys));
         }
       }
 
