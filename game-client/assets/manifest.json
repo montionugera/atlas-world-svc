@@ -56,6 +56,94 @@
       "license": "CC0 (Kenney Mini Characters)",
       "tier": "seed",
       "kind": "character"
+    },
+    "projectile:arrow": {
+      "scene": "res://assets/vfx/projectile-arrow.glb",
+      "source": "market",
+      "license": "CC0 (Quaternius)",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "projectile:spear": {
+      "scene": "res://assets/vfx/projectile-spear.glb",
+      "source": "market",
+      "license": "CC0 (Quaternius)",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "projectile:magicSpear": {
+      "scene": "res://assets/vfx/projectile-spear.glb",
+      "source": "market",
+      "license": "CC0 (Quaternius)",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "projectile:physicSpear": {
+      "scene": "res://assets/vfx/projectile-spear.glb",
+      "source": "market",
+      "license": "CC0 (Quaternius)",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "projectile:melee": {
+      "scene": "res://assets/vfx/projectile-melee.glb",
+      "source": "market",
+      "license": "CC0 (Quaternius)",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "projectile:smallMeelee": {
+      "scene": "res://assets/vfx/projectile-melee.glb",
+      "source": "market",
+      "license": "CC0 (Quaternius)",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "projectile:largeMeelee": {
+      "scene": "res://assets/vfx/projectile-melee.glb",
+      "source": "market",
+      "license": "CC0 (Quaternius)",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "zone:damage": {
+      "scene": "res://assets/vfx/zones/zone-damage.glb",
+      "source": "authored",
+      "license": "CC0 (generated)",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "zone:freeze": {
+      "scene": "res://assets/vfx/zones/zone-freeze.glb",
+      "source": "authored",
+      "license": "CC0 (generated)",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "zone:impulse_caster": {
+      "scene": "res://assets/vfx/zones/zone-impulse-caster.glb",
+      "source": "authored",
+      "license": "CC0 (generated)",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "zone:stun": {
+      "scene": "res://assets/vfx/zones/zone-stun.glb",
+      "source": "authored",
+      "license": "CC0 (generated)",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
     }
   }
 }

@@ -25,6 +25,13 @@ namespace AtlasWorld.Client.World
     /// CAPSULE fallback path deliberately use type ids the manifest does NOT cover (still
     /// the right kind, just an id that was never registered) so that coverage of the
     /// "unknown/unmapped id never breaks" contract survives the seed set landing.
+    ///
+    /// Task 11 note: the committed manifest now also maps all 7 <c>projectile:*</c> keys
+    /// (CC0 Quaternius weapon glTF) and all 4 <c>zone:*</c> keys (generated emissive discs).
+    /// <c>projectile:arrow</c> and <c>zone:freeze</c> — previously this probe's stand-ins for
+    /// "still-unmapped" — now resolve to the Seed tier like the Task 7 characters; the
+    /// CAPSULE-fallback cases moved to freshly-unregistered probe-only ids so the
+    /// "unknown/unmapped id never breaks" contract keeps being exercised.
     /// </summary>
     public static class EntityViewVerify
     {
@@ -50,29 +57,35 @@ namespace AtlasWorld.Client.World
                 return 1;
             }
 
-            // A mapped character key (Task 7 seed set) resolves to the Seed tier — never the
-            // capsule — proving the manifest is actually wired through, not just present.
+            // Mapped keys (Task 7 characters + Task 11 projectiles/zones) resolve to the Seed
+            // tier — never the capsule — proving the manifest is actually wired through, not
+            // just present.
             failures += Report("mob:spear_thrower (mapped) → seed tier", ResolvesToSeed(reg, EntityKeys.Mob("spear_thrower")));
+            failures += Report("projectile:arrow (mapped) → seed tier", ResolvesToSeed(reg, EntityKeys.Projectile("arrow")));
+            failures += Report("zone:freeze (mapped) → seed tier", ResolvesToSeed(reg, EntityKeys.Zone("freeze")));
 
-            // Keys the manifest does NOT cover — Stage 0.5 projectiles/zones, plus a
-            // deliberately-unregistered mob id — still resolve to the capsule tier.
+            // Keys the manifest does NOT cover — deliberately-unregistered probe-only ids —
+            // still resolve to the capsule tier.
             failures += Report("mob key (unmapped) → capsule tier", ResolvesToCapsule(reg, EntityKeys.Mob("unmapped_probe_only")));
-            failures += Report("projectile key → capsule tier", ResolvesToCapsule(reg, EntityKeys.Projectile("arrow")));
-            failures += Report("zone key → capsule tier", ResolvesToCapsule(reg, EntityKeys.Zone("freeze")));
+            failures += Report("projectile key (unmapped) → capsule tier", ResolvesToCapsule(reg, EntityKeys.Projectile("unmapped_probe_only")));
+            failures += Report("zone key (unmapped) → capsule tier", ResolvesToCapsule(reg, EntityKeys.Zone("unmapped_probe_only")));
 
-            // Part 2 — spawn through the real EntityManager. player/npc/mob:spear_thrower are
-            // now mapped to real seed glTF scenes (Task 7): confirm each spawns the LOADED
-            // scene, not the capsule. projectile:arrow and zone:freeze — plus a deliberately
-            // unmapped mob id — remain on the capsule path (Stage 0.5); confirm that still works.
+            // Part 2 — spawn through the real EntityManager. player/npc/mob:spear_thrower
+            // (Task 7) and projectile:arrow/zone:freeze (Task 11) are now mapped to real seed
+            // glTF scenes: confirm each spawns the LOADED scene, not the capsule.
+            // Deliberately-unmapped probe-only ids for each kind confirm the capsule fallback
+            // still works.
             var mgr = new EntityManager { Name = "VerifyEntityManager" };
             host.AddChild(mgr);
 
             failures += SpawnSeedCase(mgr, "p1", EntityKind.Player, EntityKeys.Player, "player");
             failures += SpawnSeedCase(mgr, "n1", EntityKind.Npc, EntityKeys.Npc, "npc");
             failures += SpawnSeedCase(mgr, "m1", EntityKind.Mob, EntityKeys.Mob("spear_thrower"), "mob:spear_thrower");
+            failures += SpawnSeedCase(mgr, "pr1", EntityKind.Projectile, EntityKeys.Projectile("arrow"), "projectile:arrow");
+            failures += SpawnSeedCase(mgr, "z1", EntityKind.ZoneEffect, EntityKeys.Zone("freeze"), "zone:freeze");
             failures += SpawnCase(mgr, "m0", EntityKind.Mob, EntityKeys.Mob("unmapped_probe_only"), typeof(BoxMesh), "mob (still-unmapped capsule fallback)");
-            failures += SpawnCase(mgr, "pr1", EntityKind.Projectile, EntityKeys.Projectile("arrow"), typeof(BoxMesh), "projectile");
-            failures += SpawnCase(mgr, "z1", EntityKind.ZoneEffect, EntityKeys.Zone("freeze"), typeof(CylinderMesh), "zone");
+            failures += SpawnCase(mgr, "pr0", EntityKind.Projectile, EntityKeys.Projectile("unmapped_probe_only"), typeof(BoxMesh), "projectile (still-unmapped capsule fallback)");
+            failures += SpawnCase(mgr, "z0", EntityKind.ZoneEffect, EntityKeys.Zone("unmapped_probe_only"), typeof(CylinderMesh), "zone (still-unmapped capsule fallback)");
 
             // Part 3 — per-entity material isolation: two mobs, tinted to different teams, must
             // end with DIFFERENT body colors (a shared cached material would make them equal).
