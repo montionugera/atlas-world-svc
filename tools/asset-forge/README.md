@@ -43,13 +43,24 @@ for the full design.
    > pipeline is built around, not a special case to code around.
 
    #### Working apply-scale procedure
-   > **Placeholder — to be filled in during Task 7** (the first real
-   > authoring session). Task 7 will run the scale-then-apply step against
-   > a real donor kitbash, record the exact Blender operations that keep
-   > animation F-curves intact (or the workaround if `Ctrl+A → Scale`
-   > alone distorts them), and this subsection will be replaced with that
-   > verified procedure. Until then, treat step 4 above as the intent and
-   > VALIDATE as the safety net.
+   Verified during the first real authoring session (mob_aggressive_brute,
+   donor character-male-b, factor 2.7218). Do NOT use object-level scale +
+   `Ctrl+A → Apply Scale` — applying scale on the armature does not adjust
+   pose-bone location F-curves, and parented meshes make the apply order
+   ambiguous. Scale the DATA directly, all three pieces with the same
+   factor `f = 1.8 / current_height`:
+
+   1. **Bone rests** (edit mode): `eb.head *= f; eb.tail *= f` for every
+      edit bone.
+   2. **Mesh vertices** (object mode, both meshes): `v.co *= f`.
+   3. **Animation location F-curves** (every action): for each fcurve whose
+      `data_path` ends with `"location"`, multiply keyframe `co[1]`,
+      `handle_left[1]`, `handle_right[1]` by `f` (the donor set has 126
+      such curves; rotations/scales need no change).
+
+   All object scales stay `(1,1,1)` throughout — nothing to apply. Verify
+   with data-level measurements (`v.co.z` min/max), not `object.bound_box`,
+   which caches stale values until the depsgraph re-evaluates.
 
 5. **Save** to:
 
