@@ -19,3 +19,4 @@ cheap now, painful to reconstruct later.
 | `icons/icon-mana-potion.svg` | hand | — (hand-authored placeholder) | CC0 | atlas-world-svc | 2026-07-15 | seed tier — `icon:mana_potion`, seeds the `image` render-type (F-002 Phase 1c) |
 
 <!-- Source ∈ ai | market | commission. License must be commercial-safe (prefer CC0). -->
+| `bespoke/mob_aggressive_brute/source/mob_aggressive_brute.blend` | commission | internal kitbash of Kenney Mini Characters `character-male-b` | CC0 | atlas-world-svc | 2026-07-16 | bespoke tier — `mob:aggressive` proof mob (F-003 asset-forge) |
