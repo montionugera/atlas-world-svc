@@ -11,6 +11,7 @@
 
 import { NodeIO } from "@gltf-transform/core";
 import { loadGlb, readStamp } from "./lib/gltf.mjs";
+import { fileURLToPath } from "node:url";
 
 function parseArgs(argv) {
   const positional = [];
@@ -32,6 +33,34 @@ function parseArgs(argv) {
   return { positional, flags };
 }
 
+/**
+ * Reads a .glb, injects (or refreshes) its atlas-forge provenance stamp, and
+ * writes it back to the same path in place. Shared by the stamp.mjs CLI and
+ * by anything else (e.g. test fixture generation) that needs the exact same
+ * stamp-writing code path.
+ * @param {string} glbPath
+ * @param {{ blender: string, blendSha256: string }} provenance
+ * @returns {Promise<object>} the stamp that was written
+ */
+export async function stampGlb(glbPath, { blender, blendSha256 }) {
+  const doc = await loadGlb(glbPath);
+  const asset = doc.getRoot().getAsset();
+
+  asset.extras = {
+    ...asset.extras,
+    atlasForge: {
+      blender,
+      blendSha256,
+      forge: "1",
+    },
+  };
+
+  const io = new NodeIO().setStrictResources(false);
+  await io.write(glbPath, doc);
+
+  return readStamp(doc);
+}
+
 async function main() {
   const { positional, flags } = parseArgs(process.argv.slice(2));
   const [glbPath] = positional;
@@ -43,26 +72,19 @@ async function main() {
     process.exit(1);
   }
 
-  const doc = await loadGlb(glbPath);
-  const asset = doc.getRoot().getAsset();
-
-  asset.extras = {
-    ...asset.extras,
-    atlasForge: {
-      blender: flags.blender,
-      blendSha256: flags["blend-sha"],
-      forge: "1",
-    },
-  };
-
-  const io = new NodeIO().setStrictResources(false);
-  await io.write(glbPath, doc);
-
-  const stamp = readStamp(doc);
+  const stamp = await stampGlb(glbPath, {
+    blender: flags.blender,
+    blendSha256: flags["blend-sha"],
+  });
   console.log(`stamp.mjs: wrote ${glbPath} -> ${JSON.stringify(stamp)}`);
 }
 
-main().catch((err) => {
-  console.error(`stamp.mjs: ERROR: ${err.message}`);
-  process.exit(1);
-});
+// Only run the CLI when this file is executed directly (e.g. `node stamp.mjs
+// ...` from bake.sh) -- not when `stampGlb` is imported as a module by
+// something like tests/make-fixtures.mjs.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((err) => {
+    console.error(`stamp.mjs: ERROR: ${err.message}`);
+    process.exit(1);
+  });
+}
