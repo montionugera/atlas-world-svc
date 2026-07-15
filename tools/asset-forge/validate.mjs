@@ -39,6 +39,34 @@ const PIVOT_XZ_TOLERANCE = 0.1;
 
 const NAME_PATTERN = /^[a-z0-9_]+\.glb$/;
 
+// Marker prepended to errors thrown by the external-resource loader when the
+// referenced file simply doesn't exist on disk. Lets the structural-issue
+// loop tell "resource missing" IO_ERRORs (demoted to warnings) apart from
+// every other structural error (which stays a hard failure).
+const RESOURCE_MISSING_MARKER = "ATLAS_FORGE_RESOURCE_MISSING:";
+
+/**
+ * Builds the gltf-validator externalResourceFunction for a glb at glbPath:
+ * resolves relative URIs against the glb's own directory. A genuinely absent
+ * file throws a marker-tagged error (recognized downstream and turned into a
+ * warning); any other read error propagates as-is and stays a hard failure.
+ * @param {string} glbPath
+ */
+function makeResourceLoader(glbPath) {
+  const baseDir = path.dirname(path.resolve(glbPath));
+  return async (uri) => {
+    const resolved = path.resolve(baseDir, decodeURIComponent(uri));
+    try {
+      return new Uint8Array(readFileSync(resolved));
+    } catch (err) {
+      if (err.code === "ENOENT") {
+        throw new Error(`${RESOURCE_MISSING_MARKER}${uri}`);
+      }
+      throw err;
+    }
+  };
+}
+
 /**
  * Loads forge.config.json plus derived paths, relative to configDir (never
  * cwd) -- defaults to the directory this file lives in.
@@ -129,16 +157,27 @@ export async function validateGlb(glbPath, opts = {}) {
     else failures.push(message);
   }
 
-  // 1. Khronos structural validation -- always a hard failure, never demoted.
+  // 1. Khronos structural validation -- always a hard failure, never
+  // demoted. External resources (e.g. a texture URI like
+  // Textures/colormap.png sitting next to the glb) are resolved relative to
+  // the glb's directory; a resource that's genuinely absent on disk is
+  // reported as a warning, not a structural failure.
   const bytes = readFileSync(glbPath);
   const structuralReport = await validator.validateBytes(
     new Uint8Array(bytes),
-    { uri: glbPath },
+    { uri: glbPath, externalResourceFunction: makeResourceLoader(glbPath) },
   );
   for (const issue of structuralReport.issues.messages) {
-    if (issue.severity === 0) {
-      failures.push(`structural: ${issue.code} - ${issue.message}`);
+    if (issue.severity !== 0) continue;
+    const markerIndex = issue.message.indexOf(RESOURCE_MISSING_MARKER);
+    if (issue.code === "IO_ERROR" && markerIndex !== -1) {
+      const uri = issue.message.slice(
+        markerIndex + RESOURCE_MISSING_MARKER.length,
+      );
+      warnings.push(`resources: ${uri} unresolved`);
+      continue;
     }
+    failures.push(`structural: ${issue.code} - ${issue.message}`);
   }
 
   const doc = await loadGlb(glbPath);

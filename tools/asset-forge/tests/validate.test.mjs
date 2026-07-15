@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { Document } from "@gltf-transform/core";
@@ -12,6 +12,45 @@ import {
 
 const fx = (n) => new URL(`../fixtures/${n}`, import.meta.url).pathname;
 const kind = "character";
+
+const PNG_1X1 = Buffer.from(
+  "89504e470d0a1a0a0000000d4948445200000001000000010806000000" +
+    "1f15c4890000000a4944415478da63000100000500010d0a2db400000000" +
+    "49454e44ae426082",
+  "hex",
+);
+
+// Rewrites a .glb so its images reference an external URI instead of an
+// embedded bufferView (the layout the real seed glbs use for
+// Textures/colormap.png). glTF-Transform can't author this shape (its writer
+// requires image bytes), so patch the GLB's JSON chunk directly:
+// 12-byte header | JSON chunk (len, 'JSON', data) | BIN chunk (unchanged).
+function writeExternalTextureGlb(srcPath, destPath, uri) {
+  const glb = readFileSync(srcPath);
+  const jsonLength = glb.readUInt32LE(12); // chunk 0 data length (padded)
+  const json = JSON.parse(glb.subarray(20, 20 + jsonLength).toString("utf8"));
+  for (const image of json.images ?? []) {
+    delete image.bufferView;
+    image.uri = uri;
+  }
+  let jsonText = JSON.stringify(json);
+  while (Buffer.byteLength(jsonText) % 4 !== 0) jsonText += " ";
+  const jsonBuf = Buffer.from(jsonText, "utf8");
+  const remainingChunks = glb.subarray(20 + jsonLength);
+
+  const header = Buffer.alloc(12);
+  header.write("glTF", 0, "ascii");
+  header.writeUInt32LE(2, 4);
+  header.writeUInt32LE(12 + 8 + jsonBuf.length + remainingChunks.length, 8);
+  const jsonChunkHeader = Buffer.alloc(8);
+  jsonChunkHeader.writeUInt32LE(jsonBuf.length, 0);
+  jsonChunkHeader.writeUInt32LE(0x4e4f534a, 4); // 'JSON'
+
+  writeFileSync(
+    destPath,
+    Buffer.concat([header, jsonChunkHeader, jsonBuf, remainingChunks]),
+  );
+}
 
 test("good passes", async () => {
   const r = await validateGlb(fx("good.glb"), { kind });
@@ -74,14 +113,39 @@ test("textureBudgetStatus: texture with no image data warns, never silently pass
 
 test("textureBudgetStatus: readable texture within budget passes silently", () => {
   const doc = new Document();
-  const png1x1 = Buffer.from(
-    "89504e470d0a1a0a0000000d4948445200000001000000010806000000" +
-      "1f15c4890000000a4944415478da63000100000500010d0a2db400000000" +
-      "49454e44ae426082",
-    "hex",
-  );
-  doc.createTexture("t").setImage(png1x1).setMimeType("image/png");
+  doc.createTexture("t").setImage(PNG_1X1).setMimeType("image/png");
   assert.deepEqual(textureBudgetStatus(doc, 1024), { status: "ok", size: 1 });
+});
+
+test("external texture URI that resolves on disk validates clean", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "asset-forge-exttex-"));
+  try {
+    const glbPath = path.join(dir, "ext_texture.glb");
+    writeExternalTextureGlb(fx("good.glb"), glbPath, "colormap.png");
+    writeFileSync(path.join(dir, "colormap.png"), PNG_1X1);
+    const r = await validateGlb(glbPath, { kind });
+    assert.deepEqual(r.failures, []);
+    assert.ok(
+      !r.warnings.some((w) => w.startsWith("resources:")),
+      `unexpected resources warning: ${r.warnings.join(" | ")}`,
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("missing external texture warns, never fails structurally (bespoke)", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "asset-forge-exttex-"));
+  try {
+    const glbPath = path.join(dir, "ext_texture.glb");
+    writeExternalTextureGlb(fx("good.glb"), glbPath, "colormap.png");
+    // colormap.png deliberately NOT written next to the glb.
+    const r = await validateGlb(glbPath, { kind });
+    assert.deepEqual(r.failures, []);
+    assert.match(r.warnings.join(), /resources: colormap\.png unresolved/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test("manifest mode: bespoke entry fails, seed entry warns only", async () => {
