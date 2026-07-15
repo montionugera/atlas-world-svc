@@ -811,10 +811,10 @@
         __unknown: buildUnknown,
       };
 
-      function renderEntry(key, entry, spec) {
+      function renderEntry(key, entry, spec, healthKey) {
         const render = resolveRender(entry, spec);
         const build = RENDERERS[render] || RENDERERS.__unknown;
-        const viewportEl = build(key, entry, render);
+        const viewportEl = build(key, entry, healthKey || render);
         return buildCardShell(key, entry, render, viewportEl);
       }
 
@@ -1161,15 +1161,19 @@
 
       // ---------- sidebar ----------
 
-      // Sections are now grouped by resolved render-type, not raw `kind`
-      // (§3.2: "sidebar sections ... are computed off whatever render-types
-      // actually appear"). Today that's a 1:1 relabel of the old kind-based
-      // headers (model3d ⇔ character, image ⇔ prop icons) because no
-      // render-type spans multiple kinds yet; §2 documents that model3d will
-      // later also cover vfx scenes, at which point this label map — not the
-      // grouping logic — is what needs to evolve.
+      // Sections are grouped by resolved render-type (image, __unknown, ...),
+      // except model3d: commit 2191257 added vfx scenes (weapon glTFs + zone
+      // discs, kind: "vfx") that render through the same <model-viewer>
+      // builder as characters (kind: "character"). Grouping by render-type
+      // alone would lump all 19 model3d entries into one "Characters"
+      // section and hide the vfx set, so groupKeyFor() below further splits
+      // model3d by manifest `kind` into "model3d:character" / "model3d:vfx"
+      // — labeled here. Every other render-type still maps 1:1, so this
+      // stays a small lookup + generic fallback, not a per-asset-key list.
       const RENDER_LABELS = {
         model3d: "Characters",
+        "model3d:character": "Characters",
+        "model3d:vfx": "VFX",
         image: "Icons",
         __unknown: "Unknown",
       };
@@ -1252,12 +1256,23 @@
         return btn;
       }
 
+      // model3d covers both true characters and vfx scenes since both share
+      // the <model-viewer> renderer — split the group key by manifest `kind`
+      // so vfx entries get their own nav section/count instead of being
+      // folded into "Characters" (§ RENDER_LABELS comment above). Every
+      // other render-type is unaffected and still groups 1:1.
+      function groupKeyFor(entry, spec) {
+        const render = resolveRender(entry, spec);
+        if (render === "model3d" && entry.kind) return render + ":" + entry.kind;
+        return render;
+      }
+
       function groupByRender(entries, spec) {
         const groups = new Map();
         for (const [key, entry] of entries) {
-          const render = resolveRender(entry, spec);
-          if (!groups.has(render)) groups.set(render, []);
-          groups.get(render).push([key, entry]);
+          const groupKey = groupKeyFor(entry, spec);
+          if (!groups.has(groupKey)) groups.set(groupKey, []);
+          groups.get(groupKey).push([key, entry]);
         }
         return groups;
       }
@@ -1413,12 +1428,12 @@
         allBtn.classList.add("active");
         sidebarNav.appendChild(allBtn);
 
-        for (const render of groups.keys()) {
-          initHealth(render, groups.get(render).length);
+        for (const groupKey of groups.keys()) {
+          initHealth(groupKey, groups.get(groupKey).length);
           sidebarNav.appendChild(
-            buildSidebarItem(render, groups.get(render).length),
+            buildSidebarItem(groupKey, groups.get(groupKey).length),
           );
-          renderSidebarBadge(render);
+          renderSidebarBadge(groupKey);
         }
 
         if (audioFiles.length > 0) {
@@ -1444,20 +1459,20 @@
         //     A render-type nobody's implemented a builder for yet falls
         //     through renderEntry() to buildUnknown() and shows up as its
         //     own LOUD-red section instead of vanishing (§1 goal 4). ---
-        for (const [render, list] of groups) {
+        for (const [groupKey, list] of groups) {
           const section = document.createElement("section");
           section.className = "kind-section";
-          section.id = "section-" + render;
-          section.dataset.kind = render;
+          section.id = "section-" + groupKey;
+          section.dataset.kind = groupKey;
 
           const h2 = document.createElement("h2");
-          h2.textContent = classLabel(render) + " (" + list.length + ")";
+          h2.textContent = classLabel(groupKey) + " (" + list.length + ")";
           section.appendChild(h2);
 
           const grid = document.createElement("div");
           grid.className = "grid";
           for (const [key, entry] of list) {
-            grid.appendChild(renderEntry(key, entry, renderSpec));
+            grid.appendChild(renderEntry(key, entry, renderSpec, groupKey));
           }
           section.appendChild(grid);
           main.appendChild(section);
