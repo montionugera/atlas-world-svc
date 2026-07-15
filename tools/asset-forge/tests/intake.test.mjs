@@ -10,7 +10,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { intake } from "../intake.mjs";
+import { intake, parseArgs } from "../intake.mjs";
 
 const fx = (n) => new URL(`../fixtures/${n}`, import.meta.url).pathname;
 
@@ -138,6 +138,67 @@ test("dry-run reports actions, writes nothing", async () => {
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("malformed manifest aborts with zero side effects (no orphaned glb)", async () => {
+  const { root, manifestPath } = makeSandbox();
+  try {
+    writeFileSync(manifestPath, "{ this is not valid json");
+    const before = readFileSync(manifestPath, "utf8");
+    const r = await intake(fx("good.glb"), {
+      key: KEY,
+      license: LICENSE,
+      root,
+      driftGate: async () => ({ ok: true }),
+    });
+    assert.equal(r.ok, false);
+    // Manifest must be untouched and no glb may be left copied on disk.
+    assert.equal(readFileSync(manifestPath, "utf8"), before);
+    assert.ok(
+      !existsSync(path.join(root, "game-client/assets/characters/good.glb")),
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("rollback restores a pre-existing glb rather than deleting it", async () => {
+  const { root, manifestPath } = makeSandbox();
+  try {
+    // Simulate a previously-shipped asset already living at destPath.
+    const destPath = path.join(root, "game-client/assets/characters/good.glb");
+    const priorBytes = "PRIOR-SHIPPED-GLB-BYTES";
+    writeFileSync(destPath, priorBytes);
+    const before = readFileSync(manifestPath, "utf8");
+
+    const r = await intake(fx("good.glb"), {
+      key: KEY,
+      license: LICENSE,
+      root,
+      driftGate: async () => ({ ok: false }),
+    });
+    assert.equal(r.ok, false);
+    assert.equal(readFileSync(manifestPath, "utf8"), before);
+    // The pre-existing asset must be restored to its original bytes,
+    // not deleted by the rollback.
+    assert.ok(existsSync(destPath));
+    assert.equal(readFileSync(destPath, "utf8"), priorBytes);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("parseArgs accepts --flag=value so values may start with --", () => {
+  const { positional, flags } = parseArgs([
+    "some.glb",
+    "--key=mob:aggressive",
+    "--license=--CC0 public domain--",
+    "--dry-run",
+  ]);
+  assert.deepEqual(positional, ["some.glb"]);
+  assert.equal(flags.key, "mob:aggressive");
+  assert.equal(flags.license, "--CC0 public domain--");
+  assert.equal(flags["dry-run"], true);
 });
 
 test("re-run same key is idempotent", async () => {

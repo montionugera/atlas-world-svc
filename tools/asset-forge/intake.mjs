@@ -6,14 +6,17 @@
 //   1. validate the source .glb (validateGlb, kind "character", tier
 //      "bespoke", against `<root>/art-source/LICENSES.md`) -- any failure
 //      aborts with zero side effects.
-//   2. copy the .glb into `<root>/game-client/assets/characters/`.
-//   3. backup the current manifest, then write the flipped entry
-//      `{scene, source: "internal", license, tier: "bespoke", kind:
-//      "character"}` atomically.
+//   2. read + parse the manifest and snapshot any glb already at the
+//      destination -- a missing/malformed manifest aborts here, still with
+//      zero side effects (nothing has been copied yet).
+//   3. copy the .glb into `<root>/game-client/assets/characters/`, then
+//      write the flipped entry `{scene, source: "internal", license, tier:
+//      "bespoke", kind: "character"}` atomically.
 //   4. run the drift-gate (`node <root>/scripts/check_asset_manifest.mjs`
 //      by default, injectable via `driftGate` for tests).
-//   5. on ANY failure after step 1, roll back: restore the manifest to its
-//      exact pre-write bytes and delete the copied .glb.
+//   5. on ANY failure after step 2, roll back: restore the manifest to its
+//      exact pre-write bytes, and either restore the pre-existing glb bytes
+//      (re-intake) or delete the newly-copied glb.
 //
 // Usage:
 //   node intake.mjs <glb> --key <manifest-key> --license "<text>" [--dry-run]
@@ -25,6 +28,7 @@
 import {
   existsSync,
   readFileSync,
+  writeFileSync,
   copyFileSync,
   mkdirSync,
   rmSync,
@@ -90,6 +94,8 @@ export async function intake(glbPath, opts = {}) {
     return { ok: false, actions, failures: validation.failures };
   }
   actions.push(`validate: ${glbPath} OK`);
+  // Surface non-fatal validation warnings rather than silently dropping them.
+  for (const w of validation.warnings ?? []) actions.push(`warn: ${w}`);
 
   if (dryRun) {
     actions.push(`copy (planned): ${glbPath} -> ${destPath}`);
@@ -98,14 +104,21 @@ export async function intake(glbPath, opts = {}) {
     return { ok: true, actions };
   }
 
-  // 2. Copy the glb into the game-client asset tree.
-  mkdirSync(charactersDir, { recursive: true });
-  copyFileSync(glbPath, destPath);
-  actions.push(`copy: ${glbPath} -> ${destPath}`);
-
-  // 3. Backup + write the flipped manifest entry.
-  const backupText = readFileSync(manifestPath, "utf8");
-  const manifest = JSON.parse(backupText);
+  // 2. Read + parse the manifest BEFORE touching the filesystem, so a
+  //    missing/malformed manifest aborts with zero side effects (no
+  //    orphaned glb copy).
+  let backupText;
+  let manifest;
+  try {
+    backupText = readFileSync(manifestPath, "utf8");
+    manifest = JSON.parse(backupText);
+  } catch (err) {
+    return {
+      ok: false,
+      actions,
+      failures: [`manifest read: ${err.message}`],
+    };
+  }
   manifest.entries ??= {};
   manifest.entries[key] = {
     scene,
@@ -115,10 +128,22 @@ export async function intake(glbPath, opts = {}) {
     kind: "character",
   };
 
+  // Snapshot any glb already at destPath so rollback restores it byte-for-byte
+  // (a re-intake of an already-shipped key) instead of deleting a file that
+  // existed before this run.
+  const destExisted = existsSync(destPath);
+  const destBackup = destExisted ? readFileSync(destPath) : null;
+
   function rollback() {
     writeManifestRaw(manifestPath, backupText);
-    rmSync(destPath, { force: true });
+    if (destExisted) writeFileSync(destPath, destBackup);
+    else rmSync(destPath, { force: true });
   }
+
+  // 3. Copy the glb into the game-client asset tree, then write the entry.
+  mkdirSync(charactersDir, { recursive: true });
+  copyFileSync(glbPath, destPath);
+  actions.push(`copy: ${glbPath} -> ${destPath}`);
 
   try {
     writeManifestAtomic(manifestPath, manifest);
@@ -147,7 +172,14 @@ export async function intake(glbPath, opts = {}) {
   return { ok: true, actions };
 }
 
-function parseArgs(argv) {
+/**
+ * Minimal argv parser. Supports `--flag value`, `--flag=value` (so a value
+ * may itself begin with `--`, e.g. license text), and the boolean
+ * `--dry-run`. Exported for testing.
+ * @param {string[]} argv
+ * @returns {{positional: string[], flags: Record<string, string | true>}}
+ */
+export function parseArgs(argv) {
   const positional = [];
   const flags = {};
   for (let i = 0; i < argv.length; i++) {
@@ -157,12 +189,18 @@ function parseArgs(argv) {
       continue;
     }
     if (arg.startsWith("--")) {
-      const key = arg.slice(2);
+      const body = arg.slice(2);
+      const eq = body.indexOf("=");
+      if (eq !== -1) {
+        // `--flag=value` -- value may start with `--`.
+        flags[body.slice(0, eq)] = body.slice(eq + 1);
+        continue;
+      }
       const value = argv[i + 1];
       if (value === undefined || value.startsWith("--")) {
-        throw new Error(`missing value for --${key}`);
+        throw new Error(`missing value for --${body}`);
       }
-      flags[key] = value;
+      flags[body] = value;
       i++;
     } else {
       positional.push(arg);

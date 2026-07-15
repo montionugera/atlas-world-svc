@@ -5,7 +5,13 @@
 // disk (rename is atomic on the same filesystem, which the tmp file always
 // is -- it's created alongside the target).
 
-import { readFileSync, writeFileSync, renameSync, mkdirSync } from "node:fs";
+import {
+  readFileSync,
+  writeFileSync,
+  renameSync,
+  mkdirSync,
+  rmSync,
+} from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -36,8 +42,14 @@ function atomicWrite(targetPath, text) {
       .randomBytes(6)
       .toString("hex")}.tmp`,
   );
-  writeFileSync(tmpPath, text, "utf8");
-  renameSync(tmpPath, targetPath);
+  try {
+    writeFileSync(tmpPath, text, "utf8");
+    renameSync(tmpPath, targetPath);
+  } catch (err) {
+    // Don't leave a stray .tmp file behind if the write or rename fails.
+    rmSync(tmpPath, { force: true });
+    throw err;
+  }
 }
 
 /**
