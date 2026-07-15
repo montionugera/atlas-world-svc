@@ -25,8 +25,9 @@
     "title": "asset-forge: Blender\u2192game mob asset pipeline",
     "from_idea": "I-004",
     "created_at": "2026-07-15T15:38:22.933957+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-07-15T15:43:01.458481+00:00"
   }
 ]
