@@ -1,0 +1,13 @@
+{
+  "name": "@atlas/asset-forge",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "pretest": "node tests/make-fixtures.mjs",
+    "test": "node --test tests/**/*.test.mjs"
+  },
+  "dependencies": {
+    "@gltf-transform/core": "^4.1.0",
+    "gltf-validator": "^2.0.0-dev.3.10"
+  }
+}

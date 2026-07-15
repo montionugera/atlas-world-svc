@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -63,3 +65,12 @@ jobs:
 
       - name: Asset manifest drift-gate (keys ↔ manifest ↔ files ↔ license)
         run: node scripts/check_asset_manifest.mjs
+
+      # Asset forge (F-003): structural + game-rule validation for every
+      # manifest entry whose glb exists on disk. Bespoke-tier failures are
+      # hard failures; seed-tier issues are warnings only (known scale bug,
+      # tracked as an F-002 follow-up) so this stays green today.
+      - name: Asset forge — validate manifest glbs
+        run: |
+          npm ci --prefix tools/asset-forge
+          node tools/asset-forge/validate.mjs --manifest game-client/assets/manifest.json

@@ -16,10 +16,10 @@
       "kind": "character"
     },
     "mob:aggressive": {
-      "scene": "res://assets/characters/character-male-b.glb",
-      "source": "market",
-      "license": "CC0 (Kenney Mini Characters)",
-      "tier": "seed",
+      "scene": "res://assets/characters/mob_aggressive_brute.glb",
+      "source": "internal",
+      "license": "CC0 (internal kitbash, Kenney-derived)",
+      "tier": "bespoke",
       "kind": "character"
     },
     "mob:balanced": {

@@ -1,0 +1,11 @@
+{
+  "joints": [
+    "arm-left",
+    "arm-right",
+    "head",
+    "leg-left",
+    "leg-right",
+    "root",
+    "torso"
+  ]
+}

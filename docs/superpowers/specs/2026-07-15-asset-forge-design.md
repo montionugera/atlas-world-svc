@@ -189,10 +189,13 @@ accepted and isolated.
 
 ## Testing
 
-- `validate.mjs`: jest against committed fixture glbs — one good, one
-  too-short, one missing a clip, one with a renamed bone, one without
-  provenance. Fixtures generated once by `bake.py` from tiny source blends
-  and committed (small binaries, LFS).
+- `validate.mjs`: tests against fixture glbs — one good, one too-short,
+  one missing a clip, one with a renamed bone, one without provenance,
+  one with an oversized texture. **As implemented** (deliberate deviation):
+  fixtures are regenerated deterministically at pretest from the committed
+  Kenney donor via `@gltf-transform` (`tests/make-fixtures.mjs`), not baked
+  once and committed — no new binaries in git, CI-reproducible. Tests skip
+  with a message when the donor is an unsmudged LFS pointer.
 - `intake.mjs`: dry-run mode + a test that forces a post-copy failure and
   asserts full rollback.
 - Proof mob = the integration test (acceptance below).
