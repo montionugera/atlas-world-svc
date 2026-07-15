@@ -9,6 +9,9 @@
 //   missing_clip.glb  - good.glb minus the "die" animation clip
 //   renamed_bone.glb  - good.glb with one joint renamed (rig-breaking)
 //   no_provenance.glb - good.glb, unstamped
+//   big_texture.glb   - good.glb with a real 2048px texture (donor's
+//                       placeholder textures are 1x1, which makes the
+//                       texture-budget rule vacuous to test otherwise)
 //
 // Skips (exit 0) rather than failing if the donor is an unresolved git-lfs
 // pointer, so this doesn't hard-fail on a machine/CI without LFS objects
@@ -18,6 +21,7 @@ import { NodeIO } from "@gltf-transform/core";
 import { readFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import zlib from "node:zlib";
 import { loadGlb, sceneHeight, jointNames } from "../lib/gltf.mjs";
 import { stampGlb } from "../stamp.mjs";
 
@@ -58,6 +62,73 @@ function fillMissingTextureData(doc) {
     }
   }
   return doc;
+}
+
+// --- Minimal PNG encoder -----------------------------------------------
+// Used to build a real (decodable) flat-color PNG large enough to trip the
+// texture-size budget, without pulling in an image-encoding dependency.
+// Standard PNG chunk framing: 8-byte signature, then length+type+data+crc32
+// chunks (IHDR, IDAT, IEND). See https://www.w3.org/TR/PNG/.
+
+const CRC_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) {
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    }
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+
+function crc32(buf) {
+  let c = 0xffffffff;
+  for (let i = 0; i < buf.length; i++) {
+    c = CRC_TABLE[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
+  }
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+function pngChunk(type, data) {
+  const typeBuf = Buffer.from(type, "ascii");
+  const lenBuf = Buffer.alloc(4);
+  lenBuf.writeUInt32BE(data.length, 0);
+  const crcBuf = Buffer.alloc(4);
+  crcBuf.writeUInt32BE(crc32(Buffer.concat([typeBuf, data])), 0);
+  return Buffer.concat([lenBuf, typeBuf, data, crcBuf]);
+}
+
+/** Builds a real, decodable flat-color RGB PNG of the given dimensions. */
+function buildFlatPng(width, height, [r, g, b]) {
+  const signature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+  const ihdrData = Buffer.alloc(13);
+  ihdrData.writeUInt32BE(width, 0);
+  ihdrData.writeUInt32BE(height, 4);
+  ihdrData[8] = 8; // bit depth
+  ihdrData[9] = 2; // color type: RGB
+  ihdrData[10] = 0; // compression method
+  ihdrData[11] = 0; // filter method
+  ihdrData[12] = 0; // interlace method
+  const ihdr = pngChunk("IHDR", ihdrData);
+
+  const rowBytes = 1 + width * 3; // filter-type byte + RGB per pixel
+  const raw = Buffer.alloc(rowBytes * height);
+  for (let y = 0; y < height; y++) {
+    const rowStart = y * rowBytes;
+    raw[rowStart] = 0; // filter type: None
+    for (let x = 0; x < width; x++) {
+      const px = rowStart + 1 + x * 3;
+      raw[px] = r;
+      raw[px + 1] = g;
+      raw[px + 2] = b;
+    }
+  }
+  const idat = pngChunk("IDAT", zlib.deflateSync(raw));
+  const iend = pngChunk("IEND", Buffer.alloc(0));
+
+  return Buffer.concat([signature, ihdr, idat, iend]);
 }
 
 function isLfsPointer(filePath) {
@@ -161,6 +232,20 @@ async function main() {
   const noProvenancePath = path.join(FIXTURES_DIR, "no_provenance.glb");
   await writeDoc(await loadScaledDonor(), noProvenancePath);
   console.log(`make-fixtures.mjs: wrote ${noProvenancePath} (unstamped)`);
+
+  // big_texture.glb: good.glb with every texture replaced by a real 2048px
+  // PNG, so the texture-size budget rule has something non-vacuous to trip
+  // (the donor's backfilled placeholder textures are 1x1 -- always in
+  // budget, which would make a texture-budget test meaningless).
+  const bigTexturePath = path.join(FIXTURES_DIR, "big_texture.glb");
+  const bigTextureDoc = await loadScaledDonor();
+  const bigPng = buildFlatPng(2048, 2048, [128, 128, 128]);
+  for (const texture of bigTextureDoc.getRoot().listTextures()) {
+    texture.setImage(bigPng).setMimeType("image/png");
+  }
+  await writeDoc(bigTextureDoc, bigTexturePath);
+  await stampGlb(bigTexturePath, FIXTURE_PROVENANCE);
+  console.log(`make-fixtures.mjs: wrote ${bigTexturePath} (2048px texture)`);
 }
 
 main().catch((err) => {
