@@ -18,6 +18,52 @@
       "license": "CC0 (hand-authored placeholder)",
       "tier": "seed",
       "label": "Mana Potion"
+    },
+    "sprite:slime": {
+      "scene": "res://assets/sprites/slime.png",
+      "render": "spritesheet",
+      "kind": "vfx",
+      "frame": { "w": 32, "h": 32 },
+      "animations": [
+        { "name": "idle", "row": 0, "count": 4, "fps": 6, "loop": true },
+        { "name": "walk", "row": 1, "count": 4, "fps": 8, "loop": true },
+        { "name": "attack", "row": 2, "count": 4, "fps": 10, "loop": false }
+      ],
+      "source": "hand",
+      "license": "CC0 (hand-authored placeholder)",
+      "tier": "seed",
+      "label": "Slime (SpriteFrames demo)"
+    },
+    "ui:panel_wood": {
+      "scene": "res://assets/ui/panel-wood.png",
+      "render": "ninepatch",
+      "kind": "prop",
+      "patchMargins": { "l": 12, "t": 12, "r": 12, "b": 12 },
+      "source": "hand",
+      "license": "CC0 (hand-authored placeholder)",
+      "tier": "seed",
+      "label": "Wood Panel (9-slice demo)"
+    },
+    "theme:main_ui": {
+      "scene": "res://assets/ui/main.tres",
+      "render": "theme",
+      "kind": "prop",
+      "preview": "res://assets/ui/main_preview.png",
+      "previewHashOf": "res://assets/ui/main.tres",
+      "source": "hand",
+      "license": "CC0 (hand-authored placeholder)",
+      "tier": "seed",
+      "label": "Main UI Theme (baked preview demo)"
+    },
+    "tileset:dungeon": {
+      "scene": "res://assets/tiles/dungeon.png",
+      "render": "tileset",
+      "kind": "prop",
+      "tileSize": { "w": 16, "h": 16 },
+      "source": "hand",
+      "license": "CC0 (hand-authored placeholder)",
+      "tier": "seed",
+      "label": "Dungeon Tileset (16px grid demo)"
     }
   }
 }
