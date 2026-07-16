@@ -28,4 +28,37 @@ cheap now, painful to reconstruct later.
 | `env/fence.glb` | market | Quaternius (via poly.pizza — Fence) | CC0 | Quaternius | 2026-07-16 | seed tier — `env:fence` environment prop |
 | `env/mountain.glb` | market | Quaternius (via poly.pizza — Mountains) | CC0 | Quaternius | 2026-07-16 | seed tier — `env:mountain` environment prop |
 
+| `creatures/bunny.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `creature:bunny` (RO seed library) |
+| `creatures/demon.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `creature:demon` (RO seed library) |
+| `creatures/dragon.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `creature:dragon` (RO seed library) |
+| `creatures/ghost.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `creature:ghost` (RO seed library) |
+| `creatures/green_blob.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `creature:green_blob` (RO seed library) |
+| `creatures/green_spiky_blob.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `creature:green_spiky_blob` (RO seed library) |
+| `creatures/mushnub.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `creature:mushnub` (RO seed library) |
+| `creatures/mushroom_king.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `creature:mushroom_king` (RO seed library) |
+| `creatures/orc.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `creature:orc` (RO seed library) |
+| `creatures/orc_enemy.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `creature:orc_enemy` (RO seed library) |
+| `creatures/pink_slime.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `creature:pink_slime` (RO seed library) |
+| `creatures/yeti.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `creature:yeti` (RO seed library) |
+| `weapons/axe_double.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `weapon:axe_double` (RO seed library) |
+| `weapons/claymore.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `weapon:claymore` (RO seed library) |
+| `weapons/knife.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `weapon:knife` (RO seed library) |
+| `weapons/scythe.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `weapon:scythe` (RO seed library) |
+| `weapons/shield_round.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `weapon:shield_round` (RO seed library) |
+| `weapons/spear.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `weapon:spear` (RO seed library) |
+| `weapons/sword.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `weapon:sword` (RO seed library) |
+| `weapons/wooden_bow.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `weapon:wooden_bow` (RO seed library) |
+| `loot/book.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `loot:book` (RO seed library) |
+| `loot/coin.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `loot:coin` (RO seed library) |
+| `loot/crown.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `loot:crown` (RO seed library) |
+| `loot/necklace.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `loot:necklace` (RO seed library) |
+| `loot/potion_bottle.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `loot:potion_bottle` (RO seed library) |
+| `loot/scroll.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `loot:scroll` (RO seed library) |
+| `env/blacksmith.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `env:blacksmith` (RO seed library) |
+| `env/farm.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `env:farm` (RO seed library) |
+| `env/house.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `env:house` (RO seed library) |
+| `env/inn.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `env:inn` (RO seed library) |
+| `env/sawmill.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `env:sawmill` (RO seed library) |
+| `env/stable.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `env:stable` (RO seed library) |
+
 <!-- Source ∈ ai | market | commission. License must be commercial-safe (prefer CC0). -->

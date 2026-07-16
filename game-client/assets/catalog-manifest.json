@@ -23,11 +23,32 @@
       "scene": "res://assets/sprites/slime.png",
       "render": "spritesheet",
       "kind": "vfx",
-      "frame": { "w": 32, "h": 32 },
+      "frame": {
+        "w": 32,
+        "h": 32
+      },
       "animations": [
-        { "name": "idle", "row": 0, "count": 4, "fps": 6, "loop": true },
-        { "name": "walk", "row": 1, "count": 4, "fps": 8, "loop": true },
-        { "name": "attack", "row": 2, "count": 4, "fps": 10, "loop": false }
+        {
+          "name": "idle",
+          "row": 0,
+          "count": 4,
+          "fps": 6,
+          "loop": true
+        },
+        {
+          "name": "walk",
+          "row": 1,
+          "count": 4,
+          "fps": 8,
+          "loop": true
+        },
+        {
+          "name": "attack",
+          "row": 2,
+          "count": 4,
+          "fps": 10,
+          "loop": false
+        }
       ],
       "source": "hand",
       "license": "CC0 (hand-authored placeholder)",
@@ -38,7 +59,12 @@
       "scene": "res://assets/ui/panel-wood.png",
       "render": "ninepatch",
       "kind": "prop",
-      "patchMargins": { "l": 12, "t": 12, "r": 12, "b": 12 },
+      "patchMargins": {
+        "l": 12,
+        "t": 12,
+        "r": 12,
+        "b": 12
+      },
       "source": "hand",
       "license": "CC0 (hand-authored placeholder)",
       "tier": "seed",
@@ -59,7 +85,10 @@
       "scene": "res://assets/tiles/dungeon.png",
       "render": "tileset",
       "kind": "prop",
-      "tileSize": { "w": 16, "h": 16 },
+      "tileSize": {
+        "w": 16,
+        "h": 16
+      },
       "source": "hand",
       "license": "CC0 (hand-authored placeholder)",
       "tier": "seed",
@@ -100,6 +129,294 @@
       "license": "CC0 (Quaternius, via Poly Pizza)",
       "tier": "seed",
       "label": "Mountains"
+    },
+    "creature:bunny": {
+      "scene": "res://assets/creatures/bunny.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Bunny"
+    },
+    "creature:demon": {
+      "scene": "res://assets/creatures/demon.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Demon"
+    },
+    "creature:dragon": {
+      "scene": "res://assets/creatures/dragon.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Dragon"
+    },
+    "creature:ghost": {
+      "scene": "res://assets/creatures/ghost.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Ghost"
+    },
+    "creature:green_blob": {
+      "scene": "res://assets/creatures/green_blob.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Green Blob"
+    },
+    "creature:green_spiky_blob": {
+      "scene": "res://assets/creatures/green_spiky_blob.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Green Spiky Blob"
+    },
+    "creature:mushnub": {
+      "scene": "res://assets/creatures/mushnub.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Mushnub"
+    },
+    "creature:mushroom_king": {
+      "scene": "res://assets/creatures/mushroom_king.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Mushroom King"
+    },
+    "creature:orc": {
+      "scene": "res://assets/creatures/orc.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Orc"
+    },
+    "creature:orc_enemy": {
+      "scene": "res://assets/creatures/orc_enemy.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Orc Enemy"
+    },
+    "creature:pink_slime": {
+      "scene": "res://assets/creatures/pink_slime.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Pink Slime"
+    },
+    "creature:yeti": {
+      "scene": "res://assets/creatures/yeti.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Yeti"
+    },
+    "weapon:axe_double": {
+      "scene": "res://assets/weapons/axe_double.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Axe Double"
+    },
+    "weapon:claymore": {
+      "scene": "res://assets/weapons/claymore.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Claymore"
+    },
+    "weapon:knife": {
+      "scene": "res://assets/weapons/knife.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Knife"
+    },
+    "weapon:scythe": {
+      "scene": "res://assets/weapons/scythe.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Scythe"
+    },
+    "weapon:shield_round": {
+      "scene": "res://assets/weapons/shield_round.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Shield Round"
+    },
+    "weapon:spear": {
+      "scene": "res://assets/weapons/spear.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Spear"
+    },
+    "weapon:sword": {
+      "scene": "res://assets/weapons/sword.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Sword"
+    },
+    "weapon:wooden_bow": {
+      "scene": "res://assets/weapons/wooden_bow.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Wooden Bow"
+    },
+    "loot:book": {
+      "scene": "res://assets/loot/book.glb",
+      "render": "model3d",
+      "kind": "loot",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Book"
+    },
+    "loot:coin": {
+      "scene": "res://assets/loot/coin.glb",
+      "render": "model3d",
+      "kind": "loot",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Coin"
+    },
+    "loot:crown": {
+      "scene": "res://assets/loot/crown.glb",
+      "render": "model3d",
+      "kind": "loot",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Crown"
+    },
+    "loot:necklace": {
+      "scene": "res://assets/loot/necklace.glb",
+      "render": "model3d",
+      "kind": "loot",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Necklace"
+    },
+    "loot:potion_bottle": {
+      "scene": "res://assets/loot/potion_bottle.glb",
+      "render": "model3d",
+      "kind": "loot",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Potion Bottle"
+    },
+    "loot:scroll": {
+      "scene": "res://assets/loot/scroll.glb",
+      "render": "model3d",
+      "kind": "loot",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Scroll"
+    },
+    "env:blacksmith": {
+      "scene": "res://assets/env/blacksmith.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Blacksmith"
+    },
+    "env:farm": {
+      "scene": "res://assets/env/farm.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Farm"
+    },
+    "env:house": {
+      "scene": "res://assets/env/house.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "House"
+    },
+    "env:inn": {
+      "scene": "res://assets/env/inn.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Inn"
+    },
+    "env:sawmill": {
+      "scene": "res://assets/env/sawmill.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Sawmill"
+    },
+    "env:stable": {
+      "scene": "res://assets/env/stable.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Stable"
     }
   }
 }
