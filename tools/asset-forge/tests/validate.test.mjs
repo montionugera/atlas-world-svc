@@ -1,17 +1,63 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import {
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+  existsSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { Document } from "@gltf-transform/core";
+import { mkdirSync } from "node:fs";
+import { Document, getBounds } from "@gltf-transform/core";
 import {
   validateGlb,
   validateManifest,
   textureBudgetStatus,
 } from "../validate.mjs";
+import { loadGlb, jointNames, skinnedBounds } from "../lib/gltf.mjs";
 
 const fx = (n) => new URL(`../fixtures/${n}`, import.meta.url).pathname;
 const kind = "character";
+
+// Kind config mirroring forge.config.json's "character" entry (kept in sync
+// by hand -- these multi-rig tests build their own isolated configDir so
+// they never depend on whether rig-reference/kaykit-adventurer.bones.json
+// has landed yet in the real config).
+const CHARACTER_KIND_CONFIG = {
+  heightRange: [1.6, 2.0],
+  maxTriangles: 10000,
+  maxTextureSize: 1024,
+  requiredStates: ["idle", "walk", "run", "attack", "death"],
+};
+const DEFAULT_CLIP_MAP = {
+  idle: "idle",
+  walk: "walk",
+  run: "sprint",
+  attack: "attack-melee-right",
+  death: "die",
+};
+
+/**
+ * Builds an isolated configDir with forge.config.json (character kind +
+ * defaultClipMap mirrored from the real config) whose rigReference is the
+ * given list of *relative* paths -- callers write whichever of those files
+ * they want to exist under `<dir>/rig-reference/`.
+ */
+function makeMultiRigConfigDir(rigReference) {
+  const dir = mkdtempSync(path.join(tmpdir(), "asset-forge-multirig-"));
+  mkdirSync(path.join(dir, "rig-reference"), { recursive: true });
+  writeFileSync(
+    path.join(dir, "forge.config.json"),
+    JSON.stringify({
+      kinds: { character: CHARACTER_KIND_CONFIG },
+      defaultClipMap: DEFAULT_CLIP_MAP,
+      rigReference,
+    }),
+  );
+  return dir;
+}
 
 const PNG_1X1 = Buffer.from(
   "89504e470d0a1a0a0000000d4948445200000001000000010806000000" +
@@ -79,6 +125,126 @@ test("renamed bone fails skeleton", async () => {
     (await validateGlb(fx("renamed_bone.glb"), { kind })).failures.join(),
     /skeleton/,
   );
+});
+
+test("multi-rig: skeleton passes when it matches the SECOND reference in the list", async () => {
+  // The "other" rig's joint set is the renamed_bone fixture's own joints --
+  // i.e. a rig reference that doesn't exist in the real repo yet (it's what
+  // rig-reference/kaykit-adventurer.bones.json would look like for this
+  // fixture), built here so the test never depends on that file landing.
+  const otherJoints = jointNames(await loadGlb(fx("renamed_bone.glb")));
+  const dir = makeMultiRigConfigDir([
+    "rig-reference/kenney-mini.bones.json",
+    "rig-reference/other.bones.json",
+  ]);
+  try {
+    writeFileSync(
+      path.join(dir, "rig-reference/kenney-mini.bones.json"),
+      JSON.stringify({
+        joints: ["arm-left", "arm-right", "head", "leg-left", "leg-right", "root", "torso"],
+      }),
+    );
+    writeFileSync(
+      path.join(dir, "rig-reference/other.bones.json"),
+      JSON.stringify({ joints: otherJoints }),
+    );
+    const r = await validateGlb(fx("renamed_bone.glb"), {
+      kind,
+      configDir: dir,
+    });
+    assert.ok(
+      !r.failures.some((f) => f.startsWith("skeleton:")),
+      `unexpected skeleton failure: ${r.failures.join(" | ")}`,
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("multi-rig: a listed reference missing on disk warns and is skipped, not a hard failure", async () => {
+  const dir = makeMultiRigConfigDir([
+    "rig-reference/kenney-mini.bones.json",
+    "rig-reference/kaykit-adventurer.bones.json", // deliberately never written
+  ]);
+  try {
+    writeFileSync(
+      path.join(dir, "rig-reference/kenney-mini.bones.json"),
+      JSON.stringify({
+        joints: ["arm-left", "arm-right", "head", "leg-left", "leg-right", "root", "torso"],
+      }),
+    );
+    const r = await validateGlb(fx("good.glb"), { kind, configDir: dir });
+    assert.ok(
+      !r.failures.some((f) => f.startsWith("skeleton:")),
+      `unexpected skeleton failure: ${r.failures.join(" | ")}`,
+    );
+    assert.match(
+      r.warnings.join(),
+      /skeleton: reference .*kaykit-adventurer\.bones\.json missing/,
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("multi-rig: backward compat -- a plain string rigReference still works", async () => {
+  const dir = makeMultiRigConfigDir("rig-reference/kenney-mini.bones.json");
+  try {
+    writeFileSync(
+      path.join(dir, "rig-reference/kenney-mini.bones.json"),
+      JSON.stringify({
+        joints: ["arm-left", "arm-right", "head", "leg-left", "leg-right", "root", "torso"],
+      }),
+    );
+    const r = await validateGlb(fx("good.glb"), { kind, configDir: dir });
+    assert.deepEqual(r.failures, []);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+// Real-world repro: a KayKit knight whose bone-parented sword/shield meshes
+// (unskinned attachments) drag the whole-scene bbox center off-axis
+// (center=(0.074, 0.350) before the fix). Lives in the session scratchpad,
+// not the repo, so skip when absent rather than fail.
+const KNIGHT_REPRO =
+  "/private/tmp/claude-502/-Users-pasitnusso-workspace-repos-atlas-world-svc/" +
+  "0e27871a-d050-4d1a-bc0e-e53ce910f923/scratchpad/player_knight.glb";
+
+test(
+  "pivot: skinned-only bounds ignore bone-parented attachments (knight repro)",
+  { skip: !existsSync(KNIGHT_REPRO) && "repro glb not present on this machine" },
+  async () => {
+    const r = await validateGlb(KNIGHT_REPRO, {
+      kind,
+      anims: {
+        idle: "Idle",
+        walk: "Walking_A",
+        run: "Running_A",
+        attack: "1H_Melee_Attack_Slice_Diagonal",
+        death: "Death_A",
+      },
+    });
+    assert.ok(
+      !r.failures.some((f) => f.startsWith("pivot:")),
+      `unexpected pivot failure: ${r.failures.join(" | ")}`,
+    );
+  },
+);
+
+test("skinnedBounds: falls back to full scene bounds when nothing is skinned (plain prop)", () => {
+  const doc = new Document();
+  const buffer = doc.createBuffer();
+  const position = doc
+    .createAccessor()
+    .setType("VEC3")
+    .setArray(new Float32Array([0, 0, 0, 1, 2, 3, -1, 0.5, 2]))
+    .setBuffer(buffer);
+  const prim = doc.createPrimitive().setAttribute("POSITION", position);
+  const mesh = doc.createMesh().addPrimitive(prim);
+  const node = doc.createNode("prop").setMesh(mesh);
+  const scene = doc.createScene().addChild(node);
+  assert.deepEqual(skinnedBounds(doc), getBounds(scene));
 });
 
 test("no provenance warns only", async () => {

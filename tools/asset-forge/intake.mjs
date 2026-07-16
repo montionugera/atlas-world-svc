@@ -20,10 +20,15 @@
 //
 // Usage:
 //   node intake.mjs <glb> --key <manifest-key> --license "<text>" [--dry-run]
+//                   [--anims '<json>']
 //
 // Exit 0 on success, 1 on any failure (validation, drift-gate, or thrown
 // error). `--dry-run` reports the actions that would be taken and exits 0
-// without touching the filesystem.
+// without touching the filesystem. `--anims` overrides the clip-name mapping
+// used for the required-states check (see validateGlb) and is written into
+// the manifest entry as `anims`; its keys must exactly be a subset of the
+// "character" kind's requiredStates -- an unknown state key aborts with zero
+// side effects, same as any other validation failure.
 
 import {
   existsSync,
@@ -36,7 +41,7 @@ import {
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateGlb } from "./validate.mjs";
+import { validateGlb, loadConfig } from "./validate.mjs";
 import {
   repoRoot,
   writeManifestAtomic,
@@ -65,11 +70,11 @@ function defaultDriftGateRunner({ root }) {
 /**
  * Transactional intake of a baked .glb into the game-client asset tree.
  * @param {string} glbPath
- * @param {{key: string, license: string, root: string, dryRun?: boolean, driftGate?: (ctx: {root: string, key: string}) => Promise<{ok: boolean}>}} opts
+ * @param {{key: string, license: string, root: string, dryRun?: boolean, anims?: object|null, driftGate?: (ctx: {root: string, key: string}) => Promise<{ok: boolean}>}} opts
  * @returns {Promise<{ok: boolean, actions: string[], failures?: string[]}>}
  */
 export async function intake(glbPath, opts = {}) {
-  const { key, license, root, dryRun = false, driftGate } = opts;
+  const { key, license, root, dryRun = false, anims = null, driftGate } = opts;
   if (!key) throw new Error("intake: 'key' is required");
   if (!root) throw new Error("intake: 'root' is required");
 
@@ -82,10 +87,37 @@ export async function intake(glbPath, opts = {}) {
   const destPath = path.join(charactersDir, basename);
   const scene = `res://assets/characters/${name}.glb`;
 
+  // 0. anims (if given) must be a plain object whose keys are exactly a
+  // subset of the "character" kind's requiredStates -- an unknown state key
+  // aborts here, before validation/copy, with zero side effects.
+  if (anims != null) {
+    if (typeof anims !== "object" || Array.isArray(anims)) {
+      return {
+        ok: false,
+        actions,
+        failures: ["anims: must be a JSON object mapping state to clip name"],
+      };
+    }
+    const requiredStates = loadConfig().kinds.character.requiredStates;
+    const unknown = Object.keys(anims).filter(
+      (state) => !requiredStates.includes(state),
+    );
+    if (unknown.length > 0) {
+      return {
+        ok: false,
+        actions,
+        failures: [
+          `anims: unknown state(s) ${unknown.join(", ")} (expected one of: ${requiredStates.join(", ")})`,
+        ],
+      };
+    }
+  }
+
   // 1. Validate -- any failure aborts with zero side effects.
   const validation = await validateGlb(glbPath, {
     kind: "character",
     tier: "bespoke",
+    anims,
     licenseLedger: existsSync(licenseLedgerPath)
       ? licenseLedgerPath
       : undefined,
@@ -126,6 +158,7 @@ export async function intake(glbPath, opts = {}) {
     license,
     tier: "bespoke",
     kind: "character",
+    ...(anims ? { anims } : {}),
   };
 
   // Snapshot any glb already at destPath so rollback restores it byte-for-byte
@@ -211,7 +244,8 @@ export function parseArgs(argv) {
 
 function printUsageAndExit() {
   console.error(
-    'usage: node intake.mjs <glb> --key <manifest-key> --license "<text>" [--dry-run]',
+    'usage: node intake.mjs <glb> --key <manifest-key> --license "<text>" ' +
+      "[--dry-run] [--anims '<json>']",
   );
   process.exit(1);
 }
@@ -227,6 +261,7 @@ async function main() {
     license: flags.license,
     root,
     dryRun: Boolean(flags["dry-run"]),
+    anims: flags.anims ? JSON.parse(flags.anims) : null,
   });
 
   for (const action of result.actions) console.log(action);

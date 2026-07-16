@@ -17,12 +17,11 @@
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { getBounds } from "@gltf-transform/core";
 import validator from "gltf-validator";
 import {
   loadGlb,
   sceneHeight,
-  minY,
+  skinnedBounds,
   countTriangles,
   listClipNames,
   jointNames,
@@ -72,16 +71,21 @@ function makeResourceLoader(glbPath) {
  * cwd) -- defaults to the directory this file lives in.
  * @param {string} [configDir]
  */
-function loadConfig(configDir) {
+export function loadConfig(configDir) {
   const dir = configDir ?? HERE;
   const raw = JSON.parse(
     readFileSync(path.join(dir, "forge.config.json"), "utf8"),
   );
+  // rigReference accepts a single path (legacy) or a list of paths -- the
+  // model matches if its joint set exactly equals ANY reference in the list.
+  const rigReferenceList = Array.isArray(raw.rigReference)
+    ? raw.rigReference
+    : [raw.rigReference];
   return {
     ...raw,
     configDir: dir,
     repoRoot: path.resolve(dir, "../.."),
-    rigReferencePath: path.join(dir, raw.rigReference),
+    rigReferencePaths: rigReferenceList.map((p) => path.join(dir, p)),
   };
 }
 
@@ -90,18 +94,39 @@ function loadRigReferenceJoints(rigReferencePath) {
   return [...data.joints].sort();
 }
 
-function getPrimaryScene(doc) {
-  const root = doc.getRoot();
-  return root.getDefaultScene() ?? root.listScenes()[0];
+/** Both inputs are sorted arrays -- true iff they contain the same names in order. */
+function jointArraysEqual(a, b) {
+  return a.length === b.length && a.every((name, i) => name === b[i]);
 }
 
-/** @returns {{x: number, z: number}} bbox center on the X/Z plane. */
-function bboxCenterXZ(doc) {
-  const bbox = getBounds(getPrimaryScene(doc));
-  return {
-    x: (bbox.min[0] + bbox.max[0]) / 2,
-    z: (bbox.min[2] + bbox.max[2]) / 2,
-  };
+/** Size of the symmetric difference between two joint-name arrays (as sets). */
+function jointSetDistance(a, b) {
+  const setA = new Set(a);
+  const setB = new Set(b);
+  let distance = 0;
+  for (const name of setA) if (!setB.has(name)) distance++;
+  for (const name of setB) if (!setA.has(name)) distance++;
+  return distance;
+}
+
+/**
+ * Loads every rig reference that exists on disk (skipping missing ones with
+ * a warning) and reports whether `joints` exactly matches any of them.
+ * @param {string[]} rigReferencePaths
+ * @param {string[]} joints
+ * @returns {{references: {path: string, joints: string[]}[], matched: boolean}}
+ */
+function checkSkeleton(rigReferencePaths, joints, warnings) {
+  const references = [];
+  for (const refPath of rigReferencePaths) {
+    if (!existsSync(refPath)) {
+      warnings.push(`skeleton: reference ${refPath} missing`);
+      continue;
+    }
+    references.push({ path: refPath, joints: loadRigReferenceJoints(refPath) });
+  }
+  const matched = references.some((ref) => jointArraysEqual(joints, ref.joints));
+  return { references, matched };
 }
 
 function licenseLedgerHasEntry(ledgerPath, assetKey) {
@@ -192,9 +217,15 @@ export async function validateGlb(glbPath, opts = {}) {
     );
   }
 
-  // 3. Pivot: feet on the ground plane, centered on X/Z.
-  const baseY = minY(doc);
-  const { x: centerX, z: centerZ } = bboxCenterXZ(doc);
+  // 3. Pivot: feet on the ground plane, centered on X/Z. Measured from
+  // SKINNED meshes only -- bone-parented attachment meshes (a sword held out
+  // in front) are unskinned and would drag the bbox center off-axis for
+  // legitimate characters. Falls back to whole-scene bounds when nothing is
+  // skinned (plain props). The height rule above stays whole-scene.
+  const pivotBounds = skinnedBounds(doc);
+  const baseY = pivotBounds.min[1];
+  const centerX = (pivotBounds.min[0] + pivotBounds.max[0]) / 2;
+  const centerZ = (pivotBounds.min[2] + pivotBounds.max[2]) / 2;
   if (
     Math.abs(baseY) > PIVOT_Y_TOLERANCE ||
     Math.abs(centerX) > PIVOT_XZ_TOLERANCE ||
@@ -222,16 +253,29 @@ export async function validateGlb(glbPath, opts = {}) {
     }
   }
 
-  // 5. Skeleton: joint set must exactly match the rig reference.
-  const referenceJoints = loadRigReferenceJoints(config.rigReferencePath);
+  // 5. Skeleton: joint set must exactly match ANY reference in the list.
+  // A reference file that doesn't exist on disk (e.g. one still being
+  // authored in a parallel workstream) is skipped with a warning rather than
+  // failing the whole rule.
   const joints = jointNames(doc);
-  const jointsMatch =
-    joints.length === referenceJoints.length &&
-    joints.every((name, i) => name === referenceJoints[i]);
-  if (!jointsMatch) {
+  const { references: rigReferences, matched: skeletonMatched } =
+    checkSkeleton(config.rigReferencePaths, joints, warnings);
+  if (rigReferences.length > 0 && !skeletonMatched) {
+    // Name the closest reference (smallest symmetric difference) in the
+    // FAIL message, to point at the most likely intended rig.
+    let closest = rigReferences[0];
+    let closestDistance = jointSetDistance(joints, closest.joints);
+    for (const ref of rigReferences.slice(1)) {
+      const distance = jointSetDistance(joints, ref.joints);
+      if (distance < closestDistance) {
+        closest = ref;
+        closestDistance = distance;
+      }
+    }
     report(
       "skeleton",
-      `joints [${joints.join(", ")}] != reference [${referenceJoints.join(", ")}]`,
+      `joints [${joints.join(", ")}] != reference [${closest.joints.join(", ")}] ` +
+        `(closest: ${path.basename(closest.path)})`,
     );
   }
 

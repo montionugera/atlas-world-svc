@@ -2,11 +2,18 @@
   "version": 2,
   "entries": {
     "player": {
-      "scene": "res://assets/characters/character-male-a.glb",
-      "source": "market",
-      "license": "CC0 (Kenney Mini Characters)",
-      "tier": "seed",
-      "kind": "character"
+      "scene": "res://assets/characters/player_knight.glb",
+      "source": "internal",
+      "license": "CC0 (KayKit Adventurers)",
+      "tier": "bespoke",
+      "kind": "character",
+      "anims": {
+        "idle": "Idle",
+        "walk": "Walking_A",
+        "run": "Running_A",
+        "attack": "1H_Melee_Attack_Slice_Diagonal",
+        "death": "Death_A"
+      }
     },
     "npc": {
       "scene": "res://assets/characters/character-female-a.glb",

@@ -31,14 +31,30 @@ export function sceneHeight(doc) {
 }
 
 /**
- * Minimum Y (world units) of the document's scene bounding box.
+ * Bounding box of the SKINNED meshes only (nodes whose mesh has a skin),
+ * falling back to the full scene bounds when no skinned mesh exists (plain
+ * props must still be measurable). Used by the pivot rule: bone-parented
+ * attachment meshes (e.g. a sword held out in front) are unskinned and would
+ * otherwise drag the bbox center off-axis for legitimate characters.
  * @param {import('@gltf-transform/core').Document} doc
- * @returns {number}
+ * @returns {{min: number[], max: number[]}}
  */
-export function minY(doc) {
+export function skinnedBounds(doc) {
   const scene = getPrimaryScene(doc);
-  const bbox = getBounds(scene);
-  return bbox.min[1];
+  let union = null;
+  scene.traverse((node) => {
+    if (!node.getSkin() || !node.getMesh()) return;
+    const bbox = getBounds(node);
+    if (!union) {
+      union = { min: [...bbox.min], max: [...bbox.max] };
+      return;
+    }
+    for (let i = 0; i < 3; i++) {
+      union.min[i] = Math.min(union.min[i], bbox.min[i]);
+      union.max[i] = Math.max(union.max[i], bbox.max[i]);
+    }
+  });
+  return union ?? getBounds(scene);
 }
 
 /**
