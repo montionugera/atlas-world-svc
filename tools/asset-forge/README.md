@@ -184,3 +184,10 @@ tools/asset-forge/
 
 This package's dependencies are isolated from the `colyseus-server`/`client`
 pnpm workspace — a third Node context in the repo, by design.
+
+> **Godot extracted textures are runtime dependencies.** Godot's glb import
+> EXTRACTS embedded textures to `<asset>_<name>.png` next to the glb, and the
+> imported scene depends on them at runtime (the dependency lives in the binary
+> `.scn`, invisible to grep). Commit them together with the glb and `.import`
+> sidecar — deleting them as "orphans" breaks the asset in-game while the
+> storybook (which reads the raw glb) keeps looking fine.

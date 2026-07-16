@@ -33,7 +33,7 @@ namespace AtlasWorld.Client.World
             }
 
             PackedScene scene = reg.Resolve(EntityKeys.Player, out ResolveTier tier);
-            failures += Report($"player resolves to seed tier (tier={tier})", tier == ResolveTier.Seed);
+            failures += Report($"player resolves to a real glTF tier (tier={tier})", tier != ResolveTier.Capsule);
 
             if (scene.Instantiate() is not Node3D modelRoot)
             {
@@ -43,33 +43,36 @@ namespace AtlasWorld.Client.World
             }
             host.AddChild(modelRoot);
 
-            var anim = new AnimationController(modelRoot);
+            var overrides = reg.ResolveAnimOverrides(EntityKeys.Player);
+            string Clip(string state, string fallback) =>
+                overrides.TryGetValue(state, out string? mapped) && mapped != null ? mapped : fallback;
+            var anim = new AnimationController(modelRoot, overrides);
             failures += Report("AnimationController found a real AnimationPlayer", anim.HasPlayer);
 
             // still → idle (looped)
             anim.Update(isAlive: true, velocity: Vector3.Zero, isAttacking: false);
-            failures += ReportClip(modelRoot, "still → idle", "idle");
+            failures += ReportClip(modelRoot, "still → idle", Clip("idle", "idle"));
 
             // moving, below sprint threshold → walk
             anim.Update(isAlive: true, velocity: new Vector3(1.5f, 0f, 0f), isAttacking: false);
-            failures += ReportClip(modelRoot, "moving (slow) → walk", "walk");
+            failures += ReportClip(modelRoot, "moving (slow) → walk", Clip("walk", "walk"));
 
             // moving, above sprint threshold → sprint
             anim.Update(isAlive: true, velocity: new Vector3(12f, 0f, 0f), isAttacking: false);
-            failures += ReportClip(modelRoot, "moving (fast) → sprint", "sprint");
+            failures += ReportClip(modelRoot, "moving (fast) → sprint", Clip("run", "sprint"));
 
             // attacking beats speed
             anim.Update(isAlive: true, velocity: new Vector3(12f, 0f, 0f), isAttacking: true);
-            failures += ReportClip(modelRoot, "attacking (while moving) → attack-melee-right", "attack-melee-right");
+            failures += ReportClip(modelRoot, "attacking (while moving) → attack", Clip("attack", "attack-melee-right"));
 
             // dead beats attacking and speed
             anim.Update(isAlive: false, velocity: new Vector3(12f, 0f, 0f), isAttacking: true);
-            failures += ReportClip(modelRoot, "dead (while attacking+moving) → die", "die");
+            failures += ReportClip(modelRoot, "dead (while attacking+moving) → death", Clip("death", "die"));
 
             // Edge-triggered: repeating the SAME dead state does not restart the one-shot —
             // CurrentAnimation stays "die" (this also proves the no-op path doesn't throw).
             anim.Update(isAlive: false, velocity: Vector3.Zero, isAttacking: false);
-            failures += ReportClip(modelRoot, "dead again (edge-trigger no-op) → still die", "die");
+            failures += ReportClip(modelRoot, "dead again (edge-trigger no-op) → still death", Clip("death", "die"));
 
             modelRoot.QueueFree();
 
