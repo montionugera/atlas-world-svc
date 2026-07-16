@@ -17,12 +17,11 @@
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { getBounds } from "@gltf-transform/core";
 import validator from "gltf-validator";
 import {
   loadGlb,
   sceneHeight,
-  minY,
+  skinnedBounds,
   countTriangles,
   listClipNames,
   jointNames,
@@ -130,20 +129,6 @@ function checkSkeleton(rigReferencePaths, joints, warnings) {
   return { references, matched };
 }
 
-function getPrimaryScene(doc) {
-  const root = doc.getRoot();
-  return root.getDefaultScene() ?? root.listScenes()[0];
-}
-
-/** @returns {{x: number, z: number}} bbox center on the X/Z plane. */
-function bboxCenterXZ(doc) {
-  const bbox = getBounds(getPrimaryScene(doc));
-  return {
-    x: (bbox.min[0] + bbox.max[0]) / 2,
-    z: (bbox.min[2] + bbox.max[2]) / 2,
-  };
-}
-
 function licenseLedgerHasEntry(ledgerPath, assetKey) {
   const text = readFileSync(ledgerPath, "utf8").toLowerCase();
   return text.includes(assetKey.toLowerCase());
@@ -232,9 +217,15 @@ export async function validateGlb(glbPath, opts = {}) {
     );
   }
 
-  // 3. Pivot: feet on the ground plane, centered on X/Z.
-  const baseY = minY(doc);
-  const { x: centerX, z: centerZ } = bboxCenterXZ(doc);
+  // 3. Pivot: feet on the ground plane, centered on X/Z. Measured from
+  // SKINNED meshes only -- bone-parented attachment meshes (a sword held out
+  // in front) are unskinned and would drag the bbox center off-axis for
+  // legitimate characters. Falls back to whole-scene bounds when nothing is
+  // skinned (plain props). The height rule above stays whole-scene.
+  const pivotBounds = skinnedBounds(doc);
+  const baseY = pivotBounds.min[1];
+  const centerX = (pivotBounds.min[0] + pivotBounds.max[0]) / 2;
+  const centerZ = (pivotBounds.min[2] + pivotBounds.max[2]) / 2;
   if (
     Math.abs(baseY) > PIVOT_Y_TOLERANCE ||
     Math.abs(centerX) > PIVOT_XZ_TOLERANCE ||

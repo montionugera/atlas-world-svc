@@ -1,16 +1,22 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import {
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+  existsSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { mkdirSync } from "node:fs";
-import { Document } from "@gltf-transform/core";
+import { Document, getBounds } from "@gltf-transform/core";
 import {
   validateGlb,
   validateManifest,
   textureBudgetStatus,
 } from "../validate.mjs";
-import { loadGlb, jointNames } from "../lib/gltf.mjs";
+import { loadGlb, jointNames, skinnedBounds } from "../lib/gltf.mjs";
 
 const fx = (n) => new URL(`../fixtures/${n}`, import.meta.url).pathname;
 const kind = "character";
@@ -195,6 +201,50 @@ test("multi-rig: backward compat -- a plain string rigReference still works", as
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// Real-world repro: a KayKit knight whose bone-parented sword/shield meshes
+// (unskinned attachments) drag the whole-scene bbox center off-axis
+// (center=(0.074, 0.350) before the fix). Lives in the session scratchpad,
+// not the repo, so skip when absent rather than fail.
+const KNIGHT_REPRO =
+  "/private/tmp/claude-502/-Users-pasitnusso-workspace-repos-atlas-world-svc/" +
+  "0e27871a-d050-4d1a-bc0e-e53ce910f923/scratchpad/player_knight.glb";
+
+test(
+  "pivot: skinned-only bounds ignore bone-parented attachments (knight repro)",
+  { skip: !existsSync(KNIGHT_REPRO) && "repro glb not present on this machine" },
+  async () => {
+    const r = await validateGlb(KNIGHT_REPRO, {
+      kind,
+      anims: {
+        idle: "Idle",
+        walk: "Walking_A",
+        run: "Running_A",
+        attack: "1H_Melee_Attack_Slice_Diagonal",
+        death: "Death_A",
+      },
+    });
+    assert.ok(
+      !r.failures.some((f) => f.startsWith("pivot:")),
+      `unexpected pivot failure: ${r.failures.join(" | ")}`,
+    );
+  },
+);
+
+test("skinnedBounds: falls back to full scene bounds when nothing is skinned (plain prop)", () => {
+  const doc = new Document();
+  const buffer = doc.createBuffer();
+  const position = doc
+    .createAccessor()
+    .setType("VEC3")
+    .setArray(new Float32Array([0, 0, 0, 1, 2, 3, -1, 0.5, 2]))
+    .setBuffer(buffer);
+  const prim = doc.createPrimitive().setAttribute("POSITION", position);
+  const mesh = doc.createMesh().addPrimitive(prim);
+  const node = doc.createNode("prop").setMesh(mesh);
+  const scene = doc.createScene().addChild(node);
+  assert.deepEqual(skinnedBounds(doc), getBounds(scene));
 });
 
 test("no provenance warns only", async () => {
