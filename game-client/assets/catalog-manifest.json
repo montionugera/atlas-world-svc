@@ -64,6 +64,42 @@
       "license": "CC0 (hand-authored placeholder)",
       "tier": "seed",
       "label": "Dungeon Tileset (16px grid demo)"
+    },
+    "creature:slime": {
+      "scene": "res://assets/creatures/slime.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Slime"
+    },
+    "env:tree": {
+      "scene": "res://assets/env/tree.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Trees"
+    },
+    "env:fence": {
+      "scene": "res://assets/env/fence.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Fence"
+    },
+    "env:mountain": {
+      "scene": "res://assets/env/mountain.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "tier": "seed",
+      "label": "Mountains"
     }
   }
 }
