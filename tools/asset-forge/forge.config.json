@@ -14,5 +14,8 @@
     "attack": "attack-melee-right",
     "death": "die"
   },
-  "rigReference": "rig-reference/kenney-mini.bones.json"
+  "rigReference": [
+    "rig-reference/kenney-mini.bones.json",
+    "rig-reference/kaykit-adventurer.bones.json"
+  ]
 }

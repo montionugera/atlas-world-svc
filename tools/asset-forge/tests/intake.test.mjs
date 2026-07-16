@@ -188,6 +188,70 @@ test("rollback restores a pre-existing glb rather than deleting it", async () =>
   }
 });
 
+test("anims: valid override is validated against and written into the manifest entry", async () => {
+  const { root, manifestPath } = makeSandbox();
+  try {
+    const anims = {
+      idle: "idle",
+      walk: "walk",
+      run: "sprint",
+      attack: "attack-melee-right",
+      death: "die",
+    };
+    const r = await intake(fx("good.glb"), {
+      key: KEY,
+      license: LICENSE,
+      root,
+      anims,
+      driftGate: async () => ({ ok: true }),
+    });
+    assert.equal(r.ok, true);
+    const m = JSON.parse(readFileSync(manifestPath, "utf8"));
+    assert.deepEqual(m.entries[KEY].anims, anims);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("anims: unknown state key is rejected with zero side effects", async () => {
+  const { root, manifestPath } = makeSandbox();
+  try {
+    const before = readFileSync(manifestPath, "utf8");
+    const r = await intake(fx("good.glb"), {
+      key: KEY,
+      license: LICENSE,
+      root,
+      anims: { idle: "idle", dance: "boogie" },
+      driftGate: async () => ({ ok: true }),
+    });
+    assert.equal(r.ok, false);
+    assert.ok(r.failures.some((f) => /anims/.test(f) && /dance/.test(f)));
+    assert.equal(readFileSync(manifestPath, "utf8"), before);
+    assert.ok(
+      !existsSync(path.join(root, "game-client/assets/characters/good.glb")),
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("no anims: manifest entry has no anims field (unchanged behavior)", async () => {
+  const { root, manifestPath } = makeSandbox();
+  try {
+    const r = await intake(fx("good.glb"), {
+      key: KEY,
+      license: LICENSE,
+      root,
+      driftGate: async () => ({ ok: true }),
+    });
+    assert.equal(r.ok, true);
+    const m = JSON.parse(readFileSync(manifestPath, "utf8"));
+    assert.ok(!("anims" in m.entries[KEY]));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("parseArgs accepts --flag=value so values may start with --", () => {
   const { positional, flags } = parseArgs([
     "some.glb",
