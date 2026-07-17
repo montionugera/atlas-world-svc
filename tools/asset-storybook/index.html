@@ -343,6 +343,9 @@
         margin: 0 0 0.55rem;
         word-break: break-all;
       }
+      .card .filesize {
+        color: var(--text-dim);
+      }
 
       .badges {
         display: flex;
@@ -737,6 +740,51 @@
         return path.split("/").pop();
       }
 
+      // ---------- per-card file-size probe (HEAD, no body) ----------
+      //
+      // Reads Content-Length via a HEAD request so each visual card can show
+      // its on-disk size next to the filename (mirroring the SFX tiles' KB)
+      // without downloading the asset itself. Concurrency-capped so ~60 probes
+      // don't stampede the network on first paint.
+      const SIZE_PROBE_CONCURRENCY = 8;
+      let activeProbes = 0;
+      const probeQueue = [];
+
+      function pumpProbeQueue() {
+        while (activeProbes < SIZE_PROBE_CONCURRENCY && probeQueue.length > 0) {
+          const task = probeQueue.shift();
+          activeProbes++;
+          task().finally(() => {
+            activeProbes--;
+            pumpProbeQueue();
+          });
+        }
+      }
+
+      function fmtBytes(n) {
+        if (!isFinite(n) || n <= 0) return "";
+        if (n < 1024) return n + " B";
+        if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+        return (n / (1024 * 1024)).toFixed(1) + " MB";
+      }
+
+      function attachFileSize(el, resPath) {
+        if (!resPath) return;
+        const url = resolveSceneSrc(resPath);
+        probeQueue.push(() =>
+          fetch(url, { method: "HEAD" })
+            .then((res) => {
+              const len = res.ok ? +res.headers.get("content-length") : NaN;
+              const txt = fmtBytes(len);
+              if (txt) el.textContent = " · " + txt;
+            })
+            .catch(() => {
+              /* size is a nicety — a failed probe just leaves it blank */
+            }),
+        );
+        pumpProbeQueue();
+      }
+
       function bumpHealth(kind, delta) {
         if (!health[kind]) health[kind] = { total: 0, ok: 0, err: 0 };
         health[kind].ok += delta.ok || 0;
@@ -792,6 +840,10 @@
         const fileEl = document.createElement("p");
         fileEl.className = "filename";
         fileEl.textContent = filenameOf(primaryPath(entry));
+        const sizeEl = document.createElement("span");
+        sizeEl.className = "filesize";
+        fileEl.appendChild(sizeEl);
+        attachFileSize(sizeEl, primaryPath(entry));
 
         const badges = document.createElement("div");
         badges.className = "badges";
@@ -1582,6 +1634,13 @@
         const board = document.createElement("div");
         board.className = "soundboard";
 
+        // Decode is deferred: nothing is fetched/decoded until the soundboard
+        // nears the viewport (IntersectionObserver below) or a tile is
+        // hovered/focused (play() → ensureDecode()). Keeps all 51 SFX off the
+        // first-paint budget. `warmups` collects each tile's idempotent
+        // decode-kickoff so the observer can warm the whole pack at once.
+        const warmups = [];
+
         for (const file of audioFiles) {
           const mapped = mappedByFile.get(file.name) || [];
           const tile = document.createElement("div");
@@ -1650,6 +1709,7 @@
           }
 
           function play() {
+            ensureDecode(); // decode-on-demand: first hover kicks the fetch
             if (!buffer) return;
             const ctx = getAudioCtx();
             if (ctx.state === "suspended") ctx.resume();
@@ -1690,28 +1750,52 @@
             }
           });
 
-          scheduleDecode(() =>
-            loadAudioBuffer(RAW_AUDIO_ROOT + file.name)
-              .then((decoded) => {
-                buffer = decoded;
-                state.classList.add("ok");
-                bumpHealth(SFX_CLASS, { ok: 1 });
-                // If the user is already hovering/pinned while it was decoding.
-                if (pinned || tile.matches(":hover")) play();
-              })
-              .catch((err) => {
-                state.classList.add("err");
-                bumpHealth(SFX_CLASS, { err: 1 });
-                console.error(
-                  "[asset-storybook] audio decode failed:",
-                  file.name,
-                  err,
-                );
-              }),
-          );
+          // Idempotent decode-kickoff: the first call (from hover/focus or the
+          // section-visible observer) queues the fetch+decode; later calls are
+          // no-ops. Guarded by `decodeStarted` so a hover mid-decode can't
+          // double-fetch.
+          let decodeStarted = false;
+          function ensureDecode() {
+            if (decodeStarted) return;
+            decodeStarted = true;
+            scheduleDecode(() =>
+              loadAudioBuffer(RAW_AUDIO_ROOT + file.name)
+                .then((decoded) => {
+                  buffer = decoded;
+                  state.classList.add("ok");
+                  bumpHealth(SFX_CLASS, { ok: 1 });
+                  // If the user is already hovering/pinned while it decoded.
+                  if (pinned || tile.matches(":hover")) play();
+                })
+                .catch((err) => {
+                  state.classList.add("err");
+                  bumpHealth(SFX_CLASS, { err: 1 });
+                  console.error(
+                    "[asset-storybook] audio decode failed:",
+                    file.name,
+                    err,
+                  );
+                }),
+            );
+          }
+          warmups.push(ensureDecode);
 
           board.appendChild(tile);
         }
+
+        // Warm the whole pack once the soundboard scrolls near the viewport, so
+        // the first hover after arriving is instant. Until then, zero SFX are
+        // fetched — the section can sit below 55 model cards untouched.
+        const warmObserver = new IntersectionObserver(
+          (entries, obs) => {
+            if (entries.some((e) => e.isIntersecting)) {
+              obs.disconnect();
+              for (const warm of warmups) warm();
+            }
+          },
+          { rootMargin: "200px" },
+        );
+        warmObserver.observe(board);
 
         return board;
       }
