@@ -853,6 +853,20 @@
 
       // ---------- 3D character cards (with animation dropdown) ----------
 
+      // Perf: with one WebGL renderer per card, 8+ cards animating and
+      // auto-rotating at once melt the page. Cards load as posed stills;
+      // only the HOVERED card animates + turntables, and anything scrolled
+      // off-screen is force-paused (same hover-to-play convention as SFX).
+      const mvVisibility = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          const mv = e.target.querySelector("model-viewer");
+          if (mv && !e.isIntersecting) {
+            mv.pause();
+            mv.removeAttribute("auto-rotate");
+          }
+        }
+      }, { threshold: 0.05 });
+
       function buildModel3d(key, entry, render) {
         const src = resolveSceneSrc(entry.scene);
 
@@ -862,12 +876,20 @@
         const mv = document.createElement("model-viewer");
         mv.setAttribute("src", src);
         mv.setAttribute("alt", key);
-        mv.setAttribute("auto-rotate", "");
         mv.setAttribute("camera-controls", "");
         mv.setAttribute("shadow-intensity", "1");
         mv.setAttribute("exposure", "1");
         mv.setAttribute("environment-image", "neutral");
-        mv.setAttribute("autoplay", "");
+
+        viewport.addEventListener("mouseenter", () => {
+          mv.setAttribute("auto-rotate", "");
+          mv.play();
+        });
+        viewport.addEventListener("mouseleave", () => {
+          mv.pause();
+          mv.removeAttribute("auto-rotate");
+        });
+        mvVisibility.observe(viewport);
 
         const loadState = document.createElement("div");
         loadState.className = "load-state";
@@ -915,7 +937,7 @@
           const defaultClip = clips.includes("idle") ? "idle" : clips[0];
           animSelect.value = defaultClip;
           mv.animationName = defaultClip;
-          mv.play();
+          mv.pause(); // posed still; hover (or the dropdown) starts playback
         });
         mv.addEventListener("error", (e) => {
           loadState.textContent = "load error";
