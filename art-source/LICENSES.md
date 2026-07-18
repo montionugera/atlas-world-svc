@@ -111,4 +111,9 @@ cheap now, painful to reconstruct later.
 | `music/ambient_once_upon_a_time.mp3` | market | [OpenGameArt](https://opengameart.org/content/once-upon-a-time-loop) | CC0 | tad | 2026-07-18 | music:ambient_once_upon_a_time; BGM (CC0) |
 | `music/ambient_last_journey.mp3` | market | [OpenGameArt](https://opengameart.org/content/last-journey) | CC0 | crocdent | 2026-07-18 | music:ambient_last_journey; BGM (CC0) |
 
+| `vfx/explosion.png` | market | [OpenGameArt](https://opengameart.org/content/explosion-sheet) | CC0 | stumpystrust | 2026-07-18 | fx:explosion; animated VFX sprite sheet (64f) |
+| `vfx/fireball.png` | market | [OpenGameArt](https://opengameart.org/content/sparkling-fireball-effect) | CC0 | rubberduck | 2026-07-18 | fx:fireball; animated VFX sprite sheet (56f) |
+| `vfx/magic_rune.png` | market | [OpenGameArt](https://opengameart.org/content/fire-trap-rune-animation-sprite-sheet) | CC0 | gfroad | 2026-07-18 | fx:magic_rune; animated VFX sprite sheet (16f) |
+| `vfx/barrier.png` | market | [OpenGameArt](https://opengameart.org/content/barrier-sprite-sheet) | CC0 | gfroad | 2026-07-18 | fx:barrier; animated VFX sprite sheet (25f) |
+
 <!-- Source ∈ ai | market | commission. License must be commercial-safe (prefer CC0). -->

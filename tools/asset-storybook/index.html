@@ -1133,6 +1133,7 @@
         clipPicker.appendChild(clipSelect);
 
         let img = null;
+        let cols = 1; // sheet columns, set on load; lets a clip span rows
         let currentClip = clips[0];
         let frameIndex = 0;
         let elapsed = 0;
@@ -1140,11 +1141,18 @@
 
         function draw() {
           if (!img) return;
+          // Absolute frame position: a clip starts at its `row` and its frames
+          // walk left-to-right, wrapping onto the next row. For single-row
+          // clips (count ≤ cols, e.g. the sprite:slime idle/walk/attack rows)
+          // this is identical to `srcX = frameIndex*frameW, srcY = row*frameH`;
+          // for a whole-grid effect (e.g. a 64-frame explosion across 8 rows)
+          // it walks the full sheet as one continuous flipbook.
+          const abs = currentClip.row * cols + frameIndex;
           ctx.clearRect(0, 0, frameW, frameH);
           ctx.drawImage(
             img,
-            frameIndex * frameW,
-            currentClip.row * frameH,
+            (abs % cols) * frameW,
+            Math.floor(abs / cols) * frameH,
             frameW,
             frameH,
             0,
@@ -1190,6 +1198,7 @@
 
         img = new Image();
         img.onload = () => {
+          cols = Math.max(1, Math.floor(img.naturalWidth / frameW));
           loadState.textContent = "loaded ✓";
           loadState.classList.add("ok");
           bumpHealth(render, { ok: 1 });

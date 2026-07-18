@@ -417,6 +417,98 @@
       "license": "CC0",
       "tier": "seed",
       "label": "Stable"
+    },
+    "fx:explosion": {
+      "scene": "res://assets/vfx/explosion.png",
+      "render": "spritesheet",
+      "kind": "vfx",
+      "frame": {
+        "w": 128,
+        "h": 128
+      },
+      "animations": [
+        {
+          "name": "explode",
+          "row": 0,
+          "count": 64,
+          "fps": 24,
+          "loop": true
+        }
+      ],
+      "source": "OpenGameArt — https://opengameart.org/content/explosion-sheet",
+      "author": "stumpystrust",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Explosion (8×8 flipbook)"
+    },
+    "fx:fireball": {
+      "scene": "res://assets/vfx/fireball.png",
+      "render": "spritesheet",
+      "kind": "vfx",
+      "frame": {
+        "w": 256,
+        "h": 256
+      },
+      "animations": [
+        {
+          "name": "burst",
+          "row": 0,
+          "count": 50,
+          "fps": 30,
+          "loop": true
+        }
+      ],
+      "source": "OpenGameArt — https://opengameart.org/content/sparkling-fireball-effect",
+      "author": "rubberduck",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Sparkling fireball burst"
+    },
+    "fx:magic_rune": {
+      "scene": "res://assets/vfx/magic_rune.png",
+      "render": "spritesheet",
+      "kind": "vfx",
+      "frame": {
+        "w": 128,
+        "h": 128
+      },
+      "animations": [
+        {
+          "name": "spin",
+          "row": 0,
+          "count": 16,
+          "fps": 16,
+          "loop": true
+        }
+      ],
+      "source": "OpenGameArt — https://opengameart.org/content/fire-trap-rune-animation-sprite-sheet",
+      "author": "gfroad",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Magic rune circle"
+    },
+    "fx:barrier": {
+      "scene": "res://assets/vfx/barrier.png",
+      "render": "spritesheet",
+      "kind": "vfx",
+      "frame": {
+        "w": 256,
+        "h": 256
+      },
+      "animations": [
+        {
+          "name": "pulse",
+          "row": 0,
+          "count": 25,
+          "fps": 20,
+          "loop": true
+        }
+      ],
+      "source": "OpenGameArt — https://opengameart.org/content/barrier-sprite-sheet",
+      "author": "gfroad",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Energy barrier / shield"
     }
   }
 }
