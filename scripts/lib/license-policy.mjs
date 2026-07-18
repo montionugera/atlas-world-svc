@@ -1,9 +1,13 @@
 // Tiered license policy for the asset drift-gate (F-A).
-// CC0 and CC-BY-4.0 are the only accepted licenses; CC-BY additionally
+// Accepted licenses: CC0 and CC-BY (3.0 or 4.0). Any CC-BY additionally
 // requires attribution (non-empty source + author) so a credits screen
-// can be generated mechanically later. Empty license is NOT this module's
-// concern — the render-spec `require` list already fails an empty license.
-const ALLOWED = new Set(["CC0", "CC-BY-4.0"]);
+// can be generated mechanically later. CC-BY-3.0 was added when the CC0-only
+// 3D character supply proved too thin (Poly Pizza's fantasy humanoids are
+// overwhelmingly CC-BY-3.0 Google-Poly imports). Empty license is NOT this
+// module's concern — the render-spec `require` list already fails an empty
+// license. Non-commercial / share-alike variants (CC-BY-NC, CC-BY-SA) and
+// anything else remain a hard failure.
+const ALLOWED = new Set(["CC0", "CC-BY-4.0", "CC-BY-3.0"]);
 
 function isEmpty(v) {
   return v === undefined || v === null || (typeof v === "string" && v.trim() === "");
