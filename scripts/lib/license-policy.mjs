@@ -10,8 +10,14 @@ function isEmpty(v) {
 }
 
 export function checkLicensePolicy(id, entry, failures) {
-  const lic = typeof entry.license === "string" ? entry.license.trim() : "";
-  if (lic === "") return; // presence is enforced elsewhere
+  const raw = entry.license;
+  if (raw === undefined || raw === null) return; // absent — presence enforced elsewhere
+  if (typeof raw !== "string") {
+    failures.push(`entry "${id}": license must be a string (got ${typeof raw})`);
+    return;
+  }
+  const lic = raw.trim();
+  if (lic === "") return; // blank string — presence enforced elsewhere
   if (!ALLOWED.has(lic)) {
     failures.push(
       `entry "${id}": license "${lic}" not allowed — must be one of ${[...ALLOWED].join(", ")}`,

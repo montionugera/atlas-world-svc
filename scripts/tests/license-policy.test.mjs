@@ -40,3 +40,11 @@ test("CC-BY with author+source passes", () => {
 test("empty license is left to the require-check (no policy error)", () => {
   assert.deepEqual(run({}), []);
 });
+
+test("non-string license fails loudly instead of silently passing", () => {
+  for (const bad of [123, true, ["CC0"], { license: "CC0" }]) {
+    const f = run({ license: bad });
+    assert.equal(f.length, 1, `expected exactly one failure for ${JSON.stringify(bad)}`);
+    assert.match(f[0], /license must be a string/);
+  }
+});
