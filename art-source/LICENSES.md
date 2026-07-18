@@ -103,4 +103,12 @@ cheap now, painful to reconstruct later.
 | `audio/shatter_medium.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:shatter_medium; pack file impactGlass_medium_000.ogg |
 | `audio/shatter_heavy.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:shatter_heavy; pack file impactGlass_heavy_000.ogg |
 
+| `music/town_hero_suite.ogg` | market | [OpenGameArt](https://opengameart.org/content/hero-suite-a) | CC0 | some-weirdo | 2026-07-18 | music:town_hero_suite; BGM (CC0) |
+| `music/field_treasure_hunter.mp3` | market | [OpenGameArt](https://opengameart.org/content/treasure-hunter) | CC0 | tad | 2026-07-18 | music:field_treasure_hunter; BGM (CC0) |
+| `music/dungeon_subspace.mp3` | market | [OpenGameArt](https://opengameart.org/content/subspace) | CC0 | vitalezzz | 2026-07-18 | music:dungeon_subspace; BGM (CC0) |
+| `music/battle_arrival.mp3` | market | [OpenGameArt](https://opengameart.org/content/arrival-1) | CC0 | vitalezzz | 2026-07-18 | music:battle_arrival; BGM (CC0) |
+| `music/boss_fantasy_orchestral.ogg` | market | [OpenGameArt](https://opengameart.org/content/fantasy-orchestral-theme-emotional-piano-loop-joth-vs-extenz) | CC0 | glitchart | 2026-07-18 | music:boss_fantasy_orchestral; BGM (CC0) |
+| `music/ambient_once_upon_a_time.mp3` | market | [OpenGameArt](https://opengameart.org/content/once-upon-a-time-loop) | CC0 | tad | 2026-07-18 | music:ambient_once_upon_a_time; BGM (CC0) |
+| `music/ambient_last_journey.mp3` | market | [OpenGameArt](https://opengameart.org/content/last-journey) | CC0 | crocdent | 2026-07-18 | music:ambient_last_journey; BGM (CC0) |
+
 <!-- Source ∈ ai | market | commission. License must be commercial-safe (prefer CC0). -->

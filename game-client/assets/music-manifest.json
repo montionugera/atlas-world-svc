@@ -1,4 +1,54 @@
 {
   "version": 1,
-  "entries": {}
+  "entries": {
+    "music:town_hero_suite": {
+      "render": "music",
+      "stream": "res://assets/music/town_hero_suite.ogg",
+      "license": "CC0",
+      "source": "OpenGameArt — https://opengameart.org/content/hero-suite-a",
+      "author": "some-weirdo"
+    },
+    "music:field_treasure_hunter": {
+      "render": "music",
+      "stream": "res://assets/music/field_treasure_hunter.mp3",
+      "license": "CC0",
+      "source": "OpenGameArt — https://opengameart.org/content/treasure-hunter",
+      "author": "tad"
+    },
+    "music:dungeon_subspace": {
+      "render": "music",
+      "stream": "res://assets/music/dungeon_subspace.mp3",
+      "license": "CC0",
+      "source": "OpenGameArt — https://opengameart.org/content/subspace",
+      "author": "vitalezzz"
+    },
+    "music:battle_arrival": {
+      "render": "music",
+      "stream": "res://assets/music/battle_arrival.mp3",
+      "license": "CC0",
+      "source": "OpenGameArt — https://opengameart.org/content/arrival-1",
+      "author": "vitalezzz"
+    },
+    "music:boss_fantasy_orchestral": {
+      "render": "music",
+      "stream": "res://assets/music/boss_fantasy_orchestral.ogg",
+      "license": "CC0",
+      "source": "OpenGameArt — https://opengameart.org/content/fantasy-orchestral-theme-emotional-piano-loop-joth-vs-extenz",
+      "author": "glitchart"
+    },
+    "music:ambient_once_upon_a_time": {
+      "render": "music",
+      "stream": "res://assets/music/ambient_once_upon_a_time.mp3",
+      "license": "CC0",
+      "source": "OpenGameArt — https://opengameart.org/content/once-upon-a-time-loop",
+      "author": "tad"
+    },
+    "music:ambient_last_journey": {
+      "render": "music",
+      "stream": "res://assets/music/ambient_last_journey.mp3",
+      "license": "CC0",
+      "source": "OpenGameArt — https://opengameart.org/content/last-journey",
+      "author": "crocdent"
+    }
+  }
 }
