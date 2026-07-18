@@ -128,4 +128,8 @@ cheap now, painful to reconstruct later.
 | `loot/potion.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/7qbuf1TS8C) | CC0 | Quaternius | 2026-07-18 | seed tier — `loot:potion` (3D top-up) |
 | `loot/gem.glb` | market | Poly Pizza — Kay (via poly.pizza/m/2LbAELNqb3) | CC0 | Kay | 2026-07-18 | seed tier — `loot:gem` (3D top-up) |
 
+| `creatures/spider.glb` | market | Poly Pizza — Quaternius (https://poly.pizza (Quaternius, uuid 4259fbdb)) | CC0 | Quaternius | 2026-07-18 | seed tier — `creature:spider` |
+| `characters/archer.glb` | market | Poly Pizza — Poly (https://poly.pizza/m/0jlabhnBscv) | CC-BY-3.0 | Poly | 2026-07-18 | seed tier — `character:archer` (CC-BY attribution required) |
+| `characters/mage.glb` | market | Poly Pizza — madtrollstudio (https://poly.pizza/m/6oDxK0wqyL) | CC-BY-3.0 | madtrollstudio | 2026-07-18 | seed tier — `character:mage` (CC-BY attribution required) |
+
 <!-- Source ∈ ai | market | commission. License must be commercial-safe (prefer CC0). -->

@@ -608,6 +608,35 @@
       "license": "CC0",
       "tier": "seed",
       "label": "Gem"
+    },
+    "creature:spider": {
+      "scene": "res://assets/creatures/spider.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Spider"
+    },
+    "character:archer": {
+      "scene": "res://assets/characters/archer.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC-BY-3.0",
+      "tier": "seed",
+      "label": "Archer",
+      "author": "Poly"
+    },
+    "character:mage": {
+      "scene": "res://assets/characters/mage.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC-BY-3.0",
+      "tier": "seed",
+      "label": "Wizardus Maximus (Mage)",
+      "author": "madtrollstudio"
     }
   }
 }
