@@ -64,6 +64,7 @@
 import { readFileSync, existsSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve, join } from "node:path";
+import { checkLicensePolicy } from "./lib/license-policy.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -241,6 +242,9 @@ function validateEntry(id, entry, source, gameClient, spec, failures) {
       failures.push(`entry "${id}": required "${f}" empty for render=${render}`);
     }
   }
+
+  // (I) tiered license policy — allowed set + CC-BY attribution completeness.
+  checkLicensePolicy(id, entry, failures);
 
   // (D) optional path fields — if present, must resolve.
   for (const pf of r.optionalPaths || []) {
