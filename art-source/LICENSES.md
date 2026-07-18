@@ -116,4 +116,17 @@ cheap now, painful to reconstruct later.
 | `vfx/magic_rune.png` | market | [OpenGameArt](https://opengameart.org/content/fire-trap-rune-animation-sprite-sheet) | CC0 | gfroad | 2026-07-18 | fx:magic_rune; animated VFX sprite sheet (16f) |
 | `vfx/barrier.png` | market | [OpenGameArt](https://opengameart.org/content/barrier-sprite-sheet) | CC0 | gfroad | 2026-07-18 | fx:barrier; animated VFX sprite sheet (25f) |
 
+| `creatures/spider.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/3aQgc75sUR) | CC0 | Quaternius | 2026-07-18 | seed tier — `creature:spider` (3D top-up) |
+| `creatures/skeleton.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/1XZD9GK6Kj) | CC0 | Quaternius | 2026-07-18 | seed tier — `creature:skeleton` (3D top-up) |
+| `env/barrel.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/1orHe0kCc1) | CC0 | Quaternius | 2026-07-18 | seed tier — `env:barrel` (3D top-up) |
+| `env/crate.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/1dh0EFL5gl) | CC0 | Quaternius | 2026-07-18 | seed tier — `env:crate` (3D top-up) |
+| `env/rock.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/34W5ymEePk) | CC0 | Quaternius | 2026-07-18 | seed tier — `env:rock` (3D top-up) |
+| `env/bush.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/1X06RgvSr6) | CC0 | Quaternius | 2026-07-18 | seed tier — `env:bush` (3D top-up) |
+| `weapons/axe.glb` | market | Poly Pizza — Pichuliru (via poly.pizza/m/0kgjDkCRmx) | CC0 | Pichuliru | 2026-07-18 | seed tier — `weapon:axe` (3D top-up) |
+| `weapons/greatsword.glb` | market | Poly Pizza — Pichuliru (via poly.pizza/m/15A7InejC7) | CC0 | Pichuliru | 2026-07-18 | seed tier — `weapon:greatsword` (3D top-up) |
+| `weapons/bow.glb` | market | Poly Pizza — CreativeTrio (via poly.pizza/m/3PTJlHnOfU) | CC0 | CreativeTrio | 2026-07-18 | seed tier — `weapon:bow` (3D top-up) |
+| `weapons/dagger.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/0g8M6yYtE4) | CC0 | Quaternius | 2026-07-18 | seed tier — `weapon:dagger` (3D top-up) |
+| `loot/potion.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/7qbuf1TS8C) | CC0 | Quaternius | 2026-07-18 | seed tier — `loot:potion` (3D top-up) |
+| `loot/gem.glb` | market | Poly Pizza — Kay (via poly.pizza/m/2LbAELNqb3) | CC0 | Kay | 2026-07-18 | seed tier — `loot:gem` (3D top-up) |
+
 <!-- Source ∈ ai | market | commission. License must be commercial-safe (prefer CC0). -->

@@ -509,6 +509,114 @@
       "license": "CC0",
       "tier": "seed",
       "label": "Energy barrier / shield"
+    },
+    "creature:spider": {
+      "scene": "res://assets/creatures/spider.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Spider"
+    },
+    "creature:skeleton": {
+      "scene": "res://assets/creatures/skeleton.glb",
+      "render": "model3d",
+      "kind": "creature",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Skeleton"
+    },
+    "env:barrel": {
+      "scene": "res://assets/env/barrel.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Barrel"
+    },
+    "env:crate": {
+      "scene": "res://assets/env/crate.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Crate"
+    },
+    "env:rock": {
+      "scene": "res://assets/env/rock.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock"
+    },
+    "env:bush": {
+      "scene": "res://assets/env/bush.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush"
+    },
+    "weapon:axe": {
+      "scene": "res://assets/weapons/axe.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Axe"
+    },
+    "weapon:greatsword": {
+      "scene": "res://assets/weapons/greatsword.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Greatsword"
+    },
+    "weapon:bow": {
+      "scene": "res://assets/weapons/bow.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bow"
+    },
+    "weapon:dagger": {
+      "scene": "res://assets/weapons/dagger.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Dagger"
+    },
+    "loot:potion": {
+      "scene": "res://assets/loot/potion.glb",
+      "render": "model3d",
+      "kind": "loot",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Potion"
+    },
+    "loot:gem": {
+      "scene": "res://assets/loot/gem.glb",
+      "render": "model3d",
+      "kind": "loot",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Gem"
     }
   }
 }
