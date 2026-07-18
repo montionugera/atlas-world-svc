@@ -63,5 +63,12 @@ cheap now, painful to reconstruct later.
 | `env/inn.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `env:inn` (RO seed library) |
 | `env/sawmill.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `env:sawmill` (RO seed library) |
 | `env/stable.glb` | market | Quaternius — Ultimate Monsters/RPG Items/Buildings (via poly.pizza) | CC0 | Quaternius | 2026-07-16 | seed tier — `env:stable` (RO seed library) |
+| `vfx/projectile-arrow.glb` | market | Quaternius (CC0) | CC0 | Quaternius | 2026-07-15 | seed tier — `projectile:arrow`; provenance backfilled 2026-07-18 after license-field normalization |
+| `vfx/projectile-spear.glb` | market | Quaternius (CC0) | CC0 | Quaternius | 2026-07-15 | seed tier — `projectile:spear`/`magicSpear`/`physicSpear`; provenance backfilled 2026-07-18 |
+| `vfx/projectile-melee.glb` | market | Quaternius (CC0) | CC0 | Quaternius | 2026-07-15 | seed tier — `projectile:melee`/`smallMeelee`/`largeMeelee`; provenance backfilled 2026-07-18 |
+| `vfx/zones/zone-damage.glb` | internal | generated emissive disc (F-002 vfx keys) | CC0 | atlas-world-svc | 2026-07-15 | seed tier — `zone:damage`; provenance backfilled 2026-07-18 |
+| `vfx/zones/zone-freeze.glb` | internal | generated emissive disc (F-002 vfx keys) | CC0 | atlas-world-svc | 2026-07-15 | seed tier — `zone:freeze`; provenance backfilled 2026-07-18 |
+| `vfx/zones/zone-impulse-caster.glb` | internal | generated emissive disc (F-002 vfx keys) | CC0 | atlas-world-svc | 2026-07-15 | seed tier — `zone:impulse_caster`; provenance backfilled 2026-07-18 |
+| `vfx/zones/zone-stun.glb` | internal | generated emissive disc (F-002 vfx keys) | CC0 | atlas-world-svc | 2026-07-15 | seed tier — `zone:stun`; provenance backfilled 2026-07-18 |
 
 <!-- Source ∈ ai | market | commission. License must be commercial-safe (prefer CC0). -->
