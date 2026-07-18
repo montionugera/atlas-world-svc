@@ -129,7 +129,10 @@ cheap now, painful to reconstruct later.
 | `loot/gem.glb` | market | Poly Pizza — Kay (via poly.pizza/m/2LbAELNqb3) | CC0 | Kay | 2026-07-18 | seed tier — `loot:gem` (3D top-up) |
 
 | `creatures/spider.glb` | market | Poly Pizza — Quaternius (https://poly.pizza (Quaternius, uuid 4259fbdb)) | CC0 | Quaternius | 2026-07-18 | seed tier — `creature:spider` |
-| `characters/archer.glb` | market | Poly Pizza — Poly (https://poly.pizza/m/0jlabhnBscv) | CC-BY-3.0 | Poly | 2026-07-18 | seed tier — `character:archer` (CC-BY attribution required) |
-| `characters/mage.glb` | market | Poly Pizza — madtrollstudio (https://poly.pizza/m/6oDxK0wqyL) | CC-BY-3.0 | madtrollstudio | 2026-07-18 | seed tier — `character:mage` (CC-BY attribution required) |
+
+| `characters/archer.glb` | market | KayKit Adventurers 2.0 (Kay Lousberg, kaylousberg.com) — Ranger.glb | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:archer` (matches player_knight style/rig) |
+| `characters/mage.glb` | market | KayKit Adventurers 2.0 (Kay Lousberg, kaylousberg.com) — Mage.glb | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:mage` (matches player_knight style/rig) |
+| `characters/rogue.glb` | market | KayKit Adventurers 2.0 (Kay Lousberg, kaylousberg.com) — Rogue.glb | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:rogue` (matches player_knight style/rig) |
+| `characters/barbarian.glb` | market | KayKit Adventurers 2.0 (Kay Lousberg, kaylousberg.com) — Barbarian.glb | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:barbarian` (matches player_knight style/rig) |
 
 <!-- Source ∈ ai | market | commission. License must be commercial-safe (prefer CC0). -->

@@ -623,20 +623,36 @@
       "render": "model3d",
       "kind": "character",
       "source": "market",
-      "license": "CC-BY-3.0",
+      "license": "CC0",
       "tier": "seed",
-      "label": "Archer",
-      "author": "Poly"
+      "label": "Archer (KayKit Ranger)"
     },
     "character:mage": {
       "scene": "res://assets/characters/mage.glb",
       "render": "model3d",
       "kind": "character",
       "source": "market",
-      "license": "CC-BY-3.0",
+      "license": "CC0",
       "tier": "seed",
-      "label": "Wizardus Maximus (Mage)",
-      "author": "madtrollstudio"
+      "label": "Mage (KayKit)"
+    },
+    "character:rogue": {
+      "scene": "res://assets/characters/rogue.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rogue (KayKit)"
+    },
+    "character:barbarian": {
+      "scene": "res://assets/characters/barbarian.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Barbarian (KayKit)"
     }
   }
 }
