@@ -4,7 +4,7 @@
     "player": {
       "scene": "res://assets/characters/player_knight.glb",
       "source": "internal",
-      "license": "CC0 (KayKit Adventurers)",
+      "license": "CC0",
       "tier": "bespoke",
       "kind": "character",
       "anims": {
@@ -18,56 +18,56 @@
     "npc": {
       "scene": "res://assets/characters/character-female-a.glb",
       "source": "market",
-      "license": "CC0 (Kenney Mini Characters)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "character"
     },
     "mob:aggressive": {
       "scene": "res://assets/characters/mob_aggressive_brute.glb",
       "source": "internal",
-      "license": "CC0 (internal kitbash, Kenney-derived)",
+      "license": "CC0",
       "tier": "bespoke",
       "kind": "character"
     },
     "mob:balanced": {
       "scene": "res://assets/characters/character-female-b.glb",
       "source": "market",
-      "license": "CC0 (Kenney Mini Characters)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "character"
     },
     "mob:defensive": {
       "scene": "res://assets/characters/mob_defensive_guard.glb",
       "source": "internal",
-      "license": "CC0 (internal kitbash, Kenney-derived)",
+      "license": "CC0",
       "tier": "bespoke",
       "kind": "character"
     },
     "mob:double_attacker": {
       "scene": "res://assets/characters/character-female-c.glb",
       "source": "market",
-      "license": "CC0 (Kenney Mini Characters)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "character"
     },
     "mob:hybrid": {
       "scene": "res://assets/characters/character-male-e.glb",
       "source": "market",
-      "license": "CC0 (Kenney Mini Characters)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "character"
     },
     "mob:spear_thrower": {
       "scene": "res://assets/characters/character-male-c.glb",
       "source": "market",
-      "license": "CC0 (Kenney Mini Characters)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "character"
     },
     "projectile:arrow": {
       "scene": "res://assets/vfx/projectile-arrow.glb",
       "source": "market",
-      "license": "CC0 (Quaternius)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "vfx",
       "render": "model3d"
@@ -75,7 +75,7 @@
     "projectile:spear": {
       "scene": "res://assets/vfx/projectile-spear.glb",
       "source": "market",
-      "license": "CC0 (Quaternius)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "vfx",
       "render": "model3d"
@@ -83,7 +83,7 @@
     "projectile:magicSpear": {
       "scene": "res://assets/vfx/projectile-spear.glb",
       "source": "market",
-      "license": "CC0 (Quaternius)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "vfx",
       "render": "model3d"
@@ -91,7 +91,7 @@
     "projectile:physicSpear": {
       "scene": "res://assets/vfx/projectile-spear.glb",
       "source": "market",
-      "license": "CC0 (Quaternius)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "vfx",
       "render": "model3d"
@@ -99,7 +99,7 @@
     "projectile:melee": {
       "scene": "res://assets/vfx/projectile-melee.glb",
       "source": "market",
-      "license": "CC0 (Quaternius)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "vfx",
       "render": "model3d"
@@ -107,7 +107,7 @@
     "projectile:smallMeelee": {
       "scene": "res://assets/vfx/projectile-melee.glb",
       "source": "market",
-      "license": "CC0 (Quaternius)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "vfx",
       "render": "model3d"
@@ -115,7 +115,7 @@
     "projectile:largeMeelee": {
       "scene": "res://assets/vfx/projectile-melee.glb",
       "source": "market",
-      "license": "CC0 (Quaternius)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "vfx",
       "render": "model3d"
@@ -123,7 +123,7 @@
     "zone:damage": {
       "scene": "res://assets/vfx/zones/zone-damage.glb",
       "source": "authored",
-      "license": "CC0 (generated)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "vfx",
       "render": "model3d"
@@ -131,7 +131,7 @@
     "zone:freeze": {
       "scene": "res://assets/vfx/zones/zone-freeze.glb",
       "source": "authored",
-      "license": "CC0 (generated)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "vfx",
       "render": "model3d"
@@ -139,7 +139,7 @@
     "zone:impulse_caster": {
       "scene": "res://assets/vfx/zones/zone-impulse-caster.glb",
       "source": "authored",
-      "license": "CC0 (generated)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "vfx",
       "render": "model3d"
@@ -147,7 +147,7 @@
     "zone:stun": {
       "scene": "res://assets/vfx/zones/zone-stun.glb",
       "source": "authored",
-      "license": "CC0 (generated)",
+      "license": "CC0",
       "tier": "seed",
       "kind": "vfx",
       "render": "model3d"

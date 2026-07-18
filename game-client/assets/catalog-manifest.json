@@ -6,7 +6,7 @@
       "render": "image",
       "kind": "prop",
       "source": "hand",
-      "license": "CC0 (hand-authored placeholder)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Health Potion"
     },
@@ -15,7 +15,7 @@
       "render": "image",
       "kind": "prop",
       "source": "hand",
-      "license": "CC0 (hand-authored placeholder)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Mana Potion"
     },
@@ -51,7 +51,7 @@
         }
       ],
       "source": "hand",
-      "license": "CC0 (hand-authored placeholder)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Slime (SpriteFrames demo)"
     },
@@ -66,7 +66,7 @@
         "b": 12
       },
       "source": "hand",
-      "license": "CC0 (hand-authored placeholder)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Wood Panel (9-slice demo)"
     },
@@ -77,7 +77,7 @@
       "preview": "res://assets/ui/main_preview.png",
       "previewHashOf": "res://assets/ui/main.tres",
       "source": "hand",
-      "license": "CC0 (hand-authored placeholder)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Main UI Theme (baked preview demo)"
     },
@@ -90,7 +90,7 @@
         "h": 16
       },
       "source": "hand",
-      "license": "CC0 (hand-authored placeholder)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Dungeon Tileset (16px grid demo)"
     },
@@ -99,7 +99,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Slime"
     },
@@ -108,7 +108,7 @@
       "render": "model3d",
       "kind": "environment",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Trees"
     },
@@ -117,7 +117,7 @@
       "render": "model3d",
       "kind": "environment",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Fence"
     },
@@ -126,7 +126,7 @@
       "render": "model3d",
       "kind": "environment",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Mountains"
     },
@@ -135,7 +135,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Bunny"
     },
@@ -144,7 +144,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Demon"
     },
@@ -153,7 +153,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Dragon"
     },
@@ -162,7 +162,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Ghost"
     },
@@ -171,7 +171,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Green Blob"
     },
@@ -180,7 +180,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Green Spiky Blob"
     },
@@ -189,7 +189,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Mushnub"
     },
@@ -198,7 +198,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Mushroom King"
     },
@@ -207,7 +207,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Orc"
     },
@@ -216,7 +216,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Orc Enemy"
     },
@@ -225,7 +225,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Pink Slime"
     },
@@ -234,7 +234,7 @@
       "render": "model3d",
       "kind": "creature",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Yeti"
     },
@@ -243,7 +243,7 @@
       "render": "model3d",
       "kind": "weapon",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Axe Double"
     },
@@ -252,7 +252,7 @@
       "render": "model3d",
       "kind": "weapon",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Claymore"
     },
@@ -261,7 +261,7 @@
       "render": "model3d",
       "kind": "weapon",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Knife"
     },
@@ -270,7 +270,7 @@
       "render": "model3d",
       "kind": "weapon",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Scythe"
     },
@@ -279,7 +279,7 @@
       "render": "model3d",
       "kind": "weapon",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Shield Round"
     },
@@ -288,7 +288,7 @@
       "render": "model3d",
       "kind": "weapon",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Spear"
     },
@@ -297,7 +297,7 @@
       "render": "model3d",
       "kind": "weapon",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Sword"
     },
@@ -306,7 +306,7 @@
       "render": "model3d",
       "kind": "weapon",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Wooden Bow"
     },
@@ -315,7 +315,7 @@
       "render": "model3d",
       "kind": "loot",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Book"
     },
@@ -324,7 +324,7 @@
       "render": "model3d",
       "kind": "loot",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Coin"
     },
@@ -333,7 +333,7 @@
       "render": "model3d",
       "kind": "loot",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Crown"
     },
@@ -342,7 +342,7 @@
       "render": "model3d",
       "kind": "loot",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Necklace"
     },
@@ -351,7 +351,7 @@
       "render": "model3d",
       "kind": "loot",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Potion Bottle"
     },
@@ -360,7 +360,7 @@
       "render": "model3d",
       "kind": "loot",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Scroll"
     },
@@ -369,7 +369,7 @@
       "render": "model3d",
       "kind": "environment",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Blacksmith"
     },
@@ -378,7 +378,7 @@
       "render": "model3d",
       "kind": "environment",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Farm"
     },
@@ -387,7 +387,7 @@
       "render": "model3d",
       "kind": "environment",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "House"
     },
@@ -396,7 +396,7 @@
       "render": "model3d",
       "kind": "environment",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Inn"
     },
@@ -405,7 +405,7 @@
       "render": "model3d",
       "kind": "environment",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Sawmill"
     },
@@ -414,7 +414,7 @@
       "render": "model3d",
       "kind": "environment",
       "source": "market",
-      "license": "CC0 (Quaternius, via Poly Pizza)",
+      "license": "CC0",
       "tier": "seed",
       "label": "Stable"
     }
