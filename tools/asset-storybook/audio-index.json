@@ -1,211 +1,131 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-13T17:12:55.377Z",
-  "sourceDir": "art-source/seed/audio/kenney-rpg-audio",
+  "generatedAt": "2026-07-18T09:12:07.241Z",
+  "sourceDir": "game-client/assets/audio",
   "files": [
     {
-      "name": "beltHandle1.ogg",
-      "bytes": 10820
+      "name": "chime_bright.ogg",
+      "bytes": 15577
     },
     {
-      "name": "beltHandle2.ogg",
-      "bytes": 15410
-    },
-    {
-      "name": "bookClose.ogg",
-      "bytes": 9292
-    },
-    {
-      "name": "bookFlip1.ogg",
-      "bytes": 18248
-    },
-    {
-      "name": "bookFlip2.ogg",
-      "bytes": 12393
-    },
-    {
-      "name": "bookFlip3.ogg",
-      "bytes": 9077
-    },
-    {
-      "name": "bookOpen.ogg",
-      "bytes": 8273
-    },
-    {
-      "name": "bookPlace1.ogg",
-      "bytes": 9901
-    },
-    {
-      "name": "bookPlace2.ogg",
-      "bytes": 11185
-    },
-    {
-      "name": "bookPlace3.ogg",
-      "bytes": 9570
+      "name": "chime_soft.ogg",
+      "bytes": 13915
     },
     {
       "name": "chop.ogg",
       "bytes": 9370
     },
     {
-      "name": "cloth1.ogg",
-      "bytes": 16508
+      "name": "death.ogg",
+      "bytes": 6689
     },
     {
-      "name": "cloth2.ogg",
-      "bytes": 11787
+      "name": "impact_flesh_heavy.ogg",
+      "bytes": 6570
     },
     {
-      "name": "cloth3.ogg",
-      "bytes": 12432
+      "name": "impact_flesh_soft_alt.ogg",
+      "bytes": 5506
     },
     {
-      "name": "cloth4.ogg",
-      "bytes": 11043
+      "name": "impact_flesh_soft.ogg",
+      "bytes": 5351
     },
     {
-      "name": "clothBelt.ogg",
-      "bytes": 21491
+      "name": "impact_light_alt.ogg",
+      "bytes": 5636
     },
     {
-      "name": "clothBelt2.ogg",
-      "bytes": 20013
+      "name": "impact_light.ogg",
+      "bytes": 5827
     },
     {
-      "name": "creak1.ogg",
-      "bytes": 15761
+      "name": "impact_metal_heavy_alt.ogg",
+      "bytes": 7279
     },
     {
-      "name": "creak2.ogg",
-      "bytes": 19012
+      "name": "impact_metal_heavy.ogg",
+      "bytes": 6110
     },
     {
-      "name": "creak3.ogg",
-      "bytes": 10408
+      "name": "impact_metal_light_alt.ogg",
+      "bytes": 6967
     },
     {
-      "name": "doorClose_1.ogg",
-      "bytes": 18564
+      "name": "impact_metal_light.ogg",
+      "bytes": 7651
     },
     {
-      "name": "doorClose_2.ogg",
-      "bytes": 17598
+      "name": "impact_metal_medium_alt.ogg",
+      "bytes": 6151
     },
     {
-      "name": "doorClose_3.ogg",
-      "bytes": 20889
+      "name": "impact_metal_medium.ogg",
+      "bytes": 7117
     },
     {
-      "name": "doorClose_4.ogg",
-      "bytes": 16902
+      "name": "impact_plank.ogg",
+      "bytes": 12016
     },
     {
-      "name": "doorOpen_1.ogg",
-      "bytes": 22848
+      "name": "impact_plate_heavy.ogg",
+      "bytes": 10032
     },
     {
-      "name": "doorOpen_2.ogg",
-      "bytes": 30280
+      "name": "impact_plate_light.ogg",
+      "bytes": 10474
     },
     {
-      "name": "drawKnife1.ogg",
-      "bytes": 11134
+      "name": "impact_plate_medium.ogg",
+      "bytes": 10921
     },
     {
-      "name": "drawKnife2.ogg",
-      "bytes": 12395
+      "name": "impact_tin.ogg",
+      "bytes": 6509
     },
     {
-      "name": "drawKnife3.ogg",
-      "bytes": 12726
+      "name": "impact_wood_heavy.ogg",
+      "bytes": 6233
     },
     {
-      "name": "dropLeather.ogg",
-      "bytes": 11695
+      "name": "impact_wood_light.ogg",
+      "bytes": 6343
     },
     {
-      "name": "footstep00.ogg",
-      "bytes": 9475
-    },
-    {
-      "name": "footstep01.ogg",
-      "bytes": 9900
-    },
-    {
-      "name": "footstep02.ogg",
-      "bytes": 9528
-    },
-    {
-      "name": "footstep03.ogg",
-      "bytes": 10559
-    },
-    {
-      "name": "footstep04.ogg",
-      "bytes": 11303
-    },
-    {
-      "name": "footstep05.ogg",
-      "bytes": 10288
-    },
-    {
-      "name": "footstep06.ogg",
-      "bytes": 9885
-    },
-    {
-      "name": "footstep07.ogg",
-      "bytes": 10264
-    },
-    {
-      "name": "footstep08.ogg",
-      "bytes": 9242
-    },
-    {
-      "name": "footstep09.ogg",
-      "bytes": 9356
-    },
-    {
-      "name": "handleCoins.ogg",
-      "bytes": 25394
-    },
-    {
-      "name": "handleCoins2.ogg",
-      "bytes": 13094
-    },
-    {
-      "name": "handleSmallLeather.ogg",
-      "bytes": 10492
-    },
-    {
-      "name": "handleSmallLeather2.ogg",
-      "bytes": 10028
+      "name": "impact_wood_medium.ogg",
+      "bytes": 6575
     },
     {
       "name": "knifeSlice.ogg",
       "bytes": 15532
     },
     {
-      "name": "knifeSlice2.ogg",
-      "bytes": 15099
+      "name": "punch_heavy_alt.ogg",
+      "bytes": 10861
     },
     {
-      "name": "metalClick.ogg",
-      "bytes": 13615
+      "name": "punch_heavy.ogg",
+      "bytes": 11617
     },
     {
-      "name": "metalLatch.ogg",
-      "bytes": 10208
+      "name": "punch_medium_alt.ogg",
+      "bytes": 8701
     },
     {
-      "name": "metalPot1.ogg",
-      "bytes": 31619
+      "name": "punch_medium.ogg",
+      "bytes": 8800
     },
     {
-      "name": "metalPot2.ogg",
-      "bytes": 22471
+      "name": "shatter_heavy.ogg",
+      "bytes": 7403
     },
     {
-      "name": "metalPot3.ogg",
-      "bytes": 23142
+      "name": "shatter_light.ogg",
+      "bytes": 6526
+    },
+    {
+      "name": "shatter_medium.ogg",
+      "bytes": 8400
     }
   ]
 }

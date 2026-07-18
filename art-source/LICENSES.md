@@ -71,4 +71,36 @@ cheap now, painful to reconstruct later.
 | `vfx/zones/zone-impulse-caster.glb` | internal | generated emissive disc (F-002 vfx keys) | CC0 | atlas-world-svc | 2026-07-15 | seed tier — `zone:impulse_caster`; provenance backfilled 2026-07-18 |
 | `vfx/zones/zone-stun.glb` | internal | generated emissive disc (F-002 vfx keys) | CC0 | atlas-world-svc | 2026-07-15 | seed tier — `zone:stun`; provenance backfilled 2026-07-18 |
 
+| `audio/chop.ogg` | market | [Kenney RPG Audio](https://kenney.nl/assets/rpg-audio) | CC0 | Kenney | 2026-07-18 | sfx:attack; pack file chop.ogg; ledger backfill |
+| `audio/knifeSlice.ogg` | market | [Kenney RPG Audio](https://kenney.nl/assets/rpg-audio) | CC0 | Kenney | 2026-07-18 | sfx:hit; pack file knifeSlice.ogg; ledger backfill |
+| `audio/impact_light.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_light; pack file impactGeneric_light_000.ogg |
+| `audio/impact_light_alt.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_light_alt; pack file impactGeneric_light_001.ogg |
+| `audio/impact_flesh_soft.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_flesh_soft; pack file impactSoft_medium_000.ogg |
+| `audio/impact_flesh_soft_alt.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_flesh_soft_alt; pack file impactSoft_medium_001.ogg |
+| `audio/impact_flesh_heavy.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_flesh_heavy; pack file impactSoft_heavy_000.ogg |
+| `audio/death.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:death; real death thud replacing the metalLatch stand-in; pack file impactSoft_heavy_001.ogg |
+| `audio/punch_medium.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:punch_medium; pack file impactPunch_medium_000.ogg |
+| `audio/punch_medium_alt.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:punch_medium_alt; pack file impactPunch_medium_001.ogg |
+| `audio/punch_heavy.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:punch_heavy; pack file impactPunch_heavy_000.ogg |
+| `audio/punch_heavy_alt.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:punch_heavy_alt; pack file impactPunch_heavy_001.ogg |
+| `audio/impact_metal_light.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_metal_light; pack file impactMetal_light_000.ogg |
+| `audio/impact_metal_light_alt.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_metal_light_alt; pack file impactMetal_light_001.ogg |
+| `audio/impact_metal_medium.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_metal_medium; pack file impactMetal_medium_000.ogg |
+| `audio/impact_metal_medium_alt.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_metal_medium_alt; pack file impactMetal_medium_001.ogg |
+| `audio/impact_metal_heavy.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_metal_heavy; pack file impactMetal_heavy_000.ogg |
+| `audio/impact_metal_heavy_alt.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_metal_heavy_alt; pack file impactMetal_heavy_001.ogg |
+| `audio/impact_wood_light.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_wood_light; pack file impactWood_light_000.ogg |
+| `audio/impact_wood_medium.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_wood_medium; pack file impactWood_medium_000.ogg |
+| `audio/impact_wood_heavy.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_wood_heavy; pack file impactWood_heavy_000.ogg |
+| `audio/impact_plank.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_plank; pack file impactPlank_medium_000.ogg |
+| `audio/impact_plate_light.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_plate_light; pack file impactPlate_light_000.ogg |
+| `audio/impact_plate_medium.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_plate_medium; pack file impactPlate_medium_000.ogg |
+| `audio/impact_plate_heavy.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_plate_heavy; pack file impactPlate_heavy_000.ogg |
+| `audio/impact_tin.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:impact_tin; pack file impactTin_medium_000.ogg |
+| `audio/chime_soft.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:chime_soft; pack file impactBell_heavy_000.ogg |
+| `audio/chime_bright.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:chime_bright; pack file impactBell_heavy_001.ogg |
+| `audio/shatter_light.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:shatter_light; pack file impactGlass_light_000.ogg |
+| `audio/shatter_medium.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:shatter_medium; pack file impactGlass_medium_000.ogg |
+| `audio/shatter_heavy.ogg` | market | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) | CC0 | Kenney | 2026-07-18 | sfx:shatter_heavy; pack file impactGlass_heavy_000.ogg |
+
 <!-- Source ∈ ai | market | commission. License must be commercial-safe (prefer CC0). -->

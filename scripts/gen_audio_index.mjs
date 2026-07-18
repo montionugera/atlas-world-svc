@@ -1,17 +1,18 @@
 #!/usr/bin/env node
-// Generates tools/asset-storybook/audio-index.json — a flat listing of the raw
-// Kenney RPG Audio seed pack under art-source/seed/audio/kenney-rpg-audio/.
+// Generates tools/asset-storybook/audio-index.json — a flat listing of the
+// baked SFX the game ships, under game-client/assets/audio/.
 //
 // The asset storybook (tools/asset-storybook/index.html) fetches this file at
-// runtime to render the soundboard. It exists so the page never has to guess
-// or hand-invent the file list: this script reads the real directory on disk
-// and writes it out. Re-run whenever files are added/removed from the seed
-// pack:
+// runtime to render the soundboard, then cross-references audio-manifest.json
+// to badge each tile with its sfx:* event key. It exists so the page never has
+// to guess or hand-invent the file list: this script reads the real directory
+// on disk and writes it out. Re-run whenever files are added/removed from the
+// baked audio dir:
 //
 //   node scripts/gen_audio_index.mjs
 //
 // Output shape:
-//   { "version": 1, "generatedAt": "<ISO8601>", "sourceDir": "art-source/seed/audio/kenney-rpg-audio",
+//   { "version": 1, "generatedAt": "<ISO8601>", "sourceDir": "game-client/assets/audio",
 //     "files": [ { "name": "chop.ogg", "bytes": 9370 }, ... ] }
 
 import { readdirSync, statSync, writeFileSync } from "node:fs";
@@ -21,7 +22,7 @@ import { dirname, resolve, join } from "node:path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
 
-const SOURCE_DIR_REL = "art-source/seed/audio/kenney-rpg-audio";
+const SOURCE_DIR_REL = "game-client/assets/audio";
 const SOURCE_DIR = join(REPO_ROOT, SOURCE_DIR_REL);
 const OUT_PATH = join(REPO_ROOT, "tools/asset-storybook/audio-index.json");
 
