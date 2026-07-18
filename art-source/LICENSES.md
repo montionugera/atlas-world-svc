@@ -116,7 +116,6 @@ cheap now, painful to reconstruct later.
 | `vfx/magic_rune.png` | market | [OpenGameArt](https://opengameart.org/content/fire-trap-rune-animation-sprite-sheet) | CC0 | gfroad | 2026-07-18 | fx:magic_rune; animated VFX sprite sheet (16f) |
 | `vfx/barrier.png` | market | [OpenGameArt](https://opengameart.org/content/barrier-sprite-sheet) | CC0 | gfroad | 2026-07-18 | fx:barrier; animated VFX sprite sheet (25f) |
 
-| `creatures/spider.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/3aQgc75sUR) | CC0 | Quaternius | 2026-07-18 | seed tier — `creature:spider` (3D top-up) |
 | `creatures/skeleton.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/1XZD9GK6Kj) | CC0 | Quaternius | 2026-07-18 | seed tier — `creature:skeleton` (3D top-up) |
 | `env/barrel.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/1orHe0kCc1) | CC0 | Quaternius | 2026-07-18 | seed tier — `env:barrel` (3D top-up) |
 | `env/crate.glb` | market | Poly Pizza — Quaternius (via poly.pizza/m/1dh0EFL5gl) | CC0 | Quaternius | 2026-07-18 | seed tier — `env:crate` (3D top-up) |

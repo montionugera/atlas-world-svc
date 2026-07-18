@@ -510,15 +510,6 @@
       "tier": "seed",
       "label": "Energy barrier / shield"
     },
-    "creature:spider": {
-      "scene": "res://assets/creatures/spider.glb",
-      "render": "model3d",
-      "kind": "creature",
-      "source": "market",
-      "license": "CC0",
-      "tier": "seed",
-      "label": "Spider"
-    },
     "creature:skeleton": {
       "scene": "res://assets/creatures/skeleton.glb",
       "render": "model3d",
