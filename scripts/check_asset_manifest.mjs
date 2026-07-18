@@ -80,6 +80,7 @@ function parseArgs(argv) {
       REPO_ROOT,
       "game-client/assets/catalog-manifest.json",
     ),
+    musicManifest: join(REPO_ROOT, "game-client/assets/music-manifest.json"),
     gameClient: join(REPO_ROOT, "game-client"),
   };
   for (let i = 0; i < argv.length; i++) {
@@ -91,6 +92,7 @@ function parseArgs(argv) {
     else if (a === "--audio-manifest") opts.audioManifest = resolve(argv[++i]);
     else if (a === "--catalog-manifest")
       opts.catalogManifest = resolve(argv[++i]);
+    else if (a === "--music-manifest") opts.musicManifest = resolve(argv[++i]);
     else if (a === "--game-client") opts.gameClient = resolve(argv[++i]);
     else {
       console.error(`Unknown argument: ${a}`);
@@ -178,6 +180,12 @@ function manifestSources(opts) {
     {
       path: opts.catalogManifest,
       label: "catalog-manifest",
+      keyspace: "curated",
+      driftGated: false,
+    },
+    {
+      path: opts.musicManifest,
+      label: "music-manifest",
       keyspace: "curated",
       driftGated: false,
     }, // +1 line per new curated file (§6)
@@ -386,6 +394,7 @@ function report(failures, warnings, opts) {
   console.log(`  manifest:          ${opts.manifest}`);
   console.log(`  audio-manifest:    ${opts.audioManifest}`);
   console.log(`  catalog-manifest:  ${opts.catalogManifest}`);
+  console.log(`  music-manifest:    ${opts.musicManifest}`);
   console.log("");
 
   for (const w of warnings) console.log(`  ⚠️  WARN  ${w}`);

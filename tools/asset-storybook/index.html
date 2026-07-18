@@ -718,6 +718,7 @@
       const CATALOG_MANIFEST_URL =
         "../../game-client/assets/catalog-manifest.json";
       const AUDIO_MANIFEST_URL = "../../game-client/assets/audio-manifest.json";
+      const MUSIC_MANIFEST_URL = "../../game-client/assets/music-manifest.json";
       const RENDER_SPEC_URL = "../../game-client/assets/render-spec.json";
       const ASSET_KEYS_URL =
         "../../colyseus-server/generated/asset-keys.json";
@@ -726,6 +727,7 @@
       const RAW_AUDIO_ROOT = "../../game-client/assets/audio/"; // baked SFX the game ships (audio-index.json lists this dir)
 
       const SFX_CLASS = "sfx"; // synthetic class for the audio soundboard (not present in any manifest)
+      const MUSIC_CLASS = "music"; // synthetic class for the BGM section (music-manifest.json)
       const COVERAGE_CLASS = "coverage"; // synthetic class for unmapped-codegen-key cards (§8 Phase 1c)
 
       // health[kind] = { total, ok, err } — updated as models/audio finish loading,
@@ -1800,6 +1802,160 @@
         return board;
       }
 
+      // ---------- music (BGM) soundboard ----------
+      // Driven directly by music-manifest.json entries (not a directory
+      // listing like SFX): each music:* entry is a full track with its own
+      // license/author. Reuses the same WebAudio decode+loop engine as the
+      // SFX board (getAudioCtx / loadAudioBuffer / scheduleDecode), so the two
+      // stay consistent; the tile just carries a license·author badge instead
+      // of a mapped event key.
+      function buildMusic(musicEntries) {
+        const board = document.createElement("div");
+        board.className = "soundboard";
+        const warmups = [];
+
+        for (const [key, entry] of Object.entries(musicEntries)) {
+          if (!entry || typeof entry.stream !== "string") continue;
+
+          const tile = document.createElement("div");
+          tile.className = "sound-tile mapped";
+          tile.tabIndex = 0;
+          tile.title = "Hover to preview (loops) · click to pin";
+
+          const top = document.createElement("div");
+          top.className = "tile-top";
+          const wave = document.createElement("div");
+          wave.className = "wave";
+          for (let i = 0; i < 4; i++)
+            wave.appendChild(document.createElement("span"));
+          top.appendChild(wave);
+          const state = document.createElement("span");
+          state.className = "sound-state";
+          top.appendChild(state);
+          tile.appendChild(top);
+
+          const nameEl = document.createElement("div");
+          nameEl.className = "sound-name";
+          nameEl.textContent = key.replace(/^music:/, "");
+          tile.appendChild(nameEl);
+
+          // bottom: license token + author (CC-BY attribution), full source in title
+          const bot = document.createElement("div");
+          bot.className = "tile-bot";
+          const licEl = document.createElement("span");
+          licEl.className = "sound-size";
+          licEl.textContent = entry.license || "?";
+          bot.appendChild(licEl);
+          if (entry.author) {
+            const authEl = document.createElement("span");
+            authEl.className = "event-key";
+            authEl.textContent = entry.author;
+            authEl.title = [entry.license, entry.author, entry.source]
+              .filter(Boolean)
+              .join(" · ");
+            bot.appendChild(authEl);
+          }
+          tile.appendChild(bot);
+
+          const url = ASSET_ROOT + entry.stream.slice("res://".length);
+          let buffer = null;
+          let source = null;
+          let pinned = false;
+
+          function stopSource() {
+            if (source) {
+              try {
+                source.stop();
+              } catch (e) {
+                /* already stopped — ignore */
+              }
+              source.disconnect();
+              source = null;
+            }
+          }
+
+          function play() {
+            ensureDecode();
+            if (!buffer) return;
+            const ctx = getAudioCtx();
+            if (ctx.state === "suspended") ctx.resume();
+            stopSource();
+            source = ctx.createBufferSource();
+            source.buffer = buffer;
+            source.loop = true;
+            source.connect(ctx.destination);
+            source.start();
+            tile.classList.add("playing");
+          }
+
+          function stop() {
+            stopSource();
+            tile.classList.remove("playing");
+          }
+
+          tile.addEventListener("mouseenter", play);
+          tile.addEventListener("mouseleave", () => {
+            if (!pinned) stop();
+          });
+          tile.addEventListener("focus", play);
+          tile.addEventListener("blur", () => {
+            if (!pinned) stop();
+          });
+          tile.addEventListener("click", () => {
+            pinned = !pinned;
+            tile.classList.toggle("pinned", pinned);
+            if (pinned) play();
+            else if (!tile.matches(":hover")) stop();
+          });
+          tile.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              tile.click();
+            }
+          });
+
+          let decodeStarted = false;
+          function ensureDecode() {
+            if (decodeStarted) return;
+            decodeStarted = true;
+            scheduleDecode(() =>
+              loadAudioBuffer(url)
+                .then((decoded) => {
+                  buffer = decoded;
+                  state.classList.add("ok");
+                  bumpHealth(MUSIC_CLASS, { ok: 1 });
+                  if (pinned || tile.matches(":hover")) play();
+                })
+                .catch((err) => {
+                  state.classList.add("err");
+                  bumpHealth(MUSIC_CLASS, { err: 1 });
+                  console.error(
+                    "[asset-storybook] music decode failed:",
+                    key,
+                    err,
+                  );
+                }),
+            );
+          }
+          warmups.push(ensureDecode);
+
+          board.appendChild(tile);
+        }
+
+        const warmObserver = new IntersectionObserver(
+          (entries, obs) => {
+            if (entries.some((e) => e.isIntersecting)) {
+              obs.disconnect();
+              for (const warm of warmups) warm();
+            }
+          },
+          { rootMargin: "200px" },
+        );
+        warmObserver.observe(board);
+
+        return board;
+      }
+
       // ---------- sidebar ----------
 
       // Sections are grouped by resolved render-type (image, __unknown, ...),
@@ -1830,6 +1986,7 @@
       function classLabel(cls) {
         if (cls === "all") return "All";
         if (cls === SFX_CLASS) return "SFX";
+        if (cls === MUSIC_CLASS) return "Music";
         if (cls === COVERAGE_CLASS) return "Coverage";
         if (RENDER_LABELS[cls]) return RENDER_LABELS[cls];
         return cls.charAt(0).toUpperCase() + cls.slice(1) + "s";
@@ -2001,16 +2158,28 @@
         const main = document.getElementById("main");
         const sidebarNav = document.getElementById("sidebar-nav");
 
-        let manifest, catalogManifest, audioManifest, renderSpec, audioIndex;
+        let manifest,
+          catalogManifest,
+          audioManifest,
+          musicManifest,
+          renderSpec,
+          audioIndex;
         try {
-          [manifest, catalogManifest, audioManifest, renderSpec, audioIndex] =
-            await Promise.all([
-              fetchJson(MANIFEST_URL, "manifest"),
-              fetchJson(CATALOG_MANIFEST_URL, "catalog-manifest"),
-              fetchJson(AUDIO_MANIFEST_URL, "audio-manifest"),
-              fetchJson(RENDER_SPEC_URL, "render-spec"),
-              fetchJson(AUDIO_INDEX_URL, "audio-index"),
-            ]);
+          [
+            manifest,
+            catalogManifest,
+            audioManifest,
+            musicManifest,
+            renderSpec,
+            audioIndex,
+          ] = await Promise.all([
+            fetchJson(MANIFEST_URL, "manifest"),
+            fetchJson(CATALOG_MANIFEST_URL, "catalog-manifest"),
+            fetchJson(AUDIO_MANIFEST_URL, "audio-manifest"),
+            fetchJson(MUSIC_MANIFEST_URL, "music-manifest"),
+            fetchJson(RENDER_SPEC_URL, "render-spec"),
+            fetchJson(AUDIO_INDEX_URL, "audio-index"),
+          ]);
         } catch (err) {
           main.innerHTML =
             '<div class="empty-state">Failed to load manifests: ' +
@@ -2059,6 +2228,9 @@
         const audioFiles = audioIndex.files || [];
         document.getElementById("stat-sounds").textContent = audioFiles.length;
 
+        const musicEntries = (musicManifest && musicManifest.entries) || {};
+        const musicCount = Object.keys(musicEntries).length;
+
         const groups = groupByRender(entries, renderSpec);
 
         const missingKeys = [];
@@ -2072,7 +2244,7 @@
         // --- sidebar: "All" + one item per render-type present + SFX + Coverage ---
         const allBtn = buildSidebarItem(
           "all",
-          entries.length + audioFiles.length,
+          entries.length + audioFiles.length + musicCount,
         );
         allBtn.classList.add("active");
         sidebarNav.appendChild(allBtn);
@@ -2091,6 +2263,12 @@
             buildSidebarItem(SFX_CLASS, audioFiles.length),
           );
           renderSidebarBadge(SFX_CLASS);
+        }
+
+        if (musicCount > 0) {
+          initHealth(MUSIC_CLASS, musicCount);
+          sidebarNav.appendChild(buildSidebarItem(MUSIC_CLASS, musicCount));
+          renderSidebarBadge(MUSIC_CLASS);
         }
 
         if (missingKeys.length > 0) {
@@ -2155,6 +2333,30 @@
           section.appendChild(
             buildAudio(audioFiles, audioManifest.entries || {}),
           );
+          main.appendChild(section);
+        }
+
+        // --- music (BGM) section, driven by music-manifest.json ---
+        if (musicCount > 0) {
+          const section = document.createElement("section");
+          section.className = "kind-section";
+          section.id = "section-" + MUSIC_CLASS;
+          section.dataset.kind = MUSIC_CLASS;
+
+          const h2 = document.createElement("h2");
+          h2.textContent = "Music (" + musicCount + ")";
+          section.appendChild(h2);
+
+          const note = document.createElement("p");
+          note.className = "empty-state";
+          note.style.padding = "0 0 1rem";
+          note.style.textAlign = "left";
+          note.textContent =
+            "Background music from game-client/assets/music-manifest.json (CC0 / CC-BY-4.0). " +
+            "Each tile shows its license and, for CC-BY, the required attribution. Hover to preview (loops); click to pin.";
+          section.appendChild(note);
+
+          section.appendChild(buildMusic(musicEntries));
           main.appendChild(section);
         }
 
