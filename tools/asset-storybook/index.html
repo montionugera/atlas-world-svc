@@ -661,7 +661,7 @@
           <code>&lt;img&gt;</code> (2D icons), <code>&lt;canvas&gt;</code>
           flipbooks (animated SpriteFrames sprites) and 9-slice panels (UI
           kits), baked-preview <code>&lt;img&gt;</code> (Godot Theme
-          resources), and WebAudio (SFX) — straight from
+          resources), and WebAudio (SFX + Music) — straight from
           <code>game-client/assets/</code> and <code>art-source/</code>.
           Entries, keys, and render-type rules are read from the manifests and
           <code>render-spec.json</code> at load time — this page never
@@ -1605,7 +1605,7 @@
         return getAudioCtx().decodeAudioData(bytes);
       }
 
-      // Cap concurrent fetch+decode so 51 sounds don't starve the character
+      // Cap concurrent fetch+decode so the SFX pack doesn't starve the character
       // glTF loads for bandwidth/CPU on first paint. Small batches, not one
       // big fan-out.
       const AUDIO_DECODE_CONCURRENCY = 4;
@@ -1647,7 +1647,7 @@
 
         // Decode is deferred: nothing is fetched/decoded until the soundboard
         // nears the viewport (IntersectionObserver below) or a tile is
-        // hovered/focused (play() → ensureDecode()). Keeps all 51 SFX off the
+        // hovered/focused (play() → ensureDecode()). Keeps the whole SFX pack off the
         // first-paint budget. `warmups` collects each tile's idempotent
         // decode-kickoff so the observer can warm the whole pack at once.
         const warmups = [];
@@ -1866,7 +1866,7 @@
           }
           tile.appendChild(bot);
 
-          const url = ASSET_ROOT + entry.stream.slice("res://".length);
+          const url = resolveSceneSrc(entry.stream);
           let buffer = null;
           let source = null;
           let pinned = false;
