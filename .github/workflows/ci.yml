@@ -69,10 +69,11 @@ jobs:
       # Content gate (F-005): character sheets must validate against schema
       # and stay linked to real asset keys / manifest tiers. Coverage gaps
       # (character keys with no sheet) are warnings until roadmap #1 flips
-      # --require-complete.
+      # --require-complete. Also runs the gate's own unit tests (plus the shared scripts/tests suite).
       - name: Content gate (sheets ↔ schema ↔ keys ↔ manifest)
         run: |
           npm ci --prefix scripts
+          npm test --prefix scripts
           node scripts/check_content.mjs
 
       # Asset forge (F-003): structural + game-rule validation for every

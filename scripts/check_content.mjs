@@ -69,7 +69,7 @@ function main() {
   const keysDoc = readJson(opts.keys, "asset-keys");
   const manifestDoc = readJson(opts.manifest, "manifest");
   const schema = readJson(join(opts.contentRoot, "schemas/character.schema.json"), "character schema");
-  if (!keysDoc || !manifestDoc || !schema) return finish(opts);
+  if (!keysDoc || !manifestDoc || !schema) return finish();
 
   const keyKinds = new Map(keysDoc.keys.map((k) => [k.id, k.kind]));
   const entries = manifestDoc.entries ?? {};
@@ -131,10 +131,10 @@ function main() {
     opts.requireComplete ? fail(msg) : warn(msg);
   }
 
-  return finish(opts, files.length);
+  return finish(files.length);
 }
 
-function finish(_opts, sheetCount = 0) {
+function finish(sheetCount = 0) {
   for (const w of warnings) console.log(`WARN  ${w}`);
   for (const f of failures) console.log(`FAIL  ${f}`);
   console.log(`content-gate: ${sheetCount} sheets, ${failures.length} failures, ${warnings.length} warnings`);

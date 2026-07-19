@@ -76,5 +76,6 @@ Authoring a sheet in detail:
 The validation gate reads `content/schemas/character.schema.json` and ensures:
 - Frontmatter is valid YAML + conforms to schema
 - All referenced asset keys exist
-- All story links point to real bible section ids (roadmap #3)
 - Status → tier coherence: sheet tier must match the manifest tier once status is forged/shipped (hard fail)
+
+Planned (roadmap #3): validate that story links point to real bible section ids.
