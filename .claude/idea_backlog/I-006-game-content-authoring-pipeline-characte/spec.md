@@ -1,19 +1,3 @@
----
-title: "Game content authoring pipeline (characters/story/maps)"
-id: I-006
-status: idea
----
+# I-006 — Game content authoring pipeline
 
-# Game content authoring pipeline (characters/story/maps)
-
-## Problem
-
-(what hurts; concrete examples)
-
-## Why now
-
-(opportunity; deadline; constraint)
-
-## Sketch
-
-(rough shape; not a design yet)
+Canonical spec: [docs/superpowers/specs/2026-07-19-content-pipeline-design.md](../../../docs/superpowers/specs/2026-07-19-content-pipeline-design.md) (approved 2026-07-19).
