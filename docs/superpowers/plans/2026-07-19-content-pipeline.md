@@ -595,7 +595,7 @@ git commit -m "ci(content): wire content gate beside asset drift-gate (F-005 T3)
 - Create: `content/characters/mob-defensive-guard.md`
 
 **Interfaces:**
-- Consumes: `_template.md` shape (Task 1), bible ids `faction-ashfang`, `faction-stoneguard`, `region-icefield` (Task 1). Both target keys are `tier: bespoke` in the manifest already (models: `mob_aggressive_brute.glb`, `mob_defensive_guard.glb`).
+- Consumes: `_template.md` shape (Task 1), bible ids `faction-ashfang`, `faction-stoneguard`, `region-icefield` (Task 1). Both target keys are `tier: seed` in the manifest (models: `orc_brute.glb`, `skeleton_golem.glb` — the earlier bespoke kitbash models were removed 2026-07-19; factions re-anchor to these KayKit looks).
 
 - [ ] **Step 1: Write `content/characters/mob-aggressive-brute.md`**
 
@@ -606,7 +606,7 @@ assetKey: "mob:aggressive"
 name: "Ashfang Brute"
 role: enemy
 status: shipped
-tier: bespoke
+tier: seed
 stats:
   archetype: bruiser
   durability: high
@@ -626,10 +626,11 @@ charge as the signal to close.
 
 ## Visual Brief
 
-Built (retrofit — matches `mob_aggressive_brute.glb`): Kenney
-`character-male-b` kitbash — bulked torso and arms, shrunk head, crimson
-colormap, scaled 0.66u → 1.8u. Silhouette read: mass forward, top-heavy.
-Source .blend: `art-source/bespoke/mob_aggressive_brute/source/`.
+Seed model (`orc_brute.glb`): KayKit "Orc Brute — enemy" — heavy build,
+tusked, weapon-forward. Silhouette read: mass forward, top-heavy. Ember-red
+markings from the lore land in a future bespoke pass; the earlier
+`mob_aggressive_brute` kitbash was retired 2026-07-19 (source .blend kept in
+`art-source/bespoke/mob_aggressive_brute/source/`).
 
 ## Design Notes
 
@@ -646,7 +647,7 @@ assetKey: "mob:defensive"
 name: "Stoneguard Sentinel"
 role: enemy
 status: shipped
-tier: bespoke
+tier: seed
 stats:
   archetype: tank
   durability: high
@@ -666,10 +667,11 @@ they still guard. The Sentinels have not asked themselves in years.
 
 ## Visual Brief
 
-Built (retrofit — matches `mob_defensive_guard.glb`): Kenney
-`character-male-d` kitbash — extra-wide torso, arms, and legs, small head,
-blue-grey stone tint, scaled 0.72u → 1.7u. Silhouette read: a wall with
-shoulders. Source .blend: `art-source/bespoke/mob_defensive_guard/source/`.
+Seed model (`skeleton_golem.glb`): KayKit "Skeleton Golem" — massive bone
+bulwark, slate-grey read that already fits the Icefield palette. Silhouette
+read: a wall with shoulders. The earlier `mob_defensive_guard` kitbash was
+retired 2026-07-19 (source .blend kept in
+`art-source/bespoke/mob_defensive_guard/source/`).
 
 ## Design Notes
 

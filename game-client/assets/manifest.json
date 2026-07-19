@@ -16,49 +16,49 @@
       }
     },
     "npc": {
-      "scene": "res://assets/characters/character-female-a.glb",
+      "scene": "res://assets/characters/cleric.glb",
       "source": "market",
       "license": "CC0",
       "tier": "seed",
       "kind": "character"
     },
     "mob:aggressive": {
-      "scene": "res://assets/characters/mob_aggressive_brute.glb",
-      "source": "internal",
+      "scene": "res://assets/characters/orc_brute.glb",
+      "source": "market",
       "license": "CC0",
-      "tier": "bespoke",
+      "tier": "seed",
       "kind": "character"
     },
     "mob:balanced": {
-      "scene": "res://assets/characters/character-female-b.glb",
+      "scene": "res://assets/characters/skeleton_minion.glb",
       "source": "market",
       "license": "CC0",
       "tier": "seed",
       "kind": "character"
     },
     "mob:defensive": {
-      "scene": "res://assets/characters/mob_defensive_guard.glb",
-      "source": "internal",
+      "scene": "res://assets/characters/skeleton_golem.glb",
+      "source": "market",
       "license": "CC0",
-      "tier": "bespoke",
+      "tier": "seed",
       "kind": "character"
     },
     "mob:double_attacker": {
-      "scene": "res://assets/characters/character-female-c.glb",
+      "scene": "res://assets/characters/skeleton_rogue.glb",
       "source": "market",
       "license": "CC0",
       "tier": "seed",
       "kind": "character"
     },
     "mob:hybrid": {
-      "scene": "res://assets/characters/character-male-e.glb",
+      "scene": "res://assets/characters/skeleton_mage.glb",
       "source": "market",
       "license": "CC0",
       "tier": "seed",
       "kind": "character"
     },
     "mob:spear_thrower": {
-      "scene": "res://assets/characters/character-male-c.glb",
+      "scene": "res://assets/characters/skeleton_warrior.glb",
       "source": "market",
       "license": "CC0",
       "tier": "seed",
