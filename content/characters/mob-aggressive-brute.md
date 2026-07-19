@@ -4,7 +4,7 @@ assetKey: "mob:aggressive"
 name: "Ashfang Brute"
 role: enemy
 status: shipped
-tier: bespoke
+tier: seed
 stats:
   archetype: bruiser
   durability: high
@@ -24,10 +24,11 @@ charge as the signal to close.
 
 ## Visual Brief
 
-Built (retrofit — matches `mob_aggressive_brute.glb`): Kenney
-`character-male-b` kitbash — bulked torso and arms, shrunk head, crimson
-colormap, scaled 0.66u → 1.8u. Silhouette read: mass forward, top-heavy.
-Source .blend: `art-source/bespoke/mob_aggressive_brute/source/`.
+Current mapping (2026-07-19 remap): KayKit monster set `orc_brute.glb`
+(seed/market) — mass-forward, top-heavy silhouette fits the brief as-is.
+Bespoke target (when re-forged in the KayKit style): bulked frame, crimson
+ember markings, ~1.8u. Prior Kenney-kitbash bespoke source retained at
+`art-source/bespoke/mob_aggressive_brute/source/`.
 
 ## Design Notes
 

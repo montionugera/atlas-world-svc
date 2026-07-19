@@ -4,7 +4,7 @@ assetKey: "mob:defensive"
 name: "Stoneguard Sentinel"
 role: enemy
 status: shipped
-tier: bespoke
+tier: seed
 stats:
   archetype: tank
   durability: high
@@ -24,10 +24,11 @@ they still guard. The Sentinels have not asked themselves in years.
 
 ## Visual Brief
 
-Built (retrofit — matches `mob_defensive_guard.glb`): Kenney
-`character-male-d` kitbash — extra-wide torso, arms, and legs, small head,
-blue-grey stone tint, scaled 0.72u → 1.7u. Silhouette read: a wall with
-shoulders. Source .blend: `art-source/bespoke/mob_defensive_guard/source/`.
+Current mapping (2026-07-19 remap): KayKit monster set `skeleton_golem.glb`
+(seed/market) — a wall with shoulders, matches the brief as-is.
+Bespoke target (when re-forged in the KayKit style): extra-wide frame,
+blue-grey stone tint, ~1.7u. Prior Kenney-kitbash bespoke source retained at
+`art-source/bespoke/mob_defensive_guard/source/`.
 
 ## Design Notes
 
