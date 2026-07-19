@@ -1,6 +1,6 @@
 # Content Authoring — Characters, Story, Maps
 
-This directory holds the creatives source of truth: character sheets, world bible, map specs, and asset-forge workflows.
+This directory holds the creative source of truth: character sheets, world bible, map specs, and asset-forge workflows.
 
 ## Overview
 
@@ -17,6 +17,21 @@ concept (design) → forged (asset + manifest) → shipped (live)
 - **shipped**: Live in game. Treat as immutable; create new sheets for variants.
 
 ## Authoring Workflow
+
+The full pipeline (spec: "Authoring workflow" diagram):
+
+```
+1 AUTHOR  →  2 GATE  →  3 FORGE  →  4 GATE (re-run)  →  5 VERIFY  →  6 SHIP
+```
+
+1. **AUTHOR** — copy `_template.md` → sheet, `status: concept`
+2. **GATE** — `check_content.mjs` green
+3. **FORGE** (F-003) — Visual Brief → kitbash/rig → bake → validate → intake; `status: forged`
+4. **GATE (re-run)** — tier/status × manifest cross-check
+5. **VERIFY** — storybook eyeball (idle + walk + attack) + headless probes
+6. **SHIP** — ps-release-workflow ship; `status: shipped`
+
+Authoring a sheet in detail:
 
 1. **Copy the template**
    ```bash
@@ -61,5 +76,5 @@ concept (design) → forged (asset + manifest) → shipped (live)
 The validation gate reads `content/schemas/character.schema.json` and ensures:
 - Frontmatter is valid YAML + conforms to schema
 - All referenced asset keys exist
-- All story links point to real bible section ids (roadmap #2)
-- Status → tier coherence (roadmap #2)
+- All story links point to real bible section ids (roadmap #3)
+- Status → tier coherence: sheet tier must match the manifest tier once status is forged/shipped (hard fail)
