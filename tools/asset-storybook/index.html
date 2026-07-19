@@ -934,6 +934,9 @@
         mv.setAttribute("shadow-intensity", "1");
         mv.setAttribute("exposure", "1");
         mv.setAttribute("environment-image", "neutral");
+        // Pin the vertical FOV so our height-based framing (see frameByHeight
+        // on load) sets the camera distance instead of model-viewer auto-zoom.
+        mv.setAttribute("field-of-view", "30deg");
 
         viewport.addEventListener("mouseenter", () => {
           mv.setAttribute("auto-rotate", "");
@@ -967,10 +970,30 @@
           mv.play();
         });
 
+        // Frame every character by HEIGHT, not by model-viewer's default
+        // fit-the-bounding-sphere. Rest poses are inconsistent across the
+        // catalog — some export A-pose (~2u wide), some T-pose (~5.7u wide) —
+        // and auto-fit zooms out to the arm span, shrinking T-pose characters
+        // to an unreadable blob. Sizing the camera distance from the model's
+        // height instead makes every card read at the same scale; the wide
+        // T-pose arms simply crop at the card edges.
+        function frameByHeight() {
+          const d = mv.getDimensions();
+          const c = mv.getCameraTarget();
+          if (!d || !(d.y > 0)) return;
+          const fovRad = (30 * Math.PI) / 180; // matches field-of-view above
+          const fill = 0.85; // model height fills ~85% of the viewport
+          const radius = d.y / 2 / Math.tan(fovRad / 2) / fill;
+          mv.cameraTarget = `${c.x}m ${c.y}m ${c.z}m`;
+          mv.cameraOrbit = `0deg 82deg ${radius}m`;
+          mv.jumpCameraToGoal();
+        }
+
         mv.addEventListener("load", () => {
           loadState.textContent = "loaded ✓";
           loadState.classList.add("ok");
           bumpHealth(render, { ok: 1 });
+          frameByHeight();
 
           const clips = mv.availableAnimations || [];
           animSelect.innerHTML = "";
