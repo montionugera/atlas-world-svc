@@ -26,10 +26,11 @@
     "from_idea": "I-004",
     "created_at": "2026-07-15T15:38:22.933957+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.2",
     "claimed_at": "2026-07-15T15:43:01.458481+00:00",
-    "shipped_at": "2026-07-15T17:44:00.359205+00:00"
+    "shipped_at": "2026-07-15T17:44:00.359205+00:00",
+    "promoted_at": "2026-07-19T16:51:53.953785+00:00"
   },
   {
     "id": "F-004",
@@ -37,10 +38,11 @@
     "from_idea": "I-005",
     "created_at": "2026-07-17T19:07:35.836699+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.2",
     "claimed_at": "2026-07-17T19:09:01.694057+00:00",
-    "shipped_at": "2026-07-17T23:26:59.522795+00:00"
+    "shipped_at": "2026-07-17T23:26:59.522795+00:00",
+    "promoted_at": "2026-07-19T16:51:54.954860+00:00"
   },
   {
     "id": "F-005",
@@ -48,9 +50,10 @@
     "from_idea": "I-006",
     "created_at": "2026-07-19T10:21:09.402754+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.2",
     "claimed_at": "2026-07-19T10:26:23.172129+00:00",
-    "shipped_at": "2026-07-19T14:39:47.683315+00:00"
+    "shipped_at": "2026-07-19T14:39:47.683315+00:00",
+    "promoted_at": "2026-07-19T16:51:55.884313+00:00"
   }
 ]
