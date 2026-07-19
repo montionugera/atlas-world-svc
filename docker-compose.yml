@@ -1,6 +1,8 @@
 services:
   atlas-colyseus-server:
-    build: ./colyseus-server
+    build:
+      context: .
+      dockerfile: colyseus-server/Dockerfile
     container_name: atlas-world-colyseus-server
     ports:
       - "2567:2567"        # Colyseus WebSocket server

@@ -52,9 +52,11 @@ echo "======================================"
 
 echo "[1/4] Building Docker image ($IMAGE)..."
 GIT_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo dev)"
-# Build context is colyseus-server/ (matches docker-compose.yml + the Dockerfile's
-# COPY paths). GIT_SHA is passed for traceability if the Dockerfile wants it.
-docker build --build-arg "GIT_SHA=$GIT_SHA" -t "$IMAGE" "$REPO_ROOT/colyseus-server"
+# Build context is the REPO ROOT (pnpm workspace: the server needs @atlas/contracts,
+# which lives outside colyseus-server/). The root .dockerignore whitelists the
+# context. GIT_SHA is passed for traceability if the Dockerfile wants it.
+docker build --build-arg "GIT_SHA=$GIT_SHA" -t "$IMAGE" \
+  -f "$REPO_ROOT/colyseus-server/Dockerfile" "$REPO_ROOT"
 echo "  ✓ image built ($GIT_SHA)"
 
 echo "[2/4] Applying local Kubernetes manifests..."
