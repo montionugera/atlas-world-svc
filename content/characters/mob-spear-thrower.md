@@ -3,7 +3,7 @@ id: mob-spear-thrower
 assetKey: "mob:spear_thrower"
 name: "Thornveil Spearmaiden"
 role: enemy
-status: concept
+status: forged
 tier: bespoke
 stats:
   archetype: skirmisher

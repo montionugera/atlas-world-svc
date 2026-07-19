@@ -14,7 +14,7 @@ cheap now, painful to reconstruct later.
 | `characters/character-male-d.glb` | market | Kenney — Mini Characters | CC0 | Kenney | 2026-07-12 | seed tier — `mob:defensive` |
 | `characters/character-female-c.glb` | market | Kenney — Mini Characters | CC0 | Kenney | 2026-07-12 | seed tier — `mob:double_attacker` |
 | `characters/character-male-e.glb` | market | Kenney — Mini Characters | CC0 | Kenney | 2026-07-12 | seed tier — `mob:hybrid` |
-| `characters/character-male-c.glb` | market | Kenney — Mini Characters | CC0 | Kenney | 2026-07-12 | seed tier — `mob:spear_thrower` |
+| `characters/mob_spear_thrower.glb` | internal | KayKit Adventurers Rogue (Kay Lousberg, kaylousberg.com) restyled to thorn-green/bark-brown + ember accent, with a Quaternius spear prop bone-parented to `handslot.r` (both CC0); source `.blend` in `art-source/bespoke/mob_spear_thrower/source/` | CC0 | atlas-world-svc | 2026-07-19 | bespoke tier — `mob:spear_thrower` Thornveil Spearmaiden (KayKit rig, 76 clips, manifest `anims` override) |
 | `icons/icon-health-potion.svg` | hand | — (hand-authored placeholder) | CC0 | atlas-world-svc | 2026-07-15 | seed tier — `icon:health_potion`, seeds the `image` render-type (F-002 Phase 1c) |
 | `icons/icon-mana-potion.svg` | hand | — (hand-authored placeholder) | CC0 | atlas-world-svc | 2026-07-15 | seed tier — `icon:mana_potion`, seeds the `image` render-type (F-002 Phase 1c) |
 | `characters/mob_aggressive_brute.glb` | internal | kitbash of Kenney Mini Characters `character-male-b` (CC0); source `.blend` in `art-source/bespoke/mob_aggressive_brute/source/` | CC0 | atlas-world-svc | 2026-07-16 | bespoke tier — `mob:aggressive` proof mob (F-003 asset-forge) |
