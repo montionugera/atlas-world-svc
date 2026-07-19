@@ -141,3 +141,9 @@ test("underscore-prefixed files are ignored", () => {
   const dir = fixture({ sheets: { "_template.md": "not: [valid", "mob-aggressive-brute.md": GOOD_SHEET } });
   assert.equal(runGate(dir).code, 0);
 });
+
+test("CRLF line endings are normalized, not a false failure", () => {
+  const crlf = GOOD_SHEET.replace(/\n/g, "\r\n");
+  const dir = fixture({ sheets: { "mob-aggressive-brute.md": crlf } });
+  assert.equal(runGate(dir).code, 0);
+});

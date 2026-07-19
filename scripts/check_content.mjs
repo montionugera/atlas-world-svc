@@ -18,11 +18,16 @@ function parseArgs(argv) {
     manifest: join(ROOT, "game-client/assets/manifest.json"),
     requireComplete: false,
   };
+  const takeValue = (name, i) => {
+    const v = argv[i];
+    if (v === undefined) { console.error(`missing value for ${name}`); process.exit(2); }
+    return v;
+  };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
-    if (a === "--content-root") opts.contentRoot = resolve(argv[++i]);
-    else if (a === "--keys") opts.keys = resolve(argv[++i]);
-    else if (a === "--manifest") opts.manifest = resolve(argv[++i]);
+    if (a === "--content-root") opts.contentRoot = resolve(takeValue(a, ++i));
+    else if (a === "--keys") opts.keys = resolve(takeValue(a, ++i));
+    else if (a === "--manifest") opts.manifest = resolve(takeValue(a, ++i));
     else if (a === "--require-complete") opts.requireComplete = true;
     else { console.error(`unknown arg: ${a}`); process.exit(2); }
   }
@@ -80,7 +85,8 @@ function main() {
   const sheetedKeys = new Set();
   for (const file of files) {
     const label = `characters/${file}`;
-    const parsed = splitFrontmatter(readFileSync(join(dir, file), "utf8"), label);
+    const raw = readFileSync(join(dir, file), "utf8").replace(/\r\n/g, "\n");
+    const parsed = splitFrontmatter(raw, label);
     if (!parsed) continue;
     const { fm, body } = parsed;
 
