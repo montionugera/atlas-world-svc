@@ -2192,6 +2192,3615 @@
       "license": "CC0",
       "tier": "seed",
       "label": "Werewolf Wolf (KayKit)"
+    },
+    "dungeon:banner_brown": {
+      "scene": "res://assets/dungeon/banner_brown.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner brown"
+    },
+    "dungeon:banner_green": {
+      "scene": "res://assets/dungeon/banner_green.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner green"
+    },
+    "dungeon:banner_patterna_blue": {
+      "scene": "res://assets/dungeon/banner_patterna_blue.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternA blue"
+    },
+    "dungeon:banner_patterna_brown": {
+      "scene": "res://assets/dungeon/banner_patterna_brown.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternA brown"
+    },
+    "dungeon:banner_patterna_green": {
+      "scene": "res://assets/dungeon/banner_patterna_green.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternA green"
+    },
+    "dungeon:banner_patterna_red": {
+      "scene": "res://assets/dungeon/banner_patterna_red.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternA red"
+    },
+    "dungeon:banner_patterna_yellow": {
+      "scene": "res://assets/dungeon/banner_patterna_yellow.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternA yellow"
+    },
+    "dungeon:banner_patternb_blue": {
+      "scene": "res://assets/dungeon/banner_patternb_blue.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternB blue"
+    },
+    "dungeon:banner_patternb_brown": {
+      "scene": "res://assets/dungeon/banner_patternb_brown.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternB brown"
+    },
+    "dungeon:banner_patternb_green": {
+      "scene": "res://assets/dungeon/banner_patternb_green.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternB green"
+    },
+    "dungeon:banner_patternb_red": {
+      "scene": "res://assets/dungeon/banner_patternb_red.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternB red"
+    },
+    "dungeon:banner_patternb_white": {
+      "scene": "res://assets/dungeon/banner_patternb_white.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternB white"
+    },
+    "dungeon:banner_patternc_blue": {
+      "scene": "res://assets/dungeon/banner_patternc_blue.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternC blue"
+    },
+    "dungeon:banner_patternc_brown": {
+      "scene": "res://assets/dungeon/banner_patternc_brown.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternC brown"
+    },
+    "dungeon:banner_patternc_green": {
+      "scene": "res://assets/dungeon/banner_patternc_green.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternC green"
+    },
+    "dungeon:banner_patternc_red": {
+      "scene": "res://assets/dungeon/banner_patternc_red.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternC red"
+    },
+    "dungeon:banner_patternc_white": {
+      "scene": "res://assets/dungeon/banner_patternc_white.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternC white"
+    },
+    "dungeon:banner_patternc_yellow": {
+      "scene": "res://assets/dungeon/banner_patternc_yellow.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternC yellow"
+    },
+    "dungeon:banner_shield_blue": {
+      "scene": "res://assets/dungeon/banner_shield_blue.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner shield blue"
+    },
+    "dungeon:banner_shield_brown": {
+      "scene": "res://assets/dungeon/banner_shield_brown.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner shield brown"
+    },
+    "dungeon:banner_shield_green": {
+      "scene": "res://assets/dungeon/banner_shield_green.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner shield green"
+    },
+    "dungeon:banner_shield_red": {
+      "scene": "res://assets/dungeon/banner_shield_red.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner shield red"
+    },
+    "dungeon:banner_shield_white": {
+      "scene": "res://assets/dungeon/banner_shield_white.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner shield white"
+    },
+    "dungeon:banner_shield_yellow": {
+      "scene": "res://assets/dungeon/banner_shield_yellow.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner shield yellow"
+    },
+    "dungeon:banner_thin_brown": {
+      "scene": "res://assets/dungeon/banner_thin_brown.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner thin brown"
+    },
+    "dungeon:banner_thin_green": {
+      "scene": "res://assets/dungeon/banner_thin_green.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner thin green"
+    },
+    "dungeon:banner_thin_red": {
+      "scene": "res://assets/dungeon/banner_thin_red.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner thin red"
+    },
+    "dungeon:banner_thin_white": {
+      "scene": "res://assets/dungeon/banner_thin_white.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner thin white"
+    },
+    "dungeon:banner_thin_yellow": {
+      "scene": "res://assets/dungeon/banner_thin_yellow.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner thin yellow"
+    },
+    "dungeon:banner_triple_blue": {
+      "scene": "res://assets/dungeon/banner_triple_blue.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner triple blue"
+    },
+    "dungeon:banner_triple_green": {
+      "scene": "res://assets/dungeon/banner_triple_green.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner triple green"
+    },
+    "dungeon:banner_triple_red": {
+      "scene": "res://assets/dungeon/banner_triple_red.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner triple red"
+    },
+    "dungeon:banner_triple_white": {
+      "scene": "res://assets/dungeon/banner_triple_white.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner triple white"
+    },
+    "dungeon:banner_triple_yellow": {
+      "scene": "res://assets/dungeon/banner_triple_yellow.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner triple yellow"
+    },
+    "dungeon:banner_white": {
+      "scene": "res://assets/dungeon/banner_white.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner white"
+    },
+    "dungeon:banner_yellow": {
+      "scene": "res://assets/dungeon/banner_yellow.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner yellow"
+    },
+    "dungeon:bar_outercorner": {
+      "scene": "res://assets/dungeon/bar_outercorner.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bar outercorner"
+    },
+    "dungeon:bar_straight_a": {
+      "scene": "res://assets/dungeon/bar_straight_a.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bar straight A"
+    },
+    "dungeon:bar_straight_a_short": {
+      "scene": "res://assets/dungeon/bar_straight_a_short.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bar straight A short"
+    },
+    "dungeon:bar_straight_b": {
+      "scene": "res://assets/dungeon/bar_straight_b.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bar straight B"
+    },
+    "dungeon:bar_straight_b_short": {
+      "scene": "res://assets/dungeon/bar_straight_b_short.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bar straight B short"
+    },
+    "dungeon:bar_straight_c": {
+      "scene": "res://assets/dungeon/bar_straight_c.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bar straight C"
+    },
+    "dungeon:barrel_large": {
+      "scene": "res://assets/dungeon/barrel_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "barrel large"
+    },
+    "dungeon:barrel_large_decorated": {
+      "scene": "res://assets/dungeon/barrel_large_decorated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "barrel large decorated"
+    },
+    "dungeon:barrel_small": {
+      "scene": "res://assets/dungeon/barrel_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "barrel small"
+    },
+    "dungeon:barrel_small_stack": {
+      "scene": "res://assets/dungeon/barrel_small_stack.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "barrel small stack"
+    },
+    "dungeon:barrier": {
+      "scene": "res://assets/dungeon/barrier.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "barrier"
+    },
+    "dungeon:barrier_colum_half": {
+      "scene": "res://assets/dungeon/barrier_colum_half.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "barrier colum half"
+    },
+    "dungeon:barrier_corner": {
+      "scene": "res://assets/dungeon/barrier_corner.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "barrier corner"
+    },
+    "dungeon:barrier_half": {
+      "scene": "res://assets/dungeon/barrier_half.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "barrier half"
+    },
+    "dungeon:bartop_a_large": {
+      "scene": "res://assets/dungeon/bartop_a_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bartop A large"
+    },
+    "dungeon:bartop_a_medium": {
+      "scene": "res://assets/dungeon/bartop_a_medium.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bartop A medium"
+    },
+    "dungeon:bartop_a_small": {
+      "scene": "res://assets/dungeon/bartop_a_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bartop A small"
+    },
+    "dungeon:bartop_b_large": {
+      "scene": "res://assets/dungeon/bartop_b_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bartop B large"
+    },
+    "dungeon:bartop_b_small": {
+      "scene": "res://assets/dungeon/bartop_b_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bartop B small"
+    },
+    "dungeon:bed_a_double": {
+      "scene": "res://assets/dungeon/bed_a_double.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bed A double"
+    },
+    "dungeon:bed_a_single": {
+      "scene": "res://assets/dungeon/bed_a_single.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bed A single"
+    },
+    "dungeon:bed_a_stacked": {
+      "scene": "res://assets/dungeon/bed_a_stacked.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bed A stacked"
+    },
+    "dungeon:bed_b_double": {
+      "scene": "res://assets/dungeon/bed_b_double.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bed B double"
+    },
+    "dungeon:bed_b_single": {
+      "scene": "res://assets/dungeon/bed_b_single.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bed B single"
+    },
+    "dungeon:bed_floor": {
+      "scene": "res://assets/dungeon/bed_floor.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bed floor"
+    },
+    "dungeon:bed_frame": {
+      "scene": "res://assets/dungeon/bed_frame.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bed frame"
+    },
+    "dungeon:bench": {
+      "scene": "res://assets/dungeon/bench.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bench"
+    },
+    "dungeon:book_brown": {
+      "scene": "res://assets/dungeon/book_brown.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "book brown"
+    },
+    "dungeon:book_grey": {
+      "scene": "res://assets/dungeon/book_grey.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "book grey"
+    },
+    "dungeon:book_tan": {
+      "scene": "res://assets/dungeon/book_tan.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "book tan"
+    },
+    "dungeon:bookcase_double_decorateda": {
+      "scene": "res://assets/dungeon/bookcase_double_decorateda.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bookcase double decoratedA"
+    },
+    "dungeon:bookcase_double_decoratedb": {
+      "scene": "res://assets/dungeon/bookcase_double_decoratedb.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bookcase double decoratedB"
+    },
+    "dungeon:bookcase_single": {
+      "scene": "res://assets/dungeon/bookcase_single.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bookcase single"
+    },
+    "dungeon:bookcase_single_decorateda": {
+      "scene": "res://assets/dungeon/bookcase_single_decorateda.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bookcase single decoratedA"
+    },
+    "dungeon:bookcase_single_decoratedb": {
+      "scene": "res://assets/dungeon/bookcase_single_decoratedb.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bookcase single decoratedB"
+    },
+    "dungeon:bottle_a_brown": {
+      "scene": "res://assets/dungeon/bottle_a_brown.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bottle A brown"
+    },
+    "dungeon:bottle_a_labeled_brown": {
+      "scene": "res://assets/dungeon/bottle_a_labeled_brown.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bottle A labeled brown"
+    },
+    "dungeon:bottle_a_labeled_green": {
+      "scene": "res://assets/dungeon/bottle_a_labeled_green.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bottle A labeled green"
+    },
+    "dungeon:bottle_b_brown": {
+      "scene": "res://assets/dungeon/bottle_b_brown.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bottle B brown"
+    },
+    "dungeon:bottle_b_green": {
+      "scene": "res://assets/dungeon/bottle_b_green.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bottle B green"
+    },
+    "dungeon:bottle_c_brown": {
+      "scene": "res://assets/dungeon/bottle_c_brown.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bottle C brown"
+    },
+    "dungeon:bottle_c_green": {
+      "scene": "res://assets/dungeon/bottle_c_green.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bottle C green"
+    },
+    "dungeon:box_small": {
+      "scene": "res://assets/dungeon/box_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "box small"
+    },
+    "dungeon:box_small_decorated": {
+      "scene": "res://assets/dungeon/box_small_decorated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "box small decorated"
+    },
+    "dungeon:box_stacked": {
+      "scene": "res://assets/dungeon/box_stacked.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "box stacked"
+    },
+    "dungeon:bucket": {
+      "scene": "res://assets/dungeon/bucket.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bucket"
+    },
+    "dungeon:bucket_pickaxes": {
+      "scene": "res://assets/dungeon/bucket_pickaxes.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bucket pickaxes"
+    },
+    "dungeon:candle": {
+      "scene": "res://assets/dungeon/candle.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "candle"
+    },
+    "dungeon:candle_lit": {
+      "scene": "res://assets/dungeon/candle_lit.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "candle lit"
+    },
+    "dungeon:candle_thin": {
+      "scene": "res://assets/dungeon/candle_thin.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "candle thin"
+    },
+    "dungeon:candle_thin_lit": {
+      "scene": "res://assets/dungeon/candle_thin_lit.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "candle thin lit"
+    },
+    "dungeon:candle_triple": {
+      "scene": "res://assets/dungeon/candle_triple.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "candle triple"
+    },
+    "dungeon:ceiling_tile": {
+      "scene": "res://assets/dungeon/ceiling_tile.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "ceiling tile"
+    },
+    "dungeon:chair": {
+      "scene": "res://assets/dungeon/chair.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "chair"
+    },
+    "dungeon:chest": {
+      "scene": "res://assets/dungeon/chest.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "chest"
+    },
+    "dungeon:chest_large": {
+      "scene": "res://assets/dungeon/chest_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "chest large"
+    },
+    "dungeon:chest_large_gold": {
+      "scene": "res://assets/dungeon/chest_large_gold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "chest large gold"
+    },
+    "dungeon:chest_mimic": {
+      "scene": "res://assets/dungeon/chest_mimic.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "chest mimic"
+    },
+    "dungeon:coin": {
+      "scene": "res://assets/dungeon/coin.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "coin"
+    },
+    "dungeon:coin_stack_large": {
+      "scene": "res://assets/dungeon/coin_stack_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "coin stack large"
+    },
+    "dungeon:coin_stack_medium": {
+      "scene": "res://assets/dungeon/coin_stack_medium.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "coin stack medium"
+    },
+    "dungeon:column": {
+      "scene": "res://assets/dungeon/column.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "column"
+    },
+    "dungeon:crate_large": {
+      "scene": "res://assets/dungeon/crate_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "crate large"
+    },
+    "dungeon:crate_large_decorated": {
+      "scene": "res://assets/dungeon/crate_large_decorated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "crate large decorated"
+    },
+    "dungeon:crate_small": {
+      "scene": "res://assets/dungeon/crate_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "crate small"
+    },
+    "dungeon:crates_stacked": {
+      "scene": "res://assets/dungeon/crates_stacked.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "crates stacked"
+    },
+    "dungeon:floor_dirt_large": {
+      "scene": "res://assets/dungeon/floor_dirt_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor dirt large"
+    },
+    "dungeon:floor_dirt_small_a": {
+      "scene": "res://assets/dungeon/floor_dirt_small_a.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor dirt small A"
+    },
+    "dungeon:floor_dirt_small_b": {
+      "scene": "res://assets/dungeon/floor_dirt_small_b.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor dirt small B"
+    },
+    "dungeon:floor_dirt_small_c": {
+      "scene": "res://assets/dungeon/floor_dirt_small_c.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor dirt small C"
+    },
+    "dungeon:floor_dirt_small_d": {
+      "scene": "res://assets/dungeon/floor_dirt_small_d.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor dirt small D"
+    },
+    "dungeon:floor_dirt_small_corner": {
+      "scene": "res://assets/dungeon/floor_dirt_small_corner.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor dirt small corner"
+    },
+    "dungeon:floor_dirt_small_weeds": {
+      "scene": "res://assets/dungeon/floor_dirt_small_weeds.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor dirt small weeds"
+    },
+    "dungeon:floor_foundation_corner": {
+      "scene": "res://assets/dungeon/floor_foundation_corner.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor foundation corner"
+    },
+    "dungeon:floor_foundation_diagonal_corner": {
+      "scene": "res://assets/dungeon/floor_foundation_diagonal_corner.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor foundation diagonal corner"
+    },
+    "dungeon:floor_foundation_front": {
+      "scene": "res://assets/dungeon/floor_foundation_front.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor foundation front"
+    },
+    "dungeon:floor_foundation_front_and_back": {
+      "scene": "res://assets/dungeon/floor_foundation_front_and_back.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor foundation front and back"
+    },
+    "dungeon:floor_foundation_front_and_sides": {
+      "scene": "res://assets/dungeon/floor_foundation_front_and_sides.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor foundation front and sides"
+    },
+    "dungeon:floor_tile_big_grate": {
+      "scene": "res://assets/dungeon/floor_tile_big_grate.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile big grate"
+    },
+    "dungeon:floor_tile_big_spikes": {
+      "scene": "res://assets/dungeon/floor_tile_big_spikes.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile big spikes"
+    },
+    "dungeon:floor_tile_extralarge_grates": {
+      "scene": "res://assets/dungeon/floor_tile_extralarge_grates.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile extralarge grates"
+    },
+    "dungeon:floor_tile_extralarge_grates_open": {
+      "scene": "res://assets/dungeon/floor_tile_extralarge_grates_open.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile extralarge grates open"
+    },
+    "dungeon:floor_tile_grate": {
+      "scene": "res://assets/dungeon/floor_tile_grate.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile grate"
+    },
+    "dungeon:floor_tile_grate_open": {
+      "scene": "res://assets/dungeon/floor_tile_grate_open.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile grate open"
+    },
+    "dungeon:floor_tile_large": {
+      "scene": "res://assets/dungeon/floor_tile_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile large"
+    },
+    "dungeon:floor_tile_small": {
+      "scene": "res://assets/dungeon/floor_tile_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile small"
+    },
+    "dungeon:floor_tile_small_broken_a": {
+      "scene": "res://assets/dungeon/floor_tile_small_broken_a.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile small broken A"
+    },
+    "dungeon:floor_tile_small_broken_b": {
+      "scene": "res://assets/dungeon/floor_tile_small_broken_b.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile small broken B"
+    },
+    "dungeon:floor_tile_small_corner": {
+      "scene": "res://assets/dungeon/floor_tile_small_corner.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile small corner"
+    },
+    "dungeon:floor_tile_small_decorated": {
+      "scene": "res://assets/dungeon/floor_tile_small_decorated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile small decorated"
+    },
+    "dungeon:floor_tile_small_weeds_a": {
+      "scene": "res://assets/dungeon/floor_tile_small_weeds_a.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile small weeds A"
+    },
+    "dungeon:floor_wood_large": {
+      "scene": "res://assets/dungeon/floor_wood_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor wood large"
+    },
+    "dungeon:floor_wood_large_dark": {
+      "scene": "res://assets/dungeon/floor_wood_large_dark.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor wood large dark"
+    },
+    "dungeon:floor_wood_small": {
+      "scene": "res://assets/dungeon/floor_wood_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor wood small"
+    },
+    "dungeon:floor_wood_small_dark": {
+      "scene": "res://assets/dungeon/floor_wood_small_dark.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor wood small dark"
+    },
+    "dungeon:keg": {
+      "scene": "res://assets/dungeon/keg.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "keg"
+    },
+    "dungeon:keg_decorated": {
+      "scene": "res://assets/dungeon/keg_decorated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "keg decorated"
+    },
+    "dungeon:key_gold": {
+      "scene": "res://assets/dungeon/key_gold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "key gold"
+    },
+    "dungeon:keyring": {
+      "scene": "res://assets/dungeon/keyring.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "keyring"
+    },
+    "dungeon:keyring_hanging": {
+      "scene": "res://assets/dungeon/keyring_hanging.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "keyring hanging"
+    },
+    "dungeon:pickaxe": {
+      "scene": "res://assets/dungeon/pickaxe.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "pickaxe"
+    },
+    "dungeon:pickaxe_gold": {
+      "scene": "res://assets/dungeon/pickaxe_gold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "pickaxe gold"
+    },
+    "dungeon:pillar": {
+      "scene": "res://assets/dungeon/pillar.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "pillar"
+    },
+    "dungeon:plate": {
+      "scene": "res://assets/dungeon/plate.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "plate"
+    },
+    "dungeon:plate_food_a": {
+      "scene": "res://assets/dungeon/plate_food_a.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "plate food A"
+    },
+    "dungeon:plate_food_b": {
+      "scene": "res://assets/dungeon/plate_food_b.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "plate food B"
+    },
+    "dungeon:plate_small": {
+      "scene": "res://assets/dungeon/plate_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "plate small"
+    },
+    "dungeon:plate_stack": {
+      "scene": "res://assets/dungeon/plate_stack.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "plate stack"
+    },
+    "dungeon:post": {
+      "scene": "res://assets/dungeon/post.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "post"
+    },
+    "dungeon:rocks_decorated": {
+      "scene": "res://assets/dungeon/rocks_decorated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "rocks decorated"
+    },
+    "dungeon:rocks_gold": {
+      "scene": "res://assets/dungeon/rocks_gold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "rocks gold"
+    },
+    "dungeon:rocks_small": {
+      "scene": "res://assets/dungeon/rocks_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "rocks small"
+    },
+    "dungeon:rubble_half": {
+      "scene": "res://assets/dungeon/rubble_half.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "rubble half"
+    },
+    "dungeon:rubble_large": {
+      "scene": "res://assets/dungeon/rubble_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "rubble large"
+    },
+    "dungeon:scaffold_beam_corner": {
+      "scene": "res://assets/dungeon/scaffold_beam_corner.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scaffold beam corner"
+    },
+    "dungeon:scaffold_beams_connected": {
+      "scene": "res://assets/dungeon/scaffold_beams_connected.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scaffold beams connected"
+    },
+    "dungeon:scaffold_frame_large": {
+      "scene": "res://assets/dungeon/scaffold_frame_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scaffold frame large"
+    },
+    "dungeon:scaffold_frame_small": {
+      "scene": "res://assets/dungeon/scaffold_frame_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scaffold frame small"
+    },
+    "dungeon:scaffold_pillar_corner": {
+      "scene": "res://assets/dungeon/scaffold_pillar_corner.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scaffold pillar corner"
+    },
+    "dungeon:scaffold_pillar_wall": {
+      "scene": "res://assets/dungeon/scaffold_pillar_wall.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scaffold pillar wall"
+    },
+    "dungeon:scaffold_pillar_wall_cross": {
+      "scene": "res://assets/dungeon/scaffold_pillar_wall_cross.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scaffold pillar wall cross"
+    },
+    "dungeon:scaffold_pillar_wall_torch": {
+      "scene": "res://assets/dungeon/scaffold_pillar_wall_torch.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scaffold pillar wall torch"
+    },
+    "dungeon:scaffold_pillars_connected": {
+      "scene": "res://assets/dungeon/scaffold_pillars_connected.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scaffold pillars connected"
+    },
+    "dungeon:scaffold_pillars_connected_torch": {
+      "scene": "res://assets/dungeon/scaffold_pillars_connected_torch.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scaffold pillars connected torch"
+    },
+    "dungeon:shelf_large": {
+      "scene": "res://assets/dungeon/shelf_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "shelf large"
+    },
+    "dungeon:shelf_small": {
+      "scene": "res://assets/dungeon/shelf_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "shelf small"
+    },
+    "dungeon:shelf_small_books": {
+      "scene": "res://assets/dungeon/shelf_small_books.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "shelf small books"
+    },
+    "dungeon:shelf_small_candles": {
+      "scene": "res://assets/dungeon/shelf_small_candles.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "shelf small candles"
+    },
+    "dungeon:shelves_decorated": {
+      "scene": "res://assets/dungeon/shelves_decorated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "shelves decorated"
+    },
+    "dungeon:stairs": {
+      "scene": "res://assets/dungeon/stairs.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs"
+    },
+    "dungeon:stairs_long": {
+      "scene": "res://assets/dungeon/stairs_long.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs long"
+    },
+    "dungeon:stairs_long_modular_center": {
+      "scene": "res://assets/dungeon/stairs_long_modular_center.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs long modular center"
+    },
+    "dungeon:stairs_long_modular_left": {
+      "scene": "res://assets/dungeon/stairs_long_modular_left.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs long modular left"
+    },
+    "dungeon:stairs_long_modular_right": {
+      "scene": "res://assets/dungeon/stairs_long_modular_right.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs long modular right"
+    },
+    "dungeon:stairs_modular_left": {
+      "scene": "res://assets/dungeon/stairs_modular_left.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs modular left"
+    },
+    "dungeon:stairs_modular_right": {
+      "scene": "res://assets/dungeon/stairs_modular_right.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs modular right"
+    },
+    "dungeon:stairs_narrow": {
+      "scene": "res://assets/dungeon/stairs_narrow.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs narrow"
+    },
+    "dungeon:stairs_wall_left": {
+      "scene": "res://assets/dungeon/stairs_wall_left.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs wall left"
+    },
+    "dungeon:stairs_wall_right": {
+      "scene": "res://assets/dungeon/stairs_wall_right.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs wall right"
+    },
+    "dungeon:stairs_walled": {
+      "scene": "res://assets/dungeon/stairs_walled.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs walled"
+    },
+    "dungeon:stairs_wood": {
+      "scene": "res://assets/dungeon/stairs_wood.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs wood"
+    },
+    "dungeon:stairs_wood_decorated": {
+      "scene": "res://assets/dungeon/stairs_wood_decorated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs wood decorated"
+    },
+    "dungeon:stool": {
+      "scene": "res://assets/dungeon/stool.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stool"
+    },
+    "dungeon:stool_round": {
+      "scene": "res://assets/dungeon/stool_round.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stool round"
+    },
+    "dungeon:sword_shield": {
+      "scene": "res://assets/dungeon/sword_shield.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "sword shield"
+    },
+    "dungeon:sword_shield_broken": {
+      "scene": "res://assets/dungeon/sword_shield_broken.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "sword shield broken"
+    },
+    "dungeon:table_long": {
+      "scene": "res://assets/dungeon/table_long.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table long"
+    },
+    "dungeon:table_long_broken": {
+      "scene": "res://assets/dungeon/table_long_broken.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table long broken"
+    },
+    "dungeon:table_long_decorated_a": {
+      "scene": "res://assets/dungeon/table_long_decorated_a.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table long decorated A"
+    },
+    "dungeon:table_long_decorated_b": {
+      "scene": "res://assets/dungeon/table_long_decorated_b.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table long decorated B"
+    },
+    "dungeon:table_long_decorated_c": {
+      "scene": "res://assets/dungeon/table_long_decorated_c.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table long decorated C"
+    },
+    "dungeon:table_long_tablecloth": {
+      "scene": "res://assets/dungeon/table_long_tablecloth.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table long tablecloth"
+    },
+    "dungeon:table_medium": {
+      "scene": "res://assets/dungeon/table_medium.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table medium"
+    },
+    "dungeon:table_medium_broken": {
+      "scene": "res://assets/dungeon/table_medium_broken.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table medium broken"
+    },
+    "dungeon:table_medium_decorated_a": {
+      "scene": "res://assets/dungeon/table_medium_decorated_a.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table medium decorated A"
+    },
+    "dungeon:table_medium_decorated_b": {
+      "scene": "res://assets/dungeon/table_medium_decorated_b.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table medium decorated B"
+    },
+    "dungeon:table_medium_tablecloth": {
+      "scene": "res://assets/dungeon/table_medium_tablecloth.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table medium tablecloth"
+    },
+    "dungeon:table_medium_tablecloth_decorated_b": {
+      "scene": "res://assets/dungeon/table_medium_tablecloth_decorated_b.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table medium tablecloth decorated B"
+    },
+    "dungeon:table_round_medium": {
+      "scene": "res://assets/dungeon/table_round_medium.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table round medium"
+    },
+    "dungeon:table_round_small": {
+      "scene": "res://assets/dungeon/table_round_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table round small"
+    },
+    "dungeon:table_small": {
+      "scene": "res://assets/dungeon/table_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table small"
+    },
+    "dungeon:table_small_decorated_a": {
+      "scene": "res://assets/dungeon/table_small_decorated_a.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table small decorated A"
+    },
+    "dungeon:table_small_decorated_b": {
+      "scene": "res://assets/dungeon/table_small_decorated_b.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table small decorated B"
+    },
+    "dungeon:table_small_decorated_c": {
+      "scene": "res://assets/dungeon/table_small_decorated_c.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table small decorated C"
+    },
+    "dungeon:torch_lit": {
+      "scene": "res://assets/dungeon/torch_lit.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "torch lit"
+    },
+    "dungeon:torch_mounted": {
+      "scene": "res://assets/dungeon/torch_mounted.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "torch mounted"
+    },
+    "dungeon:trunk_large_a": {
+      "scene": "res://assets/dungeon/trunk_large_a.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "trunk large A"
+    },
+    "dungeon:trunk_large_b": {
+      "scene": "res://assets/dungeon/trunk_large_b.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "trunk large B"
+    },
+    "dungeon:trunk_large_c": {
+      "scene": "res://assets/dungeon/trunk_large_c.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "trunk large C"
+    },
+    "dungeon:trunk_medium_a": {
+      "scene": "res://assets/dungeon/trunk_medium_a.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "trunk medium A"
+    },
+    "dungeon:trunk_medium_c": {
+      "scene": "res://assets/dungeon/trunk_medium_c.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "trunk medium C"
+    },
+    "dungeon:trunk_small_a": {
+      "scene": "res://assets/dungeon/trunk_small_a.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "trunk small A"
+    },
+    "dungeon:trunk_small_b": {
+      "scene": "res://assets/dungeon/trunk_small_b.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "trunk small B"
+    },
+    "dungeon:trunk_small_c": {
+      "scene": "res://assets/dungeon/trunk_small_c.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "trunk small C"
+    },
+    "dungeon:wall": {
+      "scene": "res://assets/dungeon/wall.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall"
+    },
+    "dungeon:wall_tsplit": {
+      "scene": "res://assets/dungeon/wall_tsplit.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall Tsplit"
+    },
+    "dungeon:wall_arched": {
+      "scene": "res://assets/dungeon/wall_arched.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall arched"
+    },
+    "dungeon:wall_archedwindow_gated": {
+      "scene": "res://assets/dungeon/wall_archedwindow_gated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall archedwindow gated"
+    },
+    "dungeon:wall_archedwindow_gated_scaffold": {
+      "scene": "res://assets/dungeon/wall_archedwindow_gated_scaffold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall archedwindow gated scaffold"
+    },
+    "dungeon:wall_archedwindow_open": {
+      "scene": "res://assets/dungeon/wall_archedwindow_open.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall archedwindow open"
+    },
+    "dungeon:wall_broken": {
+      "scene": "res://assets/dungeon/wall_broken.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall broken"
+    },
+    "dungeon:wall_corner": {
+      "scene": "res://assets/dungeon/wall_corner.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall corner"
+    },
+    "dungeon:wall_corner_scaffold": {
+      "scene": "res://assets/dungeon/wall_corner_scaffold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall corner scaffold"
+    },
+    "dungeon:wall_corner_small": {
+      "scene": "res://assets/dungeon/wall_corner_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall corner small"
+    },
+    "dungeon:wall_cracked": {
+      "scene": "res://assets/dungeon/wall_cracked.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall cracked"
+    },
+    "dungeon:wall_crossing": {
+      "scene": "res://assets/dungeon/wall_crossing.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall crossing"
+    },
+    "dungeon:wall_doorway": {
+      "scene": "res://assets/dungeon/wall_doorway.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall doorway"
+    },
+    "dungeon:wall_doorway_tsplit": {
+      "scene": "res://assets/dungeon/wall_doorway_tsplit.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall doorway Tsplit"
+    },
+    "dungeon:wall_doorway_sides": {
+      "scene": "res://assets/dungeon/wall_doorway_sides.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall doorway sides"
+    },
+    "dungeon:wall_endcap": {
+      "scene": "res://assets/dungeon/wall_endcap.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall endcap"
+    },
+    "dungeon:wall_gated": {
+      "scene": "res://assets/dungeon/wall_gated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall gated"
+    },
+    "dungeon:wall_half": {
+      "scene": "res://assets/dungeon/wall_half.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall half"
+    },
+    "dungeon:wall_half_endcap": {
+      "scene": "res://assets/dungeon/wall_half_endcap.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall half endcap"
+    },
+    "dungeon:wall_half_endcap_sloped": {
+      "scene": "res://assets/dungeon/wall_half_endcap_sloped.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall half endcap sloped"
+    },
+    "dungeon:wall_inset_candles": {
+      "scene": "res://assets/dungeon/wall_inset_candles.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall inset candles"
+    },
+    "dungeon:wall_inset_shelves": {
+      "scene": "res://assets/dungeon/wall_inset_shelves.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall inset shelves"
+    },
+    "dungeon:wall_inset_shelves_broken": {
+      "scene": "res://assets/dungeon/wall_inset_shelves_broken.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall inset shelves broken"
+    },
+    "dungeon:wall_inset_shelves_decorateda": {
+      "scene": "res://assets/dungeon/wall_inset_shelves_decorateda.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall inset shelves decoratedA"
+    },
+    "dungeon:wall_inset_shelves_decoratedb": {
+      "scene": "res://assets/dungeon/wall_inset_shelves_decoratedb.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall inset shelves decoratedB"
+    },
+    "dungeon:wall_open_scaffold": {
+      "scene": "res://assets/dungeon/wall_open_scaffold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall open scaffold"
+    },
+    "dungeon:wall_scaffold": {
+      "scene": "res://assets/dungeon/wall_scaffold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall scaffold"
+    },
+    "dungeon:wall_shelves": {
+      "scene": "res://assets/dungeon/wall_shelves.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall shelves"
+    },
+    "dungeon:wall_sloped": {
+      "scene": "res://assets/dungeon/wall_sloped.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall sloped"
+    },
+    "dungeon:wall_window_closed": {
+      "scene": "res://assets/dungeon/wall_window_closed.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall window closed"
+    },
+    "dungeon:wall_window_closed_scaffold": {
+      "scene": "res://assets/dungeon/wall_window_closed_scaffold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall window closed scaffold"
+    },
+    "dungeon:wall_window_open": {
+      "scene": "res://assets/dungeon/wall_window_open.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall window open"
+    },
+    "dungeon:wall_window_open_scaffold": {
+      "scene": "res://assets/dungeon/wall_window_open_scaffold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall window open scaffold"
+    },
+    "nature:bush_1_b_color1": {
+      "scene": "res://assets/nature/bush_1_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 1 B Color1"
+    },
+    "nature:bush_1_c_color1": {
+      "scene": "res://assets/nature/bush_1_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 1 C Color1"
+    },
+    "nature:bush_1_d_color1": {
+      "scene": "res://assets/nature/bush_1_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 1 D Color1"
+    },
+    "nature:bush_1_f_color1": {
+      "scene": "res://assets/nature/bush_1_f_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 1 F Color1"
+    },
+    "nature:bush_1_g_color1": {
+      "scene": "res://assets/nature/bush_1_g_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 1 G Color1"
+    },
+    "nature:bush_2_a_color1": {
+      "scene": "res://assets/nature/bush_2_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 2 A Color1"
+    },
+    "nature:bush_2_b_color1": {
+      "scene": "res://assets/nature/bush_2_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 2 B Color1"
+    },
+    "nature:bush_2_d_color1": {
+      "scene": "res://assets/nature/bush_2_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 2 D Color1"
+    },
+    "nature:bush_2_e_color1": {
+      "scene": "res://assets/nature/bush_2_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 2 E Color1"
+    },
+    "nature:bush_2_f_color1": {
+      "scene": "res://assets/nature/bush_2_f_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 2 F Color1"
+    },
+    "nature:bush_3_a_color1": {
+      "scene": "res://assets/nature/bush_3_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 3 A Color1"
+    },
+    "nature:bush_3_c_color1": {
+      "scene": "res://assets/nature/bush_3_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 3 C Color1"
+    },
+    "nature:bush_4_a_color1": {
+      "scene": "res://assets/nature/bush_4_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 4 A Color1"
+    },
+    "nature:bush_4_b_color1": {
+      "scene": "res://assets/nature/bush_4_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 4 B Color1"
+    },
+    "nature:bush_4_c_color1": {
+      "scene": "res://assets/nature/bush_4_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 4 C Color1"
+    },
+    "nature:bush_4_e_color1": {
+      "scene": "res://assets/nature/bush_4_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 4 E Color1"
+    },
+    "nature:bush_4_f_color1": {
+      "scene": "res://assets/nature/bush_4_f_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 4 F Color1"
+    },
+    "nature:grass_1_a_color1": {
+      "scene": "res://assets/nature/grass_1_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 1 A Color1"
+    },
+    "nature:grass_1_a_singlesided_color1": {
+      "scene": "res://assets/nature/grass_1_a_singlesided_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 1 A Singlesided Color1"
+    },
+    "nature:grass_1_b_singlesided_color1": {
+      "scene": "res://assets/nature/grass_1_b_singlesided_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 1 B Singlesided Color1"
+    },
+    "nature:grass_1_c_color1": {
+      "scene": "res://assets/nature/grass_1_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 1 C Color1"
+    },
+    "nature:grass_1_c_singlesided_color1": {
+      "scene": "res://assets/nature/grass_1_c_singlesided_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 1 C Singlesided Color1"
+    },
+    "nature:grass_1_d_color1": {
+      "scene": "res://assets/nature/grass_1_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 1 D Color1"
+    },
+    "nature:grass_2_a_color1": {
+      "scene": "res://assets/nature/grass_2_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 2 A Color1"
+    },
+    "nature:grass_2_a_singlesided_color1": {
+      "scene": "res://assets/nature/grass_2_a_singlesided_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 2 A Singlesided Color1"
+    },
+    "nature:grass_2_b_color1": {
+      "scene": "res://assets/nature/grass_2_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 2 B Color1"
+    },
+    "nature:grass_2_b_singlesided_color1": {
+      "scene": "res://assets/nature/grass_2_b_singlesided_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 2 B Singlesided Color1"
+    },
+    "nature:grass_2_c_singlesided_color1": {
+      "scene": "res://assets/nature/grass_2_c_singlesided_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 2 C Singlesided Color1"
+    },
+    "nature:grass_2_d_color1": {
+      "scene": "res://assets/nature/grass_2_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 2 D Color1"
+    },
+    "nature:grass_2_d_singlesided_color1": {
+      "scene": "res://assets/nature/grass_2_d_singlesided_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 2 D Singlesided Color1"
+    },
+    "nature:hill_12x12x2_color1": {
+      "scene": "res://assets/nature/hill_12x12x2_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 12x12x2 Color1"
+    },
+    "nature:hill_12x12x8_color1": {
+      "scene": "res://assets/nature/hill_12x12x8_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 12x12x8 Color1"
+    },
+    "nature:hill_12x6x2_color1": {
+      "scene": "res://assets/nature/hill_12x6x2_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 12x6x2 Color1"
+    },
+    "nature:hill_12x6x4_color1": {
+      "scene": "res://assets/nature/hill_12x6x4_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 12x6x4 Color1"
+    },
+    "nature:hill_12x6x8_color1": {
+      "scene": "res://assets/nature/hill_12x6x8_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 12x6x8 Color1"
+    },
+    "nature:hill_2x2x4_color1": {
+      "scene": "res://assets/nature/hill_2x2x4_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 2x2x4 Color1"
+    },
+    "nature:hill_2x2x8_color1": {
+      "scene": "res://assets/nature/hill_2x2x8_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 2x2x8 Color1"
+    },
+    "nature:hill_4x2x2_color1": {
+      "scene": "res://assets/nature/hill_4x2x2_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 4x2x2 Color1"
+    },
+    "nature:hill_4x2x4_color1": {
+      "scene": "res://assets/nature/hill_4x2x4_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 4x2x4 Color1"
+    },
+    "nature:hill_4x4x2_color1": {
+      "scene": "res://assets/nature/hill_4x4x2_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 4x4x2 Color1"
+    },
+    "nature:hill_4x4x4_color1": {
+      "scene": "res://assets/nature/hill_4x4x4_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 4x4x4 Color1"
+    },
+    "nature:hill_4x4x8_color1": {
+      "scene": "res://assets/nature/hill_4x4x8_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 4x4x8 Color1"
+    },
+    "nature:hill_8x4x2_color1": {
+      "scene": "res://assets/nature/hill_8x4x2_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 8x4x2 Color1"
+    },
+    "nature:hill_8x4x8_color1": {
+      "scene": "res://assets/nature/hill_8x4x8_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 8x4x8 Color1"
+    },
+    "nature:hill_8x8x2_color1": {
+      "scene": "res://assets/nature/hill_8x8x2_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 8x8x2 Color1"
+    },
+    "nature:hill_8x8x4_color1": {
+      "scene": "res://assets/nature/hill_8x8x4_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 8x8x4 Color1"
+    },
+    "nature:hill_8x8x8_color1": {
+      "scene": "res://assets/nature/hill_8x8x8_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 8x8x8 Color1"
+    },
+    "nature:hill_cliff_a_outercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_a_outercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff A OuterCorner Color1"
+    },
+    "nature:hill_cliff_b_side_color1": {
+      "scene": "res://assets/nature/hill_cliff_b_side_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff B Side Color1"
+    },
+    "nature:hill_cliff_c_innercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_c_innercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff C InnerCorner Color1"
+    },
+    "nature:hill_cliff_c_outercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_c_outercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff C OuterCorner Color1"
+    },
+    "nature:hill_cliff_e_color1": {
+      "scene": "res://assets/nature/hill_cliff_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff E Color1"
+    },
+    "nature:hill_cliff_f_side_color1": {
+      "scene": "res://assets/nature/hill_cliff_f_side_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff F Side Color1"
+    },
+    "nature:hill_cliff_g_innercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_g_innercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff G InnerCorner Color1"
+    },
+    "nature:hill_cliff_g_outercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_g_outercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff G OuterCorner Color1"
+    },
+    "nature:hill_cliff_i_innercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_i_innercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff I InnerCorner Color1"
+    },
+    "nature:hill_cliff_i_outercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_i_outercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff I OuterCorner Color1"
+    },
+    "nature:hill_cliff_tall_a_innercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_a_innercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall A InnerCorner Color1"
+    },
+    "nature:hill_cliff_tall_a_outercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_a_outercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall A OuterCorner Color1"
+    },
+    "nature:hill_cliff_tall_c_innercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_c_innercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall C InnerCorner Color1"
+    },
+    "nature:hill_cliff_tall_c_outercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_c_outercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall C OuterCorner Color1"
+    },
+    "nature:hill_cliff_tall_d_side_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_d_side_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall D Side Color1"
+    },
+    "nature:hill_cliff_tall_e_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall E Color1"
+    },
+    "nature:hill_cliff_tall_g_innercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_g_innercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall G InnerCorner Color1"
+    },
+    "nature:hill_cliff_tall_g_outercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_g_outercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall G OuterCorner Color1"
+    },
+    "nature:hill_cliff_tall_h_side_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_h_side_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall H Side Color1"
+    },
+    "nature:hill_cliff_tall_i_innercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_i_innercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall I InnerCorner Color1"
+    },
+    "nature:hill_top_a_innercorner_color1": {
+      "scene": "res://assets/nature/hill_top_a_innercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top A InnerCorner Color1"
+    },
+    "nature:hill_top_a_outercorner_color1": {
+      "scene": "res://assets/nature/hill_top_a_outercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top A OuterCorner Color1"
+    },
+    "nature:hill_top_b_side_color1": {
+      "scene": "res://assets/nature/hill_top_b_side_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top B Side Color1"
+    },
+    "nature:hill_top_c_innercorner_color1": {
+      "scene": "res://assets/nature/hill_top_c_innercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top C InnerCorner Color1"
+    },
+    "nature:hill_top_d_side_color1": {
+      "scene": "res://assets/nature/hill_top_d_side_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top D Side Color1"
+    },
+    "nature:hill_top_e_cap_color1": {
+      "scene": "res://assets/nature/hill_top_e_cap_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top E Cap Color1"
+    },
+    "nature:hill_top_e_center_color1": {
+      "scene": "res://assets/nature/hill_top_e_center_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top E Center Color1"
+    },
+    "nature:hill_top_f_side_color1": {
+      "scene": "res://assets/nature/hill_top_f_side_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top F Side Color1"
+    },
+    "nature:hill_top_g_outercorner_color1": {
+      "scene": "res://assets/nature/hill_top_g_outercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top G OuterCorner Color1"
+    },
+    "nature:hill_top_h_side_color1": {
+      "scene": "res://assets/nature/hill_top_h_side_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top H Side Color1"
+    },
+    "nature:hill_top_i_innercorner_color1": {
+      "scene": "res://assets/nature/hill_top_i_innercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top I InnerCorner Color1"
+    },
+    "nature:hill_top_i_outercorner_color1": {
+      "scene": "res://assets/nature/hill_top_i_outercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top I OuterCorner Color1"
+    },
+    "nature:rock_1_b_color1": {
+      "scene": "res://assets/nature/rock_1_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 B Color1"
+    },
+    "nature:rock_1_c_color1": {
+      "scene": "res://assets/nature/rock_1_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 C Color1"
+    },
+    "nature:rock_1_d_color1": {
+      "scene": "res://assets/nature/rock_1_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 D Color1"
+    },
+    "nature:rock_1_f_color1": {
+      "scene": "res://assets/nature/rock_1_f_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 F Color1"
+    },
+    "nature:rock_1_g_color1": {
+      "scene": "res://assets/nature/rock_1_g_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 G Color1"
+    },
+    "nature:rock_1_h_color1": {
+      "scene": "res://assets/nature/rock_1_h_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 H Color1"
+    },
+    "nature:rock_1_i_color1": {
+      "scene": "res://assets/nature/rock_1_i_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 I Color1"
+    },
+    "nature:rock_1_k_color1": {
+      "scene": "res://assets/nature/rock_1_k_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 K Color1"
+    },
+    "nature:rock_1_l_color1": {
+      "scene": "res://assets/nature/rock_1_l_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 L Color1"
+    },
+    "nature:rock_1_m_color1": {
+      "scene": "res://assets/nature/rock_1_m_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 M Color1"
+    },
+    "nature:rock_1_n_color1": {
+      "scene": "res://assets/nature/rock_1_n_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 N Color1"
+    },
+    "nature:rock_1_p_color1": {
+      "scene": "res://assets/nature/rock_1_p_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 P Color1"
+    },
+    "nature:rock_1_q_color1": {
+      "scene": "res://assets/nature/rock_1_q_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 Q Color1"
+    },
+    "nature:rock_2_a_color1": {
+      "scene": "res://assets/nature/rock_2_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 2 A Color1"
+    },
+    "nature:rock_2_b_color1": {
+      "scene": "res://assets/nature/rock_2_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 2 B Color1"
+    },
+    "nature:rock_2_d_color1": {
+      "scene": "res://assets/nature/rock_2_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 2 D Color1"
+    },
+    "nature:rock_2_e_color1": {
+      "scene": "res://assets/nature/rock_2_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 2 E Color1"
+    },
+    "nature:rock_2_f_color1": {
+      "scene": "res://assets/nature/rock_2_f_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 2 F Color1"
+    },
+    "nature:rock_2_g_color1": {
+      "scene": "res://assets/nature/rock_2_g_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 2 G Color1"
+    },
+    "nature:rock_3_a_color1": {
+      "scene": "res://assets/nature/rock_3_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 A Color1"
+    },
+    "nature:rock_3_b_color1": {
+      "scene": "res://assets/nature/rock_3_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 B Color1"
+    },
+    "nature:rock_3_c_color1": {
+      "scene": "res://assets/nature/rock_3_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 C Color1"
+    },
+    "nature:rock_3_d_color1": {
+      "scene": "res://assets/nature/rock_3_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 D Color1"
+    },
+    "nature:rock_3_f_color1": {
+      "scene": "res://assets/nature/rock_3_f_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 F Color1"
+    },
+    "nature:rock_3_g_color1": {
+      "scene": "res://assets/nature/rock_3_g_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 G Color1"
+    },
+    "nature:rock_3_h_color1": {
+      "scene": "res://assets/nature/rock_3_h_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 H Color1"
+    },
+    "nature:rock_3_i_color1": {
+      "scene": "res://assets/nature/rock_3_i_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 I Color1"
+    },
+    "nature:rock_3_k_color1": {
+      "scene": "res://assets/nature/rock_3_k_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 K Color1"
+    },
+    "nature:rock_3_l_color1": {
+      "scene": "res://assets/nature/rock_3_l_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 L Color1"
+    },
+    "nature:rock_3_m_color1": {
+      "scene": "res://assets/nature/rock_3_m_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 M Color1"
+    },
+    "nature:rock_3_n_color1": {
+      "scene": "res://assets/nature/rock_3_n_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 N Color1"
+    },
+    "nature:rock_3_p_color1": {
+      "scene": "res://assets/nature/rock_3_p_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 P Color1"
+    },
+    "nature:rock_3_q_color1": {
+      "scene": "res://assets/nature/rock_3_q_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 Q Color1"
+    },
+    "nature:rock_3_r_color1": {
+      "scene": "res://assets/nature/rock_3_r_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 R Color1"
+    },
+    "nature:rock_4_a_color1": {
+      "scene": "res://assets/nature/rock_4_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 4 A Color1"
+    },
+    "nature:rock_4_c_color1": {
+      "scene": "res://assets/nature/rock_4_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 4 C Color1"
+    },
+    "nature:rock_4_d_color1": {
+      "scene": "res://assets/nature/rock_4_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 4 D Color1"
+    },
+    "nature:rock_4_e_color1": {
+      "scene": "res://assets/nature/rock_4_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 4 E Color1"
+    },
+    "nature:rock_4_f_color1": {
+      "scene": "res://assets/nature/rock_4_f_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 4 F Color1"
+    },
+    "nature:rock_4_h_color1": {
+      "scene": "res://assets/nature/rock_4_h_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 4 H Color1"
+    },
+    "nature:rock_5_a_color1": {
+      "scene": "res://assets/nature/rock_5_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 5 A Color1"
+    },
+    "nature:rock_5_b_color1": {
+      "scene": "res://assets/nature/rock_5_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 5 B Color1"
+    },
+    "nature:rock_5_c_color1": {
+      "scene": "res://assets/nature/rock_5_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 5 C Color1"
+    },
+    "nature:rock_5_e_color1": {
+      "scene": "res://assets/nature/rock_5_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 5 E Color1"
+    },
+    "nature:rock_5_f_color1": {
+      "scene": "res://assets/nature/rock_5_f_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 5 F Color1"
+    },
+    "nature:rock_5_g_color1": {
+      "scene": "res://assets/nature/rock_5_g_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 5 G Color1"
+    },
+    "nature:rock_5_h_color1": {
+      "scene": "res://assets/nature/rock_5_h_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 5 H Color1"
+    },
+    "nature:rock_6_b_color1": {
+      "scene": "res://assets/nature/rock_6_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 6 B Color1"
+    },
+    "nature:rock_6_c_color1": {
+      "scene": "res://assets/nature/rock_6_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 6 C Color1"
+    },
+    "nature:rock_6_d_color1": {
+      "scene": "res://assets/nature/rock_6_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 6 D Color1"
+    },
+    "nature:rock_6_e_color1": {
+      "scene": "res://assets/nature/rock_6_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 6 E Color1"
+    },
+    "nature:rock_6_g_color1": {
+      "scene": "res://assets/nature/rock_6_g_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 6 G Color1"
+    },
+    "nature:rock_6_h_color1": {
+      "scene": "res://assets/nature/rock_6_h_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 6 H Color1"
+    },
+    "nature:tree_1_a_color1": {
+      "scene": "res://assets/nature/tree_1_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 1 A Color1"
+    },
+    "nature:tree_1_b_color1": {
+      "scene": "res://assets/nature/tree_1_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 1 B Color1"
+    },
+    "nature:tree_2_a_color1": {
+      "scene": "res://assets/nature/tree_2_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 2 A Color1"
+    },
+    "nature:tree_2_b_color1": {
+      "scene": "res://assets/nature/tree_2_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 2 B Color1"
+    },
+    "nature:tree_2_c_color1": {
+      "scene": "res://assets/nature/tree_2_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 2 C Color1"
+    },
+    "nature:tree_2_d_color1": {
+      "scene": "res://assets/nature/tree_2_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 2 D Color1"
+    },
+    "nature:tree_3_a_color1": {
+      "scene": "res://assets/nature/tree_3_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 3 A Color1"
+    },
+    "nature:tree_3_b_color1": {
+      "scene": "res://assets/nature/tree_3_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 3 B Color1"
+    },
+    "nature:tree_3_c_color1": {
+      "scene": "res://assets/nature/tree_3_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 3 C Color1"
+    },
+    "nature:tree_4_a_color1": {
+      "scene": "res://assets/nature/tree_4_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 4 A Color1"
+    },
+    "nature:tree_4_c_color1": {
+      "scene": "res://assets/nature/tree_4_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 4 C Color1"
+    },
+    "nature:tree_5_a_color1": {
+      "scene": "res://assets/nature/tree_5_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 5 A Color1"
+    },
+    "nature:tree_5_b_color1": {
+      "scene": "res://assets/nature/tree_5_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 5 B Color1"
+    },
+    "nature:tree_5_c_color1": {
+      "scene": "res://assets/nature/tree_5_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 5 C Color1"
+    },
+    "nature:tree_5_e_color1": {
+      "scene": "res://assets/nature/tree_5_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 5 E Color1"
+    },
+    "nature:tree_5_f_color1": {
+      "scene": "res://assets/nature/tree_5_f_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 5 F Color1"
+    },
+    "nature:tree_6_a_color1": {
+      "scene": "res://assets/nature/tree_6_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 6 A Color1"
+    },
+    "nature:tree_6_b_color1": {
+      "scene": "res://assets/nature/tree_6_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 6 B Color1"
+    },
+    "nature:tree_7_a_color1": {
+      "scene": "res://assets/nature/tree_7_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 7 A Color1"
+    },
+    "nature:tree_7_b_color1": {
+      "scene": "res://assets/nature/tree_7_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 7 B Color1"
+    },
+    "nature:tree_7_c_color1": {
+      "scene": "res://assets/nature/tree_7_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 7 C Color1"
+    },
+    "nature:tree_bare_1_a_color1": {
+      "scene": "res://assets/nature/tree_bare_1_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree Bare 1 A Color1"
+    },
+    "nature:tree_bare_1_c_color1": {
+      "scene": "res://assets/nature/tree_bare_1_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree Bare 1 C Color1"
+    },
+    "nature:tree_bare_2_a_color1": {
+      "scene": "res://assets/nature/tree_bare_2_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree Bare 2 A Color1"
+    },
+    "nature:tree_bare_2_b_color1": {
+      "scene": "res://assets/nature/tree_bare_2_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree Bare 2 B Color1"
+    },
+    "nature:tree_bare_2_c_color1": {
+      "scene": "res://assets/nature/tree_bare_2_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree Bare 2 C Color1"
     }
   }
 }
