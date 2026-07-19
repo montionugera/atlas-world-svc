@@ -135,4 +135,11 @@ cheap now, painful to reconstruct later.
 | `characters/rogue.glb` | market | KayKit Adventurers 2.0 (Kay Lousberg, kaylousberg.com) — Rogue.glb | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:rogue` (matches player_knight style/rig) |
 | `characters/barbarian.glb` | market | KayKit Adventurers 2.0 (Kay Lousberg, kaylousberg.com) — Barbarian.glb | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:barbarian` (matches player_knight style/rig) |
 
+| `characters/marksman.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — Marksman.glb + 64 anim clips merged from Rig_Medium (Melee/Ranged/Bow/Magic/Movement) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:marksman` |
+| `characters/lorekeeper.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — Lorekeeper.glb + 64 anim clips merged from Rig_Medium (Melee/Ranged/Bow/Magic/Movement) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:lorekeeper` |
+| `characters/tiefling.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — Tiefling.glb + 64 anim clips merged from Rig_Medium (Melee/Ranged/Bow/Magic/Movement) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:tiefling` |
+| `characters/witch.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — Witch.glb + 64 anim clips merged from Rig_Medium (Melee/Ranged/Bow/Magic/Movement) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:witch` |
+| `characters/cleric.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — Cleric.glb + 64 anim clips merged from Rig_Medium (Melee/Ranged/Bow/Magic/Movement) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:cleric` |
+| `characters/orc_brute.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — Orc Brute.glb + 64 anim clips merged from Rig_Medium (Melee/Ranged/Bow/Magic/Movement) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:orc_brute` |
+
 <!-- Source ∈ ai | market | commission. License must be commercial-safe (prefer CC0). -->

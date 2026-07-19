@@ -653,6 +653,60 @@
       "license": "CC0",
       "tier": "seed",
       "label": "Barbarian (KayKit)"
+    },
+    "character:marksman": {
+      "scene": "res://assets/characters/marksman.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Marksman (KayKit — archer)"
+    },
+    "character:lorekeeper": {
+      "scene": "res://assets/characters/lorekeeper.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Lorekeeper (KayKit — mage)"
+    },
+    "character:tiefling": {
+      "scene": "res://assets/characters/tiefling.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tiefling (KayKit)"
+    },
+    "character:witch": {
+      "scene": "res://assets/characters/witch.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Witch (KayKit)"
+    },
+    "character:cleric": {
+      "scene": "res://assets/characters/cleric.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Cleric (KayKit)"
+    },
+    "character:orc_brute": {
+      "scene": "res://assets/characters/orc_brute.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Orc Brute (KayKit — enemy)"
     }
   }
 }
