@@ -1,0 +1,32 @@
+# Git LFS — binary art & audio assets (F-002 asset pipeline).
+# PREREQUISITE (once per machine): `brew install git-lfs && git lfs install`
+# Raw originals live under art-source/ (LFS); baked runtime assets under game-client/assets/.
+# Text ledgers (.md/.json/.tres/.import) intentionally stay in normal git so they diff.
+
+# --- 3D models (always art — track everywhere) ---
+*.glb    filter=lfs diff=lfs merge=lfs -text
+*.gltf   filter=lfs diff=lfs merge=lfs -text
+*.fbx    filter=lfs diff=lfs merge=lfs -text
+*.obj    filter=lfs diff=lfs merge=lfs -text
+*.blend  filter=lfs diff=lfs merge=lfs -text
+
+# --- audio (always art — track everywhere) ---
+*.wav    filter=lfs diff=lfs merge=lfs -text
+*.ogg    filter=lfs diff=lfs merge=lfs -text
+*.mp3    filter=lfs diff=lfs merge=lfs -text
+*.flac   filter=lfs diff=lfs merge=lfs -text
+
+# --- downloaded packs ---
+*.zip    filter=lfs diff=lfs merge=lfs -text
+
+# --- textures (scoped to asset trees so small UI icons elsewhere stay normal git) ---
+art-source/**/*.png         filter=lfs diff=lfs merge=lfs -text
+art-source/**/*.jpg         filter=lfs diff=lfs merge=lfs -text
+art-source/**/*.jpeg        filter=lfs diff=lfs merge=lfs -text
+art-source/**/*.tga         filter=lfs diff=lfs merge=lfs -text
+art-source/**/*.exr         filter=lfs diff=lfs merge=lfs -text
+art-source/**/*.hdr         filter=lfs diff=lfs merge=lfs -text
+game-client/assets/**/*.png  filter=lfs diff=lfs merge=lfs -text
+game-client/assets/**/*.jpg  filter=lfs diff=lfs merge=lfs -text
+game-client/assets/**/*.jpeg filter=lfs diff=lfs merge=lfs -text
+game-client/assets/**/*.tga  filter=lfs diff=lfs merge=lfs -text

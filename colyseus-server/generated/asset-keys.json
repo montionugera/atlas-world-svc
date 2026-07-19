@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "keys": [
+    {
+      "id": "mob:aggressive",
+      "kind": "character"
+    },
+    {
+      "id": "mob:balanced",
+      "kind": "character"
+    },
+    {
+      "id": "mob:defensive",
+      "kind": "character"
+    },
+    {
+      "id": "mob:double_attacker",
+      "kind": "character"
+    },
+    {
+      "id": "mob:hybrid",
+      "kind": "character"
+    },
+    {
+      "id": "mob:spear_thrower",
+      "kind": "character"
+    },
+    {
+      "id": "npc",
+      "kind": "character"
+    },
+    {
+      "id": "player",
+      "kind": "character"
+    },
+    {
+      "id": "projectile:arrow",
+      "kind": "vfx"
+    },
+    {
+      "id": "projectile:largeMeelee",
+      "kind": "vfx"
+    },
+    {
+      "id": "projectile:magicSpear",
+      "kind": "vfx"
+    },
+    {
+      "id": "projectile:melee",
+      "kind": "vfx"
+    },
+    {
+      "id": "projectile:physicSpear",
+      "kind": "vfx"
+    },
+    {
+      "id": "projectile:smallMeelee",
+      "kind": "vfx"
+    },
+    {
+      "id": "projectile:spear",
+      "kind": "vfx"
+    },
+    {
+      "id": "zone:damage",
+      "kind": "vfx"
+    },
+    {
+      "id": "zone:freeze",
+      "kind": "vfx"
+    },
+    {
+      "id": "zone:impulse_caster",
+      "kind": "vfx"
+    },
+    {
+      "id": "zone:stun",
+      "kind": "vfx"
+    }
+  ]
+}

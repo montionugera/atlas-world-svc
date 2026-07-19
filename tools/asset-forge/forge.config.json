@@ -1,0 +1,21 @@
+{
+  "kinds": {
+    "character": {
+      "heightRange": [1.6, 2.0],
+      "maxTriangles": 10000,
+      "maxTextureSize": 1024,
+      "requiredStates": ["idle", "walk", "run", "attack", "death"]
+    }
+  },
+  "defaultClipMap": {
+    "idle": "idle",
+    "walk": "walk",
+    "run": "sprint",
+    "attack": "attack-melee-right",
+    "death": "die"
+  },
+  "rigReference": [
+    "rig-reference/kenney-mini.bones.json",
+    "rig-reference/kaykit-adventurer.bones.json"
+  ]
+}

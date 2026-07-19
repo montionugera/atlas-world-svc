@@ -5,6 +5,8 @@ using AtlasWorld.Client.Net;
 using AtlasWorld.Client.World;
 using AtlasWorld.Client.Input;
 using AtlasWorld.Client.UI.Panels;
+using AtlasWorld.Client.Content;
+using AtlasWorld.Client.Audio;
 
 namespace AtlasWorld.Client.Core
 {
@@ -29,6 +31,69 @@ namespace AtlasWorld.Client.Core
 
         public override void _Ready()
         {
+            // Env-gated offline verify probe (ATLAS_VERIFY_MANIFEST=1): exercises the
+            // AssetManifest loader against fixtures, prints PASS/FAIL, and quits BEFORE
+            // any networking. Lets CI/headless prove the loader without a live server.
+            if (OS.GetEnvironment("ATLAS_VERIFY_MANIFEST") == "1")
+            {
+                int code = ManifestVerify.Run();
+                GetTree().Quit(code);
+                return;
+            }
+
+            // Env-gated offline verify probe (ATLAS_VERIFY_REGISTRY=1): exercises the
+            // AssetRegistry three-tier resolve against fixtures, prints PASS/FAIL, and quits
+            // BEFORE any networking. Proves bespoke→seed→capsule fallback without a server.
+            if (OS.GetEnvironment("ATLAS_VERIFY_REGISTRY") == "1")
+            {
+                int code = RegistryVerify.Run();
+                GetTree().Quit(code);
+                return;
+            }
+
+            // Env-gated offline verify probe (ATLAS_VERIFY_ENTITYVIEW=1): spawns entities via
+            // the real EntityManager and proves the specific server type id is threaded into
+            // AssetRegistry.Resolve (capsule fallback under the empty manifest), then quits
+            // BEFORE any networking. Proves Task 4 wiring without a live server.
+            if (OS.GetEnvironment("ATLAS_VERIFY_ENTITYVIEW") == "1")
+            {
+                int code = EntityViewVerify.Run(this);
+                GetTree().Quit(code);
+                return;
+            }
+
+            // Env-gated offline verify probe (ATLAS_VERIFY_ANIM=1): drives AnimationController
+            // with synthetic synced states against a real seed glTF's AnimationPlayer, asserts
+            // the expected clip is playing for idle/walk/sprint/attack/die, then quits BEFORE
+            // any networking. Proves the character animation PoC without a live server.
+            if (OS.GetEnvironment("ATLAS_VERIFY_ANIM") == "1")
+            {
+                int code = AnimationVerify.Run(this);
+                GetTree().Quit(code);
+                return;
+            }
+
+            // Env-gated offline verify probe (ATLAS_VERIFY_SFX=1): exercises the
+            // AudioRegistry against the committed audio manifest — resolves each combat
+            // event to a real stream, proves Play() spawns a positioned/playing one-shot,
+            // proves an unknown key safely no-ops — then quits BEFORE any networking.
+            if (OS.GetEnvironment("ATLAS_VERIFY_SFX") == "1")
+            {
+                int code = AudioVerify.Run();
+                GetTree().Quit(code);
+                return;
+            }
+
+            // Env-gated offline verify probe (ATLAS_VERIFY_FACING=1): proves a character's
+            // rendered rotation tracks its heading and is never clobbered by the gait/attack
+            // animation, then quits BEFORE any networking.
+            if (OS.GetEnvironment("ATLAS_VERIFY_FACING") == "1")
+            {
+                int code = FacingVerify.Run(this);
+                GetTree().Quit(code);
+                return;
+            }
+
             _config = Config.Load();
             GD.Print($"[GameRoot] endpoint={_config.ColyseusEndpoint} room={_config.RoomName} map={_config.MapId}");
 

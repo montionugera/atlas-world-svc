@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "entries": {
+    "sfx:attack": {
+      "stream": "res://assets/audio/chop.ogg",
+      "license": "CC0",
+      "source": "Kenney RPG Audio"
+    },
+    "sfx:hit": {
+      "stream": "res://assets/audio/knifeSlice.ogg",
+      "license": "CC0",
+      "source": "Kenney RPG Audio"
+    },
+    "sfx:death": {
+      "stream": "res://assets/audio/death.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds (real death thud, replaces the metalLatch stand-in)"
+    },
+    "sfx:impact_light": {
+      "stream": "res://assets/audio/impact_light.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_light_alt": {
+      "stream": "res://assets/audio/impact_light_alt.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_flesh_soft": {
+      "stream": "res://assets/audio/impact_flesh_soft.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_flesh_soft_alt": {
+      "stream": "res://assets/audio/impact_flesh_soft_alt.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_flesh_heavy": {
+      "stream": "res://assets/audio/impact_flesh_heavy.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:punch_medium": {
+      "stream": "res://assets/audio/punch_medium.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:punch_medium_alt": {
+      "stream": "res://assets/audio/punch_medium_alt.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:punch_heavy": {
+      "stream": "res://assets/audio/punch_heavy.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:punch_heavy_alt": {
+      "stream": "res://assets/audio/punch_heavy_alt.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_metal_light": {
+      "stream": "res://assets/audio/impact_metal_light.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_metal_light_alt": {
+      "stream": "res://assets/audio/impact_metal_light_alt.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_metal_medium": {
+      "stream": "res://assets/audio/impact_metal_medium.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_metal_medium_alt": {
+      "stream": "res://assets/audio/impact_metal_medium_alt.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_metal_heavy": {
+      "stream": "res://assets/audio/impact_metal_heavy.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_metal_heavy_alt": {
+      "stream": "res://assets/audio/impact_metal_heavy_alt.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_wood_light": {
+      "stream": "res://assets/audio/impact_wood_light.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_wood_medium": {
+      "stream": "res://assets/audio/impact_wood_medium.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_wood_heavy": {
+      "stream": "res://assets/audio/impact_wood_heavy.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_plank": {
+      "stream": "res://assets/audio/impact_plank.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_plate_light": {
+      "stream": "res://assets/audio/impact_plate_light.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_plate_medium": {
+      "stream": "res://assets/audio/impact_plate_medium.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_plate_heavy": {
+      "stream": "res://assets/audio/impact_plate_heavy.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:impact_tin": {
+      "stream": "res://assets/audio/impact_tin.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:chime_soft": {
+      "stream": "res://assets/audio/chime_soft.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:chime_bright": {
+      "stream": "res://assets/audio/chime_bright.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:shatter_light": {
+      "stream": "res://assets/audio/shatter_light.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:shatter_medium": {
+      "stream": "res://assets/audio/shatter_medium.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    },
+    "sfx:shatter_heavy": {
+      "stream": "res://assets/audio/shatter_heavy.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds"
+    }
+  }
+}

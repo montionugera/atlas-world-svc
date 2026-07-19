@@ -10,5 +10,29 @@
     "title": "Security hardening: server-authority, transport, client deterrence, anti-abuse",
     "created_at": "2026-07-10T17:55:49.477668+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-003",
+    "title": "Asset build pipeline: content registry + storybook + CC0 seed set",
+    "created_at": "2026-07-12T08:49:35.731912+00:00",
+    "promoted_to": "F-002"
+  },
+  {
+    "id": "I-004",
+    "title": "asset-forge: Blender\u2192game mob asset pipeline",
+    "created_at": "2026-07-15T14:37:40.820234+00:00",
+    "promoted_to": "F-003"
+  },
+  {
+    "id": "I-005",
+    "title": "storybook-performance: lazy audio + 3D lazy-mount/dispose + per-card asset sizes",
+    "created_at": "2026-07-17T19:06:06.365867+00:00",
+    "promoted_to": "F-004"
+  },
+  {
+    "id": "I-006",
+    "title": "Game content authoring pipeline (characters/story/maps)",
+    "created_at": "2026-07-19T09:57:07.325276+00:00",
+    "promoted_to": "F-005"
   }
 ]

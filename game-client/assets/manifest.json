@@ -1,0 +1,163 @@
+{
+  "version": 2,
+  "entries": {
+    "player": {
+      "scene": "res://assets/characters/player_knight.glb",
+      "source": "internal",
+      "license": "CC0",
+      "tier": "bespoke",
+      "kind": "character",
+      "anims": {
+        "idle": "Idle",
+        "walk": "Walking_A",
+        "run": "Running_A",
+        "attack": "1H_Melee_Attack_Slice_Diagonal",
+        "death": "Death_A"
+      }
+    },
+    "npc": {
+      "scene": "res://assets/characters/cleric.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:aggressive": {
+      "scene": "res://assets/characters/orc_brute.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:balanced": {
+      "scene": "res://assets/characters/skeleton_minion.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:defensive": {
+      "scene": "res://assets/characters/skeleton_golem.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:double_attacker": {
+      "scene": "res://assets/characters/skeleton_rogue.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:hybrid": {
+      "scene": "res://assets/characters/skeleton_mage.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:spear_thrower": {
+      "scene": "res://assets/characters/mob_spear_thrower.glb",
+      "source": "internal",
+      "license": "CC0",
+      "tier": "bespoke",
+      "kind": "character",
+      "anims": {
+        "idle": "Idle",
+        "walk": "Walking_A",
+        "run": "Running_A",
+        "attack": "Throw",
+        "death": "Death_A"
+      }
+    },
+    "projectile:arrow": {
+      "scene": "res://assets/vfx/projectile-arrow.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "projectile:spear": {
+      "scene": "res://assets/vfx/projectile-spear.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "projectile:magicSpear": {
+      "scene": "res://assets/vfx/projectile-spear.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "projectile:physicSpear": {
+      "scene": "res://assets/vfx/projectile-spear.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "projectile:melee": {
+      "scene": "res://assets/vfx/projectile-melee.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "projectile:smallMeelee": {
+      "scene": "res://assets/vfx/projectile-melee.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "projectile:largeMeelee": {
+      "scene": "res://assets/vfx/projectile-melee.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "zone:damage": {
+      "scene": "res://assets/vfx/zones/zone-damage.glb",
+      "source": "authored",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "zone:freeze": {
+      "scene": "res://assets/vfx/zones/zone-freeze.glb",
+      "source": "authored",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "zone:impulse_caster": {
+      "scene": "res://assets/vfx/zones/zone-impulse-caster.glb",
+      "source": "authored",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    },
+    "zone:stun": {
+      "scene": "res://assets/vfx/zones/zone-stun.glb",
+      "source": "authored",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "vfx",
+      "render": "model3d"
+    }
+  }
+}

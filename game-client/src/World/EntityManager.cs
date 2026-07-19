@@ -34,12 +34,17 @@ namespace AtlasWorld.Client.World
         public int Count => _views.Count;
         public string OwnPlayerId => _ownPlayerId;
 
-        public void Spawn(string id, EntityKind kind)
+        /// <param name="typeId">
+        /// The specific registry key (e.g. <c>mob:spear_thrower</c>) the view resolves its
+        /// visual node from. <paramref name="kind"/> stays the broad class used for pose
+        /// ground-height + the capsule fallback; only the visual node's SOURCE changes.
+        /// </param>
+        public void Spawn(string id, EntityKind kind, string typeId)
         {
             if (_views.ContainsKey(id))
                 return;
 
-            var view = new EntityView(kind);
+            var view = new EntityView(kind, typeId);
             AddChild(view.Root);
             _views[id] = view;
         }
@@ -162,12 +167,20 @@ namespace AtlasWorld.Client.World
                     {
                         (Vector3 opos, float ohead) = _ownSmoother.Step(newest, ageSec, (float)delta, _localMoveHeld);
                         kv.Value.ApplyPose(opos, ohead);
+                        // Animation gait reads the raw server velocity (not the smoothed
+                        // render pose delta) — same source dead reckoning itself extrapolates from.
+                        kv.Value.UpdateAnimation(newest.Vel);
                     }
                     continue;
                 }
 
                 if (_interp.TrySamplePose(kv.Key, delayedCursor, out Vector3 pos, out float heading))
                     kv.Value.ApplyPose(pos, heading);
+                // Animation state is driven from the newest RAW sample's velocity, independent
+                // of the delayed interpolation cursor used for position — gait should react to
+                // "is the server telling us this entity is moving right now", not the render lag.
+                if (_interp.TryGetNewest(kv.Key, now, out PoseSample newestRemote, out _))
+                    kv.Value.UpdateAnimation(newestRemote.Vel);
             }
 
             _interp.TickCleanup(now);

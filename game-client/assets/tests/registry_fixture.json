@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "entries": {
+    "mob:bespoke_hit": {
+      "scene": "res://assets/tests/fixture_scene.tscn",
+      "source": "commission",
+      "license": "proprietary",
+      "tier": "bespoke",
+      "kind": "character"
+    },
+    "mob:seed_hit": {
+      "scene": "res://assets/tests/fixture_scene.tscn",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "character"
+    },
+    "mob:broken_path": {
+      "scene": "res://assets/tests/does_not_exist.tscn",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "character"
+    }
+  }
+}

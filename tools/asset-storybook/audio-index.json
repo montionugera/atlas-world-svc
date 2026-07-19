@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-18T09:12:07.241Z",
+  "sourceDir": "game-client/assets/audio",
+  "files": [
+    {
+      "name": "chime_bright.ogg",
+      "bytes": 15577
+    },
+    {
+      "name": "chime_soft.ogg",
+      "bytes": 13915
+    },
+    {
+      "name": "chop.ogg",
+      "bytes": 9370
+    },
+    {
+      "name": "death.ogg",
+      "bytes": 6689
+    },
+    {
+      "name": "impact_flesh_heavy.ogg",
+      "bytes": 6570
+    },
+    {
+      "name": "impact_flesh_soft_alt.ogg",
+      "bytes": 5506
+    },
+    {
+      "name": "impact_flesh_soft.ogg",
+      "bytes": 5351
+    },
+    {
+      "name": "impact_light_alt.ogg",
+      "bytes": 5636
+    },
+    {
+      "name": "impact_light.ogg",
+      "bytes": 5827
+    },
+    {
+      "name": "impact_metal_heavy_alt.ogg",
+      "bytes": 7279
+    },
+    {
+      "name": "impact_metal_heavy.ogg",
+      "bytes": 6110
+    },
+    {
+      "name": "impact_metal_light_alt.ogg",
+      "bytes": 6967
+    },
+    {
+      "name": "impact_metal_light.ogg",
+      "bytes": 7651
+    },
+    {
+      "name": "impact_metal_medium_alt.ogg",
+      "bytes": 6151
+    },
+    {
+      "name": "impact_metal_medium.ogg",
+      "bytes": 7117
+    },
+    {
+      "name": "impact_plank.ogg",
+      "bytes": 12016
+    },
+    {
+      "name": "impact_plate_heavy.ogg",
+      "bytes": 10032
+    },
+    {
+      "name": "impact_plate_light.ogg",
+      "bytes": 10474
+    },
+    {
+      "name": "impact_plate_medium.ogg",
+      "bytes": 10921
+    },
+    {
+      "name": "impact_tin.ogg",
+      "bytes": 6509
+    },
+    {
+      "name": "impact_wood_heavy.ogg",
+      "bytes": 6233
+    },
+    {
+      "name": "impact_wood_light.ogg",
+      "bytes": 6343
+    },
+    {
+      "name": "impact_wood_medium.ogg",
+      "bytes": 6575
+    },
+    {
+      "name": "knifeSlice.ogg",
+      "bytes": 15532
+    },
+    {
+      "name": "punch_heavy_alt.ogg",
+      "bytes": 10861
+    },
+    {
+      "name": "punch_heavy.ogg",
+      "bytes": 11617
+    },
+    {
+      "name": "punch_medium_alt.ogg",
+      "bytes": 8701
+    },
+    {
+      "name": "punch_medium.ogg",
+      "bytes": 8800
+    },
+    {
+      "name": "shatter_heavy.ogg",
+      "bytes": 7403
+    },
+    {
+      "name": "shatter_light.ogg",
+      "bytes": 6526
+    },
+    {
+      "name": "shatter_medium.ogg",
+      "bytes": 8400
+    }
+  ]
+}

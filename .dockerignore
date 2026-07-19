@@ -1,0 +1,12 @@
+# Whitelist context for the server image build (context = repo root).
+# Everything is excluded except what the colyseus-server Dockerfile COPYs.
+*
+!pnpm-workspace.yaml
+!pnpm-lock.yaml
+!contracts/**
+!colyseus-server/**
+!nakama/package.json
+# never ship local installs into the context
+contracts/node_modules
+colyseus-server/node_modules
+colyseus-server/dist

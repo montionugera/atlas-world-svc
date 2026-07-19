@@ -1,0 +1,11 @@
+[gd_resource type="Theme" format=3]
+
+; Seed-tier placeholder Godot Theme resource (F-002 Phase 2 — theme render
+; type). Hand-authored minimal Theme so `theme:main_ui` has a real, non-empty
+; res:// scene file the drift gate can check-exists against. Intentionally
+; NOT parsed by the previewer (§3.1 / §8 Phase 2) — the storybook and gate
+; both treat `.tres` Theme resources as opaque and rely entirely on the
+; baked `preview` PNG (main_preview.png) for a visual, with staleness
+; enforced by guard (F) via `previewHashOf`.
+
+[resource]

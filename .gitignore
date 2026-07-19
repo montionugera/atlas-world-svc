@@ -99,7 +99,6 @@ temp/
 *.sqlite3
 
 # Docker
-.dockerignore
 
 # Nakama specific
 data/
