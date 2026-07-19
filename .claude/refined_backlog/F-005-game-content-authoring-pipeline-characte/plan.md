@@ -1,3 +1,3 @@
-# Game content authoring pipeline (characters/story/maps) Implementation Plan
+# F-005 — plan
 
-> Fill via `/superpowers:writing-plans` once the spec is final.
+Canonical plan: `docs/superpowers/plans/2026-07-19-content-pipeline.md` (on release/1.2).

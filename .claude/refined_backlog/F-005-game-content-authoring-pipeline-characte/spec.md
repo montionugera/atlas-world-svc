@@ -1,24 +1,3 @@
----
-title: "Game content authoring pipeline (characters/story/maps)"
-id: F-005
-from_idea: I-006
-status: refined
----
+# F-005 — spec
 
-# Game content authoring pipeline (characters/story/maps) — design
-
-## Goal
-
-(one sentence)
-
-## Architecture
-
-(2-3 sentences)
-
-## Components
-
-(list — each with one responsibility)
-
-## Data flow / state
-
-## Tests / acceptance criteria
+Canonical spec: `docs/superpowers/specs/2026-07-19-content-pipeline-design.md` (approved 2026-07-19, on release/1.2).
