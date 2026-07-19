@@ -28,5 +28,11 @@
     "title": "storybook-performance: lazy audio + 3D lazy-mount/dispose + per-card asset sizes",
     "created_at": "2026-07-17T19:06:06.365867+00:00",
     "promoted_to": "F-004"
+  },
+  {
+    "id": "I-006",
+    "title": "Game content authoring pipeline (characters/story/maps)",
+    "created_at": "2026-07-19T09:57:07.325276+00:00",
+    "promoted_to": null
   }
 ]
