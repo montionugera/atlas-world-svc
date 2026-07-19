@@ -142,4 +142,175 @@ cheap now, painful to reconstruct later.
 | `characters/cleric.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — Cleric.glb + 64 anim clips merged from Rig_Medium (Melee/Ranged/Bow/Magic/Movement) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:cleric` |
 | `characters/orc_brute.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — Orc Brute.glb + 64 anim clips merged from Rig_Medium (Melee/Ranged/Bow/Magic/Movement) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:orc_brute` |
 
+| `weapons/kk_arrow_a.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — arrow_A.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_arrow_a` |
+| `weapons/kk_arrow_b.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — arrow_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_arrow_b` |
+| `weapons/kk_arrow_c.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — arrow_C.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_arrow_c` |
+| `weapons/kk_axe_a.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — axe_A.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_axe_a` |
+| `weapons/kk_axe_b.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — axe_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_axe_b` |
+| `weapons/kk_axe_c.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — axe_C.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_axe_c` |
+| `weapons/kk_axe_d.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — axe_D.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_axe_d` |
+| `weapons/kk_bow_a.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — bow_A.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_bow_a` |
+| `weapons/kk_bow_a_withstring.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — bow_A_withString.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_bow_a_withstring` |
+| `weapons/kk_bow_b.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — bow_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_bow_b` |
+| `weapons/kk_bow_b_withstring.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — bow_B_withString.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_bow_b_withstring` |
+| `weapons/kk_bow_c.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — bow_C.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_bow_c` |
+| `weapons/kk_bow_c_withstring.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — bow_C_withString.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_bow_c_withstring` |
+| `weapons/kk_dagger_a.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — dagger_A.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_dagger_a` |
+| `weapons/kk_dagger_b.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — dagger_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_dagger_b` |
+| `weapons/kk_dagger_c.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — dagger_C.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_dagger_c` |
+| `weapons/kk_fistweapon_a.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — fistweapon_A.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_fistweapon_a` |
+| `weapons/kk_fistweapon_a_stacked.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — fistweapon_A_stacked.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_fistweapon_a_stacked` |
+| `weapons/kk_fistweapon_b.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — fistweapon_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_fistweapon_b` |
+| `weapons/kk_fistweapon_b_stacked.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — fistweapon_B_stacked.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_fistweapon_b_stacked` |
+| `weapons/kk_fistweapon_c_left.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — fistweapon_C_left.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_fistweapon_c_left` |
+| `weapons/kk_fistweapon_c_right.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — fistweapon_C_right.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_fistweapon_c_right` |
+| `weapons/kk_fistweapon_c_stacked.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — fistweapon_C_stacked.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_fistweapon_c_stacked` |
+| `weapons/kk_halberd.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — halberd.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_halberd` |
+| `weapons/kk_hammer_a.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — hammer_A.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_hammer_a` |
+| `weapons/kk_hammer_b.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — hammer_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_hammer_b` |
+| `weapons/kk_hammer_c.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — hammer_C.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_hammer_c` |
+| `weapons/kk_hammer_d.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — hammer_D.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_hammer_d` |
+| `weapons/kk_scythe.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — scythe.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_scythe` |
+| `weapons/kk_shield_a.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — shield_A.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_shield_a` |
+| `weapons/kk_shield_b.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — shield_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_shield_b` |
+| `weapons/kk_shield_c.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — shield_C.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_shield_c` |
+| `weapons/kk_shield_d.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — shield_D.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_shield_d` |
+| `weapons/kk_spear_a.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — spear_A.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_spear_a` |
+| `weapons/kk_spear_b.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — spear_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_spear_b` |
+| `weapons/kk_staff_a.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — staff_A.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_staff_a` |
+| `weapons/kk_staff_b.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — staff_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_staff_b` |
+| `weapons/kk_staff_c.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — staff_C.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_staff_c` |
+| `weapons/kk_staff_d.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — staff_D.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_staff_d` |
+| `weapons/kk_sword_a.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — sword_A.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_sword_a` |
+| `weapons/kk_sword_b.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — sword_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_sword_b` |
+| `weapons/kk_sword_c.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — sword_C.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_sword_c` |
+| `weapons/kk_sword_d.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — sword_D.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_sword_d` |
+| `weapons/kk_sword_e.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — sword_E.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_sword_e` |
+| `weapons/kk_sword_f.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — sword_F.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_sword_f` |
+| `weapons/kk_sword_g.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — sword_G.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_sword_g` |
+| `weapons/kk_wand_a.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — wand_A.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_wand_a` |
+| `weapons/kk_wand_b.glb` | market | KayKit Fantasy Weapons Bits 1.0 (Kay Lousberg) — wand_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `weapon:kk_wand_b` |
+
+| `dungeon/banner_blue.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — banner_blue.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:banner_blue` |
+| `dungeon/banner_patterna_white.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — banner_patternA_white.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:banner_patterna_white` |
+| `dungeon/banner_patternb_yellow.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — banner_patternB_yellow.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:banner_patternb_yellow` |
+| `dungeon/banner_red.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — banner_red.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:banner_red` |
+| `dungeon/banner_thin_blue.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — banner_thin_blue.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:banner_thin_blue` |
+| `dungeon/banner_triple_brown.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — banner_triple_brown.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:banner_triple_brown` |
+| `dungeon/bar_innercorner.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — bar_innercorner.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:bar_innercorner` |
+| `dungeon/bar_straight_c_short.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — bar_straight_C_short.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:bar_straight_c_short` |
+| `dungeon/barrier_column.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — barrier_column.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:barrier_column` |
+| `dungeon/bartop_b_medium.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — bartop_B_medium.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:bartop_b_medium` |
+| `dungeon/bed_decorated.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — bed_decorated.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:bed_decorated` |
+| `dungeon/bookcase_double.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — bookcase_double.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:bookcase_double` |
+| `dungeon/bottle_a_green.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — bottle_A_green.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:bottle_a_green` |
+| `dungeon/box_large.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — box_large.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:box_large` |
+| `dungeon/candle_melted.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — candle_melted.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:candle_melted` |
+| `dungeon/chest_gold.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — chest_gold.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:chest_gold` |
+| `dungeon/coin_stack_small.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — coin_stack_small.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:coin_stack_small` |
+| `dungeon/floor_dirt_large_rocky.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — floor_dirt_large_rocky.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:floor_dirt_large_rocky` |
+| `dungeon/floor_foundation_allsides.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — floor_foundation_allsides.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:floor_foundation_allsides` |
+| `dungeon/floor_tile_big_grate_open.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — floor_tile_big_grate_open.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:floor_tile_big_grate_open` |
+| `dungeon/floor_tile_large_rocks.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — floor_tile_large_rocks.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:floor_tile_large_rocks` |
+| `dungeon/floor_tile_small_weeds_b.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — floor_tile_small_weeds_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:floor_tile_small_weeds_b` |
+| `dungeon/key.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — key.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:key` |
+| `dungeon/pillar_decorated.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — pillar_decorated.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:pillar_decorated` |
+| `dungeon/rocks.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — rocks.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:rocks` |
+| `dungeon/scaffold_beam_wall.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — scaffold_beam_wall.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:scaffold_beam_wall` |
+| `dungeon/scaffold_pillar_wall_cross_top.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — scaffold_pillar_wall_cross_top.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:scaffold_pillar_wall_cross_top` |
+| `dungeon/shelves.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — shelves.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:shelves` |
+| `dungeon/stairs_modular_center.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — stairs_modular_center.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:stairs_modular_center` |
+| `dungeon/stairs_wide.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — stairs_wide.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:stairs_wide` |
+| `dungeon/sword_shield_gold.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — sword_shield_gold.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:sword_shield_gold` |
+| `dungeon/table_long_tablecloth_decorated_a.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — table_long_tablecloth_decorated_A.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:table_long_tablecloth_decorated_a` |
+| `dungeon/table_round_large.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — table_round_large.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:table_round_large` |
+| `dungeon/torch.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — torch.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:torch` |
+| `dungeon/trunk_medium_b.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — trunk_medium_B.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:trunk_medium_b` |
+| `dungeon/wall_tsplit_sloped.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — wall_Tsplit_sloped.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:wall_tsplit_sloped` |
+| `dungeon/wall_corner_gated.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — wall_corner_gated.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:wall_corner_gated` |
+| `dungeon/wall_doorway_scaffold.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — wall_doorway_scaffold.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:wall_doorway_scaffold` |
+| `dungeon/wall_inset.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — wall_inset.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:wall_inset` |
+| `dungeon/wall_pillar.glb` | market | KayKit Dungeon Pack (Kay Lousberg) — wall_pillar.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `dungeon:wall_pillar` |
+
+
+
+| `nature/bush_1_a_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Bush_1_A_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:bush_1_a_color1` |
+| `nature/bush_1_e_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Bush_1_E_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:bush_1_e_color1` |
+| `nature/bush_2_c_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Bush_2_C_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:bush_2_c_color1` |
+| `nature/bush_3_b_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Bush_3_B_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:bush_3_b_color1` |
+| `nature/bush_4_d_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Bush_4_D_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:bush_4_d_color1` |
+| `nature/grass_1_b_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Grass_1_B_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:grass_1_b_color1` |
+| `nature/grass_1_d_singlesided_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Grass_1_D_Singlesided_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:grass_1_d_singlesided_color1` |
+| `nature/grass_2_c_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Grass_2_C_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:grass_2_c_color1` |
+| `nature/hill_12x12x4_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Hill_12x12x4_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:hill_12x12x4_color1` |
+| `nature/hill_2x2x2_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Hill_2x2x2_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:hill_2x2x2_color1` |
+| `nature/hill_4x2x8_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Hill_4x2x8_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:hill_4x2x8_color1` |
+| `nature/hill_8x4x4_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Hill_8x4x4_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:hill_8x4x4_color1` |
+| `nature/hill_cliff_a_innercorner_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Hill_Cliff_A_InnerCorner_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:hill_cliff_a_innercorner_color1` |
+| `nature/hill_cliff_d_side_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Hill_Cliff_D_Side_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:hill_cliff_d_side_color1` |
+| `nature/hill_cliff_h_side_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Hill_Cliff_H_Side_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:hill_cliff_h_side_color1` |
+| `nature/hill_cliff_tall_b_side_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Hill_Cliff_Tall_B_Side_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:hill_cliff_tall_b_side_color1` |
+| `nature/hill_cliff_tall_f_side_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Hill_Cliff_Tall_F_Side_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:hill_cliff_tall_f_side_color1` |
+| `nature/hill_cliff_tall_i_outercorner_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Hill_Cliff_Tall_I_OuterCorner_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:hill_cliff_tall_i_outercorner_color1` |
+| `nature/hill_top_c_outercorner_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Hill_Top_C_OuterCorner_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:hill_top_c_outercorner_color1` |
+| `nature/hill_top_g_innercorner_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Hill_Top_G_InnerCorner_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:hill_top_g_innercorner_color1` |
+| `nature/rock_1_a_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_1_A_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_1_a_color1` |
+| `nature/rock_1_e_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_1_E_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_1_e_color1` |
+| `nature/rock_1_j_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_1_J_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_1_j_color1` |
+| `nature/rock_1_o_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_1_O_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_1_o_color1` |
+| `nature/rock_2_c_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_2_C_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_2_c_color1` |
+| `nature/rock_2_h_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_2_H_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_2_h_color1` |
+| `nature/rock_3_e_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_3_E_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_3_e_color1` |
+| `nature/rock_3_j_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_3_J_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_3_j_color1` |
+| `nature/rock_3_o_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_3_O_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_3_o_color1` |
+| `nature/rock_4_b_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_4_B_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_4_b_color1` |
+| `nature/rock_4_g_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_4_G_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_4_g_color1` |
+| `nature/rock_5_d_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_5_D_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_5_d_color1` |
+| `nature/rock_6_a_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_6_A_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_6_a_color1` |
+| `nature/rock_6_f_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Rock_6_F_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:rock_6_f_color1` |
+| `nature/tree_1_c_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Tree_1_C_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:tree_1_c_color1` |
+| `nature/tree_2_e_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Tree_2_E_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:tree_2_e_color1` |
+| `nature/tree_4_b_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Tree_4_B_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:tree_4_b_color1` |
+| `nature/tree_5_d_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Tree_5_D_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:tree_5_d_color1` |
+| `nature/tree_6_c_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Tree_6_C_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:tree_6_c_color1` |
+| `nature/tree_bare_1_b_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Tree_Bare_1_B_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:tree_bare_1_b_color1` |
+
+| `characters/4gtn.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — 4gtn + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:4gtn` |
+| `characters/4gtn_forgotten.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — 4gtn_forgotten + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:4gtn_forgotten` |
+| `characters/animatronic_creepy.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — animatronic_creepy + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:animatronic_creepy` |
+| `characters/animatronic_normal.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — animatronic_normal + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:animatronic_normal` |
+| `characters/avianswordsman.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — avianswordsman + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:avianswordsman` |
+| `characters/blackknight.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — blackknight + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:blackknight` |
+| `characters/caveman.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — caveman + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:caveman` |
+| `characters/clanker.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — clanker + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:clanker` |
+| `characters/clown.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — clown + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:clown` |
+| `characters/combatmech.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — combatmech + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:combatmech` |
+| `characters/farmer_a.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — farmer_a + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:farmer_a` |
+| `characters/farmer_b.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — farmer_b + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:farmer_b` |
+| `characters/frostgolem.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — frostgolem + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:frostgolem` |
+| `characters/helper_a.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — helper_a + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:helper_a` |
+| `characters/helper_b.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — helper_b + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:helper_b` |
+| `characters/hiker.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — hiker + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:hiker` |
+| `characters/hoarder.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — hoarder + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:hoarder` |
+| `characters/magicalgirl.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — magicalgirl + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:magicalgirl` |
+| `characters/monstrosity.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — monstrosity + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:monstrosity` |
+| `characters/necromancer.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — necromancer + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:necromancer` |
+| `characters/paladin.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — paladin + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:paladin` |
+| `characters/paladin_with_helmet.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — paladin_with_helmet + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:paladin_with_helmet` |
+| `characters/plantwarrior.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — plantwarrior + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:plantwarrior` |
+| `characters/protagonist_a.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — protagonist_a + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:protagonist_a` |
+| `characters/protagonist_b.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — protagonist_b + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:protagonist_b` |
+| `characters/robot_one.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — robot_one + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:robot_one` |
+| `characters/robot_two.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — robot_two + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:robot_two` |
+| `characters/skeleton_golem.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — skeleton_golem + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:skeleton_golem` |
+| `characters/skeleton_mage.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — skeleton_mage + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:skeleton_mage` |
+| `characters/skeleton_minion.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — skeleton_minion + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:skeleton_minion` |
+| `characters/skeleton_rogue.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — skeleton_rogue + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:skeleton_rogue` |
+| `characters/skeleton_warrior.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — skeleton_warrior + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:skeleton_warrior` |
+| `characters/superhero.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — superhero + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:superhero` |
+| `characters/toysoldier.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — toysoldier + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:toysoldier` |
+| `characters/vampire.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — vampire + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:vampire` |
+| `characters/werewolf_man.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — werewolf_man + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:werewolf_man` |
+| `characters/werewolf_wolf.glb` | market | KayKit Complete Collection v6.1 (Kay Lousberg) — werewolf_wolf + 64 anim clips (Rig_Medium) | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `character:werewolf_wolf` |
+
 <!-- Source ∈ ai | market | commission. License must be commercial-safe (prefer CC0). -->

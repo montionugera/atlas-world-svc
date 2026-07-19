@@ -707,6 +707,1491 @@
       "license": "CC0",
       "tier": "seed",
       "label": "Orc Brute (KayKit — enemy)"
+    },
+    "weapon:kk_arrow_a": {
+      "scene": "res://assets/weapons/kk_arrow_a.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "arrow A"
+    },
+    "weapon:kk_arrow_b": {
+      "scene": "res://assets/weapons/kk_arrow_b.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "arrow B"
+    },
+    "weapon:kk_arrow_c": {
+      "scene": "res://assets/weapons/kk_arrow_c.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "arrow C"
+    },
+    "weapon:kk_axe_a": {
+      "scene": "res://assets/weapons/kk_axe_a.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "axe A"
+    },
+    "weapon:kk_axe_b": {
+      "scene": "res://assets/weapons/kk_axe_b.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "axe B"
+    },
+    "weapon:kk_axe_c": {
+      "scene": "res://assets/weapons/kk_axe_c.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "axe C"
+    },
+    "weapon:kk_axe_d": {
+      "scene": "res://assets/weapons/kk_axe_d.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "axe D"
+    },
+    "weapon:kk_bow_a": {
+      "scene": "res://assets/weapons/kk_bow_a.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bow A"
+    },
+    "weapon:kk_bow_a_withstring": {
+      "scene": "res://assets/weapons/kk_bow_a_withstring.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bow A withString"
+    },
+    "weapon:kk_bow_b": {
+      "scene": "res://assets/weapons/kk_bow_b.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bow B"
+    },
+    "weapon:kk_bow_b_withstring": {
+      "scene": "res://assets/weapons/kk_bow_b_withstring.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bow B withString"
+    },
+    "weapon:kk_bow_c": {
+      "scene": "res://assets/weapons/kk_bow_c.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bow C"
+    },
+    "weapon:kk_bow_c_withstring": {
+      "scene": "res://assets/weapons/kk_bow_c_withstring.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bow C withString"
+    },
+    "weapon:kk_dagger_a": {
+      "scene": "res://assets/weapons/kk_dagger_a.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "dagger A"
+    },
+    "weapon:kk_dagger_b": {
+      "scene": "res://assets/weapons/kk_dagger_b.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "dagger B"
+    },
+    "weapon:kk_dagger_c": {
+      "scene": "res://assets/weapons/kk_dagger_c.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "dagger C"
+    },
+    "weapon:kk_fistweapon_a": {
+      "scene": "res://assets/weapons/kk_fistweapon_a.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "fistweapon A"
+    },
+    "weapon:kk_fistweapon_a_stacked": {
+      "scene": "res://assets/weapons/kk_fistweapon_a_stacked.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "fistweapon A stacked"
+    },
+    "weapon:kk_fistweapon_b": {
+      "scene": "res://assets/weapons/kk_fistweapon_b.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "fistweapon B"
+    },
+    "weapon:kk_fistweapon_b_stacked": {
+      "scene": "res://assets/weapons/kk_fistweapon_b_stacked.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "fistweapon B stacked"
+    },
+    "weapon:kk_fistweapon_c_left": {
+      "scene": "res://assets/weapons/kk_fistweapon_c_left.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "fistweapon C left"
+    },
+    "weapon:kk_fistweapon_c_right": {
+      "scene": "res://assets/weapons/kk_fistweapon_c_right.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "fistweapon C right"
+    },
+    "weapon:kk_fistweapon_c_stacked": {
+      "scene": "res://assets/weapons/kk_fistweapon_c_stacked.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "fistweapon C stacked"
+    },
+    "weapon:kk_halberd": {
+      "scene": "res://assets/weapons/kk_halberd.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "halberd"
+    },
+    "weapon:kk_hammer_a": {
+      "scene": "res://assets/weapons/kk_hammer_a.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "hammer A"
+    },
+    "weapon:kk_hammer_b": {
+      "scene": "res://assets/weapons/kk_hammer_b.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "hammer B"
+    },
+    "weapon:kk_hammer_c": {
+      "scene": "res://assets/weapons/kk_hammer_c.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "hammer C"
+    },
+    "weapon:kk_hammer_d": {
+      "scene": "res://assets/weapons/kk_hammer_d.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "hammer D"
+    },
+    "weapon:kk_scythe": {
+      "scene": "res://assets/weapons/kk_scythe.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scythe"
+    },
+    "weapon:kk_shield_a": {
+      "scene": "res://assets/weapons/kk_shield_a.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "shield A"
+    },
+    "weapon:kk_shield_b": {
+      "scene": "res://assets/weapons/kk_shield_b.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "shield B"
+    },
+    "weapon:kk_shield_c": {
+      "scene": "res://assets/weapons/kk_shield_c.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "shield C"
+    },
+    "weapon:kk_shield_d": {
+      "scene": "res://assets/weapons/kk_shield_d.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "shield D"
+    },
+    "weapon:kk_spear_a": {
+      "scene": "res://assets/weapons/kk_spear_a.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "spear A"
+    },
+    "weapon:kk_spear_b": {
+      "scene": "res://assets/weapons/kk_spear_b.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "spear B"
+    },
+    "weapon:kk_staff_a": {
+      "scene": "res://assets/weapons/kk_staff_a.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "staff A"
+    },
+    "weapon:kk_staff_b": {
+      "scene": "res://assets/weapons/kk_staff_b.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "staff B"
+    },
+    "weapon:kk_staff_c": {
+      "scene": "res://assets/weapons/kk_staff_c.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "staff C"
+    },
+    "weapon:kk_staff_d": {
+      "scene": "res://assets/weapons/kk_staff_d.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "staff D"
+    },
+    "weapon:kk_sword_a": {
+      "scene": "res://assets/weapons/kk_sword_a.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "sword A"
+    },
+    "weapon:kk_sword_b": {
+      "scene": "res://assets/weapons/kk_sword_b.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "sword B"
+    },
+    "weapon:kk_sword_c": {
+      "scene": "res://assets/weapons/kk_sword_c.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "sword C"
+    },
+    "weapon:kk_sword_d": {
+      "scene": "res://assets/weapons/kk_sword_d.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "sword D"
+    },
+    "weapon:kk_sword_e": {
+      "scene": "res://assets/weapons/kk_sword_e.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "sword E"
+    },
+    "weapon:kk_sword_f": {
+      "scene": "res://assets/weapons/kk_sword_f.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "sword F"
+    },
+    "weapon:kk_sword_g": {
+      "scene": "res://assets/weapons/kk_sword_g.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "sword G"
+    },
+    "weapon:kk_wand_a": {
+      "scene": "res://assets/weapons/kk_wand_a.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wand A"
+    },
+    "weapon:kk_wand_b": {
+      "scene": "res://assets/weapons/kk_wand_b.glb",
+      "render": "model3d",
+      "kind": "weapon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wand B"
+    },
+    "dungeon:banner_blue": {
+      "scene": "res://assets/dungeon/banner_blue.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner blue"
+    },
+    "dungeon:banner_patterna_white": {
+      "scene": "res://assets/dungeon/banner_patterna_white.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternA white"
+    },
+    "dungeon:banner_patternb_yellow": {
+      "scene": "res://assets/dungeon/banner_patternb_yellow.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner patternB yellow"
+    },
+    "dungeon:banner_red": {
+      "scene": "res://assets/dungeon/banner_red.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner red"
+    },
+    "dungeon:banner_thin_blue": {
+      "scene": "res://assets/dungeon/banner_thin_blue.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner thin blue"
+    },
+    "dungeon:banner_triple_brown": {
+      "scene": "res://assets/dungeon/banner_triple_brown.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "banner triple brown"
+    },
+    "dungeon:bar_innercorner": {
+      "scene": "res://assets/dungeon/bar_innercorner.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bar innercorner"
+    },
+    "dungeon:bar_straight_c_short": {
+      "scene": "res://assets/dungeon/bar_straight_c_short.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bar straight C short"
+    },
+    "dungeon:barrier_column": {
+      "scene": "res://assets/dungeon/barrier_column.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "barrier column"
+    },
+    "dungeon:bartop_b_medium": {
+      "scene": "res://assets/dungeon/bartop_b_medium.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bartop B medium"
+    },
+    "dungeon:bed_decorated": {
+      "scene": "res://assets/dungeon/bed_decorated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bed decorated"
+    },
+    "dungeon:bookcase_double": {
+      "scene": "res://assets/dungeon/bookcase_double.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bookcase double"
+    },
+    "dungeon:bottle_a_green": {
+      "scene": "res://assets/dungeon/bottle_a_green.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "bottle A green"
+    },
+    "dungeon:box_large": {
+      "scene": "res://assets/dungeon/box_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "box large"
+    },
+    "dungeon:candle_melted": {
+      "scene": "res://assets/dungeon/candle_melted.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "candle melted"
+    },
+    "dungeon:chest_gold": {
+      "scene": "res://assets/dungeon/chest_gold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "chest gold"
+    },
+    "dungeon:coin_stack_small": {
+      "scene": "res://assets/dungeon/coin_stack_small.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "coin stack small"
+    },
+    "dungeon:floor_dirt_large_rocky": {
+      "scene": "res://assets/dungeon/floor_dirt_large_rocky.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor dirt large rocky"
+    },
+    "dungeon:floor_foundation_allsides": {
+      "scene": "res://assets/dungeon/floor_foundation_allsides.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor foundation allsides"
+    },
+    "dungeon:floor_tile_big_grate_open": {
+      "scene": "res://assets/dungeon/floor_tile_big_grate_open.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile big grate open"
+    },
+    "dungeon:floor_tile_large_rocks": {
+      "scene": "res://assets/dungeon/floor_tile_large_rocks.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile large rocks"
+    },
+    "dungeon:floor_tile_small_weeds_b": {
+      "scene": "res://assets/dungeon/floor_tile_small_weeds_b.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "floor tile small weeds B"
+    },
+    "dungeon:key": {
+      "scene": "res://assets/dungeon/key.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "key"
+    },
+    "dungeon:pillar_decorated": {
+      "scene": "res://assets/dungeon/pillar_decorated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "pillar decorated"
+    },
+    "dungeon:rocks": {
+      "scene": "res://assets/dungeon/rocks.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "rocks"
+    },
+    "dungeon:scaffold_beam_wall": {
+      "scene": "res://assets/dungeon/scaffold_beam_wall.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scaffold beam wall"
+    },
+    "dungeon:scaffold_pillar_wall_cross_top": {
+      "scene": "res://assets/dungeon/scaffold_pillar_wall_cross_top.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "scaffold pillar wall cross top"
+    },
+    "dungeon:shelves": {
+      "scene": "res://assets/dungeon/shelves.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "shelves"
+    },
+    "dungeon:stairs_modular_center": {
+      "scene": "res://assets/dungeon/stairs_modular_center.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs modular center"
+    },
+    "dungeon:stairs_wide": {
+      "scene": "res://assets/dungeon/stairs_wide.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "stairs wide"
+    },
+    "dungeon:sword_shield_gold": {
+      "scene": "res://assets/dungeon/sword_shield_gold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "sword shield gold"
+    },
+    "dungeon:table_long_tablecloth_decorated_a": {
+      "scene": "res://assets/dungeon/table_long_tablecloth_decorated_a.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table long tablecloth decorated A"
+    },
+    "dungeon:table_round_large": {
+      "scene": "res://assets/dungeon/table_round_large.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "table round large"
+    },
+    "dungeon:torch": {
+      "scene": "res://assets/dungeon/torch.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "torch"
+    },
+    "dungeon:trunk_medium_b": {
+      "scene": "res://assets/dungeon/trunk_medium_b.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "trunk medium B"
+    },
+    "dungeon:wall_tsplit_sloped": {
+      "scene": "res://assets/dungeon/wall_tsplit_sloped.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall Tsplit sloped"
+    },
+    "dungeon:wall_corner_gated": {
+      "scene": "res://assets/dungeon/wall_corner_gated.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall corner gated"
+    },
+    "dungeon:wall_doorway_scaffold": {
+      "scene": "res://assets/dungeon/wall_doorway_scaffold.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall doorway scaffold"
+    },
+    "dungeon:wall_inset": {
+      "scene": "res://assets/dungeon/wall_inset.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall inset"
+    },
+    "dungeon:wall_pillar": {
+      "scene": "res://assets/dungeon/wall_pillar.glb",
+      "render": "model3d",
+      "kind": "dungeon",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "wall pillar"
+    },
+    "nature:bush_1_a_color1": {
+      "scene": "res://assets/nature/bush_1_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 1 A Color1"
+    },
+    "nature:bush_1_e_color1": {
+      "scene": "res://assets/nature/bush_1_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 1 E Color1"
+    },
+    "nature:bush_2_c_color1": {
+      "scene": "res://assets/nature/bush_2_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 2 C Color1"
+    },
+    "nature:bush_3_b_color1": {
+      "scene": "res://assets/nature/bush_3_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 3 B Color1"
+    },
+    "nature:bush_4_d_color1": {
+      "scene": "res://assets/nature/bush_4_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Bush 4 D Color1"
+    },
+    "nature:grass_1_b_color1": {
+      "scene": "res://assets/nature/grass_1_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 1 B Color1"
+    },
+    "nature:grass_1_d_singlesided_color1": {
+      "scene": "res://assets/nature/grass_1_d_singlesided_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 1 D Singlesided Color1"
+    },
+    "nature:grass_2_c_color1": {
+      "scene": "res://assets/nature/grass_2_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Grass 2 C Color1"
+    },
+    "nature:hill_12x12x4_color1": {
+      "scene": "res://assets/nature/hill_12x12x4_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 12x12x4 Color1"
+    },
+    "nature:hill_2x2x2_color1": {
+      "scene": "res://assets/nature/hill_2x2x2_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 2x2x2 Color1"
+    },
+    "nature:hill_4x2x8_color1": {
+      "scene": "res://assets/nature/hill_4x2x8_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 4x2x8 Color1"
+    },
+    "nature:hill_8x4x4_color1": {
+      "scene": "res://assets/nature/hill_8x4x4_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill 8x4x4 Color1"
+    },
+    "nature:hill_cliff_a_innercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_a_innercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff A InnerCorner Color1"
+    },
+    "nature:hill_cliff_d_side_color1": {
+      "scene": "res://assets/nature/hill_cliff_d_side_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff D Side Color1"
+    },
+    "nature:hill_cliff_h_side_color1": {
+      "scene": "res://assets/nature/hill_cliff_h_side_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff H Side Color1"
+    },
+    "nature:hill_cliff_tall_b_side_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_b_side_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall B Side Color1"
+    },
+    "nature:hill_cliff_tall_f_side_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_f_side_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall F Side Color1"
+    },
+    "nature:hill_cliff_tall_i_outercorner_color1": {
+      "scene": "res://assets/nature/hill_cliff_tall_i_outercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Cliff Tall I OuterCorner Color1"
+    },
+    "nature:hill_top_c_outercorner_color1": {
+      "scene": "res://assets/nature/hill_top_c_outercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top C OuterCorner Color1"
+    },
+    "nature:hill_top_g_innercorner_color1": {
+      "scene": "res://assets/nature/hill_top_g_innercorner_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hill Top G InnerCorner Color1"
+    },
+    "nature:rock_1_a_color1": {
+      "scene": "res://assets/nature/rock_1_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 A Color1"
+    },
+    "nature:rock_1_e_color1": {
+      "scene": "res://assets/nature/rock_1_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 E Color1"
+    },
+    "nature:rock_1_j_color1": {
+      "scene": "res://assets/nature/rock_1_j_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 J Color1"
+    },
+    "nature:rock_1_o_color1": {
+      "scene": "res://assets/nature/rock_1_o_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 1 O Color1"
+    },
+    "nature:rock_2_c_color1": {
+      "scene": "res://assets/nature/rock_2_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 2 C Color1"
+    },
+    "nature:rock_2_h_color1": {
+      "scene": "res://assets/nature/rock_2_h_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 2 H Color1"
+    },
+    "nature:rock_3_e_color1": {
+      "scene": "res://assets/nature/rock_3_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 E Color1"
+    },
+    "nature:rock_3_j_color1": {
+      "scene": "res://assets/nature/rock_3_j_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 J Color1"
+    },
+    "nature:rock_3_o_color1": {
+      "scene": "res://assets/nature/rock_3_o_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 3 O Color1"
+    },
+    "nature:rock_4_b_color1": {
+      "scene": "res://assets/nature/rock_4_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 4 B Color1"
+    },
+    "nature:rock_4_g_color1": {
+      "scene": "res://assets/nature/rock_4_g_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 4 G Color1"
+    },
+    "nature:rock_5_d_color1": {
+      "scene": "res://assets/nature/rock_5_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 5 D Color1"
+    },
+    "nature:rock_6_a_color1": {
+      "scene": "res://assets/nature/rock_6_a_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 6 A Color1"
+    },
+    "nature:rock_6_f_color1": {
+      "scene": "res://assets/nature/rock_6_f_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Rock 6 F Color1"
+    },
+    "nature:tree_1_c_color1": {
+      "scene": "res://assets/nature/tree_1_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 1 C Color1"
+    },
+    "nature:tree_2_e_color1": {
+      "scene": "res://assets/nature/tree_2_e_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 2 E Color1"
+    },
+    "nature:tree_4_b_color1": {
+      "scene": "res://assets/nature/tree_4_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 4 B Color1"
+    },
+    "nature:tree_5_d_color1": {
+      "scene": "res://assets/nature/tree_5_d_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 5 D Color1"
+    },
+    "nature:tree_6_c_color1": {
+      "scene": "res://assets/nature/tree_6_c_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree 6 C Color1"
+    },
+    "nature:tree_bare_1_b_color1": {
+      "scene": "res://assets/nature/tree_bare_1_b_color1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Tree Bare 1 B Color1"
+    },
+    "character:4gtn": {
+      "scene": "res://assets/characters/4gtn.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "4gtn (KayKit)"
+    },
+    "character:4gtn_forgotten": {
+      "scene": "res://assets/characters/4gtn_forgotten.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "4gtn Forgotten (KayKit)"
+    },
+    "character:animatronic_creepy": {
+      "scene": "res://assets/characters/animatronic_creepy.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Animatronic Creepy (KayKit)"
+    },
+    "character:animatronic_normal": {
+      "scene": "res://assets/characters/animatronic_normal.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Animatronic Normal (KayKit)"
+    },
+    "character:avianswordsman": {
+      "scene": "res://assets/characters/avianswordsman.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Avianswordsman (KayKit)"
+    },
+    "character:blackknight": {
+      "scene": "res://assets/characters/blackknight.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Blackknight (KayKit)"
+    },
+    "character:caveman": {
+      "scene": "res://assets/characters/caveman.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Caveman (KayKit)"
+    },
+    "character:clanker": {
+      "scene": "res://assets/characters/clanker.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Clanker (KayKit)"
+    },
+    "character:clown": {
+      "scene": "res://assets/characters/clown.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Clown (KayKit)"
+    },
+    "character:combatmech": {
+      "scene": "res://assets/characters/combatmech.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Combatmech (KayKit)"
+    },
+    "character:farmer_a": {
+      "scene": "res://assets/characters/farmer_a.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Farmer A (KayKit)"
+    },
+    "character:farmer_b": {
+      "scene": "res://assets/characters/farmer_b.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Farmer B (KayKit)"
+    },
+    "character:frostgolem": {
+      "scene": "res://assets/characters/frostgolem.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Frostgolem (KayKit)"
+    },
+    "character:helper_a": {
+      "scene": "res://assets/characters/helper_a.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Helper A (KayKit)"
+    },
+    "character:helper_b": {
+      "scene": "res://assets/characters/helper_b.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Helper B (KayKit)"
+    },
+    "character:hiker": {
+      "scene": "res://assets/characters/hiker.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hiker (KayKit)"
+    },
+    "character:hoarder": {
+      "scene": "res://assets/characters/hoarder.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Hoarder (KayKit)"
+    },
+    "character:magicalgirl": {
+      "scene": "res://assets/characters/magicalgirl.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Magicalgirl (KayKit)"
+    },
+    "character:monstrosity": {
+      "scene": "res://assets/characters/monstrosity.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Monstrosity (KayKit)"
+    },
+    "character:necromancer": {
+      "scene": "res://assets/characters/necromancer.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Necromancer (KayKit)"
+    },
+    "character:paladin": {
+      "scene": "res://assets/characters/paladin.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Paladin (KayKit)"
+    },
+    "character:paladin_with_helmet": {
+      "scene": "res://assets/characters/paladin_with_helmet.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Paladin With Helmet (KayKit)"
+    },
+    "character:plantwarrior": {
+      "scene": "res://assets/characters/plantwarrior.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Plantwarrior (KayKit)"
+    },
+    "character:protagonist_a": {
+      "scene": "res://assets/characters/protagonist_a.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Protagonist A (KayKit)"
+    },
+    "character:protagonist_b": {
+      "scene": "res://assets/characters/protagonist_b.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Protagonist B (KayKit)"
+    },
+    "character:robot_one": {
+      "scene": "res://assets/characters/robot_one.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Robot One (KayKit)"
+    },
+    "character:robot_two": {
+      "scene": "res://assets/characters/robot_two.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Robot Two (KayKit)"
+    },
+    "character:skeleton_golem": {
+      "scene": "res://assets/characters/skeleton_golem.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Skeleton Golem (KayKit)"
+    },
+    "character:skeleton_mage": {
+      "scene": "res://assets/characters/skeleton_mage.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Skeleton Mage (KayKit)"
+    },
+    "character:skeleton_minion": {
+      "scene": "res://assets/characters/skeleton_minion.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Skeleton Minion (KayKit)"
+    },
+    "character:skeleton_rogue": {
+      "scene": "res://assets/characters/skeleton_rogue.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Skeleton Rogue (KayKit)"
+    },
+    "character:skeleton_warrior": {
+      "scene": "res://assets/characters/skeleton_warrior.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Skeleton Warrior (KayKit)"
+    },
+    "character:superhero": {
+      "scene": "res://assets/characters/superhero.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Superhero (KayKit)"
+    },
+    "character:toysoldier": {
+      "scene": "res://assets/characters/toysoldier.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Toysoldier (KayKit)"
+    },
+    "character:vampire": {
+      "scene": "res://assets/characters/vampire.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Vampire (KayKit)"
+    },
+    "character:werewolf_man": {
+      "scene": "res://assets/characters/werewolf_man.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Werewolf Man (KayKit)"
+    },
+    "character:werewolf_wolf": {
+      "scene": "res://assets/characters/werewolf_wolf.glb",
+      "render": "model3d",
+      "kind": "character",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "label": "Werewolf Wolf (KayKit)"
     }
   }
 }
