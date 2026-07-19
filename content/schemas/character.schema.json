@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas character sheet frontmatter",
+  "type": "object",
+  "required": ["id", "assetKey", "name", "role", "status", "tier", "stats", "links"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "assetKey": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "role": { "enum": ["enemy", "boss", "npc", "player-skin"] },
+    "status": { "enum": ["concept", "forged", "shipped"] },
+    "tier": { "enum": ["seed", "bespoke"] },
+    "stats": {
+      "type": "object",
+      "required": ["archetype", "durability", "speed", "threat"],
+      "additionalProperties": false,
+      "properties": {
+        "archetype": { "enum": ["bruiser", "skirmisher", "tank", "caster", "support"] },
+        "durability": { "enum": ["low", "mid", "high"] },
+        "speed": { "enum": ["low", "mid", "high"] },
+        "threat": { "enum": ["melee", "ranged", "zone"] }
+      }
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "story": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

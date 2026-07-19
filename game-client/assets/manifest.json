@@ -58,11 +58,18 @@
       "kind": "character"
     },
     "mob:spear_thrower": {
-      "scene": "res://assets/characters/skeleton_warrior.glb",
-      "source": "market",
+      "scene": "res://assets/characters/mob_spear_thrower.glb",
+      "source": "internal",
       "license": "CC0",
-      "tier": "seed",
-      "kind": "character"
+      "tier": "bespoke",
+      "kind": "character",
+      "anims": {
+        "idle": "Idle",
+        "walk": "Walking_A",
+        "run": "Running_A",
+        "attack": "Throw",
+        "death": "Death_A"
+      }
     },
     "projectile:arrow": {
       "scene": "res://assets/vfx/projectile-arrow.glb",
