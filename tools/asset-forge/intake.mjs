@@ -41,7 +41,9 @@ import {
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { NodeIO } from "@gltf-transform/core";
 import { validateGlb, loadConfig } from "./validate.mjs";
+import { normalizeRigidTranslations } from "./lib/normalize-anim.mjs";
 import {
   repoRoot,
   writeManifestAtomic,
@@ -177,6 +179,27 @@ export async function intake(glbPath, opts = {}) {
   mkdirSync(charactersDir, { recursive: true });
   copyFileSync(glbPath, destPath);
   actions.push(`copy: ${glbPath} -> ${destPath}`);
+
+  // 3b. Normalize rigid-skeleton animations. Oversized donor rigs (some KayKit
+  //     "Complete Pack" bodies) ship clips carrying a mismatched skeleton's
+  //     bone translations, which crush the model on playback. Strip the
+  //     offending non-root translation tracks in place; a no-op on correctly
+  //     authored rigs. See lib/normalize-anim.mjs.
+  try {
+    const io = new NodeIO().setStrictResources(false);
+    const doc = await io.read(destPath);
+    const rep = normalizeRigidTranslations(doc);
+    if (rep.removedChannels > 0) {
+      await io.write(destPath, doc);
+      actions.push(
+        `normalize: pinned ${rep.pinnedBones.length} crushing bones ` +
+          `(${rep.removedChannels} channels) to rest`,
+      );
+    }
+  } catch (err) {
+    rollback();
+    return { ok: false, actions, failures: [`normalize: ${err.message}`] };
+  }
 
   try {
     writeManifestAtomic(manifestPath, manifest);

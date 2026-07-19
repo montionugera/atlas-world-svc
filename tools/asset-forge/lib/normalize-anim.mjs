@@ -121,15 +121,19 @@ export function normalizeRigidTranslations(doc, opts = {}) {
 }
 
 /**
- * Report-only detection (no mutation) for validation gates.
+ * Report-only detection (no mutation) for validation gates. Applies the same
+ * systemic-crush gate as {@link normalizeRigidTranslations}: returns [] unless
+ * the whole limb+spine chain is offset (so it never flags the few peripheral
+ * frame-0 translations a correctly-authored rig legitimately carries).
  * @param {import('@gltf-transform/core').Document} doc
  * @param {{threshold?: number}} [opts]
- * @returns {{bone: string, clip: string, drift: number}[]} worst offender per bone
+ * @returns {{bone: string, drift: number}[]} worst offender per bone, desc drift
  */
 export function detectCrushingTranslations(doc, opts = {}) {
   const threshold = opts.threshold ?? DEFAULT_THRESHOLD;
   const roots = rootJoints(doc);
-  const worst = new Map(); // bone -> {bone, clip, drift}
+  const worst = new Map(); // bone -> drift
+  const coreBones = new Set();
   for (const anim of doc.getRoot().listAnimations()) {
     for (const ch of anim.listChannels()) {
       if (ch.getTargetPath() !== "translation") continue;
@@ -140,13 +144,14 @@ export function detectCrushingTranslations(doc, opts = {}) {
       const drift = restDeviation(sampler, node.getTranslation());
       if (drift <= threshold) continue;
       const name = node.getName();
-      const prev = worst.get(name);
-      if (!prev || drift > prev.drift) {
-        worst.set(name, { bone: name, clip: anim.getName(), drift });
-      }
+      if (!NON_CORE_BONE.test(name)) coreBones.add(name);
+      if (drift > (worst.get(name) ?? 0)) worst.set(name, drift);
     }
   }
-  return [...worst.values()].sort((a, b) => b.drift - a.drift);
+  if (coreBones.size < MIN_SYSTEMIC_CORE_BONES) return [];
+  return [...worst.entries()]
+    .map(([bone, drift]) => ({ bone, drift }))
+    .sort((a, b) => b.drift - a.drift);
 }
 
 export { DEFAULT_THRESHOLD };

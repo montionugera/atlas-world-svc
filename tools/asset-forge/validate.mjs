@@ -28,6 +28,7 @@ import {
   maxTextureSize,
   readStamp,
 } from "./lib/gltf.mjs";
+import { detectCrushingTranslations } from "./lib/normalize-anim.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -276,6 +277,18 @@ export async function validateGlb(glbPath, opts = {}) {
       "skeleton",
       `joints [${joints.join(", ")}] != reference [${closest.joints.join(", ")}] ` +
         `(closest: ${path.basename(closest.path)})`,
+    );
+  }
+
+  // 5b. Rigid-skeleton crush: an oversized rig whose clips carry a mismatched
+  // skeleton's bone translations collapses on playback. Intake normalizes this
+  // automatically, so it is a warning (auditable), not a hard fail.
+  const crushBones = detectCrushingTranslations(doc);
+  if (crushBones.length > 0) {
+    warnings.push(
+      `animation: crushing translation tracks on ${crushBones.length} bones ` +
+        `(worst ${crushBones[0].bone} drift ${crushBones[0].drift.toFixed(2)}); ` +
+        `intake will pin them to rest`,
     );
   }
 
