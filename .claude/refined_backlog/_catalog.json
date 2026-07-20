@@ -55,5 +55,14 @@
     "claimed_at": "2026-07-19T10:26:23.172129+00:00",
     "shipped_at": "2026-07-19T14:39:47.683315+00:00",
     "promoted_at": "2026-07-19T16:51:55.884313+00:00"
+  },
+  {
+    "id": "F-006",
+    "title": "Registry reconciliation + content\u2192runtime binding spine (event contract, kind taxonomy, CI-verified client resolver)",
+    "from_idea": "I-007",
+    "created_at": "2026-07-20T16:18:32.514431+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
