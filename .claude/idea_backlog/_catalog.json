@@ -52,5 +52,11 @@
     "title": "Character/mob roster depth (5 owed sheets) + content\u2192server-config validation binding gate",
     "created_at": "2026-07-20T16:16:31.709088+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-010",
+    "title": "2D asset forge + icon/tileset/ninepatch seeding + meta-UI icon binding",
+    "created_at": "2026-07-20T16:16:32.203396+00:00",
+    "promoted_to": null
   }
 ]
