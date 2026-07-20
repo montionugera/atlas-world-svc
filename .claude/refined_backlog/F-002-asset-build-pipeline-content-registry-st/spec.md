@@ -51,7 +51,7 @@ the C# `AssetRegistry.Resolve` all read, so the three consumers cannot disagree.
 | 1 — Codegen emits key set (D3) | `gen-asset-keys.ts`, `generated/asset-keys.json` (19 keys) | ✅ | `release 1.2 (#4)` `3cf96e7` |
 | 2 — Manifest schema + loader | `game-client/assets/manifest.json`, `AssetManifest.cs` | ✅ | `release 1.2 (#4)` `3cf96e7` |
 | 3 — AssetRegistry three-tier resolve | `game-client/src/Content/AssetRegistry.cs` | ✅ | `release 1.2 (#4)` `3cf96e7` |
-| 4 — Wire registry into entity rendering | `game-client/src/World/EntityView.cs` (feature commit `93a86d9` "entities render via AssetRegistry") | ✅ | `release 1.2 (#4)` `3cf96e7` |
+| 4 — Wire registry into entity rendering | `game-client/src/World/EntityView.cs` — a **modify** task: the file itself predates 1.2 (added in release 1.1 `a783a5f`); the registry wiring (`AssetRegistry.Instance.Resolve(...)`, +114/−21) landed via feature commit `93a86d9` "entities render via AssetRegistry" | ✅ | `release 1.2 (#4)` `3cf96e7` |
 | 5 — CI drift-gate | `scripts/check_asset_manifest.mjs` | ✅ | `release 1.2 (#4)` `3cf96e7` |
 | 6 — `art-source/` LFS + intake/delivery docs | `art-source/`, `docs/asset-intake.md`, `docs/asset-delivery-spec.md` | ✅ | `release 1.2 (#4)` `3cf96e7` |
 | 7 — CC0 seed ingest (Stage 0.5) | seed-tier assets (Quaternius/Kenney/KayKit); e.g. `22e59b8`, `fd18a84`, `081b2f4` + F-A sourcing sweep | ✅ | `release 1.2 (#4)` `3cf96e7` |
