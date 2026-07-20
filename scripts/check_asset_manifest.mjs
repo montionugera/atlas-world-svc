@@ -43,6 +43,11 @@
 //       (merges all) silently resolve different entries.
 //   (H) curated (driftGated:false) sources may not use a reserved codegen
 //       namespace (spec.codegenReservedNamespaces).
+//   (I) tiered license/CC-BY policy (per-entry; applied during validateEntry).
+//   (J) every AssetKind the codegen emits either has a render-spec
+//       kindDefaultRender or every mapped key of that kind carries explicit
+//       render — a no-default kind may not rely on ext sniffing (see §3 of
+//       docs/superpowers/specs/2026-07-20-asset-registry-contract.md).
 //
 // Codegen cross-check (driftGated:true sources only):
 //   WARNING  — a key present in asset-keys.json has no manifest entry (UNMAPPED)
@@ -320,7 +325,7 @@ function assertNoReserved(id, source, spec, failures) {
   }
 }
 
-// (I) AssetKind renderability completeness. Every `kind` the codegen emits
+// (J) AssetKind renderability completeness. Every `kind` the codegen emits
 // (asset-keys.json) must resolve to a renderer by CONTRACT, not by accident:
 // either render-spec declares a `kindDefaultRender[kind]` (guaranteed default),
 // OR every mapped codegen key of that kind carries an explicit `render`. This
@@ -373,7 +378,7 @@ function main() {
 
   const sources = manifestSources(opts);
   const sourcesEntries = []; // for the disjointness guard
-  let codegenEntries = null; // the driftGated source's entries (for guard I)
+  let codegenEntries = null; // the driftGated source's entries (for guard J)
 
   for (const source of sources) {
     const doc = readJson(source.path, source.label, failures);
