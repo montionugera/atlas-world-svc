@@ -1,0 +1,129 @@
+{
+  "executiveSummary": "This program closes seven content\u2192runtime gaps in atlas-world-svc, but it is NOT seven parallel efforts \u2014 it is one foundation plus two dependent waves. After applying the reviewers' corrected dependency graph (which trusts `revisedDependsOn` over the planners' originals), every lane collapses onto a single root: **registry-binding**. That lane reconciles the stale F-002 catalog status and hardens the already-shipped registry into ONE documented, CI-verified spine: asset-key codegen \u2194 render-spec taxonomy \u2194 four manifests \u2194 content gate \u2194 Godot AssetRegistry, PLUS a formal event\u2192asset-key binding contract. Nothing else should build until that contract and its taxonomy holes are closed, because maps-zones, character-content, ui-2d, vfx-events, sfx-events and narrative-story all bind against it. Once the spine lands (Release 1.3), four lanes fan out in parallel (Release 1.4: maps-zones, character-content, ui-2d, vfx-events), then two terminal lanes that consume them close the program (Release 1.5: sfx-events, which needs character-content's surface materials; narrative-story, which needs both maps-zones' zoneIds and character-content's NPC ids). The honest tradeoffs: (1) registry-binding is a single point of gating \u2014 if it slips, all six dependents stall; (2) several lanes graded \"L\" trend toward XL once the reviewers' missing steps (server content packaging, Godot CI harness, C# key-constant emitter, constructor retrofits) are counted, so Release 1.4's four-lane parallel slice is heavy and may need to be split or extended; (3) three cross-cutting decisions (F-002 retro-promote vs rescope, map geometry over synced-schema vs REST, Godot-in-CI availability) must be made by the release manager before or during 1.3, not deferred.",
+  "sharedInfraFirst": [
+    "registry-binding (I-007) is the spine \u2014 build it once, first, in Release 1.3, before any dependent lane. It must deliver the following concrete artifacts:",
+    "F-002 RECONCILIATION: fill the empty .claude/refined_backlog/F-002.../spec.md with the delivered architecture + a task\u2192commit\u2192release provenance table, and route the retro-promote-vs-rescope catalog decision through the ps-release-workflow _release worktree \u2014 NEVER hand-edit _catalog.json (R1, release-manager owned).",
+    "THE CONTRACT DOC: docs/superpowers/specs/2026-07-20-asset-registry-contract.md \u2014 the single authoritative index (asset-keys.json SSOT \u2192 render-spec taxonomy \u2192 4 keyspace-disjoint manifests \u2192 check_asset_manifest.mjs guards A\u2013H + license-policy \u2192 check_content.mjs \u2192 Godot AssetRegistry 3-tier resolve). This is the page every downstream lane reads to bind against.",
+    "RENDER-SPEC TAXONOMY, HOLE-FREE: add kindDefaultRender for prop\u2192model3d; but per review do NOT default vfx\u2192model3d (it would silently narrow the keyspace vfx-events needs for spritesheet/particle renderers) \u2014 instead require vfx entries to carry explicit render via the completeness test's explicit-render branch. Document + enforce the audio kind policy (sanctioned ext-based .ogg\u2192audio resolution; do not force a 31-entry kind:audio backfill). Add a jest completeness test asserting every AssetKind has a default renderer OR provably carries explicit render. CRITICAL: render-spec.json is mirrored in THREE consumers (the .mjs gate, AssetRegistry.cs at runtime, the storybook JS) \u2014 every edit must re-run the Godot RegistryVerify/ManifestVerify probes in the same phase, not just the node gate.",
+    "EVENT\u2192ASSET-KEY BINDING CONTRACT: the checked mapping Mob.mobTypeId\u2192mob:<id>, Projectile.type\u2192projectile:<Type>, ZoneEffect.type\u2192zone:<type>, Player\u2192player, NPC\u2192npc \u2014 keys derive from SYNCED SCHEMA ONLY (server-authoritative, never client input). Backed by a colyseus-server jest round-trip test that IMPORTS gen-asset-keys.ts's enumerators (not a re-implementation) so there is one enumeration source, plus one RegistryVerify fixture case per key form. This is the surface sfx-events and vfx-events extend with sfx:/vfx: forms, and it must land before they start.",
+    "CI-WIRED GODOT VERIFY PROBES: add a Godot .NET headless job to ci.yml running ATLAS_VERIFY_MANIFEST/REGISTRY/ENTITYVIEW with surfaced exit codes \u2014 pin the exact Godot version to project.godot, add a setup action/cached image, run `godot --headless --import` before the probes, scope the job to game-client/** + assets/**. Today no Godot step exists, so the client half of the spine can silently drift; this also unblocks ui-2d/vfx-events verification, which both assume a headless harness that does not exist yet.",
+    "ADDITIVE CONTENT-GATE LINK-CHECK + EXTENSION RECIPE: strengthen check_content.mjs so a character sheet whose assetKey has no codegen key (or wrong kind/tier) warns today and hard-fails under --require-complete (no server config emitted/mutated \u2014 v1 numbers-stay-server boundary preserved). Document the recipe: how a lane adds a new key type (enumerate from a REAL server config, never hand-list), a new renderer/kind (edit render-spec.json only), and a new curated keyspace (disjoint, non-reserved, license-clean). Also decide the mob-type-id source (generated/mob-types.json codegen vs WARN downgrade) that maps-zones and narrative-story gates need."
+  ],
+  "dependencyOrder": [
+    {
+      "slice": "Release 1.3 (in progress)",
+      "domains": [
+        "registry-binding"
+      ],
+      "rationale": "The foundational spine, alone. Corrected DAG root (revisedDependsOn: []). Every other lane binds against its contract doc, render-spec taxonomy, event\u2192asset-key contract, and CI probes \u2014 so it must land first and cannot safely parallelize with its dependents. Effort M and lowest blast radius (touches docs/tests/taxonomy/CI, no @colyseus/schema or sim-loop changes). Phase 1 also resolves the F-002 catalog discrepancy. NOTE: ui-2d and vfx-events authoring-only phases (their Phase 1\u20133) COULD begin in parallel at team risk once registry-binding's Phase 2 taxonomy is merged, but their verification and client-consumption phases hard-block on the full spine."
+    },
+    {
+      "slice": "Release 1.4",
+      "domains": [
+        "maps-zones",
+        "character-content",
+        "ui-2d",
+        "vfx-events"
+      ],
+      "rationale": "The four lanes whose only corrected dependency is registry-binding \u2014 they run in PARALLEL, none depends on another. Prioritize/staff maps-zones and character-content FIRST within this slice: they are on the critical path (both gate Release 1.5's narrative-story, and character-content additionally gates sfx-events). ui-2d and vfx-events are leaf lanes (nothing depends on them) so they can absorb schedule slack. HONEST FLAG: this is a heavy slice \u2014 maps-zones, character-content, and ui-2d all trend L\u2192XL once the reviewers' missing steps are counted, so consider splitting into 1.4a (maps-zones + character-content) and 1.4b (ui-2d + vfx-events) if capacity is limited."
+    },
+    {
+      "slice": "Release 1.5",
+      "domains": [
+        "sfx-events",
+        "narrative-story"
+      ],
+      "rationale": "The two terminal lanes that consume Release 1.4 outputs, run in PARALLEL with each other. sfx-events needs character-content's per-creature surfaceMaterial values (it ships a 'flesh' default so it CAN start early against registry-binding alone, but real material fidelity waits on character-content). narrative-story needs BOTH maps-zones (real zoneIds + entry detection for live ZONE_ENTERED) AND character-content (NPC ids for quest-giver validation), so it is genuinely last. narrative-story is XL and the program's terminal node."
+    }
+  ],
+  "criticalPath": [
+    "registry-binding",
+    "character-content",
+    "narrative-story"
+  ],
+  "backlogIdeas": [
+    {
+      "proposedId": "I-007",
+      "title": "Registry reconciliation + content\u2192runtime binding spine (event contract, kind taxonomy, CI-verified client resolver)",
+      "domain": "registry-binding",
+      "dependsOn": [],
+      "effort": "M",
+      "releaseSlice": "Release 1.3"
+    },
+    {
+      "proposedId": "I-008",
+      "title": "Map authoring + runtime loader (regions, spawn points, static zone hazards, mob spawn tables) with legacy fallback",
+      "domain": "maps-zones",
+      "dependsOn": [
+        "I-007"
+      ],
+      "effort": "L",
+      "releaseSlice": "Release 1.4"
+    },
+    {
+      "proposedId": "I-009",
+      "title": "Character/mob roster depth (5 owed sheets) + content\u2192server-config validation binding gate",
+      "domain": "character-content",
+      "dependsOn": [
+        "I-007"
+      ],
+      "effort": "L",
+      "releaseSlice": "Release 1.4"
+    },
+    {
+      "proposedId": "I-010",
+      "title": "2D asset forge + icon/tileset/ninepatch seeding + meta-UI icon binding",
+      "domain": "ui-2d",
+      "dependsOn": [
+        "I-007"
+      ],
+      "effort": "L",
+      "releaseSlice": "Release 1.4"
+    },
+    {
+      "proposedId": "I-011",
+      "title": "Transient VFX runtime (one-shot spawner) + combat-edge binding + CC0 expansion policy",
+      "domain": "vfx-events",
+      "dependsOn": [
+        "I-007"
+      ],
+      "effort": "L",
+      "releaseSlice": "Release 1.4"
+    },
+    {
+      "proposedId": "I-012",
+      "title": "SFX taxonomy + server-authoritative combat-event\u2192SFX broadcast binding",
+      "domain": "sfx-events",
+      "dependsOn": [
+        "I-007",
+        "I-009"
+      ],
+      "effort": "L",
+      "releaseSlice": "Release 1.5"
+    },
+    {
+      "proposedId": "I-013",
+      "title": "Narrative pipeline: formal story schema + quest narrative fields + live objective wiring (F-005 roadmap #3)",
+      "domain": "narrative-story",
+      "dependsOn": [
+        "I-007",
+        "I-008",
+        "I-009"
+      ],
+      "effort": "XL",
+      "releaseSlice": "Release 1.5"
+    }
+  ],
+  "risksAndOpenQuestions": [
+    "F-002 CATALOG RECONCILIATION (R1, release-manager owned, decide during 1.3 Phase 1): retro-mark F-002 promoted with a release_version documenting delivery-under-F-A/F-003/F-004/F-005, OR close I-003/F-002 as delivered-under-others and rescope the genuine residual into I-007. Whichever \u2014 route through the ps-release-workflow _release worktree; hand-editing _catalog.json is off-process and will drift.",
+    "GAMESTATE SCHEMA-REPLICATION BLAST RADIUS (open question, decide before maps-zones Phase 3): maps-zones proposes new synced @type region/spawn/hazard fields patched at 20Hz, but region geometry is STATIC after load. Reviewer recommendation: serve static map geometry over REST /api/rooms/:id (the established channel for immutable data) and keep only dynamic entities in the schema. If synced anyway, codegen must emit a BRAND-NEW nested C# class (MapRegion.cs) \u2014 a different codegen path than the field-add cases shipped so far \u2014 and it must be regenerated + committed in the same PR. Positive: narrative-story, sfx-events, and vfx-events all correctly AVOID GameState growth (narrative rides the content-catalog + C# content mirror; sfx uses a side-channel room.broadcast; vfx binds to already-synced client edges) \u2014 preserve that discipline; do not add @type fields for SFX/VFX/quest text.",
+    "NAKAMA-vs-COLYSEUS OWNERSHIP (narrative-story): the split must stay intact \u2014 Nakama owns quest STATE (questEngine fold, accept/claim RPCs); Colyseus only REPORTS MatchEvents over S2S http_key. Two reviewer blockers: (a) Phase 4 'server-authoritative giver accept-gating' is NOT implementable as described \u2014 accept_quest receives only {questId}; enforcing 'accept context matches the offering giver' either needs the deferred in-world NPC proximity trigger (character-content + colyseus) or trusts a client-asserted giver id, violating server-authority. Reduce to prereq-only enforcement now; defer real giver-gating to the in-world trigger. (b) 'Live ZONE_ENTERED' overstates what lands without maps-zones \u2014 colyseus has no zone-entry detection or zoneId concept today; only emitter scaffolding + a synthetic test lands until maps-zones provides real zoneIds. Re-title Phase 3 as scaffold-only and gate the end-to-end zone-quest e2e behind maps-zones.",
+    "SERVER CONTENT PACKAGING (maps-zones blocker): content/ is a repo-ROOT sibling of colyseus-server; tsc does not copy it into dist/, and the pnpm-workspace Docker image copies the colyseus-server package, not repo-root content/. loadMapSpec works in ts-node dev but FAILS in `npm start` and prod. Requires a Docker COPY + config-driven MAP_CONTENT_DIR (not relative cwd) + a smoke test against BUILT dist. Also: js-yaml + ajv become colyseus-server PRODUCTION deps (not just repo-root script deps) and must land in the image.",
+    "GODOT-IN-CI AVAILABILITY (open question, blocks registry-binding Phase 4, ui-2d Phase 4, vfx-events verification): no Godot headless step exists in ci.yml today, and it is unconfirmed whether the Godot .NET binary is available in the CI environment. The runner is heavy and flake-prone; .import sidecars must be Godot-generated (they carry uid://+content hashes), not node-synthesized. If Godot is unavailable, commit .import artifacts + downgrade the Godot probes/e2e to local-only manual verification and make the node/jest gates the CI-enforced evidence \u2014 do not assert a green headless build that cannot run.",
+    "REGISTRY-BINDING IS A SINGLE POINT OF GATING: all six dependent lanes block on its contract doc + event\u2192asset-key contract + taxonomy. If its Phase 2\u20133 slip, the entire 1.4/1.5 program stalls. Mitigation: land the contract-defining phases early and freeze the CatalogLoader key\u2192Texture2D interface signature so ui-2d's fallback loader can conform even before registry-binding's implementation lands.",
+    "SFX DRIFTGATED FLIP CONFLICTS WITH GATE CODE (sfx-events blocker): flipping audio-manifest to driftGated:true makes all 31 entries HARD-FAIL guard (A) because the audio renderer is sceneLoadable:false. Requires a coordinated registry-binding-owned change to guard (A) (exempt non-sceneLoadable renderers) BEFORE the flip, plus reconciling the 31 IRREGULAR manifest keys (they are not a clean category\u00d7material\u00d7weight matrix) \u2014 either derive the gate's expected set FROM the manifest, or restructure+migrate legacy keys. And the 'generated C# key-constants bridge' the plan assumes does NOT exist; a new C# asset-key emitter must be built and compiled into the Godot build.",
+    "EFFORT REALISM: registry-binding review confirms M; but maps-zones, character-content, ui-2d, and sfx-events all trend L\u2192XL once missing steps are counted (constructor retrofits touching ~55 test files for maps-zones; two codegen surfaces + check_content rewrite for character-content; Godot toolchain bring-up + theme baking for ui-2d; gate-code change + irregular-key reconciliation + new C# emitter for sfx-events). Release 1.4's four-lane parallel slice is the schedule's biggest risk; plan for a 1.4a/1.4b split.",
+    "CHARACTER-CONTENT v1 BOUNDARY (R1, sign-off before its Phase 3): F-005 drew the line at 'balance numbers stay server-side.' The binding gate crosses it only as a validated REFERENCE + advisory enum\u2192band consistency check, never a source-of-truth move. Get explicit sign-off; keep the enum\u2192band check advisory (WARN), and resolve the double_attacker boss-vs-enemy role question in Phase 0 before authoring.",
+    "MINOR BINDING CORRECTIONS to fold into specs: vfx-events must NOT bind attack\u2192fx:magic_rune (spawns a cast rune under every melee swing at 20FPS) \u2014 leave the attack edge VFX-unbound until a real cast RoomEventType exists; and its grid-divisibility gate must use modulo + count<=cols*rows (allow a partial final row), not an area-product check that rejects the valid 50-frame fireball sheet."
+  ]
+}
