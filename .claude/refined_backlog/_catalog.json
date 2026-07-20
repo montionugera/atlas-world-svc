@@ -61,8 +61,9 @@
     "title": "Registry reconciliation + content\u2192runtime binding spine (event contract, kind taxonomy, CI-verified client resolver)",
     "from_idea": "I-007",
     "created_at": "2026-07-20T16:18:32.514431+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-07-20T16:18:41.083805+00:00"
   }
 ]
