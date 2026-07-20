@@ -78,14 +78,13 @@ describe('event → asset-key binding contract', () => {
     const fixed = new Set(['player', 'npc'])
 
     for (const key of ids) {
-      const backed =
-        mobKeys.has(key) || projKeys.has(key) || zoneKeys.has(key) || fixed.has(key)
+      const backed = mobKeys.has(key) || projKeys.has(key) || zoneKeys.has(key) || fixed.has(key)
       expect(backed).toBe(true)
     }
   })
 
   it('every emitted kind is one the render-spec taxonomy can resolve', () => {
-    // Guard I (check_asset_manifest.mjs) enforces renderability; here we assert
+    // Guard J (check_asset_manifest.mjs) enforces renderability; here we assert
     // the codegen only emits kinds the contract knows how to bind.
     const emitted = new Set(generated.keys.map(k => k.kind))
     for (const kind of emitted) {
