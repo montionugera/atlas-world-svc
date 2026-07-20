@@ -185,3 +185,33 @@ Downstream sfx/vfx lanes add `sfx:`/`vfx:` key forms against this same contract.
 | Registry (Godot) | `ATLAS_VERIFY_REGISTRY=1 godot --headless` | resolve forms match reserved ns |
 | Manifest (Godot) | `ATLAS_VERIFY_MANIFEST=1 godot --headless` | client reads render-spec identically |
 | EntityView (Godot) | `ATLAS_VERIFY_ENTITYVIEW=1 godot --headless` | entity render wiring |
+
+## 9. Content → server binding seam & ownership boundary (F-006 Phase 5)
+
+The **content → server** direction is deliberately scoped to a **v1 boundary**:
+
+- **`content/` owns** design/identity/enum-stats: a character's `assetKey`, its
+  `kind`, `tier`, lore, visual brief. These bind to the codegen keyspace.
+- **`src/config/` owns** the balance **NUMBERS** (hp, damage, speed, cooldowns).
+  These stay authoritative on the server and are **not** emitted from content.
+- **Number-emitting content→server codegen is DEFERRED** (roadmap #2, a future
+  stats-codegen). F-006 does **not** build or mutate any server config.
+
+**The seam is already enforced** by `scripts/check_content.mjs` (no new code was
+needed — this is reconciliation):
+
+| Check | Behavior |
+|-------|----------|
+| character sheet `assetKey` not in `asset-keys.json` | **hard fail** |
+| `assetKey` kind ≠ `character` | **hard fail** |
+| forged/shipped sheet `tier` ≠ manifest tier | **hard fail** |
+| a `character` codegen key with no sheet | warn today; **hard fail** under `--require-complete` |
+
+Covered by `scripts/tests/check_content.test.mjs` (11 cases incl. unknown key,
+non-character kind, tier mismatch, `--require-complete` escalation). The
+`--require-complete` flag is the single sanctioned mode escalation (no stacked
+boolean flags — §5).
+
+**Extension directions** (see §6): a new **content type** adds a schema +
+gate-branch in `check_content.mjs`; server **numbers** wait for stats-codegen and
+never leak into `content/`.
