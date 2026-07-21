@@ -83,8 +83,9 @@
     "title": "Map authoring + runtime loader (regions, spawn points, static zone hazards, mob spawn tables) with legacy fallback",
     "from_idea": "I-008",
     "created_at": "2026-07-21T00:14:18.167697+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-07-21T00:14:21.503766+00:00"
   }
 ]
