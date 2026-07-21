@@ -48,9 +48,19 @@ Lean, fast, territorial spear-throwers of the eastern brambles. Strike from
 range, relocate, repeat. (`mob:spear_thrower`.)
 
 ### Unaligned wilds (faction-unaligned)
-Everything not yet claimed by a faction: `mob:balanced`, `mob:hybrid`,
-`mob:double_attacker`, and the camp `npc`. Assign as their sheets get
-written (roadmap #1).
+Creatures the factions never claimed — no pack, no order, no territory of
+their own. Collectively the meadow calls them **straylings**: things that
+drift its edge and the ground between regions, belonging to nothing.
+`mob:balanced` walks the middle line of everything; `mob:hybrid` mixes a
+thrown strike with a closing one; and their apex, the twin-striking
+`mob:double_attacker`, hits twice before a slower thing hits once — the
+meadow's first true wall (`role:boss`).
+
+### The Expedition (faction-expedition)
+The player's own side: the party that reopened the meadow and the camp that
+supports it. The `player` is an expedition member; the camp `npc` is its
+quartermaster, holding the line between the tents and everything past them.
+Anchored physically in `region-spawn-meadow`.
 
 ## Timeline (timeline)
 
