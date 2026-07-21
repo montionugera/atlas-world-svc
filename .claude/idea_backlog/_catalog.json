@@ -88,5 +88,11 @@
     "title": "Map runtime loader (deferred F-008 phases 2-4): server loadMapSpec + byte-identical legacy fallback, wire spec into room (dims/spawn/mob-table, REST /api for static region geometry not synced schema), static env-owner zone hazards via ZoneEffectManager. BLOCKER to resolve first: package content/maps into colyseus-server dist+Docker (vendor at build or MAP_CONTENT_DIR); js-yaml/ajv become server prod deps; constructor-change blast radius across ~55 tests",
     "created_at": "2026-07-21T00:16:07.031273+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-016",
+    "title": "Godot transient-VFX runtime (deferred F-009): VfxRegistry autoload + single-path Spawn(options) one-shot auto-free (loop forced off) reading catalog kind:vfx directly; bind hit->fx:explosion / death->fx:fireball / heal->fx:heal_sparkle at existing SFX edge sites (AnimationController/EntityView), zero SFX regression; VfxVerify probe asserting derived cols + first/last frame rect (not just count). Needs local Godot to verify. Also: real skill/cast RoomEventType broadcast for cast-glow VFX (cross-domain server work)",
+    "created_at": "2026-07-21T00:34:45.527047+00:00",
+    "promoted_to": null
   }
 ]
