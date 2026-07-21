@@ -34,5 +34,77 @@
     "title": "Game content authoring pipeline (characters/story/maps)",
     "created_at": "2026-07-19T09:57:07.325276+00:00",
     "promoted_to": "F-005"
+  },
+  {
+    "id": "I-007",
+    "title": "Registry reconciliation + content\u2192runtime binding spine (event contract, kind taxonomy, CI-verified client resolver)",
+    "created_at": "2026-07-20T16:16:30.605921+00:00",
+    "promoted_to": "F-006"
+  },
+  {
+    "id": "I-008",
+    "title": "Map authoring + runtime loader (regions, spawn points, static zone hazards, mob spawn tables) with legacy fallback",
+    "created_at": "2026-07-20T16:16:31.214042+00:00",
+    "promoted_to": "F-008"
+  },
+  {
+    "id": "I-009",
+    "title": "Character/mob roster depth (5 owed sheets) + content\u2192server-config validation binding gate",
+    "created_at": "2026-07-20T16:16:31.709088+00:00",
+    "promoted_to": "F-007"
+  },
+  {
+    "id": "I-010",
+    "title": "2D asset forge + icon/tileset/ninepatch seeding + meta-UI icon binding",
+    "created_at": "2026-07-20T16:16:32.203396+00:00",
+    "promoted_to": "F-011"
+  },
+  {
+    "id": "I-011",
+    "title": "Transient VFX runtime (one-shot spawner) + combat-edge binding + CC0 expansion policy",
+    "created_at": "2026-07-20T16:16:32.742658+00:00",
+    "promoted_to": "F-009"
+  },
+  {
+    "id": "I-012",
+    "title": "SFX taxonomy + server-authoritative combat-event\u2192SFX broadcast binding",
+    "created_at": "2026-07-20T16:16:33.493731+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-013",
+    "title": "Narrative pipeline: formal story schema + quest narrative fields + live objective wiring (F-005 roadmap #3)",
+    "created_at": "2026-07-20T16:16:34.166662+00:00",
+    "promoted_to": "F-010"
+  },
+  {
+    "id": "I-014",
+    "title": "Character-content binding hardening (deferred F-007 phases): NPC config home (src/config/npcs) + generated character-bridge.json codegen + triple validation + enum\u2194number-band consistency check + wire --require-complete into CI",
+    "created_at": "2026-07-21T00:11:44.212260+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-015",
+    "title": "Map runtime loader (deferred F-008 phases 2-4): server loadMapSpec + byte-identical legacy fallback, wire spec into room (dims/spawn/mob-table, REST /api for static region geometry not synced schema), static env-owner zone hazards via ZoneEffectManager. BLOCKER to resolve first: package content/maps into colyseus-server dist+Docker (vendor at build or MAP_CONTENT_DIR); js-yaml/ajv become server prod deps; constructor-change blast radius across ~55 tests",
+    "created_at": "2026-07-21T00:16:07.031273+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-016",
+    "title": "Godot transient-VFX runtime (deferred F-009): VfxRegistry autoload + single-path Spawn(options) one-shot auto-free (loop forced off) reading catalog kind:vfx directly; bind hit->fx:explosion / death->fx:fireball / heal->fx:heal_sparkle at existing SFX edge sites (AnimationController/EntityView), zero SFX regression; VfxVerify probe asserting derived cols + first/last frame rect (not just count). Needs local Godot to verify. Also: real skill/cast RoomEventType broadcast for cast-glow VFX (cross-domain server work)",
+    "created_at": "2026-07-21T00:34:45.527047+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-017",
+    "title": "Narrative runtime binding (deferred F-010): @atlas/contracts STORY catalog (goja-safe require, zod, validateCatalogIntegrity) + QuestDef narrative fields (title/description/offerText/giver/region/faction \u2014 backfill ALL 3 quests or contracts import crashes Nakama) + reconcile q_boar_5 'boar'->real mob id + ZONE_ENTERED emitter scaffold (real zoneIds need maps-loader I-015) + accept_quest prereq-gating only (giver-gating needs in-world NPC trigger, blocker) + C# mirror regen + drift check. Needs contracts/nakama/colyseus verify + goja bundle smoke",
+    "created_at": "2026-07-21T00:41:36.341276+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-018",
+    "title": "2D asset seeding + client icon binding (deferred F-011 phases 2-5, NEEDS Godot): seed CC0 icons for every ItemsById/SkillsById id (from contracts/content/items.json+skills.json, not MetaIds.cs) via intake2d + godot --headless --import to generate real .import sidecars; coverage test; storybook atlas-JSON path wiring (index.html L1115); client CatalogLoader key->Texture2D + SkillTile/InventoryTile TextureRect binding; ninepatch/theme baked-preview via Godot. Blocked on local Godot .NET binary",
+    "created_at": "2026-07-21T01:03:50.292466+00:00",
+    "promoted_to": null
   }
 ]

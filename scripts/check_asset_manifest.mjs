@@ -36,6 +36,9 @@
 //       frame/animations) — exactly one group must be fully present.
 //   (F) `bakedPreview` types with both `preview` and `previewHashOf` set fail
 //       if the source resource is newer than the baked preview (STALE).
+//   (K) frame+animations spritesheets must tile their PNG on a uniform grid:
+//       sheetW % frameW == 0, sheetH % frameH == 0, and each animation count
+//       <= cols*rows (partial final row allowed). Guards runtime frame-slicing.
 //
 // Cross-file guards:
 //   (G) keyspaces across all manifest sources must be disjoint — the same id
@@ -43,6 +46,11 @@
 //       (merges all) silently resolve different entries.
 //   (H) curated (driftGated:false) sources may not use a reserved codegen
 //       namespace (spec.codegenReservedNamespaces).
+//   (I) tiered license/CC-BY policy (per-entry; applied during validateEntry).
+//   (J) every AssetKind the codegen emits either has a render-spec
+//       kindDefaultRender or every mapped key of that kind carries explicit
+//       render — a no-default kind may not rely on ext sniffing (see §3 of
+//       docs/superpowers/specs/2026-07-20-asset-registry-contract.md).
 //
 // Codegen cross-check (driftGated:true sources only):
 //   WARNING  — a key present in asset-keys.json has no manifest entry (UNMAPPED)
@@ -192,6 +200,18 @@ function manifestSources(opts) {
   ];
 }
 
+// Read a PNG's pixel dimensions from its IHDR chunk (bytes 16-24 after the
+// 8-byte signature) without an image library. Returns {w,h} or null.
+function readPngSize(fsPath) {
+  try {
+    const buf = readFileSync(fsPath);
+    if (buf.length < 24 || buf.toString("ascii", 12, 16) !== "IHDR") return null;
+    return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+  } catch {
+    return null;
+  }
+}
+
 // Per-entry validation, driven entirely by render-spec.json. See the guard
 // lettering (A)-(F) in the header comment.
 function validateEntry(id, entry, source, gameClient, spec, failures) {
@@ -271,6 +291,43 @@ function validateEntry(id, entry, source, gameClient, spec, failures) {
     }
   }
 
+  // (K) spritesheet grid divisibility — a frame+animations spritesheet must
+  // tile its PNG on a uniform grid: sheetW % frameW == 0, sheetH % frameH == 0,
+  // and each animation's frame count must fit the grid (count <= cols*rows,
+  // allowing a partial final row — do NOT require count == cols*rows, which
+  // wrongly rejects a valid partial-row sheet like fireball 2048x1792/256=8x7
+  // cells for 50 frames). A mis-tiled sheet slices garbage frames at runtime
+  // while the gate stays GREEN. PNG dims read from the IHDR (no image lib).
+  if (
+    render === "spritesheet" &&
+    entry.frame &&
+    Array.isArray(entry.animations) &&
+    fsPath &&
+    existsSync(fsPath)
+  ) {
+    const dims = readPngSize(fsPath);
+    const fw = entry.frame.w;
+    const fh = entry.frame.h;
+    if (dims && fw > 0 && fh > 0) {
+      if (dims.w % fw !== 0 || dims.h % fh !== 0) {
+        failures.push(
+          `entry "${id}": spritesheet ${dims.w}x${dims.h} not divisible by frame ${fw}x${fh}`,
+        );
+      } else {
+        const cols = dims.w / fw;
+        const rows = dims.h / fh;
+        const cells = cols * rows;
+        for (const anim of entry.animations) {
+          if (typeof anim.count === "number" && anim.count > cells) {
+            failures.push(
+              `entry "${id}": animation "${anim.name}" count ${anim.count} exceeds grid ${cols}x${rows}=${cells} cells`,
+            );
+          }
+        }
+      }
+    }
+  }
+
   // (F) baked-preview staleness — the "never disagree" guarantee for baked types.
   if (r.bakedPreview && entry.previewHashOf && entry.preview) {
     const srcP = resolveResPath(entry.previewHashOf, gameClient);
@@ -320,6 +377,39 @@ function assertNoReserved(id, source, spec, failures) {
   }
 }
 
+// (J) AssetKind renderability completeness. Every `kind` the codegen emits
+// (asset-keys.json) must resolve to a renderer by CONTRACT, not by accident:
+// either render-spec declares a `kindDefaultRender[kind]` (guaranteed default),
+// OR every mapped codegen key of that kind carries an explicit `render`. This
+// is deliberately stricter than "does it resolve" — a no-default kind must NOT
+// lean on tier-3 ext-sniffing, so future kinds (e.g. a spritesheet `vfx:` key)
+// cannot silently fall through to the wrong renderer. See the asset-registry
+// contract doc (§ taxonomy completeness). Scoped to the codegen-keyed source
+// only; curated keyspaces are not codegen kinds.
+function assertKindRenderable(keys, spec, codegenEntries, failures) {
+  const defaults = spec.kindDefaultRender || {};
+  const byKind = new Map(); // kind → [ids]
+  for (const k of keys) {
+    if (!k || !k.kind || !k.id) continue;
+    if (!byKind.has(k.kind)) byKind.set(k.kind, []);
+    byKind.get(k.kind).push(k.id);
+  }
+  for (const [kind, ids] of byKind) {
+    if (defaults[kind]) continue; // guaranteed by an unambiguous kind default
+    for (const id of ids) {
+      const entry = codegenEntries ? codegenEntries[id] : undefined;
+      if (entry === undefined) continue; // unmapped: covered by the UNMAPPED guard
+      if (isEmptyField(entry.render)) {
+        failures.push(
+          `key "${id}": kind "${kind}" has no render-spec kindDefaultRender, ` +
+            `so the entry must declare an explicit "render" (found none) — ` +
+            `a no-default kind must not rely on extension sniffing`,
+        );
+      }
+    }
+  }
+}
+
 function main() {
   const opts = parseArgs(process.argv.slice(2));
   const failures = [];
@@ -340,6 +430,7 @@ function main() {
 
   const sources = manifestSources(opts);
   const sourcesEntries = []; // for the disjointness guard
+  let codegenEntries = null; // the driftGated source's entries (for guard J)
 
   for (const source of sources) {
     const doc = readJson(source.path, source.label, failures);
@@ -352,6 +443,7 @@ function main() {
       continue;
     }
     sourcesEntries.push({ label: source.label, entries });
+    if (source.driftGated) codegenEntries = entries;
 
     for (const [id, entry] of Object.entries(entries)) {
       validateEntry(id, entry, source, opts.gameClient, spec, failures);
@@ -380,6 +472,7 @@ function main() {
   }
 
   assertDisjoint(sourcesEntries, failures);
+  assertKindRenderable(keys, spec, codegenEntries, failures);
 
   return report(failures, warnings, opts);
 }

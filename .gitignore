@@ -108,3 +108,4 @@ data/
 
 # Rendered spec/plan view artifacts (local only)
 docs/superpowers/**/*.html
+plan.md

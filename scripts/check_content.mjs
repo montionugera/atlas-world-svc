@@ -3,7 +3,7 @@
 // Spec: docs/superpowers/specs/2026-07-19-content-pipeline-design.md
 // Discipline mirrors scripts/check_asset_manifest.mjs: warns allowed at exit 0,
 // any hard failure exits 1, --require-complete escalates coverage warns.
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, resolve, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
@@ -64,23 +64,95 @@ function sectionText(body, heading) {
   return (next === -1 ? rest : rest.slice(0, next)).trim();
 }
 
+const AjvClass = Ajv.default ?? Ajv;
+
+// Compile a schema file to an Ajv validator, or null if it can't be read.
+function compileSchema(path, label) {
+  const schema = readJson(path, label);
+  if (!schema) return null;
+  return new AjvClass({ allErrors: true }).compile(schema);
+}
+
+// List *.md content files in a dir, ignoring _-prefixed (templates/fixtures).
+function listContentFiles(dir, label) {
+  try {
+    return readdirSync(dir).filter((f) => f.endsWith(".md") && !f.startsWith("_")).sort();
+  } catch (e) { fail(`${label} dir unreadable: ${dir}: ${e.message}`); return []; }
+}
+
 function main() {
   const opts = parseArgs(process.argv);
+  const story = checkStory(opts);
+  const sheetCount = checkCharacters(opts, story.ids);
+  const mapCount = checkMaps(opts);
+  return finish(sheetCount, mapCount, story.count);
+}
+
+// Validate content/story/story.json (regions + factions) and return the set of
+// story ids so the character branch can resolve links.story against it.
+// story.json is read as plain JSON (like asset-keys.json) — no TS/@atlas import.
+// A MISSING story.json is a soft skip (ids=null): the character→story check
+// simply can't run, mirroring how a missing bible.md downgrades region checks.
+// A story.json that IS present but malformed/invalid is a hard FAIL.
+function checkStory(opts) {
+  const storyPath = join(opts.contentRoot, "story/story.json");
+  let raw;
+  try { raw = readFileSync(storyPath, "utf8"); }
+  catch { return { count: 0, ids: null }; } // no story.json → unverifiable, skip
+
+  let doc;
+  try { doc = JSON.parse(raw); }
+  catch (e) { fail(`story.json: cannot parse ${storyPath}: ${e.message}`); return { count: 0, ids: null }; }
+
+  const validate = compileSchema(join(opts.contentRoot, "schemas/story.schema.json"), "story schema");
+  if (!validate) return { count: 0, ids: null };
+
+  const keysDoc = readJson(opts.keys, "asset-keys");
+  const assetKeyIds = new Set((keysDoc?.keys ?? []).map((k) => k.id));
+
+  const entries = Array.isArray(doc) ? doc : (doc.entries ?? []);
+  const ids = new Set();
+
+  // Pass 1: schema, unique ids, faction mobFamily → real asset key.
+  for (const entry of entries) {
+    const label = `story/${entry?.id ?? "?"}`;
+    if (!validate(entry)) {
+      for (const err of validate.errors)
+        fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
+      continue; // downstream checks assume a valid shape
+    }
+    if (ids.has(entry.id)) fail(`${label}: duplicate story id "${entry.id}"`);
+    ids.add(entry.id);
+
+    if (entry.kind === "faction") {
+      for (const mk of entry.mobFamily) {
+        if (!assetKeyIds.has(mk)) fail(`${label}: mobFamily key "${mk}" not in asset-keys.json`);
+      }
+    }
+  }
+
+  // Pass 2: every links[] id resolves to another story id in this same file.
+  for (const entry of entries) {
+    if (typeof entry?.id !== "string") continue;
+    for (const l of entry.links ?? []) {
+      if (!ids.has(l)) fail(`story/${entry.id}: link "${l}" does not resolve to a story id`);
+    }
+  }
+
+  return { count: entries.length, ids };
+}
+
+function checkCharacters(opts, storyIds = null) {
   const keysDoc = readJson(opts.keys, "asset-keys");
   const manifestDoc = readJson(opts.manifest, "manifest");
-  const schema = readJson(join(opts.contentRoot, "schemas/character.schema.json"), "character schema");
-  if (!keysDoc || !manifestDoc || !schema) return finish();
+  const validate = compileSchema(join(opts.contentRoot, "schemas/character.schema.json"), "character schema");
+  if (!keysDoc || !manifestDoc || !validate) return 0;
 
   const keyKinds = new Map(keysDoc.keys.map((k) => [k.id, k.kind]));
   const entries = manifestDoc.entries ?? {};
-  const AjvClass = Ajv.default ?? Ajv;
-  const validate = new AjvClass({ allErrors: true }).compile(schema);
 
   const dir = join(opts.contentRoot, "characters");
-  let files = [];
-  try {
-    files = readdirSync(dir).filter((f) => f.endsWith(".md") && !f.startsWith("_")).sort();
-  } catch (e) { fail(`characters dir unreadable: ${dir}: ${e.message}`); }
+  const files = listContentFiles(dir, "characters");
 
   const sheetedKeys = new Set();
   for (const file of files) {
@@ -115,6 +187,16 @@ function main() {
       }
     }
 
+    // (4b) character → story integrity: every links.story id must resolve to a
+    // real story entry in story.json. Skipped only when story.json is absent
+    // (storyIds === null); when present, a dangling ref is a hard FAIL.
+    if (storyIds && Array.isArray(fm.links?.story)) {
+      for (const sid of fm.links.story) {
+        if (!storyIds.has(sid))
+          fail(`${label}: links.story "${sid}" does not resolve to a story id in story.json`);
+      }
+    }
+
     // (4) structure
     const lore = sectionText(body, "Lore");
     const brief = sectionText(body, "Visual Brief");
@@ -131,13 +213,111 @@ function main() {
     opts.requireComplete ? fail(msg) : warn(msg);
   }
 
-  return finish(files.length);
+  return files.length;
 }
 
-function finish(sheetCount = 0) {
+// Parse `(region-xxx)` heading anchors out of the world bible for coverage.
+function bibleRegionIds(contentRoot) {
+  const path = join(contentRoot, "story/bible.md");
+  const ids = new Set();
+  let raw;
+  try { raw = readFileSync(path, "utf8"); }
+  catch { return ids; } // no bible → every region link is an unverified WARN
+  for (const m of raw.matchAll(/\((region-[a-z0-9]+(?:-[a-z0-9]+)*)\)/g)) ids.add(m[1]);
+  return ids;
+}
+
+function checkMaps(opts) {
+  // Maps are OPTIONAL content — a content root without a maps/ dir is valid
+  // (mirrors the story.json soft-skip). Skip BEFORE touching map.schema.json,
+  // since a root with no maps/ also has no map schema and readJson would else
+  // record a spurious "schema unreadable" failure.
+  const dir = join(opts.contentRoot, "maps");
+  if (!existsSync(dir)) return 0;
+
+  const validate = compileSchema(join(opts.contentRoot, "schemas/map.schema.json"), "map schema");
+  if (!validate) return 0;
+
+  const bibleRegions = bibleRegionIds(opts.contentRoot);
+  const files = listContentFiles(dir, "maps");
+
+  for (const file of files) {
+    const label = `maps/${file}`;
+    const raw = readFileSync(join(dir, file), "utf8").replace(/\r\n/g, "\n");
+    const parsed = splitFrontmatter(raw, label);
+    if (!parsed) continue;
+    const { fm } = parsed;
+
+    // (1) schema — a violation invalidates every downstream shape assumption.
+    if (!validate(fm)) {
+      for (const err of validate.errors)
+        fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
+      continue;
+    }
+    // id = filename slug
+    if (fm.id !== basename(file, ".md"))
+      fail(`${label}: id "${fm.id}" != filename slug "${basename(file, ".md")}"`);
+
+    // (2) regions: unique ids, bounds inside world dims
+    const regionIds = new Set();
+    for (const r of fm.regions) {
+      if (regionIds.has(r.id)) fail(`${label}: duplicate region id "${r.id}"`);
+      regionIds.add(r.id);
+      const b = r.bounds;
+      if (b.x < 0 || b.y < 0 || b.x + b.width > fm.world.width || b.y + b.height > fm.world.height)
+        fail(`${label}: region "${r.id}" bounds ${b.x},${b.y} ${b.width}x${b.height} exceed world ${fm.world.width}x${fm.world.height}`);
+    }
+
+    // (3) regionId cross-refs must resolve to a declared region in this file
+    for (const area of fm.mobSpawnAreas ?? []) {
+      if (area.regionId !== undefined && !regionIds.has(area.regionId))
+        fail(`${label}: mobSpawnArea "${area.id}" regionId "${area.regionId}" is not a declared region`);
+    }
+    for (const hz of fm.zoneHazards ?? []) {
+      if (hz.regionId !== undefined && !regionIds.has(hz.regionId))
+        fail(`${label}: zoneHazard ${hz.type}@${hz.x},${hz.y} regionId "${hz.regionId}" is not a declared region`);
+    }
+
+    // (3b) geometry must lie within the world — negative or out-of-world
+    // positions are unambiguous authoring bugs (a spawn/hazard the runtime
+    // could never place). Region bounds are checked above; this covers the
+    // point/rect placements the region check doesn't.
+    const w = fm.world;
+    const inWorld = (x, y) => x >= 0 && y >= 0 && x <= w.width && y <= w.height;
+    if (!inWorld(fm.playerSpawn.x, fm.playerSpawn.y))
+      fail(`${label}: playerSpawn ${fm.playerSpawn.x},${fm.playerSpawn.y} is outside world ${w.width}x${w.height}`);
+    for (const area of fm.mobSpawnAreas ?? []) {
+      if (area.x < 0 || area.y < 0 || area.x + area.width > w.width || area.y + area.height > w.height)
+        fail(`${label}: mobSpawnArea "${area.id}" ${area.x},${area.y} ${area.width}x${area.height} exceeds world ${w.width}x${w.height}`);
+    }
+    for (const hz of fm.zoneHazards ?? []) {
+      if (!inWorld(hz.x, hz.y))
+        fail(`${label}: zoneHazard ${hz.type}@${hz.x},${hz.y} is outside world ${w.width}x${w.height}`);
+    }
+
+    // (4) mobType cross-check — WARN only. This repo-root ESM gate cannot import
+    // the server TS mob ids, and hardcoding them here would silently drift.
+    // A generated content/schemas/mob-types.json (registry-binding follow-up,
+    // emitted from colyseus-server mob definitions) would upgrade this to FAIL.
+    for (const area of fm.mobSpawnAreas ?? [])
+      warn(`${label}: mobType "${area.mobType}" (area "${area.id}") unverified — no generated mob-types.json to check against`);
+
+    // (5) bible coverage — region-looking links/ids should anchor to a bible
+    //     `(region-xxx)` heading. Coverage only: WARN, never FAIL.
+    const regionRefs = new Set([...(fm.links ?? []), ...fm.regions.map((r) => r.id)]);
+    for (const ref of regionRefs) {
+      if (!ref.startsWith("region-")) continue;
+      if (!bibleRegions.has(ref)) warn(`${label}: region ref "${ref}" has no (${ref}) heading in bible.md`);
+    }
+  }
+
+  return files.length;
+}
+
+function finish(sheetCount = 0, mapCount = 0, storyCount = 0) {
   for (const w of warnings) console.log(`WARN  ${w}`);
   for (const f of failures) console.log(`FAIL  ${f}`);
-  console.log(`content-gate: ${sheetCount} sheets, ${failures.length} failures, ${warnings.length} warnings`);
+  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${failures.length} failures, ${warnings.length} warnings`);
   process.exit(failures.length ? 1 : 0);
 }
 
