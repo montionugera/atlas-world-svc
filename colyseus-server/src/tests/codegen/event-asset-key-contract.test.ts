@@ -7,37 +7,60 @@
  * lanes (sfx-events, vfx-events, character-content) bind against these forms,
  * so a silent drift here would break every dependent lane.
  *
- * Single enumeration source: we import the generator's own `genAssetKeys()` and
- * the SAME configs it reads (MOB_TYPES / WEAPON_TYPES / SKILLS). We do NOT
- * re-implement the generator's key-building — instead we assert (a) the
- * committed file equals the generator's output (round-trip), and (b) the
- * documented event→key forms hold against the live config value spaces. Keys
- * derive from server-authoritative config only — never from client input.
+ * We validate the COMMITTED `generated/asset-keys.json` against the SAME server
+ * configs the generator reads (MOB_TYPES / WEAPON_TYPES / SKILLS) — reconstructing
+ * the documented forms and asserting exact equality in both directions. We do NOT
+ * import the generator itself: it lives under `scripts/` (outside this package's
+ * tsc `rootDir: src`), so importing it breaks `tsc --noEmit`. Reconstructing from
+ * the configs is a stronger drift check anyway (committed file ↔ live config value
+ * spaces). Keys derive from server-authoritative config only — never client input.
  */
 import * as fs from 'fs'
 import * as path from 'path'
-import { genAssetKeys } from '../../../scripts/codegen/gen-asset-keys'
 import { MOB_TYPES } from '../../config/mobs'
 import { WEAPON_TYPES } from '../../config/combat/projectileInteractions'
 import { SKILLS } from '../../config/skills'
 
 const OUT = path.resolve(__dirname, '../../../generated/asset-keys.json')
 
-describe('event → asset-key binding contract', () => {
-  const generated = genAssetKeys()
-  const ids = new Set(generated.keys.map(k => k.id))
+type AssetKey = { id: string; kind: string }
 
-  it('committed asset-keys.json equals the generator output (single source of truth)', () => {
-    const onDisk = JSON.parse(fs.readFileSync(OUT, 'utf8'))
-    // Deep equality: the committed file must never drift from genAssetKeys().
-    expect(onDisk).toEqual(generated)
+/** The expected id→kind map, reconstructed from the live server configs. */
+function expectedKeys(): Map<string, string> {
+  const m = new Map<string, string>()
+  for (const mob of MOB_TYPES) m.set(`mob:${mob.id}`, 'character')
+  for (const type of Object.values(WEAPON_TYPES)) m.set(`projectile:${type}`, 'vfx')
+  m.set('player', 'character')
+  m.set('npc', 'character')
+  for (const skill of Object.values(SKILLS))
+    for (const effect of skill.effects) m.set(`zone:${effect.type}`, 'vfx')
+  return m
+}
+
+describe('event → asset-key binding contract', () => {
+  const onDisk: { version: number; keys: AssetKey[] } = JSON.parse(fs.readFileSync(OUT, 'utf8'))
+  const ids = new Set(onDisk.keys.map(k => k.id))
+  const kindById = new Map(onDisk.keys.map(k => [k.id, k.kind]))
+  const expected = expectedKeys()
+
+  it('committed asset-keys.json exactly matches the config-derived key set (no drift)', () => {
+    // Every committed id/kind is backed by a config value...
+    for (const k of onDisk.keys) {
+      expect(expected.has(k.id)).toBe(true)
+      expect(k.kind).toBe(expected.get(k.id))
+    }
+    // ...and every config value has a committed key (no missing keys).
+    for (const [id, kind] of expected) {
+      expect(ids.has(id)).toBe(true)
+      expect(kindById.get(id)).toBe(kind)
+    }
   })
 
   it('Mob.mobTypeId → mob:<id> for every configured mob (character)', () => {
     for (const mob of MOB_TYPES) {
       const key = `mob:${mob.id}`
       expect(ids.has(key)).toBe(true)
-      expect(generated.keys.find(k => k.id === key)!.kind).toBe('character')
+      expect(kindById.get(key)).toBe('character')
     }
   })
 
@@ -45,7 +68,7 @@ describe('event → asset-key binding contract', () => {
     for (const type of Object.values(WEAPON_TYPES)) {
       const key = `projectile:${type}`
       expect(ids.has(key)).toBe(true)
-      expect(generated.keys.find(k => k.id === key)!.kind).toBe('vfx')
+      expect(kindById.get(key)).toBe('vfx')
     }
   })
 
@@ -58,35 +81,27 @@ describe('event → asset-key binding contract', () => {
     for (const t of zoneTypes) {
       const key = `zone:${t}`
       expect(ids.has(key)).toBe(true)
-      expect(generated.keys.find(k => k.id === key)!.kind).toBe('vfx')
+      expect(kindById.get(key)).toBe('vfx')
     }
   })
 
   it('fixed-actor kinds player + npc are present (character)', () => {
     for (const key of ['player', 'npc']) {
       expect(ids.has(key)).toBe(true)
-      expect(generated.keys.find(k => k.id === key)!.kind).toBe('character')
+      expect(kindById.get(key)).toBe('character')
     }
   })
 
   it('no asset-key exists without a backing config value (no orphan keys)', () => {
-    const mobKeys = new Set(MOB_TYPES.map(m => `mob:${m.id}`))
-    const projKeys = new Set(Object.values(WEAPON_TYPES).map(t => `projectile:${t}`))
-    const zoneKeys = new Set<string>()
-    for (const skill of Object.values(SKILLS))
-      for (const effect of skill.effects) zoneKeys.add(`zone:${effect.type}`)
-    const fixed = new Set(['player', 'npc'])
-
     for (const key of ids) {
-      const backed = mobKeys.has(key) || projKeys.has(key) || zoneKeys.has(key) || fixed.has(key)
-      expect(backed).toBe(true)
+      expect(expected.has(key)).toBe(true)
     }
   })
 
   it('every emitted kind is one the render-spec taxonomy can resolve', () => {
     // Guard J (check_asset_manifest.mjs) enforces renderability; here we assert
     // the codegen only emits kinds the contract knows how to bind.
-    const emitted = new Set(generated.keys.map(k => k.kind))
+    const emitted = new Set(onDisk.keys.map(k => k.kind))
     for (const kind of emitted) {
       expect(['character', 'vfx']).toContain(kind)
     }
