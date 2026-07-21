@@ -22,7 +22,11 @@ const MAP_IDS = ['map-for-test-deflect', 'map-for-test-projectile', 'default-map
 describe('map spawn areas bind to real mob configs', () => {
   it('every MAP_CONFIG.mobSpawnAreas.mobType resolves via getMobTypeById', () => {
     for (const area of MAP_CONFIG.mobSpawnAreas) {
-      expect({ area: area.id, mobType: area.mobType, resolved: !!getMobTypeById(area.mobType) }).toEqual({
+      expect({
+        area: area.id,
+        mobType: area.mobType,
+        resolved: !!getMobTypeById(area.mobType),
+      }).toEqual({
         area: area.id,
         mobType: area.mobType,
         resolved: true,
@@ -30,11 +34,15 @@ describe('map spawn areas bind to real mob configs', () => {
     }
   })
 
-  it.each(MAP_IDS)('every spawn area for map "%s" resolves to a real mob config', (mapId) => {
+  it.each(MAP_IDS)('every spawn area for map "%s" resolves to a real mob config', mapId => {
     const areas = getMobSpawnAreasForMap(mapId)
     expect(areas.length).toBeGreaterThan(0)
     for (const area of areas) {
-      expect({ area: area.id, mobType: area.mobType, resolved: !!getMobTypeById(area.mobType) }).toEqual({
+      expect({
+        area: area.id,
+        mobType: area.mobType,
+        resolved: !!getMobTypeById(area.mobType),
+      }).toEqual({
         area: area.id,
         mobType: area.mobType,
         resolved: true,
