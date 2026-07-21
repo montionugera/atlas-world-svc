@@ -49,7 +49,8 @@ range, relocate, repeat. (`mob:spear_thrower`.)
 
 ### Unaligned wilds (faction-unaligned)
 Creatures the factions never claimed — no pack, no order, no territory of
-their own. They drift the meadow's edge and the ground between regions.
+their own. Collectively the meadow calls them **straylings**: things that
+drift its edge and the ground between regions, belonging to nothing.
 `mob:balanced` walks the middle line of everything; `mob:hybrid` mixes a
 thrown strike with a closing one; and their apex, the twin-striking
 `mob:double_attacker`, hits twice before a slower thing hits once — the

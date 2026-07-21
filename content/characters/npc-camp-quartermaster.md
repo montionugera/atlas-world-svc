@@ -32,6 +32,8 @@ clip map; no bespoke target planned for v1.
 ## Design Notes
 
 `role:npc`. A non-combatant anchor; any stats it carries are baseline support
-values sourced from server config, never from this sheet (v1 boundary). Enum
-intent: support / low speed / mid durability — a stationary presence, not a
-combatant. See the NPC config home added under `src/config/npcs/`.
+values sourced from server config (`combatStats` NPC/player baselines via the
+`addNPC` path), never from this sheet (v1 boundary). Enum intent: support / low
+speed / mid durability — a stationary presence, not a combatant. A dedicated
+NPC config registry (`src/config/npcs/`, mirroring `src/config/mobs/`) is a
+tracked follow-up; today NPCs resolve through `DEFAULT_NPC_STATS`.
