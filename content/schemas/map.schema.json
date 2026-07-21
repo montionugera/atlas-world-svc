@@ -1,11 +1,103 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Atlas map spec frontmatter (stub — expand in roadmap #4)",
+  "title": "Atlas map spec frontmatter",
+  "description": "All positions and dimensions are in WORLD UNITS (same space as physics/mapConfig).",
   "type": "object",
-  "required": ["id", "title"],
+  "required": ["id", "title", "world", "playerSpawn", "regions", "links"],
+  "additionalProperties": false,
+  "definitions": {
+    "point": {
+      "type": "object",
+      "required": ["x", "y"],
+      "additionalProperties": false,
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+    "rect": {
+      "type": "object",
+      "required": ["x", "y", "width", "height"],
+      "additionalProperties": false,
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number", "exclusiveMinimum": 0 },
+        "height": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  },
   "properties": {
     "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
     "title": { "type": "string", "minLength": 1 },
-    "links": { "type": "array", "items": { "type": "string" } }
+    "world": {
+      "type": "object",
+      "required": ["width", "height"],
+      "additionalProperties": false,
+      "properties": {
+        "width": { "type": "number", "exclusiveMinimum": 0 },
+        "height": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "playerSpawn": { "$ref": "#/definitions/point" },
+    "regions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "bounds"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+          "title": { "type": "string", "minLength": 1 },
+          "bounds": { "$ref": "#/definitions/rect" },
+          "spawnPoint": { "$ref": "#/definitions/point" }
+        }
+      }
+    },
+    "zoneHazards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "x", "y", "radius", "value"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "enum": ["freeze", "stun", "burn", "poison", "regen", "heal", "damage"]
+          },
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "radius": { "type": "number", "exclusiveMinimum": 0 },
+          "value": { "type": "number" },
+          "interval": { "type": "number", "exclusiveMinimum": 0 },
+          "duration": { "type": "number", "exclusiveMinimum": 0 },
+          "castTime": { "type": "number", "minimum": 0 },
+          "regionId": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
+        }
+      }
+    },
+    "mobSpawnAreas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "x", "y", "width", "height", "mobType", "count"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+([_-][a-z0-9]+)*$" },
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "width": { "type": "number", "exclusiveMinimum": 0 },
+          "height": { "type": "number", "exclusiveMinimum": 0 },
+          "mobType": { "type": "string", "minLength": 1 },
+          "count": { "type": "integer", "minimum": 0 },
+          "spawnIntervalMs": { "type": "number", "exclusiveMinimum": 0 },
+          "regionId": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
+        }
+      }
+    },
+    "links": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
   }
 }
