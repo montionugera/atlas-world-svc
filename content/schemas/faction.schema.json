@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas story node: faction",
+  "description": "One entry of content/story/factions.json. Part of the F-012 per-kind story graph (see docs/superpowers/specs/2026-07-22-epic-story-pipeline-design.md).",
+  "type": "object",
+  "required": ["id", "title", "kind", "summary", "links", "disposition", "mobFamily"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^faction-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "kind": { "const": "faction" },
+    "summary": { "type": "string", "minLength": 1 },
+    "links": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
+    },
+    "disposition": { "enum": ["hostile", "friendly", "neutral"] },
+    "mobFamily": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^mob:[a-z0-9_]+$" }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["factionId", "stance"],
+        "additionalProperties": false,
+        "properties": {
+          "factionId": { "type": "string", "pattern": "^faction-[a-z0-9]+(-[a-z0-9]+)*$" },
+          "stance": { "enum": ["ally", "enemy", "rival", "neutral"] }
+        }
+      }
+    }
+  }
+}

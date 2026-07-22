@@ -26,7 +26,7 @@
       "mob:defensive"
     ],
     "relationships": [],
-    "links": []
+    "links": ["region-icefield"]
   },
   {
     "id": "faction-thornveil",
@@ -38,7 +38,7 @@
       "mob:spear_thrower"
     ],
     "relationships": [],
-    "links": []
+    "links": ["region-thornveil"]
   },
   {
     "id": "faction-unaligned",
@@ -72,6 +72,6 @@
         "stance": "enemy"
       }
     ],
-    "links": []
+    "links": ["region-spawn-meadow"]
   }
 ]

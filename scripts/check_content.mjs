@@ -64,6 +64,32 @@ function sectionText(body, heading) {
   return (next === -1 ? rest : rest.slice(0, next)).trim();
 }
 
+// F-012: the story graph is 7 per-kind files (one global id-space, kind-prefixed
+// ids) instead of the old single story.json. STORY_KINDS / STORY_FILES / STORY_SCHEMAS
+// are the interface Tasks 2-4 (coherence gate) and gen_story_graph.mjs build on.
+const STORY_KINDS = ["region", "faction", "character", "arc", "quest", "event", "dialogue"];
+const STORY_FILES = {
+  region: "regions.json",
+  faction: "factions.json",
+  character: "characters.json",
+  arc: "arcs.json",
+  quest: "quests.json",
+  event: "events.json",
+  dialogue: "dialogue.json",
+};
+// story-character.schema.json (not character.schema.json) — that name is already
+// taken by the F-005 markdown character-SHEET schema (content/characters/*.md),
+// a different document. See content/schemas/story-character.schema.json header.
+const STORY_SCHEMAS = {
+  region: "region.schema.json",
+  faction: "faction.schema.json",
+  character: "story-character.schema.json",
+  arc: "arc.schema.json",
+  quest: "quest.schema.json",
+  event: "event.schema.json",
+  dialogue: "dialogue.schema.json",
+};
+
 const AjvClass = Ajv.default ?? Ajv;
 
 // Compile a schema file to an Ajv validator, or null if it can't be read.
@@ -88,58 +114,93 @@ function main() {
   return finish(sheetCount, mapCount, story.count);
 }
 
-// Validate content/story/story.json (regions + factions) and return the set of
-// story ids so the character branch can resolve links.story against it.
-// story.json is read as plain JSON (like asset-keys.json) — no TS/@atlas import.
-// A MISSING story.json is a soft skip (ids=null): the character→story check
-// simply can't run, mirroring how a missing bible.md downgrades region checks.
-// A story.json that IS present but malformed/invalid is a hard FAIL.
+// F-012: read all 7 per-kind story files under `${contentRoot}/story/` (each a
+// flat JSON array of same-kind nodes) into one global id→node map, validating
+// each node against its kind's schema on the way in. Plain JSON reads only —
+// no TS/@atlas import, same discipline as asset-keys.json.
+//
+// A kind whose file is missing on disk contributes an empty array for that
+// kind — not a failure (a content root can legitimately not have events yet).
+// A file that IS present but unparsable JSON, not a JSON array, or containing
+// a schema-invalid node is a hard FAIL. A duplicate id across ANY two files
+// (even two different kinds) is a hard FAIL — the id-space is global, and
+// kind-prefixed ids (region- faction- char- arc- quest- event- dlg-) make a
+// collision a clear authoring bug rather than an intentional kind switch.
+//
+// Interface consumed by Tasks 2-4 (coherence gate) and gen_story_graph.mjs.
+function loadStory(contentRoot) {
+  const nodes = new Map(); // id -> node, union across all 7 files
+  const byKind = new Map(); // kind -> node[]
+  const sourceFile = new Map(); // id -> filename, for duplicate-id messages
+  let anyFilePresent = false;
+
+  for (const kind of STORY_KINDS) {
+    const file = STORY_FILES[kind];
+    byKind.set(kind, []);
+
+    let raw;
+    try { raw = readFileSync(join(contentRoot, "story", file), "utf8"); }
+    catch { continue; } // this kind's file is absent → empty, not a failure
+    anyFilePresent = true;
+
+    let arr;
+    try { arr = JSON.parse(raw); }
+    catch (e) { fail(`story/${file}: cannot parse: ${e.message}`); continue; }
+    if (!Array.isArray(arr)) {
+      fail(`story/${file}: expected a JSON array of ${kind} nodes, got ${typeof arr}`);
+      continue;
+    }
+
+    const validate = compileSchema(join(contentRoot, "schemas", STORY_SCHEMAS[kind]), `${kind} schema`);
+    if (!validate) continue;
+
+    const kindNodes = [];
+    for (const entry of arr) {
+      const label = `story/${file}#${entry?.id ?? "?"}`;
+      if (!validate(entry)) {
+        for (const err of validate.errors)
+          fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
+        continue; // downstream checks assume a valid shape
+      }
+      if (nodes.has(entry.id)) {
+        fail(`${label}: duplicate story id "${entry.id}" (already defined in story/${sourceFile.get(entry.id)})`);
+        continue;
+      }
+      nodes.set(entry.id, entry);
+      sourceFile.set(entry.id, file);
+      kindNodes.push(entry);
+    }
+    byKind.set(kind, kindNodes);
+  }
+
+  return { nodes, byKind, anyFilePresent };
+}
+
+// Story-graph checks preserved from the pre-F-012 single-file gate, re-run
+// against the per-kind union: faction mobFamily → real asset key (WARN — this
+// stays a WARN, matching the map mobType check, until I-019's mob-types.json
+// lands and can hard-check it; see epic-story-pipeline-design.md §2 notes),
+// and (in checkCharacters) character sheets' links.story → a real story node
+// id (FAIL, unchanged). Full reference-resolution / whole-graph coherence
+// (quest.giver, arc.questIds, prereq DAG, orphans, ...) is Tasks 2-4, not here.
+//
+// A content root with none of the 7 story files present at all is a soft skip
+// (ids=null): the character→story check simply can't run, mirroring how a
+// missing bible.md downgrades region checks. Once at least one story file
+// exists, ids is a real (possibly empty) Set and the check runs for real.
 function checkStory(opts) {
-  const storyPath = join(opts.contentRoot, "story/story.json");
-  let raw;
-  try { raw = readFileSync(storyPath, "utf8"); }
-  catch { return { count: 0, ids: null }; } // no story.json → unverifiable, skip
-
-  let doc;
-  try { doc = JSON.parse(raw); }
-  catch (e) { fail(`story.json: cannot parse ${storyPath}: ${e.message}`); return { count: 0, ids: null }; }
-
-  const validate = compileSchema(join(opts.contentRoot, "schemas/story.schema.json"), "story schema");
-  if (!validate) return { count: 0, ids: null };
+  const { nodes, byKind, anyFilePresent } = loadStory(opts.contentRoot);
 
   const keysDoc = readJson(opts.keys, "asset-keys");
   const assetKeyIds = new Set((keysDoc?.keys ?? []).map((k) => k.id));
-
-  const entries = Array.isArray(doc) ? doc : (doc.entries ?? []);
-  const ids = new Set();
-
-  // Pass 1: schema, unique ids, faction mobFamily → real asset key.
-  for (const entry of entries) {
-    const label = `story/${entry?.id ?? "?"}`;
-    if (!validate(entry)) {
-      for (const err of validate.errors)
-        fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
-      continue; // downstream checks assume a valid shape
-    }
-    if (ids.has(entry.id)) fail(`${label}: duplicate story id "${entry.id}"`);
-    ids.add(entry.id);
-
-    if (entry.kind === "faction") {
-      for (const mk of entry.mobFamily) {
-        if (!assetKeyIds.has(mk)) fail(`${label}: mobFamily key "${mk}" not in asset-keys.json`);
-      }
+  for (const entry of byKind.get("faction")) {
+    for (const mk of entry.mobFamily) {
+      if (!assetKeyIds.has(mk))
+        warn(`story/${STORY_FILES.faction}#${entry.id}: mobFamily key "${mk}" not in asset-keys.json`);
     }
   }
 
-  // Pass 2: every links[] id resolves to another story id in this same file.
-  for (const entry of entries) {
-    if (typeof entry?.id !== "string") continue;
-    for (const l of entry.links ?? []) {
-      if (!ids.has(l)) fail(`story/${entry.id}: link "${l}" does not resolve to a story id`);
-    }
-  }
-
-  return { count: entries.length, ids };
+  return { count: nodes.size, ids: anyFilePresent ? new Set(nodes.keys()) : null };
 }
 
 function checkCharacters(opts, storyIds = null) {
@@ -188,12 +249,13 @@ function checkCharacters(opts, storyIds = null) {
     }
 
     // (4b) character → story integrity: every links.story id must resolve to a
-    // real story entry in story.json. Skipped only when story.json is absent
-    // (storyIds === null); when present, a dangling ref is a hard FAIL.
+    // real node id in the union of the 7 story/*.json files (F-012). Skipped
+    // only when none of those files exist (storyIds === null); when at least
+    // one is present, a dangling ref is a hard FAIL.
     if (storyIds && Array.isArray(fm.links?.story)) {
       for (const sid of fm.links.story) {
         if (!storyIds.has(sid))
-          fail(`${label}: links.story "${sid}" does not resolve to a story id in story.json`);
+          fail(`${label}: links.story "${sid}" does not resolve to a story node id`);
       }
     }
 

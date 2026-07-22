@@ -12,7 +12,6 @@
     "giver": "char-quartermaster",
     "region": "region-spawn-meadow",
     "faction": "faction-unaligned",
-    "prereq": null,
     "arcId": "arc-meadow-awakening",
     "objectives": [
       {

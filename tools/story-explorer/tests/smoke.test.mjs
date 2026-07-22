@@ -6,11 +6,15 @@ import { fileURLToPath } from 'node:url'
 import { buildGraph, danglingEdges, KINDS } from '../graph.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
+// content/story files are plural (regions.json, ...) except dialogue.json,
+// which stays singular — mirror that one exception here or this loader
+// silently reads a nonexistent dialogues.json and always sees 0 dialogue nodes.
 const load = () => {
   const files = {}
   for (const k of KINDS) {
+    const filename = k === 'dialogue' ? 'dialogue.json' : `${k}s.json`
     try {
-      files[`${k}s`] = JSON.parse(readFileSync(join(ROOT, `content/story/${k}s.json`), 'utf8'))
+      files[`${k}s`] = JSON.parse(readFileSync(join(ROOT, `content/story/${filename}`), 'utf8'))
     } catch {
       files[`${k}s`] = []
     }
