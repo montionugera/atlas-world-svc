@@ -179,9 +179,11 @@ function loadStory(contentRoot) {
 // F-012 Task 2: whole-graph cross-reference resolution. `story` is the
 // {nodes, byKind} shape returned by loadStory(); `assetKeyIds` is the Set of
 // ids from asset-keys.json. Every edge below FAILs on a dangling/wrong-kind
-// target, except the two `mob:*` pseudo-refs (quest.objectives[].targetId,
-// faction.mobFamily[]) which stay WARN until I-019's mob-types.json can
-// hard-check them (mirrors the map mobType check's discipline).
+// target, except the `mob:*` pseudo-ref quest.objectives[].targetId, which
+// stays WARN until I-019's mob-types.json can hard-check it (mirrors the map
+// mobType check's discipline). The sibling `mob:*` pseudo-ref
+// faction.mobFamily[] gets the same WARN treatment, but that check lives in
+// checkStory(), not here.
 //
 // Target-KIND matters, not just id existence — e.g. quest.giver must resolve
 // to a *character* node, not merely to any existing id — with the single
@@ -212,6 +214,8 @@ function resolveStoryRefs(story, assetKeyIds, fail, warn) {
     resolve(label, "giver", q.giver, ["character"]);
     resolve(label, "arcId", q.arcId, ["arc"]);
     resolve(label, "prereq", q.prereq, ["quest"]);
+    resolve(label, "faction", q.faction, ["faction"]);
+    resolve(label, "region", q.region, ["region"]);
     for (const obj of q.objectives) {
       if (obj.targetId.startsWith("mob:") && !assetKeyIds.has(obj.targetId))
         warn(`${label}: objectives targetId "${obj.targetId}" not in asset-keys.json`);

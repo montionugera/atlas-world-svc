@@ -146,6 +146,22 @@ test("dangling quest.prereq is a hard fail", () => {
   assert.match(r.out, /quest-x.*prereq.*quest-nope/);
 });
 
+test("dangling quest.faction is a hard fail", () => {
+  const quest = { ...QUEST, faction: "faction-nope" };
+  const dir = fixture({ characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
+  const r = runGate(dir);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /quest-x.*faction.*faction-nope/);
+});
+
+test("dangling quest.region is a hard fail", () => {
+  const quest = { ...QUEST, region: "region-nope" };
+  const dir = fixture({ characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
+  const r = runGate(dir);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /quest-x.*region.*region-nope/);
+});
+
 test("dangling arc.questIds entry is a hard fail", () => {
   const arc = { ...ARC, questIds: ["quest-nope"] };
   const dir = fixture({ arcs: [arc] });
@@ -187,7 +203,7 @@ test("dangling event.triggeredBy is a hard fail", () => {
 });
 
 test("dangling dialogue.speaker is a hard fail", () => {
-  const dlg = { ...DIALOGUE, speaker: "char-nope", context: undefined };
+  const dlg = { ...DIALOGUE, speaker: "char-nope" };
   delete dlg.context;
   const dir = fixture({ dialogue: [dlg] });
   const r = runGate(dir);
