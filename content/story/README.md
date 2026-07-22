@@ -32,7 +32,7 @@ ignored.
 | File | kind | Fields beyond the shared base |
 |---|---|---|
 | `regions.json` | `region` | `dangerTier`: `safe`\|`low`\|`mid`\|`high` |
-| `factions.json` | `faction` | `disposition`: `hostile`\|`friendly`\|`neutral`; `mobFamily[]` (`mob:*` keys, WARN-only against `asset-keys.json`); `relationships[]?` — `{factionId, stance: ally\|enemy\|rival\|neutral}` |
+| `factions.json` | `faction` | `disposition`: `hostile`\|`friendly`\|`neutral`; `mobFamily[]` (`mob:*` keys — hard FAIL if not a server mob id in `colyseus-server/generated/mob-types.json` (F-013); WARN-only against `asset-keys.json` render coverage); `relationships[]?` — `{factionId, stance: ally\|enemy\|rival\|neutral}` |
 | `characters.json` | `character` | `role`: `npc`\|`ally`\|`villain`\|`neutral`; `faction?`; `region?`; `assetKey?` (must resolve to a real key in `colyseus-server/generated/asset-keys.json` — hard FAIL if set and missing) |
 | `arcs.json` | `arc` | `act`: integer ≥1, unique across all arcs; `questIds[]`, minItems 1 |
 | `quests.json` | `quest` | `narrative {description, offerText, completeText}` (all required); `giver` (→ character); `arcId` (→ arc); `region?`; `faction?`; `prereq?` (→ quest); `objectives[]`, minItems 1 — each `{type, targetId, count≥1}` |
