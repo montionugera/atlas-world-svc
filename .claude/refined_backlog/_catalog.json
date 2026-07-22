@@ -166,8 +166,9 @@
     "title": "CI: add scripts test-suite step (node --test in scripts/) to ci.yml",
     "from_idea": "I-022",
     "created_at": "2026-07-22T16:42:49.824550+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-07-22T16:42:52.317906+00:00"
   }
 ]
