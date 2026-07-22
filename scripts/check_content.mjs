@@ -16,6 +16,7 @@ function parseArgs(argv) {
     contentRoot: join(ROOT, "content"),
     keys: join(ROOT, "colyseus-server/generated/asset-keys.json"),
     manifest: join(ROOT, "game-client/assets/manifest.json"),
+    mobTypes: join(ROOT, "colyseus-server/generated/mob-types.json"),
     requireComplete: false,
   };
   const takeValue = (name, i) => {
@@ -28,10 +29,27 @@ function parseArgs(argv) {
     if (a === "--content-root") opts.contentRoot = resolve(takeValue(a, ++i));
     else if (a === "--keys") opts.keys = resolve(takeValue(a, ++i));
     else if (a === "--manifest") opts.manifest = resolve(takeValue(a, ++i));
+    else if (a === "--mob-types") opts.mobTypes = resolve(takeValue(a, ++i));
     else if (a === "--require-complete") opts.requireComplete = true;
     else { console.error(`unknown arg: ${a}`); process.exit(2); }
   }
   return opts;
+}
+
+// F-013: load the codegen-emitted valid mob type id set. Missing, unparseable,
+// or shape-invalid (`mobTypes` not a string array) is ONE hard FAIL and
+// returns null — callers skip their mob checks so the single loader failure
+// isn't multiplied per ref, and the checks can never silently pass. This
+// deliberately does NOT mirror the story/bible soft-skip: the artifact is
+// committed and CI-refreshed, so absence means broken setup.
+function loadMobTypes(path) {
+  const doc = readJson(path, "mob-types", fail);
+  if (!doc) return null;
+  if (!Array.isArray(doc.mobTypes) || !doc.mobTypes.every((t) => typeof t === "string")) {
+    fail(`mob-types: ${path} is shape-invalid — expected { mobTypes: string[] }`);
+    return null;
+  }
+  return new Set([...doc.mobTypes].sort()); // sorted so FAIL messages list ids deterministically
 }
 
 const failures = [];
@@ -68,9 +86,10 @@ function listContentFiles(dir, label) {
 
 function main() {
   const opts = parseArgs(process.argv);
+  const mobTypes = loadMobTypes(opts.mobTypes);
   const story = checkStory(opts);
   const sheetCount = checkCharacters(opts, story.ids);
-  const mapCount = checkMaps(opts);
+  const mapCount = checkMaps(opts, mobTypes);
   return finish(sheetCount, mapCount, story.count);
 }
 
@@ -478,7 +497,7 @@ function bibleRegionIds(contentRoot) {
   return ids;
 }
 
-function checkMaps(opts) {
+function checkMaps(opts, mobTypes) {
   // Maps are OPTIONAL content — a content root without a maps/ dir is valid
   // (mirrors the story.json soft-skip). Skip BEFORE touching map.schema.json,
   // since a root with no maps/ also has no map schema and readJson would else
@@ -546,12 +565,16 @@ function checkMaps(opts) {
         fail(`${label}: zoneHazard ${hz.type}@${hz.x},${hz.y} is outside world ${w.width}x${w.height}`);
     }
 
-    // (4) mobType cross-check — WARN only. This repo-root ESM gate cannot import
-    // the server TS mob ids, and hardcoding them here would silently drift.
-    // A generated content/schemas/mob-types.json (registry-binding follow-up,
-    // emitted from colyseus-server mob definitions) would upgrade this to FAIL.
-    for (const area of fm.mobSpawnAreas ?? [])
-      warn(`${label}: mobType "${area.mobType}" (area "${area.id}") unverified — no generated mob-types.json to check against`);
+    // (4) mobType cross-check — hard FAIL against the codegen-emitted
+    // colyseus-server/generated/mob-types.json (F-013). mobTypes === null
+    // means the artifact itself already FAILed in loadMobTypes; skip here so
+    // that one failure isn't multiplied per area.
+    if (mobTypes) {
+      for (const area of fm.mobSpawnAreas ?? []) {
+        if (!mobTypes.has(area.mobType))
+          fail(`${label}: mobType "${area.mobType}" (area "${area.id}") is not a server mob id (valid: ${[...mobTypes].join(", ")})`);
+      }
+    }
 
     // (5) bible coverage — region-looking links/ids should anchor to a bible
     //     `(region-xxx)` heading. Coverage only: WARN, never FAIL.
