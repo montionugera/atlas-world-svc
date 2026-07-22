@@ -127,5 +127,14 @@
     "claimed_at": "2026-07-21T01:02:07.228197+00:00",
     "shipped_at": "2026-07-21T01:18:54.945626+00:00",
     "promoted_at": "2026-07-21T18:04:15.305255+00:00"
+  },
+  {
+    "id": "F-012",
+    "title": "Epic Story Pipeline: full narrative graph (7 per-kind files, shared id-space) + whole-graph coherence gate (resolution + orphans + prereq-DAG) + dual visualizer (static Mermaid drift-gate + interactive story-explorer). Spec docs/superpowers/specs/2026-07-22-epic-story-pipeline-design.md + plan docs/superpowers/plans/2026-07-22-epic-story-pipeline.md (both on release/1.4). Content+gate+viz only; runtime deferred I-017; mob refs WARN until I-019",
+    "from_idea": "I-020",
+    "created_at": "2026-07-22T08:11:44.494089+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
