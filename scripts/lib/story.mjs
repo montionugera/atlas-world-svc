@@ -13,7 +13,7 @@ const AjvClass = Ajv.default ?? Ajv;
 // F-012: the story graph is 7 per-kind files (one global id-space, kind-prefixed
 // ids) instead of the old single story.json. STORY_KINDS / STORY_FILES / STORY_SCHEMAS
 // are the interface the content gate and gen_story_graph.mjs both build on.
-export const STORY_KINDS = ["act", "region", "faction", "character", "arc", "quest", "event", "dialogue"];
+export const STORY_KINDS = ["act", "region", "faction", "character", "arc", "quest", "event", "dialogue", "lore"];
 export const STORY_FILES = {
   act: "acts.json",
   region: "regions.json",
@@ -23,6 +23,7 @@ export const STORY_FILES = {
   quest: "quests.json",
   event: "events.json",
   dialogue: "dialogue.json",
+  lore: "lore.json",
 };
 // story-character.schema.json (not character.schema.json) — that name is already
 // taken by the F-005 markdown character-SHEET schema (content/characters/*.md),
@@ -36,6 +37,7 @@ export const STORY_SCHEMAS = {
   quest: "quest.schema.json",
   event: "event.schema.json",
   dialogue: "dialogue.schema.json",
+  lore: "lore.schema.json",
 };
 
 // Read+parse a JSON file, reporting `${label}: cannot read/parse ${path}: ...`

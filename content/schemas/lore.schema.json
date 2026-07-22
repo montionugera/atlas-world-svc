@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas story node: lore",
+  "description": "One entry of content/story/lore.json — a discoverable fragment (Hollow-Knight-style environmental storytelling). anchor = the node it is attached to; thread = the mystery it feeds. See docs/superpowers/specs/2026-07-22-narrative-system-v2-design.md.",
+  "type": "object",
+  "required": ["id", "title", "kind", "summary", "links", "body", "anchor", "thread"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^lore-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "kind": { "const": "lore" },
+    "summary": { "type": "string", "minLength": 1 },
+    "links": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" } },
+    "body": { "type": "string", "minLength": 1 },
+    "anchor": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "thread": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
+  }
+}

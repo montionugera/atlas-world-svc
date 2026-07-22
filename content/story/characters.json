@@ -30,6 +30,8 @@
     "faction": "faction-unaligned",
     "region": "region-spawn-meadow",
     "assetKey": "mob:double_attacker",
+    "status": "dead",
+    "diedAt": "event-twin-strike-falls",
     "links": []
   }
 ]

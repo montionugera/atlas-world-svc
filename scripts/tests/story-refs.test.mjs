@@ -23,6 +23,7 @@ const STORY_SCHEMAS = [
   "quest.schema.json",
   "event.schema.json",
   "dialogue.schema.json",
+  "lore.schema.json",
   "character.schema.json", // checkCharacters() also runs; needed even with no sheets
 ];
 
@@ -38,7 +39,7 @@ const MANIFEST = { version: 2, entries: {} };
 
 function fixture({
   acts = [], regions = [], factions = [], characters = [], arcs = [], quests = [],
-  events = [], dialogue = [], keys = KEYS, manifest = MANIFEST,
+  events = [], dialogue = [], lore = [], keys = KEYS, manifest = MANIFEST,
 } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "story-refs-"));
   mkdirSync(join(dir, "content/story"), { recursive: true });
@@ -47,7 +48,7 @@ function fixture({
   for (const schema of STORY_SCHEMAS)
     cpSync(join(ROOT, "content/schemas", schema), join(dir, "content/schemas", schema));
 
-  const files = { acts, regions, factions, characters, arcs, quests, events, dialogue };
+  const files = { acts, regions, factions, characters, arcs, quests, events, dialogue, lore };
   for (const [name, arr] of Object.entries(files))
     writeFileSync(join(dir, `content/story/${name}.json`), JSON.stringify(arr));
 

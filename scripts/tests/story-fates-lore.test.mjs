@@ -1,5 +1,5 @@
-// Narrative System v2 Task 1: act-* kind + arc.actId. Same synthetic-root
-// pattern as story-refs.test.mjs.
+// Narrative System v2 Task 3: character fates (status/diedAt) + lore-*
+// fragments. Same synthetic-root pattern as story-unlocks.test.mjs.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -38,7 +38,7 @@ function fixture({
   acts = [], regions = [], factions = [], characters = [], arcs = [], quests = [],
   events = [], dialogue = [], lore = [], keys = KEYS, manifest = MANIFEST,
 } = {}) {
-  const dir = mkdtempSync(join(tmpdir(), "story-acts-"));
+  const dir = mkdtempSync(join(tmpdir(), "story-fates-lore-"));
   mkdirSync(join(dir, "content/story"), { recursive: true });
   mkdirSync(join(dir, "content/schemas"), { recursive: true });
   mkdirSync(join(dir, "content/characters"), { recursive: true }); // empty is fine, avoids "dir unreadable"
@@ -72,7 +72,6 @@ function runGate(dir, extra = []) {
 const clone = (o) => JSON.parse(JSON.stringify(o));
 
 const ACT1 = { id: "act-1", kind: "act", title: "Act One", summary: "s", links: [], order: 1, theme: "foothold" };
-const ACT2 = { id: "act-2", kind: "act", title: "Act Two", summary: "s", links: [], order: 2, theme: "silence" };
 const REGION = { id: "region-town", kind: "region", title: "T", summary: "s", links: [], dangerTier: "safe" };
 const FACTION = { id: "faction-a", kind: "faction", title: "A", summary: "s", links: [], disposition: "friendly", mobFamily: [], relationships: [] };
 const CHARACTER = { id: "char-npc", kind: "character", title: "N", summary: "s", links: [], role: "npc", faction: "faction-a", region: "region-town" };
@@ -80,47 +79,56 @@ const QUEST = { id: "quest-x", kind: "quest", title: "X", summary: "s", links: [
 const ARC = { id: "arc-a", kind: "arc", title: "A", summary: "s", links: [], actId: "act-1", questIds: ["quest-x"] };
 const BASE = { acts: [ACT1], regions: [REGION], factions: [FACTION], characters: [CHARACTER], arcs: [ARC], quests: [QUEST] };
 
-test("green: arc.actId resolving to an act node passes", () => {
-  const { code, out } = runGate(fixture(clone(BASE)));
-  assert.equal(code, 0, out);
-});
+const EVENT = { id: "event-e", kind: "event", title: "E", summary: "s", links: [], timelineOrder: 1, involves: ["char-npc"] };
 
-test("red: dangling arc.actId FAILs", () => {
-  const files = clone(BASE);
-  files.arcs[0].actId = "act-missing";
-  const { code, out } = runGate(fixture(files));
-  assert.equal(code, 1);
-  assert.match(out, /actId "act-missing" does not resolve/);
-});
+const LORE_A = { id: "lore-oath", kind: "lore", title: "Oath", summary: "s", links: [], body: "Hold, though the hall is empty.", anchor: "faction-a", thread: "the-first-claim" };
+const LORE_B = { id: "lore-stone", kind: "lore", title: "Stone", summary: "s", links: [], body: "CLAIMED.", anchor: "region-town", thread: "the-first-claim" };
 
-test("red: non-contiguous act orders FAIL", () => {
+test("green: dead character with diedAt -> real event passes", () => {
   const files = clone(BASE);
-  files.acts = [ACT1, { ...clone(ACT2), order: 3 }];
-  const { code, out } = runGate(fixture(files));
-  assert.equal(code, 1);
-  assert.match(out, /act orders .* not contiguous/);
-});
-
-test("red: duplicate act order FAILs", () => {
-  const files = clone(BASE);
-  files.acts = [ACT1, { ...clone(ACT2), order: 1 }];
-  const { code, out } = runGate(fixture(files));
-  assert.equal(code, 1);
-  assert.match(out, /duplicate order 1/);
-});
-
-test("green: two arcs sharing one act is allowed (parallel storylines)", () => {
-  const files = clone(BASE);
-  files.quests.push({ ...clone(QUEST), id: "quest-y", arcId: "arc-b" });
-  files.arcs.push({ ...clone(ARC), id: "arc-b", questIds: ["quest-y"] });
+  files.events = [clone(EVENT)];
+  files.characters[0] = { ...clone(CHARACTER), status: "dead", diedAt: "event-e" };
   const { code, out } = runGate(fixture(files));
   assert.equal(code, 0, out);
 });
 
-test("red: old integer arc.act field is schema-rejected", () => {
+test("red: diedAt with status alive FAILs", () => {
   const files = clone(BASE);
-  delete files.arcs[0].actId;
-  files.arcs[0].act = 1;
-  const { code } = runGate(fixture(files));
+  files.events = [clone(EVENT)];
+  files.characters[0] = { ...clone(CHARACTER), diedAt: "event-e" }; // status defaults alive
+  const { code, out } = runGate(fixture(files));
   assert.equal(code, 1);
+  assert.match(out, /diedAt "event-e" set but status is "alive"/);
+});
+
+test("red: dangling diedAt FAILs", () => {
+  const files = clone(BASE);
+  files.characters[0] = { ...clone(CHARACTER), status: "dead", diedAt: "event-ghost" };
+  const { code, out } = runGate(fixture(files));
+  assert.equal(code, 1);
+  assert.match(out, /diedAt "event-ghost" does not resolve/);
+});
+
+test("green: two lore fragments on one thread pass with no thread WARN", () => {
+  const files = clone(BASE);
+  files.lore = [LORE_A, LORE_B];
+  const { code, out } = runGate(fixture(files));
+  assert.equal(code, 0, out);
+  assert.doesNotMatch(out, /thread/);
+});
+
+test("red: dangling lore.anchor FAILs", () => {
+  const files = clone(BASE);
+  files.lore = [{ ...clone(LORE_A), anchor: "region-ghost" }, clone(LORE_B)];
+  const { code, out } = runGate(fixture(files));
+  assert.equal(code, 1);
+  assert.match(out, /anchor "region-ghost" does not resolve/);
+});
+
+test("warn: singleton thread WARNs but exits 0", () => {
+  const files = clone(BASE);
+  files.lore = [clone(LORE_A)];
+  const { code, out } = runGate(fixture(files));
+  assert.equal(code, 0, out);
+  assert.match(out, /WARN .*thread "the-first-claim" has only 1 fragment/);
 });

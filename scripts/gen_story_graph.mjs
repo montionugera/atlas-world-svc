@@ -43,6 +43,10 @@ const CLASS_STYLES = {
   quest: "fill:#FAB005,color:#000,stroke:#E67700,stroke-width:1px",
   event: "fill:#FA5252,color:#fff,stroke:#C92A2A,stroke-width:1px",
   dialogue: "fill:#868E96,color:#fff,stroke:#495057,stroke-width:1px",
+  // Narrative System v2 Task 3 placeholder — full lore-edge rendering
+  // (lore.anchor) lands in Task 4; this entry only keeps `classDef lore ...`
+  // from emitting `undefined` now that STORY_KINDS includes "lore".
+  lore: "fill:#66D9E8,color:#000,stroke:#0B7285,stroke-width:1px",
 };
 
 // One row per story node, sorted by id — deterministic regardless of the

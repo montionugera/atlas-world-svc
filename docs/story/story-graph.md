@@ -21,6 +21,7 @@ flowchart LR
   classDef quest fill:#FAB005,color:#000,stroke:#E67700,stroke-width:1px
   classDef event fill:#FA5252,color:#fff,stroke:#C92A2A,stroke-width:1px
   classDef dialogue fill:#868E96,color:#fff,stroke:#495057,stroke-width:1px
+  classDef lore fill:#66D9E8,color:#000,stroke:#0B7285,stroke-width:1px
 
   n_act_1["act-1"]:::act
   n_act_2["act-2"]:::act
@@ -38,6 +39,8 @@ flowchart LR
   n_faction_stoneguard["faction-stoneguard"]:::faction
   n_faction_thornveil["faction-thornveil"]:::faction
   n_faction_unaligned["faction-unaligned"]:::faction
+  n_lore_first_claim_stone["lore-first-claim-stone"]:::lore
+  n_lore_guarded_nothing["lore-guarded-nothing"]:::lore
   n_quest_cull_the_packs["quest-cull-the-packs"]:::quest
   n_quest_first_steps["quest-first-steps"]:::quest
   n_quest_icefield_reckoning["quest-icefield-reckoning"]:::quest

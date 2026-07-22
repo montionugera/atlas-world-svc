@@ -53,12 +53,22 @@ test("the seed epic exercises every kind and every unlockedBy/edge shape (2 arcs
   const quests = readStory("quests.json");
   const events = readStory("events.json");
   const dialogue = readStory("dialogue.json");
+  const lore = readStory("lore.json");
+  const characters = readStory("characters.json");
 
   assert.equal(arcs.length, 2, "expected 2 arcs total");
   assert.equal(new Set(arcs.map((a) => a.actId)).size, arcs.length, "arc.actId values must be unique in the seed (2 arcs, 2 acts)");
   assert.ok(quests.length >= 4, "expected at least 4 quests total");
   assert.ok(events.length >= 2, "expected at least 2 events (events.json was empty before Task 7)");
   assert.ok(dialogue.length >= 2, "expected at least 2 dialogue nodes (dialogue.json was empty before Task 7)");
+  assert.ok(lore.length >= 2, "expected at least 2 lore fragments (Narrative System v2 Task 3 seed thread)");
+
+  // Narrative System v2 Task 3: char-ashfang-alpha (the Twin-Strike) dies in
+  // event-twin-strike-falls — proves the seed exercises character fates.
+  const alpha = characters.find((c) => c.id === "char-ashfang-alpha");
+  assert.ok(alpha, "expected char-ashfang-alpha in the seed");
+  assert.equal(alpha.status, "dead", "expected char-ashfang-alpha to be dead");
+  assert.equal(alpha.diedAt, "event-twin-strike-falls", "expected char-ashfang-alpha.diedAt to resolve to its death event");
 
   // A quest whose arcId belongs to the second (highest-order) arc must have an
   // unlockedBy quest-* chain reaching back into the first arc — proves the

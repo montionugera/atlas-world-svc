@@ -147,6 +147,15 @@ function resolveStoryRefs(story, assetKeyIds, fail, warn) {
     resolve(label, "region", c.region, ["region"]);
     if (c.assetKey !== undefined && !assetKeyIds.has(c.assetKey))
       fail(`${label}: assetKey "${c.assetKey}" not in asset-keys.json`);
+    resolve(label, "diedAt", c.diedAt, ["event"]);
+    if (c.diedAt !== undefined && (c.status ?? "alive") === "alive")
+      fail(`${label}: diedAt "${c.diedAt}" set but status is "alive"`);
+  }
+
+  for (const l of byKind.get("lore")) {
+    const label = `story/${STORY_FILES.lore}#${l.id}`;
+    if (!nodes.has(l.anchor))
+      fail(`${label}: anchor "${l.anchor}" does not resolve to any story node`);
   }
 
   for (const e of byKind.get("event")) {
@@ -210,7 +219,9 @@ function buildReverseRefIndex(byKind) {
   for (const c of byKind.get("character")) {
     addRef(c.faction, "character");
     addRef(c.region, "character");
+    addRef(c.diedAt, "character");
   }
+  for (const l of byKind.get("lore")) addRef(l.anchor, "lore");
   for (const e of byKind.get("event")) {
     for (const iid of e.involves) addRef(iid, "event");
     addRef(e.triggeredBy, "event");
@@ -378,6 +389,19 @@ function checkStoryCoherence(story, fail, warn, requireComplete) {
     if (act.order > e.timelineOrder)
       warn(`story/${STORY_FILES.event}#${e.id}: triggeredBy quest "${quest.id}"'s act "${act.id}" order ${act.order} is later than event timelineOrder ${e.timelineOrder}`);
   }
+
+  // --- lore.thread size WARN (never escalated — coverage-of-a-mystery,
+  // deliberately outside --require-complete, matching the triggeredBy WARN's
+  // reasoning) ----------------------------------------------------------------
+
+  const byThread = new Map();
+  for (const l of byKind.get("lore")) {
+    if (!byThread.has(l.thread)) byThread.set(l.thread, []);
+    byThread.get(l.thread).push(l);
+  }
+  for (const [thread, frags] of byThread)
+    if (frags.length < 2)
+      warn(`story/${STORY_FILES.lore}#${frags[0].id}: thread "${thread}" has only 1 fragment — a thread of one isn't a mystery`);
 }
 
 // Story-graph checks preserved from the pre-F-012 single-file gate, re-run
