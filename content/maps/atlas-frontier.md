@@ -86,6 +86,6 @@ bounds.
 - Every `mobSpawnAreas[].regionId` and `zoneHazards[].regionId` references a
   declared region id above — the content gate hard-fails on any dangling ref.
 - `mobType` ids (`balanced`, `defensive`, `spear_thrower`) are the real
-  `colyseus-server` mob definition ids; the gate currently treats mobType as an
-  unverified WARN pending a generated `mob-types.json` registry binding.
+  `colyseus-server` mob definition ids; the gate hard-FAILs any mobType not in
+  the generated `colyseus-server/generated/mob-types.json` (F-013).
 - `links` point back at the three bible region ids for coverage cross-check.

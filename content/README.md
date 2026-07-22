@@ -60,6 +60,23 @@ Authoring a sheet in detail:
    - **Numbers (server-side)**: HP, damage, cooldowns, balance knobs
    - Character sheets declare design intent; server owns tuning.
 
+## Mob References (maps + story)
+
+Every mob reference in authored content is a **hard gate FAIL** if it isn't a
+real server mob id (F-013): map `mobSpawnAreas[].mobType`, story
+`faction.mobFamily[]`, and quest `objectives[].targetId` of form `mob:*`.
+Valid ids live in the committed `colyseus-server/generated/mob-types.json`,
+emitted from the live server `MOB_TYPES` config.
+
+Adding or renaming a mob definition:
+
+1. Edit `colyseus-server/src/config/mobs/definitions/`
+2. `bash colyseus-server/scripts/codegen/gen-mob-types.sh` (and
+   `gen-asset-keys.sh` — the render keys change too)
+3. Commit the refreshed `generated/*.json` — local `check_content.mjs` runs
+   FAIL against a stale file. CI regenerates both before the gates as a
+   backstop.
+
 ## World Bible
 
 `content/story/bible.md` is the creative seed: setting, tone, factions, regions, timeline. Character sheets link to section ids via `links.story`. Formal schema and versioning land with roadmap #3.

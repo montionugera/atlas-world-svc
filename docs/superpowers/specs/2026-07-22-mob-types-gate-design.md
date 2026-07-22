@@ -100,6 +100,14 @@ flowchart LR
   "renderable" if the two sets ever diverge. (Post-F-012 this lands in the
   story-graph code — `scripts/lib/story.mjs` / `resolveStoryRefs` — not the
   current single-file `checkStory`.)
+- **Prefix escape hatch (added 2026-07-22):** an objective with
+  `type: "MOB_KILLED"` whose `targetId` does NOT start with `mob:` is also a
+  hard FAIL. `quest.schema.json` leaves `targetId` as free-form `minLength: 1`
+  (unlike `mobFamily`'s `^mob:[a-z0-9_]+$` pattern), so without this rule a
+  prefixless typo (`"aggressive"`, `"mbo:aggressive"`) would silently skip
+  every mob check — the same bug class, one typo over. Keyed on the objective
+  `type`, not a blanket schema pattern, so future non-mob objective types stay
+  legal.
 
 ### 3. CI
 
@@ -117,6 +125,7 @@ step ordering to reason about.
 | map with typo'd `mobType` | FAIL naming file, area, valid ids |
 | `mob-types.json` absent/malformed (explicit bogus `--mob-types` path) | FAIL (single failure), mob checks skipped |
 | story `mobFamily` / objective `targetId` with bogus mob id | FAIL |
+| `MOB_KILLED` objective whose `targetId` lacks the `mob:` prefix | FAIL |
 
 **Fixture hermeticity (in scope):** because the `--mob-types` default resolves
 script-relative to the real committed artifact, every existing `runGate`

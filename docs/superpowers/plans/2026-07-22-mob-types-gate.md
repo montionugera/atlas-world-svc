@@ -469,6 +469,16 @@ test("faction.mobFamily[] entry not a server mob id is a hard fail", () => {
   assert.match(r.out, /FAIL.*faction-a.*mobFamily "mob:nope" is not a server mob id \(valid: aggressive\)/);
 });
 
+test("MOB_KILLED objective whose targetId lacks the mob: prefix is a hard fail", () => {
+  // quest.schema.json leaves targetId free-form (minLength: 1), so without
+  // this rule a prefixless typo skips every mob check — the prefix escape hatch.
+  const quest = { ...QUEST, objectives: [{ type: "MOB_KILLED", targetId: "aggressive", count: 1 }] };
+  const dir = fixture({ characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
+  const r = runGate(dir);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /FAIL.*quest-x.*objectives targetId "aggressive" \(type MOB_KILLED\) must be a mob:<id> ref/);
+});
+
 test("renderable-but-not-spawnable mob key (in asset-keys, not mob-types) is a hard fail", () => {
   // The divergence Decision 2 exists for: a decorative/unreleased mob:* asset
   // key must not count as spawnable.
@@ -492,7 +502,7 @@ test("spawnable-but-not-renderable mob key (in mob-types, not asset-keys) stays 
 - [ ] **Step 2: Run to verify they fail**
 
 Run: `npm test --prefix scripts -- tests/story-refs.test.mjs`
-Expected: the first three new tests FAIL (gate still exits 0 / emits WARN); the fourth passes incidentally. Everything else green.
+Expected: the first four new tests FAIL (gate still exits 0 / emits WARN, and the prefixless targetId is silently skipped); the fifth (spawnable-but-not-renderable) passes incidentally. Everything else green.
 
 - [ ] **Step 3: Implement the story flips in `scripts/check_content.mjs`**
 
@@ -528,7 +538,15 @@ and pass the set through the resolver call below it:
 
 ```js
     for (const obj of q.objectives) {
-      if (!obj.targetId.startsWith("mob:")) continue;
+      if (!obj.targetId.startsWith("mob:")) {
+        // F-013: quest.schema.json leaves targetId free-form (minLength: 1),
+        // so a prefixless typo on a MOB_KILLED objective would silently skip
+        // every mob check below — close the escape hatch. Keyed on the
+        // objective type so future non-mob objective types stay legal.
+        if (obj.type === "MOB_KILLED")
+          fail(`${label}: objectives targetId "${obj.targetId}" (type MOB_KILLED) must be a mob:<id> ref`);
+        continue;
+      }
       if (!assetKeyIds.has(obj.targetId))
         warn(`${label}: objectives targetId "${obj.targetId}" not in asset-keys.json`);
       // F-013: hard spawnability check (see mobFamily note in checkStory).
@@ -551,7 +569,7 @@ and in the `checkStory` header comment (~363-369), replace "(WARN — this stays
 - [ ] **Step 4: Run to verify it passes**
 
 Run: `npm test --prefix scripts -- tests/story-refs.test.mjs`
-Expected: PASS (all tests, including the 4 from Step 1).
+Expected: PASS (all tests, including the 5 from Step 1).
 
 - [ ] **Step 5: Full suite + real tree**
 
