@@ -16,23 +16,12 @@
  * kept separate so a future renderable-only key (decorative variant,
  * unreleased art) never counts as spawnable.
  *
- * Lives under colyseus-server/scripts/ (not src/) by design, alongside the
- * other codegen entrypoints. Run via ts-node --transpile-only.
+ * CLI driver only — the pure builder lives in src/config/mobs/genMobTypes.ts
+ * (inside the tsc rootDir, so the unit test's direct import compiles in the
+ * production build; importing THIS file from src/tests breaks `tsc` with
+ * TS6059). Run via ts-node --transpile-only.
  */
-import { MOB_TYPES } from '../../src/config/mobs'
-
-export interface MobTypeSet {
-  version: number
-  mobTypes: string[]
-}
-
-const VERSION = 1
-
-/** Build the valid mob type id set from the live server config. */
-export function genMobTypes(): MobTypeSet {
-  const mobTypes = [...new Set(MOB_TYPES.map((m) => m.id))].sort()
-  return { version: VERSION, mobTypes }
-}
+import { genMobTypes } from '../../src/config/mobs/genMobTypes'
 
 // CLI driver: single optional arg = output file path.
 if (require.main === module) {
