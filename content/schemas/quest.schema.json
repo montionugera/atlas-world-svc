@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas story node: quest",
+  "description": "One entry of content/story/quests.json. Part of the F-012 per-kind story graph (see docs/superpowers/specs/2026-07-22-epic-story-pipeline-design.md).",
+  "type": "object",
+  "required": ["id", "title", "kind", "summary", "links", "narrative", "giver", "arcId", "objectives"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^quest-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "kind": { "const": "quest" },
+    "summary": { "type": "string", "minLength": 1 },
+    "links": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
+    },
+    "narrative": {
+      "type": "object",
+      "required": ["description", "offerText", "completeText"],
+      "additionalProperties": false,
+      "properties": {
+        "description": { "type": "string", "minLength": 1 },
+        "offerText": { "type": "string", "minLength": 1 },
+        "completeText": { "type": "string", "minLength": 1 }
+      }
+    },
+    "giver": { "type": "string", "pattern": "^char-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "arcId": { "type": "string", "pattern": "^arc-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "region": { "type": "string", "pattern": "^region-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "faction": { "type": "string", "pattern": "^faction-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "prereq": { "type": "string", "pattern": "^quest-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "objectives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type", "targetId", "count"],
+        "additionalProperties": false,
+        "properties": {
+          "type": { "type": "string", "minLength": 1 },
+          "targetId": { "type": "string", "minLength": 1 },
+          "count": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  }
+}

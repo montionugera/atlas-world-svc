@@ -1,0 +1,30 @@
+[
+  {
+    "id": "event-twin-strike-falls",
+    "kind": "event",
+    "title": "The Twin-Strike Falls",
+    "summary": "The meadow's apex strayling goes down, and the expedition finally sees past the tent line.",
+    "links": [],
+    "timelineOrder": 1,
+    "involves": [
+      "char-ashfang-alpha",
+      "char-expedition-member",
+      "region-spawn-meadow"
+    ],
+    "triggeredBy": "quest-the-twin-strike"
+  },
+  {
+    "id": "event-icefield-thornveil-standoff",
+    "kind": "event",
+    "title": "Icefield-Thornveil Standoff",
+    "summary": "With the Stoneguard's line broken, Thornveil scouts test the opening from across the frontier.",
+    "links": [],
+    "timelineOrder": 3,
+    "involves": [
+      "faction-stoneguard",
+      "faction-thornveil",
+      "region-icefield"
+    ],
+    "triggeredBy": "quest-icefield-reckoning"
+  }
+]

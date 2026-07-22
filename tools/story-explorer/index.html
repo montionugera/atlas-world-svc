@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Story Explorer — atlas</title>
+<style>
+  :root{--bg:#12141a;--panel:#1b1e27;--ink:#e7e9ee;--mut:#8b90a0;--line:#2c313d;
+    --region:#4a9d7f;--faction:#c65f5f;--character:#c8a24a;--arc:#7d6cc4;--quest:#4a7fc8;--event:#c07ac0;--dialogue:#5aa8b0;}
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);display:flex;height:100vh;overflow:hidden}
+  header{position:fixed;top:0;left:0;right:0;height:52px;display:flex;align-items:center;gap:16px;padding:0 18px;background:var(--panel);border-bottom:1px solid var(--line);z-index:10}
+  header h1{font-size:15px;margin:0;font-weight:650;letter-spacing:.2px}
+  header .sub{color:var(--mut);font-size:12px}
+  .filters{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer;text-transform:capitalize}
+  .chip.on{color:var(--ink)}
+  .chip[data-kind=region].on{border-color:var(--region);color:var(--region)}
+  .chip[data-kind=faction].on{border-color:var(--faction);color:var(--faction)}
+  .chip[data-kind=character].on{border-color:var(--character);color:var(--character)}
+  .chip[data-kind=arc].on{border-color:var(--arc);color:var(--arc)}
+  .chip[data-kind=quest].on{border-color:var(--quest);color:var(--quest)}
+  .chip[data-kind=event].on{border-color:var(--event);color:var(--event)}
+  .chip[data-kind=dialogue].on{border-color:var(--dialogue);color:var(--dialogue)}
+  #stage{flex:1;margin-top:52px;overflow:auto}
+  svg{display:block}
+  .node rect{rx:8;cursor:pointer;stroke-width:1.5}
+  .node text{fill:var(--ink);font-size:12px;pointer-events:none}
+  .node .k{fill:var(--mut);font-size:9px;text-transform:uppercase;letter-spacing:.5px}
+  .edge{stroke:var(--line);stroke-width:1.4;fill:none;marker-end:url(#arrow)}
+  .edge.hi{stroke:#e7e9ee;stroke-width:2.2}
+  .elabel{fill:var(--mut);font-size:9px}
+  .node.dim{opacity:.22}
+  aside{width:340px;margin-top:52px;background:var(--panel);border-left:1px solid var(--line);padding:18px;overflow:auto}
+  aside .empty{color:var(--mut)}
+  aside h2{font-size:15px;margin:.2rem 0}
+  aside .kk{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.6px;padding:2px 8px;border-radius:6px;color:#12141a;font-weight:700}
+  aside pre{background:#0e0f14;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;font-size:11.5px;color:#cfd3dd}
+  aside .rel{margin:.3rem 0;color:var(--mut)}
+  aside .rel a{color:var(--quest);cursor:pointer;text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>Story Explorer</h1><span class="sub" id="sub">loading…</span>
+  <div class="filters" id="filters"></div>
+</header>
+<div id="stage"><svg id="svg"></svg></div>
+<aside id="panel"><div class="empty">Click a node to inspect it. Click a <b>quest</b> to trace its prereq chain.</div></aside>
+
+<script type="module">
+import { buildGraph, KINDS } from './graph.mjs'
+const COLORS = {region:'#4a9d7f',faction:'#c65f5f',character:'#c8a24a',arc:'#7d6cc4',quest:'#4a7fc8',event:'#c07ac0',dialogue:'#5aa8b0'}
+const COLS = KINDS
+
+async function load(){
+  const files={}
+  // content/story files are plural (regions.json, ...) except dialogue.json,
+  // which stays singular — a `${k}s.json` fetch for 'dialogue' silently 404s
+  // to dialogues.json and always sees 0 dialogue nodes. Mirror the exception
+  // (see tools/story-explorer/tests/smoke.test.mjs).
+  await Promise.all(KINDS.map(async k=>{
+    const filename = k === 'dialogue' ? 'dialogue.json' : `${k}s.json`
+    try{ files[`${k}s`] = await (await fetch(`../../content/story/${filename}`)).json() }
+    catch{ files[`${k}s`] = [] }
+  }))
+  return files
+}
+
+const svg=document.getElementById('svg'), panel=document.getElementById('panel'), sub=document.getElementById('sub')
+const NS='http://www.w3.org/2000/svg'
+const el=(n,a={})=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e}
+const active=new Set(COLS)
+
+let G, pos=new Map()
+function layout(){
+  const colGap=210, rowGap=64, padX=40, padY=40, W=150, H=42
+  const byCol={}; COLS.forEach(k=>byCol[k]=[])
+  G.nodes.forEach(n=>{ if(byCol[n.kind]) byCol[n.kind].push(n) })
+  pos=new Map(); let maxRows=0
+  COLS.forEach((k,ci)=>{ byCol[k].forEach((n,ri)=>pos.set(n.id,{x:padX+ci*colGap,y:padY+ri*rowGap,w:W,h:H})); maxRows=Math.max(maxRows,byCol[k].length) })
+  svg.setAttribute('width', padX*2+COLS.length*colGap)
+  svg.setAttribute('height', padY*2+maxRows*rowGap)
+}
+
+function render(hi=new Set()){
+  svg.innerHTML=''
+  const defs=el('defs'); const m=el('marker',{id:'arrow',viewBox:'0 0 10 10',refX:'9',refY:'5',markerWidth:'6',markerHeight:'6',orient:'auto-start-reverse'})
+  m.appendChild(el('path',{d:'M0,0L10,5L0,10z',fill:'#2c313d'})); defs.appendChild(m); svg.appendChild(defs)
+  // edges
+  for(const e of G.edges){
+    const a=pos.get(e.from), b=pos.get(e.to); if(!a||!b) continue
+    const dim = !(active.has(G.byId.get(e.from)?.kind) && active.has(G.byId.get(e.to)?.kind))
+    if(dim) continue
+    const x1=a.x+a.w, y1=a.y+a.h/2, x2=b.x, y2=b.y+b.h/2, mx=(x1+x2)/2
+    const on = hi.has(e.from)&&hi.has(e.to)
+    svg.appendChild(el('path',{class:'edge'+(on?' hi':''),d:`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`}))
+    const t=el('text',{class:'elabel',x:mx,y:(y1+y2)/2-3,'text-anchor':'middle'}); t.textContent=e.label; svg.appendChild(t)
+  }
+  // nodes
+  for(const n of G.nodes){
+    const p=pos.get(n.id); if(!p) continue
+    const g=el('g',{class:'node'+(active.has(n.kind)?'':' dim')}); const c=COLORS[n.kind]||'#888'
+    const r=el('rect',{x:p.x,y:p.y,width:p.w,height:p.h,rx:8,fill:'#1b1e27',stroke:c})
+    if(hi.size&&hi.has(n.id)) r.setAttribute('stroke-width','2.6')
+    g.appendChild(r)
+    const k=el('text',{class:'k',x:p.x+10,y:p.y+14}); k.textContent=n.kind; g.appendChild(k)
+    const t=el('text',{x:p.x+10,y:p.y+30}); t.textContent=n.title.length>18?n.title.slice(0,17)+'…':n.title; g.appendChild(t)
+    g.addEventListener('click',()=>select(n.id))
+    svg.appendChild(g)
+  }
+}
+
+function prereqChain(id){ // quest → all its prereqs + all quests that require it (both directions)
+  const hi=new Set([id]); const q=id=>G.byId.get(id)?.data
+  let cur=id; while(cur){ hi.add(cur); cur=q(cur)?.prereq }
+  for(const n of G.nodes) if(n.kind==='quest'){ let c=n.id; while(c){ if(c===id){hi.add(n.id);break} c=q(c)?.prereq } }
+  return hi
+}
+
+function select(id){
+  const n=G.byId.get(id); if(!n) return
+  const hi = n.kind==='quest'? prereqChain(id) : new Set([id, ...G.edges.filter(e=>e.from===id).map(e=>e.to), ...G.edges.filter(e=>e.to===id).map(e=>e.from)])
+  render(hi)
+  const c=COLORS[n.kind]
+  const out=[...G.edges.filter(e=>e.from===id).map(e=>`→ <a data-id="${e.to}">${G.byId.get(e.to).title}</a> <i>(${e.label})</i>`),
+             ...G.edges.filter(e=>e.to===id).map(e=>`← <a data-id="${e.from}">${G.byId.get(e.from).title}</a> <i>(${e.label})</i>`)]
+  panel.innerHTML=`<div class="kk" style="background:${c}">${n.kind}</div>
+    <h2>${n.title}</h2><p style="color:var(--mut)">${n.data.summary||''}</p>
+    <div style="margin:.6rem 0">${out.map(o=>`<div class="rel">${o}</div>`).join('')||'<span class="empty">no links</span>'}</div>
+    <pre>${JSON.stringify(n.data,null,2)}</pre>`
+  panel.querySelectorAll('a[data-id]').forEach(a=>a.onclick=()=>select(a.dataset.id))
+}
+
+function filters(){
+  const f=document.getElementById('filters')
+  f.innerHTML=''
+  COLS.filter(k=>G.nodes.some(n=>n.kind===k)).forEach(k=>{
+    const b=document.createElement('button'); b.className='chip on'; b.dataset.kind=k; b.textContent=k
+    b.onclick=()=>{ active.has(k)?active.delete(k):active.add(k); b.classList.toggle('on'); render() }
+    f.appendChild(b)
+  })
+}
+
+load().then(files=>{
+  G=buildGraph(files); layout(); filters(); render()
+  sub.textContent=`${G.nodes.length} nodes · ${G.edges.length} links`
+}).catch(e=>{ sub.textContent='failed to load story files — serve from the repo root'; console.error(e) })
+</script>
+</body>
+</html>

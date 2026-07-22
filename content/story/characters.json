@@ -1,0 +1,35 @@
+[
+  {
+    "id": "char-quartermaster",
+    "kind": "character",
+    "title": "Camp Quartermaster",
+    "summary": "The one who stayed at camp so the others could leave it.",
+    "role": "npc",
+    "faction": "faction-expedition",
+    "region": "region-spawn-meadow",
+    "assetKey": "npc",
+    "links": []
+  },
+  {
+    "id": "char-expedition-member",
+    "kind": "character",
+    "title": "Expedition Member",
+    "summary": "You \u2014 one of the party that reopened the meadow.",
+    "role": "ally",
+    "faction": "faction-expedition",
+    "region": "region-spawn-meadow",
+    "assetKey": "player",
+    "links": []
+  },
+  {
+    "id": "char-ashfang-alpha",
+    "kind": "character",
+    "title": "The Twin-Strike",
+    "summary": "The apex of the unaligned wilds; the meadow's first true wall.",
+    "role": "villain",
+    "faction": "faction-unaligned",
+    "region": "region-spawn-meadow",
+    "assetKey": "mob:double_attacker",
+    "links": []
+  }
+]

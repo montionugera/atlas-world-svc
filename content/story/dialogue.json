@@ -1,0 +1,30 @@
+[
+  {
+    "id": "dlg-quartermaster-icefield-briefing",
+    "kind": "dialogue",
+    "title": "Icefield Briefing",
+    "summary": "The quartermaster sends the expedition north, onto the Stoneguard's shelf.",
+    "links": [],
+    "speaker": "char-quartermaster",
+    "lines": [
+      "Nothing's crossed that ice and come back with a story in years.",
+      "You held the meadow. That doesn't mean the Stoneguard will care.",
+      "Go slow, go loud enough to be seen, and don't chase anything onto ground you haven't checked."
+    ],
+    "context": "quest-icefield-reckoning"
+  },
+  {
+    "id": "dlg-expedition-member-twin-strike-aftermath",
+    "kind": "dialogue",
+    "title": "After the Twin-Strike",
+    "summary": "The expedition member reflects on the meadow's first real wall, now down.",
+    "links": [],
+    "speaker": "char-expedition-member",
+    "lines": [
+      "It hit twice before I finished reacting to the first one.",
+      "The meadow's not testing us anymore. It's done testing us.",
+      "Whatever's past the tree line, it won't be this polite about it."
+    ],
+    "context": "event-twin-strike-falls"
+  }
+]
