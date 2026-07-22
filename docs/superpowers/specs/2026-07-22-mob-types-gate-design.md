@@ -74,7 +74,8 @@ flowchart LR
 
 - New `--mob-types <path>` flag, default
   `colyseus-server/generated/mob-types.json` (mirrors `--keys`).
-- **Missing/unparseable/schema-invalid file → one hard FAIL** and the mob
+- **Missing, unparseable, or shape-invalid file (`mobTypes` not a string
+  array) → one hard FAIL** and the mob
   checks are skipped (they cannot silently pass). This deliberately does NOT
   mirror the story.json/bible.md soft-skip: the file is committed and
   CI-refreshed, so absence means broken setup, and a soft-skip would recreate
