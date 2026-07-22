@@ -16,15 +16,17 @@ because the repo-root ESM gate cannot import the server's TypeScript mob ids
 and hardcoding them would silently drift. At runtime the spawn area quietly
 spawns nothing: the **silent-empty-spawn** bug class.
 
-The same hole exists in the story layer: `faction.mobFamily[]` and
-`quest.objectives[].targetId` of form `mob:*` stay WARN-only, explicitly
+The story layer is partially covered: `faction.mobFamily[]` already hard-FAILs
+against `asset-keys.json` (whose `mob:<id>` keys come from the same `MOB_TYPES`
+loop — the two id-sets cannot diverge today), but
+`quest.objectives[].targetId` of form `mob:*` stays WARN-only, explicitly
 deferred to this feature by F-012's plan ("when I-019 lands, flip those two
 WARNs to FAILs").
 
 <div class="callout danger">
-A content author can ship a map or quest that references a mob the server has
-never heard of, and nothing red appears anywhere — only a WARN line nobody is
-required to read.
+A content author can ship a map spawn area or quest objective that references
+a mob the server has never heard of, and nothing red appears anywhere — only a
+WARN line nobody is required to read.
 </div>
 
 ## Design
@@ -65,10 +67,17 @@ flowchart LR
 }
 ```
 
-- Deterministic: dedup by id, stable lexicographic sort, trailing newline —
-  so a git-diff drift check is meaningful. The artifact is **committed**.
-- Unit test beside `gen-asset-keys.test.ts` (ids present, sorted, deduped,
-  version field).
+- Deterministic: dedup by id, stable lexicographic sort, trailing newline.
+  The artifact is **committed**; CI regenerates it before the gates run (same
+  model as `asset-keys.json` — no `git diff --exit-code` drift step exists for
+  either). **Authoring workflow to document** (README of `content/` or the
+  codegen header): add a mob definition → run `gen-mob-types.sh` → commit the
+  refreshed artifact, or local `check_content.mjs` runs will FAIL against the
+  stale file.
+- Test beside `gen-asset-keys.test.ts`, but **importing the exported
+  `genMobTypes()` directly** (ids present, sorted, deduped, version field) —
+  not exec-ing the bash+ts-node pipeline like `gen-asset-keys.test.ts` does;
+  one full ts-node boot in that suite is enough.
 
 ### 2. Gate — `check_content.mjs`
 
@@ -86,7 +95,11 @@ flowchart LR
 - **Story:** for `faction.mobFamily[]` entries and
   `quest.objectives[].targetId` values of form `mob:<id>` — strip the `mob:`
   prefix, FAIL if the id is not a server mob type. The existing
-  mobFamily→asset-keys check stays; this adds "is actually spawnable".
+  mobFamily→asset-keys check stays; the new check is what makes `targetId`
+  enforced at all, and makes both refs mean "actually spawnable" rather than
+  "renderable" if the two sets ever diverge. (Post-F-012 this lands in the
+  story-graph code — `scripts/lib/story.mjs` / `resolveStoryRefs` — not the
+  current single-file `checkStory`.)
 
 ### 3. CI
 
@@ -102,8 +115,15 @@ step ordering to reason about.
 |---|---|
 | map with valid `mobType` | green |
 | map with typo'd `mobType` | FAIL naming file, area, valid ids |
-| `mob-types.json` absent/malformed | FAIL (single failure), mob checks skipped |
+| `mob-types.json` absent/malformed (explicit bogus `--mob-types` path) | FAIL (single failure), mob checks skipped |
 | story `mobFamily` / objective `targetId` with bogus mob id | FAIL |
+
+**Fixture hermeticity (in scope):** because the `--mob-types` default resolves
+script-relative to the real committed artifact, every existing `runGate`
+helper — `scripts/tests/check_content.test.mjs` AND F-012's story test files —
+must be retrofitted to pass an explicit fixture `--mob-types` file. Otherwise
+all fixture tests silently depend on the live server mob set and go
+non-hermetic (renaming a mob def would flip unrelated tests).
 
 ## Sequencing dependency
 
@@ -114,6 +134,14 @@ story-graph loader — the same code this feature's story flip touches.
 Implement I-019 <b>after F-012 ships to release/1.4</b>; its plan flips the
 two WARNs F-012 leaves behind.
 </div>
+
+## Doc updates (in scope)
+
+- `scripts/check_content.mjs:300` comment names `content/schemas/mob-types.json`
+  as the anticipated path — update to the real
+  `colyseus-server/generated/mob-types.json` when implementing.
+- `content/maps/atlas-frontier.md` body text documents the WARN-pending
+  behavior — update to reflect the hard gate.
 
 ## Out of scope
 
@@ -127,7 +155,10 @@ two WARNs F-012 leaves behind.
 
 1. **Scope:** maps + story refs (both flips), not maps-only.
 2. **Mechanism:** dedicated `mob-types.json` artifact — not derived from
-   `asset-keys.json` — keeping "spawnable mob" semantically distinct from
-   "renderable asset", and honoring the contract name both the
-   `check_content.mjs` comment and F-012's plan already reference.
+   `asset-keys.json`. Today the two sets are derivationally identical (same
+   `MOB_TYPES` loop), so this buys nothing *now*; the value is guarding the
+   future divergence where a renderable-only `mob:*` asset key (decorative
+   variant, unreleased art) must not count as spawnable. Also honors the
+   contract *filename* F-012's plan and the `check_content.mjs` comment
+   reference (the comment's anticipated path differs — see Doc updates).
 3. **Missing file:** hard FAIL, never soft-skip.
