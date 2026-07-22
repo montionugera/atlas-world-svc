@@ -6,6 +6,52 @@
 
 export const KINDS = ['region', 'faction', 'character', 'arc', 'quest', 'event', 'dialogue']
 
+// Single source of truth for every cross-node reference field, mirroring the
+// gate's resolveStoryRefs (scripts/check_content.mjs) edge-for-edge: quest
+// giver/arcId/prereq/faction/region, arc.questIds, character.faction/region,
+// event.involves/triggeredBy, dialogue.speaker/context, and
+// faction.relationships[].factionId. Both buildGraph (render) and
+// danglingEdges (coherence proxy) derive from this ONE list so they can never
+// silently diverge again — any edge kind the gate checks must be declared
+// here or the explorer's picture would lie about what got validated.
+const EDGE_SPECS = {
+  faction: (n) => (n.relationships ?? []).map((r) => [r.factionId, r.stance]),
+  character: (n) => [
+    [n.faction, 'of'],
+    [n.region, 'in'],
+  ],
+  arc: (n) => (n.questIds ?? []).map((q) => [q, 'quest']),
+  quest: (n) => [
+    [n.giver, 'giver'],
+    [n.arcId, 'arc'],
+    [n.prereq, 'prereq'],
+    [n.faction, 'vs'],
+    [n.region, 'at'],
+  ],
+  event: (n) => [...(n.involves ?? []).map((i) => [i, 'involves']), [n.triggeredBy, 'triggeredBy']],
+  dialogue: (n) => [
+    [n.speaker, 'speaker'],
+    [n.context, 'in'],
+  ],
+}
+
+// Every declared (from, to, label) triple for the loaded files, regardless of
+// whether `to` resolves to a real node — buildGraph and danglingEdges each
+// filter this differently (rendered vs missing).
+function declaredEdges(files) {
+  const out = []
+  for (const kind of KINDS) {
+    const spec = EDGE_SPECS[kind]
+    if (!spec) continue
+    for (const n of files[`${kind}s`] ?? files[kind] ?? []) {
+      for (const [to, label] of spec(n)) {
+        if (to !== undefined) out.push({ from: n.id, to, label })
+      }
+    }
+  }
+  return out
+}
+
 export function buildGraph(files) {
   const nodes = []
   const byId = new Map()
@@ -17,40 +63,17 @@ export function buildGraph(files) {
     }
   }
 
-  const edges = []
-  const link = (from, to, label) => {
-    if (from && to && byId.has(from) && byId.has(to)) edges.push({ from, to, label })
-  }
-
-  for (const { data: n, kind } of nodes) {
-    if (kind === 'faction') for (const r of n.relationships ?? []) link(n.id, r.factionId, r.stance)
-    if (kind === 'character') { link(n.id, n.faction, 'of'); link(n.id, n.region, 'in') }
-    if (kind === 'arc') for (const q of n.questIds ?? []) link(n.id, q, 'quest')
-    if (kind === 'quest') {
-      link(n.id, n.giver, 'giver')
-      link(n.id, n.prereq, 'prereq')
-      link(n.id, n.faction, 'vs')
-      link(n.id, n.region, 'at')
-    }
-    if (kind === 'event') for (const i of n.involves ?? []) link(n.id, i, 'involves')
-    if (kind === 'dialogue') { link(n.id, n.speaker, 'speaker'); link(n.id, n.context, 'in') }
-  }
+  const edges = declaredEdges(files).filter((e) => byId.has(e.from) && byId.has(e.to))
 
   return { nodes, edges, byId }
 }
 
-// Every edge's endpoints resolve (used by the smoke test as a coherence proxy).
+// Every declared edge whose target id doesn't resolve to any loaded node
+// (used by the smoke test as a coherence proxy).
 export function danglingEdges(files) {
   const ids = new Set()
-  for (const kind of KINDS) for (const n of files[`${kind}s`] ?? []) ids.add(n.id)
-  const missing = []
-  const check = (from, to, field) => { if (to && !ids.has(to)) missing.push({ from, field, to }) }
-  for (const kind of KINDS)
-    for (const n of files[`${kind}s`] ?? []) {
-      if (kind === 'character') { check(n.id, n.faction, 'faction'); check(n.id, n.region, 'region') }
-      if (kind === 'arc') for (const q of n.questIds ?? []) check(n.id, q, 'questIds')
-      if (kind === 'quest') { check(n.id, n.giver, 'giver'); check(n.id, n.prereq, 'prereq'); check(n.id, n.arcId, 'arcId') }
-      if (kind === 'faction') for (const r of n.relationships ?? []) check(n.id, r.factionId, 'relationships')
-    }
-  return missing
+  for (const kind of KINDS) for (const n of files[`${kind}s`] ?? files[kind] ?? []) ids.add(n.id)
+  return declaredEdges(files)
+    .filter((e) => !ids.has(e.to))
+    .map(({ from, to, label }) => ({ from, field: label, to }))
 }

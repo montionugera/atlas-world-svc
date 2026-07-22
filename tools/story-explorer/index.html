@@ -20,6 +20,8 @@
   .chip[data-kind=character].on{border-color:var(--character);color:var(--character)}
   .chip[data-kind=arc].on{border-color:var(--arc);color:var(--arc)}
   .chip[data-kind=quest].on{border-color:var(--quest);color:var(--quest)}
+  .chip[data-kind=event].on{border-color:var(--event);color:var(--event)}
+  .chip[data-kind=dialogue].on{border-color:var(--dialogue);color:var(--dialogue)}
   #stage{flex:1;margin-top:52px;overflow:auto}
   svg{display:block}
   .node rect{rx:8;cursor:pointer;stroke-width:1.5}
@@ -53,8 +55,13 @@ const COLS = ['region','faction','character','arc','quest','event','dialogue']
 
 async function load(){
   const files={}
+  // content/story files are plural (regions.json, ...) except dialogue.json,
+  // which stays singular — a `${k}s.json` fetch for 'dialogue' silently 404s
+  // to dialogues.json and always sees 0 dialogue nodes. Mirror the exception
+  // (see tools/story-explorer/tests/smoke.test.mjs).
   await Promise.all(KINDS.map(async k=>{
-    try{ files[`${k}s`] = await (await fetch(`../../content/story/${k}s.json`)).json() }
+    const filename = k === 'dialogue' ? 'dialogue.json' : `${k}s.json`
+    try{ files[`${k}s`] = await (await fetch(`../../content/story/${filename}`)).json() }
     catch{ files[`${k}s`] = [] }
   }))
   return files
