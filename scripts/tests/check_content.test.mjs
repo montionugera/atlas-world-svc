@@ -211,3 +211,14 @@ test("shape-invalid mob-types.json is a single hard fail", () => {
   assert.match(r.out, /FAIL.*mob-types.*shape-invalid/);
   assert.match(r.out, /1 failures/);
 });
+
+test("mob-types.json parsing to a JSON-falsy value (literal null) is a single hard fail, not a silent skip", () => {
+  // JSON.parse("null") succeeds, so readJson records no failure — the loader
+  // must still FAIL shape-invalid rather than silently skipping mob checks.
+  const dir = fixture({ maps: { "test-map.md": GOOD_MAP }, mobTypes: null });
+  writeFileSync(join(dir, "mob-types.json"), "null");
+  const r = runGate(dir);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /FAIL.*mob-types.*shape-invalid/);
+  assert.match(r.out, /1 failures/);
+});

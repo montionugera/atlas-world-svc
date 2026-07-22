@@ -43,9 +43,13 @@ function parseArgs(argv) {
 // deliberately does NOT mirror the story/bible soft-skip: the artifact is
 // committed and CI-refreshed, so absence means broken setup.
 function loadMobTypes(path) {
+  // `!doc` can't distinguish "readJson recorded a FAIL" from "the file parsed
+  // to a JSON-falsy value (null/false/0/"")" — the latter must be ONE
+  // shape-invalid FAIL, never a silent skip, so check the failure count.
+  const before = failures.length;
   const doc = readJson(path, "mob-types", fail);
-  if (!doc) return null;
-  if (!Array.isArray(doc.mobTypes) || !doc.mobTypes.every((t) => typeof t === "string")) {
+  if (failures.length > before) return null; // readJson already recorded the FAIL
+  if (!doc || !Array.isArray(doc.mobTypes) || !doc.mobTypes.every((t) => typeof t === "string")) {
     fail(`mob-types: ${path} is shape-invalid — expected { mobTypes: string[] }`);
     return null;
   }
