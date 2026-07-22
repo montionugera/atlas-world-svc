@@ -6,7 +6,7 @@
 <title>Story Explorer — atlas</title>
 <style>
   :root{--bg:#12141a;--panel:#1b1e27;--ink:#e7e9ee;--mut:#8b90a0;--line:#2c313d;
-    --region:#4a9d7f;--faction:#c65f5f;--character:#c8a24a;--arc:#7d6cc4;--quest:#4a7fc8;--event:#c07ac0;--dialogue:#5aa8b0;}
+    --region:#4a9d7f;--faction:#c65f5f;--character:#c8a24a;--arc:#7d6cc4;--quest:#4a7fc8;--event:#c07ac0;--dialogue:#5aa8b0;--act:#6c757d;--lore:#66d9e8;}
   *{box-sizing:border-box}
   body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);display:flex;height:100vh;overflow:hidden}
   header{position:fixed;top:0;left:0;right:0;height:52px;display:flex;align-items:center;gap:16px;padding:0 18px;background:var(--panel);border-bottom:1px solid var(--line);z-index:10}
@@ -22,6 +22,8 @@
   .chip[data-kind=quest].on{border-color:var(--quest);color:var(--quest)}
   .chip[data-kind=event].on{border-color:var(--event);color:var(--event)}
   .chip[data-kind=dialogue].on{border-color:var(--dialogue);color:var(--dialogue)}
+  .chip[data-kind=act].on{border-color:var(--act);color:var(--act)}
+  .chip[data-kind=lore].on{border-color:var(--lore);color:var(--lore)}
   #stage{flex:1;margin-top:52px;overflow:auto}
   svg{display:block}
   .node rect{rx:8;cursor:pointer;stroke-width:1.5}
@@ -46,21 +48,21 @@
   <div class="filters" id="filters"></div>
 </header>
 <div id="stage"><svg id="svg"></svg></div>
-<aside id="panel"><div class="empty">Click a node to inspect it. Click a <b>quest</b> to trace its prereq chain.</div></aside>
+<aside id="panel"><div class="empty">Click a node to inspect it. Click a <b>quest</b>, <b>event</b>, or <b>dialogue</b> to trace its unlock chain.</div></aside>
 
 <script type="module">
 import { buildGraph, KINDS } from './graph.mjs'
-const COLORS = {region:'#4a9d7f',faction:'#c65f5f',character:'#c8a24a',arc:'#7d6cc4',quest:'#4a7fc8',event:'#c07ac0',dialogue:'#5aa8b0'}
+const COLORS = {region:'#4a9d7f',faction:'#c65f5f',character:'#c8a24a',arc:'#7d6cc4',quest:'#4a7fc8',event:'#c07ac0',dialogue:'#5aa8b0',act:'#6c757d',lore:'#66d9e8'}
 const COLS = KINDS
 
 async function load(){
   const files={}
-  // content/story files are plural (regions.json, ...) except dialogue.json,
-  // which stays singular — a `${k}s.json` fetch for 'dialogue' silently 404s
-  // to dialogues.json and always sees 0 dialogue nodes. Mirror the exception
-  // (see tools/story-explorer/tests/smoke.test.mjs).
+  // content/story files are plural (regions.json, ...) except dialogue.json
+  // and lore.json, which stay singular — a `${k}s.json` fetch for those
+  // silently 404s (dialogues.json / lores.json) and always sees 0 nodes for
+  // that kind. Mirror the exception (see tools/story-explorer/tests/smoke.test.mjs).
   await Promise.all(KINDS.map(async k=>{
-    const filename = k === 'dialogue' ? 'dialogue.json' : `${k}s.json`
+    const filename = k === 'dialogue' ? 'dialogue.json' : k === 'lore' ? 'lore.json' : `${k}s.json`
     try{ files[`${k}s`] = await (await fetch(`../../content/story/${filename}`)).json() }
     catch{ files[`${k}s`] = [] }
   }))
@@ -77,6 +79,7 @@ function layout(){
   const colGap=210, rowGap=64, padX=40, padY=40, W=150, H=42
   const byCol={}; COLS.forEach(k=>byCol[k]=[])
   G.nodes.forEach(n=>{ if(byCol[n.kind]) byCol[n.kind].push(n) })
+  byCol['act']?.sort((a,b)=>(a.data.order??0)-(b.data.order??0))
   pos=new Map(); let maxRows=0
   COLS.forEach((k,ci)=>{ byCol[k].forEach((n,ri)=>pos.set(n.id,{x:padX+ci*colGap,y:padY+ri*rowGap,w:W,h:H})); maxRows=Math.max(maxRows,byCol[k].length) })
   svg.setAttribute('width', padX*2+COLS.length*colGap)
@@ -111,22 +114,24 @@ function render(hi=new Set()){
   }
 }
 
-function prereqChain(id){ // quest → all its prereqs + all quests that require it (both directions)
-  const hi=new Set([id]); const q=id=>G.byId.get(id)?.data
-  let cur=id; while(cur){ hi.add(cur); cur=q(cur)?.prereq }
-  for(const n of G.nodes) if(n.kind==='quest'){ let c=n.id; while(c){ if(c===id){hi.add(n.id);break} c=q(c)?.prereq } }
+function unlockChain(id){ // node → full unlock ancestry + everything it (transitively) unlocks
+  const hi=new Set(); const data=i=>G.byId.get(i)?.data
+  const up=[id]; while(up.length){ const c=up.pop(); if(hi.has(c))continue; hi.add(c); for(const u of data(c)?.unlockedBy??[]) if(G.byId.has(u)) up.push(u) }
+  const down=[id]
+  while(down.length){ const c=down.pop(); for(const n of G.nodes){ if(hi.has(n.id))continue; if((n.data.unlockedBy??[]).includes(c)){ hi.add(n.id); down.push(n.id) } } }
   return hi
 }
 
 function select(id){
   const n=G.byId.get(id); if(!n) return
-  const hi = n.kind==='quest'? prereqChain(id) : new Set([id, ...G.edges.filter(e=>e.from===id).map(e=>e.to), ...G.edges.filter(e=>e.to===id).map(e=>e.from)])
+  const hi = ['quest','event','dialogue'].includes(n.kind) ? unlockChain(id) : new Set([id, ...G.edges.filter(e=>e.from===id).map(e=>e.to), ...G.edges.filter(e=>e.to===id).map(e=>e.from)])
   render(hi)
   const c=COLORS[n.kind]
   const out=[...G.edges.filter(e=>e.from===id).map(e=>`→ <a data-id="${e.to}">${G.byId.get(e.to).title}</a> <i>(${e.label})</i>`),
              ...G.edges.filter(e=>e.to===id).map(e=>`← <a data-id="${e.from}">${G.byId.get(e.from).title}</a> <i>(${e.label})</i>`)]
   panel.innerHTML=`<div class="kk" style="background:${c}">${n.kind}</div>
     <h2>${n.title}</h2><p style="color:var(--mut)">${n.data.summary||''}</p>
+    ${n.kind==='lore'?`<p style="font-style:italic;border-left:3px solid var(--lore);padding-left:10px">${n.data.body}</p><div class="rel">thread: #${n.data.thread}</div>`:''}
     <div style="margin:.6rem 0">${out.map(o=>`<div class="rel">${o}</div>`).join('')||'<span class="empty">no links</span>'}</div>
     <pre>${JSON.stringify(n.data,null,2)}</pre>`
   panel.querySelectorAll('a[data-id]').forEach(a=>a.onclick=()=>select(a.dataset.id))
@@ -138,6 +143,12 @@ function filters(){
   COLS.filter(k=>G.nodes.some(n=>n.kind===k)).forEach(k=>{
     const b=document.createElement('button'); b.className='chip on'; b.dataset.kind=k; b.textContent=k
     b.onclick=()=>{ active.has(k)?active.delete(k):active.add(k); b.classList.toggle('on'); render() }
+    f.appendChild(b)
+  })
+  const threads=[...new Set(G.nodes.filter(n=>n.kind==='lore').map(n=>n.data.thread))].sort()
+  threads.forEach(t=>{
+    const b=document.createElement('button'); b.className='chip'; b.textContent=`#${t}`
+    b.onclick=()=>{ const hi=new Set(); G.nodes.forEach(n=>{ if(n.kind==='lore'&&n.data.thread===t){ hi.add(n.id); if(G.byId.has(n.data.anchor)) hi.add(n.data.anchor) } }); render(hi) }
     f.appendChild(b)
   })
 }
