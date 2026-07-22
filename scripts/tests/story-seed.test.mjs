@@ -1,5 +1,5 @@
 // F-012 Task 7: the seed multi-arc epic is the end-to-end proof that the
-// whole story-graph pipeline (schema -> refs -> prereq DAG -> coherence ->
+// whole story-graph pipeline (schema -> refs -> unlockedBy DAG -> coherence ->
 // static graph) is fully wired and fully satisfied by real content/story/*.json
 // data, not just by scripts/tests/ fixtures. Before this task, the real tree
 // has 4 orphan WARNs (2 characters, 2 factions under-referenced) which
@@ -46,39 +46,53 @@ test("docs/story/story-graph.md is in sync with the seed epic (no drift)", () =>
   assert.equal(status, 0, `expected exit 0, got ${status}:\n${output}`);
 });
 
-test("the seed epic exercises every kind and every prereq/edge shape (2 arcs, valid cross-arc chain)", () => {
+test("the seed epic exercises every kind and every unlockedBy/edge shape (2 arcs, valid cross-arc chain)", () => {
   const readStory = (f) => JSON.parse(readFileSync(join(ROOT, `content/story/${f}`), "utf8"));
+  const acts = readStory("acts.json");
   const arcs = readStory("arcs.json");
   const quests = readStory("quests.json");
   const events = readStory("events.json");
   const dialogue = readStory("dialogue.json");
+  const lore = readStory("lore.json");
+  const characters = readStory("characters.json");
 
   assert.equal(arcs.length, 2, "expected 2 arcs total");
-  assert.equal(new Set(arcs.map((a) => a.act)).size, arcs.length, "arc.act values must be unique");
+  assert.equal(new Set(arcs.map((a) => a.actId)).size, arcs.length, "arc.actId values must be unique in the seed (2 arcs, 2 acts)");
   assert.ok(quests.length >= 4, "expected at least 4 quests total");
   assert.ok(events.length >= 2, "expected at least 2 events (events.json was empty before Task 7)");
   assert.ok(dialogue.length >= 2, "expected at least 2 dialogue nodes (dialogue.json was empty before Task 7)");
+  assert.ok(lore.length >= 2, "expected at least 2 lore fragments (Narrative System v2 Task 3 seed thread)");
 
-  // A quest whose arcId belongs to the second (highest-act) arc must have a
-  // prereq chain reaching back into the first arc — proves the "valid prereq
-  // chain across the 2 arcs" requirement, not just two disconnected arcs.
+  // Narrative System v2 Task 3: char-ashfang-alpha (the Twin-Strike) dies in
+  // event-twin-strike-falls — proves the seed exercises character fates.
+  const alpha = characters.find((c) => c.id === "char-ashfang-alpha");
+  assert.ok(alpha, "expected char-ashfang-alpha in the seed");
+  assert.equal(alpha.status, "dead", "expected char-ashfang-alpha to be dead");
+  assert.equal(alpha.diedAt, "event-twin-strike-falls", "expected char-ashfang-alpha.diedAt to resolve to its death event");
+
+  // A quest whose arcId belongs to the second (highest-order) arc must have an
+  // unlockedBy quest-* chain reaching back into the first arc — proves the
+  // "valid unlockedBy chain across the 2 arcs" requirement, not just two
+  // disconnected arcs.
   const questById = new Map(quests.map((q) => [q.id, q]));
   const arcById = new Map(arcs.map((a) => [a.id, a]));
-  const secondArc = [...arcs].sort((a, b) => b.act - a.act)[0];
-  const crossArcQuest = quests.find((q) => q.arcId === secondArc.id && q.prereq);
-  assert.ok(crossArcQuest, "expected at least one quest in the later arc with a prereq");
+  const actById = new Map(acts.map((a) => [a.id, a]));
+  const secondArc = [...arcs].sort((a, b) => actById.get(b.actId).order - actById.get(a.actId).order)[0];
+  const questUnlockId = (q) => (q.unlockedBy ?? []).find((id) => id.startsWith("quest-"));
+  const crossArcQuest = quests.find((q) => q.arcId === secondArc.id && questUnlockId(q));
+  assert.ok(crossArcQuest, "expected at least one quest in the later arc with a quest-* unlockedBy entry");
 
   let cur = crossArcQuest;
   let reachedOtherArc = false;
   const seen = new Set();
-  while (cur.prereq) {
-    assert.ok(!seen.has(cur.id), `prereq cycle at ${cur.id}`);
+  while (questUnlockId(cur)) {
+    assert.ok(!seen.has(cur.id), `unlockedBy cycle at ${cur.id}`);
     seen.add(cur.id);
-    cur = questById.get(cur.prereq);
-    assert.ok(cur, "prereq must resolve to a real quest");
+    cur = questById.get(questUnlockId(cur));
+    assert.ok(cur, "unlockedBy quest-* entry must resolve to a real quest");
     if (cur.arcId !== crossArcQuest.arcId) reachedOtherArc = true;
   }
-  assert.ok(reachedOtherArc, "expected the later-arc quest's prereq chain to reach into the other arc");
+  assert.ok(reachedOtherArc, "expected the later-arc quest's unlockedBy chain to reach into the other arc");
 
   // event.triggeredBy and dialogue.context together exercise both allowed
   // dialogue.context target kinds (quest and event).

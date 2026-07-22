@@ -1,0 +1,22 @@
+[
+  {
+    "id": "lore-guarded-nothing",
+    "kind": "lore",
+    "title": "Guarded Nothing",
+    "summary": "A Stoneguard oath-tablet, half-buried in the shelf ice.",
+    "body": "The oath does not name what is kept. It names only the keeping: 'Hold, though the hall is empty. Hold, though the name is lost.'",
+    "anchor": "faction-stoneguard",
+    "thread": "the-first-claim",
+    "links": []
+  },
+  {
+    "id": "lore-first-claim-stone",
+    "kind": "lore",
+    "title": "The First Claim",
+    "summary": "A boundary stone older than any camp, its carving worn to a single line.",
+    "body": "Beneath the frost line the stone still reads: 'CLAIMED'. Nothing else survived the years — not the claimant, not the claim.",
+    "anchor": "region-icefield",
+    "thread": "the-first-claim",
+    "links": []
+  }
+]

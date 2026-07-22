@@ -34,6 +34,17 @@ test("--check exits 0 against the real, committed content and story-graph.md", (
   assert.match(r.out, /is in sync/);
 });
 
+test("generated graph groups arcs and quests into act subgraphs and carries v2 edges", () => {
+  const md = readFileSync(join(ROOT, "docs/story/story-graph.md"), "utf8");
+  assert.match(md, /subgraph sg_n_act_1\["Act 1 — Meadow Awakening"\]/);
+  assert.match(md, /subgraph sg_n_act_2\["Act 2 — Icefield Reckoning"\]/);
+  assert.match(md, /-->\|unlockedBy\|/);
+  assert.match(md, /-->\|actId\|/);
+  assert.match(md, /-->\|anchor\|/);
+  assert.match(md, /-->\|diedAt\|/);
+  assert.doesNotMatch(md, /-->\|prereq\|/);
+});
+
 test("--check exits 1 when CONTENT_ROOT's story content has drifted from the committed graph", () => {
   const dir = mkdtempSync(join(tmpdir(), "story-graph-drift-"));
   const contentDir = join(dir, "content");

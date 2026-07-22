@@ -1,15 +1,11 @@
-// F-012 Task 4: quest prereq DAG cycle check (assertQuestPrereqDag), wired
-// into checkStory() in scripts/check_content.mjs after resolveStoryRefs().
-// FAIL: any cycle in the quest.prereq graph, naming the cycle members
-// (including a self-prereq, the degenerate 1-node cycle).
-// `quest.prereq` is a SINGULAR optional string per quest.schema.json — the
-// prereq graph is a functional graph (out-degree <= 1), so the classic
-// "diamond" (two paths converging on one prereq) DAG case from the brief's
-// quality gate can't arise here: a quest can only ever point at ONE prereq,
-// never two. Two quests sharing the SAME prereq (convergence, in-degree > 1)
-// is still exercised below and must PASS — that's the closest analogue this
-// schema allows to a diamond.
-// Mirrors the fixture()/runGate() pattern in story-coherence.test.mjs.
+// Narrative System v2 Task 2: unlockedBy DAG cycle check (assertUnlockDag),
+// replaces story-prereq-dag.test.mjs (F-012 Task 4's assertQuestPrereqDag).
+// FAIL: any cycle in the unlockedBy graph (quest/event/dialogue nodes),
+// naming the cycle members (including a self-unlockedBy, the degenerate
+// 1-node cycle). Unlike the old prereq field, `unlockedBy` is an ARRAY
+// (out-degree unbounded), so the classic "diamond" (two paths converging)
+// as well as multi-target divergence are both exercised below.
+// Mirrors the fixture()/runGate() pattern in story-unlocks.test.mjs.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -22,6 +18,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_content.mjs");
 
 const STORY_SCHEMAS = [
+  "act.schema.json",
   "region.schema.json",
   "faction.schema.json",
   "story-character.schema.json",
@@ -29,6 +26,7 @@ const STORY_SCHEMAS = [
   "quest.schema.json",
   "event.schema.json",
   "dialogue.schema.json",
+  "lore.schema.json",
   "character.schema.json", // checkCharacters() also runs; needed even with no sheets
 ];
 
@@ -44,18 +42,18 @@ const MANIFEST = { version: 2, entries: {} };
 const MOB_TYPES_FIXTURE = { version: 1, mobTypes: ["aggressive"] };
 
 function fixture({
-  regions = [], factions = [], characters = [], arcs = [], quests = [],
-  events = [], dialogue = [], keys = KEYS, manifest = MANIFEST,
+  acts = [], regions = [], factions = [], characters = [], arcs = [], quests = [],
+  events = [], dialogue = [], lore = [], keys = KEYS, manifest = MANIFEST,
   mobTypes = MOB_TYPES_FIXTURE,
 } = {}) {
-  const dir = mkdtempSync(join(tmpdir(), "story-prereq-dag-"));
+  const dir = mkdtempSync(join(tmpdir(), "story-unlock-dag-"));
   mkdirSync(join(dir, "content/story"), { recursive: true });
   mkdirSync(join(dir, "content/schemas"), { recursive: true });
   mkdirSync(join(dir, "content/characters"), { recursive: true }); // empty is fine, avoids "dir unreadable"
   for (const schema of STORY_SCHEMAS)
     cpSync(join(ROOT, "content/schemas", schema), join(dir, "content/schemas", schema));
 
-  const files = { regions, factions, characters, arcs, quests, events, dialogue };
+  const files = { acts, regions, factions, characters, arcs, quests, events, dialogue, lore };
   for (const [name, arr] of Object.entries(files))
     writeFileSync(join(dir, `content/story/${name}.json`), JSON.stringify(arr));
 
@@ -82,22 +80,7 @@ function runGate(dir, extra = []) {
   }
 }
 
-// --- Step 1: the brief's verbatim failing test ------------------------------
-
-test("a prereq cycle is a hard fail", () => {
-  const q = (id, prereq) => ({ id, kind:"quest", title:id, summary:"s", links:[],
-    narrative:{description:"d",offerText:"o",completeText:"c"}, giver:"char-g", arcId:"arc-a",
-    prereq, objectives:[{type:"MOB_KILLED",targetId:"mob:aggressive",count:1}] });
-  const dir = fixture({
-    characters:[{id:"char-g",kind:"character",title:"G",summary:"s",links:[],role:"npc"}],
-    arcs:[{id:"arc-a",kind:"arc",title:"A",summary:"s",links:[],act:1,questIds:["quest-1","quest-2"]}],
-    quests:[ q("quest-1","quest-2"), q("quest-2","quest-1") ] });
-  const r = runGate(dir);
-  assert.equal(r.code, 1);
-  assert.match(r.out, /cycle.*quest-1.*quest-2|quest-2.*quest-1/i);
-});
-
-// --- additional fixtures: self-cycle, valid chain, dangling, convergence ----
+const clone = (o) => JSON.parse(JSON.stringify(o));
 
 const q = (id, extra = {}) => ({
   id, kind: "quest", title: id, summary: "s", links: [],
@@ -107,46 +90,80 @@ const q = (id, extra = {}) => ({
   ...extra,
 });
 const CHAR_G = { id: "char-g", kind: "character", title: "G", summary: "s", links: [], role: "npc" };
-const ARC_A = (questIds) => ({ id: "arc-a", kind: "arc", title: "A", summary: "s", links: [], act: 1, questIds });
+const ACT_1 = { id: "act-1", kind: "act", title: "Act One", summary: "s", links: [], order: 1, theme: "foothold" };
+const ARC_A = (questIds) => ({ id: "arc-a", kind: "arc", title: "A", summary: "s", links: [], actId: "act-1", questIds });
 
-test("a self-prereq (1-node cycle) is a hard fail", () => {
+const QUEST = q("quest-x");
+const EVENT = { id: "event-e", kind: "event", title: "E", summary: "s", links: [], timelineOrder: 1, involves: ["char-g"] };
+const BASE = { acts: [ACT_1], characters: [CHAR_G], arcs: [ARC_A(["quest-x"])], quests: [QUEST] };
+
+// --- Step 1: the brief's verbatim failing tests ------------------------------
+
+test("red: unlockedBy cycle FAILs naming the cycle", () => {
+  const files = clone(BASE);
+  files.quests = [
+    { ...clone(QUEST), id: "quest-a", unlockedBy: ["quest-b"] },
+    { ...clone(QUEST), id: "quest-b", unlockedBy: ["quest-a"] },
+  ];
+  files.arcs[0].questIds = ["quest-a", "quest-b"];
+  const { code, out } = runGate(fixture(files));
+  assert.equal(code, 1);
+  assert.match(out, /unlockedBy cycle: quest-[ab] -> quest-[ba] -> quest-[ab]/);
+});
+
+test("red: cross-kind cycle quest->event->quest FAILs", () => {
+  const files = clone(BASE);
+  files.events = [{ ...clone(EVENT), unlockedBy: ["quest-x"] }];
+  files.quests[0].unlockedBy = ["event-e"];
+  const { code, out } = runGate(fixture(files));
+  assert.equal(code, 1);
+  assert.match(out, /unlockedBy cycle/);
+});
+
+// --- ported: self-cycle, 3-node, valid chain, convergence, chain-into-cycle,
+// dangling (from story-prereq-dag.test.mjs, F-012 Task 4) --------------------
+
+test("a self-unlockedBy (1-node cycle) is a hard fail", () => {
   const dir = fixture({
+    acts: [ACT_1],
     characters: [CHAR_G],
     arcs: [ARC_A(["quest-1"])],
-    quests: [q("quest-1", { prereq: "quest-1" })],
+    quests: [q("quest-1", { unlockedBy: ["quest-1"] })],
   });
   const r = runGate(dir);
   assert.equal(r.code, 1);
-  assert.match(r.out, /cycle.*quest-1/i);
+  assert.match(r.out, /unlockedBy cycle.*quest-1/i);
 });
 
 test("a 3-node cycle is a hard fail naming all members", () => {
   const dir = fixture({
+    acts: [ACT_1],
     characters: [CHAR_G],
     arcs: [ARC_A(["quest-1", "quest-2", "quest-3"])],
     quests: [
-      q("quest-1", { prereq: "quest-2" }),
-      q("quest-2", { prereq: "quest-3" }),
-      q("quest-3", { prereq: "quest-1" }),
+      q("quest-1", { unlockedBy: ["quest-2"] }),
+      q("quest-2", { unlockedBy: ["quest-3"] }),
+      q("quest-3", { unlockedBy: ["quest-1"] }),
     ],
   });
   const r = runGate(dir);
   assert.equal(r.code, 1);
-  assert.match(r.out, /cycle/i);
+  assert.match(r.out, /unlockedBy cycle/i);
   assert.match(r.out, /quest-1/);
   assert.match(r.out, /quest-2/);
   assert.match(r.out, /quest-3/);
 });
 
-test("a valid no-cycle prereq chain passes the DAG check", () => {
+test("a valid no-cycle unlockedBy chain passes the DAG check", () => {
   // quest-3 -> quest-2 -> quest-1 -> null: a straight chain, no cycle.
   const dir = fixture({
+    acts: [ACT_1],
     characters: [CHAR_G],
     arcs: [ARC_A(["quest-1", "quest-2", "quest-3"])],
     quests: [
       q("quest-1"),
-      q("quest-2", { prereq: "quest-1" }),
-      q("quest-3", { prereq: "quest-2" }),
+      q("quest-2", { unlockedBy: ["quest-1"] }),
+      q("quest-3", { unlockedBy: ["quest-2"] }),
     ],
   });
   const r = runGate(dir);
@@ -157,17 +174,15 @@ test("a valid no-cycle prereq chain passes the DAG check", () => {
   assert.doesNotMatch(r.out, /cycle/i);
 });
 
-test("two quests converging on the same prereq (in-degree 2) passes — not a cycle", () => {
-  // quest-2.prereq -> quest-1 AND quest-3.prereq -> quest-1: valid, since
-  // prereq is a SINGULAR field (out-degree <= 1 always), this is the closest
-  // analogue to a "diamond" the schema allows — convergence, not divergence.
+test("two quests converging on the same unlockedBy target (in-degree 2) passes — not a cycle", () => {
   const dir = fixture({
+    acts: [ACT_1],
     characters: [CHAR_G],
     arcs: [ARC_A(["quest-1", "quest-2", "quest-3"])],
     quests: [
       q("quest-1"),
-      q("quest-2", { prereq: "quest-1" }),
-      q("quest-3", { prereq: "quest-1" }),
+      q("quest-2", { unlockedBy: ["quest-1"] }),
+      q("quest-3", { unlockedBy: ["quest-1"] }),
     ],
   });
   const r = runGate(dir);
@@ -177,38 +192,41 @@ test("two quests converging on the same prereq (in-degree 2) passes — not a cy
 });
 
 test("a chain leading into a cycle (a -> b -> c -> b) names only the cycle members", () => {
-  // quest-a.prereq = quest-b, quest-b.prereq = quest-c, quest-c.prereq = quest-b:
-  // a chain that leads INTO a 2-node cycle (b ↔ c). The cycle must NOT include
-  // quest-a in its FAIL message — only b and c should appear in the cycle line.
+  // quest-a.unlockedBy = [quest-b], quest-b.unlockedBy = [quest-c],
+  // quest-c.unlockedBy = [quest-b]: a chain that leads INTO a 2-node cycle
+  // (b <-> c). The cycle must NOT include quest-a in its FAIL message — only
+  // b and c should appear in the cycle line.
   const dir = fixture({
+    acts: [ACT_1],
     characters: [CHAR_G],
     arcs: [ARC_A(["quest-a", "quest-b", "quest-c"])],
     quests: [
-      q("quest-a", { prereq: "quest-b" }),
-      q("quest-b", { prereq: "quest-c" }),
-      q("quest-c", { prereq: "quest-b" }),
+      q("quest-a", { unlockedBy: ["quest-b"] }),
+      q("quest-b", { unlockedBy: ["quest-c"] }),
+      q("quest-c", { unlockedBy: ["quest-b"] }),
     ],
   });
   const r = runGate(dir);
   assert.equal(r.code, 1);
-  assert.match(r.out, /cycle/i);
+  assert.match(r.out, /unlockedBy cycle/i);
   assert.match(r.out, /quest-b/);
   assert.match(r.out, /quest-c/);
   // Extract the cycle line and verify it does NOT contain quest-a
-  const cycleLine = r.out.split("\n").find(line => /cycle/i.test(line));
+  const cycleLine = r.out.split("\n").find(line => /unlockedBy cycle/i.test(line));
   assert(cycleLine, "cycle line should exist in output");
   assert(!cycleLine.includes("quest-a"), `cycle line should not include quest-a: ${cycleLine}`);
 });
 
-test("a dangling prereq does not crash the DAG check (already FAILs via resolveStoryRefs)", () => {
+test("a dangling unlockedBy does not crash the DAG check (already FAILs via resolveStoryRefs)", () => {
   const dir = fixture({
+    acts: [ACT_1],
     characters: [CHAR_G],
     arcs: [ARC_A(["quest-1"])],
-    quests: [q("quest-1", { prereq: "quest-ghost" })],
+    quests: [q("quest-1", { unlockedBy: ["quest-ghost"] })],
   });
   const r = runGate(dir);
   assert.equal(r.code, 1);
-  assert.match(r.out, /prereq.*"quest-ghost".*does not resolve/i);
+  assert.match(r.out, /unlockedBy.*"quest-ghost".*does not resolve/i);
   // the dangling ref is a resolveStoryRefs FAIL, not a cycle FAIL — the DAG
   // check must not throw or misreport it as a cycle.
   assert.doesNotMatch(r.out, /cycle/i);

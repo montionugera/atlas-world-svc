@@ -15,6 +15,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_content.mjs");
 
 const STORY_SCHEMAS = [
+  "act.schema.json",
   "region.schema.json",
   "faction.schema.json",
   "story-character.schema.json",
@@ -22,6 +23,7 @@ const STORY_SCHEMAS = [
   "quest.schema.json",
   "event.schema.json",
   "dialogue.schema.json",
+  "lore.schema.json",
   "character.schema.json", // checkCharacters() also runs; needed even with no sheets
 ];
 
@@ -39,8 +41,8 @@ const MANIFEST = { version: 2, entries: {} };
 const MOB_TYPES_FIXTURE = { version: 1, mobTypes: ["aggressive"] };
 
 function fixture({
-  regions = [], factions = [], characters = [], arcs = [], quests = [],
-  events = [], dialogue = [], keys = KEYS, manifest = MANIFEST,
+  acts = [], regions = [], factions = [], characters = [], arcs = [], quests = [],
+  events = [], dialogue = [], lore = [], keys = KEYS, manifest = MANIFEST,
   mobTypes = MOB_TYPES_FIXTURE,
 } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "story-refs-"));
@@ -50,7 +52,7 @@ function fixture({
   for (const schema of STORY_SCHEMAS)
     cpSync(join(ROOT, "content/schemas", schema), join(dir, "content/schemas", schema));
 
-  const files = { regions, factions, characters, arcs, quests, events, dialogue };
+  const files = { acts, regions, factions, characters, arcs, quests, events, dialogue, lore };
   for (const [name, arr] of Object.entries(files))
     writeFileSync(join(dir, `content/story/${name}.json`), JSON.stringify(arr));
 
@@ -83,7 +85,8 @@ const REGION = { id: "region-town", kind: "region", title: "Town", summary: "s",
 const FACTION_A = { id: "faction-a", kind: "faction", title: "A", summary: "s", links: [], disposition: "friendly", mobFamily: [], relationships: [] };
 const FACTION_B = { id: "faction-b", kind: "faction", title: "B", summary: "s", links: [], disposition: "hostile", mobFamily: [], relationships: [{ factionId: "faction-a", stance: "rival" }] };
 const CHARACTER = { id: "char-npc", kind: "character", title: "NPC", summary: "s", links: [], role: "npc", faction: "faction-a", region: "region-town", assetKey: "npc" };
-const ARC = { id: "arc-a", kind: "arc", title: "A", summary: "s", links: [], act: 1, questIds: ["quest-x"] };
+const ACT_1 = { id: "act-1", kind: "act", title: "Act One", summary: "s", links: [], order: 1, theme: "foothold" };
+const ARC = { id: "arc-a", kind: "arc", title: "A", summary: "s", links: [], actId: "act-1", questIds: ["quest-x"] };
 const QUEST = {
   id: "quest-x", kind: "quest", title: "X", summary: "s", links: [],
   narrative: { description: "d", offerText: "o", completeText: "c" },
@@ -99,7 +102,8 @@ test("dangling quest.giver is a hard fail", () => {
   const dir = fixture({ quests:[{ id:"quest-x", kind:"quest", title:"X", summary:"s", links:[],
     narrative:{description:"d",offerText:"o",completeText:"c"}, giver:"char-nope",
     arcId:"arc-a", objectives:[{type:"MOB_KILLED",targetId:"mob:aggressive",count:1}] }],
-    arcs:[{id:"arc-a",kind:"arc",title:"A",summary:"s",links:[],act:1,questIds:["quest-x"]}] });
+    acts:[ACT_1],
+    arcs:[{id:"arc-a",kind:"arc",title:"A",summary:"s",links:[],actId:"act-1",questIds:["quest-x"]}] });
   const r = runGate(dir);
   assert.equal(r.code, 1);
   assert.match(r.out, /quest-x.*giver.*char-nope/);
@@ -109,7 +113,7 @@ test("dangling quest.giver is a hard fail", () => {
 
 test("fully valid graph resolves clean", () => {
   const dir = fixture({
-    regions: [REGION], factions: [FACTION_A, FACTION_B], characters: [CHARACTER],
+    acts: [ACT_1], regions: [REGION], factions: [FACTION_A, FACTION_B], characters: [CHARACTER],
     arcs: [ARC], quests: [QUEST], events: [EVENT], dialogue: [DIALOGUE],
   });
   const r = runGate(dir);
@@ -127,7 +131,7 @@ test("event.involves may resolve to any node kind, not just character", () => {
 test("dialogue.context may resolve to a quest or an event", () => {
   const dlgToEvent = { ...DIALOGUE, id: "dlg-b", context: "event-a" };
   const dir = fixture({
-    characters: [CHARACTER], factions: [FACTION_A], regions: [REGION],
+    acts: [ACT_1], characters: [CHARACTER], factions: [FACTION_A], regions: [REGION],
     arcs: [ARC], quests: [QUEST], events: [{ ...EVENT, involves: ["char-npc"] }],
     dialogue: [DIALOGUE, dlgToEvent],
   });
@@ -145,17 +149,17 @@ test("dangling quest.arcId is a hard fail", () => {
   assert.match(r.out, /quest-x.*arcId.*arc-nope/);
 });
 
-test("dangling quest.prereq is a hard fail", () => {
-  const quest = { ...QUEST, prereq: "quest-nope" };
-  const dir = fixture({ characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
+test("dangling quest.unlockedBy is a hard fail", () => {
+  const quest = { ...QUEST, unlockedBy: ["quest-nope"] };
+  const dir = fixture({ acts: [ACT_1], characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
   const r = runGate(dir);
   assert.equal(r.code, 1);
-  assert.match(r.out, /quest-x.*prereq.*quest-nope/);
+  assert.match(r.out, /quest-x.*unlockedBy.*quest-nope/);
 });
 
 test("dangling quest.faction is a hard fail", () => {
   const quest = { ...QUEST, faction: "faction-nope" };
-  const dir = fixture({ characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
+  const dir = fixture({ acts: [ACT_1], characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
   const r = runGate(dir);
   assert.equal(r.code, 1);
   assert.match(r.out, /quest-x.*faction.*faction-nope/);
@@ -163,7 +167,7 @@ test("dangling quest.faction is a hard fail", () => {
 
 test("dangling quest.region is a hard fail", () => {
   const quest = { ...QUEST, region: "region-nope" };
-  const dir = fixture({ characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
+  const dir = fixture({ acts: [ACT_1], characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
   const r = runGate(dir);
   assert.equal(r.code, 1);
   assert.match(r.out, /quest-x.*region.*region-nope/);
@@ -171,7 +175,7 @@ test("dangling quest.region is a hard fail", () => {
 
 test("dangling arc.questIds entry is a hard fail", () => {
   const arc = { ...ARC, questIds: ["quest-nope"] };
-  const dir = fixture({ arcs: [arc] });
+  const dir = fixture({ acts: [ACT_1], arcs: [arc] });
   const r = runGate(dir);
   assert.equal(r.code, 1);
   assert.match(r.out, /arc-a.*questIds.*quest-nope/);
@@ -228,7 +232,7 @@ test("dangling dialogue.context is a hard fail", () => {
 
 test("dialogue.context resolving to a non quest|event kind is a hard fail (wrong kind)", () => {
   const dlg = { ...DIALOGUE, context: "arc-a" };
-  const dir = fixture({ characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [QUEST], dialogue: [dlg] });
+  const dir = fixture({ acts: [ACT_1], characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [QUEST], dialogue: [dlg] });
   const r = runGate(dir);
   assert.equal(r.code, 1);
   assert.match(r.out, /dlg-a.*context.*"arc-a".*resolves to a arc node, not quest\|event/);
@@ -254,7 +258,7 @@ test("character.assetKey not in asset-keys.json is a hard fail", () => {
 
 test("quest.objectives[].targetId of form mob:* not a server mob id is a hard fail", () => {
   const quest = { ...QUEST, objectives: [{ type: "MOB_KILLED", targetId: "mob:nope", count: 1 }] };
-  const dir = fixture({ characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
+  const dir = fixture({ acts: [ACT_1], characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
   const r = runGate(dir);
   assert.equal(r.code, 1);
   assert.match(r.out, /FAIL.*quest-x.*objectives targetId "mob:nope" is not a server mob id \(valid: aggressive\)/);

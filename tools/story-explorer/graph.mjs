@@ -1,38 +1,42 @@
 // Pure story-graph builder — shared by the browser explorer (index.html) and
 // the node smoke test, so the picture can never diverge from what's validated.
-// Input: an object { regions, factions, characters, arcs, quests, events, dialogue }
-// where each value is the parsed JSON array (missing kinds default to []).
+// Input: an object { acts, regions, factions, characters, arcs, quests,
+// events, dialogue, lore } where each value is the parsed JSON array
+// (missing kinds default to []).
 // Output: { nodes: [{id,kind,title,data}], edges: [{from,to,label}], byId: Map }.
 
-export const KINDS = ['region', 'faction', 'character', 'arc', 'quest', 'event', 'dialogue']
+export const KINDS = ['act', 'region', 'faction', 'character', 'arc', 'quest', 'event', 'dialogue', 'lore']
 
 // Single source of truth for every cross-node reference field, mirroring the
-// gate's resolveStoryRefs (scripts/check_content.mjs) edge-for-edge: quest
-// giver/arcId/prereq/faction/region, arc.questIds, character.faction/region,
-// event.involves/triggeredBy, dialogue.speaker/context, and
-// faction.relationships[].factionId. Both buildGraph (render) and
-// danglingEdges (coherence proxy) derive from this ONE list so they can never
-// silently diverge again — any edge kind the gate checks must be declared
-// here or the explorer's picture would lie about what got validated.
+// gate's resolveStoryRefs/buildReverseRefIndex (scripts/check_content.mjs)
+// edge-for-edge — this table IS the v2 edge set (Global Constraints):
+// arc.actId -> act, lore.anchor -> any kind, character.diedAt -> event,
+// {quest,event,dialogue}.unlockedBy[] -> quest|event|act (prereq removed),
+// plus the unchanged quest giver/arcId/faction/region, arc.questIds,
+// character.faction/region, event.involves/triggeredBy, dialogue.speaker/
+// context, and faction.relationships[].factionId. Both buildGraph (render)
+// and danglingEdges (coherence proxy) derive from this ONE list so they can
+// never silently diverge again — any edge kind the gate checks must be
+// declared here or the explorer's picture would lie about what got validated.
+const unlocks = (n) => (n.unlockedBy ?? []).map((u) => [u, 'unlockedBy'])
 const EDGE_SPECS = {
   faction: (n) => (n.relationships ?? []).map((r) => [r.factionId, r.stance]),
   character: (n) => [
     [n.faction, 'of'],
     [n.region, 'in'],
+    [n.diedAt, 'diedAt'],
   ],
-  arc: (n) => (n.questIds ?? []).map((q) => [q, 'quest']),
+  arc: (n) => [...(n.questIds ?? []).map((q) => [q, 'quest']), [n.actId, 'act']],
   quest: (n) => [
     [n.giver, 'giver'],
     [n.arcId, 'arc'],
-    [n.prereq, 'prereq'],
     [n.faction, 'vs'],
     [n.region, 'at'],
+    ...unlocks(n),
   ],
-  event: (n) => [...(n.involves ?? []).map((i) => [i, 'involves']), [n.triggeredBy, 'triggeredBy']],
-  dialogue: (n) => [
-    [n.speaker, 'speaker'],
-    [n.context, 'in'],
-  ],
+  event: (n) => [...(n.involves ?? []).map((i) => [i, 'involves']), [n.triggeredBy, 'triggeredBy'], ...unlocks(n)],
+  dialogue: (n) => [[n.speaker, 'speaker'], [n.context, 'in'], ...unlocks(n)],
+  lore: (n) => [[n.anchor, 'anchor']],
 }
 
 // Every declared (from, to, label) triple for the loaded files, regardless of

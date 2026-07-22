@@ -17,6 +17,8 @@
     "role": { "enum": ["npc", "ally", "villain", "neutral"] },
     "faction": { "type": "string", "pattern": "^faction-[a-z0-9]+(-[a-z0-9]+)*$" },
     "region": { "type": "string", "pattern": "^region-[a-z0-9]+(-[a-z0-9]+)*$" },
-    "assetKey": { "type": "string", "minLength": 1 }
+    "assetKey": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["alive", "dead", "missing"] },
+    "diedAt": { "type": "string", "pattern": "^event-[a-z0-9]+(-[a-z0-9]+)*$" }
   }
 }
