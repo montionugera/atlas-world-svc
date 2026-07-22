@@ -7,7 +7,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, resolve, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
-import Ajv from "ajv";
+import { STORY_FILES, loadStory, readJson, compileSchema } from "./lib/story.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -39,11 +39,6 @@ const warnings = [];
 const fail = (m) => failures.push(m);
 const warn = (m) => warnings.push(m);
 
-function readJson(path, label) {
-  try { return JSON.parse(readFileSync(path, "utf8")); }
-  catch (e) { fail(`${label}: cannot read/parse ${path}: ${e.message}`); return null; }
-}
-
 // Frontmatter split: file must start with "---\n"; frontmatter ends at next "\n---\n".
 function splitFrontmatter(raw, file) {
   if (!raw.startsWith("---\n")) { fail(`${file}: missing YAML frontmatter block`); return null; }
@@ -64,41 +59,6 @@ function sectionText(body, heading) {
   return (next === -1 ? rest : rest.slice(0, next)).trim();
 }
 
-// F-012: the story graph is 7 per-kind files (one global id-space, kind-prefixed
-// ids) instead of the old single story.json. STORY_KINDS / STORY_FILES / STORY_SCHEMAS
-// are the interface Tasks 2-4 (coherence gate) and gen_story_graph.mjs build on.
-const STORY_KINDS = ["region", "faction", "character", "arc", "quest", "event", "dialogue"];
-const STORY_FILES = {
-  region: "regions.json",
-  faction: "factions.json",
-  character: "characters.json",
-  arc: "arcs.json",
-  quest: "quests.json",
-  event: "events.json",
-  dialogue: "dialogue.json",
-};
-// story-character.schema.json (not character.schema.json) — that name is already
-// taken by the F-005 markdown character-SHEET schema (content/characters/*.md),
-// a different document. See content/schemas/story-character.schema.json header.
-const STORY_SCHEMAS = {
-  region: "region.schema.json",
-  faction: "faction.schema.json",
-  character: "story-character.schema.json",
-  arc: "arc.schema.json",
-  quest: "quest.schema.json",
-  event: "event.schema.json",
-  dialogue: "dialogue.schema.json",
-};
-
-const AjvClass = Ajv.default ?? Ajv;
-
-// Compile a schema file to an Ajv validator, or null if it can't be read.
-function compileSchema(path, label) {
-  const schema = readJson(path, label);
-  if (!schema) return null;
-  return new AjvClass({ allErrors: true }).compile(schema);
-}
-
 // List *.md content files in a dir, ignoring _-prefixed (templates/fixtures).
 function listContentFiles(dir, label) {
   try {
@@ -114,78 +74,11 @@ function main() {
   return finish(sheetCount, mapCount, story.count);
 }
 
-// F-012: read all 7 per-kind story files under `${contentRoot}/story/` (each a
-// flat JSON array of same-kind nodes) into one global id→node map, validating
-// each node against its kind's schema on the way in. Plain JSON reads only —
-// no TS/@atlas import, same discipline as asset-keys.json.
-//
-// A kind whose file is missing on disk contributes an empty array for that
-// kind — not a failure (a content root can legitimately not have events yet).
-// A file that IS present but unparsable JSON, not a JSON array, or containing
-// a schema-invalid node is a hard FAIL. A duplicate id across ANY two files
-// (even two different kinds) is a hard FAIL — the id-space is global, and
-// kind-prefixed ids (region- faction- char- arc- quest- event- dlg-) make a
-// collision a clear authoring bug rather than an intentional kind switch.
-//
-// Interface consumed by Tasks 2-4 (coherence gate) and gen_story_graph.mjs.
-// `rawByKind` is the pre-schema-filter twin of `byKind`: every entry that
-// parsed as JSON for that kind's file, valid or not. checkStoryCoherence's
-// completeness FAILs (Task 3) need it — a quest with 0 objectives or an arc
-// with 0 questIds is *also* a schema minItems violation, so a schema-invalid
-// entry never reaches `byKind`/`nodes`. Running the completeness check
-// against raw entries (defensive field access only, no ref-following) is
-// what makes our own clear-message FAIL surface alongside — not instead of —
-// the generic schema error.
-function loadStory(contentRoot) {
-  const nodes = new Map(); // id -> node, union across all 7 files
-  const byKind = new Map(); // kind -> node[], schema-valid only
-  const rawByKind = new Map(); // kind -> node[], every parsed entry regardless of schema validity
-  const sourceFile = new Map(); // id -> filename, for duplicate-id messages
-  let anyFilePresent = false;
-
-  for (const kind of STORY_KINDS) {
-    const file = STORY_FILES[kind];
-    byKind.set(kind, []);
-    rawByKind.set(kind, []);
-
-    let raw;
-    try { raw = readFileSync(join(contentRoot, "story", file), "utf8"); }
-    catch { continue; } // this kind's file is absent → empty, not a failure
-    anyFilePresent = true;
-
-    let arr;
-    try { arr = JSON.parse(raw); }
-    catch (e) { fail(`story/${file}: cannot parse: ${e.message}`); continue; }
-    if (!Array.isArray(arr)) {
-      fail(`story/${file}: expected a JSON array of ${kind} nodes, got ${typeof arr}`);
-      continue;
-    }
-    rawByKind.set(kind, arr);
-
-    const validate = compileSchema(join(contentRoot, "schemas", STORY_SCHEMAS[kind]), `${kind} schema`);
-    if (!validate) continue;
-
-    const kindNodes = [];
-    for (const entry of arr) {
-      const label = `story/${file}#${entry?.id ?? "?"}`;
-      if (!validate(entry)) {
-        for (const err of validate.errors)
-          fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
-        continue; // downstream checks assume a valid shape
-      }
-      if (nodes.has(entry.id)) {
-        fail(`${label}: duplicate story id "${entry.id}" (already defined in story/${sourceFile.get(entry.id)})`);
-        continue;
-      }
-      nodes.set(entry.id, entry);
-      sourceFile.set(entry.id, file);
-      kindNodes.push(entry);
-    }
-    byKind.set(kind, kindNodes);
-  }
-
-  return { nodes, byKind, rawByKind, anyFilePresent };
-}
+// F-012: loadStory() (reads all 7 per-kind story files under
+// `${contentRoot}/story/` into one global id→node map) now lives in
+// scripts/lib/story.mjs, shared with gen_story_graph.mjs — see that file for
+// the full loader contract (missing-file vs unparsable vs schema-invalid,
+// duplicate-id semantics, `rawByKind` vs `byKind`).
 
 // F-012 Task 2: whole-graph cross-reference resolution. `story` is the
 // {nodes, byKind} shape returned by loadStory(); `assetKeyIds` is the Set of
@@ -480,9 +373,9 @@ function checkStoryCoherence(story, fail, warn, requireComplete) {
 // missing bible.md downgrades region checks. Once at least one story file
 // exists, ids is a real (possibly empty) Set and the check runs for real.
 function checkStory(opts) {
-  const { nodes, byKind, rawByKind, anyFilePresent } = loadStory(opts.contentRoot);
+  const { nodes, byKind, rawByKind, anyFilePresent } = loadStory(opts.contentRoot, fail);
 
-  const keysDoc = readJson(opts.keys, "asset-keys");
+  const keysDoc = readJson(opts.keys, "asset-keys", fail);
   const assetKeyIds = new Set((keysDoc?.keys ?? []).map((k) => k.id));
   for (const entry of byKind.get("faction")) {
     for (const mk of entry.mobFamily) {
@@ -500,9 +393,9 @@ function checkStory(opts) {
 }
 
 function checkCharacters(opts, storyIds = null) {
-  const keysDoc = readJson(opts.keys, "asset-keys");
-  const manifestDoc = readJson(opts.manifest, "manifest");
-  const validate = compileSchema(join(opts.contentRoot, "schemas/character.schema.json"), "character schema");
+  const keysDoc = readJson(opts.keys, "asset-keys", fail);
+  const manifestDoc = readJson(opts.manifest, "manifest", fail);
+  const validate = compileSchema(join(opts.contentRoot, "schemas/character.schema.json"), "character schema", fail);
   if (!keysDoc || !manifestDoc || !validate) return 0;
 
   const keyKinds = new Map(keysDoc.keys.map((k) => [k.id, k.kind]));
@@ -593,7 +486,7 @@ function checkMaps(opts) {
   const dir = join(opts.contentRoot, "maps");
   if (!existsSync(dir)) return 0;
 
-  const validate = compileSchema(join(opts.contentRoot, "schemas/map.schema.json"), "map schema");
+  const validate = compileSchema(join(opts.contentRoot, "schemas/map.schema.json"), "map schema", fail);
   if (!validate) return 0;
 
   const bibleRegions = bibleRegionIds(opts.contentRoot);
