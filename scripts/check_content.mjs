@@ -128,15 +128,25 @@ function main() {
 // collision a clear authoring bug rather than an intentional kind switch.
 //
 // Interface consumed by Tasks 2-4 (coherence gate) and gen_story_graph.mjs.
+// `rawByKind` is the pre-schema-filter twin of `byKind`: every entry that
+// parsed as JSON for that kind's file, valid or not. checkStoryCoherence's
+// completeness FAILs (Task 3) need it — a quest with 0 objectives or an arc
+// with 0 questIds is *also* a schema minItems violation, so a schema-invalid
+// entry never reaches `byKind`/`nodes`. Running the completeness check
+// against raw entries (defensive field access only, no ref-following) is
+// what makes our own clear-message FAIL surface alongside — not instead of —
+// the generic schema error.
 function loadStory(contentRoot) {
   const nodes = new Map(); // id -> node, union across all 7 files
-  const byKind = new Map(); // kind -> node[]
+  const byKind = new Map(); // kind -> node[], schema-valid only
+  const rawByKind = new Map(); // kind -> node[], every parsed entry regardless of schema validity
   const sourceFile = new Map(); // id -> filename, for duplicate-id messages
   let anyFilePresent = false;
 
   for (const kind of STORY_KINDS) {
     const file = STORY_FILES[kind];
     byKind.set(kind, []);
+    rawByKind.set(kind, []);
 
     let raw;
     try { raw = readFileSync(join(contentRoot, "story", file), "utf8"); }
@@ -150,6 +160,7 @@ function loadStory(contentRoot) {
       fail(`story/${file}: expected a JSON array of ${kind} nodes, got ${typeof arr}`);
       continue;
     }
+    rawByKind.set(kind, arr);
 
     const validate = compileSchema(join(contentRoot, "schemas", STORY_SCHEMAS[kind]), `${kind} schema`);
     if (!validate) continue;
@@ -173,7 +184,7 @@ function loadStory(contentRoot) {
     byKind.set(kind, kindNodes);
   }
 
-  return { nodes, byKind, anyFilePresent };
+  return { nodes, byKind, rawByKind, anyFilePresent };
 }
 
 // F-012 Task 2: whole-graph cross-reference resolution. `story` is the
@@ -256,6 +267,157 @@ function resolveStoryRefs(story, assetKeyIds, fail, warn) {
   }
 }
 
+// Group `items` by `keyFn(item)`; return only the groups with 2+ members, as
+// [key, items[]] pairs — used by the arc.act / event.timelineOrder
+// duplicate-value checks below.
+function findDuplicateGroups(items, keyFn) {
+  const groups = new Map();
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  return [...groups.entries()].filter(([, group]) => group.length > 1);
+}
+
+// Single pass over the union building a targetId -> Set<sourceKind> index of
+// every cross-node edge (the same edge set resolveStoryRefs walks). Built
+// ONCE and reused by both orphan checks below, rather than re-scanning the
+// graph per kind.
+function buildReverseRefIndex(byKind) {
+  const index = new Map();
+  const addRef = (targetId, sourceKind) => {
+    if (targetId === undefined) return;
+    if (!index.has(targetId)) index.set(targetId, new Set());
+    index.get(targetId).add(sourceKind);
+  };
+
+  for (const q of byKind.get("quest")) {
+    addRef(q.giver, "quest");
+    addRef(q.arcId, "quest");
+    addRef(q.prereq, "quest");
+    addRef(q.faction, "quest");
+    addRef(q.region, "quest");
+  }
+  for (const a of byKind.get("arc")) {
+    for (const qid of a.questIds) addRef(qid, "arc");
+  }
+  for (const c of byKind.get("character")) {
+    addRef(c.faction, "character");
+    addRef(c.region, "character");
+  }
+  for (const e of byKind.get("event")) {
+    for (const iid of e.involves) addRef(iid, "event");
+    addRef(e.triggeredBy, "event");
+  }
+  for (const d of byKind.get("dialogue")) {
+    addRef(d.speaker, "dialogue");
+    addRef(d.context, "dialogue");
+  }
+  for (const f of byKind.get("faction")) {
+    for (const rel of f.relationships ?? []) addRef(rel.factionId, "faction");
+  }
+  return index;
+}
+
+// Is `quest` reachable by walking `.prereq` back to a no-prereq start? A
+// dangling prereq (already a hard FAIL from resolveStoryRefs) or a prereq
+// cycle both resolve to "not reachable" here — cycle *detection* proper
+// (distinguishing "in a cycle" from "just unreachable") is Task 4's job; a
+// quest stuck in a cycle is simply unreachable from this task's point of view.
+function isQuestReachable(quest, questById) {
+  let current = quest;
+  const visited = new Set();
+  while (true) {
+    if (!current.prereq) return true;
+    if (visited.has(current.id)) return false;
+    visited.add(current.id);
+    const prereq = questById.get(current.prereq);
+    if (!prereq) return false;
+    current = prereq;
+  }
+}
+
+// F-012 Task 3: completeness FAILs + orphan/reachability WARNs, run after
+// resolveStoryRefs so every message from both layers is visible together —
+// including for the arc/quest completeness rules below, which structurally
+// overlap with schema `required`/`minItems` (a quest with 0 objectives or an
+// arc with 0 questIds is ALSO a schema violation, and a schema-invalid entry
+// never reaches `byKind`). Those two rules therefore run against
+// `rawByKind` (every parsed entry, valid or not) so our clear-message FAIL
+// still surfaces even though the schema layer already excluded the node from
+// `byKind`/`nodes` — defense in depth, not a replacement for the schema gate.
+//
+// `requireComplete` escalates the orphan-character, orphan-faction, and
+// unreachable-quest WARNs to FAILs (mirrors the existing character-sheet
+// coverage escalation in checkCharacters). The triggeredBy/act-order WARN is
+// a graph *consistency* check, not a coverage/completeness one, so it is
+// deliberately NOT escalated by --require-complete.
+function checkStoryCoherence(story, fail, warn, requireComplete) {
+  const { nodes, byKind, rawByKind } = story;
+  const escalate = (msg) => (requireComplete ? fail(msg) : warn(msg));
+
+  // --- completeness FAILs (raw entries — see comment above) -----------------
+
+  for (const q of rawByKind.get("quest") ?? []) {
+    const label = `story/${STORY_FILES.quest}#${q?.id ?? "?"}`;
+    if (!Array.isArray(q?.objectives) || q.objectives.length === 0)
+      fail(`${label}: quest "${q?.id ?? "?"}" has 0 objectives`);
+    if (!q?.giver) fail(`${label}: quest "${q?.id ?? "?"}" is missing giver`);
+    if (!q?.arcId) fail(`${label}: quest "${q?.id ?? "?"}" is missing arcId`);
+  }
+
+  for (const a of rawByKind.get("arc") ?? []) {
+    const label = `story/${STORY_FILES.arc}#${a?.id ?? "?"}`;
+    if (!Array.isArray(a?.questIds) || a.questIds.length === 0)
+      fail(`${label}: arc "${a?.id ?? "?"}" has no quests (0 questIds)`);
+  }
+
+  // --- duplicate-value FAILs (schema-valid nodes — no minItems overlap) -----
+
+  for (const [act, arcs] of findDuplicateGroups(byKind.get("arc"), (a) => a.act))
+    fail(`story/${STORY_FILES.arc}: duplicate act ${act} used by arcs ${arcs.map((a) => `"${a.id}"`).join(", ")}`);
+
+  for (const [order, events] of findDuplicateGroups(byKind.get("event"), (e) => e.timelineOrder))
+    fail(`story/${STORY_FILES.event}: duplicate timelineOrder ${order} used by events ${events.map((e) => `"${e.id}"`).join(", ")}`);
+
+  // --- orphan WARNs (reverse-ref index, built once) --------------------------
+
+  const refIndex = buildReverseRefIndex(byKind);
+
+  for (const c of byKind.get("character")) {
+    const sources = refIndex.get(c.id) ?? new Set();
+    if (!["quest", "faction", "event", "dialogue"].some((k) => sources.has(k)))
+      escalate(`story/${STORY_FILES.character}#${c.id}: character "${c.id}" is referenced by no quest, faction, event, or dialogue (orphan)`);
+  }
+
+  for (const f of byKind.get("faction")) {
+    const sources = refIndex.get(f.id) ?? new Set();
+    if (!["quest", "character", "event"].some((k) => sources.has(k)))
+      escalate(`story/${STORY_FILES.faction}#${f.id}: faction "${f.id}" is referenced by no quest, character, or event (orphan)`);
+  }
+
+  // --- reachability WARN ------------------------------------------------------
+
+  const questById = new Map(byKind.get("quest").map((q) => [q.id, q]));
+  for (const q of byKind.get("quest")) {
+    if (!isQuestReachable(q, questById))
+      escalate(`story/${STORY_FILES.quest}#${q.id}: quest "${q.id}" is unreachable from any no-prereq start quest`);
+  }
+
+  // --- event.triggeredBy vs arc.act ordering WARN (never escalated) ---------
+
+  for (const e of byKind.get("event")) {
+    if (e.triggeredBy === undefined) continue;
+    const quest = nodes.get(e.triggeredBy);
+    if (!quest || quest.kind !== "quest") continue; // dangling/wrong-kind already FAILed by resolveStoryRefs
+    const arc = nodes.get(quest.arcId);
+    if (!arc || arc.kind !== "arc") continue; // dangling arcId already FAILed elsewhere
+    if (arc.act > e.timelineOrder)
+      warn(`story/${STORY_FILES.event}#${e.id}: triggeredBy quest "${quest.id}"'s arc "${arc.id}" act ${arc.act} is later than event timelineOrder ${e.timelineOrder}`);
+  }
+}
+
 // Story-graph checks preserved from the pre-F-012 single-file gate, re-run
 // against the per-kind union: faction mobFamily → real asset key (WARN — this
 // stays a WARN, matching the map mobType check, until I-019's mob-types.json
@@ -269,7 +431,7 @@ function resolveStoryRefs(story, assetKeyIds, fail, warn) {
 // missing bible.md downgrades region checks. Once at least one story file
 // exists, ids is a real (possibly empty) Set and the check runs for real.
 function checkStory(opts) {
-  const { nodes, byKind, anyFilePresent } = loadStory(opts.contentRoot);
+  const { nodes, byKind, rawByKind, anyFilePresent } = loadStory(opts.contentRoot);
 
   const keysDoc = readJson(opts.keys, "asset-keys");
   const assetKeyIds = new Set((keysDoc?.keys ?? []).map((k) => k.id));
@@ -280,7 +442,9 @@ function checkStory(opts) {
     }
   }
 
-  resolveStoryRefs({ nodes, byKind }, assetKeyIds, fail, warn);
+  const story = { nodes, byKind };
+  resolveStoryRefs(story, assetKeyIds, fail, warn);
+  checkStoryCoherence({ ...story, rawByKind }, fail, warn, opts.requireComplete);
 
   return { count: nodes.size, ids: anyFilePresent ? new Set(nodes.keys()) : null };
 }
