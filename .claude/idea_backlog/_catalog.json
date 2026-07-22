@@ -112,5 +112,11 @@
     "title": "Generated mob-types.json \u2192 upgrade map mobType check from WARN to hard-fail: emit a machine-readable list of valid mob ids from colyseus-server mob definitions (mirror gen-asset-keys codegen), have check_content.mjs read it so a typo in a content map mobSpawnAreas[].mobType (and faction/quest mob refs) is a hard FAIL instead of a silent WARN \u2014 closes the silent-empty-spawn risk in authored maps",
     "created_at": "2026-07-22T01:29:32.619353+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-020",
+    "title": "Epic Story Pipeline: full narrative graph (7 per-kind files, shared id-space) + whole-graph coherence gate (resolution + orphans + prereq-DAG) + dual visualizer (static Mermaid drift-gate + interactive story-explorer). Spec docs/superpowers/specs/2026-07-22-epic-story-pipeline-design.md + plan docs/superpowers/plans/2026-07-22-epic-story-pipeline.md (both on release/1.4). Content+gate+viz only; runtime deferred I-017; mob refs WARN until I-019",
+    "created_at": "2026-07-22T08:11:34.325183+00:00",
+    "promoted_to": null
   }
 ]
