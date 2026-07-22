@@ -60,8 +60,10 @@ jobs:
       # (contracts already built above) so the gate checks current keys, not a
       # stale committed snapshot; then run the checker. Stage-0: unmapped keys
       # are warnings, broken paths / missing licenses are hard failures.
-      - name: Codegen asset keys (refresh generated/asset-keys.json)
-        run: bash colyseus-server/scripts/codegen/gen-asset-keys.sh
+      - name: Codegen asset keys + mob types (refresh generated/*.json)
+        run: |
+          bash colyseus-server/scripts/codegen/gen-asset-keys.sh
+          bash colyseus-server/scripts/codegen/gen-mob-types.sh
 
       - name: Asset manifest drift-gate (keys ↔ manifest ↔ files ↔ license)
         run: node scripts/check_asset_manifest.mjs
