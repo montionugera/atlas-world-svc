@@ -144,9 +144,10 @@
     "title": "Generated mob-types.json \u2192 upgrade map mobType check from WARN to hard-fail: emit a machine-readable list of valid mob ids from colyseus-server mob definitions (mirror gen-asset-keys codegen), have check_content.mjs read it so a typo in a content map mobSpawnAreas[].mobType (and faction/quest mob refs) is a hard FAIL instead of a silent WARN \u2014 closes the silent-empty-spawn risk in authored maps",
     "from_idea": "I-019",
     "created_at": "2026-07-22T14:16:43.108133+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-07-22T15:27:49.641185+00:00"
   },
   {
     "id": "F-014",
