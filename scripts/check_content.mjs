@@ -338,6 +338,55 @@ function isQuestReachable(quest, questById) {
   }
 }
 
+// F-012 Task 4: hard FAIL on any cycle in the quest.prereq graph, naming the
+// cycle members. `quest.prereq` is a SINGULAR optional string (not an array)
+// per quest.schema.json, so this is a *functional* graph — every quest has
+// out-degree <= 1 — and DFS with white/grey/black coloring finds a cycle by
+// revisiting a grey (on-stack) node. A dangling prereq (already a hard FAIL
+// from resolveStoryRefs, Task 2) is simply skipped here via questById.get
+// returning undefined — it must never crash or be misreported as a cycle.
+// Run after resolveStoryRefs so a cycle FAIL surfaces alongside — not instead
+// of — the reachability WARN Task 3 already emits for the same quests (a
+// quest stuck in a cycle is, by definition, also "unreachable from any
+// no-prereq start" per isQuestReachable — both messages are expected to
+// appear together, this task does not suppress that WARN).
+function assertQuestPrereqDag(story, fail) {
+  const { byKind } = story;
+  const questById = new Map(byKind.get("quest").map((q) => [q.id, q]));
+
+  const WHITE = 0, GREY = 1, BLACK = 2;
+  const color = new Map();
+
+  const visit = (quest, stack) => {
+    color.set(quest.id, GREY);
+    stack.push(quest.id);
+
+    if (quest.prereq !== undefined) {
+      const prereq = questById.get(quest.prereq);
+      if (prereq) {
+        const prereqColor = color.get(prereq.id) ?? WHITE;
+        if (prereqColor === GREY) {
+          const cycleStart = stack.indexOf(prereq.id);
+          const cycle = [...stack.slice(cycleStart), prereq.id];
+          fail(`story/${STORY_FILES.quest}: prereq cycle: ${cycle.join(" -> ")}`);
+        } else if (prereqColor === WHITE) {
+          visit(prereq, stack);
+        }
+        // BLACK: already fully explored via some other path, no cycle here.
+      }
+      // dangling prereq (no matching quest) — already FAILed by
+      // resolveStoryRefs; nothing to walk into.
+    }
+
+    stack.pop();
+    color.set(quest.id, BLACK);
+  };
+
+  for (const quest of byKind.get("quest")) {
+    if ((color.get(quest.id) ?? WHITE) === WHITE) visit(quest, []);
+  }
+}
+
 // F-012 Task 3: completeness FAILs + orphan/reachability WARNs, run after
 // resolveStoryRefs so every message from both layers is visible together —
 // including for the arc/quest completeness rules below, which structurally
@@ -444,6 +493,7 @@ function checkStory(opts) {
 
   const story = { nodes, byKind };
   resolveStoryRefs(story, assetKeyIds, fail, warn);
+  assertQuestPrereqDag(story, fail);
   checkStoryCoherence({ ...story, rawByKind }, fail, warn, opts.requireComplete);
 
   return { count: nodes.size, ids: anyFilePresent ? new Set(nodes.keys()) : null };
