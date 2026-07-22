@@ -5,20 +5,8 @@ from_idea: I-021
 status: refined
 ---
 
-# Narrative System v2 — acts, lore, unlockedBy, fates — design
+# Narrative System v2 — spec pointer
 
-## Goal
-
-(one sentence)
-
-## Architecture
-
-(2-3 sentences)
-
-## Components
-
-(list — each with one responsibility)
-
-## Data flow / state
-
-## Tests / acceptance criteria
+Canonical approved spec: `docs/superpowers/specs/2026-07-22-narrative-system-v2-design.md`
+(committed on release/1.4, commit 376c89a). Sub-project A of the Grand Epic
+program (A: system upgrade → B: epic content → C: runtime spine → D: story UI).
