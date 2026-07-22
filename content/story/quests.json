@@ -1,0 +1,74 @@
+[
+  {
+    "id": "quest-first-steps",
+    "kind": "quest",
+    "title": "First Steps",
+    "summary": "Prove yourself against the meadow's straylings.",
+    "narrative": {
+      "description": "The quartermaster needs to know you can hold a line.",
+      "offerText": "Clear a few straylings from the tent line.",
+      "completeText": "You'll do. The meadow's edge is yours to push."
+    },
+    "giver": "char-quartermaster",
+    "region": "region-spawn-meadow",
+    "faction": "faction-unaligned",
+    "prereq": null,
+    "arcId": "arc-meadow-awakening",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:balanced",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-cull-the-packs",
+    "kind": "quest",
+    "title": "Cull the Packs",
+    "summary": "Break the Ashfang pressure on the camp.",
+    "narrative": {
+      "description": "Ashfang brutes are testing the tent line.",
+      "offerText": "Thin the Ashfang packs before they mass.",
+      "completeText": "The charge is broken \u2014 for now."
+    },
+    "giver": "char-quartermaster",
+    "region": "region-spawn-meadow",
+    "faction": "faction-ashfang",
+    "prereq": "quest-first-steps",
+    "arcId": "arc-meadow-awakening",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:aggressive",
+        "count": 5
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-twin-strike",
+    "kind": "quest",
+    "title": "The Twin-Strike",
+    "summary": "Face the wall the meadow puts up before it lets you leave.",
+    "narrative": {
+      "description": "The apex strayling hits twice where others hit once.",
+      "offerText": "End the Twin-Strike.",
+      "completeText": "The meadow is open. The frontier waits."
+    },
+    "giver": "char-quartermaster",
+    "region": "region-spawn-meadow",
+    "faction": "faction-unaligned",
+    "prereq": "quest-cull-the-packs",
+    "arcId": "arc-meadow-awakening",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:double_attacker",
+        "count": 1
+      }
+    ],
+    "links": []
+  }
+]

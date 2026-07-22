@@ -1,0 +1,26 @@
+[
+  {
+    "id": "region-spawn-meadow",
+    "kind": "region",
+    "title": "Spawn Meadow",
+    "summary": "The safe-ish landing: tall grass, expedition tents, training dummies.",
+    "dangerTier": "safe",
+    "links": []
+  },
+  {
+    "id": "region-icefield",
+    "kind": "region",
+    "title": "Northern Icefield",
+    "summary": "A frozen shelf ~175u north where freeze/stun zones occur naturally.",
+    "dangerTier": "mid",
+    "links": []
+  },
+  {
+    "id": "region-thornveil",
+    "kind": "region",
+    "title": "Thornveil",
+    "summary": "Bramble forest east of the meadow; dense sightlines, ranged ambushes.",
+    "dangerTier": "mid",
+    "links": []
+  }
+]

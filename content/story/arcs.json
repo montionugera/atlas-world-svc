@@ -1,0 +1,15 @@
+[
+  {
+    "id": "arc-meadow-awakening",
+    "kind": "arc",
+    "title": "Meadow Awakening",
+    "summary": "The expedition finds its footing and clears the meadow's edge.",
+    "act": 1,
+    "questIds": [
+      "quest-first-steps",
+      "quest-cull-the-packs",
+      "quest-the-twin-strike"
+    ],
+    "links": []
+  }
+]

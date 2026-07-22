@@ -1,0 +1,77 @@
+[
+  {
+    "id": "faction-ashfang",
+    "kind": "faction",
+    "title": "Ashfang Packs",
+    "summary": "Aggressive pack hunters; charge on sight.",
+    "disposition": "hostile",
+    "mobFamily": [
+      "mob:aggressive"
+    ],
+    "relationships": [
+      {
+        "factionId": "faction-unaligned",
+        "stance": "rival"
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "faction-stoneguard",
+    "kind": "faction",
+    "title": "Stoneguard Remnant",
+    "summary": "A defensive order that outlived what it guarded.",
+    "disposition": "hostile",
+    "mobFamily": [
+      "mob:defensive"
+    ],
+    "relationships": [],
+    "links": []
+  },
+  {
+    "id": "faction-thornveil",
+    "kind": "faction",
+    "title": "Thornveil Skirmishers",
+    "summary": "Lean, fast spear-throwers of the eastern brambles.",
+    "disposition": "hostile",
+    "mobFamily": [
+      "mob:spear_thrower"
+    ],
+    "relationships": [],
+    "links": []
+  },
+  {
+    "id": "faction-unaligned",
+    "kind": "faction",
+    "title": "Unaligned Wilds",
+    "summary": "Creatures no faction claimed; the meadow calls them straylings.",
+    "disposition": "hostile",
+    "mobFamily": [
+      "mob:balanced",
+      "mob:hybrid",
+      "mob:double_attacker"
+    ],
+    "relationships": [
+      {
+        "factionId": "faction-ashfang",
+        "stance": "rival"
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "faction-expedition",
+    "kind": "faction",
+    "title": "The Expedition",
+    "summary": "The player's own side: the party that reopened the meadow.",
+    "disposition": "friendly",
+    "mobFamily": [],
+    "relationships": [
+      {
+        "factionId": "faction-ashfang",
+        "stance": "enemy"
+      }
+    ],
+    "links": []
+  }
+]
