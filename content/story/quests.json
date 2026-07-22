@@ -69,5 +69,29 @@
       }
     ],
     "links": []
+  },
+  {
+    "id": "quest-icefield-reckoning",
+    "kind": "quest",
+    "title": "Icefield Reckoning",
+    "summary": "With the meadow open, march north and answer the Stoneguard's silence.",
+    "narrative": {
+      "description": "Nothing crosses the icefield without the Stoneguard noticing. It's time to find out what they're still guarding.",
+      "offerText": "Push onto the Northern Icefield and break the Stoneguard's line.",
+      "completeText": "The shelf is quiet. Whatever they were guarding, it isn't guarded anymore."
+    },
+    "giver": "char-quartermaster",
+    "region": "region-icefield",
+    "faction": "faction-stoneguard",
+    "prereq": "quest-the-twin-strike",
+    "arcId": "arc-icefield-reckoning",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:defensive",
+        "count": 4
+      }
+    ],
+    "links": []
   }
 ]

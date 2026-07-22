@@ -11,5 +11,16 @@
       "quest-the-twin-strike"
     ],
     "links": []
+  },
+  {
+    "id": "arc-icefield-reckoning",
+    "kind": "arc",
+    "title": "Icefield Reckoning",
+    "summary": "With the meadow open, the expedition pushes north onto the Stoneguard's frozen shelf.",
+    "act": 2,
+    "questIds": [
+      "quest-icefield-reckoning"
+    ],
+    "links": []
   }
 ]
