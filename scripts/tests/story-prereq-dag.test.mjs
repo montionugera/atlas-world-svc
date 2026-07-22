@@ -22,6 +22,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_content.mjs");
 
 const STORY_SCHEMAS = [
+  "act.schema.json",
   "region.schema.json",
   "faction.schema.json",
   "story-character.schema.json",
@@ -41,7 +42,7 @@ const KEYS = { version: 1, keys: [] };
 const MANIFEST = { version: 2, entries: {} };
 
 function fixture({
-  regions = [], factions = [], characters = [], arcs = [], quests = [],
+  acts = [], regions = [], factions = [], characters = [], arcs = [], quests = [],
   events = [], dialogue = [], keys = KEYS, manifest = MANIFEST,
 } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "story-prereq-dag-"));
@@ -51,7 +52,7 @@ function fixture({
   for (const schema of STORY_SCHEMAS)
     cpSync(join(ROOT, "content/schemas", schema), join(dir, "content/schemas", schema));
 
-  const files = { regions, factions, characters, arcs, quests, events, dialogue };
+  const files = { acts, regions, factions, characters, arcs, quests, events, dialogue };
   for (const [name, arr] of Object.entries(files))
     writeFileSync(join(dir, `content/story/${name}.json`), JSON.stringify(arr));
 
@@ -82,8 +83,9 @@ test("a prereq cycle is a hard fail", () => {
     narrative:{description:"d",offerText:"o",completeText:"c"}, giver:"char-g", arcId:"arc-a",
     prereq, objectives:[{type:"MOB_KILLED",targetId:"mob:aggressive",count:1}] });
   const dir = fixture({
+    acts:[{id:"act-1",kind:"act",title:"Act One",summary:"s",links:[],order:1,theme:"foothold"}],
     characters:[{id:"char-g",kind:"character",title:"G",summary:"s",links:[],role:"npc"}],
-    arcs:[{id:"arc-a",kind:"arc",title:"A",summary:"s",links:[],act:1,questIds:["quest-1","quest-2"]}],
+    arcs:[{id:"arc-a",kind:"arc",title:"A",summary:"s",links:[],actId:"act-1",questIds:["quest-1","quest-2"]}],
     quests:[ q("quest-1","quest-2"), q("quest-2","quest-1") ] });
   const r = runGate(dir);
   assert.equal(r.code, 1);
@@ -100,10 +102,12 @@ const q = (id, extra = {}) => ({
   ...extra,
 });
 const CHAR_G = { id: "char-g", kind: "character", title: "G", summary: "s", links: [], role: "npc" };
-const ARC_A = (questIds) => ({ id: "arc-a", kind: "arc", title: "A", summary: "s", links: [], act: 1, questIds });
+const ACT_1 = { id: "act-1", kind: "act", title: "Act One", summary: "s", links: [], order: 1, theme: "foothold" };
+const ARC_A = (questIds) => ({ id: "arc-a", kind: "arc", title: "A", summary: "s", links: [], actId: "act-1", questIds });
 
 test("a self-prereq (1-node cycle) is a hard fail", () => {
   const dir = fixture({
+    acts: [ACT_1],
     characters: [CHAR_G],
     arcs: [ARC_A(["quest-1"])],
     quests: [q("quest-1", { prereq: "quest-1" })],
@@ -115,6 +119,7 @@ test("a self-prereq (1-node cycle) is a hard fail", () => {
 
 test("a 3-node cycle is a hard fail naming all members", () => {
   const dir = fixture({
+    acts: [ACT_1],
     characters: [CHAR_G],
     arcs: [ARC_A(["quest-1", "quest-2", "quest-3"])],
     quests: [
@@ -134,6 +139,7 @@ test("a 3-node cycle is a hard fail naming all members", () => {
 test("a valid no-cycle prereq chain passes the DAG check", () => {
   // quest-3 -> quest-2 -> quest-1 -> null: a straight chain, no cycle.
   const dir = fixture({
+    acts: [ACT_1],
     characters: [CHAR_G],
     arcs: [ARC_A(["quest-1", "quest-2", "quest-3"])],
     quests: [
@@ -155,6 +161,7 @@ test("two quests converging on the same prereq (in-degree 2) passes — not a cy
   // prereq is a SINGULAR field (out-degree <= 1 always), this is the closest
   // analogue to a "diamond" the schema allows — convergence, not divergence.
   const dir = fixture({
+    acts: [ACT_1],
     characters: [CHAR_G],
     arcs: [ARC_A(["quest-1", "quest-2", "quest-3"])],
     quests: [
@@ -174,6 +181,7 @@ test("a chain leading into a cycle (a -> b -> c -> b) names only the cycle membe
   // a chain that leads INTO a 2-node cycle (b ↔ c). The cycle must NOT include
   // quest-a in its FAIL message — only b and c should appear in the cycle line.
   const dir = fixture({
+    acts: [ACT_1],
     characters: [CHAR_G],
     arcs: [ARC_A(["quest-a", "quest-b", "quest-c"])],
     quests: [
@@ -195,6 +203,7 @@ test("a chain leading into a cycle (a -> b -> c -> b) names only the cycle membe
 
 test("a dangling prereq does not crash the DAG check (already FAILs via resolveStoryRefs)", () => {
   const dir = fixture({
+    acts: [ACT_1],
     characters: [CHAR_G],
     arcs: [ARC_A(["quest-1"])],
     quests: [q("quest-1", { prereq: "quest-ghost" })],

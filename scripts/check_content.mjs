@@ -129,6 +129,7 @@ function resolveStoryRefs(story, assetKeyIds, fail, warn) {
   for (const a of byKind.get("arc")) {
     const label = `story/${STORY_FILES.arc}#${a.id}`;
     for (const qid of a.questIds) resolve(label, "questIds", qid, ["quest"]);
+    resolve(label, "actId", a.actId, ["act"]);
   }
 
   for (const c of byKind.get("character")) {
@@ -211,6 +212,21 @@ function buildReverseRefIndex(byKind) {
     for (const rel of f.relationships ?? []) addRef(rel.factionId, "faction");
   }
   return index;
+}
+
+// Narrative System v2: acts are the story spine — orders must be unique and
+// contiguous 1..N so "act reached" (unlockedBy act-*) is well-defined.
+function checkActOrdering(story, fail) {
+  const acts = story.byKind.get("act");
+  for (const [order, group] of findDuplicateGroups(acts, (a) => a.order))
+    fail(`story/${STORY_FILES.act}: duplicate order ${order} used by acts ${group.map((a) => `"${a.id}"`).join(", ")}`);
+  const sorted = [...new Set(acts.map((a) => a.order))].sort((x, y) => x - y);
+  for (let i = 0; i < sorted.length; i++) {
+    if (sorted[i] !== i + 1) {
+      fail(`story/${STORY_FILES.act}: act orders [${acts.map((a) => a.order).join(", ")}] are not contiguous 1..${acts.length}`);
+      break;
+    }
+  }
 }
 
 // Is `quest` reachable by walking `.prereq` back to a no-prereq start? A
@@ -317,8 +333,9 @@ function checkStoryCoherence(story, fail, warn, requireComplete) {
 
   // --- duplicate-value FAILs (schema-valid nodes — no minItems overlap) -----
 
-  for (const [act, arcs] of findDuplicateGroups(byKind.get("arc"), (a) => a.act))
-    fail(`story/${STORY_FILES.arc}: duplicate act ${act} used by arcs ${arcs.map((a) => `"${a.id}"`).join(", ")}`);
+  // Narrative System v2: multiple arcs may legally share one act (parallel
+  // storylines) — the old duplicate-arc.act FAIL is deliberately removed.
+  // Act order uniqueness/contiguity is now enforced by checkActOrdering().
 
   for (const [order, events] of findDuplicateGroups(byKind.get("event"), (e) => e.timelineOrder))
     fail(`story/${STORY_FILES.event}: duplicate timelineOrder ${order} used by events ${events.map((e) => `"${e.id}"`).join(", ")}`);
@@ -347,7 +364,7 @@ function checkStoryCoherence(story, fail, warn, requireComplete) {
       escalate(`story/${STORY_FILES.quest}#${q.id}: quest "${q.id}" is unreachable from any no-prereq start quest`);
   }
 
-  // --- event.triggeredBy vs arc.act ordering WARN (never escalated) ---------
+  // --- event.triggeredBy vs act ordering WARN (never escalated) -------------
 
   for (const e of byKind.get("event")) {
     if (e.triggeredBy === undefined) continue;
@@ -355,8 +372,10 @@ function checkStoryCoherence(story, fail, warn, requireComplete) {
     if (!quest || quest.kind !== "quest") continue; // dangling/wrong-kind already FAILed by resolveStoryRefs
     const arc = nodes.get(quest.arcId);
     if (!arc || arc.kind !== "arc") continue; // dangling arcId already FAILed elsewhere
-    if (arc.act > e.timelineOrder)
-      warn(`story/${STORY_FILES.event}#${e.id}: triggeredBy quest "${quest.id}"'s arc "${arc.id}" act ${arc.act} is later than event timelineOrder ${e.timelineOrder}`);
+    const act = nodes.get(arc.actId);
+    if (!act || act.kind !== "act") continue; // dangling actId already FAILed by resolveStoryRefs
+    if (act.order > e.timelineOrder)
+      warn(`story/${STORY_FILES.event}#${e.id}: triggeredBy quest "${quest.id}"'s act "${act.id}" order ${act.order} is later than event timelineOrder ${e.timelineOrder}`);
   }
 }
 
@@ -386,6 +405,7 @@ function checkStory(opts) {
 
   const story = { nodes, byKind };
   resolveStoryRefs(story, assetKeyIds, fail, warn);
+  checkActOrdering(story, fail);
   assertQuestPrereqDag(story, fail);
   checkStoryCoherence({ ...story, rawByKind }, fail, warn, opts.requireComplete);
 

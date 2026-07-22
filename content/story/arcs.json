@@ -4,7 +4,7 @@
     "kind": "arc",
     "title": "Meadow Awakening",
     "summary": "The expedition finds its footing and clears the meadow's edge.",
-    "act": 1,
+    "actId": "act-1",
     "questIds": [
       "quest-first-steps",
       "quest-cull-the-packs",
@@ -17,7 +17,7 @@
     "kind": "arc",
     "title": "Icefield Reckoning",
     "summary": "With the meadow open, the expedition pushes north onto the Stoneguard's frozen shelf.",
-    "act": 2,
+    "actId": "act-2",
     "questIds": [
       "quest-icefield-reckoning"
     ],

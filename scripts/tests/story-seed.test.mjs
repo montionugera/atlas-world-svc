@@ -48,23 +48,25 @@ test("docs/story/story-graph.md is in sync with the seed epic (no drift)", () =>
 
 test("the seed epic exercises every kind and every prereq/edge shape (2 arcs, valid cross-arc chain)", () => {
   const readStory = (f) => JSON.parse(readFileSync(join(ROOT, `content/story/${f}`), "utf8"));
+  const acts = readStory("acts.json");
   const arcs = readStory("arcs.json");
   const quests = readStory("quests.json");
   const events = readStory("events.json");
   const dialogue = readStory("dialogue.json");
 
   assert.equal(arcs.length, 2, "expected 2 arcs total");
-  assert.equal(new Set(arcs.map((a) => a.act)).size, arcs.length, "arc.act values must be unique");
+  assert.equal(new Set(arcs.map((a) => a.actId)).size, arcs.length, "arc.actId values must be unique in the seed (2 arcs, 2 acts)");
   assert.ok(quests.length >= 4, "expected at least 4 quests total");
   assert.ok(events.length >= 2, "expected at least 2 events (events.json was empty before Task 7)");
   assert.ok(dialogue.length >= 2, "expected at least 2 dialogue nodes (dialogue.json was empty before Task 7)");
 
-  // A quest whose arcId belongs to the second (highest-act) arc must have a
+  // A quest whose arcId belongs to the second (highest-order) arc must have a
   // prereq chain reaching back into the first arc — proves the "valid prereq
   // chain across the 2 arcs" requirement, not just two disconnected arcs.
   const questById = new Map(quests.map((q) => [q.id, q]));
   const arcById = new Map(arcs.map((a) => [a.id, a]));
-  const secondArc = [...arcs].sort((a, b) => b.act - a.act)[0];
+  const actById = new Map(acts.map((a) => [a.id, a]));
+  const secondArc = [...arcs].sort((a, b) => actById.get(b.actId).order - actById.get(a.actId).order)[0];
   const crossArcQuest = quests.find((q) => q.arcId === secondArc.id && q.prereq);
   assert.ok(crossArcQuest, "expected at least one quest in the later arc with a prereq");
 

@@ -13,6 +13,7 @@ faction.relationships.
 
 ```mermaid
 flowchart LR
+  classDef act fill:#343A40,color:#fff,stroke:#212529,stroke-width:1px
   classDef region fill:#4C6EF5,color:#fff,stroke:#364FC7,stroke-width:1px
   classDef faction fill:#F76707,color:#fff,stroke:#D9480F,stroke-width:1px
   classDef character fill:#12B886,color:#fff,stroke:#087F5B,stroke-width:1px
@@ -21,6 +22,8 @@ flowchart LR
   classDef event fill:#FA5252,color:#fff,stroke:#C92A2A,stroke-width:1px
   classDef dialogue fill:#868E96,color:#fff,stroke:#495057,stroke-width:1px
 
+  n_act_1["act-1"]:::act
+  n_act_2["act-2"]:::act
   n_arc_icefield_reckoning["arc-icefield-reckoning"]:::arc
   n_arc_meadow_awakening["arc-meadow-awakening"]:::arc
   n_char_ashfang_alpha["char-ashfang-alpha"]:::character

@@ -3,7 +3,7 @@
   "title": "Atlas story node: arc",
   "description": "One entry of content/story/arcs.json. Part of the F-012 per-kind story graph (see docs/superpowers/specs/2026-07-22-epic-story-pipeline-design.md).",
   "type": "object",
-  "required": ["id", "title", "kind", "summary", "links", "act", "questIds"],
+  "required": ["id", "title", "kind", "summary", "links", "actId", "questIds"],
   "additionalProperties": false,
   "properties": {
     "id": { "type": "string", "pattern": "^arc-[a-z0-9]+(-[a-z0-9]+)*$" },
@@ -14,7 +14,7 @@
       "type": "array",
       "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
     },
-    "act": { "type": "integer", "minimum": 1 },
+    "actId": { "type": "string", "pattern": "^act-[a-z0-9]+(-[a-z0-9]+)*$" },
     "questIds": {
       "type": "array",
       "minItems": 1,

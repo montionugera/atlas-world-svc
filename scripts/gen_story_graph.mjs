@@ -32,6 +32,10 @@ const sanitize = (id) => `n_${id.replace(/[^a-zA-Z0-9]/g, "_")}`;
 const escapeLabel = (s) => s.replace(/"/g, "&quot;");
 
 const CLASS_STYLES = {
+  // Narrative System v2 Task 1 placeholder — full act-subgraph rendering
+  // lands in Task 4; this entry only keeps `classDef act ...` from emitting
+  // `undefined` now that STORY_KINDS includes "act".
+  act: "fill:#343A40,color:#fff,stroke:#212529,stroke-width:1px",
   region: "fill:#4C6EF5,color:#fff,stroke:#364FC7,stroke-width:1px",
   faction: "fill:#F76707,color:#fff,stroke:#D9480F,stroke-width:1px",
   character: "fill:#12B886,color:#fff,stroke:#087F5B,stroke-width:1px",

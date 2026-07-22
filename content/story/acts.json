@@ -1,0 +1,20 @@
+[
+  {
+    "id": "act-1",
+    "kind": "act",
+    "title": "Meadow Awakening",
+    "summary": "The expedition finds its footing at the frontier's edge.",
+    "order": 1,
+    "theme": "foothold",
+    "links": []
+  },
+  {
+    "id": "act-2",
+    "kind": "act",
+    "title": "Icefield Reckoning",
+    "summary": "The push north onto the Stoneguard's shelf, and the first hint of what they guarded.",
+    "order": 2,
+    "theme": "the-silence",
+    "links": []
+  }
+]
