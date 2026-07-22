@@ -147,5 +147,14 @@
     "claimed_by": null,
     "status": "open",
     "release_version": null
+  },
+  {
+    "id": "F-014",
+    "title": "Narrative System v2 \u2014 acts, lore, unlockedBy, fates",
+    "from_idea": "I-021",
+    "created_at": "2026-07-22T14:18:33.421402+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
