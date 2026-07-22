@@ -141,12 +141,12 @@ test("dangling quest.arcId is a hard fail", () => {
   assert.match(r.out, /quest-x.*arcId.*arc-nope/);
 });
 
-test("dangling quest.prereq is a hard fail", () => {
-  const quest = { ...QUEST, prereq: "quest-nope" };
+test("dangling quest.unlockedBy is a hard fail", () => {
+  const quest = { ...QUEST, unlockedBy: ["quest-nope"] };
   const dir = fixture({ acts: [ACT_1], characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
   const r = runGate(dir);
   assert.equal(r.code, 1);
-  assert.match(r.out, /quest-x.*prereq.*quest-nope/);
+  assert.match(r.out, /quest-x.*unlockedBy.*quest-nope/);
 });
 
 test("dangling quest.faction is a hard fail", () => {

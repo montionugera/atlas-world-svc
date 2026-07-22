@@ -74,7 +74,6 @@ flowchart LR
   n_quest_cull_the_packs -->|arcId| n_arc_meadow_awakening
   n_quest_cull_the_packs -->|faction| n_faction_ashfang
   n_quest_cull_the_packs -->|giver| n_char_quartermaster
-  n_quest_cull_the_packs -->|prereq| n_quest_first_steps
   n_quest_cull_the_packs -->|region| n_region_spawn_meadow
   n_quest_first_steps -->|arcId| n_arc_meadow_awakening
   n_quest_first_steps -->|faction| n_faction_unaligned
@@ -83,11 +82,9 @@ flowchart LR
   n_quest_icefield_reckoning -->|arcId| n_arc_icefield_reckoning
   n_quest_icefield_reckoning -->|faction| n_faction_stoneguard
   n_quest_icefield_reckoning -->|giver| n_char_quartermaster
-  n_quest_icefield_reckoning -->|prereq| n_quest_the_twin_strike
   n_quest_icefield_reckoning -->|region| n_region_icefield
   n_quest_the_twin_strike -->|arcId| n_arc_meadow_awakening
   n_quest_the_twin_strike -->|faction| n_faction_unaligned
   n_quest_the_twin_strike -->|giver| n_char_quartermaster
-  n_quest_the_twin_strike -->|prereq| n_quest_cull_the_packs
   n_quest_the_twin_strike -->|region| n_region_spawn_meadow
 ```

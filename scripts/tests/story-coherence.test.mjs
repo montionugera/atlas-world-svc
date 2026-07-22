@@ -169,17 +169,17 @@ test("a faction referenced by nothing is a warning, not a fail", () => {
   assert.match(r.out, /WARN.*faction-a/);
 });
 
-test("a quest unreachable from a no-prereq start emits an unreachable warning (alongside the F-012 Task 4 cycle fail, since this fixture is also a cycle)", () => {
-  // quest-mid.prereq -> quest-y, quest-y.prereq -> quest-mid: a 2-cycle, no
-  // start reachable from either (both refs resolve fine, so resolveStoryRefs
-  // stays clean). F-012 Task 4: a prereq cycle is ALSO now a hard FAIL
-  // (assertQuestPrereqDag) — the two checks are independent and both fire on
-  // this same fixture, so this is no longer a WARN-only (exit 0) case. The
-  // unreachable WARN still fires alongside the cycle FAIL (Task 4 does not
-  // suppress it) — asserting both here documents that interplay.
+test("a quest unreachable from a no-unlockedBy start emits an unreachable warning (alongside the unlockedBy cycle fail, since this fixture is also a cycle)", () => {
+  // quest-mid.unlockedBy -> quest-y, quest-y.unlockedBy -> quest-mid: a
+  // 2-cycle, no start reachable from either (both refs resolve fine, so
+  // resolveStoryRefs stays clean). assertUnlockDag: an unlockedBy cycle is
+  // ALSO a hard FAIL — the two checks are independent and both fire on this
+  // same fixture, so this is no longer a WARN-only (exit 0) case. The
+  // unreachable WARN still fires alongside the cycle FAIL (assertUnlockDag
+  // does not suppress it) — asserting both here documents that interplay.
   const arcB = { ...ARC, id: "arc-b", questIds: ["quest-mid", "quest-y"] };
-  const questMid = { ...QUEST, id: "quest-mid", arcId: "arc-b", prereq: "quest-y" };
-  const questY = { ...QUEST, id: "quest-y", arcId: "arc-b", prereq: "quest-mid" };
+  const questMid = { ...QUEST, id: "quest-mid", arcId: "arc-b", unlockedBy: ["quest-y"] };
+  const questY = { ...QUEST, id: "quest-y", arcId: "arc-b", unlockedBy: ["quest-mid"] };
   const dir = fixture({
     acts: [ACT_1], characters: [CHARACTER], factions: [FACTION_A],
     arcs: [arcB], quests: [questMid, questY],
@@ -221,8 +221,8 @@ test("--require-complete escalates orphan faction to a fail", () => {
 
 test("--require-complete escalates unreachable quest to a fail", () => {
   const arcB = { ...ARC, id: "arc-b", questIds: ["quest-mid", "quest-y"] };
-  const questMid = { ...QUEST, id: "quest-mid", arcId: "arc-b", prereq: "quest-y" };
-  const questY = { ...QUEST, id: "quest-y", arcId: "arc-b", prereq: "quest-mid" };
+  const questMid = { ...QUEST, id: "quest-mid", arcId: "arc-b", unlockedBy: ["quest-y"] };
+  const questY = { ...QUEST, id: "quest-y", arcId: "arc-b", unlockedBy: ["quest-mid"] };
   const dir = fixture({
     acts: [ACT_1], characters: [CHARACTER], factions: [FACTION_A],
     arcs: [arcB], quests: [questMid, questY],

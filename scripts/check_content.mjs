@@ -113,11 +113,20 @@ function resolveStoryRefs(story, assetKeyIds, fail, warn) {
       fail(`${label}: ${field} "${id}" resolves to a ${target.kind} node, not ${expectedKinds.join("|")}`);
   };
 
+  // Narrative System v2: unlockedBy — id prefix IS the semantics (quest-* =
+  // completed, event-* = fired, act-* = reached). Schema already prefix-locks
+  // the pattern; resolution + kind check here is defense in depth.
+  const UNLOCK_KINDS = { quest: ["quest"], event: ["event"], act: ["act"] };
+  const resolveUnlocks = (label, node) => {
+    for (const uid of node.unlockedBy ?? [])
+      resolve(label, "unlockedBy", uid, UNLOCK_KINDS[uid.split("-")[0]] ?? ["quest", "event", "act"]);
+  };
+
   for (const q of byKind.get("quest")) {
     const label = `story/${STORY_FILES.quest}#${q.id}`;
     resolve(label, "giver", q.giver, ["character"]);
     resolve(label, "arcId", q.arcId, ["arc"]);
-    resolve(label, "prereq", q.prereq, ["quest"]);
+    resolveUnlocks(label, q);
     resolve(label, "faction", q.faction, ["faction"]);
     resolve(label, "region", q.region, ["region"]);
     for (const obj of q.objectives) {
@@ -146,12 +155,14 @@ function resolveStoryRefs(story, assetKeyIds, fail, warn) {
       if (!nodes.has(iid)) fail(`${label}: involves "${iid}" does not resolve to any story node`);
     }
     resolve(label, "triggeredBy", e.triggeredBy, ["quest"]);
+    resolveUnlocks(label, e);
   }
 
   for (const d of byKind.get("dialogue")) {
     const label = `story/${STORY_FILES.dialogue}#${d.id}`;
     resolve(label, "speaker", d.speaker, ["character"]);
     resolve(label, "context", d.context, ["quest", "event"]);
+    resolveUnlocks(label, d);
   }
 
   for (const f of byKind.get("faction")) {
@@ -189,7 +200,7 @@ function buildReverseRefIndex(byKind) {
   for (const q of byKind.get("quest")) {
     addRef(q.giver, "quest");
     addRef(q.arcId, "quest");
-    addRef(q.prereq, "quest");
+    for (const uid of q.unlockedBy ?? []) addRef(uid, "quest");
     addRef(q.faction, "quest");
     addRef(q.region, "quest");
   }
@@ -203,10 +214,12 @@ function buildReverseRefIndex(byKind) {
   for (const e of byKind.get("event")) {
     for (const iid of e.involves) addRef(iid, "event");
     addRef(e.triggeredBy, "event");
+    for (const uid of e.unlockedBy ?? []) addRef(uid, "event");
   }
   for (const d of byKind.get("dialogue")) {
     addRef(d.speaker, "dialogue");
     addRef(d.context, "dialogue");
+    for (const uid of d.unlockedBy ?? []) addRef(uid, "dialogue");
   }
   for (const f of byKind.get("faction")) {
     for (const rel of f.relationships ?? []) addRef(rel.factionId, "faction");
@@ -229,71 +242,59 @@ function checkActOrdering(story, fail) {
   }
 }
 
-// Is `quest` reachable by walking `.prereq` back to a no-prereq start? A
-// dangling prereq (already a hard FAIL from resolveStoryRefs) or a prereq
-// cycle both resolve to "not reachable" here — cycle *detection* proper
-// (distinguishing "in a cycle" from "just unreachable") is Task 4's job; a
-// quest stuck in a cycle is simply unreachable from this task's point of view.
-function isQuestReachable(quest, questById) {
-  let current = quest;
-  const visited = new Set();
-  while (true) {
-    if (!current.prereq) return true;
-    if (visited.has(current.id)) return false;
-    visited.add(current.id);
-    const prereq = questById.get(current.prereq);
-    if (!prereq) return false;
-    current = prereq;
-  }
+// A quest is statically reachable when every quest-* id it is unlocked by
+// resolves and is itself reachable. event-*/act-* unlocks are runtime
+// conditions, not statically walkable — ignored here (assertUnlockDag still
+// covers cycles through events). A cycle or dangling quest dep => unreachable.
+function buildQuestReachability(quests) {
+  const questById = new Map(quests.map((q) => [q.id, q]));
+  const memo = new Map();
+  const visiting = new Set();
+  const reachable = (q) => {
+    if (memo.has(q.id)) return memo.get(q.id);
+    if (visiting.has(q.id)) return false;
+    visiting.add(q.id);
+    const ok = (q.unlockedBy ?? [])
+      .filter((id) => id.startsWith("quest-"))
+      .every((id) => questById.get(id) !== undefined && reachable(questById.get(id)));
+    visiting.delete(q.id);
+    memo.set(q.id, ok);
+    return ok;
+  };
+  return reachable;
 }
 
-// F-012 Task 4: hard FAIL on any cycle in the quest.prereq graph, naming the
-// cycle members. `quest.prereq` is a SINGULAR optional string (not an array)
-// per quest.schema.json, so this is a *functional* graph — every quest has
-// out-degree <= 1 — and DFS with white/grey/black coloring finds a cycle by
-// revisiting a grey (on-stack) node. A dangling prereq (already a hard FAIL
-// from resolveStoryRefs, Task 2) is simply skipped here via questById.get
-// returning undefined — it must never crash or be misreported as a cycle.
-// Run after resolveStoryRefs so a cycle FAIL surfaces alongside — not instead
-// of — the reachability WARN Task 3 already emits for the same quests (a
-// quest stuck in a cycle is, by definition, also "unreachable from any
-// no-prereq start" per isQuestReachable — both messages are expected to
-// appear together, this task does not suppress that WARN).
-function assertQuestPrereqDag(story, fail) {
-  const { byKind } = story;
-  const questById = new Map(byKind.get("quest").map((q) => [q.id, q]));
-
+// Narrative System v2: hard FAIL on any cycle in the unlockedBy graph.
+// Graph nodes are quests/events/dialogue; edges are unlockedBy entries that
+// resolve to a quest or event (act-* refs are sinks — acts have no
+// unlockedBy — and dialogue ids can never appear in unlockedBy, so dialogue
+// nodes have out-edges only). Out-degree is now unbounded (array), so DFS
+// walks every successor. Dangling refs (already FAILed by resolveStoryRefs)
+// are skipped, never crashed on or misreported as cycles.
+function assertUnlockDag(story, fail) {
+  const { nodes, byKind } = story;
   const WHITE = 0, GREY = 1, BLACK = 2;
   const color = new Map();
 
-  const visit = (quest, stack) => {
-    color.set(quest.id, GREY);
-    stack.push(quest.id);
-
-    if (quest.prereq !== undefined) {
-      const prereq = questById.get(quest.prereq);
-      if (prereq) {
-        const prereqColor = color.get(prereq.id) ?? WHITE;
-        if (prereqColor === GREY) {
-          const cycleStart = stack.indexOf(prereq.id);
-          const cycle = [...stack.slice(cycleStart), prereq.id];
-          fail(`story/${STORY_FILES.quest}: prereq cycle: ${cycle.join(" -> ")}`);
-        } else if (prereqColor === WHITE) {
-          visit(prereq, stack);
-        }
-        // BLACK: already fully explored via some other path, no cycle here.
-      }
-      // dangling prereq (no matching quest) — already FAILed by
-      // resolveStoryRefs; nothing to walk into.
+  const visit = (node, stack) => {
+    color.set(node.id, GREY);
+    stack.push(node.id);
+    for (const uid of node.unlockedBy ?? []) {
+      const target = nodes.get(uid);
+      if (!target || !["quest", "event"].includes(target.kind)) continue;
+      const targetColor = color.get(target.id) ?? WHITE;
+      if (targetColor === GREY) {
+        const cycleStart = stack.indexOf(target.id);
+        fail(`story: unlockedBy cycle: ${[...stack.slice(cycleStart), target.id].join(" -> ")}`);
+      } else if (targetColor === WHITE) visit(target, stack);
     }
-
     stack.pop();
-    color.set(quest.id, BLACK);
+    color.set(node.id, BLACK);
   };
 
-  for (const quest of byKind.get("quest")) {
-    if ((color.get(quest.id) ?? WHITE) === WHITE) visit(quest, []);
-  }
+  for (const kind of ["quest", "event", "dialogue"])
+    for (const n of byKind.get(kind))
+      if ((color.get(n.id) ?? WHITE) === WHITE) visit(n, []);
 }
 
 // F-012 Task 3: completeness FAILs + orphan/reachability WARNs, run after
@@ -358,9 +359,9 @@ function checkStoryCoherence(story, fail, warn, requireComplete) {
 
   // --- reachability WARN ------------------------------------------------------
 
-  const questById = new Map(byKind.get("quest").map((q) => [q.id, q]));
+  const reachable = buildQuestReachability(byKind.get("quest"));
   for (const q of byKind.get("quest")) {
-    if (!isQuestReachable(q, questById))
+    if (!reachable(q))
       escalate(`story/${STORY_FILES.quest}#${q.id}: quest "${q.id}" is unreachable from any no-prereq start quest`);
   }
 
@@ -406,7 +407,7 @@ function checkStory(opts) {
   const story = { nodes, byKind };
   resolveStoryRefs(story, assetKeyIds, fail, warn);
   checkActOrdering(story, fail);
-  assertQuestPrereqDag(story, fail);
+  assertUnlockDag(story, fail);
   checkStoryCoherence({ ...story, rawByKind }, fail, warn, opts.requireComplete);
 
   return { count: nodes.size, ids: anyFilePresent ? new Set(nodes.keys()) : null };

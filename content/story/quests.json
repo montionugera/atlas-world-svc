@@ -35,7 +35,7 @@
     "giver": "char-quartermaster",
     "region": "region-spawn-meadow",
     "faction": "faction-ashfang",
-    "prereq": "quest-first-steps",
+    "unlockedBy": ["quest-first-steps"],
     "arcId": "arc-meadow-awakening",
     "objectives": [
       {
@@ -59,7 +59,7 @@
     "giver": "char-quartermaster",
     "region": "region-spawn-meadow",
     "faction": "faction-unaligned",
-    "prereq": "quest-cull-the-packs",
+    "unlockedBy": ["quest-cull-the-packs"],
     "arcId": "arc-meadow-awakening",
     "objectives": [
       {
@@ -83,7 +83,7 @@
     "giver": "char-quartermaster",
     "region": "region-icefield",
     "faction": "faction-stoneguard",
-    "prereq": "quest-the-twin-strike",
+    "unlockedBy": ["quest-the-twin-strike"],
     "arcId": "arc-icefield-reckoning",
     "objectives": [
       {
