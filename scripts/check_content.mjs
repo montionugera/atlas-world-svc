@@ -176,13 +176,89 @@ function loadStory(contentRoot) {
   return { nodes, byKind, anyFilePresent };
 }
 
+// F-012 Task 2: whole-graph cross-reference resolution. `story` is the
+// {nodes, byKind} shape returned by loadStory(); `assetKeyIds` is the Set of
+// ids from asset-keys.json. Every edge below FAILs on a dangling/wrong-kind
+// target, except the two `mob:*` pseudo-refs (quest.objectives[].targetId,
+// faction.mobFamily[]) which stay WARN until I-019's mob-types.json can
+// hard-check them (mirrors the map mobType check's discipline).
+//
+// Target-KIND matters, not just id existence — e.g. quest.giver must resolve
+// to a *character* node, not merely to any existing id — with the single
+// exception of event.involves[], which may point at a node of any kind.
+// In practice most edges are prefix-locked by their target schema's `id`
+// pattern (only faction.schema.json mints `faction-*` ids, etc.), so a
+// wrong-kind hit is mostly reachable only on the two kind-agnostic-pattern
+// fields (event.involves, dialogue.context); the check still runs uniformly
+// for every edge as defense in depth.
+function resolveStoryRefs(story, assetKeyIds, fail, warn) {
+  const { nodes, byKind } = story;
+
+  // Resolve `id` (a single-value edge field) against `expectedKinds`. Absent
+  // (undefined) values are skipped — the field is optional at that node.
+  const resolve = (label, field, id, expectedKinds) => {
+    if (id === undefined) return;
+    const target = nodes.get(id);
+    if (!target) {
+      fail(`${label}: ${field} "${id}" does not resolve to any story node`);
+      return;
+    }
+    if (!expectedKinds.includes(target.kind))
+      fail(`${label}: ${field} "${id}" resolves to a ${target.kind} node, not ${expectedKinds.join("|")}`);
+  };
+
+  for (const q of byKind.get("quest")) {
+    const label = `story/${STORY_FILES.quest}#${q.id}`;
+    resolve(label, "giver", q.giver, ["character"]);
+    resolve(label, "arcId", q.arcId, ["arc"]);
+    resolve(label, "prereq", q.prereq, ["quest"]);
+    for (const obj of q.objectives) {
+      if (obj.targetId.startsWith("mob:") && !assetKeyIds.has(obj.targetId))
+        warn(`${label}: objectives targetId "${obj.targetId}" not in asset-keys.json`);
+    }
+  }
+
+  for (const a of byKind.get("arc")) {
+    const label = `story/${STORY_FILES.arc}#${a.id}`;
+    for (const qid of a.questIds) resolve(label, "questIds", qid, ["quest"]);
+  }
+
+  for (const c of byKind.get("character")) {
+    const label = `story/${STORY_FILES.character}#${c.id}`;
+    resolve(label, "faction", c.faction, ["faction"]);
+    resolve(label, "region", c.region, ["region"]);
+    if (c.assetKey !== undefined && !assetKeyIds.has(c.assetKey))
+      fail(`${label}: assetKey "${c.assetKey}" not in asset-keys.json`);
+  }
+
+  for (const e of byKind.get("event")) {
+    const label = `story/${STORY_FILES.event}#${e.id}`;
+    for (const iid of e.involves) {
+      if (!nodes.has(iid)) fail(`${label}: involves "${iid}" does not resolve to any story node`);
+    }
+    resolve(label, "triggeredBy", e.triggeredBy, ["quest"]);
+  }
+
+  for (const d of byKind.get("dialogue")) {
+    const label = `story/${STORY_FILES.dialogue}#${d.id}`;
+    resolve(label, "speaker", d.speaker, ["character"]);
+    resolve(label, "context", d.context, ["quest", "event"]);
+  }
+
+  for (const f of byKind.get("faction")) {
+    const label = `story/${STORY_FILES.faction}#${f.id}`;
+    for (const rel of f.relationships ?? [])
+      resolve(label, "relationships.factionId", rel.factionId, ["faction"]);
+  }
+}
+
 // Story-graph checks preserved from the pre-F-012 single-file gate, re-run
 // against the per-kind union: faction mobFamily → real asset key (WARN — this
 // stays a WARN, matching the map mobType check, until I-019's mob-types.json
 // lands and can hard-check it; see epic-story-pipeline-design.md §2 notes),
-// and (in checkCharacters) character sheets' links.story → a real story node
-// id (FAIL, unchanged). Full reference-resolution / whole-graph coherence
-// (quest.giver, arc.questIds, prereq DAG, orphans, ...) is Tasks 2-4, not here.
+// resolveStoryRefs() for the whole-graph edge set (Task 2), and (in
+// checkCharacters) character sheets' links.story → a real story node id
+// (FAIL, unchanged).
 //
 // A content root with none of the 7 story files present at all is a soft skip
 // (ids=null): the character→story check simply can't run, mirroring how a
@@ -199,6 +275,8 @@ function checkStory(opts) {
         warn(`story/${STORY_FILES.faction}#${entry.id}: mobFamily key "${mk}" not in asset-keys.json`);
     }
   }
+
+  resolveStoryRefs({ nodes, byKind }, assetKeyIds, fail, warn);
 
   return { count: nodes.size, ids: anyFilePresent ? new Set(nodes.keys()) : null };
 }
