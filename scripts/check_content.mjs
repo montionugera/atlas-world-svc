@@ -87,7 +87,7 @@ function listContentFiles(dir, label) {
 function main() {
   const opts = parseArgs(process.argv);
   const mobTypes = loadMobTypes(opts.mobTypes);
-  const story = checkStory(opts);
+  const story = checkStory(opts, mobTypes);
   const sheetCount = checkCharacters(opts, story.ids);
   const mapCount = checkMaps(opts, mobTypes);
   return finish(sheetCount, mapCount, story.count);
@@ -102,11 +102,10 @@ function main() {
 // F-012 Task 2: whole-graph cross-reference resolution. `story` is the
 // {nodes, byKind} shape returned by loadStory(); `assetKeyIds` is the Set of
 // ids from asset-keys.json. Every edge below FAILs on a dangling/wrong-kind
-// target, except the `mob:*` pseudo-ref quest.objectives[].targetId, which
-// stays WARN until I-019's mob-types.json can hard-check it (mirrors the map
-// mobType check's discipline). The sibling `mob:*` pseudo-ref
-// faction.mobFamily[] gets the same WARN treatment, but that check lives in
-// checkStory(), not here.
+// target, including (since F-013) the mob:* pseudo-refs: quest
+// .objectives[].targetId and (in checkStory) faction.mobFamily[] hard-FAIL
+// against the codegen-emitted mob-types.json (spawnable), while keeping the
+// softer asset-keys WARN (renderable coverage).
 //
 // Target-KIND matters, not just id existence — e.g. quest.giver must resolve
 // to a *character* node, not merely to any existing id — with the single
@@ -116,7 +115,7 @@ function main() {
 // wrong-kind hit is mostly reachable only on the two kind-agnostic-pattern
 // fields (event.involves, dialogue.context); the check still runs uniformly
 // for every edge as defense in depth.
-function resolveStoryRefs(story, assetKeyIds, fail, warn) {
+function resolveStoryRefs(story, assetKeyIds, mobTypes, fail, warn) {
   const { nodes, byKind } = story;
 
   // Resolve `id` (a single-value edge field) against `expectedKinds`. Absent
@@ -140,8 +139,20 @@ function resolveStoryRefs(story, assetKeyIds, fail, warn) {
     resolve(label, "faction", q.faction, ["faction"]);
     resolve(label, "region", q.region, ["region"]);
     for (const obj of q.objectives) {
-      if (obj.targetId.startsWith("mob:") && !assetKeyIds.has(obj.targetId))
+      if (!obj.targetId.startsWith("mob:")) {
+        // F-013: quest.schema.json leaves targetId free-form (minLength: 1),
+        // so a prefixless typo on a MOB_KILLED objective would silently skip
+        // every mob check below — close the escape hatch. Keyed on the
+        // objective type so future non-mob objective types stay legal.
+        if (obj.type === "MOB_KILLED")
+          fail(`${label}: objectives targetId "${obj.targetId}" (type MOB_KILLED) must be a mob:<id> ref`);
+        continue;
+      }
+      if (!assetKeyIds.has(obj.targetId))
         warn(`${label}: objectives targetId "${obj.targetId}" not in asset-keys.json`);
+      // F-013: hard spawnability check (see mobFamily note in checkStory).
+      if (mobTypes && !mobTypes.has(obj.targetId.slice(4)))
+        fail(`${label}: objectives targetId "${obj.targetId}" is not a server mob id (valid: ${[...mobTypes].join(", ")})`);
     }
   }
 
@@ -380,9 +391,9 @@ function checkStoryCoherence(story, fail, warn, requireComplete) {
 }
 
 // Story-graph checks preserved from the pre-F-012 single-file gate, re-run
-// against the per-kind union: faction mobFamily → real asset key (WARN — this
-// stays a WARN, matching the map mobType check, until I-019's mob-types.json
-// lands and can hard-check it; see epic-story-pipeline-design.md §2 notes),
+// against the per-kind union: faction mobFamily → real asset key (asset-keys
+// membership stays a WARN — renderable coverage; F-013 adds the hard FAIL
+// against mob-types.json — spawnable),
 // resolveStoryRefs() for the whole-graph edge set (Task 2), and (in
 // checkCharacters) character sheets' links.story → a real story node id
 // (FAIL, unchanged).
@@ -391,7 +402,7 @@ function checkStoryCoherence(story, fail, warn, requireComplete) {
 // (ids=null): the character→story check simply can't run, mirroring how a
 // missing bible.md downgrades region checks. Once at least one story file
 // exists, ids is a real (possibly empty) Set and the check runs for real.
-function checkStory(opts) {
+function checkStory(opts, mobTypes) {
   const { nodes, byKind, rawByKind, anyFilePresent } = loadStory(opts.contentRoot, fail);
 
   const keysDoc = readJson(opts.keys, "asset-keys", fail);
@@ -400,11 +411,16 @@ function checkStory(opts) {
     for (const mk of entry.mobFamily) {
       if (!assetKeyIds.has(mk))
         warn(`story/${STORY_FILES.faction}#${entry.id}: mobFamily key "${mk}" not in asset-keys.json`);
+      // F-013: strip the mob: prefix and hard-check spawnability. The
+      // asset-keys WARN above stays — it now means "renderable coverage";
+      // this FAIL means "actually spawnable".
+      if (mobTypes && mk.startsWith("mob:") && !mobTypes.has(mk.slice(4)))
+        fail(`story/${STORY_FILES.faction}#${entry.id}: mobFamily "${mk}" is not a server mob id (valid: ${[...mobTypes].join(", ")})`);
     }
   }
 
   const story = { nodes, byKind };
-  resolveStoryRefs(story, assetKeyIds, fail, warn);
+  resolveStoryRefs(story, assetKeyIds, mobTypes, fail, warn);
   assertQuestPrereqDag(story, fail);
   checkStoryCoherence({ ...story, rawByKind }, fail, warn, opts.requireComplete);
 
