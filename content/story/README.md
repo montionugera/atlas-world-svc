@@ -85,8 +85,7 @@ kind, or it's a hard FAIL (dangling id, or resolving to the wrong kind):
 - `character.faction` → faction (optional)
 - `character.region` → region (optional)
 - `character.assetKey` → a real id in `asset-keys.json` (optional field, but a
-  set value that doesn't resolve is a hard FAIL — not the WARN that
-  `quest.objectives[].targetId` / `faction.mobFamily[]` mob-key refs get)
+  set value that doesn't resolve is a hard FAIL)
 - `event.involves[]` → **any** node kind (FAIL if the id doesn't exist at all;
   no kind restriction)
 - `event.triggeredBy` → quest (optional)
@@ -94,11 +93,12 @@ kind, or it's a hard FAIL (dangling id, or resolving to the wrong kind):
 - `dialogue.context` → quest **or** event (optional)
 - `faction.relationships[].factionId` → faction
 
-Two edge-shaped fields are deliberately **WARN, not FAIL**, because there's no
-generated registry to hard-check them against yet (tracked as I-019):
-`quest.objectives[].targetId` when it looks like a `mob:*` pseudo-ref, and
-`faction.mobFamily[]` entries — both checked against `asset-keys.json` but
-only ever downgraded to a warning if missing.
+The two `mob:*` pseudo-refs — `quest.objectives[].targetId` (when it looks
+like `mob:*`, and a `MOB_KILLED` objective's targetId MUST be `mob:*`) and
+`faction.mobFamily[]` entries — are hard-FAILed against the generated
+`colyseus-server/generated/mob-types.json` ("actually spawnable", F-013).
+Each also keeps a softer WARN against `asset-keys.json` ("renderable
+coverage") for the case where the two sets diverge.
 
 ## Coherence rules (beyond simple reference resolution)
 
