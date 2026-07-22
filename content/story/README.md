@@ -32,7 +32,7 @@ ignored.
 | File | kind | Fields beyond the shared base |
 |---|---|---|
 | `regions.json` | `region` | `dangerTier`: `safe`\|`low`\|`mid`\|`high` |
-| `factions.json` | `faction` | `disposition`: `hostile`\|`friendly`\|`neutral`; `mobFamily[]` (`mob:*` keys, WARN-only against `asset-keys.json`); `relationships[]?` — `{factionId, stance: ally\|enemy\|rival\|neutral}` |
+| `factions.json` | `faction` | `disposition`: `hostile`\|`friendly`\|`neutral`; `mobFamily[]` (`mob:*` keys — hard FAIL if not a server mob id in `colyseus-server/generated/mob-types.json` (F-013); WARN-only against `asset-keys.json` render coverage); `relationships[]?` — `{factionId, stance: ally\|enemy\|rival\|neutral}` |
 | `characters.json` | `character` | `role`: `npc`\|`ally`\|`villain`\|`neutral`; `faction?`; `region?`; `assetKey?` (must resolve to a real key in `colyseus-server/generated/asset-keys.json` — hard FAIL if set and missing) |
 | `arcs.json` | `arc` | `act`: integer ≥1, unique across all arcs; `questIds[]`, minItems 1 |
 | `quests.json` | `quest` | `narrative {description, offerText, completeText}` (all required); `giver` (→ character); `arcId` (→ arc); `region?`; `faction?`; `prereq?` (→ quest); `objectives[]`, minItems 1 — each `{type, targetId, count≥1}` |
@@ -85,8 +85,7 @@ kind, or it's a hard FAIL (dangling id, or resolving to the wrong kind):
 - `character.faction` → faction (optional)
 - `character.region` → region (optional)
 - `character.assetKey` → a real id in `asset-keys.json` (optional field, but a
-  set value that doesn't resolve is a hard FAIL — not the WARN that
-  `quest.objectives[].targetId` / `faction.mobFamily[]` mob-key refs get)
+  set value that doesn't resolve is a hard FAIL)
 - `event.involves[]` → **any** node kind (FAIL if the id doesn't exist at all;
   no kind restriction)
 - `event.triggeredBy` → quest (optional)
@@ -94,11 +93,12 @@ kind, or it's a hard FAIL (dangling id, or resolving to the wrong kind):
 - `dialogue.context` → quest **or** event (optional)
 - `faction.relationships[].factionId` → faction
 
-Two edge-shaped fields are deliberately **WARN, not FAIL**, because there's no
-generated registry to hard-check them against yet (tracked as I-019):
-`quest.objectives[].targetId` when it looks like a `mob:*` pseudo-ref, and
-`faction.mobFamily[]` entries — both checked against `asset-keys.json` but
-only ever downgraded to a warning if missing.
+The two `mob:*` pseudo-refs — `quest.objectives[].targetId` (when it looks
+like `mob:*`, and a `MOB_KILLED` objective's targetId MUST be `mob:*`) and
+`faction.mobFamily[]` entries — are hard-FAILed against the generated
+`colyseus-server/generated/mob-types.json` ("actually spawnable", F-013).
+Each also keeps a softer WARN against `asset-keys.json` ("renderable
+coverage") for the case where the two sets diverge.
 
 ## Coherence rules (beyond simple reference resolution)
 

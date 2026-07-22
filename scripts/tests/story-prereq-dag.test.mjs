@@ -40,9 +40,13 @@ const STORY_SCHEMAS = [
 const KEYS = { version: 1, keys: [] };
 const MANIFEST = { version: 2, entries: {} };
 
+// "aggressive" because every fixture QUEST's objective targets "mob:aggressive".
+const MOB_TYPES_FIXTURE = { version: 1, mobTypes: ["aggressive"] };
+
 function fixture({
   regions = [], factions = [], characters = [], arcs = [], quests = [],
   events = [], dialogue = [], keys = KEYS, manifest = MANIFEST,
+  mobTypes = MOB_TYPES_FIXTURE,
 } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "story-prereq-dag-"));
   mkdirSync(join(dir, "content/story"), { recursive: true });
@@ -57,6 +61,8 @@ function fixture({
 
   writeFileSync(join(dir, "keys.json"), JSON.stringify(keys));
   writeFileSync(join(dir, "manifest.json"), JSON.stringify(manifest));
+  if (mobTypes !== null)
+    writeFileSync(join(dir, "mob-types.json"), JSON.stringify(mobTypes));
   return dir;
 }
 
@@ -67,6 +73,7 @@ function runGate(dir, extra = []) {
       "--content-root", join(dir, "content"),
       "--keys", join(dir, "keys.json"),
       "--manifest", join(dir, "manifest.json"),
+      "--mob-types", join(dir, "mob-types.json"),
       ...extra,
     ], { encoding: "utf8" });
     return { code: 0, out };

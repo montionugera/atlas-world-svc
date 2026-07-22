@@ -35,9 +35,13 @@ const KEYS = {
 };
 const MANIFEST = { version: 2, entries: {} };
 
+// "aggressive" because every fixture QUEST's objective targets "mob:aggressive".
+const MOB_TYPES_FIXTURE = { version: 1, mobTypes: ["aggressive"] };
+
 function fixture({
   regions = [], factions = [], characters = [], arcs = [], quests = [],
   events = [], dialogue = [], keys = KEYS, manifest = MANIFEST,
+  mobTypes = MOB_TYPES_FIXTURE,
 } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "story-refs-"));
   mkdirSync(join(dir, "content/story"), { recursive: true });
@@ -52,6 +56,8 @@ function fixture({
 
   writeFileSync(join(dir, "keys.json"), JSON.stringify(keys));
   writeFileSync(join(dir, "manifest.json"), JSON.stringify(manifest));
+  if (mobTypes !== null)
+    writeFileSync(join(dir, "mob-types.json"), JSON.stringify(mobTypes));
   return dir;
 }
 
@@ -62,6 +68,7 @@ function runGate(dir, extra = []) {
       "--content-root", join(dir, "content"),
       "--keys", join(dir, "keys.json"),
       "--manifest", join(dir, "manifest.json"),
+      "--mob-types", join(dir, "mob-types.json"),
       ...extra,
     ], { encoding: "utf8" });
     return { code: 0, out };
@@ -243,20 +250,49 @@ test("character.assetKey not in asset-keys.json is a hard fail", () => {
   assert.match(r.out, /char-npc.*assetKey.*mob:nope/);
 });
 
-// --- warn (not fail) for the two mob:* pseudo-refs deferred to I-019 -------
+// --- F-013: the two mob:* pseudo-refs, hard-FAILed against mob-types.json ---
 
-test("quest.objectives[].targetId of form mob:* not in asset-keys.json is a warn, not a fail", () => {
+test("quest.objectives[].targetId of form mob:* not a server mob id is a hard fail", () => {
   const quest = { ...QUEST, objectives: [{ type: "MOB_KILLED", targetId: "mob:nope", count: 1 }] };
   const dir = fixture({ characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
   const r = runGate(dir);
-  assert.equal(r.code, 0);
-  assert.match(r.out, /WARN.*quest-x.*objectives targetId.*mob:nope/);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /FAIL.*quest-x.*objectives targetId "mob:nope" is not a server mob id \(valid: aggressive\)/);
 });
 
-test("faction.mobFamily[] not in asset-keys.json is a warn, not a fail", () => {
+test("faction.mobFamily[] entry not a server mob id is a hard fail", () => {
   const faction = { ...FACTION_A, mobFamily: ["mob:nope"] };
   const dir = fixture({ factions: [faction] });
   const r = runGate(dir);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /FAIL.*faction-a.*mobFamily "mob:nope" is not a server mob id \(valid: aggressive\)/);
+});
+
+test("MOB_KILLED objective whose targetId lacks the mob: prefix is a hard fail", () => {
+  // quest.schema.json leaves targetId free-form (minLength: 1), so without
+  // this rule a prefixless typo skips every mob check — the prefix escape hatch.
+  const quest = { ...QUEST, objectives: [{ type: "MOB_KILLED", targetId: "aggressive", count: 1 }] };
+  const dir = fixture({ characters: [CHARACTER], factions: [FACTION_A], regions: [REGION], arcs: [ARC], quests: [quest] });
+  const r = runGate(dir);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /FAIL.*quest-x.*objectives targetId "aggressive" \(type MOB_KILLED\) must be a mob:<id> ref/);
+});
+
+test("renderable-but-not-spawnable mob key (in asset-keys, not mob-types) is a hard fail", () => {
+  // The divergence Decision 2 exists for: a decorative/unreleased mob:* asset
+  // key must not count as spawnable.
+  const keys = { version: 1, keys: [...KEYS.keys, { id: "mob:decor", kind: "character" }] };
+  const faction = { ...FACTION_A, mobFamily: ["mob:decor"] };
+  const dir = fixture({ factions: [faction], keys });
+  const r = runGate(dir);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /FAIL.*faction-a.*mobFamily "mob:decor" is not a server mob id/);
+});
+
+test("spawnable-but-not-renderable mob key (in mob-types, not asset-keys) stays a warn", () => {
+  const faction = { ...FACTION_A, mobFamily: ["mob:ghost"] };
+  const dir = fixture({ factions: [faction], mobTypes: { version: 1, mobTypes: ["aggressive", "ghost"] } });
+  const r = runGate(dir);
   assert.equal(r.code, 0);
-  assert.match(r.out, /WARN.*mobFamily key "mob:nope"/);
+  assert.match(r.out, /WARN.*faction-a.*mobFamily key "mob:ghost" not in asset-keys\.json/);
 });
