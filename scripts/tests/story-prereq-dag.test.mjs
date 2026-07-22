@@ -169,6 +169,30 @@ test("two quests converging on the same prereq (in-degree 2) passes — not a cy
   assert.doesNotMatch(r.out, /cycle/i);
 });
 
+test("a chain leading into a cycle (a -> b -> c -> b) names only the cycle members", () => {
+  // quest-a.prereq = quest-b, quest-b.prereq = quest-c, quest-c.prereq = quest-b:
+  // a chain that leads INTO a 2-node cycle (b ↔ c). The cycle must NOT include
+  // quest-a in its FAIL message — only b and c should appear in the cycle line.
+  const dir = fixture({
+    characters: [CHAR_G],
+    arcs: [ARC_A(["quest-a", "quest-b", "quest-c"])],
+    quests: [
+      q("quest-a", { prereq: "quest-b" }),
+      q("quest-b", { prereq: "quest-c" }),
+      q("quest-c", { prereq: "quest-b" }),
+    ],
+  });
+  const r = runGate(dir);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /cycle/i);
+  assert.match(r.out, /quest-b/);
+  assert.match(r.out, /quest-c/);
+  // Extract the cycle line and verify it does NOT contain quest-a
+  const cycleLine = r.out.split("\n").find(line => /cycle/i.test(line));
+  assert(cycleLine, "cycle line should exist in output");
+  assert(!cycleLine.includes("quest-a"), `cycle line should not include quest-a: ${cycleLine}`);
+});
+
 test("a dangling prereq does not crash the DAG check (already FAILs via resolveStoryRefs)", () => {
   const dir = fixture({
     characters: [CHAR_G],
