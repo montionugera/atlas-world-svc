@@ -131,3 +131,25 @@ test("warn: quest whose quest-dep chain is dangling is unreachable", () => {
   const { out } = runGate(fixture(files));
   assert.match(out, /quest "quest-y" is unreachable/);
 });
+
+test("red: empty unlockedBy array is schema-rejected (minItems 1)", () => {
+  const files = clone(BASE);
+  files.quests[0].unlockedBy = [];
+  const { code } = runGate(fixture(files));
+  assert.equal(code, 1);
+});
+
+test("red: unlockedBy id without a quest/event/act prefix is schema-rejected (pattern)", () => {
+  const files = clone(BASE);
+  files.quests[0].unlockedBy = ["region-town"];
+  const { code } = runGate(fixture(files));
+  assert.equal(code, 1);
+});
+
+test("red: dangling act-* unlockedBy id FAILs", () => {
+  const files = clone(BASE);
+  files.quests[0].unlockedBy = ["act-ghost"];
+  const { code, out } = runGate(fixture(files));
+  assert.equal(code, 1);
+  assert.match(out, /unlockedBy "act-ghost" does not resolve/);
+});

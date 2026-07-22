@@ -119,8 +119,8 @@ test("green: two arcs sharing one act is allowed (parallel storylines)", () => {
 
 test("red: old integer arc.act field is schema-rejected", () => {
   const files = clone(BASE);
-  delete files.arcs[0].actId;
   files.arcs[0].act = 1;
-  const { code } = runGate(fixture(files));
+  const { code, out } = runGate(fixture(files));
   assert.equal(code, 1);
+  assert.match(out, /additional/i);
 });

@@ -182,7 +182,7 @@ function resolveStoryRefs(story, assetKeyIds, fail, warn) {
 }
 
 // Group `items` by `keyFn(item)`; return only the groups with 2+ members, as
-// [key, items[]] pairs — used by the arc.act / event.timelineOrder
+// [key, items[]] pairs — used by the act.order / event.timelineOrder
 // duplicate-value checks below.
 function findDuplicateGroups(items, keyFn) {
   const groups = new Map();
@@ -215,6 +215,7 @@ function buildReverseRefIndex(byKind) {
   }
   for (const a of byKind.get("arc")) {
     for (const qid of a.questIds) addRef(qid, "arc");
+    addRef(a.actId, "arc");
   }
   for (const c of byKind.get("character")) {
     addRef(c.faction, "character");
@@ -373,7 +374,7 @@ function checkStoryCoherence(story, fail, warn, requireComplete) {
   const reachable = buildQuestReachability(byKind.get("quest"));
   for (const q of byKind.get("quest")) {
     if (!reachable(q))
-      escalate(`story/${STORY_FILES.quest}#${q.id}: quest "${q.id}" is unreachable from any no-prereq start quest`);
+      escalate(`story/${STORY_FILES.quest}#${q.id}: quest "${q.id}" is unreachable from any no-unlockedBy start quest`);
   }
 
   // --- event.triggeredBy vs act ordering WARN (never escalated) -------------

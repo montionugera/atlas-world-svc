@@ -42,8 +42,7 @@ test('v2 edges present and prereq gone', () => {
   assert.ok(!labels.has('prereq'))
 })
 
-test('EDGE_SPECS parity: every gate edge kind is declared', () => {
-  // parity proxy: seed exercises every edge kind; no dangling edges
+test('real content has no dangling edges and includes act/lore nodes', () => {
   assert.deepEqual(danglingEdges(files), [])
   const g = buildGraph(files)
   assert.ok(g.nodes.some((n) => n.kind === 'act'))
