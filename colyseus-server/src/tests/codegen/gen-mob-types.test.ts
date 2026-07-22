@@ -1,4 +1,4 @@
-import { genMobTypes } from '../../../scripts/codegen/gen-mob-types'
+import { genMobTypes } from '../../config/mobs/genMobTypes'
 
 describe('genMobTypes', () => {
   const data = genMobTypes()
