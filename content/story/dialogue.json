@@ -183,5 +183,19 @@
       "Clear the road. Whatever's still out there prowling it doesn't get a vote in who's allowed to cross."
     ],
     "context": "quest-the-first-crossing"
+  },
+  {
+    "id": "dlg-liss-last-letter",
+    "kind": "dialogue",
+    "title": "The Last Letter",
+    "summary": "Liss hands over a letter written before the ford, already overtaken by the notice that reached Norhollow first.",
+    "links": [],
+    "speaker": "char-liss-of-embervale",
+    "lines": [
+      "He wrote this three weeks before the ford. I've had it two weeks and couldn't make myself send it any faster than this.",
+      "The notice already reached her. I know that. Send it anyway.",
+      "Tell Joren it's not urgent. Tell him it's the opposite of urgent, and that's exactly why it still matters."
+    ],
+    "context": "quest-the-last-letter"
   }
 ]

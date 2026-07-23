@@ -115,10 +115,12 @@ test("the seed epic exercises every kind and every unlockedBy/edge shape (5 arcs
   // F-016 (Undertow) Task 5: act 3 adds its own arc-ledger-game.
   // F-016 (Undertow) Task 6: act 4 adds its own arc-truth-arrives-late.
   // F-016 (Undertow) Task 7: act 5 adds its own arc-the-undertow.
+  // F-016 (Undertow) Task 8: side packs add arc-small-mercies (act 2) and
+  // arc-embers-that-remain (act 4).
   assert.equal(
     arcs.length,
-    8,
-    "expected 8 arcs total after Undertow Task 7 (2 seed + 2 act-1 starters + 1 act-2 arc + 1 act-3 arc + 1 act-4 arc + 1 act-5 arc)"
+    10,
+    "expected 10 arcs total after Undertow Task 8 (2 seed + 2 act-1 starters + 1 act-2 arc + 1 act-3 arc + 1 act-4 arc + 1 act-5 arc + 2 side-quest arcs)"
   );
   assert.ok(quests.length >= 4, "expected at least 4 quests total");
   assert.ok(events.length >= 2, "expected at least 2 events (events.json was empty before Task 7)");
