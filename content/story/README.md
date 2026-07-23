@@ -13,6 +13,12 @@ The `content/story/{acts,characters,arcs,quests,events,dialogue,lore}.json` +
 every edge type described below — read it alongside this guide, or copy its
 shape as a template for a new epic.
 
+**Voice law:** `content/story/style.md` is the theme bible — read it before
+writing any title, summary, narrative text, dialogue line, or lore body; it
+governs tone/register, naming morphology, town/faction/people/villain
+identities, magic rules, and death/dark-quest rules for the Undertow epic
+(and any epic authored after it).
+
 ## The nine kinds
 
 Every node — regardless of kind — shares four base fields:
