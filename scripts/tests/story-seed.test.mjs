@@ -8,12 +8,12 @@
 //
 // F-016 (Undertow) Task 2 update: the seed epic's own orphans were closed
 // (this file's tests reflected that for a while), but Task 2 of the Undertow
-// plan deliberately reopens the orphan count by minting 15 world-foundation
-// characters ahead of the quests/events/dialogue that will reference them in
-// Tasks 3-8 — see the "content gate --require-complete" test below, which
-// pins the exact expected mid-epic orphan set instead of asserting a clean
-// --require-complete pass. That clean-pass assertion returns once Undertow
-// Task 9 (final coherence pass) closes every orphan.
+// plan deliberately reopened the orphan count by minting 15 world-foundation
+// characters ahead of the quests/events/dialogue that would reference them in
+// Tasks 3-7. Tasks 3-6 de-orphaned all but 3 (see the "content gate
+// --require-complete" test below); Task 7 (act 5 — the undertow) closes the
+// last 3, so that test now pins a clean --require-complete pass again, ahead
+// of Undertow Task 9 (final coherence pass), which has no orphans left to do.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -74,21 +74,19 @@ test("content gate is green on the real tree (no --require-complete)", () => {
 // and char-mirelle is involved in event-bells-ring-true and speaks
 // dlg-mirelle-freed. char-quartermaster also dies here
 // (event-quartermaster-falls) but was never orphaned.
-const EXPECTED_MID_EPIC_ORPHAN_CHARACTERS = [
-  "char-elder-of-rooktide",
-  "char-liss-of-embervale",
-  "char-joren-of-norhollow",
-];
-
-test("content gate --require-complete: exactly the Undertow T2 world-foundation orphans fail (no more, no fewer)", () => {
+//
+// Task 7 (act 5 — the undertow) de-orphans the last 3: char-elder-of-rooktide
+// becomes the giver of quest-the-brokers-ledger and quest-the-first-crossing,
+// and char-liss-of-embervale / char-joren-of-norhollow are both `involves` on
+// event-the-first-crossing. That closes every character orphan ahead of
+// schedule — Task 9's "final coherence pass" no longer has any orphan left to
+// sweep, so this test now pins a clean --require-complete pass instead of an
+// expected mid-epic orphan set.
+test("content gate --require-complete: no orphans remain after Undertow Task 7", () => {
   const { status, output } = run("scripts/check_content.mjs", ["--require-complete"]);
-  assert.equal(status, 1, `expected exit 1 (mid-epic orphans pending Undertow Task 9), got ${status}:\n${output}`);
-  assert.match(output, new RegExp(`${EXPECTED_MID_EPIC_ORPHAN_CHARACTERS.length} failures`));
-  for (const id of EXPECTED_MID_EPIC_ORPHAN_CHARACTERS) {
-    assert.match(output, new RegExp(`character "${id}" is referenced by no quest, faction, event, or dialogue \\(orphan\\)`));
-  }
-  // No orphan factions expected: every new faction is de-orphaned by at
-  // least one character's `faction` field (see checkStoryCoherence()).
+  assert.equal(status, 0, `expected exit 0 (all orphans closed by Undertow Task 7), got ${status}:\n${output}`);
+  assert.match(output, /0 failures/);
+  assert.doesNotMatch(output, /character ".*" is referenced by no quest, faction, event, or dialogue \(orphan\)/);
   assert.doesNotMatch(output, /faction ".*" is referenced by no quest, character, or event \(orphan\)/);
 });
 
@@ -116,10 +114,11 @@ test("the seed epic exercises every kind and every unlockedBy/edge shape (5 arcs
   // F-016 (Undertow) Task 4: act 2 adds its own arc-war-comes-home.
   // F-016 (Undertow) Task 5: act 3 adds its own arc-ledger-game.
   // F-016 (Undertow) Task 6: act 4 adds its own arc-truth-arrives-late.
+  // F-016 (Undertow) Task 7: act 5 adds its own arc-the-undertow.
   assert.equal(
     arcs.length,
-    7,
-    "expected 7 arcs total after Undertow Task 6 (2 seed + 2 act-1 starters + 1 act-2 arc + 1 act-3 arc + 1 act-4 arc)"
+    8,
+    "expected 8 arcs total after Undertow Task 7 (2 seed + 2 act-1 starters + 1 act-2 arc + 1 act-3 arc + 1 act-4 arc + 1 act-5 arc)"
   );
   assert.ok(quests.length >= 4, "expected at least 4 quests total");
   assert.ok(events.length >= 2, "expected at least 2 events (events.json was empty before Task 7)");

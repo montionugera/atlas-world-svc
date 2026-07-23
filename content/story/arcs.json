@@ -86,5 +86,18 @@
       "quest-what-the-mob-left"
     ],
     "links": []
+  },
+  {
+    "id": "arc-the-undertow",
+    "kind": "arc",
+    "title": "The Undertow",
+    "summary": "Stop the relic sale at the harbor, drag the Broker's own hand into the light, and carry the first small crossing to Rooktide — no treaty, only what's left standing once the towns stop needing an enemy to explain themselves.",
+    "actId": "act-5",
+    "questIds": [
+      "quest-the-brink",
+      "quest-the-brokers-ledger",
+      "quest-the-first-crossing"
+    ],
+    "links": []
   }
 ]

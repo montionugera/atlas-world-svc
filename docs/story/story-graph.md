@@ -65,6 +65,10 @@ flowchart LR
   end
   subgraph sg_n_act_5["Act 5 — The Undertow"]
     n_act_5["act-5"]:::act
+    n_arc_the_undertow["arc-the-undertow"]:::arc
+    n_quest_the_brink["quest-the-brink"]:::quest
+    n_quest_the_brokers_ledger["quest-the-brokers-ledger"]:::quest
+    n_quest_the_first_crossing["quest-the-first-crossing"]:::quest
   end
   n_char_ashfang_alpha["char-ashfang-alpha"]:::character
   n_char_clerk_of_gildmark["char-clerk-of-gildmark"]:::character
@@ -86,7 +90,9 @@ flowchart LR
   n_char_widow_of_the_first_caravan["char-widow-of-the-first-caravan"]:::character
   n_dlg_ash_prophet_sermon["dlg-ash-prophet-sermon"]:::dialogue
   n_dlg_bell_keeper_confession["dlg-bell-keeper-confession"]:::dialogue
+  n_dlg_broker_at_the_harbor["dlg-broker-at-the-harbor"]:::dialogue
   n_dlg_clerk_terms["dlg-clerk-terms"]:::dialogue
+  n_dlg_elder_of_rooktide_welcome["dlg-elder-of-rooktide-welcome"]:::dialogue
   n_dlg_expedition_member_twin_strike_aftermath["dlg-expedition-member-twin-strike-aftermath"]:::dialogue
   n_dlg_farrow_at_the_ford["dlg-farrow-at-the-ford"]:::dialogue
   n_dlg_mirelle_freed["dlg-mirelle-freed"]:::dialogue
@@ -96,6 +102,7 @@ flowchart LR
   n_dlg_war_countess_briefing["dlg-war-countess-briefing"]:::dialogue
   n_dlg_widow_at_the_pyres["dlg-widow-at-the-pyres"]:::dialogue
   n_event_bells_ring_true["event-bells-ring-true"]:::event
+  n_event_broker_unmasked["event-broker-unmasked"]:::event
   n_event_clerk_silenced["event-clerk-silenced"]:::event
   n_event_farrow_falls["event-farrow-falls"]:::event
   n_event_first_caravan_burns["event-first-caravan-burns"]:::event
@@ -105,6 +112,8 @@ flowchart LR
   n_event_quartermaster_falls["event-quartermaster-falls"]:::event
   n_event_refuge_at_millcross["event-refuge-at-millcross"]:::event
   n_event_relic_deal_struck["event-relic-deal-struck"]:::event
+  n_event_relic_sale_stopped["event-relic-sale-stopped"]:::event
+  n_event_the_first_crossing["event-the-first-crossing"]:::event
   n_event_the_seal_that_matched_no_one["event-the-seal-that-matched-no-one"]:::event
   n_event_twin_strike_falls["event-twin-strike-falls"]:::event
   n_event_war_declared["event-war-declared"]:::event
@@ -149,6 +158,10 @@ flowchart LR
   n_arc_norhollow_outskirts -->|actId| n_act_1
   n_arc_norhollow_outskirts -->|questIds| n_quest_letters_already_opened
   n_arc_norhollow_outskirts -->|questIds| n_quest_norhollow_palisade
+  n_arc_the_undertow -->|actId| n_act_5
+  n_arc_the_undertow -->|questIds| n_quest_the_brink
+  n_arc_the_undertow -->|questIds| n_quest_the_brokers_ledger
+  n_arc_the_undertow -->|questIds| n_quest_the_first_crossing
   n_arc_truth_arrives_late -->|actId| n_act_4
   n_arc_truth_arrives_late -->|questIds| n_quest_ash_in_the_streets
   n_arc_truth_arrives_late -->|questIds| n_quest_the_bell_keepers_price
@@ -198,8 +211,12 @@ flowchart LR
   n_dlg_ash_prophet_sermon -->|speaker| n_char_the_ash_prophet
   n_dlg_bell_keeper_confession -->|context| n_event_bells_ring_true
   n_dlg_bell_keeper_confession -->|speaker| n_char_the_bell_keeper
+  n_dlg_broker_at_the_harbor -->|context| n_event_broker_unmasked
+  n_dlg_broker_at_the_harbor -->|speaker| n_char_the_broker
   n_dlg_clerk_terms -->|context| n_quest_the_clerks_price
   n_dlg_clerk_terms -->|speaker| n_char_clerk_of_gildmark
+  n_dlg_elder_of_rooktide_welcome -->|context| n_quest_the_first_crossing
+  n_dlg_elder_of_rooktide_welcome -->|speaker| n_char_elder_of_rooktide
   n_dlg_expedition_member_twin_strike_aftermath -->|context| n_event_twin_strike_falls
   n_dlg_expedition_member_twin_strike_aftermath -->|speaker| n_char_expedition_member
   n_dlg_farrow_at_the_ford -->|context| n_quest_hold_the_ford
@@ -219,6 +236,8 @@ flowchart LR
   n_event_bells_ring_true -->|involves| n_char_mirelle
   n_event_bells_ring_true -->|involves| n_char_the_bell_keeper
   n_event_bells_ring_true -->|triggeredBy| n_quest_the_bell_keepers_price
+  n_event_broker_unmasked -->|involves| n_char_the_broker
+  n_event_broker_unmasked -->|triggeredBy| n_quest_the_brokers_ledger
   n_event_clerk_silenced -->|involves| n_char_clerk_of_gildmark
   n_event_clerk_silenced -->|involves| n_faction_gildmark_council
   n_event_farrow_falls -->|involves| n_char_farrow_the_forward
@@ -242,6 +261,12 @@ flowchart LR
   n_event_refuge_at_millcross -->|involves| n_region_millcross
   n_event_relic_deal_struck -->|involves| n_char_iron_regent
   n_event_relic_deal_struck -->|involves| n_char_the_broker
+  n_event_relic_sale_stopped -->|involves| n_char_iron_regent
+  n_event_relic_sale_stopped -->|triggeredBy| n_quest_the_brink
+  n_event_the_first_crossing -->|involves| n_char_joren_of_norhollow
+  n_event_the_first_crossing -->|involves| n_char_liss_of_embervale
+  n_event_the_first_crossing -->|involves| n_region_rooktide
+  n_event_the_first_crossing -->|triggeredBy| n_quest_the_first_crossing
   n_event_the_seal_that_matched_no_one -->|involves| n_char_expedition_member
   n_event_the_seal_that_matched_no_one -->|triggeredBy| n_quest_salvage_run
   n_event_twin_strike_falls -->|involves| n_char_ashfang_alpha
@@ -324,11 +349,28 @@ flowchart LR
   n_quest_the_bell_keepers_price -->|region| n_region_gildmark
   n_quest_the_bell_keepers_price -->|unlockedBy| n_act_4
   n_quest_the_bell_keepers_price -->|unlockedBy| n_event_ledger_lifted
+  n_quest_the_brink -->|arcId| n_arc_the_undertow
+  n_quest_the_brink -->|faction| n_faction_gildmark_council
+  n_quest_the_brink -->|giver| n_char_warden_bright
+  n_quest_the_brink -->|region| n_region_gildmark
+  n_quest_the_brink -->|unlockedBy| n_act_5
+  n_quest_the_brink -->|unlockedBy| n_event_relic_deal_struck
+  n_quest_the_brokers_ledger -->|arcId| n_arc_the_undertow
+  n_quest_the_brokers_ledger -->|faction| n_faction_gildmark_council
+  n_quest_the_brokers_ledger -->|giver| n_char_elder_of_rooktide
+  n_quest_the_brokers_ledger -->|region| n_region_gildmark
+  n_quest_the_brokers_ledger -->|unlockedBy| n_quest_the_brink
   n_quest_the_clerks_price -->|arcId| n_arc_ledger_game
   n_quest_the_clerks_price -->|faction| n_faction_gildmark_council
   n_quest_the_clerks_price -->|giver| n_char_clerk_of_gildmark
   n_quest_the_clerks_price -->|region| n_region_gildmark
   n_quest_the_clerks_price -->|unlockedBy| n_quest_a_face_for_gildmark
+  n_quest_the_first_crossing -->|arcId| n_arc_the_undertow
+  n_quest_the_first_crossing -->|faction| n_faction_norhollow_banner
+  n_quest_the_first_crossing -->|giver| n_char_elder_of_rooktide
+  n_quest_the_first_crossing -->|region| n_region_rooktide
+  n_quest_the_first_crossing -->|unlockedBy| n_event_bells_ring_true
+  n_quest_the_first_crossing -->|unlockedBy| n_quest_the_brokers_ledger
   n_quest_the_ledger_theft -->|arcId| n_arc_ledger_game
   n_quest_the_ledger_theft -->|faction| n_faction_gildmark_council
   n_quest_the_ledger_theft -->|giver| n_char_clerk_of_gildmark

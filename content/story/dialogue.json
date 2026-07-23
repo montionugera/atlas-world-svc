@@ -153,5 +153,35 @@
       "I don't want an accounting of it. I want to go home."
     ],
     "context": "quest-the-bell-keepers-price"
+  },
+  {
+    "id": "dlg-broker-at-the-harbor",
+    "kind": "dialogue",
+    "title": "The Broker at the Harbor",
+    "summary": "Named at last in his own harbor square, the Broker doesn't deny a word of the ledger — he only tells the crowd what it means, and what it doesn't.",
+    "links": [],
+    "speaker": "char-the-broker",
+    "lines": [
+      "You have the page. Read it to whoever you like. I've never denied a word of it — only the timing.",
+      "I've never lied to you. I've only ever told you the truth at the moment it would cost you the most.",
+      "Take my ledgers. Take my harbor. Somebody in this world will always need an enemy handed to them, and I promise you, that trade doesn't need me standing in it to keep running.",
+      "The ledger closes on me tonight. It doesn't close on the war. Ask the Widow what she still wants, when you're done asking me what I did."
+    ],
+    "context": "event-broker-unmasked"
+  },
+  {
+    "id": "dlg-elder-of-rooktide-welcome",
+    "kind": "dialogue",
+    "title": "The Elder's Welcome",
+    "summary": "The Elder of Rooktide opens her town's gate to wounded from both towns, and asks the player to keep the road to it clear.",
+    "links": [],
+    "speaker": "char-elder-of-rooktide",
+    "lines": [
+      "We came back once from less than this. We didn't wait for anyone's permission then, either.",
+      "Wounded is wounded. I don't ask which banner they marched under before I ask which cot they need.",
+      "Before the return, Rooktide had nothing to offer anybody. After, we've got a gate that opens. That's the whole of what we're doing here.",
+      "Clear the road. Whatever's still out there prowling it doesn't get a vote in who's allowed to cross."
+    ],
+    "context": "quest-the-first-crossing"
   }
 ]

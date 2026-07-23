@@ -174,5 +174,43 @@
       "char-the-broker",
       "char-iron-regent"
     ]
+  },
+  {
+    "id": "event-relic-sale-stopped",
+    "kind": "event",
+    "title": "The Relic Sale Is Stopped",
+    "summary": "The crate never reaches the water — the tide turns and leaves it sitting on Gildmark's dock. The Iron Regent doesn't fight for it in the open. He walks off, the way a man walks off from an entry he means to write again under a different heading.",
+    "links": [],
+    "timelineOrder": 15,
+    "triggeredBy": "quest-the-brink",
+    "involves": [
+      "char-iron-regent"
+    ]
+  },
+  {
+    "id": "event-broker-unmasked",
+    "kind": "event",
+    "title": "The Broker Unmasked",
+    "summary": "The ledger page names a man, not an office, read aloud in Gildmark's harbor square where no seal can bury it again. The Broker doesn't deny a word of it, and doesn't apologize for any of it either.",
+    "links": [],
+    "timelineOrder": 16,
+    "triggeredBy": "quest-the-brokers-ledger",
+    "involves": [
+      "char-the-broker"
+    ]
+  },
+  {
+    "id": "event-the-first-crossing",
+    "kind": "event",
+    "title": "The First Crossing",
+    "summary": "No treaty is signed — nobody in Rooktide would know how to write one. Wounded from both towns come through the gate the Elder opened, and among the wagons a letter that spent two seasons waiting finally reaches Joren of Norhollow's hand, sent by Liss of Embervale before the road closed. The war isn't over. This is only the first crossing.",
+    "links": [],
+    "timelineOrder": 17,
+    "triggeredBy": "quest-the-first-crossing",
+    "involves": [
+      "region-rooktide",
+      "char-liss-of-embervale",
+      "char-joren-of-norhollow"
+    ]
   }
 ]
