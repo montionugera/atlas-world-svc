@@ -62,6 +62,40 @@ melodrama. A villain's Gilded Rot cruelty can be theatrical in its
 politeness, but a death, in either register, is never wept over on the
 page — it is carried.
 
+### One-read rule
+
+Every line must land in a single read. Depth lives in what is left
+unsaid — never in a sentence the player has to unravel. If a line needs
+a second pass to parse who is talking about what, it gets rewritten
+plainer, even if that costs some cleverness.
+
+- Fails: "I've buried enough of this town's sons learning that lesson
+  twice. Learn it once, if you can." (the reader has to work out what
+  "that lesson" is and who learned it, twice, before the sentence
+  resolves.)
+- Passes: "That order has cost this town enough funerals. Don't add
+  yours." (same warning, same grief, understood on the first pass.)
+
+### Plain-vocabulary rule
+
+Write for players whose English is a second language. Use direct verbs.
+No trade jargon standing in for a plain action — hunting, nautical, or
+legal terms dressed up as verbs ("thin," "flank," "table it") — and no
+stacked metaphors piled on top of each other. A line earns its weight
+from what it says, not from the rarity of its words.
+
+Gilded Rot's ledger diction stays — it is exempt because it already
+follows this rule: plain words arranged coldly, never rare ones. "Written
+off." "The interest, we still pay." Nothing there needs a dictionary; the
+chill is in the arrangement, not the vocabulary.
+
+- Fails: "Thin whatever's testing the dark past the tree line." ("thin"
+  as a hunting-culling verb and "testing the dark" as a compressed
+  metaphor both require the reader to decode an image before they get
+  the instruction.)
+- Passes: "Something prowls past the tree line after dark. Cut their
+  numbers down." (same instruction, plain verbs, one image at a time.)
+
 ## 2. Naming morphology
 
 - **Ashen Vigil names** are terse compounds — two plain words fused or

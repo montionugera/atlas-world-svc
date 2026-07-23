@@ -35,9 +35,9 @@
     "links": [],
     "speaker": "char-war-countess",
     "lines": [
-      "The west wall held last night. That doesn't mean it holds tonight.",
-      "Double the watch. Thin whatever's testing the dark past the tree line — don't chase it further than that.",
-      "I've buried enough of this town's sons learning that lesson twice. Learn it once, if you can."
+      "The west wall held last night. That does not mean it holds tonight.",
+      "Something prowls past the tree line after dark. Cut their numbers down — but do not follow them into the deep woods.",
+      "That order has cost this town enough funerals. Don't add yours."
     ],
     "context": "quest-embervale-watchfires"
   },
@@ -50,7 +50,7 @@
     "speaker": "char-speaker-of-norhollow",
     "lines": [
       "Nine notches on the west stakes. Three came loose since the frost. That's the count.",
-      "Walk the line, reset what's loose, and thin anything using the dark to test it.",
+      "Walk the line, reset what's loose, and kill anything that comes close after dark.",
       "Ask me what I think when the tallies stop needing fixed. Not before."
     ],
     "context": "quest-norhollow-palisade"

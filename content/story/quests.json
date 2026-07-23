@@ -100,8 +100,8 @@
     "title": "Watchfires",
     "summary": "Hold Embervale's west wall and keep the watchfires lit through the night.",
     "narrative": {
-      "description": "The west wall held last night. The Countess wants it doubled anyway — the packs have been testing the dark past the tree line for a week, closer each time, and nobody on the wall has slept well since.",
-      "offerText": "Walk the wall, keep the fires lit, and thin whatever's testing the dark before it stops testing and starts pressing.",
+      "description": "The west wall held last night. The Countess wants it doubled anyway — something has been prowling past the tree line for a week, closer every night, and nobody on the wall has slept well since.",
+      "offerText": "Walk the wall, keep the fires lit, and cut down whatever's out past the tree line before it comes closer.",
       "completeText": "The fires held. That's one more night the wall didn't have to prove itself twice."
     },
     "giver": "char-war-countess",
@@ -148,7 +148,7 @@
     "summary": "Walk Norhollow's palisade and reset the stakes the frost has worked loose.",
     "narrative": {
       "description": "The Speaker keeps her counts on a knotted cord at her belt — nine notches for the west stakes, three for the near ones. She wants the line walked and the stakes checked before she'll say anything else about it.",
-      "offerText": "Walk the palisade. Reset what needs resetting. Thin anything that's using the dark to get close.",
+      "offerText": "Walk the palisade. Reset what needs resetting. Kill anything that comes near after dark.",
       "completeText": "Nine notches, still nine notches. She counted them twice before she said it held. That's as close as she comes to relief out loud."
     },
     "giver": "char-speaker-of-norhollow",
@@ -171,7 +171,7 @@
     "summary": "Carry the week's mail in from the relay post, seals and all.",
     "narrative": {
       "description": "Three letters came up the coastal road this week, same as always, and all three arrived with their seals broken and pressed shut again. The Speaker reads them anyway. She stopped mentioning it to anyone but the courier a while back. Now she's mentioning it to you.",
-      "offerText": "Walk the relay road, bring the mail in, and keep anything testing the escort off your back.",
+      "offerText": "Walk the relay road, bring the mail in, and kill anything that attacks the escort.",
       "completeText": "The letters are on her desk, same as every week. She didn't ask who broke the seals this time either. She just reads what's left to read."
     },
     "giver": "char-speaker-of-norhollow",
