@@ -20,7 +20,7 @@
     "id": "faction-stoneguard",
     "kind": "faction",
     "title": "Stoneguard Remnant",
-    "summary": "A defensive order that outlived what it guarded.",
+    "summary": "A defensive order that outlived its city.",
     "disposition": "hostile",
     "mobFamily": [
       "mob:defensive"
@@ -73,5 +73,100 @@
       }
     ],
     "links": ["region-spawn-meadow"]
+  },
+  {
+    "id": "faction-embervale-banner",
+    "kind": "faction",
+    "title": "The Embervale Banner",
+    "summary": "We didn't start this. We intend to finish it.",
+    "disposition": "neutral",
+    "mobFamily": [
+      "mob:balanced"
+    ],
+    "relationships": [
+      {
+        "factionId": "faction-norhollow-banner",
+        "stance": "enemy"
+      },
+      {
+        "factionId": "faction-gildmark-council",
+        "stance": "neutral"
+      }
+    ],
+    "links": ["region-embervale"]
+  },
+  {
+    "id": "faction-norhollow-banner",
+    "kind": "faction",
+    "title": "The Norhollow Banner",
+    "summary": "Hold the line. Count the dead. Hold it again tomorrow.",
+    "disposition": "neutral",
+    "mobFamily": [
+      "mob:defensive"
+    ],
+    "relationships": [
+      {
+        "factionId": "faction-embervale-banner",
+        "stance": "enemy"
+      },
+      {
+        "factionId": "faction-gildmark-council",
+        "stance": "neutral"
+      }
+    ],
+    "links": ["region-norhollow"]
+  },
+  {
+    "id": "faction-gildmark-council",
+    "kind": "faction",
+    "title": "The Harbor Council",
+    "summary": "Every war needs a quartermaster. We simply supply both.",
+    "disposition": "neutral",
+    "mobFamily": [
+      "mob:hybrid"
+    ],
+    "relationships": [],
+    "links": ["region-gildmark"]
+  },
+  {
+    "id": "faction-bellfaith",
+    "kind": "faction",
+    "title": "The Bellfaith",
+    "summary": "The bell doesn't lie. The hand that rings it might.",
+    "disposition": "neutral",
+    "mobFamily": [],
+    "relationships": [
+      {
+        "factionId": "faction-gildmark-council",
+        "stance": "neutral"
+      }
+    ],
+    "links": ["region-gildmark"]
+  },
+  {
+    "id": "faction-ashen-column",
+    "kind": "faction",
+    "title": "The Ashen Column",
+    "summary": "Everything standing is a lie waiting to fall. We hurry it along.",
+    "disposition": "hostile",
+    "mobFamily": [
+      "mob:aggressive",
+      "mob:double_attacker"
+    ],
+    "relationships": [
+      {
+        "factionId": "faction-embervale-banner",
+        "stance": "enemy"
+      },
+      {
+        "factionId": "faction-norhollow-banner",
+        "stance": "enemy"
+      },
+      {
+        "factionId": "faction-gildmark-council",
+        "stance": "enemy"
+      }
+    ],
+    "links": ["region-cindervast"]
   }
 ]

@@ -26,83 +26,499 @@ flowchart LR
   classDef dialogue fill:#868E96,color:#fff,stroke:#495057,stroke-width:1px
   classDef lore fill:#66D9E8,color:#000,stroke:#0B7285,stroke-width:1px
 
-  subgraph sg_n_act_1["Act 1 — Meadow Awakening"]
+  subgraph sg_n_act_1["Act 1 — Small Lives"]
     n_act_1["act-1"]:::act
+    n_arc_embervale_outskirts["arc-embervale-outskirts"]:::arc
     n_arc_meadow_awakening["arc-meadow-awakening"]:::arc
+    n_arc_norhollow_outskirts["arc-norhollow-outskirts"]:::arc
     n_quest_cull_the_packs["quest-cull-the-packs"]:::quest
+    n_quest_embervale_watchfires["quest-embervale-watchfires"]:::quest
     n_quest_first_steps["quest-first-steps"]:::quest
+    n_quest_letters_already_opened["quest-letters-already-opened"]:::quest
+    n_quest_norhollow_palisade["quest-norhollow-palisade"]:::quest
     n_quest_the_twin_strike["quest-the-twin-strike"]:::quest
+    n_quest_the_unmarked_crates["quest-the-unmarked-crates"]:::quest
   end
-  subgraph sg_n_act_2["Act 2 — Icefield Reckoning"]
+  subgraph sg_n_act_2["Act 2 — The War Comes Home"]
     n_act_2["act-2"]:::act
     n_arc_icefield_reckoning["arc-icefield-reckoning"]:::arc
+    n_arc_small_mercies["arc-small-mercies"]:::arc
+    n_arc_war_comes_home["arc-war-comes-home"]:::arc
+    n_quest_hold_the_ford["quest-hold-the-ford"]:::quest
     n_quest_icefield_reckoning["quest-icefield-reckoning"]:::quest
+    n_quest_salvage_and_medals["quest-salvage-and-medals"]:::quest
+    n_quest_salvage_run["quest-salvage-run"]:::quest
+    n_quest_the_bells_that_wont_stop["quest-the-bells-that-wont-stop"]:::quest
+    n_quest_the_last_letter["quest-the-last-letter"]:::quest
+    n_quest_the_road_of_strangers["quest-the-road-of-strangers"]:::quest
+    n_quest_two_plates_at_dusk["quest-two-plates-at-dusk"]:::quest
+  end
+  subgraph sg_n_act_3["Act 3 — The Ledger Game"]
+    n_act_3["act-3"]:::act
+    n_arc_ledger_game["arc-ledger-game"]:::arc
+    n_quest_a_face_for_gildmark["quest-a-face-for-gildmark"]:::quest
+    n_quest_out_the_harbor_gate["quest-out-the-harbor-gate"]:::quest
+    n_quest_the_clerks_price["quest-the-clerks-price"]:::quest
+    n_quest_the_ledger_theft["quest-the-ledger-theft"]:::quest
+  end
+  subgraph sg_n_act_4["Act 4 — The Truth Arrives Late"]
+    n_act_4["act-4"]:::act
+    n_arc_embers_that_remain["arc-embers-that-remain"]:::arc
+    n_arc_truth_arrives_late["arc-truth-arrives-late"]:::arc
+    n_quest_a_stall_rebuilt["quest-a-stall-rebuilt"]:::quest
+    n_quest_ash_in_the_streets["quest-ash-in-the-streets"]:::quest
+    n_quest_the_bell_keepers_price["quest-the-bell-keepers-price"]:::quest
+    n_quest_the_deserters_name["quest-the-deserters-name"]:::quest
+    n_quest_the_letter_that_arrived["quest-the-letter-that-arrived"]:::quest
+    n_quest_what_the_mob_left["quest-what-the-mob-left"]:::quest
+  end
+  subgraph sg_n_act_5["Act 5 — The Undertow"]
+    n_act_5["act-5"]:::act
+    n_arc_the_undertow["arc-the-undertow"]:::arc
+    n_quest_the_brink["quest-the-brink"]:::quest
+    n_quest_the_brokers_ledger["quest-the-brokers-ledger"]:::quest
+    n_quest_the_first_crossing["quest-the-first-crossing"]:::quest
   end
   n_char_ashfang_alpha["char-ashfang-alpha"]:::character
+  n_char_clerk_of_gildmark["char-clerk-of-gildmark"]:::character
+  n_char_elder_of_rooktide["char-elder-of-rooktide"]:::character
   n_char_expedition_member["char-expedition-member"]:::character
+  n_char_farrow_the_forward["char-farrow-the-forward"]:::character
+  n_char_iron_regent["char-iron-regent"]:::character
+  n_char_joren_of_norhollow["char-joren-of-norhollow"]:::character
+  n_char_liss_of_embervale["char-liss-of-embervale"]:::character
+  n_char_mirelle["char-mirelle"]:::character
   n_char_quartermaster["char-quartermaster"]:::character
+  n_char_speaker_of_norhollow["char-speaker-of-norhollow"]:::character
+  n_char_the_ash_prophet["char-the-ash-prophet"]:::character
+  n_char_the_bell_keeper["char-the-bell-keeper"]:::character
+  n_char_the_broker["char-the-broker"]:::character
+  n_char_thornveil_war_speaker["char-thornveil-war-speaker"]:::character
+  n_char_war_countess["char-war-countess"]:::character
+  n_char_warden_bright["char-warden-bright"]:::character
+  n_char_widow_of_the_first_caravan["char-widow-of-the-first-caravan"]:::character
+  n_dlg_ash_prophet_sermon["dlg-ash-prophet-sermon"]:::dialogue
+  n_dlg_bell_keeper_confession["dlg-bell-keeper-confession"]:::dialogue
+  n_dlg_broker_at_the_harbor["dlg-broker-at-the-harbor"]:::dialogue
+  n_dlg_clerk_terms["dlg-clerk-terms"]:::dialogue
+  n_dlg_elder_of_rooktide_welcome["dlg-elder-of-rooktide-welcome"]:::dialogue
   n_dlg_expedition_member_twin_strike_aftermath["dlg-expedition-member-twin-strike-aftermath"]:::dialogue
+  n_dlg_farrow_at_the_ford["dlg-farrow-at-the-ford"]:::dialogue
+  n_dlg_liss_last_letter["dlg-liss-last-letter"]:::dialogue
+  n_dlg_mirelle_freed["dlg-mirelle-freed"]:::dialogue
   n_dlg_quartermaster_icefield_briefing["dlg-quartermaster-icefield-briefing"]:::dialogue
+  n_dlg_quartermaster_road_of_strangers["dlg-quartermaster-road-of-strangers"]:::dialogue
+  n_dlg_speaker_of_norhollow_briefing["dlg-speaker-of-norhollow-briefing"]:::dialogue
+  n_dlg_war_countess_briefing["dlg-war-countess-briefing"]:::dialogue
+  n_dlg_widow_at_the_pyres["dlg-widow-at-the-pyres"]:::dialogue
+  n_event_bells_ring_true["event-bells-ring-true"]:::event
+  n_event_broker_unmasked["event-broker-unmasked"]:::event
+  n_event_clerk_silenced["event-clerk-silenced"]:::event
+  n_event_farrow_falls["event-farrow-falls"]:::event
+  n_event_first_caravan_burns["event-first-caravan-burns"]:::event
   n_event_icefield_thornveil_standoff["event-icefield-thornveil-standoff"]:::event
+  n_event_ledger_lifted["event-ledger-lifted"]:::event
+  n_event_messengers_burned["event-messengers-burned"]:::event
+  n_event_quartermaster_falls["event-quartermaster-falls"]:::event
+  n_event_refuge_at_millcross["event-refuge-at-millcross"]:::event
+  n_event_relic_deal_struck["event-relic-deal-struck"]:::event
+  n_event_relic_sale_stopped["event-relic-sale-stopped"]:::event
+  n_event_the_first_crossing["event-the-first-crossing"]:::event
+  n_event_the_seal_that_matched_no_one["event-the-seal-that-matched-no-one"]:::event
   n_event_twin_strike_falls["event-twin-strike-falls"]:::event
+  n_event_war_declared["event-war-declared"]:::event
+  n_event_warspeaker_falls["event-warspeaker-falls"]:::event
+  n_faction_ashen_column["faction-ashen-column"]:::faction
   n_faction_ashfang["faction-ashfang"]:::faction
+  n_faction_bellfaith["faction-bellfaith"]:::faction
+  n_faction_embervale_banner["faction-embervale-banner"]:::faction
   n_faction_expedition["faction-expedition"]:::faction
+  n_faction_gildmark_council["faction-gildmark-council"]:::faction
+  n_faction_norhollow_banner["faction-norhollow-banner"]:::faction
   n_faction_stoneguard["faction-stoneguard"]:::faction
   n_faction_thornveil["faction-thornveil"]:::faction
   n_faction_unaligned["faction-unaligned"]:::faction
+  n_lore_a_decade_of_meals["lore-a-decade-of-meals"]:::lore
+  n_lore_a_fathers_first_letter["lore-a-fathers-first-letter"]:::lore
+  n_lore_a_fathers_second_letter["lore-a-fathers-second-letter"]:::lore
+  n_lore_a_harbor_entry["lore-a-harbor-entry"]:::lore
+  n_lore_a_wardens_private_tally["lore-a-wardens-private-tally"]:::lore
+  n_lore_after_the_return_count["lore-after-the-return-count"]:::lore
+  n_lore_an_entry_without_a_name["lore-an-entry-without-a-name"]:::lore
+  n_lore_before_the_return_count["lore-before-the-return-count"]:::lore
   n_lore_first_claim_stone["lore-first-claim-stone"]:::lore
   n_lore_guarded_nothing["lore-guarded-nothing"]:::lore
+  n_lore_jorens_answer["lore-jorens-answer"]:::lore
+  n_lore_jorens_tally["lore-jorens-tally"]:::lore
+  n_lore_lisss_first_letter["lore-lisss-first-letter"]:::lore
+  n_lore_lisss_second_letter["lore-lisss-second-letter"]:::lore
+  n_lore_millcross_by_the_numbers["lore-millcross-by-the-numbers"]:::lore
+  n_lore_the_bell_keepers_schedule["lore-the-bell-keepers-schedule"]:::lore
+  n_lore_the_cindered_count["lore-the-cindered-count"]:::lore
+  n_lore_the_crossing_post["lore-the-crossing-post"]:::lore
+  n_lore_the_elders_first_plank["lore-the-elders-first-plank"]:::lore
+  n_lore_the_elders_tally_of_who_stayed["lore-the-elders-tally-of-who-stayed"]:::lore
+  n_lore_the_fathers_postage_paid["lore-the-fathers-postage-paid"]:::lore
+  n_lore_the_first_caravans_manifest["lore-the-first-caravans-manifest"]:::lore
+  n_lore_the_first_tally["lore-the-first-tally"]:::lore
+  n_lore_the_last_reply["lore-the-last-reply"]:::lore
+  n_lore_the_meadows_first_count["lore-the-meadows-first-count"]:::lore
+  n_lore_the_millcross_relay["lore-the-millcross-relay"]:::lore
+  n_lore_the_night_the_road_filled["lore-the-night-the-road-filled"]:::lore
+  n_lore_the_riders_account["lore-the-riders-account"]:::lore
+  n_lore_the_seal_log["lore-the-seal-log"]:::lore
+  n_lore_the_second_harbor_entry["lore-the-second-harbor-entry"]:::lore
+  n_lore_the_second_wardens_tally["lore-the-second-wardens-tally"]:::lore
+  n_lore_the_shelf_still_remembers["lore-the-shelf-still-remembers"]:::lore
+  n_lore_the_tower_that_doesnt_answer["lore-the-tower-that-doesnt-answer"]:::lore
+  n_lore_the_tyrants_last_order["lore-the-tyrants-last-order"]:::lore
+  n_lore_the_unfinished_page["lore-the-unfinished-page"]:::lore
+  n_lore_what_the_prophet_carries["lore-what-the-prophet-carries"]:::lore
+  n_region_ashvale_front["region-ashvale-front"]:::region
+  n_region_cindervast["region-cindervast"]:::region
+  n_region_embervale["region-embervale"]:::region
+  n_region_gildmark["region-gildmark"]:::region
   n_region_icefield["region-icefield"]:::region
+  n_region_millcross["region-millcross"]:::region
+  n_region_norhollow["region-norhollow"]:::region
+  n_region_rooktide["region-rooktide"]:::region
   n_region_spawn_meadow["region-spawn-meadow"]:::region
   n_region_thornveil["region-thornveil"]:::region
 
+  n_arc_embers_that_remain -->|actId| n_act_4
+  n_arc_embers_that_remain -->|questIds| n_quest_a_stall_rebuilt
+  n_arc_embers_that_remain -->|questIds| n_quest_the_deserters_name
+  n_arc_embers_that_remain -->|questIds| n_quest_the_letter_that_arrived
+  n_arc_embervale_outskirts -->|actId| n_act_1
+  n_arc_embervale_outskirts -->|questIds| n_quest_embervale_watchfires
+  n_arc_embervale_outskirts -->|questIds| n_quest_the_unmarked_crates
   n_arc_icefield_reckoning -->|actId| n_act_2
   n_arc_icefield_reckoning -->|questIds| n_quest_icefield_reckoning
+  n_arc_ledger_game -->|actId| n_act_3
+  n_arc_ledger_game -->|questIds| n_quest_a_face_for_gildmark
+  n_arc_ledger_game -->|questIds| n_quest_out_the_harbor_gate
+  n_arc_ledger_game -->|questIds| n_quest_the_clerks_price
+  n_arc_ledger_game -->|questIds| n_quest_the_ledger_theft
   n_arc_meadow_awakening -->|actId| n_act_1
   n_arc_meadow_awakening -->|questIds| n_quest_cull_the_packs
   n_arc_meadow_awakening -->|questIds| n_quest_first_steps
   n_arc_meadow_awakening -->|questIds| n_quest_the_twin_strike
+  n_arc_norhollow_outskirts -->|actId| n_act_1
+  n_arc_norhollow_outskirts -->|questIds| n_quest_letters_already_opened
+  n_arc_norhollow_outskirts -->|questIds| n_quest_norhollow_palisade
+  n_arc_small_mercies -->|actId| n_act_2
+  n_arc_small_mercies -->|questIds| n_quest_salvage_and_medals
+  n_arc_small_mercies -->|questIds| n_quest_the_bells_that_wont_stop
+  n_arc_small_mercies -->|questIds| n_quest_the_last_letter
+  n_arc_small_mercies -->|questIds| n_quest_two_plates_at_dusk
+  n_arc_the_undertow -->|actId| n_act_5
+  n_arc_the_undertow -->|questIds| n_quest_the_brink
+  n_arc_the_undertow -->|questIds| n_quest_the_brokers_ledger
+  n_arc_the_undertow -->|questIds| n_quest_the_first_crossing
+  n_arc_truth_arrives_late -->|actId| n_act_4
+  n_arc_truth_arrives_late -->|questIds| n_quest_ash_in_the_streets
+  n_arc_truth_arrives_late -->|questIds| n_quest_the_bell_keepers_price
+  n_arc_truth_arrives_late -->|questIds| n_quest_what_the_mob_left
+  n_arc_war_comes_home -->|actId| n_act_2
+  n_arc_war_comes_home -->|questIds| n_quest_hold_the_ford
+  n_arc_war_comes_home -->|questIds| n_quest_salvage_run
+  n_arc_war_comes_home -->|questIds| n_quest_the_road_of_strangers
   n_char_ashfang_alpha -->|diedAt| n_event_twin_strike_falls
   n_char_ashfang_alpha -->|faction| n_faction_unaligned
   n_char_ashfang_alpha -->|region| n_region_spawn_meadow
+  n_char_clerk_of_gildmark -->|diedAt| n_event_clerk_silenced
+  n_char_clerk_of_gildmark -->|faction| n_faction_gildmark_council
+  n_char_clerk_of_gildmark -->|region| n_region_gildmark
+  n_char_elder_of_rooktide -->|region| n_region_rooktide
   n_char_expedition_member -->|faction| n_faction_expedition
   n_char_expedition_member -->|region| n_region_spawn_meadow
+  n_char_farrow_the_forward -->|diedAt| n_event_farrow_falls
+  n_char_farrow_the_forward -->|faction| n_faction_expedition
+  n_char_farrow_the_forward -->|region| n_region_millcross
+  n_char_iron_regent -->|faction| n_faction_embervale_banner
+  n_char_iron_regent -->|region| n_region_embervale
+  n_char_joren_of_norhollow -->|region| n_region_norhollow
+  n_char_liss_of_embervale -->|region| n_region_embervale
+  n_char_mirelle -->|region| n_region_gildmark
+  n_char_quartermaster -->|diedAt| n_event_quartermaster_falls
   n_char_quartermaster -->|faction| n_faction_expedition
   n_char_quartermaster -->|region| n_region_spawn_meadow
+  n_char_speaker_of_norhollow -->|faction| n_faction_norhollow_banner
+  n_char_speaker_of_norhollow -->|region| n_region_norhollow
+  n_char_the_ash_prophet -->|faction| n_faction_ashen_column
+  n_char_the_ash_prophet -->|region| n_region_cindervast
+  n_char_the_bell_keeper -->|faction| n_faction_bellfaith
+  n_char_the_bell_keeper -->|region| n_region_gildmark
+  n_char_the_broker -->|faction| n_faction_gildmark_council
+  n_char_the_broker -->|region| n_region_gildmark
+  n_char_thornveil_war_speaker -->|diedAt| n_event_warspeaker_falls
+  n_char_thornveil_war_speaker -->|faction| n_faction_thornveil
+  n_char_thornveil_war_speaker -->|region| n_region_thornveil
+  n_char_war_countess -->|faction| n_faction_embervale_banner
+  n_char_war_countess -->|region| n_region_embervale
+  n_char_warden_bright -->|faction| n_faction_bellfaith
+  n_char_warden_bright -->|region| n_region_gildmark
+  n_char_widow_of_the_first_caravan -->|faction| n_faction_embervale_banner
+  n_char_widow_of_the_first_caravan -->|region| n_region_embervale
+  n_dlg_ash_prophet_sermon -->|context| n_event_warspeaker_falls
+  n_dlg_ash_prophet_sermon -->|speaker| n_char_the_ash_prophet
+  n_dlg_bell_keeper_confession -->|context| n_event_bells_ring_true
+  n_dlg_bell_keeper_confession -->|speaker| n_char_the_bell_keeper
+  n_dlg_broker_at_the_harbor -->|context| n_event_broker_unmasked
+  n_dlg_broker_at_the_harbor -->|speaker| n_char_the_broker
+  n_dlg_clerk_terms -->|context| n_quest_the_clerks_price
+  n_dlg_clerk_terms -->|speaker| n_char_clerk_of_gildmark
+  n_dlg_elder_of_rooktide_welcome -->|context| n_quest_the_first_crossing
+  n_dlg_elder_of_rooktide_welcome -->|speaker| n_char_elder_of_rooktide
   n_dlg_expedition_member_twin_strike_aftermath -->|context| n_event_twin_strike_falls
   n_dlg_expedition_member_twin_strike_aftermath -->|speaker| n_char_expedition_member
+  n_dlg_farrow_at_the_ford -->|context| n_quest_hold_the_ford
+  n_dlg_farrow_at_the_ford -->|speaker| n_char_farrow_the_forward
+  n_dlg_liss_last_letter -->|context| n_quest_the_last_letter
+  n_dlg_liss_last_letter -->|speaker| n_char_liss_of_embervale
+  n_dlg_mirelle_freed -->|context| n_quest_the_bell_keepers_price
+  n_dlg_mirelle_freed -->|speaker| n_char_mirelle
   n_dlg_quartermaster_icefield_briefing -->|context| n_quest_icefield_reckoning
   n_dlg_quartermaster_icefield_briefing -->|speaker| n_char_quartermaster
+  n_dlg_quartermaster_road_of_strangers -->|context| n_quest_the_road_of_strangers
+  n_dlg_quartermaster_road_of_strangers -->|speaker| n_char_quartermaster
+  n_dlg_speaker_of_norhollow_briefing -->|context| n_quest_norhollow_palisade
+  n_dlg_speaker_of_norhollow_briefing -->|speaker| n_char_speaker_of_norhollow
+  n_dlg_war_countess_briefing -->|context| n_quest_embervale_watchfires
+  n_dlg_war_countess_briefing -->|speaker| n_char_war_countess
+  n_dlg_widow_at_the_pyres -->|context| n_event_messengers_burned
+  n_dlg_widow_at_the_pyres -->|speaker| n_char_widow_of_the_first_caravan
+  n_event_bells_ring_true -->|involves| n_char_mirelle
+  n_event_bells_ring_true -->|involves| n_char_the_bell_keeper
+  n_event_bells_ring_true -->|triggeredBy| n_quest_the_bell_keepers_price
+  n_event_broker_unmasked -->|involves| n_char_the_broker
+  n_event_broker_unmasked -->|triggeredBy| n_quest_the_brokers_ledger
+  n_event_clerk_silenced -->|involves| n_char_clerk_of_gildmark
+  n_event_clerk_silenced -->|involves| n_faction_gildmark_council
+  n_event_farrow_falls -->|involves| n_char_farrow_the_forward
+  n_event_farrow_falls -->|involves| n_faction_ashen_column
+  n_event_farrow_falls -->|triggeredBy| n_quest_hold_the_ford
+  n_event_first_caravan_burns -->|involves| n_char_widow_of_the_first_caravan
+  n_event_first_caravan_burns -->|involves| n_faction_gildmark_council
+  n_event_first_caravan_burns -->|involves| n_region_ashvale_front
   n_event_icefield_thornveil_standoff -->|involves| n_faction_stoneguard
   n_event_icefield_thornveil_standoff -->|involves| n_faction_thornveil
   n_event_icefield_thornveil_standoff -->|involves| n_region_icefield
   n_event_icefield_thornveil_standoff -->|triggeredBy| n_quest_icefield_reckoning
+  n_event_ledger_lifted -->|involves| n_char_the_broker
+  n_event_ledger_lifted -->|triggeredBy| n_quest_the_ledger_theft
+  n_event_messengers_burned -->|involves| n_char_widow_of_the_first_caravan
+  n_event_messengers_burned -->|involves| n_region_embervale
+  n_event_quartermaster_falls -->|involves| n_char_quartermaster
+  n_event_quartermaster_falls -->|involves| n_char_widow_of_the_first_caravan
+  n_event_quartermaster_falls -->|triggeredBy| n_quest_ash_in_the_streets
+  n_event_refuge_at_millcross -->|involves| n_faction_expedition
+  n_event_refuge_at_millcross -->|involves| n_region_millcross
+  n_event_relic_deal_struck -->|involves| n_char_iron_regent
+  n_event_relic_deal_struck -->|involves| n_char_the_broker
+  n_event_relic_sale_stopped -->|involves| n_char_iron_regent
+  n_event_relic_sale_stopped -->|triggeredBy| n_quest_the_brink
+  n_event_the_first_crossing -->|involves| n_char_joren_of_norhollow
+  n_event_the_first_crossing -->|involves| n_char_liss_of_embervale
+  n_event_the_first_crossing -->|involves| n_region_rooktide
+  n_event_the_first_crossing -->|triggeredBy| n_quest_the_first_crossing
+  n_event_the_seal_that_matched_no_one -->|involves| n_char_expedition_member
+  n_event_the_seal_that_matched_no_one -->|triggeredBy| n_quest_salvage_run
   n_event_twin_strike_falls -->|involves| n_char_ashfang_alpha
   n_event_twin_strike_falls -->|involves| n_char_expedition_member
   n_event_twin_strike_falls -->|involves| n_region_spawn_meadow
   n_event_twin_strike_falls -->|triggeredBy| n_quest_the_twin_strike
+  n_event_war_declared -->|involves| n_faction_embervale_banner
+  n_event_war_declared -->|involves| n_faction_norhollow_banner
+  n_event_warspeaker_falls -->|involves| n_char_thornveil_war_speaker
+  n_event_warspeaker_falls -->|involves| n_faction_thornveil
+  n_faction_ashen_column -->|relationships| n_faction_embervale_banner
+  n_faction_ashen_column -->|relationships| n_faction_gildmark_council
+  n_faction_ashen_column -->|relationships| n_faction_norhollow_banner
   n_faction_ashfang -->|relationships| n_faction_unaligned
+  n_faction_bellfaith -->|relationships| n_faction_gildmark_council
+  n_faction_embervale_banner -->|relationships| n_faction_gildmark_council
+  n_faction_embervale_banner -->|relationships| n_faction_norhollow_banner
   n_faction_expedition -->|relationships| n_faction_ashfang
+  n_faction_norhollow_banner -->|relationships| n_faction_embervale_banner
+  n_faction_norhollow_banner -->|relationships| n_faction_gildmark_council
   n_faction_unaligned -->|relationships| n_faction_ashfang
+  n_lore_a_decade_of_meals -->|anchor| n_char_quartermaster
+  n_lore_a_fathers_first_letter -->|anchor| n_region_norhollow
+  n_lore_a_fathers_second_letter -->|anchor| n_region_norhollow
+  n_lore_a_harbor_entry -->|anchor| n_region_gildmark
+  n_lore_a_wardens_private_tally -->|anchor| n_faction_bellfaith
+  n_lore_after_the_return_count -->|anchor| n_region_rooktide
+  n_lore_an_entry_without_a_name -->|anchor| n_char_the_broker
+  n_lore_before_the_return_count -->|anchor| n_region_rooktide
   n_lore_first_claim_stone -->|anchor| n_region_icefield
   n_lore_guarded_nothing -->|anchor| n_faction_stoneguard
+  n_lore_jorens_answer -->|anchor| n_char_joren_of_norhollow
+  n_lore_jorens_tally -->|anchor| n_char_joren_of_norhollow
+  n_lore_lisss_first_letter -->|anchor| n_char_liss_of_embervale
+  n_lore_lisss_second_letter -->|anchor| n_char_liss_of_embervale
+  n_lore_millcross_by_the_numbers -->|anchor| n_region_millcross
+  n_lore_the_bell_keepers_schedule -->|anchor| n_char_the_bell_keeper
+  n_lore_the_cindered_count -->|anchor| n_region_cindervast
+  n_lore_the_crossing_post -->|anchor| n_region_ashvale_front
+  n_lore_the_elders_first_plank -->|anchor| n_char_elder_of_rooktide
+  n_lore_the_elders_tally_of_who_stayed -->|anchor| n_char_elder_of_rooktide
+  n_lore_the_fathers_postage_paid -->|anchor| n_region_ashvale_front
+  n_lore_the_first_caravans_manifest -->|anchor| n_event_first_caravan_burns
+  n_lore_the_first_tally -->|anchor| n_char_quartermaster
+  n_lore_the_last_reply -->|anchor| n_region_ashvale_front
+  n_lore_the_meadows_first_count -->|anchor| n_region_spawn_meadow
+  n_lore_the_millcross_relay -->|anchor| n_region_millcross
+  n_lore_the_night_the_road_filled -->|anchor| n_event_refuge_at_millcross
+  n_lore_the_riders_account -->|anchor| n_char_the_broker
+  n_lore_the_seal_log -->|anchor| n_char_the_bell_keeper
+  n_lore_the_second_harbor_entry -->|anchor| n_region_gildmark
+  n_lore_the_second_wardens_tally -->|anchor| n_faction_bellfaith
+  n_lore_the_shelf_still_remembers -->|anchor| n_region_icefield
+  n_lore_the_tower_that_doesnt_answer -->|anchor| n_region_gildmark
+  n_lore_the_tyrants_last_order -->|anchor| n_region_cindervast
+  n_lore_the_unfinished_page -->|anchor| n_char_quartermaster
+  n_lore_what_the_prophet_carries -->|anchor| n_char_the_ash_prophet
+  n_quest_a_face_for_gildmark -->|arcId| n_arc_ledger_game
+  n_quest_a_face_for_gildmark -->|faction| n_faction_gildmark_council
+  n_quest_a_face_for_gildmark -->|giver| n_char_warden_bright
+  n_quest_a_face_for_gildmark -->|region| n_region_gildmark
+  n_quest_a_face_for_gildmark -->|unlockedBy| n_act_3
+  n_quest_a_face_for_gildmark -->|unlockedBy| n_event_the_seal_that_matched_no_one
+  n_quest_a_stall_rebuilt -->|arcId| n_arc_embers_that_remain
+  n_quest_a_stall_rebuilt -->|faction| n_faction_expedition
+  n_quest_a_stall_rebuilt -->|giver| n_char_elder_of_rooktide
+  n_quest_a_stall_rebuilt -->|region| n_region_millcross
+  n_quest_a_stall_rebuilt -->|unlockedBy| n_act_4
+  n_quest_ash_in_the_streets -->|arcId| n_arc_truth_arrives_late
+  n_quest_ash_in_the_streets -->|faction| n_faction_embervale_banner
+  n_quest_ash_in_the_streets -->|giver| n_char_quartermaster
+  n_quest_ash_in_the_streets -->|region| n_region_millcross
+  n_quest_ash_in_the_streets -->|unlockedBy| n_quest_the_bell_keepers_price
   n_quest_cull_the_packs -->|arcId| n_arc_meadow_awakening
   n_quest_cull_the_packs -->|faction| n_faction_ashfang
   n_quest_cull_the_packs -->|giver| n_char_quartermaster
   n_quest_cull_the_packs -->|region| n_region_spawn_meadow
   n_quest_cull_the_packs -->|unlockedBy| n_quest_first_steps
+  n_quest_embervale_watchfires -->|arcId| n_arc_embervale_outskirts
+  n_quest_embervale_watchfires -->|faction| n_faction_ashfang
+  n_quest_embervale_watchfires -->|giver| n_char_war_countess
+  n_quest_embervale_watchfires -->|region| n_region_embervale
   n_quest_first_steps -->|arcId| n_arc_meadow_awakening
   n_quest_first_steps -->|faction| n_faction_unaligned
   n_quest_first_steps -->|giver| n_char_quartermaster
   n_quest_first_steps -->|region| n_region_spawn_meadow
+  n_quest_hold_the_ford -->|arcId| n_arc_war_comes_home
+  n_quest_hold_the_ford -->|faction| n_faction_ashen_column
+  n_quest_hold_the_ford -->|giver| n_char_farrow_the_forward
+  n_quest_hold_the_ford -->|region| n_region_ashvale_front
+  n_quest_hold_the_ford -->|unlockedBy| n_quest_salvage_run
   n_quest_icefield_reckoning -->|arcId| n_arc_icefield_reckoning
   n_quest_icefield_reckoning -->|faction| n_faction_stoneguard
   n_quest_icefield_reckoning -->|giver| n_char_quartermaster
   n_quest_icefield_reckoning -->|region| n_region_icefield
   n_quest_icefield_reckoning -->|unlockedBy| n_quest_the_twin_strike
+  n_quest_letters_already_opened -->|arcId| n_arc_norhollow_outskirts
+  n_quest_letters_already_opened -->|faction| n_faction_gildmark_council
+  n_quest_letters_already_opened -->|giver| n_char_speaker_of_norhollow
+  n_quest_letters_already_opened -->|region| n_region_norhollow
+  n_quest_letters_already_opened -->|unlockedBy| n_quest_norhollow_palisade
+  n_quest_norhollow_palisade -->|arcId| n_arc_norhollow_outskirts
+  n_quest_norhollow_palisade -->|faction| n_faction_unaligned
+  n_quest_norhollow_palisade -->|giver| n_char_speaker_of_norhollow
+  n_quest_norhollow_palisade -->|region| n_region_norhollow
+  n_quest_out_the_harbor_gate -->|arcId| n_arc_ledger_game
+  n_quest_out_the_harbor_gate -->|faction| n_faction_gildmark_council
+  n_quest_out_the_harbor_gate -->|giver| n_char_warden_bright
+  n_quest_out_the_harbor_gate -->|region| n_region_gildmark
+  n_quest_out_the_harbor_gate -->|unlockedBy| n_quest_the_ledger_theft
+  n_quest_salvage_and_medals -->|arcId| n_arc_small_mercies
+  n_quest_salvage_and_medals -->|faction| n_faction_unaligned
+  n_quest_salvage_and_medals -->|giver| n_char_quartermaster
+  n_quest_salvage_and_medals -->|region| n_region_ashvale_front
+  n_quest_salvage_and_medals -->|unlockedBy| n_act_2
+  n_quest_salvage_run -->|arcId| n_arc_war_comes_home
+  n_quest_salvage_run -->|faction| n_faction_unaligned
+  n_quest_salvage_run -->|giver| n_char_quartermaster
+  n_quest_salvage_run -->|region| n_region_ashvale_front
+  n_quest_salvage_run -->|unlockedBy| n_quest_the_road_of_strangers
+  n_quest_the_bell_keepers_price -->|arcId| n_arc_truth_arrives_late
+  n_quest_the_bell_keepers_price -->|faction| n_faction_bellfaith
+  n_quest_the_bell_keepers_price -->|giver| n_char_warden_bright
+  n_quest_the_bell_keepers_price -->|region| n_region_gildmark
+  n_quest_the_bell_keepers_price -->|unlockedBy| n_act_4
+  n_quest_the_bell_keepers_price -->|unlockedBy| n_event_ledger_lifted
+  n_quest_the_bells_that_wont_stop -->|arcId| n_arc_small_mercies
+  n_quest_the_bells_that_wont_stop -->|faction| n_faction_expedition
+  n_quest_the_bells_that_wont_stop -->|giver| n_char_quartermaster
+  n_quest_the_bells_that_wont_stop -->|region| n_region_millcross
+  n_quest_the_bells_that_wont_stop -->|unlockedBy| n_act_2
+  n_quest_the_brink -->|arcId| n_arc_the_undertow
+  n_quest_the_brink -->|faction| n_faction_gildmark_council
+  n_quest_the_brink -->|giver| n_char_warden_bright
+  n_quest_the_brink -->|region| n_region_gildmark
+  n_quest_the_brink -->|unlockedBy| n_act_5
+  n_quest_the_brink -->|unlockedBy| n_event_relic_deal_struck
+  n_quest_the_brokers_ledger -->|arcId| n_arc_the_undertow
+  n_quest_the_brokers_ledger -->|faction| n_faction_gildmark_council
+  n_quest_the_brokers_ledger -->|giver| n_char_elder_of_rooktide
+  n_quest_the_brokers_ledger -->|region| n_region_gildmark
+  n_quest_the_brokers_ledger -->|unlockedBy| n_quest_the_brink
+  n_quest_the_clerks_price -->|arcId| n_arc_ledger_game
+  n_quest_the_clerks_price -->|faction| n_faction_gildmark_council
+  n_quest_the_clerks_price -->|giver| n_char_clerk_of_gildmark
+  n_quest_the_clerks_price -->|region| n_region_gildmark
+  n_quest_the_clerks_price -->|unlockedBy| n_quest_a_face_for_gildmark
+  n_quest_the_deserters_name -->|arcId| n_arc_embers_that_remain
+  n_quest_the_deserters_name -->|faction| n_faction_norhollow_banner
+  n_quest_the_deserters_name -->|giver| n_char_speaker_of_norhollow
+  n_quest_the_deserters_name -->|region| n_region_norhollow
+  n_quest_the_deserters_name -->|unlockedBy| n_act_4
+  n_quest_the_first_crossing -->|arcId| n_arc_the_undertow
+  n_quest_the_first_crossing -->|faction| n_faction_norhollow_banner
+  n_quest_the_first_crossing -->|giver| n_char_elder_of_rooktide
+  n_quest_the_first_crossing -->|region| n_region_rooktide
+  n_quest_the_first_crossing -->|unlockedBy| n_event_bells_ring_true
+  n_quest_the_first_crossing -->|unlockedBy| n_quest_the_brokers_ledger
+  n_quest_the_last_letter -->|arcId| n_arc_small_mercies
+  n_quest_the_last_letter -->|faction| n_faction_unaligned
+  n_quest_the_last_letter -->|giver| n_char_liss_of_embervale
+  n_quest_the_last_letter -->|region| n_region_ashvale_front
+  n_quest_the_last_letter -->|unlockedBy| n_act_2
+  n_quest_the_last_letter -->|unlockedBy| n_event_farrow_falls
+  n_quest_the_ledger_theft -->|arcId| n_arc_ledger_game
+  n_quest_the_ledger_theft -->|faction| n_faction_gildmark_council
+  n_quest_the_ledger_theft -->|giver| n_char_clerk_of_gildmark
+  n_quest_the_ledger_theft -->|region| n_region_gildmark
+  n_quest_the_ledger_theft -->|unlockedBy| n_quest_the_clerks_price
+  n_quest_the_letter_that_arrived -->|arcId| n_arc_embers_that_remain
+  n_quest_the_letter_that_arrived -->|faction| n_faction_norhollow_banner
+  n_quest_the_letter_that_arrived -->|giver| n_char_joren_of_norhollow
+  n_quest_the_letter_that_arrived -->|region| n_region_norhollow
+  n_quest_the_letter_that_arrived -->|unlockedBy| n_act_4
+  n_quest_the_road_of_strangers -->|arcId| n_arc_war_comes_home
+  n_quest_the_road_of_strangers -->|faction| n_faction_expedition
+  n_quest_the_road_of_strangers -->|giver| n_char_quartermaster
+  n_quest_the_road_of_strangers -->|region| n_region_millcross
+  n_quest_the_road_of_strangers -->|unlockedBy| n_act_2
   n_quest_the_twin_strike -->|arcId| n_arc_meadow_awakening
   n_quest_the_twin_strike -->|faction| n_faction_unaligned
   n_quest_the_twin_strike -->|giver| n_char_quartermaster
   n_quest_the_twin_strike -->|region| n_region_spawn_meadow
   n_quest_the_twin_strike -->|unlockedBy| n_quest_cull_the_packs
+  n_quest_the_unmarked_crates -->|arcId| n_arc_embervale_outskirts
+  n_quest_the_unmarked_crates -->|faction| n_faction_gildmark_council
+  n_quest_the_unmarked_crates -->|giver| n_char_war_countess
+  n_quest_the_unmarked_crates -->|region| n_region_embervale
+  n_quest_the_unmarked_crates -->|unlockedBy| n_quest_embervale_watchfires
+  n_quest_two_plates_at_dusk -->|arcId| n_arc_small_mercies
+  n_quest_two_plates_at_dusk -->|faction| n_faction_embervale_banner
+  n_quest_two_plates_at_dusk -->|giver| n_char_war_countess
+  n_quest_two_plates_at_dusk -->|region| n_region_embervale
+  n_quest_two_plates_at_dusk -->|unlockedBy| n_act_2
+  n_quest_what_the_mob_left -->|arcId| n_arc_truth_arrives_late
+  n_quest_what_the_mob_left -->|faction| n_faction_expedition
+  n_quest_what_the_mob_left -->|giver| n_char_expedition_member
+  n_quest_what_the_mob_left -->|region| n_region_millcross
+  n_quest_what_the_mob_left -->|unlockedBy| n_event_quartermaster_falls
 ```

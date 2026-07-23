@@ -30,12 +30,14 @@
     "narrative": {
       "description": "Ashfang brutes are testing the tent line.",
       "offerText": "Thin the Ashfang packs before they mass.",
-      "completeText": "The charge is broken \u2014 for now."
+      "completeText": "The charge is broken — for now."
     },
     "giver": "char-quartermaster",
     "region": "region-spawn-meadow",
     "faction": "faction-ashfang",
-    "unlockedBy": ["quest-first-steps"],
+    "unlockedBy": [
+      "quest-first-steps"
+    ],
     "arcId": "arc-meadow-awakening",
     "objectives": [
       {
@@ -59,7 +61,9 @@
     "giver": "char-quartermaster",
     "region": "region-spawn-meadow",
     "faction": "faction-unaligned",
-    "unlockedBy": ["quest-cull-the-packs"],
+    "unlockedBy": [
+      "quest-cull-the-packs"
+    ],
     "arcId": "arc-meadow-awakening",
     "objectives": [
       {
@@ -83,13 +87,638 @@
     "giver": "char-quartermaster",
     "region": "region-icefield",
     "faction": "faction-stoneguard",
-    "unlockedBy": ["quest-the-twin-strike"],
+    "unlockedBy": [
+      "quest-the-twin-strike"
+    ],
     "arcId": "arc-icefield-reckoning",
     "objectives": [
       {
         "type": "MOB_KILLED",
         "targetId": "mob:defensive",
         "count": 4
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-embervale-watchfires",
+    "kind": "quest",
+    "title": "Watchfires",
+    "summary": "Hold Embervale's west wall and keep the watchfires lit through the night.",
+    "narrative": {
+      "description": "The west wall held last night. The Countess wants it doubled anyway — something has been prowling past the tree line for a week, closer every night, and nobody on the wall has slept well since.",
+      "offerText": "Walk the wall, keep the fires lit, and cut down whatever's out past the tree line before it comes closer.",
+      "completeText": "The fires held. That's one more night the wall didn't have to prove itself twice."
+    },
+    "giver": "char-war-countess",
+    "region": "region-embervale",
+    "faction": "faction-ashfang",
+    "arcId": "arc-embervale-outskirts",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:aggressive",
+        "count": 4
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-unmarked-crates",
+    "kind": "quest",
+    "title": "The Unmarked Crates",
+    "summary": "Walk Gildmark's latest wagons in from the crossroads and log what comes through the gate.",
+    "narrative": {
+      "description": "Three wagons came up the Gildmark road before dawn, and not one crate on them carries a maker's mark, same as the ones before them. The Countess wants them counted through the gate and logged, nothing more asked. She didn't say why. Nobody's asked a Gildmark wagon a question in years. Nobody's ever gotten an answer worth the walk back.",
+      "offerText": "Walk the wagons in from the crossroads to the gate. Count the crates. Keep the road clear of anything that isn't a wagon.",
+      "completeText": "Thirty-one crates, no mark on any of them, logged and stacked behind the armory same as the ones before. The Countess signed the tally without looking up. Nobody in the yard asked what was inside. Nobody ever does."
+    },
+    "giver": "char-war-countess",
+    "region": "region-embervale",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": [
+      "quest-embervale-watchfires"
+    ],
+    "arcId": "arc-embervale-outskirts",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:balanced",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-norhollow-palisade",
+    "kind": "quest",
+    "title": "The Palisade Line",
+    "summary": "Walk Norhollow's palisade and reset the stakes the frost has worked loose.",
+    "narrative": {
+      "description": "The Speaker keeps her counts on a knotted cord at her belt — nine notches for the west stakes, three for the near ones. She wants the line walked and the stakes checked before she'll say anything else about it.",
+      "offerText": "Walk the palisade. Reset what needs resetting. Kill anything that comes near after dark.",
+      "completeText": "Nine notches, still nine notches. She counted them twice before she said it held. That's as close as she comes to relief out loud."
+    },
+    "giver": "char-speaker-of-norhollow",
+    "region": "region-norhollow",
+    "faction": "faction-unaligned",
+    "arcId": "arc-norhollow-outskirts",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 4
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-letters-already-opened",
+    "kind": "quest",
+    "title": "Letters Already Opened",
+    "summary": "Carry the week's mail in from the relay post, seals and all.",
+    "narrative": {
+      "description": "Three letters came up the coastal road this week, same as always, and all three arrived with their seals broken and pressed shut again. The Speaker reads them anyway. She stopped mentioning it to anyone but the courier a while back. Now she's mentioning it to you.",
+      "offerText": "Walk the relay road, bring the mail in, and kill anything that attacks the escort.",
+      "completeText": "The letters are on her desk, same as every week. She didn't ask who broke the seals this time either. She just reads what's left to read."
+    },
+    "giver": "char-speaker-of-norhollow",
+    "region": "region-norhollow",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": [
+      "quest-norhollow-palisade"
+    ],
+    "arcId": "arc-norhollow-outskirts",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:double_attacker",
+        "count": 2
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-road-of-strangers",
+    "kind": "quest",
+    "title": "The Road of Strangers",
+    "summary": "War is declared, and Millcross fills with people who left everything behind.",
+    "narrative": {
+      "description": "The road into Millcross hasn't stopped moving since the war was declared. Wagons, handcarts, whole families on foot — the Quartermaster counts them in blankets and tent poles now, not names, because there isn't time for names. Something's been following the slower carts in from the dark.",
+      "offerText": "Meet the road at the gate. Get the wounded to the tents, the families to the fire, and put down anything that followed them in.",
+      "completeText": "The gate's quiet for tonight. There'll be more tomorrow. She's already counting tent poles for them — she doesn't have time to do anything else with it."
+    },
+    "giver": "char-quartermaster",
+    "region": "region-millcross",
+    "faction": "faction-expedition",
+    "unlockedBy": [
+      "act-2"
+    ],
+    "arcId": "arc-war-comes-home",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:balanced",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-salvage-run",
+    "kind": "quest",
+    "title": "Salvage Run",
+    "summary": "Recover what's left of the burned caravan on the Ashvale road, seal and all.",
+    "narrative": {
+      "description": "A wrecked wagon sits half-buried in ash out past the ford, untouched since the first caravan burned. The Quartermaster wants it searched before soldiers or scavengers strip it clean — every buckle, every scrap of canvas, every seal that's still readable.",
+      "offerText": "Search the wreck. Bring back anything with a maker's mark still on it, and clear the ground of anything that's made a den in it.",
+      "completeText": "One seal came back whole. It doesn't match Embervale's mark. It doesn't match Norhollow's either. The Quartermaster turns it over twice before she says anything. Then: keep this out of sight until she says otherwise."
+    },
+    "giver": "char-quartermaster",
+    "region": "region-ashvale-front",
+    "faction": "faction-unaligned",
+    "unlockedBy": [
+      "quest-the-road-of-strangers"
+    ],
+    "arcId": "arc-war-comes-home",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:double_attacker",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-hold-the-ford",
+    "kind": "quest",
+    "title": "Hold the Ford",
+    "summary": "Farrow takes the line at the ford to buy the last of the refugee column time to cross.",
+    "narrative": {
+      "description": "The Ashen Column has found the ford before the last wagons clear it. Farrow's taking the near bank himself — he says someone has to walk point, same as always. He wants the crossing held until the last wagon's over, whatever that costs.",
+      "offerText": "Hold the ford. Keep the raiders off the column until every wagon's across. Farrow goes first — stay with him.",
+      "completeText": "The last wagon crossed. Farrow didn't. He went down holding the near bank, and the column never even saw it happen — they were already climbing the far side, counting their own numbers, not his."
+    },
+    "giver": "char-farrow-the-forward",
+    "region": "region-ashvale-front",
+    "faction": "faction-ashen-column",
+    "unlockedBy": [
+      "quest-salvage-run"
+    ],
+    "arcId": "arc-war-comes-home",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:aggressive",
+        "count": 6
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-a-face-for-gildmark",
+    "kind": "quest",
+    "title": "A Face for Gildmark",
+    "summary": "Wear a name the Harbor Council has never priced, and get inside Gildmark as someone worth nothing to watch.",
+    "narrative": {
+      "description": "Warden Bright has papers ready — a name, a trade, a reason to stand near the ledger house that isn't 'spy.' The Council watches every face it's already seen twice. This face, it hasn't seen once.",
+      "offerText": "Take the papers. Wear the name. Work the dock shift they buy you, and clear the toughs testing the new hire, until the ledger house stops looking twice.",
+      "completeText": "The papers held at the gate. Nobody asked a second question. You have a name now that isn't yours, and a reason to stand exactly where the ledger house can see you."
+    },
+    "giver": "char-warden-bright",
+    "region": "region-gildmark",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": [
+      "act-3",
+      "event-the-seal-that-matched-no-one"
+    ],
+    "arcId": "arc-ledger-game",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-clerks-price",
+    "kind": "quest",
+    "title": "The Clerk's Price",
+    "summary": "Meet the Clerk of Gildmark on his own terms, and hear what he wants for what he knows.",
+    "narrative": {
+      "description": "The Clerk of Gildmark has seen the ledgers that matter, and he's done carrying what he's seen alone. He'll talk — for a price, and only somewhere the Council doesn't listen.",
+      "offerText": "Meet the Clerk where he names. Hear his price. Keep whoever's watching him off his back until he's said it.",
+      "completeText": "He named his price, low enough that it was never about the coin. That should have been the first thing that worried you."
+    },
+    "giver": "char-clerk-of-gildmark",
+    "region": "region-gildmark",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": [
+      "quest-a-face-for-gildmark"
+    ],
+    "arcId": "arc-ledger-game",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 2
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-ledger-theft",
+    "kind": "quest",
+    "title": "The Ledger Theft",
+    "summary": "Follow the Clerk's watch-schedule into the vault room and copy the page that names names.",
+    "narrative": {
+      "description": "The Clerk has a way into the vault room — one night, one watch rotation, one page the Council never meant seen. After tonight, the ledger says something true that the Council didn't choose to say.",
+      "offerText": "Follow the Clerk's watch-schedule into the vault room. Copy the page he marks. Get clear before the next round comes through.",
+      "completeText": "The page is copied and the vault door's shut behind you same as you found it. For the first time, the ledger says something true the Council never chose to write."
+    },
+    "giver": "char-clerk-of-gildmark",
+    "region": "region-gildmark",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": [
+      "quest-the-clerks-price"
+    ],
+    "arcId": "arc-ledger-game",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 4
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-out-the-harbor-gate",
+    "kind": "quest",
+    "title": "Out the Harbor Gate",
+    "summary": "Get the copied page past the harbor gate before the Council thinks to close it.",
+    "narrative": {
+      "description": "The vault's missing page will be counted by morning. Warden Bright wants the proof out the harbor gate before the Council closes it — and the papers that got you in won't get you back out twice.",
+      "offerText": "Get the copied page past the harbor gate before the watch changes. Clear anything standing between you and the road out.",
+      "completeText": "The gate's behind you, and the page is in Warden Bright's hands. Gildmark hasn't noticed yet what it's missing. It will."
+    },
+    "giver": "char-warden-bright",
+    "region": "region-gildmark",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": [
+      "quest-the-ledger-theft"
+    ],
+    "arcId": "arc-ledger-game",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 5
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-bell-keepers-price",
+    "kind": "quest",
+    "title": "The Bell-Keeper's Price",
+    "summary": "Free the Bell-Keeper's daughter, and find out what he's been trading for her safety.",
+    "narrative": {
+      "description": "The ledger names an office, never a man. Warden Bright has found the man anyway — under the bell tower, the Bell-Keeper keeps a daughter closer than any daughter should be kept, and the Council keeps her closer still. Get her out, and he might finally ring something true.",
+      "offerText": "Get into the tower district. Find where Mirelle is kept. Bring her out before the Council notices the door's open.",
+      "completeText": "Mirelle came out from under the tower into open air and didn't say much for the first mile. Behind you, the assembly bell rang, and for the first time in years, the proclamation read out beneath it was the true one."
+    },
+    "giver": "char-warden-bright",
+    "region": "region-gildmark",
+    "faction": "faction-bellfaith",
+    "unlockedBy": [
+      "act-4",
+      "event-ledger-lifted"
+    ],
+    "arcId": "arc-truth-arrives-late",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-ash-in-the-streets",
+    "kind": "quest",
+    "title": "Ash in the Streets",
+    "summary": "The bells rang true, and the Widow's answer is fire in Millcross's streets.",
+    "narrative": {
+      "description": "The proclamation reached every tower by midday, and by evening the Widow's people are burning it in the streets — and burning the ones who carried it. The refugee tents at the crossroads sit dead in the mob's path. The Quartermaster isn't asking anyone to be brave. She's asking them to stand between the tents and the fire.",
+      "offerText": "Hold the crossroads. Keep the mob off the tents until the last refugee is clear.",
+      "completeText": "The tents held. The Quartermaster didn't."
+    },
+    "giver": "char-quartermaster",
+    "region": "region-millcross",
+    "faction": "faction-embervale-banner",
+    "unlockedBy": [
+      "quest-the-bell-keepers-price"
+    ],
+    "arcId": "arc-truth-arrives-late",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:aggressive",
+        "count": 6
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-what-the-mob-left",
+    "kind": "quest",
+    "title": "What the Mob Left",
+    "summary": "Bury the Quartermaster, and read what she never got to finish.",
+    "narrative": {
+      "description": "The crossroads is quiet again, the way a place goes quiet after a fire burns out on its own. She was the one who stayed at camp so the others could leave it — today, for the last time, she doesn't get to leave either. Someone has to see her buried. Someone has to go through the log she kept, because she never once let anyone else touch it while she was breathing.",
+      "offerText": "See her buried at the crossroads. Clear what's left prowling the ash before the mourners have to.",
+      "completeText": "The log is the last thing you touch. Meals counted, miles counted, names counted, all the way to a page that stops mid-line — the way any list stops when the one keeping it doesn't get to finish."
+    },
+    "giver": "char-expedition-member",
+    "region": "region-millcross",
+    "faction": "faction-expedition",
+    "unlockedBy": [
+      "event-quartermaster-falls"
+    ],
+    "arcId": "arc-truth-arrives-late",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:balanced",
+        "count": 2
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-brink",
+    "kind": "quest",
+    "title": "The Brink",
+    "summary": "The relic sale closes at high tide tonight, or it doesn't close at all.",
+    "narrative": {
+      "description": "The deal is struck; Warden Bright has the schedule anyway, pulled from inside the Council's own tower. One route, one warehouse, one tide window before the crate is aboard a Gildmark ship and past anyone's reach. The Iron Regent's men move at dusk.",
+      "offerText": "Get to the harbor warehouse before the tide turns. Stop the crate before it touches the water.",
+      "completeText": "The crate never touches the water. Nobody's calling it won — the Iron Regent's men walk off the dock still standing, and so does he."
+    },
+    "giver": "char-warden-bright",
+    "region": "region-gildmark",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": [
+      "act-5",
+      "event-relic-deal-struck"
+    ],
+    "arcId": "arc-the-undertow",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 6
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-brokers-ledger",
+    "kind": "quest",
+    "title": "The Broker's Ledger",
+    "summary": "A stopped crate isn't proof. The ledger still only names an office, and someone has to make it name a man.",
+    "narrative": {
+      "description": "The crate never sailed, but the ledger still says 'the Council,' the way it always has — every hand left in the tower answers to someone the Broker pays. The Elder of Rooktide came to Gildmark to beg harbor passage for wounded that her town hasn't taken in yet, and finds herself holding the one page that names a man instead of an office. Nobody in Gildmark can buy an outsider who wants nothing from them.",
+      "offerText": "Get the ledger page out of the tower and into the harbor square, where it can be read aloud before anyone seals it shut again.",
+      "completeText": "The page reaches the square. It doesn't name the Council. It names a man."
+    },
+    "giver": "char-elder-of-rooktide",
+    "region": "region-gildmark",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": [
+      "quest-the-brink"
+    ],
+    "arcId": "arc-the-undertow",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-first-crossing",
+    "kind": "quest",
+    "title": "The First Crossing",
+    "summary": "No treaty called anyone home. Rooktide just opened its gate — and the road there has to hold.",
+    "narrative": {
+      "description": "No treaty called anyone home. Rooktide just opened its gate and said it would take the wounded, from either side, no questions asked at the door. The road hasn't been walked safely in two seasons — the war left its residue prowling the verges same as everywhere else. Someone has to clear it before the first wagons risk it.",
+      "offerText": "Clear the road to Rooktide. Wounded and letters are coming through from both sides, and the road has to hold them.",
+      "completeText": "The road holds. The first wagons come through before dusk — mourning-cloth on one, palisade furs on the other — and nobody at Rooktide's gate asks which was which."
+    },
+    "giver": "char-elder-of-rooktide",
+    "region": "region-rooktide",
+    "faction": "faction-norhollow-banner",
+    "unlockedBy": [
+      "quest-the-brokers-ledger",
+      "event-bells-ring-true"
+    ],
+    "arcId": "arc-the-undertow",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:defensive",
+        "count": 2
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-bells-that-wont-stop",
+    "kind": "quest",
+    "title": "The Bells That Won't Stop",
+    "summary": "A man at the tent line still hears the ford's bell in his ears. Clear his watch post so he can sleep one night through.",
+    "narrative": {
+      "description": "One of the camp's own can't stop hearing the ford's bell. Every clang near the tent line drops him flat, hand out for a knife that isn't there anymore. The Quartermaster wants the ground near his watch post cleared quiet, tonight, so he can sleep through one bell that never rings.",
+      "offerText": "Clear the ground near his watch post. Keep it quiet till morning.",
+      "completeText": "He slept. Not through the whole night — nobody sleeps through a whole night out here — but longer than he has in weeks. The bells didn't stop. He just didn't hear them for a while."
+    },
+    "giver": "char-quartermaster",
+    "region": "region-millcross",
+    "faction": "faction-expedition",
+    "unlockedBy": [
+      "act-2"
+    ],
+    "arcId": "arc-small-mercies",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:balanced",
+        "count": 2
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-two-plates-at-dusk",
+    "kind": "quest",
+    "title": "Two Plates at Dusk",
+    "summary": "Every seventh evening, a woman past the armory cooks for a son she already buried. Clear the road so she can walk it and back before dark.",
+    "narrative": {
+      "description": "Every seventh evening, a woman on the row past the armory sets two plates and cooks enough for two. Her son is in the ground at the crossroads — she was at the burial. The Countess isn't asking anyone to tell her different. She's asking someone to keep the road to the crossroads clear, so she can walk out and back before dark, same as every week.",
+      "offerText": "Walk the road to the crossroads grave and back with her. Keep it clear till she's home.",
+      "completeText": "She set his plate at the empty chair, same as always, and ate across from it without a word. Nobody asked her to stop. Nobody's going to."
+    },
+    "giver": "char-war-countess",
+    "region": "region-embervale",
+    "faction": "faction-embervale-banner",
+    "unlockedBy": [
+      "act-2"
+    ],
+    "arcId": "arc-small-mercies",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 2
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-last-letter",
+    "kind": "quest",
+    "title": "The Last Letter",
+    "summary": "A letter written three weeks before the ford still has to cross the line, even though the death notice already has.",
+    "narrative": {
+      "description": "The dead don't send mail, but their letters sometimes outlast them. Liss has one in her hand written three weeks before the ford — before the family in Norhollow already got the notice that says he isn't coming home. It has to cross the front same as anything else does now: on foot, past whatever's using the war ground for cover.",
+      "offerText": "Carry Liss's letter across the front to Norhollow. Get it to Joren — he'll know the family, and he'll know how to put it in her hands.",
+      "completeText": "Joren read it to her himself, at her own table, because she asked him to and couldn't do it herself. The letter didn't change anything the notice already said. She kept it anyway."
+    },
+    "giver": "char-liss-of-embervale",
+    "region": "region-ashvale-front",
+    "faction": "faction-unaligned",
+    "unlockedBy": [
+      "act-2",
+      "event-farrow-falls"
+    ],
+    "arcId": "arc-small-mercies",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:double_attacker",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-salvage-and-medals",
+    "kind": "quest",
+    "title": "Salvage and Medals",
+    "summary": "A boy works the old battle line for scrap to sell. He sells all of it but one medal, pinned inside his coat where nobody's meant to notice.",
+    "narrative": {
+      "description": "A boy no older than twelve has worked the old battle line since the thaw, dragging back buckles and buttons and whatever scrap still carries a price at Millcross. He sells all of it. All but one medal, pinned inside his coat where the Quartermaster's seen it and never once asked. She wants the ground past his usual range checked before he pushes further out for more.",
+      "offerText": "Clear the salvage ground past his range. Don't ask him about the medal.",
+      "completeText": "He came back with a full sack and sold every piece in it by evening. The medal stayed pinned where it always is. Nobody's bought it yet. Nobody's going to."
+    },
+    "giver": "char-quartermaster",
+    "region": "region-ashvale-front",
+    "faction": "faction-unaligned",
+    "unlockedBy": [
+      "act-2"
+    ],
+    "arcId": "arc-small-mercies",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:aggressive",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-deserters-name",
+    "kind": "quest",
+    "title": "The Deserter's Name",
+    "summary": "Every list Norhollow keeps has his name on it twice — once with the dead, once next to a word nobody says out loud.",
+    "narrative": {
+      "description": "Every list Norhollow keeps has his name on it twice — once with the dead, once with a word nobody says out loud next to it. He walked off the line rather than fire into a column that turned out to be civilians, and the town's decided which of those two facts matters. He's still camped past the palisade, alone, because he won't come back in and won't leave either.",
+      "offerText": "Walk out to his camp. Clear what's been circling it, and don't repeat in town whatever he tells you.",
+      "completeText": "He didn't ask for anyone to change the town's mind. He asked for the wolves off his fire for one more week. That's what he got."
+    },
+    "giver": "char-speaker-of-norhollow",
+    "region": "region-norhollow",
+    "faction": "faction-norhollow-banner",
+    "unlockedBy": [
+      "act-4"
+    ],
+    "arcId": "arc-embers-that-remain",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:defensive",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-a-stall-rebuilt",
+    "kind": "quest",
+    "title": "A Stall Rebuilt",
+    "summary": "The bread-stall at the crossroads burned with half the row it stood in. The Elder of Rooktide knows the look — she's offering to hold the ladder.",
+    "narrative": {
+      "description": "The bread-stall at the crossroads burned with half the row it stood in, and the woman who ran it hasn't put a plank back up since. The Elder of Rooktide knows the look — a whole town wore it once, hers. She isn't offering money. She's offering to hold the ladder.",
+      "offerText": "Clear the burned lot of anything nesting in the wreckage, then help raise the frame.",
+      "completeText": "The frame went up before dark, plank by mismatched plank — half of it salvaged, half of it new, the way Rooktide itself was built back. She hung a sign on it before the paint was even dry: OPEN."
+    },
+    "giver": "char-elder-of-rooktide",
+    "region": "region-millcross",
+    "faction": "faction-expedition",
+    "unlockedBy": [
+      "act-4"
+    ],
+    "arcId": "arc-embers-that-remain",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:balanced",
+        "count": 2
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-letter-that-arrived",
+    "kind": "quest",
+    "title": "The Letter That Arrived",
+    "summary": "A letter reaches a Norhollow doorstep in her husband's hand, posted before the front closed the road for good — and gets there before the worst news can.",
+    "narrative": {
+      "description": "A letter came through today addressed to a woman two doors down, in a hand she'd know anywhere — her husband's, posted before the front closed the road for good. Joren's held plenty of letters that came too late to matter. This one, for once, made it before the worst news could.",
+      "offerText": "Walk the letter to her door yourself. Keep the road there clear till it's delivered.",
+      "completeText": "She read it on her own doorstep, out loud, to no one in particular. Whatever happens to him after this, that letter got there first. Joren counted that as a win, out loud, for the first time in longer than he could say."
+    },
+    "giver": "char-joren-of-norhollow",
+    "region": "region-norhollow",
+    "faction": "faction-norhollow-banner",
+    "unlockedBy": [
+      "act-4"
+    ],
+    "arcId": "arc-embers-that-remain",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 2
       }
     ],
     "links": []

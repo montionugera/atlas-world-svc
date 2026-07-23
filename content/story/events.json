@@ -26,5 +26,191 @@
       "region-icefield"
     ],
     "triggeredBy": "quest-icefield-reckoning"
+  },
+  {
+    "id": "event-first-caravan-burns",
+    "kind": "event",
+    "title": "The First Caravan Burns",
+    "summary": "A caravan burns on the Ashvale road at dawn, and each side of the plain is already certain who lit it.",
+    "links": [],
+    "timelineOrder": 2,
+    "involves": [
+      "region-ashvale-front",
+      "faction-gildmark-council",
+      "char-widow-of-the-first-caravan"
+    ]
+  },
+  {
+    "id": "event-war-declared",
+    "kind": "event",
+    "title": "War Declared",
+    "summary": "Embervale and Norhollow name each other the enemy, and the Ashvale plain becomes a front.",
+    "links": [],
+    "timelineOrder": 4,
+    "involves": [
+      "faction-embervale-banner",
+      "faction-norhollow-banner"
+    ]
+  },
+  {
+    "id": "event-refuge-at-millcross",
+    "kind": "event",
+    "title": "Refuge at Millcross",
+    "summary": "The first wave of families off the Ashvale road reaches Millcross, and doesn't stop coming.",
+    "links": [],
+    "timelineOrder": 5,
+    "involves": [
+      "region-millcross",
+      "faction-expedition"
+    ]
+  },
+  {
+    "id": "event-the-seal-that-matched-no-one",
+    "kind": "event",
+    "title": "The Seal That Matched No One",
+    "summary": "A caravan seal salvaged from the ash doesn't belong to either side of the war — the first crack in the account everyone believes.",
+    "links": [],
+    "timelineOrder": 6,
+    "triggeredBy": "quest-salvage-run",
+    "involves": [
+      "char-expedition-member"
+    ]
+  },
+  {
+    "id": "event-farrow-falls",
+    "kind": "event",
+    "title": "Farrow Falls",
+    "summary": "Farrow the Forward holds the near bank of the ford alone so the last of the column can cross.",
+    "links": [],
+    "timelineOrder": 7,
+    "triggeredBy": "quest-hold-the-ford",
+    "involves": [
+      "char-farrow-the-forward",
+      "faction-ashen-column"
+    ]
+  },
+  {
+    "id": "event-ledger-lifted",
+    "kind": "event",
+    "title": "The Ledger Is Lifted",
+    "summary": "The copied page proves what the Council never wrote plain — money moving through both war chests from the same account. The ledger still doesn't put a face to the name behind it.",
+    "links": [],
+    "timelineOrder": 8,
+    "triggeredBy": "quest-the-ledger-theft",
+    "involves": [
+      "char-the-broker"
+    ]
+  },
+  {
+    "id": "event-clerk-silenced",
+    "kind": "event",
+    "title": "The Clerk Is Silenced",
+    "summary": "The Clerk of Gildmark is found at the foot of the harbor stair before dawn, ruled an accident by a Council report that reads like every other ledger entry: clean, correct, and final. He asked for a price. He paid a different one.",
+    "links": [],
+    "timelineOrder": 9,
+    "involves": [
+      "char-clerk-of-gildmark",
+      "faction-gildmark-council"
+    ]
+  },
+  {
+    "id": "event-warspeaker-falls",
+    "kind": "event",
+    "title": "The War-Speaker Falls",
+    "summary": "The Thornveil War-Speaker falls at the truce table before the terms he carried ever reach either war town, struck down by a hand wearing the wrong side's colors on purpose. Whoever wanted the fighting to keep paying didn't want a truce signed either. The truce dies with him.",
+    "links": [],
+    "timelineOrder": 10,
+    "involves": [
+      "char-thornveil-war-speaker",
+      "faction-thornveil"
+    ]
+  },
+  {
+    "id": "event-bells-ring-true",
+    "kind": "event",
+    "title": "The Bells Ring True",
+    "summary": "The Bell-Keeper seals a proclamation the Broker never approved — the truth of the first caravan, sealed once and read aloud beneath every tower on the coast — and Mirelle walks free of the tower that held her instead of him.",
+    "links": [],
+    "timelineOrder": 11,
+    "triggeredBy": "quest-the-bell-keepers-price",
+    "involves": [
+      "char-the-bell-keeper",
+      "char-mirelle"
+    ]
+  },
+  {
+    "id": "event-messengers-burned",
+    "kind": "event",
+    "title": "The Messengers Are Burned",
+    "summary": "The Broker reframes the sealed truth as an enemy trick before the ink is dry, and the Widow leads Embervale's mob to burn every messenger who carried it into the streets.",
+    "links": [],
+    "timelineOrder": 12,
+    "involves": [
+      "char-widow-of-the-first-caravan",
+      "region-embervale"
+    ]
+  },
+  {
+    "id": "event-quartermaster-falls",
+    "kind": "event",
+    "title": "The Quartermaster Falls",
+    "summary": "She holds the crossroads between the mob and the refugee tents until the last of them is clear, and doesn't hold anything after that.",
+    "links": [],
+    "timelineOrder": 13,
+    "triggeredBy": "quest-ash-in-the-streets",
+    "involves": [
+      "char-quartermaster",
+      "char-widow-of-the-first-caravan"
+    ]
+  },
+  {
+    "id": "event-relic-deal-struck",
+    "kind": "event",
+    "title": "The Relic Deal Is Struck",
+    "summary": "The Broker names his price for Cindervast's sibling weapon, and the Iron Regent agrees to it — Embervale's protection, bought the same way the old tyrant bought the end of his own rebellion.",
+    "links": [],
+    "timelineOrder": 14,
+    "involves": [
+      "char-the-broker",
+      "char-iron-regent"
+    ]
+  },
+  {
+    "id": "event-relic-sale-stopped",
+    "kind": "event",
+    "title": "The Relic Sale Is Stopped",
+    "summary": "The crate never reaches the water — the tide turns and leaves it sitting on Gildmark's dock. The Iron Regent doesn't fight for it in the open. He walks off already planning how to come at it again.",
+    "links": [],
+    "timelineOrder": 15,
+    "triggeredBy": "quest-the-brink",
+    "involves": [
+      "char-iron-regent"
+    ]
+  },
+  {
+    "id": "event-broker-unmasked",
+    "kind": "event",
+    "title": "The Broker Unmasked",
+    "summary": "The ledger page names a man, not an office, read aloud in Gildmark's harbor square where no seal can bury it again. The Broker doesn't deny a word of it, and doesn't apologize for any of it either.",
+    "links": [],
+    "timelineOrder": 16,
+    "triggeredBy": "quest-the-brokers-ledger",
+    "involves": [
+      "char-the-broker"
+    ]
+  },
+  {
+    "id": "event-the-first-crossing",
+    "kind": "event",
+    "title": "The First Crossing",
+    "summary": "No treaty is signed — nobody in Rooktide would know how to write one. Wounded from both towns come through the gate the Elder opened, and among the wagons a letter that spent two seasons waiting finally reaches Joren of Norhollow's hand, sent by Liss of Embervale before the road closed. The war isn't over. This is only the first crossing.",
+    "links": [],
+    "timelineOrder": 17,
+    "triggeredBy": "quest-the-first-crossing",
+    "involves": [
+      "region-rooktide",
+      "char-liss-of-embervale",
+      "char-joren-of-norhollow"
+    ]
   }
 ]

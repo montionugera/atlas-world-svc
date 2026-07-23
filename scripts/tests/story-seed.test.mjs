@@ -5,6 +5,15 @@
 // has 4 orphan WARNs (2 characters, 2 factions under-referenced) which
 // --require-complete escalates to FAILs — this test is written FIRST and is
 // expected to fail until the seed epic (Task 7 Step 3) closes every orphan.
+//
+// F-016 (Undertow) Task 2 update: the seed epic's own orphans were closed
+// (this file's tests reflected that for a while), but Task 2 of the Undertow
+// plan deliberately reopened the orphan count by minting 15 world-foundation
+// characters ahead of the quests/events/dialogue that would reference them in
+// Tasks 3-7. Tasks 3-6 de-orphaned all but 3 (see the "content gate
+// --require-complete" test below); Task 7 (act 5 — the undertow) closes the
+// last 3, so that test now pins a clean --require-complete pass again, ahead
+// of Undertow Task 9 (final coherence pass), which has no orphans left to do.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -35,10 +44,50 @@ test("content gate is green on the real tree (no --require-complete)", () => {
   assert.match(output, /0 failures/);
 });
 
-test("content gate is green with --require-complete: the seed epic closes every orphan", () => {
+// F-016 (Undertow) Task 2 deliberately reintroduces orphans: the plan's
+// world-foundation task (acts/regions/factions/characters + canon.md) mints
+// 15 new characters before any quest/event/dialogue references them — the
+// Global Constraints section calls this out explicitly ("Orphan WARNs are
+// expected mid-plan ... must ALL be resolved by Task 9"). Until Undertow
+// Task 9 closes them, --require-complete legitimately fails; this test pins
+// the *exact* expected orphan set so any *additional*, unplanned orphan
+// still fails the test loudly instead of being silently absorbed.
+//
+// Task 3 (act 1 starter arcs) de-orphans 3 of the 15: char-war-countess and
+// char-speaker-of-norhollow become quest givers, char-widow-of-the-first-
+// caravan is now involved in event-first-caravan-burns.
+//
+// Task 4 (act 2 — the war comes home) de-orphans 1 more: char-farrow-the-
+// forward becomes a quest giver (quest-hold-the-ford) and dies in
+// event-farrow-falls.
+//
+// Task 5 (act 3 — the ledger game) de-orphans 5 more: char-warden-bright and
+// char-clerk-of-gildmark become quest givers (arc-ledger-game's 4-quest
+// chain), char-the-broker is involved in event-ledger-lifted,
+// char-clerk-of-gildmark and char-thornveil-war-speaker die in
+// event-clerk-silenced / event-warspeaker-falls, and char-the-ash-prophet
+// becomes a dialogue speaker (dlg-ash-prophet-sermon).
+//
+// Task 6 (act 4 — the truth arrives late) de-orphans 3 more: char-iron-
+// regent is involved in event-relic-deal-struck, char-the-bell-keeper is
+// involved in / speaks dlg-bell-keeper-confession for event-bells-ring-true,
+// and char-mirelle is involved in event-bells-ring-true and speaks
+// dlg-mirelle-freed. char-quartermaster also dies here
+// (event-quartermaster-falls) but was never orphaned.
+//
+// Task 7 (act 5 — the undertow) de-orphans the last 3: char-elder-of-rooktide
+// becomes the giver of quest-the-brokers-ledger and quest-the-first-crossing,
+// and char-liss-of-embervale / char-joren-of-norhollow are both `involves` on
+// event-the-first-crossing. That closes every character orphan ahead of
+// schedule — Task 9's "final coherence pass" no longer has any orphan left to
+// sweep, so this test now pins a clean --require-complete pass instead of an
+// expected mid-epic orphan set.
+test("content gate --require-complete: no orphans remain after Undertow Task 7", () => {
   const { status, output } = run("scripts/check_content.mjs", ["--require-complete"]);
-  assert.equal(status, 0, `expected exit 0, got ${status}:\n${output}`);
+  assert.equal(status, 0, `expected exit 0 (all orphans closed by Undertow Task 7), got ${status}:\n${output}`);
   assert.match(output, /0 failures/);
+  assert.doesNotMatch(output, /character ".*" is referenced by no quest, faction, event, or dialogue \(orphan\)/);
+  assert.doesNotMatch(output, /faction ".*" is referenced by no quest, character, or event \(orphan\)/);
 });
 
 test("docs/story/story-graph.md is in sync with the seed epic (no drift)", () => {
@@ -46,7 +95,7 @@ test("docs/story/story-graph.md is in sync with the seed epic (no drift)", () =>
   assert.equal(status, 0, `expected exit 0, got ${status}:\n${output}`);
 });
 
-test("the seed epic exercises every kind and every unlockedBy/edge shape (2 arcs, valid cross-arc chain)", () => {
+test("the seed epic exercises every kind and every unlockedBy/edge shape (5 arcs, valid cross-arc chain)", () => {
   const readStory = (f) => JSON.parse(readFileSync(join(ROOT, `content/story/${f}`), "utf8"));
   const acts = readStory("acts.json");
   const arcs = readStory("arcs.json");
@@ -56,8 +105,23 @@ test("the seed epic exercises every kind and every unlockedBy/edge shape (2 arcs
   const lore = readStory("lore.json");
   const characters = readStory("characters.json");
 
-  assert.equal(arcs.length, 2, "expected 2 arcs total");
-  assert.equal(new Set(arcs.map((a) => a.actId)).size, arcs.length, "arc.actId values must be unique in the seed (2 arcs, 2 acts)");
+  // F-016 (Undertow) Task 3: act 1 now hosts 3 parallel starter arcs
+  // (Millcross's arc-meadow-awakening, plus arc-embervale-outskirts and
+  // arc-norhollow-outskirts) per spec §3 — so arc.actId is no longer unique
+  // across arcs; the invariant this test actually cares about is the
+  // cross-arc unlockedBy chain into a later act, checked below.
+  //
+  // F-016 (Undertow) Task 4: act 2 adds its own arc-war-comes-home.
+  // F-016 (Undertow) Task 5: act 3 adds its own arc-ledger-game.
+  // F-016 (Undertow) Task 6: act 4 adds its own arc-truth-arrives-late.
+  // F-016 (Undertow) Task 7: act 5 adds its own arc-the-undertow.
+  // F-016 (Undertow) Task 8: side packs add arc-small-mercies (act 2) and
+  // arc-embers-that-remain (act 4).
+  assert.equal(
+    arcs.length,
+    10,
+    "expected 10 arcs total after Undertow Task 8 (2 seed + 2 act-1 starters + 1 act-2 arc + 1 act-3 arc + 1 act-4 arc + 1 act-5 arc + 2 side-quest arcs)"
+  );
   assert.ok(quests.length >= 4, "expected at least 4 quests total");
   assert.ok(events.length >= 2, "expected at least 2 events (events.json was empty before Task 7)");
   assert.ok(dialogue.length >= 2, "expected at least 2 dialogue nodes (dialogue.json was empty before Task 7)");
@@ -70,29 +134,38 @@ test("the seed epic exercises every kind and every unlockedBy/edge shape (2 arcs
   assert.equal(alpha.status, "dead", "expected char-ashfang-alpha to be dead");
   assert.equal(alpha.diedAt, "event-twin-strike-falls", "expected char-ashfang-alpha.diedAt to resolve to its death event");
 
-  // A quest whose arcId belongs to the second (highest-order) arc must have an
-  // unlockedBy quest-* chain reaching back into the first arc — proves the
-  // "valid unlockedBy chain across the 2 arcs" requirement, not just two
-  // disconnected arcs.
+  // At least one quest's unlockedBy quest-* chain must reach into a
+  // *different* arc than the one it started in — proves the "valid
+  // unlockedBy chain across arcs" requirement, not just disconnected arcs.
+  //
+  // F-016 (Undertow) Task 5: previously this test located its starting quest
+  // by picking "the highest-order arc" and asserting its chain reaches
+  // another arc. That assumption broke the moment a later, higher-order arc
+  // (arc-ledger-game, act-3) was added whose own internal quest chain stays
+  // self-contained (its first quest is gated by `act-3` + an event, not a
+  // quest-*). The invariant this test actually cares about — that some
+  // cross-arc quest chain exists in the graph at all — doesn't depend on
+  // *which* arc demonstrates it, so the search now scans every quest instead
+  // of hardcoding "the second arc".
   const questById = new Map(quests.map((q) => [q.id, q]));
-  const arcById = new Map(arcs.map((a) => [a.id, a]));
-  const actById = new Map(acts.map((a) => [a.id, a]));
-  const secondArc = [...arcs].sort((a, b) => actById.get(b.actId).order - actById.get(a.actId).order)[0];
   const questUnlockId = (q) => (q.unlockedBy ?? []).find((id) => id.startsWith("quest-"));
-  const crossArcQuest = quests.find((q) => q.arcId === secondArc.id && questUnlockId(q));
-  assert.ok(crossArcQuest, "expected at least one quest in the later arc with a quest-* unlockedBy entry");
 
-  let cur = crossArcQuest;
-  let reachedOtherArc = false;
-  const seen = new Set();
-  while (questUnlockId(cur)) {
-    assert.ok(!seen.has(cur.id), `unlockedBy cycle at ${cur.id}`);
-    seen.add(cur.id);
-    cur = questById.get(questUnlockId(cur));
-    assert.ok(cur, "unlockedBy quest-* entry must resolve to a real quest");
-    if (cur.arcId !== crossArcQuest.arcId) reachedOtherArc = true;
-  }
-  assert.ok(reachedOtherArc, "expected the later-arc quest's unlockedBy chain to reach into the other arc");
+  const chainReachesOtherArc = (startQuest) => {
+    let cur = startQuest;
+    const seen = new Set();
+    while (questUnlockId(cur)) {
+      assert.ok(!seen.has(cur.id), `unlockedBy cycle at ${cur.id}`);
+      seen.add(cur.id);
+      const next = questById.get(questUnlockId(cur));
+      assert.ok(next, "unlockedBy quest-* entry must resolve to a real quest");
+      if (next.arcId !== startQuest.arcId) return true;
+      cur = next;
+    }
+    return false;
+  };
+
+  const crossArcQuest = quests.find((q) => questUnlockId(q) && chainReachesOtherArc(q));
+  assert.ok(crossArcQuest, "expected at least one quest with a quest-* unlockedBy chain reaching into another arc");
 
   // event.triggeredBy and dialogue.context together exercise both allowed
   // dialogue.context target kinds (quest and event).

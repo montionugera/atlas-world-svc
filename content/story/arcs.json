@@ -22,5 +22,109 @@
       "quest-icefield-reckoning"
     ],
     "links": []
+  },
+  {
+    "id": "arc-embervale-outskirts",
+    "kind": "arc",
+    "title": "Embervale Outskirts",
+    "summary": "Embervale's militia holds its walls, and the wilds aren't the only thing pressing on them.",
+    "actId": "act-1",
+    "questIds": [
+      "quest-embervale-watchfires",
+      "quest-the-unmarked-crates"
+    ],
+    "links": []
+  },
+  {
+    "id": "arc-norhollow-outskirts",
+    "kind": "arc",
+    "title": "Norhollow Outskirts",
+    "summary": "Norhollow holds its palisade line by the tally, and the mail keeps arriving already read.",
+    "actId": "act-1",
+    "questIds": [
+      "quest-norhollow-palisade",
+      "quest-letters-already-opened"
+    ],
+    "links": []
+  },
+  {
+    "id": "arc-war-comes-home",
+    "kind": "arc",
+    "title": "The War Comes Home",
+    "summary": "War is declared, the roads fill with people who left everything behind, and the crossroads at Millcross has to hold them.",
+    "actId": "act-2",
+    "questIds": [
+      "quest-the-road-of-strangers",
+      "quest-salvage-run",
+      "quest-hold-the-ford"
+    ],
+    "links": []
+  },
+  {
+    "id": "arc-ledger-game",
+    "kind": "arc",
+    "title": "The Ledger Game",
+    "summary": "Wear a name Gildmark has never priced, buy a clerk's confession, and get the proof out the harbor gate before the Council notices what's missing.",
+    "actId": "act-3",
+    "questIds": [
+      "quest-a-face-for-gildmark",
+      "quest-the-clerks-price",
+      "quest-the-ledger-theft",
+      "quest-out-the-harbor-gate"
+    ],
+    "links": []
+  },
+  {
+    "id": "arc-truth-arrives-late",
+    "kind": "arc",
+    "title": "The Truth Arrives Late",
+    "summary": "Free the Bell-Keeper's daughter, watch the truth go out and get burned anyway, and bury the one who held the crossroads until it did.",
+    "actId": "act-4",
+    "questIds": [
+      "quest-the-bell-keepers-price",
+      "quest-ash-in-the-streets",
+      "quest-what-the-mob-left"
+    ],
+    "links": []
+  },
+  {
+    "id": "arc-the-undertow",
+    "kind": "arc",
+    "title": "The Undertow",
+    "summary": "Stop the relic sale at the harbor, drag the Broker's own hand into the light, and carry the first small crossing to Rooktide — no treaty, only what's left standing once the towns stop needing an enemy to explain themselves.",
+    "actId": "act-5",
+    "questIds": [
+      "quest-the-brink",
+      "quest-the-brokers-ledger",
+      "quest-the-first-crossing"
+    ],
+    "links": []
+  },
+  {
+    "id": "arc-small-mercies",
+    "kind": "arc",
+    "title": "Small Mercies",
+    "summary": "While the war fills every ledger, four small kindnesses get done anyway — a night's sleep, a shared meal, a letter carried, a medal left unsold.",
+    "actId": "act-2",
+    "questIds": [
+      "quest-the-bells-that-wont-stop",
+      "quest-two-plates-at-dusk",
+      "quest-the-last-letter",
+      "quest-salvage-and-medals"
+    ],
+    "links": []
+  },
+  {
+    "id": "arc-embers-that-remain",
+    "kind": "arc",
+    "title": "Embers That Remain",
+    "summary": "A deserter hated as a traitor, a stall rebuilt plank by plank, a letter that beat the worst news to the door — what's left standing in a town that's spent four seasons at war.",
+    "actId": "act-4",
+    "questIds": [
+      "quest-the-deserters-name",
+      "quest-a-stall-rebuilt",
+      "quest-the-letter-that-arrived"
+    ],
+    "links": []
   }
 ]

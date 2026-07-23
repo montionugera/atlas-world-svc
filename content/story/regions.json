@@ -22,5 +22,61 @@
     "summary": "Bramble forest east of the meadow; dense sightlines, ranged ambushes.",
     "dangerTier": "mid",
     "links": ["faction-thornveil"]
+  },
+  {
+    "id": "region-millcross",
+    "kind": "region",
+    "title": "Millcross",
+    "summary": "Where every road's leftovers end up, and every leftover finds a place to stand.",
+    "dangerTier": "safe",
+    "links": ["faction-expedition"]
+  },
+  {
+    "id": "region-embervale",
+    "kind": "region",
+    "title": "Embervale",
+    "summary": "A town that grieved its way into a war it didn't start.",
+    "dangerTier": "low",
+    "links": ["faction-embervale-banner"]
+  },
+  {
+    "id": "region-norhollow",
+    "kind": "region",
+    "title": "Norhollow",
+    "summary": "A town holding its palisade line and its temper by the same nail.",
+    "dangerTier": "low",
+    "links": ["faction-norhollow-banner"]
+  },
+  {
+    "id": "region-gildmark",
+    "kind": "region",
+    "title": "Gildmark",
+    "summary": "The port that sells peace by the pound and war by the crate — same ledger, different columns.",
+    "dangerTier": "low",
+    "links": ["faction-gildmark-council", "faction-bellfaith"]
+  },
+  {
+    "id": "region-rooktide",
+    "kind": "region",
+    "title": "Rooktide",
+    "summary": "The town that came back — proof it can be done, if anyone's still willing to try.",
+    "dangerTier": "safe",
+    "links": []
+  },
+  {
+    "id": "region-ashvale-front",
+    "kind": "region",
+    "title": "Ashvale Front",
+    "summary": "The dead ground between Embervale and Norhollow where the war is fought in earnest; neither town claims it, and both bury their dead in it.",
+    "dangerTier": "high",
+    "links": ["faction-embervale-banner", "faction-norhollow-banner", "faction-ashen-column"]
+  },
+  {
+    "id": "region-cindervast",
+    "kind": "region",
+    "title": "Cindervast",
+    "summary": "The city that answered a rebellion with a relic, and has been paying for it since.",
+    "dangerTier": "high",
+    "links": ["faction-ashen-column", "faction-stoneguard"]
   }
 ]
