@@ -74,7 +74,7 @@ everyone not listed there survives to the epic's end.
 | `char-quartermaster` | Keep everyone who reaches Millcross fed and counted. | None of her own — she carries other people's. | Counts things in meals and miles, never coin (Millcross diction). | The Expedition; the act-2 refugees; Liss's letters cross her desk. | Dies, act 4 (`event-quartermaster-falls`), shielding refugees from the Widow's mob. |
 | `char-expedition-member` | To matter to the ground he stands on. | — | Player-driven. | Farrow the Forward; the Quartermaster. | Alive — the throughline. |
 | `char-ashfang-alpha` (the Twin-Strike) | — (a wall, not a schemer). | — | No speech. | — | Already dead, act 1 (`event-twin-strike-falls`, existing). |
-| `char-the-broker` | To be right about people, forever — more than he wants money. | Personally engineered the first caravan burning; has kept the war balanced, never won, ever since. | Gilded Rot: calm ledger-and-chronicle accounting, even discussing lives. | Owns the Bell-Keeper's silence; sells to the Iron Regent. | Survives — exposed and broken (act 5, `event-broker-unmasked`), not among the epic's five deaths. |
+| `char-the-broker` | To be right about people, forever — more than he wants money. | Personally engineered the first caravan burning; has kept the war balanced, never won, ever since; wins the signal/detail gap every time (see "How news travels," §4) — his riders outride everyone else's, and inconvenient proclamations get robbed on the road. | Gilded Rot: calm ledger-and-chronicle accounting, even discussing lives. | Owns the Bell-Keeper's silence; sells to the Iron Regent. | Survives — exposed and broken (act 5, `event-broker-unmasked`), not among the epic's five deaths. |
 | `char-iron-regent` | To rule whatever's left when the war ends. | Is the buyer in the act-4 relic-weapon deal. | Ashen Vigil register: clipped command, frames every seizure of power as necessity. | Sister to the War-Countess; enemy to the Ash Prophet's raiders. | Survives — thwarted at the brink (`event-relic-sale-stopped`), not killed. |
 | `char-the-bell-keeper` | His daughter Mirelle free, above everything. | Has bent the bells for the Broker for years to keep her safe. | Ashen Vigil register: apologetic and precise, bell-schedule diction, guilt under procedure. | Mirelle (daughter); Warden Bright (reformer colleague). | Survives — breaks from the Broker act 4 (`event-bells-ring-true`), hands over the proof. |
 | `char-widow-of-the-first-caravan` | Both towns to burn. | Has known the false-flag truth since the ash cooled — see §3. | Ashen Vigil, flat and terse: states facts as verdicts, not feelings. | Her husband, dead in the first caravan; none surviving. | Survives, undefeated — no death, no defeat event (the epic's deliberate absence). |
@@ -119,6 +119,13 @@ must not learn them before which act.
   man, and that belief is why he closes the relic deal at all.
 - **Exposure:** partial, act 4 (`event-bells-ring-true`); full, act 5
   (`event-broker-unmasked`).
+- **Method (core to the hand staying hidden):** the Broker's daily
+  operation is winning the fast-signal/slow-detail gap described in §4 —
+  his riders always reach a town first with his version of a proclamation,
+  and riders carrying an inconvenient truth get robbed on the road more
+  often than chance allows. This is how "the ledger doesn't show room for
+  that" (style.md) stays true even when the ledger is, technically, honest:
+  the lie isn't in the seal, it's in who arrives first.
 
 ### The Bell-Keeper's bent proclamations
 
@@ -161,7 +168,11 @@ official reading of the first caravan burning says beneath the tower.
   road (4–5 days) and from both war towns by a coastal spur (about 3 days).
   Its harbor is the only deepwater port on this coast — there is no other
   route to bring bound war-beasts or relic-cargo in by ship, which is why
-  the arms flow, in either direction, must pass Gildmark's harbor.
+  the arms flow, in either direction, must pass Gildmark's harbor. Its
+  far-mirrors (a Gildmark monopoly) are also the one news channel faster
+  than the Bellfaith's fast signal — a private line outside the relay chain
+  entirely (see "How news travels" below) — which is why Gildmark always
+  knows before the market does, and is always rich and always prepared.
 - **Rooktide** sits inland, south of Millcross (about 2 days), off the
   direct war road entirely — part of why it recovered undisturbed, and why
   it's the natural place for the first crossing (act 5) to happen quietly,
@@ -171,7 +182,7 @@ official reading of the first caravan burning says beneath the tower.
   same wild ground the Ash Prophet's raiders use to strike Embervale's and
   Norhollow's outer farms.
 
-### How news travels (the Bellfaith, three layers)
+### How news travels (the Bellfaith, three layers, two speeds)
 
 Bells alone cannot carry detail — a single tolling tower has no way to ring
 out a paragraph. The Bellfaith's news system is three layers, and "whoever
@@ -192,8 +203,41 @@ layer 1:
 The Bell-Keeper's corruption lives entirely in layers 2 and 3: which
 proclamations he lets be read, which get sealed true, which get quietly
 burned before either — never in the tone or timing of the bell itself.
-Player-facing, this stays one sentence: news comes from the bell tower, and
-the man who runs it can lie.
+
+**Two speeds carry these three layers between towns:**
+
+- **Fast signals (hours).** Bellfaith relay towers strung along the
+  ridgelines and trade roads pass layer-1 codes town-to-town in a chain —
+  category only (war, danger, all-clear, "await proclamation"), no detail.
+  A signal reaches all six towns within hours of the first tower ringing it.
+- **Slow detail (days).** The actual sealed proclamation — layers 2 and 3 —
+  travels by bell-rider (the Bellfaith's fast couriers) or message-bird
+  along the trade roads, at the same pace as any other road traffic (see
+  the travel times above). Each town's tower verifies the seal, tolls
+  assembly, reads the proclamation aloud, and forwards a copy on to the
+  next town.
+
+**The exploit (the Broker's core method):** the gap between the fast signal
+and the slow detail — hours versus days — is where truth is decided. A town
+knows *something* happened within hours, but not *what* for days; whoever's
+version of the detail arrives first at a given town is the version that
+sticks, because there is nothing to compare it against yet ("the first news
+sticks"). The Broker's own riders always ride that gap faster than anyone
+else's — better horses, paid relay stops, roads he already controls through
+Gildmark's trade contracts — and riders carrying a proclamation inconvenient
+to him get robbed on the road unusually often, always after the signal has
+already gone out and always before the truthful detail can catch up to it.
+This is recorded on his dossier in §2 and cross-referenced in "the Broker's
+hand behind Gildmark" in §3.
+
+**Gildmark's edge:** the spec's far-mirrors — a Gildmark monopoly — are the
+one channel faster than even the fast signal, a private line outside the
+Bellfaith relay chain entirely. Gildmark's Harbor Council always knows
+before the market does, which is why it is rich and always prepared; see
+the Gildmark entry below.
+
+Player-facing, this stays one sentence: signals arrive fast, details arrive
+slow, and liars win by riding faster.
 
 ## 5. Contradiction rule
 
