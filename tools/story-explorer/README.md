@@ -4,8 +4,23 @@ Zero-dependency, no-build browser page that visualizes the whole narrative
 graph in `content/story/*.json` (acts, regions, factions, characters, arcs,
 quests, events, dialogue, lore). The graph-building logic lives in
 `graph.mjs`, a pure `buildGraph(files) → {nodes, edges, byId}` function
-imported by both `index.html` (the page) and `tests/smoke.test.mjs` (the
-test) — so the picture can never diverge from what's validated.
+imported by both `index.html` (the page), `reader.html` (id→title
+resolution), and `tests/smoke.test.mjs` (the test) — so the picture can
+never diverge from what's validated.
+
+Two views, linked from each other's header/nav:
+
+- **`index.html`** — the structural graph (9 kind columns, SVG edges). At
+  corpus sizes above 60 nodes it no longer draws every edge by default (it's
+  an unreadable hairball at 148 nodes / 336 edges) — edges render only when
+  a node is selected, or the "all links" header chip is toggled on. Smaller
+  graphs keep the old always-on-edges behavior unchanged.
+- **`reader.html`** — a typography-first reader mode for actually reading
+  the story: acts in order, each act's main arcs with their quests (full
+  narrative text, giver/region/faction, inline dialogue and triggered
+  events), a side-stories section for arcs whose quests are parallel
+  vignettes rather than a chain, a timeline, all lore letters grouped by
+  thread, and a character roster.
 
 ## What it shows
 
@@ -35,7 +50,8 @@ serve from the repo root:
 python3 -m http.server 7788 --bind 127.0.0.1
 ```
 
-Then open <http://127.0.0.1:7788/tools/story-explorer/index.html>.
+Then open <http://127.0.0.1:7788/tools/story-explorer/index.html> (graph) or
+<http://127.0.0.1:7788/tools/story-explorer/reader.html> (reader mode).
 
 ## Tests
 
