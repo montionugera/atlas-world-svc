@@ -22,5 +22,29 @@
       "quest-icefield-reckoning"
     ],
     "links": []
+  },
+  {
+    "id": "arc-embervale-outskirts",
+    "kind": "arc",
+    "title": "Embervale Outskirts",
+    "summary": "Embervale's militia holds its walls, and the wilds aren't the only thing pressing on them.",
+    "actId": "act-1",
+    "questIds": [
+      "quest-embervale-watchfires",
+      "quest-the-unmarked-crates"
+    ],
+    "links": []
+  },
+  {
+    "id": "arc-norhollow-outskirts",
+    "kind": "arc",
+    "title": "Norhollow Outskirts",
+    "summary": "Norhollow holds its palisade line by the tally, and the mail keeps arriving already read.",
+    "actId": "act-1",
+    "questIds": [
+      "quest-norhollow-palisade",
+      "quest-letters-already-opened"
+    ],
+    "links": []
   }
 ]

@@ -93,5 +93,99 @@
       }
     ],
     "links": []
+  },
+  {
+    "id": "quest-embervale-watchfires",
+    "kind": "quest",
+    "title": "Watchfires",
+    "summary": "Hold Embervale's west wall and keep the watchfires lit through the night.",
+    "narrative": {
+      "description": "The west wall held last night. The Countess wants it doubled anyway — the packs have been testing the dark past the tree line for a week, closer each time, and nobody on the wall has slept well since.",
+      "offerText": "Walk the wall, keep the fires lit, and thin whatever's testing the dark before it stops testing and starts pressing.",
+      "completeText": "The fires held. That's one more night the wall didn't have to prove itself twice."
+    },
+    "giver": "char-war-countess",
+    "region": "region-embervale",
+    "faction": "faction-ashfang",
+    "arcId": "arc-embervale-outskirts",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:aggressive",
+        "count": 4
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-unmarked-crates",
+    "kind": "quest",
+    "title": "The Unmarked Crates",
+    "summary": "Walk Gildmark's latest wagons in from the crossroads and log what comes through the gate.",
+    "narrative": {
+      "description": "Three wagons came up the Gildmark road before dawn, and not one crate on them carries a maker's mark, same as the ones before them. The Countess wants them counted through the gate and logged, nothing more asked. She didn't say why. Nobody's asked a Gildmark wagon a question in years and gotten an answer worth the walk back.",
+      "offerText": "Walk the wagons in from the crossroads to the gate. Count the crates. Keep the road clear of anything that isn't a wagon.",
+      "completeText": "Thirty-one crates, no mark on any of them, logged and stacked behind the armory same as the ones before. The Countess signed the tally without looking up. Nobody in the yard asked what was inside. Nobody ever does."
+    },
+    "giver": "char-war-countess",
+    "region": "region-embervale",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": ["quest-embervale-watchfires"],
+    "arcId": "arc-embervale-outskirts",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:balanced",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-norhollow-palisade",
+    "kind": "quest",
+    "title": "The Palisade Line",
+    "summary": "Walk Norhollow's palisade and reset the stakes the frost has worked loose.",
+    "narrative": {
+      "description": "The Speaker keeps her counts on a knotted cord at her belt — nine notches for the west stakes, three for the near ones. She wants the line walked and the stakes checked before she'll say anything else about it.",
+      "offerText": "Walk the palisade. Reset what needs resetting. Thin anything that's using the dark to get close.",
+      "completeText": "Nine notches, still nine notches. She counted them twice before she said it held. That's as close as she comes to relief out loud."
+    },
+    "giver": "char-speaker-of-norhollow",
+    "region": "region-norhollow",
+    "faction": "faction-unaligned",
+    "arcId": "arc-norhollow-outskirts",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 4
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-letters-already-opened",
+    "kind": "quest",
+    "title": "Letters Already Opened",
+    "summary": "Carry the week's mail in from the relay post, seals and all.",
+    "narrative": {
+      "description": "Three letters came up the coastal road this week, same as always, and all three arrived with their seals broken and pressed shut again. The Speaker reads them anyway. She stopped mentioning it to anyone but the courier a while back. Now she's mentioning it to you.",
+      "offerText": "Walk the relay road, bring the mail in, and keep anything testing the escort off your back.",
+      "completeText": "The letters are on her desk, same as every week. She didn't ask who broke the seals this time either. She just reads what's left to read."
+    },
+    "giver": "char-speaker-of-norhollow",
+    "region": "region-norhollow",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": ["quest-norhollow-palisade"],
+    "arcId": "arc-norhollow-outskirts",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:double_attacker",
+        "count": 2
+      }
+    ],
+    "links": []
   }
 ]

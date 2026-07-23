@@ -26,5 +26,18 @@
       "region-icefield"
     ],
     "triggeredBy": "quest-icefield-reckoning"
+  },
+  {
+    "id": "event-first-caravan-burns",
+    "kind": "event",
+    "title": "The First Caravan Burns",
+    "summary": "A caravan burns on the Ashvale road at dawn, and each side of the plain is already certain who lit it.",
+    "links": [],
+    "timelineOrder": 2,
+    "involves": [
+      "region-ashvale-front",
+      "faction-gildmark-council",
+      "char-widow-of-the-first-caravan"
+    ]
   }
 ]

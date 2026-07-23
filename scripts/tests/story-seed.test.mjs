@@ -52,14 +52,15 @@ test("content gate is green on the real tree (no --require-complete)", () => {
 // Task 9 closes them, --require-complete legitimately fails; this test pins
 // the *exact* expected orphan set so any *additional*, unplanned orphan
 // still fails the test loudly instead of being silently absorbed.
+//
+// Task 3 (act 1 starter arcs) de-orphans 3 of the 15: char-war-countess and
+// char-speaker-of-norhollow become quest givers, char-widow-of-the-first-
+// caravan is now involved in event-first-caravan-burns.
 const EXPECTED_MID_EPIC_ORPHAN_CHARACTERS = [
   "char-the-broker",
   "char-iron-regent",
   "char-the-bell-keeper",
-  "char-widow-of-the-first-caravan",
   "char-the-ash-prophet",
-  "char-war-countess",
-  "char-speaker-of-norhollow",
   "char-elder-of-rooktide",
   "char-farrow-the-forward",
   "char-clerk-of-gildmark",
@@ -87,7 +88,7 @@ test("docs/story/story-graph.md is in sync with the seed epic (no drift)", () =>
   assert.equal(status, 0, `expected exit 0, got ${status}:\n${output}`);
 });
 
-test("the seed epic exercises every kind and every unlockedBy/edge shape (2 arcs, valid cross-arc chain)", () => {
+test("the seed epic exercises every kind and every unlockedBy/edge shape (4 arcs, valid cross-arc chain)", () => {
   const readStory = (f) => JSON.parse(readFileSync(join(ROOT, `content/story/${f}`), "utf8"));
   const acts = readStory("acts.json");
   const arcs = readStory("arcs.json");
@@ -97,8 +98,12 @@ test("the seed epic exercises every kind and every unlockedBy/edge shape (2 arcs
   const lore = readStory("lore.json");
   const characters = readStory("characters.json");
 
-  assert.equal(arcs.length, 2, "expected 2 arcs total");
-  assert.equal(new Set(arcs.map((a) => a.actId)).size, arcs.length, "arc.actId values must be unique in the seed (2 arcs, 2 acts)");
+  // F-016 (Undertow) Task 3: act 1 now hosts 3 parallel starter arcs
+  // (Millcross's arc-meadow-awakening, plus arc-embervale-outskirts and
+  // arc-norhollow-outskirts) per spec §3 — so arc.actId is no longer unique
+  // across arcs; the invariant this test actually cares about is the
+  // cross-arc unlockedBy chain into a later act, checked below.
+  assert.equal(arcs.length, 4, "expected 4 arcs total after Undertow Task 3 (2 seed + 2 act-1 starters)");
   assert.ok(quests.length >= 4, "expected at least 4 quests total");
   assert.ok(events.length >= 2, "expected at least 2 events (events.json was empty before Task 7)");
   assert.ok(dialogue.length >= 2, "expected at least 2 dialogue nodes (dialogue.json was empty before Task 7)");

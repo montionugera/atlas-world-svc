@@ -28,10 +28,16 @@ flowchart LR
 
   subgraph sg_n_act_1["Act 1 — Small Lives"]
     n_act_1["act-1"]:::act
+    n_arc_embervale_outskirts["arc-embervale-outskirts"]:::arc
     n_arc_meadow_awakening["arc-meadow-awakening"]:::arc
+    n_arc_norhollow_outskirts["arc-norhollow-outskirts"]:::arc
     n_quest_cull_the_packs["quest-cull-the-packs"]:::quest
+    n_quest_embervale_watchfires["quest-embervale-watchfires"]:::quest
     n_quest_first_steps["quest-first-steps"]:::quest
+    n_quest_letters_already_opened["quest-letters-already-opened"]:::quest
+    n_quest_norhollow_palisade["quest-norhollow-palisade"]:::quest
     n_quest_the_twin_strike["quest-the-twin-strike"]:::quest
+    n_quest_the_unmarked_crates["quest-the-unmarked-crates"]:::quest
   end
   subgraph sg_n_act_2["Act 2 — The War Comes Home"]
     n_act_2["act-2"]:::act
@@ -67,6 +73,9 @@ flowchart LR
   n_char_widow_of_the_first_caravan["char-widow-of-the-first-caravan"]:::character
   n_dlg_expedition_member_twin_strike_aftermath["dlg-expedition-member-twin-strike-aftermath"]:::dialogue
   n_dlg_quartermaster_icefield_briefing["dlg-quartermaster-icefield-briefing"]:::dialogue
+  n_dlg_speaker_of_norhollow_briefing["dlg-speaker-of-norhollow-briefing"]:::dialogue
+  n_dlg_war_countess_briefing["dlg-war-countess-briefing"]:::dialogue
+  n_event_first_caravan_burns["event-first-caravan-burns"]:::event
   n_event_icefield_thornveil_standoff["event-icefield-thornveil-standoff"]:::event
   n_event_twin_strike_falls["event-twin-strike-falls"]:::event
   n_faction_ashen_column["faction-ashen-column"]:::faction
@@ -92,12 +101,18 @@ flowchart LR
   n_region_spawn_meadow["region-spawn-meadow"]:::region
   n_region_thornveil["region-thornveil"]:::region
 
+  n_arc_embervale_outskirts -->|actId| n_act_1
+  n_arc_embervale_outskirts -->|questIds| n_quest_embervale_watchfires
+  n_arc_embervale_outskirts -->|questIds| n_quest_the_unmarked_crates
   n_arc_icefield_reckoning -->|actId| n_act_2
   n_arc_icefield_reckoning -->|questIds| n_quest_icefield_reckoning
   n_arc_meadow_awakening -->|actId| n_act_1
   n_arc_meadow_awakening -->|questIds| n_quest_cull_the_packs
   n_arc_meadow_awakening -->|questIds| n_quest_first_steps
   n_arc_meadow_awakening -->|questIds| n_quest_the_twin_strike
+  n_arc_norhollow_outskirts -->|actId| n_act_1
+  n_arc_norhollow_outskirts -->|questIds| n_quest_letters_already_opened
+  n_arc_norhollow_outskirts -->|questIds| n_quest_norhollow_palisade
   n_char_ashfang_alpha -->|diedAt| n_event_twin_strike_falls
   n_char_ashfang_alpha -->|faction| n_faction_unaligned
   n_char_ashfang_alpha -->|region| n_region_spawn_meadow
@@ -135,6 +150,13 @@ flowchart LR
   n_dlg_expedition_member_twin_strike_aftermath -->|speaker| n_char_expedition_member
   n_dlg_quartermaster_icefield_briefing -->|context| n_quest_icefield_reckoning
   n_dlg_quartermaster_icefield_briefing -->|speaker| n_char_quartermaster
+  n_dlg_speaker_of_norhollow_briefing -->|context| n_quest_norhollow_palisade
+  n_dlg_speaker_of_norhollow_briefing -->|speaker| n_char_speaker_of_norhollow
+  n_dlg_war_countess_briefing -->|context| n_quest_embervale_watchfires
+  n_dlg_war_countess_briefing -->|speaker| n_char_war_countess
+  n_event_first_caravan_burns -->|involves| n_char_widow_of_the_first_caravan
+  n_event_first_caravan_burns -->|involves| n_faction_gildmark_council
+  n_event_first_caravan_burns -->|involves| n_region_ashvale_front
   n_event_icefield_thornveil_standoff -->|involves| n_faction_stoneguard
   n_event_icefield_thornveil_standoff -->|involves| n_faction_thornveil
   n_event_icefield_thornveil_standoff -->|involves| n_region_icefield
@@ -161,6 +183,10 @@ flowchart LR
   n_quest_cull_the_packs -->|giver| n_char_quartermaster
   n_quest_cull_the_packs -->|region| n_region_spawn_meadow
   n_quest_cull_the_packs -->|unlockedBy| n_quest_first_steps
+  n_quest_embervale_watchfires -->|arcId| n_arc_embervale_outskirts
+  n_quest_embervale_watchfires -->|faction| n_faction_ashfang
+  n_quest_embervale_watchfires -->|giver| n_char_war_countess
+  n_quest_embervale_watchfires -->|region| n_region_embervale
   n_quest_first_steps -->|arcId| n_arc_meadow_awakening
   n_quest_first_steps -->|faction| n_faction_unaligned
   n_quest_first_steps -->|giver| n_char_quartermaster
@@ -170,9 +196,23 @@ flowchart LR
   n_quest_icefield_reckoning -->|giver| n_char_quartermaster
   n_quest_icefield_reckoning -->|region| n_region_icefield
   n_quest_icefield_reckoning -->|unlockedBy| n_quest_the_twin_strike
+  n_quest_letters_already_opened -->|arcId| n_arc_norhollow_outskirts
+  n_quest_letters_already_opened -->|faction| n_faction_gildmark_council
+  n_quest_letters_already_opened -->|giver| n_char_speaker_of_norhollow
+  n_quest_letters_already_opened -->|region| n_region_norhollow
+  n_quest_letters_already_opened -->|unlockedBy| n_quest_norhollow_palisade
+  n_quest_norhollow_palisade -->|arcId| n_arc_norhollow_outskirts
+  n_quest_norhollow_palisade -->|faction| n_faction_unaligned
+  n_quest_norhollow_palisade -->|giver| n_char_speaker_of_norhollow
+  n_quest_norhollow_palisade -->|region| n_region_norhollow
   n_quest_the_twin_strike -->|arcId| n_arc_meadow_awakening
   n_quest_the_twin_strike -->|faction| n_faction_unaligned
   n_quest_the_twin_strike -->|giver| n_char_quartermaster
   n_quest_the_twin_strike -->|region| n_region_spawn_meadow
   n_quest_the_twin_strike -->|unlockedBy| n_quest_cull_the_packs
+  n_quest_the_unmarked_crates -->|arcId| n_arc_embervale_outskirts
+  n_quest_the_unmarked_crates -->|faction| n_faction_gildmark_council
+  n_quest_the_unmarked_crates -->|giver| n_char_war_countess
+  n_quest_the_unmarked_crates -->|region| n_region_embervale
+  n_quest_the_unmarked_crates -->|unlockedBy| n_quest_embervale_watchfires
 ```

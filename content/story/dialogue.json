@@ -26,5 +26,33 @@
       "Whatever's past the tree line, it won't be this polite about it."
     ],
     "context": "event-twin-strike-falls"
+  },
+  {
+    "id": "dlg-war-countess-briefing",
+    "kind": "dialogue",
+    "title": "The Countess's Briefing",
+    "summary": "The War-Countess sends the militia out to double the watch on Embervale's west wall.",
+    "links": [],
+    "speaker": "char-war-countess",
+    "lines": [
+      "The west wall held last night. That doesn't mean it holds tonight.",
+      "Double the watch. Thin whatever's testing the dark past the tree line — don't chase it further than that.",
+      "I've buried enough of this town's sons learning that lesson twice. Learn it once, if you can."
+    ],
+    "context": "quest-embervale-watchfires"
+  },
+  {
+    "id": "dlg-speaker-of-norhollow-briefing",
+    "kind": "dialogue",
+    "title": "The Speaker's Briefing",
+    "summary": "The Speaker of Norhollow sends the militia to walk the palisade and reset the line.",
+    "links": [],
+    "speaker": "char-speaker-of-norhollow",
+    "lines": [
+      "Nine notches on the west stakes. Three came loose since the frost. That's the count.",
+      "Walk the line, reset what's loose, and thin anything using the dark to test it.",
+      "Ask me what I think when the tallies stop needing fixed. Not before."
+    ],
+    "context": "quest-norhollow-palisade"
   }
 ]
