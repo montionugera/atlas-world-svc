@@ -97,15 +97,18 @@ must not learn them before which act.
 
 ### The false flag (the first caravan burning was staged)
 
-- **Knows:** the Broker (architect, from Day 0); the Widow (since the ash
-  cooled, Day 0); the Bell-Keeper (via the ledgers he's forced to hide,
-  before act 3); the Clerk of Gildmark (documentary proof, act 3); Warden
+- **Knows:** the Broker (architect, from `event-first-caravan-burns`, Day 0);
+  the Widow (since the ash cooled — `event-first-caravan-burns`, Day 0);
+  the Bell-Keeper (via the ledgers he's forced to hide — pre-act-3, no
+  single event node; the sealed-ledger trail is the record); the Clerk of
+  Gildmark (documentary proof, act 3); Warden
   Bright and the player (`event-the-seal-that-matched-no-one`, act 2,
   confirmed by `event-ledger-lifted`, act 3).
 - **Must not learn before:** the War-Countess and the Speaker of Norhollow
   must not learn it before act 4 (`event-bells-ring-true`) — their belief
   that the other side struck first is what keeps the war fed.
-- **Explicit:** the Widow knows the false-flag truth from Day 0 and does not
+- **Explicit:** the Widow knows the false-flag truth from
+  `event-first-caravan-burns` (Day 0) and does not
   care. This is stated outright, never a reveal — her arc is never about
   learning the truth, only about what she does with it.
 
