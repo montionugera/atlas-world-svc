@@ -88,7 +88,7 @@ everyone not listed there survives to the epic's end.
 | `char-clerk-of-gildmark` | To be paid enough to live with what he's seen. | Holds the ledger proof of the Broker's hand. | Gilded Rot diction cracking under fear. | Warden Bright brokers his deal. | Dies, act 3 (`event-clerk-silenced`), silenced to keep the ledger quiet. |
 | `char-thornveil-war-speaker` | A truce that holds. | None. | Ashen Vigil, terse (Thornveil register). | Represents Thornveil at the truce table. | Dies, act 3 (`event-warspeaker-falls`) — the truce dies with him. |
 | `char-warden-bright` | The bells to tell the truth again. | None. | Ashen Vigil, plainspoken despite living inside Gildmark. | The Clerk; the Bell-Keeper; Mirelle. | Alive throughout — central ally, acts 3–5. |
-| `char-mirelle` | To go home. | Is the leverage that has bent her father's bells for years; may not know the full scope. | Ashen Vigil, quiet. | Daughter of the Bell-Keeper. | Freed, act 4 (`event-bells-ring-true`, `quest-the-bell-keepers-price`). Alive. |
+| `char-mirelle` | To go home. | Has been the leverage behind every proclamation her father sealed false for years; may not know the full scope. | Ashen Vigil, quiet. | Daughter of the Bell-Keeper. | Freed, act 4 (`event-bells-ring-true`, `quest-the-bell-keepers-price`). Alive. |
 | `char-liss-of-embervale` | One letter to reach Norhollow before the war closes the road for good. | None. | Ashen Vigil, letters register. | Joren of Norhollow (`letters-across-the-line`). | Alive — her letter finally delivered, act 5 (`event-the-first-crossing`). |
 | `char-joren-of-norhollow` | To keep reading letters, even the opened ones. | None. | Ashen Vigil. | Liss of Embervale. | Alive — meets Liss at the first crossing, act 5. |
 
