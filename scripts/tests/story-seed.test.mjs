@@ -5,6 +5,15 @@
 // has 4 orphan WARNs (2 characters, 2 factions under-referenced) which
 // --require-complete escalates to FAILs — this test is written FIRST and is
 // expected to fail until the seed epic (Task 7 Step 3) closes every orphan.
+//
+// F-016 (Undertow) Task 2 update: the seed epic's own orphans were closed
+// (this file's tests reflected that for a while), but Task 2 of the Undertow
+// plan deliberately reopens the orphan count by minting 15 world-foundation
+// characters ahead of the quests/events/dialogue that will reference them in
+// Tasks 3-8 — see the "content gate --require-complete" test below, which
+// pins the exact expected mid-epic orphan set instead of asserting a clean
+// --require-complete pass. That clean-pass assertion returns once Undertow
+// Task 9 (final coherence pass) closes every orphan.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -35,10 +44,42 @@ test("content gate is green on the real tree (no --require-complete)", () => {
   assert.match(output, /0 failures/);
 });
 
-test("content gate is green with --require-complete: the seed epic closes every orphan", () => {
+// F-016 (Undertow) Task 2 deliberately reintroduces orphans: the plan's
+// world-foundation task (acts/regions/factions/characters + canon.md) mints
+// 15 new characters before any quest/event/dialogue references them — the
+// Global Constraints section calls this out explicitly ("Orphan WARNs are
+// expected mid-plan ... must ALL be resolved by Task 9"). Until Undertow
+// Task 9 closes them, --require-complete legitimately fails; this test pins
+// the *exact* expected orphan set so any *additional*, unplanned orphan
+// still fails the test loudly instead of being silently absorbed.
+const EXPECTED_MID_EPIC_ORPHAN_CHARACTERS = [
+  "char-the-broker",
+  "char-iron-regent",
+  "char-the-bell-keeper",
+  "char-widow-of-the-first-caravan",
+  "char-the-ash-prophet",
+  "char-war-countess",
+  "char-speaker-of-norhollow",
+  "char-elder-of-rooktide",
+  "char-farrow-the-forward",
+  "char-clerk-of-gildmark",
+  "char-thornveil-war-speaker",
+  "char-warden-bright",
+  "char-mirelle",
+  "char-liss-of-embervale",
+  "char-joren-of-norhollow",
+];
+
+test("content gate --require-complete: exactly the Undertow T2 world-foundation orphans fail (no more, no fewer)", () => {
   const { status, output } = run("scripts/check_content.mjs", ["--require-complete"]);
-  assert.equal(status, 0, `expected exit 0, got ${status}:\n${output}`);
-  assert.match(output, /0 failures/);
+  assert.equal(status, 1, `expected exit 1 (mid-epic orphans pending Undertow Task 9), got ${status}:\n${output}`);
+  assert.match(output, new RegExp(`${EXPECTED_MID_EPIC_ORPHAN_CHARACTERS.length} failures`));
+  for (const id of EXPECTED_MID_EPIC_ORPHAN_CHARACTERS) {
+    assert.match(output, new RegExp(`character "${id}" is referenced by no quest, faction, event, or dialogue \\(orphan\\)`));
+  }
+  // No orphan factions expected: every new faction is de-orphaned by at
+  // least one character's `faction` field (see checkStoryCoherence()).
+  assert.doesNotMatch(output, /faction ".*" is referenced by no quest, character, or event \(orphan\)/);
 });
 
 test("docs/story/story-graph.md is in sync with the seed epic (no drift)", () => {

@@ -2,19 +2,46 @@
   {
     "id": "act-1",
     "kind": "act",
-    "title": "Meadow Awakening",
-    "summary": "The expedition finds its footing at the frontier's edge.",
+    "title": "Small Lives",
+    "summary": "Life goes on in the starter towns — odd jobs, mob culls, family — while crates with no maker's mark pass through and letters arrive already opened.",
     "order": 1,
-    "theme": "foothold",
+    "theme": "quiet-before",
     "links": []
   },
   {
     "id": "act-2",
     "kind": "act",
-    "title": "Icefield Reckoning",
-    "summary": "The push north onto the Stoneguard's shelf, and the first hint of what they guarded.",
+    "title": "The War Comes Home",
+    "summary": "War breaks between Embervale and Norhollow; refugees flood Millcross, and the first proof surfaces that the incident was staged.",
     "order": 2,
-    "theme": "the-silence",
+    "theme": "severance",
+    "links": []
+  },
+  {
+    "id": "act-3",
+    "kind": "act",
+    "title": "The Ledger Game",
+    "summary": "Espionage into Gildmark — stolen ledgers, double agents, and the political pillars all forced onto the stage.",
+    "order": 3,
+    "theme": "the-money-trail",
+    "links": []
+  },
+  {
+    "id": "act-4",
+    "kind": "act",
+    "title": "The Truth Arrives Late",
+    "summary": "The false flag comes out, and it changes nothing the mobs have already decided; the Bell-Keeper breaks, and the war's darkest hour is entirely human-made.",
+    "order": 4,
+    "theme": "the-mirror",
+    "links": []
+  },
+  {
+    "id": "act-5",
+    "kind": "act",
+    "title": "The Undertow",
+    "summary": "The Broker falls and the relic sale is stopped at the brink — but the war doesn't end, because the hatred now belongs to the people.",
+    "order": 5,
+    "theme": "what-remains",
     "links": []
   }
 ]

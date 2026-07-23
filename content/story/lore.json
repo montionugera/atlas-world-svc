@@ -3,10 +3,10 @@
     "id": "lore-guarded-nothing",
     "kind": "lore",
     "title": "Guarded Nothing",
-    "summary": "A Stoneguard oath-tablet, half-buried in the shelf ice.",
-    "body": "The oath does not name what is kept. It names only the keeping: 'Hold, though the hall is empty. Hold, though the name is lost.'",
+    "summary": "A Stoneguard oath-tablet, half-buried in the shelf ice, that mourns a city already fallen.",
+    "body": "The oath does not name what is kept, because there is nothing left to guard. It names only the keeping: 'Hold, though the city is ash. Hold, though the name is only ours to remember now.'",
     "anchor": "faction-stoneguard",
-    "thread": "the-first-claim",
+    "thread": "the-cindervast-fall",
     "links": []
   },
   {
@@ -14,9 +14,9 @@
     "kind": "lore",
     "title": "The First Claim",
     "summary": "A boundary stone older than any camp, its carving worn to a single line.",
-    "body": "Beneath the frost line the stone still reads: 'CLAIMED'. Nothing else survived the years — not the claimant, not the claim.",
+    "body": "Beneath the frost line the stone still reads: 'CLAIMED.' The city that carved it fell a generation past — Cindervast, though the ice remembers no name, only the word.",
     "anchor": "region-icefield",
-    "thread": "the-first-claim",
+    "thread": "the-cindervast-fall",
     "links": []
   }
 ]

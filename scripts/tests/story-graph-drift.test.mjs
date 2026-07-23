@@ -36,8 +36,8 @@ test("--check exits 0 against the real, committed content and story-graph.md", (
 
 test("generated graph groups arcs and quests into act subgraphs and carries v2 edges", () => {
   const md = readFileSync(join(ROOT, "docs/story/story-graph.md"), "utf8");
-  assert.match(md, /subgraph sg_n_act_1\["Act 1 — Meadow Awakening"\]/);
-  assert.match(md, /subgraph sg_n_act_2\["Act 2 — Icefield Reckoning"\]/);
+  assert.match(md, /subgraph sg_n_act_1\["Act 1 — Small Lives"\]/);
+  assert.match(md, /subgraph sg_n_act_2\["Act 2 — The War Comes Home"\]/);
   assert.match(md, /-->\|unlockedBy\|/);
   assert.match(md, /-->\|actId\|/);
   assert.match(md, /-->\|anchor\|/);

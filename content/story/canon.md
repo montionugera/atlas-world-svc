@@ -1,0 +1,170 @@
+# The Undertow — World-History Canon (`canon.md`)
+
+This is the world-history bible for the Undertow epic: plot-hole insurance,
+binding on Tasks 3–8. Every event, character fate, and secret those tasks
+author must be placeable on the chronology below and must not contradict the
+who-knows-what matrix or geography in this file. Read this alongside
+`content/story/style.md` (voice law) before authoring quests, events,
+dialogue, or lore for any act.
+
+## 1. World chronology
+
+Relative-year timeline, anchored on **Day 0 = the first caravan burns**
+(`event-first-caravan-burns`, authored Task 3). Everything before Day 0 is
+background; everything after is expressed in seasons.
+
+- **About a generation before Day 0 — Cindervast's fall.** The city's ruler,
+  answering a rebellion he could not put down any other way, unleashed a
+  relic weapon on his own rebelling people. The city becomes a cursed ruin;
+  survivors scatter through every other town as the Cindered. The Stoneguard,
+  Cindervast's old city guard, outlive the city they guarded and hold a gate
+  that no longer opens onto anything (`faction-stoneguard`).
+- **Some years after the fall — Rooktide's near-collapse and recovery.**
+  Rooktide, cut off from Cindervast trade it depended on, nearly empties out.
+  It comes back — slowly, on its own terms — and becomes the region's proof
+  that recovery is possible. Rooktide measures no other date in years; only
+  "before the return" and "after."
+- **Founding/turn notes, otherwise unremarkable, before Day 0:**
+  - **Millcross** grows as a crossroads camp for what the Expedition left
+    behind — the existing meadow/icefield seed content is Millcross-side
+    ground, folded into this timeline as its immediate frontier.
+  - **Embervale** and **Norhollow** stand as sister towns, kin-founded on
+    either side of the Ashvale plain, close enough that old families share
+    kin-names across the line (`letters-across-the-line`).
+  - **Gildmark**'s harbor is already the coast's only deepwater port,
+    already brokering trade for both sister towns, long before either town
+    calls it a war.
+- **Day 0 — the first caravan burns** (`event-first-caravan-burns`). The
+  staged incident. The Widow's husband dies in it; she learns the truth
+  before the ash cools and does not care (§3 below).
+- **Season 1 after Day 0 — Act 1, "Small Lives," quiet-before.** The existing
+  seed events — the Twin-Strike falls (`event-twin-strike-falls`) at
+  Millcross's meadow edge, and the Icefield-Thornveil standoff
+  (`event-icefield-thornveil-standoff`) — read, in hindsight, as the quiet
+  before a war neither town yet admits is coming. Crates with no maker's mark
+  and pre-opened letters are already moving.
+- **Season 2 — Act 2, "The War Comes Home," severance.** War declared
+  (`event-war-declared`); refugees flood Millcross
+  (`event-refuge-at-millcross`); Farrow the Forward dies at the ford
+  (`event-farrow-falls`); the first hard proof surfaces — a salvaged caravan
+  seal matching neither side (`event-the-seal-that-matched-no-one`).
+- **Season 3 — Act 3, "The Ledger Game," the-money-trail.** The Gildmark
+  infiltration; the ledger is lifted (`event-ledger-lifted`); the Clerk of
+  Gildmark and the Thornveil War-Speaker die to keep it quiet
+  (`event-clerk-silenced`, `event-warspeaker-falls`).
+- **Season 4 — Act 4, "The Truth Arrives Late," the-mirror.** The false flag
+  is exposed and the Broker reframes it as enemy propaganda; the Bell-Keeper
+  breaks and the bells ring true (`event-bells-ring-true`); messengers are
+  burned by the Widow's mob (`event-messengers-burned`); the Quartermaster
+  dies shielding refugees (`event-quartermaster-falls`); the relic deal is
+  struck (`event-relic-deal-struck`).
+- **Season 5 — Act 5, "The Undertow," what-remains.** The relic sale is
+  stopped at the brink (`event-relic-sale-stopped`); the Broker is unmasked
+  (`event-broker-unmasked`); the war does not end — the Widow is still
+  standing; the first crossing happens quietly at Rooktide
+  (`event-the-first-crossing`).
+
+## 2. Character dossiers
+
+All 18 named characters. Fate follows the plan's death list (spec §3);
+everyone not listed there survives to the epic's end.
+
+| Character | Want | Secret | Voice note | Key bonds | Fate |
+|---|---|---|---|---|---|
+| `char-quartermaster` | Keep everyone who reaches Millcross fed and counted. | None of her own — she carries other people's. | Counts things in meals and miles, never coin (Millcross diction). | The Expedition; the act-2 refugees; Liss's letters cross her desk. | Dies, act 4 (`event-quartermaster-falls`), shielding refugees from the Widow's mob. |
+| `char-expedition-member` | To matter to the ground he stands on. | — | Player-driven. | Farrow the Forward; the Quartermaster. | Alive — the throughline. |
+| `char-ashfang-alpha` (the Twin-Strike) | — (a wall, not a schemer). | — | No speech. | — | Already dead, act 1 (`event-twin-strike-falls`, existing). |
+| `char-the-broker` | To be right about people, forever — more than he wants money. | Personally engineered the first caravan burning; has kept the war balanced, never won, ever since. | Gilded Rot: calm ledger-and-chronicle accounting, even discussing lives. | Owns the Bell-Keeper's silence; sells to the Iron Regent. | Survives — exposed and broken (act 5, `event-broker-unmasked`), not among the epic's five deaths. |
+| `char-iron-regent` | To rule whatever's left when the war ends. | Is the buyer in the act-4 relic-weapon deal. | Ashen Vigil register: clipped command, frames every seizure of power as necessity. | Sister to the War-Countess; enemy to the Ash Prophet's raiders. | Survives — thwarted at the brink (`event-relic-sale-stopped`), not killed. |
+| `char-the-bell-keeper` | His daughter Mirelle free, above everything. | Has bent the bells for the Broker for years to keep her safe. | Ashen Vigil register: apologetic and precise, bell-schedule diction, guilt under procedure. | Mirelle (daughter); Warden Bright (reformer colleague). | Survives — breaks from the Broker act 4 (`event-bells-ring-true`), hands over the proof. |
+| `char-widow-of-the-first-caravan` | Both towns to burn. | Has known the false-flag truth since the ash cooled — see §3. | Ashen Vigil, flat and terse: states facts as verdicts, not feelings. | Her husband, dead in the first caravan; none surviving. | Survives, undefeated — no death, no defeat event (the epic's deliberate absence). |
+| `char-the-ash-prophet` | Everything standing should fall, as Cindervast fell. | None — he hides nothing, that's the point. | Ashen Vigil register: sermon cadence, short declarative bursts, addresses crowds. | Leads the Ashen Column; enemy to every named faction. | Survives, uncontained — the variable no closing event pins down. |
+| `char-war-countess` | To hold Embervale together without becoming her brother. | Privately suspects the Iron Regent more than she says aloud. | Ashen Vigil, grieving but composed. | Sister to the Iron Regent; gives act-1/act-2 quests. | Alive throughout. |
+| `char-speaker-of-norhollow` | To hold the palisade and bring her people home, in that order. | None load-bearing. | Ashen Vigil: answers with a tally count first, an opinion second, if ever. | Gives act-1 quests. | Alive throughout. |
+| `char-elder-of-rooktide` | To prove a town can come back, publicly, so others believe it. | None. | Ashen Vigil: measures time in "before the return" and "after." | Welcomes the first crossing, act 5. | Alive throughout. |
+| `char-farrow-the-forward` | To walk point so no one behind him has to. | None. | Ashen Vigil, plain and logistical, even at the end. | The expedition member. | Dies, act 2 (`event-farrow-falls`, `quest-hold-the-ford`). |
+| `char-clerk-of-gildmark` | To be paid enough to live with what he's seen. | Holds the ledger proof of the Broker's hand. | Gilded Rot diction cracking under fear. | Warden Bright brokers his deal. | Dies, act 3 (`event-clerk-silenced`), silenced to keep the ledger quiet. |
+| `char-thornveil-war-speaker` | A truce that holds. | None. | Ashen Vigil, terse (Thornveil register). | Represents Thornveil at the truce table. | Dies, act 3 (`event-warspeaker-falls`) — the truce dies with him. |
+| `char-warden-bright` | The bells to tell the truth again. | None. | Ashen Vigil, plainspoken despite living inside Gildmark. | The Clerk; the Bell-Keeper; Mirelle. | Alive throughout — central ally, acts 3–5. |
+| `char-mirelle` | To go home. | Is the leverage that has bent her father's bells for years; may not know the full scope. | Ashen Vigil, quiet. | Daughter of the Bell-Keeper. | Freed, act 4 (`event-bells-ring-true`, `quest-the-bell-keepers-price`). Alive. |
+| `char-liss-of-embervale` | One letter to reach Norhollow before the war closes the road for good. | None. | Ashen Vigil, letters register. | Joren of Norhollow (`letters-across-the-line`). | Alive — her letter finally delivered, act 5 (`event-the-first-crossing`). |
+| `char-joren-of-norhollow` | To keep reading letters, even the opened ones. | None. | Ashen Vigil. | Liss of Embervale. | Alive — meets Liss at the first crossing, act 5. |
+
+## 3. Who-knows-what matrix
+
+The four load-bearing secrets, who knows them, since which event, and who
+must not learn them before which act.
+
+### The false flag (the first caravan burning was staged)
+
+- **Knows:** the Broker (architect, from Day 0); the Widow (since the ash
+  cooled, Day 0); the Bell-Keeper (via the ledgers he's forced to hide,
+  before act 3); the Clerk of Gildmark (documentary proof, act 3); Warden
+  Bright and the player (`event-the-seal-that-matched-no-one`, act 2,
+  confirmed by `event-ledger-lifted`, act 3).
+- **Must not learn before:** the War-Countess and the Speaker of Norhollow
+  must not learn it before act 4 (`event-bells-ring-true`) — their belief
+  that the other side struck first is what keeps the war fed.
+- **Explicit:** the Widow knows the false-flag truth from Day 0 and does not
+  care. This is stated outright, never a reveal — her arc is never about
+  learning the truth, only about what she does with it.
+
+### The Broker's hand behind Gildmark
+
+- **Knows:** the Broker himself; the Bell-Keeper (coerced witness); the
+  Clerk of Gildmark (ledger proof); Warden Bright (via the Clerk, act 3);
+  the player (`event-ledger-lifted`, act 3).
+- **Must not learn before:** the Iron Regent must not learn it before act 4
+  — until then he believes he's dealing with "the Harbor Council," not one
+  man, and that belief is why he closes the relic deal at all.
+- **Exposure:** partial, act 4 (`event-bells-ring-true`); full, act 5
+  (`event-broker-unmasked`).
+
+### The Bell-Keeper's coerced bell-bending
+
+- **Knows:** the Broker (blackmailer); the Bell-Keeper himself; Mirelle
+  (knows she is the leverage — exact date she learned it is deliberately
+  unrecorded, hers to reveal, not canon's to fix); Warden Bright (suspects
+  early, confirms act 4).
+- **Must not learn before:** the wider Bellfaith congregation and both war
+  towns must not learn before act 4 (`event-bells-ring-true`) — the
+  confession is the act's hinge.
+
+### The relic weapon's existence
+
+- **Knows:** the Broker (seller); the Iron Regent (buyer, from
+  `event-relic-deal-struck`, act 4); the Ash Prophet (knows relics survived
+  Cindervast — he salvages that ground); the Elder of Rooktide (old enough
+  to remember it was never confirmed destroyed).
+- **Must not learn before:** the War-Countess must not learn of the sale
+  before act 5 (`event-relic-sale-stopped`) — learning earlier fractures
+  Embervale's own leadership ahead of schedule.
+
+## 4. Geography & trade logic
+
+- **Millcross** is the literal hub — every road elsewhere passes through or
+  near it. The Northern Icefield lies further north past Millcross's
+  expedition camp; Thornveil's bramble forest lies east of Millcross.
+- **Embervale** and **Norhollow** are sister towns on either side of the
+  Ashvale plain, roughly a day's ride apart in peacetime. **Ashvale Front**
+  is the contested middle ground between them — neither town claims it, both
+  bury their dead in it; wartime crossing is under a day, which is exactly
+  why the front is so lethal.
+- **Gildmark** sits on the coast: reachable from Millcross by the old trade
+  road (4–5 days) and from both war towns by a coastal spur (about 3 days).
+  Its harbor is the only deepwater port on this coast — there is no other
+  route to bring bound war-beasts or relic-cargo in by ship, which is why
+  the arms flow, in either direction, must pass Gildmark's harbor.
+- **Rooktide** sits inland, south of Millcross (about 2 days), off the
+  direct war road entirely — part of why it recovered undisturbed, and why
+  it's the natural place for the first crossing (act 5) to happen quietly,
+  away from either capital's watching eyes.
+- **Cindervast**, the fallen city, lies beyond Ashvale Front to the
+  north-west, on ground both war towns avoid; its ruin districts border the
+  same wild ground the Ash Prophet's raiders use to strike Embervale's and
+  Norhollow's outer farms.
+
+## 5. Contradiction rule
+
+Content in Tasks 3–8 that contradicts this file is a review finding; fix the
+content or amend this file deliberately in the same commit, never silently.
