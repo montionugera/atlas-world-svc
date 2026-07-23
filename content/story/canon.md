@@ -38,11 +38,13 @@ background; everything after is expressed in seasons.
   staged incident. The Widow's husband dies in it; she learns the truth
   before the ash cools and does not care (§3 below).
 - **Season 1 after Day 0 — Act 1, "Small Lives," quiet-before.** The existing
-  seed events — the Twin-Strike falls (`event-twin-strike-falls`) at
-  Millcross's meadow edge, and the Icefield-Thornveil standoff
-  (`event-icefield-thornveil-standoff`) — read, in hindsight, as the quiet
-  before a war neither town yet admits is coming. Crates with no maker's mark
-  and pre-opened letters are already moving.
+  seed events — the Twin-Strike falls (`event-twin-strike-falls`), a meadow
+  cull at Millcross's edge that lands around Day 0 and is causally
+  independent of the caravan burning (near-simultaneous, unconnected — a
+  wall, not a schemer, per its dossier in §2), and the Icefield-Thornveil
+  standoff (`event-icefield-thornveil-standoff`) — read, in hindsight, as the
+  quiet before a war neither town yet admits is coming. Crates with no
+  maker's mark and pre-opened letters are already moving.
 - **Season 2 — Act 2, "The War Comes Home," severance.** War declared
   (`event-war-declared`); refugees flood Millcross
   (`event-refuge-at-millcross`); Farrow the Forward dies at the ford

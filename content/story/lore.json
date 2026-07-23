@@ -313,8 +313,8 @@
     "id": "lore-a-wardens-private-tally",
     "kind": "lore",
     "title": "A Warden's Private Tally",
-    "summary": "A junior warden's unreported count of every time the seventh bell rang late.",
-    "body": "A junior warden's private tally, kept nowhere official: seventh bell, four minutes late, eleven times this year alone. She never reported the count. She only kept it, in case someone ever asked.",
+    "summary": "A junior warden's unreported count of every proclamation that never reached the square.",
+    "body": "A junior warden's private tally, kept nowhere official: eleven proclamations that arrived sealed with the Bellfaith mark and were never read, eleven news-letters burned before the square ever heard them, all this year alone. She never reported the count. She only kept it, in case someone ever asked.",
     "anchor": "faction-bellfaith",
     "thread": "the-bent-bells",
     "links": []
@@ -333,8 +333,8 @@
     "id": "lore-the-bell-keepers-schedule",
     "kind": "lore",
     "title": "The Bell-Keeper's Schedule",
-    "summary": "His own hand, precise as always, records a delay it never explains.",
-    "body": "His own schedule, in his own hand: 'Seventh bell — hold four minutes. Reason: none written. Cost: paid gladly, every time.' He never wrote what the cost bought. He never needed to remind himself twice.",
+    "summary": "His own hand, precise as always, records an order it never explains.",
+    "body": "His own schedule, in his own hand: 'Seventh proclamation — burned, not sealed. Reason: none written. Cost: paid gladly, every time.' He never wrote what the cost bought. He never needed to remind himself twice.",
     "anchor": "char-the-bell-keeper",
     "thread": "the-bent-bells",
     "links": []

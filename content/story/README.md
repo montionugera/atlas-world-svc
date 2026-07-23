@@ -8,10 +8,15 @@ conventions, the coherence rules the gate enforces, the commands to run, and
 the loop that ships a new epic safely.
 
 The `content/story/{acts,characters,arcs,quests,events,dialogue,lore}.json` +
-`regions.json` + `factions.json` currently hold a small worked example (the
-"Meadow Awakening" / "Icefield Reckoning" epic) that exercises every kind and
-every edge type described below — read it alongside this guide, or copy its
-shape as a template for a new epic.
+`regions.json` + `factions.json` currently hold the full 5-act **"The
+Undertow"** epic — a staged false-flag caravan burning that drags Embervale
+and Norhollow into war, traced through a stolen ledger, a Bell-Keeper's
+broken silence, and a war that doesn't end even after the truth comes out.
+The original "Meadow Awakening" / "Icefield Reckoning" seed content is
+folded in as its act-1/act-2 quiet-before (Millcross's frontier, pre-war).
+Together they exercise every kind and every edge type described below —
+read it alongside this guide, or copy its shape as a template for a new
+epic.
 
 **Voice law:** `content/story/style.md` is the theme bible — read it before
 writing any title, summary, narrative text, dialogue line, or lore body; it

@@ -389,7 +389,7 @@
     "narrative": {
       "description": "The ledger names an office, never a man. Warden Bright has found the man anyway — under the bell tower, the Bell-Keeper keeps a daughter closer than any daughter should be kept, and the Council keeps her closer still. Get her out, and he might finally ring something true.",
       "offerText": "Get into the tower district. Find where Mirelle is kept. Bring her out before the Council notices the door's open.",
-      "completeText": "Mirelle came out from under the tower into open air and didn't say much for the first mile. Behind you, the seventh bell started ringing — on time, for once."
+      "completeText": "Mirelle came out from under the tower into open air and didn't say much for the first mile. Behind you, the assembly bell rang, and for the first time in years, the proclamation read out beneath it was the true one."
     },
     "giver": "char-warden-bright",
     "region": "region-gildmark",
