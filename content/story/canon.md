@@ -120,12 +120,19 @@ must not learn them before which act.
 - **Exposure:** partial, act 4 (`event-bells-ring-true`); full, act 5
   (`event-broker-unmasked`).
 
-### The Bell-Keeper's coerced bell-bending
+### The Bell-Keeper's bent proclamations
 
-- **Knows:** the Broker (blackmailer); the Bell-Keeper himself; Mirelle
-  (knows she is the leverage — exact date she learned it is deliberately
-  unrecorded, hers to reveal, not canon's to fix); Warden Bright (suspects
-  early, confirms act 4).
+Bells alone cannot carry detail (see "How news travels" in §4) — the
+Bell-Keeper's coercion is never about bending a bell's tone. It is about
+which proclamations get sealed true and which get burned, and what the
+official reading of the first caravan burning says beneath the tower.
+
+- **Knows:** the Broker (blackmailer — controls which proclamations the
+  Bell-Keeper is permitted to seal); the Bell-Keeper himself (decides,
+  under duress, which news-letters carry the Bellfaith seal and which never
+  reach a proclamation at all); Mirelle (knows she is the leverage — exact
+  date she learned it is deliberately unrecorded, hers to reveal, not
+  canon's to fix); Warden Bright (suspects early, confirms act 4).
 - **Must not learn before:** the wider Bellfaith congregation and both war
   towns must not learn before act 4 (`event-bells-ring-true`) — the
   confession is the act's hinge.
@@ -163,6 +170,30 @@ must not learn them before which act.
   north-west, on ground both war towns avoid; its ruin districts border the
   same wild ground the Ash Prophet's raiders use to strike Embervale's and
   Norhollow's outer farms.
+
+### How news travels (the Bellfaith, three layers)
+
+Bells alone cannot carry detail — a single tolling tower has no way to ring
+out a paragraph. The Bellfaith's news system is three layers, and "whoever
+owns the bells owns the truth" (spec §5) means owning layers 2 and 3, never
+layer 1:
+
+1. **Bells signal.** Simple codes only — danger, war, all-clear, "assemble
+   for a proclamation." A bell never carries detailed news, only the fact
+   that news is coming or a threat is present.
+2. **Bell-wardens proclaim.** The detailed news is read aloud beneath the
+   tower by a bell-warden. People trust a proclamation because it arrives
+   with the sacred toll that summoned them to hear it.
+3. **The bell-seal certifies.** Inter-town proclamations and news-letters
+   count as true only when stamped with the Bellfaith seal — the seal is
+   this world's state news agency and notary in one. An unsealed
+   proclamation is just a rumor with good staging.
+
+The Bell-Keeper's corruption lives entirely in layers 2 and 3: which
+proclamations he lets be read, which get sealed true, which get quietly
+burned before either — never in the tone or timing of the bell itself.
+Player-facing, this stays one sentence: news comes from the bell tower, and
+the man who runs it can lie.
 
 ## 5. Contradiction rule
 
