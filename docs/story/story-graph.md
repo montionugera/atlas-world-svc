@@ -485,6 +485,7 @@ flowchart LR
   n_quest_the_last_letter -->|giver| n_char_liss_of_embervale
   n_quest_the_last_letter -->|region| n_region_ashvale_front
   n_quest_the_last_letter -->|unlockedBy| n_act_2
+  n_quest_the_last_letter -->|unlockedBy| n_event_farrow_falls
   n_quest_the_ledger_theft -->|arcId| n_arc_ledger_game
   n_quest_the_ledger_theft -->|faction| n_faction_gildmark_council
   n_quest_the_ledger_theft -->|giver| n_char_clerk_of_gildmark

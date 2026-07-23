@@ -493,7 +493,7 @@
     "title": "The Broker's Ledger",
     "summary": "A stopped crate isn't proof. The ledger still only names an office, and someone has to make it name a man.",
     "narrative": {
-      "description": "The crate never sailed, but the ledger still says 'the Council,' the way it always has — every hand left in the tower answers to someone the Broker pays. The Elder of Rooktide came to Gildmark to beg harbor passage for wounded her town hasn't taken in yet, and finds herself holding the one page that names a man instead of an office. Nobody in Gildmark can buy an outsider who wants nothing from them.",
+      "description": "The crate never sailed, but the ledger still says 'the Council,' the way it always has — every hand left in the tower answers to someone the Broker pays. The Elder of Rooktide came to Gildmark to beg harbor passage for wounded that her town hasn't taken in yet, and finds herself holding the one page that names a man instead of an office. Nobody in Gildmark can buy an outsider who wants nothing from them.",
       "offerText": "Get the ledger page out of the tower and into the harbor square, where it can be read aloud before anyone seals it shut again.",
       "completeText": "The page reaches the square. It doesn't name the Council. It names a man."
     },
@@ -606,7 +606,8 @@
     "region": "region-ashvale-front",
     "faction": "faction-unaligned",
     "unlockedBy": [
-      "act-2"
+      "act-2",
+      "event-farrow-falls"
     ],
     "arcId": "arc-small-mercies",
     "objectives": [
