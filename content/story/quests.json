@@ -30,12 +30,14 @@
     "narrative": {
       "description": "Ashfang brutes are testing the tent line.",
       "offerText": "Thin the Ashfang packs before they mass.",
-      "completeText": "The charge is broken \u2014 for now."
+      "completeText": "The charge is broken — for now."
     },
     "giver": "char-quartermaster",
     "region": "region-spawn-meadow",
     "faction": "faction-ashfang",
-    "unlockedBy": ["quest-first-steps"],
+    "unlockedBy": [
+      "quest-first-steps"
+    ],
     "arcId": "arc-meadow-awakening",
     "objectives": [
       {
@@ -59,7 +61,9 @@
     "giver": "char-quartermaster",
     "region": "region-spawn-meadow",
     "faction": "faction-unaligned",
-    "unlockedBy": ["quest-cull-the-packs"],
+    "unlockedBy": [
+      "quest-cull-the-packs"
+    ],
     "arcId": "arc-meadow-awakening",
     "objectives": [
       {
@@ -83,7 +87,9 @@
     "giver": "char-quartermaster",
     "region": "region-icefield",
     "faction": "faction-stoneguard",
-    "unlockedBy": ["quest-the-twin-strike"],
+    "unlockedBy": [
+      "quest-the-twin-strike"
+    ],
     "arcId": "arc-icefield-reckoning",
     "objectives": [
       {
@@ -123,14 +129,16 @@
     "title": "The Unmarked Crates",
     "summary": "Walk Gildmark's latest wagons in from the crossroads and log what comes through the gate.",
     "narrative": {
-      "description": "Three wagons came up the Gildmark road before dawn, and not one crate on them carries a maker's mark, same as the ones before them. The Countess wants them counted through the gate and logged, nothing more asked. She didn't say why. Nobody's asked a Gildmark wagon a question in years and gotten an answer worth the walk back.",
+      "description": "Three wagons came up the Gildmark road before dawn, and not one crate on them carries a maker's mark, same as the ones before them. The Countess wants them counted through the gate and logged, nothing more asked. She didn't say why. Nobody's asked a Gildmark wagon a question in years. Nobody's ever gotten an answer worth the walk back.",
       "offerText": "Walk the wagons in from the crossroads to the gate. Count the crates. Keep the road clear of anything that isn't a wagon.",
       "completeText": "Thirty-one crates, no mark on any of them, logged and stacked behind the armory same as the ones before. The Countess signed the tally without looking up. Nobody in the yard asked what was inside. Nobody ever does."
     },
     "giver": "char-war-countess",
     "region": "region-embervale",
     "faction": "faction-gildmark-council",
-    "unlockedBy": ["quest-embervale-watchfires"],
+    "unlockedBy": [
+      "quest-embervale-watchfires"
+    ],
     "arcId": "arc-embervale-outskirts",
     "objectives": [
       {
@@ -177,7 +185,9 @@
     "giver": "char-speaker-of-norhollow",
     "region": "region-norhollow",
     "faction": "faction-gildmark-council",
-    "unlockedBy": ["quest-norhollow-palisade"],
+    "unlockedBy": [
+      "quest-norhollow-palisade"
+    ],
     "arcId": "arc-norhollow-outskirts",
     "objectives": [
       {
