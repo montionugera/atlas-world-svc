@@ -82,5 +82,33 @@
       "Tell the Quartermaster the ford held. That's all she needs to hear tonight."
     ],
     "context": "quest-hold-the-ford"
+  },
+  {
+    "id": "dlg-clerk-terms",
+    "kind": "dialogue",
+    "title": "The Clerk's Terms",
+    "summary": "The Clerk of Gildmark sets the price for what he knows, and the terms for staying alive after telling it.",
+    "links": [],
+    "speaker": "char-clerk-of-gildmark",
+    "lines": [
+      "The price is small. Small enough that no one asks why a clerk needed it.",
+      "I want passage out before the copy leaves my hands — not after. After, I'm just an entry someone corrects.",
+      "Don't open it until you're somewhere the Council doesn't own the walls. Not even under Warden Bright's own bell-tower."
+    ],
+    "context": "quest-the-clerks-price"
+  },
+  {
+    "id": "dlg-ash-prophet-sermon",
+    "kind": "dialogue",
+    "title": "Sermon Over the Wreckage",
+    "summary": "The Ash Prophet preaches over the War-Speaker's body before anyone can carry it away.",
+    "links": [],
+    "speaker": "char-the-ash-prophet",
+    "lines": [
+      "A man came to sign a truce, and the truce killed him faster than any war did.",
+      "You keep building tables. The dead keep falling off them.",
+      "Cindervast fell once and stopped lying about what it was. Everything still standing here is lying to your face — this table included."
+    ],
+    "context": "event-warspeaker-falls"
   }
 ]

@@ -50,6 +50,11 @@ flowchart LR
   end
   subgraph sg_n_act_3["Act 3 — The Ledger Game"]
     n_act_3["act-3"]:::act
+    n_arc_ledger_game["arc-ledger-game"]:::arc
+    n_quest_a_face_for_gildmark["quest-a-face-for-gildmark"]:::quest
+    n_quest_out_the_harbor_gate["quest-out-the-harbor-gate"]:::quest
+    n_quest_the_clerks_price["quest-the-clerks-price"]:::quest
+    n_quest_the_ledger_theft["quest-the-ledger-theft"]:::quest
   end
   subgraph sg_n_act_4["Act 4 — The Truth Arrives Late"]
     n_act_4["act-4"]:::act
@@ -75,19 +80,24 @@ flowchart LR
   n_char_war_countess["char-war-countess"]:::character
   n_char_warden_bright["char-warden-bright"]:::character
   n_char_widow_of_the_first_caravan["char-widow-of-the-first-caravan"]:::character
+  n_dlg_ash_prophet_sermon["dlg-ash-prophet-sermon"]:::dialogue
+  n_dlg_clerk_terms["dlg-clerk-terms"]:::dialogue
   n_dlg_expedition_member_twin_strike_aftermath["dlg-expedition-member-twin-strike-aftermath"]:::dialogue
   n_dlg_farrow_at_the_ford["dlg-farrow-at-the-ford"]:::dialogue
   n_dlg_quartermaster_icefield_briefing["dlg-quartermaster-icefield-briefing"]:::dialogue
   n_dlg_quartermaster_road_of_strangers["dlg-quartermaster-road-of-strangers"]:::dialogue
   n_dlg_speaker_of_norhollow_briefing["dlg-speaker-of-norhollow-briefing"]:::dialogue
   n_dlg_war_countess_briefing["dlg-war-countess-briefing"]:::dialogue
+  n_event_clerk_silenced["event-clerk-silenced"]:::event
   n_event_farrow_falls["event-farrow-falls"]:::event
   n_event_first_caravan_burns["event-first-caravan-burns"]:::event
   n_event_icefield_thornveil_standoff["event-icefield-thornveil-standoff"]:::event
+  n_event_ledger_lifted["event-ledger-lifted"]:::event
   n_event_refuge_at_millcross["event-refuge-at-millcross"]:::event
   n_event_the_seal_that_matched_no_one["event-the-seal-that-matched-no-one"]:::event
   n_event_twin_strike_falls["event-twin-strike-falls"]:::event
   n_event_war_declared["event-war-declared"]:::event
+  n_event_warspeaker_falls["event-warspeaker-falls"]:::event
   n_faction_ashen_column["faction-ashen-column"]:::faction
   n_faction_ashfang["faction-ashfang"]:::faction
   n_faction_bellfaith["faction-bellfaith"]:::faction
@@ -116,6 +126,11 @@ flowchart LR
   n_arc_embervale_outskirts -->|questIds| n_quest_the_unmarked_crates
   n_arc_icefield_reckoning -->|actId| n_act_2
   n_arc_icefield_reckoning -->|questIds| n_quest_icefield_reckoning
+  n_arc_ledger_game -->|actId| n_act_3
+  n_arc_ledger_game -->|questIds| n_quest_a_face_for_gildmark
+  n_arc_ledger_game -->|questIds| n_quest_out_the_harbor_gate
+  n_arc_ledger_game -->|questIds| n_quest_the_clerks_price
+  n_arc_ledger_game -->|questIds| n_quest_the_ledger_theft
   n_arc_meadow_awakening -->|actId| n_act_1
   n_arc_meadow_awakening -->|questIds| n_quest_cull_the_packs
   n_arc_meadow_awakening -->|questIds| n_quest_first_steps
@@ -130,6 +145,7 @@ flowchart LR
   n_char_ashfang_alpha -->|diedAt| n_event_twin_strike_falls
   n_char_ashfang_alpha -->|faction| n_faction_unaligned
   n_char_ashfang_alpha -->|region| n_region_spawn_meadow
+  n_char_clerk_of_gildmark -->|diedAt| n_event_clerk_silenced
   n_char_clerk_of_gildmark -->|faction| n_faction_gildmark_council
   n_char_clerk_of_gildmark -->|region| n_region_gildmark
   n_char_elder_of_rooktide -->|region| n_region_rooktide
@@ -153,6 +169,7 @@ flowchart LR
   n_char_the_bell_keeper -->|region| n_region_gildmark
   n_char_the_broker -->|faction| n_faction_gildmark_council
   n_char_the_broker -->|region| n_region_gildmark
+  n_char_thornveil_war_speaker -->|diedAt| n_event_warspeaker_falls
   n_char_thornveil_war_speaker -->|faction| n_faction_thornveil
   n_char_thornveil_war_speaker -->|region| n_region_thornveil
   n_char_war_countess -->|faction| n_faction_embervale_banner
@@ -161,6 +178,10 @@ flowchart LR
   n_char_warden_bright -->|region| n_region_gildmark
   n_char_widow_of_the_first_caravan -->|faction| n_faction_embervale_banner
   n_char_widow_of_the_first_caravan -->|region| n_region_embervale
+  n_dlg_ash_prophet_sermon -->|context| n_event_warspeaker_falls
+  n_dlg_ash_prophet_sermon -->|speaker| n_char_the_ash_prophet
+  n_dlg_clerk_terms -->|context| n_quest_the_clerks_price
+  n_dlg_clerk_terms -->|speaker| n_char_clerk_of_gildmark
   n_dlg_expedition_member_twin_strike_aftermath -->|context| n_event_twin_strike_falls
   n_dlg_expedition_member_twin_strike_aftermath -->|speaker| n_char_expedition_member
   n_dlg_farrow_at_the_ford -->|context| n_quest_hold_the_ford
@@ -173,6 +194,8 @@ flowchart LR
   n_dlg_speaker_of_norhollow_briefing -->|speaker| n_char_speaker_of_norhollow
   n_dlg_war_countess_briefing -->|context| n_quest_embervale_watchfires
   n_dlg_war_countess_briefing -->|speaker| n_char_war_countess
+  n_event_clerk_silenced -->|involves| n_char_clerk_of_gildmark
+  n_event_clerk_silenced -->|involves| n_faction_gildmark_council
   n_event_farrow_falls -->|involves| n_char_farrow_the_forward
   n_event_farrow_falls -->|involves| n_faction_ashen_column
   n_event_farrow_falls -->|triggeredBy| n_quest_hold_the_ford
@@ -183,6 +206,8 @@ flowchart LR
   n_event_icefield_thornveil_standoff -->|involves| n_faction_thornveil
   n_event_icefield_thornveil_standoff -->|involves| n_region_icefield
   n_event_icefield_thornveil_standoff -->|triggeredBy| n_quest_icefield_reckoning
+  n_event_ledger_lifted -->|involves| n_char_the_broker
+  n_event_ledger_lifted -->|triggeredBy| n_quest_the_ledger_theft
   n_event_refuge_at_millcross -->|involves| n_faction_expedition
   n_event_refuge_at_millcross -->|involves| n_region_millcross
   n_event_the_seal_that_matched_no_one -->|involves| n_char_expedition_member
@@ -193,6 +218,8 @@ flowchart LR
   n_event_twin_strike_falls -->|triggeredBy| n_quest_the_twin_strike
   n_event_war_declared -->|involves| n_faction_embervale_banner
   n_event_war_declared -->|involves| n_faction_norhollow_banner
+  n_event_warspeaker_falls -->|involves| n_char_thornveil_war_speaker
+  n_event_warspeaker_falls -->|involves| n_faction_thornveil
   n_faction_ashen_column -->|relationships| n_faction_embervale_banner
   n_faction_ashen_column -->|relationships| n_faction_gildmark_council
   n_faction_ashen_column -->|relationships| n_faction_norhollow_banner
@@ -206,6 +233,12 @@ flowchart LR
   n_faction_unaligned -->|relationships| n_faction_ashfang
   n_lore_first_claim_stone -->|anchor| n_region_icefield
   n_lore_guarded_nothing -->|anchor| n_faction_stoneguard
+  n_quest_a_face_for_gildmark -->|arcId| n_arc_ledger_game
+  n_quest_a_face_for_gildmark -->|faction| n_faction_gildmark_council
+  n_quest_a_face_for_gildmark -->|giver| n_char_warden_bright
+  n_quest_a_face_for_gildmark -->|region| n_region_gildmark
+  n_quest_a_face_for_gildmark -->|unlockedBy| n_act_3
+  n_quest_a_face_for_gildmark -->|unlockedBy| n_event_the_seal_that_matched_no_one
   n_quest_cull_the_packs -->|arcId| n_arc_meadow_awakening
   n_quest_cull_the_packs -->|faction| n_faction_ashfang
   n_quest_cull_the_packs -->|giver| n_char_quartermaster
@@ -238,11 +271,26 @@ flowchart LR
   n_quest_norhollow_palisade -->|faction| n_faction_unaligned
   n_quest_norhollow_palisade -->|giver| n_char_speaker_of_norhollow
   n_quest_norhollow_palisade -->|region| n_region_norhollow
+  n_quest_out_the_harbor_gate -->|arcId| n_arc_ledger_game
+  n_quest_out_the_harbor_gate -->|faction| n_faction_gildmark_council
+  n_quest_out_the_harbor_gate -->|giver| n_char_warden_bright
+  n_quest_out_the_harbor_gate -->|region| n_region_gildmark
+  n_quest_out_the_harbor_gate -->|unlockedBy| n_quest_the_ledger_theft
   n_quest_salvage_run -->|arcId| n_arc_war_comes_home
   n_quest_salvage_run -->|faction| n_faction_unaligned
   n_quest_salvage_run -->|giver| n_char_quartermaster
   n_quest_salvage_run -->|region| n_region_ashvale_front
   n_quest_salvage_run -->|unlockedBy| n_quest_the_road_of_strangers
+  n_quest_the_clerks_price -->|arcId| n_arc_ledger_game
+  n_quest_the_clerks_price -->|faction| n_faction_gildmark_council
+  n_quest_the_clerks_price -->|giver| n_char_clerk_of_gildmark
+  n_quest_the_clerks_price -->|region| n_region_gildmark
+  n_quest_the_clerks_price -->|unlockedBy| n_quest_a_face_for_gildmark
+  n_quest_the_ledger_theft -->|arcId| n_arc_ledger_game
+  n_quest_the_ledger_theft -->|faction| n_faction_gildmark_council
+  n_quest_the_ledger_theft -->|giver| n_char_clerk_of_gildmark
+  n_quest_the_ledger_theft -->|region| n_region_gildmark
+  n_quest_the_ledger_theft -->|unlockedBy| n_quest_the_clerks_price
   n_quest_the_road_of_strangers -->|arcId| n_arc_war_comes_home
   n_quest_the_road_of_strangers -->|faction| n_faction_expedition
   n_quest_the_road_of_strangers -->|giver| n_char_quartermaster

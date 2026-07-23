@@ -59,5 +59,19 @@
       "quest-hold-the-ford"
     ],
     "links": []
+  },
+  {
+    "id": "arc-ledger-game",
+    "kind": "arc",
+    "title": "The Ledger Game",
+    "summary": "Wear a name Gildmark has never priced, buy a clerk's confession, and get the proof out the harbor gate before the Council notices what's missing.",
+    "actId": "act-3",
+    "questIds": [
+      "quest-a-face-for-gildmark",
+      "quest-the-clerks-price",
+      "quest-the-ledger-theft",
+      "quest-out-the-harbor-gate"
+    ],
+    "links": []
   }
 ]

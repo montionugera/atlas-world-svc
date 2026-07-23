@@ -88,5 +88,41 @@
       "char-farrow-the-forward",
       "faction-ashen-column"
     ]
+  },
+  {
+    "id": "event-ledger-lifted",
+    "kind": "event",
+    "title": "The Ledger Is Lifted",
+    "summary": "The copied page proves what the Council never wrote plain — money moving through both war chests from the same account. The ledger still doesn't put a face to the name behind it.",
+    "links": [],
+    "timelineOrder": 8,
+    "triggeredBy": "quest-the-ledger-theft",
+    "involves": [
+      "char-the-broker"
+    ]
+  },
+  {
+    "id": "event-clerk-silenced",
+    "kind": "event",
+    "title": "The Clerk Is Silenced",
+    "summary": "The Clerk of Gildmark is found at the foot of the harbor stair before dawn, ruled an accident by a Council report that reads like every other ledger entry: clean, correct, and final. He asked for a price. He paid a different one.",
+    "links": [],
+    "timelineOrder": 9,
+    "involves": [
+      "char-clerk-of-gildmark",
+      "faction-gildmark-council"
+    ]
+  },
+  {
+    "id": "event-warspeaker-falls",
+    "kind": "event",
+    "title": "The War-Speaker Falls",
+    "summary": "The Thornveil War-Speaker falls at the truce table before the terms he carried ever reach either war town, struck down by a hand wearing the wrong side's colors on purpose. Whoever wanted the fighting to keep paying didn't want a truce signed either. The truce dies with him.",
+    "links": [],
+    "timelineOrder": 10,
+    "involves": [
+      "char-thornveil-war-speaker",
+      "faction-thornveil"
+    ]
   }
 ]

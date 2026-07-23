@@ -60,15 +60,17 @@ test("content gate is green on the real tree (no --require-complete)", () => {
 // Task 4 (act 2 — the war comes home) de-orphans 1 more: char-farrow-the-
 // forward becomes a quest giver (quest-hold-the-ford) and dies in
 // event-farrow-falls.
+//
+// Task 5 (act 3 — the ledger game) de-orphans 5 more: char-warden-bright and
+// char-clerk-of-gildmark become quest givers (arc-ledger-game's 4-quest
+// chain), char-the-broker is involved in event-ledger-lifted,
+// char-clerk-of-gildmark and char-thornveil-war-speaker die in
+// event-clerk-silenced / event-warspeaker-falls, and char-the-ash-prophet
+// becomes a dialogue speaker (dlg-ash-prophet-sermon).
 const EXPECTED_MID_EPIC_ORPHAN_CHARACTERS = [
-  "char-the-broker",
   "char-iron-regent",
   "char-the-bell-keeper",
-  "char-the-ash-prophet",
   "char-elder-of-rooktide",
-  "char-clerk-of-gildmark",
-  "char-thornveil-war-speaker",
-  "char-warden-bright",
   "char-mirelle",
   "char-liss-of-embervale",
   "char-joren-of-norhollow",
@@ -108,7 +110,8 @@ test("the seed epic exercises every kind and every unlockedBy/edge shape (5 arcs
   // cross-arc unlockedBy chain into a later act, checked below.
   //
   // F-016 (Undertow) Task 4: act 2 adds its own arc-war-comes-home.
-  assert.equal(arcs.length, 5, "expected 5 arcs total after Undertow Task 4 (2 seed + 2 act-1 starters + 1 act-2 arc)");
+  // F-016 (Undertow) Task 5: act 3 adds its own arc-ledger-game.
+  assert.equal(arcs.length, 6, "expected 6 arcs total after Undertow Task 5 (2 seed + 2 act-1 starters + 1 act-2 arc + 1 act-3 arc)");
   assert.ok(quests.length >= 4, "expected at least 4 quests total");
   assert.ok(events.length >= 2, "expected at least 2 events (events.json was empty before Task 7)");
   assert.ok(dialogue.length >= 2, "expected at least 2 dialogue nodes (dialogue.json was empty before Task 7)");
@@ -121,29 +124,38 @@ test("the seed epic exercises every kind and every unlockedBy/edge shape (5 arcs
   assert.equal(alpha.status, "dead", "expected char-ashfang-alpha to be dead");
   assert.equal(alpha.diedAt, "event-twin-strike-falls", "expected char-ashfang-alpha.diedAt to resolve to its death event");
 
-  // A quest whose arcId belongs to the second (highest-order) arc must have an
-  // unlockedBy quest-* chain reaching back into the first arc — proves the
-  // "valid unlockedBy chain across the 2 arcs" requirement, not just two
-  // disconnected arcs.
+  // At least one quest's unlockedBy quest-* chain must reach into a
+  // *different* arc than the one it started in — proves the "valid
+  // unlockedBy chain across arcs" requirement, not just disconnected arcs.
+  //
+  // F-016 (Undertow) Task 5: previously this test located its starting quest
+  // by picking "the highest-order arc" and asserting its chain reaches
+  // another arc. That assumption broke the moment a later, higher-order arc
+  // (arc-ledger-game, act-3) was added whose own internal quest chain stays
+  // self-contained (its first quest is gated by `act-3` + an event, not a
+  // quest-*). The invariant this test actually cares about — that some
+  // cross-arc quest chain exists in the graph at all — doesn't depend on
+  // *which* arc demonstrates it, so the search now scans every quest instead
+  // of hardcoding "the second arc".
   const questById = new Map(quests.map((q) => [q.id, q]));
-  const arcById = new Map(arcs.map((a) => [a.id, a]));
-  const actById = new Map(acts.map((a) => [a.id, a]));
-  const secondArc = [...arcs].sort((a, b) => actById.get(b.actId).order - actById.get(a.actId).order)[0];
   const questUnlockId = (q) => (q.unlockedBy ?? []).find((id) => id.startsWith("quest-"));
-  const crossArcQuest = quests.find((q) => q.arcId === secondArc.id && questUnlockId(q));
-  assert.ok(crossArcQuest, "expected at least one quest in the later arc with a quest-* unlockedBy entry");
 
-  let cur = crossArcQuest;
-  let reachedOtherArc = false;
-  const seen = new Set();
-  while (questUnlockId(cur)) {
-    assert.ok(!seen.has(cur.id), `unlockedBy cycle at ${cur.id}`);
-    seen.add(cur.id);
-    cur = questById.get(questUnlockId(cur));
-    assert.ok(cur, "unlockedBy quest-* entry must resolve to a real quest");
-    if (cur.arcId !== crossArcQuest.arcId) reachedOtherArc = true;
-  }
-  assert.ok(reachedOtherArc, "expected the later-arc quest's unlockedBy chain to reach into the other arc");
+  const chainReachesOtherArc = (startQuest) => {
+    let cur = startQuest;
+    const seen = new Set();
+    while (questUnlockId(cur)) {
+      assert.ok(!seen.has(cur.id), `unlockedBy cycle at ${cur.id}`);
+      seen.add(cur.id);
+      const next = questById.get(questUnlockId(cur));
+      assert.ok(next, "unlockedBy quest-* entry must resolve to a real quest");
+      if (next.arcId !== startQuest.arcId) return true;
+      cur = next;
+    }
+    return false;
+  };
+
+  const crossArcQuest = quests.find((q) => questUnlockId(q) && chainReachesOtherArc(q));
+  assert.ok(crossArcQuest, "expected at least one quest with a quest-* unlockedBy chain reaching into another arc");
 
   // event.triggeredBy and dialogue.context together exercise both allowed
   // dialogue.context target kinds (quest and event).

@@ -275,5 +275,110 @@
       }
     ],
     "links": []
+  },
+  {
+    "id": "quest-a-face-for-gildmark",
+    "kind": "quest",
+    "title": "A Face for Gildmark",
+    "summary": "Wear a name the Harbor Council has never priced, and get inside Gildmark as someone worth nothing to watch.",
+    "narrative": {
+      "description": "Warden Bright has papers ready — a name, a trade, a reason to stand near the ledger house that isn't 'spy.' The Council watches every face it's already seen twice. This face, it hasn't seen once.",
+      "offerText": "Take the papers. Wear the name. Work the dock shift they buy you, and clear the toughs testing the new hire, until the ledger house stops looking twice.",
+      "completeText": "The papers held at the gate. Nobody asked a second question. You have a name now that isn't yours, and a reason to stand exactly where the ledger house can see you."
+    },
+    "giver": "char-warden-bright",
+    "region": "region-gildmark",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": [
+      "act-3",
+      "event-the-seal-that-matched-no-one"
+    ],
+    "arcId": "arc-ledger-game",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-clerks-price",
+    "kind": "quest",
+    "title": "The Clerk's Price",
+    "summary": "Meet the Clerk of Gildmark on his own terms, and hear what he wants for what he knows.",
+    "narrative": {
+      "description": "The Clerk of Gildmark has seen the ledgers that matter, and he's done carrying what he's seen alone. He'll talk — for a price, and only somewhere the Council doesn't listen.",
+      "offerText": "Meet the Clerk where he names. Hear his price. Keep whoever's watching him off his back until he's said it.",
+      "completeText": "He named his price, low enough that it was never about the coin. That should have been the first thing that worried you."
+    },
+    "giver": "char-clerk-of-gildmark",
+    "region": "region-gildmark",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": [
+      "quest-a-face-for-gildmark"
+    ],
+    "arcId": "arc-ledger-game",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 2
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-the-ledger-theft",
+    "kind": "quest",
+    "title": "The Ledger Theft",
+    "summary": "Follow the Clerk's watch-schedule into the vault room and copy the page that names names.",
+    "narrative": {
+      "description": "The Clerk has a way into the vault room — one night, one watch rotation, one page the Council never meant seen. After tonight, the ledger says something true that the Council didn't choose to say.",
+      "offerText": "Follow the Clerk's watch-schedule into the vault room. Copy the page he marks. Get clear before the next round comes through.",
+      "completeText": "The page is copied and the vault door's shut behind you same as you found it. For the first time, the ledger says something true the Council never chose to write."
+    },
+    "giver": "char-clerk-of-gildmark",
+    "region": "region-gildmark",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": [
+      "quest-the-clerks-price"
+    ],
+    "arcId": "arc-ledger-game",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 4
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-out-the-harbor-gate",
+    "kind": "quest",
+    "title": "Out the Harbor Gate",
+    "summary": "Get the copied page past the harbor gate before the Council thinks to close it.",
+    "narrative": {
+      "description": "The vault's missing page will be counted by morning. Warden Bright wants the proof out the harbor gate before the Council closes it — and the papers that got you in won't get you back out twice.",
+      "offerText": "Get the copied page past the harbor gate before the watch changes. Clear anything standing between you and the road out.",
+      "completeText": "The gate's behind you, and the page is in Warden Bright's hands. Gildmark hasn't noticed yet what it's missing. It will."
+    },
+    "giver": "char-warden-bright",
+    "region": "region-gildmark",
+    "faction": "faction-gildmark-council",
+    "unlockedBy": [
+      "quest-the-ledger-theft"
+    ],
+    "arcId": "arc-ledger-game",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 5
+      }
+    ],
+    "links": []
   }
 ]

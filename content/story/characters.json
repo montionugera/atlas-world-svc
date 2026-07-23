@@ -129,10 +129,12 @@
     "id": "char-clerk-of-gildmark",
     "kind": "character",
     "title": "The Clerk of Gildmark",
-    "summary": "The whistleblower who priced his silence, then changed his mind.",
+    "summary": "The whistleblower who priced his silence, then changed his mind, then paid for it in a different coin than he asked for.",
     "role": "npc",
     "faction": "faction-gildmark-council",
     "region": "region-gildmark",
+    "status": "dead",
+    "diedAt": "event-clerk-silenced",
     "links": []
   },
   {
@@ -143,6 +145,8 @@
     "role": "npc",
     "faction": "faction-thornveil",
     "region": "region-thornveil",
+    "status": "dead",
+    "diedAt": "event-warspeaker-falls",
     "links": []
   },
   {
