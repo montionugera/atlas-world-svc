@@ -197,5 +197,83 @@
       }
     ],
     "links": []
+  },
+  {
+    "id": "quest-the-road-of-strangers",
+    "kind": "quest",
+    "title": "The Road of Strangers",
+    "summary": "War is declared, and Millcross fills with people who left everything behind.",
+    "narrative": {
+      "description": "The road into Millcross hasn't stopped moving since the war was declared. Wagons, handcarts, whole families on foot — the Quartermaster counts them in blankets and tent poles now, not names, because there isn't time for names. Something's been following the slower carts in from the dark.",
+      "offerText": "Meet the road at the gate. Get the wounded to the tents, the families to the fire, and put down anything that followed them in.",
+      "completeText": "The gate's quiet for tonight. There'll be more tomorrow. She's already counting tent poles for them — she doesn't have time to do anything else with it."
+    },
+    "giver": "char-quartermaster",
+    "region": "region-millcross",
+    "faction": "faction-expedition",
+    "unlockedBy": [
+      "act-2"
+    ],
+    "arcId": "arc-war-comes-home",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:balanced",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-salvage-run",
+    "kind": "quest",
+    "title": "Salvage Run",
+    "summary": "Recover what's left of the burned caravan on the Ashvale road, seal and all.",
+    "narrative": {
+      "description": "A wrecked wagon sits half-buried in ash out past the ford, untouched since the first caravan burned. The Quartermaster wants it searched before soldiers or scavengers strip it clean — every buckle, every scrap of canvas, every seal that's still readable.",
+      "offerText": "Search the wreck. Bring back anything with a maker's mark still on it, and clear the ground of anything that's made a den in it.",
+      "completeText": "One seal came back whole. It doesn't match Embervale's mark. It doesn't match Norhollow's either. The Quartermaster turns it over twice before she says anything. Then: keep this out of sight until she says otherwise."
+    },
+    "giver": "char-quartermaster",
+    "region": "region-ashvale-front",
+    "faction": "faction-unaligned",
+    "unlockedBy": [
+      "quest-the-road-of-strangers"
+    ],
+    "arcId": "arc-war-comes-home",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:double_attacker",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-hold-the-ford",
+    "kind": "quest",
+    "title": "Hold the Ford",
+    "summary": "Farrow takes the line at the ford to buy the last of the refugee column time to cross.",
+    "narrative": {
+      "description": "The Ashen Column has found the ford before the last wagons clear it. Farrow's taking the near bank himself — he says someone has to walk point, same as always. He wants the crossing held until the last wagon's over, whatever that costs.",
+      "offerText": "Hold the ford. Keep the raiders off the column until every wagon's across. Farrow goes first — stay with him.",
+      "completeText": "The last wagon crossed. Farrow didn't. He went down holding the near bank, and the column never even saw it happen — they were already climbing the far side, counting their own numbers, not his."
+    },
+    "giver": "char-farrow-the-forward",
+    "region": "region-ashvale-front",
+    "faction": "faction-ashen-column",
+    "unlockedBy": [
+      "quest-salvage-run"
+    ],
+    "arcId": "arc-war-comes-home",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:aggressive",
+        "count": 6
+      }
+    ],
+    "links": []
   }
 ]

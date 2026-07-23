@@ -39,5 +39,54 @@
       "faction-gildmark-council",
       "char-widow-of-the-first-caravan"
     ]
+  },
+  {
+    "id": "event-war-declared",
+    "kind": "event",
+    "title": "War Declared",
+    "summary": "Embervale and Norhollow name each other the enemy, and the Ashvale plain becomes a front.",
+    "links": [],
+    "timelineOrder": 4,
+    "involves": [
+      "faction-embervale-banner",
+      "faction-norhollow-banner"
+    ]
+  },
+  {
+    "id": "event-refuge-at-millcross",
+    "kind": "event",
+    "title": "Refuge at Millcross",
+    "summary": "The first wave of families off the Ashvale road reaches Millcross, and doesn't stop coming.",
+    "links": [],
+    "timelineOrder": 5,
+    "involves": [
+      "region-millcross",
+      "faction-expedition"
+    ]
+  },
+  {
+    "id": "event-the-seal-that-matched-no-one",
+    "kind": "event",
+    "title": "The Seal That Matched No One",
+    "summary": "A caravan seal salvaged from the ash doesn't belong to either side of the war — the first crack in the story everyone believes.",
+    "links": [],
+    "timelineOrder": 6,
+    "triggeredBy": "quest-salvage-run",
+    "involves": [
+      "char-expedition-member"
+    ]
+  },
+  {
+    "id": "event-farrow-falls",
+    "kind": "event",
+    "title": "Farrow Falls",
+    "summary": "Farrow the Forward holds the near bank of the ford alone so the last of the column can cross.",
+    "links": [],
+    "timelineOrder": 7,
+    "triggeredBy": "quest-hold-the-ford",
+    "involves": [
+      "char-farrow-the-forward",
+      "faction-ashen-column"
+    ]
   }
 ]

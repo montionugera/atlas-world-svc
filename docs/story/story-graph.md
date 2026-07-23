@@ -42,7 +42,11 @@ flowchart LR
   subgraph sg_n_act_2["Act 2 — The War Comes Home"]
     n_act_2["act-2"]:::act
     n_arc_icefield_reckoning["arc-icefield-reckoning"]:::arc
+    n_arc_war_comes_home["arc-war-comes-home"]:::arc
+    n_quest_hold_the_ford["quest-hold-the-ford"]:::quest
     n_quest_icefield_reckoning["quest-icefield-reckoning"]:::quest
+    n_quest_salvage_run["quest-salvage-run"]:::quest
+    n_quest_the_road_of_strangers["quest-the-road-of-strangers"]:::quest
   end
   subgraph sg_n_act_3["Act 3 — The Ledger Game"]
     n_act_3["act-3"]:::act
@@ -72,12 +76,18 @@ flowchart LR
   n_char_warden_bright["char-warden-bright"]:::character
   n_char_widow_of_the_first_caravan["char-widow-of-the-first-caravan"]:::character
   n_dlg_expedition_member_twin_strike_aftermath["dlg-expedition-member-twin-strike-aftermath"]:::dialogue
+  n_dlg_farrow_at_the_ford["dlg-farrow-at-the-ford"]:::dialogue
   n_dlg_quartermaster_icefield_briefing["dlg-quartermaster-icefield-briefing"]:::dialogue
+  n_dlg_quartermaster_road_of_strangers["dlg-quartermaster-road-of-strangers"]:::dialogue
   n_dlg_speaker_of_norhollow_briefing["dlg-speaker-of-norhollow-briefing"]:::dialogue
   n_dlg_war_countess_briefing["dlg-war-countess-briefing"]:::dialogue
+  n_event_farrow_falls["event-farrow-falls"]:::event
   n_event_first_caravan_burns["event-first-caravan-burns"]:::event
   n_event_icefield_thornveil_standoff["event-icefield-thornveil-standoff"]:::event
+  n_event_refuge_at_millcross["event-refuge-at-millcross"]:::event
+  n_event_the_seal_that_matched_no_one["event-the-seal-that-matched-no-one"]:::event
   n_event_twin_strike_falls["event-twin-strike-falls"]:::event
+  n_event_war_declared["event-war-declared"]:::event
   n_faction_ashen_column["faction-ashen-column"]:::faction
   n_faction_ashfang["faction-ashfang"]:::faction
   n_faction_bellfaith["faction-bellfaith"]:::faction
@@ -113,6 +123,10 @@ flowchart LR
   n_arc_norhollow_outskirts -->|actId| n_act_1
   n_arc_norhollow_outskirts -->|questIds| n_quest_letters_already_opened
   n_arc_norhollow_outskirts -->|questIds| n_quest_norhollow_palisade
+  n_arc_war_comes_home -->|actId| n_act_2
+  n_arc_war_comes_home -->|questIds| n_quest_hold_the_ford
+  n_arc_war_comes_home -->|questIds| n_quest_salvage_run
+  n_arc_war_comes_home -->|questIds| n_quest_the_road_of_strangers
   n_char_ashfang_alpha -->|diedAt| n_event_twin_strike_falls
   n_char_ashfang_alpha -->|faction| n_faction_unaligned
   n_char_ashfang_alpha -->|region| n_region_spawn_meadow
@@ -121,6 +135,7 @@ flowchart LR
   n_char_elder_of_rooktide -->|region| n_region_rooktide
   n_char_expedition_member -->|faction| n_faction_expedition
   n_char_expedition_member -->|region| n_region_spawn_meadow
+  n_char_farrow_the_forward -->|diedAt| n_event_farrow_falls
   n_char_farrow_the_forward -->|faction| n_faction_expedition
   n_char_farrow_the_forward -->|region| n_region_millcross
   n_char_iron_regent -->|faction| n_faction_embervale_banner
@@ -148,12 +163,19 @@ flowchart LR
   n_char_widow_of_the_first_caravan -->|region| n_region_embervale
   n_dlg_expedition_member_twin_strike_aftermath -->|context| n_event_twin_strike_falls
   n_dlg_expedition_member_twin_strike_aftermath -->|speaker| n_char_expedition_member
+  n_dlg_farrow_at_the_ford -->|context| n_quest_hold_the_ford
+  n_dlg_farrow_at_the_ford -->|speaker| n_char_farrow_the_forward
   n_dlg_quartermaster_icefield_briefing -->|context| n_quest_icefield_reckoning
   n_dlg_quartermaster_icefield_briefing -->|speaker| n_char_quartermaster
+  n_dlg_quartermaster_road_of_strangers -->|context| n_quest_the_road_of_strangers
+  n_dlg_quartermaster_road_of_strangers -->|speaker| n_char_quartermaster
   n_dlg_speaker_of_norhollow_briefing -->|context| n_quest_norhollow_palisade
   n_dlg_speaker_of_norhollow_briefing -->|speaker| n_char_speaker_of_norhollow
   n_dlg_war_countess_briefing -->|context| n_quest_embervale_watchfires
   n_dlg_war_countess_briefing -->|speaker| n_char_war_countess
+  n_event_farrow_falls -->|involves| n_char_farrow_the_forward
+  n_event_farrow_falls -->|involves| n_faction_ashen_column
+  n_event_farrow_falls -->|triggeredBy| n_quest_hold_the_ford
   n_event_first_caravan_burns -->|involves| n_char_widow_of_the_first_caravan
   n_event_first_caravan_burns -->|involves| n_faction_gildmark_council
   n_event_first_caravan_burns -->|involves| n_region_ashvale_front
@@ -161,10 +183,16 @@ flowchart LR
   n_event_icefield_thornveil_standoff -->|involves| n_faction_thornveil
   n_event_icefield_thornveil_standoff -->|involves| n_region_icefield
   n_event_icefield_thornveil_standoff -->|triggeredBy| n_quest_icefield_reckoning
+  n_event_refuge_at_millcross -->|involves| n_faction_expedition
+  n_event_refuge_at_millcross -->|involves| n_region_millcross
+  n_event_the_seal_that_matched_no_one -->|involves| n_char_expedition_member
+  n_event_the_seal_that_matched_no_one -->|triggeredBy| n_quest_salvage_run
   n_event_twin_strike_falls -->|involves| n_char_ashfang_alpha
   n_event_twin_strike_falls -->|involves| n_char_expedition_member
   n_event_twin_strike_falls -->|involves| n_region_spawn_meadow
   n_event_twin_strike_falls -->|triggeredBy| n_quest_the_twin_strike
+  n_event_war_declared -->|involves| n_faction_embervale_banner
+  n_event_war_declared -->|involves| n_faction_norhollow_banner
   n_faction_ashen_column -->|relationships| n_faction_embervale_banner
   n_faction_ashen_column -->|relationships| n_faction_gildmark_council
   n_faction_ashen_column -->|relationships| n_faction_norhollow_banner
@@ -191,6 +219,11 @@ flowchart LR
   n_quest_first_steps -->|faction| n_faction_unaligned
   n_quest_first_steps -->|giver| n_char_quartermaster
   n_quest_first_steps -->|region| n_region_spawn_meadow
+  n_quest_hold_the_ford -->|arcId| n_arc_war_comes_home
+  n_quest_hold_the_ford -->|faction| n_faction_ashen_column
+  n_quest_hold_the_ford -->|giver| n_char_farrow_the_forward
+  n_quest_hold_the_ford -->|region| n_region_ashvale_front
+  n_quest_hold_the_ford -->|unlockedBy| n_quest_salvage_run
   n_quest_icefield_reckoning -->|arcId| n_arc_icefield_reckoning
   n_quest_icefield_reckoning -->|faction| n_faction_stoneguard
   n_quest_icefield_reckoning -->|giver| n_char_quartermaster
@@ -205,6 +238,16 @@ flowchart LR
   n_quest_norhollow_palisade -->|faction| n_faction_unaligned
   n_quest_norhollow_palisade -->|giver| n_char_speaker_of_norhollow
   n_quest_norhollow_palisade -->|region| n_region_norhollow
+  n_quest_salvage_run -->|arcId| n_arc_war_comes_home
+  n_quest_salvage_run -->|faction| n_faction_unaligned
+  n_quest_salvage_run -->|giver| n_char_quartermaster
+  n_quest_salvage_run -->|region| n_region_ashvale_front
+  n_quest_salvage_run -->|unlockedBy| n_quest_the_road_of_strangers
+  n_quest_the_road_of_strangers -->|arcId| n_arc_war_comes_home
+  n_quest_the_road_of_strangers -->|faction| n_faction_expedition
+  n_quest_the_road_of_strangers -->|giver| n_char_quartermaster
+  n_quest_the_road_of_strangers -->|region| n_region_millcross
+  n_quest_the_road_of_strangers -->|unlockedBy| n_act_2
   n_quest_the_twin_strike -->|arcId| n_arc_meadow_awakening
   n_quest_the_twin_strike -->|faction| n_faction_unaligned
   n_quest_the_twin_strike -->|giver| n_char_quartermaster

@@ -46,5 +46,18 @@
       "quest-letters-already-opened"
     ],
     "links": []
+  },
+  {
+    "id": "arc-war-comes-home",
+    "kind": "arc",
+    "title": "The War Comes Home",
+    "summary": "War is declared, the roads fill with people who left everything behind, and the crossroads at Millcross has to hold them.",
+    "actId": "act-2",
+    "questIds": [
+      "quest-the-road-of-strangers",
+      "quest-salvage-run",
+      "quest-hold-the-ford"
+    ],
+    "links": []
   }
 ]

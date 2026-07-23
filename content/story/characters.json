@@ -121,6 +121,8 @@
     "role": "ally",
     "faction": "faction-expedition",
     "region": "region-millcross",
+    "status": "dead",
+    "diedAt": "event-farrow-falls",
     "links": []
   },
   {

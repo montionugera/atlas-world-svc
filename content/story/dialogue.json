@@ -54,5 +54,33 @@
       "Ask me what I think when there's nothing left to fix. Not before."
     ],
     "context": "quest-norhollow-palisade"
+  },
+  {
+    "id": "dlg-quartermaster-road-of-strangers",
+    "kind": "dialogue",
+    "title": "The Road of Strangers",
+    "summary": "The Quartermaster briefs the gate watch as the first refugees reach Millcross.",
+    "links": [],
+    "speaker": "char-quartermaster",
+    "lines": [
+      "Forty-three through the gate since dawn. That's more than we fed all last winter.",
+      "Feed the ones who can eat. Blanket the ones who can't. Don't ask which side of the plain they walked from — the road doesn't care anymore, and neither do I.",
+      "Keep the dark off them tonight. Whatever's out there, they've already lost enough today."
+    ],
+    "context": "quest-the-road-of-strangers"
+  },
+  {
+    "id": "dlg-farrow-at-the-ford",
+    "kind": "dialogue",
+    "title": "At the Ford",
+    "summary": "Farrow's last orders, given at the near bank of the ford.",
+    "links": [],
+    "speaker": "char-farrow-the-forward",
+    "lines": [
+      "Count the wagons across before you count anything else.",
+      "Hold the near bank till the last one's over the ford — then fall back. Don't wait on me.",
+      "Tell the Quartermaster the ford held. That's all she needs to hear tonight."
+    ],
+    "context": "quest-hold-the-ford"
   }
 ]

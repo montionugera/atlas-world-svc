@@ -56,13 +56,16 @@ test("content gate is green on the real tree (no --require-complete)", () => {
 // Task 3 (act 1 starter arcs) de-orphans 3 of the 15: char-war-countess and
 // char-speaker-of-norhollow become quest givers, char-widow-of-the-first-
 // caravan is now involved in event-first-caravan-burns.
+//
+// Task 4 (act 2 — the war comes home) de-orphans 1 more: char-farrow-the-
+// forward becomes a quest giver (quest-hold-the-ford) and dies in
+// event-farrow-falls.
 const EXPECTED_MID_EPIC_ORPHAN_CHARACTERS = [
   "char-the-broker",
   "char-iron-regent",
   "char-the-bell-keeper",
   "char-the-ash-prophet",
   "char-elder-of-rooktide",
-  "char-farrow-the-forward",
   "char-clerk-of-gildmark",
   "char-thornveil-war-speaker",
   "char-warden-bright",
@@ -88,7 +91,7 @@ test("docs/story/story-graph.md is in sync with the seed epic (no drift)", () =>
   assert.equal(status, 0, `expected exit 0, got ${status}:\n${output}`);
 });
 
-test("the seed epic exercises every kind and every unlockedBy/edge shape (4 arcs, valid cross-arc chain)", () => {
+test("the seed epic exercises every kind and every unlockedBy/edge shape (5 arcs, valid cross-arc chain)", () => {
   const readStory = (f) => JSON.parse(readFileSync(join(ROOT, `content/story/${f}`), "utf8"));
   const acts = readStory("acts.json");
   const arcs = readStory("arcs.json");
@@ -103,7 +106,9 @@ test("the seed epic exercises every kind and every unlockedBy/edge shape (4 arcs
   // arc-norhollow-outskirts) per spec §3 — so arc.actId is no longer unique
   // across arcs; the invariant this test actually cares about is the
   // cross-arc unlockedBy chain into a later act, checked below.
-  assert.equal(arcs.length, 4, "expected 4 arcs total after Undertow Task 3 (2 seed + 2 act-1 starters)");
+  //
+  // F-016 (Undertow) Task 4: act 2 adds its own arc-war-comes-home.
+  assert.equal(arcs.length, 5, "expected 5 arcs total after Undertow Task 4 (2 seed + 2 act-1 starters + 1 act-2 arc)");
   assert.ok(quests.length >= 4, "expected at least 4 quests total");
   assert.ok(events.length >= 2, "expected at least 2 events (events.json was empty before Task 7)");
   assert.ok(dialogue.length >= 2, "expected at least 2 dialogue nodes (dialogue.json was empty before Task 7)");
