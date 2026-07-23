@@ -110,5 +110,48 @@
       "Cindervast fell once and stopped lying about what it was. Everything still standing here is lying to your face — this table included."
     ],
     "context": "event-warspeaker-falls"
+  },
+  {
+    "id": "dlg-bell-keeper-confession",
+    "kind": "dialogue",
+    "title": "The Bell-Keeper's Confession",
+    "summary": "The Bell-Keeper explains, precisely, everything he did and why.",
+    "links": [],
+    "speaker": "char-the-bell-keeper",
+    "lines": [
+      "I rang the seventh bell four minutes late. Four minutes. That's a whole town's worth of not-knowing, and I did it on purpose.",
+      "Every false proclamation went out on schedule, sealed by my own hand, so nobody thought to check it twice.",
+      "Mirelle. That's the only word in this whole account that was never a lie."
+    ],
+    "context": "event-bells-ring-true"
+  },
+  {
+    "id": "dlg-widow-at-the-pyres",
+    "kind": "dialogue",
+    "title": "At the Pyres",
+    "summary": "The Widow answers for the burned messengers before anyone thinks to ask her to.",
+    "links": [],
+    "speaker": "char-widow-of-the-first-caravan",
+    "lines": [
+      "I know who lit the wagons. I knew before the ash cooled.",
+      "It doesn't change what I want done to the men who did it — or the ones who only stood nearby.",
+      "This proclamation doesn't need to be true to earn what's coming to the ones carrying it.",
+      "Burn the paper. Burn the men who ran it here. The wagons don't come back either way."
+    ],
+    "context": "event-messengers-burned"
+  },
+  {
+    "id": "dlg-mirelle-freed",
+    "kind": "dialogue",
+    "title": "Mirelle, Freed",
+    "summary": "Mirelle steps into open air for the first time in years, and says only a little of what she knows.",
+    "links": [],
+    "speaker": "char-mirelle",
+    "lines": [
+      "I counted the bells too, from inside. I always knew which ones were his real voice.",
+      "He never told me what the true ones cost him. I didn't need him to.",
+      "I don't want an accounting of it. I want to go home."
+    ],
+    "context": "quest-the-bell-keepers-price"
   }
 ]

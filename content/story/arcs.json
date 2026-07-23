@@ -73,5 +73,18 @@
       "quest-out-the-harbor-gate"
     ],
     "links": []
+  },
+  {
+    "id": "arc-truth-arrives-late",
+    "kind": "arc",
+    "title": "The Truth Arrives Late",
+    "summary": "Free the Bell-Keeper's daughter, watch the truth go out and get burned anyway, and bury the one who held the crossroads until it did.",
+    "actId": "act-4",
+    "questIds": [
+      "quest-the-bell-keepers-price",
+      "quest-ash-in-the-streets",
+      "quest-what-the-mob-left"
+    ],
+    "links": []
   }
 ]

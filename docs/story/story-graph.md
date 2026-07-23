@@ -58,6 +58,10 @@ flowchart LR
   end
   subgraph sg_n_act_4["Act 4 — The Truth Arrives Late"]
     n_act_4["act-4"]:::act
+    n_arc_truth_arrives_late["arc-truth-arrives-late"]:::arc
+    n_quest_ash_in_the_streets["quest-ash-in-the-streets"]:::quest
+    n_quest_the_bell_keepers_price["quest-the-bell-keepers-price"]:::quest
+    n_quest_what_the_mob_left["quest-what-the-mob-left"]:::quest
   end
   subgraph sg_n_act_5["Act 5 — The Undertow"]
     n_act_5["act-5"]:::act
@@ -81,19 +85,26 @@ flowchart LR
   n_char_warden_bright["char-warden-bright"]:::character
   n_char_widow_of_the_first_caravan["char-widow-of-the-first-caravan"]:::character
   n_dlg_ash_prophet_sermon["dlg-ash-prophet-sermon"]:::dialogue
+  n_dlg_bell_keeper_confession["dlg-bell-keeper-confession"]:::dialogue
   n_dlg_clerk_terms["dlg-clerk-terms"]:::dialogue
   n_dlg_expedition_member_twin_strike_aftermath["dlg-expedition-member-twin-strike-aftermath"]:::dialogue
   n_dlg_farrow_at_the_ford["dlg-farrow-at-the-ford"]:::dialogue
+  n_dlg_mirelle_freed["dlg-mirelle-freed"]:::dialogue
   n_dlg_quartermaster_icefield_briefing["dlg-quartermaster-icefield-briefing"]:::dialogue
   n_dlg_quartermaster_road_of_strangers["dlg-quartermaster-road-of-strangers"]:::dialogue
   n_dlg_speaker_of_norhollow_briefing["dlg-speaker-of-norhollow-briefing"]:::dialogue
   n_dlg_war_countess_briefing["dlg-war-countess-briefing"]:::dialogue
+  n_dlg_widow_at_the_pyres["dlg-widow-at-the-pyres"]:::dialogue
+  n_event_bells_ring_true["event-bells-ring-true"]:::event
   n_event_clerk_silenced["event-clerk-silenced"]:::event
   n_event_farrow_falls["event-farrow-falls"]:::event
   n_event_first_caravan_burns["event-first-caravan-burns"]:::event
   n_event_icefield_thornveil_standoff["event-icefield-thornveil-standoff"]:::event
   n_event_ledger_lifted["event-ledger-lifted"]:::event
+  n_event_messengers_burned["event-messengers-burned"]:::event
+  n_event_quartermaster_falls["event-quartermaster-falls"]:::event
   n_event_refuge_at_millcross["event-refuge-at-millcross"]:::event
+  n_event_relic_deal_struck["event-relic-deal-struck"]:::event
   n_event_the_seal_that_matched_no_one["event-the-seal-that-matched-no-one"]:::event
   n_event_twin_strike_falls["event-twin-strike-falls"]:::event
   n_event_war_declared["event-war-declared"]:::event
@@ -138,6 +149,10 @@ flowchart LR
   n_arc_norhollow_outskirts -->|actId| n_act_1
   n_arc_norhollow_outskirts -->|questIds| n_quest_letters_already_opened
   n_arc_norhollow_outskirts -->|questIds| n_quest_norhollow_palisade
+  n_arc_truth_arrives_late -->|actId| n_act_4
+  n_arc_truth_arrives_late -->|questIds| n_quest_ash_in_the_streets
+  n_arc_truth_arrives_late -->|questIds| n_quest_the_bell_keepers_price
+  n_arc_truth_arrives_late -->|questIds| n_quest_what_the_mob_left
   n_arc_war_comes_home -->|actId| n_act_2
   n_arc_war_comes_home -->|questIds| n_quest_hold_the_ford
   n_arc_war_comes_home -->|questIds| n_quest_salvage_run
@@ -159,6 +174,7 @@ flowchart LR
   n_char_joren_of_norhollow -->|region| n_region_norhollow
   n_char_liss_of_embervale -->|region| n_region_embervale
   n_char_mirelle -->|region| n_region_gildmark
+  n_char_quartermaster -->|diedAt| n_event_quartermaster_falls
   n_char_quartermaster -->|faction| n_faction_expedition
   n_char_quartermaster -->|region| n_region_spawn_meadow
   n_char_speaker_of_norhollow -->|faction| n_faction_norhollow_banner
@@ -180,12 +196,16 @@ flowchart LR
   n_char_widow_of_the_first_caravan -->|region| n_region_embervale
   n_dlg_ash_prophet_sermon -->|context| n_event_warspeaker_falls
   n_dlg_ash_prophet_sermon -->|speaker| n_char_the_ash_prophet
+  n_dlg_bell_keeper_confession -->|context| n_event_bells_ring_true
+  n_dlg_bell_keeper_confession -->|speaker| n_char_the_bell_keeper
   n_dlg_clerk_terms -->|context| n_quest_the_clerks_price
   n_dlg_clerk_terms -->|speaker| n_char_clerk_of_gildmark
   n_dlg_expedition_member_twin_strike_aftermath -->|context| n_event_twin_strike_falls
   n_dlg_expedition_member_twin_strike_aftermath -->|speaker| n_char_expedition_member
   n_dlg_farrow_at_the_ford -->|context| n_quest_hold_the_ford
   n_dlg_farrow_at_the_ford -->|speaker| n_char_farrow_the_forward
+  n_dlg_mirelle_freed -->|context| n_quest_the_bell_keepers_price
+  n_dlg_mirelle_freed -->|speaker| n_char_mirelle
   n_dlg_quartermaster_icefield_briefing -->|context| n_quest_icefield_reckoning
   n_dlg_quartermaster_icefield_briefing -->|speaker| n_char_quartermaster
   n_dlg_quartermaster_road_of_strangers -->|context| n_quest_the_road_of_strangers
@@ -194,6 +214,11 @@ flowchart LR
   n_dlg_speaker_of_norhollow_briefing -->|speaker| n_char_speaker_of_norhollow
   n_dlg_war_countess_briefing -->|context| n_quest_embervale_watchfires
   n_dlg_war_countess_briefing -->|speaker| n_char_war_countess
+  n_dlg_widow_at_the_pyres -->|context| n_event_messengers_burned
+  n_dlg_widow_at_the_pyres -->|speaker| n_char_widow_of_the_first_caravan
+  n_event_bells_ring_true -->|involves| n_char_mirelle
+  n_event_bells_ring_true -->|involves| n_char_the_bell_keeper
+  n_event_bells_ring_true -->|triggeredBy| n_quest_the_bell_keepers_price
   n_event_clerk_silenced -->|involves| n_char_clerk_of_gildmark
   n_event_clerk_silenced -->|involves| n_faction_gildmark_council
   n_event_farrow_falls -->|involves| n_char_farrow_the_forward
@@ -208,8 +233,15 @@ flowchart LR
   n_event_icefield_thornveil_standoff -->|triggeredBy| n_quest_icefield_reckoning
   n_event_ledger_lifted -->|involves| n_char_the_broker
   n_event_ledger_lifted -->|triggeredBy| n_quest_the_ledger_theft
+  n_event_messengers_burned -->|involves| n_char_widow_of_the_first_caravan
+  n_event_messengers_burned -->|involves| n_region_embervale
+  n_event_quartermaster_falls -->|involves| n_char_quartermaster
+  n_event_quartermaster_falls -->|involves| n_char_widow_of_the_first_caravan
+  n_event_quartermaster_falls -->|triggeredBy| n_quest_ash_in_the_streets
   n_event_refuge_at_millcross -->|involves| n_faction_expedition
   n_event_refuge_at_millcross -->|involves| n_region_millcross
+  n_event_relic_deal_struck -->|involves| n_char_iron_regent
+  n_event_relic_deal_struck -->|involves| n_char_the_broker
   n_event_the_seal_that_matched_no_one -->|involves| n_char_expedition_member
   n_event_the_seal_that_matched_no_one -->|triggeredBy| n_quest_salvage_run
   n_event_twin_strike_falls -->|involves| n_char_ashfang_alpha
@@ -239,6 +271,11 @@ flowchart LR
   n_quest_a_face_for_gildmark -->|region| n_region_gildmark
   n_quest_a_face_for_gildmark -->|unlockedBy| n_act_3
   n_quest_a_face_for_gildmark -->|unlockedBy| n_event_the_seal_that_matched_no_one
+  n_quest_ash_in_the_streets -->|arcId| n_arc_truth_arrives_late
+  n_quest_ash_in_the_streets -->|faction| n_faction_embervale_banner
+  n_quest_ash_in_the_streets -->|giver| n_char_quartermaster
+  n_quest_ash_in_the_streets -->|region| n_region_millcross
+  n_quest_ash_in_the_streets -->|unlockedBy| n_quest_the_bell_keepers_price
   n_quest_cull_the_packs -->|arcId| n_arc_meadow_awakening
   n_quest_cull_the_packs -->|faction| n_faction_ashfang
   n_quest_cull_the_packs -->|giver| n_char_quartermaster
@@ -281,6 +318,12 @@ flowchart LR
   n_quest_salvage_run -->|giver| n_char_quartermaster
   n_quest_salvage_run -->|region| n_region_ashvale_front
   n_quest_salvage_run -->|unlockedBy| n_quest_the_road_of_strangers
+  n_quest_the_bell_keepers_price -->|arcId| n_arc_truth_arrives_late
+  n_quest_the_bell_keepers_price -->|faction| n_faction_bellfaith
+  n_quest_the_bell_keepers_price -->|giver| n_char_warden_bright
+  n_quest_the_bell_keepers_price -->|region| n_region_gildmark
+  n_quest_the_bell_keepers_price -->|unlockedBy| n_act_4
+  n_quest_the_bell_keepers_price -->|unlockedBy| n_event_ledger_lifted
   n_quest_the_clerks_price -->|arcId| n_arc_ledger_game
   n_quest_the_clerks_price -->|faction| n_faction_gildmark_council
   n_quest_the_clerks_price -->|giver| n_char_clerk_of_gildmark
@@ -306,4 +349,9 @@ flowchart LR
   n_quest_the_unmarked_crates -->|giver| n_char_war_countess
   n_quest_the_unmarked_crates -->|region| n_region_embervale
   n_quest_the_unmarked_crates -->|unlockedBy| n_quest_embervale_watchfires
+  n_quest_what_the_mob_left -->|arcId| n_arc_truth_arrives_late
+  n_quest_what_the_mob_left -->|faction| n_faction_expedition
+  n_quest_what_the_mob_left -->|giver| n_char_expedition_member
+  n_quest_what_the_mob_left -->|region| n_region_millcross
+  n_quest_what_the_mob_left -->|unlockedBy| n_event_quartermaster_falls
 ```

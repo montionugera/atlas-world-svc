@@ -8,6 +8,8 @@
     "faction": "faction-expedition",
     "region": "region-spawn-meadow",
     "assetKey": "npc",
+    "status": "dead",
+    "diedAt": "event-quartermaster-falls",
     "links": []
   },
   {

@@ -380,5 +380,84 @@
       }
     ],
     "links": []
+  },
+  {
+    "id": "quest-the-bell-keepers-price",
+    "kind": "quest",
+    "title": "The Bell-Keeper's Price",
+    "summary": "Free the Bell-Keeper's daughter, and find out what he's been trading for her safety.",
+    "narrative": {
+      "description": "The ledger names an office, never a man. Warden Bright has found the man anyway — under the bell tower, the Bell-Keeper keeps a daughter closer than any daughter should be kept, and the Council keeps her closer still. Get her out, and he might finally ring something true.",
+      "offerText": "Get into the tower district. Find where Mirelle is kept. Bring her out before the Council notices the door's open.",
+      "completeText": "Mirelle came out from under the tower into open air and didn't say much for the first mile. Behind you, the seventh bell started ringing — on time, for once."
+    },
+    "giver": "char-warden-bright",
+    "region": "region-gildmark",
+    "faction": "faction-bellfaith",
+    "unlockedBy": [
+      "act-4",
+      "event-ledger-lifted"
+    ],
+    "arcId": "arc-truth-arrives-late",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:hybrid",
+        "count": 3
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-ash-in-the-streets",
+    "kind": "quest",
+    "title": "Ash in the Streets",
+    "summary": "The bells rang true, and the Widow's answer is fire in Millcross's streets.",
+    "narrative": {
+      "description": "The proclamation reached every tower by midday, and by evening the Widow's people are burning it in the streets — and burning the ones who carried it. The refugee tents at the crossroads sit dead in the mob's path. The Quartermaster isn't asking anyone to be brave. She's asking them to stand between the tents and the fire.",
+      "offerText": "Hold the crossroads. Keep the mob off the tents until the last refugee is clear.",
+      "completeText": "The tents held. The Quartermaster didn't."
+    },
+    "giver": "char-quartermaster",
+    "region": "region-millcross",
+    "faction": "faction-embervale-banner",
+    "unlockedBy": [
+      "quest-the-bell-keepers-price"
+    ],
+    "arcId": "arc-truth-arrives-late",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:aggressive",
+        "count": 6
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "quest-what-the-mob-left",
+    "kind": "quest",
+    "title": "What the Mob Left",
+    "summary": "Bury the Quartermaster, and read what she never got to finish.",
+    "narrative": {
+      "description": "The crossroads is quiet again, the way a place goes quiet after a fire burns out on its own. She was the one who stayed at camp so the others could leave it — today, for the last time, she doesn't get to leave either. Someone has to see her buried. Someone has to go through the log she kept, because she never once let anyone else touch it while she was breathing.",
+      "offerText": "See her buried at the crossroads. Clear what's left prowling the ash before the mourners have to.",
+      "completeText": "The log is the last thing you touch. Meals counted, miles counted, names counted, all the way to a page that stops mid-line — the way any list stops when the one keeping it doesn't get to finish."
+    },
+    "giver": "char-expedition-member",
+    "region": "region-millcross",
+    "faction": "faction-expedition",
+    "unlockedBy": [
+      "event-quartermaster-falls"
+    ],
+    "arcId": "arc-truth-arrives-late",
+    "objectives": [
+      {
+        "type": "MOB_KILLED",
+        "targetId": "mob:balanced",
+        "count": 2
+      }
+    ],
+    "links": []
   }
 ]

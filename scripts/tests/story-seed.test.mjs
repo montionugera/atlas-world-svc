@@ -67,11 +67,15 @@ test("content gate is green on the real tree (no --require-complete)", () => {
 // char-clerk-of-gildmark and char-thornveil-war-speaker die in
 // event-clerk-silenced / event-warspeaker-falls, and char-the-ash-prophet
 // becomes a dialogue speaker (dlg-ash-prophet-sermon).
+//
+// Task 6 (act 4 — the truth arrives late) de-orphans 3 more: char-iron-
+// regent is involved in event-relic-deal-struck, char-the-bell-keeper is
+// involved in / speaks dlg-bell-keeper-confession for event-bells-ring-true,
+// and char-mirelle is involved in event-bells-ring-true and speaks
+// dlg-mirelle-freed. char-quartermaster also dies here
+// (event-quartermaster-falls) but was never orphaned.
 const EXPECTED_MID_EPIC_ORPHAN_CHARACTERS = [
-  "char-iron-regent",
-  "char-the-bell-keeper",
   "char-elder-of-rooktide",
-  "char-mirelle",
   "char-liss-of-embervale",
   "char-joren-of-norhollow",
 ];
@@ -111,7 +115,12 @@ test("the seed epic exercises every kind and every unlockedBy/edge shape (5 arcs
   //
   // F-016 (Undertow) Task 4: act 2 adds its own arc-war-comes-home.
   // F-016 (Undertow) Task 5: act 3 adds its own arc-ledger-game.
-  assert.equal(arcs.length, 6, "expected 6 arcs total after Undertow Task 5 (2 seed + 2 act-1 starters + 1 act-2 arc + 1 act-3 arc)");
+  // F-016 (Undertow) Task 6: act 4 adds its own arc-truth-arrives-late.
+  assert.equal(
+    arcs.length,
+    7,
+    "expected 7 arcs total after Undertow Task 6 (2 seed + 2 act-1 starters + 1 act-2 arc + 1 act-3 arc + 1 act-4 arc)"
+  );
   assert.ok(quests.length >= 4, "expected at least 4 quests total");
   assert.ok(events.length >= 2, "expected at least 2 events (events.json was empty before Task 7)");
   assert.ok(dialogue.length >= 2, "expected at least 2 dialogue nodes (dialogue.json was empty before Task 7)");
