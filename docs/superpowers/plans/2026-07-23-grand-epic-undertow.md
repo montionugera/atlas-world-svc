@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- **Read first, always:** the spec (creative law) and `content/story/style.md` (voice law, exists after Task 1). Every title, summary, narrative text, dialogue line, and lore body must follow them. English content; Ashen Vigil register (terse, wind-worn) with Gilded Rot diction for Gildmark-bloc voices.
+- **Read first, always:** the spec (creative law), `content/story/style.md` (voice law, exists after Task 1), and `content/story/canon.md` (world-history law, exists after Task 2 — any content contradicting it is a review finding). Every title, summary, narrative text, dialogue line, and lore body must follow them. English content; Ashen Vigil register (terse, wind-worn) with Gilded Rot diction for Gildmark-bloc voices.
 - **Node ids are LAW:** use exactly the ids in this plan's tables — later tasks reference them verbatim. Kind prefixes: `act- region- faction- char- arc- quest- event- dlg- lore-`.
 - **Gate green after every task:** from worktree root `node scripts/check_content.mjs` → exit 0, 0 failures. Orphan WARNs are expected mid-plan (noted per task) and must ALL be resolved by Task 9 (`--require-complete` → exit 0).
 - **Regenerate the Mermaid artifact in the same commit whenever story JSON changes:** `node scripts/gen_story_graph.mjs --write` then commit `docs/story/story-graph.md` alongside.
@@ -42,7 +42,7 @@
 
 ### Task 2: World foundation + seed reconciliation
 
-**Files:** Modify `content/story/acts.json`, `regions.json`, `factions.json`, `characters.json`, `lore.json` · regenerate `docs/story/story-graph.md`.
+**Files:** Create `content/story/canon.md` · Modify `content/story/acts.json`, `regions.json`, `factions.json`, `characters.json`, `lore.json` · regenerate `docs/story/story-graph.md`.
 
 **Interfaces — Produces:** all world nodes later tasks reference. **Consumes:** style.md voices.
 
@@ -79,8 +79,14 @@
 | char-joren-of-norhollow | npc | (omit) | region-norhollow |
 
 - [ ] **Step 5: Seed reconciliation** — in `lore.json`, change both existing fragments' `thread` from `the-first-claim` to `the-cindervast-fall` and re-ground their summaries/bodies to the fallen city (the Stoneguard oath-tablet now mourns Cindervast); in `factions.json`, rewrite `faction-stoneguard` summary as Cindervast's old city guard ("a defensive order that outlived its city").
-- [ ] **Step 6: Verify** — gate exit 0. EXPECTED new WARNs: orphan character/faction WARNs for the 20 new nodes (referenced by nothing yet — resolved across Tasks 3–8) — count and record them in the commit body. Scripts tests pass (update any seed-title assertion). `node scripts/gen_story_graph.mjs --write`.
-- [ ] **Step 7: Commit** — `git add content/story/*.json docs/story/story-graph.md && git commit -m "content: undertow world foundation + seed reconciliation (T2)"`
+- [ ] **Step 6: Write `content/story/canon.md`** — the world-history bible, plot-hole insurance binding on Tasks 3–8. Exactly these sections:
+  1. **World chronology** — relative-year timeline: Cindervast's fall (about a generation before Day 0), each town's one-line founding/turn note, Rooktide's near-collapse and recovery, **Day 0 = the first caravan burns**, war declared (act 2), and the act boundaries expressed as seasons after Day 0. Every event the plan's tables mint must be placeable on this line.
+  2. **Character dossiers** — all 18 named characters: want / secret / voice note (one line, consistent with style.md) / key bonds / fate (per the plan's death list; survivors marked).
+  3. **Who-knows-what matrix** — for the four load-bearing secrets (the false flag, the Broker's hand behind Gildmark, the Bell-Keeper's coerced bell-bending, the relic weapon's existence): who knows, since which event id, and who must NOT learn it before which act. The Widow knows the false-flag truth early and does not care — state this explicitly.
+  4. **Geography & trade logic** — sketch route map in words: which roads connect the six towns + the three wild regions, rough travel times, why the arms flow must pass Gildmark's harbor, where Ashvale Front sits between the war towns.
+  5. **Contradiction rule** — one line: "Content in Tasks 3–8 that contradicts this file is a review finding; fix the content or amend this file deliberately in the same commit, never silently."
+- [ ] **Step 7: Verify** — gate exit 0. EXPECTED new WARNs: orphan character/faction WARNs for the 20 new nodes (referenced by nothing yet — resolved across Tasks 3–8) — count and record them in the commit body. Scripts tests pass (update any seed-title assertion). `node scripts/gen_story_graph.mjs --write`.
+- [ ] **Step 8: Commit** — `git add content/story/*.json content/story/canon.md docs/story/story-graph.md && git commit -m "content: undertow world foundation + canon + seed reconciliation (T2)"`
 
 ### Task 3: Act 1 — Small Lives (starter arcs)
 
@@ -101,6 +107,7 @@
 - [ ] **Step 3: Add event** `event-first-caravan-burns` (timelineOrder **2**, no triggeredBy, involves `["region-ashvale-front","faction-gildmark-council","char-widow-of-the-first-caravan"]`) — the staged incident, written as what people *believe* happened.
 - [ ] **Step 4: Add 2 dialogue** — `dlg-war-countess-briefing` (speaker char-war-countess, context quest-embervale-watchfires), `dlg-speaker-of-norhollow-briefing` (speaker char-speaker-of-norhollow, context quest-norhollow-palisade).
 - [ ] **Step 5: Verify + commit** — gate exit 0 (orphan WARN count shrinks; record); scripts tests; `gen_story_graph.mjs --write`; commit `"content: act 1 — small lives starter arcs (T3)"`.
+- [ ] **Step 6: USER CHECKPOINT (controller, not implementer):** after Task 3's review passes, the controller presents 3 golden samples to the user for taste approval — one quest's full narrative, one dialogue, one lore fragment (Thai framing, English content) — BEFORE dispatching Tasks 4–8. Voice corrections feed back into style.md/canon.md first.
 
 ### Task 4: Act 2 — The War Comes Home
 
