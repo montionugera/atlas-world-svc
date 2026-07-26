@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Undertow — คลื่นใต้น้ำ · ฉบับไลท์โนเวล</title>
+<style>
+  :root{
+    --bone:#e8e0d0;
+    --ash:#6b6862;
+    --ash-lo:#484540;
+    --frost:#7da5b8;
+    --frost-lo:#3d5763;
+    --bg:#1a1917;
+    --bg-lo:#111009;
+    --bg-hi:#221f1a;
+    --ember:#d4622a;
+    --ember-hi:#e8975a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--bone);
+    font-family:'Sarabun','Noto Serif Thai','Noto Sans Thai','Iowan Old Style','Palatino Linotype','Times New Roman',serif;
+    font-size:19px;
+    line-height:1.95;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  .book{max-width:720px;margin:0 auto;padding:0 26px 90px;}
+  svg{display:block;width:100%;height:auto;}
+
+  /* ---------- COVER ---------- */
+  .cover{
+    position:relative;max-width:760px;margin:0 auto;
+    background:var(--bg-lo);overflow:hidden;
+  }
+  .cover-art{display:block;width:100%;height:auto;}
+  .cover-titles{
+    position:absolute;top:6%;left:0;right:0;text-align:center;padding:0 20px;
+    text-shadow:0 2px 22px rgba(0,0,0,.85);
+  }
+  .cover-titles .kicker{
+    font-size:.72rem;letter-spacing:.42em;color:var(--frost);
+    text-transform:uppercase;margin:0 0 14px;opacity:.9;
+  }
+  .cover-titles h1{
+    font-size:2.55rem;line-height:1.15;margin:0;font-weight:700;
+    color:var(--bone);letter-spacing:.01em;
+  }
+  .cover-titles h1 .en{display:block;font-size:1.5rem;letter-spacing:.18em;
+    color:var(--ember-hi);font-weight:400;margin-bottom:2px;}
+  .cover-titles .sub{
+    margin:16px 0 0;font-size:1rem;letter-spacing:.32em;color:var(--ash);
+  }
+  .cover-foot{
+    position:absolute;bottom:4%;left:0;right:0;text-align:center;
+    font-size:.72rem;letter-spacing:.34em;color:var(--ash);
+    text-transform:uppercase;text-shadow:0 2px 14px rgba(0,0,0,.9);
+  }
+
+  /* ---------- SECTION / PAGE FRAME ---------- */
+  .page{padding-top:70px;}
+  .plate{
+    margin:0 auto 8px;background:var(--bg-hi);
+    border:1px solid var(--ash-lo);border-radius:2px;
+    box-shadow:0 18px 46px -22px rgba(0,0,0,.9), inset 0 0 0 4px rgba(232,224,208,.03);
+    overflow:hidden;
+  }
+  .caption{
+    font-size:.9rem;color:var(--ash);font-style:italic;text-align:center;
+    line-height:1.6;margin:14px auto 0;max-width:88%;
+  }
+  .caption b{color:var(--frost);font-style:normal;font-weight:400;}
+
+  /* ---------- CHAPTER HEADERS ---------- */
+  .chap{text-align:center;margin:64px 0 40px;}
+  .chap .en{
+    font-size:.74rem;letter-spacing:.44em;text-transform:uppercase;
+    color:var(--frost);display:block;margin-bottom:14px;
+  }
+  .chap h2{
+    font-size:2rem;font-weight:700;margin:0;color:var(--bone);line-height:1.25;
+  }
+  .chap .rule{
+    width:64px;height:1px;background:var(--ember);margin:20px auto 0;position:relative;
+  }
+  .chap .rule::before,.chap .rule::after{
+    content:"";position:absolute;top:-2px;width:5px;height:5px;
+    background:var(--ember);transform:rotate(45deg);
+  }
+  .chap .rule::before{left:-9px;}
+  .chap .rule::after{right:-9px;}
+
+  .pagehead{text-align:center;margin:0 0 30px;}
+  .pagehead .en{font-size:.72rem;letter-spacing:.4em;text-transform:uppercase;color:var(--frost);display:block;margin-bottom:10px;}
+  .pagehead h2{font-size:1.9rem;margin:0;font-weight:700;}
+  .pagehead p{color:var(--ash);font-size:.95rem;margin:12px auto 0;max-width:90%;font-style:italic;}
+
+  /* ---------- BODY PROSE ---------- */
+  .prose p{margin:0 0 1.35em;}
+  .prose .lead{font-size:1.12rem;color:#f2ecdd;}
+  .prose strong{color:var(--frost);font-weight:700;}
+  .prose em{color:var(--bone);}
+  .thought{text-align:center;color:var(--ember-hi);font-style:italic;
+    margin:1.6em auto;max-width:80%;font-size:1.04rem;}
+  .dialogue{color:#f2ecdd;padding-left:1.1em;border-left:2px solid var(--frost-lo);
+    margin:0 0 1.35em;}
+  .divider{display:flex;align-items:center;justify-content:center;gap:14px;
+    margin:2.6em 0;color:var(--ash-lo);}
+  .divider::before,.divider::after{content:"";height:1px;width:70px;
+    background:linear-gradient(90deg,transparent,var(--ash-lo));}
+  .divider::after{background:linear-gradient(90deg,var(--ash-lo),transparent);}
+  .divider span{color:var(--ember);font-size:.8rem;letter-spacing:.3em;}
+  .finale{text-align:center;font-size:1.5rem;color:var(--ember);font-weight:700;
+    letter-spacing:.04em;margin:2em auto 0;line-height:1.5;}
+
+  /* ---------- CHARACTER CARDS ---------- */
+  .cast{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:8px;}
+  .card{background:var(--bg-hi);border:1px solid var(--ash-lo);border-radius:3px;
+    overflow:hidden;display:flex;flex-direction:column;
+    box-shadow:0 14px 32px -20px rgba(0,0,0,.85);}
+  .card .port{background:var(--bg-lo);border-bottom:1px solid var(--ash-lo);}
+  .card .meta{padding:14px 16px 18px;}
+  .card .role{font-size:.64rem;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--ember);display:block;margin-bottom:6px;}
+  .card h3{margin:0 0 8px;font-size:1.12rem;color:var(--bone);line-height:1.3;}
+  .card h3 .en{display:block;font-size:.78rem;letter-spacing:.14em;color:var(--frost);
+    font-weight:400;margin-top:2px;}
+  .card p{margin:0;font-size:.86rem;line-height:1.62;color:var(--ash);}
+
+  /* ---------- END ---------- */
+  .end{text-align:center;padding:70px 0 20px;}
+  .end .emblem{max-width:230px;margin:0 auto 26px;}
+  .end .next{font-size:1.35rem;color:var(--bone);font-weight:700;letter-spacing:.02em;}
+  .end .sub{color:var(--ash);font-size:.86rem;letter-spacing:.3em;text-transform:uppercase;margin-top:16px;}
+
+  @media(max-width:560px){
+    body{font-size:17px;}
+    .cast{grid-template-columns:1fr;}
+    .cover-titles h1{font-size:2rem;}
+    .cover-titles h1 .en{font-size:1.15rem;}
+    .chap h2,.pagehead h2{font-size:1.55rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ========================================================= -->
+<!-- 1. COVER                                                   -->
+<!-- ========================================================= -->
+<section class="cover">
+  <svg class="cover-art" viewBox="0 0 720 960" role="img" aria-label="แม่ม่ายยืนบนเนินมองคาราวานลุกไหม้ เมืองสองเมืองอยู่ไกลลิบขอบฟ้า">
+    <defs>
+      <linearGradient id="cvSky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0e0d0b"/>
+        <stop offset="0.42" stop-color="#16150f"/>
+        <stop offset="0.60" stop-color="#241c14"/>
+        <stop offset="0.70" stop-color="#3a2817"/>
+        <stop offset="0.80" stop-color="#20170e"/>
+        <stop offset="1" stop-color="#0b0a08"/>
+      </linearGradient>
+      <radialGradient id="cvMoon" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="#cdd6d3"/>
+        <stop offset="0.5" stop-color="#8ea0a2" stop-opacity="0.5"/>
+        <stop offset="1" stop-color="#8ea0a2" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="cvEmber" cx="0.5" cy="0.6" r="0.55">
+        <stop offset="0" stop-color="#d4622a" stop-opacity="0.85"/>
+        <stop offset="0.4" stop-color="#a5401a" stop-opacity="0.45"/>
+        <stop offset="1" stop-color="#a5401a" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="cvRimF" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#7da5b8" stop-opacity="0.6"/>
+        <stop offset="1" stop-color="#7da5b8" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="cvRimE" x1="1" y1="0" x2="0" y2="0">
+        <stop offset="0" stop-color="#d4622a" stop-opacity="0.7"/>
+        <stop offset="1" stop-color="#d4622a" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="cvGrain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope="0.06"/></feComponentTransfer></filter>
+      <g id="cvFlame">
+        <path d="M0,0 C-6,-10 -7,-20 -2,-30 C1,-22 4,-24 3,-16 C7,-22 8,-10 4,-2 Z" fill="#d4622a"/>
+        <path d="M0,-2 C-3,-9 -3,-16 0,-23 C2,-16 4,-12 2,-5 Z" fill="#e8975a"/>
+      </g>
+    </defs>
+
+    <rect width="720" height="960" fill="url(#cvSky)"/>
+
+    <!-- cold moon -->
+    <circle cx="556" cy="150" r="120" fill="url(#cvMoon)"/>
+    <circle cx="556" cy="150" r="44" fill="#c6cfcb"/>
+    <circle cx="572" cy="140" r="44" fill="#16150f" opacity="0.55"/>
+    <!-- stars -->
+    <g fill="#cdd6d3">
+      <circle cx="120" cy="120" r="1.6" opacity="0.7"/>
+      <circle cx="230" cy="80" r="1.1" opacity="0.5"/>
+      <circle cx="330" cy="160" r="1.4" opacity="0.6"/>
+      <circle cx="640" cy="240" r="1.2" opacity="0.5"/>
+      <circle cx="80" cy="260" r="1" opacity="0.4"/>
+      <circle cx="440" cy="90" r="1.3" opacity="0.55"/>
+      <circle cx="700" cy="120" r="1.1" opacity="0.45"/>
+    </g>
+
+    <!-- ember wash over the plain -->
+    <ellipse cx="440" cy="590" rx="360" ry="130" fill="url(#cvEmber)"/>
+
+    <!-- far horizon towns -->
+    <g opacity="0.92">
+      <!-- Embervale (left, ember pennant) -->
+      <g fill="#0b0a08">
+        <rect x="150" y="512" width="26" height="34"/>
+        <rect x="180" y="524" width="20" height="22"/>
+        <path d="M147,512 l16,-16 l16,16 Z"/>
+        <path d="M178,524 l12,-12 l12,12 Z"/>
+        <rect x="205" y="500" width="14" height="46"/>
+        <path d="M204,500 l7,-12 l8,12 Z"/>
+      </g>
+      <path d="M219,502 l14,-4 l-3,8 l3,8 l-14,-4 Z" fill="#d4622a" opacity="0.8"/>
+      <!-- Norhollow (right, frost/mine) -->
+      <g fill="#0b0a08">
+        <path d="M470,546 l14,-30 l14,30 Z"/>
+        <path d="M494,546 l16,-36 l16,36 Z"/>
+        <path d="M522,546 l12,-24 l12,24 Z"/>
+        <!-- mine headframe -->
+        <path d="M556,546 l10,-40 l10,40 Z" fill="none" stroke="#0b0a08" stroke-width="3"/>
+        <line x1="561" y1="524" x2="571" y2="512" stroke="#0b0a08" stroke-width="3"/>
+        <circle cx="561" cy="512" r="5"/>
+      </g>
+      <line x1="150" y1="546" x2="600" y2="546" stroke="#0f0d0a" stroke-width="2" opacity="0.6"/>
+    </g>
+
+    <!-- the burning caravan, six wagons receding -->
+    <g>
+      <!-- road -->
+      <path d="M250,596 C 340,586 520,584 610,600" stroke="#0a0908" stroke-width="14" fill="none" opacity="0.7"/>
+      <g id="cvWagons">
+        <!-- each wagon: body + arched canvas + wheels + flame + smoke -->
+        <!-- w1 nearest left -->
+        <g transform="translate(268,584)">
+          <rect x="-18" y="-4" width="36" height="14" fill="#0b0a08"/>
+          <path d="M-18,-4 C-14,-20 14,-20 18,-4 Z" fill="#141009"/>
+          <circle cx="-11" cy="12" r="4.5" fill="#0b0a08"/><circle cx="11" cy="12" r="4.5" fill="#0b0a08"/>
+          <use href="#cvFlame" transform="translate(0,-14) scale(0.9)"/>
+          <use href="#cvFlame" transform="translate(-9,-8) scale(0.6)"/>
+          <path d="M0,-24 C6,-40 -4,-52 4,-70" stroke="#2a231c" stroke-width="6" fill="none" opacity="0.5" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(330,582) scale(0.94)">
+          <rect x="-18" y="-4" width="36" height="14" fill="#0b0a08"/>
+          <path d="M-18,-4 C-14,-20 14,-20 18,-4 Z" fill="#141009"/>
+          <circle cx="-11" cy="12" r="4.5" fill="#0b0a08"/><circle cx="11" cy="12" r="4.5" fill="#0b0a08"/>
+          <use href="#cvFlame" transform="translate(2,-14) scale(1.05)"/>
+          <use href="#cvFlame" transform="translate(-8,-8) scale(0.55)"/>
+          <path d="M0,-26 C8,-42 -4,-54 6,-74" stroke="#2a231c" stroke-width="6" fill="none" opacity="0.5" stroke-linecap="round"/>
+        </g>
+        <!-- w3 the father's wagon (blue patch), fiercest fire -->
+        <g transform="translate(398,582) scale(0.9)">
+          <rect x="-18" y="-4" width="36" height="14" fill="#0b0a08"/>
+          <path d="M-18,-4 C-14,-22 14,-22 18,-4 Z" fill="#141009"/>
+          <rect x="2" y="-16" width="9" height="9" fill="#3d5763"/>
+          <circle cx="-11" cy="12" r="4.5" fill="#0b0a08"/><circle cx="11" cy="12" r="4.5" fill="#0b0a08"/>
+          <use href="#cvFlame" transform="translate(0,-16) scale(1.4)"/>
+          <use href="#cvFlame" transform="translate(-10,-10) scale(0.9)"/>
+          <use href="#cvFlame" transform="translate(11,-10) scale(0.8)"/>
+          <path d="M0,-34 C10,-52 -6,-66 6,-92" stroke="#2a231c" stroke-width="7" fill="none" opacity="0.55" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(462,584) scale(0.8)">
+          <rect x="-18" y="-4" width="36" height="14" fill="#0b0a08"/>
+          <path d="M-18,-4 C-14,-20 14,-20 18,-4 Z" fill="#141009"/>
+          <circle cx="-11" cy="12" r="4.5" fill="#0b0a08"/><circle cx="11" cy="12" r="4.5" fill="#0b0a08"/>
+          <use href="#cvFlame" transform="translate(0,-14) scale(0.95)"/>
+          <path d="M0,-24 C6,-40 -4,-50 4,-68" stroke="#2a231c" stroke-width="5" fill="none" opacity="0.45" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(520,588) scale(0.68)">
+          <rect x="-18" y="-4" width="36" height="14" fill="#0b0a08"/>
+          <path d="M-18,-4 C-14,-20 14,-20 18,-4 Z" fill="#141009"/>
+          <circle cx="-11" cy="12" r="4.5" fill="#0b0a08"/><circle cx="11" cy="12" r="4.5" fill="#0b0a08"/>
+          <use href="#cvFlame" transform="translate(0,-14) scale(0.8)"/>
+          <path d="M0,-22 C6,-36 -4,-46 4,-62" stroke="#2a231c" stroke-width="5" fill="none" opacity="0.4" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(572,592) scale(0.56)">
+          <rect x="-18" y="-4" width="36" height="14" fill="#0b0a08"/>
+          <path d="M-18,-4 C-14,-20 14,-20 18,-4 Z" fill="#141009"/>
+          <circle cx="-11" cy="12" r="4.5" fill="#0b0a08"/><circle cx="11" cy="12" r="4.5" fill="#0b0a08"/>
+          <use href="#cvFlame" transform="translate(0,-13) scale(0.7)"/>
+        </g>
+      </g>
+      <!-- floating embers -->
+      <g fill="#e8975a">
+        <circle cx="410" cy="500" r="2.4" opacity="0.9"/>
+        <circle cx="446" cy="470" r="1.7" opacity="0.7"/>
+        <circle cx="382" cy="452" r="1.4" opacity="0.6"/>
+        <circle cx="470" cy="520" r="1.9" opacity="0.75"/>
+        <circle cx="356" cy="486" r="1.3" opacity="0.5"/>
+        <circle cx="500" cy="486" r="1.5" opacity="0.6"/>
+      </g>
+    </g>
+
+    <!-- foreground hill -->
+    <path d="M0,960 L0,742 C 100,690 200,612 262,606 C 420,596 560,662 720,700 L720,960 Z" fill="#080706"/>
+    <path d="M0,742 C 100,690 200,612 262,606 C 420,596 560,662 720,700" fill="none" stroke="url(#cvRimF)" stroke-width="2" opacity="0.5"/>
+
+    <!-- the widow, seen from behind, on the crest -->
+    <g transform="translate(258,604)">
+      <!-- gown -->
+      <path d="M0,0 C -34,-10 -40,-70 -30,-150 C -26,-186 -14,-210 0,-244 C 14,-210 26,-186 30,-150 C 40,-70 34,-10 0,0 Z" fill="#050504"/>
+      <!-- veil / shoulders -->
+      <path d="M0,-244 C -20,-238 -30,-210 -26,-176 C -14,-196 14,-196 26,-176 C 30,-210 20,-238 0,-244 Z" fill="#050504"/>
+      <!-- head + draped veil -->
+      <path d="M0,-300 C -16,-300 -22,-282 -20,-262 C -18,-244 -8,-238 0,-238 C 8,-238 18,-244 20,-262 C 22,-282 16,-300 0,-300 Z" fill="#050504"/>
+      <path d="M-20,-262 C -30,-236 -30,-206 -24,-180 L -18,-186 C -22,-210 -20,-240 -12,-260 Z" fill="#050504"/>
+      <path d="M20,-262 C 30,-236 30,-206 24,-180 L 18,-186 C 22,-210 20,-240 12,-260 Z" fill="#050504"/>
+      <!-- two-tone rim: frost left (moon), ember right (fire) -->
+      <path d="M0,-244 C 14,-210 26,-186 30,-150 C 40,-70 34,-10 0,0" fill="none" stroke="url(#cvRimE)" stroke-width="2.4"/>
+      <path d="M0,-300 C 8,-300 18,-296 20,-278" fill="none" stroke="url(#cvRimE)" stroke-width="2"/>
+      <path d="M0,-244 C -14,-210 -26,-186 -30,-150 C -40,-70 -34,-10 0,0" fill="none" stroke="url(#cvRimF)" stroke-width="2"/>
+      <!-- a single ember spark at her hand -->
+      <circle cx="30" cy="-120" r="2.6" fill="#e8975a"/>
+      <circle cx="38" cy="-140" r="1.6" fill="#d4622a" opacity="0.8"/>
+    </g>
+
+    <rect width="720" height="960" filter="url(#cvGrain)" opacity="0.5"/>
+    <!-- top vignette for title legibility -->
+    <rect width="720" height="360" fill="url(#cvSky)" opacity="0.45"/>
+  </svg>
+
+  <div class="cover-titles">
+    <p class="kicker">The Undertow</p>
+    <h1><span class="en">THE UNDERTOW</span>คลื่นใต้น้ำ</h1>
+    <p class="sub">ฉบับไลท์โนเวล</p>
+  </div>
+  <div class="cover-foot">แม่ม่ายแห่งคาราวานแรก · บทที่ ๑</div>
+</section>
+
+<div class="book">
+
+<!-- ========================================================= -->
+<!-- 2. MAP                                                     -->
+<!-- ========================================================= -->
+<section class="page" id="map">
+  <div class="pagehead">
+    <span class="en">Map of the Land</span>
+    <h2>แผนที่แผ่นดิน</h2>
+    <p>หกเมือง หกระบบปกครอง ไม่มีใครอยู่เหนือใคร — และถนนทุกสายมาบรรจบที่ทางแยก</p>
+  </div>
+  <div class="plate">
+    <svg viewBox="0 0 760 600" role="img" aria-label="แผนที่แผ่นดินแสดงหกเมือง ถนน หอระฆัง และจุดที่คาราวานถูกเผา">
+      <defs>
+        <pattern id="mpSea" width="22" height="12" patternUnits="userSpaceOnUse">
+          <path d="M0,8 C5,3 11,3 16,8" fill="none" stroke="#4a6d7d" stroke-width="0.9" opacity="0.6"/>
+        </pattern>
+        <pattern id="mpCurse" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="10" stroke="#6b6862" stroke-width="0.8" opacity="0.5"/>
+        </pattern>
+        <filter id="mpGrain"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope="0.045"/></feComponentTransfer></filter>
+        <radialGradient id="mpVig" cx="0.5" cy="0.5" r="0.7">
+          <stop offset="0.6" stop-color="#000" stop-opacity="0"/>
+          <stop offset="1" stop-color="#000" stop-opacity="0.5"/>
+        </radialGradient>
+      </defs>
+
+      <rect width="760" height="600" fill="#1c1a15"/>
+      <!-- ornate double frame -->
+      <rect x="14" y="14" width="732" height="572" fill="none" stroke="#6b6862" stroke-width="2"/>
+      <rect x="22" y="22" width="716" height="556" fill="none" stroke="#6b6862" stroke-width="1" opacity="0.6"/>
+      <g fill="#d4622a">
+        <rect x="14" y="14" width="8" height="8" transform="rotate(45 18 18)"/>
+        <rect x="738" y="14" width="8" height="8" transform="rotate(45 742 18)"/>
+        <rect x="14" y="578" width="8" height="8" transform="rotate(45 18 582)"/>
+        <rect x="738" y="578" width="8" height="8" transform="rotate(45 742 582)"/>
+      </g>
+
+      <!-- SEA (west) -->
+      <path d="M22,22 L150,22 C 130,120 160,200 132,300 C 150,400 120,480 148,578 L22,578 Z" fill="#233942"/>
+      <path d="M22,22 L150,22 C 130,120 160,200 132,300 C 150,400 120,480 148,578 L22,578 Z" fill="url(#mpSea)"/>
+      <text x="70" y="470" fill="#7da5b8" font-size="12" font-style="italic" font-family="serif" letter-spacing="3" transform="rotate(-90 70 470)">THE SEA · ทะเล</text>
+
+      <!-- ROADS (drawn under icons) -->
+      <g fill="none" stroke="#8a857a" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round" opacity="0.85">
+        <!-- Embervale <-> Norhollow across Ashvale -->
+        <path d="M312,250 C 380,232 470,232 540,250"/>
+        <!-- Gildmark -> Embervale -->
+        <path d="M150,320 C 210,300 260,280 288,262"/>
+        <!-- Gildmark -> Millcross -->
+        <path d="M150,340 C 250,360 350,372 408,382"/>
+        <!-- Millcross -> Embervale -->
+        <path d="M416,368 C 380,330 340,290 306,266"/>
+        <!-- Millcross -> Norhollow -->
+        <path d="M448,372 C 500,332 528,296 552,268"/>
+        <!-- Millcross -> Rooktide -->
+        <path d="M430,404 C 428,440 428,470 430,488"/>
+      </g>
+      <!-- cursed north road, faint -->
+      <path d="M428,356 C 424,280 420,200 418,132" fill="none" stroke="#6b6862" stroke-width="1.6" stroke-dasharray="1 9" opacity="0.55"/>
+
+      <!-- ASHVALE plain label + flame X (caravan burned) -->
+      <text x="426" y="205" fill="#8a857a" font-size="11" text-anchor="middle" font-style="italic" letter-spacing="2">Ashvale · ที่ราบเถ้า</text>
+      <g transform="translate(426,238)">
+        <line x1="-9" y1="-9" x2="9" y2="9" stroke="#d4622a" stroke-width="2.4"/>
+        <line x1="9" y1="-9" x2="-9" y2="9" stroke="#d4622a" stroke-width="2.4"/>
+        <path d="M0,-4 C-4,-11 -4,-18 0,-24 C2,-17 5,-14 3,-7 Z" fill="#d4622a"/>
+        <path d="M0,-6 C-2,-11 -1,-16 1,-21 C2,-15 3,-13 2,-9 Z" fill="#e8975a"/>
+      </g>
+      <text x="426" y="272" fill="#d4622a" font-size="10.5" text-anchor="middle">จุดที่คาราวานถูกเผา</text>
+
+      <!-- ================= TOWN: GILDMARK ================= -->
+      <g transform="translate(128,330)">
+        <!-- mirror tower -->
+        <rect x="-6" y="-46" width="12" height="46" fill="#151310"/>
+        <path d="M-8,-46 l8,-14 l8,14 Z" fill="#151310"/>
+        <circle cx="0" cy="-52" r="4" fill="#7da5b8"/>
+        <g stroke="#7da5b8" stroke-width="1" opacity="0.8">
+          <line x1="0" y1="-52" x2="-14" y2="-58"/><line x1="0" y1="-52" x2="14" y2="-58"/><line x1="0" y1="-52" x2="0" y2="-68"/>
+        </g>
+        <!-- harbor / dock + boat -->
+        <rect x="8" y="6" width="30" height="4" fill="#151310"/>
+        <path d="M14,6 l6,-14 l6,14 Z" fill="#151310"/>
+        <path d="M20,-8 l0,-12 l10,10 Z" fill="#6b6862"/>
+      </g>
+      <text x="128" y="366" fill="#e8e0d0" font-size="13" text-anchor="middle" font-weight="bold">Gildmark</text>
+      <text x="128" y="381" fill="#8a857a" font-size="10" text-anchor="middle">เมืองท่า · หอกระจก</text>
+
+      <!-- ================= TOWN: EMBERVALE (west, farm) ========= -->
+      <g transform="translate(298,250)">
+        <!-- barn -->
+        <rect x="-16" y="-14" width="32" height="16" fill="#151310"/>
+        <path d="M-18,-14 l18,-14 l18,14 Z" fill="#1d1912"/>
+        <rect x="-4" y="-8" width="8" height="10" fill="#d4622a" opacity="0.55"/>
+        <!-- furrows / field -->
+        <g stroke="#6b6862" stroke-width="1.4" opacity="0.7">
+          <line x1="-22" y1="10" x2="22" y2="10"/><line x1="-24" y1="16" x2="24" y2="16"/><line x1="-22" y1="22" x2="22" y2="22"/>
+        </g>
+        <path d="M20,-20 l10,-4 l-2,6 l2,6 l-10,-4 Z" fill="#d4622a" opacity="0.85"/>
+        <rect x="18" y="-20" width="2" height="16" fill="#151310"/>
+      </g>
+      <text x="298" y="292" fill="#e8e0d0" font-size="13" text-anchor="middle" font-weight="bold">Embervale</text>
+      <text x="298" y="307" fill="#8a857a" font-size="10" text-anchor="middle">เมืองไร่ · ธงแดงก่ำ</text>
+
+      <!-- ================= TOWN: NORHOLLOW (east, timber/mine) === -->
+      <g transform="translate(554,250)">
+        <!-- pines -->
+        <path d="M-24,2 l7,-20 l7,20 Z" fill="#1d1f1a"/>
+        <path d="M-18,2 l8,-24 l8,24 Z" fill="#1d1f1a"/>
+        <!-- mine headframe -->
+        <path d="M6,2 l8,-30 l8,30 Z" fill="none" stroke="#6b6862" stroke-width="2.4"/>
+        <line x1="10" y1="-14" x2="20" y2="-26" stroke="#6b6862" stroke-width="2"/>
+        <circle cx="10" cy="-14" r="4" fill="#7da5b8"/>
+        <!-- grey pennant -->
+        <path d="M24,-22 l10,-4 l-2,6 l2,6 l-10,-4 Z" fill="#8a857a"/>
+        <rect x="22" y="-22" width="2" height="16" fill="#151310"/>
+      </g>
+      <text x="554" y="292" fill="#e8e0d0" font-size="13" text-anchor="middle" font-weight="bold">Norhollow</text>
+      <text x="554" y="307" fill="#8a857a" font-size="10" text-anchor="middle">เมืองป่า–เหมือง · ธงเทาหม่น</text>
+
+      <!-- ================= TOWN: MILLCROSS (center crossroads) === -->
+      <g transform="translate(430,384)">
+        <!-- crossroads mark -->
+        <circle cx="0" cy="0" r="20" fill="none" stroke="#8a857a" stroke-width="1" opacity="0.5"/>
+        <line x1="-26" y1="0" x2="26" y2="0" stroke="#8a857a" stroke-width="2"/>
+        <line x1="0" y1="-26" x2="0" y2="26" stroke="#8a857a" stroke-width="2"/>
+        <!-- tents -->
+        <path d="M-14,6 l7,-14 l7,14 Z" fill="#151310"/>
+        <path d="M2,6 l7,-12 l7,12 Z" fill="#1d1912"/>
+      </g>
+      <text x="430" y="428" fill="#e8e0d0" font-size="13" text-anchor="middle" font-weight="bold">Millcross</text>
+      <text x="430" y="443" fill="#8a857a" font-size="10" text-anchor="middle">เมืองทางแยก · เมืองไร้รัฐ</text>
+
+      <!-- ================= TOWN: ROOKTIDE (south) ================ -->
+      <g transform="translate(430,498)">
+        <path d="M-16,6 l0,-14 l8,-8 l8,8 l0,14 Z" fill="#151310"/>
+        <rect x="-4" y="-6" width="7" height="12" fill="#3d5763"/>
+        <!-- tide waves -->
+        <path d="M-22,12 C-16,8 -10,16 -4,12 C2,8 8,16 14,12 C18,10 22,13 24,12" fill="none" stroke="#7da5b8" stroke-width="1.2" opacity="0.7"/>
+      </g>
+      <text x="430" y="538" fill="#e8e0d0" font-size="13" text-anchor="middle" font-weight="bold">Rooktide</text>
+      <text x="430" y="553" fill="#8a857a" font-size="10" text-anchor="middle">เมืองใต้ · สภาผู้ที่อยู่</text>
+
+      <!-- ================= CINDERVAST (far north, ruins) ========= -->
+      <path d="M356,66 h124 v72 h-124 Z" fill="url(#mpCurse)" opacity="0.6"/>
+      <g transform="translate(418,110)">
+        <!-- broken towers -->
+        <path d="M-30,20 l0,-30 l6,4 l0,-14 l8,6 l0,34 Z" fill="#151310"/>
+        <path d="M-8,20 l0,-40 l7,5 l0,-10 l7,6 l0,39 Z" fill="#151310"/>
+        <path d="M14,20 l0,-26 l6,4 l0,22 Z" fill="#151310"/>
+        <!-- shadow on wall motif -->
+        <rect x="-2" y="4" width="4" height="14" fill="#6b6862" opacity="0.5"/>
+      </g>
+      <text x="418" y="52" fill="#c9c2b2" font-size="13" text-anchor="middle" font-weight="bold">Cindervast</text>
+      <text x="418" y="150" fill="#8a857a" font-size="10" text-anchor="middle">ซากเมืองต้องสาป · ประชากรเหลือศูนย์</text>
+
+      <!-- ================= BELL-TOWERS along roads ============== -->
+      <g>
+        <!-- reusable-ish bell mark inlined -->
+        <g transform="translate(360,300)"><path d="M-4,4 C-4,-2 -1,-6 0,-8 C1,-6 4,-2 4,4 Z" fill="#d4c9a8"/><line x1="0" y1="-8" x2="0" y2="-11" stroke="#d4c9a8" stroke-width="1.4"/><rect x="-5" y="4" width="10" height="2" fill="#d4c9a8"/></g>
+        <g transform="translate(500,300)"><path d="M-4,4 C-4,-2 -1,-6 0,-8 C1,-6 4,-2 4,4 Z" fill="#d4c9a8"/><line x1="0" y1="-8" x2="0" y2="-11" stroke="#d4c9a8" stroke-width="1.4"/><rect x="-5" y="4" width="10" height="2" fill="#d4c9a8"/></g>
+        <g transform="translate(250,352)"><path d="M-4,4 C-4,-2 -1,-6 0,-8 C1,-6 4,-2 4,4 Z" fill="#d4c9a8"/><line x1="0" y1="-8" x2="0" y2="-11" stroke="#d4c9a8" stroke-width="1.4"/><rect x="-5" y="4" width="10" height="2" fill="#d4c9a8"/></g>
+        <g transform="translate(430,452)"><path d="M-4,4 C-4,-2 -1,-6 0,-8 C1,-6 4,-2 4,4 Z" fill="#d4c9a8"/><line x1="0" y1="-8" x2="0" y2="-11" stroke="#d4c9a8" stroke-width="1.4"/><rect x="-5" y="4" width="10" height="2" fill="#d4c9a8"/></g>
+      </g>
+      <text x="632" y="120" fill="#8a857a" font-size="9" text-anchor="middle">⌘ = หอระฆัง Bellfaith</text>
+      <g transform="translate(592,116)"><path d="M-4,4 C-4,-2 -1,-6 0,-8 C1,-6 4,-2 4,4 Z" fill="#d4c9a8"/><line x1="0" y1="-8" x2="0" y2="-11" stroke="#d4c9a8" stroke-width="1.4"/><rect x="-5" y="4" width="10" height="2" fill="#d4c9a8"/></g>
+
+      <!-- ================= COMPASS ROSE (bottom-right) ========== -->
+      <g transform="translate(672,486)">
+        <circle r="30" fill="none" stroke="#6b6862" stroke-width="1"/>
+        <circle r="22" fill="none" stroke="#6b6862" stroke-width="0.6" opacity="0.6"/>
+        <path d="M0,-30 L5,-5 L0,0 L-5,-5 Z" fill="#d4622a"/>
+        <path d="M0,30 L5,5 L0,0 L-5,5 Z" fill="#8a857a"/>
+        <path d="M30,0 L5,5 L0,0 L5,-5 Z" fill="#8a857a"/>
+        <path d="M-30,0 L-5,5 L0,0 L-5,-5 Z" fill="#8a857a"/>
+        <text x="0" y="-34" fill="#e8e0d0" font-size="10" text-anchor="middle">N</text>
+        <text x="0" y="44" fill="#8a857a" font-size="9" text-anchor="middle">S</text>
+        <text x="38" y="4" fill="#8a857a" font-size="9" text-anchor="middle">E</text>
+        <text x="-38" y="4" fill="#8a857a" font-size="9" text-anchor="middle">W</text>
+      </g>
+
+      <rect x="22" y="22" width="716" height="556" fill="url(#mpVig)"/>
+      <rect x="22" y="22" width="716" height="556" filter="url(#mpGrain)"/>
+    </svg>
+  </div>
+  <p class="caption">คาราวานสายเลือดข้าม <b>Ashvale</b> จาก Embervale และ Norhollow ไปยังท่าเรือ <b>Gildmark</b> — กากบาทไฟคือจุดที่ขบวนถูกเผา เหนือสุดคือซาก <b>Cindervast</b> ที่แม้แต่เงายังไหม้ติดกำแพง</p>
+</section>
+
+<!-- ========================================================= -->
+<!-- 3. CHARACTER INTRO                                          -->
+<!-- ========================================================= -->
+<section class="page" id="cast">
+  <div class="pagehead">
+    <span class="en">Dramatis Personae</span>
+    <h2>แนะนำตัวละคร</h2>
+    <p>สองขั้วของตัวร้ายตัวเดียวกัน คนนอกที่ประกอบความจริง และเงาที่คอยเก็บราคา</p>
+  </div>
+  <div class="cast">
+
+    <!-- WIDOW -->
+    <article class="card">
+      <div class="port">
+        <svg viewBox="0 0 240 260" role="img" aria-label="ภาพเงาแม่ม่ายคลุมผ้า มีประกายไฟ">
+          <defs><radialGradient id="pWid" cx="0.5" cy="0.4" r="0.6"><stop offset="0" stop-color="#2a3841"/><stop offset="1" stop-color="#111311"/></radialGradient></defs>
+          <rect width="240" height="260" fill="url(#pWid)"/>
+          <circle cx="120" cy="112" r="76" fill="#0c0e0d" opacity="0.55"/>
+          <!-- profile facing left, veiled -->
+          <g fill="#060706">
+            <path d="M150,244 C120,244 96,230 92,196 C88,160 96,120 118,92 C104,90 96,74 100,58 C104,40 120,30 138,34 C120,44 116,64 128,78 C142,72 158,86 158,108 C158,130 150,150 156,180 C160,210 168,244 150,244 Z"/>
+            <!-- veil drape -->
+            <path d="M100,58 C82,80 78,120 86,168 C90,140 92,104 108,80 Z"/>
+          </g>
+          <!-- frost rim -->
+          <path d="M100,58 C104,40 120,30 138,34" fill="none" stroke="#7da5b8" stroke-width="1.6" opacity="0.7"/>
+          <path d="M92,196 C88,160 96,120 118,92" fill="none" stroke="#7da5b8" stroke-width="1.4" opacity="0.4"/>
+          <!-- ember spark -->
+          <circle cx="150" cy="120" r="3.4" fill="#d4622a"/>
+          <circle cx="158" cy="104" r="2" fill="#e8975a"/>
+          <circle cx="146" cy="138" r="1.5" fill="#d4622a" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="role">ผู้ทำลาย</span>
+        <h3>แม่ม่ายแห่งคาราวานแรก<span class="en">The Widow of the First Caravan</span></h3>
+        <p>ภรรยานายขบวน ผู้เห็นความจริงเพียงคนเดียว เสียทั้งครอบครัวในคืนเดียว แล้วเลือกความเงียบเป็นอาวุธ — ต้องการเพียงให้ทั้งสองเมืองไหม้เป็นเถ้าถ่าน</p>
+      </div>
+    </article>
+
+    <!-- MAN OF THE CROSSROADS -->
+    <article class="card">
+      <div class="port">
+        <svg viewBox="0 0 240 260" role="img" aria-label="ภาพเงานักเดินทางสวมฮู้ด ถือไม้เท้า ส้นเท้ากดดิน">
+          <defs><radialGradient id="pCross" cx="0.5" cy="0.4" r="0.6"><stop offset="0" stop-color="#2b2822"/><stop offset="1" stop-color="#111009"/></radialGradient></defs>
+          <rect width="240" height="260" fill="url(#pCross)"/>
+          <circle cx="120" cy="112" r="76" fill="#0c0b09" opacity="0.5"/>
+          <!-- staff -->
+          <line x1="168" y1="40" x2="150" y2="230" stroke="#3a352c" stroke-width="5" stroke-linecap="round"/>
+          <!-- hooded traveler 3/4 -->
+          <g fill="#070605">
+            <path d="M78,232 C70,196 74,150 92,118 C80,110 78,90 88,72 C98,54 122,50 140,62 C152,70 156,88 150,106 C160,120 166,150 164,182 C162,206 168,232 168,232 Z"/>
+            <!-- pack on back -->
+            <path d="M70,150 C58,152 54,178 62,198 C74,196 82,180 82,158 Z"/>
+            <!-- hood point -->
+            <path d="M88,72 C92,54 116,48 138,60 C120,58 104,64 96,80 Z"/>
+          </g>
+          <!-- rim + hood shadow (faceless) -->
+          <path d="M92,118 C80,110 78,90 88,72" fill="none" stroke="#7da5b8" stroke-width="1.4" opacity="0.55"/>
+          <ellipse cx="120" cy="86" rx="12" ry="16" fill="#040403"/>
+          <!-- heel pressed to ground -->
+          <line x1="96" y1="234" x2="176" y2="234" stroke="#3a352c" stroke-width="2"/>
+          <path d="M150,226 l14,8 l-16,2 Z" fill="#050504"/>
+          <g stroke="#6b6862" stroke-width="1" opacity="0.6"><line x1="150" y1="236" x2="142" y2="242"/><line x1="158" y1="236" x2="164" y2="242"/></g>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="role">ตัวเอก · ผู้ประกอบความจริง</span>
+        <h3>คนทางแยก<span class="en">The Man of the Crossroads</span></h3>
+        <p>ชายพเนจรไร้เมือง บดส้นเท้าทดสอบพื้นก่อนตั้งท่าเสมอ อยากมีสักที่ที่พื้นดินจำน้ำหนักเขาได้ ค่อยๆ เก็บความจริงทีละชิ้นจนสาวถึงตัว Broker</p>
+      </div>
+    </article>
+
+    <!-- QUARTERMASTER -->
+    <article class="card">
+      <div class="port">
+        <svg viewBox="0 0 240 260" role="img" aria-label="ภาพเงาพลาธิการหญิงถือสมุดบัญชี">
+          <defs><radialGradient id="pQm" cx="0.5" cy="0.4" r="0.6"><stop offset="0" stop-color="#2c2620"/><stop offset="1" stop-color="#120f0a"/></radialGradient></defs>
+          <rect width="240" height="260" fill="url(#pQm)"/>
+          <circle cx="120" cy="112" r="76" fill="#0d0b08" opacity="0.5"/>
+          <g fill="#070605">
+            <!-- body -->
+            <path d="M84,236 C78,196 82,150 96,120 C86,110 84,88 96,72 C108,58 132,58 144,72 C156,88 154,110 144,120 C158,150 162,196 156,236 Z"/>
+            <!-- hair bun -->
+            <path d="M96,72 C96,54 144,54 144,72 C138,64 102,64 96,72 Z"/>
+            <circle cx="150" cy="66" r="8"/>
+          </g>
+          <!-- ledger held forward -->
+          <g transform="translate(120,158) rotate(-8)">
+            <rect x="-34" y="-22" width="68" height="44" fill="#b7ad95"/>
+            <line x1="0" y1="-22" x2="0" y2="22" stroke="#8a806a" stroke-width="2"/>
+            <g stroke="#6b6862" stroke-width="1.2">
+              <line x1="-28" y1="-12" x2="-6" y2="-12"/><line x1="-28" y1="-4" x2="-6" y2="-4"/><line x1="-28" y1="4" x2="-6" y2="4"/>
+              <line x1="6" y1="-12" x2="28" y2="-12"/><line x1="6" y1="-4" x2="28" y2="-4"/>
+            </g>
+            <!-- tally marks in ember -->
+            <g stroke="#d4622a" stroke-width="1.6"><line x1="10" y1="6" x2="10" y2="16"/><line x1="14" y1="6" x2="14" y2="16"/><line x1="18" y1="6" x2="18" y2="16"/><line x1="8" y1="16" x2="20" y2="6"/></g>
+          </g>
+          <ellipse cx="120" cy="90" rx="14" ry="17" fill="#050403"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="role">แม่ของเมืองทางแยก</span>
+        <h3>พลาธิการ<span class="en">The Quartermaster of Millcross</span></h3>
+        <p>ผู้หญิงที่นับทุกอย่างเป็นมื้ออาหารกับระยะทาง ไม่เคยเขียนชื่อคนลงในสมุด เพราะรู้ว่าชื่อในบัญชีคือแผลในใจ บันทึกสิบปีของเธอคือประวัติศาสตร์สงครามฉบับคนตัวเล็ก</p>
+      </div>
+    </article>
+
+    <!-- THE BROKER -->
+    <article class="card">
+      <div class="port">
+        <svg viewBox="0 0 240 260" role="img" aria-label="ภาพเงานายหน้าไร้ใบหน้าในเสื้อคลุมหรู มีตราครั่ง">
+          <defs><radialGradient id="pBrk" cx="0.5" cy="0.35" r="0.7"><stop offset="0" stop-color="#232019"/><stop offset="1" stop-color="#0b0a08"/></radialGradient></defs>
+          <rect width="240" height="260" fill="url(#pBrk)"/>
+          <g fill="#050504">
+            <!-- fine long coat, high collar -->
+            <path d="M120,52 C104,52 92,62 90,80 C88,98 96,108 108,112 C96,120 84,150 82,236 L158,236 C156,150 144,120 132,112 C144,108 152,98 150,80 C148,62 136,52 120,52 Z"/>
+            <!-- collar wings -->
+            <path d="M108,112 L96,150 L114,120 Z"/>
+            <path d="M132,112 L144,150 L126,120 Z"/>
+            <!-- lapels -->
+            <path d="M120,116 L108,220 L120,150 L132,220 Z" fill="#0c0b09"/>
+          </g>
+          <!-- faceless void -->
+          <ellipse cx="120" cy="82" rx="17" ry="21" fill="#020202"/>
+          <ellipse cx="120" cy="80" rx="17" ry="21" fill="none" stroke="#3a352c" stroke-width="1" opacity="0.6"/>
+          <!-- wax seal motif -->
+          <g transform="translate(120,178)">
+            <circle r="15" fill="#d4622a"/>
+            <circle r="15" fill="none" stroke="#a5401a" stroke-width="2"/>
+            <path d="M-6,-5 L6,-5 M-6,0 L6,0 M-5,5 L5,5" stroke="#7a2e12" stroke-width="1.4"/>
+            <circle r="7" fill="none" stroke="#7a2e12" stroke-width="1.2"/>
+          </g>
+          <text x="120" y="248" fill="#6b6862" font-size="9" text-anchor="middle" font-style="italic">no name · no face</text>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="role">ตัวร้าย · สมองของแผน</span>
+        <h3>the Broker<span class="en">The Faceless Broker</span></h3>
+        <p>นายหน้าเงาที่ไม่มีใครรู้หน้า จัดฉากทั้งสงครามด้วยหลักการเดียว: <em>“คนไม่ต้องการความจริง คนต้องการศัตรู”</em> — ขายอาวุธและเสบียงให้ทั้งสองฝ่ายเสมอกัน</p>
+      </div>
+    </article>
+
+    <!-- IRON REGENT -->
+    <article class="card">
+      <div class="port">
+        <svg viewBox="0 0 240 260" role="img" aria-label="ภาพเงาผู้สำเร็จราชการเหล็ก มีเค้ามงกุฎจางๆ">
+          <defs><radialGradient id="pIr" cx="0.5" cy="0.4" r="0.6"><stop offset="0" stop-color="#28251f"/><stop offset="1" stop-color="#100e0a"/></radialGradient></defs>
+          <rect width="240" height="260" fill="url(#pIr)"/>
+          <circle cx="120" cy="110" r="76" fill="#0d0b08" opacity="0.5"/>
+          <!-- faint crown, ember -->
+          <g stroke="#d4622a" stroke-width="1.6" fill="none" opacity="0.7">
+            <path d="M100,44 L104,32 L112,42 L120,30 L128,42 L136,32 L140,44 Z"/>
+          </g>
+          <g fill="#060605">
+            <!-- head + armored shoulders -->
+            <path d="M120,56 C106,56 98,68 100,84 C102,98 110,104 120,104 C130,104 138,98 140,84 C142,68 134,56 120,56 Z"/>
+            <path d="M120,104 C96,108 76,124 72,164 L64,236 L176,236 L168,164 C164,124 144,108 120,104 Z"/>
+            <!-- angular pauldrons -->
+            <path d="M72,164 L52,150 L68,196 Z"/>
+            <path d="M168,164 L188,150 L172,196 Z"/>
+          </g>
+          <!-- hawk silhouette above -->
+          <path d="M120,26 C112,20 100,22 94,28 C104,26 112,30 120,34 C128,30 136,26 146,28 C140,22 128,20 120,26 Z" fill="#6b6862" opacity="0.7"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="role">สายเหยี่ยวแห่ง Embervale</span>
+        <h3>Iron Regent<span class="en">น้องชายของ War-Countess</span></h3>
+        <p>กัดกินอำนาจจากในบ้านตัวเอง ทุกความพ่ายแพ้คือข้ออ้างขอ “อำนาจฉุกเฉิน” — ความลับที่ลึกที่สุด: เขาอยากเป็น <em>กษัตริย์องค์ที่สอง</em> ของแผ่นดินที่สาบส่งคำว่ากษัตริย์</p>
+      </div>
+    </article>
+
+    <!-- ASH PROPHET -->
+    <article class="card">
+      <div class="port">
+        <svg viewBox="0 0 240 260" role="img" aria-label="ภาพเงาผู้เผยพระวจนะแห่งเถ้า ในเสื้อคลุมขาดรุ่งริ่ง">
+          <defs><radialGradient id="pAsh" cx="0.5" cy="0.4" r="0.65"><stop offset="0" stop-color="#211f1b"/><stop offset="1" stop-color="#0b0a09"/></radialGradient></defs>
+          <rect width="240" height="260" fill="url(#pAsh)"/>
+          <circle cx="120" cy="112" r="78" fill="#0c0b0a" opacity="0.45"/>
+          <!-- staff -->
+          <line x1="76" y1="34" x2="88" y2="234" stroke="#33302a" stroke-width="4" stroke-linecap="round"/>
+          <g fill="#070606">
+            <!-- ragged robe -->
+            <path d="M120,64 C104,64 94,78 96,96 C98,110 106,116 116,116 C104,124 94,150 96,186 L86,236 L100,224 L108,238 L120,222 L132,238 L140,224 L154,236 L146,186 C148,150 138,124 124,116 C134,116 142,110 144,96 C146,78 136,64 120,64 Z"/>
+            <!-- hollow hood -->
+            <path d="M96,96 C96,74 144,74 144,96 C136,84 104,84 96,96 Z"/>
+          </g>
+          <ellipse cx="120" cy="98" rx="13" ry="16" fill="#020202"/>
+          <!-- ash particles -->
+          <g fill="#8a857a">
+            <circle cx="150" cy="120" r="1.6" opacity="0.7"/><circle cx="164" cy="150" r="1.2" opacity="0.5"/>
+            <circle cx="90" cy="140" r="1.4" opacity="0.6"/><circle cx="158" cy="96" r="1.1" opacity="0.5"/>
+            <circle cx="76" cy="110" r="1.3" opacity="0.5"/>
+          </g>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="role">ผู้เผยพระวจนะแห่งเถ้า</span>
+        <h3>Ash Prophet<span class="en">อดีตทหาร Cindervast</span></h3>
+        <p>รอดจากคืนที่เมืองตัวเองถูกลบ เชื่อว่า <em>ทุกเมืองคือ Cindervast ที่ยังไม่ถึงคิว</em> ฝูงของเขาโจมตีไร้แบบแผน ไม่รับเงิน ไม่เจรจา — ตัวแปรที่ทำแผนของทุกฝ่ายพัง</p>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- 4. PROLOGUE                                                -->
+<!-- ========================================================= -->
+<section class="page" id="prologue">
+  <div class="chap">
+    <span class="en">Prologue</span>
+    <h2>บทนำ — แม่ม่ายแห่งคาราวานแรก</h2>
+    <div class="rule"></div>
+  </div>
+
+  <div class="prose">
+    <p class="lead">ปีหนึ่งมีอยู่วันเดียวที่สองเมืองยิ้มให้กัน และวันนั้นคือเช้าวันนี้</p>
+
+    <p>ถนนสองสายจากสองเมืองมาบรรจบกันตรงทางแยกกลางที่ราบ คนจากเมืองแดงก่ำเทลงมาทางหนึ่ง คนจากเมืองเทาหม่นเทลงมาอีกทางหนึ่ง แล้วมาปนกันตรงกลางจนแยกไม่ออกว่าใครเป็นคนเมืองไหน กลองของเมืองหนึ่งตีคนละจังหวะกับขลุ่ยของอีกเมือง แต่พอเล่นด้วยกันมันกลับเข้ากันได้อย่างประหลาด เด็กสองเมืองวิ่งไล่กันลอดใต้ท้องม้า แม่ค้าตะโกนขายของด้วยสำเนียงคนละฝั่ง แต่หัวเราะกับเรื่องตลกเรื่องเดียวกัน</p>
+
+    <p>หญิงสาวคนหนึ่งยืนอยู่ริมถนน มือกันแดดไว้เหนือคิ้ว มองหาคนสองคนในขบวน — สามีของเธอ กับลูกชายของเธอ</p>
+
+    <p>ที่หัวขบวน สามีของเธอกำลังผูกธงสองผืนเข้ากับเสาต้นเดียว ธงเมืองแดงก่ำกับธงเมืองเทาหม่น มัดไขว้กันบนไม้อันเดียวกัน เขาเป็น <strong>นายขบวน</strong> — คนเดียวในแผ่นดินที่ได้รับอนุญาตให้ถือธงของทั้งสองเมืองไว้ในมือเดียว พ่อของเขาเคยผูกธงคู่นี้ ปู่ของเขาก็เคย มือของเขาผูกปมนั้นได้โดยไม่ต้องก้มมองด้วยซ้ำ</p>
+
+    <p>ขบวนนี้ไม่ใช่ขบวนค้าขายธรรมดา ปีละครั้ง สองเมืองพี่น้อง — Embervale เมืองไร่ กับ Norhollow เมืองป่าและเหมือง — จะรวมผลผลิตทั้งปีเป็นขบวนเดียว คนแถบนี้เรียกมันว่า <strong>คาราวานสายเลือด</strong> ร้อยปีมาแล้วที่สองเมืองทะเลาะกันนับครั้งไม่ถ้วน แต่ขบวนนี้ไม่เคยขาดสักปี เพราะบนเกวียนพวกนี้มีทั้งเสบียงหน้าหนาวของทั้งสองเมือง และกำไรทั้งฤดูที่ลงแรงร่วมกัน ถ้ามันไหม้ ทั้งสองเมืองจะหิวกันไปทั้งหน้าหนาว และตามธรรมเนียม ลูกหลานของทั้งสองเมืองจะได้ขึ้นขบวนไปด้วยกัน นั่งเคียงบ่ากันบนเกวียนคันเดียว ขบวนนี้จึงไม่ใช่แค่การค้า มันคือเส้นเลือดเส้นเดียวที่ยังเชื่อมสองเมืองไว้ด้วยกัน</p>
+
+    <p>ปีนี้พิเศษกว่าทุกปี เพราะลูกชายของเธออายุครบขึ้นขบวนเป็นครั้งแรก</p>
+
+    <p>เด็กหนุ่มปีนขึ้นเกวียนคันที่สาม — คันของพ่อ คันที่ขึงผ้าใบซึ่งเธอปะสีฟ้าไว้เองตรงมุมที่ขาด — แล้วหันมาหาเธอ โบกมือจนสุดแขน</p>
+
+    <p class="dialogue">“แม่! ปีหน้าลูกจะได้ถือธงเองแล้วนะแม่!”</p>
+
+    <p>เธอหัวเราะ โบกมือกลับ ตะโกนบอกให้เขาเกาะเกวียนไว้ให้แน่น</p>
+
+    <p class="thought">จำภาพนี้ไว้</p>
+
+    <p>เธอไม่รู้ว่าทำไมถึงคิดแบบนั้น มันเป็นความคิดของแม่ทุกคนตอนเห็นลูกจากไปไกลเป็นครั้งแรก เธอเก็บภาพนั้นไว้ — ลูกชายบนเกวียนคันที่สาม สามีผูกธงสองผืนไว้เหนือหัว มือทั้งสองโบกไหวอยู่ในแดดเช้า — โดยไม่รู้ว่ามันคือภาพสุดท้าย</p>
+  </div>
+
+  <!-- INSERT A: THE SEND-OFF -->
+  <div class="plate" style="margin-top:34px;">
+    <svg viewBox="0 0 680 380" role="img" aria-label="เช้าวันส่งขบวน ธงสองผืนบนเสาเดียว เด็กชายโบกมือจากเกวียนคันที่สามที่มีผ้าใบปะสีฟ้า">
+      <defs>
+        <linearGradient id="saSky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#6f7f86"/>
+          <stop offset="0.45" stop-color="#a9a08a"/>
+          <stop offset="0.72" stop-color="#e0b784"/>
+          <stop offset="1" stop-color="#ead9bd"/>
+        </linearGradient>
+        <radialGradient id="saSun" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stop-color="#f4e6c8"/><stop offset="0.5" stop-color="#e9c489" stop-opacity="0.6"/><stop offset="1" stop-color="#e9c489" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="saGrain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer></filter>
+      </defs>
+      <rect width="680" height="380" fill="url(#saSky)"/>
+      <circle cx="470" cy="150" r="150" fill="url(#saSun)"/>
+      <!-- distant hills -->
+      <path d="M0,250 C 140,224 300,232 430,244 C 540,254 620,246 680,236 L680,266 L0,266 Z" fill="#8f8a76" opacity="0.55"/>
+      <path d="M0,262 C 180,246 360,256 520,250 C 600,247 650,250 680,252 L680,300 L0,300 Z" fill="#7b7562" opacity="0.6"/>
+      <!-- ground / road receding -->
+      <rect x="0" y="288" width="680" height="92" fill="#b9a888"/>
+      <path d="M40,380 L300,288 L392,288 L640,380 Z" fill="#9d8b6b"/>
+      <path d="M300,288 L392,288 L640,380 L40,380 Z" fill="none" stroke="#87764f" stroke-width="1" opacity="0.4"/>
+
+      <!-- roadside crowd (silhouettes) -->
+      <g fill="#5a5346" opacity="0.85">
+        <ellipse cx="52" cy="300" rx="9" ry="22"/><ellipse cx="74" cy="304" rx="8" ry="20"/><ellipse cx="96" cy="300" rx="9" ry="24"/>
+        <ellipse cx="618" cy="300" rx="9" ry="22"/><ellipse cx="640" cy="304" rx="8" ry="20"/><ellipse cx="596" cy="302" rx="8" ry="21"/>
+      </g>
+      <!-- bunting -->
+      <g stroke="#6b6862" stroke-width="1.2" fill="none" opacity="0.6"><path d="M20,214 C 120,236 220,236 320,220"/></g>
+      <g fill="#d4622a" opacity="0.55"><path d="M60,222 l8,0 l-4,8 Z"/><path d="M120,230 l8,0 l-4,8 Z"/><path d="M180,231 l8,0 l-4,8 Z"/></g>
+      <g fill="#7da5b8" opacity="0.55"><path d="M90,227 l8,0 l-4,8 Z"/><path d="M150,231 l8,0 l-4,8 Z"/><path d="M240,224 l8,0 l-4,8 Z"/></g>
+
+      <!-- head of column: single pole, two crossed banners -->
+      <g transform="translate(214,150)">
+        <line x1="0" y1="0" x2="0" y2="150" stroke="#4a4438" stroke-width="4" stroke-linecap="round"/>
+        <!-- ember (Embervale) pennant -->
+        <path d="M0,6 L58,18 L34,30 L52,44 L0,36 Z" fill="#d4622a"/>
+        <!-- frost/grey (Norhollow) pennant, crossed other side -->
+        <path d="M0,20 L-56,34 L-32,46 L-50,60 L0,50 Z" fill="#8a857a"/>
+        <circle cx="0" cy="2" r="4" fill="#4a4438"/>
+      </g>
+
+      <!-- wagon line receding (head far, wagon three near) -->
+      <!-- far wagons -->
+      <g fill="#4f4838">
+        <g transform="translate(250,250) scale(0.55)"><rect x="-24" y="-6" width="48" height="20"/><path d="M-24,-6 C-18,-30 18,-30 24,-6 Z" fill="#5c5443"/><circle cx="-14" cy="18" r="6" fill="#33302a"/><circle cx="14" cy="18" r="6" fill="#33302a"/></g>
+        <g transform="translate(300,262) scale(0.72)"><rect x="-24" y="-6" width="48" height="20"/><path d="M-24,-6 C-18,-32 18,-32 24,-6 Z" fill="#5c5443"/><circle cx="-14" cy="18" r="6" fill="#33302a"/><circle cx="14" cy="18" r="6" fill="#33302a"/></g>
+      </g>
+      <!-- WAGON THREE (near, blue-patched canvas, boy waving) -->
+      <g transform="translate(410,286)">
+        <rect x="-46" y="-14" width="92" height="40" fill="#4a4336"/>
+        <path d="M-46,-14 C-36,-64 36,-64 46,-14 Z" fill="#cdbf9f"/>
+        <!-- blue patch on torn corner -->
+        <path d="M18,-46 l26,10 C 44,-24 40,-16 34,-14 L18,-14 Z" fill="#5c7f90"/>
+        <path d="M18,-46 l26,10" stroke="#3d5763" stroke-width="1.5"/>
+        <!-- stitch marks -->
+        <g stroke="#3d5763" stroke-width="1" opacity="0.7"><line x1="20" y1="-40" x2="24" y2="-42"/><line x1="28" y1="-36" x2="32" y2="-38"/><line x1="36" y1="-30" x2="40" y2="-32"/></g>
+        <circle cx="-26" cy="34" r="12" fill="#2c2922"/><circle cx="26" cy="34" r="12" fill="#2c2922"/>
+        <circle cx="-26" cy="34" r="4" fill="#4a4336"/><circle cx="26" cy="34" r="4" fill="#4a4336"/>
+        <!-- the boy waving from the front bench -->
+        <g fill="#3a352c">
+          <circle cx="-2" cy="-24" r="8"/>
+          <path d="M-10,-16 C-12,-2 8,-2 6,-16 Z"/>
+          <!-- raised waving arm -->
+          <path d="M4,-20 C 14,-30 22,-40 28,-52 C 30,-46 26,-38 18,-30 C 14,-24 10,-18 8,-16 Z"/>
+        </g>
+      </g>
+
+      <rect width="680" height="380" filter="url(#saGrain)"/>
+    </svg>
+  </div>
+  <p class="caption">“แม่! ปีหน้าลูกจะได้ถือธงเองแล้วนะแม่!” — <b>เกวียนคันที่สาม</b> ผ้าใบมุมที่ขาดยังมีรอยปะสีฟ้าที่เธอเย็บเอง ธงสองเมืองไขว้กันบนเสาต้นเดียวเหนือหัวขบวน</p>
+
+  <div class="divider"><span>❖</span></div>
+
+  <div class="prose">
+    <p>คืนที่ขบวนควรจะกลับถึงบ้าน — คืนที่มันควรบรรทุกเงินและเสบียงของทั้งสองเมืองกลับมาเต็มขบวน — กลิ่นควันมาถึงก่อนแสงไฟ</p>
+
+    <p>เธอสะดุ้งตื่นกลางดึกเพราะกลิ่นนั้น ยังไม่ทันสวมรองเท้า ยังใส่ชุดนอนอยู่ ก็วิ่งออกจากบ้านขึ้นเนินหลังหมู่บ้าน เท้าเปล่าเหยียบหินคมจนเจ็บ หัวใจเต้นแรงจนเจ็บซี่โครง</p>
+
+    <p class="thought">ขอร้อง… อย่าเป็นขบวนของเรา</p>
+
+    <p>เข่าเธออ่อนลงบนยอดเนิน</p>
+
+    <p>เบื้องล่างคือเกวียนทั้งขบวนกำลังลุกเป็นไฟ</p>
+
+    <p>เธอนับคันได้โดยไม่ต้องตั้งใจนับ เพราะเธอช่วยจัดขบวนนี้มากับมือ คันที่สาม — คันที่ขึงผ้าใบปะสีฟ้าที่เธอเย็บเอง — ไฟแรงที่สุด</p>
+
+    <p>นั่นคือคันของสามีเธอ คันเดียวกับที่ลูกชายของเธอปีนขึ้นไปเมื่อเช้าวันส่งขบวน</p>
+
+    <p>สามีเธออยู่บนนั้น ลูกชายเธออยู่บนนั้น ทั้งคู่อยู่บนเกวียนคันเดียวกัน</p>
+
+    <p>เธออยากวิ่งลงไป แต่ขาไม่ขยับ ไกลเกินไป และสายเกินไปแล้ว ไฟขึ้นเร็วเกินกว่าที่ใครจะวิ่งทัน สามีเธอใช้ทั้งชีวิตเป็นสะพานระหว่างสองเมือง คืนนี้สะพานกำลังไหม้ พร้อมกับคนที่เป็นสะพาน และพร้อมกับลูกชายที่ยังไม่ทันได้ถือธงของตัวเองสักครั้ง</p>
+
+    <p>เธอกวาดตามองไฟทั้งแนว — แล้วก็เห็นสิ่งที่ไม่ควรเห็น</p>
+
+    <p>ไฟไม่ได้ลามจากคันหนึ่งไปอีกคันอย่างที่ไฟปกติควรเป็น มันลุกขึ้นทีละคัน ทีละคัน เว้นระยะเท่ากันหมด เหมือนมีคนเดินจุดมันไล่ไปทีละคัน</p>
+
+    <p>แล้วเธอก็เห็นเงาคนขี่ม้าคนหนึ่งควบออกจากปลายขบวน</p>
+
+    <p>คนของแต่ละเมืองจะคาดผ้าสีประจำเมืองไว้ที่ไหล่เสมอ — แดงก่ำคือ Embervale เทาหม่นคือ Norhollow เห็นสีก็รู้ทันทีว่าใครเป็นคนเมืองไหน</p>
+
+    <p>ไหล่ของคนขี่ม้าคนนั้นเปล่า ไม่มีสีของเมืองใดเลย และเขาไม่ได้ควบหนีไปทางเมืองใดเมืองหนึ่ง เขามุ่งไปทางที่ไม่มีเมืองตั้งอยู่</p>
+
+    <p>เธอมองตามเงานั้นจนลับตา</p>
+  </div>
+
+  <!-- INSERT B: FIRE FROM THE HILL -->
+  <div class="plate" style="margin-top:34px;">
+    <svg viewBox="0 0 680 400" role="img" aria-label="เกวียนหกคันลุกไหม้เป็นแนวเว้นระยะเท่ากัน คนขี่ม้าไร้สีควบหายไปทางที่ไม่มีเมือง แม่ม่ายคุกเข่าบนเนิน">
+      <defs>
+        <linearGradient id="fbSky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#0c0b09"/>
+          <stop offset="0.5" stop-color="#17130e"/>
+          <stop offset="0.72" stop-color="#38260f"/>
+          <stop offset="0.86" stop-color="#20160c"/>
+          <stop offset="1" stop-color="#0a0907"/>
+        </linearGradient>
+        <radialGradient id="fbGlow" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stop-color="#d4622a" stop-opacity="0.8"/><stop offset="0.5" stop-color="#a5401a" stop-opacity="0.35"/><stop offset="1" stop-color="#a5401a" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="fbGrain"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope="0.06"/></feComponentTransfer></filter>
+        <g id="fbBurn">
+          <rect x="-20" y="-6" width="40" height="16" fill="#0b0a08"/>
+          <path d="M-20,-6 C-14,-24 14,-24 20,-6 Z" fill="#161009"/>
+          <circle cx="-12" cy="12" r="5" fill="#0b0a08"/><circle cx="12" cy="12" r="5" fill="#0b0a08"/>
+          <path d="M0,-16 C-8,-30 -6,-44 2,-56 C4,-46 8,-48 6,-38 C12,-46 14,-30 6,-14 Z" fill="#d4622a"/>
+          <path d="M0,-18 C-4,-28 -3,-38 1,-48 C3,-38 6,-34 3,-22 Z" fill="#e8975a"/>
+          <path d="M-10,-8 C-14,-18 -12,-26 -8,-34 C-6,-26 -4,-24 -6,-12 Z" fill="#d4622a" opacity="0.85"/>
+        </g>
+      </defs>
+      <rect width="680" height="400" fill="url(#fbSky)"/>
+      <!-- glow pools behind each wagon -->
+      <ellipse cx="340" cy="300" rx="420" ry="150" fill="url(#fbGlow)"/>
+
+      <!-- empty far horizon (no town) to the right, where the rider heads -->
+      <line x1="0" y1="288" x2="680" y2="288" stroke="#0f0d0a" stroke-width="2" opacity="0.6"/>
+
+      <!-- six burning wagons, evenly spaced -->
+      <g>
+        <use href="#fbBurn" transform="translate(120,292) scale(0.92)"/>
+        <use href="#fbBurn" transform="translate(210,292) scale(0.98)"/>
+        <use href="#fbBurn" transform="translate(300,292) scale(1.06)"/>
+        <use href="#fbBurn" transform="translate(392,292) scale(1.02)"/>
+        <use href="#fbBurn" transform="translate(482,292) scale(0.95)"/>
+        <use href="#fbBurn" transform="translate(568,292) scale(0.88)"/>
+      </g>
+      <!-- smoke columns -->
+      <g stroke-linecap="round" fill="none" opacity="0.5">
+        <path d="M120,250 C130,210 112,180 124,140" stroke="#2a2419" stroke-width="8"/>
+        <path d="M300,242 C314,196 292,160 306,110" stroke="#2a2419" stroke-width="11"/>
+        <path d="M392,246 C404,206 386,172 398,128" stroke="#2a2419" stroke-width="9"/>
+        <path d="M482,252 C492,214 476,186 486,150" stroke="#2a2419" stroke-width="7"/>
+      </g>
+
+      <!-- the colorless rider, small, galloping toward empty dark -->
+      <g transform="translate(632,278)" fill="#4a4640">
+        <!-- horse -->
+        <path d="M-30,6 C-34,-2 -26,-10 -18,-10 C-14,-14 -6,-14 -2,-10 C4,-12 10,-8 10,-2 C14,-4 18,0 16,4 L12,10 L8,4 L4,10 L2,4 L-6,10 L-8,4 L-16,10 L-18,4 L-26,10 Z"/>
+        <path d="M8,-8 C14,-14 18,-14 22,-18 C18,-10 16,-8 12,-6 Z"/>
+        <!-- rider, bare shoulder (no colour sash) -->
+        <path d="M-14,-10 C-14,-20 -8,-24 -4,-22 C-8,-16 -6,-12 -2,-10 Z" fill="#3a352f"/>
+        <circle cx="-6" cy="-24" r="3.4" fill="#3a352f"/>
+      </g>
+      <text x="628" y="238" fill="#6b6862" font-size="10" text-anchor="end" font-style="italic">ไปทางที่ไม่มีเมือง →</text>
+
+      <!-- foreground hill with the widow kneeling (from behind) -->
+      <path d="M0,400 L0,330 C 60,318 130,326 170,352 C 150,384 90,400 0,400 Z" fill="#070605"/>
+      <g transform="translate(96,352)" fill="#050403">
+        <!-- kneeling gown -->
+        <path d="M0,0 C-26,-4 -30,-24 -22,-52 C-18,-66 -8,-74 0,-84 C8,-74 18,-66 22,-52 C30,-24 26,-4 0,0 Z"/>
+        <!-- bowed head + veil -->
+        <path d="M0,-84 C-10,-84 -16,-96 -12,-104 C-8,-110 8,-110 12,-104 C16,-96 10,-84 0,-84 Z"/>
+        <path d="M-12,-104 C-20,-92 -22,-72 -18,-56 L-12,-60 C-14,-78 -12,-94 -6,-102 Z"/>
+      </g>
+      <!-- ember rim on her (fire side, right) -->
+      <path d="M96,268 C104,268 114,276 118,300 C122,324 118,344 96,352" fill="none" stroke="#d4622a" stroke-width="1.4" opacity="0.55" transform="translate(0,0)"/>
+
+      <!-- rising embers -->
+      <g fill="#e8975a">
+        <circle cx="300" cy="150" r="2.2" opacity="0.85"/><circle cx="340" cy="120" r="1.5" opacity="0.6"/>
+        <circle cx="392" cy="160" r="1.8" opacity="0.7"/><circle cx="260" cy="180" r="1.3" opacity="0.5"/>
+        <circle cx="440" cy="176" r="1.6" opacity="0.6"/><circle cx="200" cy="200" r="1.2" opacity="0.5"/>
+      </g>
+      <rect width="680" height="400" filter="url(#fbGrain)"/>
+    </svg>
+  </div>
+  <p class="caption">ไฟไม่ได้ลามจากคันหนึ่งไปอีกคัน — <b>มันลุกขึ้นทีละคัน เว้นระยะเท่ากันหมด</b> เหมือนมีคนเดินจุดไล่ไป และเงาคนขี่ม้าไหล่ไร้สีควบไปทางที่ไม่มีเมืองตั้งอยู่</p>
+
+  <div class="prose">
+    <p class="thought">ไม่ใช่คนของเมืองแดง ไม่ใช่คนของเมืองเทา</p>
+
+    <p>เธอไม่รู้ชื่อคนคนนั้น ไม่รู้ว่าใครเป็นคนสั่งให้เขามา แต่เธอรู้สิ่งเดียวที่สำคัญที่สุด — ไฟกองนี้ไม่ใช่ฝีมือเมืองใดในสองเมือง มีคนที่สามจุดมันขึ้น แล้วอยากให้สองเมืองโทษกันเอง</p>
+
+    <div class="divider"><span>❖</span></div>
+
+    <p>คืนนั้นระฆังจากหอทั้งสองเมืองดังขึ้น ระฆังบอกได้อย่างเดียวว่ามีข่าวกำลังจะมา บอกไม่ได้ว่าข่าวนั้นคืออะไร</p>
+
+    <p>รุ่งเช้า มีคนไปพบซากเกวียนที่ถูกลากไปทิ้งริมทาง ชิ้นที่ตกอยู่ใกล้ถนนฝั่งเมืองแดงก่ำ มีตราของเมืองเทาหม่นติดอยู่ ชิ้นที่ตกอยู่ใกล้ถนนฝั่งเมืองเทาหม่น มีตราของเมืองแดงก่ำ แต่ละเมืองจึงเจอหลักฐานที่ชี้ตรงไปยังอีกเมืองพอดี</p>
+
+    <p>สายวันนั้น ผู้ประกาศระฆังยืนอ่านคำประกาศอยู่ใต้หอของแต่ละเมือง ที่เมืองแดงก่ำ คำประกาศบอกว่าเมืองเทาหม่นลงมือก่อน ที่เมืองเทาหม่น คำประกาศบอกว่าเมืองแดงก่ำเป็นคนจุดไฟ ทั้งสองฉบับถูกประทับตราระฆังรับรองว่าเป็นความจริง และทั้งสองเมืองก็เชื่อ</p>
+
+    <p>เพราะแต่ละเมืองต่างเพิ่งเสียลูกหลานของตัวเองไปในกองไฟเดียวกัน ความเศร้าจึงหาที่ลงได้ง่าย — ลงที่อีกฝ่าย</p>
+
+    <div class="divider"><span>❖</span></div>
+
+    <p>เธอเป็นคนเดียวที่เห็นคนขี่ม้าไร้สี เธอรู้ความจริงที่หยุดสงครามได้ก่อนมันจะเริ่มด้วยซ้ำ และเธอเลือกที่จะพูดมันออกไป</p>
+
+    <p>เธอเดินเข้าไปกลางจัตุรัส Embervale ทั้งชุดไว้ทุกข์ ยืนอยู่ตรงหน้าคนทั้งเมืองที่เพิ่งฝังลูกหลานของตัวเอง แล้วเล่าทุกอย่างที่เห็นบนเนินคืนนั้น — ไฟที่ลุกเป็นแนวตรงเกินกว่าไฟธรรมชาติจะเป็นได้ คนขี่ม้าที่ไหล่ไม่มีสีของเมืองไหน ที่ควบหนีไปทางที่ไม่มีเมืองตั้งอยู่ เธอบอกพวกเขาว่าคนเผาขบวนไม่ใช่เมืองเทาหม่น</p>
+
+    <p>ฝูงชนเงียบไปครู่หนึ่ง</p>
+
+    <p>แล้วเสียงหนึ่งก็ตะโกนขึ้นว่าเมืองเทาหม่นคงจ้างเธอมาพูดแบบนี้</p>
+
+    <p>พวกเขาต้องการศัตรูที่มีชื่อ มีหน้า มีเมืองให้เผาคืน ไม่ใช่เงาไร้สังกัดที่ควบหายไปในความมืด และผู้หญิงที่ยืนพูดแทนอีกเมืองอยู่ตรงหน้า — ผู้หญิงที่แต่งงานกับชายผู้ถือธงสองเมือง — ก็เป็นเป้าที่จับต้องได้ง่ายกว่าเงาไร้ตัวตนมากนัก</p>
+
+    <p>คืนนั้น เพื่อนบ้านของเธอเอง คนที่เธอเคยแบ่งขนมปังให้ ถือคบเดินมาเผาบ้านเธอ</p>
+
+    <p>เธอหนีข้ามที่ราบกลับไป Norhollow เมืองที่เธอเกิด แต่ประตูเมืองปิดใส่หน้าเธอ สำหรับคนเทาหม่น เธอคือหญิงที่ทิ้งเมืองไปแต่งงานกับธงของอีกฝั่งตั้งนานแล้ว ไม่มีใครเปิดประตูรับคนที่เลือกอีกเมืองไปก่อน</p>
+
+    <p>ไฟเอาครอบครัวเธอไปในคืนเดียว เมืองทั้งสองเอาทุกอย่างที่เหลือไปในสัปดาห์เดียว</p>
+
+    <p>หลังจากนั้นเธอก็เงียบ</p>
+
+    <p>ไม่ใช่เพราะกลัว เธอพูดความจริงไปแล้วครั้งหนึ่ง และได้คำตอบครบถ้วนว่าเมืองทั้งสองทำอะไรกับความจริง เธอไม่เหลืออะไรจะพูดกับพวกเขาอีก</p>
+
+    <div class="divider"><span>❖</span></div>
+
+    <p>คนขี่ม้าคนนั้นฆ่าสามีกับลูกของเธอ เธอเกลียดเขา — แต่เขาไม่มีชื่อ ไม่มีหน้า ไม่มีสีให้ตามหา ความแค้นต้องมีที่ลง และเงาที่หายไปในความมืดไม่ใช่ที่ลงของมัน</p>
+
+    <p>ไฟไม่ได้สั่งให้เพื่อนบ้านจุดคบเดินมาที่บ้านเธอ ไม่ได้สั่งให้เมืองที่เธอเกิดปิดประตู สิ่งที่สองเมืองทำ พวกเขาเลือกทำมันเอง สามีเธออุทิศทั้งชีวิตเป็นสะพานระหว่างสองเมือง แต่สองเมืองใช้เวลาแค่คืนเดียวพิสูจน์ว่างานทั้งชีวิตของเขาไม่มีค่าอะไรเลย</p>
+
+    <p><em>คนขี่ม้าเป็นแค่ไม้ขีด</em> เธอคิด <em>ไม้ขีดก้านเดียวจุดอะไรให้ลุกไม่ได้หรอก ถ้าสิ่งนั้นไม่ได้แห้งและพร้อมจะไหม้อยู่ก่อนแล้ว เมืองทั้งสองต่างหากคือกองฟืนแห้งที่รอไฟมานานแล้ว ไม่มีใครเกลียดไม้ขีดหรอก</em></p>
+
+    <p>เธอจึงเลือกความเงียบเป็นอาวุธ ทุกวันที่เธอไม่พูด คำโกหกยิ่งแข็งแรงขึ้น สองเมืองยิ่งลงมือใส่กันหนักขึ้น เธอไม่ต้องจุดไฟอีกสักกอง แค่ไม่เดินไปดับมันก็พอ</p>
+
+    <p>วันนั้นเถ้าถ่านยังไม่ทันเย็น คนก็เริ่มเรียกเธอว่า <strong>แม่ม่ายแห่งคาราวานแรก</strong></p>
+
+    <p>และนับจากวันนั้น เธอต้องการเพียงอย่างเดียว</p>
+
+    <p class="finale">ให้ทั้งสองเมืองไหม้เป็นเถ้าถ่าน</p>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- 5. CHAPTER 1                                               -->
+<!-- ========================================================= -->
+<section class="page" id="chapter1">
+  <div class="chap">
+    <span class="en">Chapter One</span>
+    <h2>บทที่ ๑ — ชีวิตเล็กๆ</h2>
+    <div class="rule"></div>
+  </div>
+
+  <div class="prose">
+    <p class="lead">ฝนตกมาทั้งคืน พอฟ้าสาง ถนนก็กลายเป็นโคลน เกาะเท้าคนเดินทางคนหนึ่งหนักขึ้นทุกก้าว</p>
+
+    <p>เขาเดินเข้ามาใน Millcross — เมืองทางแยก — ตอนเช้ามืด ปนอยู่กับคนแปลกหน้าที่ถนนพัดพามาเหมือนกัน ข่าวไฟไหม้คาราวานสายเลือดมาถึงเมืองนี้ก่อนตัวเขาหลายสัปดาห์ และมากับข่าวคือผู้ลี้ภัยจากสองเมืองที่ต่างเชื่อว่าอีกฝ่ายเป็นคนจุดไฟ</p>
+
+    <p>ตอนนั้นเขายังไม่รู้ — ว่าไฟกองนั้นจะไม่ยอมเป็นแค่ข่าวสำหรับเขาไปตลอด ทุกคนบนถนนสายนี้กำลังเดินอยู่ในเงาของมัน ไม่เว้นแม้แต่คนที่คิดว่าตัวเองแค่ผ่านทาง</p>
+
+    <p>เขาไม่มีเมืองเป็นของตัวเอง ที่ที่เขาเคยเรียกว่าบ้านถูกกลืนหายไปในความวุ่นวายเมื่อหลายปีก่อน — สงคราม ไฟ ผู้คนหันมาโทษกันเอง เขาเห็นมาหมดแล้ว เหลือเพียงถนน และถนนทุกสายก็พาเขามาหยุดที่นี่</p>
+
+    <p class="thought">ถ้าต้องหยุดสักที่ ก็ขอที่ที่พื้นดินมันอยู่นิ่งๆ</p>
+
+    <p>เขาไม่เคยพูดความคิดนี้ออกมาดังๆ มันฟังดูอ่อนแอเกินไปสำหรับคนที่ไม่เหลืออะไรติดตัว แต่มันเป็นสิ่งเดียวที่เขายังอยากได้ — พื้นดินที่จำได้ว่าครั้งหนึ่งเขาเคยลงน้ำหนักยืนอยู่ตรงนี้</p>
+
+    <p>เมืองทางแยกไม่ใช่เมืองสวย เต็นท์เรียงยาวเกินกว่าจำนวนบ้าน โคลนจับล้อเกวียนขึ้นมาทั้งคัน และทุกคนที่นี่ดูเหมือนกำลังนับอะไรบางอย่างอยู่ในใจตลอดเวลา ที่ไหนของขาดมือ คนก็นับสิ่งที่ยังเหลือ เพราะจำนวนเป็นคำตอบเดียวที่ไม่โกหก เขาเองก็เป็นคนแบบนั้นมานานแล้ว</p>
+
+    <p>หญิงที่คุมเสบียงของเมืองยืนอยู่หลังโต๊ะไม้ที่ปลายแถวเต็นท์ ผู้คนเรียกเธอว่า <strong>Quartermaster</strong> — พลาธิการแห่ง Millcross มีบัญชีเล่มหนากางอยู่ตรงหน้า เขาเดินไปหยุดที่หน้าโต๊ะ เธอไม่เงยหน้าทันที นับของบนชั้นให้จบก่อน แล้วค่อยลากสายตาขึ้นมาครึ่งเดียว</p>
+
+    <p class="dialogue">“มาหางานหรือ” เธอถามโดยไม่วางปากกา</p>
+
+    <p>เขาพยักหน้า</p>
+
+    <p class="dialogue">“ชื่ออะไร”</p>
+
+    <p>เขาลังเลไปนิดหนึ่ง ชื่อเป็นสิ่งที่คนจดจำ และสิ่งที่ถูกจดจำก็ถูกโทษได้ ที่ที่เขาจากมา เขาเรียนรู้เรื่องนี้มาแล้ว</p>
+
+    <p>เธอเห็นเขาลังเล ก็ไม่ถามซ้ำ</p>
+
+    <p class="dialogue">“ไม่บอกก็ได้ ที่นี่ไม่มีใครเป็นของเมืองไหนอยู่แล้ว” เธอมองผ้าคาดที่ไหล่เขา — ที่ว่างเปล่า ไม่มีสีของเมืองใด “เข้ามาทางไหน”</p>
+
+    <p class="dialogue">“ทางถนนจากทางใต้”</p>
+
+    <p class="dialogue">“ทุกคนเข้ามาทางถนน” เธอก้มลงเขียนบางอย่างในบัญชี “แล้วก็ไม่มีใครเป็นของถนนสายไหนเป็นพิเศษ เจ้าก็เหมือนเมืองนี้ — อยู่ตรงที่ถนนทุกสายมาเจอกัน ข้าจะเรียกเจ้าว่า <strong>คนทางแยก</strong> ก็แล้วกัน”</p>
+
+    <p class="dialogue">“งานแรกไม่ได้วัดกันที่ฝีมือ” เธอว่าต่อโดยไม่รอให้เขาตอบ “ริมแนวเต็นท์มีสัตว์เร่ร่อนเข้ามาป้วนเปี้ยนอยู่สองสามตัว ไปไล่มันออกไป ให้ข้าเห็นว่าเจ้ายืนแนวได้”</p>
+
+    <p>ริมแนวเต็นท์ สัตว์เร่ร่อนสามตัวกำลังคุ้ยกองเศษอาหาร ก่อนเข้าไป เขาลงส้นเท้าบดดินหนึ่งที เป็นนิสัยเก่าที่ติดตัวมาตั้งแต่ยังมีบ้าน — เขาอยากรู้ทุกครั้งว่าพื้นใต้เท้าจะรับน้ำหนักเขาไว้ หรือจะทรุดหนีไปตอนที่เขาต้องการมันที่สุด ดินตรงนี้แน่นพอ เขาจึงเข้าจัดการ งานจบเร็วอย่างที่งานแบบนี้ควรจะเป็น</p>
+
+    <p>เมื่อเขากลับมา พลาธิการขีดเส้นหนึ่งลงในบัญชี “ใช้ได้ คนทางแยก ริมทุ่งเป็นของเจ้าแล้ว ดันมันออกไปให้ไกล”</p>
+
+    <p>คืนต่อๆ มา ทุ่งส่งงานมาให้เขาเอง คืนหนึ่งฝูง Ashfang — สัตว์ร้ายที่หากินกันเป็นฝูง — เริ่มดันเข้าหาแนวเต็นท์ ทีละตัวสองตัวตอนหัวค่ำ แล้วมากขึ้นเมื่อฟ้ามืด เขาออกไปสกัดก่อนมันจะรวมเป็นฝูงเดียว คืนนั้นมันแตกกระจายไป เขารู้ว่ามันไม่ได้หายไปจริง มันแค่ถอยไปนับพวกของมันใหม่ เหมือนทุกอย่างที่นี่</p>
+
+    <p>แล้ววันหนึ่งก็มาถึงตัวที่ทุ่งตั้งไว้ขวางทางออก</p>
+
+    <p>คนที่นี่เรียกมันว่า <strong>Twin-Strike</strong> — ตัวที่ฟาดสองครั้งในจังหวะที่ตัวอื่นฟาดได้เพียงครั้งเดียว มันตัวใหญ่กว่าอะไรก็ตามที่เขาเคยเจอริมทุ่งนี้ มันไม่ได้เกลียดเขา ไม่ได้วางแผนกับใคร มันเป็นแค่กำแพง — กำแพงที่ทุ่งตั้งขึ้นก่อนจะยอมปล่อยใครผ่านไป พลาธิการไม่ได้สั่งให้เขาไปสู้กับมัน เธอแค่บอกว่า ถ้าอยากรับงานฝั่งเมืองสงคราม เขาต้องผ่านมันไปให้ได้ก่อน เพราะมันยืนคร่อมถนนสายเดียวที่ออกจากทุ่งไปทางนั้น</p>
+
+    <p>เขาเจอมันตอนบ่าย มันยืนอยู่กลางถนนที่ฝนเมื่อคืนทำให้เป็นโคลน</p>
+
+    <p>เขาก้าวเข้าใส่เลย — เร็วเกินไป เขายังไม่ได้ลงส้นทดสอบดินตรงนั้นเลยสักที</p>
+
+    <p>มันยกขาหน้าฟาดลงมา เขาหลบทัน จังหวะแรกผ่านไป เขาลงน้ำหนักเท้าหลังเพื่อจะสวนกลับ —</p>
+
+    <p>แต่ดินใต้เท้าหลังทรุด</p>
+
+    <p>โคลนอ่อนยวบลงใต้ส้นเขา แค่นิ้วเดียว แต่พอสำหรับเสียหลัก และในเสี้ยววินาทีที่เขากำลังหาสมดุลกลับคืน จังหวะที่สองก็มาถึง</p>
+
+    <p>มันฟาดสองที ในเวลาที่เขานับได้แค่หนึ่ง</p>
+
+    <p>หลังมือของมันปัดเข้าที่ไหล่เขาเต็มแรง เขากระเด็นลงไปกองในโคลน ซี่โครงร้องด้วยความเจ็บ ลมหายใจหลุดออกจากปอดจนหมด</p>
+
+    <p class="thought">มันเร็วกว่าที่ควรจะเป็น</p>
+
+    <p>เขาถอยออกมา ลุกขึ้นยืน มือกดซี่โครงที่เจ็บ หายใจเข้าลึกๆ หนึ่งที</p>
+
+    <p>ปัญหาไม่ใช่ว่ามันแรง ปัญหาคือจังหวะ ทุกครั้งที่คนหลบจังหวะแรกได้ พวกเขาจะรีบสวนกลับทันที — และนั่นคือตอนที่จังหวะที่สองรออยู่พอดี มันไม่ได้ฟาดสองครั้งเพราะเร็ว มันฟาดครั้งแรกเพื่อล่อให้คนขยับ แล้วครั้งที่สองถึงจะเอาจริง</p>
+
+    <p>เขาเข้าใจแล้ว แต่เข้าใจอย่างเดียวไม่พอ ถ้าจะไม่สวนหลังจังหวะแรก เขาต้องยืนนิ่งให้ได้ ต้องอดใจรอให้จังหวะที่สองผ่านไปก่อนแล้วค่อยเข้า และจะยืนนิ่งกลางการฟาดของมันได้ เขาต้องมั่นใจว่าพื้นใต้เท้าจะไม่ทรุดหนีไปอีก</p>
+
+    <p>เขาถอยไปอีกก้าว มองพื้น แล้วทำสิ่งที่ควรทำตั้งแต่แรก — เขาลงส้นเท้าบดดินไปทีละจุด หาที่ที่โคลนบางพอจะมีดินแข็งอยู่ข้างใต้ ก้าวหนึ่ง สองก้าว จนส้นเขากระทบของแข็ง</p>
+
+    <p>ตรงนี้ ดินตรงนี้อยู่นิ่ง</p>
+
+    <p>เขาปักเท้าลงตรงนั้น แล้วรอให้มันเข้ามาหาเอง</p>
+  </div>
+
+  <!-- INSERT C: THE TWIN-STRIKE -->
+  <div class="plate" style="margin-top:34px;">
+    <svg viewBox="0 0 680 400" role="img" aria-label="สัตว์ร้าย Twin-Strike พุ่งเข้าฟาด คนทางแยกย่อตัวต่ำ ส้นเท้าปักลงดินแข็งกลางถนนโคลน">
+      <defs>
+        <linearGradient id="tsSky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3a444a"/>
+          <stop offset="0.5" stop-color="#4e565a"/>
+          <stop offset="1" stop-color="#6b6862"/>
+        </linearGradient>
+        <linearGradient id="tsMud" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#5a5346"/><stop offset="1" stop-color="#3a352c"/>
+        </linearGradient>
+        <filter id="tsGrain"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope="0.06"/></feComponentTransfer></filter>
+      </defs>
+      <rect width="680" height="400" fill="url(#tsSky)"/>
+      <!-- pale cold sun through overcast -->
+      <circle cx="530" cy="96" r="46" fill="#a9b2ac" opacity="0.35"/>
+      <!-- distant tree/tent line -->
+      <path d="M0,214 C 120,204 240,210 340,206 C 460,201 560,210 680,204 L680,236 L0,236 Z" fill="#4c534f" opacity="0.6"/>
+      <g fill="#3e4541" opacity="0.7">
+        <path d="M40,214 l10,-22 l10,22 Z"/><path d="M64,216 l8,-18 l8,18 Z"/>
+        <path d="M600,214 l10,-24 l10,24 Z"/><path d="M624,216 l8,-18 l8,18 Z"/>
+      </g>
+
+      <!-- muddy road -->
+      <rect x="0" y="230" width="680" height="170" fill="url(#tsMud)"/>
+      <path d="M0,230 C 160,244 260,232 400,240 C 520,247 600,236 680,242 L680,230 Z" fill="#4c453a"/>
+      <!-- puddles reflecting cold sky -->
+      <ellipse cx="180" cy="330" rx="60" ry="12" fill="#5c666a" opacity="0.55"/>
+      <ellipse cx="470" cy="358" rx="80" ry="15" fill="#5c666a" opacity="0.45"/>
+      <ellipse cx="90" cy="372" rx="40" ry="9" fill="#5c666a" opacity="0.4"/>
+
+      <!-- THE BEAST: Twin-Strike, mid-lunge, forelegs raised (right side, bulk) -->
+      <g fill="#22201c">
+        <!-- body mass -->
+        <path d="M640,300 C 660,250 620,210 560,206 C 500,202 452,224 442,262 C 438,282 448,304 470,314 C 452,318 452,344 472,346 C 470,360 484,368 496,360 C 500,372 520,372 522,358 C 540,366 560,356 556,340 C 588,346 620,336 636,318 Z"/>
+        <!-- head lowered, jaw -->
+        <path d="M442,262 C 418,258 396,270 388,288 C 384,300 392,312 404,312 C 398,320 406,330 416,326 L436,314 C 430,300 434,278 452,270 Z"/>
+        <!-- teeth -->
+        <g fill="#cdbf9f"><path d="M392,300 l5,10 l4,-8 Z"/><path d="M402,304 l4,9 l4,-8 Z"/><path d="M412,304 l4,8 l4,-7 Z"/></g>
+        <!-- eye -->
+        <path d="M436,278 l10,-2 l-2,7 Z" fill="#d4622a"/>
+        <!-- raised striking foreleg (mid-lunge) -->
+        <path d="M470,300 C 452,270 448,236 470,208 C 478,232 476,262 490,288 Z"/>
+        <path d="M486,296 C 470,272 470,244 488,222 C 494,244 492,268 504,290 Z"/>
+        <!-- claws on raised leg -->
+        <g fill="#cdbf9f"><path d="M466,206 l-8,-8 l2,10 Z"/><path d="M476,202 l-4,-11 l6,9 Z"/><path d="M486,206 l2,-11 l6,10 Z"/></g>
+        <!-- hind legs braced -->
+        <path d="M600,318 l6,40 l14,0 l-4,-42 Z"/>
+        <path d="M556,340 l4,34 l14,0 l-6,-36 Z"/>
+        <!-- spines -->
+        <g><path d="M520,206 l6,-20 l8,18 Z"/><path d="M556,208 l8,-22 l8,20 Z"/><path d="M592,222 l8,-18 l6,18 Z"/></g>
+      </g>
+      <!-- motion lines from the strike -->
+      <g stroke="#cdbf9f" stroke-width="1.4" opacity="0.4" fill="none">
+        <path d="M452,200 C 430,210 414,228 406,250"/>
+        <path d="M474,192 C 452,202 434,222 426,246"/>
+      </g>
+
+      <!-- THE TRAVELER: low braced stance (left), heel dug in -->
+      <g transform="translate(210,300)">
+        <!-- planted rear leg + dug heel -->
+        <path d="M6,-2 C 18,10 24,30 26,52 L34,52 C 32,28 26,8 16,-6 Z" fill="#0c0b09"/>
+        <!-- front braced leg -->
+        <path d="M-4,-4 C -18,8 -30,26 -36,48 L-28,50 C -22,30 -12,12 4,-2 Z" fill="#0c0b09"/>
+        <!-- heel pressed into hard ground -->
+        <path d="M22,50 l18,6 l-20,2 Z" fill="#080706"/>
+        <g stroke="#22201c" stroke-width="1.4" opacity="0.8"><line x1="24" y1="56" x2="16" y2="64"/><line x1="30" y1="56" x2="34" y2="66"/><line x1="38" y1="56" x2="44" y2="62"/></g>
+        <!-- torso, coiled low, leaning in -->
+        <path d="M4,-2 C -6,-16 -6,-40 4,-58 C 8,-46 6,-34 10,-24 C 20,-30 30,-22 30,-8 C 30,4 20,12 8,8 Z" fill="#0c0b09"/>
+        <!-- braced arms holding a short blade/staff forward -->
+        <path d="M8,-40 C 24,-44 44,-40 60,-30 C 44,-30 26,-32 12,-30 Z" fill="#0c0b09"/>
+        <line x1="52" y1="-34" x2="86" y2="-30" stroke="#3a352c" stroke-width="4" stroke-linecap="round"/>
+        <!-- head, focused forward -->
+        <circle cx="6" cy="-64" r="10" fill="#0c0b09"/>
+        <path d="M-2,-70 C -10,-64 -8,-52 0,-52 C -4,-58 -2,-66 4,-70 Z" fill="#0c0b09"/>
+        <!-- empty shoulder sash (no colour) -->
+        <path d="M2,-52 l-10,20 l6,2 Z" fill="#151310"/>
+      </g>
+      <!-- mud splash between them -->
+      <g fill="#4a4336" opacity="0.8">
+        <path d="M300,340 c -6,-10 4,-18 10,-12 c -2,8 2,12 8,12 c -8,6 -22,6 -28,0 Z"/>
+        <circle cx="330" cy="332" r="3"/><circle cx="342" cy="344" r="2.4"/><circle cx="320" cy="350" r="2"/>
+      </g>
+      <rect width="680" height="400" filter="url(#tsGrain)"/>
+    </svg>
+  </div>
+  <p class="caption">“มันฟาดสองที ในเวลาที่ข้านับได้แค่หนึ่ง” — คราวนี้เขา<b>ไม่สวน</b> เขาปักส้นลงบนดินแข็งใต้โคลน ยืนนิ่งกลางวงเหวี่ยง และรอให้จังหวะที่สองเปิดตัวมันเอง</p>
+
+  <div class="prose">
+    <p>มันเข้ามา ยกขาหน้าฟาดลงเป็นจังหวะแรก</p>
+
+    <p>คราวนี้เขาไม่สวน เขาแค่หลบ — เอียงตัวพอให้พ้น เท้าไม่ขยับจากที่ที่ปักไว้ จังหวะแรกผ่านไป และเป็นครั้งแรกที่เขาไม่รีบทำอะไรเลย</p>
+
+    <p>จังหวะที่สองมาถึงเหมือนที่เขารู้ว่ามันจะมา คราวนี้เขาเห็นมันชัด — ขาหน้าอีกข้างเหวี่ยงตามมาติดๆ เขาก้มหลบใต้วงเหวี่ยง พื้นใต้เท้ารับน้ำหนักเขาไว้เต็มที่ ไม่ทรุด ไม่หนี</p>
+
+    <p>แล้วตอนที่แรงเหวี่ยงครั้งที่สองพามันเปิดออกทั้งตัว — เขาถึงเข้า</p>
+
+    <p>จบในจังหวะเดียว มันล้มลงข้างถนน</p>
+
+    <p>ไม่มีใครตีระฆังให้ ไม่มีพิธี ไม่มีการฝัง มันเป็นสัตว์ตัวหนึ่งที่ตายในทุ่ง เท่านั้นเอง</p>
+
+    <p>เขานั่งลงข้างซากของมัน มือยังกดซี่โครงที่เจ็บ</p>
+
+    <p class="dialogue">“มันฟาดสองที ในเวลาที่ข้านับได้แค่หนึ่ง” เขาพูดกับตัวเองเบาๆ แล้วมองพื้นดินแข็งใต้เท้าที่เพิ่งช่วยชีวิตเขาไว้ “ถ้าดินตรงนั้นไม่แน่น ป่านนี้ข้าคงตายไปแล้ว”</p>
+
+    <p>แล้วก็ไม่พูดอะไรอีก</p>
+
+    <p>เมื่อริมทุ่งสงบลง ถนนก็พาเขาไปไกลกว่าเดิม ไปยังเมืองพี่เมืองน้องสองเมืองที่กำแพงกำลังขาดคนเฝ้า เมืองทางแยกเป็นกลาง ไม่เข้าข้างเมืองไหน และเพราะเป็นกลางนี่เอง เมืองสงครามทั้งสองฝั่งจึงจ้างแรงงานจากที่นี่ได้เท่าๆ กัน — คนจากทางแยกไม่นับเป็นคนของฝ่ายใด เขารับงานได้ทั้งสองฝั่งโดยไม่มีใครมองว่าทรยศ เพราะเขาไม่เคยเป็นของใครมาตั้งแต่แรก คนทางแยก จริงอย่างที่พลาธิการว่าไว้</p>
+
+    <p>ที่ Embervale เมืองสงครามฝั่งหนึ่ง เขาเดินยามบนกำแพงด้านตะวันตก งานตรงไปตรงมา ขอแค่เขาตื่นอยู่ทั้งคืน และเขาชอบมันตรงนั้น แต่เช้ามืดวันหนึ่งก่อนฟ้าสาง เกวียนสามคันไต่ถนนขึ้นมาจาก Gildmark — เมืองท่าค้าอาวุธชายฝั่ง ลังบนเกวียนทุกใบไม่มีตราช่างประทับไว้เลย <strong>War-Countess</strong> เจ้าเมืองหญิงแห่งเมืองนี้สั่งเพียงให้นับลังตอนผ่านประตูแล้วลงบัญชี ห้ามถามมากไปกว่านั้น</p>
+
+    <p>เขานับสามสิบเอ็ดลัง ไม่มีตราสักใบ วางซ้อนไว้หลังคลังอาวุธเหมือนลังชุดก่อนๆ ไม่มีใครถามว่าข้างในมีอะไร เขาก็เงียบ — แต่เขานับมันสองรอบ เพราะลังที่ไม่มีตราคือลังที่ไม่มีใครยอมรับว่าเป็นของตน ของแบบนั้นเขาเคยเห็นมาก่อน ในที่ที่เขาเคยเรียกว่าบ้าน เขาลงบัญชีตามสั่งแล้วเดินจากไป แต่จำนวนนั้นติดอยู่ในหัวเขาทั้งวัน</p>
+
+    <p>ที่ Norhollow เมืองสงครามอีกฝั่ง <strong>Speaker of Norhollow</strong> — ผู้นำเมืองเก็บจำนวนไว้บนเชือกผูกปมที่คาดเอว เธอให้เขาเดินตรวจแนวรั้วไม้ ตอกเสาต้นที่น้ำค้างแข็งดันจนหลวมให้แน่นกลับ เขาตอกทีละต้น ลงส้นทดสอบดินรอบโคนเสาทุกต้น เหมือนที่เขาทดสอบดินใต้เท้าตัวเองเสมอ</p>
+
+    <p>สัปดาห์นั้นมีจดหมายสามฉบับขึ้นมาตามถนนเลียบชายฝั่ง ทั้งสามฉบับมาถึงพร้อมตราผนึกที่ถูกแกะออกแล้วกดปิดกลับ ปมขี้ผึ้งบิดไปจากรอยเดิมเพียงนิดเดียว น้อยพอที่คนรีบๆ จะมองข้าม แต่ไม่น้อยพอสำหรับสายตาที่เคยชินกับการนับ ผู้นำเมืองเหนืออ่านมันอยู่ดี เธอไม่ถามว่าใครแกะ เธอเลิกถามเรื่องนี้มานานแล้ว เขายืนดูอยู่ห่างๆ และไม่ถามเช่นกัน แต่เขาจำรอยบิดของขี้ผึ้งนั้นได้</p>
+
+    <p>เขาเดินกลับเข้าเมืองทางแยกตามถนนสายเดิม งานได้ค่าจ้างเป็นมื้ออาหารกับที่ซุกหัวนอน พอดีกับที่เขาเคยขอจากที่ใดสักที่ กำแพงยังตั้งอยู่ ระฆังเงียบ ทุ่งสงบ พื้นดินที่นี่เริ่มคุ้นกับน้ำหนักของเขาแล้ว และนั่นเกือบจะเป็นสิ่งเดียวที่เขาเคยขอ</p>
+
+    <p>มีเพียงสองสิ่งที่ยังค้างอยู่ในขอบสายตาของเขา — ลังที่ไม่มีตราจากเมืองท่า กับจดหมายที่ถูกแกะก่อนถึงมือ ไม่มีใครอธิบายทั้งสองสิ่งนี้ และไม่มีใครถาม เขาก็ไม่ถาม เขาแค่จำมันไว้ อย่างที่เขาจำทุกจำนวนที่นับกับมือ</p>
+
+    <p class="finale" style="font-size:1.3rem;color:var(--frost);">โลกนี้ปกติดี ปกติดีจนเกินไป</p>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- 6. END PAGE                                                -->
+<!-- ========================================================= -->
+<section class="end">
+  <div class="emblem">
+    <svg viewBox="0 0 300 300" role="img" aria-label="ตราสองธงไขว้กันบนเสาไขว้ พร้อมตราครั่งหอระฆัง">
+      <defs>
+        <radialGradient id="enBg" cx="0.5" cy="0.45" r="0.6"><stop offset="0" stop-color="#221f1a"/><stop offset="1" stop-color="#100e0a"/></radialGradient>
+      </defs>
+      <circle cx="150" cy="150" r="140" fill="url(#enBg)"/>
+      <circle cx="150" cy="150" r="128" fill="none" stroke="#6b6862" stroke-width="1.5"/>
+      <circle cx="150" cy="150" r="120" fill="none" stroke="#6b6862" stroke-width="0.8" opacity="0.5"/>
+      <!-- decorative tick ring -->
+      <g stroke="#6b6862" stroke-width="1" opacity="0.6">
+        <line x1="150" y1="24" x2="150" y2="34"/><line x1="150" y1="266" x2="150" y2="276"/>
+        <line x1="24" y1="150" x2="34" y2="150"/><line x1="266" y1="150" x2="276" y2="150"/>
+      </g>
+      <!-- crossed poles -->
+      <line x1="86" y1="238" x2="214" y2="70" stroke="#4a4438" stroke-width="6" stroke-linecap="round"/>
+      <line x1="214" y1="238" x2="86" y2="70" stroke="#4a4438" stroke-width="6" stroke-linecap="round"/>
+      <!-- ember pennant (Embervale) upper-left -->
+      <path d="M100,84 L158,104 L128,116 L150,132 L92,118 Z" fill="#d4622a"/>
+      <!-- frost/grey pennant (Norhollow) upper-right -->
+      <path d="M200,84 L142,104 L172,116 L150,132 L208,118 Z" fill="#8a857a"/>
+      <!-- central wax seal with bell (Bellfaith) -->
+      <circle cx="150" cy="168" r="34" fill="#d4622a"/>
+      <circle cx="150" cy="168" r="34" fill="none" stroke="#a5401a" stroke-width="3"/>
+      <g fill="#7a2e12">
+        <path d="M138,180 C138,166 143,158 150,152 C157,158 162,166 162,180 Z"/>
+        <line x1="150" y1="152" x2="150" y2="146" stroke="#7a2e12" stroke-width="2.4"/>
+        <rect x="134" y="180" width="32" height="4"/>
+        <circle cx="150" cy="188" r="3"/>
+      </g>
+    </svg>
+  </div>
+  <p class="next">โปรดติดตามบทที่ ๒</p>
+  <p class="sub">The Undertow · Chapter Two</p>
+</section>
+
+</div>
+</body>
+</html>
