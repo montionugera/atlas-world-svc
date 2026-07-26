@@ -475,11 +475,11 @@
       "file": "classes/ogre-healer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
-    "art:race-panthera": {
+    "art:race-beastkin": {
       "group": "race",
-      "title": "Panthera — Rooktide scout",
-      "file": "concept/race-panthera.png",
-      "note": "Z-Image Turbo, local generation, race lineup — Rooktide scout"
+      "title": "Beastkin — Rooktide harbor scout",
+      "file": "concept/race-beastkin.png",
+      "note": "Z-Image Turbo, local generation, race lineup — kemonomimi beastkin (replaces panthera)"
     }
   }
 }
