@@ -61,12 +61,6 @@
       "file": "concept/race-dwarf.png",
       "note": "Z-Image Turbo, local generation, race lineup — Gildmark artificer"
     },
-    "art:race-panthera": {
-      "group": "race",
-      "title": "Panthera — Rooktide scout",
-      "file": "concept/race-panthera.png",
-      "note": "Z-Image Turbo, local generation, race lineup — Rooktide scout"
-    },
     "art:race-immortal": {
       "group": "race",
       "title": "Immortal — Bellfaith healer",
@@ -385,52 +379,52 @@
       "file": "classes/dragon-healer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
-    "art:class-panthera-swordsman": {
+    "art:class-beastkin-swordsman": {
       "group": "class",
-      "title": "Panthera — Swordsman",
-      "file": "classes/panthera-swordsman.png",
+      "title": "Beastkin — Swordsman",
+      "file": "classes/beastkin-swordsman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
-    "art:class-panthera-archer": {
+    "art:class-beastkin-archer": {
       "group": "class",
-      "title": "Panthera — Archer",
-      "file": "classes/panthera-archer.png",
+      "title": "Beastkin — Archer",
+      "file": "classes/beastkin-archer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
-    "art:class-panthera-assassin": {
+    "art:class-beastkin-assassin": {
       "group": "class",
-      "title": "Panthera — Assassin",
-      "file": "classes/panthera-assassin.png",
+      "title": "Beastkin — Assassin",
+      "file": "classes/beastkin-assassin.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
-    "art:class-panthera-spearman": {
+    "art:class-beastkin-spearman": {
       "group": "class",
-      "title": "Panthera — Spearman",
-      "file": "classes/panthera-spearman.png",
+      "title": "Beastkin — Spearman",
+      "file": "classes/beastkin-spearman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
-    "art:class-panthera-mage": {
+    "art:class-beastkin-mage": {
       "group": "class",
-      "title": "Panthera — Mage",
-      "file": "classes/panthera-mage.png",
+      "title": "Beastkin — Mage",
+      "file": "classes/beastkin-mage.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
-    "art:class-panthera-summoner": {
+    "art:class-beastkin-summoner": {
       "group": "class",
-      "title": "Panthera — Summoner",
-      "file": "classes/panthera-summoner.png",
+      "title": "Beastkin — Summoner",
+      "file": "classes/beastkin-summoner.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
-    "art:class-panthera-engineer": {
+    "art:class-beastkin-engineer": {
       "group": "class",
-      "title": "Panthera — Engineer",
-      "file": "classes/panthera-engineer.png",
+      "title": "Beastkin — Engineer",
+      "file": "classes/beastkin-engineer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
-    "art:class-panthera-healer": {
+    "art:class-beastkin-healer": {
       "group": "class",
-      "title": "Panthera — Healer",
-      "file": "classes/panthera-healer.png",
+      "title": "Beastkin — Healer",
+      "file": "classes/beastkin-healer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-ogre-swordsman": {
@@ -480,6 +474,12 @@
       "title": "Ogre — Healer",
       "file": "classes/ogre-healer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:race-panthera": {
+      "group": "race",
+      "title": "Panthera — Rooktide scout",
+      "file": "concept/race-panthera.png",
+      "note": "Z-Image Turbo, local generation, race lineup — Rooktide scout"
     }
   }
 }
