@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "entries": {
+    "art:cast-crossroads-man-sheet": {
+      "group": "cast",
+      "title": "The Crossroads Man — reference sheet",
+      "file": "concept/cast-crossroads-man-sheet.png",
+      "note": "Z-Image Turbo, local generation — 4-view turnaround, The Undertow cast"
+    },
+    "art:cast-crossroads-man-v1": {
+      "group": "cast",
+      "title": "The Crossroads Man — design v1",
+      "file": "concept/cast-crossroads-man-v1.png",
+      "note": "Z-Image Turbo, local generation — design variant 1, The Undertow cast"
+    },
+    "art:cast-crossroads-man-v2": {
+      "group": "cast",
+      "title": "The Crossroads Man — design v2",
+      "file": "concept/cast-crossroads-man-v2.png",
+      "note": "Z-Image Turbo, local generation — design variant 2, The Undertow cast"
+    },
+    "art:cast-crossroads-man-v3": {
+      "group": "cast",
+      "title": "The Crossroads Man — design v3",
+      "file": "concept/cast-crossroads-man-v3.png",
+      "note": "Z-Image Turbo, local generation — design variant 3, The Undertow cast"
+    },
+    "art:cast-widow": {
+      "group": "cast",
+      "title": "The Widow of the First Caravan",
+      "file": "concept/cast-widow.png",
+      "note": "Z-Image Turbo, local generation, The Undertow cast"
+    },
+    "art:cast-broker": {
+      "group": "cast",
+      "title": "The Broker",
+      "file": "concept/cast-broker.png",
+      "note": "Z-Image Turbo, local generation, The Undertow cast"
+    },
+    "art:cast-liss": {
+      "group": "cast",
+      "title": "Liss",
+      "file": "concept/cast-liss.png",
+      "note": "Z-Image Turbo, local generation, The Undertow cast"
+    },
+    "art:cast-joren": {
+      "group": "cast",
+      "title": "Joren",
+      "file": "concept/cast-joren.png",
+      "note": "Z-Image Turbo, local generation, The Undertow cast"
+    },
+    "art:cast-bell-keeper": {
+      "group": "cast",
+      "title": "The Bell-Keeper",
+      "file": "concept/cast-bell-keeper.png",
+      "note": "Z-Image Turbo, local generation, The Undertow cast"
+    },
+    "art:race-dwarf": {
+      "group": "race",
+      "title": "Dwarf — Gildmark artificer",
+      "file": "concept/race-dwarf.png",
+      "note": "Z-Image Turbo, local generation, race lineup — Gildmark artificer"
+    },
+    "art:race-panthera": {
+      "group": "race",
+      "title": "Panthera — Rooktide scout",
+      "file": "concept/race-panthera.png",
+      "note": "Z-Image Turbo, local generation, race lineup — Rooktide scout"
+    },
+    "art:race-immortal": {
+      "group": "race",
+      "title": "Immortal — Bellfaith healer",
+      "file": "concept/race-immortal.png",
+      "note": "Z-Image Turbo, local generation, race lineup — Bellfaith healer"
+    },
+    "art:race-demon": {
+      "group": "race",
+      "title": "Demon — Cindervast drifter",
+      "file": "concept/race-demon.png",
+      "note": "Z-Image Turbo, local generation, race lineup — Cindervast drifter"
+    },
+    "art:race-elf": {
+      "group": "race",
+      "title": "Elf — Norhollow archivist",
+      "file": "concept/race-elf.png",
+      "note": "Z-Image Turbo, local generation, race lineup — Norhollow archivist"
+    },
+    "art:race-ogre": {
+      "group": "race",
+      "title": "Ogre — Millcross caravan guard",
+      "file": "concept/race-ogre.png",
+      "note": "Z-Image Turbo, local generation, race lineup — Millcross caravan guard"
+    },
+    "art:race-dragon": {
+      "group": "race",
+      "title": "Dragon-blooded — golden-age wanderer",
+      "file": "concept/race-dragon.png",
+      "note": "Z-Image Turbo, local generation, race lineup — golden-age wanderer"
+    }
+  }
+}
