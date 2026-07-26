@@ -642,6 +642,27 @@
         margin: 0 0 0.75rem;
       }
 
+      /* Classes subgroup: one race-labelled sub-row per race, each its own
+         h4 + grid — 64 cards is too many to dump in one flat grid, so this
+         keeps the Genshin/RO class art scannable by race. */
+      .art-race-row {
+        margin: 0 0 1.25rem;
+      }
+
+      .art-race-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .art-race-row h4 {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-dim);
+        font-weight: 600;
+        margin: 0 0 0.6rem;
+        padding-left: 0.1rem;
+      }
+
       .viewport.art-viewport {
         aspect-ratio: auto;
         height: 320px;
@@ -2101,18 +2122,99 @@
         return wrap;
       }
 
+      // Classes (8 races x 8 jobs): id is "art:class-<race>-<job>", both
+      // single-token, so a fixed regex splits it cleanly. Race/job order
+      // below is the authoring order (art-manifest.json generation order),
+      // not alphabetical — any future race/job not in these lists still
+      // renders, just appended after the known ones instead of vanishing.
+      const CLASS_RACE_ORDER = [
+        "human",
+        "demon",
+        "dwarf",
+        "immortal",
+        "elf",
+        "dragon",
+        "panthera",
+        "ogre",
+      ];
+      const CLASS_JOB_ORDER = [
+        "swordsman",
+        "archer",
+        "assassin",
+        "spearman",
+        "mage",
+        "summoner",
+        "engineer",
+        "healer",
+      ];
+
+      function cap(word) {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      }
+
+      function buildArtClasses(classList) {
+        const byRace = new Map();
+        for (const [id, entry] of classList) {
+          const m = /^art:class-([a-z]+)-([a-z]+)$/.exec(id);
+          const race = m ? m[1] : "other";
+          if (!byRace.has(race)) byRace.set(race, []);
+          byRace.get(race).push([id, entry]);
+        }
+
+        const races = CLASS_RACE_ORDER.filter((r) => byRace.has(r));
+        for (const r of byRace.keys()) if (!races.includes(r)) races.push(r);
+
+        const wrap = document.createElement("div");
+        wrap.className = "art-group";
+
+        const h3 = document.createElement("h3");
+        h3.textContent = "Classes (" + classList.length + ")";
+        wrap.appendChild(h3);
+
+        for (const race of races) {
+          const list = byRace.get(race);
+          list.sort((a, b) => {
+            const ja = CLASS_JOB_ORDER.indexOf(a[0].split("-").pop());
+            const jb = CLASS_JOB_ORDER.indexOf(b[0].split("-").pop());
+            return (ja === -1 ? 999 : ja) - (jb === -1 ? 999 : jb);
+          });
+
+          const row = document.createElement("div");
+          row.className = "art-race-row";
+
+          const h4 = document.createElement("h4");
+          h4.textContent = cap(race) + " (" + list.length + ")";
+          row.appendChild(h4);
+
+          const grid = document.createElement("div");
+          grid.className = "grid";
+          for (const [id, entry] of list)
+            grid.appendChild(buildArtCard(id, entry));
+          row.appendChild(grid);
+
+          wrap.appendChild(row);
+        }
+
+        return wrap;
+      }
+
       function buildArt(artEntries) {
         const container = document.createElement("div");
         const castList = [];
         const raceList = [];
+        const classList = [];
         for (const [id, entry] of Object.entries(artEntries)) {
           if (!entry || typeof entry.file !== "string") continue;
-          (entry.group === "race" ? raceList : castList).push([id, entry]);
+          if (entry.group === "race") raceList.push([id, entry]);
+          else if (entry.group === "class") classList.push([id, entry]);
+          else castList.push([id, entry]);
         }
         if (castList.length > 0)
           container.appendChild(buildArtGroup("Cast", castList));
         if (raceList.length > 0)
           container.appendChild(buildArtGroup("Races", raceList));
+        if (classList.length > 0)
+          container.appendChild(buildArtClasses(classList));
         return container;
       }
 
@@ -2558,7 +2660,7 @@
           note.style.padding = "0 0 1rem";
           note.style.textAlign = "left";
           note.textContent =
-            "Character and race concept art from game-client/assets/art/art-manifest.json. " +
+            "Character, race, and class concept art from game-client/assets/art/art-manifest.json. " +
             "Click a thumbnail to open it full-size.";
           section.appendChild(note);
 

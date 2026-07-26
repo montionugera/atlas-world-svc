@@ -96,6 +96,390 @@
       "title": "Dragon-blooded — golden-age wanderer",
       "file": "concept/race-dragon.png",
       "note": "Z-Image Turbo, local generation, race lineup — golden-age wanderer"
+    },
+    "art:class-human-swordsman": {
+      "group": "class",
+      "title": "Human — Swordsman",
+      "file": "classes/human-swordsman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-human-archer": {
+      "group": "class",
+      "title": "Human — Archer",
+      "file": "classes/human-archer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-human-assassin": {
+      "group": "class",
+      "title": "Human — Assassin",
+      "file": "classes/human-assassin.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-human-spearman": {
+      "group": "class",
+      "title": "Human — Spearman",
+      "file": "classes/human-spearman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-human-mage": {
+      "group": "class",
+      "title": "Human — Mage",
+      "file": "classes/human-mage.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-human-summoner": {
+      "group": "class",
+      "title": "Human — Summoner",
+      "file": "classes/human-summoner.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-human-engineer": {
+      "group": "class",
+      "title": "Human — Engineer",
+      "file": "classes/human-engineer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-human-healer": {
+      "group": "class",
+      "title": "Human — Healer",
+      "file": "classes/human-healer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-demon-swordsman": {
+      "group": "class",
+      "title": "Demon — Swordsman",
+      "file": "classes/demon-swordsman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-demon-archer": {
+      "group": "class",
+      "title": "Demon — Archer",
+      "file": "classes/demon-archer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-demon-assassin": {
+      "group": "class",
+      "title": "Demon — Assassin",
+      "file": "classes/demon-assassin.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-demon-spearman": {
+      "group": "class",
+      "title": "Demon — Spearman",
+      "file": "classes/demon-spearman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-demon-mage": {
+      "group": "class",
+      "title": "Demon — Mage",
+      "file": "classes/demon-mage.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-demon-summoner": {
+      "group": "class",
+      "title": "Demon — Summoner",
+      "file": "classes/demon-summoner.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-demon-engineer": {
+      "group": "class",
+      "title": "Demon — Engineer",
+      "file": "classes/demon-engineer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-demon-healer": {
+      "group": "class",
+      "title": "Demon — Healer",
+      "file": "classes/demon-healer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dwarf-swordsman": {
+      "group": "class",
+      "title": "Dwarf — Swordsman",
+      "file": "classes/dwarf-swordsman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dwarf-archer": {
+      "group": "class",
+      "title": "Dwarf — Archer",
+      "file": "classes/dwarf-archer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dwarf-assassin": {
+      "group": "class",
+      "title": "Dwarf — Assassin",
+      "file": "classes/dwarf-assassin.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dwarf-spearman": {
+      "group": "class",
+      "title": "Dwarf — Spearman",
+      "file": "classes/dwarf-spearman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dwarf-mage": {
+      "group": "class",
+      "title": "Dwarf — Mage",
+      "file": "classes/dwarf-mage.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dwarf-summoner": {
+      "group": "class",
+      "title": "Dwarf — Summoner",
+      "file": "classes/dwarf-summoner.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dwarf-engineer": {
+      "group": "class",
+      "title": "Dwarf — Engineer",
+      "file": "classes/dwarf-engineer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dwarf-healer": {
+      "group": "class",
+      "title": "Dwarf — Healer",
+      "file": "classes/dwarf-healer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-immortal-swordsman": {
+      "group": "class",
+      "title": "Immortal — Swordsman",
+      "file": "classes/immortal-swordsman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-immortal-archer": {
+      "group": "class",
+      "title": "Immortal — Archer",
+      "file": "classes/immortal-archer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-immortal-assassin": {
+      "group": "class",
+      "title": "Immortal — Assassin",
+      "file": "classes/immortal-assassin.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-immortal-spearman": {
+      "group": "class",
+      "title": "Immortal — Spearman",
+      "file": "classes/immortal-spearman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-immortal-mage": {
+      "group": "class",
+      "title": "Immortal — Mage",
+      "file": "classes/immortal-mage.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-immortal-summoner": {
+      "group": "class",
+      "title": "Immortal — Summoner",
+      "file": "classes/immortal-summoner.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-immortal-engineer": {
+      "group": "class",
+      "title": "Immortal — Engineer",
+      "file": "classes/immortal-engineer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-immortal-healer": {
+      "group": "class",
+      "title": "Immortal — Healer",
+      "file": "classes/immortal-healer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-elf-swordsman": {
+      "group": "class",
+      "title": "Elf — Swordsman",
+      "file": "classes/elf-swordsman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-elf-archer": {
+      "group": "class",
+      "title": "Elf — Archer",
+      "file": "classes/elf-archer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-elf-assassin": {
+      "group": "class",
+      "title": "Elf — Assassin",
+      "file": "classes/elf-assassin.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-elf-spearman": {
+      "group": "class",
+      "title": "Elf — Spearman",
+      "file": "classes/elf-spearman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-elf-mage": {
+      "group": "class",
+      "title": "Elf — Mage",
+      "file": "classes/elf-mage.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-elf-summoner": {
+      "group": "class",
+      "title": "Elf — Summoner",
+      "file": "classes/elf-summoner.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-elf-engineer": {
+      "group": "class",
+      "title": "Elf — Engineer",
+      "file": "classes/elf-engineer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-elf-healer": {
+      "group": "class",
+      "title": "Elf — Healer",
+      "file": "classes/elf-healer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dragon-swordsman": {
+      "group": "class",
+      "title": "Dragon — Swordsman",
+      "file": "classes/dragon-swordsman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dragon-archer": {
+      "group": "class",
+      "title": "Dragon — Archer",
+      "file": "classes/dragon-archer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dragon-assassin": {
+      "group": "class",
+      "title": "Dragon — Assassin",
+      "file": "classes/dragon-assassin.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dragon-spearman": {
+      "group": "class",
+      "title": "Dragon — Spearman",
+      "file": "classes/dragon-spearman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dragon-mage": {
+      "group": "class",
+      "title": "Dragon — Mage",
+      "file": "classes/dragon-mage.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dragon-summoner": {
+      "group": "class",
+      "title": "Dragon — Summoner",
+      "file": "classes/dragon-summoner.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dragon-engineer": {
+      "group": "class",
+      "title": "Dragon — Engineer",
+      "file": "classes/dragon-engineer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-dragon-healer": {
+      "group": "class",
+      "title": "Dragon — Healer",
+      "file": "classes/dragon-healer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-panthera-swordsman": {
+      "group": "class",
+      "title": "Panthera — Swordsman",
+      "file": "classes/panthera-swordsman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-panthera-archer": {
+      "group": "class",
+      "title": "Panthera — Archer",
+      "file": "classes/panthera-archer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-panthera-assassin": {
+      "group": "class",
+      "title": "Panthera — Assassin",
+      "file": "classes/panthera-assassin.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-panthera-spearman": {
+      "group": "class",
+      "title": "Panthera — Spearman",
+      "file": "classes/panthera-spearman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-panthera-mage": {
+      "group": "class",
+      "title": "Panthera — Mage",
+      "file": "classes/panthera-mage.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-panthera-summoner": {
+      "group": "class",
+      "title": "Panthera — Summoner",
+      "file": "classes/panthera-summoner.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-panthera-engineer": {
+      "group": "class",
+      "title": "Panthera — Engineer",
+      "file": "classes/panthera-engineer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-panthera-healer": {
+      "group": "class",
+      "title": "Panthera — Healer",
+      "file": "classes/panthera-healer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-ogre-swordsman": {
+      "group": "class",
+      "title": "Ogre — Swordsman",
+      "file": "classes/ogre-swordsman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-ogre-archer": {
+      "group": "class",
+      "title": "Ogre — Archer",
+      "file": "classes/ogre-archer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-ogre-assassin": {
+      "group": "class",
+      "title": "Ogre — Assassin",
+      "file": "classes/ogre-assassin.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-ogre-spearman": {
+      "group": "class",
+      "title": "Ogre — Spearman",
+      "file": "classes/ogre-spearman.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-ogre-mage": {
+      "group": "class",
+      "title": "Ogre — Mage",
+      "file": "classes/ogre-mage.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-ogre-summoner": {
+      "group": "class",
+      "title": "Ogre — Summoner",
+      "file": "classes/ogre-summoner.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-ogre-engineer": {
+      "group": "class",
+      "title": "Ogre — Engineer",
+      "file": "classes/ogre-engineer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
+    },
+    "art:class-ogre-healer": {
+      "group": "class",
+      "title": "Ogre — Healer",
+      "file": "classes/ogre-healer.png",
+      "note": "RO-proportion x Genshin-detail class artwork"
     }
   }
 }
