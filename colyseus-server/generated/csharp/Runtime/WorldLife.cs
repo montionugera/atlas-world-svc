@@ -49,25 +49,28 @@ public WorldLife() { }
 		[Type(20, "number")]
 		public float armor = default(float);
 
-		[Type(21, "map", typeof(MapSchema<float>), "number")]
+		[Type(21, "string")]
+		public string element = default(string);
+
+		[Type(22, "map", typeof(MapSchema<float>), "number")]
 		public MapSchema<float> resistances = null;
 
-		[Type(22, "number")]
+		[Type(23, "number")]
 		public float density = default(float);
 
-		[Type(23, "boolean")]
+		[Type(24, "boolean")]
 		public bool isAttacking = default(bool);
 
-		[Type(24, "boolean")]
+		[Type(25, "boolean")]
 		public bool isMoving = default(bool);
 
-		[Type(25, "string")]
+		[Type(26, "string")]
 		public string lastAttackedTarget = default(string);
 
-		[Type(26, "number")]
+		[Type(27, "number")]
 		public float heading = default(float);
 
-		[Type(27, "map", typeof(MapSchema<BattleStatus>))]
+		[Type(28, "map", typeof(MapSchema<BattleStatus>))]
 		public MapSchema<BattleStatus> battleStatuses = null;
 	}
 }

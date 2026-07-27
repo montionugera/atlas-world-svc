@@ -1,4 +1,5 @@
 import { MobCombatStats, ProjectileType } from '../combatConfig'
+import type { Element } from '../combat/elements'
 
 /**
  * Attack Characteristic Type Enum
@@ -37,6 +38,9 @@ export type AttackCharacteristic =
 export interface AttackDefinition {
   /** Base damage of this attack */
   atkBaseDmg: number
+
+  /** Elemental damage type of this attack. Omit for neutral (World Wisdom / F-017). */
+  element?: Element
 
   /** Casting time (wind up) in milliseconds before attack executes */
   atkWindUpTime: number

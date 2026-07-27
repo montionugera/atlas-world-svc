@@ -16,43 +16,43 @@ namespace AtlasWorld.Schema {
 [Preserve]
 #endif
 public Mob() { }
-		[Type(28, "string")]
+		[Type(29, "string")]
 		public string tag = default(string);
 
-		[Type(29, "string")]
+		[Type(30, "string")]
 		public string currentBehavior = default(string);
 
-		[Type(30, "number")]
+		[Type(31, "number")]
 		public float behaviorLockedUntil = default(float);
 
-		[Type(31, "number")]
+		[Type(32, "number")]
 		public float castDuration = default(float);
 
-		[Type(32, "boolean")]
+		[Type(33, "boolean")]
 		public bool isCasting = default(bool);
 
-		[Type(33, "string")]
+		[Type(34, "string")]
 		public string mobTypeId = default(string);
 
-		[Type(34, "string")]
+		[Type(35, "string")]
 		public string spawnAreaId = default(string);
 
-		[Type(35, "string")]
+		[Type(36, "string")]
 		public string currentAttackTarget = default(string);
 
-		[Type(36, "string")]
+		[Type(37, "string")]
 		public string currentChaseTarget = default(string);
 
-		[Type(37, "number")]
+		[Type(38, "number")]
 		public float targetX = default(float);
 
-		[Type(38, "number")]
+		[Type(39, "number")]
 		public float targetY = default(float);
 
-		[Type(39, "number")]
+		[Type(40, "number")]
 		public float maxMoveSpeed = default(float);
 
-		[Type(40, "number")]
+		[Type(41, "number")]
 		public float rotationSpeed = default(float);
 	}
 }

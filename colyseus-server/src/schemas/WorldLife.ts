@@ -7,6 +7,7 @@ import { Schema, type, ArraySchema, MapSchema } from '@colyseus/schema'
 import { WorldObject } from './WorldObject'
 import { BattleStatus } from './BattleStatus'
 import { mergeBaseStat, type BaseStat } from '../config/combat/combatStats'
+import { DEFAULT_ELEMENT, isElement, type Element } from '../config/combat/elements'
 import { GAME_CONFIG } from '../config/gameConfig'
 import { IAgentRuntime } from '../ai/interfaces/IAgentRuntime'
 
@@ -34,6 +35,10 @@ export abstract class WorldLife extends WorldObject {
   pDef: number = 0 // Reduces incoming physical damage
   mDef: number = 0 // Reduces incoming magical damage
   @type('number') armor: number = 0 // Additional damage reduction
+
+  // Elemental defense (World Wisdom / F-017). Attack element x this decides the
+  // damage multiplier in DamageCalculator.
+  @type('string') element: Element = DEFAULT_ELEMENT
 
   // Resistance System (Map: Type -> Resistance Value 0.0-1.0)
   @type({ map: 'number' }) resistances = new MapSchema<number>()
@@ -130,6 +135,8 @@ export abstract class WorldLife extends WorldObject {
     mDef?: number
     armor?: number
     density?: number
+    /** Elemental defense. Omit for neutral (World Wisdom / F-017). */
+    element?: Element
     /** Merged + clamped primary stats (subclass supplies via mergeBaseStat). */
     stat: BaseStat
   }) {
@@ -147,6 +154,10 @@ export abstract class WorldLife extends WorldObject {
     this.mDef = opts.mDef ?? 0
     this.armor = opts.armor ?? 0
     this.density = opts.density ?? 1
+    // `element` is a @type('string') field, so callers outside the type system
+    // (JSON configs, deserialised state) can smuggle in a non-canon id. Validate
+    // once here so the per-tick damage path can trust it.
+    this.element = isElement(opts.element) ? opts.element : DEFAULT_ELEMENT
     this.lastAttackTime = performance.now() - this.attackDelay - 1 // Allow immediate first attack
 
     this.stat = mergeBaseStat(opts.stat)
