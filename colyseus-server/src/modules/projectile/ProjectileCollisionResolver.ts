@@ -7,6 +7,7 @@ import { PROJECTILE_INTERACTIONS } from '../../config/combatConfig'
 import { eventBus, RoomEventType } from '../../events/EventBus'
 import { GAME_CONFIG } from '../../config/gameConfig'
 import { DeflectionResolver } from './DeflectionResolver'
+import { DEFAULT_ELEMENT } from '../../config/combat/elements'
 
 export class ProjectileCollisionResolver {
   private gameState: GameState
@@ -80,11 +81,12 @@ export class ProjectileCollisionResolver {
       // Fallback: Apply damage directly via BattleModule (legacy/unthrottled)
       if (attacker && attacker.isAlive) {
         // Use BattleModule to apply damage
-        const damage = this.battleModule.calculateDamage(
-          projectile.damage,
-          projectile.damageType,
-          target
-        )
+        const damage = this.battleModule.calculateDamage({
+          baseDamage: projectile.damage,
+          damageType: projectile.damageType,
+          attackElement: DEFAULT_ELEMENT, // element threaded in Task 4
+          target,
+        })
         const targetDied = this.battleModule.applyDamage(target, damage, { eventId: projectile.id })
 
         // Calculate impulse vector from projectile velocity

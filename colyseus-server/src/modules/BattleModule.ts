@@ -17,7 +17,8 @@ import {
   DamageActionPayload,
 } from './BattleActionMessage'
 import { ProcessedEventTracker } from './combat/ProcessedEventTracker'
-import { DamageCalculator } from './combat/DamageCalculator'
+import { DamageCalculator, DamageCalculationOptions } from './combat/DamageCalculator'
+import { DEFAULT_ELEMENT } from '../config/combat/elements'
 import { StatusEffectManager } from './combat/StatusEffectManager'
 
 export interface AttackEvent {
@@ -87,7 +88,12 @@ export class BattleModule implements BattleActionProcessor {
     }
 
     // Calculate damage with defense
-    const damage = this.calculateDamage(baseDamage, damageType, target)
+    const damage = this.calculateDamage({
+      baseDamage,
+      damageType,
+      attackElement: DEFAULT_ELEMENT, // element threaded in Task 4
+      target,
+    })
     console.log(`🎯 ATTACK: ${attacker.id} deals ${damage} ${damageType} damage to ${target.id}`)
 
     // Apply damage to target
@@ -215,13 +221,9 @@ export class BattleModule implements BattleActionProcessor {
     return { canAttack: true }
   }
 
-  // Calculate damage with defense calculations (delegates to DamageCalculator)
-  calculateDamage(
-    baseDamage: number,
-    damageType: 'physical' | 'magical',
-    target: WorldLife
-  ): number {
-    return DamageCalculator.calculate(baseDamage, damageType, target)
+  // Calculate damage with defense + element (delegates to DamageCalculator)
+  calculateDamage(opts: DamageCalculationOptions): number {
+    return DamageCalculator.calculate(opts)
   }
 
   // Apply damage to target

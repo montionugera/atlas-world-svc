@@ -88,7 +88,12 @@ describe('Battle System', () => {
       player.pDef = 5
       player.armor = 3
 
-      const damage = battleModule.calculateDamage(mob.pAtk, 'physical', player)
+      const damage = battleModule.calculateDamage({
+        baseDamage: mob.pAtk,
+        damageType: 'physical',
+        attackElement: 'neutral',
+        target: player,
+      })
       expect(damage).toBeLessThan(mob.pAtk)
       expect(damage).toBeGreaterThan(0)
     })
