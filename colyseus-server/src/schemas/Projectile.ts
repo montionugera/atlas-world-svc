@@ -2,6 +2,7 @@ import { type } from '@colyseus/schema'
 import { WorldObject } from './WorldObject'
 import { SPEAR_THROWER_STATS, ProjectileType } from '../config/combatConfig'
 import type { AttackKind } from '../combat/attackDamage'
+import { DEFAULT_ELEMENT, type Element } from '../config/combat/elements'
 
 export class Projectile extends WorldObject {
   // Synced to client
@@ -14,6 +15,13 @@ export class Projectile extends WorldObject {
   // Server-only properties
   damage: number = 0
   damageType: 'physical' | 'magical' = 'physical'
+  /**
+   * Server-only: attack element this projectile carries (World Wisdom / F-017).
+   * Set by the emitter right after creation (same pattern as `attackKind`):
+   * player basic attacks copy the equipped weapon's element, mob/NPC strategies
+   * copy the executing AttackDefinition's element.
+   */
+  element: Element = DEFAULT_ELEMENT
   /** Server-only: how this hit was classified (not synced). */
   attackKind: AttackKind | '' = ''
   maxRange: number = SPEAR_THROWER_STATS.spearMaxRange

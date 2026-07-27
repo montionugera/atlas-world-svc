@@ -93,6 +93,10 @@ export class NPCCombatSystem extends BaseCombatSystem<NPC> {
       return { attacked: false }
     }
 
+    // Strategy-less fallback: no AttackDefinition executes here, so there is no
+    // element to read — this attack is neutral by construction. Configured NPC
+    // attacks go through updateAttackWithStrategies, where the strategy stamps
+    // AttackDefinition.element onto the projectile (World Wisdom / F-017).
     const attackData: BattleAttackData = {
       actorId: this.npc.id,
       targetId: targetMob.id,

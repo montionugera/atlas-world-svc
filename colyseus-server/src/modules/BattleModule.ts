@@ -87,11 +87,11 @@ export class BattleModule implements BattleActionProcessor {
       damageType = payload.damageType || 'physical'
     }
 
-    // Calculate damage with defense
+    // Calculate damage with defense + element
     const damage = this.calculateDamage({
       baseDamage,
       damageType,
-      attackElement: DEFAULT_ELEMENT, // element threaded in Task 4
+      attackElement: payload?.element ?? DEFAULT_ELEMENT,
       target,
     })
     console.log(`🎯 ATTACK: ${attacker.id} deals ${damage} ${damageType} damage to ${target.id}`)

@@ -41,7 +41,12 @@ describe('Battle Message System', () => {
 
   describe('Action Message Creation', () => {
     test('should create attack message', () => {
-      const message = BattleManager.createAttackMessage(mob.id, player.id, 20, 10)
+      const message = BattleManager.createAttackMessage({
+        actorId: mob.id,
+        targetId: player.id,
+        damage: 20,
+        range: 10,
+      })
 
       expect(message.actorId).toBe(mob.id)
       expect(message.targetId).toBe(player.id)
@@ -77,7 +82,14 @@ describe('Battle Message System', () => {
       mob.lastAttackTime = 0
 
       // Create and add attack message
-      battleManager.addActionMessage(BattleManager.createAttackMessage(mob.id, player.id, 20, 10))
+      battleManager.addActionMessage(
+        BattleManager.createAttackMessage({
+          actorId: mob.id,
+          targetId: player.id,
+          damage: 20,
+          range: 10,
+        })
+      )
 
       // Process messages
       const processedCount = await battleManager.processActionMessages()
@@ -114,7 +126,14 @@ describe('Battle Message System', () => {
       // Ensure player is damaged first
       player.currentHealth = 50
 
-      battleManager.addActionMessage(BattleManager.createAttackMessage(mob.id, player.id, 10, 5))
+      battleManager.addActionMessage(
+        BattleManager.createAttackMessage({
+          actorId: mob.id,
+          targetId: player.id,
+          damage: 10,
+          range: 5,
+        })
+      )
       battleManager.addActionMessage(
         BattleManager.createHealMessage(player.id, player.id, 20, 'natural')
       )
@@ -129,7 +148,12 @@ describe('Battle Message System', () => {
       mob.lastAttackTime = 0
 
       // Add messages with different priorities
-      const attackMessage = BattleManager.createAttackMessage(mob.id, player.id, 20, 10)
+      const attackMessage = BattleManager.createAttackMessage({
+        actorId: mob.id,
+        targetId: player.id,
+        damage: 20,
+        range: 10,
+      })
       attackMessage.priority = 3 // High priority
       battleManager.addActionMessage(attackMessage)
 
@@ -177,7 +201,12 @@ describe('Battle Message System', () => {
 
   describe('Error Handling', () => {
     test('should handle invalid actor in message', async () => {
-      const invalidMessage = BattleManager.createAttackMessage('invalid-actor', player.id, 20, 10)
+      const invalidMessage = BattleManager.createAttackMessage({
+        actorId: 'invalid-actor',
+        targetId: player.id,
+        damage: 20,
+        range: 10,
+      })
 
       battleManager.addActionMessage(invalidMessage)
       const processedCount = await battleManager.processActionMessages()
@@ -186,7 +215,12 @@ describe('Battle Message System', () => {
     })
 
     test('should handle invalid target in message', async () => {
-      const invalidMessage = BattleManager.createAttackMessage(mob.id, 'invalid-target', 20, 10)
+      const invalidMessage = BattleManager.createAttackMessage({
+        actorId: mob.id,
+        targetId: 'invalid-target',
+        damage: 20,
+        range: 10,
+      })
 
       battleManager.addActionMessage(invalidMessage)
       const processedCount = await battleManager.processActionMessages()

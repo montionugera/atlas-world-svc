@@ -47,7 +47,14 @@ describe('Battle System', () => {
       mob.attackDelay = 100 // Short delay for testing
 
       const initial = player.currentHealth
-      battleManager.addActionMessage(BattleManager.createAttackMessage(mob.id, player.id, 20, 10))
+      battleManager.addActionMessage(
+        BattleManager.createAttackMessage({
+          actorId: mob.id,
+          targetId: player.id,
+          damage: 20,
+          range: 10,
+        })
+      )
       const processed = await battleManager.processActionMessages()
       expect(processed).toBe(1)
       expect(player.currentHealth).toBeLessThan(initial)
@@ -59,8 +66,22 @@ describe('Battle System', () => {
       mob.attackDelay = 100 // Short delay for testing
 
       const initial = player.currentHealth
-      battleManager.addActionMessage(BattleManager.createAttackMessage(mob.id, player.id, 20, 10))
-      battleManager.addActionMessage(BattleManager.createAttackMessage(mob.id, player.id, 20, 10))
+      battleManager.addActionMessage(
+        BattleManager.createAttackMessage({
+          actorId: mob.id,
+          targetId: player.id,
+          damage: 20,
+          range: 10,
+        })
+      )
+      battleManager.addActionMessage(
+        BattleManager.createAttackMessage({
+          actorId: mob.id,
+          targetId: player.id,
+          damage: 20,
+          range: 10,
+        })
+      )
       const processed = await battleManager.processActionMessages()
       expect(processed).toBeGreaterThan(0)
       expect(player.currentHealth).toBeLessThan(initial)
