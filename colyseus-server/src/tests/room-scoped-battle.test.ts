@@ -87,12 +87,22 @@ describe('Room-Scoped Battle Manager', () => {
 
     // Room 1: mob attacks player
     room1BattleManager.addActionMessage(
-      BattleManager.createAttackMessage('mob-1', 'player-1', 20, 10)
+      BattleManager.createAttackMessage({
+        actorId: 'mob-1',
+        targetId: 'player-1',
+        damage: 20,
+        range: 10,
+      })
     )
 
     // Room 2: mob attacks player (same base damage as room 1 so isolation is apples-to-apples)
     room2BattleManager.addActionMessage(
-      BattleManager.createAttackMessage('mob-2', 'player-2', 20, 8)
+      BattleManager.createAttackMessage({
+        actorId: 'mob-2',
+        targetId: 'player-2',
+        damage: 20,
+        range: 8,
+      })
     )
 
     // Process attacks in both rooms
@@ -121,10 +131,20 @@ describe('Room-Scoped Battle Manager', () => {
   test('should have independent attack event histories', () => {
     // Create attacks in both rooms
     room1BattleManager.addActionMessage(
-      BattleManager.createAttackMessage('mob-1', 'player-1', 20, 10)
+      BattleManager.createAttackMessage({
+        actorId: 'mob-1',
+        targetId: 'player-1',
+        damage: 20,
+        range: 10,
+      })
     )
     room2BattleManager.addActionMessage(
-      BattleManager.createAttackMessage('mob-2', 'player-2', 15, 8)
+      BattleManager.createAttackMessage({
+        actorId: 'mob-2',
+        targetId: 'player-2',
+        damage: 15,
+        range: 8,
+      })
     )
 
     // Process the messages to create events
@@ -153,7 +173,12 @@ describe('Room-Scoped Battle Manager', () => {
   test('should not allow cross-room attacks', async () => {
     // Try to attack player in room 2 from room 1
     room1BattleManager.addActionMessage(
-      BattleManager.createAttackMessage('mob-1', 'player-2', 20, 10)
+      BattleManager.createAttackMessage({
+        actorId: 'mob-1',
+        targetId: 'player-2',
+        damage: 20,
+        range: 10,
+      })
     )
 
     // Process the attack

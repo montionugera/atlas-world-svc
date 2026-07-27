@@ -157,6 +157,7 @@ export class PlayerCombatSystem {
         projectileType,
         damage,
         damageType,
+        element,
         atkRange,
         pRadius,
         atkSpeed,
@@ -198,11 +199,15 @@ export class PlayerCombatSystem {
         )
       }
       projectile.attackKind = attackKind
+      // The equipped weapon's element rides on the projectile — that is the only
+      // path a player basic attack reaches damage (see ProjectileCollisionResolver).
+      projectile.element = element
 
       gameState.projectiles.set(projectile.id, projectile)
     }
 
-    // Emit BATTLE_ATTACK for client animation (no specific target needed anymore)
+    // Emit BATTLE_ATTACK for client animation only (targetId is always '', so this
+    // never resolves to a damage message) — no element needed on this event.
     const attackData = {
       actorId: this.player.id,
       targetId: '', // Cleaving hitboxes don't have a single explicit target upfront

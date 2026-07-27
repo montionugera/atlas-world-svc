@@ -1,0 +1,191 @@
+[
+  {
+    "id": "char-quartermaster",
+    "kind": "character",
+    "title": "Camp Quartermaster",
+    "summary": "The one who stayed at camp so the others could leave it.",
+    "role": "npc",
+    "faction": "faction-expedition",
+    "region": "region-spawn-meadow",
+    "assetKey": "npc",
+    "status": "dead",
+    "diedAt": "event-quartermaster-falls",
+    "links": []
+  },
+  {
+    "id": "char-expedition-member",
+    "kind": "character",
+    "title": "Expedition Member",
+    "summary": "You — one of the party that reopened the meadow.",
+    "role": "ally",
+    "faction": "faction-expedition",
+    "region": "region-spawn-meadow",
+    "assetKey": "player",
+    "links": []
+  },
+  {
+    "id": "char-ashfang-alpha",
+    "kind": "character",
+    "title": "The Twin-Strike",
+    "summary": "The apex of the unaligned wilds; the meadow's first true wall.",
+    "role": "villain",
+    "faction": "faction-unaligned",
+    "region": "region-spawn-meadow",
+    "assetKey": "mob:double_attacker",
+    "status": "dead",
+    "diedAt": "event-twin-strike-falls",
+    "links": []
+  },
+  {
+    "id": "char-the-broker",
+    "kind": "character",
+    "title": "The Broker",
+    "summary": "Gildmark's hidden hand — the ledger says nothing was ever his doing, and the ledger is never wrong.",
+    "role": "villain",
+    "faction": "faction-gildmark-council",
+    "region": "region-gildmark",
+    "links": []
+  },
+  {
+    "id": "char-iron-regent",
+    "kind": "character",
+    "title": "The Iron Regent",
+    "summary": "Power that calls itself protection — the War-Countess's brother, seizing more emergency power than Embervale ever voted him.",
+    "role": "villain",
+    "faction": "faction-embervale-banner",
+    "region": "region-embervale",
+    "links": []
+  },
+  {
+    "id": "char-the-bell-keeper",
+    "kind": "character",
+    "title": "The Bell-Keeper",
+    "summary": "Every mis-rung bell is a father's love, paid to Gildmark in his daughter's name.",
+    "role": "villain",
+    "faction": "faction-bellfaith",
+    "region": "region-gildmark",
+    "links": []
+  },
+  {
+    "id": "char-widow-of-the-first-caravan",
+    "kind": "character",
+    "title": "The Widow of the First Caravan",
+    "summary": "She knew who lit the wagons before the ash cooled. It changed nothing she wants done.",
+    "role": "villain",
+    "faction": "faction-embervale-banner",
+    "region": "region-embervale",
+    "links": []
+  },
+  {
+    "id": "char-the-ash-prophet",
+    "kind": "character",
+    "title": "The Ash Prophet",
+    "summary": "A Cindervast deserter who preaches that everything standing is a lie waiting to fall.",
+    "role": "villain",
+    "faction": "faction-ashen-column",
+    "region": "region-cindervast",
+    "links": []
+  },
+  {
+    "id": "char-war-countess",
+    "kind": "character",
+    "title": "The War-Countess",
+    "summary": "Embervale's ruler, grieving and cornered by her own brother's ambition.",
+    "role": "neutral",
+    "faction": "faction-embervale-banner",
+    "region": "region-embervale",
+    "links": []
+  },
+  {
+    "id": "char-speaker-of-norhollow",
+    "kind": "character",
+    "title": "The Speaker of Norhollow",
+    "summary": "Norhollow's veteran Speaker, who counts the dead before she answers anything.",
+    "role": "neutral",
+    "faction": "faction-norhollow-banner",
+    "region": "region-norhollow",
+    "links": []
+  },
+  {
+    "id": "char-elder-of-rooktide",
+    "kind": "character",
+    "title": "The Elder of Rooktide",
+    "summary": "Rooktide's elder, proof a town can come back if anyone's still willing to try.",
+    "role": "ally",
+    "region": "region-rooktide",
+    "links": []
+  },
+  {
+    "id": "char-farrow-the-forward",
+    "kind": "character",
+    "title": "Farrow the Forward",
+    "summary": "A scout who goes first so the rest of the line doesn't have to.",
+    "role": "ally",
+    "faction": "faction-expedition",
+    "region": "region-millcross",
+    "status": "dead",
+    "diedAt": "event-farrow-falls",
+    "links": []
+  },
+  {
+    "id": "char-clerk-of-gildmark",
+    "kind": "character",
+    "title": "The Clerk of Gildmark",
+    "summary": "The whistleblower who priced his silence, then changed his mind, then paid for it in a different coin than he asked for.",
+    "role": "npc",
+    "faction": "faction-gildmark-council",
+    "region": "region-gildmark",
+    "status": "dead",
+    "diedAt": "event-clerk-silenced",
+    "links": []
+  },
+  {
+    "id": "char-thornveil-war-speaker",
+    "kind": "character",
+    "title": "The Thornveil War-Speaker",
+    "summary": "A Thornveil voice at the truce table, killed to keep the ledger quiet.",
+    "role": "npc",
+    "faction": "faction-thornveil",
+    "region": "region-thornveil",
+    "status": "dead",
+    "diedAt": "event-warspeaker-falls",
+    "links": []
+  },
+  {
+    "id": "char-warden-bright",
+    "kind": "character",
+    "title": "Warden Bright",
+    "summary": "A bell-warden who still believes the bell is meant to tell the truth.",
+    "role": "ally",
+    "faction": "faction-bellfaith",
+    "region": "region-gildmark",
+    "links": []
+  },
+  {
+    "id": "char-mirelle",
+    "kind": "character",
+    "title": "Mirelle",
+    "summary": "The Bell-Keeper's daughter, held as collateral for every proclamation he sealed false to keep her safe.",
+    "role": "npc",
+    "region": "region-gildmark",
+    "links": []
+  },
+  {
+    "id": "char-liss-of-embervale",
+    "kind": "character",
+    "title": "Liss of Embervale",
+    "summary": "Writes letters across the line to a boy in Norhollow — the war was supposed to make them strangers.",
+    "role": "npc",
+    "region": "region-embervale",
+    "links": []
+  },
+  {
+    "id": "char-joren-of-norhollow",
+    "kind": "character",
+    "title": "Joren of Norhollow",
+    "summary": "Reads every letter that reaches him, even the ones opened first by someone else's hands.",
+    "role": "npc",
+    "region": "region-norhollow",
+    "links": []
+  }
+]

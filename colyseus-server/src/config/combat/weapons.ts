@@ -3,6 +3,7 @@
  */
 import type { ProjectileType } from './projectileInteractions'
 import { WEAPON_TYPES } from './projectileInteractions'
+import type { Element } from './elements'
 
 export interface WeaponConfig {
   id: string
@@ -11,6 +12,8 @@ export interface WeaponConfig {
   mAtk: number
   projectileType: ProjectileType
   range: number // weapon's effective range override
+  /** Elemental damage type this weapon deals. Omit for neutral (World Wisdom / F-017). */
+  element?: Element
   /** Melee swing hitbox radius (game units). When set, used for player basic melee projectiles. */
   pRadius?: number
   /** Attacks/sec band for AGI-scaled melee cadence (omit for bow/staff → global wind times). */

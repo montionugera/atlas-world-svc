@@ -127,5 +127,69 @@
     "claimed_at": "2026-07-21T01:02:07.228197+00:00",
     "shipped_at": "2026-07-21T01:18:54.945626+00:00",
     "promoted_at": "2026-07-21T18:04:15.305255+00:00"
+  },
+  {
+    "id": "F-012",
+    "title": "Epic Story Pipeline: full narrative graph (7 per-kind files, shared id-space) + whole-graph coherence gate (resolution + orphans + prereq-DAG) + dual visualizer (static Mermaid drift-gate + interactive story-explorer). Spec docs/superpowers/specs/2026-07-22-epic-story-pipeline-design.md + plan docs/superpowers/plans/2026-07-22-epic-story-pipeline.md (both on release/1.4). Content+gate+viz only; runtime deferred I-017; mob refs WARN until I-019",
+    "from_idea": "I-020",
+    "created_at": "2026-07-22T08:11:44.494089+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.4",
+    "claimed_at": "2026-07-22T08:11:46.819151+00:00",
+    "shipped_at": "2026-07-22T10:46:05.848320+00:00"
+  },
+  {
+    "id": "F-013",
+    "title": "Generated mob-types.json \u2192 upgrade map mobType check from WARN to hard-fail: emit a machine-readable list of valid mob ids from colyseus-server mob definitions (mirror gen-asset-keys codegen), have check_content.mjs read it so a typo in a content map mobSpawnAreas[].mobType (and faction/quest mob refs) is a hard FAIL instead of a silent WARN \u2014 closes the silent-empty-spawn risk in authored maps",
+    "from_idea": "I-019",
+    "created_at": "2026-07-22T14:16:43.108133+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.4",
+    "claimed_at": "2026-07-22T15:27:49.641185+00:00",
+    "shipped_at": "2026-07-22T15:54:31.927427+00:00"
+  },
+  {
+    "id": "F-014",
+    "title": "Narrative System v2 \u2014 acts, lore, unlockedBy, fates",
+    "from_idea": "I-021",
+    "created_at": "2026-07-22T14:18:33.421402+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.4",
+    "claimed_at": "2026-07-22T14:27:54.754817+00:00",
+    "shipped_at": "2026-07-22T16:00:47.711432+00:00"
+  },
+  {
+    "id": "F-015",
+    "title": "CI: add scripts test-suite step (node --test in scripts/) to ci.yml",
+    "from_idea": "I-022",
+    "created_at": "2026-07-22T16:42:49.824550+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
+  },
+  {
+    "id": "F-016",
+    "title": "The Undertow \u2014 grand epic 5-act content (sub-project B)",
+    "from_idea": "I-023",
+    "created_at": "2026-07-23T12:39:21.790999+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.4",
+    "claimed_at": "2026-07-23T12:39:24.402983+00:00",
+    "shipped_at": "2026-07-23T15:40:40.538211+00:00"
+  },
+  {
+    "id": "F-017",
+    "title": "World Wisdom: magic elements + schools + 8 races x 8 classes (lore + gameplay classes)",
+    "from_idea": "I-026",
+    "created_at": "2026-07-27T00:52:14.838505+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.4",
+    "claimed_at": "2026-07-27T04:46:33.245501+00:00",
+    "shipped_at": "2026-07-27T06:14:32.187406+00:00"
   }
 ]

@@ -3,6 +3,8 @@
  * Allows entities to communicate with BattleModule through structured messages
  */
 
+import type { Element } from '../config/combat/elements'
+
 export interface BattleActionMessage {
   actorId: string // Who is performing the action (mob id, player id)
   actionKey: string // Type of action (attack, heal, kill, etc.)
@@ -17,6 +19,8 @@ export interface ProjectileDetail {
   type: string
   damage: number
   damageType?: 'physical' | 'magical'
+  /** Element the projectile carries (World Wisdom / F-017). Omit for neutral. */
+  element?: Element
   speed?: number
   vx?: number
   vy?: number
@@ -25,6 +29,12 @@ export interface ProjectileDetail {
 export interface AttackActionPayload {
   damage: number
   damageType?: 'physical' | 'magical'
+  /**
+   * Element of this attack (World Wisdom / F-017). This is the field
+   * `BattleModule.processAttack` reads; `ProjectileDetail.element` only mirrors
+   * it for projectile-sourced hits. Omit for neutral.
+   */
+  element?: Element
   range: number
   direction?: { x: number; y: number }
   attackType?: string // melee, ranged, magic, etc.

@@ -60,8 +60,10 @@ jobs:
       # (contracts already built above) so the gate checks current keys, not a
       # stale committed snapshot; then run the checker. Stage-0: unmapped keys
       # are warnings, broken paths / missing licenses are hard failures.
-      - name: Codegen asset keys (refresh generated/asset-keys.json)
-        run: bash colyseus-server/scripts/codegen/gen-asset-keys.sh
+      - name: Codegen asset keys + mob types (refresh generated/*.json)
+        run: |
+          bash colyseus-server/scripts/codegen/gen-asset-keys.sh
+          bash colyseus-server/scripts/codegen/gen-mob-types.sh
 
       - name: Asset manifest drift-gate (keys ↔ manifest ↔ files ↔ license)
         run: node scripts/check_asset_manifest.mjs
@@ -75,6 +77,21 @@ jobs:
           npm ci --prefix scripts
           npm test --prefix scripts
           node scripts/check_content.mjs
+
+      # Story graph drift-gate (F-012): docs/story/story-graph.md is a
+      # generated Mermaid visualization of the 7 story files (scripts/lib/story.mjs
+      # loader, shared with the content gate above). Fails the build if the
+      # committed artifact is stale relative to content/story/*.json.
+      - name: Story graph drift-gate (docs/story/story-graph.md)
+        run: node scripts/gen_story_graph.mjs --check
+
+      # Story explorer (F-012 Task 6): graph.mjs is the pure buildGraph()
+      # shared by tools/story-explorer/index.html and this smoke test — every
+      # real story file resolves, no dangling edges, no prereq cycle, and a
+      # synthetic fixture covers the event/dialogue edge kinds real content
+      # doesn't exercise yet.
+      - name: Story explorer smoke test
+        run: node --test tools/story-explorer/tests/*.test.mjs
 
       # Asset forge (F-003): structural + game-rule validation for every
       # manifest entry whose glb exists on disk. Bespoke-tier failures are

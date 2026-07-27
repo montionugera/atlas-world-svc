@@ -55,24 +55,21 @@ export class ProjectileCollisionResolver {
 
     // Route damage through BattleManager queue if available (throttled)
     if (this.battleManager) {
-      // Create attack message
-      const message = BattleManager.createAttackMessage(
-        projectile.ownerId,
-        target.id,
-        projectile.damage,
-        projectile.radius * 2 // approx range
-      )
-
-      // Add projectile info to payload
-      const payload = message.actionPayload as any
-      payload.projectileDetail = {
-        id: projectile.id,
-        type: projectile.type,
+      const message = BattleManager.createAttackMessage({
+        actorId: projectile.ownerId,
+        targetId: target.id,
         damage: projectile.damage,
-        vx: projectile.vx,
-        vy: projectile.vy,
-      }
-      payload.attackType = 'projectile'
+        range: projectile.radius * 2, // approx range
+        element: projectile.element,
+        attackType: 'projectile',
+        projectileDetail: {
+          id: projectile.id,
+          type: projectile.type,
+          damage: projectile.damage,
+          vx: projectile.vx,
+          vy: projectile.vy,
+        },
+      })
 
       console.log(`📨 PROJECTILE: Queuing hit ${projectile.id} on ${target.id}`)
       this.battleManager.addActionMessage(message)
@@ -80,11 +77,12 @@ export class ProjectileCollisionResolver {
       // Fallback: Apply damage directly via BattleModule (legacy/unthrottled)
       if (attacker && attacker.isAlive) {
         // Use BattleModule to apply damage
-        const damage = this.battleModule.calculateDamage(
-          projectile.damage,
-          projectile.damageType,
-          target
-        )
+        const damage = this.battleModule.calculateDamage({
+          baseDamage: projectile.damage,
+          damageType: projectile.damageType,
+          attackElement: projectile.element,
+          target,
+        })
         const targetDied = this.battleModule.applyDamage(target, damage, { eventId: projectile.id })
 
         // Calculate impulse vector from projectile velocity

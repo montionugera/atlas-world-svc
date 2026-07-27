@@ -7,7 +7,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, resolve, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
-import Ajv from "ajv";
+import { STORY_FILES, loadStory, readJson, compileSchema } from "./lib/story.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -16,6 +16,7 @@ function parseArgs(argv) {
     contentRoot: join(ROOT, "content"),
     keys: join(ROOT, "colyseus-server/generated/asset-keys.json"),
     manifest: join(ROOT, "game-client/assets/manifest.json"),
+    mobTypes: join(ROOT, "colyseus-server/generated/mob-types.json"),
     requireComplete: false,
   };
   const takeValue = (name, i) => {
@@ -28,21 +29,37 @@ function parseArgs(argv) {
     if (a === "--content-root") opts.contentRoot = resolve(takeValue(a, ++i));
     else if (a === "--keys") opts.keys = resolve(takeValue(a, ++i));
     else if (a === "--manifest") opts.manifest = resolve(takeValue(a, ++i));
+    else if (a === "--mob-types") opts.mobTypes = resolve(takeValue(a, ++i));
     else if (a === "--require-complete") opts.requireComplete = true;
     else { console.error(`unknown arg: ${a}`); process.exit(2); }
   }
   return opts;
 }
 
+// F-013: load the codegen-emitted valid mob type id set. Missing, unparseable,
+// or shape-invalid (`mobTypes` not a string array) is ONE hard FAIL and
+// returns null — callers skip their mob checks so the single loader failure
+// isn't multiplied per ref, and the checks can never silently pass. This
+// deliberately does NOT mirror the story/bible soft-skip: the artifact is
+// committed and CI-refreshed, so absence means broken setup.
+function loadMobTypes(path) {
+  // `!doc` can't distinguish "readJson recorded a FAIL" from "the file parsed
+  // to a JSON-falsy value (null/false/0/"")" — the latter must be ONE
+  // shape-invalid FAIL, never a silent skip, so check the failure count.
+  const before = failures.length;
+  const doc = readJson(path, "mob-types", fail);
+  if (failures.length > before) return null; // readJson already recorded the FAIL
+  if (!doc || !Array.isArray(doc.mobTypes) || !doc.mobTypes.every((t) => typeof t === "string")) {
+    fail(`mob-types: ${path} is shape-invalid — expected { mobTypes: string[] }`);
+    return null;
+  }
+  return new Set([...doc.mobTypes].sort()); // sorted so FAIL messages list ids deterministically
+}
+
 const failures = [];
 const warnings = [];
 const fail = (m) => failures.push(m);
 const warn = (m) => warnings.push(m);
-
-function readJson(path, label) {
-  try { return JSON.parse(readFileSync(path, "utf8")); }
-  catch (e) { fail(`${label}: cannot read/parse ${path}: ${e.message}`); return null; }
-}
 
 // Frontmatter split: file must start with "---\n"; frontmatter ends at next "\n---\n".
 function splitFrontmatter(raw, file) {
@@ -64,15 +81,6 @@ function sectionText(body, heading) {
   return (next === -1 ? rest : rest.slice(0, next)).trim();
 }
 
-const AjvClass = Ajv.default ?? Ajv;
-
-// Compile a schema file to an Ajv validator, or null if it can't be read.
-function compileSchema(path, label) {
-  const schema = readJson(path, label);
-  if (!schema) return null;
-  return new AjvClass({ allErrors: true }).compile(schema);
-}
-
 // List *.md content files in a dir, ignoring _-prefixed (templates/fixtures).
 function listContentFiles(dir, label) {
   try {
@@ -82,70 +90,397 @@ function listContentFiles(dir, label) {
 
 function main() {
   const opts = parseArgs(process.argv);
-  const story = checkStory(opts);
+  const mobTypes = loadMobTypes(opts.mobTypes);
+  const story = checkStory(opts, mobTypes);
   const sheetCount = checkCharacters(opts, story.ids);
-  const mapCount = checkMaps(opts);
+  const mapCount = checkMaps(opts, mobTypes);
   return finish(sheetCount, mapCount, story.count);
 }
 
-// Validate content/story/story.json (regions + factions) and return the set of
-// story ids so the character branch can resolve links.story against it.
-// story.json is read as plain JSON (like asset-keys.json) — no TS/@atlas import.
-// A MISSING story.json is a soft skip (ids=null): the character→story check
-// simply can't run, mirroring how a missing bible.md downgrades region checks.
-// A story.json that IS present but malformed/invalid is a hard FAIL.
-function checkStory(opts) {
-  const storyPath = join(opts.contentRoot, "story/story.json");
-  let raw;
-  try { raw = readFileSync(storyPath, "utf8"); }
-  catch { return { count: 0, ids: null }; } // no story.json → unverifiable, skip
+// F-012: loadStory() (reads all 7 per-kind story files under
+// `${contentRoot}/story/` into one global id→node map) now lives in
+// scripts/lib/story.mjs, shared with gen_story_graph.mjs — see that file for
+// the full loader contract (missing-file vs unparsable vs schema-invalid,
+// duplicate-id semantics, `rawByKind` vs `byKind`).
 
-  let doc;
-  try { doc = JSON.parse(raw); }
-  catch (e) { fail(`story.json: cannot parse ${storyPath}: ${e.message}`); return { count: 0, ids: null }; }
+// F-012 Task 2: whole-graph cross-reference resolution. `story` is the
+// {nodes, byKind} shape returned by loadStory(); `assetKeyIds` is the Set of
+// ids from asset-keys.json. Every edge below FAILs on a dangling/wrong-kind
+// target, including (since F-013) the mob:* pseudo-refs: quest
+// .objectives[].targetId and (in checkStory) faction.mobFamily[] hard-FAIL
+// against the codegen-emitted mob-types.json (spawnable), while keeping the
+// softer asset-keys WARN (renderable coverage).
+//
+// Target-KIND matters, not just id existence — e.g. quest.giver must resolve
+// to a *character* node, not merely to any existing id — with the single
+// exception of event.involves[], which may point at a node of any kind.
+// In practice most edges are prefix-locked by their target schema's `id`
+// pattern (only faction.schema.json mints `faction-*` ids, etc.), so a
+// wrong-kind hit is mostly reachable only on the two kind-agnostic-pattern
+// fields (event.involves, dialogue.context); the check still runs uniformly
+// for every edge as defense in depth.
+function resolveStoryRefs(story, assetKeyIds, mobTypes, fail, warn) {
+  const { nodes, byKind } = story;
 
-  const validate = compileSchema(join(opts.contentRoot, "schemas/story.schema.json"), "story schema");
-  if (!validate) return { count: 0, ids: null };
-
-  const keysDoc = readJson(opts.keys, "asset-keys");
-  const assetKeyIds = new Set((keysDoc?.keys ?? []).map((k) => k.id));
-
-  const entries = Array.isArray(doc) ? doc : (doc.entries ?? []);
-  const ids = new Set();
-
-  // Pass 1: schema, unique ids, faction mobFamily → real asset key.
-  for (const entry of entries) {
-    const label = `story/${entry?.id ?? "?"}`;
-    if (!validate(entry)) {
-      for (const err of validate.errors)
-        fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
-      continue; // downstream checks assume a valid shape
+  // Resolve `id` (a single-value edge field) against `expectedKinds`. Absent
+  // (undefined) values are skipped — the field is optional at that node.
+  const resolve = (label, field, id, expectedKinds) => {
+    if (id === undefined) return;
+    const target = nodes.get(id);
+    if (!target) {
+      fail(`${label}: ${field} "${id}" does not resolve to any story node`);
+      return;
     }
-    if (ids.has(entry.id)) fail(`${label}: duplicate story id "${entry.id}"`);
-    ids.add(entry.id);
+    if (!expectedKinds.includes(target.kind))
+      fail(`${label}: ${field} "${id}" resolves to a ${target.kind} node, not ${expectedKinds.join("|")}`);
+  };
 
-    if (entry.kind === "faction") {
-      for (const mk of entry.mobFamily) {
-        if (!assetKeyIds.has(mk)) fail(`${label}: mobFamily key "${mk}" not in asset-keys.json`);
+  // Narrative System v2: unlockedBy — id prefix IS the semantics (quest-* =
+  // completed, event-* = fired, act-* = reached). Schema already prefix-locks
+  // the pattern; resolution + kind check here is defense in depth.
+  const UNLOCK_KINDS = { quest: ["quest"], event: ["event"], act: ["act"] };
+  const resolveUnlocks = (label, node) => {
+    for (const uid of node.unlockedBy ?? [])
+      resolve(label, "unlockedBy", uid, UNLOCK_KINDS[uid.split("-")[0]] ?? ["quest", "event", "act"]);
+  };
+
+  for (const q of byKind.get("quest")) {
+    const label = `story/${STORY_FILES.quest}#${q.id}`;
+    resolve(label, "giver", q.giver, ["character"]);
+    resolve(label, "arcId", q.arcId, ["arc"]);
+    resolveUnlocks(label, q);
+    resolve(label, "faction", q.faction, ["faction"]);
+    resolve(label, "region", q.region, ["region"]);
+    for (const obj of q.objectives) {
+      if (!obj.targetId.startsWith("mob:")) {
+        // F-013: quest.schema.json leaves targetId free-form (minLength: 1),
+        // so a prefixless typo on a MOB_KILLED objective would silently skip
+        // every mob check below — close the escape hatch. Keyed on the
+        // objective type so future non-mob objective types stay legal.
+        if (obj.type === "MOB_KILLED")
+          fail(`${label}: objectives targetId "${obj.targetId}" (type MOB_KILLED) must be a mob:<id> ref`);
+        continue;
       }
+      if (!assetKeyIds.has(obj.targetId))
+        warn(`${label}: objectives targetId "${obj.targetId}" not in asset-keys.json`);
+      // F-013: hard spawnability check (see mobFamily note in checkStory).
+      if (mobTypes && !mobTypes.has(obj.targetId.slice(4)))
+        fail(`${label}: objectives targetId "${obj.targetId}" is not a server mob id (valid: ${[...mobTypes].join(", ")})`);
     }
   }
 
-  // Pass 2: every links[] id resolves to another story id in this same file.
-  for (const entry of entries) {
-    if (typeof entry?.id !== "string") continue;
-    for (const l of entry.links ?? []) {
-      if (!ids.has(l)) fail(`story/${entry.id}: link "${l}" does not resolve to a story id`);
+  for (const a of byKind.get("arc")) {
+    const label = `story/${STORY_FILES.arc}#${a.id}`;
+    for (const qid of a.questIds) resolve(label, "questIds", qid, ["quest"]);
+    resolve(label, "actId", a.actId, ["act"]);
+  }
+
+  for (const c of byKind.get("character")) {
+    const label = `story/${STORY_FILES.character}#${c.id}`;
+    resolve(label, "faction", c.faction, ["faction"]);
+    resolve(label, "region", c.region, ["region"]);
+    if (c.assetKey !== undefined && !assetKeyIds.has(c.assetKey))
+      fail(`${label}: assetKey "${c.assetKey}" not in asset-keys.json`);
+    resolve(label, "diedAt", c.diedAt, ["event"]);
+    if (c.diedAt !== undefined && (c.status ?? "alive") === "alive")
+      fail(`${label}: diedAt "${c.diedAt}" set but status is "alive"`);
+  }
+
+  for (const l of byKind.get("lore")) {
+    const label = `story/${STORY_FILES.lore}#${l.id}`;
+    if (!nodes.has(l.anchor))
+      fail(`${label}: anchor "${l.anchor}" does not resolve to any story node`);
+  }
+
+  for (const e of byKind.get("event")) {
+    const label = `story/${STORY_FILES.event}#${e.id}`;
+    for (const iid of e.involves) {
+      if (!nodes.has(iid)) fail(`${label}: involves "${iid}" does not resolve to any story node`);
+    }
+    resolve(label, "triggeredBy", e.triggeredBy, ["quest"]);
+    resolveUnlocks(label, e);
+  }
+
+  for (const d of byKind.get("dialogue")) {
+    const label = `story/${STORY_FILES.dialogue}#${d.id}`;
+    resolve(label, "speaker", d.speaker, ["character"]);
+    resolve(label, "context", d.context, ["quest", "event"]);
+    resolveUnlocks(label, d);
+  }
+
+  for (const f of byKind.get("faction")) {
+    const label = `story/${STORY_FILES.faction}#${f.id}`;
+    for (const rel of f.relationships ?? [])
+      resolve(label, "relationships.factionId", rel.factionId, ["faction"]);
+  }
+}
+
+// Group `items` by `keyFn(item)`; return only the groups with 2+ members, as
+// [key, items[]] pairs — used by the act.order / event.timelineOrder
+// duplicate-value checks below.
+function findDuplicateGroups(items, keyFn) {
+  const groups = new Map();
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  return [...groups.entries()].filter(([, group]) => group.length > 1);
+}
+
+// Single pass over the union building a targetId -> Set<sourceKind> index of
+// every cross-node edge (the same edge set resolveStoryRefs walks). Built
+// ONCE and reused by both orphan checks below, rather than re-scanning the
+// graph per kind.
+function buildReverseRefIndex(byKind) {
+  const index = new Map();
+  const addRef = (targetId, sourceKind) => {
+    if (targetId === undefined) return;
+    if (!index.has(targetId)) index.set(targetId, new Set());
+    index.get(targetId).add(sourceKind);
+  };
+
+  for (const q of byKind.get("quest")) {
+    addRef(q.giver, "quest");
+    addRef(q.arcId, "quest");
+    for (const uid of q.unlockedBy ?? []) addRef(uid, "quest");
+    addRef(q.faction, "quest");
+    addRef(q.region, "quest");
+  }
+  for (const a of byKind.get("arc")) {
+    for (const qid of a.questIds) addRef(qid, "arc");
+    addRef(a.actId, "arc");
+  }
+  for (const c of byKind.get("character")) {
+    addRef(c.faction, "character");
+    addRef(c.region, "character");
+    addRef(c.diedAt, "character");
+  }
+  for (const l of byKind.get("lore")) addRef(l.anchor, "lore");
+  for (const e of byKind.get("event")) {
+    for (const iid of e.involves) addRef(iid, "event");
+    addRef(e.triggeredBy, "event");
+    for (const uid of e.unlockedBy ?? []) addRef(uid, "event");
+  }
+  for (const d of byKind.get("dialogue")) {
+    addRef(d.speaker, "dialogue");
+    addRef(d.context, "dialogue");
+    for (const uid of d.unlockedBy ?? []) addRef(uid, "dialogue");
+  }
+  for (const f of byKind.get("faction")) {
+    for (const rel of f.relationships ?? []) addRef(rel.factionId, "faction");
+  }
+  return index;
+}
+
+// Narrative System v2: acts are the story spine — orders must be unique and
+// contiguous 1..N so "act reached" (unlockedBy act-*) is well-defined.
+function checkActOrdering(story, fail) {
+  const acts = story.byKind.get("act");
+  for (const [order, group] of findDuplicateGroups(acts, (a) => a.order))
+    fail(`story/${STORY_FILES.act}: duplicate order ${order} used by acts ${group.map((a) => `"${a.id}"`).join(", ")}`);
+  const sorted = [...new Set(acts.map((a) => a.order))].sort((x, y) => x - y);
+  for (let i = 0; i < sorted.length; i++) {
+    if (sorted[i] !== i + 1) {
+      fail(`story/${STORY_FILES.act}: act orders [${acts.map((a) => a.order).join(", ")}] are not contiguous 1..${acts.length}`);
+      break;
+    }
+  }
+}
+
+// A quest is statically reachable when every quest-* id it is unlocked by
+// resolves and is itself reachable. event-*/act-* unlocks are runtime
+// conditions, not statically walkable — ignored here (assertUnlockDag still
+// covers cycles through events). A cycle or dangling quest dep => unreachable.
+function buildQuestReachability(quests) {
+  const questById = new Map(quests.map((q) => [q.id, q]));
+  const memo = new Map();
+  const visiting = new Set();
+  const reachable = (q) => {
+    if (memo.has(q.id)) return memo.get(q.id);
+    if (visiting.has(q.id)) return false;
+    visiting.add(q.id);
+    const ok = (q.unlockedBy ?? [])
+      .filter((id) => id.startsWith("quest-"))
+      .every((id) => questById.get(id) !== undefined && reachable(questById.get(id)));
+    visiting.delete(q.id);
+    memo.set(q.id, ok);
+    return ok;
+  };
+  return reachable;
+}
+
+// Narrative System v2: hard FAIL on any cycle in the unlockedBy graph.
+// Graph nodes are quests/events/dialogue; edges are unlockedBy entries that
+// resolve to a quest or event (act-* refs are sinks — acts have no
+// unlockedBy — and dialogue ids can never appear in unlockedBy, so dialogue
+// nodes have out-edges only). Out-degree is now unbounded (array), so DFS
+// walks every successor. Dangling refs (already FAILed by resolveStoryRefs)
+// are skipped, never crashed on or misreported as cycles.
+function assertUnlockDag(story, fail) {
+  const { nodes, byKind } = story;
+  const WHITE = 0, GREY = 1, BLACK = 2;
+  const color = new Map();
+
+  const visit = (node, stack) => {
+    color.set(node.id, GREY);
+    stack.push(node.id);
+    for (const uid of node.unlockedBy ?? []) {
+      const target = nodes.get(uid);
+      if (!target || !["quest", "event"].includes(target.kind)) continue;
+      const targetColor = color.get(target.id) ?? WHITE;
+      if (targetColor === GREY) {
+        const cycleStart = stack.indexOf(target.id);
+        fail(`story: unlockedBy cycle: ${[...stack.slice(cycleStart), target.id].join(" -> ")}`);
+      } else if (targetColor === WHITE) visit(target, stack);
+    }
+    stack.pop();
+    color.set(node.id, BLACK);
+  };
+
+  for (const kind of ["quest", "event", "dialogue"])
+    for (const n of byKind.get(kind))
+      if ((color.get(n.id) ?? WHITE) === WHITE) visit(n, []);
+}
+
+// F-012 Task 3: completeness FAILs + orphan/reachability WARNs, run after
+// resolveStoryRefs so every message from both layers is visible together —
+// including for the arc/quest completeness rules below, which structurally
+// overlap with schema `required`/`minItems` (a quest with 0 objectives or an
+// arc with 0 questIds is ALSO a schema violation, and a schema-invalid entry
+// never reaches `byKind`). Those two rules therefore run against
+// `rawByKind` (every parsed entry, valid or not) so our clear-message FAIL
+// still surfaces even though the schema layer already excluded the node from
+// `byKind`/`nodes` — defense in depth, not a replacement for the schema gate.
+//
+// `requireComplete` escalates the orphan-character, orphan-faction, and
+// unreachable-quest WARNs to FAILs (mirrors the existing character-sheet
+// coverage escalation in checkCharacters). The triggeredBy/act-order WARN is
+// a graph *consistency* check, not a coverage/completeness one, so it is
+// deliberately NOT escalated by --require-complete.
+function checkStoryCoherence(story, fail, warn, requireComplete) {
+  const { nodes, byKind, rawByKind } = story;
+  const escalate = (msg) => (requireComplete ? fail(msg) : warn(msg));
+
+  // --- completeness FAILs (raw entries — see comment above) -----------------
+
+  for (const q of rawByKind.get("quest") ?? []) {
+    const label = `story/${STORY_FILES.quest}#${q?.id ?? "?"}`;
+    if (!Array.isArray(q?.objectives) || q.objectives.length === 0)
+      fail(`${label}: quest "${q?.id ?? "?"}" has 0 objectives`);
+    if (!q?.giver) fail(`${label}: quest "${q?.id ?? "?"}" is missing giver`);
+    if (!q?.arcId) fail(`${label}: quest "${q?.id ?? "?"}" is missing arcId`);
+  }
+
+  for (const a of rawByKind.get("arc") ?? []) {
+    const label = `story/${STORY_FILES.arc}#${a?.id ?? "?"}`;
+    if (!Array.isArray(a?.questIds) || a.questIds.length === 0)
+      fail(`${label}: arc "${a?.id ?? "?"}" has no quests (0 questIds)`);
+  }
+
+  // --- duplicate-value FAILs (schema-valid nodes — no minItems overlap) -----
+
+  // Narrative System v2: multiple arcs may legally share one act (parallel
+  // storylines) — the old duplicate-arc.act FAIL is deliberately removed.
+  // Act order uniqueness/contiguity is now enforced by checkActOrdering().
+
+  for (const [order, events] of findDuplicateGroups(byKind.get("event"), (e) => e.timelineOrder))
+    fail(`story/${STORY_FILES.event}: duplicate timelineOrder ${order} used by events ${events.map((e) => `"${e.id}"`).join(", ")}`);
+
+  // --- orphan WARNs (reverse-ref index, built once) --------------------------
+
+  const refIndex = buildReverseRefIndex(byKind);
+
+  for (const c of byKind.get("character")) {
+    const sources = refIndex.get(c.id) ?? new Set();
+    if (!["quest", "faction", "event", "dialogue"].some((k) => sources.has(k)))
+      escalate(`story/${STORY_FILES.character}#${c.id}: character "${c.id}" is referenced by no quest, faction, event, or dialogue (orphan)`);
+  }
+
+  for (const f of byKind.get("faction")) {
+    const sources = refIndex.get(f.id) ?? new Set();
+    if (!["quest", "character", "event"].some((k) => sources.has(k)))
+      escalate(`story/${STORY_FILES.faction}#${f.id}: faction "${f.id}" is referenced by no quest, character, or event (orphan)`);
+  }
+
+  // --- reachability WARN ------------------------------------------------------
+
+  const reachable = buildQuestReachability(byKind.get("quest"));
+  for (const q of byKind.get("quest")) {
+    if (!reachable(q))
+      escalate(`story/${STORY_FILES.quest}#${q.id}: quest "${q.id}" is unreachable from any no-unlockedBy start quest`);
+  }
+
+  // --- event.triggeredBy vs act ordering WARN (never escalated) -------------
+
+  for (const e of byKind.get("event")) {
+    if (e.triggeredBy === undefined) continue;
+    const quest = nodes.get(e.triggeredBy);
+    if (!quest || quest.kind !== "quest") continue; // dangling/wrong-kind already FAILed by resolveStoryRefs
+    const arc = nodes.get(quest.arcId);
+    if (!arc || arc.kind !== "arc") continue; // dangling arcId already FAILed elsewhere
+    const act = nodes.get(arc.actId);
+    if (!act || act.kind !== "act") continue; // dangling actId already FAILed by resolveStoryRefs
+    if (act.order > e.timelineOrder)
+      warn(`story/${STORY_FILES.event}#${e.id}: triggeredBy quest "${quest.id}"'s act "${act.id}" order ${act.order} is later than event timelineOrder ${e.timelineOrder}`);
+  }
+
+  // --- lore.thread size WARN (never escalated — coverage-of-a-mystery,
+  // deliberately outside --require-complete, matching the triggeredBy WARN's
+  // reasoning) ----------------------------------------------------------------
+
+  const byThread = new Map();
+  for (const l of byKind.get("lore")) {
+    if (!byThread.has(l.thread)) byThread.set(l.thread, []);
+    byThread.get(l.thread).push(l);
+  }
+  for (const [thread, frags] of byThread)
+    if (frags.length < 2)
+      warn(`story/${STORY_FILES.lore}#${frags[0].id}: thread "${thread}" has only 1 fragment — a thread of one isn't a mystery`);
+}
+
+// Story-graph checks preserved from the pre-F-012 single-file gate, re-run
+// against the per-kind union: faction mobFamily → real asset key (asset-keys
+// membership stays a WARN — renderable coverage; F-013 adds the hard FAIL
+// against mob-types.json — spawnable),
+// resolveStoryRefs() for the whole-graph edge set (Task 2), and (in
+// checkCharacters) character sheets' links.story → a real story node id
+// (FAIL, unchanged).
+//
+// A content root with none of the 7 story files present at all is a soft skip
+// (ids=null): the character→story check simply can't run, mirroring how a
+// missing bible.md downgrades region checks. Once at least one story file
+// exists, ids is a real (possibly empty) Set and the check runs for real.
+function checkStory(opts, mobTypes) {
+  const { nodes, byKind, rawByKind, anyFilePresent } = loadStory(opts.contentRoot, fail);
+
+  const keysDoc = readJson(opts.keys, "asset-keys", fail);
+  const assetKeyIds = new Set((keysDoc?.keys ?? []).map((k) => k.id));
+  for (const entry of byKind.get("faction")) {
+    for (const mk of entry.mobFamily) {
+      if (!assetKeyIds.has(mk))
+        warn(`story/${STORY_FILES.faction}#${entry.id}: mobFamily key "${mk}" not in asset-keys.json`);
+      // F-013: strip the mob: prefix and hard-check spawnability. The
+      // asset-keys WARN above stays — it now means "renderable coverage";
+      // this FAIL means "actually spawnable".
+      if (mobTypes && mk.startsWith("mob:") && !mobTypes.has(mk.slice(4)))
+        fail(`story/${STORY_FILES.faction}#${entry.id}: mobFamily "${mk}" is not a server mob id (valid: ${[...mobTypes].join(", ")})`);
     }
   }
 
-  return { count: entries.length, ids };
+  const story = { nodes, byKind };
+  resolveStoryRefs(story, assetKeyIds, mobTypes, fail, warn);
+  checkActOrdering(story, fail);
+  assertUnlockDag(story, fail);
+  checkStoryCoherence({ ...story, rawByKind }, fail, warn, opts.requireComplete);
+
+  return { count: nodes.size, ids: anyFilePresent ? new Set(nodes.keys()) : null };
 }
 
 function checkCharacters(opts, storyIds = null) {
-  const keysDoc = readJson(opts.keys, "asset-keys");
-  const manifestDoc = readJson(opts.manifest, "manifest");
-  const validate = compileSchema(join(opts.contentRoot, "schemas/character.schema.json"), "character schema");
+  const keysDoc = readJson(opts.keys, "asset-keys", fail);
+  const manifestDoc = readJson(opts.manifest, "manifest", fail);
+  const validate = compileSchema(join(opts.contentRoot, "schemas/character.schema.json"), "character schema", fail);
   if (!keysDoc || !manifestDoc || !validate) return 0;
 
   const keyKinds = new Map(keysDoc.keys.map((k) => [k.id, k.kind]));
@@ -188,12 +523,13 @@ function checkCharacters(opts, storyIds = null) {
     }
 
     // (4b) character → story integrity: every links.story id must resolve to a
-    // real story entry in story.json. Skipped only when story.json is absent
-    // (storyIds === null); when present, a dangling ref is a hard FAIL.
+    // real node id in the union of the 7 story/*.json files (F-012). Skipped
+    // only when none of those files exist (storyIds === null); when at least
+    // one is present, a dangling ref is a hard FAIL.
     if (storyIds && Array.isArray(fm.links?.story)) {
       for (const sid of fm.links.story) {
         if (!storyIds.has(sid))
-          fail(`${label}: links.story "${sid}" does not resolve to a story id in story.json`);
+          fail(`${label}: links.story "${sid}" does not resolve to a story node id`);
       }
     }
 
@@ -227,7 +563,7 @@ function bibleRegionIds(contentRoot) {
   return ids;
 }
 
-function checkMaps(opts) {
+function checkMaps(opts, mobTypes) {
   // Maps are OPTIONAL content — a content root without a maps/ dir is valid
   // (mirrors the story.json soft-skip). Skip BEFORE touching map.schema.json,
   // since a root with no maps/ also has no map schema and readJson would else
@@ -235,7 +571,7 @@ function checkMaps(opts) {
   const dir = join(opts.contentRoot, "maps");
   if (!existsSync(dir)) return 0;
 
-  const validate = compileSchema(join(opts.contentRoot, "schemas/map.schema.json"), "map schema");
+  const validate = compileSchema(join(opts.contentRoot, "schemas/map.schema.json"), "map schema", fail);
   if (!validate) return 0;
 
   const bibleRegions = bibleRegionIds(opts.contentRoot);
@@ -295,12 +631,16 @@ function checkMaps(opts) {
         fail(`${label}: zoneHazard ${hz.type}@${hz.x},${hz.y} is outside world ${w.width}x${w.height}`);
     }
 
-    // (4) mobType cross-check — WARN only. This repo-root ESM gate cannot import
-    // the server TS mob ids, and hardcoding them here would silently drift.
-    // A generated content/schemas/mob-types.json (registry-binding follow-up,
-    // emitted from colyseus-server mob definitions) would upgrade this to FAIL.
-    for (const area of fm.mobSpawnAreas ?? [])
-      warn(`${label}: mobType "${area.mobType}" (area "${area.id}") unverified — no generated mob-types.json to check against`);
+    // (4) mobType cross-check — hard FAIL against the codegen-emitted
+    // colyseus-server/generated/mob-types.json (F-013). mobTypes === null
+    // means the artifact itself already FAILed in loadMobTypes; skip here so
+    // that one failure isn't multiplied per area.
+    if (mobTypes) {
+      for (const area of fm.mobSpawnAreas ?? []) {
+        if (!mobTypes.has(area.mobType))
+          fail(`${label}: mobType "${area.mobType}" (area "${area.id}") is not a server mob id (valid: ${[...mobTypes].join(", ")})`);
+      }
+    }
 
     // (5) bible coverage — region-looking links/ids should anchor to a bible
     //     `(region-xxx)` heading. Coverage only: WARN, never FAIL.

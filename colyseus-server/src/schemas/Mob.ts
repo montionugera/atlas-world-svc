@@ -11,6 +11,7 @@ import { IAgent } from '../ai/interfaces/IAgent'
 import { AttackDefinition, calculateEffectiveAttackRange } from '../config/mobTypesConfig'
 import { BehaviorState } from '../ai/behaviors/BehaviorState'
 import { MobCombatSystem } from '../systems/MobCombatSystem'
+import { type Element } from '../config/combat/elements'
 // Removed global BattleManager singleton - now using room-scoped instances
 
 export class Mob extends WorldLife implements IAgent {
@@ -118,6 +119,8 @@ export class Mob extends WorldLife implements IAgent {
     mDef?: number
     armor?: number
     density?: number
+    /** Elemental defense. Omit for neutral (World Wisdom / F-017). */
+    element?: Element
     maxMoveSpeed?: number
     attackStrategies?: AttackStrategy[]
     mobTypeId?: string
@@ -142,6 +145,7 @@ export class Mob extends WorldLife implements IAgent {
       mDef: options.mDef ?? MOB_STATS.mDef,
       armor: options.armor ?? MOB_STATS.armor,
       density: options.density ?? MOB_STATS.density,
+      element: options.element,
       stat: mobStat,
     })
     if (options.radius !== undefined) {

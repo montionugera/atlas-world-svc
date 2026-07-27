@@ -10,6 +10,7 @@ import {
   type WeaponConfig,
 } from '../config/combatConfig'
 import type { Player } from '../schemas/Player'
+import { DEFAULT_ELEMENT, type Element } from '../config/combat/elements'
 
 export const ATTACK_KIND = {
   WEAPON_BASIC: 'weapon_basic',
@@ -42,6 +43,8 @@ export type WeaponBasicProjectileParams = {
   projectileType: ProjectileType
   damage: number
   damageType: 'physical' | 'magical'
+  /** Equipped weapon's element (World Wisdom / F-017); neutral when unarmed or unset. */
+  element: Element
   atkRange: number
   pRadius: number
   atkSpeed: number
@@ -89,6 +92,7 @@ export function resolveWeaponBasicProjectileParams(player: Player): WeaponBasicP
     projectileType,
     damage,
     damageType,
+    element: weapon?.element ?? DEFAULT_ELEMENT,
     atkRange,
     pRadius,
     atkSpeed,

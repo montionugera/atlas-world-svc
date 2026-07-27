@@ -1,0 +1,402 @@
+[
+  {
+    "id": "lore-guarded-nothing",
+    "kind": "lore",
+    "title": "Guarded Nothing",
+    "summary": "A Stoneguard oath-tablet, half-buried in the shelf ice, that mourns a city already fallen.",
+    "body": "The oath does not name what is kept, because there is nothing left to guard. It names only the keeping: 'Hold, though the city is ash. Hold, though the name is only ours to remember now.'",
+    "anchor": "faction-stoneguard",
+    "thread": "the-cindervast-fall",
+    "links": []
+  },
+  {
+    "id": "lore-first-claim-stone",
+    "kind": "lore",
+    "title": "The First Claim",
+    "summary": "A boundary stone older than any camp, its carving worn to a single line.",
+    "body": "Beneath the frost line the stone still reads: 'CLAIMED.' The city that carved it fell a generation past — Cindervast, though the ice remembers no name, only the word.",
+    "anchor": "region-icefield",
+    "thread": "the-cindervast-fall",
+    "links": []
+  },
+  {
+    "id": "lore-the-tyrants-last-order",
+    "kind": "lore",
+    "title": "The Tyrant's Last Order",
+    "summary": "A scrap of proclamation found on a wall that didn't fall with the rest of Cindervast.",
+    "body": "Found on a wall that didn't fall with the rest of the city: 'Hold the square until the relic is armed. After, hold nothing — there will be nothing left worth holding.' No signature. None was needed. Everyone in Cindervast already knew whose order it was.",
+    "anchor": "region-cindervast",
+    "thread": "the-cindervast-fall",
+    "links": []
+  },
+  {
+    "id": "lore-the-cindered-count",
+    "kind": "lore",
+    "title": "The Cindered Count",
+    "summary": "A doorframe in the ruin, carved with names, one added later than the rest.",
+    "body": "Scratched into a doorframe still standing after the fall: eleven names, then a twelfth added later in different ink. Whoever added it came back once, long enough to write one more name, and never came back again.",
+    "anchor": "region-cindervast",
+    "thread": "the-cindervast-fall",
+    "links": []
+  },
+  {
+    "id": "lore-what-the-prophet-carries",
+    "kind": "lore",
+    "title": "What the Prophet Carries",
+    "summary": "The Ash Prophet keeps the one relic token every Cindered keeps hidden — except he doesn't hide it.",
+    "body": "Under my wraps, same as every Cindered, I carry the one relic token that survived the fall. The rest hide theirs — a private grief, never shown. I show mine. I made mine a sermon.",
+    "anchor": "char-the-ash-prophet",
+    "thread": "the-cindervast-fall",
+    "links": []
+  },
+  {
+    "id": "lore-the-shelf-still-remembers",
+    "kind": "lore",
+    "title": "The Shelf Still Remembers",
+    "summary": "The frost line still carries the cut of a trade road that hasn't led anywhere in a generation.",
+    "body": "The frost line here used to mark a trade road running south to Cindervast. Nothing runs it now. The stones are still cut for wagon wheels that haven't rolled over them in a generation.",
+    "anchor": "region-icefield",
+    "thread": "the-cindervast-fall",
+    "links": []
+  },
+  {
+    "id": "lore-lisss-first-letter",
+    "kind": "lore",
+    "title": "Liss's First Letter",
+    "summary": "Written while the road was still open, before either town called the other an enemy.",
+    "body": "Dear Joren — the road's still open today, so I'm sending this while it is. Mother says the talk of war is just talk. I hope she's right. Write back before the frost, if the road still lets you.",
+    "anchor": "char-liss-of-embervale",
+    "thread": "letters-across-the-line",
+    "links": []
+  },
+  {
+    "id": "lore-lisss-second-letter",
+    "kind": "lore",
+    "title": "Liss's Second Letter",
+    "summary": "Written after the war made every letter a question someone else answered first.",
+    "body": "Dear Joren — they've started asking who I'm writing to and why. I told them the truth, mostly. Keep writing anyway. I'll find a way to keep reading.",
+    "anchor": "char-liss-of-embervale",
+    "thread": "letters-across-the-line",
+    "links": []
+  },
+  {
+    "id": "lore-jorens-answer",
+    "kind": "lore",
+    "title": "Joren's Answer",
+    "summary": "Joren reads every letter twice, once for what it says and once for what's missing.",
+    "body": "Dear Liss — the seal on your last letter was broken before it reached me, same as always now. I read it twice anyway — once for what it said, once for what they might have taken out.",
+    "anchor": "char-joren-of-norhollow",
+    "thread": "letters-across-the-line",
+    "links": []
+  },
+  {
+    "id": "lore-jorens-tally",
+    "kind": "lore",
+    "title": "Joren's Tally",
+    "summary": "Joren counts his letters the way Norhollow counts everything else — by what's missing.",
+    "body": "Nine letters this season. Six arrived already opened. Three didn't — and those three, I read first, every time, before I let myself read the rest.",
+    "anchor": "char-joren-of-norhollow",
+    "thread": "letters-across-the-line",
+    "links": []
+  },
+  {
+    "id": "lore-the-crossing-post",
+    "kind": "lore",
+    "title": "The Crossing Post",
+    "summary": "A cairn on the front once marked where letters were left for whichever side found them first.",
+    "body": "A cairn of stones at the old crossing marks where letters used to be left, half-buried, for whichever side found them first. Nobody's left one there in two seasons. The stones are still stacked, waiting.",
+    "anchor": "region-ashvale-front",
+    "thread": "letters-across-the-line",
+    "links": []
+  },
+  {
+    "id": "lore-the-millcross-relay",
+    "kind": "lore",
+    "title": "The Millcross Relay",
+    "summary": "Every letter that crosses the line passes through Millcross first, ledger-free, on purpose.",
+    "body": "Every letter that crosses the line passes through Millcross first, whether it's addressed there or not — the only town neither side has burned yet. The postmaster keeps no ledger of who sends what. She says that's the one kindness she can still afford.",
+    "anchor": "region-millcross",
+    "thread": "letters-across-the-line",
+    "links": []
+  },
+  {
+    "id": "lore-the-first-tally",
+    "kind": "lore",
+    "title": "The First Tally",
+    "summary": "The earliest page of the Quartermaster's log, from before the camp had a name.",
+    "body": "Year one, count one: forty tents, sixty mouths, one working well. I stopped counting the well's problems after the third week. Some things you fix. Some things you just haul water around.",
+    "anchor": "char-quartermaster",
+    "thread": "the-quartermasters-log",
+    "links": []
+  },
+  {
+    "id": "lore-a-decade-of-meals",
+    "kind": "lore",
+    "title": "A Decade of Meals",
+    "summary": "Ten years into the log, she still keeps names somewhere the page can't lose them.",
+    "body": "Ten years of this log and I've never once written a name in it I didn't have to. Meals, miles, tent poles, boots. Names I keep somewhere else, where losing the page doesn't cost me the person.",
+    "anchor": "char-quartermaster",
+    "thread": "the-quartermasters-log",
+    "links": []
+  },
+  {
+    "id": "lore-the-unfinished-page",
+    "kind": "lore",
+    "title": "The Unfinished Page",
+    "summary": "The last entry the Quartermaster ever wrote, cut off mid-line.",
+    "body": "Forty-three through the gate since dawn. More blankets needed by nightfall. The well still hold—",
+    "anchor": "char-quartermaster",
+    "thread": "the-quartermasters-log",
+    "links": []
+  },
+  {
+    "id": "lore-the-meadows-first-count",
+    "kind": "lore",
+    "title": "The Meadow's First Count",
+    "summary": "Before the tents, before the lamps, someone was already keeping a ledger nobody asked for.",
+    "body": "Before the tents, before the tallow lamps, there was a clearing and a woman with a ledger nobody asked her to keep. She started counting the day she arrived. She never stopped.",
+    "anchor": "region-spawn-meadow",
+    "thread": "the-quartermasters-log",
+    "links": []
+  },
+  {
+    "id": "lore-millcross-by-the-numbers",
+    "kind": "lore",
+    "title": "Millcross, by the Numbers",
+    "summary": "She measured the town's growth the only way she trusted: by how many more mouths the well answered for.",
+    "body": "I measure Millcross growing the only way I trust: not in walls or years, but in how many more mouths the well answers for each spring. The number's never gone down. Not once, not even the hard winters.",
+    "anchor": "region-millcross",
+    "thread": "the-quartermasters-log",
+    "links": []
+  },
+  {
+    "id": "lore-the-night-the-road-filled",
+    "kind": "lore",
+    "title": "The Night the Road Filled",
+    "summary": "Her log entry the night the refugee column first reached Millcross and didn't stop coming.",
+    "body": "Refuge night, first count: three hundred and some, and I stopped being able to keep the 'and some' honest by midnight. I fed what I could count and hoped the rest found a fire somewhere I couldn't see.",
+    "anchor": "event-refuge-at-millcross",
+    "thread": "the-quartermasters-log",
+    "links": []
+  },
+  {
+    "id": "lore-a-fathers-first-letter",
+    "kind": "lore",
+    "title": "A Father's First Letter",
+    "summary": "A Norhollow father writes to his conscripted son about a well, because he can't write about anything else.",
+    "body": "To my son at the front — your mother says not to worry you with the well going dry again. I'm telling you anyway. Come home and fix it yourself, if you want it done right.",
+    "anchor": "region-norhollow",
+    "thread": "a-fathers-postage",
+    "links": []
+  },
+  {
+    "id": "lore-a-fathers-second-letter",
+    "kind": "lore",
+    "title": "A Father's Second Letter",
+    "summary": "Three unanswered letters later, a father chooses to believe the simplest excuse.",
+    "body": "To my son — three letters back now with no answer. The relay rider says the roads are slower this month, nothing more. I choose to believe him.",
+    "anchor": "region-norhollow",
+    "thread": "a-fathers-postage",
+    "links": []
+  },
+  {
+    "id": "lore-the-fathers-postage-paid",
+    "kind": "lore",
+    "title": "The Postage Paid",
+    "summary": "A postage token found near the front, still unspent, still owed to someone.",
+    "body": "A postage token, still unspent, found near the old relay post at the front. Whatever letter it was meant to carry never got written, or never got sent. Either way, it's still owed to someone.",
+    "anchor": "region-ashvale-front",
+    "thread": "a-fathers-postage",
+    "links": []
+  },
+  {
+    "id": "lore-the-last-reply",
+    "kind": "lore",
+    "title": "The Last Reply",
+    "summary": "Half a letter, folded into a boot, that never finished its own sentence.",
+    "body": "Half a letter, found folded into a boot at the front: 'Dad — tell Mother the well isn't the only thing that's —' The rest never got written. Whoever carried the boot this far didn't carry the rest of the sentence with it.",
+    "anchor": "region-ashvale-front",
+    "thread": "a-fathers-postage",
+    "links": []
+  },
+  {
+    "id": "lore-an-entry-without-a-name",
+    "kind": "lore",
+    "title": "An Entry Without a Name",
+    "summary": "An unsigned ledger line that says nothing and everything at once.",
+    "body": "Ledger, unsigned: 'Delivery: on schedule. Cost: absorbed. Outcome: as required.' No cargo listed. No cargo needed to be — the entry was never about what moved, only that something did, on time.",
+    "anchor": "char-the-broker",
+    "thread": "the-brokers-hand",
+    "links": []
+  },
+  {
+    "id": "lore-the-riders-account",
+    "kind": "lore",
+    "title": "The Rider's Account",
+    "summary": "A rider paid twice for one ride, and never asked to explain the second payment.",
+    "body": "Payment logged twice for the same ride, same week, same road — once for the horse, once for 'delay, unavoidable.' The rider who filed it never explained which delay. Nobody at the ledger house ever asked him to.",
+    "anchor": "char-the-broker",
+    "thread": "the-brokers-hand",
+    "links": []
+  },
+  {
+    "id": "lore-a-harbor-entry",
+    "kind": "lore",
+    "title": "A Harbor Entry",
+    "summary": "A tariff clears on the same day the war is declared, and the ledger doesn't remark on it.",
+    "body": "Filed under Harbor Dues, no further heading: 'Mercy convoy, held pending tariff clearance. Tariff cleared same day war was declared.' The two dates are the same date. The ledger doesn't remark on it. Ledgers don't.",
+    "anchor": "region-gildmark",
+    "thread": "the-brokers-hand",
+    "links": []
+  },
+  {
+    "id": "lore-the-second-harbor-entry",
+    "kind": "lore",
+    "title": "The Second Harbor Entry",
+    "summary": "One line in the harbor accounts values the far-mirrors above the entire fleet.",
+    "body": "Only one line in the harbor accounts mentions the far-mirrors, and it isn't listed as an expense — it's an asset, valued higher than the fleet. Whoever wrote the entry valued knowing first above everything else the harbor owns.",
+    "anchor": "region-gildmark",
+    "thread": "the-brokers-hand",
+    "links": []
+  },
+  {
+    "id": "lore-the-first-caravans-manifest",
+    "kind": "lore",
+    "title": "The First Caravan's Manifest",
+    "summary": "The manifest survived the fire better than the caravan did — and one detail on it went unquestioned for a season.",
+    "body": "The caravan's manifest survived the fire better than the caravan did. Cargo: sundries, unremarkable. Escort: contracted, paid in full, in advance — a detail nobody thought worth asking about until it was the only page left to read.",
+    "anchor": "event-first-caravan-burns",
+    "thread": "the-brokers-hand",
+    "links": []
+  },
+  {
+    "id": "lore-before-the-return-count",
+    "kind": "lore",
+    "title": "Before the Return, a Count",
+    "summary": "Rooktide's ledger from before the return runs three lines, because there wasn't more to write.",
+    "body": "Before the return: nine households, one well, no gate worth the name. The ledger from that year is three lines long. Nobody wrote more because there wasn't more to write.",
+    "anchor": "region-rooktide",
+    "thread": "rooktide-ledger-of-return",
+    "links": []
+  },
+  {
+    "id": "lore-after-the-return-count",
+    "kind": "lore",
+    "title": "After the Return, a Count",
+    "summary": "The ledger runs to four pages now — proof, Rooktide says, of staying over leaving.",
+    "body": "After the return: the ledger runs to four pages before the ink even changes hand. Nobody in Rooktide calls that luck. They call it the difference between leaving and staying.",
+    "anchor": "region-rooktide",
+    "thread": "rooktide-ledger-of-return",
+    "links": []
+  },
+  {
+    "id": "lore-the-elders-first-plank",
+    "kind": "lore",
+    "title": "The Elder's First Plank",
+    "summary": "The Elder nailed the rebuilt gate's first plank crooked, and left it that way on purpose.",
+    "body": "I nailed the first plank of the rebuilt gate myself, crooked, and left it crooked on purpose. Every gate since has gone up straight. I keep the crooked one so the town remembers what straight cost.",
+    "anchor": "char-elder-of-rooktide",
+    "thread": "rooktide-ledger-of-return",
+    "links": []
+  },
+  {
+    "id": "lore-the-elders-tally-of-who-stayed",
+    "kind": "lore",
+    "title": "The Elder's Tally of Who Stayed",
+    "summary": "A private count the Elder keeps, of who never left in the first place.",
+    "body": "I keep a private count, never posted: not of who returned, but of who never left in the first place. Nine names. That number matters more to me than any that came after it.",
+    "anchor": "char-elder-of-rooktide",
+    "thread": "rooktide-ledger-of-return",
+    "links": []
+  },
+  {
+    "id": "lore-a-wardens-private-tally",
+    "kind": "lore",
+    "title": "A Warden's Private Tally",
+    "summary": "A junior warden's unreported count of every proclamation that never reached the square.",
+    "body": "A junior warden's private tally, kept nowhere official: eleven proclamations that arrived sealed with the Bellfaith mark and were never read, eleven news-letters burned before the square ever heard them, all this year alone. She never reported the count. She only kept it, in case someone ever asked.",
+    "anchor": "faction-bellfaith",
+    "thread": "the-bent-bells",
+    "links": []
+  },
+  {
+    "id": "lore-the-second-wardens-tally",
+    "kind": "lore",
+    "title": "The Second Warden's Tally",
+    "summary": "A different hand, same tower, the same pattern of delay stops being tracked the week it gets worse.",
+    "body": "Another tally, different hand, same tower: three proclamations sealed and read the day they arrived; two more that arrived sealed and were never read at all, no explanation logged. The warden who kept this one stopped keeping it the week the second one vanished.",
+    "anchor": "faction-bellfaith",
+    "thread": "the-bent-bells",
+    "links": []
+  },
+  {
+    "id": "lore-the-bell-keepers-schedule",
+    "kind": "lore",
+    "title": "The Bell-Keeper's Schedule",
+    "summary": "His own hand, precise as always, records an order it never explains.",
+    "body": "His own schedule, in his own hand: 'Seventh proclamation — burned, not sealed. Reason: none written. Cost: paid gladly, every time.' He never wrote what the cost bought. He never needed to remind himself twice.",
+    "anchor": "char-the-bell-keeper",
+    "thread": "the-bent-bells",
+    "links": []
+  },
+  {
+    "id": "lore-the-seal-log",
+    "kind": "lore",
+    "title": "The Seal Log",
+    "summary": "One proclamation in a long log of 'true' entries is marked, just once, 'true enough.'",
+    "body": "A margin note beside one sealed proclamation, in the same careful hand as all the rest: 'True enough.' Every other entry in the log just says 'true.' Only this one hedges. He sealed it anyway.",
+    "anchor": "char-the-bell-keeper",
+    "thread": "the-bent-bells",
+    "links": []
+  },
+  {
+    "id": "lore-the-tower-that-doesnt-answer",
+    "kind": "lore",
+    "title": "The Tower That Doesn't Answer",
+    "summary": "The bell tower district keeps its own gate and its own schedule, closed to the rest of Gildmark.",
+    "body": "The tower district keeps its own gate, separate from the harbor's, and answers to a schedule nobody outside the Bellfaith has ever seen written down. Ask why, and the answer is always the same: bells run on bell-time, not yours.",
+    "anchor": "region-gildmark",
+    "thread": "the-bent-bells",
+    "links": []
+  },
+  {
+    "id": "lore-a-bill-for-warded-steel",
+    "kind": "lore",
+    "title": "A Bill for Warded Steel",
+    "summary": "A Gildmark shop's bill of sale, where cutting an antimagic ward costs nothing and surprises nobody.",
+    "body": "Bill of sale, Harbor Street, stamped and paid: 'Forty shields, cut with the common ward. Warding at no charge — every shop on this street cuts the same one, and a customer charged for it walks three doors down.' Beneath the total, in the same hand: 'Second order, same cut, other banner. Delivered the same week.'",
+    "anchor": "region-gildmark",
+    "thread": "the-warded-world",
+    "links": []
+  },
+  {
+    "id": "lore-the-bite-that-wont-close",
+    "kind": "lore",
+    "title": "The Bite That Won't Close",
+    "summary": "A Bell School healer's note on a war-scar wound that opens again every night.",
+    "body": "A Bell School note, kept with the sick-room tallies: 'Third week on the same leg. The bite came from one of the things that grow where the dead were left unburied — there is void in a bite like that, and the bell is what answers void. I bring it to him every morning. The wound closes by noon and opens again by dark. He asks whether tomorrow's ringing is the one that finishes it. I tell him I don't know, and I ring it again.'",
+    "anchor": "faction-bellfaith",
+    "thread": "the-warded-world",
+    "links": []
+  },
+  {
+    "id": "lore-fourth-refusal",
+    "kind": "lore",
+    "title": "Fourth Refusal",
+    "summary": "An Elements School turns a student away for the fourth time, and the reason is not money.",
+    "body": "Embervale Elements School, fourth refusal to the same applicant: 'You light a lamp and hold the flame steady, and you learned both quicker than most. That is where you stop — the same answer as the last three times you asked. You are asking because of the war. Everything on that field is warded steel, and your flame will never trouble it. Only the High-Tier will, and the High-Tier costs years, not coin. Our gate stays open to you. The High-Tier is closed, and nothing you can pay will open it.'",
+    "anchor": "region-embervale",
+    "thread": "the-warded-world",
+    "links": []
+  },
+  {
+    "id": "lore-a-page-from-no-school",
+    "kind": "lore",
+    "title": "A Page From No School",
+    "summary": "One page of an unlicensed void manual, confiscated at the front, teaching a craft no school will put its name to.",
+    "body": "One page, taken off a hired fighter at the crossing and filed with the watch. No cover, no school mark, and the writing is nobody's trained hand: 'Void, lesson eleven. You will not find this written anywhere with a roof over it. No roster, no master to ask when it goes wrong — that is the price, and you paid part of it by reading this far.' Lesson twelve runs on down the same page. The watch clerk filed the whole thing without reading past the first line.",
+    "anchor": "region-ashvale-front",
+    "thread": "the-warded-world",
+    "links": []
+  }
+]

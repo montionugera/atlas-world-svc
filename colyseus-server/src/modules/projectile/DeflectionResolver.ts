@@ -117,6 +117,10 @@ export class DeflectionResolver {
       // Give it at least some distance if it was already maxed out
       projectile.maxRange += 10
     }
+    // Ownership changes, but `element`, `damageType` and `attackKind` deliberately
+    // survive the parry — they are intrinsic to the projectile (like `type`), not
+    // to whoever last touched it. A parried fireball is still a fire hit, now
+    // credited to the deflector (World Wisdom / F-017).
     projectile.ownerId = attacker.id
     // Make the projectile belong to the deflecting actor's team going forward.
     // This prevents immediate "same-team" filtering issues and keeps collision rules consistent.

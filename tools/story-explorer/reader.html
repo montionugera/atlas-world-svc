@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Story Reader — atlas</title>
+<style>
+  :root{--bg:#12141a;--panel:#1b1e27;--ink:#e7e9ee;--mut:#8b90a0;--line:#2c313d;
+    --region:#4a9d7f;--faction:#c65f5f;--character:#c8a24a;--arc:#7d6cc4;--quest:#4a7fc8;--event:#c07ac0;--dialogue:#5aa8b0;--act:#6c757d;--lore:#66d9e8;}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);display:flex;min-height:100vh}
+  nav{position:sticky;top:0;align-self:flex-start;width:230px;height:100vh;overflow-y:auto;padding:20px 14px;border-right:1px solid var(--line);background:var(--panel);flex-shrink:0}
+  nav .back{display:block;color:var(--mut);text-decoration:none;font-size:13px;margin-bottom:18px;padding:4px 8px}
+  nav .back:hover{color:var(--ink)}
+  nav .navlink{display:block;color:var(--ink);text-decoration:none;padding:6px 8px;border-radius:6px;font-size:13px;margin-bottom:2px}
+  nav .navlink:hover{background:#242835}
+  nav .navlink.section{color:var(--mut);text-transform:uppercase;font-size:10px;letter-spacing:.6px;margin:14px 8px 4px;padding:0}
+  main{flex:1;padding:48px 24px 140px;display:flex;justify-content:center;overflow-x:hidden}
+  #content{max-width:760px;width:100%;min-width:0}
+  #content .loading{color:var(--mut)}
+  h2{font-size:26px;margin:56px 0 4px;border-bottom:1px solid var(--line);padding-bottom:10px;scroll-margin-top:20px}
+  h2:first-child{margin-top:0}
+  .theme{color:var(--act);text-transform:uppercase;font-size:11px;letter-spacing:1px;margin:10px 0 2px}
+  .summary{color:var(--mut);font-size:16px;line-height:1.7;margin:4px 0}
+  h3{font-size:20px;margin:34px 0 4px;color:var(--arc);scroll-margin-top:20px}
+  h4{font-size:17px;margin:0 0 8px}
+  .arc{margin-bottom:8px}
+  .quest{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--quest);border-radius:8px;padding:18px 20px;margin:14px 0}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .chip{border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:2px 10px;font-size:12px;white-space:nowrap}
+  .chip.unlock{border-color:var(--quest);color:var(--quest)}
+  .desc{line-height:1.75;font-size:15.5px}
+  .beat{line-height:1.75;font-size:15px;color:var(--ink);margin:8px 0}
+  .beat b{color:var(--mut);font-weight:600}
+  .dialogue{margin:14px 0;padding:2px 0 2px 16px;border-left:2px solid var(--dialogue)}
+  .speaker{color:var(--dialogue);margin-bottom:4px}
+  .dtitle{color:var(--mut);font-weight:400;font-size:13px}
+  .line{color:var(--ink);font-style:italic;padding:3px 0 3px 10px;line-height:1.6}
+  .event-inline{margin:14px 0;padding:12px 16px;border-radius:8px;background:rgba(192,122,192,.08);border:1px solid var(--event)}
+  .ekind{color:var(--event);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+  .etitle{font-weight:650;margin-bottom:4px}
+  .esum{color:var(--mut);margin:0;line-height:1.6}
+  .timeline{list-style:none;padding:0;margin:0}
+  .timeline li{padding:14px 0;border-bottom:1px solid var(--line)}
+  .timeline .ord{display:inline-block;min-width:26px;color:var(--act);font-weight:700}
+  .timeline p{color:var(--mut);margin:4px 0 6px;line-height:1.6}
+  .thread{margin:34px 0}
+  .thread h3{color:var(--lore)}
+  .thread .count{color:var(--mut);font-size:12px;font-weight:400;margin-left:8px}
+  .fragment{margin:20px 0}
+  .ftitle{font-weight:650;margin-bottom:2px}
+  .anchor{color:var(--mut);font-size:12px;margin-bottom:8px}
+  blockquote{margin:0;padding:16px 22px;border-left:3px solid var(--lore);background:rgba(102,217,232,.06);font-family:Georgia,"Times New Roman",serif;font-size:17px;line-height:1.85;font-style:italic;color:#dbe6e8;border-radius:0 8px 8px 0}
+  .charlist{display:flex;flex-direction:column;gap:0}
+  .charrow{padding:14px 0;border-bottom:1px solid var(--line)}
+  .chead b{font-size:16px}
+  .role{color:var(--character);font-size:11px;text-transform:uppercase;margin-left:8px;letter-spacing:.4px}
+  .died{color:var(--faction);font-size:13px;margin:6px 0 0}
+  .err{color:var(--faction)}
+  @media (max-width:720px){
+    body{display:block}
+    nav{position:static;width:auto;height:auto}
+    main{padding:24px 16px}
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a class="back" href="index.html">&larr; Graph view</a>
+  <div id="navlinks"><span class="navlink section">loading…</span></div>
+</nav>
+<main>
+  <div id="content"><p class="loading">loading story…</p></div>
+</main>
+
+<script type="module">
+import { buildGraph, KINDS } from './graph.mjs'
+
+async function load(){
+  const files={}
+  // content/story files are plural (regions.json, ...) except dialogue.json
+  // and lore.json, which stay singular — mirrors index.html's fetch pattern.
+  await Promise.all(KINDS.map(async k=>{
+    const filename = k === 'dialogue' ? 'dialogue.json' : k === 'lore' ? 'lore.json' : `${k}s.json`
+    try{ files[`${k}s`] = await (await fetch(`../../content/story/${filename}`)).json() }
+    catch{ files[`${k}s`] = [] }
+  }))
+  return files
+}
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
+
+// A quest chain that a whole arc's quests hang off of one another is a "main"
+// arc; an arc whose quests are all unlocked directly by the act (parallel
+// vignettes, no quest in the arc unlocking another quest in the same arc) is
+// a "side" arc and renders under Side Stories instead of its act.
+function isSideArc(arc, questsById){
+  const ids = arc.questIds ?? []
+  if(ids.length <= 1) return false
+  const inArc = new Set(ids)
+  return !ids.some(qid => (questsById.get(qid)?.unlockedBy ?? []).some(u => inArc.has(u)))
+}
+
+function chip(text, cls=''){ return `<span class="chip${cls?' '+cls:''}">${esc(text)}</span>` }
+
+function questCard(q, files, title){
+  const chips = []
+  if(q.giver) chips.push(chip(title(q.giver)))
+  if(q.region) chips.push(chip(title(q.region)))
+  if(q.faction) chips.push(chip(title(q.faction)))
+  for(const u of q.unlockedBy ?? []) chips.push(chip(`unlocked by ${title(u)}`, 'unlock'))
+  const n = q.narrative ?? {}
+  const dialogues = files.dialogues.filter(d => d.context === q.id)
+  const events = files.events.filter(e => e.triggeredBy === q.id)
+  return `<article class="quest" id="${esc(q.id)}">
+    <h4>${esc(q.title)}</h4>
+    ${chips.length ? `<div class="chips">${chips.join('')}</div>` : ''}
+    ${n.description ? `<p class="desc">${esc(n.description)}</p>` : ''}
+    ${n.offerText ? `<p class="beat"><b>Offer:</b> ${esc(n.offerText)}</p>` : ''}
+    ${n.completeText ? `<p class="beat"><b>Complete:</b> ${esc(n.completeText)}</p>` : ''}
+    ${dialogues.map(d => dialogueBlock(d, title)).join('')}
+    ${events.map(e => eventBlock(e)).join('')}
+  </article>`
+}
+
+function dialogueBlock(d, title){
+  return `<div class="dialogue">
+    <div class="speaker"><b>${esc(title(d.speaker))}</b> <span class="dtitle">— ${esc(d.title)}</span></div>
+    ${(d.lines ?? []).map(l => `<div class="line">&ldquo;${esc(l)}&rdquo;</div>`).join('')}
+  </div>`
+}
+
+function eventBlock(e){
+  return `<div class="event-inline">
+    <div class="ekind">Event</div>
+    <div class="etitle">${esc(e.title)}</div>
+    ${e.summary ? `<p class="esum">${esc(e.summary)}</p>` : ''}
+  </div>`
+}
+
+function arcBlock(arc, files, title, questsById){
+  const quests = (arc.questIds ?? []).map(id => questsById.get(id)).filter(Boolean)
+  return `<div class="arc">
+    <h3 id="${esc(arc.id)}">${esc(arc.title)}</h3>
+    ${arc.summary ? `<p class="summary">${esc(arc.summary)}</p>` : ''}
+    ${quests.map(q => questCard(q, files, title)).join('')}
+  </div>`
+}
+
+function actSection(act, files, title, questsById){
+  const arcs = files.arcs.filter(a => a.actId === act.id && !isSideArc(a, questsById))
+  return `<section id="${esc(act.id)}">
+    <h2>Act ${esc(act.order)} &middot; ${esc(act.title)}</h2>
+    ${act.theme ? `<div class="theme">${esc(act.theme)}</div>` : ''}
+    ${act.summary ? `<p class="summary">${esc(act.summary)}</p>` : ''}
+    ${arcs.map(a => arcBlock(a, files, title, questsById)).join('')}
+  </section>`
+}
+
+function sideStoriesSection(files, title, questsById){
+  const arcs = files.arcs.filter(a => isSideArc(a, questsById))
+  return `<section id="side-stories">
+    <h2>Side stories</h2>
+    ${arcs.length ? arcs.map(a => arcBlock(a, files, title, questsById)).join('') : '<p class="summary">None.</p>'}
+  </section>`
+}
+
+function timelineSection(files, title){
+  const events = [...files.events].sort((a,b) => (a.timelineOrder ?? 0) - (b.timelineOrder ?? 0))
+  return `<section id="timeline">
+    <h2>Timeline</h2>
+    <ol class="timeline">
+      ${events.map(e => `<li>
+        <span class="ord">${esc(e.timelineOrder ?? '?')}</span><b>${esc(e.title)}</b>
+        ${e.summary ? `<p>${esc(e.summary)}</p>` : ''}
+        ${(e.involves ?? []).length ? `<div class="chips">${e.involves.map(i => chip(title(i))).join('')}</div>` : ''}
+      </li>`).join('')}
+    </ol>
+  </section>`
+}
+
+function threadLabel(t){ return String(t).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) }
+
+function lettersSection(files, title){
+  const byThread = new Map()
+  for(const l of files.lores){
+    if(!byThread.has(l.thread)) byThread.set(l.thread, [])
+    byThread.get(l.thread).push(l)
+  }
+  const threads = [...byThread.keys()]
+  return `<section id="letters">
+    <h2>Letters</h2>
+    ${threads.map(t => {
+      const frags = byThread.get(t)
+      return `<div class="thread">
+        <h3>${esc(threadLabel(t))}<span class="count">${frags.length} fragment${frags.length===1?'':'s'}</span></h3>
+        ${frags.map(f => `<div class="fragment">
+          <div class="ftitle">${esc(f.title)}</div>
+          <div class="anchor">anchor: ${esc(title(f.anchor))}</div>
+          <blockquote>${esc(f.body)}</blockquote>
+        </div>`).join('')}
+      </div>`
+    }).join('')}
+  </section>`
+}
+
+function charactersSection(files, title){
+  return `<section id="characters">
+    <h2>Characters</h2>
+    <div class="charlist">
+      ${files.characters.map(c => `<div class="charrow">
+        <div class="chead"><b>${esc(c.title)}</b>${c.role ? `<span class="role">${esc(c.role)}</span>` : ''}</div>
+        <div class="chips">
+          ${c.faction ? chip(title(c.faction)) : ''}
+          ${c.region ? chip(title(c.region)) : ''}
+        </div>
+        ${c.summary ? `<p class="summary">${esc(c.summary)}</p>` : ''}
+        ${c.status === 'dead' ? `<p class="died">&#10013; died at ${esc(title(c.diedAt))}</p>` : ''}
+      </div>`).join('')}
+    </div>
+  </section>`
+}
+
+function buildNav(acts){
+  const nav = document.getElementById('navlinks')
+  const links = [
+    ...acts.map(a => `<a class="navlink" href="#${esc(a.id)}">Act ${esc(a.order)} &middot; ${esc(a.title)}</a>`),
+    `<a class="navlink" href="#side-stories">Side stories</a>`,
+    `<a class="navlink" href="#timeline">Timeline</a>`,
+    `<a class="navlink" href="#letters">Letters</a>`,
+    `<a class="navlink" href="#characters">Characters</a>`,
+  ]
+  nav.innerHTML = links.join('')
+}
+
+load().then(files => {
+  const G = buildGraph(files)
+  const title = id => id ? (G.byId.get(id)?.title ?? id) : ''
+  const questsById = new Map(files.quests.map(q => [q.id, q]))
+  const acts = [...files.acts].sort((a,b) => (a.order ?? 0) - (b.order ?? 0))
+
+  buildNav(acts)
+  document.getElementById('content').innerHTML =
+    acts.map(a => actSection(a, files, title, questsById)).join('') +
+    sideStoriesSection(files, title, questsById) +
+    timelineSection(files, title) +
+    lettersSection(files, title) +
+    charactersSection(files, title)
+}).catch(e => {
+  document.getElementById('content').innerHTML = '<p class="err">failed to load story files — serve from the repo root</p>'
+  document.getElementById('navlinks').innerHTML = ''
+  console.error(e)
+})
+</script>
+</body>
+</html>

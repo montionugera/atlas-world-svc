@@ -12,7 +12,9 @@ import {
   KillActionPayload,
   RespawnActionPayload,
   DamageActionPayload,
+  ProjectileDetail,
 } from './BattleActionMessage'
+import { DEFAULT_ELEMENT, type Element } from '../config/combat/elements'
 import { eventBus, RoomEventType, BattleAttackData, BattleHealData } from '../events/EventBus'
 import { GameState } from '../schemas/GameState'
 
@@ -45,12 +47,17 @@ export class BattleManager {
         console.log(`⚔️ BATTLE EVENT: Attack from ${data.actorId} (no target)`)
       }
 
-      const attackMessage = BattleManager.createAttackMessage(
-        data.actorId,
-        data.targetId || '', // Use empty string if no target
-        data.damage,
-        data.range
-      )
+      // No element here on purpose: BATTLE_ATTACK is only emitted by the
+      // strategy-less Mob/NPC fallback (and by the player's animation-only
+      // event), and neither has an AttackDefinition to read an element from.
+      // Every element-carrying attack in the game is projectile-sourced and
+      // reaches the queue through ProjectileCollisionResolver instead.
+      const attackMessage = BattleManager.createAttackMessage({
+        actorId: data.actorId,
+        targetId: data.targetId || '', // Use empty string if no target
+        damage: data.damage,
+        range: data.range,
+      })
 
       this.addActionMessage(attackMessage)
     }
@@ -90,23 +97,37 @@ export class BattleManager {
   }
 
   // Static factory methods for creating action messages
-  static createAttackMessage(
-    actorId: string,
-    targetId: string,
-    damage: number,
-    range: number,
+  static createAttackMessage(opts: {
+    actorId: string
+    targetId: string
+    damage: number
+    range: number
+    /** Attack element (World Wisdom / F-017). Defaults to neutral. */
+    element?: Element
     direction?: { x: number; y: number }
-  ): BattleActionMessage {
+    /** melee (default), projectile, … — drives the range/cooldown bypass in canAttack. */
+    attackType?: string
+    /** `element` is filled in from `opts.element`; do not set it here. */
+    projectileDetail?: Omit<ProjectileDetail, 'element'>
+  }): BattleActionMessage {
+    const element = opts.element ?? DEFAULT_ELEMENT
+
+    const actionPayload: AttackActionPayload = {
+      damage: opts.damage,
+      range: opts.range,
+      direction: opts.direction,
+      attackType: opts.attackType ?? 'melee',
+      element,
+      // The mirror on projectileDetail is derived here, never taken from the
+      // caller, so the two copies of the element cannot diverge.
+      projectileDetail: opts.projectileDetail && { ...opts.projectileDetail, element },
+    }
+
     return {
-      actorId,
+      actorId: opts.actorId,
       actionKey: 'attack',
-      actionPayload: {
-        damage,
-        range,
-        direction,
-        attackType: 'melee',
-      } as AttackActionPayload,
-      targetId,
+      actionPayload,
+      targetId: opts.targetId,
       timestamp: Date.now(),
       priority: 1,
     }

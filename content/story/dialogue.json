@@ -1,0 +1,201 @@
+[
+  {
+    "id": "dlg-quartermaster-icefield-briefing",
+    "kind": "dialogue",
+    "title": "Icefield Briefing",
+    "summary": "The quartermaster sends the expedition north, onto the Stoneguard's shelf.",
+    "links": [],
+    "speaker": "char-quartermaster",
+    "lines": [
+      "Nothing's crossed that ice and come back with a story in years.",
+      "You held the meadow. That doesn't mean the Stoneguard will care.",
+      "Go slow, go loud enough to be seen, and don't chase anything onto ground you haven't checked."
+    ],
+    "context": "quest-icefield-reckoning"
+  },
+  {
+    "id": "dlg-expedition-member-twin-strike-aftermath",
+    "kind": "dialogue",
+    "title": "After the Twin-Strike",
+    "summary": "The expedition member reflects on the meadow's first real wall, now down.",
+    "links": [],
+    "speaker": "char-expedition-member",
+    "lines": [
+      "It hit twice before I finished reacting to the first one.",
+      "The meadow's not testing us anymore. It's done testing us.",
+      "Whatever's past the tree line, it won't be this polite about it."
+    ],
+    "context": "event-twin-strike-falls"
+  },
+  {
+    "id": "dlg-war-countess-briefing",
+    "kind": "dialogue",
+    "title": "The Countess's Briefing",
+    "summary": "The War-Countess sends the militia out to double the watch on Embervale's west wall.",
+    "links": [],
+    "speaker": "char-war-countess",
+    "lines": [
+      "The west wall held last night. That does not mean it holds tonight.",
+      "Something prowls past the tree line after dark. Cut their numbers down — but do not follow them into the deep woods.",
+      "That order has cost this town enough funerals. Don't add yours."
+    ],
+    "context": "quest-embervale-watchfires"
+  },
+  {
+    "id": "dlg-speaker-of-norhollow-briefing",
+    "kind": "dialogue",
+    "title": "The Speaker's Briefing",
+    "summary": "The Speaker of Norhollow sends the militia to walk the palisade and reset the line.",
+    "links": [],
+    "speaker": "char-speaker-of-norhollow",
+    "lines": [
+      "Nine notches on the west stakes. Three came loose since the frost. That's the count.",
+      "Walk the line, reset what's loose, and kill anything that comes close after dark.",
+      "Ask me what I think when there's nothing left to fix. Not before."
+    ],
+    "context": "quest-norhollow-palisade"
+  },
+  {
+    "id": "dlg-quartermaster-road-of-strangers",
+    "kind": "dialogue",
+    "title": "The Road of Strangers",
+    "summary": "The Quartermaster briefs the gate watch as the first refugees reach Millcross.",
+    "links": [],
+    "speaker": "char-quartermaster",
+    "lines": [
+      "Forty-three through the gate since dawn. That's more than we fed all last winter.",
+      "Feed the ones who can eat. Blanket the ones who can't. Don't ask which side of the plain they walked from — the road doesn't care anymore, and neither do I.",
+      "Keep the dark off them tonight. Whatever's out there, they've already lost enough today."
+    ],
+    "context": "quest-the-road-of-strangers"
+  },
+  {
+    "id": "dlg-farrow-at-the-ford",
+    "kind": "dialogue",
+    "title": "At the Ford",
+    "summary": "Farrow's last orders, given at the near bank of the ford.",
+    "links": [],
+    "speaker": "char-farrow-the-forward",
+    "lines": [
+      "Count the wagons across before you count anything else.",
+      "Hold the near bank till the last one's over the ford — then fall back. Don't wait on me.",
+      "Tell the Quartermaster the ford held. That's all she needs to hear tonight."
+    ],
+    "context": "quest-hold-the-ford"
+  },
+  {
+    "id": "dlg-clerk-terms",
+    "kind": "dialogue",
+    "title": "The Clerk's Terms",
+    "summary": "The Clerk of Gildmark sets the price for what he knows, and the terms for staying alive after telling it.",
+    "links": [],
+    "speaker": "char-clerk-of-gildmark",
+    "lines": [
+      "The price is small. Small enough that no one asks why a clerk needed it.",
+      "I want passage out before the copy leaves my hands — not after. After, I'm just an entry someone corrects.",
+      "Don't open it until you're somewhere the Council doesn't own the walls. Not even under Warden Bright's own bell-tower."
+    ],
+    "context": "quest-the-clerks-price"
+  },
+  {
+    "id": "dlg-ash-prophet-sermon",
+    "kind": "dialogue",
+    "title": "Sermon Over the Wreckage",
+    "summary": "The Ash Prophet preaches over the War-Speaker's body before anyone can carry it away.",
+    "links": [],
+    "speaker": "char-the-ash-prophet",
+    "lines": [
+      "A man came to sign a truce, and the truce killed him faster than any war did.",
+      "You keep building tables. The dead keep falling off them.",
+      "Cindervast fell once and stopped lying about what it was. Everything still standing here is lying to your face — this table included."
+    ],
+    "context": "event-warspeaker-falls"
+  },
+  {
+    "id": "dlg-bell-keeper-confession",
+    "kind": "dialogue",
+    "title": "The Bell-Keeper's Confession",
+    "summary": "The Bell-Keeper explains, precisely, everything he did and why.",
+    "links": [],
+    "speaker": "char-the-bell-keeper",
+    "lines": [
+      "I sealed the proclamation the Broker wrote about the first caravan, word for word, and burned the true one before it ever reached the square. My own hand. My own seal. That's a whole town believing a lie, and I did it on purpose.",
+      "Every false proclamation went out on schedule, sealed by my own hand, so nobody thought to check it twice.",
+      "Mirelle. That's the only word in this whole account that was never a lie."
+    ],
+    "context": "event-bells-ring-true"
+  },
+  {
+    "id": "dlg-widow-at-the-pyres",
+    "kind": "dialogue",
+    "title": "At the Pyres",
+    "summary": "The Widow answers for the burned messengers before anyone thinks to ask her to.",
+    "links": [],
+    "speaker": "char-widow-of-the-first-caravan",
+    "lines": [
+      "I know who lit the wagons. I knew before the ash cooled.",
+      "It doesn't change what I want done to the men who did it — or the ones who only stood nearby.",
+      "This proclamation doesn't need to be true to earn what's coming to the ones carrying it.",
+      "Burn the paper. Burn the men who ran it here. The wagons don't come back either way."
+    ],
+    "context": "event-messengers-burned"
+  },
+  {
+    "id": "dlg-mirelle-freed",
+    "kind": "dialogue",
+    "title": "Mirelle, Freed",
+    "summary": "Mirelle steps into open air for the first time in years, and says only a little of what she knows.",
+    "links": [],
+    "speaker": "char-mirelle",
+    "lines": [
+      "I counted the bells too, from inside. I always knew which ones were his real voice.",
+      "He never told me what the true ones cost him. I didn't need him to.",
+      "I don't want an accounting of it. I want to go home."
+    ],
+    "context": "quest-the-bell-keepers-price"
+  },
+  {
+    "id": "dlg-broker-at-the-harbor",
+    "kind": "dialogue",
+    "title": "The Broker at the Harbor",
+    "summary": "Named at last in his own harbor square, the Broker doesn't deny a word of the ledger — he only tells the crowd what it means, and what it doesn't.",
+    "links": [],
+    "speaker": "char-the-broker",
+    "lines": [
+      "You have the page. Read it to whoever you like. I've never denied a word of it — only the timing.",
+      "I've never lied to you. I've only ever told you the truth at the moment it would cost you the most.",
+      "Take my ledgers. Take my harbor. Somebody in this world will always need an enemy handed to them, and I promise you, that trade doesn't need me standing in it to keep running.",
+      "The ledger closes on me tonight. It doesn't close on the war. Ask the Widow what she still wants, when you're done asking me what I did."
+    ],
+    "context": "event-broker-unmasked"
+  },
+  {
+    "id": "dlg-elder-of-rooktide-welcome",
+    "kind": "dialogue",
+    "title": "The Elder's Welcome",
+    "summary": "The Elder of Rooktide opens her town's gate to wounded from both towns, and asks the player to keep the road to it clear.",
+    "links": [],
+    "speaker": "char-elder-of-rooktide",
+    "lines": [
+      "We came back once from less than this. We didn't wait for anyone's permission then, either.",
+      "Wounded is wounded. I don't ask which banner they marched under before I ask which cot they need.",
+      "Before the return, Rooktide had nothing to offer anybody. After, we've got a gate that opens. That's the whole of what we're doing here.",
+      "Clear the road. Whatever's still out there prowling it doesn't decide who's allowed to cross."
+    ],
+    "context": "quest-the-first-crossing"
+  },
+  {
+    "id": "dlg-liss-last-letter",
+    "kind": "dialogue",
+    "title": "The Last Letter",
+    "summary": "Liss hands over a letter written before the ford, already overtaken by the notice that reached Norhollow first.",
+    "links": [],
+    "speaker": "char-liss-of-embervale",
+    "lines": [
+      "He wrote this three weeks before the ford. I've had it two weeks and couldn't make myself send it any faster than this.",
+      "The notice already reached her. I know that. Send it anyway.",
+      "Tell Joren it's not urgent. Tell him it's the opposite of urgent, and that's exactly why it still matters."
+    ],
+    "context": "quest-the-last-letter"
+  }
+]

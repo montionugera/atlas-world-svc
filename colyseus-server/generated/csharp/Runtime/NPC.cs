@@ -16,28 +16,28 @@ namespace AtlasWorld.Schema {
 [Preserve]
 #endif
 public NPC() { }
-		[Type(28, "string")]
+		[Type(29, "string")]
 		public string ownerId = default(string);
 
-		[Type(29, "string")]
+		[Type(30, "string")]
 		public string name = default(string);
 
-		[Type(30, "string")]
+		[Type(31, "string")]
 		public string currentBehavior = default(string);
 
-		[Type(31, "number")]
+		[Type(32, "number")]
 		public float behaviorLockedUntil = default(float);
 
-		[Type(32, "number")]
+		[Type(33, "number")]
 		public float castDuration = default(float);
 
-		[Type(33, "boolean")]
+		[Type(34, "boolean")]
 		public bool isCasting = default(bool);
 
-		[Type(34, "number")]
+		[Type(35, "number")]
 		public float maxMoveSpeed = default(float);
 
-		[Type(35, "string")]
+		[Type(36, "string")]
 		public string tag = default(string);
 	}
 }

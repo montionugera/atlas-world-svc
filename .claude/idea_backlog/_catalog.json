@@ -106,5 +106,59 @@
     "title": "2D asset seeding + client icon binding (deferred F-011 phases 2-5, NEEDS Godot): seed CC0 icons for every ItemsById/SkillsById id (from contracts/content/items.json+skills.json, not MetaIds.cs) via intake2d + godot --headless --import to generate real .import sidecars; coverage test; storybook atlas-JSON path wiring (index.html L1115); client CatalogLoader key->Texture2D + SkillTile/InventoryTile TextureRect binding; ninepatch/theme baked-preview via Godot. Blocked on local Godot .NET binary",
     "created_at": "2026-07-21T01:03:50.292466+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-019",
+    "title": "Generated mob-types.json \u2192 upgrade map mobType check from WARN to hard-fail: emit a machine-readable list of valid mob ids from colyseus-server mob definitions (mirror gen-asset-keys codegen), have check_content.mjs read it so a typo in a content map mobSpawnAreas[].mobType (and faction/quest mob refs) is a hard FAIL instead of a silent WARN \u2014 closes the silent-empty-spawn risk in authored maps",
+    "created_at": "2026-07-22T01:29:32.619353+00:00",
+    "promoted_to": "F-013"
+  },
+  {
+    "id": "I-020",
+    "title": "Epic Story Pipeline: full narrative graph (7 per-kind files, shared id-space) + whole-graph coherence gate (resolution + orphans + prereq-DAG) + dual visualizer (static Mermaid drift-gate + interactive story-explorer). Spec docs/superpowers/specs/2026-07-22-epic-story-pipeline-design.md + plan docs/superpowers/plans/2026-07-22-epic-story-pipeline.md (both on release/1.4). Content+gate+viz only; runtime deferred I-017; mob refs WARN until I-019",
+    "created_at": "2026-07-22T08:11:34.325183+00:00",
+    "promoted_to": "F-012"
+  },
+  {
+    "id": "I-021",
+    "title": "Narrative System v2 \u2014 acts, lore, unlockedBy, fates",
+    "created_at": "2026-07-22T14:18:26.520091+00:00",
+    "promoted_to": "F-014"
+  },
+  {
+    "id": "I-022",
+    "title": "CI: add scripts test-suite step (node --test in scripts/) to ci.yml",
+    "created_at": "2026-07-22T15:54:59.919564+00:00",
+    "promoted_to": "F-015"
+  },
+  {
+    "id": "I-023",
+    "title": "The Undertow \u2014 grand epic 5-act content (sub-project B)",
+    "created_at": "2026-07-23T12:39:13.864133+00:00",
+    "promoted_to": "F-016"
+  },
+  {
+    "id": "I-024",
+    "title": "Undertow villain spotlight beats: Bell-Keeper act-2, Iron Regent act-3, Ash Prophet act-4/5 (spec \u00a74 full choreography)",
+    "created_at": "2026-07-23T15:24:57.821887+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-025",
+    "title": "Brotherhood Caravan retcon: backport epic-scale first-caravan framing (joint sacred convoy, both towns' children, planted evidence both ways) from novel v3 into game lore/canon",
+    "created_at": "2026-07-24T15:22:32.737227+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-026",
+    "title": "World Wisdom: magic elements + schools + 8 races x 8 classes (lore + gameplay classes)",
+    "created_at": "2026-07-27T05:30:00+00:00",
+    "promoted_to": "F-017"
+  },
+  {
+    "id": "I-027",
+    "title": "damageType dropped on the BattleManager queue path (magical projectiles defended with pDef)",
+    "created_at": "2026-07-27T06:12:55.294281+00:00",
+    "promoted_to": null
   }
 ]

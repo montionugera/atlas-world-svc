@@ -18,6 +18,13 @@ import { ProcessedEventTracker } from './ProcessedEventTracker'
 export class StatusEffectManager {
   constructor(
     private tracker: ProcessedEventTracker,
+    /**
+     * Applies a FINAL damage amount. DOT ticks intentionally bypass
+     * BattleModule.calculateDamage — no defense reduction and no element
+     * multiplier (World Wisdom / F-017) — because BattleStatus carries neither a
+     * damageType nor an element. If DOTs ever become elemental, add the field to
+     * BattleStatus and widen this callback; do not apply raw values.
+     */
     private applyDamage: (e: WorldLife, amount: number) => boolean,
     private healEntity: (e: WorldLife, amount: number) => boolean
   ) {}
@@ -106,6 +113,8 @@ export class StatusEffectManager {
           // For now, hardcode 'burn', 'poison', 'regen' logic or generic 'damage'/'heal'
 
           if (status.type === 'burn' || status.type === 'poison') {
+            // status.value is final damage — see the applyDamage ctor doc for why
+            // DOT ticks skip defense and the element multiplier.
             this.applyDamage(entity, status.value)
             console.log(`🔥 DOT: ${entity.id} took ${status.value} damage from ${status.type}`)
           } else if (status.type === 'regen') {
