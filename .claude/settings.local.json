@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk wc *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'docs: narrative system v2 implementation plan \\(6 tasks\\) *)"
+    ]
+  }
+}

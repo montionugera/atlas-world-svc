@@ -1,24 +1,20 @@
 {
   "main": {
-    "id": "9d784a86b88ca8d5",
+    "id": "1753339f63791c1a",
     "type": "split",
     "children": [
       {
-        "id": "f5179e6aaa4f9379",
+        "id": "ccf5cfbea109674f",
         "type": "tabs",
         "children": [
           {
-            "id": "7067624ddde9ece4",
+            "id": "619267dd474fc898",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "superpowers/specs/2026-07-23-grand-epic-undertow-design.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "2026-07-23-grand-epic-undertow-design"
+              "title": "New tab"
             }
           }
         ]
@@ -27,15 +23,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "424f1e99c0e47c0f",
+    "id": "be00bcf5acb44f95",
     "type": "split",
     "children": [
       {
-        "id": "28f6d2a22a56ba00",
+        "id": "13ea2d12cc0dae18",
         "type": "tabs",
         "children": [
           {
-            "id": "7c0b13f9fdd37c29",
+            "id": "d41c4c63520c1518",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -48,7 +44,7 @@
             }
           },
           {
-            "id": "bac69d54fa108a4c",
+            "id": "86334739e496a2da",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -65,7 +61,7 @@
             }
           },
           {
-            "id": "28b1ccbcba5d4d46",
+            "id": "7d52f47dd28327fb",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -78,23 +74,22 @@
       }
     ],
     "direction": "horizontal",
-    "width": 519.5
+    "width": 300
   },
   "right": {
-    "id": "cc4e6f60e8e8224f",
+    "id": "537a52e0d7fe7a07",
     "type": "split",
     "children": [
       {
-        "id": "1deef55572a74e69",
+        "id": "86539022df0b39c3",
         "type": "tabs",
         "children": [
           {
-            "id": "392247562d642f4a",
+            "id": "d392ef73d11da0c8",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "superpowers/specs/2026-07-23-grand-epic-undertow-design.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,25 +99,24 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for 2026-07-23-grand-epic-undertow-design"
+              "title": "Backlinks"
             }
           },
           {
-            "id": "ed2c15dd096a1e21",
+            "id": "e2fe72572a7d6723",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "superpowers/specs/2026-07-23-grand-epic-undertow-design.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from 2026-07-23-grand-epic-undertow-design"
+              "title": "Outgoing links"
             }
           },
           {
-            "id": "e2a8a92092d42cad",
+            "id": "cc3bb9be61e61349",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -137,7 +131,7 @@
             }
           },
           {
-            "id": "342430690342b936",
+            "id": "3d01d6fbd5814bfe",
             "type": "leaf",
             "state": {
               "type": "all-properties",
@@ -151,18 +145,17 @@
             }
           },
           {
-            "id": "3a6f4ceeb5f390e4",
+            "id": "dc6ad5fd408d05bd",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "superpowers/specs/2026-07-23-grand-epic-undertow-design.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of 2026-07-23-grand-epic-undertow-design"
+              "title": "Outline"
             }
           }
         ]
@@ -183,19 +176,25 @@
       "bases:Create new base": false
     }
   },
-  "active": "7067624ddde9ece4",
+  "active": "d41c4c63520c1518",
   "lastOpenFiles": [
-    "superpowers/plans/2026-07-27-world-wisdom.html",
-    "superpowers/plans/2026-07-27-world-wisdom.md",
-    "superpowers/specs/2026-07-27-world-wisdom-design.html",
     "superpowers/specs/2026-07-27-world-wisdom-design.md",
-    "story/undertow/novel-complete.md",
-    "story/undertow/novel-prologue-ch1.md",
+    "superpowers/specs/2026-07-23-grand-epic-undertow-design.md",
+    "superpowers/specs/2026-07-22-narrative-system-v2-design.md",
+    "superpowers/specs/2026-07-22-mob-types-gate-design.md",
+    "superpowers/specs/2026-07-22-epic-story-pipeline-design.md",
+    "superpowers/plans/2026-07-27-world-wisdom.md",
+    "superpowers/plans/2026-07-23-grand-epic-undertow.md",
+    "superpowers/plans/2026-07-22-narrative-system-v2.md",
+    "superpowers/plans/2026-07-22-mob-types-gate.md",
+    "superpowers/plans/2026-07-22-epic-story-pipeline.md",
     "story/undertow/novel-illustrated-edition.html",
+    "story/undertow/novel-complete.md",
     "story/undertow/glossary-th.md",
     "story/undertow/core-story.md",
     "story/undertow",
-    "superpowers/plans/2026-07-23-grand-epic-undertow.html",
-    "superpowers/plans/2026-07-23-grand-epic-undertow.md"
+    "story/story-graph.md",
+    "story",
+    "HANDOFF-2026-07-22.md"
   ]
 }
