@@ -172,8 +172,20 @@ could be swapped between two villains without a title change, rewrite it.
 
 ## 6. Magic rules
 
-Magic is a scarce, contested **resource** — oil, not miracle — never a
-plot eraser (spec §6):
+Magic is common. Anyone with the training can cast, and fuel is never
+what stops them — a caster spends their own mana, or burns a magic
+stone, and magic stones come out of mines in many towns and sell in any
+market like nails or salt. What stops a caster is a **rune**. Antimagic
+runes are cut into war gear as a matter of course — armor, shields,
+siege engines — and ordinary combat magic slides off warded steel. Only
+a High-Tier caster breaks a ward, and High-Tier casters are rare: the
+cost is years of school training, not money. Rune-craft is public. Every
+town cuts its own wards, and no town holds the craft over another.
+
+That is why a world full of casters still fights its wars with steel —
+and why magic is still never a plot eraser (magic model:
+`docs/superpowers/specs/2026-07-27-world-wisdom-design.md`, which
+replaces the older framing of magic as a rationed resource):
 
 1. **Monsters are war-scars.** Unburied battlefields and lingering fear
    breed the wild factions; clearing them is clearing the war's residue,
@@ -188,10 +200,18 @@ plot eraser (spec §6):
    intercepted, lovers' ink readable only by the beloved, far-mirrors
    monopolized by Gildmark. These create story opportunities; they never
    resolve a scene by themselves.
-5. **The iron rule:** no spell resolves a political knot, cures grief or
+5. **Elements are texture, not a physics lecture.** Prose may name an
+   element — a fire-warded blade, a bell that rings holy, a beast with
+   the void in it — and stops there. It never quotes a multiplier, a
+   table, or any other game number. Those belong to the combat code;
+   `content/story/canon.md` §5 carries the elements in words, and words
+   are all a lore body ever gets.
+6. **The iron rule:** no spell resolves a political knot, cures grief or
    trauma, or raises the dead. Deaths are permanent. Love and politics
    are decided by human action, full stop — magic is never the answer to
-   either, only sometimes the stakes.
+   either, only sometimes the stakes. **Widespread magic does not soften
+   this:** a world full of casters is still a world where nobody can
+   cast the war away.
 
 ## 7. Death & dark-quest rules
 

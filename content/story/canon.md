@@ -244,7 +244,130 @@ the Gildmark entry below.
 Player-facing, this stays one sentence: signals arrive fast, details arrive
 slow, and liars win by riding faster.
 
-## 5. Contradiction rule
+## 5. Magic, schools, and the elements
+
+This section is world law for all content authored after it, not only for
+the Undertow acts. It settles who can use magic, who teaches what, and
+what the elements are. Read it with `content/story/style.md` §6, which is
+the voice law for the same ground.
+
+### The magic model
+
+1. **Magic is everyday.** It is widespread, ordinary, and cheap. A caster
+   spends their own mana or burns a magic stone; magic stones are mined
+   in many towns and sold like any other good. Nobody in this world
+   rations fuel for spells, hoards it, or goes to war over it. There is
+   no shortage and no black market in it.
+2. **Runes are the real limit.** Antimagic runes are standard on war gear
+   — armor, shields, siege engines. Ordinary combat magic fails against a
+   warded target. Only High-Tier magic breaks a ward, and High-Tier
+   casters are few, because the price is years of school training rather
+   than money. This is why battles are decided by steel: not because
+   magic is rare, but because everyone on the field is warded against the
+   common kind.
+3. **Rune-craft belongs to everyone.** Every town engraves its own wards,
+   and the craft is taught openly. No town, church, or house holds
+   defense over another. Gildmark's edge in arms is scale and quality
+   (§4), never a monopoly on the craft.
+4. **What this does not change.** No page of the Undertow shows battle
+   magic, and none needs rewriting. Every magic thing already on the page
+   is utility: the Bellfaith's bells, Gildmark's far-mirrors, lovers'
+   ink. The war reads as steel because every soldier in it is warded and
+   the people we follow are ordinary. The first caravan burned by
+   ordinary fire — runes stop spells, not torches.
+
+### The elements
+
+Six elements, plus plain matter.
+
+Four of them turn in a circle, each one answering the one before it:
+water puts out fire, fire cracks earth, earth swallows wind, wind lifts
+the water back up. Strike along the circle and the blow lands with its
+full weight. Strike backward against it, or strike an element with its
+own kind, and the blow barely lands at all.
+
+Holy and Void stand outside the circle, as a matched pair. Each is the
+other's undoing, and unlike the circle it cuts both ways: holy burns
+void, void eats holy, and neither holds the advantage. Against the four
+turning elements both land like anything else, no better and no worse.
+And like the turning four, neither answers its own kind well — holy has
+little to say to holy.
+
+Plain steel and plain flesh carry no element at all — Neutral. Neutral
+gives and takes the same weight against everything. It is the safe, dull
+middle, and it is what most people and most weapons are.
+
+The attack element rides on the weapon, the coating, or the spell; the
+defense element rides on armor, hide, or a creature's own nature. Armor
+cut to resist one element is always open to another, so nobody wears
+their way out of the problem. Knowing what a thing is made of is worth
+more than swinging harder.
+
+**War-scar monsters are Void-line.** The wild things that grow out of
+unburied battlefields carry the void in them. That is why the Bell
+School's holy work is a weapon and not only a mercy, and why the
+Bellfaith is the branch that answers them.
+
+The numbers behind all of this — how much heavier, how much weaker —
+live in the combat code and the F-017 design spec. Canon carries the
+elements in words only; no lore body, quest, or dialogue line quotes a
+multiplier (`style.md` §6, rule 5).
+
+### Wisdom branches, schools, and towns
+
+| Branch | School(s) | Home town(s) | Element / craft |
+|---|---|---|---|
+| **Magic** | Elements Schools (per element) | Embervale (Fire/Earth — mining town), Norhollow + Rooktide (Water/Wind) | Earth, Water, Wind, Fire |
+| **Physical** | Sword / Spear / Dagger / Bow / Shield Schools | Every town (common craft) | Neutral; weapons can be endowed with elements via coatings or magic stones |
+| **Mix** | Builder School (magic-stone automata), Summoner | Builder = Gildmark (Dwarf artisans; automata as the arms industry's next product line), Summoner = Millcross (stateless; war-scar beast affinity) | Automata = machinery plus magic stones. Rune-craft is public, but the Builder School teaches the engineering tier |
+| **Healer** | Bell School | Bellfaith | **Holy** — the church holds both news and healing (§4), and is the branch that counters Void |
+
+Bellfaith is the church, not a town: the Bell School trains in its bell
+towers, and every town has one (§4). Automata are clockwork bodies driven
+by magic stones — machinery, not wound springs and not anything stranger.
+
+**Void has no school.** No town dares teach it openly, so it is learned
+outside the system entirely — illegal manuals, private masters, nothing
+with a roof and a roster. This is not tied to Cindervast's fall, which
+keeps its own cause (§1): the Last King and the relic weapon, not the
+void.
+
+### The eight classes and the eight races
+
+Classes: Swordsman, Archer, Assassin, Spearman, Mage, Summoner,
+Engineer, Healer.
+
+Races: Human, Demon, Dwarf, Immortal (Angel), Elf, Dragon, Beastkin
+(a human face with animal ears and tail), Ogre.
+
+Any race may take any class. All sixty-four pairings are canon, none is
+forbidden, and none is the correct answer. Each race leans, and the lean
+is a direction only:
+
+| Race | Lean | Race | Lean |
+|---|---|---|---|
+| Human | balanced, no lean | Elf | mana and cast speed |
+| Ogre | physical power and health | Dwarf | defense and craft |
+| Demon | Void affinity | Immortal | Holy affinity |
+| Dragon | elemental magic power | Beastkin | agility |
+
+The muscularity gradient set by the art pipeline is unchanged: a race
+axis running from Elf (lightest) to Ogre (heaviest), crossed with a class
+axis running from Mage (lightest) to Swordsman (heaviest). The numeric
+band belongs to the art pipeline
+(`game-client/assets/art/art-manifest.json`), not to canon.
+
+### Not in game state yet
+
+Class and race are lore and art today, nothing more. The server stores no
+class, race, or job on a player, and the leans above are intent, not
+tuned values. **No canon text, quest, dialogue, or lore body may assume a
+player's class or race exists in game state** — a line that reads a
+player's class, or an objective that requires one, contradicts this file.
+Elements do exist in the running game (weapons and creatures carry them);
+classes and races do not. That split holds until phase C.
+
+## 6. Contradiction rule
 
 Content in Tasks 3–8 that contradicts this file is a review finding; fix the
 content or amend this file deliberately in the same commit, never silently.
