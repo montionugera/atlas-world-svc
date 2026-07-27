@@ -4,6 +4,7 @@ import { ProjectileManager } from '../../modules/ProjectileManager'
 import { GameState } from '../../schemas/GameState'
 import type { AttackDefinition } from '../../config/mobTypesConfig'
 import { resolveMeleeAttackTiming } from '../../combat/meleeAttackSpeed'
+import { DEFAULT_ELEMENT, type Element } from '../../config/combat/elements'
 
 /**
  * Melee Attack Strategy
@@ -17,6 +18,8 @@ export class MeleeAttackStrategy implements AttackStrategy {
 
   private castTime: number = 0
   private timingBands?: Pick<AttackDefinition, 'aspdMin' | 'aspdMax'>
+  /** Element of the AttackDefinition this strategy executes (World Wisdom / F-017). */
+  private element: Element = DEFAULT_ELEMENT
 
   constructor(
     projectileManager?: ProjectileManager,
@@ -30,6 +33,7 @@ export class MeleeAttackStrategy implements AttackStrategy {
     }
     if (options?.attack) {
       this.timingBands = options.attack
+      this.element = options.attack.element ?? DEFAULT_ELEMENT
     }
   }
 
@@ -109,6 +113,7 @@ export class MeleeAttackStrategy implements AttackStrategy {
 
     // Create melee projectile (short range, fast speed)
     const projectile = this.projectileManager.createMelee(attacker, targetX, targetY, attacker.pAtk)
+    projectile.element = this.element
 
     // Add to game state (synced to clients)
     this.gameState.projectiles.set(projectile.id, projectile)

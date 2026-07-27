@@ -5,6 +5,7 @@ import { GameState } from '../../schemas/GameState'
 import { SPEAR_THROWER_STATS } from '../../config/combatConfig'
 import type { AttackDefinition } from '../../config/mobTypesConfig'
 import { resolveMeleeAttackTiming } from '../../combat/meleeAttackSpeed'
+import { DEFAULT_ELEMENT, type Element } from '../../config/combat/elements'
 
 /**
  * Spear Throw Attack Strategy
@@ -19,6 +20,8 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
   private castTime: number = SPEAR_THROWER_STATS.castTime
   private speed: number = SPEAR_THROWER_STATS.spearSpeed
   private timingBands?: Pick<AttackDefinition, 'aspdMin' | 'aspdMax'>
+  /** Element of the AttackDefinition this strategy executes (World Wisdom / F-017). */
+  private element: Element = DEFAULT_ELEMENT
 
   // Must be roughly facing the target to start a committed ranged attack.
   // Matches the melee cone check threshold used elsewhere (~0.5 rad).
@@ -44,6 +47,7 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
       this.speed = options.speed ?? this.speed
       if (options.attack) {
         this.timingBands = options.attack
+        this.element = options.attack.element ?? DEFAULT_ELEMENT
       }
     }
   }
@@ -99,6 +103,7 @@ export class SpearThrowAttackStrategy implements AttackStrategy {
       undefined, // Default radius
       this.speed
     )
+    projectile.element = this.element
 
     // Add to game state
     this.gameState.projectiles.set(projectile.id, projectile)

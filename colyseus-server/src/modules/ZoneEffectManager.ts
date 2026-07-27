@@ -213,6 +213,14 @@ export class ZoneEffectManager {
     })
 
     // 2. Apply Damage LAST
+    //
+    // Intentional bypass of BattleModule.calculateDamage: zone damage is a flat,
+    // final amount — no defense reduction and no element multiplier (World Wisdom
+    // / F-017). ZoneEffectEffect carries neither a damageType nor an element, so
+    // there is nothing to feed the calculator. If zones ever gain an element,
+    // add it to ZoneEffectEffect and route this call through
+    // battleModule.calculateDamage({ baseDamage, damageType, attackElement, target })
+    // first — do not leave it raw.
     zone.effects.forEach(effect => {
       if (effect.type === 'damage') {
         this.battleModule.applyDamage(target, effect.value, { eventId: `${eventId}-damage` })

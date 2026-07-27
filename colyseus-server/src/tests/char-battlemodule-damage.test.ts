@@ -33,18 +33,53 @@ describe('char: BattleModule.calculateDamage', () => {
   })
 
   it('physical: subtracts pDef + armor', () => {
-    expect(bm.calculateDamage(100, 'physical', target({ pDef: 10, armor: 5 }))).toBe(85)
+    expect(
+      bm.calculateDamage({
+        baseDamage: 100,
+        damageType: 'physical',
+        attackElement: 'neutral',
+        target: target({ pDef: 10, armor: 5 }),
+      })
+    ).toBe(85)
   })
   it('magical: subtracts mDef + armor (ignores pDef)', () => {
-    expect(bm.calculateDamage(100, 'magical', target({ pDef: 999, mDef: 4, armor: 5 }))).toBe(91)
+    expect(
+      bm.calculateDamage({
+        baseDamage: 100,
+        damageType: 'magical',
+        attackElement: 'neutral',
+        target: target({ pDef: 999, mDef: 4, armor: 5 }),
+      })
+    ).toBe(91)
   })
   it('caps reduction at 80% of base damage', () => {
-    expect(bm.calculateDamage(100, 'physical', target({ pDef: 500 }))).toBe(20)
+    expect(
+      bm.calculateDamage({
+        baseDamage: 100,
+        damageType: 'physical',
+        attackElement: 'neutral',
+        target: target({ pDef: 500 }),
+      })
+    ).toBe(20)
   })
   it('never reduces below 1', () => {
-    expect(bm.calculateDamage(1, 'physical', target({ pDef: 500 }))).toBe(1)
+    expect(
+      bm.calculateDamage({
+        baseDamage: 1,
+        damageType: 'physical',
+        attackElement: 'neutral',
+        target: target({ pDef: 500 }),
+      })
+    ).toBe(1)
   })
   it('floors fractional results', () => {
-    expect(bm.calculateDamage(10, 'physical', target({ pDef: 0.5 }))).toBe(9)
+    expect(
+      bm.calculateDamage({
+        baseDamage: 10,
+        damageType: 'physical',
+        attackElement: 'neutral',
+        target: target({ pDef: 0.5 }),
+      })
+    ).toBe(9)
   })
 })

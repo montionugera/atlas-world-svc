@@ -138,15 +138,18 @@ flowchart LR
   n_faction_stoneguard["faction-stoneguard"]:::faction
   n_faction_thornveil["faction-thornveil"]:::faction
   n_faction_unaligned["faction-unaligned"]:::faction
+  n_lore_a_bill_for_warded_steel["lore-a-bill-for-warded-steel"]:::lore
   n_lore_a_decade_of_meals["lore-a-decade-of-meals"]:::lore
   n_lore_a_fathers_first_letter["lore-a-fathers-first-letter"]:::lore
   n_lore_a_fathers_second_letter["lore-a-fathers-second-letter"]:::lore
   n_lore_a_harbor_entry["lore-a-harbor-entry"]:::lore
+  n_lore_a_page_from_no_school["lore-a-page-from-no-school"]:::lore
   n_lore_a_wardens_private_tally["lore-a-wardens-private-tally"]:::lore
   n_lore_after_the_return_count["lore-after-the-return-count"]:::lore
   n_lore_an_entry_without_a_name["lore-an-entry-without-a-name"]:::lore
   n_lore_before_the_return_count["lore-before-the-return-count"]:::lore
   n_lore_first_claim_stone["lore-first-claim-stone"]:::lore
+  n_lore_fourth_refusal["lore-fourth-refusal"]:::lore
   n_lore_guarded_nothing["lore-guarded-nothing"]:::lore
   n_lore_jorens_answer["lore-jorens-answer"]:::lore
   n_lore_jorens_tally["lore-jorens-tally"]:::lore
@@ -154,6 +157,7 @@ flowchart LR
   n_lore_lisss_second_letter["lore-lisss-second-letter"]:::lore
   n_lore_millcross_by_the_numbers["lore-millcross-by-the-numbers"]:::lore
   n_lore_the_bell_keepers_schedule["lore-the-bell-keepers-schedule"]:::lore
+  n_lore_the_bite_that_wont_close["lore-the-bite-that-wont-close"]:::lore
   n_lore_the_cindered_count["lore-the-cindered-count"]:::lore
   n_lore_the_crossing_post["lore-the-crossing-post"]:::lore
   n_lore_the_elders_first_plank["lore-the-elders-first-plank"]:::lore
@@ -343,15 +347,18 @@ flowchart LR
   n_faction_norhollow_banner -->|relationships| n_faction_embervale_banner
   n_faction_norhollow_banner -->|relationships| n_faction_gildmark_council
   n_faction_unaligned -->|relationships| n_faction_ashfang
+  n_lore_a_bill_for_warded_steel -->|anchor| n_region_gildmark
   n_lore_a_decade_of_meals -->|anchor| n_char_quartermaster
   n_lore_a_fathers_first_letter -->|anchor| n_region_norhollow
   n_lore_a_fathers_second_letter -->|anchor| n_region_norhollow
   n_lore_a_harbor_entry -->|anchor| n_region_gildmark
+  n_lore_a_page_from_no_school -->|anchor| n_region_ashvale_front
   n_lore_a_wardens_private_tally -->|anchor| n_faction_bellfaith
   n_lore_after_the_return_count -->|anchor| n_region_rooktide
   n_lore_an_entry_without_a_name -->|anchor| n_char_the_broker
   n_lore_before_the_return_count -->|anchor| n_region_rooktide
   n_lore_first_claim_stone -->|anchor| n_region_icefield
+  n_lore_fourth_refusal -->|anchor| n_region_embervale
   n_lore_guarded_nothing -->|anchor| n_faction_stoneguard
   n_lore_jorens_answer -->|anchor| n_char_joren_of_norhollow
   n_lore_jorens_tally -->|anchor| n_char_joren_of_norhollow
@@ -359,6 +366,7 @@ flowchart LR
   n_lore_lisss_second_letter -->|anchor| n_char_liss_of_embervale
   n_lore_millcross_by_the_numbers -->|anchor| n_region_millcross
   n_lore_the_bell_keepers_schedule -->|anchor| n_char_the_bell_keeper
+  n_lore_the_bite_that_wont_close -->|anchor| n_faction_bellfaith
   n_lore_the_cindered_count -->|anchor| n_region_cindervast
   n_lore_the_crossing_post -->|anchor| n_region_ashvale_front
   n_lore_the_elders_first_plank -->|anchor| n_char_elder_of_rooktide

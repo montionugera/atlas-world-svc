@@ -17,7 +17,8 @@ import {
   DamageActionPayload,
 } from './BattleActionMessage'
 import { ProcessedEventTracker } from './combat/ProcessedEventTracker'
-import { DamageCalculator } from './combat/DamageCalculator'
+import { DamageCalculator, DamageCalculationOptions } from './combat/DamageCalculator'
+import { DEFAULT_ELEMENT } from '../config/combat/elements'
 import { StatusEffectManager } from './combat/StatusEffectManager'
 
 export interface AttackEvent {
@@ -86,8 +87,13 @@ export class BattleModule implements BattleActionProcessor {
       damageType = payload.damageType || 'physical'
     }
 
-    // Calculate damage with defense
-    const damage = this.calculateDamage(baseDamage, damageType, target)
+    // Calculate damage with defense + element
+    const damage = this.calculateDamage({
+      baseDamage,
+      damageType,
+      attackElement: payload?.element ?? DEFAULT_ELEMENT,
+      target,
+    })
     console.log(`🎯 ATTACK: ${attacker.id} deals ${damage} ${damageType} damage to ${target.id}`)
 
     // Apply damage to target
@@ -215,13 +221,9 @@ export class BattleModule implements BattleActionProcessor {
     return { canAttack: true }
   }
 
-  // Calculate damage with defense calculations (delegates to DamageCalculator)
-  calculateDamage(
-    baseDamage: number,
-    damageType: 'physical' | 'magical',
-    target: WorldLife
-  ): number {
-    return DamageCalculator.calculate(baseDamage, damageType, target)
+  // Calculate damage with defense + element (delegates to DamageCalculator)
+  calculateDamage(opts: DamageCalculationOptions): number {
+    return DamageCalculator.calculate(opts)
   }
 
   // Apply damage to target
@@ -493,7 +495,12 @@ export class BattleModule implements BattleActionProcessor {
     return true
   }
 
-  // Process damage action message
+  // Process damage action message.
+  // payload.amount is a FINAL amount: this path deliberately skips
+  // calculateDamage, so no defense reduction and no element multiplier (World
+  // Wisdom / F-017). DamageActionPayload has no element field and nothing in the
+  // server currently creates an `actionKey: 'damage'` message. If a caller ever
+  // appears, decide explicitly whether it should route through calculateDamage.
   private processDamageAction(
     actor: WorldLife,
     target: WorldLife | null,

@@ -93,6 +93,12 @@ export class NPCCombatSystem extends BaseCombatSystem<NPC> {
       return { attacked: false }
     }
 
+    // Neutral by construction: no AttackDefinition executes here, so there is no
+    // element to read. NPCs are in fact ALWAYS neutral today — their only
+    // strategy is the bare MeleeAttackStrategy built in
+    // RoomEventHandler.handleNPCSpawned, which is constructed without an
+    // `attack` option, so the strategy path has no element source either
+    // (World Wisdom / F-017).
     const attackData: BattleAttackData = {
       actorId: this.npc.id,
       targetId: targetMob.id,

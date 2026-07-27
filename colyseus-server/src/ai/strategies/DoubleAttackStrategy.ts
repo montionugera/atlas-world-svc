@@ -5,6 +5,7 @@ import { GameState } from '../../schemas/GameState'
 import { AttackDefinition, AttackCharacteristicType } from '../../config/mobTypesConfig'
 import { calculateEffectiveAttackRange } from '../../config/mobTypesConfig'
 import { ProjectileType, WEAPON_TYPES } from '../../config/combatConfig'
+import { DEFAULT_ELEMENT } from '../../config/combat/elements'
 
 export class DoubleAttackStrategy implements AttackStrategy {
   name = 'doubleAttack'
@@ -92,6 +93,8 @@ export class DoubleAttackStrategy implements AttackStrategy {
       const targetY = attacker.y + Math.sin(heading) * range
 
       const projectileType = char.projectileType || WEAPON_TYPES.SPEAR
+      // Element of the AttackDefinition being executed (World Wisdom / F-017).
+      const element = attack.element ?? DEFAULT_ELEMENT
 
       if (projectileType === WEAPON_TYPES.MELEE) {
         const projectile = this.projectileManager.createMelee(
@@ -103,6 +106,7 @@ export class DoubleAttackStrategy implements AttackStrategy {
           char.projectileRadius,
           char.speedUnitsPerSec
         )
+        projectile.element = element
         this.gameState.projectiles.set(projectile.id, projectile)
       } else {
         // Default to 'spear' (projectile)
@@ -117,6 +121,7 @@ export class DoubleAttackStrategy implements AttackStrategy {
           char.speedUnitsPerSec,
           projectileType as ProjectileType
         )
+        projectile.element = element
         this.gameState.projectiles.set(projectile.id, projectile)
       }
     }

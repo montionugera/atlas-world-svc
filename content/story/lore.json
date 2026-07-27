@@ -358,5 +358,45 @@
     "anchor": "region-gildmark",
     "thread": "the-bent-bells",
     "links": []
+  },
+  {
+    "id": "lore-a-bill-for-warded-steel",
+    "kind": "lore",
+    "title": "A Bill for Warded Steel",
+    "summary": "A Gildmark shop's bill of sale, where cutting an antimagic ward costs nothing and surprises nobody.",
+    "body": "Bill of sale, Harbor Street, stamped and paid: 'Forty shields, cut with the common ward. Warding at no charge — every shop on this street cuts the same one, and a customer charged for it walks three doors down.' Beneath the total, in the same hand: 'Second order, same cut, other banner. Delivered the same week.'",
+    "anchor": "region-gildmark",
+    "thread": "the-warded-world",
+    "links": []
+  },
+  {
+    "id": "lore-the-bite-that-wont-close",
+    "kind": "lore",
+    "title": "The Bite That Won't Close",
+    "summary": "A Bell School healer's note on a war-scar wound that opens again every night.",
+    "body": "A Bell School note, kept with the sick-room tallies: 'Third week on the same leg. The bite came from one of the things that grow where the dead were left unburied — there is void in a bite like that, and the bell is what answers void. I bring it to him every morning. The wound closes by noon and opens again by dark. He asks whether tomorrow's ringing is the one that finishes it. I tell him I don't know, and I ring it again.'",
+    "anchor": "faction-bellfaith",
+    "thread": "the-warded-world",
+    "links": []
+  },
+  {
+    "id": "lore-fourth-refusal",
+    "kind": "lore",
+    "title": "Fourth Refusal",
+    "summary": "An Elements School turns a student away for the fourth time, and the reason is not money.",
+    "body": "Embervale Elements School, fourth refusal to the same applicant: 'You light a lamp and hold the flame steady, and you learned both quicker than most. That is where you stop — the same answer as the last three times you asked. You are asking because of the war. Everything on that field is warded steel, and your flame will never trouble it. Only the High-Tier will, and the High-Tier costs years, not coin. Our gate stays open to you. The High-Tier is closed, and nothing you can pay will open it.'",
+    "anchor": "region-embervale",
+    "thread": "the-warded-world",
+    "links": []
+  },
+  {
+    "id": "lore-a-page-from-no-school",
+    "kind": "lore",
+    "title": "A Page From No School",
+    "summary": "One page of an unlicensed void manual, confiscated at the front, teaching a craft no school will put its name to.",
+    "body": "One page, taken off a hired fighter at the crossing and filed with the watch. No cover, no school mark, and the writing is nobody's trained hand: 'Void, lesson eleven. You will not find this written anywhere with a roof over it. No roster, no master to ask when it goes wrong — that is the price, and you paid part of it by reading this far.' Lesson twelve runs on down the same page. The watch clerk filed the whole thing without reading past the first line.",
+    "anchor": "region-ashvale-front",
+    "thread": "the-warded-world",
+    "links": []
   }
 ]
