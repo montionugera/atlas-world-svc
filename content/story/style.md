@@ -147,8 +147,8 @@ chill is in the arrangement, not the vocabulary.
 Peoples are lore-level identities, not factions — they carry no
 `mobFamily` of their own (mark it `—`). They are the cultures of the
 Undertow acts, and they are **not** the playable-race roster: the eight
-races live in `content/story/canon.md` §5, on a separate axis. A person
-can be Millcross-raised and any race at all. Where a name looks shared —
+races live in `content/story/canon.md` §5, on a separate axis. A
+gild-blooded merchant can be any race at all. Where a name looks shared —
 beast-blooded here, Beastkin there — canon does not yet say whether the
 two are the same blood, and no line should assume it.
 

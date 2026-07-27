@@ -280,9 +280,9 @@ the voice law for the same ground.
 
 Six elements, plus plain matter.
 
-Four of them turn in a circle, each one answering the one before it:
-water puts out fire, fire cracks earth, earth swallows wind, wind
-scatters water. Strike the element yours answers and the blow lands far
+Four of them turn in a circle, each one the answer to another: water
+puts out fire, fire cracks earth, earth swallows wind, wind scatters
+water. Strike the element yours answers and the blow lands far
 harder than plain steel would. Strike backward around the circle, or
 strike an element with its own kind, and it lands soft. The two pairs
 that face each other across the circle — water and earth, fire and wind
@@ -290,7 +290,8 @@ that face each other across the circle — water and earth, fire and wind
 
 Holy and Void stand outside the circle, as a matched pair. Each is the
 other's undoing, and unlike the circle it cuts both ways: holy burns
-void, void eats holy, and neither holds the advantage. Between them and
+void, void eats holy, and each lands as hard on the other as it takes.
+Between them and
 the turning four there is nothing either way — holy and void land plain
 against the four, and the four land plain against them. And like the
 turning four, neither answers its own kind: holy against holy lands
@@ -322,7 +323,7 @@ multiplier (`style.md` §6, rule 5).
 |---|---|---|---|
 | **Magic** | Elements Schools (per element) | Embervale (Fire/Earth — mining town), Norhollow + Rooktide (Water/Wind) | Earth, Water, Wind, Fire |
 | **Physical** | Sword / Spear / Dagger / Bow / Shield Schools | Every town (common craft) | Neutral; weapons can be endowed with elements via coatings or magic stones |
-| **Mix** | Builder School (magic-stone automata), Summoner | Builder = Gildmark (Dwarf artisans; automata are the next thing its arms trade means to sell), Summoner = Millcross (belongs to no town's banner; war-scar beast affinity) | Automata = machinery plus magic stones. Rune-craft is public, but the Builder School teaches the building of them |
+| **Mix** | Builder School (magic-stone automata), Summoner | Builder = Gildmark (Dwarf artisans; automata are the next thing its arms trade means to sell), Summoner = Millcross (belongs to no town's banner; war-scar beast affinity) | Automata = machinery plus magic stones. Rune-craft is public, but the Builder School teaches the building of the automata themselves |
 | **Healer** | Bell School | Bellfaith | **Holy** — the church holds the news (§4) and the healing with it, and is the branch that counters Void |
 
 Bellfaith is the church, not a town: the Bell School trains in its bell
