@@ -43,6 +43,17 @@ commit 4bd18f8) has no canon behind it.
    original 5-element list). Healer/Bellfaith = Holy. War-scar monsters = Void-line.
 10. **Race x class: free choice across all 64 combinations + small per-race stat
     leans.** No forbidden classes, no meta locks.
+11. **`content/story/style.md` §6 "Magic rules" is REWRITTEN, the iron rule kept.**
+    Its current opening ("magic is a scarce, contested resource — oil, not
+    miracle") contradicts decisions #1/#5 and must go. Everything that survives:
+    the iron rule (no spell resolves a political knot, cures grief or trauma, or
+    raises the dead; deaths are permanent), monsters-are-war-scars, arms-are-still-
+    just-arms, Cindervast-is-a-wound, espionage-in-texture-only. Widespread magic
+    does NOT mean magic solves plots.
+12. **F-017 scope includes the runtime element system in combat** — elements on mob
+    and weapon configs, the multiplier table threaded through the damage path.
+    Player class/race storage and stat leans stay in phase C (no class field exists
+    server-side yet).
 
 ## Magic Model (canon)
 
@@ -54,13 +65,18 @@ commit 4bd18f8) has no canon behind it.
    not materials.
 3. Rune-craft is a public craft; every town engraves its own wards. The world is
    balanced by mutual protection, not by monopoly.
-4. **Novel/canon reconciliation — zero backport needed.** The finished novel and
-   canon.md never depict battle magic; every magic artifact on the page (Bellfaith
-   bells, Gildmark mirror tower, lovers' ink) is utility/infrastructure magic, which
-   fits this model exactly. War scenes read as steel because everyone is rune-warded
-   and POV characters are ordinary soldiers; the caravan burned by ordinary fire
-   (runes stop spells, not torches). This spec only ADDS lore; it changes nothing
-   written.
+4. **Novel/canon reconciliation — one file needs editing, and it is not the novel.**
+   The finished novel and `content/story/canon.md` never depict battle magic (verified:
+   canon.md has zero magic/mana/rune/spell matches); every magic artifact on the page
+   (Bellfaith bells, Gildmark mirror tower, lovers' ink) is utility/infrastructure
+   magic, which fits this model exactly. War scenes read as steel because everyone is
+   rune-warded and POV characters are ordinary soldiers; the caravan burned by ordinary
+   fire (runes stop spells, not torches).
+   **The exception is `content/story/style.md` §6 (lines 173-194)** — the voice-law
+   bible every authoring pass must read — which currently opens "Magic is a scarce,
+   contested resource — oil, not miracle". That framing is superseded (decision #11);
+   §6 gets rewritten around widespread-but-warded magic while keeping its iron rule
+   intact. No prose in the novel changes.
 
 ## Elemental rules (RO-style table, canon for lore AND gameplay)
 
@@ -142,17 +158,37 @@ Mage, Summoner, Engineer, Healer.
 - Muscularity gradient canon unchanged: race axis (Elf lightest -> Ogre heaviest) x
   class axis (Mage lightest -> Swordsman heaviest), score 6.0-8.5.
 
+## In scope for F-017
+
+1. **Lore/canon**: magic model + schools + elements written into `content/story/canon.md`;
+   `content/story/style.md` §6 rewritten (decision #11); new `lore-*` nodes carrying the
+   magic/school/element fragments into the story graph (the `lore` schema's free-form
+   `anchor` + `thread` need no schema change; mind the gate's >=2-fragments-per-thread WARN).
+2. **Element runtime**: an `Element` type + the multiplier table as a pure, fully-tested
+   function; element fields on mob and weapon configs; the attack element threaded from
+   the combat systems through the battle message into the damage calculation; a defense
+   element on entities. Existing damage behaviour must be preserved exactly when both
+   sides are Neutral.
+
 ## Out of scope
 
 - **No elemental reaction system** (Genshin-style) — cut, not deferred.
-- **No skill trees or per-class skill numbers** — this spec fixes canon, the element
-  table, and the school structure only.
-- **Server-side class storage** (Colyseus player schema vs Nakama meta) — phase C
-  concern, unchanged.
-- **No edits to the finished novel/canon** — Magic Model rule 4 makes backport
-  unnecessary; this spec only adds new lore.
+- **No skill trees or per-class skill numbers.**
+- **No player class/race field and no race stat leans** — nothing stores a class
+  server-side today (`Player` has no class/race/job field; the sim's `BaseStat` is
+  `{agi,str,vit,dex}` while Nakama's `PrimaryStats` is `{str,agi,int,vit}` — the two
+  disagree and picking a side is its own decision). Phase C concern; the race-lean table
+  above is canon-of-intent, not a build instruction for this feature.
+- **No edits to the novel** — see Magic Model rule 4.
+- **No mana/MP resource** — decision #5 makes fuel a non-limit; no resource bar is added.
 
 ## Assets already done
 
-64 class artworks + 8 race concepts + pipeline (Z-Image + silhouette proportion lock +
-muscle gradient) in tools/asset-storybook (commits 9355f05..49fd6c4 on release/1.4).
+64 class artworks + 7 race concepts + pipeline (Z-Image + silhouette proportion lock +
+muscle gradient); manifest at `game-client/assets/art/art-manifest.json`, keys
+`art:class-<race>-<job>` (64) and `art:race-<race>` (7), browsable via
+`tools/asset-storybook/index.html` (commits 9355f05..49fd6c4 on release/1.4).
+
+**Known gap:** `art:race-human` / `concept/race-human.png` does not exist — the race
+lineup is 7, not 8, even though `human` heads the class grid and all 8 human class
+images exist. Generating it is not part of F-017; tracked as a content gap.
