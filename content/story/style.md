@@ -145,8 +145,12 @@ chill is in the arrangement, not the vocabulary.
 ### Peoples (6)
 
 Peoples are lore-level identities, not factions — they carry no
-`mobFamily` of their own (mark it `—`); playable races are out of scope
-for this program (spec §10).
+`mobFamily` of their own (mark it `—`). They are the cultures of the
+Undertow acts, and they are **not** the playable-race roster: the eight
+races live in `content/story/canon.md` §5, on a separate axis. A person
+can be Millcross-raised and any race at all. Where a name looks shared —
+beast-blooded here, Beastkin there — canon does not yet say whether the
+two are the same blood, and no line should assume it.
 
 | People | Accent color | Costume motif | Mob family | One-line creed |
 |---|---|---|---|---|
@@ -184,8 +188,8 @@ town cuts its own wards, and no town holds the craft over another.
 
 That is why a world full of casters still fights its wars with steel —
 and why magic is still never a plot eraser (magic model:
-`docs/superpowers/specs/2026-07-27-world-wisdom-design.md`, which
-replaces the older framing of magic as a rationed resource):
+`docs/superpowers/specs/2026-07-27-world-wisdom-design.md`, "Magic
+Model"):
 
 1. **Monsters are war-scars.** Unburied battlefields and lingering fear
    breed the wild factions; clearing them is clearing the war's residue,

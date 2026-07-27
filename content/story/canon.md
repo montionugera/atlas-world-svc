@@ -281,27 +281,30 @@ the voice law for the same ground.
 Six elements, plus plain matter.
 
 Four of them turn in a circle, each one answering the one before it:
-water puts out fire, fire cracks earth, earth swallows wind, wind lifts
-the water back up. Strike along the circle and the blow lands with its
-full weight. Strike backward against it, or strike an element with its
-own kind, and the blow barely lands at all.
+water puts out fire, fire cracks earth, earth swallows wind, wind
+scatters water. Strike the element yours answers and the blow lands far
+harder than plain steel would. Strike backward around the circle, or
+strike an element with its own kind, and it lands soft. The two pairs
+that face each other across the circle — water and earth, fire and wind
+— neither help nor hinder: those blows land plain.
 
 Holy and Void stand outside the circle, as a matched pair. Each is the
 other's undoing, and unlike the circle it cuts both ways: holy burns
-void, void eats holy, and neither holds the advantage. Against the four
-turning elements both land like anything else, no better and no worse.
-And like the turning four, neither answers its own kind well — holy has
-little to say to holy.
+void, void eats holy, and neither holds the advantage. Between them and
+the turning four there is nothing either way — holy and void land plain
+against the four, and the four land plain against them. And like the
+turning four, neither answers its own kind: holy against holy lands
+soft, void against void the same.
 
 Plain steel and plain flesh carry no element at all — Neutral. Neutral
-gives and takes the same weight against everything. It is the safe, dull
-middle, and it is what most people and most weapons are.
+lands plain against everything and takes plain from everything. It is
+the safe, dull middle, and it is what most people and most weapons are.
 
 The attack element rides on the weapon, the coating, or the spell; the
 defense element rides on armor, hide, or a creature's own nature. Armor
-cut to resist one element is always open to another, so nobody wears
-their way out of the problem. Knowing what a thing is made of is worth
-more than swinging harder.
+cut to resist one element is always open to another — no armor covers
+everything. Knowing what a thing is made of is worth more than swinging
+harder.
 
 **War-scar monsters are Void-line.** The wild things that grow out of
 unburied battlefields carry the void in them. That is why the Bell
@@ -319,18 +322,18 @@ multiplier (`style.md` §6, rule 5).
 |---|---|---|---|
 | **Magic** | Elements Schools (per element) | Embervale (Fire/Earth — mining town), Norhollow + Rooktide (Water/Wind) | Earth, Water, Wind, Fire |
 | **Physical** | Sword / Spear / Dagger / Bow / Shield Schools | Every town (common craft) | Neutral; weapons can be endowed with elements via coatings or magic stones |
-| **Mix** | Builder School (magic-stone automata), Summoner | Builder = Gildmark (Dwarf artisans; automata as the arms industry's next product line), Summoner = Millcross (stateless; war-scar beast affinity) | Automata = machinery plus magic stones. Rune-craft is public, but the Builder School teaches the engineering tier |
-| **Healer** | Bell School | Bellfaith | **Holy** — the church holds both news and healing (§4), and is the branch that counters Void |
+| **Mix** | Builder School (magic-stone automata), Summoner | Builder = Gildmark (Dwarf artisans; automata are the next thing its arms trade means to sell), Summoner = Millcross (belongs to no town's banner; war-scar beast affinity) | Automata = machinery plus magic stones. Rune-craft is public, but the Builder School teaches the building of them |
+| **Healer** | Bell School | Bellfaith | **Holy** — the church holds the news (§4) and the healing with it, and is the branch that counters Void |
 
 Bellfaith is the church, not a town: the Bell School trains in its bell
 towers, and every town has one (§4). Automata are clockwork bodies driven
 by magic stones — machinery, not wound springs and not anything stranger.
 
-**Void has no school.** No town dares teach it openly, so it is learned
-outside the system entirely — illegal manuals, private masters, nothing
-with a roof and a roster. This is not tied to Cindervast's fall, which
-keeps its own cause (§1): the Last King and the relic weapon, not the
-void.
+**Void has no official school.** No town dares teach it openly, so it is
+learned outside the system entirely — illegal manuals, private masters,
+nothing with a roof and a roster. This is not tied to Cindervast's fall,
+which keeps its own cause (§1): the city's ruler and the relic weapon he
+turned on his own people, not the void.
 
 ### The eight classes and the eight races
 
