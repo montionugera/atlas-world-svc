@@ -25,6 +25,9 @@ import { DeflectionResolver } from '../modules/projectile/DeflectionResolver'
 import { resolveWeaponBasicProjectileParams } from '../combat/attackDamage'
 import { WEAPONS } from '../config/combat/weapons'
 import { MeleeAttackStrategy } from '../ai/strategies/MeleeAttackStrategy'
+import { SpearThrowAttackStrategy } from '../ai/strategies/SpearThrowAttackStrategy'
+import { DoubleAttackStrategy } from '../ai/strategies/DoubleAttackStrategy'
+import { PlayerCombatSystem } from '../systems/PlayerCombatSystem'
 import { ProjectileManager } from '../modules/ProjectileManager'
 import { AttackCharacteristicType, type AttackDefinition } from '../config/mobTypesConfig'
 
@@ -192,52 +195,133 @@ describe('ProjectileCollisionResolver carries projectile.element', () => {
 })
 
 describe('element sources', () => {
-  it('reads the equipped weapon element for player basic attacks', () => {
+  let gameState: GameState
+  let projectileManager: ProjectileManager
+
+  beforeEach(() => {
+    gameState = new GameState('test-map', 'room-strategy')
+    projectileManager = new ProjectileManager(gameState, new BattleModule(gameState))
+  })
+
+  afterEach(() => {
+    gameState.stopAI()
+  })
+
+  const spawnedElements = (): string[] => [...gameState.projectiles.values()].map(p => p.element)
+
+  /** No shipped weapon is elemental yet, so drive the lookup with a temporary entry. */
+  const withElementalWeapon = (element: 'fire', run: (weaponId: string) => void): void => {
+    const id = '__test_elemental_weapon'
+    WEAPONS[id] = { ...WEAPONS.basic_sword, id, element }
+    try {
+      run(id)
+    } finally {
+      delete WEAPONS[id]
+    }
+  }
+
+  const attackDef = (over: Partial<AttackDefinition> = {}): AttackDefinition => ({
+    atkBaseDmg: 10,
+    atkWindUpTime: 0,
+    atkCharacteristic: {
+      type: AttackCharacteristicType.AREA,
+      area: { areaRadius: 2, atkRange: 2 },
+    },
+    ...over,
+  })
+
+  it('resolves the equipped weapon element for player basic attacks', () => {
     const player = new Player('weapon-session', 'Armed', 0, 0)
     player.equippedWeaponId = 'basic_sword'
     expect(resolveWeaponBasicProjectileParams(player).element).toBe('neutral')
 
-    // No shipped weapon is elemental yet, so drive the lookup with a temporary entry.
-    WEAPONS.__test_flame_sword = {
-      ...WEAPONS.basic_sword,
-      id: '__test_flame_sword',
-      element: 'fire',
-    }
-    try {
-      player.equippedWeaponId = '__test_flame_sword'
+    withElementalWeapon('fire', weaponId => {
+      player.equippedWeaponId = weaponId
       expect(resolveWeaponBasicProjectileParams(player).element).toBe('fire')
-    } finally {
-      delete WEAPONS.__test_flame_sword
-    }
+    })
+  })
+
+  it('stamps the weapon element onto the projectile a player basic attack spawns', () => {
+    const player = new Player('weapon-session', 'Armed', 0, 0)
+    gameState.players.set(player.id, player)
+    const combat = new PlayerCombatSystem(player)
+    const context = { roomId: gameState.roomId, projectileManager, gameState }
+
+    player.equippedWeaponId = 'basic_sword'
+    expect(combat.executeAttack(context)).toBe(true)
+    expect(spawnedElements()).toEqual(['neutral'])
+
+    gameState.projectiles.clear()
+    withElementalWeapon('fire', weaponId => {
+      player.equippedWeaponId = weaponId
+      expect(combat.executeAttack(context)).toBe(true)
+      expect(spawnedElements()).toEqual(['fire'])
+    })
   })
 
   it('stamps the executing AttackDefinition element onto a mob melee projectile', () => {
-    const gameState = new GameState('test-map', 'room-strategy')
-    const battleModule = new BattleModule(gameState)
-    const projectileManager = new ProjectileManager(gameState, battleModule)
-    try {
-      const attack: AttackDefinition = {
-        atkBaseDmg: 10,
-        element: 'holy',
-        atkWindUpTime: 0,
+    const attacker = new Mob({ id: 'holy-mob', x: 0, y: 0, pAtk: 10 })
+    const target = new Mob({ id: 'victim', x: 1, y: 0 })
+    gameState.mobs.set(attacker.id, attacker)
+    gameState.mobs.set(target.id, target)
+
+    const strategy = new MeleeAttackStrategy(projectileManager, gameState, {
+      attack: attackDef({ element: 'holy' }),
+    })
+
+    expect(strategy.execute(attacker, target, gameState.roomId)).toBe(true)
+    expect(spawnedElements()).toEqual(['holy'])
+  })
+
+  it('defaults a mob melee projectile to neutral when the AttackDefinition has no element', () => {
+    const attacker = new Mob({ id: 'plain-mob', x: 0, y: 0, pAtk: 10 })
+    const target = new Mob({ id: 'victim', x: 1, y: 0 })
+    gameState.mobs.set(attacker.id, attacker)
+    gameState.mobs.set(target.id, target)
+
+    const strategy = new MeleeAttackStrategy(projectileManager, gameState, { attack: attackDef() })
+
+    expect(strategy.execute(attacker, target, gameState.roomId)).toBe(true)
+    expect(spawnedElements()).toEqual(['neutral'])
+  })
+
+  it('stamps the AttackDefinition element onto a spear-throw projectile', () => {
+    const attacker = new Mob({ id: 'void-mob', x: 0, y: 0, pAtk: 10 })
+    const target = new Mob({ id: 'victim', x: 5, y: 0 })
+    gameState.mobs.set(attacker.id, attacker)
+    gameState.mobs.set(target.id, target)
+
+    const strategy = new SpearThrowAttackStrategy(projectileManager, gameState, {
+      attack: attackDef({ element: 'void' }),
+    })
+
+    expect(strategy.execute(attacker, target, gameState.roomId)).toBe(true)
+    expect(spawnedElements()).toEqual(['void'])
+  })
+
+  it('stamps the per-attack element on each projectile of a double attack', () => {
+    const attacker = new Mob({ id: 'combo-mob', x: 0, y: 0, pAtk: 10 })
+    const target = new Mob({ id: 'victim', x: 1, y: 0 })
+    gameState.mobs.set(attacker.id, attacker)
+    gameState.mobs.set(target.id, target)
+
+    const projectileAttack = (element?: AttackDefinition['element']): AttackDefinition =>
+      attackDef({
+        element,
         atkCharacteristic: {
-          type: AttackCharacteristicType.AREA,
-          area: { areaRadius: 2, atkRange: 2 },
+          type: AttackCharacteristicType.PROJECTILE,
+          projectile: { speedUnitsPerSec: 20, projectileRadius: 0.5, atkRange: 10 },
         },
-      }
-      const strategy = new MeleeAttackStrategy(projectileManager, gameState, { attack })
+      })
 
-      const attacker = new Mob({ id: 'holy-mob', x: 0, y: 0, pAtk: 10 })
-      const target = new Mob({ id: 'victim', x: 1, y: 0 })
-      gameState.mobs.set(attacker.id, attacker)
-      gameState.mobs.set(target.id, target)
+    const strategy = new DoubleAttackStrategy(projectileManager, gameState, [
+      projectileAttack('earth'),
+      projectileAttack(),
+    ])
 
-      expect(strategy.execute(attacker, target, 'room-strategy')).toBe(true)
-      const created = [...gameState.projectiles.values()]
-      expect(created).toHaveLength(1)
-      expect(created[0].element).toBe('holy')
-    } finally {
-      gameState.stopAI()
-    }
+    strategy.performAttack(attacker, target, projectileAttack('earth'))
+    strategy.performAttack(attacker, target, projectileAttack())
+
+    expect(spawnedElements()).toEqual(['earth', 'neutral'])
   })
 })

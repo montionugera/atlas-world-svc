@@ -245,7 +245,13 @@ export class MobLifeCycleManager {
       strategies.push(...createdStrategies)
     }
 
-    // Fallback: if no strategies were created, add melee as default
+    // Fallback: if no strategies were created, add melee as default.
+    // TODO(F-017): this fallback has no AttackDefinition, so its attacks are
+    // always neutral — an AREA-only mob type (attackStrategyFactory does not
+    // build those yet) would silently lose its configured `element`. Pass the
+    // definition through once AREA strategies exist; note that MeleeAttackStrategy's
+    // `attack` option ALSO sets the ASPD timing bands, so passing it here would
+    // move existing wind-up numbers.
     if (strategies.length === 0) {
       strategies.push(new MeleeAttackStrategy(this.projectileManager, this.state))
     }

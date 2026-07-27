@@ -495,7 +495,12 @@ export class BattleModule implements BattleActionProcessor {
     return true
   }
 
-  // Process damage action message
+  // Process damage action message.
+  // payload.amount is a FINAL amount: this path deliberately skips
+  // calculateDamage, so no defense reduction and no element multiplier (World
+  // Wisdom / F-017). DamageActionPayload has no element field and nothing in the
+  // server currently creates an `actionKey: 'damage'` message. If a caller ever
+  // appears, decide explicitly whether it should route through calculateDamage.
   private processDamageAction(
     actor: WorldLife,
     target: WorldLife | null,

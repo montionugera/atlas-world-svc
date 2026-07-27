@@ -66,7 +66,6 @@ export class ProjectileCollisionResolver {
           id: projectile.id,
           type: projectile.type,
           damage: projectile.damage,
-          element: projectile.element,
           vx: projectile.vx,
           vy: projectile.vy,
         },

@@ -107,15 +107,20 @@ export class BattleManager {
     direction?: { x: number; y: number }
     /** melee (default), projectile, … — drives the range/cooldown bypass in canAttack. */
     attackType?: string
-    projectileDetail?: ProjectileDetail
+    /** `element` is filled in from `opts.element`; do not set it here. */
+    projectileDetail?: Omit<ProjectileDetail, 'element'>
   }): BattleActionMessage {
+    const element = opts.element ?? DEFAULT_ELEMENT
+
     const actionPayload: AttackActionPayload = {
       damage: opts.damage,
       range: opts.range,
       direction: opts.direction,
       attackType: opts.attackType ?? 'melee',
-      element: opts.element ?? DEFAULT_ELEMENT,
-      projectileDetail: opts.projectileDetail,
+      element,
+      // The mirror on projectileDetail is derived here, never taken from the
+      // caller, so the two copies of the element cannot diverge.
+      projectileDetail: opts.projectileDetail && { ...opts.projectileDetail, element },
     }
 
     return {
