@@ -1,7 +1,7 @@
 {
-  "version": "1.4",
-  "in_progress": false,
-  "started_at": "2026-07-21T18:04:40.569243+00:00",
+  "version": "1.5",
+  "in_progress": true,
+  "started_at": "2026-07-27T17:51:18.123172+00:00",
   "started_by": "claude-a6c35399",
   "last_promoted_at": "2026-07-27T14:54:30.479320+00:00",
   "last_promoted_version": "1.4"
