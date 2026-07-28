@@ -201,18 +201,31 @@ median beats C fairly → (0.765/m_C)² ≥ 2.0 → m_C ≤ 0.54
 current S/C           = 2.2/1.3            = 1.69     ← no valid solution exists
 ```
 
-| rank | current | **proposed** | max player | median player |
-|---|---|---|---|---|
-| E | 1.00 | **0.32** | trivial | easy |
-| D | 1.15 | **0.40** | easy | easy |
-| C | 1.30 | **0.50** | easy (R 4.0) | **fair (R 2.3)** |
-| B | 1.50 | **0.63** | fair | hard |
-| A | 1.80 | **0.80** | **hard (R 1.6)** | brutal |
-| S | 2.20 | **1.10** | **loss (R 0.83)** | loss |
+Solving it requires the **encounter** form of R, not the single-mob one. Under the settled headcount reading — *n mobs and n players* — Lanchester's `+n²` (the party focus-fires) and `−n(n+1)/2` (the pack dies one at a time) nearly cancel:
 
-Every rank up to A becomes *weaker per-mob* than a same-level player. Difficulty comes from headcount gating, not from each individual outclassing you.
+```
+R_encounter = R_single × 2n/(n+1)          R_single = (CS_player / CS_mob)²
+```
 
-`TODO(design)` — this is the largest single change in the spec. It reframes "an E mob is your equal" as "an E mob is a third of you."
+That factor only equals 1 at n = 1, so ranks E/D/C can be solved with the closed form but **B and above cannot**. An earlier draft of this table solved every row as if n = 1; the B/A/S multipliers below are the corrected ones, generated from `model/balance_sheet.py` and cross-checked by `tools/combat-lab/verify.mjs`.
+
+| rank | n | current | **proposed** | max, party of n | max, solo | median, party of n |
+|---|---|---|---|---|---|---|
+| E | 1 | 1.00 | **0.290** | 11.89 trivial | 11.89 trivial | 6.61 easy |
+| D | 1 | 1.15 | **0.410** | 5.95 easy | 5.95 easy | 3.31 fair |
+| C | 1 | 1.30 | **0.500** | 4.00 easy | 4.00 easy | 2.23 fair |
+| B | 2 | 1.50 | **0.780** | 2.19 fair | 1.64 hard | 1.22 brutal |
+| A | 4 | 1.80 | **0.943** | 1.80 hard | 1.12 brutal | 1.00 brutal |
+| S | 8 | 2.20 | **1.054** | 1.60 hard | 0.90 LOSS | 0.89 LOSS |
+| SS | 20 | 2.80 | **1.127** | 1.50 hard | 0.79 LOSS | 0.83 LOSS |
+| SSS | 50 | 3.50 | **1.183** | 1.40 hard | 0.71 LOSS | 0.78 LOSS |
+
+Two properties worth naming:
+
+- **Every rank up to A is weaker per-mob than a same-level player.** Difficulty comes from headcount gating, not from each individual outclassing you. It reframes "an E mob is your equal" as "an E mob is a third of you."
+- **Every rank is a hard-to-fair win for a correctly-sized party, and a loss for a soloist from S upward.** Escalation is social — can you field 50 people — rather than numerical. The proposed multipliers compress into a narrow 0.29 → 1.18 band precisely because `2n/(n+1)` is doing the difficulty work instead.
+
+`TODO(design)` — this is the largest single change in the spec. Note the ladder is only *lowered* for E–A; from S upward the mob is stronger than a same-level player, and the earlier "lowered and stretched" framing understates how much of the top end is carried by headcount rather than by the multiplier.
 
 ---
 
