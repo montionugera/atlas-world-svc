@@ -629,38 +629,6 @@
           "Time to clear the encounter",
           "Seconds for the party of n to kill all n mobs.",
         ],
-        "shipped maxHP": [
-          "Maximum health, as the game ships today",
-          "From the live additive formula in derivedStats.ts.",
-        ],
-        "shipped pAtk": [
-          "Physical attack, as the game ships today",
-          "Live additive formula, assuming str equals the player's level.",
-        ],
-        "shipped pDef": [
-          "Physical defence, as the game ships today",
-          "Live additive formula, assuming vit equals the player's level.",
-        ],
-        "shipped move speed": [
-          "Movement speed, as the game ships today",
-          "20 + 0.2 × agi, reaching 39.8 at the stat cap — above the proposed clamp of 36.",
-        ],
-        "proposed maxHP": [
-          "Maximum health under I-028",
-          "What the multiplicative model would give a max-grade player. Not in the game.",
-        ],
-        "proposed pAtk": [
-          "Physical attack under I-028",
-          "What the multiplicative model would give a max-grade player. Not in the game.",
-        ],
-        "proposed pDef": [
-          "Physical defence under I-028",
-          "What the multiplicative model would give a max-grade player. Not in the game.",
-        ],
-        "proposed move speed": [
-          "Movement speed under I-028",
-          "Clamped at 36 so a body cannot cross the collision capture band in one tick.",
-        ],
         "party factor 2n/(n+1)": [
           "Party advantage multiplier",
           "How much easier an n-vs-n encounter is than a duel. 1.0 at n=1, approaching 2.0 as n grows.",
@@ -878,16 +846,19 @@
             rows,
           )}
           <div class="banner info" style="margin-top:12px">
-            <b>Rests on:</b> mobs not focus-firing. If they all attacked one player, the n² terms cancel
-            by symmetry and R collapses back to the 1v1 value — every party column optimistic by up to
-            1.96×, rank S going from <code>1.60 hard</code> to <code>0.90 LOSS</code>.
+            <b>This factor is a specification, not a measurement.</b> It holds only while mobs do not
+            coordinate focus fire. If they all attacked one player, the n² terms cancel by symmetry and R
+            collapses to the 1v1 value — every party column optimistic by up to 1.96×, rank S going from
+            <code>1.60 hard</code> to <code>0.90 LOSS</code>.
             <br /><br />
-            <b>Checked against real code:</b> each mob independently targets its <i>nearest</i> player
-            (<code>AttackBehavior.ts:28</code>, <code>AgentBehaviors.ts</code>), so targeting is
-            positional rather than coordinated — the assumption broadly holds for a spread-out party.
-            But it is <b>formation-dependent</b>: a clumped party, or a melee front-liner, makes the same
-            player nearest to every mob, which is focus fire in practice. The model also pools party HP,
-            which that case breaks — one player dies rather than the pool draining evenly.
+            So <b>"mobs must not coordinate target selection" is a requirement the AI has to satisfy</b>,
+            and it belongs in the spec alongside the multipliers. What today's prototype happens to do is
+            a migration question, not evidence for or against the model.
+            <br /><br />
+            <b>Open design question:</b> the model has no concept of formation, yet formation is what
+            decides whether this factor applies at all — a clumped party or a melee front-liner is
+            nearest to every mob at once. Deciding how much positioning should be worth (currently: up to
+            1.96×, implicitly and by accident) is a design call that has not been made.
           </div>
         </div>`;
       }
@@ -1114,76 +1085,6 @@
         )}`;
       }
 
-      /** What the game ships TODAY, so the design's drift is visible, not asserted. */
-      function renderShipped() {
-        const s = DATA.shipped,
-          d = s.derivedStats,
-          cap = s.statRange.max;
-        const at = (lvl, stat) => ({
-          maxHealth:
-            d.maxHealth.base +
-            d.maxHealth.perVit * stat +
-            d.maxHealth.perLevel * (lvl - 1),
-          pAtk: d.pAtk.base + d.pAtk.perStr * stat,
-          pDef: d.pDef.base + stat,
-          mspd: d.maxMoveSpeed.base + d.maxMoveSpeed.perAgi * stat,
-        });
-        const rows = [1, 50, 99].map((L) => {
-          const a = at(L, Math.min(cap, L)); // stat tracks level as a rough stand-in
-          const proposed = player(L, "max");
-          return [
-            L,
-            n0(a.maxHealth),
-            n0(a.pAtk),
-            n0(a.pDef),
-            a.mspd.toFixed(1),
-            `<span class="dim">${n0(proposed.hp)}</span>`,
-            `<span class="dim">${n0(proposed.pAtk)}</span>`,
-            `<span class="dim">${n0(proposed.pDef)}</span>`,
-            `<span class="dim">${proposed.mspd.toFixed(1)}</span>`,
-          ];
-        });
-        const shippedCapMspd =
-          d.maxMoveSpeed.base + d.maxMoveSpeed.perAgi * cap;
-        return `${section(
-          "Shipped vs proposed — TODAY's numbers next to the DESIGN's",
-          `Left four columns are what the game ships right now, scraped live from ${Object.values(s.sources).length} config files. The grey primed columns are what I-028 would make them. Both describe a <b>player</b>; no mobs here. <b>Assumption:</b> the shipped rows assume every primary stat equals the player's level (capped at ${cap}) — the shipped formula is additive in raw stat values, so it needs a stat number and the game does not pin one to level. Treat the left half as illustrative, not as a measured player.`,
-        )}
-        <div class="banner info">
-          Today the formula is <b>additive</b>:
-          <code>pAtk = ${d.pAtk.base} + ${d.pAtk.perStr}·str + weapon</code>,
-          <code>maxHealth = ${d.maxHealth.base} + ${d.maxHealth.perVit}·vit + ${d.maxHealth.perLevel}·(L−1)</code>,
-          <code>mspd = ${d.maxMoveSpeed.base} + ${d.maxMoveSpeed.perAgi}·agi</code>.
-          I-028 makes stats <b>multiply</b> gear instead. Grey columns are the proposal.
-        </div>
-        ${table(
-          [
-            "player level",
-            "shipped maxHP",
-            "shipped pAtk",
-            "shipped pDef",
-            "shipped move speed",
-            "proposed maxHP",
-            "proposed pAtk",
-            "proposed pDef",
-            "proposed move speed",
-          ],
-          rows,
-        )}
-        <div class="banner ${shippedCapMspd > P.mspdCap ? "bad" : "ok"}" style="margin-top:12px">
-          Shipped move speed at stat cap ${cap} is <b>${shippedCapMspd.toFixed(1)}</b>
-          (proposed clamp ${P.mspdCap}).
-          ${
-            shippedCapMspd > P.mspdCap
-              ? `At ${shippedCapMspd.toFixed(1)} world-units/s with a ${s.game.tickRate}ms tick a body moves
-                 ${((shippedCapMspd * s.game.tickRate) / 1000).toFixed(2)} units per step, past the
-                 ${(2 * (s.physics.playerRadius + s.physics.projectileRadius)).toFixed(1)}-unit head-on capture band —
-                 glancing hits tunnel. The fix is a 4× physics substep, not a lower coefficient.`
-              : "Within the capture band."
-          }
-        </div>`;
-      }
-
       function renderNotes() {
         return `${section(
           "Not covered here",
@@ -1196,12 +1097,11 @@
         </ul>
         ${section("Provenance", "Where each number on this page came from.")}
         <ul class="notes">
-          <li>Shipped values scraped by <code>scripts/gen_combat_model.mjs</code> from
-              ${Object.values(DATA.shipped.sources)
-                .map((f) => `<code>${f}</code>`)
-                .join(", ")}.
-              Re-run it after any combat config change.</li>
-          <li>Proposed model authored in the same script; mirrors
+          <li>Everything on this page comes from <code>combat-model.json</code>, generated by
+              <code>scripts/gen_combat_model.mjs</code>. That file contains the model and nothing else —
+              it does not read the game's source. Reconciling the model with what ships is a separate
+              job, deliberately kept out of here.</li>
+          <li>Mirrors
               <code>${DATA.proposed.reference}</code>.</li>
           <li>Spec: <code>${DATA.proposed.spec}</code></li>
         </ul>`;
@@ -1217,7 +1117,6 @@
           renderCurve(),
           renderMobs(),
           renderInvariants(),
-          renderShipped(),
           renderGlossary(),
           renderNotes(),
         ].join("");
@@ -1268,7 +1167,7 @@
           loadDefaults();
           document.getElementById("hdr").textContent =
             `generated ${json.generatedAt} · schema v${json.version} · ` +
-            `shipped values scraped from source, proposed model from the I-028 spec`;
+            `the I-028 model only — nothing here is read from the game`;
           renderAll();
         })
         .catch(() => {

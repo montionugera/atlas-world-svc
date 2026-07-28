@@ -119,7 +119,7 @@ console.log("\nrendered output");
       `${script}
        DATA = DATA_; P = P_;
        return { TERMS, renderLadder, renderMatrix, renderCurve, renderMobs,
-                renderRequirements, renderInvariants, renderShipped,
+                renderRequirements, renderInvariants,
                 renderGlossary, renderLegend, renderInputs };`,
     )(
       () => inert,
@@ -145,7 +145,6 @@ console.log("\nrendered output");
       "renderCurve",
       "renderMobs",
       "renderInvariants",
-      "renderShipped",
       "renderGlossary",
     ]) {
       try {
@@ -156,7 +155,7 @@ console.log("\nrendered output");
     }
     if (threw) failures++;
     console.log(
-      `  ${threw ? "FAIL" : "PASS"}  all 10 sections render${threw ? ` — ${threw}` : ""}`,
+      `  ${threw ? "FAIL" : "PASS"}  all 9 sections render${threw ? ` — ${threw}` : ""}`,
     );
 
     // Every <th> must carry a tooltip, i.e. its text must exist in TERMS.

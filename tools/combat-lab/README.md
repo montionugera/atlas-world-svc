@@ -20,21 +20,15 @@ Single static HTML, no build step, no dependencies — matching
 `scripts/gen_audio_index.mjs`: a generator reads the real thing on disk and
 writes JSON; the page only renders.
 
-`combat-model.json` has two halves that are deliberately not mixed:
+`combat-model.json` contains the model and nothing else. It does **not** read
+the game's source.
 
-| key        | origin      | meaning                                               |
-| ---------- | ----------- | ----------------------------------------------------- |
-| `shipped`  | source      | scraped from the TypeScript the server actually runs  |
-| `proposed` | design-spec | the I-028 model, which does **not** exist in code yet |
-
-The `shipped` half is never hand-typed. `gen_combat_model.mjs` extracts it from
-`derivedStats.ts`, `combatStats.ts`, `physicsConfig.ts` and `gameConfig.ts`, and
-every extraction asserts it matched — a rename fails the script loudly instead
-of emitting a stale number. That is what makes the "Shipped vs proposed" table
-show real drift rather than a claim about drift.
-
-When the model ships, move each `proposed` value into the scraper and delete it
-from the authored block.
+An earlier version scraped the shipped combat constants out of the server's
+TypeScript so the page could show live drift. That was wrong at this stage: the
+running code is a single-player debug prototype, and putting it beside the design
+invites the design to be judged against it — or bent to match it. The foundation
+gets settled on its own terms; reconciling it with what ships is a separate,
+later job.
 
 ## Verifying it
 

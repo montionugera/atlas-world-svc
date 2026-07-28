@@ -2,218 +2,25 @@
 // Generates tools/combat-lab/combat-model.json — the input data for the combat
 // balance lab (tools/combat-lab/index.html).
 //
-// Two halves, deliberately kept apart:
+// This file is the I-028 combat model and NOTHING ELSE. It deliberately does not
+// read, import or scrape anything from the game.
 //
-//   shipped   — scraped out of the REAL TypeScript the server runs on. Never
-//               hand-typed here. If someone retunes a weapon or the pinned
-//               derivedStats formula, this picks it up on the next run, and the
-//               lab shows the drift against the design. Every extraction below
-//               asserts it matched; a rename fails the script loudly rather
-//               than silently emitting a stale number.
+// An earlier version scraped the shipped constants out of the server's
+// TypeScript so the page could show live drift. That was a mistake at this
+// stage: the running code is a single-player debug prototype, and letting it
+// sit next to the design invites the design to be judged against it — or worse,
+// bent to match it. The foundation gets settled on its own terms first;
+// reconciling it with what ships is a separate, later job.
 //
-//   proposed  — the I-028 combat stat model. This does NOT exist in code yet,
-//               so it is authored here and tagged origin:"design-spec". When it
-//               ships, move each value into the shipped scraper and delete it.
-//
-// Re-run whenever combat config or the design changes:
+// Re-run after changing the model:
 //
 //   node scripts/gen_combat_model.mjs
 //
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve, join } from "node:path";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-
-const SOURCES = {
-  derivedStats: "contracts/src/meta/derivedStats.ts",
-  combatStats: "colyseus-server/src/config/combat/combatStats.ts",
-  physicsConfig: "colyseus-server/src/config/physicsConfig.ts",
-  gameConfig: "colyseus-server/src/config/gameConfig.ts",
-};
-
-const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
-
-/** Pull one capture group out of `src`, or die naming the pattern that broke. */
-function grab(src, label, re, group = 1) {
-  const m = src.match(re);
-  if (!m) {
-    throw new Error(
-      `gen_combat_model: could not extract "${label}" — the source moved or was ` +
-        `renamed. Fix the pattern in scripts/gen_combat_model.mjs:\n  ${re}`,
-    );
-  }
-  return Number(m[group]);
-}
-
-/**
- * Slice exactly one `export const X = {...} as const` literal. Bounded on
- * purpose: an unbounded window silently reads the NEXT block's value when a key
- * is absent, which is how player wind-up times first came out as the mob's.
- */
-function objectBody(src, anchor) {
-  const start = src.indexOf(anchor);
-  if (start < 0) throw new Error(`gen_combat_model: no anchor "${anchor}"`);
-  const end = src.indexOf("} as const", start);
-  if (end < 0)
-    throw new Error(
-      `gen_combat_model: "${anchor}" has no closing "} as const"`,
-    );
-  return src.slice(start, end);
-}
-
-/**
- * Read a numeric field out of one object literal. The value may be a literal or
- * a reference like `PLAYER_DEFAULT_WIND_MS.windDownMs`, resolved via `consts`.
- */
-function field(src, anchor, key, consts = {}) {
-  const body = objectBody(src, anchor);
-  const m = body.match(
-    new RegExp(`\\b${key}:\\s*(-?[\\d.]+|[A-Za-z_$][\\w$]*\\.[\\w$]+)`),
-  );
-  if (!m) {
-    throw new Error(`gen_combat_model: "${anchor}" has no field "${key}"`);
-  }
-  const raw = m[1];
-  if (/^-?[\d.]+$/.test(raw)) return Number(raw);
-  if (!(raw in consts)) {
-    throw new Error(
-      `gen_combat_model: "${anchor}.${key}" is the reference "${raw}", which is ` +
-        `not in the resolved constants map. Add it in scrapeShipped().`,
-    );
-  }
-  return consts[raw];
-}
-
-// ---------------------------------------------------------------- shipped ---
-
-function scrapeShipped() {
-  const ds = read(SOURCES.derivedStats);
-  const cs = read(SOURCES.combatStats);
-  const pc = read(SOURCES.physicsConfig);
-  const gc = read(SOURCES.gameConfig);
-
-  // The pinned formula bodies in derivedStats.ts. These are ADDITIVE today —
-  // that is exactly the thing I-028 replaces, so the lab needs the real numbers
-  // to draw the before/after.
-  const derived = {
-    maxHealth: {
-      base: grab(ds, "maxHealth.base", /maxHealth:\s*(\d+)\s*\+/),
-      perVit: grab(
-        ds,
-        "maxHealth.perVit",
-        /maxHealth:\s*\d+\s*\+\s*(\d+)\s*\*\s*vit/,
-      ),
-      perLevel: grab(
-        ds,
-        "maxHealth.perLevel",
-        /vit\s*\+\s*(\d+)\s*\*\s*\(level\s*-\s*1\)/,
-      ),
-    },
-    pAtk: {
-      base: grab(ds, "pAtk.base", /pAtk:\s*(\d+)\s*\+/),
-      perStr: grab(ds, "pAtk.perStr", /pAtk:\s*\d+\s*\+\s*(\d+)\s*\*\s*str/),
-    },
-    mAtk: {
-      base: grab(ds, "mAtk.base", /mAtk:\s*(\d+)\s*\+/),
-      perInt: grab(ds, "mAtk.perInt", /mAtk:\s*\d+\s*\+\s*(\d+)\s*\*\s*int/),
-    },
-    pDef: {
-      base: grab(ds, "pDef.base", /pDef:\s*(\d+)\s*\+\s*vit/),
-      perVit: 1,
-    },
-    mDef: {
-      base: grab(ds, "mDef.base", /mDef:\s*(\d+)\s*\+\s*int/),
-      perInt: 1,
-    },
-    maxMoveSpeed: {
-      base: grab(ds, "mspd.base", /maxMoveSpeed:\s*(\d+)\s*\+/),
-      perAgi: grab(
-        ds,
-        "mspd.perAgi",
-        /maxMoveSpeed:\s*\d+\s*\+\s*([\d.]+)\s*\*\s*agi/,
-      ),
-    },
-  };
-
-  const statRange = {
-    min: grab(cs, "PRIMARY_MIN", /PRIMARY_MIN\s*=\s*(\d+)/),
-    max: grab(cs, "PRIMARY_MAX", /PRIMARY_MAX\s*=\s*(\d+)/),
-  };
-
-  // PLAYER_STATS spells its wind timings as PLAYER_DEFAULT_WIND_MS.* rather than
-  // literals, so resolve that object first and pass it in.
-  const consts = {
-    "PLAYER_DEFAULT_WIND_MS.windUpMs": field(
-      cs,
-      "export const PLAYER_DEFAULT_WIND_MS",
-      "windUpMs",
-    ),
-    "PLAYER_DEFAULT_WIND_MS.windDownMs": field(
-      cs,
-      "export const PLAYER_DEFAULT_WIND_MS",
-      "windDownMs",
-    ),
-  };
-
-  const block = (anchor) => ({
-    maxHealth: field(cs, anchor, "maxHealth", consts),
-    pAtk: field(cs, anchor, "pAtk", consts),
-    mAtk: field(cs, anchor, "mAtk", consts),
-    pDef: field(cs, anchor, "pDef", consts),
-    mDef: field(cs, anchor, "mDef", consts),
-    armor: field(cs, anchor, "armor", consts),
-    attackRange: field(cs, anchor, "attackRange", consts),
-    atkWindUpTime: field(cs, anchor, "atkWindUpTime", consts),
-    atkWindDownTime: field(cs, anchor, "atkWindDownTime", consts),
-    radius: field(cs, anchor, "radius", consts),
-    maxMoveSpeed: field(cs, anchor, "maxMoveSpeed", consts),
-  });
-
-  // physicsConfig nests radii under per-entity keys; slice to each one first so
-  // we do not pick up a neighbour's radius.
-  const radiusAfter = (key) =>
-    grab(pc.slice(pc.indexOf(key)), `${key}.radius`, /radius:\s*([\d.]+)/);
-
-  return {
-    origin: "source",
-    sources: SOURCES,
-    note:
-      "Scraped from the TypeScript the server actually runs. Do not hand-edit; " +
-      "re-run scripts/gen_combat_model.mjs.",
-    derivedStats: derived,
-    statRange,
-    player: block("export const PLAYER_STATS"),
-    mob: block("export const MOB_STATS"),
-    physics: {
-      timeStep:
-        grab(pc, "timeStep numerator", /timeStep:\s*([\d.]+)\s*\/\s*[\d.]+/) /
-        grab(pc, "timeStep denominator", /timeStep:\s*[\d.]+\s*\/\s*([\d.]+)/),
-      velocityIterations: grab(
-        pc,
-        "velocityIterations",
-        /velocityIterations:\s*(\d+)/,
-      ),
-      positionIterations: grab(
-        pc,
-        "positionIterations",
-        /positionIterations:\s*(\d+)/,
-      ),
-      playerRadius: radiusAfter("player: {"),
-      mobRadius: radiusAfter("mob: {"),
-      projectileRadius: radiusAfter("projectile: {"),
-    },
-    game: {
-      tickRate: grab(gc, "tickRate", /const tickRate\s*=\s*(\d+)/),
-      worldWidth: grab(gc, "worldWidth", /worldWidth:\s*(\d+)/),
-      worldHeight: grab(gc, "worldHeight", /worldHeight:\s*(\d+)/),
-    },
-  };
-}
-
-// --------------------------------------------------------------- proposed ---
-// I-028. Mirrors model/balance_sheet.py exactly — that script and this block
-// must agree, and tools/combat-lab/index.html re-derives everything from here.
 
 const proposed = {
   origin: "design-spec",
@@ -395,29 +202,16 @@ const proposed = {
 // ------------------------------------------------------------------ emit ----
 
 function main() {
-  const out = {
-    version: 1,
-    generatedAt: new Date().toISOString(),
-    shipped: scrapeShipped(),
-    proposed,
-  };
-
+  const out = { version: 2, generatedAt: new Date().toISOString(), proposed };
   const dir = join(ROOT, "tools/combat-lab");
   mkdirSync(dir, { recursive: true });
   const dest = join(dir, "combat-model.json");
   writeFileSync(dest, JSON.stringify(out, null, 2) + "\n");
-
-  const d = out.shipped.derivedStats;
   console.log(`wrote ${dest}`);
   console.log(
-    `  shipped: pAtk = ${d.pAtk.base} + ${d.pAtk.perStr}*str + weapon, ` +
-      `maxHealth = ${d.maxHealth.base} + ${d.maxHealth.perVit}*vit + ${d.maxHealth.perLevel}*(L-1), ` +
-      `mspd = ${d.maxMoveSpeed.base} + ${d.maxMoveSpeed.perAgi}*agi ` +
-      `(→ ${(d.maxMoveSpeed.base + d.maxMoveSpeed.perAgi * out.shipped.statRange.max).toFixed(1)} at cap)`,
-  );
-  console.log(
-    `  proposed: growth ${proposed.inputs.growth.value}, C ${proposed.inputs.statCoef.value}, ` +
-      `${proposed.ladder.length} ranks, ${proposed.requirements.length} requirements`,
+    `  growth ${proposed.inputs.growth.value}, C ${proposed.inputs.statCoef.value}, ` +
+      `${proposed.ladder.length} ranks, ${proposed.builds.length} builds x ` +
+      `${proposed.gearTiers.length} gear tiers, ${proposed.requirements.length} requirements`,
   );
 }
 

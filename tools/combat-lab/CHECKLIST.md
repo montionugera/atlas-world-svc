@@ -203,12 +203,6 @@ Two of these are design questions, not display bugs:
   `K(L)` rides the same growth curve as pDef. So armour never gets relatively
   better or worse as you level. Also deliberate, also worth confirming.
 
-**Assumption in "Shipped vs proposed":** the shipped columns assume every primary
-stat equals the player's level, capped at 99. The shipped formula is additive in
-raw stat values (`pAtk = 10 + 2·str`), so it needs a stat number, and nothing in
-the game pins stats to level. The left half of that table is illustrative, not a
-measured player — the 4.7× HP gap it shows is directionally real but not exact.
-
 ---
 
 ## C. What is NOT verified — read before trusting any verdict
@@ -231,10 +225,7 @@ None of the following is checked by anything, anywhere:
 5. **Jobs cannot matter here.** `R = (CS_p/CS_m)²` cancels the DPS/EHP split, so
    no allocation archetype can change any verdict. Differentiation has to come
    from elements, AoE, range or crit — all outside CS.
-6. **The proposed model is not in the game.** Shipped code is additive
-   (`pAtk = 10 + 2·str + weapon`). The proposed L99 HP is 7,471 against a shipped
-   1,580 — a 4.7× structural gap, not a tuning delta.
-7. **`statCapAtL1/LMax` are declared, not derived.** They are asserted in the
+6. **`statCapAtL1/LMax` are declared, not derived.** They are asserted in the
    JSON and checked against 99, but nothing ties them to the level curve.
 
 ## Where each number comes from
