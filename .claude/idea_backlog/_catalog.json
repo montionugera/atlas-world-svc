@@ -190,5 +190,11 @@
     "title": "recalculateStats clobbers the applied loadout \u2014 SWITCH_WEAPON erases every allocated stat point mid-match",
     "created_at": "2026-07-28T02:35:38.373631+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-033",
+    "title": "Primary-stat clamp split-brain \u2014 Nakama allows unbounded allocation, colyseus clamps 1-99, derivedStats consumes raw",
+    "created_at": "2026-07-28T02:35:44.393621+00:00",
+    "promoted_to": null
   }
 ]
