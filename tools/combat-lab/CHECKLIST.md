@@ -1,17 +1,32 @@
 # Verifying the Combat Balance Lab
 
-Three separate questions, in increasing order of how much they matter and
-decreasing order of how well they are answered:
+Three questions, in increasing order of how much they matter and decreasing
+order of how well they are answered:
 
-| #   | question                            | answered by             | status                      |
-| --- | ----------------------------------- | ----------------------- | --------------------------- |
-| A   | Does the arithmetic match the spec? | `verify.mjs`            | **automated, passing**      |
-| B   | Does the model behave sensibly?     | this checklist, by hand | **do it yourself, ~10 min** |
-| C   | Does it predict the real game?      | nothing yet             | **NOT ANSWERED**            |
+| #   | question                            | answered by             | status                     |
+| --- | ----------------------------------- | ----------------------- | -------------------------- |
+| A   | Does the arithmetic match the spec? | `verify.mjs`            | **automated, passing**     |
+| B   | Does the model behave sensibly?     | this checklist, by hand | **do it yourself, ~5 min** |
+| C   | Does it predict the real game?      | nothing yet             | **NOT ANSWERED**           |
 
-A passing `verify.mjs` proves only that the page and `model/balance_sheet.py`
-agree. Two implementations of the same wrong model would still agree. B and C
-are where actual confidence comes from.
+A passing `verify.mjs` proves the page and the balance sheet agree. Two
+implementations of the same wrong model would also agree. B and C are where
+confidence actually comes from.
+
+## The model in one line
+
+```
+dmg = k × refHp(defender level) × (atk / def)
+```
+
+`refHp` is a **reference curve, not the defender's own HP.** If damage scaled
+with the target's actual HP, bigger bars would take proportionally bigger hits
+and stacking HP would do nothing at all. As a reference curve it only makes `k`
+readable — `k` is the share of a typical HP bar one even hit removes.
+
+Level enters through `atk/def` and nowhere else, because `atk` and `def` already
+grow with their owners' levels. An explicit `growth^lvDiff` would count the gap
+twice. `Level gap weight` then damps what remains.
 
 ---
 
@@ -21,251 +36,163 @@ are where actual confidence comes from.
 node scripts/gen_combat_model.mjs && node tools/combat-lab/verify.mjs
 ```
 
-Expect `OK — index.html reproduces the balance sheet exactly.` and exit 0.
-It asserts 4 requirements, 8 ladder rows, 42 player-curve cells, 3 grade
-identities, axis monotonicity, 72 cross-product cells, and 8 invariants.
+Expect `OK` and exit 0. It parses the **whole** inline script, renders every
+section with stubbed `fetch`/`document`, asserts every column header is defined
+in the page's glossary, then checks 4 requirements, 8 ladder rows, 30 curve
+cells, axis independence, the party factor, the gap knob and 9 invariants.
 
-Since the page-script gate was added it also parses the **entire** inline script,
-not just the model half. That gap was real: a broken string literal in the render
-code once left the page showing nothing but `loading…` while `verify.mjs`
-reported OK. The gate now fails on it (`Unexpected identifier 'dim'`), verified
-by reintroducing the bug deliberately.
+The script-parse gate exists because a broken string literal in the render code
+once left the page showing nothing but `loading…` while `verify.mjs` reported
+OK. Proven to catch it by reintroducing the bug deliberately.
 
-It also **renders every section** with stubbed `fetch`/`document` and asserts that
-each column header appears in the page's `TERMS` glossary. That gate found nine
-undocumented headers on its first run — the `HP′ pAtk′ pDef′ mspd′` columns in
-"Shipped vs proposed", which no reader could have decoded. Any new column now
-fails the build until it is defined.
-
-It will NOT catch: a wrong formula that both implementations share, a mislabelled
-column, a runtime error that only fires on a click, or a modelling assumption
-that does not match the game. **Rendering is still not tested — load the page.**
+**Rendering is still not tested — load the page.**
 
 ---
 
-## B. By hand — ten checks, each ~30 seconds
+## B. By hand
 
-Do these with the sliders at spec defaults (hit **Reset to spec defaults** first).
-Every expected value below was computed from the live model, not asserted.
+Hit **Reset to spec defaults** first. Every number below was computed from the
+live model, not asserted.
 
-### 1. CombatScore really is `√(DPS × EHP)`
+### 1. `k` sets fight length, and only fight length
 
-Player curve, L1: `DPS 20.0`, `EHP 149.3`.
-`√(20 × 149.25) = 54.64` → the table shows **55**. ✅
+`k = 0.10`, so an even fight is `1/k` = **10 hits**. Check the invariant row
+`mirror match is an even fight` reads `atk/def 0.9998` — that is what makes
+`1/k` mean anything.
 
-### 2. The growth rate is exactly what the slider says
+Double `k` to 0.20 and rank C's time to kill halves, 3.24s → 1.62s. Every R on
+the page stays exactly where it was. Same for `Attack speed`: 1.5 → 3.0 also
+halves it, also changes no outcome.
 
-CS at L2 ÷ CS at L1 = **1.045000**, matching `Growth / level`.
-Not approximately — exactly, by construction.
+### 2. Rank multipliers are solved, not authored
 
-### 3. Growth compounds over the whole range
+`mult` is derived from each rank's target R, so the ladder cannot drift. Rank C
+shows `mult 0.6300`, and `1 / 0.63³ = 4.00` — the ladder shows **4.00 easy**.
 
-CS L99 ÷ CS L1 = **74.71**, and `1.045^98 = 74.71`. ✅
-So a level-99 player is ~75× a level-1 player.
+Check rank E too: `0.4381` → `1 / 0.4381³ = 11.89`. If both hold, `R = (CS_p /
+CS_m)³` is right.
 
-### 4. The rank multiplier inverts and squares
+### 3. CombatScore still compounds at the growth rate
 
-Rank C has `mult 0.500`. A max player solo should be `(1/0.5)² = 4.00`.
-Matrix shows **4.00 easy**. ✅
+CS is the geometric mean of `atk`, `def` and `hp`, so it grows at exactly
+`1.045` per level. `CS L99 ÷ CS L1 = 74.71`, and `1.045^98 = 74.71`.
 
-### 5. Same check, awkward number
+### 4. Eight player groups, **two** outcomes
 
-Rank E has `mult 0.290` → `(1/0.29)² = 11.89`. Shows **11.89 trivial**. ✅
-If these two hold, the R formula is right.
+Read `relative strength` in the eight-group table: only **100%** and **79%**.
+Gear tier is the only thing that moves it.
 
-### 6. Gear moves mitigation — the non-obvious one
+- **Build focus does nothing to the outcome.** A budget applies once and is
+  split among the stats it buys, so `(1+2Ca·φ)(1+2Ca·(1−φ))` is symmetric about
+  `φ = 0.5`. Full DPS and full tank have identical CS, identical R and identical
+  HP left. Only time to kill moves — **exactly 2× apart** (0.9s vs 1.8s).
+- **Gear class does nothing either.** Same reason. `dps gear` and `tank gear` are
+  the same strength at every rank.
 
-Compare a max player to a median player at L33:
+This is the model being perfectly fair: no stat is a trap and no stat runs away.
+It is also the model saying **direction is pacing and magnitude is power.** If a
+tank is supposed to be mechanically tougher than a striker, it cannot come from
+here — it has to come from taunt and aggro, i.e. from taking hits meant for
+someone else.
+
+### 5. HP and DEF are exactly interchangeable
+
+By construction: the defensive budget is split `sqrt` each, so `hp × def` is
+exactly the budget. Spending defensively on either buys the same survival.
+Neither is a trap stat. This is a real design decision to accept or reject.
+
+### 6. Level: only the gap matters
+
+Absolute level is irrelevant — rank C is **4.0000** at level 1, 33 and 99 alike.
+Player and mob grow at the same rate, so it cancels. There is an invariant
+asserting it.
+
+The gap does matter, at `growth^(2 × gapWeight)` per level. At the default
+weight **0.6** that is **5.4% per level**:
 
 ```
-max     mitigation 33.0%
-median  mitigation 29.5%
+mob +5 levels    1.30× harder
+mob +10 levels   1.70× harder
+mob +16 levels   2.33× harder
 ```
 
-**Gear scales pDef but not the defence constant K**, so worse gear means you
-mitigate a smaller fraction, not just have less of everything. This compounds
-into CS: median/max CS ratio is **0.7458**, not the 0.765 you would get from
-DPS scaling alone. Then `(0.7458 / 0.5)² = 2.225` → matrix shows **2.23 fair**. ✅
+Set `Level gap weight` to 1.0 and those become 1.55× / 2.41× / 4.09×. Set it to
+0 and level difference stops mattering entirely.
 
-If you did not expect gear to affect mitigation percentage, this is a real design
-decision to accept or reject — not a bug, but not obviously right either.
+It is **symmetric** — softening the punishment softens the reward. Out-levelling
+content near your own level is correspondingly less of a win. Going far back is
+still trivial either way: a level-90 player against a level-10 rank C is R 9156.
 
-### 7. The party factor is `2n/(n+1)` and nothing else
+### 7. Sliders that change nothing, change nothing
 
-Rank B has `n = 2`, so party R should be solo R × `2·2/3 = 1.3333`.
-`2.19 / 1.64 = 1.3333`. ✅
-Check rank A too: `n=4` → `8/5 = 1.6`.
+Only these move an outcome:
 
-### 8. Level difference costs a fixed multiplier
+```
+Stat coefficient C      spreads builds apart
+Encounter size          party factor 2n/(n+1)
+Mob level − player      the gap
+Level gap weight        how much the gap counts
+rank multipliers        the ladder itself
+```
 
-Set `Mob level − player level` to `+1`. R divides by `1.045² = 1.0920`,
-i.e. **each mob level above you makes the fight 9.2% harder**.
-At `+16`, rank C solo goes `4.00 easy` → **0.978 LOSS**. ✅
-A 16-level gap flips any same-level _easy_ into a loss.
+These move **fight length only**: `Damage k`, `Attack speed`.
 
-### 8b. Absolute level does not matter — only the difference
+These move **nothing at all**: `Reference HP`, `Base atk`, `Base def`,
+`Gear class lean`, `Move speed base`. A mob is a scaled copy of the max-grade
+player, so anything applied to both sides cancels in the ratio. `Growth` also
+cancels except through the level gap.
 
-Rank C encounter R is **4.000000** at player level 1, 33 and 99 alike.
-Player and mob grow at the same rate, so `L` cancels out of `CS_p / CS_m`
-entirely. Set the offset to +5 and it is `2.575711` at every level.
+If a slider you expected to matter does nothing, that is why — a statement about
+the model, not a bug.
 
-This is why the rank ladder's level band is greyed out: it is content
-placement, not strength. It changes nothing in that table. There is now an
-invariant asserting it (`R invariant to absolute level`).
+### 8. Party factor is `2n/(n+1)` and nothing else
 
-### 8c. `n` is the encounter size, not the pack size
+`n = 4` is 1.6× easier than a duel, not 4×. The party focus-fires, so mobs die
+one at a time and the average number still alive is `(n+1)/2`. Bounded at 2×:
+`n=8` is 1.778, `n=50` is 1.961, infinity is exactly 2.
 
-`n` is used on **both** sides: `R_encounter = R_single × 2n/(n+1)` comes from a
-party of n focus-firing (`+n²`) against a pack of n dying one at a time
-(`−n(n+1)/2`). So rank S at `n = 8` means **8 players against 8 mobs**, not one
-player against 8.
+**This rests on mobs NOT coordinating focus fire.** If they all attacked one
+player the `n²` terms cancel by symmetry and R collapses to the duel value —
+every party column optimistic by up to 1.96×. It is a **specification**, not a
+measurement: "mobs must not coordinate target selection" is a requirement the AI
+has to satisfy, and it belongs in the spec beside the multipliers.
 
-The column was originally labelled "mobs in pack (n)", which stated half of it.
-If you read the ladder as one player against a pack, every party number on the
-page is wrong by a factor of `2n/(n+1)` — up to 1.96× at SSS.
-
-### 8d. Why n changes anything — and what it rests on
-
-`n = 4` is **1.6× easier** than 1v1, not the same and not harder. The party
-focus-fires, so mobs die one at a time and the average number still alive is
-`(n+1)/2` rather than `n` — at n=4 you absorb 63% of the damage four mobs could
-theoretically deal. Hence `2n/(n+1)`.
-
-The factor is **bounded at 2×**: `n=8` gives 1.778, `n=50` gives 1.961, and
-infinity gives exactly 2. No party size makes a symmetric fight more than twice
-as favourable as a duel.
-
-**This is the load-bearing assumption on the whole party half of the page:**
-mobs are assumed _not_ to focus fire. If they do, the n² terms cancel by
-symmetry and R returns to the 1v1 value — every "party" column optimistic by up
-to 1.96×, and rank S goes from `1.60 hard` to `0.90 LOSS`.
-
-**Checked against real code** — the one item on this list that has been.
-`AttackBehavior.ts:28` has each mob independently reduce `nearbyPlayers` to its
-_nearest_ player. Targeting is positional, not coordinated, so the assumption
-broadly holds for a spread-out party.
-
-It is **formation-dependent**, which the model does not represent at all. A
-clumped party, or a melee front-liner, is nearest to every mob at once — that is
-focus fire in practice, and it also breaks the pooled-party-HP assumption, since
-one player dies rather than a shared pool draining evenly. Formation is an
-unmodelled variable worth up to 1.96×, arguably the largest single gap between
-this page and the real game.
-
-### 9. HP left is `1 − 1/R`
-
-Ladder, rank C: R 4.00 → **75%** HP left.
-Rank S party: R 1.60 → **38%**. ✅
-
-### 10. Sliders that should do nothing, do nothing
-
-Drag **Target mitigation** across its whole range. Every R stays put.
-That is correct and worth understanding: a mob is defined as a scaled copy of
-the max-grade player, so anything applied to both sides cancels in the ratio.
-The same is true of `Base DPS`, `Base HP`, `Base pDef`.
-
-**Only these change outcomes:** `Stat coefficient C` (spreads builds apart),
-`Growth / level` (only via level difference), `Mob level − player level`, and
-the rank multipliers themselves.
-
-If a slider you expected to matter does nothing, this is why — and it is a
-statement about the model, not a bug.
-
-### 11. The eight player groups collapse to four outcomes
-
-`[gear class tank|dps] × [gear tier low|high] × [build full DPS|full tank]` = 8
-rows. Read the `relative strength` column: there are only **four distinct
-values** — 100%, 91%, 66%, 61%. Every pair that differs only in build focus is
-identical.
-
-That is not a rendering bug. `R = (CS_p/CS_m)²`, and the stat split
-`(1 + 2Caφ)(1 + 2Ca(1−φ))` is symmetric about `φ = 0.5`, so **a full-DPS player
-and a full-tank player have exactly the same CombatScore.** Check the HP-left
-numbers: identical down the pair. Check the TTK numbers: exactly **2× apart**.
-
-So in this model **build direction sets the pace of the fight, never the
-result.** Accept that (build = pacing, gear = power) or add a term direction can
-move — but do not assume the table is showing you a tank being tankier.
-
-### 12. Tank gear beats dps gear at every rank
-
-100% vs 91%, and it holds at all seven ranks and both tiers. Defence enters EHP
-**twice** — once as HP, once as mitigation — while offense enters DPS once. Per
-unit of gear budget, armour is simply worth more. Drag `Gear class lean` to 0.9
-and the gap widens; at 0.5 the classes merge.
-
-Greedy players will wear tank gear. Decide whether that is the intent.
-
-### 13. Adding the direction axes moved nothing else
-
-`verify.mjs` asserts `balanced focus + balanced class == the old model`. Every
-requirement, ladder row and curve cell is byte-identical to before the axes
-existed. If that gate ever fails, the two new axes have leaked into numbers that
-predate them.
-
----
-
-## B2. Section audit — which displayed values are load-bearing
-
-Ran every section through the same test: does this value change any outcome?
-Several do not. That is fine, but only if the page says so — a normal-looking
-column implies a dependency, and three of them had none.
-
-| section             | column                           | load-bearing?                                                                                            |
-| ------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Rank ladder         | `usual level band`               | **No.** R is identical at L1 and L99. Greyed out + footnoted.                                            |
-| Rank ladder         | `was`                            | No — prior value, kept for comparison. Greyed by design.                                                 |
-| Rank ladder         | `mult`, `n`                      | Yes. These are the only real inputs to R.                                                                |
-| Outcome matrix      | level in each header             | **No** at offset 0. Marked in the section note.                                                          |
-| Outcome matrix      | build, gear                      | Yes — verified monotonic on each axis independently.                                                     |
-| Player curve        | `damage mitigated`               | **No — constant 33% at every level.** Footnoted.                                                         |
-| Player curve        | `player move speed`              | **No — constant 30.0 at every level.** Footnoted.                                                        |
-| Player curve        | CS, pAtk, mAtk, maxHP, pDef, EHP | Yes, all vary with level.                                                                                |
-| Mob stats           | `mob level`                      | Yes for mob CS/HP/pAtk/pDef — they are absolute values.                                                  |
-| Mob stats           | `time to kill`                   | **No — level-invariant** (3.7313s for rank C at L10, L33 and L90 alike). Depends only on `mult` and `n`. |
-| Shipped vs proposed | all                              | Yes, but see the assumption below.                                                                       |
-
-Two of these are design questions, not display bugs:
-
-- **Move speed has no level term.** `mspd = base × (1 + C·alloc)`, so a level-99
-  player moves exactly as fast as a level-1 player with the same allocation.
-  Deliberate — move speed is outside CombatScore (spec §2.1) — but worth
-  confirming you want it.
-- **Mitigation is flat at 33% forever.** By construction: the defence constant
-  `K(L)` rides the same growth curve as pDef. So armour never gets relatively
-  better or worse as you level. Also deliberate, also worth confirming.
+Formation is not modelled at all, yet it decides whether the factor applies — a
+clumped party is nearest to every mob at once. Worth up to 1.96×, unmodelled.
 
 ---
 
 ## C. What is NOT verified — read before trusting any verdict
 
-None of the following is checked by anything, anywhere:
-
-1. **No simulation has ever been run.** Every number is closed-form. No crit
-   variance, no misses, no kiting, no movement, no line of sight, perfect
-   focus-fire, instant target switching. A `BattleModule` run is the only thing
-   that turns this from a model into evidence.
-2. **Gear tiers E/C/A are invented.** `weapons.ts` has archetypes, not tiers,
-   and there is no rarity field anywhere in `catalogs.ts`. The 0.70/0.85/1.00
-   scale is authored design data — the weakest-grounded input on the page.
-3. **Mana and skills are not in R.** Modelled separately in `mana_level.py` and
-   `parity.py` and never merged. Every verdict is auto-attack-only.
-4. **Top ranks are incoherent.** SSS derives a 9-second encounter against a
+1. **No simulation has ever been run.** Every number is closed-form. No crits,
+   misses, kiting, movement, line of sight; perfect focus fire, instant target
+   switching. A `BattleModule` run is the only thing that turns this from a
+   model into evidence.
+2. **Gear tiers E/C/A are invented.** `weapons.ts` has archetypes, not tiers, and
+   there is no rarity field anywhere. The 0.70/0.85/1.00 scale is authored design
+   data — the weakest-grounded input on the page.
+3. **Gear classes are invented too.** There is no tank/dps gear concept in code.
+4. **Mana and skills are not in R.** Modelled separately in `mana_level.py` and
+   `parity.py`, never merged. Every verdict is auto-attack-only. The model now
+   carries a single `atk` rather than pAtk/mAtk, so physical-vs-magic parity is
+   not represented at all.
+5. **Top ranks are incoherent.** SSS derives a 10-second encounter against a
    3000–4500s target. Either SS/SSS are _n players vs one boss_ rather than a
    pack of n, or the TTK targets are wrong. Everything above rank A is
    provisional.
-5. **Jobs cannot matter here.** `R = (CS_p/CS_m)²` cancels the DPS/EHP split, so
-   no allocation archetype can change any verdict. Differentiation has to come
-   from elements, AoE, range or crit — all outside CS.
-6. **`statCapAtL1/LMax` are declared, not derived.** They are asserted in the
-   JSON and checked against 99, but nothing ties them to the level curve.
+6. **A tank has no mechanical edge.** See B4. Deliberate under this model, but
+   nothing has been designed yet to replace it.
+7. **`gapWeight = 0.6` is chosen, not derived.** It halves the pain of a 10-level
+   gap. No playtest supports the number.
+8. **`statCapAtL1/LMax` are declared, not derived.** Asserted in the JSON and
+   checked against 99, but nothing ties them to the level curve.
 
 ## Where each number comes from
 
-- `shipped` values — scraped live from `derivedStats.ts`, `combatStats.ts`,
-  `physicsConfig.ts`, `gameConfig.ts` by `scripts/gen_combat_model.mjs`. Every
-  extraction asserts it matched, so a rename fails loudly rather than emitting a
-  stale number.
-- `proposed` values — authored in that same script, tagged
-  `origin: "design-spec"`, mirroring `model/balance_sheet.py`.
-- Anything on the page not in one of those two — a bug. Report it.
+- Everything on the page is authored in `scripts/gen_combat_model.mjs`, tagged
+  `origin: "design-spec"`. **Nothing is read from the game.** That is deliberate:
+  the running server is a single-player debug prototype, and letting it sit
+  beside the design invites the design to be judged against it.
+- Rank multipliers are the exception — they are *solved* in that script from each
+  rank's target R, so they cannot drift out of calibration by hand-editing.
+- Anything on the page not from one of those two — a bug. Report it.
