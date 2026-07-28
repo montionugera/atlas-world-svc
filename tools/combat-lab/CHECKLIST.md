@@ -25,8 +25,15 @@ Expect `OK — index.html reproduces the balance sheet exactly.` and exit 0.
 It asserts 4 requirements, 8 ladder rows, 42 player-curve cells, 3 grade
 identities, axis monotonicity, 72 cross-product cells, and 8 invariants.
 
+Since the page-script gate was added it also parses the **entire** inline script,
+not just the model half. That gap was real: a broken string literal in the render
+code once left the page showing nothing but `loading…` while `verify.mjs`
+reported OK. The gate now fails on it (`Unexpected identifier 'dim'`), verified
+by reintroducing the bug deliberately.
+
 It will NOT catch: a wrong formula that both implementations share, a mislabelled
-column, or a modelling assumption that does not match the game.
+column, a runtime error that only fires on a click, or a modelling assumption
+that does not match the game. **Rendering is still not tested — load the page.**
 
 ---
 

@@ -642,12 +642,12 @@
         });
         return `${section(
           "Rank ladder — how strong is each MOB tier",
-          "One row per <b>mob</b> rank, measured against a <b>max-grade player</b> (high build, A gear). ⃰ <b>The level band changes none of these numbers</b> — R is identical at level 1 and level 99, because player and mob grow at the same rate and absolute level cancels. Only the <i>difference</i> between them matters. The band is greyed out because it is content placement, not strength.",
+          "One row per <b>mob</b> rank, measured against a <b>max-grade player</b> (high build, A gear). † <b>The level band changes none of these numbers</b> — R is identical at level 1 and level 99, because player and mob grow at the same rate and absolute level cancels. Only the <i>difference</i> between them matters. The band is greyed out because it is content placement, not strength.",
         )}
         ${table(
           [
             "mob rank",
-            "usual level band ⃰",
+            "usual level band †",
             "mobs in pack (n)",
             "mob CS ÷ player CS",
             "was",
@@ -751,7 +751,7 @@
         });
         return `${section(
           "Player curve — what a PLAYER looks like at each level",
-          "No mobs here. One row per <b>player</b> level for a max-grade player (high build, A gear). <b>EHP</b> is effective HP — raw HP divided by what mitigation lets through. ⃰ Mitigation and move speed are <b>constant at every level by design</b> — mitigation because the defence constant rides the same curve as pDef, move speed because it has no level term at all. If you want either to grow with level, that is a change to the model, not a tuning value.",
+          "No mobs here. One row per <b>player</b> level for a max-grade player (high build, A gear). <b>EHP</b> is effective HP — raw HP divided by what mitigation lets through. † Mitigation and move speed are <b>constant at every level by design</b> — mitigation because the defence constant rides the same curve as pDef, move speed because it has no level term at all. If you want either to grow with level, that is a change to the model, not a tuning value.",
         )}
         ${table(
           [
@@ -761,9 +761,9 @@
             "player mAtk",
             "player maxHP",
             "player pDef",
-            "damage mitigated ⃰",
+            "damage mitigated †",
             "player EHP",
-            "player move speed ⃰",
+            "player move speed †",
           ],
           rows,
         )}

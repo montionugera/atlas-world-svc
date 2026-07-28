@@ -78,6 +78,27 @@ const check = (label, got, want, tol) => {
   );
 };
 
+// verify.mjs only ever evaluated the pure-model region, so a syntax error in
+// the RENDER half passed every check while the page was blank. It happened.
+// Parse the whole inline script before anything else.
+console.log("\npage script");
+{
+  const script = html.match(/<script>([\s\S]*?)<\/script>/);
+  let ok = false,
+    msg = "";
+  try {
+    if (!script) throw new Error("no inline <script> block found");
+    new Function(script[1]);
+    ok = true;
+  } catch (e) {
+    msg = e.message;
+  }
+  if (!ok) failures++;
+  console.log(
+    `  ${ok ? "PASS" : "FAIL"}  whole inline script parses${ok ? "" : ` — ${msg}`}`,
+  );
+}
+
 console.log("\nrequirements (§2) — R values");
 for (const q of model.requirements()) {
   check(q.id, q.r, EXPECT_REQ[q.id], 0.005);
