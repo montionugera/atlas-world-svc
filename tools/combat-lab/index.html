@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>atlas-world-svc — Combat Balance Lab</title>
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --bg-elev: #12151d;
+        --bg-card: #171b26;
+        --border: #262c3a;
+        --border-hover: #3a4256;
+        --text: #e7e9ee;
+        --text-dim: #9aa1b2;
+        --text-faint: #656d80;
+        --accent: #7c9eff;
+        --accent-dim: #3a4a7a;
+        --ok: #7ee787;
+        --err: #ff7b72;
+        --warn: #f2b84b;
+        --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        --sans:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
+
+        --loss: #ff7b72;
+        --brutal: #ff9f6e;
+        --hard: #f2b84b;
+        --fair: #7ee787;
+        --easy: #56d4dd;
+        --trivial: #7c9eff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      header {
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-elev);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 18px;
+        letter-spacing: -0.01em;
+      }
+      h2 {
+        margin: 32px 0 12px;
+        font-size: 15px;
+        color: var(--text);
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      h2 .sub {
+        font-size: 12px;
+        color: var(--text-faint);
+        font-weight: 400;
+      }
+      main {
+        padding: 0 24px 80px;
+        max-width: 1400px;
+      }
+      .meta {
+        font-size: 12px;
+        color: var(--text-faint);
+        font-family: var(--mono);
+      }
+      a {
+        color: var(--accent);
+      }
+
+      .panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+      }
+      .grid-inputs {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 14px 20px;
+      }
+      .input-row label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--text-dim);
+        margin-bottom: 4px;
+      }
+      .input-row label b {
+        font-family: var(--mono);
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .input-row input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
+      }
+      button {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-family: var(--sans);
+        font-size: 12px;
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--border-hover);
+        color: var(--text);
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      th,
+      td {
+        text-align: right;
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      th {
+        color: var(--text-faint);
+        font-weight: 500;
+        text-align: right;
+        font-family: var(--sans);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+      tbody tr:hover {
+        background: #ffffff06;
+      }
+      .scroll {
+        overflow-x: auto;
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 1px 7px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        font-family: var(--sans);
+      }
+      .b-LOSS {
+        background: #ff7b7222;
+        color: var(--loss);
+      }
+      .b-brutal {
+        background: #ff9f6e22;
+        color: var(--brutal);
+      }
+      .b-hard {
+        background: #f2b84b22;
+        color: var(--hard);
+      }
+      .b-fair {
+        background: #7ee78722;
+        color: var(--fair);
+      }
+      .b-easy {
+        background: #56d4dd22;
+        color: var(--easy);
+      }
+      .b-trivial {
+        background: #7c9eff22;
+        color: var(--trivial);
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+      }
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-left-width: 3px;
+        border-radius: 6px;
+        padding: 12px 14px;
+      }
+      .card.pass {
+        border-left-color: var(--ok);
+      }
+      .card.fail {
+        border-left-color: var(--err);
+      }
+      .card .req {
+        font-size: 12px;
+        color: var(--text-dim);
+        margin-bottom: 6px;
+      }
+      .card .val {
+        font-family: var(--mono);
+        font-size: 20px;
+        font-weight: 600;
+      }
+      .card .verdict {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+      }
+      .card.pass .verdict {
+        color: var(--ok);
+      }
+      .card.fail .verdict {
+        color: var(--err);
+      }
+      .card .bound {
+        font-size: 11px;
+        color: var(--text-faint);
+        font-family: var(--mono);
+      }
+
+      .banner {
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-size: 13px;
+        margin: 12px 0;
+        border: 1px solid;
+      }
+      .banner.ok {
+        background: #7ee7870f;
+        border-color: #7ee78744;
+        color: var(--ok);
+      }
+      .banner.bad {
+        background: #ff7b720f;
+        border-color: #ff7b7244;
+        color: var(--err);
+      }
+      .banner.info {
+        background: #7c9eff0f;
+        border-color: #7c9eff44;
+        color: var(--text-dim);
+      }
+
+      .PASS {
+        color: var(--ok);
+        font-weight: 600;
+      }
+      .FAIL {
+        color: var(--err);
+        font-weight: 600;
+      }
+      .dim {
+        color: var(--text-faint);
+      }
+      ul.notes {
+        color: var(--text-dim);
+        font-size: 13px;
+        padding-left: 20px;
+      }
+      ul.notes li {
+        margin-bottom: 6px;
+      }
+      code {
+        font-family: var(--mono);
+        background: #ffffff0d;
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
+      #err {
+        padding: 40px 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>
+        Combat Balance Lab
+        <span class="dim" style="font-weight: 400">— I-028</span>
+      </h1>
+      <div class="meta" id="hdr">loading…</div>
+    </header>
+    <main id="app"></main>
+    <div id="err" hidden>
+      <div class="banner bad">
+        <b>Could not load <code>combat-model.json</code>.</b><br />
+        Browsers block <code>fetch()</code> over <code>file://</code>. Serve the
+        folder instead:<br /><br />
+        <code
+          >node scripts/gen_combat_model.mjs &amp;&amp; (cd tools/combat-lab
+          &amp;&amp; python3 -m http.server 842)</code
+        ><br /><br />
+        then open <a href="http://localhost:842/">http://localhost:842/</a>
+      </div>
+    </div>
+
+    <script>
+      // ---------------------------------------------------------------- model
+      // Mirrors model/balance_sheet.py. Every number on this page is derived
+      // here from combat-model.json — nothing is hand-typed into the markup.
+
+      let DATA = null; // parsed combat-model.json
+      let P = {}; // live tunable inputs (proposed.inputs.*.value, slider-editable)
+
+      const grow = (L) => Math.pow(P.growth, L - 1);
+      /** Defence constant that keeps mitigation % flat across levels. */
+      const kAnchor = () =>
+        (P.def1 * (1 - P.targetReduction)) / P.targetReduction;
+
+      function player(L, grade) {
+        const g = DATA.proposed.grades.find((x) => x.grade === grade);
+        const f = grow(L),
+          C = P.statCoef,
+          a = g.alloc,
+          gs = g.gear;
+        const dps = ((P.dps1 * f) / (1 + C)) * (1 + C * a) * gs;
+        const hp = ((P.hp1 * f) / (1 + C)) * (1 + C * a) * gs;
+        const dfn = P.def1 * f * gs;
+        const red = dfn / (dfn + kAnchor() * f);
+        const ehp = hp / (1 - red);
+        return {
+          dps,
+          hp,
+          ehp,
+          red,
+          pDef: dfn,
+          mDef: dfn,
+          cs: Math.sqrt(dps * ehp),
+          pAtk: (dps * P.physMix) / P.aspd,
+          mAtk: (dps * (1 - P.physMix)) / P.castRate,
+          mspd: Math.min(P.mspdBase * (1 + C * a), P.mspdCap),
+          mspdRaw: P.mspdBase * (1 + C * a),
+        };
+      }
+
+      /** A rank's mob is the max-grade player at that level, scaled by `mult`. */
+      function mob(L, rank) {
+        const r = DATA.proposed.ladder.find((x) => x.rank === rank);
+        const ref = player(L, "max");
+        const s = (v) => v * r.mult;
+        return {
+          n: r.n,
+          mult: r.mult,
+          cs: s(ref.cs),
+          dps: s(ref.dps),
+          ehp: s(ref.ehp),
+          hp: s(ref.hp),
+          pAtk: s(ref.pAtk),
+          pDef: s(ref.pDef),
+        };
+      }
+
+      /**
+       * R = how long you survive / how long the encounter survives. R>1 = win.
+       * Single duel collapses to (CS_p/CS_m)^2 — CS is the sufficient statistic,
+       * the DPS/EHP split cancels. Headcount reading is "n mobs AND n players",
+       * so Lanchester's +n^2 (focus fire) and -n(n+1)/2 (pack dies one at a
+       * time) nearly cancel, leaving 2n/(n+1).
+       */
+      function R(L, rank, grade, solo) {
+        const p = player(L, grade),
+          m = mob(L, rank);
+        const single = Math.pow(p.cs / m.cs, 2);
+        return solo ? single : (single * 2 * m.n) / (m.n + 1);
+      }
+
+      function band(r) {
+        for (const b of DATA.proposed.bands)
+          if (b.max === null || r < b.max) return b.name;
+        return "trivial";
+      }
+      const hpLeft = (r) =>
+        r > 1 ? `${((1 - 1 / r) * 100).toFixed(0)}%` : "—";
+      const midLevel = (rk) => Math.floor((rk.from + rk.to) / 2);
+
+      // ----------------------------------------------------------- invariants
+      function invariants() {
+        const C = P.statCoef,
+          G = P.growth;
+        const reds = [];
+        for (let L = 1; L <= P.levelMax; L++) reds.push(player(L, "max").red);
+        const statShare = C / (1 + C); // provably flat: CS scales by (1+C*alloc)
+        const sss = DATA.proposed.ladder[DATA.proposed.ladder.length - 1];
+        const biggestHp = mob(sss.to, sss.rank).hp * sss.n;
+        const reqs = requirements();
+        const capAtMax = P.mspdBase * (1 + C * 1.0);
+
+        return [
+          [
+            "20-level growth in 120–160%",
+            `${((Math.pow(G, 20) - 1) * 100).toFixed(0)}%`,
+            Math.pow(G, 20) - 1 >= 1.2 && Math.pow(G, 20) - 1 <= 1.6,
+          ],
+          [
+            "CS compounds at the growth rate",
+            `${((player(2, "max").cs / player(1, "max").cs - 1) * 100).toFixed(2)}%`,
+            Math.abs(player(2, "max").cs / player(1, "max").cs - G) < 1e-9,
+          ],
+          [
+            "mitigation % flat across levels",
+            `${(reds[0] * 100).toFixed(0)}%`,
+            Math.max(...reds) - Math.min(...reds) < 1e-9,
+          ],
+          [
+            "stat share ≥25% at every level",
+            `${(statShare * 100).toFixed(1)}% flat`,
+            statShare >= 0.25,
+          ],
+          [
+            "stat cap never exceeds 99",
+            `${DATA.proposed.statCapAtLMax}`,
+            DATA.proposed.statCapAtLMax <= 99,
+          ],
+          [
+            "largest encounter HP fits int32",
+            biggestHp.toLocaleString(undefined, { maximumFractionDigits: 0 }),
+            biggestHp < 2 ** 31,
+          ],
+          [
+            "all four requirements",
+            `${reqs.filter((r) => r.ok).length}/${reqs.length}`,
+            reqs.every((r) => r.ok),
+          ],
+          [
+            `move speed within clamp ${P.mspdCap}`,
+            capAtMax.toFixed(1),
+            capAtMax <= P.mspdCap,
+          ],
+        ];
+      }
+
+      function requirements() {
+        return DATA.proposed.requirements.map((q) => {
+          const r = R(q.level, q.rank, q.grade, q.solo);
+          return { ...q, r, band: band(r), ok: r >= q.min && r < q.max };
+        });
+      }
+
+      // -------------------------------------------------------------- render
+      const el = (h) => {
+        const d = document.createElement("div");
+        d.innerHTML = h;
+        return d.firstElementChild;
+      };
+      const n0 = (v) =>
+        v.toLocaleString(undefined, { maximumFractionDigits: 0 });
+      const rCell = (r) =>
+        `<span class="pill b-${band(r)}">${r.toFixed(2)} ${band(r)}</span>`;
+
+      function table(headers, rows) {
+        return `<div class="scroll"><table><thead><tr>${headers
+          .map((h) => `<th>${h}</th>`)
+          .join("")}</tr></thead><tbody>${rows
+          .map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`)
+          .join("")}</tbody></table></div>`;
+      }
+
+      function renderInputs() {
+        const defs = DATA.proposed.inputs;
+        return `<h2>Inputs <span class="sub">drag anything — every table below recomputes live</span></h2>
+        <div class="panel grid-inputs">${Object.entries(defs)
+          .map(
+            ([k, d]) => `<div class="input-row">
+              <label for="in-${k}">${d.label} <b id="lbl-${k}">${P[k]}</b></label>
+              <input type="range" id="in-${k}" data-key="${k}"
+                     min="${d.min}" max="${d.max}" step="${d.step}" value="${P[k]}" />
+            </div>`,
+          )
+          .join("")}</div>
+        <div style="margin-top:10px"><button id="reset">Reset to spec defaults</button></div>`;
+      }
+
+      function renderRequirements() {
+        const reqs = requirements();
+        const all = reqs.every((r) => r.ok);
+        return `<h2>Requirements <span class="sub">the four outcomes you specified</span></h2>
+        <div class="banner ${all ? "ok" : "bad"}">${
+          all ? "ALL FOUR PASS" : `${reqs.filter((r) => !r.ok).length} FAILING`
+        }</div>
+        <div class="cards">${reqs
+          .map(
+            (q) => `<div class="card ${q.ok ? "pass" : "fail"}">
+              <div class="req">${q.label}</div>
+              <div class="val">${q.r.toFixed(2)} <span class="pill b-${q.band}">${q.band}</span></div>
+              <div class="verdict">${q.ok ? "PASS" : "FAIL"}</div>
+              <div class="bound">needs ${q.min} ≤ R &lt; ${q.max} · L${q.level} ${q.rank} ${q.grade} ${
+                q.solo ? "solo" : "party"
+              }</div>
+            </div>`,
+          )
+          .join("")}</div>`;
+      }
+
+      function renderLadder() {
+        const rows = DATA.proposed.ladder.map((rk) => {
+          const L = midLevel(rk);
+          const re = R(L, rk.rank, "max", false),
+            rs = R(L, rk.rank, "max", true);
+          return [
+            `<b>${rk.rank}</b>`,
+            `${rk.from}–${rk.to}`,
+            rk.n,
+            rk.mult.toFixed(3),
+            `<span class="dim">${rk.was.toFixed(2)}</span>`,
+            rCell(re),
+            hpLeft(re),
+            rCell(rs),
+          ];
+        });
+        return `<h2>Rank ladder <span class="sub">per-mob CS multiplier vs the max-grade player at mid-band level</span></h2>
+        ${table(["rank", "levels", "n", "mult", "was", "encounter R", "HP left", "solo R"], rows)}`;
+      }
+
+      function renderMatrix() {
+        const grades = DATA.proposed.grades.map((g) => g.grade);
+        const rows = DATA.proposed.ladder.map((rk) => {
+          const L = midLevel(rk);
+          const cells = [];
+          for (const solo of [false, true])
+            for (const g of grades) cells.push(rCell(R(L, rk.rank, g, solo)));
+          return [`<b>${rk.rank}</b>`, L, ...cells];
+        });
+        const gs = grades.map((g) => g);
+        return `<h2>Outcome matrix <span class="sub">party of n vs pack of n · solo = 1v1</span></h2>
+        ${table(["rank", "lvl", ...gs.map((g) => `${g} (party)`), ...gs.map((g) => `${g} (solo)`)], rows)}`;
+      }
+
+      function renderCurve() {
+        const levels = [1, 20, 40, 60, 80, P.levelMax];
+        const rows = levels.map((L) => {
+          const p = player(L, "max");
+          return [
+            L,
+            n0(p.cs),
+            n0(p.pAtk),
+            n0(p.mAtk),
+            n0(p.hp),
+            n0(p.pDef),
+            `${(p.red * 100).toFixed(0)}%`,
+            n0(p.ehp),
+            p.mspdRaw > P.mspdCap
+              ? `<span class="FAIL">${p.mspd.toFixed(1)} clamped</span>`
+              : p.mspd.toFixed(1),
+          ];
+        });
+        return `<h2>Player curve <span class="sub">max grade, fully allocated</span></h2>
+        ${table(["L", "CS", "pAtk", "mAtk", "maxHP", "pDef", "mitigation", "EHP", "mspd"], rows)}
+        ${sparkline()}`;
+      }
+
+      /** CS vs level, one line per grade. Log-y — CS spans ~75x over 99 levels. */
+      function sparkline() {
+        const W = 720,
+          H = 200,
+          PAD = 34;
+        const colors = { max: "#7c9eff", median: "#7ee787", min: "#f2b84b" };
+        const grades = DATA.proposed.grades.map((g) => g.grade);
+        const all = grades.flatMap((g) => {
+          const pts = [];
+          for (let L = 1; L <= P.levelMax; L++) pts.push(player(L, g).cs);
+          return pts;
+        });
+        const lo = Math.log(Math.min(...all)),
+          hi = Math.log(Math.max(...all));
+        const x = (L) => PAD + ((L - 1) / (P.levelMax - 1)) * (W - PAD - 8);
+        const y = (cs) =>
+          H - PAD - ((Math.log(cs) - lo) / (hi - lo || 1)) * (H - PAD - 10);
+        const paths = grades
+          .map((g) => {
+            let d = "";
+            for (let L = 1; L <= P.levelMax; L++)
+              d += `${L === 1 ? "M" : "L"}${x(L).toFixed(1)},${y(player(L, g).cs).toFixed(1)} `;
+            return `<path d="${d}" fill="none" stroke="${colors[g]}" stroke-width="1.8"/>`;
+          })
+          .join("");
+        const legend = grades
+          .map(
+            (
+              g,
+              i,
+            ) => `<text x="${PAD + 8 + i * 76}" y="16" fill="${colors[g]}" font-size="11"
+                           font-family="var(--mono)">■ ${g}</text>`,
+          )
+          .join("");
+        const ticks = [1, 25, 50, 75, P.levelMax]
+          .map(
+            (
+              L,
+            ) => `<text x="${x(L)}" y="${H - 12}" fill="#656d80" font-size="10"
+                        text-anchor="middle" font-family="var(--mono)">${L}</text>`,
+          )
+          .join("");
+        return `<div class="panel" style="margin-top:12px">
+          <svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px">
+            ${legend}${paths}${ticks}
+            <text x="4" y="${y(Math.exp(hi))}" fill="#656d80" font-size="10" font-family="var(--mono)">${n0(Math.exp(hi))}</text>
+            <text x="4" y="${y(Math.exp(lo))}" fill="#656d80" font-size="10" font-family="var(--mono)">${n0(Math.exp(lo))}</text>
+          </svg>
+          <div class="meta">CombatScore vs level (log scale)</div>
+        </div>`;
+      }
+
+      function renderMobs() {
+        const rows = DATA.proposed.ladder.map((rk) => {
+          const L = midLevel(rk);
+          const p = player(L, "max"),
+            m = mob(L, rk.rank);
+          const ttk1 = m.ehp / (p.dps * m.n); // n players focusing one mob
+          return [
+            `<b>${rk.rank}</b>`,
+            L,
+            m.n,
+            n0(m.cs),
+            n0(m.hp),
+            n0(m.pAtk),
+            n0(m.pDef),
+            `${ttk1.toFixed(1)}s`,
+            `${(ttk1 * m.n).toFixed(0)}s`,
+          ];
+        });
+        return `<h2>Mob stats <span class="sub">at each rank's mid-band level</span></h2>
+        ${table(["rank", "lvl", "n", "mob CS", "mob HP", "pAtk", "pDef", "TTK/mob", "TTK encounter"], rows)}`;
+      }
+
+      function renderInvariants() {
+        const inv = invariants();
+        const all = inv.every(([, , ok]) => ok);
+        return `<h2>Invariants</h2>
+        <div class="banner ${all ? "ok" : "bad"}">${all ? "ALL PASS" : "SOME FAILED"}</div>
+        ${table(
+          ["invariant", "value", "result"],
+          inv.map(([n, v, ok]) => [
+            n,
+            v,
+            `<span class="${ok ? "PASS" : "FAIL"}">${ok ? "PASS" : "FAIL"}</span>`,
+          ]),
+        )}`;
+      }
+
+      /** What the game ships TODAY, so the design's drift is visible, not asserted. */
+      function renderShipped() {
+        const s = DATA.shipped,
+          d = s.derivedStats,
+          cap = s.statRange.max;
+        const at = (lvl, stat) => ({
+          maxHealth:
+            d.maxHealth.base +
+            d.maxHealth.perVit * stat +
+            d.maxHealth.perLevel * (lvl - 1),
+          pAtk: d.pAtk.base + d.pAtk.perStr * stat,
+          pDef: d.pDef.base + stat,
+          mspd: d.maxMoveSpeed.base + d.maxMoveSpeed.perAgi * stat,
+        });
+        const rows = [1, 50, 99].map((L) => {
+          const a = at(L, Math.min(cap, L)); // stat tracks level as a rough stand-in
+          const proposed = player(L, "max");
+          return [
+            L,
+            n0(a.maxHealth),
+            n0(a.pAtk),
+            n0(a.pDef),
+            a.mspd.toFixed(1),
+            `<span class="dim">${n0(proposed.hp)}</span>`,
+            `<span class="dim">${n0(proposed.pAtk)}</span>`,
+            `<span class="dim">${n0(proposed.pDef)}</span>`,
+            `<span class="dim">${proposed.mspd.toFixed(1)}</span>`,
+          ];
+        });
+        const shippedCapMspd =
+          d.maxMoveSpeed.base + d.maxMoveSpeed.perAgi * cap;
+        return `<h2>Shipped vs proposed <span class="sub">scraped from ${Object.values(s.sources).length} real config files</span></h2>
+        <div class="banner info">
+          Today the formula is <b>additive</b>:
+          <code>pAtk = ${d.pAtk.base} + ${d.pAtk.perStr}·str + weapon</code>,
+          <code>maxHealth = ${d.maxHealth.base} + ${d.maxHealth.perVit}·vit + ${d.maxHealth.perLevel}·(L−1)</code>,
+          <code>mspd = ${d.maxMoveSpeed.base} + ${d.maxMoveSpeed.perAgi}·agi</code>.
+          I-028 makes stats <b>multiply</b> gear instead. Grey columns are the proposal.
+        </div>
+        ${table(["L", "HP", "pAtk", "pDef", "mspd", "HP′", "pAtk′", "pDef′", "mspd′"], rows)}
+        <div class="banner ${shippedCapMspd > P.mspdCap ? "bad" : "ok"}" style="margin-top:12px">
+          Shipped move speed at stat cap ${cap} is <b>${shippedCapMspd.toFixed(1)}</b>
+          (proposed clamp ${P.mspdCap}).
+          ${
+            shippedCapMspd > P.mspdCap
+              ? `At ${shippedCapMspd.toFixed(1)} world-units/s with a ${s.game.tickRate}ms tick a body moves
+                 ${((shippedCapMspd * s.game.tickRate) / 1000).toFixed(2)} units per step, past the
+                 ${(2 * (s.physics.playerRadius + s.physics.projectileRadius)).toFixed(1)}-unit head-on capture band —
+                 glancing hits tunnel. The fix is a 4× physics substep, not a lower coefficient.`
+              : "Within the capture band."
+          }
+        </div>`;
+      }
+
+      function renderNotes() {
+        return `<h2>Not covered here</h2>
+        <ul class="notes">
+          <li>Closed-form only — no crit variance, misses, kiting; perfect focus-fire assumed.
+              A <code>BattleModule</code> run is what turns this from a screen into proof.</li>
+          ${DATA.proposed.openQuestions.map((q) => `<li>${q}</li>`).join("")}
+        </ul>
+        <h2>Provenance</h2>
+        <ul class="notes">
+          <li>Shipped values scraped by <code>scripts/gen_combat_model.mjs</code> from
+              ${Object.values(DATA.shipped.sources)
+                .map((f) => `<code>${f}</code>`)
+                .join(", ")}.
+              Re-run it after any combat config change.</li>
+          <li>Proposed model authored in the same script; mirrors
+              <code>${DATA.proposed.reference}</code>.</li>
+          <li>Spec: <code>${DATA.proposed.spec}</code></li>
+        </ul>`;
+      }
+
+      function renderAll() {
+        document.getElementById("app").innerHTML = [
+          renderInputs(),
+          renderRequirements(),
+          renderLadder(),
+          renderMatrix(),
+          renderCurve(),
+          renderMobs(),
+          renderInvariants(),
+          renderShipped(),
+          renderNotes(),
+        ].join("");
+        wireInputs();
+      }
+
+      function wireInputs() {
+        for (const input of document.querySelectorAll('input[type="range"]')) {
+          input.addEventListener("input", (e) => {
+            const k = e.target.dataset.key;
+            P[k] = parseFloat(e.target.value);
+            const focus = e.target.id,
+              pos = e.target.value;
+            renderAll();
+            const again = document.getElementById(focus);
+            if (again) {
+              again.value = pos;
+              again.focus();
+            }
+          });
+        }
+        document.getElementById("reset").addEventListener("click", () => {
+          loadDefaults();
+          renderAll();
+        });
+      }
+
+      function loadDefaults() {
+        P = {};
+        for (const [k, d] of Object.entries(DATA.proposed.inputs))
+          P[k] = d.value;
+        P.levelMax = DATA.proposed.levelMax;
+      }
+
+      fetch("combat-model.json")
+        .then((r) => {
+          if (!r.ok) throw new Error(r.status);
+          return r.json();
+        })
+        .then((json) => {
+          DATA = json;
+          loadDefaults();
+          document.getElementById("hdr").textContent =
+            `generated ${json.generatedAt} · schema v${json.version} · ` +
+            `shipped values scraped from source, proposed model from the I-028 spec`;
+          renderAll();
+        })
+        .catch(() => {
+          document.getElementById("hdr").textContent = "load failed";
+          document.getElementById("err").hidden = false;
+        });
+    </script>
+  </body>
+</html>

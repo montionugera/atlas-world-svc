@@ -1,0 +1,335 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-28T09:12:27.018Z",
+  "shipped": {
+    "origin": "source",
+    "sources": {
+      "derivedStats": "contracts/src/meta/derivedStats.ts",
+      "combatStats": "colyseus-server/src/config/combat/combatStats.ts",
+      "physicsConfig": "colyseus-server/src/config/physicsConfig.ts",
+      "gameConfig": "colyseus-server/src/config/gameConfig.ts"
+    },
+    "note": "Scraped from the TypeScript the server actually runs. Do not hand-edit; re-run scripts/gen_combat_model.mjs.",
+    "derivedStats": {
+      "maxHealth": {
+        "base": 100,
+        "perVit": 10,
+        "perLevel": 5
+      },
+      "pAtk": {
+        "base": 10,
+        "perStr": 2
+      },
+      "mAtk": {
+        "base": 10,
+        "perInt": 2
+      },
+      "pDef": {
+        "base": 5,
+        "perVit": 1
+      },
+      "mDef": {
+        "base": 5,
+        "perInt": 1
+      },
+      "maxMoveSpeed": {
+        "base": 20,
+        "perAgi": 0.2
+      }
+    },
+    "statRange": {
+      "min": 1,
+      "max": 99
+    },
+    "player": {
+      "maxHealth": 100,
+      "pAtk": 25,
+      "mAtk": 10,
+      "pDef": 1,
+      "mDef": 1,
+      "armor": 0,
+      "attackRange": 3,
+      "atkWindUpTime": 100,
+      "atkWindDownTime": 800,
+      "radius": 1.3,
+      "maxMoveSpeed": 20
+    },
+    "mob": {
+      "maxHealth": 100,
+      "pAtk": 20,
+      "mAtk": 0,
+      "pDef": 2,
+      "mDef": 1,
+      "armor": 1,
+      "attackRange": 1.5,
+      "atkWindUpTime": 0,
+      "atkWindDownTime": 2000,
+      "radius": 4,
+      "maxMoveSpeed": 8
+    },
+    "physics": {
+      "timeStep": 0.016666666666666666,
+      "velocityIterations": 6,
+      "positionIterations": 2,
+      "playerRadius": 1.3,
+      "mobRadius": 4,
+      "projectileRadius": 0.5
+    },
+    "game": {
+      "tickRate": 50,
+      "worldWidth": 1000,
+      "worldHeight": 1000
+    }
+  },
+  "proposed": {
+    "origin": "design-spec",
+    "spec": "docs/superpowers/specs/2026-07-28-combat-stat-model-design.md",
+    "balanceSheet": "docs/superpowers/specs/2026-07-28-combat-balance-sheet.md",
+    "reference": ".claude/idea_backlog/I-028-phase-c-runtime-spine-player-race-class/model/balance_sheet.py",
+    "note": "NOT in code yet. Stats MULTIPLY gear rather than add. Headcount reading is 'n mobs AND n players', so R_encounter = R_single * 2n/(n+1).",
+    "inputs": {
+      "growth": {
+        "value": 1.045,
+        "min": 1.02,
+        "max": 1.07,
+        "step": 0.001,
+        "label": "Growth / level"
+      },
+      "statCoef": {
+        "value": 0.5,
+        "min": 0,
+        "max": 1.5,
+        "step": 0.05,
+        "label": "Stat coefficient C"
+      },
+      "targetReduction": {
+        "value": 0.33,
+        "min": 0,
+        "max": 0.8,
+        "step": 0.01,
+        "label": "Target mitigation"
+      },
+      "dps1": {
+        "value": 20,
+        "min": 5,
+        "max": 60,
+        "step": 1,
+        "label": "Base DPS @L1"
+      },
+      "hp1": {
+        "value": 100,
+        "min": 40,
+        "max": 400,
+        "step": 10,
+        "label": "Base HP @L1"
+      },
+      "def1": {
+        "value": 5,
+        "min": 1,
+        "max": 40,
+        "step": 1,
+        "label": "Base pDef @L1"
+      },
+      "aspd": {
+        "value": 1.5,
+        "min": 0.5,
+        "max": 4,
+        "step": 0.1,
+        "label": "Attack speed (hits/s)"
+      },
+      "castRate": {
+        "value": 0.8,
+        "min": 0.2,
+        "max": 3,
+        "step": 0.1,
+        "label": "Cast rate (casts/s)"
+      },
+      "physMix": {
+        "value": 0.7,
+        "min": 0,
+        "max": 1,
+        "step": 0.05,
+        "label": "Physical share of DPS"
+      },
+      "mspdBase": {
+        "value": 20,
+        "min": 5,
+        "max": 40,
+        "step": 1,
+        "label": "Move speed base"
+      },
+      "mspdCap": {
+        "value": 36,
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "label": "Move speed clamp"
+      }
+    },
+    "levelMax": 99,
+    "statCapAtL1": 10,
+    "statCapAtLMax": 99,
+    "ladder": [
+      {
+        "rank": "E",
+        "mult": 0.29,
+        "n": 1,
+        "from": 1,
+        "to": 12,
+        "was": 1
+      },
+      {
+        "rank": "D",
+        "mult": 0.41,
+        "n": 1,
+        "from": 13,
+        "to": 25,
+        "was": 1.15
+      },
+      {
+        "rank": "C",
+        "mult": 0.5,
+        "n": 1,
+        "from": 26,
+        "to": 40,
+        "was": 1.3
+      },
+      {
+        "rank": "B",
+        "mult": 0.78,
+        "n": 2,
+        "from": 41,
+        "to": 55,
+        "was": 1.5
+      },
+      {
+        "rank": "A",
+        "mult": 0.943,
+        "n": 4,
+        "from": 56,
+        "to": 70,
+        "was": 1.8
+      },
+      {
+        "rank": "S",
+        "mult": 1.054,
+        "n": 8,
+        "from": 71,
+        "to": 84,
+        "was": 2.2
+      },
+      {
+        "rank": "SS",
+        "mult": 1.127,
+        "n": 20,
+        "from": 85,
+        "to": 95,
+        "was": 2.8
+      },
+      {
+        "rank": "SSS",
+        "mult": 1.183,
+        "n": 50,
+        "from": 96,
+        "to": 99,
+        "was": 3.5
+      }
+    ],
+    "grades": [
+      {
+        "grade": "max",
+        "gear": 1,
+        "alloc": 1
+      },
+      {
+        "grade": "median",
+        "gear": 0.85,
+        "alloc": 0.7
+      },
+      {
+        "grade": "min",
+        "gear": 0.7,
+        "alloc": 0.4
+      }
+    ],
+    "bands": [
+      {
+        "name": "LOSS",
+        "max": 1,
+        "tone": "loss"
+      },
+      {
+        "name": "brutal",
+        "max": 1.3,
+        "tone": "brutal"
+      },
+      {
+        "name": "hard",
+        "max": 2,
+        "tone": "hard"
+      },
+      {
+        "name": "fair",
+        "max": 3.5,
+        "tone": "fair"
+      },
+      {
+        "name": "easy",
+        "max": 8,
+        "tone": "easy"
+      },
+      {
+        "name": "trivial",
+        "max": null,
+        "tone": "trivial"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "s-solo-loss",
+        "label": "max player CANNOT solo a same-level S mob",
+        "level": 77,
+        "rank": "S",
+        "grade": "max",
+        "solo": true,
+        "min": 0,
+        "max": 1
+      },
+      {
+        "id": "a-solo-not-easy",
+        "label": "max player cannot EASILY solo same-level A",
+        "level": 63,
+        "rank": "A",
+        "grade": "max",
+        "solo": true,
+        "min": 0,
+        "max": 3.5
+      },
+      {
+        "id": "c-median-fair",
+        "label": "median player beats same-level C, fair",
+        "level": 33,
+        "rank": "C",
+        "grade": "median",
+        "solo": true,
+        "min": 2,
+        "max": 3.5
+      },
+      {
+        "id": "c-max-easy",
+        "label": "max player beats same-level C, easy",
+        "level": 33,
+        "rank": "C",
+        "grade": "max",
+        "solo": true,
+        "min": 3.5,
+        "max": 8
+      }
+    ],
+    "openQuestions": [
+      "Top ranks derive a 2–9s encounter TTK against a 3000–4500s target — are SS/SSS n players vs ONE boss rather than a pack of n?",
+      "Mana, skills and physical-vs-magic parity are modelled separately (mana_level.py, parity.py) and are not folded into R yet.",
+      "R = (CS_p/CS_m)^2 cancels the DPS/EHP split, so jobs cannot change any verdict here. Differentiation must come from elements / AoE / range / crit."
+    ]
+  }
+}
