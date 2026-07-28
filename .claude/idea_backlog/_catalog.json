@@ -172,5 +172,11 @@
     "title": "Activate the element system: give shipped content non-neutral elements (war-scar mobs as Void-line) \u2014 built in F-017 but currently 100% inert",
     "created_at": "2026-07-28T00:48:27.109632+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-030",
+    "title": "Concept-art manifest gate: extend check_asset_manifest.mjs to cover game-client/assets/art/art-manifest.json (80 ungated keys, LFS files unverified) + close the missing art:race-human key",
+    "created_at": "2026-07-28T00:48:33.148657+00:00",
+    "promoted_to": null
   }
 ]
