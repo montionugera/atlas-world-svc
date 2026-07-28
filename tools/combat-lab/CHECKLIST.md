@@ -31,6 +31,12 @@ code once left the page showing nothing but `loading…` while `verify.mjs`
 reported OK. The gate now fails on it (`Unexpected identifier 'dim'`), verified
 by reintroducing the bug deliberately.
 
+It also **renders every section** with stubbed `fetch`/`document` and asserts that
+each column header appears in the page's `TERMS` glossary. That gate found nine
+undocumented headers on its first run — the `HP′ pAtk′ pDef′ mspd′` columns in
+"Shipped vs proposed", which no reader could have decoded. Any new column now
+fails the build until it is defined.
+
 It will NOT catch: a wrong formula that both implementations share, a mislabelled
 column, a runtime error that only fires on a click, or a modelling assumption
 that does not match the game. **Rendering is still not tested — load the page.**

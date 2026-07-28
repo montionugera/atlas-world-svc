@@ -99,6 +99,85 @@ console.log("\npage script");
   );
 }
 
+// Run the RENDER half too, not just the model. Stub the two globals the page
+// touches (fetch, document) so the trailing bootstrap is inert, then call the
+// section renderers directly — they return strings and touch no DOM.
+// This catches render-time exceptions and undocumented column headers, neither
+// of which the syntax gate can see.
+console.log("\nrendered output");
+{
+  const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  const inert = { then: () => inert, catch: () => inert };
+  let page = null,
+    boot = "";
+  try {
+    page = new Function(
+      "fetch",
+      "document",
+      "DATA_",
+      "P_",
+      `${script}
+       DATA = DATA_; P = P_;
+       return { TERMS, renderLadder, renderMatrix, renderCurve, renderMobs,
+                renderRequirements, renderInvariants, renderShipped,
+                renderGlossary, renderLegend, renderInputs };`,
+    )(
+      () => inert,
+      { getElementById: () => ({ style: {}, addEventListener() {} }) },
+      data,
+      P,
+    );
+  } catch (e) {
+    boot = e.message;
+  }
+  if (!page) {
+    failures++;
+    console.log(`  FAIL  render functions load — ${boot}`);
+  } else {
+    let html_ = "",
+      threw = "";
+    for (const name of [
+      "renderLegend",
+      "renderInputs",
+      "renderRequirements",
+      "renderLadder",
+      "renderMatrix",
+      "renderCurve",
+      "renderMobs",
+      "renderInvariants",
+      "renderShipped",
+      "renderGlossary",
+    ]) {
+      try {
+        html_ += page[name]();
+      } catch (e) {
+        threw += `${name}: ${e.message}; `;
+      }
+    }
+    if (threw) failures++;
+    console.log(
+      `  ${threw ? "FAIL" : "PASS"}  all 10 sections render${threw ? ` — ${threw}` : ""}`,
+    );
+
+    // Every <th> must carry a tooltip, i.e. its text must exist in TERMS.
+    const heads = [...html_.matchAll(/<th>([\s\S]*?)<\/th>/g)].map((m) => m[1]);
+    const bare = heads.filter((h) => !h.includes('class="term"'));
+    const dynamic = bare.filter((h) =>
+      /^vs |^L\d|^as shown$|^full name$|^meaning$|^value$|^result$/.test(
+        h.replace(/<[^>]*>/g, "").trim(),
+      ),
+    );
+    const undocumented = bare.filter((h) => !dynamic.includes(h));
+    if (undocumented.length) failures++;
+    console.log(
+      `  ${undocumented.length ? "FAIL" : "PASS"}  every column header is in the glossary` +
+        (undocumented.length
+          ? ` — missing: ${undocumented.map((h) => JSON.stringify(h.replace(/<[^>]*>/g, "").trim())).join(", ")}`
+          : ` (${heads.length - bare.length} documented, ${dynamic.length} generated)`),
+    );
+  }
+}
+
 console.log("\nrequirements (§2) — R values");
 for (const q of model.requirements()) {
   check(q.id, q.r, EXPECT_REQ[q.id], 0.005);

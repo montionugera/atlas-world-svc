@@ -294,6 +294,29 @@
         font-size: 13px;
         color: var(--text-dim);
       }
+      /* Signals "hover me" — every documented header carries a tooltip. */
+      .term {
+        border-bottom: 1px dotted var(--text-faint);
+        cursor: help;
+      }
+      .term:hover {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+      .gloss-t th {
+        text-align: left;
+      }
+      td.gloss {
+        text-align: left;
+        white-space: normal;
+        font-family: var(--sans);
+        font-size: 13px;
+      }
+      td.gloss:first-child {
+        font-family: var(--mono);
+        font-size: 12px;
+        white-space: nowrap;
+      }
       ul.notes {
         color: var(--text-dim);
         font-size: 13px;
@@ -521,9 +544,162 @@
       const rCell = (r) =>
         `<span class="pill b-${band(r)}">${r.toFixed(2)} ${band(r)}</span>`;
 
+      /**
+       * Every abbreviation on the page, defined once. Keys are the exact header
+       * strings passed to table(), so a header with no entry here renders plain
+       * and is immediately obvious as undocumented.
+       */
+      const TERMS = {
+        "mob rank": [
+          "Mob rank",
+          "Content tier, E through SSS. Sets how strong one mob is RELATIVE to a same-level player. It does not imply a level.",
+        ],
+        "encounter size (n)": [
+          "Encounter size",
+          "The number of mobs AND the number of players — both. Rank S at n=8 means 8 players fighting 8 mobs, not one player against 8.",
+        ],
+        "mob CS ÷ player CS": [
+          "Rank multiplier",
+          "The mob's CombatScore as a fraction of a max-grade same-level player's. 0.5 means the mob is half as strong as you; 1.05 means slightly stronger.",
+        ],
+        was: [
+          "Previous multiplier",
+          "What this rank's multiplier was before I-028. Shown for comparison only — no calculation uses it.",
+        ],
+        "R · party of n": [
+          "R for the full encounter",
+          "n players against n mobs. Equals the 1v1 value times 2n/(n+1).",
+        ],
+        "R · 1v1": ["R for a single duel", "One player against one mob."],
+        "player HP left": [
+          "Player HP remaining",
+          "The share of your health pool left when the fight ends, equal to 1 − 1/R. Blank when you lose.",
+        ],
+        "player build": [
+          "Stat allocation completeness",
+          "How fully the player spent their stat points: low 0.4, mid 0.7, high 1.0.",
+        ],
+        "player gear": [
+          "Equipment tier",
+          "E, C or A. NOTE: gear tiers do not exist in the game yet — this scale is authored design data.",
+        ],
+        "player level": ["Player level", "1 to 99."],
+        "mob level": [
+          "Mob level",
+          "Independent of rank. Equals the player's level unless you set an offset; shown red when it differs.",
+        ],
+        "player CS": [
+          "CombatScore",
+          "√(DPS × EHP). The single number that decides a 1v1 — the split between damage and survivability cancels out.",
+        ],
+        "mob CS": ["Mob CombatScore", "√(DPS × EHP) for one mob."],
+        "player pAtk": ["Physical attack", "Physical damage per hit."],
+        "player mAtk": ["Magic attack", "Magic damage per cast."],
+        "player pDef": [
+          "Physical defence",
+          "Feeds mitigation via pDef / (pDef + K), where K rides the same level curve.",
+        ],
+        "mob pAtk": ["Mob physical attack", "Physical damage per hit."],
+        "mob pDef": [
+          "Mob physical defence",
+          "Same mitigation formula as the player.",
+        ],
+        "player maxHP": [
+          "Maximum health",
+          "Raw health pool, before mitigation.",
+        ],
+        "mob HP": ["Mob maximum health", "Raw health pool, before mitigation."],
+        "damage mitigated †": [
+          "Damage reduction",
+          "Share of incoming damage absorbed. Constant at every level by design — K(L) grows at the same rate as pDef.",
+        ],
+        "player EHP": [
+          "Effective health",
+          "maxHP ÷ (1 − mitigation). How much raw damage it actually takes to kill you.",
+        ],
+        "player move speed †": [
+          "Movement speed",
+          "World units per second. Has no level term at all — a level 99 player moves as fast as a level 1 with the same allocation.",
+        ],
+        "time to kill 1 mob": [
+          "Time to kill one mob",
+          "Seconds for the party of n to focus down a single mob. Level-invariant.",
+        ],
+        "time to clear pack": [
+          "Time to clear the encounter",
+          "Seconds for the party of n to kill all n mobs.",
+        ],
+        "shipped maxHP": [
+          "Maximum health, as the game ships today",
+          "From the live additive formula in derivedStats.ts.",
+        ],
+        "shipped pAtk": [
+          "Physical attack, as the game ships today",
+          "Live additive formula, assuming str equals the player's level.",
+        ],
+        "shipped pDef": [
+          "Physical defence, as the game ships today",
+          "Live additive formula, assuming vit equals the player's level.",
+        ],
+        "shipped move speed": [
+          "Movement speed, as the game ships today",
+          "20 + 0.2 × agi, reaching 39.8 at the stat cap — above the proposed clamp of 36.",
+        ],
+        "proposed maxHP": [
+          "Maximum health under I-028",
+          "What the multiplicative model would give a max-grade player. Not in the game.",
+        ],
+        "proposed pAtk": [
+          "Physical attack under I-028",
+          "What the multiplicative model would give a max-grade player. Not in the game.",
+        ],
+        "proposed pDef": [
+          "Physical defence under I-028",
+          "What the multiplicative model would give a max-grade player. Not in the game.",
+        ],
+        "proposed move speed": [
+          "Movement speed under I-028",
+          "Clamped at 36 so a body cannot cross the collision capture band in one tick.",
+        ],
+        invariant: [
+          "Structural property",
+          "Something the model must satisfy regardless of tuning. A FAIL means the current slider settings broke the design.",
+        ],
+      };
+
+      /** Header cell: dotted underline + native tooltip when the term is known. */
+      function th(h) {
+        const key = String(h)
+          .replace(/<[^>]*>/g, "")
+          .trim();
+        const t = TERMS[key];
+        if (!t) return `<th>${h}</th>`;
+        return `<th><span class="term" title="${t[0]} — ${t[1]}">${h}</span></th>`;
+      }
+
+      /** Rendered at the foot of the page, because tooltips do not exist on touch. */
+      function renderGlossary() {
+        const rows = Object.entries(TERMS).map(([k, [full, desc]]) => [
+          `<b>${k}</b>`,
+          full,
+          `<span class="dim">${desc}</span>`,
+        ]);
+        return `${section(
+          "Glossary",
+          "Every abbreviation used above. Column headers on this page carry the same text as a hover tooltip.",
+        )}
+        <div class="scroll"><table class="gloss-t"><thead><tr><th>as shown</th><th>full name</th><th>meaning</th></tr></thead>
+        <tbody>${rows
+          .map(
+            (r) =>
+              `<tr>${r.map((c) => `<td class="gloss">${c}</td>`).join("")}</tr>`,
+          )
+          .join("")}</tbody></table></div>`;
+      }
+
       function table(headers, rows) {
         return `<div class="scroll"><table><thead><tr>${headers
-          .map((h) => `<th>${h}</th>`)
+          .map(th)
           .join("")}</tr></thead><tbody>${rows
           .map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`)
           .join("")}</tbody></table></div>`;
@@ -921,7 +1097,20 @@
           <code>mspd = ${d.maxMoveSpeed.base} + ${d.maxMoveSpeed.perAgi}·agi</code>.
           I-028 makes stats <b>multiply</b> gear instead. Grey columns are the proposal.
         </div>
-        ${table(["L", "HP", "pAtk", "pDef", "mspd", "HP′", "pAtk′", "pDef′", "mspd′"], rows)}
+        ${table(
+          [
+            "player level",
+            "shipped maxHP",
+            "shipped pAtk",
+            "shipped pDef",
+            "shipped move speed",
+            "proposed maxHP",
+            "proposed pAtk",
+            "proposed pDef",
+            "proposed move speed",
+          ],
+          rows,
+        )}
         <div class="banner ${shippedCapMspd > P.mspdCap ? "bad" : "ok"}" style="margin-top:12px">
           Shipped move speed at stat cap ${cap} is <b>${shippedCapMspd.toFixed(1)}</b>
           (proposed clamp ${P.mspdCap}).
@@ -970,6 +1159,7 @@
           renderMobs(),
           renderInvariants(),
           renderShipped(),
+          renderGlossary(),
           renderNotes(),
         ].join("");
         wireInputs();
