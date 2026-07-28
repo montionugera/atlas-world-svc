@@ -480,6 +480,9 @@
         percent: (atk, def, K) => (atk * K) / (def + K),
         subtract: (atk, def) => Math.max(0, atk - def),
         soft: (atk, def) => (atk * atk) / (atk + def),
+        // Lineage 2's shape. K * targetReduction anchors it to the same 33%
+        // baseline as `percent` at reference armour, so the four are comparable.
+        divide: (atk, def, K) => (atk * K * P.targetReduction) / def,
       };
 
       /** Damage per second one side actually lands on the other. */

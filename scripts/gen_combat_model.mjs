@@ -114,7 +114,8 @@ const proposed = {
   // percent  = mitigation as a share of the hit (the model as it stands)
   // subtract = armour cancels damage point for point, and can reach zero
   // soft     = subtractive at the first point, asymptotic to zero after
-  armourRules: ["percent", "subtract", "soft"],
+  // divide   = Lineage 2's shape: damage = k * atk / def
+  armourRules: ["percent", "subtract", "soft", "divide"],
   armourRuleDefault: "percent",
 
   levelMax: 99,

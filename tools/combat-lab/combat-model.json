@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-07-28T16:41:46.016Z",
+  "generatedAt": "2026-07-28T17:59:28.457Z",
   "proposed": {
     "origin": "design-spec",
     "spec": "docs/superpowers/specs/2026-07-28-combat-stat-model-design.md",
@@ -110,7 +110,8 @@
     "armourRules": [
       "percent",
       "subtract",
-      "soft"
+      "soft",
+      "divide"
     ],
     "armourRuleDefault": "percent",
     "levelMax": 99,
