@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "f5179e6aaa4f9379",
+        "id": "4874b4319aa9031b",
         "type": "tabs",
         "children": [
           {
-            "id": "7067624ddde9ece4",
+            "id": "9f9395fb778935aa",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "superpowers/specs/2026-07-23-grand-epic-undertow-design.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "2026-07-23-grand-epic-undertow-design"
+              "title": "New tab"
             }
           }
         ]
@@ -94,7 +90,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "superpowers/specs/2026-07-23-grand-epic-undertow-design.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +99,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for 2026-07-23-grand-epic-undertow-design"
+              "title": "Backlinks"
             }
           },
           {
@@ -113,12 +108,11 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "superpowers/specs/2026-07-23-grand-epic-undertow-design.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from 2026-07-23-grand-epic-undertow-design"
+              "title": "Outgoing links"
             }
           },
           {
@@ -156,13 +150,12 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "superpowers/specs/2026-07-23-grand-epic-undertow-design.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of 2026-07-23-grand-epic-undertow-design"
+              "title": "Outline"
             }
           }
         ]
@@ -183,8 +176,9 @@
       "bases:Create new base": false
     }
   },
-  "active": "7067624ddde9ece4",
+  "active": "9f9395fb778935aa",
   "lastOpenFiles": [
+    "superpowers/specs/2026-07-23-grand-epic-undertow-design.md",
     "superpowers/decisions/2026-07-27-world-wisdom-handoff.html",
     "superpowers/decisions/2026-07-27-world-wisdom-handoff.md",
     "superpowers/decisions",
