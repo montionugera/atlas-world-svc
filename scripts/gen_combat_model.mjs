@@ -298,11 +298,29 @@ const proposed = {
     { rank: "SSS", mult: 1.183, n: 50, from: 96, to: 99, was: 3.5 },
   ],
 
-  // player grade -> gear scale + stat allocation completeness
+  // Two INDEPENDENT player axes. They used to be fused into one max/median/min
+  // scale, which made "great build, bad gear" impossible to read off the page.
+  //
+  // build = how completely the player allocated stat points.
+  builds: [
+    { build: "low", alloc: 0.4 },
+    { build: "mid", alloc: 0.7 },
+    { build: "high", alloc: 1.0 },
+  ],
+  // gear = equipment tier. NOTE: gear tiers do not exist in code — weapons.ts
+  // holds archetypes (sword/staff/bow/dagger/scythe), not tiers. This scale is
+  // authored design data and is the weakest-grounded input on the page.
+  gearTiers: [
+    { tier: "E", scale: 0.7 },
+    { tier: "C", scale: 0.85 },
+    { tier: "A", scale: 1.0 },
+  ],
+  // The old grade names survive as the DIAGONAL of build x gear, so the four
+  // requirements keep meaning exactly what they meant before.
   grades: [
-    { grade: "max", gear: 1.0, alloc: 1.0 },
-    { grade: "median", gear: 0.85, alloc: 0.7 },
-    { grade: "min", gear: 0.7, alloc: 0.4 },
+    { grade: "max", build: "high", gear: "A" },
+    { grade: "median", build: "mid", gear: "C" },
+    { grade: "min", build: "low", gear: "E" },
   ],
 
   // R = time you survive / time the encounter survives. R>1 wins.

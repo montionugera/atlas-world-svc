@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-28T09:12:27.018Z",
+  "generatedAt": "2026-07-28T10:13:56.527Z",
   "shipped": {
     "origin": "source",
     "sources": {
@@ -235,21 +235,49 @@
         "was": 3.5
       }
     ],
-    "grades": [
+    "builds": [
       {
-        "grade": "max",
-        "gear": 1,
-        "alloc": 1
+        "build": "low",
+        "alloc": 0.4
       },
       {
-        "grade": "median",
-        "gear": 0.85,
+        "build": "mid",
         "alloc": 0.7
       },
       {
+        "build": "high",
+        "alloc": 1
+      }
+    ],
+    "gearTiers": [
+      {
+        "tier": "E",
+        "scale": 0.7
+      },
+      {
+        "tier": "C",
+        "scale": 0.85
+      },
+      {
+        "tier": "A",
+        "scale": 1
+      }
+    ],
+    "grades": [
+      {
+        "grade": "max",
+        "build": "high",
+        "gear": "A"
+      },
+      {
+        "grade": "median",
+        "build": "mid",
+        "gear": "C"
+      },
+      {
         "grade": "min",
-        "gear": 0.7,
-        "alloc": 0.4
+        "build": "low",
+        "gear": "E"
       }
     ],
     "bands": [

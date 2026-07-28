@@ -316,18 +316,34 @@
 
       let DATA = null; // parsed combat-model.json
       let P = {}; // live tunable inputs (proposed.inputs.*.value, slider-editable)
+      let crossSolo = true; // outcome matrix: 1v1 by default, toggles to party
 
       const grow = (L) => Math.pow(P.growth, L - 1);
       /** Defence constant that keeps mitigation % flat across levels. */
       const kAnchor = () =>
         (P.def1 * (1 - P.targetReduction)) / P.targetReduction;
 
-      function player(L, grade) {
-        const g = DATA.proposed.grades.find((x) => x.grade === grade);
+      /**
+       * Resolve a player spec to its two independent axes. Accepts either
+       * {build, gear} or a legacy grade name ("max"/"median"/"min"), which is
+       * just a named point on the build x gear diagonal.
+       */
+      function resolve(spec) {
+        const s =
+          typeof spec === "string"
+            ? DATA.proposed.grades.find((x) => x.grade === spec)
+            : spec;
+        const b = DATA.proposed.builds.find((x) => x.build === s.build);
+        const g = DATA.proposed.gearTiers.find((x) => x.tier === s.gear);
+        return { alloc: b.alloc, gearScale: g.scale };
+      }
+
+      function player(L, spec) {
+        const { alloc, gearScale } = resolve(spec);
         const f = grow(L),
           C = P.statCoef,
-          a = g.alloc,
-          gs = g.gear;
+          a = alloc,
+          gs = gearScale;
         const dps = ((P.dps1 * f) / (1 + C)) * (1 + C * a) * gs;
         const hp = ((P.hp1 * f) / (1 + C)) * (1 + C * a) * gs;
         const dfn = P.def1 * f * gs;
@@ -372,8 +388,8 @@
        * so Lanchester's +n^2 (focus fire) and -n(n+1)/2 (pack dies one at a
        * time) nearly cancel, leaving 2n/(n+1).
        */
-      function R(L, rank, grade, solo) {
-        const p = player(L, grade),
+      function R(L, rank, spec, solo) {
+        const p = player(L, spec),
           m = mob(L, rank);
         const single = Math.pow(p.cs / m.cs, 2);
         return solo ? single : (single * 2 * m.n) / (m.n + 1);
@@ -526,18 +542,53 @@
         ${table(["rank", "levels", "n", "mult", "was", "encounter R", "HP left", "solo R"], rows)}`;
       }
 
+      /**
+       * The full cross-product: every build x gear combination against every
+       * mob rank. Rows are 3 builds x 3 gear tiers; columns are the ranks, each
+       * fought at its own mid-band level. The three grade names used by the
+       * requirements are the diagonal, marked with a dot.
+       */
       function renderMatrix() {
-        const grades = DATA.proposed.grades.map((g) => g.grade);
-        const rows = DATA.proposed.ladder.map((rk) => {
-          const L = midLevel(rk);
-          const cells = [];
-          for (const solo of [false, true])
-            for (const g of grades) cells.push(rCell(R(L, rk.rank, g, solo)));
-          return [`<b>${rk.rank}</b>`, L, ...cells];
-        });
-        const gs = grades.map((g) => g);
-        return `<h2>Outcome matrix <span class="sub">party of n vs pack of n · solo = 1v1</span></h2>
-        ${table(["rank", "lvl", ...gs.map((g) => `${g} (party)`), ...gs.map((g) => `${g} (solo)`)], rows)}`;
+        const { builds, gearTiers, grades, ladder } = DATA.proposed;
+        const diagonal = new Set(grades.map((g) => `${g.build}/${g.gear}`));
+        const rows = [];
+        for (const b of builds) {
+          for (const g of gearTiers) {
+            const key = `${b.build}/${g.tier}`;
+            const named = grades.find(
+              (x) => x.build === b.build && x.gear === g.tier,
+            );
+            rows.push([
+              `<b>${b.build}</b>${
+                diagonal.has(key)
+                  ? ` <span class="dim">· ${named.grade}</span>`
+                  : ""
+              }`,
+              g.tier,
+              ...ladder.map((rk) =>
+                rCell(
+                  R(
+                    midLevel(rk),
+                    rk.rank,
+                    { build: b.build, gear: g.tier },
+                    crossSolo,
+                  ),
+                ),
+              ),
+            ]);
+          }
+        }
+        return `<h2>Outcome matrix
+          <span class="sub">player build × gear tier × mob rank — ${rows.length} × ${ladder.length} combinations</span></h2>
+        <div style="margin-bottom:10px">
+          <button id="cross-toggle">${
+            crossSolo
+              ? "showing SOLO (1 player vs 1 mob)"
+              : "showing PARTY (n players vs n mobs)"
+          }</button>
+          <span class="dim" style="font-size:12px;margin-left:8px">click to switch</span>
+        </div>
+        ${table(["build", "gear", ...ladder.map((rk) => `${rk.rank} · L${midLevel(rk)}`)], rows)}`;
       }
 
       function renderCurve() {
@@ -760,6 +811,12 @@
           loadDefaults();
           renderAll();
         });
+        document
+          .getElementById("cross-toggle")
+          .addEventListener("click", () => {
+            crossSolo = !crossSolo;
+            renderAll();
+          });
       }
 
       function loadDefaults() {

@@ -38,7 +38,7 @@ for (const [k, d] of Object.entries(data.proposed.inputs)) P[k] = d.value;
 const model = new Function(
   "DATA",
   "P",
-  `${modelSrc}; return { player, mob, R, band, requirements, invariants, midLevel };`,
+  `${modelSrc}; return { player, mob, R, band, requirements, invariants, midLevel, resolve };`,
 )(data, P);
 
 // --------------------------------------------------- expected (balance sheet)
@@ -107,6 +107,54 @@ for (const [L, want] of Object.entries(EXPECT_CURVE)) {
     check(`L${L} ${names[i]}`, g, want[i], i === 6 ? 0.05 : 0.6),
   );
 }
+
+// The build and gear axes must be genuinely independent: a named grade has to
+// equal its {build, gear} pair, and R has to rise along each axis on its own.
+console.log("\nbuild × gear axes");
+const { builds, gearTiers, grades, ladder } = data.proposed;
+for (const g of grades) {
+  const viaName = model.R(33, "C", g.grade, true);
+  const viaPair = model.R(33, "C", { build: g.build, gear: g.gear }, true);
+  check(`${g.grade} == ${g.build}/${g.gear}`, viaPair, viaName, 1e-9);
+}
+let mono = 0;
+for (const rk of ladder) {
+  const L = model.midLevel(rk);
+  const at = (b, t) => model.R(L, rk.rank, { build: b, gear: t }, true);
+  for (const t of gearTiers.map((x) => x.tier)) {
+    for (let i = 1; i < builds.length; i++) {
+      if (!(at(builds[i].build, t) > at(builds[i - 1].build, t))) mono++;
+    }
+  }
+  for (const b of builds.map((x) => x.build)) {
+    for (let i = 1; i < gearTiers.length; i++) {
+      if (!(at(b, gearTiers[i].tier) > at(b, gearTiers[i - 1].tier))) mono++;
+    }
+  }
+}
+const cells = builds.length * gearTiers.length * ladder.length;
+const finite = builds
+  .flatMap((b) =>
+    gearTiers.flatMap((g) =>
+      ladder.map((rk) =>
+        model.R(
+          model.midLevel(rk),
+          rk.rank,
+          { build: b.build, gear: g.tier },
+          true,
+        ),
+      ),
+    ),
+  )
+  .filter((r) => Number.isFinite(r) && r > 0).length;
+if (mono) failures++;
+if (finite !== cells) failures++;
+console.log(
+  `  ${mono === 0 ? "PASS" : "FAIL"}  R rises along each axis independently`,
+);
+console.log(
+  `  ${finite === cells ? "PASS" : "FAIL"}  all ${cells} cross-product cells finite (${finite}/${cells})`,
+);
 
 console.log("\ninvariants (§7)");
 for (const [name, value, ok] of model.invariants()) {
