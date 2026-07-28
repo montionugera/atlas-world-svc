@@ -87,6 +87,13 @@ const proposed = {
       step: 1,
       label: "Encounter size (n vs n)",
     },
+    gapWeight: {
+      value: 0.6,
+      min: 0,
+      max: 1,
+      step: 0.05,
+      label: "Level gap weight",
+    },
     mobLevelDelta: {
       value: 0,
       min: -20,

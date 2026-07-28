@@ -363,9 +363,23 @@
       const kAnchor = () =>
         (P.def1 * (1 - P.targetReduction)) / P.targetReduction;
 
-      /** Mob level is the player's plus an offset. Rank does not imply a level. */
+      const clampL = (x) => Math.max(1, Math.min(P.levelMax, x));
+
+      /** The level a mob is SHOWN at. Rank does not imply a level. */
+      const mobShownLevel = (L) => clampL(L + (P.mobLevelDelta || 0));
+
+      /**
+       * The level a mob FIGHTS at. Level gap weight scales how much of a level
+       * difference actually counts in combat: 1.0 is the full stat difference,
+       * 0.5 means a 10-level gap fights like a 5-level one.
+       *
+       * It exists because the gap steepness is growth-squared per level, and
+       * growth is pinned to 1.042-1.048 by the 20-level progression invariant.
+       * The whole legal range moves the gap 9.2% -> 8.6%, so softening it at all
+       * requires a separate knob. Every game with level-based combat has one.
+       */
       const mobLevel = (L) =>
-        Math.max(1, Math.min(P.levelMax, L + (P.mobLevelDelta || 0)));
+        clampL(L + (P.mobLevelDelta || 0) * (P.gapWeight ?? 1));
 
       /** The encounter size a rank's multiplier was originally solved against. */
       const rankRef = (rank) =>
@@ -925,7 +939,7 @@
             "player gear",
             ...ladder.map(
               (rk) =>
-                `vs ${rk.rank} mob · L${mobLevel(midLevel(rk))}` +
+                `vs ${rk.rank} mob · L${mobShownLevel(midLevel(rk))}` +
                 (P.mobLevelDelta
                   ? ` <span class="dim">(you L${midLevel(rk)})</span>`
                   : ""),
@@ -1121,14 +1135,15 @@
         const n = P.encounterSize;
         const rows = DATA.proposed.ladder.map((rk) => {
           const L = midLevel(rk),
-            Lm = mobLevel(L);
+            Lm = mobLevel(L),
+            Ls = mobShownLevel(L);
           const p = player(L, "max"),
             m = mob(Lm, rk.rank);
           const ttk1 = m.ehp / (p.dps * n);
           return [
             `<b>${rk.rank}</b>`,
             L,
-            Lm === L ? Lm : `<span class="FAIL">${Lm}</span>`,
+            Ls === L ? Ls : `<span class="FAIL">${Ls}</span>`,
             n0(m.cs),
             n0(m.hp),
             n0(m.pAtk),

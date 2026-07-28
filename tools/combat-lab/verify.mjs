@@ -357,6 +357,43 @@ gate(
   `legacy ${legacy.toFixed(3)} vs per-hit ${perHit.toFixed(3)}`,
 );
 
+// --------------------------------------------------- 5d. level gap -------
+// The gap knob must scale the exponent and nothing else: R(delta) should equal
+// R(0) * growth^(-2 * gapWeight * delta), exactly.
+console.log("\nlevel gap");
+{
+  const build = (w, d) => {
+    const Q = { levelMax: data.proposed.levelMax };
+    for (const [k, v] of Object.entries(data.proposed.inputs)) Q[k] = v.value;
+    Q.armourRule = data.proposed.armourRuleDefault;
+    Q.gapWeight = w;
+    Q.mobLevelDelta = d;
+    return new Function("DATA", "P", `${html.slice(a, b)}; return { Rrule };`)(
+      data,
+      Q,
+    );
+  };
+  const g = data.proposed.inputs.growth.value;
+  let bad = 0;
+  for (const w of [0, 0.25, 0.5, 0.6, 1])
+    for (const d of [-10, -5, 5, 10, 16]) {
+      const got = build(w, d).Rrule(50, "C", "max", 1, "divide");
+      const want =
+        build(w, 0).Rrule(50, "C", "max", 1, "divide") *
+        Math.pow(g, -2 * w * d);
+      if (Math.abs(got / want - 1) > 1e-9) bad++;
+    }
+  gate(bad === 0, "gap weight scales the exponent and nothing else");
+  gate(
+    Math.abs(
+      build(0, 16).Rrule(50, "C", "max", 1, "divide") /
+        build(0, 0).Rrule(50, "C", "max", 1, "divide") -
+        1,
+    ) < 1e-9,
+    "gap weight 0 makes level difference irrelevant",
+  );
+}
+
 // ------------------------------------------------------- 6. invariants ----
 console.log("\ninvariants (§7)");
 for (const [name, value, ok] of model.invariants()) {
