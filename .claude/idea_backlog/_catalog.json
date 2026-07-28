@@ -166,5 +166,11 @@
     "title": "Phase C runtime spine: player race/class field + BaseStat<->PrimaryStats reconciliation + per-race stat leans (F-017 canon-of-intent into game state)",
     "created_at": "2026-07-28T00:48:20.248623+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-029",
+    "title": "Activate the element system: give shipped content non-neutral elements (war-scar mobs as Void-line) \u2014 built in F-017 but currently 100% inert",
+    "created_at": "2026-07-28T00:48:27.109632+00:00",
+    "promoted_to": null
   }
 ]
