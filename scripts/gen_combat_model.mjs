@@ -80,6 +80,13 @@ const proposed = {
       label: "Physical share of DPS",
     },
     mspdBase: { value: 20, min: 5, max: 40, step: 1, label: "Move speed base" },
+    encounterSize: {
+      value: 1,
+      min: 1,
+      max: 50,
+      step: 1,
+      label: "Encounter size (n vs n)",
+    },
     mobLevelDelta: {
       value: 0,
       min: -20,

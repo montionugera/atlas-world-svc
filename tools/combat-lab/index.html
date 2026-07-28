@@ -15,15 +15,12 @@
         --text-dim: #9aa1b2;
         --text-faint: #656d80;
         --accent: #7c9eff;
-        --accent-dim: #3a4a7a;
         --ok: #7ee787;
         --err: #ff7b72;
-        --warn: #f2b84b;
         --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
         --sans:
           -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
           sans-serif;
-
         --loss: #ff7b72;
         --brutal: #ff9f6e;
         --hard: #f2b84b;
@@ -56,17 +53,8 @@
         letter-spacing: -0.01em;
       }
       h2 {
-        margin: 32px 0 12px;
+        margin: 34px 0 6px;
         font-size: 15px;
-        color: var(--text);
-        display: flex;
-        align-items: baseline;
-        gap: 10px;
-      }
-      h2 .sub {
-        font-size: 12px;
-        color: var(--text-faint);
-        font-weight: 400;
       }
       main {
         padding: 0 24px 80px;
@@ -80,6 +68,12 @@
       a {
         color: var(--accent);
       }
+      code {
+        font-family: var(--mono);
+        background: #ffffff0d;
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
 
       .panel {
         background: var(--bg-card);
@@ -87,9 +81,19 @@
         border-radius: 8px;
         padding: 16px;
       }
+      .qline {
+        color: var(--text-dim);
+        font-size: 13px;
+        margin: 0 0 12px;
+      }
+      .qline b {
+        color: var(--text);
+        font-weight: 600;
+      }
+
       .grid-inputs {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
         gap: 14px 20px;
       }
       .input-row label {
@@ -139,7 +143,6 @@
       th {
         color: var(--text-faint);
         font-weight: 500;
-        text-align: right;
         font-family: var(--sans);
         font-size: 11px;
         text-transform: uppercase;
@@ -154,6 +157,14 @@
       }
       .scroll {
         overflow-x: auto;
+      }
+      .term {
+        border-bottom: 1px dotted var(--text-faint);
+        cursor: help;
+      }
+      .term:hover {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
       }
 
       .pill {
@@ -268,16 +279,6 @@
       .dim {
         color: var(--text-faint);
       }
-      /* One-line statement of what a table answers, directly under its title. */
-      .qline {
-        color: var(--text-dim);
-        font-size: 13px;
-        margin: -6px 0 12px;
-      }
-      .qline b {
-        color: var(--text);
-        font-weight: 600;
-      }
       .legend-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -294,14 +295,13 @@
         font-size: 13px;
         color: var(--text-dim);
       }
-      /* Signals "hover me" — every documented header carries a tooltip. */
-      .term {
-        border-bottom: 1px dotted var(--text-faint);
-        cursor: help;
+      ul.notes {
+        color: var(--text-dim);
+        font-size: 13px;
+        padding-left: 20px;
       }
-      .term:hover {
-        color: var(--accent);
-        border-bottom-color: var(--accent);
+      ul.notes li {
+        margin-bottom: 6px;
       }
       .gloss-t th {
         text-align: left;
@@ -316,20 +316,6 @@
         font-family: var(--mono);
         font-size: 12px;
         white-space: nowrap;
-      }
-      ul.notes {
-        color: var(--text-dim);
-        font-size: 13px;
-        padding-left: 20px;
-      }
-      ul.notes li {
-        margin-bottom: 6px;
-      }
-      code {
-        font-family: var(--mono);
-        background: #ffffff0d;
-        padding: 1px 5px;
-        border-radius: 3px;
       }
       #err {
         padding: 40px 24px;
@@ -349,33 +335,37 @@
       <div class="banner bad">
         <b>Could not load <code>combat-model.json</code>.</b><br />
         Browsers block <code>fetch()</code> over <code>file://</code>. Serve the
-        folder instead:<br /><br />
-        <code
-          >node scripts/gen_combat_model.mjs &amp;&amp; (cd tools/combat-lab
-          &amp;&amp; python3 -m http.server 842)</code
-        ><br /><br />
-        then open <a href="http://localhost:842/">http://localhost:842/</a>
+        folder:<br /><br />
+        <code>cd tools/combat-lab &amp;&amp; python3 -m http.server 8421</code>
       </div>
     </div>
 
     <script>
-      // ---------------------------------------------------------------- model
-      // Mirrors model/balance_sheet.py. Every number on this page is derived
-      // here from combat-model.json — nothing is hand-typed into the markup.
+      // ============================================================== model ==
+      // The I-028 combat model. Nothing here reads the game — this is the
+      // foundation on its own terms. Mirrors model/balance_sheet.py; verify.mjs
+      // asserts the two agree.
 
       let DATA = null; // parsed combat-model.json
-      let P = {}; // live tunable inputs (proposed.inputs.*.value, slider-editable)
-      let crossSolo = true; // outcome matrix: 1v1 by default, toggles to party
+      let P = {}; // live tunable inputs, slider-editable
 
       const grow = (L) => Math.pow(P.growth, L - 1);
-      /** Defence constant that keeps mitigation % flat across levels. */
+
+      /** Defence constant, riding the same curve as pDef so mitigation stays flat. */
       const kAnchor = () =>
         (P.def1 * (1 - P.targetReduction)) / P.targetReduction;
 
+      /** Mob level is the player's plus an offset. Rank does not imply a level. */
+      const mobLevel = (L) =>
+        Math.max(1, Math.min(P.levelMax, L + (P.mobLevelDelta || 0)));
+
+      /** The encounter size a rank's multiplier was originally solved against. */
+      const rankRef = (rank) =>
+        DATA.proposed.ladder.find((x) => x.rank === rank).n;
+
       /**
-       * Resolve a player spec to its two independent axes. Accepts either
-       * {build, gear} or a legacy grade name ("max"/"median"/"min"), which is
-       * just a named point on the build x gear diagonal.
+       * Resolve a player to its two independent axes. Accepts {build, gear} or a
+       * legacy grade name, which is just a named point on the diagonal.
        */
       function resolve(spec) {
         const s =
@@ -388,11 +378,9 @@
       }
 
       function player(L, spec) {
-        const { alloc, gearScale } = resolve(spec);
+        const { alloc: a, gearScale: gs } = resolve(spec);
         const f = grow(L),
-          C = P.statCoef,
-          a = alloc,
-          gs = gearScale;
+          C = P.statCoef;
         const dps = ((P.dps1 * f) / (1 + C)) * (1 + C * a) * gs;
         const hp = ((P.hp1 * f) / (1 + C)) * (1 + C * a) * gs;
         const dfn = P.def1 * f * gs;
@@ -404,7 +392,6 @@
           ehp,
           red,
           pDef: dfn,
-          mDef: dfn,
           cs: Math.sqrt(dps * ehp),
           pAtk: (dps * P.physMix) / P.aspd,
           mAtk: (dps * (1 - P.physMix)) / P.castRate,
@@ -413,13 +400,12 @@
         };
       }
 
-      /** A rank's mob is the max-grade player at that level, scaled by `mult`. */
+      /** A mob is the max-grade player at its own level, scaled by the rank multiplier. */
       function mob(L, rank) {
         const r = DATA.proposed.ladder.find((x) => x.rank === rank);
         const ref = player(L, "max");
         const s = (v) => v * r.mult;
         return {
-          n: r.n,
           mult: r.mult,
           cs: s(ref.cs),
           dps: s(ref.dps),
@@ -431,21 +417,21 @@
       }
 
       /**
-       * R = how long you survive / how long the encounter survives. R>1 = win.
-       * Single duel collapses to (CS_p/CS_m)^2 — CS is the sufficient statistic,
-       * the DPS/EHP split cancels. Headcount reading is "n mobs AND n players",
-       * so Lanchester's +n^2 (focus fire) and -n(n+1)/2 (pack dies one at a
-       * time) nearly cancel, leaving 2n/(n+1).
+       * R = how long the player survives ÷ how long the encounter survives.
+       * R > 1 is a win and 1 − 1/R is the HP left.
+       *
+       * n = 1 is THE FOUNDATION: R = (CS_p / CS_m)². CombatScore is the exact
+       * sufficient statistic — the DPS/EHP split cancels entirely.
+       *
+       * n > 1 layers on the party factor 2n/(n+1): the party focus-fires, so mobs
+       * die one at a time and the average number still alive is (n+1)/2 rather
+       * than n. Encounter size is a property of the FIGHT, not of the mob's rank.
        */
-      /** Mob level is player level plus the offset — rank does not fix a level. */
-      const mobLevel = (L) =>
-        Math.max(1, Math.min(P.levelMax, L + (P.mobLevelDelta || 0)));
-
-      function R(L, rank, spec, solo) {
+      function R(L, rank, spec, n = 1) {
         const p = player(L, spec),
           m = mob(mobLevel(L), rank);
         const single = Math.pow(p.cs / m.cs, 2);
-        return solo ? single : (single * 2 * m.n) / (m.n + 1);
+        return n <= 1 ? single : (single * 2 * n) / (n + 1);
       }
 
       function band(r) {
@@ -457,17 +443,26 @@
         r > 1 ? `${((1 - 1 / r) * 100).toFixed(0)}%` : "—";
       const midLevel = (rk) => Math.floor((rk.from + rk.to) / 2);
 
-      // ----------------------------------------------------------- invariants
+      function requirements() {
+        return DATA.proposed.requirements.map((q) => {
+          const r = R(q.level, q.rank, q.grade, q.solo ? 1 : rankRef(q.rank));
+          return { ...q, r, band: band(r), ok: r >= q.min && r < q.max };
+        });
+      }
+
       function invariants() {
         const C = P.statCoef,
           G = P.growth;
         const reds = [];
         for (let L = 1; L <= P.levelMax; L++) reds.push(player(L, "max").red);
-        const statShare = C / (1 + C); // provably flat: CS scales by (1+C*alloc)
+        const statShare = C / (1 + C); // provably flat: CS scales by (1 + C·alloc)
         const sss = DATA.proposed.ladder[DATA.proposed.ladder.length - 1];
         const biggestHp = mob(sss.to, sss.rank).hp * sss.n;
         const reqs = requirements();
         const capAtMax = P.mspdBase * (1 + C * 1.0);
+        const flat = [1, 25, 50, 75, P.levelMax].map((L) =>
+          R(L, "C", "max", 1),
+        );
 
         return [
           [
@@ -510,94 +505,63 @@
             capAtMax.toFixed(1),
             capAtMax <= P.mspdCap,
           ],
-          // Pure exponential growth means CS_p/CS_m has no L in it. If this ever
-          // fails, some term stopped scaling with the level curve.
-          (() => {
-            const rs = [1, 25, 50, 75, P.levelMax].map((L) =>
-              R(L, "C", "max", false),
-            );
-            const spread = Math.max(...rs) - Math.min(...rs);
-            return [
-              "R invariant to absolute level",
-              `${rs[0].toFixed(4)} at every level`,
-              spread < 1e-9,
-            ];
-          })(),
+          // Pure exponential growth means L cancels out of CS_p/CS_m. If this
+          // fails, some term stopped riding the level curve.
+          [
+            "R invariant to absolute level",
+            `${flat[0].toFixed(4)} at every level`,
+            Math.max(...flat) - Math.min(...flat) < 1e-9,
+          ],
         ];
       }
 
-      function requirements() {
-        return DATA.proposed.requirements.map((q) => {
-          const r = R(q.level, q.rank, q.grade, q.solo);
-          return { ...q, r, band: band(r), ok: r >= q.min && r < q.max };
-        });
-      }
+      // ============================================================= render ==
 
-      // -------------------------------------------------------------- render
-      const el = (h) => {
-        const d = document.createElement("div");
-        d.innerHTML = h;
-        return d.firstElementChild;
-      };
-      const n0 = (v) =>
-        v.toLocaleString(undefined, { maximumFractionDigits: 0 });
-      const rCell = (r) =>
-        `<span class="pill b-${band(r)}">${r.toFixed(2)} ${band(r)}</span>`;
-
-      /**
-       * Every abbreviation on the page, defined once. Keys are the exact header
-       * strings passed to table(), so a header with no entry here renders plain
-       * and is immediately obvious as undocumented.
-       */
+      /** Every abbreviation on the page. A header missing here fails verify.mjs. */
       const TERMS = {
         "mob rank": [
           "Mob rank",
-          "Content tier, E through SSS. Sets how strong one mob is RELATIVE to a same-level player. It does not imply a level.",
-        ],
-        "encounter size (n)": [
-          "Encounter size",
-          "The number of mobs AND the number of players — both. Rank S at n=8 means 8 players fighting 8 mobs, not one player against 8.",
+          "Content tier E through SSS. Sets how strong one mob is RELATIVE to a same-level player. It does not imply a level or a headcount.",
         ],
         "mob CS ÷ player CS": [
           "Rank multiplier",
-          "The mob's CombatScore as a fraction of a max-grade same-level player's. 0.5 means the mob is half as strong as you; 1.05 means slightly stronger.",
+          "The mob's CombatScore as a fraction of a max-grade same-level player's. 0.5 means half as strong as you.",
         ],
         was: [
           "Previous multiplier",
-          "What this rank's multiplier was before I-028. Shown for comparison only — no calculation uses it.",
+          "The value before I-028. Comparison only — no calculation uses it.",
         ],
-        "R · party of n": [
-          "R for the full encounter",
-          "n players against n mobs. Equals the 1v1 value times 2n/(n+1).",
+        "R · 1v1": [
+          "R for a single duel",
+          "One player against one mob. This is the foundation; everything else layers on top of it.",
         ],
-        "R · 1v1": ["R for a single duel", "One player against one mob."],
         "player HP left": [
           "Player HP remaining",
-          "The share of your health pool left when the fight ends, equal to 1 − 1/R. Blank when you lose.",
+          "1 − 1/R. Blank when you lose.",
         ],
         "player build": [
           "Stat allocation completeness",
-          "How fully the player spent their stat points: low 0.4, mid 0.7, high 1.0.",
+          "How fully stat points were spent: low 0.4, mid 0.7, high 1.0.",
         ],
         "player gear": [
           "Equipment tier",
-          "E, C or A. NOTE: gear tiers do not exist in the game yet — this scale is authored design data.",
+          "E, C or A. Gear tiers do not exist in the game — this scale is authored design data and the weakest-grounded input here.",
         ],
         "player level": ["Player level", "1 to 99."],
         "mob level": [
           "Mob level",
-          "Independent of rank. Equals the player's level unless you set an offset; shown red when it differs.",
+          "Independent of rank. Equals the player's unless you set an offset; shown red when it differs.",
         ],
         "player CS": [
           "CombatScore",
-          "√(DPS × EHP). The single number that decides a 1v1 — the split between damage and survivability cancels out.",
+          "√(DPS × EHP). The single number that decides a duel — the split between damage and survivability cancels out.",
         ],
         "mob CS": ["Mob CombatScore", "√(DPS × EHP) for one mob."],
         "player pAtk": ["Physical attack", "Physical damage per hit."],
         "player mAtk": ["Magic attack", "Magic damage per cast."],
         "player pDef": [
           "Physical defence",
-          "Feeds mitigation via pDef / (pDef + K), where K rides the same level curve.",
+          "Feeds mitigation via pDef / (pDef + K).",
         ],
         "mob pAtk": ["Mob physical attack", "Physical damage per hit."],
         "mob pDef": [
@@ -615,123 +579,88 @@
         ],
         "player EHP": [
           "Effective health",
-          "maxHP ÷ (1 − mitigation). How much raw damage it actually takes to kill you.",
+          "maxHP ÷ (1 − mitigation). Raw damage needed to kill you.",
         ],
         "player move speed †": [
           "Movement speed",
-          "World units per second. Has no level term at all — a level 99 player moves as fast as a level 1 with the same allocation.",
+          "World units per second. No level term at all — a level 99 player moves as fast as a level 1 with the same allocation.",
         ],
         "time to kill 1 mob": [
           "Time to kill one mob",
-          "Seconds for the party of n to focus down a single mob. Level-invariant.",
+          "Seconds for the party to focus down a single mob. Level-invariant.",
         ],
         "time to clear pack": [
           "Time to clear the encounter",
-          "Seconds for the party of n to kill all n mobs.",
+          "Seconds to kill all n mobs.",
+        ],
+        "encounter size (n)": [
+          "Encounter size",
+          "n players against n mobs. A property of the FIGHT, not of the rank — an input you set, not a column of the ladder.",
         ],
         "party factor 2n/(n+1)": [
           "Party advantage multiplier",
-          "How much easier an n-vs-n encounter is than a duel. 1.0 at n=1, approaching 2.0 as n grows.",
+          "How much easier n-vs-n is than a duel. 1.0 at n=1, approaching 2.0 and never reaching it.",
         ],
         "damage you actually take": [
           "Share of theoretical incoming damage",
-          "(n+1)/2n — because mobs die progressively under focus fire rather than all living to the end.",
+          "(n+1)/2n — mobs die progressively under focus fire rather than all living to the end.",
         ],
-        effect: [
-          "Plain-language summary",
-          "The same number stated as a percentage.",
-        ],
+        effect: ["Plain-language summary", "The same number as a percentage."],
         invariant: [
           "Structural property",
-          "Something the model must satisfy regardless of tuning. A FAIL means the current slider settings broke the design.",
+          "Something the model must satisfy regardless of tuning. A FAIL means the current settings broke the design.",
         ],
       };
 
-      /** Header cell: dotted underline + native tooltip when the term is known. */
+      const n0 = (v) =>
+        v.toLocaleString(undefined, { maximumFractionDigits: 0 });
+      const rCell = (r) =>
+        `<span class="pill b-${band(r)}">${r.toFixed(2)} ${band(r)}</span>`;
+
       function th(h) {
         const key = String(h)
           .replace(/<[^>]*>/g, "")
           .trim();
         const t = TERMS[key];
-        if (!t) return `<th>${h}</th>`;
-        return `<th><span class="term" title="${t[0]} — ${t[1]}">${h}</span></th>`;
-      }
-
-      /** Rendered at the foot of the page, because tooltips do not exist on touch. */
-      function renderGlossary() {
-        const rows = Object.entries(TERMS).map(([k, [full, desc]]) => [
-          `<b>${k}</b>`,
-          full,
-          `<span class="dim">${desc}</span>`,
-        ]);
-        return `${section(
-          "Glossary",
-          "Every abbreviation used above. Column headers on this page carry the same text as a hover tooltip.",
-        )}
-        <div class="scroll"><table class="gloss-t"><thead><tr><th>as shown</th><th>full name</th><th>meaning</th></tr></thead>
-        <tbody>${rows
-          .map(
-            (r) =>
-              `<tr>${r.map((c) => `<td class="gloss">${c}</td>`).join("")}</tr>`,
-          )
-          .join("")}</tbody></table></div>`;
+        return t
+          ? `<th><span class="term" title="${t[0]} — ${t[1]}">${h}</span></th>`
+          : `<th>${h}</th>`;
       }
 
       function table(headers, rows) {
-        return `<div class="scroll"><table><thead><tr>${headers
-          .map(th)
-          .join("")}</tr></thead><tbody>${rows
-          .map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`)
-          .join("")}</tbody></table></div>`;
+        return `<div class="scroll"><table><thead><tr>${headers.map(th).join("")}</tr></thead>
+          <tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>
+          </table></div>`;
       }
 
-      /**
-       * Every section states, in one line, what question its table answers and
-       * which actor each axis belongs to. "Rank" alone is ambiguous — it means
-       * the MOB's rank here and nothing else on the page uses that word.
-       */
+      /** Title plus one line stating what the table answers and whose numbers they are. */
       function section(title, question) {
-        return `<h2>${title}</h2>
-          <div class="qline">${question}</div>`;
+        return `<h2>${title}</h2><div class="qline">${question}</div>`;
       }
 
-      /** Who is who, and how to read a coloured pill. Shown once, up top. */
       function renderLegend() {
         const bands = DATA.proposed.bands
           .map(
             (b) =>
-              `<span class="pill b-${b.name}">${b.name}</span> ${
-                b.max === null ? "≥ 8" : `&lt; ${b.max}`
-              }`,
+              `<span class="pill b-${b.name}">${b.name}</span> ${b.max === null ? "≥ 8" : `&lt; ${b.max}`}`,
           )
           .join(" · ");
         return `${section(
           "How to read this page",
-          "Three things vary: the <b>player</b> (level, build, gear), the <b>mob</b> (rank, level, how many), and the <b>encounter</b> (solo or party).",
+          "Three things vary: the <b>player</b> (level, build, gear), the <b>mob</b> (rank, level), and the <b>encounter</b> (how many a side).",
         )}
         <div class="panel">
           <div class="legend-grid">
-            <div>
-              <div class="legend-h">PLAYER</div>
-              <div class="legend-b"><code>build</code> = how completely stat points were spent (low/mid/high).
-              <code>gear</code> = equipment tier (E/C/A). <code>L</code> = player level, 1–${P.levelMax}.
-              <code>CS</code> = CombatScore = <code>√(DPS × EHP)</code>.</div>
-            </div>
-            <div>
-              <div class="legend-h">MOB</div>
-              <div class="legend-b"><code>rank</code> = E → SSS, the content tier. Each rank owns a level band and a
-              headcount <code>n</code>. A mob has its own <b>level</b>, independent of rank — rank sets how strong it
-              is <i>relative to a same-level player</i>, level sets absolute power. The
-              <code>Mob level − player level</code> slider offsets it; at 0 every fight is same-level.
-              A mob's stats are the max-grade player at the <b>mob's</b> level times the rank's
-              <code>mult</code>.</div>
-            </div>
-            <div>
-              <div class="legend-h">OUTCOME — R</div>
-              <div class="legend-b"><code>R</code> = how long the <b>player</b> survives ÷ how long the
-              <b>encounter</b> survives. <code>R &gt; 1</code> = player wins, and <code>1 − 1/R</code> is the
-              player's HP at the end. For 1v1 it equals <code>(CS_player / CS_mob)²</code>.</div>
-            </div>
+            <div><div class="legend-h">PLAYER</div><div class="legend-b">
+              <code>build</code> = how fully stat points were spent. <code>gear</code> = equipment tier.
+              <code>CS</code> = CombatScore = <code>√(DPS × EHP)</code>.</div></div>
+            <div><div class="legend-h">MOB</div><div class="legend-b">
+              <code>rank</code> = E → SSS. Sets strength <i>relative to a same-level player</i> and nothing
+              else. Level and headcount are separate inputs.</div></div>
+            <div><div class="legend-h">OUTCOME — R</div><div class="legend-b">
+              How long the <b>player</b> survives ÷ how long the <b>encounter</b> survives.
+              <code>R &gt; 1</code> = win, <code>1 − 1/R</code> = HP left.
+              A duel is exactly <code>(CS_player / CS_mob)²</code>.</div></div>
           </div>
           <div class="legend-h" style="margin-top:14px">BANDS</div>
           <div class="legend-b">${bands}</div>
@@ -742,15 +671,14 @@
         const defs = DATA.proposed.inputs;
         return `${section(
           "Inputs — the knobs",
-          "These drive <b>both</b> the player and the mobs, since a mob is defined as a scaled copy of the max-grade player. Every table below recomputes live.",
+          "These drive <b>both</b> sides: a mob is a scaled copy of the max-grade player, so anything applied to both cancels in R. Only <code>Stat coefficient C</code>, <code>Encounter size</code>, <code>Mob level − player level</code> and the rank multipliers change an outcome.",
         )}
         <div class="panel grid-inputs">${Object.entries(defs)
           .map(
             ([k, d]) => `<div class="input-row">
-              <label for="in-${k}">${d.label} <b id="lbl-${k}">${P[k]}</b></label>
-              <input type="range" id="in-${k}" data-key="${k}"
-                     min="${d.min}" max="${d.max}" step="${d.step}" value="${P[k]}" />
-            </div>`,
+            <label for="in-${k}">${d.label} <b id="lbl-${k}">${P[k]}</b></label>
+            <input type="range" id="in-${k}" data-key="${k}" min="${d.min}" max="${d.max}" step="${d.step}" value="${P[k]}" />
+          </div>`,
           )
           .join("")}</div>
         <div style="margin-top:10px"><button id="reset">Reset to spec defaults</button></div>`;
@@ -761,64 +689,59 @@
         const all = reqs.every((r) => r.ok);
         return `${section(
           "Requirements — the four outcomes you specified",
-          "Each card fixes a <b>player</b> grade, a <b>mob</b> rank and a level, then checks R lands in the band you asked for.",
+          "Each card fixes a <b>player</b> grade, a <b>mob</b> rank and a level, then checks R lands in the band you asked for. These use each rank's reference encounter size, not the slider.",
         )}
-        <div class="banner ${all ? "ok" : "bad"}">${
-          all ? "ALL FOUR PASS" : `${reqs.filter((r) => !r.ok).length} FAILING`
-        }</div>
+        <div class="banner ${all ? "ok" : "bad"}">${all ? "ALL FOUR PASS" : `${reqs.filter((r) => !r.ok).length} FAILING`}</div>
         <div class="cards">${reqs
           .map(
             (q) => `<div class="card ${q.ok ? "pass" : "fail"}">
-              <div class="req">${q.label}</div>
-              <div class="val">${q.r.toFixed(2)} <span class="pill b-${q.band}">${q.band}</span></div>
-              <div class="verdict">${q.ok ? "PASS" : "FAIL"}</div>
-              <div class="bound">needs ${q.min} ≤ R &lt; ${q.max} · L${q.level} ${q.rank} ${q.grade} ${
-                q.solo ? "solo" : "party"
-              }</div>
-            </div>`,
+          <div class="req">${q.label}</div>
+          <div class="val">${q.r.toFixed(2)} <span class="pill b-${q.band}">${q.band}</span></div>
+          <div class="verdict">${q.ok ? "PASS" : "FAIL"}</div>
+          <div class="bound">needs ${q.min} ≤ R &lt; ${q.max} · L${q.level} ${q.rank} ${q.grade} ${q.solo ? "1v1" : "party"}</div>
+        </div>`,
           )
           .join("")}</div>`;
       }
 
       function renderLadder() {
+        const n = P.encounterSize;
         const rows = DATA.proposed.ladder.map((rk) => {
           const L = midLevel(rk);
-          const re = R(L, rk.rank, "max", false),
-            rs = R(L, rk.rank, "max", true);
+          const duel = R(L, rk.rank, "max", 1);
           return [
             `<b>${rk.rank}</b>`,
-            rk.n,
             rk.mult.toFixed(3),
             `<span class="dim">${rk.was.toFixed(2)}</span>`,
-            rCell(re),
-            hpLeft(re),
-            rCell(rs),
+            rCell(duel),
+            hpLeft(duel),
+            n > 1
+              ? rCell(R(L, rk.rank, "max", n))
+              : `<span class="dim">—</span>`,
           ];
         });
         return `${section(
           "Rank ladder — how strong is each MOB tier",
-          "One row per <b>mob</b> rank, measured against a <b>max-grade player</b> (high build, A gear). <b>n is the whole encounter</b> — n mobs <i>and</i> n players, so rank S means 8 players against 8 mobs. Level is absent on purpose: R is identical at level 1 and level 99, because player and mob grow at the same rate and absolute level cancels out. Only the <i>difference</i> between their levels matters.",
+          "One row per <b>mob</b> rank against a <b>max-grade player</b>. Rank carries strength and nothing else — no level, no headcount. R is identical at level 1 and level 99 because player and mob grow at the same rate, so only the level <i>difference</i> matters.",
         )}
         ${table(
           [
             "mob rank",
-            "encounter size (n)",
             "mob CS ÷ player CS",
             "was",
-            "R · party of n",
-            "player HP left",
             "R · 1v1",
+            "player HP left",
+            n > 1
+              ? `R · ${n}v${n}`
+              : `R · ${n}v${n} <span class="dim">(raise Encounter size)</span>`,
           ],
           rows,
         )}
-        ${partyFactorNote()}`;
+        ${renderPartyFactor()}`;
       }
 
-      /**
-       * Why n changes anything at all. This is the most-asked question about the
-       * model and the answer rests on an assumption worth stating out loud.
-       */
-      function partyFactorNote() {
+      /** Why n changes anything, and the requirement it places on the AI. */
+      function renderPartyFactor() {
         const rows = [1, 2, 4, 8, 20, 50].map((n) => [
           n,
           ((2 * n) / (n + 1)).toFixed(3),
@@ -828,13 +751,10 @@
         return `<div class="panel" style="margin-top:14px">
           <div class="legend-h">WHY n MATTERS — 4v4 IS NOT THE SAME AS 1v1</div>
           <div class="legend-b" style="margin-bottom:12px">
-            The party <b>focus-fires</b>: all n players hit one mob, so mobs die one at a time and the
-            pack's damage output decays as the fight goes on. The average number of mobs still alive is
-            <code>(n+1)/2</code>, not <code>n</code> — so you absorb far less damage than n mobs could
-            theoretically deal. That is worth a factor of <code>2n/(n+1)</code>.
-            <br /><br />
-            It is <b>bounded at 2×</b>. However big the party, focus-firing can never make a symmetric
-            fight more than twice as favourable as a duel.
+            The party <b>focus-fires</b>: all n players hit one mob, so mobs die one at a time and the pack's
+            damage decays. The average number still alive is <code>(n+1)/2</code>, not <code>n</code>, so you
+            absorb far less than n mobs could theoretically deal. That is <code>2n/(n+1)</code> — and it is
+            <b>bounded at 2×</b>. No party size makes a symmetric fight more than twice as favourable as a duel.
           </div>
           ${table(
             [
@@ -846,54 +766,33 @@
             rows,
           )}
           <div class="banner info" style="margin-top:12px">
-            <b>This factor is a specification, not a measurement.</b> It holds only while mobs do not
-            coordinate focus fire. If they all attacked one player, the n² terms cancel by symmetry and R
-            collapses to the 1v1 value — every party column optimistic by up to 1.96×, rank S going from
-            <code>1.60 hard</code> to <code>0.90 LOSS</code>.
+            <b>This is a specification, not a measurement.</b> It holds only while mobs do not coordinate focus
+            fire. If they all attacked one player the n² terms cancel by symmetry and R collapses to the duel
+            value. So <b>"mobs must not coordinate target selection" is a requirement the AI has to satisfy</b>,
+            and it belongs in the spec beside the multipliers.
             <br /><br />
-            So <b>"mobs must not coordinate target selection" is a requirement the AI has to satisfy</b>,
-            and it belongs in the spec alongside the multipliers. What today's prototype happens to do is
-            a migration question, not evidence for or against the model.
-            <br /><br />
-            <b>Open design question:</b> the model has no concept of formation, yet formation is what
-            decides whether this factor applies at all — a clumped party or a melee front-liner is
-            nearest to every mob at once. Deciding how much positioning should be worth (currently: up to
-            1.96×, implicitly and by accident) is a design call that has not been made.
+            <b>Open design question:</b> the model has no concept of formation, yet formation decides whether
+            this factor applies at all — a clumped party is nearest to every mob at once. How much positioning
+            should be worth (currently up to 1.96×, implicitly) has not been decided.
           </div>
         </div>`;
       }
 
-      /**
-       * The full cross-product: every build x gear combination against every
-       * mob rank. Rows are 3 builds x 3 gear tiers; columns are the ranks, each
-       * fought at its own mid-band level. The three grade names used by the
-       * requirements are the diagonal, marked with a dot.
-       */
       function renderMatrix() {
         const { builds, gearTiers, grades, ladder } = DATA.proposed;
-        const diagonal = new Set(grades.map((g) => `${g.build}/${g.gear}`));
+        const n = P.encounterSize;
+        const named = (b, g) =>
+          grades.find((x) => x.build === b && x.gear === g);
         const rows = [];
         for (const b of builds) {
           for (const g of gearTiers) {
-            const key = `${b.build}/${g.tier}`;
-            const named = grades.find(
-              (x) => x.build === b.build && x.gear === g.tier,
-            );
+            const nm = named(b.build, g.tier);
             rows.push([
-              `<b>${b.build}</b>${
-                diagonal.has(key)
-                  ? ` <span class="dim">· ${named.grade}</span>`
-                  : ""
-              }`,
+              `<b>${b.build}</b>${nm ? ` <span class="dim">· ${nm.grade}</span>` : ""}`,
               g.tier,
               ...ladder.map((rk) =>
                 rCell(
-                  R(
-                    midLevel(rk),
-                    rk.rank,
-                    { build: b.build, gear: g.tier },
-                    crossSolo,
-                  ),
+                  R(midLevel(rk), rk.rank, { build: b.build, gear: g.tier }, n),
                 ),
               ),
             ]);
@@ -901,24 +800,16 @@
         }
         return `${section(
           "Outcome matrix — who beats what",
-          `Rows are the <b>player</b> (${builds.length} builds × ${gearTiers.length} gear tiers). Columns are the <b>mob</b> rank. Each cell is R — ${
-            crossSolo
-              ? "one player against one mob"
-              : "n players against n mobs"
-          }. The level shown in each header is where that rank is normally met; ${
+          `Rows are the <b>player</b> (${builds.length} builds × ${gearTiers.length} gear tiers). Columns are the <b>mob</b> rank. Each cell is R for ${
+            n <= 1
+              ? "<b>one player against one mob</b> — the foundation"
+              : `<b>${n} players against ${n} mobs</b>`
+          }. ${
             P.mobLevelDelta
-              ? "with a level offset set, it is the <b>mob's</b> level and your own is shown beside it"
-              : "it does <b>not</b> affect any cell — R is the same at every level"
-          }.`,
+              ? "Header levels are the <b>mob's</b>, with yours beside them."
+              : "Header levels do <b>not</b> affect any cell — R is the same at every level."
+          }`,
         )}
-        <div style="margin-bottom:10px">
-          <button id="cross-toggle">${
-            crossSolo
-              ? "showing SOLO — 1 player vs 1 mob"
-              : "showing PARTY — n players vs n mobs"
-          }</button>
-          <span class="dim" style="font-size:12px;margin-left:8px">click to switch</span>
-        </div>
         ${table(
           [
             "player build",
@@ -936,8 +827,7 @@
       }
 
       function renderCurve() {
-        const levels = [1, 20, 40, 60, 80, P.levelMax];
-        const rows = levels.map((L) => {
+        const rows = [1, 20, 40, 60, 80, P.levelMax].map((L) => {
           const p = player(L, "max");
           return [
             L,
@@ -955,7 +845,7 @@
         });
         return `${section(
           "Player curve — what a PLAYER looks like at each level",
-          "No mobs here. One row per <b>player</b> level for a max-grade player (high build, A gear). <b>EHP</b> is effective HP — raw HP divided by what mitigation lets through. † Mitigation and move speed are <b>constant at every level by design</b> — mitigation because the defence constant rides the same curve as pDef, move speed because it has no level term at all. If you want either to grow with level, that is a change to the model, not a tuning value.",
+          "No mobs here. A max-grade player at each level. † Mitigation and move speed are <b>constant at every level by design</b> — mitigation because the defence constant rides the same curve as pDef, move speed because it has no level term. Making either grow with level is a change to the model, not a tuning value.",
         )}
         ${table(
           [
@@ -974,7 +864,7 @@
         ${sparkline()}`;
       }
 
-      /** CS vs level, one line per grade. Log-y — CS spans ~75x over 99 levels. */
+      /** CS vs level per grade. Log-y — CS spans ~75× over 99 levels. */
       function sparkline() {
         const W = 720,
           H = 200,
@@ -982,9 +872,9 @@
         const colors = { max: "#7c9eff", median: "#7ee787", min: "#f2b84b" };
         const grades = DATA.proposed.grades.map((g) => g.grade);
         const all = grades.flatMap((g) => {
-          const pts = [];
-          for (let L = 1; L <= P.levelMax; L++) pts.push(player(L, g).cs);
-          return pts;
+          const out = [];
+          for (let L = 1; L <= P.levelMax; L++) out.push(player(L, g).cs);
+          return out;
         });
         const lo = Math.log(Math.min(...all)),
           hi = Math.log(Math.max(...all));
@@ -1001,61 +891,53 @@
           .join("");
         const legend = grades
           .map(
-            (
-              g,
-              i,
-            ) => `<text x="${PAD + 8 + i * 76}" y="16" fill="${colors[g]}" font-size="11"
-                           font-family="var(--mono)">■ ${g}</text>`,
+            (g, i) =>
+              `<text x="${PAD + 8 + i * 76}" y="16" fill="${colors[g]}" font-size="11">■ ${g}</text>`,
           )
           .join("");
         const ticks = [1, 25, 50, 75, P.levelMax]
           .map(
-            (
-              L,
-            ) => `<text x="${x(L)}" y="${H - 12}" fill="#656d80" font-size="10"
-                        text-anchor="middle" font-family="var(--mono)">${L}</text>`,
+            (L) =>
+              `<text x="${x(L)}" y="${H - 12}" fill="#656d80" font-size="10" text-anchor="middle">${L}</text>`,
           )
           .join("");
         return `<div class="panel" style="margin-top:12px">
-          <svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px">
-            ${legend}${paths}${ticks}
-            <text x="4" y="${y(Math.exp(hi))}" fill="#656d80" font-size="10" font-family="var(--mono)">${n0(Math.exp(hi))}</text>
-            <text x="4" y="${y(Math.exp(lo))}" fill="#656d80" font-size="10" font-family="var(--mono)">${n0(Math.exp(lo))}</text>
+          <svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px">${legend}${paths}${ticks}
+            <text x="4" y="${y(Math.exp(hi))}" fill="#656d80" font-size="10">${n0(Math.exp(hi))}</text>
+            <text x="4" y="${y(Math.exp(lo))}" fill="#656d80" font-size="10">${n0(Math.exp(lo))}</text>
           </svg>
-          <div class="meta">CombatScore vs level (log scale)</div>
-        </div>`;
+          <div class="meta">CombatScore vs level (log scale)</div></div>`;
       }
 
       function renderMobs() {
+        const n = P.encounterSize;
         const rows = DATA.proposed.ladder.map((rk) => {
-          const L = midLevel(rk);
-          const Lm = mobLevel(L);
+          const L = midLevel(rk),
+            Lm = mobLevel(L);
           const p = player(L, "max"),
             m = mob(Lm, rk.rank);
-          const ttk1 = m.ehp / (p.dps * m.n); // n players focusing one mob
+          const ttk1 = m.ehp / (p.dps * n);
           return [
             `<b>${rk.rank}</b>`,
             L,
             Lm === L ? Lm : `<span class="FAIL">${Lm}</span>`,
-            m.n,
             n0(m.cs),
             n0(m.hp),
             n0(m.pAtk),
             n0(m.pDef),
             `${ttk1.toFixed(1)}s`,
-            `${(ttk1 * m.n).toFixed(0)}s`,
+            `${(ttk1 * n).toFixed(0)}s`,
           ];
         });
         return `${section(
           "Mob stats — what a MOB looks like at each rank",
-          "One row per <b>mob</b> rank. <b>n is the encounter size</b> — n mobs and n players both. The two time columns are how long a party of n max-grade players takes to kill one mob, then to clear all n of them.",
+          `One row per <b>mob</b> rank. The two time columns are for a party of <b>${n}</b> max-grade players — raise <code>Encounter size</code> to change them.`,
         )}
         ${table(
           [
             "mob rank",
             "player level",
             "mob level",
-            "encounter size (n)",
             "mob CS",
             "mob HP",
             "mob pAtk",
@@ -1072,7 +954,7 @@
         const all = inv.every(([, , ok]) => ok);
         return `${section(
           "Invariants — does the MODEL itself hold up",
-          "Not about any player or mob. These are structural properties the whole model must satisfy at every level; a FAIL means the current slider settings broke the design, not that someone lost a fight.",
+          "Not about any player or mob. Structural properties the model must satisfy at every level; a FAIL means the current settings broke the design.",
         )}
         <div class="banner ${all ? "ok" : "bad"}">${all ? "ALL PASS" : "SOME FAILED"}</div>
         ${table(
@@ -1085,24 +967,34 @@
         )}`;
       }
 
-      function renderNotes() {
+      function renderGlossary() {
+        const rows = Object.entries(TERMS).map(([k, [full, desc]]) => [
+          `<b>${k}</b>`,
+          full,
+          `<span class="dim">${desc}</span>`,
+        ]);
         return `${section(
-          "Not covered here",
-          "Known limits of this model. Read these before treating any verdict above as final.",
+          "Glossary",
+          "Every abbreviation used above. Column headers carry the same text as a hover tooltip.",
         )}
+        <div class="scroll"><table class="gloss-t"><thead><tr><th>as shown</th><th>full name</th><th>meaning</th></tr></thead>
+        <tbody>${rows.map((r) => `<tr>${r.map((c) => `<td class="gloss">${c}</td>`).join("")}</tr>`).join("")}</tbody>
+        </table></div>`;
+      }
+
+      function renderNotes() {
+        return `${section("Not covered here", "Read these before treating any verdict above as final.")}
         <ul class="notes">
-          <li>Closed-form only — no crit variance, misses, kiting; perfect focus-fire assumed.
-              A <code>BattleModule</code> run is what turns this from a screen into proof.</li>
+          <li>Closed-form only — no crit variance, misses, kiting or movement; perfect focus-fire assumed.
+              A <code>BattleModule</code> run is what would turn this from a model into evidence.</li>
           ${DATA.proposed.openQuestions.map((q) => `<li>${q}</li>`).join("")}
         </ul>
-        ${section("Provenance", "Where each number on this page came from.")}
+        ${section("Provenance", "Where the numbers come from.")}
         <ul class="notes">
-          <li>Everything on this page comes from <code>combat-model.json</code>, generated by
-              <code>scripts/gen_combat_model.mjs</code>. That file contains the model and nothing else —
-              it does not read the game's source. Reconciling the model with what ships is a separate
-              job, deliberately kept out of here.</li>
-          <li>Mirrors
-              <code>${DATA.proposed.reference}</code>.</li>
+          <li>Everything here comes from <code>combat-model.json</code>, generated by
+              <code>scripts/gen_combat_model.mjs</code>. That file holds the model and nothing else — it does
+              not read the game's source. Reconciling the model with what ships is a separate, later job.</li>
+          <li>Mirrors <code>${DATA.proposed.reference}</code>; <code>verify.mjs</code> asserts they agree.</li>
           <li>Spec: <code>${DATA.proposed.spec}</code></li>
         </ul>`;
       }
@@ -1120,18 +1012,17 @@
           renderGlossary(),
           renderNotes(),
         ].join("");
-        wireInputs();
+        wire();
       }
 
-      function wireInputs() {
+      function wire() {
         for (const input of document.querySelectorAll('input[type="range"]')) {
           input.addEventListener("input", (e) => {
-            const k = e.target.dataset.key;
-            P[k] = parseFloat(e.target.value);
-            const focus = e.target.id,
+            P[e.target.dataset.key] = parseFloat(e.target.value);
+            const id = e.target.id,
               pos = e.target.value;
             renderAll();
-            const again = document.getElementById(focus);
+            const again = document.getElementById(id);
             if (again) {
               again.value = pos;
               again.focus();
@@ -1142,19 +1033,12 @@
           loadDefaults();
           renderAll();
         });
-        document
-          .getElementById("cross-toggle")
-          .addEventListener("click", () => {
-            crossSolo = !crossSolo;
-            renderAll();
-          });
       }
 
       function loadDefaults() {
-        P = {};
+        P = { levelMax: DATA.proposed.levelMax };
         for (const [k, d] of Object.entries(DATA.proposed.inputs))
           P[k] = d.value;
-        P.levelMax = DATA.proposed.levelMax;
       }
 
       fetch(`combat-model.json?v=${Date.now()}`) // regenerated often; never cache

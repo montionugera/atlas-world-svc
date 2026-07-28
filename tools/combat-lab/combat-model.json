@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-07-28T15:44:14.341Z",
+  "generatedAt": "2026-07-28T15:55:24.033Z",
   "proposed": {
     "origin": "design-spec",
     "spec": "docs/superpowers/specs/2026-07-28-combat-stat-model-design.md",
@@ -77,6 +77,13 @@
         "max": 40,
         "step": 1,
         "label": "Move speed base"
+      },
+      "encounterSize": {
+        "value": 1,
+        "min": 1,
+        "max": 50,
+        "step": 1,
+        "label": "Encounter size (n vs n)"
       },
       "mobLevelDelta": {
         "value": 0,
