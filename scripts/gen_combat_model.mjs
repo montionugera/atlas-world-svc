@@ -273,6 +273,13 @@ const proposed = {
       label: "Physical share of DPS",
     },
     mspdBase: { value: 20, min: 5, max: 40, step: 1, label: "Move speed base" },
+    mobLevelDelta: {
+      value: 0,
+      min: -20,
+      max: 20,
+      step: 1,
+      label: "Mob level − player level",
+    },
     mspdCap: {
       value: 36,
       min: 10,

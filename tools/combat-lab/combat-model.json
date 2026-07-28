@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-28T10:13:56.527Z",
+  "generatedAt": "2026-07-28T14:38:59.239Z",
   "shipped": {
     "origin": "source",
     "sources": {
@@ -157,6 +157,13 @@
         "max": 40,
         "step": 1,
         "label": "Move speed base"
+      },
+      "mobLevelDelta": {
+        "value": 0,
+        "min": -20,
+        "max": 20,
+        "step": 1,
+        "label": "Mob level − player level"
       },
       "mspdCap": {
         "value": 36,

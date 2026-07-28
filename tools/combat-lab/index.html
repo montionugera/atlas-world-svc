@@ -414,9 +414,13 @@
        * so Lanchester's +n^2 (focus fire) and -n(n+1)/2 (pack dies one at a
        * time) nearly cancel, leaving 2n/(n+1).
        */
+      /** Mob level is player level plus the offset — rank does not fix a level. */
+      const mobLevel = (L) =>
+        Math.max(1, Math.min(P.levelMax, L + (P.mobLevelDelta || 0)));
+
       function R(L, rank, spec, solo) {
         const p = player(L, spec),
-          m = mob(L, rank);
+          m = mob(mobLevel(L), rank);
         const single = Math.pow(p.cs / m.cs, 2);
         return solo ? single : (single * 2 * m.n) / (m.n + 1);
       }
@@ -547,7 +551,10 @@
             <div>
               <div class="legend-h">MOB</div>
               <div class="legend-b"><code>rank</code> = E → SSS, the content tier. Each rank owns a level band and a
-              headcount <code>n</code>. A mob's stats are the max-grade player at that level times the rank's
+              headcount <code>n</code>. A mob has its own <b>level</b>, independent of rank — rank sets how strong it
+              is <i>relative to a same-level player</i>, level sets absolute power. The
+              <code>Mob level − player level</code> slider offsets it; at 0 every fight is same-level.
+              A mob's stats are the max-grade player at the <b>mob's</b> level times the rank's
               <code>mult</code>.</div>
             </div>
             <div>
@@ -622,12 +629,12 @@
         });
         return `${section(
           "Rank ladder — how strong is each MOB tier",
-          "One row per <b>mob</b> rank. Every value is measured against a <b>max-grade player</b> (high build, A gear) standing at the middle of that rank's level band.",
+          "One row per <b>mob</b> rank, measured against a <b>max-grade player</b> (high build, A gear) at the middle of that rank's band. Rank and level are independent — the band is only where that rank is normally <i>met</i>, not part of its strength.",
         )}
         ${table(
           [
             "mob rank",
-            "player levels",
+            "player level band",
             "mobs in pack (n)",
             "mob CS ÷ player CS",
             "was",
@@ -695,7 +702,13 @@
           [
             "player build",
             "player gear",
-            ...ladder.map((rk) => `vs ${rk.rank} mob · L${midLevel(rk)}`),
+            ...ladder.map(
+              (rk) =>
+                `vs ${rk.rank} mob · L${mobLevel(midLevel(rk))}` +
+                (P.mobLevelDelta
+                  ? ` <span class="dim">(you L${midLevel(rk)})</span>`
+                  : ""),
+            ),
           ],
           rows,
         )}`;
@@ -795,12 +808,14 @@
       function renderMobs() {
         const rows = DATA.proposed.ladder.map((rk) => {
           const L = midLevel(rk);
+          const Lm = mobLevel(L);
           const p = player(L, "max"),
-            m = mob(L, rk.rank);
+            m = mob(Lm, rk.rank);
           const ttk1 = m.ehp / (p.dps * m.n); // n players focusing one mob
           return [
             `<b>${rk.rank}</b>`,
             L,
+            Lm === L ? Lm : `<span class="FAIL">${Lm}</span>`,
             m.n,
             n0(m.cs),
             n0(m.hp),
@@ -817,6 +832,7 @@
         ${table(
           [
             "mob rank",
+            "player level",
             "mob level",
             "mobs in pack (n)",
             "mob CS",
@@ -978,7 +994,7 @@
         P.levelMax = DATA.proposed.levelMax;
       }
 
-      fetch("combat-model.json")
+      fetch(`combat-model.json?v=${Date.now()}`) // regenerated often; never cache
         .then((r) => {
           if (!r.ok) throw new Error(r.status);
           return r.json();
