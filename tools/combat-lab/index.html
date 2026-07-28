@@ -364,8 +364,12 @@
         DATA.proposed.ladder.find((x) => x.rank === rank).n;
 
       /**
-       * Resolve a player to its two independent axes. Accepts {build, gear} or a
-       * legacy grade name, which is just a named point on the diagonal.
+       * Resolve a player to its FOUR axes — two magnitudes and two directions.
+       * Accepts {build, gear, focus, gearClass} or a legacy grade name, which is
+       * just a named point on the build x gear diagonal.
+       *
+       * Both directions default to balanced, so anything that does not name them
+       * reproduces the model exactly as it stood before they existed.
        */
       function resolve(spec) {
         const s =
@@ -374,16 +378,38 @@
             : spec;
         const b = DATA.proposed.builds.find((x) => x.build === s.build);
         const g = DATA.proposed.gearTiers.find((x) => x.tier === s.gear);
-        return { alloc: b.alloc, gearScale: g.scale };
+        const f = s.focus
+          ? DATA.proposed.focuses.find((x) => x.focus === s.focus)
+          : null;
+        const lean =
+          s.gearClass === "dps"
+            ? P.gearLean
+            : s.gearClass === "tank"
+              ? 1 - P.gearLean
+              : 0.5;
+        return {
+          alloc: b.alloc,
+          gearScale: g.scale,
+          off: f ? f.off : 0.5,
+          lean,
+        };
       }
 
       function player(L, spec) {
-        const { alloc: a, gearScale: gs } = resolve(spec);
+        const { alloc: a, gearScale: gs, off, lean } = resolve(spec);
         const f = grow(L),
           C = P.statCoef;
-        const dps = ((P.dps1 * f) / (1 + C)) * (1 + C * a) * gs;
-        const hp = ((P.hp1 * f) / (1 + C)) * (1 + C * a) * gs;
-        const dfn = P.def1 * f * gs;
+        // Stat points: the (1 + C·a) bonus is SPLIT by focus. At off = 0.5 both
+        // halves are exactly (1 + C·a) — the pre-focus model, unchanged.
+        const atkStat = 1 + 2 * C * a * off;
+        const defStat = 1 + 2 * C * a * (1 - off);
+        // Gear: the TIER is how big the budget is, the CLASS is where it points.
+        // At lean = 0.5 both are gs — again, unchanged.
+        const gO = gs * 2 * lean;
+        const gD = gs * 2 * (1 - lean);
+        const dps = ((P.dps1 * f) / (1 + C)) * atkStat * gO;
+        const hp = ((P.hp1 * f) / (1 + C)) * defStat * gD;
+        const dfn = P.def1 * f * gD;
         const red = dfn / (dfn + kAnchor() * f);
         const ehp = hp / (1 - red);
         return {
@@ -604,6 +630,26 @@
         "damage you actually take": [
           "Share of theoretical incoming damage",
           "(n+1)/2n — mobs die progressively under focus fire rather than all living to the end.",
+        ],
+        "gear class": [
+          "What the player's gear is FOR",
+          "Where the gear budget points: tank gear buys HP and pDef, dps gear buys attack. Direction, not size — set the split with the Gear class lean slider. INVENTED: no gear-class concept exists in code.",
+        ],
+        "gear tier": [
+          "How good the player's gear is",
+          "Size of the gear budget, independent of what it is for. low = E (0.70), high = A (1.00). INVENTED: weapons.ts has archetypes, not tiers.",
+        ],
+        "build focus": [
+          "Where the player spent stat points",
+          "full DPS = every point into offense, full tank = every point into defence, balanced = the even split every other table on this page uses.",
+        ],
+        "relative strength": [
+          "CombatScore vs the strongest of the eight",
+          "Level-invariant, so it holds at every level. 100% is the best group; everything else is that fraction of it.",
+        ],
+        "player HP left": [
+          "Fraction of your HP still there when the encounter dies",
+          "1 − 1/R. Negative means the encounter killed you first, and the size of the negative is how far short you fell. HP consumed is 100 minus this.",
         ],
         effect: ["Plain-language summary", "The same number as a percentage."],
         invariant: [
@@ -826,6 +872,74 @@
         )}`;
       }
 
+      /**
+       * The eight player groups: [gear class] x [gear tier] x [build focus].
+       * Scored the way you asked — time to kill, and HP left over.
+       */
+      function renderArchetypes() {
+        const { archetypes, archetypeRanks, ladder } = DATA.proposed;
+        const n = P.encounterSize;
+        const ranks = archetypeRanks.map((r) =>
+          ladder.find((x) => x.rank === r),
+        );
+        const spec = (a) => ({
+          build: "high",
+          gear: a.gear,
+          focus: a.focus,
+          gearClass: a.gearClass,
+        });
+        // Level-invariant, so any reference level gives the same ratio.
+        const cs = archetypes.map((a) => player(50, spec(a)).cs);
+        const best = Math.max(...cs);
+
+        const cell = (a, rk) => {
+          const L = midLevel(rk);
+          const p = player(L, spec(a)),
+            m = mob(mobLevel(L), rk.rank);
+          const r = R(L, rk.rank, spec(a), n);
+          // n cancels: n players share n mobs' worth of EHP.
+          const ttk = m.ehp / p.dps;
+          const left = (1 - 1 / r) * 100;
+          return (
+            `<span class="pill b-${band(r)}">${ttk < 100 ? ttk.toFixed(1) : ttk.toFixed(0)}s</span>` +
+            `<div class="${left < 0 ? "FAIL" : "dim"}">${left >= 0 ? "+" : ""}${left.toFixed(0)}% HP left</div>`
+          );
+        };
+
+        const rows = archetypes.map((a, i) => [
+          `<b>${a.gearClass}</b> gear`,
+          a.tier,
+          a.focus,
+          `${((cs[i] / best) * 100).toFixed(0)}%`,
+          ...ranks.map((rk) => cell(a, rk)),
+        ]);
+
+        return `${section(
+          "Eight player groups — time to kill, and what it costs you",
+          `Rows are the <b>player</b>: gear class × gear tier × build focus, 2×2×2. All eight are
+           <b>fully allocated</b> — "full DPS" and "full tank" are directions, not amounts.
+           Columns are the <b>mob</b> rank, E through SS. Each cell is
+           <b>time to kill the encounter</b> (level-invariant) over <b>player HP left</b>,
+           which is <code>100 − HP consumed</code> and <b>goes negative when the fight kills you</b> —
+           the negative is how far short you fell. ${
+             n <= 1
+               ? "One player, one mob."
+               : `<b>${n} players against ${n} mobs.</b>`
+           }
+           SSS is omitted: it is the unresolved boss-or-pack rank.`,
+        )}
+        ${table(
+          [
+            "gear class",
+            "gear tier",
+            "build focus",
+            "relative strength",
+            ...ranks.map((rk) => `vs ${rk.rank} mob`),
+          ],
+          rows,
+        )}`;
+      }
+
       function renderCurve() {
         const rows = [1, 20, 40, 60, 80, P.levelMax].map((L) => {
           const p = player(L, "max");
@@ -1006,6 +1120,7 @@
           renderRequirements(),
           renderLadder(),
           renderMatrix(),
+          renderArchetypes(),
           renderCurve(),
           renderMobs(),
           renderInvariants(),

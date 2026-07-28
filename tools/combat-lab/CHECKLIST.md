@@ -171,6 +171,38 @@ the rank multipliers themselves.
 If a slider you expected to matter does nothing, this is why — and it is a
 statement about the model, not a bug.
 
+### 11. The eight player groups collapse to four outcomes
+
+`[gear class tank|dps] × [gear tier low|high] × [build full DPS|full tank]` = 8
+rows. Read the `relative strength` column: there are only **four distinct
+values** — 100%, 91%, 66%, 61%. Every pair that differs only in build focus is
+identical.
+
+That is not a rendering bug. `R = (CS_p/CS_m)²`, and the stat split
+`(1 + 2Caφ)(1 + 2Ca(1−φ))` is symmetric about `φ = 0.5`, so **a full-DPS player
+and a full-tank player have exactly the same CombatScore.** Check the HP-left
+numbers: identical down the pair. Check the TTK numbers: exactly **2× apart**.
+
+So in this model **build direction sets the pace of the fight, never the
+result.** Accept that (build = pacing, gear = power) or add a term direction can
+move — but do not assume the table is showing you a tank being tankier.
+
+### 12. Tank gear beats dps gear at every rank
+
+100% vs 91%, and it holds at all seven ranks and both tiers. Defence enters EHP
+**twice** — once as HP, once as mitigation — while offense enters DPS once. Per
+unit of gear budget, armour is simply worth more. Drag `Gear class lean` to 0.9
+and the gap widens; at 0.5 the classes merge.
+
+Greedy players will wear tank gear. Decide whether that is the intent.
+
+### 13. Adding the direction axes moved nothing else
+
+`verify.mjs` asserts `balanced focus + balanced class == the old model`. Every
+requirement, ladder row and curve cell is byte-identical to before the axes
+existed. If that gate ever fails, the two new axes have leaked into numbers that
+predate them.
+
 ---
 
 ## B2. Section audit — which displayed values are load-bearing

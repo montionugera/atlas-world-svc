@@ -30,6 +30,7 @@ const SECTIONS = [
   "renderRequirements",
   "renderLadder",
   "renderMatrix",
+  "renderArchetypes",
   "renderCurve",
   "renderMobs",
   "renderInvariants",
@@ -260,6 +261,62 @@ gate(
 gate(
   Math.abs(model.R(33, "C", "max", 1) - duel) < 1e-12,
   "n = 1 is the plain duel (CS_p/CS_m)²",
+);
+
+// ------------------------------------- 5b. direction axes are additive ----
+// focus and gearClass were bolted onto a model that already had committed
+// numbers. The whole design rests on them defaulting to balanced, so naming
+// them explicitly must change NOTHING.
+console.log("\ndirection axes");
+const bal = {
+  build: "high",
+  gear: "A",
+  focus: "balanced",
+  gearClass: "balanced",
+};
+gate(
+  Math.abs(model.player(50, bal).cs - model.player(50, "max").cs) < 1e-9 &&
+    Math.abs(
+      model.player(50, { build: "high", gear: "A" }).cs -
+        model.player(50, "max").cs,
+    ) < 1e-9,
+  "balanced focus + balanced class == the old model",
+);
+
+// (1 + 2Caφ)(1 + 2Ca(1−φ)) is symmetric about φ = 0.5, and defence enters EHP
+// twice (HP and mitigation) — so this is only exact when gear is balanced.
+const dpsB = model.player(50, { build: "high", gear: "A", focus: "full DPS" });
+const tankB = model.player(50, {
+  build: "high",
+  gear: "A",
+  focus: "full tank",
+});
+gate(
+  Math.abs(dpsB.cs - tankB.cs) < 1e-9,
+  "full DPS and full tank builds have identical CS",
+  `${dpsB.cs.toFixed(4)} vs ${tankB.cs.toFixed(4)}`,
+);
+gate(
+  dpsB.cs < model.player(50, bal).cs,
+  "specialising costs CombatScore",
+  `${((1 - dpsB.cs / model.player(50, bal).cs) * 100).toFixed(1)}% loss`,
+);
+
+const cells8 = data.proposed.archetypes.flatMap((a) =>
+  data.proposed.archetypeRanks.map((rank) =>
+    model.R(
+      50,
+      rank,
+      { build: "high", gear: a.gear, focus: a.focus, gearClass: a.gearClass },
+      P.encounterSize,
+    ),
+  ),
+);
+gate(
+  cells8.length === 8 * data.proposed.archetypeRanks.length &&
+    cells8.every((r) => Number.isFinite(r) && r > 0),
+  `all ${cells8.length} archetype cells finite`,
+  `(8 groups × ${data.proposed.archetypeRanks.length} ranks)`,
 );
 
 // ------------------------------------------------------- 6. invariants ----

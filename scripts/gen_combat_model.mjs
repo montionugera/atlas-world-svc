@@ -101,6 +101,13 @@ const proposed = {
       step: 1,
       label: "Move speed clamp",
     },
+    gearLean: {
+      value: 0.65,
+      min: 0.5,
+      max: 0.9,
+      step: 0.01,
+      label: "Gear class lean (offense share)",
+    },
   },
 
   levelMax: 99,
@@ -136,6 +143,42 @@ const proposed = {
     { tier: "C", scale: 0.85 },
     { tier: "A", scale: 1.0 },
   ],
+  // DIRECTION axes. `builds` and `gearTiers` above are MAGNITUDES -- how much
+  // you allocated, how good the gear is. Neither says WHERE it points. These two
+  // do, and they are what separates a tank from a striker.
+  //
+  // Both default to the balanced midpoint everywhere they are not named, so
+  // every number that predates them is reproduced exactly.
+  //
+  // focus = share of the stat-point bonus pointed at offense rather than defence.
+  focuses: [
+    { focus: "full tank", off: 0.0 },
+    { focus: "balanced", off: 0.5 },
+    { focus: "full DPS", off: 1.0 },
+  ],
+  // gear class = same split, applied to the gear budget. The lean itself is the
+  // `gearLean` slider, so nobody has to take 0.65 on faith. INVENTED, like the
+  // tiers -- there is no gear-class concept in code.
+  gearClasses: ["tank", "balanced", "dps"],
+
+  // The eight player groups the comparison table enumerates:
+  //   [gear class tank|dps] x [gear tier low|high] x [build full tank|full DPS]
+  // Allocation completeness is pinned to `high` for all eight -- "full DPS" and
+  // "full tank" mean fully allocated in one direction, not partly allocated.
+  archetypes: [
+    { gearClass: "dps", gear: "A", tier: "high", focus: "full DPS" },
+    { gearClass: "dps", gear: "A", tier: "high", focus: "full tank" },
+    { gearClass: "dps", gear: "E", tier: "low", focus: "full DPS" },
+    { gearClass: "dps", gear: "E", tier: "low", focus: "full tank" },
+    { gearClass: "tank", gear: "A", tier: "high", focus: "full DPS" },
+    { gearClass: "tank", gear: "A", tier: "high", focus: "full tank" },
+    { gearClass: "tank", gear: "E", tier: "low", focus: "full DPS" },
+    { gearClass: "tank", gear: "E", tier: "low", focus: "full tank" },
+  ],
+  // Ranks the archetype table is scored against. SSS is excluded: it is the
+  // unresolved boss-or-pack rank (see openQuestions).
+  archetypeRanks: ["E", "D", "C", "B", "A", "S", "SS"],
+
   // The old grade names survive as the DIAGONAL of build x gear, so the four
   // requirements keep meaning exactly what they meant before.
   grades: [
@@ -199,6 +242,8 @@ const proposed = {
   ],
 
   openQuestions: [
+    "BUILD DIRECTION IS INVISIBLE TO THE OUTCOME. Splitting the stat bonus as (1+2Caφ)(1+2Ca(1-φ)) is symmetric about φ=0.5, so a full-DPS and a full-tank player have IDENTICAL CombatScore and therefore identical R and identical HP left. Only time-to-kill moves, by 2x. The eight groups collapse to four distinct outcomes. Either that is the intent (build = pacing, gear = power) or CS needs a term that direction can move.",
+    "TANK GEAR STRICTLY BEATS DPS GEAR (100% vs 91% CS). Defence enters EHP twice -- once as HP, once as mitigation -- while offense enters DPS once. Per unit of gear budget, defence is worth more, at every tier and every rank. Either accept that armour is the correct greedy choice or break the double-dip.",
     "The n-vs-n party advantage (up to 1.96x) rests on mobs NOT focus-firing. Checked: each mob targets its nearest player independently (AttackBehavior.ts:28), so it holds for a spread party -- but a clumped party or a melee front-liner makes one player nearest to every mob, which is focus fire in practice, and also breaks the pooled-party-HP assumption. Formation is an unmodelled variable worth up to 1.96x.",
     "Top ranks derive a 2–9s encounter TTK against a 3000–4500s target — are SS/SSS n players vs ONE boss rather than a pack of n?",
     "Mana, skills and physical-vs-magic parity are modelled separately (mana_level.py, parity.py) and are not folded into R yet.",
