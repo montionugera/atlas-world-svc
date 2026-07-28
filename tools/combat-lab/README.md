@@ -36,6 +36,12 @@ show real drift rather than a claim about drift.
 When the model ships, move each `proposed` value into the scraper and delete it
 from the authored block.
 
+## Verifying it
+
+`CHECKLIST.md` is the human-facing procedure — ten hand-checks with expected
+values, plus an explicit list of what is **not** verified. Read that before
+trusting any verdict on the page. `verify.mjs` below only covers the arithmetic.
+
 ## verify.mjs
 
 The page and `model/balance_sheet.py` are two implementations of one model.
