@@ -697,10 +697,14 @@
         }
         return `${section(
           "Outcome matrix — who beats what",
-          `Rows are the <b>player</b> (${builds.length} builds × ${gearTiers.length} gear tiers). Columns are the <b>mob</b> rank, each fought at that rank's mid-band level. Each cell is R — ${
+          `Rows are the <b>player</b> (${builds.length} builds × ${gearTiers.length} gear tiers). Columns are the <b>mob</b> rank. Each cell is R — ${
             crossSolo
               ? "one player against one mob"
               : "n players against n mobs"
+          }. The level shown in each header is where that rank is normally met; ${
+            P.mobLevelDelta
+              ? "with a level offset set, it is the <b>mob's</b> level and your own is shown beside it"
+              : "it does <b>not</b> affect any cell — R is the same at every level"
           }.`,
         )}
         <div style="margin-bottom:10px">
@@ -747,7 +751,7 @@
         });
         return `${section(
           "Player curve — what a PLAYER looks like at each level",
-          "No mobs here. One row per <b>player</b> level for a max-grade player (high build, A gear). <b>EHP</b> is effective HP — raw HP divided by what mitigation lets through.",
+          "No mobs here. One row per <b>player</b> level for a max-grade player (high build, A gear). <b>EHP</b> is effective HP — raw HP divided by what mitigation lets through. ⃰ Mitigation and move speed are <b>constant at every level by design</b> — mitigation because the defence constant rides the same curve as pDef, move speed because it has no level term at all. If you want either to grow with level, that is a change to the model, not a tuning value.",
         )}
         ${table(
           [
@@ -757,9 +761,9 @@
             "player mAtk",
             "player maxHP",
             "player pDef",
-            "damage mitigated",
+            "damage mitigated ⃰",
             "player EHP",
-            "player move speed",
+            "player move speed ⃰",
           ],
           rows,
         )}
@@ -910,7 +914,7 @@
           d.maxMoveSpeed.base + d.maxMoveSpeed.perAgi * cap;
         return `${section(
           "Shipped vs proposed — TODAY's numbers next to the DESIGN's",
-          `Left four columns are what the game ships right now, scraped live from ${Object.values(s.sources).length} config files. The grey primed columns are what I-028 would make them. Both describe a <b>player</b>; no mobs here.`,
+          `Left four columns are what the game ships right now, scraped live from ${Object.values(s.sources).length} config files. The grey primed columns are what I-028 would make them. Both describe a <b>player</b>; no mobs here. <b>Assumption:</b> the shipped rows assume every primary stat equals the player's level (capped at ${cap}) — the shipped formula is additive in raw stat values, so it needs a stat number and the game does not pin one to level. Treat the left half as illustrative, not as a measured player.`,
         )}
         <div class="banner info">
           Today the formula is <b>additive</b>:

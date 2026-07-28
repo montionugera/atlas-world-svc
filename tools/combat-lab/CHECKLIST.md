@@ -121,6 +121,44 @@ statement about the model, not a bug.
 
 ---
 
+## B2. Section audit — which displayed values are load-bearing
+
+Ran every section through the same test: does this value change any outcome?
+Several do not. That is fine, but only if the page says so — a normal-looking
+column implies a dependency, and three of them had none.
+
+| section             | column                           | load-bearing?                                                                                            |
+| ------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Rank ladder         | `usual level band`               | **No.** R is identical at L1 and L99. Greyed out + footnoted.                                            |
+| Rank ladder         | `was`                            | No — prior value, kept for comparison. Greyed by design.                                                 |
+| Rank ladder         | `mult`, `n`                      | Yes. These are the only real inputs to R.                                                                |
+| Outcome matrix      | level in each header             | **No** at offset 0. Marked in the section note.                                                          |
+| Outcome matrix      | build, gear                      | Yes — verified monotonic on each axis independently.                                                     |
+| Player curve        | `damage mitigated`               | **No — constant 33% at every level.** Footnoted.                                                         |
+| Player curve        | `player move speed`              | **No — constant 30.0 at every level.** Footnoted.                                                        |
+| Player curve        | CS, pAtk, mAtk, maxHP, pDef, EHP | Yes, all vary with level.                                                                                |
+| Mob stats           | `mob level`                      | Yes for mob CS/HP/pAtk/pDef — they are absolute values.                                                  |
+| Mob stats           | `time to kill`                   | **No — level-invariant** (3.7313s for rank C at L10, L33 and L90 alike). Depends only on `mult` and `n`. |
+| Shipped vs proposed | all                              | Yes, but see the assumption below.                                                                       |
+
+Two of these are design questions, not display bugs:
+
+- **Move speed has no level term.** `mspd = base × (1 + C·alloc)`, so a level-99
+  player moves exactly as fast as a level-1 player with the same allocation.
+  Deliberate — move speed is outside CombatScore (spec §2.1) — but worth
+  confirming you want it.
+- **Mitigation is flat at 33% forever.** By construction: the defence constant
+  `K(L)` rides the same growth curve as pDef. So armour never gets relatively
+  better or worse as you level. Also deliberate, also worth confirming.
+
+**Assumption in "Shipped vs proposed":** the shipped columns assume every primary
+stat equals the player's level, capped at 99. The shipped formula is additive in
+raw stat values (`pAtk = 10 + 2·str`), so it needs a stat number, and nothing in
+the game pins stats to level. The left half of that table is illustrative, not a
+measured player — the 4.7× HP gap it shows is directionally real but not exact.
+
+---
+
 ## C. What is NOT verified — read before trusting any verdict
 
 None of the following is checked by anything, anywhere:
