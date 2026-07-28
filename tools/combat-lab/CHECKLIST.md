@@ -107,6 +107,17 @@ This is why the rank ladder's level band is greyed out: it is content
 placement, not strength. It changes nothing in that table. There is now an
 invariant asserting it (`R invariant to absolute level`).
 
+### 8c. `n` is the encounter size, not the pack size
+
+`n` is used on **both** sides: `R_encounter = R_single × 2n/(n+1)` comes from a
+party of n focus-firing (`+n²`) against a pack of n dying one at a time
+(`−n(n+1)/2`). So rank S at `n = 8` means **8 players against 8 mobs**, not one
+player against 8.
+
+The column was originally labelled "mobs in pack (n)", which stated half of it.
+If you read the ladder as one player against a pack, every party number on the
+page is wrong by a factor of `2n/(n+1)` — up to 1.96× at SSS.
+
 ### 9. HP left is `1 − 1/R`
 
 Ladder, rank C: R 4.00 → **75%** HP left.

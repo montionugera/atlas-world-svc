@@ -631,7 +631,6 @@
             rs = R(L, rk.rank, "max", true);
           return [
             `<b>${rk.rank}</b>`,
-            `<span class="dim">${rk.from}–${rk.to}</span>`,
             rk.n,
             rk.mult.toFixed(3),
             `<span class="dim">${rk.was.toFixed(2)}</span>`,
@@ -642,13 +641,12 @@
         });
         return `${section(
           "Rank ladder — how strong is each MOB tier",
-          "One row per <b>mob</b> rank, measured against a <b>max-grade player</b> (high build, A gear). † <b>The level band changes none of these numbers</b> — R is identical at level 1 and level 99, because player and mob grow at the same rate and absolute level cancels. Only the <i>difference</i> between them matters. The band is greyed out because it is content placement, not strength.",
+          "One row per <b>mob</b> rank, measured against a <b>max-grade player</b> (high build, A gear). <b>n is the whole encounter</b> — n mobs <i>and</i> n players, so rank S means 8 players against 8 mobs. Level is absent on purpose: R is identical at level 1 and level 99, because player and mob grow at the same rate and absolute level cancels out. Only the <i>difference</i> between their levels matters.",
         )}
         ${table(
           [
             "mob rank",
-            "usual level band †",
-            "mobs in pack (n)",
+            "encounter size (n)",
             "mob CS ÷ player CS",
             "was",
             "R · party of n",
@@ -844,14 +842,14 @@
         });
         return `${section(
           "Mob stats — what a MOB looks like at each rank",
-          "One row per <b>mob</b> rank at its mid-band level. The two TTK columns are how long a <b>party of n max-grade players</b> takes to kill one mob, and to clear the whole pack.",
+          "One row per <b>mob</b> rank. <b>n is the encounter size</b> — n mobs and n players both. The two time columns are how long a party of n max-grade players takes to kill one mob, then to clear all n of them.",
         )}
         ${table(
           [
             "mob rank",
             "player level",
             "mob level",
-            "mobs in pack (n)",
+            "encounter size (n)",
             "mob CS",
             "mob HP",
             "mob pAtk",
