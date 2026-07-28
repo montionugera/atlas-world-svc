@@ -124,6 +124,34 @@ The column was originally labelled "mobs in pack (n)", which stated half of it.
 If you read the ladder as one player against a pack, every party number on the
 page is wrong by a factor of `2n/(n+1)` — up to 1.96× at SSS.
 
+### 8d. Why n changes anything — and what it rests on
+
+`n = 4` is **1.6× easier** than 1v1, not the same and not harder. The party
+focus-fires, so mobs die one at a time and the average number still alive is
+`(n+1)/2` rather than `n` — at n=4 you absorb 63% of the damage four mobs could
+theoretically deal. Hence `2n/(n+1)`.
+
+The factor is **bounded at 2×**: `n=8` gives 1.778, `n=50` gives 1.961, and
+infinity gives exactly 2. No party size makes a symmetric fight more than twice
+as favourable as a duel.
+
+**This is the load-bearing assumption on the whole party half of the page:**
+mobs are assumed _not_ to focus fire. If they do, the n² terms cancel by
+symmetry and R returns to the 1v1 value — every "party" column optimistic by up
+to 1.96×, and rank S goes from `1.60 hard` to `0.90 LOSS`.
+
+**Checked against real code** — the one item on this list that has been.
+`AttackBehavior.ts:28` has each mob independently reduce `nearbyPlayers` to its
+_nearest_ player. Targeting is positional, not coordinated, so the assumption
+broadly holds for a spread-out party.
+
+It is **formation-dependent**, which the model does not represent at all. A
+clumped party, or a melee front-liner, is nearest to every mob at once — that is
+focus fire in practice, and it also breaks the pooled-party-HP assumption, since
+one player dies rather than a shared pool draining evenly. Formation is an
+unmodelled variable worth up to 1.96×, arguably the largest single gap between
+this page and the real game.
+
 ### 9. HP left is `1 − 1/R`
 
 Ladder, rank C: R 4.00 → **75%** HP left.

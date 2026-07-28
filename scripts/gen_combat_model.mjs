@@ -385,6 +385,7 @@ const proposed = {
   ],
 
   openQuestions: [
+    "The n-vs-n party advantage (up to 1.96x) rests on mobs NOT focus-firing. Checked: each mob targets its nearest player independently (AttackBehavior.ts:28), so it holds for a spread party -- but a clumped party or a melee front-liner makes one player nearest to every mob, which is focus fire in practice, and also breaks the pooled-party-HP assumption. Formation is an unmodelled variable worth up to 1.96x.",
     "Top ranks derive a 2–9s encounter TTK against a 3000–4500s target — are SS/SSS n players vs ONE boss rather than a pack of n?",
     "Mana, skills and physical-vs-magic parity are modelled separately (mana_level.py, parity.py) and are not folded into R yet.",
     "R = (CS_p/CS_m)^2 cancels the DPS/EHP split, so jobs cannot change any verdict here. Differentiation must come from elements / AoE / range / crit.",

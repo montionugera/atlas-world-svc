@@ -661,6 +661,18 @@
           "Movement speed under I-028",
           "Clamped at 36 so a body cannot cross the collision capture band in one tick.",
         ],
+        "party factor 2n/(n+1)": [
+          "Party advantage multiplier",
+          "How much easier an n-vs-n encounter is than a duel. 1.0 at n=1, approaching 2.0 as n grows.",
+        ],
+        "damage you actually take": [
+          "Share of theoretical incoming damage",
+          "(n+1)/2n — because mobs die progressively under focus fire rather than all living to the end.",
+        ],
+        effect: [
+          "Plain-language summary",
+          "The same number stated as a percentage.",
+        ],
         invariant: [
           "Structural property",
           "Something the model must satisfy regardless of tuning. A FAIL means the current slider settings broke the design.",
@@ -830,7 +842,54 @@
             "R · 1v1",
           ],
           rows,
-        )}`;
+        )}
+        ${partyFactorNote()}`;
+      }
+
+      /**
+       * Why n changes anything at all. This is the most-asked question about the
+       * model and the answer rests on an assumption worth stating out loud.
+       */
+      function partyFactorNote() {
+        const rows = [1, 2, 4, 8, 20, 50].map((n) => [
+          n,
+          ((2 * n) / (n + 1)).toFixed(3),
+          `${(((n + 1) / 2 / n) * 100).toFixed(0)}%`,
+          `${(((2 * n) / (n + 1) - 1) * 100).toFixed(0)}% easier than 1v1`,
+        ]);
+        return `<div class="panel" style="margin-top:14px">
+          <div class="legend-h">WHY n MATTERS — 4v4 IS NOT THE SAME AS 1v1</div>
+          <div class="legend-b" style="margin-bottom:12px">
+            The party <b>focus-fires</b>: all n players hit one mob, so mobs die one at a time and the
+            pack's damage output decays as the fight goes on. The average number of mobs still alive is
+            <code>(n+1)/2</code>, not <code>n</code> — so you absorb far less damage than n mobs could
+            theoretically deal. That is worth a factor of <code>2n/(n+1)</code>.
+            <br /><br />
+            It is <b>bounded at 2×</b>. However big the party, focus-firing can never make a symmetric
+            fight more than twice as favourable as a duel.
+          </div>
+          ${table(
+            [
+              "encounter size (n)",
+              "party factor 2n/(n+1)",
+              "damage you actually take",
+              "effect",
+            ],
+            rows,
+          )}
+          <div class="banner info" style="margin-top:12px">
+            <b>Rests on:</b> mobs not focus-firing. If they all attacked one player, the n² terms cancel
+            by symmetry and R collapses back to the 1v1 value — every party column optimistic by up to
+            1.96×, rank S going from <code>1.60 hard</code> to <code>0.90 LOSS</code>.
+            <br /><br />
+            <b>Checked against real code:</b> each mob independently targets its <i>nearest</i> player
+            (<code>AttackBehavior.ts:28</code>, <code>AgentBehaviors.ts</code>), so targeting is
+            positional rather than coordinated — the assumption broadly holds for a spread-out party.
+            But it is <b>formation-dependent</b>: a clumped party, or a melee front-liner, makes the same
+            player nearest to every mob, which is focus fire in practice. The model also pools party HP,
+            which that case breaks — one player dies rather than the pool draining evenly.
+          </div>
+        </div>`;
       }
 
       /**
