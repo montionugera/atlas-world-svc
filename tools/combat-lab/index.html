@@ -487,6 +487,19 @@
             capAtMax.toFixed(1),
             capAtMax <= P.mspdCap,
           ],
+          // Pure exponential growth means CS_p/CS_m has no L in it. If this ever
+          // fails, some term stopped scaling with the level curve.
+          (() => {
+            const rs = [1, 25, 50, 75, P.levelMax].map((L) =>
+              R(L, "C", "max", false),
+            );
+            const spread = Math.max(...rs) - Math.min(...rs);
+            return [
+              "R invariant to absolute level",
+              `${rs[0].toFixed(4)} at every level`,
+              spread < 1e-9,
+            ];
+          })(),
         ];
       }
 
@@ -618,7 +631,7 @@
             rs = R(L, rk.rank, "max", true);
           return [
             `<b>${rk.rank}</b>`,
-            `${rk.from}–${rk.to}`,
+            `<span class="dim">${rk.from}–${rk.to}</span>`,
             rk.n,
             rk.mult.toFixed(3),
             `<span class="dim">${rk.was.toFixed(2)}</span>`,
@@ -629,12 +642,12 @@
         });
         return `${section(
           "Rank ladder — how strong is each MOB tier",
-          "One row per <b>mob</b> rank, measured against a <b>max-grade player</b> (high build, A gear) at the middle of that rank's band. Rank and level are independent — the band is only where that rank is normally <i>met</i>, not part of its strength.",
+          "One row per <b>mob</b> rank, measured against a <b>max-grade player</b> (high build, A gear). ⃰ <b>The level band changes none of these numbers</b> — R is identical at level 1 and level 99, because player and mob grow at the same rate and absolute level cancels. Only the <i>difference</i> between them matters. The band is greyed out because it is content placement, not strength.",
         )}
         ${table(
           [
             "mob rank",
-            "player level band",
+            "usual level band ⃰",
             "mobs in pack (n)",
             "mob CS ÷ player CS",
             "was",

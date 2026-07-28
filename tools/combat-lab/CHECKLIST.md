@@ -90,6 +90,16 @@ i.e. **each mob level above you makes the fight 9.2% harder**.
 At `+16`, rank C solo goes `4.00 easy` → **0.978 LOSS**. ✅
 A 16-level gap flips any same-level _easy_ into a loss.
 
+### 8b. Absolute level does not matter — only the difference
+
+Rank C encounter R is **4.000000** at player level 1, 33 and 99 alike.
+Player and mob grow at the same rate, so `L` cancels out of `CS_p / CS_m`
+entirely. Set the offset to +5 and it is `2.575711` at every level.
+
+This is why the rank ladder's level band is greyed out: it is content
+placement, not strength. It changes nothing in that table. There is now an
+invariant asserting it (`R invariant to absolute level`).
+
 ### 9. HP left is `1 − 1/R`
 
 Ladder, rank C: R 4.00 → **75%** HP left.
