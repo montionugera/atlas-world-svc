@@ -268,6 +268,32 @@
       .dim {
         color: var(--text-faint);
       }
+      /* One-line statement of what a table answers, directly under its title. */
+      .qline {
+        color: var(--text-dim);
+        font-size: 13px;
+        margin: -6px 0 12px;
+      }
+      .qline b {
+        color: var(--text);
+        font-weight: 600;
+      }
+      .legend-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 18px;
+      }
+      .legend-h {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--accent);
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .legend-b {
+        font-size: 13px;
+        color: var(--text-dim);
+      }
       ul.notes {
         color: var(--text-dim);
         font-size: 13px;
@@ -486,9 +512,62 @@
           .join("")}</tbody></table></div>`;
       }
 
+      /**
+       * Every section states, in one line, what question its table answers and
+       * which actor each axis belongs to. "Rank" alone is ambiguous — it means
+       * the MOB's rank here and nothing else on the page uses that word.
+       */
+      function section(title, question) {
+        return `<h2>${title}</h2>
+          <div class="qline">${question}</div>`;
+      }
+
+      /** Who is who, and how to read a coloured pill. Shown once, up top. */
+      function renderLegend() {
+        const bands = DATA.proposed.bands
+          .map(
+            (b) =>
+              `<span class="pill b-${b.name}">${b.name}</span> ${
+                b.max === null ? "≥ 8" : `&lt; ${b.max}`
+              }`,
+          )
+          .join(" · ");
+        return `${section(
+          "How to read this page",
+          "Three things vary: the <b>player</b> (level, build, gear), the <b>mob</b> (rank, level, how many), and the <b>encounter</b> (solo or party).",
+        )}
+        <div class="panel">
+          <div class="legend-grid">
+            <div>
+              <div class="legend-h">PLAYER</div>
+              <div class="legend-b"><code>build</code> = how completely stat points were spent (low/mid/high).
+              <code>gear</code> = equipment tier (E/C/A). <code>L</code> = player level, 1–${P.levelMax}.
+              <code>CS</code> = CombatScore = <code>√(DPS × EHP)</code>.</div>
+            </div>
+            <div>
+              <div class="legend-h">MOB</div>
+              <div class="legend-b"><code>rank</code> = E → SSS, the content tier. Each rank owns a level band and a
+              headcount <code>n</code>. A mob's stats are the max-grade player at that level times the rank's
+              <code>mult</code>.</div>
+            </div>
+            <div>
+              <div class="legend-h">OUTCOME — R</div>
+              <div class="legend-b"><code>R</code> = how long the <b>player</b> survives ÷ how long the
+              <b>encounter</b> survives. <code>R &gt; 1</code> = player wins, and <code>1 − 1/R</code> is the
+              player's HP at the end. For 1v1 it equals <code>(CS_player / CS_mob)²</code>.</div>
+            </div>
+          </div>
+          <div class="legend-h" style="margin-top:14px">BANDS</div>
+          <div class="legend-b">${bands}</div>
+        </div>`;
+      }
+
       function renderInputs() {
         const defs = DATA.proposed.inputs;
-        return `<h2>Inputs <span class="sub">drag anything — every table below recomputes live</span></h2>
+        return `${section(
+          "Inputs — the knobs",
+          "These drive <b>both</b> the player and the mobs, since a mob is defined as a scaled copy of the max-grade player. Every table below recomputes live.",
+        )}
         <div class="panel grid-inputs">${Object.entries(defs)
           .map(
             ([k, d]) => `<div class="input-row">
@@ -504,7 +583,10 @@
       function renderRequirements() {
         const reqs = requirements();
         const all = reqs.every((r) => r.ok);
-        return `<h2>Requirements <span class="sub">the four outcomes you specified</span></h2>
+        return `${section(
+          "Requirements — the four outcomes you specified",
+          "Each card fixes a <b>player</b> grade, a <b>mob</b> rank and a level, then checks R lands in the band you asked for.",
+        )}
         <div class="banner ${all ? "ok" : "bad"}">${
           all ? "ALL FOUR PASS" : `${reqs.filter((r) => !r.ok).length} FAILING`
         }</div>
@@ -538,8 +620,23 @@
             rCell(rs),
           ];
         });
-        return `<h2>Rank ladder <span class="sub">per-mob CS multiplier vs the max-grade player at mid-band level</span></h2>
-        ${table(["rank", "levels", "n", "mult", "was", "encounter R", "HP left", "solo R"], rows)}`;
+        return `${section(
+          "Rank ladder — how strong is each MOB tier",
+          "One row per <b>mob</b> rank. Every value is measured against a <b>max-grade player</b> (high build, A gear) standing at the middle of that rank's level band.",
+        )}
+        ${table(
+          [
+            "mob rank",
+            "player levels",
+            "mobs in pack (n)",
+            "mob CS ÷ player CS",
+            "was",
+            "R · party of n",
+            "player HP left",
+            "R · 1v1",
+          ],
+          rows,
+        )}`;
       }
 
       /**
@@ -578,17 +675,30 @@
             ]);
           }
         }
-        return `<h2>Outcome matrix
-          <span class="sub">player build × gear tier × mob rank — ${rows.length} × ${ladder.length} combinations</span></h2>
+        return `${section(
+          "Outcome matrix — who beats what",
+          `Rows are the <b>player</b> (${builds.length} builds × ${gearTiers.length} gear tiers). Columns are the <b>mob</b> rank, each fought at that rank's mid-band level. Each cell is R — ${
+            crossSolo
+              ? "one player against one mob"
+              : "n players against n mobs"
+          }.`,
+        )}
         <div style="margin-bottom:10px">
           <button id="cross-toggle">${
             crossSolo
-              ? "showing SOLO (1 player vs 1 mob)"
-              : "showing PARTY (n players vs n mobs)"
+              ? "showing SOLO — 1 player vs 1 mob"
+              : "showing PARTY — n players vs n mobs"
           }</button>
           <span class="dim" style="font-size:12px;margin-left:8px">click to switch</span>
         </div>
-        ${table(["build", "gear", ...ladder.map((rk) => `${rk.rank} · L${midLevel(rk)}`)], rows)}`;
+        ${table(
+          [
+            "player build",
+            "player gear",
+            ...ladder.map((rk) => `vs ${rk.rank} mob · L${midLevel(rk)}`),
+          ],
+          rows,
+        )}`;
       }
 
       function renderCurve() {
@@ -609,8 +719,24 @@
               : p.mspd.toFixed(1),
           ];
         });
-        return `<h2>Player curve <span class="sub">max grade, fully allocated</span></h2>
-        ${table(["L", "CS", "pAtk", "mAtk", "maxHP", "pDef", "mitigation", "EHP", "mspd"], rows)}
+        return `${section(
+          "Player curve — what a PLAYER looks like at each level",
+          "No mobs here. One row per <b>player</b> level for a max-grade player (high build, A gear). <b>EHP</b> is effective HP — raw HP divided by what mitigation lets through.",
+        )}
+        ${table(
+          [
+            "player level",
+            "player CS",
+            "player pAtk",
+            "player mAtk",
+            "player maxHP",
+            "player pDef",
+            "damage mitigated",
+            "player EHP",
+            "player move speed",
+          ],
+          rows,
+        )}
         ${sparkline()}`;
       }
 
@@ -684,14 +810,33 @@
             `${(ttk1 * m.n).toFixed(0)}s`,
           ];
         });
-        return `<h2>Mob stats <span class="sub">at each rank's mid-band level</span></h2>
-        ${table(["rank", "lvl", "n", "mob CS", "mob HP", "pAtk", "pDef", "TTK/mob", "TTK encounter"], rows)}`;
+        return `${section(
+          "Mob stats — what a MOB looks like at each rank",
+          "One row per <b>mob</b> rank at its mid-band level. The two TTK columns are how long a <b>party of n max-grade players</b> takes to kill one mob, and to clear the whole pack.",
+        )}
+        ${table(
+          [
+            "mob rank",
+            "mob level",
+            "mobs in pack (n)",
+            "mob CS",
+            "mob HP",
+            "mob pAtk",
+            "mob pDef",
+            "time to kill 1 mob",
+            "time to clear pack",
+          ],
+          rows,
+        )}`;
       }
 
       function renderInvariants() {
         const inv = invariants();
         const all = inv.every(([, , ok]) => ok);
-        return `<h2>Invariants</h2>
+        return `${section(
+          "Invariants — does the MODEL itself hold up",
+          "Not about any player or mob. These are structural properties the whole model must satisfy at every level; a FAIL means the current slider settings broke the design, not that someone lost a fight.",
+        )}
         <div class="banner ${all ? "ok" : "bad"}">${all ? "ALL PASS" : "SOME FAILED"}</div>
         ${table(
           ["invariant", "value", "result"],
@@ -734,7 +879,10 @@
         });
         const shippedCapMspd =
           d.maxMoveSpeed.base + d.maxMoveSpeed.perAgi * cap;
-        return `<h2>Shipped vs proposed <span class="sub">scraped from ${Object.values(s.sources).length} real config files</span></h2>
+        return `${section(
+          "Shipped vs proposed — TODAY's numbers next to the DESIGN's",
+          `Left four columns are what the game ships right now, scraped live from ${Object.values(s.sources).length} config files. The grey primed columns are what I-028 would make them. Both describe a <b>player</b>; no mobs here.`,
+        )}
         <div class="banner info">
           Today the formula is <b>additive</b>:
           <code>pAtk = ${d.pAtk.base} + ${d.pAtk.perStr}·str + weapon</code>,
@@ -758,13 +906,16 @@
       }
 
       function renderNotes() {
-        return `<h2>Not covered here</h2>
+        return `${section(
+          "Not covered here",
+          "Known limits of this model. Read these before treating any verdict above as final.",
+        )}
         <ul class="notes">
           <li>Closed-form only — no crit variance, misses, kiting; perfect focus-fire assumed.
               A <code>BattleModule</code> run is what turns this from a screen into proof.</li>
           ${DATA.proposed.openQuestions.map((q) => `<li>${q}</li>`).join("")}
         </ul>
-        <h2>Provenance</h2>
+        ${section("Provenance", "Where each number on this page came from.")}
         <ul class="notes">
           <li>Shipped values scraped by <code>scripts/gen_combat_model.mjs</code> from
               ${Object.values(DATA.shipped.sources)
@@ -779,6 +930,7 @@
 
       function renderAll() {
         document.getElementById("app").innerHTML = [
+          renderLegend(),
           renderInputs(),
           renderRequirements(),
           renderLadder(),
