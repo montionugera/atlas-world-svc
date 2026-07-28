@@ -41,6 +41,7 @@ const SECTIONS = [
 // Same bootstrap the page does in loadDefaults().
 const P = { levelMax: data.proposed.levelMax };
 for (const [k, d] of Object.entries(data.proposed.inputs)) P[k] = d.value;
+P.armourRule = data.proposed.armourRuleDefault;
 
 let failures = 0;
 const check = (label, got, want, tol) => {
@@ -144,7 +145,7 @@ if (a < 0 || b < 0 || b <= a) {
 const model = new Function(
   "DATA",
   "P",
-  `${html.slice(a, b)}; return { player, mob, R, band, requirements, invariants, midLevel, rankRef };`,
+  `${html.slice(a, b)}; return { player, mob, R, Rrule, ttkRule, band, requirements, invariants, midLevel, rankRef };`,
 )(data, P);
 
 const EXPECT_REQ = {
@@ -317,6 +318,43 @@ gate(
     cells8.every((r) => Number.isFinite(r) && r > 0),
   `all ${cells8.length} archetype cells finite`,
   `(8 groups × ${data.proposed.archetypeRanks.length} ranks)`,
+);
+
+// ------------------------------------------------- 5c. armour rules -------
+// The three candidate rules must all be computable, and each must have the
+// shape it claims: percent attacker-blind, subtract able to reach zero, soft
+// never reaching zero.
+console.log("\narmour rules");
+const HI = { build: "high", gear: "A", focus: "full tank", gearClass: "tank" };
+for (const rule of data.proposed.armourRules) {
+  const vals = data.proposed.archetypeRanks.map((rk) =>
+    model.Rrule(50, rk, HI, 1, rule),
+  );
+  gate(
+    vals.every((v) => v >= 0 && !Number.isNaN(v)),
+    `${rule}: all ranks computable`,
+    vals.map((v) => (v === Infinity ? "\u221e" : v.toFixed(2))).join(" "),
+  );
+}
+gate(
+  model.Rrule(50, "E", HI, 1, "subtract") === Infinity,
+  "subtract reaches full immunity somewhere",
+);
+gate(
+  Number.isFinite(model.Rrule(50, "E", HI, 1, "soft")),
+  "soft never reaches immunity",
+);
+
+// Under `percent` the per-hit engine and the legacy closed form describe the
+// same fight -- but they disagree, because legacy gives the mob the reference
+// player's flat 33% while the per-hit engine derives it from the mob's own
+// pDef. Pin the gap so it cannot drift unnoticed while it is unresolved.
+const legacy = model.R(33, "C", "max", 1);
+const perHit = model.Rrule(33, "C", "max", 1, "percent");
+gate(
+  Math.abs(perHit / legacy - 1.1975) < 0.001,
+  "known percent-rule gap: mob pDef does not produce mob EHP",
+  `legacy ${legacy.toFixed(3)} vs per-hit ${perHit.toFixed(3)}`,
 );
 
 // ------------------------------------------------------- 6. invariants ----

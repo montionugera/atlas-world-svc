@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-07-28T16:15:44.673Z",
+  "generatedAt": "2026-07-28T16:41:46.016Z",
   "proposed": {
     "origin": "design-spec",
     "spec": "docs/superpowers/specs/2026-07-28-combat-stat-model-design.md",
@@ -107,6 +107,12 @@
         "label": "Gear class lean (offense share)"
       }
     },
+    "armourRules": [
+      "percent",
+      "subtract",
+      "soft"
+    ],
+    "armourRuleDefault": "percent",
     "levelMax": 99,
     "statCapAtL1": 10,
     "statCapAtLMax": 99,

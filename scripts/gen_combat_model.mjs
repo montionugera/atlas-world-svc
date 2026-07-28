@@ -110,6 +110,13 @@ const proposed = {
     },
   },
 
+  // Candidate armour rules, switchable in the lab's eight-group table.
+  // percent  = mitigation as a share of the hit (the model as it stands)
+  // subtract = armour cancels damage point for point, and can reach zero
+  // soft     = subtractive at the first point, asymptotic to zero after
+  armourRules: ["percent", "subtract", "soft"],
+  armourRuleDefault: "percent",
+
   levelMax: 99,
   statCapAtL1: 10,
   statCapAtLMax: 99,
