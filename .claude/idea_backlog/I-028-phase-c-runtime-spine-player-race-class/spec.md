@@ -35,6 +35,59 @@ Per-race leans cannot be implemented until this is resolved, because "Elf leans 
 cast speed" needs an `int`-like stat the sim does not have, and "Beastkin leans agility"
 needs to survive the `applyLoadout` gap.
 
+### `dex` is a phantom stat — the mismatch is worse than "dex vs int"
+
+Verified by grep across `colyseus-server/src` (excluding tests): **nothing reads
+`stat.dex`.** The only two hits are its own declaration in `combatStats.ts:25` and the
+`applyLoadout.ts:27` comment explaining it is left alone. It feeds no derived stat, no
+timing, no formula.
+
+Contrast `agi`, which is genuinely consumed — `meleeAttackSpeed.ts:105`,
+`MeleeAttackStrategy.ts:43`, `SpearThrowAttackStrategy.ts:58`, `Player.ts:99`.
+
+So the framing "the sim has dex, meta has int" is misleading. The truth:
+**`dex` has never done anything, and `int` does two things.** The pinned formula in
+`contracts/src/meta/derivedStats.ts` uses only `vit / str / int / agi`:
+
+```
+maxHealth = 100 + 10*vit + 5*(level-1)     pAtk = 10 + 2*str + weapon.pAtk
+mAtk      = 10 + 2*int + weapon.mAtk       pDef = 5 + vit
+mDef      = 5 + int                        maxMoveSpeed = 20 + 0.2*agi
+```
+
+`int` drives **both magic offense and magic defence**. Combined with [[I-027]] (magical
+projectiles defended with `pDef`, not `mDef`) and [[I-029]] (element multiplier applied
+*after* defence), `int` is the balance hotspot of the whole combat model.
+
+**The likely resolution is to delete `dex`, not to reconcile it** — but that is an owner
+call, since RO-style `dex` (hit/accuracy/cast-time) is the natural home for the
+cast-speed lean canon promises the Elf.
+
+### Missing stats: 4 of 8 canon leans have no mechanism to attach to
+
+`content/story/canon.md:353-356` promises eight leans. Audited against what exists:
+
+| Race | Canon lean | Expressible today? |
+|---|---|---|
+| Human | balanced, no lean | ✅ trivially (no-op) |
+| Ogre | physical power and health | ✅ `str` + `vit` |
+| Beastkin | agility | ✅ `agi` |
+| Dwarf | defense **and craft** | ⚠️ defence yes; **no craft stat exists** |
+| Elf | **mana** and **cast speed** | ❌ no mana/MP resource, no cast-speed stat |
+| Demon | **Void affinity** | ❌ no per-entity element affinity |
+| Immortal | **Holy affinity** | ❌ no per-entity element affinity |
+| Dragon | **elemental magic power** | ❌ only flat `mAtk`; nothing scales *by element* |
+
+Verified absent: `grep -riE "\bmana\b|maxMp|currentMp|spCost"` over
+`colyseus-server/src` + `contracts/src` returns **nothing** — consistent with handoff §5
+("No mana/MP resource"). And `grep -rn "resist\|affinity" colyseus-server/src/config/combat`
+returns **nothing** — the element system is a flat 7×7 attacker-element × defender-element
+table with **no per-entity affinity or resistance modifier**.
+
+So "Demon leans Void affinity" is not a tuning value waiting for a field. **There is no
+mechanism at all.** Per-element affinity is a new combat mechanic shared with [[I-029]],
+and it should probably be designed once, there or here, but not twice.
+
 ## Why now
 
 - The element system (F-017) multiplies **after** defense, so stat correctness compounds:
@@ -57,6 +110,60 @@ needs to survive the `applyLoadout` gap.
 3. Apply per-race leans as a data table derived from `canon.md`, not hardcoded — likely a
    content file with a gate, so lore and runtime cannot drift.
 4. Close the `applyLoadout` silent-drop seam so no allocated stat is discarded.
+
+## Missing: classes have nothing to gate (the "skill" half of Phase C)
+
+Handoff §5 says "No skill trees, no per-class skill numbers" — but the gap is more
+concrete than that. `contracts/content/skills.json` is **four skills** with only
+`{ id, name, maxLevel, requires }`:
+
+```
+power_strike (max 5)   fireball (max 5)   iron_skin (max 3)   cleave (max 5, requires power_strike)
+```
+
+There is **no `class` / `job` field, no `element` field, and no `damageType` field** on a
+skill. `fireball` exists and cannot be Fire-elemental.
+
+Verified: no job/class token (`swordsman|archer|assassin|spearman|summoner|engineer|healer`)
+appears anywhere in `*.ts` / `*.cs` / non-art `*.json` — the 8 classes exist **only** as
+64 art keys in `art-manifest.json`.
+
+**Consequence: shipping a `class` field alone makes class purely cosmetic** — a label with
+no mechanical consequence, since there is nothing for it to gate. Deciding whether Phase C
+includes "skills gain a `class` gate + an `element`" is a scoping decision this idea must
+make explicitly, not discover during implementation.
+
+## Blast radius — 10 sites, one of them stored player data
+
+Changing the `PrimaryStats` shape is not a local edit. Concretely:
+
+| # | Site | Why |
+|---|---|---|
+| 1 | `contracts/src/meta/types.ts:1` | the interface |
+| 2 | `contracts/src/meta/schemas.ts:25` | **`schemaVersion: z.literal(1)` + `.strict()`** |
+| 3 | `contracts/src/meta/derivedStats.ts` | **PINNED formula**, comment says "do not improve the numbers here" |
+| 4 | `nakama/src/rpc/allocateStats.ts` | hardcodes `{str,agi,int,vit}` **twice** (parse + accumulate) |
+| 5 | `nakama/src/leveling.ts:21` | point economy — `+3 statPoints` per level; a 5th stat dilutes it |
+| 6 | `colyseus-server/src/meta/applyLoadout.ts` | the silent-drop seam |
+| 7 | `colyseus-server/src/config/combat/combatStats.ts` | `BaseStat` + `clampPrimaryStat` (1–99, vs meta's unbounded non-negative — **the two clamps also disagree**) |
+| 8 | `colyseus-server/scripts/codegen/gen-csharp-meta.ts` + `check_drift_meta.sh` | drift gate **fails until regenerated** |
+| 9 | `game-client/src/Contracts/MetaTypes.cs`, `UI/Panels/CharacterPanel.cs`, `UI/Panels/LoadoutPanel.cs` | generated C# + the two panels that render stats |
+| 10 | **Stored Nakama profile docs** | see below |
+
+### The migration story — currently missing entirely
+
+`ProfileDoc` is validated with `schemaVersion: z.literal(1)` under a `.strict()` object.
+That means **adding or removing a `PrimaryStats` field breaks every existing stored
+profile on read** — a literal `1` will not accept a v2 doc, and `.strict()` rejects
+unknown keys. Any change here requires:
+
+- bumping to `z.literal(2)` (or a discriminated union across versions), **and**
+- a migration for already-persisted player profiles, **and**
+- a decision on stat respec: if `dex` is deleted or `int` is added, players who already
+  allocated points need those points refunded or remapped.
+
+None of this is optional, and none of it was in the original sketch. It is plausibly the
+single largest chunk of work in Phase C.
 
 ## Open questions
 
