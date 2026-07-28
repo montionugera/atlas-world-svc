@@ -359,9 +359,16 @@
 
       const grow = (L) => Math.pow(P.growth, L - 1);
 
-      /** Defence constant, riding the same curve as pDef so mitigation stays flat. */
-      const kAnchor = () =>
-        (P.def1 * (1 - P.targetReduction)) / P.targetReduction;
+      /**
+       * REFERENCE HP curve — a constant, not anyone's actual HP.
+       *
+       * This distinction is load-bearing. If damage scaled with the target's own
+       * HP, bigger bars would take proportionally bigger hits and stacking HP
+       * would do nothing at all. As a reference curve it only makes `k` readable:
+       * k is the share of a typical HP bar one even hit removes, so 1/k is
+       * hits-to-kill in an even fight.
+       */
+      const refHp = (L) => P.baseHp * grow(L);
 
       const clampL = (x) => Math.max(1, Math.min(P.levelMax, x));
 
@@ -370,13 +377,13 @@
 
       /**
        * The level a mob FIGHTS at. Level gap weight scales how much of a level
-       * difference actually counts in combat: 1.0 is the full stat difference,
-       * 0.5 means a 10-level gap fights like a 5-level one.
+       * difference actually counts: 1.0 is the full stat difference, 0.6 makes a
+       * 10-level gap fight like a 6-level one.
        *
-       * It exists because the gap steepness is growth-squared per level, and
-       * growth is pinned to 1.042-1.048 by the 20-level progression invariant.
-       * The whole legal range moves the gap 9.2% -> 8.6%, so softening it at all
-       * requires a separate knob. Every game with level-based combat has one.
+       * It exists because gap steepness is growth-squared per level, and growth
+       * is pinned to 1.042-1.048 by the 20-level progression invariant. The whole
+       * legal range moves the gap 9.2% -> 8.6%, so softening it at all needs a
+       * separate knob.
        */
       const mobLevel = (L) =>
         clampL(L + (P.mobLevelDelta || 0) * (P.gapWeight ?? 1));
@@ -417,60 +424,63 @@
         };
       }
 
+      /**
+       * A budget applies ONCE and is split among the stats it buys.
+       *
+       * That rule is what keeps everything symmetric: the defensive budget is
+       * shared between hp and def as sqrt each, so hp x def is exactly the budget
+       * and the two are perfectly interchangeable. Neither is a trap stat, and
+       * neither side of the fight double-dips.
+       */
       function player(L, spec) {
         const { alloc: a, gearScale: gs, off, lean } = resolve(spec);
-        const f = grow(L),
+        const g = grow(L),
           C = P.statCoef;
-        // Stat points: the (1 + C·a) bonus is SPLIT by focus. At off = 0.5 both
-        // halves are exactly (1 + C·a) — the pre-focus model, unchanged.
-        const atkStat = 1 + 2 * C * a * off;
-        const defStat = 1 + 2 * C * a * (1 - off);
-        // Gear: the TIER is how big the budget is, the CLASS is where it points.
-        // At lean = 0.5 both are gs — again, unchanged.
-        const gO = gs * 2 * lean;
-        const gD = gs * 2 * (1 - lean);
-        const dps = ((P.dps1 * f) / (1 + C)) * atkStat * gO;
-        const hp = ((P.hp1 * f) / (1 + C)) * defStat * gD;
-        const dfn = P.def1 * f * gD;
-        const red = dfn / (dfn + kAnchor() * f);
-        const ehp = hp / (1 - red);
+        const atkBudget = (1 + 2 * C * a * off) * (gs * 2 * lean);
+        const defBudget = (1 + 2 * C * a * (1 - off)) * (gs * 2 * (1 - lean));
+        const half = Math.sqrt(defBudget);
+        const atk = P.baseAtk * g * atkBudget;
+        const def = P.baseDef * g * half;
+        const hp = refHp(L) * half;
         return {
-          dps,
+          atk,
+          def,
           hp,
-          ehp,
-          red,
-          pDef: dfn,
-          cs: Math.sqrt(dps * ehp),
-          pAtk: (dps * P.physMix) / P.aspd,
-          mAtk: (dps * (1 - P.physMix)) / P.castRate,
+          // Geometric mean of the three, so it grows at exactly `growth`.
+          cs: Math.cbrt(atk * def * hp),
           mspd: Math.min(P.mspdBase * (1 + C * a), P.mspdCap),
           mspdRaw: P.mspdBase * (1 + C * a),
         };
       }
 
-      /** A mob is the max-grade player at its own level, scaled by the rank multiplier. */
+      /**
+       * A mob is the max-grade player at its own level with its CombatScore
+       * scaled by the rank multiplier. CS is the geometric mean of the three
+       * stats, so scaling each stat by mult scales CS by exactly mult — and R,
+       * which is the ratio of the products, by mult^3.
+       */
       function mob(L, rank) {
         const r = DATA.proposed.ladder.find((x) => x.rank === rank);
         const ref = player(L, "max");
-        const s = (v) => v * r.mult;
+        const s = r.mult;
         return {
           mult: r.mult,
-          cs: s(ref.cs),
-          dps: s(ref.dps),
-          ehp: s(ref.ehp),
-          hp: s(ref.hp),
-          pAtk: s(ref.pAtk),
-          mAtk: s(ref.mAtk),
-          pDef: s(ref.pDef),
+          atk: ref.atk * s,
+          def: ref.def * s,
+          hp: ref.hp * s,
+          cs: ref.cs * r.mult,
         };
       }
 
+      /** One hit: k x refHp(defender level) x (atk / def). */
+      const hit = (att, dfn, Ldef) => P.k * refHp(Ldef) * (att.atk / dfn.def);
+
       /**
-       * R = how long the player survives ÷ how long the encounter survives.
-       * R > 1 is a win and 1 − 1/R is the HP left.
+       * R = how long the player survives / how long the encounter survives.
+       * R > 1 is a win and 1 - 1/R is the HP left.
        *
-       * n = 1 is THE FOUNDATION: R = (CS_p / CS_m)². CombatScore is the exact
-       * sufficient statistic — the DPS/EHP split cancels entirely.
+       * n = 1 is THE FOUNDATION. The level gap enters only through atk/def and
+       * refHp, already damped by gapWeight inside mobLevel.
        *
        * n > 1 layers on the party factor 2n/(n+1): the party focus-fires, so mobs
        * die one at a time and the average number still alive is (n+1)/2 rather
@@ -478,63 +488,19 @@
        */
       function R(L, rank, spec, n = 1) {
         const p = player(L, spec),
-          m = mob(mobLevel(L), rank);
-        const single = Math.pow(p.cs / m.cs, 2);
-        return n <= 1 ? single : (single * 2 * n) / (n + 1);
-      }
-
-      // ---------------------------------------------------- armour rules ----
-      // How much damage ONE hit lands, given the attacker's per-hit power and
-      // the defender's pDef. The entire tank question lives in this one line.
-      //
-      //   percent  — mitigation as a share. Attacker-blind: 33% off everything.
-      //   subtract — armour cancels damage point for point. Reaches ZERO.
-      //   soft     — subtractive at the first point, asymptotic to zero after.
-      const ARMOUR_RULES = {
-        percent: (atk, def, K) => (atk * K) / (def + K),
-        subtract: (atk, def) => Math.max(0, atk - def),
-        soft: (atk, def) => (atk * atk) / (atk + def),
-        // Lineage 2's shape. K * targetReduction anchors it to the same 33%
-        // baseline as `percent` at reference armour, so the four are comparable.
-        divide: (atk, def, K) => (atk * K * P.targetReduction) / def,
-      };
-
-      /** Damage per second one side actually lands on the other. */
-      function effDps(att, def, Ldef, rule) {
-        const K = kAnchor() * grow(Ldef);
-        const f = ARMOUR_RULES[rule];
-        return (
-          P.aspd * f(att.pAtk, def.pDef, K) +
-          P.castRate * f(att.mAtk, def.pDef, K)
-        );
-      }
-
-      /**
-       * R computed per HIT, which is the only way a subtractive rule can be
-       * expressed at all. Under `percent` this is the same fight as R() —
-       * except that the mob's mitigation is derived from the mob's own pDef,
-       * where R() inherits the reference player's flat 33%. The two disagree,
-       * and that disagreement is a real inconsistency, not rounding. The
-       * armour-rule section reports it rather than hiding it.
-       */
-      function Rrule(L, rank, spec, n, rule) {
-        const p = player(L, spec),
           Lm = mobLevel(L),
           m = mob(Lm, rank);
-        const out = effDps(p, m, Lm, rule),
-          inc = effDps(m, p, L, rule);
-        if (out <= 0) return 0; // you cannot hurt it
-        if (inc <= 0) return Infinity; // it cannot hurt you
-        const single = p.hp / inc / (m.hp / out);
+        const single = hitsToDie(p, m, L) / hitsToKill(p, m, Lm);
         return n <= 1 ? single : (single * 2 * n) / (n + 1);
       }
 
-      /** Seconds to kill one mob under a given armour rule. */
-      function ttkRule(L, rank, spec, rule) {
-        const Lm = mobLevel(L),
-          m = mob(Lm, rank);
-        const out = effDps(player(L, spec), m, Lm, rule);
-        return out > 0 ? m.hp / out : Infinity;
+      const hitsToKill = (p, m, Lm) => m.hp / hit(p, m, Lm);
+      const hitsToDie = (p, m, L) => p.hp / hit(m, p, L);
+
+      /** Seconds for one player to kill one mob of this rank. */
+      function ttk(L, rank, spec) {
+        const Lm = mobLevel(L);
+        return hitsToKill(player(L, spec), mob(Lm, rank), Lm) / P.aspd;
       }
 
       function band(r) {
@@ -556,16 +522,15 @@
       function invariants() {
         const C = P.statCoef,
           G = P.growth;
-        const reds = [];
-        for (let L = 1; L <= P.levelMax; L++) reds.push(player(L, "max").red);
-        const statShare = C / (1 + C); // provably flat: CS scales by (1 + C·alloc)
-        const sss = DATA.proposed.ladder[DATA.proposed.ladder.length - 1];
-        const biggestHp = mob(sss.to, sss.rank).hp * sss.n;
+        const statShare = C / (1 + C);
         const reqs = requirements();
-        const capAtMax = P.mspdBase * (1 + C * 1.0);
         const flat = [1, 25, 50, 75, P.levelMax].map((L) =>
           R(L, "C", "max", 1),
         );
+        // hp and def are interchangeable: moving the defensive budget between
+        // them must not move CombatScore at all.
+        const hi = player(50, "max");
+        const evenHits = 1 / P.k;
 
         return [
           [
@@ -579,9 +544,16 @@
             Math.abs(player(2, "max").cs / player(1, "max").cs - G) < 1e-9,
           ],
           [
-            "mitigation % flat across levels",
-            `${(reds[0] * 100).toFixed(0)}%`,
-            Math.max(...reds) - Math.min(...reds) < 1e-9,
+            // What makes 1/k readable as hits-to-kill. Breaks if baseAtk/baseDef
+            // drift apart, or if the defensive budget stops being split as sqrt.
+            "mirror match is an even fight",
+            `atk/def ${(hi.atk / hi.def).toFixed(4)}`,
+            Math.abs(hi.atk / hi.def - 1) < 0.01,
+          ],
+          [
+            "even fight is 1/k hits",
+            `${evenHits.toFixed(1)} hits`,
+            evenHits >= 2 && evenHits <= 20,
           ],
           [
             "stat share ≥25% at every level",
@@ -594,22 +566,15 @@
             DATA.proposed.statCapAtLMax <= 99,
           ],
           [
-            "largest encounter HP fits int32",
-            biggestHp.toLocaleString(undefined, { maximumFractionDigits: 0 }),
-            biggestHp < 2 ** 31,
-          ],
-          [
             "all four requirements",
-            `${reqs.filter((r) => r.ok).length}/${reqs.length}`,
-            reqs.every((r) => r.ok),
+            `${reqs.filter((q) => q.ok).length}/${reqs.length}`,
+            reqs.every((q) => q.ok),
           ],
           [
             `move speed within clamp ${P.mspdCap}`,
-            capAtMax.toFixed(1),
-            capAtMax <= P.mspdCap,
+            `${player(P.levelMax, "max").mspd.toFixed(1)}`,
+            player(P.levelMax, "max").mspdRaw <= P.mspdCap,
           ],
-          // Pure exponential growth means L cancels out of CS_p/CS_m. If this
-          // fails, some term stopped riding the level curve.
           [
             "R invariant to absolute level",
             `${flat[0].toFixed(4)} at every level`,
@@ -711,6 +676,23 @@
         "gear class": [
           "What the player's gear is FOR",
           "Where the gear budget points: tank gear buys HP and pDef, dps gear buys attack. Direction, not size — set the split with the Gear class lean slider. INVENTED: no gear-class concept exists in code.",
+        ],
+        "player atk": [
+          "Attack power",
+          "Damage per hit before the target's def divides it.",
+        ],
+        "player def": [
+          "Defence",
+          "Divides incoming damage: dmg = k x refHp x (atk / def). Exactly interchangeable with HP.",
+        ],
+        "mob atk": [
+          "Mob attack power",
+          "Damage per hit before your def divides it.",
+        ],
+        "mob def": ["Mob defence", "Divides the damage you deal."],
+        "mob CS mult": [
+          "CombatScore multiplier for the rank",
+          "Solved, not authored: each rank's multiplier is derived from its target R, so the ladder cannot silently drift.",
         ],
         "gear tier": [
           "How good the player's gear is",
@@ -953,6 +935,10 @@
        * The eight player groups: [gear class] x [gear tier] x [build focus].
        * Scored the way you asked — time to kill, and HP left over.
        */
+      /**
+       * The eight player groups: [gear class] x [gear tier] x [build focus].
+       * Scored the way you asked — time to kill, and HP left over.
+       */
       function renderArchetypes() {
         const { archetypes, archetypeRanks, ladder } = DATA.proposed;
         const n = P.encounterSize;
@@ -965,28 +951,17 @@
           focus: a.focus,
           gearClass: a.gearClass,
         });
-        // Strength yardstick: sqrt(R) against a rank-C mob. Under `percent` this
-        // is exactly the CombatScore ratio; under the subtractive rules there is
-        // no single CombatScore, so it becomes what it always really was — a
-        // measurement against a specific opponent.
-        const cs = archetypes.map((a) =>
-          Math.sqrt(Rrule(50, "C", spec(a), 1, P.armourRule)),
-        );
-        const best = Math.max(...cs.filter(Number.isFinite));
+        // Level-invariant, so any reference level gives the same ratio.
+        const cs = archetypes.map((a) => player(50, spec(a)).cs);
+        const best = Math.max(...cs);
 
-        const rule = P.armourRule;
         const cell = (a, rk) => {
           const L = midLevel(rk);
-          const r = Rrule(L, rk.rank, spec(a), n, rule);
-          const ttk = ttkRule(L, rk.rank, spec(a), rule);
-          if (r === 0) return `<span class="pill b-LOSS">can't hurt it</span>`;
-          const left = r === Infinity ? 100 : (1 - 1 / r) * 100;
-          const t =
-            ttk === Infinity
-              ? "∞"
-              : `${ttk < 100 ? ttk.toFixed(1) : ttk.toFixed(0)}s`;
+          const r = R(L, rk.rank, spec(a), n);
+          const t = ttk(L, rk.rank, spec(a));
+          const left = (1 - 1 / r) * 100;
           return (
-            `<span class="pill b-${band(r)}">${t}</span>` +
+            `<span class="pill b-${band(r)}">${t < 100 ? t.toFixed(1) : t.toFixed(0)}s</span>` +
             `<div class="${left < 0 ? "FAIL" : "dim"}">${left >= 0 ? "+" : ""}${left.toFixed(0)}% HP left</div>`
           );
         };
@@ -995,47 +970,23 @@
           `<b>${a.gearClass}</b> gear`,
           a.tier,
           a.focus,
-          Number.isFinite(cs[i])
-            ? `${((cs[i] / best) * 100).toFixed(0)}%`
-            : "∞",
+          `${((cs[i] / best) * 100).toFixed(0)}%`,
           ...ranks.map((rk) => cell(a, rk)),
         ]);
-
-        const RULE_TEXT = {
-          percent:
-            "Armour removes a <b>share</b> of every hit — 33% off everything, whoever is swinging. This is the model as it stands.",
-          subtract:
-            "Armour cancels damage <b>point for point</b>, like pAtk. Once your armour reaches their attack you take nothing at all — watch for <b>∞</b> and <code>can't hurt it</code>.",
-          soft: "Armour subtracts at the first point, then <b>bends away from zero</b>: damage = atk × atk/(atk + def). Never immune, never a wall.",
-        };
-        const buttons = DATA.proposed.armourRules
-          .map(
-            (r) =>
-              `<button class="rule ${r === rule ? "on" : ""}" data-rule="${r}">${r}</button>`,
-          )
-          .join(" ");
 
         return `${section(
           "Eight player groups — time to kill, and what it costs you",
           `Rows are the <b>player</b>: gear class × gear tier × build focus, 2×2×2. All eight are
            <b>fully allocated</b> — "full DPS" and "full tank" are directions, not amounts.
            Columns are the <b>mob</b> rank, E through SS. Each cell is
-           <b>time to kill the encounter</b> (level-invariant) over <b>player HP left</b>,
-           which is <code>100 − HP consumed</code> and <b>goes negative when the fight kills you</b> —
-           the negative is how far short you fell. ${
+           <b>time to kill</b> over <b>player HP left</b>, which is <code>100 − HP consumed</code>
+           and <b>goes negative when the fight kills you</b>. ${
              n <= 1
                ? "One player, one mob."
                : `<b>${n} players against ${n} mobs.</b>`
            }
            SSS is omitted: it is the unresolved boss-or-pack rank.`,
         )}
-        <div class="panel" style="margin-bottom:12px">
-          <div style="margin-bottom:8px"><b>Armour rule</b> &nbsp; ${buttons}</div>
-          <div class="qline" style="margin:0">${RULE_TEXT[rule]}</div>
-          <div class="qline" style="margin:6px 0 0"><b>This switch only drives this table.</b>
-            The requirements, ladder and outcome matrix above stay on the percentage rule —
-            they are calibrated against it, and rebasing them is a separate decision.</div>
-        </div>
         ${table(
           [
             "gear class",
@@ -1054,12 +1005,9 @@
           return [
             L,
             n0(p.cs),
-            n0(p.pAtk),
-            n0(p.mAtk),
+            n0(p.atk),
             n0(p.hp),
-            n0(p.pDef),
-            `${(p.red * 100).toFixed(0)}%`,
-            n0(p.ehp),
+            n0(p.def),
             p.mspdRaw > P.mspdCap
               ? `<span class="FAIL">${p.mspd.toFixed(1)} clamped</span>`
               : p.mspd.toFixed(1),
@@ -1067,18 +1015,15 @@
         });
         return `${section(
           "Player curve — what a PLAYER looks like at each level",
-          "No mobs here. A max-grade player at each level. † Mitigation and move speed are <b>constant at every level by design</b> — mitigation because the defence constant rides the same curve as pDef, move speed because it has no level term. Making either grow with level is a change to the model, not a tuning value.",
+          "No mobs here. A max-grade player at each level. † Move speed is <b>constant at every level by design</b> — it has no level term. Making it grow with level is a change to the model, not a tuning value.",
         )}
         ${table(
           [
             "player level",
             "player CS",
-            "player pAtk",
-            "player mAtk",
+            "player atk",
             "player maxHP",
-            "player pDef",
-            "damage mitigated †",
-            "player EHP",
+            "player def",
             "player move speed †",
           ],
           rows,
@@ -1137,34 +1082,35 @@
           const L = midLevel(rk),
             Lm = mobLevel(L),
             Ls = mobShownLevel(L);
-          const p = player(L, "max"),
-            m = mob(Lm, rk.rank);
-          const ttk1 = m.ehp / (p.dps * n);
+          const m = mob(Lm, rk.rank);
+          const t1 = ttk(L, rk.rank, "max") / n;
           return [
             `<b>${rk.rank}</b>`,
             L,
             Ls === L ? Ls : `<span class="FAIL">${Ls}</span>`,
+            rk.mult.toFixed(4),
             n0(m.cs),
             n0(m.hp),
-            n0(m.pAtk),
-            n0(m.pDef),
-            `${ttk1.toFixed(1)}s`,
-            `${(ttk1 * n).toFixed(0)}s`,
+            n0(m.atk),
+            n0(m.def),
+            `${t1.toFixed(1)}s`,
+            `${(t1 * n).toFixed(0)}s`,
           ];
         });
         return `${section(
           "Mob stats — what a MOB looks like at each rank",
-          `One row per <b>mob</b> rank. The two time columns are for a party of <b>${n}</b> max-grade players — raise <code>Encounter size</code> to change them.`,
+          `One row per <b>mob</b> rank. <code>mult</code> is a CombatScore multiplier, solved so each rank lands on its target R. The two time columns are for a party of <b>${n}</b> max-grade players.`,
         )}
         ${table(
           [
             "mob rank",
             "player level",
             "mob level",
+            "mob CS mult",
             "mob CS",
             "mob HP",
-            "mob pAtk",
-            "mob pDef",
+            "mob atk",
+            "mob def",
             "time to kill 1 mob",
             "time to clear pack",
           ],

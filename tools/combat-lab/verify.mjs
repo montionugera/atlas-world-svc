@@ -41,7 +41,6 @@ const SECTIONS = [
 // Same bootstrap the page does in loadDefaults().
 const P = { levelMax: data.proposed.levelMax };
 for (const [k, d] of Object.entries(data.proposed.inputs)) P[k] = d.value;
-P.armourRule = data.proposed.armourRuleDefault;
 
 let failures = 0;
 const check = (label, got, want, tol) => {
@@ -145,13 +144,13 @@ if (a < 0 || b < 0 || b <= a) {
 const model = new Function(
   "DATA",
   "P",
-  `${html.slice(a, b)}; return { player, mob, R, Rrule, ttkRule, band, requirements, invariants, midLevel, rankRef };`,
+  `${html.slice(a, b)}; return { player, mob, R, ttk, band, requirements, invariants, midLevel, rankRef };`,
 )(data, P);
 
 const EXPECT_REQ = {
   "s-solo-loss": 0.9,
-  "a-solo-not-easy": 1.12,
-  "c-median-fair": 2.23,
+  "a-solo-not-easy": 1.125,
+  "c-median-fair": 2.341,
   "c-max-easy": 4.0,
 };
 const EXPECT_LADDER = {
@@ -164,14 +163,14 @@ const EXPECT_LADDER = {
   SS: 1.5,
   SSS: 1.4,
 };
-// L -> [CS, pAtk, mAtk, hp, pDef, ehp, mspd]
+// L -> [CS, atk, hp, def, mspd]
 const EXPECT_CURVE = {
-  1: [55, 9, 8, 100, 5, 149, 30.0],
-  20: [126, 22, 17, 231, 12, 344, 30.0],
-  40: [304, 52, 42, 557, 28, 831, 30.0],
-  60: [733, 125, 101, 1342, 67, 2003, 30.0],
-  80: [1769, 302, 243, 3237, 162, 4832, 30.0],
-  99: [4082, 697, 560, 7471, 374, 11151, 30.0],
+  1: [96, 60, 245, 60, 30.0],
+  20: [221, 138, 565, 139, 30.0],
+  40: [534, 334, 1363, 334, 30.0],
+  60: [1287, 805, 3288, 806, 30.0],
+  80: [3105, 1942, 7930, 1943, 30.0],
+  99: [7165, 4483, 18301, 4484, 30.0],
 };
 
 console.log("\nrequirements (§2)");
@@ -194,11 +193,11 @@ for (const rk of data.proposed.ladder) {
 }
 
 console.log("\nplayer curve (§4) — max grade");
-const NAMES = ["CS", "pAtk", "mAtk", "hp", "pDef", "ehp", "mspd"];
+const NAMES = ["CS", "atk", "hp", "def", "mspd"];
 for (const [L, want] of Object.entries(EXPECT_CURVE)) {
   const p = model.player(Number(L), "max");
-  [p.cs, p.pAtk, p.mAtk, p.hp, p.pDef, p.ehp, p.mspd].forEach((g, i) =>
-    check(`L${L} ${NAMES[i]}`, g, want[i], i === 6 ? 0.05 : 0.6),
+  [p.cs, p.atk, p.hp, p.def, p.mspd].forEach((g, i) =>
+    check(`L${L} ${NAMES[i]}`, g, want[i], i === 4 ? 0.05 : 0.6),
   );
 }
 
@@ -320,43 +319,6 @@ gate(
   `(8 groups × ${data.proposed.archetypeRanks.length} ranks)`,
 );
 
-// ------------------------------------------------- 5c. armour rules -------
-// The three candidate rules must all be computable, and each must have the
-// shape it claims: percent attacker-blind, subtract able to reach zero, soft
-// never reaching zero.
-console.log("\narmour rules");
-const HI = { build: "high", gear: "A", focus: "full tank", gearClass: "tank" };
-for (const rule of data.proposed.armourRules) {
-  const vals = data.proposed.archetypeRanks.map((rk) =>
-    model.Rrule(50, rk, HI, 1, rule),
-  );
-  gate(
-    vals.every((v) => v >= 0 && !Number.isNaN(v)),
-    `${rule}: all ranks computable`,
-    vals.map((v) => (v === Infinity ? "\u221e" : v.toFixed(2))).join(" "),
-  );
-}
-gate(
-  model.Rrule(50, "E", HI, 1, "subtract") === Infinity,
-  "subtract reaches full immunity somewhere",
-);
-gate(
-  Number.isFinite(model.Rrule(50, "E", HI, 1, "soft")),
-  "soft never reaches immunity",
-);
-
-// Under `percent` the per-hit engine and the legacy closed form describe the
-// same fight -- but they disagree, because legacy gives the mob the reference
-// player's flat 33% while the per-hit engine derives it from the mob's own
-// pDef. Pin the gap so it cannot drift unnoticed while it is unresolved.
-const legacy = model.R(33, "C", "max", 1);
-const perHit = model.Rrule(33, "C", "max", 1, "percent");
-gate(
-  Math.abs(perHit / legacy - 1.1975) < 0.001,
-  "known percent-rule gap: mob pDef does not produce mob EHP",
-  `legacy ${legacy.toFixed(3)} vs per-hit ${perHit.toFixed(3)}`,
-);
-
 // --------------------------------------------------- 5d. level gap -------
 // The gap knob must scale the exponent and nothing else: R(delta) should equal
 // R(0) * growth^(-2 * gapWeight * delta), exactly.
@@ -365,10 +327,9 @@ console.log("\nlevel gap");
   const build = (w, d) => {
     const Q = { levelMax: data.proposed.levelMax };
     for (const [k, v] of Object.entries(data.proposed.inputs)) Q[k] = v.value;
-    Q.armourRule = data.proposed.armourRuleDefault;
     Q.gapWeight = w;
     Q.mobLevelDelta = d;
-    return new Function("DATA", "P", `${html.slice(a, b)}; return { Rrule };`)(
+    return new Function("DATA", "P", `${html.slice(a, b)}; return { R };`)(
       data,
       Q,
     );
@@ -377,18 +338,14 @@ console.log("\nlevel gap");
   let bad = 0;
   for (const w of [0, 0.25, 0.5, 0.6, 1])
     for (const d of [-10, -5, 5, 10, 16]) {
-      const got = build(w, d).Rrule(50, "C", "max", 1, "divide");
-      const want =
-        build(w, 0).Rrule(50, "C", "max", 1, "divide") *
-        Math.pow(g, -2 * w * d);
+      const got = build(w, d).R(50, "C", "max", 1);
+      const want = build(w, 0).R(50, "C", "max", 1) * Math.pow(g, -2 * w * d);
       if (Math.abs(got / want - 1) > 1e-9) bad++;
     }
   gate(bad === 0, "gap weight scales the exponent and nothing else");
   gate(
     Math.abs(
-      build(0, 16).Rrule(50, "C", "max", 1, "divide") /
-        build(0, 0).Rrule(50, "C", "max", 1, "divide") -
-        1,
+      build(0, 16).R(50, "C", "max", 1) / build(0, 0).R(50, "C", "max", 1) - 1,
     ) < 1e-9,
     "gap weight 0 makes level difference irrelevant",
   );
