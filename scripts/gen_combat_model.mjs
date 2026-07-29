@@ -349,6 +349,50 @@ const proposed = {
       step: 1,
       label: "Mob level − player level",
     },
+
+    // --- Sustain economy -----------------------------------------------
+    // Where the healing in `sustain` actually comes from. Two design rules
+    // drive all of it:
+    //
+    //   1. HP and mana regenerate ONLY in rest mode -- no attacking and not
+    //      being attacked for `restDelay` seconds first.
+    //   2. In-combat healing comes from a healer class and is paid for in mana.
+    //
+    // Rule 1 is the sharp one. If mana cannot regenerate during a fight, the
+    // TOTAL healing a fight can receive is capped by the mana the healers
+    // walked in with -- a hard ceiling, not a rate limit. A 90-minute fight is
+    // funded entirely from bars filled before the pull.
+    healerShare: {
+      value: 0.2,
+      min: 0,
+      max: 0.6,
+      step: 0.05,
+      label: "Share of the party that heals",
+    },
+    // One healer's FULL mana pool, expressed in the only unit that matters
+    // here: how many player health bars it can put back. Authored -- there is
+    // no mana or healing system to read it from.
+    manaBars: {
+      value: 8,
+      min: 1,
+      max: 80,
+      step: 1,
+      label: "Health bars per healer's mana pool",
+    },
+    restRate: {
+      value: 2,
+      min: 0.25,
+      max: 10,
+      step: 0.25,
+      label: "Rest regen (% of a bar / s)",
+    },
+    restDelay: {
+      value: 5,
+      min: 0,
+      max: 30,
+      step: 1,
+      label: "Seconds out of combat before rest starts",
+    },
   },
 
   levelMax: 99,
@@ -465,6 +509,7 @@ const proposed = {
     "HP and DEF are exactly interchangeable by construction (CS is the geometric mean of atk, def, hp), so neither is a trap stat. Confirm that is wanted before anything depends on it.",
     "Gap weight 0.6 is a chosen value, not a derived one. It makes a mob 10 levels above you 1.70x harder instead of 2.41x. It is symmetric: out-levelling content near your own level is correspondingly less rewarding.",
     "SUSTAIN IS NOW LOAD-BEARING AND DOES NOT EXIST. SS and SSS author a wall clock (900s, 5400s) and the model solves the healing needed to pay for it: 82.2% and 93.4% of ALL incoming damage, sustained for 15 and 90 minutes. There is no healing, regeneration or resurrection anywhere in the model or the game, so every SS/SSS number is quoted against an undesigned system. If healing cannot deliver those rates the wall clocks are not reachable and the fights must get shorter. The alternative -- paying with attack instead -- needs 33.8 and 75.6 swings to kill a player, i.e. hits of 3.0% and 1.3% of a health bar, because a long fight survived on one health bar is necessarily made of imperceptible hits.",
+    "THE SUSTAIN ECONOMY DOES NOT CLOSE, AND THE TWO LEVERS FIGHT EACH OTHER. Rest-mode-only regen makes a fight's healing a fixed POOL, not a rate -- nothing refills mid-fight, so supply is healers x barsPerManaPool however long the fight runs while demand grows with the clock (super-linearly: the party's own HP is a one-time absorption, so doubling the fight raises demand 2.07x). At the authored 20% healers and 8 bars per mana pool, SS is short 30 bars of 61.7 and SSS short 424 of 504.3. Raising the healer share is the obvious fix and it BACKFIRES: a boss's R is single x n x attackers, so 30% healers funds more but drops SSS from R 1.40 to 0.98 -- a loss. 50% healers gives R 0.70. The only combination that closes is a mana pool restoring ~50 health bars at 20% healers, which makes mana a non-constraint everywhere else. Real options: in-combat mana regen or consumables (both break the rest-mode rule as written), or shorter wall clocks.",
     "RANK S HAS NO WALL CLOCK while SS and SSS do, so the ladder jumps from a 70-second fight with no healing to a 900-second fight needing 82% healing. Either S should author a ttk too (and take on a sustain bill of its own) or the sustain systems it does not need should not appear one rank later.",
     "Mana, skills and physical-vs-magic parity are modelled separately (mana_level.py, parity.py) and are not folded into R yet. The model now carries a single atk rather than pAtk/mAtk.",
     "THIS MODEL AND THE SHIPPED STAT FORMULA DISAGREE STRUCTURALLY, not just in tuning. contracts/src/meta/derivedStats.ts is a PINNED formula and it is ADDITIVE with a flat base -- maxHealth = 100 + 10*vit + 5*(level-1), pAtk = 10 + 2*str + weapon.pAtk, pDef = 5 + vit -- so it has NO geometric growth at all. This model is multiplicative: refHp * growth^level, 18,300 HP at L99 against the shipped formula's 100 + 10*vit + 490. Three separate gaps: (a) additive vs multiplicative growth, (b) the game splits pAtk/mAtk and pDef/mDef where this model carries one atk and one def, (c) the game has four primaries (str, agi, int, vit) and agi feeds move speed ONLY, so points into agi are invisible to R here. `alloc` in this model is an abstraction over that pool, not a mapping onto it. Reconciling the two is unscoped work and nothing here is a spec for derivedStats until it is done.",

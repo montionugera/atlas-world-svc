@@ -30,6 +30,7 @@ const SECTIONS = [
   "renderRequirements",
   "renderLadder",
   "renderTiers",
+  "renderEconomy",
   "renderMatrix",
   "renderArchetypes",
   "renderExample",
@@ -147,7 +148,7 @@ if (a < 0 || b < 0 || b <= a) {
 const model = new Function(
   "DATA",
   "P",
-  `${html.slice(a, b)}; return { player, mob, R, ttk, band, requirements, invariants, midLevel, rankRef, hit, rankSustain };`,
+  `${html.slice(a, b)}; return { player, mob, R, ttk, band, requirements, invariants, midLevel, rankRef, hit, rankSustain, economy };`,
 )(data, P);
 
 const EXPECT_REQ = {
@@ -424,6 +425,68 @@ console.log("\nsustain — the bill a long fight runs up");
       .filter((rk) => !rk.ttk)
       .every((rk) => model.rankSustain(rk) === 0),
     "no rank without an authored ttk assumes any healing",
+  );
+}
+
+// -------------------------------------------- 5c-ter. sustain economy -----
+// Sustain says how much healing a fight needs; this says whether healers can
+// supply it. Two authored rules make it a POOL rather than a rate: regen only
+// happens in rest mode, and in-combat healing costs mana. Nothing refills
+// mid-fight, so supply is fixed while demand grows with the clock.
+//
+// Pinned independently of the JSON, same reason as EXPECT_SWINGS.
+console.log("\nsustain economy — can healers pay the bill");
+{
+  const EXPECT_DEMAND = { SS: 61.7, SSS: 504.3 };
+  for (const [rank, want] of Object.entries(EXPECT_DEMAND)) {
+    const rk = data.proposed.ladder.find((x) => x.rank === rank);
+    const e = model.economy(rk);
+    check(`${rank} healing demanded (bars)`, e.demand, want, 0.1);
+  }
+  // The structural claim the whole section rests on: doubling the fight length
+  // doubles demand and leaves supply untouched. If this ever fails, mana has
+  // stopped being a fixed pool and the rest-mode rule has been broken.
+  const rk = data.proposed.ladder.find((x) => x.rank === "SSS");
+  const base = model.economy(rk);
+  const longer = new Function(
+    "DATA",
+    "P",
+    `${html.slice(a, b)}; return { economy };`,
+  )(
+    {
+      ...data,
+      proposed: {
+        ...data.proposed,
+        ladder: data.proposed.ladder.map((x) =>
+          x.rank === "SSS" ? { ...x, ttk: x.ttk * 2 } : x,
+        ),
+      },
+    },
+    P,
+  ).economy({ ...rk, ttk: rk.ttk * 2 });
+  gate(
+    Math.abs(longer.incoming / base.incoming - 2) < 1e-9,
+    "doubling the fight doubles the damage incoming",
+    `${base.incoming.toFixed(0)} → ${longer.incoming.toFixed(0)} bars`,
+  );
+  // Demand grows by MORE than the clock does. The party's own health bars are a
+  // one-time absorption — they do not scale with fight length — so every extra
+  // second lands entirely on healing. Long fights are super-linearly expensive.
+  gate(
+    longer.demand / base.demand > 2,
+    "and demands MORE than double the healing — own-HP absorption is one-time",
+    `${base.demand.toFixed(0)} → ${longer.demand.toFixed(0)} bars (${(longer.demand / base.demand).toFixed(3)}×)`,
+  );
+  gate(
+    longer.supply === base.supply,
+    "and leaves the healing supplied untouched — mana is a pool, not a rate",
+    `${base.supply.toFixed(0)} bars either way`,
+  );
+  // Healers do not attack, so they cost difficulty as well as time.
+  gate(
+    base.rWithHealers < rk.r,
+    "swapping attackers for healers lowers a boss's R",
+    `SSS ${rk.r.toFixed(2)} → ${base.rWithHealers.toFixed(2)} at ${base.healers} healers`,
   );
 }
 

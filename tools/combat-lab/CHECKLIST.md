@@ -149,6 +149,61 @@ Gates: `sustain — the bill a long fight runs up` pins 82.2% / 93.4% to 0.1%,
 asserts the wall clocks land, and asserts no rank without an authored `ttk`
 assumes any healing at all.
 
+### 2a-ter. Who pays the bill — and why the economy does not close
+
+Two authored rules decide where sustain comes from:
+
+1. **HP and mana regenerate only in rest mode** — out of combat, after a delay.
+2. **In-combat healing comes from a healer class and costs mana.**
+
+Rule 1 is the sharp one. If mana cannot regenerate during a fight, a fight's
+healing is a **fixed pool, not a rate**: supply is `healers × barsPerManaPool`
+however long the fight runs, while demand grows with the clock. Everything below
+is in health bars — one bar is one player's full HP.
+
+```
+rank  split         ttk     incoming  demand  supply  need/healer  verdict
+SS    16dps + 4h    900s        75.0    61.7      32         15.4  SHORT 30 bars
+SSS   40dps + 10h  5400s       540.0   504.3      80         50.4  SHORT 424 bars
+```
+
+**Demand grows super-linearly.** Doubling the fight doubles incoming damage
+exactly, but raises demand **2.07×** — the party's own health bars are a
+one-time absorption that does not scale, so every extra second lands entirely on
+healing. Long fights are disproportionately expensive, and this is why the SSS
+wall clock is the most costly thing on the page.
+
+**Raising the healer share backfires.** It is the obvious fix and it makes the
+fight unwinnable, because a boss's `R = single × n × attackers` — a player who
+heals is a player not attacking:
+
+```
+healers   need per healer   SSS boss R
+20%              50.4         1.40 → 1.12
+30%              33.6         1.40 → 0.98   <- LOSS
+50%              20.2         1.40 → 0.70
+```
+
+The two levers fight each other. The only combination that closes at 20% healers
+is a mana pool restoring ~50 health bars, which makes mana a non-constraint
+everywhere else in the game.
+
+**Real options, all of them decisions rather than tuning:** allow in-combat mana
+regeneration, allow consumables (both break rule 1 as written), or shorten the
+wall clocks.
+
+Note the ladder is quoted with **all n attacking**, so it reads optimistically
+the moment anyone heals. Whether the target R should be met _with_ healers in
+the party is undecided.
+
+Also unmodelled: **rest time never appears in any clear-time figure.** A dry
+healer needs `restDelay + 100/restRate` seconds to refill — 55s at the defaults —
+and healers end every funded fight empty.
+
+Gates: `sustain economy — can healers pay the bill` pins both demands, asserts
+incoming doubles with the clock while demand grows faster and supply does not
+move at all, and asserts that swapping attackers for healers lowers a boss's R.
+
 ### 2b. The old check: multipliers are solved, not authored
 
 `mult` is derived from each rank's target R, so the ladder cannot drift. Rank C

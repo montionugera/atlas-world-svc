@@ -604,6 +604,62 @@
        */
       const rankSustain = (rk) => rankMults(rk).sustain ?? 0;
 
+      /**
+       * Can healers actually PAY the sustain bill?
+       *
+       * Two authored rules decide this, and the first is the sharp one:
+       *
+       *   1. HP and mana regenerate ONLY in rest mode — out of combat.
+       *   2. In-combat healing comes from healers and costs mana.
+       *
+       * Together they make a fight's healing budget a FIXED POOL, not a rate.
+       * Nothing refills mid-fight, so total healing available is exactly
+       * `healers × barsPerManaPool` however long the fight runs. Demand grows
+       * with the clock; supply does not. That is why a long fight is far harder
+       * to fund than a hard one.
+       *
+       * Everything is in "health bars" — one bar is one player's full HP — so
+       * supply and demand are directly comparable.
+       */
+      function economy(rk) {
+        const n = rk.n;
+        const healers = Math.max(1, Math.round(n * (P.healerShare ?? 0)));
+        const dps = Math.max(1, n - healers);
+        const ttk = rankMults(rk).ttk;
+        // Total damage the encounter deals, in health bars. Independent of how
+        // it is spread: `swings` bars-worth per swing, ttk × aspd swings.
+        const incoming = (ttk * P.aspd) / rk.swings;
+        // What the party can absorb on its own bars before anyone dies. R > 1
+        // means it ends with 1 − 1/R still in reserve, so it may spend 1/R.
+        const r = rk.r;
+        const absorbable = r > 1 ? n * (1 / r) : n;
+        const demand = Math.max(0, incoming - absorbable);
+        const supply = healers * (P.manaBars ?? 0);
+        return {
+          healers,
+          dps,
+          incoming,
+          absorbable,
+          demand,
+          supply,
+          fundable: supply >= demand,
+          // Bars one healer's mana pool must cover for this fight to work.
+          needPerHealer: demand / healers,
+          // Healers do not attack, so the party's damage is short by this much
+          // — the fight runs longer, which raises demand again.
+          dpsTax: n / dps,
+          // And the ladder's R assumed all n attack. A boss's R is
+          // single × n × (attackers), so swapping attackers for healers costs
+          // difficulty directly: the encounter gets HARDER, not just slower.
+          // Quoted for bosses only — the pack factor 2n/(n+1) models mobs dying
+          // one at a time and does not decompose this way.
+          rWithHealers: rk.shape === "boss" ? (r * dps) / n : null,
+          // Downtime afterwards: refill whatever was spent. Healers are dry.
+          restSeconds:
+            (P.restDelay ?? 0) + 100 / Math.max(0.01, P.restRate ?? 1),
+        };
+      }
+
       function mob(L, rank) {
         const rk = DATA.proposed.ladder.find((x) => x.rank === rank);
         const ref = player(L, "max");
@@ -947,6 +1003,30 @@
           "Fraction of your HP still there when the encounter dies",
           "1 − 1/R. Negative means the encounter killed you first, and the size of the negative is how far short you fell. HP consumed is 100 minus this.",
         ],
+        "party split": [
+          "How the n players divide into damage and healing",
+          "Healers do not attack, so raising their share lengthens the fight — which raises the healing demanded. The split fights itself.",
+        ],
+        "damage incoming": [
+          "Total damage the encounter deals, in health bars",
+          "ttk × aspd / swings. Independent of how it is spread across the party — spreading changes who dies, not the total.",
+        ],
+        "healing demanded": [
+          "Health bars healing must replace",
+          "Damage incoming minus what the party can absorb on its own bars (n/R). This is the bill sustain describes, in bars rather than a percentage.",
+        ],
+        "healing supplied": [
+          "Health bars the healers can actually restore",
+          "healers × bars per mana pool. A FIXED POOL, not a rate: with rest-only regen nothing refills mid-fight, so this number does not grow with fight length even though demand does.",
+        ],
+        "bars per healer needed": [
+          "What one healer's mana pool must cover for this fight to work",
+          "healing demanded ÷ healers. Compare against the `Health bars per healer's mana pool` slider — if that is smaller, the fight cannot be funded at any skill level.",
+        ],
+        fundable: [
+          "Whether supply covers demand",
+          "SHORT means the encounter is arithmetically unsurvivable as specified, not merely hard. Closing it needs a bigger mana pool, more healers (which lengthens the fight), or a shorter fight.",
+        ],
         "fight length": [
           "The boss's authored wall clock, in seconds",
           "SS and SSS author this; every other rank derives it from R and swings. Authoring it is what creates the sustain bill.",
@@ -1274,6 +1354,114 @@
             SSS boss <b>75.6</b> — hits of 3.0% and 1.3% of a health bar. A long fight survived on
             one health bar is necessarily made of imperceptible hits. That is arithmetic, not
             tuning.
+          </div>
+        </div>`;
+      }
+
+      /**
+       * The sustain bill is one thing; who pays it is another. This section
+       * exists because "82% healed" reads like a tuning value until you ask
+       * where it comes from, and the answer under rest-only regen is a fixed
+       * pool that does not care how long the fight is.
+       */
+      function renderEconomy() {
+        const rows = DATA.proposed.ladder.map((rk) => {
+          const e = economy(rk);
+          const s = rankSustain(rk);
+          const ok = s === 0 || e.fundable;
+          return [
+            `<b>${rk.rank}</b>`,
+            `${e.dps} dps + ${e.healers} heal`,
+            `${rankMults(rk).ttk < 100 ? rankMults(rk).ttk.toFixed(1) : rankMults(rk).ttk.toFixed(0)}s`,
+            e.incoming.toFixed(1),
+            e.demand.toFixed(1),
+            e.supply.toFixed(0),
+            s === 0
+              ? `<span class="dim">n/a</span>`
+              : `${e.needPerHealer.toFixed(1)}`,
+            s === 0
+              ? `<span class="dim">no healing needed</span>`
+              : ok
+                ? `<span class="pill b-fair">funded</span>`
+                : `<span class="pill b-loss">SHORT ${(e.demand - e.supply).toFixed(0)} bars</span>`,
+          ];
+        });
+        const worst = DATA.proposed.ladder
+          .filter((rk) => rankSustain(rk) > 0)
+          .map((rk) => ({ rk, e: economy(rk) }));
+        return `${section(
+          "Sustain economy — who pays the healing bill",
+          `Two authored rules: <b>HP and mana regenerate only in rest mode</b> (out of combat), and
+           <b>in-combat healing comes from healers and costs mana</b>. Everything below is in
+           <b>health bars</b> — one bar is one player's full HP — so supply and demand compare directly.`,
+        )}
+        <div class="banner warn">
+          <b>Rest-only regen makes a fight's healing a fixed pool, not a rate.</b> Nothing refills
+          mid-fight, so the total healing available is <code>healers × bars per mana pool</code>
+          <b>however long the fight runs</b>. Demand grows with the clock; supply does not. That is
+          why a <i>long</i> fight is much harder to fund than a <i>hard</i> one — and why the SSS
+          wall clock is the most expensive thing on this page.
+        </div>
+        ${table(
+          [
+            "mob rank",
+            "party split",
+            "fight length",
+            "damage incoming",
+            "healing demanded",
+            "healing supplied",
+            "bars per healer needed",
+            "fundable",
+          ],
+          rows,
+        )}
+        ${
+          worst.length
+            ? `<div class="banner ${worst.every((w) => w.e.fundable) ? "info" : "danger"}" style="margin-top:12px">
+          ${worst
+            .map(
+              (w) =>
+                `<b>${w.rk.rank}</b> needs one healer's mana pool to restore
+                 <b>${w.e.needPerHealer.toFixed(1)} health bars</b>
+                 (${w.e.healers} healers × ${P.manaBars} = ${w.e.supply.toFixed(0)} supplied,
+                 ${w.e.demand.toFixed(0)} demanded).`,
+            )
+            .join("<br />")}
+          <br /><br />
+          <b>Three ways to close a gap, and each costs something.</b> Raise
+          <code>bars per healer's mana pool</code> — the healer's pool does more work, which makes
+          mana a weaker constraint everywhere else. Raise the healer share — but healers do not
+          attack, so the fight runs <b>${worst[worst.length - 1].e.dpsTax.toFixed(2)}×</b> longer at
+          the current split, which raises demand again. Or shorten the fight, which is the target
+          you set.
+          <br /><br />
+          <b>A fourth option is not on this page:</b> letting mana regenerate in combat, or
+          consumables. Either would break rule 1 as written, so it is a decision rather than a
+          tuning value.
+          <br /><br />
+          <b>And healers cost difficulty, not just time.</b> A boss's R is
+          <code>single × n × attackers</code>, so every player who heals instead of attacking
+          takes difficulty straight off the ladder:
+          ${worst
+            .map(
+              (w) =>
+                `<b>${w.rk.rank}</b> ${w.rk.r.toFixed(2)} → <b>${w.e.rWithHealers.toFixed(2)}</b>`,
+            )
+            .join(", ")}.
+          The ladder above is quoted with <b>all n attacking</b>, so it reads optimistically the
+          moment anyone heals. Whether the target R should be met <i>with</i> the healers in the
+          party is an open decision.
+        </div>`
+            : ""
+        }
+        <div class="panel" style="margin-top:14px">
+          <div class="legend-h">REST — THE COST BETWEEN FIGHTS</div>
+          <div class="legend-b">
+            At <b>${P.restRate}%/s</b> after <b>${P.restDelay}s</b> out of combat, a dry healer needs
+            <b>${(P.restDelay + 100 / Math.max(0.01, P.restRate)).toFixed(0)}s</b> to refill.
+            Since healers end every funded fight empty, that is the floor on downtime between
+            attempts — and it is <b>not modelled anywhere else</b>: no table on this page counts
+            rest time toward how long content takes to clear.
           </div>
         </div>`;
       }
@@ -1833,6 +2021,7 @@
           renderRequirements(),
           renderLadder(),
           renderTiers(),
+          renderEconomy(),
           renderMatrix(),
           renderArchetypes(),
           renderExample(),
