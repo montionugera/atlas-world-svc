@@ -62,21 +62,113 @@ const growth = 1.045;
 // They still are unreachable — R = 1/(atk × def × hp) means an hour-long fight
 // survived on one health bar consists of imperceptible hits — but that is now a
 // sustain question, not a hole in the ladder.
+// `shape` is the encounter, and it changes the arithmetic:
+//
+//   pack — n players against n mobs. R = R_solo x 2n/(n+1), bounded at 2x.
+//   boss — n players against ONE mob. R = R_solo x n^2, unbounded.
+//
+// The n^2 is what makes a boss possible at all. Above rank A the mob has to
+// grow in attack AND defence AND HP at once, and a pack cannot pay for that:
+// at 8-vs-8 the ladder ran out of room at exactly R = 1.00. Concentrating the
+// party's damage into one target and spreading the boss's damage across the
+// party buys back a factor of n^2 -- 64x at rank S.
+//
+// ASSUMPTION, and it is load-bearing: a boss's damage is shared evenly across
+// the party. If it focuses one player instead, that player takes n times the
+// damage and dies. Without healing, even sharing is the only survivable reading
+// -- so "a boss must rotate targets" is an AI requirement, not an observation.
+//
+// `danger` is per PLAYER: the share of one player's health bar drained per
+// second. Fight length derives from the pair: ttk = 100 / (R x danger).
 const LADDER_TARGETS = [
-  { rank: "E", r: 11.89, danger: 2.0, n: 1, from: 1, to: 12, was: 1.0 },
-  { rank: "D", r: 5.95, danger: 2.3, n: 1, from: 13, to: 25, was: 1.15 },
-  { rank: "C", r: 4.0, danger: 2.6, n: 1, from: 26, to: 40, was: 1.3 },
-  { rank: "B", r: 2.19, danger: 3.0, n: 2, from: 41, to: 55, was: 1.5 },
-  { rank: "A", r: 1.8, danger: 3.4, n: 4, from: 56, to: 70, was: 1.8 },
-  { rank: "S", r: 1.6, danger: 3.8, n: 8, from: 71, to: 84, was: 2.2 },
-  { rank: "SS", r: 1.5, danger: 4.2, n: 20, from: 85, to: 95, was: 2.8 },
-  { rank: "SSS", r: 1.4, danger: 4.6, n: 50, from: 96, to: 99, was: 3.5 },
+  {
+    rank: "E",
+    r: 11.89,
+    danger: 2.0,
+    n: 1,
+    shape: "pack",
+    from: 1,
+    to: 12,
+    was: 1.0,
+  },
+  {
+    rank: "D",
+    r: 5.95,
+    danger: 2.3,
+    n: 1,
+    shape: "pack",
+    from: 13,
+    to: 25,
+    was: 1.15,
+  },
+  {
+    rank: "C",
+    r: 4.0,
+    danger: 2.6,
+    n: 1,
+    shape: "pack",
+    from: 26,
+    to: 40,
+    was: 1.3,
+  },
+  {
+    rank: "B",
+    r: 2.19,
+    danger: 3.0,
+    n: 2,
+    shape: "pack",
+    from: 41,
+    to: 55,
+    was: 1.5,
+  },
+  {
+    rank: "A",
+    r: 1.8,
+    danger: 3.4,
+    n: 4,
+    shape: "pack",
+    from: 56,
+    to: 70,
+    was: 1.8,
+  },
+  // Danger chosen so mob attack steps +100% / +20% / +20% from rank A.
+  {
+    rank: "S",
+    r: 1.6,
+    danger: 0.85,
+    n: 8,
+    shape: "boss",
+    from: 71,
+    to: 84,
+    was: 2.2,
+  },
+  {
+    rank: "SS",
+    r: 1.5,
+    danger: 0.41,
+    n: 20,
+    shape: "boss",
+    from: 85,
+    to: 95,
+    was: 2.8,
+  },
+  {
+    rank: "SSS",
+    r: 1.4,
+    danger: 0.196,
+    n: 50,
+    shape: "boss",
+    from: 96,
+    to: 99,
+    was: 3.5,
+  },
 ];
 
 const ladder = LADDER_TARGETS.map((t) => ({
   rank: t.rank,
   r: t.r,
   danger: t.danger,
+  shape: t.shape,
   mult: Math.cbrt((2 * t.n) / ((t.n + 1) * t.r)),
   n: t.n,
   from: t.from,

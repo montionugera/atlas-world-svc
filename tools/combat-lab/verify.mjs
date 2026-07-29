@@ -149,7 +149,7 @@ const model = new Function(
 )(data, P);
 
 const EXPECT_REQ = {
-  "s-solo-loss": 0.9,
+  "s-solo-loss": 0.025,
   "a-solo-not-easy": 1.125,
   "c-median-fair": 2.341,
   "c-max-easy": 4.0,
@@ -257,7 +257,7 @@ gate(
     (n) =>
       Math.abs(model.R(33, "C", "max", n) / duel - (2 * n) / (n + 1)) < 1e-9,
   ),
-  "encounter size applies 2n/(n+1) and nothing else",
+  "encounter size applies 2n/(n+1) to a pack and nothing else",
 );
 gate(
   Math.abs(model.R(33, "C", "max", 1) - duel) < 1e-12,
@@ -333,7 +333,10 @@ console.log("\nthree rank multipliers");
     const m = model.mob(L, rk.rank);
     const gotR = model.R(L, rk.rank, "max", rk.n);
     const gotT = model.ttk(L, rk.rank, "max");
-    const gotD = 100 / (model.R(L, rk.rank, "max", 1) * gotT);
+    const gotD =
+      rk.shape === "boss"
+        ? 100 / (rk.r * gotT)
+        : 100 / (model.R(L, rk.rank, "max", 1) * gotT);
     if (Math.abs(gotR - rk.r) > 0.005)
       bad += `${rk.rank} R ${gotR.toFixed(3)}; `;
     if (Math.abs(gotD - rk.danger) > 0.005)

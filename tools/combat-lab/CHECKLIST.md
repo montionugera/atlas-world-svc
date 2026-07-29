@@ -131,6 +131,28 @@ It also explains **why mob def is high and mob atk is low**: `def × hp` buy
 duration, `atk` buys danger. Fix both the TTK table and the R ladder and `atk`
 has no freedom left — it is whatever makes the arithmetic close.
 
+### 2d. Two encounter shapes
+
+```
+pack — n players vs n mobs.  R = R_solo × 2n/(n+1),  bounded at 2×
+boss — n players vs ONE mob. R = R_solo × n²,        unbounded
+```
+
+E through A are packs. S, SS and SSS are **bosses** — 8, 20 and 50 players
+against one. The `n²` is what makes a boss possible at all: above rank A the mob
+has to grow in attack **and** defence **and** HP simultaneously, and a pack
+cannot pay for that. At 8-vs-8 the ladder ran out of room at exactly R = 1.00 —
+a dead heat — and anything harder meant eight players losing to eight S mobs.
+
+**Load-bearing assumption:** a boss shares its damage evenly across the party. If
+it focuses one player, that player takes `n` times the damage and dies. Without
+healing, even sharing is the only survivable reading — so _"a boss must rotate
+targets"_ is an AI requirement, not an observation. It sits beside _"mobs must
+not coordinate focus fire"_ for packs, and both belong in the spec.
+
+Check it: a lone max-grade player against a same-level S boss is **R 0.025** —
+annihilated, as the requirement demands.
+
 ### 3. CombatScore still compounds at the growth rate
 
 CS is the geometric mean of `atk`, `def` and `hp`, so it grows at exactly
