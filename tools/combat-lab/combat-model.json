@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-29T14:28:46.583Z",
+  "generatedAt": "2026-07-29T14:38:12.569Z",
   "proposed": {
     "origin": "design-spec",
     "spec": "docs/superpowers/specs/2026-07-28-combat-stat-model-design.md",
@@ -180,6 +180,7 @@
         "shape": "boss",
         "mult": 1.0357441686512863,
         "n": 8,
+        "level": 77,
         "from": 71,
         "to": 84,
         "was": 2.2
@@ -191,6 +192,7 @@
         "shape": "boss",
         "mult": 1.0828870144196137,
         "n": 20,
+        "level": 90,
         "from": 85,
         "to": 95,
         "was": 2.8
@@ -202,6 +204,7 @@
         "shape": "boss",
         "mult": 1.1188381403949932,
         "n": 50,
+        "level": 97,
         "from": 96,
         "to": 99,
         "was": 3.5
@@ -249,11 +252,7 @@
         "off": 1
       }
     ],
-    "gearClasses": [
-      "tank",
-      "balanced",
-      "dps"
-    ],
+    "gearClasses": ["tank", "balanced", "dps"],
     "archetypes": [
       {
         "gearClass": "dps",
@@ -304,15 +303,7 @@
         "focus": "full tank"
       }
     ],
-    "archetypeRanks": [
-      "E",
-      "D",
-      "C",
-      "B",
-      "A",
-      "S",
-      "SS"
-    ],
+    "archetypeRanks": ["E", "D", "C", "B", "A", "S", "SS"],
     "grades": [
       {
         "grade": "max",

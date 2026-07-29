@@ -638,7 +638,14 @@
       }
       const hpLeft = (r) =>
         r > 1 ? `${((1 - 1 / r) * 100).toFixed(0)}%` : "—";
-      const midLevel = (rk) => Math.floor((rk.from + rk.to) / 2);
+      /**
+       * The level a rank is met at. A pack is drawn from its band, so the
+       * midpoint stands for it. A BOSS has one authored level and no band —
+       * `rk.level` — because a fourteen-level range for a single named boss
+       * let the same rank swing 1.99x across it, which crossed the loss line
+       * at S and SS. `from`/`to` still bound who is expected to attempt it.
+       */
+      const midLevel = (rk) => rk.level ?? Math.floor((rk.from + rk.to) / 2);
 
       function requirements() {
         return DATA.proposed.requirements.map((q) => {

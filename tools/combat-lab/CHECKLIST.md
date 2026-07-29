@@ -221,6 +221,55 @@ Why the squaring: a tier's budget is `(1 + C·alloc) × gearScale` — 0.84 / 1.
 outcome. The gear scale is also **invented** (see C2), and this table is the
 thing most sensitive to it.
 
+### 4c. A rank is one difficulty — and a boss has a level, not a band
+
+Absolute level cancels (§6), so a level-80 fight is identical to a level-20 one
+in every outcome column — R, TTK and swings-to-kill-you all match to the digit,
+with only the absolute numbers scaling by `1.045^60` = 14.03×. What changes with
+level is **which content you meet**, and that is where a real defect lived.
+
+The gap term is 5.4%/level, so across a 14-wide band the same rank swings by
+**1.99×**. Ranks with lots of headroom absorb it; ranks targeting R just above
+1.0 did not:
+
+```
+rank  band     R at band bottom vs band top
+C     26-40    1.91  hard
+B     41-55    1.05  brutal
+A     56-70    0.86  LOSS
+S     71-84    0.81  LOSS      <- fixed
+SS    85-95    0.88  LOSS      <- fixed
+```
+
+A band-bottom party met band-top content of **its own rank** at R 0.81 with max
+gear and full headcount. Same rank, same 8 players, two different games.
+
+**The fix was to stop giving bosses a band.** S/SS/SSS are single named bosses
+fought by 8, 20 and 50 players; a fourteen-level range for one boss is a
+category error. They now carry `level: 77 / 90 / 97`, and the approach reads as
+a curve instead of a cliff:
+
+```
+S boss, level 77      player L71  R 1.17 brutal
+                      player L77  R 1.60 hard
+                      player L84  R 2.32 fair
+```
+
+`from`/`to` survive on a boss row, but they now mean *the player levels expected
+to attempt it*, not a range the mob is drawn from.
+
+**Rank A is deliberately left at 0.86** and is the gate's only exemption: 4v4 at
+14 levels under the far end of the last zone should not be winnable.
+
+Two alternatives were rejected. Lowering `gapWeight` would need ~0.41 and it is
+symmetric — a global knob flattening out-levelling across all 99 levels to fix
+three ranks' edges. Narrowing the bands works numerically (S needs width 9, SS
+width 8) but is the same fix in disguise: shrinking a range until it is nearly a
+point is an awkward way of saying the boss has a level.
+
+Gate: `a rank is one difficulty, not a range of them`. Proven to bite —
+deleting the boss levels reproduces `FAIL S 0.81`, `FAIL SS 0.88`.
+
 ### 5. HP and DEF are exactly interchangeable
 
 By construction: the defensive budget is split `sqrt` each, so `hp × def` is

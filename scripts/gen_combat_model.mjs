@@ -142,12 +142,30 @@ const LADDER_TARGETS = [
     was: 1.8,
   },
   // Bosses: swings are what it needs to kill ONE player if it focuses them.
+  //
+  // A boss has a LEVEL, not a band. Packs get from/to because a zone is a
+  // progression you walk through; giving a single named boss a fourteen-level
+  // range is a category error, and it had a measurable cost. The gap term is
+  // growth^(2*gapWeight) = 5.4%/level, so across a 14-wide band the same rank
+  // swings by 1.99x -- and because S/SS target R barely above 1.0, that swing
+  // crossed the loss line: a band-bottom party met band-top content at R 0.81
+  // with max gear. Same rank, same headcount, same gear, two different games.
+  //
+  // With one authored level the worst case is R 1.17 "brutal" instead of a
+  // loss, and the approach reads brutal -> hard -> fair as the party levels
+  // into it. `from`/`to` stay, but for a boss they mean the player levels
+  // expected to attempt it, NOT a range the mob is drawn from.
+  //
+  // Packs keep their bands. Only rank A's bottom edge is a loss (0.86) and
+  // that is the far end of the last zone doing its job -- 4v4 at 14 levels
+  // under should not be winnable.
   {
     rank: "S",
     r: 1.6,
     swings: 7,
     n: 8,
     shape: "boss",
+    level: 77,
     from: 71,
     to: 84,
     was: 2.2,
@@ -158,6 +176,7 @@ const LADDER_TARGETS = [
     swings: 6,
     n: 20,
     shape: "boss",
+    level: 90,
     from: 85,
     to: 95,
     was: 2.8,
@@ -168,6 +187,7 @@ const LADDER_TARGETS = [
     swings: 5,
     n: 50,
     shape: "boss",
+    level: 97,
     from: 96,
     to: 99,
     was: 3.5,
@@ -181,6 +201,8 @@ const ladder = LADDER_TARGETS.map((t) => ({
   shape: t.shape,
   mult: Math.cbrt((2 * t.n) / ((t.n + 1) * t.r)),
   n: t.n,
+  // Bosses only. Undefined for a pack, whose level comes from its band.
+  level: t.level,
   from: t.from,
   to: t.to,
   was: t.was,

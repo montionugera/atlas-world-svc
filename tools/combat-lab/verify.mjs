@@ -417,6 +417,53 @@ console.log("\nlevel gap");
   );
 }
 
+// ------------------------------------- 5e. a rank is one difficulty --------
+// A rank's LABEL has to mean something. The gap term is growth^(2*gapWeight)
+// per level, so across a wide band the same rank swings hard -- at 14 wide
+// that is 1.99x, and because S/SS target R barely above 1.0 it used to cross
+// the loss line: a band-bottom party met band-top content at R 0.81 with max
+// gear and full headcount. Bosses were given one authored level to fix it.
+//
+// This gate asserts the fix holds: meeting a rank anywhere in its own range
+// must never be a loss for a max-tier player at the rank's own headcount.
+// Only rank A is permitted to reach the line, and only at its bottom edge --
+// 4v4 at 14 levels under the last zone's far end should not be winnable.
+console.log("\na rank is one difficulty, not a range of them");
+{
+  const at = (playerLevel, mobLevel, rk) => {
+    const Q = { levelMax: data.proposed.levelMax };
+    for (const [k, v] of Object.entries(data.proposed.inputs)) Q[k] = v.value;
+    Q.mobLevelDelta = mobLevel - playerLevel;
+    return new Function("DATA", "P", `${html.slice(a, b)}; return { R };`)(
+      data,
+      Q,
+    ).R(playerLevel, rk.rank, "max", rk.n);
+  };
+  const EXEMPT = new Set(["A"]);
+  const worst = [];
+  for (const rk of data.proposed.ladder) {
+    // A boss sits at one level; a pack is drawn from anywhere in its band.
+    const mobLevels = rk.level ? [rk.level] : [rk.from, rk.to];
+    let lo = Infinity;
+    for (const pl of [rk.from, rk.to])
+      for (const ml of mobLevels) lo = Math.min(lo, at(pl, ml, rk));
+    worst.push(`${rk.rank} ${lo.toFixed(2)}`);
+    if (!EXEMPT.has(rk.rank))
+      gate(
+        lo >= 1.0,
+        `${rk.rank} is never a loss inside its own level range`,
+        `worst case R ${lo.toFixed(2)} at ${rk.n} max-tier player${rk.n > 1 ? "s" : ""}`,
+      );
+  }
+  gate(
+    data.proposed.ladder
+      .filter((rk) => rk.shape === "boss")
+      .every((rk) => typeof rk.level === "number"),
+    "every boss has one authored level, not a band",
+  );
+  console.log(`       worst case per rank: ${worst.join("  ")}`);
+}
+
 // ------------------------------------------------------- 6. invariants ----
 console.log("\ninvariants (§7)");
 for (const [name, value, ok] of model.invariants()) {
