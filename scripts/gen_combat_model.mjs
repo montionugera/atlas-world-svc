@@ -256,6 +256,18 @@ const proposed = {
       step: 1,
       label: "Encounter size (n vs n)",
     },
+    // Where a mob's durability sits. def x hp is pinned by difficulty and
+    // duration; the split between them is FREE and changes no outcome — but it
+    // decides whether an S boss is a 2,770 HP wall of armour you chip at 9 a
+    // swing, or a 6,132 HP boss you hit for 21. Durability belongs mostly in HP
+    // so damage numbers stay readable and a weapon still feels like a weapon.
+    durabilityHp: {
+      value: 0.75,
+      min: 0.5,
+      max: 1,
+      step: 0.05,
+      label: "Mob durability in HP (vs def)",
+    },
     gapWeight: {
       value: 0.6,
       min: 0,

@@ -540,22 +540,28 @@
       function rankMults(rk) {
         // Hits a lone max-grade player needs to survive a mob of attack 1.0.
         const C = P.baseDef / (P.k * P.baseAtk);
+        // Durability budget split. def x hp is what difficulty and duration
+        // pin; where it sits between the two changes NO outcome, only how the
+        // numbers read. See `durabilityHp`.
+        const psi = P.durabilityHp ?? 0.5;
+        const split = (dh) => ({
+          d: Math.pow(dh, 1 - psi),
+          h: Math.pow(dh, psi),
+        });
         if (rk.shape === "boss") {
           // n players, ONE mob. R = R_solo × n², and the boss's damage is
           // shared across the party — so `danger` is one player's share.
           const a = (rk.danger * C * rk.n) / (100 * P.aspd);
           const dh = (rk.n * rk.n) / (rk.r * a);
-          const s = Math.sqrt(dh);
-          return { a, d: s, h: s, ttk: 100 / (rk.r * rk.danger) };
+          return { a, ...split(dh), ttk: 100 / (rk.r * rk.danger) };
         }
         // n players, n mobs. R = R_solo × 2n/(n+1).
         const rSolo = (rk.r * (rk.n + 1)) / (2 * rk.n);
         const ttkTarget = 100 / (rSolo * rk.danger);
         const dh = (ttkTarget * P.k * P.baseAtk * P.aspd) / P.baseDef;
-        const s = Math.sqrt(dh);
         // a is proportional to danger, which is why a rising danger curve makes
         // mob attack rise rank by rank.
-        return { a: 1 / (rSolo * dh), d: s, h: s, ttk: ttkTarget };
+        return { a: 1 / (rSolo * dh), ...split(dh), ttk: ttkTarget };
       }
 
       function mob(L, rank) {
@@ -798,6 +804,10 @@
           "Defence",
           "Divides incoming damage: dmg = k x refHp x (atk / def). Exactly interchangeable with HP.",
         ],
+        "swings to kill": [
+          "How many of your swings the mob takes to drop",
+          "Mob HP divided by your damage per hit. For a boss the party shares this total, so the wall clock is this divided by party size.",
+        ],
         "your damage / hit": [
           "Damage you land per swing",
           "k x refHp(mob level) x (your atk / mob def). Absolute, so it grows with level.",
@@ -985,50 +995,92 @@
           .join("")}</div>`;
       }
 
+      /**
+       * Two tables, not one. Eleven columns overflowed horizontally and mixed
+       * two different questions in one row — what you do to the mob, and what
+       * the mob does to you. They are split along that seam.
+       */
       function renderLadder() {
         const L = P.exampleLevel;
         const p = player(L, "max");
-        const rows = DATA.proposed.ladder.map((rk) => {
+        const perMin = P.aspd * 60;
+        const each = DATA.proposed.ladder.map((rk) => {
           const Lm = mobLevel(L),
             m = mob(Lm, rk.rank);
-          const yours = hit(p, m, Lm), // damage you land per swing
-            theirs = hit(m, p, L); // damage it lands on you per swing
-          const T = ttk(L, rk.rank, "max");
-          const r = R(L, rk.rank, "max", rk.n);
-          const perMin = P.aspd * 60;
-          return [
-            `<b>${rk.rank}</b>`,
-            rk.shape === "boss"
-              ? `${rk.n}v1 boss`
-              : rk.n > 1
-                ? `${rk.n}v${rk.n}`
-                : "1v1",
-            n0(yours),
-            perMin.toFixed(0),
-            n0(yours * perMin),
-            `${n0(theirs)} <span class="dim">(${((theirs / p.hp) * 100).toFixed(1)}%)</span>`,
-            n0(theirs * perMin),
-            `${(100 / (r * T)).toFixed(2)}%/s`,
-            T < 100 ? `${T.toFixed(1)}s` : `${T.toFixed(0)}s`,
-            hpLeft(r),
-            rCell(r),
-          ];
+          return {
+            rk,
+            m,
+            yours: hit(p, m, Lm),
+            theirs: hit(m, p, L),
+            T: ttk(L, rk.rank, "max"),
+            r: R(L, rk.rank, "max", rk.n),
+            enc:
+              rk.shape === "boss"
+                ? `${rk.n}v1 boss`
+                : rk.n > 1
+                  ? `${rk.n}v${rk.n}`
+                  : "1v1",
+          };
         });
+        const secs = (T) => (T < 100 ? `${T.toFixed(1)}s` : `${T.toFixed(0)}s`);
+
+        const offence = each.map((e) => [
+          `<b>${e.rk.rank}</b>`,
+          e.enc,
+          n0(e.m.hp),
+          n0(e.m.def),
+          n0(e.yours),
+          perMin.toFixed(0),
+          n0(e.yours * perMin),
+          (e.m.hp / e.yours).toFixed(0),
+          secs(e.T),
+        ]);
+
+        const defence = each.map((e) => [
+          `<b>${e.rk.rank}</b>`,
+          e.enc,
+          n0(e.m.atk),
+          `${n0(e.theirs)} <span class="dim">(${((e.theirs / p.hp) * 100).toFixed(1)}%)</span>`,
+          n0(e.theirs * perMin),
+          `${(100 / (e.r * e.T)).toFixed(2)}%/s`,
+          secs(e.T),
+          hpLeft(e.r),
+          rCell(e.r),
+        ]);
+
         return `${section(
-          "Rank ladder — what fighting each MOB tier is actually like",
-          `One row per <b>mob</b> rank against a <b>max-grade player at level ${L}</b>
+          "Rank ladder ① — what YOU do to the mob",
+          `A <b>max-grade player at level ${L}</b> against each rank
            (drag <code>Worked example level</code> to move it). Every column is quoted at the
-           rank's own encounter shape — a boss row is not a duel.
-           <b>R and HP left do not depend on level at all</b>; the damage figures do,
-           because they are absolute. Only the level <i>difference</i> changes an outcome.`,
+           rank's own encounter shape — a boss row is not a duel, and for a boss the
+           swings are per player while the kill is the party's wall clock.`,
         )}
         ${table(
           [
             "mob rank",
             "encounter",
+            "mob HP",
+            "mob def",
             "your damage / hit",
             "your hits / min",
             "your damage / min",
+            "swings to kill",
+            "time to kill",
+          ],
+          offence,
+        )}
+
+        ${section(
+          "Rank ladder ② — what the MOB does to you",
+          `The same fights from the other side. <b>R</b> and <b>player HP left</b> do not depend on
+           level at all; the damage figures do, because they are absolute. Only the level
+           <i>difference</i> changes an outcome.`,
+        )}
+        ${table(
+          [
+            "mob rank",
+            "encounter",
+            "mob atk",
             "its damage / hit",
             "its damage / min",
             "danger per second",
@@ -1036,7 +1088,7 @@
             "player HP left",
             "R",
           ],
-          rows,
+          defence,
         )}
         ${renderPartyFactor()}`;
       }
