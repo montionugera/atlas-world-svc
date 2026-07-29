@@ -451,7 +451,10 @@ const proposed = {
 // ------------------------------------------------------------------ emit ----
 
 function main() {
-  const out = { version: 3, generatedAt: new Date().toISOString(), proposed };
+  // No `generatedAt`. A wall-clock stamp guaranteed a diff on every run, which
+  // is precisely what stops `git status` from answering "did the MODEL change?".
+  // Git already records when the file changed, and more honestly.
+  const out = { version: 3, proposed };
   const dir = join(ROOT, "tools/combat-lab");
   mkdirSync(dir, { recursive: true });
   const dest = join(dir, "combat-model.json");
