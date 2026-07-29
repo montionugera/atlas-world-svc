@@ -464,8 +464,18 @@
         "max": 8
       }
     ],
+    "decisions": [
+      {
+        "id": "D1",
+        "title": "Build direction sets pacing, not power",
+        "decided": "2026-07-30",
+        "choice": "Full-DPS and full-tank keep identical R and HP-left. A tank kills 2x slower and survives 2x longer; the two cancel. No allocation is ever wrong, so no stat is a trap and nobody needs a build guide.",
+        "why": "The obvious objection is that everyone will then roll DPS, since equal safety at double the speed is strictly better. That is true ONLY without downtime. Both builds lose the same FRACTION of their bar per fight (28% at rank C), so both get the same number of fights before resting -- and rest time is identical because it is a percentage of the bar. Rest therefore dwarfs the fight: at restRate 2%/s the DPS farming advantage collapses from 2.00x to 1.16x. A 16% edge, paid for with higher variance and no group role, is a defensible balance rather than a flaw.",
+        "consequence": "restRate is a BALANCE PARAMETER, not flavour -- it is the knob that sets the glass-cannon farming edge (none: 2.00x, 4%/s: 1.26x, 2%/s: 1.16x, 1%/s: 1.09x). It must not be tuned for pacing alone. Separately, a tank's group value has to come from TAUNT/AGGRO, which is unbuilt and which the pack factor 2n/(n+1) and boss target rotation already silently depend on. And the tank's variance advantage is invisible to a closed-form model -- only the simulation test can show it.",
+        "rejected": "Superlinear defence (defensive budget raised to p>1). At p=1.2 a tank ends a rank C fight at 76% HP instead of 72%, but the optimal build shifts to 36% offence, so leaning defensive becomes correct for EVERY player and full-DPS becomes 19% weaker in outcome -- the most intuitive build made the worst one, for 4 percentage points of health."
+      }
+    ],
     "openQuestions": [
-      "BUILD DIRECTION IS INVISIBLE TO THE OUTCOME. A budget applies once and is split among the stats it buys, so (1+2Ca*phi)(1+2Ca*(1-phi)) is symmetric about phi=0.5: a full-DPS and a full-tank player have IDENTICAL CombatScore, R and HP left. Only time-to-kill moves, by 2x. Either that is the intent (build = pacing, gear = power) or a tank's advantage has to come from the party -- taunt and aggro -- rather than from the damage formula.",
       "HP and DEF are exactly interchangeable by construction (CS is the geometric mean of atk, def, hp), so neither is a trap stat. Confirm that is wanted before anything depends on it.",
       "Gap weight 0.6 is a chosen value, not a derived one. It makes a mob 10 levels above you 1.70x harder instead of 2.41x. It is symmetric: out-levelling content near your own level is correspondingly less rewarding.",
       "SUSTAIN IS DESIGNED BUT NOT BUILT. The model now carries the full economy -- rest-mode regen, a healer class paying in mana, flat non-stacking potions, and a skill granting in-combat mana regen -- and it closes: SS funds at 1.35x and SSS at 1.10x. NONE of it exists in the game. There is no mana, no healing, no regeneration, no rest mode, no potion and no resurrection in the server today, so every SS/SSS figure is quoted against systems that are specified here and nowhere else. The wall clocks (900s, 5400s) are only reachable if all four are built roughly as modelled.",
