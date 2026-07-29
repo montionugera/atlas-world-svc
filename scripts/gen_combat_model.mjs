@@ -170,6 +170,23 @@ const LADDER_TARGETS = [
     to: 84,
     was: 2.2,
   },
+  // SS and SSS carry a THIRD target: `ttk`, the fight's wall clock.
+  //
+  // For a boss, ttk = swings * n / (r * aspd) -- three authored numbers and a
+  // global, so it has no freedom left. SS derived 160s against a 600-1200s
+  // target and SSS 357s against 3600-7200s. Raising boss HP alone cannot fix
+  // that: hp sits in the def*hp product, and R = n^2/(a*d*h), so every factor
+  // added to hp is taken straight back out of R.
+  //
+  // The only way to hold r AND swings AND ttk is a fourth variable, and the
+  // honest one is SUSTAIN -- the fraction of incoming damage the party heals.
+  // It is DERIVED here, not authored, precisely so it reads as a bill:
+  //
+  //   sustain = 1 - n^2 / (r * a * d * h)
+  //
+  // SS bills 82.2% and SSS 93.4%. Those are requirements on the healing system,
+  // not tuning knobs. If healing cannot deliver them the ttk targets are not
+  // reachable and the fights have to get shorter. See openQuestions.
   {
     rank: "SS",
     r: 1.5,
@@ -177,6 +194,7 @@ const LADDER_TARGETS = [
     n: 20,
     shape: "boss",
     level: 90,
+    ttk: 900, // midpoint of the 600-1200s target
     from: 85,
     to: 95,
     was: 2.8,
@@ -188,6 +206,7 @@ const LADDER_TARGETS = [
     n: 50,
     shape: "boss",
     level: 97,
+    ttk: 5400, // midpoint of the 3600-7200s target
     from: 96,
     to: 99,
     was: 3.5,
@@ -203,6 +222,9 @@ const ladder = LADDER_TARGETS.map((t) => ({
   n: t.n,
   // Bosses only. Undefined for a pack, whose level comes from its band.
   level: t.level,
+  // Bosses only, and optional even there. Present => the fight's wall clock is
+  // authored and `sustain` is solved to pay for it.
+  ttk: t.ttk,
   from: t.from,
   to: t.to,
   was: t.was,
@@ -442,7 +464,8 @@ const proposed = {
     "BUILD DIRECTION IS INVISIBLE TO THE OUTCOME. A budget applies once and is split among the stats it buys, so (1+2Ca*phi)(1+2Ca*(1-phi)) is symmetric about phi=0.5: a full-DPS and a full-tank player have IDENTICAL CombatScore, R and HP left. Only time-to-kill moves, by 2x. Either that is the intent (build = pacing, gear = power) or a tank's advantage has to come from the party -- taunt and aggro -- rather than from the damage formula.",
     "HP and DEF are exactly interchangeable by construction (CS is the geometric mean of atk, def, hp), so neither is a trap stat. Confirm that is wanted before anything depends on it.",
     "Gap weight 0.6 is a chosen value, not a derived one. It makes a mob 10 levels above you 1.70x harder instead of 2.41x. It is symmetric: out-levelling content near your own level is correspondingly less rewarding.",
-    "Top ranks derive a 2-9s encounter TTK against a 3000-4500s target -- are SS/SSS n players vs ONE boss rather than a pack of n?",
+    "SUSTAIN IS NOW LOAD-BEARING AND DOES NOT EXIST. SS and SSS author a wall clock (900s, 5400s) and the model solves the healing needed to pay for it: 82.2% and 93.4% of ALL incoming damage, sustained for 15 and 90 minutes. There is no healing, regeneration or resurrection anywhere in the model or the game, so every SS/SSS number is quoted against an undesigned system. If healing cannot deliver those rates the wall clocks are not reachable and the fights must get shorter. The alternative -- paying with attack instead -- needs 33.8 and 75.6 swings to kill a player, i.e. hits of 3.0% and 1.3% of a health bar, because a long fight survived on one health bar is necessarily made of imperceptible hits.",
+    "RANK S HAS NO WALL CLOCK while SS and SSS do, so the ladder jumps from a 70-second fight with no healing to a 900-second fight needing 82% healing. Either S should author a ttk too (and take on a sustain bill of its own) or the sustain systems it does not need should not appear one rank later.",
     "Mana, skills and physical-vs-magic parity are modelled separately (mana_level.py, parity.py) and are not folded into R yet. The model now carries a single atk rather than pAtk/mAtk.",
     "THIS MODEL AND THE SHIPPED STAT FORMULA DISAGREE STRUCTURALLY, not just in tuning. contracts/src/meta/derivedStats.ts is a PINNED formula and it is ADDITIVE with a flat base -- maxHealth = 100 + 10*vit + 5*(level-1), pAtk = 10 + 2*str + weapon.pAtk, pDef = 5 + vit -- so it has NO geometric growth at all. This model is multiplicative: refHp * growth^level, 18,300 HP at L99 against the shipped formula's 100 + 10*vit + 490. Three separate gaps: (a) additive vs multiplicative growth, (b) the game splits pAtk/mAtk and pDef/mDef where this model carries one atk and one def, (c) the game has four primaries (str, agi, int, vit) and agi feeds move speed ONLY, so points into agi are invisible to R here. `alloc` in this model is an abstraction over that pool, not a mapping onto it. Reconciling the two is unscoped work and nothing here is a spec for derivedStats until it is done.",
   ],

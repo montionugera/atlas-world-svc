@@ -60,47 +60,94 @@ live model, not asserted.
 `mirror match is an even fight` reads `atk/def 0.9998` — that is what makes
 `1/k` mean anything.
 
-Now double `k` to 0.20 and watch what does **not** move:
+Now double `k` to 0.20 and watch what moves. Nothing does:
 
 ```
-k = 0.10   E 3.5s  D 8.0s  C 13.5s  B 21.0s  A 45.0s  |  S 8.8s  SS 9.6s  SSS 10.2s
-k = 0.20   E 3.5s  D 8.0s  C 13.5s  B 21.0s  A 45.0s  |  S 4.4s  SS 4.8s  SSS  5.1s
+k = 0.10   E 2.5s  D 4.5s  C 6.0s  B 12.2s  A 15.1s  S 70.0s  SS 900s  SSS 5400s
+k = 0.20   E 2.5s  D 4.5s  C 6.0s  B 12.2s  A 15.1s  S 70.0s  SS 900s  SSS 5400s
 ```
 
-Ranks with a TTK target hold it **exactly**, because the three multipliers are
-re-solved live against the current sliders. Only the ranks with no target
-(S and above, falling back to one uniform multiplier) shorten with `k`.
+Every rank absorbs it, because every rank's multipliers are re-solved live
+against the current sliders. So `k` is not a fight-length knob at all — it sets
+how big damage numbers are and the ladder compensates. To change fight lengths,
+change `swings` (E–S) or `ttk` (SS, SSS) in `gen_combat_model.mjs`, not `k`.
 
-Every R is untouched at both settings. `Attack speed` behaves the same way for
-targeted ranks — but see below, it decides how the fight is _delivered_.
+`Attack speed` is different, and the difference is the whole point of §2a-bis:
 
-So `k` is not a fight-length knob any more — it sets how big damage numbers are,
-and the ladder compensates. To make E-through-A fights longer, change their TTK
-targets in `gen_combat_model.mjs`, not `k`.
+```
+aspd = 0.5   E 2.5s  D 4.5s  C 6.0s  B 12.2s  A 15.1s  S 70.0s  SS 900s  SSS 5400s
+aspd = 1.5   E 0.8s  D 1.5s  C 2.0s  B  4.1s  A  5.0s  S 23.3s  SS 900s  SSS 5400s
+                                                        sustain  82→94%   93→98%
+```
+
+Ranks without a wall clock get shorter. SS and SSS **hold their clock and pay
+in sustain instead** — at 1.5 swings/s the boss lands three times as many hits
+in the same 900 seconds, so healing has to cover 94.1% rather than 82.2%. That
+is the authored target doing its job: something has to give, and the model makes
+it visible rather than silently moving the fight length.
 
 ### 2. Three multipliers per rank, solved live
 
 Each rank has `atk`, `def` and `hp` multipliers rather than one. With a single
 multiplier, duration and difficulty are welded together as `TTK ∝ R^(−2/3)` —
 the ladder's 16.7× difficulty span permits a 6.5× span in fight length, while
-the committed TTK table wants **1071×**. Splitting them breaks the weld:
+the targets want far more. Splitting them breaks the weld:
 
 ```
 R    = 1 / (atk × def × hp)      difficulty
 TTK ∝       def × hp             duration
 ```
 
-Check the mob table: E through A hit their target seconds **exactly** —
-3.5 / 8.0 / 13.5 / 21.0 / 45.0 — and their target R at the same time. Move the
-`Damage k` or `Attack speed` sliders and they still do; the solve is live.
+Check the mob table: every rank hits its target R **and** its target
+swings-to-kill-a-player at the same time — 15 / 13.5 / 12 / 10 / 8.5 / 7 / 6 / 5.
+Move the `Damage k` or `Attack speed` sliders and they still do; the solve is
+live.
 
-S, SS and SSS show `— derived` and fall back to one uniform multiplier. Their
-targets (195s / 750s / 3750s) are **unreachable**, and not by a little: an SSS
-boss stretched to 3750s must attack at 0.8% of a player's, landing ~5,600 hits
-that each remove about one eight-thousandth of your health bar. Any long fight
-survived on a single health bar consists of imperceptible hits. That is
-arithmetic. Those three ranks are blocked on a **sustain model** — healing or
-regeneration — not on the ladder.
+Splitting is necessary but **not sufficient**, and that is the lesson of the SS
+and SSS wall clocks. Three multipliers give you two free targets per rank, not
+three: fix R and swings and fight length is determined. A third target needs a
+fourth variable, which is sustain — see §2a-bis.
+
+### 2a-bis. A boss's wall clock is bought with healing, not HP
+
+SS and SSS author a fight length (900s, 5400s). Raising boss HP cannot deliver
+one. `hp` lives inside the `def × hp` product and `R = n²/(a·d·h)`, so every
+factor added to HP is taken straight back out of difficulty — and for a boss
+
+```
+ttk = swings × n / (R × aspd)
+```
+
+has no freedom left once `swings`, `n` and `R` are written down. SS derived
+**160s** against a 600–1200s target; SSS **357s** against 3600–7200s.
+
+Holding R _and_ swings while stretching the clock needs a fourth variable.
+Healing is the only one that buys survival time without changing how hard the
+boss hits, so **sustain is solved, never authored** — it is the bill:
+
+```
+sustain = 1 − n² / (R × a × d × h)
+```
+
+| rank | fight | swings to kill you | swings you take | health bars | sustain   |
+| ---- | ----- | ------------------ | --------------- | ----------- | --------- |
+| SS   | 900s  | 6                  | 22.5            | 3.8         | **82.2%** |
+| SSS  | 5400s | 5                  | 54.0            | 10.8        | **93.4%** |
+
+Boss HP moves 80× → 380× a player's at SS, and 377× → 4,345× at SSS.
+
+**None of it exists.** There is no healing, regeneration or resurrection in the
+model or the game. An SSS party must replace 93.4% of everything the boss deals
+for 90 minutes or the fight is unsurvivable at any gear level.
+
+**The alternative was rejected on arithmetic, not taste.** Paying with attack
+instead means the SS boss needs 33.8 swings to kill a player and SSS 75.6 —
+hits of 3.0% and 1.3% of a health bar. A long fight survived on one health bar
+is necessarily made of imperceptible hits.
+
+Gates: `sustain — the bill a long fight runs up` pins 82.2% / 93.4% to 0.1%,
+asserts the wall clocks land, and asserts no rank without an authored `ttk`
+assumes any healing at all.
 
 ### 2b. The old check: multipliers are solved, not authored
 
@@ -212,7 +259,7 @@ Three things fall out, and all three are decisions rather than observations:
    7–15 swings-to-kill-a-player; at C-tier that is 3.8–11.5, at E-tier 2.8–8.4.
    A rank S boss two-shots-ish an E-tier player at 3.9 swings.
 3. **Which tier should the ladder be calibrated for?** Currently the top. If a
-   rank should be fair for a *typical* player, the target R belongs on the
+   rank should be fair for a _typical_ player, the target R belongs on the
    median column, which lifts every rank by 1/0.585 = **1.71×**.
 
 Why the squaring: a tier's budget is `(1 + C·alloc) × gearScale` — 0.84 / 1.15
@@ -255,8 +302,8 @@ S boss, level 77      player L71  R 1.17 brutal
                       player L84  R 2.32 fair
 ```
 
-`from`/`to` survive on a boss row, but they now mean *the player levels expected
-to attempt it*, not a range the mob is drawn from.
+`from`/`to` survive on a boss row, but they now mean _the player levels expected
+to attempt it_, not a range the mob is drawn from.
 
 **Rank A is deliberately left at 0.86** and is the gate's only exemption: 4v4 at
 14 levels under the far end of the last zone should not be winnable.
@@ -353,16 +400,27 @@ clumped party is nearest to every mob at once. Worth up to 1.96×, unmodelled.
    `parity.py`, never merged. Every verdict is auto-attack-only. The model now
    carries a single `atk` rather than pAtk/mAtk, so physical-vs-magic parity is
    not represented at all.
-5. **Top ranks are incoherent.** SSS derives a 10-second encounter against a
-   3000–4500s target. Either SS/SSS are _n players vs one boss_ rather than a
-   pack of n, or the TTK targets are wrong. Everything above rank A is
-   provisional.
-6. **A tank has no mechanical edge.** See B4. Deliberate under this model, but
+5. **Sustain is load-bearing and does not exist.** SS and SSS now hit their
+   wall clocks (900s, 5400s) only because the model assumes **82.2%** and
+   **93.4%** of all incoming damage is healed. There is no healing,
+   regeneration or resurrection anywhere in the model or the game, so every
+   SS/SSS figure is quoted against an undesigned system. If healing cannot
+   deliver those rates, the clocks are unreachable and the fights must shorten.
+   See §2a-bis.
+6. **Rank S has no wall clock while SS and SSS do.** The ladder jumps from a
+   70-second fight needing no healing to a 900-second fight needing 82%. Either
+   S should author a `ttk` too and take on a bill of its own, or systems S does
+   not need should not become mandatory one rank later.
+7. **A tank has no mechanical edge.** See B4. Deliberate under this model, but
    nothing has been designed yet to replace it.
-7. **`gapWeight = 0.6` is chosen, not derived.** It halves the pain of a 10-level
+8. **`gapWeight = 0.6` is chosen, not derived.** It halves the pain of a 10-level
    gap. No playtest supports the number.
-8. **`statCapAtL1/LMax` are declared, not derived.** Asserted in the JSON and
+9. **`statCapAtL1/LMax` are declared, not derived.** Asserted in the JSON and
    checked against 99, but nothing ties them to the level curve.
+10. **The shipped stat formula disagrees structurally.** `derivedStats.ts` is
+    additive with a flat base and has no geometric growth; this model is
+    multiplicative. It also splits pAtk/mAtk where this carries one `atk`, and
+    has four primaries where this has three stats. Reconciling them is unscoped.
 
 ## Where each number comes from
 

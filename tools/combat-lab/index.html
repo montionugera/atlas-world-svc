@@ -561,8 +561,26 @@
           // n players, ONE mob. R = R_solo × n², and the boss's damage is
           // shared across the party — so `danger` is one player's share.
           const a = (danger * C * rk.n) / (100 * P.aspd);
+          // A boss may author its wall clock. Without one, fight length is
+          // whatever R and swings imply: ttk = swings × n / (r × aspd).
+          //
+          // WITH one, def×hp is solved from the clock instead — and since
+          // R = n²/(a·d·h), inflating def×hp takes the difficulty straight back
+          // out. SUSTAIN is what pays it back: healing extends how long the
+          // party lasts without touching how hard the boss hits, so it is the
+          // only variable that can stretch a fight while holding BOTH the
+          // target R and the target swings-to-kill-a-player.
+          if (rk.ttk) {
+            const dh = (rk.ttk * P.aspd * rk.n) / C;
+            return {
+              a,
+              ...split(dh),
+              ttk: rk.ttk,
+              sustain: 1 - (rk.n * rk.n) / (rk.r * a * dh),
+            };
+          }
           const dh = (rk.n * rk.n) / (rk.r * a);
-          return { a, ...split(dh), ttk: 100 / (rk.r * danger) };
+          return { a, ...split(dh), ttk: 100 / (rk.r * danger), sustain: 0 };
         }
         // n players, n mobs. R = R_solo × 2n/(n+1).
         const rSolo = (rk.r * (rk.n + 1)) / (2 * rk.n);
@@ -570,8 +588,21 @@
         const dh = (ttkTarget * P.k * P.baseAtk * P.aspd) / P.baseDef;
         // a is proportional to danger, which is why a rising danger curve makes
         // mob attack rise rank by rank.
-        return { a: 1 / (rSolo * dh), ...split(dh), ttk: ttkTarget };
+        return {
+          a: 1 / (rSolo * dh),
+          ...split(dh),
+          ttk: ttkTarget,
+          sustain: 0,
+        };
       }
+
+      /**
+       * Fraction of incoming damage the encounter ASSUMES is healed. Solved,
+       * never authored — it is the bill a rank's fight length runs up, so it
+       * has to be read as a requirement on the healing system rather than a
+       * knob. 0 everywhere except bosses that author a `ttk`.
+       */
+      const rankSustain = (rk) => rankMults(rk).sustain ?? 0;
 
       function mob(L, rank) {
         const rk = DATA.proposed.ladder.find((x) => x.rank === rank);
@@ -607,9 +638,12 @@
         const p = player(L, spec),
           Lm = mobLevel(L),
           m = mob(Lm, rank);
-        const single = hitsToDie(p, m, L) / hitsToKill(p, m, Lm);
-        if (n <= 1) return single;
         const rk = DATA.proposed.ladder.find((x) => x.rank === rank);
+        // Healing extends how long the party lasts without changing how hard
+        // the boss hits, so it divides survival time — and R with it.
+        const single =
+          hitsToDie(p, m, L) / hitsToKill(p, m, Lm) / (1 - rankSustain(rk));
+        if (n <= 1) return single;
         // boss: damage concentrates one way and spreads the other, so n².
         // pack: mobs die one at a time, so 2n/(n+1), bounded at 2×.
         return rk.shape === "boss"
@@ -913,6 +947,22 @@
           "Fraction of your HP still there when the encounter dies",
           "1 − 1/R. Negative means the encounter killed you first, and the size of the negative is how far short you fell. HP consumed is 100 minus this.",
         ],
+        "fight length": [
+          "The boss's authored wall clock, in seconds",
+          "SS and SSS author this; every other rank derives it from R and swings. Authoring it is what creates the sustain bill.",
+        ],
+        "swings you take": [
+          "Swings one player absorbs across the whole fight",
+          "ttk × aspd / n — the boss's total swings divided evenly across the party. Rests on the boss rotating targets; if it focuses one player, that player takes n times this.",
+        ],
+        "health bars taken": [
+          "Total damage one player absorbs, in whole health bars",
+          "swings taken ÷ swings-to-kill-you. Above 1.0 the player cannot survive on their own bar, and the excess is what healing must replace.",
+        ],
+        "sustain assumed": [
+          "Fraction of incoming damage the fight ASSUMES is healed",
+          "Solved, never authored — it is the bill a long fight runs up. A boss's wall clock cannot be paid for out of HP, because R = n²/(a·d·h) takes back whatever hp adds. Healing is the only variable that buys survival time without changing how hard the boss hits. A REQUIREMENT on the healing system, which does not exist yet.",
+        ],
         "player tier": [
           "One of the three reference players",
           "max = A gear + every stat point spent, median = C gear + 70%, min = E gear + 40%. Ladders ① and ② quote `max` only.",
@@ -1164,7 +1214,68 @@
           ],
           defence,
         )}
+        ${renderSustain()}
         ${renderPartyFactor()}`;
+      }
+
+      /**
+       * Sustain is the single biggest unbuilt assumption on this page, so it
+       * gets its own panel rather than a footnote. A reader who takes the SS
+       * and SSS rows at face value without seeing this would be reading a
+       * fight that cannot happen.
+       */
+      function renderSustain() {
+        const withS = DATA.proposed.ladder.filter((rk) => rankSustain(rk) > 0);
+        if (!withS.length) return "";
+        const rows = withS.map((rk) => {
+          const s = rankSustain(rk);
+          const swingsTaken = (rk.ttk * P.aspd) / rk.n;
+          return [
+            `<b>${rk.rank}</b>`,
+            `${rk.n}v1`,
+            `${rk.ttk}s`,
+            `${rk.swings}`,
+            swingsTaken.toFixed(1),
+            (swingsTaken / rk.swings).toFixed(1),
+            `<span class="FAIL">${(s * 100).toFixed(1)}%</span>`,
+          ];
+        });
+        return `<div class="panel" style="margin-top:14px">
+          <div class="legend-h">SUSTAIN — WHAT A LONG FIGHT COSTS</div>
+          <div class="legend-b" style="margin-bottom:12px">
+            A boss's wall clock cannot be bought with HP. <code>hp</code> sits inside the
+            <code>def×hp</code> product and <code>R = n²/(a·d·h)</code>, so every factor added to HP
+            is taken straight back out of difficulty. Holding <b>R</b> and
+            <b>swings-to-kill-a-player</b> while stretching the fight needs a fourth variable, and
+            healing is the only one that buys survival time without changing how hard the boss hits.
+            So sustain is <b>solved, not chosen</b> — it is the bill.
+          </div>
+          ${table(
+            [
+              "mob rank",
+              "encounter",
+              "fight length",
+              "swings to kill you",
+              "swings you take",
+              "health bars taken",
+              "sustain assumed",
+            ],
+            rows,
+          )}
+          <div class="banner warn" style="margin-top:12px">
+            <b>None of this exists.</b> There is no healing, regeneration or resurrection anywhere
+            in the model or the game. Every SS and SSS number on this page is quoted against a
+            system that has not been designed, and the requirement is severe: an SSS party must
+            replace <b>93.4%</b> of everything the boss deals, sustained for 90 minutes, or the
+            fight is not survivable at any gear level.
+            <br /><br />
+            <b>The alternative is worse, which is why it was not taken.</b> Paying for the clock
+            with attack instead means the SS boss needs <b>33.8</b> swings to kill a player and the
+            SSS boss <b>75.6</b> — hits of 3.0% and 1.3% of a health bar. A long fight survived on
+            one health bar is necessarily made of imperceptible hits. That is arithmetic, not
+            tuning.
+          </div>
+        </div>`;
       }
 
       function renderPartyFactor() {
@@ -1630,6 +1741,9 @@
             `${rk.swings}`,
             m.atkMult.toFixed(4),
             m.defMult.toFixed(3),
+            rankSustain(rk) > 0
+              ? `<span class="FAIL">${(rankSustain(rk) * 100).toFixed(1)}%</span>`
+              : `<span class="dim">none</span>`,
             n0(m.cs),
             n0(m.hp),
             n0(m.atk),
@@ -1650,6 +1764,7 @@
             "target swings to kill you",
             "mob atk mult",
             "mob def/hp mult",
+            "sustain assumed",
             "mob CS",
             "mob HP",
             "mob atk",

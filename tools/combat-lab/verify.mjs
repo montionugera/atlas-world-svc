@@ -147,7 +147,7 @@ if (a < 0 || b < 0 || b <= a) {
 const model = new Function(
   "DATA",
   "P",
-  `${html.slice(a, b)}; return { player, mob, R, ttk, band, requirements, invariants, midLevel, rankRef };`,
+  `${html.slice(a, b)}; return { player, mob, R, ttk, band, requirements, invariants, midLevel, rankRef, hit, rankSustain };`,
 )(data, P);
 
 const EXPECT_REQ = {
@@ -349,16 +349,16 @@ console.log("\nthree rank multipliers");
     const m = model.mob(L, rk.rank);
     const gotR = model.R(L, rk.rank, "max", rk.n);
     const gotT = model.ttk(L, rk.rank, "max");
-    // Danger is derived from the authored swings-to-kill-a-player, so assert
-    // the swings themselves — the number actually written down. A previous
-    // version compared against rk.danger after that field was removed, so it
-    // compared with undefined and passed vacuously.
-    const gotD =
-      rk.shape === "boss"
-        ? 100 / (rk.r * gotT)
-        : 100 / (model.R(L, rk.rank, "max", 1) * gotT);
+    // Swings-to-kill-a-player, measured STRAIGHT off the model: the player's
+    // health bar divided by one of the mob's hits. Two earlier versions were
+    // wrong here. One compared against rk.danger after that field was removed,
+    // so it compared with undefined and passed vacuously. The next back-derived
+    // swings from `danger x ttk = 100/R` — an identity that silently stops
+    // holding once a rank has sustain, since healing buys survival time that no
+    // amount of raw HP explains. Measuring the thing itself has neither failure
+    // mode and does not care how the model reached it.
     const gotSwings =
-      (100 * P.aspd) / (gotD * (rk.shape === "boss" ? rk.n : 1));
+      model.player(L, "max").hp / model.hit(m, model.player(L, "max"), L);
     if (Math.abs(gotR - rk.r) > 0.005)
       bad += `${rk.rank} R ${gotR.toFixed(3)}; `;
     const wantSwings = EXPECT_SWINGS[rk.rank];
@@ -382,6 +382,48 @@ console.log("\nthree rank multipliers");
     !nonMono,
     "fight length, mob atk and mob def/hp all rise rank by rank",
     nonMono || seen.map((s) => `${s.rank} ${s.t.toFixed(1)}s`).join(" "),
+  );
+}
+
+// ------------------------------------------------------ 5c-bis. sustain ---
+// A boss that authors a wall clock cannot pay for it out of HP: hp lives in the
+// def*hp product and R = n^2/(a*d*h), so every factor added to hp comes straight
+// back out of R. SUSTAIN is what pays instead -- and because it is solved, not
+// authored, it has to be pinned HERE or the check is the same tautology the
+// swings gate used to be.
+//
+// These are requirements on the healing system, not preferences. Pinned to 0.1%.
+console.log("\nsustain — the bill a long fight runs up");
+{
+  const EXPECT_SUSTAIN = { SS: 0.8222, SSS: 0.9339 };
+  const EXPECT_TTK = { SS: 900, SSS: 5400 };
+  for (const rk of data.proposed.ladder) {
+    const got = model.rankSustain(rk);
+    const want = EXPECT_SUSTAIN[rk.rank] ?? 0;
+    gate(
+      Math.abs(got - want) < 0.001,
+      `${rk.rank} assumes ${(want * 100).toFixed(1)}% of incoming damage is healed`,
+      `got ${(got * 100).toFixed(2)}%`,
+    );
+  }
+  let badT = "";
+  for (const [rank, want] of Object.entries(EXPECT_TTK)) {
+    const rk = data.proposed.ladder.find((x) => x.rank === rank);
+    const got = model.ttk(model.midLevel(rk), rank, "max");
+    if (Math.abs(got / want - 1) > 0.001)
+      badT += `${rank} ${got.toFixed(0)}s want ${want}s; `;
+  }
+  gate(
+    !badT,
+    "SS and SSS hit their authored wall clock",
+    badT || "900s / 5400s",
+  );
+  // Sustain must not leak into ranks that never asked for it.
+  gate(
+    data.proposed.ladder
+      .filter((rk) => !rk.ttk)
+      .every((rk) => model.rankSustain(rk) === 0),
+    "no rank without an authored ttk assumes any healing",
   );
 }
 
