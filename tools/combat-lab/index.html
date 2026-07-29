@@ -905,20 +905,23 @@
           .join(" · ");
         return `${section(
           "How to read this page",
-          "Three things vary: the <b>player</b> (level, build, gear), the <b>mob</b> (rank, level), and the <b>encounter</b> (how many a side).",
+          "One hit is <code>k × refHp(defender level) × (atk / def)</code>. Three things vary: the <b>player</b> (level, build, gear), the <b>mob</b> (rank), and the <b>encounter</b> (pack or boss).",
         )}
         <div class="panel">
           <div class="legend-grid">
             <div><div class="legend-h">PLAYER</div><div class="legend-b">
               <code>build</code> = how fully stat points were spent. <code>gear</code> = equipment tier.
-              <code>CS</code> = CombatScore = <code>√(DPS × EHP)</code>.</div></div>
+              <code>CS</code> = CombatScore = the geometric mean of <code>atk</code>, <code>def</code>
+              and <code>hp</code>, so it grows at exactly the growth rate per level.</div></div>
             <div><div class="legend-h">MOB</div><div class="legend-b">
-              <code>rank</code> = E → SSS. Sets strength <i>relative to a same-level player</i> and nothing
-              else. Level and headcount are separate inputs.</div></div>
+              <code>rank</code> = E → SSS, set by two targets: <b>R</b> (how hard) and <b>danger</b>
+              (share of your health bar drained per second). Fight length is <i>derived</i> from the pair.
+              E–A are <b>packs</b>; S and above are <b>bosses</b>, n players against one.</div></div>
             <div><div class="legend-h">OUTCOME — R</div><div class="legend-b">
               How long the <b>player</b> survives ÷ how long the <b>encounter</b> survives.
-              <code>R &gt; 1</code> = win, <code>1 − 1/R</code> = HP left.
-              A duel is exactly <code>(CS_player / CS_mob)²</code>.</div></div>
+              <code>R &gt; 1</code> = win, <code>1 − 1/R</code> = HP left. A duel is exactly
+              <code>(CS_player / CS_mob)³</code>; a pack multiplies by <code>2n/(n+1)</code>
+              and a boss by <code>n²</code>.</div></div>
           </div>
           <div class="legend-h" style="margin-top:14px">BANDS</div>
           <div class="legend-b">${bands}</div>
