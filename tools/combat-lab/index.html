@@ -798,6 +798,26 @@
           "Defence",
           "Divides incoming damage: dmg = k x refHp x (atk / def). Exactly interchangeable with HP.",
         ],
+        "your damage / hit": [
+          "Damage you land per swing",
+          "k x refHp(mob level) x (your atk / mob def). Absolute, so it grows with level.",
+        ],
+        "your hits / min": [
+          "Swings you make per minute",
+          "Attack speed x 60. Constant across ranks — it is your weapon, not the mob.",
+        ],
+        "your damage / min": [
+          "Damage you deal per minute",
+          "Damage per hit x hits per minute. Compare against the mob's HP to sanity-check time to kill.",
+        ],
+        "its damage / hit": [
+          "Damage the mob lands on you per swing",
+          "The bracket is that as a share of your health bar. For a boss it is one player's share, since the boss rotates targets.",
+        ],
+        "its damage / min": [
+          "Damage the mob deals to you per minute",
+          "Its damage per hit x its swings per minute.",
+        ],
         "danger per second": [
           "Share of your health bar the mob removes each second",
           "1/(R x ttk). Intensity, as opposed to endurance. A rank that is hard only because the fight is long shows a LOW number here.",
@@ -966,42 +986,61 @@
       }
 
       function renderLadder() {
-        const n = P.encounterSize;
+        const L = P.exampleLevel;
+        const p = player(L, "max");
         const rows = DATA.proposed.ladder.map((rk) => {
-          const L = midLevel(rk);
-          const duel = R(L, rk.rank, "max", 1);
+          const Lm = mobLevel(L),
+            m = mob(Lm, rk.rank);
+          const yours = hit(p, m, Lm), // damage you land per swing
+            theirs = hit(m, p, L); // damage it lands on you per swing
+          const T = ttk(L, rk.rank, "max");
+          const r = R(L, rk.rank, "max", rk.n);
+          const perMin = P.aspd * 60;
           return [
             `<b>${rk.rank}</b>`,
-            rk.mult.toFixed(3),
-            `<span class="dim">${rk.was.toFixed(2)}</span>`,
-            rCell(duel),
-            hpLeft(duel),
-            n > 1
-              ? rCell(R(L, rk.rank, "max", n))
-              : `<span class="dim">—</span>`,
+            rk.shape === "boss"
+              ? `${rk.n}v1 boss`
+              : rk.n > 1
+                ? `${rk.n}v${rk.n}`
+                : "1v1",
+            n0(yours),
+            perMin.toFixed(0),
+            n0(yours * perMin),
+            `${n0(theirs)} <span class="dim">(${((theirs / p.hp) * 100).toFixed(1)}%)</span>`,
+            n0(theirs * perMin),
+            `${(100 / (r * T)).toFixed(2)}%/s`,
+            T < 100 ? `${T.toFixed(1)}s` : `${T.toFixed(0)}s`,
+            hpLeft(r),
+            rCell(r),
           ];
         });
         return `${section(
-          "Rank ladder — how strong is each MOB tier",
-          "One row per <b>mob</b> rank against a <b>max-grade player</b>. Rank carries strength and nothing else — no level, no headcount. R is identical at level 1 and level 99 because player and mob grow at the same rate, so only the level <i>difference</i> matters.",
+          "Rank ladder — what fighting each MOB tier is actually like",
+          `One row per <b>mob</b> rank against a <b>max-grade player at level ${L}</b>
+           (drag <code>Worked example level</code> to move it). Every column is quoted at the
+           rank's own encounter shape — a boss row is not a duel.
+           <b>R and HP left do not depend on level at all</b>; the damage figures do,
+           because they are absolute. Only the level <i>difference</i> changes an outcome.`,
         )}
         ${table(
           [
             "mob rank",
-            "mob CS ÷ player CS",
-            "was",
-            "R · 1v1",
+            "encounter",
+            "your damage / hit",
+            "your hits / min",
+            "your damage / min",
+            "its damage / hit",
+            "its damage / min",
+            "danger per second",
+            "time to kill",
             "player HP left",
-            n > 1
-              ? `R · ${n}v${n}`
-              : `R · ${n}v${n} <span class="dim">(raise Encounter size)</span>`,
+            "R",
           ],
           rows,
         )}
         ${renderPartyFactor()}`;
       }
 
-      /** Why n changes anything, and the requirement it places on the AI. */
       function renderPartyFactor() {
         const rows = [1, 2, 4, 8, 20, 50].map((n) => [
           n,
