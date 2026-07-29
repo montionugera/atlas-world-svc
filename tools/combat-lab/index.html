@@ -647,9 +647,25 @@
         const bars = P.manaBars ?? 0;
         const pool = healers * bars;
         const regen = healers * bars * ((P.combatManaRegen ?? 0) / 100) * ttk;
-        const byCooldown = Math.floor(ttk / Math.max(1, P.potionCooldown ?? 1));
-        const drunk = Math.min(P.potionCarry ?? 0, byCooldown);
-        const potions = n * drunk * (P.potionBars ?? 0);
+
+        // Potions are a FLAT heal-over-time that cannot stack, so two things
+        // bound them and neither is a cooldown.
+        //
+        //   UPTIME — no-stack means one at a time, so a fight can hold at most
+        //            ttk/duration of them. Carry is usually far tighter: 20
+        //            potions × 5s is 100 seconds of coverage, 1.9% of a 5400s
+        //            fight. Chain-drinking is impossible by construction.
+        //   LEVEL  — a flat heal against a bar growing at growth^level. 700 HP
+        //            is 124% of a level-20 bar and 4.2% of a level-97 one, so
+        //            potions fade out exactly where the wall clocks live.
+        const secs = Math.max(1, P.potionSeconds ?? 1);
+        const byUptime = Math.floor(ttk / secs);
+        const drunk = Math.min(P.potionCarry ?? 0, byUptime);
+        const healPerPotion = (P.potionHps ?? 0) * secs;
+        // Converting HP to health bars at the level that actually fights this
+        // rank is the step that makes "flat" bite.
+        const barHp = player(midLevel(rk), "max").hp;
+        const potions = (n * drunk * healPerPotion) / barHp;
         const supply = pool + regen + potions;
         return {
           healers,
@@ -661,10 +677,16 @@
           regen,
           potions,
           drunk,
-          // Which bound actually stops the potions — the thing to change if
-          // potions are the lever you want to pull.
-          potionLimit:
-            (P.potionCarry ?? 0) <= byCooldown ? "carry" : "cooldown",
+          healPerPotion,
+          barHp,
+          // Share of the fight a potion is actually ticking. No-stack makes
+          // this the real constraint: you cannot bank potions into a burst.
+          uptime: (drunk * secs) / ttk,
+          // One potion as a share of the bar it is healing — the number that
+          // decays with level and is the whole argument against flat heals.
+          potionBars: healPerPotion / barHp,
+          // Which bound actually stops the potions.
+          potionLimit: (P.potionCarry ?? 0) <= byUptime ? "carry" : "uptime",
           supply,
           // The design-smell number: if healers supply a small share, the
           // healer CLASS is decorative and the fight is really an inventory
@@ -1070,7 +1092,15 @@
         ],
         "from potions": [
           "Healing paid for by consumables during the fight",
-          "n × potions drunk × bars per potion, where potions drunk is the smaller of what can be carried and what the cooldown permits. Check which bound binds before tuning either.",
+          "A FLAT heal-over-time that cannot stack: potionHps × duration HP per potion, converted to bars at the level that fights this rank. Bounded by UPTIME (one at a time) and by carry — never by a cooldown. Flat means it decays with level: 700 HP is 124% of a level-20 bar and 4.2% of a level-97 one.",
+        ],
+        "potion uptime": [
+          "Share of the fight a potion is actually ticking",
+          "carry × duration ÷ ttk. Because potions cannot stack you cannot bank them into a burst, so this is the ceiling on what consumables can ever contribute — 1.9% at SSS.",
+        ],
+        "one potion": [
+          "A single potion as a share of the drinker's health bar",
+          "A flat heal against a bar growing at growth^level, so this decays the whole way up. The top 140 HP/s tier is worth LESS at level 97 (4.2%) than the bottom 10 HP/s tier is at level 20 (8.8%).",
         ],
         fundable: [
           "Whether supply covers demand",
@@ -1426,7 +1456,9 @@
             e.demand.toFixed(1),
             e.pool.toFixed(0),
             e.regen.toFixed(0),
-            e.potions.toFixed(0),
+            e.potions.toFixed(1),
+            `${(e.uptime * 100).toFixed(1)}% <span class="dim">(${e.potionLimit})</span>`,
+            `${(e.potionBars * 100).toFixed(1)}% <span class="dim">of bar</span>`,
             `<b>${e.supply.toFixed(0)}</b>`,
             s === 0
               ? `<span class="dim">no healing needed</span>`
@@ -1465,6 +1497,8 @@
             "from pool",
             "from regen",
             "from potions",
+            "potion uptime",
+            "one potion",
             "healing supplied",
             "fundable",
           ],
@@ -1493,7 +1527,28 @@
           <b>Watch the healer share of supply.</b> Potions and regen are the easy levers, and if
           they carry most of the healing then the healer <i>class</i> is decorative — the fight
           becomes an inventory check rather than a role check. Solving the arithmetic and losing
-          the role is the failure mode here, and it does not show up as a number going red.
+          the role is the failure mode here, and it does not show up as a number going red. At
+          0.5 bars per potion it did exactly that: healers fell to 23% at SS, because 20 carried
+          potions is ten full health bars in every player's pocket.
+          <br /><br />
+          <b>Potions are a flat, non-stacking heal-over-time, and both properties bite.</b>
+          <i>Flat</i> means a fixed HP amount against a bar growing at <code>growth^level</code>,
+          so a potion decays the entire way up the ladder — and the tiers do not keep pace:
+          <br />
+          <code>10 / 30 / 60 / 140 HP/s × 5s</code> is a 14× span, while a health bar grows
+          <b>30×</b> from level 20 to level 97. So the <b>top</b> tier at endgame (4.2% of a bar)
+          is worth <b>less than the bottom tier at level 20</b> (8.8%). Matching level 20's
+          usefulness at level 97 would need a fifth tier around <b>300 HP/s</b>.
+          <br />
+          <i>Non-stacking</i> means the ceiling is UPTIME, not cooldown: one potion runs at a
+          time, so 20 carried × 5s is 100 seconds of coverage — 11% of an SS fight and
+          <b>1.9%</b> of an SSS one. Potions cannot be banked into a burst by construction.
+          <br /><br />
+          <b>The healer numbers are still invented placeholders, and they now carry almost all
+          the weight.</b> Potions supply 27% at SS and 8% at SSS, so fundability rests on
+          <code>8 bars per mana pool</code> and <code>0.1 %/s regen</code> — neither of which is
+          anchored to anything. Remove potions entirely and SS goes short by 1 bar of 62 while
+          SSS funds at 1.02×, so that regen default very nearly decides fundability on its own.
           <br /><br />
           <b>And healers cost difficulty, not just time.</b> A boss's R is
           <code>single × n × attackers</code>, so every player who heals instead of attacking

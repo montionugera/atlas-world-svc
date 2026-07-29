@@ -514,6 +514,16 @@ console.log("\nsustain economy — can healers pay the bill");
       `${r.rank}'s healing bill is payable at the authored settings`,
       `supply ${e.supply.toFixed(0)} vs demand ${e.demand.toFixed(0)} bars (${(e.supply / e.demand).toFixed(2)}×)`,
     );
+    // A DESIGN gate, not an arithmetic one. Funding a fight with consumables
+    // works on paper while quietly deleting the role that was supposed to do
+    // it, and nothing else on the page turns red when that happens. At the
+    // first authored potion strength (0.5 bars) healers fell to 23% here —
+    // 20 carried potions is ten full health bars in every player's pocket.
+    gate(
+      e.healerShareOfSupply > 0.5,
+      `${r.rank} is a role check, not an inventory check — healers supply the majority`,
+      `healers ${(e.healerShareOfSupply * 100).toFixed(0)}%, consumables ${(100 - e.healerShareOfSupply * 100).toFixed(0)}%`,
+    );
   }
 }
 

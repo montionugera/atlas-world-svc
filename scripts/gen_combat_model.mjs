@@ -399,26 +399,37 @@ const proposed = {
     // could not grow with the clock; a consumable restores per use, so supply
     // becomes a rate again -- bounded by how many a player can carry and how
     // often one can be drunk, not by the mana anyone started with.
-    potionBars: {
-      value: 0.5,
+    // A potion is a FLAT heal-over-time that cannot stack: it restores
+    // `potionHps` HP per second for `potionSeconds`, and no second potion can
+    // run while one is active. Tiers are 10 / 30 / 60 / 140 HP/s over 5s, so a
+    // top-tier potion is 700 HP total.
+    //
+    // Two consequences follow from the shape, and both matter more than the
+    // numbers. FLAT means a potion is a fixed amount against a bar growing at
+    // growth^level -- 700 HP is 124% of a level-20 bar and 4.2% of a level-97
+    // one, so potions fade exactly where the wall clocks are. NO-STACK means
+    // the binding limit is UPTIME, not cooldown: carry x duration seconds of
+    // coverage out of a ttk-second fight, which is 1.9% at SSS.
+    potionHps: {
+      value: 140,
       min: 0,
-      max: 2,
-      step: 0.05,
-      label: "Health bars restored per potion",
+      max: 300,
+      step: 10,
+      label: "Potion regen (HP/s) — tiers 10/30/60/140",
+    },
+    potionSeconds: {
+      value: 5,
+      min: 1,
+      max: 30,
+      step: 1,
+      label: "Potion duration (s, cannot stack)",
     },
     potionCarry: {
       value: 20,
       min: 0,
-      max: 100,
+      max: 200,
       step: 1,
       label: "Potions a player can carry",
-    },
-    potionCooldown: {
-      value: 30,
-      min: 1,
-      max: 300,
-      step: 1,
-      label: "Seconds between potions",
     },
     // A skill may grant regeneration DURING combat, which is the rule that
     // actually removes the ceiling. Rest-only regen capped a fight's healing at
@@ -548,6 +559,9 @@ const proposed = {
     "HP and DEF are exactly interchangeable by construction (CS is the geometric mean of atk, def, hp), so neither is a trap stat. Confirm that is wanted before anything depends on it.",
     "Gap weight 0.6 is a chosen value, not a derived one. It makes a mob 10 levels above you 1.70x harder instead of 2.41x. It is symmetric: out-levelling content near your own level is correspondingly less rewarding.",
     "SUSTAIN IS NOW LOAD-BEARING AND DOES NOT EXIST. SS and SSS author a wall clock (900s, 5400s) and the model solves the healing needed to pay for it: 82.2% and 93.4% of ALL incoming damage, sustained for 15 and 90 minutes. There is no healing, regeneration or resurrection anywhere in the model or the game, so every SS/SSS number is quoted against an undesigned system. If healing cannot deliver those rates the wall clocks are not reachable and the fights must get shorter. The alternative -- paying with attack instead -- needs 33.8 and 75.6 swings to kill a player, i.e. hits of 3.0% and 1.3% of a health bar, because a long fight survived on one health bar is necessarily made of imperceptible hits.",
+    "POTION TIERS DO NOT KEEP PACE WITH THE HP CURVE. Potions are a flat, non-stacking heal-over-time: 10/30/60/140 HP/s for 5s, so 50/150/300/700 HP total. That is a 14x span across the tier list, while a health bar grows 30x from level 20 (565) to level 97 (16,759). The consequence is that the TOP tier at endgame is worth LESS than the BOTTOM tier at level 20 -- 700 HP is 4.2% of a level-97 bar against 50 HP being 8.8% of a level-20 one. Potions decline in relevance the whole way up the ladder. Matching level 20 usefulness at level 97 needs a fifth tier around 300 HP/s. Separately, 140 HP/s overheals a level-20 player by 24%, so the tiers clearly want to be level-gated.",
+    "NO-STACK MAKES UPTIME THE CEILING ON CONSUMABLES, which is a good property worth keeping deliberately. One potion runs at a time, so 20 carried x 5s is 100 seconds of coverage -- 11% of an SS fight and 1.9% of an SSS one. Potions cannot be banked into a burst by construction, so they cannot rescue a phase spike, only chip at the average. Carry is the binding limit at every rank, not uptime, so carry capacity is still the lever.",
+    "THE HEALER PLACEHOLDERS NOW CARRY ALMOST ALL THE WEIGHT. With the real potion spec, consumables supply only 27% of the healing at SS and 8% at SSS, so fundability rests on `manaBars` (8 bars per pool) and `combatManaRegen` (0.1 %/s) -- neither anchored to anything. Remove potions entirely and SS goes short by 1 bar of 62 while SSS funds at 1.02x, so the regen default very nearly decides fundability by itself. SSS now funds at only 1.10x, which is thin enough that any of these guesses moving down breaks it.",
     "THE SUSTAIN ECONOMY NOW CLOSES, BUT HEALERS ARE NOT WHAT CLOSES IT. With potions and a skill granting in-combat mana regen, SS funds at 4.23x and SSS at 2.01x. The fix was a change of SHAPE, not size: pool is fixed and loses ground to any clock, while regen and potions are rates that scale with it as demand does. Two consequences to decide on. First, at SS the healer class supplies only 23% of the healing (potions 200 bars of 261) -- the fight is closer to an inventory check than a role check, and that failure mode never shows up as a number going red. Second, potions are bound by CARRY not cooldown at these settings, so carry capacity -- an inventory decision made elsewhere -- is silently the most load-bearing number in the sustain economy.",
     "THE OLD PROBLEM, KEPT FOR THE REASONING: rest-only regen made a fight's healing a fixed POOL, so supply could not grow with the clock while demand did (super-linearly -- own-HP absorption is one-time, so doubling a fight raises demand 2.07x). SS was short 30 bars of 61.7 and SSS short 424 of 504.3. Raising the healer share BACKFIRES and still would: a boss's R is single x n x attackers, so 30% healers drops SSS from R 1.40 to 0.98, a loss. Funding a fight by adding healers cannot work in this model.",
     "RANK S HAS NO WALL CLOCK while SS and SSS do, so the ladder jumps from a 70-second fight with no healing to a 900-second fight needing 82% healing. Either S should author a ttk too (and take on a sustain bill of its own) or the sustain systems it does not need should not appear one rank later.",

@@ -197,31 +197,54 @@ potions  n × min(carry, ttk/cd) × bars    RATE, twice-bounded; carry usually b
 ```
 
 ```
-rank   ttk    demand   pool   regen  potions  SUPPLY  healer%  verdict
-SS      900       62     32      29      200     261      23%  funded 4.23×
-SSS    5400      504     80     432      500    1012      51%  funded 2.01×
+rank   ttk   demand   pool  regen  potions  SUPPLY  healer%  uptime  verdict
+SS      900      62     32     29     22.7      84      73%   11.1%  funded 1.35×
+SSS    5400     504     80    432     41.8     554      92%    1.9%  funded 1.10×
 ```
 
-**Two things to decide, and neither shows up as a number going red:**
+**A potion is a flat, non-stacking heal-over-time** — 10 / 30 / 60 / 140 HP/s
+for 5s, so 50 / 150 / 300 / 700 HP total. Both properties bite.
 
-1. **At SS the healer class supplies 23% of the healing.** Potions carry 200
-   bars of the 261. That fight is closer to an inventory check than a role
-   check — the arithmetic is solved and the role is lost.
-2. **Potions are bound by CARRY, not cooldown**, at every rank. So carry
-   capacity — an inventory decision made somewhere else entirely — is silently
-   the most load-bearing number in the sustain economy.
+_Flat_ means a fixed amount against a bar growing at `growth^level`, and **the
+tiers do not keep pace**: the tier list spans 14× while a health bar grows 30×
+from level 20 to level 97. So the **top tier at endgame is worth less than the
+bottom tier at level 20**:
 
-Note the ladder is quoted with **all n attacking**, so it reads optimistically
-the moment anyone heals. Whether the target R should be met _with_ healers in
-the party is undecided.
+```
+tier(HP/s)  total     L20 bar 565   L77 6949   L90 12315   L97 16759
+        10     50HP          8.8%       0.7%        0.4%        0.3%
+        30    150HP         26.5%       2.2%        1.2%        0.9%
+        60    300HP         53.1%       4.3%        2.4%        1.8%
+       140    700HP        123.8%      10.1%        5.7%        4.2%
+```
 
-Also unmodelled: **rest time never appears in any clear-time figure.** A dry
-healer needs `restDelay + 100/restRate` seconds to refill — 55s at the defaults —
-and healers end every funded fight empty.
+Matching level 20's usefulness at level 97 would need a fifth tier around
+**300 HP/s**. And 140 HP/s **overheals a level-20 player by 24%**, so the tiers
+clearly want to be level-gated.
 
-Gates: `sustain economy — can healers pay the bill` pins both demands, asserts
-incoming doubles with the clock while demand grows faster and supply does not
-move at all, and asserts that swapping attackers for healers lowers a boss's R.
+_Non-stacking_ makes **uptime** the ceiling rather than a cooldown: one potion
+runs at a time, so 20 carried × 5s is 100 seconds of coverage — 11% of an SS
+fight and **1.9%** of an SSS one. Potions cannot be banked into a burst by
+construction, so they chip at the average and cannot rescue a spike. That is a
+good property; keep it deliberately.
+
+**An earlier placeholder got this badly wrong** and is worth remembering. At
+0.5 bars per potion — a percentage-of-bar model — 20 carried potions was ten
+full health bars in every pocket and healers fell to **23%** of supply at SS.
+The fight funded on paper while the role it was built around quietly
+disappeared. Gated now as `SS is a role check, not an inventory check`; proven
+to bite by restoring 0.5, which reproduces `FAIL … healers 23%, consumables 77%`.
+
+**Two things still undecided:**
+
+1. **Carry is the binding limit at every rank**, not uptime. Carry capacity —
+   an inventory decision made somewhere else entirely — is the lever.
+2. **The healer placeholders now carry almost all the weight.** Consumables
+   supply 27% at SS and 8% at SSS, so fundability rests on `manaBars` (8) and
+   `combatManaRegen` (0.1 %/s), neither anchored to anything. Remove potions
+   and SS goes short by 1 bar of 62 while SSS funds at 1.02×. SSS funds at only
+   **1.10×** as it stands — thin enough that any of these guesses moving down
+   breaks it.
 
 ### 2b. The old check: multipliers are solved, not authored
 
