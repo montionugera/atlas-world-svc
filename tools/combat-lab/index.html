@@ -804,6 +804,10 @@
           "Defence",
           "Divides incoming damage: dmg = k x refHp x (atk / def). Exactly interchangeable with HP.",
         ],
+        "swings to kill you": [
+          "How many of the mob's swings you can absorb",
+          "Your HP divided by its damage per hit. Compare against `swings to kill` — whichever side runs out first loses, and their ratio is R.",
+        ],
         "swings to kill": [
           "How many of your swings the mob takes to drop",
           "Mob HP divided by your damage per hit. For a boss the party shares this total, so the wall clock is this divided by party size.",
@@ -1042,11 +1046,24 @@
           n0(e.m.atk),
           `${n0(e.theirs)} <span class="dim">(${((e.theirs / p.hp) * 100).toFixed(1)}%)</span>`,
           n0(e.theirs * perMin),
+          (p.hp / e.theirs).toFixed(0),
           `${(100 / (e.r * e.T)).toFixed(2)}%/s`,
           secs(e.T),
           hpLeft(e.r),
           rCell(e.r),
         ]);
+
+        const you = `<div class="panel" style="margin-bottom:12px">
+          <div class="legend-h">YOU — max-grade player, level ${L}</div>
+          <div class="legend-b" style="font-family:var(--mono);font-size:13px;color:var(--text)">
+            HP <b>${n0(p.hp)}</b> &nbsp;·&nbsp; atk <b>${n0(p.atk)}</b> &nbsp;·&nbsp; def <b>${n0(p.def)}</b>
+            &nbsp;·&nbsp; ${P.aspd} swings/s
+          </div>
+          <div class="legend-b" style="margin-top:6px">
+            Every damage figure below is against <b>this</b> health bar — that is what the
+            percentages are a share of. HP grows with level; the outcomes do not.
+          </div>
+        </div>`;
 
         return `${section(
           "Rank ladder ① — what YOU do to the mob",
@@ -1055,6 +1072,7 @@
            rank's own encounter shape — a boss row is not a duel, and for a boss the
            swings are per player while the kill is the party's wall clock.`,
         )}
+        ${you}
         ${table(
           [
             "mob rank",
@@ -1083,6 +1101,7 @@
             "mob atk",
             "its damage / hit",
             "its damage / min",
+            "swings to kill you",
             "danger per second",
             "time to kill",
             "player HP left",
