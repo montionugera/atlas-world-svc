@@ -46,19 +46,33 @@ const growth = 1.045;
 //
 // CS is the geometric mean of atk, def and hp, so it grows at exactly `growth`
 // per level and R is the cube of the CS ratio.
+// `ttk` is the committed target from HANDOFF.md. Where it is set, the page
+// solves THREE multipliers per rank — atk, def and hp — so the rank hits both
+// its target R and its target fight length. Where it is null the rank falls back
+// to one uniform multiplier and its fight length is derived.
+//
+// S, SS and SSS are deliberately null. Their targets (195s / 750s / 3750s) are
+// not reachable: R = 1/(atk x def x hp), so stretching a fight 370x at fixed
+// difficulty forces the mob's attack down to 0.8% of a player's. An SSS boss
+// would land ~5,600 hits each removing about one eight-thousandth of your health
+// bar. A long fight survived on ONE health bar must consist of imperceptible
+// hits — that is arithmetic, not tuning. Those three ranks are blocked on a
+// sustain model (healing / regen), not on the ladder.
 const LADDER_TARGETS = [
-  { rank: "E", r: 11.89, n: 1, from: 1, to: 12, was: 1.0 },
-  { rank: "D", r: 5.95, n: 1, from: 13, to: 25, was: 1.15 },
-  { rank: "C", r: 4.0, n: 1, from: 26, to: 40, was: 1.3 },
-  { rank: "B", r: 2.19, n: 2, from: 41, to: 55, was: 1.5 },
-  { rank: "A", r: 1.8, n: 4, from: 56, to: 70, was: 1.8 },
-  { rank: "S", r: 1.6, n: 8, from: 71, to: 84, was: 2.2 },
-  { rank: "SS", r: 1.5, n: 20, from: 85, to: 95, was: 2.8 },
-  { rank: "SSS", r: 1.4, n: 50, from: 96, to: 99, was: 3.5 },
+  { rank: "E", r: 11.89, ttk: 3.5, n: 1, from: 1, to: 12, was: 1.0 },
+  { rank: "D", r: 5.95, ttk: 8, n: 1, from: 13, to: 25, was: 1.15 },
+  { rank: "C", r: 4.0, ttk: 13.5, n: 1, from: 26, to: 40, was: 1.3 },
+  { rank: "B", r: 2.19, ttk: 21, n: 2, from: 41, to: 55, was: 1.5 },
+  { rank: "A", r: 1.8, ttk: 45, n: 4, from: 56, to: 70, was: 1.8 },
+  { rank: "S", r: 1.6, ttk: null, n: 8, from: 71, to: 84, was: 2.2 },
+  { rank: "SS", r: 1.5, ttk: null, n: 20, from: 85, to: 95, was: 2.8 },
+  { rank: "SSS", r: 1.4, ttk: null, n: 50, from: 96, to: 99, was: 3.5 },
 ];
 
 const ladder = LADDER_TARGETS.map((t) => ({
   rank: t.rank,
+  r: t.r,
+  ttk: t.ttk,
   mult: Math.cbrt((2 * t.n) / ((t.n + 1) * t.r)),
   n: t.n,
   from: t.from,

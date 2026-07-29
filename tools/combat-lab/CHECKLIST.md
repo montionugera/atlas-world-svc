@@ -64,7 +64,31 @@ Double `k` to 0.20 and rank C's time to kill halves, 3.24s → 1.62s. Every R on
 the page stays exactly where it was. Same for `Attack speed`: 1.5 → 3.0 also
 halves it, also changes no outcome.
 
-### 2. Rank multipliers are solved, not authored
+### 2. Three multipliers per rank, solved live
+
+Each rank has `atk`, `def` and `hp` multipliers rather than one. With a single
+multiplier, duration and difficulty are welded together as `TTK ∝ R^(−2/3)` —
+the ladder's 16.7× difficulty span permits a 6.5× span in fight length, while
+the committed TTK table wants **1071×**. Splitting them breaks the weld:
+
+```
+R    = 1 / (atk × def × hp)      difficulty
+TTK ∝       def × hp             duration
+```
+
+Check the mob table: E through A hit their target seconds **exactly** —
+3.5 / 8.0 / 13.5 / 21.0 / 45.0 — and their target R at the same time. Move the
+`Damage k` or `Attack speed` sliders and they still do; the solve is live.
+
+S, SS and SSS show `— derived` and fall back to one uniform multiplier. Their
+targets (195s / 750s / 3750s) are **unreachable**, and not by a little: an SSS
+boss stretched to 3750s must attack at 0.8% of a player's, landing ~5,600 hits
+that each remove about one eight-thousandth of your health bar. Any long fight
+survived on a single health bar consists of imperceptible hits. That is
+arithmetic. Those three ranks are blocked on a **sustain model** — healing or
+regeneration — not on the ladder.
+
+### 2b. The old check: multipliers are solved, not authored
 
 `mult` is derived from each rank's target R, so the ladder cannot drift. Rank C
 shows `mult 0.6300`, and `1 / 0.63³ = 4.00` — the ladder shows **4.00 easy**.
@@ -193,6 +217,6 @@ clumped party is nearest to every mob at once. Worth up to 1.96×, unmodelled.
   `origin: "design-spec"`. **Nothing is read from the game.** That is deliberate:
   the running server is a single-player debug prototype, and letting it sit
   beside the design invites the design to be judged against it.
-- Rank multipliers are the exception — they are *solved* in that script from each
+- Rank multipliers are the exception — they are _solved_ in that script from each
   rank's target R, so they cannot drift out of calibration by hand-editing.
 - Anything on the page not from one of those two — a bug. Report it.

@@ -459,16 +459,44 @@
        * stats, so scaling each stat by mult scales CS by exactly mult — and R,
        * which is the ratio of the products, by mult^3.
        */
+      /**
+       * THREE multipliers per rank, not one.
+       *
+       * With a single multiplier, TTK and R are welded together as
+       * TTK ∝ R^(-2/3): the ladder's 16.7x difficulty span permits a 6.5x span
+       * in fight length and no more, while the committed TTK table wants 1071x.
+       * Splitting atk / def / hp breaks the weld, because
+       *
+       *   R    = 1 / (atk x def x hp)      difficulty
+       *   TTK ∝       def x hp             duration
+       *
+       * are independent. Solved in closed form from the rank's target R and
+       * target seconds, at the CURRENT slider values, so both hold live.
+       *
+       * Ranks with no ttk target fall back to one uniform multiplier — see the
+       * generator for why S and above have none.
+       */
+      function rankMults(rk) {
+        if (rk.ttk == null) return { a: rk.mult, d: rk.mult, h: rk.mult };
+        const rSolo = (rk.r * (rk.n + 1)) / (2 * rk.n);
+        const dh = (rk.ttk * P.k * P.baseAtk * P.aspd) / P.baseDef;
+        const s = Math.sqrt(dh);
+        return { a: 1 / (rSolo * dh), d: s, h: s };
+      }
+
       function mob(L, rank) {
-        const r = DATA.proposed.ladder.find((x) => x.rank === rank);
+        const rk = DATA.proposed.ladder.find((x) => x.rank === rank);
         const ref = player(L, "max");
-        const s = r.mult;
+        const { a, d, h } = rankMults(rk);
         return {
-          mult: r.mult,
-          atk: ref.atk * s,
-          def: ref.def * s,
-          hp: ref.hp * s,
-          cs: ref.cs * r.mult,
+          mult: rk.mult,
+          atkMult: a,
+          defMult: d,
+          hpMult: h,
+          atk: ref.atk * a,
+          def: ref.def * d,
+          hp: ref.hp * h,
+          cs: ref.cs * Math.cbrt(a * d * h),
         };
       }
 
@@ -690,6 +718,18 @@
           "Damage per hit before your def divides it.",
         ],
         "mob def": ["Mob defence", "Divides the damage you deal."],
+        "target time to kill": [
+          "Committed TTK target for the rank",
+          "From HANDOFF.md. Where it is set, the three mob multipliers are solved to hit it exactly. S and above have none — their targets are unreachable without a sustain model.",
+        ],
+        "mob atk mult": [
+          "Mob attack relative to a max-grade player",
+          "Falls as rank rises: R = 1/(atk x def x hp), so stretching a fight at fixed difficulty forces attack down.",
+        ],
+        "mob def/hp mult": [
+          "Mob defence and HP relative to a max-grade player",
+          "Both carry the duration. def x hp sets fight length; sqrt each so they stay interchangeable.",
+        ],
         "mob CS mult": [
           "CombatScore multiplier for the rank",
           "Solved, not authored: each rank's multiplier is derived from its target R, so the ladder cannot silently drift.",
@@ -1088,7 +1128,11 @@
             `<b>${rk.rank}</b>`,
             L,
             Ls === L ? Ls : `<span class="FAIL">${Ls}</span>`,
-            rk.mult.toFixed(4),
+            rk.ttk == null
+              ? `<span class="dim">— derived</span>`
+              : `${rk.ttk}s`,
+            m.atkMult.toFixed(4),
+            m.defMult.toFixed(3),
             n0(m.cs),
             n0(m.hp),
             n0(m.atk),
@@ -1099,14 +1143,16 @@
         });
         return `${section(
           "Mob stats — what a MOB looks like at each rank",
-          `One row per <b>mob</b> rank. <code>mult</code> is a CombatScore multiplier, solved so each rank lands on its target R. The two time columns are for a party of <b>${n}</b> max-grade players.`,
+          `One row per <b>mob</b> rank. Each rank has <b>three</b> multipliers — atk, def and hp — solved live so it hits its target R <b>and</b> its target fight length. Ranks marked <span class="dim">— derived</span> have no reachable TTK target and fall back to a single uniform multiplier: see the notes. The two time columns are for a party of <b>${n}</b> max-grade players.`,
         )}
         ${table(
           [
             "mob rank",
             "player level",
             "mob level",
-            "mob CS mult",
+            "target time to kill",
+            "mob atk mult",
+            "mob def/hp mult",
             "mob CS",
             "mob HP",
             "mob atk",

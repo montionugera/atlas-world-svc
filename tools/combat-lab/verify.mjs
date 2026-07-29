@@ -319,6 +319,40 @@ gate(
   `(8 groups × ${data.proposed.archetypeRanks.length} ranks)`,
 );
 
+// ------------------------------------------- 5c. three rank multipliers ---
+// Every rank with a TTK target must hit BOTH its target R and its target
+// seconds. Ranks without one must fall back to a single uniform multiplier.
+console.log("\nthree rank multipliers");
+{
+  let bad = "";
+  for (const rk of data.proposed.ladder) {
+    const L = model.midLevel(rk);
+    const m = model.mob(L, rk.rank);
+    const gotR = model.R(L, rk.rank, "max", rk.n);
+    if (Math.abs(gotR - rk.r) > 0.005)
+      bad += `${rk.rank} R ${gotR.toFixed(3)}; `;
+    if (rk.ttk == null) {
+      if (
+        Math.abs(m.atkMult - rk.mult) > 1e-9 ||
+        Math.abs(m.defMult - rk.mult) > 1e-9 ||
+        Math.abs(m.hpMult - rk.mult) > 1e-9
+      )
+        bad += `${rk.rank} not uniform; `;
+    } else {
+      const gotT = model.ttk(L, rk.rank, "max");
+      if (Math.abs(gotT - rk.ttk) > 0.01)
+        bad += `${rk.rank} ttk ${gotT.toFixed(2)}s want ${rk.ttk}s; `;
+    }
+  }
+  gate(!bad, "each rank hits its target R and its target seconds", bad);
+  gate(
+    data.proposed.ladder
+      .filter((rk) => rk.ttk != null)
+      .every((rk, i, a) => i === 0 || rk.ttk > a[i - 1].ttk),
+    "TTK targets rise monotonically",
+  );
+}
+
 // --------------------------------------------------- 5d. level gap -------
 // The gap knob must scale the exponent and nothing else: R(delta) should equal
 // R(0) * growth^(-2 * gapWeight * delta), exactly.
