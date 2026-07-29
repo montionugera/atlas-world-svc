@@ -32,6 +32,7 @@ const SECTIONS = [
   "renderMatrix",
   "renderArchetypes",
   "renderExample",
+  "renderStoryboard",
   "renderCurve",
   "renderMobs",
   "renderInvariants",

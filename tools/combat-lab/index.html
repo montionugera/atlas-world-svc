@@ -208,6 +208,67 @@
         color: var(--accent);
         background: #7c9eff14;
       }
+      .sb-row {
+        display: grid;
+        grid-template-columns: 92px repeat(6, 1fr);
+        gap: 6px;
+        align-items: stretch;
+        margin-bottom: 6px;
+      }
+      .sb-label {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text-dim);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .sb-label b {
+        color: var(--text);
+        font-size: 13px;
+      }
+      .sb-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 7px 8px 8px;
+      }
+      .sb-t {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-faint);
+        margin-bottom: 5px;
+      }
+      .sb-bar {
+        height: 7px;
+        border-radius: 4px;
+        background: #ffffff12;
+        overflow: hidden;
+        margin-bottom: 3px;
+      }
+      .sb-bar i {
+        display: block;
+        height: 100%;
+      }
+      .sb-you i {
+        background: var(--ok);
+      }
+      .sb-you.hurt i {
+        background: var(--hard);
+      }
+      .sb-you.dying i {
+        background: var(--err);
+      }
+      .sb-mob i {
+        background: var(--accent);
+      }
+      .sb-n {
+        font-family: var(--mono);
+        font-size: 9px;
+        color: var(--text-faint);
+        display: flex;
+        justify-content: space-between;
+      }
       .cards {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -745,10 +806,6 @@
           "Seconds to drop one mob",
           "Hits to kill divided by attack speed. Ranks E through A are solved to land on their committed target exactly.",
         ],
-        "R (1v1)": [
-          "One player against one mob",
-          "Time you survive divided by time the mob survives. Above 1 you win; 1 - 1/R is the health you finish on.",
-        ],
         "you hit for": [
           "Damage you deal per hit",
           "k x refHp(mob level) x (your atk / mob def).",
@@ -757,9 +814,17 @@
           "Damage the mob deals per hit",
           "k x refHp(your level) x (mob atk / your def). The bracket is that as a share of your health bar.",
         ],
-        "hits to kill": [
-          "Swings needed to drop the mob",
-          "Mob HP divided by your damage per hit. Divide by attack speed for seconds.",
+        "swings each": [
+          "Swings one player makes during the fight",
+          "Time to kill times attack speed. For a boss the party's damage is pooled, so each player swings this many times, not the whole total.",
+        ],
+        encounter: [
+          "Shape of the fight",
+          "1v1 or n-vs-n is a pack; n-vs-1 is a boss. R is quoted for this shape, not for a lone player.",
+        ],
+        R: [
+          "Time you survive divided by time the encounter survives",
+          "Above 1 you win, and 1 - 1/R is the health you finish on. Quoted at the rank's own encounter shape.",
         ],
         "mob atk": [
           "Mob attack power",
@@ -1098,7 +1163,10 @@
           const m = mob(mobLevel(L), rk.rank);
           const yours = hit(p, m, mobLevel(L));
           const theirs = hit(m, p, L);
-          const r = R(L, rk.rank, "max", 1);
+          // Encounter R, matching the rank's own shape. Using the 1v1 value for
+          // a boss while showing the party's wall clock mixed two different
+          // fights in one row — the storyboard made that obvious.
+          const r = R(L, rk.rank, "max", rk.n);
           return [
             `<b>${rk.rank}</b>`,
             n0(m.atk),
@@ -1106,12 +1174,17 @@
             n0(m.hp),
             n0(yours),
             `${n0(theirs)} <span class="dim">(${((theirs / p.hp) * 100).toFixed(1)}% of you)</span>`,
-            (m.hp / yours).toFixed(1),
+            (ttk(L, rk.rank, "max") * P.aspd).toFixed(1),
             `${ttk(L, rk.rank, "max").toFixed(1)}s`,
             // Intensity: how fast it drains you, independent of how long the
             // fight runs. 1/(R x ttk). This is the column that exposes a rank
             // being "hard" only by lasting longer.
             `${(100 / (r * ttk(L, rk.rank, "max"))).toFixed(2)}%/s`,
+            rk.shape === "boss"
+              ? `${rk.n}v1 boss`
+              : rk.n > 1
+                ? `${rk.n}v${rk.n}`
+                : "1v1",
             rCell(r),
           ];
         });
@@ -1131,13 +1204,59 @@
             "mob HP",
             "you hit for",
             "it hits you for",
-            "hits to kill",
+            "swings each",
             "time to kill",
             "danger per second",
-            "R (1v1)",
+            "encounter",
+            "R",
           ],
           rows,
         )}`;
+      }
+
+      /**
+       * The same fights as a storyboard. Every other section is a number; this
+       * is what the number looks like while it happens.
+       *
+       * Both bars drain linearly — damage per second is constant on both sides —
+       * so the last panel lands on 1 - 1/R by construction, the same health left
+       * the tables report.
+       */
+      function renderStoryboard() {
+        const L = P.exampleLevel;
+        const STEPS = 6;
+        const rows = DATA.proposed.ladder
+          .map((rk) => {
+            const T = ttk(L, rk.rank, "max");
+            const r = R(L, rk.rank, "max", rk.n);
+            const drain = 100 / (r * T); // your health bar, % per second
+            const panels = Array.from({ length: STEPS }, (_, i) => {
+              const t = (T * i) / (STEPS - 1);
+              const you = Math.max(0, 100 - drain * t);
+              const mob = Math.max(0, 100 * (1 - t / T));
+              const tone = you > 60 ? "" : you > 25 ? " hurt" : " dying";
+              return `<div class="sb-panel">
+                <div class="sb-t">${t < 10 ? t.toFixed(1) : t.toFixed(0)}s${i === STEPS - 1 ? " · end" : ""}</div>
+                <div class="sb-bar sb-you${tone}"><i style="width:${you.toFixed(1)}%"></i></div>
+                <div class="sb-bar sb-mob"><i style="width:${mob.toFixed(1)}%"></i></div>
+                <div class="sb-n"><span>you ${you.toFixed(0)}%</span><span>${rk.shape === "boss" ? "boss" : "mob"} ${mob.toFixed(0)}%</span></div>
+              </div>`;
+            }).join("");
+            return `<div class="sb-row">
+              <div class="sb-label"><b>${rk.rank}</b>
+                <span>${rk.shape === "boss" ? `${rk.n}v1 boss` : rk.n > 1 ? `${rk.n}v${rk.n}` : "1v1"}</span>
+                <span>${T < 100 ? T.toFixed(1) : T.toFixed(0)}s · ${(T * P.aspd).toFixed(0)} swings</span>
+              </div>${panels}</div>`;
+          })
+          .join("");
+        return `${section(
+          `Storyboard — how each fight actually runs, at level ${P.exampleLevel}`,
+          `Six moments through every rank, from the opening swing to the kill.
+           <b class="PASS">Green</b> is your health, <b style="color:var(--accent)">blue</b> is the mob's.
+           Both drain at a constant rate, so the final panel is exactly the health the tables say you finish on.
+           Packs are drawn as one representative fight; bosses show the party's wall clock.`,
+        )}
+        <div class="panel">${rows}</div>`;
       }
 
       function renderCurve() {
@@ -1322,6 +1441,7 @@
           renderMatrix(),
           renderArchetypes(),
           renderExample(),
+          renderStoryboard(),
           renderCurve(),
           renderMobs(),
           renderInvariants(),
