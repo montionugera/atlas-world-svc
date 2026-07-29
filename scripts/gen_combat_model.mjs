@@ -120,9 +120,13 @@ const proposed = {
     // mirror match to sit at atk/def = 1.0 — which is what makes 1/k readable as
     // hits-to-kill in an even fight.
     baseDef: { value: 49, min: 5, max: 200, step: 1, label: "Base def @L1" },
+    // 0.5 = one swing every two seconds. Attack speed does not change difficulty
+    // or fight length at all — the rank solve absorbs it — but it decides how
+    // that fight is DELIVERED: per-hit damage is 1/(R x ttk x aspd), so slow
+    // swings mean few heavy blows instead of a drizzle of pinpricks.
     aspd: {
-      value: 1.5,
-      min: 0.5,
+      value: 0.5,
+      min: 0.2,
       max: 4,
       step: 0.1,
       label: "Attack speed (hits/s)",

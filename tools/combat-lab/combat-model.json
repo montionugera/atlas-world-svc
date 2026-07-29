@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-29T01:57:24.905Z",
+  "generatedAt": "2026-07-29T02:02:04.032Z",
   "proposed": {
     "origin": "design-spec",
     "spec": "docs/superpowers/specs/2026-07-28-combat-stat-model-design.md",
@@ -44,8 +44,8 @@
         "label": "Base def @L1"
       },
       "aspd": {
-        "value": 1.5,
-        "min": 0.5,
+        "value": 0.5,
+        "min": 0.2,
         "max": 4,
         "step": 0.1,
         "label": "Attack speed (hits/s)"

@@ -71,7 +71,8 @@ Ranks with a TTK target hold it **exactly**, because the three multipliers are
 re-solved live against the current sliders. Only the ranks with no target
 (S and above, falling back to one uniform multiplier) shorten with `k`.
 
-Every R is untouched at both settings. `Attack speed` behaves identically.
+Every R is untouched at both settings. `Attack speed` behaves the same way for
+targeted ranks — but see below, it decides how the fight is _delivered_.
 
 So `k` is not a fight-length knob any more — it sets how big damage numbers are,
 and the ladder compensates. To make E-through-A fights longer, change their TTK
@@ -108,6 +109,27 @@ shows `mult 0.6300`, and `1 / 0.63³ = 4.00` — the ladder shows **4.00 easy**.
 
 Check rank E too: `0.4381` → `1 / 0.4381³ = 11.89`. If both hold, `R = (CS_p /
 CS_m)³` is right.
+
+### 2c. Attack speed decides how a fight is delivered
+
+`aspd = 0.5` — one swing every two seconds. It changes **no** difficulty and
+**no** fight length; the rank solve absorbs it entirely. What it changes is the
+size of each blow:
+
+```
+damage per hit, as a share of your health bar  =  1 / (R × TTK × aspd)
+```
+
+Exact at every rank. R fixes the total damage you take across the fight, and
+`TTK × aspd` fixes how many swings it is spread over. Division does the rest.
+
+That is why the mob numbers look the way they do. At 1.5 swings/s a 45-second
+rank A fight is 68 swings, so each one had to be 1.3% of your health bar —
+invisible chip damage. At 0.5 it is 23 swings of 4.0% each.
+
+It also explains **why mob def is high and mob atk is low**: `def × hp` buy
+duration, `atk` buys danger. Fix both the TTK table and the R ladder and `atk`
+has no freedom left — it is whatever makes the arithmetic close.
 
 ### 3. CombatScore still compounds at the growth rate
 
