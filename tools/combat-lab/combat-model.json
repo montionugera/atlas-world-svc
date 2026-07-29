@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-29T14:18:19.764Z",
+  "generatedAt": "2026-07-29T14:28:46.583Z",
   "proposed": {
     "origin": "design-spec",
     "spec": "docs/superpowers/specs/2026-07-28-combat-stat-model-design.md",
@@ -409,7 +409,8 @@
       "HP and DEF are exactly interchangeable by construction (CS is the geometric mean of atk, def, hp), so neither is a trap stat. Confirm that is wanted before anything depends on it.",
       "Gap weight 0.6 is a chosen value, not a derived one. It makes a mob 10 levels above you 1.70x harder instead of 2.41x. It is symmetric: out-levelling content near your own level is correspondingly less rewarding.",
       "Top ranks derive a 2-9s encounter TTK against a 3000-4500s target -- are SS/SSS n players vs ONE boss rather than a pack of n?",
-      "Mana, skills and physical-vs-magic parity are modelled separately (mana_level.py, parity.py) and are not folded into R yet. The model now carries a single atk rather than pAtk/mAtk."
+      "Mana, skills and physical-vs-magic parity are modelled separately (mana_level.py, parity.py) and are not folded into R yet. The model now carries a single atk rather than pAtk/mAtk.",
+      "THIS MODEL AND THE SHIPPED STAT FORMULA DISAGREE STRUCTURALLY, not just in tuning. contracts/src/meta/derivedStats.ts is a PINNED formula and it is ADDITIVE with a flat base -- maxHealth = 100 + 10*vit + 5*(level-1), pAtk = 10 + 2*str + weapon.pAtk, pDef = 5 + vit -- so it has NO geometric growth at all. This model is multiplicative: refHp * growth^level, 18,300 HP at L99 against the shipped formula's 100 + 10*vit + 490. Three separate gaps: (a) additive vs multiplicative growth, (b) the game splits pAtk/mAtk and pDef/mDef where this model carries one atk and one def, (c) the game has four primaries (str, agi, int, vit) and agi feeds move speed ONLY, so points into agi are invisible to R here. `alloc` in this model is an abstraction over that pool, not a mapping onto it. Reconciling the two is unscoped work and nothing here is a spec for derivedStats until it is done."
     ]
   }
 }
