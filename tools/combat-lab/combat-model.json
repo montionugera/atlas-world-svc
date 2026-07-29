@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-29T13:01:12.088Z",
+  "generatedAt": "2026-07-29T13:52:28.235Z",
   "proposed": {
     "origin": "design-spec",
     "spec": "docs/superpowers/specs/2026-07-28-combat-stat-model-design.md",
@@ -86,7 +86,7 @@
         "label": "Encounter size (n vs n)"
       },
       "durabilityHp": {
-        "value": 0.75,
+        "value": 0.9,
         "min": 0.5,
         "max": 1,
         "step": 0.05,

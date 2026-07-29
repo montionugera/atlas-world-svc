@@ -261,8 +261,14 @@ const proposed = {
     // decides whether an S boss is a 2,770 HP wall of armour you chip at 9 a
     // swing, or a 6,132 HP boss you hit for 21. Durability belongs mostly in HP
     // so damage numbers stay readable and a weapon still feels like a weapon.
+    //
+    // 0.90 rather than 0.75 because defence is the stat players read as "how
+    // armoured is it", and at 0.75 it stepped +118% / +53% / +54% from rank A --
+    // far past the +20-30% the top of the ladder is meant to feel like. At 0.90
+    // it steps +37% / +19% / +19% while attack still doubles at A -> S, so a
+    // boss reads as much harder-hitting rather than much more armoured.
     durabilityHp: {
-      value: 0.75,
+      value: 0.9,
       min: 0.5,
       max: 1,
       step: 0.05,
