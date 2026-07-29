@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-29T14:38:12.569Z",
+  "generatedAt": "2026-07-29T15:38:51.731Z",
   "proposed": {
     "origin": "design-spec",
     "spec": "docs/superpowers/specs/2026-07-28-combat-stat-model-design.md",
@@ -252,7 +252,11 @@
         "off": 1
       }
     ],
-    "gearClasses": ["tank", "balanced", "dps"],
+    "gearClasses": [
+      "tank",
+      "balanced",
+      "dps"
+    ],
     "archetypes": [
       {
         "gearClass": "dps",
@@ -303,7 +307,15 @@
         "focus": "full tank"
       }
     ],
-    "archetypeRanks": ["E", "D", "C", "B", "A", "S", "SS"],
+    "archetypeRanks": [
+      "E",
+      "D",
+      "C",
+      "B",
+      "A",
+      "S",
+      "SS"
+    ],
     "grades": [
       {
         "grade": "max",
