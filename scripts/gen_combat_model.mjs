@@ -163,6 +163,13 @@ const proposed = {
       step: 0.05,
       label: "Level gap weight",
     },
+    exampleLevel: {
+      value: 20,
+      min: 1,
+      max: 99,
+      step: 1,
+      label: "Worked example level",
+    },
     mobLevelDelta: {
       value: 0,
       min: -20,

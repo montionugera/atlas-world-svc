@@ -713,6 +713,26 @@
           "Defence",
           "Divides incoming damage: dmg = k x refHp x (atk / def). Exactly interchangeable with HP.",
         ],
+        "time to kill": [
+          "Seconds to drop one mob",
+          "Hits to kill divided by attack speed. Ranks E through A are solved to land on their committed target exactly.",
+        ],
+        "R (1v1)": [
+          "One player against one mob",
+          "Time you survive divided by time the mob survives. Above 1 you win; 1 - 1/R is the health you finish on.",
+        ],
+        "you hit for": [
+          "Damage you deal per hit",
+          "k x refHp(mob level) x (your atk / mob def).",
+        ],
+        "it hits you for": [
+          "Damage the mob deals per hit",
+          "k x refHp(your level) x (mob atk / your def). The bracket is that as a share of your health bar.",
+        ],
+        "hits to kill": [
+          "Swings needed to drop the mob",
+          "Mob HP divided by your damage per hit. Divide by attack speed for seconds.",
+        ],
         "mob atk": [
           "Mob attack power",
           "Damage per hit before your def divides it.",
@@ -1039,6 +1059,54 @@
         )}`;
       }
 
+      /**
+       * One concrete level, every number spelled out. The rest of the page is
+       * ratios; this is the only place you see an actual damage figure.
+       */
+      function renderExample() {
+        const L = P.exampleLevel;
+        const p = player(L, "max");
+        const rows = DATA.proposed.ladder.map((rk) => {
+          const m = mob(mobLevel(L), rk.rank);
+          const yours = hit(p, m, mobLevel(L));
+          const theirs = hit(m, p, L);
+          const r = R(L, rk.rank, "max", 1);
+          return [
+            `<b>${rk.rank}</b>`,
+            n0(m.atk),
+            n0(m.def),
+            n0(m.hp),
+            n0(yours),
+            `${n0(theirs)} <span class="dim">(${((theirs / p.hp) * 100).toFixed(1)}% of you)</span>`,
+            (m.hp / yours).toFixed(0),
+            `${ttk(L, rk.rank, "max").toFixed(1)}s`,
+            rCell(r),
+          ];
+        });
+        return `${section(
+          `Worked example — a level ${L} player, every number spelled out`,
+          `The rest of the page is ratios. This is the only place with actual damage figures.
+           A <b>max-grade player at level ${L}</b>: atk <b>${n0(p.atk)}</b>, def <b>${n0(p.def)}</b>,
+           HP <b>${n0(p.hp)}</b>. One hit is <code>k × refHp(${L}) × atk/def</code> with
+           k = <b>${P.k}</b> and refHp(${L}) = <b>${n0(refHp(L))}</b>.
+           Drag <code>Worked example level</code> to move it.`,
+        )}
+        ${table(
+          [
+            "mob rank",
+            "mob atk",
+            "mob def",
+            "mob HP",
+            "you hit for",
+            "it hits you for",
+            "hits to kill",
+            "time to kill",
+            "R (1v1)",
+          ],
+          rows,
+        )}`;
+      }
+
       function renderCurve() {
         const rows = [1, 20, 40, 60, 80, P.levelMax].map((L) => {
           const p = player(L, "max");
@@ -1222,6 +1290,7 @@
           renderLadder(),
           renderMatrix(),
           renderArchetypes(),
+          renderExample(),
           renderCurve(),
           renderMobs(),
           renderInvariants(),
