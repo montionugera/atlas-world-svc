@@ -569,10 +569,21 @@ const proposed = {
       rejected:
         "Superlinear defence (defensive budget raised to p>1). At p=1.2 a tank ends a rank C fight at 76% HP instead of 72%, but the optimal build shifts to 36% offence, so leaning defensive becomes correct for EVERY player and full-DPS becomes 19% weaker in outcome -- the most intuitive build made the worst one, for 4 percentage points of health.",
     },
+    {
+      id: "D2",
+      title: "HP and DEF stay coupled",
+      decided: "2026-07-30",
+      choice:
+        "One defensive budget, split sqrt into hp and def, with no way for a player to trade between them. Matches the shipped code, where `vit` already gives BOTH: maxHealth = 100 + 10*vit and pDef = 5 + vit.",
+      why: "They are exactly interchangeable by construction -- hp x def IS the budget, so survival is identical at every split (37.15M at level 90 whichever way it leans). Exposing a choice whose outcome is identical is a choice in name only, and the shipped stat model already couples them, so keeping them coupled costs nothing in either the model or the game.",
+      consequence:
+        "There is exactly one defensive stat from the player's point of view. If this is ever reversed, note that the tie is NOT quite even: a flat potion refills a bigger share of a smaller bar, so a DEF-heavy build gets 28% more value per potion (6.4% vs 5.0% of bar at level 90) for identical survival. Splitting them also means splitting `vit` in derivedStats.ts -- a shipped-code change, not a model one.",
+      rejected:
+        "Making them genuinely different (e.g. DEF resists only physical while HP covers everything) would create real build decisions, but needs the physical/magic damage split that this model does not carry -- it has one atk and one def.",
+    },
   ],
 
   openQuestions: [
-    "HP and DEF are exactly interchangeable by construction (CS is the geometric mean of atk, def, hp), so neither is a trap stat. Confirm that is wanted before anything depends on it.",
     "Gap weight 0.6 is a chosen value, not a derived one. It makes a mob 10 levels above you 1.70x harder instead of 2.41x. It is symmetric: out-levelling content near your own level is correspondingly less rewarding.",
     "SUSTAIN IS DESIGNED BUT NOT BUILT. The model now carries the full economy -- rest-mode regen, a healer class paying in mana, flat non-stacking potions, and a skill granting in-combat mana regen -- and it closes: SS funds at 1.35x and SSS at 1.10x. NONE of it exists in the game. There is no mana, no healing, no regeneration, no rest mode, no potion and no resurrection in the server today, so every SS/SSS figure is quoted against systems that are specified here and nowhere else. The wall clocks (900s, 5400s) are only reachable if all four are built roughly as modelled.",
     "POTION TIERS DO NOT KEEP PACE WITH THE HP CURVE. Potions are a flat, non-stacking heal-over-time: 10/30/60/140 HP/s for 5s, so 50/150/300/700 HP total. That is a 14x span across the tier list, while a health bar grows 30x from level 20 (565) to level 97 (16,759). The consequence is that the TOP tier at endgame is worth LESS than the BOTTOM tier at level 20 -- 700 HP is 4.2% of a level-97 bar against 50 HP being 8.8% of a level-20 one. Potions decline in relevance the whole way up the ladder. Matching level 20 usefulness at level 97 needs a fifth tier around 300 HP/s. Separately, 140 HP/s overheals a level-20 player by 24%, so the tiers clearly want to be level-gated.",
