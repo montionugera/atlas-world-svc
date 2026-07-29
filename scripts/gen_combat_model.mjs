@@ -617,6 +617,18 @@ const proposed = {
       rejected:
         "Percentage-of-max-HP potions would stay equally useful forever and need no tiers, but consumables would then scale with the player and crowd out the healer at exactly the ranks the role gate protects.",
     },
+    {
+      id: "D5",
+      title: "Gear tiers are adopted at a 0.70 -> 1.00 span",
+      decided: "2026-07-30",
+      choice:
+        "Three tiers E/C/A scaling 0.70 / 0.85 / 1.00. Gear becomes a real field in the game: `weapons.ts` today holds archetypes (sword/staff/bow/dagger/scythe) and has no tier or rarity field at all, so this needs adding.",
+      why: "R is proportional to budget squared, so a 1.43x gear span is worth 2.04x in outcome -- making gear the single strongest player axis, ahead of stat allocation's 1.56x. That is deliberate: gear progression should be a real gate with teeth, not a rounding error.",
+      consequence:
+        "CONTENT IS GATED BEHIND GEAR, by design. An E-geared player LOSES rank A outright (R 0.88) and scrapes rank B at 1.07, so the gear ladder decides what you can attempt and not merely how fast. Narrowing to 0.80 -> 1.00 would drop gear to 1.56x -- equal to stat allocation -- and leave every rank clearable in any gear, just slower; that was considered and rejected as too weak a chase. The scale remains the weakest-grounded input in the model: three authored numbers with no playtest behind them, now load-bearing for what content is reachable.",
+      rejected:
+        "Keeping archetypes only, with no power ladder, would be the most honest reading of the current code but removes gear progression entirely and puts the whole power curve on levels and stat points.",
+    },
   ],
 
   openQuestions: [

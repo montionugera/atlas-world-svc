@@ -483,15 +483,32 @@ clumped party is nearest to every mob at once. Worth up to 1.96×, unmodelled.
 
 ---
 
+## Settled decisions
+
+Five design questions are closed and recorded in `combat-model.json` under
+`decisions[]`, each with its reasoning, its consequence and what was rejected:
+
+| #   | decision                               | the consequence to remember                                                                              |
+| --- | -------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| D1  | Build direction sets pacing, not power | `restRate` is a **balance parameter** — it sets the DPS farming edge (2.00× with no rest, 1.16× at 2%/s) |
+| D2  | HP and DEF stay coupled                | Matches `vit` in `derivedStats.ts`; one defensive stat, no trap                                          |
+| D3  | Rank S gets a 150s wall clock          | **No healer-free tier any more** — healers are mandatory from S                                          |
+| D4  | Potions stay flat and may decay        | Potions are a levelling tool; tiers gate at L1/18/33/53                                                  |
+| D5  | Gear tiers at 0.70 → 1.00              | Gear is the strongest axis (2.04×) and **gates rank A**                                                  |
+
 ## C. What is NOT verified — read before trusting any verdict
 
 1. **No simulation has ever been run.** Every number is closed-form. No crits,
    misses, kiting, movement, line of sight; perfect focus fire, instant target
    switching. A `BattleModule` run is the only thing that turns this from a
    model into evidence.
-2. **Gear tiers E/C/A are invented.** `weapons.ts` has archetypes, not tiers, and
-   there is no rarity field anywhere. The 0.70/0.85/1.00 scale is authored design
-   data — the weakest-grounded input on the page.
+2. **Gear tiers E/C/A are DECIDED (D5) but still invented.** `weapons.ts` has
+   archetypes, not tiers, and no rarity field anywhere — adding one is now
+   required work. The 0.70/0.85/1.00 span was adopted deliberately: it makes
+   gear worth 2.04× in outcome, the strongest player axis, and gates rank A
+   behind it (an E-geared player is R 0.88 there). It remains the
+   weakest-grounded input on the page, and it is now load-bearing for what
+   content is reachable.
 3. **Gear classes are invented too.** There is no tank/dps gear concept in code.
 4. **Mana and skills are not in R.** Modelled separately in `mana_level.py` and
    `parity.py`, never merged. Every verdict is auto-attack-only. The model now
