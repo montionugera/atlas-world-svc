@@ -78,13 +78,23 @@ const growth = 1.045;
 // damage and dies. Without healing, even sharing is the only survivable reading
 // -- so "a boss must rotate targets" is an AI requirement, not an observation.
 //
-// `danger` is per PLAYER: the share of one player's health bar drained per
-// second. Fight length derives from the pair: ttk = 100 / (R x danger).
+// `swings` is the authored target: how many of the mob's swings it takes to
+// kill ONE player. That is the number a designer can actually picture, so it is
+// what gets written down; danger (health bar drained per second) and fight
+// length are both derived from it:
+//
+//   danger = 100 x aspd / swings          (x 1/n for a boss, whose damage spreads)
+//   ttk    = 100 / (R x danger)
+//
+// Consequence worth knowing: your OWN swings to kill are `swings / R`, so a
+// rank the mob needs 15 swings to win costs you 1.3 at R = 11.89. Trash dies in
+// one hit precisely because it is 12x weaker than you -- that is R doing what it
+// says, not the ladder being wrong.
 const LADDER_TARGETS = [
   {
     rank: "E",
     r: 11.89,
-    danger: 2.0,
+    swings: 15,
     n: 1,
     shape: "pack",
     from: 1,
@@ -94,7 +104,7 @@ const LADDER_TARGETS = [
   {
     rank: "D",
     r: 5.95,
-    danger: 2.3,
+    swings: 13.5,
     n: 1,
     shape: "pack",
     from: 13,
@@ -104,7 +114,7 @@ const LADDER_TARGETS = [
   {
     rank: "C",
     r: 4.0,
-    danger: 2.6,
+    swings: 12,
     n: 1,
     shape: "pack",
     from: 26,
@@ -114,7 +124,7 @@ const LADDER_TARGETS = [
   {
     rank: "B",
     r: 2.19,
-    danger: 3.0,
+    swings: 10,
     n: 2,
     shape: "pack",
     from: 41,
@@ -124,18 +134,18 @@ const LADDER_TARGETS = [
   {
     rank: "A",
     r: 1.8,
-    danger: 3.4,
+    swings: 8.5,
     n: 4,
     shape: "pack",
     from: 56,
     to: 70,
     was: 1.8,
   },
-  // Danger chosen so mob attack steps +100% / +20% / +20% from rank A.
+  // Bosses: swings are what it needs to kill ONE player if it focuses them.
   {
     rank: "S",
     r: 1.6,
-    danger: 0.85,
+    swings: 7,
     n: 8,
     shape: "boss",
     from: 71,
@@ -145,7 +155,7 @@ const LADDER_TARGETS = [
   {
     rank: "SS",
     r: 1.5,
-    danger: 0.41,
+    swings: 6,
     n: 20,
     shape: "boss",
     from: 85,
@@ -155,7 +165,7 @@ const LADDER_TARGETS = [
   {
     rank: "SSS",
     r: 1.4,
-    danger: 0.196,
+    swings: 5,
     n: 50,
     shape: "boss",
     from: 96,
@@ -167,7 +177,7 @@ const LADDER_TARGETS = [
 const ladder = LADDER_TARGETS.map((t) => ({
   rank: t.rank,
   r: t.r,
-  danger: t.danger,
+  swings: t.swings,
   shape: t.shape,
   mult: Math.cbrt((2 * t.n) / ((t.n + 1) * t.r)),
   n: t.n,

@@ -537,9 +537,18 @@
        * Ranks with no ttk target fall back to one uniform multiplier — see the
        * generator for why S and above have none.
        */
+      /**
+       * Danger implied by a rank's authored swings-to-kill-a-player.
+       * For a boss the damage spreads across the party, so one player's share
+       * is 1/n of it — but `swings` still means swings against ONE player.
+       */
+      const rankDanger = (rk) =>
+        (100 * P.aspd) / (rk.swings * (rk.shape === "boss" ? rk.n : 1));
+
       function rankMults(rk) {
         // Hits a lone max-grade player needs to survive a mob of attack 1.0.
         const C = P.baseDef / (P.k * P.baseAtk);
+        const danger = rankDanger(rk);
         // Durability budget split. def x hp is what difficulty and duration
         // pin; where it sits between the two changes NO outcome, only how the
         // numbers read. See `durabilityHp`.
@@ -551,13 +560,13 @@
         if (rk.shape === "boss") {
           // n players, ONE mob. R = R_solo × n², and the boss's damage is
           // shared across the party — so `danger` is one player's share.
-          const a = (rk.danger * C * rk.n) / (100 * P.aspd);
+          const a = (danger * C * rk.n) / (100 * P.aspd);
           const dh = (rk.n * rk.n) / (rk.r * a);
-          return { a, ...split(dh), ttk: 100 / (rk.r * rk.danger) };
+          return { a, ...split(dh), ttk: 100 / (rk.r * danger) };
         }
         // n players, n mobs. R = R_solo × 2n/(n+1).
         const rSolo = (rk.r * (rk.n + 1)) / (2 * rk.n);
-        const ttkTarget = 100 / (rSolo * rk.danger);
+        const ttkTarget = 100 / (rSolo * danger);
         const dh = (ttkTarget * P.k * P.baseAtk * P.aspd) / P.baseDef;
         // a is proportional to danger, which is why a rising danger curve makes
         // mob attack rise rank by rank.
@@ -865,9 +874,9 @@
           "Damage per hit before your def divides it.",
         ],
         "mob def": ["Mob defence", "Divides the damage you deal."],
-        "target danger": [
-          "Share of your health bar the rank should remove each second",
-          "One of the rank's two targets, alongside R. Fight length is derived from the pair, not authored. Mob attack is directly proportional to this.",
+        "target swings to kill you": [
+          "Swings the mob needs to kill one player",
+          "One of the rank's two targets, alongside R. Danger and fight length are both derived from it. Your own swings to kill are this divided by R.",
         ],
         "mob atk mult": [
           "Mob attack relative to a max-grade player",
@@ -1461,7 +1470,7 @@
             `<b>${rk.rank}</b>`,
             L,
             Ls === L ? Ls : `<span class="FAIL">${Ls}</span>`,
-            `${rk.danger.toFixed(1)}%/s`,
+            `${rk.swings}`,
             m.atkMult.toFixed(4),
             m.defMult.toFixed(3),
             n0(m.cs),
@@ -1481,7 +1490,7 @@
             "mob rank",
             "player level",
             "mob level",
-            "target danger",
+            "target swings to kill you",
             "mob atk mult",
             "mob def/hp mult",
             "mob CS",

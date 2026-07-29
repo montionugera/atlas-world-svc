@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-07-29T13:52:28.235Z",
+  "generatedAt": "2026-07-29T13:57:36.940Z",
   "proposed": {
     "origin": "design-spec",
     "spec": "docs/superpowers/specs/2026-07-28-combat-stat-model-design.md",
@@ -121,7 +121,7 @@
       {
         "rank": "E",
         "r": 11.89,
-        "danger": 2,
+        "swings": 15,
         "shape": "pack",
         "mult": 0.43813308390101247,
         "n": 1,
@@ -132,7 +132,7 @@
       {
         "rank": "D",
         "r": 5.95,
-        "danger": 2.3,
+        "swings": 13.5,
         "shape": "pack",
         "mult": 0.5518584262127164,
         "n": 1,
@@ -143,7 +143,7 @@
       {
         "rank": "C",
         "r": 4,
-        "danger": 2.6,
+        "swings": 12,
         "shape": "pack",
         "mult": 0.6299605249474366,
         "n": 1,
@@ -154,7 +154,7 @@
       {
         "rank": "B",
         "r": 2.19,
-        "danger": 3,
+        "swings": 10,
         "shape": "pack",
         "mult": 0.8475491134282155,
         "n": 2,
@@ -165,7 +165,7 @@
       {
         "rank": "A",
         "r": 1.8,
-        "danger": 3.4,
+        "swings": 8.5,
         "shape": "pack",
         "mult": 0.9614997135382722,
         "n": 4,
@@ -176,7 +176,7 @@
       {
         "rank": "S",
         "r": 1.6,
-        "danger": 0.85,
+        "swings": 7,
         "shape": "boss",
         "mult": 1.0357441686512863,
         "n": 8,
@@ -187,7 +187,7 @@
       {
         "rank": "SS",
         "r": 1.5,
-        "danger": 0.41,
+        "swings": 6,
         "shape": "boss",
         "mult": 1.0828870144196137,
         "n": 20,
@@ -198,7 +198,7 @@
       {
         "rank": "SSS",
         "r": 1.4,
-        "danger": 0.196,
+        "swings": 5,
         "shape": "boss",
         "mult": 1.1188381403949932,
         "n": 50,

@@ -155,6 +155,20 @@ const EXPECT_REQ = {
   "c-median-fair": 2.341,
   "c-max-easy": 4.0,
 };
+// Swings the mob needs to kill ONE player. Pinned HERE, independently of the
+// JSON: the model derives danger FROM these, so checking the model against the
+// data file is a tautology that can never fail — an earlier version did exactly
+// that and passed happily with rank E set to 99.
+const EXPECT_SWINGS = {
+  E: 15,
+  D: 13.5,
+  C: 12,
+  B: 10,
+  A: 8.5,
+  S: 7,
+  SS: 6,
+  SSS: 5,
+};
 const EXPECT_LADDER = {
   E: 11.89,
   D: 5.95,
@@ -334,17 +348,26 @@ console.log("\nthree rank multipliers");
     const m = model.mob(L, rk.rank);
     const gotR = model.R(L, rk.rank, "max", rk.n);
     const gotT = model.ttk(L, rk.rank, "max");
+    // Danger is derived from the authored swings-to-kill-a-player, so assert
+    // the swings themselves — the number actually written down. A previous
+    // version compared against rk.danger after that field was removed, so it
+    // compared with undefined and passed vacuously.
     const gotD =
       rk.shape === "boss"
         ? 100 / (rk.r * gotT)
         : 100 / (model.R(L, rk.rank, "max", 1) * gotT);
+    const gotSwings =
+      (100 * P.aspd) / (gotD * (rk.shape === "boss" ? rk.n : 1));
     if (Math.abs(gotR - rk.r) > 0.005)
       bad += `${rk.rank} R ${gotR.toFixed(3)}; `;
-    if (Math.abs(gotD - rk.danger) > 0.005)
-      bad += `${rk.rank} danger ${gotD.toFixed(3)}; `;
+    const wantSwings = EXPECT_SWINGS[rk.rank];
+    if (!Number.isFinite(wantSwings))
+      bad += `${rk.rank} has no pinned swings target; `;
+    else if (Math.abs(gotSwings - wantSwings) > 0.01)
+      bad += `${rk.rank} swings ${gotSwings.toFixed(2)} want ${wantSwings}; `;
     seen.push({ rank: rk.rank, t: gotT, a: m.atkMult, d: m.defMult });
   }
-  gate(!bad, "each rank hits its target R and its target danger", bad);
+  gate(!bad, "each rank hits its target R and its target swings-to-kill", bad);
 
   let nonMono = "";
   for (let i = 1; i < seen.length; i++) {
