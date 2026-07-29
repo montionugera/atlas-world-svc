@@ -1753,20 +1753,23 @@
               : `<b>${n} players against ${n} mobs</b>`
           }. ${
             P.mobLevelDelta
-              ? "Header levels are the <b>mob's</b>, with yours beside them."
-              : "Header levels do <b>not</b> affect any cell — R is the same at every level."
+              ? "Each column names the <b>mob's</b> level and yours beneath it."
+              : "Each column is a <b>same-level</b> fight, and the level rises across the table — you are L" +
+                ladder.map((rk) => midLevel(rk)).join(" / L") +
+                ". None of it changes a cell: absolute level cancels, so only a level <i>difference</i> moves R."
           }`,
         )}
         ${table(
           [
             "player build",
             "player gear",
+            // Always show BOTH levels. Hiding "you L…" when the delta was zero
+            // made the header read as the mob's level alone, and left the
+            // player's level — which changes per column — invisible.
             ...ladder.map(
               (rk) =>
                 `vs ${rk.rank} mob · L${mobShownLevel(midLevel(rk))}` +
-                (P.mobLevelDelta
-                  ? ` <span class="dim">(you L${midLevel(rk)})</span>`
-                  : ""),
+                `<br /><span class="dim">you L${midLevel(rk)}</span>`,
             ),
           ],
           rows,
