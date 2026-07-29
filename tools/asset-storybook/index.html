@@ -2466,6 +2466,18 @@
         main.appendChild(section);
       }
 
+      /** Sidebar entry for the embedded lab. Separated so it can sit up top. */
+      function mountCombatNav(sidebarNav) {
+        initHealth(COMBAT_CLASS, 1);
+        const btn = buildSidebarItem(COMBAT_CLASS, 1);
+        btn.style.marginBottom = "10px";
+        btn.style.borderBottom = "1px solid #262c3a";
+        btn.style.paddingBottom = "10px";
+        sidebarNav.appendChild(btn);
+        bumpHealth(COMBAT_CLASS, { ok: 1 });
+        renderSidebarBadge(COMBAT_CLASS);
+      }
+
       async function init() {
         const main = document.getElementById("main");
         const sidebarNav = document.getElementById("sidebar-nav");
@@ -2499,10 +2511,7 @@
             "</div>";
           console.error("[asset-storybook] manifest fetch failed:", err);
           // The combat lab does not depend on any manifest — keep it reachable.
-          initHealth(COMBAT_CLASS, 1);
-          sidebarNav.appendChild(buildSidebarItem(COMBAT_CLASS, 1));
-          bumpHealth(COMBAT_CLASS, { ok: 1 });
-          renderSidebarBadge(COMBAT_CLASS);
+          mountCombatNav(sidebarNav);
           mountCombatLab(main);
           return;
         }
@@ -2582,6 +2591,11 @@
         allBtn.classList.add("active");
         sidebarNav.appendChild(allBtn);
 
+        // Combat lab goes directly under All, not at the end: it is not an asset
+        // class, and the asset list is long enough that the last entry falls
+        // below the fold on a short window.
+        mountCombatNav(sidebarNav);
+
         for (const groupKey of groups.keys()) {
           initHealth(groupKey, groups.get(groupKey).length);
           sidebarNav.appendChild(
@@ -2617,12 +2631,6 @@
           );
           for (const k of missingKeys) bumpHealth(COVERAGE_CLASS, { err: 1 });
         }
-
-        // --- combat balance lab (tools/combat-lab), embedded ---
-        initHealth(COMBAT_CLASS, 1);
-        sidebarNav.appendChild(buildSidebarItem(COMBAT_CLASS, 1));
-        bumpHealth(COMBAT_CLASS, { ok: 1 });
-        renderSidebarBadge(COMBAT_CLASS);
 
         main.innerHTML = "";
 
