@@ -634,17 +634,54 @@
         const r = rk.r;
         const absorbable = r > 1 ? n * (1 / r) : n;
         const demand = Math.max(0, incoming - absorbable);
-        const supply = healers * (P.manaBars ?? 0);
+
+        // THREE supply sources, and only the shape of them matters.
+        //
+        //   pool     — what the healers walked in with. FIXED: does not care
+        //              how long the fight is, so it loses ground to any clock.
+        //   regen    — a skill returning mana during combat. A RATE, so it
+        //              scales with the clock exactly as demand does. This is
+        //              the rule that removes the ceiling entirely.
+        //   potions  — also a rate, but bounded twice: by the cooldown and by
+        //              how many a player can carry. The tighter bound wins.
+        const bars = P.manaBars ?? 0;
+        const pool = healers * bars;
+        const regen = healers * bars * ((P.combatManaRegen ?? 0) / 100) * ttk;
+        const byCooldown = Math.floor(ttk / Math.max(1, P.potionCooldown ?? 1));
+        const drunk = Math.min(P.potionCarry ?? 0, byCooldown);
+        const potions = n * drunk * (P.potionBars ?? 0);
+        const supply = pool + regen + potions;
         return {
           healers,
           dps,
           incoming,
           absorbable,
           demand,
+          pool,
+          regen,
+          potions,
+          drunk,
+          // Which bound actually stops the potions — the thing to change if
+          // potions are the lever you want to pull.
+          potionLimit:
+            (P.potionCarry ?? 0) <= byCooldown ? "carry" : "cooldown",
           supply,
+          // The design-smell number: if healers supply a small share, the
+          // healer CLASS is decorative and the fight is really an inventory
+          // check. Guard against solving the arithmetic and losing the role.
+          healerShareOfSupply: supply > 0 ? (pool + regen) / supply : 0,
           fundable: supply >= demand,
           // Bars one healer's mana pool must cover for this fight to work.
           needPerHealer: demand / healers,
+          // If everything else stayed put, the in-combat regen rate that would
+          // close the gap on its own — i.e. what the SKILL has to deliver.
+          regenNeeded:
+            healers * bars * ttk > 0
+              ? Math.max(
+                  0,
+                  ((demand - pool - potions) / (healers * bars * ttk)) * 100,
+                )
+              : Infinity,
           // Healers do not attack, so the party's damage is short by this much
           // — the fight runs longer, which raises demand again.
           dpsTax: n / dps,
@@ -1023,6 +1060,18 @@
           "What one healer's mana pool must cover for this fight to work",
           "healing demanded ÷ healers. Compare against the `Health bars per healer's mana pool` slider — if that is smaller, the fight cannot be funded at any skill level.",
         ],
+        "from pool": [
+          "Healing paid for by the mana the healers walked in with",
+          "healers × bars per pool. FIXED — it does not grow with the fight, so it loses ground to any clock. This was the only source under rest-only regen, which is why long fights were unfundable.",
+        ],
+        "from regen": [
+          "Healing paid for by in-combat mana regeneration",
+          "healers × bars × rate × ttk. A RATE, so it scales with the clock exactly as demand does. This is the rule that removes the ceiling — a skill granting it changes the shape of the economy, not just its size.",
+        ],
+        "from potions": [
+          "Healing paid for by consumables during the fight",
+          "n × potions drunk × bars per potion, where potions drunk is the smaller of what can be carried and what the cooldown permits. Check which bound binds before tuning either.",
+        ],
         fundable: [
           "Whether supply covers demand",
           "SHORT means the encounter is arithmetically unsurvivable as specified, not merely hard. Closing it needs a bigger mana pool, more healers (which lengthens the fight), or a shorter fight.",
@@ -1375,14 +1424,14 @@
             `${rankMults(rk).ttk < 100 ? rankMults(rk).ttk.toFixed(1) : rankMults(rk).ttk.toFixed(0)}s`,
             e.incoming.toFixed(1),
             e.demand.toFixed(1),
-            e.supply.toFixed(0),
-            s === 0
-              ? `<span class="dim">n/a</span>`
-              : `${e.needPerHealer.toFixed(1)}`,
+            e.pool.toFixed(0),
+            e.regen.toFixed(0),
+            e.potions.toFixed(0),
+            `<b>${e.supply.toFixed(0)}</b>`,
             s === 0
               ? `<span class="dim">no healing needed</span>`
               : ok
-                ? `<span class="pill b-fair">funded</span>`
+                ? `<span class="pill b-fair">funded ${(e.supply / e.demand).toFixed(1)}×</span>`
                 : `<span class="pill b-loss">SHORT ${(e.demand - e.supply).toFixed(0)} bars</span>`,
           ];
         });
@@ -1391,16 +1440,20 @@
           .map((rk) => ({ rk, e: economy(rk) }));
         return `${section(
           "Sustain economy — who pays the healing bill",
-          `Two authored rules: <b>HP and mana regenerate only in rest mode</b> (out of combat), and
-           <b>in-combat healing comes from healers and costs mana</b>. Everything below is in
-           <b>health bars</b> — one bar is one player's full HP — so supply and demand compare directly.`,
+          `Four authored rules: <b>base HP/mana regen happens only in rest mode</b>, <b>healers heal
+           in combat and pay in mana</b>, <b>potions restore during a fight</b>, and <b>a skill can
+           regenerate mana in combat</b>. Everything is in <b>health bars</b> — one bar is one
+           player's full HP — so supply and demand compare directly.`,
         )}
-        <div class="banner warn">
-          <b>Rest-only regen makes a fight's healing a fixed pool, not a rate.</b> Nothing refills
-          mid-fight, so the total healing available is <code>healers × bars per mana pool</code>
-          <b>however long the fight runs</b>. Demand grows with the clock; supply does not. That is
-          why a <i>long</i> fight is much harder to fund than a <i>hard</i> one — and why the SSS
-          wall clock is the most expensive thing on this page.
+        <div class="banner info">
+          <b>What matters is the SHAPE of each source, not its size.</b>
+          <br />
+          <code>pool</code> is what the healers walked in with — <b>fixed</b>, so it loses ground to
+          any clock: a fight twice as long gets the same pool.
+          <code>regen</code> and <code>potions</code> are <b>rates</b>, so they scale with the clock
+          exactly as demand does. Rest-only regen alone made sustain a fixed pool and the long
+          fights were unfundable by construction; adding either rate removes that ceiling. It is
+          the <i>shape</i> that fixed it, not the extra numbers.
         </div>
         ${table(
           [
@@ -1409,8 +1462,10 @@
             "fight length",
             "damage incoming",
             "healing demanded",
+            "from pool",
+            "from regen",
+            "from potions",
             "healing supplied",
-            "bars per healer needed",
             "fundable",
           ],
           rows,
@@ -1421,23 +1476,24 @@
           ${worst
             .map(
               (w) =>
-                `<b>${w.rk.rank}</b> needs one healer's mana pool to restore
-                 <b>${w.e.needPerHealer.toFixed(1)} health bars</b>
-                 (${w.e.healers} healers × ${P.manaBars} = ${w.e.supply.toFixed(0)} supplied,
-                 ${w.e.demand.toFixed(0)} demanded).`,
+                `<b>${w.rk.rank}</b> — demand <b>${w.e.demand.toFixed(0)}</b>, supply
+                 <b>${w.e.supply.toFixed(0)}</b> bars
+                 (pool ${w.e.pool.toFixed(0)} + regen ${w.e.regen.toFixed(0)} + potions
+                 ${w.e.potions.toFixed(0)}). Healers are
+                 <b>${(w.e.healerShareOfSupply * 100).toFixed(0)}%</b> of the healing;
+                 each player drinks ${w.e.drunk} potions, limited by <b>${w.e.potionLimit}</b>.
+                 ${
+                   w.e.fundable
+                     ? ""
+                     : `Closing on regen alone needs <b>${w.e.regenNeeded.toFixed(2)} %/s</b>.`
+                 }`,
             )
             .join("<br />")}
           <br /><br />
-          <b>Three ways to close a gap, and each costs something.</b> Raise
-          <code>bars per healer's mana pool</code> — the healer's pool does more work, which makes
-          mana a weaker constraint everywhere else. Raise the healer share — but healers do not
-          attack, so the fight runs <b>${worst[worst.length - 1].e.dpsTax.toFixed(2)}×</b> longer at
-          the current split, which raises demand again. Or shorten the fight, which is the target
-          you set.
-          <br /><br />
-          <b>A fourth option is not on this page:</b> letting mana regenerate in combat, or
-          consumables. Either would break rule 1 as written, so it is a decision rather than a
-          tuning value.
+          <b>Watch the healer share of supply.</b> Potions and regen are the easy levers, and if
+          they carry most of the healing then the healer <i>class</i> is decorative — the fight
+          becomes an inventory check rather than a role check. Solving the arithmetic and losing
+          the role is the failure mode here, and it does not show up as a number going red.
           <br /><br />
           <b>And healers cost difficulty, not just time.</b> A boss's R is
           <code>single × n × attackers</code>, so every player who heals instead of attacking

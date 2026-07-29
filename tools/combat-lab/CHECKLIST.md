@@ -149,23 +149,22 @@ Gates: `sustain — the bill a long fight runs up` pins 82.2% / 93.4% to 0.1%,
 asserts the wall clocks land, and asserts no rank without an authored `ttk`
 assumes any healing at all.
 
-### 2a-ter. Who pays the bill — and why the economy does not close
+### 2a-ter. Who pays the bill
 
-Two authored rules decide where sustain comes from:
+Four authored rules decide where sustain comes from:
 
-1. **HP and mana regenerate only in rest mode** — out of combat, after a delay.
+1. **Base HP/mana regen happens only in rest mode** — out of combat, after a delay.
 2. **In-combat healing comes from a healer class and costs mana.**
+3. **Potions restore during a fight.**
+4. **A skill can regenerate mana in combat.**
 
-Rule 1 is the sharp one. If mana cannot regenerate during a fight, a fight's
-healing is a **fixed pool, not a rate**: supply is `healers × barsPerManaPool`
-however long the fight runs, while demand grows with the clock. Everything below
-is in health bars — one bar is one player's full HP.
+Rules 1 and 2 alone did **not** close, and the reason is worth keeping because it
+is the lesson: with rest-only regen a fight's healing is a **fixed pool, not a
+rate**. Supply is `healers × barsPerManaPool` however long the fight runs, while
+demand grows with the clock. SS came up 30 bars short of 61.7 and SSS 424 short
+of 504.3 — unfundable by construction, not by tuning.
 
-```
-rank  split         ttk     incoming  demand  supply  need/healer  verdict
-SS    16dps + 4h    900s        75.0    61.7      32         15.4  SHORT 30 bars
-SSS   40dps + 10h  5400s       540.0   504.3      80         50.4  SHORT 424 bars
-```
+Everything below is in health bars — one bar is one player's full HP.
 
 **Demand grows super-linearly.** Doubling the fight doubles incoming damage
 exactly, but raises demand **2.07×** — the party's own health bars are a
@@ -173,9 +172,9 @@ one-time absorption that does not scale, so every extra second lands entirely on
 healing. Long fights are disproportionately expensive, and this is why the SSS
 wall clock is the most costly thing on the page.
 
-**Raising the healer share backfires.** It is the obvious fix and it makes the
-fight unwinnable, because a boss's `R = single × n × attackers` — a player who
-heals is a player not attacking:
+**Raising the healer share still backfires**, and this stays true regardless of
+potions. A boss's `R = single × n × attackers`, so a player who heals is a
+player not attacking — funding a fight by adding healers cannot work here:
 
 ```
 healers   need per healer   SSS boss R
@@ -184,13 +183,33 @@ healers   need per healer   SSS boss R
 50%              20.2         1.40 → 0.70
 ```
 
-The two levers fight each other. The only combination that closes at 20% healers
-is a mana pool restoring ~50 health bars, which makes mana a non-constraint
-everywhere else in the game.
+So the healer share is not a funding lever. It buys healing and sells difficulty
+at roughly the same rate.
 
-**Real options, all of them decisions rather than tuning:** allow in-combat mana
-regeneration, allow consumables (both break rule 1 as written), or shorten the
-wall clocks.
+**Resolved by two more rules: potions, and a skill granting in-combat mana
+regen.** Both were adopted, and what fixed it was the **shape** of the new
+sources, not their size:
+
+```
+pool     healers × barsPerPool            FIXED — loses ground to any clock
+regen    healers × bars × rate × ttk      RATE  — scales exactly as demand does
+potions  n × min(carry, ttk/cd) × bars    RATE, twice-bounded; carry usually binds
+```
+
+```
+rank   ttk    demand   pool   regen  potions  SUPPLY  healer%  verdict
+SS      900       62     32      29      200     261      23%  funded 4.23×
+SSS    5400      504     80     432      500    1012      51%  funded 2.01×
+```
+
+**Two things to decide, and neither shows up as a number going red:**
+
+1. **At SS the healer class supplies 23% of the healing.** Potions carry 200
+   bars of the 261. That fight is closer to an inventory check than a role
+   check — the arithmetic is solved and the role is lost.
+2. **Potions are bound by CARRY, not cooldown**, at every rank. So carry
+   capacity — an inventory decision made somewhere else entirely — is silently
+   the most load-bearing number in the sustain economy.
 
 Note the ladder is quoted with **all n attacking**, so it reads optimistically
 the moment anyone heals. Whether the target R should be met _with_ healers in

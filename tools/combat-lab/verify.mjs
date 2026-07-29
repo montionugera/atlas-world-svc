@@ -477,10 +477,25 @@ console.log("\nsustain economy — can healers pay the bill");
     "and demands MORE than double the healing — own-HP absorption is one-time",
     `${base.demand.toFixed(0)} → ${longer.demand.toFixed(0)} bars (${(longer.demand / base.demand).toFixed(3)}×)`,
   );
+  // The three supply sources have three DIFFERENT shapes, and the shapes are
+  // the whole design. Doubling the fight must leave the pool alone, double the
+  // regen, and leave carry-bound potions alone. An earlier version of this gate
+  // asserted total supply never moved, which was true only while rest-mode was
+  // the sole source; it failed the moment in-combat regen was added, correctly.
   gate(
-    longer.supply === base.supply,
-    "and leaves the healing supplied untouched — mana is a pool, not a rate",
-    `${base.supply.toFixed(0)} bars either way`,
+    longer.pool === base.pool,
+    "pool is FIXED — a longer fight gets the same mana carried in",
+    `${base.pool.toFixed(0)} bars either way`,
+  );
+  gate(
+    Math.abs(longer.regen / base.regen - 2) < 1e-9,
+    "regen is a RATE — it scales with the clock, as demand does",
+    `${base.regen.toFixed(0)} → ${longer.regen.toFixed(0)} bars`,
+  );
+  gate(
+    longer.potions === base.potions && base.potionLimit === "carry",
+    "potions are capped by CARRY here, so the clock does not add any",
+    `${base.potions.toFixed(0)} bars either way, limited by ${base.potionLimit}`,
   );
   // Healers do not attack, so they cost difficulty as well as time.
   gate(
@@ -488,6 +503,18 @@ console.log("\nsustain economy — can healers pay the bill");
     "swapping attackers for healers lowers a boss's R",
     `SSS ${rk.r.toFixed(2)} → ${base.rWithHealers.toFixed(2)} at ${base.healers} healers`,
   );
+  // Both wall-clocked ranks must actually be payable at the authored settings —
+  // this is the check that would have caught the rest-only economy.
+  for (const r of data.proposed.ladder.filter(
+    (x) => model.rankSustain(x) > 0,
+  )) {
+    const e = model.economy(r);
+    gate(
+      e.fundable,
+      `${r.rank}'s healing bill is payable at the authored settings`,
+      `supply ${e.supply.toFixed(0)} vs demand ${e.demand.toFixed(0)} bars (${(e.supply / e.demand).toFixed(2)}×)`,
+    );
+  }
 }
 
 // --------------------------------------------------- 5d. level gap -------
