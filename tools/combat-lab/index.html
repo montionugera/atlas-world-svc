@@ -906,6 +906,43 @@
           "Fraction of your HP still there when the encounter dies",
           "1 − 1/R. Negative means the encounter killed you first, and the size of the negative is how far short you fell. HP consumed is 100 minus this.",
         ],
+        "player tier": [
+          "One of the three reference players",
+          "max = A gear + every stat point spent, median = C gear + 70%, min = E gear + 40%. Ladders ① and ② quote `max` only.",
+        ],
+        gear: [
+          "Equipment tier and its budget scale",
+          "E 0.70, C 0.85, A 1.00. INVENTED: there is no rarity or tier field anywhere in the game — this is authored design data.",
+        ],
+        "stat points spent": [
+          "Share of the level's stat allocation actually used",
+          "The `alloc` term. Enters the budget as (1 + C·alloc), so at C = 0.5 a fully-spent build is 1.5× an unspent one.",
+        ],
+        HP: ["Health bar at this level", "refHp(level) × √(defensive budget)."],
+        atk: [
+          "Attack stat",
+          "The numerator of atk/def. Scales with the full budget, not its square root — the only stat that does.",
+        ],
+        def: [
+          "Defence stat",
+          "The denominator of atk/def. Shares the defensive budget with HP, √ each, so the two are exactly interchangeable.",
+        ],
+        CombatScore: [
+          "cbrt(atk × def × hp)",
+          "The single number a side's strength collapses to. Grows at exactly `growth` per level; R is the ratio of two of them, cubed.",
+        ],
+        "E gear · low build": [
+          "Weakest reference player",
+          "E-tier gear, 40% of stat points spent. Budget 0.84 — the floor of what someone can bring to a rank.",
+        ],
+        "C gear · mid build": [
+          "Median reference player",
+          "C-tier gear, 70% of stat points spent. Budget 1.15. The one to balance against if the ladder should suit a typical player.",
+        ],
+        "A gear · high build": [
+          "Strongest reference player",
+          "A-tier gear, every stat point spent. Budget 1.50. This is the player ladders ① and ② quote, so those tables read optimistically.",
+        ],
         effect: ["Plain-language summary", "The same number as a percentage."],
         invariant: [
           "Structural property",
@@ -1063,7 +1100,7 @@
         ]);
 
         const you = `<div class="panel" style="margin-bottom:12px">
-          <div class="legend-h">YOU — max-grade player, level ${L}</div>
+          <div class="legend-h">YOU — A-tier gear, every stat point spent, level ${L}</div>
           <div class="legend-b" style="font-family:var(--mono);font-size:13px;color:var(--text)">
             HP <b>${n0(p.hp)}</b> &nbsp;·&nbsp; atk <b>${n0(p.atk)}</b> &nbsp;·&nbsp; def <b>${n0(p.def)}</b>
             &nbsp;·&nbsp; ${P.aspd} swings/s
@@ -1071,6 +1108,8 @@
           <div class="legend-b" style="margin-top:6px">
             Every damage figure below is against <b>this</b> health bar — that is what the
             percentages are a share of. HP grows with level; the outcomes do not.
+            This is the <b>strongest player in the model</b>, so both ladders read
+            optimistically. Ladder ③ asks the same questions of the weaker tiers.
           </div>
         </div>`;
 
@@ -1155,6 +1194,117 @@
             this factor applies at all — a clumped party is nearest to every mob at once. How much positioning
             should be worth (currently up to 1.96×, implicitly) has not been decided.
           </div>
+        </div>`;
+      }
+
+      /**
+       * Ladders ① and ② are quoted for ONE player — A-tier gear with every
+       * stat point spent. That is the strongest player in the model, so those
+       * two tables are the optimistic reading of every rank. This one asks the
+       * same questions of all three tiers.
+       *
+       * Everything follows from a single number. A tier's budget is
+       * `(1 + C·alloc) × gearScale`, and it reaches the stats as
+       *
+       *   atk ∝ budget      def, hp ∝ √budget      CS ∝ budget^(2/3)
+       *   R ∝ budget²       swings you survive ∝ budget
+       *
+       * so R between tiers is the budget ratio SQUARED. The gear scale spans
+       * only 0.70→1.00 and the allocation 0.4→1.0, but together they square
+       * into a ~3.2× spread in outcome. That squaring is why a tier gap this
+       * modest on paper decides whether a rank is farmable or fatal.
+       */
+      function renderTiers() {
+        const L = P.exampleLevel;
+        const Lm = mobLevel(L);
+        const secs = (T) => (T < 100 ? `${T.toFixed(1)}s` : `${T.toFixed(0)}s`);
+        // Weakest first, so the columns read as a progression.
+        const tiers = DATA.proposed.grades
+          .map((g) => ({ ...g, p: player(L, g.grade) }))
+          .reverse();
+        const top = tiers[tiers.length - 1];
+
+        const head = `<div class="panel" style="margin-bottom:12px">
+          <div class="legend-h">THE THREE PLAYERS — level ${L}</div>
+          ${table(
+            [
+              "player tier",
+              "gear",
+              "stat points spent",
+              "HP",
+              "atk",
+              "def",
+              "CombatScore",
+              "relative strength",
+            ],
+            tiers.map((t) => {
+              const b = DATA.proposed.builds.find((x) => x.build === t.build);
+              return [
+                `<b>${t.grade}</b>`,
+                `${t.gear} <span class="dim">(×${DATA.proposed.gearTiers.find((x) => x.tier === t.gear).scale})</span>`,
+                `${(b.alloc * 100).toFixed(0)}%`,
+                n0(t.p.hp),
+                n0(t.p.atk),
+                n0(t.p.def),
+                t.p.cs.toFixed(0),
+                `${((t.p.cs / top.p.cs) * 100).toFixed(0)}%`,
+              ];
+            }),
+          )}
+          <div class="legend-b" style="margin-top:10px">
+            CombatScore is the geometric mean, so a tier at <b>x%</b> of the top's CS meets
+            every rank at <b>x³%</b> of its R. The strength column looks narrow; the outcome
+            column below is not.
+          </div>
+        </div>`;
+
+        const rows = DATA.proposed.ladder.map((rk) => {
+          const m = mob(Lm, rk.rank);
+          return [
+            `<b>${rk.rank}</b>`,
+            rk.shape === "boss"
+              ? `${rk.n}v1 boss`
+              : rk.n > 1
+                ? `${rk.n}v${rk.n}`
+                : "1v1",
+            ...tiers.map((t) => {
+              const r = R(L, rk.rank, t.grade, rk.n);
+              const T = ttk(L, rk.rank, t.grade);
+              const swings = t.p.hp / hit(m, t.p, L);
+              return `${rCell(r)}
+                <div class="dim" style="margin-top:4px;font-size:12px;line-height:1.5">
+                  ${secs(T)} to kill<br />survives ${swings.toFixed(1)} swings<br />${
+                    r > 1 ? `${hpLeft(r)} HP left` : "<b>you die</b>"
+                  }
+                </div>`;
+            }),
+          ];
+        });
+
+        return `${section(
+          "Rank ladder ③ — the same ladder for all three player tiers",
+          `Ladders ① and ② showed the <b>strongest</b> player only. Here is every rank against
+           each tier, at level ${L} and the rank's own encounter shape.`,
+        )}
+        ${head}
+        ${table(
+          [
+            "mob rank",
+            "encounter",
+            ...tiers.map((t) => `${t.gear} gear · ${t.build} build`),
+          ],
+          rows,
+        )}
+        <div class="banner warn" style="margin-top:12px">
+          <b>The tier gap is squared, and it moves the whole ladder.</b> Read the columns
+          against each other rather than down: the same rank is a different game per tier, and
+          a rank that is comfortable for the top tier can be a loss two tiers down. Where a
+          column reads <b>you die</b>, that rank is gated behind gear — it cannot be brute-forced
+          by playing well, because nothing in this model represents playing well.
+          <br /><br />
+          <b>The gear scale is invented.</b> <code>weapons.ts</code> holds archetypes, not tiers;
+          the 0.70 / 0.85 / 1.00 numbers are authored here and nowhere else. They are the input
+          this whole table is most sensitive to and the one with the least behind it.
         </div>`;
       }
 
@@ -1560,6 +1710,7 @@
           renderInputs(),
           renderRequirements(),
           renderLadder(),
+          renderTiers(),
           renderMatrix(),
           renderArchetypes(),
           renderExample(),

@@ -29,6 +29,7 @@ const SECTIONS = [
   "renderInputs",
   "renderRequirements",
   "renderLadder",
+  "renderTiers",
   "renderMatrix",
   "renderArchetypes",
   "renderExample",

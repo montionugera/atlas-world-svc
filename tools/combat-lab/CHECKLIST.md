@@ -176,6 +176,51 @@ tank is supposed to be mechanically tougher than a striker, it cannot come from
 here — it has to come from taunt and aggro, i.e. from taking hits meant for
 someone else.
 
+### 4b. Three player tiers — and the ladder is calibrated for the top one
+
+Ladders ① and ② quote **one** player: A-tier gear with every stat point spent.
+That is the strongest player in the model, so both tables are the optimistic
+reading of every rank. Ladder ③ runs all three (level 20):
+
+```
+tier    gear  points  HP    atk  def  CS   rel
+min     E     40%     423    78  104  150   68%
+median  C     70%     494   106  121  185   84%
+max     A     100%    565   138  139  221  100%
+```
+
+68 / 84 / 100 in strength — narrow. The outcomes are not, because R is CS
+cubed:
+
+```
+rank  encounter   E gear         C gear         A gear
+E     1v1          3.73  8.4sw    6.96 11.5sw   11.89 15.0sw
+C     1v1          1.25  6.7sw    2.34  9.2sw    4.00 12.0sw
+B     2v2          0.69  5.6sw    1.28  7.7sw    2.19 10.0sw
+A     4v4          0.56  4.8sw    1.05  6.5sw    1.80  8.5sw
+S     8v1 boss     0.50  3.9sw    0.94  5.4sw    1.60  7.0sw
+SSS   50v1 boss    0.44  2.8sw    0.82  3.8sw    1.40  5.0sw
+```
+
+Three things fall out, and all three are decisions rather than observations:
+
+1. **Everything from B up is gear-gated.** An E-tier player loses rank B and
+   every rank above it; a C-tier player is at a dead heat at rank A (1.05) and
+   loses S and above. Nothing in the model represents playing well, so a losing
+   column cannot be brute-forced — it can only be out-geared.
+2. **The swings target holds for the top tier only.** The ladder is authored to
+   7–15 swings-to-kill-a-player; at C-tier that is 3.8–11.5, at E-tier 2.8–8.4.
+   A rank S boss two-shots-ish an E-tier player at 3.9 swings.
+3. **Which tier should the ladder be calibrated for?** Currently the top. If a
+   rank should be fair for a *typical* player, the target R belongs on the
+   median column, which lifts every rank by 1/0.585 = **1.71×**.
+
+Why the squaring: a tier's budget is `(1 + C·alloc) × gearScale` — 0.84 / 1.15
+/ 1.50. It reaches the stats as `atk ∝ budget`, `def, hp ∝ √budget`, so
+`CS ∝ budget^(2/3)` and `R ∝ budget²`. A 1.79× budget spread becomes 3.2× in
+outcome. The gear scale is also **invented** (see C2), and this table is the
+thing most sensitive to it.
+
 ### 5. HP and DEF are exactly interchangeable
 
 By construction: the defensive budget is split `sqrt` each, so `hp × def` is
