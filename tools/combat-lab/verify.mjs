@@ -606,6 +606,28 @@ console.log("\na rank is one difficulty, not a range of them");
   console.log(`       worst case per rank: ${worst.join("  ")}`);
 }
 
+// ------------------------------------------------------ 5f. spec is current --
+// The spec's tables are GENERATED from this same model, so a hand-edited or
+// simply forgotten spec is a defect the moment any number moves. This gate runs
+// the spec generator in --check mode: it re-renders every block and fails if the
+// committed file differs. Without it the spec would rot exactly the way the
+// previous one did -- 8.8K of confident prose with zero mentions of sustain,
+// swings, wall clocks, boss levels or potions.
+console.log("\nspec");
+{
+  const { spawnSync } = await import("node:child_process");
+  const r = spawnSync(
+    process.execPath,
+    [join(HERE, "../../scripts/gen_combat_spec.mjs"), "--check"],
+    { encoding: "utf8" },
+  );
+  gate(
+    r.status === 0,
+    "the design spec's generated tables match the model",
+    (r.stdout + r.stderr).trim().split("\n").pop(),
+  );
+}
+
 // ------------------------------------------------------- 6. invariants ----
 console.log("\ninvariants (§7)");
 for (const [name, value, ok] of model.invariants()) {
