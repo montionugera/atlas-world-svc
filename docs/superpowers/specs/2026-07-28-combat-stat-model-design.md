@@ -1,3 +1,10 @@
+> **SUPERSEDED — 2026-07-30.**
+> Replaced by [`2026-07-30-combat-stat-model-design.md`](./2026-07-30-combat-stat-model-design.md).
+>
+> This draft predates the swings-authored rank ladder, per-boss levels, the
+> SS/SSS wall clocks and the entire sustain economy (healers, mana, rest mode,
+> potions). Its numbers are wrong, not merely old. Kept for history only.
+
 # Combat Stat Model — Design Spec
 
 **Status:** DRAFT for review · 2026-07-28 · supersedes the additive model in `contracts/src/meta/derivedStats.ts`
