@@ -713,6 +713,10 @@
           "Defence",
           "Divides incoming damage: dmg = k x refHp x (atk / def). Exactly interchangeable with HP.",
         ],
+        "danger per second": [
+          "Share of your health bar the mob removes each second",
+          "1/(R x ttk). Intensity, as opposed to endurance. A rank that is hard only because the fight is long shows a LOW number here.",
+        ],
         "time to kill": [
           "Seconds to drop one mob",
           "Hits to kill divided by attack speed. Ranks E through A are solved to land on their committed target exactly.",
@@ -1078,8 +1082,12 @@
             n0(m.hp),
             n0(yours),
             `${n0(theirs)} <span class="dim">(${((theirs / p.hp) * 100).toFixed(1)}% of you)</span>`,
-            (m.hp / yours).toFixed(0),
+            (m.hp / yours).toFixed(1),
             `${ttk(L, rk.rank, "max").toFixed(1)}s`,
+            // Intensity: how fast it drains you, independent of how long the
+            // fight runs. 1/(R x ttk). This is the column that exposes a rank
+            // being "hard" only by lasting longer.
+            `${(100 / (r * ttk(L, rk.rank, "max"))).toFixed(2)}%/s`,
             rCell(r),
           ];
         });
@@ -1101,6 +1109,7 @@
             "it hits you for",
             "hits to kill",
             "time to kill",
+            "danger per second",
             "R (1v1)",
           ],
           rows,
