@@ -196,5 +196,14 @@
     "claimed_at": "2026-07-27T04:46:33.245501+00:00",
     "shipped_at": "2026-07-27T06:14:32.187406+00:00",
     "promoted_at": "2026-07-27T17:50:34.122430+00:00"
+  },
+  {
+    "id": "F-018",
+    "title": "Phase C runtime spine: player race/class field + BaseStat<->PrimaryStats reconciliation + per-race stat leans (F-017 canon-of-intent into game state)",
+    "from_idea": "I-028",
+    "created_at": "2026-07-29T17:38:37.844216+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
