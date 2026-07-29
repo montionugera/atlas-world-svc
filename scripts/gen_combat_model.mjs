@@ -159,6 +159,17 @@ const LADDER_TARGETS = [
   // Packs keep their bands. Only rank A's bottom edge is a loss (0.86) and
   // that is the far end of the last zone doing its job -- 4v4 at 14 levels
   // under should not be winnable.
+  // S authors a wall clock too (D3). Its NATURAL length -- what r and swings
+  // force with no healing at all -- is 70s, and a boss fought by 8 players
+  // ending in 70 seconds is a large mob rather than an encounter. 150s is the
+  // deliberate middle: a substantial fight that still needs materially less
+  // healing than SS (53.3% against 82.2%).
+  //
+  // The trade this makes is that there is no longer a healer-free tier. Any
+  // clock past 70s requires healing, because reaching 300s WITHOUT it would
+  // need 30 swings-to-kill-a-player -- hits of 3.3% of a bar, well outside the
+  // authored 7-15 range. So the boundary moved rather than disappeared: the
+  // healer is now mandatory from S, not from SS.
   {
     rank: "S",
     r: 1.6,
@@ -166,6 +177,7 @@ const LADDER_TARGETS = [
     n: 8,
     shape: "boss",
     level: 77,
+    ttk: 150,
     from: 71,
     to: 84,
     was: 2.2,
@@ -581,6 +593,18 @@ const proposed = {
       rejected:
         "Making them genuinely different (e.g. DEF resists only physical while HP covers everything) would create real build decisions, but needs the physical/magic damage split that this model does not carry -- it has one atk and one def.",
     },
+    {
+      id: "D3",
+      title: "Rank S gets a 150-second wall clock",
+      decided: "2026-07-30",
+      choice:
+        "S authors ttk 150s, billing 53.3% sustain. Its NATURAL length -- what r 1.6 and swings 7 force with no healing -- is 70s.",
+      why: "A boss fought by 8 players ending in 70 seconds is a large mob rather than an encounter. 150s is the deliberate middle: substantially longer, while still needing materially less healing than SS (53.3% against 82.2%).",
+      consequence:
+        "THERE IS NO LONGER A HEALER-FREE TIER. Any clock past 70s requires healing, because reaching even 300s without it would need 30 swings-to-kill-a-player -- hits of 3.3% of a bar, well outside the authored 7-15 range. So the boundary moved rather than disappeared: the healer is mandatory from S, not from SS. Watch S closely: at 150s, 20 carried potions cover 100 of the 150 seconds (66.7% uptime) and healers hold only 53% of the healing -- barely over the role-check gate. Any rise in potion carry or strength flips S into an inventory check.",
+      rejected:
+        "Leaving S at 70s would have preserved a healer-free tier and cost nothing, but leaves an 8-player boss dying in about a minute. Going to 300s would have billed 76.7% -- nearly SS's -- making the S and SS healing requirements almost indistinguishable.",
+    },
   ],
 
   openQuestions: [
@@ -591,7 +615,6 @@ const proposed = {
     "THE HEALER PLACEHOLDERS NOW CARRY ALMOST ALL THE WEIGHT. With the real potion spec, consumables supply only 27% of the healing at SS and 8% at SSS, so fundability rests on `manaBars` (8 bars per pool) and `combatManaRegen` (0.1 %/s) -- neither anchored to anything. Remove potions entirely and SS goes short by 1 bar of 62 while SSS funds at 1.02x, so the regen default very nearly decides fundability by itself. SSS now funds at only 1.10x, which is thin enough that any of these guesses moving down breaks it.",
     "THE SUSTAIN ECONOMY NOW CLOSES, BUT HEALERS ARE NOT WHAT CLOSES IT. With potions and a skill granting in-combat mana regen, SS funds at 4.23x and SSS at 2.01x. The fix was a change of SHAPE, not size: pool is fixed and loses ground to any clock, while regen and potions are rates that scale with it as demand does. Two consequences to decide on. First, at SS the healer class supplies only 23% of the healing (potions 200 bars of 261) -- the fight is closer to an inventory check than a role check, and that failure mode never shows up as a number going red. Second, potions are bound by CARRY not cooldown at these settings, so carry capacity -- an inventory decision made elsewhere -- is silently the most load-bearing number in the sustain economy.",
     "THE OLD PROBLEM, KEPT FOR THE REASONING: rest-only regen made a fight's healing a fixed POOL, so supply could not grow with the clock while demand did (super-linearly -- own-HP absorption is one-time, so doubling a fight raises demand 2.07x). SS was short 30 bars of 61.7 and SSS short 424 of 504.3. Raising the healer share BACKFIRES and still would: a boss's R is single x n x attackers, so 30% healers drops SSS from R 1.40 to 0.98, a loss. Funding a fight by adding healers cannot work in this model.",
-    "RANK S HAS NO WALL CLOCK while SS and SSS do, so the ladder jumps from a 70-second fight with no healing to a 900-second fight needing 82% healing. Either S should author a ttk too (and take on a sustain bill of its own) or the sustain systems it does not need should not appear one rank later.",
     "Mana, skills and physical-vs-magic parity are modelled separately (mana_level.py, parity.py) and are not folded into R yet. The model now carries a single atk rather than pAtk/mAtk.",
     "THIS MODEL AND THE SHIPPED STAT FORMULA DISAGREE STRUCTURALLY, not just in tuning. contracts/src/meta/derivedStats.ts is a PINNED formula and it is ADDITIVE with a flat base -- maxHealth = 100 + 10*vit + 5*(level-1), pAtk = 10 + 2*str + weapon.pAtk, pDef = 5 + vit -- so it has NO geometric growth at all. This model is multiplicative: refHp * growth^level, 18,300 HP at L99 against the shipped formula's 100 + 10*vit + 490. Three separate gaps: (a) additive vs multiplicative growth, (b) the game splits pAtk/mAtk and pDef/mDef where this model carries one atk and one def, (c) the game has four primaries (str, agi, int, vit) and agi feeds move speed ONLY, so points into agi are invisible to R here. `alloc` in this model is an abstraction over that pool, not a mapping onto it. Reconciling the two is unscoped work and nothing here is a spec for derivedStats until it is done.",
   ],

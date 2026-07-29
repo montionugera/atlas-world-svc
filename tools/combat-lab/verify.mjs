@@ -396,8 +396,8 @@ console.log("\nthree rank multipliers");
 // These are requirements on the healing system, not preferences. Pinned to 0.1%.
 console.log("\nsustain — the bill a long fight runs up");
 {
-  const EXPECT_SUSTAIN = { SS: 0.8222, SSS: 0.9339 };
-  const EXPECT_TTK = { SS: 900, SSS: 5400 };
+  const EXPECT_SUSTAIN = { S: 0.5333, SS: 0.8222, SSS: 0.9339 };
+  const EXPECT_TTK = { S: 150, SS: 900, SSS: 5400 };
   for (const rk of data.proposed.ladder) {
     const got = model.rankSustain(rk);
     const want = EXPECT_SUSTAIN[rk.rank] ?? 0;
