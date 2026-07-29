@@ -46,33 +46,37 @@ const growth = 1.045;
 //
 // CS is the geometric mean of atk, def and hp, so it grows at exactly `growth`
 // per level and R is the cube of the CS ratio.
-// `ttk` is the committed target from HANDOFF.md. Where it is set, the page
-// solves THREE multipliers per rank — atk, def and hp — so the rank hits both
-// its target R and its target fight length. Where it is null the rank falls back
-// to one uniform multiplier and its fight length is derived.
+// Each rank is defined by TWO targets: how hard it is (`r`) and how fast it
+// drains you (`danger`, share of your health bar per second). Fight length is
+// DERIVED from them — ttk = 100 / (R_solo × danger) — rather than authored.
 //
-// S, SS and SSS are deliberately null. Their targets (195s / 750s / 3750s) are
-// not reachable: R = 1/(atk x def x hp), so stretching a fight 370x at fixed
-// difficulty forces the mob's attack down to 0.8% of a player's. An SSS boss
-// would land ~5,600 hits each removing about one eight-thousandth of your health
-// bar. A long fight survived on ONE health bar must consist of imperceptible
-// hits — that is arithmetic, not tuning. Those three ranks are blocked on a
-// sustain model (healing / regen), not on the ladder.
+// That replaces the eight TTK figures in HANDOFF.md (3.5 / 8 / 13.5 / 21 / 45 /
+// 195 / 750 / 3750s). Those were written independently of the R ladder, and
+// nobody ever divided one by the other: the resulting danger curve zigzagged
+// 2.40 / 2.10 / 1.85 / 2.90 / 1.98 %/s, so rank C was the safest fight in the
+// game and rank A was LESS intense than rank B — which is why A's attack came
+// out lower than B's. Choosing danger directly makes the ladder monotonic in
+// fight length, attack, defence and HP all at once.
+//
+// The old top-rank targets (195 / 750 / 3750s) are gone rather than unreachable.
+// They still are unreachable — R = 1/(atk × def × hp) means an hour-long fight
+// survived on one health bar consists of imperceptible hits — but that is now a
+// sustain question, not a hole in the ladder.
 const LADDER_TARGETS = [
-  { rank: "E", r: 11.89, ttk: 3.5, n: 1, from: 1, to: 12, was: 1.0 },
-  { rank: "D", r: 5.95, ttk: 8, n: 1, from: 13, to: 25, was: 1.15 },
-  { rank: "C", r: 4.0, ttk: 13.5, n: 1, from: 26, to: 40, was: 1.3 },
-  { rank: "B", r: 2.19, ttk: 21, n: 2, from: 41, to: 55, was: 1.5 },
-  { rank: "A", r: 1.8, ttk: 45, n: 4, from: 56, to: 70, was: 1.8 },
-  { rank: "S", r: 1.6, ttk: null, n: 8, from: 71, to: 84, was: 2.2 },
-  { rank: "SS", r: 1.5, ttk: null, n: 20, from: 85, to: 95, was: 2.8 },
-  { rank: "SSS", r: 1.4, ttk: null, n: 50, from: 96, to: 99, was: 3.5 },
+  { rank: "E", r: 11.89, danger: 2.0, n: 1, from: 1, to: 12, was: 1.0 },
+  { rank: "D", r: 5.95, danger: 2.3, n: 1, from: 13, to: 25, was: 1.15 },
+  { rank: "C", r: 4.0, danger: 2.6, n: 1, from: 26, to: 40, was: 1.3 },
+  { rank: "B", r: 2.19, danger: 3.0, n: 2, from: 41, to: 55, was: 1.5 },
+  { rank: "A", r: 1.8, danger: 3.4, n: 4, from: 56, to: 70, was: 1.8 },
+  { rank: "S", r: 1.6, danger: 3.8, n: 8, from: 71, to: 84, was: 2.2 },
+  { rank: "SS", r: 1.5, danger: 4.2, n: 20, from: 85, to: 95, was: 2.8 },
+  { rank: "SSS", r: 1.4, danger: 4.6, n: 50, from: 96, to: 99, was: 3.5 },
 ];
 
 const ladder = LADDER_TARGETS.map((t) => ({
   rank: t.rank,
   r: t.r,
-  ttk: t.ttk,
+  danger: t.danger,
   mult: Math.cbrt((2 * t.n) / ((t.n + 1) * t.r)),
   n: t.n,
   from: t.from,

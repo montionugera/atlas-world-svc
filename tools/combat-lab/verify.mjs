@@ -321,36 +321,39 @@ gate(
 );
 
 // ------------------------------------------- 5c. three rank multipliers ---
-// Every rank with a TTK target must hit BOTH its target R and its target
-// seconds. Ranks without one must fall back to a single uniform multiplier.
+// Each rank is set by two targets -- difficulty and danger -- and fight length
+// is derived from the pair. All four of R, danger, attack and defence/HP must
+// land, and the ladder must rise monotonically in every one of them.
 console.log("\nthree rank multipliers");
 {
   let bad = "";
+  const seen = [];
   for (const rk of data.proposed.ladder) {
     const L = model.midLevel(rk);
     const m = model.mob(L, rk.rank);
     const gotR = model.R(L, rk.rank, "max", rk.n);
+    const gotT = model.ttk(L, rk.rank, "max");
+    const gotD = 100 / (model.R(L, rk.rank, "max", 1) * gotT);
     if (Math.abs(gotR - rk.r) > 0.005)
       bad += `${rk.rank} R ${gotR.toFixed(3)}; `;
-    if (rk.ttk == null) {
-      if (
-        Math.abs(m.atkMult - rk.mult) > 1e-9 ||
-        Math.abs(m.defMult - rk.mult) > 1e-9 ||
-        Math.abs(m.hpMult - rk.mult) > 1e-9
-      )
-        bad += `${rk.rank} not uniform; `;
-    } else {
-      const gotT = model.ttk(L, rk.rank, "max");
-      if (Math.abs(gotT - rk.ttk) > 0.01)
-        bad += `${rk.rank} ttk ${gotT.toFixed(2)}s want ${rk.ttk}s; `;
-    }
+    if (Math.abs(gotD - rk.danger) > 0.005)
+      bad += `${rk.rank} danger ${gotD.toFixed(3)}; `;
+    seen.push({ rank: rk.rank, t: gotT, a: m.atkMult, d: m.defMult });
   }
-  gate(!bad, "each rank hits its target R and its target seconds", bad);
+  gate(!bad, "each rank hits its target R and its target danger", bad);
+
+  let nonMono = "";
+  for (let i = 1; i < seen.length; i++) {
+    const p = seen[i - 1],
+      c = seen[i];
+    if (c.t <= p.t) nonMono += `${c.rank} ttk; `;
+    if (c.a <= p.a) nonMono += `${c.rank} atk; `;
+    if (c.d <= p.d) nonMono += `${c.rank} def/hp; `;
+  }
   gate(
-    data.proposed.ladder
-      .filter((rk) => rk.ttk != null)
-      .every((rk, i, a) => i === 0 || rk.ttk > a[i - 1].ttk),
-    "TTK targets rise monotonically",
+    !nonMono,
+    "fight length, mob atk and mob def/hp all rise rank by rank",
+    nonMono || seen.map((s) => `${s.rank} ${s.t.toFixed(1)}s`).join(" "),
   );
 }
 

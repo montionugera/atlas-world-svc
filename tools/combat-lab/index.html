@@ -477,11 +477,15 @@
        * generator for why S and above have none.
        */
       function rankMults(rk) {
-        if (rk.ttk == null) return { a: rk.mult, d: rk.mult, h: rk.mult };
         const rSolo = (rk.r * (rk.n + 1)) / (2 * rk.n);
-        const dh = (rk.ttk * P.k * P.baseAtk * P.aspd) / P.baseDef;
+        // Fight length is DERIVED from difficulty and danger, not authored.
+        const ttkTarget = 100 / (rSolo * rk.danger);
+        const dh = (ttkTarget * P.k * P.baseAtk * P.aspd) / P.baseDef;
         const s = Math.sqrt(dh);
-        return { a: 1 / (rSolo * dh), d: s, h: s };
+        // Note a = danger / (100 × k × baseAtk × aspd / baseDef): the mob's
+        // attack is directly proportional to the danger curve, which is why
+        // choosing a rising danger curve makes attack rise rank by rank.
+        return { a: 1 / (rSolo * dh), d: s, h: s, ttk: ttkTarget };
       }
 
       function mob(L, rank) {
@@ -742,9 +746,9 @@
           "Damage per hit before your def divides it.",
         ],
         "mob def": ["Mob defence", "Divides the damage you deal."],
-        "target time to kill": [
-          "Committed TTK target for the rank",
-          "From HANDOFF.md. Where it is set, the three mob multipliers are solved to hit it exactly. S and above have none — their targets are unreachable without a sustain model.",
+        "target danger": [
+          "Share of your health bar the rank should remove each second",
+          "One of the rank's two targets, alongside R. Fight length is derived from the pair, not authored. Mob attack is directly proportional to this.",
         ],
         "mob atk mult": [
           "Mob attack relative to a max-grade player",
@@ -1205,9 +1209,7 @@
             `<b>${rk.rank}</b>`,
             L,
             Ls === L ? Ls : `<span class="FAIL">${Ls}</span>`,
-            rk.ttk == null
-              ? `<span class="dim">— derived</span>`
-              : `${rk.ttk}s`,
+            `${rk.danger.toFixed(1)}%/s`,
             m.atkMult.toFixed(4),
             m.defMult.toFixed(3),
             n0(m.cs),
@@ -1220,14 +1222,14 @@
         });
         return `${section(
           "Mob stats — what a MOB looks like at each rank",
-          `One row per <b>mob</b> rank. Each rank has <b>three</b> multipliers — atk, def and hp — solved live so it hits its target R <b>and</b> its target fight length. Ranks marked <span class="dim">— derived</span> have no reachable TTK target and fall back to a single uniform multiplier: see the notes. The two time columns are for a party of <b>${n}</b> max-grade players.`,
+          `One row per <b>mob</b> rank. Each rank has <b>three</b> multipliers — atk, def and hp — solved live so it hits its target R <b>and</b> its target fight length. Each rank is set by two targets — how hard (<b>R</b>) and how fast it drains you (<b>danger</b>) — and its fight length is derived from the pair. The two time columns are for a party of <b>${n}</b> max-grade players.`,
         )}
         ${table(
           [
             "mob rank",
             "player level",
             "mob level",
-            "target time to kill",
+            "target danger",
             "mob atk mult",
             "mob def/hp mult",
             "mob CS",
