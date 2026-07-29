@@ -54,15 +54,28 @@ OK. Proven to catch it by reintroducing the bug deliberately.
 Hit **Reset to spec defaults** first. Every number below was computed from the
 live model, not asserted.
 
-### 1. `k` sets fight length, and only fight length
+### 1. `k` sets the scale, and the solve absorbs it
 
 `k = 0.10`, so an even fight is `1/k` = **10 hits**. Check the invariant row
 `mirror match is an even fight` reads `atk/def 0.9998` — that is what makes
 `1/k` mean anything.
 
-Double `k` to 0.20 and rank C's time to kill halves, 3.24s → 1.62s. Every R on
-the page stays exactly where it was. Same for `Attack speed`: 1.5 → 3.0 also
-halves it, also changes no outcome.
+Now double `k` to 0.20 and watch what does **not** move:
+
+```
+k = 0.10   E 3.5s  D 8.0s  C 13.5s  B 21.0s  A 45.0s  |  S 8.8s  SS 9.6s  SSS 10.2s
+k = 0.20   E 3.5s  D 8.0s  C 13.5s  B 21.0s  A 45.0s  |  S 4.4s  SS 4.8s  SSS  5.1s
+```
+
+Ranks with a TTK target hold it **exactly**, because the three multipliers are
+re-solved live against the current sliders. Only the ranks with no target
+(S and above, falling back to one uniform multiplier) shorten with `k`.
+
+Every R is untouched at both settings. `Attack speed` behaves identically.
+
+So `k` is not a fight-length knob any more — it sets how big damage numbers are,
+and the ladder compensates. To make E-through-A fights longer, change their TTK
+targets in `gen_combat_model.mjs`, not `k`.
 
 ### 2. Three multipliers per rank, solved live
 
@@ -159,7 +172,9 @@ Level gap weight        how much the gap counts
 rank multipliers        the ladder itself
 ```
 
-These move **fight length only**: `Damage k`, `Attack speed`.
+These move fight length for **untargeted ranks only** (S and above): `Damage k`,
+`Attack speed`. Ranks with a TTK target absorb them in the solve and hold their
+seconds exactly.
 
 These move **nothing at all**: `Reference HP`, `Base atk`, `Base def`,
 `Gear class lean`, `Move speed base`. A mob is a scaled copy of the max-grade
