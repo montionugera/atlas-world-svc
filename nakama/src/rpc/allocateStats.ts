@@ -12,13 +12,13 @@ function parsePayload(raw: string): PrimaryStats {
   if (typeof parsed !== 'object' || parsed === null) {
     throw new Error('allocate_stats: payload must be a JSON object');
   }
-  const { str, agi, int, vit } = parsed as Record<string, unknown>;
-  for (const [key, value] of Object.entries({ str, agi, int, vit })) {
+  const { str, agi, int, vit, dex } = parsed as Record<string, unknown>;
+  for (const [key, value] of Object.entries({ str, agi, int, vit, dex })) {
     if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
       throw new Error(`allocate_stats: ${key} must be a non-negative integer`);
     }
   }
-  return { str, agi, int, vit } as PrimaryStats;
+  return { str, agi, int, vit, dex } as PrimaryStats;
 }
 
 /**
@@ -35,7 +35,7 @@ export const allocateStats: nkruntime.RpcFunction = function (
     throw new Error('allocate_stats requires an authenticated client session');
   }
   const delta = parsePayload(payload);
-  const spent = delta.str + delta.agi + delta.int + delta.vit;
+  const spent = delta.str + delta.agi + delta.int + delta.vit + delta.dex;
 
   const { doc, version } = readDoc(nk, ctx.userId, COLLECTIONS.profile);
   if (spent > doc.statPoints) {
@@ -50,6 +50,7 @@ export const allocateStats: nkruntime.RpcFunction = function (
       agi: doc.allocated.agi + delta.agi,
       int: doc.allocated.int + delta.int,
       vit: doc.allocated.vit + delta.vit,
+      dex: doc.allocated.dex + delta.dex,
     },
   };
   writeDoc(nk, ctx.userId, COLLECTIONS.profile, updated, version);
