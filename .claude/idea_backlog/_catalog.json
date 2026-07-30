@@ -231,6 +231,6 @@
     "id": "I-039",
     "title": "nakama package has no CI job at all \u2014 add typecheck/test/esbuild gate",
     "created_at": "2026-07-30T17:47:19.326104+00:00",
-    "promoted_to": null
+    "promoted_to": "F-020"
   }
 ]

@@ -220,5 +220,14 @@
     "claimed_at": "2026-07-30T13:17:38.839424+00:00",
     "shipped_at": "2026-07-30T13:40:46.183161+00:00",
     "promoted_at": "2026-07-30T17:23:40.262918+00:00"
+  },
+  {
+    "id": "F-020",
+    "title": "nakama package has no CI job at all \u2014 add typecheck/test/esbuild gate",
+    "from_idea": "I-039",
+    "created_at": "2026-07-30T17:48:05.894829+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
