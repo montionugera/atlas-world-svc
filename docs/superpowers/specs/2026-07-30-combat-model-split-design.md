@@ -37,12 +37,15 @@ then adversarially judged with the algebra re-derived rather than taken on trust
 
 <div class="callout warn">
 
-**Two numbers in the first round were wrong and are corrected here.** The first
-judgement ran on a truncated input (2 of 3 candidates) and reported rank B breaking
-at `Q = 0.957`. Re-measured against the live model: **B breaks below `Q = 0.609`**,
-and `Q` is **trinary**. The third candidate also caught a **sign pathology** in the
-winning design's `theta`. Neither error changed the chosen direction, but both
-changed the numbers — which is the argument for the adversarial pass, not against it.
+**The adversarial passes corrected numbers three times — the last correction stands.**
+Round one ran on a truncated input (2 of 3 candidates) and reported rank B breaking at
+`Q = 0.957`. Round two re-measured it as `Q = 0.609` and that is what §9 shipped. The
+Phase 1 review then showed **0.609 was the wrong sweep** — it is `R` at the rank's own
+level with `n = 1`, not the gate-5e band-worst — and that **`0.957` was right all along**.
+See §9 for the corrected table, computed live from `verify.mjs`'s own sweep. Round three
+also caught a **sign pathology** in the winning design's `theta`. None of this changed
+the chosen direction; all of it changed the numbers, which is the argument for the
+adversarial pass rather than against it.
 
 </div>
 
@@ -75,8 +78,13 @@ Every pinned expectation in `verify.mjs` — `EXPECT_LADDER`, `EXPECT_SWINGS`,
 | `postureMix` | `rhoBar` | (0,1) | 0.5 | The reference offence mix `defEff` and CS are quoted against. **Global, not per-entity** — this is what keeps CS comparable across entities. |
 | `elemWeight` | `eta` | [0,1] | 1.0 | Element damper, `e -> e^eta`. `1` is the shipped table; `0` disables elements and reduces to today's model. |
 
-Both are read-only-in-outcome in the same sense as `durabilityHp`: moving them
-changes how numbers **read**, never who wins.
+Both leave every `R` **bit-identical while all authored tags are flat and neutral** —
+which is where the ladder is calibrated, and is exactly what the reduction gate pins.
+They are **not** outcome-neutral in the sense `durabilityHp` is: `durabilityHp` leaves
+`R` unmoved at every setting, authored or not, whereas these two become real balance
+levers the moment any `rho`/`theta`/`slant`/`element` is authored. Measured at a single
+authored shape: `postureMix` moves `R` by **1.57×** across its range, `elemWeight` by
+**4×**. Treat them as gauges that re-quote the whole ladder, not as free parameters.
 
 ### Four per-entity authored tags (player spec *and* mob rank)
 
@@ -221,9 +229,23 @@ attacker**, or when an element cell is not 1. That is the entire design surface.
 ### R — same shape, one extra factor
 
 ```js
-Q(p,m) = m(p,m) / m(m,p)
-R      = R_ref * Q(p,m)      // R_ref is index.html:752 verbatim
+Q(p,m) = matchup(p,m) / matchup(m,p)
+R      = R_ref * Q(p,m)      // IDENTITY, NOT A STEP TO PERFORM
 ```
+
+<div class="callout danger">
+
+**Do not multiply `Q` into `R`.** Once `hit()` is split-aware (§6), `R_ref` is no longer
+`Q`-free: `dmgRatio` factorises as `(atkEff/defEff) × matchup`, so the two directions of
+a duel contribute `matchup(p,m)/matchup(m,p)` — which *is* `Q` — all by themselves.
+`R = R_ref × Q` therefore holds as a **property** of `R()`'s existing expression. An
+explicit `* Q(p,m)` in `R()` **squares** it, and the error is invisible at the reduction
+point because `Q = 1` there. Measured: with a shape authored onto rank C, the observed
+factor is `Q = 3.9760`, while a squared `Q` reads `15.8086`. `R` is **exactly linear in
+`Q`** — verified `R_shaped/R_flat === Q` over 29,160 authored configurations to 7.77e-16.
+`Q()` exists to *report* the factor and let the gates assert it, never to reapply it.
+
+</div>
 
 The pack factor `2n/(n+1)` and the boss `n²` apply **outside** `Q`, so `Q` cancels in
 `R(n)/R(1)` and the "encounter size applies `2n/(n+1)` and nothing else" gate is
@@ -294,21 +316,37 @@ event" is exactly backwards.
 
 </div>
 
-### Real safety margins — at band-worst level, which is what gate 5e evaluates
+### Real safety margins — at gate-5e band-worst
 
-| rank | worst R | at | breaks at `Q <` |
-| --- | --- | --- | --- |
-| E | 11.890 | L2 n1 | 0.084 |
-| D | 5.950 | L24 n1 | 0.168 |
-| C | 4.000 | L32 n1 | 0.250 |
-| **B** | **1.643** | L46 n1 | **0.609** |
-| A | 1.125 | L67 n1 | 0.889 *(gate 5e exempts A)* |
-| S | 1.600 | L77 n8 | 0.625 |
-| SS | 1.500 | L90 n20 | 0.667 |
-| SSS | 1.400 | L97 n50 | 0.714 |
+Computed with **exactly** the sweep `verify.mjs:575-592` uses: max-tier player at each
+edge of the rank's own level band, mob at the band edges (or the boss's authored level),
+at the rank's own headcount `n`. This is *not* the same thing as `R` at the rank's
+reference conditions — the band-worst is **1.5–2.4× lower**, and quoting the reference
+number as a safety margin is how a vacuous gate gets written.
 
-At `Q = 0.25` — the only adverse value the table can produce — ranks **C, B, S, SS and
-SSS all fall below R = 1** (1.00, 0.41, 0.40, 0.37, 0.35).
+| rank | band-worst `R` | at | breaks at `Q <` | `R` at `Q = 0.25` |
+| --- | --- | --- | --- | --- |
+| E | 6.650 | L1 vs L12, n1 | 0.150 | 1.663 |
+| D | 3.157 | L13 vs L25, n1 | 0.317 | **0.789** |
+| C | 1.909 | L26 vs L40, n1 | 0.524 | **0.477** |
+| **B** | **1.045** | L41 vs L55, n2 | **0.957** | **0.261** |
+| A | 0.859 | L56 vs L70, n4 | 1.164 | **0.215** *(gate 5e exempts A)* |
+| S | 1.165 | L71 vs L77, n8 | 0.858 | **0.291** |
+| SS | 1.152 | L85 vs L90, n20 | 0.868 | **0.288** |
+| SSS | 1.328 | L96 vs L97, n50 | 0.753 | **0.332** |
+
+<div class="callout danger">
+
+**At `Q = 0.25`, every rank except E falls below `R = 1`.** Not "C, B, S, SS and SSS" —
+**D and A too**. And rank B's true margin is thin enough to matter on its own: it breaks
+below `Q = 0.957`, which the trinary table cannot *quite* reach from above, but leaves
+essentially **no headroom** for any future non-unit `Q` between 0.25 and 1.
+
+</div>
+
+**G9 must compute this sweep live**, never transcribe the numbers above. A gate built
+from a transcribed reference-`R` column would read every margin as 1.5–2.4× safer than
+it is and pass while the margin was gone.
 
 ### The resolution: a content gate, not a recalibration
 

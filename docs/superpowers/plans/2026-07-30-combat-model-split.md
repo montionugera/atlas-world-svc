@@ -86,8 +86,11 @@ player spec and every mob rank, all defaulting to the reduction point. `theta` a
 **Task 1.4 — Replace `hit()`** (`index.html:739`) per spec §6, element **outside** the
 mix sum. Signature stays `(att, dfn, Ldef) -> number`.
 
-**Task 1.5 — Add `m()` and `Q()`**, and multiply `Q` into `R` outside the pack/boss
-shape factor.
+**Task 1.5 — Add `matchup()` and `Q()`.** Do **not** multiply `Q` into `R` — once Task
+1.4 makes `hit()` split-aware, `R_ref` already carries it and an explicit factor squares
+it (invisibly, because `Q = 1` at the reduction point). `Q()` is for reporting and for
+Phase 2's gates. Name it `matchup`, not `m`: `m` is the conventional local for a mob
+throughout `index.html` and would shadow it.
 
 **Task 1.6 — Leave `rankMults()` byte-identical.** Add the overdetermination-refusal
 comment from spec §8. If this function changes at all, something has gone wrong.
@@ -110,6 +113,19 @@ a time and showing the failure output. Revert each break.
 The three worth proving, because they are the ones a future refactor would silently
 undo: **G2** (no free lunch), **G7** (element leverage full for every build — this is
 the one that catches the magic-only regression), **G9** (G-ELEM content gate).
+
+**G9 must recompute the band-worst sweep live**, exactly as `verify.mjs:575-592` does,
+and must never transcribe spec §9's table. Prove it bites by authoring a
+cycle-disadvantaged element onto **rank D** (which the original §9 list omitted).
+
+Two gates this phase gained from the Phase 1 review, both of which would otherwise hide
+behind `Q = 1`:
+
+- **`R_shaped / R_flat === Q`** for an authored shape — this is what makes the
+  Q-squaring bug fail loudly instead of silently.
+- **Sweeping `postureMix` and `elemWeight` over their full ranges must leave every
+  `EXPECT_LADDER` cell bit-identical at default tags** — the true, testable version of
+  the outcome-neutrality claim that was originally overstated.
 
 ---
 
