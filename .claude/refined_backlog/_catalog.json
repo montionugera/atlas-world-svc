@@ -213,8 +213,9 @@
     "title": "Weapon-driven offence stats: dex primary + multiplicative derivedStats (F-018 Phase 4)",
     "from_idea": "I-038",
     "created_at": "2026-07-30T13:17:28.541388+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-07-30T13:17:38.839424+00:00"
   }
 ]
