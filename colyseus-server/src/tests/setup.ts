@@ -5,6 +5,10 @@ import 'jest'
 // tests so CI stays deterministic. This does NOT hide real failures: deterministic
 // tests fail every attempt, so a genuine bug still fails after all retries — only a
 // rare timing flake (which passes on a calmer retry) is smoothed over.
+// CAVEAT for `it.failing` tests (see the f018-* pinned-divergence tests): retry
+// applies to them too, so the moment a pinned divergence gets FIXED, Jest runs the
+// inverted test three times before reporting it red. That is noisy but not wrong —
+// it still ends red. Do not read a triple-run in the log as flakiness there.
 jest.retryTimes(2, { logErrorsBeforeRetry: true })
 
 // Mock console methods to reduce noise during tests
