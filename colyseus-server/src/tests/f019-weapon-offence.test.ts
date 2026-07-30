@@ -50,7 +50,7 @@ describe('applyLoadout + recalculateStats reconciliation', () => {
     // PLAYER_STATS.pAtk plus a weapon addend, discarding level and allocation.
     expect(player.pAtk).toBeCloseTo(
       derivedStats({ level: 30, allocated: ALLOCATED, weaponItemId: 'scythe' }).pAtk,
-      6,
+      6
     )
     expect(player.pAtk).toBeGreaterThan(afterJoin)
   })
@@ -105,19 +105,16 @@ describe('the two weapon catalogs must agree', () => {
     [WEAPON_TYPES.MAGIC_SPEAR]: 'int',
   }
 
-  it.each(Object.keys(WEAPONS))('%s agrees on atkStat and gear', (id) => {
+  it.each(Object.keys(WEAPONS))('%s agrees on atkStat and gear', id => {
     const w = WEAPONS[id]
     // A new projectileType with no mapping is a gap, not a pass.
     expect(EXPECTED_BY_TYPE[w.projectileType]).toBeDefined()
     expect(weaponOffence(id).atkStat).toBe(EXPECTED_BY_TYPE[w.projectileType])
-    expect(weaponOffence(id).gear).toBeCloseTo(
-      ((w.pAtk || 0) + (w.mAtk || 0)) / GEAR_REFERENCE,
-      9,
-    )
+    expect(weaponOffence(id).gear).toBeCloseTo(((w.pAtk || 0) + (w.mAtk || 0)) / GEAR_REFERENCE, 9)
   })
 
   it('no weapon exceeds gear 1 — a stronger weapon must move GEAR_REFERENCE', () => {
-    const overs = Object.keys(WEAPONS).filter((id) => weaponOffence(id).gear > 1 + 1e-12)
+    const overs = Object.keys(WEAPONS).filter(id => weaponOffence(id).gear > 1 + 1e-12)
     expect(overs).toEqual([])
   })
 })
