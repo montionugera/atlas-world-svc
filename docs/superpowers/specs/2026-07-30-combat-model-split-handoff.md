@@ -197,10 +197,25 @@ None are filed yet; filing needs a commit on the `_release` worktree.
    silently become physical** if a future emitter sources `mAtk` into that event. The
    `?? 'physical'` default will not catch it.
 
+**Filed 2026-07-30:** **I-035** (boss aggro), **I-036** (pack test + real-fight parity),
+**I-037** (`BATTLE_ATTACK` damageType). All three carry the findings in their `spec.md`,
+not just a title.
+
 Already filed: **I-034** (race/class + per-race leans, deferred from this slice).
 Closed by this work: **I-027** (`damageType` dropped on the queue).
 Still open and untouched: **I-032** (two sources of truth for `pAtk`/`mAtk`),
 **I-033** (primary-stat clamp split-brain).
+
+<div class="callout warn">
+
+**"Closed" is not a state the backlog can represent.** `_catalog.json` rows are
+`{id, title, created_at, promoted_to}` — the only lifecycle field is `promoted_to`
+(→ an `F-NNN`). An idea fixed *inside another feature*, as I-027 was, therefore reads as
+an untouched open idea forever. The outcome is recorded in the per-idea `spec.md`
+frontmatter instead (`status: resolved` / `resolved_by`), which is the only place that
+survives. Check there before assuming an old idea is still live.
+
+</div>
 
 ## Traps, each of which cost real time
 
