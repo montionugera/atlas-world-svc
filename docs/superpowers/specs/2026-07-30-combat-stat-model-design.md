@@ -27,7 +27,7 @@ the design to be judged against it, or bent to match it.
 | `tools/combat-lab/index.html` | The lab. Computes every figure live from those numbers. |
 | `tools/combat-lab/verify.mjs` | <!-- GEN:gatecount2 -->
 
-72 assertion sites
+75 assertion sites
 
 <!-- /GEN:gatecount2 --> gates. Run before believing anything. |
 
@@ -446,7 +446,7 @@ node scripts/gen_combat_model.mjs && node tools/combat-lab/verify.mjs
 
 <!-- GEN:gatecount -->
 
-72 assertion sites
+75 assertion sites
 
 <!-- /GEN:gatecount --> gates, cheapest first: the inline script parses, all 15 sections render,
 every column header is defined in the glossary, then requirements, the ladder,
