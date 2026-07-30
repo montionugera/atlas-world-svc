@@ -16,9 +16,9 @@ finding that changes what the whole feature is worth.
 
 | artifact | enforced by |
 | --- | --- |
-| `docs/superpowers/specs/2026-07-30-combat-model-split-design.md` | `verify.mjs` staleness gate regenerates its tables; hand-edits are caught |
+| `docs/superpowers/specs/2026-07-30-combat-model-split-design.md` | `tools/combat-lab/verify.mjs` staleness gate regenerates its tables; hand-edits are caught |
 | `docs/superpowers/plans/2026-07-30-combat-model-split.md` | — (read it for phase structure) |
-| `tools/combat-lab/index.html` — the live model math | 155 gates in `verify.mjs`, exit 0 |
+| `tools/combat-lab/index.html` — the live model math | 155 gates in `tools/combat-lab/verify.mjs`, exit 0 |
 | `tools/combat-lab/verify.mjs` — G1–G12 | three gates proven to bite by deliberate breakage |
 | `colyseus-server/src/tests/f018-*.test.ts` | 564/570 green |
 
@@ -36,7 +36,7 @@ recalibration, and why `rankMults()`'s executable body is byte-identical.
 
 ## Phase 4 is the only unstarted phase — and it is not mechanical
 
-The plan frames it as reconciling a formula. It is not. `derivedStats.ts` currently reads
+The plan frames it as reconciling a formula. It is not. `contracts/src/meta/derivedStats.ts` currently reads
 
 ```
 maxHealth = 100 + 10*vit + 5*(level-1)     pAtk = 10 + 2*str + weapon.pAtk
@@ -58,17 +58,57 @@ intuition attached to it. That is a content decision, not a refactor, and it is
 
 </div>
 
-A working draft that takes the multiplicative-gear route (with `WEAPON_REFERENCE = 10`
-as neutral, offence magnitude from `str + int` together, direction from their split) is
-preserved at:
+### The draft, inlined
 
-```
-/private/tmp/claude-502/.../scratchpad/derivedStats-P4-draft.ts
+A working draft was written and then **reverted**, not committed: all four
+`contracts/src/meta/derivedStats.test.ts` expectations and the C# twin were still out of
+sync, and a half-landed *pinned* formula is worse than an untouched one. It is
+reproduced here rather than left in a scratchpad, because scratchpads are
+session-scoped and a handoff that points at one is a dead link.
+
+**It is unverified.** Nothing below has been run against the tests or the lab.
+
+```ts
+const GROWTH = 1.045;        // mirrors P.growth in the lab
+const STAT_COEF = 0.5;       // mirrors P.statCoef
+const STAT_REFERENCE = 99;   // points at which one primary saturates to 1
+const BASE_HP = 100, BASE_ATK = 10, BASE_DEF = 5, MSPD_BASE = 20;
+const WEAPON_REFERENCE = 10; // weapon pAtk+mAtk reading as gear scale 1
+
+const g = Math.pow(GROWTH, level - 1);          // D6: ONE factor, so it cancels
+const share = (p: number) => Math.max(0, p) / STAT_REFERENCE;
+
+const offMagnitude = 1 + 2 * STAT_COEF * share(str + int);  // offence together
+const defMagnitude = 1 + 2 * STAT_COEF * share(vit);        // D7: vit alone
+const gear = 1 + (weaponPAtk + weaponMAtk) / (2 * WEAPON_REFERENCE);
+
+// Direction: rho is the physical share of offence, from stats AND weapon.
+// The two multipliers sum to exactly 2, so tilting costs the other channel
+// one-for-one. Defaults to 0.5 so an unallocated character is symmetric
+// rather than accidentally physical.
+const rho = (str + int + weaponPAtk + weaponMAtk) > 0
+  ? (str + weaponPAtk) / (str + int + weaponPAtk + weaponMAtk)
+  : 0.5;
+
+const atk = BASE_ATK * g * offMagnitude * gear;
+const def = BASE_DEF * g * defMagnitude;
+
+maxHealth    = BASE_HP * g * defMagnitude;
+pAtk         = atk * (2 * rho);
+mAtk         = atk * (2 * (1 - rho));
+pDef = mDef  = def;                              // D7
+maxMoveSpeed = MSPD_BASE * (1 + STAT_COEF * share(agi));  // no g — level-free
 ```
 
-It is **unverified** — it was reverted rather than committed because all four
-`derivedStats.test.ts` expectations and the C# twin were still out of sync, and a
-half-landed pinned formula is worse than an untouched one.
+Three things to decide before adopting it, none of which the spec settles:
+
+1. **`WEAPON_REFERENCE = 10` is invented.** It is the weapon power that reads as
+   neutral. Pick it from the catalog's actual distribution, not from a round number.
+2. **`STAT_REFERENCE = 99`** assumes allocation is measured against the level cap.
+   Confirm against how points are actually granted.
+3. **Both weapon channels feed magnitude** (`(pAtk + mAtk) / 2`), on the reasoning
+   that a staff is as much a weapon as a sword and *which* channel it favours is
+   direction. If that is wrong, gear scale and direction need separating.
 
 ### Phase 4's real blast radius (measured — the plan is wrong about this)
 
@@ -124,7 +164,7 @@ TTK and HP-remaining measured against `mob(L, rank)`. Its two derived quantities
 currently guarded only by an `it.failing`, which passes on **any** throw rather than
 only on the intended divergence.
 
-Also unreconciled, and load-bearing: `DamageCalculator.ts` is **subtractive,
+Also unreconciled, and load-bearing: `colyseus-server/src/modules/combat/DamageCalculator.ts` is **subtractive,
 80%-capped, 1-floored** while the model is **divisive and uncapped**. Different
 functions; they cannot agree in general. **This model does not predict shipped damage
 numbers.**
@@ -134,7 +174,7 @@ numbers.**
 | # | step | blocked on |
 | --- | --- | --- |
 | 1 | **Decide weapon semantics** — flat `pAtk` addend → multiplicative gear scale, reinterpreting every item-catalog number | a content decision; nothing else |
-| 2 | **P4 `derivedStats`** D6/D7/D8. Land in **all three** copies: `contracts/src/meta/derivedStats.ts`, `game-client/src/UI/MetaIds.cs` (`MetaFormulas.Derived`), and reconcile the divergent `Player.recalculateStats`. Update the 4 expectations in `derivedStats.test.ts` | step 1 |
+| 2 | **P4 `derivedStats`** D6/D7/D8. Land in **all three** copies: `contracts/src/meta/derivedStats.ts`, `game-client/src/UI/MetaIds.cs` (`MetaFormulas.Derived`), and reconcile the divergent `Player.recalculateStats`. Update the 4 expectations in `contracts/src/meta/derivedStats.test.ts` | step 1 |
 | 3 | **File the three idea tickets** below | — |
 | 4 | **Gate 1** — `bash .claude/ps-release-workflow/precheck.sh` | — |
 | 5 | **Ship F-018 into `release/1.5`**, then worktree cleanup | Gate 1 green |
@@ -153,7 +193,7 @@ None are filed yet; filing needs a commit on the `_release` worktree.
    completion rather than probing single hits.
 3. **`BATTLE_ATTACK` carries no `damageType`.** Correct today — both mob and NPC
    emitters source `damage` from `pAtk` — and documented as deliberate at
-   `BattleManager.ts:50`, but it is **the one remaining place a magical hit could
+   `colyseus-server/src/modules/BattleManager.ts:50`, but it is **the one remaining place a magical hit could
    silently become physical** if a future emitter sources `mAtk` into that event. The
    `?? 'physical'` default will not catch it.
 
@@ -166,7 +206,7 @@ Still open and untouched: **I-032** (two sources of truth for `pAtk`/`mAtk`),
 
 - **`feat/F-018` was cut from `main`, which lacks the combat-lab work** — it lives only
   on `release/1.5`. Merge release into the feature branch before anything else.
-- **`gen_combat_spec.mjs` embeds a live count of `gate(`+`check(` from `verify.mjs`
+- **`scripts/gen_combat_spec.mjs` embeds a live count of `gate(`+`check(` from `tools/combat-lab/verify.mjs`
   into the spec.** Adding gates turns the staleness gate **red** until you re-run it.
   That is not table drift. Do not go hunting for it — this cost a full blocker triage.
 - **`Q` must never be multiplied into `R`.** Once `hit()` is split-aware, `R_ref`
