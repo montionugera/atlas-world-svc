@@ -1,5 +1,3 @@
-import * as fs from "fs";
-export const __probeB = fs;
 import { RPC } from '@atlas/contracts';
 import { grantXp } from './rpc/grantXp';
 import { grantLoot } from './rpc/grantLoot';
