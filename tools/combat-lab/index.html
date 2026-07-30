@@ -453,6 +453,210 @@
       const rankRef = (rank) =>
         DATA.proposed.ladder.find((x) => x.rank === rank).n;
 
+      // ============================================ the physical/magic split ==
+      // ARCHITECTURAL RULE, and everything below depends on it:
+      //
+      //   physical-vs-magical is a DIRECTION INSIDE the existing magnitudes,
+      //   never a new magnitude.
+      //
+      // `str`-vs-`int` is a direction inside atkBudget; `pDef`-vs-`mDef` is a
+      // direction inside defEff. There are still THREE stat slots (atkEff,
+      // defEff, hp) and CombatScore is still the cube root of their product.
+      //
+      // That is the whole reason this extension is free: `half` stays a square
+      // root, `baseDef = 49` needs no recalibration, and rankMults() is
+      // byte-identical. A three-way defensive split — pDef, mDef and hp as
+      // PEERS — would force pow(defBudget, 1/3), move every def and hp number
+      // on the page, and invalidate the baseDef calibration that makes 1/k
+      // readable as hits-to-kill. pDef/mDef is a direction inside the single
+      // defEff magnitude, NOT a third durability slot.
+
+      /**
+       * Element multiplier for an attack of A's element landing on D's, damped
+       * by `elemWeight`: e -> e^eta.
+       *
+       * The table is authored in combat-model.json as a MIRROR of the shipped
+       * colyseus-server/src/config/combat/elements.ts (F-017) — this page still
+       * reads nothing from the game. eta = 1 is the shipped table; eta = 0
+       * disables elements and reduces to the pre-split model.
+       *
+       * Only the ONE-DIRECTIONAL cycle (water > fire > earth > wind > water)
+       * moves difficulty. holy<->void is mutual 2.0 and same-element is mutual
+       * 0.5, so both cancel in Q and are pure PACING levers — they halve or
+       * double both clocks and change no outcome. That is the opposite of the
+       * intuition, so do not reach for holy/void expecting a balance change.
+       */
+      const elem = (attack, defense) => {
+        const row = DATA.proposed.elementTable[attack];
+        const raw = row ? row[defense] : undefined;
+        // An unrecognised element is an AUTHORING ERROR, and it throws rather
+        // than falling back to 1. Silently reading a typo as neutral is exactly
+        // the failure mode §9 warns about: `neutral`'s inertness is the ONLY
+        // thing holding Q = 1 everywhere today, so a misspelt element would
+        // move difficulty with nothing on the page turning red.
+        if (raw === undefined)
+          throw new Error(`unknown element pair: ${attack} -> ${defense}`);
+        const eta = P.elemWeight ?? 1;
+        // Short-circuit eta = 1 rather than calling Math.pow(raw, 1). Math.pow
+        // is implementation-approximated, and eta = 1 with a neutral table cell
+        // is the exact reduction point the whole calibration is pinned at — it
+        // must not depend on a library's rounding.
+        return eta === 1 ? raw : Math.pow(raw, eta);
+      };
+
+      /**
+       * SHAPE COORDINATES — the split at constant magnitude.
+       *
+       *   xp = 1 + theta*(1 - rho)      xm = 1 - theta*rho
+       *   qp = 1 - slant*(1 - rhoBar)   qm = 1 + slant*rhoBar
+       *
+       * Two exact identities, and they are what makes aggregation EXACT rather
+       * than approximate:
+       *
+       *   rho*xp    + (1-rho)*xm    === 1    for all theta, rho
+       *   rhoBar*qp + (1-rhoBar)*qm === 1    for all slant
+       *
+       * So a shape moves the four displayed stats around while leaving the two
+       * magnitudes — and therefore CombatScore — exactly where they were.
+       *
+       * `theta` and `slant` are SIGNED, and that is not cosmetic. An unsigned
+       * form was tried and has a proven sign pathology: at rho = 0, theta = -1
+       * a pure caster came out pAtk 180 / mAtk 100 instead of 0 / 100.
+       *
+       * `rhoBar` (postureMix) is GLOBAL, not per-entity. That is what keeps
+       * CombatScore comparable across entities: every defence is aggregated at
+       * the same reference offence mix, so the two sides are measured on one
+       * ruler. Per-entity it would become a free parameter each side could pick
+       * to flatter itself.
+       */
+      function shapeOf(tags) {
+        const rhoBar = P.postureMix ?? 0.5;
+        const rho = Math.min(1, Math.max(0, tags.rho ?? 0.5));
+        // Two clamps, and the tighter one wins. The HARD bounds are whatever
+        // keeps xp, xm >= 0 and qp, qm > 0 — outside them a stat goes negative
+        // and the model stops meaning anything. The AUTHORING bounds
+        // (|theta| <= 1, |slant| <= 0.5) are tighter and are where a designer
+        // is expected to stay; |slant| <= 0.5 additionally bounds how far this
+        // DIVISIVE model can drift from the shipped SUBTRACTIVE mitigation,
+        // which floors at 20% of base damage.
+        const tLo = Math.max(-1, rho < 1 ? -1 / (1 - rho) : -Infinity);
+        const tHi = Math.min(1, rho > 0 ? 1 / rho : Infinity);
+        const theta = Math.min(tHi, Math.max(tLo, tags.theta ?? 0));
+        const sLo = Math.max(-0.5, -1 / rhoBar);
+        const sHi = Math.min(0.5, 1 / (1 - rhoBar));
+        const slant = Math.min(sHi, Math.max(sLo, tags.slant ?? 0));
+        return {
+          rho,
+          theta,
+          slant,
+          element: tags.element ?? "neutral",
+          xp: 1 + theta * (1 - rho),
+          xm: 1 - theta * rho,
+          qp: 1 - slant * (1 - rhoBar),
+          qm: 1 + slant * rhoBar,
+        };
+      }
+
+      /** FORWARD — the two magnitudes plus a shape give the four shown stats. */
+      const forward = (atkEff, defEff, sh) => ({
+        pAtk: atkEff * sh.xp,
+        mAtk: atkEff * sh.xm,
+        pDef: defEff / sh.qp,
+        mDef: defEff / sh.qm,
+      });
+
+      /**
+       * INVERSE — the four stats back to the two magnitudes. Exact, closed form.
+       *
+       * WHY THESE TWO MEANS, AND WHY NOT GEOMETRIC. Damage over a fight is a
+       * SUM of hits, and 1/def enters that sum linearly. Arithmetic-on-attack
+       * plus harmonic-on-defence is the unique pairing under which the
+       * aggregate IS the stat that produces the damage — which is what makes
+       * `atkEff`/`defEff` legitimate inputs to CombatScore rather than a
+       * convenient average.
+       *
+       * A geometric blend was tried and REJECTED. It looks tidier and it is
+       * wrong: it lets a build push tilt and gain up to 2.57x damage at
+       * constant CombatScore — an unbounded free lunch, measured against the
+       * shipped magic_staff's 6.59x tilt. Both aggregates look tidier as
+       * geometric means and both break if changed.
+       *
+       * Note the asymmetry is deliberate: attack aggregates at the ATTACKER's
+       * own mix (`sh.rho` — it is that entity's damage being summed), defence
+       * at the GLOBAL posture (`rhoBar` — a defence has to be quoted against a
+       * common reference or CombatScore stops being comparable).
+       */
+      const inverse = (st, sh) => {
+        const rhoBar = P.postureMix ?? 0.5;
+        return {
+          atkEff: sh.rho * st.pAtk + (1 - sh.rho) * st.mAtk,
+          defEff: 1 / (rhoBar / st.pDef + (1 - rhoBar) / st.mDef),
+        };
+      };
+
+      /**
+       * THE MATCHUP FACTOR — the entire extension in one scalar.
+       *
+       *   m(A,D) = ( rho_A*xp_A*qp_D + (1-rho_A)*xm_A*qm_D ) * e(A,D)
+       *
+       * and it factorises the damage ratio exactly:
+       *
+       *   dmgRatio(A,D) === (atkEff_A / defEff_D) * m(A,D)
+       *
+       * m is 0-homogeneous in both magnitudes, level-free and budget-free — a
+       * pure function of the two shapes and one element cell. It equals 1 on
+       * two whole families:
+       *
+       *   (i)  DEFENDER FLAT (slant_D = 0) and e = 1  ->  m = 1 for ANY
+       *        attacker rho and theta. THIS IS THE NO-FREE-LUNCH GUARANTEE:
+       *        no amount of offensive tilt buys damage against a flat target.
+       *   (ii) ATTACKER FLAT (theta_A = 0, rho_A = rhoBar) and e = 1  ->  m = 1
+       *        for any defender slant.
+       *
+       * So m leaves 1 only when a LOPSIDED DEFENDER meets a MIX-MISMATCHED
+       * ATTACKER, or when an element cell is not 1. That pair of conditions is
+       * the entire design surface this feature adds.
+       *
+       * Named `matchup`, not `m`: `m` is the conventional local for a mob all
+       * over this file, and a top-level `m()` would be shadowed by any of them.
+       */
+      const matchup = (att, dfn) =>
+        (att.rho * att.xp * dfn.qp + (1 - att.rho) * att.xm * dfn.qm) *
+        elem(att.element, dfn.element);
+
+      /**
+       * Q — the matchup asymmetry, and the one extra factor R gains.
+       *
+       *   Q = m(player, mob) / m(mob, player)
+       *
+       * R IS EXACTLY LINEAR IN Q, and Q reaches R THROUGH hit() — it must not
+       * be multiplied in on top. dmgRatio factorises as (atkEff/defEff) × m, so
+       * the two directions of a fight contribute m(p,mob)/m(mob,p) all by
+       * themselves and R() needs no Q term at all. See the comment in R(); an
+       * explicit factor there squares Q and reads correct at the reduction
+       * point, which is the worst possible failure mode. This function is for
+       * REPORTING the factor and asserting on it.
+       *
+       * Linearity is what the safety margins are quoted against: a rank whose
+       * BAND-WORST R is Rw crosses R = 1 at Q < 1/Rw. Use the band-worst, which
+       * is the sweep verify.mjs's "a rank is one difficulty" gate already runs
+       * (max-tier player at each band edge, mob at the band edges or the boss's
+       * authored level, at the rank's own n) -- NOT R at the rank's reference
+       * conditions, which is 1.5-2.4x higher and reads every margin as safer
+       * than it is. Measured band-worst: E 6.650 D 3.157 C 1.909 B 1.045
+       * A 0.859 S 1.165 SS 1.152 SSS 1.328, so rank B breaks below Q = 0.957
+       * and at Q = 0.25 every rank except E is a loss. Any gate on this must
+       * recompute the sweep, never transcribe these numbers.
+       *
+       * CS IS NO LONGER A SUFFICIENT STATISTIC, and that is the real cost of
+       * this feature. Q cannot be folded into CombatScore — no 1-homogeneous
+       * aggregate absorbs a cross term — so anyone reading CS as "strength"
+       * mis-ranks matchups by up to 4x. The mitigation is editorial, not
+       * mathematical: show Q as its own column wherever R appears, and say
+       * "at Q = 1" on every headline claim.
+       */
+      const Q = (att, dfn) => matchup(att, dfn) / matchup(dfn, att);
+
       /**
        * Resolve a player to its FOUR axes — two magnitudes and two directions.
        * Accepts {build, gear, focus, gearClass} or a legacy grade name, which is
@@ -482,6 +686,14 @@
           gearScale: g.scale,
           off: f ? f.off : 0.5,
           lean,
+          // The four SPLIT tags, passed straight through for shapeOf() to clamp.
+          // Authored on the spec; absent on the ad-hoc {build, gear, focus,
+          // gearClass} objects the matrix and archetype tables build, which is
+          // exactly why they default to the reduction point.
+          rho: s.rho,
+          theta: s.theta,
+          slant: s.slant,
+          element: s.element,
         };
       }
 
@@ -494,7 +706,8 @@
        * neither side of the fight double-dips.
        */
       function player(L, spec) {
-        const { alloc: a, gearScale: gs, off, lean } = resolve(spec);
+        const r = resolve(spec);
+        const { alloc: a, gearScale: gs, off, lean } = r;
         const g = grow(L),
           C = P.statCoef;
         const atkBudget = (1 + 2 * C * a * off) * (gs * 2 * lean);
@@ -503,6 +716,11 @@
         const atk = P.baseAtk * g * atkBudget;
         const def = P.baseDef * g * half;
         const hp = refHp(L) * half;
+        // `atk` and `def` ARE atkEff and defEff — three slots, three factors,
+        // numerically identical to what they were before the split existed. The
+        // four displayed stats below are that same pair pushed off-centre by the
+        // shape, and inverse() aggregates them back to it exactly.
+        const sh = shapeOf(r);
         return {
           atk,
           def,
@@ -511,6 +729,8 @@
           cs: Math.cbrt(atk * def * hp),
           mspd: Math.min(P.mspdBase * (1 + C * a), P.mspdCap),
           mspdRaw: P.mspdBase * (1 + C * a),
+          ...sh,
+          ...forward(atk, def, sh),
         };
       }
 
@@ -545,6 +765,36 @@
       const rankDanger = (rk) =>
         (100 * P.aspd) / (rk.swings * (rk.shape === "boss" ? rk.n : 1));
 
+      /**
+       * THE SPLIT DOES NOT REACH THIS FUNCTION. Nothing below reads `rho`,
+       * `theta`, `slant` or `element`, and that is by construction rather than
+       * by omission — `C = baseDef / (k * baseAtk)` and every line after it are
+       * unchanged from before the split existed.
+       *
+       * Why it survives at zero cost: the solve is against the REFERENCE
+       * PLAYER, which the split now defines as rho = rhoBar, theta = 0,
+       * slant = 0, element = neutral. A flat defender gives m = 1 in one
+       * direction (family i) and a flat attacker gives m = 1 in the other
+       * (family ii), so Q === 1 by construction and the four tags never enter.
+       * The authored `r` is therefore the ELEMENT-NEUTRAL R, and Q is reported
+       * beside it as an auditable column — never baked into the solve.
+       *
+       * HARD RULE, and it is the mistake a future contributor is most likely to
+       * make because it sounds like a feature ("let the solver figure out the
+       * mob's resistances"):
+       *
+       *   NEVER SOLVE `theta` OR `slant` FROM TWO PER-CHANNEL `r` TARGETS.
+       *
+       * One free parameter against two targets is OVERDETERMINED. It has no
+       * exact solution, and reaching for one forces least-squares or
+       * root-finding — which turns a closed-form ladder that holds live at any
+       * slider setting into a numerical one that does not. The shape tags are
+       * AUTHORED; `mult`, the three multipliers and `sustain` are SOLVED. Never
+       * the reverse.
+       *
+       * If you find yourself editing the body of this function to accommodate
+       * the split, stop — something has gone wrong further up.
+       */
       function rankMults(rk) {
         // Hits a lone max-grade player needs to survive a mob of attack 1.0.
         const C = P.baseDef / (P.k * P.baseAtk);
@@ -723,20 +973,45 @@
         const rk = DATA.proposed.ladder.find((x) => x.rank === rank);
         const ref = player(L, "max");
         const { a, d, h } = rankMults(rk);
+        const atk = ref.atk * a,
+          def = ref.def * d,
+          hp = ref.hp * h;
+        // A rank's shape is authored on the ladder entry, never solved from it.
+        const sh = shapeOf(rk);
         return {
           mult: rk.mult,
           atkMult: a,
           defMult: d,
           hpMult: h,
-          atk: ref.atk * a,
-          def: ref.def * d,
-          hp: ref.hp * h,
+          atk,
+          def,
+          hp,
           cs: ref.cs * Math.cbrt(a * d * h),
+          ...sh,
+          ...forward(atk, def, sh),
         };
       }
 
-      /** One hit: k x refHp(defender level) x (atk / def). */
-      const hit = (att, dfn, Ldef) => P.k * refHp(Ldef) * (att.atk / dfn.def);
+      /**
+       * The damage ratio: the mix sum across both channels, times the element.
+       *
+       * THE ELEMENT MULTIPLIES THE WHOLE HIT, NOT JUST THE MAGIC TERM. That is
+       * not a preference and not a simplification. DamageCalculator.ts:36-40
+       * applies getElementMultiplier to `afterDefense` REGARDLESS of
+       * `damageType`, and canon lets a physical weapon be endowed with an
+       * element via coatings and magic stones — `WeaponConfig.element` is
+       * optional on EVERY weapon, not just staves. Attaching the element to the
+       * magic term alone reports 2.000 where the shipped code reports 4.000, so
+       * a physical build would silently get half the element leverage of a
+       * caster at identical investment.
+       */
+      const dmgRatio = (att, dfn) =>
+        (att.rho * (att.pAtk / dfn.pDef) +
+          (1 - att.rho) * (att.mAtk / dfn.mDef)) *
+        elem(att.element, dfn.element);
+
+      /** One hit: k x refHp(defender level) x dmgRatio. */
+      const hit = (att, dfn, Ldef) => P.k * refHp(Ldef) * dmgRatio(att, dfn);
 
       /**
        * R = how long the player survives / how long the encounter survives.
@@ -756,6 +1031,27 @@
         const rk = DATA.proposed.ladder.find((x) => x.rank === rank);
         // Healing extends how long the party lasts without changing how hard
         // the boss hits, so it divides survival time — and R with it.
+        // Q IS ALREADY IN HERE — DO NOT MULTIPLY IT IN AGAIN.
+        //
+        // This body is verbatim what it was before the split, and it has to
+        // stay that way. `single` is built from hit(), hit() is built from
+        // dmgRatio(), and dmgRatio factorises exactly as
+        // (atkEff/defEff) × m — so the two directions contribute
+        // m(p,mob) / m(mob,p), which IS Q. The decomposition
+        //
+        //   R = R_pre_split × Q(p, mob)
+        //
+        // therefore holds as a PROPERTY of this expression, not as a step to
+        // perform. An explicit `* Q(p, m)` here squares it, and the error is
+        // INVISIBLE at the reduction point because Q = 1 there — it was caught
+        // only by authoring a shape onto a rank and measuring R against §9's
+        // table, where rank C at Q = 0.25 must read 1.00 and a squared Q reads
+        // 0.25. Q() below exists to REPORT that factor and to let the gates
+        // assert it, never to reapply it.
+        //
+        // Q lands inside `single` — the duel — and therefore outside the shape
+        // factors below, which is what makes it cancel in R(n)/R(1) so
+        // encounter size still applies exactly 2n/(n+1) and nothing else.
         const single =
           hitsToDie(p, m, L) / hitsToKill(p, m, Lm) / (1 - rankSustain(rk));
         if (n <= 1) return single;
@@ -806,7 +1102,16 @@
       function invariants() {
         const C = P.statCoef,
           G = P.growth;
-        const statShare = C / (1 + C);
+        // Only R-VISIBLE primaries count toward the share a player's choices
+        // actually control. `agi` buys move speed and attack cadence, and the
+        // rank solve absorbs aspd entirely, so agi never reaches R: 3 of the 4
+        // primaries are R-visible, not 4. C/(1+C) is share(4) and overstates
+        // this at 33.3% -- the honest figure is 27.3%, which still clears the
+        // 25% floor but leaves far less headroom than the old number implied.
+        // Keep this in step with verify.mjs's G12, which pins all three values.
+        const R_VISIBLE_PRIMARIES = 3;
+        const visC = (R_VISIBLE_PRIMARIES / 4) * C;
+        const statShare = visC / (1 + visC);
         const reqs = requirements();
         const flat = [1, 25, 50, 75, P.levelMax].map((L) =>
           R(L, "C", "max", 1),
@@ -830,9 +1135,17 @@
           [
             // What makes 1/k readable as hits-to-kill. Breaks if baseAtk/baseDef
             // drift apart, or if the defensive budget stops being split as sqrt.
+            //
+            // BOTH HALVES, or this reads false after the split. atk/def ~ 1 is
+            // only the magnitude half; a mirror is also even in DIRECTION,
+            // Q = 1, and that has to be asserted separately because it is NOT
+            // implied. It holds for a same-element mirror too: every element is
+            // 0.5 against itself, so the pair cancels in Q and the fight simply
+            // takes 2/k hits instead of 1/k.
             "mirror match is an even fight",
-            `atk/def ${(hi.atk / hi.def).toFixed(4)}`,
-            Math.abs(hi.atk / hi.def - 1) < 0.01,
+            `atk/def ${(hi.atk / hi.def).toFixed(4)}, Q ${Q(hi, hi).toFixed(4)}`,
+            Math.abs(hi.atk / hi.def - 1) < 0.01 &&
+              Math.abs(Q(hi, hi) - 1) < 1e-12,
           ],
           [
             "even fight is 1/k hits",
@@ -906,19 +1219,37 @@
         ],
         "player CS": [
           "CombatScore",
-          "√(DPS × EHP). The single number that decides a duel — the split between damage and survivability cancels out.",
+          "cbrt(atkEff × defEff × HP) — three factors, so it is 1-homogeneous: doubling every stat doubles CS. NOT a sufficient statistic once elements or lopsided defences are in play; read it alongside Q.",
         ],
-        "mob CS": ["Mob CombatScore", "√(DPS × EHP) for one mob."],
-        "player pAtk": ["Physical attack", "Physical damage per hit."],
-        "player mAtk": ["Magic attack", "Magic damage per cast."],
+        "mob CS": [
+          "Mob CombatScore",
+          "cbrt(atkEff × defEff × HP) for one mob, on the same ruler as the player's.",
+        ],
+        "player pAtk": [
+          "Physical attack",
+          "atkEff × xp. A DIRECTION on the attack magnitude, not an extra magnitude — rho·xp + (1−rho)·xm is exactly 1, so tilting toward physical costs magic one-for-one.",
+        ],
+        "player mAtk": [
+          "Magic attack",
+          "atkEff × xm. The other half of the same budget as pAtk.",
+        ],
         "player pDef": [
           "Physical defence",
-          "Feeds mitigation via pDef / (pDef + K).",
+          "defEff ÷ qp. Mitigation is DIVISIVE and uncapped here — damage scales as atk/def — not the saturating pDef/(pDef+K) form. (The live server's DamageCalculator is subtractive and 80%-capped; that divergence is tracked, not modelled.)",
         ],
-        "mob pAtk": ["Mob physical attack", "Physical damage per hit."],
+        "player mDef": [
+          "Magic defence",
+          "defEff ÷ qm. Aggregated HARMONICALLY with pDef at the global reference mix, which is what stops a lopsided defence from buying free CS.",
+        ],
+        "mob pAtk": ["Mob physical attack", "atkEff × xp for the mob."],
         "mob pDef": [
           "Mob physical defence",
-          "Same mitigation formula as the player.",
+          "Same divisive mitigation as the player, on the same gauge.",
+        ],
+        "mob mDef": ["Mob magic defence", "defEff ÷ qm for the mob."],
+        Q: [
+          "Matchup factor",
+          "matchup(player, mob) ÷ matchup(mob, player). R is exactly LINEAR in Q, and Q reaches R through hit() — it is never multiplied in. Over the shipped element table Q is trinary: 0.25, 1.00 or 4.00, and 84% of ordered pairs are 1.00.",
         ],
         "player maxHP": [
           "Maximum health",
@@ -927,7 +1258,7 @@
         "mob HP": ["Mob maximum health", "Raw health pool, before mitigation."],
         "damage mitigated †": [
           "Damage reduction",
-          "Share of incoming damage absorbed. Constant at every level by design — K(L) grows at the same rate as pDef.",
+          "Share of incoming damage absorbed, read off the divisive form: 1 − atk/def against a same-level opponent. Constant at every level by design, because attack and defence grow at the same rate.",
         ],
         "player EHP": [
           "Effective health",

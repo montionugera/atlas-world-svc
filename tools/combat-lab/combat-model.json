@@ -91,6 +91,20 @@
         "step": 0.05,
         "label": "Mob durability in HP (vs def)"
       },
+      "postureMix": {
+        "value": 0.5,
+        "min": 0.05,
+        "max": 0.95,
+        "step": 0.05,
+        "label": "Reference offence mix (physical share)"
+      },
+      "elemWeight": {
+        "value": 1,
+        "min": 0,
+        "max": 1,
+        "step": 0.05,
+        "label": "Element weight (damper, e^η)"
+      },
       "gapWeight": {
         "value": 0.6,
         "min": 0,
@@ -172,6 +186,81 @@
     "levelMax": 99,
     "statCapAtL1": 10,
     "statCapAtLMax": 99,
+    "elements": [
+      "neutral",
+      "earth",
+      "water",
+      "wind",
+      "fire",
+      "holy",
+      "void"
+    ],
+    "elementTable": {
+      "neutral": {
+        "neutral": 1,
+        "earth": 1,
+        "water": 1,
+        "wind": 1,
+        "fire": 1,
+        "holy": 1,
+        "void": 1
+      },
+      "earth": {
+        "neutral": 1,
+        "earth": 0.5,
+        "water": 1,
+        "wind": 2,
+        "fire": 0.5,
+        "holy": 1,
+        "void": 1
+      },
+      "water": {
+        "neutral": 1,
+        "earth": 1,
+        "water": 0.5,
+        "wind": 0.5,
+        "fire": 2,
+        "holy": 1,
+        "void": 1
+      },
+      "wind": {
+        "neutral": 1,
+        "earth": 0.5,
+        "water": 2,
+        "wind": 0.5,
+        "fire": 1,
+        "holy": 1,
+        "void": 1
+      },
+      "fire": {
+        "neutral": 1,
+        "earth": 2,
+        "water": 0.5,
+        "wind": 1,
+        "fire": 0.5,
+        "holy": 1,
+        "void": 1
+      },
+      "holy": {
+        "neutral": 1,
+        "earth": 1,
+        "water": 1,
+        "wind": 1,
+        "fire": 1,
+        "holy": 0.5,
+        "void": 2
+      },
+      "void": {
+        "neutral": 1,
+        "earth": 1,
+        "water": 1,
+        "wind": 1,
+        "fire": 1,
+        "holy": 2,
+        "void": 0.5
+      }
+    },
+    "elementSource": "colyseus-server/src/config/combat/elements.ts",
     "ladder": [
       {
         "rank": "E",
@@ -180,6 +269,10 @@
         "shape": "pack",
         "mult": 0.43813308390101247,
         "n": 1,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
         "from": 1,
         "to": 12,
         "was": 1
@@ -191,6 +284,10 @@
         "shape": "pack",
         "mult": 0.5518584262127164,
         "n": 1,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
         "from": 13,
         "to": 25,
         "was": 1.15
@@ -202,6 +299,10 @@
         "shape": "pack",
         "mult": 0.6299605249474366,
         "n": 1,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
         "from": 26,
         "to": 40,
         "was": 1.3
@@ -213,6 +314,10 @@
         "shape": "pack",
         "mult": 0.8475491134282155,
         "n": 2,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
         "from": 41,
         "to": 55,
         "was": 1.5
@@ -224,6 +329,10 @@
         "shape": "pack",
         "mult": 0.9614997135382722,
         "n": 4,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
         "from": 56,
         "to": 70,
         "was": 1.8
@@ -235,6 +344,10 @@
         "shape": "boss",
         "mult": 1.0357441686512863,
         "n": 8,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
         "level": 77,
         "ttk": 150,
         "from": 71,
@@ -248,6 +361,10 @@
         "shape": "boss",
         "mult": 1.0828870144196137,
         "n": 20,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
         "level": 90,
         "ttk": 900,
         "from": 85,
@@ -261,6 +378,10 @@
         "shape": "boss",
         "mult": 1.1188381403949932,
         "n": 50,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
         "level": 97,
         "ttk": 5400,
         "from": 96,
@@ -378,17 +499,29 @@
       {
         "grade": "max",
         "build": "high",
-        "gear": "A"
+        "gear": "A",
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral"
       },
       {
         "grade": "median",
         "build": "mid",
-        "gear": "C"
+        "gear": "C",
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral"
       },
       {
         "grade": "min",
         "build": "low",
-        "gear": "E"
+        "gear": "E",
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral"
       }
     ],
     "bands": [

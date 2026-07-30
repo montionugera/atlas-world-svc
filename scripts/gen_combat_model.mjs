@@ -39,6 +39,49 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const growth = 1.045;
 
+// --------------------------------------------------------------- elements ----
+// The 6-element RO-style table shipped by F-017, carried here as AUTHORED data.
+//
+// This is the one place the model deliberately mirrors something the game
+// already has, and it is a mirror rather than an import on purpose: this file
+// still reads nothing from `colyseus-server/`. The source of truth for the
+// running game is `colyseus-server/src/config/combat/elements.ts`; if that file
+// changes, this must be changed to match. The rules are DERIVED from the two
+// canon statements rather than transcribed cell by cell, so a typo cannot hide
+// in 49 hand-written numbers:
+//
+//   natural cycle, ONE-DIRECTIONAL:  water > fire > earth > wind > water
+//   opposed pair, MUTUAL:            holy <-> void
+//   every element against itself:    0.5
+//   `neutral`:                       inert, 1.0 as attacker and as defender
+//
+// The consequence worth knowing, because it is the opposite of the intuition:
+// `holy`<->`void` is MUTUAL 2.0, so it cancels in Q and moves difficulty NOT AT
+// ALL -- it is a pure pacing lever (both clocks halve). Same-element is mutual
+// 0.5 and likewise Q-neutral (both clocks double). The ONLY thing that moves
+// difficulty is the one-directional cycle, which is 8 of the 49 ordered pairs.
+const ELEMENTS = ["neutral", "earth", "water", "wind", "fire", "holy", "void"];
+const STRONG = 2.0;
+const WEAK = 0.5;
+const EVEN = 1.0;
+const CYCLE = { water: "fire", fire: "earth", earth: "wind", wind: "water" };
+const OPPOSED = { holy: "void", void: "holy" };
+
+const elementTable = Object.fromEntries(
+  ELEMENTS.map((att) => [
+    att,
+    Object.fromEntries(
+      ELEMENTS.map((def) => {
+        if (att === "neutral" || def === "neutral") return [def, EVEN];
+        if (att === def) return [def, WEAK];
+        if (CYCLE[att] === def || OPPOSED[att] === def) return [def, STRONG];
+        if (CYCLE[def] === att) return [def, WEAK];
+        return [def, EVEN];
+      }),
+    ),
+  ]),
+);
+
 // Rank ladder. `mult` is a CombatScore multiplier and is SOLVED, not authored,
 // so the R column stays exactly where it has always been calibrated:
 //
@@ -225,6 +268,47 @@ const LADDER_TARGETS = [
   },
 ];
 
+// ------------------------------------------------------------ shape tags ----
+// The four per-entity tags the physical/magical split adds (F-018). They are
+// DIMENSIONLESS, LEVEL-FREE and AUTHORED -- and the last of those is the rule
+// that matters most:
+//
+//   rho      [0,1]     physical share of this entity's damage OVER A FIGHT
+//   theta    SIGNED    offence purity;  > 0 favours physical, < 0 favours magic
+//   slant    SIGNED    defence lopsidedness;  > 0 favours pDef
+//   element  7 values  attack/defence element, `neutral` is inert both ways
+//
+// `theta` and `slant` MUST BE SIGNED. An unsigned form was tried and has a
+// proven sign pathology: at rho = 0, theta = -1 -- a pure caster -- it produced
+// pAtk 180 / mAtk 100 instead of 0 / 100. Clamps are enforced in the lab's
+// shape(): |theta| <= 1, |slant| <= 0.5, tightened further by whatever keeps
+// xp, xm >= 0 and qp, qm > 0.
+//
+// HARD RULE: NEVER SOLVE `theta` OR `slant` FROM PER-CHANNEL DIFFICULTY TARGETS.
+// One free parameter against two targets is overdetermined -- it has no exact
+// solution and forces least-squares or root-finding, which is how a closed-form
+// ladder turns into a numerical one. The shape tags are AUTHORED; `mult`, the
+// three rank multipliers and `sustain` are SOLVED. Never the reverse. This
+// sounds like a feature ("let the solver figure out the mob's resistances") and
+// that is exactly why it is written down as a prohibition.
+//
+// EVERY RANK IS AT THE REDUCTION POINT TODAY -- rho 0.5, theta 0, slant 0,
+// neutral. That is deliberate: it is what makes the split provably free, and it
+// is the state the exactness gate pins. Authoring a shape here is a real
+// balance change, and for `element` it is governed by G-ELEM: no encounter may
+// put the player on the cycle-DISADVANTAGED side of a boss of its own rank,
+// because at Q = 0.25 ranks C, B, S, SS and SSS all fall below R = 1.
+const RANK_SHAPE = {
+  E: { rho: 0.5, theta: 0, slant: 0, element: "neutral" },
+  D: { rho: 0.5, theta: 0, slant: 0, element: "neutral" },
+  C: { rho: 0.5, theta: 0, slant: 0, element: "neutral" },
+  B: { rho: 0.5, theta: 0, slant: 0, element: "neutral" },
+  A: { rho: 0.5, theta: 0, slant: 0, element: "neutral" },
+  S: { rho: 0.5, theta: 0, slant: 0, element: "neutral" },
+  SS: { rho: 0.5, theta: 0, slant: 0, element: "neutral" },
+  SSS: { rho: 0.5, theta: 0, slant: 0, element: "neutral" },
+};
+
 const ladder = LADDER_TARGETS.map((t) => ({
   rank: t.rank,
   r: t.r,
@@ -232,6 +316,8 @@ const ladder = LADDER_TARGETS.map((t) => ({
   shape: t.shape,
   mult: Math.cbrt((2 * t.n) / ((t.n + 1) * t.r)),
   n: t.n,
+  // Authored shape, not solved. See RANK_SHAPE above.
+  ...RANK_SHAPE[t.rank],
   // Bosses only. Undefined for a pack, whose level comes from its band.
   level: t.level,
   // Bosses only, and optional even there. Present => the fight's wall clock is
@@ -339,6 +425,49 @@ const proposed = {
       max: 1,
       step: 0.05,
       label: "Mob durability in HP (vs def)",
+    },
+    // The two globals the physical/magical split adds (F-018).
+    //
+    // NOT outcome-neutral the way `durabilityHp` above is -- do not read them
+    // that way. They leave every R bit-identical only WHILE ALL AUTHORED TAGS
+    // ARE FLAT AND NEUTRAL, which is where the ladder is calibrated and is what
+    // the reduction gate pins. Author one shape or one element and both become
+    // real balance levers: measured at a single authored shape, postureMix moves
+    // R by 1.57x across its range and elemWeight by 4x. `durabilityHp` by
+    // contrast leaves R unmoved at EVERY setting, authored or not.
+    //
+    // So: gauges, not free parameters. Changing either re-quotes the whole
+    // ladder and requires re-running the band-worst sweep, not just verify.
+    //
+    // postureMix (rhoBar) is the reference offence mix that `defEff` and
+    // CombatScore are quoted against. It is GLOBAL, not per-entity, and that is
+    // the whole reason CS stays comparable across entities -- every defence is
+    // harmonically aggregated at the SAME reference mix, so two entities' CS
+    // are measured on one ruler. Per-entity it would silently become a free
+    // parameter each side could pick to flatter itself.
+    //
+    // Kept strictly inside (0,1): at either endpoint one channel drops out of
+    // the harmonic aggregate entirely and the slant clamps divide by zero.
+    postureMix: {
+      value: 0.5,
+      min: 0.05,
+      max: 0.95,
+      step: 0.05,
+      label: "Reference offence mix (physical share)",
+    },
+    // elemWeight (eta) damps the element table: e -> e^eta. 1 is the shipped
+    // table; 0 disables elements entirely and reduces to the pre-split model.
+    // It is the emergency lever if the cycle turns out too sharp -- eta = 0.5
+    // reads 2.0 as 1.41 and caps the cycle span at 4x instead of 16x -- and it
+    // is deliberately NOT the fix for the difficulty inversion the cycle can
+    // cause. That is a content gate (G-ELEM), because 84% of the table is
+    // already Q = 1 and the hazard is 8 ordered pairs.
+    elemWeight: {
+      value: 1,
+      min: 0,
+      max: 1,
+      step: 0.05,
+      label: "Element weight (damper, e^η)",
     },
     gapWeight: {
       value: 0.6,
@@ -461,6 +590,14 @@ const proposed = {
   statCapAtL1: 10,
   statCapAtLMax: 99,
 
+  // The shipped F-017 element table, mirrored (see the ELEMENTS block at the
+  // top for why it is a mirror and not an import, and what has to change with
+  // it). `elementSource` is recorded so the drift is traceable from the JSON
+  // alone rather than only from this generator.
+  elements: ELEMENTS,
+  elementTable,
+  elementSource: "colyseus-server/src/config/combat/elements.ts",
+
   ladder,
 
   // Two INDEPENDENT player axes. They used to be fused into one max/median/min
@@ -506,10 +643,45 @@ const proposed = {
   ],
   archetypeRanks: ["E", "D", "C", "B", "A", "S", "SS"],
 
+  // The three named player specs. They carry the same four SHAPE TAGS a mob
+  // rank does (see RANK_SHAPE), spelled out rather than left to default,
+  // because these three ARE the reference player the whole ladder is solved
+  // against -- and §8's argument that the mob solver survives at zero cost
+  // rests on that reference being flat. Written down, it is auditable; left
+  // implicit, it is an assumption.
+  //
+  // Any spec that does NOT name them (the ad-hoc {build, gear, focus,
+  // gearClass} objects the matrix and archetype tables build) falls back to
+  // exactly these values, so every number that predates the split is
+  // reproduced bit for bit.
   grades: [
-    { grade: "max", build: "high", gear: "A" },
-    { grade: "median", build: "mid", gear: "C" },
-    { grade: "min", build: "low", gear: "E" },
+    {
+      grade: "max",
+      build: "high",
+      gear: "A",
+      rho: 0.5,
+      theta: 0,
+      slant: 0,
+      element: "neutral",
+    },
+    {
+      grade: "median",
+      build: "mid",
+      gear: "C",
+      rho: 0.5,
+      theta: 0,
+      slant: 0,
+      element: "neutral",
+    },
+    {
+      grade: "min",
+      build: "low",
+      gear: "E",
+      rho: 0.5,
+      theta: 0,
+      slant: 0,
+      element: "neutral",
+    },
   ],
 
   // R = time you survive / time the encounter survives. R>1 wins.

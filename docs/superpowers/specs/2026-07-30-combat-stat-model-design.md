@@ -27,7 +27,7 @@ the design to be judged against it, or bent to match it.
 | `tools/combat-lab/index.html` | The lab. Computes every figure live from those numbers. |
 | `tools/combat-lab/verify.mjs` | <!-- GEN:gatecount2 -->
 
-35 assertion sites
+72 assertion sites
 
 <!-- /GEN:gatecount2 --> gates. Run before believing anything. |
 
@@ -396,18 +396,43 @@ and which the pack factor and boss rotation already silently depend on.
 
 ## 8. What is NOT settled
 
-1. **No simulation has ever run.** Every number is closed-form — no crits,
-   misses, kiting, movement or line of sight. This is the largest gap.
-2. **The shipped stat formula disagrees structurally.** `derivedStats.ts` is
-   additive with a flat base and has **no geometric growth**; this model is
-   multiplicative. It splits pAtk/mAtk where this carries one `atk`, and has
-   four primaries where this has three stats. **Blocks all implementation.**
+1. **Simulation has now run, and it disagrees.** F-018's Phase 5 drove real rooms
+   (real AI, physics, knockback, strategy cadence, range/facing gating) and found the
+   **party assumptions do not hold**:
+   - **Bosses focus-fire and structurally cannot stop** — nearest-target picks a
+     victim, knockback pushes that victim away, the boss chases the victim it just
+     hit, which keeps it nearest. So the `n²` branch prices a rank as though damage
+     split `n` ways while **one player absorbs 8×/20×/50×** of it at S/SS/SSS.
+   - **The pack result is geometry, not AI.** Only **1 of 49 swings (2%)** landed
+     while a mob's lane-mate was not already its nearest player.
+   Treat both `2n/(n+1)` and `n²` as **unverified**. What is still closed-form-only:
+   crits, misses, kiting and line of sight, and the parity check is a **per-hit damage
+   probe rather than a simulated fight** — its numbers are reproducible without
+   instantiating a room at all. So the gap is narrower than it was and **not closed**.
+2. **The shipped stat formula still disagrees structurally.** `derivedStats.ts` is
+   additive with a flat base and **no geometric growth**; this model is multiplicative,
+   so `R` drifts with absolute level. F-018 resolved the *split* half — pAtk/mAtk and
+   pDef/mDef are now first-class in the model — but the additive-vs-multiplicative half
+   is **open**, blocked on a content decision: going multiplicative forces weapons off
+   a flat `pAtk` addend onto a gear **scale**, which reinterprets every item-catalog
+   number. There are also **three hand-written copies** of the formula
+   (`contracts/src/meta/derivedStats.ts`, its C# twin in `game-client/src/UI/MetaIds.cs`,
+   and the divergent `Player.recalculateStats`) with no codegen between them.
+2b. **Mitigation shape is unreconciled, and this is load-bearing.**
+   `DamageCalculator.ts` is **subtractive, 80%-capped and 1-floored**
+   (`max(1, base − min(pDef + armor, 0.8·base))`); this model is **divisive and
+   uncapped** (`k · refHp · atk/def`). These are different functions and cannot agree
+   in general. **Do not read this model as predicting shipped damage numbers.** The
+   `|slant| <= 0.5` clamp bounds the divergence; it does not remove it.
 3. **`manaBars` (8) and `combatManaRegen` (0.1%/s) are unanchored** and supply
    92% of SSS's healing, which funds at only **1.10×**.
 4. **`gapWeight` 0.6 is chosen, not derived.**
 5. **Rank S is on a knife edge** — 67% potion uptime, healers at 53% of healing,
    barely over the role-check gate.
-6. **Mana, skills and physical-vs-magic parity are not folded into R.**
+6. **Mana and skills are not folded into R.** Physical-vs-magic parity now **is** —
+   F-018 carries pAtk/mAtk, pDef/mDef and the element multiplier through `R`, with the
+   matchup factor `Q` as its own term. Note `Q` means **CombatScore is no longer a
+   sufficient statistic**: reading CS as "strength" mis-ranks matchups by up to 4×.
 7. **Unplaced entirely:** DEX, LUK, stat points per level, respec, per-race
    leans, jobs, resurrection, and rest time in any clear-time figure.
 
@@ -421,7 +446,7 @@ node scripts/gen_combat_model.mjs && node tools/combat-lab/verify.mjs
 
 <!-- GEN:gatecount -->
 
-35 assertion sites
+72 assertion sites
 
 <!-- /GEN:gatecount --> gates, cheapest first: the inline script parses, all 15 sections render,
 every column header is defined in the glossary, then requirements, the ladder,
