@@ -230,5 +230,14 @@
     "status": "claimed",
     "release_version": null,
     "claimed_at": "2026-07-30T17:48:16.244478+00:00"
+  },
+  {
+    "id": "F-021",
+    "title": "Local k8s full-stack deploy: storybook + nakama + cockroachdb, wired into ship",
+    "from_idea": "I-040",
+    "created_at": "2026-07-30T17:56:29.064538+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
