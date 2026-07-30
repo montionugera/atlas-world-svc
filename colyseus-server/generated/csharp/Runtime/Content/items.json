@@ -5,7 +5,8 @@
     "kind": "weapon",
     "stackable": false,
     "pAtk": 10,
-    "mAtk": 0
+    "mAtk": 0,
+    "atkStat": "str"
   },
   {
     "id": "magic_staff",
@@ -13,7 +14,8 @@
     "kind": "weapon",
     "stackable": false,
     "pAtk": 2,
-    "mAtk": 15
+    "mAtk": 15,
+    "atkStat": "int"
   },
   {
     "id": "great_bow",
@@ -21,7 +23,8 @@
     "kind": "weapon",
     "stackable": false,
     "pAtk": 16,
-    "mAtk": 0
+    "mAtk": 0,
+    "atkStat": "dex"
   },
   {
     "id": "dagger",
@@ -29,7 +32,8 @@
     "kind": "weapon",
     "stackable": false,
     "pAtk": 6,
-    "mAtk": 0
+    "mAtk": 0,
+    "atkStat": "str"
   },
   {
     "id": "scythe",
@@ -37,7 +41,8 @@
     "kind": "weapon",
     "stackable": false,
     "pAtk": 18,
-    "mAtk": 0
+    "mAtk": 0,
+    "atkStat": "str"
   },
   {
     "id": "potion_minor",

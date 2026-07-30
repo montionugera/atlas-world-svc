@@ -1,4 +1,5 @@
 import { type, MapSchema, ArraySchema } from '@colyseus/schema'
+import { derivedStats, type PrimaryStats } from '@atlas/contracts'
 import { WorldLife } from './WorldLife'
 import { PlayerInput } from './PlayerInput'
 import {
@@ -71,6 +72,23 @@ export class Player extends WorldLife implements IAgent {
   isEphemeral: boolean = false
 
   /**
+   * Server-only; not Colyseus-synced. The loadout inputs `derivedStats` needs,
+   * cached at join by applyLoadout so `recalculateStats()` can RE-DERIVE on a
+   * weapon switch instead of resetting to the flat PLAYER_STATS constants.
+   *
+   * They live here rather than as `@type` fields because `Player` carries no
+   * `level`, and `stat` (BaseStat) has no `int` — that absence is the actual
+   * reason recalculateStats ever diverged from derivedStats (I-032). Caching
+   * server-side fixes the divergence without changing the synced schema or the
+   * generated C# models.
+   *
+   * `metaAllocated` stays null for ephemeral joins and bots, which is the signal
+   * to fall back to config defaults.
+   */
+  metaLevel: number = 0
+  metaAllocated: PrimaryStats | null = null
+
+  /**
    * Server-only; not Colyseus-synced (deliberately no @type decorator). The
    * real Nakama user id resolved by GameRoom.onAuth. Never synced to clients
    * and never sourced from client-supplied options — see GameRoom.onJoin.
@@ -85,17 +103,35 @@ export class Player extends WorldLife implements IAgent {
   }
 
   recalculateStats() {
-    let wPAtk = 0
-    let wMAtk = 0
-    if (this.equippedWeaponId) {
-      const weapon = WEAPONS[this.equippedWeaponId]
-      if (weapon) {
-        wPAtk = weapon.pAtk || 0
-        wMAtk = weapon.mAtk || 0
+    if (this.metaAllocated) {
+      // Re-derive from the cached loadout so a weapon switch keeps level and
+      // allocation. Deliberately does NOT touch currentHealth: applyLoadout
+      // fills the bar at join, and a maxHealth change mid-fight must not heal.
+      const stats = derivedStats({
+        level: this.metaLevel,
+        allocated: this.metaAllocated,
+        weaponItemId: this.equippedWeaponId || undefined,
+      })
+      this.pAtk = stats.pAtk
+      this.mAtk = stats.mAtk
+      this.pDef = stats.pDef
+      this.mDef = stats.mDef
+      this.maxHealth = stats.maxHealth
+    } else {
+      // Ephemeral join or bot: no loadout was ever fetched, so there is nothing
+      // to derive from. Keep the config defaults plus the flat weapon addend.
+      let wPAtk = 0
+      let wMAtk = 0
+      if (this.equippedWeaponId) {
+        const weapon = WEAPONS[this.equippedWeaponId]
+        if (weapon) {
+          wPAtk = weapon.pAtk || 0
+          wMAtk = weapon.mAtk || 0
+        }
       }
+      this.pAtk = PLAYER_STATS.pAtk + wPAtk
+      this.mAtk = PLAYER_STATS.mAtk + wMAtk
     }
-    this.pAtk = PLAYER_STATS.pAtk + wPAtk
-    this.mAtk = PLAYER_STATS.mAtk + wMAtk
     this.stat.agi = clampPrimaryStat(PLAYER_STATS.baseStat.agi + this.agiFromEquipment)
 
     const meleeTiming = resolvePlayerMeleeAttackTiming(this)
