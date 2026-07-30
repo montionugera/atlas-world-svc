@@ -6,7 +6,8 @@
     "build": "node esbuild.config.mjs",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "verify:bundle": "node scripts/check-bundle.mjs"
   },
   "dependencies": {
     "@atlas/contracts": "workspace:*"
