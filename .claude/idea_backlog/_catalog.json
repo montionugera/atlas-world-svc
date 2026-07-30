@@ -220,5 +220,11 @@
     "title": "BATTLE_ATTACK carries no damageType \u2014 the last silent physical fallback",
     "created_at": "2026-07-30T13:08:15.963149+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-038",
+    "title": "Weapon-driven offence stats: dex primary + multiplicative derivedStats (F-018 Phase 4)",
+    "created_at": "2026-07-30T13:16:46.547013+00:00",
+    "promoted_to": null
   }
 ]
