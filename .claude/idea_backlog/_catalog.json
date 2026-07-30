@@ -208,5 +208,11 @@
     "title": "Boss target rotation / aggro \u2014 bosses structurally cannot stop focus-firing",
     "created_at": "2026-07-30T13:08:07.370988+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-036",
+    "title": "Pack no-focus-fire, properly tested + a parity test that runs a real fight",
+    "created_at": "2026-07-30T13:08:15.424808+00:00",
+    "promoted_to": null
   }
 ]
