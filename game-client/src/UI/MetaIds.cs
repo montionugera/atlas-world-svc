@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace AtlasWorld.Client.UI
@@ -41,7 +42,7 @@ namespace AtlasWorld.Client.UI
     }
 
     /// <summary>Minimal item definition mirrored from contracts/content/items.json.</summary>
-    public sealed record ItemDef(string Id, string Name, string Kind, bool Stackable, int PAtk = 0, int MAtk = 0);
+    public sealed record ItemDef(string Id, string Name, string Kind, bool Stackable, int PAtk = 0, int MAtk = 0, string? AtkStat = null);
 
     /// <summary>Minimal skill definition mirrored from contracts/content/skills.json.</summary>
     public sealed record SkillDef(string Id, string Name, int MaxLevel);
@@ -54,11 +55,11 @@ namespace AtlasWorld.Client.UI
     {
         public static readonly Dictionary<string, ItemDef> ItemsById = new()
         {
-            ["basic_sword"] = new("basic_sword", "Basic Sword", "weapon", false, 10, 0),
-            ["magic_staff"] = new("magic_staff", "Magic Staff", "weapon", false, 2, 15),
-            ["great_bow"] = new("great_bow", "Great Bow", "weapon", false, 16, 0),
-            ["dagger"] = new("dagger", "Dagger", "weapon", false, 6, 0),
-            ["scythe"] = new("scythe", "Scythe", "weapon", false, 18, 0),
+            ["basic_sword"] = new("basic_sword", "Basic Sword", "weapon", false, 10, 0, "str"),
+            ["magic_staff"] = new("magic_staff", "Magic Staff", "weapon", false, 2, 15, "int"),
+            ["great_bow"] = new("great_bow", "Great Bow", "weapon", false, 16, 0, "dex"),
+            ["dagger"] = new("dagger", "Dagger", "weapon", false, 6, 0, "str"),
+            ["scythe"] = new("scythe", "Scythe", "weapon", false, 18, 0, "str"),
             ["potion_minor"] = new("potion_minor", "Minor Healing Potion", "consumable", true),
             ["leather_armor"] = new("leather_armor", "Leather Armor", "armor", false),
             ["iron_ore"] = new("iron_ore", "Iron Ore", "material", true),
@@ -104,26 +105,67 @@ namespace AtlasWorld.Client.UI
     }
 
     /// <summary>
-    /// Derived combat stats — C# port of nakama/src/... derivedStats. PINNED formula;
-    /// do not tune here. Used by the Loadout screen for a read-only stats readout.
+    /// Derived combat stats — C# port of contracts/src/meta/derivedStats.ts.
+    ///
+    /// Multiplicative: grow(level) enters atk, def and maxHealth as exactly ONE factor,
+    /// so it cancels out of the attack/defence ratio. Offence reads exactly ONE primary
+    /// stat, chosen by the equipped weapon's AtkStat (bow -> dex, casting -> int,
+    /// blade -> str). Both defences come off vit alone.
+    ///
+    /// There is NO codegen between this and the TypeScript original — change both
+    /// together, or the Loadout screen shows stats the server does not agree with.
+    /// The constants are solved from an anchor (level 1, all primaries 1, basic_sword
+    /// reproduces the pre-F018 numbers); do not tune them here.
+    ///
+    /// Returns doubles, not ints: the formula produces fractional values and truncating
+    /// them would make this readout disagree with the server.
     /// </summary>
     public static class MetaFormulas
     {
-        public static (int maxHealth, int pAtk, int mAtk, int pDef, int mDef, double maxMoveSpeed)
-            Derived(int level, double str, double agi, double @int, double vit, string? weaponItemId)
+        const double Growth = 1.045, StatCoef = 0.5, StatMax = 99;
+        const double BaseHp = 108.9, BaseAtk = 19.602, BaseDef = 5.94;
+        const double GearReference = 18, UnarmedGear = 0.25;
+
+        static double Share(double p) => Math.Min(StatMax, Math.Max(1, p)) / StatMax;
+
+        public static (double maxHealth, double pAtk, double mAtk, double pDef, double mDef, double maxMoveSpeed)
+            Derived(int level, double str, double agi, double @int, double vit, double dex, string? weaponItemId)
         {
-            int wpAtk = 0, wmAtk = 0;
-            if (weaponItemId != null && Catalog.ItemsById.TryGetValue(weaponItemId, out ItemDef? w))
+            // Unarmed: str, fully physical, and strictly worse than any weapon.
+            double gear = UnarmedGear, rho = 1, offStat = str;
+
+            if (weaponItemId != null
+                && Catalog.ItemsById.TryGetValue(weaponItemId, out ItemDef? w)
+                && w.Kind == "weapon"
+                && w.AtkStat != null)
             {
-                wpAtk = w.PAtk;
-                wmAtk = w.MAtk;
+                double total = w.PAtk + w.MAtk;
+                if (total > 0)
+                {
+                    gear = total / GearReference;
+                    rho = w.PAtk / total;
+                }
+                offStat = w.AtkStat switch { "dex" => dex, "int" => @int, _ => str };
             }
+
+            double grow = Math.Pow(Growth, level - 1);
+            double offMagnitude = 1 + 2 * StatCoef * Share(offStat);
+            double defMagnitude = 1 + 2 * StatCoef * Share(vit);
+
+            double atk = BaseAtk * grow * offMagnitude * gear;
+            double def = BaseDef * grow * defMagnitude;
+
             return (
-                maxHealth: (int)(100 + 10 * vit + 5 * (level - 1)),
-                pAtk: (int)(10 + 2 * str + wpAtk),
-                mAtk: (int)(10 + 2 * @int + wmAtk),
-                pDef: (int)(5 + vit),
-                mDef: (int)(5 + @int),
+                maxHealth: BaseHp * grow * defMagnitude,
+                // rho + (1-rho) sums to 1, so the two multipliers sum to 2 and total
+                // offence is conserved across any channel split. A blade (rho 1) yields
+                // mAtk of exactly 0 — intended: magic needs a magic weapon.
+                pAtk: atk * 2 * rho,
+                mAtk: atk * 2 * (1 - rho),
+                pDef: def,
+                mDef: def,
+                // Additive on purpose: move speed is on neither side of the attack/
+                // defence ratio, so it already cancels.
                 maxMoveSpeed: 20 + 0.2 * agi);
         }
     }

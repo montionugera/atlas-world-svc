@@ -17,12 +17,15 @@ const primaryStatsSchema = z
     agi: z.number(),
     int: z.number(),
     vit: z.number(),
+    dex: z.number(),
   })
   .strict();
 
 export const profileDocSchema = z
   .object({
-    schemaVersion: z.literal(1),
+    // v2 added `dex` to PrimaryStats. Only `profile` changed shape; every other
+    // collection is still v1 (see nakama/src/storage.ts migrateDoc).
+    schemaVersion: z.literal(2),
     level: z.number(),
     xp: z.number(),
     statPoints: z.number(),
@@ -134,11 +137,11 @@ const DEFAULT_DOC_FACTORIES: {
   [K in keyof DefaultDocMap]: () => DefaultDocMap[K];
 } = {
   [COLLECTIONS.profile]: () => ({
-    schemaVersion: 1,
+    schemaVersion: 2,
     level: 1,
     xp: 0,
     statPoints: 0,
-    allocated: { str: 1, agi: 1, int: 1, vit: 1 },
+    allocated: { str: 1, agi: 1, int: 1, vit: 1, dex: 1 },
   }),
   [COLLECTIONS.inventory]: () => ({
     schemaVersion: 1,

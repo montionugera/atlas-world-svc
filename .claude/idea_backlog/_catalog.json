@@ -160,5 +160,71 @@
     "title": "damageType dropped on the BattleManager queue path (magical projectiles defended with pDef)",
     "created_at": "2026-07-27T06:12:55.294281+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-028",
+    "title": "Phase C runtime spine: player race/class field + BaseStat<->PrimaryStats reconciliation + per-race stat leans (F-017 canon-of-intent into game state)",
+    "created_at": "2026-07-28T00:48:20.248623+00:00",
+    "promoted_to": "F-018"
+  },
+  {
+    "id": "I-029",
+    "title": "Activate the element system: give shipped content non-neutral elements (war-scar mobs as Void-line) \u2014 built in F-017 but currently 100% inert",
+    "created_at": "2026-07-28T00:48:27.109632+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-030",
+    "title": "Concept-art manifest gate: extend check_asset_manifest.mjs to cover game-client/assets/art/art-manifest.json (80 ungated keys, LFS files unverified) + close the missing art:race-human key",
+    "created_at": "2026-07-28T00:48:33.148657+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-031",
+    "title": "Commit the concept-art generation pipeline into the repo (Z-Image Turbo img2img + silhouette recipe + prompt laws + batch matrix scripts) \u2014 currently scratchpad-only and dies with the session",
+    "created_at": "2026-07-28T00:48:40.368492+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-032",
+    "title": "recalculateStats clobbers the applied loadout \u2014 SWITCH_WEAPON erases every allocated stat point mid-match",
+    "created_at": "2026-07-28T02:35:38.373631+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-033",
+    "title": "Primary-stat clamp split-brain \u2014 Nakama allows unbounded allocation, colyseus clamps 1-99, derivedStats consumes raw",
+    "created_at": "2026-07-28T02:35:44.393621+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-034",
+    "title": "Player race/class field + per-race stat leans (deferred from F-018 foundation slice)",
+    "created_at": "2026-07-29T17:49:59.851582+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-035",
+    "title": "Boss target rotation / aggro \u2014 bosses structurally cannot stop focus-firing",
+    "created_at": "2026-07-30T13:08:07.370988+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-036",
+    "title": "Pack no-focus-fire, properly tested + a parity test that runs a real fight",
+    "created_at": "2026-07-30T13:08:15.424808+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-037",
+    "title": "BATTLE_ATTACK carries no damageType \u2014 the last silent physical fallback",
+    "created_at": "2026-07-30T13:08:15.963149+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-038",
+    "title": "Weapon-driven offence stats: dex primary + multiplicative derivedStats (F-018 Phase 4)",
+    "created_at": "2026-07-30T13:16:46.547013+00:00",
+    "promoted_to": "F-019"
   }
 ]

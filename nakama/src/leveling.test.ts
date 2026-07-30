@@ -13,7 +13,7 @@ describe('applyXp', () => {
   it('single level-up leaves remainder xp and +3 statPoints', () => {
     const result = applyXp(DEFAULT_PROFILE, 250);
     expect(result).toEqual({
-      schemaVersion: 1,
+      schemaVersion: 2,
       level: 2,
       xp: 150,
       statPoints: 3,

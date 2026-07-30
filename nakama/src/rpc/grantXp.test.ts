@@ -44,7 +44,7 @@ describe('grantXp', () => {
     const result = grantXp(stubCtx(''), stubLogger(), nk, JSON.stringify({ userId: 'u1', amount: 250 })) as string;
 
     expect(JSON.parse(result)).toEqual({
-      schemaVersion: 1,
+      schemaVersion: 2,
       level: 2,
       xp: 150,
       statPoints: 3,

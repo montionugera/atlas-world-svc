@@ -1,5 +1,9 @@
 import { z } from "zod";
-import type { MatchEventType } from "./types";
+import type { AtkStat, MatchEventType } from "./types";
+
+// Reuses the AtkStat union from ./types as the single source of truth for which
+// primary stat a weapon's damage reads; `satisfies` keeps this array in sync.
+const ATK_STATS = ["str", "dex", "int"] as const satisfies readonly AtkStat[];
 
 // Reuses the MatchEventType union from ./types as the single source of truth for
 // objective event types; `satisfies` keeps this array in sync at compile time.
@@ -18,6 +22,15 @@ export interface ItemDef {
   pAtk?: number;
   /** Weapon magic attack contribution. Only meaningful for kind: "weapon". */
   mAtk?: number;
+  /**
+   * Which single primary stat this weapon's damage reads. Only meaningful for
+   * kind: "weapon", and required for every weapon (gated in weaponStats.test.ts).
+   * Mirrors the `projectileType` recorded in
+   * colyseus-server/src/config/combat/weapons.ts — MELEE/SMALL_MELEE/LARGE_MELEE
+   * are "str", ARROW is "dex", MAGIC_SPEAR is "int". Nothing dedups those two
+   * catalogs, so a test gates them against each other instead.
+   */
+  atkStat?: AtkStat;
 }
 
 export interface SkillDef {
@@ -54,6 +67,7 @@ export const itemDefSchema = z
     stackable: z.boolean(),
     pAtk: z.number().int().nonnegative().optional(),
     mAtk: z.number().int().nonnegative().optional(),
+    atkStat: z.enum(ATK_STATS).optional(),
   })
   .strict() satisfies z.ZodType<ItemDef>;
 

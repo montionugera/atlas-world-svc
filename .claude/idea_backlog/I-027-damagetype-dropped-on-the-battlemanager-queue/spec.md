@@ -1,10 +1,26 @@
 ---
 title: "damageType dropped on the BattleManager queue path (magical projectiles defended with pDef)"
 id: I-027
-status: idea
+status: resolved
+resolved_by: "F-018 Phase 0 (commit ac7eff7, release/1.5)"
+resolved_at: 2026-07-30
 ---
 
 # damageType dropped on the BattleManager queue path
+
+> **RESOLVED by F-018 Phase 0** — `ac7eff7` *"fix: route damageType through the attack
+> queue so mDef is not dead code"*, shipped on `release/1.5`. `damageType` is now an
+> option on `BattleManager.createAttackMessage` and is fed from the projectile call site,
+> exactly the "minimal fix" this ticket sketched. A test that fails against the old
+> behaviour landed with it.
+>
+> `promoted_to` stays `null` in `_catalog.json` on purpose: the catalog's only lifecycle
+> field is `promoted_to` (→ an `F-NNN`), and this idea was fixed inside another feature
+> rather than promoted into one. That is why this frontmatter carries the outcome.
+>
+> **One gap deliberately left open** and refiled as **[[I-037]]**: the `BATTLE_ATTACK`
+> event still carries no `damageType`. Correct today — every emitter sources `pAtk` — but
+> it is the last place a magical hit could silently become physical.
 
 ## Problem
 

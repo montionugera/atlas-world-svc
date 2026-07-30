@@ -20,14 +20,20 @@ export function applyLoadout(player: Player, snap: LoadoutSnapshot): void {
   player.maxMoveSpeed = stats.maxMoveSpeed
   player.maxLinearSpeed = stats.maxMoveSpeed
 
+  // Cache the derivedStats inputs so recalculateStats() can re-derive on a
+  // weapon switch rather than clobbering the above back to PLAYER_STATS.
+  player.metaLevel = snap.profile.level
+  player.metaAllocated = { ...snap.profile.allocated }
+
   // Primary stats also drive derived combat timing (e.g. attack speed reads
   // player.stat.agi — see Player.recalculateStats/meleeAttackSpeed), so the
   // loadout's allocated points must land on player.stat, not just the
-  // pre-derived combat fields above. @atlas/contracts' PrimaryStats has no
-  // `dex` field — leave player.stat.dex at its config default.
+  // pre-derived combat fields above. `int` has no BaseStat slot and is not
+  // needed there — it reaches combat through derivedStats' mAtk.
   player.stat.agi = clampPrimaryStat(snap.profile.allocated.agi)
   player.stat.str = clampPrimaryStat(snap.profile.allocated.str)
   player.stat.vit = clampPrimaryStat(snap.profile.allocated.vit)
+  player.stat.dex = clampPrimaryStat(snap.profile.allocated.dex)
 }
 
 export interface LoadPlayerLoadoutParams {

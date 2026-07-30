@@ -2,6 +2,7 @@ import {
   COLLECTIONS,
   STORAGE_KEY,
   defaultDoc,
+  type PrimaryStats,
   type ProfileDoc,
   type InventoryDoc,
   type EquipmentDoc,
@@ -25,8 +26,21 @@ type CollectionDocs = {
 
 export type CollectionKey = keyof CollectionDocs;
 
-/** No collection has ever shipped a schema past version 1 yet. */
-const CURRENT_SCHEMA_VERSION = 1;
+/**
+ * Current schema version PER COLLECTION. This is deliberately not one global
+ * constant: `profile` went to v2 when `dex` joined PrimaryStats, while every
+ * other collection is still v1 and its `schemaVersion` field is typed as the
+ * literal `1`. A single global would force those collections to a version their
+ * own type forbids, and would send their perfectly-current docs down the
+ * migration path for no reason.
+ */
+const SCHEMA_VERSIONS = {
+  [COLLECTIONS.profile]: 2,
+  [COLLECTIONS.inventory]: 1,
+  [COLLECTIONS.equipment]: 1,
+  [COLLECTIONS.skills]: 1,
+  [COLLECTIONS.quests]: 1,
+} as const satisfies Record<CollectionKey, number>;
 
 /** Sentinel version passed to writeDoc for a doc that doesn't exist yet (create-only CAS). */
 export const NEW_DOC_VERSION = '*';
@@ -37,20 +51,37 @@ export interface DocRead<K extends CollectionKey> {
 }
 
 /**
- * Migrates a raw storage value up to CURRENT_SCHEMA_VERSION. Since only
- * version 1 has ever existed, anything already at 1 passes through
- * unchanged; anything older/malformed (missing or non-numeric
- * schemaVersion) is untrusted and reset to the collection default rather
- * than guessed at. Extend this switch when schema v2 ships.
+ * Migrates a raw storage value up to its collection's current schema version.
+ * A doc already at (or past) that version passes through unchanged.
+ *
+ * Anything older gets an EXPLICIT migration case. The `defaultDoc` fallback at
+ * the bottom is only for docs that are untrusted — a missing or non-numeric
+ * `schemaVersion` — because those cannot be interpreted at all. Reaching that
+ * fallback with real progression in hand would DISCARD level/xp/statPoints, so
+ * every version that has ever shipped must be handled above it.
  */
 function migrateDoc<K extends CollectionKey>(
   collection: K,
   raw: Record<string, unknown>,
 ): CollectionDocs[K] {
   const version = typeof raw.schemaVersion === 'number' ? raw.schemaVersion : 0;
-  if (version >= CURRENT_SCHEMA_VERSION) {
+  if (version >= SCHEMA_VERSIONS[collection]) {
     return raw as unknown as CollectionDocs[K];
   }
+
+  // v1 -> v2: `profile` gained `dex`. No other collection changed shape, and
+  // none of them is past v1, so they never reach here.
+  if (version === 1 && collection === COLLECTIONS.profile) {
+    const allocated = (raw.allocated ?? {}) as Partial<PrimaryStats>;
+    return {
+      ...raw,
+      schemaVersion: 2,
+      // Default to 1, matching DEFAULT_PROFILE — never overwrite a dex that is
+      // somehow already present.
+      allocated: { ...allocated, dex: allocated.dex ?? 1 },
+    } as unknown as CollectionDocs[K];
+  }
+
   return defaultDoc(collection);
 }
 

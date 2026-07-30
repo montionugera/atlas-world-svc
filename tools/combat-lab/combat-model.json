@@ -1,0 +1,659 @@
+{
+  "version": 3,
+  "proposed": {
+    "origin": "design-spec",
+    "spec": "docs/superpowers/specs/2026-07-28-combat-stat-model-design.md",
+    "balanceSheet": "docs/superpowers/specs/2026-07-28-combat-balance-sheet.md",
+    "reference": ".claude/idea_backlog/I-028-phase-c-runtime-spine-player-race-class/model/balance_sheet.py",
+    "note": "NOT in code yet. Damage is k * refHp(L) * (atk/def) — Lineage 2's divide shape. Headcount reading is 'n mobs AND n players', so R_encounter = R_single * 2n/(n+1).",
+    "inputs": {
+      "growth": {
+        "value": 1.045,
+        "min": 1.02,
+        "max": 1.07,
+        "step": 0.001,
+        "label": "Growth / level"
+      },
+      "k": {
+        "value": 0.1,
+        "min": 0.02,
+        "max": 0.5,
+        "step": 0.01,
+        "label": "Damage k (share of an HP bar)"
+      },
+      "baseHp": {
+        "value": 200,
+        "min": 50,
+        "max": 800,
+        "step": 10,
+        "label": "Reference HP @L1"
+      },
+      "baseAtk": {
+        "value": 40,
+        "min": 5,
+        "max": 200,
+        "step": 1,
+        "label": "Base atk @L1"
+      },
+      "baseDef": {
+        "value": 49,
+        "min": 5,
+        "max": 200,
+        "step": 1,
+        "label": "Base def @L1"
+      },
+      "aspd": {
+        "value": 0.5,
+        "min": 0.2,
+        "max": 4,
+        "step": 0.1,
+        "label": "Attack speed (hits/s)"
+      },
+      "statCoef": {
+        "value": 0.5,
+        "min": 0,
+        "max": 1.5,
+        "step": 0.05,
+        "label": "Stat coefficient C"
+      },
+      "gearLean": {
+        "value": 0.65,
+        "min": 0.5,
+        "max": 0.9,
+        "step": 0.01,
+        "label": "Gear class lean (offense share)"
+      },
+      "mspdBase": {
+        "value": 20,
+        "min": 5,
+        "max": 40,
+        "step": 1,
+        "label": "Move speed base"
+      },
+      "mspdCap": {
+        "value": 36,
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "label": "Move speed clamp"
+      },
+      "encounterSize": {
+        "value": 1,
+        "min": 1,
+        "max": 50,
+        "step": 1,
+        "label": "Encounter size (n vs n)"
+      },
+      "durabilityHp": {
+        "value": 0.9,
+        "min": 0.5,
+        "max": 1,
+        "step": 0.05,
+        "label": "Mob durability in HP (vs def)"
+      },
+      "postureMix": {
+        "value": 0.5,
+        "min": 0.05,
+        "max": 0.95,
+        "step": 0.05,
+        "label": "Reference offence mix (physical share)"
+      },
+      "elemWeight": {
+        "value": 1,
+        "min": 0,
+        "max": 1,
+        "step": 0.05,
+        "label": "Element weight (damper, e^η)"
+      },
+      "gapWeight": {
+        "value": 0.6,
+        "min": 0,
+        "max": 1,
+        "step": 0.05,
+        "label": "Level gap weight"
+      },
+      "exampleLevel": {
+        "value": 20,
+        "min": 1,
+        "max": 99,
+        "step": 1,
+        "label": "Worked example level"
+      },
+      "mobLevelDelta": {
+        "value": 0,
+        "min": -20,
+        "max": 20,
+        "step": 1,
+        "label": "Mob level − player level"
+      },
+      "healerShare": {
+        "value": 0.2,
+        "min": 0,
+        "max": 0.6,
+        "step": 0.05,
+        "label": "Share of the party that heals"
+      },
+      "manaBars": {
+        "value": 8,
+        "min": 1,
+        "max": 80,
+        "step": 1,
+        "label": "Health bars per healer's mana pool"
+      },
+      "restRate": {
+        "value": 2,
+        "min": 0.25,
+        "max": 10,
+        "step": 0.25,
+        "label": "Rest regen (% of a bar / s)"
+      },
+      "restDelay": {
+        "value": 5,
+        "min": 0,
+        "max": 30,
+        "step": 1,
+        "label": "Seconds out of combat before rest starts"
+      },
+      "potionHps": {
+        "value": 140,
+        "min": 0,
+        "max": 300,
+        "step": 10,
+        "label": "Potion regen (HP/s) — tiers 10/30/60/140"
+      },
+      "potionSeconds": {
+        "value": 5,
+        "min": 1,
+        "max": 30,
+        "step": 1,
+        "label": "Potion duration (s, cannot stack)"
+      },
+      "potionCarry": {
+        "value": 20,
+        "min": 0,
+        "max": 200,
+        "step": 1,
+        "label": "Potions a player can carry"
+      },
+      "combatManaRegen": {
+        "value": 0.1,
+        "min": 0,
+        "max": 2,
+        "step": 0.01,
+        "label": "In-combat mana regen (% of pool / s)"
+      }
+    },
+    "levelMax": 99,
+    "statCapAtL1": 10,
+    "statCapAtLMax": 99,
+    "elements": [
+      "neutral",
+      "earth",
+      "water",
+      "wind",
+      "fire",
+      "holy",
+      "void"
+    ],
+    "elementTable": {
+      "neutral": {
+        "neutral": 1,
+        "earth": 1,
+        "water": 1,
+        "wind": 1,
+        "fire": 1,
+        "holy": 1,
+        "void": 1
+      },
+      "earth": {
+        "neutral": 1,
+        "earth": 0.5,
+        "water": 1,
+        "wind": 2,
+        "fire": 0.5,
+        "holy": 1,
+        "void": 1
+      },
+      "water": {
+        "neutral": 1,
+        "earth": 1,
+        "water": 0.5,
+        "wind": 0.5,
+        "fire": 2,
+        "holy": 1,
+        "void": 1
+      },
+      "wind": {
+        "neutral": 1,
+        "earth": 0.5,
+        "water": 2,
+        "wind": 0.5,
+        "fire": 1,
+        "holy": 1,
+        "void": 1
+      },
+      "fire": {
+        "neutral": 1,
+        "earth": 2,
+        "water": 0.5,
+        "wind": 1,
+        "fire": 0.5,
+        "holy": 1,
+        "void": 1
+      },
+      "holy": {
+        "neutral": 1,
+        "earth": 1,
+        "water": 1,
+        "wind": 1,
+        "fire": 1,
+        "holy": 0.5,
+        "void": 2
+      },
+      "void": {
+        "neutral": 1,
+        "earth": 1,
+        "water": 1,
+        "wind": 1,
+        "fire": 1,
+        "holy": 2,
+        "void": 0.5
+      }
+    },
+    "elementSource": "colyseus-server/src/config/combat/elements.ts",
+    "ladder": [
+      {
+        "rank": "E",
+        "r": 11.89,
+        "swings": 15,
+        "shape": "pack",
+        "mult": 0.43813308390101247,
+        "n": 1,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
+        "from": 1,
+        "to": 12,
+        "was": 1
+      },
+      {
+        "rank": "D",
+        "r": 5.95,
+        "swings": 13.5,
+        "shape": "pack",
+        "mult": 0.5518584262127164,
+        "n": 1,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
+        "from": 13,
+        "to": 25,
+        "was": 1.15
+      },
+      {
+        "rank": "C",
+        "r": 4,
+        "swings": 12,
+        "shape": "pack",
+        "mult": 0.6299605249474366,
+        "n": 1,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
+        "from": 26,
+        "to": 40,
+        "was": 1.3
+      },
+      {
+        "rank": "B",
+        "r": 2.19,
+        "swings": 10,
+        "shape": "pack",
+        "mult": 0.8475491134282155,
+        "n": 2,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
+        "from": 41,
+        "to": 55,
+        "was": 1.5
+      },
+      {
+        "rank": "A",
+        "r": 1.8,
+        "swings": 8.5,
+        "shape": "pack",
+        "mult": 0.9614997135382722,
+        "n": 4,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
+        "from": 56,
+        "to": 70,
+        "was": 1.8
+      },
+      {
+        "rank": "S",
+        "r": 1.6,
+        "swings": 7,
+        "shape": "boss",
+        "mult": 1.0357441686512863,
+        "n": 8,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
+        "level": 77,
+        "ttk": 150,
+        "from": 71,
+        "to": 84,
+        "was": 2.2
+      },
+      {
+        "rank": "SS",
+        "r": 1.5,
+        "swings": 6,
+        "shape": "boss",
+        "mult": 1.0828870144196137,
+        "n": 20,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
+        "level": 90,
+        "ttk": 900,
+        "from": 85,
+        "to": 95,
+        "was": 2.8
+      },
+      {
+        "rank": "SSS",
+        "r": 1.4,
+        "swings": 5,
+        "shape": "boss",
+        "mult": 1.1188381403949932,
+        "n": 50,
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral",
+        "level": 97,
+        "ttk": 5400,
+        "from": 96,
+        "to": 99,
+        "was": 3.5
+      }
+    ],
+    "builds": [
+      {
+        "build": "low",
+        "alloc": 0.4
+      },
+      {
+        "build": "mid",
+        "alloc": 0.7
+      },
+      {
+        "build": "high",
+        "alloc": 1
+      }
+    ],
+    "gearTiers": [
+      {
+        "tier": "E",
+        "scale": 0.7
+      },
+      {
+        "tier": "C",
+        "scale": 0.85
+      },
+      {
+        "tier": "A",
+        "scale": 1
+      }
+    ],
+    "focuses": [
+      {
+        "focus": "full tank",
+        "off": 0
+      },
+      {
+        "focus": "balanced",
+        "off": 0.5
+      },
+      {
+        "focus": "full DPS",
+        "off": 1
+      }
+    ],
+    "gearClasses": [
+      "tank",
+      "balanced",
+      "dps"
+    ],
+    "archetypes": [
+      {
+        "gearClass": "dps",
+        "gear": "A",
+        "tier": "high",
+        "focus": "full DPS"
+      },
+      {
+        "gearClass": "dps",
+        "gear": "A",
+        "tier": "high",
+        "focus": "full tank"
+      },
+      {
+        "gearClass": "dps",
+        "gear": "E",
+        "tier": "low",
+        "focus": "full DPS"
+      },
+      {
+        "gearClass": "dps",
+        "gear": "E",
+        "tier": "low",
+        "focus": "full tank"
+      },
+      {
+        "gearClass": "tank",
+        "gear": "A",
+        "tier": "high",
+        "focus": "full DPS"
+      },
+      {
+        "gearClass": "tank",
+        "gear": "A",
+        "tier": "high",
+        "focus": "full tank"
+      },
+      {
+        "gearClass": "tank",
+        "gear": "E",
+        "tier": "low",
+        "focus": "full DPS"
+      },
+      {
+        "gearClass": "tank",
+        "gear": "E",
+        "tier": "low",
+        "focus": "full tank"
+      }
+    ],
+    "archetypeRanks": [
+      "E",
+      "D",
+      "C",
+      "B",
+      "A",
+      "S",
+      "SS"
+    ],
+    "grades": [
+      {
+        "grade": "max",
+        "build": "high",
+        "gear": "A",
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral"
+      },
+      {
+        "grade": "median",
+        "build": "mid",
+        "gear": "C",
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral"
+      },
+      {
+        "grade": "min",
+        "build": "low",
+        "gear": "E",
+        "rho": 0.5,
+        "theta": 0,
+        "slant": 0,
+        "element": "neutral"
+      }
+    ],
+    "bands": [
+      {
+        "name": "LOSS",
+        "max": 1,
+        "tone": "loss"
+      },
+      {
+        "name": "brutal",
+        "max": 1.3,
+        "tone": "brutal"
+      },
+      {
+        "name": "hard",
+        "max": 2,
+        "tone": "hard"
+      },
+      {
+        "name": "fair",
+        "max": 3.5,
+        "tone": "fair"
+      },
+      {
+        "name": "easy",
+        "max": 8,
+        "tone": "easy"
+      },
+      {
+        "name": "trivial",
+        "max": null,
+        "tone": "trivial"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "s-solo-loss",
+        "label": "max player CANNOT solo a same-level S mob",
+        "level": 77,
+        "rank": "S",
+        "grade": "max",
+        "solo": true,
+        "min": 0,
+        "max": 1
+      },
+      {
+        "id": "a-solo-not-easy",
+        "label": "max player cannot EASILY solo same-level A",
+        "level": 63,
+        "rank": "A",
+        "grade": "max",
+        "solo": true,
+        "min": 0,
+        "max": 3.5
+      },
+      {
+        "id": "c-median-fair",
+        "label": "median player beats same-level C, fair",
+        "level": 33,
+        "rank": "C",
+        "grade": "median",
+        "solo": true,
+        "min": 2,
+        "max": 3.5
+      },
+      {
+        "id": "c-max-easy",
+        "label": "max player beats same-level C, easy",
+        "level": 33,
+        "rank": "C",
+        "grade": "max",
+        "solo": true,
+        "min": 3.5,
+        "max": 8
+      }
+    ],
+    "decisions": [
+      {
+        "id": "D1",
+        "title": "Build direction sets pacing, not power",
+        "decided": "2026-07-30",
+        "choice": "Full-DPS and full-tank keep identical R and HP-left. A tank kills 2x slower and survives 2x longer; the two cancel. No allocation is ever wrong, so no stat is a trap and nobody needs a build guide.",
+        "why": "The obvious objection is that everyone will then roll DPS, since equal safety at double the speed is strictly better. That is true ONLY without downtime. Both builds lose the same FRACTION of their bar per fight (28% at rank C), so both get the same number of fights before resting -- and rest time is identical because it is a percentage of the bar. Rest therefore dwarfs the fight: at restRate 2%/s the DPS farming advantage collapses from 2.00x to 1.16x. A 16% edge, paid for with higher variance and no group role, is a defensible balance rather than a flaw.",
+        "consequence": "restRate is a BALANCE PARAMETER, not flavour -- it is the knob that sets the glass-cannon farming edge (none: 2.00x, 4%/s: 1.26x, 2%/s: 1.16x, 1%/s: 1.09x). It must not be tuned for pacing alone. Separately, a tank's group value has to come from TAUNT/AGGRO, which is unbuilt and which the pack factor 2n/(n+1) and boss target rotation already silently depend on. And the tank's variance advantage is invisible to a closed-form model -- only the simulation test can show it.",
+        "rejected": "Superlinear defence (defensive budget raised to p>1). At p=1.2 a tank ends a rank C fight at 76% HP instead of 72%, but the optimal build shifts to 36% offence, so leaning defensive becomes correct for EVERY player and full-DPS becomes 19% weaker in outcome -- the most intuitive build made the worst one, for 4 percentage points of health."
+      },
+      {
+        "id": "D2",
+        "title": "HP and DEF stay coupled",
+        "decided": "2026-07-30",
+        "choice": "One defensive budget, split sqrt into hp and def, with no way for a player to trade between them. Matches the shipped code, where `vit` already gives BOTH: maxHealth = 100 + 10*vit and pDef = 5 + vit.",
+        "why": "They are exactly interchangeable by construction -- hp x def IS the budget, so survival is identical at every split (37.15M at level 90 whichever way it leans). Exposing a choice whose outcome is identical is a choice in name only, and the shipped stat model already couples them, so keeping them coupled costs nothing in either the model or the game.",
+        "consequence": "There is exactly one defensive stat from the player's point of view. If this is ever reversed, note that the tie is NOT quite even: a flat potion refills a bigger share of a smaller bar, so a DEF-heavy build gets 28% more value per potion (6.4% vs 5.0% of bar at level 90) for identical survival. Splitting them also means splitting `vit` in derivedStats.ts -- a shipped-code change, not a model one.",
+        "rejected": "Making them genuinely different (e.g. DEF resists only physical while HP covers everything) would create real build decisions, but needs the physical/magic damage split that this model does not carry -- it has one atk and one def."
+      },
+      {
+        "id": "D3",
+        "title": "Rank S gets a 150-second wall clock",
+        "decided": "2026-07-30",
+        "choice": "S authors ttk 150s, billing 53.3% sustain. Its NATURAL length -- what r 1.6 and swings 7 force with no healing -- is 70s.",
+        "why": "A boss fought by 8 players ending in 70 seconds is a large mob rather than an encounter. 150s is the deliberate middle: substantially longer, while still needing materially less healing than SS (53.3% against 82.2%).",
+        "consequence": "THERE IS NO LONGER A HEALER-FREE TIER. Any clock past 70s requires healing, because reaching even 300s without it would need 30 swings-to-kill-a-player -- hits of 3.3% of a bar, well outside the authored 7-15 range. So the boundary moved rather than disappeared: the healer is mandatory from S, not from SS. Watch S closely: at 150s, 20 carried potions cover 100 of the 150 seconds (66.7% uptime) and healers hold only 53% of the healing -- barely over the role-check gate. Any rise in potion carry or strength flips S into an inventory check.",
+        "rejected": "Leaving S at 70s would have preserved a healer-free tier and cost nothing, but leaves an 8-player boss dying in about a minute. Going to 300s would have billed 76.7% -- nearly SS's -- making the S and SS healing requirements almost indistinguishable."
+      },
+      {
+        "id": "D4",
+        "title": "Potion tiers stay flat and are allowed to decay with level",
+        "decided": "2026-07-30",
+        "choice": "Keep the four flat tiers (10/30/60/140 HP/s for 5s) and accept that they fade the whole way up: the top tier at level 97 is worth 4.2% of a bar, less than the bottom tier is worth at level 20 (8.8%). Gate each tier by level so it cannot be bought where it would trivialise a fight.",
+        "why": "The decay is doing useful work, not causing a problem. It is what keeps consumables from replacing the healer: potions carry 47% of the healing at S but only 8% at SSS, so the ranks with the biggest bills are role checks. Making potions keep pace with the HP curve would reproduce the failure seen earlier, where a percentage-based potion dropped healers to 23% of supply at SS.",
+        "consequence": "Potions are a LEVELLING tool and healers are the endgame answer. Level-gating derived on the rule that a tier unlocks only once it heals at most 30% of a max-tier bar: 10 HP/s from L1 (20.4%), 30 from L18 (29.0%), 60 from L33 (29.9%), 140 from L53 (29.0%). Without gating, 140 HP/s overheals a level-20 player by 24% -- 700 HP against a 565 bar. A fifth tier at 300 HP/s would unlock at L70 and be worth 9.0% at L97; it is deliberately NOT added, because restoring endgame potency is the thing this decision rejects.",
+        "rejected": "Percentage-of-max-HP potions would stay equally useful forever and need no tiers, but consumables would then scale with the player and crowd out the healer at exactly the ranks the role gate protects."
+      },
+      {
+        "id": "D5",
+        "title": "Gear tiers are adopted at a 0.70 -> 1.00 span",
+        "decided": "2026-07-30",
+        "choice": "Three tiers E/C/A scaling 0.70 / 0.85 / 1.00. Gear becomes a real field in the game: `weapons.ts` today holds archetypes (sword/staff/bow/dagger/scythe) and has no tier or rarity field at all, so this needs adding.",
+        "why": "R is proportional to budget squared, so a 1.43x gear span is worth 2.04x in outcome -- making gear the single strongest player axis, ahead of stat allocation's 1.56x. That is deliberate: gear progression should be a real gate with teeth, not a rounding error.",
+        "consequence": "CONTENT IS GATED BEHIND GEAR, by design. An E-geared player LOSES rank A outright (R 0.88) and scrapes rank B at 1.07, so the gear ladder decides what you can attempt and not merely how fast. Narrowing to 0.80 -> 1.00 would drop gear to 1.56x -- equal to stat allocation -- and leave every rank clearable in any gear, just slower; that was considered and rejected as too weak a chase. The scale remains the weakest-grounded input in the model: three authored numbers with no playtest behind them, now load-bearing for what content is reachable.",
+        "rejected": "Keeping archetypes only, with no power ladder, would be the most honest reading of the current code but removes gear progression entirely and puts the whole power curve on levels and stat points."
+      }
+    ],
+    "openQuestions": [
+      "Gap weight 0.6 is a chosen value, not a derived one. It makes a mob 10 levels above you 1.70x harder instead of 2.41x. It is symmetric: out-levelling content near your own level is correspondingly less rewarding.",
+      "SUSTAIN IS DESIGNED BUT NOT BUILT. The model now carries the full economy -- rest-mode regen, a healer class paying in mana, flat non-stacking potions, and a skill granting in-combat mana regen -- and it closes: SS funds at 1.35x and SSS at 1.10x. NONE of it exists in the game. There is no mana, no healing, no regeneration, no rest mode, no potion and no resurrection in the server today, so every SS/SSS figure is quoted against systems that are specified here and nowhere else. The wall clocks (900s, 5400s) are only reachable if all four are built roughly as modelled.",
+      "NO-STACK MAKES UPTIME THE CEILING ON CONSUMABLES, which is a good property worth keeping deliberately. One potion runs at a time, so 20 carried x 5s is 100 seconds of coverage -- 11% of an SS fight and 1.9% of an SSS one. Potions cannot be banked into a burst by construction, so they cannot rescue a phase spike, only chip at the average. Carry is the binding limit at every rank, not uptime, so carry capacity is still the lever.",
+      "THE HEALER PLACEHOLDERS NOW CARRY ALMOST ALL THE WEIGHT. With the real potion spec, consumables supply only 27% of the healing at SS and 8% at SSS, so fundability rests on `manaBars` (8 bars per pool) and `combatManaRegen` (0.1 %/s) -- neither anchored to anything. Remove potions entirely and SS goes short by 1 bar of 62 while SSS funds at 1.02x, so the regen default very nearly decides fundability by itself. SSS now funds at only 1.10x, which is thin enough that any of these guesses moving down breaks it.",
+      "THE SUSTAIN ECONOMY NOW CLOSES, BUT HEALERS ARE NOT WHAT CLOSES IT. With potions and a skill granting in-combat mana regen, SS funds at 4.23x and SSS at 2.01x. The fix was a change of SHAPE, not size: pool is fixed and loses ground to any clock, while regen and potions are rates that scale with it as demand does. Two consequences to decide on. First, at SS the healer class supplies only 23% of the healing (potions 200 bars of 261) -- the fight is closer to an inventory check than a role check, and that failure mode never shows up as a number going red. Second, potions are bound by CARRY not cooldown at these settings, so carry capacity -- an inventory decision made elsewhere -- is silently the most load-bearing number in the sustain economy.",
+      "THE OLD PROBLEM, KEPT FOR THE REASONING: rest-only regen made a fight's healing a fixed POOL, so supply could not grow with the clock while demand did (super-linearly -- own-HP absorption is one-time, so doubling a fight raises demand 2.07x). SS was short 30 bars of 61.7 and SSS short 424 of 504.3. Raising the healer share BACKFIRES and still would: a boss's R is single x n x attackers, so 30% healers drops SSS from R 1.40 to 0.98, a loss. Funding a fight by adding healers cannot work in this model.",
+      "Mana, skills and physical-vs-magic parity are modelled separately (mana_level.py, parity.py) and are not folded into R yet. The model now carries a single atk rather than pAtk/mAtk.",
+      "THIS MODEL AND THE SHIPPED STAT FORMULA DISAGREE STRUCTURALLY, not just in tuning. contracts/src/meta/derivedStats.ts is a PINNED formula and it is ADDITIVE with a flat base -- maxHealth = 100 + 10*vit + 5*(level-1), pAtk = 10 + 2*str + weapon.pAtk, pDef = 5 + vit -- so it has NO geometric growth at all. This model is multiplicative: refHp * growth^level, 18,300 HP at L99 against the shipped formula's 100 + 10*vit + 490. Three separate gaps: (a) additive vs multiplicative growth, (b) the game splits pAtk/mAtk and pDef/mDef where this model carries one atk and one def, (c) the game has four primaries (str, agi, int, vit) and agi feeds move speed ONLY, so points into agi are invisible to R here. `alloc` in this model is an abstraction over that pool, not a mapping onto it. Reconciling the two is unscoped work and nothing here is a spec for derivedStats until it is done."
+    ]
+  }
+}

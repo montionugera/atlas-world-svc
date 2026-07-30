@@ -20,10 +20,11 @@ namespace AtlasWorld.Contracts.Meta {
         public double agi;
         public double @int;
         public double vit;
+        public double dex;
     }
 
     public sealed class ProfileDoc {
-        public int schemaVersion = 1;
+        public int schemaVersion = 2;
         public double level;
         public double xp;
         public double statPoints;

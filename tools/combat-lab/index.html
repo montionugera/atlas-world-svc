@@ -1,0 +1,2535 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>atlas-world-svc — Combat Balance Lab</title>
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --bg-elev: #12151d;
+        --bg-card: #171b26;
+        --border: #262c3a;
+        --border-hover: #3a4256;
+        --text: #e7e9ee;
+        --text-dim: #9aa1b2;
+        --text-faint: #656d80;
+        --accent: #7c9eff;
+        --ok: #7ee787;
+        --err: #ff7b72;
+        --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        --sans:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
+        --loss: #ff7b72;
+        --brutal: #ff9f6e;
+        --hard: #f2b84b;
+        --fair: #7ee787;
+        --easy: #56d4dd;
+        --trivial: #7c9eff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      header {
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-elev);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 18px;
+        letter-spacing: -0.01em;
+      }
+      h2 {
+        margin: 34px 0 6px;
+        font-size: 15px;
+      }
+      main {
+        padding: 0 24px 80px;
+        max-width: 1400px;
+      }
+      .meta {
+        font-size: 12px;
+        color: var(--text-faint);
+        font-family: var(--mono);
+      }
+      a {
+        color: var(--accent);
+      }
+      code {
+        font-family: var(--mono);
+        background: #ffffff0d;
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
+
+      .panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+      }
+      .qline {
+        color: var(--text-dim);
+        font-size: 13px;
+        margin: 0 0 12px;
+      }
+      .qline b {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .grid-inputs {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 14px 20px;
+      }
+      .input-row label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--text-dim);
+        margin-bottom: 4px;
+      }
+      .input-row label b {
+        font-family: var(--mono);
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .input-row input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
+      }
+      button {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-family: var(--sans);
+        font-size: 12px;
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--border-hover);
+        color: var(--text);
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      th,
+      td {
+        text-align: right;
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      th {
+        color: var(--text-faint);
+        font-weight: 500;
+        font-family: var(--sans);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+      tbody tr:hover {
+        background: #ffffff06;
+      }
+      .scroll {
+        overflow-x: auto;
+      }
+      .term {
+        border-bottom: 1px dotted var(--text-faint);
+        cursor: help;
+      }
+      .term:hover {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 1px 7px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        font-family: var(--sans);
+      }
+      .b-LOSS {
+        background: #ff7b7222;
+        color: var(--loss);
+      }
+      .b-brutal {
+        background: #ff9f6e22;
+        color: var(--brutal);
+      }
+      .b-hard {
+        background: #f2b84b22;
+        color: var(--hard);
+      }
+      .b-fair {
+        background: #7ee78722;
+        color: var(--fair);
+      }
+      .b-easy {
+        background: #56d4dd22;
+        color: var(--easy);
+      }
+      .b-trivial {
+        background: #7c9eff22;
+        color: var(--trivial);
+      }
+
+      button.rule {
+        text-transform: lowercase;
+      }
+      button.rule.on {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: #7c9eff14;
+      }
+      .sb-row {
+        display: grid;
+        grid-template-columns: 92px repeat(6, 1fr);
+        gap: 6px;
+        align-items: stretch;
+        margin-bottom: 6px;
+      }
+      .sb-label {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text-dim);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .sb-label b {
+        color: var(--text);
+        font-size: 13px;
+      }
+      .sb-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 7px 8px 8px;
+      }
+      .sb-t {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-faint);
+        margin-bottom: 5px;
+      }
+      .sb-bar {
+        height: 7px;
+        border-radius: 4px;
+        background: #ffffff12;
+        overflow: hidden;
+        margin-bottom: 3px;
+      }
+      .sb-bar i {
+        display: block;
+        height: 100%;
+      }
+      .sb-you i {
+        background: var(--ok);
+      }
+      .sb-you.hurt i {
+        background: var(--hard);
+      }
+      .sb-you.dying i {
+        background: var(--err);
+      }
+      .sb-mob i {
+        background: var(--accent);
+      }
+      .sb-n {
+        font-family: var(--mono);
+        font-size: 9px;
+        color: var(--text-faint);
+        display: flex;
+        justify-content: space-between;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+      }
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-left-width: 3px;
+        border-radius: 6px;
+        padding: 12px 14px;
+      }
+      .card.pass {
+        border-left-color: var(--ok);
+      }
+      .card.fail {
+        border-left-color: var(--err);
+      }
+      .card .req {
+        font-size: 12px;
+        color: var(--text-dim);
+        margin-bottom: 6px;
+      }
+      .card .val {
+        font-family: var(--mono);
+        font-size: 20px;
+        font-weight: 600;
+      }
+      .card .verdict {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+      }
+      .card.pass .verdict {
+        color: var(--ok);
+      }
+      .card.fail .verdict {
+        color: var(--err);
+      }
+      .card .bound {
+        font-size: 11px;
+        color: var(--text-faint);
+        font-family: var(--mono);
+      }
+
+      .banner {
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-size: 13px;
+        margin: 12px 0;
+        border: 1px solid;
+      }
+      .banner.ok {
+        background: #7ee7870f;
+        border-color: #7ee78744;
+        color: var(--ok);
+      }
+      .banner.bad {
+        background: #ff7b720f;
+        border-color: #ff7b7244;
+        color: var(--err);
+      }
+      .banner.info {
+        background: #7c9eff0f;
+        border-color: #7c9eff44;
+        color: var(--text-dim);
+      }
+
+      .PASS {
+        color: var(--ok);
+        font-weight: 600;
+      }
+      .FAIL {
+        color: var(--err);
+        font-weight: 600;
+      }
+      .dim {
+        color: var(--text-faint);
+      }
+      .legend-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 18px;
+      }
+      .legend-h {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--accent);
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .legend-b {
+        font-size: 13px;
+        color: var(--text-dim);
+      }
+      ul.notes {
+        color: var(--text-dim);
+        font-size: 13px;
+        padding-left: 20px;
+      }
+      ul.notes li {
+        margin-bottom: 6px;
+      }
+      .gloss-t th {
+        text-align: left;
+      }
+      td.gloss {
+        text-align: left;
+        white-space: normal;
+        font-family: var(--sans);
+        font-size: 13px;
+      }
+      td.gloss:first-child {
+        font-family: var(--mono);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      #err {
+        padding: 40px 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>
+        Combat Balance Lab
+        <span class="dim" style="font-weight: 400">— I-028</span>
+      </h1>
+      <div class="meta" id="hdr">loading…</div>
+    </header>
+    <main id="app"></main>
+    <div id="err" hidden>
+      <div class="banner bad">
+        <b>Could not load <code>combat-model.json</code>.</b><br />
+        Browsers block <code>fetch()</code> over <code>file://</code>. Serve the
+        folder:<br /><br />
+        <code>cd tools/combat-lab &amp;&amp; python3 -m http.server 8421</code>
+      </div>
+    </div>
+
+    <script>
+      // ============================================================== model ==
+      // The I-028 combat model. Nothing here reads the game — this is the
+      // foundation on its own terms. Mirrors model/balance_sheet.py; verify.mjs
+      // asserts the two agree.
+
+      let DATA = null; // parsed combat-model.json
+      let P = {}; // live tunable inputs, slider-editable
+
+      const grow = (L) => Math.pow(P.growth, L - 1);
+
+      /**
+       * REFERENCE HP curve — a constant, not anyone's actual HP.
+       *
+       * This distinction is load-bearing. If damage scaled with the target's own
+       * HP, bigger bars would take proportionally bigger hits and stacking HP
+       * would do nothing at all. As a reference curve it only makes `k` readable:
+       * k is the share of a typical HP bar one even hit removes, so 1/k is
+       * hits-to-kill in an even fight.
+       */
+      const refHp = (L) => P.baseHp * grow(L);
+
+      const clampL = (x) => Math.max(1, Math.min(P.levelMax, x));
+
+      /** The level a mob is SHOWN at. Rank does not imply a level. */
+      const mobShownLevel = (L) => clampL(L + (P.mobLevelDelta || 0));
+
+      /**
+       * The level a mob FIGHTS at. Level gap weight scales how much of a level
+       * difference actually counts: 1.0 is the full stat difference, 0.6 makes a
+       * 10-level gap fight like a 6-level one.
+       *
+       * It exists because gap steepness is growth-squared per level, and growth
+       * is pinned to 1.042-1.048 by the 20-level progression invariant. The whole
+       * legal range moves the gap 9.2% -> 8.6%, so softening it at all needs a
+       * separate knob.
+       */
+      const mobLevel = (L) =>
+        clampL(L + (P.mobLevelDelta || 0) * (P.gapWeight ?? 1));
+
+      /** The encounter size a rank's multiplier was originally solved against. */
+      const rankRef = (rank) =>
+        DATA.proposed.ladder.find((x) => x.rank === rank).n;
+
+      // ============================================ the physical/magic split ==
+      // ARCHITECTURAL RULE, and everything below depends on it:
+      //
+      //   physical-vs-magical is a DIRECTION INSIDE the existing magnitudes,
+      //   never a new magnitude.
+      //
+      // `str`-vs-`int` is a direction inside atkBudget; `pDef`-vs-`mDef` is a
+      // direction inside defEff. There are still THREE stat slots (atkEff,
+      // defEff, hp) and CombatScore is still the cube root of their product.
+      //
+      // That is the whole reason this extension is free: `half` stays a square
+      // root, `baseDef = 49` needs no recalibration, and rankMults() is
+      // byte-identical. A three-way defensive split — pDef, mDef and hp as
+      // PEERS — would force pow(defBudget, 1/3), move every def and hp number
+      // on the page, and invalidate the baseDef calibration that makes 1/k
+      // readable as hits-to-kill. pDef/mDef is a direction inside the single
+      // defEff magnitude, NOT a third durability slot.
+
+      /**
+       * Element multiplier for an attack of A's element landing on D's, damped
+       * by `elemWeight`: e -> e^eta.
+       *
+       * The table is authored in combat-model.json as a MIRROR of the shipped
+       * colyseus-server/src/config/combat/elements.ts (F-017) — this page still
+       * reads nothing from the game. eta = 1 is the shipped table; eta = 0
+       * disables elements and reduces to the pre-split model.
+       *
+       * Only the ONE-DIRECTIONAL cycle (water > fire > earth > wind > water)
+       * moves difficulty. holy<->void is mutual 2.0 and same-element is mutual
+       * 0.5, so both cancel in Q and are pure PACING levers — they halve or
+       * double both clocks and change no outcome. That is the opposite of the
+       * intuition, so do not reach for holy/void expecting a balance change.
+       */
+      const elem = (attack, defense) => {
+        const row = DATA.proposed.elementTable[attack];
+        const raw = row ? row[defense] : undefined;
+        // An unrecognised element is an AUTHORING ERROR, and it throws rather
+        // than falling back to 1. Silently reading a typo as neutral is exactly
+        // the failure mode §9 warns about: `neutral`'s inertness is the ONLY
+        // thing holding Q = 1 everywhere today, so a misspelt element would
+        // move difficulty with nothing on the page turning red.
+        if (raw === undefined)
+          throw new Error(`unknown element pair: ${attack} -> ${defense}`);
+        const eta = P.elemWeight ?? 1;
+        // Short-circuit eta = 1 rather than calling Math.pow(raw, 1). Math.pow
+        // is implementation-approximated, and eta = 1 with a neutral table cell
+        // is the exact reduction point the whole calibration is pinned at — it
+        // must not depend on a library's rounding.
+        return eta === 1 ? raw : Math.pow(raw, eta);
+      };
+
+      /**
+       * SHAPE COORDINATES — the split at constant magnitude.
+       *
+       *   xp = 1 + theta*(1 - rho)      xm = 1 - theta*rho
+       *   qp = 1 - slant*(1 - rhoBar)   qm = 1 + slant*rhoBar
+       *
+       * Two exact identities, and they are what makes aggregation EXACT rather
+       * than approximate:
+       *
+       *   rho*xp    + (1-rho)*xm    === 1    for all theta, rho
+       *   rhoBar*qp + (1-rhoBar)*qm === 1    for all slant
+       *
+       * So a shape moves the four displayed stats around while leaving the two
+       * magnitudes — and therefore CombatScore — exactly where they were.
+       *
+       * `theta` and `slant` are SIGNED, and that is not cosmetic. An unsigned
+       * form was tried and has a proven sign pathology: at rho = 0, theta = -1
+       * a pure caster came out pAtk 180 / mAtk 100 instead of 0 / 100.
+       *
+       * `rhoBar` (postureMix) is GLOBAL, not per-entity. That is what keeps
+       * CombatScore comparable across entities: every defence is aggregated at
+       * the same reference offence mix, so the two sides are measured on one
+       * ruler. Per-entity it would become a free parameter each side could pick
+       * to flatter itself.
+       */
+      function shapeOf(tags) {
+        const rhoBar = P.postureMix ?? 0.5;
+        const rho = Math.min(1, Math.max(0, tags.rho ?? 0.5));
+        // Two clamps, and the tighter one wins. The HARD bounds are whatever
+        // keeps xp, xm >= 0 and qp, qm > 0 — outside them a stat goes negative
+        // and the model stops meaning anything. The AUTHORING bounds
+        // (|theta| <= 1, |slant| <= 0.5) are tighter and are where a designer
+        // is expected to stay; |slant| <= 0.5 additionally bounds how far this
+        // DIVISIVE model can drift from the shipped SUBTRACTIVE mitigation,
+        // which floors at 20% of base damage.
+        const tLo = Math.max(-1, rho < 1 ? -1 / (1 - rho) : -Infinity);
+        const tHi = Math.min(1, rho > 0 ? 1 / rho : Infinity);
+        const theta = Math.min(tHi, Math.max(tLo, tags.theta ?? 0));
+        const sLo = Math.max(-0.5, -1 / rhoBar);
+        const sHi = Math.min(0.5, 1 / (1 - rhoBar));
+        const slant = Math.min(sHi, Math.max(sLo, tags.slant ?? 0));
+        return {
+          rho,
+          theta,
+          slant,
+          element: tags.element ?? "neutral",
+          xp: 1 + theta * (1 - rho),
+          xm: 1 - theta * rho,
+          qp: 1 - slant * (1 - rhoBar),
+          qm: 1 + slant * rhoBar,
+        };
+      }
+
+      /** FORWARD — the two magnitudes plus a shape give the four shown stats. */
+      const forward = (atkEff, defEff, sh) => ({
+        pAtk: atkEff * sh.xp,
+        mAtk: atkEff * sh.xm,
+        pDef: defEff / sh.qp,
+        mDef: defEff / sh.qm,
+      });
+
+      /**
+       * INVERSE — the four stats back to the two magnitudes. Exact, closed form.
+       *
+       * WHY THESE TWO MEANS, AND WHY NOT GEOMETRIC. Damage over a fight is a
+       * SUM of hits, and 1/def enters that sum linearly. Arithmetic-on-attack
+       * plus harmonic-on-defence is the unique pairing under which the
+       * aggregate IS the stat that produces the damage — which is what makes
+       * `atkEff`/`defEff` legitimate inputs to CombatScore rather than a
+       * convenient average.
+       *
+       * A geometric blend was tried and REJECTED. It looks tidier and it is
+       * wrong: it lets a build push tilt and gain up to 2.57x damage at
+       * constant CombatScore — an unbounded free lunch, measured against the
+       * shipped magic_staff's 6.59x tilt. Both aggregates look tidier as
+       * geometric means and both break if changed.
+       *
+       * Note the asymmetry is deliberate: attack aggregates at the ATTACKER's
+       * own mix (`sh.rho` — it is that entity's damage being summed), defence
+       * at the GLOBAL posture (`rhoBar` — a defence has to be quoted against a
+       * common reference or CombatScore stops being comparable).
+       */
+      const inverse = (st, sh) => {
+        const rhoBar = P.postureMix ?? 0.5;
+        return {
+          atkEff: sh.rho * st.pAtk + (1 - sh.rho) * st.mAtk,
+          defEff: 1 / (rhoBar / st.pDef + (1 - rhoBar) / st.mDef),
+        };
+      };
+
+      /**
+       * THE MATCHUP FACTOR — the entire extension in one scalar.
+       *
+       *   m(A,D) = ( rho_A*xp_A*qp_D + (1-rho_A)*xm_A*qm_D ) * e(A,D)
+       *
+       * and it factorises the damage ratio exactly:
+       *
+       *   dmgRatio(A,D) === (atkEff_A / defEff_D) * m(A,D)
+       *
+       * m is 0-homogeneous in both magnitudes, level-free and budget-free — a
+       * pure function of the two shapes and one element cell. It equals 1 on
+       * two whole families:
+       *
+       *   (i)  DEFENDER FLAT (slant_D = 0) and e = 1  ->  m = 1 for ANY
+       *        attacker rho and theta. THIS IS THE NO-FREE-LUNCH GUARANTEE:
+       *        no amount of offensive tilt buys damage against a flat target.
+       *   (ii) ATTACKER FLAT (theta_A = 0, rho_A = rhoBar) and e = 1  ->  m = 1
+       *        for any defender slant.
+       *
+       * So m leaves 1 only when a LOPSIDED DEFENDER meets a MIX-MISMATCHED
+       * ATTACKER, or when an element cell is not 1. That pair of conditions is
+       * the entire design surface this feature adds.
+       *
+       * Named `matchup`, not `m`: `m` is the conventional local for a mob all
+       * over this file, and a top-level `m()` would be shadowed by any of them.
+       */
+      const matchup = (att, dfn) =>
+        (att.rho * att.xp * dfn.qp + (1 - att.rho) * att.xm * dfn.qm) *
+        elem(att.element, dfn.element);
+
+      /**
+       * Q — the matchup asymmetry, and the one extra factor R gains.
+       *
+       *   Q = m(player, mob) / m(mob, player)
+       *
+       * R IS EXACTLY LINEAR IN Q, and Q reaches R THROUGH hit() — it must not
+       * be multiplied in on top. dmgRatio factorises as (atkEff/defEff) × m, so
+       * the two directions of a fight contribute m(p,mob)/m(mob,p) all by
+       * themselves and R() needs no Q term at all. See the comment in R(); an
+       * explicit factor there squares Q and reads correct at the reduction
+       * point, which is the worst possible failure mode. This function is for
+       * REPORTING the factor and asserting on it.
+       *
+       * Linearity is what the safety margins are quoted against: a rank whose
+       * BAND-WORST R is Rw crosses R = 1 at Q < 1/Rw. Use the band-worst, which
+       * is the sweep verify.mjs's "a rank is one difficulty" gate already runs
+       * (max-tier player at each band edge, mob at the band edges or the boss's
+       * authored level, at the rank's own n) -- NOT R at the rank's reference
+       * conditions, which is 1.5-2.4x higher and reads every margin as safer
+       * than it is. Measured band-worst: E 6.650 D 3.157 C 1.909 B 1.045
+       * A 0.859 S 1.165 SS 1.152 SSS 1.328, so rank B breaks below Q = 0.957
+       * and at Q = 0.25 every rank except E is a loss. Any gate on this must
+       * recompute the sweep, never transcribe these numbers.
+       *
+       * CS IS NO LONGER A SUFFICIENT STATISTIC, and that is the real cost of
+       * this feature. Q cannot be folded into CombatScore — no 1-homogeneous
+       * aggregate absorbs a cross term — so anyone reading CS as "strength"
+       * mis-ranks matchups by up to 4x. The mitigation is editorial, not
+       * mathematical: show Q as its own column wherever R appears, and say
+       * "at Q = 1" on every headline claim.
+       */
+      const Q = (att, dfn) => matchup(att, dfn) / matchup(dfn, att);
+
+      /**
+       * Resolve a player to its FOUR axes — two magnitudes and two directions.
+       * Accepts {build, gear, focus, gearClass} or a legacy grade name, which is
+       * just a named point on the build x gear diagonal.
+       *
+       * Both directions default to balanced, so anything that does not name them
+       * reproduces the model exactly as it stood before they existed.
+       */
+      function resolve(spec) {
+        const s =
+          typeof spec === "string"
+            ? DATA.proposed.grades.find((x) => x.grade === spec)
+            : spec;
+        const b = DATA.proposed.builds.find((x) => x.build === s.build);
+        const g = DATA.proposed.gearTiers.find((x) => x.tier === s.gear);
+        const f = s.focus
+          ? DATA.proposed.focuses.find((x) => x.focus === s.focus)
+          : null;
+        const lean =
+          s.gearClass === "dps"
+            ? P.gearLean
+            : s.gearClass === "tank"
+              ? 1 - P.gearLean
+              : 0.5;
+        return {
+          alloc: b.alloc,
+          gearScale: g.scale,
+          off: f ? f.off : 0.5,
+          lean,
+          // The four SPLIT tags, passed straight through for shapeOf() to clamp.
+          // Authored on the spec; absent on the ad-hoc {build, gear, focus,
+          // gearClass} objects the matrix and archetype tables build, which is
+          // exactly why they default to the reduction point.
+          rho: s.rho,
+          theta: s.theta,
+          slant: s.slant,
+          element: s.element,
+        };
+      }
+
+      /**
+       * A budget applies ONCE and is split among the stats it buys.
+       *
+       * That rule is what keeps everything symmetric: the defensive budget is
+       * shared between hp and def as sqrt each, so hp x def is exactly the budget
+       * and the two are perfectly interchangeable. Neither is a trap stat, and
+       * neither side of the fight double-dips.
+       */
+      function player(L, spec) {
+        const r = resolve(spec);
+        const { alloc: a, gearScale: gs, off, lean } = r;
+        const g = grow(L),
+          C = P.statCoef;
+        const atkBudget = (1 + 2 * C * a * off) * (gs * 2 * lean);
+        const defBudget = (1 + 2 * C * a * (1 - off)) * (gs * 2 * (1 - lean));
+        const half = Math.sqrt(defBudget);
+        const atk = P.baseAtk * g * atkBudget;
+        const def = P.baseDef * g * half;
+        const hp = refHp(L) * half;
+        // `atk` and `def` ARE atkEff and defEff — three slots, three factors,
+        // numerically identical to what they were before the split existed. The
+        // four displayed stats below are that same pair pushed off-centre by the
+        // shape, and inverse() aggregates them back to it exactly.
+        const sh = shapeOf(r);
+        return {
+          atk,
+          def,
+          hp,
+          // Geometric mean of the three, so it grows at exactly `growth`.
+          cs: Math.cbrt(atk * def * hp),
+          mspd: Math.min(P.mspdBase * (1 + C * a), P.mspdCap),
+          mspdRaw: P.mspdBase * (1 + C * a),
+          ...sh,
+          ...forward(atk, def, sh),
+        };
+      }
+
+      /**
+       * A mob is the max-grade player at its own level with its CombatScore
+       * scaled by the rank multiplier. CS is the geometric mean of the three
+       * stats, so scaling each stat by mult scales CS by exactly mult — and R,
+       * which is the ratio of the products, by mult^3.
+       */
+      /**
+       * THREE multipliers per rank, not one.
+       *
+       * With a single multiplier, TTK and R are welded together as
+       * TTK ∝ R^(-2/3): the ladder's 16.7x difficulty span permits a 6.5x span
+       * in fight length and no more, while the committed TTK table wants 1071x.
+       * Splitting atk / def / hp breaks the weld, because
+       *
+       *   R    = 1 / (atk x def x hp)      difficulty
+       *   TTK ∝       def x hp             duration
+       *
+       * are independent. Solved in closed form from the rank's target R and
+       * target seconds, at the CURRENT slider values, so both hold live.
+       *
+       * Ranks with no ttk target fall back to one uniform multiplier — see the
+       * generator for why S and above have none.
+       */
+      /**
+       * Danger implied by a rank's authored swings-to-kill-a-player.
+       * For a boss the damage spreads across the party, so one player's share
+       * is 1/n of it — but `swings` still means swings against ONE player.
+       */
+      const rankDanger = (rk) =>
+        (100 * P.aspd) / (rk.swings * (rk.shape === "boss" ? rk.n : 1));
+
+      /**
+       * THE SPLIT DOES NOT REACH THIS FUNCTION. Nothing below reads `rho`,
+       * `theta`, `slant` or `element`, and that is by construction rather than
+       * by omission — `C = baseDef / (k * baseAtk)` and every line after it are
+       * unchanged from before the split existed.
+       *
+       * Why it survives at zero cost: the solve is against the REFERENCE
+       * PLAYER, which the split now defines as rho = rhoBar, theta = 0,
+       * slant = 0, element = neutral. A flat defender gives m = 1 in one
+       * direction (family i) and a flat attacker gives m = 1 in the other
+       * (family ii), so Q === 1 by construction and the four tags never enter.
+       * The authored `r` is therefore the ELEMENT-NEUTRAL R, and Q is reported
+       * beside it as an auditable column — never baked into the solve.
+       *
+       * HARD RULE, and it is the mistake a future contributor is most likely to
+       * make because it sounds like a feature ("let the solver figure out the
+       * mob's resistances"):
+       *
+       *   NEVER SOLVE `theta` OR `slant` FROM TWO PER-CHANNEL `r` TARGETS.
+       *
+       * One free parameter against two targets is OVERDETERMINED. It has no
+       * exact solution, and reaching for one forces least-squares or
+       * root-finding — which turns a closed-form ladder that holds live at any
+       * slider setting into a numerical one that does not. The shape tags are
+       * AUTHORED; `mult`, the three multipliers and `sustain` are SOLVED. Never
+       * the reverse.
+       *
+       * If you find yourself editing the body of this function to accommodate
+       * the split, stop — something has gone wrong further up.
+       */
+      function rankMults(rk) {
+        // Hits a lone max-grade player needs to survive a mob of attack 1.0.
+        const C = P.baseDef / (P.k * P.baseAtk);
+        const danger = rankDanger(rk);
+        // Durability budget split. def x hp is what difficulty and duration
+        // pin; where it sits between the two changes NO outcome, only how the
+        // numbers read. See `durabilityHp`.
+        const psi = P.durabilityHp ?? 0.5;
+        const split = (dh) => ({
+          d: Math.pow(dh, 1 - psi),
+          h: Math.pow(dh, psi),
+        });
+        if (rk.shape === "boss") {
+          // n players, ONE mob. R = R_solo × n², and the boss's damage is
+          // shared across the party — so `danger` is one player's share.
+          const a = (danger * C * rk.n) / (100 * P.aspd);
+          // A boss may author its wall clock. Without one, fight length is
+          // whatever R and swings imply: ttk = swings × n / (r × aspd).
+          //
+          // WITH one, def×hp is solved from the clock instead — and since
+          // R = n²/(a·d·h), inflating def×hp takes the difficulty straight back
+          // out. SUSTAIN is what pays it back: healing extends how long the
+          // party lasts without touching how hard the boss hits, so it is the
+          // only variable that can stretch a fight while holding BOTH the
+          // target R and the target swings-to-kill-a-player.
+          if (rk.ttk) {
+            const dh = (rk.ttk * P.aspd * rk.n) / C;
+            return {
+              a,
+              ...split(dh),
+              ttk: rk.ttk,
+              sustain: 1 - (rk.n * rk.n) / (rk.r * a * dh),
+            };
+          }
+          const dh = (rk.n * rk.n) / (rk.r * a);
+          return { a, ...split(dh), ttk: 100 / (rk.r * danger), sustain: 0 };
+        }
+        // n players, n mobs. R = R_solo × 2n/(n+1).
+        const rSolo = (rk.r * (rk.n + 1)) / (2 * rk.n);
+        const ttkTarget = 100 / (rSolo * danger);
+        const dh = (ttkTarget * P.k * P.baseAtk * P.aspd) / P.baseDef;
+        // a is proportional to danger, which is why a rising danger curve makes
+        // mob attack rise rank by rank.
+        return {
+          a: 1 / (rSolo * dh),
+          ...split(dh),
+          ttk: ttkTarget,
+          sustain: 0,
+        };
+      }
+
+      /**
+       * Fraction of incoming damage the encounter ASSUMES is healed. Solved,
+       * never authored — it is the bill a rank's fight length runs up, so it
+       * has to be read as a requirement on the healing system rather than a
+       * knob. 0 everywhere except bosses that author a `ttk`.
+       */
+      const rankSustain = (rk) => rankMults(rk).sustain ?? 0;
+
+      /**
+       * Can healers actually PAY the sustain bill?
+       *
+       * Two authored rules decide this, and the first is the sharp one:
+       *
+       *   1. HP and mana regenerate ONLY in rest mode — out of combat.
+       *   2. In-combat healing comes from healers and costs mana.
+       *
+       * Together they make a fight's healing budget a FIXED POOL, not a rate.
+       * Nothing refills mid-fight, so total healing available is exactly
+       * `healers × barsPerManaPool` however long the fight runs. Demand grows
+       * with the clock; supply does not. That is why a long fight is far harder
+       * to fund than a hard one.
+       *
+       * Everything is in "health bars" — one bar is one player's full HP — so
+       * supply and demand are directly comparable.
+       */
+      function economy(rk) {
+        const n = rk.n;
+        const healers = Math.max(1, Math.round(n * (P.healerShare ?? 0)));
+        const dps = Math.max(1, n - healers);
+        const ttk = rankMults(rk).ttk;
+        // Total damage the encounter deals, in health bars. Independent of how
+        // it is spread: `swings` bars-worth per swing, ttk × aspd swings.
+        const incoming = (ttk * P.aspd) / rk.swings;
+        // What the party can absorb on its own bars before anyone dies. R > 1
+        // means it ends with 1 − 1/R still in reserve, so it may spend 1/R.
+        const r = rk.r;
+        const absorbable = r > 1 ? n * (1 / r) : n;
+        const demand = Math.max(0, incoming - absorbable);
+
+        // THREE supply sources, and only the shape of them matters.
+        //
+        //   pool     — what the healers walked in with. FIXED: does not care
+        //              how long the fight is, so it loses ground to any clock.
+        //   regen    — a skill returning mana during combat. A RATE, so it
+        //              scales with the clock exactly as demand does. This is
+        //              the rule that removes the ceiling entirely.
+        //   potions  — also a rate, but bounded twice: by the cooldown and by
+        //              how many a player can carry. The tighter bound wins.
+        const bars = P.manaBars ?? 0;
+        const pool = healers * bars;
+        const regen = healers * bars * ((P.combatManaRegen ?? 0) / 100) * ttk;
+
+        // Potions are a FLAT heal-over-time that cannot stack, so two things
+        // bound them and neither is a cooldown.
+        //
+        //   UPTIME — no-stack means one at a time, so a fight can hold at most
+        //            ttk/duration of them. Carry is usually far tighter: 20
+        //            potions × 5s is 100 seconds of coverage, 1.9% of a 5400s
+        //            fight. Chain-drinking is impossible by construction.
+        //   LEVEL  — a flat heal against a bar growing at growth^level. 700 HP
+        //            is 124% of a level-20 bar and 4.2% of a level-97 one, so
+        //            potions fade out exactly where the wall clocks live.
+        const secs = Math.max(1, P.potionSeconds ?? 1);
+        const byUptime = Math.floor(ttk / secs);
+        const drunk = Math.min(P.potionCarry ?? 0, byUptime);
+        const healPerPotion = (P.potionHps ?? 0) * secs;
+        // Converting HP to health bars at the level that actually fights this
+        // rank is the step that makes "flat" bite.
+        const barHp = player(midLevel(rk), "max").hp;
+        const potions = (n * drunk * healPerPotion) / barHp;
+        const supply = pool + regen + potions;
+        return {
+          healers,
+          dps,
+          incoming,
+          absorbable,
+          demand,
+          pool,
+          regen,
+          potions,
+          drunk,
+          healPerPotion,
+          barHp,
+          // Share of the fight a potion is actually ticking. No-stack makes
+          // this the real constraint: you cannot bank potions into a burst.
+          uptime: (drunk * secs) / ttk,
+          // One potion as a share of the bar it is healing — the number that
+          // decays with level and is the whole argument against flat heals.
+          potionBars: healPerPotion / barHp,
+          // Which bound actually stops the potions.
+          potionLimit: (P.potionCarry ?? 0) <= byUptime ? "carry" : "uptime",
+          supply,
+          // The design-smell number: if healers supply a small share, the
+          // healer CLASS is decorative and the fight is really an inventory
+          // check. Guard against solving the arithmetic and losing the role.
+          healerShareOfSupply: supply > 0 ? (pool + regen) / supply : 0,
+          fundable: supply >= demand,
+          // Bars one healer's mana pool must cover for this fight to work.
+          needPerHealer: demand / healers,
+          // If everything else stayed put, the in-combat regen rate that would
+          // close the gap on its own — i.e. what the SKILL has to deliver.
+          regenNeeded:
+            healers * bars * ttk > 0
+              ? Math.max(
+                  0,
+                  ((demand - pool - potions) / (healers * bars * ttk)) * 100,
+                )
+              : Infinity,
+          // Healers do not attack, so the party's damage is short by this much
+          // — the fight runs longer, which raises demand again.
+          dpsTax: n / dps,
+          // And the ladder's R assumed all n attack. A boss's R is
+          // single × n × (attackers), so swapping attackers for healers costs
+          // difficulty directly: the encounter gets HARDER, not just slower.
+          // Quoted for bosses only — the pack factor 2n/(n+1) models mobs dying
+          // one at a time and does not decompose this way.
+          rWithHealers: rk.shape === "boss" ? (r * dps) / n : null,
+          // Downtime afterwards: refill whatever was spent. Healers are dry.
+          restSeconds:
+            (P.restDelay ?? 0) + 100 / Math.max(0.01, P.restRate ?? 1),
+        };
+      }
+
+      function mob(L, rank) {
+        const rk = DATA.proposed.ladder.find((x) => x.rank === rank);
+        const ref = player(L, "max");
+        const { a, d, h } = rankMults(rk);
+        const atk = ref.atk * a,
+          def = ref.def * d,
+          hp = ref.hp * h;
+        // A rank's shape is authored on the ladder entry, never solved from it.
+        const sh = shapeOf(rk);
+        return {
+          mult: rk.mult,
+          atkMult: a,
+          defMult: d,
+          hpMult: h,
+          atk,
+          def,
+          hp,
+          cs: ref.cs * Math.cbrt(a * d * h),
+          ...sh,
+          ...forward(atk, def, sh),
+        };
+      }
+
+      /**
+       * The damage ratio: the mix sum across both channels, times the element.
+       *
+       * THE ELEMENT MULTIPLIES THE WHOLE HIT, NOT JUST THE MAGIC TERM. That is
+       * not a preference and not a simplification. DamageCalculator.ts:36-40
+       * applies getElementMultiplier to `afterDefense` REGARDLESS of
+       * `damageType`, and canon lets a physical weapon be endowed with an
+       * element via coatings and magic stones — `WeaponConfig.element` is
+       * optional on EVERY weapon, not just staves. Attaching the element to the
+       * magic term alone reports 2.000 where the shipped code reports 4.000, so
+       * a physical build would silently get half the element leverage of a
+       * caster at identical investment.
+       */
+      const dmgRatio = (att, dfn) =>
+        (att.rho * (att.pAtk / dfn.pDef) +
+          (1 - att.rho) * (att.mAtk / dfn.mDef)) *
+        elem(att.element, dfn.element);
+
+      /** One hit: k x refHp(defender level) x dmgRatio. */
+      const hit = (att, dfn, Ldef) => P.k * refHp(Ldef) * dmgRatio(att, dfn);
+
+      /**
+       * R = how long the player survives / how long the encounter survives.
+       * R > 1 is a win and 1 - 1/R is the HP left.
+       *
+       * n = 1 is THE FOUNDATION. The level gap enters only through atk/def and
+       * refHp, already damped by gapWeight inside mobLevel.
+       *
+       * n > 1 layers on the party factor 2n/(n+1): the party focus-fires, so mobs
+       * die one at a time and the average number still alive is (n+1)/2 rather
+       * than n. Encounter size is a property of the FIGHT, not of the mob's rank.
+       */
+      function R(L, rank, spec, n = 1) {
+        const p = player(L, spec),
+          Lm = mobLevel(L),
+          m = mob(Lm, rank);
+        const rk = DATA.proposed.ladder.find((x) => x.rank === rank);
+        // Healing extends how long the party lasts without changing how hard
+        // the boss hits, so it divides survival time — and R with it.
+        // Q IS ALREADY IN HERE — DO NOT MULTIPLY IT IN AGAIN.
+        //
+        // This body is verbatim what it was before the split, and it has to
+        // stay that way. `single` is built from hit(), hit() is built from
+        // dmgRatio(), and dmgRatio factorises exactly as
+        // (atkEff/defEff) × m — so the two directions contribute
+        // m(p,mob) / m(mob,p), which IS Q. The decomposition
+        //
+        //   R = R_pre_split × Q(p, mob)
+        //
+        // therefore holds as a PROPERTY of this expression, not as a step to
+        // perform. An explicit `* Q(p, m)` here squares it, and the error is
+        // INVISIBLE at the reduction point because Q = 1 there — it was caught
+        // only by authoring a shape onto a rank and measuring R against §9's
+        // table, where rank C at Q = 0.25 must read 1.00 and a squared Q reads
+        // 0.25. Q() below exists to REPORT that factor and to let the gates
+        // assert it, never to reapply it.
+        //
+        // Q lands inside `single` — the duel — and therefore outside the shape
+        // factors below, which is what makes it cancel in R(n)/R(1) so
+        // encounter size still applies exactly 2n/(n+1) and nothing else.
+        const single =
+          hitsToDie(p, m, L) / hitsToKill(p, m, Lm) / (1 - rankSustain(rk));
+        if (n <= 1) return single;
+        // boss: damage concentrates one way and spreads the other, so n².
+        // pack: mobs die one at a time, so 2n/(n+1), bounded at 2×.
+        return rk.shape === "boss"
+          ? single * n * n
+          : (single * 2 * n) / (n + 1);
+      }
+
+      const hitsToKill = (p, m, Lm) => m.hp / hit(p, m, Lm);
+      const hitsToDie = (p, m, L) => p.hp / hit(m, p, L);
+
+      /**
+       * Seconds to kill. For a boss this is the WALL CLOCK for the whole party
+       * (n players share the work); for a pack it is one player on one mob.
+       */
+      function ttk(L, rank, spec) {
+        const Lm = mobLevel(L);
+        const rk = DATA.proposed.ladder.find((x) => x.rank === rank);
+        const solo = hitsToKill(player(L, spec), mob(Lm, rank), Lm) / P.aspd;
+        return rk.shape === "boss" ? solo / rk.n : solo;
+      }
+
+      function band(r) {
+        for (const b of DATA.proposed.bands)
+          if (b.max === null || r < b.max) return b.name;
+        return "trivial";
+      }
+      const hpLeft = (r) =>
+        r > 1 ? `${((1 - 1 / r) * 100).toFixed(0)}%` : "—";
+      /**
+       * The level a rank is met at. A pack is drawn from its band, so the
+       * midpoint stands for it. A BOSS has one authored level and no band —
+       * `rk.level` — because a fourteen-level range for a single named boss
+       * let the same rank swing 1.99x across it, which crossed the loss line
+       * at S and SS. `from`/`to` still bound who is expected to attempt it.
+       */
+      const midLevel = (rk) => rk.level ?? Math.floor((rk.from + rk.to) / 2);
+
+      function requirements() {
+        return DATA.proposed.requirements.map((q) => {
+          const r = R(q.level, q.rank, q.grade, q.solo ? 1 : rankRef(q.rank));
+          return { ...q, r, band: band(r), ok: r >= q.min && r < q.max };
+        });
+      }
+
+      function invariants() {
+        const C = P.statCoef,
+          G = P.growth;
+        // Only R-VISIBLE primaries count toward the share a player's choices
+        // actually control. `agi` buys move speed and attack cadence, and the
+        // rank solve absorbs aspd entirely, so agi never reaches R: 3 of the 4
+        // primaries are R-visible, not 4. C/(1+C) is share(4) and overstates
+        // this at 33.3% -- the honest figure is 27.3%, which still clears the
+        // 25% floor but leaves far less headroom than the old number implied.
+        // Keep this in step with verify.mjs's G12, which pins all three values.
+        const R_VISIBLE_PRIMARIES = 3;
+        const visC = (R_VISIBLE_PRIMARIES / 4) * C;
+        const statShare = visC / (1 + visC);
+        const reqs = requirements();
+        const flat = [1, 25, 50, 75, P.levelMax].map((L) =>
+          R(L, "C", "max", 1),
+        );
+        // hp and def are interchangeable: moving the defensive budget between
+        // them must not move CombatScore at all.
+        const hi = player(50, "max");
+        const evenHits = 1 / P.k;
+
+        return [
+          [
+            "20-level growth in 120–160%",
+            `${((Math.pow(G, 20) - 1) * 100).toFixed(0)}%`,
+            Math.pow(G, 20) - 1 >= 1.2 && Math.pow(G, 20) - 1 <= 1.6,
+          ],
+          [
+            "CS compounds at the growth rate",
+            `${((player(2, "max").cs / player(1, "max").cs - 1) * 100).toFixed(2)}%`,
+            Math.abs(player(2, "max").cs / player(1, "max").cs - G) < 1e-9,
+          ],
+          [
+            // What makes 1/k readable as hits-to-kill. Breaks if baseAtk/baseDef
+            // drift apart, or if the defensive budget stops being split as sqrt.
+            //
+            // BOTH HALVES, or this reads false after the split. atk/def ~ 1 is
+            // only the magnitude half; a mirror is also even in DIRECTION,
+            // Q = 1, and that has to be asserted separately because it is NOT
+            // implied. It holds for a same-element mirror too: every element is
+            // 0.5 against itself, so the pair cancels in Q and the fight simply
+            // takes 2/k hits instead of 1/k.
+            "mirror match is an even fight",
+            `atk/def ${(hi.atk / hi.def).toFixed(4)}, Q ${Q(hi, hi).toFixed(4)}`,
+            Math.abs(hi.atk / hi.def - 1) < 0.01 &&
+              Math.abs(Q(hi, hi) - 1) < 1e-12,
+          ],
+          [
+            "even fight is 1/k hits",
+            `${evenHits.toFixed(1)} hits`,
+            evenHits >= 2 && evenHits <= 20,
+          ],
+          [
+            "stat share ≥25% at every level",
+            `${(statShare * 100).toFixed(1)}% flat`,
+            statShare >= 0.25,
+          ],
+          [
+            "stat cap never exceeds 99",
+            `${DATA.proposed.statCapAtLMax}`,
+            DATA.proposed.statCapAtLMax <= 99,
+          ],
+          [
+            "all four requirements",
+            `${reqs.filter((q) => q.ok).length}/${reqs.length}`,
+            reqs.every((q) => q.ok),
+          ],
+          [
+            `move speed within clamp ${P.mspdCap}`,
+            `${player(P.levelMax, "max").mspd.toFixed(1)}`,
+            player(P.levelMax, "max").mspdRaw <= P.mspdCap,
+          ],
+          [
+            "R invariant to absolute level",
+            `${flat[0].toFixed(4)} at every level`,
+            Math.max(...flat) - Math.min(...flat) < 1e-9,
+          ],
+        ];
+      }
+
+      // ============================================================= render ==
+
+      /** Every abbreviation on the page. A header missing here fails verify.mjs. */
+      const TERMS = {
+        "mob rank": [
+          "Mob rank",
+          "Content tier E through SSS. Sets how strong one mob is RELATIVE to a same-level player. It does not imply a level or a headcount.",
+        ],
+        "mob CS ÷ player CS": [
+          "Rank multiplier",
+          "The mob's CombatScore as a fraction of a max-grade same-level player's. 0.5 means half as strong as you.",
+        ],
+        was: [
+          "Previous multiplier",
+          "The value before I-028. Comparison only — no calculation uses it.",
+        ],
+        "R · 1v1": [
+          "R for a single duel",
+          "One player against one mob. This is the foundation; everything else layers on top of it.",
+        ],
+        "player HP left": [
+          "Player HP remaining",
+          "1 − 1/R. Blank when you lose.",
+        ],
+        "player build": [
+          "Stat allocation completeness",
+          "How fully stat points were spent: low 0.4, mid 0.7, high 1.0.",
+        ],
+        "player gear": [
+          "Equipment tier",
+          "E, C or A. Gear tiers do not exist in the game — this scale is authored design data and the weakest-grounded input here.",
+        ],
+        "player level": ["Player level", "1 to 99."],
+        "mob level": [
+          "Mob level",
+          "Independent of rank. Equals the player's unless you set an offset; shown red when it differs.",
+        ],
+        "player CS": [
+          "CombatScore",
+          "cbrt(atkEff × defEff × HP) — three factors, so it is 1-homogeneous: doubling every stat doubles CS. NOT a sufficient statistic once elements or lopsided defences are in play; read it alongside Q.",
+        ],
+        "mob CS": [
+          "Mob CombatScore",
+          "cbrt(atkEff × defEff × HP) for one mob, on the same ruler as the player's.",
+        ],
+        "player pAtk": [
+          "Physical attack",
+          "atkEff × xp. A DIRECTION on the attack magnitude, not an extra magnitude — rho·xp + (1−rho)·xm is exactly 1, so tilting toward physical costs magic one-for-one.",
+        ],
+        "player mAtk": [
+          "Magic attack",
+          "atkEff × xm. The other half of the same budget as pAtk.",
+        ],
+        "player pDef": [
+          "Physical defence",
+          "defEff ÷ qp. Mitigation is DIVISIVE and uncapped here — damage scales as atk/def — not the saturating pDef/(pDef+K) form. (The live server's DamageCalculator is subtractive and 80%-capped; that divergence is tracked, not modelled.)",
+        ],
+        "player mDef": [
+          "Magic defence",
+          "defEff ÷ qm. Aggregated HARMONICALLY with pDef at the global reference mix, which is what stops a lopsided defence from buying free CS.",
+        ],
+        "mob pAtk": ["Mob physical attack", "atkEff × xp for the mob."],
+        "mob pDef": [
+          "Mob physical defence",
+          "Same divisive mitigation as the player, on the same gauge.",
+        ],
+        "mob mDef": ["Mob magic defence", "defEff ÷ qm for the mob."],
+        Q: [
+          "Matchup factor",
+          "matchup(player, mob) ÷ matchup(mob, player). R is exactly LINEAR in Q, and Q reaches R through hit() — it is never multiplied in. Over the shipped element table Q is trinary: 0.25, 1.00 or 4.00, and 84% of ordered pairs are 1.00.",
+        ],
+        "player maxHP": [
+          "Maximum health",
+          "Raw health pool, before mitigation.",
+        ],
+        "mob HP": ["Mob maximum health", "Raw health pool, before mitigation."],
+        "damage mitigated †": [
+          "Damage reduction",
+          "Share of incoming damage absorbed, read off the divisive form: 1 − atk/def against a same-level opponent. Constant at every level by design, because attack and defence grow at the same rate.",
+        ],
+        "player EHP": [
+          "Effective health",
+          "maxHP ÷ (1 − mitigation). Raw damage needed to kill you.",
+        ],
+        "player move speed †": [
+          "Movement speed",
+          "World units per second. No level term at all — a level 99 player moves as fast as a level 1 with the same allocation.",
+        ],
+        "time to kill 1 mob": [
+          "Time to kill one mob",
+          "Seconds for the party to focus down a single mob. Level-invariant.",
+        ],
+        "time to clear pack": [
+          "Time to clear the encounter",
+          "Seconds to kill all n mobs.",
+        ],
+        "encounter size (n)": [
+          "Encounter size",
+          "n players against n mobs. A property of the FIGHT, not of the rank — an input you set, not a column of the ladder.",
+        ],
+        "party factor 2n/(n+1)": [
+          "Party advantage multiplier",
+          "How much easier n-vs-n is than a duel. 1.0 at n=1, approaching 2.0 and never reaching it.",
+        ],
+        "damage you actually take": [
+          "Share of theoretical incoming damage",
+          "(n+1)/2n — mobs die progressively under focus fire rather than all living to the end.",
+        ],
+        "gear class": [
+          "What the player's gear is FOR",
+          "Where the gear budget points: tank gear buys HP and pDef, dps gear buys attack. Direction, not size — set the split with the Gear class lean slider. INVENTED: no gear-class concept exists in code.",
+        ],
+        "player atk": [
+          "Attack power",
+          "Damage per hit before the target's def divides it.",
+        ],
+        "player def": [
+          "Defence",
+          "Divides incoming damage: dmg = k x refHp x (atk / def). Exactly interchangeable with HP.",
+        ],
+        "swings to kill you": [
+          "How many of the mob's swings you can absorb",
+          "Your HP divided by its damage per hit. Compare against `swings to kill` — whichever side runs out first loses, and their ratio is R.",
+        ],
+        "swings to kill": [
+          "How many of your swings the mob takes to drop",
+          "Mob HP divided by your damage per hit. For a boss the party shares this total, so the wall clock is this divided by party size.",
+        ],
+        "your damage / hit": [
+          "Damage you land per swing",
+          "k x refHp(mob level) x (your atk / mob def). Absolute, so it grows with level.",
+        ],
+        "your hits / min": [
+          "Swings you make per minute",
+          "Attack speed x 60. Constant across ranks — it is your weapon, not the mob.",
+        ],
+        "your damage / min": [
+          "Damage you deal per minute",
+          "Damage per hit x hits per minute. Compare against the mob's HP to sanity-check time to kill.",
+        ],
+        "its damage / hit": [
+          "Damage the mob lands on you per swing",
+          "The bracket is that as a share of your health bar. For a boss it is one player's share, since the boss rotates targets.",
+        ],
+        "its damage / min": [
+          "Damage the mob deals to you per minute",
+          "Its damage per hit x its swings per minute.",
+        ],
+        "danger per second": [
+          "Share of your health bar the mob removes each second",
+          "1/(R x ttk). Intensity, as opposed to endurance. A rank that is hard only because the fight is long shows a LOW number here.",
+        ],
+        "time to kill": [
+          "Seconds to drop one mob",
+          "Hits to kill divided by attack speed. Ranks E through A are solved to land on their committed target exactly.",
+        ],
+        "you hit for": [
+          "Damage you deal per hit",
+          "k x refHp(mob level) x (your atk / mob def).",
+        ],
+        "it hits you for": [
+          "Damage the mob deals per hit",
+          "k x refHp(your level) x (mob atk / your def). The bracket is that as a share of your health bar.",
+        ],
+        "swings each": [
+          "Swings one player makes during the fight",
+          "Time to kill times attack speed. For a boss the party's damage is pooled, so each player swings this many times, not the whole total.",
+        ],
+        encounter: [
+          "Shape of the fight",
+          "1v1 or n-vs-n is a pack; n-vs-1 is a boss. R is quoted for this shape, not for a lone player.",
+        ],
+        R: [
+          "Time you survive divided by time the encounter survives",
+          "Above 1 you win, and 1 - 1/R is the health you finish on. Quoted at the rank's own encounter shape.",
+        ],
+        "mob atk": [
+          "Mob attack power",
+          "Damage per hit before your def divides it.",
+        ],
+        "mob def": ["Mob defence", "Divides the damage you deal."],
+        "target swings to kill you": [
+          "Swings the mob needs to kill one player",
+          "One of the rank's two targets, alongside R. Danger and fight length are both derived from it. Your own swings to kill are this divided by R.",
+        ],
+        "mob atk mult": [
+          "Mob attack relative to a max-grade player",
+          "Falls as rank rises: R = 1/(atk x def x hp), so stretching a fight at fixed difficulty forces attack down.",
+        ],
+        "mob def/hp mult": [
+          "Mob defence and HP relative to a max-grade player",
+          "Both carry the duration. def x hp sets fight length; sqrt each so they stay interchangeable.",
+        ],
+        "mob CS mult": [
+          "CombatScore multiplier for the rank",
+          "Solved, not authored: each rank's multiplier is derived from its target R, so the ladder cannot silently drift.",
+        ],
+        "gear tier": [
+          "How good the player's gear is",
+          "Size of the gear budget, independent of what it is for. low = E (0.70), high = A (1.00). INVENTED: weapons.ts has archetypes, not tiers.",
+        ],
+        "build focus": [
+          "Where the player spent stat points",
+          "full DPS = every point into offense, full tank = every point into defence, balanced = the even split every other table on this page uses.",
+        ],
+        "relative strength": [
+          "CombatScore vs the strongest of the eight",
+          "Level-invariant, so it holds at every level. 100% is the best group; everything else is that fraction of it.",
+        ],
+        "player HP left": [
+          "Fraction of your HP still there when the encounter dies",
+          "1 − 1/R. Negative means the encounter killed you first, and the size of the negative is how far short you fell. HP consumed is 100 minus this.",
+        ],
+        "party split": [
+          "How the n players divide into damage and healing",
+          "Healers do not attack, so raising their share lengthens the fight — which raises the healing demanded. The split fights itself.",
+        ],
+        "damage incoming": [
+          "Total damage the encounter deals, in health bars",
+          "ttk × aspd / swings. Independent of how it is spread across the party — spreading changes who dies, not the total.",
+        ],
+        "healing demanded": [
+          "Health bars healing must replace",
+          "Damage incoming minus what the party can absorb on its own bars (n/R). This is the bill sustain describes, in bars rather than a percentage.",
+        ],
+        "healing supplied": [
+          "Health bars the healers can actually restore",
+          "healers × bars per mana pool. A FIXED POOL, not a rate: with rest-only regen nothing refills mid-fight, so this number does not grow with fight length even though demand does.",
+        ],
+        "bars per healer needed": [
+          "What one healer's mana pool must cover for this fight to work",
+          "healing demanded ÷ healers. Compare against the `Health bars per healer's mana pool` slider — if that is smaller, the fight cannot be funded at any skill level.",
+        ],
+        "from pool": [
+          "Healing paid for by the mana the healers walked in with",
+          "healers × bars per pool. FIXED — it does not grow with the fight, so it loses ground to any clock. This was the only source under rest-only regen, which is why long fights were unfundable.",
+        ],
+        "from regen": [
+          "Healing paid for by in-combat mana regeneration",
+          "healers × bars × rate × ttk. A RATE, so it scales with the clock exactly as demand does. This is the rule that removes the ceiling — a skill granting it changes the shape of the economy, not just its size.",
+        ],
+        "from potions": [
+          "Healing paid for by consumables during the fight",
+          "A FLAT heal-over-time that cannot stack: potionHps × duration HP per potion, converted to bars at the level that fights this rank. Bounded by UPTIME (one at a time) and by carry — never by a cooldown. Flat means it decays with level: 700 HP is 124% of a level-20 bar and 4.2% of a level-97 one.",
+        ],
+        "potion uptime": [
+          "Share of the fight a potion is actually ticking",
+          "carry × duration ÷ ttk. Because potions cannot stack you cannot bank them into a burst, so this is the ceiling on what consumables can ever contribute — 1.9% at SSS.",
+        ],
+        "one potion": [
+          "A single potion as a share of the drinker's health bar",
+          "A flat heal against a bar growing at growth^level, so this decays the whole way up. The top 140 HP/s tier is worth LESS at level 97 (4.2%) than the bottom 10 HP/s tier is at level 20 (8.8%).",
+        ],
+        fundable: [
+          "Whether supply covers demand",
+          "SHORT means the encounter is arithmetically unsurvivable as specified, not merely hard. Closing it needs a bigger mana pool, more healers (which lengthens the fight), or a shorter fight.",
+        ],
+        "fight length": [
+          "The boss's authored wall clock, in seconds",
+          "SS and SSS author this; every other rank derives it from R and swings. Authoring it is what creates the sustain bill.",
+        ],
+        "swings you take": [
+          "Swings one player absorbs across the whole fight",
+          "ttk × aspd / n — the boss's total swings divided evenly across the party. Rests on the boss rotating targets; if it focuses one player, that player takes n times this.",
+        ],
+        "health bars taken": [
+          "Total damage one player absorbs, in whole health bars",
+          "swings taken ÷ swings-to-kill-you. Above 1.0 the player cannot survive on their own bar, and the excess is what healing must replace.",
+        ],
+        "sustain assumed": [
+          "Fraction of incoming damage the fight ASSUMES is healed",
+          "Solved, never authored — it is the bill a long fight runs up. A boss's wall clock cannot be paid for out of HP, because R = n²/(a·d·h) takes back whatever hp adds. Healing is the only variable that buys survival time without changing how hard the boss hits. A REQUIREMENT on the healing system, which does not exist yet.",
+        ],
+        "player tier": [
+          "One of the three reference players",
+          "max = A gear + every stat point spent, median = C gear + 70%, min = E gear + 40%. Ladders ① and ② quote `max` only.",
+        ],
+        gear: [
+          "Equipment tier and its budget scale",
+          "E 0.70, C 0.85, A 1.00. INVENTED: there is no rarity or tier field anywhere in the game — this is authored design data.",
+        ],
+        "stat points spent": [
+          "Share of your earned stat points actually put into combat stats",
+          "The `alloc` term. Enters as (1 + C·alloc), so at C = 0.5 levelling gives the 1 for free and points add up to +50% — one third of your power. 40% → 100% is 1.25× budget = 1.56× R, a weaker lever than gear's 2.04×. Abstracts the game's str/agi/int/vit pool without mapping onto it.",
+        ],
+        HP: ["Health bar at this level", "refHp(level) × √(defensive budget)."],
+        atk: [
+          "Attack stat",
+          "The numerator of atk/def. Scales with the full budget, not its square root — the only stat that does.",
+        ],
+        def: [
+          "Defence stat",
+          "The denominator of atk/def. Shares the defensive budget with HP, √ each, so the two are exactly interchangeable.",
+        ],
+        CombatScore: [
+          "cbrt(atk × def × hp)",
+          "The single number a side's strength collapses to. Grows at exactly `growth` per level; R is the ratio of two of them, cubed.",
+        ],
+        "E gear · low build": [
+          "Weakest reference player",
+          "E-tier gear, 40% of stat points spent. Budget 0.84 — the floor of what someone can bring to a rank.",
+        ],
+        "C gear · mid build": [
+          "Median reference player",
+          "C-tier gear, 70% of stat points spent. Budget 1.15. The one to balance against if the ladder should suit a typical player.",
+        ],
+        "A gear · high build": [
+          "Strongest reference player",
+          "A-tier gear, every stat point spent. Budget 1.50. This is the player ladders ① and ② quote, so those tables read optimistically.",
+        ],
+        effect: ["Plain-language summary", "The same number as a percentage."],
+        invariant: [
+          "Structural property",
+          "Something the model must satisfy regardless of tuning. A FAIL means the current settings broke the design.",
+        ],
+      };
+
+      const n0 = (v) =>
+        v.toLocaleString(undefined, { maximumFractionDigits: 0 });
+      const rCell = (r) =>
+        `<span class="pill b-${band(r)}">${r.toFixed(2)} ${band(r)}</span>`;
+
+      function th(h) {
+        const key = String(h)
+          .replace(/<[^>]*>/g, "")
+          .trim();
+        const t = TERMS[key];
+        return t
+          ? `<th><span class="term" title="${t[0]} — ${t[1]}">${h}</span></th>`
+          : `<th>${h}</th>`;
+      }
+
+      function table(headers, rows) {
+        return `<div class="scroll"><table><thead><tr>${headers.map(th).join("")}</tr></thead>
+          <tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>
+          </table></div>`;
+      }
+
+      /** Title plus one line stating what the table answers and whose numbers they are. */
+      function section(title, question) {
+        return `<h2>${title}</h2><div class="qline">${question}</div>`;
+      }
+
+      function renderLegend() {
+        const bands = DATA.proposed.bands
+          .map(
+            (b) =>
+              `<span class="pill b-${b.name}">${b.name}</span> ${b.max === null ? "≥ 8" : `&lt; ${b.max}`}`,
+          )
+          .join(" · ");
+        return `${section(
+          "How to read this page",
+          "One hit is <code>k × refHp(defender level) × (atk / def)</code>. Three things vary: the <b>player</b> (level, build, gear), the <b>mob</b> (rank), and the <b>encounter</b> (pack or boss).",
+        )}
+        <div class="panel">
+          <div class="legend-grid">
+            <div><div class="legend-h">PLAYER</div><div class="legend-b">
+              <code>build</code> = how fully stat points were spent. <code>gear</code> = equipment tier.
+              <code>CS</code> = CombatScore = the geometric mean of <code>atk</code>, <code>def</code>
+              and <code>hp</code>, so it grows at exactly the growth rate per level.</div></div>
+            <div><div class="legend-h">MOB</div><div class="legend-b">
+              <code>rank</code> = E → SSS, set by two targets: <b>R</b> (how hard) and <b>danger</b>
+              (share of your health bar drained per second). Fight length is <i>derived</i> from the pair.
+              E–A are <b>packs</b>; S and above are <b>bosses</b>, n players against one.</div></div>
+            <div><div class="legend-h">OUTCOME — R</div><div class="legend-b">
+              How long the <b>player</b> survives ÷ how long the <b>encounter</b> survives.
+              <code>R &gt; 1</code> = win, <code>1 − 1/R</code> = HP left. A duel is exactly
+              <code>(CS_player / CS_mob)³</code>; a pack multiplies by <code>2n/(n+1)</code>
+              and a boss by <code>n²</code>.</div></div>
+          </div>
+          <div class="legend-h" style="margin-top:14px">BANDS</div>
+          <div class="legend-b">${bands}</div>
+        </div>`;
+      }
+
+      function renderInputs() {
+        const defs = DATA.proposed.inputs;
+        return `${section(
+          "Inputs — the knobs",
+          "These drive <b>both</b> sides: a mob is a scaled copy of the max-grade player, so anything applied to both cancels in R. Only <code>Stat coefficient C</code>, <code>Encounter size</code>, <code>Mob level − player level</code> and the rank multipliers change an outcome.",
+        )}
+        <div class="panel grid-inputs">${Object.entries(defs)
+          .map(
+            ([k, d]) => `<div class="input-row">
+            <label for="in-${k}">${d.label} <b id="lbl-${k}">${P[k]}</b></label>
+            <input type="range" id="in-${k}" data-key="${k}" min="${d.min}" max="${d.max}" step="${d.step}" value="${P[k]}" />
+          </div>`,
+          )
+          .join("")}</div>
+        <div style="margin-top:10px"><button id="reset">Reset to spec defaults</button></div>`;
+      }
+
+      function renderRequirements() {
+        const reqs = requirements();
+        const all = reqs.every((r) => r.ok);
+        return `${section(
+          "Requirements — the four outcomes you specified",
+          "Each card fixes a <b>player</b> grade, a <b>mob</b> rank and a level, then checks R lands in the band you asked for. These use each rank's reference encounter size, not the slider.",
+        )}
+        <div class="banner ${all ? "ok" : "bad"}">${all ? "ALL FOUR PASS" : `${reqs.filter((r) => !r.ok).length} FAILING`}</div>
+        <div class="cards">${reqs
+          .map(
+            (q) => `<div class="card ${q.ok ? "pass" : "fail"}">
+          <div class="req">${q.label}</div>
+          <div class="val">${q.r.toFixed(2)} <span class="pill b-${q.band}">${q.band}</span></div>
+          <div class="verdict">${q.ok ? "PASS" : "FAIL"}</div>
+          <div class="bound">needs ${q.min} ≤ R &lt; ${q.max} · L${q.level} ${q.rank} ${q.grade} ${q.solo ? "1v1" : "party"}</div>
+        </div>`,
+          )
+          .join("")}</div>`;
+      }
+
+      /**
+       * Two tables, not one. Eleven columns overflowed horizontally and mixed
+       * two different questions in one row — what you do to the mob, and what
+       * the mob does to you. They are split along that seam.
+       */
+      function renderLadder() {
+        const L = P.exampleLevel;
+        const p = player(L, "max");
+        const perMin = P.aspd * 60;
+        const each = DATA.proposed.ladder.map((rk) => {
+          const Lm = mobLevel(L),
+            m = mob(Lm, rk.rank);
+          return {
+            rk,
+            m,
+            yours: hit(p, m, Lm),
+            theirs: hit(m, p, L),
+            T: ttk(L, rk.rank, "max"),
+            r: R(L, rk.rank, "max", rk.n),
+            enc:
+              rk.shape === "boss"
+                ? `${rk.n}v1 boss`
+                : rk.n > 1
+                  ? `${rk.n}v${rk.n}`
+                  : "1v1",
+          };
+        });
+        const secs = (T) => (T < 100 ? `${T.toFixed(1)}s` : `${T.toFixed(0)}s`);
+
+        const offence = each.map((e) => [
+          `<b>${e.rk.rank}</b>`,
+          e.enc,
+          n0(e.m.hp),
+          n0(e.m.def),
+          n0(e.yours),
+          perMin.toFixed(0),
+          n0(e.yours * perMin),
+          (e.m.hp / e.yours).toFixed(0),
+          secs(e.T),
+        ]);
+
+        const defence = each.map((e) => [
+          `<b>${e.rk.rank}</b>`,
+          e.enc,
+          n0(e.m.atk),
+          `${n0(e.theirs)} <span class="dim">(${((e.theirs / p.hp) * 100).toFixed(1)}%)</span>`,
+          n0(e.theirs * perMin),
+          (p.hp / e.theirs).toFixed(0),
+          `${(100 / (e.r * e.T)).toFixed(2)}%/s`,
+          secs(e.T),
+          hpLeft(e.r),
+          rCell(e.r),
+        ]);
+
+        const you = `<div class="panel" style="margin-bottom:12px">
+          <div class="legend-h">YOU — A-tier gear, every stat point spent, level ${L}</div>
+          <div class="legend-b" style="font-family:var(--mono);font-size:13px;color:var(--text)">
+            HP <b>${n0(p.hp)}</b> &nbsp;·&nbsp; atk <b>${n0(p.atk)}</b> &nbsp;·&nbsp; def <b>${n0(p.def)}</b>
+            &nbsp;·&nbsp; ${P.aspd} swings/s
+          </div>
+          <div class="legend-b" style="margin-top:6px">
+            Every damage figure below is against <b>this</b> health bar — that is what the
+            percentages are a share of. HP grows with level; the outcomes do not.
+            This is the <b>strongest player in the model</b>, so both ladders read
+            optimistically. Ladder ③ asks the same questions of the weaker tiers.
+          </div>
+        </div>`;
+
+        return `${section(
+          "Rank ladder ① — what YOU do to the mob",
+          `A <b>max-grade player at level ${L}</b> against each rank
+           (drag <code>Worked example level</code> to move it). Every column is quoted at the
+           rank's own encounter shape — a boss row is not a duel, and for a boss the
+           swings are per player while the kill is the party's wall clock.`,
+        )}
+        ${you}
+        ${table(
+          [
+            "mob rank",
+            "encounter",
+            "mob HP",
+            "mob def",
+            "your damage / hit",
+            "your hits / min",
+            "your damage / min",
+            "swings to kill",
+            "time to kill",
+          ],
+          offence,
+        )}
+
+        ${section(
+          "Rank ladder ② — what the MOB does to you",
+          `The same fights from the other side. <b>R</b> and <b>player HP left</b> do not depend on
+           level at all; the damage figures do, because they are absolute. Only the level
+           <i>difference</i> changes an outcome.`,
+        )}
+        ${table(
+          [
+            "mob rank",
+            "encounter",
+            "mob atk",
+            "its damage / hit",
+            "its damage / min",
+            "swings to kill you",
+            "danger per second",
+            "time to kill",
+            "player HP left",
+            "R",
+          ],
+          defence,
+        )}
+        ${renderSustain()}
+        ${renderPartyFactor()}`;
+      }
+
+      /**
+       * Sustain is the single biggest unbuilt assumption on this page, so it
+       * gets its own panel rather than a footnote. A reader who takes the SS
+       * and SSS rows at face value without seeing this would be reading a
+       * fight that cannot happen.
+       */
+      function renderSustain() {
+        const withS = DATA.proposed.ladder.filter((rk) => rankSustain(rk) > 0);
+        if (!withS.length) return "";
+        const rows = withS.map((rk) => {
+          const s = rankSustain(rk);
+          const swingsTaken = (rk.ttk * P.aspd) / rk.n;
+          return [
+            `<b>${rk.rank}</b>`,
+            `${rk.n}v1`,
+            `${rk.ttk}s`,
+            `${rk.swings}`,
+            swingsTaken.toFixed(1),
+            (swingsTaken / rk.swings).toFixed(1),
+            `<span class="FAIL">${(s * 100).toFixed(1)}%</span>`,
+          ];
+        });
+        return `<div class="panel" style="margin-top:14px">
+          <div class="legend-h">SUSTAIN — WHAT A LONG FIGHT COSTS</div>
+          <div class="legend-b" style="margin-bottom:12px">
+            A boss's wall clock cannot be bought with HP. <code>hp</code> sits inside the
+            <code>def×hp</code> product and <code>R = n²/(a·d·h)</code>, so every factor added to HP
+            is taken straight back out of difficulty. Holding <b>R</b> and
+            <b>swings-to-kill-a-player</b> while stretching the fight needs a fourth variable, and
+            healing is the only one that buys survival time without changing how hard the boss hits.
+            So sustain is <b>solved, not chosen</b> — it is the bill.
+          </div>
+          ${table(
+            [
+              "mob rank",
+              "encounter",
+              "fight length",
+              "swings to kill you",
+              "swings you take",
+              "health bars taken",
+              "sustain assumed",
+            ],
+            rows,
+          )}
+          <div class="banner warn" style="margin-top:12px">
+            <b>None of this exists.</b> There is no healing, regeneration or resurrection anywhere
+            in the model or the game. Every SS and SSS number on this page is quoted against a
+            system that has not been designed, and the requirement is severe: an SSS party must
+            replace <b>93.4%</b> of everything the boss deals, sustained for 90 minutes, or the
+            fight is not survivable at any gear level.
+            <br /><br />
+            <b>The alternative is worse, which is why it was not taken.</b> Paying for the clock
+            with attack instead means the SS boss needs <b>33.8</b> swings to kill a player and the
+            SSS boss <b>75.6</b> — hits of 3.0% and 1.3% of a health bar. A long fight survived on
+            one health bar is necessarily made of imperceptible hits. That is arithmetic, not
+            tuning.
+          </div>
+        </div>`;
+      }
+
+      /**
+       * The sustain bill is one thing; who pays it is another. This section
+       * exists because "82% healed" reads like a tuning value until you ask
+       * where it comes from, and the answer under rest-only regen is a fixed
+       * pool that does not care how long the fight is.
+       */
+      function renderEconomy() {
+        const rows = DATA.proposed.ladder.map((rk) => {
+          const e = economy(rk);
+          const s = rankSustain(rk);
+          const ok = s === 0 || e.fundable;
+          return [
+            `<b>${rk.rank}</b>`,
+            `${e.dps} dps + ${e.healers} heal`,
+            `${rankMults(rk).ttk < 100 ? rankMults(rk).ttk.toFixed(1) : rankMults(rk).ttk.toFixed(0)}s`,
+            e.incoming.toFixed(1),
+            e.demand.toFixed(1),
+            e.pool.toFixed(0),
+            e.regen.toFixed(0),
+            e.potions.toFixed(1),
+            `${(e.uptime * 100).toFixed(1)}% <span class="dim">(${e.potionLimit})</span>`,
+            `${(e.potionBars * 100).toFixed(1)}% <span class="dim">of bar</span>`,
+            `<b>${e.supply.toFixed(0)}</b>`,
+            s === 0
+              ? `<span class="dim">no healing needed</span>`
+              : ok
+                ? `<span class="pill b-fair">funded ${(e.supply / e.demand).toFixed(1)}×</span>`
+                : `<span class="pill b-loss">SHORT ${(e.demand - e.supply).toFixed(0)} bars</span>`,
+          ];
+        });
+        const worst = DATA.proposed.ladder
+          .filter((rk) => rankSustain(rk) > 0)
+          .map((rk) => ({ rk, e: economy(rk) }));
+        return `${section(
+          "Sustain economy — who pays the healing bill",
+          `Four authored rules: <b>base HP/mana regen happens only in rest mode</b>, <b>healers heal
+           in combat and pay in mana</b>, <b>potions restore during a fight</b>, and <b>a skill can
+           regenerate mana in combat</b>. Everything is in <b>health bars</b> — one bar is one
+           player's full HP — so supply and demand compare directly.`,
+        )}
+        <div class="banner info">
+          <b>What matters is the SHAPE of each source, not its size.</b>
+          <br />
+          <code>pool</code> is what the healers walked in with — <b>fixed</b>, so it loses ground to
+          any clock: a fight twice as long gets the same pool.
+          <code>regen</code> and <code>potions</code> are <b>rates</b>, so they scale with the clock
+          exactly as demand does. Rest-only regen alone made sustain a fixed pool and the long
+          fights were unfundable by construction; adding either rate removes that ceiling. It is
+          the <i>shape</i> that fixed it, not the extra numbers.
+        </div>
+        ${table(
+          [
+            "mob rank",
+            "party split",
+            "fight length",
+            "damage incoming",
+            "healing demanded",
+            "from pool",
+            "from regen",
+            "from potions",
+            "potion uptime",
+            "one potion",
+            "healing supplied",
+            "fundable",
+          ],
+          rows,
+        )}
+        ${
+          worst.length
+            ? `<div class="banner ${worst.every((w) => w.e.fundable) ? "info" : "danger"}" style="margin-top:12px">
+          ${worst
+            .map(
+              (w) =>
+                `<b>${w.rk.rank}</b> — demand <b>${w.e.demand.toFixed(0)}</b>, supply
+                 <b>${w.e.supply.toFixed(0)}</b> bars
+                 (pool ${w.e.pool.toFixed(0)} + regen ${w.e.regen.toFixed(0)} + potions
+                 ${w.e.potions.toFixed(0)}). Healers are
+                 <b>${(w.e.healerShareOfSupply * 100).toFixed(0)}%</b> of the healing;
+                 each player drinks ${w.e.drunk} potions, limited by <b>${w.e.potionLimit}</b>.
+                 ${
+                   w.e.fundable
+                     ? ""
+                     : `Closing on regen alone needs <b>${w.e.regenNeeded.toFixed(2)} %/s</b>.`
+                 }`,
+            )
+            .join("<br />")}
+          <br /><br />
+          <b>Watch the healer share of supply.</b> Potions and regen are the easy levers, and if
+          they carry most of the healing then the healer <i>class</i> is decorative — the fight
+          becomes an inventory check rather than a role check. Solving the arithmetic and losing
+          the role is the failure mode here, and it does not show up as a number going red. At
+          0.5 bars per potion it did exactly that: healers fell to 23% at SS, because 20 carried
+          potions is ten full health bars in every player's pocket.
+          <br /><br />
+          <b>Potions are a flat, non-stacking heal-over-time, and both properties bite.</b>
+          <i>Flat</i> means a fixed HP amount against a bar growing at <code>growth^level</code>,
+          so a potion decays the entire way up the ladder — and the tiers do not keep pace:
+          <br />
+          <code>10 / 30 / 60 / 140 HP/s × 5s</code> is a 14× span, while a health bar grows
+          <b>30×</b> from level 20 to level 97. So the <b>top</b> tier at endgame (4.2% of a bar)
+          is worth <b>less than the bottom tier at level 20</b> (8.8%). Matching level 20's
+          usefulness at level 97 would need a fifth tier around <b>300 HP/s</b>.
+          <br />
+          <i>Non-stacking</i> means the ceiling is UPTIME, not cooldown: one potion runs at a
+          time, so 20 carried × 5s is 100 seconds of coverage — 11% of an SS fight and
+          <b>1.9%</b> of an SSS one. Potions cannot be banked into a burst by construction.
+          <br /><br />
+          <b>The healer numbers are still invented placeholders, and they now carry almost all
+          the weight.</b> Potions supply 27% at SS and 8% at SSS, so fundability rests on
+          <code>8 bars per mana pool</code> and <code>0.1 %/s regen</code> — neither of which is
+          anchored to anything. Remove potions entirely and SS goes short by 1 bar of 62 while
+          SSS funds at 1.02×, so that regen default very nearly decides fundability on its own.
+          <br /><br />
+          <b>And healers cost difficulty, not just time.</b> A boss's R is
+          <code>single × n × attackers</code>, so every player who heals instead of attacking
+          takes difficulty straight off the ladder:
+          ${worst
+            .map(
+              (w) =>
+                `<b>${w.rk.rank}</b> ${w.rk.r.toFixed(2)} → <b>${w.e.rWithHealers.toFixed(2)}</b>`,
+            )
+            .join(", ")}.
+          The ladder above is quoted with <b>all n attacking</b>, so it reads optimistically the
+          moment anyone heals. Whether the target R should be met <i>with</i> the healers in the
+          party is an open decision.
+        </div>`
+            : ""
+        }
+        <div class="panel" style="margin-top:14px">
+          <div class="legend-h">REST — THE COST BETWEEN FIGHTS</div>
+          <div class="legend-b">
+            At <b>${P.restRate}%/s</b> after <b>${P.restDelay}s</b> out of combat, a dry healer needs
+            <b>${(P.restDelay + 100 / Math.max(0.01, P.restRate)).toFixed(0)}s</b> to refill.
+            Since healers end every funded fight empty, that is the floor on downtime between
+            attempts — and it is <b>not modelled anywhere else</b>: no table on this page counts
+            rest time toward how long content takes to clear.
+          </div>
+        </div>`;
+      }
+
+      function renderPartyFactor() {
+        const rows = [1, 2, 4, 8, 20, 50].map((n) => [
+          n,
+          ((2 * n) / (n + 1)).toFixed(3),
+          `${(((n + 1) / 2 / n) * 100).toFixed(0)}%`,
+          `${(((2 * n) / (n + 1) - 1) * 100).toFixed(0)}% easier than 1v1`,
+        ]);
+        return `<div class="panel" style="margin-top:14px">
+          <div class="legend-h">WHY n MATTERS — 4v4 IS NOT THE SAME AS 1v1</div>
+          <div class="legend-b" style="margin-bottom:12px">
+            The party <b>focus-fires</b>: all n players hit one mob, so mobs die one at a time and the pack's
+            damage decays. The average number still alive is <code>(n+1)/2</code>, not <code>n</code>, so you
+            absorb far less than n mobs could theoretically deal. That is <code>2n/(n+1)</code> — and it is
+            <b>bounded at 2×</b>. No party size makes a symmetric fight more than twice as favourable as a duel.
+          </div>
+          ${table(
+            [
+              "encounter size (n)",
+              "party factor 2n/(n+1)",
+              "damage you actually take",
+              "effect",
+            ],
+            rows,
+          )}
+          <div class="banner info" style="margin-top:12px">
+            <b>This is a specification, not a measurement.</b> It holds only while mobs do not coordinate focus
+            fire. If they all attacked one player the n² terms cancel by symmetry and R collapses to the duel
+            value. So <b>"mobs must not coordinate target selection" is a requirement the AI has to satisfy</b>,
+            and it belongs in the spec beside the multipliers.
+            <br /><br />
+            <b>Open design question:</b> the model has no concept of formation, yet formation decides whether
+            this factor applies at all — a clumped party is nearest to every mob at once. How much positioning
+            should be worth (currently up to 1.96×, implicitly) has not been decided.
+          </div>
+        </div>`;
+      }
+
+      /**
+       * Ladders ① and ② are quoted for ONE player — A-tier gear with every
+       * stat point spent. That is the strongest player in the model, so those
+       * two tables are the optimistic reading of every rank. This one asks the
+       * same questions of all three tiers.
+       *
+       * Everything follows from a single number. A tier's budget is
+       * `(1 + C·alloc) × gearScale`, and it reaches the stats as
+       *
+       *   atk ∝ budget      def, hp ∝ √budget      CS ∝ budget^(2/3)
+       *   R ∝ budget²       swings you survive ∝ budget
+       *
+       * so R between tiers is the budget ratio SQUARED. The gear scale spans
+       * only 0.70→1.00 and the allocation 0.4→1.0, but together they square
+       * into a ~3.2× spread in outcome. That squaring is why a tier gap this
+       * modest on paper decides whether a rank is farmable or fatal.
+       */
+      function renderTiers() {
+        const L = P.exampleLevel;
+        const Lm = mobLevel(L);
+        const secs = (T) => (T < 100 ? `${T.toFixed(1)}s` : `${T.toFixed(0)}s`);
+        // Weakest first, so the columns read as a progression.
+        const tiers = DATA.proposed.grades
+          .map((g) => ({ ...g, p: player(L, g.grade) }))
+          .reverse();
+        const top = tiers[tiers.length - 1];
+
+        const head = `<div class="panel" style="margin-bottom:12px">
+          <div class="legend-h">THE THREE PLAYERS — level ${L}</div>
+          ${table(
+            [
+              "player tier",
+              "gear",
+              "stat points spent",
+              "HP",
+              "atk",
+              "def",
+              "CombatScore",
+              "relative strength",
+            ],
+            tiers.map((t) => {
+              const b = DATA.proposed.builds.find((x) => x.build === t.build);
+              return [
+                `<b>${t.grade}</b>`,
+                `${t.gear} <span class="dim">(×${DATA.proposed.gearTiers.find((x) => x.tier === t.gear).scale})</span>`,
+                `${(b.alloc * 100).toFixed(0)}%`,
+                n0(t.p.hp),
+                n0(t.p.atk),
+                n0(t.p.def),
+                t.p.cs.toFixed(0),
+                `${((t.p.cs / top.p.cs) * 100).toFixed(0)}%`,
+              ];
+            }),
+          )}
+          <div class="legend-b" style="margin-top:10px">
+            CombatScore is the geometric mean, so a tier at <b>x%</b> of the top's CS meets
+            every rank at <b>x³%</b> of its R. The strength column looks narrow; the outcome
+            column below is not.
+          </div>
+        </div>`;
+
+        const rows = DATA.proposed.ladder.map((rk) => {
+          const m = mob(Lm, rk.rank);
+          return [
+            `<b>${rk.rank}</b>`,
+            rk.shape === "boss"
+              ? `${rk.n}v1 boss`
+              : rk.n > 1
+                ? `${rk.n}v${rk.n}`
+                : "1v1",
+            ...tiers.map((t) => {
+              const r = R(L, rk.rank, t.grade, rk.n);
+              const T = ttk(L, rk.rank, t.grade);
+              const swings = t.p.hp / hit(m, t.p, L);
+              return `${rCell(r)}
+                <div class="dim" style="margin-top:4px;font-size:12px;line-height:1.5">
+                  ${secs(T)} to kill<br />survives ${swings.toFixed(1)} swings<br />${
+                    r > 1 ? `${hpLeft(r)} HP left` : "<b>you die</b>"
+                  }
+                </div>`;
+            }),
+          ];
+        });
+
+        return `${section(
+          "Rank ladder ③ — the same ladder for all three player tiers",
+          `Ladders ① and ② showed the <b>strongest</b> player only. Here is every rank against
+           each tier, at level ${L} and the rank's own encounter shape.`,
+        )}
+        ${head}
+        ${table(
+          [
+            "mob rank",
+            "encounter",
+            ...tiers.map((t) => `${t.gear} gear · ${t.build} build`),
+          ],
+          rows,
+        )}
+        <div class="banner warn" style="margin-top:12px">
+          <b>The tier gap is squared, and it moves the whole ladder.</b> Read the columns
+          against each other rather than down: the same rank is a different game per tier, and
+          a rank that is comfortable for the top tier can be a loss two tiers down. Where a
+          column reads <b>you die</b>, that rank is gated behind gear — it cannot be brute-forced
+          by playing well, because nothing in this model represents playing well.
+          <br /><br />
+          <b>The gear scale is invented.</b> <code>weapons.ts</code> holds archetypes, not tiers;
+          the 0.70 / 0.85 / 1.00 numbers are authored here and nowhere else. They are the input
+          this whole table is most sensitive to and the one with the least behind it.
+        </div>`;
+      }
+
+      function renderMatrix() {
+        const { builds, gearTiers, grades, ladder } = DATA.proposed;
+        const n = P.encounterSize;
+        const named = (b, g) =>
+          grades.find((x) => x.build === b && x.gear === g);
+        const rows = [];
+        for (const b of builds) {
+          for (const g of gearTiers) {
+            const nm = named(b.build, g.tier);
+            rows.push([
+              `<b>${b.build}</b>${nm ? ` <span class="dim">· ${nm.grade}</span>` : ""}`,
+              g.tier,
+              ...ladder.map((rk) =>
+                rCell(
+                  R(midLevel(rk), rk.rank, { build: b.build, gear: g.tier }, n),
+                ),
+              ),
+            ]);
+          }
+        }
+        return `${section(
+          "Outcome matrix — who beats what",
+          `Rows are the <b>player</b> (${builds.length} builds × ${gearTiers.length} gear tiers). Columns are the <b>mob</b> rank. Each cell is R for ${
+            n <= 1
+              ? "<b>one player against one mob</b> — the foundation"
+              : `<b>${n} players against ${n} mobs</b>`
+          }. ${
+            P.mobLevelDelta
+              ? "Each column names the <b>mob's</b> level and yours beneath it."
+              : "Each column is a <b>same-level</b> fight, and the level rises across the table — you are L" +
+                ladder.map((rk) => midLevel(rk)).join(" / L") +
+                ". None of it changes a cell: absolute level cancels, so only a level <i>difference</i> moves R."
+          }`,
+        )}
+        ${table(
+          [
+            "player build",
+            "player gear",
+            // Always show BOTH levels. Hiding "you L…" when the delta was zero
+            // made the header read as the mob's level alone, and left the
+            // player's level — which changes per column — invisible.
+            ...ladder.map(
+              (rk) =>
+                `vs ${rk.rank} mob · L${mobShownLevel(midLevel(rk))}` +
+                `<br /><span class="dim">you L${midLevel(rk)}</span>`,
+            ),
+          ],
+          rows,
+        )}`;
+      }
+
+      /**
+       * The eight player groups: [gear class] x [gear tier] x [build focus].
+       * Scored the way you asked — time to kill, and HP left over.
+       */
+      /**
+       * The eight player groups: [gear class] x [gear tier] x [build focus].
+       * Scored the way you asked — time to kill, and HP left over.
+       */
+      function renderArchetypes() {
+        const { archetypes, archetypeRanks, ladder } = DATA.proposed;
+        const n = P.encounterSize;
+        const ranks = archetypeRanks.map((r) =>
+          ladder.find((x) => x.rank === r),
+        );
+        const spec = (a) => ({
+          build: "high",
+          gear: a.gear,
+          focus: a.focus,
+          gearClass: a.gearClass,
+        });
+        // Level-invariant, so any reference level gives the same ratio.
+        const cs = archetypes.map((a) => player(50, spec(a)).cs);
+        const best = Math.max(...cs);
+
+        const cell = (a, rk) => {
+          const L = midLevel(rk);
+          const r = R(L, rk.rank, spec(a), n);
+          const t = ttk(L, rk.rank, spec(a));
+          const left = (1 - 1 / r) * 100;
+          return (
+            `<span class="pill b-${band(r)}">${t < 100 ? t.toFixed(1) : t.toFixed(0)}s</span>` +
+            `<div class="${left < 0 ? "FAIL" : "dim"}">${left >= 0 ? "+" : ""}${left.toFixed(0)}% HP left</div>`
+          );
+        };
+
+        const rows = archetypes.map((a, i) => [
+          `<b>${a.gearClass}</b> gear`,
+          a.tier,
+          a.focus,
+          `${((cs[i] / best) * 100).toFixed(0)}%`,
+          ...ranks.map((rk) => cell(a, rk)),
+        ]);
+
+        return `${section(
+          "Eight player groups — time to kill, and what it costs you",
+          `Rows are the <b>player</b>: gear class × gear tier × build focus, 2×2×2. All eight are
+           <b>fully allocated</b> — "full DPS" and "full tank" are directions, not amounts.
+           Columns are the <b>mob</b> rank, E through SS. Each cell is
+           <b>time to kill</b> over <b>player HP left</b>, which is <code>100 − HP consumed</code>
+           and <b>goes negative when the fight kills you</b>. ${
+             n <= 1
+               ? "One player, one mob."
+               : `<b>${n} players against ${n} mobs.</b>`
+           }
+           SSS is omitted: it is the unresolved boss-or-pack rank.`,
+        )}
+        ${table(
+          [
+            "gear class",
+            "gear tier",
+            "build focus",
+            "relative strength",
+            ...ranks.map((rk) => `vs ${rk.rank} mob`),
+          ],
+          rows,
+        )}`;
+      }
+
+      /**
+       * One concrete level, every number spelled out. The rest of the page is
+       * ratios; this is the only place you see an actual damage figure.
+       */
+      function renderExample() {
+        const L = P.exampleLevel;
+        const p = player(L, "max");
+        const rows = DATA.proposed.ladder.map((rk) => {
+          const m = mob(mobLevel(L), rk.rank);
+          const yours = hit(p, m, mobLevel(L));
+          const theirs = hit(m, p, L);
+          // Encounter R, matching the rank's own shape. Using the 1v1 value for
+          // a boss while showing the party's wall clock mixed two different
+          // fights in one row — the storyboard made that obvious.
+          const r = R(L, rk.rank, "max", rk.n);
+          return [
+            `<b>${rk.rank}</b>`,
+            n0(m.atk),
+            n0(m.def),
+            n0(m.hp),
+            n0(yours),
+            `${n0(theirs)} <span class="dim">(${((theirs / p.hp) * 100).toFixed(1)}% of you)</span>`,
+            (ttk(L, rk.rank, "max") * P.aspd).toFixed(1),
+            `${ttk(L, rk.rank, "max").toFixed(1)}s`,
+            // Intensity: how fast it drains you, independent of how long the
+            // fight runs. 1/(R x ttk). This is the column that exposes a rank
+            // being "hard" only by lasting longer.
+            `${(100 / (r * ttk(L, rk.rank, "max"))).toFixed(2)}%/s`,
+            rk.shape === "boss"
+              ? `${rk.n}v1 boss`
+              : rk.n > 1
+                ? `${rk.n}v${rk.n}`
+                : "1v1",
+            rCell(r),
+          ];
+        });
+        return `${section(
+          `Worked example — a level ${L} player, every number spelled out`,
+          `The rest of the page is ratios. This is the only place with actual damage figures.
+           A <b>max-grade player at level ${L}</b>: atk <b>${n0(p.atk)}</b>, def <b>${n0(p.def)}</b>,
+           HP <b>${n0(p.hp)}</b>. One hit is <code>k × refHp(${L}) × atk/def</code> with
+           k = <b>${P.k}</b> and refHp(${L}) = <b>${n0(refHp(L))}</b>.
+           Drag <code>Worked example level</code> to move it.`,
+        )}
+        ${table(
+          [
+            "mob rank",
+            "mob atk",
+            "mob def",
+            "mob HP",
+            "you hit for",
+            "it hits you for",
+            "swings each",
+            "time to kill",
+            "danger per second",
+            "encounter",
+            "R",
+          ],
+          rows,
+        )}`;
+      }
+
+      /**
+       * The same fights as a storyboard. Every other section is a number; this
+       * is what the number looks like while it happens.
+       *
+       * Both bars drain linearly — damage per second is constant on both sides —
+       * so the last panel lands on 1 - 1/R by construction, the same health left
+       * the tables report.
+       */
+      function renderStoryboard() {
+        const L = P.exampleLevel;
+        const STEPS = 6;
+        const rows = DATA.proposed.ladder
+          .map((rk) => {
+            const T = ttk(L, rk.rank, "max");
+            const r = R(L, rk.rank, "max", rk.n);
+            const drain = 100 / (r * T); // your health bar, % per second
+            const panels = Array.from({ length: STEPS }, (_, i) => {
+              const t = (T * i) / (STEPS - 1);
+              const you = Math.max(0, 100 - drain * t);
+              const mob = Math.max(0, 100 * (1 - t / T));
+              const tone = you > 60 ? "" : you > 25 ? " hurt" : " dying";
+              return `<div class="sb-panel">
+                <div class="sb-t">${t < 10 ? t.toFixed(1) : t.toFixed(0)}s${i === STEPS - 1 ? " · end" : ""}</div>
+                <div class="sb-bar sb-you${tone}"><i style="width:${you.toFixed(1)}%"></i></div>
+                <div class="sb-bar sb-mob"><i style="width:${mob.toFixed(1)}%"></i></div>
+                <div class="sb-n"><span>you ${you.toFixed(0)}%</span><span>${rk.shape === "boss" ? "boss" : "mob"} ${mob.toFixed(0)}%</span></div>
+              </div>`;
+            }).join("");
+            return `<div class="sb-row">
+              <div class="sb-label"><b>${rk.rank}</b>
+                <span>${rk.shape === "boss" ? `${rk.n}v1 boss` : rk.n > 1 ? `${rk.n}v${rk.n}` : "1v1"}</span>
+                <span>${T < 100 ? T.toFixed(1) : T.toFixed(0)}s · ${(T * P.aspd).toFixed(0)} swings</span>
+              </div>${panels}</div>`;
+          })
+          .join("");
+        return `${section(
+          `Storyboard — how each fight actually runs, at level ${P.exampleLevel}`,
+          `Six moments through every rank, from the opening swing to the kill.
+           <b class="PASS">Green</b> is your health, <b style="color:var(--accent)">blue</b> is the mob's.
+           Both drain at a constant rate, so the final panel is exactly the health the tables say you finish on.
+           Packs are drawn as one representative fight; bosses show the party's wall clock.`,
+        )}
+        <div class="panel">${rows}</div>`;
+      }
+
+      function renderCurve() {
+        const rows = [1, 20, 40, 60, 80, P.levelMax].map((L) => {
+          const p = player(L, "max");
+          return [
+            L,
+            n0(p.cs),
+            n0(p.atk),
+            n0(p.hp),
+            n0(p.def),
+            p.mspdRaw > P.mspdCap
+              ? `<span class="FAIL">${p.mspd.toFixed(1)} clamped</span>`
+              : p.mspd.toFixed(1),
+          ];
+        });
+        return `${section(
+          "Player curve — what a PLAYER looks like at each level",
+          "No mobs here. A max-grade player at each level. † Move speed is <b>constant at every level by design</b> — it has no level term. Making it grow with level is a change to the model, not a tuning value.",
+        )}
+        ${table(
+          [
+            "player level",
+            "player CS",
+            "player atk",
+            "player maxHP",
+            "player def",
+            "player move speed †",
+          ],
+          rows,
+        )}
+        ${sparkline()}`;
+      }
+
+      /** CS vs level per grade. Log-y — CS spans ~75× over 99 levels. */
+      function sparkline() {
+        const W = 720,
+          H = 200,
+          PAD = 34;
+        const colors = { max: "#7c9eff", median: "#7ee787", min: "#f2b84b" };
+        const grades = DATA.proposed.grades.map((g) => g.grade);
+        const all = grades.flatMap((g) => {
+          const out = [];
+          for (let L = 1; L <= P.levelMax; L++) out.push(player(L, g).cs);
+          return out;
+        });
+        const lo = Math.log(Math.min(...all)),
+          hi = Math.log(Math.max(...all));
+        const x = (L) => PAD + ((L - 1) / (P.levelMax - 1)) * (W - PAD - 8);
+        const y = (cs) =>
+          H - PAD - ((Math.log(cs) - lo) / (hi - lo || 1)) * (H - PAD - 10);
+        const paths = grades
+          .map((g) => {
+            let d = "";
+            for (let L = 1; L <= P.levelMax; L++)
+              d += `${L === 1 ? "M" : "L"}${x(L).toFixed(1)},${y(player(L, g).cs).toFixed(1)} `;
+            return `<path d="${d}" fill="none" stroke="${colors[g]}" stroke-width="1.8"/>`;
+          })
+          .join("");
+        const legend = grades
+          .map(
+            (g, i) =>
+              `<text x="${PAD + 8 + i * 76}" y="16" fill="${colors[g]}" font-size="11">■ ${g}</text>`,
+          )
+          .join("");
+        const ticks = [1, 25, 50, 75, P.levelMax]
+          .map(
+            (L) =>
+              `<text x="${x(L)}" y="${H - 12}" fill="#656d80" font-size="10" text-anchor="middle">${L}</text>`,
+          )
+          .join("");
+        return `<div class="panel" style="margin-top:12px">
+          <svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px">${legend}${paths}${ticks}
+            <text x="4" y="${y(Math.exp(hi))}" fill="#656d80" font-size="10">${n0(Math.exp(hi))}</text>
+            <text x="4" y="${y(Math.exp(lo))}" fill="#656d80" font-size="10">${n0(Math.exp(lo))}</text>
+          </svg>
+          <div class="meta">CombatScore vs level (log scale)</div></div>`;
+      }
+
+      function renderMobs() {
+        const n = P.encounterSize;
+        const rows = DATA.proposed.ladder.map((rk) => {
+          const L = midLevel(rk),
+            Lm = mobLevel(L),
+            Ls = mobShownLevel(L);
+          const m = mob(Lm, rk.rank);
+          const t1 = ttk(L, rk.rank, "max") / n;
+          return [
+            `<b>${rk.rank}</b>`,
+            L,
+            Ls === L ? Ls : `<span class="FAIL">${Ls}</span>`,
+            `${rk.swings}`,
+            m.atkMult.toFixed(4),
+            m.defMult.toFixed(3),
+            rankSustain(rk) > 0
+              ? `<span class="FAIL">${(rankSustain(rk) * 100).toFixed(1)}%</span>`
+              : `<span class="dim">none</span>`,
+            n0(m.cs),
+            n0(m.hp),
+            n0(m.atk),
+            n0(m.def),
+            `${t1.toFixed(1)}s`,
+            `${(t1 * n).toFixed(0)}s`,
+          ];
+        });
+        return `${section(
+          "Mob stats — what a MOB looks like at each rank",
+          `One row per <b>mob</b> rank. Each rank has <b>three</b> multipliers — atk, def and hp — solved live so it hits its target R <b>and</b> its target fight length. Each rank is set by two targets — how hard (<b>R</b>) and how fast it drains you (<b>danger</b>) — and its fight length is derived from the pair. The two time columns are for a party of <b>${n}</b> max-grade players.`,
+        )}
+        ${table(
+          [
+            "mob rank",
+            "player level",
+            "mob level",
+            "target swings to kill you",
+            "mob atk mult",
+            "mob def/hp mult",
+            "sustain assumed",
+            "mob CS",
+            "mob HP",
+            "mob atk",
+            "mob def",
+            "time to kill 1 mob",
+            "time to clear pack",
+          ],
+          rows,
+        )}`;
+      }
+
+      function renderInvariants() {
+        const inv = invariants();
+        const all = inv.every(([, , ok]) => ok);
+        return `${section(
+          "Invariants — does the MODEL itself hold up",
+          "Not about any player or mob. Structural properties the model must satisfy at every level; a FAIL means the current settings broke the design.",
+        )}
+        <div class="banner ${all ? "ok" : "bad"}">${all ? "ALL PASS" : "SOME FAILED"}</div>
+        ${table(
+          ["invariant", "value", "result"],
+          inv.map(([n, v, ok]) => [
+            n,
+            v,
+            `<span class="${ok ? "PASS" : "FAIL"}">${ok ? "PASS" : "FAIL"}</span>`,
+          ]),
+        )}`;
+      }
+
+      function renderGlossary() {
+        const rows = Object.entries(TERMS).map(([k, [full, desc]]) => [
+          `<b>${k}</b>`,
+          full,
+          `<span class="dim">${desc}</span>`,
+        ]);
+        return `${section(
+          "Glossary",
+          "Every abbreviation used above. Column headers carry the same text as a hover tooltip.",
+        )}
+        <div class="scroll"><table class="gloss-t"><thead><tr><th>as shown</th><th>full name</th><th>meaning</th></tr></thead>
+        <tbody>${rows.map((r) => `<tr>${r.map((c) => `<td class="gloss">${c}</td>`).join("")}</tr>`).join("")}</tbody>
+        </table></div>`;
+      }
+
+      function renderNotes() {
+        return `${section("Not covered here", "Read these before treating any verdict above as final.")}
+        <ul class="notes">
+          <li>Closed-form only — no crit variance, misses, kiting or movement; perfect focus-fire assumed.
+              A <code>BattleModule</code> run is what would turn this from a model into evidence.</li>
+          ${DATA.proposed.openQuestions.map((q) => `<li>${q}</li>`).join("")}
+        </ul>
+        ${section("Provenance", "Where the numbers come from.")}
+        <ul class="notes">
+          <li>Everything here comes from <code>combat-model.json</code>, generated by
+              <code>scripts/gen_combat_model.mjs</code>. That file holds the model and nothing else — it does
+              not read the game's source. Reconciling the model with what ships is a separate, later job.</li>
+          <li>Mirrors <code>${DATA.proposed.reference}</code>; <code>verify.mjs</code> asserts they agree.</li>
+          <li>Spec: <code>${DATA.proposed.spec}</code></li>
+        </ul>`;
+      }
+
+      function renderAll() {
+        document.getElementById("app").innerHTML = [
+          renderLegend(),
+          renderInputs(),
+          renderRequirements(),
+          renderLadder(),
+          renderTiers(),
+          renderEconomy(),
+          renderMatrix(),
+          renderArchetypes(),
+          renderExample(),
+          renderStoryboard(),
+          renderCurve(),
+          renderMobs(),
+          renderInvariants(),
+          renderGlossary(),
+          renderNotes(),
+        ].join("");
+        wire();
+      }
+
+      function wire() {
+        for (const input of document.querySelectorAll('input[type="range"]')) {
+          input.addEventListener("input", (e) => {
+            P[e.target.dataset.key] = parseFloat(e.target.value);
+            const id = e.target.id,
+              pos = e.target.value;
+            renderAll();
+            const again = document.getElementById(id);
+            if (again) {
+              again.value = pos;
+              again.focus();
+            }
+          });
+        }
+        for (const b of document.querySelectorAll("button.rule")) {
+          b.addEventListener("click", (e) => {
+            P.armourRule = e.target.dataset.rule;
+            renderAll();
+          });
+        }
+        document.getElementById("reset").addEventListener("click", () => {
+          loadDefaults();
+          renderAll();
+        });
+      }
+
+      function loadDefaults() {
+        P = { levelMax: DATA.proposed.levelMax };
+        for (const [k, d] of Object.entries(DATA.proposed.inputs))
+          P[k] = d.value;
+        P.armourRule = DATA.proposed.armourRuleDefault;
+      }
+
+      fetch(`combat-model.json?v=${Date.now()}`) // regenerated often; never cache
+        .then((r) => {
+          if (!r.ok) throw new Error(r.status);
+          return r.json();
+        })
+        .then((json) => {
+          DATA = json;
+          loadDefaults();
+          document.getElementById("hdr").textContent =
+            `schema v${json.version} · ` +
+            `the I-028 model only — nothing here is read from the game`;
+          renderAll();
+        })
+        .catch(() => {
+          document.getElementById("hdr").textContent = "load failed";
+          document.getElementById("err").hidden = false;
+        });
+    </script>
+  </body>
+</html>
