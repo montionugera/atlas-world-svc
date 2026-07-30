@@ -8,11 +8,11 @@ function buildSnapshot(overrides: Partial<LoadoutSnapshot['profile']> = {}): Loa
   return {
     schemaVersion: 1,
     profile: {
-      schemaVersion: 1,
+      schemaVersion: 2,
       level: 5,
       xp: 0,
       statPoints: 0,
-      allocated: { str: 8, agi: 6, int: 3, vit: 10 },
+      allocated: { str: 8, agi: 6, int: 3, vit: 10, dex: 4 },
       ...overrides,
     },
     equippedItemIds: {},
@@ -46,7 +46,7 @@ describe('applyLoadout', () => {
 
   it('maps allocated agi/str/vit onto player.stat so attack speed reflects the loadout', () => {
     const player = new Player('p1', 'Tester')
-    const snapshot = buildSnapshot({ allocated: { str: 8, agi: 42, int: 3, vit: 10 } })
+    const snapshot = buildSnapshot({ allocated: { str: 8, agi: 42, int: 3, vit: 10, dex: 4 } })
 
     applyLoadout(player, snapshot)
 
