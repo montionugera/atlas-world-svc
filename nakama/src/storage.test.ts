@@ -44,6 +44,69 @@ describe('readDoc', () => {
   });
 });
 
+describe('migrateDoc v1 -> v2 (dex added to PrimaryStats)', () => {
+  /** A profile exactly as v1 persisted it: no `dex`, real progression. */
+  const V1_PROFILE = {
+    schemaVersion: 1,
+    level: 27,
+    xp: 4310,
+    statPoints: 9,
+    allocated: { str: 40, agi: 12, int: 3, vit: 25 },
+  };
+
+  /** storageRead stub returning one stored value at CAS version 'v9'. */
+  function nkWith(collection: string, value: unknown) {
+    return stubNk({
+      storageRead: jest.fn(() => [
+        { collection, key: STORAGE_KEY, userId: 'user-1', version: 'v9', value },
+      ]),
+    });
+  }
+
+  it('migrates a v1 profile to v2 with dex 1 and KEEPS level, xp and statPoints', () => {
+    const nk = nkWith(COLLECTIONS.profile, V1_PROFILE);
+    const { doc, version } = readDoc(nk, 'user-1', COLLECTIONS.profile);
+    expect(doc.schemaVersion).toBe(2);
+    // The whole point: falling through to defaultDoc here would silently wipe
+    // every player's progression.
+    expect(doc.level).toBe(27);
+    expect(doc.xp).toBe(4310);
+    expect(doc.statPoints).toBe(9);
+    expect(doc.allocated).toEqual({ str: 40, agi: 12, int: 3, vit: 25, dex: 1 });
+    // A migration must not consume the CAS version — the caller still needs it.
+    expect(version).toBe('v9');
+  });
+
+  it('leaves an existing dex value alone rather than resetting it to 1', () => {
+    const nk = nkWith(COLLECTIONS.profile, {
+      ...V1_PROFILE,
+      allocated: { ...V1_PROFILE.allocated, dex: 17 },
+    });
+    const { doc } = readDoc(nk, 'user-1', COLLECTIONS.profile);
+    expect(doc.allocated.dex).toBe(17);
+  });
+
+  it('passes a v1 doc of an unchanged collection straight through', () => {
+    const nk = nkWith(COLLECTIONS.inventory, {
+      schemaVersion: 1,
+      stackables: [{ itemId: 'potion_minor', qty: 3 }],
+      uniques: [],
+    });
+    const { doc } = readDoc(nk, 'user-1', COLLECTIONS.inventory);
+    expect(doc.stackables).toEqual([{ itemId: 'potion_minor', qty: 3 }]);
+    // inventory never went to v2 — its own current version is still 1, so this
+    // is a passthrough, not a migration.
+    expect(doc.schemaVersion).toBe(1);
+  });
+
+  it('still resets a doc with no schemaVersion at all — untrusted, not migratable', () => {
+    const nk = nkWith(COLLECTIONS.profile, { level: 99, xp: 1 });
+    const { doc } = readDoc(nk, 'user-1', COLLECTIONS.profile);
+    expect(doc).toEqual(DEFAULT_PROFILE);
+    expect(doc.allocated.dex).toBe(1);
+  });
+});
+
 describe('writeDoc', () => {
   it('writes with owner-read/no-client-write permissions and the given version', () => {
     const write = jest.fn(() => [{ version: 'v2' }]);

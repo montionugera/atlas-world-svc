@@ -64,14 +64,14 @@ namespace AtlasWorld.Client.UI.Panels
             string? weaponItemId = weaponInstance != null && _instanceToItem.TryGetValue(weaponInstance, out string? id) ? id : null;
 
             PrimaryStats a = _profile.allocated ?? new PrimaryStats();
-            var d = MetaFormulas.Derived((int)_profile.level, a.str, a.agi, a.@int, a.vit, weaponItemId);
+            var d = MetaFormulas.Derived((int)_profile.level, a.str, a.agi, a.@int, a.vit, a.dex, weaponItemId);
 
             Row("Weapon", weaponItemId != null ? Catalog.ItemName(weaponItemId) : "—");
-            Row("Max Health", d.maxHealth.ToString());
-            Row("Physical Atk", d.pAtk.ToString());
-            Row("Magic Atk", d.mAtk.ToString());
-            Row("Physical Def", d.pDef.ToString());
-            Row("Magic Def", d.mDef.ToString());
+            Row("Max Health", d.maxHealth.ToString("0"));
+            Row("Physical Atk", d.pAtk.ToString("0"));
+            Row("Magic Atk", d.mAtk.ToString("0"));
+            Row("Physical Def", d.pDef.ToString("0"));
+            Row("Magic Def", d.mDef.ToString("0"));
             Row("Move Speed", d.maxMoveSpeed.ToString("0.0"));
         }
 

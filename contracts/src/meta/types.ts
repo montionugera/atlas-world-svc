@@ -1,12 +1,23 @@
+/**
+ * Which single primary stat a weapon's damage reads. Offence is one stat chosen
+ * by the equipped weapon, never a blend — see meta/weaponStats.ts.
+ */
+export type AtkStat = "str" | "dex" | "int";
+
 export interface PrimaryStats {
   str: number;
   agi: number;
   int: number;
   vit: number;
+  /**
+   * Ranged/precision offence. Bows read this instead of str. Added in profile
+   * schema v2; v1 docs are migrated with dex: 1 (see nakama/src/storage.ts).
+   */
+  dex: number;
 }
 
 export interface ProfileDoc {
-  schemaVersion: 1;
+  schemaVersion: 2;
   level: number;
   xp: number;
   statPoints: number;

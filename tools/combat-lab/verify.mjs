@@ -1438,6 +1438,40 @@ console.log(
   );
 }
 
+// --------------------------------- N. the game's gear scale vs this model ---
+// The lab's gearTiers put best-in-slot at scale 1.0. contracts/content/items.json
+// is the game's real weapon catalog, and contracts' GEAR_REFERENCE normalises it
+// so the best weapon reads exactly 1.0. If a stronger weapon ships without moving
+// GEAR_REFERENCE, weapons quietly exceed the scale this model was solved against.
+// Gated HERE as well as in contracts/src/meta/labParity.test.ts because verify.mjs
+// cannot import TypeScript, and the lab must not depend on the game to be checked.
+{
+  console.log("\ngame catalog vs gear scale");
+  const items = JSON.parse(
+    readFileSync(new URL("../../contracts/content/items.json", import.meta.url), "utf8"),
+  );
+  const weapons = items.filter((i) => i.kind === "weapon");
+  const totals = weapons.map((w) => (w.pAtk ?? 0) + (w.mAtk ?? 0));
+  const GEAR_REFERENCE = 18; // pinned, mirrors contracts/src/meta/weaponStats.ts
+  const max = Math.max(...totals);
+
+  gate(
+    max === GEAR_REFERENCE,
+    "GEAR_REFERENCE is exactly the catalog's best weapon total",
+    `catalog max ${max}, pinned ${GEAR_REFERENCE}`,
+  );
+  gate(
+    totals.every((t) => t > 0 && t / GEAR_REFERENCE <= 1 + 1e-12),
+    "every weapon's gear scale lands in (0, 1] like the lab's gearTiers",
+    `${weapons.length} weapons, worst ${(Math.min(...totals) / GEAR_REFERENCE).toFixed(3)}`,
+  );
+  gate(
+    weapons.every((w) => ["str", "dex", "int"].includes(w.atkStat)),
+    "every weapon declares a valid atkStat (offence reads ONE stat)",
+    weapons.map((w) => `${w.id}:${w.atkStat}`).join(" "),
+  );
+}
+
 console.log(
   failures === 0
     ? "\nOK — page renders, headers documented, model matches the balance sheet.\n"
