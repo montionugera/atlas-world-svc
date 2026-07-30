@@ -1,0 +1,87 @@
+name: nakama
+
+# Gate @atlas/nakama-runtime — the package that had no CI at all until F-020.
+#
+# It matters more than a normal coverage gap: nakama/ is bundled by esbuild into
+# the Nakama server runtime (goja). A break here does not surface as a failing
+# test, it breaks InitModule at load — taking down auth, matchmaking and the
+# loadout RPCs for the whole deployment.
+#
+# Mirrors contracts.yml's toolchain (pnpm 10 · Node 18 · --filter) and its
+# contracts-built-first ordering.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'nakama/**'
+      - 'contracts/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/nakama.yml'
+  pull_request:
+    # contracts/** is included deliberately: nakama consumes @atlas/contracts'
+    # types, so a contracts shape change breaks nakama without touching
+    # nakama/**. F-019 is the worked example — it changed PrimaryStats and
+    # ProfileDoc, and nakama/src/storage.ts plus nakama/src/rpc/allocateStats.ts
+    # both had to change with it.
+    paths:
+      - 'nakama/**'
+      - 'contracts/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/nakama.yml'
+
+concurrency:
+  group: nakama-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  nakama:
+    name: nakama (typecheck · test · bundle)
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: "0" # skip husky install in CI (no git hooks needed)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Ordering here is not optional. nakama resolves @atlas/contracts from its
+      # dist/, and contracts has no prepare hook, so a clean install leaves it
+      # unbuilt. A MISSING dist gives phantom TS2307s; a STALE dist typechecks
+      # green against the old types. Both fail silently — build it first.
+      - name: Build contracts (@atlas/contracts)
+        run: pnpm --filter @atlas/contracts run build
+
+      - name: Typecheck (tsc --noEmit)
+        run: pnpm --filter @atlas/nakama-runtime run typecheck
+
+      - name: Test (jest)
+        run: pnpm --filter @atlas/nakama-runtime run test
+
+      # The bundle is the artifact that actually loads into Nakama, so build it
+      # rather than trusting typecheck+test alone.
+      - name: Build esbuild bundle (the goja artifact)
+        run: pnpm --filter @atlas/nakama-runtime run build
+
+      # ...but esbuild exiting 0 does not mean the bundle LOADS. With
+      # platform:'node' a stray top-level `import * as fs from "fs"` is
+      # externalized into a top-level import statement and esbuild still exits 0
+      # (verified 2026-07-31, alongside tsc --noEmit exit 0). goja then cannot
+      # load the file and InitModule is never found. This step evaluates the
+      # bundle as a plain script in a bare context and asserts InitModule exists.
+      - name: Verify bundle load contract (plain script · top-level InitModule)
+        run: pnpm --filter @atlas/nakama-runtime run verify:bundle
