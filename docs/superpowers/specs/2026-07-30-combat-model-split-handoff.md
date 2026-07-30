@@ -114,12 +114,53 @@ a clustered party keeps taking damage while every mob can reach every player.
 > `npm test` exits 0, and that must not be read as meeting it — the divergences are
 > `it.failing`, so they turn red the moment someone fixes them.
 
-## Two idea tickets to file
+### What the parity test does and does not do
+
+It is a **per-hit damage probe, not a simulated fight** — every number it reports is
+reproducible in closed form without instantiating a room. So it does *not* close the
+foundation spec's "no simulation has ever run" gap on its own; the pack and boss tests
+are what actually drove rooms. A real parity test needs a fight run to completion with
+TTK and HP-remaining measured against `mob(L, rank)`. Its two derived quantities are
+currently guarded only by an `it.failing`, which passes on **any** throw rather than
+only on the intended divergence.
+
+Also unreconciled, and load-bearing: `DamageCalculator.ts` is **subtractive,
+80%-capped, 1-floored** while the model is **divisive and uncapped**. Different
+functions; they cannot agree in general. **This model does not predict shipped damage
+numbers.**
+
+## Every remaining step, in order
+
+| # | step | blocked on |
+| --- | --- | --- |
+| 1 | **Decide weapon semantics** — flat `pAtk` addend → multiplicative gear scale, reinterpreting every item-catalog number | a content decision; nothing else |
+| 2 | **P4 `derivedStats`** D6/D7/D8. Land in **all three** copies: `contracts/src/meta/derivedStats.ts`, `game-client/src/UI/MetaIds.cs` (`MetaFormulas.Derived`), and reconcile the divergent `Player.recalculateStats`. Update the 4 expectations in `derivedStats.test.ts` | step 1 |
+| 3 | **File the three idea tickets** below | — |
+| 4 | **Gate 1** — `bash .claude/ps-release-workflow/precheck.sh` | — |
+| 5 | **Ship F-018 into `release/1.5`**, then worktree cleanup | Gate 1 green |
+
+Steps 3–5 do **not** depend on 1–2. F-018 is shippable as-is if you want the split, the
+gates and the findings landed while the weapon decision waits — P4 is additive to it.
+
+## Three idea tickets to file
+
+None are filed yet; filing needs a commit on the `_release` worktree.
 
 1. **Boss target rotation / aggro** — the focus-fire finding above. Blocks the boss
    `n²` branch meaning anything. Needs a design decision first.
 2. **Pack no-focus-fire, properly tested** — a clustered-party engagement where target
-   choice stays live while damage lands.
+   choice stays live while damage lands, plus a parity test that runs a fight to
+   completion rather than probing single hits.
+3. **`BATTLE_ATTACK` carries no `damageType`.** Correct today — both mob and NPC
+   emitters source `damage` from `pAtk` — and documented as deliberate at
+   `BattleManager.ts:50`, but it is **the one remaining place a magical hit could
+   silently become physical** if a future emitter sources `mAtk` into that event. The
+   `?? 'physical'` default will not catch it.
+
+Already filed: **I-034** (race/class + per-race leans, deferred from this slice).
+Closed by this work: **I-027** (`damageType` dropped on the queue).
+Still open and untouched: **I-032** (two sources of truth for `pAtk`/`mAtk`),
+**I-033** (primary-stat clamp split-brain).
 
 ## Traps, each of which cost real time
 
