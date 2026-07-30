@@ -62,3 +62,6 @@ function InitModule(
 // Keep InitModule reachable so esbuild's tree-shaking never drops the
 // top-level declaration Nakama's goja runtime looks up by name.
 !InitModule && InitModule.bind(null);
+
+// PROBE A (F-020): deliberate type error to prove the CI gate bites. Reverted.
+const __probeTypeError: number = "definitely not a number";
