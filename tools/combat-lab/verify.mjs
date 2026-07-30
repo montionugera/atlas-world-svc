@@ -7,6 +7,7 @@
 //   4. the model reproduces docs/superpowers/specs/2026-07-28-combat-balance-sheet.md
 //   5. build and gear are independent axes, and encounter size is a free input
 //   6. the invariant suite passes
+//   7. the physical/magical split reduces exactly and cannot be gamed (G1–G12)
 //
 // (1) exists because an earlier version only evaluated the model half, so a
 // broken string literal in the render code passed every check while the page
@@ -148,7 +149,8 @@ if (a < 0 || b < 0 || b <= a) {
 const model = new Function(
   "DATA",
   "P",
-  `${html.slice(a, b)}; return { player, mob, R, ttk, band, requirements, invariants, midLevel, rankRef, hit, rankSustain, economy };`,
+  `${html.slice(a, b)}; return { player, mob, R, ttk, band, requirements, invariants, midLevel, rankRef, hit, rankSustain, economy,
+     shapeOf, forward, inverse, matchup, Q, elem, dmgRatio };`,
 )(data, P);
 
 const EXPECT_REQ = {
@@ -633,6 +635,807 @@ console.log("\ninvariants (§7)");
 for (const [name, value, ok] of model.invariants()) {
   if (!ok) failures++;
   console.log(`  ${ok ? "PASS" : "FAIL"}  ${name.padEnd(44)} ${value}`);
+}
+
+// ======================================= 7. the physical/magical split =====
+// Spec: docs/superpowers/specs/2026-07-30-combat-model-split-design.md §13.
+//
+// TWO RULES GOVERN EVERY GATE BELOW.
+//
+//   1. Expectations are LITERALS here. Nothing is read back out of
+//      combat-model.json and compared with itself -- that is the tautology the
+//      swings gate fell into, and it passed happily with rank E set to 99.
+//   2. Anything derived from a sweep is RECOMPUTED LIVE, never transcribed from
+//      the spec. §9's table was itself wrong for an hour because someone
+//      transcribed a different sweep than the one the gate runs.
+//
+// The whole surface these gates cover -- matchup(), Q(), inverse() -- has no
+// other caller in the repository. If a refactor breaks it, this section is the
+// only thing that will notice.
+
+// P is the SAME object the model closes over, so writing a property re-quotes
+// the model live and costs nothing. Everything here restores in a finally.
+const withInputs = (over, fn) => {
+  const saved = {};
+  for (const k of Object.keys(over)) saved[k] = P[k];
+  Object.assign(P, over);
+  try {
+    return fn();
+  } finally {
+    Object.assign(P, saved);
+  }
+};
+
+// Authored tags live on the grade / ladder rows in `data`, read at call time.
+// NEVER leave one behind: index.html has to keep shipping at the reduction
+// point, and a stray authored shape would move the pinned ladder.
+const TAG_KEYS = ["rho", "theta", "slant", "element"];
+const withTags = (pairs, fn) => {
+  const saved = pairs.map(([row]) =>
+    Object.fromEntries(TAG_KEYS.map((k) => [k, row[k]])),
+  );
+  pairs.forEach(([row, tags]) => Object.assign(row, tags));
+  try {
+    return fn();
+  } finally {
+    pairs.forEach(([row], i) => Object.assign(row, saved[i]));
+  }
+};
+
+const gradeMax = data.proposed.grades.find((g) => g.grade === "max");
+const rankRow = (rank) => data.proposed.ladder.find((x) => x.rank === rank);
+// A synthetic entity: a shape plus the four displayed stats the two magnitudes
+// and that shape imply. This is what matchup()/dmgRatio() consume.
+const ent = (atkEff, defEff, sh) => ({
+  ...sh,
+  ...model.forward(atkEff, defEff, sh),
+});
+const span = (from, to, step) => {
+  const out = [];
+  for (let x = from; x <= to + step / 2; x += step)
+    out.push(Number(x.toFixed(4)));
+  return out;
+};
+
+console.log("\nG1–G5 — the reduction, no free lunch, and the identities");
+{
+  // G1 — THE REDUCTION GATE. Exact equality, not a tolerance: every pinned
+  // expectation in this file is by definition the Q = 1 number.
+  const flat = model.shapeOf({});
+  let bad = "";
+  for (const rk of data.proposed.ladder) {
+    const L = model.midLevel(rk);
+    const q = model.Q(model.player(L, "max"), model.mob(L, rk.rank));
+    if (q !== 1) bad += `${rk.rank} Q ${q}; `;
+  }
+  gate(
+    model.matchup(flat, flat) === 1 && model.Q(flat, flat) === 1 && !bad,
+    "G1 Q == 1 exactly at the authored tags and neutral element",
+    bad || "all 8 ranks, and matchup(flat, flat) === 1",
+  );
+
+  // G2 — NO FREE LUNCH, family (i): a flat defender at e = 1 gives m = 1 for
+  // ANY attacker mix and tilt. No amount of offensive lopsidedness buys damage.
+  // Asserted twice: on matchup() and again through dmgRatio(), because the
+  // guarantee has to survive in the function that actually deals the damage.
+  let worst = 0,
+    n = 0;
+  const flatD = ent(100, 50, flat);
+  for (const rho of span(0, 1, 0.05))
+    for (const theta of span(-1, 1, 0.1)) {
+      const att = model.shapeOf({ rho, theta });
+      worst = Math.max(
+        worst,
+        Math.abs(model.matchup(att, flat) - 1),
+        Math.abs(model.dmgRatio(ent(100, 50, att), flatD) / 2 - 1),
+      );
+      n++;
+    }
+  gate(
+    worst < 1e-12,
+    `G2 no free lunch: m == 1 vs a flat defender over ${n} legal (rho, theta)`,
+    `max deviation ${worst.toExponential(2)}`,
+  );
+
+  // G2 — family (ii): an attacker flat at rho = rhoBar sees m = 1 against ANY
+  // defender slant. This is the half that makes the mob solver survive
+  // untouched, because the solve runs against exactly that reference player.
+  worst = 0;
+  n = 0;
+  for (const pm of span(0.05, 0.95, 0.05))
+    withInputs({ postureMix: pm }, () => {
+      for (const slant of span(-0.5, 0.5, 0.05)) {
+        const att = model.shapeOf({ rho: pm, theta: 0 });
+        worst = Math.max(
+          worst,
+          Math.abs(model.matchup(att, model.shapeOf({ slant })) - 1),
+        );
+        n++;
+      }
+    });
+  gate(
+    worst < 1e-12,
+    `G2 and m == 1 for a reference-mix attacker over ${n} (rhoBar, slant)`,
+    `max |m − 1| ${worst.toExponential(2)}`,
+  );
+
+  // G3 — Q is level-free. Shapes carry no level term, so this is exact
+  // equality; a refactor that let a level reach matchup() turns it red.
+  withTags(
+    [
+      [gradeMax, { rho: 0.8, theta: 0.5, slant: 0.3, element: "fire" }],
+      [rankRow("C"), { rho: 0.3, theta: -0.4, slant: -0.4, element: "earth" }],
+    ],
+    () => {
+      const LS = [1, 25, 50, 75, P.levelMax];
+      const qs = LS.map((L) =>
+        model.Q(model.player(L, "max"), model.mob(L, "C")),
+      );
+      const rs = LS.map((L) => model.R(L, "C", "max", 1));
+      // Assert NON-UNIT as well as invariant. `new Set(qs).size === 1` alone is
+      // satisfied by any constant, so a matchup() that stopped computing
+      // anything and returned 1 would pass it. Requiring Q != 1 is what makes
+      // this gate exercise the feature rather than merely its absence.
+      gate(
+        new Set(qs).size === 1 && Math.abs(qs[0] - 1) > 0.1,
+        "G3 Q invariant to absolute level, non-default tags AND elements both sides — and non-unit, so the gate is not satisfied by a constant",
+        `Q ${qs[0].toFixed(6)} at L${LS.join("/L")}`,
+      );
+      gate(
+        Math.max(...rs) - Math.min(...rs) < 1e-9,
+        "G3 and R stays level-flat with those shapes authored",
+        `R ${rs[0].toFixed(4)}`,
+      );
+    },
+  );
+
+  // G4 — Q is 0-homogeneous in both magnitudes, rescaled INDEPENDENTLY, and
+  // the same loop pins §7's factorisation identity:
+  //   dmgRatio(A,D) === (atkEff_A / defEff_D) x matchup(A,D)
+  // which is the property that lets R carry Q without R() mentioning it.
+  {
+    const att = model.shapeOf({
+      rho: 0.7,
+      theta: 0.6,
+      slant: 0.2,
+      element: "water",
+    });
+    const dfn = model.shapeOf({
+      rho: 0.2,
+      theta: -0.5,
+      slant: -0.35,
+      element: "fire",
+    });
+    const baseM = model.matchup(att, dfn),
+      baseQ = model.Q(att, dfn);
+    let moved = "",
+      wf = 0,
+      cells = 0;
+    for (const s of [1e-3, 0.5, 1, 7, 1e4])
+      for (const t of [1e-3, 0.5, 1, 7, 1e4]) {
+        const A = ent(100 * s, 50 * s, att),
+          D = ent(100 * t, 50 * t, dfn);
+        if (model.matchup(A, D) !== baseM || model.Q(A, D) !== baseQ)
+          moved += `${s}/${t}; `;
+        wf = Math.max(
+          wf,
+          Math.abs(model.dmgRatio(A, D) / (((100 * s) / (50 * t)) * baseM) - 1),
+        );
+        cells++;
+      }
+    gate(
+      !moved && wf < 1e-12,
+      `G4 Q is 0-homogeneous and dmgRatio factorises, over ${cells} rescalings`,
+      moved ||
+        `Q ${baseQ.toFixed(6)} fixed, factorisation error ${wf.toExponential(2)}`,
+    );
+  }
+
+  // G5 — forward/inverse round trip, and the two identities that make the
+  // aggregation exact rather than approximate. Arithmetic-on-attack plus
+  // harmonic-on-defence is the ONLY pairing that round-trips; a geometric
+  // blend (which reads tidier) does not, and buys 2.57x damage at constant CS.
+  {
+    let wr = 0,
+      wi = 0,
+      cells = 0;
+    for (const pm of [0.05, 0.25, 0.5, 0.75, 0.95])
+      withInputs({ postureMix: pm }, () => {
+        for (const rho of [0, 0.25, 0.5, 0.75, 1])
+          for (const theta of [-1, -0.5, 0, 0.5, 1])
+            for (const slant of [-0.5, -0.25, 0, 0.25, 0.5]) {
+              const sh = model.shapeOf({ rho, theta, slant });
+              wi = Math.max(
+                wi,
+                Math.abs(sh.rho * sh.xp + (1 - sh.rho) * sh.xm - 1),
+                Math.abs(pm * sh.qp + (1 - pm) * sh.qm - 1),
+              );
+              for (const [ae, de] of [
+                [1, 1],
+                [60, 60],
+                [4483, 4484],
+                [1e-3, 1e5],
+              ]) {
+                const inv = model.inverse(model.forward(ae, de, sh), sh);
+                wr = Math.max(
+                  wr,
+                  Math.abs(inv.atkEff / ae - 1),
+                  Math.abs(inv.defEff / de - 1),
+                );
+                cells++;
+              }
+            }
+      });
+    gate(
+      wr < 1e-12,
+      `G5 forward/inverse round trip exact over ${cells} shape x magnitude x posture cells`,
+      `max relative error ${wr.toExponential(2)}`,
+    );
+    gate(
+      wi < 1e-12,
+      "G5 the two identities hold: rho·xp+(1−rho)·xm == 1 and rhoBar·qp+(1−rhoBar)·qm == 1",
+      `max |identity − 1| ${wi.toExponential(2)}`,
+    );
+  }
+}
+
+// G6 — the aggregates have to reproduce the PINNED curve, not merely agree with
+// the page. EXPECT_CURVE above is the literal; this drives it through
+// forward() and back through inverse(), which is what makes inverse()
+// load-bearing rather than decorative.
+console.log(
+  "\nG6 — atkEff / defEff reproduce the pinned curve at theta = slant = 0",
+);
+for (const [L, want] of Object.entries(EXPECT_CURVE)) {
+  const p = model.player(Number(L), "max");
+  const inv = model.inverse(
+    { pAtk: p.pAtk, mAtk: p.mAtk, pDef: p.pDef, mDef: p.mDef },
+    p,
+  );
+  check(`L${L} atkEff`, inv.atkEff, want[1], 0.6);
+  check(`L${L} defEff`, inv.defEff, want[3], 0.6);
+}
+
+console.log("\nG7–G8 — elements");
+{
+  // G7 — ELEMENT LEVERAGE IS FULL FOR EVERY BUILD. The element multiplies the
+  // WHOLE hit, so m / mixterm == e at every mix. Attaching it to the magic term
+  // alone reports 1 at rho = 1 where the shipped DamageCalculator reports e,
+  // and a physical build silently gets none of the leverage a caster gets.
+  // The defender is deliberately SLANTED so mixterm != 1 and the division bites.
+  // The e values are literals, hand-read off the shipped cycle.
+  const PAIRS = [
+    ["fire", "earth", 2],
+    ["earth", "fire", 0.5],
+    ["water", "fire", 2],
+    ["holy", "void", 2],
+    ["fire", "fire", 0.5],
+    ["neutral", "fire", 1],
+  ];
+  let bad = "",
+    cells = 0;
+  for (const rho of [0, 0.25, 0.5, 0.75, 1])
+    for (const [ea, ed, e] of PAIRS) {
+      const att = model.shapeOf({ rho, theta: 0.5, element: ea });
+      const dfn = model.shapeOf({ slant: 0.4, element: ed });
+      const mix = att.rho * att.xp * dfn.qp + (1 - att.rho) * att.xm * dfn.qm;
+      const lev = model.matchup(att, dfn) / mix;
+      if (Math.abs(lev - e) > 1e-12)
+        bad += `m/mix rho ${rho} ${ea}->${ed} ${lev.toFixed(6)} want ${e}; `;
+      // Again through the damage function, against the same fight with both
+      // elements set to neutral: the ratio must be exactly e.
+      const ratio =
+        model.dmgRatio(ent(100, 50, att), ent(100, 50, dfn)) /
+        model.dmgRatio(
+          ent(100, 50, model.shapeOf({ rho, theta: 0.5 })),
+          ent(100, 50, model.shapeOf({ slant: 0.4 })),
+        );
+      if (Math.abs(ratio - e) > 1e-12)
+        bad += `dmgRatio rho ${rho} ${ea}->${ed} ${ratio.toFixed(6)} want ${e}; `;
+      cells++;
+    }
+  gate(
+    !bad,
+    `G7 element leverage is full for every build, ${cells} (rho, pair) cells`,
+    bad || "rho 0/.25/.5/.75/1 x 6 pairs, on m/mixterm and on dmgRatio",
+  );
+
+  // G8 — the table is TRINARY. Histogram pinned as a literal.
+  const WANT_HIST = { 0.25: 4, 1: 41, 4: 4 };
+  const els = Object.keys(data.proposed.elementTable);
+  const hist = new Map();
+  for (const A of els)
+    for (const D of els) {
+      const q = model.elem(A, D) / model.elem(D, A);
+      hist.set(q, (hist.get(q) ?? 0) + 1);
+    }
+  const norm = (o) =>
+    [...Object.entries(o)]
+      .map(([k, v]) => [Number(k), v])
+      .sort((x, y) => x[0] - y[0])
+      .map(([k, v]) => `${k}x${v}`)
+      .join(" ");
+  gate(
+    els.length === 7 && norm(Object.fromEntries(hist)) === norm(WANT_HIST),
+    "G8 Q_element takes only {0.25, 1, 4} over all 49 ordered pairs at eta = 1",
+    `${els.length} elements, ${norm(Object.fromEntries(hist))}`,
+  );
+  // The direction of the cycle, and the two families that cancel. Literals.
+  gate(
+    model.elem("water", "fire") === 2 &&
+      model.elem("fire", "water") === 0.5 &&
+      model.elem("fire", "earth") === 2 &&
+      model.elem("earth", "wind") === 2 &&
+      model.elem("wind", "water") === 2,
+    "G8 the cycle runs water > fire > earth > wind > water, one-directionally",
+  );
+  gate(
+    model.elem("holy", "void") / model.elem("void", "holy") === 1 &&
+      model.elem("fire", "fire") / model.elem("fire", "fire") === 1 &&
+      els.every(
+        (e) => model.elem("neutral", e) === 1 && model.elem(e, "neutral") === 1,
+      ),
+    "G8 holy↔void and same-element cancel in Q, and neutral is inert both ways",
+  );
+
+  // G8-bis — PARITY with the shipped table. combat-model.json's table is a
+  // mirror of colyseus-server's, and a mirror that drifts is worse than no
+  // mirror: the page would keep reporting balance for a game that had changed.
+  const tsPath = join(
+    HERE,
+    "../../colyseus-server/src/config/combat/elements.ts",
+  );
+  const ts = readFileSync(tsPath, "utf8");
+  const i0 = ts.indexOf("const ELEMENT_MULTIPLIER");
+  const i1 = ts.indexOf("\n}", i0);
+  let shipped = null,
+    parseErr2 = "";
+  // GUARD THE ANCHOR. indexOf returns -1 on a rename, and ts.indexOf("{", -1)
+  // silently restarts from 0 — which today happens to land on the right object
+  // only because nothing precedes the table. Without this the gate would report
+  // "matches on all 49 ordered pairs" while having located nothing at all,
+  // which is the exact failure mode a parity gate exists to prevent.
+  if (i0 < 0 || i1 < 0)
+    parseErr2 = `could not locate ELEMENT_MULTIPLIER in ${tsPath} — the anchor was renamed; update this gate rather than deleting it`;
+  try {
+    if (parseErr2) throw new Error(parseErr2);
+    shipped = new Function(
+      `return ${ts
+        .slice(ts.indexOf("{", i0), i1 + 2)
+        .replace(/\bSTRONG\b/g, "2.0")
+        .replace(/\bWEAK\b/g, "0.5")
+        .replace(/\bEVEN\b/g, "1.0")}`,
+    )();
+  } catch (e) {
+    parseErr2 = e.message;
+  }
+  const shippedList = (ts.match(/export const ELEMENTS = \[([^\]]*)\]/) ?? [
+    "",
+    "",
+  ])[1]
+    .split(",")
+    .map((s) => s.trim().replace(/['"]/g, ""))
+    .filter(Boolean);
+  let drift = parseErr2;
+  if (shipped)
+    for (const A of shippedList)
+      for (const D of shippedList)
+        if (model.elem(A, D) !== shipped[A]?.[D])
+          drift += `${A}->${D} lab ${model.elem(A, D)} vs game ${shipped[A]?.[D]}; `;
+  gate(
+    !drift && shippedList.length === 7 && shippedList.join() === els.join(),
+    `G8 the lab's table matches colyseus-server/src/config/combat/elements.ts on all ${shippedList.length ** 2} ordered pairs`,
+    drift || `[${shippedList.join(" ")}]`,
+  );
+
+  // An unrecognised element is an AUTHORING ERROR. Defaulting a typo to
+  // neutral is the exact failure §9 warns about: neutral's inertness is the
+  // only thing holding Q = 1 everywhere today, so a misspelt element would
+  // move difficulty with nothing on the page turning red.
+  const throws = (fn) => {
+    try {
+      fn();
+      return false;
+    } catch {
+      return true;
+    }
+  };
+  gate(
+    throws(() => model.elem("stone", "fire")) &&
+      throws(() => model.elem("fire", "stone")) &&
+      throws(() => model.elem("Fire", "fire")),
+    "G8 elem() THROWS on an unknown element rather than defaulting to 1",
+  );
+}
+
+console.log("\nG9 — G-ELEM, the content gate (band-worst RECOMPUTED live)");
+{
+  // Exactly the sweep gate 5e runs, and for the same reason: a rank's band-worst
+  // R is 1.5-2.4x LOWER than R at its reference conditions, so a gate built from
+  // the reference column would read every margin as far safer than it is and
+  // pass while the margin was gone. Max-tier player at each edge of the rank's
+  // own band, mob at the band edges or the boss's authored level, at the rank's
+  // own headcount. NEVER transcribed from spec §9 -- that table was itself wrong
+  // until it was regenerated from this sweep.
+  const bandWorst = (rk) => {
+    const mobLevels = rk.level ? [rk.level] : [rk.from, rk.to];
+    let lo = Infinity;
+    for (const pl of [rk.from, rk.to])
+      for (const ml of mobLevels)
+        lo = Math.min(
+          lo,
+          withInputs({ mobLevelDelta: ml - pl }, () =>
+            model.R(pl, rk.rank, "max", rk.n),
+          ),
+        );
+    return lo;
+  };
+  // Carried over from gate 5e EXPLICITLY: rank A is allowed to reach the loss
+  // line at its band bottom (4v4, 14 levels under the last zone's far end
+  // should not be winnable). Every other rank must stay above it, WITH whatever
+  // shapes and elements are authored.
+  const EXEMPT = new Set(["A"]);
+  const rows = [];
+  for (const rk of data.proposed.ladder) {
+    const w = bandWorst(rk);
+    rows.push(
+      `${rk.rank} ${w.toFixed(3)} (breaks at Q<${(1 / w).toFixed(3)}, ${(w * 0.25).toFixed(3)} at Q=0.25)`,
+    );
+    if (!EXEMPT.has(rk.rank))
+      gate(
+        w >= 1.0,
+        `G9 ${rk.rank} stays winnable at its band worst case with the authored tags`,
+        `band-worst R ${w.toFixed(3)}`,
+      );
+  }
+  // The exemption restated as a LITERAL, so it cannot be quietly widened: at
+  // Q = 1 rank A is the ONLY rank under the line.
+  const belowFlat = withTags(
+    [gradeMax, ...data.proposed.ladder].map((row) => [
+      row,
+      { rho: 0.5, theta: 0, slant: 0, element: "neutral" },
+    ]),
+    () =>
+      data.proposed.ladder
+        .filter((rk) => bandWorst(rk) < 1)
+        .map((rk) => rk.rank),
+  );
+  gate(
+    belowFlat.join(",") === "A",
+    "G9 at Q = 1 rank A is the only rank under R = 1 — the 5e exemption, pinned",
+    `[${belowFlat.join(" ")}]`,
+  );
+  // G-ELEM as a CONTENT rule, which is what catches the ranks R alone cannot:
+  // rank A is R-exempt above, and a rank with headroom would absorb a 0.25
+  // without failing. Cycle advantage is reserved for trash/farm, so a boss must
+  // be element-neutral in BOTH directions, and nothing may put the player on the
+  // disadvantaged side of anything.
+  let elemBad = "";
+  for (const rk of data.proposed.ladder) {
+    const L = model.midLevel(rk);
+    const q = model.Q(model.player(L, "max"), model.mob(L, rk.rank));
+    if (q < 1)
+      elemBad += `${rk.rank} puts the player on the disadvantaged side (Q ${q}); `;
+    if (rk.shape === "boss" && q !== 1)
+      elemBad += `${rk.rank} is a boss with a cycle edge (Q ${q}) — advantage is for trash/farm; `;
+  }
+  gate(
+    !elemBad,
+    "G9 G-ELEM: no rank is cycle-disadvantaged, and no boss carries a cycle edge at all",
+    elemBad || "all 8 ranks at Q = 1",
+  );
+  console.log(`       band-worst per rank: ${rows.join("  ")}`);
+}
+
+console.log("\nG10–G12 — clamps, class symmetry, stat visibility");
+{
+  // G10 — the clamps are what keep the model MEANING anything: outside them a
+  // displayed stat goes negative or a defence divides by zero.
+  let bad = "";
+  const RAW = [-3, -1.5, -1, -0.5, 0, 0.25, 0.5, 0.75, 1, 1.5, 3];
+  let cells = 0;
+  for (const pm of [0.05, 0.5, 0.95])
+    withInputs({ postureMix: pm }, () => {
+      for (const rho of [-1, 0, 0.25, 0.5, 0.75, 1, 2])
+        for (const theta of RAW)
+          for (const slant of RAW) {
+            const s = model.shapeOf({ rho, theta, slant });
+            const st = model.forward(100, 50, s);
+            if (
+              !(s.rho >= 0 && s.rho <= 1) ||
+              !(Math.abs(s.theta) <= 1) ||
+              !(Math.abs(s.slant) <= 0.5) ||
+              !(s.xp >= 0 && s.xm >= 0 && s.qp > 0 && s.qm > 0) ||
+              !(st.pAtk >= 0 && st.mAtk >= 0 && st.pDef > 0 && st.mDef > 0)
+            )
+              bad += `rho ${rho} theta ${theta} slant ${slant} rhoBar ${pm}; `;
+            cells++;
+          }
+    });
+  gate(
+    !bad,
+    `G10 shapeOf clamps all ${cells} raw tag triples into xp,xm >= 0 and qp,qm > 0`,
+    bad.slice(0, 160) ||
+      "|theta| <= 1, |slant| <= 0.5, all four stats non-negative",
+  );
+  // The authored data must already be legal AS WRITTEN — a clamp that silently
+  // rewrites authored content is how a designer's intent goes missing.
+  let clamped = "";
+  for (const row of [...data.proposed.grades, ...data.proposed.ladder]) {
+    const s = model.shapeOf(row);
+    if (
+      s.rho !== (row.rho ?? 0.5) ||
+      s.theta !== (row.theta ?? 0) ||
+      s.slant !== (row.slant ?? 0)
+    )
+      clamped += `${row.grade ?? row.rank}; `;
+  }
+  gate(
+    !clamped,
+    "G10 every authored row is inside the clamps as written, nothing is silently rewritten",
+    clamped,
+  );
+  // THE SIGN PATHOLOGY. The winning design wrote theta unsigned and a pure
+  // caster came out pAtk 180 / mAtk 100 instead of 0 / 100. Signed is the fix
+  // and this is the assertion that keeps it.
+  const caster = model.forward(100, 50, model.shapeOf({ rho: 0, theta: -1 }));
+  const bruiser = model.forward(100, 50, model.shapeOf({ rho: 1, theta: 1 }));
+  gate(
+    caster.pAtk === 0 && caster.mAtk === 100,
+    "G10 theta is SIGNED: rho 0, theta −1 is pAtk 0 / mAtk 100 — not 180 / 100",
+    `pAtk ${caster.pAtk} mAtk ${caster.mAtk}`,
+  );
+  gate(
+    bruiser.pAtk === 100 && bruiser.mAtk === 0,
+    "G10 and the mirror holds: rho 1, theta +1 is pAtk 100 / mAtk 0",
+    `pAtk ${bruiser.pAtk} mAtk ${bruiser.mAtk}`,
+  );
+  const armoured = model.shapeOf({ slant: 0.5 });
+  const warded = model.shapeOf({ slant: -0.5 });
+  gate(
+    model.forward(100, 50, armoured).pDef > 50 &&
+      model.forward(100, 50, armoured).mDef < 50 &&
+      model.forward(100, 50, warded).pDef < 50 &&
+      model.forward(100, 50, warded).mDef > 50,
+    "G10 slant is SIGNED: positive favours pDef, negative favours mDef",
+  );
+
+  // G11 — CLASS SYMMETRY. The model must have zero class bias BY CONSTRUCTION,
+  // which is the whole argument behind spec §11's D7: the shipped mapping gives
+  // a caster its mDef free off its offence stat and the model must not.
+  const phys = model.shapeOf({ rho: 1, theta: 1 });
+  const mag = model.shapeOf({ rho: 0, theta: -1 });
+  const balanced = ent(100, 50, model.shapeOf({}));
+  const dp = model.dmgRatio(ent(100, 50, phys), balanced);
+  const dm = model.dmgRatio(ent(100, 50, mag), balanced);
+  gate(
+    dp === 2 && dm === 2,
+    "G11 pure physical and pure magical deal identical damage to a balanced defender",
+    `${dp} vs ${dm}, both atkEff/defEff`,
+  );
+  const pp = model.player(50, { build: "high", gear: "A", rho: 1, theta: 1 });
+  const pm2 = model.player(50, { build: "high", gear: "A", rho: 0, theta: -1 });
+  const flatP = model.player(50, "max");
+  gate(
+    pp.cs === flatP.cs && pm2.cs === flatP.cs,
+    "G11 and the shape never moves CombatScore — it is a direction, not a magnitude",
+    `${flatP.cs.toFixed(4)} all three`,
+  );
+  gate(
+    pp.mAtk === 0 &&
+      pp.pAtk === pp.atk &&
+      pm2.pAtk === 0 &&
+      pm2.mAtk === pm2.atk,
+    "G11 and the two builds really are pure, not merely tilted",
+  );
+
+  // G12 — spec §11 D8. `agi` buys move speed and cadence, and the rank solve
+  // absorbs aspd entirely, so agi never reaches R. With S of 4 primaries
+  // R-visible the stat share is (S/4)·C / (1 + (S/4)·C). Literals from §11.
+  const R_VISIBLE = 3; // str, int, vit. agi is the one R-invisible primary.
+  const share = (S) => ((S / 4) * P.statCoef) / (1 + (S / 4) * P.statCoef);
+  gate(
+    Math.abs(share(4) - 0.3333) < 5e-5 &&
+      Math.abs(share(3) - 0.2727) < 5e-5 &&
+      Math.abs(share(2) - 0.2) < 5e-5,
+    "G12 stat share reads 33.3% / 27.3% / 20.0% at 4 / 3 / 2 R-visible primaries",
+    `at statCoef ${P.statCoef}`,
+  );
+  gate(
+    share(R_VISIBLE) >= 0.25,
+    "G12 at most one primary is R-invisible — stat share stays >= 25%",
+    `${(share(R_VISIBLE) * 100).toFixed(1)}% at ${R_VISIBLE} of 4 visible`,
+  );
+  gate(
+    share(R_VISIBLE - 1) < 0.25,
+    "G12 and the bound is TIGHT: a second R-invisible primary would fail it",
+    `${(share(R_VISIBLE - 1) * 100).toFixed(1)}%`,
+  );
+}
+
+// ------------------------------------------- R is exactly linear in Q ------
+// The gate that makes the Q-squaring bug fail LOUDLY. R() must never multiply Q
+// in: hit() is split-aware, so dmgRatio factorises as (atkEff/defEff) x matchup
+// and the two directions of a duel contribute matchup(p,m)/matchup(m,p) -- which
+// IS Q -- all by themselves. An explicit factor squares it, and the error is
+// invisible at the reduction point because Q = 1 there.
+//
+// Every expected Q below is a hand-derived LITERAL, and each case is authored
+// here and restored immediately -- index.html must keep shipping flat.
+console.log("\nR is exactly linear in Q — a squared Q would read Q²");
+{
+  const CASES = [
+    // player tags, rank tags, rank, Q -- literal
+    [{ rho: 1, theta: 1 }, { slant: 0.5 }, "C", 0.75],
+    [{ element: "fire" }, { element: "earth" }, "C", 4],
+    [{ element: "wind" }, { element: "earth" }, "D", 0.25],
+    [{ element: "water" }, { element: "wind" }, "E", 0.25],
+    [{ element: "holy" }, { element: "void" }, "B", 1],
+    [{ element: "fire" }, { element: "fire" }, "B", 1],
+  ];
+  let bad = "";
+  for (const [pt, mt, rank, wantQ] of CASES) {
+    const rk = rankRow(rank),
+      L = model.midLevel(rk);
+    const base = model.R(L, rank, "max", rk.n);
+    withTags(
+      [
+        [gradeMax, pt],
+        [rk, mt],
+      ],
+      () => {
+        const q = model.Q(model.player(L, "max"), model.mob(L, rank));
+        const got = model.R(L, rank, "max", rk.n) / base;
+        if (q !== wantQ) bad += `${rank} Q ${q} want ${wantQ}; `;
+        if (Math.abs(got / wantQ - 1) > 1e-12)
+          bad +=
+            `${rank} R ratio ${got.toFixed(6)} want ${wantQ}` +
+            ` (a squared Q reads ${(wantQ * wantQ).toFixed(4)}); `;
+      },
+    );
+  }
+  gate(
+    !bad,
+    `R_shaped / R_flat == Q over ${CASES.length} authored cases, Q from 0.25 to 4`,
+    bad || "shape-driven and element-driven, both directions of the cycle",
+  );
+  // holy<->void and same-element are PURE PACING levers: Q = 1 so R does not
+  // move at all, but both clocks halve or double. "Holy/void is the enormous
+  // balance event" is exactly backwards, and this is the assertion that says so.
+  let pacing = "";
+  for (const [pe, me, wantTtk] of [
+    ["holy", "void", 0.5],
+    ["fire", "fire", 2],
+  ]) {
+    const baseT = model.ttk(33, "C", "max");
+    // baseR MUST be captured out here, against the untagged model. Dividing
+    // R by itself inside the closure is a self-comparison: R is a pure function
+    // of P and DATA, so the ratio is identically 1 and the r !== 1 branch is
+    // unreachable — the gate would assert nothing about R at all.
+    const baseR = model.R(33, "C", "max", 1);
+    withTags(
+      [
+        [gradeMax, { element: pe }],
+        [rankRow("C"), { element: me }],
+      ],
+      () => {
+        const t = model.ttk(33, "C", "max") / baseT;
+        const r = model.R(33, "C", "max", 1) / baseR;
+        if (Math.abs(t - wantTtk) > 1e-12 || Math.abs(r - 1) > 1e-12)
+          pacing += `${pe}->${me} ttk x${t.toFixed(4)} want x${wantTtk}; `;
+      },
+    );
+  }
+  gate(
+    !pacing,
+    "holy↔void and same-element move the CLOCK only — Q = 1, ttk x0.5 and x2",
+    pacing || "R unmoved, ttk halved and doubled",
+  );
+  // Mirror match, both halves. index.html's "mirror match is an even fight"
+  // invariant asserts only atk/def ~ 1, which reads FALSE for a non-neutral
+  // mirror unless the second half is stated: every element is 0.5 against
+  // ITSELF, so a same-element mirror is still exactly even (Q = 1) and simply
+  // takes 2/k hits rather than 1/k.
+  const me50 = model.player(50, "max");
+  let mirror =
+    model.matchup(me50, me50) === 1 && model.Q(me50, me50) === 1
+      ? ""
+      : "neutral; ";
+  withTags([[gradeMax, { element: "fire" }]], () => {
+    const f = model.player(50, "max");
+    if (model.Q(f, f) !== 1 || model.matchup(f, f) !== 0.5)
+      mirror += "same-element; ";
+  });
+  gate(
+    !mirror,
+    "mirror match: even at neutral (m = 1), still even at same-element (Q = 1) but 2/k hits",
+    mirror,
+  );
+  // Nothing may be left authored. This is the gate that catches a withTags()
+  // whose finally never ran.
+  gate(
+    [gradeMax, ...data.proposed.ladder].every(
+      (row) =>
+        (row.rho ?? 0.5) === 0.5 &&
+        (row.theta ?? 0) === 0 &&
+        (row.slant ?? 0) === 0 &&
+        (row.element ?? "neutral") === "neutral",
+    ),
+    "every authored shape restored to the reduction point",
+  );
+}
+
+// --------------------------- the two globals, honestly characterised ------
+// postureMix and elemWeight are NOT outcome-neutral the way durabilityHp is.
+// durabilityHp leaves R unmoved at every setting, authored or not; these two
+// leave R BIT-identical only while every tag is flat and neutral -- which is
+// exactly where the ladder is calibrated -- and become real balance levers the
+// moment anything is authored. Both halves are asserted, because the neutrality
+// claim was overstated once and the honest version is the testable one.
+console.log(
+  "\nthe two new globals — bit-identical at flat tags, levers once authored",
+);
+{
+  const base = {};
+  for (const rk of data.proposed.ladder)
+    base[rk.rank] = model.R(model.midLevel(rk), rk.rank, "max", rk.n);
+  let off = "";
+  for (const rk of data.proposed.ladder)
+    if (Math.abs(base[rk.rank] - EXPECT_LADDER[rk.rank]) > 0.005)
+      off += `${rk.rank} ${base[rk.rank].toFixed(3)}; `;
+  let bad = "",
+    cells = 0;
+  for (const pm of span(0.05, 0.95, 0.05))
+    for (const ew of span(0, 1, 0.05))
+      withInputs({ postureMix: pm, elemWeight: ew }, () => {
+        for (const rk of data.proposed.ladder) {
+          cells++;
+          const got = model.R(model.midLevel(rk), rk.rank, "max", rk.n);
+          if (!Object.is(got, base[rk.rank]))
+            bad += `${rk.rank} at rhoBar ${pm} eta ${ew}: ${got}; `;
+        }
+      });
+  gate(
+    !off && !bad,
+    `postureMix x elemWeight leave all ${cells} ladder cells BIT-identical at flat tags`,
+    off ||
+      bad.slice(0, 160) ||
+      "baseline is EXPECT_LADDER, so this is not self-referential",
+  );
+  // postureMix re-quotes a lopsided defender: qp = 1 − slant(1 − rhoBar), so at
+  // slant 0.5 it runs 0.525 to 0.975 across the slider — 13/7 of span. Literal.
+  withTags(
+    [
+      [gradeMax, { rho: 1, theta: 1 }],
+      [rankRow("C"), { slant: 0.5 }],
+    ],
+    () => {
+      const at = (pm) =>
+        withInputs({ postureMix: pm }, () => model.R(33, "C", "max", 1));
+      const ratio = at(0.95) / at(0.05);
+      gate(
+        Math.abs(ratio / (0.975 / 0.525) - 1) < 1e-12,
+        "postureMix IS a balance lever once a shape is authored — 13/7 across its range",
+        `R x${ratio.toFixed(4)} from rhoBar 0.05 to 0.95`,
+      );
+    },
+  );
+  withTags(
+    [
+      [gradeMax, { element: "fire" }],
+      [rankRow("C"), { element: "earth" }],
+    ],
+    () => {
+      const at = (ew) =>
+        withInputs({ elemWeight: ew }, () => model.R(33, "C", "max", 1));
+      gate(
+        Math.abs(at(1) / at(0) - 4) < 1e-12 &&
+          Math.abs(at(0.5) / at(0) - 2) < 1e-12,
+        "elemWeight damps exactly: eta 0 is Q 1, eta 0.5 is Q 2, eta 1 is Q 4",
+        `x${(at(1) / at(0)).toFixed(4)} at eta 1, x${(at(0.5) / at(0)).toFixed(4)} at eta 0.5`,
+      );
+    },
+  );
 }
 
 console.log(

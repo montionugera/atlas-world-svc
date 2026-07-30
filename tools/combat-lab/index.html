@@ -1102,7 +1102,16 @@
       function invariants() {
         const C = P.statCoef,
           G = P.growth;
-        const statShare = C / (1 + C);
+        // Only R-VISIBLE primaries count toward the share a player's choices
+        // actually control. `agi` buys move speed and attack cadence, and the
+        // rank solve absorbs aspd entirely, so agi never reaches R: 3 of the 4
+        // primaries are R-visible, not 4. C/(1+C) is share(4) and overstates
+        // this at 33.3% -- the honest figure is 27.3%, which still clears the
+        // 25% floor but leaves far less headroom than the old number implied.
+        // Keep this in step with verify.mjs's G12, which pins all three values.
+        const R_VISIBLE_PRIMARIES = 3;
+        const visC = (R_VISIBLE_PRIMARIES / 4) * C;
+        const statShare = visC / (1 + visC);
         const reqs = requirements();
         const flat = [1, 25, 50, 75, P.levelMax].map((L) =>
           R(L, "C", "max", 1),
@@ -1126,9 +1135,17 @@
           [
             // What makes 1/k readable as hits-to-kill. Breaks if baseAtk/baseDef
             // drift apart, or if the defensive budget stops being split as sqrt.
+            //
+            // BOTH HALVES, or this reads false after the split. atk/def ~ 1 is
+            // only the magnitude half; a mirror is also even in DIRECTION,
+            // Q = 1, and that has to be asserted separately because it is NOT
+            // implied. It holds for a same-element mirror too: every element is
+            // 0.5 against itself, so the pair cancels in Q and the fight simply
+            // takes 2/k hits instead of 1/k.
             "mirror match is an even fight",
-            `atk/def ${(hi.atk / hi.def).toFixed(4)}`,
-            Math.abs(hi.atk / hi.def - 1) < 0.01,
+            `atk/def ${(hi.atk / hi.def).toFixed(4)}, Q ${Q(hi, hi).toFixed(4)}`,
+            Math.abs(hi.atk / hi.def - 1) < 0.01 &&
+              Math.abs(Q(hi, hi) - 1) < 1e-12,
           ],
           [
             "even fight is 1/k hits",
@@ -1202,19 +1219,37 @@
         ],
         "player CS": [
           "CombatScore",
-          "√(DPS × EHP). The single number that decides a duel — the split between damage and survivability cancels out.",
+          "cbrt(atkEff × defEff × HP) — three factors, so it is 1-homogeneous: doubling every stat doubles CS. NOT a sufficient statistic once elements or lopsided defences are in play; read it alongside Q.",
         ],
-        "mob CS": ["Mob CombatScore", "√(DPS × EHP) for one mob."],
-        "player pAtk": ["Physical attack", "Physical damage per hit."],
-        "player mAtk": ["Magic attack", "Magic damage per cast."],
+        "mob CS": [
+          "Mob CombatScore",
+          "cbrt(atkEff × defEff × HP) for one mob, on the same ruler as the player's.",
+        ],
+        "player pAtk": [
+          "Physical attack",
+          "atkEff × xp. A DIRECTION on the attack magnitude, not an extra magnitude — rho·xp + (1−rho)·xm is exactly 1, so tilting toward physical costs magic one-for-one.",
+        ],
+        "player mAtk": [
+          "Magic attack",
+          "atkEff × xm. The other half of the same budget as pAtk.",
+        ],
         "player pDef": [
           "Physical defence",
-          "Feeds mitigation via pDef / (pDef + K).",
+          "defEff ÷ qp. Mitigation is DIVISIVE and uncapped here — damage scales as atk/def — not the saturating pDef/(pDef+K) form. (The live server's DamageCalculator is subtractive and 80%-capped; that divergence is tracked, not modelled.)",
         ],
-        "mob pAtk": ["Mob physical attack", "Physical damage per hit."],
+        "player mDef": [
+          "Magic defence",
+          "defEff ÷ qm. Aggregated HARMONICALLY with pDef at the global reference mix, which is what stops a lopsided defence from buying free CS.",
+        ],
+        "mob pAtk": ["Mob physical attack", "atkEff × xp for the mob."],
         "mob pDef": [
           "Mob physical defence",
-          "Same mitigation formula as the player.",
+          "Same divisive mitigation as the player, on the same gauge.",
+        ],
+        "mob mDef": ["Mob magic defence", "defEff ÷ qm for the mob."],
+        Q: [
+          "Matchup factor",
+          "matchup(player, mob) ÷ matchup(mob, player). R is exactly LINEAR in Q, and Q reaches R through hit() — it is never multiplied in. Over the shipped element table Q is trinary: 0.25, 1.00 or 4.00, and 84% of ordered pairs are 1.00.",
         ],
         "player maxHP": [
           "Maximum health",
@@ -1223,7 +1258,7 @@
         "mob HP": ["Mob maximum health", "Raw health pool, before mitigation."],
         "damage mitigated †": [
           "Damage reduction",
-          "Share of incoming damage absorbed. Constant at every level by design — K(L) grows at the same rate as pDef.",
+          "Share of incoming damage absorbed, read off the divisive form: 1 − atk/def against a same-level opponent. Constant at every level by design, because attack and defence grow at the same rate.",
         ],
         "player EHP": [
           "Effective health",
