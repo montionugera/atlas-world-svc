@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: asset-storybook
+  namespace: atlas-world
+  labels:
+    app: asset-storybook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: asset-storybook
+  template:
+    metadata:
+      labels:
+        app: asset-storybook
+    spec:
+      containers:
+        - name: nginx
+          # Built locally by scripts/deploy-local.sh; never pulled from a registry.
+          image: atlas-world-storybook:local
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: asset-storybook
+  namespace: atlas-world
+  labels:
+    app: asset-storybook
+spec:
+  # LoadBalancer resolves to localhost on docker-desktop / OrbStack. On kind or
+  # any cluster without a LB controller, use the port-forward that
+  # scripts/deploy-local.sh prints instead.
+  type: LoadBalancer
+  selector:
+    app: asset-storybook
+  ports:
+    - name: http
+      # 6006 is the conventional storybook port; the container still serves :80.
+      port: 6006
+      targetPort: http

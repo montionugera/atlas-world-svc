@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nakama
+  namespace: atlas-world
+  labels:
+    app: nakama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nakama
+  template:
+    metadata:
+      labels:
+        app: nakama
+    spec:
+      initContainers:
+        # docker-compose gets ordering from `depends_on: service_healthy`; k8s has
+        # no such edge between workloads, so wait for CockroachDB and run the
+        # migration here. Retried in a loop because the StatefulSet can be
+        # Running-but-not-yet-accepting-SQL when this starts.
+        - name: migrate
+          image: atlas-world-nakama:local
+          imagePullPolicy: Never
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              # `migrate` accepts only -database.address, -limit and
+              # -logger.format. NOT -logger.level: passing it makes the command
+              # exit non-zero on a usage error, which this retry loop would
+              # misreport as "database not ready" for all 40 attempts. The repo's
+              # own migrate.sh passes --logger.level and is stale; docker-compose
+              # gets this right. Keep the flags in step with docker-compose.yml.
+              for i in $(seq 1 40); do
+                if /nakama/nakama migrate up \
+                     --database.address "root@cockroachdb:26257"; then
+                  echo "migration complete"
+                  exit 0
+                fi
+                echo "cockroachdb not reachable yet (attempt $i/40); retrying in 3s"
+                sleep 3
+              done
+              echo "migration failed: cockroachdb never became reachable"
+              exit 1
+      containers:
+        - name: nakama
+          # Built locally by scripts/deploy-local.sh; never pulled from a registry.
+          image: atlas-world-nakama:local
+          imagePullPolicy: Never
+          command:
+            - /nakama/nakama
+            - --config
+            - /nakama/data/local.yml
+            - --database.address
+            - root@cockroachdb:26257
+          ports:
+            - name: grpc
+              containerPort: 7349
+            - name: http
+              containerPort: 7350
+            - name: console
+              containerPort: 7351
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nakama
+  namespace: atlas-world
+  labels:
+    app: nakama
+spec:
+  # LoadBalancer resolves to localhost on docker-desktop / OrbStack. On kind or
+  # any cluster without a LB controller, use the port-forward that
+  # scripts/deploy-local.sh prints instead.
+  type: LoadBalancer
+  selector:
+    app: nakama
+  ports:
+    - name: grpc
+      port: 7349
+      targetPort: grpc
+    - name: http
+      port: 7350
+      targetPort: http
+    - name: console
+      port: 7351
+      targetPort: console

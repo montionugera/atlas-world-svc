@@ -1,0 +1,20 @@
+# Scoped build context for the Nakama runtime image.
+#
+# BuildKit prefers <dockerfile-path>.dockerignore over the root .dockerignore.
+# The root file whitelists only nakama/package.json (all colyseus needs), which
+# is not enough to bundle the runtime. Keep this in sync with ./Dockerfile.
+
+*
+!pnpm-workspace.yaml
+!pnpm-lock.yaml
+!contracts/**
+!colyseus-server/package.json
+!nakama/**
+
+# Never ship local installs or prior build output into the context.
+contracts/node_modules
+contracts/dist
+nakama/node_modules
+nakama/build
+nakama/coverage
+**/.DS_Store
