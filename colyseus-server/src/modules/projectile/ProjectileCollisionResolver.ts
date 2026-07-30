@@ -60,6 +60,9 @@ export class ProjectileCollisionResolver {
         targetId: target.id,
         damage: projectile.damage,
         range: projectile.radius * 2, // approx range
+        // Without this the queue path defaulted every hit to 'physical', so a
+        // magic projectile's damage was mitigated by pDef (F-018 / I-027).
+        damageType: projectile.damageType,
         element: projectile.element,
         attackType: 'projectile',
         projectileDetail: {

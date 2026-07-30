@@ -47,11 +47,18 @@ export class BattleManager {
         console.log(`⚔️ BATTLE EVENT: Attack from ${data.actorId} (no target)`)
       }
 
-      // No element here on purpose: BATTLE_ATTACK is only emitted by the
-      // strategy-less Mob/NPC fallback (and by the player's animation-only
-      // event), and neither has an AttackDefinition to read an element from.
-      // Every element-carrying attack in the game is projectile-sourced and
-      // reaches the queue through ProjectileCollisionResolver instead.
+      // No element here on purpose, and no damageType either, for the same
+      // reason: BATTLE_ATTACK is only emitted by the strategy-less Mob/NPC
+      // fallback (and by the player's animation-only event), and neither has an
+      // AttackDefinition to read either field from. Both mob and NPC emitters
+      // source `damage` from pAtk, so physical is correct, not merely default.
+      // Every element- or magic-carrying attack in the game is
+      // projectile-sourced and reaches the queue through
+      // ProjectileCollisionResolver instead.
+      //
+      // THIS IS THE ONE PLACE a magical hit could silently become physical. If
+      // an emitter ever sources mAtk into this event, it must pass damageType
+      // here — the `?? 'physical'` default below will not catch the mistake.
       const attackMessage = BattleManager.createAttackMessage({
         actorId: data.actorId,
         targetId: data.targetId || '', // Use empty string if no target
@@ -102,25 +109,33 @@ export class BattleManager {
     targetId: string
     damage: number
     range: number
+    /**
+     * Which defence channel mitigates this hit: `pDef` for 'physical',
+     * `mDef` for 'magical' (F-018 / I-027). Defaults to physical, which is what
+     * `BattleModule.processAttack` assumes when the field is absent.
+     */
+    damageType?: 'physical' | 'magical'
     /** Attack element (World Wisdom / F-017). Defaults to neutral. */
     element?: Element
     direction?: { x: number; y: number }
     /** melee (default), projectile, … — drives the range/cooldown bypass in canAttack. */
     attackType?: string
-    /** `element` is filled in from `opts.element`; do not set it here. */
-    projectileDetail?: Omit<ProjectileDetail, 'element'>
+    /** `element` and `damageType` are filled in from `opts`; do not set them here. */
+    projectileDetail?: Omit<ProjectileDetail, 'element' | 'damageType'>
   }): BattleActionMessage {
     const element = opts.element ?? DEFAULT_ELEMENT
+    const damageType = opts.damageType ?? 'physical'
 
     const actionPayload: AttackActionPayload = {
       damage: opts.damage,
       range: opts.range,
+      damageType,
       direction: opts.direction,
       attackType: opts.attackType ?? 'melee',
       element,
-      // The mirror on projectileDetail is derived here, never taken from the
-      // caller, so the two copies of the element cannot diverge.
-      projectileDetail: opts.projectileDetail && { ...opts.projectileDetail, element },
+      // The mirrors on projectileDetail are derived here, never taken from the
+      // caller, so the two copies cannot diverge.
+      projectileDetail: opts.projectileDetail && { ...opts.projectileDetail, element, damageType },
     }
 
     return {
