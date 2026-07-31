@@ -110,9 +110,66 @@ re-derived from prose:
 ## 4. Gate changes
 
 Add `art-manifest.json` as a **4th curated source** in `manifestSources()` — keyspace
-`curated`, `driftGated: false`, the same mode already used for `audio-manifest.json` and
-`catalog-manifest.json`. The existing comment at `check_asset_manifest.mjs:199`
-(`// +1 line per new curated file (§6)`) is the designed hook for exactly this.
+`curated`, `driftGated: false`, alongside `audio-manifest`, `catalog-manifest` and
+`music-manifest`.
+
+<div class="callout danger">
+<strong>The "+1 line" hook does not work here — measured, not assumed.</strong> Running
+<code>node scripts/check_asset_manifest.mjs --catalog-manifest game-client/assets/art/art-manifest.json</code>
+fails <strong>all 80 entries</strong> with <code>unknown render "unknown"</code>.
+<br><br>
+Cause: <code>validateEntry()</code> is render-spec-driven. It resolves a render type from
+<code>entry.render</code> → <code>kindDefaultRender[entry.kind]</code> → an extension sniff of
+<code>primaryPath()</code>, which reads <code>entry.scene ?? entry.stream ?? ""</code>. Art
+entries carry <strong><code>file</code></strong> — a plain path relative to
+<code>game-client/assets/art/</code>, not a <code>res://</code> scene — and no
+<code>render</code> or <code>kind</code>. So the sniff runs on <code>""</code>, resolves to
+<code>"unknown"</code>, and <code>spec.renderers["unknown"]</code> does not exist.
+<br><br>
+The comment at <code>check_asset_manifest.mjs:199</code> is accurate for a curated file that
+follows the render-spec entry shape. <strong>Concept art does not</strong> — it has no
+renderer by design (§1).
+</div>
+
+**Therefore:** each entry in `manifestSources()` gains a `validator` field —
+`"render"` (the existing path, default for all four current sources) or `"art"`. `main()`
+branches on it. This keeps `validateEntry()` untouched rather than threading art-shaped
+special cases through a function that four other sources depend on.
+
+```js
+// manifestSources() — the new source
+{
+  path: opts.artManifest,
+  label: "art-manifest",
+  keyspace: "curated",
+  driftGated: false,
+  validator: "art",        // ← not render-spec shaped
+  root: opts.artRoot,      // game-client/assets/art
+}
+```
+
+`validateArtEntry(id, entry, source, groups, failures)` replaces the render checks with:
+`group` is a string present in `art-groups.json` · `title` non-empty · `note` non-empty
+(provenance, since art is locally generated and carries no third-party licence) · `file` is a
+relative path — no `res://`, no leading `/`, no `..` — resolving to a non-empty file under
+`source.root`.
+
+<div class="callout info">
+<strong>Licence policy deliberately does not apply.</strong> Guard (I)
+(<code>checkLicensePolicy</code>) runs inside <code>validateEntry</code> and enforces the
+tiered CC0/CC-BY rules for <em>sourced</em> assets. Concept art is generated locally on
+mont-pc, so it has no upstream licence to record; the <code>note</code> field carries
+provenance instead. Bypassing guard (I) here is the intended behaviour, not an oversight.
+</div>
+
+<div class="callout success">
+<strong>Guard (H) is already safe.</strong> <code>codegenReservedNamespaces</code> is
+<code>["player", "npc", "mob:", "projectile:", "zone:", "item:"]</code> and the check is a
+prefix match on the whole id. T1's <code>art:mob-*</code> and T3's <code>art:item-*</code>
+start with <code>art:</code>, so they do not collide with <code>mob:</code> or
+<code>item:</code>. No change needed — but do not rename the groups to bare
+<code>mob:</code>/<code>item:</code> prefixes later.
+</div>
 
 New assertions:
 
