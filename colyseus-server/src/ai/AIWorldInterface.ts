@@ -11,6 +11,7 @@ import { WorldLife } from '../schemas/WorldLife'
 import { IAgent } from './interfaces/IAgent'
 import { AIDecision } from './core/AIBehavior'
 import { IAgentRuntime } from './interfaces/IAgentRuntime'
+import { selectTarget, TargetCandidate } from './targeting/selectTarget'
 
 export interface WorldData {
   players: Player[]
@@ -128,6 +129,43 @@ export class AIWorldInterface {
     return nearest
   }
 
+  /**
+   * Threat-aware replacement for the nearest-opposite-team scan (F-023).
+   *
+   * Collects the same candidate set the old scan considered, then defers the choice
+   * to `selectTarget`. With an empty threat table this returns exactly what
+   * `getNearestOppositeTeam` returned.
+   */
+  private pickTarget(
+    agent: IAgent,
+    position: { x: number; y: number },
+    myTeamId: string | undefined
+  ): WorldLife | null {
+    const byId = new Map<string, WorldLife>()
+    const candidates: TargetCandidate[] = []
+
+    const consider = (other: WorldLife) => {
+      if (!other.isAlive) return
+      if (other.id === agent.id) return
+      if (myTeamId && other.teamId && myTeamId === other.teamId) return
+      byId.set(other.id, other)
+      candidates.push({ id: other.id, distance: this.calculateDistance(position, other) })
+    }
+
+    for (const p of this.gameState.players.values()) consider(p)
+    for (const n of this.gameState.npcs.values()) consider(n)
+    for (const m of this.gameState.mobs.values()) consider(m)
+
+    const picked = selectTarget({
+      candidates,
+      table: this.gameState.threatRegistry.peek({ agentId: agent.id }),
+      currentTargetId: agent.currentAttackTarget,
+      now: performance.now(),
+    })
+
+    return picked ? (byId.get(picked.id) ?? null) : null
+  }
+
   // Legacy: nearest player only (no NPCs). Prefer getNearestOppositeTeam for targeting.
   getNearestPlayerOnly(position: { x: number; y: number }, excludeId?: string): Player | null {
     let nearest: Player | null = null
@@ -205,8 +243,10 @@ export class AIWorldInterface {
     const position = { x: agent.x, y: agent.y }
     const myTeamId = agent.teamId
 
-    // Chase/attack target = nearest opposite team (player, NPC, or mob by teamId).
-    const nearestEnemy = this.getNearestOppositeTeam(position, myTeamId, agent.id)
+    // Chase/attack target. Both AttackBehavior and ChaseBehavior read the single
+    // field this produces, which is why they cannot disagree -- and why F-023 only
+    // had to substitute here.
+    const nearestEnemy = this.pickTarget(agent, position, myTeamId)
     const distanceEnemy = nearestEnemy ? this.calculateDistance(position, nearestEnemy) : Infinity
     const inRangeEnemy = distanceEnemy <= (perceptionRange ?? Infinity)
 
