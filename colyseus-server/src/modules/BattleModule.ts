@@ -287,6 +287,19 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Apply a status effect to an entity (delegates to StatusEffectManager)
+  /**
+   * Force `tauntingEntityId` to the top of `targetAgentId`'s threat table and pin
+   * it for THREAT_CONFIG.tauntLockMs (F-023).
+   *
+   * This is the threat OPERATION. Whether any class has a taunt ability is content,
+   * not this system -- combat logic stays centralised here rather than in a system.
+   */
+  applyTaunt(options: { tauntingEntityId: string; targetAgentId: string }): void {
+    this.gameState.threatRegistry
+      .forAgent({ agentId: options.targetAgentId })
+      .taunt({ entityId: options.tauntingEntityId, now: performance.now() })
+  }
+
   applyStatusEffect(
     entity: WorldLife,
     type: string,

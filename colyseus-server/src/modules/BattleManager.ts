@@ -207,6 +207,11 @@ export class BattleManager {
   }
 
   // Add action message to queue
+  /** Facade for BattleModule.applyTaunt -- battleModule is private (F-023). */
+  applyTaunt(options: { tauntingEntityId: string; targetAgentId: string }): void {
+    this.battleModule.applyTaunt(options)
+  }
+
   addActionMessage(message: BattleActionMessage): void {
     this.actionQueue.addMessage(message)
   }
