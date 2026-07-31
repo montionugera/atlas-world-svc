@@ -47,22 +47,15 @@ export class BattleManager {
         console.log(`⚔️ BATTLE EVENT: Attack from ${data.actorId} (no target)`)
       }
 
-      // No element here on purpose, and no damageType either, for the same
-      // reason: BATTLE_ATTACK is only emitted by the strategy-less Mob/NPC
-      // fallback (and by the player's animation-only event), and neither has an
-      // AttackDefinition to read either field from. Both mob and NPC emitters
-      // source `damage` from pAtk, so physical is correct, not merely default.
-      // Every element- or magic-carrying attack in the game is
-      // projectile-sourced and reaches the queue through
-      // ProjectileCollisionResolver instead.
-      //
-      // THIS IS THE ONE PLACE a magical hit could silently become physical. If
-      // an emitter ever sources mAtk into this event, it must pass damageType
-      // here — the `?? 'physical'` default below will not catch the mistake.
+      // The channel and element are stated by the emitter and forwarded verbatim.
+      // They are NOT defaulted here: a hit that reaches DamageCalculator on the
+      // wrong channel is mitigated by the wrong defence, silently (I-037).
       const attackMessage = BattleManager.createAttackMessage({
         actorId: data.actorId,
         targetId: data.targetId || '', // Use empty string if no target
         damage: data.damage,
+        damageType: data.damageType,
+        element: data.element,
         range: data.range,
       })
 
