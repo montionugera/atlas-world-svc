@@ -69,7 +69,14 @@
 //   --catalog-manifest <path>   override catalog-manifest.json path (testing)
 //   --game-client <dir>         override the res:// root dir (testing)
 
-import { readFileSync, existsSync, statSync } from "node:fs";
+import {
+  readFileSync,
+  existsSync,
+  statSync,
+  openSync,
+  readSync,
+  closeSync,
+} from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve, join } from "node:path";
 import { checkLicensePolicy } from "./lib/license-policy.mjs";
@@ -89,6 +96,9 @@ function parseArgs(argv) {
       "game-client/assets/catalog-manifest.json",
     ),
     musicManifest: join(REPO_ROOT, "game-client/assets/music-manifest.json"),
+    artManifest: join(REPO_ROOT, "game-client/assets/art/art-manifest.json"),
+    artGroups: join(REPO_ROOT, "game-client/assets/art/art-groups.json"),
+    artRoot: join(REPO_ROOT, "game-client/assets/art"),
     gameClient: join(REPO_ROOT, "game-client"),
   };
   for (let i = 0; i < argv.length; i++) {
@@ -101,6 +111,9 @@ function parseArgs(argv) {
     else if (a === "--catalog-manifest")
       opts.catalogManifest = resolve(argv[++i]);
     else if (a === "--music-manifest") opts.musicManifest = resolve(argv[++i]);
+    else if (a === "--art-manifest") opts.artManifest = resolve(argv[++i]);
+    else if (a === "--art-groups") opts.artGroups = resolve(argv[++i]);
+    else if (a === "--art-root") opts.artRoot = resolve(argv[++i]);
     else if (a === "--game-client") opts.gameClient = resolve(argv[++i]);
     else {
       console.error(`Unknown argument: ${a}`);
@@ -178,25 +191,37 @@ function manifestSources(opts) {
       label: "manifest",
       keyspace: "codegen",
       driftGated: true,
+      validator: "render",
     },
     {
       path: opts.audioManifest,
       label: "audio-manifest",
       keyspace: "curated",
       driftGated: false,
+      validator: "render",
     },
     {
       path: opts.catalogManifest,
       label: "catalog-manifest",
       keyspace: "curated",
       driftGated: false,
+      validator: "render",
     },
     {
       path: opts.musicManifest,
       label: "music-manifest",
       keyspace: "curated",
       driftGated: false,
+      validator: "render",
     }, // +1 line per new curated file (§6)
+    {
+      path: opts.artManifest,
+      label: "art-manifest",
+      keyspace: "curated",
+      driftGated: false,
+      validator: "art", // concept art is NOT render-spec shaped — see spec §4
+      root: opts.artRoot,
+    },
   ];
 }
 
@@ -205,10 +230,62 @@ function manifestSources(opts) {
 function readPngSize(fsPath) {
   try {
     const buf = readFileSync(fsPath);
-    if (buf.length < 24 || buf.toString("ascii", 12, 16) !== "IHDR") return null;
+    if (buf.length < 24 || buf.toString("ascii", 12, 16) !== "IHDR")
+      return null;
     return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
   } catch {
     return null;
+  }
+}
+
+// (L) Concept-art entries. Curated reference material with NO renderer, so the
+// render-spec path in validateEntry() does not apply — see
+// docs/superpowers/specs/2026-08-01-art-forge-foundation-design.md §4.
+// Licence guard (I) deliberately does not apply either: art is generated
+// locally on mont-pc and has no upstream licence, so `note` carries provenance.
+function validateArtEntry(id, entry, source, groupIds, failures) {
+  if (!entry || typeof entry !== "object") {
+    failures.push(`entry "${id}": not an object`);
+    return;
+  }
+  if (typeof entry.group !== "string" || !groupIds.has(entry.group)) {
+    failures.push(
+      `entry "${id}": group "${entry.group}" is not declared in art-groups.json`,
+    );
+  }
+  if (isEmptyField(entry.title)) failures.push(`entry "${id}": missing title`);
+  if (isEmptyField(entry.note)) {
+    failures.push(
+      `entry "${id}": missing note — provenance is required (art carries no upstream licence)`,
+    );
+  }
+
+  const file = entry.file;
+  if (typeof file !== "string" || file.trim() === "") {
+    failures.push(`entry "${id}": missing file`);
+    return;
+  }
+  if (
+    file.startsWith("res://") ||
+    file.startsWith("/") ||
+    file.split("/").includes("..")
+  ) {
+    failures.push(
+      `entry "${id}": file must be a relative path under the art root — got "${file}"`,
+    );
+    return;
+  }
+
+  const fsPath = join(source.root, file);
+  if (!existsSync(fsPath)) {
+    failures.push(`entry "${id}": file not found — ${file}`);
+    return;
+  }
+  const st = statSync(fsPath);
+  if (!st.isFile() || st.size === 0) {
+    failures.push(
+      `entry "${id}": file is empty or not a regular file — ${file}`,
+    );
   }
 }
 
@@ -267,7 +344,9 @@ function validateEntry(id, entry, source, gameClient, spec, failures) {
   // (C) required scalar/structured fields.
   for (const f of r.require) {
     if (isEmptyField(entry[f])) {
-      failures.push(`entry "${id}": required "${f}" empty for render=${render}`);
+      failures.push(
+        `entry "${id}": required "${f}" empty for render=${render}`,
+      );
     }
   }
 
@@ -283,7 +362,9 @@ function validateEntry(id, entry, source, gameClient, spec, failures) {
 
   // (E) oneOf groups — exactly one group fully present.
   for (const groups of r.oneOf ? [r.oneOf] : []) {
-    const present = groups.filter((g) => g.every((k) => !isEmptyField(entry[k])));
+    const present = groups.filter((g) =>
+      g.every((k) => !isEmptyField(entry[k])),
+    );
     if (present.length !== 1) {
       failures.push(
         `entry "${id}": render=${render} needs exactly one of ${JSON.stringify(groups)} (got ${present.length})`,
@@ -428,6 +509,13 @@ function main() {
   }
   const keyIds = new Set(keys.map((k) => k && k.id).filter(Boolean));
 
+  const groupsDoc = readJson(opts.artGroups, "art-groups", failures);
+  const groupIds = new Set(
+    groupsDoc && Array.isArray(groupsDoc.groups)
+      ? groupsDoc.groups.map((g) => g && g.id).filter(Boolean)
+      : [],
+  );
+
   const sources = manifestSources(opts);
   const sourcesEntries = []; // for the disjointness guard
   let codegenEntries = null; // the driftGated source's entries (for guard J)
@@ -446,14 +534,20 @@ function main() {
     if (source.driftGated) codegenEntries = entries;
 
     for (const [id, entry] of Object.entries(entries)) {
-      validateEntry(id, entry, source, opts.gameClient, spec, failures);
+      if (source.validator === "art") {
+        validateArtEntry(id, entry, source, groupIds, failures);
+      } else {
+        validateEntry(id, entry, source, opts.gameClient, spec, failures);
+      }
       assertNoReserved(id, source, spec, failures);
 
       // A manifest entry for an id the codegen doesn't know about is drift —
       // warn (not fatal), since it points at a stale/renamed key. Only
       // meaningful for the codegen-keyed source.
       if (source.driftGated && !keyIds.has(id)) {
-        warnings.push(`entry "${id}": not a known asset key (stale or renamed?)`);
+        warnings.push(
+          `entry "${id}": not a known asset key (stale or renamed?)`,
+        );
       }
     }
 
@@ -488,6 +582,7 @@ function report(failures, warnings, opts) {
   console.log(`  audio-manifest:    ${opts.audioManifest}`);
   console.log(`  catalog-manifest:  ${opts.catalogManifest}`);
   console.log(`  music-manifest:    ${opts.musicManifest}`);
+  console.log(`  art-manifest:      ${opts.artManifest}`);
   console.log("");
 
   for (const w of warnings) console.log(`  ⚠️  WARN  ${w}`);
