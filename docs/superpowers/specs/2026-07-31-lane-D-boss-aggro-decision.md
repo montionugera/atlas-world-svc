@@ -4,11 +4,36 @@ lane: D
 release: "1.6"
 date: 2026-07-31
 ticket: I-035
-status: "BLOCKED on a human design call — no code until it is made"
+status: "SUPERSEDED 2026-07-31 — the design call was made; see the successor spec"
+superseded_by: "docs/superpowers/specs/2026-07-31-boss-threat-aggro-design.md"
 blocks: "the boss n² branch of the balance model meaning anything"
 ---
 
 # Lane D — boss target rotation / aggro
+
+<div class="callout danger">
+
+**SUPERSEDED — do not act on the acceptance signal in this file.**
+The decision was taken on 2026-07-31 (**trinity roles → Option 1, threat table**).
+Read **`2026-07-31-boss-threat-aggro-design.md`** instead.
+
+Three claims below did not survive contact with the code:
+
+1. **§*Acceptance signal* is wrong for Option 1.** A threat table *concentrates* boss
+   damage on the tank — that is what threat is for. The `it.failing` even-spread
+   assertion does **not** invert; flipping it green would mean the system is broken. It
+   is deleted and replaced with five mechanism gates in the successor.
+2. **Option 2 is not "much cheaper; no new state."** `AttackCharacteristicType.AREA` is
+   declared but **unimplemented** (`attackStrategyFactory.ts:102-104` is a `TODO` +
+   `console.warn`), and it drags in the F-017 element bug at
+   `MobLifeCycleManager.ts:250`.
+3. **"No arithmetic in `tools/combat-lab` can fix this" is false under trinity.** The
+   `÷n` even-spread branch is the *no-healer* reading; `CHECKLIST.md:129`'s sustain
+   equation is the trinity one. See the successor §7.
+
+Retained for the history of the decision, not as instructions.
+
+</div>
 
 Self-sufficient. You do not need the other lane docs.
 

@@ -11,6 +11,16 @@ export class DebugCommandHandler {
     this.room.onMessage('debug_spawn_mob', this.handleSpawnMob.bind(this))
     this.room.onMessage('debug_force_die', this.handleForceDie.bind(this))
     this.room.onMessage('player_respawn', this.handlePlayerRespawn.bind(this))
+    this.room.onMessage('debug_taunt', this.handleTaunt.bind(this))
+  }
+
+  /** Debug hook so the F-023 taunt threat-op is exercisable without a class ability. */
+  private handleTaunt(client: Client, data: { mobId: string }) {
+    if (!data?.mobId) return
+    this.room.state.battleManager.applyTaunt({
+      tauntingEntityId: client.sessionId,
+      targetAgentId: data.mobId,
+    })
   }
 
   private handleSpawnTrap(client: Client, data: { type: string }) {

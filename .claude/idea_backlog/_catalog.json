@@ -207,7 +207,7 @@
     "id": "I-035",
     "title": "Boss target rotation / aggro \u2014 bosses structurally cannot stop focus-firing",
     "created_at": "2026-07-30T13:08:07.370988+00:00",
-    "promoted_to": null
+    "promoted_to": "F-023"
   },
   {
     "id": "I-036",
@@ -249,6 +249,24 @@
     "id": "I-042",
     "title": "ProjectileCollisionResolver's direct-damage branch is dead in production \u2014 delete it, make battleManager required",
     "created_at": "2026-07-31T01:32:49.771245+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-043",
+    "title": "Boss multi-target cleave - implement AreaAttackStrategy",
+    "created_at": "2026-07-31T16:00:58.407234+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-044",
+    "title": "Boss branch: replace divide-by-n even-spread with the trinity sustain reading",
+    "created_at": "2026-07-31T16:00:58.956317+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-045",
+    "title": "Local k8s: add Ingress so services have portless hostnames",
+    "created_at": "2026-07-31T16:50:29.778950+00:00",
     "promoted_to": null
   }
 ]

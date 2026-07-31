@@ -70,13 +70,13 @@ describe('Bot Mode Tests', () => {
     expect(agents.has(player.id)).toBe(true)
   })
 
-  test('AIWorldInterface nearestPlayer is nearest opposite team (no enemy when same team)', () => {
+  test('AIWorldInterface preferredTarget is nearest opposite team (no enemy when same team)', () => {
     const otherPlayer = new Player('session-2', 'Other Player', 110, 110)
     gameState.players.set(otherPlayer.sessionId, otherPlayer)
 
     const env = worldInterface.buildAgentEnvironment(player, 100)
-    // Both players are IRON_HAMMER; nearestPlayer = nearest enemy, so null when only same-team
-    expect(env.nearestPlayer).toBeNull()
+    // Both players are IRON_HAMMER; preferredTarget = nearest enemy, so null when only same-team
+    expect(env.preferredTarget).toBeNull()
   })
 
   test('Player update should use desired velocity in Bot Mode', () => {

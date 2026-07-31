@@ -26,8 +26,8 @@ describe('Bot Targeting Logic', () => {
 
     // Setup Environment
     env = {
-      nearestPlayer: null, // No other players nearby
-      distanceToNearestPlayer: Infinity,
+      preferredTarget: null, // No other players nearby
+      distanceToPreferredTarget: Infinity,
       nearestMob: mob,
       distanceToNearestMob: 5,
       nearBoundary: false,
@@ -66,8 +66,8 @@ describe('Bot Targeting Logic', () => {
 
     // Environment for Mob
     const mobEnv: AgentEnvironment = {
-      nearestPlayer: playerBot,
-      distanceToNearestPlayer: 5,
+      preferredTarget: playerBot,
+      distanceToPreferredTarget: 5,
       nearestMob: null,
       distanceToNearestMob: Infinity,
       nearBoundary: false,

@@ -8,8 +8,8 @@ import { Player } from '../../schemas/Player'
 import { BehaviorState } from './BehaviorState'
 
 export type AgentEnvironment = {
-  nearestPlayer?: Player | null
-  distanceToNearestPlayer?: number
+  preferredTarget?: Player | null
+  distanceToPreferredTarget?: number
   nearestMob?: IAgent | null
   distanceToNearestMob?: number
   nearBoundary?: boolean
@@ -125,10 +125,10 @@ export class AttackBehavior implements AgentBehavior {
   canApply(agent: IAgent, env: AgentEnvironment): boolean {
     // Determine target based on agent type
     const isPlayer = agent.tags?.includes('player')
-    const target = isPlayer ? env.nearestMob : env.nearestPlayer
+    const target = isPlayer ? env.nearestMob : env.preferredTarget
     const distance = isPlayer
       ? (env.distanceToNearestMob ?? Infinity)
-      : (env.distanceToNearestPlayer ?? Infinity)
+      : (env.distanceToPreferredTarget ?? Infinity)
 
     if (distance === Infinity || !target) return false
 
@@ -171,12 +171,12 @@ export class AttackBehavior implements AgentBehavior {
 
   getDecision(agent: IAgent, env: AgentEnvironment, now: number): BehaviorDecision {
     const isPlayer = agent.tags?.includes('player')
-    const target = isPlayer ? env.nearestMob : env.nearestPlayer
+    const target = isPlayer ? env.nearestMob : env.preferredTarget
     let velocity = { x: 0, y: 0 }
 
     if (target) {
       const distance =
-        (isPlayer ? env.distanceToNearestMob : env.distanceToNearestPlayer) ??
+        (isPlayer ? env.distanceToNearestMob : env.distanceToPreferredTarget) ??
         Math.hypot(target.x - agent.x, target.y - agent.y)
       const targetRadius = target.radius || 4
 
@@ -233,10 +233,10 @@ export class ChaseBehavior implements AgentBehavior {
 
   canApply(agent: IAgent, env: AgentEnvironment): boolean {
     const isPlayer = agent.tags?.includes('player')
-    const target = isPlayer ? env.nearestMob : env.nearestPlayer
+    const target = isPlayer ? env.nearestMob : env.preferredTarget
     const distance = isPlayer
       ? (env.distanceToNearestMob ?? Infinity)
-      : (env.distanceToNearestPlayer ?? Infinity)
+      : (env.distanceToPreferredTarget ?? Infinity)
 
     if (distance === Infinity || !target) return false
 
@@ -268,7 +268,7 @@ export class ChaseBehavior implements AgentBehavior {
 
   getDecision(agent: IAgent, env: AgentEnvironment, now: number): BehaviorDecision {
     const isPlayer = agent.tags?.includes('player')
-    const target = isPlayer ? env.nearestMob : env.nearestPlayer
+    const target = isPlayer ? env.nearestMob : env.preferredTarget
     let velocity = { x: 0, y: 0 }
 
     if (target) {

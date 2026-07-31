@@ -302,8 +302,8 @@ export class AIModule {
 
     // Convert to AgentEnvironment format
     const agentEnv: AgentEnvironment = {
-      nearestPlayer: env.nearestPlayer || null,
-      distanceToNearestPlayer: env.distanceToNearestPlayer,
+      preferredTarget: env.preferredTarget || null,
+      distanceToPreferredTarget: env.distanceToPreferredTarget,
       nearestMob: env.nearestMob || null,
       distanceToNearestMob: env.distanceToNearestMob,
       nearBoundary: env.nearBoundary,
@@ -325,7 +325,7 @@ export class AIModule {
 
       // Debug: Log behavior selection occasionally
       if (Math.random() < 0.01) {
-        const distance = env.distanceToNearestPlayer ?? Infinity
+        const distance = env.distanceToPreferredTarget ?? Infinity
         console.log(
           `🎯 AGENT ${agent.id}: selected behavior="${selectedBehavior.name}", distance=${distance.toFixed(2)}, priority=${selectedBehavior.priority}`
         )
