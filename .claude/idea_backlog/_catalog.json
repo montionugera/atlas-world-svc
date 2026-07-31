@@ -268,5 +268,11 @@
     "title": "Local k8s: add Ingress so services have portless hostnames",
     "created_at": "2026-07-31T16:50:29.778950+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-046",
+    "title": "--help",
+    "created_at": "2026-07-31T21:06:02.503999+00:00",
+    "promoted_to": null
   }
 ]
