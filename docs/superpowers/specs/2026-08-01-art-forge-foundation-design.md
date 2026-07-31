@@ -48,6 +48,12 @@ tools/art-forge/
     contact-sheet.sh     QC montage (magick montage -tile 8x8)
   intake-art.mjs       CI-runnable: transactional entry → art-manifest.json
   tests/
+
+game-client/assets/art/
+  art-groups.json      shared group registry — see §5
+
+tools/asset-storybook/index.html
+  buildArt()           group-order table + generic fallback — see §5.1
 ```
 
 <div class="callout danger">
@@ -139,6 +145,38 @@ Reserved now so later tracks cannot collide or fork naming:
 | `map`, `town`, `biome` | `art:map-*`, `art:town-*`, `art:biome-*` | T2 |
 | `item`, `icon`, `crest` | `art:item-*`, `art:icon-*`, `art:crest-*` | T3 |
 
+These eleven group names live in **one file**, `game-client/assets/art/art-groups.json`,
+read by both gate assertion 5 and the storybook renderer (§5.1). A new group cannot be
+minted without simultaneously giving it a place to display.
+
+### 5.1 Storybook renderer <span class="topic-chip">consumer</span>
+
+`tools/asset-storybook/index.html:2211` `buildArt()` currently hardcodes three buckets:
+
+```js
+if (entry.group === "race")       raceList.push(...)
+else if (entry.group === "class") classList.push(...)
+else                              castList.push(...)   // ← everything else
+```
+
+<div class="callout danger">
+<strong>Every T1–T3 group falls into that <code>else</code>.</strong> A
+<code>group: "mob"</code> or <code>"town"</code> entry does not vanish — it renders under a
+heading that says <strong>"Cast"</strong>. Wrong, and silent. Reserving a keyspace whose only
+consumer cannot display it is reserving nothing.
+</div>
+
+Replace the three-way branch with a group-order table driven by `art-groups.json`, plus a
+generic fallback that gives an unrecognised group **its own titled section** instead of
+absorbing it. This is the pattern the file already intends one level lower — the
+`CLASS_RACE_ORDER` comment at `index.html:2137` states that an unknown race
+*"still renders, just appended after the known ones instead of vanishing."* The same
+defensive rule, applied to groups.
+
+`buildArtGroup(label, list)` and `buildArtCard(id, entry)` are already generic and need no
+change; only the bucketing does. `buildArtClasses()` stays the special case it is (the 8×8
+matrix layout).
+
 <div class="callout warn">
 T1's <code>art:mob-*</code> keys must not fork from the server's mob ids
 (<code>balanced</code>, <code>defensive</code>, <code>spear_thrower</code>), which are
@@ -160,14 +198,26 @@ Fixture-driven, landing in `scripts/` npm test — already run by **both** CI
 - gate fixture: healthy manifest → pass, exit 0
 - intake test: gate fails after write → **rollback restores exact prior bytes**, no PNG left behind (mirrors `tools/asset-2d-forge/tests/intake2d.test.mjs`, which already injects the real gate)
 
+<div class="callout warn">
+<strong>Coverage gap, accepted deliberately.</strong> The §5.1 storybook renderer change has
+<strong>no automated test</strong> — <code>index.html</code> is a single-file browser app with
+no headless harness today. It is verified by <strong>loading the page and confirming each
+group renders its own titled section</strong> (serve the worktree, open the Concept Art
+section). A headless smoke test following the <code>tools/story-explorer/tests</code> pattern
+— which Gate 2 already runs via <code>explorer_smoke</code> — was considered and deferred;
+capture it as a follow-up idea rather than leaving it implied.
+</div>
+
 ## 7. Scope
 
 **In:** `tools/art-forge/` (recipe, config, prompts, generation scripts, intake), the 5 gate
-assertions, the `art:race-human` key, the reserved keyspace, the tests.
+assertions, the `art:race-human` key, the reserved keyspace in `art-groups.json`, the
+storybook `buildArt()` group-order fix (§5.1), the tests.
 
 **Out:** any new artwork · the two-worlds map decision (T2) · mob species taxonomy (T1) ·
 wiring `check_asset_manifest.mjs` into `integration.sh` as a separate Gate 2 section — it
-already runs per-PR in CI, and Gate 2 gains coverage through `content_tests` regardless.
+already runs per-PR in CI, and Gate 2 gains coverage through `content_tests` regardless ·
+a headless storybook smoke test (§6) — deferred to a follow-up idea.
 
 ## 8. Risks
 
