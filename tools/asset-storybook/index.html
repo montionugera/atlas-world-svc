@@ -780,6 +780,14 @@
       const AUDIO_MANIFEST_URL = "../../game-client/assets/audio-manifest.json";
       const MUSIC_MANIFEST_URL = "../../game-client/assets/music-manifest.json";
       const ART_MANIFEST_URL = "../../game-client/assets/art/art-manifest.json";
+      const ART_GROUPS_URL = "../../game-client/assets/art/art-groups.json";
+      // Fallback preserves the pre-T0 behaviour if the registry is unavailable,
+      // so a missing file degrades the section rather than breaking the page.
+      const ART_GROUPS_FALLBACK = [
+        { id: "cast", label: "Cast" },
+        { id: "race", label: "Races" },
+        { id: "class", label: "Classes" },
+      ];
       const RENDER_SPEC_URL = "../../game-client/assets/render-spec.json";
       const ASSET_KEYS_URL = "../../colyseus-server/generated/asset-keys.json";
       const AUDIO_INDEX_URL = "./audio-index.json";
@@ -2208,23 +2216,47 @@
         return wrap;
       }
 
-      function buildArt(artEntries) {
+      function buildArt(artEntries, artGroups) {
         const container = document.createElement("div");
-        const castList = [];
-        const raceList = [];
-        const classList = [];
+        const order =
+          artGroups &&
+          Array.isArray(artGroups.groups) &&
+          artGroups.groups.length
+            ? artGroups.groups
+            : ART_GROUPS_FALLBACK;
+
+        const buckets = new Map(order.map((g) => [g.id, []]));
+        const unregistered = new Map();
+
         for (const [id, entry] of Object.entries(artEntries)) {
           if (!entry || typeof entry.file !== "string") continue;
-          if (entry.group === "race") raceList.push([id, entry]);
-          else if (entry.group === "class") classList.push([id, entry]);
-          else castList.push([id, entry]);
+          const g = typeof entry.group === "string" ? entry.group : "cast";
+          if (buckets.has(g)) {
+            buckets.get(g).push([id, entry]);
+          } else {
+            // Never fold an unknown group into Cast — that hid every T1-T3
+            // group behind the wrong heading before T0.
+            if (!unregistered.has(g)) unregistered.set(g, []);
+            unregistered.get(g).push([id, entry]);
+          }
         }
-        if (castList.length > 0)
-          container.appendChild(buildArtGroup("Cast", castList));
-        if (raceList.length > 0)
-          container.appendChild(buildArtGroup("Races", raceList));
-        if (classList.length > 0)
-          container.appendChild(buildArtClasses(classList));
+
+        for (const g of order) {
+          const list = buckets.get(g.id);
+          if (!list || list.length === 0) continue;
+          container.appendChild(
+            g.id === "class"
+              ? buildArtClasses(list)
+              : buildArtGroup(g.label || g.id, list),
+          );
+        }
+
+        for (const [gid, list] of [...unregistered].sort((a, b) =>
+          a[0].localeCompare(b[0]),
+        )) {
+          container.appendChild(buildArtGroup(gid + " (unregistered)", list));
+        }
+
         return container;
       }
 
@@ -2541,6 +2573,19 @@
           );
         }
 
+        // art-groups.json declares section order/labels; a missing/unreadable
+        // registry falls back to the hardcoded cast/race/class order so the
+        // page degrades instead of breaking.
+        let artGroups = null;
+        try {
+          artGroups = await fetchJson(ART_GROUPS_URL, "art-groups");
+        } catch (err) {
+          console.warn(
+            "[asset-storybook] art-groups.json unavailable — falling back to cast/race/class order:",
+            err,
+          );
+        }
+
         // manifest.json (codegen-keyed) + catalog-manifest.json (curated) —
         // merged into one entry list the same way the storybook has always
         // treated "everything with a scene/stream" (§4.4: keyspaces are
@@ -2735,7 +2780,7 @@
             "Click a thumbnail to open it full-size.";
           section.appendChild(note);
 
-          section.appendChild(buildArt(artEntries));
+          section.appendChild(buildArt(artEntries, artGroups));
           main.appendChild(section);
         }
 
