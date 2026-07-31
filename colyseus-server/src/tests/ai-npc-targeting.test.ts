@@ -23,15 +23,15 @@ describe('AI targeting with companion NPCs', () => {
     npc.y = 100
 
     const env = gameState.worldInterface.buildMobEnvironment(mob, 200)
-    expect(env.nearestPlayer).toBeDefined()
-    expect(env.nearestPlayer!.id).toBe(npc.id)
-    expect(env.distanceToNearestPlayer).toBeCloseTo(10, 5)
+    expect(env.preferredTarget).toBeDefined()
+    expect(env.preferredTarget!.id).toBe(npc.id)
+    expect(env.distanceToPreferredTarget).toBeCloseTo(10, 5)
 
     // Move player closer than NPC -> mob targets player
     player.x = 105
     player.y = 100
     const env2 = gameState.worldInterface.buildMobEnvironment(mob, 200)
-    expect(env2.nearestPlayer!.id).toBe(player.id)
+    expect(env2.preferredTarget!.id).toBe(player.id)
   })
 
   test('npc environment exposes owner player for follow behavior', () => {
@@ -54,7 +54,7 @@ describe('AI targeting with companion NPCs', () => {
     expect(env.ownerPlayer).toBeDefined()
     expect(env.ownerPlayer!.id).toBe(player.id)
 
-    // nearestPlayer = nearest enemy (opposite team). Here only owner exists, same team, so no enemy.
-    expect(env.nearestPlayer).toBeNull()
+    // preferredTarget = nearest enemy (opposite team). Here only owner exists, same team, so no enemy.
+    expect(env.preferredTarget).toBeNull()
   })
 })
