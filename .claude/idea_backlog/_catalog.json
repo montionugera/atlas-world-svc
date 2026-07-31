@@ -262,5 +262,11 @@
     "title": "Boss branch: replace divide-by-n even-spread with the trinity sustain reading",
     "created_at": "2026-07-31T16:00:58.956317+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-045",
+    "title": "Local k8s: add Ingress so services have portless hostnames",
+    "created_at": "2026-07-31T16:50:29.778950+00:00",
+    "promoted_to": null
   }
 ]
