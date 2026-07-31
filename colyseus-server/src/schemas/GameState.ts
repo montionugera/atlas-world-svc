@@ -7,6 +7,7 @@ import { GAME_CONFIG } from '../config/gameConfig'
 import { getMapDimensions } from '../config/mapConfig'
 import { AIModule } from '../ai/AIModule'
 import { AIWorldInterface } from '../ai/AIWorldInterface'
+import { ThreatRegistry } from '../ai/threat/ThreatRegistry'
 // Removed global BattleManager singleton - now using room-scoped instances
 import { eventBus, RoomEventType } from '../events/EventBus'
 import { mergeBaseStat, MOB_STATS, MOB_TYPE_STATS, PLAYER_STATS } from '../config/combatConfig'
@@ -32,6 +33,8 @@ export class GameState extends Schema {
   public worldInterface: AIWorldInterface
   public battleManager!: BattleManager
   public mobLifeCycleManager!: MobLifeCycleManager
+  /** Per-agent aggro tables (F-023). Non-synced, like battleManager. */
+  public threatRegistry: ThreatRegistry
 
   constructor(mapId: string = 'map-01-sector-a', roomId: string = '') {
     super()
@@ -44,7 +47,9 @@ export class GameState extends Schema {
 
     // BattleManager is now room-scoped, not global singleton
 
-    // Initialize AI module
+    // Initialize AI module. The threat registry is constructed first because
+    // AIWorldInterface reads it during target selection (F-023).
+    this.threatRegistry = new ThreatRegistry()
     this.worldInterface = new AIWorldInterface(this)
     this.aiModule = new AIModule(this.worldInterface)
     this.aiModule.start()
@@ -212,6 +217,7 @@ export class GameState extends Schema {
       for (const id of toRemove) {
         const npc = this.npcs.get(id)
         this.aiModule.unregisterAgent(id)
+        this.threatRegistry.forgetEntity({ entityId: id })
         this.npcs.delete(id)
         if (npc) eventBus.emitRoomEvent(this.roomId, RoomEventType.NPC_REMOVED, { npc })
       }
@@ -219,6 +225,7 @@ export class GameState extends Schema {
       while (player.companionIds.length > 0) player.companionIds.pop()
 
       this.aiModule.unregisterAgent(sessionId)
+      this.threatRegistry.forgetEntity({ entityId: sessionId })
       eventBus.emitRoomEvent(this.roomId, RoomEventType.PLAYER_LEFT, { player })
     }
     this.players.delete(sessionId)
