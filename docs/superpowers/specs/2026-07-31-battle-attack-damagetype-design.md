@@ -243,13 +243,40 @@ This follows the existing `canAttack() → { canAttack, reason? }` precedent in
 `BattleModule.ts:183`, so it introduces no new idiom. One caller exists today
 (`attack-damage.test.ts:83`); it is cheap now and expensive later.
 
-## 7. I-027's open question is already answered — by the code
+## 7. I-027's open question was aimed at the wrong target
 
 I-027's spec asked whether `mDef`/`pDef` selection should move into the projectile stamp so
-both branches read one source. **It already does.** `ProjectileCollisionResolver` reads
-`projectile.damageType` on the queue branch (`:65`) *and* on the direct-damage branch
-(`:85`). There is no per-branch re-derivation left to unify. **No work — record the answer
-and close the question.**
+both branches read one source. **On the narrow question, the code already complies:**
+`ProjectileCollisionResolver` reads `projectile.damageType` on the queue branch (`:65`)
+*and* on the direct-damage branch (`:85`). One source, both branches.
+
+But the audit for this lane turned up something the question missed.
+
+<div class="callout danger">
+
+**The direct-damage branch is dead in production.** `GameRoom.ts:93-100` always constructs
+a `BattleManager` and passes it to `ProjectileManager`, which always passes it to the
+resolver. The `battleManager?` optional is left empty **only by tests**. So
+`ProjectileCollisionResolver.handleEntityCollision`'s else-branch (`:80-89`) is a *shadow
+copy of the damage pipeline that exists only to be tested* — and
+`damage-type-routing.test.ts:133,144` assert the behaviour of a path production cannot
+take.
+
+</div>
+
+Two consequences:
+
+1. The field mapping is written twice — `damage → baseDamage`, `damageType → damageType`,
+   `element → attackElement`. A fourth field on `Projectile` must be remembered in two
+   places. Same class of defect as this lane.
+2. Extracting a shared mapper would be treating the symptom. The root fix is **deleting the
+   fallback branch and making `battleManager` required** on the resolver and on
+   `ProjectileManager`.
+
+**That fix is right, and it is not this lane's job.** It changes `ProjectileManager`'s
+public constructor signature, deletes tests, and is structural surgery on projectile damage
+resolution — folding it into a lane about stating the channel is scope drift.
+**Filed as its own idea, with these findings, so it is not rediscovered from scratch.**
 
 ## 8. Tests
 
@@ -296,8 +323,9 @@ Recorded here so it reads as a decision, not an accident.
 Roughly **21 call sites** must now state `damageType` (and `element`), about **19 of them
 in test files**: `battle.test.ts`, `battle-messages.test.ts`, `room-scoped-battle.test.ts`,
 `f018-harness.ts`, `element-combat-integration.test.ts`, `damage-type-routing.test.ts`.
-Mechanical, but it is the bulk of the diff — expect the review to be mostly noise, and say
-so in the PR.
+
+This is the bulk of the diff, and it will bury the ~40 lines that actually change
+behaviour. **Commit ordering matters** — see §11.
 
 ### 8.4 Skill resolution tests
 
@@ -312,7 +340,35 @@ carrying `mAtk` and `damageType: 'magical'`.
 | `ZoneEffectManager` (`:219`) | flat final damage by design, no channel and no element to carry — already documented at the call site |
 | `StatusEffectManager` DOTs (`:25`) | same, already documented |
 | discriminated union for `BattleActionMessage` | §5 — real, separate, gets its own idea |
-| the 6 pending colyseus tests | `it.failing` characterised divergences; they turn red when the underlying behaviour is fixed. **That is the design — do not "fix" them.** |
+| deleting the dead direct-damage branch | §7 — real, separate, gets its own idea |
+| the 2 `it.failing` tripwires | see below |
+
+### 9.1 The `it.failing` tripwires — correcting the handoff
+
+<div class="callout warn">
+
+The release-1.6 handoff says *"do not fix the **6 pending** colyseus tests, they are
+`it.failing` characterised divergences."* **That conflates two unrelated things**, and this
+spec repeated it before checking:
+
+- There are **2** `it.failing` tests: `f018-model-parity.test.ts:324` and
+  `f018-boss-spread.test.ts:172`.
+- The **6 pending** are `ai-performance.test.ts` — six perf tests behind `describe.skip`
+  unless `RUN_PERF_TESTS=1`. Deliberately off by default. Nothing to do with `it.failing`.
+
+</div>
+
+`it.failing` inverts the assertion: the test is *expected* to fail, and the suite stays
+green while it does. If someone fixes the underlying behaviour, it starts passing and jest
+raises **an error** — "failing test passed". It is a tripwire announcing that a known
+divergence closed.
+
+**For this lane:** touch neither. Lane B changes which *defence* is subtracted on the
+`BATTLE_ATTACK` path; both tripwires concern F-018 model parity and boss target spread —
+different subsystems. **If one fires anyway, that is a signal, not a breakage:** stop,
+establish which behaviour changed and why, and if it is genuinely fixed, flip
+`it.failing` → `it` in the same PR stating the reason. Never delete it; never re-mark it
+merely to make the run green.
 
 ## 10. Done when
 
@@ -328,11 +384,28 @@ carrying `mAtk` and `damageType: 'magical'`.
 
 </div>
 
-## 11. Risks
+## 11. Commit ordering, and the risks
+
+<div class="callout idea">
+
+**Churn first, behaviour second — not the other way round.**
+
+| # | commit | property |
+| --- | --- | --- |
+| 1 | Add `damageType` / `element` at all ~21 call sites **while the fields are still optional** | Noisy, compiles, **zero behaviour change** |
+| 2 | Make both fields required, thread them through the `BattleManager` listener, add the red-first test | Small, sharp, readable line by line |
+
+The obvious ordering — real change first, churn second — is **wrong here**: making the
+fields required breaks every call site, so commit 1 would not compile on its own. Since
+this repo squash-merges, splitting buys *review clarity only*, never history; paying for it
+with a non-building commit is a bad trade. Reversing the order buys the same clarity for
+free.
+
+</div>
 
 | risk | mitigation |
 | --- | --- |
-| Large mechanical diff hides a real change | Land the required-field change and the ~21 call-site updates as separate commits so review can read them apart |
+| Large mechanical diff hides a real change | The commit ordering above |
 | Deleting an F-018 test looks like a regression | §8.2 records the reason; reference it in the commit message |
 | `actionPayload: any` still lets a hand-built message bypass the type | §5 audible-default guard; no production code hand-builds these |
 | Cut from `main`, missing release/1.6 | **`git merge release/1.6 --no-edit` immediately after claiming** — this bit both F-018 and F-019 in 1.5 |
