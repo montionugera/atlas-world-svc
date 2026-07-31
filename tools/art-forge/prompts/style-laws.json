@@ -1,0 +1,9 @@
+{
+  "positive": ["crisp flat 2D anime illustration"],
+  "negative": ["NOT 3D render", "NOT CGI", "NOT clay", "no fur"],
+  "laws": [
+    "Text alone CANNOT hold head-body ratio — always anchor with an image. The owner caught drift twice on text-only attempts.",
+    "The words 'raccoon', 'goggles' and 'dwarf' drag the model toward 3D-furry/Pixar. Counter with 'KEMONOMIMI, HUMAN face, no fur'.",
+    "QC per row on a contact sheet, then reroll only failing cells with a new seed plus reinforced identity words."
+  ]
+}

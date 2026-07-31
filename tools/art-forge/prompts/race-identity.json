@@ -1,0 +1,32 @@
+{
+  "ogre": {
+    "identity": [
+      "moss-green skin",
+      "small tusks",
+      "intelligent eyes",
+      "natural muscle"
+    ],
+    "muscle": 8.5
+  },
+  "immortal": {
+    "identity": ["halo is a ring of LIGHT, not bells"],
+    "muscle": 6.8
+  },
+  "dragon": {
+    "identity": ["white hair", "pearl-opal iridescent skin"],
+    "muscle": 7.4
+  },
+  "beastkin": {
+    "identity": [
+      "HUMAN face",
+      "animal ears and tail only",
+      "KEMONOMIMI",
+      "no fur"
+    ],
+    "muscle": 6.4
+  },
+  "elf": { "identity": ["slender", "mana-bright"], "muscle": 6.0 },
+  "dwarf": { "identity": ["stocky", "artisan"], "muscle": 7.8 },
+  "demon": { "identity": ["void affinity"], "muscle": 7.0 },
+  "human": { "identity": ["balanced, no lean"], "muscle": 7.0 }
+}
