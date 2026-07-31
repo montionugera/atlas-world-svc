@@ -131,6 +131,11 @@ export class MobCombatSystem extends BaseCombatSystem<Mob> {
       actorId: this.mob.id,
       targetId: target.id,
       damage: this.mob.pAtk,
+      // Physical on purpose, not by default: `damage` is sourced from pAtk directly above.
+      damageType: 'physical',
+      // Neutral by construction — no AttackDefinition executes on this path, so there is
+      // no element to read (World Wisdom / F-017).
+      element: 'neutral',
       range: this.mob.attackRange,
       roomId: roomId,
     }

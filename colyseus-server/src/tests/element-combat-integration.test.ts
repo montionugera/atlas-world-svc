@@ -38,6 +38,7 @@ describe('createAttackMessage', () => {
       targetId: 'b',
       damage: 10,
       range: 2,
+      damageType: 'physical',
       element: 'fire',
     })
     expect((msg.actionPayload as AttackActionPayload).element).toBe('fire')

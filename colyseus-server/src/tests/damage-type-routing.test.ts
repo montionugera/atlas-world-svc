@@ -43,6 +43,7 @@ describe('createAttackMessage carries damageType', () => {
       damage: 10,
       range: 2,
       damageType: 'magical',
+      element: 'neutral',
     })
     expect((msg.actionPayload as AttackActionPayload).damageType).toBe('magical')
   })
@@ -64,6 +65,7 @@ describe('createAttackMessage carries damageType', () => {
       damage: 10,
       range: 2,
       damageType: 'magical',
+      element: 'neutral',
       projectileDetail: { id: 'p1', type: 'spear', damage: 10 },
     })
     const payload = msg.actionPayload as AttackActionPayload

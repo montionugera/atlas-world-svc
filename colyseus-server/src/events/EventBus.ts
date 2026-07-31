@@ -2,6 +2,7 @@ import { EventEmitter } from 'events'
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
 import { WorldLife } from '../schemas/WorldLife'
+import type { Element } from '../config/combat/elements'
 
 export enum RoomEventType {
   PLAYER_JOINED = 'player:joined',
@@ -43,6 +44,13 @@ export interface BattleAttackData {
   actorId: string
   targetId?: string // Optional - allows attacks without targets (e.g., player swinging weapon)
   damage: number
+  /**
+   * Which defence mitigates this hit: `pDef` for 'physical', `mDef` for 'magical'.
+   * Optional only until I-037 Task 3 makes it required — state it, always.
+   */
+  damageType?: 'physical' | 'magical'
+  /** Attack element (World Wisdom / F-017). State 'neutral' explicitly; do not omit. */
+  element?: Element
   range: number
   roomId: string
 }

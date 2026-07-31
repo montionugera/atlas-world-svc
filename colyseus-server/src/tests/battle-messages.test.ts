@@ -46,6 +46,8 @@ describe('Battle Message System', () => {
         targetId: player.id,
         damage: 20,
         range: 10,
+        damageType: 'physical',
+        element: 'neutral',
       })
 
       expect(message.actorId).toBe(mob.id)
@@ -88,6 +90,8 @@ describe('Battle Message System', () => {
           targetId: player.id,
           damage: 20,
           range: 10,
+          damageType: 'physical',
+          element: 'neutral',
         })
       )
 
@@ -132,6 +136,8 @@ describe('Battle Message System', () => {
           targetId: player.id,
           damage: 10,
           range: 5,
+          damageType: 'physical',
+          element: 'neutral',
         })
       )
       battleManager.addActionMessage(
@@ -153,6 +159,8 @@ describe('Battle Message System', () => {
         targetId: player.id,
         damage: 20,
         range: 10,
+        damageType: 'physical',
+        element: 'neutral',
       })
       attackMessage.priority = 3 // High priority
       battleManager.addActionMessage(attackMessage)
@@ -206,6 +214,8 @@ describe('Battle Message System', () => {
         targetId: player.id,
         damage: 20,
         range: 10,
+        damageType: 'physical',
+        element: 'neutral',
       })
 
       battleManager.addActionMessage(invalidMessage)
@@ -220,6 +230,8 @@ describe('Battle Message System', () => {
         targetId: 'invalid-target',
         damage: 20,
         range: 10,
+        damageType: 'physical',
+        element: 'neutral',
       })
 
       battleManager.addActionMessage(invalidMessage)
