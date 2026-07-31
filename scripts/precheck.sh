@@ -78,9 +78,19 @@ run_section() {
 # --- Sections ----------------------------------------------------------------
 
 # A fresh feature worktree has no node_modules at all.
+#
+# client/react-client needs a SEPARATE npm install. pnpm-workspace.yaml lists
+# 'client', but there is no client/package.json — the real app sits one level
+# down at client/react-client/ with its own package-lock.json, and appears
+# nowhere in pnpm-lock.yaml. So the root pnpm install does not touch it and
+# `react-scripts` is simply absent. Same situation as scripts/, which
+# integration.sh installs the same way.
 deps_install() {
   command -v pnpm >/dev/null 2>&1 || { echo "pnpm not found — run: corepack enable"; return 1; }
-  (cd "$REPO_ROOT" && pnpm install --frozen-lockfile)
+  (cd "$REPO_ROOT" && pnpm install --frozen-lockfile) || return 1
+  if [ -f "$REPO_ROOT/client/react-client/package.json" ]; then
+    (cd "$REPO_ROOT/client/react-client" && npm ci) || return 1
+  fi
 }
 
 # Must run before any typecheck; see the header note.
@@ -95,6 +105,25 @@ server_format()    { (cd "$REPO_ROOT/colyseus-server" && npm run format:check); 
 # nakama is bundled into the Nakama runtime; a type error here breaks InitModule.
 nakama_typecheck() { (cd "$REPO_ROOT/nakama" && npx tsc --noEmit); }
 nakama_tests()     { (cd "$REPO_ROOT/nakama" && npx jest); }
+
+# The react-client suite. This used to run only via scripts/test_all.sh, which
+# nothing called — so it gated nothing. CI=true makes react-scripts run once and
+# exit instead of dropping into interactive watch (which would hang the gate).
+# Skipped cleanly on branches without the client, same as combat_lab.
+client_tests() {
+  if [ ! -f "$REPO_ROOT/client/react-client/package.json" ]; then
+    echo "no client/react-client on this branch — skipping"
+    return 0
+  fi
+  # Distinguish "deps missing" from "tests failed" — react-scripts absent shows
+  # up as a bare `command not found`, which reads like a broken suite.
+  if [ ! -x "$REPO_ROOT/client/react-client/node_modules/.bin/react-scripts" ]; then
+    echo "react-scripts not installed under client/react-client/node_modules"
+    echo "  run:  (cd client/react-client && npm ci)   — or drop --no-install"
+    return 1
+  fi
+  (cd "$REPO_ROOT/client/react-client" && CI=true npm test)
+}
 
 # The combat balance model gates itself (G1-G12) and fails on spec staleness.
 # Skipped cleanly on branches predating the combat lab rather than failing them.
@@ -115,6 +144,7 @@ run_section "server: jest suite"            server_tests
 run_section "server: prettier format"       server_format
 run_section "nakama: tsc --noEmit"          nakama_typecheck
 run_section "nakama: jest suite"            nakama_tests
+run_section "client: react-client suite"    client_tests
 run_section "combat-lab: model gates"       combat_lab
 
 # --- Summary -----------------------------------------------------------------

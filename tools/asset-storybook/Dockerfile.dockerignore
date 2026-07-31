@@ -1,0 +1,21 @@
+# Scoped build context for the storybook image.
+#
+# BuildKit prefers <dockerfile-path>.dockerignore over the root .dockerignore.
+# That matters here: the root file is a whitelist for the colyseus build and
+# excludes game-client/ and tools/ outright, which would produce an asset-less
+# storybook. Keep this in sync with the COPY lines in ./Dockerfile.
+
+*
+!game-client/assets/**
+!colyseus-server/generated/asset-keys.json
+!tools/asset-storybook/**
+!tools/combat-lab/**
+!k8s/local/storybook-nginx.conf
+
+# Build inputs, not page content — these would otherwise be served in the docroot.
+tools/asset-storybook/Dockerfile
+tools/asset-storybook/Dockerfile.dockerignore
+
+# Never ship local installs or caches into the context.
+**/node_modules
+**/.DS_Store
