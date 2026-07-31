@@ -177,3 +177,28 @@ test("a Git LFS pointer stub fails instead of passing as an image", () => {
   assert.equal(r.code, 1);
   assert.match(r.stdout, /Git LFS pointer/);
 });
+
+test("an image on disk with no manifest entry fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok() }, // b.png exists on disk but is unclaimed
+    groups: { ...GROUPS, expectedCounts: {} },
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /no manifest entry.*b\.png/);
+});
+
+test("a group short of its expected count fails", () => {
+  const f = fixture({
+    entries: {
+      "art:race-a": ok({ group: "race" }),
+      "art:race-b": ok({ group: "race", file: "concept/b.png" }),
+      "art:race-c": ok({ group: "race", file: "concept/c.png" }),
+    },
+    groups: { ...GROUPS, expectedCounts: { race: 8 } },
+    files: ["a.png", "b.png", "c.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /group "race": expected 8 entries, found 3/);
+});

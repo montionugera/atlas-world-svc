@@ -76,9 +76,10 @@ import {
   openSync,
   readSync,
   closeSync,
+  readdirSync,
 } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, resolve, join } from "node:path";
+import { dirname, resolve, join, relative } from "node:path";
 import { checkLicensePolicy } from "./lib/license-policy.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -483,6 +484,58 @@ function assertNoReserved(id, source, spec, failures) {
   }
 }
 
+const ART_IMAGE_EXT = new Set([".png", ".webp", ".jpg", ".jpeg"]);
+
+function* walkImages(dir) {
+  for (const ent of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, ent.name);
+    if (ent.isDirectory()) {
+      yield* walkImages(p);
+      continue;
+    }
+    const dot = ent.name.lastIndexOf(".");
+    const ext = dot === -1 ? "" : ent.name.slice(dot).toLowerCase();
+    if (ART_IMAGE_EXT.has(ext)) yield p;
+  }
+}
+
+// (M) Reverse direction + group completeness. Rule (L) catches an entry whose
+// file vanished; this catches the opposite — a committed image nothing points
+// at, which is invisible forever — and a group that silently lost a member
+// (the exact 7-vs-8 races symptom that went unnoticed).
+function assertArtCoverage(entries, source, groupsDoc, failures) {
+  const claimed = new Set();
+  const counts = {};
+  for (const entry of Object.values(entries)) {
+    if (!entry || typeof entry !== "object") continue;
+    if (typeof entry.file === "string" && entry.file.trim() !== "") {
+      claimed.add(resolve(source.root, entry.file));
+    }
+    if (typeof entry.group === "string") {
+      counts[entry.group] = (counts[entry.group] || 0) + 1;
+    }
+  }
+
+  for (const abs of walkImages(source.root)) {
+    if (!claimed.has(resolve(abs))) {
+      failures.push(
+        `art file has no manifest entry: ${relative(source.root, abs)}`,
+      );
+    }
+  }
+
+  for (const [group, expected] of Object.entries(
+    (groupsDoc && groupsDoc.expectedCounts) || {},
+  )) {
+    const actual = counts[group] || 0;
+    if (actual !== expected) {
+      failures.push(
+        `art group "${group}": expected ${expected} entries, found ${actual}`,
+      );
+    }
+  }
+}
+
 // (J) AssetKind renderability completeness. Every `kind` the codegen emits
 // (asset-keys.json) must resolve to a renderer by CONTRACT, not by accident:
 // either render-spec declares a `kindDefaultRender[kind]` (guaranteed default),
@@ -574,6 +627,10 @@ function main() {
           `entry "${id}": not a known asset key (stale or renamed?)`,
         );
       }
+    }
+
+    if (source.validator === "art") {
+      assertArtCoverage(entries, source, groupsDoc, failures);
     }
 
     // Every generated key should eventually have a manifest entry in the
