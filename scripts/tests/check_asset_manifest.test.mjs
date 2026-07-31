@@ -83,6 +83,8 @@ function runGate({ dir, artRoot }) {
         join(dir, "music.json"),
         "--art-manifest",
         join(dir, "art-manifest.json"),
+        "--art-groups",
+        join(dir, "art-groups.json"),
         "--art-root",
         artRoot,
         "--game-client",
