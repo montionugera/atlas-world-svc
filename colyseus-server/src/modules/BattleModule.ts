@@ -18,7 +18,7 @@ import {
 } from './BattleActionMessage'
 import { ProcessedEventTracker } from './combat/ProcessedEventTracker'
 import { DamageCalculator, DamageCalculationOptions } from './combat/DamageCalculator'
-import { DEFAULT_ELEMENT } from '../config/combat/elements'
+import { DEFAULT_ELEMENT, type Element } from '../config/combat/elements'
 import { StatusEffectManager } from './combat/StatusEffectManager'
 
 export interface AttackEvent {
@@ -78,20 +78,28 @@ export class BattleModule implements BattleActionProcessor {
       return null
     }
 
-    // Determine damage based on payload or use fallback
-    let baseDamage = attacker.pAtk // Default fallback to physical pAtk
+    // With a payload, every field is read verbatim — no `?? 'physical'`, no
+    // `?? DEFAULT_ELEMENT`. Those defaults are what let a magical hit be mitigated
+    // by pDef without anyone noticing (I-037).
+    //
+    // The no-payload branch keeps its own values: `processAttack` is still callable
+    // without a payload, and physical/neutral off pAtk is the documented meaning of
+    // that call, not a fallback for a missing field.
+    let baseDamage = attacker.pAtk
     let damageType: 'physical' | 'magical' = 'physical'
+    let attackElement: Element = DEFAULT_ELEMENT
 
     if (payload) {
       baseDamage = payload.damage
-      damageType = payload.damageType || 'physical'
+      damageType = payload.damageType
+      attackElement = payload.element
     }
 
     // Calculate damage with defense + element
     const damage = this.calculateDamage({
       baseDamage,
       damageType,
-      attackElement: payload?.element ?? DEFAULT_ELEMENT,
+      attackElement,
       target,
     })
     console.log(`🎯 ATTACK: ${attacker.id} deals ${damage} ${damageType} damage to ${target.id}`)
@@ -451,6 +459,21 @@ export class BattleModule implements BattleActionProcessor {
     target: WorldLife | null,
     payload: AttackActionPayload
   ): boolean {
+    // `AttackActionPayload.damageType` is required, so this cannot be reached through
+    // the type system. It is still checked because `BattleActionMessage.actionPayload`
+    // is `any` (BattleActionMessage.ts:11) and processAction casts it at :401 — the one
+    // place the compile-time guarantee does not hold (I-041 removes the cause).
+    //
+    // Deliberately NOT a throw: processActionMessages wraps processAction in try/catch
+    // and only logs, so throwing would make the whole attack vanish silently — a
+    // quieter failure than the one being fixed.
+    if (payload.damageType !== 'physical' && payload.damageType !== 'magical') {
+      console.error(
+        `❌ BATTLE: attack from ${actor.id} arrived with no damageType — resolving as ` +
+          `physical. This is a defect, not a default (I-037).`
+      )
+    }
+
     if (!target) {
       // No target - combat system already natively handled the attack animation execution.
       // We don't need to manually override the state here.

@@ -80,10 +80,44 @@ describe('attackDamage', () => {
     expect(isWeaponMagicalPrimary(WEAPONS.magic_staff)).toBe(true)
   })
 
-  test('getSkillDamageForKind uses pAtk vs mAtk totals', () => {
+  test('getSkillDamageForKind returns the stat and its channel together', () => {
     const p = new Player('s3', 'T', 0, 0)
     p.equipWeapon('magic_staff')
-    expect(getSkillDamageForKind(p, ATTACK_KIND.SKILL_PHYSICAL)).toBe(p.pAtk)
-    expect(getSkillDamageForKind(p, ATTACK_KIND.SKILL_MAGICAL)).toBe(p.mAtk)
+    // Direct reads: the function is a pure reader of the two stats, so the values
+    // recalculateStats produced are what it must report — paired with the channel
+    // they belong to, so a skill's stat and its damage type cannot drift apart.
+    expect(getSkillDamageForKind(p, ATTACK_KIND.SKILL_PHYSICAL)).toEqual({
+      ok: true,
+      damage: p.pAtk,
+      damageType: 'physical',
+    })
+    expect(getSkillDamageForKind(p, ATTACK_KIND.SKILL_MAGICAL)).toEqual({
+      ok: true,
+      damage: p.mAtk,
+      damageType: 'magical',
+    })
+  })
+
+  test('a magical skill with no magical offence is refused, not silently zero', () => {
+    // This is not hypothetical. derivedStats computes mAtk as
+    // `atk * 2 * (1 - weapon.rho)` and weaponOffence sets `rho = pAtk / (pAtk + mAtk)`,
+    // so a pure-physical blade (and unarmed) yields rho 1 and mAtk of exactly 0.
+    const p = new Player('s4', 'T', 0, 0)
+    p.pAtk = 120
+    p.mAtk = 0
+    expect(getSkillDamageForKind(p, ATTACK_KIND.SKILL_MAGICAL)).toEqual({
+      ok: false,
+      reason: 'no-magical-offence',
+    })
+  })
+
+  test('a physical skill with no physical offence is refused symmetrically', () => {
+    const p = new Player('s5', 'T', 0, 0)
+    p.pAtk = 0
+    p.mAtk = 80
+    expect(getSkillDamageForKind(p, ATTACK_KIND.SKILL_PHYSICAL)).toEqual({
+      ok: false,
+      reason: 'no-physical-offence',
+    })
   })
 })

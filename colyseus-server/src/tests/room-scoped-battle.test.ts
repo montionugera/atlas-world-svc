@@ -92,6 +92,8 @@ describe('Room-Scoped Battle Manager', () => {
         targetId: 'player-1',
         damage: 20,
         range: 10,
+        damageType: 'physical',
+        element: 'neutral',
       })
     )
 
@@ -102,6 +104,8 @@ describe('Room-Scoped Battle Manager', () => {
         targetId: 'player-2',
         damage: 20,
         range: 8,
+        damageType: 'physical',
+        element: 'neutral',
       })
     )
 
@@ -136,6 +140,8 @@ describe('Room-Scoped Battle Manager', () => {
         targetId: 'player-1',
         damage: 20,
         range: 10,
+        damageType: 'physical',
+        element: 'neutral',
       })
     )
     room2BattleManager.addActionMessage(
@@ -144,6 +150,8 @@ describe('Room-Scoped Battle Manager', () => {
         targetId: 'player-2',
         damage: 15,
         range: 8,
+        damageType: 'physical',
+        element: 'neutral',
       })
     )
 
@@ -178,6 +186,8 @@ describe('Room-Scoped Battle Manager', () => {
         targetId: 'player-2',
         damage: 20,
         range: 10,
+        damageType: 'physical',
+        element: 'neutral',
       })
     )
 

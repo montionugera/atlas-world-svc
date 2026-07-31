@@ -53,6 +53,8 @@ describe('Battle System', () => {
           targetId: player.id,
           damage: 20,
           range: 10,
+          damageType: 'physical',
+          element: 'neutral',
         })
       )
       const processed = await battleManager.processActionMessages()
@@ -72,6 +74,8 @@ describe('Battle System', () => {
           targetId: player.id,
           damage: 20,
           range: 10,
+          damageType: 'physical',
+          element: 'neutral',
         })
       )
       battleManager.addActionMessage(
@@ -80,6 +84,8 @@ describe('Battle System', () => {
           targetId: player.id,
           damage: 20,
           range: 10,
+          damageType: 'physical',
+          element: 'neutral',
         })
       )
       const processed = await battleManager.processActionMessages()

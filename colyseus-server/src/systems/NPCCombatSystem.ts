@@ -103,6 +103,10 @@ export class NPCCombatSystem extends BaseCombatSystem<NPC> {
       actorId: this.npc.id,
       targetId: targetMob.id,
       damage: this.npc.pAtk,
+      // Physical on purpose: `damage` is sourced from pAtk directly above.
+      damageType: 'physical',
+      // Neutral per the comment above — there is no element source on this path at all.
+      element: 'neutral',
       range: this.npc.attackRange,
       roomId: roomId,
     }

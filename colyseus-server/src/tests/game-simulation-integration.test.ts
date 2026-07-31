@@ -173,6 +173,7 @@ describe('GameSimulationSystem (integration): meta event flow', () => {
     const attackEvent = env.room.battleModule.processAttack(player, mob, {
       damage: 9999,
       damageType: 'physical',
+      element: 'neutral',
       range: 10,
     })
     expect(attackEvent?.targetDied).toBe(true)

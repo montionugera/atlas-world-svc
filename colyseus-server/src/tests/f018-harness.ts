@@ -280,6 +280,7 @@ export function landEverySwing(env: TestEnv, mob: Mob): Swing[] {
           damage,
           range: 2,
           damageType: 'physical',
+          element: 'neutral',
           attackType: 'projectile',
         })
       )
@@ -311,6 +312,7 @@ export function enqueueHit(
       damage,
       range: 2,
       damageType,
+      element: 'neutral',
       attackType: 'projectile',
     })
   )
