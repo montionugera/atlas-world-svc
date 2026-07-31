@@ -28,13 +28,14 @@ export interface ProjectileDetail {
 
 export interface AttackActionPayload {
   damage: number
-  damageType?: 'physical' | 'magical'
+  /** Which defence mitigates this hit. Required — there is no default (I-037). */
+  damageType: 'physical' | 'magical'
   /**
    * Element of this attack (World Wisdom / F-017). This is the field
    * `BattleModule.processAttack` reads; `ProjectileDetail.element` only mirrors
-   * it for projectile-sourced hits. Omit for neutral.
+   * it for projectile-sourced hits. Required — state 'neutral' explicitly.
    */
-  element?: Element
+  element: Element
   range: number
   direction?: { x: number; y: number }
   attackType?: string // melee, ranged, magic, etc.

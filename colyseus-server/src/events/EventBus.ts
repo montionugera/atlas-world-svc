@@ -46,11 +46,12 @@ export interface BattleAttackData {
   damage: number
   /**
    * Which defence mitigates this hit: `pDef` for 'physical', `mDef` for 'magical'.
-   * Optional only until I-037 Task 3 makes it required — state it, always.
+   * Required: an emitter that omits it would have its hit silently mitigated by the
+   * wrong defence, which is exactly the defect I-037 closes.
    */
-  damageType?: 'physical' | 'magical'
-  /** Attack element (World Wisdom / F-017). State 'neutral' explicitly; do not omit. */
-  element?: Element
+  damageType: 'physical' | 'magical'
+  /** Attack element (World Wisdom / F-017). Required — state 'neutral' explicitly. */
+  element: Element
   range: number
   roomId: string
 }

@@ -104,20 +104,19 @@ export class BattleManager {
     range: number
     /**
      * Which defence channel mitigates this hit: `pDef` for 'physical',
-     * `mDef` for 'magical' (F-018 / I-027). Defaults to physical, which is what
-     * `BattleModule.processAttack` assumes when the field is absent.
+     * `mDef` for 'magical' (F-018 / I-027). Required — there is no default, so a
+     * caller cannot silently route a magical hit onto the physical channel (I-037).
      */
-    damageType?: 'physical' | 'magical'
-    /** Attack element (World Wisdom / F-017). Defaults to neutral. */
-    element?: Element
+    damageType: 'physical' | 'magical'
+    /** Attack element (World Wisdom / F-017). Required — state 'neutral' explicitly. */
+    element: Element
     direction?: { x: number; y: number }
     /** melee (default), projectile, … — drives the range/cooldown bypass in canAttack. */
     attackType?: string
     /** `element` and `damageType` are filled in from `opts`; do not set them here. */
     projectileDetail?: Omit<ProjectileDetail, 'element' | 'damageType'>
   }): BattleActionMessage {
-    const element = opts.element ?? DEFAULT_ELEMENT
-    const damageType = opts.damageType ?? 'physical'
+    const { element, damageType } = opts
 
     const actionPayload: AttackActionPayload = {
       damage: opts.damage,

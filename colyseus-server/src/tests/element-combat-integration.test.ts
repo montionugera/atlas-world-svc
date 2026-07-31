@@ -46,15 +46,19 @@ describe('createAttackMessage', () => {
     expect(msg.targetId).toBe('b')
   })
 
-  it('defaults to neutral when no element is supplied', () => {
+  // The "defaults to neutral when none supplied" case was deleted with I-037:
+  // element is now required, so the default it pinned no longer exists. The
+  // attackType assertion it also carried is preserved below, since that default
+  // is unchanged.
+  it('still defaults attackType to melee, so melee skips the projectile bypass', () => {
     const msg = BattleManager.createAttackMessage({
       actorId: 'a',
       targetId: 'b',
       damage: 10,
       range: 2,
+      damageType: 'physical',
+      element: 'neutral',
     })
-    expect((msg.actionPayload as AttackActionPayload).element).toBe('neutral')
-    // Unchanged defaults: melee attacks still skip the projectile bypass.
     expect((msg.actionPayload as AttackActionPayload).attackType).toBe('melee')
   })
 })
@@ -115,16 +119,10 @@ describe('processAttack applies the payload element', () => {
     expect(attackWith('wind')).toBe(200)
   })
 
-  it('treats a missing payload element as neutral', () => {
-    const before = mob.currentHealth
-    battleModule.processAttack(player, mob, {
-      damage: 100,
-      range: 50,
-      damageType: 'physical',
-      attackType: 'projectile',
-    })
-    expect(before - mob.currentHealth).toBe(100)
-  })
+  // 'treats a missing payload element as neutral' was deleted with I-037: element is
+  // now required on AttackActionPayload, so the `?? DEFAULT_ELEMENT` it pinned is gone.
+  // The behaviour it checked — a neutral attack takes no elemental modifier — is still
+  // covered by attackWith('neutral') above, which asserts the same unmodified 100.
 })
 
 describe('ProjectileCollisionResolver carries projectile.element', () => {

@@ -48,15 +48,8 @@ describe('createAttackMessage carries damageType', () => {
     expect((msg.actionPayload as AttackActionPayload).damageType).toBe('magical')
   })
 
-  it('defaults to physical when no damageType is supplied', () => {
-    const msg = BattleManager.createAttackMessage({
-      actorId: 'a',
-      targetId: 'b',
-      damage: 10,
-      range: 2,
-    })
-    expect((msg.actionPayload as AttackActionPayload).damageType).toBe('physical')
-  })
+  // The "defaults to physical when none supplied" case was deleted with I-037:
+  // damageType is now required, so the default it pinned no longer exists.
 
   it('mirrors the damageType onto projectileDetail so the two copies cannot diverge', () => {
     const msg = BattleManager.createAttackMessage({
