@@ -67,6 +67,12 @@
       "file": "concept/race-immortal.png",
       "note": "Z-Image Turbo, local generation, race lineup — Bellfaith healer"
     },
+    "art:race-human": {
+      "group": "race",
+      "title": "Human",
+      "file": "concept/cast-crossroads-man-sheet.png",
+      "note": "Deliberate reuse: the human race lineup uses the approved cast turnaround rather than a separate render. Recorded explicitly so a 7-of-8 race group can never again be mistaken for an omission."
+    },
     "art:race-demon": {
       "group": "race",
       "title": "Demon — Cindervast drifter",
