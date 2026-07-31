@@ -88,6 +88,8 @@ content_tests() { (cd "$REPO_ROOT/scripts" && npm test); }
 
 explorer_smoke() { (cd "$REPO_ROOT" && node --test tools/story-explorer/tests/*.test.mjs); }
 
+art_forge_tests() { (cd "$REPO_ROOT" && node --test tools/art-forge/tests/*.test.mjs); }
+
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace + content-gate + contracts build" deps_install
 run_section "server: tsc build"            server_build
@@ -97,6 +99,7 @@ run_section "content: gate (--require-complete)" content_gate
 run_section "content: story-graph drift"   graph_drift
 run_section "content: gate test suite"     content_tests
 run_section "content: story-explorer smoke" explorer_smoke
+run_section "art-forge: intake tests" art_forge_tests
 
 # --- Summary -----------------------------------------------------------------
 echo ""

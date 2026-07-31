@@ -1,0 +1,322 @@
+#!/usr/bin/env node
+// Transactional concept-art intake: takes a source PNG produced by the
+// art-forge generation scripts (Tasks 4-7) and lands it in
+// game-client/assets/art/concept/ + the curated art-manifest.json as a
+// single atomic, rollback-safe operation. This is the ONLY sanctioned way a
+// generated image enters the repo — see docs/superpowers/specs/
+// 2026-08-01-art-forge-foundation-design.md §4.
+//
+// Same SHAPE as tools/asset-2d-forge/intake2d.mjs (validate -> snapshot ->
+// copy -> write-entry -> gate -> rollback), different sink: art-manifest.json
+// (curated, driftGated:false, validated by the "art" validator in
+// scripts/check_asset_manifest.mjs, NOT the render-spec validator).
+//
+// Order of operations:
+//   1. validate — the source file exists; `id` starts with "art:"; `group`
+//      is declared in the FIXED, committed art-groups.json (Task 1's
+//      registry — always read from the real repo, independent of any
+//      sandboxed `root`/`manifestPath` used for testing); `title` and `note`
+//      (provenance — art carries no upstream licence) are non-empty; and the
+//      destination path does not already hold a DIFFERENT file. ANY failure
+//      aborts with ZERO side effects.
+//   2. snapshot — read art-manifest.json's exact bytes (and any PNG already
+//      at the destination) before touching anything.
+//   3. copy — the source PNG into <root>/concept/.
+//   4. write-entry — add { group, title, file, note } via the REUSED atomic
+//      writer (tmp+rename) from tools/asset-forge/lib/manifest.mjs.
+//   5. gate — run `node scripts/check_asset_manifest.mjs` from the repo root.
+//   6. rollback — on ANY failure after step 2, restore art-manifest.json to
+//      its exact snapshot bytes and restore/delete the copied PNG.
+//
+// `root` is the ART root (game-client/assets/art — the directory containing
+// concept/ and art-manifest.json), NOT the repo root. It defaults to the
+// real game-client/assets/art but is fully injectable so tests can point it
+// at a throwaway sandbox. The group registry (art-groups.json) and the gate
+// script, by contrast, are always resolved against the real repo root
+// (via manifest.mjs's repoRoot()) — they are fixed contracts, not sandboxed
+// per call.
+
+import {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  copyFileSync,
+  mkdirSync,
+  rmSync,
+} from "node:fs";
+import { spawn } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+// REUSE the proven atomic manifest writer + repo-root resolver — do not
+// reinvent tmp-file+rename semantics.
+import {
+  repoRoot,
+  readManifest,
+  writeManifestAtomic,
+  writeManifestRaw,
+} from "../asset-forge/lib/manifest.mjs";
+
+/**
+ * Default drift-gate runner: spawns `node scripts/check_asset_manifest.mjs`
+ * from the real repo root. Injectable via opts.driftGateRunner for tests.
+ * @returns {Promise<{ok: boolean}>}
+ */
+function defaultDriftGateRunner() {
+  return new Promise((resolve) => {
+    const child = spawn("node", ["scripts/check_asset_manifest.mjs"], {
+      cwd: repoRoot(),
+      stdio: "inherit",
+    });
+    child.on("error", () => resolve({ ok: false }));
+    child.on("exit", (code) => resolve({ ok: code === 0 }));
+  });
+}
+
+/**
+ * Read the FIXED, committed art-groups.json (Task 1's registry) and return
+ * the set of declared group ids. Always resolved against the real repo root
+ * — the group registry is a global contract, not something a caller/test
+ * should be able to fake by pointing `root` elsewhere.
+ * @returns {{ groupIds: Set<string> } | { error: string }}
+ */
+function readGroupIds() {
+  const groupsPath = path.join(
+    repoRoot(),
+    "game-client/assets/art/art-groups.json",
+  );
+  let doc;
+  try {
+    doc = JSON.parse(readFileSync(groupsPath, "utf8"));
+  } catch (err) {
+    return { error: `art-groups read: ${err.message}` };
+  }
+  const groupIds = new Set(
+    Array.isArray(doc.groups)
+      ? doc.groups.map((g) => g && g.id).filter(Boolean)
+      : [],
+  );
+  return { groupIds };
+}
+
+/**
+ * Transactional intake of a source PNG into the concept-art tree +
+ * art-manifest.json. Single-path options object (repo invariant — no
+ * positional args, no boolean-flag params that branch behavior).
+ *
+ * @param {object} opts
+ * @param {string} opts.src            path to the source PNG
+ * @param {string} opts.id             manifest id, must start with "art:"
+ * @param {string} opts.group          group id, must be declared in art-groups.json
+ * @param {string} opts.title          human-readable title
+ * @param {string} opts.note           provenance note (required — no upstream licence)
+ * @param {string} [opts.root]         art root (defaults to game-client/assets/art)
+ * @param {string} [opts.manifestPath] art-manifest.json path (defaults to <root>/art-manifest.json)
+ * @param {Function} [opts.driftGateRunner] injectable gate runner (tests)
+ * @returns {Promise<{ok: boolean, id: string, actions?: string[], failures?: string[], entry?: object}>}
+ */
+export async function intakeArt(opts = {}) {
+  const {
+    src,
+    id,
+    group,
+    title,
+    note,
+    root = path.join(repoRoot(), "game-client/assets/art"),
+    manifestPath = path.join(root, "art-manifest.json"),
+    driftGateRunner,
+  } = opts;
+
+  const actions = [];
+  const fail = (...failures) => ({ ok: false, id, actions, failures });
+
+  // --- 1. Validate — every failure below must abort with ZERO side effects.
+
+  if (!src) return fail("intake-art: 'src' is required");
+  if (!id) return fail("intake-art: 'id' is required");
+  if (!group) return fail("intake-art: 'group' is required");
+
+  if (!existsSync(src)) return fail(`source file not found: ${src}`);
+
+  if (!id.startsWith("art:")) {
+    return fail(`id "${id}" must start with "art:"`);
+  }
+
+  const groupResult = readGroupIds();
+  if (groupResult.error) return fail(groupResult.error);
+  if (!groupResult.groupIds.has(group)) {
+    return fail(`group "${group}" is not declared in art-groups.json`);
+  }
+
+  if (typeof title !== "string" || title.trim() === "") {
+    return fail("title is required and must be non-empty");
+  }
+  if (typeof note !== "string" || note.trim() === "") {
+    return fail(
+      "note is required and must be non-empty — provenance is mandatory (art carries no upstream licence)",
+    );
+  }
+
+  const destDir = path.join(root, "concept");
+  const destPath = path.join(destDir, path.basename(src));
+
+  // A pre-existing file at the destination with DIFFERENT bytes is a
+  // conflicting intake — abort rather than silently overwrite it. Identical
+  // bytes are tolerated (idempotent re-intake attempt).
+  if (existsSync(destPath)) {
+    let same = false;
+    try {
+      same = readFileSync(src).equals(readFileSync(destPath));
+    } catch (err) {
+      return fail(`destination read: ${err.message}`);
+    }
+    if (!same) {
+      return fail(`destination already has a different file: ${destPath}`);
+    }
+  }
+
+  actions.push(`validate: ${id} (${group}) OK`);
+
+  // --- 2. Snapshot — read the manifest's exact bytes before touching
+  //    anything, so a missing/malformed manifest aborts with zero side
+  //    effects, and rollback can restore byte-for-byte.
+
+  let backupText;
+  let manifestObj;
+  try {
+    backupText = readFileSync(manifestPath, "utf8");
+    manifestObj = readManifest(manifestPath);
+  } catch (err) {
+    return fail(`manifest read: ${err.message}`);
+  }
+  manifestObj.entries ??= {};
+  if (manifestObj.entries[id]) {
+    return fail(`id "${id}" already exists in art-manifest.json`);
+  }
+
+  const entry = {
+    group,
+    title,
+    file: `concept/${path.basename(src)}`,
+    note,
+  };
+  manifestObj.entries[id] = entry;
+
+  // Snapshot any file already at destPath (identical bytes, per the check
+  // above) so rollback restores it rather than deleting a pre-existing file.
+  const destExisted = existsSync(destPath);
+  const destBackup = destExisted ? readFileSync(destPath) : null;
+
+  function rollback() {
+    writeManifestRaw(manifestPath, backupText);
+    if (destExisted) writeFileSync(destPath, destBackup);
+    else rmSync(destPath, { force: true });
+  }
+
+  // --- 3. Copy the PNG into <root>/concept/. Inside the rollback net: an
+  //    overwrite copy that throws mid-write could truncate a pre-existing
+  //    dest, so any failure here must roll back too.
+  try {
+    mkdirSync(destDir, { recursive: true });
+    copyFileSync(src, destPath);
+  } catch (err) {
+    rollback();
+    return fail(`copy: ${err.message}`);
+  }
+  actions.push(`copy: ${src} -> ${destPath}`);
+
+  // --- 4. Write-entry (atomic tmp+rename).
+  try {
+    writeManifestAtomic(manifestPath, manifestObj);
+  } catch (err) {
+    rollback();
+    return fail(`manifest write: ${err.message}`);
+  }
+  actions.push(`manifest: wrote entries["${id}"]`);
+
+  // --- 5. Gate.
+  const gate = driftGateRunner ?? defaultDriftGateRunner;
+  let gateResult;
+  try {
+    gateResult = await gate({ root, manifestPath, id });
+  } catch (err) {
+    gateResult = { ok: false, error: err.message };
+  }
+  if (!gateResult || !gateResult.ok) {
+    // --- 6. Rollback on gate failure.
+    rollback();
+    return fail("drift-gate: failed (rolled back)");
+  }
+  actions.push("drift-gate: passed");
+
+  return { ok: true, id, actions, entry };
+}
+
+/**
+ * Minimal argv parser: `--flag value` only (no JSON-valued flags needed
+ * here). Exported for testing parity with intake2d's parseArgs.
+ * @param {string[]} argv
+ */
+export function parseArgs(argv) {
+  const flags = {};
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg.startsWith("--")) {
+      const body = arg.slice(2);
+      const eq = body.indexOf("=");
+      if (eq !== -1) {
+        flags[body.slice(0, eq)] = body.slice(eq + 1);
+        continue;
+      }
+      const value = argv[i + 1];
+      if (value === undefined || value.startsWith("--")) {
+        throw new Error(`missing value for --${body}`);
+      }
+      flags[body] = value;
+      i++;
+    }
+  }
+  return flags;
+}
+
+function printUsageAndExit() {
+  console.error(
+    "usage: node intake-art.mjs --src <png> --id <art:key> --group <group-id> " +
+      "--title <text> --note <provenance> [--root <dir>] [--manifest-path <path>]",
+  );
+  process.exit(1);
+}
+
+async function main() {
+  const flags = parseArgs(process.argv.slice(2));
+  if (!flags.src || !flags.id || !flags.group || !flags.title || !flags.note) {
+    printUsageAndExit();
+  }
+
+  const result = await intakeArt({
+    src: path.resolve(flags.src),
+    id: flags.id,
+    group: flags.group,
+    title: flags.title,
+    note: flags.note,
+    root: flags.root ? path.resolve(flags.root) : undefined,
+    manifestPath: flags["manifest-path"]
+      ? path.resolve(flags["manifest-path"])
+      : undefined,
+  });
+
+  for (const action of result.actions ?? []) console.log(action);
+  if (result.entry && !result.ok) {
+    console.log(`entry: ${JSON.stringify(result.entry, null, 2)}`);
+  }
+  for (const failure of result.failures ?? []) console.log(`FAIL ${failure}`);
+
+  process.exit(result.ok ? 0 : 1);
+}
+
+// Only run the CLI when executed directly — not when imported by tests.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((err) => {
+    console.error(`intake-art.mjs: ERROR: ${err.message}`);
+    process.exit(1);
+  });
+}
