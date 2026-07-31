@@ -238,6 +238,25 @@ function readPngSize(fsPath) {
   }
 }
 
+// A Git LFS pointer is a small text file that begins with this exact line. A
+// fresh clone without `git lfs pull` has pointers where the images should be —
+// they are non-empty regular files, so a size check alone lets them through.
+const LFS_MAGIC = "version https://git-lfs.github.com/spec/v1";
+
+function isLfsPointer(fsPath) {
+  let fd;
+  try {
+    fd = openSync(fsPath, "r");
+    const buf = Buffer.alloc(LFS_MAGIC.length);
+    const n = readSync(fd, buf, 0, LFS_MAGIC.length, 0);
+    return n === LFS_MAGIC.length && buf.toString("utf8") === LFS_MAGIC;
+  } catch {
+    return false;
+  } finally {
+    if (fd !== undefined) closeSync(fd);
+  }
+}
+
 // (L) Concept-art entries. Curated reference material with NO renderer, so the
 // render-spec path in validateEntry() does not apply — see
 // docs/superpowers/specs/2026-08-01-art-forge-foundation-design.md §4.
@@ -285,6 +304,12 @@ function validateArtEntry(id, entry, source, groupIds, failures) {
   if (!st.isFile() || st.size === 0) {
     failures.push(
       `entry "${id}": file is empty or not a regular file — ${file}`,
+    );
+    return;
+  }
+  if (isLfsPointer(fsPath)) {
+    failures.push(
+      `entry "${id}": file is a Git LFS pointer, not image payload — run \`git lfs pull\` (${file})`,
     );
   }
 }

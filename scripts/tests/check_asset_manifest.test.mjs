@@ -161,3 +161,19 @@ test("absolute or res:// file path fails", () => {
   assert.equal(r.code, 1);
   assert.match(r.stdout, /must be a relative path/);
 });
+
+test("a Git LFS pointer stub fails instead of passing as an image", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok() },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  // Overwrite the real PNG with what a fresh clone without `git lfs pull` has.
+  writeFileSync(
+    join(f.artRoot, "concept/a.png"),
+    "version https://git-lfs.github.com/spec/v1\noid sha256:deadbeef\nsize 12345\n",
+  );
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /Git LFS pointer/);
+});
