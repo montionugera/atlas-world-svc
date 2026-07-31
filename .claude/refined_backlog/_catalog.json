@@ -252,5 +252,14 @@
     "status": "claimed",
     "release_version": null,
     "claimed_at": "2026-07-31T01:38:23.237969+00:00"
+  },
+  {
+    "id": "F-023",
+    "title": "Boss target rotation / aggro \u2014 bosses structurally cannot stop focus-firing",
+    "from_idea": "I-035",
+    "created_at": "2026-07-31T11:56:49.775135+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
