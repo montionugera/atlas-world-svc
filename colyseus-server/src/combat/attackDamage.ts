@@ -30,12 +30,38 @@ export function isWeaponMagicalPrimary(weapon: WeaponConfig | undefined): boolea
   return weapon.mAtk > weapon.pAtk
 }
 
-/** Skill damage: physical skills scale with total P.Atk; magical with total M.Atk. */
+/** Outcome of resolving a skill's damage: either a usable number with its channel, or a refusal. */
+export type SkillDamageResolution =
+  | { ok: true; damage: number; damageType: 'physical' | 'magical' }
+  | { ok: false; reason: 'no-magical-offence' | 'no-physical-offence' }
+
+/**
+ * Skill damage: physical skills scale with total P.Atk, magical with total M.Atk.
+ *
+ * Returns a resolution rather than a bare number so a zeroed offence stat cannot
+ * masquerade as "0 damage". `derivedStats` computes mAtk as `atk * 2 * (1 - rho)`
+ * and `weaponOffence` sets `rho = pAtk / (pAtk + mAtk)`, so a pure-physical blade
+ * yields mAtk of exactly 0 — a blade user casting a magical skill would otherwise
+ * deal no damage, silently.
+ *
+ * The caller decides the policy (refuse the cast, warn, substitute) — this
+ * function only refuses to report a misleading number. The channel travels with
+ * the damage so a skill's stat and its damage type cannot drift apart (I-037).
+ *
+ * Guarded on the stat being zero rather than on weapon class: the zero IS the
+ * failure, and testing it directly invents no weapon-class rule, so a hybrid
+ * weapon with small non-zero mAtk still works.
+ */
 export function getSkillDamageForKind(
   player: Player,
   kind: typeof ATTACK_KIND.SKILL_PHYSICAL | typeof ATTACK_KIND.SKILL_MAGICAL
-): number {
-  return kind === ATTACK_KIND.SKILL_MAGICAL ? player.mAtk : player.pAtk
+): SkillDamageResolution {
+  if (kind === ATTACK_KIND.SKILL_MAGICAL) {
+    if (player.mAtk <= 0) return { ok: false, reason: 'no-magical-offence' }
+    return { ok: true, damage: player.mAtk, damageType: 'magical' }
+  }
+  if (player.pAtk <= 0) return { ok: false, reason: 'no-physical-offence' }
+  return { ok: true, damage: player.pAtk, damageType: 'physical' }
 }
 
 export type WeaponBasicProjectileParams = {
