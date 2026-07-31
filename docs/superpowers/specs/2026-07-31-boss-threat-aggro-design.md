@@ -4,7 +4,7 @@ lane: D
 release: "1.6"
 date: 2026-07-31
 ticket: I-035
-status: "APPROVED — design settled 2026-07-31; ready to refine into F-NNN"
+status: "IMPLEMENTED in F-023 — release 1.6"
 supersedes: "docs/superpowers/specs/2026-07-31-lane-D-boss-aggro-decision.md (acceptance signal)"
 ---
 
