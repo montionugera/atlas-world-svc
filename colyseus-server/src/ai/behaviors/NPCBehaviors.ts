@@ -23,21 +23,21 @@ export class NPCFollowBehavior implements AgentBehavior {
     if (!npc.ownerId) return false
 
     // We expect the npc's owner to be nearby, or at least in the game
-    // The environment nearestPlayer might not be the owner, so we could just use the target player if available
+    // The environment preferredTarget might not be the owner, so we could just use the target player if available
     // For simplicity, we just check if distance to any player is far? No, npc must follow its owner.
-    // Env only gives nearestPlayer, but we need the specific owner.
+    // Env only gives preferredTarget, but we need the specific owner.
     // Let's assume the npc has a reference or we search for the owner in env or agent state.
 
     // As a shortcut, if agent has ownerId, we need to know the owner's position.
     // since env doesn't give us all players, we may need to calculate it. But wait, `AgentEnvironment` doesn't have `allPlayers`.
-    // For now, if nearestPlayer is the owner:
-    if (env.nearestPlayer && env.nearestPlayer.id === npc.ownerId) {
-      const dist = env.distanceToNearestPlayer ?? Infinity
+    // For now, if preferredTarget is the owner:
+    if (env.preferredTarget && env.preferredTarget.id === npc.ownerId) {
+      const dist = env.distanceToPreferredTarget ?? Infinity
       return dist > this.followDistance
     }
 
     // If owner is not the nearest player, we still want to follow.
-    // In our AIWorldInterface, `nearestPlayer` is just the geometrically nearest.
+    // In our AIWorldInterface, `preferredTarget` is just the geometrically nearest.
     // To make this work optimally without changing AIWorldInterface, we will assume if nearest is NOT owner, we should probably still follow owner.
     // For now, let's rely on GameState being accessible or just looking for the player in the world.
     // Wait, AIWorldInterface is where environment is built. Maybe we can pass the owner to env?
@@ -49,11 +49,11 @@ export class NPCFollowBehavior implements AgentBehavior {
     const npc = agent as unknown as NPC
     let velocity = { x: 0, y: 0 }
 
-    // We need owner position. Let's assume env has owner from a future PR or we just use nearestPlayer if it's owner.
-    // If we only have nearestPlayer and it's the owner:
+    // We need owner position. Let's assume env has owner from a future PR or we just use preferredTarget if it's owner.
+    // If we only have preferredTarget and it's the owner:
     const owner =
       ((env as any).ownerPlayer as Player) ||
-      (env.nearestPlayer?.id === npc.ownerId ? env.nearestPlayer : null)
+      (env.preferredTarget?.id === npc.ownerId ? env.preferredTarget : null)
 
     if (owner) {
       const dx = owner.x - agent.x

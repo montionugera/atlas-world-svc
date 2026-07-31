@@ -8,8 +8,8 @@ describe('Mob maxMoveSpeed caps desired velocity', () => {
     const chaseBehavior = new ChaseBehavior()
 
     const env = {
-      nearestPlayer: { id: 'p1', x: 100, y: 0, radius: 1.3 } as any,
-      distanceToNearestPlayer: 100,
+      preferredTarget: { id: 'p1', x: 100, y: 0, radius: 1.3 } as any,
+      distanceToPreferredTarget: 100,
       nearBoundary: false,
       worldBounds: { width: 400, height: 300 },
     }
@@ -31,8 +31,8 @@ describe('Mob maxMoveSpeed caps desired velocity', () => {
     mob['wanderTargetY'] = 0
 
     const env = {
-      nearestPlayer: null,
-      distanceToNearestPlayer: Infinity,
+      preferredTarget: null,
+      distanceToPreferredTarget: Infinity,
       nearBoundary: false,
       worldBounds: { width: 400, height: 300 },
     }

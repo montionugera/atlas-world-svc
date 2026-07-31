@@ -34,8 +34,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.x = 15 // Within 30px threshold
 
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearBoundary: true,
         nearestMob: null,
         distanceToNearestMob: Infinity,
@@ -53,8 +53,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.x = 385 // Within 30px of right boundary (400-30=370)
 
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearBoundary: true,
         nearestMob: null,
         distanceToNearestMob: Infinity,
@@ -72,8 +72,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.y = 15 // Within 30px of top boundary
 
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearBoundary: true,
         nearestMob: null,
         distanceToNearestMob: Infinity,
@@ -91,8 +91,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.y = 285 // Within 30px of bottom boundary (300-30=270)
 
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearBoundary: true,
         nearestMob: null,
         distanceToNearestMob: Infinity,
@@ -111,8 +111,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.y = 150
 
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearestMob: null,
         distanceToNearestMob: Infinity,
         nearBoundary: false,
@@ -132,8 +132,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.x = 10 // Very close to left boundary
       const behavior = new AvoidBoundaryBehavior()
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearBoundary: true,
         nearestMob: null,
         distanceToNearestMob: Infinity,
@@ -153,8 +153,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.x = 390 // Very close to right boundary
       const behavior = new AvoidBoundaryBehavior()
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearBoundary: true,
         nearestMob: null,
         distanceToNearestMob: Infinity,
@@ -175,8 +175,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.y = 10 // Very close to top boundary
       const behavior = new AvoidBoundaryBehavior()
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearBoundary: true,
         nearestMob: null,
         distanceToNearestMob: Infinity,
@@ -197,8 +197,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.y = 290 // Very close to bottom boundary
       const behavior = new AvoidBoundaryBehavior()
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearBoundary: true,
         nearestMob: null,
         distanceToNearestMob: Infinity,
@@ -219,8 +219,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.y = 5 // Very close to top boundary
       const behavior = new AvoidBoundaryBehavior()
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearBoundary: true,
         nearestMob: null,
         distanceToNearestMob: Infinity,
@@ -302,8 +302,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.x = 0 // Exactly at left boundary
       const behavior = new AvoidBoundaryBehavior()
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearBoundary: true,
         nearestMob: null,
         distanceToNearestMob: Infinity,
@@ -323,8 +323,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.y = 150
       const behavior = new AvoidBoundaryBehavior()
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearBoundary: true, // Force behavior to run
         nearestMob: null,
         distanceToNearestMob: Infinity,
@@ -345,8 +345,8 @@ describe('Boundary Avoidance Tests', () => {
       testMob.y = 5
       const behavior = new AvoidBoundaryBehavior()
       const env = {
-        nearestPlayer: null,
-        distanceToNearestPlayer: Infinity,
+        preferredTarget: null,
+        distanceToPreferredTarget: Infinity,
         nearBoundary: true,
         nearestMob: null,
         distanceToNearestMob: Infinity,

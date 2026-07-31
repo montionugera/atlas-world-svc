@@ -194,8 +194,8 @@ export class AIWorldInterface {
     agent: IAgent,
     perceptionRange: number
   ): {
-    nearestPlayer: Player | null
-    distanceToNearestPlayer: number
+    preferredTarget: Player | null
+    distanceToPreferredTarget: number
     nearestMob: IAgent | null
     distanceToNearestMob: number
     nearBoundary: boolean
@@ -215,8 +215,8 @@ export class AIWorldInterface {
       (this.gameState.players.has(nearestEnemy.id) || this.gameState.npcs.has(nearestEnemy.id))
     const isMobEnemy = nearestEnemy && this.gameState.mobs.has(nearestEnemy.id)
 
-    const nearestPlayer = inRangeEnemy && isPlayerOrNpc ? (nearestEnemy as Player) : null
-    const distanceToNearestPlayer = nearestPlayer ? distanceEnemy : Infinity
+    const preferredTarget = inRangeEnemy && isPlayerOrNpc ? (nearestEnemy as Player) : null
+    const distanceToPreferredTarget = preferredTarget ? distanceEnemy : Infinity
 
     const nearestMobRaw =
       inRangeEnemy && isMobEnemy ? nearestEnemy : this.getNearestMob(position, agent.id)
@@ -236,8 +236,8 @@ export class AIWorldInterface {
     }
 
     return {
-      nearestPlayer,
-      distanceToNearestPlayer,
+      preferredTarget,
+      distanceToPreferredTarget,
       nearestMob,
       distanceToNearestMob,
       nearBoundary,
