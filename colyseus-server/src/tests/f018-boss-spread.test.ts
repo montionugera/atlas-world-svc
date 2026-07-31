@@ -1,49 +1,38 @@
 /**
- * F-018 Phase 5 / Task 5.2 — the boss test: one boss, n players, even spread.
+ * F-018 Phase 5 / Task 5.2, re-gated by F-023.
  *
- * The boss branch of the ladder solver divides a boss's danger by the party size:
+ * ── HISTORY ──────────────────────────────────────────────────────────────────
+ * This file originally measured whether nearest-opposite-team targeting plus
+ * knockback was enough to make a boss rotate targets. It was not: 21 of 24 swings
+ * landed on ONE player (87.5% of damage), in every geometry tried. The finding was
+ * pinned, and an even-spread assertion was parked as `it.failing` so it would turn
+ * red the moment target rotation started working.
  *
- *     rankDanger = 100 * aspd / (swings * (shape === 'boss' ? n : 1))
+ * ── WHY THAT ASSERTION IS GONE ───────────────────────────────────────────────
+ * F-023 replaced distance-based selection with a THREAT TABLE. A threat system
+ * does not spread a boss's damage — it CONCENTRATES it, deliberately, on whoever
+ * holds aggro. That is what threat is for. So the even-spread bound was never the
+ * right acceptance signal for this design: passing it would have meant the threat
+ * system was NOT working.
  *
- * i.e. `swings` still means "swings to kill ONE player", but the boss's damage is
- * assumed to be SHARED across the party, so one player's share is 1/n of it
- * (index.html rankDanger(), spec §8). R = R_solo * n² leans on the same reading.
+ * Two further reasons it could not have worked as written:
+ *   - Players in this test never attack (`input.attack = false`, so wind-up does
+ *     not deflect incoming melee). Damage-threat is therefore identically zero for
+ *     all four, the table stays empty, and selection falls back to distance —
+ *     leaving the measurement unchanged. Gates that need threat seed it explicitly.
+ *   - The model's `÷n` even-spread branch is the NO-HEALER reading
+ *     (tools/combat-lab/CHECKLIST.md:291-295). Under the trinity roles this game
+ *     targets, CHECKLIST.md:129's sustain equation governs instead.
  *
- * If a boss instead parked on one player, that player would die in `swings` swings
- * while the model priced the fight as though the pain were spread n ways — S/SS/SSS
- * would be lethal at 1/8, 1/20 and 1/50 of their designed pressure per victim.
+ * The even-spread assertion is therefore DELETED rather than inverted, and replaced
+ * by the mechanism gates below. See
+ * docs/superpowers/specs/2026-07-31-boss-threat-aggro-design.md.
  *
- * There is no threat/aggro system (spec §12 lists aggro as unbuilt), so the only
- * mechanism that can rotate a single attacker's target is emergent:
- * nearest-opposite-team plus knockback pushing the current victim out of reach.
- * This test measures whether that is enough.
- *
- * ── RESULT: IT IS NOT. THE BOSS FOCUS-FIRES. ─────────────────────────────────
- *
- * Measured over 60 s with four players all starting inside the boss's reach:
- * **21 of 24 swings land on ONE player, 87.5% of the damage**; the other three take
- * one swing each, in the first moments before the AI settles. The victim's identity
- * changes with the geometry (ring 5 / 6 / 6.8 pick p2, p2, p3) but the concentration
- * does not — it is 21/24 in every configuration tried, so this is structural rather
- * than a seed artefact.
- *
- * The mechanism is self-reinforcing: nearest-opposite-team picks a victim, knockback
- * pushes that victim away, and the boss then CHASES the victim it just hit — which
- * keeps that victim nearest. Nothing in the loop ever hands the target to anyone else.
- *
- * What it costs the model: the boss branch prices a rank as though its damage were
- * split n ways, so at S (n=8), SS (n=20) and SSS (n=50) the real victim absorbs 8x,
- * 20x and 50x the intended pressure and dies in `swings` swings — 7, 6 and 5
- * respectively — while the party's other members are untouched. No arithmetic in the
- * lab can fix this; it needs the aggro/threat system the foundation spec describes,
- * or bosses need multi-target attacks. That is a design decision and is not taken
- * here.
- *
- * The even-spread assertion is therefore marked `it.failing`: Jest inverts it, so it
- * passes while the boss focus-fires and turns RED the moment target rotation starts
- * working. The bound is untouched — still the spec's (1+eps)/n. Alongside it, a plain
- * `it` PINS the concentration that was measured, so the finding is machine-checked
- * and a harness that stopped producing damage could not be mistaken for it.
+ * ── WHAT IS STILL UNVERIFIED ─────────────────────────────────────────────────
+ * Healer, mana and healing do not exist yet, so the boss branch of the balance
+ * model remains unverified against the simulation. These gates prove the MECHANISM
+ * is correct. They do NOT prove the NUMBERS are. Do not read a green run here as a
+ * validated boss ladder.
  */
 import {
   addPlayerAt,
@@ -60,6 +49,7 @@ import {
 } from './f018-harness'
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
+import { THREAT_CONFIG } from '../config/combat/threat'
 
 const ROOM_ID = 'f018-boss'
 const PARTY = 4
@@ -71,9 +61,6 @@ const TICKS = 1200
  * leaves target choice entirely to the AI rather than to who happens to be close.
  */
 const RING = 6
-
-/** Same bound and the same reasoning as the pack test: 37.5% for a party of four. */
-const EPS = 0.5
 
 describe('F-018 boss: how one boss distributes its damage across the party', () => {
   let env: TestEnv
@@ -134,7 +121,7 @@ describe('F-018 boss: how one boss distributes its damage across the party', () 
     console.log(
       `[F-018 boss] ${swings.length} swings over ${((TICKS * TICK_MS) / 1000).toFixed(0)}s — ` +
         `worst share ${(ledger.worstShare().share * 100).toFixed(1)}% on ${ledger.worstShare().id} ` +
-        `(bound ${(((1 + EPS) / PARTY) * 100).toFixed(1)}%) — ${ledger.report()}`
+        `— ${ledger.report()}`
     )
     console.log(
       `[F-018 boss] swings per victim: ${[...perTarget.entries()].map(([t, n]) => `${t}x${n}`).join(' ')}`
@@ -142,7 +129,22 @@ describe('F-018 boss: how one boss distributes its damage across the party', () 
     return { ledger, perTarget }
   }
 
-  it('PINNED FINDING: the boss parks on one victim instead of rotating', async () => {
+  /**
+   * The id F-023's selection layer currently picks for the boss.
+   *
+   * Read from the AI environment rather than from `boss.currentAttackTarget`,
+   * because that schema field is only populated while AttackBehavior is the active
+   * behaviour — it is `''` on every tick the boss spends chasing. Selection is what
+   * these gates are about, so they assert on selection.
+   */
+  function selectedTargetId(): string | undefined {
+    return env.state.worldInterface.buildAgentEnvironment(boss, 50).preferredTarget?.id
+  }
+
+  // Concentration is now INTENTIONAL: threat picks a victim and hysteresis keeps it
+  // there. This test is retained to prove the boss still commits to a target rather
+  // than dithering — the failure mode a badly-tuned switchMargin would produce.
+  it('the boss commits to one victim rather than dithering', async () => {
     const { ledger, perTarget } = await fight()
 
     // Not vacuous: the boss really swung, damage really landed, and every player was
@@ -155,25 +157,100 @@ describe('F-018 boss: how one boss distributes its damage across the party', () 
       expect(ledger.taken.get(p.id) ?? 0).toBeGreaterThan(0)
     }
 
-    // The finding itself, pinned: one victim takes the overwhelming majority of both
-    // the swings and the damage. Both halves are asserted because a swing count alone
-    // would not show how lopsided the damage is.
     const swingsOnWorst = perTarget.get(ledger.worstShare().id) ?? 0
     expect(swingsOnWorst / swings.length).toBeGreaterThan(0.8)
     expect(ledger.worstShare().share).toBeGreaterThan(0.8)
-    // …and the other three are left effectively untouched, one opening swing each.
     const others = [...perTarget.entries()].filter(([id]) => id !== ledger.worstShare().id)
     expect(others).toHaveLength(PARTY - 1)
     for (const [, n] of others) expect(n).toBeLessThanOrEqual(2)
   })
 
-  // Jest inverts this: it passes while the boss focus-fires, and goes RED once target
-  // rotation works. The bound is the spec's, unmodified — see the header.
-  it.failing(
-    `PINNED DIVERGENCE — the boss does NOT spread its damage within (1+${EPS})/${PARTY}`,
-    async () => {
-      const { ledger } = await fight()
-      expect(ledger.worstShare().share).toBeLessThanOrEqual((1 + EPS) / PARTY)
+  it('GATE 1: threat decides — the threatening player is targeted over the nearer one', async () => {
+    // Nothing else can generate threat here (players never attack), so this seeded
+    // entry is the only one in the table — and it must beat pure proximity.
+    const threatening = players[2]
+    env.state.threatRegistry
+      .forAgent({ agentId: boss.id })
+      .add({ entityId: threatening.id, amount: 1e6, now: performance.now() })
+
+    const { ledger } = await fight()
+    expect(ledger.worstShare().id).toBe(threatening.id)
+  })
+
+  it('GATE 2: taunt transfers the target and holds it', async () => {
+    const tank = players[1]
+    const dps = players[3]
+    const table = env.state.threatRegistry.forAgent({ agentId: boss.id })
+    table.add({ entityId: dps.id, amount: 10_000, now: performance.now() })
+
+    env.battleManager.applyTaunt({ tauntingEntityId: tank.id, targetAgentId: boss.id })
+
+    for (let t = 0; t < 5; t++) await tickRoom(env, TICK_MS)
+
+    expect(table.tauntedTarget({ now: performance.now() })).toBe(tank.id)
+    expect(selectedTargetId()).toBe(tank.id)
+  })
+
+  it('GATE 3: the lock pins the target even against higher threat, then releases it', async () => {
+    const tank = players[1]
+    const dps = players[3]
+    const table = env.state.threatRegistry.forAgent({ agentId: boss.id })
+    table.add({ entityId: dps.id, amount: 1000, now: performance.now() })
+
+    env.battleManager.applyTaunt({ tauntingEntityId: tank.id, targetAgentId: boss.id })
+    for (let t = 0; t < 5; t++) await tickRoom(env, TICK_MS)
+    expect(selectedTargetId()).toBe(tank.id)
+
+    // Overwhelm the tank's threat WHILE the lock is still up. Selection must ignore
+    // it -- this is what distinguishes the lock from mere threat ordering. (Without
+    // the lock, taunt would only ever be a 1.5x nudge and a DPS spike would peel the
+    // boss straight off the tank.)
+    table.add({ entityId: dps.id, amount: 1e9, now: performance.now() })
+    await tickRoom(env, TICK_MS)
+    expect(table.isTauntLocked({ now: performance.now() })).toBe(true)
+    expect(selectedTargetId()).toBe(tank.id)
+
+    // Once the lock lapses, raw threat governs again and the dps takes it.
+    const ticksPastLock = Math.ceil(THREAT_CONFIG.tauntLockMs / TICK_MS) + 20
+    for (let t = 0; t < ticksPastLock; t++) await tickRoom(env, TICK_MS)
+
+    expect(table.tauntedTarget({ now: performance.now() })).toBeNull()
+    expect(selectedTargetId()).toBe(dps.id)
+  })
+
+  it('GATE 4: a zero-threat party still falls back to nearest', async () => {
+    // No threat is seeded at all. This pins pre-F-023 behaviour: the boss must
+    // still pick SOMEBODY and still land damage, exactly as it did before.
+    expect(env.state.threatRegistry.peek({ agentId: boss.id })).toBeNull()
+
+    const { ledger, perTarget } = await fight()
+    expect(swings.length).toBeGreaterThan(0)
+    expect(ledger.total).toBeGreaterThan(0)
+    expect(perTarget.size).toBe(PARTY)
+  })
+
+  it('GATE 5: threat inside switchMargin does not flip the target tick-to-tick', async () => {
+    const now = performance.now()
+    const table = env.state.threatRegistry.forAgent({ agentId: boss.id })
+    table.add({ entityId: players[0].id, amount: 1000, now })
+    // Deliberately just inside the margin — must NOT steal the target back and forth.
+    table.add({
+      entityId: players[1].id,
+      amount: 1000 * THREAT_CONFIG.switchMargin - 1,
+      now,
+    })
+
+    for (let t = 0; t < 5; t++) await tickRoom(env, TICK_MS)
+    const settled = selectedTargetId()
+    expect(settled).toBeDefined()
+
+    const seen = new Set<string>()
+    for (let t = 0; t < 40; t++) {
+      await tickRoom(env, TICK_MS)
+      seen.add(selectedTargetId() ?? '')
     }
-  )
+
+    expect(seen.size).toBe(1)
+    expect(seen.has(settled!)).toBe(true)
+  })
 })
