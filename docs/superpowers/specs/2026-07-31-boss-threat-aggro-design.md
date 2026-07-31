@@ -156,15 +156,30 @@ Five new gates:
 
 | # | gate |
 | --- | --- |
-| 1 | Threat decides — the higher-damage player is targeted over the nearer one |
+| 1 | Threat decides — the threatening player is targeted over the nearer one |
 | 2 | Taunt transfers the target within one decision tick and holds for the lock |
-| 3 | After the lock expires and the taunter disengages, target returns to top threat |
+| 3 | The lock pins the target even against far higher threat, then releases it |
 | 4 | Zero-threat party falls back to nearest — pins today's behaviour against regression |
 | 5 | Threat inside `switchMargin` does not flip the target tick-to-tick |
 
 Gate 2 requires taunt to be fireable, so v1 ships taunt as a **threat operation** plus a
 `DebugCommandHandler` command. Whether any class *has* a taunt ability is content, not
 this system.
+
+<div class="callout warn">
+
+**Implementation note (2026-07-31).** The gates assert on the AI environment's
+`preferredTarget`, **not** on `Mob.currentAttackTarget`. That schema field is only
+populated while `AttackBehavior` is the active behaviour and is `''` on every tick the
+boss spends chasing, so asserting on it produced false failures. Selection is what these
+gates are about, so they read selection.
+
+Gate 3 was also strengthened during implementation: because `taunt()` sets threat to
+`1.5x` the current maximum, the taunter legitimately still leads *after* the lock lapses.
+The gate therefore spikes a rival's threat **while the lock is up** — proving the lock,
+not mere threat ordering, is what pins the target.
+
+</div>
 
 ## 7. Explicitly out of scope
 
