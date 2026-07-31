@@ -1,0 +1,467 @@
+#!/usr/bin/env node
+/**
+ * charsheet.mjs — txt2img baseline generator (ComfyUI / Z-Image Turbo).
+ *
+ * This file is BOTH a CLI and the shared core for the rest of `generate/`:
+ * `i2i.mjs` imports the config loader, prompt builder and ComfyUI transport
+ * from here and swaps the empty latent for a silhouette-encoded one;
+ * `batch-matrix.mjs` imports `i2i.mjs`. Keeping the chain
+ * charsheet -> i2i -> batch-matrix avoids a fourth shared module while
+ * guaranteeing all three take the exact same code path.
+ *
+ * NOT RUNNABLE IN CI. Needs a live GPU on mont-pc plus an SSH tunnel:
+ *   ssh -f -N -L 8188:127.0.0.1:8188 -o ServerAliveInterval=30 mont@100.66.190.100
+ *
+ * Usage:
+ *   node generate/charsheet.mjs --race human --job swordsman --seed 12345
+ *
+ * Flags: --seed N  --width N  --height N  --timeout SECONDS (default 600)
+ *        --host H  --direct  --dry-run (print the graph, queue nothing)
+ */
+
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+export const FORGE_DIR = path.resolve(HERE, "..");
+
+/* ------------------------------------------------------------------ *
+ * Config — every tunable lives in forge.config.json / prompts/*.json. *
+ * Nothing in this file may restate a value that lives in those files. *
+ * ------------------------------------------------------------------ */
+
+function readJson(file) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch (err) {
+    throw new Error(`could not read ${file}: ${err.message}`);
+  }
+}
+
+/** Load forge.config.json + prompts/*.json as one frozen bundle. */
+export function loadForge(forgeDir = FORGE_DIR) {
+  return {
+    config: readJson(path.join(forgeDir, "forge.config.json")),
+    styleLaws: readJson(path.join(forgeDir, "prompts", "style-laws.json")),
+    raceIdentity: readJson(
+      path.join(forgeDir, "prompts", "race-identity.json"),
+    ),
+    outDir: path.join(forgeDir, "out"),
+  };
+}
+
+/* ------------------------------- CLI ------------------------------- */
+
+/** Minimal `--flag value` / `--flag=value` / `--bool` parser. */
+export function parseArgs(argv = process.argv.slice(2)) {
+  const out = {};
+  for (let i = 0; i < argv.length; i++) {
+    const tok = argv[i];
+    if (!tok.startsWith("--")) continue;
+    const eq = tok.indexOf("=");
+    if (eq !== -1) {
+      out[tok.slice(2, eq)] = tok.slice(eq + 1);
+    } else if (argv[i + 1] !== undefined && !argv[i + 1].startsWith("--")) {
+      out[tok.slice(2)] = argv[++i];
+    } else {
+      out[tok.slice(2)] = true;
+    }
+  }
+  return out;
+}
+
+export function requireCell(args, forge) {
+  const { raceAxis, jobAxis } = forge.config.muscleGradient;
+  const race = args.race;
+  const job = args.job;
+  if (!race || !job) {
+    throw new Error("usage: --race <race> --job <job> [--seed N]");
+  }
+  if (!raceAxis.includes(race)) {
+    throw new Error(
+      `unknown race "${race}" — expected one of ${raceAxis.join(", ")}`,
+    );
+  }
+  if (!jobAxis.includes(job)) {
+    throw new Error(
+      `unknown job "${job}" — expected one of ${jobAxis.join(", ")}`,
+    );
+  }
+  // race-identity.json is locked canon (README + content/story/canon.md §5).
+  // A race on the axis with no entry there would silently generate without its
+  // identity markers, so refuse rather than emit off-canon art.
+  if (!forge.raceIdentity[race]) {
+    throw new Error(
+      `race "${race}" is on muscleGradient.raceAxis but missing from prompts/race-identity.json`,
+    );
+  }
+  return { race, job };
+}
+
+/**
+ * Parse `--seed`. A bare `--seed` (parsed as `true`) or a non-numeric value
+ * must fail loudly: silently falling back to seed 1 or NaN would hand back an
+ * unreproducible render that the caller believes is pinned.
+ */
+export function parseSeed(value) {
+  if (value === undefined) return randomSeed();
+  const n = Number(value);
+  if (value === true || !Number.isFinite(n) || n < 0) {
+    throw new Error(`--seed must be a non-negative number, got "${value}"`);
+  }
+  return Math.floor(n);
+}
+
+/* --------------------------- Prompt build --------------------------- */
+
+/**
+ * Muscle score for one race x job cell.
+ *
+ * The race axis carries the canon score (prompts/race-identity.json). The job
+ * axis nudges it within `muscleGradient.scoreRange`, by at most half a step of
+ * the race axis — so a heavy job never pushes a light race past its neighbour.
+ * Every number here is derived from config; none is written down.
+ */
+export function muscleScore(race, job, forge) {
+  const { raceAxis, jobAxis, scoreRange } = forge.config.muscleGradient;
+  const [min, max] = scoreRange;
+  const base = forge.raceIdentity[race].muscle;
+  const raceStep = (max - min) / Math.max(1, raceAxis.length - 1);
+  const jobFactor = jobAxis.indexOf(job) / Math.max(1, jobAxis.length - 1);
+  const nudged = base + (jobFactor - 0.5) * raceStep;
+  return Math.min(max, Math.max(min, nudged));
+}
+
+/**
+ * Assemble the positive prompt for a cell.
+ *
+ * Z-Image Turbo is a distilled model sampled at cfg 1, where the negative
+ * branch is not evaluated at all. That is why style-laws.json phrases its
+ * negatives as counter-prompt words ("NOT 3D render", "no fur") — per
+ * README.md they belong INSIDE the positive prompt. They are also encoded
+ * into a real negative conditioning (see buildBaseGraph) so the graph stays
+ * correct if cfg is ever raised.
+ */
+export function buildPrompt({ race, job }, forge) {
+  const identity = forge.raceIdentity[race].identity;
+  const score = muscleScore(race, job, forge);
+  return [
+    ...forge.styleLaws.positive,
+    `full body character sheet, ${race} ${job}`,
+    ...identity,
+    `muscle mass ${score.toFixed(1)} out of 10`,
+    "single character, plain background, front view",
+    ...forge.styleLaws.negative,
+  ].join(", ");
+}
+
+export function negativePrompt(forge) {
+  return forge.styleLaws.negative.join(", ");
+}
+
+/* --------------------------- Graph build --------------------------- */
+
+/**
+ * Node ids and wiring for the Z-Image Turbo graph, discovered from this
+ * install's `GET /object_info` and the shipped `image_z_image_turbo`
+ * template (`GET /templates/image_z_image_turbo.json`) rather than guessed:
+ *
+ *   UNETLoader -> ModelSamplingAuraFlow -+
+ *   CLIPLoader -> CLIPTextEncode(pos) ---+-> KSampler -> VAEDecode -> SaveImage
+ *              -> CLIPTextEncode(neg) ---+       ^
+ *   VAELoader --------------------------+        |
+ *   <latent source>  ---------------------------+
+ *
+ * The latent source is the only difference between txt2img and img2img:
+ * charsheet uses EmptySD3LatentImage, i2i uses LoadImage -> VAEEncode.
+ */
+export const MODELS = Object.freeze({
+  unet: "z_image_turbo_bf16.safetensors",
+  clip: "qwen_3_4b.safetensors",
+  clipType: "lumina2",
+  vae: "ae.safetensors",
+});
+
+/** Sampler settings for Z-Image Turbo, from the shipped ComfyUI template. */
+export const SAMPLER_DEFAULTS = Object.freeze({
+  steps: 8,
+  cfg: 1,
+  samplerName: "res_multistep",
+  scheduler: "simple",
+  shift: 3,
+});
+
+export const NODE = Object.freeze({
+  UNET: "1",
+  MODEL_SAMPLING: "2",
+  CLIP: "3",
+  POS: "4",
+  NEG: "5",
+  VAE: "6",
+  LATENT: "7",
+  KSAMPLER: "8",
+  DECODE: "9",
+  SAVE: "10",
+  LOAD_IMAGE: "11",
+  ENCODE: "12",
+});
+
+/**
+ * Build the API-format prompt graph shared by txt2img and img2img.
+ * `latentSource` is [nodeId, outputSlot]; extra nodes producing it are merged in.
+ */
+export function buildBaseGraph({
+  positive,
+  negative,
+  seed,
+  denoise,
+  filenamePrefix,
+  latentNodes,
+  latentSource,
+  steps = SAMPLER_DEFAULTS.steps,
+}) {
+  return {
+    [NODE.UNET]: {
+      class_type: "UNETLoader",
+      inputs: { unet_name: MODELS.unet, weight_dtype: "default" },
+    },
+    [NODE.MODEL_SAMPLING]: {
+      class_type: "ModelSamplingAuraFlow",
+      inputs: { model: [NODE.UNET, 0], shift: SAMPLER_DEFAULTS.shift },
+    },
+    [NODE.CLIP]: {
+      class_type: "CLIPLoader",
+      inputs: {
+        clip_name: MODELS.clip,
+        type: MODELS.clipType,
+        device: "default",
+      },
+    },
+    [NODE.POS]: {
+      class_type: "CLIPTextEncode",
+      inputs: { clip: [NODE.CLIP, 0], text: positive },
+    },
+    [NODE.NEG]: {
+      class_type: "CLIPTextEncode",
+      inputs: { clip: [NODE.CLIP, 0], text: negative },
+    },
+    [NODE.VAE]: { class_type: "VAELoader", inputs: { vae_name: MODELS.vae } },
+    ...latentNodes,
+    [NODE.KSAMPLER]: {
+      class_type: "KSampler",
+      inputs: {
+        model: [NODE.MODEL_SAMPLING, 0],
+        positive: [NODE.POS, 0],
+        negative: [NODE.NEG, 0],
+        latent_image: latentSource,
+        seed,
+        steps,
+        cfg: SAMPLER_DEFAULTS.cfg,
+        sampler_name: SAMPLER_DEFAULTS.samplerName,
+        scheduler: SAMPLER_DEFAULTS.scheduler,
+        denoise,
+      },
+    },
+    [NODE.DECODE]: {
+      class_type: "VAEDecode",
+      inputs: { samples: [NODE.KSAMPLER, 0], vae: [NODE.VAE, 0] },
+    },
+    [NODE.SAVE]: {
+      class_type: "SaveImage",
+      inputs: { images: [NODE.DECODE, 0], filename_prefix: filenamePrefix },
+    },
+  };
+}
+
+/* --------------------------- ComfyUI client --------------------------- */
+
+/**
+ * Resolve the ComfyUI base URL.
+ *
+ * The port comes from forge.config.json. The host defaults to 127.0.0.1
+ * because README.md's access path is an SSH tunnel; `--direct` targets
+ * `comfy.host` (the Tailscale address) when running on the LAN.
+ */
+export function comfyBaseUrl(forge, args = {}) {
+  const { host, port } = forge.config.comfy;
+  const resolved = args.host || (args.direct ? host : "127.0.0.1");
+  return `http://${resolved}:${port}`;
+}
+
+async function comfyFetch(url, init) {
+  const res = await fetch(url, init);
+  if (!res.ok) {
+    throw new Error(
+      `${init?.method ?? "GET"} ${url} -> ${res.status} ${await res.text()}`,
+    );
+  }
+  return res;
+}
+
+export async function assertReachable(base) {
+  try {
+    const stats = await (await comfyFetch(`${base}/system_stats`)).json();
+    return stats?.system?.comfyui_version ?? "unknown";
+  } catch (err) {
+    throw new Error(
+      `ComfyUI unreachable at ${base}: ${err.message}\n` +
+        "Open the tunnel first:\n" +
+        "  ssh -f -N -L 8188:127.0.0.1:8188 -o ServerAliveInterval=30 mont@100.66.190.100",
+    );
+  }
+}
+
+export async function queuePrompt(base, graph) {
+  const body = JSON.stringify({
+    prompt: graph,
+    client_id: `art-forge-${process.pid}`,
+  });
+  const res = await comfyFetch(`${base}/prompt`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+  });
+  const json = await res.json();
+  if (json.node_errors && Object.keys(json.node_errors).length) {
+    throw new Error(
+      `ComfyUI rejected the graph: ${JSON.stringify(json.node_errors)}`,
+    );
+  }
+  return json.prompt_id;
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** Poll /history/<id> until the job finishes; returns its outputs block. */
+export async function awaitHistory(
+  base,
+  promptId,
+  { timeoutMs = 600_000, pollMs = 1500 } = {},
+) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const hist = await (await comfyFetch(`${base}/history/${promptId}`)).json();
+    const entry = hist[promptId];
+    if (entry) {
+      const status = entry.status ?? {};
+      if (status.status_str === "error") {
+        const msgs = (status.messages ?? [])
+          .map((m) => JSON.stringify(m))
+          .join("\n");
+        throw new Error(`ComfyUI job ${promptId} failed:\n${msgs}`);
+      }
+      // Only a real completion, or a non-empty outputs block, ends the poll —
+      // a present-but-empty `outputs: {}` is not a finished job.
+      if (status.completed) return entry.outputs ?? {};
+      if (entry.outputs && Object.keys(entry.outputs).length) {
+        return entry.outputs;
+      }
+    }
+    await sleep(pollMs);
+  }
+  throw new Error(
+    `timed out after ${timeoutMs}ms waiting for prompt ${promptId}. ` +
+      "The job may still be queued — check GET /queue, and raise --timeout " +
+      "(seconds) if the box is busy with other work.",
+  );
+}
+
+/** Pull the first image out of a history outputs block and write it locally. */
+export async function downloadFirstImage(base, outputs, destPath) {
+  const images = Object.values(outputs).flatMap((o) => o.images ?? []);
+  if (!images.length) throw new Error("job completed but produced no images");
+  const img = images[0];
+  const qs = new URLSearchParams({
+    filename: img.filename,
+    subfolder: img.subfolder ?? "",
+    type: img.type ?? "output",
+  });
+  const res = await comfyFetch(`${base}/view?${qs}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  fs.mkdirSync(path.dirname(destPath), { recursive: true });
+  fs.writeFileSync(destPath, buf);
+  return { bytes: buf.length, remote: img };
+}
+
+export function randomSeed() {
+  return Math.floor(Math.random() * 2 ** 32);
+}
+
+/**
+ * Queue one graph, wait for it, save it to out/<name>.png. Shared by all
+ * three CLIs so there is exactly one transport implementation.
+ */
+export async function runGraph({ forge, args, graph, name, label }) {
+  const base = comfyBaseUrl(forge, args);
+  if (args["dry-run"]) {
+    console.log(JSON.stringify(graph, null, 2));
+    return null;
+  }
+  const version = await assertReachable(base);
+  const dest = path.join(forge.outDir, `${name}.png`);
+  console.log(`[art-forge] ${label} -> ${base} (ComfyUI ${version})`);
+  const started = Date.now();
+  const promptId = await queuePrompt(base, graph);
+  console.log(`[art-forge] queued prompt_id=${promptId}`);
+  const outputs = await awaitHistory(base, promptId, {
+    timeoutMs: args.timeout ? Number(args.timeout) * 1000 : undefined,
+  });
+  const { bytes, remote } = await downloadFirstImage(base, outputs, dest);
+  const secs = ((Date.now() - started) / 1000).toFixed(1);
+  console.log(
+    `[art-forge] ${remote.filename} -> ${dest} (${bytes} bytes, ${secs}s)`,
+  );
+  return { dest, bytes, promptId };
+}
+
+/* ------------------------------ txt2img ------------------------------ */
+
+/** Build the txt2img graph for one cell. */
+export function buildCharsheetGraph({ race, job, seed, width, height, forge }) {
+  return buildBaseGraph({
+    positive: buildPrompt({ race, job }, forge),
+    negative: negativePrompt(forge),
+    seed,
+    // txt2img always denoises fully; forge.config's denoise is the img2img knob.
+    denoise: 1,
+    filenamePrefix: `art-forge/${race}-${job}-t2i`,
+    latentNodes: {
+      [NODE.LATENT]: {
+        class_type: "EmptySD3LatentImage",
+        inputs: { width, height, batch_size: 1 },
+      },
+    },
+    latentSource: [NODE.LATENT, 0],
+  });
+}
+
+export async function generateCharsheet(args, forge = loadForge()) {
+  const { race, job } = requireCell(args, forge);
+  const seed = parseSeed(args.seed);
+  const width = Number(args.width ?? 1024);
+  const height = Number(args.height ?? 1024);
+  const graph = buildCharsheetGraph({ race, job, seed, width, height, forge });
+  return runGraph({
+    forge,
+    args,
+    graph,
+    name: `${race}-${job}-t2i`,
+    label: `txt2img ${race}/${job} seed=${seed} ${width}x${height}`,
+  });
+}
+
+async function main() {
+  const args = parseArgs();
+  await generateCharsheet(args);
+}
+
+if (
+  process.argv[1] &&
+  fileURLToPath(import.meta.url) === path.resolve(process.argv[1])
+) {
+  main().catch((err) => {
+    console.error(`[art-forge] FAILED: ${err.message}`);
+    process.exitCode = 1;
+  });
+}
