@@ -58,15 +58,30 @@ import {
 
 /**
  * Default drift-gate runner: spawns `node scripts/check_asset_manifest.mjs`
- * from the real repo root. Injectable via opts.driftGateRunner for tests.
+ * from the real repo root, pointed at the SAME `root`/`manifestPath` this
+ * intake call actually wrote to (via the gate's `--art-root`/`--art-manifest`
+ * overrides) — otherwise a sandboxed intake would "gate" the untouched real
+ * manifest instead of the one it just wrote, a silent false green. Injectable
+ * via opts.driftGateRunner for tests.
+ * @param {{root: string, manifestPath: string}} params
  * @returns {Promise<{ok: boolean}>}
  */
-function defaultDriftGateRunner() {
+function defaultDriftGateRunner({ root, manifestPath }) {
   return new Promise((resolve) => {
-    const child = spawn("node", ["scripts/check_asset_manifest.mjs"], {
-      cwd: repoRoot(),
-      stdio: "inherit",
-    });
+    const child = spawn(
+      "node",
+      [
+        "scripts/check_asset_manifest.mjs",
+        "--art-manifest",
+        manifestPath,
+        "--art-root",
+        root,
+      ],
+      {
+        cwd: repoRoot(),
+        stdio: "inherit",
+      },
+    );
     child.on("error", () => resolve({ ok: false }));
     child.on("exit", (code) => resolve({ ok: code === 0 }));
   });

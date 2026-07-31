@@ -67,6 +67,9 @@
 //   --manifest <path>           override manifest.json path (testing)
 //   --audio-manifest <path>     override audio-manifest.json path (testing)
 //   --catalog-manifest <path>   override catalog-manifest.json path (testing)
+//   --art-manifest <path>       override art-manifest.json path (testing)
+//   --art-groups <path>         override art-groups.json path (testing)
+//   --art-root <dir>            override the art root dir (testing)
 //   --game-client <dir>         override the res:// root dir (testing)
 
 import {

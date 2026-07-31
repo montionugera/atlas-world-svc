@@ -71,7 +71,7 @@ lists. The hard-won rules behind them:
 - **Anti-3D counter-prompts.** The words "raccoon", "goggles" and
   "dwarf" drag the model toward 3D-furry/Pixar. Counter with
   `KEMONOMIMI, HUMAN face, no fur` and `crisp flat 2D anime
-  illustration, NOT 3D render, NOT CGI, NOT clay`.
+illustration, NOT 3D render, NOT CGI, NOT clay`.
 
 ## Stage: QC
 
@@ -95,8 +95,12 @@ QC runs **per row**, not per image:
   prompt laws above.
 - `prompts/race-identity.json` — per-race identity markers and muscle
   score, locked canon (see `content/story/canon.md` §5).
-- `generate/` (Task 8) — the actual ComfyUI job scripts. Not present yet;
-  not run in CI when it lands.
+- `generate/` (Task 7) — the actual ComfyUI job scripts. Present; not run
+  in CI (see "CI status" below).
+- `intake-art.mjs` — transactional, gate-verified intake of a generated
+  PNG into `game-client/assets/art/concept/` + `art-manifest.json`. The
+  only sanctioned way a generated image enters the repo.
+- `tests/` — `node --test` coverage for `intake-art.mjs`.
 
 ## CI status
 

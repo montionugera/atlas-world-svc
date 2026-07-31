@@ -233,3 +233,66 @@ test("happy path (synthetic passing gate) copies the file and writes the entry",
     note: "Z-Image Turbo, local generation",
   });
 });
+
+// Regression test for the "silent false green" finding: with NO
+// driftGateRunner override, defaultDriftGateRunner must actually gate the
+// SANDBOXED root/manifestPath this call wrote to — not the real repo's
+// art-manifest.json. We prove that by planting an orphan image in the
+// sandbox art root (a file with no manifest entry). The real gate's
+// assertArtCoverage (guard M in scripts/check_asset_manifest.mjs) fails on
+// any unclaimed image under the art root it was pointed at. If the runner
+// silently validated the real repo's manifest instead (the bug this test
+// guards against), the sandbox orphan would never be seen and the gate
+// would report a false pass.
+test("default (real) drift-gate genuinely validates the sandboxed root — an orphan image in the sandbox fails the gate and rolls back", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "artintake-"));
+  const root = join(dir, "art");
+  mkdirSync(join(root, "concept"), { recursive: true });
+  const manifestPath = join(root, "art-manifest.json");
+  const before = JSON.stringify({ version: 1, entries: {} }, null, 2) + "\n";
+  writeFileSync(manifestPath, before);
+
+  // Orphan: a PNG already sitting in the sandbox concept/ dir that no
+  // manifest entry claims. Only the sandbox gate (pointed at THIS root) can
+  // see it — the real repo's art root has no such file.
+  writeFileSync(
+    join(root, "concept/orphan.png"),
+    Buffer.from("89504e470d0a1a0a", "hex"),
+  );
+
+  const src = join(dir, "new.png");
+  writeFileSync(src, Buffer.from("89504e470d0a1a0a", "hex"));
+
+  const res = await intakeArt({
+    src,
+    id: "art:mob-wolf",
+    group: "mob",
+    title: "Wolf",
+    note: "Z-Image Turbo, local generation",
+    root,
+    manifestPath,
+    // No driftGateRunner override — exercises the real
+    // defaultDriftGateRunner, which spawns the real
+    // scripts/check_asset_manifest.mjs against this sandbox.
+  });
+
+  assert.equal(
+    res.ok,
+    false,
+    "expected the real gate to fail on the sandbox's orphan image",
+  );
+  assert.equal(
+    readFileSync(manifestPath, "utf8"),
+    before,
+    "manifest not restored after gate failure",
+  );
+  assert.equal(
+    existsSync(join(root, "concept/new.png")),
+    false,
+    "copied PNG not rolled back after gate failure",
+  );
+  // The orphan itself is untouched by intake — it was never intake's file to
+  // manage — but it must still be present, proving the gate actually looked
+  // at this sandbox (rather than, say, some other run wiping the dir).
+  assert.equal(existsSync(join(root, "concept/orphan.png")), true);
+});
