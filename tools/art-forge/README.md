@@ -5,15 +5,12 @@ GPU box (mont-pc), then intaking the results into the game's asset
 manifest. This README documents the **recipe** — the hard-won generation
 tuning — plus the access path and QC method. It ships **zero images**;
 see `forge.config.json` and `prompts/*.json` for the machine-readable
-config, and `.superpowers/sdd/2026-08-01-art-forge-foundation/` for the
-task briefs behind this pipeline.
+config, `docs/superpowers/specs/2026-08-01-art-forge-foundation-design.md`
+for the design, and `HANDOFF-2026-07-28.md` §2 for the original session
+notes this recipe was transcribed from.
 
-> **Nothing under `generate/` runs in CI.** Generation needs a live GPU
-> and a Tailscale tunnel into a specific machine on the owner's home
-> network — there is no way to run it headlessly or in a pipeline. Every
-> `generate/*` script (added in a later task) is a manual, interactive
-> tool run by a human at a keyboard, never a CI step. Treat anything
-> under `generate/` as out of scope for automated gates.
+> Generation requires a live GPU and a Tailscale tunnel — see "CI status"
+> at the bottom of this file before assuming any of this is automatable.
 
 ## Stage: ACCESS (mont-pc, interactive)
 
@@ -100,3 +97,12 @@ QC runs **per row**, not per image:
   score, locked canon (see `content/story/canon.md` §5).
 - `generate/` (Task 8) — the actual ComfyUI job scripts. Not present yet;
   not run in CI when it lands.
+
+## CI status
+
+> **Nothing under `generate/` runs in CI.** Generation needs a live GPU
+> and a Tailscale tunnel into a specific machine on the owner's home
+> network — there is no way to run it headlessly or in a pipeline. Every
+> `generate/*` script (added in a later task) is a manual, interactive
+> tool run by a human at a keyboard, never a CI step. Treat anything
+> under `generate/` as out of scope for automated gates.
