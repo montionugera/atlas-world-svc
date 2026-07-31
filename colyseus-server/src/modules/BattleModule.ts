@@ -99,6 +99,14 @@ export class BattleModule implements BattleActionProcessor {
     // Apply damage to target
     const targetDied = this.applyDamage(target, damage)
 
+    // Threat: the target remembers who hit it (F-023). Written only on resolved
+    // hits -- never per tick -- so quiet ticks cost nothing.
+    if (damage > 0) {
+      this.gameState.threatRegistry
+        .forAgent({ agentId: target.id })
+        .add({ entityId: attacker.id, amount: damage, now: performance.now() })
+    }
+
     // Calculate impulse vector
     let nx, ny
 
