@@ -25,7 +25,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loadForge, parseArgs, randomSeed } from "./charsheet.mjs";
+import { loadForge, parseArgs, parseSeed, randomSeed } from "./charsheet.mjs";
 import { generateCell } from "./i2i.mjs";
 
 /** Resolve `all` / a comma list into a validated subset of `axis`. */
@@ -51,12 +51,18 @@ export function selectAxis(value, axis, label) {
  * reproduces exactly what the full run produced). Without it, each cell gets
  * a fresh random seed — the seed is echoed per cell so failures can be
  * rerolled deliberately.
+ *
+ * `base` must already be `undefined` or a validated seed. It is re-validated
+ * through `parseSeed` anyway: a bare `--seed` arrives from `parseArgs` as
+ * `true`, and `Number(true) + offset` is a small finite integer that would sail
+ * through every downstream check — silently pinning all 64 cells of an
+ * unattended run to a fixed seed sequence instead of randomising them.
  */
 export function cellSeed(base, race, job, forge) {
   if (base === undefined) return randomSeed();
   const { raceAxis, jobAxis } = forge.config.muscleGradient;
   return (
-    Number(base) +
+    parseSeed(base) +
     raceAxis.indexOf(race) * jobAxis.length +
     jobAxis.indexOf(job)
   );
@@ -68,6 +74,11 @@ export async function runMatrix(args, forge = loadForge()) {
   const jobs = selectAxis(args.jobs, jobAxis, "job");
   const total = races.length * jobs.length;
 
+  // Validate --seed ONCE, at the CLI boundary, before anything is queued. This
+  // is the unattended entry point: a bad seed discovered mid-sweep costs hours
+  // of GPU time. `undefined` stays undefined so each cell gets a fresh random.
+  const baseSeed = args.seed === undefined ? undefined : parseSeed(args.seed);
+
   console.log(
     `[art-forge] matrix ${races.length} races x ${jobs.length} jobs = ${total} cells`,
   );
@@ -77,7 +88,7 @@ export async function runMatrix(args, forge = loadForge()) {
   for (const race of races) {
     for (const job of jobs) {
       done++;
-      const seed = cellSeed(args.seed, race, job, forge);
+      const seed = cellSeed(baseSeed, race, job, forge);
       console.log(
         `[art-forge] --- cell ${done}/${total}: ${race}/${job} seed=${seed}`,
       );
