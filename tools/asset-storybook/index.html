@@ -2363,7 +2363,17 @@
         btn.addEventListener("click", () => {
           setActiveClass(cls);
           if (cls !== "all") {
-            const target = document.getElementById("section-" + cls);
+            // An aggregate class (e.g. "art") has no "section-<cls>" of its
+            // own — it fans out over several sections via data-group
+            // instead (see setActiveClass). Fall back to the first one
+            // setActiveClass just made visible so the button still scrolls
+            // somewhere.
+            const target =
+              document.getElementById("section-" + cls) ||
+              [...document.querySelectorAll("section.kind-section")].find(
+                (sec) =>
+                  sec.dataset.group === cls && sec.style.display !== "none",
+              );
             if (target)
               target.scrollIntoView({ behavior: "smooth", block: "start" });
           } else {
