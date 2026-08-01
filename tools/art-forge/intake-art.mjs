@@ -16,9 +16,11 @@
 //      is declared in the FIXED, committed art-groups.json (Task 1's
 //      registry — always read from the real repo, independent of any
 //      sandboxed `root`/`manifestPath` used for testing); `title` and `note`
-//      (provenance — art carries no upstream licence) are non-empty; and the
-//      destination path does not already hold a DIFFERENT file. ANY failure
-//      aborts with ZERO side effects.
+//      (provenance — art carries no upstream licence) are non-empty; the
+//      ARTIFACT GATE passes (hallucinated watermarks / tiling artifacts /
+//      degenerate renders — see artifact-gate.mjs); and the destination path
+//      does not already hold a DIFFERENT file. ANY failure aborts with ZERO
+//      side effects.
 //   2. snapshot — read art-manifest.json's exact bytes (and any PNG already
 //      at the destination) before touching anything.
 //   3. copy — the source PNG into <root>/concept/.
@@ -55,6 +57,25 @@ import {
   writeManifestAtomic,
   writeManifestRaw,
 } from "../asset-forge/lib/manifest.mjs";
+import { inspectImage } from "./artifact-gate.mjs";
+
+/**
+ * Default artifact-gate runner: screens the SOURCE image for hallucinated
+ * watermarks, checkerboard/tiling artifacts and degenerate renders before it
+ * can enter the manifest. Injectable via opts.artifactGateRunner so the
+ * transaction tests can use byte-stub "PNG"s that ImageMagick cannot decode.
+ *
+ * The gate is a TRIAGE tool, not a classifier — read artifact-gate.mjs's
+ * header and docs/worldbuilding/ABP-artifact-gate.md before relaxing it. A
+ * PASS does not prove the image is clean; it means the cheap checks found
+ * nothing and the corner sheet still needs a human.
+ * @param {{src: string}} params
+ * @returns {{ok: boolean, reasons: string[]}}
+ */
+function defaultArtifactGateRunner({ src }) {
+  const result = inspectImage({ src });
+  return { ok: result.ok, reasons: result.reasons };
+}
 
 /**
  * Default drift-gate runner: spawns `node scripts/check_asset_manifest.mjs`
@@ -212,9 +233,16 @@ function readGroupIds() {
  * @param {string[]} [opts.tags]       optional array of short tag strings
  * @param {string} [opts.source]       optional brief-source reference (e.g. a doc anchor)
  * @param {object} [opts.gen]          optional reproducibility record: { model, steps, cfg, seed, denoise, width, height }
+ * @param {string} [opts.skipArtifactGate] NON-EMPTY REASON to bypass the artifact
+ *   gate. Deliberate by construction: there is no boolean form, the caller must
+ *   type why, and the reason is recorded in the manifest entry as
+ *   `artifactGate: { skipped: true, reason }` so a bypassed image is auditable
+ *   forever. Use only when a human has reviewed the corner sheet and judged a
+ *   flag to be a false positive.
  * @param {string} [opts.root]         art root (defaults to game-client/assets/art)
  * @param {string} [opts.manifestPath] art-manifest.json path (defaults to <root>/art-manifest.json)
- * @param {Function} [opts.driftGateRunner] injectable gate runner (tests)
+ * @param {Function} [opts.driftGateRunner] injectable drift-gate runner (tests)
+ * @param {Function} [opts.artifactGateRunner] injectable artifact-gate runner (tests)
  * @returns {Promise<{ok: boolean, id: string, actions?: string[], failures?: string[], entry?: object}>}
  */
 export async function intakeArt(opts = {}) {
@@ -228,9 +256,11 @@ export async function intakeArt(opts = {}) {
     tags,
     source: briefSource,
     gen,
+    skipArtifactGate,
     root = path.join(repoRoot(), "game-client/assets/art"),
     manifestPath = path.join(root, "art-manifest.json"),
     driftGateRunner,
+    artifactGateRunner,
   } = opts;
 
   const actions = [];
@@ -270,6 +300,44 @@ export async function intakeArt(opts = {}) {
     gen,
   });
   if (metaFailures.length > 0) return fail(...metaFailures);
+
+  // --- 1b. Artifact gate. Runs inside the validate phase, so a flagged image
+  //     aborts before ANY file or manifest write — the image simply never
+  //     enters the repo. Bypassing requires a written reason (see
+  //     opts.skipArtifactGate); an empty/whitespace reason is NOT a bypass and
+  //     must fail loudly rather than silently disabling the gate.
+  let artifactGateRecord;
+  if (skipArtifactGate !== undefined) {
+    if (
+      typeof skipArtifactGate !== "string" ||
+      skipArtifactGate.trim() === ""
+    ) {
+      return fail(
+        "skipArtifactGate must be a non-empty reason string — bypassing the " +
+          "artifact gate has to be justified in writing",
+      );
+    }
+    artifactGateRecord = { skipped: true, reason: skipArtifactGate.trim() };
+    actions.push(`artifact-gate: SKIPPED (${artifactGateRecord.reason})`);
+  } else {
+    const artifactGate = artifactGateRunner ?? defaultArtifactGateRunner;
+    let artifactResult;
+    try {
+      artifactResult = await artifactGate({ src });
+    } catch (err) {
+      return fail(`artifact-gate: ${err.message}`);
+    }
+    if (!artifactResult || !artifactResult.ok) {
+      return fail(
+        ...(artifactResult?.reasons?.length
+          ? artifactResult.reasons.map((r) => `artifact-gate: ${r}`)
+          : ["artifact-gate: failed"]),
+        "artifact-gate: pass --skip-artifact-gate <reason> only after reviewing " +
+          "the corner sheet (node artifact-gate.mjs <png> --corner-sheet <out.png>)",
+      );
+    }
+    actions.push("artifact-gate: passed");
+  }
 
   const destDir = path.join(root, "concept");
   const destPath = path.join(destDir, path.basename(src));
@@ -322,6 +390,10 @@ export async function intakeArt(opts = {}) {
   if (tags !== undefined) entry.tags = tags;
   if (briefSource !== undefined) entry.source = briefSource;
   if (gen !== undefined) entry.gen = gen;
+  // Only recorded when the gate was BYPASSED. A passing gate leaves no key, so
+  // entries stay byte-identical in shape to the 81 pre-existing ones and the
+  // presence of `artifactGate` is itself the audit signal.
+  if (artifactGateRecord !== undefined) entry.artifactGate = artifactGateRecord;
   manifestObj.entries[id] = entry;
 
   // Snapshot any file already at destPath (identical bytes, per the check
@@ -408,7 +480,12 @@ function printUsageAndExit() {
     "usage: node intake-art.mjs --src <png> --id <art:key> --group <group-id> " +
       "--title <text> --note <provenance> [--description <text>] " +
       "[--tags <comma,separated,tags>] [--source <ref>] [--gen <json>] " +
-      "[--root <dir>] [--manifest-path <path>]",
+      "[--skip-artifact-gate <reason>] [--root <dir>] [--manifest-path <path>]\n" +
+      "\n" +
+      "  --skip-artifact-gate REQUIRES a written reason and records it in the " +
+      "manifest entry.\n" +
+      "  Review the corner sheet first: node artifact-gate.mjs <png> " +
+      "--corner-sheet <out.png>",
   );
   process.exit(1);
 }
@@ -453,6 +530,17 @@ async function main() {
     }
   }
 
+  // --skip-artifact-gate: parseArgs already throws on the bare space-separated
+  // form (`--skip-artifact-gate` with no value), which is the whole point —
+  // the bypass cannot be tripped by accident. Guard the `--skip-artifact-gate=`
+  // empty-string form here too.
+  if (flags["skip-artifact-gate"] !== undefined) {
+    if (flags["skip-artifact-gate"].trim() === "") {
+      console.error("--skip-artifact-gate requires a non-empty reason");
+      printUsageAndExit();
+    }
+  }
+
   const result = await intakeArt({
     src: path.resolve(flags.src),
     id: flags.id,
@@ -463,6 +551,7 @@ async function main() {
     tags,
     source: flags.source,
     gen,
+    skipArtifactGate: flags["skip-artifact-gate"],
     root: flags.root ? path.resolve(flags.root) : undefined,
     manifestPath: flags["manifest-path"]
       ? path.resolve(flags["manifest-path"])

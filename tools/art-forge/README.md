@@ -75,7 +75,23 @@ illustration, NOT 3D render, NOT CGI, NOT clay`.
 
 ## Stage: QC
 
-QC runs **per row**, not per image:
+**Every image goes through the artifact gate first** — every model tested
+by the F-024 campaign hallucinates signature text (`CALENER SAFE`,
+`©Arand Alita`, `©Llaman Woalo`), so unattended batches are unsafe
+without it:
+
+```bash
+# exit 0 = PASS, 1 = FLAG. Always look at the corner sheet.
+node artifact-gate.mjs out/<cell>.png --corner-sheet out/_corners.png
+```
+
+A PASS is triage, not proof: the gate flags 13 of 37 known-clean corpus
+images and has no power on a textured corner. The normalised corner sheet
+is what a human actually adjudicates. To intake despite a flag you must
+supply a written reason, which is recorded in the manifest entry:
+`intake-art.mjs ... --skip-artifact-gate "<why>"`.
+
+Then QC runs **per row**, not per image:
 
 1. Build a contact sheet for the row:
 
@@ -100,7 +116,14 @@ QC runs **per row**, not per image:
 - `intake-art.mjs` — transactional, gate-verified intake of a generated
   PNG into `game-client/assets/art/concept/` + `art-manifest.json`. The
   only sanctioned way a generated image enters the repo.
-- `tests/` — `node --test` coverage for `intake-art.mjs`.
+- `artifact-gate.mjs` — screens an image for hallucinated watermarks,
+  checkerboard/tiling artifacts and degenerate (flat-vector) renders.
+  Wired into `intake-art.mjs`, so a flagged image cannot enter the
+  manifest. **It is triage, not a classifier** — read
+  `docs/worldbuilding/ABP-artifact-gate.md` for the measured detection
+  rates and the blind spots before trusting a PASS.
+- `tests/` — `node --test` coverage for `intake-art.mjs` and
+  `artifact-gate.mjs`.
 
 ## CI status
 

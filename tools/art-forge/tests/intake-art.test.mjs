@@ -6,6 +6,7 @@ import {
   writeFileSync,
   readFileSync,
   existsSync,
+  copyFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
@@ -14,6 +15,23 @@ import { execFileSync } from "node:child_process";
 import { intakeArt } from "../intake-art.mjs";
 
 const CLI = join(dirname(fileURLToPath(import.meta.url)), "../intake-art.mjs");
+
+// The CLI tests spawn a real subprocess, so they cannot inject a stub artifact
+// gate — their source image has to genuinely clear it. Uniform random noise
+// does: high Laplacian sigma (not degenerate), uniform edge energy everywhere
+// (no corner outlier), no axis-aligned periodicity (no tiling). Built once.
+const GATE_PASSING_PNG = join(
+  mkdtempSync(join(tmpdir(), "artintake-fixture-")),
+  "gate-passing.png",
+);
+execFileSync("magick", [
+  "-size",
+  "640x416",
+  "xc:gray",
+  "+noise",
+  "Random",
+  GATE_PASSING_PNG,
+]);
 
 test("a failing gate rolls back to the exact prior bytes and leaves no PNG", async () => {
   const dir = mkdtempSync(join(tmpdir(), "artintake-"));
@@ -70,6 +88,7 @@ test("validation failure (bad id prefix) aborts with zero side effects", async (
     note: "Z-Image Turbo, local generation",
     root,
     manifestPath,
+    artifactGateRunner: () => ({ ok: true, reasons: [] }),
     driftGateRunner: async () => ({ ok: true }),
   });
 
@@ -96,6 +115,7 @@ test("validation failure (unknown group) aborts with zero side effects", async (
     note: "Z-Image Turbo, local generation",
     root,
     manifestPath,
+    artifactGateRunner: () => ({ ok: true, reasons: [] }),
     driftGateRunner: async () => ({ ok: true }),
   });
 
@@ -122,6 +142,7 @@ test("validation failure (missing note) aborts with zero side effects", async ()
     note: "", // provenance required
     root,
     manifestPath,
+    artifactGateRunner: () => ({ ok: true, reasons: [] }),
     driftGateRunner: async () => ({ ok: true }),
   });
 
@@ -223,6 +244,7 @@ test("happy path (synthetic passing gate) copies the file and writes the entry",
     note: "Z-Image Turbo, local generation",
     root,
     manifestPath,
+    artifactGateRunner: () => ({ ok: true, reasons: [] }),
     driftGateRunner: async () => ({ ok: true }),
   });
 
@@ -336,6 +358,7 @@ test("happy path with all rich-metadata fields writes them into the entry", asyn
     gen,
     root,
     manifestPath,
+    artifactGateRunner: () => ({ ok: true, reasons: [] }),
     driftGateRunner: async () => ({ ok: true }),
   });
 
@@ -372,6 +395,7 @@ test("validation failure (empty description) aborts with zero side effects", asy
     description: "   ",
     root,
     manifestPath,
+    artifactGateRunner: () => ({ ok: true, reasons: [] }),
     driftGateRunner: async () => ({ ok: true }),
   });
 
@@ -399,6 +423,7 @@ test("validation failure (tags not an array) aborts with zero side effects", asy
     tags: "cluster-1,coastal", // must be an array, not a comma string
     root,
     manifestPath,
+    artifactGateRunner: () => ({ ok: true, reasons: [] }),
     driftGateRunner: async () => ({ ok: true }),
   });
 
@@ -426,6 +451,7 @@ test("validation failure (gen not an object) aborts with zero side effects", asy
     gen: "z_image_turbo_bf16",
     root,
     manifestPath,
+    artifactGateRunner: () => ({ ok: true, reasons: [] }),
     driftGateRunner: async () => ({ ok: true }),
   });
 
@@ -453,6 +479,7 @@ test("validation failure (gen.width not positive) aborts with zero side effects"
     gen: { model: "z_image_turbo_bf16", width: 0, height: 832 },
     root,
     manifestPath,
+    artifactGateRunner: () => ({ ok: true, reasons: [] }),
     driftGateRunner: async () => ({ ok: true }),
   });
 
@@ -475,7 +502,7 @@ function cliFixture() {
   const before = JSON.stringify({ version: 1, entries: {} }, null, 2) + "\n";
   writeFileSync(manifestPath, before);
   const src = join(dir, "new.png");
-  writeFileSync(src, Buffer.from("89504e470d0a1a0a", "hex"));
+  copyFileSync(GATE_PASSING_PNG, src);
   return { dir, root, manifestPath, before, src };
 }
 
@@ -650,4 +677,138 @@ test("CLI: valid --gen JSON + --tags + --description + --source parse and pass f
   // Rolled back by the real gate's unrelated race/class count policy —
   // proves the rollback net still closes over the new fields correctly.
   assert.equal(readFileSync(f.manifestPath, "utf8"), f.before);
+});
+
+// ---------- F-024: artifact gate wiring ----------
+// The gate runs inside intakeArt's VALIDATE phase, so a flagged image must
+// abort before any file or manifest write — the image never enters the repo.
+
+// A flat gradient: the artifact gate's `degenerate` check flags it, which
+// makes it a real gate-failing fixture rather than a stubbed one.
+const GATE_FAILING_PNG = join(
+  mkdtempSync(join(tmpdir(), "artintake-badfixture-")),
+  "flat.png",
+);
+execFileSync("magick", [
+  "-size",
+  "640x416",
+  "gradient:#3a5a7a-#8ab0c8",
+  GATE_FAILING_PNG,
+]);
+
+test("a gate-failing image aborts intake with ZERO side effects", async () => {
+  const f = cliFixture();
+  copyFileSync(GATE_FAILING_PNG, f.src);
+  const result = await intakeArt({
+    src: f.src,
+    id: "art:mob-wolf",
+    group: "mob",
+    title: "Wolf",
+    note: "local generation",
+    root: f.root,
+    manifestPath: f.manifestPath,
+    driftGateRunner: async () => ({ ok: true }),
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.failures.join("\n"), /artifact-gate: degenerate/);
+  // The operator must be told how to override, not left guessing.
+  assert.match(result.failures.join("\n"), /--skip-artifact-gate/);
+  assert.equal(readFileSync(f.manifestPath, "utf8"), f.before);
+  assert.equal(existsSync(join(f.root, "concept/new.png")), false);
+});
+
+test("skipArtifactGate records the reason in the manifest entry", async () => {
+  const f = cliFixture();
+  copyFileSync(GATE_FAILING_PNG, f.src);
+  const result = await intakeArt({
+    src: f.src,
+    id: "art:mob-wolf",
+    group: "mob",
+    title: "Wolf",
+    note: "local generation",
+    skipArtifactGate:
+      "  reviewed corner sheet 2026-08-01, flat sky is intentional  ",
+    root: f.root,
+    manifestPath: f.manifestPath,
+    driftGateRunner: async () => ({ ok: true }),
+  });
+  assert.equal(result.ok, true, (result.failures ?? []).join("\n"));
+  assert.deepEqual(result.entry.artifactGate, {
+    skipped: true,
+    reason: "reviewed corner sheet 2026-08-01, flat sky is intentional",
+  });
+  const written = JSON.parse(readFileSync(f.manifestPath, "utf8"));
+  assert.deepEqual(written.entries["art:mob-wolf"].artifactGate, {
+    skipped: true,
+    reason: "reviewed corner sheet 2026-08-01, flat sky is intentional",
+  });
+});
+
+test("a PASSING gate leaves no artifactGate key — its presence is the audit signal", async () => {
+  const f = cliFixture(); // cliFixture's PNG is the gate-passing noise image
+  const result = await intakeArt({
+    src: f.src,
+    id: "art:mob-wolf",
+    group: "mob",
+    title: "Wolf",
+    note: "local generation",
+    root: f.root,
+    manifestPath: f.manifestPath,
+    driftGateRunner: async () => ({ ok: true }),
+  });
+  assert.equal(result.ok, true, (result.failures ?? []).join("\n"));
+  assert.equal("artifactGate" in result.entry, false);
+  assert.ok(result.actions.includes("artifact-gate: passed"));
+});
+
+test("an empty skipArtifactGate reason is rejected, not treated as a bypass", async () => {
+  const f = cliFixture();
+  copyFileSync(GATE_FAILING_PNG, f.src);
+  for (const reason of ["", "   ", 1, true]) {
+    const result = await intakeArt({
+      src: f.src,
+      id: "art:mob-wolf",
+      group: "mob",
+      title: "Wolf",
+      note: "local generation",
+      skipArtifactGate: reason,
+      root: f.root,
+      manifestPath: f.manifestPath,
+      driftGateRunner: async () => ({ ok: true }),
+    });
+    assert.equal(
+      result.ok,
+      false,
+      `reason ${JSON.stringify(reason)} must not bypass`,
+    );
+    assert.match(result.failures.join("\n"), /non-empty reason/);
+  }
+  assert.equal(readFileSync(f.manifestPath, "utf8"), f.before);
+});
+
+test("CLI: a bare --skip-artifact-gate exits non-zero and writes nothing", () => {
+  const f = cliFixture();
+  copyFileSync(GATE_FAILING_PNG, f.src);
+  // Space-separated bare flag at end of argv, and the --flag= empty form.
+  for (const tail of [["--skip-artifact-gate"], ["--skip-artifact-gate="]]) {
+    const r = runCli([
+      "--src",
+      f.src,
+      "--id",
+      "art:mob-wolf",
+      "--group",
+      "mob",
+      "--title",
+      "Wolf",
+      "--note",
+      "local generation",
+      "--root",
+      f.root,
+      "--manifest-path",
+      f.manifestPath,
+      ...tail,
+    ]);
+    assert.notEqual(r.code, 0, `${tail[0]} must not succeed`);
+    assert.equal(readFileSync(f.manifestPath, "utf8"), f.before);
+  }
 });
