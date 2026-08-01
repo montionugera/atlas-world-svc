@@ -198,11 +198,29 @@ Evidence required before this is called done:
 
 ## 9. Open questions for the plan
 
-1. Does `region-spawn-meadow` retire, or bind to `meltwash-terrace`? A1 §5.3 explicitly declines to
-   rule ("not this role's call").
-2. Does the variant axis go on `MobTypeConfig` or into a new spawn-entry layer above it? The gate
-   chain (`gen-mob-types.sh` → `gen-asset-keys.ts` → `check_asset_manifest.mjs` → `check_content.mjs`)
-   keys on the `MOB_TYPES` array, so the answer changes five files.
-3. Where does the buried-ground observation channel live — world state read by the client, a zone
-   readout, or a warden's tally? PX requires it named, not the mechanism chosen.
-4. Does the act axis extend to act-6+, or does a separate era field carry post-act-5 content?
+**Two are decided.** A Principal that did not run the panel ruled on the two questions with no
+natural owner (charter §2.4). The other two are owned by single roles, so per §2.4 — *"if one role's
+veto settles the matter, it is settled — no Principal, no decision record, no ceremony"* — they stay
+open until those roles ratify them.
+
+1. ~~Does `region-spawn-meadow` retire, or bind to `meltwash-terrace`?~~ **Decided —
+   `DR-004-starter-ground.md`: bind.** The region node denotes A1 §4.2 zone 1, Meltwash Terrace,
+   scoped so that no file under `content/maps/` changes and the two-worlds question stays untouched.
+   The id *string* is P1's rename, not a reversal. Confidence 85%; reopens by appendix if the
+   topology work retires `atlas-frontier.md` as an artifact.
+   **Correction this forces on §5.3:** retiring the id would break **8 gate-enforced edges** and touch
+   **19 references** in total — not the 3 quest references first counted.
+2. **Open — Systems Designer's.** Does the variant axis go on `MobTypeConfig` or into a new
+   spawn-entry layer above it? The gate chain (`gen-mob-types.sh` → `gen-asset-keys.ts` →
+   `check_asset_manifest.mjs` → `check_content.mjs`) keys on the `MOB_TYPES` array, so the answer
+   changes five files — and one `mob:*` asset key is minted per entry, which couples it directly to
+   the bestiary art budget.
+3. **Open — Player Experience's.** Where does the buried-ground observation channel live: world state
+   read by the client, a zone readout, or a warden's tally? PX requires it *named*, not the mechanism
+   chosen.
+4. ~~Does the act axis extend to act-6+?~~ **Decided — `DR-005-act-axis.md`: a separate era axis**,
+   acts 1–5 frozen as history. Note the ruling explicitly finds `act-6` **compatible** with DR-001
+   §6.4(4) rather than blocked by it, and rejects it on scale headroom and reversibility instead.
+   Confidence 75%; reopens by appendix if P2's `unlockedBy` evaluator makes `act-6` reachable without
+   a second meaning. The forcing function is `content/schemas/arc.schema.json:6` — `actId` is required
+   on every arc, so no post-act-5 quest can be authored until this migration lands.
