@@ -108,8 +108,8 @@ The 90 quests are not spread evenly over the ten zones.
 
 The **Ashvale Front** (zone 8) plus the three zones bracketing it — **Millcross Ford**, **Emberdown**
 and **Hollowmarch** — carry **~60% of the 90 quests (54)**. The remaining six zones split the other
-**36**. Mob implementation order follows the same rule: the Front's designs are built first, because
-they alone cover all eight bands (`A1-geography-cluster1.md` §4.3).
+**36**. Mob implementation order follows the same rule: the Front's **26** designs are built first,
+because they alone cover all eight bands (`A1-geography-cluster1.md` §4.3).
 
 **The band floor:** at least **18 of the 90** sit in bands **1–15**, and at least **6** of those
 exercise the **burial verb**.
@@ -130,7 +130,7 @@ corresponding prerequisite is in.
 | # | Prerequisite | Until it lands |
 |---|---|---|
 | **P1** | **The clearing commit — delivered by `I-056`** (resolve the 14 catalogued canon contradictions): amend `canon.md:77` to retire `char-expedition-member` as a player identity, name the Crossroads Man canonically across prose, glossary and the four `art:cast-crossroads-man-*` entries, repoint or retire `quests.json:447`'s giver, unify the region keyspaces, and record X1 as resolved-by-accommodation. | The `zones` line cannot be measured at all, and no quest can be written into a zone that has no `region-*` id. |
-| **P2** | **Quest schema ↔ engine reconciliation.** `content/schemas/quest.schema.json` requires objectives `{type, targetId, count}` with `additionalProperties: false`; `nakama/src/questEngine.ts` reads `obj.id` and `obj.required`. | No authored quest can complete — every objective keys on `undefined` — so the 90-quest line buys nothing that runs. |
+| **P2** | **Quest schema ↔ engine reconciliation.** `content/schemas/quest.schema.json` requires objectives `{type, targetId, count}` with `additionalProperties: false`; `nakama/src/questEngine.ts` reads `obj.id` and `obj.required`. **Also unify the `targetId` keyspace, and rule whether `rewards` is a legal field** — the schema currently forbids it. | No authored quest can complete — every objective keys on `undefined` — so the 90-quest line buys nothing that runs. Landing only the objective-shape half leaves `targetId` pointing into an unreconciled keyspace and the `rewards` question unruled. |
 | **P3** | **Buried-ground world state — a design, not a line.** Must state granularity (the unit of ground a burial changes), a **numeric** reversion rule, and the **observation channel** by which a player who did not do the burial perceives it. | The `world-state-systems` line stays blocked, and DR-001 §6.4(1)'s void condition stays live against the whole L1 decision. |
 | **P4** | **A `level` field and a runtime map loader.** `content/schemas/map.schema.json`'s `mobSpawnAreas` is `additionalProperties: false` with no level field, no `level` exists on `Mob`, and the server reads no file under `content/maps/` at all. | "Bands 1–80, one route" is unrepresentable in schema, runtime and entity; ten authored zones the server cannot read are ten documents. |
 | **P5** | **Run the I-058 Stage 1 load harness** before committing any cell, zone or CCU number. | `cellSize`, `aoiRadius`, spawn counts and the per-zone concurrency target all rest on a measurement nobody has taken — the `spawn-entries` target may be sized against a topology that does not exist. |
@@ -138,9 +138,12 @@ corresponding prerequisite is in.
 
 <div class="callout info">
 <strong>P1 is written as a delivery of <code>I-056</code>, not as a standalone commit.</strong> The
-canon amendment it needs is a slice of that idea, and backlog sequencing already places
-<code>I-056</code> at wave 1 order 1 — ahead of this budget. Specifying the same amendment twice, in
-two places, is how the two copies drift apart.
+canon amendment it needs is a slice of that idea, and specifying the same amendment twice, in two
+places, is how the two copies drift apart. <strong>This record does not set backlog order</strong> —
+and note that <code>idea-map.md</code>'s suggested order does not currently place
+<code>I-056</code> at all. <mark>P1 therefore needs an explicit position ahead of quest authoring
+before this budget is authorable against</mark>; folding it into <code>I-056</code> removes the
+duplication, it does not by itself guarantee the sequencing.
 </div>
 
 ## 6. What this record does not decide
