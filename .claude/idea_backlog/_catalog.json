@@ -316,5 +316,11 @@
     "title": "Phasing decision and spike: GameState has zero @filter/filterChildren/StateView, so two clients in one room cannot see different world contents - cheapest to build now at 28 quests, cannot be retrofitted at 560",
     "created_at": "2026-08-01T15:12:11.024470+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-054",
+    "title": "Asset gate hardening: assert manifest files are git-TRACKED not merely present (6 entries pointed at untracked PNGs and passed), plus intake-art.mjs cannot replace an entry and hardcodes the concept/ destination",
+    "created_at": "2026-08-01T15:12:11.677899+00:00",
+    "promoted_to": null
   }
 ]
