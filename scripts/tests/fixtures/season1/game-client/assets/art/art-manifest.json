@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "entries": {
+    "art:town-millcross": { "kind": "concept" },
+    "art:town-gildmark": { "kind": "concept" },
+    "art:class-mage": { "kind": "concept" }
+  }
+}

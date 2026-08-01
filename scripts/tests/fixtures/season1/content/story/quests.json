@@ -1,0 +1,9 @@
+[
+  { "id": "quest-free-root" },
+  { "id": "quest-free-child", "unlockedBy": ["quest-free-root"] },
+  { "id": "quest-act-gated", "unlockedBy": ["act-3"] },
+  { "id": "quest-downstream-of-act", "unlockedBy": ["quest-act-gated"] },
+  { "id": "quest-event-gated", "unlockedBy": ["event-bells-ring-true"] },
+  { "id": "quest-cycle-a", "unlockedBy": ["quest-cycle-b"] },
+  { "id": "quest-cycle-b", "unlockedBy": ["quest-cycle-a"] }
+]

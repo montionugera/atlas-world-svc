@@ -29,3 +29,55 @@ test("every line is well formed and ids are unique", () => {
     assert.ok(measured !== blocked, `${line.id}: needs exactly one of measure / blockedBy`);
   }
 });
+
+import { MEASURES, buildRows, renderTable } from "../lib/season1.mjs";
+
+const FIXTURE = join(ROOT, "scripts/tests/fixtures/season1");
+
+test("mobBases counts the codegen mob type ids", () => {
+  assert.equal(MEASURES.mobBases(FIXTURE), 2);
+});
+
+test("bestiaryDesigns counts the top-level array", () => {
+  assert.equal(MEASURES.bestiaryDesigns(FIXTURE), 3);
+});
+
+test("actIndependentQuests excludes act gates, event gates, their descendants and cycles", () => {
+  // free: quest-free-root, quest-free-child. Everything else is gated,
+  // downstream of a gate, or in a cycle that never resolves.
+  assert.equal(MEASURES.actIndependentQuests(FIXTURE), 2);
+});
+
+test("art measures count by key prefix", () => {
+  assert.equal(MEASURES.townArt(FIXTURE), 2);
+  assert.equal(MEASURES.bestiaryArt(FIXTURE), 0);
+});
+
+test("buildRows reports blocked lines without inventing a delta", () => {
+  const doc = {
+    lines: [
+      { id: "measured", label: "M", target: 5, measure: "mobBases", source: "s" },
+      { id: "stuck", label: "S", target: 1, blockedBy: "P3 - buried-ground design", source: "s" },
+    ],
+  };
+  const [measured, stuck] = buildRows(doc, FIXTURE);
+  assert.equal(measured.actual, 2);
+  assert.equal(measured.note, "3 short");
+  assert.equal(stuck.actual, null);
+  assert.match(stuck.note, /^blocked: P3/);
+});
+
+test("buildRows never throws when a measured file is missing", () => {
+  const doc = { lines: [{ id: "measured", label: "M", target: 5, measure: "mobBases", source: "s" }] };
+  const [row] = buildRows(doc, join(ROOT, "scripts/tests/fixtures/does-not-exist"));
+  assert.equal(row.actual, null);
+  assert.match(row.note, /^unmeasurable:/);
+});
+
+test("renderTable emits a header and one line per row", () => {
+  const out = renderTable(
+    buildRows({ lines: [{ id: "measured", label: "M", target: 5, measure: "mobBases", source: "s" }] }, FIXTURE),
+  );
+  assert.match(out, /measured/);
+  assert.match(out, /target/);
+});
