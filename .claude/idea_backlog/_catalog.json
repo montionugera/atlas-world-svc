@@ -370,5 +370,11 @@
     "title": "L3 boss design: F-023 shipped boss threat/aggro CODE but no boss exists anywhere - no identities, no lore, no art:boss entries; define the cluster-1 bosses, their threat behaviour and their place in the bestiary's element table",
     "created_at": "2026-08-01T16:23:04.879999+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-063",
+    "title": "L3 dungeon design: the seed library holds 283 unused dungeon 3D props and the world has zero dungeon content - define cluster-1 dungeon locations, their layout grammar, and how they attach to the Cartographer's zones",
+    "created_at": "2026-08-01T16:23:05.508426+00:00",
+    "promoted_to": null
   }
 ]
