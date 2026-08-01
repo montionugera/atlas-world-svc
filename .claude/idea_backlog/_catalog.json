@@ -286,5 +286,11 @@
     "title": "Season 1 scope cut: reduce the MMO target from 32 zones / 384 species / 560 quests to a finishable cluster-1 slice (9-10 zones, ~30 monsters, 2 art classes) per DR-001's chosen cadence",
     "created_at": "2026-08-01T15:12:05.743404+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-049",
+    "title": "Adopt the measured environment art recipe as default (schnell + ControlNet depth strength 0.30, denoise 1.0, hires 4x-UltraSharp @0.40) and settle the FLUX.1-dev non-commercial licence route per DR-002 appendix A",
+    "created_at": "2026-08-01T15:12:06.934841+00:00",
+    "promoted_to": null
   }
 ]
