@@ -625,23 +625,6 @@
 
       /* ---------- concept art (Cast / Races reference sheets) ---------- */
 
-      .art-group {
-        margin-bottom: 1.5rem;
-      }
-
-      .art-group:last-child {
-        margin-bottom: 0;
-      }
-
-      .art-group h3 {
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--text-faint);
-        font-weight: 600;
-        margin: 0 0 0.75rem;
-      }
-
       /* Classes subgroup: one race-labelled sub-row per race, each its own
          h4 + grid — 64 cards is too many to dump in one flat grid, so this
          keeps the Genshin/RO class art scannable by race. */
@@ -797,7 +780,12 @@
 
       const SFX_CLASS = "sfx"; // synthetic class for the audio soundboard (not present in any manifest)
       const MUSIC_CLASS = "music"; // synthetic class for the BGM section (music-manifest.json)
-      const ART_CLASS = "art"; // synthetic class for the Concept Art section (art-manifest.json)
+      const ART_CLASS = "art"; // synthetic class for the aggregate Concept Art entry (art-manifest.json)
+      // Per-group art sections/sidebar items use "art:<groupId>" as their
+      // class — populated from art-groups.json (or its fallback) once
+      // fetched in init(), and read by classLabel() below. Keeps classLabel
+      // a pure lookup instead of threading the registry through every call.
+      const ART_GROUP_LABELS = new Map();
       const COVERAGE_CLASS = "coverage"; // synthetic class for unmapped-codegen-key cards (§8 Phase 1c)
       // synthetic class for the embedded combat balance lab (tools/combat-lab).
       // Not an asset — it has no manifest entry, no health, no renderer. It is
@@ -2074,7 +2062,7 @@
       // group ("cast" | "race"), title, and note. Reuses .card/.meta for a
       // consistent look; health is tracked the same way as every other
       // synthetic class, just driven off <img> load/error instead of decode.
-      function buildArtCard(id, entry) {
+      function buildArtCard(id, entry, groupClass) {
         const card = document.createElement("div");
         card.className = "card";
 
@@ -2092,8 +2080,17 @@
         img.src = url;
         img.loading = "lazy";
         img.alt = entry.title || id;
-        img.addEventListener("load", () => bumpHealth(ART_CLASS, { ok: 1 }));
-        img.addEventListener("error", () => bumpHealth(ART_CLASS, { err: 1 }));
+        // Each image load/error bumps both its own group's dot (groupClass,
+        // e.g. "art:mob") and the aggregate "Concept Art" dot (ART_CLASS) —
+        // the aggregate's health is the sum of every group's.
+        img.addEventListener("load", () => {
+          bumpHealth(groupClass, { ok: 1 });
+          bumpHealth(ART_CLASS, { ok: 1 });
+        });
+        img.addEventListener("error", () => {
+          bumpHealth(groupClass, { err: 1 });
+          bumpHealth(ART_CLASS, { err: 1 });
+        });
 
         link.appendChild(img);
         viewport.appendChild(link);
@@ -2121,23 +2118,6 @@
 
         card.appendChild(meta);
         return card;
-      }
-
-      function buildArtGroup(label, list) {
-        const wrap = document.createElement("div");
-        wrap.className = "art-group";
-
-        const h3 = document.createElement("h3");
-        h3.textContent = label + " (" + list.length + ")";
-        wrap.appendChild(h3);
-
-        const grid = document.createElement("div");
-        grid.className = "grid";
-        for (const [id, entry] of list)
-          grid.appendChild(buildArtCard(id, entry));
-        wrap.appendChild(grid);
-
-        return wrap;
       }
 
       // Classes (8 races x 8 jobs): id is "art:class-<race>-<job>", both
@@ -2170,7 +2150,11 @@
         return word.charAt(0).toUpperCase() + word.slice(1);
       }
 
-      function buildArtClasses(classList) {
+      // Renders just the by-race body (h4 + grid per race) — no outer
+      // heading, since the caller's <section> h2 already carries the
+      // "Classes (N)" title (one section per group now, not one shared
+      // "Concept Art" section holding every group's own h3).
+      function buildArtClassesBody(classList, groupClass) {
         const byRace = new Map();
         for (const [id, entry] of classList) {
           const m = /^art:class-([a-z]+)-([a-z]+)$/.exec(id);
@@ -2183,11 +2167,6 @@
         for (const r of byRace.keys()) if (!races.includes(r)) races.push(r);
 
         const wrap = document.createElement("div");
-        wrap.className = "art-group";
-
-        const h3 = document.createElement("h3");
-        h3.textContent = "Classes (" + classList.length + ")";
-        wrap.appendChild(h3);
 
         for (const race of races) {
           const list = byRace.get(race);
@@ -2207,7 +2186,7 @@
           const grid = document.createElement("div");
           grid.className = "grid";
           for (const [id, entry] of list)
-            grid.appendChild(buildArtCard(id, entry));
+            grid.appendChild(buildArtCard(id, entry, groupClass));
           row.appendChild(grid);
 
           wrap.appendChild(row);
@@ -2216,8 +2195,12 @@
         return wrap;
       }
 
-      function buildArt(artEntries, artGroups) {
-        const container = document.createElement("div");
+      // Buckets every art-manifest entry by its `group` field, in
+      // art-groups.json registry order (or ART_GROUPS_FALLBACK). Entries
+      // whose group isn't in the registry land in `unregistered` — never
+      // folded into Cast, since that hid every T1-T3 group behind the wrong
+      // heading before T0.
+      function bucketArtEntries(artEntries, artGroups) {
         const order =
           artGroups &&
           Array.isArray(artGroups.groups) &&
@@ -2234,30 +2217,46 @@
           if (buckets.has(g)) {
             buckets.get(g).push([id, entry]);
           } else {
-            // Never fold an unknown group into Cast — that hid every T1-T3
-            // group behind the wrong heading before T0.
             if (!unregistered.has(g)) unregistered.set(g, []);
             unregistered.get(g).push([id, entry]);
           }
         }
 
-        for (const g of order) {
-          const list = buckets.get(g.id);
-          if (!list || list.length === 0) continue;
-          container.appendChild(
-            g.id === "class"
-              ? buildArtClasses(list)
-              : buildArtGroup(g.label || g.id, list),
-          );
-        }
+        return { order, buckets, unregistered };
+      }
 
-        for (const [gid, list] of [...unregistered].sort((a, b) =>
-          a[0].localeCompare(b[0]),
-        )) {
-          container.appendChild(buildArtGroup(gid + " (unregistered)", list));
-        }
+      function buildArtGrid(list, groupClass) {
+        const grid = document.createElement("div");
+        grid.className = "grid";
+        for (const [id, entry] of list)
+          grid.appendChild(buildArtCard(id, entry, groupClass));
+        return grid;
+      }
 
-        return container;
+      // One <section class="kind-section"> per art group, so the sidebar can
+      // jump straight to Mobs/Bosses/etc. instead of scrolling through one
+      // 90-entry "Concept Art" bucket. `data-group="art"` (in addition to
+      // `data-kind`) lets the aggregate "Concept Art" sidebar entry reveal
+      // every group's section at once — see setActiveClass().
+      function buildArtGroupSection(gid, label, list) {
+        const cls = ART_CLASS + ":" + gid;
+        const section = document.createElement("section");
+        section.className = "kind-section";
+        section.id = "section-" + cls;
+        section.dataset.kind = cls;
+        section.dataset.group = ART_CLASS;
+
+        const h2 = document.createElement("h2");
+        h2.textContent = label + " (" + list.length + ")";
+        section.appendChild(h2);
+
+        section.appendChild(
+          gid === "class"
+            ? buildArtClassesBody(list, cls)
+            : buildArtGrid(list, cls),
+        );
+
+        return section;
       }
 
       // ---------- sidebar ----------
@@ -2294,6 +2293,10 @@
         if (cls === ART_CLASS) return "Concept Art";
         if (cls === COVERAGE_CLASS) return "Coverage";
         if (cls === COMBAT_CLASS) return "Combat";
+        if (cls.startsWith(ART_CLASS + ":")) {
+          const gid = cls.slice(ART_CLASS.length + 1);
+          return ART_GROUP_LABELS.get(gid) || gid + " (unregistered)";
+        }
         if (RENDER_LABELS[cls]) return RENDER_LABELS[cls];
         return cls.charAt(0).toUpperCase() + cls.slice(1) + "s";
       }
@@ -2328,8 +2331,11 @@
           btn.classList.toggle("active", btn.dataset.class === cls);
         });
         document.querySelectorAll("section.kind-section").forEach((sec) => {
-          sec.style.display =
-            cls === "all" || sec.dataset.kind === cls ? "" : "none";
+          const show =
+            cls === "all" ||
+            sec.dataset.kind === cls ||
+            sec.dataset.group === cls;
+          sec.style.display = show ? "" : "none";
         });
       }
 
@@ -2617,6 +2623,10 @@
 
         const artEntries = (artManifest && artManifest.entries) || {};
         const artCount = Object.keys(artEntries).length;
+        const artBuckets = bucketArtEntries(artEntries, artGroups);
+        for (const g of artBuckets.order) {
+          ART_GROUP_LABELS.set(g.id, g.label || g.id);
+        }
 
         const groups = groupByRender(entries, renderSpec);
 
@@ -2664,9 +2674,31 @@
         }
 
         if (artCount > 0) {
+          // Aggregate "Concept Art" entry first, then one entry per
+          // non-empty group in registry order, then unregistered groups —
+          // so the user gets Mobs/Bosses/etc. as their own jump targets
+          // instead of one 90-entry bucket to scroll through.
           initHealth(ART_CLASS, artCount);
           sidebarNav.appendChild(buildSidebarItem(ART_CLASS, artCount));
           renderSidebarBadge(ART_CLASS);
+
+          for (const g of artBuckets.order) {
+            const list = artBuckets.buckets.get(g.id);
+            if (!list || list.length === 0) continue;
+            const cls = ART_CLASS + ":" + g.id;
+            initHealth(cls, list.length);
+            sidebarNav.appendChild(buildSidebarItem(cls, list.length));
+            renderSidebarBadge(cls);
+          }
+
+          for (const [gid, list] of [...artBuckets.unregistered].sort((a, b) =>
+            a[0].localeCompare(b[0]),
+          )) {
+            const cls = ART_CLASS + ":" + gid;
+            initHealth(cls, list.length);
+            sidebarNav.appendChild(buildSidebarItem(cls, list.length));
+            renderSidebarBadge(cls);
+          }
         }
 
         if (missingKeys.length > 0) {
@@ -2760,28 +2792,23 @@
           main.appendChild(section);
         }
 
-        // --- concept art section, driven by art-manifest.json ---
+        // --- concept art sections, driven by art-manifest.json — one
+        //     <section> per non-empty group instead of a single "Concept
+        //     Art" bucket holding all of them (see buildArtGroupSection). ---
         if (artCount > 0) {
-          const section = document.createElement("section");
-          section.className = "kind-section";
-          section.id = "section-" + ART_CLASS;
-          section.dataset.kind = ART_CLASS;
+          for (const g of artBuckets.order) {
+            const list = artBuckets.buckets.get(g.id);
+            if (!list || list.length === 0) continue;
+            main.appendChild(buildArtGroupSection(g.id, g.label || g.id, list));
+          }
 
-          const h2 = document.createElement("h2");
-          h2.textContent = "Concept Art (" + artCount + ")";
-          section.appendChild(h2);
-
-          const note = document.createElement("p");
-          note.className = "empty-state";
-          note.style.padding = "0 0 1rem";
-          note.style.textAlign = "left";
-          note.textContent =
-            "Character, race, and class concept art from game-client/assets/art/art-manifest.json. " +
-            "Click a thumbnail to open it full-size.";
-          section.appendChild(note);
-
-          section.appendChild(buildArt(artEntries, artGroups));
-          main.appendChild(section);
+          for (const [gid, list] of [...artBuckets.unregistered].sort((a, b) =>
+            a[0].localeCompare(b[0]),
+          )) {
+            main.appendChild(
+              buildArtGroupSection(gid, gid + " (unregistered)", list),
+            );
+          }
         }
 
         // --- coverage panel: codegen keys with no manifest entry ---
