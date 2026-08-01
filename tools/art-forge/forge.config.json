@@ -4,12 +4,12 @@
   "sampler": {
     "denoise": 0.82,
     "mode": "img2img",
-    "steps": 8,
-    "cfg": 1,
+    "steps": 24,
+    "cfg": 3,
     "samplerName": "res_multistep",
     "scheduler": "simple",
     "shift": 3,
-    "_note": "steps/cfg/samplerName/scheduler/shift are STOCK ComfyUI image_z_image_turbo template values, NOT the owner's lost hand-tuned 'winning recipe v3' — first thing to tune if regenerated art does not match game-client/assets/art/classes/*.png."
+    "_note": "denoise (0.82), steps (24), and cfg (3) are empirically validated against game-client/assets/art/classes/ogre-mage.png by the F-024 calibration campaign (tools/art-forge/out/sweep/ + out/costumesweep/) — do not change them without re-running that sweep. The stock ComfyUI image_z_image_turbo template values (steps 8, cfg 1) produce flat vector cartoon output, not the house style. samplerName/scheduler/shift were left at the stock template values — not yet swept; next thing to tune if regenerated art still doesn't match now that steps/cfg/denoise are locked in."
   },
   "silhouettes": {
     "dir": "F:\\comfy-ui\\input",

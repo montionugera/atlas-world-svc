@@ -57,6 +57,7 @@ export function loadForge(forgeDir = FORGE_DIR) {
     raceIdentity: readJson(
       path.join(forgeDir, "prompts", "race-identity.json"),
     ),
+    jobCostume: readJson(path.join(forgeDir, "prompts", "job-costume.json")),
     outDir: path.join(forgeDir, "out"),
   };
 }
@@ -104,6 +105,14 @@ export function requireCell(args, forge) {
   if (!forge.raceIdentity[race]) {
     throw new Error(
       `race "${race}" is on muscleGradient.raceAxis but missing from prompts/race-identity.json`,
+    );
+  }
+  // job-costume.json is the other locked-canon prompt ingredient (costume/prop
+  // vocabulary, see content/story/canon.md §5); missing it would silently
+  // generate without costume identity, same failure mode raceIdentity guards.
+  if (!forge.jobCostume?.[job]?.clause) {
+    throw new Error(
+      `job "${job}" is on muscleGradient.jobAxis but missing a clause in prompts/job-costume.json`,
     );
   }
   return { race, job };
@@ -239,6 +248,14 @@ export function muscleScore(race, job, forge) {
  * README.md they belong INSIDE the positive prompt. They are also encoded
  * into a real negative conditioning (see buildBaseGraph) so the graph stays
  * correct if cfg is ever raised.
+ *
+ * The F-024 calibration campaign found the negatives-inside-positive
+ * duplication makes no visual difference either way, so it stays exactly
+ * where it always was — it is not worth moving now that cfg defaults to 3
+ * (forge.config.json). Two more ingredients are appended AFTER it, in this
+ * order, to reproduce the campaign's validated prompt string verbatim: the
+ * job's costume/prop clause (prompts/job-costume.json), then the style
+ * clause (style-laws.json `styleClause`).
  */
 export function buildPrompt({ race, job }, forge) {
   const identity = forge.raceIdentity[race].identity;
@@ -250,6 +267,8 @@ export function buildPrompt({ race, job }, forge) {
     `muscle mass ${score.toFixed(1)} out of 10`,
     "single character, plain background, front view",
     ...forge.styleLaws.negative,
+    forge.jobCostume[job].clause,
+    ...forge.styleLaws.styleClause,
   ].join(", ");
 }
 

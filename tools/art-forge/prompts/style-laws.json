@@ -1,6 +1,13 @@
 {
   "positive": ["crisp flat 2D anime illustration"],
   "negative": ["NOT 3D render", "NOT CGI", "NOT clay", "no fur"],
+  "styleClause": [
+    "RO proportion",
+    "Genshin-detail",
+    "soft painterly shading",
+    "richly detailed rendering"
+  ],
+  "_note": "styleClause is the F-024 calibration campaign's validated style-word clause. 'RO proportion x Genshin-detail' was recovered from the `note` field ('RO-proportion x Genshin-detail class artwork') that is identical across all 64 art:class-* entries in game-client/assets/art/art-manifest.json; 'soft painterly shading, richly detailed rendering' came from the same costume-sweep calibration (tools/art-forge/out/costumesweep/W2-costume-style.png) as job-costume.json's mage clause. buildPrompt() (generate/charsheet.mjs) appends styleClause LAST — after the job costume clause, not inside the opening `positive` array — to reproduce the validated ogre-mage prompt string verbatim.",
   "laws": [
     "Text alone CANNOT hold head-body ratio — always anchor with an image. The owner caught drift twice on text-only attempts.",
     "The words 'raccoon', 'goggles' and 'dwarf' drag the model toward 3D-furry/Pixar. Counter with 'KEMONOMIMI, HUMAN face, no fur'.",
