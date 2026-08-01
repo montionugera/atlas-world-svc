@@ -43,7 +43,7 @@ Every object has exactly these thirteen fields.
 | `durability`  | `low`, `mid`, `high`                                                                                          |
 | `speed`       | `low`, `mid`, `high`                                                                                          |
 | `region`      | one of the nine regions below                                                                                 |
-| `faction`     | one of the nine faction ids below                                                                             |
+| `faction`     | one of the ten canonical `faction-*` ids from `content/story/factions.json`                                   |
 | `lore`        | 2–4 sentences, Ashen Vigil voice (`style.md` §1)                                                              |
 | `visualBrief` | silhouette and distinguishing marks; written to drive concept-art generation later                            |
 
@@ -113,7 +113,7 @@ Front and the deepest ruin districts of Cindervast.
   beast and no Void plant exists in this roster: the void gets into what the
   war left behind, not into ordinary living things.
 - **Holy is rare and Bellfaith-adjacent.** All 5 Holy entries carry
-  `faction: bellfaith`, and every one of them is the Bell School's answer to
+  `faction: faction-bellfaith`, and every one of them is the Bell School's answer to
   the war-scars turned loose or turned wrong — a warden who could not stop
   ringing, a body the holy work cleaned and did not release. That is why they
   are hostile: not evil, unstoppable.
@@ -146,33 +146,38 @@ and things that push through cane; Gildmark is automata and bound beasts off
 the manifest; the Ashvale Front is war-scars and the Bellfaith's answer to
 them.
 
-## Factions (9)
+## Factions (10)
 
-Faction values are the short forms of the ids in
-`content/story/factions.json` — `unaligned` here means `faction-unaligned`
-there, `ashfang` means `faction-ashfang`, and so on.
+Faction values are the **canonical ids** from `content/story/factions.json`,
+`faction-` prefix included, so an entry here can be joined against the story
+data without translation. All ten story factions are used.
 
-| Faction value      | Count |
-| ------------------ | ----- |
-| `unaligned`        | 86    |
-| `thornveil`        | 8     |
-| `bellfaith`        | 5     |
-| `stoneguard`       | 4     |
-| `ashen-column`     | 4     |
-| `ashfang`          | 3     |
-| `expedition`       | 2     |
-| `embervale-banner` | 2     |
-| `norhollow-banner` | 2     |
+| Faction value              | Count |
+| -------------------------- | ----- |
+| `faction-unaligned`        | 78    |
+| `faction-thornveil`        | 8     |
+| `faction-gildmark-council` | 8     |
+| `faction-bellfaith`        | 5     |
+| `faction-stoneguard`       | 4     |
+| `faction-ashen-column`     | 4     |
+| `faction-ashfang`          | 3     |
+| `faction-expedition`       | 2     |
+| `faction-embervale-banner` | 2     |
+| `faction-norhollow-banner` | 2     |
 
-Most wild things are `unaligned` on purpose — the Undertow's monsters are the
-war's residue, not an organised enemy army (`style.md` §6 rule 1). A banner
-value means the creature still carries that side's identity: a Norhollow guard
-still counting his dead, Embervale hounds bred on the forge floor, expedition
-draft oxen with the harness still on.
+Most wild things are `faction-unaligned` on purpose — the Undertow's monsters
+are the war's residue, not an organised enemy army (`style.md` §6 rule 1). A
+banner value means the creature still carries that side's identity: a Norhollow
+guard still counting his dead, Embervale hounds bred on the forge floor,
+expedition draft oxen with the harness still on.
 
-`faction-gildmark-council` has no entries. Gildmark's monsters are its
-merchandise and its machines, and neither belongs to the Council once it is
-off the manifest.
+**Gildmark splits on who made the thing.** Canon §4 and §5 put the deepwater
+port, the arms trade, and the Builder School's magic-stone automata in the
+Harbor Council's hands, so everything in the `gildmark` region that was
+_built_ or _bound_ — all 8 `automata` and `bound-beast` entries — carries
+`faction-gildmark-council`, whether or not the Council would still admit to
+owning it. The two wild things on the same coast, the `wharf-scuttler` and the
+`bilge-crawler`, stay `faction-unaligned`. Nobody built those.
 
 ## Combat shape distribution
 
