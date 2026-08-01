@@ -78,6 +78,12 @@ jobs:
           npm test --prefix scripts
           node scripts/check_content.mjs
 
+      # I-048: Season 1 budget report. Informational only — report_season1.mjs
+      # always exits 0, so this step can never redden the build. It exists so
+      # the target/actual delta is visible on every PR without anyone running it.
+      - name: Season 1 budget report
+        run: node scripts/report_season1.mjs
+
       # Story graph drift-gate (F-012): docs/story/story-graph.md is a
       # generated Mermaid visualization of the 7 story files (scripts/lib/story.mjs
       # loader, shared with the content gate above). Fails the build if the
