@@ -346,5 +346,11 @@
     "title": "Seamless large-world scaling: AOI (StateView) + shard grid + border ghosts + authority handoff + cross-shard combat",
     "created_at": "2026-08-01T15:22:00.133551+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-059",
+    "title": "L2 ecology: biome and habitat lore for cluster-1's zones - convene the Naturalist (joins at L2 per the roles charter) to derive climate, vegetation, water and food chains from the Cartographer's terrain, and place the 116 bestiary monsters by ZONE not just region",
+    "created_at": "2026-08-01T16:23:03.138219+00:00",
+    "promoted_to": null
   }
 ]
