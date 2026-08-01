@@ -225,9 +225,17 @@ Create `scripts/tests/fixtures/season1/content/story/quests.json`:
   { "id": "quest-downstream-of-act", "unlockedBy": ["quest-act-gated"] },
   { "id": "quest-event-gated", "unlockedBy": ["event-bells-ring-true"] },
   { "id": "quest-cycle-a", "unlockedBy": ["quest-cycle-b"] },
-  { "id": "quest-cycle-b", "unlockedBy": ["quest-cycle-a"] }
+  { "id": "quest-cycle-b", "unlockedBy": ["quest-cycle-a"] },
+  { "id": "quest-mixed-gate", "unlockedBy": ["quest-free-root", "act-3"] },
+  { "id": "quest-two-free-parents", "unlockedBy": ["quest-free-root", "quest-free-child"] }
 ]
 ```
+
+`quest-mixed-gate` and `quest-two-free-parents` exist to discriminate the AND-gate: with only
+singleton `unlockedBy` arrays, `.every()` and `.some()` are indistinguishable, so a regression
+flipping the AND-gate to an OR-gate would pass unnoticed. `quest-two-free-parents` has two
+free parents and must join the free set; `quest-mixed-gate` has one free parent and one act
+gate and must never join — proving the semantics are AND, not OR.
 
 Create `scripts/tests/fixtures/season1/game-client/assets/art/art-manifest.json`:
 
@@ -260,9 +268,13 @@ test("bestiaryDesigns counts the top-level array", () => {
 });
 
 test("actIndependentQuests excludes act gates, event gates, their descendants and cycles", () => {
-  // free: quest-free-root, quest-free-child. Everything else is gated,
-  // downstream of a gate, or in a cycle that never resolves.
-  assert.equal(MEASURES.actIndependentQuests(FIXTURE), 2);
+  // free: quest-free-root, quest-free-child, quest-two-free-parents (both of
+  // its unlockedBy entries are themselves free). Everything else is gated,
+  // downstream of a gate, or in a cycle that never resolves — including
+  // quest-mixed-gate, whose unlockedBy mixes a free quest id with an act-*
+  // id: this proves the AND-gate (every prerequisite must be free), since an
+  // OR-gate (any prerequisite free) would wrongly admit it via quest-free-root.
+  assert.equal(MEASURES.actIndependentQuests(FIXTURE), 3);
 });
 
 test("art measures count by key prefix", () => {

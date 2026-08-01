@@ -43,9 +43,13 @@ test("bestiaryDesigns counts the top-level array", () => {
 });
 
 test("actIndependentQuests excludes act gates, event gates, their descendants and cycles", () => {
-  // free: quest-free-root, quest-free-child. Everything else is gated,
-  // downstream of a gate, or in a cycle that never resolves.
-  assert.equal(MEASURES.actIndependentQuests(FIXTURE), 2);
+  // free: quest-free-root, quest-free-child, quest-two-free-parents (both of
+  // its unlockedBy entries are themselves free). Everything else is gated,
+  // downstream of a gate, or in a cycle that never resolves — including
+  // quest-mixed-gate, whose unlockedBy mixes a free quest id with an act-*
+  // id: this proves the AND-gate (every prerequisite must be free), since an
+  // OR-gate (any prerequisite free) would wrongly admit it via quest-free-root.
+  assert.equal(MEASURES.actIndependentQuests(FIXTURE), 3);
 });
 
 test("art measures count by key prefix", () => {
