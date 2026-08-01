@@ -63,6 +63,38 @@ a <em>story</em> world had nobody who owned whether the story works as drama.
 | **Quest Designer** | L3 | Needs places and factions to hang hooks on |
 | **Linguist (deep)** | optional | Only if the world wants real conlang depth rather than consistent naming |
 
+## 2.3 The Principal — the decision role
+
+| Role | Owns | Decides | May never |
+|---|---|---|---|
+| **Principal** | The decision record | Which option wins, with reasoning shown against weighted criteria | Propose options · author content · overrule a veto · reopen a §1 standing decision |
+
+<div class="callout info">
+<strong>Why this is separate from the Showrunner.</strong> The Showrunner writes the briefs, runs
+the panel and carries the session's momentum — which makes it the <em>worst</em> candidate to
+judge the results. On 2026-08-01 the Showrunner recommended the option that avoided the most
+expensive engineering and presented it as a design argument. That is exactly the failure this
+role exists to prevent: <strong>the person who ran the process should not score it.</strong>
+</div>
+
+**The Principal must, every time:**
+
+1. **Show the criteria and their weights** before scoring anything. Criteria are derived from §1 standing decisions, never invented to fit a preferred answer.
+2. **Score every option against every criterion** — including options it dislikes.
+3. **State what the decision sacrifices.** A decision with no stated cost has not been made, only asserted.
+4. **Give the losing option's strongest argument, in its strongest form.** If it cannot, it has not understood the option well enough to reject it.
+5. **State its confidence, and what evidence would change its mind.** A decision that nothing could overturn is a preference.
+6. **Escalate rather than decide** when the choice belongs to the owner — anything touching §1, anything trading art quality against cost, anything reshaping the product.
+
+<div class="callout danger">
+<strong>Cost is not a tie-breaker unless the owner says it is.</strong> The owner's standing
+principle is <strong>do it right, not fast</strong>. The Principal may record cost as a
+consequence, never use it as the deciding criterion, and must flag explicitly when the
+cheapest option and the best option differ.
+</div>
+
+**Output:** a decision record — the criteria, the matrix, the call, the sacrifice, the dissent, the confidence, and the trigger that would reopen it. Decision records are permanent; a later reversal appends, never edits.
+
 ## 3. How they work
 
 ```mermaid
@@ -74,12 +106,14 @@ flowchart TD
   NAME["Namer"]
   AUD["Cliché Auditor"]
   SYN["Showrunner → synthesis"]
+  PRIN["Principal → decision record"]
   ART["A_N"]
 
   ARCH --> PANEL
   RES --> PANEL
   PANEL -->|competing proposals| SYN
-  SYN --> NAME --> AUD
+  SYN --> PRIN
+  PRIN --> NAME --> AUD
   AUD -->|pass| ART
   AUD -->|reject with reason| PANEL
   ART --> OWNER
@@ -91,10 +125,11 @@ flowchart TD
 1. **Archivist** assembles `A0` — what is true now, with every gap and contradiction listed.
 2. **Research** supplies cited mechanisms (dossiers already exist for bells/news and death/relics/forbidden).
 3. **Panel** each proposes independently against the same brief. **They must not converge early** — the point is competing answers, not a committee average.
-4. **Showrunner** (me) synthesises the strongest combination, and records what was rejected and why.
-5. **Namer** replaces every placeholder with real names under the naming system.
-6. **Cliché Auditor** attacks the result. A reject sends it back to the panel with a reason, not to the Showrunner to patch.
-7. **Owner** accepts or amends. Only the owner may reopen a §1 standing decision.
+4. **Showrunner** (me) synthesises the strongest combination, and records what was rejected and why. The Showrunner does **not** score the panel — see §2.3.
+5. **Principal** adjudicates where the panel disagrees, and issues a decision record. It escalates to the owner rather than deciding anything that touches §1.
+6. **Namer** replaces every placeholder with real names under the naming system.
+7. **Cliché Auditor** attacks the result. A reject sends it back to the panel with a reason, not to the Showrunner to patch.
+8. **Owner** accepts or amends. Only the owner may reopen a §1 standing decision.
 
 ## 4. Rules that make this work rather than theatre
 
