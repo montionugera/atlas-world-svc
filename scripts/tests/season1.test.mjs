@@ -57,6 +57,24 @@ test("art measures count by key prefix", () => {
   assert.equal(MEASURES.bestiaryArt(FIXTURE), 0);
 });
 
+test("buildRows notes over/met/short correctly (drift upward must not read as met)", () => {
+  const doc = {
+    lines: [
+      { id: "over", label: "O", target: 1, measure: "mobBases", source: "s" },
+      { id: "met", label: "M", target: 2, measure: "mobBases", source: "s" },
+      { id: "short", label: "S", target: 5, measure: "mobBases", source: "s" },
+    ],
+  };
+  const [over, met, short] = buildRows(doc, FIXTURE);
+  // FIXTURE's mobBases measures 2 (see the "mobBases counts..." test above).
+  assert.equal(over.actual, 2);
+  assert.equal(over.note, "1 over");
+  assert.equal(met.actual, 2);
+  assert.equal(met.note, "met");
+  assert.equal(short.actual, 2);
+  assert.equal(short.note, "3 short");
+});
+
 test("buildRows reports blocked lines without inventing a delta", () => {
   const doc = {
     lines: [

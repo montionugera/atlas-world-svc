@@ -79,10 +79,21 @@ jobs:
           node scripts/check_content.mjs
 
       # I-048: Season 1 budget report. Informational only — report_season1.mjs
-      # always exits 0, so this step can never redden the build. It exists so
-      # the target/actual delta is visible on every PR without anyone running it.
+      # always exits 0, so this step can never redden the build. `if: always()`
+      # plus posting to $GITHUB_STEP_SUMMARY means the delta is still visible
+      # on the run summary page even when an earlier step (typecheck, jest,
+      # the asset gate, the content gate) already failed — exactly the
+      # content-churn PRs where the delta matters most.
       - name: Season 1 budget report
-        run: node scripts/report_season1.mjs
+        if: always()
+        run: |
+          OUTPUT="$(node scripts/report_season1.mjs)"
+          echo "$OUTPUT"
+          {
+            echo '```'
+            echo "$OUTPUT"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # Story graph drift-gate (F-012): docs/story/story-graph.md is a
       # generated Mermaid visualization of the 7 story files (scripts/lib/story.mjs

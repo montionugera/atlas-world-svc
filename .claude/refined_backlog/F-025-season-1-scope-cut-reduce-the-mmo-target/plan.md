@@ -507,7 +507,9 @@ Create `scripts/report_season1.mjs`:
 
 ```js
 #!/usr/bin/env node
-// Season 1 budget report (I-048). REPORTING ONLY — this always exits 0.
+// Season 1 budget report (I-048). REPORTING ONLY: every input path exits 0
+// except the deliberate process.exit(2) in parseArgs for an unknown flag or
+// a flag missing its value.
 // It is deliberately not a gate: the failure mode it exists to catch is
 // authoring drift UPWARD toward a 32-zone continent, and a red floor check
 // would be red for months and teach everyone to ignore it.
@@ -543,7 +545,21 @@ function parseArgs(argv) {
 }
 
 const opts = parseArgs(process.argv);
-const budget = JSON.parse(readFileSync(opts.budget, "utf8"));
+
+// A missing/malformed --budget file is still a report finding, not a crash:
+// the "always exits 0" contract above covers every input path except the
+// deliberate arg-parse exit(2) cases in parseArgs.
+let budget;
+try {
+  budget = JSON.parse(readFileSync(opts.budget, "utf8"));
+} catch (err) {
+  console.log(`Season 1 budget — could not load ${opts.budget}: ${err.message}`);
+  process.exit(0);
+}
+if (typeof budget !== "object" || budget === null || !Array.isArray(budget.lines)) {
+  console.log(`Season 1 budget — could not load ${opts.budget}: expected an object with a "lines" array`);
+  process.exit(0);
+}
 console.log(`Season ${budget.season} budget — cluster ${budget.cluster} — ${budget.record}`);
 console.log(renderTable(buildRows(budget, opts.root)));
 process.exit(0);

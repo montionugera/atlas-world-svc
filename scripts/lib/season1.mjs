@@ -83,7 +83,8 @@ export function buildRows(budget, root) {
     if (!fn) return { ...line, actual: null, note: `unknown measure: ${line.measure}` };
     try {
       const actual = fn(root);
-      const note = actual >= line.target ? "met" : `${line.target - actual} short`;
+      const note =
+        actual > line.target ? `${actual - line.target} over` : actual === line.target ? "met" : `${line.target - actual} short`;
       return { ...line, actual, note };
     } catch (err) {
       return { ...line, actual: null, note: `unmeasurable: ${err.message}` };
@@ -93,9 +94,10 @@ export function buildRows(budget, root) {
 
 export function renderTable(rows) {
   const pad = (value, width) => String(value).padEnd(width);
-  const out = [pad("line", 26) + pad("target", 8) + pad("actual", 8) + "note", "-".repeat(78)];
+  const idWidth = Math.max(26, ...rows.map((row) => String(row.id).length + 2));
+  const out = [pad("line", idWidth) + pad("target", 8) + pad("actual", 8) + "note", "-".repeat(78)];
   for (const row of rows) {
-    out.push(pad(row.id, 26) + pad(row.target, 8) + pad(row.actual ?? "-", 8) + row.note);
+    out.push(pad(row.id, idWidth) + pad(row.target, 8) + pad(row.actual ?? "-", 8) + row.note);
   }
   return out.join("\n");
 }
