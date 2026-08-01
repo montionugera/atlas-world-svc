@@ -304,5 +304,11 @@
     "title": "L1 remainder: the god, what Void is, and deep-time legend - run Theologian, Deep-Time Historian and Political Economist against the two cited research dossiers",
     "created_at": "2026-08-01T15:12:09.770579+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-052",
+    "title": "Wire the 28 authored quests to the Nakama runtime and reconcile the two quest catalogs (contracts/content/quests.json has live ITEM_PICKED_UP / ZONE_ENTERED quests no event can complete)",
+    "created_at": "2026-08-01T15:12:10.502838+00:00",
+    "promoted_to": null
   }
 ]
