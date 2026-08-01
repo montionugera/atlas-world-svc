@@ -35,7 +35,17 @@ function parseArgs(argv) {
 }
 
 const opts = parseArgs(process.argv);
-const budget = JSON.parse(readFileSync(opts.budget, "utf8"));
+
+// A missing/malformed --budget file is still a report finding, not a crash:
+// the "always exits 0" contract above covers every input path except the
+// deliberate arg-parse exit(2) cases in parseArgs.
+let budget;
+try {
+  budget = JSON.parse(readFileSync(opts.budget, "utf8"));
+} catch (err) {
+  console.log(`Season 1 budget — could not load ${opts.budget}: ${err.message}`);
+  process.exit(0);
+}
 console.log(`Season ${budget.season} budget — cluster ${budget.cluster} — ${budget.record}`);
 console.log(renderTable(buildRows(budget, opts.root)));
 process.exit(0);

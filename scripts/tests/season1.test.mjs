@@ -120,3 +120,15 @@ test("CLI rejects an unknown flag with exit 2", () => {
     (err) => err.status === 2,
   );
 });
+
+test("CLI still exits 0 when --budget points at a missing file", () => {
+  // Found in review: the budget-file read itself must honor the same
+  // "always exits 0" contract as a missing measured file, since this is
+  // not the deliberate arg-parse exit(2) case.
+  const out = execFileSync(
+    process.execPath,
+    [CLI, "--budget", join(ROOT, "content/does-not-exist.json")],
+    { encoding: "utf8" },
+  );
+  assert.match(out, /could not load/);
+});
