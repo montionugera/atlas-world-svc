@@ -77,6 +77,26 @@ reads like generic high fantasy, it is a re-skin. <strong>Reject.</strong>
 - **G5 · No contradiction.** Nothing collides with `canon.md`, the 152 story nodes, the novel, or the 116-monster bestiary — or, if it does, the collision is named and the fix is proposed in the same commit (canon §6).
 - **G6 · Ordinary life is legible.** After reading it, you can say what changes for a miller, a caravan guard and a bell-warden.
 
+<div class="callout danger">
+<strong>G7 · Zero real-world nouns.</strong> No world artifact may contain the name of a real
+country, city, region, people, language, religion, institution or historical person —
+no <em>England</em>, no <em>Venice</em>, no <em>Rome</em>, no <em>Norse</em>, no
+<em>Latin</em>. Not as a name, not as a knowing wink, not in an epigraph.
+<br><br>
+<strong>This also bans one-to-one transplants.</strong> A town that is recognisably a real city
+with the serial numbers filed off fails this gate even if the name is invented. The research
+supplies <strong>mechanisms</strong> — a price list, a licensing racket, a signalling exploit —
+never settings. If a reader can say "oh, this is medieval such-and-such", it is rejected.
+<br><br>
+<strong>Scope:</strong> applies to <code>A1</code>…<code>A4</code> and everything derived from
+them — lore, quests, dialogue, item names, place names, monster names, art prompts.
+<strong>It does not apply to</strong> the research dossiers under <code>docs/research/</code>,
+which must cite real sources by name to be checkable at all. Dossiers are engineering
+documents, not world content, and are never shipped to a player.
+</div>
+
+**Check it like this:** grep the artifact for real-world proper nouns before acceptance, and read every invented name aloud — if it is a real-world name with one letter changed, it fails.
+
 ### Quality items (scored, not blocking)
 
 | # | Test | Good looks like |
@@ -115,6 +135,14 @@ not fantasy fiction.</strong>
 - Other games' lore (Lineage 2 included — structure only, never substance)
 
 **Extract into a dossier:** mechanism · who benefited · what it cost · how it failed · one concrete detail worth stealing. **Citation required per row.**
+
+<div class="callout warn">
+<strong>Steal the mechanism, never the setting.</strong> A dossier row saying "a guild banned a
+craft for 285 years so it could sell exemptions" is usable. Carrying across the country, the
+century, the costume or the institution's real name is a <strong>G7</strong> failure. The test:
+strip the row to its causal skeleton — who wants what, who pays, who profits, how it breaks —
+and build from the skeleton alone.
+</div>
 
 ## 6. ABP — asset build pipeline contract
 
