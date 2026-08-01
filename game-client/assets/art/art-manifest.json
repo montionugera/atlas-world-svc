@@ -3,27 +3,27 @@
   "entries": {
     "art:cast-crossroads-man-sheet": {
       "group": "cast",
-      "title": "The Crossroads Man — reference sheet",
+      "title": "The Crossroads Man \u2014 reference sheet",
       "file": "concept/cast-crossroads-man-sheet.png",
-      "note": "Z-Image Turbo, local generation — 4-view turnaround, The Undertow cast"
+      "note": "Z-Image Turbo, local generation \u2014 4-view turnaround, The Undertow cast"
     },
     "art:cast-crossroads-man-v1": {
       "group": "cast",
-      "title": "The Crossroads Man — design v1",
+      "title": "The Crossroads Man \u2014 design v1",
       "file": "concept/cast-crossroads-man-v1.png",
-      "note": "Z-Image Turbo, local generation — design variant 1, The Undertow cast"
+      "note": "Z-Image Turbo, local generation \u2014 design variant 1, The Undertow cast"
     },
     "art:cast-crossroads-man-v2": {
       "group": "cast",
-      "title": "The Crossroads Man — design v2",
+      "title": "The Crossroads Man \u2014 design v2",
       "file": "concept/cast-crossroads-man-v2.png",
-      "note": "Z-Image Turbo, local generation — design variant 2, The Undertow cast"
+      "note": "Z-Image Turbo, local generation \u2014 design variant 2, The Undertow cast"
     },
     "art:cast-crossroads-man-v3": {
       "group": "cast",
-      "title": "The Crossroads Man — design v3",
+      "title": "The Crossroads Man \u2014 design v3",
       "file": "concept/cast-crossroads-man-v3.png",
-      "note": "Z-Image Turbo, local generation — design variant 3, The Undertow cast"
+      "note": "Z-Image Turbo, local generation \u2014 design variant 3, The Undertow cast"
     },
     "art:cast-widow": {
       "group": "cast",
@@ -57,15 +57,15 @@
     },
     "art:race-dwarf": {
       "group": "race",
-      "title": "Dwarf — Gildmark artificer",
+      "title": "Dwarf \u2014 Gildmark artificer",
       "file": "concept/race-dwarf.png",
-      "note": "Z-Image Turbo, local generation, race lineup — Gildmark artificer"
+      "note": "Z-Image Turbo, local generation, race lineup \u2014 Gildmark artificer"
     },
     "art:race-immortal": {
       "group": "race",
-      "title": "Immortal — Bellfaith healer",
+      "title": "Immortal \u2014 Bellfaith healer",
       "file": "concept/race-immortal.png",
-      "note": "Z-Image Turbo, local generation, race lineup — Bellfaith healer"
+      "note": "Z-Image Turbo, local generation, race lineup \u2014 Bellfaith healer"
     },
     "art:race-human": {
       "group": "race",
@@ -75,423 +75,423 @@
     },
     "art:race-demon": {
       "group": "race",
-      "title": "Demon — Cindervast drifter",
+      "title": "Demon \u2014 Cindervast drifter",
       "file": "concept/race-demon.png",
-      "note": "Z-Image Turbo, local generation, race lineup — Cindervast drifter"
+      "note": "Z-Image Turbo, local generation, race lineup \u2014 Cindervast drifter"
     },
     "art:race-elf": {
       "group": "race",
-      "title": "Elf — Norhollow archivist",
+      "title": "Elf \u2014 Norhollow archivist",
       "file": "concept/race-elf.png",
-      "note": "Z-Image Turbo, local generation, race lineup — Norhollow archivist"
+      "note": "Z-Image Turbo, local generation, race lineup \u2014 Norhollow archivist"
     },
     "art:race-ogre": {
       "group": "race",
-      "title": "Ogre — Millcross caravan guard",
+      "title": "Ogre \u2014 Millcross caravan guard",
       "file": "concept/race-ogre.png",
-      "note": "Z-Image Turbo, local generation, race lineup — Millcross caravan guard"
+      "note": "Z-Image Turbo, local generation, race lineup \u2014 Millcross caravan guard"
     },
     "art:race-dragon": {
       "group": "race",
-      "title": "Dragon-blooded — golden-age wanderer",
+      "title": "Dragon-blooded \u2014 golden-age wanderer",
       "file": "concept/race-dragon.png",
-      "note": "Z-Image Turbo, local generation, race lineup — golden-age wanderer"
+      "note": "Z-Image Turbo, local generation, race lineup \u2014 golden-age wanderer"
     },
     "art:class-human-swordsman": {
       "group": "class",
-      "title": "Human — Swordsman",
+      "title": "Human \u2014 Swordsman",
       "file": "classes/human-swordsman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-human-archer": {
       "group": "class",
-      "title": "Human — Archer",
+      "title": "Human \u2014 Archer",
       "file": "classes/human-archer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-human-assassin": {
       "group": "class",
-      "title": "Human — Assassin",
+      "title": "Human \u2014 Assassin",
       "file": "classes/human-assassin.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-human-spearman": {
       "group": "class",
-      "title": "Human — Spearman",
+      "title": "Human \u2014 Spearman",
       "file": "classes/human-spearman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-human-mage": {
       "group": "class",
-      "title": "Human — Mage",
+      "title": "Human \u2014 Mage",
       "file": "classes/human-mage.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-human-summoner": {
       "group": "class",
-      "title": "Human — Summoner",
+      "title": "Human \u2014 Summoner",
       "file": "classes/human-summoner.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-human-engineer": {
       "group": "class",
-      "title": "Human — Engineer",
+      "title": "Human \u2014 Engineer",
       "file": "classes/human-engineer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-human-healer": {
       "group": "class",
-      "title": "Human — Healer",
+      "title": "Human \u2014 Healer",
       "file": "classes/human-healer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-demon-swordsman": {
       "group": "class",
-      "title": "Demon — Swordsman",
+      "title": "Demon \u2014 Swordsman",
       "file": "classes/demon-swordsman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-demon-archer": {
       "group": "class",
-      "title": "Demon — Archer",
+      "title": "Demon \u2014 Archer",
       "file": "classes/demon-archer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-demon-assassin": {
       "group": "class",
-      "title": "Demon — Assassin",
+      "title": "Demon \u2014 Assassin",
       "file": "classes/demon-assassin.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-demon-spearman": {
       "group": "class",
-      "title": "Demon — Spearman",
+      "title": "Demon \u2014 Spearman",
       "file": "classes/demon-spearman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-demon-mage": {
       "group": "class",
-      "title": "Demon — Mage",
+      "title": "Demon \u2014 Mage",
       "file": "classes/demon-mage.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-demon-summoner": {
       "group": "class",
-      "title": "Demon — Summoner",
+      "title": "Demon \u2014 Summoner",
       "file": "classes/demon-summoner.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-demon-engineer": {
       "group": "class",
-      "title": "Demon — Engineer",
+      "title": "Demon \u2014 Engineer",
       "file": "classes/demon-engineer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-demon-healer": {
       "group": "class",
-      "title": "Demon — Healer",
+      "title": "Demon \u2014 Healer",
       "file": "classes/demon-healer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dwarf-swordsman": {
       "group": "class",
-      "title": "Dwarf — Swordsman",
+      "title": "Dwarf \u2014 Swordsman",
       "file": "classes/dwarf-swordsman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dwarf-archer": {
       "group": "class",
-      "title": "Dwarf — Archer",
+      "title": "Dwarf \u2014 Archer",
       "file": "classes/dwarf-archer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dwarf-assassin": {
       "group": "class",
-      "title": "Dwarf — Assassin",
+      "title": "Dwarf \u2014 Assassin",
       "file": "classes/dwarf-assassin.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dwarf-spearman": {
       "group": "class",
-      "title": "Dwarf — Spearman",
+      "title": "Dwarf \u2014 Spearman",
       "file": "classes/dwarf-spearman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dwarf-mage": {
       "group": "class",
-      "title": "Dwarf — Mage",
+      "title": "Dwarf \u2014 Mage",
       "file": "classes/dwarf-mage.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dwarf-summoner": {
       "group": "class",
-      "title": "Dwarf — Summoner",
+      "title": "Dwarf \u2014 Summoner",
       "file": "classes/dwarf-summoner.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dwarf-engineer": {
       "group": "class",
-      "title": "Dwarf — Engineer",
+      "title": "Dwarf \u2014 Engineer",
       "file": "classes/dwarf-engineer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dwarf-healer": {
       "group": "class",
-      "title": "Dwarf — Healer",
+      "title": "Dwarf \u2014 Healer",
       "file": "classes/dwarf-healer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-immortal-swordsman": {
       "group": "class",
-      "title": "Immortal — Swordsman",
+      "title": "Immortal \u2014 Swordsman",
       "file": "classes/immortal-swordsman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-immortal-archer": {
       "group": "class",
-      "title": "Immortal — Archer",
+      "title": "Immortal \u2014 Archer",
       "file": "classes/immortal-archer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-immortal-assassin": {
       "group": "class",
-      "title": "Immortal — Assassin",
+      "title": "Immortal \u2014 Assassin",
       "file": "classes/immortal-assassin.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-immortal-spearman": {
       "group": "class",
-      "title": "Immortal — Spearman",
+      "title": "Immortal \u2014 Spearman",
       "file": "classes/immortal-spearman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-immortal-mage": {
       "group": "class",
-      "title": "Immortal — Mage",
+      "title": "Immortal \u2014 Mage",
       "file": "classes/immortal-mage.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-immortal-summoner": {
       "group": "class",
-      "title": "Immortal — Summoner",
+      "title": "Immortal \u2014 Summoner",
       "file": "classes/immortal-summoner.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-immortal-engineer": {
       "group": "class",
-      "title": "Immortal — Engineer",
+      "title": "Immortal \u2014 Engineer",
       "file": "classes/immortal-engineer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-immortal-healer": {
       "group": "class",
-      "title": "Immortal — Healer",
+      "title": "Immortal \u2014 Healer",
       "file": "classes/immortal-healer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-elf-swordsman": {
       "group": "class",
-      "title": "Elf — Swordsman",
+      "title": "Elf \u2014 Swordsman",
       "file": "classes/elf-swordsman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-elf-archer": {
       "group": "class",
-      "title": "Elf — Archer",
+      "title": "Elf \u2014 Archer",
       "file": "classes/elf-archer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-elf-assassin": {
       "group": "class",
-      "title": "Elf — Assassin",
+      "title": "Elf \u2014 Assassin",
       "file": "classes/elf-assassin.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-elf-spearman": {
       "group": "class",
-      "title": "Elf — Spearman",
+      "title": "Elf \u2014 Spearman",
       "file": "classes/elf-spearman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-elf-mage": {
       "group": "class",
-      "title": "Elf — Mage",
+      "title": "Elf \u2014 Mage",
       "file": "classes/elf-mage.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-elf-summoner": {
       "group": "class",
-      "title": "Elf — Summoner",
+      "title": "Elf \u2014 Summoner",
       "file": "classes/elf-summoner.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-elf-engineer": {
       "group": "class",
-      "title": "Elf — Engineer",
+      "title": "Elf \u2014 Engineer",
       "file": "classes/elf-engineer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-elf-healer": {
       "group": "class",
-      "title": "Elf — Healer",
+      "title": "Elf \u2014 Healer",
       "file": "classes/elf-healer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dragon-swordsman": {
       "group": "class",
-      "title": "Dragon — Swordsman",
+      "title": "Dragon \u2014 Swordsman",
       "file": "classes/dragon-swordsman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dragon-archer": {
       "group": "class",
-      "title": "Dragon — Archer",
+      "title": "Dragon \u2014 Archer",
       "file": "classes/dragon-archer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dragon-assassin": {
       "group": "class",
-      "title": "Dragon — Assassin",
+      "title": "Dragon \u2014 Assassin",
       "file": "classes/dragon-assassin.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dragon-spearman": {
       "group": "class",
-      "title": "Dragon — Spearman",
+      "title": "Dragon \u2014 Spearman",
       "file": "classes/dragon-spearman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dragon-mage": {
       "group": "class",
-      "title": "Dragon — Mage",
+      "title": "Dragon \u2014 Mage",
       "file": "classes/dragon-mage.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dragon-summoner": {
       "group": "class",
-      "title": "Dragon — Summoner",
+      "title": "Dragon \u2014 Summoner",
       "file": "classes/dragon-summoner.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dragon-engineer": {
       "group": "class",
-      "title": "Dragon — Engineer",
+      "title": "Dragon \u2014 Engineer",
       "file": "classes/dragon-engineer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-dragon-healer": {
       "group": "class",
-      "title": "Dragon — Healer",
+      "title": "Dragon \u2014 Healer",
       "file": "classes/dragon-healer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-beastkin-swordsman": {
       "group": "class",
-      "title": "Beastkin — Swordsman",
+      "title": "Beastkin \u2014 Swordsman",
       "file": "classes/beastkin-swordsman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-beastkin-archer": {
       "group": "class",
-      "title": "Beastkin — Archer",
+      "title": "Beastkin \u2014 Archer",
       "file": "classes/beastkin-archer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-beastkin-assassin": {
       "group": "class",
-      "title": "Beastkin — Assassin",
+      "title": "Beastkin \u2014 Assassin",
       "file": "classes/beastkin-assassin.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-beastkin-spearman": {
       "group": "class",
-      "title": "Beastkin — Spearman",
+      "title": "Beastkin \u2014 Spearman",
       "file": "classes/beastkin-spearman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-beastkin-mage": {
       "group": "class",
-      "title": "Beastkin — Mage",
+      "title": "Beastkin \u2014 Mage",
       "file": "classes/beastkin-mage.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-beastkin-summoner": {
       "group": "class",
-      "title": "Beastkin — Summoner",
+      "title": "Beastkin \u2014 Summoner",
       "file": "classes/beastkin-summoner.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-beastkin-engineer": {
       "group": "class",
-      "title": "Beastkin — Engineer",
+      "title": "Beastkin \u2014 Engineer",
       "file": "classes/beastkin-engineer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-beastkin-healer": {
       "group": "class",
-      "title": "Beastkin — Healer",
+      "title": "Beastkin \u2014 Healer",
       "file": "classes/beastkin-healer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-ogre-swordsman": {
       "group": "class",
-      "title": "Ogre — Swordsman",
+      "title": "Ogre \u2014 Swordsman",
       "file": "classes/ogre-swordsman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-ogre-archer": {
       "group": "class",
-      "title": "Ogre — Archer",
+      "title": "Ogre \u2014 Archer",
       "file": "classes/ogre-archer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-ogre-assassin": {
       "group": "class",
-      "title": "Ogre — Assassin",
+      "title": "Ogre \u2014 Assassin",
       "file": "classes/ogre-assassin.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-ogre-spearman": {
       "group": "class",
-      "title": "Ogre — Spearman",
+      "title": "Ogre \u2014 Spearman",
       "file": "classes/ogre-spearman.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-ogre-mage": {
       "group": "class",
-      "title": "Ogre — Mage",
+      "title": "Ogre \u2014 Mage",
       "file": "classes/ogre-mage.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-ogre-summoner": {
       "group": "class",
-      "title": "Ogre — Summoner",
+      "title": "Ogre \u2014 Summoner",
       "file": "classes/ogre-summoner.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-ogre-engineer": {
       "group": "class",
-      "title": "Ogre — Engineer",
+      "title": "Ogre \u2014 Engineer",
       "file": "classes/ogre-engineer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:class-ogre-healer": {
       "group": "class",
-      "title": "Ogre — Healer",
+      "title": "Ogre \u2014 Healer",
       "file": "classes/ogre-healer.png",
       "note": "RO-proportion x Genshin-detail class artwork"
     },
     "art:race-beastkin": {
       "group": "race",
-      "title": "Beastkin — Rooktide harbor scout",
+      "title": "Beastkin \u2014 Rooktide harbor scout",
       "file": "concept/race-beastkin.png",
-      "note": "Z-Image Turbo, local generation, race lineup — kemonomimi beastkin (replaces panthera)"
+      "note": "Z-Image Turbo, local generation, race lineup \u2014 kemonomimi beastkin (replaces panthera)"
     },
     "art:map-cluster1": {
       "group": "map",
-      "title": "Cluster 1 — the Meltwash basin",
+      "title": "Cluster 1 \u2014 the Meltwash basin",
       "file": "maps/cluster1-world.png",
-      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-map.mjs from content/maps/cluster1-geography.json; the SVG beside this PNG (maps/cluster1-world.svg) is the artifact, the PNG is a 2000px raster of it for the storybook. Replaces an earlier Z-Image Turbo attempt, which could not draw this world’s coastline, roads or place names.",
+      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-map.mjs from content/maps/cluster1-geography.json; the SVG beside this PNG (maps/cluster1-world.svg) is the artifact, the PNG is a 2000px raster of it for the storybook. Replaces an earlier Z-Image Turbo attempt, which could not draw this world\u2019s coastline, roads or place names.",
       "description": "A single-sheet Bellfaith relay map of the Meltwash basin, drafted rather than painted: ink on cream parchment with one accent colour (bell-bronze) reserved for the 27 relay towers and their sight-lines. Real paths for the coastline, the Meltwash and the hatched Saltmire; roads carry their canon day-counts lettered along the legs, with waystations where each day ends; six towns, ten zones with level bands, the Ashvale Front drawn as a gradient whose northern deep is left as bare hatch, and a hard parchment edge along the top because the map does not pretend to know what lies past the ice.",
       "tags": [
         "cluster-1",
@@ -511,16 +511,22 @@
         "raster": "rsvg-convert -w 2000",
         "deterministic": true,
         "width": 2000,
-        "note": "No model, no sampler, no seed — this sheet is drawn from geometry, so there are no generation parameters to record. Re-run the tool to reproduce it byte-for-byte."
+        "note": "No model, no sampler, no seed \u2014 this sheet is drawn from geometry, so there are no generation parameters to record. Re-run the tool to reproduce it byte-for-byte."
       }
     },
     "art:town-millcross": {
       "group": "town",
-      "title": "Millcross — the crossing",
+      "title": "Millcross \u2014 the crossing",
       "file": "concept/A1-ART-02.png",
-      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs \u2014 PLACEHOLDER: below the \u00a76.0 asset quality bar (turbo model, single pass, no upscaler); regenerate when an environment-capable model is installed.",
       "description": "Millcross, a sprawling wall-less crossing town on both banks of a grey river, seen from the road at cart height in late afternoon. One mill-wheel housing is the only structure above one storey; a queue of loaded carts and led animals stretches toward the ford, and former refugee tents have grown plank walls with real doorframes.",
-      "tags": ["cluster-1", "river-crossing", "market-town", "millcross"],
+      "tags": [
+        "cluster-1",
+        "market-town",
+        "millcross",
+        "placeholder-quality",
+        "river-crossing"
+      ],
       "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-02",
       "gen": {
         "model": "z_image_turbo_bf16",
@@ -533,11 +539,17 @@
     },
     "art:town-embervale": {
       "group": "town",
-      "title": "Embervale — the terraced hearths",
+      "title": "Embervale \u2014 the terraced hearths",
       "file": "concept/A1-ART-03.png",
-      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs \u2014 PLACEHOLDER: below the \u00a76.0 asset quality bar (turbo model, single pass, no upscaler); regenerate when an environment-capable model is installed.",
       "description": "Embervale, a terraced hill town of six stacked ledges seen from the fields below at dusk, each ledge a row of slate roofs above a black clinker retaining wall. Forty low hearth-smoke plumes stand off the roofs, and ember-red banners hang along every ledge above figures in banded mourning cloth over faded militia colours.",
-      "tags": ["cluster-1", "hill-town", "embervale", "mining"],
+      "tags": [
+        "cluster-1",
+        "embervale",
+        "hill-town",
+        "mining",
+        "placeholder-quality"
+      ],
       "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-03",
       "gen": {
         "model": "z_image_turbo_bf16",
@@ -550,11 +562,17 @@
     },
     "art:town-norhollow": {
       "group": "town",
-      "title": "Norhollow — the palisade",
+      "title": "Norhollow \u2014 the palisade",
       "file": "concept/A1-ART-04.png",
-      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs \u2014 PLACEHOLDER: below the \u00a76.0 asset quality bar (turbo model, single pass, no upscaler); regenerate when an environment-capable model is installed.",
       "description": "Norhollow, a wooded hollow behind a continuous palisade of sharpened trunks, seen from the open flat in flat morning light so the wall reads as the town's entire silhouette. The open gate is the focal point, flanked by tally boards cut edge to edge with knife marks, with figures in layered furs over palisade-guard leathers.",
-      "tags": ["cluster-1", "palisade-town", "norhollow", "timber"],
+      "tags": [
+        "cluster-1",
+        "norhollow",
+        "palisade-town",
+        "placeholder-quality",
+        "timber"
+      ],
       "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-04",
       "gen": {
         "model": "z_image_turbo_bf16",
@@ -567,11 +585,17 @@
     },
     "art:town-gildmark": {
       "group": "town",
-      "title": "Gildmark — the deepwater head",
+      "title": "Gildmark \u2014 the deepwater head",
       "file": "concept/A1-ART-05.png",
-      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs \u2014 PLACEHOLDER: below the \u00a76.0 asset quality bar (turbo model, single pass, no upscaler); regenerate when an environment-capable model is installed.",
       "description": "Gildmark, a vertical port town stacked in five terraces up a rock headland, seen from the water at the end of the coastal road in low sun. Dressed stone at the base gives way to rendered plaster and timber above, every seaward face tarred black against the salt, with a glazed-cap tower crowning the silhouette above mudflats studded with wrecked-hull ribs.",
-      "tags": ["cluster-1", "port-town", "gildmark", "coastal"],
+      "tags": [
+        "cluster-1",
+        "coastal",
+        "gildmark",
+        "placeholder-quality",
+        "port-town"
+      ],
       "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-05",
       "gen": {
         "model": "z_image_turbo_bf16",
@@ -584,11 +608,17 @@
     },
     "art:town-rooktide": {
       "group": "town",
-      "title": "Rooktide — the tidal landing",
+      "title": "Rooktide \u2014 the tidal landing",
       "file": "concept/A1-ART-06.png",
-      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs \u2014 PLACEHOLDER: below the \u00a76.0 asset quality bar (turbo model, single pass, no upscaler); regenerate when an environment-capable model is installed.",
       "description": "Rooktide, a low river town on stepped terraces above a tidal landing at slack low water, its barges sitting in mud on their pilings while thousands of rooks work the exposed flats. Long shallow-roofed sheds step up the bank, every building visibly sewn from old salvaged plank into newer timber, with barge cranes dominating the foreground.",
-      "tags": ["cluster-1", "river-town", "rooktide", "tidal"],
+      "tags": [
+        "cluster-1",
+        "placeholder-quality",
+        "river-town",
+        "rooktide",
+        "tidal"
+      ],
       "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-06",
       "gen": {
         "model": "z_image_turbo_bf16",
@@ -601,11 +631,17 @@
     },
     "art:town-cindervast": {
       "group": "town",
-      "title": "Cindervast — the roofless city",
+      "title": "Cindervast \u2014 the roofless city",
       "file": "concept/A1-ART-07.png",
-      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs \u2014 PLACEHOLDER: below the \u00a76.0 asset quality bar (turbo model, single pass, no upscaler); regenerate when an environment-capable model is installed.",
       "description": "Cindervast, a roofless walled city on an upland rock shoulder seen from a day's walk below at dusk. The street grid is completely legible in bleached, clean stone with no rubble; undamaged statues of a crowned man holding a child stand among human-shaped shadows fused flat into the walls, and a handful of figures in cracked ceremonial plate still stand post at the closed gate.",
-      "tags": ["cluster-1", "ruined-city", "cindervast", "relic"],
+      "tags": [
+        "cindervast",
+        "cluster-1",
+        "placeholder-quality",
+        "relic",
+        "ruined-city"
+      ],
       "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-07",
       "gen": {
         "model": "z_image_turbo_bf16",
