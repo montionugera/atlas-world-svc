@@ -328,5 +328,11 @@
     "title": "Artifact gate hardening: current detector is corner-only with a knife-edge operating point (15/15 TP but 13/37 FP, no held-out set) and cannot see mid-facade hallucinations like the one the best recipe produced",
     "created_at": "2026-08-01T15:12:12.586829+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-056",
+    "title": "Resolve the 14 internal canon contradictions the Archivist catalogued, including char-expedition-member's two incompatible definitions and core-story.md's superseded magic rule that F-017 replaced",
+    "created_at": "2026-08-01T15:12:13.113110+00:00",
+    "promoted_to": null
   }
 ]
