@@ -400,5 +400,11 @@
     "title": "Season 1 budget: 'met' conflates counter-reached with work-done \u2014 bestiary-designs reads 116/116 met the day F-024 merges with 0% of the ~54-design re-band pass done, and quests-act-independent counts 8 against a target of 90 that was set from a playable count of 4",
     "created_at": "2026-08-01T17:42:18.494023+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-068",
+    "title": "Assert content/season-1-budget.json against DR-003 section 3 \u2014 nothing checks the two agree, which is the exact drift the JSON was created to prevent and which DR-003 itself declares impossible; a ~15-line test on {id,target} pairs closes it (string equality on source will not work, 3 of 8 cells are normalized prose)",
+    "created_at": "2026-08-01T17:42:27.906515+00:00",
+    "promoted_to": null
   }
 ]
