@@ -352,5 +352,11 @@
     "title": "L2 ecology: biome and habitat lore for cluster-1's zones - convene the Naturalist (joins at L2 per the roles charter) to derive climate, vegetation, water and food chains from the Cartographer's terrain, and place the 116 bestiary monsters by ZONE not just region",
     "created_at": "2026-08-01T16:23:03.138219+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-060",
+    "title": "L2 zone content pass: for each cluster-1 zone define hazards, harvestable resources, landmarks and the reason a player goes there - the Systems Designer's three-zones-per-band model needs alternates, cluster 1 currently ships one route with no branches",
+    "created_at": "2026-08-01T16:23:03.859094+00:00",
+    "promoted_to": null
   }
 ]
