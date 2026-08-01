@@ -310,5 +310,11 @@
     "title": "Wire the 28 authored quests to the Nakama runtime and reconcile the two quest catalogs (contracts/content/quests.json has live ITEM_PICKED_UP / ZONE_ENTERED quests no event can complete)",
     "created_at": "2026-08-01T15:12:10.502838+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-053",
+    "title": "Phasing decision and spike: GameState has zero @filter/filterChildren/StateView, so two clients in one room cannot see different world contents - cheapest to build now at 28 quests, cannot be retrofitted at 560",
+    "created_at": "2026-08-01T15:12:11.024470+00:00",
+    "promoted_to": null
   }
 ]
