@@ -139,11 +139,13 @@ corresponding prerequisite is in.
 <div class="callout info">
 <strong>P1 is written as a delivery of <code>I-056</code>, not as a standalone commit.</strong> The
 canon amendment it needs is a slice of that idea, and specifying the same amendment twice, in two
-places, is how the two copies drift apart. <strong>This record does not set backlog order</strong> —
-and note that <code>idea-map.md</code>'s suggested order does not currently place
-<code>I-056</code> at all. <mark>P1 therefore needs an explicit position ahead of quest authoring
-before this budget is authorable against</mark>; folding it into <code>I-056</code> removes the
-duplication, it does not by itself guarantee the sequencing.
+places, is how the two copies drift apart. The sequencing already supports this: backlog order is
+stamped in each idea's spec frontmatter (<code>release/1.6</code>, commit <code>4763697</code>), and
+it places <mark><code>I-056</code> at wave 1, order 1</mark> — <em>"L0 first - stop building on 14
+known contradictions"</em> — ahead of <mark><code>I-048</code> at wave 1, order 2</mark> —
+<em>"scope cut sizes every idea below it"</em>. <strong>P1 therefore precedes the content authoring
+this budget sizes.</strong> <strong>This record does not itself set backlog order</strong>; it reads
+the order that exists.
 </div>
 
 ## 6. What this record does not decide
