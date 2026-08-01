@@ -132,3 +132,23 @@ test("CLI still exits 0 when --budget points at a missing file", () => {
   );
   assert.match(out, /could not load/);
 });
+
+import { writeFileSync, unlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
+
+test("CLI still exits 0 when --budget is valid JSON but missing lines", () => {
+  // Found in fix-round 1: JSON.parse succeeds on a structurally-wrong
+  // budget (e.g. no `lines` array), so the earlier try/catch around
+  // readFileSync+JSON.parse never fires and buildRows throws uncaught.
+  // This is a separate failure mode from "not valid JSON" and needs its
+  // own envelope check, exiting 0 the same way.
+  const badBudgetPath = join(tmpdir(), `season1-bad-budget-${process.pid}.json`);
+  writeFileSync(badBudgetPath, JSON.stringify({ season: 1, cluster: 1, record: "x" }));
+  try {
+    const out = execFileSync(process.execPath, [CLI, "--budget", badBudgetPath], { encoding: "utf8" });
+    assert.match(out, /could not load/);
+    assert.match(out, new RegExp(badBudgetPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  } finally {
+    unlinkSync(badBudgetPath);
+  }
+});
