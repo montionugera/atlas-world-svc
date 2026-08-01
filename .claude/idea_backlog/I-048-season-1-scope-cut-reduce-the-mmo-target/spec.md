@@ -4,6 +4,9 @@ id: I-048
 status: idea
 date: 2026-08-01
 panel: Systems Designer (PASS-WITH-CONDITIONS) · Player Experience (PASS-WITH-CONDITIONS) · Archivist (BLOCK, clearable)
+wave: 1
+order: 2
+sequence_why: "scope cut sizes every idea below it"
 ---
 
 # I-048 — Season 1 scope cut

@@ -2,6 +2,9 @@
 title: "Seamless large-world scaling: AOI (StateView) + shard grid + border ghosts + authority handoff + cross-shard combat"
 id: I-058
 status: idea
+wave: 2
+order: 2
+sequence_why: "AOI/sharding - same subsystem as I-053, resolve overlap first"
 ---
 
 # Seamless large-world scaling

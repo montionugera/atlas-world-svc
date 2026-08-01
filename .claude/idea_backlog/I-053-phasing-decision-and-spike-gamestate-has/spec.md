@@ -2,6 +2,9 @@
 title: "Phasing decision and spike: GameState has zero @filter/filterChildren/StateView, so two clients in one room cannot see different world contents - cheapest to build now at 28 quests, cannot be retrofitted at 560"
 id: I-053
 status: idea
+wave: 2
+order: 1
+sequence_why: "phasing: the only genuinely un-retrofittable call"
 ---
 
 # Phasing decision and spike: GameState has zero @filter/filterChildren/StateView, so two clients in one room cannot see different world contents - cheapest to build now at 28 quests, cannot be retrofitted at 560
