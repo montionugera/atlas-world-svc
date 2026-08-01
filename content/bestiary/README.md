@@ -29,13 +29,14 @@ cannot change gate output.
 
 ## Record shape
 
-Every object has exactly these thirteen fields.
+Every object has exactly these fourteen fields.
 
 | Field         | Meaning                                                                                                       |
 | ------------- | ------------------------------------------------------------------------------------------------------------- |
 | `id`          | kebab-case, unique, `mob-` prefixed                                                                           |
 | `name`        | display name; obeys the naming morphology in `content/story/style.md` §2                                      |
 | `family`      | one of the twelve families below                                                                              |
+| `bodyPlan`    | one of the twelve skeletal-layout plans below — see "Body plans" for why this field exists                    |
 | `levelBand`   | one of `1-10`, `11-20`, `21-30`, `31-40`, `41-50`, `51-60`, `61-70`, `71-80`                                  |
 | `element`     | one of `earth`, `water`, `wind`, `fire`, `holy`, `void`, `neutral`                                            |
 | `archetype`   | one of `bruiser`, `skirmisher`, `tank`, `caster`, `support` — matches `content/schemas/character.schema.json` |
@@ -71,6 +72,66 @@ like one place.
 | `giant`       | Oversized humanoid things: moor giants, slag hulks, ice colossi.                                                                                |
 | `relic-born`  | Woken by Cindervast's relic residue and the violet afterglow. **Distinct from war-scar** — the fall had its own cause (canon §1), not the void. |
 | `bound-beast` | Gildmark's harnessed and warded war-beasts, loose or never delivered (canon §4, `style.md` §6 rule 2).                                          |
+
+## Body plans (12)
+
+`bodyPlan` exists for one reason: it is the **img2img silhouette anchor** that
+keeps 116 monster illustrations reading as one bestiary instead of 116
+unrelated pictures. The 64 class illustrations already prove the mechanism —
+every one was generated img2img over a shared flat-grey silhouette cut from
+one approved reference row, so proportion, scale, framing, and pose were
+fixed before the prompt ever touched race or costume. Monsters had no such
+anchor. The plan is to generate one approved reference per `bodyPlan`, cut
+each to a silhouette, and generate every monster that shares a plan img2img
+over its matching silhouette.
+
+Because the field exists to fix a _silhouette_, it groups by skeletal layout,
+not by `family` or theme. Two monsters in the same family routinely land in
+different plans — a `war-scar` "armless torso-sized shape pulling itself on
+two thin fore-limbs" is `torso-dragger`, while another `war-scar` "low
+four-limbed thing of matted sod" is `quadruped-beast`; a `drake` described as
+"serpentine, the length of a boat" is `serpentine`, not `quadruped-drake`.
+Conversely, two monsters from unrelated families can share a plan when the
+brief describes the same silhouette — `mob-boneorchard-warden` (`war-scar`)
+and `mob-gravefield-maw` (`war-scar`) are both rooted, wide, immobile masses
+with no legs, so both are `plant-rooted` even though neither is in the
+`plant` family.
+
+| `bodyPlan` id     | Silhouette                                                               |
+| ----------------- | ------------------------------------------------------------------------ |
+| `quadruped-beast` | Four-legged animal, low and long, head forward — otters, hounds, wolves. |
+| `quadruped-drake` | Heavy scaled four-legged reptile, broad skull, cart-length or larger.    |
+| `serpentine`      | Long snake- or wyrm-bodied, little or no limb mass, sinuous.             |
+| `insect-low`      | Flat or disc-bodied, many legs splayed, close to the ground.             |
+| `insect-upright`  | Hunched grub or mandibled thing standing roughly chest-high.             |
+| `humanoid-raider` | Man-sized upright biped, two arms, usually carrying a weapon.            |
+| `giant-hulk`      | Upright biped 1.5–2x a man's height, heavy, stooped, thick-limbed.       |
+| `automaton`       | Built mechanical frame — brass/iron, legs or a swivelling base.          |
+| `spirit`          | No solid anatomy — light, shadow, mist; a shape rather than a body.      |
+| `plant-rooted`    | Rooted immobile mass, whip-canes or foliage, no legs.                    |
+| `torso-dragger`   | Limb-poor remains dragging itself; torso plus fore-limbs, no legs.       |
+| `winged-small`    | Small flying thing dominated by wing area — moths, bats.                 |
+
+Distribution across the 116 monsters (see `bestiary.json`):
+
+| `bodyPlan`        | Count |     | `bodyPlan`        | Count |
+| ----------------- | ----- | --- | ----------------- | ----- |
+| `humanoid-raider` | 24    |     | `spirit`          | 11    |
+| `giant-hulk`      | 14    |     | `automaton`       | 11    |
+| `quadruped-beast` | 18    |     | `insect-low`      | 11    |
+| `winged-small`    | 9     |     | `plant-rooted`    | 6     |
+| `serpentine`      | 6     |     | `quadruped-drake` | 3     |
+| `insect-upright`  | 2     |     | `torso-dragger`   | 1     |
+
+`torso-dragger` has exactly one member (`mob-ashfield-crawler`) — that is
+expected, not a bug. It is the narrowest silhouette in the set; forcing more
+monsters into it to "balance" the table would defeat the point of the field.
+
+A handful of briefs don't fit any of the twelve cleanly (a ground bird, a
+few winged drakes sized well past "small", two or three walking bramble
+creatures that read as neither purely rooted nor purely humanoid). Those were
+assigned the closest plan rather than a forced new bucket; see the F-024
+task report for the full list and reasoning.
 
 ## Level bands
 
