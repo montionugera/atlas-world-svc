@@ -56,3 +56,38 @@ the list and the one that sizes every other.
 | **L2** — areas and biomes               | ❌ not started                                                                                         |
 | **L3** — races, dungeons, camps, bosses | ❌ not started                                                                                         |
 | **L4** — NPCs, mobs, items              | ⚠️ 116-monster bestiary written with 13 body plans; **no art, not playable**                           |
+
+## L2 → L4 — added 2026-08-01
+
+These levels had **no ideas at all** before this pass. L4 had a written bestiary but nothing
+covering what makes it playable.
+
+| Idea      | What it is                   | Goal                                                                                                                | Input                                                      | Output artifact                                                                    | Level |
+| --------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------- | ----- |
+| **I-059** | Ecology and habitat lore     | Derive climate, vegetation, water and food chains from terrain; place the 116 monsters **by zone**, not just region | `A1-geography-cluster1.md`, `bestiary.json`                | `A2-ecology.md`; bestiary gains a `zone` field                                     | L2    |
+| **I-060** | Zone content pass            | Give every zone hazards, resources, landmarks and a reason to go there                                              | cluster-1 zones, Systems Designer's 3-zones-per-band model | per-zone content spec; alternates for the single route cluster 1 currently ships   | L2    |
+| **I-061** | Biome concept art            | The `art:biome` group is empty                                                                                      | terrain types, recipe from I-049                           | biome key art in the manifest                                                      | L2    |
+| **I-062** | Boss design                  | **F-023 shipped boss threat/aggro code and no boss exists**                                                         | `bestiary.json` element table, F-023 behaviour             | boss identities, lore, `art:boss` entries                                          | L3    |
+| **I-063** | Dungeon design               | 283 unused dungeon props, zero dungeon content                                                                      | seed catalog, cluster-1 zones                              | dungeon locations, layout grammar, zone attachment                                 | L3    |
+| **I-064** | Promote monsters to playable | 116 designed, **6 implemented**                                                                                     | `bestiary.json`, F-013 codegen, `asset-keys.json`          | minted mobTypes + assetKeys; character sheets stop failing `check_content.mjs:512` | L4    |
+| **I-065** | NPC roster                   | Only one NPC sheet exists                                                                                           | towns, factions, DR-001's burial-detail player role        | NPC definitions and their quest-giver status                                       | L4    |
+| **I-066** | Item and equipment scheme    | **No tier system exists at all**                                                                                    | `canon.md` §5 (element coatings, magic stones)             | tier scheme; what `art:item` should contain                                        | L4    |
+
+<div class="callout danger">
+<strong>All eight are sized by I-048.</strong> Their scope is undefined until the Season 1 cut
+decides how many zones, monsters and art classes cluster 1 actually ships. Starting any of them
+before I-048 risks planning 32 zones of work and building 9.
+</div>
+
+### Dependency shape
+
+```mermaid
+flowchart LR
+  I048["I-048 scope cut"] --> L2["I-059 · I-060 · I-061"]
+  I048 --> L3["I-062 · I-063"]
+  I048 --> L4["I-064 · I-065 · I-066"]
+  I049["I-049 art recipe"] --> I061
+  I049 --> I050["I-050 towns"]
+  I051["I-051 cosmology"] -.->|informs| L3
+  L2 --> L3 --> L4
+```
