@@ -19,6 +19,9 @@
  *          (override forge.config.json's `sampler.*`; CLI wins over config)
  *        --port N (override forge.config.json's `comfy.port`; CLI wins over
  *          config; does not mutate the config file)
+ *        --positive "<string>"  --negative "<string>" (replace the composed
+ *          buildPrompt()/negativePrompt() strings entirely; CLI wins over
+ *          composed; does not change buildPrompt()/negativePrompt() themselves)
  */
 
 import path from "node:path";
@@ -31,6 +34,7 @@ import {
   loadForge,
   negativePrompt,
   parseArgs,
+  parsePromptOverride,
   parseSeed,
   requireCell,
   resolveSampler,
@@ -47,7 +51,15 @@ export function silhouetteName(job, forge) {
 }
 
 /** Build the img2img graph for one cell. */
-export function buildI2iGraph({ race, job, seed, forge, sampler }) {
+export function buildI2iGraph({
+  race,
+  job,
+  seed,
+  forge,
+  sampler,
+  positiveOverride,
+  negativeOverride,
+}) {
   const { denoise, mode } = forge.config.sampler;
   if (mode !== "img2img") {
     console.warn(
@@ -55,8 +67,8 @@ export function buildI2iGraph({ race, job, seed, forge, sampler }) {
     );
   }
   return buildBaseGraph({
-    positive: buildPrompt({ race, job }, forge),
-    negative: negativePrompt(forge),
+    positive: positiveOverride ?? buildPrompt({ race, job }, forge),
+    negative: negativeOverride ?? negativePrompt(forge),
     seed,
     denoise,
     filenamePrefix: `art-forge/${race}-${job}`,
@@ -83,7 +95,17 @@ export async function generateCell(args, forge = loadForge()) {
   const { race, job } = requireCell(args, forge);
   const seed = parseSeed(args.seed);
   const sampler = resolveSampler(args, forge);
-  const graph = buildI2iGraph({ race, job, seed, forge, sampler });
+  const positiveOverride = parsePromptOverride("positive", args.positive);
+  const negativeOverride = parsePromptOverride("negative", args.negative);
+  const graph = buildI2iGraph({
+    race,
+    job,
+    seed,
+    forge,
+    sampler,
+    positiveOverride,
+    negativeOverride,
+  });
   return runGraph({
     forge,
     args,

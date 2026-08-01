@@ -21,6 +21,9 @@
  *          (override forge.config.json's `sampler.*`; CLI wins over config)
  *        --port N (override forge.config.json's `comfy.port`; CLI wins over
  *          config; does not mutate the config file)
+ *        --positive "<string>"  --negative "<string>" (replace the composed
+ *          buildPrompt()/negativePrompt() strings entirely; CLI wins over
+ *          composed; does not change buildPrompt()/negativePrompt() themselves)
  */
 
 import fs from "node:fs";
@@ -142,6 +145,28 @@ export function parseStringOverride(flag, value, fallback) {
   if (value === undefined) return fallback;
   if (value === true) {
     throw new Error(`--${flag} requires a value, got a bare flag`);
+  }
+  return value;
+}
+
+/**
+ * Parse a `--positive` / `--negative` prompt-override CLI flag. Same
+ * fail-loudly shape as `parseSeed`/`parseNumericOverride`/`parseStringOverride`:
+ * a bare flag (parsed as `true`) OR an empty string must exit non-zero before
+ * anything is queued. This codebase has been bitten by the bare-flag bug
+ * before — an empty string here would silently send an unprompted image to
+ * ComfyUI while the caller believes the override took effect. Returns
+ * `undefined` when the flag was not passed, so the caller falls back to the
+ * composed prompt from `buildPrompt()`/`negativePrompt()`.
+ */
+export function parsePromptOverride(flag, value) {
+  if (value === undefined) return undefined;
+  if (value === true || value === "") {
+    throw new Error(
+      `--${flag} must be a non-empty string, got ${
+        value === true ? "a bare flag" : "an empty string"
+      }`,
+    );
   }
   return value;
 }
@@ -497,10 +522,12 @@ export function buildCharsheetGraph({
   height,
   forge,
   sampler,
+  positiveOverride,
+  negativeOverride,
 }) {
   return buildBaseGraph({
-    positive: buildPrompt({ race, job }, forge),
-    negative: negativePrompt(forge),
+    positive: positiveOverride ?? buildPrompt({ race, job }, forge),
+    negative: negativeOverride ?? negativePrompt(forge),
     seed,
     // txt2img always denoises fully; forge.config's denoise is the img2img knob.
     denoise: 1,
@@ -522,6 +549,8 @@ export async function generateCharsheet(args, forge = loadForge()) {
   const sampler = resolveSampler(args, forge);
   const width = Number(args.width ?? 1024);
   const height = Number(args.height ?? 1024);
+  const positiveOverride = parsePromptOverride("positive", args.positive);
+  const negativeOverride = parsePromptOverride("negative", args.negative);
   const graph = buildCharsheetGraph({
     race,
     job,
@@ -530,6 +559,8 @@ export async function generateCharsheet(args, forge = loadForge()) {
     height,
     forge,
     sampler,
+    positiveOverride,
+    negativeOverride,
   });
   return runGraph({
     forge,
