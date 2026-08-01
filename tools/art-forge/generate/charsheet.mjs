@@ -24,6 +24,9 @@
  *        --positive "<string>"  --negative "<string>" (replace the composed
  *          buildPrompt()/negativePrompt() strings entirely; CLI wins over
  *          composed; does not change buildPrompt()/negativePrompt() themselves)
+ *        --denoise N (0 < N <= 1; overrides the hardcoded txt2img fallback of
+ *          1 — forge.config.json's sampler.denoise is the img2img knob and is
+ *          not consulted here; does not mutate the config file)
  */
 
 import fs from "node:fs";
@@ -131,6 +134,26 @@ export function parseNumericOverride(flag, value, fallback) {
   const n = Number(value);
   if (value === true || !Number.isFinite(n)) {
     throw new Error(`--${flag} must be a number, got "${value}"`);
+  }
+  return n;
+}
+
+/**
+ * Parse a `--denoise` CLI override. Same fail-loudly shape as
+ * `parseNumericOverride`, plus a range check: denoise is the fraction of the
+ * input latent KSampler is allowed to replace, so a bare flag (parsed as
+ * `true`), a non-numeric value, or anything outside `0 < x <= 1` must exit
+ * non-zero before anything is queued rather than silently reaching KSampler
+ * out of range. Returns `fallback` when the flag was not passed; never
+ * mutates forge.config.json itself.
+ */
+export function parseDenoiseOverride(value, fallback) {
+  if (value === undefined) return fallback;
+  const n = Number(value);
+  if (value === true || !Number.isFinite(n) || n <= 0 || n > 1) {
+    throw new Error(
+      `--denoise must be a number with 0 < x <= 1, got "${value}"`,
+    );
   }
   return n;
 }
@@ -524,13 +547,16 @@ export function buildCharsheetGraph({
   sampler,
   positiveOverride,
   negativeOverride,
+  denoise,
 }) {
   return buildBaseGraph({
     positive: positiveOverride ?? buildPrompt({ race, job }, forge),
     negative: negativeOverride ?? negativePrompt(forge),
     seed,
-    // txt2img always denoises fully; forge.config's denoise is the img2img knob.
-    denoise: 1,
+    // txt2img always denoises fully by default; forge.config's denoise is the
+    // img2img knob, not applicable here — the --denoise CLI override (see
+    // parseDenoiseOverride) can still force a partial denoise for experiments.
+    denoise,
     filenamePrefix: `art-forge/${race}-${job}-t2i`,
     latentNodes: {
       [NODE.LATENT]: {
@@ -551,6 +577,9 @@ export async function generateCharsheet(args, forge = loadForge()) {
   const height = Number(args.height ?? 1024);
   const positiveOverride = parsePromptOverride("positive", args.positive);
   const negativeOverride = parsePromptOverride("negative", args.negative);
+  // txt2img's fallback is the hardcoded `1` (always denoise fully), NOT
+  // forge.config.json's sampler.denoise — that value is the img2img knob.
+  const denoise = parseDenoiseOverride(args.denoise, 1);
   const graph = buildCharsheetGraph({
     race,
     job,
@@ -561,13 +590,14 @@ export async function generateCharsheet(args, forge = loadForge()) {
     sampler,
     positiveOverride,
     negativeOverride,
+    denoise,
   });
   return runGraph({
     forge,
     args,
     graph,
     name: `${race}-${job}-t2i`,
-    label: `txt2img ${race}/${job} seed=${seed} ${width}x${height}`,
+    label: `txt2img ${race}/${job} seed=${seed} ${width}x${height} denoise=${denoise}`,
   });
 }
 

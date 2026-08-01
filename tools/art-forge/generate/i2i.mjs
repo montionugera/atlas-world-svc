@@ -4,7 +4,8 @@
  *
  * Proportion and pose come from `input/sil-<job>.png` on the ComfyUI box;
  * race and costume come from the prompt. Denoise comes from
- * forge.config.json (`sampler.denoise`) — never from a literal here.
+ * forge.config.json (`sampler.denoise`) by default, CLI-overridable via
+ * `--denoise` — never a bare literal in this file.
  *
  * Everything except the latent source is shared with charsheet.mjs.
  *
@@ -22,6 +23,9 @@
  *        --positive "<string>"  --negative "<string>" (replace the composed
  *          buildPrompt()/negativePrompt() strings entirely; CLI wins over
  *          composed; does not change buildPrompt()/negativePrompt() themselves)
+ *        --denoise N (0 < N <= 1; overrides forge.config.json's
+ *          sampler.denoise; CLI wins over config; does not mutate the config
+ *          file)
  */
 
 import path from "node:path";
@@ -34,6 +38,7 @@ import {
   loadForge,
   negativePrompt,
   parseArgs,
+  parseDenoiseOverride,
   parsePromptOverride,
   parseSeed,
   requireCell,
@@ -59,8 +64,9 @@ export function buildI2iGraph({
   sampler,
   positiveOverride,
   negativeOverride,
+  denoise,
 }) {
-  const { denoise, mode } = forge.config.sampler;
+  const { mode } = forge.config.sampler;
   if (mode !== "img2img") {
     console.warn(
       `[art-forge] warning: forge.config.json sampler.mode is "${mode}", not "img2img"`,
@@ -97,6 +103,10 @@ export async function generateCell(args, forge = loadForge()) {
   const sampler = resolveSampler(args, forge);
   const positiveOverride = parsePromptOverride("positive", args.positive);
   const negativeOverride = parsePromptOverride("negative", args.negative);
+  const denoise = parseDenoiseOverride(
+    args.denoise,
+    forge.config.sampler.denoise,
+  );
   const graph = buildI2iGraph({
     race,
     job,
@@ -105,6 +115,7 @@ export async function generateCell(args, forge = loadForge()) {
     sampler,
     positiveOverride,
     negativeOverride,
+    denoise,
   });
   return runGraph({
     forge,
@@ -113,7 +124,7 @@ export async function generateCell(args, forge = loadForge()) {
     name: `${race}-${job}`,
     label:
       `img2img ${race}/${job} seed=${seed} ` +
-      `denoise=${forge.config.sampler.denoise} sil=${silhouetteName(job, forge)}`,
+      `denoise=${denoise} sil=${silhouetteName(job, forge)}`,
   });
 }
 
