@@ -358,5 +358,11 @@
     "title": "L2 zone content pass: for each cluster-1 zone define hazards, harvestable resources, landmarks and the reason a player goes there - the Systems Designer's three-zones-per-band model needs alternates, cluster 1 currently ships one route with no branches",
     "created_at": "2026-08-01T16:23:03.859094+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-061",
+    "title": "L2 biome concept art: the art:biome group is empty - generate biome key art for the cluster-1 terrain types using the measured recipe from I-049",
+    "created_at": "2026-08-01T16:23:04.328267+00:00",
+    "promoted_to": null
   }
 ]
