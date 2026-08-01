@@ -1,0 +1,172 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join, resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const budget = JSON.parse(readFileSync(join(ROOT, "content/season-1-budget.json"), "utf8"));
+
+test("budget document has the expected envelope", () => {
+  assert.equal(budget.version, 1);
+  assert.equal(budget.season, 1);
+  assert.equal(budget.cluster, 1);
+  assert.equal(budget.record, "docs/worldbuilding/DR-003-season-1-budget.md");
+  assert.ok(Array.isArray(budget.lines) && budget.lines.length > 0);
+});
+
+test("every line is well formed and ids are unique", () => {
+  const ids = new Set();
+  for (const line of budget.lines) {
+    assert.equal(typeof line.id, "string", `line missing id: ${JSON.stringify(line)}`);
+    assert.equal(ids.has(line.id), false, `duplicate line id: ${line.id}`);
+    ids.add(line.id);
+    assert.equal(typeof line.label, "string", `${line.id}: label must be a string`);
+    assert.equal(Number.isInteger(line.target), true, `${line.id}: target must be an integer`);
+    assert.equal(typeof line.source, "string", `${line.id}: source must cite where the number came from`);
+    const measured = typeof line.measure === "string";
+    const blocked = typeof line.blockedBy === "string";
+    assert.ok(measured !== blocked, `${line.id}: needs exactly one of measure / blockedBy`);
+  }
+});
+
+import { MEASURES, buildRows, renderTable } from "../lib/season1.mjs";
+
+const FIXTURE = join(ROOT, "scripts/tests/fixtures/season1");
+
+test("mobBases counts the codegen mob type ids", () => {
+  assert.equal(MEASURES.mobBases(FIXTURE), 2);
+});
+
+test("bestiaryDesigns counts the top-level array", () => {
+  assert.equal(MEASURES.bestiaryDesigns(FIXTURE), 3);
+});
+
+test("actIndependentQuests excludes act gates, event gates, their descendants and cycles", () => {
+  // free: quest-free-root, quest-free-child, quest-two-free-parents (both of
+  // its unlockedBy entries are themselves free). Everything else is gated,
+  // downstream of a gate, or in a cycle that never resolves — including
+  // quest-mixed-gate, whose unlockedBy mixes a free quest id with an act-*
+  // id: this proves the AND-gate (every prerequisite must be free), since an
+  // OR-gate (any prerequisite free) would wrongly admit it via quest-free-root.
+  assert.equal(MEASURES.actIndependentQuests(FIXTURE), 3);
+});
+
+test("art measures count by key prefix", () => {
+  assert.equal(MEASURES.townArt(FIXTURE), 2);
+  assert.equal(MEASURES.bestiaryArt(FIXTURE), 0);
+});
+
+test("buildRows notes over/met/short correctly (drift upward must not read as met)", () => {
+  const doc = {
+    lines: [
+      { id: "over", label: "O", target: 1, measure: "mobBases", source: "s" },
+      { id: "met", label: "M", target: 2, measure: "mobBases", source: "s" },
+      { id: "short", label: "S", target: 5, measure: "mobBases", source: "s" },
+    ],
+  };
+  const [over, met, short] = buildRows(doc, FIXTURE);
+  // FIXTURE's mobBases measures 2 (see the "mobBases counts..." test above).
+  assert.equal(over.actual, 2);
+  assert.equal(over.note, "1 over");
+  assert.equal(met.actual, 2);
+  assert.equal(met.note, "met");
+  assert.equal(short.actual, 2);
+  assert.equal(short.note, "3 short");
+});
+
+test("buildRows reports blocked lines without inventing a delta", () => {
+  const doc = {
+    lines: [
+      { id: "measured", label: "M", target: 5, measure: "mobBases", source: "s" },
+      { id: "stuck", label: "S", target: 1, blockedBy: "P3 - buried-ground design", source: "s" },
+    ],
+  };
+  const [measured, stuck] = buildRows(doc, FIXTURE);
+  assert.equal(measured.actual, 2);
+  assert.equal(measured.note, "3 short");
+  assert.equal(stuck.actual, null);
+  assert.match(stuck.note, /^blocked: P3/);
+});
+
+test("buildRows never throws when a measured file is missing", () => {
+  const doc = { lines: [{ id: "measured", label: "M", target: 5, measure: "mobBases", source: "s" }] };
+  const [row] = buildRows(doc, join(ROOT, "scripts/tests/fixtures/does-not-exist"));
+  assert.equal(row.actual, null);
+  assert.match(row.note, /^unmeasurable:/);
+});
+
+test("renderTable emits a header and one line per row", () => {
+  const out = renderTable(
+    buildRows({ lines: [{ id: "measured", label: "M", target: 5, measure: "mobBases", source: "s" }] }, FIXTURE),
+  );
+  assert.match(out, /measured/);
+  assert.match(out, /target/);
+});
+
+import { execFileSync } from "node:child_process";
+
+const CLI = join(ROOT, "scripts/report_season1.mjs");
+
+test("CLI prints every budget line and exits 0", () => {
+  const out = execFileSync(process.execPath, [CLI], { encoding: "utf8" });
+  for (const line of budget.lines) assert.match(out, new RegExp(line.id));
+  assert.match(out, /Season 1 budget/);
+});
+
+test("CLI still exits 0 when every measured file is missing", () => {
+  // The guarantee that makes this a report and not a gate.
+  // --root also moves the default budget path, so --budget is passed
+  // explicitly: the missing fixture root has no budget file to read.
+  const out = execFileSync(
+    process.execPath,
+    [
+      CLI,
+      "--root",
+      join(ROOT, "scripts/tests/fixtures/does-not-exist"),
+      "--budget",
+      join(ROOT, "content/season-1-budget.json"),
+    ],
+    { encoding: "utf8" },
+  );
+  assert.match(out, /unmeasurable:/);
+});
+
+test("CLI rejects an unknown flag with exit 2", () => {
+  assert.throws(
+    () => execFileSync(process.execPath, [CLI, "--nope"], { encoding: "utf8", stdio: "pipe" }),
+    (err) => err.status === 2,
+  );
+});
+
+test("CLI still exits 0 when --budget points at a missing file", () => {
+  // Found in review: the budget-file read itself must honor the same
+  // "always exits 0" contract as a missing measured file, since this is
+  // not the deliberate arg-parse exit(2) case.
+  const out = execFileSync(
+    process.execPath,
+    [CLI, "--budget", join(ROOT, "content/does-not-exist.json")],
+    { encoding: "utf8" },
+  );
+  assert.match(out, /could not load/);
+});
+
+import { writeFileSync, unlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
+
+test("CLI still exits 0 when --budget is valid JSON but missing lines", () => {
+  // Found in fix-round 1: JSON.parse succeeds on a structurally-wrong
+  // budget (e.g. no `lines` array), so the earlier try/catch around
+  // readFileSync+JSON.parse never fires and buildRows throws uncaught.
+  // This is a separate failure mode from "not valid JSON" and needs its
+  // own envelope check, exiting 0 the same way.
+  const badBudgetPath = join(tmpdir(), `season1-bad-budget-${process.pid}.json`);
+  writeFileSync(badBudgetPath, JSON.stringify({ season: 1, cluster: 1, record: "x" }));
+  try {
+    const out = execFileSync(process.execPath, [CLI, "--budget", badBudgetPath], { encoding: "utf8" });
+    assert.match(out, /could not load/);
+    assert.match(out, new RegExp(badBudgetPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  } finally {
+    unlinkSync(badBudgetPath);
+  }
+});

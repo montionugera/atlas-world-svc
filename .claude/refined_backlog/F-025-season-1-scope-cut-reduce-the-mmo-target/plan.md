@@ -225,9 +225,17 @@ Create `scripts/tests/fixtures/season1/content/story/quests.json`:
   { "id": "quest-downstream-of-act", "unlockedBy": ["quest-act-gated"] },
   { "id": "quest-event-gated", "unlockedBy": ["event-bells-ring-true"] },
   { "id": "quest-cycle-a", "unlockedBy": ["quest-cycle-b"] },
-  { "id": "quest-cycle-b", "unlockedBy": ["quest-cycle-a"] }
+  { "id": "quest-cycle-b", "unlockedBy": ["quest-cycle-a"] },
+  { "id": "quest-mixed-gate", "unlockedBy": ["quest-free-root", "act-3"] },
+  { "id": "quest-two-free-parents", "unlockedBy": ["quest-free-root", "quest-free-child"] }
 ]
 ```
+
+`quest-mixed-gate` and `quest-two-free-parents` exist to discriminate the AND-gate: with only
+singleton `unlockedBy` arrays, `.every()` and `.some()` are indistinguishable, so a regression
+flipping the AND-gate to an OR-gate would pass unnoticed. `quest-two-free-parents` has two
+free parents and must join the free set; `quest-mixed-gate` has one free parent and one act
+gate and must never join — proving the semantics are AND, not OR.
 
 Create `scripts/tests/fixtures/season1/game-client/assets/art/art-manifest.json`:
 
@@ -260,9 +268,13 @@ test("bestiaryDesigns counts the top-level array", () => {
 });
 
 test("actIndependentQuests excludes act gates, event gates, their descendants and cycles", () => {
-  // free: quest-free-root, quest-free-child. Everything else is gated,
-  // downstream of a gate, or in a cycle that never resolves.
-  assert.equal(MEASURES.actIndependentQuests(FIXTURE), 2);
+  // free: quest-free-root, quest-free-child, quest-two-free-parents (both of
+  // its unlockedBy entries are themselves free). Everything else is gated,
+  // downstream of a gate, or in a cycle that never resolves — including
+  // quest-mixed-gate, whose unlockedBy mixes a free quest id with an act-*
+  // id: this proves the AND-gate (every prerequisite must be free), since an
+  // OR-gate (any prerequisite free) would wrongly admit it via quest-free-root.
+  assert.equal(MEASURES.actIndependentQuests(FIXTURE), 3);
 });
 
 test("art measures count by key prefix", () => {
@@ -460,9 +472,17 @@ test("CLI prints every budget line and exits 0", () => {
 
 test("CLI still exits 0 when every measured file is missing", () => {
   // The guarantee that makes this a report and not a gate.
+  // --root also moves the default budget path, so --budget is passed
+  // explicitly: the missing fixture root has no budget file to read.
   const out = execFileSync(
     process.execPath,
-    [CLI, "--root", join(ROOT, "scripts/tests/fixtures/does-not-exist")],
+    [
+      CLI,
+      "--root",
+      join(ROOT, "scripts/tests/fixtures/does-not-exist"),
+      "--budget",
+      join(ROOT, "content/season-1-budget.json"),
+    ],
     { encoding: "utf8" },
   );
   assert.match(out, /unmeasurable:/);
@@ -476,8 +496,6 @@ test("CLI rejects an unknown flag with exit 2", () => {
 });
 ```
 
-Note on the second test: `--root` also moves the default budget path, so pass `--budget` explicitly if the fixture root has no budget file — the fixture root above deliberately does not, so this test must be written as `[CLI, "--root", <missing>, "--budget", join(ROOT, "content/season-1-budget.json")]`. Use that exact form.
-
 - [ ] **Step 2: Run tests to verify they fail**
 
 Run: `npm test --prefix scripts`
@@ -489,7 +507,9 @@ Create `scripts/report_season1.mjs`:
 
 ```js
 #!/usr/bin/env node
-// Season 1 budget report (I-048). REPORTING ONLY — this always exits 0.
+// Season 1 budget report (I-048). REPORTING ONLY: every input path exits 0
+// except the deliberate process.exit(2) in parseArgs for an unknown flag or
+// a flag missing its value.
 // It is deliberately not a gate: the failure mode it exists to catch is
 // authoring drift UPWARD toward a 32-zone continent, and a red floor check
 // would be red for months and teach everyone to ignore it.
@@ -525,7 +545,21 @@ function parseArgs(argv) {
 }
 
 const opts = parseArgs(process.argv);
-const budget = JSON.parse(readFileSync(opts.budget, "utf8"));
+
+// A missing/malformed --budget file is still a report finding, not a crash:
+// the "always exits 0" contract above covers every input path except the
+// deliberate arg-parse exit(2) cases in parseArgs.
+let budget;
+try {
+  budget = JSON.parse(readFileSync(opts.budget, "utf8"));
+} catch (err) {
+  console.log(`Season 1 budget — could not load ${opts.budget}: ${err.message}`);
+  process.exit(0);
+}
+if (typeof budget !== "object" || budget === null || !Array.isArray(budget.lines)) {
+  console.log(`Season 1 budget — could not load ${opts.budget}: expected an object with a "lines" array`);
+  process.exit(0);
+}
 console.log(`Season ${budget.season} budget — cluster ${budget.cluster} — ${budget.record}`);
 console.log(renderTable(buildRows(budget, opts.root)));
 process.exit(0);
@@ -539,7 +573,32 @@ Expected: PASS.
 - [ ] **Step 5: Capture the real output for the PR** (spec §8(1))
 
 Run: `node scripts/report_season1.mjs`
-Expected: a table showing `mob-bases 30 6 24 short`, `bestiary-designs 116 116 met`, `art-town 6 6 met`, `art-bestiary 30 0 30 short`, and the three blocked lines. **Paste this output into the PR body.**
+
+Expected on **this branch** (`feat/F-025`, cut from `main` + `release/1.6`):
+
+| line | target | actual | note |
+|---|---|---|---|
+| `mob-bases` | 30 | 6 | 24 short |
+| `bestiary-designs` | 116 | – | `unmeasurable: ENOENT … content/bestiary/bestiary.json` |
+| `quests-act-independent` | 90 | 8 | 82 short |
+| `art-town` | 6 | 0 | 6 short |
+| `art-bestiary` | 30 | 0 | 30 short |
+| `zones`, `spawn-entries`, `world-state-systems` | — | – | `blocked: …` |
+
+<div class="callout warn">
+<strong>Two measures are dark on this branch, and that is expected — do not "fix" it.</strong>
+<code>content/bestiary/bestiary.json</code> (116 designs) and the six <code>art:town-*</code> manifest
+entries live on <strong>feat/F-024</strong>, which has not shipped into <code>release/1.6</code> yet.
+This branch carries the 80-entry manifest (64 class, 9 cast, 7 race) and no bestiary at all.
+<code>bestiary-designs</code> reporting <em>unmeasurable</em> and <code>art-town</code> reporting
+<strong>0</strong> is the report behaving correctly. Once F-024 ships they become 116/116 and 6/6 with
+no code change — that is the whole point of the graceful-degradation design. <strong>Verify this by
+re-running the report after F-024 lands; do not merge feat/F-024 into this branch to make the numbers
+look better.</strong>
+</div>
+
+**Paste the real output into the PR body**, including the unmeasurable lines — a report that only shows
+its good numbers is not a report.
 
 - [ ] **Step 6: Commit**
 
