@@ -376,5 +376,11 @@
     "title": "L3 dungeon design: the seed library holds 283 unused dungeon 3D props and the world has zero dungeon content - define cluster-1 dungeon locations, their layout grammar, and how they attach to the Cartographer's zones",
     "created_at": "2026-08-01T16:23:05.508426+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-064",
+    "title": "L4 promote monsters to playable: 116 designed but only 6 have server mob types and asset keys - define how many cluster-1 needs, mint the mobTypes through F-013 codegen, and wire assetKeys so character sheets stop hard-failing check_content.mjs:512",
+    "created_at": "2026-08-01T16:23:06.179834+00:00",
+    "promoted_to": null
   }
 ]
