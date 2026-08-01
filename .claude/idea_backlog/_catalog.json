@@ -340,5 +340,11 @@
     "title": "Extract the worldbuilding process into a reusable claude plugin: 11 role agents with vetoes, SWF research/brainstorm/synthesis skills, ABP asset pipeline with the measured generation traps, and a G7 real-world-noun hook",
     "created_at": "2026-08-01T15:12:14.126118+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-058",
+    "title": "Seamless large-world scaling: AOI (StateView) + shard grid + border ghosts + authority handoff + cross-shard combat",
+    "created_at": "2026-08-01T15:22:00.133551+00:00",
+    "promoted_to": null
   }
 ]
