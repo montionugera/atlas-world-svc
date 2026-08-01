@@ -8,8 +8,12 @@ import {
   existsSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 import { intakeArt } from "../intake-art.mjs";
+
+const CLI = join(dirname(fileURLToPath(import.meta.url)), "../intake-art.mjs");
 
 test("a failing gate rolls back to the exact prior bytes and leaves no PNG", async () => {
   const dir = mkdtempSync(join(tmpdir(), "artintake-"));
@@ -295,4 +299,355 @@ test("default (real) drift-gate genuinely validates the sandboxed root — an or
   // manage — but it must still be present, proving the gate actually looked
   // at this sandbox (rather than, say, some other run wiping the dir).
   assert.equal(existsSync(join(root, "concept/orphan.png")), true);
+});
+
+// ---------- F-024: rich-metadata fields (description, tags, source, gen) ----------
+
+test("happy path with all rich-metadata fields writes them into the entry", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "artintake-"));
+  const root = join(dir, "art");
+  mkdirSync(join(root, "concept"), { recursive: true });
+  const manifestPath = join(root, "art-manifest.json");
+  writeFileSync(
+    manifestPath,
+    JSON.stringify({ version: 1, entries: {} }, null, 2) + "\n",
+  );
+  const src = join(dir, "new.png");
+  writeFileSync(src, Buffer.from("89504e470d0a1a0a", "hex"));
+
+  const gen = {
+    model: "z_image_turbo_bf16",
+    steps: 24,
+    cfg: 3,
+    seed: 12345,
+    width: 1280,
+    height: 832,
+  };
+
+  const res = await intakeArt({
+    src,
+    id: "art:mob-wolf",
+    group: "mob",
+    title: "Wolf",
+    note: "Z-Image Turbo, local generation",
+    description: "A lean grey wolf, mid-stride on a frost-cracked road.",
+    tags: ["cluster-1", "coastal", "mob"],
+    source: "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-05",
+    gen,
+    root,
+    manifestPath,
+    driftGateRunner: async () => ({ ok: true }),
+  });
+
+  assert.equal(res.ok, true, JSON.stringify(res.failures));
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  assert.deepEqual(manifest.entries["art:mob-wolf"], {
+    group: "mob",
+    title: "Wolf",
+    file: "concept/new.png",
+    note: "Z-Image Turbo, local generation",
+    description: "A lean grey wolf, mid-stride on a frost-cracked road.",
+    tags: ["cluster-1", "coastal", "mob"],
+    source: "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-05",
+    gen,
+  });
+});
+
+test("validation failure (empty description) aborts with zero side effects", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "artintake-"));
+  const root = join(dir, "art");
+  mkdirSync(join(root, "concept"), { recursive: true });
+  const manifestPath = join(root, "art-manifest.json");
+  const before = JSON.stringify({ version: 1, entries: {} }, null, 2) + "\n";
+  writeFileSync(manifestPath, before);
+  const src = join(dir, "new.png");
+  writeFileSync(src, Buffer.from("89504e470d0a1a0a", "hex"));
+
+  const res = await intakeArt({
+    src,
+    id: "art:mob-wolf",
+    group: "mob",
+    title: "Wolf",
+    note: "Z-Image Turbo, local generation",
+    description: "   ",
+    root,
+    manifestPath,
+    driftGateRunner: async () => ({ ok: true }),
+  });
+
+  assert.equal(res.ok, false);
+  assert.equal(readFileSync(manifestPath, "utf8"), before);
+  assert.equal(existsSync(join(root, "concept/new.png")), false);
+});
+
+test("validation failure (tags not an array) aborts with zero side effects", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "artintake-"));
+  const root = join(dir, "art");
+  mkdirSync(join(root, "concept"), { recursive: true });
+  const manifestPath = join(root, "art-manifest.json");
+  const before = JSON.stringify({ version: 1, entries: {} }, null, 2) + "\n";
+  writeFileSync(manifestPath, before);
+  const src = join(dir, "new.png");
+  writeFileSync(src, Buffer.from("89504e470d0a1a0a", "hex"));
+
+  const res = await intakeArt({
+    src,
+    id: "art:mob-wolf",
+    group: "mob",
+    title: "Wolf",
+    note: "Z-Image Turbo, local generation",
+    tags: "cluster-1,coastal", // must be an array, not a comma string
+    root,
+    manifestPath,
+    driftGateRunner: async () => ({ ok: true }),
+  });
+
+  assert.equal(res.ok, false);
+  assert.equal(readFileSync(manifestPath, "utf8"), before);
+  assert.equal(existsSync(join(root, "concept/new.png")), false);
+});
+
+test("validation failure (gen not an object) aborts with zero side effects", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "artintake-"));
+  const root = join(dir, "art");
+  mkdirSync(join(root, "concept"), { recursive: true });
+  const manifestPath = join(root, "art-manifest.json");
+  const before = JSON.stringify({ version: 1, entries: {} }, null, 2) + "\n";
+  writeFileSync(manifestPath, before);
+  const src = join(dir, "new.png");
+  writeFileSync(src, Buffer.from("89504e470d0a1a0a", "hex"));
+
+  const res = await intakeArt({
+    src,
+    id: "art:mob-wolf",
+    group: "mob",
+    title: "Wolf",
+    note: "Z-Image Turbo, local generation",
+    gen: "z_image_turbo_bf16",
+    root,
+    manifestPath,
+    driftGateRunner: async () => ({ ok: true }),
+  });
+
+  assert.equal(res.ok, false);
+  assert.equal(readFileSync(manifestPath, "utf8"), before);
+  assert.equal(existsSync(join(root, "concept/new.png")), false);
+});
+
+test("validation failure (gen.width not positive) aborts with zero side effects", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "artintake-"));
+  const root = join(dir, "art");
+  mkdirSync(join(root, "concept"), { recursive: true });
+  const manifestPath = join(root, "art-manifest.json");
+  const before = JSON.stringify({ version: 1, entries: {} }, null, 2) + "\n";
+  writeFileSync(manifestPath, before);
+  const src = join(dir, "new.png");
+  writeFileSync(src, Buffer.from("89504e470d0a1a0a", "hex"));
+
+  const res = await intakeArt({
+    src,
+    id: "art:mob-wolf",
+    group: "mob",
+    title: "Wolf",
+    note: "Z-Image Turbo, local generation",
+    gen: { model: "z_image_turbo_bf16", width: 0, height: 832 },
+    root,
+    manifestPath,
+    driftGateRunner: async () => ({ ok: true }),
+  });
+
+  assert.equal(res.ok, false);
+  assert.equal(readFileSync(manifestPath, "utf8"), before);
+  assert.equal(existsSync(join(root, "concept/new.png")), false);
+});
+
+// ---------- F-024: CLI bare-flag guard (this codebase's four-time-repeated bug) ----------
+// Each of these spawns the real CLI as a subprocess so the *actual* argv
+// parsing + usage-error path is exercised, not just the programmatic
+// intakeArt() API. A bare flag or malformed --gen must exit non-zero AND
+// leave the sandboxed manifest byte-for-byte untouched.
+
+function cliFixture() {
+  const dir = mkdtempSync(join(tmpdir(), "artintake-cli-"));
+  const root = join(dir, "art");
+  mkdirSync(join(root, "concept"), { recursive: true });
+  const manifestPath = join(root, "art-manifest.json");
+  const before = JSON.stringify({ version: 1, entries: {} }, null, 2) + "\n";
+  writeFileSync(manifestPath, before);
+  const src = join(dir, "new.png");
+  writeFileSync(src, Buffer.from("89504e470d0a1a0a", "hex"));
+  return { dir, root, manifestPath, before, src };
+}
+
+function runCli(args) {
+  try {
+    const stdout = execFileSync("node", [CLI, ...args], { encoding: "utf8" });
+    return { code: 0, stdout };
+  } catch (e) {
+    return { code: e.status, stdout: e.stdout || "", stderr: e.stderr || "" };
+  }
+}
+
+test("CLI: a bare --tags (no value, end of argv) exits non-zero and writes nothing", () => {
+  const f = cliFixture();
+  const r = runCli([
+    "--src",
+    f.src,
+    "--id",
+    "art:mob-wolf",
+    "--group",
+    "mob",
+    "--title",
+    "Wolf",
+    "--note",
+    "Z-Image Turbo, local generation",
+    "--root",
+    f.root,
+    "--manifest-path",
+    f.manifestPath,
+    "--tags",
+  ]);
+  assert.notEqual(r.code, 0);
+  assert.equal(readFileSync(f.manifestPath, "utf8"), f.before);
+  assert.equal(existsSync(join(f.root, "concept/new.png")), false);
+});
+
+test("CLI: a bare --tags followed by another flag exits non-zero and writes nothing", () => {
+  const f = cliFixture();
+  const r = runCli([
+    "--src",
+    f.src,
+    "--id",
+    "art:mob-wolf",
+    "--group",
+    "mob",
+    "--title",
+    "Wolf",
+    "--tags",
+    "--note",
+    "Z-Image Turbo, local generation",
+    "--root",
+    f.root,
+    "--manifest-path",
+    f.manifestPath,
+  ]);
+  assert.notEqual(r.code, 0);
+  assert.equal(readFileSync(f.manifestPath, "utf8"), f.before);
+  assert.equal(existsSync(join(f.root, "concept/new.png")), false);
+});
+
+test("CLI: --tags= (empty value) exits non-zero and writes nothing", () => {
+  const f = cliFixture();
+  const r = runCli([
+    "--src",
+    f.src,
+    "--id",
+    "art:mob-wolf",
+    "--group",
+    "mob",
+    "--title",
+    "Wolf",
+    "--note",
+    "Z-Image Turbo, local generation",
+    "--root",
+    f.root,
+    "--manifest-path",
+    f.manifestPath,
+    "--tags=",
+  ]);
+  assert.notEqual(r.code, 0);
+  assert.equal(readFileSync(f.manifestPath, "utf8"), f.before);
+  assert.equal(existsSync(join(f.root, "concept/new.png")), false);
+});
+
+test("CLI: a bare --gen exits non-zero and writes nothing", () => {
+  const f = cliFixture();
+  const r = runCli([
+    "--src",
+    f.src,
+    "--id",
+    "art:mob-wolf",
+    "--group",
+    "mob",
+    "--title",
+    "Wolf",
+    "--note",
+    "Z-Image Turbo, local generation",
+    "--root",
+    f.root,
+    "--manifest-path",
+    f.manifestPath,
+    "--gen",
+  ]);
+  assert.notEqual(r.code, 0);
+  assert.equal(readFileSync(f.manifestPath, "utf8"), f.before);
+  assert.equal(existsSync(join(f.root, "concept/new.png")), false);
+});
+
+test("CLI: malformed --gen JSON exits non-zero and writes nothing", () => {
+  const f = cliFixture();
+  const r = runCli([
+    "--src",
+    f.src,
+    "--id",
+    "art:mob-wolf",
+    "--group",
+    "mob",
+    "--title",
+    "Wolf",
+    "--note",
+    "Z-Image Turbo, local generation",
+    "--root",
+    f.root,
+    "--manifest-path",
+    f.manifestPath,
+    "--gen",
+    "{not valid json",
+  ]);
+  assert.notEqual(r.code, 0);
+  assert.equal(readFileSync(f.manifestPath, "utf8"), f.before);
+  assert.equal(existsSync(join(f.root, "concept/new.png")), false);
+});
+
+// This CLI run's --root/--manifest-path point at the sandbox, but
+// intake-art.mjs's defaultDriftGateRunner only overrides --art-manifest and
+// --art-root on the spawned gate — --art-groups/--manifest/--keys etc. still
+// resolve to the REAL repo (by design: the group registry is a fixed,
+// non-sandboxable contract). The real art-groups.json's expectedCounts
+// (race:8, class:64) therefore fail against this single-entry sandbox
+// regardless of these new fields, and intakeArt rolls the write back — so
+// this test asserts the CLI got PAST field parsing/validation (the
+// "validate" and "manifest: wrote" actions appear in stdout) and that the
+// rollback correctly restored the sandbox, rather than asserting exit 0.
+test("CLI: valid --gen JSON + --tags + --description + --source parse and pass field validation", () => {
+  const f = cliFixture();
+  const r = runCli([
+    "--src",
+    f.src,
+    "--id",
+    "art:mob-wolf",
+    "--group",
+    "mob",
+    "--title",
+    "Wolf",
+    "--note",
+    "Z-Image Turbo, local generation",
+    "--description",
+    "A lean grey wolf, mid-stride on a frost-cracked road.",
+    "--tags",
+    "cluster-1, coastal , mob",
+    "--source",
+    "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-05",
+    "--gen",
+    '{"model":"z_image_turbo_bf16","steps":24,"cfg":3,"seed":12345,"width":1280,"height":832}',
+    "--root",
+    f.root,
+    "--manifest-path",
+    f.manifestPath,
+  ]);
+  assert.match(r.stdout, /validate: art:mob-wolf \(mob\) OK/);
+  assert.match(r.stdout, /manifest: wrote entries\["art:mob-wolf"\]/);
+  // Rolled back by the real gate's unrelated race/class count policy —
+  // proves the rollback net still closes over the new fields correctly.
+  assert.equal(readFileSync(f.manifestPath, "utf8"), f.before);
 });

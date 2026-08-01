@@ -486,6 +486,125 @@
       "title": "Beastkin — Rooktide harbor scout",
       "file": "concept/race-beastkin.png",
       "note": "Z-Image Turbo, local generation, race lineup — kemonomimi beastkin (replaces panthera)"
+    },
+    "art:map-cluster1": {
+      "group": "map",
+      "title": "Cluster 1 — the Meltwash basin",
+      "file": "concept/A1-ART-01.png",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "description": "A single-sheet Bellfaith relay map of the Meltwash basin, drawn as a working document rather than a decorative one: ink on cream parchment, with bell-bronze reserved entirely for the relay towers and their sight-lines. A river runs from an ice shelf at the top edge, south, then west into a hatched tidal mire; six town emblems mark the six settlements, and roads carry day-counts lettered along them.",
+      "tags": ["cluster-1", "map", "bellfaith", "relay-map"],
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-01",
+      "gen": {
+        "model": "z_image_turbo_bf16",
+        "steps": 24,
+        "cfg": 3,
+        "seed": 12345,
+        "width": 1024,
+        "height": 1024
+      }
+    },
+    "art:town-millcross": {
+      "group": "town",
+      "title": "Millcross — the crossing",
+      "file": "concept/A1-ART-02.png",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "description": "Millcross, a sprawling wall-less crossing town on both banks of a grey river, seen from the road at cart height in late afternoon. One mill-wheel housing is the only structure above one storey; a queue of loaded carts and led animals stretches toward the ford, and former refugee tents have grown plank walls with real doorframes.",
+      "tags": ["cluster-1", "river-crossing", "market-town", "millcross"],
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-02",
+      "gen": {
+        "model": "z_image_turbo_bf16",
+        "steps": 24,
+        "cfg": 3,
+        "seed": 12345,
+        "width": 1280,
+        "height": 832
+      }
+    },
+    "art:town-embervale": {
+      "group": "town",
+      "title": "Embervale — the terraced hearths",
+      "file": "concept/A1-ART-03.png",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "description": "Embervale, a terraced hill town of six stacked ledges seen from the fields below at dusk, each ledge a row of slate roofs above a black clinker retaining wall. Forty low hearth-smoke plumes stand off the roofs, and ember-red banners hang along every ledge above figures in banded mourning cloth over faded militia colours.",
+      "tags": ["cluster-1", "hill-town", "embervale", "mining"],
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-03",
+      "gen": {
+        "model": "z_image_turbo_bf16",
+        "steps": 24,
+        "cfg": 3,
+        "seed": 12345,
+        "width": 1280,
+        "height": 832
+      }
+    },
+    "art:town-norhollow": {
+      "group": "town",
+      "title": "Norhollow — the palisade",
+      "file": "concept/A1-ART-04.png",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "description": "Norhollow, a wooded hollow behind a continuous palisade of sharpened trunks, seen from the open flat in flat morning light so the wall reads as the town's entire silhouette. The open gate is the focal point, flanked by tally boards cut edge to edge with knife marks, with figures in layered furs over palisade-guard leathers.",
+      "tags": ["cluster-1", "palisade-town", "norhollow", "timber"],
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-04",
+      "gen": {
+        "model": "z_image_turbo_bf16",
+        "steps": 24,
+        "cfg": 3,
+        "seed": 12345,
+        "width": 1280,
+        "height": 832
+      }
+    },
+    "art:town-gildmark": {
+      "group": "town",
+      "title": "Gildmark — the deepwater head",
+      "file": "concept/A1-ART-05.png",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "description": "Gildmark, a vertical port town stacked in five terraces up a rock headland, seen from the water at the end of the coastal road in low sun. Dressed stone at the base gives way to rendered plaster and timber above, every seaward face tarred black against the salt, with a glazed-cap tower crowning the silhouette above mudflats studded with wrecked-hull ribs.",
+      "tags": ["cluster-1", "port-town", "gildmark", "coastal"],
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-05",
+      "gen": {
+        "model": "z_image_turbo_bf16",
+        "steps": 24,
+        "cfg": 3,
+        "seed": 12345,
+        "width": 1280,
+        "height": 832
+      }
+    },
+    "art:town-rooktide": {
+      "group": "town",
+      "title": "Rooktide — the tidal landing",
+      "file": "concept/A1-ART-06.png",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "description": "Rooktide, a low river town on stepped terraces above a tidal landing at slack low water, its barges sitting in mud on their pilings while thousands of rooks work the exposed flats. Long shallow-roofed sheds step up the bank, every building visibly sewn from old salvaged plank into newer timber, with barge cranes dominating the foreground.",
+      "tags": ["cluster-1", "river-town", "rooktide", "tidal"],
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-06",
+      "gen": {
+        "model": "z_image_turbo_bf16",
+        "steps": 24,
+        "cfg": 3,
+        "seed": 12345,
+        "width": 1280,
+        "height": 832
+      }
+    },
+    "art:town-cindervast": {
+      "group": "town",
+      "title": "Cindervast — the roofless city",
+      "file": "concept/A1-ART-07.png",
+      "note": "Z-Image Turbo, local generation, ABP_1 from A1-geography-cluster1.md art briefs",
+      "description": "Cindervast, a roofless walled city on an upland rock shoulder seen from a day's walk below at dusk. The street grid is completely legible in bleached, clean stone with no rubble; undamaged statues of a crowned man holding a child stand among human-shaped shadows fused flat into the walls, and a handful of figures in cracked ceremonial plate still stand post at the closed gate.",
+      "tags": ["cluster-1", "ruined-city", "cindervast", "relic"],
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-07",
+      "gen": {
+        "model": "z_image_turbo_bf16",
+        "steps": 24,
+        "cfg": 3,
+        "seed": 12345,
+        "width": 1280,
+        "height": 832
+      }
     }
   }
 }

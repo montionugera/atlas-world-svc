@@ -39,6 +39,8 @@
 //   (K) frame+animations spritesheets must tile their PNG on a uniform grid:
 //       sheetW % frameW == 0, sheetH % frameH == 0, and each animation count
 //       <= cols*rows (partial final row allowed). Guards runtime frame-slicing.
+//   (N) art-manifest OPTIONAL rich-metadata fields (F-024) — description,
+//       tags, source, gen — validated when present, never required.
 //
 // Cross-file guards:
 //   (G) keyspaces across all manifest sources must be disjoint — the same id
@@ -261,6 +263,87 @@ function isLfsPointer(fsPath) {
   }
 }
 
+// (N) Optional rich-metadata fields (F-024): description, tags, source, gen.
+// All are OPTIONAL — the 81 pre-existing entries carry none of them and must
+// stay valid — but when present they are validated so a malformed value
+// can never reach the storybook. `gen` is the reproducibility record (model
+// + sampler knobs); without it a good result cannot be regenerated.
+const GEN_NUMBER_FIELDS = [
+  "steps",
+  "cfg",
+  "seed",
+  "denoise",
+  "width",
+  "height",
+];
+const GEN_INTEGER_FIELDS = new Set(["steps", "seed", "width", "height"]);
+
+function validateArtMetaFields(id, entry, failures) {
+  if (entry.description !== undefined) {
+    if (
+      typeof entry.description !== "string" ||
+      entry.description.trim() === ""
+    ) {
+      failures.push(
+        `entry "${id}": description must be a non-empty string if present`,
+      );
+    }
+  }
+
+  if (entry.source !== undefined) {
+    if (typeof entry.source !== "string" || entry.source.trim() === "") {
+      failures.push(
+        `entry "${id}": source must be a non-empty string if present`,
+      );
+    }
+  }
+
+  if (entry.tags !== undefined) {
+    if (
+      !Array.isArray(entry.tags) ||
+      entry.tags.length === 0 ||
+      entry.tags.some((t) => typeof t !== "string" || t.trim() === "")
+    ) {
+      failures.push(
+        `entry "${id}": tags must be a non-empty array of non-empty strings if present`,
+      );
+    }
+  }
+
+  if (entry.gen !== undefined) {
+    if (
+      typeof entry.gen !== "object" ||
+      entry.gen === null ||
+      Array.isArray(entry.gen)
+    ) {
+      failures.push(`entry "${id}": gen must be an object if present`);
+    } else {
+      const gen = entry.gen;
+      if (
+        gen.model !== undefined &&
+        (typeof gen.model !== "string" || gen.model.trim() === "")
+      ) {
+        failures.push(`entry "${id}": gen.model must be a non-empty string`);
+      }
+      for (const field of GEN_NUMBER_FIELDS) {
+        if (gen[field] === undefined) continue;
+        const v = gen[field];
+        if (typeof v !== "number" || !Number.isFinite(v)) {
+          failures.push(`entry "${id}": gen.${field} must be a number`);
+          continue;
+        }
+        if (GEN_INTEGER_FIELDS.has(field) && !Number.isInteger(v)) {
+          failures.push(`entry "${id}": gen.${field} must be an integer`);
+          continue;
+        }
+        if ((field === "width" || field === "height") && v <= 0) {
+          failures.push(`entry "${id}": gen.${field} must be positive`);
+        }
+      }
+    }
+  }
+}
+
 // (L) Concept-art entries. Curated reference material with NO renderer, so the
 // render-spec path in validateEntry() does not apply — see
 // docs/superpowers/specs/2026-08-01-art-forge-foundation-design.md §4.
@@ -282,6 +365,8 @@ function validateArtEntry(id, entry, source, groupIds, failures) {
       `entry "${id}": missing note — provenance is required (art carries no upstream licence)`,
     );
   }
+
+  validateArtMetaFields(id, entry, failures);
 
   const file = entry.file;
   if (typeof file !== "string" || file.trim() === "") {

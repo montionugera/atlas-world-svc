@@ -665,6 +665,52 @@
         border-radius: 4px;
       }
 
+      /* Rich concept-art metadata (F-024): description / tags / gen params /
+         source, all optional — inserted between .key and .filename so the
+         filename+note provenance line stays last, per the existing card
+         layout. */
+
+      .card .art-description {
+        font-size: 0.8rem;
+        line-height: 1.45;
+        color: var(--text-dim);
+        margin: 0 0 0.6rem;
+      }
+
+      .card .art-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin: 0 0 0.6rem;
+      }
+
+      .card .tag-chip {
+        font-size: 0.66rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        padding: 0.16rem 0.55rem;
+        border-radius: 999px;
+        border: 1px solid var(--accent-dim);
+        background: rgba(124, 158, 255, 0.1);
+        color: var(--accent);
+      }
+
+      .card .art-gen {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-faint);
+        margin: 0 0 0.4rem;
+        word-break: break-word;
+      }
+
+      .card .art-source {
+        font-size: 0.68rem;
+        color: var(--text-faint);
+        font-style: italic;
+        margin: 0 0 0.55rem;
+        word-break: break-word;
+      }
+
       footer {
         max-width: 1280px;
         margin: 0 auto;
@@ -2103,6 +2149,55 @@
         titleEl.className = "key";
         titleEl.textContent = entry.title || id;
         meta.appendChild(titleEl);
+
+        // Rich metadata (F-024) — all optional, rendered only when present.
+        // description: readable body text.
+        if (entry.description) {
+          const descEl = document.createElement("p");
+          descEl.className = "art-description";
+          descEl.textContent = entry.description;
+          meta.appendChild(descEl);
+        }
+
+        // tags: distinct visual chips, not a comma string.
+        if (Array.isArray(entry.tags) && entry.tags.length > 0) {
+          const tagsEl = document.createElement("div");
+          tagsEl.className = "art-tags";
+          for (const tag of entry.tags) {
+            const chip = document.createElement("span");
+            chip.className = "tag-chip";
+            chip.textContent = tag;
+            tagsEl.appendChild(chip);
+          }
+          meta.appendChild(tagsEl);
+        }
+
+        // gen: compact labelled row (model · steps · cfg · seed), monospace,
+        // visually secondary. Built from whichever fields are present so an
+        // entry with a partial gen block never renders a dangling separator.
+        if (entry.gen && typeof entry.gen === "object") {
+          const parts = [];
+          if (entry.gen.model) parts.push(entry.gen.model);
+          if (entry.gen.steps !== undefined)
+            parts.push(`${entry.gen.steps} steps`);
+          if (entry.gen.cfg !== undefined) parts.push(`cfg ${entry.gen.cfg}`);
+          if (entry.gen.seed !== undefined)
+            parts.push(`seed ${entry.gen.seed}`);
+          if (parts.length > 0) {
+            const genEl = document.createElement("p");
+            genEl.className = "art-gen";
+            genEl.textContent = parts.join(" · ");
+            meta.appendChild(genEl);
+          }
+        }
+
+        // source: small reference line.
+        if (entry.source) {
+          const sourceEl = document.createElement("p");
+          sourceEl.className = "art-source";
+          sourceEl.textContent = entry.source;
+          meta.appendChild(sourceEl);
+        }
 
         const fileEl = document.createElement("p");
         fileEl.className = "filename";

@@ -87,6 +87,90 @@ function defaultDriftGateRunner({ root, manifestPath }) {
   });
 }
 
+// (F-024) Rich-metadata field validation — MIRRORS validateArtMetaFields in
+// scripts/check_asset_manifest.mjs field-for-field, so an entry that clears
+// intake validation can never fail the gate on these fields (and vice
+// versa). Kept as a local, self-contained function rather than a shared
+// import: this file already mirrors the gate's SHAPE, not its code, per the
+// header comment ("same SHAPE ... different sink") — intake and gate are
+// deliberately independent validators over the same contract.
+const GEN_NUMBER_FIELDS = [
+  "steps",
+  "cfg",
+  "seed",
+  "denoise",
+  "width",
+  "height",
+];
+const GEN_INTEGER_FIELDS = new Set(["steps", "seed", "width", "height"]);
+
+/**
+ * Validate the optional rich-metadata fields (description, tags, source,
+ * gen). Returns an array of failure strings — empty when everything present
+ * is well-formed. Fields that are `undefined` (not passed) are always fine;
+ * these fields are optional everywhere.
+ * @param {{description?: unknown, tags?: unknown, source?: unknown, gen?: unknown}} fields
+ * @returns {string[]}
+ */
+function validateArtMetaFields(fields) {
+  const failures = [];
+  const { description, tags, source, gen } = fields;
+
+  if (description !== undefined) {
+    if (typeof description !== "string" || description.trim() === "") {
+      failures.push("description must be a non-empty string if present");
+    }
+  }
+
+  if (source !== undefined) {
+    if (typeof source !== "string" || source.trim() === "") {
+      failures.push("source must be a non-empty string if present");
+    }
+  }
+
+  if (tags !== undefined) {
+    if (
+      !Array.isArray(tags) ||
+      tags.length === 0 ||
+      tags.some((t) => typeof t !== "string" || t.trim() === "")
+    ) {
+      failures.push(
+        "tags must be a non-empty array of non-empty strings if present",
+      );
+    }
+  }
+
+  if (gen !== undefined) {
+    if (typeof gen !== "object" || gen === null || Array.isArray(gen)) {
+      failures.push("gen must be an object if present");
+    } else {
+      if (
+        gen.model !== undefined &&
+        (typeof gen.model !== "string" || gen.model.trim() === "")
+      ) {
+        failures.push("gen.model must be a non-empty string");
+      }
+      for (const field of GEN_NUMBER_FIELDS) {
+        if (gen[field] === undefined) continue;
+        const v = gen[field];
+        if (typeof v !== "number" || !Number.isFinite(v)) {
+          failures.push(`gen.${field} must be a number`);
+          continue;
+        }
+        if (GEN_INTEGER_FIELDS.has(field) && !Number.isInteger(v)) {
+          failures.push(`gen.${field} must be an integer`);
+          continue;
+        }
+        if ((field === "width" || field === "height") && v <= 0) {
+          failures.push(`gen.${field} must be positive`);
+        }
+      }
+    }
+  }
+
+  return failures;
+}
+
 /**
  * Read the FIXED, committed art-groups.json (Task 1's registry) and return
  * the set of declared group ids. Always resolved against the real repo root
@@ -124,6 +208,10 @@ function readGroupIds() {
  * @param {string} opts.group          group id, must be declared in art-groups.json
  * @param {string} opts.title          human-readable title
  * @param {string} opts.note           provenance note (required — no upstream licence)
+ * @param {string} [opts.description]  optional sentence-or-two of prose
+ * @param {string[]} [opts.tags]       optional array of short tag strings
+ * @param {string} [opts.source]       optional brief-source reference (e.g. a doc anchor)
+ * @param {object} [opts.gen]          optional reproducibility record: { model, steps, cfg, seed, denoise, width, height }
  * @param {string} [opts.root]         art root (defaults to game-client/assets/art)
  * @param {string} [opts.manifestPath] art-manifest.json path (defaults to <root>/art-manifest.json)
  * @param {Function} [opts.driftGateRunner] injectable gate runner (tests)
@@ -136,6 +224,10 @@ export async function intakeArt(opts = {}) {
     group,
     title,
     note,
+    description,
+    tags,
+    source: briefSource,
+    gen,
     root = path.join(repoRoot(), "game-client/assets/art"),
     manifestPath = path.join(root, "art-manifest.json"),
     driftGateRunner,
@@ -170,6 +262,14 @@ export async function intakeArt(opts = {}) {
       "note is required and must be non-empty — provenance is mandatory (art carries no upstream licence)",
     );
   }
+
+  const metaFailures = validateArtMetaFields({
+    description,
+    tags,
+    source: briefSource,
+    gen,
+  });
+  if (metaFailures.length > 0) return fail(...metaFailures);
 
   const destDir = path.join(root, "concept");
   const destPath = path.join(destDir, path.basename(src));
@@ -214,6 +314,14 @@ export async function intakeArt(opts = {}) {
     file: `concept/${path.basename(src)}`,
     note,
   };
+  // Optional rich-metadata fields (F-024) — only set the key when the
+  // caller actually passed a value, so entries without them stay exactly
+  // the same shape as the 81 pre-existing entries (no `tags: undefined`
+  // or similar noise landing in the manifest).
+  if (description !== undefined) entry.description = description;
+  if (tags !== undefined) entry.tags = tags;
+  if (briefSource !== undefined) entry.source = briefSource;
+  if (gen !== undefined) entry.gen = gen;
   manifestObj.entries[id] = entry;
 
   // Snapshot any file already at destPath (identical bytes, per the check
@@ -267,8 +375,10 @@ export async function intakeArt(opts = {}) {
 }
 
 /**
- * Minimal argv parser: `--flag value` only (no JSON-valued flags needed
- * here). Exported for testing parity with intake2d's parseArgs.
+ * Minimal argv parser: `--flag value` only. Raw string values — `--gen`'s
+ * JSON string and `--tags`'s comma-separated list are parsed by the CLI
+ * caller (main()), not here. Exported for testing parity with intake2d's
+ * parseArgs.
  * @param {string[]} argv
  */
 export function parseArgs(argv) {
@@ -296,7 +406,9 @@ export function parseArgs(argv) {
 function printUsageAndExit() {
   console.error(
     "usage: node intake-art.mjs --src <png> --id <art:key> --group <group-id> " +
-      "--title <text> --note <provenance> [--root <dir>] [--manifest-path <path>]",
+      "--title <text> --note <provenance> [--description <text>] " +
+      "[--tags <comma,separated,tags>] [--source <ref>] [--gen <json>] " +
+      "[--root <dir>] [--manifest-path <path>]",
   );
   process.exit(1);
 }
@@ -307,12 +419,50 @@ async function main() {
     printUsageAndExit();
   }
 
+  // --tags: comma-separated -> array. A bare `--tags` (no following value)
+  // already throws inside parseArgs (space-separated form, the codebase's
+  // recurring bare-flag bug); guard the `--tags=` empty-string form here
+  // too so it fails loudly with a usage error rather than silently
+  // resolving to an empty tag list.
+  let tags;
+  if (flags.tags !== undefined) {
+    if (flags.tags.trim() === "") {
+      console.error("--tags requires a non-empty comma-separated value");
+      printUsageAndExit();
+    }
+    tags = flags.tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t !== "");
+  }
+
+  // --gen: JSON string -> object. Malformed JSON must fail loudly with a
+  // usage error BEFORE intakeArt (and therefore any manifest write) is ever
+  // reached — not land in the manifest as a broken or partial value.
+  let gen;
+  if (flags.gen !== undefined) {
+    if (flags.gen.trim() === "") {
+      console.error("--gen requires a non-empty JSON value");
+      printUsageAndExit();
+    }
+    try {
+      gen = JSON.parse(flags.gen);
+    } catch (err) {
+      console.error(`--gen must be valid JSON: ${err.message}`);
+      process.exit(1);
+    }
+  }
+
   const result = await intakeArt({
     src: path.resolve(flags.src),
     id: flags.id,
     group: flags.group,
     title: flags.title,
     note: flags.note,
+    description: flags.description,
+    tags,
+    source: flags.source,
+    gen,
     root: flags.root ? path.resolve(flags.root) : undefined,
     manifestPath: flags["manifest-path"]
       ? path.resolve(flags["manifest-path"])

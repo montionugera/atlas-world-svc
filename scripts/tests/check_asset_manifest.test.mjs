@@ -202,3 +202,175 @@ test("a group short of its expected count fails", () => {
   assert.equal(r.code, 1);
   assert.match(r.stdout, /group "race": expected 8 entries, found 3/);
 });
+
+// ---------- F-024: optional rich-metadata fields ----------
+// (description, tags, source, gen) — all optional, validated when present.
+
+const GEN = {
+  model: "z_image_turbo_bf16",
+  steps: 24,
+  cfg: 3,
+  seed: 12345,
+  denoise: 0.8,
+  width: 1280,
+  height: 832,
+};
+
+test("a rich entry with description/tags/source/gen all valid passes", () => {
+  const f = fixture({
+    entries: {
+      "art:cast-a": ok({
+        description: "A weathered crossroads figure in a wide-brimmed coat.",
+        tags: ["cluster-1", "coastal", "port"],
+        source: "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-05",
+        gen: GEN,
+      }),
+    },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 0, r.stdout);
+});
+
+test("existing entries with none of the optional fields still pass (backward compat)", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok() },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 0, r.stdout);
+});
+
+test("empty description fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok({ description: "   " }) },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /description must be a non-empty string/);
+});
+
+test("empty source fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok({ source: "" }) },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /source must be a non-empty string/);
+});
+
+test("tags as a comma string instead of an array fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok({ tags: "cluster-1,coastal" }) },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /tags must be a non-empty array of non-empty strings/);
+});
+
+test("tags array containing an empty string fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok({ tags: ["cluster-1", ""] }) },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /tags must be a non-empty array of non-empty strings/);
+});
+
+test("empty tags array fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok({ tags: [] }) },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /tags must be a non-empty array of non-empty strings/);
+});
+
+test("gen as a non-object (string) fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok({ gen: "z_image_turbo_bf16" }) },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /gen must be an object/);
+});
+
+test("gen as an array fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok({ gen: [1, 2, 3] }) },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /gen must be an object/);
+});
+
+test("gen.model empty string fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok({ gen: { ...GEN, model: "" } }) },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /gen\.model must be a non-empty string/);
+});
+
+test("gen.steps as a string fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok({ gen: { ...GEN, steps: "24" } }) },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /gen\.steps must be a number/);
+});
+
+test("gen.seed as a non-integer number fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok({ gen: { ...GEN, seed: 12345.5 } }) },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /gen\.seed must be an integer/);
+});
+
+test("gen.width zero or negative fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok({ gen: { ...GEN, width: 0 } }) },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /gen\.width must be positive/);
+});
+
+test("gen.cfg non-finite (NaN via bad JSON-safe value) fails", () => {
+  const f = fixture({
+    entries: { "art:cast-a": ok({ gen: { ...GEN, cfg: "3" } }) },
+    groups: { ...GROUPS, expectedCounts: {} },
+    files: ["a.png"],
+  });
+  const r = runGate(f);
+  assert.equal(r.code, 1);
+  assert.match(r.stdout, /gen\.cfg must be a number/);
+});
