@@ -539,7 +539,32 @@ Expected: PASS.
 - [ ] **Step 5: Capture the real output for the PR** (spec §8(1))
 
 Run: `node scripts/report_season1.mjs`
-Expected: a table showing `mob-bases 30 6 24 short`, `bestiary-designs 116 116 met`, `art-town 6 6 met`, `art-bestiary 30 0 30 short`, and the three blocked lines. **Paste this output into the PR body.**
+
+Expected on **this branch** (`feat/F-025`, cut from `main` + `release/1.6`):
+
+| line | target | actual | note |
+|---|---|---|---|
+| `mob-bases` | 30 | 6 | 24 short |
+| `bestiary-designs` | 116 | – | `unmeasurable: ENOENT … content/bestiary/bestiary.json` |
+| `quests-act-independent` | 90 | 8 | 82 short |
+| `art-town` | 6 | 0 | 6 short |
+| `art-bestiary` | 30 | 0 | 30 short |
+| `zones`, `spawn-entries`, `world-state-systems` | — | – | `blocked: …` |
+
+<div class="callout warn">
+<strong>Two measures are dark on this branch, and that is expected — do not "fix" it.</strong>
+<code>content/bestiary/bestiary.json</code> (116 designs) and the six <code>art:town-*</code> manifest
+entries live on <strong>feat/F-024</strong>, which has not shipped into <code>release/1.6</code> yet.
+This branch carries the 80-entry manifest (64 class, 9 cast, 7 race) and no bestiary at all.
+<code>bestiary-designs</code> reporting <em>unmeasurable</em> and <code>art-town</code> reporting
+<strong>0</strong> is the report behaving correctly. Once F-024 ships they become 116/116 and 6/6 with
+no code change — that is the whole point of the graceful-degradation design. <strong>Verify this by
+re-running the report after F-024 lands; do not merge feat/F-024 into this branch to make the numbers
+look better.</strong>
+</div>
+
+**Paste the real output into the PR body**, including the unmeasurable lines — a report that only shows
+its good numbers is not a report.
 
 - [ ] **Step 6: Commit**
 
