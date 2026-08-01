@@ -85,3 +85,38 @@ test("renderTable emits a header and one line per row", () => {
   assert.match(out, /measured/);
   assert.match(out, /target/);
 });
+
+import { execFileSync } from "node:child_process";
+
+const CLI = join(ROOT, "scripts/report_season1.mjs");
+
+test("CLI prints every budget line and exits 0", () => {
+  const out = execFileSync(process.execPath, [CLI], { encoding: "utf8" });
+  for (const line of budget.lines) assert.match(out, new RegExp(line.id));
+  assert.match(out, /Season 1 budget/);
+});
+
+test("CLI still exits 0 when every measured file is missing", () => {
+  // The guarantee that makes this a report and not a gate.
+  // --root also moves the default budget path, so --budget is passed
+  // explicitly: the missing fixture root has no budget file to read.
+  const out = execFileSync(
+    process.execPath,
+    [
+      CLI,
+      "--root",
+      join(ROOT, "scripts/tests/fixtures/does-not-exist"),
+      "--budget",
+      join(ROOT, "content/season-1-budget.json"),
+    ],
+    { encoding: "utf8" },
+  );
+  assert.match(out, /unmeasurable:/);
+});
+
+test("CLI rejects an unknown flag with exit 2", () => {
+  assert.throws(
+    () => execFileSync(process.execPath, [CLI, "--nope"], { encoding: "utf8", stdio: "pipe" }),
+    (err) => err.status === 2,
+  );
+});

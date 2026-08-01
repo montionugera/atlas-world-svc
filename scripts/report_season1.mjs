@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+// Season 1 budget report (I-048). REPORTING ONLY — this always exits 0.
+// It is deliberately not a gate: the failure mode it exists to catch is
+// authoring drift UPWARD toward a 32-zone continent, and a red floor check
+// would be red for months and teach everyone to ignore it.
+// Record: docs/worldbuilding/DR-003-season-1-budget.md
+import { readFileSync } from "node:fs";
+import { dirname, resolve, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { buildRows, renderTable } from "./lib/season1.mjs";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+function parseArgs(argv) {
+  const opts = { root: ROOT, budget: null };
+  const takeValue = (name, i) => {
+    const v = argv[i];
+    if (v === undefined) {
+      console.error(`missing value for ${name}`);
+      process.exit(2);
+    }
+    return v;
+  };
+  for (let i = 2; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--root") opts.root = resolve(takeValue(a, ++i));
+    else if (a === "--budget") opts.budget = resolve(takeValue(a, ++i));
+    else {
+      console.error(`unknown arg: ${a}`);
+      process.exit(2);
+    }
+  }
+  opts.budget ??= join(opts.root, "content/season-1-budget.json");
+  return opts;
+}
+
+const opts = parseArgs(process.argv);
+const budget = JSON.parse(readFileSync(opts.budget, "utf8"));
+console.log(`Season ${budget.season} budget — cluster ${budget.cluster} — ${budget.record}`);
+console.log(renderTable(buildRows(budget, opts.root)));
+process.exit(0);
