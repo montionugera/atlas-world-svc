@@ -17,6 +17,8 @@
  *        --host H  --direct  --dry-run (print the graph, queue nothing)
  *        --steps N  --cfg N  --sampler NAME  --scheduler NAME  --shift N
  *          (override forge.config.json's `sampler.*`; CLI wins over config)
+ *        --port N (override forge.config.json's `comfy.port`; CLI wins over
+ *          config; does not mutate the config file)
  */
 
 import path from "node:path";

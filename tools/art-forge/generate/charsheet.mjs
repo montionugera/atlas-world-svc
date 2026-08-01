@@ -19,6 +19,8 @@
  *        --host H  --direct  --dry-run (print the graph, queue nothing)
  *        --steps N  --cfg N  --sampler NAME  --scheduler NAME  --shift N
  *          (override forge.config.json's `sampler.*`; CLI wins over config)
+ *        --port N (override forge.config.json's `comfy.port`; CLI wins over
+ *          config; does not mutate the config file)
  */
 
 import fs from "node:fs";
@@ -321,16 +323,41 @@ export function buildBaseGraph({
 /* --------------------------- ComfyUI client --------------------------- */
 
 /**
+ * Parse a `--port` CLI override. Same fail-loudly shape as `parseSeed` /
+ * `parseNumericOverride`: a bare flag (parsed as `true`), a non-numeric
+ * value, or a value outside the valid TCP port range must exit non-zero
+ * before anything is queued — silently coercing a bare `--port` to `true`
+ * (-> 1 as a number) would target the wrong ComfyUI instance without
+ * warning. Returns `undefined` when the flag was not passed, so the caller
+ * can fall back to forge.config.json's `comfy.port` — this never mutates
+ * the config file itself.
+ */
+export function parsePort(value) {
+  if (value === undefined) return undefined;
+  const n = Number(value);
+  if (value === true || !Number.isInteger(n) || n < 1 || n > 65535) {
+    throw new Error(
+      `--port must be an integer between 1 and 65535, got "${value}"`,
+    );
+  }
+  return n;
+}
+
+/**
  * Resolve the ComfyUI base URL.
  *
- * The port comes from forge.config.json. The host defaults to 127.0.0.1
- * because README.md's access path is an SSH tunnel; `--direct` targets
- * `comfy.host` (the Tailscale address) when running on the LAN.
+ * The port comes from forge.config.json by default, overridable per-run via
+ * `--port` (CLI wins over config; the config file is never mutated) — e.g.
+ * to target a different instance/GPU explicitly for one invocation. The
+ * host defaults to 127.0.0.1 because README.md's access path is an SSH
+ * tunnel; `--direct` targets `comfy.host` (the Tailscale address) when
+ * running on the LAN.
  */
 export function comfyBaseUrl(forge, args = {}) {
   const { host, port } = forge.config.comfy;
   const resolved = args.host || (args.direct ? host : "127.0.0.1");
-  return `http://${resolved}:${port}`;
+  const resolvedPort = parsePort(args.port) ?? port;
+  return `http://${resolved}:${resolvedPort}`;
 }
 
 async function comfyFetch(url, init) {
