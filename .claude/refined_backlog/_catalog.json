@@ -280,8 +280,9 @@
     "title": "Season 1 scope cut: reduce the MMO target from 32 zones / 384 species / 560 quests to a finishable cluster-1 slice (9-10 zones, ~30 monsters, 2 art classes) per DR-001's chosen cadence",
     "from_idea": "I-048",
     "created_at": "2026-08-01T16:29:16.535491+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-08-01T16:29:46.207707+00:00"
   }
 ]
