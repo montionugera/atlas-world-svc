@@ -322,5 +322,11 @@
     "title": "Asset gate hardening: assert manifest files are git-TRACKED not merely present (6 entries pointed at untracked PNGs and passed), plus intake-art.mjs cannot replace an entry and hardcodes the concept/ destination",
     "created_at": "2026-08-01T15:12:11.677899+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-055",
+    "title": "Artifact gate hardening: current detector is corner-only with a knife-edge operating point (15/15 TP but 13/37 FP, no held-out set) and cannot see mid-facade hallucinations like the one the best recipe produced",
+    "created_at": "2026-08-01T15:12:12.586829+00:00",
+    "promoted_to": null
   }
 ]
