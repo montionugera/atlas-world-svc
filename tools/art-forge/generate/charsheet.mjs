@@ -17,6 +17,8 @@
  *
  * Flags: --seed N  --width N  --height N  --timeout SECONDS (default 600)
  *        --host H  --direct  --dry-run (print the graph, queue nothing)
+ *        --steps N  --cfg N  --sampler NAME  --scheduler NAME  --shift N
+ *          (override forge.config.json's `sampler.*`; CLI wins over config)
  */
 
 import fs from "node:fs";
@@ -113,6 +115,51 @@ export function parseSeed(value) {
   return Math.floor(n);
 }
 
+/**
+ * Parse a numeric sampler CLI override (`--steps` / `--cfg` / `--shift`).
+ * Same fail-loudly shape as `parseSeed`: a bare flag (parsed as `true`) or a
+ * non-numeric value must exit non-zero before anything is queued, rather than
+ * silently sailing through as `NaN` or the boolean `true` coerced to `1`.
+ */
+export function parseNumericOverride(flag, value, fallback) {
+  if (value === undefined) return fallback;
+  const n = Number(value);
+  if (value === true || !Number.isFinite(n)) {
+    throw new Error(`--${flag} must be a number, got "${value}"`);
+  }
+  return n;
+}
+
+/**
+ * Parse a string sampler CLI override (`--sampler` / `--scheduler`). Only the
+ * bool-sentinel bug applies here — a bare flag (parsed as `true`) must exit
+ * non-zero rather than silently stringifying to `"true"` and reaching ComfyUI
+ * as a nonexistent sampler/scheduler name.
+ */
+export function parseStringOverride(flag, value, fallback) {
+  if (value === undefined) return fallback;
+  if (value === true) {
+    throw new Error(`--${flag} requires a value, got a bare flag`);
+  }
+  return value;
+}
+
+/**
+ * Resolve the five sampler knobs: forge.config.json `sampler.*` is the base,
+ * CLI flags are overrides (CLI wins over config). Every override is
+ * validated at the CLI boundary before any graph is queued.
+ */
+export function resolveSampler(args, forge) {
+  const base = forge.config.sampler;
+  return {
+    steps: parseNumericOverride("steps", args.steps, base.steps),
+    cfg: parseNumericOverride("cfg", args.cfg, base.cfg),
+    samplerName: parseStringOverride("sampler", args.sampler, base.samplerName),
+    scheduler: parseStringOverride("scheduler", args.scheduler, base.scheduler),
+    shift: parseNumericOverride("shift", args.shift, base.shift),
+  };
+}
+
 /* --------------------------- Prompt build --------------------------- */
 
 /**
@@ -183,15 +230,6 @@ export const MODELS = Object.freeze({
   vae: "ae.safetensors",
 });
 
-/** Sampler settings for Z-Image Turbo, from the shipped ComfyUI template. */
-export const SAMPLER_DEFAULTS = Object.freeze({
-  steps: 8,
-  cfg: 1,
-  samplerName: "res_multistep",
-  scheduler: "simple",
-  shift: 3,
-});
-
 export const NODE = Object.freeze({
   UNET: "1",
   MODEL_SAMPLING: "2",
@@ -210,6 +248,8 @@ export const NODE = Object.freeze({
 /**
  * Build the API-format prompt graph shared by txt2img and img2img.
  * `latentSource` is [nodeId, outputSlot]; extra nodes producing it are merged in.
+ * `steps`/`cfg`/`samplerName`/`scheduler`/`shift` come from `resolveSampler()`
+ * (forge.config.json `sampler.*`, CLI-overridable) — never restated here.
  */
 export function buildBaseGraph({
   positive,
@@ -219,7 +259,11 @@ export function buildBaseGraph({
   filenamePrefix,
   latentNodes,
   latentSource,
-  steps = SAMPLER_DEFAULTS.steps,
+  steps,
+  cfg,
+  samplerName,
+  scheduler,
+  shift,
 }) {
   return {
     [NODE.UNET]: {
@@ -228,7 +272,7 @@ export function buildBaseGraph({
     },
     [NODE.MODEL_SAMPLING]: {
       class_type: "ModelSamplingAuraFlow",
-      inputs: { model: [NODE.UNET, 0], shift: SAMPLER_DEFAULTS.shift },
+      inputs: { model: [NODE.UNET, 0], shift },
     },
     [NODE.CLIP]: {
       class_type: "CLIPLoader",
@@ -257,9 +301,9 @@ export function buildBaseGraph({
         latent_image: latentSource,
         seed,
         steps,
-        cfg: SAMPLER_DEFAULTS.cfg,
-        sampler_name: SAMPLER_DEFAULTS.samplerName,
-        scheduler: SAMPLER_DEFAULTS.scheduler,
+        cfg,
+        sampler_name: samplerName,
+        scheduler,
         denoise,
       },
     },
@@ -418,7 +462,15 @@ export async function runGraph({ forge, args, graph, name, label }) {
 /* ------------------------------ txt2img ------------------------------ */
 
 /** Build the txt2img graph for one cell. */
-export function buildCharsheetGraph({ race, job, seed, width, height, forge }) {
+export function buildCharsheetGraph({
+  race,
+  job,
+  seed,
+  width,
+  height,
+  forge,
+  sampler,
+}) {
   return buildBaseGraph({
     positive: buildPrompt({ race, job }, forge),
     negative: negativePrompt(forge),
@@ -433,15 +485,25 @@ export function buildCharsheetGraph({ race, job, seed, width, height, forge }) {
       },
     },
     latentSource: [NODE.LATENT, 0],
+    ...sampler,
   });
 }
 
 export async function generateCharsheet(args, forge = loadForge()) {
   const { race, job } = requireCell(args, forge);
   const seed = parseSeed(args.seed);
+  const sampler = resolveSampler(args, forge);
   const width = Number(args.width ?? 1024);
   const height = Number(args.height ?? 1024);
-  const graph = buildCharsheetGraph({ race, job, seed, width, height, forge });
+  const graph = buildCharsheetGraph({
+    race,
+    job,
+    seed,
+    width,
+    height,
+    forge,
+    sampler,
+  });
   return runGraph({
     forge,
     args,

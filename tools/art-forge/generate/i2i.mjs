@@ -15,6 +15,8 @@
  *
  * Flags: --seed N  --timeout SECONDS (default 600)
  *        --host H  --direct  --dry-run (print the graph, queue nothing)
+ *        --steps N  --cfg N  --sampler NAME  --scheduler NAME  --shift N
+ *          (override forge.config.json's `sampler.*`; CLI wins over config)
  */
 
 import path from "node:path";
@@ -29,6 +31,7 @@ import {
   parseArgs,
   parseSeed,
   requireCell,
+  resolveSampler,
   runGraph,
 } from "./charsheet.mjs";
 
@@ -42,7 +45,7 @@ export function silhouetteName(job, forge) {
 }
 
 /** Build the img2img graph for one cell. */
-export function buildI2iGraph({ race, job, seed, forge }) {
+export function buildI2iGraph({ race, job, seed, forge, sampler }) {
   const { denoise, mode } = forge.config.sampler;
   if (mode !== "img2img") {
     console.warn(
@@ -66,6 +69,7 @@ export function buildI2iGraph({ race, job, seed, forge }) {
       },
     },
     latentSource: [NODE.ENCODE, 0],
+    ...sampler,
   });
 }
 
@@ -76,7 +80,8 @@ export function buildI2iGraph({ race, job, seed, forge }) {
 export async function generateCell(args, forge = loadForge()) {
   const { race, job } = requireCell(args, forge);
   const seed = parseSeed(args.seed);
-  const graph = buildI2iGraph({ race, job, seed, forge });
+  const sampler = resolveSampler(args, forge);
+  const graph = buildI2iGraph({ race, job, seed, forge, sampler });
   return runGraph({
     forge,
     args,

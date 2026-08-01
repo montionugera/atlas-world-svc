@@ -1,7 +1,16 @@
 {
   "version": 1,
   "model": "Z-Image Turbo",
-  "sampler": { "denoise": 0.82, "mode": "img2img" },
+  "sampler": {
+    "denoise": 0.82,
+    "mode": "img2img",
+    "steps": 8,
+    "cfg": 1,
+    "samplerName": "res_multistep",
+    "scheduler": "simple",
+    "shift": 3,
+    "_note": "steps/cfg/samplerName/scheduler/shift are STOCK ComfyUI image_z_image_turbo template values, NOT the owner's lost hand-tuned 'winning recipe v3' — first thing to tune if regenerated art does not match game-client/assets/art/classes/*.png."
+  },
   "silhouettes": {
     "dir": "F:\\comfy-ui\\input",
     "prefix": "sil-",
