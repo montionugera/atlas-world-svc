@@ -95,6 +95,37 @@ cheapest option and the best option differ.
 
 **Output:** a decision record — the criteria, the matrix, the call, the sacrifice, the dissent, the confidence, and the trigger that would reopen it. Decision records are permanent; a later reversal appends, never edits.
 
+## 2.4 Proportionality — the default is a small panel, not a full one
+
+<div class="callout danger">
+<strong>Roles must not be nosy.</strong> A role speaks only where its own domain or veto is
+actually implicated. Commenting outside your lane is a process error, not diligence — it produces
+volume, not judgement, and it drowns the one voice that mattered.
+</div>
+
+**Convening rules:**
+
+- **Default: nobody.** Most questions need no panel at all. Answer them directly.
+- **Then: the smallest sufficient set.** Convene only the roles whose domain the question actually touches. One role is a normal answer. Two or three is a large question.
+- **Full panel is rare** — reserved for decisions that reshape the world or bind every later level. L1 scope is one. Most L2–L4 work is not.
+- **"Not my domain" is a complete answer.** A role that has nothing at stake replies in one line and stops. That is a success, not an abstention.
+- **Output length tracks stakes.** A one-line ruling is a valid artifact. Long documents are for decisions that are genuinely load-bearing and permanent.
+
+**The Principal convenes only when:**
+
+1. Two roles' vetoes genuinely conflict, **or**
+2. The panel disagrees and no single role owns the call, **or**
+3. A decision has real consequences and no natural owner.
+
+If one role's veto settles the matter, it is settled — **no Principal, no decision record, no ceremony.** Invoking the Principal on a question a single role already answered is itself over-reach.
+
+<div class="callout warn">
+<strong>Recorded 2026-08-01.</strong> The first run convened three heavyweight roles at once and
+produced three long documents for a single question. Two of the three were necessary. The
+process was heavier than the decision required — noted so the plugin encodes proportionality
+rather than the maximal version.
+</div>
+
 ## 3. How they work
 
 ```mermaid
