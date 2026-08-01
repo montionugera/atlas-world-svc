@@ -36,7 +36,7 @@ Every object has exactly these fourteen fields.
 | `id`          | kebab-case, unique, `mob-` prefixed                                                                           |
 | `name`        | display name; obeys the naming morphology in `content/story/style.md` §2                                      |
 | `family`      | one of the twelve families below                                                                              |
-| `bodyPlan`    | one of the twelve skeletal-layout plans below — see "Body plans" for why this field exists                    |
+| `bodyPlan`    | one of the thirteen skeletal-layout plans below — see "Body plans" for why this field exists                  |
 | `levelBand`   | one of `1-10`, `11-20`, `21-30`, `31-40`, `41-50`, `51-60`, `61-70`, `71-80`                                  |
 | `element`     | one of `earth`, `water`, `wind`, `fire`, `holy`, `void`, `neutral`                                            |
 | `archetype`   | one of `bruiser`, `skirmisher`, `tank`, `caster`, `support` — matches `content/schemas/character.schema.json` |
@@ -73,7 +73,7 @@ like one place.
 | `relic-born`  | Woken by Cindervast's relic residue and the violet afterglow. **Distinct from war-scar** — the fall had its own cause (canon §1), not the void. |
 | `bound-beast` | Gildmark's harnessed and warded war-beasts, loose or never delivered (canon §4, `style.md` §6 rule 2).                                          |
 
-## Body plans (12)
+## Body plans (13)
 
 `bodyPlan` exists for one reason: it is the **img2img silhouette anchor** that
 keeps 116 monster illustrations reading as one bestiary instead of 116
@@ -97,41 +97,54 @@ and `mob-gravefield-maw` (`war-scar`) are both rooted, wide, immobile masses
 with no legs, so both are `plant-rooted` even though neither is in the
 `plant` family.
 
-| `bodyPlan` id     | Silhouette                                                               |
-| ----------------- | ------------------------------------------------------------------------ |
-| `quadruped-beast` | Four-legged animal, low and long, head forward — otters, hounds, wolves. |
-| `quadruped-drake` | Heavy scaled four-legged reptile, broad skull, cart-length or larger.    |
-| `serpentine`      | Long snake- or wyrm-bodied, little or no limb mass, sinuous.             |
-| `insect-low`      | Flat or disc-bodied, many legs splayed, close to the ground.             |
-| `insect-upright`  | Hunched grub or mandibled thing standing roughly chest-high.             |
-| `humanoid-raider` | Man-sized upright biped, two arms, usually carrying a weapon.            |
-| `giant-hulk`      | Upright biped 1.5–2x a man's height, heavy, stooped, thick-limbed.       |
-| `automaton`       | Built mechanical frame — brass/iron, legs or a swivelling base.          |
-| `spirit`          | No solid anatomy — light, shadow, mist; a shape rather than a body.      |
-| `plant-rooted`    | Rooted immobile mass, whip-canes or foliage, no legs.                    |
-| `torso-dragger`   | Limb-poor remains dragging itself; torso plus fore-limbs, no legs.       |
-| `winged-small`    | Small flying thing dominated by wing area — moths, bats.                 |
+| `bodyPlan` id     | Silhouette                                                                                                             |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `quadruped-beast` | Four-legged animal, low and long, head forward — otters, hounds, wolves.                                               |
+| `quadruped-drake` | Heavy scaled four-legged reptile, broad skull, cart-length or larger.                                                  |
+| `serpentine`      | Long snake- or wyrm-bodied, little or no limb mass, sinuous.                                                           |
+| `insect-low`      | Flat or disc-bodied, many legs splayed, close to the ground.                                                           |
+| `insect-upright`  | Hunched grub or mandibled thing standing roughly chest-high.                                                           |
+| `humanoid-raider` | Man-sized upright biped, two arms, usually carrying a weapon.                                                          |
+| `giant-hulk`      | Upright biped 1.5–2x a man's height, heavy, stooped, thick-limbed.                                                     |
+| `automaton`       | Built mechanical frame — brass/iron, legs or a swivelling base.                                                        |
+| `spirit`          | No solid anatomy — light, shadow, mist; a shape rather than a body.                                                    |
+| `plant-rooted`    | Rooted immobile mass, whip-canes or foliage, no legs.                                                                  |
+| `torso-dragger`   | Limb-poor remains dragging itself; torso plus fore-limbs, no legs.                                                     |
+| `winged-small`    | Small flying thing dominated by wing area — moths, bats.                                                               |
+| `winged-drake`    | Large winged reptile — heavy body, four limbs plus a substantial wing span, long neck or tail; many times human scale. |
+
+`winged-drake` was split out from `winged-small` after the first pass: a
+moth and a horse-sized winged drake do not share a silhouette, and cutting
+one reference image for both would produce moth-proportioned drakes — the
+exact failure this anchor mechanism exists to prevent. Only three monsters
+qualify — `mob-violet-ash-drake`, `mob-scar-drake`, `mob-ashcrown-drake` —
+because they are the only entries in the roster that are both winged and
+described at drake scale (horse-sized, "great", cart-and-up); every other
+drake in the roster is either wingless (`serpentine` wyrms) or four-legged
+with wings unused or absent (`quadruped-drake`).
 
 Distribution across the 116 monsters (see `bestiary.json`):
 
 | `bodyPlan`        | Count |     | `bodyPlan`        | Count |
 | ----------------- | ----- | --- | ----------------- | ----- |
-| `humanoid-raider` | 24    |     | `spirit`          | 11    |
-| `giant-hulk`      | 14    |     | `automaton`       | 11    |
-| `quadruped-beast` | 18    |     | `insect-low`      | 11    |
-| `winged-small`    | 9     |     | `plant-rooted`    | 6     |
-| `serpentine`      | 6     |     | `quadruped-drake` | 3     |
-| `insect-upright`  | 2     |     | `torso-dragger`   | 1     |
+| `humanoid-raider` | 24    |     | `insect-low`      | 11    |
+| `giant-hulk`      | 14    |     | `plant-rooted`    | 6     |
+| `quadruped-beast` | 18    |     | `serpentine`      | 6     |
+| `spirit`          | 11    |     | `winged-drake`    | 3     |
+| `automaton`       | 11    |     | `quadruped-drake` | 3     |
+| `winged-small`    | 6     |     | `insect-upright`  | 2     |
+|                   |       |     | `torso-dragger`   | 1     |
 
 `torso-dragger` has exactly one member (`mob-ashfield-crawler`) — that is
 expected, not a bug. It is the narrowest silhouette in the set; forcing more
 monsters into it to "balance" the table would defeat the point of the field.
 
-A handful of briefs don't fit any of the twelve cleanly (a ground bird, a
-few winged drakes sized well past "small", two or three walking bramble
-creatures that read as neither purely rooted nor purely humanoid). Those were
-assigned the closest plan rather than a forced new bucket; see the F-024
-task report for the full list and reasoning.
+A handful of briefs don't fit any of the thirteen cleanly (a ground bird, a
+limbless flat fish read as `serpentine`, two or three walking bramble
+creatures that read as neither purely rooted nor purely humanoid, a couple
+of amorphous "maw" masses folded into `giant-hulk` for bulk and scale).
+Those were assigned the closest plan rather than a forced new bucket; see
+the F-024 task report for the full list and reasoning.
 
 ## Level bands
 
