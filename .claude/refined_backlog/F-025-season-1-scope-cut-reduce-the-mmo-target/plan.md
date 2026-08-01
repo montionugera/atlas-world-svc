@@ -460,9 +460,17 @@ test("CLI prints every budget line and exits 0", () => {
 
 test("CLI still exits 0 when every measured file is missing", () => {
   // The guarantee that makes this a report and not a gate.
+  // --root also moves the default budget path, so --budget is passed
+  // explicitly: the missing fixture root has no budget file to read.
   const out = execFileSync(
     process.execPath,
-    [CLI, "--root", join(ROOT, "scripts/tests/fixtures/does-not-exist")],
+    [
+      CLI,
+      "--root",
+      join(ROOT, "scripts/tests/fixtures/does-not-exist"),
+      "--budget",
+      join(ROOT, "content/season-1-budget.json"),
+    ],
     { encoding: "utf8" },
   );
   assert.match(out, /unmeasurable:/);
@@ -475,8 +483,6 @@ test("CLI rejects an unknown flag with exit 2", () => {
   );
 });
 ```
-
-Note on the second test: `--root` also moves the default budget path, so pass `--budget` explicitly if the fixture root has no budget file — the fixture root above deliberately does not, so this test must be written as `[CLI, "--root", <missing>, "--budget", join(ROOT, "content/season-1-budget.json")]`. Use that exact form.
 
 - [ ] **Step 2: Run tests to verify they fail**
 
