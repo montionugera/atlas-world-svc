@@ -154,6 +154,58 @@ For each level, `ABP_N` turns `A_N` into assets. Every ABP must declare:
 4. **Verify gate** — a sample batch reviewed by the owner *before* the full run
 5. **Sink** — which manifest and group the output lands in
 
+### 6.0 Asset quality bar — the gap this contract originally had
+
+<div class="callout danger">
+<strong>Recorded 2026-08-01.</strong> This contract defined a rigorous quality bar for
+<em>documents</em> and <strong>none for assets</strong>. Seven L1 illustrations were generated,
+gated and shipped into the storybook before anyone asked whether they were good enough. The owner
+had to supply reference targets <em>after</em> the fact. Reference targets are an
+<strong>input</strong>, pinned before generation — never a reaction afterwards.
+</div>
+
+**Rule 1 · Pin the reference target first.** Before any batch, the owner names reference images
+that represent the acceptance standard. They are recorded in the ABP for that asset class. An ABP
+with no reference target may not run.
+
+*Reference standard supplied by the owner for world/city art (Lineage II):*
+
+- world map — `lineage.pmfun.com/data/maps/world/`, city maps — `lineage.pmfun.com/data/maps/town/`, index at `lineage.pmfun.com/list/map`
+- city concept art — `legacy-lineage2.com/concept-art/Aden_Concept.jpg`, plus the Gracia and Revolution key art the owner cited
+
+**Rule 2 · Right tool per asset class.** Not one recipe for everything.
+
+| Asset class | Correct tool | Why |
+|---|---|---|
+| Character sheets | turbo diffusion + silhouette anchor | measured and validated |
+| Creatures | diffusion + **body-plan silhouette anchor** | consistency comes from the anchor, not the prompt |
+| Environments / towns | **higher-capacity model, real step counts, multi-pass** | turbo at 24 steps yields flat, simplified forms |
+| **Maps** | **authored vector from geography data — never diffusion** | a map needs accurate coastlines, correct roads and legible labels; no image model can draw *this* world's geography |
+| Icons, crests | vector or diffusion + strict silhouette | flat graphic subjects |
+
+**Rule 3 · Multi-pass, not one shot.** Thumbnails → pick the composition → refine → upscale. A
+single generation per subject is a draft, not a deliverable.
+
+**Rule 4 · Sample-and-approve is mandatory.** A representative batch is reviewed by the owner
+against the pinned references *before* the full run. Skipping this is what produced seven
+unusable-as-shipped illustrations in one pass.
+
+**Rule 5 · Record how it was made.** Every entry carries `gen` — model, steps, cfg, seed,
+dimensions. Without it a *good* result cannot be reproduced, which makes iteration guesswork.
+
+**Acceptance criteria — judged per image against the pinned references:**
+
+| # | Criterion | Fails when |
+|---|---|---|
+| A1 | **Detail density** | dissolves into flat shapes at full size |
+| A2 | **Depth** | no real foreground / midground / background separation |
+| A3 | **Material read** | stone, timber, water and mud are indistinguishable |
+| A4 | **Light** | no coherent single source, or impossible falloff |
+| A5 | **Composition** | a centred object on a backdrop, no deliberate focal point |
+| A6 | **Thumbnail legibility** | unreadable small |
+| A7 | **Brief fidelity** | the stated subject, palette or camera was overridden |
+| A8 | **Set coherence** | does not read as the same world as its siblings |
+
 ### 6.1 Known generation traps (measured, not theoretical)
 
 - **Scale similes become the subject.** "the size of a hog" → a hog; "the size of a plough horse" → a horse. Use measurements.
