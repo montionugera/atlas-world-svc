@@ -38,12 +38,28 @@ Settled by the owner; roles may not reopen them without escalating.
 | **Cliché Auditor** | The quality bar | Nothing — this role only attacks | **G1** — runs the swap test on every artifact and blocks re-skins |
 | **Systems Designer** | MMO constraints | What the world must support: zones, level bands, progression, density | Blocks lore that cannot be built or played at MMO scale |
 
+| **Narrative Director** | Dramatic integrity | Whether a story *works as drama* — its engine, its cast, its ending | Blocks structures that destroy the drama, however consistent or buildable they are |
+| **Player Experience** | What the player *is* | The player's role, fantasy and relationship to the story | Blocks worlds where the player has no place, or where thousands of players must each be the sole protagonist |
+| **Art Director** | Visual language | The tone-contrast mandate, palette, the silhouette anchor system | Blocks content whose register the art cannot carry |
+
+<div class="callout warn">
+<strong>Eleven roles is the ceiling.</strong> Past that you get averaging instead of argument, and
+averaging is how worlds turn generic. <strong>Live Ops</strong> and <strong>Localisation</strong>
+stay out: the Thai glossary is a <em>cost the Archivist prices</em>, not a voice at the table.
+</div>
+
+<div class="callout danger">
+<strong>Correction, recorded 2026-08-01.</strong> The Art Director was originally deferred to L2.
+That was wrong: the tone-contrast mandate is at risk in the <em>scope</em> decision, which happens
+at L1. It is pulled forward. The Narrative Director was missing entirely — a charter for building
+a <em>story</em> world had nobody who owned whether the story works as drama.
+</div>
+
 ### 2.2 Deferred — join at L2 and later
 
 | Role | Joins at | Why not yet |
 |---|---|---|
 | **Naturalist** | L2 (biomes) | Needs the map and climate before ecology means anything |
-| **Art Director** | L1 synthesis → ABP | Needs the world before setting the visual language; owns the "contrast" mandate and the silhouette anchor |
 | **Quest Designer** | L3 | Needs places and factions to hang hooks on |
 | **Linguist (deep)** | optional | Only if the world wants real conlang depth rather than consistent naming |
 
