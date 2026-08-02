@@ -15,6 +15,11 @@ test("environment profile pins the checkpoint verified against the live ComfyUI 
   assert.equal(forge.profile.models.checkpoint, "flux1-schnell-fp8.safetensors");
 });
 
+test("environment profile pins the controlNet verified against the live ComfyUI server", () => {
+  const forge = loadForge({ profile: "environment" });
+  assert.equal(forge.profile.models.controlNet, "flux-controlnet-union-pro-2.0.safetensors");
+});
+
 test("environment profile carries the measured ControlNet recipe", () => {
   const forge = loadForge({ profile: "environment" });
   assert.equal(forge.profile.sampler.denoise, 1.0);
