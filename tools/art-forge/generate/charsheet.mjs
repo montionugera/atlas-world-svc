@@ -54,7 +54,7 @@ export function loadForge({ forgeDir = FORGE_DIR, profile } = {}) {
   const config = readJson(path.join(forgeDir, "forge.config.json"));
   if (!profile) {
     throw new Error(
-      `loadForge requires an explicit profile — one of ${Object.keys(config.profiles).join(", ")}. ` +
+      `loadForge requires an explicit profile — one of ${Object.keys(config.profiles ?? {}).join(", ")}. ` +
         `There is deliberately no default: inheriting the wrong recipe silently produces wrong-style art.`,
     );
   }
