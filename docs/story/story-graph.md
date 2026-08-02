@@ -29,11 +29,13 @@ flowchart LR
   subgraph sg_n_act_1["Act 1 — Small Lives"]
     n_act_1["act-1"]:::act
     n_arc_embervale_outskirts["arc-embervale-outskirts"]:::arc
+    n_arc_icefield_reckoning["arc-icefield-reckoning"]:::arc
     n_arc_meadow_awakening["arc-meadow-awakening"]:::arc
     n_arc_norhollow_outskirts["arc-norhollow-outskirts"]:::arc
     n_quest_cull_the_packs["quest-cull-the-packs"]:::quest
     n_quest_embervale_watchfires["quest-embervale-watchfires"]:::quest
     n_quest_first_steps["quest-first-steps"]:::quest
+    n_quest_icefield_reckoning["quest-icefield-reckoning"]:::quest
     n_quest_letters_already_opened["quest-letters-already-opened"]:::quest
     n_quest_norhollow_palisade["quest-norhollow-palisade"]:::quest
     n_quest_the_twin_strike["quest-the-twin-strike"]:::quest
@@ -41,11 +43,9 @@ flowchart LR
   end
   subgraph sg_n_act_2["Act 2 — The War Comes Home"]
     n_act_2["act-2"]:::act
-    n_arc_icefield_reckoning["arc-icefield-reckoning"]:::arc
     n_arc_small_mercies["arc-small-mercies"]:::arc
     n_arc_war_comes_home["arc-war-comes-home"]:::arc
     n_quest_hold_the_ford["quest-hold-the-ford"]:::quest
-    n_quest_icefield_reckoning["quest-icefield-reckoning"]:::quest
     n_quest_salvage_and_medals["quest-salvage-and-medals"]:::quest
     n_quest_salvage_run["quest-salvage-run"]:::quest
     n_quest_the_bells_that_wont_stop["quest-the-bells-that-wont-stop"]:::quest
@@ -196,7 +196,7 @@ flowchart LR
   n_arc_embervale_outskirts -->|actId| n_act_1
   n_arc_embervale_outskirts -->|questIds| n_quest_embervale_watchfires
   n_arc_embervale_outskirts -->|questIds| n_quest_the_unmarked_crates
-  n_arc_icefield_reckoning -->|actId| n_act_2
+  n_arc_icefield_reckoning -->|actId| n_act_1
   n_arc_icefield_reckoning -->|questIds| n_quest_icefield_reckoning
   n_arc_ledger_game -->|actId| n_act_3
   n_arc_ledger_game -->|questIds| n_quest_a_face_for_gildmark
@@ -246,7 +246,7 @@ flowchart LR
   n_char_mirelle -->|region| n_region_gildmark
   n_char_quartermaster -->|diedAt| n_event_quartermaster_falls
   n_char_quartermaster -->|faction| n_faction_expedition
-  n_char_quartermaster -->|region| n_region_spawn_meadow
+  n_char_quartermaster -->|region| n_region_millcross
   n_char_speaker_of_norhollow -->|faction| n_faction_norhollow_banner
   n_char_speaker_of_norhollow -->|region| n_region_norhollow
   n_char_the_ash_prophet -->|faction| n_faction_ashen_column
@@ -262,8 +262,7 @@ flowchart LR
   n_char_war_countess -->|region| n_region_embervale
   n_char_warden_bright -->|faction| n_faction_bellfaith
   n_char_warden_bright -->|region| n_region_gildmark
-  n_char_widow_of_the_first_caravan -->|faction| n_faction_embervale_banner
-  n_char_widow_of_the_first_caravan -->|region| n_region_embervale
+  n_char_widow_of_the_first_caravan -->|region| n_region_ashvale_front
   n_dlg_ash_prophet_sermon -->|context| n_event_warspeaker_falls
   n_dlg_ash_prophet_sermon -->|speaker| n_char_the_ash_prophet
   n_dlg_bell_keeper_confession -->|context| n_event_bells_ring_true
