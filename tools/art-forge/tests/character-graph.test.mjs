@@ -9,6 +9,7 @@ import {
 } from "../generate/charsheet.mjs";
 import { buildI2iGraph, silhouetteName, generateCell } from "../generate/i2i.mjs";
 import { cellSeed } from "../generate/batch-matrix.mjs";
+import { generateCharsheet } from "../generate/charsheet.mjs";
 
 /**
  * Regression guard for Task 3 (F-026): every one of these functions used to
@@ -46,6 +47,34 @@ test("character img2img graph's KSampler carries the F-024 frozen recipe (denois
   assert.equal(ksampler.denoise, 0.82);
   assert.equal(ksampler.steps, 24);
   assert.equal(ksampler.cfg, 3);
+});
+
+/**
+ * Final-review Finding 4: generateCell (below) has this exact guard, but
+ * generateCharsheet (the txt2img entry point, `node generate/charsheet.mjs
+ * --race ... --job ...` -> `generateCharsheet(parseArgs())`) had NO test
+ * exercising its own `loadForge({ profile: "character" })` default. Mutating
+ * generateCell's default to "environment" already failed a test; mutating
+ * generateCharsheet's default the same way failed nothing — the same
+ * silent-wrong-style class this branch built the guard for, just on the
+ * sibling entry point. This test drives generateCharsheet with NO forge
+ * argument and asserts the built graph carries the character profile's
+ * values: steps/cfg (24/3 for character vs 8/1 for environment) and the
+ * character profile's unet loader model (the environment profile has no
+ * `models.unet` at all, so a wrong default would leave it undefined).
+ */
+test("generateCharsheet with no forge argument resolves the character profile end to end", async () => {
+  const graph = await generateCharsheet({
+    race: "human",
+    job: "swordsman",
+    seed: 1,
+    "dry-run": true,
+  });
+  assert.ok(graph, "dry-run must return the built graph, not null, to be testable");
+  const ksampler = graph[NODE.KSAMPLER].inputs;
+  assert.equal(ksampler.steps, 24);
+  assert.equal(ksampler.cfg, 3);
+  assert.equal(graph[NODE.UNET].inputs.unet_name, "z_image_turbo_bf16.safetensors");
 });
 
 test("character img2img graph's loader nodes carry profiles.character.models", () => {
