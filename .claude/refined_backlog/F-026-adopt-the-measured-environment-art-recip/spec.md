@@ -68,11 +68,13 @@ which was unreachable for the entire duration of this branch:**
 
 **Important:** `forge.config.json`'s `profiles.environment` block **is
 committed but INERT.** Nothing in this branch executes it — there is no
-runner. Its own `_note` field already records that the checkpoint
-filename `flux1-schnell.safetensors` is **unverified** against the live
-ComfyUI box, because that box was unreachable when the profile was
-written. Do not assume `profiles.environment` describes a working
-pipeline; it is recipe data waiting for a runner that does not exist yet.
+runner. Its own `_note` field now records that the checkpoint filename
+`flux1-schnell-fp8.safetensors` was **verified** against the live ComfyUI
+server (v0.24.1) on 2026-08-02 via `GET /object_info/CheckpointLoaderSimple`;
+the ControlNet filename `flux-controlnet-union-pro-2.0.safetensors`
+remains **unverified**. Do not assume `profiles.environment` describes a
+working pipeline; it is recipe data waiting for a runner that does not
+exist yet.
 
 This is an accepted hardware blocker, not a defect — do not re-attempt
 Tasks 5–7 without first re-establishing that the ComfyUI server at

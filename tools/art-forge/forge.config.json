@@ -57,7 +57,7 @@
     },
     "environment": {
       "models": {
-        "checkpoint": "flux1-schnell.safetensors",
+        "checkpoint": "flux1-schnell-fp8.safetensors",
         "controlNet": "flux-controlnet-union-pro-2.0.safetensors"
       },
       "sampler": {
@@ -76,7 +76,7 @@
         "endPercent": 1.0
       },
       "hires": { "upscaler": "4x-UltraSharp", "steps": 10, "denoise": 0.4 },
-      "_note": "Measured in docs/worldbuilding/ABP-controlnet-rescue.md. strength 0.30 is NOT a typo: the usable window is 0.30-0.40 and the conventional 0.8-1.0 collapses schnell into flat vector art (-88% detail). Steps and strength interact — 8 steps at strength >= 0.50 produced a cutout halo. Do not reach for end_percent to fix flatness; reach for lower strength. EVIDENCE IS THIN: two subjects (Gildmark, Norhollow), one seed (12345); steps=16 and strengths 0.40-0.60 were never swept. Checkpoint filename flux1-schnell.safetensors is UNVERIFIED against the live ComfyUI box (100.66.190.100:8188 was unreachable when this profile was written) — confirm via GET /object_info/CheckpointLoaderSimple before relying on it and correct here if it differs."
+      "_note": "Measured in docs/worldbuilding/ABP-controlnet-rescue.md. strength 0.30 is NOT a typo: the usable window is 0.30-0.40 and the conventional 0.8-1.0 collapses schnell into flat vector art (-88% detail). Steps and strength interact — 8 steps at strength >= 0.50 produced a cutout halo. Do not reach for end_percent to fix flatness; reach for lower strength. EVIDENCE IS THIN: two subjects (Gildmark, Norhollow), one seed (12345); steps=16 and strengths 0.40-0.60 were never swept. Checkpoint filename flux1-schnell-fp8.safetensors was VERIFIED against the live ComfyUI server (v0.24.1) on 2026-08-02 via GET /object_info/CheckpointLoaderSimple. ControlNet filename flux-controlnet-union-pro-2.0.safetensors remains UNVERIFIED against the live server — confirm via the same endpoint before relying on it and correct here if it differs."
     }
   }
 }
