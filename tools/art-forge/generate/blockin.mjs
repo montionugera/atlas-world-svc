@@ -36,7 +36,11 @@ export const PLANE_DEPTH = Object.freeze({
 const PLANE_ORDER = ["bg", "mg", "fg"];
 
 // The canvas itself represents unaddressed space (sky) — the farthest thing
-// in frame, per ABP-controlnet-rescue.md's depth generator comment.
+// in frame, per ABP-controlnet-rescue.md's depth generator comment ("canvas
+// is black ... then masses draw back-to-front"). Deliberately NOT
+// PLANE_DEPTH.bg: bg is a tier for drawn masses (e.g. a "sea" mass), one
+// step lighter than empty sky. Collapsing them to the same value removes a
+// depth tier — pinned by the "canvas fill is black" test below.
 const CANVAS_FILL = "#000000";
 
 /** Convert one mass (normalised 0..1 `rect` or `poly`) to an SVG points string in pixel space. */
@@ -67,6 +71,11 @@ function massToPoints({ mass, width, height }) {
 export function depthPlanesFromBrief({ brief, width, height }) {
   const planes = { bg: [], mg: [], fg: [] };
   for (const mass of brief.masses ?? []) {
+    if (!Object.hasOwn(planes, mass.plane)) {
+      throw new Error(
+        `mass "${mass.name}" has plane "${mass.plane}" — must be one of: ${PLANE_ORDER.join(", ")}`,
+      );
+    }
     planes[mass.plane].push({ points: massToPoints({ mass, width, height }) });
   }
   return { planes };
@@ -117,6 +126,16 @@ export async function renderDepthPng({ brief, width, height, outPath }) {
       "8",
       outPath,
     ]);
+  } catch (err) {
+    if (err.code === "ENOENT") {
+      throw new Error(
+        'renderDepthPng needs the "magick" binary (ImageMagick) on PATH to rasterise the ' +
+          "depth SVG, and it was not found. Install it — e.g. `brew install imagemagick` on " +
+          "macOS — then retry.",
+        { cause: err },
+      );
+    }
+    throw err;
   } finally {
     await unlink(svgPath).catch(() => {});
   }
