@@ -1,0 +1,61 @@
+{
+  "id": "A1-ART-07",
+  "subject": "Cindervast",
+  "prompt": "A roofless walled city on an upland rock shoulder, seen from a day's walk below at dusk. The street grid is completely legible because nothing has grown over it and there is no rubble — the stone is bleached rather than charred, walls standing clean with mortar intact. On the north-facing walls, a faint violet afterglow. In the visible squares, undamaged statues of a crowned man holding a child stand upright among human-shaped shadows fused flat into the stone around them. Palette cinder-black, bone-white, relic-violet. A broken-crown-over-ash device is carved above a closed gate at which a handful of figures in cracked ceremonial plate are still standing post. No smoke anywhere.",
+  "width": 1280,
+  "height": 832,
+  "horizon": 0.5,
+  "focal": [0.34, 0.32],
+  "_note": "Newly authored to the recovered block-in schema for this subject. Composition: distant upland silhouette on bg, the walled city on its rock shoulder on mg with the closed gate off-centre-left (per the anti-symmetry warning), a lower rock-slope mass on fg for the 'seen from below' vantage.",
+  "masses": [
+    {
+      "name": "upland-shoulder-far",
+      "plane": "bg",
+      "shape": "rect",
+      "rect": [0, 0.42, 1, 0.5],
+      "value": "#3a3446"
+    },
+    {
+      "name": "city-wall-run",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.1, 0.3, 0.86, 0.4],
+      "value": "#5c5560"
+    },
+    {
+      "name": "gate-tower-left",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.28, 0.18, 0.4, 0.4],
+      "value": "#48414c"
+    },
+    {
+      "name": "interior-block-right",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.5, 0.22, 0.74, 0.3],
+      "value": "#544d58"
+    },
+    {
+      "name": "street-grid-line",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.38, 0.3, 0.44, 0.4],
+      "value": "#403a44"
+    },
+    {
+      "name": "rock-slope-foreground",
+      "plane": "fg",
+      "shape": "poly",
+      "points": [
+        [-0.02, 1.02],
+        [-0.02, 0.72],
+        [0.3, 0.62],
+        [0.66, 0.7],
+        [1.02, 0.6],
+        [1.02, 1.02]
+      ],
+      "value": "#100e14"
+    }
+  ]
+}

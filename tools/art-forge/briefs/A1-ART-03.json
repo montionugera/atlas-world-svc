@@ -1,0 +1,68 @@
+{
+  "id": "A1-ART-03",
+  "subject": "Embervale",
+  "prompt": "A terraced hill town of six stacked ledges seen from the fields below at dusk, each ledge a row of slate roofs above a retaining wall of black clinker. Forty low, level smoke plumes stand off the hearths, none of them rising far. Warm materials — fired brick and red pantile against the black footings; palette iron-red, banner-black, hearth-orange. Ember-red banners hang on frontages along every ledge, and the figures on the terrace stairs wear banded black mourning cloth over faded militia colours as everyday dress. A caravan-wheel emblem wreathed in ember-red thread appears on the largest banner. Adit mouths open directly into the hillside between ledges.",
+  "width": 1280,
+  "height": 832,
+  "horizon": 0.68,
+  "focal": [0.62, 0.36],
+  "_note": "Newly authored to the recovered block-in schema for this subject. Composition: six ascending ledge bands on mg, tapering right-to-left and offset (asymmetric per ABP-flux-dev-and-anchor.md's centred-anchor warning) so the hill climbs off-centre rather than pyramiding in the middle; open fields on bg below the horizon; a low field-edge mass on fg for the 'seen from the fields below' foreground.",
+  "masses": [
+    {
+      "name": "fields-far",
+      "plane": "bg",
+      "shape": "rect",
+      "rect": [0, 0.68, 1, 0.78],
+      "value": "#3a3226"
+    },
+    {
+      "name": "ledge-6-top",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.42, 0.16, 0.66, 0.24],
+      "value": "#2a2422"
+    },
+    {
+      "name": "ledge-5",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.36, 0.24, 0.72, 0.32],
+      "value": "#2e2724"
+    },
+    {
+      "name": "ledge-4",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.3, 0.32, 0.78, 0.4],
+      "value": "#332a26"
+    },
+    {
+      "name": "ledge-3",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.24, 0.4, 0.84, 0.48],
+      "value": "#382d28"
+    },
+    {
+      "name": "ledge-2",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.16, 0.48, 0.9, 0.56],
+      "value": "#3c302a"
+    },
+    {
+      "name": "ledge-1-base",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.06, 0.56, 0.96, 0.68],
+      "value": "#191512"
+    },
+    {
+      "name": "field-edge-foreground",
+      "plane": "fg",
+      "shape": "rect",
+      "rect": [0, 0.92, 1, 1.02],
+      "value": "#1a1712"
+    }
+  ]
+}

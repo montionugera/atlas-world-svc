@@ -1,0 +1,85 @@
+{
+  "id": "A1-ART-06",
+  "subject": "Rooktide",
+  "prompt": "A low river town on stepped terraces above a tidal landing at slack low water, so the barges sit in mud on their pilings and the channel is a thin bright line. Long, shallow-roofed sheds step up the bank; every building visibly has old salvaged plank sewn into newer timber, the joins unhidden and differently weathered. Thousands of rooks work the exposed flats, with part of the flock lifting at once. Palette rook-blue, tide-grey, new-thatch gold. Barge cranes and hull-change gear dominate the foreground. A rook-in-flight-over-a-rising-tideline emblem is painted on the largest shed's gable.",
+  "width": 1280,
+  "height": 832,
+  "horizon": 0.58,
+  "focal": [0.4, 0.62],
+  "_note": "Newly authored to the recovered block-in schema for this subject. Composition: tidal channel/mudflat on bg, stepped shed terraces climbing the bank on mg (asymmetric, denser on the left), barge cranes and hull-change gear as the dominant fg occluders per the brief's explicit 'dominate the foreground' instruction.",
+  "masses": [
+    {
+      "name": "tidal-channel",
+      "plane": "bg",
+      "shape": "rect",
+      "rect": [0.3, 0.6, 0.6, 0.64],
+      "value": "#c4d4d8"
+    },
+    {
+      "name": "exposed-mudflat",
+      "plane": "bg",
+      "shape": "rect",
+      "rect": [0, 0.64, 1, 0.78],
+      "value": "#5c5648"
+    },
+    {
+      "name": "shed-terrace-low",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.08, 0.5, 0.62, 0.6],
+      "value": "#4a4438"
+    },
+    {
+      "name": "shed-terrace-mid",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.14, 0.4, 0.5, 0.5],
+      "value": "#403a30"
+    },
+    {
+      "name": "shed-terrace-high",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.18, 0.32, 0.4, 0.4],
+      "value": "#38332a"
+    },
+    {
+      "name": "largest-shed-gable",
+      "plane": "mg",
+      "shape": "poly",
+      "points": [
+        [0.62, 0.6],
+        [0.7, 0.46],
+        [0.8, 0.46],
+        [0.86, 0.6]
+      ],
+      "value": "#544632"
+    },
+    {
+      "name": "barge-crane",
+      "plane": "fg",
+      "shape": "poly",
+      "points": [
+        [0.06, 1.02],
+        [0.1, 0.7],
+        [0.14, 0.66],
+        [0.18, 0.72],
+        [0.22, 1.02]
+      ],
+      "value": "#14120e"
+    },
+    {
+      "name": "hull-change-gear",
+      "plane": "fg",
+      "shape": "poly",
+      "points": [
+        [0.7, 1.02],
+        [0.76, 0.82],
+        [0.92, 0.8],
+        [1.02, 0.9],
+        [1.02, 1.02]
+      ],
+      "value": "#1a1712"
+    }
+  ]
+}
