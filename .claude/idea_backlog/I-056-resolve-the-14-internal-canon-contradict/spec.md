@@ -10,7 +10,35 @@ supersedes_title: "Resolve the 14 internal canon contradictions the Archivist ca
 
 # Resolve the internal canon contradictions
 
-## Status: catalogue re-derived from the corpus (the Archivist's original list is lost)
+## Status: 11 of 15 resolved on `release/1.6` (2026-08-02)
+
+| Item | State | Commit |
+|---|---|---|
+| 1 — Embervale loam + seam (**X1**) | ✅ accommodated in `canon.md` §4; `:343` school table de-coupled from "mining town" | `da31ccf` |
+| 2 — player vs Crossroads Man (**X9**) | ✅ **owner ruled: player stays anonymous, Crossroads Man is a distinct NPC** | `49c468e` |
+| 3 — superseded magic rule | ✅ retired in `core-story.md` and the grand-epic spec; `style.md` gained a provenance warning | `812beb7` |
+| 4 — region keyspace (**X12**) | ⚠️ **ruling recorded, rename NOT possible here** — see below | `da31ccf` |
+| 5 — meadow / Millcross | ✅ ward ruling in §4; Quartermaster repointed | `da31ccf`, `3290be8` |
+| 6 — Icefield arc in the war act | ✅ `act-2` → `act-1`, graph regenerated | `3290be8` |
+| 7 — Void-line mobs inert | ⏭ deferred — it is [[I-029]], a code change |  |
+| 8 — `bible.md` as source of truth | ✅ demoted; README authoring order repointed | `812beb7` |
+| 9 — the Widow's faction | ✅ `faction` dropped, region → `region-ashvale-front` | `3290be8` |
+| 10 — Stoneguard two gates | ✅ accommodated; `region-cindervast` linked | `da31ccf`, `3290be8` |
+| 11 — Cindervast arithmetic | ✅ ~37,000 erased, ~3,000 survivors, `0 (residents)` | `0396222` |
+| 12 — Brotherhood Caravan | ⏭ deferred — it is [[I-025]] |  |
+| 13 — dawn vs night | ✅ "in the night, and by dawn …" | `3290be8` |
+| 14 — six peoples vs eight races | ✅ `style.md`'s ruling copied into `core-story.md` | `812beb7` |
+| 15 — "no cross-register name exists" | ✅ the Crossroads Man named as the deliberate instance | `812beb7` |
+
+**Gates at every step:** `check_content.mjs` → *8 sheets, 1 maps, 153 story, 0 failures, 0 warnings*; `check_asset_manifest.mjs` → drift gate passed; `story-graph.md` regenerated (153 nodes, 340 edges).
+
+### What is left, and why
+
+- **Item 4's rename cannot happen on this branch.** `cluster1-geography.json` and `bestiary.json` live only on `feat/F-024`. The *ruling* (`region-*` wins) is now recorded in `canon.md` §6.1 with the schema evidence (`quest.schema.json:29` pins `^region-`), but the ids themselves must be renamed after F-024 merges — and the nine corresponding pairs are **not string-equal**, so the merge will not surface them as conflicts.
+- **`zones` needs two things, not one.** Correcting an earlier claim in this spec: unblocking it needs the rename **and** a `zones` measure function — `scripts/lib/season1.mjs` has none, and `:81` short-circuits on `blockedBy` before any measurement runs. Filed as part of the F-024 follow-up.
+- **Items 7 and 12** are [[I-029]] and [[I-025]] — linked, not duplicated.
+
+## Catalogue re-derived from the corpus (the Archivist's original list is lost)
 
 A prior worldbuilding panel catalogued 14 contradictions as `X1`..`X14`. **That catalogue was never committed.** Only three survive by name — `X1`, `X9`, `X12` — in `.claude/idea_backlog/I-048-.../spec.md` §7 and `docs/worldbuilding/DR-003-season-1-budget.md:132`.
 
@@ -103,6 +131,6 @@ Item 12 is [[I-025]] and item 7 is [[I-029]] — both already filed; link rather
 
 1. Every edit above is present in the tree, quoted back with `file:line` — the failure mode this idea exists to fix is *a ruling recorded in the backlog and never landed in canon*.
 2. `node scripts/check_content.mjs` (or the story coherence gate) passes; `docs/story/story-graph.md` is regenerated in the same commit as the `arcs.json` change or the drift gate fails.
-3. `node scripts/report_season1.mjs` prints a measured `zones` value, not `blocked`.
+3. ~~`node scripts/report_season1.mjs` prints a measured `zones` value, not `blocked`.~~ **Corrected 2026-08-02:** not achievable on this branch, and not achievable by the keyspace rename alone. `season1.mjs:81` returns early on `blockedBy` and there is **no `zones` measure function** — unblocking it needs the rename (on `feat/F-024`) *plus* a new measure. Re-scoped to the F-024 follow-up.
 4. The keyspace half of this audit is **re-run after `feat/F-024` merges**, and X12's remaining two heads are either found or explicitly ruled absent.
 5. DR-003 no longer cites unreachable parents.
