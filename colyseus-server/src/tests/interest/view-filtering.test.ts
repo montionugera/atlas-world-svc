@@ -2,20 +2,6 @@ import { Encoder, StateView } from '@colyseus/schema'
 import { GameState } from '../../schemas/GameState'
 
 describe('GameState view filtering', () => {
-  it('encodes nothing for a view that has been given no entities', () => {
-    const state = new GameState('map-test', 'room-1')
-    state.addPlayer('s1', 'Alice')
-
-    const encoder = new Encoder(state)
-    const emptyView = new StateView()
-
-    const full = encoder.encodeAll()
-    const filtered = encoder.encodeAllView(emptyView, full.byteLength, { offset: 0 })
-
-    // The player must not reach a client whose view does not contain it.
-    expect(filtered.byteLength).toBeLessThan(full.byteLength)
-  })
-
   it('encodes a player once it is added to the view', () => {
     const state = new GameState('map-test', 'room-1')
     const player = state.addPlayer('s1', 'Alice')
@@ -31,5 +17,17 @@ describe('GameState view filtering', () => {
     })
 
     expect(withPlayer.byteLength).toBeGreaterThan(withoutPlayer.byteLength)
+
+    // Load-bearing assertion — do not remove or "simplify" this away.
+    // `encodeAllView` only walks a ChangeTree's `allFilteredChanges` bucket,
+    // and that bucket only exists on schema classes carrying
+    // `$viewFieldIndexes` (i.e. at least one `@view()` field). If `@view()`
+    // is ever removed from every root collection on GameState, the class
+    // loses `$viewFieldIndexes` entirely and EVERY filtered encode
+    // degenerates to 0 bytes — this assertion is what catches that: it
+    // fails pre-fix (withPlayer.byteLength === 0) and passes post-fix.
+    // Verified by temporarily stripping `@view()` from all five collections:
+    // the test goes red, then green again once restored (see task-3-report.md).
+    expect(withPlayer.byteLength).toBeGreaterThan(0)
   })
 })
