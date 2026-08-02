@@ -272,12 +272,17 @@ a targeted negative word next.
 **On the strength-vs-paint-quality claim specifically: yes, cleanly.** 16/16 new cells painted,
 0 flat-vector collapses, across four subjects the original round never touched. Combined with the
 two subjects from `ABP-controlnet-rescue.md`, the core recipe (depth control, strength 0.30–0.40,
-denoise 1.0, 8 steps) is now evidenced on **six subjects, two seeds** — no longer "two subjects,
-one seed." **On depth adherence specifically: also yes, and more strongly than the first write-up
-gave it credit for.** Embervale's pyramid render is not a counterexample to depth fidelity — it is
-direct proof of it: the model painted the control map's actual geometry with high fidelity, and that
-geometry happened to be authored wrong. All four subjects' geometric composition tracked their depth
-maps; only one depth map itself was wrong.
+denoise 1.0, 8 steps) is now evidenced on **six subjects; two seeds on four of them** — Gildmark and
+Norhollow remain one-seed — no longer "two subjects, one seed." **On depth adherence specifically:
+also yes, and more strongly than the first write-up gave it credit for, though only directly
+demonstrated for one subject.** Embervale's pyramid render is not a counterexample to depth
+fidelity — it is direct proof of it: the model painted the control map's actual geometry with high
+fidelity, and that geometry happened to be authored wrong. That direct comparison — rendering the
+depth map itself and checking the generation against it — was only done for Embervale. Millcross,
+Rooktide and Cindervast's compositions held close to their *brief prose* (see the per-subject
+observations above); their depth maps were not separately rendered and compared here, so their
+fidelity is evidenced at the brief level, not confirmed against the control signal the way
+Embervale's is.
 
 **On "safe for unattended batch use": still no, but the reason has narrowed.** It is not that the
 recipe produces a wrong building — it is that one of four *block-ins* encodes a wrong building, and
