@@ -207,8 +207,10 @@ counted as the pylon artifact.
 ### A1-ART-07 Cindervast — stable composition, one consistent brief violation
 
 Gate, crown emblem, statue and standing figures are compositionally stable across all four cells —
-consistent with the high depth-adherence this round confirms across all four subjects, Embervale
-included (see the re-attribution above). But **all 4/4 cells show visibly cracked,
+brief-consistent stability of the same kind seen in Millcross and Rooktide. As with those two,
+Cindervast's own depth map was not separately rendered and compared against its generations here;
+that direct depth-map check was only done for Embervale (see the re-attribution above), so this is
+evidenced at the brief level, not confirmed depth-adherence. But **all 4/4 cells show visibly cracked,
 patched or rubbled walls**, directly contradicting the brief's "no rubble ... walls standing clean
 with mortar intact." This reads as a prompt-emphasis gap rather than a seed artifact, since it is
 consistent regardless of seed or strength. A hazy modern city skyline is visible in the background
