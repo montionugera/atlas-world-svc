@@ -442,5 +442,11 @@
     "title": "Convert remaining gameplay subsystems to SimClock (respawn, projectile lifetimes, combat scheduling)",
     "created_at": "2026-08-02T17:15:01.530434+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-075",
+    "title": "Ban global clock reads in converted gameplay directories (eslint) and update the CLAUDE.md timing invariant",
+    "created_at": "2026-08-02T17:15:06.779570+00:00",
+    "promoted_to": null
   }
 ]
