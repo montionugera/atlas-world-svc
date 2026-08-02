@@ -321,6 +321,25 @@ Entities are added at `aoiRadius` and removed at `aoiRadius × aoiHysteresis` (d
 <strong>The harness is not "just write a file" — the repo has no tooling for it.</strong> <code>@colyseus/testing</code> is <strong>not installed</strong> (<code>colyseus-server/package.json:39-56</code> — devDeps are jest / ts-jest / ts-node / ts-morph only). <code>colyseus.js</code> is a runtime dependency (<code>:34</code>) but is pinned at <code>^0.16.19</code> against a <strong>0.17</strong> server — an unflagged version skew. Two viable paths: add <code>@colyseus/testing</code>, or hand-roll an in-process harness instantiating <code>GameRoom</code> + <code>GameSimulationSystem</code> directly, the pattern <code>src/tests/game-simulation-integration.test.ts</code> and <code>src/tests/f018-harness.ts</code> already prove. Note that <strong>snapshot bytes per client — the single most important number here — cannot be measured without real clients or a hand-driven <code>Encoder</code></strong>. Decide which before Stage 1 starts.
 </div>
 
+#### Measured result (2026-08-02, `npm run load`, 100 ticks/point, `AOI_CONFIG.radius=150`)
+
+| players | mobs=50 | mobs=200 | mobs=500 | mobs=1000 |
+|---:|---|---|---|---|
+| 1 | OK p95=3.2ms bytes=704 | OK p95=7.3ms bytes=3796 | OK p95=16.7ms bytes=5032 | **OVER** p95=62.2ms bytes=10758 |
+| 10 | OK p95=0.9ms bytes=945 | OK p95=1.4ms bytes=3205 | OK p95=13.6ms bytes=10215 | **OVER** p95=59.8ms bytes=20161 |
+| 50 | OK p95=1.5ms bytes=2643 | OK p95=5.0ms bytes=4231 | OK p95=21.7ms bytes=10876 | **OVER** p95=74.9ms bytes=21020 |
+| 100 | OK p95=2.0ms bytes=2074 | OK p95=2.0ms bytes=3170 | OK p95=22.4ms bytes=9482 | **OVER** p95=67.3ms bytes=22175 |
+| 200 | OK p95=3.4ms bytes=4952 | OK p95=11.0ms bytes=5814 | **OVER** p95=54.2ms bytes=8672 | **OVER** p95=114.1ms bytes=14714 |
+| 300 | OK p95=7.6ms bytes=3566 | OK p95=16.6ms bytes=11086 | OK p95=42.7ms bytes=13272 | **OVER** p95=138.4ms bytes=11762 |
+
+<div class="callout success">
+<strong>R1 is answered: a ceiling was found, not merely un-reached.</strong> Mob count, not player count, is what breaks the 50ms tick budget — <code>mobs=1000</code> is <code>OVER</code> at every player count tested (1 through 300), while <code>players</code> scaling alone (at fixed, moderate mob counts) stays cheap. <code>mobs=500</code> sits right at the edge (21–54ms p95, one <code>OVER</code> outlier at 200 players from single-sample AI/position variance — the harness runs each point once, uniformly-random mob placement, no repeats).
+</div>
+
+<div class="callout warn">
+<strong>This sets a per-room mob-density ceiling, not a final <code>cellSize</code>.</strong> The safe zone is comfortably under ~200 mobs/room (p95 ≤ ~16ms with wide margin); 500 is the observed edge; 1000 reliably blows the budget. Converting that into a concrete <code>cellSize</code> requires the mob <em>density per unit area</em> the real spawn tables produce (mobs / world-unit²) — not measured here and out of this task's scope. <code>AOI_CONFIG.radius</code> was <strong>not</strong> changed by this harness: the sweep held it fixed at its existing placeholder (150) and never varied it, so there is no measured basis to pick a new number without guessing. Both remain open pending (a) real per-map mob density and (b) a radius-focused sweep, which this harness does not run.
+</div>
+
 ### Testing
 
 - Membership: an entity crossing into/out of `aoiRadius` is added/removed exactly once; hysteresis prevents oscillation.
@@ -583,11 +602,11 @@ Added to `config/gameConfig.ts`, all overridable by environment variable:
 
 | Key | Default | Notes |
 |---|---|---|
-| `aoiRadius` | *from load harness* | Stage 1 |
+| `aoiRadius` | `150` (unvalidated placeholder) | Stage 1 — load harness measured *capacity*, not radius; this sweep never varied radius, so 150 is still a guess. See *Load harness* measured result. |
 | `aoiHysteresis` | `1.15` | Removal radius multiplier |
 | `interestUpdateIntervalTicks` | `1` | Raise to trade freshness for CPU |
 | `worldId` | `world-01` | Stage 3 |
-| `cellSize` | *from load harness* | **Derived from measurement, not guessed** |
+| `cellSize` | *per-room mob ceiling measured (≤~200 safe, ~500 edge, 1000 over budget); final cellSize also needs real spawn-table mob density* | **Partially derived from measurement** — see *Load harness* measured result |
 | `maxEntitySpeed` | *from existing entity tuning* | Fastest world-units/sec any entity can reach; feeds `ghostBand` |
 | `ghostBand` | `aoiRadius + maxEntitySpeed × handoffTimeoutMs / 1000` | Validated at boot |
 | `ghostPublishIntervalMs` | `100` | Independent of tick rate |
@@ -641,7 +660,7 @@ Prometheus metrics, extending the existing exporter:
 
 ## Open questions
 
-1. **Cell size and AOI radius** — cannot be answered until the Stage 1 load harness runs. Everything downstream depends on these two numbers.
+1. **Cell size and AOI radius** — **partially answered 2026-08-02** by the Stage 1 load harness (`npm run load`, see measured result under *Load harness*): a per-room mob-density ceiling was found (comfortably safe ≤~200 mobs, ~500 is the edge, 1000 reliably blows the 50ms tick budget; player count in the tested 1–300 range is not the bottleneck). Still open: **(a)** `cellSize` itself, which needs this ceiling combined with real spawn-table mob density per unit area (not measured); **(b)** `aoiRadius`, which this sweep held fixed at its 150 placeholder and never varied — a radius-focused sweep is a separate, not-yet-run harness variant.
 2. **Do mobs hand off, or are they cell-bound?** Cell-bound mobs (they turn back at the border, like the existing `BoundaryAwareBehavior`) are far simpler and remove most mob handoff traffic. Handing off mobs is more believable. **Recommendation: cell-bound in Stage 4, revisit after.**
 3. **Does world state persist across shard restart?** Players persist through Nakama already. Mobs are proposed as ephemeral and respawned from spawn tables. Persistent world objects — dropped loot, player structures — are undesigned and out of scope here.
 4. ~~**Diagonal neighbours** — a corner cell has 8 neighbours; publish to all 8 or only the 4 edge-adjacent?~~ **Closed 2026-08-02 by the move to hexagons.** A hex has exactly 6 neighbours, all edge-adjacent — there is no diagonal case to decide. See *Cell shape* above.
