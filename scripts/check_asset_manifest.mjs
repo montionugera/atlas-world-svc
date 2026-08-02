@@ -174,7 +174,7 @@ function isEmptyField(v) {
 // §4.1 — render-type resolution. Mirrored byte-for-byte in
 // tools/asset-storybook/js/renderers.mjs so the gate and the storybook can
 // never disagree on what a given entry renders as. Enforced by the
-// "resolveRender mirror" test in scripts/tests/check_asset_manifest.test.mjs
+// "resolveRender mirror" test in scripts/tests/resolve_render_mirror.test.mjs
 // — that test reads both copies and diffs them, so a drift here fails CI
 // instead of silently diverging.
 function primaryPath(entry) {
