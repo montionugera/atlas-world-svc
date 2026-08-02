@@ -5,7 +5,7 @@
       "group": "cast",
       "title": "The Crossroads Man — reference sheet",
       "file": "concept/cast-crossroads-man-sheet.png",
-      "note": "Z-Image Turbo, local generation — 4-view turnaround, The Undertow cast"
+      "note": "Z-Image Turbo, local generation — 4-view turnaround, The Undertow cast. Binds to char-crossroads-man, an NPC — NOT the player avatar (char-expedition-member is deliberately unnamed and unportrayed; see canon.md §2). Do not reuse this sheet as the canonical Human race reference."
     },
     "art:cast-crossroads-man-v1": {
       "group": "cast",

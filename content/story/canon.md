@@ -68,13 +68,24 @@ background; everything after is expressed in seasons.
 
 ## 2. Character dossiers
 
-All 18 named characters. Fate follows the plan's death list (spec §3);
+All 19 named characters. Fate follows the plan's death list (spec §3);
 everyone not listed there survives to the epic's end.
+
+**The protagonist question, settled.** The player is an **anonymous
+expedition member**, not a named hero — `char-expedition-member` exists
+only as the avatar's anchor and carries no authored voice. **The
+Crossroads Man is a separate NPC**, the drifter the Quartermaster hired,
+and the four `art:cast-crossroads-man-*` sheets are his likeness — *not*
+the player's. The two were previously conflated, which had the player
+giving himself a quest and speaking his own dialogue. If a line needs a
+voice from inside the Expedition, use Farrow, the Quartermaster, or the
+Crossroads Man — never the player.
 
 | Character | Want | Secret | Voice note | Key bonds | Fate |
 |---|---|---|---|---|---|
 | `char-quartermaster` | Keep everyone who reaches Millcross fed and counted. | None of her own — she carries other people's. | Counts things in meals and miles, never coin (Millcross diction). | The Expedition; the act-2 refugees; Liss's letters cross her desk. | Dies, act 4 (`event-quartermaster-falls`), shielding refugees from the Widow's mob. |
-| `char-expedition-member` | To matter to the ground he stands on. | — | Player-driven. | Farrow the Forward; the Quartermaster. | Alive — the throughline. |
+| `char-expedition-member` | To matter to the ground they stand on. | — | **None — the player avatar has no authored voice.** It is deliberately unnamed and un-gendered, and it is **not a character sheet**: it may never be a quest `giver` or a dialogue `speaker`, and no line may put words in it. Events may list it as involved. | Farrow the Forward; the Quartermaster. | Alive — the throughline. |
+| `char-crossroads-man` (**the Crossroads Man**) | A place that is his, after a war took the first one. | Knows what both sides pay him to carry, and reads it. | Ashen Vigil terseness wearing a Gilded Rot "the" — the one deliberate cross-register name in the world (see `style.md`). | The Quartermaster hired him and named him; buries her in act 4. | Survives — not among the epic's five deaths. |
 | `char-ashfang-alpha` (the Twin-Strike) | — (a wall, not a schemer). | — | No speech. | — | Already dead, act 1 (`event-twin-strike-falls`, existing). |
 | `char-the-broker` | To be right about people, forever — more than he wants money. | Personally engineered the first caravan burning; has kept the war balanced, never won, ever since; wins the signal/detail gap every time (see "How news travels," §4) — his riders outride everyone else's, and inconvenient proclamations get robbed on the road. | Gilded Rot: calm ledger-and-chronicle accounting, even discussing lives. | Owns the Bell-Keeper's silence; sells to the Iron Regent. | Survives — exposed and broken (act 5, `event-broker-unmasked`), not among the epic's five deaths. |
 | `char-iron-regent` | To rule whatever's left when the war ends. | Is the buyer in the act-4 relic-weapon deal. | Ashen Vigil register: clipped command, frames every seizure of power as necessity. | Sister to the War-Countess; enemy to the Ash Prophet's raiders. | Survives — thwarted at the brink (`event-relic-sale-stopped`), not killed. |

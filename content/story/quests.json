@@ -444,7 +444,7 @@
       "offerText": "See her buried at the crossroads. Clear what's left prowling the ash before the mourners have to.",
       "completeText": "The log is the last thing you touch. Meals counted, miles counted, names counted, all the way to a page that stops mid-line — the way any list stops when the one keeping it doesn't get to finish."
     },
-    "giver": "char-expedition-member",
+    "giver": "char-crossroads-man",
     "region": "region-millcross",
     "faction": "faction-expedition",
     "unlockedBy": [
