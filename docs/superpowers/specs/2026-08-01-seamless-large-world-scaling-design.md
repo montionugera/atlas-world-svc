@@ -321,23 +321,39 @@ Entities are added at `aoiRadius` and removed at `aoiRadius × aoiHysteresis` (d
 <strong>The harness is not "just write a file" — the repo has no tooling for it.</strong> <code>@colyseus/testing</code> is <strong>not installed</strong> (<code>colyseus-server/package.json:39-56</code> — devDeps are jest / ts-jest / ts-node / ts-morph only). <code>colyseus.js</code> is a runtime dependency (<code>:34</code>) but is pinned at <code>^0.16.19</code> against a <strong>0.17</strong> server — an unflagged version skew. Two viable paths: add <code>@colyseus/testing</code>, or hand-roll an in-process harness instantiating <code>GameRoom</code> + <code>GameSimulationSystem</code> directly, the pattern <code>src/tests/game-simulation-integration.test.ts</code> and <code>src/tests/f018-harness.ts</code> already prove. Note that <strong>snapshot bytes per client — the single most important number here — cannot be measured without real clients or a hand-driven <code>Encoder</code></strong>. Decide which before Stage 1 starts.
 </div>
 
-#### Measured result (2026-08-02, `npm run load`, 100 ticks/point, `AOI_CONFIG.radius=150`)
+#### Measured result — RETRACTED (2026-08-02, first pass, 100 ticks/point)
+
+<div class="callout danger">
+<strong>Invalidated by code review, same day.</strong> The first-pass harness ran its tick loop unpaced (no real-time delay between iterations). <code>AIModule.update()</code> gates <code>updateAIDecision()</code> on <code>Date.now() - lastUpdateTime >= 50ms</code> (<code>src/ai/AIModule.ts:90-100</code>); an unpaced loop completes iterations in a few ms, so that gate almost never opened — instrumented at <strong>6 of 100 ticks</strong> actually running AI decisions. Synthetic players also stood idle rather than moving. The table below (mob count, not player count, drives the ceiling) was measuring a world running AI at ~6% of production frequency with idle players, and is retracted. See the corrected result immediately below.
+</div>
+
+#### Measured result — corrected (2026-08-02, `npm run load`, paced to real time, 20 warm-up + 200 recorded ticks/point, `AOI_CONFIG.radius=150`)
+
+Fixes applied: tick loop paced to real wall-clock time (so `Date.now()`-gated systems, not just `AIModule`, behave as they do in production); synthetic players scripted to wander/reflect via the real `state.updatePlayerInput()` path instead of standing idle; 20 warm-up ticks discarded; recorded ticks raised 100 → 200; `bytesPerClient` averaged across up to 10 sampled clients instead of 1.
 
 | players | mobs=50 | mobs=200 | mobs=500 | mobs=1000 |
 |---:|---|---|---|---|
-| 1 | OK p95=3.2ms bytes=704 | OK p95=7.3ms bytes=3796 | OK p95=16.7ms bytes=5032 | **OVER** p95=62.2ms bytes=10758 |
-| 10 | OK p95=0.9ms bytes=945 | OK p95=1.4ms bytes=3205 | OK p95=13.6ms bytes=10215 | **OVER** p95=59.8ms bytes=20161 |
-| 50 | OK p95=1.5ms bytes=2643 | OK p95=5.0ms bytes=4231 | OK p95=21.7ms bytes=10876 | **OVER** p95=74.9ms bytes=21020 |
-| 100 | OK p95=2.0ms bytes=2074 | OK p95=2.0ms bytes=3170 | OK p95=22.4ms bytes=9482 | **OVER** p95=67.3ms bytes=22175 |
-| 200 | OK p95=3.4ms bytes=4952 | OK p95=11.0ms bytes=5814 | **OVER** p95=54.2ms bytes=8672 | **OVER** p95=114.1ms bytes=14714 |
-| 300 | OK p95=7.6ms bytes=3566 | OK p95=16.6ms bytes=11086 | OK p95=42.7ms bytes=13272 | **OVER** p95=138.4ms bytes=11762 |
+| 1 | OK p95=4.5ms bytes=1895 | OK p95=5.9ms bytes=4279 | OK p95=22.1ms bytes=9156 | **OVER** p95=55.3ms bytes=19492 |
+| 10 | OK p95=4.2ms bytes=1056 | OK p95=7.9ms bytes=3792 | OK p95=28.9ms bytes=8626 | **OVER** p95=73.4ms bytes=18926 |
+| 50 | OK p95=3.2ms bytes=1772 | OK p95=7.9ms bytes=4707 | OK p95=22.7ms bytes=11207 | **OVER** p95=106.1ms bytes=20024 |
+| 100 | OK p95=5.4ms bytes=2867 | OK p95=18.7ms bytes=5755 | **OVER** p95=142.4ms bytes=11199 | **OVER** p95=145.3ms bytes=23126 |
+| 200 | OK p95=8.6ms bytes=5744 | OK p95=13.8ms bytes=8762 | OK p95=38.6ms bytes=15193 | **OVER** p95=92.7ms bytes=22909 |
+| 300 | OK p95=10.3ms bytes=6904 | OK p95=26.9ms bytes=9934 | **OVER** p95=52.3ms bytes=17420 | **OVER** p95=121.9ms bytes=24576 |
+
+<div class="callout danger">
+<strong>The "mob count only" conclusion does not survive.</strong> With AI actually running every ~50ms and players actually moving, per-tick cost now visibly scales with <strong>player count too</strong>: at a fixed mobs=50, p50 rises from 1.0ms (1 player) to 9.2ms (300 players) — roughly 9x. <code>mobs=500</code> is no longer a clean "mostly OK, one outlier" edge: it is now <code>OVER</code> at 100 and 300 players and <code>OK</code> at 200 (still non-monotonic — see the noise caveat below). Capacity is jointly limited by players and mobs, not purely by mob count.
+</div>
 
 <div class="callout success">
-<strong>R1 is answered: a ceiling was found, not merely un-reached.</strong> Mob count, not player count, is what breaks the 50ms tick budget — <code>mobs=1000</code> is <code>OVER</code> at every player count tested (1 through 300), while <code>players</code> scaling alone (at fixed, moderate mob counts) stays cheap. <code>mobs=500</code> sits right at the edge (21–54ms p95, one <code>OVER</code> outlier at 200 players from single-sample AI/position variance — the harness runs each point once, uniformly-random mob placement, no repeats).
+<strong>R1 is still answered: a ceiling was found.</strong> <code>mobs=1000</code> is <code>OVER</code> at every player count tested (1 through 300) — the hard ceiling from the first pass survives. <code>mobs≤200</code> stays <code>OK</code> across the full 1–300 player range tested. The largest all-<code>OK</code> combined-load points are players=300/mobs=200 (p95=26.9ms) and players=200/mobs=500 (p95=38.6ms, 700 total entities).
 </div>
 
 <div class="callout warn">
-<strong>This sets a per-room mob-density ceiling, not a final <code>cellSize</code>.</strong> The safe zone is comfortably under ~200 mobs/room (p95 ≤ ~16ms with wide margin); 500 is the observed edge; 1000 reliably blows the budget. Converting that into a concrete <code>cellSize</code> requires the mob <em>density per unit area</em> the real spawn tables produce (mobs / world-unit²) — not measured here and out of this task's scope. <code>AOI_CONFIG.radius</code> was <strong>not</strong> changed by this harness: the sweep held it fixed at its existing placeholder (150) and never varied it, so there is no measured basis to pick a new number without guessing. Both remain open pending (a) real per-map mob density and (b) a radius-focused sweep, which this harness does not run.
+<strong>Residual noise, disclosed not fixed:</strong> the sweep runs 24 points sequentially in one process in fixed ascending order, with no repeats per point and observed heap growth (~160MB → 350MB+) across the run, so later points carry more baseline GC pressure than earlier ones at equal load. This plausibly explains the players=100/mobs=500 spike (p95=142.4ms, p99=224.7ms, while p50=27.3ms is unremarkable — a tail-latency shape, not a shifted center) and the non-monotonicity at mobs=500 generally. Treat single-point tail values with caution; the mobs=1000 ceiling and the mobs≤200 safe zone are consistent enough across the whole player range to trust.
+</div>
+
+<div class="callout warn">
+<strong>This still sets a per-room capacity ceiling, not a final <code>cellSize</code>.</strong> Converting it into a concrete <code>cellSize</code> requires the player and mob <em>density per unit area</em> the real spawn tables and expected concurrency produce — not measured here and out of this task's scope. <code>AOI_CONFIG.radius</code> was <strong>not</strong> changed by this harness: the sweep held it fixed at its existing placeholder (150) and never varied it, so there is no measured basis to pick a new number without guessing. Both remain open pending (a) real per-map density data and (b) a radius-focused sweep, which this harness does not run.
 </div>
 
 ### Testing
@@ -606,7 +622,7 @@ Added to `config/gameConfig.ts`, all overridable by environment variable:
 | `aoiHysteresis` | `1.15` | Removal radius multiplier |
 | `interestUpdateIntervalTicks` | `1` | Raise to trade freshness for CPU |
 | `worldId` | `world-01` | Stage 3 |
-| `cellSize` | *per-room mob ceiling measured (≤~200 safe, ~500 edge, 1000 over budget); final cellSize also needs real spawn-table mob density* | **Partially derived from measurement** — see *Load harness* measured result |
+| `cellSize` | *per-room capacity ceiling measured (mobs≤200 safe at any tested player count 1-300; mobs=1000 always over budget; mobs=500 is player-count-sensitive, OVER at 100 and 300 players); final cellSize also needs real spawn-table player+mob density* | **Partially derived from measurement** — see *Load harness* corrected measured result |
 | `maxEntitySpeed` | *from existing entity tuning* | Fastest world-units/sec any entity can reach; feeds `ghostBand` |
 | `ghostBand` | `aoiRadius + maxEntitySpeed × handoffTimeoutMs / 1000` | Validated at boot |
 | `ghostPublishIntervalMs` | `100` | Independent of tick rate |
@@ -660,7 +676,7 @@ Prometheus metrics, extending the existing exporter:
 
 ## Open questions
 
-1. **Cell size and AOI radius** — **partially answered 2026-08-02** by the Stage 1 load harness (`npm run load`, see measured result under *Load harness*): a per-room mob-density ceiling was found (comfortably safe ≤~200 mobs, ~500 is the edge, 1000 reliably blows the 50ms tick budget; player count in the tested 1–300 range is not the bottleneck). Still open: **(a)** `cellSize` itself, which needs this ceiling combined with real spawn-table mob density per unit area (not measured); **(b)** `aoiRadius`, which this sweep held fixed at its 150 placeholder and never varied — a radius-focused sweep is a separate, not-yet-run harness variant.
+1. **Cell size and AOI radius** — **partially answered 2026-08-02** by the Stage 1 load harness (`npm run load`, corrected result under *Load harness* — an initial pass was retracted after review found the tick loop was unpaced and starving `AIModule`'s `Date.now()` throttle, see the retraction callout there). Corrected finding: `mobs=1000` reliably blows the 50ms tick budget at every player count tested (1–300); `mobs≤200` stays safe at every player count tested; `mobs=500` is player-count-sensitive (OVER at 100 and 300 players, OK at 200 — capacity is jointly limited by players and mobs, not mob count alone, contrary to the retracted pass's headline). Still open: **(a)** `cellSize` itself, which needs this ceiling combined with real spawn-table player+mob density per unit area (not measured); **(b)** `aoiRadius`, which this sweep held fixed at its 150 placeholder and never varied — a radius-focused sweep is a separate, not-yet-run harness variant.
 2. **Do mobs hand off, or are they cell-bound?** Cell-bound mobs (they turn back at the border, like the existing `BoundaryAwareBehavior`) are far simpler and remove most mob handoff traffic. Handing off mobs is more believable. **Recommendation: cell-bound in Stage 4, revisit after.**
 3. **Does world state persist across shard restart?** Players persist through Nakama already. Mobs are proposed as ephemeral and respawned from spawn tables. Persistent world objects — dropped loot, player structures — are undesigned and out of scope here.
 4. ~~**Diagonal neighbours** — a corner cell has 8 neighbours; publish to all 8 or only the 4 edge-adjacent?~~ **Closed 2026-08-02 by the move to hexagons.** A hex has exactly 6 neighbours, all edge-adjacent — there is no diagonal case to decide. See *Cell shape* above.
