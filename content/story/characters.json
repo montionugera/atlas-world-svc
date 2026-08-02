@@ -19,7 +19,7 @@
     "summary": "You — one of the party that reopened the meadow. The player avatar, deliberately unnamed: never a quest giver, never a dialogue speaker. Events may list you as involved; nothing may put words in your mouth.",
     "role": "ally",
     "faction": "faction-expedition",
-    "region": "region-millcross",
+    "region": "region-spawn-meadow",
     "assetKey": "player",
     "links": []
   },

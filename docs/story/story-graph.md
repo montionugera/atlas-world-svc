@@ -237,7 +237,7 @@ flowchart LR
   n_char_crossroads_man -->|region| n_region_millcross
   n_char_elder_of_rooktide -->|region| n_region_rooktide
   n_char_expedition_member -->|faction| n_faction_expedition
-  n_char_expedition_member -->|region| n_region_millcross
+  n_char_expedition_member -->|region| n_region_spawn_meadow
   n_char_farrow_the_forward -->|diedAt| n_event_farrow_falls
   n_char_farrow_the_forward -->|faction| n_faction_expedition
   n_char_farrow_the_forward -->|region| n_region_millcross

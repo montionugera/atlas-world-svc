@@ -190,9 +190,15 @@ official reading of the first caravan burning says beneath the tower.
   seat from the seam. Accepted by accommodation — do not "fix" either.)*
 - **The spawn meadow is Millcross's frontier ward, not a rival settlement.**
   `region-spawn-meadow` and `region-millcross` are two ids for one town's
-  ground — the expedition camp and the crossroads it supplies. A character
-  who lives at the camp lives at Millcross; count the pair once when
-  counting towns.
+  ground — the expedition camp and the crossroads it supplies. **Both ids
+  stay valid and neither is retired:** use `region-spawn-meadow` for
+  camp-side placement (it is where the map spawns things), and
+  `region-millcross` for the crossroads itself and for anyone whose office,
+  life and death are there. **Count the pair once when counting towns.**
+  When a character sheet in `content/characters/` carries a `region-*`
+  link, it must match that character's `region` in
+  `content/story/characters.json` — the content gate checks only that the
+  id resolves, not that the two agree.
 - **Gildmark** sits on the coast: reachable from Millcross by the old trade
   road (4–5 days) and from both war towns by a coastal spur (about 3 days).
   Its harbor is the only deepwater port on this coast — there is no other

@@ -11,7 +11,7 @@ stats:
   speed: low
   threat: melee
 links:
-  story: [faction-expedition, region-spawn-meadow]
+  story: [faction-expedition, region-millcross]
 ---
 
 ## Lore
@@ -26,7 +26,9 @@ back.
 
 Current mapping: `cleric.glb` (seed/market) — a calm, robed non-combatant
 silhouette that reads as "camp personnel, not a threat". Scale ~1.7u,
-feet-pivot. Placed in `region-spawn-meadow` near the tents. Seed rig, default
+feet-pivot. Placed at the expedition camp near the tents — canonically
+`region-millcross`, of which the spawn meadow is the frontier ward
+(`canon.md` §4). Seed rig, default
 clip map; no bespoke target planned for v1.
 
 ## Design Notes
