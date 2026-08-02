@@ -1,4 +1,4 @@
-import { Schema, MapSchema, ArraySchema, type } from '@colyseus/schema'
+import { Schema, MapSchema, ArraySchema, type, view } from '@colyseus/schema'
 import { Mob } from './Mob'
 import { Player } from './Player'
 import { Projectile } from './Projectile'
@@ -18,11 +18,11 @@ import type { BattleManager } from '../modules/BattleManager'
 import type { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
 
 export class GameState extends Schema {
-  @type({ map: Player }) players = new MapSchema<Player>()
-  @type({ map: Mob }) mobs = new MapSchema<Mob>()
-  @type({ map: NPC }) npcs = new MapSchema<NPC>()
-  @type({ map: Projectile }) projectiles = new MapSchema<Projectile>()
-  @type({ map: ZoneEffect }) zoneEffects = new MapSchema<ZoneEffect>()
+  @view() @type({ map: Player }) players = new MapSchema<Player>()
+  @view() @type({ map: Mob }) mobs = new MapSchema<Mob>()
+  @view() @type({ map: NPC }) npcs = new MapSchema<NPC>()
+  @view() @type({ map: Projectile }) projectiles = new MapSchema<Projectile>()
+  @view() @type({ map: ZoneEffect }) zoneEffects = new MapSchema<ZoneEffect>()
   @type('number') tick: number = 0
   @type('string') mapId: string = 'map-01-sector-a'
   @type('string') roomId: string = ''
