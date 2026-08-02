@@ -19,6 +19,7 @@ import {
   collectInterestViewers as collectViewers,
 } from '../interest/collect'
 import { AOI_CONFIG } from '../config/aoiConfig'
+import { SimClock } from '../time/SimClock'
 
 /**
  * Integration test for the per-tick simulation loop (GameSimulationSystem) wired
@@ -65,6 +66,10 @@ function buildRoom() {
   const room = {
     state,
     roomId: ROOM_ID,
+    // GameSimulationSystem.update() advances this every tick, exactly as the real
+    // room does. Omitting it makes every tick throw into the loop's try/catch and
+    // silently do nothing.
+    simClock: new SimClock(),
     physicsManager,
     battleManager,
     battleModule,

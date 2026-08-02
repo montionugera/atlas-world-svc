@@ -87,15 +87,18 @@ export class AIModule {
   }
 
   // Update all agent AI (public method for tick-driven updates)
-  update(): void {
+  //
+  // `nowMs` is SIMULATED time from the room's SimClock, not wall clock. Gating
+  // on wall clock made AI cadence depend on how fast the process happened to be
+  // running: an unpaced loop ran AI on 1 of 100 ticks and silently invalidated
+  // F-027's first capacity table. See .claude/refined_backlog/F-028.
+  update(nowMs: number): void {
     if (!this.isRunning) return
-    const now = Date.now()
-    const dt = now - this.lastUpdateTime
-    const targetInterval = 1000 / this.updateFrequency // 50ms for 20 FPS
 
-    // Only update if enough time has passed
-    if (dt < targetInterval) return
-    this.lastUpdateTime = now
+    const targetInterval = 1000 / this.updateFrequency // 50ms for 20 FPS
+    if (nowMs - this.lastUpdateTime < targetInterval) return
+
+    this.lastUpdateTime = nowMs
     this.updateAIDecision()
   }
 

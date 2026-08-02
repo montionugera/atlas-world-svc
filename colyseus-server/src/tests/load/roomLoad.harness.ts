@@ -34,21 +34,20 @@
  *
  * The tick loop is paced to real wall-clock time (~GAME_CONFIG.tickRate ms
  * apart), sleeping only the leftover time after each tick's work completes.
- * This is NOT cosmetic: `AIModule.update()` (src/ai/AIModule.ts:90-100) gates
- * `updateAIDecision()` on `Date.now() - lastUpdateTime >= 50ms`. An unpaced
- * loop completes iterations in a few ms, so that gate almost never opens —
- * measured at 6 of 100 ticks actually running AI decision logic in an earlier,
- * unpaced version of this harness. Pacing to real time is the general fix:
- * it makes every `Date.now()`-gated system in the codebase (not just this one)
- * behave the way it does in production, where the loop really is ~50ms apart.
- * `AIModule` is deliberately not special-cased/force-ticked here.
+ * This was NOT cosmetic: it compensates for systems that gate their per-tick
+ * work on wall-clock `Date.now()`, which an unpaced loop (a few ms per
+ * iteration) starves almost completely.
  *
- * `AIModule` gating a gameplay-timing check on `Date.now()` instead of
- * `performance.now()` also directly violates this repo's own stated invariant
- * (CLAUDE.md: "Use performance.now() for gameplay timing/cooldowns end-to-end;
- * do not mix with Date.now() for deltas"). That is a real production bug this
- * harness exposed — left unfixed here (out of scope for a measurement tool)
- * and worth its own backlog entry.
+ * `AIModule` was the case this harness originally exposed — measured at 6 of
+ * 100 ticks actually running AI decision logic in an earlier, unpaced version,
+ * which invalidated the first capacity table published from it. As of F-028 it
+ * no longer needs the pacing: it gates on the room's SimClock (simulated time),
+ * so it runs once per tick at any execution speed.
+ *
+ * The pacing stays because other systems still gate on `Date.now()` — respawn,
+ * projectile lifetimes, combat scheduling — and pacing is what keeps them
+ * behaving as they do in production. Converting those is F-028's step 3,
+ * deliberately out of scope both there and here.
  *
  * Run: npm run load
  */

@@ -61,6 +61,7 @@ import {
   collectInterestViewers as collectViewers,
 } from '../interest/collect'
 import { AOI_CONFIG } from '../config/aoiConfig'
+import { SimClock } from '../time/SimClock'
 
 // ───────────────────────────────────────────────────────── the closed form ───
 
@@ -147,6 +148,7 @@ export function loadCombatModel(): LoadedModel {
 export interface TestRoom {
   state: GameState
   roomId: string
+  simClock: SimClock
   physicsManager: PlanckPhysicsManager
   battleManager: BattleManager
   battleModule: BattleModule
@@ -205,6 +207,10 @@ export function buildTestRoom(roomId: string, mapId = 'map-test'): TestEnv {
   const room: TestRoom = {
     state,
     roomId,
+    // GameSimulationSystem.update() advances this every tick, exactly as the real
+    // room does. Omitting it makes every tick throw into the loop's try/catch and
+    // silently do nothing.
+    simClock: new SimClock(),
     physicsManager,
     battleManager,
     battleModule,
