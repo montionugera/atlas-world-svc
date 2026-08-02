@@ -1,4 +1,4 @@
-import { SpatialEntity } from './SpatialHash'
+import { InterestEntity } from './types'
 
 export interface VisibilityContext {
   viewerId: string
@@ -15,8 +15,12 @@ export interface VisibilityContext {
  * never hard-wire a distance query — a phase predicate composes here with `&&`
  * and needs no change to the manager. See the design spec, Stage 1 ->
  * "The phasing hook (I-053)".
+ *
+ * `candidate` is typed as InterestEntity (not the narrower SpatialEntity) so a
+ * future phase predicate can reach `candidate.ref` directly instead of keying
+ * off string ids via an out-of-band table.
  */
-export type VisibilityPredicate = (candidate: SpatialEntity, ctx: VisibilityContext) => boolean
+export type VisibilityPredicate = (candidate: InterestEntity, ctx: VisibilityContext) => boolean
 
 /**
  * Distance predicate with hysteresis: an entity becomes visible at `radius` but

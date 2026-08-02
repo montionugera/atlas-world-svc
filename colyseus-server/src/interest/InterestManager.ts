@@ -1,21 +1,12 @@
 import type { StateView, Ref } from '@colyseus/schema'
-import { SpatialHash, SpatialEntity } from './SpatialHash'
+import { SpatialHash } from './SpatialHash'
 import { VisibilityPredicate, VisibilityContext } from './visibility'
+import type { InterestEntity, InterestViewer } from './types'
 
-/** An entity as InterestManager sees it: a position plus the schema ref to filter. */
-export interface InterestEntity extends SpatialEntity {
-  /** The @colyseus/schema instance handed to StateView.add / .remove.
-   * Typed as object because it's an opaque reference that could be Schema,
-   * ArraySchema, MapSchema, CollectionSchema, SetSchema, or a test mock.
-   */
-  ref: object
-}
-
-export interface InterestViewer {
-  sessionId: string
-  x: number
-  y: number
-}
+// Re-exported for backward compatibility: existing call sites import these
+// interfaces from here. Canonical definitions live in ./types (see that
+// file's comment for why — avoids an import cycle with visibility.ts).
+export type { InterestEntity, InterestViewer } from './types'
 
 export interface InterestManagerOptions {
   predicate: VisibilityPredicate
@@ -99,7 +90,12 @@ export class InterestManager {
       const own = byId.get(slot.ownEntityId)
       if (own) {
         next.add(own.id)
-        if (!slot.visible.has(own.id)) {
+        // Re-add whenever the ref identity changed too, not just on first-seen:
+        // if an id is rebound to a different schema instance while still
+        // "visible" (MapSchema.set overwrites silently on id collision), the
+        // view must drop the stale ref and pick up the live one, or the view
+        // keeps pointing at a dead instance forever.
+        if (!slot.visible.has(own.id) || slot.visibleRefs.get(own.id) !== own.ref) {
           // Cast to Ref: schema object (Schema | ArraySchema | MapSchema | etc) or test mock.
           slot.view.add(own.ref as Ref)
           slot.visibleRefs.set(own.id, own.ref)
@@ -119,7 +115,10 @@ export class InterestManager {
         if (!this.predicate(candidate, ctx)) continue
 
         next.add(candidate.id)
-        if (!ctx.wasVisible) {
+        // Same re-add-on-identity-change rule as the own-entity path above:
+        // wasVisible alone isn't enough when an id can be rebound to a new
+        // schema instance while still "visible" from the set's point of view.
+        if (!ctx.wasVisible || slot.visibleRefs.get(candidate.id) !== candidate.ref) {
           slot.view.add(candidate.ref as Ref)
           slot.visibleRefs.set(candidate.id, candidate.ref)
         }

@@ -11,6 +11,10 @@ import { registerRoom, unregisterRoom } from '../api'
 import { buildEquipmentSnapshotFromPlayer } from '../config/combat/equipmentSlots'
 import { InterestManager, InterestEntity, InterestViewer } from '../interest/InterestManager'
 import { createDistancePredicate } from '../interest/visibility'
+import {
+  collectInterestEntities as collectEntities,
+  collectInterestViewers as collectViewers,
+} from '../interest/collect'
 import { AOI_CONFIG } from '../config/aoiConfig'
 
 // Handlers & Systems
@@ -277,27 +281,11 @@ export class GameRoom extends Room<{ state: GameState; client: GameRoomClient }>
    * interestManager.attach().
    */
   collectInterestEntities(): InterestEntity[] {
-    const out: InterestEntity[] = []
-    for (const [sessionId, p] of this.state.players.entries()) {
-      out.push({ id: sessionId, x: p.x, y: p.y, ref: p })
-    }
-    for (const m of this.state.mobs.values()) out.push({ id: m.id, x: m.x, y: m.y, ref: m })
-    for (const n of this.state.npcs.values()) out.push({ id: n.id, x: n.x, y: n.y, ref: n })
-    for (const pr of this.state.projectiles.values()) {
-      out.push({ id: pr.id, x: pr.x, y: pr.y, ref: pr })
-    }
-    for (const z of this.state.zoneEffects.values()) {
-      out.push({ id: z.id, x: z.x, y: z.y, ref: z })
-    }
-    return out
+    return collectEntities(this.state)
   }
 
   collectInterestViewers(): InterestViewer[] {
-    const out: InterestViewer[] = []
-    for (const [sessionId, p] of this.state.players.entries()) {
-      out.push({ sessionId, x: p.x, y: p.y })
-    }
-    return out
+    return collectViewers(this.state)
   }
 
   enableMobChaseBehavior() {

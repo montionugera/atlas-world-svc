@@ -16,7 +16,43 @@ const num = (envKey: string, fallback: number): number => {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
-export const AOI_CONFIG = {
+export interface AoiConfig {
+  radius: number
+  hysteresis: number
+  updateIntervalTicks: number
+  cellSize: number
+}
+
+/**
+ * Fails loudly at boot rather than silently at runtime. `num()` accepts any
+ * finite number, including 0, negatives, and non-integers — an invalid
+ * `updateIntervalTicks` (e.g. 0 or 2.5) makes `tick % updateIntervalTicks`
+ * evaluate to NaN in GameSimulationSystem.updateInterest(), which is `!== 0`
+ * forever, so InterestManager.update() is never called and every connected
+ * client renders an empty world with no throw and no log. Same pattern as
+ * SpatialHash (throws on cellSize <= 0) and createDistancePredicate (throws
+ * on hysteresis < 1) — this just applies it at config-load time instead of
+ * at first use.
+ */
+export function validateAoiConfig(config: AoiConfig): AoiConfig {
+  if (!(config.radius > 0)) {
+    throw new Error(`AOI_CONFIG.radius must be > 0, got ${config.radius}`)
+  }
+  if (!(config.hysteresis >= 1)) {
+    throw new Error(`AOI_CONFIG.hysteresis must be >= 1, got ${config.hysteresis}`)
+  }
+  if (!Number.isInteger(config.updateIntervalTicks) || config.updateIntervalTicks < 1) {
+    throw new Error(
+      `AOI_CONFIG.updateIntervalTicks must be an integer >= 1, got ${config.updateIntervalTicks}`
+    )
+  }
+  if (!(config.cellSize > 0)) {
+    throw new Error(`AOI_CONFIG.cellSize must be > 0, got ${config.cellSize}`)
+  }
+  return config
+}
+
+export const AOI_CONFIG: AoiConfig = validateAoiConfig({
   /** World units. Entities within this distance of a viewer become visible. */
   radius: num('AOI_RADIUS', 150),
   /** Entities stay visible out to radius * hysteresis. Must be >= 1. */
@@ -25,4 +61,4 @@ export const AOI_CONFIG = {
   updateIntervalTicks: num('AOI_UPDATE_INTERVAL_TICKS', 1),
   /** Spatial hash cell size. Sized to the radius so a query scans ~9 cells. */
   cellSize: num('AOI_CELL_SIZE', 150),
-}
+})

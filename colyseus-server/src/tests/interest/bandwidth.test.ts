@@ -1,18 +1,13 @@
 import { Encoder, StateView } from '@colyseus/schema'
 import { InterestManager } from '../../interest/InterestManager'
 import { createDistancePredicate } from '../../interest/visibility'
+import { collectInterestEntities as collectFrom } from '../../interest/collect'
 import { buildTestRoom, addPlayerAt, spawnRealMob } from '../f018-harness'
-import type { GameState } from '../../schemas/GameState'
-import type { InterestEntity } from '../../interest/InterestManager'
 
-function collectFrom(state: GameState): InterestEntity[] {
-  const out: InterestEntity[] = []
-  for (const [sessionId, p] of state.players.entries()) {
-    out.push({ id: sessionId, x: p.x, y: p.y, ref: p })
-  }
-  for (const m of state.mobs.values()) out.push({ id: m.id, x: m.x, y: m.y, ref: m })
-  return out
-}
+// Uses the shared collectInterestEntities() from interest/collect.ts (the same
+// collector GameRoom delegates to), not a hand-rolled players+mobs-only copy.
+// This test only ever spawns a player and mobs, so npcs/projectiles/zoneEffects
+// stay empty and the switch does not change what's measured below.
 
 describe('AOI bandwidth', () => {
   let env: ReturnType<typeof buildTestRoom>

@@ -55,8 +55,9 @@
 import { performance } from 'perf_hooks'
 import { Encoder, StateView } from '@colyseus/schema'
 import { buildTestRoom, addPlayerAt, spawnRealMob } from '../f018-harness'
-import { InterestManager, InterestEntity } from '../../interest/InterestManager'
+import { InterestManager } from '../../interest/InterestManager'
 import { createDistancePredicate } from '../../interest/visibility'
+import { collectInterestEntities as collect } from '../../interest/collect'
 import { AOI_CONFIG } from '../../config/aoiConfig'
 import { GAME_CONFIG } from '../../config/gameConfig'
 import type { GameState } from '../../schemas/GameState'
@@ -72,18 +73,15 @@ export interface CapacityRow {
   withinBudget: boolean
 }
 
-function collect(state: GameState): InterestEntity[] {
-  const out: InterestEntity[] = []
-  for (const [sessionId, p] of state.players.entries()) {
-    out.push({ id: sessionId, x: p.x, y: p.y, ref: p })
-  }
-  for (const m of state.mobs.values()) out.push({ id: m.id, x: m.x, y: m.y, ref: m })
-  for (const n of state.npcs.values()) out.push({ id: n.id, x: n.x, y: n.y, ref: n })
-  for (const pr of state.projectiles.values()) {
-    out.push({ id: pr.id, x: pr.x, y: pr.y, ref: pr })
-  }
-  return out
-}
+// collect() now delegates to the shared collectInterestEntities() from
+// interest/collect.ts (the same collector GameRoom uses), which also covers
+// zoneEffects — the local copy this replaced omitted them. This harness only
+// ever spawns players and mobs (addPlayerAt / spawnRealMob); nothing in this
+// file calls ZoneEffectManager.createZoneEffect (that only happens via
+// PlayerInputHandler/DebugCommandHandler message handlers, which this
+// in-process harness never routes through), so zero zone effects exist during
+// any sweep and the already-published capacity table's bytesPerClient figures
+// are unaffected by this switch.
 
 function percentile(sorted: number[], p: number): number {
   if (sorted.length === 0) return 0

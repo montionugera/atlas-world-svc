@@ -56,6 +56,10 @@ import { Player } from '../schemas/Player'
 import { GAME_CONFIG } from '../config/gameConfig'
 import { InterestManager, InterestEntity, InterestViewer } from '../interest/InterestManager'
 import { createDistancePredicate } from '../interest/visibility'
+import {
+  collectInterestEntities as collectEntities,
+  collectInterestViewers as collectViewers,
+} from '../interest/collect'
 import { AOI_CONFIG } from '../config/aoiConfig'
 
 // ───────────────────────────────────────────────────────── the closed form ───
@@ -208,28 +212,13 @@ export function buildTestRoom(roomId: string, mapId = 'map-test'): TestEnv {
     zoneEffectManager,
     mobLifeCycleManager,
     interestManager,
-    // Mirrors GameRoom.collectInterestEntities()/collectInterestViewers().
+    // Mirrors GameRoom.collectInterestEntities()/collectInterestViewers() by
+    // delegating to the same shared collector GameRoom uses.
     collectInterestEntities(): InterestEntity[] {
-      const out: InterestEntity[] = []
-      for (const [sessionId, p] of state.players.entries()) {
-        out.push({ id: sessionId, x: p.x, y: p.y, ref: p })
-      }
-      for (const m of state.mobs.values()) out.push({ id: m.id, x: m.x, y: m.y, ref: m })
-      for (const n of state.npcs.values()) out.push({ id: n.id, x: n.x, y: n.y, ref: n })
-      for (const pr of state.projectiles.values()) {
-        out.push({ id: pr.id, x: pr.x, y: pr.y, ref: pr })
-      }
-      for (const z of state.zoneEffects.values()) {
-        out.push({ id: z.id, x: z.x, y: z.y, ref: z })
-      }
-      return out
+      return collectEntities(state)
     },
     collectInterestViewers(): InterestViewer[] {
-      const out: InterestViewer[] = []
-      for (const [sessionId, p] of state.players.entries()) {
-        out.push({ sessionId, x: p.x, y: p.y })
-      }
-      return out
+      return collectViewers(state)
     },
   }
 

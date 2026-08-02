@@ -1,8 +1,8 @@
 import { StateView } from '@colyseus/schema'
-import { InterestManager, InterestEntity } from '../../interest/InterestManager'
+import { InterestManager } from '../../interest/InterestManager'
 import { createDistancePredicate } from '../../interest/visibility'
+import { collectInterestEntities as collectFrom } from '../../interest/collect'
 import { buildTestRoom, addPlayerAt, spawnRealMob } from '../f018-harness'
-import type { GameState } from '../../schemas/GameState'
 
 /**
  * GameRoom.maxClients is 1, so this exercises the collect + update contract
@@ -13,20 +13,11 @@ import type { GameState } from '../../schemas/GameState'
  * NOT a bare room. addPlayerAt() and spawnRealMob() are existing harness helpers;
  * both place the entity deterministically and sync its physics body, which
  * state.addPlayer() alone does not (it always spawns at map centre).
+ *
+ * Uses the shared collectInterestEntities() from interest/collect.ts (the same
+ * collector GameRoom delegates to) so this test asserts the real shape, not a
+ * hand-rolled copy that can drift.
  */
-
-/** Mirrors GameRoom.collectInterestEntities() so the test asserts the same shape. */
-function collectFrom(state: GameState): InterestEntity[] {
-  const out: InterestEntity[] = []
-  for (const [sessionId, p] of state.players.entries()) {
-    out.push({ id: sessionId, x: p.x, y: p.y, ref: p })
-  }
-  for (const m of state.mobs.values()) out.push({ id: m.id, x: m.x, y: m.y, ref: m })
-  for (const n of state.npcs.values()) out.push({ id: n.id, x: n.x, y: n.y, ref: n })
-  for (const pr of state.projectiles.values()) out.push({ id: pr.id, x: pr.x, y: pr.y, ref: pr })
-  for (const z of state.zoneEffects.values()) out.push({ id: z.id, x: z.x, y: z.y, ref: z })
-  return out
-}
 
 describe('room interest wiring', () => {
   let env: ReturnType<typeof buildTestRoom>

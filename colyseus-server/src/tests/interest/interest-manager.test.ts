@@ -152,4 +152,55 @@ describe('InterestManager', () => {
     expect(im.visibleIdsFor('sA')).toEqual(new Set(['pA', 'm1']))
     expect(im.visibleIdsFor('sB')).toEqual(new Set(['pB']))
   })
+
+  it('re-adds the view ref when a visible id is rebound to a new schema instance', () => {
+    // Reproduces the mob-debug-${tick}-${rand2} id collision: MapSchema.set
+    // overwrites silently in production, so the same id can point at a brand
+    // new mob instance while InterestManager still thinks it's "visible".
+    const view = new FakeView()
+    const im = new InterestManager({
+      predicate: createDistancePredicate({ radius: 100, hysteresis: 1.15 }),
+      cellSize: 100,
+      candidateRadius: 115,
+    })
+    im.attach('s1', asView(view), 'p1')
+
+    const self = entity('p1', 100, 100)
+    const viewers = [viewer('s1', 100, 100)]
+
+    const original = entity('m1', 110, 100)
+    im.update([self, original], viewers)
+    expect(view.added.filter(o => (o as { id: string }).id === 'm1')).toHaveLength(1)
+
+    // Same id, brand new ref (distinct object identity) — simulates the dead
+    // instance being silently overwritten while still marked visible.
+    const rebound = entity('m1', 110, 100)
+    im.update([self, rebound], viewers)
+
+    const addsForM1 = view.added.filter(o => (o as { id: string }).id === 'm1')
+    expect(addsForM1).toHaveLength(2)
+    expect(addsForM1[1]).toBe(rebound.ref) // the view received the LIVE ref
+    expect(im.visibleIdsFor('s1').has('m1')).toBe(true)
+  })
+
+  it("re-adds the viewer's own ref when its id is rebound to a new schema instance", () => {
+    const view = new FakeView()
+    const im = new InterestManager({
+      predicate: createDistancePredicate({ radius: 100, hysteresis: 1.15 }),
+      cellSize: 100,
+      candidateRadius: 115,
+    })
+    im.attach('s1', asView(view), 'p1')
+
+    const original = entity('p1', 100, 100)
+    im.update([original], [viewer('s1', 100, 100)])
+    expect(view.added.filter(o => (o as { id: string }).id === 'p1')).toHaveLength(1)
+
+    const rebound = entity('p1', 100, 100)
+    im.update([rebound], [viewer('s1', 100, 100)])
+
+    const addsForP1 = view.added.filter(o => (o as { id: string }).id === 'p1')
+    expect(addsForP1).toHaveLength(2)
+    expect(addsForP1[1]).toBe(rebound.ref)
+  })
 })
