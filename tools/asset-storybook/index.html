@@ -711,6 +711,74 @@
         word-break: break-word;
       }
 
+      /* ---------- concept-art tab bar + filter (Task 8) ---------- */
+      /* Sits above the per-group art sections so the "Concept Art" view
+         switches one group at a time instead of stacking every group as one
+         long scroll. Purely presentational — see applyArtTabFilter(). */
+
+      .art-filter-row {
+        margin-bottom: 0.75rem;
+      }
+
+      .art-filter-input {
+        width: 100%;
+        max-width: 360px;
+        font-family: var(--sans);
+        font-size: 0.85rem;
+        color: var(--text);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+      }
+
+      .art-filter-input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      .art-filter-input::placeholder {
+        color: var(--text-faint);
+      }
+
+      .art-tabbar-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 0.9rem;
+      }
+
+      .art-tab {
+        font-family: var(--sans);
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-dim);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.4rem 0.9rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .art-tab:hover {
+        border-color: var(--border-hover);
+        color: var(--text);
+      }
+
+      .art-tab.active {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: #dce4ff;
+      }
+
+      .art-tabbar-hint {
+        margin: 0 0 1.25rem;
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-faint);
+      }
+
       footer {
         max-width: 1280px;
         margin: 0 auto;
@@ -832,6 +900,15 @@
       // fetched in init(), and read by classLabel() below. Keeps classLabel
       // a pure lookup instead of threading the registry through every call.
       const ART_GROUP_LABELS = new Map();
+      // Task 8 — tab layer over the art groups. activeArtTab is the
+      // currently selected group id (defaults to the first non-empty
+      // group at init); artFilterText is the free-text filter, combined
+      // with the tabs. Both are pure UI state: applyArtTabFilter() below
+      // only ever toggles section/card `style.display`, never re-buckets,
+      // re-fetches, or touches `health` — so the aggregate health stays the
+      // sum of every group's regardless of what's currently hidden.
+      let activeArtTab = null;
+      let artFilterText = "";
       const COVERAGE_CLASS = "coverage"; // synthetic class for unmapped-codegen-key cards (§8 Phase 1c)
       // synthetic class for the embedded combat balance lab (tools/combat-lab).
       // Not an asset — it has no manifest entry, no health, no renderer. It is
@@ -2111,6 +2188,15 @@
       function buildArtCard(id, entry, groupClass) {
         const card = document.createElement("div");
         card.className = "card";
+        // Task 8 filter: precomputed lowercase "title tags" haystack so
+        // applyArtTabFilter() can match free text without re-reading the
+        // manifest — title/tags are the two fields the filter searches.
+        const tagText = Array.isArray(entry.tags) ? entry.tags.join(" ") : "";
+        card.dataset.artSearch = (
+          (entry.title || id) +
+          " " +
+          tagText
+        ).toLowerCase();
 
         const viewport = document.createElement("div");
         viewport.className = "viewport art-viewport";
@@ -2340,6 +2426,9 @@
         section.id = "section-" + cls;
         section.dataset.kind = cls;
         section.dataset.group = ART_CLASS;
+        // Task 8: lets applyArtTabFilter() select "just this group's
+        // section" without re-deriving gid from dataset.kind's "art:" prefix.
+        section.dataset.artGroupId = gid;
 
         const h2 = document.createElement("h2");
         h2.textContent = label + " (" + list.length + ")";
@@ -2352,6 +2441,99 @@
         );
 
         return section;
+      }
+
+      // ---------- concept-art tab bar + filter (Task 8) ----------
+      //
+      // The art groups above render as one long stacked page once there are
+      // more than a couple of them. This adds a tab layer *on top of* the
+      // existing per-group sections built by buildArtGroupSection() — it
+      // never re-buckets, re-fetches, or touches `health`; it only toggles
+      // `style.display` on the sections/cards bucketArtEntries() already
+      // built. Tabs default to the first group; typing in the filter shows
+      // every group at once (filtered by title/tags), and clearing it
+      // restores the active tab.
+
+      function buildArtTabBar(tabs) {
+        const section = document.createElement("section");
+        section.className = "kind-section";
+        section.id = "section-" + ART_CLASS;
+        section.dataset.kind = ART_CLASS;
+        section.dataset.group = ART_CLASS;
+
+        const h2 = document.createElement("h2");
+        h2.textContent = "Concept Art";
+        section.appendChild(h2);
+
+        const filterRow = document.createElement("div");
+        filterRow.className = "art-filter-row";
+        const filterInput = document.createElement("input");
+        filterInput.type = "search";
+        filterInput.className = "art-filter-input";
+        filterInput.placeholder = "Filter by title or tag…";
+        filterInput.setAttribute(
+          "aria-label",
+          "Filter concept art by title or tag",
+        );
+        filterInput.addEventListener("input", () => {
+          artFilterText = filterInput.value;
+          applyArtTabFilter();
+        });
+        filterRow.appendChild(filterInput);
+        section.appendChild(filterRow);
+
+        const tabRow = document.createElement("div");
+        tabRow.className = "art-tabbar-row";
+        for (const tab of tabs) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "art-tab";
+          btn.dataset.artTab = tab.id;
+          btn.textContent = tab.label + " (" + tab.count + ")";
+          btn.addEventListener("click", () => {
+            activeArtTab = tab.id;
+            filterInput.value = "";
+            artFilterText = "";
+            applyArtTabFilter();
+          });
+          tabRow.appendChild(btn);
+        }
+        section.appendChild(tabRow);
+
+        const hint = document.createElement("p");
+        hint.className = "art-tabbar-hint";
+        hint.textContent =
+          "Tabs mirror the art-groups.json registry order. Typing in the filter searches every group's title/tags at once.";
+        section.appendChild(hint);
+
+        return section;
+      }
+
+      // Applies the active tab + filter text to every already-rendered
+      // art-group section and card. Pure visibility toggle: health totals
+      // (set once by initHealth in init()) are never touched here, so the
+      // aggregate "Concept Art" dot stays the sum of every group's whether
+      // or not that group is currently hidden by the tab/filter.
+      function applyArtTabFilter() {
+        const term = artFilterText.trim().toLowerCase();
+        const filtering = term.length > 0;
+
+        document
+          .querySelectorAll("section.kind-section[data-art-group-id]")
+          .forEach((sec) => {
+            const showGroup =
+              filtering || sec.dataset.artGroupId === activeArtTab;
+            sec.style.display = showGroup ? "" : "none";
+            sec.querySelectorAll(".card").forEach((card) => {
+              const hay = card.dataset.artSearch || "";
+              card.style.display =
+                !filtering || hay.includes(term) ? "" : "none";
+            });
+          });
+
+        document.querySelectorAll(".art-tab").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.artTab === activeArtTab);
+        });
       }
 
       // ---------- sidebar ----------
@@ -2432,6 +2614,13 @@
             sec.dataset.group === cls;
           sec.style.display = show ? "" : "none";
         });
+        // Task 8: "all" and the aggregate "Concept Art" class both just made
+        // every art-group section visible above (data-group match) — re-run
+        // the tab/filter layer so switching back into the art region shows
+        // only the active tab instead of every group at once again.
+        if (cls === "all" || cls === ART_CLASS) {
+          applyArtTabFilter();
+        }
       }
 
       function buildSidebarItem(cls, total) {
@@ -2897,10 +3086,36 @@
           main.appendChild(section);
         }
 
-        // --- concept art sections, driven by art-manifest.json — one
-        //     <section> per non-empty group instead of a single "Concept
-        //     Art" bucket holding all of them (see buildArtGroupSection). ---
+        // --- concept art: tab bar (Task 8) + one <section> per non-empty
+        //     group instead of a single "Concept Art" bucket holding all of
+        //     them (see buildArtGroupSection). The tab bar is mounted first
+        //     so it lands above the group sections in the DOM; activeArtTab
+        //     defaults to the first tab (same order the sections use — the
+        //     registry order in artBuckets.order, filtered to non-empty
+        //     groups) and applyArtTabFilter() below hides the rest. ---
         if (artCount > 0) {
+          const artTabs = [];
+          for (const g of artBuckets.order) {
+            const list = artBuckets.buckets.get(g.id);
+            if (!list || list.length === 0) continue;
+            artTabs.push({
+              id: g.id,
+              label: g.label || g.id,
+              count: list.length,
+            });
+          }
+          for (const [gid, list] of [...artBuckets.unregistered].sort(
+            (a, b) => a[0].localeCompare(b[0]),
+          )) {
+            artTabs.push({
+              id: gid,
+              label: gid + " (unregistered)",
+              count: list.length,
+            });
+          }
+          activeArtTab = artTabs.length > 0 ? artTabs[0].id : null;
+          main.appendChild(buildArtTabBar(artTabs));
+
           for (const g of artBuckets.order) {
             const list = artBuckets.buckets.get(g.id);
             if (!list || list.length === 0) continue;
@@ -2914,6 +3129,8 @@
               buildArtGroupSection(gid, gid + " (unregistered)", list),
             );
           }
+
+          applyArtTabFilter();
         }
 
         // --- coverage panel: codegen keys with no manifest entry ---
