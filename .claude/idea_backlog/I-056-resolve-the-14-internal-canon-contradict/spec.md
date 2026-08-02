@@ -64,7 +64,7 @@ So the `zones` budget line is still unmeasurable (`node scripts/report_season1.m
 
 10. **The Stoneguard hold two different gates.** `canon.md:19-21` grounds their identity at Cindervast's gate (north-west beyond Ashvale Front, `:185-186`); `factions.json:29` links them only to `region-icefield`, and `bible.md:43` calls the icefield their home turf. → **accommodate**: the gate plus a detached watch on the old Cindervast trade road; add `region-cindervast` to their links.
 
-11. **Cindervast's dead do not add up.** `core-story.md:40` — 40,000 erased in one night; `:68` — `~40,000 → 0`, *92%*, and *~3,000 survivors*. Only the 92% reading leaves the Cindered existing at all. → **repoint** to ~37,000 erased, population `0 (residents)`, ~3,000 scattered.
+11. **Cindervast's dead do not add up.** `core-story.md:40` says *all* forty thousand rose up and **"สี่หมื่นชีวิตถูกลบในคืนเดียว"** — forty thousand lives erased in one night. `:68` says *92%* erased with *~3,000 survivors scattered*. 92% of 40,000 leaves ~3,200, which is the only reading under which the Cindered exist at all (`canon.md:20`, `style.md:162`). → **repoint** `:40` to ~37,000. *(The same row's `→ 0` is **not** part of the conflict — 0 is defensible as current residents of a destroyed city; write it as `0 (residents)` to remove the ambiguity.)*
 
 13. **The caravan burns at dawn and in the night.** `events.json:34` fixes it at dawn; `novel-complete.md:36,38` and `core-story.md:156` turn the prologue on the Widow waking in the dead of night, with the planted evidence found the *next* morning. → **repoint** `events.json:34` to "in the night, and by dawn each side … was already certain".
 
