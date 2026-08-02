@@ -546,7 +546,7 @@ export async function runGraph({ forge, args, graph, name, label }) {
   const base = comfyBaseUrl(forge, args);
   if (args["dry-run"]) {
     console.log(JSON.stringify(graph, null, 2));
-    return null;
+    return graph;
   }
   const version = await assertReachable(base);
   const dest = path.join(forge.outDir, `${name}.png`);

@@ -7,7 +7,7 @@ import {
   resolveSampler,
   NODE,
 } from "../generate/charsheet.mjs";
-import { buildI2iGraph, silhouetteName } from "../generate/i2i.mjs";
+import { buildI2iGraph, silhouetteName, generateCell } from "../generate/i2i.mjs";
 import { cellSeed } from "../generate/batch-matrix.mjs";
 
 /**
@@ -80,4 +80,38 @@ test("cellSeed reads the character profile's muscleGradient axes", () => {
     seed,
     base + raceAxis.indexOf(race) * jobAxis.length + jobAxis.indexOf(job),
   );
+});
+
+/**
+ * Code-review follow-up (Important 1 + Important 2): the four tests above
+ * all call loadForge({ profile: "character" }) themselves and invoke the
+ * graph builder directly — none of them route through generateCell, which
+ * is where the profile default is ACTUALLY chosen at the real CLI entry
+ * point. A wrong default (e.g. loadForge({ profile: "environment" })) or a
+ * broken denoise fallback (generateCell's
+ * parseDenoiseOverride(args.denoise, forge.profile.sampler.denoise)) would
+ * both leave every test above green, since they never exercise that code.
+ *
+ * This test drives generateCell with NO forge argument at all — the exact
+ * shape of a real CLI invocation (`node generate/i2i.mjs --race ... --job
+ * ...`, which calls `generateCell(parseArgs())`) — and inspects the graph
+ * `runGraph` returns on --dry-run (as of this diff, --dry-run returns the
+ * built graph instead of null, specifically so this is unit-testable
+ * without a live ComfyUI box). It closes both findings: a wrong default
+ * profile changes the KSampler's steps/cfg/denoise (environment is
+ * 1.0/8/1, character is 0.82/24/3), and a broken denoise fallback changes
+ * ONLY denoise while leaving steps/cfg alone.
+ */
+test("generateCell with no forge argument resolves the character profile's frozen recipe end to end", async () => {
+  const graph = await generateCell({
+    race: "human",
+    job: "swordsman",
+    seed: 1,
+    "dry-run": true,
+  });
+  assert.ok(graph, "dry-run must return the built graph, not null, to be testable");
+  const ksampler = graph[NODE.KSAMPLER].inputs;
+  assert.equal(ksampler.denoise, 0.82);
+  assert.equal(ksampler.steps, 24);
+  assert.equal(ksampler.cfg, 3);
 });

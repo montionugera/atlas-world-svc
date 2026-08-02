@@ -69,7 +69,7 @@ export function buildI2iGraph({
   const { mode } = forge.profile.sampler;
   if (mode !== "img2img") {
     console.warn(
-      `[art-forge] warning: forge.config.json sampler.mode is "${mode}", not "img2img"`,
+      `[art-forge] warning: forge.config.json profiles.character.sampler.mode is "${mode}", not "img2img"`,
     );
   }
   return buildBaseGraph({
