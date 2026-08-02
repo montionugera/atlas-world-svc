@@ -105,6 +105,12 @@ Phase 3 runs that replication. Adopting a recipe on two subjects and calling it 
 
 `silhouettes` and `muscleGradient` move **into** `profiles.character` — both are character-path concepts (`muscleGradient` drives the race × job matrix; silhouettes are the img2img anchor). Neither has any meaning for an empty-latent environment render.
 
+<div class="callout warn">
+
+**Model identity must move into the profile too — the spec's first draft missed this.** `charsheet.mjs:295` holds a frozen module-level `MODELS` const — `unet: z_image_turbo_bf16.safetensors`, `clip: qwen_3_4b.safetensors`, `clipType: lumina2`, `vae: ae.safetensors`. It is **hard-coded, not config**. The environment graph loads a schnell checkpoint via `CheckpointLoaderSimple` instead of the `UNETLoader` + `CLIPLoader` + `VAELoader` triple. A profile that cannot name its own model is not a profile, so `MODELS` becomes `profiles.<name>.models` and `buildBaseGraph` reads it from the profile rather than the module const.
+
+</div>
+
 **Consumers to update** — all three are character-path, which is what keeps this contained:
 
 | File | Reads today | Becomes |
@@ -154,13 +160,23 @@ What it lacks is scale: everything renders as one long page. This phase adds a *
 | 3 | The measurement record exists and is committed, with contact sheets. An explicit hold-or-fail verdict, not a summary. |
 | 4 | `scripts/tests/check_asset_manifest.test.mjs` stays green (render-type parity); storybook loads with every existing group present; tabs and filters exercised in a browser, not asserted from source. |
 
+<div class="callout danger">
+
+**Correction: Gate 1 does not currently run these tests.** `scripts/precheck.sh` runs exactly ten sections — `deps`, `contracts: tsc build`, `contracts: jest`, `server: tsc`, `server: jest`, `server: prettier`, `nakama: tsc`, `nakama: jest`, `client: react-client`, `combat-lab: model gates`. **None of them runs `tools/art-forge/tests`**, whose runner is `node --test tests/*.test.mjs`. The existing `intake-art` and `artifact-gate` tests are therefore already ungated.
+
+Phase 1 must add a `run_section "art-forge: config + gate tests"` to `precheck.sh`, or the regression guard pinning 0.82 / 24 / 3 never executes and this whole verification column is decorative.
+
+</div>
+
 Per the standing phased quality gate, **each phase ends** implement → verify → independent adversarial review of that phase's diff → refactor → re-verify, before the next begins.
 
 ---
 
 ## 6. Assumptions, stated rather than assumed silently
 
-1. **Depth-map provenance is not designed here.** The ABP's workflow consumes a depth image; where the depth maps for the five replication subjects come from (authored, or derived from the existing block-ins) is an input Phase 3 must resolve before it can run. If they must be generated, that is additional Phase 3 scope.
+1. **Depth-map provenance — resolved into a hard gap, not an assumption.** The ABP's depth generator is documented as *"derived from the EXISTING block-in spec — same masses, same polygons, same draw order as `blockin.mjs`"*, with `PLANE_DEPTH` fills `fg: #b4b4b4` / `mg: #8c8c8c` / `bg: #333333` (and an explicit warning that `#e8e8e8` for `fg` renders as a glossy boat gunwale).
+
+   **`blockin.mjs` is not in the repository.** `git ls-files` finds no match. It was scratchpad-only — precisely the failure mode F-024 existed to fix. So **there is no committed producer for the depth control images**, and without one Phase 3 cannot run at all. Building the block-in / depth generator is therefore **Phase 2 scope**, not a Phase 3 input. This is the single largest piece of unplanned work the exploration surfaced.
 2. **The ComfyUI box is a hardware dependency.** Phases 2 and 3 need `100.66.190.100:8188` (GPU 0) reachable. GPU 1 / port 8189 is the owner's own instance and is not to be touched. Phases 1 and 4 are pure code and can proceed while the box is unavailable — this is the main practical argument for the phase ordering.
 3. **`4x-UltraSharp` is installed** on that box. The ABP used it; this spec assumes it is still present rather than adding an installation step.
 
