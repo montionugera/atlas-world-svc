@@ -58,9 +58,10 @@ Once loaded, code reads `forge.profile.*` (the resolved profile), never
 `forge.config.sampler.denoise`. `forge.config.comfy` is still the right
 place for host/port/GPU, since that's shared across profiles.
 
-> **`profiles.environment` exists but has no runner yet.** It is recipe
-> data only — see "Stage: GENERATE" below and the "CI status" section.
-> Do not go looking for an `env.mjs`; it has not been built.
+> **`profiles.environment` has a runner: `generate/env.mjs`.** It builds a
+> schnell + depth-ControlNet graph, using `generate/blockin.mjs` to produce
+> the depth control image — see "Stage: GENERATE" below and the "CI
+> status" section for why neither runs in CI.
 
 ## Stage: GENERATE — the winning v3 recipe (`profiles.character`)
 
@@ -83,24 +84,34 @@ markers (`prompts/race-identity.json`) are locked by owner iteration and
 referenced by `content/story/canon.md` §5 — treat them as canon, not as
 suggestions.
 
-## The environment profile (`profiles.environment`) — recipe only, no runner
+## The environment profile (`profiles.environment`) — recipe and runner
 
 `forge.config.json` also carries a measured recipe for environment
-concept art: **flux1-schnell**, txt2img, ControlNet-depth at
+concept art: **flux1-schnell-fp8**, txt2img, ControlNet-depth at
 **strength 0.30** (the usable window is 0.30–0.40 — the conventional
-0.8–1.0 collapses schnell into flat vector art), plus a hires pass at
-denoise 0.4. See `profiles.environment` in `forge.config.json` for the
+0.8–1.0 collapses schnell into flat vector art), over the base pass only
+(the hires pass at denoise 0.4 described in the config is not built by
+`env.mjs` yet). See `profiles.environment` in `forge.config.json` for the
 full values and `profiles.environment._note` for the measurement
-provenance and caveats — including that the checkpoint filename
-**`flux1-schnell.safetensors` is unverified** against the live ComfyUI
-box, because that box was unreachable when the profile was written.
+provenance and caveats. The checkpoint (`flux1-schnell-fp8.safetensors`)
+and ControlNet (`flux-controlnet-union-pro-2.0.safetensors`) filenames
+are **verified** against the live ComfyUI server (v0.24.1) — see
+`profiles.environment._note` for the verification method and date.
 
-This profile is **inert**: nothing in this repo executes it. The depth
-control image producer (`blockin.mjs`) and the graph runner (a
-prospective `generate/env.mjs`) both require the ComfyUI server at
-`100.66.190.100:8188`, which has been unreachable, and neither has been
-built. Treat `profiles.environment` as validated recipe data waiting for
-a runner, not as a working pipeline.
+`blockin.mjs` (the depth control image producer) and `generate/env.mjs`
+(the schnell + depth-ControlNet graph runner) both exist and are the
+sanctioned way to run this profile. Access is the same as "Stage: ACCESS"
+above — run on mont-pc itself, or tunnel with
+`ssh -N -L 8188:127.0.0.1:8188 Mont@100.66.190.100`. The server binds
+`--listen 127.0.0.1`, so the Tailscale address `100.66.190.100:8188`
+itself has never been directly reachable — see `forge.config.json`'s
+`comfy._note`. Neither runner is wired into CI — see "CI status" below.
+
+A replicated measurement of this recipe — 16 generations across four
+subjects and two seeds, run 2026-08-03 — lives at
+`docs/worldbuilding/ABP-controlnet-replication.md`, verdict **PARTIAL
+HOLD**. Read that document for the current findings rather than assuming
+this recipe is safe for unattended batch use.
 
 ## Prompt laws
 
@@ -156,9 +167,10 @@ Then QC runs **per row**, not per image:
 - `prompts/race-identity.json` — per-race identity markers and muscle
   score, locked canon (see `content/story/canon.md` §5).
 - `generate/` — the character ComfyUI job scripts (`charsheet.mjs`,
-  `i2i.mjs`, `batch-matrix.mjs`), all reading `profiles.character`.
-  Present; not run in CI (see "CI status" below). There is no equivalent
-  runner for `profiles.environment` yet — see above.
+  `i2i.mjs`, `batch-matrix.mjs`), reading `profiles.character`, plus the
+  environment runner (`env.mjs`) and depth control producer
+  (`blockin.mjs`), reading `profiles.environment` — see above. Present;
+  not run in CI (see "CI status" below).
 - `intake-art.mjs` — transactional, gate-verified intake of a generated
   PNG into `game-client/assets/art/concept/` + `art-manifest.json`. The
   only sanctioned way a generated image enters the repo.
