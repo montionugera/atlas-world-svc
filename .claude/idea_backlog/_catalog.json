@@ -412,5 +412,11 @@
     "title": "AIModule gates AI decisions on Date.now() wall-clock, violating the repo's performance.now() invariant",
     "created_at": "2026-08-02T14:07:57.116991+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-070",
+    "title": "GameSimulationSystem's single try/catch silently drops the rest of a tick on any throw",
+    "created_at": "2026-08-02T14:07:57.810179+00:00",
+    "promoted_to": null
   }
 ]
