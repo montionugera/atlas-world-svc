@@ -5,11 +5,10 @@ import { VisibilityPredicate, VisibilityContext } from './visibility'
 /** An entity as InterestManager sees it: a position plus the schema ref to filter. */
 export interface InterestEntity extends SpatialEntity {
   /** The @colyseus/schema instance handed to StateView.add / .remove.
-   * Typed as any because it's an opaque reference — could be Schema, ArraySchema,
-   * MapSchema, CollectionSchema, SetSchema, or a test mock. The StateView is the authority.
+   * Typed as object because it's an opaque reference that could be Schema,
+   * ArraySchema, MapSchema, CollectionSchema, SetSchema, or a test mock.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ref: any
+  ref: object
 }
 
 export interface InterestViewer {
@@ -36,7 +35,7 @@ interface ViewerSlot {
   ownEntityId: string
   visible: Set<string>
   /** Map of id -> ref for entities currently visible, to support despawns. */
-  visibleRefs: Map<string, any>
+  visibleRefs: Map<string, object>
 }
 
 /**
@@ -101,7 +100,8 @@ export class InterestManager {
       if (own) {
         next.add(own.id)
         if (!slot.visible.has(own.id)) {
-          slot.view.add(own.ref)
+          // Cast to Ref: schema object (Schema | ArraySchema | MapSchema | etc) or test mock.
+          slot.view.add(own.ref as Ref)
           slot.visibleRefs.set(own.id, own.ref)
         }
       }
@@ -120,7 +120,7 @@ export class InterestManager {
 
         next.add(candidate.id)
         if (!ctx.wasVisible) {
-          slot.view.add(candidate.ref)
+          slot.view.add(candidate.ref as Ref)
           slot.visibleRefs.set(candidate.id, candidate.ref)
         }
       }
@@ -130,7 +130,7 @@ export class InterestManager {
       for (const id of slot.visible) {
         if (next.has(id)) continue
         const ref = slot.visibleRefs.get(id)
-        if (ref) slot.view.remove(ref)
+        if (ref) slot.view.remove(ref as Ref)
         slot.visibleRefs.delete(id)
       }
 
