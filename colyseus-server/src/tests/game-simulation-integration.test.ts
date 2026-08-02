@@ -12,6 +12,9 @@ import { RoomEventHandler } from '../rooms/handlers/RoomEventHandler'
 import { eventBus } from '../events/EventBus'
 import { FakeMetaBackend } from '../meta/FakeMetaBackend'
 import { MetaEventReporter } from '../meta/MetaEventReporter'
+import { InterestManager, InterestEntity, InterestViewer } from '../interest/InterestManager'
+import { createDistancePredicate } from '../interest/visibility'
+import { AOI_CONFIG } from '../config/aoiConfig'
 
 /**
  * Integration test for the per-tick simulation loop (GameSimulationSystem) wired
@@ -44,6 +47,17 @@ function buildRoom() {
 
   state.worldInterface.setPhysicsManager(physicsManager)
 
+  // Same construction as GameRoom.onCreate() — a harness that diverges from the
+  // room's options is a future bug, not a simplification.
+  const interestManager = new InterestManager({
+    predicate: createDistancePredicate({
+      radius: AOI_CONFIG.radius,
+      hysteresis: AOI_CONFIG.hysteresis,
+    }),
+    cellSize: AOI_CONFIG.cellSize,
+    candidateRadius: AOI_CONFIG.radius * AOI_CONFIG.hysteresis,
+  })
+
   const room = {
     state,
     roomId: ROOM_ID,
@@ -53,6 +67,30 @@ function buildRoom() {
     projectileManager,
     zoneEffectManager,
     mobLifeCycleManager,
+    interestManager,
+    // Mirrors GameRoom.collectInterestEntities()/collectInterestViewers().
+    collectInterestEntities(): InterestEntity[] {
+      const out: InterestEntity[] = []
+      for (const [sessionId, p] of state.players.entries()) {
+        out.push({ id: sessionId, x: p.x, y: p.y, ref: p })
+      }
+      for (const m of state.mobs.values()) out.push({ id: m.id, x: m.x, y: m.y, ref: m })
+      for (const n of state.npcs.values()) out.push({ id: n.id, x: n.x, y: n.y, ref: n })
+      for (const pr of state.projectiles.values()) {
+        out.push({ id: pr.id, x: pr.x, y: pr.y, ref: pr })
+      }
+      for (const z of state.zoneEffects.values()) {
+        out.push({ id: z.id, x: z.x, y: z.y, ref: z })
+      }
+      return out
+    },
+    collectInterestViewers(): InterestViewer[] {
+      const out: InterestViewer[] = []
+      for (const [sessionId, p] of state.players.entries()) {
+        out.push({ sessionId, x: p.x, y: p.y })
+      }
+      return out
+    },
   }
 
   const sim = new GameSimulationSystem(room as any)
