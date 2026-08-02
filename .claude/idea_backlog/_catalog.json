@@ -268,5 +268,143 @@
     "title": "Local k8s: add Ingress so services have portless hostnames",
     "created_at": "2026-07-31T16:50:29.778950+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-046",
+    "title": "--help",
+    "created_at": "2026-07-31T21:06:02.503999+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-047",
+    "title": "art-forge + intake hardening follow-ups: art-style calibration for the reconstructed Z-Image pipeline (sampler settings lost with the scratchpad), group-id uniqueness assertion in art-groups.json, bool-sentinel guards for --timeout/--width/--height, try/catch around rollback() in BOTH intake-art.mjs and intake2d.mjs, overwrite-rollback test for intake2d, and a headless storybook smoke test",
+    "created_at": "2026-07-31T21:06:27.733887+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-048",
+    "title": "Season 1 scope cut: reduce the MMO target from 32 zones / 384 species / 560 quests to a finishable cluster-1 slice (9-10 zones, ~30 monsters, 2 art classes) per DR-001's chosen cadence",
+    "created_at": "2026-08-01T15:12:05.743404+00:00",
+    "promoted_to": "F-025"
+  },
+  {
+    "id": "I-049",
+    "title": "Adopt the measured environment art recipe as default (schnell + ControlNet depth strength 0.30, denoise 1.0, hires 4x-UltraSharp @0.40) and settle the FLUX.1-dev non-commercial licence route per DR-002 appendix A",
+    "created_at": "2026-08-01T15:12:06.934841+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-050",
+    "title": "Regenerate the 6 town concept placeholders with the measured recipe and drop the placeholder-quality tag",
+    "created_at": "2026-08-01T15:12:08.990117+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-051",
+    "title": "L1 remainder: the god, what Void is, and deep-time legend - run Theologian, Deep-Time Historian and Political Economist against the two cited research dossiers",
+    "created_at": "2026-08-01T15:12:09.770579+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-052",
+    "title": "Wire the 28 authored quests to the Nakama runtime and reconcile the two quest catalogs (contracts/content/quests.json has live ITEM_PICKED_UP / ZONE_ENTERED quests no event can complete)",
+    "created_at": "2026-08-01T15:12:10.502838+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-053",
+    "title": "Phasing policy decision + the InterestManager predicate hook (rider on I-058 Stage 1)",
+    "created_at": "2026-08-01T15:12:11.024470+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-054",
+    "title": "Asset gate hardening: assert manifest files are git-TRACKED not merely present (6 entries pointed at untracked PNGs and passed), plus intake-art.mjs cannot replace an entry and hardcodes the concept/ destination",
+    "created_at": "2026-08-01T15:12:11.677899+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-055",
+    "title": "Artifact gate hardening: current detector is corner-only with a knife-edge operating point (15/15 TP but 13/37 FP, no held-out set) and cannot see mid-facade hallucinations like the one the best recipe produced",
+    "created_at": "2026-08-01T15:12:12.586829+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-056",
+    "title": "Resolve the internal canon contradictions (catalogue re-derived: 15 found, X1/X9/X12 confirmed unresolved)",
+    "created_at": "2026-08-01T15:12:13.113110+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-057",
+    "title": "Extract the worldbuilding process into a reusable claude plugin: 11 role agents with vetoes, SWF research/brainstorm/synthesis skills, ABP asset pipeline with the measured generation traps, and a G7 real-world-noun hook",
+    "created_at": "2026-08-01T15:12:14.126118+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-058",
+    "title": "Seamless large-world scaling: AOI (StateView) + shard grid + border ghosts + authority handoff + cross-shard combat",
+    "created_at": "2026-08-01T15:22:00.133551+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-059",
+    "title": "L2 ecology: biome and habitat lore for cluster-1's zones - convene the Naturalist (joins at L2 per the roles charter) to derive climate, vegetation, water and food chains from the Cartographer's terrain, and place the 116 bestiary monsters by ZONE not just region",
+    "created_at": "2026-08-01T16:23:03.138219+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-060",
+    "title": "L2 zone content pass: for each cluster-1 zone define hazards, harvestable resources, landmarks and the reason a player goes there - the Systems Designer's three-zones-per-band model needs alternates, cluster 1 currently ships one route with no branches",
+    "created_at": "2026-08-01T16:23:03.859094+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-061",
+    "title": "L2 biome concept art: the art:biome group is empty - generate biome key art for the cluster-1 terrain types using the measured recipe from I-049",
+    "created_at": "2026-08-01T16:23:04.328267+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-062",
+    "title": "L3 boss design: F-023 shipped boss threat/aggro CODE but no boss exists anywhere - no identities, no lore, no art:boss entries; define the cluster-1 bosses, their threat behaviour and their place in the bestiary's element table",
+    "created_at": "2026-08-01T16:23:04.879999+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-063",
+    "title": "L3 dungeon design: the seed library holds 283 unused dungeon 3D props and the world has zero dungeon content - define cluster-1 dungeon locations, their layout grammar, and how they attach to the Cartographer's zones",
+    "created_at": "2026-08-01T16:23:05.508426+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-064",
+    "title": "L4 promote monsters to playable: 116 designed but only 6 have server mob types and asset keys - define how many cluster-1 needs, mint the mobTypes through F-013 codegen, and wire assetKeys so character sheets stop hard-failing check_content.mjs:512",
+    "created_at": "2026-08-01T16:23:06.179834+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-065",
+    "title": "L4 NPC roster: only one NPC sheet exists (camp quartermaster) - define the NPCs cluster-1's towns and camps need, their factions, and whether they are quest-givers under the burial-detail player role DR-001 chose",
+    "created_at": "2026-08-01T16:23:06.808684+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-066",
+    "title": "L4 item and equipment scheme: no weapon/armour tier system exists at all - define tiers, how element coatings and magic stones from canon 5 attach to gear, and what the art:item group should contain",
+    "created_at": "2026-08-01T16:23:07.480727+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-067",
+    "title": "Season 1 budget: 'met' conflates counter-reached with work-done \u2014 bestiary-designs reads 116/116 met the day F-024 merges with 0% of the ~54-design re-band pass done, and quests-act-independent counts 8 against a target of 90 that was set from a playable count of 4",
+    "created_at": "2026-08-01T17:42:18.494023+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-068",
+    "title": "Assert content/season-1-budget.json against DR-003 section 3 \u2014 nothing checks the two agree, which is the exact drift the JSON was created to prevent and which DR-003 itself declares impossible; a ~15-line test on {id,target} pairs closes it (string equality on source will not work, 3 of 8 cells are normalized prose)",
+    "created_at": "2026-08-01T17:42:27.906515+00:00",
+    "promoted_to": null
   }
 ]

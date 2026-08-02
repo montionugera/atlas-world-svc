@@ -29,11 +29,13 @@ flowchart LR
   subgraph sg_n_act_1["Act 1 — Small Lives"]
     n_act_1["act-1"]:::act
     n_arc_embervale_outskirts["arc-embervale-outskirts"]:::arc
+    n_arc_icefield_reckoning["arc-icefield-reckoning"]:::arc
     n_arc_meadow_awakening["arc-meadow-awakening"]:::arc
     n_arc_norhollow_outskirts["arc-norhollow-outskirts"]:::arc
     n_quest_cull_the_packs["quest-cull-the-packs"]:::quest
     n_quest_embervale_watchfires["quest-embervale-watchfires"]:::quest
     n_quest_first_steps["quest-first-steps"]:::quest
+    n_quest_icefield_reckoning["quest-icefield-reckoning"]:::quest
     n_quest_letters_already_opened["quest-letters-already-opened"]:::quest
     n_quest_norhollow_palisade["quest-norhollow-palisade"]:::quest
     n_quest_the_twin_strike["quest-the-twin-strike"]:::quest
@@ -41,11 +43,9 @@ flowchart LR
   end
   subgraph sg_n_act_2["Act 2 — The War Comes Home"]
     n_act_2["act-2"]:::act
-    n_arc_icefield_reckoning["arc-icefield-reckoning"]:::arc
     n_arc_small_mercies["arc-small-mercies"]:::arc
     n_arc_war_comes_home["arc-war-comes-home"]:::arc
     n_quest_hold_the_ford["quest-hold-the-ford"]:::quest
-    n_quest_icefield_reckoning["quest-icefield-reckoning"]:::quest
     n_quest_salvage_and_medals["quest-salvage-and-medals"]:::quest
     n_quest_salvage_run["quest-salvage-run"]:::quest
     n_quest_the_bells_that_wont_stop["quest-the-bells-that-wont-stop"]:::quest
@@ -81,6 +81,7 @@ flowchart LR
   end
   n_char_ashfang_alpha["char-ashfang-alpha"]:::character
   n_char_clerk_of_gildmark["char-clerk-of-gildmark"]:::character
+  n_char_crossroads_man["char-crossroads-man"]:::character
   n_char_elder_of_rooktide["char-elder-of-rooktide"]:::character
   n_char_expedition_member["char-expedition-member"]:::character
   n_char_farrow_the_forward["char-farrow-the-forward"]:::character
@@ -102,8 +103,8 @@ flowchart LR
   n_dlg_broker_at_the_harbor["dlg-broker-at-the-harbor"]:::dialogue
   n_dlg_clerk_terms["dlg-clerk-terms"]:::dialogue
   n_dlg_elder_of_rooktide_welcome["dlg-elder-of-rooktide-welcome"]:::dialogue
-  n_dlg_expedition_member_twin_strike_aftermath["dlg-expedition-member-twin-strike-aftermath"]:::dialogue
   n_dlg_farrow_at_the_ford["dlg-farrow-at-the-ford"]:::dialogue
+  n_dlg_farrow_twin_strike_aftermath["dlg-farrow-twin-strike-aftermath"]:::dialogue
   n_dlg_liss_last_letter["dlg-liss-last-letter"]:::dialogue
   n_dlg_mirelle_freed["dlg-mirelle-freed"]:::dialogue
   n_dlg_quartermaster_icefield_briefing["dlg-quartermaster-icefield-briefing"]:::dialogue
@@ -196,7 +197,7 @@ flowchart LR
   n_arc_embervale_outskirts -->|actId| n_act_1
   n_arc_embervale_outskirts -->|questIds| n_quest_embervale_watchfires
   n_arc_embervale_outskirts -->|questIds| n_quest_the_unmarked_crates
-  n_arc_icefield_reckoning -->|actId| n_act_2
+  n_arc_icefield_reckoning -->|actId| n_act_1
   n_arc_icefield_reckoning -->|questIds| n_quest_icefield_reckoning
   n_arc_ledger_game -->|actId| n_act_3
   n_arc_ledger_game -->|questIds| n_quest_a_face_for_gildmark
@@ -233,6 +234,7 @@ flowchart LR
   n_char_clerk_of_gildmark -->|diedAt| n_event_clerk_silenced
   n_char_clerk_of_gildmark -->|faction| n_faction_gildmark_council
   n_char_clerk_of_gildmark -->|region| n_region_gildmark
+  n_char_crossroads_man -->|region| n_region_millcross
   n_char_elder_of_rooktide -->|region| n_region_rooktide
   n_char_expedition_member -->|faction| n_faction_expedition
   n_char_expedition_member -->|region| n_region_spawn_meadow
@@ -246,7 +248,7 @@ flowchart LR
   n_char_mirelle -->|region| n_region_gildmark
   n_char_quartermaster -->|diedAt| n_event_quartermaster_falls
   n_char_quartermaster -->|faction| n_faction_expedition
-  n_char_quartermaster -->|region| n_region_spawn_meadow
+  n_char_quartermaster -->|region| n_region_millcross
   n_char_speaker_of_norhollow -->|faction| n_faction_norhollow_banner
   n_char_speaker_of_norhollow -->|region| n_region_norhollow
   n_char_the_ash_prophet -->|faction| n_faction_ashen_column
@@ -262,8 +264,7 @@ flowchart LR
   n_char_war_countess -->|region| n_region_embervale
   n_char_warden_bright -->|faction| n_faction_bellfaith
   n_char_warden_bright -->|region| n_region_gildmark
-  n_char_widow_of_the_first_caravan -->|faction| n_faction_embervale_banner
-  n_char_widow_of_the_first_caravan -->|region| n_region_embervale
+  n_char_widow_of_the_first_caravan -->|region| n_region_ashvale_front
   n_dlg_ash_prophet_sermon -->|context| n_event_warspeaker_falls
   n_dlg_ash_prophet_sermon -->|speaker| n_char_the_ash_prophet
   n_dlg_bell_keeper_confession -->|context| n_event_bells_ring_true
@@ -274,10 +275,10 @@ flowchart LR
   n_dlg_clerk_terms -->|speaker| n_char_clerk_of_gildmark
   n_dlg_elder_of_rooktide_welcome -->|context| n_quest_the_first_crossing
   n_dlg_elder_of_rooktide_welcome -->|speaker| n_char_elder_of_rooktide
-  n_dlg_expedition_member_twin_strike_aftermath -->|context| n_event_twin_strike_falls
-  n_dlg_expedition_member_twin_strike_aftermath -->|speaker| n_char_expedition_member
   n_dlg_farrow_at_the_ford -->|context| n_quest_hold_the_ford
   n_dlg_farrow_at_the_ford -->|speaker| n_char_farrow_the_forward
+  n_dlg_farrow_twin_strike_aftermath -->|context| n_event_twin_strike_falls
+  n_dlg_farrow_twin_strike_aftermath -->|speaker| n_char_farrow_the_forward
   n_dlg_liss_last_letter -->|context| n_quest_the_last_letter
   n_dlg_liss_last_letter -->|speaker| n_char_liss_of_embervale
   n_dlg_mirelle_freed -->|context| n_quest_the_bell_keepers_price
@@ -526,7 +527,7 @@ flowchart LR
   n_quest_two_plates_at_dusk -->|unlockedBy| n_act_2
   n_quest_what_the_mob_left -->|arcId| n_arc_truth_arrives_late
   n_quest_what_the_mob_left -->|faction| n_faction_expedition
-  n_quest_what_the_mob_left -->|giver| n_char_expedition_member
+  n_quest_what_the_mob_left -->|giver| n_char_crossroads_man
   n_quest_what_the_mob_left -->|region| n_region_millcross
   n_quest_what_the_mob_left -->|unlockedBy| n_event_quartermaster_falls
 ```

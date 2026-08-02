@@ -108,4 +108,6 @@ data/
 
 # Rendered spec/plan view artifacts (local only)
 docs/superpowers/**/*.html
-plan.md
+docs/worldbuilding/**/*.html
+.claude/idea_backlog/**/*.html
+.claude/refined_backlog/**/*.html

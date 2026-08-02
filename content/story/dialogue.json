@@ -14,12 +14,12 @@
     "context": "quest-icefield-reckoning"
   },
   {
-    "id": "dlg-expedition-member-twin-strike-aftermath",
+    "id": "dlg-farrow-twin-strike-aftermath",
     "kind": "dialogue",
     "title": "After the Twin-Strike",
-    "summary": "The expedition member reflects on the meadow's first real wall, now down.",
+    "summary": "Farrow reflects on the meadow's first real wall, now down.",
     "links": [],
-    "speaker": "char-expedition-member",
+    "speaker": "char-farrow-the-forward",
     "lines": [
       "It hit twice before I finished reacting to the first one.",
       "The meadow's not testing us anymore. It's done testing us.",

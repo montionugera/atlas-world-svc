@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "season": 1,
+  "cluster": 1,
+  "record": "docs/worldbuilding/DR-003-season-1-budget.md",
+  "lines": [
+    {
+      "id": "mob-bases",
+      "label": "Implemented mob types (bases)",
+      "target": 30,
+      "measure": "mobBases",
+      "source": "role-systems-designer-scale.md 1.3, scaled 32 zones to 10; pinned at 30 bases x 4 variants"
+    },
+    {
+      "id": "bestiary-designs",
+      "label": "Bestiary designs",
+      "target": 116,
+      "measure": "bestiaryDesigns",
+      "source": "measured; no net-new designs, a re-band pass over ~54 stranded ones instead"
+    },
+    {
+      "id": "quests-act-independent",
+      "label": "Quests with no act or event gate",
+      "target": 90,
+      "measure": "actIndependentQuests",
+      "source": "DR-005; giver-liveness is a manual canon read on top of this count"
+    },
+    {
+      "id": "art-town",
+      "label": "Town key art",
+      "target": 6,
+      "measure": "townArt",
+      "source": "owner's art-class funding, 2026-08-01"
+    },
+    {
+      "id": "art-bestiary",
+      "label": "Bestiary art",
+      "target": 30,
+      "measure": "bestiaryArt",
+      "source": "owner's art-class funding, 2026-08-01; one image per mob base"
+    },
+    {
+      "id": "zones",
+      "label": "Cluster-1 zones carrying a region id",
+      "target": 10,
+      "blockedBy": "P1 - keyspace unification; A1's ten zones have no region-* ids yet",
+      "source": "A1-geography-cluster1.md 4.2"
+    },
+    {
+      "id": "spawn-entries",
+      "label": "Spawn entries",
+      "target": 120,
+      "blockedBy": "the variant axis does not exist on MobTypeConfig (spec 9 q2)",
+      "source": "12 species per zone x 10 zones"
+    },
+    {
+      "id": "world-state-systems",
+      "label": "Observable world-state systems",
+      "target": 1,
+      "blockedBy": "P3 - buried-ground design",
+      "source": "DR-001 6.4(1) and PX-V2: the bar is one, the current count is zero"
+    }
+  ]
+}

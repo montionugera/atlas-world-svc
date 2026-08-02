@@ -1,0 +1,3 @@
+# L2 ecology: biome and habitat lore for cluster-1's zones - convene the Naturalist (joins at L2 per the roles charter) to derive climate, vegetation, water and food chains from the Cartographer's terrain, and place the 116 bestiary monsters by ZONE not just region — research notes
+
+(prior art, related issues, open questions)

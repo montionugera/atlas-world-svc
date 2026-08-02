@@ -1,8 +1,18 @@
-# Atlas World Bible — v0
+# Atlas World Bible — v0 (superseded)
 
-Free-prose source of truth for setting, tone, factions, regions. Character
-sheets anchor to the ids in parentheses via `links.story`. Formal schema
-lands with roadmap #3; until then, keep ids stable (kebab-case headings).
+> ⚠️ **This is no longer the source of truth. Canon is
+> `content/story/canon.md`.**
+>
+> This file describes one era and three regions (the meadow, the icefield,
+> Thornveil). The shipped story graph runs **five acts, ten regions and ten
+> factions** — seven of each never appear here. Retained for the seed-region
+> detail it still holds; do not judge new content against it, and do not
+> "extend the bible first" as the authoring order below once said. Read
+> `canon.md` first, `style.md` second, this file only for meadow / icefield
+> / Thornveil texture.
+
+Free-prose setting notes for the seed regions. Character sheets anchor to the
+ids in parentheses via `links.story`. Keep ids stable (kebab-case headings).
 
 ## Premise (premise)
 

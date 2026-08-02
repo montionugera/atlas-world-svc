@@ -31,7 +31,7 @@
     "id": "event-first-caravan-burns",
     "kind": "event",
     "title": "The First Caravan Burns",
-    "summary": "A caravan burns on the Ashvale road at dawn, and each side of the plain is already certain who lit it.",
+    "summary": "A caravan burns on the Ashvale road in the night, and by dawn each side of the plain is already certain who lit it.",
     "links": [],
     "timelineOrder": 2,
     "involves": [
@@ -142,7 +142,7 @@
     "id": "event-messengers-burned",
     "kind": "event",
     "title": "The Messengers Are Burned",
-    "summary": "The Broker reframes the sealed truth as an enemy trick before the ink is dry, and the Widow leads Embervale's mob to burn every messenger who carried it into the streets.",
+    "summary": "The Broker reframes the sealed truth as an enemy trick before the ink is dry, and the Widow leads a mob of Embervale's bereaved to burn every messenger who carried it into the streets.",
     "links": [],
     "timelineOrder": 12,
     "involves": [
