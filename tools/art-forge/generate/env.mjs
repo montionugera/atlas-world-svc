@@ -52,6 +52,11 @@
  *        --positive "<string>" (replace the FULLY COMPOSED positive prompt
  *          entirely — bypasses buildEnvPositive, so style vocabulary is
  *          NOT auto-appended; CLI wins over the brief)
+ *        --strength N (override forge.config.json's profiles.environment
+ *          .controlNet.strength; CLI wins over config. Neither half of the
+ *          published 0.30/0.40 replication matrix was reproducible from
+ *          committed code before this flag existed — see
+ *          docs/worldbuilding/ABP-controlnet-replication.md)
  */
 
 import fs from "node:fs";
@@ -63,6 +68,7 @@ import {
   comfyBaseUrl,
   loadForge,
   parseArgs,
+  parseNumericOverride,
   parsePromptOverride,
   parseSeed,
   runGraph,
@@ -84,16 +90,52 @@ export const ENV_NODE = Object.freeze({
   CN_APPLY: "23",
 });
 
+/**
+ * Validate a parsed brief object before it reaches the graph. Same
+ * fail-loudly precedent as `parsePromptOverride` (charsheet.mjs) — a brief
+ * missing/empty `prompt` or `masses` must throw before anything is queued,
+ * not sail through and burn a generation on bad input:
+ *
+ *  - an empty/missing `prompt` makes `buildEnvPositive(undefined, forge)`
+ *    join the literal string "undefined" into the positive prompt.
+ *  - an empty/missing `masses` makes `depthPlanesFromBrief` (blockin.mjs)
+ *    produce only the black canvas rect — an all-black control image, with
+ *    no depth signal at all — and `env.mjs` would upload it and generate
+ *    anyway, silently.
+ *
+ * Exported (rather than folded into `readBrief`) so it can be unit tested
+ * without touching the filesystem.
+ */
+export function validateBrief(brief, id, file) {
+  if (
+    typeof brief.prompt !== "string" ||
+    brief.prompt.trim() === ""
+  ) {
+    throw new Error(
+      `brief "${id}" at ${file} has an empty or missing "prompt"`,
+    );
+  }
+  if (!Array.isArray(brief.masses) || brief.masses.length === 0) {
+    throw new Error(
+      `brief "${id}" at ${file} has an empty or missing "masses" — the ` +
+        "depth control image would render as a blank black canvas with no depth signal",
+    );
+  }
+  return brief;
+}
+
 /** Read one brief JSON (tools/art-forge/briefs/<id>.json). */
 function readBrief(id) {
   const file = path.join(FORGE_DIR, "briefs", `${id}.json`);
+  let brief;
   try {
-    return JSON.parse(fs.readFileSync(file, "utf8"));
+    brief = JSON.parse(fs.readFileSync(file, "utf8"));
   } catch (err) {
     throw new Error(
       `could not read brief "${id}" at ${file}: ${err.message}`,
     );
   }
+  return validateBrief(brief, id, file);
 }
 
 /**
@@ -149,13 +191,35 @@ export function buildEnvNegative(forge) {
 }
 
 /**
+ * Format a ControlNet strength value for use in an output filename —
+ * `0.3` -> `"0.30"` — matching the `<subject>-seed<seed>-s<strength>.png`
+ * naming docs/worldbuilding/ABP-controlnet-replication.md's driver used.
+ */
+export function formatStrength(strength) {
+  return Number(strength).toFixed(2);
+}
+
+/**
  * Build the environment graph. `depthImage` is the filename LoadImage
  * resolves against the ComfyUI server's own input directory (which is a
  * remote Windows path on mont-pc — see uploadControlImage below); it is
  * never a local filesystem path.
+ *
+ * `strength` defaults to the config value but can be overridden (see
+ * `generateEnv`'s `--strength` flag) — it also drives the output filename
+ * below, since running the documented seed x strength sweep with a filename
+ * that carries neither would leave only one surviving PNG per subject, each
+ * later run silently overwriting the last.
  */
-export function buildEnvGraph({ brief, seed, depthImage, forge }) {
+export function buildEnvGraph({
+  brief,
+  seed,
+  depthImage,
+  forge,
+  strength = forge.profile.controlNet.strength,
+}) {
   const { models, sampler, latent, controlNet } = forge.profile;
+  const outputId = `${brief.id ?? "subject"}-seed${seed}-s${formatStrength(strength)}`;
   return {
     [ENV_NODE.CKPT]: {
       class_type: "CheckpointLoaderSimple",
@@ -188,7 +252,7 @@ export function buildEnvGraph({ brief, seed, depthImage, forge }) {
         negative: [ENV_NODE.NEG, 0],
         control_net: [ENV_NODE.CN_TYPE, 0],
         image: [ENV_NODE.CN_IMAGE, 0],
-        strength: controlNet.strength,
+        strength,
         start_percent: controlNet.startPercent,
         end_percent: controlNet.endPercent,
         vae: [ENV_NODE.CKPT, 2],
@@ -221,7 +285,7 @@ export function buildEnvGraph({ brief, seed, depthImage, forge }) {
       class_type: "SaveImage",
       inputs: {
         images: [ENV_NODE.DECODE, 0],
-        filename_prefix: `art-forge/env/${brief.id ?? "subject"}`,
+        filename_prefix: `art-forge/env/${outputId}`,
       },
     },
   };
@@ -272,6 +336,11 @@ export async function generateEnv(
   const rawBrief = readBrief(briefId);
   const seed = parseSeed(args.seed);
   const positiveOverride = parsePromptOverride("positive", args.positive);
+  const strength = parseNumericOverride(
+    "strength",
+    args.strength,
+    forge.profile.controlNet.strength,
+  );
   const { width, height } = forge.profile.latent;
 
   const depthLocalPath = path.join(forge.outDir, "depth", `${briefId}.png`);
@@ -294,14 +363,15 @@ export async function generateEnv(
     negative: buildEnvNegative(forge),
     id: rawBrief.id,
   };
-  const graph = buildEnvGraph({ brief, seed, depthImage, forge });
+  const graph = buildEnvGraph({ brief, seed, depthImage, forge, strength });
 
+  const outputId = `${briefId}-seed${seed}-s${formatStrength(strength)}`;
   return runGraph({
     forge,
     args,
     graph,
-    name: `env/${briefId}`,
-    label: `env ${briefId} seed=${seed} depth=${depthImage}`,
+    name: `env/${outputId}`,
+    label: `env ${briefId} seed=${seed} strength=${formatStrength(strength)} depth=${depthImage}`,
   });
 }
 

@@ -1,7 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { loadForge } from "../generate/charsheet.mjs";
-import { ENV_NODE, buildEnvGraph, buildEnvNegative, buildEnvPositive } from "../generate/env.mjs";
+import {
+  ENV_NODE,
+  buildEnvGraph,
+  buildEnvNegative,
+  buildEnvPositive,
+  formatStrength,
+  validateBrief,
+} from "../generate/env.mjs";
 
 const forge = loadForge({ profile: "environment" });
 const graph = buildEnvGraph({
@@ -62,4 +69,71 @@ test("composed prompt carries the style clause and a non-empty negative — a ba
     negative.includes("no modern vehicles"),
     "negative must carry the anti-modern-contamination guard from forge.config.json profiles.environment.styleGuard",
   );
+});
+
+test("output filename carries the seed and strength — a 2-seed x 2-strength sweep must not overwrite itself", () => {
+  const g1 = buildEnvGraph({
+    brief: { positive: "a harbour town", id: "A1-ART-02" },
+    seed: 12345,
+    depthImage: "cntest/control-depth-A1-ART-02.png",
+    forge,
+    strength: 0.3,
+  });
+  const g2 = buildEnvGraph({
+    brief: { positive: "a harbour town", id: "A1-ART-02" },
+    seed: 12345,
+    depthImage: "cntest/control-depth-A1-ART-02.png",
+    forge,
+    strength: 0.4,
+  });
+  const g3 = buildEnvGraph({
+    brief: { positive: "a harbour town", id: "A1-ART-02" },
+    seed: 741852,
+    depthImage: "cntest/control-depth-A1-ART-02.png",
+    forge,
+    strength: 0.3,
+  });
+  const prefix = (g) => g[ENV_NODE.SAVE].inputs.filename_prefix;
+  const prefixes = new Set([prefix(g1), prefix(g2), prefix(g3)]);
+  assert.equal(prefixes.size, 3, "all three cells of a seed x strength sweep must produce distinct filenames");
+  assert.equal(prefix(g1), "art-forge/env/A1-ART-02-seed12345-s0.30");
+  assert.equal(prefix(g2), "art-forge/env/A1-ART-02-seed12345-s0.40");
+});
+
+test("buildEnvGraph defaults strength to forge.profile.controlNet.strength when no override is given", () => {
+  const apply = Object.values(graph).find((n) => n.class_type === "ControlNetApplyAdvanced");
+  assert.equal(apply.inputs.strength, forge.profile.controlNet.strength);
+});
+
+test("formatStrength renders two decimal places, matching the ABP replication driver's naming (seed12345-s0.30)", () => {
+  assert.equal(formatStrength(0.3), "0.30");
+  assert.equal(formatStrength(0.4), "0.40");
+  assert.equal(formatStrength(1), "1.00");
+});
+
+test("validateBrief rejects an empty/missing prompt — an undefined prompt would join the literal string 'undefined' into the positive prompt", () => {
+  assert.throws(
+    () => validateBrief({ masses: [{}] }, "A1-ART-99", "/fake/A1-ART-99.json"),
+    /A1-ART-99.*\/fake\/A1-ART-99\.json.*prompt/s,
+  );
+  assert.throws(
+    () => validateBrief({ prompt: "  ", masses: [{}] }, "A1-ART-99", "/fake/A1-ART-99.json"),
+    /prompt/,
+  );
+});
+
+test("validateBrief rejects an empty/missing masses — depthPlanesFromBrief would otherwise produce only the black canvas rect, no depth signal", () => {
+  assert.throws(
+    () => validateBrief({ prompt: "a town" }, "A1-ART-99", "/fake/A1-ART-99.json"),
+    /A1-ART-99.*\/fake\/A1-ART-99\.json.*masses/s,
+  );
+  assert.throws(
+    () => validateBrief({ prompt: "a town", masses: [] }, "A1-ART-99", "/fake/A1-ART-99.json"),
+    /masses/,
+  );
+});
+
+test("validateBrief accepts a well-formed brief and returns it unchanged", () => {
+  const brief = { prompt: "a town", masses: [{ name: "x" }] };
+  assert.equal(validateBrief(brief, "A1-ART-99", "/fake/A1-ART-99.json"), brief);
 });
