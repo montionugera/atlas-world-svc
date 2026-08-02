@@ -291,7 +291,7 @@
     "id": "I-049",
     "title": "Adopt the measured environment art recipe as a named profile (schnell + ControlNet depth strength 0.30, denoise 1.0, hires 4x-UltraSharp @0.40), build its runner, replicate the measurement, and scale the storybook to observe it",
     "created_at": "2026-08-01T15:12:06.934841+00:00",
-    "promoted_to": null
+    "promoted_to": "F-026"
   },
   {
     "id": "I-050",

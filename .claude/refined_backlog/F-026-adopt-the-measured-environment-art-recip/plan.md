@@ -1,0 +1,3 @@
+# Adopt the measured environment art recipe as a named profile (schnell + ControlNet depth strength 0.30, denoise 1.0, hires 4x-UltraSharp @0.40), build its runner, replicate the measurement, and scale the storybook to observe it Implementation Plan
+
+> Fill via `/superpowers:writing-plans` once the spec is final.

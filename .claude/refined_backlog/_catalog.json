@@ -286,5 +286,14 @@
     "release_version": "1.6",
     "claimed_at": "2026-08-01T16:29:46.207707+00:00",
     "shipped_at": "2026-08-01T17:47:56.032647+00:00"
+  },
+  {
+    "id": "F-026",
+    "title": "Adopt the measured environment art recipe as a named profile (schnell + ControlNet depth strength 0.30, denoise 1.0, hires 4x-UltraSharp @0.40), build its runner, replicate the measurement, and scale the storybook to observe it",
+    "from_idea": "I-049",
+    "created_at": "2026-08-02T05:31:38.978685+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
