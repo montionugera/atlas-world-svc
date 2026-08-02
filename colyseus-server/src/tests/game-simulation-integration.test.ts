@@ -12,6 +12,13 @@ import { RoomEventHandler } from '../rooms/handlers/RoomEventHandler'
 import { eventBus } from '../events/EventBus'
 import { FakeMetaBackend } from '../meta/FakeMetaBackend'
 import { MetaEventReporter } from '../meta/MetaEventReporter'
+import { InterestManager, InterestEntity, InterestViewer } from '../interest/InterestManager'
+import { createDistancePredicate } from '../interest/visibility'
+import {
+  collectInterestEntities as collectEntities,
+  collectInterestViewers as collectViewers,
+} from '../interest/collect'
+import { AOI_CONFIG } from '../config/aoiConfig'
 
 /**
  * Integration test for the per-tick simulation loop (GameSimulationSystem) wired
@@ -44,6 +51,17 @@ function buildRoom() {
 
   state.worldInterface.setPhysicsManager(physicsManager)
 
+  // Same construction as GameRoom.onCreate() — a harness that diverges from the
+  // room's options is a future bug, not a simplification.
+  const interestManager = new InterestManager({
+    predicate: createDistancePredicate({
+      radius: AOI_CONFIG.radius,
+      hysteresis: AOI_CONFIG.hysteresis,
+    }),
+    cellSize: AOI_CONFIG.cellSize,
+    candidateRadius: AOI_CONFIG.radius * AOI_CONFIG.hysteresis,
+  })
+
   const room = {
     state,
     roomId: ROOM_ID,
@@ -53,6 +71,15 @@ function buildRoom() {
     projectileManager,
     zoneEffectManager,
     mobLifeCycleManager,
+    interestManager,
+    // Mirrors GameRoom.collectInterestEntities()/collectInterestViewers() by
+    // delegating to the same shared collector GameRoom uses.
+    collectInterestEntities(): InterestEntity[] {
+      return collectEntities(state)
+    },
+    collectInterestViewers(): InterestViewer[] {
+      return collectViewers(state)
+    },
   }
 
   const sim = new GameSimulationSystem(room as any)

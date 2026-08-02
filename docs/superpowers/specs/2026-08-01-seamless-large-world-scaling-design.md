@@ -152,6 +152,28 @@ This **generalizes the existing `mapId`** rather than replacing it. Today `GameR
 
 **Fixed grid, not dynamic splitting.** Adaptive re-partitioning under live entities is a research problem — it requires migrating arbitrary entity sets between processes while they are being simulated. Rebalancing is done by changing cell sizes between deploys. Deliberate YAGNI.
 
+#### Cell shape: hexagons, not squares <span class="topic-chip">decided 2026-08-02</span>
+
+Cells are **regular hexagons**. Three independent reasons, all permanent:
+
+| | Square | Hexagon |
+|---|---|---|
+| Cells meeting at a vertex | **4** | **3** |
+| Neighbours | 8 — 4 edge-adjacent, 4 corner-only | **6, all edge-adjacent** |
+| Border length for equal cell area | `4.00·√A` | **`3.72·√A` (~7% less)** |
+
+1. **Fewer participants at the worst point.** A square's corner is shared by four cells, so a player standing there may need ghosts from three neighbours at once, and a handoff there is a four-way geometric decision. A hex vertex is shared by three.
+2. **One kind of neighbour.** A square has edge-neighbours and corner-neighbours, which need different ghost-band geometry and make `isInBand` two cases instead of one. All six hex neighbours are edge-adjacent and equidistant. This removes the "diagonal neighbours" open question entirely — it is no longer 4-vs-8, it is always 6.
+3. **Less border per unit area.** ~7% less edge means proportionally fewer entities inside the ghost band, so lower steady-state `ShardLink` traffic forever. The hexagon is the provably optimal tiling for minimising perimeter per area (honeycomb conjecture, Hales 1999).
+
+**Costs, recorded honestly:** axial/cube hex coordinates are less familiar than `(cx, cy)` — standard and well-documented, but roughly 50 lines of non-obvious math, all confined to `ShardTopology.ts`. The world's outer rim is jagged rather than a clean rectangle; clip it or accept it.
+
+**What this does not affect:** map art, terrain zones, and spawn areas stay rectangular. Sharding partitions **continuous space**, not tiles — entities carry float world coordinates, so the shard lattice and the content lattice are independent. Stage 1 is also unaffected: AOI is a radius query and is shape-agnostic.
+
+<div class="callout info">
+<strong>No central bridge.</strong> Shards communicate peer-to-peer over <code>ShardLink</code>. A central bridging service was considered and rejected — it is the "gateway multiplexer" option from the handoff-model decision: an extra latency hop on every message, a throughput bottleneck, and a single point of failure for the entire world.
+</div>
+
 ### Residency
 
 Every `WorldObject` gains a residency. This is the conceptual core of stages 2–5.
@@ -297,6 +319,41 @@ Entities are added at `aoiRadius` and removed at `aoiRadius × aoiHysteresis` (d
 
 <div class="callout warn">
 <strong>The harness is not "just write a file" — the repo has no tooling for it.</strong> <code>@colyseus/testing</code> is <strong>not installed</strong> (<code>colyseus-server/package.json:39-56</code> — devDeps are jest / ts-jest / ts-node / ts-morph only). <code>colyseus.js</code> is a runtime dependency (<code>:34</code>) but is pinned at <code>^0.16.19</code> against a <strong>0.17</strong> server — an unflagged version skew. Two viable paths: add <code>@colyseus/testing</code>, or hand-roll an in-process harness instantiating <code>GameRoom</code> + <code>GameSimulationSystem</code> directly, the pattern <code>src/tests/game-simulation-integration.test.ts</code> and <code>src/tests/f018-harness.ts</code> already prove. Note that <strong>snapshot bytes per client — the single most important number here — cannot be measured without real clients or a hand-driven <code>Encoder</code></strong>. Decide which before Stage 1 starts.
+</div>
+
+#### Measured result — RETRACTED (2026-08-02, first pass, 100 ticks/point)
+
+<div class="callout danger">
+<strong>Invalidated by code review, same day.</strong> The first-pass harness ran its tick loop unpaced (no real-time delay between iterations). <code>AIModule.update()</code> gates <code>updateAIDecision()</code> on <code>Date.now() - lastUpdateTime >= 50ms</code> (<code>src/ai/AIModule.ts:90-100</code>); an unpaced loop completes iterations in a few ms, so that gate almost never opened — instrumented at <strong>6 of 100 ticks</strong> actually running AI decisions. Synthetic players also stood idle rather than moving. The table below (mob count, not player count, drives the ceiling) was measuring a world running AI at ~6% of production frequency with idle players, and is retracted. See the corrected result immediately below.
+</div>
+
+#### Measured result — corrected (2026-08-02, `npm run load`, paced to real time, 20 warm-up + 200 recorded ticks/point, `AOI_CONFIG.radius=150`)
+
+Fixes applied: tick loop paced to real wall-clock time (so `Date.now()`-gated systems, not just `AIModule`, behave as they do in production); synthetic players scripted to wander/reflect via the real `state.updatePlayerInput()` path instead of standing idle; 20 warm-up ticks discarded; recorded ticks raised 100 → 200; `bytesPerClient` averaged across up to 10 sampled clients instead of 1.
+
+| players | mobs=50 | mobs=200 | mobs=500 | mobs=1000 |
+|---:|---|---|---|---|
+| 1 | OK p95=4.5ms bytes=1895 | OK p95=5.9ms bytes=4279 | OK p95=22.1ms bytes=9156 | **OVER** p95=55.3ms bytes=19492 |
+| 10 | OK p95=4.2ms bytes=1056 | OK p95=7.9ms bytes=3792 | OK p95=28.9ms bytes=8626 | **OVER** p95=73.4ms bytes=18926 |
+| 50 | OK p95=3.2ms bytes=1772 | OK p95=7.9ms bytes=4707 | OK p95=22.7ms bytes=11207 | **OVER** p95=106.1ms bytes=20024 |
+| 100 | OK p95=5.4ms bytes=2867 | OK p95=18.7ms bytes=5755 | **OVER** p95=142.4ms bytes=11199 | **OVER** p95=145.3ms bytes=23126 |
+| 200 | OK p95=8.6ms bytes=5744 | OK p95=13.8ms bytes=8762 | OK p95=38.6ms bytes=15193 | **OVER** p95=92.7ms bytes=22909 |
+| 300 | OK p95=10.3ms bytes=6904 | OK p95=26.9ms bytes=9934 | **OVER** p95=52.3ms bytes=17420 | **OVER** p95=121.9ms bytes=24576 |
+
+<div class="callout danger">
+<strong>The "mob count only" conclusion does not survive.</strong> With AI actually running every ~50ms and players actually moving, per-tick cost now visibly scales with <strong>player count too</strong>: at a fixed mobs=50, p50 rises from 1.0ms (1 player) to 9.2ms (300 players) — roughly 9x. <code>mobs=500</code> is no longer a clean "mostly OK, one outlier" edge: it is now <code>OVER</code> at 100 and 300 players and <code>OK</code> at 200 (still non-monotonic — see the noise caveat below). Capacity is jointly limited by players and mobs, not purely by mob count.
+</div>
+
+<div class="callout success">
+<strong>R1 is still answered: a ceiling was found.</strong> <code>mobs=1000</code> is <code>OVER</code> at every player count tested (1 through 300) — the hard ceiling from the first pass survives. <code>mobs≤200</code> stays <code>OK</code> across the full 1–300 player range tested. The largest all-<code>OK</code> combined-load points are players=300/mobs=200 (p95=26.9ms) and players=200/mobs=500 (p95=38.6ms, 700 total entities).
+</div>
+
+<div class="callout warn">
+<strong>Residual noise, disclosed not fixed:</strong> the sweep runs 24 points sequentially in one process in fixed ascending order, with no repeats per point and observed heap growth (~160MB → 350MB+) across the run, so later points carry more baseline GC pressure than earlier ones at equal load. This plausibly explains the players=100/mobs=500 spike (p95=142.4ms, p99=224.7ms, while p50=27.3ms is unremarkable — a tail-latency shape, not a shifted center) and the non-monotonicity at mobs=500 generally. Treat single-point tail values with caution; the mobs=1000 ceiling and the mobs≤200 safe zone are consistent enough across the whole player range to trust.
+</div>
+
+<div class="callout warn">
+<strong>This still sets a per-room capacity ceiling, not a final <code>cellSize</code>.</strong> Converting it into a concrete <code>cellSize</code> requires the player and mob <em>density per unit area</em> the real spawn tables and expected concurrency produce — not measured here and out of this task's scope. <code>AOI_CONFIG.radius</code> was <strong>not</strong> changed by this harness: the sweep held it fixed at its existing placeholder (150) and never varied it, so there is no measured basis to pick a new number without guessing. Both remain open pending (a) real per-map density data and (b) a radius-focused sweep, which this harness does not run.
 </div>
 
 ### Testing
@@ -561,11 +618,11 @@ Added to `config/gameConfig.ts`, all overridable by environment variable:
 
 | Key | Default | Notes |
 |---|---|---|
-| `aoiRadius` | *from load harness* | Stage 1 |
+| `aoiRadius` | `150` (unvalidated placeholder) | Stage 1 — load harness measured *capacity*, not radius; this sweep never varied radius, so 150 is still a guess. See *Load harness* measured result. |
 | `aoiHysteresis` | `1.15` | Removal radius multiplier |
 | `interestUpdateIntervalTicks` | `1` | Raise to trade freshness for CPU |
 | `worldId` | `world-01` | Stage 3 |
-| `cellSize` | *from load harness* | **Derived from measurement, not guessed** |
+| `cellSize` | *per-room capacity ceiling measured (mobs≤200 safe at any tested player count 1-300; mobs=1000 always over budget; mobs=500 is player-count-sensitive, OVER at 100 and 300 players); final cellSize also needs real spawn-table player+mob density* | **Partially derived from measurement** — see *Load harness* corrected measured result |
 | `maxEntitySpeed` | *from existing entity tuning* | Fastest world-units/sec any entity can reach; feeds `ghostBand` |
 | `ghostBand` | `aoiRadius + maxEntitySpeed × handoffTimeoutMs / 1000` | Validated at boot |
 | `ghostPublishIntervalMs` | `100` | Independent of tick rate |
@@ -619,10 +676,10 @@ Prometheus metrics, extending the existing exporter:
 
 ## Open questions
 
-1. **Cell size and AOI radius** — cannot be answered until the Stage 1 load harness runs. Everything downstream depends on these two numbers.
+1. **Cell size and AOI radius** — **partially answered 2026-08-02** by the Stage 1 load harness (`npm run load`, corrected result under *Load harness* — an initial pass was retracted after review found the tick loop was unpaced and starving `AIModule`'s `Date.now()` throttle, see the retraction callout there). Corrected finding: `mobs=1000` reliably blows the 50ms tick budget at every player count tested (1–300); `mobs≤200` stays safe at every player count tested; `mobs=500` is player-count-sensitive (OVER at 100 and 300 players, OK at 200 — capacity is jointly limited by players and mobs, not mob count alone, contrary to the retracted pass's headline). Still open: **(a)** `cellSize` itself, which needs this ceiling combined with real spawn-table player+mob density per unit area (not measured); **(b)** `aoiRadius`, which this sweep held fixed at its 150 placeholder and never varied — a radius-focused sweep is a separate, not-yet-run harness variant.
 2. **Do mobs hand off, or are they cell-bound?** Cell-bound mobs (they turn back at the border, like the existing `BoundaryAwareBehavior`) are far simpler and remove most mob handoff traffic. Handing off mobs is more believable. **Recommendation: cell-bound in Stage 4, revisit after.**
 3. **Does world state persist across shard restart?** Players persist through Nakama already. Mobs are proposed as ephemeral and respawned from spawn tables. Persistent world objects — dropped loot, player structures — are undesigned and out of scope here.
-4. **Diagonal neighbours** — a corner cell has 8 neighbours. Publishing to all 8 is simplest; publishing only to the 4 edge-adjacent leaves corner gaps. **Recommendation: all 8**, and measure the cost.
+4. ~~**Diagonal neighbours** — a corner cell has 8 neighbours; publish to all 8 or only the 4 edge-adjacent?~~ **Closed 2026-08-02 by the move to hexagons.** A hex has exactly 6 neighbours, all edge-adjacent — there is no diagonal case to decide. See *Cell shape* above.
 5. **Phasing (I-053)** — is phasing in Season 1 scope at all? Stage 1 must ship the pluggable predicate either way (it is cheap now, expensive later), but per-phase Planck collision filtering and the Nakama progression fetch are only worth building if the answer is yes. **This is a content/design call, not an engineering one.**
 
 ---

@@ -1,5 +1,6 @@
 import { GameRoom } from '../GameRoom'
 import { Player } from '../../schemas/Player'
+import { AOI_CONFIG } from '../../config/aoiConfig'
 
 export class GameSimulationSystem {
   constructor(private room: GameRoom) {}
@@ -31,6 +32,8 @@ export class GameSimulationSystem {
       this.cleanupDespawnedProjectiles(deltaTime)
 
       this.room.zoneEffectManager.update(this.room.state.zoneEffects)
+
+      this.updateInterest()
 
       this.processBattleMessages()
 
@@ -129,6 +132,20 @@ export class GameSimulationSystem {
     }
 
     this.room.state.updateProjectiles(deltaTime)
+  }
+
+  /**
+   * Recomputes per-client visible sets. Runs after all entity movement so views
+   * reflect post-simulation positions, and before Colyseus encodes the patch.
+   */
+  private updateInterest() {
+    const tick = this.room.state.tick
+    if (tick % AOI_CONFIG.updateIntervalTicks !== 0) return
+
+    this.room.interestManager.update(
+      this.room.collectInterestEntities(),
+      this.room.collectInterestViewers()
+    )
   }
 
   private processBattleMessages() {

@@ -1,4 +1,5 @@
 import { Room, Client } from 'colyseus'
+import { StateView } from '@colyseus/schema'
 import { GameState } from '../schemas/GameState'
 import { PlanckPhysicsManager } from '../physics/PlanckPhysicsManager'
 import { BattleManager } from '../modules/BattleManager'
@@ -8,6 +9,13 @@ import { ZoneEffectManager } from '../modules/ZoneEffectManager'
 import { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
 import { registerRoom, unregisterRoom } from '../api'
 import { buildEquipmentSnapshotFromPlayer } from '../config/combat/equipmentSlots'
+import { InterestManager, InterestEntity, InterestViewer } from '../interest/InterestManager'
+import { createDistancePredicate } from '../interest/visibility'
+import {
+  collectInterestEntities as collectEntities,
+  collectInterestViewers as collectViewers,
+} from '../interest/collect'
+import { AOI_CONFIG } from '../config/aoiConfig'
 
 // Handlers & Systems
 import { PlayerInputHandler } from './handlers/PlayerInputHandler'
@@ -65,6 +73,7 @@ export class GameRoom extends Room<{ state: GameState; client: GameRoomClient }>
   public projectileManager!: ProjectileManager
   public mobLifeCycleManager!: MobLifeCycleManager
   public zoneEffectManager!: ZoneEffectManager
+  public interestManager!: InterestManager
 
   // Meta systems (Nakama-backed; see IMetaBackend)
   public metaBackend!: IMetaBackend
@@ -117,6 +126,15 @@ export class GameRoom extends Room<{ state: GameState; client: GameRoomClient }>
     this.metaEventReporter = new MetaEventReporter({
       backend: this.metaBackend,
       matchId: this.roomId,
+    })
+
+    this.interestManager = new InterestManager({
+      predicate: createDistancePredicate({
+        radius: AOI_CONFIG.radius,
+        hysteresis: AOI_CONFIG.hysteresis,
+      }),
+      cellSize: AOI_CONFIG.cellSize,
+      candidateRadius: AOI_CONFIG.radius * AOI_CONFIG.hysteresis,
     })
 
     // Initialize Extracted Handlers & Systems
@@ -180,6 +198,11 @@ export class GameRoom extends Room<{ state: GameState; client: GameRoomClient }>
     const player = this.state.addPlayer(client.sessionId, playerName)
     player.userId = userId
 
+    // With @view() on the root collections a client receives NOTHING until it
+    // has a view, so every seated client must get one here.
+    client.view = new StateView()
+    this.interestManager.attach(client.sessionId, client.view, client.sessionId)
+
     // Fetch & apply the player's loadout snapshot (profile-derived combat stats).
     // Falls back to ephemeral defaults if the meta backend is unavailable.
     await loadPlayerLoadout({ player, backend: this.metaBackend, userId })
@@ -200,6 +223,7 @@ export class GameRoom extends Room<{ state: GameState; client: GameRoomClient }>
     console.log(`👋 Player ${client.sessionId} left the game`)
 
     // Physics cleanup is handled by RoomEventHandler via EventBus 'playerLeft'
+    this.interestManager.detach(client.sessionId)
     this.state.removePlayer(client.sessionId)
     this.state.aiModule.unregisterAgent(client.sessionId)
   }
@@ -249,6 +273,19 @@ export class GameRoom extends Room<{ state: GameState; client: GameRoomClient }>
       clearInterval(this.simulationInterval)
       this.simulationInterval = undefined
     }
+  }
+
+  /**
+   * Flattens the five view-filtered root collections into the shape
+   * InterestManager consumes. Keyed by session id for players so it matches
+   * interestManager.attach().
+   */
+  collectInterestEntities(): InterestEntity[] {
+    return collectEntities(this.state)
+  }
+
+  collectInterestViewers(): InterestViewer[] {
+    return collectViewers(this.state)
   }
 
   enableMobChaseBehavior() {
