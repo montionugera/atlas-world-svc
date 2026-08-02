@@ -268,9 +268,13 @@ This is the loop a prompt-to-epic agent (or a human) should follow, matching
 
 1. **Research** — read `bible.md`, the existing `content/story/*.json` files,
    `content/characters/*.md` (real character sheets / `assetKey`s), and
-   `content/maps/*.md` (real regions). Never invent a faction, region, or mob
-   family that doesn't already exist in the bible — extend the bible first if
-   the story genuinely needs a new one.
+   `content/maps/*.md` (real regions). Read **`canon.md` first** (it is the
+   source of truth), `style.md` second for voice, and `bible.md` only for
+   seed-region texture — `bible.md` is **superseded** and describes one era
+   and three regions against canon's five acts and ten regions. Never invent
+   a faction, region, or mob family that isn't already in `canon.md` — amend
+   `canon.md` deliberately, in the same commit, if the story genuinely needs
+   a new one.
 2. **Write story files, one kind at a time, in this order** — **acts** first
    (the spine: how many, what order, what theme), then **regions/factions/
    characters** (the nouns), then **arcs** (which act each belongs to), then

@@ -73,7 +73,7 @@ Five human villains (user direction 2026-07-23), each embodying one characterist
 2. **Arms are fantastic** — Gildmark sells bound war-beasts and relics dug from Cindervast; danger tiers follow the trade routes.
 3. **Cindervast is a magical wound** — the relic its tyrant used made it a cursed ruin (this world's City of Tears); dungeon zone + the act-4 stake (the Broker is selling its sibling weapon to both sides).
 4. **Fantastic espionage** — message-birds that can be intercepted, lovers' ink readable only by the beloved, far-mirrors monopolized by Gildmark.
-5. **The iron rule:** magic is a scarce, contested *resource* (oil, not miracle). No spell resolves a political knot, cures grief or trauma, or raises the dead. Deaths are permanent; love and politics are decided by human action. The theme bible enforces this editorially.
+5. **The iron rule:** ~~magic is a scarce, contested *resource* (oil, not miracle)~~ — **the scarcity half is superseded by F-017; see `content/story/canon.md` §5.** Magic is everyday, widespread and cheap; what gates it is *runes* — knowledge and training — not shortage. Nobody rations spell fuel, hoards it, or goes to war over it, so no plot may turn on magic scarcity, a black market in it, or mages conscripted to secure supply. **The surviving half still holds:** no spell resolves a political knot, cures grief or trauma, or raises the dead. Deaths are permanent; love and politics are decided by human action. The theme bible enforces this editorially.
 
 ## 7. Love as the through-line (letters = lore threads)
 
