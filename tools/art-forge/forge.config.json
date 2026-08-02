@@ -1,21 +1,5 @@
 {
-  "version": 1,
-  "model": "Z-Image Turbo",
-  "sampler": {
-    "denoise": 0.82,
-    "mode": "img2img",
-    "steps": 24,
-    "cfg": 3,
-    "samplerName": "res_multistep",
-    "scheduler": "simple",
-    "shift": 3,
-    "_note": "denoise (0.82), steps (24), and cfg (3) are empirically validated against game-client/assets/art/classes/ogre-mage.png by the F-024 calibration campaign (tools/art-forge/out/sweep/ + out/costumesweep/) — do not change them without re-running that sweep. The stock ComfyUI image_z_image_turbo template values (steps 8, cfg 1) produce flat vector cartoon output, not the house style. samplerName/scheduler/shift were left at the stock template values — not yet swept; next thing to tune if regenerated art still doesn't match now that steps/cfg/denoise are locked in."
-  },
-  "silhouettes": {
-    "dir": "F:\\comfy-ui\\input",
-    "prefix": "sil-",
-    "note": "Flat-grey per-job silhouettes cut from the approved human row via ImageMagick magenta-key. Proportion and pose come from the silhouette; race and costume come from the prompt."
-  },
+  "version": 2,
   "comfy": {
     "host": "100.66.190.100",
     "port": 8188,
@@ -23,27 +7,70 @@
     "launchScript": "C:\\Users\\Mont\\run-comfy-gpu0.cmd",
     "warning": "GPU 1 : 8189 is the owner's own instance — do not touch it."
   },
-  "muscleGradient": {
-    "raceAxis": [
-      "elf",
-      "beastkin",
-      "immortal",
-      "human",
-      "demon",
-      "dragon",
-      "dwarf",
-      "ogre"
-    ],
-    "jobAxis": [
-      "mage",
-      "healer",
-      "summoner",
-      "engineer",
-      "assassin",
-      "archer",
-      "spearman",
-      "swordsman"
-    ],
-    "scoreRange": [6.0, 8.5]
+  "profiles": {
+    "character": {
+      "model": "Z-Image Turbo",
+      "sampler": {
+        "denoise": 0.82,
+        "mode": "img2img",
+        "steps": 24,
+        "cfg": 3,
+        "samplerName": "res_multistep",
+        "scheduler": "simple",
+        "shift": 3,
+        "_note": "denoise (0.82), steps (24), and cfg (3) are empirically validated against game-client/assets/art/classes/ogre-mage.png by the F-024 calibration campaign (tools/art-forge/out/sweep/ + out/costumesweep/) — do not change them without re-running that sweep. The stock ComfyUI image_z_image_turbo template values (steps 8, cfg 1) produce flat vector cartoon output, not the house style. samplerName/scheduler/shift were left at the stock template values — not yet swept; next thing to tune if regenerated art still doesn't match now that steps/cfg/denoise are locked in."
+      },
+      "silhouettes": {
+        "dir": "F:\\comfy-ui\\input",
+        "prefix": "sil-",
+        "note": "Flat-grey per-job silhouettes cut from the approved human row via ImageMagick magenta-key. Proportion and pose come from the silhouette; race and costume come from the prompt."
+      },
+      "muscleGradient": {
+        "raceAxis": [
+          "elf",
+          "beastkin",
+          "immortal",
+          "human",
+          "demon",
+          "dragon",
+          "dwarf",
+          "ogre"
+        ],
+        "jobAxis": [
+          "mage",
+          "healer",
+          "summoner",
+          "engineer",
+          "assassin",
+          "archer",
+          "spearman",
+          "swordsman"
+        ],
+        "scoreRange": [6.0, 8.5]
+      }
+    },
+    "environment": {
+      "models": {
+        "checkpoint": "flux1-schnell.safetensors",
+        "controlNet": "flux-controlnet-union-pro-2.0.safetensors"
+      },
+      "sampler": {
+        "denoise": 1.0,
+        "mode": "txt2img",
+        "steps": 8,
+        "cfg": 1,
+        "samplerName": "euler",
+        "scheduler": "simple"
+      },
+      "latent": { "width": 1280, "height": 832 },
+      "controlNet": {
+        "type": "depth",
+        "strength": 0.3,
+        "startPercent": 0.0,
+        "endPercent": 1.0
+      },
+      "hires": { "upscaler": "4x-UltraSharp", "steps": 10, "denoise": 0.4 },
+      "_note": "Measured in docs/worldbuilding/ABP-controlnet-rescue.md. strength 0.30 is NOT a typo: the usable window is 0.30-0.40 and the conventional 0.8-1.0 collapses schnell into flat vector art (-88% detail). Steps and strength interact — 8 steps at strength >= 0.50 produced a cutout halo. Do not reach for end_percent to fix flatness; reach for lower strength. EVIDENCE IS THIN: two subjects (Gildmark, Norhollow), one seed (12345); steps=16 and strengths 0.40-0.60 were never swept. Checkpoint filename flux1-schnell.safetensors is UNVERIFIED against the live ComfyUI box (100.66.190.100:8188 was unreachable when this profile was written) — confirm via GET /object_info/CheckpointLoaderSimple before relying on it and correct here if it differs."
+    }
   }
 }

@@ -49,10 +49,24 @@ function readJson(file) {
   }
 }
 
-/** Load forge.config.json + prompts/*.json as one frozen bundle. */
-export function loadForge(forgeDir = FORGE_DIR) {
+/** Load forge.config.json + prompts/*.json as one frozen bundle for ONE named profile. */
+export function loadForge({ forgeDir = FORGE_DIR, profile } = {}) {
+  const config = readJson(path.join(forgeDir, "forge.config.json"));
+  if (!profile) {
+    throw new Error(
+      `loadForge requires an explicit profile — one of ${Object.keys(config.profiles).join(", ")}. ` +
+        `There is deliberately no default: inheriting the wrong recipe silently produces wrong-style art.`,
+    );
+  }
+  const resolved = config.profiles?.[profile];
+  if (!resolved) {
+    throw new Error(
+      `unknown profile "${profile}" — expected one of ${Object.keys(config.profiles ?? {}).join(", ")}`,
+    );
+  }
   return {
-    config: readJson(path.join(forgeDir, "forge.config.json")),
+    config,
+    profile: resolved,
     styleLaws: readJson(path.join(forgeDir, "prompts", "style-laws.json")),
     raceIdentity: readJson(
       path.join(forgeDir, "prompts", "race-identity.json"),
