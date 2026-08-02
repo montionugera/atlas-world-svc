@@ -5,6 +5,16 @@
 **Sub-decisions already settled:** `DR-004-starter-ground.md` (the starter ground binds, it does not retire) · `DR-005-act-axis.md` (a separate era axis; acts 1–5 frozen as history)
 **Machine-readable form:** `content/season-1-budget.json` · **Report:** `scripts/report_season1.mjs`
 
+<div class="callout warn">
+<strong>Parent records are not on this branch.</strong> All four documents cited above —
+<code>DR-001-L1-scope.md</code>, <code>A1-geography-cluster1.md</code>, <code>DR-004-starter-ground.md</code>,
+<code>DR-005-act-axis.md</code> — plus <code>content/bestiary/bestiary.json</code> and
+<code>content/maps/cluster1-geography.json</code>, live only on <mark><code>feat/F-024</code></mark>.
+On <code>release/1.6</code> this record's citations do not resolve, and two of the budget lines
+(<code>bestiary-designs</code>, <code>zones</code>) cannot be measured for that reason rather than
+because the work is undone. Remove this note once F-024 merges. See <code>I-056</code>.
+</div>
+
 <div class="callout danger">
 <strong>This record states a budget and nothing else.</strong> It does not decide progression or XP,
 PvP, the reward law, the third register, or the present-tense antagonist. Those are listed in §6 and
