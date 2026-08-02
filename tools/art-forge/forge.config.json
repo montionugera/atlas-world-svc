@@ -9,7 +9,13 @@
   },
   "profiles": {
     "character": {
-      "model": "Z-Image Turbo",
+      "models": {
+        "unet": "z_image_turbo_bf16.safetensors",
+        "clip": "qwen_3_4b.safetensors",
+        "clipType": "lumina2",
+        "vae": "ae.safetensors",
+        "_note": "Z-Image Turbo, discovered from this install's GET /object_info and the shipped image_z_image_turbo template rather than guessed — see buildBaseGraph in generate/charsheet.mjs."
+      },
       "sampler": {
         "denoise": 0.82,
         "mode": "img2img",
