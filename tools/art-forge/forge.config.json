@@ -1,11 +1,12 @@
 {
   "version": 2,
   "comfy": {
-    "host": "100.66.190.100",
+    "host": "127.0.0.1",
     "port": 8188,
     "gpu": 0,
     "launchScript": "C:\\Users\\Mont\\run-comfy-gpu0.cmd",
-    "warning": "GPU 1 : 8189 is the owner's own instance — do not touch it."
+    "warning": "GPU 1 : 8189 is the owner's own instance — do not touch it.",
+    "_note": "The ComfyUI server launches with --listen 127.0.0.1 on mont-pc, so it binds localhost-only — 100.66.190.100 (its Tailscale address) is NOT reachable directly and never was. Reach it either by running on mont-pc itself, or via an SSH tunnel from this machine: ssh -N -L 8188:127.0.0.1:8188 Mont@100.66.190.100 — then this host value (127.0.0.1) resolves through the tunnel. Verified live 2026-08-02."
   },
   "profiles": {
     "character": {
@@ -76,6 +77,18 @@
         "endPercent": 1.0
       },
       "hires": { "upscaler": "4x-UltraSharp", "steps": 10, "denoise": 0.4 },
+      "styleGuard": {
+        "negative": [
+          "no cars",
+          "no trucks",
+          "no modern vehicles",
+          "no power lines",
+          "no paved roads",
+          "no contemporary architecture",
+          "no modern city skyline"
+        ],
+        "_note": "Measured directly from this recipe's first real generation — A1-ART-02 'Millcross' (a pre-industrial crossing town) rendered as a photorealistic MODERN settlement: white pickup trucks, an SUV, corrugated-metal roofing, a contemporary city skyline on the horizon. The ABP's own recorded workflow carried a bare prompt (it was measuring ControlNet strength, not style) and neither the brief prose nor the shared style-laws.json ruled out modern contamination — schnell defaults toward a photoreal modern read once style words are absent. One subject, one seed; not yet swept across the other three L1 briefs."
+      },
       "_note": "Measured in docs/worldbuilding/ABP-controlnet-rescue.md. strength 0.30 is NOT a typo: the usable window is 0.30-0.40 and the conventional 0.8-1.0 collapses schnell into flat vector art (-88% detail). Steps and strength interact — 8 steps at strength >= 0.50 produced a cutout halo. Do not reach for end_percent to fix flatness; reach for lower strength. EVIDENCE IS THIN: two subjects (Gildmark, Norhollow), one seed (12345); steps=16 and strengths 0.40-0.60 were never swept. Checkpoint filename flux1-schnell-fp8.safetensors and ControlNet filename flux-controlnet-union-pro-2.0.safetensors were both VERIFIED to exist on the live ComfyUI server (v0.24.1) on 2026-08-02 via GET /object_info/CheckpointLoaderSimple and GET /object_info/ControlNetLoader respectively — this confirms the filenames are installed, NOT that the recipe itself is validated on this hardware."
     }
   }
