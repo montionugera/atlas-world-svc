@@ -20,12 +20,20 @@ instead of collapsing into flat vector art — **replicates cleanly: 16/16 cells
 flat-vector collapses**, across all four subjects and both seeds. That part of the recipe is now
 measured on six subjects total (two from the rescue round, four here), not two.
 
-**The profile as a whole is not yet safe for unattended batch use.** Two things broke that the
-strength axis does not explain: **Embervale's composition fails at all 4/4 cells** — it renders as
-one stepped pyramid, not the six-ledge hill town the brief describes — and the **lattice-pylon
-utility-tower artifact recurs in 5 of 16 cells across 3 of the 4 subjects**, unsuppressed by the
-current `styleGuard.negative` list. A near-repeat of the original Millcross modern-vehicle failure
-also appeared once, and Cindervast's "no rubble, clean walls" clause failed in all 4/4 cells.
+**The profile as a whole is not yet safe for unattended batch use** — but not because of Embervale.
+**Update (2026-08-03, post-write):** rendering and inspecting Embervale's own depth control map
+directly (see "Embervale's composition failure, re-attributed" below) shows the map is itself a
+symmetric, centred, stepped pyramid — the model painted that control signal faithfully. Embervale's
+failure attributes **entirely to block-in composition authoring**, not to the recipe, and is now
+read as evidence of **high depth-adherence** rather than an open question. What actually keeps this
+profile out of unattended-batch territory is a different axis, unrelated to composition: the
+**lattice-pylon utility-tower artifact recurs in 5 of 16 cells across 3 of the 4 subjects**,
+unsuppressed by the current `styleGuard.negative` list; **Cindervast's "no rubble, clean walls"
+clause fails in all 4/4 cells**; Rooktide produced a hallucinated flag emblem and fake
+copyright/watermark text; and a near-repeat of the original Millcross modern-vehicle contamination
+appeared once more. None of those four are composition failures — Millcross, Rooktide and
+Cindervast's structures all land close to their briefs geometrically. Only Embervale's did, and that
+one is now explained.
 
 </div>
 
@@ -42,17 +50,24 @@ did with them.
 
 That means this round is the **first** real look at three of the four compositions, at the same
 time as it is the replication of the strength claim. **A "hold" on those three partly measures our
-own drafts, not just the recipe** — and the Embervale failure below cannot be cleanly attributed to
-"the recipe" versus "the block-in," because both were untested going in. Where the finding is
-about paint quality (steps/cfg/sampler/strength), the evidence is strong: those knobs are shared
-identically by all six subjects tested across both rounds. Where the finding is about composition
-or brief fidelity, it is entangled with an unvalidated draft and should be read that way.
+own drafts, not just the recipe.** Where the finding is about paint quality (steps/cfg/sampler/
+strength), the evidence is strong: those knobs are shared identically by all six subjects tested
+across both rounds. Where the finding is about composition or brief fidelity, it was entangled with
+an unvalidated draft at write time — **this has since been resolved for Embervale**, by directly
+rendering and inspecting its depth control map (see below): the pyramid silhouette is baked into the
+depth map itself, so the recipe rendered it correctly, and the failure is attributed to the block-in
+with confidence, not left ambiguous. Rooktide and Cindervast's compositions held close to brief
+across all cells, which further narrows the "untested draft" concern down to authoring quality
+rather than an open question about the recipe. Where the finding is about **content control** —
+hallucinated text/emblems, modern contamination, the rubble/wall-condition miss — that remains
+genuinely unresolved by this correction and should still be read as entangled with unswept negative-
+list work, not settled.
 
 </div>
 
 <div class="metric-grid">
 <div class="metric-tile"><strong>16/16</strong><br/>painted, 0 flat-vector collapses</div>
-<div class="metric-tile alarm"><strong>4/4</strong><br/>Embervale cells render as one pyramid, not a town</div>
+<div class="metric-tile alarm"><strong>4/4</strong><br/>Embervale cells render as one pyramid — depth map's fault, not the recipe's</div>
 <div class="metric-tile alarm"><strong>5/16</strong><br/>cells show the lattice-pylon artifact, 3 of 4 subjects</div>
 <div class="metric-tile"><strong>0</strong><br/>OOMs or ComfyUI failures — 16/16 generations completed</div>
 </div>
@@ -128,7 +143,7 @@ original failure, but the **same failure mode at lower amplitude**: `styleGuard.
 The other seed (`12345`, strength 0.30) shows two electricity-transmission lattice pylons in the
 mid-background — confirmed by crop, unambiguous.
 
-### A1-ART-03 Embervale — composition fails at all 4/4 cells
+### A1-ART-03 Embervale — composition fails at all 4/4 cells, re-attributed with direct evidence
 
 <div class="callout danger">
 
@@ -142,16 +157,40 @@ contact sheet's second row — four near-identical silhouettes.
 
 </div>
 
-This is very likely a **block-in authoring problem, not a ControlNet-strength problem** — and per
-the honesty caveat above, this is also the **first time anyone looked at what this block-in
-produces**. The paint quality itself is excellent at both strengths (strong dusk lighting, coursed
-stone/tile detail, banner cloth folds) — the strength axis is not what failed here. A hallucinated
-nonsense banner reading "Slathey Love" appeared at seed 12345/strength 0.30 (same family as the
-"LA LASE / CIVCLE" hallucination `ABP-controlnet-rescue.md` recorded on Gildmark). The lattice
-pylon appears at seed 12345 (both strengths) and is absent at seed 741852 — the only subject where
-the same artifact both appeared and disappeared purely on a seed change with strength held fixed,
-which argues the pylon is a seed-sensitive prior in the checkpoint rather than something
-strength or the control image is driving.
+<div class="callout success">
+
+**Re-attributed (2026-08-03), with direct evidence, not inference.** `briefs/A1-ART-03.json` was
+rendered through `blockin.mjs`'s `renderDepthPng()` and the resulting PNG was viewed directly. **The
+depth map itself is a symmetric, centred, stepped pyramid** — dark `bg` steps at the apex, grey `mg`
+steps below them, a full-width `fg` band across the base — and the generated images match that
+silhouette closely. This is **not** an ambiguous case of "untested recipe vs. untested draft" any
+more: the model painted exactly what the control map told it to paint. That is a demonstration of
+**high depth-adherence**, and it belongs in the recipe's favour, not against it.
+
+The root cause is visible in the brief's own coordinates. All six `ledge-*` masses in
+`briefs/A1-ART-03.json` share the same horizontal centre despite each one having a different width:
+`[0.42,0.66]`, `[0.36,0.72]`, `[0.3,0.78]`, `[0.24,0.84]`, `[0.16,0.9]`, `[0.04,0.97]` — midpoints
+`0.54, 0.54, 0.54, 0.54, 0.53, 0.505`, all within 0.035 of a single shared axis. Varying each tier's
+*width* while holding its *centre* fixed still produces a symmetric stack — it does not produce
+off-centre massing. This is despite the block-in's own authoring note claiming the ledges were kept
+"asymmetric/off-centre" per `ABP-flux-dev-and-anchor.md`'s centred-anchor warning; the note's intent
+was right, the execution was not. By contrast, Millcross, Rooktide and Cindervast's masses have
+genuinely varying midpoints (real off-centre placement), and none of those three subjects collapsed
+into a single monumental structure. See "Authoring law" below.
+
+</div>
+
+This **is** a **block-in authoring problem, not a ControlNet-strength or recipe problem** — confirmed,
+not merely likely. The paint quality itself is excellent at both strengths (strong dusk lighting,
+coursed stone/tile detail, banner cloth folds) — the strength axis is not what failed here, and
+neither is the recipe's depth-conditioning fidelity, which this finding now demonstrates directly. A
+hallucinated nonsense banner reading "Slathey Love" appeared at seed 12345/strength 0.30 (same
+family as the "LA LASE / CIVCLE" hallucination `ABP-controlnet-rescue.md` recorded on Gildmark) —
+this and the lattice-pylon recurrence below are content-control findings, independent of the
+composition finding above. The lattice pylon appears at seed 12345 (both strengths) and is absent at
+seed 741852 — the only subject where the same artifact both appeared and disappeared purely on a
+seed change with strength held fixed, which argues the pylon is a seed-sensitive prior in the
+checkpoint rather than something strength or the control image is driving.
 
 ### A1-ART-06 Rooktide — brief fidelity strong, contamination present
 
@@ -168,12 +207,44 @@ counted as the pylon artifact.
 ### A1-ART-07 Cindervast — stable composition, one consistent brief violation
 
 Gate, crown emblem, statue and standing figures are compositionally stable across all four cells —
-the strongest depth-adherence of the four subjects. But **all 4/4 cells show visibly cracked,
+consistent with the high depth-adherence this round confirms across all four subjects, Embervale
+included (see the re-attribution above). But **all 4/4 cells show visibly cracked,
 patched or rubbled walls**, directly contradicting the brief's "no rubble ... walls standing clean
 with mortar intact." This reads as a prompt-emphasis gap rather than a seed artifact, since it is
 consistent regardless of seed or strength. A hazy modern city skyline is visible in the background
 on both `0.30` cells (both seeds) — confirmed by crop — a faint recurrence of the same
 modern-contamination class Millcross first surfaced, now showing up on a third subject.
+
+## Authoring law: a symmetric, centred stack of steps reads as one monument
+
+<div class="callout idea">
+
+**Transferable lesson — apply this to every future terraced/tiered block-in, not just Embervale.**
+A depth map made of concentric rectangles that share a common horizontal centre, stacked upward and
+inward, will be rendered as **one large stepped building** (pyramid, ziggurat, pagoda) no matter what
+the prompt text says. ControlNet depth-conditioning does not know "these are six separate ledges of
+a hillside town" versus "this is one structure's steps" — it only knows the geometry it is given, and
+a symmetric centred stack of shrinking rectangles *is* the geometry of a monumental building. This
+round confirms that reading directly: Embervale's depth map (`briefs/A1-ART-03.json` rendered
+through `blockin.mjs`) is exactly that shape, and all 16 cells with settings that touched it rendered
+exactly that shape back.
+
+**The specific mistake, precisely, so it doesn't repeat:** varying each tier's *width* while holding
+its *centre* fixed is not enough to break the "single structure" read. Embervale's six ledges have
+midpoints `0.54, 0.54, 0.54, 0.54, 0.53, 0.505` — a shared axis to within 0.035 — despite each ledge
+having a visibly different width and despite the block-in's own authoring note claiming the ledges
+were kept "asymmetric/off-centre." Width variation alone reads as a stepped silhouette around a fixed
+axis; it does not read as separate, staggered masses.
+
+**What terraced/tiered settlements need instead:** asymmetric, broken, off-centre masses — vary each
+tier's *centroid*, not just its width (shift it left or right by a different amount per tier, the way
+Millcross, Rooktide and Cindervast's block-ins already do); prefer several smaller, disjoint rects per
+tier over one continuous rect spanning the full tier width; and let some tiers interrupt or overlap
+their neighbours rather than nesting cleanly inside them. A real hillside settlement, seen from
+below, does not present as concentric rings around a single axis — this recipe will paint whatever
+geometry it is handed with high fidelity, so the geometry has to actually encode a settlement.
+
+</div>
 
 ## The lattice-pylon artifact — frequency, as requested
 
@@ -202,15 +273,20 @@ a targeted negative word next.
 0 flat-vector collapses, across four subjects the original round never touched. Combined with the
 two subjects from `ABP-controlnet-rescue.md`, the core recipe (depth control, strength 0.30–0.40,
 denoise 1.0, 8 steps) is now evidenced on **six subjects, two seeds** — no longer "two subjects,
-one seed."
+one seed." **On depth adherence specifically: also yes, and more strongly than the first write-up
+gave it credit for.** Embervale's pyramid render is not a counterexample to depth fidelity — it is
+direct proof of it: the model painted the control map's actual geometry with high fidelity, and that
+geometry happened to be authored wrong. All four subjects' geometric composition tracked their depth
+maps; only one depth map itself was wrong.
 
-**On "safe for unattended batch use": no.** A profile that reliably produces a wrong building for
-one of four subjects, and unsuppressed modern-world artifacts in nearly a third of cells, is not
-ready to run unattended. The failures are not spread evenly — Embervale's is total and
-compositional, the others are intermittent and content-level (hallucinated text, contaminating
-objects, one recurring silhouette) — so the fix is **not** "lower the strength further." It is:
-fix Embervale's block-in, add pylon/tower and rubble/damage words to the negative list, and expect
-to still spot-check every batch output by eye.
+**On "safe for unattended batch use": still no, but the reason has narrowed.** It is not that the
+recipe produces a wrong building — it is that one of four *block-ins* encodes a wrong building, and
+that a separate, unrelated axis (content control: hallucinated text/emblems, modern-world
+contamination, a brief clause about wall condition) is still unsuppressed in nearly a third of
+cells. Neither failure mode responds to the strength dial. The fix is: re-author Embervale's
+composition per the authoring law above (break the shared centre, stagger the tiers), add
+pylon/tower and rubble/damage words to the negative list, and still expect to spot-check every batch
+output by eye until both are addressed.
 
 ## What remains unswept
 
