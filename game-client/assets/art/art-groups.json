@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "groups": [
+    { "id": "cast", "label": "Cast", "track": "existing" },
+    { "id": "race", "label": "Races", "track": "existing" },
+    { "id": "class", "label": "Classes", "track": "existing" },
+    { "id": "mob", "label": "Mobs", "track": "T1" },
+    { "id": "boss", "label": "Bosses", "track": "T1" },
+    { "id": "map", "label": "Maps", "track": "T2" },
+    { "id": "town", "label": "Towns", "track": "T2" },
+    { "id": "biome", "label": "Biomes", "track": "T2" },
+    { "id": "item", "label": "Items", "track": "T3" },
+    { "id": "icon", "label": "Element & Class Icons", "track": "T3" },
+    { "id": "crest", "label": "Faction Crests", "track": "T3" }
+  ],
+  "expectedCounts": { "race": 8, "class": 64 }
+}

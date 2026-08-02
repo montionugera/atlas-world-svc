@@ -39,6 +39,8 @@
 //   (K) frame+animations spritesheets must tile their PNG on a uniform grid:
 //       sheetW % frameW == 0, sheetH % frameH == 0, and each animation count
 //       <= cols*rows (partial final row allowed). Guards runtime frame-slicing.
+//   (N) art-manifest OPTIONAL rich-metadata fields (F-024) — description,
+//       tags, source, gen — validated when present, never required.
 //
 // Cross-file guards:
 //   (G) keyspaces across all manifest sources must be disjoint — the same id
@@ -67,11 +69,22 @@
 //   --manifest <path>           override manifest.json path (testing)
 //   --audio-manifest <path>     override audio-manifest.json path (testing)
 //   --catalog-manifest <path>   override catalog-manifest.json path (testing)
+//   --art-manifest <path>       override art-manifest.json path (testing)
+//   --art-groups <path>         override art-groups.json path (testing)
+//   --art-root <dir>            override the art root dir (testing)
 //   --game-client <dir>         override the res:// root dir (testing)
 
-import { readFileSync, existsSync, statSync } from "node:fs";
+import {
+  readFileSync,
+  existsSync,
+  statSync,
+  openSync,
+  readSync,
+  closeSync,
+  readdirSync,
+} from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, resolve, join } from "node:path";
+import { dirname, resolve, join, relative } from "node:path";
 import { checkLicensePolicy } from "./lib/license-policy.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -89,6 +102,9 @@ function parseArgs(argv) {
       "game-client/assets/catalog-manifest.json",
     ),
     musicManifest: join(REPO_ROOT, "game-client/assets/music-manifest.json"),
+    artManifest: join(REPO_ROOT, "game-client/assets/art/art-manifest.json"),
+    artGroups: join(REPO_ROOT, "game-client/assets/art/art-groups.json"),
+    artRoot: join(REPO_ROOT, "game-client/assets/art"),
     gameClient: join(REPO_ROOT, "game-client"),
   };
   for (let i = 0; i < argv.length; i++) {
@@ -101,6 +117,9 @@ function parseArgs(argv) {
     else if (a === "--catalog-manifest")
       opts.catalogManifest = resolve(argv[++i]);
     else if (a === "--music-manifest") opts.musicManifest = resolve(argv[++i]);
+    else if (a === "--art-manifest") opts.artManifest = resolve(argv[++i]);
+    else if (a === "--art-groups") opts.artGroups = resolve(argv[++i]);
+    else if (a === "--art-root") opts.artRoot = resolve(argv[++i]);
     else if (a === "--game-client") opts.gameClient = resolve(argv[++i]);
     else {
       console.error(`Unknown argument: ${a}`);
@@ -178,25 +197,37 @@ function manifestSources(opts) {
       label: "manifest",
       keyspace: "codegen",
       driftGated: true,
+      validator: "render",
     },
     {
       path: opts.audioManifest,
       label: "audio-manifest",
       keyspace: "curated",
       driftGated: false,
+      validator: "render",
     },
     {
       path: opts.catalogManifest,
       label: "catalog-manifest",
       keyspace: "curated",
       driftGated: false,
+      validator: "render",
     },
     {
       path: opts.musicManifest,
       label: "music-manifest",
       keyspace: "curated",
       driftGated: false,
+      validator: "render",
     }, // +1 line per new curated file (§6)
+    {
+      path: opts.artManifest,
+      label: "art-manifest",
+      keyspace: "curated",
+      driftGated: false,
+      validator: "art", // concept art is NOT render-spec shaped — see spec §4
+      root: opts.artRoot,
+    },
   ];
 }
 
@@ -205,10 +236,170 @@ function manifestSources(opts) {
 function readPngSize(fsPath) {
   try {
     const buf = readFileSync(fsPath);
-    if (buf.length < 24 || buf.toString("ascii", 12, 16) !== "IHDR") return null;
+    if (buf.length < 24 || buf.toString("ascii", 12, 16) !== "IHDR")
+      return null;
     return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
   } catch {
     return null;
+  }
+}
+
+// A Git LFS pointer is a small text file that begins with this exact line. A
+// fresh clone without `git lfs pull` has pointers where the images should be —
+// they are non-empty regular files, so a size check alone lets them through.
+const LFS_MAGIC = "version https://git-lfs.github.com/spec/v1";
+
+function isLfsPointer(fsPath) {
+  let fd;
+  try {
+    fd = openSync(fsPath, "r");
+    const buf = Buffer.alloc(LFS_MAGIC.length);
+    const n = readSync(fd, buf, 0, LFS_MAGIC.length, 0);
+    return n === LFS_MAGIC.length && buf.toString("utf8") === LFS_MAGIC;
+  } catch {
+    return false;
+  } finally {
+    if (fd !== undefined) closeSync(fd);
+  }
+}
+
+// (N) Optional rich-metadata fields (F-024): description, tags, source, gen.
+// All are OPTIONAL — the 81 pre-existing entries carry none of them and must
+// stay valid — but when present they are validated so a malformed value
+// can never reach the storybook. `gen` is the reproducibility record (model
+// + sampler knobs); without it a good result cannot be regenerated.
+const GEN_NUMBER_FIELDS = [
+  "steps",
+  "cfg",
+  "seed",
+  "denoise",
+  "width",
+  "height",
+];
+const GEN_INTEGER_FIELDS = new Set(["steps", "seed", "width", "height"]);
+
+function validateArtMetaFields(id, entry, failures) {
+  if (entry.description !== undefined) {
+    if (
+      typeof entry.description !== "string" ||
+      entry.description.trim() === ""
+    ) {
+      failures.push(
+        `entry "${id}": description must be a non-empty string if present`,
+      );
+    }
+  }
+
+  if (entry.source !== undefined) {
+    if (typeof entry.source !== "string" || entry.source.trim() === "") {
+      failures.push(
+        `entry "${id}": source must be a non-empty string if present`,
+      );
+    }
+  }
+
+  if (entry.tags !== undefined) {
+    if (
+      !Array.isArray(entry.tags) ||
+      entry.tags.length === 0 ||
+      entry.tags.some((t) => typeof t !== "string" || t.trim() === "")
+    ) {
+      failures.push(
+        `entry "${id}": tags must be a non-empty array of non-empty strings if present`,
+      );
+    }
+  }
+
+  if (entry.gen !== undefined) {
+    if (
+      typeof entry.gen !== "object" ||
+      entry.gen === null ||
+      Array.isArray(entry.gen)
+    ) {
+      failures.push(`entry "${id}": gen must be an object if present`);
+    } else {
+      const gen = entry.gen;
+      if (
+        gen.model !== undefined &&
+        (typeof gen.model !== "string" || gen.model.trim() === "")
+      ) {
+        failures.push(`entry "${id}": gen.model must be a non-empty string`);
+      }
+      for (const field of GEN_NUMBER_FIELDS) {
+        if (gen[field] === undefined) continue;
+        const v = gen[field];
+        if (typeof v !== "number" || !Number.isFinite(v)) {
+          failures.push(`entry "${id}": gen.${field} must be a number`);
+          continue;
+        }
+        if (GEN_INTEGER_FIELDS.has(field) && !Number.isInteger(v)) {
+          failures.push(`entry "${id}": gen.${field} must be an integer`);
+          continue;
+        }
+        if ((field === "width" || field === "height") && v <= 0) {
+          failures.push(`entry "${id}": gen.${field} must be positive`);
+        }
+      }
+    }
+  }
+}
+
+// (L) Concept-art entries. Curated reference material with NO renderer, so the
+// render-spec path in validateEntry() does not apply — see
+// docs/superpowers/specs/2026-08-01-art-forge-foundation-design.md §4.
+// Licence guard (I) deliberately does not apply either: art is generated
+// locally on mont-pc and has no upstream licence, so `note` carries provenance.
+function validateArtEntry(id, entry, source, groupIds, failures) {
+  if (!entry || typeof entry !== "object") {
+    failures.push(`entry "${id}": not an object`);
+    return;
+  }
+  if (typeof entry.group !== "string" || !groupIds.has(entry.group)) {
+    failures.push(
+      `entry "${id}": group "${entry.group}" is not declared in art-groups.json`,
+    );
+  }
+  if (isEmptyField(entry.title)) failures.push(`entry "${id}": missing title`);
+  if (isEmptyField(entry.note)) {
+    failures.push(
+      `entry "${id}": missing note — provenance is required (art carries no upstream licence)`,
+    );
+  }
+
+  validateArtMetaFields(id, entry, failures);
+
+  const file = entry.file;
+  if (typeof file !== "string" || file.trim() === "") {
+    failures.push(`entry "${id}": missing file`);
+    return;
+  }
+  if (
+    file.startsWith("res://") ||
+    file.startsWith("/") ||
+    file.split("/").includes("..")
+  ) {
+    failures.push(
+      `entry "${id}": file must be a relative path under the art root — got "${file}"`,
+    );
+    return;
+  }
+
+  const fsPath = join(source.root, file);
+  if (!existsSync(fsPath)) {
+    failures.push(`entry "${id}": file not found — ${file}`);
+    return;
+  }
+  const st = statSync(fsPath);
+  if (!st.isFile() || st.size === 0) {
+    failures.push(
+      `entry "${id}": file is empty or not a regular file — ${file}`,
+    );
+    return;
+  }
+  if (isLfsPointer(fsPath)) {
+    failures.push(
+      `entry "${id}": file is a Git LFS pointer, not image payload — run \`git lfs pull\` (${file})`,
+    );
   }
 }
 
@@ -267,7 +458,9 @@ function validateEntry(id, entry, source, gameClient, spec, failures) {
   // (C) required scalar/structured fields.
   for (const f of r.require) {
     if (isEmptyField(entry[f])) {
-      failures.push(`entry "${id}": required "${f}" empty for render=${render}`);
+      failures.push(
+        `entry "${id}": required "${f}" empty for render=${render}`,
+      );
     }
   }
 
@@ -283,7 +476,9 @@ function validateEntry(id, entry, source, gameClient, spec, failures) {
 
   // (E) oneOf groups — exactly one group fully present.
   for (const groups of r.oneOf ? [r.oneOf] : []) {
-    const present = groups.filter((g) => g.every((k) => !isEmptyField(entry[k])));
+    const present = groups.filter((g) =>
+      g.every((k) => !isEmptyField(entry[k])),
+    );
     if (present.length !== 1) {
       failures.push(
         `entry "${id}": render=${render} needs exactly one of ${JSON.stringify(groups)} (got ${present.length})`,
@@ -377,6 +572,58 @@ function assertNoReserved(id, source, spec, failures) {
   }
 }
 
+const ART_IMAGE_EXT = new Set([".png", ".webp", ".jpg", ".jpeg"]);
+
+function* walkImages(dir) {
+  for (const ent of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, ent.name);
+    if (ent.isDirectory()) {
+      yield* walkImages(p);
+      continue;
+    }
+    const dot = ent.name.lastIndexOf(".");
+    const ext = dot === -1 ? "" : ent.name.slice(dot).toLowerCase();
+    if (ART_IMAGE_EXT.has(ext)) yield p;
+  }
+}
+
+// (M) Reverse direction + group completeness. Rule (L) catches an entry whose
+// file vanished; this catches the opposite — a committed image nothing points
+// at, which is invisible forever — and a group that silently lost a member
+// (the exact 7-vs-8 races symptom that went unnoticed).
+function assertArtCoverage(entries, source, groupsDoc, failures) {
+  const claimed = new Set();
+  const counts = {};
+  for (const entry of Object.values(entries)) {
+    if (!entry || typeof entry !== "object") continue;
+    if (typeof entry.file === "string" && entry.file.trim() !== "") {
+      claimed.add(resolve(source.root, entry.file));
+    }
+    if (typeof entry.group === "string") {
+      counts[entry.group] = (counts[entry.group] || 0) + 1;
+    }
+  }
+
+  for (const abs of walkImages(source.root)) {
+    if (!claimed.has(resolve(abs))) {
+      failures.push(
+        `art file has no manifest entry: ${relative(source.root, abs)}`,
+      );
+    }
+  }
+
+  for (const [group, expected] of Object.entries(
+    (groupsDoc && groupsDoc.expectedCounts) || {},
+  )) {
+    const actual = counts[group] || 0;
+    if (actual !== expected) {
+      failures.push(
+        `art group "${group}": expected ${expected} entries, found ${actual}`,
+      );
+    }
+  }
+}
+
 // (J) AssetKind renderability completeness. Every `kind` the codegen emits
 // (asset-keys.json) must resolve to a renderer by CONTRACT, not by accident:
 // either render-spec declares a `kindDefaultRender[kind]` (guaranteed default),
@@ -428,6 +675,13 @@ function main() {
   }
   const keyIds = new Set(keys.map((k) => k && k.id).filter(Boolean));
 
+  const groupsDoc = readJson(opts.artGroups, "art-groups", failures);
+  const groupIds = new Set(
+    groupsDoc && Array.isArray(groupsDoc.groups)
+      ? groupsDoc.groups.map((g) => g && g.id).filter(Boolean)
+      : [],
+  );
+
   const sources = manifestSources(opts);
   const sourcesEntries = []; // for the disjointness guard
   let codegenEntries = null; // the driftGated source's entries (for guard J)
@@ -446,15 +700,25 @@ function main() {
     if (source.driftGated) codegenEntries = entries;
 
     for (const [id, entry] of Object.entries(entries)) {
-      validateEntry(id, entry, source, opts.gameClient, spec, failures);
+      if (source.validator === "art") {
+        validateArtEntry(id, entry, source, groupIds, failures);
+      } else {
+        validateEntry(id, entry, source, opts.gameClient, spec, failures);
+      }
       assertNoReserved(id, source, spec, failures);
 
       // A manifest entry for an id the codegen doesn't know about is drift —
       // warn (not fatal), since it points at a stale/renamed key. Only
       // meaningful for the codegen-keyed source.
       if (source.driftGated && !keyIds.has(id)) {
-        warnings.push(`entry "${id}": not a known asset key (stale or renamed?)`);
+        warnings.push(
+          `entry "${id}": not a known asset key (stale or renamed?)`,
+        );
       }
+    }
+
+    if (source.validator === "art") {
+      assertArtCoverage(entries, source, groupsDoc, failures);
     }
 
     // Every generated key should eventually have a manifest entry in the
@@ -488,6 +752,7 @@ function report(failures, warnings, opts) {
   console.log(`  audio-manifest:    ${opts.audioManifest}`);
   console.log(`  catalog-manifest:  ${opts.catalogManifest}`);
   console.log(`  music-manifest:    ${opts.musicManifest}`);
+  console.log(`  art-manifest:      ${opts.artManifest}`);
   console.log("");
 
   for (const w of warnings) console.log(`  ⚠️  WARN  ${w}`);
