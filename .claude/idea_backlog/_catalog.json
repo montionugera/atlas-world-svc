@@ -424,5 +424,11 @@
     "title": "MobLifeCycleManager mob ids use a 2-char suffix and collide on burst spawn",
     "created_at": "2026-08-02T14:07:58.445009+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-072",
+    "title": "aoi_snapshot_bytes metric has no code \u2014 the Stage 1 payoff is invisible in production",
+    "created_at": "2026-08-02T14:08:04.729868+00:00",
+    "promoted_to": null
   }
 ]
