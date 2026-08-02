@@ -6,52 +6,52 @@
   "height": 832,
   "horizon": 0.58,
   "focal": [0.4, 0.62],
-  "_note": "Newly authored to the recovered block-in schema for this subject. Composition: tidal channel/mudflat on bg, stepped shed terraces climbing the bank on mg (asymmetric, denser on the left), barge cranes and hull-change gear as the dominant fg occluders per the brief's explicit 'dominate the foreground' instruction.",
+  "_note": "Newly authored to the recovered block-in schema for this subject. Revised for task 6b: the original draft placed the mg shed terraces ABOVE (smaller y than) the bg tidal channel/mudflat — inverted depth. Fixed by moving the channel/mudflat to sit right at the horizon (0.58) and dropping the terraces' ground-contact below it, so the flat is glimpsed farthest-and-highest and the town reads as nearer, per the standard landscape convention. Also raised land coverage: terraces widened toward the frame edges, and a low barge-hull mass was added in the gap between the crane and the hull-change gear ('barges sit in mud on their pilings' is explicit in the brief) so the foreground band isn't half black. Composition unchanged in kind: tidal channel/mudflat on bg, stepped shed terraces climbing the bank on mg (asymmetric, denser on the left), barge cranes and hull-change gear as the dominant fg occluders per the brief's explicit 'dominate the foreground' instruction. Still authored, not measured.",
   "masses": [
     {
       "name": "tidal-channel",
       "plane": "bg",
       "shape": "rect",
-      "rect": [0.3, 0.6, 0.6, 0.64],
+      "rect": [0.25, 0.555, 0.75, 0.585],
       "value": "#c4d4d8"
     },
     {
       "name": "exposed-mudflat",
       "plane": "bg",
       "shape": "rect",
-      "rect": [0, 0.64, 1, 0.78],
+      "rect": [0, 0.585, 1, 0.62],
       "value": "#5c5648"
-    },
-    {
-      "name": "shed-terrace-low",
-      "plane": "mg",
-      "shape": "rect",
-      "rect": [0.08, 0.5, 0.62, 0.6],
-      "value": "#4a4438"
-    },
-    {
-      "name": "shed-terrace-mid",
-      "plane": "mg",
-      "shape": "rect",
-      "rect": [0.14, 0.4, 0.5, 0.5],
-      "value": "#403a30"
     },
     {
       "name": "shed-terrace-high",
       "plane": "mg",
       "shape": "rect",
-      "rect": [0.18, 0.32, 0.4, 0.4],
+      "rect": [0.18, 0.46, 0.4, 0.58],
       "value": "#38332a"
+    },
+    {
+      "name": "shed-terrace-mid",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.14, 0.56, 0.5, 0.7],
+      "value": "#403a30"
+    },
+    {
+      "name": "shed-terrace-low",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.02, 0.66, 0.64, 0.86],
+      "value": "#4a4438"
     },
     {
       "name": "largest-shed-gable",
       "plane": "mg",
       "shape": "poly",
       "points": [
-        [0.62, 0.6],
-        [0.7, 0.46],
-        [0.8, 0.46],
-        [0.86, 0.6]
+        [0.62, 0.78],
+        [0.7, 0.6],
+        [0.84, 0.6],
+        [0.94, 0.78]
       ],
       "value": "#544632"
     },
@@ -60,24 +60,31 @@
       "plane": "fg",
       "shape": "poly",
       "points": [
-        [0.06, 1.02],
-        [0.1, 0.7],
-        [0.14, 0.66],
-        [0.18, 0.72],
-        [0.22, 1.02]
+        [0.04, 1.04],
+        [0.08, 0.78],
+        [0.14, 0.72],
+        [0.18, 0.8],
+        [0.22, 1.04]
       ],
       "value": "#14120e"
+    },
+    {
+      "name": "barge-hull-midforeground",
+      "plane": "fg",
+      "shape": "rect",
+      "rect": [0.24, 0.86, 0.66, 1.04],
+      "value": "#221e18"
     },
     {
       "name": "hull-change-gear",
       "plane": "fg",
       "shape": "poly",
       "points": [
-        [0.7, 1.02],
-        [0.76, 0.82],
-        [0.92, 0.8],
-        [1.02, 0.9],
-        [1.02, 1.02]
+        [0.66, 1.04],
+        [0.72, 0.86],
+        [0.9, 0.84],
+        [1.02, 0.94],
+        [1.02, 1.04]
       ],
       "value": "#1a1712"
     }
