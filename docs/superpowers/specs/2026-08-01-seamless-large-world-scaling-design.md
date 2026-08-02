@@ -152,6 +152,28 @@ This **generalizes the existing `mapId`** rather than replacing it. Today `GameR
 
 **Fixed grid, not dynamic splitting.** Adaptive re-partitioning under live entities is a research problem — it requires migrating arbitrary entity sets between processes while they are being simulated. Rebalancing is done by changing cell sizes between deploys. Deliberate YAGNI.
 
+#### Cell shape: hexagons, not squares <span class="topic-chip">decided 2026-08-02</span>
+
+Cells are **regular hexagons**. Three independent reasons, all permanent:
+
+| | Square | Hexagon |
+|---|---|---|
+| Cells meeting at a vertex | **4** | **3** |
+| Neighbours | 8 — 4 edge-adjacent, 4 corner-only | **6, all edge-adjacent** |
+| Border length for equal cell area | `4.00·√A` | **`3.72·√A` (~7% less)** |
+
+1. **Fewer participants at the worst point.** A square's corner is shared by four cells, so a player standing there may need ghosts from three neighbours at once, and a handoff there is a four-way geometric decision. A hex vertex is shared by three.
+2. **One kind of neighbour.** A square has edge-neighbours and corner-neighbours, which need different ghost-band geometry and make `isInBand` two cases instead of one. All six hex neighbours are edge-adjacent and equidistant. This removes the "diagonal neighbours" open question entirely — it is no longer 4-vs-8, it is always 6.
+3. **Less border per unit area.** ~7% less edge means proportionally fewer entities inside the ghost band, so lower steady-state `ShardLink` traffic forever. The hexagon is the provably optimal tiling for minimising perimeter per area (honeycomb conjecture, Hales 1999).
+
+**Costs, recorded honestly:** axial/cube hex coordinates are less familiar than `(cx, cy)` — standard and well-documented, but roughly 50 lines of non-obvious math, all confined to `ShardTopology.ts`. The world's outer rim is jagged rather than a clean rectangle; clip it or accept it.
+
+**What this does not affect:** map art, terrain zones, and spawn areas stay rectangular. Sharding partitions **continuous space**, not tiles — entities carry float world coordinates, so the shard lattice and the content lattice are independent. Stage 1 is also unaffected: AOI is a radius query and is shape-agnostic.
+
+<div class="callout info">
+<strong>No central bridge.</strong> Shards communicate peer-to-peer over <code>ShardLink</code>. A central bridging service was considered and rejected — it is the "gateway multiplexer" option from the handoff-model decision: an extra latency hop on every message, a throughput bottleneck, and a single point of failure for the entire world.
+</div>
+
 ### Residency
 
 Every `WorldObject` gains a residency. This is the conceptual core of stages 2–5.
@@ -622,7 +644,7 @@ Prometheus metrics, extending the existing exporter:
 1. **Cell size and AOI radius** — cannot be answered until the Stage 1 load harness runs. Everything downstream depends on these two numbers.
 2. **Do mobs hand off, or are they cell-bound?** Cell-bound mobs (they turn back at the border, like the existing `BoundaryAwareBehavior`) are far simpler and remove most mob handoff traffic. Handing off mobs is more believable. **Recommendation: cell-bound in Stage 4, revisit after.**
 3. **Does world state persist across shard restart?** Players persist through Nakama already. Mobs are proposed as ephemeral and respawned from spawn tables. Persistent world objects — dropped loot, player structures — are undesigned and out of scope here.
-4. **Diagonal neighbours** — a corner cell has 8 neighbours. Publishing to all 8 is simplest; publishing only to the 4 edge-adjacent leaves corner gaps. **Recommendation: all 8**, and measure the cost.
+4. ~~**Diagonal neighbours** — a corner cell has 8 neighbours; publish to all 8 or only the 4 edge-adjacent?~~ **Closed 2026-08-02 by the move to hexagons.** A hex has exactly 6 neighbours, all edge-adjacent — there is no diagonal case to decide. See *Cell shape* above.
 5. **Phasing (I-053)** — is phasing in Season 1 scope at all? Stage 1 must ship the pluggable predicate either way (it is cheap now, expensive later), but per-phase Planck collision filtering and the Nakama progression fetch are only worth building if the answer is yes. **This is a content/design call, not an engineering one.**
 
 ---
