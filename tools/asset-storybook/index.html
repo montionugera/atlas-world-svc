@@ -2509,6 +2509,21 @@
         return section;
       }
 
+      // A card inside a display:none section has no layout box, so its
+      // loading="lazy" <img> never fetches — the group's health dot would
+      // sit at "loading…" forever if that tab is never opened (review
+      // finding #1). Forcing eager on the moment a card actually becomes
+      // visible restores the pre-tab behavior for any group the user does
+      // look at: a full settle without needing to scroll further, exactly
+      // like the old one-long-page view. Groups that stay unvisited still
+      // don't fetch — that's the scale win the tab layer exists for — and
+      // the existing settled-check in renderSidebarBadge (ok+err>=total)
+      // means an unvisited dot never falsely paints green or red.
+      function eagerLoadCard(card) {
+        const img = card.querySelector("img");
+        if (img && img.loading === "lazy") img.loading = "eager";
+      }
+
       // Applies the active tab + filter text to every already-rendered
       // art-group section and card. Pure visibility toggle: health totals
       // (set once by initHealth in init()) are never touched here, so the
@@ -2526,8 +2541,19 @@
             sec.style.display = showGroup ? "" : "none";
             sec.querySelectorAll(".card").forEach((card) => {
               const hay = card.dataset.artSearch || "";
-              card.style.display =
-                !filtering || hay.includes(term) ? "" : "none";
+              const showCard = showGroup && (!filtering || hay.includes(term));
+              card.style.display = showCard ? "" : "none";
+              if (showCard) eagerLoadCard(card);
+            });
+            // Classes' race sub-headings (buildArtClassesBody) aren't
+            // touched by the card loop above — without this a filter can
+            // leave an "Ogre (8)" heading standing over zero visible cards
+            // (review finding, Minor). No-op for groups with no race rows.
+            sec.querySelectorAll(".art-race-row").forEach((row) => {
+              const anyVisible = [...row.querySelectorAll(".card")].some(
+                (c) => c.style.display !== "none",
+              );
+              row.style.display = anyVisible ? "" : "none";
             });
           });
 
@@ -2620,6 +2646,36 @@
         // only the active tab instead of every group at once again.
         if (cls === "all" || cls === ART_CLASS) {
           applyArtTabFilter();
+        } else if (cls.startsWith(ART_CLASS + ":")) {
+          // Review finding #2: the legacy per-group sidebar item (e.g.
+          // "art:race") isolates its section directly via the `show` loop
+          // above and never goes through applyArtTabFilter — so a filter
+          // typed earlier left this section's cards exactly as the filter
+          // last set them (mostly hidden), while the filter <input> itself
+          // is now inside a hidden section (no visible control explaining
+          // why). Clear the filter and force every card in the one section
+          // `show` just made visible back on, so jumping to a single group
+          // this way always shows that whole group, unconditionally.
+          artFilterText = "";
+          const filterInput = document.querySelector(".art-filter-input");
+          if (filterInput) filterInput.value = "";
+          const sec = document.getElementById("section-" + cls);
+          if (sec) {
+            sec.querySelectorAll(".card").forEach((card) => {
+              card.style.display = "";
+              eagerLoadCard(card);
+            });
+            sec.querySelectorAll(".art-race-row").forEach((row) => {
+              row.style.display = "";
+            });
+          }
+          // Keep the tab bar's own highlight in sync so returning to
+          // "Concept Art" afterward resumes on the group just isolated here
+          // instead of a stale earlier tab.
+          activeArtTab = cls.slice(ART_CLASS.length + 1);
+          document.querySelectorAll(".art-tab").forEach((btn) => {
+            btn.classList.toggle("active", btn.dataset.artTab === activeArtTab);
+          });
         }
       }
 
