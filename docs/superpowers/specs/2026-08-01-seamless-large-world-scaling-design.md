@@ -62,10 +62,10 @@ Sharding is therefore a solution to a ceiling nobody has located. One Node proce
 Knockback is a core mechanic, not decoration. It is applied in four places:
 
 - `physics/PlanckPhysicsManager.ts:396` and `:729` — `applyLinearImpulse`
-- `modules/BattleModule.ts:106` — `damage * attackImpulseMultiplier`
-- `modules/projectile/ProjectileCollisionResolver.ts:111` — same on projectile hits
+- `modules/BattleModule.ts:122` — `damage * attackImpulseMultiplier`
+- `modules/projectile/ProjectileCollisionResolver.ts:111` **and `:234`** — same on projectile hits
 
-with `attackImpulseMultiplier: 20`, commented in-repo as "Doubled to 20 for impactful knockback".
+with `attackImpulseMultiplier: 20` (`config/gameConfig.ts:21`), commented in-repo as "Doubled to 20 for impactful knockback". Note there are **four** impulse sites, not three; R2's mitigation must cover both `ProjectileCollisionResolver` branches.
 
 A ghost is a read-only copy with no physics authority. Applying an impulse to a ghost does nothing. Two consequences:
 
@@ -117,7 +117,7 @@ flowchart LR
 
 | Stage | Adds | Ships value alone | Risk |
 |---|---|---|---|
-| **1 — AOI** | Per-client `StateView` filtering; load harness | ✅ Bandwidth decoupled from world size | Low |
+| **1 — AOI** | Per-client `StateView` filtering; load harness | ✅ Bandwidth decoupled from world size | **Medium** — see [Stage 1](#stage-1--interest-management-aoi); it is not additive |
 | **2 — Residency** | `LOCAL`/`GHOST` on `WorldObject`; systems iterate local only | ✅ No behaviour change; unlocks 3–5 | Low, but invasive |
 | **3 — Shard link** | Grid topology; Redis border snapshots; see across borders | ⚠️ Requires ≥2 shards to matter | High |
 | **4 — Handoff** | Authority transfer + client dual-connect | ✅ The seamless payoff | High |
@@ -144,10 +144,10 @@ A **world** (e.g. `world-01`) of dimensions W×H is partitioned into a fixed gri
    └──────────┴──────────┴──────────┘
 ```
 
-This **generalizes the existing `mapId`** rather than replacing it. Today `GameRoom.onCreate` reads `options.mapId` (default `map-01-sector-a`) and `getMapDimensions` resolves per-map dimensions (`config/mapConfig.ts:11`). A shard key resolves the same way, plus cell coordinates and world-space origin.
+This **generalizes the existing `mapId`** rather than replacing it. Today `GameRoom.onCreate` reads `options.mapId` (default `map-01-sector-a`) and `getMapDimensions` resolves per-map dimensions (`config/mapConfig.ts:10`). A shard key resolves the same way, plus cell coordinates and world-space origin.
 
 <div class="callout success">
-<strong>A 1×1 grid is byte-for-byte today's behaviour.</strong> Single-shard is the degenerate case of the sharded design, so stages 3–5 can land without regressing the single-room game, and the existing ~55 test files continue to exercise a valid configuration.
+<strong>A 1×1 grid is byte-for-byte today's behaviour.</strong> Single-shard is the degenerate case of the sharded design, so stages 3–5 can land without regressing the single-room game, and the existing <strong>80</strong> test files continue to exercise a valid configuration. (<code>CLAUDE.md</code>'s "~55" is stale.)
 </div>
 
 **Fixed grid, not dynamic splitting.** Adaptive re-partitioning under live entities is a research problem — it requires migrating arbitrary entity sets between processes while they are being simulated. Rebalancing is done by changing cell sizes between deploys. Deliberate YAGNI.
@@ -210,6 +210,12 @@ The `aoiRadius` term ensures a player standing exactly on the authority line sti
 
 `@colyseus/schema` v4 ships `StateView` (`node_modules/@colyseus/schema/build/index.d.ts:29`), which replaces the removed `@filter` decorator. Each client is assigned a view; only entities added to that view are encoded for it.
 
+<div class="callout warn">
+<strong>Nothing to extend — no AOI structure exists in the code.</strong> An exhaustive grep of <code>colyseus-server/src</code> for <em>spatial / aoi / grid / cell / quadtree / broadphase / interest / neighbour</em> returns no interest structure. The only near-hit, <code>config/physicsConfig.ts:125-126</code> (<code>enableBroadphase: true, broadphase: 'SAP'</code>), is <strong>dead config read by nothing</strong>, and would be Planck's collision broadphase, not network interest management. Stage 1 builds this from zero.
+<br/><br/>
+<code>README.md:16</code> is <em>consistent</em> with this — it sits in the performance-budget block and states AOI as a <strong>target</strong> ("budget: 15-25 entities; ~800B peak/client"), the same way the block states a 30 Hz tick the config does not run. Stage 1 should adopt that budget as its goal. What <strong>is</strong> wrong is the workspace-level <code>repos/CLAUDE.md:16</code>, which lists "AOI grid" as an architectural <em>fact</em> of this service alongside Planck physics. That file is outside this repo; correcting it is a separate housekeeping task.
+</div>
+
 ### Components
 
 **New — `src/interest/InterestManager.ts`**
@@ -217,15 +223,42 @@ The `aoiRadius` term ensures a player standing exactly on the authority line sti
 - Owns one `StateView` per client.
 - Each tick (or every Nth tick, configurable), recomputes each client's visible set and applies the delta — `view.add(entity)` / `view.remove(entity)`.
 - Backed by a uniform spatial hash sized to `aoiRadius` so recomputation is O(entities near the player), not O(all entities).
+- **The visible-set computation takes a pluggable per-client predicate, not a hard-wired `query(x, y, aoiRadius)`.** See [the phasing hook](#the-phasing-hook-i-053) below — this is the one part of Stage 1 that genuinely cannot be retrofitted.
+
+**Changed — `schemas/GameState.ts`** ← *missing from the original draft*
+
+View filtering is **opt-in per field**. A field is only filtered if it carries a `@view()` tag (`@colyseus/schema` `build/index.mjs:1124` — `isFiltered = this.isFiltered || (this.metadata?.[index]?.tag !== undefined)`). So the five root collections at `GameState.ts:21-25` (`players`, `mobs`, `npcs`, `projectiles`, `zoneEffects`) must each gain `@view()`. **A client that is never assigned a view then receives nothing** — which is why the own-entity invariant test below exists.
+
+**Changed — `src/codegen/isolate-schemas.ts`** ← *missing from the original draft*
+
+The C# codegen isolator copies every decorator verbatim (`isolate-schemas.ts:56-59`) but seeds its import set with only `['Schema', 'type']` (`:44`, plus `ArraySchema`/`MapSchema` at `:64-65`). Adding `@view()` emits it into `generated/.schema-src/GameState.ts` **with no `view` import**, breaking `npm run client:csharp` and the drift gate `scripts/codegen/check_drift.sh`. One-line fix, but it must be in the same commit as the schema change.
 
 **Changed — `rooms/GameRoom.ts`**
 
-- `onJoin` creates the client's view; `onLeave` disposes it.
+- `onJoin` (`:165`) creates the client's view; `onLeave` (`:199`) disposes it. `client.view` is the documented seam (`@colyseus/core@0.17.44 build/Transport.d.ts:95`).
 - The interest update slot is added to the simulation pass.
+- **`maxClients = 1` (`:56`) has to become config-driven** — see [Testing](#testing) below.
 
 **Changed — `rooms/systems/GameSimulationSystem.ts`**
 
-- One new ordered step, after entity updates and before patch encoding, so views reflect post-simulation positions.
+- One new ordered step, after entity updates and before patch encoding, so views reflect post-simulation positions. The existing single ordered pass is `GameSimulationSystem.ts:7-41`.
+
+**Changed — `config/gameConfig.ts`**
+
+- `GAME_CONFIG` is declared `as const` (`:25`). Adding env-overridable AOI keys means either dropping `as const` or introducing a parallel mutable object; pick one deliberately.
+
+### The phasing hook (I-053)
+
+I-053 asks for **phasing** — two players in one room seeing different world contents based on progression, not distance. Triage verdict: **a rider on this stage, not a duplicate of it.**
+
+`StateView` is predicate-agnostic — `add(obj: Ref, tag?: number)` (`build/encoder/StateView.d.ts:51`) takes any ref, and nothing in the API is distance-aware. So one view per client can carry both predicates by intersection: `visible = nearby(x, y, r) ∩ phaseVisible(player)`. **But** if `InterestManager` owns the view authoritatively and recomputes it from the spatial hash every tick, any phase-driven `add()` is silently `remove()`d on the next tick. Hence the pluggable predicate above.
+
+Two hard limits, recorded here so Stage 1 does not over-promise:
+
+- **A view can hide a field; it cannot give client A value X and client B value Y for the same ref+field.** `Encoder` holds a single `state` tree (`build/encoder/Encoder.d.ts:11`) and `encodeView` encodes from it (`:20`). Divergent world *content* must be modelled as **two entity instances**, not one field with two values.
+- **Physics is not view-filtered.** Two phase-variants of an NPC means two dynamic Planck bodies in one world, and a phase-A player would physically collide with the phase-B body. No stage in this design addresses that; it needs a Planck collision-filter category per phase.
+
+Everything else I-053 needs is outside this design: the room has **no progression state at all** (`GameRoom.onJoin` fetches only a `LoadoutSnapshot`, `GameRoom.ts:185` → `src/meta/applyLoadout.ts`; quest state lives in `nakama/src/questEngine.ts`), so the phase predicate has no input until a new Nakama RPC and join-time fetch exist.
 
 ### Data flow
 
@@ -262,12 +295,20 @@ Entities are added at `aoiRadius` and removed at `aoiRadius × aoiHysteresis` (d
 <strong>Output artifact:</strong> a capacity table — for each (players, mobs) pair, whether p95 tick duration fits inside the 50 ms budget. <strong>This table sets <code>cellSize</code>.</strong> Without it, Stage 3 is guesswork.
 </div>
 
+<div class="callout warn">
+<strong>The harness is not "just write a file" — the repo has no tooling for it.</strong> <code>@colyseus/testing</code> is <strong>not installed</strong> (<code>colyseus-server/package.json:39-56</code> — devDeps are jest / ts-jest / ts-node / ts-morph only). <code>colyseus.js</code> is a runtime dependency (<code>:34</code>) but is pinned at <code>^0.16.19</code> against a <strong>0.17</strong> server — an unflagged version skew. Two viable paths: add <code>@colyseus/testing</code>, or hand-roll an in-process harness instantiating <code>GameRoom</code> + <code>GameSimulationSystem</code> directly, the pattern <code>src/tests/game-simulation-integration.test.ts</code> and <code>src/tests/f018-harness.ts</code> already prove. Note that <strong>snapshot bytes per client — the single most important number here — cannot be measured without real clients or a hand-driven <code>Encoder</code></strong>. Decide which before Stage 1 starts.
+</div>
+
 ### Testing
 
 - Membership: an entity crossing into/out of `aoiRadius` is added/removed exactly once; hysteresis prevents oscillation.
 - Correctness: a client's decoded state contains exactly the expected set.
 - Bandwidth: an assertion that snapshot bytes with AOI enabled are materially smaller than without, at a fixed entity count — the regression guard for the whole stage.
 - Own-entity invariant: a player's own entity is **always** in its view regardless of geometry.
+
+<div class="callout danger">
+<strong><code>maxClients = 1</code> makes half of these tests impossible today.</strong> <code>GameRoom.ts:56</code> seats one client. The membership and bandwidth tests both need ≥2 seated clients, and <code>maxClients = 1</code> is load-bearing for the current single-player debug posture (<code>gameConfig.ts:15</code> <code>mobCount: 1</code>) that the existing <strong>80</strong> test files were written under. Stage 1 must pick one: <strong>(i)</strong> make <code>maxClients</code> config-driven and prove the full suite still passes, or <strong>(ii)</strong> test <code>InterestManager</code> + <code>StateView</code> in isolation against synthetic refs, with no real room. The original draft assumed multi-client tests were already possible.
+</div>
 
 ---
 
@@ -291,7 +332,7 @@ Residency is `@type`-annotated and replicated, because the client must render gh
 
 **Changed — every consumer of the raw maps**
 
-`GameSimulationSystem` currently iterates `state.players`, `state.mobs`, `state.npcs`, and `state.projectiles` wholesale (`rooms/systems/GameSimulationSystem.ts:44-90`). These become local-only iterations. The same change applies in `AIModule` / `AIWorldInterface`, `MobLifeCycleManager`, `ZoneEffectManager`, `BattleModule`, and `ProjectileManager`.
+`GameSimulationSystem` currently iterates `state.players`, `state.mobs`, `state.npcs`, and `state.projectiles` wholesale (`rooms/systems/GameSimulationSystem.ts` — `updatePlayers:51`, `updateMobs:83`, `updateNPCs:93`). These become local-only iterations. The same change applies in `AIModule` / `AIWorldInterface`, `MobLifeCycleManager`, `ZoneEffectManager`, `BattleModule`, and `ProjectileManager`.
 
 **New — the ghost-mutation guard**
 
@@ -326,7 +367,7 @@ Pure functions, no I/O: `cellForPoint(x, y)`, `neighboursOf(cell)`, `isInBand(en
 
 **New — `src/shard/ShardLink.ts`**
 
-Transport interface — `publish(channel, payload)` and `subscribe(channel, handler)` — with a Redis implementation over `@colyseus/redis-presence` (already installed at `node_modules/@colyseus/redis-presence`). One channel per **unordered adjacent pair**, e.g. `link:world-01:1,1|2,1`, so a shard subscribes to at most 8 channels.
+Transport interface — `publish(channel, payload)` and `subscribe(channel, handler)` — with a Redis implementation over `@colyseus/redis-presence` — **which is NOT installed**. `require.resolve('@colyseus/redis-presence')` from `colyseus-server` fails with `MODULE_NOT_FOUND`; it exists only inside the `colyseus` bundle's private pnpm tree, and resolves there to **0.16.4**, not the `^0.17.7` that `colyseus@0.17.10` declares (same skew for `redis-driver`: 0.16.1). Stage 3 must add it as a direct dependency *and* resolve that version skew — it is not the solved prerequisite the original draft assumed. One channel per **unordered adjacent pair**, e.g. `link:world-01:1,1|2,1`, so a shard subscribes to at most 8 channels.
 
 Keeping this an interface is what makes the Redis bottleneck (lesser risk) escapable later without touching callers.
 
@@ -582,6 +623,7 @@ Prometheus metrics, extending the existing exporter:
 2. **Do mobs hand off, or are they cell-bound?** Cell-bound mobs (they turn back at the border, like the existing `BoundaryAwareBehavior`) are far simpler and remove most mob handoff traffic. Handing off mobs is more believable. **Recommendation: cell-bound in Stage 4, revisit after.**
 3. **Does world state persist across shard restart?** Players persist through Nakama already. Mobs are proposed as ephemeral and respawned from spawn tables. Persistent world objects — dropped loot, player structures — are undesigned and out of scope here.
 4. **Diagonal neighbours** — a corner cell has 8 neighbours. Publishing to all 8 is simplest; publishing only to the 4 edge-adjacent leaves corner gaps. **Recommendation: all 8**, and measure the cost.
+5. **Phasing (I-053)** — is phasing in Season 1 scope at all? Stage 1 must ship the pluggable predicate either way (it is cheap now, expensive later), but per-phase Planck collision filtering and the Nakama progression fetch are only worth building if the answer is yes. **This is a content/design call, not an engineering one.**
 
 ---
 
@@ -589,7 +631,7 @@ Prometheus metrics, extending the existing exporter:
 
 | Stage | New | Changed |
 |---|---|---|
-| 1 | `src/interest/InterestManager.ts`, `src/tests/load/roomLoad.harness.ts` | `rooms/GameRoom.ts`, `rooms/systems/GameSimulationSystem.ts`, `config/gameConfig.ts` |
+| 1 | `src/interest/InterestManager.ts`, `src/tests/load/roomLoad.harness.ts` | **`schemas/GameState.ts`** (`@view()` on the 5 root collections), **`src/codegen/isolate-schemas.ts`** (emit the `view` import), `rooms/GameRoom.ts` (view lifecycle + `maxClients`), `rooms/systems/GameSimulationSystem.ts`, `config/gameConfig.ts` |
 | 2 | ghost-mutation guard | `schemas/WorldObject.ts`, `schemas/GameState.ts`, `rooms/systems/GameSimulationSystem.ts`, `physics/PlanckPhysicsManager.ts`, `ai/AIModule.ts`, `ai/AIWorldInterface.ts`, `modules/MobLifeCycleManager.ts`, `modules/ZoneEffectManager.ts`, `modules/BattleModule.ts`, `modules/ProjectileManager.ts` |
 | 3 | `src/shard/ShardTopology.ts`, `src/shard/ShardLink.ts`, `src/shard/GhostSync.ts`, `contracts/src/shard/*` | `rooms/GameRoom.ts`, `config/mapConfig.ts`, deployment manifests |
 | 4 | `src/shard/HandoffCoordinator.ts`, conformance harness | `rooms/GameRoom.ts`, `rooms/handlers/PlayerInputHandler.ts`, Nakama RPC module |
