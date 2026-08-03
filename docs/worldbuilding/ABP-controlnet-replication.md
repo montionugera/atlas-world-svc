@@ -107,6 +107,26 @@ list work, not settled.
 All 16 cells completed. **Zero failures, zero OOMs** — cuda:0's ~3.8 GB free was sufficient for
 every base-pass cell at 8 steps (15–22 s each).
 
+### The exhibit — this is the only committed visual evidence
+
+![Replication contact sheet: 4 subjects x 4 cells](ABP-controlnet-replication-sheet.png)
+
+**Read the grid as one row per subject, four cells per row** — seeds 12345 and 741852, each at
+strength 0.30 then 0.40. Row 1 Millcross, row 2 Embervale, row 3 Rooktide, row 4 Cindervast.
+
+Several findings below are legible directly in this sheet, so they can be checked rather than taken
+on trust: **row 2 shows Embervale rendering as a monumental stepped pyramid in all four cells** (the
+composition failure re-attributed to block-in authoring); **row 2's first cell carries hallucinated
+banner text**; **row 3's third cell contains a bright red modern tractor** — the modern-world
+contamination the `styleGuard` negative list did not suppress; and **row 1 shows the vehicle
+contamination** in the Millcross cells.
+
+The 16 full-resolution PNGs live under `tools/art-forge/out/`, which is **git-ignored by design** —
+that directory is the forge's staging area for sweeps and rejects, and `intake-art.mjs` is the only
+sanctioned path for a generated image to enter the repo. None of these were intaked: they carry
+known artifacts and are evaluation material, not shipped art. This downsampled sheet is therefore
+the single durable exhibit, and a future reader cannot independently re-examine anything beyond it.
+
 | subject | seed | strength | result | notes |
 | --- | --- | --- | --- | --- |
 | A1-ART-02 Millcross | 12345 | 0.30 | ok | lattice pylons visible, bg right |
