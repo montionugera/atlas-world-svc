@@ -753,6 +753,18 @@ function checkBestiaryPlacement(opts) {
         fail(`${label}: design "${p.design}" has region "${design.region}", not "${doc.bestiaryRegion}"`);
     }
 
+    // G4 — completeness. This is what makes the file trustworthy: the roster
+    // is the authority on which designs belong to this zone, and every one of
+    // them must appear here exactly once. Missing = the zone is not placed;
+    // duplicated = two locations claim the same design.
+    for (const [design, group] of findDuplicateGroups(doc.placements, (p) => p.design))
+      fail(`${label}: design "${design}" placed ${group.length} times`);
+
+    const placed = new Set(doc.placements.map((p) => p.design));
+    for (const d of zoneDesigns)
+      if (!placed.has(d.id))
+        fail(`${label}: design "${d.id}" (region "${doc.bestiaryRegion}") is not placed`);
+
     count++;
   }
   return count;

@@ -147,3 +147,26 @@ test("G3: a placement naming an unknown design fails", () => {
   assert.equal(r.code, 1);
   assert.match(r.out, /design "mob-does-not-exist" not in bestiary\.json/);
 });
+
+test("G4: a zone design left unplaced fails", () => {
+  const doc = placement();
+  doc.placements = [{ design: "mob-veil-cub", tier: "verge", locale: "l" }];
+  const r = runGate(fixture({ placements: { "placement-thornveil.json": doc } }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /design "mob-bramble-warden" .* is not placed/);
+});
+
+test("G4: a design placed twice fails", () => {
+  const doc = placement();
+  doc.placements.push({ design: "mob-veil-cub", tier: "route", locale: "l" });
+  const r = runGate(fixture({ placements: { "placement-thornveil.json": doc } }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /design "mob-veil-cub" placed 2 times/);
+});
+
+test("G4: a design from another region is not required here", () => {
+  // mob-millpond-gnawer is region millcross; a thornveil file must not be
+  // asked to place it, and must not fail for omitting it.
+  const r = runGate(fixture({ placements: { "placement-thornveil.json": placement() } }));
+  assert.equal(r.code, 0);
+});
