@@ -736,6 +736,28 @@ function checkBestiaryPlacement(opts) {
       continue; // every remaining rule is relative to the zone
     }
 
+    // G8 — the route band is the geography's band, asserted across files
+    // rather than retyped from prose.
+    const geoBand = Array.isArray(zone.levelBand) ? zone.levelBand : null;
+    if (!geoBand || geoBand.length !== 2)
+      fail(`${label}: zone "${doc.zone}" has no two-element levelBand in the geography`);
+    else if (doc.routeBand[0] !== geoBand[0] || doc.routeBand[1] !== geoBand[1])
+      fail(`${label}: routeBand [${doc.routeBand}] != geography levelBand [${geoBand}] for zone "${doc.zone}"`);
+
+    // G7 — tiers must ascend, be contiguous, and not overlap. A gap or an
+    // overlap means some level has no tier, or two.
+    const tiers = doc.depthTiers;
+    const seenTierIds = new Set();
+    for (const t of tiers) {
+      if (seenTierIds.has(t.id)) fail(`${label}: duplicate depthTier id "${t.id}"`);
+      seenTierIds.add(t.id);
+      if (t.bandCeil < t.bandFloor)
+        fail(`${label}: depthTier "${t.id}" bandCeil ${t.bandCeil} < bandFloor ${t.bandFloor}`);
+    }
+    for (let i = 1; i < tiers.length; i++)
+      if (tiers[i].bandFloor !== tiers[i - 1].bandCeil + 1)
+        fail(`${label}: depthTiers "${tiers[i - 1].id}" -> "${tiers[i].id}" not contiguous (${tiers[i - 1].bandCeil} -> ${tiers[i].bandFloor})`);
+
     // G2 — bestiaryRegion is a region key the roster actually uses
     const zoneDesigns = [...designs.values()].filter((d) => d.region === doc.bestiaryRegion);
     if (!zoneDesigns.length)
@@ -751,6 +773,22 @@ function checkBestiaryPlacement(opts) {
       // and it belongs to this zone's region
       if (design.region !== doc.bestiaryRegion)
         fail(`${label}: design "${p.design}" has region "${design.region}", not "${doc.bestiaryRegion}"`);
+
+      // G5 — the tier is one this file declares
+      const tier = tiers.find((t) => t.id === p.tier);
+      if (!tier) {
+        fail(`${label}: design "${p.design}" tier "${p.tier}" is not a declared depthTier`);
+        continue;
+      }
+
+      // G6 — the design's band must OVERLAP its tier. Bands are 10 wide and
+      // tier edges do not fall on multiples of 10, so straddling is normal and
+      // legal; only a fully disjoint pair is an error.
+      const [bandLo, bandHi] = String(design.levelBand).split("-").map(Number);
+      if (!Number.isFinite(bandLo) || !Number.isFinite(bandHi))
+        fail(`${label}: design "${p.design}" has unparseable levelBand "${design.levelBand}"`);
+      else if (bandHi < tier.bandFloor || bandLo > tier.bandCeil)
+        fail(`${label}: design "${p.design}" band ${design.levelBand} is disjoint from tier "${p.tier}" (${tier.bandFloor}-${tier.bandCeil})`);
     }
 
     // G4 — completeness. This is what makes the file trustworthy: the roster

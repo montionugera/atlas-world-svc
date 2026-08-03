@@ -170,3 +170,45 @@ test("G4: a design from another region is not required here", () => {
   const r = runGate(fixture({ placements: { "placement-thornveil.json": placement() } }));
   assert.equal(r.code, 0);
 });
+
+test("G5: an undeclared tier fails", () => {
+  const doc = placement();
+  doc.placements[0].tier = "basement";
+  const r = runGate(fixture({ placements: { "placement-thornveil.json": doc } }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /tier "basement" is not a declared depthTier/);
+});
+
+test("G6: a band disjoint from its tier fails", () => {
+  const doc = placement();
+  // mob-veil-cub is band 1-10; tier route is 15-28 — no overlap at all.
+  doc.placements[0].tier = "route";
+  const r = runGate(fixture({ placements: { "placement-thornveil.json": doc } }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /band 1-10 is disjoint from tier "route"/);
+});
+
+test("G6: a band straddling a tier edge is legal", () => {
+  // mob-bramble-warden is band 21-30; tier route is 15-28. It straddles the
+  // 28/29 edge and must be accepted — straddling is why placement is authored
+  // rather than computed.
+  const r = runGate(fixture({ placements: { "placement-thornveil.json": placement() } }));
+  assert.equal(r.code, 0);
+});
+
+test("G7: non-contiguous tiers fail", () => {
+  const doc = placement({ depthTiers: [
+    { id: "verge", label: "V", bandFloor: 1, bandCeil: 14, summary: "s" },
+    { id: "route", label: "R", bandFloor: 20, bandCeil: 28, summary: "s" },
+  ] });
+  const r = runGate(fixture({ placements: { "placement-thornveil.json": doc } }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /not contiguous \(14 -> 20\)/);
+});
+
+test("G8: routeBand disagreeing with the geography fails", () => {
+  const doc = placement({ routeBand: [10, 40] });
+  const r = runGate(fixture({ placements: { "placement-thornveil.json": doc } }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /routeBand \[10,40\] != geography levelBand \[15,28\]/);
+});
