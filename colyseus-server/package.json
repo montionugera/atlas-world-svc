@@ -10,6 +10,7 @@
     "dev:watch": "nodemon --exec ts-node src/index.ts --watch src --ext ts,js",
     "test": "jest",
     "test:watch": "jest --watch",
+    "load": "ts-node src/tests/load/roomLoad.harness.ts",
     "test:coverage": "jest --coverage",
     "test:coverage:ci": "jest --coverage --coverageReporters=text --coverageReporters=lcov",
     "format": "prettier --write src/**/*.ts",

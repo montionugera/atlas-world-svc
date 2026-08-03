@@ -345,7 +345,7 @@
     "id": "I-058",
     "title": "Seamless large-world scaling: AOI (StateView) + shard grid + border ghosts + authority handoff + cross-shard combat",
     "created_at": "2026-08-01T15:22:00.133551+00:00",
-    "promoted_to": null
+    "promoted_to": "F-027"
   },
   {
     "id": "I-059",
@@ -405,6 +405,48 @@
     "id": "I-068",
     "title": "Assert content/season-1-budget.json against DR-003 section 3 \u2014 nothing checks the two agree, which is the exact drift the JSON was created to prevent and which DR-003 itself declares impossible; a ~15-line test on {id,target} pairs closes it (string equality on source will not work, 3 of 8 cells are normalized prose)",
     "created_at": "2026-08-01T17:42:27.906515+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-069",
+    "title": "Simulation clock injection: gameplay takes time as an input, not from a global clock",
+    "created_at": "2026-08-02T14:07:57.116991+00:00",
+    "promoted_to": "F-028"
+  },
+  {
+    "id": "I-070",
+    "title": "GameSimulationSystem's single try/catch silently drops the rest of a tick on any throw",
+    "created_at": "2026-08-02T14:07:57.810179+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-071",
+    "title": "MobLifeCycleManager mob ids use a 2-char suffix and collide on burst spawn",
+    "created_at": "2026-08-02T14:07:58.445009+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-072",
+    "title": "aoi_snapshot_bytes metric has no code \u2014 the Stage 1 payoff is invisible in production",
+    "created_at": "2026-08-02T14:08:04.729868+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-073",
+    "title": "No nightly CI job runs the load harness, so the capacity table will silently rot",
+    "created_at": "2026-08-02T14:08:05.318455+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-074",
+    "title": "Convert remaining gameplay subsystems to SimClock (respawn, projectile lifetimes, combat scheduling)",
+    "created_at": "2026-08-02T17:15:01.530434+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-075",
+    "title": "Ban global clock reads in converted gameplay directories (eslint) and update the CLAUDE.md timing invariant",
+    "created_at": "2026-08-02T17:15:06.779570+00:00",
     "promoted_to": null
   }
 ]

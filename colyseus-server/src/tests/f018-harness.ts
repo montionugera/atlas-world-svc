@@ -54,6 +54,13 @@ import { WorldLife } from '../schemas/WorldLife'
 import { Mob } from '../schemas/Mob'
 import { Player } from '../schemas/Player'
 import { GAME_CONFIG } from '../config/gameConfig'
+import { InterestManager, InterestEntity, InterestViewer } from '../interest/InterestManager'
+import { createDistancePredicate } from '../interest/visibility'
+import {
+  collectInterestEntities as collectEntities,
+  collectInterestViewers as collectViewers,
+} from '../interest/collect'
+import { AOI_CONFIG } from '../config/aoiConfig'
 
 // ───────────────────────────────────────────────────────── the closed form ───
 
@@ -146,6 +153,9 @@ export interface TestRoom {
   projectileManager: ProjectileManager
   zoneEffectManager: ZoneEffectManager
   mobLifeCycleManager: MobLifeCycleManager
+  interestManager: InterestManager
+  collectInterestEntities(): InterestEntity[]
+  collectInterestViewers(): InterestViewer[]
 }
 
 export interface TestEnv {
@@ -181,6 +191,17 @@ export function buildTestRoom(roomId: string, mapId = 'map-test'): TestEnv {
 
   state.worldInterface.setPhysicsManager(physicsManager)
 
+  // Same construction as GameRoom.onCreate() — a harness that diverges from the
+  // room's options is a future bug, not a simplification.
+  const interestManager = new InterestManager({
+    predicate: createDistancePredicate({
+      radius: AOI_CONFIG.radius,
+      hysteresis: AOI_CONFIG.hysteresis,
+    }),
+    cellSize: AOI_CONFIG.cellSize,
+    candidateRadius: AOI_CONFIG.radius * AOI_CONFIG.hysteresis,
+  })
+
   const room: TestRoom = {
     state,
     roomId,
@@ -190,6 +211,15 @@ export function buildTestRoom(roomId: string, mapId = 'map-test'): TestEnv {
     projectileManager,
     zoneEffectManager,
     mobLifeCycleManager,
+    interestManager,
+    // Mirrors GameRoom.collectInterestEntities()/collectInterestViewers() by
+    // delegating to the same shared collector GameRoom uses.
+    collectInterestEntities(): InterestEntity[] {
+      return collectEntities(state)
+    },
+    collectInterestViewers(): InterestViewer[] {
+      return collectViewers(state)
+    },
   }
 
   // Silence ambient spawning. MobLifeCycleManager.update() runs every tick from the
@@ -201,6 +231,12 @@ export function buildTestRoom(roomId: string, mapId = 'map-test'): TestEnv {
   // spliced because getMobSpawnAreasForMap returns the shared MAP_CONFIG array.
   ;(mobLifeCycleManager as unknown as { spawnAreas: unknown[] }).spawnAreas = []
 
+  // `room` is a TestRoom, not a real GameRoom (no Colyseus internals, no other
+  // handlers/managers) — `as never` bypasses the structural mismatch. This is safe
+  // because RoomEventHandler/GameSimulationSystem only ever read the fields/methods
+  // TestRoom actually declares (state, managers, interestManager, the two
+  // collectors); TestRoom is kept in sync with what GameRoom exposes for that
+  // reason.
   const handler = new RoomEventHandler(room as never)
   handler.register()
 

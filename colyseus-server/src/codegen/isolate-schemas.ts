@@ -41,7 +41,10 @@ export function isolateSchemas(inputDir: string, outputDir: string): string[] {
     if (classes.length === 0) continue
 
     const keptSchemaImports = new Set<string>() // sibling schema class names to import
-    const primitives = new Set<string>(['Schema', 'type']) // always from @colyseus/schema
+    // `view` is included because GameState's root collections carry @view() for
+    // AOI filtering, and decorators are copied verbatim at :56-59. Omitting it
+    // emits generated schema sources that reference an unimported `view`.
+    const primitives = new Set<string>(['Schema', 'type', 'view'])
     const bodies: string[] = []
 
     for (const cls of classes) {

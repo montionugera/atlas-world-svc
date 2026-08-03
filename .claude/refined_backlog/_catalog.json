@@ -289,12 +289,33 @@
   },
   {
     "id": "F-026",
-    "title": "Adopt the measured environment art recipe as a named profile (schnell + ControlNet depth strength 0.30, denoise 1.0, hires 4x-UltraSharp @0.40), build its runner, replicate the measurement, and scale the storybook to observe it",
+    "title": "Environment art recipe as a named profile (forge.config.json v2: character + environment, no implicit default) + storybook group tabs/filter + module split. RUNNER AND REPLICATION DEFERRED - blocked on the ComfyUI box being unreachable; blockin.mjs and generate/env.mjs are NOT built.",
     "from_idea": "I-049",
     "created_at": "2026-08-02T05:31:38.978685+00:00",
     "claimed_by": "claude-a6c35399",
     "status": "claimed",
     "release_version": null,
     "claimed_at": "2026-08-02T06:29:58.748099+00:00"
+  },
+  {
+    "id": "F-027",
+    "title": "Seamless large-world scaling: AOI (StateView) + shard grid + border ghosts + authority handoff + cross-shard combat",
+    "from_idea": "I-058",
+    "created_at": "2026-08-02T07:03:28.091992+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.6",
+    "claimed_at": "2026-08-02T07:03:35.678530+00:00",
+    "shipped_at": "2026-08-02T14:16:01.400217+00:00"
+  },
+  {
+    "id": "F-028",
+    "title": "Simulation clock injection: gameplay takes time as an input, not from a global clock",
+    "from_idea": "I-069",
+    "created_at": "2026-08-02T17:00:10.647023+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-08-02T17:05:03.386531+00:00"
   }
 ]
