@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import { loadForge } from "../generate/charsheet.mjs";
 import {
   ENV_NODE,
+  HIRES_NODE,
   buildEnvGraph,
+  buildEnvHiresGraph,
   buildEnvNegative,
   buildEnvPositive,
   formatStrength,
@@ -136,4 +138,103 @@ test("validateBrief rejects an empty/missing masses — depthPlanesFromBrief wou
 test("validateBrief accepts a well-formed brief and returns it unchanged", () => {
   const brief = { prompt: "a town", masses: [{ name: "x" }] };
   assert.equal(validateBrief(brief, "A1-ART-99", "/fake/A1-ART-99.json"), brief);
+});
+
+/* --------------------------- hires graph --------------------------- */
+
+const hiresGraph = buildEnvHiresGraph({
+  brief: { positive: "a harbour town", negative: "no cars", id: "A1-ART-02" },
+  seed: 12345,
+  baseImage: "art-forge/A1-ART-02-seed12345-s0.30.png",
+  forge,
+});
+
+test("hires graph shape: UpscaleModelLoader -> ImageUpscaleWithModel -> ImageScale -> VAEEncode -> KSampler -> VAEDecode -> SaveImage", () => {
+  const classTypes = Object.fromEntries(
+    Object.entries(hiresGraph).map(([id, n]) => [id, n.class_type]),
+  );
+  assert.equal(classTypes[HIRES_NODE.UPSCALE_LOAD], "UpscaleModelLoader");
+  assert.equal(classTypes[HIRES_NODE.UPSCALE_MODEL], "ImageUpscaleWithModel");
+  assert.equal(classTypes[HIRES_NODE.SCALE], "ImageScale");
+  assert.equal(classTypes[HIRES_NODE.ENCODE], "VAEEncode");
+  assert.equal(classTypes[HIRES_NODE.KSAMPLER], "KSampler");
+  assert.equal(classTypes[HIRES_NODE.DECODE], "VAEDecode");
+  assert.equal(classTypes[HIRES_NODE.SAVE], "SaveImage");
+
+  const upscale = hiresGraph[HIRES_NODE.UPSCALE_MODEL];
+  assert.deepEqual(upscale.inputs.upscale_model, [HIRES_NODE.UPSCALE_LOAD, 0]);
+  assert.deepEqual(upscale.inputs.image, [HIRES_NODE.LOAD_BASE, 0]);
+
+  const scale = hiresGraph[HIRES_NODE.SCALE];
+  assert.deepEqual(scale.inputs.image, [HIRES_NODE.UPSCALE_MODEL, 0]);
+
+  const encode = hiresGraph[HIRES_NODE.ENCODE];
+  assert.deepEqual(encode.inputs.pixels, [HIRES_NODE.SCALE, 0]);
+
+  const ks = hiresGraph[HIRES_NODE.KSAMPLER];
+  assert.deepEqual(ks.inputs.latent_image, [HIRES_NODE.ENCODE, 0]);
+
+  const decode = hiresGraph[HIRES_NODE.DECODE];
+  assert.deepEqual(decode.inputs.samples, [HIRES_NODE.KSAMPLER, 0]);
+
+  const save = hiresGraph[HIRES_NODE.SAVE];
+  assert.deepEqual(save.inputs.images, [HIRES_NODE.DECODE, 0]);
+});
+
+test("hires graph loads the re-uploaded base image, not the depth control image", () => {
+  const load = hiresGraph[HIRES_NODE.LOAD_BASE];
+  assert.equal(load.class_type, "LoadImage");
+  assert.equal(load.inputs.image, "art-forge/A1-ART-02-seed12345-s0.30.png");
+});
+
+test("hires values come from forge.config.json profiles.environment.hires — steps 10, denoise 0.40, upscaler filename with extension", () => {
+  assert.equal(forge.profile.hires.steps, 10);
+  assert.equal(forge.profile.hires.denoise, 0.4);
+  assert.equal(forge.profile.hires.upscaler, "4x-UltraSharp.pth");
+
+  const upscaleLoad = hiresGraph[HIRES_NODE.UPSCALE_LOAD];
+  assert.equal(upscaleLoad.inputs.model_name, forge.profile.hires.upscaler);
+  assert.equal(upscaleLoad.inputs.model_name, "4x-UltraSharp.pth");
+
+  const ks = hiresGraph[HIRES_NODE.KSAMPLER];
+  assert.equal(ks.inputs.steps, forge.profile.hires.steps);
+  assert.equal(ks.inputs.denoise, forge.profile.hires.denoise);
+  assert.equal(ks.inputs.steps, 10);
+  assert.equal(ks.inputs.denoise, 0.4);
+});
+
+test("hires target resolution comes from config — 1.5x base (1920x1248), not a naive 4x (5120x3328)", () => {
+  const scale = hiresGraph[HIRES_NODE.SCALE];
+  assert.equal(scale.inputs.width, forge.profile.hires.width);
+  assert.equal(scale.inputs.height, forge.profile.hires.height);
+  assert.equal(scale.inputs.width, 1920);
+  assert.equal(scale.inputs.height, 1248);
+  assert.equal(scale.inputs.upscale_method, "lanczos");
+  assert.equal(scale.inputs.crop, "disabled");
+});
+
+test("hires sampler reuses the base sampler's cfg/sampler_name/scheduler — only steps/denoise change", () => {
+  const ks = hiresGraph[HIRES_NODE.KSAMPLER];
+  assert.equal(ks.inputs.cfg, forge.profile.sampler.cfg);
+  assert.equal(ks.inputs.sampler_name, forge.profile.sampler.samplerName);
+  assert.equal(ks.inputs.scheduler, forge.profile.sampler.scheduler);
+  assert.equal(ks.inputs.seed, 12345);
+});
+
+test("hires sampler conditions from plain CLIPTextEncode, not a ControlNetApplyAdvanced node — the hires graph carries no ControlNet nodes at all", () => {
+  assert.equal(
+    Object.values(hiresGraph).some((n) => n.class_type === "ControlNetApplyAdvanced"),
+    false,
+    "the hires pass must not re-apply ControlNet — see buildEnvHiresGraph's doc-comment",
+  );
+  const ks = hiresGraph[HIRES_NODE.KSAMPLER];
+  assert.deepEqual(ks.inputs.positive, [HIRES_NODE.POS, 0]);
+  assert.deepEqual(ks.inputs.negative, [HIRES_NODE.NEG, 0]);
+  assert.equal(hiresGraph[HIRES_NODE.POS].inputs.text, "a harbour town");
+  assert.equal(hiresGraph[HIRES_NODE.NEG].inputs.text, "no cars");
+});
+
+test("hires output filename is distinct from the base pass filename for the same seed", () => {
+  const save = hiresGraph[HIRES_NODE.SAVE];
+  assert.equal(save.inputs.filename_prefix, "art-forge/env/A1-ART-02-seed12345-hires");
 });

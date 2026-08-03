@@ -76,7 +76,14 @@
         "startPercent": 0.0,
         "endPercent": 1.0
       },
-      "hires": { "upscaler": "4x-UltraSharp", "steps": 10, "denoise": 0.4 },
+      "hires": {
+        "upscaler": "4x-UltraSharp.pth",
+        "steps": 10,
+        "denoise": 0.4,
+        "width": 1920,
+        "height": 1248,
+        "_note": "Second-pass hires-fix, ported from docs/worldbuilding/ABP-flux-eval.md (the graph's origin — 'The working graph' section, nodes 11-17) and reconfirmed unchanged by ABP-anchor-model-choice.md and ABP-controlnet-rescue.md ('Hires pass 10 steps @ 0.40, unchanged from both prior ABPs'). upscaler filename VERIFIED against the live ComfyUI server (v0.24.1) via GET /object_info/UpscaleModelLoader on 2026-08-03 — the installed file is '4x-UltraSharp.pth' WITH the extension; the prior value here ('4x-UltraSharp', no extension) was never queued against a real server and would have failed the combo-option check. width/height (1920x1248) are the ABP's own measured choice, NOT a naive 4x of the 1280x832 base (5120x3328): 4x-UltraSharp always outputs 4x in pixel space via ImageUpscaleWithModel, then ImageScale (lanczos) resamples DOWN to 1.5x base before VAEEncode/KSampler — 'the upscaler still does the real work; the downsample just makes it fit' (ABP-flux-eval.md). steps/denoise are already the FINAL KSampler values (not native-steps inputs to a formula) — see that doc's 'effective steps' explanation for why 10/0.40 restores schnell's native ~4 effective steps at low denoise rather than doing nothing."
+      },
       "styleGuard": {
         "negative": [
           "no cars",

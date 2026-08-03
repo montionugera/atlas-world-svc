@@ -89,19 +89,39 @@ suggestions.
 `forge.config.json` also carries a measured recipe for environment
 concept art: **flux1-schnell-fp8**, txt2img, ControlNet-depth at
 **strength 0.30** (the usable window is 0.30–0.40 — the conventional
-0.8–1.0 collapses schnell into flat vector art), over the base pass only
-(the hires pass at denoise 0.4 described in the config is not built by
-`env.mjs` yet). See `profiles.environment` in `forge.config.json` for the
-full values and `profiles.environment._note` for the measurement
-provenance and caveats. The checkpoint (`flux1-schnell-fp8.safetensors`)
-and ControlNet (`flux-controlnet-union-pro-2.0.safetensors`) filenames
-are **verified** against the live ComfyUI server (v0.24.1) — see
-`profiles.environment._note` for the verification method and date.
+0.8–1.0 collapses schnell into flat vector art), plus an **opt-in hires
+pass** (`--hires`): a second job that re-uploads the base PNG and refines
+it through `UpscaleModelLoader` (`4x-UltraSharp.pth`) ->
+`ImageUpscaleWithModel` -> `ImageScale` (down to 1920x1248, 1.5x base — not
+a naive 4x, which would be 5120x3328 and does not fit the box's VRAM) ->
+`VAEEncode` -> a second `KSampler` at **10 steps, denoise 0.40**. See
+`profiles.environment` in `forge.config.json` for the full values and
+`profiles.environment._note`/`profiles.environment.hires._note` for the
+measurement provenance and caveats. The checkpoint
+(`flux1-schnell-fp8.safetensors`), ControlNet
+(`flux-controlnet-union-pro-2.0.safetensors`) and hires upscaler
+(`4x-UltraSharp.pth`) filenames are all **verified** against the live
+ComfyUI server (v0.24.1) — see `profiles.environment._note` and
+`profiles.environment.hires._note` for the verification method and date.
+
+`--hires` is **off by default**. The 16 base-pass cells already measured
+in `docs/worldbuilding/ABP-controlnet-replication.md` must stay
+reproducible from committed code exactly as they were generated, so
+opting into the hires pass never changes what a plain `env.mjs` invocation
+produces. A real hires generation for A1-ART-02 seed 12345
+(2026-08-03) confirmed the second pass genuinely resolves more detail —
+tent seams, windmill roof shingles and clock face, individual figures in
+the cart queue — over the base pass at the same crop, with no OOM (this
+box's tight VRAM, ~3.8 GB free on the pinned GPU, was the open risk going
+in) and no visible over-sharpening/checkerboard artifact on this subject.
+Modern-contamination artifacts already present in the base pass (a
+lattice-pylon silhouette, vehicle-like shapes) carry through unchanged —
+the hires pass refines detail, it does not fix content.
 
 `blockin.mjs` (the depth control image producer) and `generate/env.mjs`
-(the schnell + depth-ControlNet graph runner) both exist and are the
-sanctioned way to run this profile. Access is the same as "Stage: ACCESS"
-above — run on mont-pc itself, or tunnel with
+(the schnell + depth-ControlNet graph runner, plus the opt-in hires pass)
+both exist and are the sanctioned way to run this profile. Access is the
+same as "Stage: ACCESS" above — run on mont-pc itself, or tunnel with
 `ssh -N -L 8188:127.0.0.1:8188 Mont@100.66.190.100`. The server binds
 `--listen 127.0.0.1`, so the Tailscale address `100.66.190.100:8188`
 itself has never been directly reachable — see `forge.config.json`'s

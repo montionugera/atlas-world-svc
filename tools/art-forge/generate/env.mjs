@@ -36,14 +36,25 @@
  * (forge.config.json `profiles.environment.styleGuard`) — see their
  * doc-comments for what was included/excluded and why.
  *
- * The hires pass described in the ABP is a SECOND graph and is not built
- * here yet — this file covers the base pass only.
+ * The hires pass described in the ABP (`profiles.environment.hires`) is a
+ * SECOND graph — `buildEnvHiresGraph` below — run as its own ComfyUI job
+ * against the just-downloaded base PNG, OPT IN via `--hires`. It is not
+ * queued automatically: the 16 base-pass cells already measured in
+ * docs/worldbuilding/ABP-controlnet-replication.md must stay reproducible
+ * from committed code exactly as they were generated, so nobody's `--hires`
+ * experiment silently changes what that replication measured.
+ *
+ * The hires graph is deliberately a SEPARATE graph submission rather than
+ * extra nodes appended to the base graph (which is how the ABP's own
+ * "one graph, two SaveImage nodes" recipe worked) — see `buildEnvHiresGraph`'s
+ * doc-comment for why, and what that costs vs. what it buys.
  *
  * NOT RUNNABLE IN CI. Needs a live GPU on mont-pc plus an SSH tunnel:
  *   ssh -N -L 8188:127.0.0.1:8188 Mont@100.66.190.100
  *
  * Usage:
  *   node generate/env.mjs --brief A1-ART-02 --seed 12345
+ *   node generate/env.mjs --brief A1-ART-02 --seed 12345 --hires
  *
  * Flags: --seed N  --timeout SECONDS (default 600)
  *        --host H  --direct  --dry-run (print the graph, queue nothing)
@@ -57,6 +68,10 @@
  *          published 0.30/0.40 replication matrix was reproducible from
  *          committed code before this flag existed — see
  *          docs/worldbuilding/ABP-controlnet-replication.md)
+ *        --hires (opt-in; queues a SECOND job after the base pass completes,
+ *          the `profiles.environment.hires` upscale+refine pass measured in
+ *          docs/worldbuilding/ABP-flux-eval.md/-anchor-model-choice.md/
+ *          -controlnet-rescue.md. Off by default — see above.)
  */
 
 import fs from "node:fs";
@@ -88,6 +103,32 @@ export const ENV_NODE = Object.freeze({
   CN_TYPE: "21",
   CN_IMAGE: "22",
   CN_APPLY: "23",
+});
+
+/**
+ * Node ids for the standalone hires graph (`buildEnvHiresGraph`). `1`, `4`,
+ * `5`, `11`-`17` intentionally match the numbering in
+ * docs/worldbuilding/ABP-flux-eval.md's "The working graph" (the origin of
+ * this hires recipe, reconfirmed unchanged by ABP-anchor-model-choice.md and
+ * ABP-controlnet-rescue.md) so the graph stays diffable against the record.
+ * `18` (LoadImage of the re-uploaded base PNG) has no ABP counterpart — the
+ * ABP's own graph fed `ImageUpscaleWithModel` straight from its base
+ * `VAEDecode` node inside the SAME graph; this graph is standalone (see
+ * `buildEnvHiresGraph`'s doc-comment for why), so it needs its own image
+ * input.
+ */
+export const HIRES_NODE = Object.freeze({
+  CKPT: "1",
+  POS: "4",
+  NEG: "5",
+  UPSCALE_LOAD: "11",
+  UPSCALE_MODEL: "12",
+  SCALE: "13",
+  ENCODE: "14",
+  KSAMPLER: "15",
+  SAVE: "16",
+  DECODE: "17",
+  LOAD_BASE: "18",
 });
 
 /**
@@ -292,6 +333,122 @@ export function buildEnvGraph({
 }
 
 /**
+ * Build the hires (upscale + refine) graph — `profiles.environment.hires`
+ * in forge.config.json. Ported from docs/worldbuilding/ABP-flux-eval.md's
+ * "The working graph" (nodes 11-17: `UpscaleModelLoader` ->
+ * `ImageUpscaleWithModel` -> `ImageScale` -> `VAEEncode` -> `KSampler` ->
+ * `VAEDecode` -> `SaveImage`), reconfirmed unchanged in
+ * ABP-anchor-model-choice.md and ABP-controlnet-rescue.md ("Hires pass 10
+ * steps @ 0.40, unchanged from both prior ABPs"). Every tunable (upscaler
+ * filename, steps, denoise, target width/height) comes from
+ * `forge.profile.hires` — nothing here restates a measured value.
+ *
+ * DESIGN CHOICE — a standalone graph, not nodes appended to the base graph.
+ * The ABP's own recipe ran base+hires as ONE graph with two `SaveImage`
+ * nodes so "hires refines the byte-identical base rather than a re-roll."
+ * This function instead takes `baseImage` — the filename of the base PNG
+ * already downloaded and re-uploaded to the ComfyUI input directory (via
+ * `uploadControlImage`, reused as-is) — and refines THAT. The refined image
+ * is still byte-identical-base-derived (same file, no regeneration); the
+ * difference is mechanical, not measurement-affecting: it reuses the
+ * existing single-purpose `runGraph`/`downloadFirstImage` transport
+ * unchanged (one graph submission -> exactly one `SaveImage` -> exactly one
+ * downloaded file) instead of teaching that shared, already-tested path to
+ * disambiguate between multiple `SaveImage` outputs in one job. The cost is
+ * one extra network round-trip (re-upload); on a home-network SSH tunnel
+ * this is negligible next to generation time.
+ *
+ * CONDITIONING CHOICE — plain `CLIPTextEncode`, not through ControlNet.
+ * None of the three ABPs' recorded hires graphs (flux-eval.md,
+ * ABP-anchor-model-choice.md, ABP-flux-dev-and-anchor.md) re-apply
+ * ControlNet in the second pass — every one samples from the same
+ * `CLIPTextEncode` nodes the base pass used, not through a
+ * `ControlNetApplyAdvanced` node. `ABP-controlnet-rescue.md` does not
+ * record the hires graph's exact wiring for the schnell+ControlNet case (it
+ * only says the hires SETTINGS — 10 steps @ 0.40 — are "unchanged from both
+ * prior ABPs"), so this is a documented, conservative choice made in the
+ * gap: at denoise 0.4 the sampler only runs the last ~40% of the trajectory,
+ * refining detail on top of an input latent whose structure was already
+ * locked in by the base pass's ControlNet-held pixels — re-applying
+ * ControlNet on a near-converged image is redundant with, and could fight,
+ * that structure. If this is later found to lose composition fidelity,
+ * re-run the base pass's ControlNet nodes into this graph instead.
+ */
+export function buildEnvHiresGraph({ brief, seed, baseImage, forge }) {
+  const { models, sampler, hires } = forge.profile;
+  const outputId = `${brief.id ?? "subject"}-seed${seed}-hires`;
+  return {
+    [HIRES_NODE.CKPT]: {
+      class_type: "CheckpointLoaderSimple",
+      inputs: { ckpt_name: models.checkpoint },
+    },
+    [HIRES_NODE.POS]: {
+      class_type: "CLIPTextEncode",
+      inputs: { clip: [HIRES_NODE.CKPT, 1], text: brief.positive },
+    },
+    [HIRES_NODE.NEG]: {
+      class_type: "CLIPTextEncode",
+      inputs: { clip: [HIRES_NODE.CKPT, 1], text: brief.negative ?? "" },
+    },
+    [HIRES_NODE.LOAD_BASE]: {
+      class_type: "LoadImage",
+      inputs: { image: baseImage },
+    },
+    [HIRES_NODE.UPSCALE_LOAD]: {
+      class_type: "UpscaleModelLoader",
+      inputs: { model_name: hires.upscaler },
+    },
+    [HIRES_NODE.UPSCALE_MODEL]: {
+      class_type: "ImageUpscaleWithModel",
+      inputs: {
+        upscale_model: [HIRES_NODE.UPSCALE_LOAD, 0],
+        image: [HIRES_NODE.LOAD_BASE, 0],
+      },
+    },
+    [HIRES_NODE.SCALE]: {
+      class_type: "ImageScale",
+      inputs: {
+        image: [HIRES_NODE.UPSCALE_MODEL, 0],
+        width: hires.width,
+        height: hires.height,
+        upscale_method: "lanczos",
+        crop: "disabled",
+      },
+    },
+    [HIRES_NODE.ENCODE]: {
+      class_type: "VAEEncode",
+      inputs: { pixels: [HIRES_NODE.SCALE, 0], vae: [HIRES_NODE.CKPT, 2] },
+    },
+    [HIRES_NODE.KSAMPLER]: {
+      class_type: "KSampler",
+      inputs: {
+        model: [HIRES_NODE.CKPT, 0],
+        positive: [HIRES_NODE.POS, 0],
+        negative: [HIRES_NODE.NEG, 0],
+        latent_image: [HIRES_NODE.ENCODE, 0],
+        seed,
+        steps: hires.steps,
+        cfg: sampler.cfg,
+        sampler_name: sampler.samplerName,
+        scheduler: sampler.scheduler,
+        denoise: hires.denoise,
+      },
+    },
+    [HIRES_NODE.DECODE]: {
+      class_type: "VAEDecode",
+      inputs: { samples: [HIRES_NODE.KSAMPLER, 0], vae: [HIRES_NODE.CKPT, 2] },
+    },
+    [HIRES_NODE.SAVE]: {
+      class_type: "SaveImage",
+      inputs: {
+        images: [HIRES_NODE.DECODE, 0],
+        filename_prefix: `art-forge/env/${outputId}`,
+      },
+    },
+  };
+}
+
+/**
  * Upload a local depth PNG to the ComfyUI server's input directory via
  * `POST /upload/image` — the method docs/worldbuilding/ABP-controlnet-rescue.md
  * itself used ("the only writes were four POST /upload/image calls of
@@ -324,6 +481,13 @@ export async function uploadControlImage({
  * Generate one environment subject end to end: render the depth control PNG
  * from the brief's block-in masses (Task 5's blockin.mjs), upload it to the
  * ComfyUI box's input directory, queue the graph, download the result.
+ *
+ * With `--hires`, a SECOND job runs after the base pass completes: the just-
+ * downloaded base PNG is re-uploaded and refined through
+ * `buildEnvHiresGraph` (`profiles.environment.hires`). Off by default — see
+ * this file's header comment for why. Returns `{ base, hires }` when
+ * `--hires` is set, or the base-only `runGraph` result otherwise (unchanged
+ * shape — every existing caller of the base-only path is unaffected).
  */
 export async function generateEnv(
   args,
@@ -366,13 +530,34 @@ export async function generateEnv(
   const graph = buildEnvGraph({ brief, seed, depthImage, forge, strength });
 
   const outputId = `${briefId}-seed${seed}-s${formatStrength(strength)}`;
-  return runGraph({
+  const baseResult = await runGraph({
     forge,
     args,
     graph,
     name: `env/${outputId}`,
     label: `env ${briefId} seed=${seed} strength=${formatStrength(strength)} depth=${depthImage}`,
   });
+
+  if (!args.hires) {
+    return baseResult;
+  }
+
+  const hiresOutputId = `${briefId}-seed${seed}-hires`;
+  // dry-run must not touch the network — mirrors the depthImage placeholder
+  // above so `--dry-run --hires` still prints a realistic LoadImage name.
+  const baseImage = args["dry-run"]
+    ? `art-forge/${outputId}.png`
+    : await uploadControlImage({ base, localPath: baseResult.dest, subfolder: "art-forge" });
+  const hiresGraph = buildEnvHiresGraph({ brief, seed, baseImage, forge });
+  const hiresResult = await runGraph({
+    forge,
+    args,
+    graph: hiresGraph,
+    name: `env/${hiresOutputId}`,
+    label: `env hires ${briefId} seed=${seed} base=${baseImage}`,
+  });
+
+  return { base: baseResult, hires: hiresResult };
 }
 
 async function main() {
