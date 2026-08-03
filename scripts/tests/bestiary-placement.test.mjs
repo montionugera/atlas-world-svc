@@ -76,13 +76,20 @@ function placement(over = {}) {
   };
 }
 
-function fixture({ placements = {}, bestiary = BESTIARY, geography = GEOGRAPHY } = {}) {
+function fixture({
+  placements = {},
+  bestiary = BESTIARY,
+  geography = GEOGRAPHY,
+  placementSchema = true,
+} = {}) {
   const dir = mkdtempSync(join(tmpdir(), "placement-gate-"));
   mkdirSync(join(dir, "content/characters"), { recursive: true });
   mkdirSync(join(dir, "content/schemas"), { recursive: true });
   mkdirSync(join(dir, "content/bestiary"), { recursive: true });
   mkdirSync(join(dir, "content/maps"), { recursive: true });
-  for (const s of ["character.schema.json", "map.schema.json", "bestiary-placement.schema.json"])
+  const schemas = ["character.schema.json", "map.schema.json"];
+  if (placementSchema) schemas.push("bestiary-placement.schema.json");
+  for (const s of schemas)
     cpSync(join(ROOT, "content/schemas", s), join(dir, "content/schemas", s));
   writeFileSync(join(dir, "content/bestiary/bestiary.json"), JSON.stringify(bestiary));
   writeFileSync(join(dir, "content/maps/cluster1-geography.json"), JSON.stringify(geography));
@@ -128,6 +135,37 @@ test("no bestiary directory skips silently", () => {
   assert.match(r.out, /0 placements/);
 });
 
+// The other half of the soft-skip contract: a roster that has not adopted
+// placement yet. Without the `!files.length` guard the gate would go on to
+// compile a schema this content root does not ship, so the absent schema is
+// what makes this fixture prove the guard rather than merely pass through it.
+test("a bestiary directory with no placement file skips silently", () => {
+  const r = runGate(fixture({ placements: {}, placementSchema: false }));
+  assert.equal(r.code, 0);
+  assert.match(r.out, /0 placements/);
+});
+
+// readJson cannot distinguish "recorded a FAIL" from "parsed to a JSON-falsy
+// value"; both loaders check the failure count for that reason. A literal
+// `null` roster must be ONE shape-invalid FAIL, never a silent skip.
+test("a bestiary.json parsing to null is one shape-invalid FAIL, not a skip", () => {
+  const r = runGate(fixture({
+    bestiary: null,
+    placements: { "placement-thornveil.json": placement() },
+  }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /bestiary: .* is shape-invalid/);
+});
+
+test("a geography file parsing to null is one shape-invalid FAIL, not a skip", () => {
+  const r = runGate(fixture({
+    geography: null,
+    placements: { "placement-thornveil.json": placement() },
+  }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /geography: .* is shape-invalid/);
+});
+
 test("G1: unknown zone fails", () => {
   const r = runGate(fixture({ placements: {
     "placement-thornveil.json": placement({ zone: "nowhere" }) } }));
@@ -148,6 +186,17 @@ test("G3: a placement naming an unknown design fails", () => {
   const r = runGate(fixture({ placements: { "placement-thornveil.json": doc } }));
   assert.equal(r.code, 1);
   assert.match(r.out, /design "mob-does-not-exist" not in bestiary\.json/);
+});
+
+// G3's second half. G4 cannot compensate: a foreign design placed here is
+// neither a duplicate nor a hole in this zone's roster, so only the region
+// check stands between a millcross mob and Thornveil's ecology.
+test("G3: a placement naming a design from another region fails", () => {
+  const doc = placement();
+  doc.placements.push({ design: "mob-millpond-gnawer", tier: "verge", locale: "l" });
+  const r = runGate(fixture({ placements: { "placement-thornveil.json": doc } }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /design "mob-millpond-gnawer" has region "millcross", not "thornveil"/);
 });
 
 test("G4: a zone design left unplaced fails", () => {
