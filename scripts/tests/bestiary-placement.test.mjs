@@ -1,16 +1,22 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, cpSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
+
+// Same ESM/CJS interop guard as scripts/lib/story.mjs:11 — `ajv` is CJS, so
+// under ESM the constructor may arrive as the module namespace's `.default`.
+const AjvClass = Ajv.default ?? Ajv;
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 function compile() {
   const schema = JSON.parse(
     readFileSync(join(ROOT, "content/schemas/bestiary-placement.schema.json"), "utf8"));
-  return new Ajv({ allErrors: true }).compile(schema);
+  return new AjvClass({ allErrors: true }).compile(schema);
 }
 
 test("the committed Thornveil placement file validates against the schema", () => {
@@ -34,10 +40,6 @@ test("schema rejects a placement missing its locale", () => {
   const broken = { ...doc, placements: [{ design: "mob-veil-cub", tier: "verge" }] };
   assert.equal(validate(broken), false);
 });
-
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, cpSync } from "node:fs";
-import { tmpdir } from "node:os";
 
 const GATE = join(ROOT, "scripts/check_content.mjs");
 
@@ -211,4 +213,48 @@ test("G8: routeBand disagreeing with the geography fails", () => {
   const r = runGate(fixture({ placements: { "placement-thornveil.json": doc } }));
   assert.equal(r.code, 1);
   assert.match(r.out, /routeBand \[10,40\] != geography levelBand \[15,28\]/);
+});
+
+test("G7: two depthTiers sharing an id fail", () => {
+  // The trailing pair is deliberately contiguous (28 -> 29) and unreferenced by
+  // any placement, so the ONLY rule this fixture can trip is the duplicate-id
+  // one — the schema does not constrain depthTier id uniqueness.
+  const doc = placement({ depthTiers: [
+    { id: "verge", label: "V", bandFloor: 1, bandCeil: 14, summary: "s" },
+    { id: "route", label: "R", bandFloor: 15, bandCeil: 28, summary: "s" },
+    { id: "route", label: "R again", bandFloor: 29, bandCeil: 40, summary: "s" },
+  ] });
+  const r = runGate(fixture({ placements: { "placement-thornveil.json": doc } }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /duplicate depthTier id "route"/);
+});
+
+test("G7: a depthTier whose bandCeil is below its bandFloor fails", () => {
+  // "deep" is inverted (29..28) but still contiguous with "route" by bandFloor,
+  // and no placement names it — isolating the inverted-band rule.
+  const doc = placement({ depthTiers: [
+    { id: "verge", label: "V", bandFloor: 1, bandCeil: 14, summary: "s" },
+    { id: "route", label: "R", bandFloor: 15, bandCeil: 28, summary: "s" },
+    { id: "deep", label: "D", bandFloor: 29, bandCeil: 28, summary: "s" },
+  ] });
+  const r = runGate(fixture({ placements: { "placement-thornveil.json": doc } }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /depthTier "deep" bandCeil 28 < bandFloor 29/);
+});
+
+test("G6: a design whose levelBand cannot be parsed fails", () => {
+  // bestiary.json is a design backlog the gate does not schema-validate, so a
+  // junk levelBand reaches the band-overlap maths — it must FAIL loudly rather
+  // than silently compare NaNs and pass.
+  const bestiary = [
+    { id: "mob-veil-cub", region: "thornveil", levelBand: "banana" },
+    { id: "mob-bramble-warden", region: "thornveil", levelBand: "21-30" },
+    { id: "mob-millpond-gnawer", region: "millcross", levelBand: "1-10" },
+  ];
+  const r = runGate(fixture({
+    bestiary,
+    placements: { "placement-thornveil.json": placement() },
+  }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /design "mob-veil-cub" has unparseable levelBand "banana"/);
 });
