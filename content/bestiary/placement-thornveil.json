@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "zone": "thornveil",
+  "bestiaryRegion": "thornveil",
+  "routeBand": [15, 28],
+  "depthTiers": [
+    {
+      "id": "verge",
+      "label": "The Verge",
+      "bandFloor": 1,
+      "bandCeil": 14,
+      "summary": "The track margin. Passing traffic keeps the thorn cut back, so the growth here is young and the things in it are small."
+    },
+    {
+      "id": "route",
+      "label": "The Route",
+      "bandFloor": 15,
+      "bandCeil": 28,
+      "summary": "The thorn wall the terrace track runs beside. A1 4.2's binding band for the zone — it describes this skirting passage, not the ground behind it."
+    },
+    {
+      "id": "interior",
+      "label": "The Interior",
+      "bandFloor": 29,
+      "bandCeil": 50,
+      "summary": "The bramble body, off the track and out of sight of it. No road has ever crossed here and nothing cuts the thorn back."
+    },
+    {
+      "id": "heart",
+      "label": "The Heart",
+      "bandFloor": 51,
+      "bandCeil": 70,
+      "summary": "The roadless centre, and the deepest root mass in the zone. The oldest growth holds the most water, which is why the largest things stand here."
+    }
+  ],
+  "placements": [
+    {
+      "design": "mob-bramble-shoot",
+      "tier": "verge",
+      "locale": "cart-cut margins",
+      "note": "First-year growth on ground the traffic keeps open."
+    },
+    {
+      "design": "mob-thicket-hopper",
+      "tier": "verge",
+      "locale": "dry grass at the bramble's first edge"
+    },
+    {
+      "design": "mob-veil-cub",
+      "tier": "verge",
+      "locale": "outer thickets within sight of the track",
+      "note": "The zone's only ordinary animal, and it stays where it can leave."
+    },
+    {
+      "design": "mob-bramble-stalker",
+      "tier": "route",
+      "locale": "the thorn wall the track runs beside"
+    },
+    {
+      "design": "mob-veil-spearling",
+      "tier": "route",
+      "locale": "ambush cuts overlooking the terrace track",
+      "note": "Raiders work the route because the route is where things pass."
+    },
+    {
+      "design": "mob-thornhusk-weaver",
+      "tier": "route",
+      "locale": "husk galleries in the roadside thorn",
+      "note": "A sap-feeder: in an interfluve with no standing water, sap is the water."
+    },
+    {
+      "design": "mob-bramble-warden",
+      "tier": "route",
+      "locale": "the first standing thickets, where the wall thickens"
+    },
+    {
+      "design": "mob-thornveil-spearhand",
+      "tier": "route",
+      "locale": "the raiders' cut paths just inside the wall"
+    },
+    {
+      "design": "mob-sapdrinker-swarm",
+      "tier": "route",
+      "locale": "sap runs on the older stems",
+      "note": "The second sap-feeder, and the reason the older growth is scarred."
+    },
+    {
+      "design": "mob-bramble-drake",
+      "tier": "interior",
+      "locale": "stone hollows in the bramble body",
+      "note": "Apex of the interior; drakes top a region's food chain per the bestiary README."
+    },
+    {
+      "design": "mob-briar-caller",
+      "tier": "interior",
+      "locale": "the raiders' deep camp, past where the track can see"
+    },
+    {
+      "design": "mob-bramble-mother",
+      "tier": "interior",
+      "locale": "a root mass holding its own standing water"
+    },
+    {
+      "design": "mob-thorncrown-drake",
+      "tier": "heart",
+      "locale": "the crown thickets above the heartwood"
+    },
+    {
+      "design": "mob-heartwood-tyrant",
+      "tier": "heart",
+      "locale": "the heartwood itself — the zone's deepest root and its water table"
+    }
+  ]
+}
