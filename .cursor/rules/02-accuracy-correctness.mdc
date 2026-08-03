@@ -12,8 +12,15 @@ Scope
 
 Hard Rules
 1) Timing Source Consistency
-   - Use `performance.now()` for gameplay timing/cooldowns on server and client.
-   - Do not mix `Date.now()` with `performance.now()` for deltas.
+   - Server simulation takes time as an INPUT: gate per-tick work on simulated
+     time from the room's `SimClock` (`src/time/SimClock.ts`), not on a global
+     clock. `performance.now()` is real-time too, so it loses determinism exactly
+     as `Date.now()` does — swapping one for the other fixes nothing. See F-028.
+   - Migration in progress (I-074): subsystems not yet converted still read
+     `Date.now()`/`performance.now()`. Until a subsystem converts, keep it
+     internally consistent — never cross-subtract two clocks.
+   - Use `performance.now()` for gameplay timing/cooldowns on the client, and on
+     the server only outside the simulation loop.
    - Cooldowns and comparisons MUST use the same source end-to-end.
 
 2) Rendering Scale Correctness

@@ -7,6 +7,10 @@ export class GameSimulationSystem {
 
   update(deltaTime: number) {
     try {
+      // Advance simulated time before any system reads it, so the whole pass
+      // shares one timestamp.
+      this.room.simClock.advance(deltaTime)
+
       this.updatePhysicsBodies()
 
       this.room.physicsManager.update(
@@ -24,7 +28,7 @@ export class GameSimulationSystem {
 
       this.updatePlayers(deltaTime)
 
-      this.room.state.aiModule.update()
+      this.room.state.aiModule.update(this.room.simClock.now())
       this.room.mobLifeCycleManager.update()
 
       this.updateMobs(deltaTime)

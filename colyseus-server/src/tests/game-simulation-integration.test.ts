@@ -19,6 +19,7 @@ import {
   collectInterestViewers as collectViewers,
 } from '../interest/collect'
 import { AOI_CONFIG } from '../config/aoiConfig'
+import { SimClock } from '../time/SimClock'
 
 /**
  * Integration test for the per-tick simulation loop (GameSimulationSystem) wired
@@ -65,6 +66,10 @@ function buildRoom() {
   const room = {
     state,
     roomId: ROOM_ID,
+    // GameSimulationSystem.update() advances this every tick, exactly as the real
+    // room does. Omitting it makes every tick throw into the loop's try/catch and
+    // silently do nothing.
+    simClock: new SimClock(),
     physicsManager,
     battleManager,
     battleModule,
@@ -110,6 +115,25 @@ describe('GameSimulationSystem (integration)', () => {
     // updateMobs() (inside the loop) increments tick; reaching it means the loop
     // ran past physics/projectile/player stages without a thrown+caught error.
     expect(env.state.tick).toBe(3)
+  })
+
+  it('advances the room SimClock by exactly one delta per tick, and drives AI from it', () => {
+    // Guards the wiring, not just the gate: the cadence unit tests drive AIModule
+    // directly, so they stay green even if GameSimulationSystem stops advancing
+    // the clock. This asserts the loop itself does it.
+    const aiSpy = jest.spyOn(env.state.aiModule, 'update')
+
+    expect(env.room.simClock.now()).toBe(0)
+    env.sim.update(50)
+    expect(env.room.simClock.now()).toBe(50)
+    env.sim.update(50)
+    expect(env.room.simClock.now()).toBe(100)
+
+    // AI is handed simulated time, not wall clock.
+    expect(aiSpy).toHaveBeenNthCalledWith(1, 50)
+    expect(aiSpy).toHaveBeenNthCalledWith(2, 100)
+
+    aiSpy.mockRestore()
   })
 
   it('runs full ticks with players, mobs and a projectile without a swallowed simulation error', () => {

@@ -22,6 +22,7 @@ import { PlayerInputHandler } from './handlers/PlayerInputHandler'
 import { DebugCommandHandler } from './handlers/DebugCommandHandler'
 import { RoomEventHandler } from './handlers/RoomEventHandler'
 import { GameSimulationSystem } from './systems/GameSimulationSystem'
+import { SimClock } from '../time/SimClock'
 
 // Meta systems (Nakama-backed profile/loadout/match-event reporting)
 import { IMetaBackend } from '../meta/IMetaBackend'
@@ -84,6 +85,9 @@ export class GameRoom extends Room<{ state: GameState; client: GameRoomClient }>
   private debugCommandHandler!: DebugCommandHandler
   private roomEventHandler!: RoomEventHandler
   private simulationSystem!: GameSimulationSystem
+
+  /** Monotonic simulated time, advanced once per tick by GameSimulationSystem. */
+  public readonly simClock = new SimClock()
 
   onCreate(options: GameRoomOptions) {
     console.log(`🎮 GameRoom created with mapId: ${options.mapId || 'map-01-sector-a'}`)
