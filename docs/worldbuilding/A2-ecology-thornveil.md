@@ -27,7 +27,7 @@ nothing but a check against the map data would have caught it. The correction is
 A1 §4.2's zone table, row 4, describes Thornveil as:
 
 > *"The interfluve between the river and the eastern hills — the ground every road went **around**,
-> so it stayed nobody's."*
+> so it stayed nobody's"*.
 > — `docs/worldbuilding/A1-geography-cluster1.md` §4.2, zone 4
 
 That is the whole zone in one word. **An interfluve is, by definition, the dry land between two
@@ -127,7 +127,7 @@ hydrology, and the hydrology is the faction.
 ## 3. Vegetation
 
 `content/maps/cluster1-geography.json#zones[thornveil]` carries `"terrainKind": "bramble"`, and A1
-§4.2 describes the terrain as *"Stony bramble upland, dense sightlines, no through-track."* One
+§4.2 describes the terrain as *"Stony bramble upland, dense sightlines, no through-track"*. One
 vegetation type, one growth habit — but **not one age**.
 
 `content/bestiary/README.md` describes the whole `plant` family as *"Bramble and thorn. Almost
@@ -197,7 +197,9 @@ Everything between those two ends is what this document derives:
   thin energy budget. That thinness is the interfluve again.
 - **Drakes are apex, per the README**, and Bramble Drake's lore confirms the physical relationship
   with the terrain: *"It does not fly. It pushes through the deep veil at chest height and takes the
-  canes down with it."* The apex predator here is defined by what it does to the plant.
+  canes down with it, which is how you know where it has been."* The apex predator here is defined
+  by what it does to the plant — and the dropped clause is the ecological point: the drake's passage
+  is legible in the bramble afterwards, which is only possible because the bramble is the terrain.
 
 ### 4.1 The raiders are outside the web — and that is the interesting part
 
