@@ -117,6 +117,25 @@ describe('GameSimulationSystem (integration)', () => {
     expect(env.state.tick).toBe(3)
   })
 
+  it('advances the room SimClock by exactly one delta per tick, and drives AI from it', () => {
+    // Guards the wiring, not just the gate: the cadence unit tests drive AIModule
+    // directly, so they stay green even if GameSimulationSystem stops advancing
+    // the clock. This asserts the loop itself does it.
+    const aiSpy = jest.spyOn(env.state.aiModule, 'update')
+
+    expect(env.room.simClock.now()).toBe(0)
+    env.sim.update(50)
+    expect(env.room.simClock.now()).toBe(50)
+    env.sim.update(50)
+    expect(env.room.simClock.now()).toBe(100)
+
+    // AI is handed simulated time, not wall clock.
+    expect(aiSpy).toHaveBeenNthCalledWith(1, 50)
+    expect(aiSpy).toHaveBeenNthCalledWith(2, 100)
+
+    aiSpy.mockRestore()
+  })
+
   it('runs full ticks with players, mobs and a projectile without a swallowed simulation error', () => {
     const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 

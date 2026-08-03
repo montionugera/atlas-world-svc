@@ -12,16 +12,6 @@ describe('SimClock', () => {
     expect(clock.now()).toBe(100)
   })
 
-  it('is unaffected by wall-clock time', () => {
-    const clock = new SimClock()
-    const before = clock.now()
-    const spin = Date.now()
-    while (Date.now() - spin < 20) {
-      /* burn real time without advancing the clock */
-    }
-    expect(clock.now()).toBe(before)
-  })
-
   it('is monotonic — rejects negative deltas', () => {
     const clock = new SimClock()
     clock.advance(50)

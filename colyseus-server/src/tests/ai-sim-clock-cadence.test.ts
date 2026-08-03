@@ -50,6 +50,33 @@ describe('AIModule cadence on simulated time', () => {
     expect(decisions.count).toBe(20)
   })
 
+  it('holds the long-run rate when the tick is not a multiple of the interval', () => {
+    // 33ms ticks (the 30Hz target in the README) against a 50ms interval.
+    // Snapping lastUpdateTime to now would drop this to 15Hz; advancing by whole
+    // intervals keeps it at ~20Hz.
+    const clock = new SimClock()
+    const { aiModule, decisions } = buildModule()
+
+    for (let i = 0; i < 300; i++) {
+      clock.advance(33)
+      aiModule.update(clock.now())
+    }
+
+    // 300 * 33ms = 9900ms of simulated time at 20Hz => ~198 passes.
+    expect(decisions.count).toBeGreaterThanOrEqual(196)
+    expect(decisions.count).toBeLessThanOrEqual(200)
+  })
+
+  it('never runs more than one decision pass per call, even after a long stall', () => {
+    const clock = new SimClock()
+    const { aiModule, decisions } = buildModule()
+
+    clock.advance(5000) // a 5s stall
+    aiModule.update(clock.now())
+
+    expect(decisions.count).toBe(1)
+  })
+
   it('does not run when stopped', () => {
     const clock = new SimClock()
     const { aiModule, decisions } = buildModule()
