@@ -135,6 +135,10 @@ combat_lab() {
   node "$REPO_ROOT/tools/combat-lab/verify.mjs"
 }
 
+art_forge_tests() {
+  ( cd "$REPO_ROOT/tools/art-forge" && node --test tests/*.test.mjs )
+}
+
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace install" deps_install
 run_section "contracts: tsc build"          contracts_build
@@ -145,6 +149,7 @@ run_section "server: prettier format"       server_format
 run_section "nakama: tsc --noEmit"          nakama_typecheck
 run_section "nakama: jest suite"            nakama_tests
 run_section "client: react-client suite"    client_tests
+run_section "art-forge: node --test suite"  art_forge_tests
 run_section "combat-lab: model gates"       combat_lab
 
 # --- Summary -----------------------------------------------------------------

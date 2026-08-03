@@ -16,7 +16,7 @@
 //   - game-client/assets/catalog-manifest.json   curated,        driftGated:false
 //   - res:// scene/stream paths resolve against game-client/ (the Godot project root).
 //
-// Render-type resolution (mirrors tools/asset-storybook/index.html exactly —
+// Render-type resolution (mirrors tools/asset-storybook/js/renderers.mjs exactly —
 // see docs/superpowers/specs/2026-07-14-universal-asset-previewer-design.md §4.1):
 //   1. entry.render, if present — authoritative
 //   2. spec.kindDefaultRender[entry.kind], if entry.kind has an unambiguous default
@@ -172,8 +172,11 @@ function isEmptyField(v) {
 }
 
 // §4.1 — render-type resolution. Mirrored byte-for-byte in
-// tools/asset-storybook/index.html so the gate and the storybook can never
-// disagree on what a given entry renders as.
+// tools/asset-storybook/js/renderers.mjs so the gate and the storybook can
+// never disagree on what a given entry renders as. Enforced by the
+// "resolveRender mirror" test in scripts/tests/resolve_render_mirror.test.mjs
+// — that test reads both copies and diffs them, so a drift here fails CI
+// instead of silently diverging.
 function primaryPath(entry) {
   return entry.scene ?? entry.stream ?? "";
 }

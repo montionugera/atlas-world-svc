@@ -60,7 +60,7 @@ export function selectAxis(value, axis, label) {
  */
 export function cellSeed(base, race, job, forge) {
   if (base === undefined) return randomSeed();
-  const { raceAxis, jobAxis } = forge.config.muscleGradient;
+  const { raceAxis, jobAxis } = forge.profile.muscleGradient;
   return (
     parseSeed(base) +
     raceAxis.indexOf(race) * jobAxis.length +
@@ -68,8 +68,11 @@ export function cellSeed(base, race, job, forge) {
   );
 }
 
-export async function runMatrix(args, forge = loadForge()) {
-  const { raceAxis, jobAxis } = forge.config.muscleGradient;
+export async function runMatrix(
+  args,
+  forge = loadForge({ profile: "character" }),
+) {
+  const { raceAxis, jobAxis } = forge.profile.muscleGradient;
   const races = selectAxis(args.races, raceAxis, "race");
   const jobs = selectAxis(args.jobs, jobAxis, "job");
   const total = races.length * jobs.length;

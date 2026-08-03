@@ -96,3 +96,29 @@ this before 4 GB crossed the wire.
 
 **Unchanged:** the reversal condition is still measurably unmet, and dev-derived output remains
 evaluation material until the owner decides otherwise.
+
+---
+
+## Appendix B — 2026-08-02: the premise is withdrawn
+
+**Owner ruling: this is not a commercial project.**
+
+The body above and appendix A both reason from *"This project is a game intended to ship"* — that
+premise is now withdrawn by the owner. A non-commercial model licence does not bind a project that
+is never commercially released.
+
+**What this cancels.** Every mitigation appendix A proposed is dropped as unnecessary work:
+the tiered licence policy for generated art, `gen.license` tagging at intake, the
+`licence-restricted` tag, and closing the locally-generated-art exemption in
+`scripts/check_asset_manifest.mjs`. The measured-best recipe (schnell + FLUX.1-dev-derived
+ControlNet at strength 0.30) is adopted without restriction — see
+`docs/superpowers/specs/2026-08-02-environment-art-recipe-design.md`.
+
+**What would reverse this.** Any move toward monetization — sales, advertising, in-app purchases,
+paid distribution. At that point appendix A's three options become live again, and every asset
+generated under the ControlNet recipe needs review. Nothing in the repo currently tracks which
+assets those are, because appendix A's tagging was cancelled; re-deriving the list would mean
+re-reading the `gen` blocks and the ABP records.
+
+**Unchanged:** `note` provenance remains mandatory at intake. That was never a licence
+mechanism — it is authorship archaeology, and it is what makes the reversal above tractable.

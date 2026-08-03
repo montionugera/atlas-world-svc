@@ -41,7 +41,29 @@ reachable over Tailscale at `100.66.190.100`.
    > it.** Our instance is pinned to **GPU 0, port 8188**. Never launch,
    > kill, or send jobs to anything on port 8189.
 
-## Stage: GENERATE — the winning v3 recipe
+## Config shape: `forge.config.json` v2 — named profiles, no default
+
+`forge.config.json` is **v2**: a top-level `comfy` block (the machine —
+host/port/GPU/launch script, shared across every recipe) plus a
+`profiles` map keyed by name. There are currently two profiles,
+`character` and `environment`, each holding its own `models` /
+`sampler` / other recipe data. **There is no default profile.**
+`loadForge({ forgeDir, profile })` throws if `profile` is omitted or
+unknown — callers must always name one explicitly
+(`loadForge({ profile: "character" })`), because inheriting the wrong
+recipe silently produces wrong-style art instead of an error.
+
+Once loaded, code reads `forge.profile.*` (the resolved profile), never
+`forge.config.*` directly — e.g. `forge.profile.sampler.denoise`, not
+`forge.config.sampler.denoise`. `forge.config.comfy` is still the right
+place for host/port/GPU, since that's shared across profiles.
+
+> **`profiles.environment` has a runner: `generate/env.mjs`.** It builds a
+> schnell + depth-ControlNet graph, using `generate/blockin.mjs` to produce
+> the depth control image — see "Stage: GENERATE" below and the "CI
+> status" section for why neither runs in CI.
+
+## Stage: GENERATE — the winning v3 recipe (`profiles.character`)
 
 Model: **Z-Image Turbo**, mode **img2img**, **denoise 0.82**, over
 flat-grey per-job silhouettes cut from the approved human row via
@@ -52,13 +74,64 @@ ImageMagick magenta-key.
 
 This split is the whole trick: earlier attempts that tried to hold
 proportion with text alone drifted on head-body ratio every time. See
-`forge.config.json` → `sampler` / `silhouettes` for the exact values.
+`forge.config.json` → `profiles.character.sampler` /
+`profiles.character.silhouettes` for the exact values.
 
-The muscle gradient (`forge.config.json` → `muscleGradient`) locks a
-race axis (lightest → heaviest) crossed with a job axis, scored
-6.0 → 8.5. Race identity markers (`prompts/race-identity.json`) are
-locked by owner iteration and referenced by `content/story/canon.md`
-§5 — treat them as canon, not as suggestions.
+The muscle gradient (`forge.config.json` →
+`profiles.character.muscleGradient`) locks a race axis (lightest →
+heaviest) crossed with a job axis, scored 6.0 → 8.5. Race identity
+markers (`prompts/race-identity.json`) are locked by owner iteration and
+referenced by `content/story/canon.md` §5 — treat them as canon, not as
+suggestions.
+
+## The environment profile (`profiles.environment`) — recipe and runner
+
+`forge.config.json` also carries a measured recipe for environment
+concept art: **flux1-schnell-fp8**, txt2img, ControlNet-depth at
+**strength 0.30** (the usable window is 0.30–0.40 — the conventional
+0.8–1.0 collapses schnell into flat vector art), plus an **opt-in hires
+pass** (`--hires`): a second job that re-uploads the base PNG and refines
+it through `UpscaleModelLoader` (`4x-UltraSharp.pth`) ->
+`ImageUpscaleWithModel` -> `ImageScale` (down to 1920x1248, 1.5x base — not
+a naive 4x, which would be 5120x3328 and does not fit the box's VRAM) ->
+`VAEEncode` -> a second `KSampler` at **10 steps, denoise 0.40**. See
+`profiles.environment` in `forge.config.json` for the full values and
+`profiles.environment._note`/`profiles.environment.hires._note` for the
+measurement provenance and caveats. The checkpoint
+(`flux1-schnell-fp8.safetensors`), ControlNet
+(`flux-controlnet-union-pro-2.0.safetensors`) and hires upscaler
+(`4x-UltraSharp.pth`) filenames are all **verified** against the live
+ComfyUI server (v0.24.1) — see `profiles.environment._note` and
+`profiles.environment.hires._note` for the verification method and date.
+
+`--hires` is **off by default**. The 16 base-pass cells already measured
+in `docs/worldbuilding/ABP-controlnet-replication.md` must stay
+reproducible from committed code exactly as they were generated, so
+opting into the hires pass never changes what a plain `env.mjs` invocation
+produces. A real hires generation for A1-ART-02 seed 12345
+(2026-08-03) confirmed the second pass genuinely resolves more detail —
+tent seams, windmill roof shingles and clock face, individual figures in
+the cart queue — over the base pass at the same crop, with no OOM (this
+box's tight VRAM, ~3.8 GB free on the pinned GPU, was the open risk going
+in) and no visible over-sharpening/checkerboard artifact on this subject.
+Modern-contamination artifacts already present in the base pass (a
+lattice-pylon silhouette, vehicle-like shapes) carry through unchanged —
+the hires pass refines detail, it does not fix content.
+
+`blockin.mjs` (the depth control image producer) and `generate/env.mjs`
+(the schnell + depth-ControlNet graph runner, plus the opt-in hires pass)
+both exist and are the sanctioned way to run this profile. Access is the
+same as "Stage: ACCESS" above — run on mont-pc itself, or tunnel with
+`ssh -N -L 8188:127.0.0.1:8188 Mont@100.66.190.100`. The server binds
+`--listen 127.0.0.1`, so the Tailscale address `100.66.190.100:8188`
+itself has never been directly reachable — see `forge.config.json`'s
+`comfy._note`. Neither runner is wired into CI — see "CI status" below.
+
+A replicated measurement of this recipe — 16 generations across four
+subjects and two seeds, run 2026-08-03 — lives at
+`docs/worldbuilding/ABP-controlnet-replication.md`, verdict **PARTIAL
+HOLD**. Read that document for the current findings rather than assuming
+this recipe is safe for unattended batch use.
 
 ## Prompt laws
 
@@ -105,14 +178,19 @@ Then QC runs **per row**, not per image:
 
 ## Files in this directory
 
-- `forge.config.json` — model, sampler, silhouette, ComfyUI host/port/GPU,
-  and muscle-gradient axes.
+- `forge.config.json` — v2, `comfy` (shared ComfyUI host/port/GPU) plus
+  `profiles.character` and `profiles.environment` (model, sampler,
+  silhouette/ControlNet, and muscle-gradient axes per profile). No
+  default profile — see "Config shape" above.
 - `prompts/style-laws.json` — positive/negative prompt fragments and the
   prompt laws above.
 - `prompts/race-identity.json` — per-race identity markers and muscle
   score, locked canon (see `content/story/canon.md` §5).
-- `generate/` (Task 7) — the actual ComfyUI job scripts. Present; not run
-  in CI (see "CI status" below).
+- `generate/` — the character ComfyUI job scripts (`charsheet.mjs`,
+  `i2i.mjs`, `batch-matrix.mjs`), reading `profiles.character`, plus the
+  environment runner (`env.mjs`) and depth control producer
+  (`blockin.mjs`), reading `profiles.environment` — see above. Present;
+  not run in CI (see "CI status" below).
 - `intake-art.mjs` — transactional, gate-verified intake of a generated
   PNG into `game-client/assets/art/concept/` + `art-manifest.json`. The
   only sanctioned way a generated image enters the repo.

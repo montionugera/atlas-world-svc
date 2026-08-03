@@ -36,10 +36,19 @@ COPY k8s/local/storybook-nginx.conf /etc/nginx/conf.d/default.conf
 # as application/octet-stream. That happens to work for ArrayBuffer loaders, but
 # the correct type is cheap and avoids a puzzling class of loader warnings.
 #
+# .mjs is NOT a cosmetic case like glb/gltf above: default mime.types maps .js
+# to application/javascript but has no .mjs entry at all, so index.html's
+# `<script type="module" src="./js/main.mjs">` (Task 9's module split) would
+# get served as application/octet-stream — which Chrome/Firefox refuse to
+# execute as a module script, breaking the page in the container while local
+# dev (python3 -m http.server, whose mimetypes module already knows .mjs)
+# works fine. Confirmed by building and running this image before adding the
+# line below: 0 sidebar sections rendered.
+#
 # These must be inserted INSIDE the `types { … }` block — appending to the end of
 # the file lands after its closing brace and makes the config invalid. Insert
 # before the final `}`, then let `nginx -t` prove the result parses.
-RUN sed -i '$ i \    model/gltf-binary                      glb;\n    model/gltf+json                        gltf;' /etc/nginx/mime.types \
+RUN sed -i '$ i \    model/gltf-binary                      glb;\n    model/gltf+json                        gltf;\n    text/javascript                        mjs;' /etc/nginx/mime.types \
  && nginx -t
 
 EXPOSE 80

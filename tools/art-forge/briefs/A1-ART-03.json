@@ -1,0 +1,68 @@
+{
+  "id": "A1-ART-03",
+  "subject": "Embervale",
+  "prompt": "A terraced hill town of six stacked ledges seen from the fields below at dusk, each ledge a row of slate roofs above a retaining wall of black clinker. Forty low, level smoke plumes stand off the hearths, none of them rising far. Warm materials — fired brick and red pantile against the black footings; palette iron-red, banner-black, hearth-orange. Ember-red banners hang on frontages along every ledge, and the figures on the terrace stairs wear banded black mourning cloth over faded militia colours as everyday dress. A caravan-wheel emblem wreathed in ember-red thread appears on the largest banner. Adit mouths open directly into the hillside between ledges.",
+  "width": 1280,
+  "height": 832,
+  "horizon": 0.68,
+  "focal": [0.62, 0.36],
+  "_note": "Newly authored to the recovered block-in schema for this subject. Revised for task 6b: the original draft put all six ledges on mg ABOVE a 'fields-far' rect wrongly tagged bg, even though the fields are where the viewer stands ('seen from the fields below') and are therefore the NEAREST thing in frame, not the farthest — an inverted plane assignment, not just an inverted y-position. Fixed by reusing the ledges' own natural recession: the hillside terraces genuinely get farther as they climb, so the upper three ledges (6/5/4) now carry bg and the lower three (3/2/1) carry mg; the fields are retagged fg and widened to full width, filling the land gap between the hill's foot and the frame bottom that was previously mostly black. Sky above the horizon (0.68) stays black on purpose. CORRECTION (2026-08-03, docs/worldbuilding/ABP-controlnet-replication.md): this note originally claimed the six ledges were kept 'asymmetric/off-centre' per ABP-flux-dev-and-anchor.md's centred-anchor warning — they were NOT. All six ledge midpoints (0.54, 0.54, 0.54, 0.54, 0.53, 0.505) share a common horizontal centre to within 0.035; only each tier's width varies. That is the confirmed, measured cause of all 4/4 replication cells rendering as one centred stepped pyramid instead of six offset ledges — see the ABP's 'Authoring law' section. The composition below is intentionally NOT re-authored here: doing so would invalidate the four measured replication cells for this subject. Still authored, not measured.",
+  "masses": [
+    {
+      "name": "ledge-6-top",
+      "plane": "bg",
+      "shape": "rect",
+      "rect": [0.42, 0.14, 0.66, 0.22],
+      "value": "#2a2422"
+    },
+    {
+      "name": "ledge-5",
+      "plane": "bg",
+      "shape": "rect",
+      "rect": [0.36, 0.22, 0.72, 0.3],
+      "value": "#2e2724"
+    },
+    {
+      "name": "ledge-4",
+      "plane": "bg",
+      "shape": "rect",
+      "rect": [0.3, 0.3, 0.78, 0.38],
+      "value": "#332a26"
+    },
+    {
+      "name": "ledge-3",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.24, 0.38, 0.84, 0.46],
+      "value": "#382d28"
+    },
+    {
+      "name": "ledge-2",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.16, 0.46, 0.9, 0.55],
+      "value": "#3c302a"
+    },
+    {
+      "name": "ledge-1-base",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.04, 0.55, 0.97, 0.66],
+      "value": "#191512"
+    },
+    {
+      "name": "fields-near",
+      "plane": "fg",
+      "shape": "rect",
+      "rect": [0, 0.66, 1, 0.92],
+      "value": "#3a3226"
+    },
+    {
+      "name": "field-edge-foreground",
+      "plane": "fg",
+      "shape": "rect",
+      "rect": [0, 0.92, 1, 1.04],
+      "value": "#1a1712"
+    }
+  ]
+}
