@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas bestiary zone placement",
+  "description": "One file per cluster-1 zone: where inside that zone each of its bestiary designs sits. A sibling to content/bestiary/bestiary.json, which stays a pure design roster (see content/bestiary/README.md). I-059.",
+  "type": "object",
+  "required": ["version", "zone", "bestiaryRegion", "routeBand", "depthTiers", "placements"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "zone": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "bestiaryRegion": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "routeBand": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "integer", "minimum": 1, "maximum": 80 }
+    },
+    "depthTiers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "bandFloor", "bandCeil", "summary"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+          "label": { "type": "string", "minLength": 1 },
+          "bandFloor": { "type": "integer", "minimum": 1, "maximum": 80 },
+          "bandCeil": { "type": "integer", "minimum": 1, "maximum": 80 },
+          "summary": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "placements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["design", "tier", "locale"],
+        "additionalProperties": false,
+        "properties": {
+          "design": { "type": "string", "pattern": "^mob-[a-z0-9]+(-[a-z0-9]+)*$" },
+          "tier": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+          "locale": { "type": "string", "minLength": 1 },
+          "note": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

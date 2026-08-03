@@ -27,6 +27,13 @@ sheet, forging the asset, and re-running the gate — one monster at a time.
 The gate does not read `content/bestiary/`. Adding or editing this file
 cannot change gate output.
 
+That statement is about `bestiary.json` itself and stays true. **Placement is a
+separate concern in sibling files** — `placement-<zone>.json`, one per zone,
+which say where inside a zone each of its designs sits. Those files *are* gated,
+strictly: see `content/schemas/bestiary-placement.schema.json` and
+`checkBestiaryPlacement()` in `scripts/check_content.mjs`. The roster stays a
+design backlog; placement stays level-design data.
+
 ## Record shape
 
 Every object has exactly these fourteen fields.
