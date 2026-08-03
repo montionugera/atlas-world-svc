@@ -52,7 +52,7 @@ import {
  * `forge.config.json -> silhouettes.dir` on the remote and are never uploaded.
  */
 export function silhouetteName(job, forge) {
-  return `${forge.config.silhouettes.prefix}${job}.png`;
+  return `${forge.profile.silhouettes.prefix}${job}.png`;
 }
 
 /** Build the img2img graph for one cell. */
@@ -66,10 +66,10 @@ export function buildI2iGraph({
   negativeOverride,
   denoise,
 }) {
-  const { mode } = forge.config.sampler;
+  const { mode } = forge.profile.sampler;
   if (mode !== "img2img") {
     console.warn(
-      `[art-forge] warning: forge.config.json sampler.mode is "${mode}", not "img2img"`,
+      `[art-forge] warning: forge.config.json profiles.character.sampler.mode is "${mode}", not "img2img"`,
     );
   }
   return buildBaseGraph({
@@ -89,6 +89,7 @@ export function buildI2iGraph({
       },
     },
     latentSource: [NODE.ENCODE, 0],
+    models: forge.profile.models,
     ...sampler,
   });
 }
@@ -97,7 +98,10 @@ export function buildI2iGraph({
  * Generate one race x job cell. This is the single code path batch-matrix.mjs
  * loops over — there is no second implementation of the recipe.
  */
-export async function generateCell(args, forge = loadForge()) {
+export async function generateCell(
+  args,
+  forge = loadForge({ profile: "character" }),
+) {
   const { race, job } = requireCell(args, forge);
   const seed = parseSeed(args.seed);
   const sampler = resolveSampler(args, forge);
@@ -105,7 +109,7 @@ export async function generateCell(args, forge = loadForge()) {
   const negativeOverride = parsePromptOverride("negative", args.negative);
   const denoise = parseDenoiseOverride(
     args.denoise,
-    forge.config.sampler.denoise,
+    forge.profile.sampler.denoise,
   );
   const graph = buildI2iGraph({
     race,

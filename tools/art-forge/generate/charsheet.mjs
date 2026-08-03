@@ -49,10 +49,24 @@ function readJson(file) {
   }
 }
 
-/** Load forge.config.json + prompts/*.json as one frozen bundle. */
-export function loadForge(forgeDir = FORGE_DIR) {
+/** Load forge.config.json + prompts/*.json as one frozen bundle for ONE named profile. */
+export function loadForge({ forgeDir = FORGE_DIR, profile } = {}) {
+  const config = readJson(path.join(forgeDir, "forge.config.json"));
+  if (!profile) {
+    throw new Error(
+      `loadForge requires an explicit profile — one of ${Object.keys(config.profiles ?? {}).join(", ")}. ` +
+        `There is deliberately no default: inheriting the wrong recipe silently produces wrong-style art.`,
+    );
+  }
+  const resolved = config.profiles?.[profile];
+  if (!resolved) {
+    throw new Error(
+      `unknown profile "${profile}" — expected one of ${Object.keys(config.profiles ?? {}).join(", ")}`,
+    );
+  }
   return {
-    config: readJson(path.join(forgeDir, "forge.config.json")),
+    config,
+    profile: resolved,
     styleLaws: readJson(path.join(forgeDir, "prompts", "style-laws.json")),
     raceIdentity: readJson(
       path.join(forgeDir, "prompts", "race-identity.json"),
@@ -83,7 +97,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
 }
 
 export function requireCell(args, forge) {
-  const { raceAxis, jobAxis } = forge.config.muscleGradient;
+  const { raceAxis, jobAxis } = forge.profile.muscleGradient;
   const race = args.race;
   const job = args.job;
   if (!race || !job) {
@@ -209,7 +223,7 @@ export function parsePromptOverride(flag, value) {
  * validated at the CLI boundary before any graph is queued.
  */
 export function resolveSampler(args, forge) {
-  const base = forge.config.sampler;
+  const base = forge.profile.sampler;
   return {
     steps: parseNumericOverride("steps", args.steps, base.steps),
     cfg: parseNumericOverride("cfg", args.cfg, base.cfg),
@@ -230,7 +244,7 @@ export function resolveSampler(args, forge) {
  * Every number here is derived from config; none is written down.
  */
 export function muscleScore(race, job, forge) {
-  const { raceAxis, jobAxis, scoreRange } = forge.config.muscleGradient;
+  const { raceAxis, jobAxis, scoreRange } = forge.profile.muscleGradient;
   const [min, max] = scoreRange;
   const base = forge.raceIdentity[race].muscle;
   const raceStep = (max - min) / Math.max(1, raceAxis.length - 1);
@@ -291,14 +305,11 @@ export function negativePrompt(forge) {
  *
  * The latent source is the only difference between txt2img and img2img:
  * charsheet uses EmptySD3LatentImage, i2i uses LoadImage -> VAEEncode.
+ *
+ * Model filenames (`unet`/`clip`/`clipType`/`vae`) are no longer a module
+ * const — they are frozen per-profile in forge.config.json (`profiles.<name>.models`)
+ * and passed into buildBaseGraph() as `models`, the same way sampler.* is.
  */
-export const MODELS = Object.freeze({
-  unet: "z_image_turbo_bf16.safetensors",
-  clip: "qwen_3_4b.safetensors",
-  clipType: "lumina2",
-  vae: "ae.safetensors",
-});
-
 export const NODE = Object.freeze({
   UNET: "1",
   MODEL_SAMPLING: "2",
@@ -333,11 +344,12 @@ export function buildBaseGraph({
   samplerName,
   scheduler,
   shift,
+  models,
 }) {
   return {
     [NODE.UNET]: {
       class_type: "UNETLoader",
-      inputs: { unet_name: MODELS.unet, weight_dtype: "default" },
+      inputs: { unet_name: models.unet, weight_dtype: "default" },
     },
     [NODE.MODEL_SAMPLING]: {
       class_type: "ModelSamplingAuraFlow",
@@ -346,8 +358,8 @@ export function buildBaseGraph({
     [NODE.CLIP]: {
       class_type: "CLIPLoader",
       inputs: {
-        clip_name: MODELS.clip,
-        type: MODELS.clipType,
+        clip_name: models.clip,
+        type: models.clipType,
         device: "default",
       },
     },
@@ -359,7 +371,7 @@ export function buildBaseGraph({
       class_type: "CLIPTextEncode",
       inputs: { clip: [NODE.CLIP, 0], text: negative },
     },
-    [NODE.VAE]: { class_type: "VAELoader", inputs: { vae_name: MODELS.vae } },
+    [NODE.VAE]: { class_type: "VAELoader", inputs: { vae_name: models.vae } },
     ...latentNodes,
     [NODE.KSAMPLER]: {
       class_type: "KSampler",
@@ -534,7 +546,7 @@ export async function runGraph({ forge, args, graph, name, label }) {
   const base = comfyBaseUrl(forge, args);
   if (args["dry-run"]) {
     console.log(JSON.stringify(graph, null, 2));
-    return null;
+    return graph;
   }
   const version = await assertReachable(base);
   const dest = path.join(forge.outDir, `${name}.png`);
@@ -584,11 +596,15 @@ export function buildCharsheetGraph({
       },
     },
     latentSource: [NODE.LATENT, 0],
+    models: forge.profile.models,
     ...sampler,
   });
 }
 
-export async function generateCharsheet(args, forge = loadForge()) {
+export async function generateCharsheet(
+  args,
+  forge = loadForge({ profile: "character" }),
+) {
   const { race, job } = requireCell(args, forge);
   const seed = parseSeed(args.seed);
   const sampler = resolveSampler(args, forge);
