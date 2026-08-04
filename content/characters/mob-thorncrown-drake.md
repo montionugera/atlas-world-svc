@@ -11,7 +11,7 @@ stats:
   speed: mid
   threat: melee
 links:
-  story: [faction-unaligned]
+  story: [faction-unaligned, region-thornveil]
 ---
 
 ## Lore
