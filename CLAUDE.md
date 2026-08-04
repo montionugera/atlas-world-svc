@@ -94,3 +94,17 @@ Jest (ts-jest) under `colyseus-server/src/tests/*.test.ts` (~55 files) plus `src
 ## Further docs
 
 `docs/` holds the authoritative specs — notably `docs/event-flow.spec.md`, `docs/game-server.spec.md`, `docs/companion.spec.md`. `.cursor/rules/*.mdc` contain the full coding-standard set summarized above.
+
+## Agent skills
+
+### Issue tracker
+
+Issues tracked as GitHub issues (`montionugera/atlas-world-svc`), via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context (`CONTEXT.md` + `docs/adr/` at repo root). Repo is a monorepo — switch this line to multi-context (`CONTEXT-MAP.md`) if you split docs per package. See `docs/agents/domain.md`.
