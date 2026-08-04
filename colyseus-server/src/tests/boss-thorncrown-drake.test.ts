@@ -3,11 +3,19 @@ import { join } from 'path'
 import { MOB_TYPES } from '../config/mobs'
 import { MOB_STATS } from '../config/combatConfig'
 import { createAttackStrategies } from '../config/attackStrategyFactory'
-import { MAP_CONFIG } from '../config/mapConfig'
+import { MAP_CONFIG, MobSpawnArea } from '../config/mapConfig'
 import { Mob } from '../schemas/Mob'
 import { Player } from '../schemas/Player'
 import { GameState } from '../schemas/GameState'
 import { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
+import {
+  addPlayerAt,
+  buildTestRoom,
+  enqueueHit,
+  makeUnkillable,
+  tickRoom,
+  TICK_MS,
+} from './f018-harness'
 
 const REPO_ROOT = join(__dirname, '../../..')
 
@@ -157,38 +165,63 @@ describe('Thorncrown Drake', () => {
     }
   })
 
-  // F-023's threat table is universal — it is written on every resolved hit with no
-  // mob-type condition, so the apex needs no per-boss switch. This proves the drake
-  // that actually spawned gets its own table keyed by its runtime id, and that the
-  // table names the attacker back.
+  // F-023's threat table is universal — BattleModule writes it on every resolved
+  // hit with no mob-type condition, so the apex needs no per-boss switch. This test
+  // therefore has to drive a REAL hit: an earlier version hand-wrote the threat
+  // entry itself and read it straight back, which stayed green even with the
+  // production write in BattleModule deleted. (F-029: a green suite is not a
+  // covering suite.) Nothing here touches threatRegistry except to read it.
   //
   // Verified signature: ThreatTable.best() returns `{ entityId, threat } | null`
-  // (ThreatTable.ts:112), NOT a bare string — see threat-table.test.ts:24.
-  it('remembers who hit it (F-023 threat)', () => {
-    const state = new GameState('map-01-sector-a', 'test-room')
-    const manager = new MobLifeCycleManager('test-room', state)
+  // (ThreatTable.ts:94-113), NOT a bare string — see threat-table.test.ts:24.
+  it('remembers who actually hit it, via the real damage path (F-023 threat)', async () => {
+    // The harness ticks with jest.advanceTimersByTime, so fake timers are required.
+    jest.useFakeTimers()
+    const env = buildTestRoom('boss-threat-room')
     try {
-      manager.seedInitial()
-      const drake = [...state.mobs.values()].find(m => m.mobTypeId === 'thorncrown_drake')
+      // buildTestRoom deliberately empties spawnAreas to silence ambient spawning
+      // (f018-harness.ts:231-238). Restore JUST boss_area so seedInitial() produces
+      // the real drake through the real MobLifeCycleManager path and nothing else —
+      // spawnMobAt is hardcoded to 'balanced' (MobLifeCycleManager.ts:127-138), so
+      // the harness's spawnRealMob cannot give us a drake.
+      const bossArea = MAP_CONFIG.mobSpawnAreas.find(a => a.id === 'boss_area')
+      expect(bossArea).toBeDefined()
+      ;(env.mobLifeCycleManager as unknown as { spawnAreas: MobSpawnArea[] }).spawnAreas = [
+        bossArea!,
+      ]
+      env.mobLifeCycleManager.seedInitial()
+
+      const drake = [...env.state.mobs.values()].find(m => m.mobTypeId === 'thorncrown_drake')
       expect(drake).toBeDefined()
+      makeUnkillable(drake!)
 
-      // A single `now` keeps the decay curve out of the assertion.
-      const now = performance.now()
-      state.threatRegistry
-        .forAgent({ agentId: drake!.id })
-        .add({ entityId: 'attacker-1', amount: 50, now })
+      const attacker = addPlayerAt(env, 'p-attacker', drake!.x + 15, drake!.y)
+      makeUnkillable(attacker)
+      const bystander = addPlayerAt(env, 'p-bystander', drake!.x - 15, drake!.y)
+      makeUnkillable(bystander)
 
-      const table = state.threatRegistry.peek({ agentId: drake!.id })
+      // Control: nothing has hit it yet, so it has no table at all. Without this the
+      // assertions below could be satisfied by a table written at spawn time.
+      expect(env.state.threatRegistry.peek({ agentId: drake!.id })).toBeNull()
+
+      // The established path (threat-from-damage.test.ts:34-35): queue the hit, then
+      // tick so BattleManager.processActionMessages drains it into BattleModule.
+      enqueueHit(env, attacker, drake!, 25)
+      for (let t = 0; t < 10; t++) await tickRoom(env, TICK_MS)
+
+      const table = env.state.threatRegistry.peek({ agentId: drake!.id })
       expect(table).not.toBeNull()
-      expect(table!.valueOf({ entityId: 'attacker-1', now })).toBeCloseTo(50)
-      expect(table!.best({ candidateIds: ['attacker-1'], now })?.entityId).toBe('attacker-1')
 
-      // The table belongs to THIS agent alone: no other spawned mob inherits it.
-      const otherMob = [...state.mobs.values()].find(m => m.id !== drake!.id)
-      expect(otherMob).toBeDefined()
-      expect(state.threatRegistry.peek({ agentId: otherMob!.id })).toBeNull()
+      const now = performance.now()
+      expect(table!.valueOf({ entityId: attacker.id, now })).toBeGreaterThan(0)
+      // The bystander swung at nothing, so the apex owes it nothing.
+      expect(table!.valueOf({ entityId: bystander.id, now })).toBe(0)
+      expect(table!.best({ candidateIds: [attacker.id, bystander.id], now })?.entityId).toBe(
+        attacker.id
+      )
     } finally {
-      state.stopAI()
+      env.dispose()
+      jest.useRealTimers()
     }
   })
 })
