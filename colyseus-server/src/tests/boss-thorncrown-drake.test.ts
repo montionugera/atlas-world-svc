@@ -156,4 +156,39 @@ describe('Thorncrown Drake', () => {
       state.stopAI()
     }
   })
+
+  // F-023's threat table is universal — it is written on every resolved hit with no
+  // mob-type condition, so the apex needs no per-boss switch. This proves the drake
+  // that actually spawned gets its own table keyed by its runtime id, and that the
+  // table names the attacker back.
+  //
+  // Verified signature: ThreatTable.best() returns `{ entityId, threat } | null`
+  // (ThreatTable.ts:112), NOT a bare string — see threat-table.test.ts:24.
+  it('remembers who hit it (F-023 threat)', () => {
+    const state = new GameState('map-01-sector-a', 'test-room')
+    const manager = new MobLifeCycleManager('test-room', state)
+    try {
+      manager.seedInitial()
+      const drake = [...state.mobs.values()].find(m => m.mobTypeId === 'thorncrown_drake')
+      expect(drake).toBeDefined()
+
+      // A single `now` keeps the decay curve out of the assertion.
+      const now = performance.now()
+      state.threatRegistry
+        .forAgent({ agentId: drake!.id })
+        .add({ entityId: 'attacker-1', amount: 50, now })
+
+      const table = state.threatRegistry.peek({ agentId: drake!.id })
+      expect(table).not.toBeNull()
+      expect(table!.valueOf({ entityId: 'attacker-1', now })).toBeCloseTo(50)
+      expect(table!.best({ candidateIds: ['attacker-1'], now })?.entityId).toBe('attacker-1')
+
+      // The table belongs to THIS agent alone: no other spawned mob inherits it.
+      const otherMob = [...state.mobs.values()].find(m => m.id !== drake!.id)
+      expect(otherMob).toBeDefined()
+      expect(state.threatRegistry.peek({ agentId: otherMob!.id })).toBeNull()
+    } finally {
+      state.stopAI()
+    }
+  })
 })
