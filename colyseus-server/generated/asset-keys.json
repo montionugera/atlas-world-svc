@@ -26,6 +26,10 @@
       "kind": "character"
     },
     {
+      "id": "mob:thorncrown_drake",
+      "kind": "character"
+    },
+    {
       "id": "npc",
       "kind": "character"
     },

@@ -80,6 +80,11 @@ export interface MobTypeConfig {
   radius?: number | [number, number] // Single value or [min, max] range
   /** Rotation speed in radians per second (default: PI = 180 deg/sec) */
   rotationSpeed?: number
+  /**
+   * Elemental DEFENCE of this mob (World Wisdom / F-017). Omit for neutral.
+   * This is the defender side; per-attack offence element lives on AttackDefinition.
+   */
+  element?: Element
   /** Base combat stats (overrides MOB_STATS defaults) */
   stats: Partial<MobCombatStats>
   /** Attack strategies this mob can use */

@@ -55,8 +55,11 @@ export const MAP_CONFIG = {
       y: 450,
       width: 100,
       height: 100,
-      mobType: 'double_attacker',
-      count: 3,
+      // F-030: the Thornveil apex holds this ground alone. It replaces the three
+      // double_attackers that used to share it — an apex predator that spawns in
+      // triplicate is not an apex predator.
+      mobType: 'thorncrown_drake',
+      count: 1,
     },
     // North icy area - aggressive mobs (Just North)
     {
