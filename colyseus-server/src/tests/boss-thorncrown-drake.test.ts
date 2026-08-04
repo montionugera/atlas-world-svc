@@ -3,8 +3,11 @@ import { join } from 'path'
 import { MOB_TYPES } from '../config/mobs'
 import { MOB_STATS } from '../config/combatConfig'
 import { createAttackStrategies } from '../config/attackStrategyFactory'
+import { MAP_CONFIG } from '../config/mapConfig'
 import { Mob } from '../schemas/Mob'
 import { Player } from '../schemas/Player'
+import { GameState } from '../schemas/GameState'
+import { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
 
 const REPO_ROOT = join(__dirname, '../../..')
 
@@ -121,5 +124,36 @@ describe('Thorncrown Drake', () => {
     const design = bestiaryDesign('mob-thorncrown-drake')
     expect(design.element).toBe('earth')
     expect(drake!.element).toBe(design.element)
+  })
+
+  it('holds the boss_area alone', () => {
+    const area = MAP_CONFIG.mobSpawnAreas.find(a => a.id === 'boss_area')
+    expect(area).toBeDefined()
+    expect(area!.mobType).toBe('thorncrown_drake')
+    expect(area!.count).toBe(1)
+  })
+
+  it('spawns with its configured hp, element and mobTypeId', () => {
+    // Verified signatures: GameState is (mapId, roomId) with both defaulted;
+    // MobLifeCycleManager is (roomId, state); the seed entrypoint is seedInitial().
+    // GameState's constructor already builds and starts the AIModule that seedInitial needs.
+    // Unlike mob-lifecycle.test.ts, this test must NOT mock ../config/mapConfig — the real
+    // boss_area is the thing under test.
+    const state = new GameState('map-01-sector-a', 'test-room')
+    const manager = new MobLifeCycleManager('test-room', state)
+    try {
+      manager.seedInitial()
+
+      // seedInitial seeds EVERY spawn area, so filter — state.mobs is not one entry.
+      const spawned = [...state.mobs.values()].filter(m => m.mobTypeId === 'thorncrown_drake')
+      expect(spawned).toHaveLength(1)
+      expect(spawned[0].maxHealth).toBe(1400)
+      expect(spawned[0].element).toBe('earth')
+      expect(spawned[0].spawnAreaId).toBe('boss_area')
+    } finally {
+      // Started by the GameState constructor; stop it or jest reports open handles.
+      // stopAI() is the teardown mob-lifecycle.test.ts's afterEach uses.
+      state.stopAI()
+    }
   })
 })
