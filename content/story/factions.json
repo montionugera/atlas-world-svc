@@ -26,7 +26,7 @@
       "mob:defensive"
     ],
     "relationships": [],
-    "links": ["region-icefield"]
+    "links": ["region-icefield", "region-cindervast"]
   },
   {
     "id": "faction-thornveil",

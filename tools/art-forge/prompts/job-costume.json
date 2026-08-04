@@ -1,0 +1,36 @@
+{
+  "_note": "Per-job costume/prop vocabulary. buildPrompt() (generate/charsheet.mjs) appends `jobCostume[job].clause` right after the existing composed prompt and before style-laws.json's `styleClause`. ONLY `mage` is `validated: true` — it is the F-024 calibration campaign's exact winning clause, visually confirmed against the committed reference game-client/assets/art/classes/ogre-mage.png (matches tools/art-forge/out/costumesweep/W2-costume-style.png, race=ogre job=mage seed=12345). The other seven entries are `validated: false` — authored in the same shape (prop in hand + costume + a distinguishing detail) and spirit for this bake-in, consistent with content/story/canon.md §5's class list, but NOT yet visually confirmed against any generated or reference image. Treat them as a starting hypothesis; QC each on its own contact-sheet row before trusting it.",
+  "swordsman": {
+    "clause": "holding a broadsword at rest point-down, riveted plate armor over a banner-crest tabard, sturdy pauldrons, a scabbard slung across the back",
+    "validated": false
+  },
+  "archer": {
+    "clause": "holding a longbow with an arrow nocked, light leather ranger gear with a quiver strap across the back, a fur-lined hood, feathered fletching details",
+    "validated": false
+  },
+  "assassin": {
+    "clause": "gripping a pair of curved daggers reverse-grip, fitted dark leather armor with hidden pouches, a face-wrapping scarf, soft silent-step boots",
+    "validated": false
+  },
+  "spearman": {
+    "clause": "holding a long spear planted at an angle, banded plate greaves with a chest guard, a tasseled spearhead, a crest-marked pauldron",
+    "validated": false
+  },
+  "mage": {
+    "clause": "holding an ornate crystal-topped staff, layered mage robes with gold trim, wide-brimmed pointed witch hat, glowing arcane sigil in the free hand",
+    "validated": true,
+    "validatedAgainst": "game-client/assets/art/classes/ogre-mage.png (calibration cell tools/art-forge/out/costumesweep/W2-costume-style.png, race=ogre seed=12345)"
+  },
+  "summoner": {
+    "clause": "holding a carved beast-bone totem aloft, layered nomad furs strung with bone talismans, a small war-scarred beast familiar coiled at the feet, tribal warpaint markings",
+    "validated": false
+  },
+  "engineer": {
+    "clause": "holding a heavy socket wrench, a leather tool harness with brass gauges and pouches, a magic-stone-powered automaton companion at the side, soot-streaked goggles pushed up on the forehead",
+    "validated": false
+  },
+  "healer": {
+    "clause": "holding a small bronze bell-staff, pale Bellfaith vestments with a holy sigil clasp, a thin golden halo-ring accessory, soft holy light glowing at the fingertips",
+    "validated": false
+  }
+}

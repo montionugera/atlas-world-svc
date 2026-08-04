@@ -1,0 +1,86 @@
+{
+  "id": "A1-ART-02",
+  "subject": "Millcross",
+  "prompt": "A sprawling, wall-less crossing town on both banks of a grey river, viewed from the road at cart height, late afternoon. One mill-wheel housing is the only structure above one storey; everything else is single-height grey plank, patched canvas and roped tarpaulin, laid out with no plan along the roads. A queue of loaded carts and led animals stretches from the foreground toward the ford, longer than the town is wide. Palette ash-grey, rope-brown, tallow-yellow, with chalked crossed-roads-over-an-empty-bowl marks on tarpaulins. In the middle distance, former refugee tents that have grown plank walls and real doorframes — the seams between canvas and timber clearly visible.",
+  "width": 1280,
+  "height": 832,
+  "horizon": 0.62,
+  "focal": [0.58, 0.42],
+  "_note": "Newly authored to the recovered block-in schema (ABP-flux-dev-and-anchor.md) for this subject — the ABPs only ever block-in'd Gildmark and Norhollow. Revised for task 6b: the original draft placed the mg town rows ABOVE (smaller y than) the bg far-bank/river band — inverted depth, since farther things must sit higher in frame, not lower. Also raised land-region coverage (was ~1/3 of the non-sky frame) by widening the town rows to near-full width and adding a mudflat/tent bridge across the former centre gap; sky above the horizon (0.62) is left black on purpose. Composition unchanged in kind: far bank/river on bg right at the horizon, single-storey plank rows + the one taller mill-wheel housing on mg (asymmetric — right bank denser, matching 'longer than the town is wide'), cart queue + led animals occluding the foreground. Still authored, not measured.",
+  "masses": [
+    {
+      "name": "far-bank",
+      "plane": "bg",
+      "shape": "rect",
+      "rect": [0, 0.58, 1, 0.63],
+      "value": "#7d8288"
+    },
+    {
+      "name": "river",
+      "plane": "bg",
+      "shape": "rect",
+      "rect": [0, 0.63, 1, 0.7],
+      "value": "#9aa4a8"
+    },
+    {
+      "name": "refugee-tents-midground",
+      "plane": "mg",
+      "shape": "poly",
+      "points": [
+        [0.16, 0.78],
+        [0.2, 0.68],
+        [0.48, 0.68],
+        [0.48, 0.76],
+        [0.16, 0.78]
+      ],
+      "value": "#a89a78"
+    },
+    {
+      "name": "town-row-left",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.02, 0.7, 0.44, 0.88],
+      "value": "#8f8a82"
+    },
+    {
+      "name": "town-row-right",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.55, 0.66, 0.99, 0.9],
+      "value": "#948e84"
+    },
+    {
+      "name": "millwheel-housing",
+      "plane": "mg",
+      "shape": "rect",
+      "rect": [0.46, 0.36, 0.58, 0.9],
+      "value": "#5c4a34"
+    },
+    {
+      "name": "cart-queue",
+      "plane": "fg",
+      "shape": "poly",
+      "points": [
+        [-0.02, 1.04],
+        [-0.02, 0.88],
+        [0.18, 0.82],
+        [0.42, 0.88],
+        [0.62, 1.04]
+      ],
+      "value": "#241f18"
+    },
+    {
+      "name": "led-animals-foreground",
+      "plane": "fg",
+      "shape": "poly",
+      "points": [
+        [0.6, 1.04],
+        [0.72, 0.92],
+        [0.86, 0.92],
+        [1.02, 1.02],
+        [1.02, 1.04]
+      ],
+      "value": "#1c1712"
+    }
+  ]
+}

@@ -127,7 +127,7 @@ Rules in words:
 
 | Branch | School(s) | Home town(s) | Element / craft |
 |--------|-----------|--------------|-----------------|
-| **Magic** | Elements Schools (per element) | Embervale (Fire/Earth — mining town), Norhollow + Rooktide (Water/Wind) | Earth, Water, Wind, Fire |
+| **Magic** | Elements Schools (per element) | Embervale (Fire/Earth — the ember-seam), Norhollow + Rooktide (Water/Wind) | Earth, Water, Wind, Fire |
 | **Physical** | Sword / Spear / Dagger / Bow / Shield Schools | Every town (common craft) | Neutral; weapons can be endowed with elements via coatings/magic stones |
 | **Mix** | Builder School (magic-stone automata), Summoner | Builder = Gildmark (Dwarf artisans; automata as the arms industry's next product line), Summoner = Millcross (stateless; war-scar beast affinity) | Automata = machinery + magic stones. Rune-craft is public, but Builder School teaches the engineering tier |
 | **Healer** | Bell School | Bellfaith | **Holy** — the church monopolizes news AND healing (canon), and is the branch that counters Void |

@@ -77,7 +77,7 @@ Everything is composed in **`rooms/GameRoom.ts`** — this is the wiring hub. `o
 - **Single-path APIs.** Constructors/methods take one options object — no positional overloads, no boolean flag params that branch behavior. Use explicit keys (`mode: "attack" | "chase"`, `maxLinearSpeed`).
 - **Entity lifecycle via transition methods.** Call `entity.die()` (sets flags + timestamps + side effects atomically); never set `entity.isAlive = false` by hand. For **creation** count TOTAL entities (active + inactive) to avoid over-spawning; for **capacity** count ACTIVE only. Use helper checks like `readyToBeRemoved(delay)` for cleanup — not inline `!isActive`.
 - **Projectiles.** `ProjectileManager.createMelee` → `piercing = true` (cleave); `createSpear`/ranged default `piercing = false`. On a valid hit, non-piercing projectiles call `stick()` to stop; piercing keep flying. **When `stick()` zeroes `vx`/`vy`, you must call `physicsManager.syncEntityToBody(projectile, projectile.id)` in the same collision path** (in `RoomEventHandler`) or the Planck body keeps sliding until the next tick. Despawn rules live in `Projectile.shouldDespawn()`.
-- **Units & timing.** Physics is in world units; rendering multiplies by `scale` (positions *and* radii). `heading` is an angle in radians — derive vectors via `(cos, sin)`. Use `performance.now()` for gameplay timing/cooldowns end-to-end; do not mix with `Date.now()` for deltas.
+- **Units & timing.** Physics is in world units; rendering multiplies by `scale` (positions *and* radii). `heading` is an angle in radians — derive vectors via `(cos, sin)`. **The simulation takes time as an input**: gate per-tick work on simulated time from the room's `SimClock` (`src/time/SimClock.ts`), not a global clock — `performance.now()` is real-time too and loses determinism exactly as `Date.now()` does (F-028). Subsystems not yet converted (respawn, projectile lifetimes, combat scheduling — I-074) still read `Date.now()`; keep each internally consistent and never cross-subtract two clocks.
 - **Tick reality vs README.** README/specs advertise 30 Hz, but `config/gameConfig.ts` currently runs `tickRate = 50` ms (**20 FPS**), and `GameRoom` sets `setPatchRate(50)`. Trust the config for actual behavior; treat the 30 Hz/p50 budgets as targets, not current settings.
 
 ## Tests
@@ -94,3 +94,17 @@ Jest (ts-jest) under `colyseus-server/src/tests/*.test.ts` (~55 files) plus `src
 ## Further docs
 
 `docs/` holds the authoritative specs — notably `docs/event-flow.spec.md`, `docs/game-server.spec.md`, `docs/companion.spec.md`. `.cursor/rules/*.mdc` contain the full coding-standard set summarized above.
+
+## Agent skills
+
+### Issue tracker
+
+Issues tracked as GitHub issues (`montionugera/atlas-world-svc`), via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context (`CONTEXT.md` + `docs/adr/` at repo root). Repo is a monorepo — switch this line to multi-context (`CONTEXT-MAP.md`) if you split docs per package. See `docs/agents/domain.md`.

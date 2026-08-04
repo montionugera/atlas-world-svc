@@ -1,0 +1,95 @@
+# Single-node insecure CockroachDB — the k8s equivalent of the atlas-database
+# service in docker-compose.yml. Local development only: --insecure means no TLS
+# and no auth, which is why k8s/local/ is guarded against non-local contexts.
+apiVersion: v1
+kind: Service
+metadata:
+  name: cockroachdb
+  namespace: atlas-world
+  labels:
+    app: cockroachdb
+spec:
+  # Headless: the StatefulSet needs stable per-pod DNS
+  # (cockroachdb-0.cockroachdb.atlas-world.svc.cluster.local), and Nakama
+  # connects through the service name directly.
+  clusterIP: None
+  selector:
+    app: cockroachdb
+  ports:
+    - name: sql
+      port: 26257
+      targetPort: sql
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cockroachdb
+  namespace: atlas-world
+  labels:
+    app: cockroachdb
+spec:
+  serviceName: cockroachdb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cockroachdb
+  template:
+    metadata:
+      labels:
+        app: cockroachdb
+    spec:
+      # CockroachDB flushes on shutdown; give it room before SIGKILL.
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: cockroachdb
+          image: cockroachdb/cockroach:latest-v23.1
+          command:
+            - /cockroach/cockroach
+            - start-single-node
+            - --insecure
+            - --store=path=/cockroach/cockroach-data
+            # Must match the headless-service DNS name or clients are handed an
+            # unroutable pod IP to reconnect to.
+            - --advertise-addr=cockroachdb-0.cockroachdb.atlas-world.svc.cluster.local
+          ports:
+            - name: sql
+              containerPort: 26257
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health?ready=1
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          volumeMounts:
+            - name: data
+              mountPath: /cockroach/cockroach-data
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            # Local dev only. Note that deleting the StatefulSet does NOT delete
+            # this PVC — `kubectl -n atlas-world delete pvc data-cockroachdb-0`
+            # (or delete the namespace) to reclaim the disk.
+            storage: 1Gi

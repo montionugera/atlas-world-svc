@@ -220,5 +220,126 @@
     "claimed_at": "2026-07-30T13:17:38.839424+00:00",
     "shipped_at": "2026-07-30T13:40:46.183161+00:00",
     "promoted_at": "2026-07-30T17:23:40.262918+00:00"
+  },
+  {
+    "id": "F-020",
+    "title": "nakama package has no CI job at all \u2014 add typecheck/test/esbuild gate",
+    "from_idea": "I-039",
+    "created_at": "2026-07-30T17:48:05.894829+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.6",
+    "claimed_at": "2026-07-30T17:48:16.244478+00:00",
+    "shipped_at": "2026-07-30T18:10:01.194338+00:00"
+  },
+  {
+    "id": "F-021",
+    "title": "Local k8s full-stack deploy: storybook + nakama + cockroachdb, wired into ship",
+    "from_idea": "I-040",
+    "created_at": "2026-07-30T17:56:29.064538+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.6",
+    "claimed_at": "2026-07-30T17:56:37.886356+00:00",
+    "shipped_at": "2026-07-31T01:31:20.891638+00:00"
+  },
+  {
+    "id": "F-022",
+    "title": "BATTLE_ATTACK carries no damageType \u2014 the last silent physical fallback",
+    "from_idea": "I-037",
+    "created_at": "2026-07-31T01:38:13.866893+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.6",
+    "claimed_at": "2026-07-31T01:38:23.237969+00:00",
+    "shipped_at": "2026-07-31T17:07:52.186159+00:00"
+  },
+  {
+    "id": "F-023",
+    "title": "Boss target rotation / aggro \u2014 bosses structurally cannot stop focus-firing",
+    "from_idea": "I-035",
+    "created_at": "2026-07-31T11:56:49.775135+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.6",
+    "claimed_at": "2026-07-31T12:04:22.093407+00:00",
+    "shipped_at": "2026-07-31T16:10:04.593845+00:00"
+  },
+  {
+    "id": "F-024",
+    "title": "Commit the concept-art generation pipeline into the repo (Z-Image Turbo img2img + silhouette recipe + prompt laws + batch matrix scripts) \u2014 currently scratchpad-only and dies with the session",
+    "from_idea": "I-031",
+    "created_at": "2026-07-31T18:29:09.894664+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.6",
+    "claimed_at": "2026-07-31T18:29:20.653847+00:00",
+    "shipped_at": "2026-08-02T04:45:40.639095+00:00"
+  },
+  {
+    "id": "F-025",
+    "title": "Season 1 scope cut: reduce the MMO target from 32 zones / 384 species / 560 quests to a finishable cluster-1 slice (9-10 zones, ~30 monsters, 2 art classes) per DR-001's chosen cadence",
+    "from_idea": "I-048",
+    "created_at": "2026-08-01T16:29:16.535491+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.6",
+    "claimed_at": "2026-08-01T16:29:46.207707+00:00",
+    "shipped_at": "2026-08-01T17:47:56.032647+00:00"
+  },
+  {
+    "id": "F-026",
+    "title": "Environment art recipe as a named profile (forge.config.json v2: character + environment, no implicit default) + storybook group tabs/filter + module split. RUNNER AND REPLICATION DEFERRED - blocked on the ComfyUI box being unreachable; blockin.mjs and generate/env.mjs are NOT built.",
+    "from_idea": "I-049",
+    "created_at": "2026-08-02T05:31:38.978685+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.6",
+    "claimed_at": "2026-08-02T06:29:58.748099+00:00",
+    "shipped_at": "2026-08-03T06:54:12.966515+00:00"
+  },
+  {
+    "id": "F-027",
+    "title": "Seamless large-world scaling: AOI (StateView) + shard grid + border ghosts + authority handoff + cross-shard combat",
+    "from_idea": "I-058",
+    "created_at": "2026-08-02T07:03:28.091992+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.6",
+    "claimed_at": "2026-08-02T07:03:35.678530+00:00",
+    "shipped_at": "2026-08-02T14:16:01.400217+00:00"
+  },
+  {
+    "id": "F-028",
+    "title": "Simulation clock injection: gameplay takes time as an input, not from a global clock",
+    "from_idea": "I-069",
+    "created_at": "2026-08-02T17:00:10.647023+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.6",
+    "claimed_at": "2026-08-02T17:05:03.386531+00:00",
+    "shipped_at": "2026-08-03T15:00:47.375972+00:00"
+  },
+  {
+    "id": "F-029",
+    "title": "L2 ecology: biome and habitat lore for cluster-1's zones - convene the Naturalist (joins at L2 per the roles charter) to derive climate, vegetation, water and food chains from the Cartographer's terrain, and place the 116 bestiary monsters by ZONE not just region",
+    "from_idea": "I-059",
+    "created_at": "2026-08-03T17:07:20.535749+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.6",
+    "claimed_at": "2026-08-03T17:08:23.372333+00:00",
+    "shipped_at": "2026-08-03T19:24:59.748476+00:00"
+  },
+  {
+    "id": "F-030",
+    "title": "L3 boss design: F-023 shipped boss threat/aggro CODE but no boss exists anywhere - no identities, no lore, no art:boss entries; define the cluster-1 bosses, their threat behaviour and their place in the bestiary's element table",
+    "from_idea": "I-062",
+    "created_at": "2026-08-04T14:58:43.821818+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.6",
+    "claimed_at": "2026-08-04T14:59:02.745747+00:00",
+    "shipped_at": "2026-08-04T17:03:22.101884+00:00"
   }
 ]

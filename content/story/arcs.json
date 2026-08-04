@@ -17,7 +17,7 @@
     "kind": "arc",
     "title": "Icefield Reckoning",
     "summary": "With the meadow open, the expedition pushes north onto the Stoneguard's frozen shelf.",
-    "actId": "act-2",
+    "actId": "act-1",
     "questIds": [
       "quest-icefield-reckoning"
     ],

@@ -207,6 +207,7 @@ export class MobLifeCycleManager {
       mobTypeId: mobTypeConfig.id,
       spawnAreaId: spawnAreaId,
       rotationSpeed: mobTypeConfig.rotationSpeed,
+      element: mobTypeConfig.element,
       stat: mobStat,
     })
 

@@ -6,7 +6,7 @@
     "summary": "The one who stayed at camp so the others could leave it.",
     "role": "npc",
     "faction": "faction-expedition",
-    "region": "region-spawn-meadow",
+    "region": "region-millcross",
     "assetKey": "npc",
     "status": "dead",
     "diedAt": "event-quartermaster-falls",
@@ -16,11 +16,22 @@
     "id": "char-expedition-member",
     "kind": "character",
     "title": "Expedition Member",
-    "summary": "You — one of the party that reopened the meadow.",
+    "summary": "You — one of the party that reopened the meadow. The player avatar, deliberately unnamed: never a quest giver, never a dialogue speaker. Events may list you as involved; nothing may put words in your mouth.",
     "role": "ally",
     "faction": "faction-expedition",
     "region": "region-spawn-meadow",
     "assetKey": "player",
+    "links": []
+  },
+  {
+    "id": "char-crossroads-man",
+    "kind": "character",
+    "title": "The Crossroads Man",
+    "summary": "A townless drifter the Quartermaster hired and named. His home was swallowed by an earlier war, so he owes no banner — which is exactly why both sides will hand him a ledger they would not hand each other.",
+    "role": "npc",
+    "region": "region-millcross",
+    "assetKey": "npc",
+    "status": "alive",
     "links": []
   },
   {
@@ -72,8 +83,7 @@
     "title": "The Widow of the First Caravan",
     "summary": "She knew who lit the wagons before the ash cooled. It changed nothing she wants done.",
     "role": "villain",
-    "faction": "faction-embervale-banner",
-    "region": "region-embervale",
+    "region": "region-ashvale-front",
     "links": []
   },
   {

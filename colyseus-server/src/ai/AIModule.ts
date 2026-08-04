@@ -87,21 +87,35 @@ export class AIModule {
   }
 
   // Update all agent AI (public method for tick-driven updates)
-  update(): void {
+  //
+  // `nowMs` is SIMULATED time from the room's SimClock, not wall clock. Gating
+  // on wall clock made AI cadence depend on how fast the process happened to be
+  // running: an unpaced loop ran the decision pass on 1 of 100 ticks, and the
+  // 6-of-100 rate measured by F-027's load harness silently invalidated its
+  // first capacity table. See .claude/refined_backlog/F-028.
+  update(nowMs: number): void {
     if (!this.isRunning) return
-    const now = Date.now()
-    const dt = now - this.lastUpdateTime
-    const targetInterval = 1000 / this.updateFrequency // 50ms for 20 FPS
 
-    // Only update if enough time has passed
-    if (dt < targetInterval) return
-    this.lastUpdateTime = now
-    this.updateAIDecision()
+    const targetInterval = 1000 / this.updateFrequency // 50ms for 20 FPS
+    if (nowMs - this.lastUpdateTime < targetInterval) return
+
+    // Advance by whole intervals rather than snapping to `nowMs`, so a tick rate
+    // that is not a multiple of the interval keeps the long-run decision rate at
+    // updateFrequency instead of silently rounding down (33ms ticks would
+    // otherwise yield 15Hz, not 20Hz). Clamped to avoid a catch-up burst after a
+    // long stall: at most one decision pass per call, always.
+    this.lastUpdateTime += targetInterval
+    if (nowMs - this.lastUpdateTime > targetInterval) {
+      this.lastUpdateTime = nowMs
+    }
+
+    this.updateAIDecision(nowMs)
   }
 
-  // Update all agent AI (public method for testing)
-  updateAll(): void {
-    this.updateAIDecision()
+  // Update all agent AI (public method for testing) — runs a decision pass
+  // unconditionally, bypassing the cadence gate.
+  updateAll(nowMs: number = performance.now()): void {
+    this.updateAIDecision(nowMs)
   }
 
   // Calculate separation velocity to prevent agent clustering
@@ -152,8 +166,10 @@ export class AIModule {
     return { x: sepX, y: sepY }
   }
 
-  // Internal AI update logic
-  private updateAIDecision(): void {
+  // Internal AI update logic. `nowMs` is simulated time, threaded down to
+  // decideBehavior so behaviour locks and cooldowns expire on the same clock
+  // that gated this pass.
+  private updateAIDecision(nowMs: number): void {
     const startTime = performance.now()
 
     try {
@@ -168,7 +184,7 @@ export class AIModule {
         )
 
         // AI module decides behavior (not Agent)
-        const behaviorDecision = this.decideBehavior(agent, env)
+        const behaviorDecision = this.decideBehavior(agent, env, nowMs)
 
         // Agent applies the behavior decision (state transition)
         agent.applyBehaviorDecision(behaviorDecision)
@@ -281,8 +297,18 @@ export class AIModule {
    * This is the AI module's responsibility - Agent just holds state
    * Public for testing and external use
    */
-  decideBehavior(agent: IAgent, env: AgentEnvironmentFromInterface): BehaviorDecision {
-    const now = performance.now()
+  // `nowMs` is simulated time, supplied by updateAIDecision. It drives
+  // behaviourLockedUntil and the per-behaviour cooldowns inside getDecision, so
+  // a fast-forwarded run expires locks at the same rate it runs decision passes.
+  // The performance.now() default exists only for tests that call this directly;
+  // the simulation always passes simulated time. I-074 removes the default when
+  // the remaining subsystems convert.
+  decideBehavior(
+    agent: IAgent,
+    env: AgentEnvironmentFromInterface,
+    nowMs: number = performance.now()
+  ): BehaviorDecision {
+    const now = nowMs
 
     // Simple cooldown to prevent rapid switching
     if (agent.behaviorLockedUntil && now < agent.behaviorLockedUntil) {
@@ -302,8 +328,8 @@ export class AIModule {
 
     // Convert to AgentEnvironment format
     const agentEnv: AgentEnvironment = {
-      nearestPlayer: env.nearestPlayer || null,
-      distanceToNearestPlayer: env.distanceToNearestPlayer,
+      preferredTarget: env.preferredTarget || null,
+      distanceToPreferredTarget: env.distanceToPreferredTarget,
       nearestMob: env.nearestMob || null,
       distanceToNearestMob: env.distanceToNearestMob,
       nearBoundary: env.nearBoundary,
@@ -325,7 +351,7 @@ export class AIModule {
 
       // Debug: Log behavior selection occasionally
       if (Math.random() < 0.01) {
-        const distance = env.distanceToNearestPlayer ?? Infinity
+        const distance = env.distanceToPreferredTarget ?? Infinity
         console.log(
           `🎯 AGENT ${agent.id}: selected behavior="${selectedBehavior.name}", distance=${distance.toFixed(2)}, priority=${selectedBehavior.priority}`
         )

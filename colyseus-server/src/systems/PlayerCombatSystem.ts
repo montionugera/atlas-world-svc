@@ -3,6 +3,9 @@ import { PLAYER_STATS, WEAPON_TYPES } from '../config/combatConfig'
 import { resolveWeaponBasicProjectileParams } from '../combat/attackDamage'
 import { resolvePlayerMeleeAttackTiming } from '../combat/meleeAttackSpeed'
 import { ScheduledAttack, processAttackQueue } from './attackQueue'
+// Type-only: erased at compile time, so this does NOT reintroduce the circular import
+// that the lazy `require('../events/EventBus')` in executeAttack exists to avoid.
+import type { BattleAttackData } from '../events/EventBus'
 
 /**
  * PlayerCombatSystem
@@ -207,11 +210,18 @@ export class PlayerCombatSystem {
     }
 
     // Emit BATTLE_ATTACK for client animation only (targetId is always '', so this
-    // never resolves to a damage message) — no element needed on this event.
-    const attackData = {
+    // never resolves to a damage message). Both fields are still stated, because
+    // "animation-only" is a property of this call site, not of the event.
+    //
+    // The `: BattleAttackData` annotation is load-bearing: without it this literal is
+    // only structurally typed, so a field required by the interface would not be
+    // enforced here and this emitter could drift undetected (I-037).
+    const attackData: BattleAttackData = {
       actorId: this.player.id,
       targetId: '', // Cleaving hitboxes don't have a single explicit target upfront
       damage: this.player.pAtk, // just for visual numbers/logs
+      damageType: 'physical',
+      element: 'neutral',
       range: this.player.attackRange,
       roomId: roomId,
     }

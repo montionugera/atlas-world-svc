@@ -68,18 +68,29 @@ background; everything after is expressed in seasons.
 
 ## 2. Character dossiers
 
-All 18 named characters. Fate follows the plan's death list (spec §3);
+All 19 named characters. Fate follows the plan's death list (spec §3);
 everyone not listed there survives to the epic's end.
+
+**The protagonist question, settled.** The player is an **anonymous
+expedition member**, not a named hero — `char-expedition-member` exists
+only as the avatar's anchor and carries no authored voice. **The
+Crossroads Man is a separate NPC**, the drifter the Quartermaster hired,
+and the four `art:cast-crossroads-man-*` sheets are his likeness — *not*
+the player's. The two were previously conflated, which had the player
+giving himself a quest and speaking his own dialogue. If a line needs a
+voice from inside the Expedition, use Farrow, the Quartermaster, or the
+Crossroads Man — never the player.
 
 | Character | Want | Secret | Voice note | Key bonds | Fate |
 |---|---|---|---|---|---|
 | `char-quartermaster` | Keep everyone who reaches Millcross fed and counted. | None of her own — she carries other people's. | Counts things in meals and miles, never coin (Millcross diction). | The Expedition; the act-2 refugees; Liss's letters cross her desk. | Dies, act 4 (`event-quartermaster-falls`), shielding refugees from the Widow's mob. |
-| `char-expedition-member` | To matter to the ground he stands on. | — | Player-driven. | Farrow the Forward; the Quartermaster. | Alive — the throughline. |
+| `char-expedition-member` | To matter to the ground they stand on. | — | **None — the player avatar has no authored voice.** It is deliberately unnamed and un-gendered, and it is **not a character sheet**: it may never be a quest `giver` or a dialogue `speaker`, and no line may put words in it. Events may list it as involved. | Farrow the Forward; the Quartermaster. | Alive — the throughline. |
+| `char-crossroads-man` (**the Crossroads Man**) | A place that is his, after a war took the first one. | Knows what both sides pay him to carry, and reads it. | Ashen Vigil terseness wearing a Gilded Rot "the" — the one deliberate cross-register name in the world (see `style.md`). | The Quartermaster hired him and named him; buries her in act 4. | Survives — not among the epic's five deaths. |
 | `char-ashfang-alpha` (the Twin-Strike) | — (a wall, not a schemer). | — | No speech. | — | Already dead, act 1 (`event-twin-strike-falls`, existing). |
 | `char-the-broker` | To be right about people, forever — more than he wants money. | Personally engineered the first caravan burning; has kept the war balanced, never won, ever since; wins the signal/detail gap every time (see "How news travels," §4) — his riders outride everyone else's, and inconvenient proclamations get robbed on the road. | Gilded Rot: calm ledger-and-chronicle accounting, even discussing lives. | Owns the Bell-Keeper's silence; sells to the Iron Regent. | Survives — exposed and broken (act 5, `event-broker-unmasked`), not among the epic's five deaths. |
 | `char-iron-regent` | To rule whatever's left when the war ends. | Is the buyer in the act-4 relic-weapon deal. | Ashen Vigil register: clipped command, frames every seizure of power as necessity. | Sister to the War-Countess; enemy to the Ash Prophet's raiders. | Survives — thwarted at the brink (`event-relic-sale-stopped`), not killed. |
 | `char-the-bell-keeper` | His daughter Mirelle free, above everything. | Has sealed false proclamations and burned true ones for the Broker for years to keep her safe. | Ashen Vigil register: apologetic and precise, speaks in readings and sealings, guilt under procedure. | Mirelle (daughter); Warden Bright (reformer colleague). | Survives — breaks from the Broker act 4 (`event-bells-ring-true`), hands over the proof. |
-| `char-widow-of-the-first-caravan` | Both towns to burn. | Has known the false-flag truth since the ash cooled — see §3. | Ashen Vigil, flat and terse: states facts as verdicts, not feelings. | Her husband, dead in the first caravan; none surviving. | Survives, undefeated — no death, no defeat event (the epic's deliberate absence). |
+| `char-widow-of-the-first-caravan` | Both towns to burn. | Has known the false-flag truth since the ash cooled — see §3. | Ashen Vigil, flat and terse: states facts as verdicts, not feelings. | Her husband, dead in the first caravan; none surviving. Belongs to no banner — expelled by Embervale, refused by Norhollow; her only network is the bereaved of both towns, which is why the Broker's money-and-paper watch cannot see her. | Survives, undefeated — no death, no defeat event (the epic's deliberate absence). |
 | `char-the-ash-prophet` | Everything standing should fall, as Cindervast fell. | None — he hides nothing, that's the point. | Ashen Vigil register: sermon cadence, short declarative bursts, addresses crowds. | Leads the Ashen Column; enemy to every named faction. | Survives, uncontained — the variable no closing event pins down. |
 | `char-war-countess` | To hold Embervale together without becoming her brother. | Privately suspects the Iron Regent more than she says aloud. | Ashen Vigil, grieving but composed. | Sister to the Iron Regent; gives act-1/act-2 quests. | Alive throughout. |
 | `char-speaker-of-norhollow` | To hold the palisade and bring her people home, in that order. | None load-bearing. | Ashen Vigil: answers with a tally count first, an opinion second, if ever. | Gives act-1 quests. | Alive throughout. |
@@ -169,6 +180,25 @@ official reading of the first caravan burning says beneath the tower.
   is the contested middle ground between them — neither town claims it, both
   bury their dead in it; wartime crossing is under a day, which is exactly
   why the front is so lethal.
+- **Embervale farms the Ashvale loam and works the ember-seam beneath it.**
+  Norhollow remains a forest-and-mine town. Both readings are true and
+  neither is a correction of the other: the loam is what the year's harvest
+  comes out of, the seam is what the town's Fire/Earth school grew around,
+  and the sister towns' bargain was always grain from one side of the plain
+  against timber and ore from the other. *(Sources: the treatment and the
+  novel call Embervale a farm town; §5's school table derives its Fire/Earth
+  seat from the seam. Accepted by accommodation — do not "fix" either.)*
+- **The spawn meadow is Millcross's frontier ward, not a rival settlement.**
+  `region-spawn-meadow` and `region-millcross` are two ids for one town's
+  ground — the expedition camp and the crossroads it supplies. **Both ids
+  stay valid and neither is retired:** use `region-spawn-meadow` for
+  camp-side placement (it is where the map spawns things), and
+  `region-millcross` for the crossroads itself and for anyone whose office,
+  life and death are there. **Count the pair once when counting towns.**
+  When a character sheet in `content/characters/` carries a `region-*`
+  link, it must match that character's `region` in
+  `content/story/characters.json` — the content gate checks only that the
+  id resolves, not that the two agree.
 - **Gildmark** sits on the coast: reachable from Millcross by the old trade
   road (4–5 days) and from both war towns by a coastal spur (about 3 days).
   Its harbor is the only deepwater port on this coast — there is no other
@@ -186,6 +216,12 @@ official reading of the first caravan burning says beneath the tower.
   north-west, on ground both war towns avoid; its ruin districts border the
   same wild ground the Ash Prophet's raiders use to strike Embervale's and
   Norhollow's outer farms.
+- **The Stoneguard hold the Cindervast gate, and a detached watch keeps the
+  old trade road on the Northern Icefield.** The road ran to Cindervast
+  before the city fell, which is why a company sworn to a dead city's gate
+  is found on a frozen shelf a world away from it — they are holding both
+  ends of the same road. Their home turf in seed content is the icefield;
+  their reason for existing is the gate.
 
 ### How news travels (the Bellfaith, three layers, two speeds)
 
@@ -321,7 +357,7 @@ multiplier (`style.md` §6, rule 5).
 
 | Branch | School(s) | Home town(s) | Element / craft |
 |---|---|---|---|
-| **Magic** | Elements Schools (per element) | Embervale (Fire/Earth — mining town), Norhollow + Rooktide (Water/Wind) | Earth, Water, Wind, Fire |
+| **Magic** | Elements Schools (per element) | Embervale (Fire/Earth — the ember-seam), Norhollow + Rooktide (Water/Wind) | Earth, Water, Wind, Fire |
 | **Physical** | Sword / Spear / Dagger / Bow / Shield Schools | Every town (common craft) | Neutral; weapons can be endowed with elements via coatings or magic stones |
 | **Mix** | Builder School (magic-stone automata), Summoner | Builder = Gildmark (Dwarf artisans; automata are the next thing its arms trade means to sell), Summoner = Millcross (belongs to no town's banner; war-scar beast affinity) | Automata = machinery plus magic stones. Rune-craft is public, but the Builder School teaches the building of the automata themselves |
 | **Healer** | Bell School | Bellfaith | **Holy** — the church holds the news (§4) and the healing with it, and is the branch that counters Void |
@@ -375,3 +411,40 @@ classes and races do not. That split holds until phase C.
 
 Content in Tasks 3–8 that contradicts this file is a review finding; fix the
 content or amend this file deliberately in the same commit, never silently.
+
+### 6.1 Keyspace register
+
+One concept, one id space. When two id spaces name the same thing, the
+winner is recorded here and the loser is renamed — not aliased.
+
+| Concept | Winning keyspace | Authority | Losing forms |
+|---|---|---|---|
+| Regions / zones | `region-*` | `content/story/regions.json` | bare zone ids in `content/maps/cluster1-geography.json` (on `feat/F-024`); `content/bestiary/bestiary.json` bare region keys (same branch) |
+
+**Why `region-*` wins:** `content/schemas/quest.schema.json` pins a quest's
+`region` field to `^region-`, so every quest already authored — and the 90
+budgeted for Season 1 — is locked to it. Renaming the schema is a larger
+blast radius than renaming the zone ids.
+
+**Open, not resolved:** the rename itself cannot happen on this branch —
+`cluster1-geography.json` and `bestiary.json` live only on `feat/F-024`. The
+nine corresponding pairs (`millcross-ford` ↔ `region-millcross`, `emberdown`
+↔ `region-embervale`, `hollowmarch` ↔ `region-norhollow`, …) are **not
+string-equal**, so the merge will not surface them as conflicts. Until that
+rename lands, `content/season-1-budget.json`'s `zones` line stays `blockedBy`
+and reports as blocked rather than measured. See `I-056`.
+
+### 6.2 Rulings already made, and where they live
+
+A ruling recorded only in a backlog spec is not canon. If a decision is
+made about this file, it lands *in* this file in the same pass — the
+failure this section exists to prevent is a contradiction being marked
+"ruled" in `.claude/idea_backlog/` and left standing in the prose for weeks.
+
+| Ruling | Landed in |
+|---|---|
+| Embervale farms the loam *and* works the seam (accommodation) | §4 |
+| The spawn meadow is Millcross's frontier ward | §4 |
+| The Stoneguard hold the gate; the icefield watch is detached | §4 |
+| Six *peoples* and eight *races* are separate axes | `style.md` §"Peoples", copied to `core-story.md` |
+| Magic is rune-gated, not scarcity-gated (F-017) | §5, and the scarcity rule retired from `core-story.md` |

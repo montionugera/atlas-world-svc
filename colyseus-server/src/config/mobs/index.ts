@@ -5,6 +5,7 @@ import { aggressive } from './definitions/aggressive'
 import { defensive } from './definitions/defensive'
 import { balanced } from './definitions/balanced'
 import { doubleAttacker } from './definitions/doubleAttacker'
+import { thorncrownDrake } from './definitions/thorncrownDrake'
 
 /**
  * Mob Type Definitions
@@ -17,6 +18,7 @@ export const MOB_TYPES: MobTypeConfig[] = [
   defensive,
   balanced,
   doubleAttacker,
+  thorncrownDrake,
 ]
 
 export * from './types'

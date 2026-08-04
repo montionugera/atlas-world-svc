@@ -14,6 +14,7 @@ atlas-world-svc/
 │   │   ├── schemas/     # Colyseus schemas
 │   │   ├── ai/          # AI module, behaviors, strategies
 │   │   ├── physics/     # Planck physics
+│   │   ├── time/        # SimClock (simulated time)
 │   │   └── tests/       # Jest unit/integration tests
 │   ├── generated/csharp/ # C# Unity client (generated)
 │   ├── package.json
@@ -30,6 +31,7 @@ atlas-world-svc/
 - **schemas/**: Colyseus state schemas (Player, Mob, NPC, GameState)
 - **ai/**: AIModule, behaviors, AIWorldInterface
 - **physics/**: PlanckPhysicsManager
+- **time/**: SimClock — monotonic simulated time, advanced once per tick
 - **src/tests/**: Jest tests (*.test.ts)
 - **generated/csharp/**: C# Unity client library (generated)
 

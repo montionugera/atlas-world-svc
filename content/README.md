@@ -1,6 +1,6 @@
 # Content Authoring — Characters, Story, Maps
 
-This directory holds the creative source of truth: character sheets, world bible, map specs, and asset-forge workflows.
+This directory holds character sheets, map specs, and asset-forge workflows. **The creative source of truth is `content/story/canon.md`** — `content/story/bible.md` is superseded and retained only for seed-region texture.
 
 ## Overview
 
@@ -43,10 +43,14 @@ Authoring a sheet in detail:
    - `assetKey`: reference to `colyseus-server/generated/asset-keys.json`
    - `role`, `status`, `tier`: enums from schema
    - `stats`: design intent only (descriptive enums, not balance numbers)
-   - `links.story`: array of bible section ids (e.g., `[faction-ashfang]`)
+   - `links.story`: array of story-node ids (e.g., `[faction-ashfang]`) — these
+     must resolve against `content/story/*.json`, and a character's `region-*`
+     link must match that character's `region` in `content/story/characters.json`
 
 3. **Write lore + visual brief** (markdown body)
-   - Anchor to world bible nouns; don't invent new ones
+   - Anchor to nouns that already exist in `content/story/canon.md`; don't
+     invent new ones. Amend `canon.md` deliberately, in the same commit, if
+     the content genuinely needs one
    - Visual brief is the forge's input (silhouette, palette, scale, donor rig)
 
 4. **Run the gate**
@@ -77,9 +81,13 @@ Adding or renaming a mob definition:
    FAIL against a stale file. CI regenerates both before the gates as a
    backstop.
 
-## World Bible
+## Canon (and the superseded bible)
 
-`content/story/bible.md` is the creative seed: setting, tone, factions, regions, timeline. Character sheets link to section ids via `links.story`. Formal schema and versioning land with roadmap #3.
+**`content/story/canon.md` is the source of truth** — setting, chronology, characters, geography, magic. Read it first; `content/story/style.md` second for voice.
+
+`content/story/bible.md` is **superseded**. It describes one era and three regions against canon's five acts and ten regions, and must not be used to judge new content — keep it only for meadow / icefield / Thornveil texture.
+
+Character sheets link to story-node ids via `links.story`. Note the gate only checks that those ids **resolve**, not that a sheet's `region-*` agrees with the same character's `region` in `content/story/characters.json` — keep them in sync by hand.
 
 ## File Structure
 

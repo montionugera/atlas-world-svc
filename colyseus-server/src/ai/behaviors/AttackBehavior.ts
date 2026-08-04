@@ -25,12 +25,12 @@ export class AttackBehavior extends BaseBehavior {
     }
 
     // Check if we should start attacking (player within range)
-    const nearestPlayer = context.nearbyPlayers.reduce((nearest, player) => {
+    const preferredTarget = context.nearbyPlayers.reduce((nearest, player) => {
       const dist = this.distance(mob.x, mob.y, player.x, player.y)
       return dist < this.distance(mob.x, mob.y, nearest.x, nearest.y) ? player : nearest
     })
 
-    const distanceToPlayer = this.distance(mob.x, mob.y, nearestPlayer.x, nearestPlayer.y)
+    const distanceToPlayer = this.distance(mob.x, mob.y, preferredTarget.x, preferredTarget.y)
 
     // Start attacking if player is within attack range
     if (distanceToPlayer <= this.attackRange) {

@@ -18,7 +18,7 @@ import {
 } from './BattleActionMessage'
 import { ProcessedEventTracker } from './combat/ProcessedEventTracker'
 import { DamageCalculator, DamageCalculationOptions } from './combat/DamageCalculator'
-import { DEFAULT_ELEMENT } from '../config/combat/elements'
+import { DEFAULT_ELEMENT, type Element } from '../config/combat/elements'
 import { StatusEffectManager } from './combat/StatusEffectManager'
 
 export interface AttackEvent {
@@ -78,26 +78,42 @@ export class BattleModule implements BattleActionProcessor {
       return null
     }
 
-    // Determine damage based on payload or use fallback
-    let baseDamage = attacker.pAtk // Default fallback to physical pAtk
+    // With a payload, every field is read verbatim — no `?? 'physical'`, no
+    // `?? DEFAULT_ELEMENT`. Those defaults are what let a magical hit be mitigated
+    // by pDef without anyone noticing (I-037).
+    //
+    // The no-payload branch keeps its own values: `processAttack` is still callable
+    // without a payload, and physical/neutral off pAtk is the documented meaning of
+    // that call, not a fallback for a missing field.
+    let baseDamage = attacker.pAtk
     let damageType: 'physical' | 'magical' = 'physical'
+    let attackElement: Element = DEFAULT_ELEMENT
 
     if (payload) {
       baseDamage = payload.damage
-      damageType = payload.damageType || 'physical'
+      damageType = payload.damageType
+      attackElement = payload.element
     }
 
     // Calculate damage with defense + element
     const damage = this.calculateDamage({
       baseDamage,
       damageType,
-      attackElement: payload?.element ?? DEFAULT_ELEMENT,
+      attackElement,
       target,
     })
     console.log(`🎯 ATTACK: ${attacker.id} deals ${damage} ${damageType} damage to ${target.id}`)
 
     // Apply damage to target
     const targetDied = this.applyDamage(target, damage)
+
+    // Threat: the target remembers who hit it (F-023). Written only on resolved
+    // hits -- never per tick -- so quiet ticks cost nothing.
+    if (damage > 0) {
+      this.gameState.threatRegistry
+        .forAgent({ agentId: target.id })
+        .add({ entityId: attacker.id, amount: damage, now: performance.now() })
+    }
 
     // Calculate impulse vector
     let nx, ny
@@ -279,6 +295,19 @@ export class BattleModule implements BattleActionProcessor {
   }
 
   // Apply a status effect to an entity (delegates to StatusEffectManager)
+  /**
+   * Force `tauntingEntityId` to the top of `targetAgentId`'s threat table and pin
+   * it for THREAT_CONFIG.tauntLockMs (F-023).
+   *
+   * This is the threat OPERATION. Whether any class has a taunt ability is content,
+   * not this system -- combat logic stays centralised here rather than in a system.
+   */
+  applyTaunt(options: { tauntingEntityId: string; targetAgentId: string }): void {
+    this.gameState.threatRegistry
+      .forAgent({ agentId: options.targetAgentId })
+      .taunt({ entityId: options.tauntingEntityId, now: performance.now() })
+  }
+
   applyStatusEffect(
     entity: WorldLife,
     type: string,
@@ -430,6 +459,21 @@ export class BattleModule implements BattleActionProcessor {
     target: WorldLife | null,
     payload: AttackActionPayload
   ): boolean {
+    // `AttackActionPayload.damageType` is required, so this cannot be reached through
+    // the type system. It is still checked because `BattleActionMessage.actionPayload`
+    // is `any` (BattleActionMessage.ts:11) and processAction casts it at :401 — the one
+    // place the compile-time guarantee does not hold (I-041 removes the cause).
+    //
+    // Deliberately NOT a throw: processActionMessages wraps processAction in try/catch
+    // and only logs, so throwing would make the whole attack vanish silently — a
+    // quieter failure than the one being fixed.
+    if (payload.damageType !== 'physical' && payload.damageType !== 'magical') {
+      console.error(
+        `❌ BATTLE: attack from ${actor.id} arrived with no damageType — resolving as ` +
+          `physical. This is a defect, not a default (I-037).`
+      )
+    }
+
     if (!target) {
       // No target - combat system already natively handled the attack animation execution.
       // We don't need to manually override the state here.

@@ -76,8 +76,8 @@ describe('Mob-centric AI decisions', () => {
     // Test ChaseBehavior
     const chaseBehavior = new ChaseBehavior()
     const chaseEnv = {
-      nearestPlayer: { x: 5, y: 0, id: 'player1', radius: 1.3 } as any,
-      distanceToNearestPlayer: 5,
+      preferredTarget: { x: 5, y: 0, id: 'player1', radius: 1.3 } as any,
+      distanceToPreferredTarget: 5,
       nearBoundary: false,
       worldBounds: { width: 400, height: 300 },
     }
@@ -97,8 +97,8 @@ describe('Mob-centric AI decisions', () => {
 
     // Test: outside melee range (10 units > 6.8 melee range with player radius 1.3) - should move closer
     const attackEnvFar = {
-      nearestPlayer: { x: 10, y: 0, id: 'player1', radius: 1.3 } as any,
-      distanceToNearestPlayer: 10,
+      preferredTarget: { x: 10, y: 0, id: 'player1', radius: 1.3 } as any,
+      distanceToPreferredTarget: 10,
       nearBoundary: false,
       worldBounds: { width: 400, height: 300 },
     }
@@ -111,8 +111,8 @@ describe('Mob-centric AI decisions', () => {
 
     // Test: within melee range (5 units < 6.8 melee range with player radius 1.3) - should stop
     const attackEnvClose = {
-      nearestPlayer: { x: 5, y: 0, id: 'player1', radius: 1.3 } as any,
-      distanceToNearestPlayer: 5,
+      preferredTarget: { x: 5, y: 0, id: 'player1', radius: 1.3 } as any,
+      distanceToPreferredTarget: 5,
       nearBoundary: false,
       worldBounds: { width: 400, height: 300 },
     }
@@ -239,6 +239,6 @@ describe('Mob-centric AI decisions', () => {
     expect(mob.currentBehavior).toBe('wander')
     expect(decision.currentAttackTarget).toBe('')
     // Verify dead player is not in environment
-    expect(env.nearestPlayer).toBeNull()
+    expect(env.preferredTarget).toBeNull()
   })
 })

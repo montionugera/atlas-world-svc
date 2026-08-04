@@ -56,6 +56,7 @@ Per the `localization-th` skill: read before translating, append new decisions, 
 | the erased village | หมู่บ้านที่ตายทั้งที่ยังตั้งอยู่ / ถูกขีดออกจากเส้นทางการค้า | ch3: killed by subtraction (caravan stopped, bell-seal withdrawn); "ฆ่าคนทั้งหมู่บ้านโดยไม่ต้องแตะใครสักคน"; added 2026-07-26 |
 | prior "accident" victims | เหยื่อ "อุบัติเหตุ" ก่อนหน้า | ch3 tavern whispers: dock clerk (boat, calm sea) / gate-keeper (fire, "fallen lamp") / woman courier (vanished, horse and all); added 2026-07-26 |
 | "the crossroads man should stay at the crossroads" | "คนทางแยกควรอยู่ที่ทางแยก" | ch3: anonymous being-seen letter — names his moniker, heel habit, Farrow; added 2026-07-26 |
+| the Crossroads Man (`char-crossroads-man`) | คนทางแยก | **Canonical NPC, not the player** (added 2026-08-02, I-056/X9). A moniker, not a rank — renders Thai-only in prose, so the title rule's English-proper-noun clause does not apply. The drifter the Quartermaster hired and named; the four `art:cast-crossroads-man-*` sheets are his likeness. The player (`char-expedition-member`) stays unnamed and unvoiced — never render the player as คนทางแยก |
 | the Clerk | the Clerk — เสมียนผู้คุมบัญชี(สภาท่าเรือ) | ch3: sells the secret ledger, dies as a harbor "accident" before clearing port; added 2026-07-26 |
 | the secret ledger | บัญชีลับ | ch3: pays the war EVENLY both sides so no one wins & it never ends; last page = blank where the name should be; added 2026-07-26 |
 | the Harbor Council | สภาท่าเรือ | Gildmark's merchant council; the Clerk kept its books ten years; added 2026-07-26 |

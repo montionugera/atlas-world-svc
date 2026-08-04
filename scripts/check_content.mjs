@@ -56,6 +56,45 @@ function loadMobTypes(path) {
   return new Set([...doc.mobTypes].sort()); // sorted so FAIL messages list ids deterministically
 }
 
+// I-059: the design roster, read ONLY to resolve placement references. The
+// roster itself is not validated here — content/bestiary/README.md keeps it a
+// design backlog. Same failure-count discipline as loadMobTypes: a recorded
+// FAIL and a parsed-but-falsy document are different things.
+function loadBestiaryDesigns(path) {
+  const before = failures.length;
+  const doc = readJson(path, "bestiary", fail);
+  if (failures.length > before) return null;
+  if (!Array.isArray(doc)) {
+    fail(`bestiary: ${path} is shape-invalid — expected a top-level array`);
+    return null;
+  }
+  const byId = new Map();
+  for (const d of doc) {
+    if (!d || typeof d.id !== "string") continue; // roster shape is not this gate's business
+    byId.set(d.id, d);
+  }
+  return byId;
+}
+
+// I-059: zone records from the Cartographer's geography. levelBand is the
+// authority for a placement file's routeBand (G8) — the band is asserted
+// across files, never retyped from prose.
+function loadGeographyZones(path) {
+  const before = failures.length;
+  const doc = readJson(path, "geography", fail);
+  if (failures.length > before) return null;
+  if (!doc || !Array.isArray(doc.zones)) {
+    fail(`geography: ${path} is shape-invalid — expected { zones: [...] }`);
+    return null;
+  }
+  const byId = new Map();
+  for (const z of doc.zones) {
+    if (!z || typeof z.id !== "string") continue;
+    byId.set(z.id, z);
+  }
+  return byId;
+}
+
 const failures = [];
 const warnings = [];
 const fail = (m) => failures.push(m);
@@ -94,7 +133,8 @@ function main() {
   const story = checkStory(opts, mobTypes);
   const sheetCount = checkCharacters(opts, story.ids);
   const mapCount = checkMaps(opts, mobTypes);
-  return finish(sheetCount, mapCount, story.count);
+  const placementCount = checkBestiaryPlacement(opts);
+  return finish(sheetCount, mapCount, story.count, placementCount);
 }
 
 // F-012: loadStory() (reads all 7 per-kind story files under
@@ -654,10 +694,124 @@ function checkMaps(opts, mobTypes) {
   return files.length;
 }
 
-function finish(sheetCount = 0, mapCount = 0, storyCount = 0) {
+// I-059: zone placement gate. Placement is OPTIONAL content — a root with no
+// bestiary/ dir, or none matching placement-*.json, skips (mirrors the maps
+// soft-skip). Once a file exists it is checked STRICTLY, because the file is
+// complete for its zone by construction: "every design placed exactly once"
+// (G4) is a FAIL, not a warning, and that completeness is the point.
+function checkBestiaryPlacement(opts) {
+  const dir = join(opts.contentRoot, "bestiary");
+  if (!existsSync(dir)) return 0;
+  const files = readdirSync(dir).filter((f) => /^placement-.+\.json$/.test(f)).sort();
+  if (!files.length) return 0;
+
+  const validate = compileSchema(
+    join(opts.contentRoot, "schemas/bestiary-placement.schema.json"),
+    "bestiary-placement schema", fail);
+  if (!validate) return 0;
+
+  // Both are REQUIRED once a placement file exists: every rule below is a
+  // cross-file assertion against one of them.
+  const designs = loadBestiaryDesigns(join(dir, "bestiary.json"));
+  const zones = loadGeographyZones(join(opts.contentRoot, "maps/cluster1-geography.json"));
+  if (!designs || !zones) return 0;
+
+  let count = 0;
+  for (const file of files) {
+    const label = `bestiary/${file}`;
+    const before = failures.length;
+    const doc = readJson(join(dir, file), label, fail);
+    if (failures.length > before) continue;
+
+    if (!validate(doc)) {
+      for (const err of validate.errors)
+        fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
+      continue; // downstream rules assume a valid shape
+    }
+
+    // G1 — the zone exists in the Cartographer's geography
+    const zone = zones.get(doc.zone);
+    if (!zone) {
+      fail(`${label}: zone "${doc.zone}" not in cluster1-geography.json#zones`);
+      continue; // every remaining rule is relative to the zone
+    }
+
+    // G8 — the route band is the geography's band, asserted across files
+    // rather than retyped from prose.
+    const geoBand = Array.isArray(zone.levelBand) ? zone.levelBand : null;
+    if (!geoBand || geoBand.length !== 2)
+      fail(`${label}: zone "${doc.zone}" has no two-element levelBand in the geography`);
+    else if (doc.routeBand[0] !== geoBand[0] || doc.routeBand[1] !== geoBand[1])
+      fail(`${label}: routeBand [${doc.routeBand}] != geography levelBand [${geoBand}] for zone "${doc.zone}"`);
+
+    // G7 — tiers must ascend, be contiguous, and not overlap. A gap or an
+    // overlap means some level has no tier, or two.
+    const tiers = doc.depthTiers;
+    const seenTierIds = new Set();
+    for (const t of tiers) {
+      if (seenTierIds.has(t.id)) fail(`${label}: duplicate depthTier id "${t.id}"`);
+      seenTierIds.add(t.id);
+      if (t.bandCeil < t.bandFloor)
+        fail(`${label}: depthTier "${t.id}" bandCeil ${t.bandCeil} < bandFloor ${t.bandFloor}`);
+    }
+    for (let i = 1; i < tiers.length; i++)
+      if (tiers[i].bandFloor !== tiers[i - 1].bandCeil + 1)
+        fail(`${label}: depthTiers "${tiers[i - 1].id}" -> "${tiers[i].id}" not contiguous (${tiers[i - 1].bandCeil} -> ${tiers[i].bandFloor})`);
+
+    // G2 — bestiaryRegion is a region key the roster actually uses
+    const zoneDesigns = [...designs.values()].filter((d) => d.region === doc.bestiaryRegion);
+    if (!zoneDesigns.length)
+      fail(`${label}: bestiaryRegion "${doc.bestiaryRegion}" matches no design in bestiary.json`);
+
+    for (const p of doc.placements) {
+      // G3 — the named design exists
+      const design = designs.get(p.design);
+      if (!design) {
+        fail(`${label}: design "${p.design}" not in bestiary.json`);
+        continue;
+      }
+      // and it belongs to this zone's region
+      if (design.region !== doc.bestiaryRegion)
+        fail(`${label}: design "${p.design}" has region "${design.region}", not "${doc.bestiaryRegion}"`);
+
+      // G5 — the tier is one this file declares
+      const tier = tiers.find((t) => t.id === p.tier);
+      if (!tier) {
+        fail(`${label}: design "${p.design}" tier "${p.tier}" is not a declared depthTier`);
+        continue;
+      }
+
+      // G6 — the design's band must OVERLAP its tier. Bands are 10 wide and
+      // tier edges do not fall on multiples of 10, so straddling is normal and
+      // legal; only a fully disjoint pair is an error.
+      const [bandLo, bandHi] = String(design.levelBand).split("-").map(Number);
+      if (!Number.isFinite(bandLo) || !Number.isFinite(bandHi))
+        fail(`${label}: design "${p.design}" has unparseable levelBand "${design.levelBand}"`);
+      else if (bandHi < tier.bandFloor || bandLo > tier.bandCeil)
+        fail(`${label}: design "${p.design}" band ${design.levelBand} is disjoint from tier "${p.tier}" (${tier.bandFloor}-${tier.bandCeil})`);
+    }
+
+    // G4 — completeness. This is what makes the file trustworthy: the roster
+    // is the authority on which designs belong to this zone, and every one of
+    // them must appear here exactly once. Missing = the zone is not placed;
+    // duplicated = two locations claim the same design.
+    for (const [design, group] of findDuplicateGroups(doc.placements, (p) => p.design))
+      fail(`${label}: design "${design}" placed ${group.length} times`);
+
+    const placed = new Set(doc.placements.map((p) => p.design));
+    for (const d of zoneDesigns)
+      if (!placed.has(d.id))
+        fail(`${label}: design "${d.id}" (region "${doc.bestiaryRegion}") is not placed`);
+
+    count++;
+  }
+  return count;
+}
+
+function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0) {
   for (const w of warnings) console.log(`WARN  ${w}`);
   for (const f of failures) console.log(`FAIL  ${f}`);
-  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${failures.length} failures, ${warnings.length} warnings`);
+  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${failures.length} failures, ${warnings.length} warnings`);
   process.exit(failures.length ? 1 : 0);
 }
 

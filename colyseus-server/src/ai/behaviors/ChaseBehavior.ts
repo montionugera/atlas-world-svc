@@ -15,12 +15,12 @@ export class ChaseBehavior extends BaseBehavior {
     if (!context.nearbyPlayers || context.nearbyPlayers.length === 0) return false
 
     const mob = context.selfMob
-    const nearestPlayer = context.nearbyPlayers.reduce((nearest, player) => {
+    const preferredTarget = context.nearbyPlayers.reduce((nearest, player) => {
       const dist = this.distance(mob.x, mob.y, player.x, player.y)
       return dist < this.distance(mob.x, mob.y, nearest.x, nearest.y) ? player : nearest
     })
 
-    const distanceToPlayer = this.distance(mob.x, mob.y, nearestPlayer.x, nearestPlayer.y)
+    const distanceToPlayer = this.distance(mob.x, mob.y, preferredTarget.x, preferredTarget.y)
 
     // Only chase if player is within detection range AND not too close
     return distanceToPlayer <= this.detectionRadius && distanceToPlayer >= 10

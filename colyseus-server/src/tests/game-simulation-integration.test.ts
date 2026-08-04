@@ -12,6 +12,14 @@ import { RoomEventHandler } from '../rooms/handlers/RoomEventHandler'
 import { eventBus } from '../events/EventBus'
 import { FakeMetaBackend } from '../meta/FakeMetaBackend'
 import { MetaEventReporter } from '../meta/MetaEventReporter'
+import { InterestManager, InterestEntity, InterestViewer } from '../interest/InterestManager'
+import { createDistancePredicate } from '../interest/visibility'
+import {
+  collectInterestEntities as collectEntities,
+  collectInterestViewers as collectViewers,
+} from '../interest/collect'
+import { AOI_CONFIG } from '../config/aoiConfig'
+import { SimClock } from '../time/SimClock'
 
 /**
  * Integration test for the per-tick simulation loop (GameSimulationSystem) wired
@@ -44,15 +52,39 @@ function buildRoom() {
 
   state.worldInterface.setPhysicsManager(physicsManager)
 
+  // Same construction as GameRoom.onCreate() — a harness that diverges from the
+  // room's options is a future bug, not a simplification.
+  const interestManager = new InterestManager({
+    predicate: createDistancePredicate({
+      radius: AOI_CONFIG.radius,
+      hysteresis: AOI_CONFIG.hysteresis,
+    }),
+    cellSize: AOI_CONFIG.cellSize,
+    candidateRadius: AOI_CONFIG.radius * AOI_CONFIG.hysteresis,
+  })
+
   const room = {
     state,
     roomId: ROOM_ID,
+    // GameSimulationSystem.update() advances this every tick, exactly as the real
+    // room does. Omitting it makes every tick throw into the loop's try/catch and
+    // silently do nothing.
+    simClock: new SimClock(),
     physicsManager,
     battleManager,
     battleModule,
     projectileManager,
     zoneEffectManager,
     mobLifeCycleManager,
+    interestManager,
+    // Mirrors GameRoom.collectInterestEntities()/collectInterestViewers() by
+    // delegating to the same shared collector GameRoom uses.
+    collectInterestEntities(): InterestEntity[] {
+      return collectEntities(state)
+    },
+    collectInterestViewers(): InterestViewer[] {
+      return collectViewers(state)
+    },
   }
 
   const sim = new GameSimulationSystem(room as any)
@@ -83,6 +115,25 @@ describe('GameSimulationSystem (integration)', () => {
     // updateMobs() (inside the loop) increments tick; reaching it means the loop
     // ran past physics/projectile/player stages without a thrown+caught error.
     expect(env.state.tick).toBe(3)
+  })
+
+  it('advances the room SimClock by exactly one delta per tick, and drives AI from it', () => {
+    // Guards the wiring, not just the gate: the cadence unit tests drive AIModule
+    // directly, so they stay green even if GameSimulationSystem stops advancing
+    // the clock. This asserts the loop itself does it.
+    const aiSpy = jest.spyOn(env.state.aiModule, 'update')
+
+    expect(env.room.simClock.now()).toBe(0)
+    env.sim.update(50)
+    expect(env.room.simClock.now()).toBe(50)
+    env.sim.update(50)
+    expect(env.room.simClock.now()).toBe(100)
+
+    // AI is handed simulated time, not wall clock.
+    expect(aiSpy).toHaveBeenNthCalledWith(1, 50)
+    expect(aiSpy).toHaveBeenNthCalledWith(2, 100)
+
+    aiSpy.mockRestore()
   })
 
   it('runs full ticks with players, mobs and a projectile without a swallowed simulation error', () => {
@@ -173,6 +224,7 @@ describe('GameSimulationSystem (integration): meta event flow', () => {
     const attackEvent = env.room.battleModule.processAttack(player, mob, {
       damage: 9999,
       damageType: 'physical',
+      element: 'neutral',
       range: 10,
     })
     expect(attackEvent?.targetDied).toBe(true)

@@ -2,6 +2,7 @@ import { EventEmitter } from 'events'
 import { Player } from '../schemas/Player'
 import { Mob } from '../schemas/Mob'
 import { WorldLife } from '../schemas/WorldLife'
+import type { Element } from '../config/combat/elements'
 
 export enum RoomEventType {
   PLAYER_JOINED = 'player:joined',
@@ -43,6 +44,14 @@ export interface BattleAttackData {
   actorId: string
   targetId?: string // Optional - allows attacks without targets (e.g., player swinging weapon)
   damage: number
+  /**
+   * Which defence mitigates this hit: `pDef` for 'physical', `mDef` for 'magical'.
+   * Required: an emitter that omits it would have its hit silently mitigated by the
+   * wrong defence, which is exactly the defect I-037 closes.
+   */
+  damageType: 'physical' | 'magical'
+  /** Attack element (World Wisdom / F-017). Required — state 'neutral' explicitly. */
+  element: Element
   range: number
   roomId: string
 }

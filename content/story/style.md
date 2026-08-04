@@ -7,6 +7,11 @@ agents and reviewers editorially — there is no schema or gate machinery
 behind it (see `docs/superpowers/specs/2026-07-23-grand-epic-undertow-design.md`
 §1). When in doubt, reread this file before writing prose, not after.
 
+> **Provenance warning.** That design spec predates F-017. Its §6.5 "iron
+> rule" (magic as a scarce, contested resource) is **superseded** — magic is
+> rune-gated, not scarcity-gated. The live rule is `content/story/canon.md`
+> §5. Read the spec for structure, never for world law.
+
 ## 1. Global tone rules
 
 The world speaks in two registers. Nothing is written in a third.
@@ -111,8 +116,11 @@ chill is in the arrangement, not the vocabulary.
   register or the other. A name that could pass for either (or neither)
   gets rewritten before it ships. Mixing — a terse compound wearing a
   Gilded Rot "the" — is reserved on purpose for characters who move
-  between the two worlds (none exist yet; if one is ever written, it is
-  a deliberate signal, not an accident).
+  between the two worlds. **One exists: "the Crossroads Man."** He is the
+  deliberate instance the rule was held open for — a terse compound
+  wearing the definite article, for a man both worlds hire precisely
+  because he belongs to neither. Any further mixed name is a deliberate
+  signal of the same kind, not an accident.
 
 ## 3. Town identity table
 
