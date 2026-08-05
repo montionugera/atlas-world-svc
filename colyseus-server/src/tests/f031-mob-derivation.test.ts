@@ -2,6 +2,11 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import { MOB_STATS } from '../config/combat/combatStats'
 import { MOB_TYPES } from '../config/mobs'
+import { MAP_CONFIG } from '../config/mapConfig'
+import { GameState } from '../schemas/GameState'
+import { MobLifeCycleManager } from '../modules/MobLifeCycleManager'
+import { BattleModule } from '../modules/BattleModule'
+import { ProjectileManager } from '../modules/ProjectileManager'
 
 // Runtime read, not a static JSON import: content/ sits outside tsc's rootDir,
 // so `import bestiary from '../../../content/...'` would break the build with
@@ -59,12 +64,85 @@ describe('F-031 promoted mobs follow the derivation rule', () => {
     })
   }
 
+  it('each promoted mob has a runtime spawn area, so it can actually appear', () => {
+    // THE point of this test: everything above passes on config alone. F-029
+    // and F-030 both shipped suites that stayed green with the spawn wiring
+    // removed, because they asserted against hand-built objects. This one
+    // reads the real MAP_CONFIG, so deleting the mapConfig.ts entries turns it
+    // red — verified by doing exactly that.
+    for (const { mobId } of CASES) {
+      const area = MAP_CONFIG.mobSpawnAreas.find((a) => a.mobType === mobId)
+      expect(area).toBeDefined()
+      expect(area!.count).toBeGreaterThan(0)
+    }
+  })
+
   it('melee damage sits on stats.pAtk, which is what the melee path actually reads', () => {
     // MeleeAttackStrategy calls createMelee(attacker, x, y, attacker.pAtk) and
     // never reads atkBaseDmg — damage placed only there is dead config.
     for (const { mobId } of CASES) {
       const cfg = MOB_TYPES.find((m) => m.id === mobId)!
       expect(cfg.stats.pAtk).toBeGreaterThan(0)
+    }
+  })
+})
+
+/**
+ * The real spawn path, not the config. Same harness F-030 used for the boss:
+ * GameState is (mapId, roomId); MobLifeCycleManager is (roomId, state); the
+ * seed entrypoint is seedInitial(). Must NOT mock ../config/mapConfig — the
+ * real spawn areas are the thing under test.
+ */
+describe('F-031 promoted mobs reach a real room through the real spawn path', () => {
+  const EXPECTED = [
+    { mobId: 'bramble_stalker', areaId: 'thornveil_route_stalkers', count: 2, hp: 100, element: 'earth' },
+    { mobId: 'veil_spearling', areaId: 'thornveil_route_spearlings', count: 2, hp: 70, element: 'wind' },
+    { mobId: 'bramble_drake', areaId: 'thornveil_interior', count: 1, hp: 263, element: 'earth' },
+  ] as const
+
+  it('seeds each one with its configured hp, element, area and population', () => {
+    const state = new GameState('map-01-sector-a', 'test-room')
+    const manager = new MobLifeCycleManager('test-room', state)
+    try {
+      manager.seedInitial()
+      for (const { mobId, areaId, count, hp, element } of EXPECTED) {
+        // seedInitial seeds EVERY area, so filter — state.mobs is not one entry.
+        const spawned = [...state.mobs.values()].filter((m) => m.mobTypeId === mobId)
+        expect(spawned).toHaveLength(count)
+        for (const mob of spawned) {
+          expect(mob.maxHealth).toBe(hp)
+          expect(mob.element).toBe(element)
+          expect(mob.spawnAreaId).toBe(areaId)
+        }
+      }
+    } finally {
+      // Started by the GameState constructor; stop it or jest reports open handles.
+      state.stopAI()
+    }
+  })
+
+  it('gives each one a built attack strategy, so it can fight rather than just stand', () => {
+    // The factory silently produces NOTHING for an unbuildable strategy id
+    // (it only console.warns for AREA), so a mob can spawn and never attack.
+    // This asserts the strategies were actually CONSTRUCTED on the spawned
+    // entity — which needs a real ProjectileManager: without one,
+    // buildAttackStrategies bails at MobLifeCycleManager.ts:229 and every mob
+    // silently gets zero strategies.
+    const state = new GameState('map-01-sector-a', 'test-room')
+    const manager = new MobLifeCycleManager('test-room', state)
+    manager.setProjectileManager(new ProjectileManager(state, new BattleModule(state)))
+    try {
+      manager.seedInitial()
+      for (const { mobId } of EXPECTED) {
+        const mob = [...state.mobs.values()].find((m) => m.mobTypeId === mobId)
+        expect(mob).toBeDefined()
+        expect(mob!.attackStrategies.length).toBeGreaterThan(0)
+      }
+      // veil_spearling is the ranged one: it must get BOTH melee and spear.
+      const spearling = [...state.mobs.values()].find((m) => m.mobTypeId === 'veil_spearling')
+      expect(spearling!.attackStrategies.length).toBe(2)
+    } finally {
+      state.stopAI()
     }
   })
 })
