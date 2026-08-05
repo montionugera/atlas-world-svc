@@ -448,5 +448,11 @@
     "title": "Ban global clock reads in converted gameplay directories (eslint) and update the CLAUDE.md timing invariant",
     "created_at": "2026-08-02T17:15:06.779570+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-076",
+    "title": "Unblock the spawn-entries budget line: its blockedBy reason is stale \u2014 F-030/F-031 resolved the variant axis (a species is its own MOB_TYPES entry, element? exists), and there is now a real 6-row authored spawn table; add a spawnEntries measure to scripts/lib/season1.mjs and clear the blocker",
+    "created_at": "2026-08-05T14:59:14.936865+00:00",
+    "promoted_to": null
   }
 ]
