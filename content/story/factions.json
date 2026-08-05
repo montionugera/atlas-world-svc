@@ -35,7 +35,9 @@
     "summary": "Lean, fast spear-throwers of the eastern brambles.",
     "disposition": "hostile",
     "mobFamily": [
-      "mob:spear_thrower"
+      "mob:spear_thrower",
+      "mob:bramble_stalker",
+      "mob:veil_spearling"
     ],
     "relationships": [],
     "links": ["region-thornveil"]
