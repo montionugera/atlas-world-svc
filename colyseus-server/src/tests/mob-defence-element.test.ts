@@ -136,7 +136,7 @@ describe('mob defence element', () => {
       'spear_thrower',
     ]
     for (const id of PRE_F030) {
-      const mobType = MOB_TYPES.find((m) => m.id === id)
+      const mobType = MOB_TYPES.find(m => m.id === id)
       expect(mobType).toBeDefined()
       expect(mobType!.element ?? 'neutral').toBe('neutral')
     }

@@ -36,7 +36,7 @@ const VERSION = 1
 /** Build the runtime spawn-area reference set from the live server config. */
 export function genSpawnAreas(): SpawnAreaSet {
   const areas = MAP_CONFIG.mobSpawnAreas
-    .map((a) => ({ id: a.id, mobType: a.mobType, count: a.count }))
+    .map(a => ({ id: a.id, mobType: a.mobType, count: a.count }))
     .sort((x, y) => (x.id < y.id ? -1 : x.id > y.id ? 1 : 0))
   return { version: VERSION, areas }
 }

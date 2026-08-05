@@ -39,9 +39,9 @@ const CASES = [
 describe('F-031 promoted mobs follow the derivation rule', () => {
   for (const { mobId, design, tier } of CASES) {
     it(`${mobId} derives from ${design} at tier ${tier}`, () => {
-      const row = bestiary.find((r) => r.id === design)
+      const row = bestiary.find(r => r.id === design)
       expect(row).toBeDefined()
-      const cfg = MOB_TYPES.find((m) => m.id === mobId)
+      const cfg = MOB_TYPES.find(m => m.id === mobId)
       expect(cfg).toBeDefined()
 
       const f = TIER[tier]
@@ -59,7 +59,7 @@ describe('F-031 promoted mobs follow the derivation rule', () => {
       expect(cfg!.element).toBe(row!.element)
 
       // threat decides the strategy set; `zone` is unsupported until I-043.
-      const ids = cfg!.atkStrategies.map((s) => s.id).sort()
+      const ids = cfg!.atkStrategies.map(s => s.id).sort()
       expect(ids).toEqual(row!.threat === 'ranged' ? ['melee', 'spear'] : ['melee'])
     })
   }
@@ -71,7 +71,7 @@ describe('F-031 promoted mobs follow the derivation rule', () => {
     // reads the real MAP_CONFIG, so deleting the mapConfig.ts entries turns it
     // red — verified by doing exactly that.
     for (const { mobId } of CASES) {
-      const area = MAP_CONFIG.mobSpawnAreas.find((a) => a.mobType === mobId)
+      const area = MAP_CONFIG.mobSpawnAreas.find(a => a.mobType === mobId)
       expect(area).toBeDefined()
       expect(area!.count).toBeGreaterThan(0)
     }
@@ -81,7 +81,7 @@ describe('F-031 promoted mobs follow the derivation rule', () => {
     // MeleeAttackStrategy calls createMelee(attacker, x, y, attacker.pAtk) and
     // never reads atkBaseDmg — damage placed only there is dead config.
     for (const { mobId } of CASES) {
-      const cfg = MOB_TYPES.find((m) => m.id === mobId)!
+      const cfg = MOB_TYPES.find(m => m.id === mobId)!
       expect(cfg.stats.pAtk).toBeGreaterThan(0)
     }
   })
@@ -95,8 +95,20 @@ describe('F-031 promoted mobs follow the derivation rule', () => {
  */
 describe('F-031 promoted mobs reach a real room through the real spawn path', () => {
   const EXPECTED = [
-    { mobId: 'bramble_stalker', areaId: 'thornveil_route_stalkers', count: 2, hp: 100, element: 'earth' },
-    { mobId: 'veil_spearling', areaId: 'thornveil_route_spearlings', count: 2, hp: 70, element: 'wind' },
+    {
+      mobId: 'bramble_stalker',
+      areaId: 'thornveil_route_stalkers',
+      count: 2,
+      hp: 100,
+      element: 'earth',
+    },
+    {
+      mobId: 'veil_spearling',
+      areaId: 'thornveil_route_spearlings',
+      count: 2,
+      hp: 70,
+      element: 'wind',
+    },
     { mobId: 'bramble_drake', areaId: 'thornveil_interior', count: 1, hp: 263, element: 'earth' },
   ] as const
 
@@ -107,7 +119,7 @@ describe('F-031 promoted mobs reach a real room through the real spawn path', ()
       manager.seedInitial()
       for (const { mobId, areaId, count, hp, element } of EXPECTED) {
         // seedInitial seeds EVERY area, so filter — state.mobs is not one entry.
-        const spawned = [...state.mobs.values()].filter((m) => m.mobTypeId === mobId)
+        const spawned = [...state.mobs.values()].filter(m => m.mobTypeId === mobId)
         expect(spawned).toHaveLength(count)
         for (const mob of spawned) {
           expect(mob.maxHealth).toBe(hp)
@@ -134,12 +146,12 @@ describe('F-031 promoted mobs reach a real room through the real spawn path', ()
     try {
       manager.seedInitial()
       for (const { mobId } of EXPECTED) {
-        const mob = [...state.mobs.values()].find((m) => m.mobTypeId === mobId)
+        const mob = [...state.mobs.values()].find(m => m.mobTypeId === mobId)
         expect(mob).toBeDefined()
         expect(mob!.attackStrategies.length).toBeGreaterThan(0)
       }
       // veil_spearling is the ranged one: it must get BOTH melee and spear.
-      const spearling = [...state.mobs.values()].find((m) => m.mobTypeId === 'veil_spearling')
+      const spearling = [...state.mobs.values()].find(m => m.mobTypeId === 'veil_spearling')
       expect(spearling!.attackStrategies.length).toBe(2)
     } finally {
       state.stopAI()

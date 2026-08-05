@@ -27,10 +27,10 @@ const VERSION = 2
 
 /** Build the valid mob type id set from the live server config. */
 export function genMobTypes(): MobTypeSet {
-  const mobTypes = [...new Set(MOB_TYPES.map((m) => m.id))].sort()
+  const mobTypes = [...new Set(MOB_TYPES.map(m => m.id))].sort()
   const elements: Record<string, string> = {}
   for (const id of mobTypes) {
-    const element = MOB_TYPES.find((m) => m.id === id)?.element
+    const element = MOB_TYPES.find(m => m.id === id)?.element
     if (element) elements[id] = element
   }
   return { version: VERSION, mobTypes, elements }

@@ -18,12 +18,12 @@ describe('genSpawnAreas', () => {
   })
 
   it('is deterministic: sorted by id', () => {
-    const ids = genSpawnAreas().areas.map((a) => a.id)
+    const ids = genSpawnAreas().areas.map(a => a.id)
     expect(ids).toEqual([...ids].sort())
   })
 
   it('includes the three F-031 Thornveil areas once Task 4 has added them', () => {
-    const byId = new Map(genSpawnAreas().areas.map((a) => [a.id, a]))
+    const byId = new Map(genSpawnAreas().areas.map(a => [a.id, a]))
     // Guard only what this task owns: the builder must faithfully reflect
     // whatever mapConfig holds. Task 4 adds the areas; this asserts the
     // builder does not drop or rename them.
