@@ -1,0 +1,15 @@
+{
+  "_note": "F-031. Per-creature identity clause + humanoid silhouette anchor, keyed by BESTIARY DESIGN ID. buildCreaturePrompt() (generate/charsheet.mjs) appends style-laws.json's styleClause LAST, after the clause — the same F-024 law job-costume.json follows; putting the style words in the opening `positive` array does not reproduce the validated prompt string. Both entries are validated:false — authored from the bestiary row's visualBrief, NOT yet visually confirmed on a contact sheet. QC each on its own row before trusting it, exactly as job-costume.json's seven unvalidated jobs. HARD LIMIT: only humanoid-raider body plans can be generated at all. The `character` profile is img2img anchored on silhouettes cut from the approved human row, and style-laws law #1 says text alone cannot hold head-body ratio — so quadrupeds, insects, plants and hulks (92 of the 116 designs) have no anchor and are out of reach until a non-humanoid silhouette set exists.",
+  "mob-bramble-stalker": {
+    "clause": "a man-height bundle of green cane walking on a knot of trailing roots, two whip-arms of hooked thorn, NO HEAD, only a dark hollow at chest height, bark-black old wood and bright new growth",
+    "silhouette": "sil-assassin",
+    "validated": false,
+    "_why": "sil-assassin: the closest humanoid anchor to a fast, light, two-armed skirmisher. Confirmed present on mont-pc at F:\\comfy-ui\\input (2026-08-05). The headlessness is the hard part of this prompt — expect to reroll and reinforce it."
+  },
+  "mob-veil-spearling": {
+    "clause": "a slight young raider in bramble-woven leathers, face wrapped, a three-spear harness across the back, bare arms scratched from shoulder to wrist, thorn-green over bark-brown",
+    "silhouette": "sil-spearman",
+    "validated": false,
+    "_why": "sil-spearman: a literal match — the design carries a three-spear harness. Confirmed present on mont-pc at F:\\comfy-ui\\input (2026-08-05)."
+  }
+}
