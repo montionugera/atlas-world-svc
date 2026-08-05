@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "areas": [
+    {
+      "id": "boss_area",
+      "mobType": "thorncrown_drake",
+      "count": 1
+    },
+    {
+      "id": "center_courtyard",
+      "mobType": "balanced",
+      "count": 3
+    },
+    {
+      "id": "east_dunes",
+      "mobType": "spear_thrower",
+      "count": 4
+    },
+    {
+      "id": "north_ice_fields",
+      "mobType": "aggressive",
+      "count": 2
+    },
+    {
+      "id": "south_mud_pit",
+      "mobType": "defensive",
+      "count": 2
+    }
+  ]
+}
