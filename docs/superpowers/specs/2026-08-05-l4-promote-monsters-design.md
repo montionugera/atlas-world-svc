@@ -73,12 +73,16 @@ while I-015 waits.
 
 `AttackCharacteristicType.AREA` exists in the enum (`config/mobs/types.ts`) and in
 `AttackArea`, but has **no implementation**: `attackStrategyFactory.ts:102` reaches the
-AREA branch and logs `⚠️ Area attacks not yet implemented`, creating no strategy. A
-`threat: zone` mob would spawn, chase, and never attack.
+AREA branch and `:104` warns `⚠️ Area attacks not yet implemented`, creating no strategy.
+A `threat: zone` mob would spawn, chase, and never attack.
 
 `threat` distribution across the 116: **melee 73 · ranged 23 · zone 20**. The 20 zone
 designs are unpromotable until `I-043 — Boss multi-target cleave: implement
-AreaAttackStrategy` lands. In Thornveil specifically that is **8 of 14**.
+AreaAttackStrategy` lands. In Thornveil specifically that is **7 of 14**
+(`bramble-shoot`, `thornhusk-weaver`, `bramble-warden`, `sapdrinker-swarm`, `briar-caller`,
+`bramble-mother`, `heartwood-tyrant`), leaving 7 promotable — of which `thorncrown-drake`
+is already shipped by F-030, so **6 remain available** and exactly **3 of those are
+art-able**.
 
 ### 1.3 The art pipeline is humanoid-only
 
@@ -157,6 +161,17 @@ hp 100 · pAtk 20 · attackRange 1.5 · pDef 2 · mDef 1 · armor 1 · radius 4 
 
 <div class="callout success">
 
+**Preconditions verified — do not re-derive these.** `'wind'` is a real member of the
+`Element` union (`config/combat/elements.ts:10` — `neutral · earth · water · wind · fire ·
+holy · void`), so `veil_spearling` compiles. `'melee'` and `'spear'` are real
+`switch` cases in `attackStrategyFactory.ts` (`:36` and `:50`), not names invented for this
+spec. Note the natural cycle is *water > fire > earth > wind > water*, so `bramble_stalker`
+(earth) holds advantage over `veil_spearling` (wind) — intended flavour, not a bug.
+
+</div>
+
+<div class="callout success">
+
 `tierFactor` for `heart` is **2.5**, which is exactly F-030's existing
 `DRAKE_PATK = MOB_STATS.pAtk * 2.5`. The ladder is continuous with the shipped boss rather
 than a parallel invention.
@@ -232,12 +247,19 @@ flowchart LR
 4. **Three character sheets** at `content/characters/mob-<design-id>.md`, `status: concept`,
    `tier: seed`, stats enums mirroring the bestiary row, with Lore and Visual Brief
    sections drawn from the row's `lore` / `visualBrief`.
-5. **Three paired spawn areas**, written into **both** map files with identical ids:
+5. **Extend `faction-thornveil.mobFamily`** in `content/story/factions.json` with
+   `mob:bramble_stalker` and `mob:veil_spearling`. Both rows carry
+   `faction: faction-thornveil` in the bestiary, so this is canon-consistent. **Do not add
+   `mob:bramble_drake`** — its bestiary row is `faction-unaligned`, matching its lore
+   ("the bramble-kin do not hunt it").
+6. **Three NEW paired spawn areas**, written into **both** map files with identical ids
+   (ids satisfy the schema pattern `^[a-z0-9]+([_-][a-z0-9]+)*$`; authored entries also
+   carry `regionId: region-thornveil`, whose dangling refs the gate hard-fails):
 
    | id | mobType | count |
    | --- | --- | --- |
    | `thornveil_route_stalkers` | `bramble_stalker` | 2 |
-   | `thornveil_skirmishers` *(retargets the existing authored entry off generic `spear_thrower`)* | `veil_spearling` | 2 |
+   | `thornveil_route_spearlings` | `veil_spearling` | 2 |
    | `thornveil_interior` | `bramble_drake` | 1 |
 
    Authored geometry stays inside `region-thornveil` `(750,250) 250×500`. Runtime geometry
@@ -249,6 +271,20 @@ flowchart LR
 `mobSpawnConfig.ts:13` is **dead config** — `MobLifeCycleManager` reads only `area.count`
 (`:71`), never `maxMobs`, so the room already runs 12 against a nominal cap of 8. Not
 fixed here.
+
+</div>
+
+<div class="callout danger">
+
+**Do NOT retarget the existing `thornveil_skirmishers` area.** An earlier draft of this
+spec pointed it at `veil_spearling`, which would have repeated F-030's mistake exactly.
+`spear_thrower` is `faction-thornveil`'s canonical mob in **three** story files —
+`content/story/factions.json:38` (`mobFamily: ["mob:spear_thrower"]`),
+`content/story/style.md:144`, and `content/story/bible.md:58` ("range, relocate, repeat.
+(`mob:spear_thrower`.)"). Retargeting its only authored spawn area would leave the mob
+canon calls Thornveil's face spawning nowhere in Thornveil, while every story file still
+named it — which is precisely what happened to `double_attacker` when F-030 took
+`boss_area`. **This lane adds new areas only and touches no existing one.**
 
 </div>
 
@@ -264,7 +300,7 @@ may depend on Part B completing — the two must be separately verifiable.
 
 </div>
 
-6. **`tools/art-forge/prompts/creature-identity.json`** — new prompt module keyed by
+7. **`tools/art-forge/prompts/creature-identity.json`** — new prompt module keyed by
    bestiary design id:
 
    ```json
@@ -292,13 +328,13 @@ may depend on Part B completing — the two must be separately verifiable.
    available job silhouette and record the substitution in the module's `_note`.
 
    </div>
-7. **A `--creature <design-id>` path in `buildPrompt`**, appending `styleClause` **last** —
+8. **A `--creature <design-id>` path in `buildPrompt`**, appending `styleClause` **last** —
    after the creature clause, exactly as `job-costume` is composed. This is the F-024 law;
    putting the style words inside the opening `positive` array does not reproduce the
    validated prompt string.
-8. **Generate** on the `character` profile at its locked recipe. QC per row on a contact
+9. **Generate** on the `character` profile at its locked recipe. QC per row on a contact
    sheet; reroll only failing cells with a new seed plus reinforced identity words.
-9. **Intake** via `tools/art-forge/intake-art.mjs` → `art:mob-bramble-stalker` and
+10. **Intake** via `tools/art-forge/intake-art.mjs` → `art:mob-bramble-stalker` and
    `art:mob-veil-spearling`, `group: mob`. The group is already declared in the committed
    `game-client/assets/art/art-groups.json` (`track: T1`), so the registry needs no change.
    `title` and `note` (provenance) must be non-empty and the artifact gate must pass.
@@ -307,7 +343,7 @@ may depend on Part B completing — the two must be separately verifiable.
 
 **Concept art does NOT promote a sheet to `status: forged`.** `checkCharacters` reads the
 codegen `manifest.json` — the 3D-scene sink — never `art-manifest.json`
-(`scripts/check_content.mjs:521`). And `render-spec.json` lists `mob:` in
+(`scripts/check_content.mjs:522`). And `render-spec.json` lists `mob:` in
 `codegenReservedNamespaces`, so the 2D intake tool is *forbidden* from writing a `mob:*`
 key at all. All three mobs stay visually unmapped in the client. The art is reference for
 a later 3D forge, not a game asset.
@@ -315,7 +351,7 @@ a later 3D forge, not a game asset.
 </div>
 
 **Budget effect:** `bestiaryArt` counts the `art:mob-` prefix
-(`scripts/lib/season1.mjs:71`) — **0 → 2** of 30. `mobBases` counts codegen ids — **7 → 10**
+(`scripts/lib/season1.mjs:68`) — **0 → 2** of 30. `mobBases` counts codegen ids — **7 → 10**
 of 30.
 
 ---
@@ -327,9 +363,9 @@ of 30.
 > Every authored `mobSpawnAreas` entry must have a **same-`id`** counterpart in
 > `mapConfig.ts` with the same `mobType` and the same `count`. **Geometry may differ** —
 > the two maps describe different worlds until I-015 lands. Ids that predate the content
-> layer sit in an explicit, commented `LEGACY_UNPAIRED` allowlist:
+> layer sit in an explicit, commented `LEGACY_UNPAIRED` allowlist — **eight** of them:
 > `center_courtyard`, `north_ice_fields`, `south_mud_pit`, `east_dunes`, `boss_area`,
-> `meadow_wilds`, `icefield_stoneguard`.
+> `meadow_wilds`, `icefield_stoneguard`, `thornveil_skirmishers`.
 
 The allowlist is the honest part: a "must be identical" rule would be a fiction that fails
 on day one against five pre-existing mismatches. New pairs are unbreakable; old ones are
@@ -377,7 +413,7 @@ with `bestiaryArt` unchanged at 0 and that is stated plainly rather than papered
 
 | Item | Where it goes |
 | --- | --- |
-| `AreaAttackStrategy` — unblocks 20 of 116 designs (8 of Thornveil's 14) | **I-043** (exists) |
+| `AreaAttackStrategy` — unblocks 20 of 116 designs (7 of Thornveil's 14) | **I-043** (exists) |
 | Server loading `content/maps/` — one source of truth | **I-015** (exists, blocker documented) |
 | Non-humanoid silhouette anchors — unblocks 92 of 116 for art | new idea |
 | Reconciling the seven `LEGACY_UNPAIRED` map areas | new idea |

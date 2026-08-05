@@ -24,8 +24,8 @@ it is three separate breaks:
    content does not make anything spawn. F-030 put its boss in the world by hand-editing
    `mapConfig.ts`.
 2. **A third of the roster is unbuildable.** 20 of 116 designs are `threat: zone`, and
-   `AttackCharacteristicType.AREA` has no implementation — `attackStrategyFactory.ts:102`
-   logs "not yet implemented" and creates no strategy.
+   `AttackCharacteristicType.AREA` has no implementation — `attackStrategyFactory.ts:104`
+   warns "not yet implemented" and creates no strategy.
 3. **No bestiary art at all.** `art:mob-*` count is 0; the `art-bestiary` budget line is
    0 of 30. The art pipeline is humanoid-anchored (img2img on per-job human silhouettes),
    so only 24 of 116 designs are generatable with the validated recipe.
