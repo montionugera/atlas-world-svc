@@ -466,5 +466,11 @@
     "title": "Map mob:* asset keys to glb scenes so promoted mobs stop rendering as nothing: the storybook COVERAGE section red-cards four unmapped keys (bramble_stalker, veil_spearling, bramble_drake, thorncrown_drake). plantwarrior.glb suits bramble_stalker, but EVERY model in game-client/assets/characters is humanoid \u2014 the two drakes need a quadruped source first, and a half-wrong mapping is worse than an honest red card",
     "created_at": "2026-08-05T14:59:30.430550+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-079",
+    "title": "maxMobs in mobSpawnConfig.ts is dead config: MobLifeCycleManager reads only area.count (:71) and never maxMobs, so the documented per-room cap of 8 does nothing and the room already runs 17 mobs after F-031 \u2014 either enforce it or delete it, but stop shipping a number that lies",
+    "created_at": "2026-08-05T14:59:30.870525+00:00",
+    "promoted_to": null
   }
 ]
