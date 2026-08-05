@@ -25,6 +25,21 @@
       "id": "south_mud_pit",
       "mobType": "defensive",
       "count": 2
+    },
+    {
+      "id": "thornveil_interior",
+      "mobType": "bramble_drake",
+      "count": 1
+    },
+    {
+      "id": "thornveil_route_spearlings",
+      "mobType": "veil_spearling",
+      "count": 2
+    },
+    {
+      "id": "thornveil_route_stalkers",
+      "mobType": "bramble_stalker",
+      "count": 2
     }
   ]
 }
