@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import { STORY_FILES, loadStory, readJson, compileSchema } from "./lib/story.mjs";
 import { checkSpawnPairing } from "./lib/spawn-pairing.mjs";
+import { checkBestiarySheet } from "./lib/bestiary-sheet.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -532,6 +533,16 @@ function checkCharacters(opts, storyIds = null) {
   const dir = join(opts.contentRoot, "characters");
   const files = listContentFiles(dir, "characters");
 
+  // F-031 (G-BESTIARY-SHEET): the design roster and the runtime element map.
+  // Both are OPTIONAL here — a content root with no bestiary/ dir simply has
+  // no sheet that could be bound to a design (mirrors the maps soft-skip), and
+  // an unreadable mob-types.json has already been hard-FAILed by loadMobTypes.
+  const bestiaryPath = join(opts.contentRoot, "bestiary/bestiary.json");
+  const bestiaryById = existsSync(bestiaryPath)
+    ? (loadBestiaryDesigns(bestiaryPath) ?? new Map())
+    : new Map();
+  const mobElements = readJson(opts.mobTypes, "mob-types", () => {})?.elements ?? {};
+
   const sheetedKeys = new Set();
   for (const file of files) {
     const label = `characters/${file}`;
@@ -549,6 +560,12 @@ function checkCharacters(opts, storyIds = null) {
     // id = filename slug
     if (fm.id !== basename(file, ".md"))
       fail(`${label}: id "${fm.id}" != filename slug "${basename(file, ".md")}"`);
+
+    // (1b) G-BESTIARY-SHEET (F-031) — only sheets whose id IS a bestiary
+    // design id. The six legacy archetype sheets (mob-aggressive-brute etc.)
+    // are behaviour archetypes, not species, and are deliberately untouched.
+    const design = bestiaryById.get(fm.id);
+    if (design) checkBestiarySheet(fm, design, mobElements, fail);
 
     // (2) forward link-check
     const kind = keyKinds.get(fm.assetKey);
