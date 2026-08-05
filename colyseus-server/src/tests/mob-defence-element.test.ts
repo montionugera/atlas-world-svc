@@ -120,9 +120,25 @@ describe('mob defence element', () => {
   })
 
   it('leaves every mob type that predates F-030 neutral', () => {
-    for (const mobType of MOB_TYPES) {
-      if (mobType.id === 'thorncrown_drake') continue
-      expect(mobType.element ?? 'neutral').toBe('neutral')
+    // The six behaviour archetypes that existed before F-030 introduced
+    // per-mob elements. Named EXPLICITLY rather than "every mob except the
+    // elemental one": the original form asserted a property of the whole
+    // roster, so it broke the moment F-031 added three more elemental mobs —
+    // which is not what this test is guarding. What it guards is that the
+    // legacy wilds were never retro-fitted with an element, and that claim is
+    // unchanged.
+    const PRE_F030 = [
+      'aggressive',
+      'balanced',
+      'defensive',
+      'double_attacker',
+      'hybrid',
+      'spear_thrower',
+    ]
+    for (const id of PRE_F030) {
+      const mobType = MOB_TYPES.find((m) => m.id === id)
+      expect(mobType).toBeDefined()
+      expect(mobType!.element ?? 'neutral').toBe('neutral')
     }
   })
 })

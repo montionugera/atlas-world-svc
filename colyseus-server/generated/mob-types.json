@@ -3,10 +3,13 @@
   "mobTypes": [
     "aggressive",
     "balanced",
+    "bramble_drake",
+    "bramble_stalker",
     "defensive",
     "double_attacker",
     "hybrid",
     "spear_thrower",
-    "thorncrown_drake"
+    "thorncrown_drake",
+    "veil_spearling"
   ]
 }

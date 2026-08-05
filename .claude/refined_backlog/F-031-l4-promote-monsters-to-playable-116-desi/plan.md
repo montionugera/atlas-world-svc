@@ -29,7 +29,7 @@
 - **Codegen artifacts are committed.** After touching `MOB_TYPES`, run `gen-mob-types.sh` *and* `gen-asset-keys.sh` and commit the refreshed JSON, or local gate runs fail against a stale file.
 - **A pure builder consumed by a `src/tests` unit test MUST live under `src/`** — importing a `scripts/codegen/*.ts` file from `src/tests` breaks `tsc` with TS6059 (the F-013 lesson).
 - **`tsc`, not jest.** ts-jest caches per file; a green jest run does not prove the build compiles. Run `npx tsc --noEmit` after any type change.
-- **Fresh worktree has no `node_modules`** — run `npm install` in `colyseus-server` before anything else.
+- **Fresh worktree has no `node_modules`** — run `pnpm install` from the WORKSPACE ROOT (this is a pnpm workspace — `npm install` fails with `EUNSUPPORTEDPROTOCOL … workspace:*`), then `pnpm build` in `contracts/` or every `@atlas/contracts` import fails tsc.
 
 ---
 
