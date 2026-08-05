@@ -8,6 +8,7 @@ import { dirname, resolve, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import { STORY_FILES, loadStory, readJson, compileSchema } from "./lib/story.mjs";
+import { checkSpawnPairing } from "./lib/spawn-pairing.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -17,6 +18,7 @@ function parseArgs(argv) {
     keys: join(ROOT, "colyseus-server/generated/asset-keys.json"),
     manifest: join(ROOT, "game-client/assets/manifest.json"),
     mobTypes: join(ROOT, "colyseus-server/generated/mob-types.json"),
+    spawnAreas: join(ROOT, "colyseus-server/generated/spawn-areas.json"),
     requireComplete: false,
   };
   const takeValue = (name, i) => {
@@ -30,6 +32,7 @@ function parseArgs(argv) {
     else if (a === "--keys") opts.keys = resolve(takeValue(a, ++i));
     else if (a === "--manifest") opts.manifest = resolve(takeValue(a, ++i));
     else if (a === "--mob-types") opts.mobTypes = resolve(takeValue(a, ++i));
+    else if (a === "--spawn-areas") opts.spawnAreas = resolve(takeValue(a, ++i));
     else if (a === "--require-complete") opts.requireComplete = true;
     else { console.error(`unknown arg: ${a}`); process.exit(2); }
   }
@@ -615,6 +618,20 @@ function checkMaps(opts, mobTypes) {
   if (!validate) return 0;
 
   const bibleRegions = bibleRegionIds(opts.contentRoot);
+
+  // F-031: the RUNTIME spawn table, for G-SPAWN-PAIR below. Same discipline as
+  // loadMobTypes — a recorded FAIL or a shape-invalid document yields null and
+  // the pairing check is skipped, so one loader failure isn't multiplied per
+  // area and the rule can never silently pass.
+  const spawnBefore = failures.length;
+  const spawnDoc = readJson(opts.spawnAreas, "spawn-areas", fail);
+  let spawnAreas = null;
+  if (failures.length === spawnBefore) {
+    if (!spawnDoc || !Array.isArray(spawnDoc.areas))
+      fail(`spawn-areas: ${opts.spawnAreas} is shape-invalid — expected { areas: [...] }`);
+    else spawnAreas = spawnDoc.areas;
+  }
+
   const files = listContentFiles(dir, "maps");
 
   for (const file of files) {
@@ -681,6 +698,12 @@ function checkMaps(opts, mobTypes) {
           fail(`${label}: mobType "${area.mobType}" (area "${area.id}") is not a server mob id (valid: ${[...mobTypes].join(", ")})`);
       }
     }
+
+    // (4b) G-SPAWN-PAIR (F-031) — bind this authored table to the RUNTIME one
+    // (colyseus-server/src/config/mapConfig.ts, via its codegen artifact).
+    // Identity + population only; geometry deliberately unchecked. See
+    // scripts/lib/spawn-pairing.mjs for why, and for the LEGACY_UNPAIRED list.
+    if (spawnAreas) checkSpawnPairing(fm.mobSpawnAreas ?? [], spawnAreas, fail);
 
     // (5) bible coverage — region-looking links/ids should anchor to a bible
     //     `(region-xxx)` heading. Coverage only: WARN, never FAIL.
