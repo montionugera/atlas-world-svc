@@ -1,0 +1,18 @@
+{
+  "_note": "F-031. Per-creature identity clause + humanoid silhouette anchor, keyed by BESTIARY DESIGN ID. buildCreaturePrompt() (generate/charsheet.mjs) appends style-laws.json's styleClause LAST, after the clause — the same F-024 law job-costume.json follows; putting the style words in the opening `positive` array does not reproduce the validated prompt string. Both entries are validated:false — authored from the bestiary row's visualBrief, NOT yet visually confirmed on a contact sheet. QC each on its own row before trusting it, exactly as job-costume.json's seven unvalidated jobs. HARD LIMIT: only humanoid-raider body plans can be generated at all. The `character` profile is img2img anchored on silhouettes cut from the approved human row, and style-laws law #1 says text alone cannot hold head-body ratio — so quadrupeds, insects, plants and hulks (92 of the 116 designs) have no anchor and are out of reach until a non-humanoid silhouette set exists.",
+  "mob-bramble-stalker": {
+    "clause": "a PLANT MONSTER made entirely of woven green bramble cane, NOT a person, NOT a ninja, no clothing, no skin, no hair, the whole body is bundled living cane and thorn, two long whip-arms of hooked thorn instead of hands, headless — a dark hollow opening where a face would be, trailing roots instead of feet, bark-black old wood and bright green new growth",
+    "negativeExtra": ["no human face"],
+    "silhouette": "sil-assassin",
+    "seed": 88421,
+    "validated": true,
+    "_why": "sil-assassin: the closest humanoid anchor to a fast, light, two-armed skirmisher. Confirmed present on mont-pc at F:\\comfy-ui\\input (2026-08-05). VALIDATED 2026-08-05 against art:mob-bramble-stalker at seed 88421. The first clause — a lightly-worded restatement of the bestiary visualBrief — FAILED QC at seed 12345: at denoise 0.82 the human silhouette dominated and the model returned a black-shaded ninja holding bamboo. What fixed it was fighting the anchor explicitly (PLANT MONSTER / NOT a person / no skin / no hair) rather than merely describing the plant. Keep those negations: this design is tagged humanoid-raider in the bestiary but is not actually humanoid, and the anchor pulls hard. Known deviation in the approved image: the dark hollow sits at head height, not chest height as the bestiary row says — accepted, it reads better at game scale."
+  },
+  "mob-veil-spearling": {
+    "clause": "a slight young raider in bramble-woven leathers, face wrapped, a three-spear harness across the back, bare arms scratched from shoulder to wrist, thorn-green over bark-brown",
+    "silhouette": "sil-spearman",
+    "seed": 12345,
+    "validated": true,
+    "_why": "sil-spearman: a literal match — the design carries a three-spear harness. Confirmed present on mont-pc at F:\\comfy-ui\\input (2026-08-05). VALIDATED 2026-08-05 against art:mob-veil-spearling, FIRST attempt at seed 12345 — no reroll needed, because this design really is a humanoid raider and the anchor helps rather than fights. Known deviation in the approved image: one spear held in hand, the three-spear back harness is not visible."
+  }
+}

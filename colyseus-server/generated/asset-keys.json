@@ -10,6 +10,14 @@
       "kind": "character"
     },
     {
+      "id": "mob:bramble_drake",
+      "kind": "character"
+    },
+    {
+      "id": "mob:bramble_stalker",
+      "kind": "character"
+    },
+    {
       "id": "mob:defensive",
       "kind": "character"
     },
@@ -27,6 +35,10 @@
     },
     {
       "id": "mob:thorncrown_drake",
+      "kind": "character"
+    },
+    {
+      "id": "mob:veil_spearling",
       "kind": "character"
     },
     {

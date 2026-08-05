@@ -35,6 +35,7 @@ import {
   NODE,
   buildBaseGraph,
   buildPrompt,
+  buildCreaturePrompt,
   loadForge,
   negativePrompt,
   parseArgs,
@@ -132,8 +133,71 @@ export async function generateCell(
   });
 }
 
+/**
+ * F-031 — generate one CREATURE from the bestiary, reusing the exact same
+ * img2img recipe as a race x job cell. Only two things differ: the prompt
+ * comes from prompts/creature-identity.json instead of race+job, and the
+ * silhouette is named explicitly by that entry rather than derived from a job.
+ * Everything else — models, sampler, denoise, graph shape — is shared, so
+ * there is no second implementation of the recipe to drift.
+ */
+export async function generateCreature(
+  args,
+  forge = loadForge({ profile: "character" }),
+) {
+  const designId = args.creature;
+  const entry = forge.creatures?.[designId];
+  if (!entry) {
+    throw new Error(
+      `unknown creature "${designId}" — add it to prompts/creature-identity.json first`,
+    );
+  }
+  const seed = parseSeed(args.seed);
+  const sampler = resolveSampler(args, forge);
+  const denoise = parseDenoiseOverride(
+    args.denoise,
+    forge.profile.sampler.denoise,
+  );
+  const sil = `${forge.profile.silhouettes.prefix}${entry.silhouette.replace(/^sil-/, "")}.png`;
+  const graph = buildBaseGraph({
+    positive:
+      parsePromptOverride("positive", args.positive) ??
+      buildCreaturePrompt(designId, forge),
+    negative:
+      parsePromptOverride("negative", args.negative) ?? negativePrompt(forge),
+    seed,
+    denoise,
+    filenamePrefix: `art-forge/${designId}`,
+    latentNodes: {
+      [NODE.LOAD_IMAGE]: {
+        class_type: "LoadImage",
+        inputs: { image: sil },
+      },
+      [NODE.ENCODE]: {
+        class_type: "VAEEncode",
+        inputs: { pixels: [NODE.LOAD_IMAGE, 0], vae: [NODE.VAE, 0] },
+      },
+    },
+    latentSource: [NODE.ENCODE, 0],
+    models: forge.profile.models,
+    ...sampler,
+  });
+  return runGraph({
+    forge,
+    args,
+    graph,
+    name: designId,
+    label: `img2img creature ${designId} seed=${seed} denoise=${denoise} sil=${sil}`,
+  });
+}
+
 async function main() {
-  await generateCell(parseArgs());
+  const args = parseArgs();
+  if (args.creature) {
+    await generateCreature(args);
+    return;
+  }
+  await generateCell(args);
 }
 
 if (

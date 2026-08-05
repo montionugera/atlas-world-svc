@@ -72,6 +72,8 @@ export function loadForge({ forgeDir = FORGE_DIR, profile } = {}) {
       path.join(forgeDir, "prompts", "race-identity.json"),
     ),
     jobCostume: readJson(path.join(forgeDir, "prompts", "job-costume.json")),
+    // F-031: per-creature identity clauses, keyed by bestiary design id.
+    creatures: readJson(path.join(forgeDir, "prompts", "creature-identity.json")),
     outDir: path.join(forgeDir, "out"),
   };
 }
@@ -282,6 +284,41 @@ export function buildPrompt({ race, job }, forge) {
     "single character, plain background, front view",
     ...forge.styleLaws.negative,
     forge.jobCostume[job].clause,
+    ...forge.styleLaws.styleClause,
+  ].join(", ");
+}
+
+/**
+ * F-031 — compose a CREATURE prompt.
+ *
+ * Same law as the job path and in the same order: the style-laws opener, the
+ * creature's identity clause, then styleClause LAST. A creature is not a
+ * race x job cell — it has no muscle score and no costume — so it gets its own
+ * composer rather than being forced through buildPrompt().
+ *
+ * Only humanoid-raider designs are reachable: the `character` profile is
+ * img2img anchored on human-row silhouettes, and style-laws law #1 records
+ * that text alone cannot hold head-body ratio.
+ */
+export function buildCreaturePrompt(designId, forge) {
+  const entry = forge.creatures?.[designId];
+  if (!entry) {
+    throw new Error(
+      `unknown creature "${designId}" — add it to prompts/creature-identity.json first`,
+    );
+  }
+  if (!entry.clause) {
+    throw new Error(
+      `creature "${designId}" has no clause in prompts/creature-identity.json — ` +
+        `a silhouette alone is not a prompt`,
+    );
+  }
+  return [
+    ...forge.styleLaws.positive,
+    "full body character sheet",
+    entry.clause,
+    "single creature, plain background, front view",
+    ...forge.styleLaws.negative,
     ...forge.styleLaws.styleClause,
   ].join(", ");
 }
