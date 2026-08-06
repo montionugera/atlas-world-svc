@@ -472,5 +472,11 @@
     "title": "maxMobs in mobSpawnConfig.ts is dead config: MobLifeCycleManager reads only area.count (:71) and never maxMobs, so the documented per-room cap of 8 does nothing and the room already runs 17 mobs after F-031 \u2014 either enforce it or delete it, but stop shipping a number that lies",
     "created_at": "2026-08-05T14:59:30.870525+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-080",
+    "title": "Iron Regent's replacement motive - the king-taboo his ambition was built on was removed by I-051",
+    "created_at": "2026-08-06T18:17:58.288299+00:00",
+    "promoted_to": null
   }
 ]
