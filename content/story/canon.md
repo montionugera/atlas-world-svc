@@ -13,6 +13,14 @@ Relative-year timeline, anchored on **Day 0 = the first caravan burns**
 (`event-first-caravan-burns`, authored Task 3). Everything before Day 0 is
 background; everything after is expressed in seasons.
 
+- **Before the count — the unsealed years.** The land was lived in long
+  before anyone kept a record of it. That age made the relic weapons and
+  ended in their use; its own records were erased in the same event, which
+  is why nothing older than the first sealed record can be dated at all.
+  The present count begins at that first sealed record, not at the first
+  event. What people believe about the unsealed years is in
+  `docs/worldbuilding/A1-cosmology.md`; what is actually known is this
+  paragraph and nothing more.
 - **About a generation before Day 0 — Cindervast's fall.** The city's ruler,
   answering a rebellion he could not put down any other way, unleashed a
   relic weapon on his own rebelling people. The city becomes a cursed ruin;
@@ -347,6 +355,17 @@ harder.
 unburied battlefields carry the void in them. That is why the Bell
 School's holy work is a weapon and not only a mercy, and why the
 Bellfaith is the branch that answers them.
+
+**Where Void comes from.** Void is not a will and not a punishment. It is
+what collects where the dead were never buried, and it collects in
+proportion to them. A battlefield left unburied breeds it; an age left
+unburied is why there is any of it in the ground at all (see the unsealed
+years, §1). Burial is the only prevention and Holy is the only answer,
+and neither undoes what has already taken. This is why a town's burial is
+argued over in council alongside its walls, and why a caravan guard is
+paid to bring bodies back. What people *believe* Void is — a curse, a
+punishment, something that wants in — is a different matter, and is
+wrong; `docs/worldbuilding/A1-cosmology.md` holds the beliefs.
 
 The numbers behind all of this — how much heavier, how much weaker —
 live in the combat code and the F-017 design spec. Canon carries the
