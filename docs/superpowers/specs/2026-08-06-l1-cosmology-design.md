@@ -99,11 +99,11 @@ A claim that explains nothing is decoration (SWF §3.3).
 | --- | --- |
 | C1 | `core-story.md:40` — the Last King took an **ancient weapon** from the palace vault. Ancient *to whom*, made *by whom*, was never answerable. Now it is. |
 | C2 | Why exactly one weapon class of this kind exists, with no supply chain, no rival, and no second example in production. |
-| C3 | `canon.md:346` — *"War-scar monsters are Void-line"*, and `A0:272` — void is the most common element in the corpus (28 uses), **concentrated on the war ground**. Void was already behaving like a by-product of battle. This names the mechanism. |
+| C3 | `canon.md:354` — *"War-scar monsters are Void-line"*, and `A0:272` — void is the most common element in the corpus (28 uses), **concentrated on the war ground**. Void was already behaving like a by-product of battle. This names the mechanism. |
 | C4 | `A0` G2 — the world's memory is ~100 years deep and nothing older is mentioned anywhere. The shallowness stops being a gap and becomes the scar of the event. |
 | C5 | `canon.md` §4 — the Bellfaith owns the news, the proclamation and the seal. Its authority is now **historically** founded: it did not become powerful by being holy, it became powerful by being **first to write things down and vouch for them**. |
 | C6 | Act 4's entire stake. The relic sale is the world's most consequential transaction because the supply is fixed at whatever survived — `event-relic-deal-struck`, `event-relic-sale-stopped`. |
-| C7 | `canon.md:293` — magic is cheap, ordinary, no shortage, no black market. Untouched. |
+| C7 | `canon.md:301` — magic is cheap, ordinary, no shortage, no black market. Untouched. |
 
 ## 4. Consequences — second-order effects on ordinary life
 
@@ -118,7 +118,7 @@ bell-warden all become legible.
 2. **Gravedigging is a paid trade with a wartime surge price**, and body-recovery is a clause in a
    caravan guard's contract — the guard is paid to bring bodies back, not out of sentiment, but
    because the alternative breeds what he will have to fight next year.
-3. **Ashvale Front is the one thing the two towns cooperate on.** `canon.md:180-181` already says
+3. **Ashvale Front is the one thing the two towns cooperate on.** `canon.md:188-189` already says
    *"neither town claims it, both bury their dead in it."* That is not a truce gesture. It is both
    towns paying into the same defence.
 
@@ -146,7 +146,7 @@ Power with no cost is not worldbuilding (SWF §3.5).
 - **The erasing weapons cannot be made, counted, or studied.** Using one destroys the record of
   its own use — including any record of how many were made. Nobody can prove how many remain.
   This is the standing threat, and it is unresolvable by design.
-- **Void cannot be cured, only answered.** Holy counters it (`canon.md:363`); burial prevents it.
+- **Void cannot be cured, only answered.** Holy counters it (`canon.md:382`); burial prevents it.
   Neither undoes it. Ground that has held unburied dead stays Void-line.
 - **The Bellfaith's authority has an expiry it cannot admit.** The count began when someone chose
   to start writing. It is arbitrary, and the Bellfaith knows the first sealed record is not the

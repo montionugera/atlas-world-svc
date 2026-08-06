@@ -585,7 +585,7 @@ untouched.** A session scanning only the catalog will re-do finished work.
 
 ### 6.3 `canon.md` §6.1 is stale — **CONFIRMED**
 
-`content/story/canon.md:429-435` still reads: *"the rename itself cannot happen on this branch —
+`content/story/canon.md:448-454` still reads: *"the rename itself cannot happen on this branch —
 `cluster1-geography.json` and `bestiary.json` live only on `feat/F-024`."*
 
 F-024 has merged (`a8b82b3`, catalog `status: shipped / 1.6, shipped_at 2026-08-02`), and

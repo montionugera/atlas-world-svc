@@ -609,7 +609,7 @@ Independent reviewer on `git show HEAD`, given SWF §3 and §4 verbatim. Reviewe
 - Consumes: C1–C6 and the era name from Task 5.
 - Produces: canon states Void's origin. Task 7's lore nodes dramatise what canon here asserts, and must not contradict it.
 
-**canon.md is world law.** It carries the elements in words only — no lore body, quest or dialogue line may quote a multiplier (`canon.md:351-354`, `style.md` §6 rule 5). Keep it that way.
+**canon.md is world law.** It carries the elements in words only — no lore body, quest or dialogue line may quote a multiplier (`canon.md:370-373`, `style.md` §6 rule 5). Keep it that way.
 
 - [ ] **Step 1: Add the chronology entry**
 
@@ -626,7 +626,7 @@ In `## 1. World chronology`, insert as the **first** bullet, above `- **About a 
 
 - [ ] **Step 2: Add Void's origin to §5**
 
-Immediately after the existing paragraph beginning `**War-scar monsters are Void-line.**` (`canon.md:346`), insert:
+Immediately after the existing paragraph beginning `**War-scar monsters are Void-line.**` (`canon.md:354`), insert:
 
 ```markdown
 **Where Void comes from.** Void is not a will and not a punishment. It is what collects
@@ -786,13 +786,29 @@ echo "exit=$?"
 ```
 Expected: `0 failures`, `exit=0`, and **no new warning** about `the-unsealed-years`. If an anchor fails to resolve, the message names the offending id — fix the anchor, do not invent a story node.
 
+- [ ] **Step 4b: Regenerate the story graph — REQUIRED, or the suite goes red**
+
+Adding story nodes makes `docs/story/story-graph.md` stale, and a drift gate fails two tests in
+the scripts suite when it is.
+
+Run:
+```bash
+cd .claude/worktrees/_release
+node scripts/gen_story_graph.mjs --write
+node scripts/gen_story_graph.mjs --check; echo "check-exit=$?"
+```
+Expected: `--write` reports the new node/edge counts, then `--check` reports *in sync* and
+`check-exit=0`. Commit the regenerated file together with `lore.json`.
+
 - [ ] **Step 5: Run the scripts suite**
 
 Run:
 ```bash
-cd .claude/worktrees/_release/scripts && npm test
+cd .claude/worktrees/_release/scripts
+npm test > /tmp/suite.txt 2>&1; echo "TRUE suite exit = $?"
+tail -6 /tmp/suite.txt
 ```
-Expected: all pass. **Do not** run `node --test scripts/tests/` — that is `MODULE_NOT_FOUND`, exit 1, on Node 26.
+Expected: `TRUE suite exit = 0`, `fail 0`. **Capture the exit code before any pipe** — `npm test | tail` reports `tail`'s status, not the suite's. **Do not** run `node --test scripts/tests/` — that is `MODULE_NOT_FOUND`, exit 1, on Node 26.
 
 - [ ] **Step 6: G4 and G7 scan on the new bodies**
 
