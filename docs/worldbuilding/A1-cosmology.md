@@ -173,6 +173,11 @@ something valuable and do not know it — they think they are keeping a habit.
 - **The erasing weapons cannot be made, counted or studied.** Using one destroys the record of its
   own use, including any record of how many were made. Nobody can prove how many remain. This is
   the standing threat, and it is **unresolvable by design**.
+  <br><br>
+  **They are also given no failure mode, deliberately.** What a thing fails against is a fact about
+  how it works, and §8 forbids answering that. Naming a weakness here to satisfy the cost rule
+  would trade a soft note for a hard self-contradiction. The cost is stated instead in what using
+  one destroys.
 - **Void cannot be cured, only answered.** Holy counters it (`canon.md:382`); burial prevents it.
   Neither undoes it. Ground that has held unburied dead stays Void-line, and stays that way.
 - **The Bellfaith's authority has an expiry it cannot admit.** The count began when somebody chose
@@ -213,7 +218,7 @@ His reading is the one that lets a survivor keep standing.
 
 ## 7. What this does not change
 
-Everything listed here stays valid, unamended.
+Everything listed here stays valid; the one exception is named in the last bullet.
 
 - **The magic model** — `canon.md` §5 entire: magic is cheap and everyday, runes are the real
   limit, rune-craft belongs to everyone, High-Tier is the ceiling.
