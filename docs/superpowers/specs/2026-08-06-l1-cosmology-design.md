@@ -99,7 +99,7 @@ A claim that explains nothing is decoration (SWF §3.3).
 | --- | --- |
 | C1 | `core-story.md:40` — the Last King took an **ancient weapon** from the palace vault. Ancient *to whom*, made *by whom*, was never answerable. Now it is. |
 | C2 | Why exactly one weapon class of this kind exists, with no supply chain, no rival, and no second example in production. |
-| C3 | `canon.md:354` — *"War-scar monsters are Void-line"*, and `A0:272` — void is the most common element in the corpus (28 uses), **concentrated on the war ground**. Void was already behaving like a by-product of battle. This names the mechanism. |
+| C3 | `canon.md:354` — *"War-scar monsters are Void-line"*, and `A0:278` — void is the most common element in the corpus (28 uses), **concentrated on the war ground**. Void was already behaving like a by-product of battle. This names the mechanism. |
 | C4 | `A0` G2 — the world's memory is ~100 years deep and nothing older is mentioned anywhere. The shallowness stops being a gap and becomes the scar of the event. |
 | C5 | `canon.md` §4 — the Bellfaith owns the news, the proclamation and the seal. Its authority is now **historically** founded: it did not become powerful by being holy, it became powerful by being **first to write things down and vouch for them**. |
 | C6 | Act 4's entire stake. The relic sale is the world's most consequential transaction because the supply is fixed at whatever survived — `event-relic-deal-struck`, `event-relic-sale-stopped`. |
@@ -169,7 +169,7 @@ fill.
 <div class="callout danger">
 
 **The Ash Prophet is the most fervently wrong.** `char-the-ash-prophet` already *"holds the
-vacuum as a religion"* (`A0:107`) and shows his relic token as a sermon
+vacuum as a religion"* (`A0:113`) and shows his relic token as a sermon
 (`lore-what-the-prophet-carries`). Under C3 he is preaching the meaning of an industrial
 accident. **This design does not correct him, and no content may.** He is the load-bearing
 example that belief in this world runs ahead of fact.

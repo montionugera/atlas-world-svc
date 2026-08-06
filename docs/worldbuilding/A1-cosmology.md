@@ -98,7 +98,7 @@ before this document existed.
 | --- | --- |
 | **C1** | The Last King took an **ancient weapon** from the palace vault (`core-story.md:40`). Ancient *to whom*, and made *by whom*, had no answer. Now it does. |
 | **C2** | Why exactly one class of weapon like this exists, with no rival, no second example and no industry around it. |
-| **C3** | `canon.md:354` — *"War-scar monsters are Void-line"* — and `A0:272`, where void is the most-used element in the whole corpus and is **concentrated on the war ground**. Void was already behaving like a by-product of battle. This names the mechanism it was already obeying. |
+| **C3** | `canon.md:354` — *"War-scar monsters are Void-line"* — and `A0:278`, where void is the most-used element in the whole corpus and is **concentrated on the war ground**. Void was already behaving like a by-product of battle. This names the mechanism it was already obeying. |
 | **C4** | `A0` **G2** — the world's memory is about a hundred years deep and nothing older is mentioned anywhere. The shallowness stops being an oversight and becomes the scar. |
 | **C5** | `canon.md` §4 — the Bellfaith owns the news, the proclamation and the seal. Its authority now has a **history**: it did not become powerful by being holy. It became powerful by being first to write things down and vouch for them. |
 | **C6** | Act 4's entire stake. The relic sale is the most consequential transaction in the world because supply is fixed at whatever survived — `event-relic-deal-struck`, `event-relic-sale-stopped`. |
@@ -107,6 +107,22 @@ before this document existed.
 ---
 
 ## 4. Consequences <span class="topic-chip">ordinary life</span>
+
+<div class="callout info">
+
+**Which claims carry consequences, and which do not.** The contract asks for at least two
+second-order effects per claim. **C3, C5 and C6 carry them** and are worked through below.
+
+**C1, C2 and C4 are structural** — they say who existed, what they did, and why no record of it
+survives. Nothing in a miller's week changes because of them; their ordinary-life effects reach
+daily life *through* C3 (the Void they left), C5 (the count that started after) and C6 (the
+salvage they left behind), which is where those effects are stated. **C7 mints none by design** —
+it exists to keep magic stones exactly as they were.
+
+Stating this rather than manufacturing thin consequences for C1, C2 and C4 is the honest reading
+of the rule.
+
+</div>
 
 <div class="metric-grid">
 <div class="metric-tile"><strong>burial</strong><br/>a defence budget<br/><em>not a rite</em></div>
@@ -183,9 +199,9 @@ In the manner of `canon.md` §3's who-knows-what matrix.
 
 **The Ash Prophet is the most fervently wrong, and stays wrong.**
 
-He already *"holds the vacuum as a religion"* and shows his relic token as a sermon
-(`lore-what-the-prophet-carries`). Under **C3** he is preaching the meaning of an industrial
-accident.
+He already *"holds the vacuum as a religion"* (`A0:113`, glossing `core-story.md:55`) and shows
+his relic token as a sermon — *"I made mine a sermon"* (`lore-what-the-prophet-carries`). Under
+**C3** he is preaching the meaning of an erasure.
 
 **This document does not correct him, and no content authored after it may.** He is the
 load-bearing proof that in this world belief runs well ahead of fact — and he is not a fool for it.
@@ -205,7 +221,10 @@ Everything listed here stays valid, unamended.
 - **Magic stones** — mined, sold, unexplained (**C7**).
 - **Classes and races** — all sixty-four pairings, every lean, and the rule that none of it exists
   in game state yet.
-- **The five-act epic** — every event id, character fate and quest. Nothing in acts 1–5 is touched.
+- **The five-act epic** — every event id, character fate and quest is untouched. **One wording
+  change did land inside the act-4/5 spine**: the Iron Regent's stated ambition, reworded from
+  *"the second king"* to *"the only power left"* when the king theme was removed. No event, no
+  fate and no quest changed with it. See the design's §9.3 for the full site list.
 - **The 116-design bestiary**, the Thornveil placement file, and every mob type.
 - **The Last King of Cindervast** — the three-layer villainy, the seventy hanged, the relic weapon,
   the erased city, the standing statues, the Cindered, the Stoneguard. Whole.
