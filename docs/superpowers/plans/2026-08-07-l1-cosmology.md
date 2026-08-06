@@ -338,8 +338,14 @@ aria-label="ภาพเงาผู้สำเร็จราชการเ�
 ```
 with:
 ```
-aria-label="ภาพเงาผู้สำเร็จราชการเหล็ก"
+aria-label="ภาพเงาผู้สำเร็จราชการเหล็ก มีเงาเหยี่ยวเหนือศีรษะ"
 ```
+
+**Do not shorten this to the role alone.** Every sibling portrait card in this file pairs the role
+with a distinguishing detail that is actually drawn — the Widow's sparks (`:538`), the traveller's
+staff (`:567`), the Broker's wax seal (`:635`), the Ash Prophet's torn cloak (`:696`). Dropping the
+crown without naming the hawk would leave a screen-reader user with no identity cue for this one
+character while sighted users still get one. The hawk silhouette is drawn at `:687` and stays.
 
 - [ ] **Step 5: Check whether the SVG actually draws a crown**
 
@@ -488,7 +494,7 @@ with:
 Run:
 ```bash
 cd .claude/worktrees/_release
-git grep -nE "only king in all history|กษัตริย์องค์เดียว|สาบส่งคำว่ากษัตริย์|องค์ที่สอง" -- docs/ content/
+git grep -nE "only king in all history|กษัตริย์องค์เดียว|สาบส่งคำว่ากษัตริย์|องค์ที่สอง|curse word|dares wear a crown|feared crowns" -- docs/ content/ ':!docs/superpowers/'
 echo "hits above should be none"
 ```
 Expected: no output — this is now the repo-wide assertion, since Tasks 2, 3 and 4 have all landed.
@@ -858,7 +864,7 @@ Run:
 ```bash
 cd .claude/worktrees/_release
 echo "--- king theme gone ---"
-git grep -nE "กษัตริย์องค์เดียว|องค์ที่สอง|สาบส่งคำว่ากษัตริย์|only king in all history" -- docs/ content/
+git grep -nE "กษัตริย์องค์เดียว|องค์ที่สอง|สาบส่งคำว่ากษัตริย์|only king in all history|curse word|dares wear a crown" -- docs/ content/ ':!docs/superpowers/' ':!docs/worldbuilding/DR-006-swf-scope.md'
 echo "--- content gate ---"
 node scripts/check_content.mjs; echo "gate-exit=$?"
 echo "--- scripts suite ---"
