@@ -398,5 +398,55 @@
     "anchor": "region-ashvale-front",
     "thread": "the-warded-world",
     "links": []
+  },
+  {
+    "id": "lore-the-ground-that-keeps-count",
+    "kind": "lore",
+    "title": "The Ground That Keeps Count",
+    "summary": "A burial detail on the Ashvale Front explains why the digging never stops, without knowing he is explaining anything.",
+    "body": "Two seasons I have dug here and I have stopped asking which side a man came from. You bury them or you fight them again in the spring, and the second time they do not stop when you shout. The Embervale lads take the north rows, we take the south, and not one person on either side has ever said a word about that arrangement out loud.",
+    "anchor": "region-ashvale-front",
+    "thread": "the-unsealed-years",
+    "links": []
+  },
+  {
+    "id": "lore-nothing-left-to-bury",
+    "kind": "lore",
+    "title": "Nothing Left to Bury",
+    "summary": "A Cindered survivor on the one thing the city could not do for its dead.",
+    "body": "People ask what we buried. We buried nothing. That is the whole of it. There was no body to carry, no weight to lower, no place to set a name down. The wall kept the shadow and the ground kept nothing. A grief you cannot put in the earth is a different animal than the kind you can.",
+    "anchor": "region-cindervast",
+    "thread": "the-unsealed-years",
+    "links": []
+  },
+  {
+    "id": "lore-the-first-seal",
+    "kind": "lore",
+    "title": "The First Seal",
+    "summary": "The oldest sealed record in the tower archive, and the honest thing a bell-warden tells her students about it.",
+    "body": "It is a grain tally. Four lines, the date we count from, and the seal. Every claim of age in this land measures back to it and stops there. I tell the students what my warden told me: this is not the oldest thing that happened, it is the oldest thing anyone signed for. What came before it is not lost. It was never written.",
+    "anchor": "faction-bellfaith",
+    "thread": "the-unsealed-years",
+    "links": []
+  },
+  {
+    "id": "lore-the-vacuum-holds",
+    "kind": "lore",
+    "title": "The Vacuum Holds",
+    "summary": "The Ash Prophet preaches a meaning for the erasure, and nobody corrects him.",
+    "body": "They tell me the ruin is empty. I have stood in it. It is the fullest place in this land. What was taken there was taken on purpose and by a hand, and a thing done on purpose can be answered. Bring me someone willing to say that much about a famine.",
+    "anchor": "char-the-ash-prophet",
+    "thread": "the-unsealed-years",
+    "links": []
+  },
+  {
+    "id": "lore-what-the-ice-gives-back",
+    "kind": "lore",
+    "title": "What the Ice Gives Back",
+    "summary": "The expedition camp catalogues something the ground surrendered that predates every record they have.",
+    "body": "Sixth crate this season. Same as the others — worked metal, no maker's mark, and an edge that has not dulled in whatever time it spent down there. It gets logged as salvage because there is no other column to put it in. I have started a second book. It has one column and no dates in it.",
+    "anchor": "region-icefield",
+    "thread": "the-unsealed-years",
+    "links": []
   }
 ]
