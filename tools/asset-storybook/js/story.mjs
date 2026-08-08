@@ -252,7 +252,15 @@ export async function mountStory(main) {
   // An unconditional prepend would push that diagnostic below the story
   // section, hiding it. If that notice is present, insert right after it
   // instead so it stays the first thing on the page.
-  const failureNotice = main.querySelector(".empty-state");
+  //
+  // Scoped to DIRECT children only (":scope > .empty-state"), not
+  // main.querySelector(".empty-state"): the class is reused for ordinary
+  // section blurbs (SFX/Music/Coverage descriptive text nested inside their
+  // own <section>s), which are healthy-page content, not error notices. An
+  // unscoped descendant query would find one of those instead if a
+  // blurb-bearing section ever mounted before story, and insert the story
+  // section INSIDE it — a nested <section> in the middle of another list.
+  const failureNotice = main.querySelector(":scope > .empty-state");
   if (failureNotice) failureNotice.after(section);
   else main.prepend(section);
 }
