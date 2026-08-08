@@ -238,7 +238,13 @@ export async function mountStory(main) {
     "Views mirror the story-views.json registry order. Adding a view is a registry edit plus its Dockerfile COPY + allowlist lines.";
   section.appendChild(hint);
 
-  main.appendChild(section);
+  // I-085: appended last, this landed at 94.6% of a 75,284px page — behind 24
+  // sections and ~653 cards. Sit directly under the combat lab instead, matching
+  // the sidebar order. The fallback keeps the old behaviour if combat is absent
+  // (it mounts on both main.mjs paths, but never assume a sibling exists).
+  const combat = document.getElementById("section-combat");
+  if (combat && combat.parentNode === main) combat.after(section);
+  else main.prepend(section);
 }
 
 /** Sidebar entry for the story section. Separated so it can sit up top. */
