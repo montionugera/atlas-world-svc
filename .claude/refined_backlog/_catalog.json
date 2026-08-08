@@ -391,9 +391,10 @@
     "from_idea": "I-082",
     "created_at": "2026-08-08T04:15:28.387270+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-08-08T04:23:19.394673+00:00"
+    "status": "shipped",
+    "release_version": "1.7",
+    "claimed_at": "2026-08-08T04:23:19.394673+00:00",
+    "shipped_at": "2026-08-08T05:25:42.500012+00:00"
   },
   {
     "id": "F-035",
