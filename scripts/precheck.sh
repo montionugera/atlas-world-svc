@@ -139,6 +139,12 @@ art_forge_tests() {
   ( cd "$REPO_ROOT/tools/art-forge" && node --test tests/*.test.mjs )
 }
 
+storybook_tests() {
+  # F-038: taxonomy resolution, thumb-index join, verdict store. Pure modules,
+  # so they run here with no browser and no Blender.
+  ( cd "$REPO_ROOT" && node --test tools/asset-storybook/tests/*.test.mjs )
+}
+
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace install" deps_install
 run_section "contracts: tsc build"          contracts_build
@@ -150,6 +156,7 @@ run_section "nakama: tsc --noEmit"          nakama_typecheck
 run_section "nakama: jest suite"            nakama_tests
 run_section "client: react-client suite"    client_tests
 run_section "art-forge: node --test suite"  art_forge_tests
+run_section "asset-storybook: node --test suite" storybook_tests
 run_section "combat-lab: model gates"       combat_lab
 
 # --- Summary -----------------------------------------------------------------

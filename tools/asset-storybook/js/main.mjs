@@ -17,6 +17,10 @@ import {
   TAXONOMY_URL,
   taxonomyState,
   THUMB_INDEX_URL,
+  REVIEW_QUEUE_URL,
+  REJECTED_CLASS,
+  REBUILD_CLASS,
+  UNREVIEWED_CLASS,
 } from "./state.mjs";
 import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
 import { resolveRender } from "./renderers.mjs";
@@ -29,6 +33,7 @@ import { loadThumbIndex, thumbUrlFor } from "./data/thumbs.mjs";
 import { buildCard } from "./view/Card.mjs";
 import { VirtualGrid, preloadThumbnails } from "./view/VirtualGrid.mjs";
 import { openDetail } from "./view/DetailOverlay.mjs";
+import { initReview, getStore } from "./review/ui.mjs";
 import { buildCoverageSection } from "./coverage.mjs";
 import { mountCombatLab, mountCombatNav } from "./combat-lab.mjs";
 import { mountStory, mountStoryNav } from "./story.mjs";
@@ -136,6 +141,20 @@ async function init() {
       err,
     );
   }
+
+  // Review layer (Phase 4). content/review-queue.json is the COMMITTED source
+  // of truth; localStorage holds only unsaved marks. Non-critical: a repo with
+  // no queue file yet simply starts with zero verdicts.
+  let reviewQueue = { version: 1, verdicts: {} };
+  try {
+    reviewQueue = await fetchJson(REVIEW_QUEUE_URL, "review-queue");
+  } catch (err) {
+    console.warn(
+      "[asset-storybook] review-queue.json unavailable — starting with no verdicts:",
+      err,
+    );
+  }
+  initReview(reviewQueue);
 
   // manifest.json (codegen-keyed) + catalog-manifest.json (curated) —
   // merged into one entry list the same way the storybook has always
@@ -256,7 +275,7 @@ async function init() {
   }
 
   main.innerHTML = "";
-  const grids = [];
+  const gridsBySection = new Map();
 
   // --- one virtualized section per taxonomy section. Cards are baked
   //     thumbnails (js/view/Card.mjs); the live renderers in renderers.mjs
@@ -300,7 +319,7 @@ async function init() {
             }),
         }),
     });
-    grids.push(grid);
+    gridsBySection.set(groupKey, grid);
 
     // Health is counted over the FULL list via a bounded preload, never over
     // mounted cards — a virtualized card that scrolls away is removed from the
@@ -316,6 +335,80 @@ async function init() {
       },
     );
   }
+
+  // --- verdict filters (Task 18). These slice the SAME item set by review
+  //     state rather than by kind, so filtering re-windows the grids instead
+  //     of hiding DOM — the point of virtualization is that a filter on 653
+  //     items stays instant. ---
+  const allItems = entries;
+  const sectionGrids = new Map(gridsBySection);
+
+  function applyVerdictFilter(cls) {
+    const store = getStore();
+    if (!store) return;
+    const keep = (key) => {
+      const rec = store.get(key);
+      if (cls === REJECTED_CLASS) return rec?.verdict === "reject";
+      if (cls === REBUILD_CLASS) return rec?.verdict === "rebuild";
+      if (cls === UNREVIEWED_CLASS) return !rec;
+      return true;
+    };
+    for (const [groupKey, grid] of sectionGrids) {
+      const list = groups.get(groupKey).filter(([key]) => keep(key));
+      grid.setItems(list);
+      const sec = document.getElementById("section-" + groupKey);
+      if (sec) {
+        sec.style.display = list.length === 0 ? "none" : "";
+        const h2 = sec.querySelector("h2");
+        if (h2)
+          h2.textContent = classLabel(groupKey) + " (" + list.length + ")";
+      }
+    }
+  }
+
+  function clearVerdictFilter() {
+    for (const [groupKey, grid] of sectionGrids) {
+      const list = groups.get(groupKey);
+      grid.setItems(list);
+      const sec = document.getElementById("section-" + groupKey);
+      if (sec) {
+        const h2 = sec.querySelector("h2");
+        if (h2)
+          h2.textContent = classLabel(groupKey) + " (" + list.length + ")";
+      }
+    }
+  }
+
+  function refreshVerdictNav() {
+    const store = getStore();
+    if (!store) return;
+    const c = store.counts();
+    const reviewed = store.allKeys().length;
+    const totals = {
+      [REJECTED_CLASS]: c.reject,
+      [REBUILD_CLASS]: c.rebuild,
+      [UNREVIEWED_CLASS]: allItems.length - reviewed,
+    };
+    for (const [cls, n] of Object.entries(totals)) {
+      const btn = document.querySelector(
+        '.sidebar-item[data-class="' + cls + '"] .count',
+      );
+      if (btn) btn.textContent = n;
+    }
+  }
+
+  for (const cls of [REJECTED_CLASS, REBUILD_CLASS, UNREVIEWED_CLASS]) {
+    const btn = buildSidebarItem(cls, 0);
+    btn.addEventListener("click", () => applyVerdictFilter(cls));
+    sidebarNav.appendChild(btn);
+  }
+  // "All" must also drop any active verdict filter, or the page stays
+  // filtered while claiming to show everything.
+  document.addEventListener("storybook:class-change", (e) => {
+    if (e.detail && e.detail.cls === "all") clearVerdictFilter();
+  });
+  document.addEventListener("storybook:verdict-change", refreshVerdictNav);
+  refreshVerdictNav();
 
   mountCombatLab(main);
   await mountStory(main);

@@ -5,6 +5,9 @@ import {
   COVERAGE_CLASS,
   COMBAT_CLASS,
   STORY_CLASS,
+  REJECTED_CLASS,
+  REBUILD_CLASS,
+  UNREVIEWED_CLASS,
   ART_GROUP_LABELS,
   artTabState,
   taxonomyState,
@@ -34,6 +37,9 @@ export function classLabel(cls) {
   if (cls === COVERAGE_CLASS) return "Coverage";
   if (cls === COMBAT_CLASS) return "Combat";
   if (cls === STORY_CLASS) return "Story";
+  if (cls === REJECTED_CLASS) return "Rejected";
+  if (cls === REBUILD_CLASS) return "Needs rebuild";
+  if (cls === UNREVIEWED_CLASS) return "Unreviewed";
   if (cls.startsWith(ART_CLASS + ":")) {
     const gid = cls.slice(ART_CLASS.length + 1);
     return ART_GROUP_LABELS.get(gid) || gid + " (unregistered)";

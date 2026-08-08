@@ -12,6 +12,7 @@
 
 import { thumbUrlFor, sizeTextFor, hasThumb } from "../data/thumbs.mjs";
 import { filenameOf } from "../utils.mjs";
+import { attachVerdictControls } from "../review/ui.mjs";
 
 function primaryPath(entry) {
   return entry.scene ?? entry.stream ?? "";
@@ -105,6 +106,10 @@ export function buildCard(key, entry, ctx) {
       }
     });
   }
+
+  // Reject / rebuild controls. Added last so they sit above the meta block,
+  // and they stopPropagation so marking never opens the detail overlay.
+  attachVerdictControls(card, key);
 
   card.dataset.section = sectionId || "";
   return card;

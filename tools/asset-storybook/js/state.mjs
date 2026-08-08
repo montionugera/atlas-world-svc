@@ -26,6 +26,12 @@ export const RENDER_SPEC_URL = "../../game-client/assets/render-spec.json";
 export const TAXONOMY_URL = "../../content/asset-taxonomy.json";
 // F-038: baked thumbnail index. Fetched non-critically — a checkout that has
 // never run scripts/bake_thumbnails.mjs still renders, with LOUD cards.
+export const REVIEW_QUEUE_URL = "../../content/review-queue.json";
+// Synthetic sidebar classes for the verdict filters (F-038 Phase 4). Not asset
+// kinds — they slice the SAME items by review state.
+export const REJECTED_CLASS = "verdict:reject";
+export const REBUILD_CLASS = "verdict:rebuild";
+export const UNREVIEWED_CLASS = "verdict:unreviewed";
 export const THUMB_INDEX_URL = "../../game-client/assets/.thumbs/index.json";
 // Holder for the loaded taxonomy, set once in init(). Mirrors how
 // ART_GROUP_LABELS below is populated at load time and read by classLabel(),

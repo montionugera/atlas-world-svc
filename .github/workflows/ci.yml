@@ -110,6 +110,12 @@ jobs:
       - name: Story explorer smoke test
         run: node --test tools/story-explorer/tests/*.test.mjs
 
+      # Asset storybook (F-038): the pure data layer — taxonomy resolution,
+      # thumb-index join, verdict store. No DOM, so node --test covers it.
+      # Without this step the storybook's tests only ever ran on a laptop.
+      - name: Asset storybook data-layer tests
+        run: node --test tools/asset-storybook/tests/*.test.mjs
+
       # Asset forge (F-003): structural + game-rule validation for every
       # manifest entry whose glb exists on disk. Bespoke-tier failures are
       # hard failures; seed-tier issues are warnings only (known scale bug,

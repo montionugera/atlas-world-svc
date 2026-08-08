@@ -16,11 +16,7 @@ function buildArtCard(id, entry, groupClass) {
   // applyArtTabFilter() can match free text without re-reading the
   // manifest — title/tags are the two fields the filter searches.
   const tagText = Array.isArray(entry.tags) ? entry.tags.join(" ") : "";
-  card.dataset.artSearch = (
-    (entry.title || id) +
-    " " +
-    tagText
-  ).toLowerCase();
+  card.dataset.artSearch = ((entry.title || id) + " " + tagText).toLowerCase();
 
   const viewport = document.createElement("div");
   viewport.className = "viewport art-viewport";
@@ -88,11 +84,9 @@ function buildArtCard(id, entry, groupClass) {
   if (entry.gen && typeof entry.gen === "object") {
     const parts = [];
     if (entry.gen.model) parts.push(entry.gen.model);
-    if (entry.gen.steps !== undefined)
-      parts.push(`${entry.gen.steps} steps`);
+    if (entry.gen.steps !== undefined) parts.push(`${entry.gen.steps} steps`);
     if (entry.gen.cfg !== undefined) parts.push(`cfg ${entry.gen.cfg}`);
-    if (entry.gen.seed !== undefined)
-      parts.push(`seed ${entry.gen.seed}`);
+    if (entry.gen.seed !== undefined) parts.push(`seed ${entry.gen.seed}`);
     if (parts.length > 0) {
       const genEl = document.createElement("p");
       genEl.className = "art-gen";
@@ -207,9 +201,7 @@ function buildArtClassesBody(classList, groupClass) {
 // heading before T0.
 export function bucketArtEntries(artEntries, artGroups) {
   const order =
-    artGroups &&
-    Array.isArray(artGroups.groups) &&
-    artGroups.groups.length
+    artGroups && Array.isArray(artGroups.groups) && artGroups.groups.length
       ? artGroups.groups
       : ART_GROUPS_FALLBACK;
 
@@ -259,11 +251,8 @@ export function buildArtGroupSection(gid, label, list) {
   section.appendChild(h2);
 
   section.appendChild(
-    gid === "class"
-      ? buildArtClassesBody(list, cls)
-      : buildArtGrid(list, cls),
+    gid === "class" ? buildArtClassesBody(list, cls) : buildArtGrid(list, cls),
   );
 
   return section;
 }
-
