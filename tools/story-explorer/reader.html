@@ -17,7 +17,12 @@
   nav .navlink:hover{background:#242835}
   nav .navlink.section{color:var(--mut);text-transform:uppercase;font-size:10px;letter-spacing:.6px;margin:14px 8px 4px;padding:0}
   main{flex:1;padding:48px 24px 140px;display:flex;justify-content:center;overflow-x:hidden}
-  #content{max-width:70ch;width:100%;min-width:0}
+  /* 58ch, not ~75ch: `ch` is the advance width of the font's "0" glyph, which
+     measures wider than the average character in this font (measured ~10.07px
+     vs ~8.01px average) — so a naive 70ch cap rendered at 705px, ~88 average
+     characters per line, well past the 75-char target. 58ch keeps the
+     column under 75 measured characters. */
+  #content{max-width:58ch;width:100%;min-width:0}
   #content .loading{color:var(--mut)}
   h2{font-size:26px;margin:56px 0 4px;border-bottom:1px solid var(--line);padding-bottom:10px;scroll-margin-top:20px}
   h2:first-child{margin-top:0}
