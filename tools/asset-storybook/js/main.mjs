@@ -16,14 +16,19 @@ import {
   artTabState,
   TAXONOMY_URL,
   taxonomyState,
+  THUMB_INDEX_URL,
 } from "./state.mjs";
 import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
-import { resolveRender, renderEntry } from "./renderers.mjs";
+import { resolveRender } from "./renderers.mjs";
 import { buildAudio, buildMusic } from "./audio.mjs";
 import { bucketArtEntries, buildArtGroupSection } from "./art.mjs";
 import { buildArtTabBar, applyArtTabFilter } from "./art-tabs.mjs";
 import { classLabel, buildSidebarItem } from "./sidebar.mjs";
 import { loadTaxonomy, groupEntries } from "./data/taxonomy.mjs";
+import { loadThumbIndex, thumbUrlFor } from "./data/thumbs.mjs";
+import { buildCard } from "./view/Card.mjs";
+import { VirtualGrid, preloadThumbnails } from "./view/VirtualGrid.mjs";
+import { openDetail } from "./view/DetailOverlay.mjs";
 import { buildCoverageSection } from "./coverage.mjs";
 import { mountCombatLab, mountCombatNav } from "./combat-lab.mjs";
 import { mountStory, mountStoryNav } from "./story.mjs";
@@ -112,6 +117,22 @@ async function init() {
   } catch (err) {
     console.warn(
       "[asset-storybook] art-groups.json unavailable — falling back to cast/race/class order:",
+      err,
+    );
+  }
+
+  // .thumbs/index.json is fetched NON-critically: a checkout that has never
+  // run scripts/bake_thumbnails.mjs should still render the page (with LOUD
+  // "no baked thumbnail" cards) rather than a blank screen. Guard (U) is what
+  // makes a missing thumbnail a build failure; the page only has to degrade.
+  let thumbIndex = new Map();
+  try {
+    thumbIndex = loadThumbIndex(
+      await fetchJson(THUMB_INDEX_URL, "thumb-index"),
+    );
+  } catch (err) {
+    console.warn(
+      "[asset-storybook] .thumbs/index.json unavailable — run `node scripts/bake_thumbnails.mjs`:",
       err,
     );
   }
@@ -235,12 +256,13 @@ async function init() {
   }
 
   main.innerHTML = "";
+  const grids = [];
 
-  // --- render-type sections — every group renders through the
-  //     registry now; no more silent "no renderer wired up" text.
-  //     A render-type nobody's implemented a builder for yet falls
-  //     through renderEntry() to buildUnknown() and shows up as its
-  //     own LOUD-red section instead of vanishing (§1 goal 4). ---
+  // --- one virtualized section per taxonomy section. Cards are baked
+  //     thumbnails (js/view/Card.mjs); the live renderers in renderers.mjs
+  //     now run only inside the detail overlay, one at a time. An asset with
+  //     no baked thumbnail still gets a LOUD red card rather than a blank
+  //     one — guard (U) fails the build before that can reach anyone. ---
   for (const [groupKey, list] of groups) {
     const section = document.createElement("section");
     section.className = "kind-section";
@@ -251,13 +273,48 @@ async function init() {
     h2.textContent = classLabel(groupKey) + " (" + list.length + ")";
     section.appendChild(h2);
 
-    const grid = document.createElement("div");
-    grid.className = "grid";
-    for (const [key, entry] of list) {
-      grid.appendChild(renderEntry(key, entry, renderSpec, groupKey));
-    }
-    section.appendChild(grid);
+    const gridHost = document.createElement("div");
+    section.appendChild(gridHost);
+    // Attach BEFORE constructing the grid: VirtualGrid measures clientWidth to
+    // derive its column count, and a detached element reports 0 — which yields
+    // one column, a wrong height, and a getBoundingClientRect() of all zeros,
+    // so nothing ever falls inside the visible range. Symptom is an empty grid.
     main.appendChild(section);
+
+    // One VirtualGrid per section. Only the rows near the viewport are ever
+    // in the DOM, so a 283-card section costs the same as a 5-card one.
+    const grid = new VirtualGrid({
+      container: gridHost,
+      items: list,
+      rowHeight: 340,
+      minColumnWidth: 260,
+      buildCard: ([key, entry]) =>
+        buildCard(key, entry, {
+          thumbIndex,
+          sectionId: groupKey,
+          onOpen: (k) =>
+            openDetail({
+              items: list,
+              index: list.findIndex(([kk]) => kk === k),
+              renderSpec,
+            }),
+        }),
+    });
+    grids.push(grid);
+
+    // Health is counted over the FULL list via a bounded preload, never over
+    // mounted cards — a virtualized card that scrolls away is removed from the
+    // DOM, and card-driven counting would drift on every scroll. This is also
+    // what finally lets a class settle: every item reports exactly once.
+    preloadThumbnails(
+      list.map(([, entry]) =>
+        thumbUrlFor(entry.scene ?? entry.stream ?? "", thumbIndex),
+      ),
+      {
+        onOk: () => bumpHealth(groupKey, { ok: 1 }),
+        onErr: () => bumpHealth(groupKey, { err: 1 }),
+      },
+    );
   }
 
   mountCombatLab(main);

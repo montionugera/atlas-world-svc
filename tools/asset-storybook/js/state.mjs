@@ -24,6 +24,9 @@ export const RENDER_SPEC_URL = "../../game-client/assets/render-spec.json";
 // F-038: section naming registry. Every manifest `kind` must appear here —
 // guard (H) in scripts/check_asset_manifest.mjs fails the build otherwise.
 export const TAXONOMY_URL = "../../content/asset-taxonomy.json";
+// F-038: baked thumbnail index. Fetched non-critically — a checkout that has
+// never run scripts/bake_thumbnails.mjs still renders, with LOUD cards.
+export const THUMB_INDEX_URL = "../../game-client/assets/.thumbs/index.json";
 // Holder for the loaded taxonomy, set once in init(). Mirrors how
 // ART_GROUP_LABELS below is populated at load time and read by classLabel(),
 // so classLabel() stays a pure lookup rather than threading the registry
