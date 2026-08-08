@@ -1,0 +1,52 @@
+{
+  "zone": "northern-icefield",
+  "reasonToGo": "Every river in the land starts under this shelf, and the company at the gate on its lip has been standing there since the city behind it fell.",
+  "hazards": [
+    {
+      "id": "the-cold",
+      "name": "The cold",
+      "description": "Standing air off the old ice. It takes the hands, then the feet, then the judgement, in that order and quickly.",
+      "effect": "freeze"
+    },
+    {
+      "id": "the-white-weather",
+      "name": "The white weather",
+      "description": "Ground and sky go one colour and a man loses which way he came in. It takes a person's sense of direction first and their warmth second.",
+      "effect": "stun"
+    },
+    {
+      "id": "the-crevasses",
+      "name": "The crevasses",
+      "description": "Splits in the old ice, bridged over with snow and invisible until the bridge goes. Every sled is sounded ahead of its own runners.",
+      "note": "Absence hazard: a fall, not a field effect. The runtime enum has nothing for ground that is not there."
+    }
+  ],
+  "resources": [
+    {
+      "id": "the-meltwater-heads",
+      "name": "The meltwater heads",
+      "kind": "water",
+      "description": "Braids running out from under the shelf, the head of every river in the basin and clean the whole year."
+    },
+    {
+      "id": "the-gravel-head",
+      "name": "The gravel head",
+      "kind": "stone",
+      "description": "Old stone under the ice, exposed in bands where the shelf has drawn back, with no soil over it at all."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "the-oath-gate",
+      "name": "The oath-gate",
+      "description": "A gate frame in the south lip with no gate hung in it and no wall on either side, and a sentinel still holding it.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#4.2"
+    },
+    {
+      "id": "the-crevasse-shelf",
+      "name": "The crevasse shelf",
+      "description": "The broken front of the old ice, standing over stone and split from edge to edge.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#4.2"
+    }
+  ]
+}

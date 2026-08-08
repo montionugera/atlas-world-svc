@@ -1,0 +1,52 @@
+{
+  "zone": "ashvale-front",
+  "reasonToGo": "The only ground both towns reach in a day and neither can hold, which is why four seasons of what either army carried is still lying on it.",
+  "hazards": [
+    {
+      "id": "no-water-on-it",
+      "name": "No water on it",
+      "description": "Rain sinks and comes back alkaline. A party crossing carries every drop it drinks.",
+      "note": "Absence hazard: design claim C3's own worked example. Thirst is what this ground does, and the runtime enum has no value for it."
+    },
+    {
+      "id": "no-cover-for-a-days-crossing",
+      "name": "No cover for a day's crossing",
+      "description": "Level, treeless and pale from edge to edge. Whatever steps onto it can be seen from the moment it steps on.",
+      "note": "Absence hazard: being visible for a full day is not a tick."
+    },
+    {
+      "id": "the-alkali-dust",
+      "name": "The alkali dust",
+      "description": "Wind lifts the flat and lays it grey on everything. It takes the eyes first and then the skin at the collar and the cuffs.",
+      "effect": "burn"
+    }
+  ],
+  "resources": [
+    {
+      "id": "abandoned-arms",
+      "name": "Abandoned arms",
+      "kind": "salvage",
+      "description": "Shields, plate and burial stones left where they fell through four seasons of fighting, and never carried off by either side."
+    },
+    {
+      "id": "the-southern-lip-loam",
+      "name": "The southern lip loam",
+      "kind": "crop",
+      "description": "The one settled edge of the flat, marked and grassed over, with loam deep enough to turn."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "the-grave-rows",
+      "name": "The grave rows",
+      "description": "Straight lines of marked stones running across the flat, laid in three ages and none of them finished.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#4.3"
+    },
+    {
+      "id": "the-abandoned-cut-lines",
+      "name": "The abandoned cut lines",
+      "description": "Trench works both towns dug and neither held, filling with dust a hand's depth a year.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#4.2"
+    }
+  ]
+}

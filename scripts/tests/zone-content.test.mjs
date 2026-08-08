@@ -216,3 +216,103 @@ test("schema does NOT catch duplicate ids within an array — that is Z4's job",
   doc.hazards[1] = { ...doc.hazards[0] };
   assert.ok(compile()(doc), "duplicate detection belongs to the gate, not the schema");
 });
+
+// ---------------------------------------------------------------------------
+// The committed content. These are the only tests that read the real files;
+// everything below (Task 4) runs on a hermetic fixture.
+// ---------------------------------------------------------------------------
+
+test("every committed zone record validates against the committed schema", () => {
+  const validate = compile();
+  for (const id of ZONE_IDS) {
+    const path = join(ROOT, `content/zones/zone-${id}.json`);
+    assert.ok(existsSync(path), `missing ${path}`);
+    const doc = JSON.parse(readFileSync(path, "utf8"));
+    assert.ok(validate(doc), `${id}: ${JSON.stringify(validate.errors, null, 2)}`);
+    assert.equal(doc.zone, id);
+  }
+});
+
+test("the committed records cover exactly the geography's zones", () => {
+  const geo = JSON.parse(readFileSync(GEOGRAPHY_PATH, "utf8"));
+  assert.deepEqual([...geo.zones.map((z) => z.id)].sort(), [...ZONE_IDS].sort());
+});
+
+// ENUMERATES the directory instead of addressing it by constructed name. Every
+// other test in this block loops `ZONE_IDS` and reads
+// `content/zones/zone-${id}.json`, so a file nobody named is invisible to all of
+// them — and Task 4's checkZoneContent does the opposite, reading
+// `readdirSync(dir).filter((f) => /^zone-.+\.json$/.test(f))`. A leftover
+// experiment (`zone-emberdown-copy.json`), a macOS duplicate
+// (`zone-thornveil 2.json`), or a record whose filename and `zone` field
+// disagree all match the gate's filter, all get committed by
+// `git add content/zones`, and all pass the by-name tests — the first thing to
+// see them would be Task 4 Step 7's real-content run, AFTER the gate is
+// committed. This test closes the record set before the gate that enforces it
+// exists.
+test("content/zones holds exactly the ten records and nothing else", () => {
+  const files = readdirSync(join(ROOT, "content/zones"))
+    .filter((f) => /^zone-.+\.json$/.test(f)).sort();
+  assert.deepEqual(files, ZONE_IDS.map((id) => `zone-${id}.json`).sort(),
+    "an extra or misnamed zone-*.json is invisible to the by-name tests but fatal to Z1/Z2");
+});
+
+// Z3's floors, Z4's id rules and Z6's distinctiveness, asserted against the
+// COMMITTED records rather than only against fixtures. Task 4's gate enforces
+// these for anyone editing later; this pins that the ten shipped records were
+// correct on the day they landed, without waiting for a hand-run of
+// check_content.mjs.
+//
+// Z4 is covered HERE and not only in Task 4 on purpose. If a record with
+// `id: "The Adits"` or two hazards sharing an id first detonated at Task 4's
+// real-content gate run, the remedy would be editing content/zones/*.json after
+// the gate had already been committed. Proving the records kebab-clean before
+// the gate exists moves that failure one task earlier, where the records are
+// still the task under edit. Z1's orphan branch and Z2's duplicate branch are
+// pre-proven by the directory-enumeration test above, not by this one. Task 4's
+// "Files:" block additionally carries a remedy-only row permitting a record edit
+// for anything that still reaches its Step 7 — the three defences are layered,
+// none of them is claimed to be complete on its own.
+test("every committed record clears the Z3 floors and the Z4 id rules", () => {
+  for (const id of ZONE_IDS) {
+    const doc = JSON.parse(readFileSync(join(ROOT, `content/zones/zone-${id}.json`), "utf8"));
+    assert.ok(doc.reasonToGo.trim() !== "", `${id}: empty reasonToGo`);
+    for (const f of ["hazards", "resources", "landmarks"]) {
+      assert.ok(doc[f].length >= 2, `${id}: ${doc[f].length} ${f}, needs at least 2`);
+      const seen = new Set();
+      for (const item of doc[f]) {
+        assert.match(item.id, ZONE_ID_RE, `${id}: ${f} id "${item.id}" is not kebab-case`);
+        assert.equal(seen.has(item.id), false, `${id}: duplicate ${f} id "${item.id}"`);
+        seen.add(item.id);
+      }
+    }
+  }
+});
+
+test("the committed records have ten distinct resource-kind sets and no shared landmark name", () => {
+  const kindSets = new Map();
+  // DELIBERATELY STRICTER THAN Z6. The gate's Z6 landmark rule fires only when a
+  // name is shared ACROSS zones (`if (shared.length > 1)`), so one zone repeating
+  // a name inside its own list passes the gate. This flat Map rejects that too.
+  // Keeping it stricter is the choice: twenty landmarks, twenty names, no
+  // exceptions. If this ever fails on an intra-zone repeat, fix the record — do
+  // not relax the test to match the gate.
+  const names = new Map();
+  for (const id of ZONE_IDS) {
+    const doc = JSON.parse(readFileSync(join(ROOT, `content/zones/zone-${id}.json`), "utf8"));
+    for (const r of doc.resources)
+      assert.ok(RESOURCE_KINDS.includes(r.kind), `${id}: bad kind "${r.kind}"`);
+    for (const h of doc.hazards)
+      if (h.effect !== undefined)
+        assert.ok(EFFECTS.includes(h.effect), `${id}: bad effect "${h.effect}"`);
+    const key = [...new Set(doc.resources.map((r) => r.kind))].sort().join(",");
+    assert.equal(kindSets.get(key), undefined, `${id} shares kind set [${key}] with ${kindSets.get(key)}`);
+    kindSets.set(key, id);
+    for (const l of doc.landmarks) {
+      const k = l.name.trim().toLowerCase();
+      assert.equal(names.get(k), undefined, `landmark "${l.name}" in both ${names.get(k)} and ${id}`);
+      names.set(k, id);
+    }
+  }
+  assert.equal(kindSets.size, 10);
+});

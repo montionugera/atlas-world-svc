@@ -1,0 +1,46 @@
+{
+  "zone": "cindervast",
+  "reasonToGo": "A city the weapon took without knocking it down: intact mortar, no rubble in the streets, and what the people in it were carrying still where they dropped it.",
+  "hazards": [
+    {
+      "id": "the-afterglow",
+      "name": "The afterglow",
+      "description": "A violet light that shows at dusk on the north faces. What stands in it long enough stops wanting to eat.",
+      "effect": "poison"
+    },
+    {
+      "id": "a-city-with-nobody-in-it",
+      "name": "A city with nobody in it",
+      "description": "No water drawn, no fire kept and nobody to carry a man out. Everything a town does for the people inside it, this one stopped doing.",
+      "note": "Absence hazard: the absence of a town's services. Nothing in the runtime enum expresses it."
+    }
+  ],
+  "resources": [
+    {
+      "id": "relic-scrap",
+      "name": "Relic scrap",
+      "kind": "salvage",
+      "description": "Worked metal and glass dug out of the ruin districts and carried out in sacks by the crews that come back."
+    },
+    {
+      "id": "district-fuel",
+      "name": "District fuel",
+      "kind": "fuel",
+      "description": "What the outer districts still burn: dry roof timber, and stored coal in cellars the fires have not reached."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "the-giving-king-statues",
+      "name": "The Giving King statues",
+      "description": "One in every square, holding a child, upright and undamaged in a city where everything else was taken.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#6"
+    },
+    {
+      "id": "the-dead-gate",
+      "name": "The dead gate",
+      "description": "The city's own gate, held now from the outside, with the wall standing clean on either side of it.",
+      "source": "content/maps/cluster1-geography.json#towns[cindervast].wallsOnly.gateAt"
+    }
+  ]
+}

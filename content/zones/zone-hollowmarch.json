@@ -1,0 +1,52 @@
+{
+  "zone": "hollowmarch",
+  "reasonToGo": "Where the timber and the ore both start, behind the only wall in the land that was never taken down.",
+  "hazards": [
+    {
+      "id": "the-open-moor",
+      "name": "The open moor",
+      "description": "Between the ore heads and the gate there is no cover for a mile. What comes down off the moor comes when the wind turns, and the wind turning is the only warning anyone gets.",
+      "note": "Absence hazard: no cover and no warning. The runtime enum has no value for exposure."
+    },
+    {
+      "id": "the-outer-fields",
+      "name": "The outer fields",
+      "description": "Ground beyond the palisade where the burial details work. What crawls out of it is burned where it stands.",
+      "effect": "poison"
+    },
+    {
+      "id": "hollow-stakes",
+      "name": "Hollow stakes",
+      "description": "A stake in the line that answers hollow has been eaten from the inside. It gets pulled and replaced before dark.",
+      "note": "Absence hazard: structural failure of the wall, not an environmental effect on a body."
+    }
+  ],
+  "resources": [
+    {
+      "id": "the-timber-line",
+      "name": "The timber line",
+      "kind": "timber",
+      "description": "Old standing wood running up the rim, felled in lengths and dragged down to the palisade crews."
+    },
+    {
+      "id": "the-ore-heads",
+      "name": "The ore heads",
+      "kind": "ore",
+      "description": "Worked heads at the top of the timber line, the ore carried down the same track the trunks come down."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "the-tally-boards",
+      "name": "The tally boards",
+      "description": "Planed boards at the gate, waist high and covered edge to edge in knife-cut marks, one to a name.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#6"
+    },
+    {
+      "id": "the-palisade-line",
+      "name": "The palisade line",
+      "description": "A continuous line of sharpened trunks along the rim, standing since before anyone now at the gate was born.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#4.2"
+    }
+  ]
+}
