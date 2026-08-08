@@ -53,6 +53,10 @@
 //       kindDefaultRender or every mapped key of that kind carries explicit
 //       render — a no-default kind may not rely on ext sniffing (see §3 of
 //       docs/superpowers/specs/2026-07-20-asset-registry-contract.md).
+//   (T) every manifest `kind` must have a section in
+//       content/asset-taxonomy.json, so tools/asset-storybook can never fall
+//       back to a munged label like "Model3d:dungeons" (F-038). Letters L/M
+//       are taken by the art-rule lettering below, hence T.
 //
 // Codegen cross-check (driftGated:true sources only):
 //   WARNING  — a key present in asset-keys.json has no manifest entry (UNMAPPED)
@@ -73,6 +77,7 @@
 //   --art-groups <path>         override art-groups.json path (testing)
 //   --art-root <dir>            override the art root dir (testing)
 //   --game-client <dir>         override the res:// root dir (testing)
+//   --taxonomy <path>           override asset-taxonomy.json path (testing)
 
 import {
   readFileSync,
@@ -106,6 +111,7 @@ function parseArgs(argv) {
     artGroups: join(REPO_ROOT, "game-client/assets/art/art-groups.json"),
     artRoot: join(REPO_ROOT, "game-client/assets/art"),
     gameClient: join(REPO_ROOT, "game-client"),
+    taxonomy: join(REPO_ROOT, "content/asset-taxonomy.json"),
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -121,6 +127,7 @@ function parseArgs(argv) {
     else if (a === "--art-groups") opts.artGroups = resolve(argv[++i]);
     else if (a === "--art-root") opts.artRoot = resolve(argv[++i]);
     else if (a === "--game-client") opts.gameClient = resolve(argv[++i]);
+    else if (a === "--taxonomy") opts.taxonomy = resolve(argv[++i]);
     else {
       console.error(`Unknown argument: ${a}`);
       process.exit(2);
@@ -547,6 +554,44 @@ function validateEntry(id, entry, source, gameClient, spec, failures) {
 // (G) cross-file keyspace disjointness — the same id in two manifest sources
 // would let C# (manifest.json only) and the storybook (merges all) silently
 // resolve different entries.
+// (T) taxonomy coverage — every manifest `kind` must have a section in
+// content/asset-taxonomy.json.
+//
+// tools/asset-storybook groups and labels its sections by `kind` through that
+// registry. Before this guard the storybook carried a hand-maintained label
+// lookup that fell through to a generic capitalize-and-append-s branch on a
+// miss, so an unregistered kind produced a section headed "Model3d:dungeons
+// (283)" — a silent lookup miss, not an error. Failing here turns a whole
+// class of bug into an impossibility: a new kind cannot reach the page
+// without someone naming it.
+//
+// Art entries are exempt: they carry a `group` (validated against
+// art-groups.json by assertArtCoverage), not a `kind`.
+function assertTaxonomyCoverage(sourcesEntries, taxonomyDoc, failures) {
+  if (!taxonomyDoc) return; // readJson already recorded the failure
+  const known = new Set();
+  for (const s of taxonomyDoc.sections || []) {
+    for (const k of s.kinds || []) known.add(k);
+  }
+
+  const offenders = new Map(); // kind → first "source/id" that used it
+  for (const { label, entries } of sourcesEntries) {
+    for (const [id, entry] of Object.entries(entries)) {
+      const kind = entry && entry.kind;
+      if (!kind || known.has(kind)) continue;
+      if (!offenders.has(kind)) offenders.set(kind, `${label} entry "${id}"`);
+    }
+  }
+
+  for (const [kind, where] of offenders) {
+    failures.push(
+      `kind "${kind}" (first used by ${where}) has no section in ` +
+        `content/asset-taxonomy.json — add it to a section's "kinds" array ` +
+        `so the storybook can label it`,
+    );
+  }
+}
+
 function assertDisjoint(sourcesEntries, failures) {
   const seen = new Map(); // id → source label
   for (const { label, entries } of sourcesEntries) {
@@ -739,6 +784,8 @@ function main() {
   }
 
   assertDisjoint(sourcesEntries, failures);
+  const taxonomyDoc = readJson(opts.taxonomy, "asset-taxonomy", failures);
+  assertTaxonomyCoverage(sourcesEntries, taxonomyDoc, failures);
   assertKindRenderable(keys, spec, codegenEntries, failures);
 
   return report(failures, warnings, opts);
