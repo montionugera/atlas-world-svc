@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas zone content",
+  "description": "One file per cluster-1 zone: why a player walks in, what threatens them, what they carry out, and what they remember seeing. A sibling to content/maps/cluster1-geography.json, which stays the authority on where a zone is (id, levelBand, polygon) and is never written back to. Shape only: the floors, the kebab-case ids, the hazard effect enum and the resource kind enum are gate rules Z3/Z4/Z5/Z7 in scripts/check_content.mjs, because a schema-invalid document never reaches them. I-060.",
+  "type": "object",
+  "required": ["zone", "reasonToGo", "hazards", "resources", "landmarks"],
+  "additionalProperties": false,
+  "properties": {
+    "zone": { "type": "string", "minLength": 1 },
+    "reasonToGo": { "type": "string" },
+    "hazards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "effect": { "type": "string" },
+          "note": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "kind", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string" },
+          "description": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "landmarks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}
