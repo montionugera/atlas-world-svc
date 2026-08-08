@@ -98,11 +98,11 @@ before this document existed.
 | --- | --- |
 | **C1** | The Last King took an **ancient weapon** from the palace vault (`core-story.md:40`). Ancient *to whom*, and made *by whom*, had no answer. Now it does. |
 | **C2** | Why exactly one class of weapon like this exists, with no rival, no second example and no industry around it. |
-| **C3** | `canon.md:354` — *"War-scar monsters are Void-line"* — and `A0:278`, where void is the most-used element in the whole corpus and is **concentrated on the war ground**. Void was already behaving like a by-product of battle. This names the mechanism it was already obeying. |
+| **C3** | `canon.md:368` — *"War-scar monsters are Void-line"* — and `A0:278`, where void is the most-used element in the whole corpus and is **concentrated on the war ground**. Void was already behaving like a by-product of battle. This names the mechanism it was already obeying. |
 | **C4** | `A0` **G2** — the world's memory is about a hundred years deep and nothing older is mentioned anywhere. The shallowness stops being an oversight and becomes the scar. |
 | **C5** | `canon.md` §4 — the Bellfaith owns the news, the proclamation and the seal. Its authority now has a **history**: it did not become powerful by being holy. It became powerful by being first to write things down and vouch for them. |
 | **C6** | Act 4's entire stake. The relic sale is the most consequential transaction in the world because supply is fixed at whatever survived — `event-relic-deal-struck`, `event-relic-sale-stopped`. |
-| **C7** | `canon.md:301` — magic is cheap, ordinary, no shortage, no black market. Left exactly as it was. |
+| **C7** | `canon.md:314` — magic is cheap, ordinary, no shortage, no black market. Left exactly as it was. |
 
 ---
 
@@ -150,9 +150,11 @@ loud.
 **An unsealed document is worth nothing**, and the Bellfaith charges to seal. It is a notary with a
 monopoly, and a founding story that happens to be true.
 
-**Forging a seal is the highest-value crime available in this world** — which is precisely the
-Bell-Keeper's crime (`canon.md` §3). His motive stops being personal weakness alone and becomes
-the obvious exploit of the most valuable instrument anyone owns.
+**Getting a false statement sealed is the highest-value crime available in this world** — and it
+requires no forgery at all, because the seal attests only that a statement was given and recorded,
+never that it is true (`canon.md` §4, F-035). The Bell-Keeper's crime is not faking documents. It
+is deciding which true ones are never heard (`canon.md` §3). His motive stops being personal
+weakness alone and becomes the obvious exploit of the most valuable instrument anyone owns.
 
 **A miller dates his lease from the count**, because there is nothing else to date it from.
 "Before the seal" is how ordinary people say *so long ago that it does not bear on this*.
@@ -178,7 +180,7 @@ something valuable and do not know it — they think they are keeping a habit.
   how it works, and §8 forbids answering that. Naming a weakness here to satisfy the cost rule
   would trade a soft note for a hard self-contradiction. The cost is stated instead in what using
   one destroys.
-- **Void cannot be cured, only answered.** Holy counters it (`canon.md:382`); burial prevents it.
+- **Void cannot be cured, only answered.** Holy counters it (`canon.md:396`); burial prevents it.
   Neither undoes it. Ground that has held unburied dead stays Void-line, and stays that way.
 - **The Bellfaith's authority has an expiry it cannot admit.** The count began when somebody chose
   to start writing. It is arbitrary. The tower knows the first sealed record is not the first
