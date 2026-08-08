@@ -508,5 +508,11 @@
     "title": "Story reading view: full-viewport overlay instead of a cropped inline frame",
     "created_at": "2026-08-08T09:19:50.223388+00:00",
     "promoted_to": "F-036"
+  },
+  {
+    "id": "I-086",
+    "title": "Harden the story overlay: mark outside content inert so the sidebar exit and AT navigation behave",
+    "created_at": "2026-08-08T11:42:30.612789+00:00",
+    "promoted_to": null
   }
 ]

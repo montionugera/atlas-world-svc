@@ -31,7 +31,7 @@
   - **Gate 1 (`scripts/precheck.sh`) runs NEITHER `check_content.mjs` NOR the scripts suite.** Verified: `grep -n 'check_content' scripts/precheck.sh` returns nothing, and its only `npm test` lines are 102 (`colyseus-server`) and 125 (`client/react-client`) — neither is `scripts/`. Gate 1 will not catch either kind of red.
   - **CI (`.github/workflows/ci.yml:77-79`) runs BOTH on every push** — `npm ci --prefix scripts` on line 77, `npm test --prefix scripts` on line 78, then `node scripts/check_content.mjs` on line 79. So a pushed commit with a red suite or a red gate reddens CI. This is why every task boundary in this plan must be green *before* it is pushed; "nobody runs it" is false. **All three are lines of a single `run: |` block** (verified: one `run: |` at `ci.yml:76` covering 77-79), so the step runs them under one shell with `set -e` semantics — **a red suite short-circuits the step and `check_content.mjs` never executes**. Consequence when diagnosing: a CI failure that names only the suite is **not** evidence the gate is green — the gate produced no output at all. Fix the suite locally, then run the gate yourself before pushing again.
   - **Gate 2 (`scripts/integration.sh`) runs both, and runs the gate in a stricter mode than any other caller** — the scripts suite at line 87 (`content_tests`), and the gate at line 81 as `node scripts/check_content.mjs --require-complete`. That is the ship bar. No step in the original draft ever exercised that flag. `--require-complete` escalates in exactly two places (`checkStoryCoherence(..., requireComplete)` and the `opts.requireComplete ? fail : warn` ternary at `check_content.mjs:609`, character-key coverage), so Z5's plain `warn()` is **not** escalated — but that is a claim to *verify*, not to assume: run `node scripts/check_content.mjs --require-complete` and read the exit code before ship.
-  Run `node scripts/check_content.mjs` by hand at every task's verify step, and `--require-complete` once in the final Verification.
+  Run `node scripts/check_content.mjs` by hand at every task's verify step. `--require-complete` is run **twice, deliberately**: first at **Task 4 Step 7** (the first point in the plan where a zone rule exists to escalate), and again as the fifth acceptance command in the final **Verification** section. Neither run is a duplicate of the other — Step 7 proves D3's warn-not-fail ruling the moment the gate lands, Verification proves it still holds over the finished tree.
 - **Zone ids come from `content/maps/cluster1-geography.json#zones` and are never invented:** `meltwash-terrace, millcross-ford, rooktide-reach, thornveil, emberdown, gildmark-head, hollowmarch, ashvale-front, northern-icefield, cindervast`.
 - **`content/maps/cluster1-geography.json` is never edited** (spec §12). Zone records reference it; nothing is written back.
 - **`scripts/` is not prettier-formatted.** Husky/lint-staged is scoped to `colyseus-server/src/**/*.ts`. Do not run prettier over `scripts/lib/season1.mjs` or `scripts/check_content.mjs` — it reflows the file and buries the diff. `content/**/*.json` formatting is hand-maintained: 2-space indent, short scalar schemas on one line.
@@ -65,12 +65,14 @@ The schema keeps `required` and `additionalProperties: false` at every level (sp
 
 **Rule Z2 (every one of the ten zones has exactly one record) FAILS until all ten records exist.**
 
-**Choice: author all ten records in ONE task (Task 3), which lands strictly BEFORE the task that introduces the gate (Task 4).** By the time `checkZoneContent()` exists, `content/zones/` already holds all ten, so Z2 is satisfied on its very first run.
+**Choice: all ten records exist BEFORE the task that introduces the gate.** The records are authored across **Task 3a** (five) and **Task 3b** (the other five), and both land strictly before **Task 4**, which is what adds `checkZoneContent()`. **Tasks 3a and 3b together are what the rest of this plan calls "Task 3"** — wherever a later section says "the ten records from Task 3" it means the state of the tree after **3b**. There is no task numbered plain `3`. By the time `checkZoneContent()` exists, `content/zones/` already holds all ten, so Z2 is satisfied on its very first run.
 
-**Why this ordering and not the alternative** ("make the task that introduces Z2 the same task that completes the tenth record"): the gate is ~120 lines of new logic with 41 tests, and the ten records are ~10 hand-authored world-content files. Fusing them makes one un-reviewable commit and forces the adversarial review to cover code and prose at once. Splitting keeps each diff reviewable, and the ordering — data first, gate second — is what keeps the tree green:
+**The invariant is "all ten records exist before Task 4 lands" — NOT "all ten records land in one commit."** Those are different claims and only the first one is load-bearing. Nothing reads `content/zones/` until Task 3b's committed-content tests and Task 4's `checkZoneContent()`: until then `check_content.mjs` has no zone checker, so the directory is simply not looked at, and no test file mentions it. Any number of commits *inside* Task 3 is therefore both gate-green and suite-green. Only a split that **crossed** Task 4 would be unsafe, and this one does not.
+
+**Why the records are not fused into the gate task** ("make the task that introduces Z2 the same task that completes the tenth record"): the gate is ~130 lines of new logic with **40 tests**, and the ten records are ten hand-authored world-content files whose defects (kebab-case ids, landmark-name collisions, kind-set collisions, voice) are prose-level and only findable by reading. Fusing them makes one un-reviewable commit and forces the adversarial review to cover code and prose at once. Splitting keeps each diff reviewable, and the ordering — data first, gate second — is what keeps the tree green:
 
 - After Task 1 (schema only): nothing reads the schema. Gate green.
-- After Task 3 (ten records, no gate): `check_content.mjs` has no `checkZoneContent()`, so `content/zones/` is simply not looked at. Gate green.
+- After Task 3a (five records, no gate) **and** after Task 3b (all ten, no gate): `check_content.mjs` has no `checkZoneContent()`, so `content/zones/` is simply not looked at. Gate green at **both** boundaries.
 - After Task 4 (gate): all ten records are present. Z2 passes on the first run. Gate green.
 
 The **soft-skip** guard is what makes this safe for every *other* fixture: `checkZoneContent()` returns 0 before anything else if `content/zones/` is absent, and again if it holds no `zone-*.json`. Without that, all ~40 existing tests in `check_content.test.mjs` and `bestiary-placement.test.mjs` — whose fixtures have no `content/zones` — would see ten "geography zone X has no record" FAILs and go red.
@@ -84,13 +86,13 @@ The **soft-skip** guard is what makes this safe for every *other* fixture: `chec
 | `content/schemas/zone-content.schema.json` | **Create** | Draft-07 **shape** of one zone record: required fields, `additionalProperties:false` at every level. Owns no vocabulary and no cardinality. |
 | `docs/worldbuilding/A2-zones-cluster1.md` | **Create** | The L2 world artifact. SWF §3 nine-part contract + the ten-zone derivation table (the authoring input for the records) + § alternates (prose only) + citation register. |
 | `content/zones/zone-<id>.json` × 10 | **Create** | One record per geography zone: `zone`, `reasonToGo`, `hazards[]`, `resources[]`, `landmarks[]`. |
-| `scripts/check_content.mjs` | **Modify** | Adds `ZONE_RESOURCE_KINDS` / `ZONE_HAZARD_EFFECTS` / `ZONE_ID_RE`, the two Z5 counters, `checkZoneContent(opts)` (Z1–Z7), one line in `main()`, the 5th param + two new output segments in `finish()` (the `zone-content:` line **guarded** so zone-less roots gain nothing), and renames `loadGeographyZones` to `readGeographyZones` behind a one-line memoizing wrapper so two consumers parse the geography once and a broken one FAILs once. |
-| `scripts/tests/zone-content.test.mjs` | **Create** | Deliverable 4. Schema/reachability tests, soft-skip + wiring tests, and both polarities of Z1–Z7 driven through the real gate binary against hermetic tmpdir fixtures. **56 tests total** — 13 from Task 1, 4 from Task 3b, 39 from Task 4. |
+| `scripts/check_content.mjs` | **Modify** | Adds `ZONE_RESOURCE_KINDS` / `ZONE_HAZARD_EFFECTS` / `ZONE_ID_RE`, the two Z5 counters, `checkZoneContent(opts)` (Z1–Z7), one line in `main()`, the 5th param + two new output segments in `finish()` (the `zone-content:` line **guarded** so zone-less roots gain nothing). **`loadGeographyZones` is reused unchanged** — `checkZoneContent` becomes a second caller and the function itself is not renamed, memoized or wrapped (spec §7 "no new loader"; spec §12 leaves F-029's G1–G8 untouched). |
+| `scripts/tests/zone-content.test.mjs` | **Create** | Deliverable 4. Schema/reachability tests, soft-skip + wiring tests, and both polarities of Z1–Z7 driven through the real gate binary against hermetic tmpdir fixtures. **58 tests total** — 13 from Task 1, 5 from Task 3b, 40 from Task 4. |
 | `scripts/lib/season1.mjs` | **Modify** | Adds `readdirSync` to the import, `ZONE_FILE`, `export function zones(root)`, and `zones` in the `MEASURES` registry. |
 | `content/season-1-budget.json` | **Modify** | The `zones` line only: drop `blockedBy`, add `"measure": "zones"`, rewrite `label` and `source`. |
-| `scripts/tests/season1.test.mjs` | **Modify** | Appends the 9-test `zones()` block + **three** import lines (`node:fs` extras, `node:os`'s `tmpdir`, `node:child_process`'s `execFileSync` — seven new bindings, all currently unbound in this file). No existing test is edited. |
+| `scripts/tests/season1.test.mjs` | **Modify** | Appends the 9-test `zones()` block + **ONE** import line — `import { existsSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";` (four new bindings). `execFileSync`, `writeFileSync`, `unlinkSync` and `tmpdir` are **ALREADY imported** mid-file at lines 107, 154 and 155 and must **NOT** be re-imported: a duplicate ESM binding is a parse-time `SyntaxError` that kills the whole file. No existing test is edited. See Task 5 Step 1. |
 | `scripts/tests/fixtures/season1/content/zones/*.json` | **Create** (6 files) | Fixture records for the measure: 2 complete, 1 short a hazard, 1 blank `reasonToGo`, 1 duplicate zone id, 1 non-record (`notes.json`). |
-| `docs/worldbuilding/DR-003-season-1-budget.md` | **Modify** | **Five** places that still assert the `zones` line is blocked, in six edits — the §0 callout, the §3 table row, the "three blocked lines" sentence *and* its `zones` bullet (one place, two lines), the verbatim report block, and the P1 consequence cell. Two of them never use the word "blocked". |
+| `docs/worldbuilding/DR-003-season-1-budget.md` | **Modify** | **Six edits across five places** that still assert the `zones` line is blocked — the §0 callout (edit 1), the §3 table row (2), the "three blocked lines" sentence (3) *and* its `zones` bullet (4) — those two edits are one place — the verbatim report block (5), and the P1 consequence cell (6). Task 5 Step 6 numbers them 1–6 and every later reference counts **six edits**. Two of them never use the word "blocked". |
 | `content/story/canon.md` | **Modify** | §6.1 Keyspace register, "Open, not resolved:" paragraph — the sentence claiming the line stays `blockedBy`. |
 | `content/README.md` | **Modify** | The `schemas/` inventory line, which omits both `bestiary-placement` and `zones`. |
 | `docs/worldbuilding/idea-map.md` | **Modify** | The I-060 row's Output-artifact cell — the second carrier of the retracted alternates promise, named by design §0's D1 callout. |
@@ -119,7 +121,7 @@ The **soft-skip** guard is what makes this safe for every *other* fixture: `chec
 - **Test helpers produced (Tasks 3a/3b and 4 reuse them from this same file):** `ROOT`, `GATE`, `SCHEMA_PATH`, `GEOGRAPHY_PATH`, `ZONE_IDS`, `ZONE_BANDS`, `RESOURCE_KINDS`, `EFFECTS`, `ZONE_ID_RE`, `FIXTURE_KINDS_BY_ZONE`, `compile()`, `zoneRecord(id)`. **`FIXTURE_KINDS_BY_ZONE` is hermetic fixture data and is deliberately NOT the authored kind sets of Tasks 2/3 — see the comment at its definition.**
   - `SCHEMA_PATH` is what `compile()` reads; it is the only place the schema path is written in the test file.
   - `GEOGRAPHY_PATH` is the binding **Task 3b's `the committed records cover exactly the geography's zones` test reads** — it is a cross-task binding, not a Task-1-local constant, so do not inline it.
-- **`ZONE_ID_RE` is written TWICE on purpose** — once here (the test file) and once in Task 4's patch B (the gate). The two copies are not the same variable and nothing in the language binds them. What binds them is one specific test: **Task 4's `Z4: the gate's kebab rule rejects leading, trailing and doubled hyphens`**, which drives three boundary values through the real gate binary, so a gate regex loosened to `/^[a-z0-9-]+$/` goes red even though this file's copy is unchanged. That is the same treatment `ZONE_FILE` gets from Task 5's filename-agreement test. Do not "deduplicate" the two regexes by importing one from the other — `check_content.mjs` calls `main()` and `process.exit()` at module scope and cannot be imported.
+- **`ZONE_ID_RE` is written TWICE in committed code on purpose** — once here (the test file) and once in Task 4's patch B (the gate, as `const ZONE_ID_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/` inside `check_content.mjs`). A **third, uncommitted** copy exists as `const RE = /^[a-z0-9]+(-[a-z0-9]+)*$/` in Task 3a Step 2's throwaway `node -e` validator; that one is a one-off run, not a maintained duplicate, and it disappears with the shell. The two committed copies are not the same variable and nothing in the language binds them. What binds them is one specific test: **Task 4's `Z4: the gate's kebab rule rejects leading, trailing and doubled hyphens`**, which drives the three boundary values `-seam-damp`, `seam-damp-` and `seam--damp` through the real gate binary, so a gate regex loosened to `/^[a-z0-9-]+$/` goes red even though this file's copy is unchanged. That is the same treatment `ZONE_FILE` gets from Task 5's filename-agreement test. Do not "deduplicate" the two committed regexes by importing one from the other — `check_content.mjs` calls `main()` and `process.exit()` at module scope and cannot be imported.
 
 Steps:
 
@@ -458,14 +460,14 @@ Steps:
 
 - [ ] **Step 1: Write the failing check** — before any prose, encode the Z6 resource-kind constraint as a runnable check in the scratchpad so the table is validated as it is written, not after ten JSON files exist. **The script has three modes and no ellipsis: `--naive` runs the built-in naive derivation (must go RED), `--corrected` runs the built-in corrected derivation (must go GREEN), and the default mode parses the ten pairs out of the COMMITTED artifact** so that once Step 3 lands, this check is a real test of a real deliverable rather than of a literal the author typed to please it.
 
-**Bind the script's path ONCE, here, and use `"$Z6"` in every invocation below.** `node <scratchpad>/z6-check.mjs` is not a runnable command — `<` is a shell input redirect, so the shell tries to feed the script to `node` on stdin instead of executing it. Export the real path first (substitute this session's scratchpad directory for `<scratchpad>`; it is printed in the session's own environment notes):
+**Bind the script's path ONCE, here, and use `"$Z6"` in every invocation below.** An unquoted `node <some-dir>/z6-check.mjs` is not a runnable command — `<` is a shell input redirect, so the shell tries to feed the script to `node` on stdin instead of executing it. Export the real path first. The path below is **this session's scratchpad directory, resolved — paste it verbatim**; if you are executing this plan in a different session, replace it with your own scratchpad path (one token, in one place, and every later block re-states the same line):
 
 ```bash
-export Z6="<scratchpad>/z6-check.mjs"   # e.g. /private/tmp/claude-502/<project>/<session>/scratchpad/z6-check.mjs
+export Z6="/private/tmp/claude-502/-Users-pasitnusso-workspace-repos-atlas-world-svc/c0fca8d9-8dbd-4aa3-86df-6feb2d533de1/scratchpad/z6-check.mjs"
 ls -l "$Z6"                              # must exist before any run below
 ```
 
-`export` survives only within one shell session. Every later step that runs `node "$Z6"` — Task 2 Steps 2, 4 and 7, Task 3a Step 7, Task 3b Steps 5 and 8 — re-states the export line for that reason; if `$Z6` is empty, `node ""` fails immediately rather than silently doing nothing.
+`export` survives only within one shell session. The three later blocks that run `node "$Z6"` — **Task 2 Step 2, Task 2 Step 4 and Task 3a Step 7** — each re-state the export line for that reason; if `$Z6` is empty, `node ""` fails immediately rather than silently doing nothing. (Task 2 Step 7 restates it inline in its prose; Task 3b Steps 5 and 8 do **not** carry their own copy — they point back at Task 2 Step 4's command.)
 
 ```js
 // z6-check.mjs — throwaway, lives in this session's scratchpad, never committed.
@@ -539,7 +541,7 @@ process.exit(bad ? 1 : 0);
 
 - [ ] **Step 2: Run it red, then green** — the naive derivation first, so the reason for the three corrections is on the record, then the corrected one. (The default `--artifact` mode cannot run yet; the artifact does not exist until Step 3. It runs in Step 4.)
 ```bash
-export Z6="<scratchpad>/z6-check.mjs"   # Step 1's binding; re-state it if the shell restarted
+export Z6="/private/tmp/claude-502/-Users-pasitnusso-workspace-repos-atlas-world-svc/c0fca8d9-8dbd-4aa3-86df-6feb2d533de1/scratchpad/z6-check.mjs"   # Step 1's binding, restated
 node "$Z6" --naive > /tmp/z6-naive.out 2>&1; echo "naive exit=$?"; cat /tmp/z6-naive.out
 node "$Z6" --corrected > /tmp/z6-ok.out 2>&1; echo "corrected exit=$?"; cat /tmp/z6-ok.out
 ```
@@ -560,7 +562,9 @@ with `naive exit=1`. Expected on `--corrected`: `Z6 OK: ten distinct kind sets (
 
   `§0 Scope` (callout info: alternates are prose-only per D1; `atlas-frontier.md` untouched) · `§1 Provenance` · **`§2 The ten grounds` — the derivation table, written out below** · **`§2.1` — the machine-readable kind-set fence** · `§3 Claims C1–C5` (lift design §3 verbatim; **do not mint C6+**) · `§4 Causal links` (design §4 table) · `§5 Consequences, two per claim` (design §5) · `§6 The hazard vocabulary and its runtime binding` (the 7-value enum, `effect` optional, the absence-hazard class; cite `atlas-frontier.md`'s live `region-icefield` `freeze`/`stun` entries as the existence proof that `effect` is not aspirational) · `§7 The eight resource kinds → the A1 §6 town economy each maps to` (this is the G3 answer: every kind names who profits and who pays) · `§8 Distinctiveness` (the three river-country and two rim sets side by side, argued from town economies; plus the `{salvage, stone}` three-way collision and its fix) · `§9 Alternates, on paper only` (A1 §4.4's three sites + band + fork zone + design §9's Mermaid block) · `§10 Costs and limits` (see the §10 rule below) · `§11 Known-wrong` · `§12 What this does not change` · `§13 Contradiction rule + the live collisions` · `§14 Open questions` (design §16) · `§15 Citation register` (shape specified below).
 
-  **The nine SWF §3 parts mapped onto these sixteen sections — this is the mapping Step 6's reviewer executes.** Sixteen sections are listed, nine of them are the mandatory SWF parts, and the other seven are this artifact's own additions. Without this mapping "all nine parts present" is not a checkable claim:
+  **The nine SWF §3 parts mapped onto these sixteen sections — this is the mapping Step 6's reviewer executes.** Sixteen top-level sections are listed, `§0` through `§15` (`§2.1` is a subsection of `§2`, not a sixteenth peer). Nine of the sixteen are the mandatory SWF parts; the other seven are this artifact's own additions. Without this mapping "all nine parts present" is not a checkable claim:
+
+  The nine parts are quoted from `docs/superpowers/specs/2026-08-01-synthesis-workflow-contract.md` §3, in its order. **Part 9 is `Open questions`, not a citation register** — SWF §3 does not ask for one, so `§15` below is an addition, not a mandatory part; do not swap those two rows.
 
   | SWF §3 part | this artifact's section |
   | --- | --- |
@@ -568,13 +572,13 @@ with `naive exit=1`. Expected on `--corrected`: `Z6 OK: ten distinct kind sets (
   | 2 · Claims | `§3 Claims C1–C5` |
   | 3 · Causal links | `§4 Causal links` |
   | 4 · Consequences | `§5 Consequences, two per claim` |
-  | 5 · Costs and limits | `§10 Costs and limits` |
+  | 5 · Costs & limits | `§10 Costs and limits` |
   | 6 · Known-wrong | `§11 Known-wrong` |
   | 7 · What this does not change | `§12 What this does not change` |
   | 8 · Contradiction rule | `§13 Contradiction rule + the live collisions` |
-  | 9 · Citation register | `§15 Citation register` |
+  | 9 · Open questions | `§14 Open questions` (lifts design §16) |
 
-  **This artifact's own additions, which SWF does not require and a reviewer must not report as surplus:** `§0 Scope`, `§2 The ten grounds`, `§2.1` the kind-set fence, `§6 The hazard vocabulary`, `§7 The eight resource kinds`, `§8 Distinctiveness`, `§9 Alternates`, `§14 Open questions`.
+  **This artifact's own seven additions, which SWF does not require and a reviewer must not report as surplus:** `§0 Scope`, `§2 The ten grounds` (**including its `§2.1` kind-set fence**, which is part of `§2` and is not counted separately), `§6 The hazard vocabulary`, `§7 The eight resource kinds`, `§8 Distinctiveness`, `§9 Alternates`, `§15 Citation register`. Nine SWF parts + seven additions = the sixteen sections `§0`–`§15`, each accounted for exactly once. **Two of the additions are still mandatory here** even though SWF does not ask for them: `§2.1`, because Step 4's artifact-mode `z6-check` exits 1 with `NO §2.1 FENCE` without it, and `§15`, because Task 3a Step 6 and Task 3b Step 7 both check named rows against it.
 
   **§15's shape is specified, not left to taste**, because Task 3a Step 6 and Task 3b Step 7 both check specific rows against it. One row per `[C]`/`[D]`/`[N]` marker in the §2 table — **20 landmark rows, 20 resource rows, 23 hazard rows and 10 `reasonToGo` rows (73 rows)** — with columns `claim | marker | cited file + section | the derivation step, if [D]`. Three rows are named by the downstream reviews and must be findable by id:
   - `spear-cane` — **[D]**, derivation step: `style.md` §4 gives `faction-thornveil` a throwing-spear harness; canon never says the raiders cut cane for the shafts.
@@ -583,7 +587,7 @@ with `naive exit=1`. Expected on `--corrected`: `Z6 OK: ten distinct kind sets (
 
   **§10's Z5 blind spot must be named by enumeration, not by memory.** The zones that reach content-complete with **zero** mapped hazards are whichever ones `content/zones/` actually leaves at zero after Task 3b — derive them, do not copy a pair out of this plan. On the §2 table as written below that set is exactly **`millcross-ford` and `gildmark-head`**, and `ashvale-front` is *not* in it only because it carries a third hazard (`the-alkali-dust` → `burn`) on top of its two absences. If a reviewer removes that third hazard, `ashvale-front` joins the set and §10 must say so. Re-run the enumeration command in Task 3b Step 5 after any hazard edit and write down what it prints:
 ```bash
-node -e 'const fs=require("fs");for(const f of fs.readdirSync("content/zones").sort()){const d=JSON.parse(fs.readFileSync("content/zones/"+f));const m=d.hazards.filter(h=>h.effect!==undefined).length;if(m===0)console.log(`zero mapped: ${d.zone}`);}'
+node -e 'const fs=require("fs");for(const f of fs.readdirSync("content/zones").filter(f=>/^zone-.+\.json$/.test(f)).sort()){const d=JSON.parse(fs.readFileSync("content/zones/"+f));const m=d.hazards.filter(h=>h.effect!==undefined).length;if(m===0)console.log(`zero mapped: ${d.zone}`);}'
 ```
 
   **§2 — The ten grounds.** Write this table into the artifact verbatim. It is the authoring input Tasks 3a/3b transcribe. **What it binds:** every zone id, `reasonToGo`, hazard id, hazard `effect`, resource id, resource `kind`, landmark id, landmark `name` and landmark `source` in the ten records is a cell here, written in the **exact form the record carries** — a landmark `source` cell reads `docs/worldbuilding/A1-geography-cluster1.md#4.2`, not `A1 §4.2`, so `grep -F` of a record's value hits the table. **What it does not bind:** hazard `name`, hazard `description`, hazard `note`, resource `name`, resource `description` and landmark `description` have no cells here at all; that prose is authored in Tasks 3a/3b against `style.md` and is reviewed for voice. The last column's `[C]`/`[D]`/`[N]` citations are *provenance shorthand for this artifact's own argument* (`A1 §4.2 zone 1`) and are deliberately not record strings. Legend: **[C]** transcribed from canon · **[D]** derived one step from canon (the step is named) · **[N]** needs invention. Hazard `→ effect` maps to one of the seven runtime `zoneHazards` types; **`none`** is an absence-hazard (design C3) which Z5 WARNs by design and which carries an authoring `note` saying why no enum value fits.
@@ -638,7 +642,7 @@ grep -nEo '\b[A-Z][a-z]+\b' docs/worldbuilding/A2-zones-cluster1.md | sort -u | 
 grep -n 'the mire.s bar\|gravel bars\|oath-gate\|dead gate' docs/worldbuilding/A2-zones-cluster1.md
 # Z6 against the COMMITTED artifact — default mode parses §2.1's fence out of the
 # real file, so this is a test of the deliverable, not of a scratchpad literal.
-export Z6="<scratchpad>/z6-check.mjs"   # Step 1's binding; re-state it if the shell restarted
+export Z6="/private/tmp/claude-502/-Users-pasitnusso-workspace-repos-atlas-world-svc/c0fca8d9-8dbd-4aa3-86df-6feb2d533de1/scratchpad/z6-check.mjs"   # Step 1's binding, restated
 node "$Z6" > /tmp/z6-artifact.out 2>&1; echo "exit=$?"; cat /tmp/z6-artifact.out
 # The §2 table must carry a row for every zone — the transcription contract
 # Tasks 3a/3b depend on. Zero output before "row check done" means all ten landed.
@@ -663,7 +667,7 @@ git commit -m "docs(worldbuilding): A2 zones of cluster 1 — the ten grounds (I
 
 - [ ] **Step 6: Independent adversarial review of this task's diff.** Fresh subagent, briefed as the **Archivist + Cliché Auditor + Namer**. It must check: all nine SWF §3 parts present **using Step 3's nine-onto-sixteen mapping table** (walk the mapping row by row; the seven listed additions are not surplus); **§15 carries all 73 rows in the specified four columns, including the three named rows `spear-cane` [D], `district-fuel` [D] two-step, and `the-southern-lip-loam` [C] with its §13 cross-reference**; G1 swap test; G5 — every `[C]` quote actually appears in the cited file (verify by grep, do not take the citation on trust); G7 — zero real-world proper nouns; the three collisions named rather than smoothed; the Thornveil section not contradicting `A2-ecology-thornveil.md`'s four tiers or `[15,28]` band; `thornveil`'s "spear cane" flagged `[D]`/`[N]` rather than promoted to a transcribed fact.
 
-- [ ] **Step 7: Refactor on the findings** — if any resource kind changed, edit **§2.1's fence and the §2 table together** and re-run `node "$Z6"` in its default (artifact) mode (`export Z6="<scratchpad>/z6-check.mjs"` first if the shell restarted); a kind changed in the table but not the fence is exactly the drift this check exists to catch. If any hazard, resource or landmark **id** changed, it must change in §2's table before Tasks 3a/3b transcribe it — the records are downstream of this table, never the other way round.
+- [ ] **Step 7: Refactor on the findings** — if any resource kind changed, edit **§2.1's fence and the §2 table together** and re-run `node "$Z6"` in its default (artifact) mode (re-state Step 1's `export Z6="/private/tmp/claude-502/-Users-pasitnusso-workspace-repos-atlas-world-svc/c0fca8d9-8dbd-4aa3-86df-6feb2d533de1/scratchpad/z6-check.mjs"` first if the shell restarted); a kind changed in the table but not the fence is exactly the drift this check exists to catch. If any hazard, resource or landmark **id** changed, it must change in §2's table before Tasks 3a/3b transcribe it — the records are downstream of this table, never the other way round.
 
 - [ ] **Step 8: Re-verify** — re-run every command in Step 4 and paste real output. New commit.
 
@@ -681,7 +685,7 @@ git commit -m "docs(worldbuilding): A2 zones of cluster 1 — the ten grounds (I
 - **Consumes:** `content/schemas/zone-content.schema.json` (Task 1) for shape; `docs/worldbuilding/A2-zones-cluster1.md` §2 (Task 2) as the authoring input, cell by cell; `content/maps/cluster1-geography.json#zones` for the ids.
 - **Produces:** five records at `content/zones/zone-<id>.json`, each already Z1–Z7-clean, verified by a throwaway validator rather than by the suite (the suite's committed-content tests assert all ten and therefore only land in 3b).
 
-**Why Task 3 is split in two, and why the split is safe.** The invariant the sequencing rests on is **"all ten records exist before Task 4 lands"** — *not* "all ten records land in one commit". Those are different claims, and only the first one is true. Nothing reads `content/zones/` until 3b's tests and Task 4's `checkZoneContent()`: `check_content.mjs` has no zone checker yet, so the directory is simply not looked at, and no test file mentions it. Any number of commits inside Task 3 is therefore gate-green and suite-green. **The earlier draft's justification for one mega-commit — "a partial `content/zones/` would leave Task 4's very first run red" — is false as stated**; it is only true of a split that *crosses* Task 4, which this one does not. Splitting matters because the defects these files can carry (kebab-case ids, landmark-name collisions, kind-set collisions, voice) are all prose-level and only findable by reading, and one reviewer given ten hand-authored world-content files plus a README edit plus four tests in a single sitting will not find them — which is the exact un-reviewable diff this plan says elsewhere it is avoiding.
+**Why Task 3 is split in two, and why the split is safe.** The invariant the sequencing rests on is **"all ten records exist before Task 4 lands"** — *not* "all ten records land in one commit". Those are different claims, and only the first one is true. Nothing reads `content/zones/` until 3b's tests and Task 4's `checkZoneContent()`: `check_content.mjs` has no zone checker yet, so the directory is simply not looked at, and no test file mentions it. Any number of commits inside Task 3 is therefore gate-green and suite-green. **The earlier draft's justification for one mega-commit — "a partial `content/zones/` would leave Task 4's very first run red" — is false as stated**; it is only true of a split that *crosses* Task 4, which this one does not. Splitting matters because the defects these files can carry (kebab-case ids, landmark-name collisions, kind-set collisions, voice) are all prose-level and only findable by reading, and one reviewer given ten hand-authored world-content files plus a README edit plus five tests in a single sitting will not find them — which is the exact un-reviewable diff this plan says elsewhere it is avoiding.
 
 Steps:
 
@@ -1009,7 +1013,7 @@ git commit -m "feat(content): zone records for the five river-country and rim zo
 - [ ] **Step 7: Refactor on the findings** — apply every finding. If any id, name or kind changed, **change the artifact's §2 table and §2.1 fence in the same commit**, then re-run BOTH of these from the repo root:
 
 ```bash
-export Z6="<scratchpad>/z6-check.mjs"   # Task 2 Step 1's binding; re-state it if the shell restarted
+export Z6="/private/tmp/claude-502/-Users-pasitnusso-workspace-repos-atlas-world-svc/c0fca8d9-8dbd-4aa3-86df-6feb2d533de1/scratchpad/z6-check.mjs"   # Task 2 Step 1's binding, restated
 # (a) the artifact is still internally consistent — ten pairwise-distinct sets
 node "$Z6" > /tmp/z6-artifact.out 2>&1; echo "z6 exit=$?"; cat /tmp/z6-artifact.out
 # (b) the records that exist so far still match the artifact's §2.1 fence. This
@@ -1054,7 +1058,7 @@ Expect `z6 exit=0` with `Z6 OK: ten distinct kind sets (--artifact)`, and `fence
 
 Steps:
 
-- [ ] **Step 1: Write the failing test** — append to `scripts/tests/zone-content.test.mjs`:
+- [ ] **Step 1: Write the failing test** — append the **five** committed-content tests below to `scripts/tests/zone-content.test.mjs`. Five is the number every roll-up in this task uses: Step 2 expects four of them red (the fifth is green from the start, for the reason given there) and Step 4 expects the pass count exactly five above Task 1's.
 
 ```js
 // ---------------------------------------------------------------------------
@@ -1473,7 +1477,11 @@ grep -rhoE '\b[A-Z][a-z]+\b' content/zones/ | sort -u
 node -e '
 const fs = require("fs");
 let m = 0, u = 0, total = 0; const zero = [];
-for (const f of fs.readdirSync("content/zones").sort()) {
+// Same filename filter the gate uses (`/^zone-.+\.json$/`) and the fence-drift
+// check below uses. Without it a stray `.DS_Store` dies in JSON.parse and a
+// leftover non-record .json dies on `d.hazards` — this census runs mid-authoring,
+// BEFORE the directory-enumeration test that closes the record set is green.
+for (const f of fs.readdirSync("content/zones").filter((f) => /^zone-.+\.json$/.test(f)).sort()) {
   const d = JSON.parse(fs.readFileSync("content/zones/" + f, "utf8"));
   total += d.hazards.length;
   for (const h of d.hazards) (h.effect === undefined ? u++ : m++);
@@ -1524,7 +1532,7 @@ git add content/zones content/README.md scripts/tests/zone-content.test.mjs
 git commit -m "feat(content): remaining five zone records + committed-content tests (I-060)"
 ```
 
-- [ ] **Step 7: Independent adversarial review of this task's diff.** Fresh subagent, briefed as **Archivist + Political Economist + Cliché Auditor**, scoped to five records + one README line + four tests. It must check: every string traceable to a cell of the artifact's §2 table (verify by grep, do not take it on trust); no `reasonToGo` that says "adventure awaits" or "rich hunting grounds" — each must name a thing carried **out** (C2) or a thing only this ground has; every resource has a named taker and a named loser (G3); no banned word; **all twenty landmark names distinct across the ten records, with "The mire's bar" ≠ "The gravel bars" and "The dead gate" ≠ "The oath-gate" held deliberately**; the ten kind sets pairwise distinct and identical to the artifact's §2.1 fence; `the-southern-lip-loam`'s canon collision named in §13 rather than smoothed; no record listing the expedition camp outside `meltwash-terrace`.
+- [ ] **Step 7: Independent adversarial review of this task's diff.** Fresh subagent, briefed as **Archivist + Political Economist + Cliché Auditor**, scoped to five records + one README line + **five** tests. It must check: every string traceable to a cell of the artifact's §2 table (verify by grep, do not take it on trust); no `reasonToGo` that says "adventure awaits" or "rich hunting grounds" — each must name a thing carried **out** (C2) or a thing only this ground has; every resource has a named taker and a named loser (G3); no banned word; **all twenty landmark names distinct across the ten records, with "The mire's bar" ≠ "The gravel bars" and "The dead gate" ≠ "The oath-gate" held deliberately**; the ten kind sets pairwise distinct and identical to the artifact's §2.1 fence; `the-southern-lip-loam`'s canon collision named in §13 rather than smoothed; no record listing the expedition camp outside `meltwash-terrace`.
 
 - [ ] **Step 8: Refactor on the findings.** If any id, name or kind changed, change the artifact's §2 table **and** §2.1 fence in the same commit and re-run Task 2 Step 4's artifact-mode `z6-check.mjs`.
 
@@ -1537,6 +1545,7 @@ git commit -m "feat(content): remaining five zone records + committed-content te
 **Files:**
 - Modify: `scripts/check_content.mjs`
 - Modify (test): `scripts/tests/zone-content.test.mjs` — append the fixture-driven Z1–Z7 suite
+- Modify (remedy only): `content/zones/zone-<id>.json` — permitted **ONLY** to correct a record the new gate rejects at Step 7. Any such edit must be re-run through **Task 3b Step 5's census** and **Task 2 Step 4's artifact-mode z6-check** in the same commit, because the artifact's §2 table is upstream of the records. This row exists so the one boundary where the gate can still go red (Step 7, the first real-content run) has a permitted fix; it is not licence to tune content to hit a number.
 
 **Interfaces:**
 - **Consumes:** `existsSync`, `readdirSync`, `join`, `readJson(path, label, fail)`, `compileSchema(path, label, fail)`, `findDuplicateGroups(items, keyFn)`, `loadGeographyZones(path)`, `fail(msg)`, `warn(msg)` — **all already in scope in `check_content.mjs`. Add no imports.**
@@ -1544,8 +1553,9 @@ git commit -m "feat(content): remaining five zone records + committed-content te
   - `function checkZoneContent(opts) -> number` — the count of accepted records. `opts.contentRoot` is the only field read.
   - `const ZONE_RESOURCE_KINDS: string[8]`, `const ZONE_HAZARD_EFFECTS: string[7]`, `const ZONE_ID_RE: RegExp` — module-level.
   - `let zoneHazardsTotal`, `let zoneHazardsUnmapped` — module-level counters beside `failures`/`warnings`.
-  - `function readGeographyZones(path)` — the **renamed** body of today's `loadGeographyZones`, byte-identical inside; `loadGeographyZones(path)` becomes a one-line memoizing wrapper over it (Step 3, patch A2). `checkBestiaryPlacement`'s call site is untouched. This exists because `checkZoneContent` makes the geography a **second** consumer's dependency: without the memo the file is parsed twice per run and a shape-invalid geography prints its FAIL **twice**, reporting one defect as two.
-  - `function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0)` — **a 5th positional parameter**, plus a `, ${zoneCount} zones` segment in the summary and one new aggregate line. **The aggregate line is guarded** (`if (zoneCount > 0 || zoneHazardsTotal > 0)`): a content root that ships no zone content must not gain a `zone-content: 0 of 0 …` line, which would print a measurement of a thing that was never measured onto all ~20 fixtures in `check_content.test.mjs` and `bestiary-placement.test.mjs`. Two tests pin the guard in both directions.
+  - `function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0)` — **a 5th positional parameter**, plus a `, ${zoneCount} zones` segment in the summary and one new aggregate line. **The aggregate line is guarded** (`if (zoneCount > 0 || zoneHazardsTotal > 0)`): a content root that ships no zone content must not gain a `zone-content: 0 of 0 …` line, which would print a measurement of a thing that was never measured onto all ~20 fixtures in `check_content.test.mjs` and `bestiary-placement.test.mjs`. Three tests pin the guard: PRESENT on the ten-record root, ABSENT on both soft-skip shapes (no `zones/` dir, and a `zones/` dir with no `zone-*.json`).
+- **`loadGeographyZones` is REUSED UNCHANGED — not renamed, not memoized, not wrapped.** Spec §7: *"loadGeographyZones() already exists in check_content.mjs and is reused unchanged for Z1 and Z2 — no new loader"*, and spec §12 lists F-029's G1–G8 as untouched. `checkZoneContent` simply becomes a second caller. The consequence is accepted and is not a defect: on a content root that has **both** a `bestiary/` placement dir **and** a shape-invalid geography, the `geography: … is shape-invalid` FAIL is recorded once per consumer. That is not a shipping state (the committed geography is valid and gated), and the alternative — a memo in front of a renamed shared helper — is untestable from this task's fixtures, because `checkBestiaryPlacement` returns at `if (!existsSync(dir)) return 0;` before it ever reaches the loader and no Task 4 fixture creates `content/bestiary/`. An untested refactor of a helper G1–G8 depend on is the larger risk. **Do not "optimize" the double parse.**
+- **Spec §7 puts "no orphans" inside Z2; this implementation emits it under the Z1 message** (`zones/<file>: zone "<id>" not in cluster1-geography.json#zones`), because it is a per-record check answerable in pass 1, while Z2's missing/duplicate clauses are cross-file. Nothing is unenforced — but a reader auditing §7 row by row will not find Z2's third clause where the spec puts it, and **Brief A's Z2 deletion test must therefore also delete the `if (!known) fail(...)` line and the `if (known)` guard on `records.push`, and confirm `Z1: a record naming a zone the geography does not have fails` goes red.**
 - **Produces — the message strings, which ARE the contract** (`assert.match` on exact text; label = content-relative path, matching the `bestiary/` and `maps/` precedent):
 
 | rule | message |
@@ -1645,6 +1655,9 @@ test("a content/zones directory with no zone-*.json skips silently", () => {
   const r = runGate(fixture({ zones: {}, zoneSchema: false }));
   assert.equal(r.code, 0);
   assert.match(r.out, /0 zones/);
+  // The SECOND soft-skip shape (dir present, no records) must also leave the
+  // guarded aggregate line off, not just the first (no dir at all).
+  assert.doesNotMatch(r.out, /zone-content:/);
 });
 
 test("the ten valid records pass, are counted, and raise nothing", () => {
@@ -1660,8 +1673,10 @@ test("the ten valid records pass, are counted, and raise nothing", () => {
 // `0 of 0` would put a measurement of an unmeasured thing onto every fixture in
 // check_content.test.mjs and bestiary-placement.test.mjs. season1.mjs's
 // buildRows keeps the same discipline (`actual: null`, never 0, when nothing is
-// countable). These two tests pin the guard in BOTH directions, so neither
-// removing it nor inverting it can pass.
+// countable). Three tests pin the guard: PRESENT on the ten-record root, and
+// ABSENT on BOTH soft-skip shapes — no zones/ dir (below) and a zones/ dir
+// holding no zone-*.json (up in the wiring block). Neither removing the guard
+// nor inverting it can pass.
 test("the zone-content line is ABSENT on a root with no zone content", () => {
   const r = runGate(fixture({ zones: null, zoneSchema: false }));
   assert.equal(r.code, 0);
@@ -1676,19 +1691,20 @@ test("the zone-content line is PRESENT once the root has zone records", () => {
 });
 
 // readJson cannot distinguish "recorded a FAIL" from "parsed to a JSON-falsy
-// value"; readGeographyZones checks the failure count for that reason. A
-// literal `null` must be ONE shape-invalid FAIL — never a silent skip that
-// would leave Z1 and Z2 unenforced, and never TWO, which is what an unmemoized
-// loadGeographyZones would print now that checkBestiaryPlacement and
-// checkZoneContent both ask for the geography. The count assertion is the only
-// thing that can catch a regression on the memo (Step 3, patch A2).
-test("a geography parsing to null is one shape-invalid FAIL, not a skip and not two", () => {
+// value" — a file holding a literal `null` parses fine — which is why
+// loadGeographyZones tests the failure count rather than the return value. A
+// `null` geography must be a shape-invalid FAIL and then a CLEAN BAIL: not a
+// silent skip (which would leave Z1 and Z2 unenforced), and not ten Z2
+// missing-record FAILs stacked on top of it. The third assertion is what pins
+// `if (!zones) return 0;` in patch B — without that guard `zones.has(doc.zone)`
+// throws on the first record and the gate dies with a stack trace instead of a
+// FAIL line. This test says nothing about how many times the geography is
+// parsed; see the Interfaces note on reusing loadGeographyZones unchanged.
+test("a geography parsing to null is one shape-invalid FAIL, not a skip", () => {
   const r = runGate(fixture({ zones: allZones(), geography: null }));
   assert.equal(r.code, 1);
   assert.match(r.out, /geography: .* is shape-invalid/);
-  assert.equal(
-    (r.out.match(/is shape-invalid/g) ?? []).length, 1,
-    `one broken geography must be reported once, not once per consumer:\n${r.out}`);
+  assert.doesNotMatch(r.out, /has no record in content\/zones\//);
 });
 
 test("a schema-invalid record FAILs and its Z-rules are skipped, not crashed on", () => {
@@ -1877,6 +1893,30 @@ test("Z4: ids with digits and multiple segments are legal kebab-case", () => {
   }) }));
   assert.equal(r.code, 0);
   assert.doesNotMatch(r.out, /is not kebab-case/);
+});
+
+// THE DRIFT BINDING for ZONE_ID_RE. The regex is written twice — once in this
+// file (Task 1's constant) and once in the gate (Step 4, patch B) — and nothing
+// in the language binds them; `check_content.mjs` calls main() and
+// process.exit() at module scope, so it cannot be imported and the constant
+// cannot be compared directly. This test binds them behaviourally instead, the
+// same way the two `(valid: …)` tests bind the effect and kind enums: it drives
+// the three boundary shapes that separate `/^[a-z0-9]+(-[a-z0-9]+)*$/` from a
+// loosened `/^[a-z0-9-]+$/` through the REAL gate binary. Loosen the gate's
+// copy and this goes red even though this file's copy is untouched. The three
+// legal-shape tests above cannot catch that drift — every one of them passes
+// under the loose regex too.
+test("Z4: the gate's kebab rule rejects leading, trailing and doubled hyphens", () => {
+  for (const bad of ["-seam-damp", "seam-damp-", "seam--damp"]) {
+    const r = runGate(fixture({ zones: allZones({
+      emberdown: (z) => { z.hazards[0].id = bad; },
+    }) }));
+    assert.equal(r.code, 1, `the gate must reject the id "${bad}":\n${r.out}`);
+    assert.match(
+      r.out,
+      new RegExp(`zones/zone-emberdown\\.json: hazard id "${bad}" is not kebab-case`),
+      `wrong or missing message for "${bad}":\n${r.out}`);
+  }
 });
 
 // --------------------------------- Z5 --------------------------------------
@@ -2078,7 +2118,7 @@ test("Z7: all eight enum kinds are accepted", () => {
 npm test --prefix scripts > /tmp/t.out 2>&1; echo "exit=$?"; grep -E "^ℹ (tests|pass|fail)" /tmp/t.out
 grep -E "^✖" /tmp/t.out | head -40
 ```
-Expected failure: `exit=1` and a **floor of 25** `✖` lines — not an exact count, because several of this step's tests are legitimately green before any implementation exists. Exactly these eight are green at this point, and each for a stated reason:
+Expected failure: `exit=1` and a **floor of 25** `✖` lines — not an exact count, because several of this step's tests are legitimately green before any implementation exists. Exactly these seven are green at this point, and each for a stated reason:
 
 | test | why it is green with no implementation |
 | --- | --- |
@@ -2089,13 +2129,14 @@ Expected failure: `exit=1` and a **floor of 25** `✖` lines — not an exact co
 | `Z6: kind sets that overlap without being identical are legal` | same |
 | `Z6: repeating one kind inside a single zone is legal and dedupes to a set` | same |
 | `Z6: ten distinct landmark-name sets and ten distinct kind sets pass` | same |
-| `the zone-content line is ABSENT on a root with no zone content` | `finish()` prints no `zone-content:` line at all yet, so "absent" holds vacuously — its polarity partner (`… is PRESENT once the root has zone records`) is what must be red |
+
+**`the zone-content line is ABSENT on a root with no zone content` is RED at this point despite its name, and belongs on the red list — not this table.** Its `doesNotMatch(/zone-content:/)` half does hold vacuously, but its third assertion is `assert.match(r.out, /0 zones/)` and `finish()` prints no `zones` segment at all until patch C exists. Its polarity partner (`… is PRESENT once the root has zone records`) is red too. **Do not "fix" either one by weakening the `/0 zones/` assertion** — that assertion is what makes the soft-skip observable, and it is the guard spec §7 asks for.
 
 The **shape** is what to check, and it is stricter than the count: every test that asserts a `N zones` substring must be red (the soft-skip and pass-case tests fail on `assert.match(r.out, /0 zones|10 zones/)` because `finish()` prints no `zones` segment yet), every test that asserts `assert.equal(r.code, 1)` must be red (it receives `0`, because no rule exists), and both `the GATE's effect list …` / `the GATE's kind list …` tests must be red at the `assert.equal(r.code, 1)` line — **not** at the `deepEqual`, because there is no `(valid: …)` message to parse yet. **Any test naming a Z-rule that is GREEN at this point and is not in the table above is not testing that rule — fix the test before writing a line of the implementation.**
 
-- [ ] **Step 3: Write minimal implementation — patch A: the Z5 counters and the geography memo.** **Anchor every edit in this task on exact text, never on a line number.** Patch A1 shifts everything below it by +6 and patch A2 by a further +7, so any line number quoted for a later step is stale by the time that step runs.
+- [ ] **Step 3: Write minimal implementation — patch A: the Z5 counters.** **Anchor every edit in this task on exact text, never on a line number.** Patch A shifts everything below it by +6, so any line number quoted for a later step is stale by the time that step runs.
 
-**Patch A1 — the counters.** In `scripts/check_content.mjs`, find the four-line block that begins `const failures = [];` and ends `const warn = (m) => warnings.push(m);` (it sits immediately below `loadGeographyZones`'s closing brace), and replace those four lines with:
+**Patch A — the counters.** In `scripts/check_content.mjs`, find the four-line block that begins `const failures = [];` and ends `const warn = (m) => warnings.push(m);` (it sits immediately below `loadGeographyZones`'s closing brace), and replace those four lines with:
 
 ```js
 const failures = [];
@@ -2110,23 +2151,7 @@ const fail = (m) => failures.push(m);
 const warn = (m) => warnings.push(m);
 ```
 
-**Patch A2 — memoize the geography load.** `checkZoneContent()` makes `checkBestiaryPlacement()` no longer the only consumer of the geography, and today's `loadGeographyZones` re-reads and re-validates on every call: two parses per run, and on a broken geography the SAME `geography: … is shape-invalid` FAIL text pushed **twice** — one defect reported as two, in both the failure count and the printed output. Fix it by renaming the existing function and putting a memo in front of it. Find the line `function loadGeographyZones(path) {` and change **only** that line to `function readGeographyZones(path) {` — the body below it is untouched, byte for byte — then insert directly **above** the renamed function:
-
-```js
-// I-060: two checkers now need the geography (checkBestiaryPlacement and
-// checkZoneContent). Memoized on `path` so it is parsed once per run and a
-// shape-invalid geography records its FAIL once rather than once per consumer.
-// `has()`, not a truthiness test: `null` is the legitimate cached failure
-// result and must not be retried (retrying is exactly what double-FAILs).
-const geographyZonesCache = new Map();
-function loadGeographyZones(path) {
-  if (!geographyZonesCache.has(path))
-    geographyZonesCache.set(path, readGeographyZones(path));
-  return geographyZonesCache.get(path);
-}
-```
-
-`checkBestiaryPlacement`'s existing call site keeps calling `loadGeographyZones` and is not edited. The memo is pinned by the `a geography parsing to null is one shape-invalid FAIL, not a skip and not two` test in Step 1, which asserts the match count is exactly `1`.
+**That is the whole of patch A. `loadGeographyZones` is NOT touched — not renamed, not memoized, not wrapped.** `checkZoneContent` becomes a second caller of it and nothing else changes, per spec §7 (*"reused unchanged for Z1 and Z2 — no new loader"*) and spec §12 (F-029's G1–G8 untouched). Do not add a cache: see the Interfaces note above for why the double parse is accepted and why a memo here would ship as untestable code.
 
 - [ ] **Step 4: Write minimal implementation — patch B: `checkZoneContent()`.** Insert VERBATIM immediately after `checkBestiaryPlacement()`'s closing brace and before `function finish(`. **No new imports.**
 
@@ -2296,7 +2321,7 @@ function checkZoneContent(opts) {
 }
 ```
 
-- [ ] **Step 5: Write minimal implementation — patch C: `main()` and `finish()`.** **Anchor on text, not line numbers** — patches A1, A2 and B have all landed above `main()` by now, so any line number written before them is wrong. Find these two consecutive lines at the end of `main()`:
+- [ ] **Step 5: Write minimal implementation — patch C: `main()` and `finish()`.** **Anchor on text, not line numbers** — patches A and B have both landed above `main()` by now, so any line number written before them is wrong. Find these two consecutive lines at the end of `main()`:
 
 ```js
   const placementCount = checkBestiaryPlacement(opts);
@@ -2326,9 +2351,9 @@ function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0
   // every fixture in check_content.test.mjs and bestiary-placement.test.mjs.
   // That is the opposite of the discipline the rest of this codebase keeps —
   // season1.mjs's buildRows returns `actual: null`, never 0, when nothing is
-  // countable. Two tests pin this in both directions (ABSENT on the soft-skip
-  // fixture, PRESENT on the ten-record fixture), so the guard cannot be
-  // removed or inverted silently.
+  // countable. Three tests pin this (ABSENT on both soft-skip fixtures,
+  // PRESENT on the ten-record fixture), so the guard cannot be removed or
+  // inverted silently.
   if (zoneCount > 0 || zoneHazardsTotal > 0)
     console.log(`zone-content: ${zoneHazardsUnmapped} of ${zoneHazardsTotal} hazards have no runtime effect`);
   console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${zoneCount} zones, ${failures.length} failures, ${warnings.length} warnings`);
@@ -2342,9 +2367,9 @@ The `, ${zoneCount} zones` segment is **unguarded** — it appears on every root
 ```bash
 npm test --prefix scripts > /tmp/t.out 2>&1; echo "exit=$?"; grep -E "^ℹ (tests|pass|fail)" /tmp/t.out
 ```
-Expected: `exit=0`, `ℹ fail 0`, and `ℹ pass` **≥ 247** — measured baseline `ℹ pass 191`, plus Task 1's thirteen, Task 3b's four and this task's thirty-nine (191 + 13 + 4 + 39 = 247). Anything below 247 means tests were dropped rather than added. **Every pre-existing suite must still be green** — `check_content.test.mjs` and `bestiary-placement.test.mjs` fixtures have no `content/zones`, so the soft-skip carries them, and the guarded `zone-content:` line means they gain no new output at all; no existing test asserts the whole summary line, only substrings such as `/1 placements/`.
+Expected: `exit=0`, `ℹ fail 0`, and `ℹ pass` **≥ 249** — measured baseline `ℹ pass 191`, plus Task 1's thirteen, Task 3b's five and this task's forty (191 + 13 + 5 + 40 = 249). Anything below 249 means tests were dropped rather than added. **Every pre-existing suite must still be green** — `check_content.test.mjs` and `bestiary-placement.test.mjs` fixtures have no `content/zones`, so the soft-skip carries them, and the guarded `zone-content:` line means they gain no new output at all; no existing test asserts the whole summary line, only substrings such as `/1 placements/`.
 
-- [ ] **Step 7: Verify against the real content root, in both modes** (no pipe, so `$?` is honest). The second command is the form **Gate 2 runs at ship** (`scripts/integration.sh:81`); this is the only step in the plan that exercises it before the release gate does, and it is what proves D3's warn-not-fail ruling survives `--require-complete`.
+- [ ] **Step 7: Verify against the real content root, in both modes** (no pipe, so `$?` is honest). The second command is the form **Gate 2 runs at ship** (`scripts/integration.sh:81`); this is the **first** step in the plan that exercises it — the final Verification section runs it again as its fifth acceptance command — and it is what proves D3's warn-not-fail ruling survives `--require-complete`.
 ```bash
 node scripts/check_content.mjs > /tmp/gate.out 2>&1; echo "exit=$?"; tail -3 /tmp/gate.out
 grep -c 'has no effect' /tmp/gate.out; grep 'zone-content:' /tmp/gate.out
@@ -2357,7 +2382,7 @@ Expected — **four invariants, not four literals. No hazard census is written h
 3. `grep -c 'has no effect'` equals that line's first number, and — since Z5 is the only new `warn()` — equals the summary's `N warnings` (today's baseline is `0 warnings`, so N is purely the zone WARNs).
 4. `rc exit=0` with `grep -c '^FAIL'` printing `0` and the same `10 zones, 0 failures` summary: every unmapped hazard is still a **WARN** under `--require-complete`. `--require-complete` escalates in exactly two places (`checkStoryCoherence(…, requireComplete)` and the `opts.requireComplete ? fail : warn` at `check_content.mjs:609`, character-key coverage), neither of which touches Z5's plain `warn()` — that is a reason to expect this to pass, not a substitute for running it.
 
-**If the numbers disagree with Task 3b Step 5, a record drifted after that step ran — re-run the census and fix the record. Never edit shipped world content to hit a number written into a plan in advance.**
+**If the numbers disagree with Task 3b Step 5, a record drifted after that step ran — re-run the census and fix the record.** That record edit is in scope for this task, and only here: it is the third row of Task 4's **Files:** block above (`Modify (remedy only)`), which also states what has to be re-run alongside it. **Never edit shipped world content to hit a number written into a plan in advance.**
 
 - [ ] **Step 8: Commit**
 ```bash
@@ -2365,11 +2390,11 @@ git add scripts/check_content.mjs scripts/tests/zone-content.test.mjs
 git commit -m "feat(gate): checkZoneContent Z1-Z7 for L2 zone content (I-060)"
 ```
 
-- [ ] **Step 9: Independent adversarial review of this task's diff — TWO briefs, two fresh subagents, dispatched in parallel.** This is the heaviest task in the plan (~130 lines of new gate logic, a changed `finish()` signature and output shape, a renamed shared helper, ~40 tests), and it carries the review weight Task 6 gave up when it was folded into Task 5. One reviewer covering both halves is how a blast-radius defect gets missed behind a rules defect.
+- [ ] **Step 9: Independent adversarial review of this task's diff — TWO briefs, two fresh subagents, dispatched in parallel.** This is the heaviest task in the plan (~130 lines of new gate logic, a changed `finish()` signature and output shape, a second consumer of the shared geography loader, **40 tests**), and it carries the review weight Task 6 gave up when it was folded into Task 5. One reviewer covering both halves is how a blast-radius defect gets missed behind a rules defect.
 
   **Brief A — the F-029 deletion test over Z1–Z7.** For each of Z1, Z2, Z3, Z4, Z5, Z6, Z7 in turn: delete the rule from `checkZoneContent()`, run `npm test --prefix scripts`, and confirm **at least one test goes red**; restore it before the next. A rule whose deletion leaves the suite green is untested and the review fails. Also: is the soft-skip two-stage (dir, then files)? Is `compileSchema` called *after* both guards? Does Z1 avoid `continue`? Does Z2's coverage half iterate `zones.keys()` and not the files? Does Z6 dedupe **and** sort? Are all message strings byte-identical to the Interfaces table above? Do the two `(valid: …)` drift tests parse the **gate's** output rather than re-asserting a constant against itself?
 
-  **Brief B — `finish()` / `main()` / `loadGeographyZones` blast radius.** Everything that consumes the gate's output or the renamed helper: (a) grep `scripts/tests/check_content.test.mjs` and `scripts/tests/bestiary-placement.test.mjs` for any assertion on the whole summary line, an output **line count**, `split("\n")`, `.at(-1)`, or a `doesNotMatch` broad enough to catch the new segment — **this was true when the plan was written (only substring matches such as `/1 placements/`, plus one `doesNotMatch(r.out, /FAIL/)` at `check_content.test.mjs:230`) and must be re-checked against the tree as it now stands, not taken from this sentence**; (b) confirm the guarded `zone-content:` line is genuinely absent on a zone-less root and that both polarity tests exist; (c) confirm the 5th positional parameter defaults to `0` so any caller passing four arguments still works; (d) confirm `readGeographyZones`'s body is byte-identical to the pre-rename `loadGeographyZones` and that **every** call site still resolves — `grep -n 'GeographyZones' scripts/check_content.mjs` must show exactly the wrapper, the renamed definition, and the two checkers' calls; (e) confirm nothing outside `scripts/check_content.mjs` referenced `loadGeographyZones` before the rename (`grep -rn 'loadGeographyZones' scripts/`).
+  **Brief B — `finish()` / `main()` blast radius.** Everything that consumes the gate's output or the shared geography loader: (a) grep `scripts/tests/check_content.test.mjs` and `scripts/tests/bestiary-placement.test.mjs` for any assertion on the whole summary line, an output **line count**, `split("\n")`, `.at(-1)`, or a `doesNotMatch` broad enough to catch the new segment — **this was true when the plan was written (only substring matches such as `/1 placements/`, plus one `doesNotMatch(r.out, /FAIL/)` at `check_content.test.mjs:230`) and must be re-checked against the tree as it now stands, not taken from this sentence**; (b) confirm the guarded `zone-content:` line is genuinely absent on a zone-less root, and that all **three** polarity tests exist (PRESENT on the ten-record root; ABSENT on each of the two soft-skip shapes); (c) confirm the 5th positional parameter defaults to `0` so any caller passing four arguments still works; (d) confirm `loadGeographyZones` was **not modified at all** — `git diff HEAD~1 -- scripts/check_content.mjs` must show no hunk inside it and no rename of it, and `grep -n 'loadGeographyZones' scripts/check_content.mjs` must show exactly **three** hits: the one definition and the two call sites (`checkBestiaryPlacement`'s, unchanged; `checkZoneContent`'s, new). A fourth hit means a wrapper or cache was added — reject it, and see the Interfaces note on why; (e) confirm the diff to `scripts/check_content.mjs` is confined to patches A, B and C: `git diff HEAD~1 -- scripts/check_content.mjs` must show exactly four hunks — the counters, the new `checkZoneContent` block, the one added line in `main()`, and `finish()` — with **no** hunk inside `loadGeographyZones` (86), `checkStoryCoherence` (405), `checkCharacters` (524), `checkMaps` (626) or `checkBestiaryPlacement` (742). (`readJson` is not in this file; it is imported from `scripts/lib/story.mjs:45` and is not touched by this task.)
 
 - [ ] **Step 10: Refactor on the findings.**
 
@@ -2388,7 +2413,7 @@ git commit -m "feat(gate): checkZoneContent Z1-Z7 for L2 zone content (I-060)"
 - Modify: `content/story/canon.md`
 - Modify (Task 6, folded in — see below): `docs/worldbuilding/idea-map.md`, `.claude/idea_backlog/I-060-l2-zone-content-pass-for-each-cluster-1/research.md`, `.claude/idea_backlog/I-060-l2-zone-content-pass-for-each-cluster-1/plan.md`
 
-**Task 6 rides in this task's commit.** Task 6 is documentation hygiene with no consumer — it produces nothing any other task reads — and a separate five-step review gate for two H1 rewrites and one table cell is review weight spent in the wrong place. It stays a numbered task below so its content is written out in full, but its steps are executed inside this task: its edits land in Step 8's commit, and its review is the single self-check line added to Step 9's brief. The weight this frees is reallocated to Task 4, whose review is split into two parallel briefs.
+**Task 6 rides in this task's commit — it is not a separate execution unit.** Task 6 is documentation hygiene with no consumer — it produces nothing any other task reads — and a separate five-step review gate for two H1 rewrites and one table cell is review weight spent in the wrong place. It keeps its own heading below **only so its content is written out in full**; that heading is reference text, not a sixth task to run. Its steps execute inside this task at Step 7c, its edits land in Step 8's commit, and its review is the self-check line added to Step 9's brief. **An executor walking headings in order must not re-run it** — the stop line at that heading and its Step 4 say so. The weight this frees is reallocated to Task 4, whose review is split into two parallel briefs.
 
 **Interfaces:**
 - **Consumes:** `content/zones/zone-<id>.json` (Task 3); the private `readJsonAt(root, rel)` helper already in `season1.mjs`; `buildRows(budget, root)` and `renderTable(rows)`, already exported.
@@ -2402,17 +2427,30 @@ Steps:
 
 - [ ] **Step 1: Write the failing test** — create the six fixture files under `scripts/tests/fixtures/season1/content/zones/` (2 complete: `emberdown`, `thornveil`; 1 short a hazard: `hollowmarch`; 1 with `"reasonToGo": "   "`: `cindervast`; 1 complete duplicate of emberdown: `zone-emberdown-second-file.json`; 1 non-record: `notes.json` holding `["not a zone record; the zone-<id>.json filter must skip this file entirely"]`). Then append to `scripts/tests/season1.test.mjs` the block below.
 
-**THREE import lines, seven new bindings — count them before running anything.** `scripts/tests/season1.test.mjs` today imports only `{ test }`, `assert`, `{ readFileSync } from "node:fs"`, `{ join, resolve, dirname } from "node:path"` and `{ fileURLToPath } from "node:url"` — **nothing from `node:os` or `node:child_process`, and no `writeFileSync` anywhere**. The block below needs all three modules:
+**ONE import line, four new bindings — read the file's existing imports before you write anything.** `scripts/tests/season1.test.mjs` declares imports in **five** places, not one, and the last three are mid-file. Verified against the committed file:
 
-- `writeFileSync` and `tmpdir` are both called inside `zoneRoot()`. Leave either unbound and three of the nine new tests — including the 10/10 report row that is spec §17's acceptance signal for Deliverable 5 — throw `ReferenceError` before a single assertion runs.
-- `execFileSync` is called by the gate/measure filename-agreement test at the end of the block, which spawns the real gate binary.
+| Line | Declaration |
+| --- | --- |
+| 1–5 | `{ test }` from `node:test`; `assert` from `node:assert/strict`; `{ readFileSync }` from `node:fs`; `{ join, resolve, dirname }` from `node:path`; `{ fileURLToPath }` from `node:url` |
+| 33 | `import { MEASURES, buildRows, renderTable } from "../lib/season1.mjs";` |
+| 107 | `import { execFileSync } from "node:child_process";` |
+| 154 | `import { writeFileSync, unlinkSync } from "node:fs";` |
+| 155 | `import { tmpdir } from "node:os";` |
 
-A second `import … from "node:fs"` with disjoint names is legal ESM and does not disturb the existing `readFileSync` import. None of the seven names collides with anything already bound in the file.
+ESM `import` declarations are **hoisted module-wide**, so every one of those bindings — including `execFileSync`, `writeFileSync` and `tmpdir` — is already in scope for a block appended at the *end* of the file. **Re-importing any of them is a parse-time `SyntaxError: Identifier '<name>' has already been declared`**, which kills the whole module: the nine new tests and every pre-existing test in `season1.test.mjs` vanish together, and `npm test` goes red for a reason none of Step 2's named failures describes.
+
+Exactly **four** names the appended block uses are genuinely unbound — `existsSync`, `mkdtempSync`, `mkdirSync`, `rmSync` — so the block below opens with exactly **one** import line, and adds no other.
+
+- `writeFileSync` (line 154) and `tmpdir` (line 155) are called inside `zoneRoot()`; `execFileSync` (line 107) is called by the gate/measure filename-agreement test. **All three are already bound — do NOT add them.**
+- `MEASURES`, `buildRows`, `renderTable` (line 33), `budget` (line 8), `FIXTURE` (line 35), `ROOT` (line 7), `join`, `readFileSync`, `assert` and `test` are all already bound too. The block introduces no other new identifier.
+- A second `import … from "node:fs"` carrying **disjoint** names is legal ESM and does not disturb the `readFileSync` import at line 3 or the `writeFileSync, unlinkSync` import at line 154. Mid-file imports are this file's own existing style, so position is irrelevant — only name collisions matter.
 
 ```js
-import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { execFileSync } from "node:child_process";
+// The ONLY new import. existsSync, mkdtempSync, mkdirSync and rmSync are the
+// four names nothing in this file binds yet; writeFileSync, tmpdir and
+// execFileSync are already imported at lines 154, 155 and 107 and re-importing
+// any of them is a duplicate-binding SyntaxError.
+import { existsSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";
 
 // I-060: the zones measure. Ids come from the geography rather than a literal
 // list, so a change to the ten cannot silently pass this file.
@@ -2513,19 +2551,35 @@ test("no budget line carries a note key — buildRows computes note and would cl
 test("the gate and the zones measure agree on which filenames are records", () => {
   const root = mkdtempSync(join(tmpdir(), "season1-filter-"));
   try {
+    mkdirSync(join(root, "content/characters"), { recursive: true });
     mkdirSync(join(root, "content/schemas"), { recursive: true });
     mkdirSync(join(root, "content/maps"), { recursive: true });
     mkdirSync(join(root, "content/zones"), { recursive: true });
     // The same three schemas Task 4's fixture() copies, plus the geography:
     // checkZoneContent needs zone-content.schema.json and the geography, and
     // copying character/map schemas keeps the unrelated checkers on a fixture
-    // rather than half-reading the real tree.
+    // rather than half-reading the real tree. content/characters must EXIST or
+    // the gate emits `FAIL characters dir unreadable: … ENOENT`; empty is fine.
     for (const rel of [
       "content/schemas/zone-content.schema.json",
       "content/schemas/character.schema.json",
       "content/schemas/map.schema.json",
       "content/maps/cluster1-geography.json",
     ]) writeFileSync(join(root, rel), readFileSync(join(ROOT, rel), "utf8"));
+
+    // Hermeticity, exactly as Task 4's fixture()/runGate() do it. parseArgs in
+    // check_content.mjs defaults --keys, --manifest, --mob-types and
+    // --spawn-areas to the LIVE repo artifacts (colyseus-server/generated/*,
+    // game-client/assets/manifest.json). Spawning with only --content-root
+    // would make this filename-filter test read three committed generated files
+    // and go red on a worktree where codegen has not run. These four stubs plus
+    // the four flags below are what keep that from happening.
+    for (const [name, body] of [
+      ["keys.json", { version: 1, keys: [] }],
+      ["manifest.json", { version: 2, entries: {} }],
+      ["mob-types.json", { version: 1, mobTypes: [] }],
+      ["spawn-areas.json", { version: 1, areas: [] }],
+    ]) writeFileSync(join(root, name), JSON.stringify(body));
 
     // `zone-emberdown.json` is the ONLY record. The other three sit one
     // character off the pattern on three different sides: no hyphen, a plural
@@ -2547,15 +2601,21 @@ test("the gate and the zones measure agree on which filenames are records", () =
     // the three decoys got through the filter and hit the shape check.
     assert.equal(MEASURES.zones(root), 1);
 
-    // The gate over the SAME directory. It exits 1 (nine geography zones have
-    // no record, and this root ships no characters or story), which is
-    // irrelevant — the assertion is on the `N zones` count, which is
-    // checkZoneContent()'s own view of how many files were records.
+    // The gate over the SAME directory, invoked on Task 4's contract: all four
+    // sidecar flags pointed at the stubs above, so nothing outside this tmpdir
+    // is read. It exits 1 because the nine remaining geography zones have no
+    // record (Z2), which is irrelevant here — the assertion is on the `N zones`
+    // count, which is checkZoneContent()'s own view of how many files were
+    // records.
     let out;
     try {
       out = execFileSync(process.execPath, [
         join(ROOT, "scripts/check_content.mjs"),
         "--content-root", join(root, "content"),
+        "--keys", join(root, "keys.json"),
+        "--manifest", join(root, "manifest.json"),
+        "--mob-types", join(root, "mob-types.json"),
+        "--spawn-areas", join(root, "spawn-areas.json"),
       ], { encoding: "utf8" });
     } catch (e) {
       out = `${e.stdout ?? ""}${e.stderr ?? ""}`;
@@ -2589,7 +2649,13 @@ test("the report's zones row reads 10/10 met once all ten records clear the floo
 npm test --prefix scripts > /tmp/t.out 2>&1; echo "exit=$?"; grep -E "^ℹ (tests|pass|fail)" /tmp/t.out
 grep -E "^✖" /tmp/t.out; grep -B1 -A6 "zones counts only records" /tmp/t.out | head -25
 ```
-Expected: `exit=1` with a non-zero `ℹ fail`, and `✖` lines for the new `season1.test.mjs` tests. **The imports resolve first** — with all seven bindings in place the module loads cleanly and every failure below is the real, intended one, not a `ReferenceError: writeFileSync is not defined` at the first `zoneRoot()` call. If any `✖` carries a `ReferenceError`, an import was dropped: fix that before reading anything else in this output.
+Expected: `exit=1` with a non-zero `ℹ fail`, and `✖` lines for the new `season1.test.mjs` tests.
+
+**The module must load first — check that before reading any `✖`.** Two failure shapes mean the import line is wrong, and neither is in the named list below:
+- **`season1.test.mjs` fails to load with a `SyntaxError` about an already-declared identifier** — you re-imported a name the file already binds at line 107, 154 or 155 (`execFileSync`, `writeFileSync`, `unlinkSync`, `tmpdir`). Remove it. This is a parse error, so the whole file drops out and the pre-existing season1 tests disappear with the nine new ones; the `ℹ tests` count falls instead of rising.
+- **A `✖` carrying a `ReferenceError`** — the one new import line was dropped or is short a name. `mkdtempSync`, `mkdirSync` and `rmSync` are needed by **four** of the nine new tests (the three that call `zoneRoot()` — the two `zones throws …` tests and `the report's zones row reads 10/10 met` — plus `the gate and the zones measure agree on which filenames are records`, which calls `mkdtempSync(join(tmpdir(), …))` itself); `existsSync` is needed by a fifth, `zones ignores files that are not named zone-<id>.json`.
+
+Fix either shape before reading anything else in this output. With the module loading cleanly, every failure below is the real, intended one.
 
 The named failures:
 - `✖ zones counts only records clearing the Z3 floors, once per zone` — `TypeError: MEASURES.zones is not a function` (the export does not exist yet).
@@ -2675,17 +2741,30 @@ Edit 3: `export const MEASURES = { mobBases, bestiaryDesigns, actIndependentQues
 npm test --prefix scripts > /tmp/t.out 2>&1; echo "exit=$?"; grep -E "^ℹ (tests|pass|fail)" /tmp/t.out
 node scripts/report_season1.mjs
 ```
-Expected: `exit=0` and `ℹ fail 0` from the suite, and the report's zones row reads exactly `zones                     10      10      met` (5 chars + 21 spaces + `10` + 6 spaces + `10` + 6 spaces + `met`; `renderTable`'s `idWidth` is `Math.max(26, …)` and the longest id `quests-act-independent` is 24, so no other row shifts).
+Expected: `exit=0` and `ℹ fail 0` from the suite, and the report's zones row reads exactly `zones                     10      10      met` (5 chars + 21 spaces + `10` + 6 spaces + `10` + 6 spaces + `met`; `renderTable`'s `idWidth` is `Math.max(26, …)` and the longest id `quests-act-independent` is 22, so the 26 floor wins and no other row shifts).
 
 - [ ] **Step 6: Fix the downstream documents that now assert something false** — this is not scope creep, it is `canon.md` §6's same-commit contradiction rule.
 
-**`docs/worldbuilding/DR-003-season-1-budget.md` — FIVE places, not three; six edits, because place 3 is a sentence and the bullet under it.** The draft named three; a grep of the real file finds five, and two of the five are the ones the naive verification grep cannot see. Each is quoted below by its text, with the exact rewrite. (Line numbers are given only as a search hint and will drift as the earlier edits land — match on the text.)
+  **Do this FIRST, before touching any file in this step** — capture Step 7b's citation baseline. It must be taken before the *DR-003* edits too, not just before the `canon.md` edit: a DR-003 rewrite that changes that file's line count moves any `canon.md:NNN` citation that happens to sit below it, which would pollute a baseline captured later and mask the thing Step 7b is looking for.
+```bash
+grep -rhoE 'canon\.md:[0-9]+' docs/ content/ .claude/ scripts/ \
+  | sort | uniq -c > /tmp/canon-cites-before.out 2>&1; cat /tmp/canon-cites-before.out
+```
+  Measured on this worktree before any edit: **64 distinct `canon.md:NNN` targets**. (Note `[0-9]+`, not `[0-9]*` — the `*` form also matches the bare string `canon.md:` with no line number, of which there are 13, and those are not citations.)
 
-  1. **The §0 "Parent records resolved" callout** (~line 9). It currently ends:
-     > `zones` stays blocked — see `I-056` §6.1: it needs the `region-*` keyspace rename *and* a `zones` measure function, which `scripts/lib/season1.mjs` does not have.
+**`docs/worldbuilding/DR-003-season-1-budget.md` — SIX edits across FIVE places, not the three the draft named.** A grep of the real file finds five places, and two of the five are the ones the naive verification grep cannot see; one of those places (the "three blocked lines" sentence and the `zones` bullet under it) takes two edits, which is why the list below numbers **1–6**. **Count edits, not places, everywhere downstream — "all six" is the number Step 7's verification and Step 9's review brief both use.** Each edit is quoted below by its text, with the exact rewrite. (Line numbers are given only as a search hint and will drift as the earlier edits land — match on the text.)
 
-     **Both halves become false in this commit** — the measure function now exists, and the line is measured. Replace that sentence with:
-     > `zones` is no longer blocked: `scripts/lib/season1.mjs` now exports a `zones` measure and the line reports **10/10 met**, counted on the geography zone id. The `region-*` keyspace rename (`I-056` §6.1, item 4) is still separately owed and still blocks quest-region authoring.
+  **Dialect warning — edit 1 is raw HTML; edits 2–6 are Markdown.** Edit 1 lands inside a `<div class="callout success">` block, where Markdown is **not** processed: backticks and `**bold**` dropped in there render literally. Write edit 1's replacement in the callout's own markup (`<code>`, `<em>`, `<mark>`) — which is why the surrounding sentence already reads `<mark>116/116</mark>` rather than `**116/116**`. Edits 2 (a table row), 3 (a sentence), 4 (a bullet), 5 (a fenced code block) and 6 (a table cell) are all plain Markdown and take backticks normally.
+
+  1. **The §0 "Parent records resolved" callout** (~line 9, inside `<div class="callout success">`). The sentence to replace is the last one on that line, byte-for-byte:
+     ```html
+     <code>zones</code> stays blocked — see <code>I-056</code> §6.1: it needs the <code>region-*</code> keyspace rename <em>and</em> a <code>zones</code> measure function, which <code>scripts/lib/season1.mjs</code> does not have.
+     ```
+
+     **Both halves become false in this commit** — the measure function now exists, and the line is measured. Replace that sentence with, in the same HTML dialect:
+     ```html
+     <code>zones</code> is no longer blocked: <code>scripts/lib/season1.mjs</code> now exports a <code>zones</code> measure and the line reports <mark>10/10 met</mark>, counted on the geography zone id. The <code>region-*</code> keyspace rename (<code>I-056</code> §6.1, item 4) is still separately owed and still blocks quest-region authoring.
+     ```
 
   2. **The §3 table row** (~line 62). Currently:
      > `| `zones` — cluster-1 zones carrying a region id | **10** | — *(blocked)* | — | `A1-geography-cluster1.md` §4.2 |`
@@ -2718,12 +2797,13 @@ Expected: `exit=0` and `ℹ fail 0` from the suite, and the report's zones row r
 
   **Prefer a same-line-count rewrite of that two-sentence claim.** Reflowing the paragraph shifts every line number below it in a file other artifacts cite by line — this repo has been bitten by exactly that **three** times. If the rewrite does change the line count, Step 7b's citation-repair grep is mandatory, not optional.
 
-  > **Run Step 7b's `before` grep now, before touching `canon.md`.** It is written as Step 7b because that is where its `after` half and its diff live, but its baseline capture has to happen here — there is no way to reconstruct it once the file has moved.
+  > **Step 7b's `before` grep must already have been run** — it is this step's first bullet, above. It is written up under Step 7b because that is where its `after` half and its comparison live, but the baseline capture has to happen before the first edit of Step 6; there is no way to reconstruct it once any file has moved.
 
 - [ ] **Step 7: Verify the downstream fixes.** The first grep is deliberately wider than "blocked" — a grep whose pattern is the word the document happens to use is a coverage claim, not a check, and it is exactly what let the P1 row through the draft.
 
 ```bash
 # Every line in DR-003 that mentions zones AND any blocked-ness phrasing.
+# Deliberately wide. It has ONE known false positive, line 63 — see below.
 grep -n -iE "zones" docs/worldbuilding/DR-003-season-1-budget.md \
   | grep -iE "block|cannot be measured|no zones measure|region-\*|does not have"
 # The two phrasings that escape the word "blocked" entirely.
@@ -2734,25 +2814,37 @@ node scripts/report_season1.mjs
 node scripts/check_content.mjs > /tmp/gate.out 2>&1; echo "exit=$?"; tail -3 /tmp/gate.out
 ```
 Expected:
-- The **first** grep returns only lines that describe the `zones` line as **measured** — i.e. the rewritten §0 callout sentence and the rewritten P1 cell, both of which legitimately still mention `region-*` because the rename is still owed. **No line may still call the `zones` line blocked, unmeasurable, or absent from `season1.mjs`.** If a line does, it is one of the five and it was missed.
+- The **first** grep returns **exactly three** lines, and no others:
+  1. the rewritten §0 callout (edit 1) — it matches on "no longer **block**ed" and on `region-*`;
+  2. the rewritten P1 consequence cell (edit 6) — it matches on `region-*`, which it legitimately still mentions because the rename is still owed;
+  3. **`docs/worldbuilding/DR-003-season-1-budget.md:63`, the `spawn-entries` row** — ``| `spawn-entries` — spawn entries | **120** | — *(blocked)* | — | 12 species per zone × 10 zones |``. **This is a known false positive and must NOT be edited.** It matches only because "10 zones" is a multiplicand in its derivation cell and "(blocked)" is its own status; `spawn-entries` stays blocked for an entirely unrelated reason (the variant axis does not exist on `MobTypeConfig`, spec §9 q2) and is not this feature's business. Verified against the current file: the wide grep returns lines 9, 62, 63, 69, 104 and 136 before the edits; after them, 62, 69 and 104 no longer match and 63 is unchanged.
+
+  **No line may still call the `zones` BUDGET LINE blocked, unmeasurable, or absent from `season1.mjs`.** Any hit that is not one of those three is one of Step 6's six numbered edits and it was missed.
 - The **second and third** greps return **nothing**.
 - The fourth grep returns nothing (`blockedBy` is gone from `canon.md`'s prose as well as from the budget JSON).
 - The report shows `zones 10 10 met`; the gate exits 0 with `10 zones, 0 failures`.
 
-- [ ] **Step 7b: Repair any `canon.md` line citation the §6.1 rewrite moved.** Non-optional, and it must be run **twice** — once before the Step 6 edit to capture the baseline, once after. This repo has had three separate incidents of citations rotting because a paragraph in `canon.md` was rewritten and every pointer below it silently shifted.
+- [ ] **Step 7b: Repair any `canon.md` line citation the §6.1 rewrite moved.** Non-optional. This repo has had three separate incidents of citations rotting because a paragraph in `canon.md` was rewritten and every pointer below it silently shifted.
+
+**The `before` half already ran — it is Step 6's first bullet, taken before any Step-6 edit.** Run the `after` half now and compare.
+
+**What is compared, and why.** The comparison is over the **citation targets** (`canon.md:NNN`, sorted and counted with `-o`), **not** over `file:lineno:content` lines. A `grep -rn` diff would go non-empty whenever a Step-6 DR-003 edit shifts a *citing* line — noise that has nothing to do with `canon.md` — while still being blind to the failure that matters, a citation whose **target** moved while the citing line stayed put. Only the target multiset can see that.
+
 ```bash
-# BEFORE the canon.md edit — capture the baseline.
-grep -rn 'canon\.md:[0-9]' docs/ content/ .claude/ scripts/ > /tmp/canon-cites-before.out 2>&1; cat /tmp/canon-cites-before.out
-# ... make the Step 6 canon.md edit ...
-# AFTER — same command, then diff the two.
-grep -rn 'canon\.md:[0-9]' docs/ content/ .claude/ scripts/ > /tmp/canon-cites-after.out 2>&1
-diff /tmp/canon-cites-before.out /tmp/canon-cites-after.out; echo "citation-set diff exit=$?"
-# Confirm the line count did not move at all — the cheapest possible proof.
+# AFTER the Step 6 edits — same command as Step 6's first bullet.
+grep -rhoE 'canon\.md:[0-9]+' docs/ content/ .claude/ scripts/ \
+  | sort | uniq -c > /tmp/canon-cites-after.out 2>&1
+diff /tmp/canon-cites-before.out /tmp/canon-cites-after.out; echo "citation-target diff exit=$?"
+# The load-bearing check: confirm canon.md's line count did not move at all.
 git diff --numstat content/story/canon.md
 ```
-Expected: `citation-set diff exit=0` (the citing lines themselves are unchanged), **and** `git diff --numstat` shows equal added and deleted counts for `canon.md`, proving a same-line-count rewrite so no citation target moved. If the counts differ, open every path printed by the `before` grep, check whether its cited line number still lands on the text it names, and repair the ones that moved **in this same commit**.
+Expected:
+- **`git diff --numstat` shows equal added and deleted counts** for `content/story/canon.md` — e.g. `2	2	content/story/canon.md`. **This is the load-bearing check**: equal counts prove a same-line-count rewrite, so no citation target below the edit can have moved. Everything else in this step is corroboration.
+- `citation-target diff exit=0` — the 64 distinct targets and their counts are unchanged. A non-empty diff here means either the rewrite moved a target (fix `canon.md` to be line-count-neutral, or repair every citation that moved) **or** the rewrite itself added/removed a `canon.md:NNN` citation, which is fine if intentional — say which in the task evidence.
 
-- [ ] **Step 7c: Do Task 6's edits now** — Task 6 is folded into this commit (see this task's Files block). Execute Task 6's Steps 1–3 below in full, then come back here. They touch `docs/worldbuilding/idea-map.md` and the two backlog files, and nothing in this task's suite reads them.
+If the `--numstat` counts differ, open every file containing a `canon.md:NNN` citation (`grep -rlE 'canon\.md:[0-9]+' docs/ content/ .claude/ scripts/`), check whether each cited line number still lands on the text it names, and repair the ones that moved **in this same commit**.
+
+- [ ] **Step 7c: Do Task 6's edits now** — Task 6 is folded into this commit (see this task's Files block). **Execute Task 6's Steps 1, 2a, 2b and 3 now; Task 6's Step 4 does not apply on this path** — it is a stop line for anyone who arrives at that heading by walking the task list. Then come back here. Those edits touch `docs/worldbuilding/idea-map.md` and the two backlog files, and nothing in this task's suite reads them.
 
 - [ ] **Step 8: Commit** — one commit covering the measure, the budget line, the downstream documents and the folded backlog hygiene.
 ```bash
@@ -2760,9 +2852,9 @@ git add scripts/lib/season1.mjs scripts/tests/season1.test.mjs scripts/tests/fix
 git commit -m "feat(budget): zones measure unblocks the season-1 zones line (I-060)"
 ```
 
-- [ ] **Step 9: Independent adversarial review of this task's diff.** Fresh subagent. Must check: `blockedBy` deleted rather than accompanied; no authored `note` key anywhere in the budget; `zones()` counts a **Set** of `doc.zone`, not files; the measure does not re-implement any Z-rule; `season1.mjs` not reflowed by prettier; the `canon.md` edit cites by heading not line number and changed the file's line count by zero; **all five** DR-003 places rewritten, with nothing left saying "three blocked lines" or "cannot be measured"; the `season1.test.mjs` import block binds all seven new names and the file has no unbound identifier; the gate/measure filename-agreement test really spawns the gate rather than asserting a regex against itself.
+- [ ] **Step 9: Independent adversarial review of this task's diff.** Fresh subagent. Must check: `blockedBy` deleted rather than accompanied; no authored `note` key anywhere in the budget; `zones()` counts a **Set** of `doc.zone`, not files; the measure does not re-implement any Z-rule; `season1.mjs` not reflowed by prettier; the `canon.md` edit cites by heading not line number and changed the file's line count by zero; **all six** DR-003 edits applied (across the five places Step 6 numbers 1–6), with nothing left saying "three blocked lines" or "cannot be measured"; the `season1.test.mjs` diff adds **exactly one** import line binding **exactly four** new names (`existsSync`, `mkdtempSync`, `mkdirSync`, `rmSync`) and re-imports **nothing** already bound at lines 107, 154 or 155 — confirm with `grep -n '^import' scripts/tests/season1.test.mjs`, which must show no identifier twice; the gate/measure filename-agreement test really spawns the gate rather than asserting a regex against itself, **and spawns it hermetically** — `--keys`, `--manifest`, `--mob-types` and `--spawn-areas` all pointed at stubs inside its own tmpdir, plus a `content/characters` directory, exactly as Task 4's `runGate()`/`fixture()` do; no test in this diff reads `colyseus-server/generated/*` or `game-client/assets/manifest.json` by default.
 
-  **Plus one line, the folded Task 6 self-check** (documentation hygiene, no consumer, so it gets a self-check rather than its own review pass): re-run Task 6 Step 3's grep and confirm that (a) no H1 still promises alternates, (b) `idea-map.md`'s I-060 row no longer promises them either, and (c) `spec.md`'s D1 decision paragraph is still intact and untouched — `grep -c "has been corrected" .claude/idea_backlog/I-060-*/spec.md` must still return `1`.
+  **Plus one line, the folded Task 6 self-check** (documentation hygiene, no consumer, so it gets a self-check rather than its own review pass): re-run **all three** of Task 6 Step 3's greps and confirm that (a) no H1 still promises alternates, (b) `idea-map.md`'s I-060 row no longer promises them either, (c) `spec.md`'s D1 decision paragraph is still intact and untouched — `grep -c "has been corrected" .claude/idea_backlog/I-060-*/spec.md` must still return `1` — and (d) `spec.md`'s **frontmatter `title:`** still carries the corrected title, which is what spec §14 row 8 actually names; Task 6 Step 3's third grep must also return `1`.
 
 - [ ] **Step 10: Refactor on the findings.**
 
@@ -2770,7 +2862,9 @@ git commit -m "feat(budget): zones measure unblocks the season-1 zones line (I-0
 
 ---
 
-## Task 6: Backlog hygiene — deliverable 8 (executed inside Task 5, at its Step 7c)
+## Task 6 (NOT a separate execution unit — reference text for Task 5 Step 7c): Backlog hygiene, deliverable 8
+
+> **STOP if you arrived here by walking the task list in order.** This heading is not a sixth task to run. Its Steps 1–3 are executed inside **Task 5 Step 7c** and committed by **Task 5 Step 8**, which by the time you read this heading have already happened. Do **not** re-run Steps 1, 2a or 2b — Step 1's "Expected before the fix" no longer holds once the edits have landed, and re-running Step 2a/2b would try to strip a clause that is already gone. Run **Step 3's greps only**, confirm the expected output, and move on to Verification. See Step 4 below.
 
 **Files:**
 - Modify: `docs/worldbuilding/idea-map.md` — the I-060 row's Output-artifact cell
@@ -2815,12 +2909,14 @@ Expected before the fix:
 ```bash
 grep -rn -i "alternate" .claude/idea_backlog/I-060-l2-zone-content-pass-for-each-cluster-1/ docs/worldbuilding/idea-map.md
 grep -c "has been corrected" .claude/idea_backlog/I-060-l2-zone-content-pass-for-each-cluster-1/spec.md
+grep -cE '^title: "L2 zone content pass: give each of cluster 1.s ten zones its hazards, harvestable resources, landmarks and the reason a player goes there"$' .claude/idea_backlog/I-060-l2-zone-content-pass-for-each-cluster-1/spec.md
 ```
 Expected:
 - the first grep's hits are **only**: `spec.md`'s D1 paragraph (unchanged), the two new pointer lines under the corrected H1s, and `idea-map.md`'s rewritten cell — which now says alternates are paper-only and routed to cluster 2. **No H1, and no register row, still promises alternates as a deliverable of I-060.**
-- the second grep returns exactly **`1`** — proof that `spec.md`'s decision record survived intact and was not swept up while removing the stale promise elsewhere.
+- the second grep returns exactly **`1`** — proof that `spec.md`'s §0 callout, the prose record of D1, survived intact and was not swept up while removing the stale promise elsewhere.
+- the third grep returns exactly **`1`** — proof that `spec.md`'s **frontmatter `title:` field** still carries the corrected title. This is the line spec §14 row 8 actually names ("title corrected per D1"); the §0 callout is a second, weaker carrier. Without this grep, a future edit could restore the pre-D1 title in the frontmatter, leave the callout untouched, and the second grep would still print `1`. (Verified against the committed file today: both greps return `1`. The `.` in `cluster 1.s` stands in for the apostrophe so the pattern can sit inside a single-quoted shell string.)
 
-- [ ] **Step 4: Return to Task 5 Step 8** and commit these edits with the measure. There is no separate commit, no separate review subagent and no separate re-verify for this task; Task 5's Step 9 self-check and Step 11 re-verify cover it.
+- [ ] **Step 4: Do not execute this section as a task.** If you reached this line by working through Task 5 Step 7c, return to **Task 5 Step 8** and commit these edits with the measure. If instead you reached it by walking the plan's task headings in order, **Task 5 Step 7c has already executed Steps 1–3 and Task 5 Step 8 has already committed them** — confirm with Step 3's three greps and do nothing else; do not re-run Steps 1, 2a or 2b. Either way there is no separate commit, no separate review subagent and no separate re-verify for this section; Task 5's Step 9 self-check and Step 11 re-verify cover it.
 
 ---
 
@@ -2842,7 +2938,7 @@ node scripts/check_content.mjs --require-complete > /tmp/gate-rc.out 2>&1; echo 
 | Command | Required output |
 | --- | --- |
 | `npm install --prefix scripts` | Completes with exit 0. `ajv` and `js-yaml` resolvable under `scripts/node_modules`. Runs from the repo root and leaves the cwd there. |
-| `npm test --prefix scripts` | `exit=0`, and **`ℹ fail 0`** in the marker lines. Measured baseline was **`ℹ tests 191` / `ℹ pass 191` / `ℹ fail 0`**; this plan adds **65** tests — **56 in `zone-content.test.mjs`** (Task 1's 13 + Task 3b's 4 + Task 4's 39) and **9 in `season1.test.mjs`** — so expect **`ℹ pass 256`**, with **`≥ 256`** as the floor. A count below 256 means tests were dropped, not that the suite is green. There are **no** `# pass` / `# fail` / `not ok` lines to look for — this runner emits the spec reporter (`ℹ`, `✔`, `✖`) even when redirected. **Every pre-existing suite still green** — the soft-skip is what protects `check_content.test.mjs` and `bestiary-placement.test.mjs`, whose fixtures have no `content/zones`. |
+| `npm test --prefix scripts` | `exit=0`, and **`ℹ fail 0`** in the marker lines. Measured baseline was **`ℹ tests 191` / `ℹ pass 191` / `ℹ fail 0`**; this plan adds **67** tests — **58 in `zone-content.test.mjs`** (Task 1's 13 + Task 3b's 5 + Task 4's 40) and **9 in `season1.test.mjs`** — so expect **`ℹ pass 258`**, with **`≥ 258`** as the floor. Those are the same per-task counts recorded at each boundary along the way — Task 1 Step 4 → 204, Task 3b Step 4 → 209, Task 4 Step 6 → 249, plus Task 5's nine → 258 (Task 5 Step 5 checks only `ℹ fail 0` and the report row, so 258 is first read here). A count below 258 means tests were dropped, not that the suite is green. There are **no** `# pass` / `# fail` / `not ok` lines to look for — this runner emits the spec reporter (`ℹ`, `✔`, `✖`) even when redirected. **Every pre-existing suite still green** — the soft-skip is what protects `check_content.test.mjs` and `bestiary-placement.test.mjs`, whose fixtures have no `content/zones`. |
 | `node scripts/check_content.mjs` | `exit=0`, and **four invariants, not four literals** — no hazard-census number is hard-coded here, because no rule pins one (Z3's floor is ≥2 per zone; the total is whatever Task 3 authored):<br>1. the summary line contains **`10 zones, 0 failures`** — this is the Z2 completeness proof;<br>2. a line matches **`^zone-content: [0-9]+ of [0-9]+ hazards have no runtime effect`**, with the second number (the total) **≥ 20** (ten zones × the Z3 floor of two);<br>3. **zero** lines beginning `FAIL`;<br>4. the first number in that `zone-content:` line equals the count of `WARN  zones/…: hazard "…" has no effect` lines, and equals the `N warnings` figure in the summary minus any non-zone warnings. Check with `grep -c 'has no effect' /tmp/gate.out` against `grep 'zone-content:' /tmp/gate.out`.<br>**Record the actual `N of M` from this run into the task evidence — do not edit shipped world content to hit a number written in advance.** |
 | `node scripts/report_season1.mjs` | exit 0, and the `zones` row reads byte-exactly:<br>`zones                     10      10      met`<br>— no `blocked:`, no `unmeasurable:`, no `unknown measure:`. |
 | `node scripts/check_content.mjs --require-complete` | `exit=0`, with the same `10 zones, 0 failures` summary. This is the form **Gate 2 (`scripts/integration.sh:81`) runs at ship**, and it is the only evidence that D3's warn-not-fail ruling survives it: every zone hazard with no `effect` must still print as **`WARN`**, never `FAIL`. Confirm with `grep -c '^FAIL' /tmp/gate-rc.out` → `0`. |
