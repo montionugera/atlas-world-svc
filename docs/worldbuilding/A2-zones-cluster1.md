@@ -161,7 +161,7 @@ above; the two are edited together or not at all.
 | C2 | Why the six towns' economies in A1 §6 are all extraction or transit, and why Cindervast — which *"does nothing for a living"* — is the land's dead end. |
 | C3 | Why the Ashvale Front is *"the only region of the nine with species in all eight bands"* (A1 §4.3) yet holds no town: the ground kills by what it lacks, so nobody settles it and everything can live on it. |
 | C4 | Why A1 §6 was written silhouette-first for concept art — the same first-sight test that drives an art brief drives a player's memory of a place. |
-| C5 | Why the Systems Designer assumes **12 species per zone before repetition is felt** (`role-systems-designer-scale.md` §1): repetition is a content-identity problem, and terrain is too coarse an axis to solve it — seven distinct `terrainKind` values cover ten zones, so five of the ten share a label with a neighbour. |
+| C5 | Why the Systems Designer assumes **12 species per zone before repetition is felt** (`role-systems-designer-scale.md` §1.3, where the figure is used; declared as an assumption in that file's §0 *Assumed* list): repetition is a content-identity problem, and terrain is too coarse an axis to solve it — seven distinct `terrainKind` values cover ten zones, so five of the ten share a label with a neighbour. |
 
 ---
 
@@ -171,7 +171,8 @@ above; the two are edited together or not at all.
   waystations A1 §7.1 draws on the road legs stop being scenery and become the places the errands
   are handed out.
 - **C1 → work.** The burial detail DR-001 gives the player is the one profession with a reason to
-  enter all ten grounds. Every other trade in the land works two or three.
+  enter all ten grounds — the errands in §2 span the whole route, and no other trade named anywhere
+  in A1 §6 has business in every one of them.
 - **C2 → trade.** If every zone yields, then the trade road's traffic is not just through-traffic;
   each stretch has its own local cargo, and Millcross's refusal to formalise its tolls (A1 §6)
   becomes a live grievance for nine zones' worth of carters rather than an anecdote.
@@ -258,8 +259,8 @@ economy, and each names a party that profits and a party that pays.
 | --- | --- | --- | --- | --- |
 | `crop` | *"Embervale farms the loam on the ledges"*; Millcross *"feeding whoever is waiting"* | `millcross-ford`, `emberdown`, `ashvale-front` | Embervale's ledge farms; Millcross's mill | the cart queue — Millcross prices a meal by how long the crossing is backed up, and refuses to write the price down |
 | `timber` | *"Norhollow cuts timber"* | `thornveil`, `hollowmarch` | Norhollow, and the raiders who cut their own shafts and pay nobody | Norhollow's palisade guard, who must walk the line twice a day tapping stakes because the town is made of its own product |
-| `ore` | *"works the ore heads behind it"* | `hollowmarch` | Norhollow, and whoever buys the ore that goes across the plain | the ore-head crews — the only worked stone in a timber town is the machinery that kills them |
-| `fuel` | *"digs the seam under them"*; the fires still finding fuel in Cindervast's outer districts | `emberdown`, `cindervast` | Embervale's forty hearths that never go out; the Column, in the ruin | Embervale's smiths, who lose forge houses to what lives in the warm ground, and rebuilt one on stone |
+| `ore` | *"works the ore heads behind it"* | `hollowmarch` | Norhollow, and whoever buys the ore that goes across the plain | the ore-head crews — in a town built entirely of timber, *"the only stone is the ore-head machinery"* (A1 §6), and they are the ones who work it |
+| `fuel` | *"digs the seam under them"*; the fires still finding fuel in Cindervast's outer districts | `emberdown`, `cindervast` | Embervale's forty hearths that never go out; the Column, in the ruin | Embervale's smiths — the town *"lost a forge house"* to what lives in the warm ground *"and rebuilt it on stone"* (`mob-emberpit-digger`) |
 | `stone` | *"dressed stone at the bottom"* of Gildmark; the quarry face west of Millcross | `millcross-ford`, `gildmark-head`, `northern-icefield` | Gildmark's counting-houses, sitting on five terraces of it | the quarry crews, who work around a thing that turns a hammer and have stopped calling that a delay |
 | `water` | the braided heads; Thornveil's sap, which is the zone's only water at all | `meltwash-terrace`, `thornveil` | nobody, in a river basin — which is exactly the point | everybody, in the two grounds that have none: Thornveil drinks sap, and the Front drinks what it carried in |
 | `forage` | the terrace's cropped grass; the new reed Rooktide reroofed with | `meltwash-terrace`, `rooktide-reach` | the stock waiting on the crossing, and Rooktide's roofers | Rooktide, which bought the mites with the reed and says so out loud |
@@ -402,7 +403,10 @@ is re-derived from <code>content/zones/</code> after any hazard edit, never copi
   all eight bands."* The people who cross it fastest are the ones most certain nothing lives there.
 - **That Cindervast yields nothing.** It *"does nothing for a living"*, which is a statement about
   its inhabitants, not its ground: a bleached, unrubbled city with intact mortar is the largest
-  intact salvage field in the land, and the two groups holding it will not say its name.
+  intact salvage field in the land, and the people who left it will not say its name — *"the
+  Cindered never say the city's old name aloud — only 'the fall,' or 'home, once'"* (`style.md` §3;
+  `canon.md` §1 scatters the survivors *"through every other town as the Cindered"*). **The two
+  groups still standing in the ruin are a different matter — §13 case 4.**
 - **That Thornveil is worthless.** Every road went *around* it, so it stayed nobody's — a judgement
   about routing that the land's own water contradicts. The zone with no through-stream is the zone
   whose water is worth carrying.
@@ -428,10 +432,15 @@ is re-derived from <code>content/zones/</code> after any hazard edit, never copi
 
 ---
 
-## 13. Contradiction rule, and the three live collisions
+## 13. Contradiction rule, and the four live collisions
 
-**Per `canon.md` §6: any collision found while authoring is named in the artifact and fixed in the
-same commit.** All three below were found while writing §2. None is smoothed.
+**`canon.md` §6 states the rule exactly: *"Content in Tasks 3–8 that contradicts this file is a
+review finding; fix the content or amend this file deliberately in the same commit, never
+silently."*** Note what that does and does not demand: the collision must not be passed over in
+silence, and where the fix is this artifact's to make it is made here. It does **not** demand that
+this artifact settle a collision between two files it does not own — cases 2, 3 and 4 below are
+named and routed to the Archivist rather than decided, which is the "never silently" half of the
+rule, not an exception to it. All four were found while writing §2 and §11.
 
 **1 · D1 — this idea's own title against A1 §4.4.** I-060's title asks for *"alternates for the
 single route cluster 1 currently ships."* A1 §4.4 had already ruled on that, named where the
@@ -462,6 +471,20 @@ building under one reading and a ruin with something walking in it under the oth
 Archivist**, who holds G5 and already holds A1 §8's three geographic accommodations. Reported, not
 decided — and the record ships with the present-tense reading because that is A1's, with this row
 attached to it.
+
+**4 · Who will not say Cindervast's name.** A1 §6 closes its Cindervast paragraph with the city's
+population being *"the Stoneguard holding a gate with nothing behind it, and the Ash Prophet's
+people in the outer districts, and neither will say the city's name."* Two sources pull against
+that. `style.md` §3 assigns the name-taboo to **the Cindered** — *"the Cindered never say the city's
+old name aloud"* — who are the scattered survivors, not the occupiers (`canon.md` §1: *"survivors
+scatter through every other town as the Cindered"*). And `style.md` §5 gives the Ash Prophet a
+sample line that **says the name aloud**: *"Cindervast didn't lie about what it was."* The two
+groups holding the ruin are `faction-stoneguard` and `faction-ashen-column` (`factions.json`,
+`links: region-cindervast`), and the Column's creed — *"Everything standing is a lie waiting to
+fall"* — points away from reverence rather than toward it.
+**§11 therefore attributes the silence only to the Cindered, which is the uncontested reading**, and
+the A1 §6 clause is left standing rather than edited: this artifact does not own A1. **Routed to the
+Archivist** with the rest.
 
 ---
 
@@ -525,8 +548,8 @@ the row was written. `canon.md` is cited by section heading.
 | `no-water-on-it` → none | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §4.2 zone 8 — *"Level alkali flat, no water"*; §3.1 — *"Why the Ashvale flat has no water at all"* | — (**absence-hazard**, design C3: nothing ticks, and that is the point) |
 | `no-cover-for-a-days-crossing` → none | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §3.2 item 3 — *"offers no cover for a full day's crossing"* | — (**absence-hazard**, design C3) |
 | `the-alkali-dust` → `burn` | [D] | `docs/worldbuilding/A1-geography-cluster1.md` §3.2 item 3 — *"pale, level, treeless, windblown. Dusts everything grey"*; §3.1 — *"Rain sinks and goes alkaline"* | one step: windblown alkali dust on wet eyes and skin; of the seven types only `burn` describes that harm |
-| `the-cold` → `freeze` | [C] | `content/maps/atlas-frontier.md` `zoneHazards` — two `freeze` entries, `regionId: region-icefield` | — (**not derived: already authored in committed content.** Not the same as *played* — see §6's second callout) |
-| `the-white-weather` → `stun` | [C] | `content/maps/atlas-frontier.md` `zoneHazards` — the `stun` entry, `castTime: 400`, `regionId: region-icefield` | — (**not derived: already authored in committed content.** Not the same as *played* — see §6's second callout) |
+| `the-cold` → `freeze` | [C] | `content/maps/atlas-frontier.md` `zoneHazards` — two `freeze` entries, `regionId: region-icefield` | — (**not derived: already authored in committed content.** Not the same as *played* — see §6's second callout. **Reading `region-icefield` as this zone is an identification, not a given**: A1 §5.3 calls that map a *"compressed miniature"* whose three regions sit in three different zones) |
+| `the-white-weather` → `stun` | [C] | `content/maps/atlas-frontier.md` `zoneHazards` — the `stun` entry, `castTime: 400`, `regionId: region-icefield` | — (**not derived: already authored in committed content.** Same two caveats as the row above: not *played*, and `region-icefield` ≡ `northern-icefield` is a reading of a compressed miniature, not an identity the corpus states) |
 | `the-crevasses` → none | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §4.2 zone 9 — *"Old ice over stone, meltwater braids, crevasse shelf"* | — (a hole under a crust; nothing in the enum expresses falling) |
 | `the-afterglow` → `poison` | [D] | `content/bestiary/bestiary.json` `mob-relicglow-moth` — *"the violet afterglow that never left the fallen city"*; `mob-relicslag-crawler` — *"things that have been near it for long enough stop wanting to eat"* | one step: canon states proximity takes the appetite; of the seven types only `poison` is harm without a wound |
 | `a-city-with-nobody-in-it` → none | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §6 Cindervast — *"Cindervast does nothing for a living"*; §4.2 zone 10 — pop. 0 | — (**absence-hazard**: no water, no bell, no one to carry you out) |

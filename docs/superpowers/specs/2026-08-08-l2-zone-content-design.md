@@ -94,9 +94,14 @@ Three consequences, each verified:
    runtime.** An earlier revision of this section said it was "consumed by `ZoneEffectManager`".
    That is false. `grep -rn "zoneHazards" colyseus-server/src` returns **nothing**, and
    `ZoneEffectManager.ts` contains no `hazard` token. The identifier appears in exactly three
-   files: `content/schemas/map.schema.json` (declares it), `scripts/check_content.mjs` (gates it)
-   and `scripts/tests/zone-content.test.mjs` (pins the enum). Authored map hazards are
-   content-gate-validated only; nothing spawns them.
+   **machinery** files — `content/schemas/map.schema.json` (declares it),
+   `scripts/check_content.mjs` (gates it) and `scripts/tests/zone-content.test.mjs` (pins the
+   enum) — plus the authored map `content/maps/atlas-frontier.md`, which **uses** it: three live
+   `region-icefield` entries (`freeze` ×2, `stun` with `castTime: 400`) that
+   `A2-zones-cluster1.md` §6 cites as its existence proof. The remaining hits are prose about the
+   field (backlog specs, this design, the plan, the artifact). Measured:
+   `grep -rln "zoneHazards" . --exclude-dir=node_modules --exclude-dir=.git | wc -l` → **10**.
+   Authored map hazards are content-gate-validated only; nothing spawns them.
 
    **This strengthens D3 rather than weakening it.** If no hazard reaches the runtime today, then
    an `effect` binding is aspirational for *every* hazard, not just the absence-hazards — so Z5
