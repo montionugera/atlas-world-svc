@@ -1,5 +1,16 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import {
+  FORGE_DIR,
+  buildCreaturePrompt,
+  buildPrompt,
+  loadForge,
+  negativePrompt,
+  promptForbiddenTokens,
+} from "../generate/charsheet.mjs";
+import { buildEnvNegative, buildEnvPositive } from "../generate/env.mjs";
 import {
   RULE_FORBIDDEN_TOKEN,
   RULE_NEGATION,
@@ -152,4 +163,102 @@ test("assertPositivePromptClean throws naming the rule AND the offending substri
 test("assertPositivePromptClean returns the text unchanged when it is clean", () => {
   const text = "a rutted dirt track of bare earth and cart ruts";
   assert.equal(assertPositivePromptClean(text, { forbiddenTokens: ["cars"] }), text);
+});
+
+/* ------------------------------------------------------------------ *
+ * The real, live config — the tests this module exists for.          *
+ *                                                                    *
+ * These compose the SHIPPED prompts/*.json + forge.config.json into  *
+ * real positive prompts and assert zero violations. Before the F-039 *
+ * fix the environment one reported ten R1-negation violations        *
+ * ("NOT 3D", "NOT CGI", "NOT clay", "no cars", "no trucks",          *
+ * "no modern", "no power", "no paved", "no contemporary",            *
+ * "no modern") — the shipped config was the defect.                  *
+ * ------------------------------------------------------------------ */
+
+function assertClean(label, positive, forge) {
+  assert.deepEqual(
+    lintPositivePrompt(positive, { forbiddenTokens: promptForbiddenTokens(forge) }),
+    [],
+    `${label} composed to:\n${positive}`,
+  );
+}
+
+test("the SHIPPED environment config composes a positive prompt with zero lint violations", () => {
+  const forge = loadForge({ profile: "environment" });
+  const positive = buildEnvPositive(
+    "a river crossing town of timber and canvas on both banks, seen from the road",
+    forge,
+  );
+  assertClean("environment config", positive, forge);
+});
+
+test("the era block reaches the positive prompt — the negatives it replaced must not", () => {
+  const forge = loadForge({ profile: "environment" });
+  const positive = buildEnvPositive("a river crossing town", forge);
+  assert.ok(
+    positive.includes(forge.profile.styleGuard.era),
+    "styleGuard.era must be composed into the positive prompt",
+  );
+  assert.equal(forge.profile.styleGuard.negative, undefined, "styleGuard.negative must be gone");
+});
+
+test("every SHIPPED brief composes a clean environment positive prompt", () => {
+  const forge = loadForge({ profile: "environment" });
+  const dir = path.join(FORGE_DIR, "briefs");
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith(".json"));
+  assert.ok(files.length > 0, "no briefs found");
+  for (const file of files) {
+    const brief = JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"));
+    assertClean(file, buildEnvPositive(brief.prompt, forge), forge);
+  }
+});
+
+test("every SHIPPED race x job cell composes a clean character positive prompt", () => {
+  const forge = loadForge({ profile: "character" });
+  const { raceAxis, jobAxis } = forge.profile.muscleGradient;
+  for (const race of raceAxis) {
+    for (const job of jobAxis) {
+      assertClean(`${race} x ${job}`, buildPrompt({ race, job }, forge), forge);
+    }
+  }
+});
+
+test("every SHIPPED creature clause composes a clean character positive prompt", () => {
+  const forge = loadForge({ profile: "character" });
+  for (const id of Object.keys(forge.creatures)) {
+    if (id.startsWith("_")) continue;
+    assertClean(id, buildCreaturePrompt(id, forge), forge);
+  }
+});
+
+test("the negative CONDITIONING node may still carry the real negative words", () => {
+  const forge = loadForge({ profile: "environment" });
+  assert.ok(buildEnvNegative(forge).length > 0, "the negative node must not go empty");
+  assert.ok(
+    negativePrompt(loadForge({ profile: "character" })).length > 0,
+    "the character negative node must not go empty",
+  );
+});
+
+/* --- the wiring: a bad prompt cannot be generated from --------------- */
+
+test("a negation re-inserted into style-laws makes buildPrompt THROW, not queue", () => {
+  const forge = loadForge({ profile: "character" });
+  const poisoned = {
+    ...forge,
+    styleLaws: { ...forge.styleLaws, renderAssertion: ["NOT 3D render", "no fur"] },
+  };
+  assert.throws(
+    () => buildPrompt({ race: "human", job: "swordsman" }, poisoned),
+    /R1-negation/,
+  );
+});
+
+test("a forbidden token re-inserted into a brief makes buildEnvPositive THROW, not queue", () => {
+  const forge = loadForge({ profile: "environment" });
+  assert.throws(
+    () => buildEnvPositive("a crossing town with power lines along the road", forge),
+    /R2-forbidden-token/,
+  );
 });

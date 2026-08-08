@@ -86,9 +86,11 @@ import {
   parseNumericOverride,
   parsePromptOverride,
   parseSeed,
+  promptForbiddenTokens,
   runGraph,
 } from "./charsheet.mjs";
 import { renderDepthPng, renderSegmentPng } from "./blockin.mjs";
+import { assertPositivePromptClean } from "./prompt-lint.mjs";
 
 /** Node ids follow docs/worldbuilding/ABP-controlnet-rescue.md's numbering. */
 export const ENV_NODE = Object.freeze({
@@ -181,50 +183,60 @@ function readBrief(id) {
 
 /**
  * Shared style-laws.json negative words that do NOT apply to environments.
- * "no fur" guards a character-specific failure mode (creature/costume fur
+ * "fur" guards a character-specific failure mode (creature/costume fur
  * rendering, see style-laws.json's `laws`) with no environment analogue.
- * The other three ("NOT 3D render", "NOT CGI", "NOT clay") are generic
- * render-style guards and apply unchanged.
+ * The other three ("3D render", "CGI", "clay") are generic render-style
+ * guards and apply unchanged.
  */
-const ENV_NEGATIVE_EXCLUDE = new Set(["no fur"]);
+const ENV_NEGATIVE_EXCLUDE = new Set(["fur"]);
 
 /**
- * The negative word list for one environment render: the shared house-style
- * guard (prompts/style-laws.json `negative`, minus the character-only
- * exclusions above) plus `styleGuard.negative`
- * (forge.config.json `profiles.environment`) — anti-modern-contamination
- * words measured directly from this recipe's first real generation
- * (A1-ART-02 "Millcross" rendered as a photoreal MODERN settlement: pickup
- * trucks, an SUV, a contemporary skyline). Read from config, never
- * hardcoded here.
+ * The negative CONDITIONING words for one environment render — the string
+ * that goes into the real CLIPTextEncode negative node (`buildEnvNegative`),
+ * and nowhere else. `profiles.environment.sampler.cfg` is 1, so KSampler
+ * never evaluates that branch; the node is built anyway so the graph stays
+ * correct if cfg is ever raised.
+ *
+ * This is the ONLY place negation-flavoured vocabulary is allowed. It must
+ * never be spliced into the positive prompt — that is the F-039 defect, see
+ * generate/prompt-lint.mjs.
  */
 export function environmentNegativeWords(forge) {
   const shared = forge.styleLaws.negative.filter((w) => !ENV_NEGATIVE_EXCLUDE.has(w));
-  const guard = forge.profile.styleGuard?.negative ?? [];
-  return [...shared, ...guard];
+  return [...shared, ...(forge.profile.styleGuard?.forbiddenTokens ?? [])];
 }
 
 /**
- * Compose the environment positive prompt: the brief's own scene prose, the
- * house style vocabulary (`style-laws.json` `positive` + `styleClause`), and
- * the negative words repeated as literal counter-prompt phrasing.
+ * Compose the environment positive prompt, entirely out of assertions of
+ * what IS present: the brief's own scene prose, the house style vocabulary
+ * (`style-laws.json` `positive` + `renderAssertion`), the shared era block
+ * (`styleGuard.era`), then `styleClause` last.
  *
- * `profiles.environment.sampler.cfg` is 1 — same as the character profile —
- * so KSampler's negative conditioning branch is not evaluated (the CFG
- * formula collapses to the conditional prediction alone at cfg=1). That is
- * exactly why `buildPrompt()` (charsheet.mjs) also repeats its negatives
- * inside the positive string as literal counter-prompt words instead of
- * relying on the negative branch; this mirrors that same reasoning. A real
- * CLIPTextEncode negative node is still built (see `buildEnvNegative`) so
- * the graph stays correct if cfg is ever raised.
+ * `styleGuard.era` sits in exactly the slot the old `styleGuard.negative`
+ * list occupied. That list ("no cars", "no power lines", "no modern city
+ * skyline", ...) was the contamination source, not the cure: a text encoder
+ * attends to tokens, so each phrase delivered its own subject. Millcross
+ * 2026-08-08 showed pylons and painted road markings in every cell across
+ * ControlNet strengths 0.00/0.30/0.45/0.60 — including with the control
+ * signal fully OFF — while a positive-only rewrite came back clean. See
+ * forge.config.json `styleGuard._note` for the full evidence chain.
+ *
+ * The result is linted before it is returned, so a negation reaching the
+ * positive prompt (from config, from a brief, from anywhere) throws here
+ * rather than ~218 s of GPU later.
  */
 export function buildEnvPositive(promptText, forge) {
-  return [
-    promptText,
-    ...forge.styleLaws.positive,
-    ...environmentNegativeWords(forge),
-    ...forge.styleLaws.styleClause,
-  ].join(", ");
+  const era = forge.profile.styleGuard?.era;
+  return assertPositivePromptClean(
+    [
+      promptText,
+      ...forge.styleLaws.positive,
+      ...forge.styleLaws.renderAssertion,
+      ...(era ? [era] : []),
+      ...forge.styleLaws.styleClause,
+    ].join(", "),
+    { forbiddenTokens: promptForbiddenTokens(forge) },
+  );
 }
 
 export function buildEnvNegative(forge) {
@@ -607,7 +619,13 @@ export async function generateEnv(
   // suffix for non-depth controls. depth's id stays bare on purpose: that is
   // what keeps its embedded filename_prefix byte-identical to F-026.
   const brief = {
-    positive: positiveOverride ?? buildEnvPositive(rawBrief.prompt, forge),
+    // The composed path lints inside buildEnvPositive(); a --positive
+    // override bypasses composition, so it is linted here instead.
+    positive: positiveOverride
+      ? assertPositivePromptClean(positiveOverride, {
+          forbiddenTokens: promptForbiddenTokens(forge),
+        })
+      : buildEnvPositive(rawBrief.prompt, forge),
     negative: buildEnvNegative(forge),
     id: control === "depth" ? rawBrief.id : `${rawBrief.id}-${control}`,
   };

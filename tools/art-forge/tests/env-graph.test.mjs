@@ -72,11 +72,16 @@ test("composed prompt carries the style clause and a non-empty negative — a ba
   assert.equal(composed[ENV_NODE.NEG].inputs.text, negative);
   assert.ok(positive.includes(forge.styleLaws.styleClause[0]), "positive must carry the styleClause");
   assert.notEqual(negative, "", "negative prompt must not be empty");
-  assert.ok(!negative.includes("no fur"), "no fur is character-specific and must not leak into environment negatives");
+  assert.ok(!negative.includes("fur"), "fur is character-specific and must not leak into environment negatives");
   assert.ok(
-    negative.includes("no modern vehicles"),
-    "negative must carry the anti-modern-contamination guard from forge.config.json profiles.environment.styleGuard",
+    negative.includes("power lines"),
+    "the negative CONDITIONING node must still carry the modern-contamination vocabulary from forge.config.json profiles.environment.styleGuard.forbiddenTokens",
   );
+  // F-039: that vocabulary is data for the negative node and for
+  // prompt-lint's R2 rule. It must never be spliced into the POSITIVE
+  // string again — writing "no power lines" there delivers `power lines`.
+  assert.ok(!positive.includes("power lines"), "forbidden tokens must not appear in the positive prompt");
+  assert.ok(positive.includes(forge.profile.styleGuard.era), "positive must carry the era assertion");
 });
 
 test("output filename carries the seed and strength — a 2-seed x 2-strength sweep must not overwrite itself", () => {

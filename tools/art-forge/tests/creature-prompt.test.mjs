@@ -11,7 +11,10 @@ const FORGE_DIR = path.resolve(HERE, "..");
 const BUNDLE = {
   styleLaws: {
     positive: ["crisp flat 2D anime illustration"],
-    negative: ["NOT 3D render"],
+    // F-039: `negative` no longer enters the positive prompt at all —
+    // `renderAssertion` occupies that slot, stated positively.
+    renderAssertion: ["hand-drawn 2D cel-shaded artwork"],
+    negative: ["3D render"],
     styleClause: ["RO proportion", "Genshin-detail"],
   },
   creatures: {
