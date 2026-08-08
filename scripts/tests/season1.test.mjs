@@ -203,10 +203,19 @@ function zoneRoot(files) {
 }
 
 test("zones counts only records clearing the Z3 floors, once per zone", () => {
-  // The fixture holds five zone-*.json files: emberdown and thornveil are
-  // complete; hollowmarch has one hazard; cindervast's reasonToGo is blank
-  // whitespace; zone-emberdown-second-file.json is a complete DUPLICATE of
-  // emberdown. Two distinct zones clear the floors.
+  // The fixture holds seven zone-*.json files. Two are complete — emberdown
+  // and thornveil — and FOUR fail on exactly one Z3 floor each, one floor per
+  // file, so every branch of the conjunction in zones() has its own dedicated
+  // witness: hollowmarch has one hazard, ashvale-front has one resource,
+  // gildmark-head has one landmark, and cindervast's reasonToGo is blank
+  // whitespace. The seventh, zone-emberdown-second-file.json, is a complete
+  // DUPLICATE of emberdown and pins the Set. Two distinct zones clear.
+  //
+  // DO NOT prune these to "one representative failing record". Found by
+  // mutation testing in review: with only hollowmarch failing, deleting the
+  // resources floor or the landmarks floor from zones() left the whole suite
+  // GREEN. One floor-failing fixture per floor is what makes those two
+  // deletions go red, and it is the only thing that does.
   assert.equal(MEASURES.zones(FIXTURE), 2);
 });
 

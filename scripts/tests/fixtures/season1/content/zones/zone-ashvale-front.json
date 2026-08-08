@@ -1,0 +1,25 @@
+{
+  "zone": "ashvale-front",
+  "reasonToGo": "why anyone walks into ashvale-front",
+  "hazards": [
+    {
+      "id": "h-one"
+    },
+    {
+      "id": "h-two"
+    }
+  ],
+  "resources": [
+    {
+      "id": "r-one"
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "l-one"
+    },
+    {
+      "id": "l-two"
+    }
+  ]
+}
