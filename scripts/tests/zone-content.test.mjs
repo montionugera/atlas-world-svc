@@ -810,12 +810,63 @@ test("Z6: kind sets that overlap without being identical are legal", () => {
   assert.doesNotMatch(r.out, /resource-kind set/);
 });
 
+// NOTE ON WHAT THIS TEST DOES AND DOES NOT PIN. It proves a zone may legally
+// carry two resources of one kind (exit 0). It does NOT pin the `new Set(...)`
+// dedupe, despite its name: emberdown's multiset key "fuel, fuel" happens to be
+// unique among the other nine zones' two-kind keys, so this passes with the
+// dedupe REMOVED. The test below is the one that actually pins it — keep them
+// together and do not merge them.
 test("Z6: repeating one kind inside a single zone is legal and dedupes to a set", () => {
   const r = runGate(fixture({ zones: allZones({
     emberdown: (z) => { z.resources[0].kind = "fuel"; z.resources[1].kind = "fuel"; },
   }) }));
   assert.equal(r.code, 0);
   assert.doesNotMatch(r.out, /resource-kind set/);
+});
+
+// THE DEDUPE BINDING for Z6's kind-set key. Two zones whose resources are all
+// one and the same kind, differing ONLY in array length: as SETS both are
+// {fuel} and must collide; as MULTISETS their keys are "fuel, fuel" and
+// "fuel, fuel, fuel" and Z6 silently stops firing. Drop `new Set(...)` from the
+// gate's kindSets key (keeping `.sort()`) and this is the only test that goes
+// red — the legality test above passes either way. Without this, "compared as a
+// SET" is a claim the comment makes and nothing enforces.
+test("Z6: two single-kind zones of different lengths are the same SET and collide", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => {
+      z.resources = ["a", "b"].map((s) => ({
+        id: `emberdown-res-${s}`, name: `R${s}`, kind: "fuel", description: "d",
+      }));
+    },
+    hollowmarch: (z) => {
+      z.resources = ["a", "b", "c"].map((s) => ({
+        id: `hollowmarch-res-${s}`, name: `R${s}`, kind: "fuel", description: "d",
+      }));
+    },
+  }) }));
+  assert.equal(r.code, 1, `{fuel} and {fuel} are the same set and must collide:\n${r.out}`);
+  assert.match(
+    r.out,
+    /zones: resource-kind set \(fuel\) is shared by zones "emberdown", "hollowmarch"/);
+});
+
+// THE EXEMPTION BINDING for Z6's landmark rule. The `if (shared.length > 1)`
+// guard is a DECIDED asymmetry (see the block comment above): the gate fires
+// only on a name spanning two DIFFERENT zones, while Task 3b's committed-content
+// test additionally rejects an intra-zone repeat. Nothing in the language pins
+// that decision, so without this test the gate can silently drift STRICTER than
+// what was decided — swap the guard to `group.length > 1` and the suite stays
+// green. This is the polarity partner of "a landmark name appearing in two
+// zones fails": that one proves the rule fires across zones, this one proves it
+// does not fire within one.
+test("Z6: one zone repeating a landmark name inside its own list is legal", () => {
+  const r = runGate(fixture({ zones: allZones({
+    // Ids stay distinct, so Z4's duplicate rule cannot supply the exit code.
+    emberdown: (z) => { z.landmarks[1].name = z.landmarks[0].name; },
+  }) }));
+  assert.equal(r.code, 0, `an intra-zone landmark repeat is deliberately legal:\n${r.out}`);
+  assert.doesNotMatch(r.out, /landmark name/);
+  assert.match(r.out, /10 zones/);
 });
 
 test("Z6: ten distinct landmark-name sets and ten distinct kind sets pass", () => {
