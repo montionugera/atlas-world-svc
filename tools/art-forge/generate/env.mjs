@@ -310,13 +310,21 @@ export function controlOutputId({ briefId, control, seed, strength }) {
  * Build the environment graph. `depthImage` is the filename LoadImage
  * resolves against the ComfyUI server's own input directory (which is a
  * remote Windows path on mont-pc — see uploadControlImage below); it is
- * never a local filesystem path.
+ * never a local filesystem path. Despite the name (kept for F-026 diffability
+ * and because every existing call/test site already names it this way), it
+ * carries the control image for WHICHEVER control is active — `resolveControl`
+ * picks the renderer, this just forwards its uploaded/staged filename.
  *
  * `strength` defaults to the config value but can be overridden (see
  * `generateEnv`'s `--strength` flag) — it also drives the output filename
  * below, since running the documented seed x strength sweep with a filename
  * that carries neither would leave only one surviving PNG per subject, each
  * later run silently overwriting the last.
+ *
+ * `controlNet` defaults to `forge.profile.controlNet` (the frozen depth
+ * block) so every existing call site that omits it keeps today's behaviour;
+ * `generateEnv` passes the block `resolveControl` picked instead, so the
+ * union type and percents come from whichever control is actually active.
  */
 export function buildEnvGraph({
   brief,
@@ -612,7 +620,7 @@ export async function generateEnv(
     args,
     graph,
     name: `env/${outputId}`,
-    label: `env ${briefId} seed=${seed} control=${control} strength=${formatStrength(strength)} depth=${controlImage}`,
+    label: `env ${briefId} seed=${seed} control=${control} strength=${formatStrength(strength)} image=${controlImage}`,
   });
 
   if (!args.hires) {
