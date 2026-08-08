@@ -118,8 +118,17 @@ function selectView(view) {
 // Tab/Shift+Tab trap while the overlay is open. Queried fresh on every
 // keydown rather than cached: the tab row is built once, but overlayLink's
 // href (and so its place as a real, focusable `a[href]`) changes per view.
+// The iframe is included as the last stop — it's the reading content itself,
+// so a keyboard-only user must be able to Tab into it. Known trade-off: once
+// focus is inside the iframe's own document, keydown fires there, not here,
+// so this trap cannot intercept it — focus can leave the overlay from inside
+// the iframe. Accepted: being able to read the content by keyboard outweighs
+// a perfectly sealed trap. Do not "fix" this with polling, focus/blur
+// ping-pong, or reaching into the iframe's document.
 function trapFocus(ev) {
-  const focusable = Array.from(overlay.querySelectorAll("button, a[href]"));
+  const focusable = Array.from(
+    overlay.querySelectorAll("button, a[href], iframe"),
+  );
   if (focusable.length === 0) return;
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
