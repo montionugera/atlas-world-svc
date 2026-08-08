@@ -244,10 +244,22 @@ layer 1:
 2. **Bell-wardens proclaim.** The detailed news is read aloud beneath the
    tower by a bell-warden. People trust a proclamation because it arrives
    with the sacred toll that summoned them to hear it.
-3. **The bell-seal certifies.** Inter-town proclamations and news-letters
-   count as true only when stamped with the Bellfaith seal — the seal is
-   this world's state news agency and notary in one. An unsealed
-   proclamation is just a rumor with good staging.
+3. **The bell-seal certifies provenance, not truth.** Inter-town
+   proclamations and news-letters carry weight only when stamped with the
+   Bellfaith seal — the seal is this world's state news agency and notary
+   in one. What it attests is that **a statement was given to the Bellfaith
+   and recorded**, never that the statement is accurate. A notary certifies
+   that a person signed, not that what they signed is so. An unsealed
+   proclamation is just a rumor with good staging; a sealed one is a rumor
+   somebody put their name to. The wax cracks only when tampered with, so
+   a sealed letter cannot be opened and closed again unnoticed — the text
+   declines to say whether that is faith or craft.
+
+   **Nobody forges the seal**, because forging it is worthless. A stamped
+   page with no bell tolled for it and no bell-rider carrying it is exactly
+   the rumor with good staging above. The towns believe sealed news anyway;
+   that they read "sealed" as "true" is the standing mistake this world is
+   built on.
 
 The Bell-Keeper's corruption lives entirely in layers 2 and 3: which
 proclamations he lets be read, which get sealed true, which get quietly
