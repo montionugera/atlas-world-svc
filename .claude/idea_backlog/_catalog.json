@@ -502,5 +502,11 @@
     "title": "Citation-integrity gate for every file:line reference into canon.md and the A-docs - line citations rot silently on any insert",
     "created_at": "2026-08-08T05:10:07.014817+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-085",
+    "title": "Story reading view: full-viewport overlay instead of a cropped inline frame",
+    "created_at": "2026-08-08T09:19:50.223388+00:00",
+    "promoted_to": null
   }
 ]
