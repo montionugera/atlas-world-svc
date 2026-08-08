@@ -155,7 +155,7 @@ must not learn them before which act.
 
 Bells alone cannot carry detail (see "How news travels" in §4) — the
 Bell-Keeper's coercion is never about bending a bell's tone. It is about
-which proclamations get sealed true and which get burned, and what the
+which proclamations get sealed and which get burned, and what the
 official reading of the first caravan burning says beneath the tower.
 
 - **Knows:** the Broker (blackmailer — controls which proclamations the
@@ -253,16 +253,17 @@ layer 1:
    proclamation is just a rumor with good staging; a sealed one is a rumor
    somebody put their name to. The wax cracks only when tampered with, so
    a sealed letter cannot be opened and closed again unnoticed — the text
-   declines to say whether that is faith or craft.
+   declines to say whether that is faith or magic.
 
-   **Nobody forges the seal**, because forging it is worthless. A stamped
-   page with no bell tolled for it and no bell-rider carrying it is exactly
-   the rumor with good staging above. The towns believe sealed news anyway;
+   **Forging the seal is possible, and worthless.** Anyone can carve a die;
+   a stamped page with no bell tolled for it and no bell-rider carrying it is
+   exactly the rumor with good staging above. The towns believe sealed news
+   anyway;
    that they read "sealed" as "true" is the standing mistake this world is
    built on.
 
 The Bell-Keeper's corruption lives entirely in layers 2 and 3: which
-proclamations he lets be read, which get sealed true, which get quietly
+proclamations he lets be read, which get sealed, which get quietly
 burned before either — never in the tone or timing of the bell itself.
 
 **Two speeds carry these three layers between towns:**
@@ -328,8 +329,9 @@ the voice law for the same ground.
 4. **What this does not change.** No page of the Undertow shows battle
    magic, and none needs rewriting. Every magic thing already on the page
    is utility: the Bellfaith's bells, Gildmark's far-mirrors, lovers'
-   ink. The war reads as steel because every soldier in it is warded and
-   the people we follow are ordinary. The first caravan burned by
+   ink, and the seal's tamper-evident wax (§4) — which the text declines
+   to call either faith or magic. The war reads as steel because every
+   soldier in it is warded and the people we follow are ordinary. The first caravan burned by
    ordinary fire — runes stop spells, not torches.
 
 ### The elements
@@ -479,3 +481,4 @@ failure this section exists to prevent is a contradiction being marked
 | The Stoneguard hold the gate; the icefield watch is detached | §4 |
 | Six *peoples* and eight *races* are separate axes | `style.md` §"Peoples", copied to `core-story.md` |
 | Magic is rune-gated, not scarcity-gated (F-017) | §5, and the scarcity rule retired from `core-story.md` |
+| The seal certifies provenance, not truth (F-035) | §4 |

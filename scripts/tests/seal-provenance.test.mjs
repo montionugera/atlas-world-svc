@@ -11,13 +11,14 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CANON_PATH = join(REPO, 'content', 'story', 'canon.md');
-const A0_PATH = join(REPO, 'docs', 'worldbuilding', 'A0-current-world.md');
+const WB_DIR = join(REPO, 'docs', 'worldbuilding');
+const A0_PATH = join(WB_DIR, 'A0-current-world.md');
 
 const canon = () => readFileSync(CANON_PATH, 'utf8');
 const a0 = () => readFileSync(A0_PATH, 'utf8');
@@ -38,34 +39,74 @@ test('canon states that the seal certifies provenance, not truth', () => {
   );
 });
 
-test('canon does not reassert that a sealed proclamation is true', () => {
-  assert.doesNotMatch(
-    canon(),
-    /count as true only when stamped/,
-    'the pre-F-035 wording asserted the exact thing D1 denies; it must stay removed',
-  );
+test('no world doc reasserts that a sealed proclamation is true', () => {
+  // canon alone is not enough: A0 is the sharpened summary of canon and carried
+  // the retracted sentence verbatim while canon had already dropped it.
+  const offenders = [['canon.md', canon()]];
+  for (const f of readdirSync(WB_DIR).filter((f) => f.endsWith('.md'))) {
+    offenders.push([f, readFileSync(join(WB_DIR, f), 'utf8')]);
+  }
+  // Tolerate markdown emphasis inside the phrase — DR-001 writes it as
+  // "_count as true_ only when stamped" and a literal match sailed past it.
+  const RETRACTED = /count as true[_*\s]+only when[\s_*]+stamped/;
+  const hits = offenders
+    .filter(([, text]) => RETRACTED.test(text))
+    // A record may quote the old wording if it marks it superseded.
+    .filter(([, text]) => !/Superseded in part by F-035/.test(text))
+    .map(([name]) => name);
+  assert.deepEqual(hits, [], `retracted pre-F-035 wording still live in: ${hits.join(', ')}`);
+});
+
+test('no world doc calls forging the seal the high-value crime', () => {
+  // A1 asserted the exact inverse of D2 and shipped on release/1.7.
+  const hits = readdirSync(WB_DIR)
+    .filter((f) => f.endsWith('.md'))
+    .filter((f) => /Forging a seal is the highest-value crime/.test(readFileSync(join(WB_DIR, f), 'utf8')));
+  assert.deepEqual(hits, [], `contradicts canon section 4 (F-035 D2): ${hits.join(', ')}`);
 });
 
 test('canon says forging the seal is worthless rather than impossible', () => {
   assert.match(
     canon(),
-    /Nobody forges the seal\*\*, because forging it is worthless/,
-    'spec D2: forgery is possible and pointless — never "impossible", which would need a mechanism canon.md section 5.3 forbids',
+    /Forging the seal is possible, and worthless/,
+    'spec D2 says forgery is POSSIBLE and worthless. "Nobody forges it" states the wrong fact — a quest author greps the bold line and gets the belief the spec set out to retire.',
   );
 });
 
-test('every canon.md citation in A0 resolves to a real line', () => {
-  const cites = [...a0().matchAll(/`canon\.md:(\d+)(?:-(\d+))?`/g)];
-  assert.ok(cites.length > 0, 'A0 should cite canon.md somewhere');
+test('no canon.md citation in a worldbuilding doc lands on a blank line', () => {
+  // A line-number citation that points at whitespace is always wrong, and it is
+  // the signature of a citation rotted by an insert above it. Checking only that
+  // the number is <= the file length would be theatre: the largest citation in
+  // A0 is ~405 against a 485-line canon, so a bounds check can never fire.
+  // Debt that predates F-035. All three sit ABOVE this feature's edit site, so
+  // they were already blank-anchored on release/1.7 and repairing them belongs to
+  // the deferred general citation sweep, not here. Listed rather than tolerated
+  // silently: the gate below still fails on any NEW rot.
+  const KNOWN_STALE = new Set(['canon.md:180-184', 'canon.md:233-244', 'canon.md:233-242']);
 
-  const total = canon().split('\n').length;
-  for (const [raw, start, end] of cites) {
-    const last = Number(end ?? start);
-    assert.ok(
-      last <= total,
-      `A0 cites ${raw} but canon.md has only ${total} lines`,
-    );
+  const lines = canon().split('\n');
+  const docs = readdirSync(WB_DIR).filter((f) => f.endsWith('.md'));
+  const offenders = [];
+
+  for (const file of docs) {
+    const text = readFileSync(join(WB_DIR, file), 'utf8');
+    for (const m of text.matchAll(/`canon\.md:(\d+)(?:-(\d+))?`/g)) {
+      if (KNOWN_STALE.has(m[0].replaceAll('`', ''))) continue;
+      const start = Number(m[1]);
+      const end = Number(m[2] ?? m[1]);
+      if (end > lines.length) {
+        offenders.push(`${file} ${m[0]} — past end of canon.md (${lines.length} lines)`);
+        continue;
+      }
+      // A range may contain blank lines; its FIRST line may not be blank, or the
+      // citation is pointing into the gap left by an edit.
+      if (!(lines[start - 1] ?? '').trim()) {
+        offenders.push(`${file} ${m[0]} — canon.md:${start} is blank`);
+      }
+    }
   }
+
+  assert.deepEqual(offenders, [], `rotted canon.md citations:\n${offenders.join('\n')}`);
 });
 
 test('the two citations F-035 owns point at the sentences they claim', () => {
@@ -75,8 +116,8 @@ test('the two citations F-035 owns point at the sentences they claim', () => {
     .map((m) => Number(m[1]))
     .filter((n) => /tampered with/.test(canonLine(n) ?? ''));
   assert.ok(
-    waxCites.length >= 2,
-    'A0 must cite the canon line carrying "tampered with" from both its narrative note and the V16 row',
+    waxCites.length >= 1,
+    'A0 must cite the canon line carrying "tampered with" — V16 is the site that makes the claim',
   );
 
   // The utility-magic list, whose citation was stale before F-035.
