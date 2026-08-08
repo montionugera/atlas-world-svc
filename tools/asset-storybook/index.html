@@ -776,6 +776,56 @@
         color: #dce4ff;
       }
 
+      /* I-085 — the story reading overlay. The inline 80vh frame it replaces
+         showed 2.3% of a 29,298px document while the page scrolled behind it. */
+      .story-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9000;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .story-overlay[hidden] {
+        display: none;
+      }
+
+      .story-overlay-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding: 0.55rem 0.9rem;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-card);
+        flex-shrink: 0;
+      }
+
+      .story-overlay-spacer {
+        flex: 1;
+      }
+
+      .story-overlay-frame {
+        flex: 1;
+        width: 100%;
+        border: 0;
+        background: #0b0d12;
+        display: block;
+      }
+
+      .story-launcher-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 0.9rem;
+      }
+
+      /* The sidebar jump lands flush against the viewport edge without this. */
+      #section-story {
+        scroll-margin-top: 1.25rem;
+      }
+
       .art-tabbar-hint {
         margin: 0 0 1.25rem;
         font-family: var(--mono);

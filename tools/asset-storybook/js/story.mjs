@@ -7,15 +7,21 @@ import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
 import { buildSidebarItem } from "./sidebar.mjs";
 
 /**
- * The story surfaces (tools/story-explorer + the Undertow novel), embedded.
+ * The story surfaces (tools/story-explorer + the Undertow novel).
  *
- * Same contract as the combat lab (js/combat-lab.mjs): not an asset, no health
- * check, and a manifest 404 must not take it down — so main.mjs mounts this in
- * both its failure path and its happy path.
+ * Same mount contract as the combat lab (js/combat-lab.mjs): not an asset, no
+ * health check, and a manifest 404 must not take it down — so main.mjs mounts
+ * this in both its failure path and its happy path.
  *
- * Unlike the art tabs, the active tab is a closure local: nothing outside this
- * module reads or writes it, because the section shows and hides wholesale via
- * setActiveClass's data-kind match (sidebar.mjs:60-66).
+ * I-085: the section itself holds NO iframe. F-034 put one at height:80vh in the
+ * page flow, which meant reading a 29,298px document through a 688px slot while
+ * a 75,284px page scrolled behind it — and showing a ~400px sliver of that slot
+ * whenever the section was only partly scrolled into view. The section is now a
+ * launcher; reading happens in a full-viewport overlay that owns the screen.
+ *
+ * There is exactly ONE iframe and it is never reparented: moving an iframe
+ * between parents forces a reload in every major browser, which would re-fetch
+ * the novel on every open/close.
  */
 async function loadViews() {
   try {
@@ -34,6 +40,114 @@ async function loadViews() {
   }
 }
 
+// ---------- the reading overlay (module-level singleton) ----------
+
+let overlay = null;
+let overlayFrame = null;
+let overlayTabRow = null;
+let overlayLink = null;
+let activeView = null;
+let savedScrollY = 0;
+let lastTrigger = null;
+let escHandler = null;
+
+function buildOverlay(views) {
+  overlay = document.createElement("div");
+  overlay.className = "story-overlay";
+  overlay.hidden = true;
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", "Story reading view");
+
+  const header = document.createElement("div");
+  header.className = "story-overlay-header";
+
+  overlayTabRow = document.createElement("div");
+  overlayTabRow.className = "story-tabbar-row";
+  overlayTabRow.style.margin = "0";
+  for (const view of views) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "story-tab";
+    btn.dataset.storyTab = view.id;
+    btn.textContent = view.label;
+    btn.addEventListener("click", () => selectView(view));
+    overlayTabRow.appendChild(btn);
+  }
+  header.appendChild(overlayTabRow);
+
+  const spacer = document.createElement("div");
+  spacer.className = "story-overlay-spacer";
+  header.appendChild(spacer);
+
+  overlayLink = document.createElement("a");
+  overlayLink.className = "story-tab";
+  overlayLink.target = "_blank";
+  overlayLink.rel = "noopener";
+  overlayLink.textContent = "Open full screen ↗";
+  header.appendChild(overlayLink);
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "story-tab";
+  closeBtn.textContent = "Exit ✕";
+  closeBtn.setAttribute("aria-label", "Close the story reading view");
+  closeBtn.addEventListener("click", () => closeStoryView());
+  header.appendChild(closeBtn);
+
+  overlay.appendChild(header);
+
+  overlayFrame = document.createElement("iframe");
+  overlayFrame.className = "story-overlay-frame";
+  overlay.appendChild(overlayFrame);
+
+  document.body.appendChild(overlay);
+}
+
+function selectView(view) {
+  if (activeView && activeView.id === view.id) return; // don't reload the open view
+  activeView = view;
+  overlayFrame.src = view.src;
+  overlayLink.href = view.src;
+  overlayTabRow.querySelectorAll(".story-tab").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.storyTab === view.id);
+  });
+}
+
+function openStoryView(view, views, trigger) {
+  if (!overlay) buildOverlay(views);
+  if (trigger) lastTrigger = trigger;
+  if (overlay.hidden) {
+    savedScrollY = window.scrollY;
+    document.body.style.overflow = "hidden";
+    overlay.hidden = false;
+    escHandler = (ev) => {
+      if (ev.key === "Escape") closeStoryView();
+    };
+    document.addEventListener("keydown", escHandler);
+  }
+  selectView(view);
+}
+
+function closeStoryView() {
+  if (!overlay || overlay.hidden) return;
+  overlay.hidden = true;
+  document.body.style.overflow = "";
+  window.scrollTo(0, savedScrollY);
+  if (escHandler) {
+    document.removeEventListener("keydown", escHandler);
+    escHandler = null;
+  }
+  if (lastTrigger) lastTrigger.focus();
+}
+
+// Closing on sidebar navigation goes through a DOM event rather than an import.
+// sidebar.mjs cannot import this module: story.mjs already imports
+// buildSidebarItem from sidebar.mjs, and the reverse import would make a cycle.
+document.addEventListener("storybook:class-change", () => closeStoryView());
+
+// ---------- the inline launcher ----------
+
 export async function mountStory(main) {
   const views = await loadViews();
 
@@ -49,58 +163,40 @@ export async function mountStory(main) {
   const note = document.createElement("p");
   note.style.cssText =
     "color:#9aa1b2;font-size:13px;margin:0 0 12px;max-width:70ch";
-  const noteText = document.createElement("span");
-  noteText.textContent =
+  note.textContent =
     "The narrative, live. Not an asset — no manifest, no health check. " +
-    "Only the open tab loads. ";
-  const fullLink = document.createElement("a");
-  fullLink.target = "_blank";
-  fullLink.rel = "noopener";
-  fullLink.textContent = "Open full screen ↗";
-  note.appendChild(noteText);
-  note.appendChild(fullLink);
+    "Pick a view to open it full screen; nothing loads until you do. " +
+    "Exit with the ✕ or the Escape key.";
   section.appendChild(note);
 
-  const tabRow = document.createElement("div");
-  tabRow.className = "story-tabbar-row";
-  section.appendChild(tabRow);
-
-  const frame = document.createElement("iframe");
-  frame.loading = "lazy";
-  frame.style.cssText =
-    "width:100%;height:80vh;border:1px solid #262c3a;border-radius:10px;background:#0b0d12;display:block";
-  section.appendChild(frame);
-
-  let activeView = null;
-  function selectView(view) {
-    activeView = view;
-    frame.src = view.src;
-    fullLink.href = view.src;
-    tabRow.querySelectorAll(".story-tab").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.storyTab === view.id);
-    });
-  }
-
+  const row = document.createElement("div");
+  row.className = "story-launcher-row";
   for (const view of views) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "story-tab";
-    btn.dataset.storyTab = view.id;
+    btn.dataset.storyLaunch = view.id;
     btn.textContent = view.label;
-    btn.addEventListener("click", () => {
-      if (activeView && activeView.id === view.id) return; // don't reload the open view
-      selectView(view);
-    });
-    tabRow.appendChild(btn);
+    btn.addEventListener("click", () => openStoryView(view, views, btn));
+    row.appendChild(btn);
+
+    const out = document.createElement("a");
+    out.className = "story-tab";
+    out.href = view.src;
+    out.target = "_blank";
+    out.rel = "noopener";
+    out.textContent = "↗";
+    out.title = "Open " + view.label + " in a new tab";
+    out.setAttribute("aria-label", "Open " + view.label + " in a new tab");
+    row.appendChild(out);
   }
+  section.appendChild(row);
 
   const hint = document.createElement("p");
   hint.className = "art-tabbar-hint";
   hint.textContent =
-    "Tabs mirror the story-views.json registry order. Adding a view is a registry edit plus its Dockerfile COPY + allowlist lines.";
+    "Views mirror the story-views.json registry order. Adding a view is a registry edit plus its Dockerfile COPY + allowlist lines.";
   section.appendChild(hint);
-
-  selectView(views[0]);
 
   main.appendChild(section);
 }
