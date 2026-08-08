@@ -22,7 +22,7 @@
   },
   {
     "id": "F-003",
-    "title": "asset-forge: Blender→game mob asset pipeline",
+    "title": "asset-forge: Blender\u2192game mob asset pipeline",
     "from_idea": "I-004",
     "created_at": "2026-07-15T15:38:22.933957+00:00",
     "claimed_by": "claude-a6c35399",
@@ -58,7 +58,7 @@
   },
   {
     "id": "F-006",
-    "title": "Registry reconciliation + content→runtime binding spine (event contract, kind taxonomy, CI-verified client resolver)",
+    "title": "Registry reconciliation + content\u2192runtime binding spine (event contract, kind taxonomy, CI-verified client resolver)",
     "from_idea": "I-007",
     "created_at": "2026-07-20T16:18:32.514431+00:00",
     "claimed_by": "claude-a6c35399",
@@ -70,7 +70,7 @@
   },
   {
     "id": "F-007",
-    "title": "Character/mob roster depth (5 owed sheets) + content→server-config validation binding gate",
+    "title": "Character/mob roster depth (5 owed sheets) + content\u2192server-config validation binding gate",
     "from_idea": "I-009",
     "created_at": "2026-07-21T00:01:38.970017+00:00",
     "claimed_by": "claude-a6c35399",
@@ -142,7 +142,7 @@
   },
   {
     "id": "F-013",
-    "title": "Generated mob-types.json → upgrade map mobType check from WARN to hard-fail: emit a machine-readable list of valid mob ids from colyseus-server mob definitions (mirror gen-asset-keys codegen), have check_content.mjs read it so a typo in a content map mobSpawnAreas[].mobType (and faction/quest mob refs) is a hard FAIL instead of a silent WARN — closes the silent-empty-spawn risk in authored maps",
+    "title": "Generated mob-types.json \u2192 upgrade map mobType check from WARN to hard-fail: emit a machine-readable list of valid mob ids from colyseus-server mob definitions (mirror gen-asset-keys codegen), have check_content.mjs read it so a typo in a content map mobSpawnAreas[].mobType (and faction/quest mob refs) is a hard FAIL instead of a silent WARN \u2014 closes the silent-empty-spawn risk in authored maps",
     "from_idea": "I-019",
     "created_at": "2026-07-22T14:16:43.108133+00:00",
     "claimed_by": "claude-a6c35399",
@@ -154,7 +154,7 @@
   },
   {
     "id": "F-014",
-    "title": "Narrative System v2 — acts, lore, unlockedBy, fates",
+    "title": "Narrative System v2 \u2014 acts, lore, unlockedBy, fates",
     "from_idea": "I-021",
     "created_at": "2026-07-22T14:18:33.421402+00:00",
     "claimed_by": "claude-a6c35399",
@@ -175,7 +175,7 @@
   },
   {
     "id": "F-016",
-    "title": "The Undertow — grand epic 5-act content (sub-project B)",
+    "title": "The Undertow \u2014 grand epic 5-act content (sub-project B)",
     "from_idea": "I-023",
     "created_at": "2026-07-23T12:39:21.790999+00:00",
     "claimed_by": "claude-a6c35399",
@@ -223,7 +223,7 @@
   },
   {
     "id": "F-020",
-    "title": "nakama package has no CI job at all — add typecheck/test/esbuild gate",
+    "title": "nakama package has no CI job at all \u2014 add typecheck/test/esbuild gate",
     "from_idea": "I-039",
     "created_at": "2026-07-30T17:48:05.894829+00:00",
     "claimed_by": "claude-a6c35399",
@@ -247,7 +247,7 @@
   },
   {
     "id": "F-022",
-    "title": "BATTLE_ATTACK carries no damageType — the last silent physical fallback",
+    "title": "BATTLE_ATTACK carries no damageType \u2014 the last silent physical fallback",
     "from_idea": "I-037",
     "created_at": "2026-07-31T01:38:13.866893+00:00",
     "claimed_by": "claude-a6c35399",
@@ -259,7 +259,7 @@
   },
   {
     "id": "F-023",
-    "title": "Boss target rotation / aggro — bosses structurally cannot stop focus-firing",
+    "title": "Boss target rotation / aggro \u2014 bosses structurally cannot stop focus-firing",
     "from_idea": "I-035",
     "created_at": "2026-07-31T11:56:49.775135+00:00",
     "claimed_by": "claude-a6c35399",
@@ -271,7 +271,7 @@
   },
   {
     "id": "F-024",
-    "title": "Commit the concept-art generation pipeline into the repo (Z-Image Turbo img2img + silhouette recipe + prompt laws + batch matrix scripts) — currently scratchpad-only and dies with the session",
+    "title": "Commit the concept-art generation pipeline into the repo (Z-Image Turbo img2img + silhouette recipe + prompt laws + batch matrix scripts) \u2014 currently scratchpad-only and dies with the session",
     "from_idea": "I-031",
     "created_at": "2026-07-31T18:29:09.894664+00:00",
     "claimed_by": "claude-a6c35399",
@@ -373,5 +373,14 @@
     "status": "shipped",
     "release_version": "1.7",
     "shipped_at": "2026-08-08T03:15:37.882099+00:00"
+  },
+  {
+    "id": "F-033",
+    "title": "Sharpen the five the-unsealed-years lore bodies - shipped as gate-passing drafts under world-first-prose-later",
+    "from_idea": "I-081",
+    "created_at": "2026-08-08T03:27:43.592604+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
