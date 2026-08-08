@@ -53,6 +53,10 @@
 //       kindDefaultRender or every mapped key of that kind carries explicit
 //       render — a no-default kind may not rely on ext sniffing (see §3 of
 //       docs/superpowers/specs/2026-07-20-asset-registry-contract.md).
+//   (U) every manifest entry must have a baked thumbnail in
+//       game-client/assets/.thumbs/ that is no older than its source — the
+//       storybook renders every card from one, so a stale thumbnail is a card
+//       that lies about the asset (F-038).
 //   (T) every manifest `kind` must have a section in
 //       content/asset-taxonomy.json, so tools/asset-storybook can never fall
 //       back to a munged label like "Model3d:dungeons" (F-038). Letters L/M
@@ -91,6 +95,7 @@ import {
 import { fileURLToPath } from "node:url";
 import { dirname, resolve, join, relative } from "node:path";
 import { checkLicensePolicy } from "./lib/license-policy.mjs";
+import { thumbFilename } from "./lib/thumbkey.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -554,6 +559,58 @@ function validateEntry(id, entry, source, gameClient, spec, failures) {
 // (G) cross-file keyspace disjointness — the same id in two manifest sources
 // would let C# (manifest.json only) and the storybook (merges all) silently
 // resolve different entries.
+// (U) thumbnail freshness — every manifest entry must have a baked thumbnail
+// in game-client/assets/.thumbs/, no older than its source file.
+//
+// tools/asset-storybook renders EVERY card from a baked thumbnail (F-038), so
+// a thumbnail older than its source is a card that lies about what the asset
+// looks like — and the reviewer files a reject/rebuild verdict against a stale
+// image. This is guard (F)'s mtime rule (which covers only bakedPreview types)
+// applied universally.
+//
+// Pure filesystem comparison, so CI needs neither Blender nor sharp; only
+// `node scripts/bake_thumbnails.mjs` does.
+//
+// Art entries are exempt here — they are validated by the art source's own
+// path rules and carry `file`, not a res:// scene/stream.
+function assertThumbFreshness(sourcesEntries, gameClient, failures) {
+  const thumbDir = join(gameClient, "assets/.thumbs");
+  const seen = new Set(); // several keys can share one source path
+
+  for (const { entries } of sourcesEntries) {
+    for (const [id, entry] of Object.entries(entries)) {
+      // `scene` only, never `stream`. render-spec.json gives audio and music
+      // pathField "stream", and the storybook renders those as soundboard
+      // tiles (js/audio.mjs) rather than thumbnail cards — an .ogg has
+      // nothing to thumbnail. Keying on the field rather than the extension
+      // means a future audio format needs no change here.
+      const resPath = entry && entry.scene;
+      if (!resPath || typeof resPath !== "string") continue;
+      if (!resPath.startsWith("res://")) continue; // art `file` paths
+      if (seen.has(resPath)) continue;
+      seen.add(resPath);
+
+      const thumbP = join(thumbDir, thumbFilename(resPath));
+      if (!existsSync(thumbP)) {
+        failures.push(
+          `entry "${id}": missing thumbnail ${thumbFilename(resPath)} for ` +
+            `${resPath} — run \`node scripts/bake_thumbnails.mjs\``,
+        );
+        continue;
+      }
+
+      const srcP = resolveResPath(entry.preview || resPath, gameClient);
+      if (!srcP || !existsSync(srcP)) continue; // guard (B) owns missing sources
+      if (statSync(srcP).mtimeMs > statSync(thumbP).mtimeMs) {
+        failures.push(
+          `entry "${id}": thumbnail is STALE — ${resPath} is newer than its ` +
+            `baked thumbnail; re-run \`node scripts/bake_thumbnails.mjs\``,
+        );
+      }
+    }
+  }
+}
+
 // (T) taxonomy coverage — every manifest `kind` must have a section in
 // content/asset-taxonomy.json.
 //
@@ -786,6 +843,7 @@ function main() {
   assertDisjoint(sourcesEntries, failures);
   const taxonomyDoc = readJson(opts.taxonomy, "asset-taxonomy", failures);
   assertTaxonomyCoverage(sourcesEntries, taxonomyDoc, failures);
+  assertThumbFreshness(sourcesEntries, opts.gameClient, failures);
   assertKindRenderable(keys, spec, codegenEntries, failures);
 
   return report(failures, warnings, opts);

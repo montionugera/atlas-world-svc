@@ -1,0 +1,4397 @@
+{
+  "version": 1,
+  "entries": {
+    "classes/beastkin-archer.png": {
+      "thumb": "f72b54b064d43b1d.webp",
+      "bytes": 1015349,
+      "w": 205,
+      "h": 256
+    },
+    "classes/beastkin-assassin.png": {
+      "thumb": "2575410f50ef903f.webp",
+      "bytes": 1072288,
+      "w": 205,
+      "h": 256
+    },
+    "classes/beastkin-engineer.png": {
+      "thumb": "3231cb6d9af5e296.webp",
+      "bytes": 1084192,
+      "w": 205,
+      "h": 256
+    },
+    "classes/beastkin-healer.png": {
+      "thumb": "dceee3b2166b5e79.webp",
+      "bytes": 1096628,
+      "w": 205,
+      "h": 256
+    },
+    "classes/beastkin-mage.png": {
+      "thumb": "2126bed2a007fb86.webp",
+      "bytes": 1114812,
+      "w": 205,
+      "h": 256
+    },
+    "classes/beastkin-spearman.png": {
+      "thumb": "f9ddfc7b6f6d5467.webp",
+      "bytes": 1012758,
+      "w": 205,
+      "h": 256
+    },
+    "classes/beastkin-summoner.png": {
+      "thumb": "eb17bec7f1b068ab.webp",
+      "bytes": 1075151,
+      "w": 205,
+      "h": 256
+    },
+    "classes/beastkin-swordsman.png": {
+      "thumb": "bf3a30a53b1e1e1e.webp",
+      "bytes": 1021880,
+      "w": 205,
+      "h": 256
+    },
+    "classes/demon-archer.png": {
+      "thumb": "386759ddbd91f9f4.webp",
+      "bytes": 876289,
+      "w": 205,
+      "h": 256
+    },
+    "classes/demon-assassin.png": {
+      "thumb": "156195d30c708127.webp",
+      "bytes": 826268,
+      "w": 205,
+      "h": 256
+    },
+    "classes/demon-engineer.png": {
+      "thumb": "2422989b06c625aa.webp",
+      "bytes": 1050005,
+      "w": 205,
+      "h": 256
+    },
+    "classes/demon-healer.png": {
+      "thumb": "c41e045d65d6bf62.webp",
+      "bytes": 960990,
+      "w": 205,
+      "h": 256
+    },
+    "classes/demon-mage.png": {
+      "thumb": "bdc97ca9606893fd.webp",
+      "bytes": 1075312,
+      "w": 205,
+      "h": 256
+    },
+    "classes/demon-spearman.png": {
+      "thumb": "7cb1bd392fa1c241.webp",
+      "bytes": 920790,
+      "w": 205,
+      "h": 256
+    },
+    "classes/demon-summoner.png": {
+      "thumb": "a6f028c93c74af0c.webp",
+      "bytes": 986004,
+      "w": 205,
+      "h": 256
+    },
+    "classes/demon-swordsman.png": {
+      "thumb": "7866c6e5f16ef0d4.webp",
+      "bytes": 972613,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dragon-archer.png": {
+      "thumb": "4761686f477284fc.webp",
+      "bytes": 959327,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dragon-assassin.png": {
+      "thumb": "17f62942516c51c9.webp",
+      "bytes": 918152,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dragon-engineer.png": {
+      "thumb": "bd0f20b56de8fa7e.webp",
+      "bytes": 1220234,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dragon-healer.png": {
+      "thumb": "a73faf2f2803d0c4.webp",
+      "bytes": 1086773,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dragon-mage.png": {
+      "thumb": "4b5005b581dcb361.webp",
+      "bytes": 1151068,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dragon-spearman.png": {
+      "thumb": "bab558fde47def40.webp",
+      "bytes": 965820,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dragon-summoner.png": {
+      "thumb": "34d105b401e94590.webp",
+      "bytes": 987736,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dragon-swordsman.png": {
+      "thumb": "09a9d4c040e1315c.webp",
+      "bytes": 991311,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dwarf-archer.png": {
+      "thumb": "7ba3ba31498144bd.webp",
+      "bytes": 938613,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dwarf-assassin.png": {
+      "thumb": "9bd9833f55c1976e.webp",
+      "bytes": 906238,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dwarf-engineer.png": {
+      "thumb": "6d77a0a6f4be8760.webp",
+      "bytes": 1096539,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dwarf-healer.png": {
+      "thumb": "aeed8e209ccf047c.webp",
+      "bytes": 1112635,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dwarf-mage.png": {
+      "thumb": "4f28c03dabc32a74.webp",
+      "bytes": 1235622,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dwarf-spearman.png": {
+      "thumb": "6d5b8ee008ae8dc7.webp",
+      "bytes": 1037102,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dwarf-summoner.png": {
+      "thumb": "04a45f6e691afd5d.webp",
+      "bytes": 1137535,
+      "w": 205,
+      "h": 256
+    },
+    "classes/dwarf-swordsman.png": {
+      "thumb": "f66fa3a99e52c58d.webp",
+      "bytes": 964341,
+      "w": 205,
+      "h": 256
+    },
+    "classes/elf-archer.png": {
+      "thumb": "1994aa27b57d2550.webp",
+      "bytes": 971263,
+      "w": 205,
+      "h": 256
+    },
+    "classes/elf-assassin.png": {
+      "thumb": "45bcb2a9c9494e3d.webp",
+      "bytes": 971805,
+      "w": 205,
+      "h": 256
+    },
+    "classes/elf-engineer.png": {
+      "thumb": "0c0d8878ff2304c6.webp",
+      "bytes": 1164885,
+      "w": 205,
+      "h": 256
+    },
+    "classes/elf-healer.png": {
+      "thumb": "ea2578815f9d4737.webp",
+      "bytes": 1142644,
+      "w": 205,
+      "h": 256
+    },
+    "classes/elf-mage.png": {
+      "thumb": "1c67ce99fcd70fc7.webp",
+      "bytes": 1190435,
+      "w": 205,
+      "h": 256
+    },
+    "classes/elf-spearman.png": {
+      "thumb": "2fa9a9ef0feccfda.webp",
+      "bytes": 1044334,
+      "w": 205,
+      "h": 256
+    },
+    "classes/elf-summoner.png": {
+      "thumb": "096d9a5d1be6a93f.webp",
+      "bytes": 975325,
+      "w": 205,
+      "h": 256
+    },
+    "classes/elf-swordsman.png": {
+      "thumb": "88504243b6cfa0b5.webp",
+      "bytes": 952514,
+      "w": 205,
+      "h": 256
+    },
+    "classes/human-archer.png": {
+      "thumb": "6d2820a32a939e10.webp",
+      "bytes": 930230,
+      "w": 205,
+      "h": 256
+    },
+    "classes/human-assassin.png": {
+      "thumb": "c4071885fb26bdaa.webp",
+      "bytes": 882029,
+      "w": 205,
+      "h": 256
+    },
+    "classes/human-engineer.png": {
+      "thumb": "c5f77d5461d4e629.webp",
+      "bytes": 1139667,
+      "w": 205,
+      "h": 256
+    },
+    "classes/human-healer.png": {
+      "thumb": "a808b731ab4decbe.webp",
+      "bytes": 1089132,
+      "w": 205,
+      "h": 256
+    },
+    "classes/human-mage.png": {
+      "thumb": "133aae6e4247882d.webp",
+      "bytes": 1148561,
+      "w": 205,
+      "h": 256
+    },
+    "classes/human-spearman.png": {
+      "thumb": "fae0ce2de26cf11d.webp",
+      "bytes": 984956,
+      "w": 205,
+      "h": 256
+    },
+    "classes/human-summoner.png": {
+      "thumb": "8f5211eaaaa90e7f.webp",
+      "bytes": 925286,
+      "w": 205,
+      "h": 256
+    },
+    "classes/human-swordsman.png": {
+      "thumb": "1aa84ea265e0cf54.webp",
+      "bytes": 1097199,
+      "w": 205,
+      "h": 256
+    },
+    "classes/immortal-archer.png": {
+      "thumb": "a1b1a552633019be.webp",
+      "bytes": 968144,
+      "w": 205,
+      "h": 256
+    },
+    "classes/immortal-assassin.png": {
+      "thumb": "48725ab2d7cad501.webp",
+      "bytes": 974635,
+      "w": 205,
+      "h": 256
+    },
+    "classes/immortal-engineer.png": {
+      "thumb": "293076e8373aff48.webp",
+      "bytes": 1105998,
+      "w": 205,
+      "h": 256
+    },
+    "classes/immortal-healer.png": {
+      "thumb": "7051deea9b3f0d1b.webp",
+      "bytes": 1059921,
+      "w": 205,
+      "h": 256
+    },
+    "classes/immortal-mage.png": {
+      "thumb": "f362218fc81c05e0.webp",
+      "bytes": 1190590,
+      "w": 205,
+      "h": 256
+    },
+    "classes/immortal-spearman.png": {
+      "thumb": "2c004e99da5c07c0.webp",
+      "bytes": 927018,
+      "w": 205,
+      "h": 256
+    },
+    "classes/immortal-summoner.png": {
+      "thumb": "3d77cf9a2c31c4b7.webp",
+      "bytes": 1056526,
+      "w": 205,
+      "h": 256
+    },
+    "classes/immortal-swordsman.png": {
+      "thumb": "b77e33f7e7f2ebc4.webp",
+      "bytes": 932010,
+      "w": 205,
+      "h": 256
+    },
+    "classes/ogre-archer.png": {
+      "thumb": "b90b98aadd167c19.webp",
+      "bytes": 990523,
+      "w": 205,
+      "h": 256
+    },
+    "classes/ogre-assassin.png": {
+      "thumb": "a89321883f7b80e3.webp",
+      "bytes": 843567,
+      "w": 205,
+      "h": 256
+    },
+    "classes/ogre-engineer.png": {
+      "thumb": "5a29c6bc78693e26.webp",
+      "bytes": 1124414,
+      "w": 205,
+      "h": 256
+    },
+    "classes/ogre-healer.png": {
+      "thumb": "7a10aa81ae44cfe9.webp",
+      "bytes": 1084819,
+      "w": 205,
+      "h": 256
+    },
+    "classes/ogre-mage.png": {
+      "thumb": "8beea6f9a755188d.webp",
+      "bytes": 1210108,
+      "w": 205,
+      "h": 256
+    },
+    "classes/ogre-spearman.png": {
+      "thumb": "5d0abec4d548fda4.webp",
+      "bytes": 840480,
+      "w": 205,
+      "h": 256
+    },
+    "classes/ogre-summoner.png": {
+      "thumb": "1263c1bba1e46afa.webp",
+      "bytes": 907349,
+      "w": 205,
+      "h": 256
+    },
+    "classes/ogre-swordsman.png": {
+      "thumb": "0df7449b117846bd.webp",
+      "bytes": 905344,
+      "w": 205,
+      "h": 256
+    },
+    "concept/A1-ART-02.png": {
+      "thumb": "c647d63d5a3c8f7c.webp",
+      "bytes": 1718230,
+      "w": 256,
+      "h": 166
+    },
+    "concept/A1-ART-03.png": {
+      "thumb": "66e289a539b80fc0.webp",
+      "bytes": 1515949,
+      "w": 256,
+      "h": 166
+    },
+    "concept/A1-ART-04.png": {
+      "thumb": "624c607e695330b4.webp",
+      "bytes": 1067051,
+      "w": 256,
+      "h": 166
+    },
+    "concept/A1-ART-05.png": {
+      "thumb": "94edb9e02fa5d7e2.webp",
+      "bytes": 1095708,
+      "w": 256,
+      "h": 166
+    },
+    "concept/A1-ART-06.png": {
+      "thumb": "bc41000aedf7bc43.webp",
+      "bytes": 1641990,
+      "w": 256,
+      "h": 166
+    },
+    "concept/A1-ART-07.png": {
+      "thumb": "ed66e46702a03133.webp",
+      "bytes": 1373554,
+      "w": 256,
+      "h": 166
+    },
+    "concept/cast-bell-keeper.png": {
+      "thumb": "644e0642be85f77a.webp",
+      "bytes": 1445203,
+      "w": 171,
+      "h": 256
+    },
+    "concept/cast-broker.png": {
+      "thumb": "1a3c4f81c6733e55.webp",
+      "bytes": 1407227,
+      "w": 171,
+      "h": 256
+    },
+    "concept/cast-crossroads-man-sheet.png": {
+      "thumb": "c58c0c5807c7f974.webp",
+      "bytes": 1484936,
+      "w": 256,
+      "h": 171
+    },
+    "concept/cast-crossroads-man-v1.png": {
+      "thumb": "7cd95a57ee548bd8.webp",
+      "bytes": 1475440,
+      "w": 171,
+      "h": 256
+    },
+    "concept/cast-crossroads-man-v2.png": {
+      "thumb": "03222ecd8f65ee0b.webp",
+      "bytes": 1482549,
+      "w": 171,
+      "h": 256
+    },
+    "concept/cast-crossroads-man-v3.png": {
+      "thumb": "502c1f92c508d6b0.webp",
+      "bytes": 1319921,
+      "w": 171,
+      "h": 256
+    },
+    "concept/cast-joren.png": {
+      "thumb": "c11c1cca0807dccb.webp",
+      "bytes": 1312702,
+      "w": 171,
+      "h": 256
+    },
+    "concept/cast-liss.png": {
+      "thumb": "5946497289b95076.webp",
+      "bytes": 1198514,
+      "w": 171,
+      "h": 256
+    },
+    "concept/cast-widow.png": {
+      "thumb": "ee0b9b616d429447.webp",
+      "bytes": 1152049,
+      "w": 171,
+      "h": 256
+    },
+    "concept/mob-bramble-stalker.png": {
+      "thumb": "99e0886aa94b5fa5.webp",
+      "bytes": 846361,
+      "w": 205,
+      "h": 256
+    },
+    "concept/mob-veil-spearling.png": {
+      "thumb": "cff7d9a47d4a02d8.webp",
+      "bytes": 792615,
+      "w": 205,
+      "h": 256
+    },
+    "concept/race-beastkin.png": {
+      "thumb": "c52bf57b36dcac1a.webp",
+      "bytes": 1321405,
+      "w": 171,
+      "h": 256
+    },
+    "concept/race-demon.png": {
+      "thumb": "6e6204d1f0c72a09.webp",
+      "bytes": 1044470,
+      "w": 171,
+      "h": 256
+    },
+    "concept/race-dragon.png": {
+      "thumb": "f33d7149f80151b0.webp",
+      "bytes": 1370224,
+      "w": 171,
+      "h": 256
+    },
+    "concept/race-dwarf.png": {
+      "thumb": "31635be4fdacbc70.webp",
+      "bytes": 1527592,
+      "w": 171,
+      "h": 256
+    },
+    "concept/race-elf.png": {
+      "thumb": "38d3c94fa2ddd399.webp",
+      "bytes": 1457204,
+      "w": 171,
+      "h": 256
+    },
+    "concept/race-immortal.png": {
+      "thumb": "254df02ad27ef272.webp",
+      "bytes": 1468133,
+      "w": 171,
+      "h": 256
+    },
+    "concept/race-ogre.png": {
+      "thumb": "60bcd3ac7b373702.webp",
+      "bytes": 1630171,
+      "w": 171,
+      "h": 256
+    },
+    "maps/cluster1-world.png": {
+      "thumb": "d0571e8e5c96aef6.webp",
+      "bytes": 1326403,
+      "w": 256,
+      "h": 221
+    },
+    "res://assets/characters/4gtn_forgotten.glb": {
+      "thumb": "94672f24b8fad226.webp",
+      "bytes": 2892348,
+      "w": 155,
+      "h": 256
+    },
+    "res://assets/characters/4gtn.glb": {
+      "thumb": "c755268ac1503107.webp",
+      "bytes": 2584012,
+      "w": 155,
+      "h": 256
+    },
+    "res://assets/characters/animatronic_creepy.glb": {
+      "thumb": "20d78872a257f664.webp",
+      "bytes": 2090556,
+      "w": 127,
+      "h": 256
+    },
+    "res://assets/characters/animatronic_normal.glb": {
+      "thumb": "46254630f584d09a.webp",
+      "bytes": 2022660,
+      "w": 127,
+      "h": 256
+    },
+    "res://assets/characters/archer.glb": {
+      "thumb": "efed57158f0eabde.webp",
+      "bytes": 1128584,
+      "w": 136,
+      "h": 256
+    },
+    "res://assets/characters/avianswordsman.glb": {
+      "thumb": "2ff35dbd1beb0729.webp",
+      "bytes": 2129440,
+      "w": 131,
+      "h": 256
+    },
+    "res://assets/characters/barbarian.glb": {
+      "thumb": "3e33ed13ee283e07.webp",
+      "bytes": 1030628,
+      "w": 126,
+      "h": 256
+    },
+    "res://assets/characters/blackknight.glb": {
+      "thumb": "375bf10e4e115553.webp",
+      "bytes": 2182644,
+      "w": 193,
+      "h": 256
+    },
+    "res://assets/characters/caveman.glb": {
+      "thumb": "a994515e4cae37d6.webp",
+      "bytes": 1994884,
+      "w": 134,
+      "h": 256
+    },
+    "res://assets/characters/clanker.glb": {
+      "thumb": "730d700211e02c45.webp",
+      "bytes": 3263024,
+      "w": 161,
+      "h": 256
+    },
+    "res://assets/characters/cleric.glb": {
+      "thumb": "732c40c78f7d95e3.webp",
+      "bytes": 2242956,
+      "w": 140,
+      "h": 256
+    },
+    "res://assets/characters/clown.glb": {
+      "thumb": "71ac9487d2cbbbab.webp",
+      "bytes": 2037072,
+      "w": 119,
+      "h": 256
+    },
+    "res://assets/characters/combatmech.glb": {
+      "thumb": "cb10f411832292b9.webp",
+      "bytes": 2420104,
+      "w": 175,
+      "h": 256
+    },
+    "res://assets/characters/farmer_a.glb": {
+      "thumb": "69c8c2f16388c097.webp",
+      "bytes": 2094144,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/characters/farmer_b.glb": {
+      "thumb": "9fab2a45b3f8b2de.webp",
+      "bytes": 2150300,
+      "w": 206,
+      "h": 256
+    },
+    "res://assets/characters/frostgolem.glb": {
+      "thumb": "866aa1044a539ac9.webp",
+      "bytes": 2613148,
+      "w": 168,
+      "h": 256
+    },
+    "res://assets/characters/helper_a.glb": {
+      "thumb": "1c78f0a87e2c5b5a.webp",
+      "bytes": 2025108,
+      "w": 137,
+      "h": 256
+    },
+    "res://assets/characters/helper_b.glb": {
+      "thumb": "70b460156d1b084b.webp",
+      "bytes": 2014516,
+      "w": 152,
+      "h": 256
+    },
+    "res://assets/characters/hiker.glb": {
+      "thumb": "6c36d8f91fb5f43a.webp",
+      "bytes": 2308116,
+      "w": 187,
+      "h": 256
+    },
+    "res://assets/characters/hoarder.glb": {
+      "thumb": "07c3fc08f6f76628.webp",
+      "bytes": 2972956,
+      "w": 209,
+      "h": 256
+    },
+    "res://assets/characters/lorekeeper.glb": {
+      "thumb": "83d384a7d166e2b5.webp",
+      "bytes": 2343132,
+      "w": 183,
+      "h": 256
+    },
+    "res://assets/characters/mage.glb": {
+      "thumb": "152a653021a90516.webp",
+      "bytes": 996348,
+      "w": 190,
+      "h": 256
+    },
+    "res://assets/characters/magicalgirl.glb": {
+      "thumb": "98b7ad52bed8c243.webp",
+      "bytes": 2192744,
+      "w": 179,
+      "h": 256
+    },
+    "res://assets/characters/marksman.glb": {
+      "thumb": "311bd1da7faa3256.webp",
+      "bytes": 2423996,
+      "w": 165,
+      "h": 256
+    },
+    "res://assets/characters/mob_spear_thrower.glb": {
+      "thumb": "399fa811766c6faf.webp",
+      "bytes": 2908276,
+      "w": 256,
+      "h": 215
+    },
+    "res://assets/characters/monstrosity.glb": {
+      "thumb": "eb6a7a06a976b04c.webp",
+      "bytes": 2338020,
+      "w": 169,
+      "h": 256
+    },
+    "res://assets/characters/necromancer.glb": {
+      "thumb": "ee5c1faa5f852886.webp",
+      "bytes": 2167784,
+      "w": 170,
+      "h": 256
+    },
+    "res://assets/characters/orc_brute.glb": {
+      "thumb": "2eb31bf6e3478079.webp",
+      "bytes": 2442476,
+      "w": 171,
+      "h": 256
+    },
+    "res://assets/characters/paladin_with_helmet.glb": {
+      "thumb": "96e1f09f48bd673d.webp",
+      "bytes": 2113648,
+      "w": 162,
+      "h": 256
+    },
+    "res://assets/characters/paladin.glb": {
+      "thumb": "de2fcb6cad058bbd.webp",
+      "bytes": 2065304,
+      "w": 140,
+      "h": 256
+    },
+    "res://assets/characters/plantwarrior.glb": {
+      "thumb": "cb4c172b57bf6fb1.webp",
+      "bytes": 2133892,
+      "w": 144,
+      "h": 256
+    },
+    "res://assets/characters/player_knight.glb": {
+      "thumb": "838e6aaf84cf54bc.webp",
+      "bytes": 2870252,
+      "w": 247,
+      "h": 256
+    },
+    "res://assets/characters/protagonist_a.glb": {
+      "thumb": "07bf82ac1b8aeebb.webp",
+      "bytes": 2270380,
+      "w": 187,
+      "h": 256
+    },
+    "res://assets/characters/protagonist_b.glb": {
+      "thumb": "70a46833d43983b5.webp",
+      "bytes": 2220976,
+      "w": 154,
+      "h": 256
+    },
+    "res://assets/characters/robot_one.glb": {
+      "thumb": "b758e7fa75c0bf26.webp",
+      "bytes": 2128912,
+      "w": 125,
+      "h": 256
+    },
+    "res://assets/characters/robot_two.glb": {
+      "thumb": "1f2a043b75e97ec7.webp",
+      "bytes": 2117228,
+      "w": 117,
+      "h": 256
+    },
+    "res://assets/characters/rogue.glb": {
+      "thumb": "c9fd9c441b421a77.webp",
+      "bytes": 1053164,
+      "w": 150,
+      "h": 256
+    },
+    "res://assets/characters/skeleton_golem.glb": {
+      "thumb": "1be5e4de3c1613e1.webp",
+      "bytes": 2085076,
+      "w": 167,
+      "h": 256
+    },
+    "res://assets/characters/skeleton_mage.glb": {
+      "thumb": "1c85e82669d53810.webp",
+      "bytes": 2028428,
+      "w": 185,
+      "h": 256
+    },
+    "res://assets/characters/skeleton_minion.glb": {
+      "thumb": "008ee8aafc2a75b6.webp",
+      "bytes": 2081268,
+      "w": 123,
+      "h": 256
+    },
+    "res://assets/characters/skeleton_rogue.glb": {
+      "thumb": "86637b844ac65801.webp",
+      "bytes": 2093828,
+      "w": 141,
+      "h": 256
+    },
+    "res://assets/characters/skeleton_warrior.glb": {
+      "thumb": "959999a7e7716d08.webp",
+      "bytes": 2130112,
+      "w": 134,
+      "h": 256
+    },
+    "res://assets/characters/superhero.glb": {
+      "thumb": "9ba44f1098d56d98.webp",
+      "bytes": 1973360,
+      "w": 220,
+      "h": 256
+    },
+    "res://assets/characters/tiefling.glb": {
+      "thumb": "1d06ac3ab4c4b518.webp",
+      "bytes": 2284580,
+      "w": 133,
+      "h": 256
+    },
+    "res://assets/characters/toysoldier.glb": {
+      "thumb": "b45432c7445122ed.webp",
+      "bytes": 2177364,
+      "w": 141,
+      "h": 256
+    },
+    "res://assets/characters/vampire.glb": {
+      "thumb": "c87fa82c89f7acb6.webp",
+      "bytes": 2107488,
+      "w": 183,
+      "h": 256
+    },
+    "res://assets/characters/werewolf_man.glb": {
+      "thumb": "bb14d1b8573d4769.webp",
+      "bytes": 1963888,
+      "w": 125,
+      "h": 256
+    },
+    "res://assets/characters/werewolf_wolf.glb": {
+      "thumb": "7d77d4358f8bbe34.webp",
+      "bytes": 1985056,
+      "w": 126,
+      "h": 256
+    },
+    "res://assets/characters/witch.glb": {
+      "thumb": "71a7713667aedf88.webp",
+      "bytes": 2079260,
+      "w": 183,
+      "h": 256
+    },
+    "res://assets/creatures/bunny.glb": {
+      "thumb": "e1deb911afbc8318.webp",
+      "bytes": 538360,
+      "w": 247,
+      "h": 256
+    },
+    "res://assets/creatures/demon.glb": {
+      "thumb": "cf8c8418ae5a0e45.webp",
+      "bytes": 321140,
+      "w": 256,
+      "h": 161
+    },
+    "res://assets/creatures/dragon.glb": {
+      "thumb": "7f2637e2d6c8a84b.webp",
+      "bytes": 251540,
+      "w": 256,
+      "h": 129
+    },
+    "res://assets/creatures/ghost.glb": {
+      "thumb": "68aa085a54d72381.webp",
+      "bytes": 203360,
+      "w": 220,
+      "h": 256
+    },
+    "res://assets/creatures/green_blob.glb": {
+      "thumb": "1c1776b26f613b09.webp",
+      "bytes": 74812,
+      "w": 256,
+      "h": 231
+    },
+    "res://assets/creatures/green_spiky_blob.glb": {
+      "thumb": "bbcc2fa81c4ea752.webp",
+      "bytes": 185820,
+      "w": 256,
+      "h": 256
+    },
+    "res://assets/creatures/mushnub.glb": {
+      "thumb": "378a0467978cba26.webp",
+      "bytes": 67900,
+      "w": 234,
+      "h": 256
+    },
+    "res://assets/creatures/mushroom_king.glb": {
+      "thumb": "2dfe315054496a37.webp",
+      "bytes": 444228,
+      "w": 248,
+      "h": 256
+    },
+    "res://assets/creatures/orc_enemy.glb": {
+      "thumb": "30af99bf35576df6.webp",
+      "bytes": 146420,
+      "w": 234,
+      "h": 256
+    },
+    "res://assets/creatures/orc.glb": {
+      "thumb": "3ffc35e633312739.webp",
+      "bytes": 512984,
+      "w": 222,
+      "h": 256
+    },
+    "res://assets/creatures/pink_slime.glb": {
+      "thumb": "3992d77a081c39dd.webp",
+      "bytes": 62652,
+      "w": 240,
+      "h": 256
+    },
+    "res://assets/creatures/skeleton.glb": {
+      "thumb": "1b0430e316b25bab.webp",
+      "bytes": 662212,
+      "w": 256,
+      "h": 236
+    },
+    "res://assets/creatures/slime.glb": {
+      "thumb": "16dcc9abdcc35751.webp",
+      "bytes": 174396,
+      "w": 256,
+      "h": 222
+    },
+    "res://assets/creatures/spider.glb": {
+      "thumb": "4f114af2b59bc45e.webp",
+      "bytes": 449008,
+      "w": 256,
+      "h": 152
+    },
+    "res://assets/creatures/yeti.glb": {
+      "thumb": "6bb283f32bccaa99.webp",
+      "bytes": 111224,
+      "w": 256,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_blue.glb": {
+      "thumb": "724fdb77a9624d28.webp",
+      "bytes": 24980,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_brown.glb": {
+      "thumb": "3fb19ed52d6896c9.webp",
+      "bytes": 24980,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_green.glb": {
+      "thumb": "bfe5a031a9dcefd4.webp",
+      "bytes": 24980,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patterna_blue.glb": {
+      "thumb": "3033e0469ca1fbeb.webp",
+      "bytes": 26132,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patterna_brown.glb": {
+      "thumb": "52273ffc5012443e.webp",
+      "bytes": 26136,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patterna_green.glb": {
+      "thumb": "8fce5987bf2e7d55.webp",
+      "bytes": 26136,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patterna_red.glb": {
+      "thumb": "09281d42961f2b9b.webp",
+      "bytes": 26132,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patterna_white.glb": {
+      "thumb": "c79a1ce321695e75.webp",
+      "bytes": 26136,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patterna_yellow.glb": {
+      "thumb": "c823977450f29f18.webp",
+      "bytes": 26136,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patternb_blue.glb": {
+      "thumb": "491e5a60dc569bdc.webp",
+      "bytes": 25316,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patternb_brown.glb": {
+      "thumb": "75cc52771eb7f835.webp",
+      "bytes": 25320,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patternb_green.glb": {
+      "thumb": "26f8f739deefb512.webp",
+      "bytes": 25320,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patternb_red.glb": {
+      "thumb": "92dca6977ccefdb0.webp",
+      "bytes": 25316,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patternb_white.glb": {
+      "thumb": "a5c1b357d727551e.webp",
+      "bytes": 25320,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patternb_yellow.glb": {
+      "thumb": "029dedab9f61afe3.webp",
+      "bytes": 25320,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patternc_blue.glb": {
+      "thumb": "4227c993092d9ded.webp",
+      "bytes": 25316,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patternc_brown.glb": {
+      "thumb": "a7aebfb622ddc392.webp",
+      "bytes": 25320,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patternc_green.glb": {
+      "thumb": "2566aa586f5dfb05.webp",
+      "bytes": 25320,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patternc_red.glb": {
+      "thumb": "0fa5dd6a31148b8a.webp",
+      "bytes": 25316,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patternc_white.glb": {
+      "thumb": "0a212fb40c6c2101.webp",
+      "bytes": 25320,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_patternc_yellow.glb": {
+      "thumb": "3e527d3306daae64.webp",
+      "bytes": 25320,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_red.glb": {
+      "thumb": "55e555597bf5f459.webp",
+      "bytes": 24976,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_shield_blue.glb": {
+      "thumb": "17d31b8dc4ac714e.webp",
+      "bytes": 54980,
+      "w": 133,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_shield_brown.glb": {
+      "thumb": "2cb5c034ab338f09.webp",
+      "bytes": 54980,
+      "w": 133,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_shield_green.glb": {
+      "thumb": "fe0cabe8c4083029.webp",
+      "bytes": 54980,
+      "w": 133,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_shield_red.glb": {
+      "thumb": "733e0f5de0a8a9f5.webp",
+      "bytes": 54976,
+      "w": 133,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_shield_white.glb": {
+      "thumb": "bbc055c68136bc3a.webp",
+      "bytes": 54980,
+      "w": 133,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_shield_yellow.glb": {
+      "thumb": "00d8fc398c93f8b3.webp",
+      "bytes": 54984,
+      "w": 133,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_thin_blue.glb": {
+      "thumb": "716b6a0eff6d2074.webp",
+      "bytes": 23888,
+      "w": 76,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_thin_brown.glb": {
+      "thumb": "a0969d0315a66c94.webp",
+      "bytes": 23888,
+      "w": 76,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_thin_green.glb": {
+      "thumb": "06f6f746d7f0c832.webp",
+      "bytes": 23888,
+      "w": 76,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_thin_red.glb": {
+      "thumb": "e0e90048cb6d9c06.webp",
+      "bytes": 23884,
+      "w": 76,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_thin_white.glb": {
+      "thumb": "2bc6164672adabf2.webp",
+      "bytes": 23888,
+      "w": 76,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_thin_yellow.glb": {
+      "thumb": "41d8cffd2085a1f2.webp",
+      "bytes": 23892,
+      "w": 76,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_triple_blue.glb": {
+      "thumb": "a2c989453bdf83dc.webp",
+      "bytes": 35920,
+      "w": 217,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_triple_brown.glb": {
+      "thumb": "30ec985f0cb69feb.webp",
+      "bytes": 35920,
+      "w": 217,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_triple_green.glb": {
+      "thumb": "2b609211ce08ab08.webp",
+      "bytes": 35920,
+      "w": 217,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_triple_red.glb": {
+      "thumb": "054fe586c6a76c69.webp",
+      "bytes": 35916,
+      "w": 217,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_triple_white.glb": {
+      "thumb": "895082d83a12dece.webp",
+      "bytes": 35920,
+      "w": 217,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_triple_yellow.glb": {
+      "thumb": "83a9adbb669b5776.webp",
+      "bytes": 35924,
+      "w": 217,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_white.glb": {
+      "thumb": "ada2380f05e30801.webp",
+      "bytes": 24980,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/banner_yellow.glb": {
+      "thumb": "f29f83d6c97d16ff.webp",
+      "bytes": 24984,
+      "w": 97,
+      "h": 256
+    },
+    "res://assets/dungeon/bar_innercorner.glb": {
+      "thumb": "f457b1d0434182ff.webp",
+      "bytes": 47456,
+      "w": 256,
+      "h": 224
+    },
+    "res://assets/dungeon/bar_outercorner.glb": {
+      "thumb": "0fd54ebea07d0915.webp",
+      "bytes": 49960,
+      "w": 256,
+      "h": 217
+    },
+    "res://assets/dungeon/bar_straight_a_short.glb": {
+      "thumb": "cb08caec9d56fc71.webp",
+      "bytes": 29988,
+      "w": 256,
+      "h": 234
+    },
+    "res://assets/dungeon/bar_straight_a.glb": {
+      "thumb": "42152ed2083765e4.webp",
+      "bytes": 36912,
+      "w": 256,
+      "h": 196
+    },
+    "res://assets/dungeon/bar_straight_b_short.glb": {
+      "thumb": "7d9f731e00ffc8ae.webp",
+      "bytes": 34724,
+      "w": 256,
+      "h": 234
+    },
+    "res://assets/dungeon/bar_straight_b.glb": {
+      "thumb": "2e503eb185dce975.webp",
+      "bytes": 36200,
+      "w": 256,
+      "h": 197
+    },
+    "res://assets/dungeon/bar_straight_c_short.glb": {
+      "thumb": "16bdfcf961425d21.webp",
+      "bytes": 34708,
+      "w": 256,
+      "h": 234
+    },
+    "res://assets/dungeon/bar_straight_c.glb": {
+      "thumb": "6bb28fee3500588f.webp",
+      "bytes": 43208,
+      "w": 256,
+      "h": 197
+    },
+    "res://assets/dungeon/barrel_large_decorated.glb": {
+      "thumb": "b40b9fd0f35cd834.webp",
+      "bytes": 69628,
+      "w": 165,
+      "h": 256
+    },
+    "res://assets/dungeon/barrel_large.glb": {
+      "thumb": "2c13cad20a5dc92d.webp",
+      "bytes": 44192,
+      "w": 212,
+      "h": 256
+    },
+    "res://assets/dungeon/barrel_small_stack.glb": {
+      "thumb": "187ec5d338eb187a.webp",
+      "bytes": 91944,
+      "w": 217,
+      "h": 256
+    },
+    "res://assets/dungeon/barrel_small.glb": {
+      "thumb": "ba5dd5549db4502b.webp",
+      "bytes": 33080,
+      "w": 226,
+      "h": 256
+    },
+    "res://assets/dungeon/barrier_colum_half.glb": {
+      "thumb": "474a394c9174dc9e.webp",
+      "bytes": 24544,
+      "w": 256,
+      "h": 230
+    },
+    "res://assets/dungeon/barrier_column.glb": {
+      "thumb": "b5d8932c047d64af.webp",
+      "bytes": 26200,
+      "w": 256,
+      "h": 165
+    },
+    "res://assets/dungeon/barrier_corner.glb": {
+      "thumb": "0c9c84e1835871cb.webp",
+      "bytes": 27456,
+      "w": 217,
+      "h": 256
+    },
+    "res://assets/dungeon/barrier_half.glb": {
+      "thumb": "3476281cc9c2c606.webp",
+      "bytes": 21292,
+      "w": 256,
+      "h": 230
+    },
+    "res://assets/dungeon/barrier.glb": {
+      "thumb": "af871104fe120e04.webp",
+      "bytes": 24628,
+      "w": 256,
+      "h": 161
+    },
+    "res://assets/dungeon/bartop_a_large.glb": {
+      "thumb": "98e87b48faebaee3.webp",
+      "bytes": 34288,
+      "w": 256,
+      "h": 238
+    },
+    "res://assets/dungeon/bartop_a_medium.glb": {
+      "thumb": "f96f0f56174fc0ab.webp",
+      "bytes": 34292,
+      "w": 181,
+      "h": 256
+    },
+    "res://assets/dungeon/bartop_a_small.glb": {
+      "thumb": "b9274f1c52cba416.webp",
+      "bytes": 34292,
+      "w": 121,
+      "h": 256
+    },
+    "res://assets/dungeon/bartop_b_large.glb": {
+      "thumb": "4b882e7d1a0def9a.webp",
+      "bytes": 38088,
+      "w": 256,
+      "h": 223
+    },
+    "res://assets/dungeon/bartop_b_medium.glb": {
+      "thumb": "df7c3c912d107485.webp",
+      "bytes": 36604,
+      "w": 195,
+      "h": 256
+    },
+    "res://assets/dungeon/bartop_b_small.glb": {
+      "thumb": "3db7b16534b24ede.webp",
+      "bytes": 36604,
+      "w": 132,
+      "h": 256
+    },
+    "res://assets/dungeon/bed_a_double.glb": {
+      "thumb": "abbda41cd773a404.webp",
+      "bytes": 50472,
+      "w": 256,
+      "h": 160
+    },
+    "res://assets/dungeon/bed_a_single.glb": {
+      "thumb": "6ac65ae9b3f9f11a.webp",
+      "bytes": 45932,
+      "w": 256,
+      "h": 172
+    },
+    "res://assets/dungeon/bed_a_stacked.glb": {
+      "thumb": "4db7ea81f31d28c0.webp",
+      "bytes": 92956,
+      "w": 233,
+      "h": 256
+    },
+    "res://assets/dungeon/bed_b_double.glb": {
+      "thumb": "13b9e395425e6a62.webp",
+      "bytes": 80468,
+      "w": 256,
+      "h": 185
+    },
+    "res://assets/dungeon/bed_b_single.glb": {
+      "thumb": "836148e5fdf26e00.webp",
+      "bytes": 73812,
+      "w": 256,
+      "h": 203
+    },
+    "res://assets/dungeon/bed_decorated.glb": {
+      "thumb": "4c16a50a4cbcef5d.webp",
+      "bytes": 88472,
+      "w": 256,
+      "h": 182
+    },
+    "res://assets/dungeon/bed_floor.glb": {
+      "thumb": "783b159dfffa3138.webp",
+      "bytes": 25872,
+      "w": 256,
+      "h": 139
+    },
+    "res://assets/dungeon/bed_frame.glb": {
+      "thumb": "d9eba4cfb685ba12.webp",
+      "bytes": 30996,
+      "w": 256,
+      "h": 171
+    },
+    "res://assets/dungeon/bench.glb": {
+      "thumb": "35df9aea09854500.webp",
+      "bytes": 36880,
+      "w": 256,
+      "h": 175
+    },
+    "res://assets/dungeon/book_brown.glb": {
+      "thumb": "c07c81efa918d9c4.webp",
+      "bytes": 21672,
+      "w": 175,
+      "h": 256
+    },
+    "res://assets/dungeon/book_grey.glb": {
+      "thumb": "7410695c6ae23a84.webp",
+      "bytes": 21664,
+      "w": 175,
+      "h": 256
+    },
+    "res://assets/dungeon/book_tan.glb": {
+      "thumb": "df00128849f4bf8c.webp",
+      "bytes": 21668,
+      "w": 175,
+      "h": 256
+    },
+    "res://assets/dungeon/bookcase_double_decorateda.glb": {
+      "thumb": "09564d41a716b692.webp",
+      "bytes": 157356,
+      "w": 227,
+      "h": 256
+    },
+    "res://assets/dungeon/bookcase_double_decoratedb.glb": {
+      "thumb": "08bfddce2eb4a13b.webp",
+      "bytes": 141364,
+      "w": 225,
+      "h": 256
+    },
+    "res://assets/dungeon/bookcase_double.glb": {
+      "thumb": "925216a6d4dad321.webp",
+      "bytes": 33568,
+      "w": 227,
+      "h": 256
+    },
+    "res://assets/dungeon/bookcase_single_decorateda.glb": {
+      "thumb": "b76b5ca416a2be88.webp",
+      "bytes": 94152,
+      "w": 145,
+      "h": 256
+    },
+    "res://assets/dungeon/bookcase_single_decoratedb.glb": {
+      "thumb": "ac0fc8e381f5ed61.webp",
+      "bytes": 97184,
+      "w": 144,
+      "h": 256
+    },
+    "res://assets/dungeon/bookcase_single.glb": {
+      "thumb": "3323907d0a06e8d4.webp",
+      "bytes": 32232,
+      "w": 144,
+      "h": 256
+    },
+    "res://assets/dungeon/bottle_a_brown.glb": {
+      "thumb": "88d5b9780da80e04.webp",
+      "bytes": 26172,
+      "w": 106,
+      "h": 256
+    },
+    "res://assets/dungeon/bottle_a_green.glb": {
+      "thumb": "5bbc40356d3478e9.webp",
+      "bytes": 26684,
+      "w": 106,
+      "h": 256
+    },
+    "res://assets/dungeon/bottle_a_labeled_brown.glb": {
+      "thumb": "9b22014559b15f41.webp",
+      "bytes": 26316,
+      "w": 106,
+      "h": 256
+    },
+    "res://assets/dungeon/bottle_a_labeled_green.glb": {
+      "thumb": "39e82345f4563090.webp",
+      "bytes": 26828,
+      "w": 106,
+      "h": 256
+    },
+    "res://assets/dungeon/bottle_b_brown.glb": {
+      "thumb": "a5dee6897208468a.webp",
+      "bytes": 26168,
+      "w": 148,
+      "h": 256
+    },
+    "res://assets/dungeon/bottle_b_green.glb": {
+      "thumb": "416f57efada8a8b7.webp",
+      "bytes": 26680,
+      "w": 148,
+      "h": 256
+    },
+    "res://assets/dungeon/bottle_c_brown.glb": {
+      "thumb": "ebdc79c5ef1f6bc9.webp",
+      "bytes": 26172,
+      "w": 184,
+      "h": 256
+    },
+    "res://assets/dungeon/bottle_c_green.glb": {
+      "thumb": "00e7c11dd5cdf696.webp",
+      "bytes": 26684,
+      "w": 184,
+      "h": 256
+    },
+    "res://assets/dungeon/box_large.glb": {
+      "thumb": "866110c8a0abd1c8.webp",
+      "bytes": 29756,
+      "w": 256,
+      "h": 243
+    },
+    "res://assets/dungeon/box_small_decorated.glb": {
+      "thumb": "c65033cb553ae6f2.webp",
+      "bytes": 72712,
+      "w": 211,
+      "h": 256
+    },
+    "res://assets/dungeon/box_small.glb": {
+      "thumb": "fb5990f62aa580c1.webp",
+      "bytes": 29708,
+      "w": 256,
+      "h": 243
+    },
+    "res://assets/dungeon/box_stacked.glb": {
+      "thumb": "6e96cc8f2ab81620.webp",
+      "bytes": 141868,
+      "w": 198,
+      "h": 256
+    },
+    "res://assets/dungeon/bucket_pickaxes.glb": {
+      "thumb": "c2af46a849300c24.webp",
+      "bytes": 45788,
+      "w": 238,
+      "h": 256
+    },
+    "res://assets/dungeon/bucket.glb": {
+      "thumb": "30ed9703ab6aa7cc.webp",
+      "bytes": 33336,
+      "w": 256,
+      "h": 255
+    },
+    "res://assets/dungeon/candle_lit.glb": {
+      "thumb": "61e03371898ea2a9.webp",
+      "bytes": 22956,
+      "w": 85,
+      "h": 256
+    },
+    "res://assets/dungeon/candle_melted.glb": {
+      "thumb": "4c23fdec4a7a2da3.webp",
+      "bytes": 21712,
+      "w": 121,
+      "h": 256
+    },
+    "res://assets/dungeon/candle_thin_lit.glb": {
+      "thumb": "810afb3a85a3e1dd.webp",
+      "bytes": 22968,
+      "w": 53,
+      "h": 256
+    },
+    "res://assets/dungeon/candle_thin.glb": {
+      "thumb": "37e5f744052f256a.webp",
+      "bytes": 21708,
+      "w": 62,
+      "h": 256
+    },
+    "res://assets/dungeon/candle_triple.glb": {
+      "thumb": "e91dad9af0818f05.webp",
+      "bytes": 28332,
+      "w": 134,
+      "h": 256
+    },
+    "res://assets/dungeon/candle.glb": {
+      "thumb": "43925c067a289d91.webp",
+      "bytes": 21700,
+      "w": 102,
+      "h": 256
+    },
+    "res://assets/dungeon/ceiling_tile.glb": {
+      "thumb": "e6f2b5f481320ccf.webp",
+      "bytes": 21940,
+      "w": 256,
+      "h": 118
+    },
+    "res://assets/dungeon/chair.glb": {
+      "thumb": "86348bbf9e14a1d2.webp",
+      "bytes": 36368,
+      "w": 193,
+      "h": 256
+    },
+    "res://assets/dungeon/chest_gold.glb": {
+      "thumb": "7175bb5254e5b476.webp",
+      "bytes": 99788,
+      "w": 256,
+      "h": 239
+    },
+    "res://assets/dungeon/chest_large_gold.glb": {
+      "thumb": "bc8bde8c0952ba9b.webp",
+      "bytes": 59536,
+      "w": 256,
+      "h": 208
+    },
+    "res://assets/dungeon/chest_large.glb": {
+      "thumb": "abbb7ea8d3176ad6.webp",
+      "bytes": 59516,
+      "w": 256,
+      "h": 208
+    },
+    "res://assets/dungeon/chest_mimic.glb": {
+      "thumb": "04083195369fe0a7.webp",
+      "bytes": 75088,
+      "w": 256,
+      "h": 239
+    },
+    "res://assets/dungeon/chest.glb": {
+      "thumb": "995ea1a34171467e.webp",
+      "bytes": 59652,
+      "w": 256,
+      "h": 239
+    },
+    "res://assets/dungeon/coin_stack_large.glb": {
+      "thumb": "bb7aade3e870e5c0.webp",
+      "bytes": 100880,
+      "w": 191,
+      "h": 256
+    },
+    "res://assets/dungeon/coin_stack_medium.glb": {
+      "thumb": "f3729533492f89ed.webp",
+      "bytes": 64436,
+      "w": 256,
+      "h": 246
+    },
+    "res://assets/dungeon/coin_stack_small.glb": {
+      "thumb": "83b33db467062688.webp",
+      "bytes": 39232,
+      "w": 256,
+      "h": 216
+    },
+    "res://assets/dungeon/coin.glb": {
+      "thumb": "ce823f2c0f5be622.webp",
+      "bytes": 22852,
+      "w": 256,
+      "h": 173
+    },
+    "res://assets/dungeon/column.glb": {
+      "thumb": "cf51eaacf12edbaf.webp",
+      "bytes": 21592,
+      "w": 171,
+      "h": 256
+    },
+    "res://assets/dungeon/crate_large_decorated.glb": {
+      "thumb": "5300c08d6844b97f.webp",
+      "bytes": 58380,
+      "w": 256,
+      "h": 206
+    },
+    "res://assets/dungeon/crate_large.glb": {
+      "thumb": "4c88998f30ea583e.webp",
+      "bytes": 29828,
+      "w": 256,
+      "h": 183
+    },
+    "res://assets/dungeon/crate_small.glb": {
+      "thumb": "3d8b6fbc96a20d91.webp",
+      "bytes": 29848,
+      "w": 256,
+      "h": 185
+    },
+    "res://assets/dungeon/crates_stacked.glb": {
+      "thumb": "ddff06da1eca264a.webp",
+      "bytes": 100504,
+      "w": 165,
+      "h": 256
+    },
+    "res://assets/dungeon/floor_dirt_large_rocky.glb": {
+      "thumb": "31cf909df4d682cf.webp",
+      "bytes": 30448,
+      "w": 256,
+      "h": 122
+    },
+    "res://assets/dungeon/floor_dirt_large.glb": {
+      "thumb": "49e80432aab04564.webp",
+      "bytes": 25320,
+      "w": 256,
+      "h": 119
+    },
+    "res://assets/dungeon/floor_dirt_small_a.glb": {
+      "thumb": "1c86c6b975a60354.webp",
+      "bytes": 21580,
+      "w": 256,
+      "h": 126
+    },
+    "res://assets/dungeon/floor_dirt_small_b.glb": {
+      "thumb": "8c87f4a07c4e4998.webp",
+      "bytes": 20628,
+      "w": 256,
+      "h": 125
+    },
+    "res://assets/dungeon/floor_dirt_small_c.glb": {
+      "thumb": "097ca81f6707cfdb.webp",
+      "bytes": 20704,
+      "w": 256,
+      "h": 126
+    },
+    "res://assets/dungeon/floor_dirt_small_corner.glb": {
+      "thumb": "b0032a0051a33382.webp",
+      "bytes": 22036,
+      "w": 256,
+      "h": 126
+    },
+    "res://assets/dungeon/floor_dirt_small_d.glb": {
+      "thumb": "b323a85b1433d10a.webp",
+      "bytes": 19796,
+      "w": 256,
+      "h": 124
+    },
+    "res://assets/dungeon/floor_dirt_small_weeds.glb": {
+      "thumb": "04984dbcd70049f2.webp",
+      "bytes": 38028,
+      "w": 256,
+      "h": 128
+    },
+    "res://assets/dungeon/floor_foundation_allsides.glb": {
+      "thumb": "9afa428f6bfbbf74.webp",
+      "bytes": 45528,
+      "w": 256,
+      "h": 228
+    },
+    "res://assets/dungeon/floor_foundation_corner.glb": {
+      "thumb": "38a856b25fd59d59.webp",
+      "bytes": 32964,
+      "w": 256,
+      "h": 231
+    },
+    "res://assets/dungeon/floor_foundation_diagonal_corner.glb": {
+      "thumb": "8ee170c72ce5ede6.webp",
+      "bytes": 26192,
+      "w": 143,
+      "h": 256
+    },
+    "res://assets/dungeon/floor_foundation_front_and_back.glb": {
+      "thumb": "55b59c9fa06b24c7.webp",
+      "bytes": 32980,
+      "w": 256,
+      "h": 240
+    },
+    "res://assets/dungeon/floor_foundation_front_and_sides.glb": {
+      "thumb": "6cbc79667edf9ff3.webp",
+      "bytes": 39260,
+      "w": 256,
+      "h": 234
+    },
+    "res://assets/dungeon/floor_foundation_front.glb": {
+      "thumb": "a5cafb1504c9a2d1.webp",
+      "bytes": 26676,
+      "w": 256,
+      "h": 237
+    },
+    "res://assets/dungeon/floor_tile_big_grate_open.glb": {
+      "thumb": "f0941a35377140a2.webp",
+      "bytes": 37092,
+      "w": 256,
+      "h": 109
+    },
+    "res://assets/dungeon/floor_tile_big_grate.glb": {
+      "thumb": "89812c8bfec3a314.webp",
+      "bytes": 37640,
+      "w": 256,
+      "h": 119
+    },
+    "res://assets/dungeon/floor_tile_big_spikes.glb": {
+      "thumb": "5c7262dbaa49ce2a.webp",
+      "bytes": 60180,
+      "w": 256,
+      "h": 195
+    },
+    "res://assets/dungeon/floor_tile_extralarge_grates_open.glb": {
+      "thumb": "9e2633e9d55dc018.webp",
+      "bytes": 65608,
+      "w": 256,
+      "h": 111
+    },
+    "res://assets/dungeon/floor_tile_extralarge_grates.glb": {
+      "thumb": "36b0c54c1072fd3e.webp",
+      "bytes": 66156,
+      "w": 256,
+      "h": 111
+    },
+    "res://assets/dungeon/floor_tile_grate_open.glb": {
+      "thumb": "8ca7150b7f26c448.webp",
+      "bytes": 27912,
+      "w": 256,
+      "h": 113
+    },
+    "res://assets/dungeon/floor_tile_grate.glb": {
+      "thumb": "c65e2f2d43839738.webp",
+      "bytes": 28044,
+      "w": 256,
+      "h": 143
+    },
+    "res://assets/dungeon/floor_tile_large_rocks.glb": {
+      "thumb": "ff01f4874a0d6977.webp",
+      "bytes": 37944,
+      "w": 256,
+      "h": 126
+    },
+    "res://assets/dungeon/floor_tile_large.glb": {
+      "thumb": "dc723f5054200444.webp",
+      "bytes": 28288,
+      "w": 256,
+      "h": 119
+    },
+    "res://assets/dungeon/floor_tile_small_broken_a.glb": {
+      "thumb": "9d98f13a157e015b.webp",
+      "bytes": 23488,
+      "w": 256,
+      "h": 126
+    },
+    "res://assets/dungeon/floor_tile_small_broken_b.glb": {
+      "thumb": "c1331a6d36bec345.webp",
+      "bytes": 22416,
+      "w": 256,
+      "h": 126
+    },
+    "res://assets/dungeon/floor_tile_small_corner.glb": {
+      "thumb": "fc397ac1a4731c04.webp",
+      "bytes": 20224,
+      "w": 256,
+      "h": 247
+    },
+    "res://assets/dungeon/floor_tile_small_decorated.glb": {
+      "thumb": "e60388e1d7fe6864.webp",
+      "bytes": 40056,
+      "w": 256,
+      "h": 153
+    },
+    "res://assets/dungeon/floor_tile_small_weeds_a.glb": {
+      "thumb": "f6bb606ecb8647ad.webp",
+      "bytes": 45372,
+      "w": 256,
+      "h": 130
+    },
+    "res://assets/dungeon/floor_tile_small_weeds_b.glb": {
+      "thumb": "8e7560a176d9c104.webp",
+      "bytes": 38860,
+      "w": 256,
+      "h": 130
+    },
+    "res://assets/dungeon/floor_tile_small.glb": {
+      "thumb": "ecc140f1b02ead68.webp",
+      "bytes": 21960,
+      "w": 256,
+      "h": 126
+    },
+    "res://assets/dungeon/floor_wood_large_dark.glb": {
+      "thumb": "62b92c820d2e3ec8.webp",
+      "bytes": 36900,
+      "w": 256,
+      "h": 119
+    },
+    "res://assets/dungeon/floor_wood_large.glb": {
+      "thumb": "06717b2c013b9add.webp",
+      "bytes": 36892,
+      "w": 256,
+      "h": 119
+    },
+    "res://assets/dungeon/floor_wood_small_dark.glb": {
+      "thumb": "0b0f8bf13bb07700.webp",
+      "bytes": 23512,
+      "w": 256,
+      "h": 126
+    },
+    "res://assets/dungeon/floor_wood_small.glb": {
+      "thumb": "8415ba8932232e17.webp",
+      "bytes": 23504,
+      "w": 256,
+      "h": 126
+    },
+    "res://assets/dungeon/keg_decorated.glb": {
+      "thumb": "ccc1c48054112ab2.webp",
+      "bytes": 133728,
+      "w": 256,
+      "h": 213
+    },
+    "res://assets/dungeon/keg.glb": {
+      "thumb": "d944fc6ab34e4e80.webp",
+      "bytes": 58072,
+      "w": 239,
+      "h": 256
+    },
+    "res://assets/dungeon/key_gold.glb": {
+      "thumb": "06f66a04fa3b5c08.webp",
+      "bytes": 24492,
+      "w": 256,
+      "h": 203
+    },
+    "res://assets/dungeon/key.glb": {
+      "thumb": "210e200abf58d736.webp",
+      "bytes": 24480,
+      "w": 256,
+      "h": 176
+    },
+    "res://assets/dungeon/keyring_hanging.glb": {
+      "thumb": "ee3803a9f6a27d8c.webp",
+      "bytes": 45648,
+      "w": 111,
+      "h": 256
+    },
+    "res://assets/dungeon/keyring.glb": {
+      "thumb": "3d729a1de517145a.webp",
+      "bytes": 45632,
+      "w": 256,
+      "h": 125
+    },
+    "res://assets/dungeon/pickaxe_gold.glb": {
+      "thumb": "d81039b7464bccee.webp",
+      "bytes": 24336,
+      "w": 229,
+      "h": 256
+    },
+    "res://assets/dungeon/pickaxe.glb": {
+      "thumb": "e93ac1cac522a7db.webp",
+      "bytes": 24328,
+      "w": 229,
+      "h": 256
+    },
+    "res://assets/dungeon/pillar_decorated.glb": {
+      "thumb": "34a094b372656bee.webp",
+      "bytes": 62356,
+      "w": 127,
+      "h": 256
+    },
+    "res://assets/dungeon/pillar.glb": {
+      "thumb": "3c7aad1dc6cf1a53.webp",
+      "bytes": 26884,
+      "w": 102,
+      "h": 256
+    },
+    "res://assets/dungeon/plate_food_a.glb": {
+      "thumb": "9cceac10b078b36b.webp",
+      "bytes": 39568,
+      "w": 256,
+      "h": 245
+    },
+    "res://assets/dungeon/plate_food_b.glb": {
+      "thumb": "581f542b2bde3293.webp",
+      "bytes": 30952,
+      "w": 256,
+      "h": 133
+    },
+    "res://assets/dungeon/plate_small.glb": {
+      "thumb": "9a4cf0dcb6f66d2c.webp",
+      "bytes": 23716,
+      "w": 256,
+      "h": 134
+    },
+    "res://assets/dungeon/plate_stack.glb": {
+      "thumb": "520f29843a8d4b16.webp",
+      "bytes": 34244,
+      "w": 256,
+      "h": 200
+    },
+    "res://assets/dungeon/plate.glb": {
+      "thumb": "946fc749315d7ada.webp",
+      "bytes": 23700,
+      "w": 256,
+      "h": 113
+    },
+    "res://assets/dungeon/post.glb": {
+      "thumb": "4817d4a0199ee431.webp",
+      "bytes": 23272,
+      "w": 39,
+      "h": 256
+    },
+    "res://assets/dungeon/rocks_decorated.glb": {
+      "thumb": "71af38946a4bd620.webp",
+      "bytes": 60804,
+      "w": 234,
+      "h": 256
+    },
+    "res://assets/dungeon/rocks_gold.glb": {
+      "thumb": "08e82840fb3c4283.webp",
+      "bytes": 41204,
+      "w": 256,
+      "h": 223
+    },
+    "res://assets/dungeon/rocks_small.glb": {
+      "thumb": "ceaf7c8b7752852c.webp",
+      "bytes": 28580,
+      "w": 256,
+      "h": 181
+    },
+    "res://assets/dungeon/rocks.glb": {
+      "thumb": "97a77eea3c6dc12f.webp",
+      "bytes": 28672,
+      "w": 256,
+      "h": 223
+    },
+    "res://assets/dungeon/rubble_half.glb": {
+      "thumb": "68906b1820a43362.webp",
+      "bytes": 40176,
+      "w": 226,
+      "h": 256
+    },
+    "res://assets/dungeon/rubble_large.glb": {
+      "thumb": "f80909ea68653237.webp",
+      "bytes": 61532,
+      "w": 256,
+      "h": 206
+    },
+    "res://assets/dungeon/scaffold_beam_corner.glb": {
+      "thumb": "5be77e3eb6a204a0.webp",
+      "bytes": 20820,
+      "w": 256,
+      "h": 231
+    },
+    "res://assets/dungeon/scaffold_beam_wall.glb": {
+      "thumb": "eabe3a91ef73d64e.webp",
+      "bytes": 19424,
+      "w": 256,
+      "h": 105
+    },
+    "res://assets/dungeon/scaffold_beams_connected.glb": {
+      "thumb": "2273b23ef6d7fe62.webp",
+      "bytes": 25068,
+      "w": 256,
+      "h": 119
+    },
+    "res://assets/dungeon/scaffold_frame_large.glb": {
+      "thumb": "dbb8ac50c5539a8a.webp",
+      "bytes": 27352,
+      "w": 256,
+      "h": 198
+    },
+    "res://assets/dungeon/scaffold_frame_small.glb": {
+      "thumb": "90dba88ce6ffeff2.webp",
+      "bytes": 27352,
+      "w": 220,
+      "h": 256
+    },
+    "res://assets/dungeon/scaffold_pillar_corner.glb": {
+      "thumb": "423bb19a7be8832c.webp",
+      "bytes": 21672,
+      "w": 95,
+      "h": 256
+    },
+    "res://assets/dungeon/scaffold_pillar_wall_cross_top.glb": {
+      "thumb": "b29dac1a8c49b964.webp",
+      "bytes": 23424,
+      "w": 221,
+      "h": 256
+    },
+    "res://assets/dungeon/scaffold_pillar_wall_cross.glb": {
+      "thumb": "76ca2fd298e5be45.webp",
+      "bytes": 23416,
+      "w": 221,
+      "h": 256
+    },
+    "res://assets/dungeon/scaffold_pillar_wall_torch.glb": {
+      "thumb": "e71c13272c406eec.webp",
+      "bytes": 36732,
+      "w": 208,
+      "h": 256
+    },
+    "res://assets/dungeon/scaffold_pillar_wall.glb": {
+      "thumb": "3fb97b760dacbd0e.webp",
+      "bytes": 21892,
+      "w": 203,
+      "h": 256
+    },
+    "res://assets/dungeon/scaffold_pillars_connected_torch.glb": {
+      "thumb": "9d29242ca745669f.webp",
+      "bytes": 56828,
+      "w": 256,
+      "h": 191
+    },
+    "res://assets/dungeon/scaffold_pillars_connected.glb": {
+      "thumb": "e9ef76b24d5f3d48.webp",
+      "bytes": 27168,
+      "w": 256,
+      "h": 191
+    },
+    "res://assets/dungeon/shelf_large.glb": {
+      "thumb": "615ea99002210833.webp",
+      "bytes": 23348,
+      "w": 256,
+      "h": 117
+    },
+    "res://assets/dungeon/shelf_small_books.glb": {
+      "thumb": "3220c56f93296dda.webp",
+      "bytes": 32052,
+      "w": 256,
+      "h": 256
+    },
+    "res://assets/dungeon/shelf_small_candles.glb": {
+      "thumb": "edc9ee1abb51edd5.webp",
+      "bytes": 30328,
+      "w": 243,
+      "h": 256
+    },
+    "res://assets/dungeon/shelf_small.glb": {
+      "thumb": "2e774064a28203d1.webp",
+      "bytes": 22268,
+      "w": 256,
+      "h": 138
+    },
+    "res://assets/dungeon/shelves_decorated.glb": {
+      "thumb": "b214fbbafb5b92f4.webp",
+      "bytes": 87244,
+      "w": 179,
+      "h": 256
+    },
+    "res://assets/dungeon/shelves.glb": {
+      "thumb": "51bcb5dc4adb5127.webp",
+      "bytes": 28328,
+      "w": 219,
+      "h": 256
+    },
+    "res://assets/dungeon/stairs_long_modular_center.glb": {
+      "thumb": "61f29705a195f0ca.webp",
+      "bytes": 22076,
+      "w": 252,
+      "h": 256
+    },
+    "res://assets/dungeon/stairs_long_modular_left.glb": {
+      "thumb": "45dab80b59f788ad.webp",
+      "bytes": 36440,
+      "w": 221,
+      "h": 256
+    },
+    "res://assets/dungeon/stairs_long_modular_right.glb": {
+      "thumb": "db157b839967831a.webp",
+      "bytes": 36392,
+      "w": 225,
+      "h": 256
+    },
+    "res://assets/dungeon/stairs_long.glb": {
+      "thumb": "a150fe759a996b3a.webp",
+      "bytes": 50720,
+      "w": 256,
+      "h": 245
+    },
+    "res://assets/dungeon/stairs_modular_center.glb": {
+      "thumb": "db4f256cd30273aa.webp",
+      "bytes": 22068,
+      "w": 199,
+      "h": 256
+    },
+    "res://assets/dungeon/stairs_modular_left.glb": {
+      "thumb": "48ba04d991df5157.webp",
+      "bytes": 33112,
+      "w": 157,
+      "h": 256
+    },
+    "res://assets/dungeon/stairs_modular_right.glb": {
+      "thumb": "3884dfbcc5e30a14.webp",
+      "bytes": 33060,
+      "w": 154,
+      "h": 256
+    },
+    "res://assets/dungeon/stairs_narrow.glb": {
+      "thumb": "22d11745da3c386a.webp",
+      "bytes": 44076,
+      "w": 198,
+      "h": 256
+    },
+    "res://assets/dungeon/stairs_wall_left.glb": {
+      "thumb": "420fb12512e46a45.webp",
+      "bytes": 57988,
+      "w": 255,
+      "h": 256
+    },
+    "res://assets/dungeon/stairs_wall_right.glb": {
+      "thumb": "159608bbb69a8e98.webp",
+      "bytes": 57992,
+      "w": 256,
+      "h": 253
+    },
+    "res://assets/dungeon/stairs_walled.glb": {
+      "thumb": "9ccc5065dedcb643.webp",
+      "bytes": 71936,
+      "w": 256,
+      "h": 240
+    },
+    "res://assets/dungeon/stairs_wide.glb": {
+      "thumb": "b9690d4822f89575.webp",
+      "bytes": 44072,
+      "w": 248,
+      "h": 256
+    },
+    "res://assets/dungeon/stairs_wood_decorated.glb": {
+      "thumb": "f3239fa661e5bb70.webp",
+      "bytes": 157732,
+      "w": 256,
+      "h": 253
+    },
+    "res://assets/dungeon/stairs_wood.glb": {
+      "thumb": "8e5e09359761ff7e.webp",
+      "bytes": 35904,
+      "w": 256,
+      "h": 253
+    },
+    "res://assets/dungeon/stairs.glb": {
+      "thumb": "8291f891c557f089.webp",
+      "bytes": 44064,
+      "w": 223,
+      "h": 256
+    },
+    "res://assets/dungeon/stool_round.glb": {
+      "thumb": "e58e878c2dd374fb.webp",
+      "bytes": 32824,
+      "w": 256,
+      "h": 230
+    },
+    "res://assets/dungeon/stool.glb": {
+      "thumb": "81a755bbd98151d4.webp",
+      "bytes": 29280,
+      "w": 256,
+      "h": 204
+    },
+    "res://assets/dungeon/sword_shield_broken.glb": {
+      "thumb": "73e163080d33b151.webp",
+      "bytes": 40172,
+      "w": 132,
+      "h": 256
+    },
+    "res://assets/dungeon/sword_shield_gold.glb": {
+      "thumb": "e04b36cca5ef6423.webp",
+      "bytes": 47320,
+      "w": 238,
+      "h": 256
+    },
+    "res://assets/dungeon/sword_shield.glb": {
+      "thumb": "874a7ed898908bd7.webp",
+      "bytes": 47312,
+      "w": 238,
+      "h": 256
+    },
+    "res://assets/dungeon/table_long_broken.glb": {
+      "thumb": "e5acdb8d697cb87b.webp",
+      "bytes": 53652,
+      "w": 256,
+      "h": 152
+    },
+    "res://assets/dungeon/table_long_decorated_a.glb": {
+      "thumb": "b6e5d05ba32ab95e.webp",
+      "bytes": 109556,
+      "w": 256,
+      "h": 185
+    },
+    "res://assets/dungeon/table_long_decorated_b.glb": {
+      "thumb": "f5bfa30cdc991567.webp",
+      "bytes": 61580,
+      "w": 256,
+      "h": 182
+    },
+    "res://assets/dungeon/table_long_decorated_c.glb": {
+      "thumb": "8037768a9dcfa702.webp",
+      "bytes": 209724,
+      "w": 256,
+      "h": 244
+    },
+    "res://assets/dungeon/table_long_tablecloth_decorated_a.glb": {
+      "thumb": "9d04b20bd321b9e1.webp",
+      "bytes": 112972,
+      "w": 256,
+      "h": 185
+    },
+    "res://assets/dungeon/table_long_tablecloth.glb": {
+      "thumb": "7cf3ac78bde2e853.webp",
+      "bytes": 38692,
+      "w": 256,
+      "h": 154
+    },
+    "res://assets/dungeon/table_long.glb": {
+      "thumb": "ea7b756ad5cc782a.webp",
+      "bytes": 35276,
+      "w": 256,
+      "h": 154
+    },
+    "res://assets/dungeon/table_medium_broken.glb": {
+      "thumb": "1c8e9024b018603d.webp",
+      "bytes": 35188,
+      "w": 256,
+      "h": 157
+    },
+    "res://assets/dungeon/table_medium_decorated_a.glb": {
+      "thumb": "1404afb17cb62f01.webp",
+      "bytes": 75984,
+      "w": 256,
+      "h": 244
+    },
+    "res://assets/dungeon/table_medium_decorated_b.glb": {
+      "thumb": "1fb6df0eaeca9d82.webp",
+      "bytes": 57032,
+      "w": 256,
+      "h": 239
+    },
+    "res://assets/dungeon/table_medium_tablecloth_decorated_b.glb": {
+      "thumb": "e3f603ba1a62bbd2.webp",
+      "bytes": 77432,
+      "w": 256,
+      "h": 244
+    },
+    "res://assets/dungeon/table_medium_tablecloth.glb": {
+      "thumb": "39b10f9ca85a800a.webp",
+      "bytes": 35456,
+      "w": 256,
+      "h": 181
+    },
+    "res://assets/dungeon/table_medium.glb": {
+      "thumb": "f6c86f24c4650195.webp",
+      "bytes": 34004,
+      "w": 256,
+      "h": 181
+    },
+    "res://assets/dungeon/table_round_large.glb": {
+      "thumb": "2dbd82a5934786a8.webp",
+      "bytes": 49796,
+      "w": 256,
+      "h": 131
+    },
+    "res://assets/dungeon/table_round_medium.glb": {
+      "thumb": "3ee5844b1e777184.webp",
+      "bytes": 42724,
+      "w": 256,
+      "h": 173
+    },
+    "res://assets/dungeon/table_round_small.glb": {
+      "thumb": "03637f94b1b7fce5.webp",
+      "bytes": 40568,
+      "w": 255,
+      "h": 256
+    },
+    "res://assets/dungeon/table_small_decorated_a.glb": {
+      "thumb": "173b2738c6815044.webp",
+      "bytes": 65628,
+      "w": 195,
+      "h": 256
+    },
+    "res://assets/dungeon/table_small_decorated_b.glb": {
+      "thumb": "35b1f733bcc7e0d4.webp",
+      "bytes": 104940,
+      "w": 148,
+      "h": 256
+    },
+    "res://assets/dungeon/table_small_decorated_c.glb": {
+      "thumb": "ba1f159607814657.webp",
+      "bytes": 37280,
+      "w": 201,
+      "h": 256
+    },
+    "res://assets/dungeon/table_small.glb": {
+      "thumb": "9d33a596cc7d5a59.webp",
+      "bytes": 30672,
+      "w": 256,
+      "h": 238
+    },
+    "res://assets/dungeon/torch_lit.glb": {
+      "thumb": "7251defa216d0e17.webp",
+      "bytes": 30180,
+      "w": 128,
+      "h": 256
+    },
+    "res://assets/dungeon/torch_mounted.glb": {
+      "thumb": "3bf92c016d5628b5.webp",
+      "bytes": 32608,
+      "w": 149,
+      "h": 256
+    },
+    "res://assets/dungeon/torch.glb": {
+      "thumb": "31e832caacd3be03.webp",
+      "bytes": 28916,
+      "w": 135,
+      "h": 256
+    },
+    "res://assets/dungeon/trunk_large_a.glb": {
+      "thumb": "774253996212d9af.webp",
+      "bytes": 31104,
+      "w": 256,
+      "h": 211
+    },
+    "res://assets/dungeon/trunk_large_b.glb": {
+      "thumb": "17c903e63e5c888d.webp",
+      "bytes": 31104,
+      "w": 256,
+      "h": 211
+    },
+    "res://assets/dungeon/trunk_large_c.glb": {
+      "thumb": "eb0e1e5d27cbefb9.webp",
+      "bytes": 31104,
+      "w": 256,
+      "h": 211
+    },
+    "res://assets/dungeon/trunk_medium_a.glb": {
+      "thumb": "c4e3642b4c63ee42.webp",
+      "bytes": 27440,
+      "w": 256,
+      "h": 221
+    },
+    "res://assets/dungeon/trunk_medium_b.glb": {
+      "thumb": "cd4ad29ecdfdbf12.webp",
+      "bytes": 27440,
+      "w": 256,
+      "h": 221
+    },
+    "res://assets/dungeon/trunk_medium_c.glb": {
+      "thumb": "a9b017335b2f8675.webp",
+      "bytes": 27440,
+      "w": 256,
+      "h": 221
+    },
+    "res://assets/dungeon/trunk_small_a.glb": {
+      "thumb": "4a6cc16af5e82954.webp",
+      "bytes": 31108,
+      "w": 256,
+      "h": 222
+    },
+    "res://assets/dungeon/trunk_small_b.glb": {
+      "thumb": "be45819e186cde89.webp",
+      "bytes": 31108,
+      "w": 256,
+      "h": 222
+    },
+    "res://assets/dungeon/trunk_small_c.glb": {
+      "thumb": "b48dd73f97732571.webp",
+      "bytes": 31108,
+      "w": 256,
+      "h": 222
+    },
+    "res://assets/dungeon/wall_arched.glb": {
+      "thumb": "38a80c29dbe8418e.webp",
+      "bytes": 69080,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_archedwindow_gated_scaffold.glb": {
+      "thumb": "3c18d1979068b754.webp",
+      "bytes": 61548,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_archedwindow_gated.glb": {
+      "thumb": "41322a53811e5095.webp",
+      "bytes": 65264,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_archedwindow_open.glb": {
+      "thumb": "dd96fc3e088febe9.webp",
+      "bytes": 58480,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_broken.glb": {
+      "thumb": "578742fe485fee84.webp",
+      "bytes": 70480,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_corner_gated.glb": {
+      "thumb": "2057bb20c27b0267.webp",
+      "bytes": 51032,
+      "w": 126,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_corner_scaffold.glb": {
+      "thumb": "ceb618874fb37060.webp",
+      "bytes": 54588,
+      "w": 126,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_corner_small.glb": {
+      "thumb": "722ad585a5d69988.webp",
+      "bytes": 34700,
+      "w": 93,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_corner.glb": {
+      "thumb": "c0973b1dfe86f73e.webp",
+      "bytes": 49496,
+      "w": 126,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_cracked.glb": {
+      "thumb": "05503033fa13c686.webp",
+      "bytes": 121624,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_crossing.glb": {
+      "thumb": "e7838d07c0d4539a.webp",
+      "bytes": 66180,
+      "w": 221,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_doorway_scaffold.glb": {
+      "thumb": "3bb4b3674155fb26.webp",
+      "bytes": 77800,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_doorway_sides.glb": {
+      "thumb": "5a471dbab855676c.webp",
+      "bytes": 96816,
+      "w": 256,
+      "h": 240
+    },
+    "res://assets/dungeon/wall_doorway_tsplit.glb": {
+      "thumb": "10d35b4b6ae813e1.webp",
+      "bytes": 91712,
+      "w": 256,
+      "h": 214
+    },
+    "res://assets/dungeon/wall_doorway.glb": {
+      "thumb": "48b445a76270e310.webp",
+      "bytes": 71444,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_endcap.glb": {
+      "thumb": "8eb6eb3679269167.webp",
+      "bytes": 34792,
+      "w": 94,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_gated.glb": {
+      "thumb": "74603804292a5d44.webp",
+      "bytes": 47444,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_half_endcap_sloped.glb": {
+      "thumb": "96407064ab370569.webp",
+      "bytes": 34496,
+      "w": 122,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_half_endcap.glb": {
+      "thumb": "c0fb65723209172d.webp",
+      "bytes": 37620,
+      "w": 133,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_half.glb": {
+      "thumb": "d64180d912e30c83.webp",
+      "bytes": 37728,
+      "w": 133,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_inset_candles.glb": {
+      "thumb": "40991ea7351b5eab.webp",
+      "bytes": 77248,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_inset_shelves_broken.glb": {
+      "thumb": "06b4ffab67ef1d1a.webp",
+      "bytes": 69424,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_inset_shelves_decorateda.glb": {
+      "thumb": "81f5973370792dd8.webp",
+      "bytes": 122008,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_inset_shelves_decoratedb.glb": {
+      "thumb": "5d92e1bd93cc5384.webp",
+      "bytes": 123280,
+      "w": 199,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_inset_shelves.glb": {
+      "thumb": "1d2e5399c4dac398.webp",
+      "bytes": 66056,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_inset.glb": {
+      "thumb": "f12abacce888d2af.webp",
+      "bytes": 63992,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_open_scaffold.glb": {
+      "thumb": "3fc7aaca12e148cd.webp",
+      "bytes": 30932,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_pillar.glb": {
+      "thumb": "65dfc970ad7f34a9.webp",
+      "bytes": 55340,
+      "w": 198,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_scaffold.glb": {
+      "thumb": "c2df5c151d2f6b34.webp",
+      "bytes": 59620,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_shelves.glb": {
+      "thumb": "b6b910c416d1c8a8.webp",
+      "bytes": 120128,
+      "w": 199,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_sloped.glb": {
+      "thumb": "9ae75919f9eafb8b.webp",
+      "bytes": 36948,
+      "w": 186,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_tsplit_sloped.glb": {
+      "thumb": "89934dc48c493233.webp",
+      "bytes": 57384,
+      "w": 207,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_tsplit.glb": {
+      "thumb": "b1a607a3eff78a5e.webp",
+      "bytes": 59912,
+      "w": 219,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_window_closed_scaffold.glb": {
+      "thumb": "59362a01d7c3b88d.webp",
+      "bytes": 67344,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_window_closed.glb": {
+      "thumb": "d363ff82ede351e4.webp",
+      "bytes": 62288,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_window_open_scaffold.glb": {
+      "thumb": "b82497da5b546bf4.webp",
+      "bytes": 63140,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall_window_open.glb": {
+      "thumb": "b461a5a74d3f47ff.webp",
+      "bytes": 58084,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/dungeon/wall.glb": {
+      "thumb": "c11f7df3606c1f2f.webp",
+      "bytes": 53596,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/env/barrel.glb": {
+      "thumb": "01d1464ac7787799.webp",
+      "bytes": 19056,
+      "w": 180,
+      "h": 256
+    },
+    "res://assets/env/blacksmith.glb": {
+      "thumb": "e26c0f7771498ab3.webp",
+      "bytes": 670832,
+      "w": 256,
+      "h": 250
+    },
+    "res://assets/env/bush.glb": {
+      "thumb": "b0f8aa4e724dcabc.webp",
+      "bytes": 342312,
+      "w": 256,
+      "h": 120
+    },
+    "res://assets/env/crate.glb": {
+      "thumb": "bd0a5add66a805e4.webp",
+      "bytes": 75296,
+      "w": 256,
+      "h": 250
+    },
+    "res://assets/env/farm.glb": {
+      "thumb": "3f0be1f5b79b9500.webp",
+      "bytes": 230864,
+      "w": 242,
+      "h": 256
+    },
+    "res://assets/env/fence.glb": {
+      "thumb": "aa205f46f52e97bb.webp",
+      "bytes": 10616,
+      "w": 256,
+      "h": 139
+    },
+    "res://assets/env/house.glb": {
+      "thumb": "9217841b221b2be5.webp",
+      "bytes": 410268,
+      "w": 212,
+      "h": 256
+    },
+    "res://assets/env/inn.glb": {
+      "thumb": "b45d72c72217ed4c.webp",
+      "bytes": 468600,
+      "w": 251,
+      "h": 256
+    },
+    "res://assets/env/mountain.glb": {
+      "thumb": "eeabbb7ad7f61f63.webp",
+      "bytes": 154432,
+      "w": 256,
+      "h": 178
+    },
+    "res://assets/env/rock.glb": {
+      "thumb": "dac7cdb52b33f56c.webp",
+      "bytes": 18224,
+      "w": 178,
+      "h": 256
+    },
+    "res://assets/env/sawmill.glb": {
+      "thumb": "4fd607c5b302f6f9.webp",
+      "bytes": 309568,
+      "w": 256,
+      "h": 233
+    },
+    "res://assets/env/stable.glb": {
+      "thumb": "709e02157d9d2f75.webp",
+      "bytes": 444596,
+      "w": 256,
+      "h": 210
+    },
+    "res://assets/env/tree.glb": {
+      "thumb": "b019318b0022b474.webp",
+      "bytes": 3408276,
+      "w": 256,
+      "h": 160
+    },
+    "res://assets/icons/icon-health-potion.svg": {
+      "thumb": "cb54c1b110381413.webp",
+      "bytes": 1093,
+      "w": 256,
+      "h": 256
+    },
+    "res://assets/icons/icon-mana-potion.svg": {
+      "thumb": "07daf4ece3c558df.webp",
+      "bytes": 1092,
+      "w": 256,
+      "h": 256
+    },
+    "res://assets/loot/book.glb": {
+      "thumb": "7b8c33bf8811c351.webp",
+      "bytes": 40448,
+      "w": 153,
+      "h": 256
+    },
+    "res://assets/loot/coin.glb": {
+      "thumb": "e47acc9a493c56ec.webp",
+      "bytes": 22304,
+      "w": 214,
+      "h": 256
+    },
+    "res://assets/loot/crown.glb": {
+      "thumb": "c46bd5982f5addce.webp",
+      "bytes": 47620,
+      "w": 256,
+      "h": 206
+    },
+    "res://assets/loot/gem.glb": {
+      "thumb": "645e2644b964b7d5.webp",
+      "bytes": 32724,
+      "w": 256,
+      "h": 136
+    },
+    "res://assets/loot/necklace.glb": {
+      "thumb": "edcbe8b5ff978a7d.webp",
+      "bytes": 59736,
+      "w": 224,
+      "h": 256
+    },
+    "res://assets/loot/potion_bottle.glb": {
+      "thumb": "7c301d520102db40.webp",
+      "bytes": 32444,
+      "w": 180,
+      "h": 256
+    },
+    "res://assets/loot/potion.glb": {
+      "thumb": "471464d6d0b22cc2.webp",
+      "bytes": 31340,
+      "w": 164,
+      "h": 256
+    },
+    "res://assets/loot/scroll.glb": {
+      "thumb": "45ef99754ea72b69.webp",
+      "bytes": 54328,
+      "w": 256,
+      "h": 120
+    },
+    "res://assets/nature/bush_1_a_color1.glb": {
+      "thumb": "49faae35e4b0daea.webp",
+      "bytes": 27828,
+      "w": 256,
+      "h": 254
+    },
+    "res://assets/nature/bush_1_b_color1.glb": {
+      "thumb": "8a2d8dd02dcdeee2.webp",
+      "bytes": 30136,
+      "w": 256,
+      "h": 209
+    },
+    "res://assets/nature/bush_1_c_color1.glb": {
+      "thumb": "1c5b3578f41f4d02.webp",
+      "bytes": 30132,
+      "w": 256,
+      "h": 218
+    },
+    "res://assets/nature/bush_1_d_color1.glb": {
+      "thumb": "fcaf44c520f2fbe2.webp",
+      "bytes": 30132,
+      "w": 256,
+      "h": 209
+    },
+    "res://assets/nature/bush_1_e_color1.glb": {
+      "thumb": "bacbe438b2d2f93d.webp",
+      "bytes": 41852,
+      "w": 256,
+      "h": 192
+    },
+    "res://assets/nature/bush_1_f_color1.glb": {
+      "thumb": "dce680ff25d4b019.webp",
+      "bytes": 41800,
+      "w": 256,
+      "h": 218
+    },
+    "res://assets/nature/bush_1_g_color1.glb": {
+      "thumb": "349adf76735d4f5e.webp",
+      "bytes": 53464,
+      "w": 256,
+      "h": 153
+    },
+    "res://assets/nature/bush_2_a_color1.glb": {
+      "thumb": "6ec380b4baa4c612.webp",
+      "bytes": 26504,
+      "w": 256,
+      "h": 256
+    },
+    "res://assets/nature/bush_2_b_color1.glb": {
+      "thumb": "2109607a58534680.webp",
+      "bytes": 27920,
+      "w": 256,
+      "h": 255
+    },
+    "res://assets/nature/bush_2_c_color1.glb": {
+      "thumb": "692476aacea74f83.webp",
+      "bytes": 27916,
+      "w": 256,
+      "h": 255
+    },
+    "res://assets/nature/bush_2_d_color1.glb": {
+      "thumb": "5f7b9082c6088734.webp",
+      "bytes": 29984,
+      "w": 256,
+      "h": 199
+    },
+    "res://assets/nature/bush_2_e_color1.glb": {
+      "thumb": "e1e16e41dff47e35.webp",
+      "bytes": 36272,
+      "w": 256,
+      "h": 220
+    },
+    "res://assets/nature/bush_2_f_color1.glb": {
+      "thumb": "d56f82295ad311ca.webp",
+      "bytes": 33812,
+      "w": 228,
+      "h": 256
+    },
+    "res://assets/nature/bush_3_a_color1.glb": {
+      "thumb": "f4e92f2852498ec8.webp",
+      "bytes": 30724,
+      "w": 256,
+      "h": 161
+    },
+    "res://assets/nature/bush_3_b_color1.glb": {
+      "thumb": "d93615df4d84ca99.webp",
+      "bytes": 32232,
+      "w": 256,
+      "h": 162
+    },
+    "res://assets/nature/bush_3_c_color1.glb": {
+      "thumb": "7f99d6300cbaf358.webp",
+      "bytes": 33032,
+      "w": 256,
+      "h": 159
+    },
+    "res://assets/nature/bush_4_a_color1.glb": {
+      "thumb": "b98869ebef757b60.webp",
+      "bytes": 26504,
+      "w": 256,
+      "h": 231
+    },
+    "res://assets/nature/bush_4_b_color1.glb": {
+      "thumb": "8fb40bcbf79839f1.webp",
+      "bytes": 26508,
+      "w": 256,
+      "h": 231
+    },
+    "res://assets/nature/bush_4_c_color1.glb": {
+      "thumb": "9f416e6ea80ef984.webp",
+      "bytes": 28044,
+      "w": 256,
+      "h": 245
+    },
+    "res://assets/nature/bush_4_d_color1.glb": {
+      "thumb": "5ce631693defc37c.webp",
+      "bytes": 28572,
+      "w": 256,
+      "h": 182
+    },
+    "res://assets/nature/bush_4_e_color1.glb": {
+      "thumb": "c77b7c048bd08f2c.webp",
+      "bytes": 32172,
+      "w": 256,
+      "h": 205
+    },
+    "res://assets/nature/bush_4_f_color1.glb": {
+      "thumb": "20305f4716316fdb.webp",
+      "bytes": 32176,
+      "w": 256,
+      "h": 204
+    },
+    "res://assets/nature/grass_1_a_color1.glb": {
+      "thumb": "6e683f9edf7c1d67.webp",
+      "bytes": 27536,
+      "w": 120,
+      "h": 256
+    },
+    "res://assets/nature/grass_1_a_singlesided_color1.glb": {
+      "thumb": "c3095c1ae94a32c6.webp",
+      "bytes": 26152,
+      "w": 95,
+      "h": 256
+    },
+    "res://assets/nature/grass_1_b_color1.glb": {
+      "thumb": "e8d3068ec8fa184e.webp",
+      "bytes": 31648,
+      "w": 238,
+      "h": 256
+    },
+    "res://assets/nature/grass_1_b_singlesided_color1.glb": {
+      "thumb": "f6a212091ef5d03d.webp",
+      "bytes": 27480,
+      "w": 252,
+      "h": 256
+    },
+    "res://assets/nature/grass_1_c_color1.glb": {
+      "thumb": "d67686d58cc4bd8c.webp",
+      "bytes": 43988,
+      "w": 256,
+      "h": 255
+    },
+    "res://assets/nature/grass_1_c_singlesided_color1.glb": {
+      "thumb": "eb22a87d6c4e83c9.webp",
+      "bytes": 31440,
+      "w": 256,
+      "h": 200
+    },
+    "res://assets/nature/grass_1_d_color1.glb": {
+      "thumb": "379f7d6f5d3a7d24.webp",
+      "bytes": 50156,
+      "w": 256,
+      "h": 167
+    },
+    "res://assets/nature/grass_1_d_singlesided_color1.glb": {
+      "thumb": "5585ead7c28be2a4.webp",
+      "bytes": 33424,
+      "w": 256,
+      "h": 128
+    },
+    "res://assets/nature/grass_2_a_color1.glb": {
+      "thumb": "45135fc1ebea0503.webp",
+      "bytes": 27532,
+      "w": 62,
+      "h": 256
+    },
+    "res://assets/nature/grass_2_a_singlesided_color1.glb": {
+      "thumb": "17119f8fe7c238cf.webp",
+      "bytes": 26152,
+      "w": 59,
+      "h": 256
+    },
+    "res://assets/nature/grass_2_b_color1.glb": {
+      "thumb": "705371fb59a95696.webp",
+      "bytes": 31648,
+      "w": 125,
+      "h": 256
+    },
+    "res://assets/nature/grass_2_b_singlesided_color1.glb": {
+      "thumb": "92ae3724a4851743.webp",
+      "bytes": 27476,
+      "w": 123,
+      "h": 256
+    },
+    "res://assets/nature/grass_2_c_color1.glb": {
+      "thumb": "d765c3676c62531d.webp",
+      "bytes": 50156,
+      "w": 225,
+      "h": 256
+    },
+    "res://assets/nature/grass_2_c_singlesided_color1.glb": {
+      "thumb": "e51a7b6b6a7e76a9.webp",
+      "bytes": 33428,
+      "w": 249,
+      "h": 256
+    },
+    "res://assets/nature/grass_2_d_color1.glb": {
+      "thumb": "057a075a95c4b614.webp",
+      "bytes": 50156,
+      "w": 256,
+      "h": 196
+    },
+    "res://assets/nature/grass_2_d_singlesided_color1.glb": {
+      "thumb": "d954a0c92bb96125.webp",
+      "bytes": 33424,
+      "w": 256,
+      "h": 170
+    },
+    "res://assets/nature/hill_12x12x2_color1.glb": {
+      "thumb": "ad1e925ed4da9fd5.webp",
+      "bytes": 97144,
+      "w": 256,
+      "h": 135
+    },
+    "res://assets/nature/hill_12x12x4_color1.glb": {
+      "thumb": "71b6f161ee44aec3.webp",
+      "bytes": 97912,
+      "w": 256,
+      "h": 159
+    },
+    "res://assets/nature/hill_12x12x8_color1.glb": {
+      "thumb": "c03c7da5104b7476.webp",
+      "bytes": 111176,
+      "w": 256,
+      "h": 210
+    },
+    "res://assets/nature/hill_12x6x2_color1.glb": {
+      "thumb": "5a50f04fa9fca202.webp",
+      "bytes": 77920,
+      "w": 256,
+      "h": 139
+    },
+    "res://assets/nature/hill_12x6x4_color1.glb": {
+      "thumb": "047c4200cf1e54d6.webp",
+      "bytes": 78560,
+      "w": 256,
+      "h": 173
+    },
+    "res://assets/nature/hill_12x6x8_color1.glb": {
+      "thumb": "622d0f92a97e8057.webp",
+      "bytes": 89028,
+      "w": 256,
+      "h": 238
+    },
+    "res://assets/nature/hill_2x2x2_color1.glb": {
+      "thumb": "ae631d4257755c84.webp",
+      "bytes": 37864,
+      "w": 256,
+      "h": 256
+    },
+    "res://assets/nature/hill_2x2x4_color1.glb": {
+      "thumb": "7cf357073ddb073b.webp",
+      "bytes": 37928,
+      "w": 154,
+      "h": 256
+    },
+    "res://assets/nature/hill_2x2x8_color1.glb": {
+      "thumb": "f3ac3ef7788ddcab.webp",
+      "bytes": 39816,
+      "w": 84,
+      "h": 256
+    },
+    "res://assets/nature/hill_4x2x2_color1.glb": {
+      "thumb": "a27f984a2cc500ed.webp",
+      "bytes": 45368,
+      "w": 256,
+      "h": 207
+    },
+    "res://assets/nature/hill_4x2x4_color1.glb": {
+      "thumb": "6036d89cd6b49f92.webp",
+      "bytes": 45528,
+      "w": 216,
+      "h": 256
+    },
+    "res://assets/nature/hill_4x2x8_color1.glb": {
+      "thumb": "8800c5bb60840d62.webp",
+      "bytes": 49488,
+      "w": 127,
+      "h": 256
+    },
+    "res://assets/nature/hill_4x4x2_color1.glb": {
+      "thumb": "107779762eb30961.webp",
+      "bytes": 48956,
+      "w": 256,
+      "h": 180
+    },
+    "res://assets/nature/hill_4x4x4_color1.glb": {
+      "thumb": "3341e83629461a23.webp",
+      "bytes": 48844,
+      "w": 256,
+      "h": 252
+    },
+    "res://assets/nature/hill_4x4x8_color1.glb": {
+      "thumb": "55c841903c345207.webp",
+      "bytes": 54684,
+      "w": 160,
+      "h": 256
+    },
+    "res://assets/nature/hill_8x4x2_color1.glb": {
+      "thumb": "7acbade79ef26391.webp",
+      "bytes": 59700,
+      "w": 256,
+      "h": 153
+    },
+    "res://assets/nature/hill_8x4x4_color1.glb": {
+      "thumb": "f46582c91bb6370d.webp",
+      "bytes": 59764,
+      "w": 256,
+      "h": 204
+    },
+    "res://assets/nature/hill_8x4x8_color1.glb": {
+      "thumb": "ce99ec6f7e079d42.webp",
+      "bytes": 66216,
+      "w": 221,
+      "h": 256
+    },
+    "res://assets/nature/hill_8x8x2_color1.glb": {
+      "thumb": "c75ca9d965af1d7e.webp",
+      "bytes": 72276,
+      "w": 256,
+      "h": 144
+    },
+    "res://assets/nature/hill_8x8x4_color1.glb": {
+      "thumb": "708db46307dfdcd4.webp",
+      "bytes": 72532,
+      "w": 256,
+      "h": 183
+    },
+    "res://assets/nature/hill_8x8x8_color1.glb": {
+      "thumb": "41e9e7275eeff16d.webp",
+      "bytes": 80996,
+      "w": 256,
+      "h": 249
+    },
+    "res://assets/nature/hill_cliff_a_innercorner_color1.glb": {
+      "thumb": "ef63a5ed57d9b8d1.webp",
+      "bytes": 27092,
+      "w": 256,
+      "h": 80
+    },
+    "res://assets/nature/hill_cliff_a_outercorner_color1.glb": {
+      "thumb": "1129425cc2459477.webp",
+      "bytes": 27656,
+      "w": 256,
+      "h": 238
+    },
+    "res://assets/nature/hill_cliff_b_side_color1.glb": {
+      "thumb": "251ab9fcaf6ec917.webp",
+      "bytes": 27012,
+      "w": 243,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_c_innercorner_color1.glb": {
+      "thumb": "774ff1e6b3297199.webp",
+      "bytes": 27092,
+      "w": 106,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_c_outercorner_color1.glb": {
+      "thumb": "47ce80f1472f3bfe.webp",
+      "bytes": 27656,
+      "w": 193,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_d_side_color1.glb": {
+      "thumb": "dba72f68c9ffe78e.webp",
+      "bytes": 26980,
+      "w": 256,
+      "h": 184
+    },
+    "res://assets/nature/hill_cliff_e_color1.glb": {
+      "thumb": "ba517cb92dddb807.webp",
+      "bytes": 28420,
+      "w": 247,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_f_side_color1.glb": {
+      "thumb": "4296f5aa6ff27110.webp",
+      "bytes": 27008,
+      "w": 249,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_g_innercorner_color1.glb": {
+      "thumb": "096428cb8528f83a.webp",
+      "bytes": 27088,
+      "w": 106,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_g_outercorner_color1.glb": {
+      "thumb": "152452d20942ff5d.webp",
+      "bytes": 27592,
+      "w": 193,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_h_side_color1.glb": {
+      "thumb": "b8e8671ddcfdba51.webp",
+      "bytes": 26980,
+      "w": 236,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_i_innercorner_color1.glb": {
+      "thumb": "e12328675203b24a.webp",
+      "bytes": 27088,
+      "w": 222,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_i_outercorner_color1.glb": {
+      "thumb": "62a1c851b1610eb0.webp",
+      "bytes": 27592,
+      "w": 256,
+      "h": 234
+    },
+    "res://assets/nature/hill_cliff_tall_a_innercorner_color1.glb": {
+      "thumb": "402cd58fdd1a7498.webp",
+      "bytes": 27964,
+      "w": 207,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_tall_a_outercorner_color1.glb": {
+      "thumb": "60223bbfb43c48f6.webp",
+      "bytes": 28620,
+      "w": 256,
+      "h": 226
+    },
+    "res://assets/nature/hill_cliff_tall_b_side_color1.glb": {
+      "thumb": "1e14a0c0676a6576.webp",
+      "bytes": 27760,
+      "w": 95,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_tall_c_innercorner_color1.glb": {
+      "thumb": "eecaeb27f9b0a34f.webp",
+      "bytes": 27964,
+      "w": 58,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_tall_c_outercorner_color1.glb": {
+      "thumb": "10c5d6a7e85411e2.webp",
+      "bytes": 28616,
+      "w": 112,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_tall_d_side_color1.glb": {
+      "thumb": "645cb587410b6f2c.webp",
+      "bytes": 27728,
+      "w": 219,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_tall_e_color1.glb": {
+      "thumb": "946c82a6c492ba2e.webp",
+      "bytes": 28496,
+      "w": 138,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_tall_f_side_color1.glb": {
+      "thumb": "0ff063936f40a346.webp",
+      "bytes": 27756,
+      "w": 197,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_tall_g_innercorner_color1.glb": {
+      "thumb": "d518e2413da37a06.webp",
+      "bytes": 27964,
+      "w": 60,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_tall_g_outercorner_color1.glb": {
+      "thumb": "2911bc1aafbdca86.webp",
+      "bytes": 28556,
+      "w": 112,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_tall_h_side_color1.glb": {
+      "thumb": "00a59659bf584d99.webp",
+      "bytes": 27728,
+      "w": 141,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_tall_i_innercorner_color1.glb": {
+      "thumb": "5be046a8bffdcd3d.webp",
+      "bytes": 27964,
+      "w": 124,
+      "h": 256
+    },
+    "res://assets/nature/hill_cliff_tall_i_outercorner_color1.glb": {
+      "thumb": "cea9e5dd2eb92498.webp",
+      "bytes": 28556,
+      "w": 173,
+      "h": 256
+    },
+    "res://assets/nature/hill_top_a_innercorner_color1.glb": {
+      "thumb": "e87ddf0e0faf09b3.webp",
+      "bytes": 26528,
+      "w": 256,
+      "h": 102
+    },
+    "res://assets/nature/hill_top_a_outercorner_color1.glb": {
+      "thumb": "ccc8db7c388c8426.webp",
+      "bytes": 30720,
+      "w": 256,
+      "h": 96
+    },
+    "res://assets/nature/hill_top_b_side_color1.glb": {
+      "thumb": "9829416cef170aee.webp",
+      "bytes": 29052,
+      "w": 256,
+      "h": 102
+    },
+    "res://assets/nature/hill_top_c_innercorner_color1.glb": {
+      "thumb": "dbbad66f631e2331.webp",
+      "bytes": 26528,
+      "w": 256,
+      "h": 111
+    },
+    "res://assets/nature/hill_top_c_outercorner_color1.glb": {
+      "thumb": "193f3788b8eb5b52.webp",
+      "bytes": 30720,
+      "w": 256,
+      "h": 151
+    },
+    "res://assets/nature/hill_top_d_side_color1.glb": {
+      "thumb": "9b64732062fde0cf.webp",
+      "bytes": 29036,
+      "w": 256,
+      "h": 103
+    },
+    "res://assets/nature/hill_top_e_cap_color1.glb": {
+      "thumb": "d22dd755936d2ed5.webp",
+      "bytes": 34944,
+      "w": 256,
+      "h": 153
+    },
+    "res://assets/nature/hill_top_e_center_color1.glb": {
+      "thumb": "fab55fbfba801c11.webp",
+      "bytes": 26052,
+      "w": 256,
+      "h": 114
+    },
+    "res://assets/nature/hill_top_f_side_color1.glb": {
+      "thumb": "9a2e8dbd05535804.webp",
+      "bytes": 29052,
+      "w": 256,
+      "h": 133
+    },
+    "res://assets/nature/hill_top_g_innercorner_color1.glb": {
+      "thumb": "00762d20271151db.webp",
+      "bytes": 26528,
+      "w": 256,
+      "h": 111
+    },
+    "res://assets/nature/hill_top_g_outercorner_color1.glb": {
+      "thumb": "fd5717eaf11e2fcd.webp",
+      "bytes": 30692,
+      "w": 256,
+      "h": 151
+    },
+    "res://assets/nature/hill_top_h_side_color1.glb": {
+      "thumb": "dc5864665b78c7f1.webp",
+      "bytes": 29040,
+      "w": 256,
+      "h": 133
+    },
+    "res://assets/nature/hill_top_i_innercorner_color1.glb": {
+      "thumb": "0a6d718a0918e53c.webp",
+      "bytes": 26528,
+      "w": 256,
+      "h": 126
+    },
+    "res://assets/nature/hill_top_i_outercorner_color1.glb": {
+      "thumb": "97262a053e091aed.webp",
+      "bytes": 30692,
+      "w": 256,
+      "h": 120
+    },
+    "res://assets/nature/rock_1_a_color1.glb": {
+      "thumb": "b63f4766b8191b94.webp",
+      "bytes": 28304,
+      "w": 227,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_b_color1.glb": {
+      "thumb": "30f1bbcceb9ba51c.webp",
+      "bytes": 28240,
+      "w": 198,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_c_color1.glb": {
+      "thumb": "03a3d987b03511f3.webp",
+      "bytes": 28368,
+      "w": 214,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_d_color1.glb": {
+      "thumb": "91ae0ab748527d7e.webp",
+      "bytes": 30248,
+      "w": 195,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_e_color1.glb": {
+      "thumb": "33f3ebf076326fcc.webp",
+      "bytes": 30280,
+      "w": 200,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_f_color1.glb": {
+      "thumb": "2d6f3498400d7e98.webp",
+      "bytes": 30348,
+      "w": 180,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_g_color1.glb": {
+      "thumb": "26fba038ad12874f.webp",
+      "bytes": 30400,
+      "w": 163,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_h_color1.glb": {
+      "thumb": "903de5c578949dd9.webp",
+      "bytes": 30560,
+      "w": 190,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_i_color1.glb": {
+      "thumb": "9d38ce07c0024ae3.webp",
+      "bytes": 30432,
+      "w": 213,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_j_color1.glb": {
+      "thumb": "35cdc36d8348fc21.webp",
+      "bytes": 56268,
+      "w": 206,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_k_color1.glb": {
+      "thumb": "1ed239298e0d11f0.webp",
+      "bytes": 56464,
+      "w": 165,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_l_color1.glb": {
+      "thumb": "dc9979c47a7e7e3e.webp",
+      "bytes": 54760,
+      "w": 184,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_m_color1.glb": {
+      "thumb": "b862518371b4c880.webp",
+      "bytes": 55636,
+      "w": 242,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_n_color1.glb": {
+      "thumb": "7f7cec1893e5075e.webp",
+      "bytes": 46052,
+      "w": 133,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_o_color1.glb": {
+      "thumb": "b895f5621c6efcc5.webp",
+      "bytes": 37800,
+      "w": 112,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_p_color1.glb": {
+      "thumb": "a3ac000ab2d7f9ce.webp",
+      "bytes": 48244,
+      "w": 116,
+      "h": 256
+    },
+    "res://assets/nature/rock_1_q_color1.glb": {
+      "thumb": "f2c1e40fc935d91b.webp",
+      "bytes": 55508,
+      "w": 165,
+      "h": 256
+    },
+    "res://assets/nature/rock_2_a_color1.glb": {
+      "thumb": "e9654b01c14baf15.webp",
+      "bytes": 26316,
+      "w": 239,
+      "h": 256
+    },
+    "res://assets/nature/rock_2_b_color1.glb": {
+      "thumb": "f4a6eeaabbb57314.webp",
+      "bytes": 26892,
+      "w": 222,
+      "h": 256
+    },
+    "res://assets/nature/rock_2_c_color1.glb": {
+      "thumb": "b815089723d80b2a.webp",
+      "bytes": 28812,
+      "w": 227,
+      "h": 256
+    },
+    "res://assets/nature/rock_2_d_color1.glb": {
+      "thumb": "4dfc42a964894dab.webp",
+      "bytes": 28812,
+      "w": 229,
+      "h": 256
+    },
+    "res://assets/nature/rock_2_e_color1.glb": {
+      "thumb": "b34af6859f3b0729.webp",
+      "bytes": 40396,
+      "w": 195,
+      "h": 256
+    },
+    "res://assets/nature/rock_2_f_color1.glb": {
+      "thumb": "04f99ccf6c793ea4.webp",
+      "bytes": 40080,
+      "w": 256,
+      "h": 238
+    },
+    "res://assets/nature/rock_2_g_color1.glb": {
+      "thumb": "b9f07cf778a32a1a.webp",
+      "bytes": 41724,
+      "w": 203,
+      "h": 256
+    },
+    "res://assets/nature/rock_2_h_color1.glb": {
+      "thumb": "e7e4f0d746cad5a9.webp",
+      "bytes": 36184,
+      "w": 243,
+      "h": 256
+    },
+    "res://assets/nature/rock_3_a_color1.glb": {
+      "thumb": "54a6780366a2d384.webp",
+      "bytes": 29916,
+      "w": 246,
+      "h": 256
+    },
+    "res://assets/nature/rock_3_b_color1.glb": {
+      "thumb": "cce89147de7f486c.webp",
+      "bytes": 30048,
+      "w": 201,
+      "h": 256
+    },
+    "res://assets/nature/rock_3_c_color1.glb": {
+      "thumb": "8e8050ff12c3f284.webp",
+      "bytes": 29692,
+      "w": 192,
+      "h": 256
+    },
+    "res://assets/nature/rock_3_d_color1.glb": {
+      "thumb": "8e6e32d0690c98cf.webp",
+      "bytes": 29788,
+      "w": 216,
+      "h": 256
+    },
+    "res://assets/nature/rock_3_e_color1.glb": {
+      "thumb": "a23923605d6270fb.webp",
+      "bytes": 29852,
+      "w": 233,
+      "h": 256
+    },
+    "res://assets/nature/rock_3_f_color1.glb": {
+      "thumb": "011148f2ba7c4a9b.webp",
+      "bytes": 30684,
+      "w": 256,
+      "h": 232
+    },
+    "res://assets/nature/rock_3_g_color1.glb": {
+      "thumb": "a74a300f4c0d5e7e.webp",
+      "bytes": 32692,
+      "w": 224,
+      "h": 256
+    },
+    "res://assets/nature/rock_3_h_color1.glb": {
+      "thumb": "645f2486ba4dbe39.webp",
+      "bytes": 32180,
+      "w": 239,
+      "h": 256
+    },
+    "res://assets/nature/rock_3_i_color1.glb": {
+      "thumb": "3368ca0ec0eddceb.webp",
+      "bytes": 31824,
+      "w": 256,
+      "h": 241
+    },
+    "res://assets/nature/rock_3_j_color1.glb": {
+      "thumb": "1e117b35cf5ea8f2.webp",
+      "bytes": 33488,
+      "w": 256,
+      "h": 223
+    },
+    "res://assets/nature/rock_3_k_color1.glb": {
+      "thumb": "bb17065a8dff6509.webp",
+      "bytes": 33492,
+      "w": 256,
+      "h": 253
+    },
+    "res://assets/nature/rock_3_l_color1.glb": {
+      "thumb": "5cc2ddeb2ce25537.webp",
+      "bytes": 32020,
+      "w": 256,
+      "h": 230
+    },
+    "res://assets/nature/rock_3_m_color1.glb": {
+      "thumb": "19ecdb9fe9e77a77.webp",
+      "bytes": 36768,
+      "w": 232,
+      "h": 256
+    },
+    "res://assets/nature/rock_3_n_color1.glb": {
+      "thumb": "1baf82c127a1d645.webp",
+      "bytes": 37736,
+      "w": 229,
+      "h": 256
+    },
+    "res://assets/nature/rock_3_o_color1.glb": {
+      "thumb": "91e666eb15884451.webp",
+      "bytes": 37796,
+      "w": 228,
+      "h": 256
+    },
+    "res://assets/nature/rock_3_p_color1.glb": {
+      "thumb": "6813c807a84ca699.webp",
+      "bytes": 36292,
+      "w": 194,
+      "h": 256
+    },
+    "res://assets/nature/rock_3_q_color1.glb": {
+      "thumb": "a259357aedfd55bf.webp",
+      "bytes": 38788,
+      "w": 256,
+      "h": 242
+    },
+    "res://assets/nature/rock_3_r_color1.glb": {
+      "thumb": "a13966e5256180fd.webp",
+      "bytes": 35744,
+      "w": 256,
+      "h": 224
+    },
+    "res://assets/nature/rock_4_a_color1.glb": {
+      "thumb": "97477231cd566f2e.webp",
+      "bytes": 26288,
+      "w": 78,
+      "h": 256
+    },
+    "res://assets/nature/rock_4_b_color1.glb": {
+      "thumb": "357332d150f4cdce.webp",
+      "bytes": 27088,
+      "w": 51,
+      "h": 256
+    },
+    "res://assets/nature/rock_4_c_color1.glb": {
+      "thumb": "d0d7d0f53bc43a4a.webp",
+      "bytes": 29004,
+      "w": 67,
+      "h": 256
+    },
+    "res://assets/nature/rock_4_d_color1.glb": {
+      "thumb": "0e20310d3c1be500.webp",
+      "bytes": 29004,
+      "w": 71,
+      "h": 256
+    },
+    "res://assets/nature/rock_4_e_color1.glb": {
+      "thumb": "730d7551b3eed40d.webp",
+      "bytes": 41700,
+      "w": 132,
+      "h": 256
+    },
+    "res://assets/nature/rock_4_f_color1.glb": {
+      "thumb": "e9e95b7c06b3f637.webp",
+      "bytes": 40268,
+      "w": 152,
+      "h": 256
+    },
+    "res://assets/nature/rock_4_g_color1.glb": {
+      "thumb": "97bb7dd3a4d30462.webp",
+      "bytes": 36632,
+      "w": 131,
+      "h": 256
+    },
+    "res://assets/nature/rock_4_h_color1.glb": {
+      "thumb": "c5be9825c95894bd.webp",
+      "bytes": 41140,
+      "w": 112,
+      "h": 256
+    },
+    "res://assets/nature/rock_5_a_color1.glb": {
+      "thumb": "f860bd2fa8b33e74.webp",
+      "bytes": 27236,
+      "w": 256,
+      "h": 199
+    },
+    "res://assets/nature/rock_5_b_color1.glb": {
+      "thumb": "3c9ff00a5bc84112.webp",
+      "bytes": 27688,
+      "w": 256,
+      "h": 190
+    },
+    "res://assets/nature/rock_5_c_color1.glb": {
+      "thumb": "de4e84721eeeec4c.webp",
+      "bytes": 28964,
+      "w": 256,
+      "h": 200
+    },
+    "res://assets/nature/rock_5_d_color1.glb": {
+      "thumb": "8da8884fb045dcc2.webp",
+      "bytes": 29668,
+      "w": 256,
+      "h": 222
+    },
+    "res://assets/nature/rock_5_e_color1.glb": {
+      "thumb": "bb39ddb251add52f.webp",
+      "bytes": 41468,
+      "w": 256,
+      "h": 166
+    },
+    "res://assets/nature/rock_5_f_color1.glb": {
+      "thumb": "c1a4ee7c830260ac.webp",
+      "bytes": 37304,
+      "w": 239,
+      "h": 256
+    },
+    "res://assets/nature/rock_5_g_color1.glb": {
+      "thumb": "ed8743bea05a645b.webp",
+      "bytes": 46608,
+      "w": 256,
+      "h": 251
+    },
+    "res://assets/nature/rock_5_h_color1.glb": {
+      "thumb": "0c3dec58a5d9b942.webp",
+      "bytes": 46356,
+      "w": 159,
+      "h": 256
+    },
+    "res://assets/nature/rock_6_a_color1.glb": {
+      "thumb": "936ede8aeb2c23fe.webp",
+      "bytes": 27656,
+      "w": 241,
+      "h": 256
+    },
+    "res://assets/nature/rock_6_b_color1.glb": {
+      "thumb": "37ea6087cfcf755e.webp",
+      "bytes": 27828,
+      "w": 207,
+      "h": 256
+    },
+    "res://assets/nature/rock_6_c_color1.glb": {
+      "thumb": "661c75272b8dd842.webp",
+      "bytes": 28968,
+      "w": 175,
+      "h": 256
+    },
+    "res://assets/nature/rock_6_d_color1.glb": {
+      "thumb": "b5d31b43b26d292a.webp",
+      "bytes": 30032,
+      "w": 154,
+      "h": 256
+    },
+    "res://assets/nature/rock_6_e_color1.glb": {
+      "thumb": "06ae5a75d9a3d2a9.webp",
+      "bytes": 38052,
+      "w": 184,
+      "h": 256
+    },
+    "res://assets/nature/rock_6_f_color1.glb": {
+      "thumb": "de5756246f910eaf.webp",
+      "bytes": 42136,
+      "w": 218,
+      "h": 256
+    },
+    "res://assets/nature/rock_6_g_color1.glb": {
+      "thumb": "9780265cbb95b5fc.webp",
+      "bytes": 42408,
+      "w": 153,
+      "h": 256
+    },
+    "res://assets/nature/rock_6_h_color1.glb": {
+      "thumb": "a338f81d189becfd.webp",
+      "bytes": 45004,
+      "w": 170,
+      "h": 256
+    },
+    "res://assets/nature/tree_1_a_color1.glb": {
+      "thumb": "eabad9a1db5fda6b.webp",
+      "bytes": 42960,
+      "w": 196,
+      "h": 256
+    },
+    "res://assets/nature/tree_1_b_color1.glb": {
+      "thumb": "5908481be4710871.webp",
+      "bytes": 44492,
+      "w": 229,
+      "h": 256
+    },
+    "res://assets/nature/tree_1_c_color1.glb": {
+      "thumb": "4776de811da54a22.webp",
+      "bytes": 71776,
+      "w": 215,
+      "h": 256
+    },
+    "res://assets/nature/tree_2_a_color1.glb": {
+      "thumb": "1dcc95f1b6714882.webp",
+      "bytes": 33668,
+      "w": 155,
+      "h": 256
+    },
+    "res://assets/nature/tree_2_b_color1.glb": {
+      "thumb": "fd13ba4c2e324da8.webp",
+      "bytes": 37164,
+      "w": 183,
+      "h": 256
+    },
+    "res://assets/nature/tree_2_c_color1.glb": {
+      "thumb": "5ed79ce9fa058165.webp",
+      "bytes": 40920,
+      "w": 141,
+      "h": 256
+    },
+    "res://assets/nature/tree_2_d_color1.glb": {
+      "thumb": "134af7c4ac97248b.webp",
+      "bytes": 58400,
+      "w": 166,
+      "h": 256
+    },
+    "res://assets/nature/tree_2_e_color1.glb": {
+      "thumb": "6ad4d5174c188225.webp",
+      "bytes": 61496,
+      "w": 193,
+      "h": 256
+    },
+    "res://assets/nature/tree_3_a_color1.glb": {
+      "thumb": "2524a4eb206d6bc5.webp",
+      "bytes": 55216,
+      "w": 243,
+      "h": 256
+    },
+    "res://assets/nature/tree_3_b_color1.glb": {
+      "thumb": "e04b3dfd0cdf8ff6.webp",
+      "bytes": 54768,
+      "w": 256,
+      "h": 244
+    },
+    "res://assets/nature/tree_3_c_color1.glb": {
+      "thumb": "6d6f82da23e5afe6.webp",
+      "bytes": 96768,
+      "w": 256,
+      "h": 230
+    },
+    "res://assets/nature/tree_4_a_color1.glb": {
+      "thumb": "65a428265fb36482.webp",
+      "bytes": 38048,
+      "w": 143,
+      "h": 256
+    },
+    "res://assets/nature/tree_4_b_color1.glb": {
+      "thumb": "bd4a57375b86e2dd.webp",
+      "bytes": 41568,
+      "w": 108,
+      "h": 256
+    },
+    "res://assets/nature/tree_4_c_color1.glb": {
+      "thumb": "1d920b1df949215f.webp",
+      "bytes": 56616,
+      "w": 95,
+      "h": 256
+    },
+    "res://assets/nature/tree_5_a_color1.glb": {
+      "thumb": "08d200b814d70069.webp",
+      "bytes": 44168,
+      "w": 150,
+      "h": 256
+    },
+    "res://assets/nature/tree_5_b_color1.glb": {
+      "thumb": "e908c62f87915891.webp",
+      "bytes": 50712,
+      "w": 150,
+      "h": 256
+    },
+    "res://assets/nature/tree_5_c_color1.glb": {
+      "thumb": "c19a5a1d25302d62.webp",
+      "bytes": 58640,
+      "w": 143,
+      "h": 256
+    },
+    "res://assets/nature/tree_5_d_color1.glb": {
+      "thumb": "43df6801e8ac977d.webp",
+      "bytes": 45872,
+      "w": 113,
+      "h": 256
+    },
+    "res://assets/nature/tree_5_e_color1.glb": {
+      "thumb": "920557b839bab1f6.webp",
+      "bytes": 55528,
+      "w": 113,
+      "h": 256
+    },
+    "res://assets/nature/tree_5_f_color1.glb": {
+      "thumb": "f6ca1b84fe640d72.webp",
+      "bytes": 64428,
+      "w": 105,
+      "h": 256
+    },
+    "res://assets/nature/tree_6_a_color1.glb": {
+      "thumb": "de00768b9313db1a.webp",
+      "bytes": 45224,
+      "w": 133,
+      "h": 256
+    },
+    "res://assets/nature/tree_6_b_color1.glb": {
+      "thumb": "8a517f4bcd10281e.webp",
+      "bytes": 51148,
+      "w": 129,
+      "h": 256
+    },
+    "res://assets/nature/tree_6_c_color1.glb": {
+      "thumb": "af8d1c4a99f8b35b.webp",
+      "bytes": 62552,
+      "w": 87,
+      "h": 256
+    },
+    "res://assets/nature/tree_7_a_color1.glb": {
+      "thumb": "229e70dfd13f05d8.webp",
+      "bytes": 41408,
+      "w": 175,
+      "h": 256
+    },
+    "res://assets/nature/tree_7_b_color1.glb": {
+      "thumb": "6aa5b380128f871d.webp",
+      "bytes": 46600,
+      "w": 142,
+      "h": 256
+    },
+    "res://assets/nature/tree_7_c_color1.glb": {
+      "thumb": "a6e44f3f65abea0b.webp",
+      "bytes": 60860,
+      "w": 120,
+      "h": 256
+    },
+    "res://assets/nature/tree_bare_1_a_color1.glb": {
+      "thumb": "7b2fc467f88a3de9.webp",
+      "bytes": 37224,
+      "w": 115,
+      "h": 256
+    },
+    "res://assets/nature/tree_bare_1_b_color1.glb": {
+      "thumb": "3f41250cc2dd566f.webp",
+      "bytes": 36664,
+      "w": 189,
+      "h": 256
+    },
+    "res://assets/nature/tree_bare_1_c_color1.glb": {
+      "thumb": "f60916766195b9f8.webp",
+      "bytes": 61120,
+      "w": 125,
+      "h": 256
+    },
+    "res://assets/nature/tree_bare_2_a_color1.glb": {
+      "thumb": "0daa77783f8997e3.webp",
+      "bytes": 40492,
+      "w": 86,
+      "h": 256
+    },
+    "res://assets/nature/tree_bare_2_b_color1.glb": {
+      "thumb": "7b05547f43ffd6c2.webp",
+      "bytes": 42260,
+      "w": 62,
+      "h": 256
+    },
+    "res://assets/nature/tree_bare_2_c_color1.glb": {
+      "thumb": "e6f8b68a6ffa3965.webp",
+      "bytes": 48584,
+      "w": 53,
+      "h": 256
+    },
+    "res://assets/sprites/slime.png": {
+      "thumb": "dcec8a52f57031fe.webp",
+      "bytes": 472,
+      "w": 256,
+      "h": 192
+    },
+    "res://assets/tiles/dungeon.png": {
+      "thumb": "eb3f44056d9f0729.webp",
+      "bytes": 321,
+      "w": 256,
+      "h": 256
+    },
+    "res://assets/ui/main.tres": {
+      "thumb": "c869a8ce1da44a79.webp",
+      "bytes": 556,
+      "w": 256,
+      "h": 171
+    },
+    "res://assets/ui/panel-wood.png": {
+      "thumb": "ca5d230682f94819.webp",
+      "bytes": 147,
+      "w": 256,
+      "h": 256
+    },
+    "res://assets/vfx/barrier.png": {
+      "thumb": "e8c1fe82b1db3323.webp",
+      "bytes": 571345,
+      "w": 256,
+      "h": 256
+    },
+    "res://assets/vfx/explosion.png": {
+      "thumb": "a01dc9c7c941e412.webp",
+      "bytes": 369002,
+      "w": 256,
+      "h": 256
+    },
+    "res://assets/vfx/fireball.png": {
+      "thumb": "e88467bf3b0aed78.webp",
+      "bytes": 3122097,
+      "w": 256,
+      "h": 224
+    },
+    "res://assets/vfx/magic_rune.png": {
+      "thumb": "9673bc76756c1e56.webp",
+      "bytes": 416767,
+      "w": 256,
+      "h": 256
+    },
+    "res://assets/vfx/projectile-arrow.glb": {
+      "thumb": "3b3d33bfddb467dd.webp",
+      "bytes": 16836,
+      "w": 25,
+      "h": 256
+    },
+    "res://assets/vfx/projectile-melee.glb": {
+      "thumb": "2087f006a30b285e.webp",
+      "bytes": 47240,
+      "w": 51,
+      "h": 256
+    },
+    "res://assets/vfx/projectile-spear.glb": {
+      "thumb": "d7b235135cfa35a8.webp",
+      "bytes": 69892,
+      "w": 14,
+      "h": 256
+    },
+    "res://assets/vfx/zones/zone-damage.glb": {
+      "thumb": "d02b13a063124573.webp",
+      "bytes": 16968,
+      "w": 256,
+      "h": 112
+    },
+    "res://assets/vfx/zones/zone-freeze.glb": {
+      "thumb": "1886625cb9b7506f.webp",
+      "bytes": 16964,
+      "w": 256,
+      "h": 112
+    },
+    "res://assets/vfx/zones/zone-impulse-caster.glb": {
+      "thumb": "9df3de0d641a2f3c.webp",
+      "bytes": 16972,
+      "w": 256,
+      "h": 112
+    },
+    "res://assets/vfx/zones/zone-stun.glb": {
+      "thumb": "c3d9d649e0bcebd2.webp",
+      "bytes": 16960,
+      "w": 256,
+      "h": 112
+    },
+    "res://assets/weapons/axe_double.glb": {
+      "thumb": "e53a1b29006d830f.webp",
+      "bytes": 84232,
+      "w": 82,
+      "h": 256
+    },
+    "res://assets/weapons/axe.glb": {
+      "thumb": "d447ef3d52b79cca.webp",
+      "bytes": 15364,
+      "w": 80,
+      "h": 256
+    },
+    "res://assets/weapons/bow.glb": {
+      "thumb": "ced561a8c1b66b62.webp",
+      "bytes": 111684,
+      "w": 256,
+      "h": 189
+    },
+    "res://assets/weapons/claymore.glb": {
+      "thumb": "3c1f14ec63a708ee.webp",
+      "bytes": 54980,
+      "w": 36,
+      "h": 256
+    },
+    "res://assets/weapons/dagger.glb": {
+      "thumb": "1fbc02cd6b193670.webp",
+      "bytes": 40368,
+      "w": 50,
+      "h": 256
+    },
+    "res://assets/weapons/greatsword.glb": {
+      "thumb": "1733b344d4fd2f7c.webp",
+      "bytes": 78636,
+      "w": 25,
+      "h": 256
+    },
+    "res://assets/weapons/kk_arrow_a.glb": {
+      "thumb": "9345962e9deb62e2.webp",
+      "bytes": 22348,
+      "w": 256,
+      "h": 176
+    },
+    "res://assets/weapons/kk_arrow_b.glb": {
+      "thumb": "d433008411b5d143.webp",
+      "bytes": 45260,
+      "w": 256,
+      "h": 174
+    },
+    "res://assets/weapons/kk_arrow_c.glb": {
+      "thumb": "25dbc77d738ae4b3.webp",
+      "bytes": 21900,
+      "w": 256,
+      "h": 171
+    },
+    "res://assets/weapons/kk_axe_a.glb": {
+      "thumb": "4cc21dadca21b800.webp",
+      "bytes": 65876,
+      "w": 143,
+      "h": 256
+    },
+    "res://assets/weapons/kk_axe_b.glb": {
+      "thumb": "fda8b25a5229f80f.webp",
+      "bytes": 68320,
+      "w": 137,
+      "h": 256
+    },
+    "res://assets/weapons/kk_axe_c.glb": {
+      "thumb": "a13024cd80ec1297.webp",
+      "bytes": 55336,
+      "w": 105,
+      "h": 256
+    },
+    "res://assets/weapons/kk_axe_d.glb": {
+      "thumb": "ba64950b3969c883.webp",
+      "bytes": 59072,
+      "w": 120,
+      "h": 256
+    },
+    "res://assets/weapons/kk_bow_a_withstring.glb": {
+      "thumb": "b2aea8c5ba2e2d48.webp",
+      "bytes": 67632,
+      "w": 256,
+      "h": 79
+    },
+    "res://assets/weapons/kk_bow_a.glb": {
+      "thumb": "1ba3776748558ecb.webp",
+      "bytes": 55852,
+      "w": 256,
+      "h": 79
+    },
+    "res://assets/weapons/kk_bow_b_withstring.glb": {
+      "thumb": "836d765e499ecc39.webp",
+      "bytes": 192796,
+      "w": 256,
+      "h": 111
+    },
+    "res://assets/weapons/kk_bow_b.glb": {
+      "thumb": "e7114d1c735e45a0.webp",
+      "bytes": 184412,
+      "w": 256,
+      "h": 111
+    },
+    "res://assets/weapons/kk_bow_c_withstring.glb": {
+      "thumb": "a5b23389f48ec290.webp",
+      "bytes": 108364,
+      "w": 256,
+      "h": 83
+    },
+    "res://assets/weapons/kk_bow_c.glb": {
+      "thumb": "3af60540c6c3df1f.webp",
+      "bytes": 96320,
+      "w": 256,
+      "h": 83
+    },
+    "res://assets/weapons/kk_dagger_a.glb": {
+      "thumb": "a38ed0634f3e69fc.webp",
+      "bytes": 36344,
+      "w": 67,
+      "h": 256
+    },
+    "res://assets/weapons/kk_dagger_b.glb": {
+      "thumb": "c8ef496cbe399bf5.webp",
+      "bytes": 38868,
+      "w": 85,
+      "h": 256
+    },
+    "res://assets/weapons/kk_dagger_c.glb": {
+      "thumb": "a919cf14075a8836.webp",
+      "bytes": 52512,
+      "w": 57,
+      "h": 256
+    },
+    "res://assets/weapons/kk_fistweapon_a_stacked.glb": {
+      "thumb": "3075ce73a2a8672b.webp",
+      "bytes": 39560,
+      "w": 256,
+      "h": 144
+    },
+    "res://assets/weapons/kk_fistweapon_a.glb": {
+      "thumb": "c096c91982c1e7fd.webp",
+      "bytes": 29204,
+      "w": 256,
+      "h": 146
+    },
+    "res://assets/weapons/kk_fistweapon_b_stacked.glb": {
+      "thumb": "0e4619ce67d4880b.webp",
+      "bytes": 40640,
+      "w": 256,
+      "h": 179
+    },
+    "res://assets/weapons/kk_fistweapon_b.glb": {
+      "thumb": "b58fdc33df557350.webp",
+      "bytes": 29800,
+      "w": 256,
+      "h": 164
+    },
+    "res://assets/weapons/kk_fistweapon_c_left.glb": {
+      "thumb": "f53ab4629379d6b0.webp",
+      "bytes": 44312,
+      "w": 256,
+      "h": 236
+    },
+    "res://assets/weapons/kk_fistweapon_c_right.glb": {
+      "thumb": "33afca0495df8bc1.webp",
+      "bytes": 44316,
+      "w": 256,
+      "h": 183
+    },
+    "res://assets/weapons/kk_fistweapon_c_stacked.glb": {
+      "thumb": "dacdda9b61f57f52.webp",
+      "bytes": 69752,
+      "w": 238,
+      "h": 256
+    },
+    "res://assets/weapons/kk_halberd.glb": {
+      "thumb": "0de75185476c1a6a.webp",
+      "bytes": 82980,
+      "w": 89,
+      "h": 256
+    },
+    "res://assets/weapons/kk_hammer_a.glb": {
+      "thumb": "a34fa32a9d97f373.webp",
+      "bytes": 42108,
+      "w": 212,
+      "h": 256
+    },
+    "res://assets/weapons/kk_hammer_b.glb": {
+      "thumb": "c2ca1a8103591b38.webp",
+      "bytes": 47848,
+      "w": 131,
+      "h": 256
+    },
+    "res://assets/weapons/kk_hammer_c.glb": {
+      "thumb": "31617e3d248b6b01.webp",
+      "bytes": 51268,
+      "w": 95,
+      "h": 256
+    },
+    "res://assets/weapons/kk_hammer_d.glb": {
+      "thumb": "d43dc95e5c01fadf.webp",
+      "bytes": 92400,
+      "w": 164,
+      "h": 256
+    },
+    "res://assets/weapons/kk_scythe.glb": {
+      "thumb": "b17c96570ea35c67.webp",
+      "bytes": 67708,
+      "w": 152,
+      "h": 256
+    },
+    "res://assets/weapons/kk_shield_a.glb": {
+      "thumb": "810b7b39603f22a8.webp",
+      "bytes": 33472,
+      "w": 156,
+      "h": 256
+    },
+    "res://assets/weapons/kk_shield_b.glb": {
+      "thumb": "349d3a86aab0560c.webp",
+      "bytes": 34708,
+      "w": 154,
+      "h": 256
+    },
+    "res://assets/weapons/kk_shield_c.glb": {
+      "thumb": "27d809a9f977ebaf.webp",
+      "bytes": 46756,
+      "w": 170,
+      "h": 256
+    },
+    "res://assets/weapons/kk_shield_d.glb": {
+      "thumb": "e749061c57f707e7.webp",
+      "bytes": 42124,
+      "w": 149,
+      "h": 256
+    },
+    "res://assets/weapons/kk_spear_a.glb": {
+      "thumb": "32312ac0511ab495.webp",
+      "bytes": 71604,
+      "w": 21,
+      "h": 256
+    },
+    "res://assets/weapons/kk_spear_b.glb": {
+      "thumb": "d03bb740b0cee221.webp",
+      "bytes": 52832,
+      "w": 58,
+      "h": 256
+    },
+    "res://assets/weapons/kk_staff_a.glb": {
+      "thumb": "659c81bdd998f549.webp",
+      "bytes": 39884,
+      "w": 17,
+      "h": 256
+    },
+    "res://assets/weapons/kk_staff_b.glb": {
+      "thumb": "230e1ecd6e1a457b.webp",
+      "bytes": 51428,
+      "w": 60,
+      "h": 256
+    },
+    "res://assets/weapons/kk_staff_c.glb": {
+      "thumb": "fd8e2c6bfffa65c5.webp",
+      "bytes": 82216,
+      "w": 67,
+      "h": 256
+    },
+    "res://assets/weapons/kk_staff_d.glb": {
+      "thumb": "370eeae228b74071.webp",
+      "bytes": 94176,
+      "w": 85,
+      "h": 256
+    },
+    "res://assets/weapons/kk_sword_a.glb": {
+      "thumb": "56d4662bb5d7d8a6.webp",
+      "bytes": 32360,
+      "w": 68,
+      "h": 256
+    },
+    "res://assets/weapons/kk_sword_b.glb": {
+      "thumb": "a098aca2232ed586.webp",
+      "bytes": 39100,
+      "w": 70,
+      "h": 256
+    },
+    "res://assets/weapons/kk_sword_c.glb": {
+      "thumb": "abb72e7bfba1b558.webp",
+      "bytes": 35844,
+      "w": 31,
+      "h": 256
+    },
+    "res://assets/weapons/kk_sword_d.glb": {
+      "thumb": "d14ff343677ac5ee.webp",
+      "bytes": 44844,
+      "w": 70,
+      "h": 256
+    },
+    "res://assets/weapons/kk_sword_e.glb": {
+      "thumb": "ee24e1f8a0e3ae08.webp",
+      "bytes": 48736,
+      "w": 54,
+      "h": 256
+    },
+    "res://assets/weapons/kk_sword_f.glb": {
+      "thumb": "9fbd93c697cbb48f.webp",
+      "bytes": 54568,
+      "w": 49,
+      "h": 256
+    },
+    "res://assets/weapons/kk_sword_g.glb": {
+      "thumb": "32cf8b2b98af251f.webp",
+      "bytes": 70608,
+      "w": 82,
+      "h": 256
+    },
+    "res://assets/weapons/kk_wand_a.glb": {
+      "thumb": "66a3982bcc4f24b9.webp",
+      "bytes": 38504,
+      "w": 55,
+      "h": 256
+    },
+    "res://assets/weapons/kk_wand_b.glb": {
+      "thumb": "5c12c12eeccc94b0.webp",
+      "bytes": 40268,
+      "w": 114,
+      "h": 256
+    },
+    "res://assets/weapons/knife.glb": {
+      "thumb": "981fac012bfb0f8f.webp",
+      "bytes": 40368,
+      "w": 50,
+      "h": 256
+    },
+    "res://assets/weapons/scythe.glb": {
+      "thumb": "193410f7f7e93d41.webp",
+      "bytes": 75252,
+      "w": 114,
+      "h": 256
+    },
+    "res://assets/weapons/shield_round.glb": {
+      "thumb": "e19248bb4e44158b.webp",
+      "bytes": 69492,
+      "w": 204,
+      "h": 256
+    },
+    "res://assets/weapons/spear.glb": {
+      "thumb": "c91c6c3546f99f1f.webp",
+      "bytes": 69892,
+      "w": 14,
+      "h": 256
+    },
+    "res://assets/weapons/sword.glb": {
+      "thumb": "f9cf8e39a4f5f3a5.webp",
+      "bytes": 50036,
+      "w": 36,
+      "h": 256
+    },
+    "res://assets/weapons/wooden_bow.glb": {
+      "thumb": "0f766deb0c3c1637.webp",
+      "bytes": 39108,
+      "w": 54,
+      "h": 256
+    }
+  }
+}

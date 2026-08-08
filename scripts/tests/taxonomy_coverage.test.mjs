@@ -18,6 +18,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { thumbFilename } from "../lib/thumbkey.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_asset_manifest.mjs");
@@ -32,9 +33,15 @@ const PNG_1X1 = Buffer.from(
 // plain PNG so it passes the per-entry guards and the run reaches guard (T).
 function fixture({ kind, taxonomyKinds }) {
   const dir = mkdtempSync(join(tmpdir(), "taxgate-"));
-  mkdirSync(join(dir, "assets"), { recursive: true });
+  mkdirSync(join(dir, "assets", ".thumbs"), { recursive: true });
   mkdirSync(join(dir, "art", "concept"), { recursive: true });
   writeFileSync(join(dir, "assets", "thing.png"), PNG_1X1);
+  // Guard (U) requires a thumbnail for every visual entry. Provide one so
+  // this fixture exercises guard (T) in isolation rather than tripping (U).
+  writeFileSync(
+    join(dir, "assets", ".thumbs", thumbFilename("res://assets/thing.png")),
+    PNG_1X1,
+  );
 
   writeFileSync(
     join(dir, "catalog.json"),
