@@ -3,7 +3,8 @@ title: "I-083 — The Bellfaith seal certifies provenance, not truth"
 date: 2026-08-08
 idea: I-083
 release: "1.7"
-status: proposed
+status: accepted
+accepted: 2026-08-08 by the owner, after two rounds of simplification
 scope: "One question: what stops a forged Bellfaith seal. The answer needs one sentence of new world law and no new magic."
 ---
 
