@@ -21,7 +21,10 @@
      measures wider than the average character in this font (measured ~10.07px
      vs ~8.01px average) — so a naive 70ch cap rendered at 705px, ~88 average
      characters per line, well past the 75-char target. 58ch keeps the
-     column under 75 measured characters. */
+     column under 75 measured characters. That ~1.257 ch-to-average-character
+     ratio is specific to THIS font stack (-apple-system/Segoe UI/Roboto) —
+     if the font changes, re-measure rather than assume 58ch still lands
+     under 75 characters. */
   #content{max-width:58ch;width:100%;min-width:0}
   #content .loading{color:var(--mut)}
   h2{font-size:26px;margin:56px 0 4px;border-bottom:1px solid var(--line);padding-bottom:10px;scroll-margin-top:20px}

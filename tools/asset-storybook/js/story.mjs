@@ -246,7 +246,15 @@ export async function mountStory(main) {
   // without reordering other sections, which is out of scope for this
   // feature — accepted trade-off: body order (Story first) no longer
   // matches the sidebar order (Combat above Story).
-  main.prepend(section);
+  //
+  // Exception: on main.mjs's manifest-failure path (:61), main.innerHTML is
+  // set to a `.empty-state` diagnostic div BEFORE combat and story mount.
+  // An unconditional prepend would push that diagnostic below the story
+  // section, hiding it. If that notice is present, insert right after it
+  // instead so it stays the first thing on the page.
+  const failureNotice = main.querySelector(".empty-state");
+  if (failureNotice) failureNotice.after(section);
+  else main.prepend(section);
 }
 
 /** Sidebar entry for the story section. Separated so it can sit up top. */
