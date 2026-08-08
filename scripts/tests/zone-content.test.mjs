@@ -473,6 +473,10 @@ test("Z1: a record naming a zone the geography does not have fails", () => {
   const r = runGate(fixture({ zones }));
   assert.equal(r.code, 1);
   assert.match(r.out, /zones\/zone-nowhere\.json: zone "nowhere" not in cluster1-geography\.json#zones/);
+  // The orphan must be withheld from the summary count too, not just FAILed:
+  // it is not pushed into `records`, so the ten real geography zones — not
+  // eleven — are what the gate reports as covered.
+  assert.match(r.out, /\b10 zones,/);
 });
 
 test("Z1: all ten geography zone ids are accepted", () => {

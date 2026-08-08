@@ -859,7 +859,7 @@ function checkBestiaryPlacement(opts) {
 // says cluster 1 lives on (design §6); `effect` is the seven runtime zoneHazards
 // types, whose source of truth is
 // content/schemas/map.schema.json #/properties/zoneHazards/items/properties/type/enum
-// (consumed by colyseus-server ZoneEffectManager). Restated here deliberately:
+// (declared there; NOT read by colyseus-server — see design §2 item 3). Restated here deliberately:
 // this gate must not depend on a map schema the content root may not ship. A
 // test asserts the two lists are equal so the copy cannot drift silently.
 const ZONE_RESOURCE_KINDS = ["crop", "timber", "ore", "fuel", "stone", "water", "forage", "salvage"];

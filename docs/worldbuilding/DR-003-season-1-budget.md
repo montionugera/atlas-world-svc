@@ -89,7 +89,7 @@ line reads 0 forever and looks correct. The prefix is part of the budget's contr
 pipeline, not an implementation detail of the report.
 </div>
 
-**The report at adoption, verbatim:**
+**The report at adoption, with the `zones` row updated:**
 
 ```
 Season 1 budget — cluster 1 — docs/worldbuilding/DR-003-season-1-budget.md

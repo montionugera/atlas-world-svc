@@ -350,8 +350,9 @@ flowchart LR
 - `content/maps/atlas-frontier.md` and its `zoneHazards` — untouched.
 - `bestiary.json`, `placement-thornveil.json` and F-029's G1–G8 — untouched; Z-rules live in a
   separate function over a separate file class.
-- The 152 story nodes, the novel, the 5-act structure, `canon.md` — untouched. Nothing here amends
-  narrative.
+- The 152 story nodes, the novel, the 5-act structure — untouched. Nothing here amends narrative.
+  `canon.md` §6.1's keyspace register gets a 3-line, line-count-neutral edit to remove a sentence
+  this branch makes factually false; that is a keyspace-register correction, not a narrative one.
 - The `mob-bases`, `spawn-entries` and `world-state-systems` budget lines and their blockers.
 
 ---
