@@ -9,7 +9,7 @@ import {
   artTabState,
   taxonomyState,
 } from "./state.mjs";
-import { applyArtTabFilter, eagerLoadCard } from "./art-tabs.mjs";
+import { applyArtTabFilter, observeCardForPromotion } from "./art-tabs.mjs";
 import { labelForSection } from "./data/taxonomy.mjs";
 
 // ---------- sidebar ----------
@@ -21,7 +21,7 @@ import { labelForSection } from "./data/taxonomy.mjs";
 // capitalize-and-append-s branch on a miss — which is how 283 dungeon
 // assets came to sit under a heading reading "Model3d:dungeons (283)".
 // A miss was indistinguishable from a hit. Now a kind with no registry
-// entry lands in UNTAXONOMIZED and guard (H) fails the build.
+// entry lands in UNTAXONOMIZED and guard (T) fails the build.
 //
 // The synthetic classes below (sfx/music/art/coverage/combat/story) are not
 // manifest kinds and keep their hardcoded labels.
@@ -79,7 +79,7 @@ function setActiveClass(cls) {
     if (sec) {
       sec.querySelectorAll(".card").forEach((card) => {
         card.style.display = "";
-        eagerLoadCard(card);
+        observeCardForPromotion(card);
       });
       sec.querySelectorAll(".art-race-row").forEach((row) => {
         row.style.display = "";
