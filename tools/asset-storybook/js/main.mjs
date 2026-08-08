@@ -23,6 +23,7 @@ import { buildArtTabBar, applyArtTabFilter } from "./art-tabs.mjs";
 import { classLabel, buildSidebarItem, groupByRender } from "./sidebar.mjs";
 import { buildCoverageSection } from "./coverage.mjs";
 import { mountCombatLab, mountCombatNav } from "./combat-lab.mjs";
+import { mountStory, mountStoryNav } from "./story.mjs";
 
 async function fetchJson(url, label) {
   const res = await fetch(url);
@@ -65,6 +66,9 @@ async function init() {
     // The combat lab does not depend on any manifest — keep it reachable.
     mountCombatNav(sidebarNav);
     mountCombatLab(main);
+    // Story doesn't either (I-082) — same reason, same treatment.
+    mountStoryNav(sidebarNav);
+    await mountStory(main);
     return;
   }
 
@@ -114,13 +118,10 @@ async function init() {
     ...Object.entries(manifest.entries || {}),
     ...Object.entries(catalogManifest.entries || {}),
   ];
-  document.getElementById("stat-version").textContent =
-    manifest.version ?? "?";
+  document.getElementById("stat-version").textContent = manifest.version ?? "?";
   document.getElementById("stat-total").textContent = entries.length;
 
-  const characterEntries = entries.filter(
-    ([, e]) => e.kind === "character",
-  );
+  const characterEntries = entries.filter(([, e]) => e.kind === "character");
   document.getElementById("stat-characters").textContent =
     characterEntries.length;
 
@@ -164,6 +165,7 @@ async function init() {
   // class, and the asset list is long enough that the last entry falls
   // below the fold on a short window.
   mountCombatNav(sidebarNav);
+  mountStoryNav(sidebarNav);
 
   for (const groupKey of groups.keys()) {
     initHealth(groupKey, groups.get(groupKey).length);
@@ -175,9 +177,7 @@ async function init() {
 
   if (audioFiles.length > 0) {
     initHealth(SFX_CLASS, audioFiles.length);
-    sidebarNav.appendChild(
-      buildSidebarItem(SFX_CLASS, audioFiles.length),
-    );
+    sidebarNav.appendChild(buildSidebarItem(SFX_CLASS, audioFiles.length));
     renderSidebarBadge(SFX_CLASS);
   }
 
@@ -250,6 +250,7 @@ async function init() {
   }
 
   mountCombatLab(main);
+  await mountStory(main);
 
   // --- soundboard section (bespoke, driven by audio-index.json — not
   //     the registry; see the RENDERERS comment above) ---
@@ -276,9 +277,7 @@ async function init() {
       " are wired to gameplay events (audio-manifest.json) — highlighted below. Hover a tile to preview (loops); click to pin.";
     section.appendChild(note);
 
-    section.appendChild(
-      buildAudio(audioFiles, audioManifest.entries || {}),
-    );
+    section.appendChild(buildAudio(audioFiles, audioManifest.entries || {}));
     main.appendChild(section);
   }
 
@@ -324,8 +323,8 @@ async function init() {
         count: list.length,
       });
     }
-    for (const [gid, list] of [...artBuckets.unregistered].sort(
-      (a, b) => a[0].localeCompare(b[0]),
+    for (const [gid, list] of [...artBuckets.unregistered].sort((a, b) =>
+      a[0].localeCompare(b[0]),
     )) {
       artTabs.push({
         id: gid,

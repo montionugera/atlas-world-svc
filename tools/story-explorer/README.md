@@ -50,6 +50,11 @@ serve from the repo root:
 python3 -m http.server 7788 --bind 127.0.0.1
 ```
 
+Both views are also embedded in the asset storybook (I-082) as the **Story**
+section's Reader and Graph tabs, alongside the Undertow novel — see
+`tools/asset-storybook/story-views.json`. Serving the repo root and opening
+`/tools/asset-storybook/index.html` reaches all three without a second server.
+
 Then open <http://127.0.0.1:7788/tools/story-explorer/index.html> (graph) or
 <http://127.0.0.1:7788/tools/story-explorer/reader.html> (reader mode).
 

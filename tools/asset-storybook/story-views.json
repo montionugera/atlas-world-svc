@@ -1,0 +1,5 @@
+[
+  { "id": "reader", "label": "Reader", "src": "../story-explorer/reader.html" },
+  { "id": "graph", "label": "Graph", "src": "../story-explorer/index.html" },
+  { "id": "novel", "label": "Undertow", "src": "../../docs/story/undertow/novel-illustrated-edition.html" }
+]
