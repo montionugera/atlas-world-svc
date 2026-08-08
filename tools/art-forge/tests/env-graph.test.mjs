@@ -8,7 +8,10 @@ import {
   buildEnvHiresGraph,
   buildEnvNegative,
   buildEnvPositive,
+  controlOutputId,
   formatStrength,
+  resolveControl,
+  resolveStrength,
   validateBrief,
 } from "../generate/env.mjs";
 
@@ -138,6 +141,49 @@ test("validateBrief rejects an empty/missing masses — depthPlanesFromBrief wou
 test("validateBrief accepts a well-formed brief and returns it unchanged", () => {
   const brief = { prompt: "a town", masses: [{ name: "x" }] };
   assert.equal(validateBrief(brief, "A1-ART-99", "/fake/A1-ART-99.json"), brief);
+});
+
+/* --------------------------- control selection --------------------------- */
+
+test("resolveControl defaults to depth and maps it to the frozen controlNet block", () => {
+  const r = resolveControl({ forge, control: undefined });
+  assert.equal(r.control, "depth");
+  assert.equal(r.block.strength, 0.3);
+});
+
+test("resolveControl names an unknown control instead of silently generating with the wrong one", () => {
+  assert.throws(() => resolveControl({ forge, control: "sgement" }), /sgement.*depth, segment/s);
+});
+
+test("an unmeasured strength fails loudly rather than defaulting — a null that reached the graph would queue strength:null", () => {
+  const { block } = resolveControl({ forge, control: "segment" });
+  assert.throws(
+    () => resolveStrength({ control: "segment", block, override: undefined }),
+    /segment.*unmeasured.*--strength/s,
+  );
+  assert.equal(resolveStrength({ control: "segment", block, override: "0.45" }), 0.45);
+});
+
+test("depth output ids keep F-026's exact naming; segment ids carry their control so the two never collide", () => {
+  assert.equal(
+    controlOutputId({ briefId: "A1-ART-02", control: "depth", seed: 12345, strength: 0.3 }),
+    "A1-ART-02-seed12345-s0.30",
+  );
+  assert.equal(
+    controlOutputId({ briefId: "A1-ART-02", control: "segment", seed: 12345, strength: 0.3 }),
+    "A1-ART-02-segment-seed12345-s0.30",
+  );
+});
+
+test("the graph sends the control block's own union type, not a hardcoded 'depth'", () => {
+  const { block } = resolveControl({ forge, control: "segment" });
+  const g = buildEnvGraph({
+    brief: { positive: "a crossing town", id: "A1-ART-02" },
+    seed: 12345, depthImage: "art-forge/A1-ART-02-segment.png", forge,
+    strength: 0.45, controlNet: block,
+  });
+  assert.equal(g[ENV_NODE.CN_TYPE].inputs.type, "segment");
+  assert.equal(g[ENV_NODE.CN_APPLY].inputs.strength, 0.45);
 });
 
 /* --------------------------- hires graph --------------------------- */

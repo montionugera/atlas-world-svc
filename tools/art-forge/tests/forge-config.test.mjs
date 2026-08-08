@@ -48,3 +48,20 @@ test("comfy stays shared at top level — it describes the machine, not the reci
   assert.equal(typeof forge.config.comfy.host, "string");
   assert.equal(forge.config.version, 2);
 });
+
+test("environment profile carries a segment control block whose strength is explicitly UNMEASURED", () => {
+  const forge = loadForge({ profile: "environment" });
+  assert.equal(forge.profile.segment.type, "segment");
+  assert.equal(forge.profile.segment.strength, null,
+    "F-026's 0.30-0.40 window was depth-measured and does not transfer — Task 3 measures this");
+  assert.equal(forge.profile.segment.startPercent, 0.0);
+  assert.equal(forge.profile.segment.endPercent, 1.0);
+});
+
+test("the depth controlNet block is FROZEN — F-026's replication record depends on it", () => {
+  const forge = loadForge({ profile: "environment" });
+  assert.deepEqual(forge.profile.controlNet, {
+    type: "depth", strength: 0.3, startPercent: 0.0, endPercent: 1.0,
+  });
+  assert.equal(forge.profile.control, "depth", "the default control does not change until segment is measured");
+});

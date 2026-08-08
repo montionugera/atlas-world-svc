@@ -76,6 +76,14 @@
         "startPercent": 0.0,
         "endPercent": 1.0
       },
+      "control": "depth",
+      "segment": {
+        "type": "segment",
+        "strength": null,
+        "startPercent": 0.0,
+        "endPercent": 1.0,
+        "_note": "Segment control over the per-mass `value` colours every brief already carries — added because the depth path renders only FOUR levels (measured 2026-08-08: 0 sky 54.5%, 51 all-bg 5.1%, 140 all-mg 18.4%, 180 all-fg 7.5%), so a river and its far bank are the same pixel and no ControlNet strength can separate them. `segment` is a valid SetUnionControlNetType option on this install (verified 2026-08-08 via GET /object_info/SetUnionControlNetType: auto, openpose, depth, hed/pidi/scribble/ted, canny/lineart/anime_lineart/mlsd, normal, segment, tile, repaint). strength is NULL ON PURPOSE and env.mjs refuses to run without --strength: F-026's 0.30-0.40 window was measured for DEPTH and does not transfer to a label map. Task 3 of the segment-control plan measures it and replaces this null."
+      },
       "hires": {
         "upscaler": "4x-UltraSharp.pth",
         "steps": 10,

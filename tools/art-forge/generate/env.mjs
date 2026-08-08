@@ -88,7 +88,7 @@ import {
   parseSeed,
   runGraph,
 } from "./charsheet.mjs";
-import { renderDepthPng } from "./blockin.mjs";
+import { renderDepthPng, renderSegmentPng } from "./blockin.mjs";
 
 /** Node ids follow docs/worldbuilding/ABP-controlnet-rescue.md's numbering. */
 export const ENV_NODE = Object.freeze({
@@ -240,6 +240,72 @@ export function formatStrength(strength) {
   return Number(strength).toFixed(2);
 }
 
+/* --------------------------- control selection --------------------------- */
+
+/** control key -> the forge.config.json profile key holding its block. */
+export const CONTROL_BLOCK = Object.freeze({ depth: "controlNet", segment: "segment" });
+
+/** control key -> the blockin.mjs renderer that produces its control PNG. */
+export const CONTROL_RENDERER = Object.freeze({ depth: renderDepthPng, segment: renderSegmentPng });
+
+/**
+ * Pick the active control. Precedence: --control > profile.control > "depth".
+ * Throws by name on an unknown key, and on a block whose `type` does not equal
+ * its key (a typo there silently sends the wrong SetUnionControlNetType).
+ * @returns {{ control: string, block: object, render: Function }}
+ */
+export function resolveControl({ forge, control }) {
+  if (control === true) {
+    throw new Error("--control requires a value, got a bare flag");
+  }
+  const key = control ?? forge.profile.control ?? "depth";
+  const blockKey = CONTROL_BLOCK[key];
+  if (!blockKey) {
+    throw new Error(
+      `unknown --control "${key}" — expected one of ${Object.keys(CONTROL_BLOCK).join(", ")}`,
+    );
+  }
+  const block = forge.profile[blockKey];
+  if (!block) {
+    throw new Error(
+      `control "${key}" has no "${blockKey}" block in forge.config.json profiles.environment`,
+    );
+  }
+  if (block.type !== key) {
+    throw new Error(
+      `control "${key}"'s block has type "${block.type}" in forge.config.json — expected ` +
+        `"${key}" (a typo there would silently send the wrong SetUnionControlNetType)`,
+    );
+  }
+  return { control: key, block, render: CONTROL_RENDERER[key] };
+}
+
+/**
+ * Resolve the strength for one control. `--strength` wins over the block's
+ * value. Throws if the block's strength is null AND no override was given —
+ * an unmeasured strength must fail loudly, not silently default.
+ */
+export function resolveStrength({ control, block, override }) {
+  const strength = parseNumericOverride("strength", override, block.strength);
+  if (strength === null || strength === undefined) {
+    throw new Error(
+      `control "${control}" has an unmeasured strength (null in forge.config.json) — pass ` +
+        "--strength to override; an unmeasured strength must fail loudly, not silently reach the graph",
+    );
+  }
+  return strength;
+}
+
+/**
+ * Output id for one cell. Depth keeps F-026's exact naming
+ * (`<id>-seed<n>-s<x>`) so the replication record's filenames still resolve;
+ * any other control inserts its key (`<id>-<control>-seed<n>-s<x>`).
+ */
+export function controlOutputId({ briefId, control, seed, strength }) {
+  const suffix = `-seed${seed}-s${formatStrength(strength)}`;
+  return control === "depth" ? `${briefId}${suffix}` : `${briefId}-${control}${suffix}`;
+}
+
 /**
  * Build the environment graph. `depthImage` is the filename LoadImage
  * resolves against the ComfyUI server's own input directory (which is a
@@ -258,8 +324,9 @@ export function buildEnvGraph({
   depthImage,
   forge,
   strength = forge.profile.controlNet.strength,
+  controlNet = forge.profile.controlNet,
 }) {
-  const { models, sampler, latent, controlNet } = forge.profile;
+  const { models, sampler, latent } = forge.profile;
   const outputId = `${brief.id ?? "subject"}-seed${seed}-s${formatStrength(strength)}`;
   return {
     [ENV_NODE.CKPT]: {
@@ -500,42 +567,52 @@ export async function generateEnv(
   const rawBrief = readBrief(briefId);
   const seed = parseSeed(args.seed);
   const positiveOverride = parsePromptOverride("positive", args.positive);
-  const strength = parseNumericOverride(
-    "strength",
-    args.strength,
-    forge.profile.controlNet.strength,
-  );
+
+  const { control, block, render } = resolveControl({ forge, control: args.control });
+  const strength = resolveStrength({ control, block, override: args.strength });
   const { width, height } = forge.profile.latent;
 
-  const depthLocalPath = path.join(forge.outDir, "depth", `${briefId}.png`);
-  await renderDepthPng({ brief: rawBrief, width, height, outPath: depthLocalPath });
+  // Per-control local path AND per-control uploaded basename. Both matter:
+  // uploadControlImage sends path.basename(localPath) with overwrite=true, so
+  // a shared "A1-ART-02.png" would let a segment run clobber the depth map
+  // already sitting in ComfyUI's input dir (and vice versa).
+  const controlLocalPath = path.join(forge.outDir, "control", control, `${briefId}-${control}.png`);
+  await render({ brief: rawBrief, width, height, outPath: controlLocalPath });
 
   const base = comfyBaseUrl(forge, args);
-  // dry-run must not touch the network — the depth PNG still renders locally
-  // above so a --dry-run graph carries a realistic LoadImage name.
-  const depthImage = args["dry-run"]
-    ? `art-forge/${briefId}.png`
-    : await uploadControlImage({ base, localPath: depthLocalPath, subfolder: "art-forge" });
+  // dry-run must not touch the network — the control PNG still renders
+  // locally above so a --dry-run graph carries a realistic LoadImage name.
+  const controlImage = args["dry-run"]
+    ? `art-forge/${briefId}-${control}.png`
+    : await uploadControlImage({ base, localPath: controlLocalPath, subfolder: "art-forge" });
 
   // --positive replaces the composed prompt entirely (CLI wins over
   // composed), matching charsheet.mjs/i2i.mjs's --positive convention. When
   // not given, the positive is the brief prose PLUS the house style
   // vocabulary — a bare brief prompt is exactly what produced the modern-
   // contamination failure this composition exists to prevent.
+  //
+  // brief.id is qualified with the control (matching controlOutputId's own
+  // naming) so buildEnvGraph's internal SaveImage filename_prefix — which it
+  // derives from brief.id, not from the outer outputId below — lands on the
+  // SAME control-qualified name instead of silently dropping the control
+  // suffix for non-depth controls. depth's id stays bare on purpose: that is
+  // what keeps its embedded filename_prefix byte-identical to F-026.
   const brief = {
     positive: positiveOverride ?? buildEnvPositive(rawBrief.prompt, forge),
     negative: buildEnvNegative(forge),
-    id: rawBrief.id,
+    id: control === "depth" ? rawBrief.id : `${rawBrief.id}-${control}`,
   };
-  const graph = buildEnvGraph({ brief, seed, depthImage, forge, strength });
 
-  const outputId = `${briefId}-seed${seed}-s${formatStrength(strength)}`;
+  const outputId = controlOutputId({ briefId, control, seed, strength });
+  const graph = buildEnvGraph({ brief, seed, depthImage: controlImage, forge, strength, controlNet: block });
+
   const baseResult = await runGraph({
     forge,
     args,
     graph,
     name: `env/${outputId}`,
-    label: `env ${briefId} seed=${seed} strength=${formatStrength(strength)} depth=${depthImage}`,
+    label: `env ${briefId} seed=${seed} control=${control} strength=${formatStrength(strength)} depth=${controlImage}`,
   });
 
   if (!args.hires) {
