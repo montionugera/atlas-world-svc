@@ -55,6 +55,12 @@ export function classLabel(cls) {
 }
 
 function setActiveClass(cls) {
+  // I-085: lets the story overlay close itself on sidebar navigation without
+  // sidebar.mjs importing story.mjs (story.mjs already imports from here — the
+  // reverse import would be a cycle).
+  document.dispatchEvent(
+    new CustomEvent("storybook:class-change", { detail: { cls } }),
+  );
   document.querySelectorAll(".sidebar-item").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.class === cls);
   });

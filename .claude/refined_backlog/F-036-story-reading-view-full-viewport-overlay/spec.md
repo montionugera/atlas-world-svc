@@ -21,7 +21,7 @@ viewport:
 | Iframe height (`height:80vh`) | 688 px |
 | Reader document height *inside* that frame | 29,298 px |
 | Fraction of the document visible at once | **2.3% — about 43 screenfuls** |
-| Prose column width inside the reader | 969 px |
+| Prose column width inside the reader (`#content`) | 760 px (~95 chars) — see correction below |
 
 Three distinct failures stack:
 
@@ -31,9 +31,14 @@ Three distinct failures stack:
    the "cropped" symptom.
 2. **Depth.** The section sits at 94.6% page depth behind 24 sections and ~653 asset
    cards. The sidebar button jumps there, but any stray scroll loses it.
-3. **Line length.** 969 px lines are far past the comfortable measure for prose
-   (~65–75 characters). This one lives in `tools/story-explorer/reader.html`, so it
-   affects the standalone reader too.
+3. **Line length.** The prose column runs ~95 characters, past the comfortable measure
+   (~65–75). This one lives in `tools/story-explorer/reader.html`, so it affects the
+   standalone reader too.
+
+   **Correction (found during implementation).** The 969 px figure originally recorded
+   here measured `main` — the flex *centring container* — not the prose. The real column
+   was 760 px, set by an existing `#content { max-width: 760px }` rule, which is ~95
+   characters. The direction of the fix was right; the stated magnitude was wrong.
 
 The root cause is a design choice, not a bug: an iframe fixed at `80vh` inside a
 scrolling page is a letterbox by construction. Enlarging it does not fix it —
@@ -110,14 +115,23 @@ On exit, focus returns to the launcher button that opened the overlay.
 
 ### 4. Placement and line length
 
-The Story section renders near the top of `main`, immediately after the combat lab —
-matching where it already sits in the sidebar — instead of at 94.6% page depth. A
+The Story section is prepended to `main` instead of rendering at 94.6% page depth. A
 `scroll-margin-top` on the section makes the sidebar jump land cleanly rather than
 flush against the viewport edge.
 
-Separately, `tools/story-explorer/reader.html`'s `main` gains a `max-width` of about
-`70ch`. This is the one change that reaches outside the storybook; it improves the
-standalone reader identically.
+**Correction (found during implementation).** This originally said "immediately after
+the combat lab — matching where it already sits in the sidebar." That does not work:
+`main.mjs:249` appends every asset section, and only then does `:252` append the combat
+lab, so the combat *section* is itself ~13th — only the sidebar *entry* is near the top.
+Anchoring to it measured 95.3% depth. `main.prepend()` is used instead. Accepted
+consequence: body order is Story first, Combat ~14th, which no longer matches the sidebar
+order. Moving the combat lab is outside this feature's Story-only scope.
+
+Separately, `tools/story-explorer/reader.html`'s existing `#content { max-width: 760px }`
+is tightened to `58ch` (~73 characters at this font stack's measured ch-to-average-character
+ratio of ~1.257). Note `58ch`, not the `70ch` first proposed: `ch` is the advance width of
+the "0" glyph, not the average character, so `70ch` measured ~88 characters. This is the one
+change that reaches outside the storybook; it improves the standalone reader identically.
 
 ## Failure handling
 
@@ -154,7 +168,15 @@ Verification is browser-based, as it was for F-034:
    `src`.
 4. With the overlay open, scrolling the page does not move the content behind it;
    closing restores the pre-open scroll position.
-5. Exit ✕, Escape, and clicking another sidebar entry all close the overlay.
+5. Exit ✕ and Escape both close the overlay. A third path exists — sidebar navigation
+   dispatches `storybook:class-change`, which the overlay listens for — but it is not
+   reachable by ordinary mouse or keyboard while the overlay is open: the overlay covers
+   the sidebar (`position:fixed; z-index:9000` over a `position:sticky` sidebar with no
+   z-index), and the focus trap keeps Tab inside the overlay. It was originally verified
+   with a programmatic `.click()`, which bypasses hit-testing — that verification did not
+   prove what it appeared to. The path is real defence-in-depth for assistive tech that
+   navigates outside the trap; hardening it properly (marking outside content `inert`) is
+   a follow-up, not part of this feature.
 6. The Story section appears within the first two sections of `main`, not at the bottom.
 7. `npm test --prefix scripts` still passes with the packaging test unmodified.
 8. The reader's prose column measures under about 75 characters per line.
