@@ -37,7 +37,7 @@
 - **`scripts/` is not prettier-formatted.** Husky/lint-staged is scoped to `colyseus-server/src/**/*.ts`. Do not run prettier over `scripts/lib/season1.mjs` or `scripts/check_content.mjs` — it reflows the file and buries the diff. `content/**/*.json` formatting is hand-maintained: 2-space indent, short scalar schemas on one line.
 - **Never `git commit --amend`.** Always a new commit on top.
 
-### Two cross-lane conflicts, resolved here — read before writing any code
+### Three cross-lane conflicts, resolved here — read before writing any code
 
 **Conflict 1 — where the vocabulary rules live. RESOLVED: the schema is SHAPE-ONLY; the gate owns every Z-rule.**
 
@@ -93,7 +93,7 @@ The **soft-skip** guard is what makes this safe for every *other* fixture: `chec
 | `scripts/tests/season1.test.mjs` | **Modify** | Appends the 9-test `zones()` block + **ONE** import line — `import { existsSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";` (four new bindings). `execFileSync`, `writeFileSync`, `unlinkSync` and `tmpdir` are **ALREADY imported** mid-file at lines 107, 154 and 155 and must **NOT** be re-imported: a duplicate ESM binding is a parse-time `SyntaxError` that kills the whole file. No existing test is edited. See Task 5 Step 1. |
 | `scripts/tests/fixtures/season1/content/zones/*.json` | **Create** (6 files) | Fixture records for the measure: 2 complete, 1 short a hazard, 1 blank `reasonToGo`, 1 duplicate zone id, 1 non-record (`notes.json`). |
 | `docs/worldbuilding/DR-003-season-1-budget.md` | **Modify** | **Six edits across five places** that still assert the `zones` line is blocked — the §0 callout (edit 1), the §3 table row (2), the "three blocked lines" sentence (3) *and* its `zones` bullet (4) — those two edits are one place — the verbatim report block (5), and the P1 consequence cell (6). Task 5 Step 6 numbers them 1–6 and every later reference counts **six edits**. Two of them never use the word "blocked". |
-| `content/story/canon.md` | **Modify** | §6.1 Keyspace register, "Open, not resolved:" paragraph — the sentence claiming the line stays `blockedBy`. |
+| `content/story/canon.md` | **Modify** | §6.1 Keyspace register, "Open, not resolved:" paragraph — the sentence claiming the line stays `blockedBy`. **Design §12 lists `canon.md` as untouched; that bullet is qualified "Nothing here amends narrative", and this edit is to the keyspace register, not to narrative. Stated here so the apparent conflict is deliberate and reviewable rather than silent.** |
 | `content/README.md` | **Modify** | The `schemas/` inventory line, which omits both `bestiary-placement` and `zones`. |
 | `docs/worldbuilding/idea-map.md` | **Modify** | The I-060 row's Output-artifact cell — the second carrier of the retracted alternates promise, named by design §0's D1 callout. |
 | `.claude/idea_backlog/I-060-*/research.md`, `plan.md` | **Modify** | Deliverable 8 — headings still carry the pre-D1 title. **`spec.md` is already corrected in the repo and is deliberately not modified.** |
@@ -463,11 +463,11 @@ Steps:
 **Bind the script's path ONCE, here, and use `"$Z6"` in every invocation below.** An unquoted `node <some-dir>/z6-check.mjs` is not a runnable command — `<` is a shell input redirect, so the shell tries to feed the script to `node` on stdin instead of executing it. Export the real path first. The path below is **this session's scratchpad directory, resolved — paste it verbatim**; if you are executing this plan in a different session, replace it with your own scratchpad path (one token, in one place, and every later block re-states the same line):
 
 ```bash
-export Z6="/private/tmp/claude-502/-Users-pasitnusso-workspace-repos-atlas-world-svc/c0fca8d9-8dbd-4aa3-86df-6feb2d533de1/scratchpad/z6-check.mjs"
+export Z6="/tmp/i060-z6-check.mjs"
 ls -l "$Z6"                              # must exist before any run below
 ```
 
-`export` survives only within one shell session. The three later blocks that run `node "$Z6"` — **Task 2 Step 2, Task 2 Step 4 and Task 3a Step 7** — each re-state the export line for that reason; if `$Z6` is empty, `node ""` fails immediately rather than silently doing nothing. (Task 2 Step 7 restates it inline in its prose; Task 3b Steps 5 and 8 do **not** carry their own copy — they point back at Task 2 Step 4's command.)
+`export` survives only within one shell session. The three later blocks that run `node "$Z6"` — **Task 2 Step 2, Task 2 Step 4 and Task 3a Step 7** — each re-state the export line for that reason; if `$Z6` is empty, `node ""` fails immediately rather than silently doing nothing. (Task 2 Step 7 restates it inline in its prose; Task 3b Step 8 does **not** carry its own copy — it points back at Task 2 Step 4's command. Task 3b Step 5 does not run `z6-check.mjs` at all.)
 
 ```js
 // z6-check.mjs — throwaway, lives in this session's scratchpad, never committed.
@@ -541,7 +541,7 @@ process.exit(bad ? 1 : 0);
 
 - [ ] **Step 2: Run it red, then green** — the naive derivation first, so the reason for the three corrections is on the record, then the corrected one. (The default `--artifact` mode cannot run yet; the artifact does not exist until Step 3. It runs in Step 4.)
 ```bash
-export Z6="/private/tmp/claude-502/-Users-pasitnusso-workspace-repos-atlas-world-svc/c0fca8d9-8dbd-4aa3-86df-6feb2d533de1/scratchpad/z6-check.mjs"   # Step 1's binding, restated
+export Z6="/tmp/i060-z6-check.mjs"   # Step 1's binding, restated
 node "$Z6" --naive > /tmp/z6-naive.out 2>&1; echo "naive exit=$?"; cat /tmp/z6-naive.out
 node "$Z6" --corrected > /tmp/z6-ok.out 2>&1; echo "corrected exit=$?"; cat /tmp/z6-ok.out
 ```
@@ -642,7 +642,7 @@ grep -nEo '\b[A-Z][a-z]+\b' docs/worldbuilding/A2-zones-cluster1.md | sort -u | 
 grep -n 'the mire.s bar\|gravel bars\|oath-gate\|dead gate' docs/worldbuilding/A2-zones-cluster1.md
 # Z6 against the COMMITTED artifact — default mode parses §2.1's fence out of the
 # real file, so this is a test of the deliverable, not of a scratchpad literal.
-export Z6="/private/tmp/claude-502/-Users-pasitnusso-workspace-repos-atlas-world-svc/c0fca8d9-8dbd-4aa3-86df-6feb2d533de1/scratchpad/z6-check.mjs"   # Step 1's binding, restated
+export Z6="/tmp/i060-z6-check.mjs"   # Step 1's binding, restated
 node "$Z6" > /tmp/z6-artifact.out 2>&1; echo "exit=$?"; cat /tmp/z6-artifact.out
 # The §2 table must carry a row for every zone — the transcription contract
 # Tasks 3a/3b depend on. Zero output before "row check done" means all ten landed.
@@ -667,7 +667,7 @@ git commit -m "docs(worldbuilding): A2 zones of cluster 1 — the ten grounds (I
 
 - [ ] **Step 6: Independent adversarial review of this task's diff.** Fresh subagent, briefed as the **Archivist + Cliché Auditor + Namer**. It must check: all nine SWF §3 parts present **using Step 3's nine-onto-sixteen mapping table** (walk the mapping row by row; the seven listed additions are not surplus); **§15 carries all 73 rows in the specified four columns, including the three named rows `spear-cane` [D], `district-fuel` [D] two-step, and `the-southern-lip-loam` [C] with its §13 cross-reference**; G1 swap test; G5 — every `[C]` quote actually appears in the cited file (verify by grep, do not take the citation on trust); G7 — zero real-world proper nouns; the three collisions named rather than smoothed; the Thornveil section not contradicting `A2-ecology-thornveil.md`'s four tiers or `[15,28]` band; `thornveil`'s "spear cane" flagged `[D]`/`[N]` rather than promoted to a transcribed fact.
 
-- [ ] **Step 7: Refactor on the findings** — if any resource kind changed, edit **§2.1's fence and the §2 table together** and re-run `node "$Z6"` in its default (artifact) mode (re-state Step 1's `export Z6="/private/tmp/claude-502/-Users-pasitnusso-workspace-repos-atlas-world-svc/c0fca8d9-8dbd-4aa3-86df-6feb2d533de1/scratchpad/z6-check.mjs"` first if the shell restarted); a kind changed in the table but not the fence is exactly the drift this check exists to catch. If any hazard, resource or landmark **id** changed, it must change in §2's table before Tasks 3a/3b transcribe it — the records are downstream of this table, never the other way round.
+- [ ] **Step 7: Refactor on the findings** — if any resource kind changed, edit **§2.1's fence and the §2 table together** and re-run `node "$Z6"` in its default (artifact) mode (re-state Step 1's `export Z6="/tmp/i060-z6-check.mjs"` first if the shell restarted); a kind changed in the table but not the fence is exactly the drift this check exists to catch. If any hazard, resource or landmark **id** changed, it must change in §2's table before Tasks 3a/3b transcribe it — the records are downstream of this table, never the other way round.
 
 - [ ] **Step 8: Re-verify** — re-run every command in Step 4 and paste real output. New commit.
 
@@ -1013,7 +1013,7 @@ git commit -m "feat(content): zone records for the five river-country and rim zo
 - [ ] **Step 7: Refactor on the findings** — apply every finding. If any id, name or kind changed, **change the artifact's §2 table and §2.1 fence in the same commit**, then re-run BOTH of these from the repo root:
 
 ```bash
-export Z6="/private/tmp/claude-502/-Users-pasitnusso-workspace-repos-atlas-world-svc/c0fca8d9-8dbd-4aa3-86df-6feb2d533de1/scratchpad/z6-check.mjs"   # Task 2 Step 1's binding, restated
+export Z6="/tmp/i060-z6-check.mjs"   # Task 2 Step 1's binding, restated
 # (a) the artifact is still internally consistent — ten pairwise-distinct sets
 node "$Z6" > /tmp/z6-artifact.out 2>&1; echo "z6 exit=$?"; cat /tmp/z6-artifact.out
 # (b) the records that exist so far still match the artifact's §2.1 fence. This
@@ -2118,7 +2118,7 @@ test("Z7: all eight enum kinds are accepted", () => {
 npm test --prefix scripts > /tmp/t.out 2>&1; echo "exit=$?"; grep -E "^ℹ (tests|pass|fail)" /tmp/t.out
 grep -E "^✖" /tmp/t.out | head -40
 ```
-Expected failure: `exit=1` and a **floor of 25** `✖` lines — not an exact count, because several of this step's tests are legitimately green before any implementation exists. Exactly these seven are green at this point, and each for a stated reason:
+Expected failure: `exit=1` and **exactly 33** `✖` lines (40 tests minus the seven green below). Exactly these seven are green at this point, and each for a stated reason:
 
 | test | why it is green with no implementation |
 | --- | --- |
@@ -2750,7 +2750,7 @@ Expected: `exit=0` and `ℹ fail 0` from the suite, and the report's zones row r
 grep -rhoE 'canon\.md:[0-9]+' docs/ content/ .claude/ scripts/ \
   | sort | uniq -c > /tmp/canon-cites-before.out 2>&1; cat /tmp/canon-cites-before.out
 ```
-  Measured on this worktree before any edit: **64 distinct `canon.md:NNN` targets**. (Note `[0-9]+`, not `[0-9]*` — the `*` form also matches the bare string `canon.md:` with no line number, of which there are 13, and those are not citations.)
+  Measured on this worktree before any edit: **64 distinct `canon.md:NNN` targets**. (Note `[0-9]+`, not `[0-9]*` — the `*` form also matches the bare string `canon.md:` with no line number, of which there are 25, and those are not citations.)
 
 **`docs/worldbuilding/DR-003-season-1-budget.md` — SIX edits across FIVE places, not the three the draft named.** A grep of the real file finds five places, and two of the five are the ones the naive verification grep cannot see; one of those places (the "three blocked lines" sentence and the `zones` bullet under it) takes two edits, which is why the list below numbers **1–6**. **Count edits, not places, everywhere downstream — "all six" is the number Step 7's verification and Step 9's review brief both use.** Each edit is quoted below by its text, with the exact rewrite. (Line numbers are given only as a search hint and will drift as the earlier edits land — match on the text.)
 
