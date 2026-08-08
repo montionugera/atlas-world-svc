@@ -100,11 +100,16 @@ and `mountStory(main)`. Mount shape copied from `js/combat-lab.mjs`; the tab lay
 copied from `js/art-tabs.mjs`. Renders one tab per registry view plus a single
 `loading="lazy"` iframe whose `src` swaps on tab click.
 
-**Edited — `js/state.mjs`.** Add `STORY_CLASS = "story"`, `STORY_VIEWS_URL`,
-`STORY_VIEWS_FALLBACK`, and `storyTabState = { activeView: null }`. The mutable
-state is an exported **object**, not a `let`, for the reason already documented at
-`state.mjs:43-49`: an ES module cannot reassign another module's `let` export, and
-both `story.mjs` and `sidebar.mjs` write this state.
+**Edited — `js/state.mjs`.** Add three constants only: `STORY_CLASS = "story"`,
+`STORY_VIEWS_URL`, `STORY_VIEWS_FALLBACK`.
+
+The active-tab state stays a **closure local inside `mountStory`** — deliberately
+unlike `artTabState`. That export exists because three modules reassign it
+(`state.mjs:43-49`), and an ES module cannot reassign another module's `let`
+export. Story has no such sharing: the section shows and hides wholesale through
+`setActiveClass`'s `data-kind` match (`sidebar.mjs:60-66`), so no other module
+ever reads or writes which tab is active. Adding a shared export here would
+invent coupling that does not exist.
 
 **Edited — `js/main.mjs`.** Import and call `mountStoryNav` / `mountStory` in
 **both** code paths: the manifest-failure path (`main.mjs:66-67`) and the happy
