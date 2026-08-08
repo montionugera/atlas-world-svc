@@ -27,6 +27,9 @@ COPY game-client/assets game-client/assets
 # a story edit reuses that cached ~261 MB layer rather than re-copying it.
 # Keep in sync with the "!" lines in ./Dockerfile.dockerignore.
 COPY content/story content/story
+# F-038: section naming registry. This is a CRITICAL fetch in js/main.mjs's
+# Promise.all — a 404 here takes the whole page down, not just the labels.
+COPY content/asset-taxonomy.json content/asset-taxonomy.json
 COPY tools/story-explorer tools/story-explorer
 COPY docs/story/undertow docs/story/undertow
 

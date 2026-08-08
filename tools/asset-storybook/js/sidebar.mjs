@@ -7,36 +7,24 @@ import {
   STORY_CLASS,
   ART_GROUP_LABELS,
   artTabState,
+  taxonomyState,
 } from "./state.mjs";
 import { applyArtTabFilter, eagerLoadCard } from "./art-tabs.mjs";
-import { resolveRender } from "./renderers.mjs";
+import { labelForSection } from "./data/taxonomy.mjs";
 
 // ---------- sidebar ----------
 
-// Sections are grouped by resolved render-type (image, __unknown, ...),
-// except model3d: commit 2191257 added vfx scenes (weapon glTFs + zone
-// discs, kind: "vfx") that render through the same <model-viewer>
-// builder as characters (kind: "character"). Grouping by render-type
-// alone would lump all 19 model3d entries into one "Characters"
-// section and hide the vfx set, so groupKeyFor() below further splits
-// model3d by manifest `kind` into "model3d:character" / "model3d:vfx"
-// — labeled here. Every other render-type still maps 1:1, so this
-// stays a small lookup + generic fallback, not a per-asset-key list.
-const RENDER_LABELS = {
-  model3d: "Characters",
-  "model3d:character": "Characters",
-  "model3d:vfx": "VFX",
-  "model3d:creature": "Creatures",
-  "model3d:environment": "Environment",
-  "model3d:weapon": "Weapons",
-  "model3d:loot": "Loot & Items",
-  image: "Icons",
-  spritesheet: "Sprites",
-  ninepatch: "UI Kits",
-  tileset: "Tilesets",
-  theme: "Themes",
-  __unknown: "Unknown",
-};
+// Asset sections are named by content/asset-taxonomy.json (see
+// js/data/taxonomy.mjs), NOT by a lookup table here. The previous
+// RENDER_LABELS map keyed sections by resolved render-type plus a
+// "model3d:<kind>" split, and fell through to a generic
+// capitalize-and-append-s branch on a miss — which is how 283 dungeon
+// assets came to sit under a heading reading "Model3d:dungeons (283)".
+// A miss was indistinguishable from a hit. Now a kind with no registry
+// entry lands in UNTAXONOMIZED and guard (H) fails the build.
+//
+// The synthetic classes below (sfx/music/art/coverage/combat/story) are not
+// manifest kinds and keep their hardcoded labels.
 
 export function classLabel(cls) {
   if (cls === "all") return "All";
@@ -50,8 +38,7 @@ export function classLabel(cls) {
     const gid = cls.slice(ART_CLASS.length + 1);
     return ART_GROUP_LABELS.get(gid) || gid + " (unregistered)";
   }
-  if (RENDER_LABELS[cls]) return RENDER_LABELS[cls];
-  return cls.charAt(0).toUpperCase() + cls.slice(1) + "s";
+  return labelForSection(cls, taxonomyState.taxonomy);
 }
 
 function setActiveClass(cls) {
@@ -154,23 +141,9 @@ export function buildSidebarItem(cls, total) {
   return btn;
 }
 
-// model3d covers both true characters and vfx scenes since both share
-// the <model-viewer> renderer — split the group key by manifest `kind`
-// so vfx entries get their own nav section/count instead of being
-// folded into "Characters" (§ RENDER_LABELS comment above). Every
-// other render-type is unaffected and still groups 1:1.
-function groupKeyFor(entry, spec) {
-  const render = resolveRender(entry, spec);
-  if (render === "model3d" && entry.kind) return render + ":" + entry.kind;
-  return render;
-}
-
-export function groupByRender(entries, spec) {
-  const groups = new Map();
-  for (const [key, entry] of entries) {
-    const groupKey = groupKeyFor(entry, spec);
-    if (!groups.has(groupKey)) groups.set(groupKey, []);
-    groups.get(groupKey).push([key, entry]);
-  }
-  return groups;
-}
+// groupKeyFor/groupByRender removed in F-038 — grouping now lives in
+// js/data/taxonomy.mjs groupEntries(), keyed by manifest `kind` through
+// content/asset-taxonomy.json rather than by resolved render-type with a
+// "model3d:<kind>" special case. That old scheme is what produced the
+// "Model3d:dungeons" heading; it is also why grouping and labelling could
+// disagree, since one derived keys and the other looked them up.

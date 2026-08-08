@@ -56,6 +56,14 @@ test("an entry with no kind is untaxonomized rather than throwing", () => {
   assert.equal(sectionForEntry(null, t), UNTAXONOMIZED);
 });
 
+test("a null taxonomy degrades instead of throwing", () => {
+  // The storybook renders its sidebar on the manifest-fetch-failure path,
+  // before any registry has loaded. Throwing here would take the page down.
+  assert.equal(sectionForEntry({ kind: "dungeon" }, null), UNTAXONOMIZED);
+  assert.equal(labelForSection("dungeon", null), "dungeon");
+  assert.equal(labelForSection(UNTAXONOMIZED, null), "Untaxonomized");
+});
+
 test("groupEntries returns sections in registry order, not insertion order", () => {
   const t = loadTaxonomy(FIXTURE);
   const grouped = groupEntries(

@@ -35,14 +35,20 @@ export function loadTaxonomy(json) {
   return { sections, kindToSection };
 }
 
+// `taxonomy` is nullable throughout: the storybook's manifest-fetch-failure
+// path still renders the sidebar (combat lab + story stay reachable) before
+// any registry has loaded. A null registry degrades to the raw id rather than
+// throwing and taking the whole page down with it.
+
 export function sectionForEntry(entry, taxonomy) {
   const kind = entry && entry.kind;
-  if (!kind) return UNTAXONOMIZED;
+  if (!kind || !taxonomy) return UNTAXONOMIZED;
   return taxonomy.kindToSection.get(kind) || UNTAXONOMIZED;
 }
 
 export function labelForSection(sectionId, taxonomy) {
   if (sectionId === UNTAXONOMIZED) return "Untaxonomized";
+  if (!taxonomy) return sectionId;
   const s = taxonomy.sections.get(sectionId);
   return s ? s.label : sectionId;
 }

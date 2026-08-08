@@ -21,6 +21,14 @@ export const ART_GROUPS_FALLBACK = [
   { id: "class", label: "Classes" },
 ];
 export const RENDER_SPEC_URL = "../../game-client/assets/render-spec.json";
+// F-038: section naming registry. Every manifest `kind` must appear here —
+// guard (H) in scripts/check_asset_manifest.mjs fails the build otherwise.
+export const TAXONOMY_URL = "../../content/asset-taxonomy.json";
+// Holder for the loaded taxonomy, set once in init(). Mirrors how
+// ART_GROUP_LABELS below is populated at load time and read by classLabel(),
+// so classLabel() stays a pure lookup rather than threading the registry
+// through buildSidebarItem's every caller (combat-lab.mjs, story.mjs).
+export const taxonomyState = { taxonomy: null };
 export const ASSET_KEYS_URL = "../../colyseus-server/generated/asset-keys.json";
 export const AUDIO_INDEX_URL = "./audio-index.json";
 export const ASSET_ROOT = "../../game-client/"; // scene/stream paths are "res://assets/..." relative to game-client/

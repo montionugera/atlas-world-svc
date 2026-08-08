@@ -14,13 +14,16 @@ import {
   ART_GROUP_LABELS,
   COVERAGE_CLASS,
   artTabState,
+  TAXONOMY_URL,
+  taxonomyState,
 } from "./state.mjs";
 import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
 import { resolveRender, renderEntry } from "./renderers.mjs";
 import { buildAudio, buildMusic } from "./audio.mjs";
 import { bucketArtEntries, buildArtGroupSection } from "./art.mjs";
 import { buildArtTabBar, applyArtTabFilter } from "./art-tabs.mjs";
-import { classLabel, buildSidebarItem, groupByRender } from "./sidebar.mjs";
+import { classLabel, buildSidebarItem } from "./sidebar.mjs";
+import { loadTaxonomy, groupEntries } from "./data/taxonomy.mjs";
 import { buildCoverageSection } from "./coverage.mjs";
 import { mountCombatLab, mountCombatNav } from "./combat-lab.mjs";
 import { mountStory, mountStoryNav } from "./story.mjs";
@@ -40,7 +43,8 @@ async function init() {
     audioManifest,
     musicManifest,
     renderSpec,
-    audioIndex;
+    audioIndex,
+    taxonomyJson;
   try {
     [
       manifest,
@@ -49,6 +53,7 @@ async function init() {
       musicManifest,
       renderSpec,
       audioIndex,
+      taxonomyJson,
     ] = await Promise.all([
       fetchJson(MANIFEST_URL, "manifest"),
       fetchJson(CATALOG_MANIFEST_URL, "catalog-manifest"),
@@ -56,6 +61,7 @@ async function init() {
       fetchJson(MUSIC_MANIFEST_URL, "music-manifest"),
       fetchJson(RENDER_SPEC_URL, "render-spec"),
       fetchJson(AUDIO_INDEX_URL, "audio-index"),
+      fetchJson(TAXONOMY_URL, "asset-taxonomy"),
     ]);
   } catch (err) {
     main.innerHTML =
@@ -143,7 +149,12 @@ async function init() {
     ART_GROUP_LABELS.set(g.id, g.label || g.id);
   }
 
-  const groups = groupByRender(entries, renderSpec);
+  // Sections are keyed by manifest `kind` through content/asset-taxonomy.json
+  // (F-038). taxonomy.json is fetched with the critical manifests above, so a
+  // missing registry is a hard failure here rather than a silent fall-through
+  // to munged labels — which is the whole point of the registry.
+  taxonomyState.taxonomy = loadTaxonomy(taxonomyJson);
+  const groups = groupEntries(entries, taxonomyState.taxonomy);
 
   const missingKeys = [];
   if (assetKeys) {

@@ -11,6 +11,7 @@
 !tools/asset-storybook/**
 !tools/combat-lab/**
 !content/story/**
+!content/asset-taxonomy.json
 !tools/story-explorer/**
 !docs/story/undertow/**
 !k8s/local/storybook-nginx.conf
