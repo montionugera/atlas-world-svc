@@ -22,6 +22,14 @@ WORKDIR /usr/share/nginx/html
 # ship. Do NOT fold this into a later COPY.
 COPY game-client/assets game-client/assets
 
+# Story surfaces (I-082) — the reader/graph page, the narrative JSON it fetches,
+# and the Undertow novel. ~560 KB total. These sit after the asset layer above so
+# a story edit reuses that cached ~261 MB layer rather than re-copying it.
+# Keep in sync with the "!" lines in ./Dockerfile.dockerignore.
+COPY content/story content/story
+COPY tools/story-explorer tools/story-explorer
+COPY docs/story/undertow docs/story/undertow
+
 # Small and frequently edited — these come last so they invalidate as little as
 # possible.
 COPY colyseus-server/generated/asset-keys.json colyseus-server/generated/asset-keys.json
