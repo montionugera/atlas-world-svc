@@ -86,7 +86,7 @@ enum value fits.
 | `meltwash-terrace` | The last drained ground before the crossing: grass for the stock, gravel underfoot, and a camp that is still standing when the water goes down. | `meltwater-cold` → `freeze`<br>`the-thaw-rise` → none | `cropped-grass`, `forage`<br>`the-braided-heads`, `water` | `the-expedition-camp`, "The expedition camp", `content/maps/cluster1-geography.json#camps[expedition-camp]`<br>`the-gravel-bars`, "The gravel bars", `docs/worldbuilding/A1-geography-cluster1.md#4.2` | [C] throughout (A1 §4.2 zone 1, A1 §3.1); the `freeze` mapping is [D] |
 | `millcross-ford` | One crossing serves the whole land, and everything waiting on it has to be fed, stabled and ferried here. | `high-water-at-the-ford` → none<br>`the-millrace` → none | `race-milled-grain`, `crop`<br>`the-quarry-face`, `stone` | `the-cart-queue`, "The cart queue", `docs/worldbuilding/A1-geography-cluster1.md#6`<br>`the-mill-wheel-housing`, "The mill-wheel housing", `docs/worldbuilding/A1-geography-cluster1.md#6` | [C] (A1 §6; `mob-chaff-crawler`, `mob-quarrystone-beetle`, `mob-millrace-lurker`). **Zero mapped hazards — §10's named case.** Mill collision → §13 |
 | `rooktide-reach` | Everything moving between sea and river changes hulls here, and whatever goes over the side in the change stays on the flats. | `the-turning-tide` → none<br>`the-low-water-mud` → `stun` | `old-plank`, `salvage`<br>`cut-reed`, `forage` | `the-barge-cranes`, "The barge-cranes", `docs/worldbuilding/A1-geography-cluster1.md#6`<br>`the-rook-flats`, "The rook flats", `docs/worldbuilding/A1-geography-cluster1.md#6` | [C] (A1 §3.1, A1 §6, `mob-thatch-mite`, `mob-tideflat-nipper`); reed→`forage` is [D] (the enum has no reed); the `stun` mapping is [D] |
-| `thornveil` | The one ground no road overlooks, which is why the people who do not want to be overlooked are in it. | `the-thorn-wall` → `damage`<br>`no-through-stream` → none | `cane-sap`, `water`<br>`spear-cane`, `timber` | `the-heartwood`, "The heartwood", `docs/worldbuilding/A2-ecology-thornveil.md#6.2`<br>`the-crown-thickets`, "The crown thickets", `docs/worldbuilding/A2-ecology-thornveil.md#6.3` | [C] except `spear-cane`: **[D], the weakest cell in the table** — `style.md` §4 gives `faction-thornveil` a throwing-spear harness, canon never says they cut cane for the shafts. §15 carries it as [D], not as a transcribed fact |
+| `thornveil` | The one ground no road overlooks, which is why the people who do not want to be overlooked are in it. | `the-thorn-wall` → `damage`<br>`no-through-stream` → none | `cane-sap`, `water`<br>`spear-cane`, `timber` | `the-heartwood`, "The heartwood", `docs/worldbuilding/A2-ecology-thornveil.md#6.2`<br>`the-crown-thickets`, "The crown thickets", `docs/worldbuilding/A2-ecology-thornveil.md#6.3` | [C] except `spear-cane` and the `damage` mapping. `spear-cane` is **[D], the weakest cell in the table** — `style.md` §4 gives `faction-thornveil` a throwing-spear harness, canon never says they cut cane for the shafts. §15 carries it as [D], not as a transcribed fact |
 | `emberdown` | The only hillside in the land where the fuel and the food come out of the same ground. | `seam-damp` → `poison`<br>`the-ember-pits` → `burn` | `burning-stone`, `fuel`<br>`ledge-loam`, `crop` | `the-terraced-ledges`, "The terraced ledges", `docs/worldbuilding/A1-geography-cluster1.md#6`<br>`the-adits`, "The adits", `docs/worldbuilding/A1-geography-cluster1.md#4.2` | [C] (A1 §4.2 zone 5, A1 §6, `canon.md` §4, `mob-slagheap-grub`, `mob-emberpit-digger`); bad air in a worked adit is [D] |
 | `gildmark-head` | The only door the sea has, with half a day of mudflat in front of it holding everything that missed the door. | `the-moving-sandbars` → none<br>`the-salt` → none | `beached-cargo`, `salvage`<br>`dressed-headland-stone`, `stone` | `the-mirror-tower`, "The mirror tower", `docs/worldbuilding/A1-geography-cluster1.md#6`<br>`the-mires-bar`, "The mire's bar", `docs/worldbuilding/A1-geography-cluster1.md#4.2` | [C] (A1 §3.1 Saltmire, A1 §6, A1 §7.1, `mob-bound-war-beast`); `dressed-headland-stone` is [D] — canon names no quarry. **Zero mapped hazards — §10's second named case.** **Name it "The mire's bar", never "the bar"** |
 | `hollowmarch` | Where the timber and the ore both start, behind the only wall in the land that was never taken down. | `the-open-moor` → none<br>`the-outer-fields` → `poison`<br>`hollow-stakes` → none | `the-timber-line`, `timber`<br>`the-ore-heads`, `ore` | `the-tally-boards`, "The tally boards", `docs/worldbuilding/A1-geography-cluster1.md#6`<br>`the-palisade-line`, "The palisade line", `docs/worldbuilding/A1-geography-cluster1.md#4.2` | [C] (A1 §3.3, A1 §4.2 zone 7, A1 §6, `canon.md` §4, `mob-hollowmoor-giant`, `mob-graveturf-creeper`, `mob-palisade-borer`); the `poison` mapping is [D] |
@@ -159,7 +159,7 @@ above; the two are edited together or not at all.
 | --- | --- |
 | C1 | Why A1 §4.2 can say Meltwash Terrace is *"the only drained flat ground within a morning's walk of the ford"* and still leave a player with no errand there. |
 | C2 | Why the six towns' economies in A1 §6 are all extraction or transit, and why Cindervast — which *"does nothing for a living"* — is the land's dead end. |
-| C3 | Why the Ashvale Front is the only region with species in all eight bands (A1 §4.3) yet holds no town: the ground kills by what it lacks, so nobody settles it and everything can live on it. |
+| C3 | Why the Ashvale Front is *"the only region of the nine with species in all eight bands"* (A1 §4.3) yet holds no town: the ground kills by what it lacks, so nobody settles it and everything can live on it. |
 | C4 | Why A1 §6 was written silhouette-first for concept art — the same first-sight test that drives an art brief drives a player's memory of a place. |
 | C5 | Why the Systems Designer assumes **12 species per zone before repetition is felt** (`role-systems-designer-scale.md` §1): repetition is a content-identity problem, and terrain is too coarse an axis to solve it — seven distinct `terrainKind` values cover ten zones, so five of the ten share a label with a neighbour. |
 
@@ -185,11 +185,12 @@ above; the two are edited together or not at all.
   water and cover that makes it lethal makes it easy to dig.
 - **C4 → travel.** A traveller navigates cluster 1 by first-sight landmarks, not by distance — which
   is exactly the mechanism A1 §5.3 requires when it bans expressing fictional days as walking time
-  and mandates *"a signpost at a waystation, not the player's legs."*
-- **C4 → who gets rich.** Two of the twenty landmarks are instruments of a monopoly rather than
-  scenery: Gildmark's mirror tower is the private line A1 §5.2 says follows the public towers'
-  ridgelines, and Norhollow's tally boards are the only public ledger in the land that anyone can
-  read without paying for it.
+  and mandates a *"signpost at a waystation, not with the player's legs."*
+- **C4 → who gets rich.** Two of the twenty landmarks are instruments of record-keeping rather than
+  scenery, and they are kept in opposite ways: Gildmark's mirror tower is the private line A1 §5.2
+  says follows the public towers' ridgelines, while Norhollow's tally boards stand at an open gate,
+  *"replaced when full and never erased"* (A1 §6). One town's account is read by whoever walks up to
+  it; the other's is read by whoever owns the tower.
 - **C5 → who gets rich.** Distinct resource profiles mean the three river-country zones compete on
   different goods, so no single town can corner the river.
 - **C5 → trade.** Because the two rim zones yield different things — fuel and grain on one side, timber
@@ -204,18 +205,30 @@ above; the two are edited together or not at all.
 A hazard in this artifact is a **fiction** first. The runtime binding is optional and comes second.
 
 **The seven runtime types**, copied from `content/schemas/map.schema.json`
-(`#/properties/zoneHazards/items/properties/type/enum`) and consumed by `ZoneEffectManager`:
-`freeze`, `stun`, `burn`, `poison`, `regen`, `heal`, `damage`. A zone hazard may carry one of these
-as its `effect`, or carry none at all.
+(`#/properties/zoneHazards/items/properties/type/enum`): `freeze`, `stun`, `burn`, `poison`,
+`regen`, `heal`, `damage`. The same seven strings are the effect types `ZoneEffectManager` switches
+on (`colyseus-server/src/modules/ZoneEffectManager.ts`), which is where the vocabulary comes from. A
+zone hazard may carry one of these as its `effect`, or carry none at all.
 
 <div class="callout success">
-<strong><code>effect</code> is not aspirational — three of these are live in shipped content right
-now.</strong> <code>content/maps/atlas-frontier.md</code>'s <code>zoneHazards</code> block carries
-two <code>freeze</code> entries and one <code>stun</code> entry (that one with
-<code>castTime: 400</code>), all three on <code>regionId: region-icefield</code>. That is why
+<strong><code>effect</code> is not an invention of this artifact — three of these are already
+authored in shipped content.</strong> <code>content/maps/atlas-frontier.md</code>'s
+<code>zoneHazards</code> block carries two <code>freeze</code> entries and one <code>stun</code>
+entry (that one with <code>castTime: 400</code>), all three on
+<code>regionId: region-icefield</code>, and the content gate checks them on every run. That is why
 <code>northern-icefield</code>'s two mapped hazards below are marked <strong>[C]</strong> and not
-<strong>[D]</strong>: they are transcriptions of hazards the engine is already running, not
-proposals.
+<strong>[D]</strong>: they are transcriptions of hazards somebody already wrote into committed
+content, not mappings this artifact proposes.
+</div>
+
+<div class="callout warn">
+<strong>What that does not mean — and this artifact does not claim it.</strong> It does not mean the
+engine plays them. <code>grep -rn "zoneHazards" colyseus-server/src</code> returns
+<strong>nothing</strong>: the block's only readers today are <code>scripts/check_content.mjs</code>
+and its test, and <code>ZoneEffectManager</code> builds its zones from cast skills, never from the
+map file. <strong>§14 question 2 stands exactly as written — nothing consumes <code>effect</code> at
+runtime yet.</strong> "Already authored" is a claim about the content tree; it is not a claim about
+the server.
 </div>
 
 **Three kinds of hazard, and only the first is machine-visible:**
@@ -385,8 +398,8 @@ is re-derived from <code>content/zones/</code> after any hazard edit, never copi
 
 ## 11. Known-wrong — what people in the world believe that is false
 
-- **That the Front is empty.** It is the only region with species in all eight bands. The people who
-  cross it fastest are the ones most certain nothing lives there.
+- **That the Front is empty.** A1 §4.3 measured it: *"the only region of the nine with species in
+  all eight bands."* The people who cross it fastest are the ones most certain nothing lives there.
 - **That Cindervast yields nothing.** It *"does nothing for a living"*, which is a statement about
   its inhabitants, not its ground: a bleached, unrubbled city with intact mortar is the largest
   intact salvage field in the land, and the two groups holding it will not say its name.
@@ -445,8 +458,10 @@ neither, or the collision simply moves.
 turning, and it has been walking the ruin in a circle ever since."* A1 §6 describes the mill-wheel
 housing in the **present tense**, as the town's one tall thing. Either there are two mills, or one
 was rebuilt. **Millcross's landmark record depends on which**: `the-mill-wheel-housing` is a working
-building under one reading and a ruin with something walking in it under the other. Reported, not
-decided.
+building under one reading and a ruin with something walking in it under the other. **Routed to the
+Archivist**, who holds G5 and already holds A1 §8's three geographic accommodations. Reported, not
+decided — and the record ships with the present-tense reading because that is A1's, with this row
+attached to it.
 
 ---
 
@@ -499,7 +514,7 @@ the row was written. `canon.md` is cited by section heading.
 | `the-turning-tide` → none | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §3.1 *The tidal reach* — *"The sea pushes up it twice a day as far as Rooktide's landing and no further"* | — (no enum value expresses water arriving on a schedule) |
 | `the-low-water-mud` → `stun` | [D] | `content/bestiary/bestiary.json` `mob-tideflat-nipper` — *"Rooktide children learn to keep moving on the flats before they learn to read a tide mark"* | one step: the flats punish standing still because the mud holds a foot; the enum has no *mired*, and `stun` is the type that stops a body moving |
 | `the-thorn-wall` → `damage` | [D] | `docs/worldbuilding/A2-ecology-thornveil.md` §6.2 — the Route tier, *"the thorn wall the track runs beside"* | one step: a thorn wall injures on contact and does nothing else; `damage` is the enum's plain-injury type |
-| `no-through-stream` → none | [C] | `docs/worldbuilding/A2-ecology-thornveil.md` §1 — *"no through-stream — the defining property of an interfluve"* | — (an absence-hazard: the zone's danger is that it has no water in it) |
+| `no-through-stream` → none | [C] | `docs/worldbuilding/A2-ecology-thornveil.md` §1 — *"An interfluve is, by definition, the dry land between two drainages"*, and its metric tile *"no through-stream"* / *"the defining property of an interfluve"*; §2 — *"There is no standing water in Thornveil"* | — (an absence-hazard: the zone's danger is that it has no water in it) |
 | `seam-damp` → `poison` | [D] | `docs/worldbuilding/A1-geography-cluster1.md` §4.2 zone 5 — *"adits into a burning-stone seam"* | one step: air standing overnight in a worked adit is bad air; of the seven types only `poison` describes harm from breathing |
 | `the-ember-pits` → `burn` | [C] | `content/bestiary/bestiary.json` `mob-emberpit-digger` — *"It digs under the ember pits and comes up wherever the ground is warmest"* | — (`burn` is the literal reading of an ember pit) |
 | `the-moving-sandbars` → none | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §3.1 *The Saltmire* — *"channels, mud, salt scrub and moving sandbars"* | — (no enum value expresses ground that is not where it was) |
@@ -510,8 +525,8 @@ the row was written. `canon.md` is cited by section heading.
 | `no-water-on-it` → none | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §4.2 zone 8 — *"Level alkali flat, no water"*; §3.1 — *"Why the Ashvale flat has no water at all"* | — (**absence-hazard**, design C3: nothing ticks, and that is the point) |
 | `no-cover-for-a-days-crossing` → none | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §3.2 item 3 — *"offers no cover for a full day's crossing"* | — (**absence-hazard**, design C3) |
 | `the-alkali-dust` → `burn` | [D] | `docs/worldbuilding/A1-geography-cluster1.md` §3.2 item 3 — *"pale, level, treeless, windblown. Dusts everything grey"*; §3.1 — *"Rain sinks and goes alkaline"* | one step: windblown alkali dust on wet eyes and skin; of the seven types only `burn` describes that harm |
-| `the-cold` → `freeze` | [C] | `content/maps/atlas-frontier.md` `zoneHazards` — two live `freeze` entries, `regionId: region-icefield` | — (**not derived: already running**) |
-| `the-white-weather` → `stun` | [C] | `content/maps/atlas-frontier.md` `zoneHazards` — the live `stun` entry, `castTime: 400`, `regionId: region-icefield` | — (**not derived: already running**) |
+| `the-cold` → `freeze` | [C] | `content/maps/atlas-frontier.md` `zoneHazards` — two `freeze` entries, `regionId: region-icefield` | — (**not derived: already authored in committed content.** Not the same as *played* — see §6's second callout) |
+| `the-white-weather` → `stun` | [C] | `content/maps/atlas-frontier.md` `zoneHazards` — the `stun` entry, `castTime: 400`, `regionId: region-icefield` | — (**not derived: already authored in committed content.** Not the same as *played* — see §6's second callout) |
 | `the-crevasses` → none | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §4.2 zone 9 — *"Old ice over stone, meltwater braids, crevasse shelf"* | — (a hole under a crust; nothing in the enum expresses falling) |
 | `the-afterglow` → `poison` | [D] | `content/bestiary/bestiary.json` `mob-relicglow-moth` — *"the violet afterglow that never left the fallen city"*; `mob-relicslag-crawler` — *"things that have been near it for long enough stop wanting to eat"* | one step: canon states proximity takes the appetite; of the seven types only `poison` is harm without a wound |
 | `a-city-with-nobody-in-it` → none | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §6 Cindervast — *"Cindervast does nothing for a living"*; §4.2 zone 10 — pop. 0 | — (**absence-hazard**: no water, no bell, no one to carry you out) |
@@ -526,7 +541,7 @@ the row was written. `canon.md` is cited by section heading.
 | `the-quarry-face`, `stone` | [C] | `content/bestiary/bestiary.json` `mob-quarrystone-beetle` — *"it eats the quarry face west of Millcross"* | — |
 | `old-plank`, `salvage` | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §6 Rooktide — *"every building has old plank sewn into new, salvaged from the years the town was nearly empty"* | — |
 | `cut-reed`, `forage` | [D] | `docs/worldbuilding/A1-geography-cluster1.md` §3.1 *The tidal reach* — *"Brackish, reed-fringed, barge water"*; `content/bestiary/bestiary.json` `mob-thatch-mite` — *"Rooktide rebuilt its roofs with new reed"* | one step: the eight-value enum has no `reed`; cut reed is gathered off wild ground rather than farmed or felled, so `forage` |
-| `cane-sap`, `water` | [C] | `docs/worldbuilding/A2-ecology-thornveil.md` §2 — sap is *"the scarce resource the entire food web turns on"*, standing in for water on ground with no through-stream | — |
+| `cane-sap`, `water` | [C] | `docs/worldbuilding/A2-ecology-thornveil.md` §2 — *"Sap is the only reliable water in Thornveil"*, and the sap row of that section's three-source water table reads *"inside the bramble, all year / anything that can open a cane"* | — |
 | `spear-cane`, `timber` | **[D]** | `content/story/style.md` §4 — `faction-thornveil`, costume motif *"bramble-woven leathers, throwing-spear harness"*; mob family `mob:spear_thrower` | **the weakest cell in the table.** `style.md` gives the Thornveil Skirmishers a throwing-spear harness; **canon never says the raiders cut cane for the shafts.** One step, and it is the step this artifact would strike first if a derivation must go |
 | `burning-stone`, `fuel` | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §6 Embervale — *"digs the seam under them"*; §3.3 — *"Hill loam over a burning-stone seam"*; `content/story/canon.md` §4 *Geography & trade logic* — *"works the ember-seam beneath it"* | — |
 | `ledge-loam`, `crop` | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §6 Embervale — *"Embervale farms the loam on the ledges"* | — |
@@ -554,7 +569,7 @@ the row was written. `canon.md` is cited by section heading.
 | `the-heartwood`, "The heartwood" | [C] | `docs/worldbuilding/A2-ecology-thornveil.md` §6.2 — the Heart tier, *"the roadless centre, the deepest root mass"*; §6.3 — *"the heartwood itself — the zone's deepest root and its water table"* | — |
 | `the-crown-thickets`, "The crown thickets" | [C] | `docs/worldbuilding/A2-ecology-thornveil.md` §6.3 — *"the crown thickets above the heartwood"* | — |
 | `the-terraced-ledges`, "The terraced ledges" | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §6 Embervale — *"stacked in six or seven ledges above its own fields"* | — |
-| `the-adits`, "The adits" | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §4.2 zone 5 — *"adits into a burning-stone seam"*; §6 — *"Adit mouths open directly into the hillside between ledges"* | — |
+| `the-adits`, "The adits" | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §4.2 zone 5 — *"adits into a burning-stone seam"*; corroborated in §9 art brief A1-ART-03 — *"Adit mouths open directly into the hillside between ledges"* | — |
 | `the-mirror-tower`, "The mirror tower" | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §6 Gildmark — *"the mirror tower, a slim square shaft with a glazed cap that catches sun at a strange hour"* | — |
 | `the-mires-bar`, "The mire's bar" | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §4.2 zone 6 — *"Rock headland, deep berth, harbour terraces, the mire's bar"* | — (**the longer form is the binding one**: A1 §6's *"the bar"* would collide with zone 1's gravel bars) |
 | `the-tally-boards`, "The tally boards" | [C] | `docs/worldbuilding/A1-geography-cluster1.md` §6 Norhollow — *"First thing a traveller sees: the tally boards at the gate"* | — |
