@@ -4,6 +4,7 @@ import {
   MUSIC_CLASS,
   COVERAGE_CLASS,
   COMBAT_CLASS,
+  STORY_CLASS,
   ART_GROUP_LABELS,
   artTabState,
 } from "./state.mjs";
@@ -44,6 +45,7 @@ export function classLabel(cls) {
   if (cls === ART_CLASS) return "Concept Art";
   if (cls === COVERAGE_CLASS) return "Coverage";
   if (cls === COMBAT_CLASS) return "Combat";
+  if (cls === STORY_CLASS) return "Story";
   if (cls.startsWith(ART_CLASS + ":")) {
     const gid = cls.slice(ART_CLASS.length + 1);
     return ART_GROUP_LABELS.get(gid) || gid + " (unregistered)";
@@ -52,16 +54,13 @@ export function classLabel(cls) {
   return cls.charAt(0).toUpperCase() + cls.slice(1) + "s";
 }
 
-
 function setActiveClass(cls) {
   document.querySelectorAll(".sidebar-item").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.class === cls);
   });
   document.querySelectorAll("section.kind-section").forEach((sec) => {
     const show =
-      cls === "all" ||
-      sec.dataset.kind === cls ||
-      sec.dataset.group === cls;
+      cls === "all" || sec.dataset.kind === cls || sec.dataset.group === cls;
     sec.style.display = show ? "" : "none";
   });
   // Task 8: "all" and the aggregate "Concept Art" class both just made
@@ -98,7 +97,10 @@ function setActiveClass(cls) {
     // instead of a stale earlier tab.
     artTabState.activeArtTab = cls.slice(ART_CLASS.length + 1);
     document.querySelectorAll(".art-tab").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.artTab === artTabState.activeArtTab);
+      btn.classList.toggle(
+        "active",
+        btn.dataset.artTab === artTabState.activeArtTab,
+      );
     });
   }
 }
@@ -135,11 +137,9 @@ export function buildSidebarItem(cls, total) {
       const target =
         document.getElementById("section-" + cls) ||
         [...document.querySelectorAll("section.kind-section")].find(
-          (sec) =>
-            sec.dataset.group === cls && sec.style.display !== "none",
+          (sec) => sec.dataset.group === cls && sec.style.display !== "none",
         );
-      if (target)
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
     } else {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -155,8 +155,7 @@ export function buildSidebarItem(cls, total) {
 // other render-type is unaffected and still groups 1:1.
 function groupKeyFor(entry, spec) {
   const render = resolveRender(entry, spec);
-  if (render === "model3d" && entry.kind)
-    return render + ":" + entry.kind;
+  if (render === "model3d" && entry.kind) return render + ":" + entry.kind;
   return render;
 }
 

@@ -741,14 +741,16 @@
         color: var(--text-faint);
       }
 
-      .art-tabbar-row {
+      .art-tabbar-row,
+      .story-tabbar-row {
         display: flex;
         flex-wrap: wrap;
         gap: 0.4rem;
         margin-bottom: 0.9rem;
       }
 
-      .art-tab {
+      .art-tab,
+      .story-tab {
         font-family: var(--sans);
         font-size: 0.78rem;
         font-weight: 600;
@@ -761,12 +763,14 @@
         transition: all 0.15s ease;
       }
 
-      .art-tab:hover {
+      .art-tab:hover,
+      .story-tab:hover {
         border-color: var(--border-hover);
         color: var(--text);
       }
 
-      .art-tab.active {
+      .art-tab.active,
+      .story-tab.active {
         background: var(--accent-dim);
         border-color: var(--accent);
         color: #dce4ff;
