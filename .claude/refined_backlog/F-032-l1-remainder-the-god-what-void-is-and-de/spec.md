@@ -2,7 +2,7 @@
 title: "L1 cosmology: the unsealed years, what Void is, and deep-time legend"
 id: F-032
 from_idea: I-051
-status: refined
+status: shipped
 wave: 5
 design: docs/superpowers/specs/2026-08-06-l1-cosmology-design.md
 plan: docs/superpowers/plans/2026-08-07-l1-cosmology.md
@@ -21,7 +21,7 @@ Economist against the two cited research dossiers"*. The owner ruled on 2026-08-
 exists** — there is only belief — and the work was done by direct synthesis against the two
 dossiers rather than by convening those three roles.
 
-## Status — already implemented on `release/1.7`
+## Status — SHIPPED to `release/1.7` (2026-08-08)
 
 **This feature was built before it was refined**, because the work began as a wave-5 brainstorm on
 the idea and ran to completion on the release branch. There is **no `feat/F-032` branch**; the 16
