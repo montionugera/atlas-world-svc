@@ -176,26 +176,60 @@ export function parseHexColour(value, massName) {
 }
 
 /**
+ * Warn (never throw) about any pair of masses in one brief whose `value`
+ * colours are closer than SEGMENT_MIN_SEPARATION. Advisory only — deferred
+ * from being an enforced gate (see
+ * .superpowers/sdd/2026-08-08-town-art-segment-control/task-2-report.md's
+ * SEGMENT_MIN_SEPARATION section): A1-ART-02 "Millcross" already has
+ * plausibly-deliberate near-identical pairs (town-row-left/town-row-right,
+ * same substance on opposite riverbanks, spatially disjoint) that a strict
+ * gate would have broken. This surfaces every such pair at render time so
+ * Task 3's human verdict sees it without having to read that report.
+ */
+function warnOnNearSeparationPairs(parsedMasses) {
+  for (let i = 0; i < parsedMasses.length; i++) {
+    for (let j = i + 1; j < parsedMasses.length; j++) {
+      const a = parsedMasses[i];
+      const b = parsedMasses[j];
+      const distance = Math.max(...a.rgb.map((c, k) => Math.abs(c - b.rgb[k])));
+      if (distance < SEGMENT_MIN_SEPARATION) {
+        console.warn(
+          `[art-forge] segment masses "${a.name}" and "${b.name}" are only ${distance} apart ` +
+            `(SEGMENT_MIN_SEPARATION=${SEGMENT_MIN_SEPARATION}) — they may render as one label to ` +
+            "the ControlNet encoder; confirm this is intentional (same-substance masses that never " +
+            "share a boundary) before trusting a segment result",
+        );
+      }
+    }
+  }
+}
+
+/**
  * Convert `brief.masses` into the pixel-space, per-plane shape
  * `buildSegmentSvg` renders. Same plane validation as `depthPlanesFromBrief`,
  * but each polygon carries its OWN fill taken from `mass.value`. Throws by
  * mass name if `value` is missing or malformed — an unfilled mass would
- * render as CANVAS_FILL, i.e. silently become unlabelled space.
+ * render as CANVAS_FILL, i.e. silently become unlabelled space. Also warns
+ * (never throws) on any pair of masses too close to distinguish as separate
+ * labels — see `warnOnNearSeparationPairs`.
  */
 export function segmentMassesFromBrief({ brief, width, height }) {
   const planes = { bg: [], mg: [], fg: [] };
+  const parsedMasses = [];
   for (const mass of brief.masses ?? []) {
     if (!Object.hasOwn(planes, mass.plane)) {
       throw new Error(
         `mass "${mass.name}" has plane "${mass.plane}" — must be one of: ${PLANE_ORDER.join(", ")}`,
       );
     }
-    parseHexColour(mass.value, mass.name); // validate before it reaches the SVG
+    const rgb = parseHexColour(mass.value, mass.name); // validate before it reaches the SVG
+    parsedMasses.push({ name: mass.name, rgb });
     planes[mass.plane].push({
       points: massToPoints({ mass, width, height }),
       fill: mass.value,
     });
   }
+  warnOnNearSeparationPairs(parsedMasses);
   return { planes };
 }
 

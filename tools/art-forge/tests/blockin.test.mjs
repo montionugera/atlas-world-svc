@@ -111,6 +111,69 @@ test("segmentMassesFromBrief names the mass whose value is missing — a silentl
   );
 });
 
+test("segmentMassesFromBrief warns (does not throw) when two mass values are closer than SEGMENT_MIN_SEPARATION", () => {
+  const warnings = [];
+  const original = console.warn;
+  console.warn = (msg) => warnings.push(msg);
+  let result;
+  try {
+    result = segmentMassesFromBrief({
+      brief: {
+        masses: [
+          { name: "near-a", plane: "mg", shape: "rect", rect: [0, 0, 0.1, 0.1], value: "#808080" },
+          { name: "near-b", plane: "mg", shape: "rect", rect: [0.2, 0, 0.3, 0.1], value: "#828280" },
+          { name: "far", plane: "mg", shape: "rect", rect: [0.4, 0, 0.5, 0.1], value: "#ffffff" },
+        ],
+      },
+      width: 1280,
+      height: 832,
+    });
+  } finally {
+    console.warn = original;
+  }
+  assert.ok(result.planes, "advisory only — must still succeed, not throw");
+  assert.equal(warnings.length, 1, `expected exactly one warning, got ${warnings.length}: ${warnings.join(" | ")}`);
+  assert.match(warnings[0], /near-a.*near-b/s);
+  assert.match(warnings[0], new RegExp(String(SEGMENT_MIN_SEPARATION)));
+});
+
+test("segmentMassesFromBrief stays silent when every mass value is well separated", () => {
+  const warnings = [];
+  const original = console.warn;
+  console.warn = (msg) => warnings.push(msg);
+  try {
+    segmentMassesFromBrief({
+      brief: {
+        masses: [
+          { name: "a", plane: "bg", shape: "rect", rect: [0, 0, 0.1, 0.1], value: "#000000" },
+          { name: "b", plane: "mg", shape: "rect", rect: [0.2, 0, 0.3, 0.1], value: "#808080" },
+          { name: "c", plane: "fg", shape: "rect", rect: [0.4, 0, 0.5, 0.1], value: "#ffffff" },
+        ],
+      },
+      width: 1280,
+      height: 832,
+    });
+  } finally {
+    console.warn = original;
+  }
+  assert.equal(warnings.length, 0);
+});
+
+test("GUARD: Millcross's real near-threshold pairs (town rows, cart-queue/animals) warn, not throw — this is the concrete case the deferral decision was about", () => {
+  const warnings = [];
+  const original = console.warn;
+  console.warn = (msg) => warnings.push(msg);
+  try {
+    segmentMassesFromBrief({ brief: MILLCROSS, width: 1280, height: 832 });
+  } finally {
+    console.warn = original;
+  }
+  const joined = warnings.join(" | ");
+  assert.match(joined, /town-row-left.*town-row-right/s);
+  assert.match(joined, /cart-queue.*led-animals-foreground/s);
+  assert.doesNotMatch(joined, /far-bank.*river/s, "river vs far-bank is 34 apart — must NOT warn");
+});
+
 test("segmentMassesFromBrief rejects an unknown plane by name, same as the depth path", () => {
   assert.throws(
     () => segmentMassesFromBrief({

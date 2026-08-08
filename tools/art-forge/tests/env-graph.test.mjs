@@ -1,7 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { loadForge } from "../generate/charsheet.mjs";
+import { renderDepthPng, renderSegmentPng } from "../generate/blockin.mjs";
 import {
+  CONTROL_RENDERER,
   ENV_NODE,
   HIRES_NODE,
   buildEnvGraph,
@@ -10,6 +12,7 @@ import {
   buildEnvPositive,
   controlOutputId,
   formatStrength,
+  generateEnv,
   resolveControl,
   resolveStrength,
   validateBrief,
@@ -175,6 +178,23 @@ test("depth output ids keep F-026's exact naming; segment ids carry their contro
   );
 });
 
+test("resolveControl wires each control key to its OWN renderer — a depth/segment mixup would render the wrong control image while every other assertion (type/strength/block) stays green", () => {
+  assert.equal(
+    CONTROL_RENDERER.depth,
+    renderDepthPng,
+    "CONTROL_RENDERER.depth must be renderDepthPng, not renderSegmentPng or anything else",
+  );
+  assert.equal(
+    CONTROL_RENDERER.segment,
+    renderSegmentPng,
+    "CONTROL_RENDERER.segment must be renderSegmentPng — if this were renderDepthPng, a " +
+      "--control segment run would silently stage a DEPTH png under the segment filename, " +
+      "defeating the whole feature while every other assertion here stays green",
+  );
+  assert.equal(resolveControl({ forge, control: "depth" }).render, renderDepthPng);
+  assert.equal(resolveControl({ forge, control: "segment" }).render, renderSegmentPng);
+});
+
 test("the graph sends the control block's own union type, not a hardcoded 'depth'", () => {
   const { block } = resolveControl({ forge, control: "segment" });
   const g = buildEnvGraph({
@@ -184,6 +204,29 @@ test("the graph sends the control block's own union type, not a hardcoded 'depth
   });
   assert.equal(g[ENV_NODE.CN_TYPE].inputs.type, "segment");
   assert.equal(g[ENV_NODE.CN_APPLY].inputs.strength, 0.45);
+});
+
+test("generateEnv (dry-run, end to end) embeds the control-qualified filename in the queued graph — buildEnvGraph alone can't catch this: generateEnv builds brief.id itself before calling it, and a bug there (e.g. leaving brief.id bare) would let a segment run's SaveImage.filename_prefix collide with depth's on the ComfyUI server", async () => {
+  const graph = await generateEnv(
+    { brief: "A1-ART-02", seed: 12345, control: "segment", strength: "0.45", "dry-run": true },
+    forge,
+  );
+  assert.equal(
+    graph[ENV_NODE.SAVE].inputs.filename_prefix,
+    "art-forge/env/A1-ART-02-segment-seed12345-s0.45",
+    "a segment run's embedded output filename must carry -segment- so it never collides with a depth run's",
+  );
+});
+
+test("generateEnv (dry-run, end to end) keeps depth's embedded filename bare — F-026 byte-for-byte", async () => {
+  const graph = await generateEnv(
+    { brief: "A1-ART-02", seed: 12345, "dry-run": true },
+    forge,
+  );
+  assert.equal(
+    graph[ENV_NODE.SAVE].inputs.filename_prefix,
+    "art-forge/env/A1-ART-02-seed12345-s0.30",
+  );
 });
 
 /* --------------------------- hires graph --------------------------- */
