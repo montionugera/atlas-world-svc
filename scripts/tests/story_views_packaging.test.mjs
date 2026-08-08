@@ -68,3 +68,23 @@ test("every story-views.json src is packaged into the storybook image", () => {
     );
   }
 });
+
+// content/story/*.json is not a registry `src` — it's a runtime data dependency
+// that the "reader" and "graph" registry entries fetch after they load (see
+// tools/story-explorer/reader.html and index.html, both of which
+// `fetch("../../content/story/${filename}")`). The walk above only ever checks
+// registry `src` paths, so it can never catch a dropped `content/story` COPY or
+// allowlist line — that class of break stays green in this suite while the
+// shipped pages 404 on their data fetch and render empty. Assert it directly.
+test("content/story (the reader/graph pages' runtime data fetch) is packaged into the storybook image", () => {
+  const copies = copyPaths();
+  const allowed = allowlistPaths();
+  assert.ok(
+    coveredBy(copies, "content/story"),
+    'content/story has no COPY line in tools/asset-storybook/Dockerfile — the "reader" and "graph" views fetch content/story/*.json at runtime and would render empty',
+  );
+  assert.ok(
+    coveredBy(allowed, "content/story"),
+    'content/story has no "!" allowlist line in tools/asset-storybook/Dockerfile.dockerignore — the "reader" and "graph" views fetch content/story/*.json at runtime and would render empty',
+  );
+});
