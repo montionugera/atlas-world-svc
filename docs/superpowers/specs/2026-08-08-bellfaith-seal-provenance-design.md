@@ -111,16 +111,23 @@ Nothing magical stops a forger. Three ordinary things do, and all are already on
 
 So forgery buys nothing that buying a witness does not buy more cheaply and more durably.
 
-### D3 — The exploitable flaw: two witnesses from different towns
+### D3 — The seal is only for what crosses town lines
 
-The Bellfaith seals a statement when **two witnesses from two different towns** attest to it.
+`canon.md:247` already sets the scope and this design keeps it exactly: the seal is for
+**inter-town proclamations and news-letters**. Business inside one town — a lease between
+neighbours, a local debt, a boundary between two fields — never touches the Bellfaith. The
+town settles it the way it always has.
+
+The Bellfaith seals a cross-town statement when **two witnesses from two different towns**
+attest to it: one from where the thing happened, one from somewhere else.
 
 <div class="callout success">
 
-**The rule is not stupid — it is obsolete.** In a land with no federation, no common law and
-no central court (`A0:335`, **V14**), sourcing two paid mouths in two separate towns is beyond
-any ordinary party. The rule was correct for the world it was written for. It is correct for
-everyone in the story **except one man.**
+**The rule is not stupid — it is obsolete.** The second witness exists so that no single town
+can declare something about another town unopposed. In a land with no federation, no common
+law and no central court (`A0:335`, **V14**), reaching two towns at once was beyond anybody.
+The rule was right for the world it was written for. It is still right for everyone in the
+story **except one man.**
 
 </div>
 
@@ -170,26 +177,36 @@ flowchart TD
 
 ## 4. Consequences for ordinary life
 
-Per the SWF artifact contract, each claim owes at least two second-order effects.
+<div class="callout warn">
 
-<div class="row two">
-
-**Work and trade.** Being a witness is a paid trade, not a civic duty — a class of people who
-travel to attest. Every lease, boundary and debt in the land rests on two strangers' word, so
-towns keep informal lists of who has attested before and how often. A name that appears too
-many times loses its price.
-
-**Law and travel.** A statement needs a partner in another town, so witnessing generates
-road traffic and a reason for cross-town acquaintance in a land with no common law. It also
-means **the poor cannot seal anything** — one town's worth of neighbours is not enough. Sealed
-record-keeping is a service the well-connected can buy and the isolated cannot.
+**Ordinary life is barely touched, and that is the point.** D3 keeps the seal on cross-town
+news only, so a farmer's lease, a debt between neighbours and a field boundary never involve
+the Bellfaith at all. A design whose consequence is *"nothing changes in the village"* is
+doing its job — the change belongs where the war is.
 
 </div>
 
-**Burial and the count.** `lore-the-first-seal` says every claim measures back to the first
-sealed page. Under D1 that page is not a record of what happened — it is a record of **who
-said so**, and the two who vouched are unnamed in a four-line grain tally. The world's calendar
-begins at an act of trust, not an act of observation.
+Two effects that are real:
+
+**Distance decides what is believed.** Something that happens near a town is known there
+within the day. Something that happens far away needs a second town's witness before it can
+be proclaimed anywhere — so **the further away an event is, the longer it stays a rumour.**
+Towns are best informed about the places they matter least to.
+
+**Reaching two towns at once becomes a form of wealth.** Almost nobody can do it. Whoever can
+does not merely spread news faster — he decides which version gets a seal at all. That is the
+same advantage `canon.md:152` already grants the Broker in the signal/detail gap, arriving now
+by a second road.
+
+<div class="callout idea">
+
+**A quiet bonus for the calendar.** The first sealed record is a four-line grain tally
+(`A1-cosmology.md` C5). Under D3 the seal is only for what crosses town lines — so the oldest
+document in the world is not a village ledger. It is **grain moving between two towns**, with
+two strangers vouching for the count. The world's calendar begins at a trade dispute nobody
+recorded the outcome of.
+
+</div>
 
 ---
 
@@ -228,6 +245,10 @@ begins at an act of trust, not an act of observation.
 - **The five acts** — every event id, character fate and quest stands. `event-bells-ring-true`
   gains a mechanism (a witness recants) but keeps its place, its act and its meaning.
 - **The Widow may not be resolved** (`DR-001-L1-scope.md:190`).
+- **`lore-the-first-seal` stays valid as written.** Its line *"every lease and every claim in
+  this land measures back to this page"* is about **dating**, not about needing a seal — a
+  village lease is still dated from the count while never going near the Bellfaith. D3 narrows
+  what gets *sealed*, never what gets *dated*.
 
 ---
 
