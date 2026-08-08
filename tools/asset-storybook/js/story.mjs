@@ -46,6 +46,7 @@ let overlay = null;
 let overlayFrame = null;
 let overlayTabRow = null;
 let overlayLink = null;
+let overlayCloseBtn = null;
 let activeView = null;
 let savedScrollY = 0;
 let lastTrigger = null;
@@ -87,13 +88,13 @@ function buildOverlay(views) {
   overlayLink.textContent = "Open full screen ↗";
   header.appendChild(overlayLink);
 
-  const closeBtn = document.createElement("button");
-  closeBtn.type = "button";
-  closeBtn.className = "story-tab";
-  closeBtn.textContent = "Exit ✕";
-  closeBtn.setAttribute("aria-label", "Close the story reading view");
-  closeBtn.addEventListener("click", () => closeStoryView());
-  header.appendChild(closeBtn);
+  overlayCloseBtn = document.createElement("button");
+  overlayCloseBtn.type = "button";
+  overlayCloseBtn.className = "story-tab";
+  overlayCloseBtn.textContent = "Exit ✕";
+  overlayCloseBtn.setAttribute("aria-label", "Close the story reading view");
+  overlayCloseBtn.addEventListener("click", () => closeStoryView());
+  header.appendChild(overlayCloseBtn);
 
   overlay.appendChild(header);
 
@@ -114,6 +115,25 @@ function selectView(view) {
   });
 }
 
+// Tab/Shift+Tab trap while the overlay is open. Queried fresh on every
+// keydown rather than cached: the tab row is built once, but overlayLink's
+// href (and so its place as a real, focusable `a[href]`) changes per view.
+function trapFocus(ev) {
+  const focusable = Array.from(overlay.querySelectorAll("button, a[href]"));
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (ev.shiftKey) {
+    if (document.activeElement === first) {
+      ev.preventDefault();
+      last.focus();
+    }
+  } else if (document.activeElement === last) {
+    ev.preventDefault();
+    first.focus();
+  }
+}
+
 function openStoryView(view, views, trigger) {
   if (!overlay) buildOverlay(views);
   if (trigger) lastTrigger = trigger;
@@ -122,11 +142,22 @@ function openStoryView(view, views, trigger) {
     document.body.style.overflow = "hidden";
     overlay.hidden = false;
     escHandler = (ev) => {
-      if (ev.key === "Escape") closeStoryView();
+      if (ev.key === "Escape") {
+        closeStoryView();
+      } else if (ev.key === "Tab") {
+        trapFocus(ev);
+      }
     };
     document.addEventListener("keydown", escHandler);
   }
   selectView(view);
+  // Move focus into the dialog on open (WCAG 2.4.3 / the modal pattern) —
+  // the active view's own tab button is the natural landing spot; fall back
+  // to the Exit button on the vanishingly unlikely chance it's missing.
+  const activeTabBtn = overlayTabRow.querySelector(
+    '[data-story-tab="' + view.id + '"]',
+  );
+  (activeTabBtn || overlayCloseBtn).focus();
 }
 
 function closeStoryView() {
