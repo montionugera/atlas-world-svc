@@ -316,3 +316,536 @@ test("the committed records have ten distinct resource-kind sets and no shared l
   }
   assert.equal(kindSets.size, 10);
 });
+
+const GEOGRAPHY = {
+  zones: ZONE_IDS.map((id) => ({ id, name: id, levelBand: ZONE_BANDS[id] })),
+};
+
+// All ten records, keyed by filename. `mutators` is zoneId -> (record) => void,
+// applied after construction so a test can reach into a nested array.
+function allZones(mutators = {}) {
+  const files = {};
+  for (const id of ZONE_IDS) {
+    const rec = zoneRecord(id);
+    if (mutators[id]) mutators[id](rec);
+    files[`zone-${id}.json`] = rec;
+  }
+  return files;
+}
+
+// `zones: null` = do not create content/zones at all (the soft-skip path).
+// `geography: null` = write a literal JSON `null` (the shape-invalid path).
+function fixture({ zones = {}, geography = GEOGRAPHY, zoneSchema = true } = {}) {
+  const dir = mkdtempSync(join(tmpdir(), "zone-gate-"));
+  mkdirSync(join(dir, "content/characters"), { recursive: true });
+  mkdirSync(join(dir, "content/schemas"), { recursive: true });
+  mkdirSync(join(dir, "content/maps"), { recursive: true });
+  const schemas = ["character.schema.json", "map.schema.json"];
+  if (zoneSchema) schemas.push("zone-content.schema.json");
+  for (const s of schemas)
+    cpSync(join(ROOT, "content/schemas", s), join(dir, "content/schemas", s));
+  writeFileSync(join(dir, "content/maps/cluster1-geography.json"), JSON.stringify(geography));
+  if (zones !== null) {
+    mkdirSync(join(dir, "content/zones"), { recursive: true });
+    for (const [name, body] of Object.entries(zones))
+      writeFileSync(join(dir, "content/zones", name), JSON.stringify(body));
+  }
+  // Hermeticity: every external artifact the gate reads is a fixture, so these
+  // tests can never silently track the live committed files.
+  writeFileSync(join(dir, "keys.json"), JSON.stringify({ version: 1, keys: [] }));
+  writeFileSync(join(dir, "manifest.json"), JSON.stringify({ version: 2, entries: {} }));
+  writeFileSync(join(dir, "mob-types.json"), JSON.stringify({ version: 1, mobTypes: [] }));
+  writeFileSync(join(dir, "spawn-areas.json"), JSON.stringify({ version: 1, areas: [] }));
+  return dir;
+}
+
+function runGate(dir, extra = []) {
+  try {
+    const out = execFileSync(process.execPath, [
+      GATE,
+      "--content-root", join(dir, "content"),
+      "--keys", join(dir, "keys.json"),
+      "--manifest", join(dir, "manifest.json"),
+      "--mob-types", join(dir, "mob-types.json"),
+      "--spawn-areas", join(dir, "spawn-areas.json"),
+      ...extra,
+    ], { encoding: "utf8" });
+    return { code: 0, out };
+  } catch (e) {
+    return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Wiring + the soft-skip contract. checkZoneContent MUST skip a content root
+// with no zones/ dir: every fixture in check_content.test.mjs and
+// bestiary-placement.test.mjs lacks one, and Z2 would otherwise fire ten
+// missing-record FAILs into unrelated suites.
+// ---------------------------------------------------------------------------
+
+test("no content/zones directory skips silently", () => {
+  const r = runGate(fixture({ zones: null, zoneSchema: false }));
+  assert.equal(r.code, 0);
+  assert.match(r.out, /0 zones/);
+});
+
+test("a content/zones directory with no zone-*.json skips silently", () => {
+  const r = runGate(fixture({ zones: {}, zoneSchema: false }));
+  assert.equal(r.code, 0);
+  assert.match(r.out, /0 zones/);
+  // The SECOND soft-skip shape (dir present, no records) must also leave the
+  // guarded aggregate line off, not just the first (no dir at all).
+  assert.doesNotMatch(r.out, /zone-content:/);
+});
+
+test("the ten valid records pass, are counted, and raise nothing", () => {
+  const r = runGate(fixture({ zones: allZones() }));
+  assert.equal(r.code, 0);
+  assert.match(r.out, /10 zones/);
+  assert.doesNotMatch(r.out, /FAIL/);
+  assert.doesNotMatch(r.out, /WARN/);
+});
+
+// The two halves of the finish() guard. The `zone-content:` line reports a
+// ratio; on a root that ships no zone content there is no ratio, and printing
+// `0 of 0` would put a measurement of an unmeasured thing onto every fixture in
+// check_content.test.mjs and bestiary-placement.test.mjs. season1.mjs's
+// buildRows keeps the same discipline (`actual: null`, never 0, when nothing is
+// countable). Three tests pin the guard: PRESENT on the ten-record root, and
+// ABSENT on BOTH soft-skip shapes — no zones/ dir (below) and a zones/ dir
+// holding no zone-*.json (up in the wiring block). Neither removing the guard
+// nor inverting it can pass.
+test("the zone-content line is ABSENT on a root with no zone content", () => {
+  const r = runGate(fixture({ zones: null, zoneSchema: false }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /zone-content:/);
+  assert.match(r.out, /0 zones/);
+});
+
+test("the zone-content line is PRESENT once the root has zone records", () => {
+  const r = runGate(fixture({ zones: allZones() }));
+  assert.equal(r.code, 0);
+  assert.match(r.out, /^zone-content: 0 of 20 hazards have no runtime effect$/m);
+});
+
+// readJson cannot distinguish "recorded a FAIL" from "parsed to a JSON-falsy
+// value" — a file holding a literal `null` parses fine — which is why
+// loadGeographyZones tests the failure count rather than the return value. A
+// `null` geography must be a shape-invalid FAIL and then a CLEAN BAIL: not a
+// silent skip (which would leave Z1 and Z2 unenforced), and not ten Z2
+// missing-record FAILs stacked on top of it. The third assertion is what pins
+// `if (!zones) return 0;` in patch B — without that guard `zones.has(doc.zone)`
+// throws on the first record and the gate dies with a stack trace instead of a
+// FAIL line. This test says nothing about how many times the geography is
+// parsed; see the Interfaces note on reusing loadGeographyZones unchanged.
+test("a geography parsing to null is one shape-invalid FAIL, not a skip", () => {
+  const r = runGate(fixture({ zones: allZones(), geography: null }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /geography: .* is shape-invalid/);
+  assert.doesNotMatch(r.out, /has no record in content\/zones\//);
+});
+
+test("a schema-invalid record FAILs and its Z-rules are skipped, not crashed on", () => {
+  const zones = allZones();
+  zones["zone-emberdown.json"].surprise = true;
+  const r = runGate(fixture({ zones }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-emberdown\.json: schema /);
+});
+
+// --------------------------------- Z1 --------------------------------------
+// The fixture keeps all ten real records present and adds an ELEVENTH file, so
+// Z2's completeness rule is fully satisfied and Z1 is the only rule that can
+// reject this root. Delete Z1 from the gate and this root exits 0.
+test("Z1: a record naming a zone the geography does not have fails", () => {
+  const zones = allZones();
+  const orphan = zoneRecord("emberdown");
+  orphan.zone = "nowhere";
+  orphan.resources = [
+    { id: "nowhere-res-a", name: "A", kind: "crop", description: "d" },
+    { id: "nowhere-res-b", name: "B", kind: "timber", description: "d" },
+  ];
+  orphan.landmarks = [
+    { id: "nowhere-mark-a", name: "nowhere landmark A", description: "d" },
+    { id: "nowhere-mark-b", name: "nowhere landmark B", description: "d" },
+  ];
+  zones["zone-nowhere.json"] = orphan;
+  const r = runGate(fixture({ zones }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-nowhere\.json: zone "nowhere" not in cluster1-geography\.json#zones/);
+});
+
+test("Z1: all ten geography zone ids are accepted", () => {
+  const r = runGate(fixture({ zones: allZones() }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /not in cluster1-geography/);
+});
+
+// --------------------------------- Z2 --------------------------------------
+// Every surviving record is fully valid, so nothing but Z2 can reject this
+// root. Delete Z2 and a nine-tenths-finished cluster passes — the one thing Z2
+// exists to make impossible.
+test("Z2: a geography zone with no record fails", () => {
+  const zones = allZones();
+  delete zones["zone-thornveil.json"];
+  const r = runGate(fixture({ zones }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones: geography zone "thornveil" has no record in content\/zones\//);
+  assert.match(r.out, /9 zones/);
+  assert.doesNotMatch(r.out, /not in cluster1-geography/);
+});
+
+test("Z2: two records claiming the same zone fail", () => {
+  const zones = allZones();
+  const dup = zoneRecord("emberdown");
+  // Non-colliding kind set and landmark names, so Z6 cannot supply the exit-1.
+  dup.resources[0].kind = "timber";
+  dup.resources[1].kind = "stone";
+  dup.landmarks[0].name = "emberdown landmark C";
+  dup.landmarks[1].name = "emberdown landmark D";
+  zones["zone-emberdown-copy.json"] = dup;
+  const r = runGate(fixture({ zones }));
+  assert.equal(r.code, 1);
+  assert.match(
+    r.out,
+    /zones: zone "emberdown" has 2 records \(zone-emberdown-copy\.json, zone-emberdown\.json\)/);
+});
+
+test("Z2: exactly ten records, one per zone, is the passing shape", () => {
+  const r = runGate(fixture({ zones: allZones() }));
+  assert.equal(r.code, 0);
+  assert.match(r.out, /10 zones/);
+  assert.doesNotMatch(r.out, /has no record in content\/zones\//);
+  assert.doesNotMatch(r.out, /has 2 records/);
+});
+
+// --------------------------------- Z3 --------------------------------------
+// The baseline sits EXACTLY on the floors, so each test removes one element.
+test("Z3: fewer than two hazards fails", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.hazards = [z.hazards[0]]; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-emberdown\.json: zone "emberdown" has 1 hazards, needs at least 2/);
+});
+
+test("Z3: fewer than two resources fails", () => {
+  // Dropping res-b leaves emberdown's kind set {fuel} — still distinct from
+  // every other zone's, so Z6 cannot be what rejects this root.
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.resources = [z.resources[0]]; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-emberdown\.json: zone "emberdown" has 1 resources, needs at least 2/);
+  assert.doesNotMatch(r.out, /resource-kind set/);
+});
+
+test("Z3: fewer than two landmarks fails", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.landmarks = [z.landmarks[0]]; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-emberdown\.json: zone "emberdown" has 1 landmarks, needs at least 2/);
+});
+
+test("Z3: an empty reasonToGo fails", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.reasonToGo = "   "; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-emberdown\.json: zone "emberdown" has an empty reasonToGo/);
+});
+
+test("Z3: exactly two of each, with a reasonToGo, is legal", () => {
+  const r = runGate(fixture({ zones: allZones() }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /needs at least 2|empty reasonToGo/);
+});
+
+// --------------------------------- Z4 --------------------------------------
+test("Z4: a non-kebab-case hazard id fails", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.hazards[0].id = "Seam_Damp"; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-emberdown\.json: hazard id "Seam_Damp" is not kebab-case/);
+});
+
+test("Z4: a non-kebab-case resource id fails", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.resources[0].id = "Burning Stone"; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-emberdown\.json: resource id "Burning Stone" is not kebab-case/);
+});
+
+test("Z4: a non-kebab-case landmark id fails", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.landmarks[0].id = "TheAdits"; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-emberdown\.json: landmark id "TheAdits" is not kebab-case/);
+});
+
+test("Z4: two hazards sharing an id fail", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.hazards[1].id = z.hazards[0].id; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-emberdown\.json: duplicate hazard id "emberdown-hazard-a"/);
+});
+
+test("Z4: two resources sharing an id fail", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.resources[1].id = z.resources[0].id; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-emberdown\.json: duplicate resource id "emberdown-res-a"/);
+});
+
+test("Z4: two landmarks sharing an id fail", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.landmarks[1].id = z.landmarks[0].id; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones\/zone-emberdown\.json: duplicate landmark id "emberdown-mark-a"/);
+});
+
+// The other polarity: "unique within their array" is not "unique within the
+// file". A gate that pooled all three arrays would reject this legal record.
+test("Z4: one id string reused across two DIFFERENT arrays is legal", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => {
+      z.hazards[0].id = "the-adits";
+      z.resources[0].id = "the-adits";
+      z.landmarks[0].id = "the-adits";
+    },
+  }) }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /duplicate .* id/);
+});
+
+test("Z4: ids with digits and multiple segments are legal kebab-case", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.hazards[0].id = "seam-damp-2"; },
+  }) }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /is not kebab-case/);
+});
+
+// THE DRIFT BINDING for ZONE_ID_RE. The regex is written twice — once in this
+// file (Task 1's constant) and once in the gate (Step 4, patch B) — and nothing
+// in the language binds them; `check_content.mjs` calls main() and
+// process.exit() at module scope, so it cannot be imported and the constant
+// cannot be compared directly. This test binds them behaviourally instead, the
+// same way the two `(valid: …)` tests bind the effect and kind enums: it drives
+// the three boundary shapes that separate `/^[a-z0-9]+(-[a-z0-9]+)*$/` from a
+// loosened `/^[a-z0-9-]+$/` through the REAL gate binary. Loosen the gate's
+// copy and this goes red even though this file's copy is untouched. The three
+// legal-shape tests above cannot catch that drift — every one of them passes
+// under the loose regex too.
+test("Z4: the gate's kebab rule rejects leading, trailing and doubled hyphens", () => {
+  for (const bad of ["-seam-damp", "seam-damp-", "seam--damp"]) {
+    const r = runGate(fixture({ zones: allZones({
+      emberdown: (z) => { z.hazards[0].id = bad; },
+    }) }));
+    assert.equal(r.code, 1, `the gate must reject the id "${bad}":\n${r.out}`);
+    assert.match(
+      r.out,
+      new RegExp(`zones/zone-emberdown\\.json: hazard id "${bad}" is not kebab-case`),
+      `wrong or missing message for "${bad}":\n${r.out}`);
+  }
+});
+
+// --------------------------------- Z5 --------------------------------------
+// THE SUBTLE ONE. An exit-code-only test cannot tell a correct WARN from a
+// wrongly-escalated FAIL, so this asserts all three of: exit 0, the WARN text,
+// and the total absence of FAIL.
+test("Z5: a hazard with no effect is a WARN, not a FAIL", () => {
+  const r = runGate(fixture({ zones: allZones({
+    "ashvale-front": (z) => { delete z.hazards[0].effect; },
+  }) }));
+  assert.equal(r.code, 0, `a missing effect must not fail the gate:\n${r.out}`);
+  assert.match(
+    r.out,
+    /WARN\s+zones\/zone-ashvale-front\.json: hazard "ashvale-front-hazard-a" has no effect/);
+  assert.doesNotMatch(r.out, /FAIL/);
+  assert.match(r.out, /10 zones/);
+});
+
+// Spec §7: "the implementation must print that count, not swallow it." The
+// per-hazard WARN alone does not satisfy that, and the generic `N warnings`
+// conflates zone hazards with character-coverage warns.
+test("Z5: the unmapped-hazard count is printed as an aggregate", () => {
+  const r = runGate(fixture({ zones: allZones({
+    "ashvale-front": (z) => { delete z.hazards[0].effect; delete z.hazards[1].effect; },
+    cindervast: (z) => { delete z.hazards[0].effect; },
+  }) }));
+  assert.equal(r.code, 0);
+  assert.match(r.out, /zone-content: 3 of 20 hazards have no runtime effect/);
+});
+
+test("Z5: an effect outside the seven runtime types fails", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.hazards[0].effect = "melt"; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(
+    r.out,
+    /zones\/zone-emberdown\.json: hazard "emberdown-hazard-a" effect "melt" is not a runtime zoneHazards type \(valid: freeze, stun, burn, poison, regen, heal, damage\)/);
+});
+
+test("Z5: every one of the seven runtime types is accepted with no WARN", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => {
+      z.hazards = EFFECTS.map((e, i) => ({
+        id: `emberdown-hazard-${i}`, name: `H${i}`, description: "d", effect: e,
+      }));
+    },
+  }) }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /WARN/);
+  assert.doesNotMatch(r.out, /is not a runtime zoneHazards type/);
+  assert.match(r.out, /zone-content: 0 of 25 hazards have no runtime effect/);
+});
+
+// The gate's ZONE_HAZARD_EFFECTS is a hand-copy of the runtime enum. If the two
+// ever drift, `effect` becomes a fiction field pretending to be a binding.
+//
+// This must assert against the GATE's list, not against this file's `EFFECTS`
+// constant. `check_content.mjs` cannot be imported — it calls `main()` and
+// `process.exit()` at module scope — so the gate's list is reachable only
+// through its observable surface: the `(valid: …)` tail of the Z5 FAIL message,
+// which the implementation builds with `ZONE_HAZARD_EFFECTS.join(", ")`. Parsing
+// that tail and deep-equalling it against BOTH map.schema.json's enum AND
+// `EFFECTS` binds all three lists in one assertion, so deleting a value from
+// ZONE_HAZARD_EFFECTS goes red. (An earlier draft of this test compared the
+// schema to `EFFECTS` only — the gate could have dropped a value and stayed
+// green.)
+function validListFrom(out, re) {
+  const m = out.match(re);
+  assert.ok(m, `no "(valid: …)" list in gate output:\n${out}`);
+  return m[1].split(", ");
+}
+
+test("Z5: the GATE's effect list equals map.schema.json's zoneHazards enum", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.hazards[0].effect = "melt"; },
+  }) }));
+  assert.equal(r.code, 1);
+  const gateList = validListFrom(
+    r.out, /is not a runtime zoneHazards type \(valid: ([^)]+)\)/);
+  const map = JSON.parse(readFileSync(join(ROOT, "content/schemas/map.schema.json"), "utf8"));
+  const runtime = map.properties.zoneHazards.items.properties.type.enum;
+  assert.deepEqual(gateList, runtime, "gate's ZONE_HAZARD_EFFECTS drifted from map.schema.json");
+  assert.deepEqual(gateList, EFFECTS, "gate's ZONE_HAZARD_EFFECTS drifted from this file's EFFECTS");
+});
+
+// The Z7 mirror. There is no schema to compare against — the eight kinds are
+// design §6's own vocabulary and this file's RESOURCE_KINDS is their only other
+// written copy — so this pins the gate's ZONE_RESOURCE_KINDS to it. Without
+// this test, ZONE_RESOURCE_KINDS is asserted nowhere except inside the one
+// message regex that would be edited in lockstep with it.
+test("Z7: the GATE's kind list equals the eight-value resource-kind enum", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.resources[0].kind = "gemstone"; },
+  }) }));
+  assert.equal(r.code, 1);
+  const gateList = validListFrom(
+    r.out, /is not a resource kind \(valid: ([^)]+)\)/);
+  assert.deepEqual(gateList, RESOURCE_KINDS, "gate's ZONE_RESOURCE_KINDS drifted from spec §6");
+  assert.equal(gateList.length, 8);
+});
+
+// --------------------------------- Z6 --------------------------------------
+// DECIDED, and the two places are deliberately NOT symmetric: the GATE fires
+// only on a landmark name shared ACROSS zones (`if (shared.length > 1)`), so a
+// zone repeating a name inside its own list passes Z6; Task 3b's
+// committed-content test uses one FLAT name Map across all ten records and
+// rejects that too. The stricter of the two was chosen for the committed
+// content — twenty landmarks, twenty names, no exceptions — and the looser one
+// for the gate, because "this zone lists the same rock twice" is an authoring
+// slip in one file, not a cross-zone identity failure worth failing every
+// consumer's content root over. If Task 3b's test ever fires on an intra-zone
+// repeat, fix the record; do not relax it to match the gate, and do not tighten
+// the gate to match it.
+//
+// Only the landmark name collides — kind sets stay {fuel,crop} vs {ore,fuel}.
+test("Z6: a landmark name appearing in two zones fails", () => {
+  const r = runGate(fixture({ zones: allZones({
+    hollowmarch: (z) => { z.landmarks[0].name = "emberdown landmark A"; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(
+    r.out,
+    /zones: landmark name "emberdown landmark A" appears in zones "emberdown", "hollowmarch"/);
+  assert.doesNotMatch(r.out, /resource-kind set/);
+});
+
+// Only the kind set collides — every landmark name stays zone-prefixed.
+test("Z6: two zones with an identical resource-kind set fail", () => {
+  const r = runGate(fixture({ zones: allZones({
+    hollowmarch: (z) => { z.resources[0].kind = "ore"; z.resources[1].kind = "stone"; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(
+    r.out,
+    /zones: resource-kind set \(ore, stone\) is shared by zones "gildmark-head", "hollowmarch"/);
+  assert.doesNotMatch(r.out, /landmark name/);
+});
+
+test("Z6: an identical kind set in a different order still fails", () => {
+  const r = runGate(fixture({ zones: allZones({
+    hollowmarch: (z) => { z.resources[0].kind = "stone"; z.resources[1].kind = "ore"; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zones: resource-kind set \(ore, stone\) is shared by zones "gildmark-head", "hollowmarch"/);
+});
+
+test("Z6: kind sets that overlap without being identical are legal", () => {
+  const r = runGate(fixture({ zones: allZones({
+    hollowmarch: (z) => { z.resources[0].kind = "ore"; z.resources[1].kind = "timber"; },
+  }) }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /resource-kind set/);
+});
+
+test("Z6: repeating one kind inside a single zone is legal and dedupes to a set", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.resources[0].kind = "fuel"; z.resources[1].kind = "fuel"; },
+  }) }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /resource-kind set/);
+});
+
+test("Z6: ten distinct landmark-name sets and ten distinct kind sets pass", () => {
+  const r = runGate(fixture({ zones: allZones() }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /landmark name .* appears in zones|resource-kind set/);
+});
+
+// --------------------------------- Z7 --------------------------------------
+test("Z7: a resource kind outside the enum fails", () => {
+  const r = runGate(fixture({ zones: allZones({
+    emberdown: (z) => { z.resources[0].kind = "gemstone"; },
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(
+    r.out,
+    /zones\/zone-emberdown\.json: resource "emberdown-res-a" kind "gemstone" is not a resource kind \(valid: crop, timber, ore, fuel, stone, water, forage, salvage\)/);
+});
+
+test("Z7: all eight enum kinds are accepted", () => {
+  const r = runGate(fixture({ zones: allZones({
+    // The full eight-kind set is distinct from every zone's pair, so Z6 stays
+    // quiet and Z7 is the only rule under test.
+    cindervast: (z) => {
+      z.resources = RESOURCE_KINDS.map((k, i) => ({
+        id: `cindervast-res-${i}`, name: `R${i}`, kind: k, description: "d",
+      }));
+    },
+  }) }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /is not a resource kind/);
+  assert.match(r.out, /10 zones/);
+});
