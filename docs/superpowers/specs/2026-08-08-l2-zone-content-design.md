@@ -58,7 +58,7 @@ Derives from **`A1-geography-cluster1.md`** (the ten zones, §4.2; the six towns
 
 Researched against the repo, not against a new dossier: `content/maps/cluster1-geography.json`,
 `content/schemas/map.schema.json`, `content/season-1-budget.json`, `scripts/lib/season1.mjs`,
-`scripts/check_content.mjs`, and `colyseus-server/src/modules/ZoneEffectManager.ts`.
+`scripts/check_content.mjs`, and `colyseus-server/src/modules/ZoneEffectManager.ts` (checked and found NOT to read `zoneHazards` — see §2 item 3).
 
 ---
 
@@ -84,10 +84,26 @@ Three consequences, each verified:
    across ten zones: `river-country` covers **Meltwash Terrace, Millcross Ford and Rooktide Reach**;
    `rim` covers **Emberdown and Hollowmarch**. Five of ten zones share a terrain label with a
    neighbour. Content derived from terrain alone produces five near-duplicates.
-3. **Hazards have a runtime home; resources and landmarks have none.** `map.schema.json`'s
-   `zoneHazards` is a closed enum — `freeze, stun, burn, poison, regen, heal, damage` — consumed by
-   `ZoneEffectManager`. There is no schema anywhere in the repo for a harvestable resource or a
-   landmark.
+3. **Hazards have a declared vocabulary; resources and landmarks have none.** `map.schema.json`'s
+   `zoneHazards` carries a closed `type` enum — `freeze, stun, burn, poison, regen, heal, damage`.
+   There is no schema anywhere in the repo for a harvestable resource or a landmark.
+
+   <div class="callout danger">
+
+   **Correction, made during F-037 Task 2 and verified: `zoneHazards` is NOT consumed by the
+   runtime.** An earlier revision of this section said it was "consumed by `ZoneEffectManager`".
+   That is false. `grep -rn "zoneHazards" colyseus-server/src` returns **nothing**, and
+   `ZoneEffectManager.ts` contains no `hazard` token. The identifier appears in exactly three
+   files: `content/schemas/map.schema.json` (declares it), `scripts/check_content.mjs` (gates it)
+   and `scripts/tests/zone-content.test.mjs` (pins the enum). Authored map hazards are
+   content-gate-validated only; nothing spawns them.
+
+   **This strengthens D3 rather than weakening it.** If no hazard reaches the runtime today, then
+   an `effect` binding is aspirational for *every* hazard, not just the absence-hazards — so Z5
+   warning rather than failing is the only honest rule. The enum is still the right target
+   vocabulary, because it is the one the repo has already committed to.
+
+   </div>
 
 ---
 
