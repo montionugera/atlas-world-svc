@@ -41,10 +41,10 @@
     },
     {
       "id": "zones",
-      "label": "Cluster-1 zones carrying a region id",
+      "label": "Cluster-1 zones with a complete content record",
       "target": 10,
-      "blockedBy": "P1 - keyspace unification; A1's ten zones have no region-* ids yet",
-      "source": "A1-geography-cluster1.md 4.2"
+      "measure": "zones",
+      "source": "A1-geography-cluster1.md 4.2; counts content/zones/zone-<id>.json records passing the Z3 floors, keyed on the geography zone id (emberdown) rather than a runtime region-* id; the X12 region-* keyspace rename (I-056 item 4) remains separately owed"
     },
     {
       "id": "spawn-entries",

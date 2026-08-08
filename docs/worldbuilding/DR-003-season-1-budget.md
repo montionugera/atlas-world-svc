@@ -6,7 +6,7 @@
 **Machine-readable form:** `content/season-1-budget.json` · **Report:** `scripts/report_season1.mjs`
 
 <div class="callout success">
-<strong>Parent records resolved.</strong> <code>DR-001-L1-scope.md</code>, <code>A1-geography-cluster1.md</code>, <code>DR-004-starter-ground.md</code> and <code>DR-005-act-axis.md</code> all landed on <code>release/1.6</code> when <code>F-024</code> shipped (2026-08-02), together with <code>content/bestiary/bestiary.json</code> and <code>content/maps/cluster1-geography.json</code>. Every citation above now resolves, and <code>bestiary-designs</code> measures <mark>116/116</mark> where it previously could not be read at all. <code>zones</code> stays blocked — see <code>I-056</code> §6.1: it needs the <code>region-*</code> keyspace rename <em>and</em> a <code>zones</code> measure function, which <code>scripts/lib/season1.mjs</code> does not have.
+<strong>Parent records resolved.</strong> <code>DR-001-L1-scope.md</code>, <code>A1-geography-cluster1.md</code>, <code>DR-004-starter-ground.md</code> and <code>DR-005-act-axis.md</code> all landed on <code>release/1.6</code> when <code>F-024</code> shipped (2026-08-02), together with <code>content/bestiary/bestiary.json</code> and <code>content/maps/cluster1-geography.json</code>. Every citation above now resolves, and <code>bestiary-designs</code> measures <mark>116/116</mark> where it previously could not be read at all. <code>zones</code> is no longer blocked: <code>scripts/lib/season1.mjs</code> now exports a <code>zones</code> measure and the line reports <mark>10/10 met</mark>, counted on the geography zone id. The <code>region-*</code> keyspace rename (<code>I-056</code> §6.1, item 4) is still separately owed and still blocks quest-region authoring.
 </div>
 
 <div class="callout danger">
@@ -59,14 +59,13 @@ time of adoption — not hand-counted.
 | `quests-act-independent` — quests with no act or event gate | **90** | 8 | 82 short | `DR-005-act-axis.md`; giver-liveness is a manual canon read on top of this count |
 | `art-town` — town key art | **6** | 0 | 6 short | owner's art-class funding, 2026-08-01 |
 | `art-bestiary` — bestiary art | **30** | 0 | 30 short | owner's art-class funding, 2026-08-01; one image per mob base |
-| `zones` — cluster-1 zones carrying a region id | **10** | — *(blocked)* | — | `A1-geography-cluster1.md` §4.2 |
+| `zones` — cluster-1 zones with a complete content record | **10** | 10 | met | `A1-geography-cluster1.md` §4.2; counted by `scripts/lib/season1.mjs`'s `zones` measure over `content/zones/`, keyed on the geography zone id |
 | `spawn-entries` — spawn entries | **120** | — *(blocked)* | — | 12 species per zone × 10 zones |
 | `world-state-systems` — observable world-state systems | **1** | — *(blocked)* | — | `DR-001-L1-scope.md` §6.4(1) and PX-V2: the bar is one, the current count is zero |
 
-**The three blocked lines report no actual because nothing countable exists yet, and the reason is
+**The two blocked lines report no actual because nothing countable exists yet, and the reason is
 part of the budget:**
 
-- `zones` — blocked by **P1**, keyspace unification. A1's ten zones have no `region-*` ids yet.
 - `spawn-entries` — blocked because **the variant axis does not exist on `MobTypeConfig`** (open
   question q2, §6).
 - `world-state-systems` — blocked by **P3**, the buried-ground design.
@@ -101,7 +100,7 @@ bestiary-designs          116     -       unmeasurable: ENOENT: no such file or 
 quests-act-independent    90      8       82 short
 art-town                  6       0       6 short
 art-bestiary              30      0       30 short
-zones                     10      -       blocked: P1 - keyspace unification; A1's ten zones have no region-* ids yet
+zones                     10      10      met
 spawn-entries             120     -       blocked: the variant axis does not exist on MobTypeConfig (spec 9 q2)
 world-state-systems       1       -       blocked: P3 - buried-ground design
 ```
@@ -133,7 +132,7 @@ corresponding prerequisite is in.
 
 | # | Prerequisite | Until it lands |
 |---|---|---|
-| **P1** | **The clearing commit — delivered by `I-056`** (resolve the 14 catalogued canon contradictions): amend `canon.md:85` to retire `char-expedition-member` as a player identity, name the Crossroads Man canonically across prose, glossary and the four `art:cast-crossroads-man-*` entries, repoint or retire `quests.json:447`'s giver, unify the region keyspaces, and record X1 as resolved-by-accommodation. | The `zones` line cannot be measured at all, and no quest can be written into a zone that has no `region-*` id. |
+| **P1** | **The clearing commit — delivered by `I-056`** (resolve the 14 catalogued canon contradictions): amend `canon.md:85` to retire `char-expedition-member` as a player identity, name the Crossroads Man canonically across prose, glossary and the four `art:cast-crossroads-man-*` entries, repoint or retire `quests.json:447`'s giver, unify the region keyspaces, and record X1 as resolved-by-accommodation. | No quest can be written into a zone that has no `region-*` id. (The `zones` budget line no longer depends on this: it is measured on the geography zone id.) |
 | **P2** | **Quest schema ↔ engine reconciliation.** `content/schemas/quest.schema.json` requires objectives `{type, targetId, count}` with `additionalProperties: false`; `nakama/src/questEngine.ts` reads `obj.id` and `obj.required`. **Also unify the `targetId` keyspace, and rule whether `rewards` is a legal field** — the schema currently forbids it. | No authored quest can complete — every objective keys on `undefined` — so the 90-quest line buys nothing that runs. Landing only the objective-shape half leaves `targetId` pointing into an unreconciled keyspace and the `rewards` question unruled. |
 | **P3** | **Buried-ground world state — a design, not a line.** Must state granularity (the unit of ground a burial changes), a **numeric** reversion rule, and the **observation channel** by which a player who did not do the burial perceives it. | The `world-state-systems` line stays blocked, and DR-001 §6.4(1)'s void condition stays live against the whole L1 decision. |
 | **P4** | **A `level` field and a runtime map loader.** `content/schemas/map.schema.json`'s `mobSpawnAreas` is `additionalProperties: false` with no level field, no `level` exists on `Mob`, and the server reads no file under `content/maps/` at all. | "Bands 1–80, one route" is unrepresentable in schema, runtime and entity; ten authored zones the server cannot read are ten documents. |
