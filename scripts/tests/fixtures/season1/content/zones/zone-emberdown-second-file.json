@@ -1,0 +1,28 @@
+{
+  "zone": "emberdown",
+  "reasonToGo": "why anyone walks into emberdown",
+  "hazards": [
+    {
+      "id": "h-one"
+    },
+    {
+      "id": "h-two"
+    }
+  ],
+  "resources": [
+    {
+      "id": "r-one"
+    },
+    {
+      "id": "r-two"
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "l-one"
+    },
+    {
+      "id": "l-two"
+    }
+  ]
+}

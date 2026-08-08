@@ -101,6 +101,12 @@ function loadGeographyZones(path) {
 
 const failures = [];
 const warnings = [];
+// I-060 Z5: hazards authored vs hazards the runtime can express. Module-level
+// alongside failures/warnings because finish() prints the ratio — design §7
+// makes that count the only signal of how much of the authored world the
+// engine can express, so it must never be swallowed into the warning total.
+let zoneHazardsTotal = 0;
+let zoneHazardsUnmapped = 0;
 const fail = (m) => failures.push(m);
 const warn = (m) => warnings.push(m);
 
@@ -138,7 +144,8 @@ function main() {
   const sheetCount = checkCharacters(opts, story.ids);
   const mapCount = checkMaps(opts, mobTypes);
   const placementCount = checkBestiaryPlacement(opts);
-  return finish(sheetCount, mapCount, story.count, placementCount);
+  const zoneCount = checkZoneContent(opts);
+  return finish(sheetCount, mapCount, story.count, placementCount, zoneCount);
 }
 
 // F-012: loadStory() (reads all 7 per-kind story files under
@@ -848,10 +855,188 @@ function checkBestiaryPlacement(opts) {
   return count;
 }
 
-function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0) {
+// I-060: L2 zone content. `kind` is a closed enum drawn from what canon already
+// says cluster 1 lives on (design §6); `effect` is the seven runtime zoneHazards
+// types, whose source of truth is
+// content/schemas/map.schema.json #/properties/zoneHazards/items/properties/type/enum
+// (declared there; NOT read by colyseus-server — see design §2 item 3). Restated here deliberately:
+// this gate must not depend on a map schema the content root may not ship. A
+// test asserts the two lists are equal so the copy cannot drift silently.
+const ZONE_RESOURCE_KINDS = ["crop", "timber", "ore", "fuel", "stone", "water", "forage", "salvage"];
+const ZONE_HAZARD_EFFECTS = ["freeze", "stun", "burn", "poison", "regen", "heal", "damage"];
+const ZONE_ID_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+// I-060: the zone-content gate, rules Z1-Z7 (design §7). Zone content is
+// OPTIONAL content — a root with no zones/ dir, or none matching zone-*.json,
+// skips silently (mirrors checkBestiaryPlacement's soft-skip; without it every
+// fixture in check_content.test.mjs and bestiary-placement.test.mjs would take
+// ten Z2 FAILs). Once ONE file exists the whole cluster is checked STRICTLY:
+// Z2 asserts every zone in the geography has exactly one record, so a
+// half-finished pass cannot go green. That is what bounds the per-zone cost.
+//
+// Two passes. Z1/Z3/Z4/Z5/Z7 are per-record and run in pass 1; Z2 and Z6 are
+// cross-file — "this landmark name is taken" and "this zone is missing" are
+// only answerable once every record is in hand — so pass 1 collects the
+// accepted records and pass 2 checks them against each other.
+//
+// The schema is deliberately SHAPE-ONLY (see zone-content.schema.json's own
+// description): because a schema-invalid doc `continue`s past every rule
+// below, any constraint duplicated in the schema would make its Z-rule
+// unreachable dead code. The floors, the kebab pattern and both enums
+// therefore live here and nowhere else.
+function checkZoneContent(opts) {
+  const dir = join(opts.contentRoot, "zones");
+  if (!existsSync(dir)) return 0;
+  const files = readdirSync(dir).filter((f) => /^zone-.+\.json$/.test(f)).sort();
+  if (!files.length) return 0;
+
+  // Skip BEFORE touching the schema: a content root that never adopted zone
+  // content must not FAIL with "zone-content schema: cannot read/parse".
+  const validate = compileSchema(
+    join(opts.contentRoot, "schemas/zone-content.schema.json"),
+    "zone-content schema", fail);
+  if (!validate) return 0;
+
+  // REQUIRED once a zone file exists: Z1 and Z2 are both assertions against
+  // the Cartographer's geography, which is the authority on which zones exist.
+  const zones = loadGeographyZones(join(opts.contentRoot, "maps/cluster1-geography.json"));
+  if (!zones) return 0;
+
+  const records = []; // { label, file, doc } for every valid record naming a real zone
+
+  for (const file of files) {
+    const label = `zones/${file}`;
+    // readJson cannot distinguish "recorded a FAIL" from "parsed to a
+    // JSON-falsy value" — a file holding literal `null` parses fine — so the
+    // failure count, not the return value, is what says whether to continue.
+    const before = failures.length;
+    const doc = readJson(join(dir, file), label, fail);
+    if (failures.length > before) continue;
+
+    if (!validate(doc)) {
+      for (const err of validate.errors)
+        fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
+      continue; // downstream rules assume a valid shape
+    }
+
+    // Z1 — the zone exists in the Cartographer's geography. This is also the
+    // "no orphans" half of Z2. Unlike checkBestiaryPlacement's G1 this does
+    // NOT continue: Z3/Z4/Z5/Z7 are purely intra-record, so bailing here would
+    // hide real defects behind one typo. The orphan is FAILed and simply not
+    // pushed into `records`, which withholds it from Z2, Z6 and the count.
+    const known = zones.has(doc.zone);
+    if (!known) fail(`${label}: zone "${doc.zone}" not in cluster1-geography.json#zones`);
+
+    // Z3 — floors (design D4). Owned here, not by the schema: Ajv would emit
+    // "/hazards must NOT have fewer than 2 items" and would reject the doc
+    // before any other Z-rule could speak.
+    for (const field of ["hazards", "resources", "landmarks"]) {
+      if (doc[field].length < 2)
+        fail(`${label}: zone "${doc.zone}" has ${doc[field].length} ${field}, needs at least 2`);
+    }
+    if (doc.reasonToGo.trim() === "")
+      fail(`${label}: zone "${doc.zone}" has an empty reasonToGo`);
+
+    // Z4 — ids kebab-case and unique WITHIN their own array. Uniqueness across
+    // sibling ids is not expressible in draft-07 (uniqueItems compares whole
+    // objects and would miss two hazards sharing an id but differing by one
+    // word of description), so this rule owns it. "Within the array", not
+    // within the file: one id string may legally appear in all three arrays.
+    for (const [field, noun] of [["hazards", "hazard"], ["resources", "resource"], ["landmarks", "landmark"]]) {
+      const arr = doc[field];
+      for (const item of arr)
+        if (!ZONE_ID_RE.test(item.id))
+          fail(`${label}: ${noun} id "${item.id}" is not kebab-case`);
+      for (const [id, group] of findDuplicateGroups(arr, (i) => i.id))
+        fail(`${label}: duplicate ${noun} id "${id}" (${group.length} entries)`);
+    }
+
+    // Z5 — the optional `effect` binds an authored hazard to a runtime type.
+    // A bad value is a FAIL; an ABSENT one is only a WARN (design D3), because
+    // the Ashvale Front's defining hazard is an absence the engine cannot
+    // express. That WARN is the accepted blind spot: a zone can be
+    // content-complete with zero implementable hazards, so the ratio is
+    // counted here and printed by finish() rather than swallowed.
+    for (const h of doc.hazards) {
+      zoneHazardsTotal++;
+      if (h.effect === undefined) {
+        zoneHazardsUnmapped++;
+        warn(`${label}: hazard "${h.id}" has no effect — authored but not expressible at runtime`);
+      } else if (!ZONE_HAZARD_EFFECTS.includes(h.effect)) {
+        fail(`${label}: hazard "${h.id}" effect "${h.effect}" is not a runtime zoneHazards type (valid: ${ZONE_HAZARD_EFFECTS.join(", ")})`);
+      }
+    }
+
+    // Z7 — resource kinds come from the closed enum.
+    for (const r of doc.resources) {
+      if (!ZONE_RESOURCE_KINDS.includes(r.kind))
+        fail(`${label}: resource "${r.id}" kind "${r.kind}" is not a resource kind (valid: ${ZONE_RESOURCE_KINDS.join(", ")})`);
+    }
+
+    if (known) records.push({ label, file, doc });
+  }
+
+  // --- pass 2: the cross-file rules -----------------------------------------
+
+  // Z2 — completeness, the direct analogue of the placement gate's G4. The
+  // geography is the authority; every zone it declares must have exactly one
+  // record. Missing = the pass is half-finished; duplicated = two files claim
+  // the same ground. (An orphan was already FAILed by Z1 and is not here.)
+  for (const [zone, group] of findDuplicateGroups(records, (r) => r.doc.zone))
+    fail(`zones: zone "${zone}" has ${group.length} records (${group.map((r) => r.file).sort().join(", ")})`);
+
+  // Iterates the geography, NOT the files: the whole point of Z2 is the zone
+  // that was never written.
+  const covered = new Set(records.map((r) => r.doc.zone));
+  for (const id of zones.keys())
+    if (!covered.has(id)) fail(`zones: geography zone "${id}" has no record in content/zones/`);
+
+  // Z6 — distinctiveness (design D4/C5). Terrain is too coarse an axis to keep
+  // ten zones apart — three of them are "river-country" — so identity is
+  // enforced here rather than left to taste. Names compare trimmed and
+  // case-insensitively: "The Adits" and "the adits" are the same landmark to a
+  // player. Only a name spanning two DIFFERENT zones fires; a zone repeating a
+  // name inside its own list is deliberately not covered by any Z-rule.
+  const landmarkUses = [];
+  for (const r of records)
+    for (const l of r.doc.landmarks)
+      landmarkUses.push({ zone: r.doc.zone, name: l.name, key: l.name.trim().toLowerCase() });
+  for (const [, group] of findDuplicateGroups(landmarkUses, (u) => u.key)) {
+    const shared = [...new Set(group.map((u) => u.zone))].sort();
+    if (shared.length > 1)
+      fail(`zones: landmark name "${group[0].name.trim()}" appears in zones ${shared.map((z) => `"${z}"`).join(", ")}`);
+  }
+
+  // Compared as a SET: deduped and sorted, so {stone,ore} is {ore,stone} and a
+  // zone listing two resources of one kind has a one-element set.
+  const kindSets = records.map((r) => ({
+    zone: r.doc.zone,
+    key: [...new Set(r.doc.resources.map((x) => x.kind))].sort().join(", "),
+  }));
+  for (const [key, group] of findDuplicateGroups(kindSets, (s) => s.key))
+    fail(`zones: resource-kind set (${key}) is shared by zones ${group.map((s) => s.zone).sort().map((z) => `"${z}"`).join(", ")}`);
+
+  return records.length;
+}
+
+function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0) {
   for (const w of warnings) console.log(`WARN  ${w}`);
   for (const f of failures) console.log(`FAIL  ${f}`);
-  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${failures.length} failures, ${warnings.length} warnings`);
+  // I-060 design §7: Z5's WARN is an accepted blind spot, so the ratio it
+  // measures is printed as its own line. The generic warning total conflates
+  // it with character-coverage and story-orphan warns and is not that signal.
+  //
+  // GUARDED. A content root with no zone content has no ratio to report, and
+  // `0 of 0` would print a measurement of a thing that was never measured onto
+  // every fixture in check_content.test.mjs and bestiary-placement.test.mjs.
+  // That is the opposite of the discipline the rest of this codebase keeps —
+  // season1.mjs's buildRows returns `actual: null`, never 0, when nothing is
+  // countable. Three tests pin this (ABSENT on both soft-skip fixtures,
+  // PRESENT on the ten-record fixture), so the guard cannot be removed or
+  // inverted silently.
+  if (zoneCount > 0 || zoneHazardsTotal > 0)
+    console.log(`zone-content: ${zoneHazardsUnmapped} of ${zoneHazardsTotal} hazards have no runtime effect`);
+  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${zoneCount} zones, ${failures.length} failures, ${warnings.length} warnings`);
   process.exit(failures.length ? 1 : 0);
 }
 

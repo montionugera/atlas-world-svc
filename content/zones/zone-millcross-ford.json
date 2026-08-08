@@ -1,0 +1,46 @@
+{
+  "zone": "millcross-ford",
+  "reasonToGo": "One crossing serves the whole land, and everything waiting on it has to be fed, stabled and ferried here.",
+  "hazards": [
+    {
+      "id": "high-water-at-the-ford",
+      "name": "High water at the ford",
+      "description": "In thaw the ford goes under and the carts stop where they stand. Nothing crosses until the ferrymen say it crosses.",
+      "note": "Absence hazard: ground that cannot be crossed is a wall, not a tick. No runtime zoneHazards type fits."
+    },
+    {
+      "id": "the-millrace",
+      "name": "The millrace",
+      "description": "A cut channel running fast and flat under the wheel housing. The current hides the shape of whatever is standing in it.",
+      "note": "Absence hazard: a current is not in the seven-value enum, and `damage` would read as a burn or a bite."
+    }
+  ],
+  "resources": [
+    {
+      "id": "race-milled-grain",
+      "name": "Race-milled grain",
+      "kind": "crop",
+      "description": "Grain brought in by cart and ground at the race. The dust of it settles on every yard behind the mill."
+    },
+    {
+      "id": "the-quarry-face",
+      "name": "The quarry face",
+      "kind": "stone",
+      "description": "Cut stone off the face west of the town, worked in lifts by crews who down tools when the beetles come up."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "the-cart-queue",
+      "name": "The cart queue",
+      "description": "The first thing on the road: waggons standing nose to tail, sometimes a mile out from the town.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#6"
+    },
+    {
+      "id": "the-mill-wheel-housing",
+      "name": "The mill-wheel housing",
+      "description": "The one tall thing in the town, timber and iron over the race, and the only roof visible from the far bank.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#6"
+    }
+  ]
+}

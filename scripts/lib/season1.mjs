@@ -1,7 +1,7 @@
 // Season 1 budget measurement (I-048). Pure: every function takes an explicit
 // repo root so tests can point at a fixture instead of live content.
 // Record: docs/worldbuilding/DR-003-season-1-budget.md
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 function readJsonAt(root, rel) {
@@ -69,7 +69,54 @@ export function bestiaryArt(root) {
   return countArtPrefix(root, "art:mob-");
 }
 
-export const MEASURES = { mobBases, bestiaryDesigns, actIndependentQuests, townArt, bestiaryArt };
+// I-060: only files named zone-<something>.json are records. A README, a
+// schema copy or an editor scratch file sharing the directory is not a zone
+// and must not be counted as one.
+const ZONE_FILE = /^zone-.+\.json$/;
+
+/**
+ * Zone content records that clear the Z3 floors of the L2 zone-content design
+ * (docs/superpowers/specs/2026-08-08-l2-zone-content-design.md §7): at least
+ * two hazards, at least two resources, at least two landmarks, and a
+ * non-blank reasonToGo. Counts DISTINCT `zone` ids, so two files claiming the
+ * same zone can never read as two of the ten.
+ *
+ * Keyed on the geography zone id ("emberdown"), NOT on a runtime region-* id.
+ * That keying is what makes the line measurable at all, and it does not stand
+ * in for the X12 keyspace rename (I-056 item 4), which is still owed.
+ *
+ * It deliberately does NOT enforce the other Z-rules: that the zone exists in
+ * cluster1-geography.json (Z1), that all ten are present (Z2), kebab-case ids
+ * (Z4), a hazard `effect` that maps to a runtime type (Z5), landmark-name and
+ * resource-kind distinctiveness across zones (Z6), or the resource kind enum
+ * (Z7). Those belong to checkZoneContent() in scripts/check_content.mjs — a
+ * counter that also gates reports a number nobody can reproduce by reading
+ * the files.
+ */
+export function zones(root) {
+  const dir = join(root, "content/zones");
+  const complete = new Set();
+  for (const file of readdirSync(dir).filter((f) => ZONE_FILE.test(f)).sort()) {
+    const rel = `content/zones/${file}`;
+    const doc = readJsonAt(root, rel);
+    if (typeof doc !== "object" || doc === null || Array.isArray(doc))
+      throw new Error(`${rel}: expected a zone record object`);
+    if (typeof doc.zone !== "string" || doc.zone === "")
+      throw new Error(`${rel}: expected a non-empty string "zone"`);
+    const meetsFloor = (v) => Array.isArray(v) && v.length >= 2;
+    if (
+      typeof doc.reasonToGo === "string" &&
+      doc.reasonToGo.trim() !== "" &&
+      meetsFloor(doc.hazards) &&
+      meetsFloor(doc.resources) &&
+      meetsFloor(doc.landmarks)
+    )
+      complete.add(doc.zone);
+  }
+  return complete.size;
+}
+
+export const MEASURES = { mobBases, bestiaryDesigns, actIndependentQuests, townArt, bestiaryArt, zones };
 
 /**
  * One row per budget line. A line that cannot be measured yet reports

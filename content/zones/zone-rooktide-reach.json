@@ -1,0 +1,46 @@
+{
+  "zone": "rooktide-reach",
+  "reasonToGo": "Everything moving between sea and river changes hulls here, and whatever goes over the side in the change stays on the flats.",
+  "hazards": [
+    {
+      "id": "the-turning-tide",
+      "name": "The turning tide",
+      "description": "The sea pushes up as far as the landing twice a day and pulls back out. A boat left on the wrong side of it sits until evening.",
+      "note": "Absence hazard: a tide moves the ground, it does not apply an effect to a body. No runtime zoneHazards type fits."
+    },
+    {
+      "id": "the-low-water-mud",
+      "name": "The low-water mud",
+      "description": "Grey mud a foot deep where the boats sit at low water. It takes a boot first and then the leg, and holds a man where he stands.",
+      "effect": "stun"
+    }
+  ],
+  "resources": [
+    {
+      "id": "old-plank",
+      "name": "Old plank",
+      "kind": "salvage",
+      "description": "Hull boards, cleats and sound timber pulled off the barges in the hull change and sewn into new building."
+    },
+    {
+      "id": "cut-reed",
+      "name": "Cut reed",
+      "kind": "forage",
+      "description": "Reed cut off the brackish fringe at low water, bundled for thatch and for winter bedding."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "the-barge-cranes",
+      "name": "The barge-cranes",
+      "description": "Timber jibs standing over the pilings, one to each berth, with the hull-change gear stacked beneath them.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#6"
+    },
+    {
+      "id": "the-rook-flats",
+      "name": "The rook flats",
+      "description": "Open mud south of the landing, black with rooks working it at every low water.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#6"
+    }
+  ]
+}

@@ -463,9 +463,9 @@ blast radius than renaming the zone ids.
 `cluster1-geography.json` and `bestiary.json` live only on `feat/F-024`. The
 nine corresponding pairs (`millcross-ford` ↔ `region-millcross`, `emberdown`
 ↔ `region-embervale`, `hollowmarch` ↔ `region-norhollow`, …) are **not
-string-equal**, so the merge will not surface them as conflicts. Until that
-rename lands, `content/season-1-budget.json`'s `zones` line stays `blockedBy`
-and reports as blocked rather than measured. See `I-056`.
+string-equal**, so the merge will not surface them as conflicts. The
+`zones` line in `content/season-1-budget.json` is measured on the
+geography zone id; the rename itself is still owed. See `I-056`.
 
 ### 6.2 Rulings already made, and where they live
 
