@@ -141,3 +141,116 @@ export async function renderDepthPng({ brief, width, height, outPath }) {
   }
   return outPath;
 }
+
+/**
+ * Segment control producer — a sibling of the depth path above, NOT a
+ * replacement. Same masses, same back-to-front PLANE_ORDER, same
+ * -blur 0x6 rasterisation, but each polygon is filled with the mass's OWN
+ * `value` colour instead of its plane's PLANE_DEPTH bucket. This is what
+ * lets a river and its far bank — both plane "bg" — render as two distinct
+ * labels instead of collapsing into one grey band. See
+ * .superpowers/sdd/2026-08-08-town-art-segment-control/ for the design.
+ */
+
+/**
+ * Minimum Chebyshev (max-per-channel) distance required between any two
+ * mass `value` colours in one brief. A segment control image is a LABEL
+ * map: two masses painted within a few levels of each other are one label
+ * to the encoder, which is the exact failure the depth path had.
+ */
+export const SEGMENT_MIN_SEPARATION = 24;
+
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+
+/** "#9aa4a8" -> [154, 164, 168]. Throws on anything that is not #rrggbb. */
+export function parseHexColour(value, massName) {
+  if (typeof value !== "string" || !HEX_RE.test(value)) {
+    throw new Error(
+      `mass "${massName}" has value ${JSON.stringify(value)} — a segment mass ` +
+        'needs an explicit #rrggbb colour; an unfilled mass renders as the black ' +
+        "canvas and becomes unlabelled space",
+    );
+  }
+  const v = value.slice(1);
+  return [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16));
+}
+
+/**
+ * Convert `brief.masses` into the pixel-space, per-plane shape
+ * `buildSegmentSvg` renders. Same plane validation as `depthPlanesFromBrief`,
+ * but each polygon carries its OWN fill taken from `mass.value`. Throws by
+ * mass name if `value` is missing or malformed — an unfilled mass would
+ * render as CANVAS_FILL, i.e. silently become unlabelled space.
+ */
+export function segmentMassesFromBrief({ brief, width, height }) {
+  const planes = { bg: [], mg: [], fg: [] };
+  for (const mass of brief.masses ?? []) {
+    if (!Object.hasOwn(planes, mass.plane)) {
+      throw new Error(
+        `mass "${mass.name}" has plane "${mass.plane}" — must be one of: ${PLANE_ORDER.join(", ")}`,
+      );
+    }
+    parseHexColour(mass.value, mass.name); // validate before it reaches the SVG
+    planes[mass.plane].push({
+      points: massToPoints({ mass, width, height }),
+      fill: mass.value,
+    });
+  }
+  return { planes };
+}
+
+/**
+ * Build the segment SVG. Planes draw back to front (same PLANE_ORDER as
+ * depth) so nearer masses win overlaps; canvas fill stays CANVAS_FILL
+ * (#000000 = unlabelled space).
+ */
+export function buildSegmentSvg({ brief, width, height }) {
+  const { planes } = segmentMassesFromBrief({ brief, width, height });
+  const body = PLANE_ORDER.flatMap((plane) =>
+    planes[plane].map((poly) => `<polygon points="${poly.points}" fill="${poly.fill}"/>`),
+  ).join("\n  ");
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
+    `  <rect width="${width}" height="${height}" fill="${CANVAS_FILL}"/>`,
+    `  ${body}`,
+    `</svg>`,
+  ].join("\n");
+}
+
+/**
+ * Render a segment control PNG for one brief to `outPath`. Same `magick`
+ * invocation and same `-blur 0x6` as renderDepthPng. Returns outPath.
+ */
+export async function renderSegmentPng({ brief, width, height, outPath }) {
+  const svg = buildSegmentSvg({ brief, width, height });
+  await mkdir(path.dirname(outPath), { recursive: true });
+  const svgPath = `${outPath}.svg`;
+  await writeFile(svgPath, svg, "utf8");
+  try {
+    await execFileAsync("magick", [
+      svgPath,
+      "-blur",
+      "0x6",
+      "-alpha",
+      "off",
+      "-colorspace",
+      "sRGB",
+      "-depth",
+      "8",
+      outPath,
+    ]);
+  } catch (err) {
+    if (err.code === "ENOENT") {
+      throw new Error(
+        'renderSegmentPng needs the "magick" binary (ImageMagick) on PATH to rasterise the ' +
+          "segment SVG, and it was not found. Install it — e.g. `brew install imagemagick` on " +
+          "macOS — then retry.",
+        { cause: err },
+      );
+    }
+    throw err;
+  } finally {
+    await unlink(svgPath).catch(() => {});
+  }
+  return outPath;
+}
