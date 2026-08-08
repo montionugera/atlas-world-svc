@@ -434,8 +434,9 @@
     "title": "asset-storybook as an art-direction review surface: baked thumbnail spine + virtualized gallery + reject/rebuild verdicts",
     "from_idea": "I-087",
     "created_at": "2026-08-08T16:21:51.429233+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-08-08T16:29:17.825832+00:00"
   }
 ]
