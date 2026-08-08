@@ -1,0 +1,46 @@
+{
+  "zone": "emberdown",
+  "reasonToGo": "The only hillside in the land where the fuel and the food come out of the same ground.",
+  "hazards": [
+    {
+      "id": "seam-damp",
+      "name": "Seam damp",
+      "description": "Air that has sat in a worked adit overnight. It puts a man on the floor before he knows he is short of breath.",
+      "effect": "poison"
+    },
+    {
+      "id": "the-ember-pits",
+      "name": "The ember pits",
+      "description": "Waste poured off from the forges and left to cool on open ground. It holds its heat for days.",
+      "effect": "burn"
+    }
+  ],
+  "resources": [
+    {
+      "id": "burning-stone",
+      "name": "Burning stone",
+      "kind": "fuel",
+      "description": "Seam coal cut by hand out of the adits and carried down the ledges in baskets."
+    },
+    {
+      "id": "ledge-loam",
+      "name": "Ledge loam",
+      "kind": "crop",
+      "description": "Terrace soil, warm from the seam beneath it and shallow enough to turn with a hand fork."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "the-terraced-ledges",
+      "name": "The terraced ledges",
+      "description": "Six or seven cut steps of field and roof stacked above the town, a stair of slate seen from the road.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#6"
+    },
+    {
+      "id": "the-adits",
+      "name": "The adits",
+      "description": "Square black mouths opening straight into the hillside between one ledge and the next.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#4.2"
+    }
+  ]
+}

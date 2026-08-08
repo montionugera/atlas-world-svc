@@ -1,0 +1,46 @@
+{
+  "zone": "thornveil",
+  "reasonToGo": "The one ground no road overlooks, which is why the people who do not want to be overlooked are in it.",
+  "hazards": [
+    {
+      "id": "the-thorn-wall",
+      "name": "The thorn wall",
+      "description": "Mature bramble, continuous and taller than a man, closing every sightline. Going through it costs skin and going round it costs a day.",
+      "effect": "damage"
+    },
+    {
+      "id": "no-through-stream",
+      "name": "No through-stream",
+      "description": "The upland sheds its water to either side and keeps none of it. A party that carries none finds none.",
+      "note": "Absence hazard: the harm is what is missing. Nothing in the runtime enum expresses an absence."
+    }
+  ],
+  "resources": [
+    {
+      "id": "cane-sap",
+      "name": "Cane sap",
+      "kind": "water",
+      "description": "Sap drawn from cut cane, the only reliable water in the veil and the reason a camp can hold ground with no stream."
+    },
+    {
+      "id": "spear-cane",
+      "name": "Spear cane",
+      "kind": "timber",
+      "description": "Straight cane, cut green and dried standing, worked into shafts for the throwing spears the raiders carry."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "the-heartwood",
+      "name": "The heartwood",
+      "description": "A single old tree at the centre of the veil, with the bramble running out from it in every direction.",
+      "source": "docs/worldbuilding/A2-ecology-thornveil.md#6.2"
+    },
+    {
+      "id": "the-crown-thickets",
+      "name": "The crown thickets",
+      "description": "The high cane above the heartwood, dense enough to stand on and thin enough to see out of.",
+      "source": "docs/worldbuilding/A2-ecology-thornveil.md#6.3"
+    }
+  ]
+}
