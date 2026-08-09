@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1454,6 +1454,12 @@ function checkSpine(opts) {
   // every run that reaches this point (spine/ present, schema compiles).
   gSpineBudgets({ spine, tree, contentRoot: opts.contentRoot, fail });
 
+  // F-041 Phase 1 Task 1.11: G-OVERLAP + G-COMP-ROLLUP, reported as WARN
+  // until the two authoring debts (8 measured overlap pairs, the n-cluster1
+  // union identity) are paid off in Task 1.12 — Task 1.13 flips `report`
+  // from `warn` to `fail`, no other change.
+  gSpineOverlapRollup({ tree, report: warn });
+
   return validNodes.length;
 }
 
@@ -1748,6 +1754,70 @@ function gSpineBudgets({ spine, tree, contentRoot, fail }) {
     fail(`spine: G-COMP-REPORT: spine/coverage-budget.json is missing`);
   else if (totals.UNCHECKED > spine.budgets.coverage.maxUnchecked)
     fail(`spine: G-COMP-REPORT: ${totals.UNCHECKED} UNCHECKED nodes > budget ${spine.budgets.coverage.maxUnchecked}`);
+}
+
+// F-041 Phase 1: G-OVERLAP + G-COMP-ROLLUP. `report` is warn until the two
+// authoring debts are paid (Task 1.12), then flipped to fail (Task 1.13) —
+// that flip changes only the argument at the call site above, not this body.
+//
+// One deliberate departure from a literal transcription of the brief: walks
+// `tree.byId.values()` (the schema-VALID node set the tree was built from),
+// never raw `spine.nodes` — the same validNodes discipline gSpineGeometry/
+// gSpineFrames/gSpineFrozen/gSpineNet/gSpineBudgets already follow. A
+// schema-invalid node has no entry in `tree.byId`, so treating it as
+// `parent` here (`parent.interior.units`, `rollupComposition({ tree, id })`
+// which does `tree.byId.get(id).placement`) would throw on `undefined`
+// instead of reporting — and an uncaught throw skips `finish()`, silently
+// dropping every FAIL recorded before it. `spine` is dropped from the
+// signature since nothing else in this function needs it. `parent.interior`
+// is also read optionally (`?.`) — schema doesn't require it — mirroring
+// gSpineFrames' `if (node.interior)` guard, even though every committed
+// node ships one today.
+function gSpineOverlapRollup({ tree, report }) {
+  for (const parent of tree.byId.values()) {
+    const kids = (tree.childrenOf.get(parent.id) ?? [])
+      .map((i) => tree.byId.get(i))
+      .filter((n) => n.placement.shape !== "point");
+    const cell = parent.interior?.units === "u" ? SPINE_CELL_U : SPINE_CELL_KM;
+    for (let i = 0; i < kids.length; i++)
+      for (let j = i + 1; j < kids.length; j++) {
+        const inter = gridIntersectionArea({ a: kids[i].placement, b: kids[j].placement, cell });
+        const limit = 0.005 * Math.min(placementArea({ placement: kids[i].placement }),
+                                       placementArea({ placement: kids[j].placement }));
+        if (inter > limit)
+          report(`spine: G-OVERLAP ${kids[i].id} ∩ ${kids[j].id}: ${inter.toFixed(1)} over limit ${limit.toFixed(1)}`);
+      }
+    if (kids.length >= 2) {
+      const sum = kids.reduce((s, k) => s + placementArea({ placement: k.placement }), 0);
+      const union = gridUnionArea({ placements: kids.map((k) => k.placement), cell });
+      const A = placementArea({ placement: parent.placement });
+      if (sum - union > 0.005 * A)
+        report(`spine: G-OVERLAP ${parent.id}: children double-count ${(sum - union).toFixed(1)} (limit ${(0.005 * A).toFixed(1)})`);
+    }
+    // G-COMP-ROLLUP — nodes with ≥ 1 child only (preamble note 3).
+    if ((tree.childrenOf.get(parent.id) ?? []).length === 0) {
+      if (parent.interstitial)
+        report(`spine: G-COMP-ROLLUP ${parent.id}: interstitial on a childless node`);
+      continue;
+    }
+    const r = rollupComposition({ tree, id: parent.id });
+    const U = r.unclaimedPct / 100;
+    if (U > 0.005 && !parent.interstitial && !parent.interstitialUnsurveyed)
+      report(`spine: G-COMP-ROLLUP ${parent.id}: unclaimed ${r.unclaimedPct.toFixed(1)}% but no interstitial`);
+    if (U <= 0.005 && parent.interstitial)
+      report(`spine: G-COMP-ROLLUP ${parent.id}: interstitial forbidden at U ≤ 0.005`);
+    const tol = parent.compositionTolerance ?? 3.0;
+    if (tol > 5.0) report(`spine: G-COMP-ROLLUP ${parent.id}: tolerance ${tol} over ceiling 5.0`);
+    if (parent.compositionTolerance !== null && !parent.toleranceWhy)
+      report(`spine: G-COMP-ROLLUP ${parent.id}: compositionTolerance without toleranceWhy`);
+    let l1 = 0;
+    for (const [k, delta] of Object.entries(r.perKeyDelta)) {
+      l1 += Math.abs(delta);
+      if (Math.abs(delta) > tol)
+        report(`spine: G-COMP-ROLLUP ${parent.id}: ${k} off by ${delta.toFixed(1)} pp (tol ${tol})`);
+    }
+    if (l1 > 8.0) report(`spine: G-COMP-ROLLUP ${parent.id}: L1 ${l1.toFixed(1)} pp > 8.0`);
+  }
 }
 
 function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0) {

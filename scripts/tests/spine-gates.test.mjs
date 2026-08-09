@@ -372,3 +372,17 @@ t11("G-COMP-REPORT prints coverage and verdict for every node", () => {
   assert11.match(r.out, /spine-comp: totals CHECKED=\d+ ASSERTED=\d+ UNCHECKED=2/);
   assert11.match(r.out, /spine-load: 3 nodes, \d+ bytes \(budget 10 nodes, 65536 bytes\)/);
 });
+
+// ─── F-041 Phase 1 · Task 1.11: G-OVERLAP + G-COMP-ROLLUP (WARN stage) ──────
+t11("G-OVERLAP + G-COMP-ROLLUP report as WARN on overlapping twins", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const base = JSON.parse(read11(join11(dir, "spine/nodes/n-r.json"), "utf8"));
+    const twin = { ...base, id: "n-r2", seed: { value: "52fc1fdd51a099d7", epoch: 0, why: null } };
+    delete twin.derived;
+    write11(join11(dir, "spine/nodes/n-r2.json"), JSON.stringify(twin, null, 2) + "\n");
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  // still WARN: exit 0, but the finding is printed
+  assert11.equal(r.code, 0);
+  assert11.match(r.out, /WARN.*G-OVERLAP n-r ∩ n-r2: 400\.0 over limit 2\.0/);
+});
