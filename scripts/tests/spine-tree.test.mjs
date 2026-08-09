@@ -51,7 +51,20 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 //            against the declared composition by G-TOWN-COMP — so it reads
 //            CHECKED at 0.0% child coverage. A town has no children; coverage
 //            can never be the evidence for one.
-//   n-playroot: no children, unsurveyed → 0.0% UNCHECKED.
+//   n-playroot: Task 4.3 (F-041 P4) authored its runtime subtree — 2 fixture
+//            children (n-fixture-deflect 100×100 u, n-fixture-projectile
+//            1000×1000 u) plus the n-frontier-shelf playspace (1000×1000 u,
+//            3 site children of its own: n-site-icefield, n-site-spawn-meadow,
+//            n-site-thornveil, each 0.0% ASSERTED — no children yet). Combined
+//            child area is 2,010,000 of the 4,000,000 u² frame = 50.25% →
+//            "50.2%". The composition rollup no longer closes against the old
+//            5%-built guess once real fixture footprints (both 100% built)
+//            claim area, so the same commit flips interstitialUnsurveyed to
+//            false, authors a real interstitial (the unclaimed wilds beyond
+//            the shelf/fixtures), and rebalances composition to match the
+//            derived total — n-playroot reads ASSERTED, not UNCHECKED, from
+//            here on. n-frontier-shelf itself: 465,000 of 1,000,000 u² claimed
+//            by its 3 sites = 46.5% → "46.5%" ASSERTED.
 const EXPECTED = `n-atlas · world · km · coverage 0.7% UNCHECKED
 ├── n-cluster1 · continent · km · coverage 53.4% ASSERTED
 │   ├── n-ashvale-front · region · km · coverage 0.0% ASSERTED
@@ -74,8 +87,14 @@ const EXPECTED = `n-atlas · world · km · coverage 0.7% UNCHECKED
 │   ├── n-saltmire · region · km · coverage 0.0% ASSERTED
 │   └── n-thornveil · region · km · coverage 0.0% ASSERTED
 └── n-westsea · ocean · km · coverage 0.0% ASSERTED
-n-playroot · playroot · u · coverage 0.0% UNCHECKED
-23 nodes · 2 roots
+n-playroot · playroot · u · coverage 50.2% ASSERTED
+├── n-fixture-deflect · fixture · u · coverage 0.0% ASSERTED
+├── n-fixture-projectile · fixture · u · coverage 0.0% ASSERTED
+└── n-frontier-shelf · playspace · u · coverage 46.5% ASSERTED
+    ├── n-site-icefield · site · u · coverage 0.0% ASSERTED
+    ├── n-site-spawn-meadow · site · u · coverage 0.0% ASSERTED
+    └── n-site-thornveil · site · u · coverage 0.0% ASSERTED
+29 nodes · 2 roots
 `;
 
 test("spine-tree prints the committed table exactly (snapshot)", () => {

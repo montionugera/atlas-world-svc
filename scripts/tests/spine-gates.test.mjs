@@ -57,24 +57,30 @@ test("spine-node schema is draft-07 with an $id", () => {
 // n-eastern-hills, HC-3: cluster 1 has 12 children, not 10), growing the
 // table from 4 to 16 nodes. Task 1.4 transcribed the 6 towns + the
 // expedition camp (tier town, depth 3, under their region parents), growing
-// the table from 16 to 23 nodes. Ids come back sorted (loadSpine reads the
-// directory sorted), so the 7 new n-* ids interleave with the existing 16.
-test("the committed 23-node table loads clean: 2 roots, depths legal, no load errors", () => {
+// the table from 16 to 23 nodes. Task 4.3 (F-041 P4) authored the runtime
+// subtree — n-frontier-shelf + 3 sites + 2 fixtures — growing the table from
+// 23 to 29 nodes. Ids come back sorted (loadSpine reads the directory
+// sorted), so the 6 new n-* ids interleave with the existing 23.
+test("the committed 29-node table loads clean: 2 roots, depths legal, no load errors", () => {
   const spine = loadSpine({ contentRoot: join(ROOT, "content") });
   assert.equal(spine.present, true);
   assert.deepEqual(spine.errors, []);
   assert.deepEqual(spine.nodes.map((n) => n.id), [
     "n-ashvale-front", "n-atlas", "n-cindervast-town", "n-cindervast", "n-cluster1",
     "n-eastern-hills", "n-emberdown", "n-embervale", "n-expedition-camp",
+    "n-fixture-deflect", "n-fixture-projectile", "n-frontier-shelf",
     "n-gildmark-head", "n-gildmark", "n-hollowmarch", "n-meltwash-terrace",
     "n-millcross-ford", "n-millcross", "n-norhollow", "n-northern-icefield",
-    "n-playroot", "n-rooktide-reach", "n-rooktide", "n-saltmire", "n-thornveil",
+    "n-playroot", "n-rooktide-reach", "n-rooktide", "n-saltmire",
+    "n-site-icefield", "n-site-spawn-meadow", "n-site-thornveil", "n-thornveil",
     "n-westsea",
   ]);
   assert.deepEqual(spine.roots, ["n-atlas", "n-playroot"]);
   // Task 1.10: these were Phase-0 placeholders (48 / 4) until G-LOAD-BUDGET
-  // and G-COMP-REPORT existed to enforce them; real values as of the 23-node
-  // table (real UNCHECKED today: n-atlas, n-playroot).
+  // and G-COMP-REPORT existed to enforce them; real values as of the 29-node
+  // table (real UNCHECKED today: n-atlas only — Task 4.3 flipped n-playroot's
+  // interstitialUnsurveyed to false, so it now reads ASSERTED; maxUnchecked
+  // stays 2, well over the actual count of 1, so no budget bump was needed).
   assert.deepEqual(spine.budgets.load, { maxNodes: 40, maxBytes: 262144 });
   assert.deepEqual(spine.budgets.coverage, { maxUnchecked: 2 });
   for (const n of spine.nodes) assert.equal(typeof TIER_DEPTH[n.tier], "number", n.id);
@@ -560,7 +566,7 @@ test("G-COMP-REPORT: the shipped table reports exactly one CHECKED node (n-millc
   const r = runGate(join(ROOT, "content"));
   assert.equal(r.code, 0, r.stdout);
   assert.match(r.stdout, /spine-comp: n-millcross coverage=0\.0% verdict=CHECKED/);
-  assert.match(r.stdout, /spine-comp: totals CHECKED=1 ASSERTED=20 UNCHECKED=2/);
+  assert.match(r.stdout, /spine-comp: totals CHECKED=1 ASSERTED=27 UNCHECKED=1/);
 });
 
 // Finding 4 (MEDIUM). terrainKindErrors ran over raw spine.nodes, so a node
