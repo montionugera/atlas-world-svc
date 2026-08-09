@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spine-node.schema.json",
+  "title": "Spine node — SHAPE ONLY. Every numeric floor/ceiling lives in checkSpine()'s G-* gates, never here: the gate continues past a schema-invalid doc, so a bound duplicated into the schema turns its gate rule into dead code (town-plan.test.mjs:105-118 discipline).",
+  "type": "object",
+  "required": ["id", "tier", "parentId", "title", "seed", "placement", "composition"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string" },
+    "tier": { "enum": ["world", "playroot", "continent", "ocean", "playspace", "fixture", "region", "sea", "town", "site"] },
+    "parentId": { "type": ["string", "null"] },
+    "title": { "type": "string" },
+    "provenance": {
+      "type": "object",
+      "required": ["authored", "generator", "source"],
+      "properties": {
+        "authored": { "enum": ["hand", "generated", "derived"] },
+        "generator": { "type": ["object", "null"] },
+        "source": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "frozen": { "type": "boolean" },
+    "absoluteAnchor": { "type": "array", "items": { "type": "number" } },
+    "seed": {
+      "type": "object",
+      "required": ["value", "epoch", "why"],
+      "properties": {
+        "value": { "type": "string" },
+        "epoch": { "type": "integer" },
+        "why": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "placement": {
+      "type": "object",
+      "required": ["shape", "anchor"],
+      "properties": {
+        "shape": { "enum": ["polygon", "rect", "point"] },
+        "points": { "type": "array", "items": { "type": "array", "items": { "type": "number" } } },
+        "rect": {
+          "type": "object",
+          "required": ["x", "y", "w", "h"],
+          "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "w": { "type": "number" }, "h": { "type": "number" } },
+          "additionalProperties": false
+        },
+        "at": { "type": "array", "items": { "type": "number" } },
+        "anchor": { "type": "array", "items": { "type": "number" } }
+      },
+      "additionalProperties": false
+    },
+    "interior": { "type": "object" },
+    "composition": { "type": "object", "additionalProperties": { "type": "number" } },
+    "interstitial": { "type": ["object", "null"] },
+    "interstitialUnsurveyed": { "type": "boolean" },
+    "compositionTolerance": { "type": ["number", "null"] },
+    "toleranceWhy": { "type": ["string", "null"] },
+    "terrainKind": { "type": ["string", "null"] },
+    "features": { "type": "array" },
+    "bands": { "type": "array" },
+    "runtime": { "type": ["object", "null"] },
+    "representsNodeId": { "type": ["string", "null"] },
+    "lore": { "type": "object" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "levelBand": { "type": ["array", "null"] },
+    "derived": { "type": "object" }
+  }
+}

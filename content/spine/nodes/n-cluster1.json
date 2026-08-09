@@ -1,0 +1,34 @@
+{
+  "id": "n-cluster1",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Cluster 1 — the Meltwash basin",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": false,
+  "seed": { "value": "3f8a1c5d9e2b7406", "epoch": 0, "why": null },
+  "placement": {
+    "shape": "polygon",
+    "points": [[8, 4], [142, 4], [148, 120], [120, 186], [30, 186], [6, 110]],
+    "anchor": [75, 95]
+  },
+  "interior": { "units": "km", "perParentUnit": 1, "size": [142, 182], "originInParent": [6, 4] },
+  "composition": { "meadow": 31, "bramble": 12, "ice": 11, "rock": 11, "river": 9, "upland": 9, "alkali": 7, "marsh": 6, "built": 4 },
+  "interstitial": { "meadow": 31, "bramble": 12, "ice": 11, "rock": 11, "river": 9, "upland": 9, "alkali": 7, "marsh": 6, "built": 4 },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": null,
+  "features": [],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": "Phase 0 coarse hull of the 150x190 km sheet, drawn on the sheet's own km grid (x east, y south). Phase 1 replaces it with the transcribed coastline under the HC-6 rewrite licence; until then this node has no children and its interstitial mirrors its composition."
+  },
+  "tags": [],
+  "levelBand": null
+}

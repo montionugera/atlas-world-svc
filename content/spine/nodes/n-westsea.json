@@ -1,0 +1,34 @@
+{
+  "id": "n-westsea",
+  "tier": "ocean",
+  "parentId": "n-atlas",
+  "title": "The West Sea",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": false,
+  "seed": { "value": "b2e7d4a90c6f1385", "epoch": 0, "why": null },
+  "placement": {
+    "shape": "polygon",
+    "points": [[0, 0], [5, 0], [5, 190], [0, 190]],
+    "anchor": [2.5, 95]
+  },
+  "interior": { "units": "km", "perParentUnit": 1, "size": [5, 190], "originInParent": [0, 0] },
+  "composition": { "ocean": 100 },
+  "interstitial": { "ocean": 100 },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": null,
+  "features": [],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": "The ocean is a SIBLING of the continent, never a bucket inside it (research §5.3) — the continent's placement polygon is land only, so sea never enters its denominator. Phase 0 strip; Phase 1 absorbs the 49.5% unclaimed ground split."
+  },
+  "tags": [],
+  "levelBand": null
+}
