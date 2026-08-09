@@ -466,3 +466,9 @@ test("G-TOWN-COMP red: footprints-only built (10 declared vs 28 derived) is outs
   assert.equal(status, 1, out);
   assert.match(out, /G-TOWN-COMP: towns\/town-t1\.json -> n-t1: declared built 10 vs derived 28\.00/);
 });
+
+test("G-TERRAINKIND red: river-country with river at 10% misses the 15% implied-biome floor (HC-2)", () => {
+  const { status, out } = p3RunSpineGate(p3Root("g-terrainkind-implied-biome-missing"));
+  assert.equal(status, 1, out);
+  assert.match(out, /G-TERRAINKIND: n-r1: terrainKind "river-country" implies biome "river" at >= 15% of composition, found 10/);
+});
