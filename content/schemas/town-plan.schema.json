@@ -8,6 +8,7 @@
   "additionalProperties": false,
   "properties": {
     "town": { "type": "string", "minLength": 1 },
+    "spineId": { "type": "string" },
     "extent": {
       "type": "object",
       "required": ["width", "height"],
