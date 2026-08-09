@@ -42,8 +42,7 @@ export function buildCoverageSection(missingKeys) {
   section.dataset.kind = COVERAGE_CLASS;
 
   const h2 = document.createElement("h2");
-  h2.textContent =
-    "Coverage — Missing Entries (" + missingKeys.length + ")";
+  h2.textContent = "Coverage — Missing Entries (" + missingKeys.length + ")";
   section.appendChild(h2);
 
   const note = document.createElement("p");
@@ -64,4 +63,3 @@ export function buildCoverageSection(missingKeys) {
   section.appendChild(grid);
   return section;
 }
-
