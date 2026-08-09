@@ -7,11 +7,13 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 // Snapshot of the committed 4-node table. Coverage math, pinned:
-//   n-atlas: (23554 km² cluster hull + 950 km² westsea strip) / 4,000,000 km²
-//            = 0.6126% → "0.6%"; interstitialUnsurveyed → UNCHECKED.
+//   n-atlas: (26128 km² cluster1 land polygon + 2042 km² westsea strip) /
+//            4,000,000 km² = 0.70425% → "0.7%" (Task 1.2 replaced the
+//            Phase-0 coarse hulls with the transcribed coastline geometry);
+//            interstitialUnsurveyed → UNCHECKED.
 //   n-cluster1 / n-westsea: no children → 0.0%; authored interstitial → ASSERTED.
 //   n-playroot: no children, unsurveyed → 0.0% UNCHECKED.
-const EXPECTED = `n-atlas · world · km · coverage 0.6% UNCHECKED
+const EXPECTED = `n-atlas · world · km · coverage 0.7% UNCHECKED
 ├── n-cluster1 · continent · km · coverage 0.0% ASSERTED
 └── n-westsea · ocean · km · coverage 0.0% ASSERTED
 n-playroot · playroot · u · coverage 0.0% UNCHECKED

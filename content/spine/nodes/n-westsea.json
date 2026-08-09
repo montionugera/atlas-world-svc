@@ -18,31 +18,44 @@
     "shape": "polygon",
     "points": [
       [0, 0],
-      [5, 0],
-      [5, 190],
-      [0, 190]
+      [24, 0],
+      [20, 10],
+      [17, 24],
+      [15, 40],
+      [14, 56],
+      [13, 72],
+      [12, 88],
+      [12, 104],
+      [13, 118],
+      [14, 130],
+      [12, 140],
+      [0, 140]
     ],
-    "anchor": [2.5, 95]
+    "anchor": [8, 60]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [5, 190],
+    "size": [24, 140],
     "originInParent": [0, 0]
   },
   "composition": {
     "ocean": 100
   },
-  "interstitial": {
-    "ocean": 100
-  },
+  "interstitial": null,
   "interstitialUnsurveyed": false,
   "compositionTolerance": null,
   "toleranceWhy": null,
-  "terrainKind": null,
   "features": [],
   "bands": [],
-  "runtime": null,
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
   "representsNodeId": null,
   "lore": {
     "summary": "The ocean is a SIBLING of the continent, never a bucket inside it (research §5.3) — the continent's placement polygon is land only, so sea never enters its denominator. Phase 0 strip; Phase 1 absorbs the 49.5% unclaimed ground split."
@@ -50,21 +63,19 @@
   "tags": [],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 950,
+    "areaParentUnits2": 2042,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
-    "computedComposition": {
-      "ocean": 100
-    },
+    "computedComposition": {},
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [2.5, 95],
+    "absoluteAnchorRoot": [8, 60],
     "resolvedSeedStreams": {
       "terrain": "08bc7cf4db04f6d0",
       "settlements": "2ef11b7499607e1f",
       "vegetation": "74067f5d575933ad",
       "names": "55883baf84485a59"
     },
-    "digest": "sha256:81e63567ca63850ceb3a94ff62069d1651681ac9552c9bf8e696dcad245aa3b3"
+    "digest": "sha256:b8b29382bde5b8f76c0ba7655765ab2f39835d82828037676837dd41018d488c"
   }
 }

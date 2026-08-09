@@ -8,7 +8,8 @@
     "generator": null,
     "source": "docs/worldbuilding/A1-geography-cluster1.md"
   },
-  "frozen": false,
+  "frozen": true,
+  "absoluteAnchor": [1000, 1000],
   "seed": {
     "value": "7c9e4a2f8b1d6e03",
     "epoch": 0,
@@ -51,20 +52,22 @@
   "levelBand": null,
   "derived": {
     "areaParentUnits2": 4000000,
-    "childAreaParentUnits2": 24504,
-    "coveragePct": 0.6125999999999999,
-    "unclaimedPct": 99.3874,
+    "childAreaParentUnits2": 28170,
+    "coveragePct": 0.7042499999999999,
+    "unclaimedPct": 99.29575,
     "computedComposition": {
-      "meadow": 0.1825435,
-      "bramble": 0.070662,
-      "ice": 2.0525215,
-      "rock": 2.0525215,
-      "river": 0.052996499999999995,
-      "upland": 0.052996499999999995,
-      "alkali": 0.0412195,
-      "marsh": 0.035331,
-      "built": 0.023554,
-      "ocean": 95.43565400000001
+      "meadow": 0.1633,
+      "forest": 0.0894884,
+      "rock": 2.0714842,
+      "upland": 0.0757712,
+      "marsh": 0.0679328,
+      "river": 0.042457999999999996,
+      "ice": 2.0270666,
+      "bramble": 0.0385388,
+      "alkali": 0.019596,
+      "ash": 0.012410799999999998,
+      "built": 0.009144799999999998,
+      "ocean": 95.3834616
     },
     "rollupVerdict": "UNCHECKED",
     "absoluteAnchorRoot": [1000, 1000],
@@ -74,6 +77,6 @@
       "vegetation": "4430c6c4193ad72b",
       "names": "6033b1b1f52e861c"
     },
-    "digest": "sha256:bf3329411d36ebf7b56ff5588c6615542609e581f513e93d0636738f9208b17a"
+    "digest": "sha256:45969484f82e40849fad7f7866538d7fe5a65fef7865f3d203cdec3ce858def7"
   }
 }
