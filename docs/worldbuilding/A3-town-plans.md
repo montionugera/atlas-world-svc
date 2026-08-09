@@ -260,3 +260,284 @@ Nothing above was written back to `content/maps/cluster1-geography.json`, and th
 in §0.1 were **not** repaired. The review was scoped to exactly the four criteria; road–road
 junction topology, coast × river interaction, terrain patches, the relay, the sea lane and the
 `distances` residuals were not examined.
+
+---
+
+## 1. The scale contract, and where every number in it comes from
+
+These are the project's first written spatial numbers. The point of this section is not the table —
+it is the **derivation**. Every input below was read out of the server source; nothing was chosen by
+eye.
+
+### 1.1 The measured inputs
+
+| input | value | verified in |
+| --- | --- | --- |
+| player radius | **1.3**, hard-clamped | `PLAYER_STATS.radius` in `colyseus-server/src/config/combat/combatStats.ts`. `colyseus-server/src/schemas/Player.ts` clamps it **twice**: `Math.min(PLAYER_STATS.radius, 1.3)` at construction (line 156), then a post-construction check that warns and resets anything above 1.3 (lines 185–189). A player cannot be wider than 2.6 units. |
+| mob radii | **3 – 5** across the eight ordinary types | `colyseus-server/src/config/mobs/definitions/*.ts` |
+| mob radii, **full** registered range | **3 – 9** — `doubleAttacker` 8, `thorncrownDrake` 9 | same directory; all ten types are registered in `colyseus-server/src/config/mobs/index.ts` |
+| player speed | **20 u/s** | `PLAYER_STATS.maxMoveSpeed` |
+| world | **1000 × 1000** | `worldWidth` / `worldHeight` in `colyseus-server/src/config/gameConfig.ts` |
+| static collision bodies before F-040 | **4** — the world boundary walls | `colyseus-server/src/physics/PlanckPhysicsManager.ts` |
+
+```
+grep -rn "radius:" colyseus-server/src/config/mobs/definitions/*.ts
+grep -n "radius\|maxMoveSpeed" colyseus-server/src/config/combat/combatStats.ts
+grep -n "worldWidth\|worldHeight" colyseus-server/src/config/gameConfig.ts
+```
+
+```
+definitions/spearThrower.ts:9:  radius: 3,
+definitions/brambleStalker.ts:25:  radius: 3, // skirmisher
+definitions/veilSpearling.ts:27:  radius: 3, // skirmisher
+definitions/aggressive.ts:9:  radius: 3.5,
+definitions/balanced.ts:9:  radius: 4,
+definitions/hybrid.ts:9:  radius: 4,
+definitions/defensive.ts:9:  radius: 5,
+definitions/brambleDrake.ts:24:  radius: 5, // bruiser
+definitions/doubleAttacker.ts:10:  radius: 8,
+definitions/thorncrownDrake.ts:35:  radius: 9,
+combat/combatStats.ts:  radius: 1.3, // Player radius must not exceed 1.3
+combat/combatStats.ts:  maxMoveSpeed: 20,
+gameConfig.ts:13:  worldWidth: 1000,
+gameConfig.ts:14:  worldHeight: 1000,
+```
+
+### 1.2 The contract, with the arithmetic shown
+
+| rule | floor | derivation, step by step |
+| --- | --- | --- |
+| `roads[].kind: "cart"` width | **≥ 12** | largest routed mob radius **5** → **diameter 10** → one unit of clearance either side → **12**. The mob, not the player, sets this number. |
+| `roads[].kind: "foot"` width | **≥ 4** | player radius **1.3** → **diameter 2.6** → ~0.7 of clearance either side → **4**. |
+| `extent` on both axes | **150 – 260** | D1: a town ~200 units across is **ten seconds to cross** at the measured 20 u/s (200 ÷ 20 = 10 s). The band is that figure with tolerance. |
+| `footprints[].rect` shorter side | **≥ 6** | a building narrower than a mob is standing next to reads as a prop, not a mass. |
+
+Millcross sits **above** every floor, deliberately: cart roads at **14, 14, 12, 12**; foot roads at
+**6, 6, 6**; extent **220 × 160**.
+
+### 1.3 The counter-intuitive fact, stated plainly
+
+> **A street sized for a player is impassable to a bramble drake.**
+
+A 4-unit alley clears a player (diameter 2.6) with 1.4 units to spare. A `brambleDrake` has radius 5
+— diameter **10** — so it does not merely squeeze through that alley, it is short by **6 units** and
+cannot enter at all. The consequence is a design commitment, not a tuning knob: **every `foot` road
+authored in a town is permanently mob-free**, and any street a mob is ever routed down has to be
+sized for the mob from the day it is drawn. Widening it later moves every footprint beside it.
+
+Two corrections worth recording, since both touch this derivation:
+
+- **The player-diameter figure.** 12 units is **4.6 player-diameters** (12 ÷ 2.6), i.e. **9.2 player
+  *radii***. Design §3's callout says "roughly nine player-diameters"; the count is nine *radii*.
+  The floor of 12 is unaffected — only the illustrative ratio was.
+- **The mob band the floor was derived from is not the full registered range.** The 12-unit floor
+  clears radius ≤ 5. Two of the ten registered mob types exceed that: `doubleAttacker` at **8**
+  (needs 16 + clearance) and `thorncrownDrake` at **9** (the F-030 boss — needs 18 + clearance).
+  Neither is routed through a town today, and design §10 question 3 has not decided whether mobs
+  enter towns at all. **Recorded, not resolved** — see §6.
+
+---
+
+## 2. Millcross, derived from A1 §6
+
+`docs/worldbuilding/A1-geography-cluster1.md` §6 dictates most of the plan. Each row below quotes it
+**verbatim** (whitespace re-flowed only — the source is hard-wrapped) and states what the quote
+forces in `content/towns/town-millcross.json`.
+
+| A1 §6, verbatim | what it forces in the plan |
+| --- | --- |
+| "A town with no wall and no plan, built along both banks of a river crossing and spilling a quarter-mile up each road out of it." | **No wall, no gate footprint, no bounded core.** `footprints[].kind` never takes a wall or gate value in this file. Buildings are strung **along the roads out of the crossing** (ribbon sprawl) rather than packed round a centre, and both banks carry building. |
+| "The silhouette is horizontal and low: one tall thing, the mill-wheel housing over the race, and everything else a single storey of grey plank and patched canvas." | **Exactly one `storeys: 2` mass** — `mill-house` — and it sits **at the race**. All 16 other footprints are `storeys: 1`. A second two-storey building anywhere in the file contradicts canon. |
+| "**First thing a traveller sees: the cart queue.** It starts before the town does, sometimes a mile out, because one crossing serves an entire land." | `landmarks[].firstSight: true` belongs to **`cart-queue`** and nothing else, and it is placed **out along the trunk road, west of the town proper** — "before the town does". |
+| "Millcross lives on the ford — tolls it refuses to formalise, stabling, ferrying at high water, and feeding whoever is waiting." | Four of the trades appear as buildings: **`ford-stable`** (stabling), **`ferry-shed`** (ferrying), **`victual-shed`** (feeding whoever is waiting). Tolls have no building by design — canon says they are *refused formalisation*, so a toll-house would contradict it. |
+| "After the war it is the only town that grew: the refugee camps on the east bank never came down, and the tents have grown plank walls and doorframes." | A **plank-and-tent quarter on the east bank**: `tent-row-a` … `tent-row-f`, `kind: "tent"`, all east of the river, on their own foot lanes. |
+| A1 §3.1, verbatim: "Gravel-bedded, fordable in a dozen places on foot, in **exactly one** by cart — that place is Millcross" | **One** cart crossing. The three canon cart roads meet at a single point, `the-ford` at `[110, 80]`, and no other road crosses the water. |
+
+The geography file supplies the rest of the frame, also verbatim: `towns[millcross].at = [86,118]`
+(→ `anchor.geographyAt`), `river.id = "the-meltwash"`, `river.ford.label = "the ford"`, and the
+three road ids that §0.1 measured as sharing the ford vertex — `trade-road-trunk`,
+`river-road-south`, `terrace-track`.
+
+---
+
+## 3. Canon vs invented — every id and every coordinate class
+
+This table exists to catch one specific defect: **an element that is in the JSON and not in this
+table.** Coverage is verified mechanically in §3.3, not by reading.
+
+Three classes are used:
+
+- **CANON-ID** — the id string itself is lifted verbatim from a canon file.
+- **CANON-THING** — A1 §6 (or §3.1) names the *thing*; the id string is authored.
+- **INVENTED** — no canon referent at all; design-open.
+
+### 3.1 The 30 ids in `content/towns/town-millcross.json`
+
+| id (and where it lives) | class | canon warrant — verbatim | invented |
+| --- | --- | --- | --- |
+| `the-meltwash` — `water[0]` | **CANON-ID** | `cluster1-geography.json`: `river.id: "the-meltwash"`, `river.name: "the Meltwash"` | its in-town polygon; that it runs the full height of the plan |
+| `the-race` — `water[1]` | CANON-THING | A1 §6: "the mill-wheel housing over the race" | id string `the-race`; `kind: "race"`; its polygon; that it runs **west** off the river |
+| `trade-road-trunk` — `roads[0]` | **CANON-ID** | `cluster1-geography.json` `roads[].id`; §0.1 measured it with a vertex on the ford `[86,118]` | in-town `points`; `width: 14`; that it runs west from the ford |
+| `terrace-track` — `roads[1]` | **CANON-ID** | as above | in-town `points`; `width: 14`; that it runs north-east |
+| `river-road-south` — `roads[2]` | **CANON-ID** | as above | in-town `points`; `width: 12`; that it runs south-east |
+| `mill-lane` — `roads[3]` | INVENTED | — | everything: the id, that a cart lane serves the mill at all, `width: 12`, its route |
+| `bank-lane` — `roads[4]` | INVENTED | — | everything: id, `kind: "foot"`, `width: 6`, route along the east bank |
+| `tent-lane-north` — `roads[5]` | INVENTED | — | everything (the *quarter* is canon; a named lane through it is not) |
+| `tent-lane-south` — `roads[6]` | INVENTED | — | everything, as above |
+| `mill-house` — `footprints[0]` | CANON-THING | A1 §6: "one tall thing, the mill-wheel housing over the race, and everything else a single storey" | id string; `rect`; `kind: "mill"`; `entranceOn: "mill-lane"`. **`storeys: 2` is canon-forced; its being the only one is canon-forced.** |
+| `victual-shed` — `footprints[1]` | CANON-THING | A1 §6: "feeding whoever is waiting" | id string; `rect`; `kind: "store"`; that it fronts the trunk road |
+| `ford-stable` — `footprints[2]` | CANON-THING | A1 §6: "stabling" | id string; `rect`; `kind: "stable"`; siting west of the cart yard |
+| `west-row-a` — `footprints[3]` | INVENTED | *(pattern only: "built along both banks")* | the dwelling itself, id, `rect`, `kind: "dwelling"` |
+| `west-row-b` — `footprints[4]` | INVENTED | *(pattern only, as above)* | as above |
+| `ford-store` — `footprints[5]` | INVENTED | — | everything: id, `rect`, `kind: "store"`, east-bank siting |
+| `ferry-shed` — `footprints[6]` | CANON-THING | A1 §6: "ferrying at high water" | id string; `rect`; `kind: "store"`; that it sits on the east bank |
+| `tent-row-a` — `footprints[7]` | CANON-THING | A1 §6: "the refugee camps on the east bank never came down, and the tents have grown plank walls and doorframes" | id string; `rect`; **that there are six of them** |
+| `tent-row-b` — `footprints[8]` | CANON-THING | as above | as above |
+| `tent-row-c` — `footprints[9]` | CANON-THING | as above | as above |
+| `tent-row-d` — `footprints[10]` | CANON-THING | as above | as above |
+| `tent-row-e` — `footprints[11]` | CANON-THING | as above | as above |
+| `tent-row-f` — `footprints[12]` | CANON-THING | as above | as above |
+| `terrace-row-a` — `footprints[13]` | INVENTED | *(pattern only: "spilling a quarter-mile up each road out of it")* | the dwelling itself, id, `rect`, siting on the terrace road |
+| `terrace-row-b` — `footprints[14]` | INVENTED | *(pattern only, as above)* | as above |
+| `terrace-row-c` — `footprints[15]` | INVENTED | *(pattern only, as above)* | as above |
+| `terrace-row-d` — `footprints[16]` | INVENTED | *(pattern only, as above)* | as above |
+| `cart-yard` — `plazas[0]` | CANON-THING | A1 §6: "It starts before the town does, sometimes a mile out, because one crossing serves an entire land." — the queue is canon; **the yard it stands in is design §6's derivation, not a canon noun** | id string; `rect`; the `why` sentence; siting west of the ford |
+| `cart-queue` — `landmarks[0]` | CANON-THING | A1 §6: "**First thing a traveller sees: the cart queue.**" | id string; `at: [24, 88]`. `firstSight: true` is canon-forced. |
+| `the-ford` — `landmarks[1]` | CANON-THING | `cluster1-geography.json` `river.ford.label: "the ford"`; A1 §3.1 "in **exactly one** by cart — that place is Millcross" | id string `the-ford`; `at: [110, 80]` in local space |
+| `mill-wheel` — `landmarks[2]` | CANON-THING | A1 §6: "the mill-wheel housing over the race" | id string; `at: [86, 41]` |
+
+**Counts: 4 CANON-ID · 15 CANON-THING · 11 INVENTED = 30.** Two further identifiers sit outside the
+`id` fields and are both **CANON-ID**: `town: "millcross"` (`cluster1-geography.json`
+`towns[].id`) and `anchor.geographyAt: [86, 118]` (`towns[millcross].at`, which is also
+`river.ford.at`).
+
+### 3.2 Every coordinate, width and count is invented
+
+A1 §6 is prose. **It carries no geometry whatsoever** — not one number. So the whole numeric surface
+of the file is authored, and this is the honest half of the table:
+
+| numeric class | in the file | status |
+| --- | --- | --- |
+| `extent` | `220 × 160` | **INVENTED**, inside design §3's 150–260 band and D1's "~200 across" |
+| `anchor.geographyAt` | `[86, 118]` | **CANON** — copied from `towns[millcross].at` |
+| `water[].poly` | 2 polygons, **8 vertices** total | INVENTED |
+| `roads[].points` | 7 polylines, **21 vertices** total | INVENTED |
+| `roads[].width` | cart `14, 14, 12, 12` · foot `6, 6, 6` | INVENTED — the **floors** (12 / 4) are design §3; every value above them is chosen |
+| `roads[].kind` | 4 `cart`, 3 `foot` | INVENTED (the enum is schema; the assignment is authored) |
+| `footprints[].rect` | **17** rects | INVENTED |
+| `footprints[].kind` | `mill`, `store`, `stable`, `dwelling`, `tent` in use | mostly INVENTED; `mill` and `tent` are canon-forced by §2 |
+| `footprints[].storeys` | `2` on `mill-house`; `1` on the other **16** | **canon-forced values, authored fields** — A1 §6 says "everything else a single storey"; writing the number down is authoring |
+| `footprints[].entranceOn` | 17 assignments across 6 roads | INVENTED |
+| `plazas[].rect` + `why` | 1 rect, 1 sentence | INVENTED |
+| `landmarks[].at` | 3 points | INVENTED |
+| `landmarks[].firstSight` | 1 (`cart-queue`) | **canon-forced** — A1 §6 names the cart queue |
+| `landmarks[].source` | 3 citation strings | INVENTED (provenance metadata, not canon text) |
+| element counts | 2 water · 7 roads · 17 footprints · 1 plaza · 3 landmarks | INVENTED |
+
+### 3.3 How coverage was verified
+
+Not by reading. The command below enumerates every `id` in the JSON, then checks each one appears as
+an inline-code token in §3.1 of this document, **and** checks §3.1 introduces no id the JSON does not
+contain (the reverse direction — a table row for a building that was deleted is the same defect
+wearing a different hat). Run from the repo root:
+
+```
+node -e '
+const fs = require("fs");
+const p = JSON.parse(fs.readFileSync("content/towns/town-millcross.json", "utf8"));
+const doc = fs.readFileSync("docs/worldbuilding/A3-town-plans.md", "utf8");
+const sec = doc.slice(doc.indexOf("### 3.1 The 30 ids"), doc.indexOf("### 3.2 Every coordinate"));
+const jsonIds = [...p.water, ...p.roads, ...p.footprints, ...p.plazas, ...p.landmarks].map(x => x.id);
+const tableIds = [...new Set([...sec.matchAll(/^\| `([a-z0-9-]+)` —/gm)].map(m => m[1]))];
+const missing = jsonIds.filter(i => !tableIds.includes(i));
+const extra = tableIds.filter(i => !jsonIds.includes(i));
+console.log("idsInJson=" + jsonIds.length, "idsInTable=" + tableIds.length);
+console.log("inJsonNotInTable=" + (missing.join(",") || "(none)"));
+console.log("inTableNotInJson=" + (extra.join(",") || "(none)"));
+console.log("duplicateIdsInJson=" + (jsonIds.length - new Set(jsonIds).size));
+console.log(missing.length === 0 && extra.length === 0 ? "COVERAGE OK" : "COVERAGE DEFECT");
+'
+```
+
+```
+idsInJson=30 idsInTable=30
+inJsonNotInTable=(none)
+inTableNotInJson=(none)
+duplicateIdsInJson=0
+COVERAGE OK
+```
+
+The **canon** quotes were verified the same way — whitespace-normalising `A1-geography-cluster1.md`
+and asserting `String.prototype.includes` for each quoted passage, rather than trusting a
+transcription. All six §2 quotes and the §3.1 warrants resolve to `OK`; the source is hard-wrapped,
+so a line-oriented `grep -F` reports false misses on any quote that spans a line break.
+
+---
+
+## 4. The render
+
+![Millcross town plan](A3-town-millcross-plan.png)
+
+Regenerated by:
+
+```
+node tools/art-forge/generate/townplan.mjs \
+  --plan content/towns/town-millcross.json \
+  --out docs/worldbuilding/A3-town-millcross-plan.png
+```
+
+Roads are drawn at **true width**, so the 12-unit cart road is checkable against the scale bar by
+eye — the point of §1.3 is visible rather than asserted.
+
+---
+
+## 5. The accepted layout judgement — the river runs north–south
+
+**In `town-millcross.json` the Meltwash runs north–south down the middle of the plan.** Design §2's
+example JSON draws a water band horizontally (`"poly": [[0,52],[220,58],[220,74],[0,68]]`). That
+block is **schema illustration, not layout**, and the plan does not follow it. Two reasons, both
+checkable:
+
+1. **The parent map already fixed the axis.** In `content/maps/cluster1-geography.json` the Meltwash
+   passes the ford at `[86,118]` running **north–south**: the neighbouring river vertices are
+   `[90,106]` and `[88,128]`, a local run of **Δx = 2 against Δy = 22**. A town plan whose river ran
+   east–west would contradict the world map it is anchored to.
+2. **A1 §6 requires an east bank.** "the refugee camps on the **east bank** never came down" — an
+   east bank only exists if the river separates east from west, i.e. if it runs north–south. A
+   horizontal river gives Millcross a north bank and a south bank and leaves the refugee quarter
+   nowhere to stand.
+
+```
+node -e '
+const g = require("./content/maps/cluster1-geography.json");
+const p = g.river.points, i = p.findIndex(q => q[0] === 86 && q[1] === 118);
+console.log("fordVertexIndex=" + i, JSON.stringify(p.slice(i - 1, i + 2)));
+console.log("localRun dx=" + Math.abs(p[i + 1][0] - p[i - 1][0]), "dy=" + Math.abs(p[i + 1][1] - p[i - 1][1]));
+'
+```
+
+```
+fordVertexIndex=8 [[90,106],[86,118],[88,128]]
+localRun dx=2 dy=22
+```
+
+The three canon cart roads therefore converge on the ford from **west** (`trade-road-trunk`),
+**north-east** (`terrace-track`) and **south-east** (`river-road-south`), and the plank-and-tent
+quarter sits east of the water.
+
+---
+
+## 6. Open questions, carried forward unresolved
+
+These are design §10's four questions, reproduced as they stand. **This document does not answer
+them.** They are recorded here so the next town plan inherits them rather than re-deciding them by
+accident.
+
+| # | question (design §10, verbatim) | why it stays open |
+| --- | --- | --- |
+| 1 | "**Does water block, slow, or drown?** Not decided; §5 deliberately leaves `water[]` non-physical." | The collision binder emits bodies for footprints only. `the-meltwash` and `the-race` are drawn and are not solid. |
+| 2 | "**Where does a town plan attach to the runtime map?** Needs the Systems Designer's topology call (DR-001 §6.4.2). The `anchor` field is the seam." | `anchor.geographyAt: [86,118]` is written and correct; nothing consumes it at runtime. D2 put the plan in its own local space precisely so this could stay open. |
+| 3 | "**Do mobs enter towns?** T3's 12-unit floor assumes yes. If towns are mob-free, `cart` roads could be much narrower and towns would tighten considerably." | This is the load-bearing one. §1.2's entire cart-road derivation rests on the *yes* branch, and §1.3 records that even *yes* is only satisfied for mob radius ≤ 5. |
+| 4 | "**Interiors?** `entranceOn` implies a door. Whether it leads anywhere is out of scope." | 17 footprints carry `entranceOn`; none of them opens onto anything. |
+
+
