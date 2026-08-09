@@ -480,130 +480,305 @@ function drawRoads(plan) {
 // spot collided four of seven road labels with a building and buried the river's
 // name under a landmark dot.
 //
-// So the free-form labels (roads, water) are placed by scoring a small fixed set
-// of candidate positions against everything already committed to the page, and
-// each label joins the obstacle set once placed. Deliberately NOT a general
-// label-placement solver: the candidate set is small and enumerated, so the
-// worst case is a label that still overlaps something — never a label somewhere
-// surprising, and never a run that does not terminate.
+// So EVERY label — building, plaza, landmark caption, water, road — is placed by
+// one pass that scores a small enumerated set of candidate positions against
+// everything already committed to the page, and joins the obstacle set the
+// moment it is placed. There is no second mechanism and nothing is positioned by
+// hand: hand-nudged coordinates would fix Millcross and break the other five
+// towns D4 says follow once the pattern is proven.
+//
+// Three things this got wrong on the first pass, all fixed here, all pinned by
+// tests, because each is the kind of bug that only shows up in the picture:
+//
+//   * A label that was placed did not become an obstacle for the labels placed
+//     after it, so `mill-lane · 12u` and `trade-road-trunk · 14u` both landed at
+//     the same spot left of the ford.
+//   * Landmark captions were positioned by a fixed rule and never scored at all,
+//     so `mill-wheel` sat on the mill-house.
+//   * Boxes that merely TOUCH still read as one garbled block, so clearance is
+//     now enforced with LABEL_PAD rather than bare intersection.
+//
+// Deliberately NOT a general label-placement solver: the candidate set is small
+// and enumerated, so the worst case is a label that still overlaps something —
+// never a label somewhere surprising, and never a run that does not terminate.
 
-/** The rect a label occupies, in world units. `y` is the text baseline. */
-function labelBox(x, y, str, size, anchor) {
-  const w = textWidth(str, size);
-  const h = size * 1.25;
-  const x0 = anchor === "middle" ? x - w / 2 : anchor === "start" ? x : x - w;
-  return [x0, y - h * 0.8, x0 + w, y + h * 0.2];
+/** Vertical advance of one text line, as a multiple of its font size. */
+const LINE_ADVANCE = 1.35;
+
+/**
+ * Clearance every label keeps from everything else, in world units.
+ *
+ * Zero is not enough. Two labels whose boxes merely abut read as a single
+ * garbled block — which is exactly what `mill-lane · 12u` stacked flush on
+ * `trade-road-trunk · 14u` looked like, even though the boxes did not strictly
+ * intersect. The pad is applied when SCORING a candidate; the box stored on the
+ * placed label is the true one, so "no two labels intersect" stays a statement
+ * about the drawing rather than about the margin.
+ */
+export const LABEL_PAD = 0.9;
+
+/** Width and height of a block of text lines, in world units. */
+function blockMetrics(lines) {
+  return {
+    w: Math.max(...lines.map((l) => textWidth(l.str, l.size))),
+    h: lines.reduce((s, l) => s + l.size * LINE_ADVANCE, 0),
+  };
 }
 
-/** Total area a candidate box steals from things already on the page. */
+/** The rect a block occupies. A candidate is anchored by its TOP edge, so a
+ *  one-line and a two-line caption can share the same candidate generator. */
+function blockBox(lines, { x, top, anchor }) {
+  const { w, h } = blockMetrics(lines);
+  const x0 = anchor === "middle" ? x - w / 2 : anchor === "start" ? x : x - w;
+  return [x0, top, x0 + w, top + h];
+}
+
+/** The text runs of a block, converting its top edge into per-line baselines. */
+function blockRuns(lines, { x, top, anchor }) {
+  let cursor = top;
+  return lines.map((l) => {
+    cursor += l.size * 0.95;
+    const run = { ...l, x, y: cursor, anchor };
+    cursor += l.size * (LINE_ADVANCE - 0.95);
+    return run;
+  });
+}
+
+/** Total area a box steals from things already on the page. */
 function clashArea(box, obstacles) {
   return obstacles.reduce((sum, o) => sum + overlapArea(box, o), 0);
 }
 
-/** Pick the lowest-scoring candidate. `rank` breaks ties between equally clear
- *  positions, so a clash always outweighs any preference. */
-function bestCandidate(candidates, obstacles) {
+/** How much of a box falls outside the drawable band. Keeps a label from
+ *  wandering into the title or footer to escape a crowded quarter. */
+function spillArea(box, bounds) {
+  const area = (box[2] - box[0]) * (box[3] - box[1]);
+  return area - overlapArea(box, bounds);
+}
+
+/**
+ * Pick the clearest candidate.
+ *
+ * A clash outweighs spill, and spill outweighs `rank`, so preference only ever
+ * decides between positions that are equally clear. Ties are broken by candidate
+ * order, which is fixed — the same plan always renders the same map.
+ */
+function place(lines, candidates, obstacles, bounds) {
   let best = null;
   for (const c of candidates) {
-    const score = clashArea(c.box, obstacles) * 1000 + c.rank;
-    if (!best || score < best.score) best = { ...c, score };
+    const box = blockBox(lines, c);
+    const score = clashArea(outset(box, LABEL_PAD), obstacles) * 1000 + spillArea(box, bounds) * 20 + c.rank;
+    if (!best || score < best.score) best = { ...c, box, score };
   }
   return best;
 }
 
-/** Where a footprint's label goes: inside the mass if it fits, otherwise just
- *  below it. Fixed rather than searched — a building's name belongs to the
- *  building, and moving it elsewhere would cost more legibility than it buys. */
-function footprintLabelPlacement(f) {
-  const [x0, y0, x1, y1] = normalizeRect(f.rect);
-  const multi = (f.storeys ?? 1) >= 2;
-  const str = multi ? `${f.id} · ${f.storeys} storeys` : f.id;
-  const inside = textFits(str, FS_SMALL, x1 - x0);
-  const x = (x0 + x1) / 2;
-  const y = inside ? (y0 + y1) / 2 + FS_SMALL * 0.35 : y1 + FS_SMALL + 1.4;
-  return {
-    x,
-    y,
-    str,
-    inside,
-    onDark: inside && luminance(footprintFill(f)) < 0.55,
-    box: labelBox(x, y, str, FS_SMALL, "middle"),
-  };
+function markerRadius(l) {
+  return l.firstSight ? 6.6 : 3.1;
 }
 
-/** The marker and caption of a landmark, as one box to steer other labels around. */
-function landmarkBox(l) {
-  const [x, y] = l.at;
-  const r = l.firstSight ? 6.6 : 3.1;
-  const caption = labelBox(
-    l.firstSight ? x - 9 : x,
-    l.firstSight ? y + 3.2 : y + 7,
-    l.id,
-    FS_LABEL,
-    l.firstSight ? "end" : "middle",
-  );
-  return [Math.min(x - r, caption[0]), Math.min(y - r, caption[1]), Math.max(x + r, caption[2]), Math.max(y + r, caption[3])];
+/** The marker disc itself — fixed geometry, since a landmark must be drawn AT
+ *  its point. Only the caption moves. */
+function markerBox(l) {
+  const r = markerRadius(l) + 0.4;
+  return [l.at[0] - r, l.at[1] - r, l.at[0] + r, l.at[1] + r];
 }
 
-/** Everything already committed to the page before the free-form labels run. */
-function committedBoxes(plan) {
+/** Candidates around a rect: inside if it fits, then below, above, and either
+ *  flank — each of the outside rows offered centred and edge-aligned. */
+function rectCandidates([x0, y0, x1, y1], lines, allowInside) {
+  const { h } = blockMetrics(lines);
+  const cx = (x0 + x1) / 2;
+  const cy = (y0 + y1) / 2;
+  const out = [];
+  if (allowInside) out.push({ x: cx, top: cy - h / 2, anchor: "middle", inside: true, rank: 0 });
+  for (const [top, base] of [
+    [y1 + 1.0, 1],
+    [y0 - 1.0 - h, 2],
+  ]) {
+    for (const [x, anchor, bump] of [
+      [cx, "middle", 0],
+      [x0, "start", 0.4],
+      [x1, "end", 0.4],
+    ]) {
+      out.push({ x, top, anchor, inside: false, rank: base + bump });
+    }
+  }
+  out.push({ x: x1 + 1.6, top: cy - h / 2, anchor: "start", inside: false, rank: 3 });
+  out.push({ x: x0 - 1.6, top: cy - h / 2, anchor: "end", inside: false, rank: 3.1 });
+  return out;
+}
+
+/** Eight positions ringing a landmark's marker. */
+function ringCandidates(l, lines) {
+  const [cx, cy] = l.at;
+  const { h } = blockMetrics(lines);
+  const r = markerRadius(l) + 1.6;
+  const d = r * 0.72;
   return [
-    ...(plan.footprints ?? []).map((f) => normalizeRect(f.rect)),
-    ...(plan.plazas ?? []).map((p) => normalizeRect(p.rect)),
-    ...(plan.footprints ?? []).map((f) => footprintLabelPlacement(f).box),
-    ...(plan.landmarks ?? []).map(landmarkBox),
+    { x: cx, top: cy + r, anchor: "middle", rank: 0 },
+    { x: cx + r, top: cy - h / 2, anchor: "start", rank: 1 },
+    { x: cx - r, top: cy - h / 2, anchor: "end", rank: 1.1 },
+    { x: cx, top: cy - r - h, anchor: "middle", rank: 2 },
+    { x: cx + d, top: cy + d, anchor: "start", rank: 3 },
+    { x: cx - d, top: cy + d, anchor: "end", rank: 3.1 },
+    { x: cx + d, top: cy - d - h, anchor: "start", rank: 3.2 },
+    { x: cx - d, top: cy - d - h, anchor: "end", rank: 3.3 },
   ];
 }
 
 /**
- * Candidate positions for a road's label: three points along each segment, on
- * either side of the road. Roads themselves are not obstacles — a label on pale
- * road surface is perfectly readable, and on a plan this dense there is nowhere
- * else for most of them to go.
+ * Candidates for a road label: seven points along each segment, and three
+ * offsets at each — above the road, ON it, and below.
+ *
+ * The on-centreline offset matters more than it looks. Roads are not obstacles
+ * (a label on pale road surface is perfectly readable) and on the east bank the
+ * lanes are the ONLY clear corridors left between rows of tents, so without it
+ * `tent-lane-north · 6u` has nowhere to go but across a building — which is
+ * where it went.
  */
-function placeRoadLabel(road, label, obstacles) {
-  const gap = road.width / 2 + 2;
-  const h = FS_SMALL * 1.25;
-  const candidates = [];
-
+function roadCandidates(road, lines) {
+  const { h } = blockMetrics(lines);
+  const gap = road.width / 2 + 1.6;
+  const out = [];
   for (let i = 0; i < road.points.length - 1; i++) {
     const [ax, ay] = road.points[i];
     const [bx, by] = road.points[i + 1];
     const len = Math.hypot(bx - ax, by - ay);
     const horizontal = Math.abs(bx - ax) >= Math.abs(by - ay);
-    for (const t of [0.5, 0.3, 0.7]) {
+    for (const t of [0.5, 0.4, 0.6, 0.25, 0.75, 0.1, 0.9]) {
       const mx = ax + (bx - ax) * t;
       const my = ay + (by - ay) * t;
-      for (const side of [-1, 1]) {
-        const pos = horizontal
-          ? { x: mx, y: my + side * gap + (side < 0 ? 0 : h * 0.8), anchor: "middle" }
-          : { x: mx + side * gap, y: my, anchor: side > 0 ? "start" : "end" };
-        candidates.push({
-          ...pos,
-          box: labelBox(pos.x, pos.y, label, FS_SMALL, pos.anchor),
-          // Prefer the longest segment, then its midpoint, then the side a label
-          // conventionally sits on (above the road, or to its right).
-          rank: -len + Math.abs(t - 0.5) * 40 + (side < 0 ? 0 : 1),
-        });
+      // Prefer the longest segment, then its middle, then the side a label
+      // conventionally sits on.
+      const base = -len * 0.5 + Math.abs(t - 0.5) * 12;
+      if (horizontal) {
+        out.push({ x: mx, top: my - gap - h, anchor: "middle", rank: base });
+        out.push({ x: mx, top: my - h / 2, anchor: "middle", rank: base + 0.5 });
+        out.push({ x: mx, top: my + gap, anchor: "middle", rank: base + 1 });
+      } else {
+        out.push({ x: mx + gap, top: my - h / 2, anchor: "start", rank: base });
+        out.push({ x: mx, top: my - h / 2, anchor: "middle", rank: base + 0.5 });
+        out.push({ x: mx - gap, top: my - h / 2, anchor: "end", rank: base + 1 });
       }
     }
   }
-  return bestCandidate(candidates, obstacles);
+  return out;
 }
 
-/** Road labels carry the width in world units — the map's own claim about the
- *  scale contract, which is what makes the 12-unit floor checkable per road
- *  rather than only against the footer band. */
-function drawRoadLabels(plan, obstacles) {
-  return (plan.roads ?? [])
-    .map((r) => {
-      const label = `${r.id} · ${num(r.width)}u`;
-      const at = placeRoadLabel(r, label, obstacles);
-      if (!at) return "";
-      obstacles.push(at.box);
-      return text({ x: at.x, y: at.y, str: label, size: FS_SMALL, fill: PALETTE.inkSoft, anchor: at.anchor });
-    })
-    .join("\n  ");
+/** Candidates along a water body's long axis. The Meltwash runs the full height
+ *  of the plan and its centroid is the ford — so the centroid is precisely where
+ *  the river's name is guaranteed to meet the busiest landmark on the map. */
+function waterCandidates(w, lines) {
+  const xs = w.poly.map((p) => p[0]);
+  const ys = w.poly.map((p) => p[1]);
+  const bbox = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+  const [cx, cy] = centroid(w.poly);
+  const { h } = blockMetrics(lines);
+  const alongY = bbox[3] - bbox[1] >= bbox[2] - bbox[0];
+  return [0.5, 0.35, 0.65, 0.2, 0.8].map((t) => ({
+    x: alongY ? cx : bbox[0] + (bbox[2] - bbox[0]) * t,
+    top: (alongY ? bbox[1] + (bbox[3] - bbox[1]) * t : cy) - h / 2,
+    anchor: "middle",
+    rank: Math.abs(t - 0.5),
+  }));
+}
+
+/**
+ * Place every label on the plan, in one ordered pass.
+ *
+ * Order is least-freedom-first: a building's name has to stay near its building,
+ * a landmark's near its dot, while a road label can slide anywhere along a road.
+ * Giving the constrained labels first pick and letting the free ones route around
+ * them is what makes the crowded east bank resolvable at all.
+ *
+ * Exported for the tests, which assert the invariant this whole section exists to
+ * produce: no two placed labels intersect, and no label crosses a footprint that
+ * is not its own.
+ *
+ * @param {object} plan
+ * @returns {Array<{ kind: string, id: string, owner: number[]|null, box: number[],
+ *                   runs: Array<object> }>}
+ */
+export function planLabels(plan) {
+  const footprints = plan.footprints ?? [];
+  const plazas = plan.plazas ?? [];
+  const landmarks = plan.landmarks ?? [];
+  const bounds = [-MARGIN, -4, plan.extent.width + MARGIN, plan.extent.height + 4];
+
+  // Fixed geometry: masses and marker discs, which no label may cross.
+  const fpRects = footprints.map((f) => normalizeRect(f.rect));
+  const plazaRects = plazas.map((p) => normalizeRect(p.rect));
+  const markerRects = landmarks.map(markerBox);
+  const obstacles = [...fpRects, ...plazaRects, ...markerRects];
+
+  const placed = [];
+  const commit = (kind, id, owner, lines, at) => {
+    const entry = { kind, id, owner, box: at.box, inside: at.inside === true, runs: blockRuns(lines, at) };
+    obstacles.push(entry.box);
+    placed.push(entry);
+  };
+  // A label is allowed to sit on the thing it names; everything else is an
+  // obstacle. Identity, not geometry — two footprints could share a rect.
+  const others = (own) => (own ? obstacles.filter((o) => o !== own) : obstacles);
+
+  plazas.forEach((p, i) => {
+    const lines = [{ str: p.id, size: FS_LABEL, fill: PALETTE.ink, weight: "400", halo: PALETTE.paper }];
+    const at = place(lines, rectCandidates(plazaRects[i], lines, true), others(plazaRects[i]), bounds);
+    commit("plaza", p.id, plazaRects[i], lines, at);
+  });
+
+  footprints.forEach((f, i) => {
+    const multi = (f.storeys ?? 1) >= 2;
+    const str = multi ? `${f.id} · ${f.storeys} storeys` : f.id;
+    const [x0, , x1] = fpRects[i];
+    const fits = textFits(str, FS_SMALL, x1 - x0);
+    const dark = luminance(footprintFill(f)) < 0.55;
+    const probe = [{ str, size: FS_SMALL }];
+    const at = place(probe, rectCandidates(fpRects[i], probe, fits), others(fpRects[i]), bounds);
+    // Ink flips only INSIDE the mass; a label that ended up on paper stays dark
+    // and takes a halo, wherever the scorer put it.
+    const lines = [
+      {
+        str,
+        size: FS_SMALL,
+        weight: "400",
+        fill: at.inside && dark ? PALETTE.paper : PALETTE.ink,
+        halo: at.inside ? null : PALETTE.paper,
+      },
+    ];
+    commit("footprint", f.id, fpRects[i], lines, at);
+  });
+
+  landmarks.forEach((l, i) => {
+    const lines = l.firstSight
+      ? [
+          { str: l.id, size: FS_LABEL, weight: "700", fill: PALETTE.ink, halo: PALETTE.paper },
+          { str: "FIRST SIGHT", size: FS_SMALL, weight: "700", fill: PALETTE.goldInk, halo: PALETTE.paper },
+        ]
+      : [{ str: l.id, size: FS_LABEL, weight: "400", fill: PALETTE.ink, halo: PALETTE.paper }];
+    const at = place(lines, ringCandidates(l, lines), others(markerRects[i]), bounds);
+    commit("landmark", l.id, markerRects[i], lines, at);
+  });
+
+  for (const w of plan.water ?? []) {
+    const lines = [{ str: w.id, size: FS_SMALL, weight: "400", fill: PALETTE.waterInk, halo: null }];
+    commit("water", w.id, null, lines, place(lines, waterCandidates(w, lines), obstacles, bounds));
+  }
+
+  for (const r of plan.roads ?? []) {
+    const str = `${r.id} · ${num(r.width)}u`;
+    const lines = [{ str, size: FS_SMALL, weight: "400", fill: PALETTE.inkSoft, halo: PALETTE.paper }];
+    commit("road", r.id, null, lines, place(lines, roadCandidates(r, lines), obstacles, bounds));
+  }
+
+  return placed;
+}
+
+/** Every placed label, as one layer. Order within the layer does not matter —
+ *  by construction they do not overlap. */
+function drawLabels(labels) {
+  return labels.flatMap((l) => l.runs.map((run) => text(run))).join("\n  ");
 }
 
 function footprintFill(f) {
@@ -645,57 +820,6 @@ function drawFootprints(plan) {
   return [...casings, ...fills, ...uppers].join("\n  ");
 }
 
-function drawFootprintLabels(plan) {
-  return (plan.footprints ?? [])
-    .map((f) => {
-      const at = footprintLabelPlacement(f);
-      return text({
-        x: at.x,
-        y: at.y,
-        str: at.str,
-        size: FS_SMALL,
-        fill: at.onDark ? PALETTE.paper : PALETTE.ink,
-        halo: at.inside ? null : PALETTE.paper,
-      });
-    })
-    .join("\n  ");
-}
-
-function drawPlazaLabels(plan) {
-  return (plan.plazas ?? [])
-    .map((p) => {
-      const [x0, y0, x1, y1] = normalizeRect(p.rect);
-      return text({ x: (x0 + x1) / 2, y: (y0 + y1) / 2, str: p.id, size: FS_LABEL, fill: PALETTE.ink });
-    })
-    .join("\n  ");
-}
-
-/**
- * Water labels ride along the body's long axis rather than sitting at its
- * centroid. The Meltwash runs the full height of the plan and its centroid is
- * the ford — so the centroid is precisely where the river's name is guaranteed
- * to collide with the busiest landmark on the map. It did.
- */
-function drawWaterLabels(plan, obstacles) {
-  return (plan.water ?? [])
-    .map((w) => {
-      const xs = w.poly.map((p) => p[0]);
-      const ys = w.poly.map((p) => p[1]);
-      const bbox = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
-      const [cx, cy] = centroid(w.poly);
-      const alongY = bbox[3] - bbox[1] >= bbox[2] - bbox[0];
-      const candidates = [0.5, 0.25, 0.75, 0.15, 0.85].map((t) => {
-        const x = alongY ? cx : bbox[0] + (bbox[2] - bbox[0]) * t;
-        const y = alongY ? bbox[1] + (bbox[3] - bbox[1]) * t : cy;
-        return { x, y, box: labelBox(x, y, w.id, FS_SMALL, "middle"), rank: Math.abs(t - 0.5) };
-      });
-      const at = bestCandidate(candidates, obstacles);
-      obstacles.push(at.box);
-      return text({ x: at.x, y: at.y, str: w.id, size: FS_SMALL, fill: PALETTE.waterInk, halo: null });
-    })
-    .join("\n  ");
-}
-
 /** A five-pointed star, centred — only ever the firstSight marker. */
 function starPath(cx, cy, r) {
   const pts = [];
@@ -708,16 +832,14 @@ function starPath(cx, cy, r) {
 }
 
 /**
- * Landmarks. The one with `firstSight: true` — what A1 §6 says a traveller sees
- * before anything else — gets a gold ring, a star and a shouted caption, because
+ * Landmark MARKERS. The one with `firstSight: true` — what A1 §6 says a
+ * traveller sees before anything else — gets a gold ring and a star, because
  * "which of these dots is the first sight" is exactly the question the owner
  * will put to the picture.
  *
- * Its caption sits BESIDE the ring rather than under it. A firstSight landmark
- * is on a road by definition — it is what you see on the way in — and a road has
- * buildings on both sides, so the space under the marker is the one place the
- * caption is most likely to collide. (It did: the first render put "cart-queue /
- * FIRST SIGHT" straight through west-row-a's label.)
+ * Markers only: the captions are placed by `planLabels` along with every other
+ * label. A marker must be drawn AT its point, so it is fixed geometry and enters
+ * the placement pass as an obstacle rather than as something to position.
  */
 function drawLandmarks(plan) {
   return (plan.landmarks ?? [])
@@ -729,8 +851,6 @@ function drawLandmarks(plan) {
           `  <circle cx="${u(x)}" cy="${u(y)}" r="${u(6.6)}" fill="${PALETTE.gold}"/>`,
           `  <circle cx="${u(x)}" cy="${u(y)}" r="${u(5.4)}" fill="${PALETTE.paper}"/>`,
           `  <path d="${starPath(x, y, 4.3)}" fill="${PALETTE.gold}"/>`,
-          `  ${text({ x: x - 9, y: y - 0.4, str: l.id, size: FS_LABEL, weight: "700", anchor: "end" })}`,
-          `  ${text({ x: x - 9, y: y + 3.2, str: "FIRST SIGHT", size: FS_SMALL, fill: PALETTE.goldInk, weight: "700", anchor: "end" })}`,
           `</g>`,
         ].join("\n  ");
       }
@@ -738,7 +858,6 @@ function drawLandmarks(plan) {
         `<g class="landmark" data-landmark="${esc(l.id)}">`,
         `  <circle cx="${u(x)}" cy="${u(y)}" r="${u(3.1)}" fill="${PALETTE.paper}"/>`,
         `  <circle cx="${u(x)}" cy="${u(y)}" r="${u(2.3)}" fill="${PALETTE.ink}"/>`,
-        `  ${text({ x, y: y + 7, str: l.id, size: FS_LABEL })}`,
         `</g>`,
       ].join("\n  ");
     })
@@ -898,21 +1017,15 @@ export function buildTownPlanSvg({ plan, width = DEFAULT_PX_WIDTH, height } = {}
   const pxWidth = width;
   const pxHeight = height ?? Math.round((pxWidth * vb.height) / vb.width);
 
-  // One shared, growing obstacle set: each free-form label steers around
-  // everything already committed, including the labels placed before it.
-  const obstacles = committedBoxes(plan);
-
   const layers = [
     drawGround(plan, vb),
     drawWater(plan),
     drawPlazas(plan),
     drawRoads(plan),
     drawFootprints(plan),
-    drawWaterLabels(plan, obstacles),
-    drawRoadLabels(plan, obstacles),
-    drawPlazaLabels(plan),
-    drawFootprintLabels(plan),
     drawLandmarks(plan),
+    // Every label, placed in one pass so none can collide with another.
+    drawLabels(planLabels(plan)),
     drawTitle(plan),
     drawNorthArrow(plan),
     drawScaleBar(plan),

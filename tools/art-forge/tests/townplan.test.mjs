@@ -26,6 +26,7 @@ import { fileURLToPath } from "node:url";
 import {
   CART_ROAD_FLOOR,
   DRAW_SCALE,
+  planLabels,
   FOOT_ROAD_FLOOR,
   KIND_FILL,
   MULTI_STOREY_FILL,
@@ -306,6 +307,96 @@ test("the ford, the cart yard and the mill all appear by name", () => {
   for (const id of ["the-ford", "cart-yard", "mill-house"]) {
     assert.ok(svg.includes(id), `${id} must appear in the drawing`);
   }
+});
+
+/* --------------------------- label placement ------------------------------ */
+//
+// Two invariants instead of a list of positional assertions. A positional
+// assertion ("mill-wheel sits at x=91") pins one town and rots the moment a
+// coordinate moves; these pin the PROPERTY the placement pass exists to produce,
+// and hold for the other five towns D4 says follow.
+
+/** Do two rects share positive area? Touching does not count. */
+function intersects(a, b) {
+  return a[0] < b[2] - 1e-9 && b[0] < a[2] - 1e-9 && a[1] < b[3] - 1e-9 && b[1] < a[3] - 1e-9;
+}
+
+test("no two placed labels overlap each other", () => {
+  const labels = planLabels(millcross);
+  assert.ok(labels.length >= millcross.footprints.length + millcross.roads.length);
+  const hits = [];
+  for (let i = 0; i < labels.length; i++) {
+    for (let j = i + 1; j < labels.length; j++) {
+      if (intersects(labels[i].box, labels[j].box)) hits.push(`${labels[i].id} × ${labels[j].id}`);
+    }
+  }
+  assert.deepEqual(hits, [], `overlapping labels: ${hits.join(", ")}`);
+});
+
+test("no label crosses a footprint other than the one it names", () => {
+  // A label INSIDE its own mass is the whole point of an inside placement, so
+  // ownership is the exemption — not "any footprint", which would let a road
+  // label sit on a building as long as some other label owned it.
+  const labels = planLabels(millcross);
+  const hits = [];
+  for (const l of labels) {
+    for (const f of millcross.footprints) {
+      const r = [
+        Math.min(f.rect[0], f.rect[2]),
+        Math.min(f.rect[1], f.rect[3]),
+        Math.max(f.rect[0], f.rect[2]),
+        Math.max(f.rect[1], f.rect[3]),
+      ];
+      if (l.kind === "footprint" && l.id === f.id) continue;
+      if (intersects(l.box, r)) hits.push(`${l.kind} ${l.id} × ${f.id}`);
+    }
+  }
+  assert.deepEqual(hits, [], `labels crossing buildings: ${hits.join(", ")}`);
+});
+
+test("no label crosses a landmark marker other than its own", () => {
+  const labels = planLabels(millcross);
+  const hits = [];
+  for (const l of labels) {
+    for (const lm of millcross.landmarks) {
+      if (l.kind === "landmark" && l.id === lm.id) continue;
+      const r = lm.firstSight ? 6.6 : 3.1;
+      const disc = [lm.at[0] - r, lm.at[1] - r, lm.at[0] + r, lm.at[1] + r];
+      if (intersects(l.box, disc)) hits.push(`${l.kind} ${l.id} × ${lm.id}`);
+    }
+  }
+  assert.deepEqual(hits, [], `labels over markers: ${hits.join(", ")}`);
+});
+
+test("every label on the plan is placed exactly once", () => {
+  const labels = planLabels(millcross);
+  const expect = (kind, ids) =>
+    assert.deepEqual(
+      labels.filter((l) => l.kind === kind).map((l) => l.id).sort(),
+      [...ids].sort(),
+      `${kind} labels`,
+    );
+  expect("footprint", millcross.footprints.map((f) => f.id));
+  expect("road", millcross.roads.map((r) => r.id));
+  expect("water", millcross.water.map((w) => w.id));
+  expect("plaza", millcross.plazas.map((p) => p.id));
+  expect("landmark", millcross.landmarks.map((l) => l.id));
+});
+
+test("placement is deterministic — the same plan renders the same map", () => {
+  assert.deepEqual(
+    planLabels(millcross).map((l) => [l.id, l.box]),
+    planLabels(millcross).map((l) => [l.id, l.box]),
+  );
+});
+
+test("a label that cannot fit inside its mass is moved out, not shrunk or clipped", () => {
+  // tent rects are 12 units wide and "tent-row-a" needs more, so its label must
+  // leave the mass entirely rather than overflow it.
+  const labels = planLabels(millcross);
+  const tent = labels.find((l) => l.id === "tent-row-a");
+  assert.equal(tent.inside, false);
+  assert.equal(tent.runs[0].size, planLabels(millcross).find((l) => l.id === "mill-house").runs[0].size);
 });
 
 test("label ink flips against the mass under it", () => {
