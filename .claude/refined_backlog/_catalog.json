@@ -449,5 +449,14 @@
     "status": "claimed",
     "release_version": null,
     "claimed_at": "2026-08-08T16:48:22.715160+00:00"
+  },
+  {
+    "id": "F-040",
+    "title": "Town plan view: top-down town map schema (boundary, road spine with widths, building footprints, plazas, landmarks) authored from A1 section 6 themes and bound to the physics scale, plus the footprint to static-collision binder",
+    "from_idea": "I-088",
+    "created_at": "2026-08-09T02:26:25.139979+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
