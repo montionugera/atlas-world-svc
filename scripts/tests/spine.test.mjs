@@ -473,6 +473,13 @@ test("townCompErrors: the true declaration passes within ±3 pp", () => {
     []);
 });
 
+test("townCompErrors: a degenerate extent (smaller than the sampling cell) is reported, not silently NaN'd away", () => {
+  const doc = p3PlanDoc({ extent: { width: 0.3, height: 0.3 } });
+  const errors = townCompErrors({ tree: p3Tree(p3TownNode()), plans: [{ file: "towns/town-t1.json", doc }] });
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /extent 0\.3x0\.3 is smaller than the sampling cell/);
+});
+
 test("terrainKindErrors: implied biome under 15% is a defect; null terrainKind is silence; unknown kind is a defect", () => {
   assert.deepEqual(terrainKindErrors({ nodes: [p3TownNode()] }), []);
   const under = terrainKindErrors({ nodes: [{ id: "n-r1", terrainKind: "river-country", composition: { river: 10, meadow: 90 } }] });

@@ -525,7 +525,18 @@ export function townCompErrors({ tree, plans, tolerancePp = 3, cell = SPINE_CELL
     if (typeof doc?.spineId !== "string") continue;
     const node = tree.byId.get(doc.spineId);
     if (!node || node.tier !== "town") continue; // join defects are G-TOWN-FRAME's report
+    const w = doc.extent?.width ?? 0;
+    const h = doc.extent?.height ?? 0;
     const { builtPct, riverPct } = townCompDerived({ plan: doc, cell });
+    // A extent smaller than one sampling cell (or otherwise degenerate) samples
+    // zero grid cells: townCompDerived divides 0/0 and returns NaN. NaN fails
+    // every `> tolerancePp` comparison below, so a malformed extent — exactly
+    // the authoring-typo class these gates exist to catch — would silently
+    // report ZERO errors. Name the defect instead of comparing against NaN.
+    if (w < cell || h < cell || !Number.isFinite(builtPct) || !Number.isFinite(riverPct)) {
+      errors.push(`${file} -> ${node.id}: extent ${w}x${h} is smaller than the sampling cell (${cell}u) — composition cannot be derived to check (degenerate extent)`);
+      continue;
+    }
     const declaredBuilt = node.composition?.built ?? 0;
     const declaredRiver = node.composition?.river ?? 0;
     if (Math.abs(declaredBuilt - builtPct) > tolerancePp)
