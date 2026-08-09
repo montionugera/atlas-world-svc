@@ -19,8 +19,9 @@
     "shape": "polygon",
     "points": [
       [26, 78],
-      [44, 72],
-      [56, 82],
+      [40, 78],
+      [44, 82],
+      [52, 96],
       [54, 102],
       [42, 112],
       [28, 106],
@@ -31,8 +32,8 @@
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [34, 40],
-    "originInParent": [22, 72]
+    "size": [32, 34],
+    "originInParent": [22, 78]
   },
   "composition": {
     "rock": 34,
@@ -70,7 +71,7 @@
   "tags": [],
   "levelBand": [25, 35],
   "derived": {
-    "areaParentUnits2": 974,
+    "areaParentUnits2": 742,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
@@ -89,6 +90,6 @@
       "vegetation": "3c07e6ebeb419b2c",
       "names": "5c827dcb6693d2b9"
     },
-    "digest": "sha256:0efcfa935d0c569361370b1867d99474200902a0fbdc7751134192bc90ba0ae0"
+    "digest": "sha256:f03cfbcc1abf7d22fcde6d2d45f6eb248dbcdd460b4b0c372951431cc1e0c7d5"
   }
 }

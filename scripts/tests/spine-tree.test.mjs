@@ -16,7 +16,13 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 //            15202 km² of its 26128 km² polygon = 58.18279...% → "58.2%";
 //            authored interstitial → ASSERTED (coverage stays under the 60%
 //            CHECKED threshold — expected, region children have no children
-//            of their own yet).
+//            of their own yet). Task 1.12 redrew five region boundaries to
+//            close the G-OVERLAP siblings and pulled cluster-1's own west
+//            edge east so the sea strip becomes n-westsea's alone, shrinking
+//            cluster-1's own polygon from 26128 to 26017 km²; the redrawn
+//            children now cover 13885.5 km² of that = 53.37...% → "53.4%"
+//            (n-atlas's 0.7% land-fraction of the 4,000,000 km² world is
+//            unaffected within rounding).
 //   n-westsea: no children → 0.0%; authored interstitial → ASSERTED.
 //   the 12 region nodes: Task 1.4 gave 6 of them a town child (7th is a
 //            camp) — every one is `placement.shape: "point"` (area 0 —
@@ -26,7 +32,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 //            0.0% ASSERTED.
 //   n-playroot: no children, unsurveyed → 0.0% UNCHECKED.
 const EXPECTED = `n-atlas · world · km · coverage 0.7% UNCHECKED
-├── n-cluster1 · continent · km · coverage 58.2% ASSERTED
+├── n-cluster1 · continent · km · coverage 53.4% ASSERTED
 │   ├── n-ashvale-front · region · km · coverage 0.0% ASSERTED
 │   ├── n-cindervast · region · km · coverage 0.0% ASSERTED
 │   │   └── n-cindervast-town · town · km · coverage 0.0% ASSERTED

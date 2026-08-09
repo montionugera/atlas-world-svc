@@ -18,12 +18,13 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [72, 136],
-      [94, 134],
+      [74, 139.5],
+      [94, 137.5],
       [100, 148],
       [98, 166],
-      [88, 180],
-      [74, 178],
+      [90, 176],
+      [84, 174.5],
+      [74, 169],
       [66, 160],
       [66, 146]
     ],
@@ -32,8 +33,8 @@
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [34, 46],
-    "originInParent": [66, 134]
+    "size": [34, 38.5],
+    "originInParent": [66, 137.5]
   },
   "composition": {
     "river": 30,
@@ -71,7 +72,7 @@
   "tags": [],
   "levelBand": [10, 20],
   "derived": {
-    "areaParentUnits2": 1240,
+    "areaParentUnits2": 998.5,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
@@ -90,6 +91,6 @@
       "vegetation": "5bcc0d3dc908f753",
       "names": "63171f215e88689a"
     },
-    "digest": "sha256:bf400d92fb8591f717fe090cc35e53d390dc8bb8e10666f52c59d9312b2471f4"
+    "digest": "sha256:f2c1524b8ddaf5d4576361313b7fdc8d1e356aef98c7a419596192515b682fa5"
   }
 }

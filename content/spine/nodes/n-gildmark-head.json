@@ -21,16 +21,16 @@
       [2, 142],
       [20, 140],
       [30, 152],
-      [28, 170],
-      [14, 180],
-      [2, 174]
+      [28, 164],
+      [16, 168],
+      [2, 172]
     ],
     "anchor": [22, 146]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [28, 40],
+    "size": [28, 32],
     "originInParent": [2, 140]
   },
   "composition": {
@@ -69,7 +69,7 @@
   "tags": [],
   "levelBand": [30, 45],
   "derived": {
-    "areaParentUnits2": 898,
+    "areaParentUnits2": 690,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
@@ -88,6 +88,6 @@
       "vegetation": "dfb48aa0251d8bf1",
       "names": "4417222909867d03"
     },
-    "digest": "sha256:7bb2d3828673ae61bf57dac2747f784bd742847e7d97ec4ef2ee01bbda6465f7"
+    "digest": "sha256:81cd1c96e2ec28e36498a7fc7fab564077423fa6c77bcc40c2d1355fae947a36"
   }
 }

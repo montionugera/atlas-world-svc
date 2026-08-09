@@ -71,7 +71,7 @@ export function canonicalNode({ node, tree }) {
 // ── spine → content/maps/cluster1-geography.json (G-EMIT-DRIFT, Phase 1) ──
 // Header prose is mirror boilerplate, frozen here verbatim from the shipped
 // file. GEOGRAPHY_VERSION bumps to 2 with the Task 1.12 boundary redraws.
-export const GEOGRAPHY_VERSION = 1;
+export const GEOGRAPHY_VERSION = 2;
 const GEO_HEADER = {
   id: "cluster1-geography",
   title: "Cluster 1 — the Meltwash basin",
