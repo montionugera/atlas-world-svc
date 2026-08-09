@@ -1,14 +1,20 @@
 // F-038 — guard (U): every manifest entry must have a thumbnail, and that
-// thumbnail may never be older than its source.
+// thumbnail must have been baked from the source bytes now on disk.
 //
 // tools/asset-storybook renders every card from a baked thumbnail, so a
-// thumbnail older than its source is a card that LIES about what the asset
-// looks like — the reviewer judges a stale image and files a verdict against
-// it. Same mtime rule as guard (F) (which covers only bakedPreview types),
-// applied universally.
+// thumbnail that does not match its source is a card that LIES about what the
+// asset looks like — the reviewer judges a stale image and files a verdict
+// against it.
 //
-// Pure filesystem comparison: CI needs neither Blender nor sharp to run it,
-// only `node scripts/bake_thumbnails.mjs` does.
+// The rule is a CONTENT HASH recorded by the bake in .thumbs/index.json, not
+// an mtime comparison. mtime only means something on a tree edited in place;
+// on a fresh `git checkout` every file gets its own write time in checkout
+// order, and `.thumbs` sorts first under assets/, so the old rule called all
+// 643 entries stale in CI while passing locally. These tests therefore vary
+// the recorded hash, never the timestamps.
+//
+// Pure filesystem + stdlib hashing: CI needs neither Blender nor sharp to run
+// it, only `node scripts/bake_thumbnails.mjs` does.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -16,7 +22,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { thumbFilename } from "../lib/thumbkey.mjs";
+import { thumbFilename, sourceHash } from "../lib/thumbkey.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_asset_manifest.mjs");
@@ -29,7 +35,13 @@ const PNG_1X1 = Buffer.from(
 
 const SRC_RES = "res://assets/thing.png";
 
-// thumbState: "fresh" | "stale" | "missing"
+// thumbState: "fresh" | "stale" | "unrecorded" | "missing"
+//   fresh       thumbnail present, index records the source's real hash
+//   stale       thumbnail present, index records a DIFFERENT hash — i.e. the
+//               asset was edited after the bake
+//   unrecorded  thumbnail present but the index never heard of it, so nothing
+//               proves which bytes it came from
+//   missing     no thumbnail at all
 function fixture(thumbState) {
   const dir = mkdtempSync(join(tmpdir(), "thumbgate-"));
   mkdirSync(join(dir, "assets", ".thumbs"), { recursive: true });
@@ -41,13 +53,27 @@ function fixture(thumbState) {
   if (thumbState !== "missing") {
     const thumb = join(dir, "assets", ".thumbs", thumbFilename(SRC_RES));
     writeFileSync(thumb, PNG_1X1);
+    // Backdate the thumbnail an hour behind the source in EVERY state. Under
+    // the old mtime rule that alone said "stale"; under the hash rule it is
+    // irrelevant, which is exactly the regression these tests pin.
     const srcSec = Date.now() / 1000;
-    // Stale => thumbnail one hour OLDER than the source. Fresh => one hour
-    // newer. Set both explicitly so the test never races the filesystem's
-    // mtime granularity.
-    const thumbSec = thumbState === "stale" ? srcSec - 3600 : srcSec + 3600;
     utimesSync(src, srcSec, srcSec);
-    utimesSync(thumb, thumbSec, thumbSec);
+    utimesSync(thumb, srcSec - 3600, srcSec - 3600);
+
+    const entries = {};
+    if (thumbState === "fresh" || thumbState === "stale") {
+      entries[SRC_RES] = {
+        thumb: thumbFilename(SRC_RES),
+        bytes: PNG_1X1.length,
+        w: 1,
+        h: 1,
+        srcHash: thumbState === "fresh" ? sourceHash(src) : "0000000000000000",
+      };
+    }
+    writeFileSync(
+      join(dir, "assets", ".thumbs", "index.json"),
+      JSON.stringify({ version: 1, entries }),
+    );
   }
 
   writeFileSync(
@@ -136,16 +162,38 @@ function runGate(dir) {
   }
 }
 
-test("guard (U): a fresh thumbnail passes", () => {
+test("guard (U): a thumbnail whose recorded hash matches the source passes", () => {
   const { code, out } = runGate(fixture("fresh"));
   assert.equal(code, 0, `expected pass, got:\n${out}`);
 });
 
-test("guard (U): a thumbnail older than its source is STALE and fails", () => {
+test("guard (U): an older mtime alone is NOT stale — only the hash decides", () => {
+  // The regression this guard shipped with: `git checkout` writes .thumbs
+  // first, so every source is "newer" than its thumbnail on a tree nobody
+  // edited. The fresh fixture above backdates the thumbnail by an hour and
+  // must still pass; assert that explicitly so nobody reintroduces mtime.
+  const { code, out } = runGate(fixture("fresh"));
+  assert.equal(code, 0);
+  assert.doesNotMatch(out, /STALE/);
+});
+
+test("guard (U): a source edited since the bake is STALE and fails", () => {
   const { code, out } = runGate(fixture("stale"));
   assert.notEqual(code, 0);
   assert.match(out, /STALE/);
   assert.match(out, /prop:thing/);
+  assert.match(out, /bake_thumbnails\.mjs/);
+});
+
+test("guard (U): a thumbnail absent from the index is UNRECORDED and fails", () => {
+  // A thumbnail nothing vouches for is indistinguishable from a stale one —
+  // the bake stamps srcHash only for images it actually rendered, so a gap
+  // here means the bake failed or was never run for that entry.
+  const { code, out } = runGate(fixture("unrecorded"));
+  assert.notEqual(code, 0);
+  assert.match(out, /UNRECORDED/);
+  assert.match(out, /prop:thing/);
+  assert.match(out, /bake_thumbnails\.mjs/);
 });
 
 test("guard (U): a missing thumbnail fails and names the bake script", () => {

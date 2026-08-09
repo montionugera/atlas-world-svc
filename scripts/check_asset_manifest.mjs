@@ -54,9 +54,9 @@
 //       render — a no-default kind may not rely on ext sniffing (see §3 of
 //       docs/superpowers/specs/2026-07-20-asset-registry-contract.md).
 //   (U) every manifest entry must have a baked thumbnail in
-//       game-client/assets/.thumbs/ that is no older than its source — the
-//       storybook renders every card from one, so a stale thumbnail is a card
-//       that lies about the asset (F-038).
+//       game-client/assets/.thumbs/ whose recorded source hash matches the
+//       source bytes on disk — the storybook renders every card from one, so a
+//       stale thumbnail is a card that lies about the asset (F-038).
 //   (T) every manifest `kind` must have a section in
 //       content/asset-taxonomy.json, so tools/asset-storybook can never fall
 //       back to a munged label like "Model3d:dungeons" (F-038). Letters L/M
@@ -95,7 +95,7 @@ import {
 import { fileURLToPath } from "node:url";
 import { dirname, resolve, join, relative } from "node:path";
 import { checkLicensePolicy } from "./lib/license-policy.mjs";
-import { thumbFilename } from "./lib/thumbkey.mjs";
+import { thumbFilename, sourceHash } from "./lib/thumbkey.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -560,22 +560,49 @@ function validateEntry(id, entry, source, gameClient, spec, failures) {
 // would let C# (manifest.json only) and the storybook (merges all) silently
 // resolve different entries.
 // (U) thumbnail freshness — every manifest entry must have a baked thumbnail
-// in game-client/assets/.thumbs/, no older than its source file.
+// in game-client/assets/.thumbs/, baked from the source bytes now on disk.
 //
 // tools/asset-storybook renders EVERY card from a baked thumbnail (F-038), so
-// a thumbnail older than its source is a card that lies about what the asset
-// looks like — and the reviewer files a reject/rebuild verdict against a stale
-// image. This is guard (F)'s mtime rule (which covers only bakedPreview types)
-// applied universally.
+// a thumbnail that does not match its source is a card that lies about what
+// the asset looks like — and the reviewer files a reject/rebuild verdict
+// against a stale image.
 //
-// Pure filesystem comparison, so CI needs neither Blender nor sharp; only
-// `node scripts/bake_thumbnails.mjs` does.
+// CONTENT HASH, not mtime. The first cut of this guard compared
+// statSync(src).mtimeMs > statSync(thumb).mtimeMs, which holds only where the
+// tree was *edited* in place. Anywhere it is *materialised* — a fresh
+// `git checkout` in CI, a copy, an rsync, a cache restore — every file gets
+// its own write time in checkout order, and `.thumbs` sorts before every other
+// directory under assets/, so it is always written FIRST. Result: every source
+// looked "newer" than its thumbnail and CI reported 643 STALE entries on a
+// tree with zero real drift, while the same command passed locally. The bake
+// records sourceHash(src) per entry in .thumbs/index.json; this guard rehashes
+// the file on disk and compares. That is invariant under how the tree got
+// there, and still fails loudly the moment an asset is edited without a
+// re-bake — which is the drift the guard exists to catch.
+//
+// Still no Blender and no sharp in CI: hashing is stdlib. Only
+// `node scripts/bake_thumbnails.mjs` needs the renderers.
 //
 // Art entries are exempt here — they are validated by the art source's own
 // path rules and carry `file`, not a res:// scene/stream.
 function assertThumbFreshness(sourcesEntries, gameClient, failures) {
   const thumbDir = join(gameClient, "assets/.thumbs");
   const seen = new Set(); // several keys can share one source path
+
+  // The bake's record of which bytes each thumbnail was rendered from. An
+  // absent index is not fatal by itself — the per-entry checks below turn it
+  // into one honest failure per entry naming the bake script.
+  let thumbIndex = {};
+  const indexPath = join(thumbDir, "index.json");
+  if (existsSync(indexPath)) {
+    try {
+      thumbIndex = JSON.parse(readFileSync(indexPath, "utf8")).entries || {};
+    } catch {
+      failures.push(
+        `.thumbs/index.json is unreadable — re-run \`node scripts/bake_thumbnails.mjs\``,
+      );
+    }
+  }
 
   for (const { entries } of sourcesEntries) {
     for (const [id, entry] of Object.entries(entries)) {
@@ -601,10 +628,21 @@ function assertThumbFreshness(sourcesEntries, gameClient, failures) {
 
       const srcP = resolveResPath(entry.preview || resPath, gameClient);
       if (!srcP || !existsSync(srcP)) continue; // guard (B) owns missing sources
-      if (statSync(srcP).mtimeMs > statSync(thumbP).mtimeMs) {
+
+      const recorded = thumbIndex[resPath] && thumbIndex[resPath].srcHash;
+      if (!recorded) {
         failures.push(
-          `entry "${id}": thumbnail is STALE — ${resPath} is newer than its ` +
-            `baked thumbnail; re-run \`node scripts/bake_thumbnails.mjs\``,
+          `entry "${id}": thumbnail for ${resPath} is UNRECORDED — no srcHash ` +
+            `in .thumbs/index.json, so it cannot be proven current; re-run ` +
+            `\`node scripts/bake_thumbnails.mjs\``,
+        );
+        continue;
+      }
+      if (sourceHash(srcP) !== recorded) {
+        failures.push(
+          `entry "${id}": thumbnail is STALE — ${resPath} has changed since it ` +
+            `was baked (source hash differs from .thumbs/index.json); re-run ` +
+            `\`node scripts/bake_thumbnails.mjs\``,
         );
       }
     }

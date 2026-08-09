@@ -18,12 +18,16 @@
 // The index is what lets the page show each card's on-disk size WITHOUT the
 // 653 HEAD requests js/utils.mjs used to issue on every load.
 //
-// Freshness is mtime-based, matching guard (U) in check_asset_manifest.mjs:
-// a thumbnail older than its source is stale and gets re-baked. CI never runs
-// this script — it only runs the guard, which needs no Blender and no sharp.
+// Freshness is CONTENT-HASH based, matching guard (U) in
+// check_asset_manifest.mjs: index.json records sourceHash(source) per entry,
+// and a source whose bytes no longer hash to the recorded value is stale and
+// gets re-baked. It used to be an mtime comparison, which is only meaningful
+// on a tree that was edited in place — see the note in lib/thumbkey.mjs for
+// how that made CI report 643 false STALEs. CI never runs this script; it only
+// runs the guard, which needs no Blender and no sharp.
 //
 // Flags:
-//   --force            re-bake everything, ignoring mtimes
+//   --force            re-bake everything, ignoring recorded hashes
 //   --only <substr>    only sources whose path contains <substr>
 //   --skip-3d          skip the Blender queue (useful without Blender installed)
 //   --dry-run          report what would be baked, write nothing
@@ -41,7 +45,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve, join } from "node:path";
 import { tmpdir } from "node:os";
 import sharp from "sharp";
-import { thumbFilename } from "./lib/thumbkey.mjs";
+import { thumbFilename, sourceHash } from "./lib/thumbkey.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -133,10 +137,31 @@ function collectJobs(spec) {
   return jobs;
 }
 
-function isStale(absSrc, absThumb) {
+// Stale = the thumbnail was not rendered from the bytes currently on disk.
+// `recordedHash` is index.json's srcHash for this source; an entry the index
+// has never seen is stale by definition, which is also what makes the guard
+// and the bake agree — the guard fails an unrecorded thumbnail, and this
+// re-bakes it rather than leaving CI permanently red.
+function isStale(absSrc, absThumb, recordedHash) {
   if (!existsSync(absThumb)) return true;
   if (!existsSync(absSrc)) return false; // a missing source is the gate's problem
-  return statSync(absSrc).mtimeMs > statSync(absThumb).mtimeMs;
+  return sourceHash(absSrc) !== recordedHash;
+}
+
+// The previous index, read for its srcHash records. Missing or malformed means
+// "nothing is known to be fresh" — every entry re-bakes, which is correct if
+// slow, never silently wrong.
+function readPriorIndex() {
+  const p = join(THUMB_DIR, "index.json");
+  if (!existsSync(p)) return {};
+  try {
+    return readJson(p).entries || {};
+  } catch {
+    console.warn(
+      "bake_thumbnails: .thumbs/index.json unreadable — re-baking all",
+    );
+    return {};
+  }
 }
 
 // Trim the transparent margin, then centre-pad back to a square. Blender
@@ -181,6 +206,7 @@ async function main() {
   }
 
   const index = { version: 1, entries: {} };
+  const prior = readPriorIndex();
   const stale = [];
   let missingSource = 0;
 
@@ -190,7 +216,9 @@ async function main() {
       missingSource++;
       continue; // guard (B) already fails the build on a missing source
     }
-    if (opts.force || isStale(job.absSrc, job.absThumb)) stale.push(job);
+    const recorded = prior[job.srcPath] && prior[job.srcPath].srcHash;
+    if (opts.force || isStale(job.absSrc, job.absThumb, recorded))
+      stale.push(job);
   }
 
   console.log(
@@ -244,6 +272,7 @@ async function main() {
           // Blender frames to the bounding box; recover the wasted margin.
           try {
             await toThumb(j.absThumb, j.absThumb, { trim: true });
+            j.baked = true;
             baked++;
           } catch (e) {
             failed++;
@@ -260,6 +289,7 @@ async function main() {
   for (const job of stale.filter((j) => !j.is3d)) {
     try {
       await toThumb(job.absSrc, job.absThumb, { trim: false });
+      job.baked = true;
       baked++;
     } catch (e) {
       failed++;
@@ -269,15 +299,32 @@ async function main() {
 
   // --- index: every job whose thumbnail exists on disk. Written with sorted
   //     keys so a re-run produces a byte-identical file when nothing changed
-  //     — an unsorted object would churn the diff on every bake. ---
+  //     — an unsorted object would churn the diff on every bake.
+  //
+  //     `srcHash` is the freshness token guard (U) checks, so it may only be
+  //     stamped with the CURRENT source hash for a thumbnail that really was
+  //     rendered from those bytes: one that was already fresh, or one this run
+  //     baked successfully. A job whose bake failed (or was skipped by
+  //     --skip-3d) keeps whatever the previous index recorded, so the guard
+  //     stays red until the bake actually succeeds instead of certifying an
+  //     image nobody rendered. ---
+  const staleSet = new Set(stale.map((j) => j.srcPath));
   for (const job of jobs.sort((a, b) => a.srcPath.localeCompare(b.srcPath))) {
     if (!existsSync(job.absThumb)) continue;
+    // A missing source has nothing to hash; guard (B) owns that failure.
+    const current =
+      existsSync(job.absSrc) &&
+      (!staleSet.has(job.srcPath) || job.baked === true);
+    const srcHash = current
+      ? sourceHash(job.absSrc)
+      : prior[job.srcPath] && prior[job.srcPath].srcHash;
     const meta = await sharp(job.absThumb).metadata();
     index.entries[job.srcPath] = {
       thumb: thumbFilename(job.srcPath),
       bytes: existsSync(job.absSrc) ? statSync(job.absSrc).size : 0,
       w: meta.width,
       h: meta.height,
+      ...(srcHash ? { srcHash } : {}),
     };
   }
   writeFileSync(

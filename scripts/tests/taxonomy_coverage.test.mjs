@@ -18,7 +18,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { thumbFilename } from "../lib/thumbkey.mjs";
+import { thumbFilename, sourceHash } from "../lib/thumbkey.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_asset_manifest.mjs");
@@ -35,12 +35,29 @@ function fixture({ kind, taxonomyKinds }) {
   const dir = mkdtempSync(join(tmpdir(), "taxgate-"));
   mkdirSync(join(dir, "assets", ".thumbs"), { recursive: true });
   mkdirSync(join(dir, "art", "concept"), { recursive: true });
-  writeFileSync(join(dir, "assets", "thing.png"), PNG_1X1);
-  // Guard (U) requires a thumbnail for every visual entry. Provide one so
-  // this fixture exercises guard (T) in isolation rather than tripping (U).
+  const src = join(dir, "assets", "thing.png");
+  writeFileSync(src, PNG_1X1);
+  // Guard (U) requires a thumbnail for every visual entry AND an index entry
+  // recording the source hash it was baked from. Provide both so this fixture
+  // exercises guard (T) in isolation rather than tripping (U).
   writeFileSync(
     join(dir, "assets", ".thumbs", thumbFilename("res://assets/thing.png")),
     PNG_1X1,
+  );
+  writeFileSync(
+    join(dir, "assets", ".thumbs", "index.json"),
+    JSON.stringify({
+      version: 1,
+      entries: {
+        "res://assets/thing.png": {
+          thumb: thumbFilename("res://assets/thing.png"),
+          bytes: PNG_1X1.length,
+          w: 1,
+          h: 1,
+          srcHash: sourceHash(src),
+        },
+      },
+    }),
   );
 
   writeFileSync(
