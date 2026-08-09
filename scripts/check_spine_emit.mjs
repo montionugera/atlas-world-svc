@@ -77,7 +77,7 @@ const GEO_HEADER = {
   title: "Cluster 1 — the Meltwash basin",
   version: GEOGRAPHY_VERSION,
   source: "docs/worldbuilding/A1-geography-cluster1.md",
-  about: "Machine-readable geography of cluster 1. This is the data the world map is DRAWN FROM; the SVG is a view of it, never the source of truth. Every proper noun here already exists in the Cartographer's document (A1) or content/story/canon.md — nothing is invented.",
+  about: "GENERATED FILE — do not edit by hand. Emitted from content/spine/nodes/* by scripts/check_spine_emit.mjs (regenerate with --write; CI byte-compares with --check). Machine-readable geography of cluster 1: the data the world map is DRAWN FROM; the SVG is a view of it, never the source of truth. Every proper noun here already exists in the Cartographer's document (A1) or content/story/canon.md — nothing is invented.",
   coordinateSystem: {
     units: "km",
     convention: "x increases EAST, y increases SOUTH (north is smaller y) — inherited unchanged from content/maps/atlas-frontier.md",
