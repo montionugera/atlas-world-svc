@@ -63,3 +63,39 @@ test("the committed 4-node table loads clean: 2 roots, depths legal, no load err
   assert.deepEqual(spine.budgets.coverage, { maxUnchecked: 4 });
   for (const n of spine.nodes) assert.equal(typeof TIER_DEPTH[n.tier], "number", n.id);
 });
+
+import { mkdtempSync as mkdtemp2 } from "node:fs";
+
+test("soft-skip: a content root with NO spine/ (and no schema) exits 0 — skip happens BEFORE schema compile", () => {
+  const dir = mkdtemp2(join(tmpdir2(), "spine-skip-"));
+  const { code, stdout } = runGate(dir);
+  assert.equal(code, 0, stdout);
+  assert.match(stdout, /0 failures/);
+});
+// helper import for the test above
+import { tmpdir as tmpdir2 } from "node:os";
+
+test("HC-2 G-ID red: duplicate id across two files", () => {
+  const { code, stdout } = runGate(contentRootFor("g-id-duplicate-id"));
+  assert.equal(code, 1, stdout);
+  assert.match(stdout, /FAIL {2}G-ID: duplicate id "n-atlas"/);
+});
+
+test("HC-2 G-PARENT red: a depth-0 node not listed in roots.json", () => {
+  const { code, stdout } = runGate(contentRootFor("g-parent-root-not-listed"));
+  assert.equal(code, 1, stdout);
+  assert.match(stdout, /FAIL {2}G-PARENT: root n-rogue is not listed in roots\.json/);
+});
+
+test("HC-2 G-TREE red: a two-node parent cycle", () => {
+  const { code, stdout } = runGate(contentRootFor("g-tree-cycle"));
+  assert.equal(code, 1, stdout);
+  assert.match(stdout, /FAIL {2}G-TREE: cycle detected through n-loop-/);
+  assert.match(stdout, /unreachable from any root/);
+});
+
+test("HC-2 G-DEPTH red: a town (depth 3) under a continent (depth 1)", () => {
+  const { code, stdout } = runGate(contentRootFor("g-depth-town-under-continent"));
+  assert.equal(code, 1, stdout);
+  assert.match(stdout, /FAIL {2}G-DEPTH: n-oops-town \(town, depth 3\) under n-shore \(continent, depth 1\)/);
+});

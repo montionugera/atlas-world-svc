@@ -20,6 +20,10 @@ import {
   floodFillRegions,
   cellIndexAt,
 } from "./lib/town-geometry.mjs";
+// F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
+// file ends in a bare main() + process.exit() and is not importable, so gate
+// tests spawn it as a child process against fixture content roots.
+import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -31,6 +35,7 @@ function parseArgs(argv) {
     mobTypes: join(ROOT, "colyseus-server/generated/mob-types.json"),
     spawnAreas: join(ROOT, "colyseus-server/generated/spawn-areas.json"),
     requireComplete: false,
+    only: null,
   };
   const takeValue = (name, i) => {
     const v = argv[i];
@@ -45,6 +50,10 @@ function parseArgs(argv) {
     else if (a === "--mob-types") opts.mobTypes = resolve(takeValue(a, ++i));
     else if (a === "--spawn-areas") opts.spawnAreas = resolve(takeValue(a, ++i));
     else if (a === "--require-complete") opts.requireComplete = true;
+    else if (a === "--only" || a.startsWith("--only=")) {
+      opts.only = a.startsWith("--only=") ? a.slice("--only=".length) : takeValue(a, ++i);
+      if (opts.only !== "spine") { console.error(`unsupported --only value: ${opts.only} (only "spine" exists)`); process.exit(2); }
+    }
     else { console.error(`unknown arg: ${a}`); process.exit(2); }
   }
   return opts;
@@ -170,6 +179,12 @@ function listContentFiles(dir, label) {
 
 function main() {
   const opts = parseArgs(process.argv);
+  if (opts.only === "spine") {
+    // Gate 1 fast path (--only=spine): structural spine gates only (~1 s),
+    // not the whole content sweep. finish() still owns exit-code semantics.
+    checkSpine(opts);
+    return finish();
+  }
   const mobTypes = loadMobTypes(opts.mobTypes);
   const story = checkStory(opts, mobTypes);
   const sheetCount = checkCharacters(opts, story.ids);
@@ -177,6 +192,7 @@ function main() {
   const placementCount = checkBestiaryPlacement(opts);
   const zoneCount = checkZoneContent(opts);
   const townCount = checkTownPlan(opts);
+  checkSpine(opts);
   return finish(sheetCount, mapCount, story.count, placementCount, zoneCount, townCount);
 }
 
@@ -1303,6 +1319,79 @@ function checkTownPlan(opts) {
   // =======================================================================
 
   return records.length;
+}
+
+// ═══════════════════════ SPINE (F-041 Phase 0) ══════════════════════════
+// The tier-spine node table: content/spine/nodes/<id>.json, a flat table
+// joined on parentId. Phase 0 wires the structural gates G-ID, G-PARENT,
+// G-TREE, G-DEPTH, G-POLY, G-SEED, G-COMP-SUM. Geometry/derivation gates
+// (G-CONTAIN, G-FRAME, …) land in Phase 1. Returns the valid-node count
+// (finish() starts printing it in Phase 6).
+function checkSpine(opts) {
+  // Soft-skip BEFORE compiling the schema: a content root with no spine/ is
+  // valid (mirrors the maps/ soft-skip) and must not record a spurious
+  // "schema unreadable" failure — every pre-existing gate fixture depends on
+  // this ordering.
+  if (!existsSync(join(opts.contentRoot, "spine"))) return 0;
+
+  const validate = compileSchema(join(opts.contentRoot, "schemas/spine-node.schema.json"), "spine-node schema", fail);
+  if (!validate) return 0;
+
+  const spine = loadSpine({ contentRoot: opts.contentRoot });
+  for (const e of spine.errors) fail(`spine: ${e}`);
+
+  const seenIds = new Map();   // G-ID: node ids AND feature ids, ONE case-sensitive namespace
+  const seenSeeds = new Map(); // G-SEED: seed.value → first owner
+  const validNodes = [];
+
+  for (const node of spine.nodes) {
+    const label = `spine/nodes/${node.file}`;
+    if (!validate(node)) {
+      for (const err of validate.errors) fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
+      continue; // downstream gates assume a valid shape
+    }
+    validNodes.push(node);
+
+    // G-ID — id === filename stem, keyspace regex, global uniqueness.
+    const stem = node.file.replace(/\.json$/, "");
+    if (node.id !== stem) fail(`G-ID: ${label}: id "${node.id}" !== filename stem "${stem}"`);
+    if (!ID_RE.test(node.id)) fail(`G-ID: ${label}: id "${node.id}" does not match ^n-[a-z0-9]+(-[a-z0-9]+)*$`);
+    if (seenIds.has(node.id)) fail(`G-ID: duplicate id "${node.id}" in ${label} (first seen in ${seenIds.get(node.id)})`);
+    else seenIds.set(node.id, label);
+    for (const f of node.features ?? []) {
+      if (typeof f?.id !== "string") continue;
+      if (seenIds.has(f.id)) fail(`G-ID: duplicate id "${f.id}" (feature in ${label}, first seen in ${seenIds.get(f.id)})`);
+      else seenIds.set(f.id, label);
+    }
+
+    // G-PARENT (per-node half) — parentId null iff depth 0.
+    const depth = TIER_DEPTH[node.tier];
+    if ((node.parentId === null) !== (depth === 0))
+      fail(`G-PARENT: ${node.id} (${node.tier}, depth ${depth}) has parentId ${JSON.stringify(node.parentId)} — parentId must be null iff depth 0`);
+
+    // G-POLY, G-SEED, G-COMP-SUM land in the next commit (Task 0.7).
+  }
+
+  // G-PARENT (table half) — every declared root must exist as a node …
+  for (const r of spine.roots)
+    if (!validNodes.some((n) => n.id === r)) fail(`G-PARENT: roots.json lists ${r} but no such node exists`);
+
+  // … and buildTree reports the reverse (a depth-0 node roots.json omits),
+  // plus dangling parents, cycles and orphan islands.
+  const tree = buildTree({ nodes: validNodes, rootIds: spine.roots });
+  for (const e of tree.errors) fail(e.startsWith("root ") ? `G-PARENT: ${e}` : `G-TREE: ${e}`);
+
+  // G-DEPTH — child depth === parent depth + 1, the rule that kills
+  // "region means three things" permanently.
+  for (const n of validNodes) {
+    if (n.parentId === null) continue;
+    const parent = tree.byId.get(n.parentId);
+    if (!parent) continue; // dangling — already a G-TREE failure
+    if (TIER_DEPTH[n.tier] !== TIER_DEPTH[parent.tier] + 1)
+      fail(`G-DEPTH: ${n.id} (${n.tier}, depth ${TIER_DEPTH[n.tier]}) under ${parent.id} (${parent.tier}, depth ${TIER_DEPTH[parent.tier]}) — child depth must be parent depth + 1`);
+  }
+
+  return validNodes.length;
 }
 
 function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0) {
