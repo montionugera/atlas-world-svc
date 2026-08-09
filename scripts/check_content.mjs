@@ -1432,8 +1432,12 @@ function checkSpine(opts) {
 
   // F-041 Phase 1: G-CONTAIN + G-ANCHOR. Boundary-touching points count as
   // inside (tolerance 0.01 parent units) — the sheet's ice edge and south rim
-  // put real vertices exactly on the continent outline.
-  gSpineGeometry({ spine, tree, fail });
+  // put real vertices exactly on the continent outline. Mirrors checkTownPlan/
+  // checkZoneContent's discipline: walk the SCHEMA-VALIDATED list, never the
+  // raw loadSpine() one — a schema-invalid node already got its clean FAIL
+  // line above and `continue`d out of validNodes; reaching into its missing
+  // `placement` here would crash instead of reporting.
+  gSpineGeometry({ nodes: validNodes, tree, fail });
 
   return validNodes.length;
 }
@@ -1458,8 +1462,8 @@ function insideWithTol(pt, ring) {
     if (distToSegment(pt, ring[i], ring[(i + 1) % ring.length]) <= CONTAIN_TOL) return true;
   return false;
 }
-function gSpineGeometry({ spine, tree, fail }) {
-  for (const node of spine.nodes) {
+function gSpineGeometry({ nodes, tree, fail }) {
+  for (const node of nodes) {
     const ring = ringOf(node.placement);
     // G-ANCHOR: anchor present, inside own placement.
     const a = node.placement.anchor;
@@ -1499,6 +1503,10 @@ function gSpineGeometry({ spine, tree, fail }) {
     for (const f of node.features ?? []) {
       if (f.offSheet || !ring) continue;
       const local = f.kind === "point" ? [f.at] : f.points;
+      // `interior` is schema-optional (spine-node.schema.json: {"type":"object"},
+      // no required sub-fields) — a node authored without it but WITH features
+      // must still get a clean skip here, not a TypeError.
+      if (!node.interior) continue;
       const per = node.interior.perParentUnit, o = node.interior.originInParent;
       for (const p of local) {
         const inParentFrame = per === 1 ? p : [o[0] + p[0] / per, o[1] + p[1] / per];

@@ -220,3 +220,27 @@ t11("G-ANCHOR red: anchor outside own placement", () => {
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-ANCHOR.*n-r.*anchor \[5, 5\] outside placement/);
 });
+
+// Review round 1, Important: gSpineGeometry must walk the SCHEMA-VALIDATED
+// list (validNodes), not loadSpine()'s raw one — a node missing `placement`
+// entirely already earned its clean schema FAIL and must not also reach
+// ringOf()/ .anchor and crash the whole gate with an uncaught TypeError
+// (which would also swallow every FAIL recorded before it, since finish()
+// never runs). Delete `placement` AFTER --write (mutate), not before — a
+// node with no placement can't be derived, so it can't survive the
+// fixture's own emit step.
+t11("G-SCHEMA-MISSING-PLACEMENT: a node missing placement FAILs cleanly, no crash", () => {
+  const r = runSpineGate(
+    spineFixture({
+      mutate: (dir) => {
+        const p = join11(dir, "spine/nodes/n-r.json");
+        const doc = JSON.parse(read11(p, "utf8"));
+        delete doc.placement;
+        write11(p, JSON.stringify(doc, null, 2) + "\n");
+      },
+    }),
+  );
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /FAIL {2}spine\/nodes\/n-r\.json: schema .*placement/);
+  assert11.doesNotMatch(r.out, /TypeError/);
+});
