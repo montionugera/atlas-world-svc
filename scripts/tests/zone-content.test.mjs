@@ -123,6 +123,14 @@ test("schema rejects an unknown top-level property", () => {
   assert.equal(compile()({ ...zoneRecord("emberdown"), surprise: true }), false);
 });
 
+test("schema accepts an optional root spineId — the F-041 foreign key to content/spine/nodes/", () => {
+  const validate = compile();
+  assert.ok(
+    validate({ ...zoneRecord("emberdown"), spineId: "n-emberdown" }),
+    JSON.stringify(validate.errors, null, 2)
+  );
+});
+
 test("schema rejects an unknown property inside a resource", () => {
   const doc = zoneRecord("emberdown");
   doc.resources[0].yield = 3;
