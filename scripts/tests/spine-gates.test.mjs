@@ -99,3 +99,28 @@ test("HC-2 G-DEPTH red: a town (depth 3) under a continent (depth 1)", () => {
   assert.equal(code, 1, stdout);
   assert.match(stdout, /FAIL {2}G-DEPTH: n-oops-town \(town, depth 3\) under n-shore \(continent, depth 1\)/);
 });
+
+test("HC-2 G-POLY red: a clockwise ring has strictly negative signed shoelace", () => {
+  const { code, stdout } = runGate(contentRootFor("g-poly-clockwise-ring"));
+  assert.equal(code, 1, stdout);
+  assert.match(stdout, /FAIL {2}G-POLY: n-badland: signed shoelace area -1600 is not strictly positive/);
+});
+
+test("HC-2 G-SEED red: two nodes sharing one seed.value", () => {
+  const { code, stdout } = runGate(contentRootFor("g-seed-duplicate-seed"));
+  assert.equal(code, 1, stdout);
+  assert.match(stdout, /FAIL {2}G-SEED: duplicate seed\.value "00000000000000aa" on n-copied and n-atlas/);
+});
+
+test("HC-2 G-COMP-SUM red: the 65-that-should-be-6.5 typo sums to 158.5", () => {
+  const { code, stdout } = runGate(contentRootFor("g-comp-sum-typo"));
+  assert.equal(code, 1, stdout);
+  assert.match(stdout, /FAIL {2}G-COMP-SUM: n-typo: composition sums to 158\.5/);
+});
+
+// ── the acceptance-criteria green: all 7 gates on the committed table ──────
+test("all 7 structural gates are green on the committed 4-node spine", () => {
+  const { code, stdout } = runGate(join(ROOT, "content"));
+  assert.equal(code, 0, stdout);
+  assert.match(stdout, /content-gate: .*, 0 failures/);
+});

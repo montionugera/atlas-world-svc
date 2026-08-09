@@ -1,0 +1,9 @@
+{
+  "id": "n-atlas",
+  "tier": "world",
+  "parentId": null,
+  "title": "Atlas",
+  "seed": { "value": "00000000000000aa", "epoch": 0, "why": null },
+  "placement": { "shape": "rect", "rect": { "x": 0, "y": 0, "w": 100, "h": 100 }, "anchor": [50, 50] },
+  "composition": { "ocean": 100 }
+}

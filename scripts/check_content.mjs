@@ -1369,7 +1369,46 @@ function checkSpine(opts) {
     if ((node.parentId === null) !== (depth === 0))
       fail(`G-PARENT: ${node.id} (${node.tier}, depth ${depth}) has parentId ${JSON.stringify(node.parentId)} — parentId must be null iff depth 0`);
 
-    // G-POLY, G-SEED, G-COMP-SUM land in the next commit (Task 0.7).
+    // G-POLY — polygon rings: >= 3 points, OPEN ring, no repeated consecutive
+    // point, strictly POSITIVE signed shoelace (abs() nowhere — a negative
+    // area is a winding failure, not a magnitude), no self-intersection.
+    if (node.placement?.shape === "polygon") {
+      const pts = node.placement.points ?? [];
+      if (pts.length < 3) fail(`G-POLY: ${node.id}: polygon has ${pts.length} points (need >= 3)`);
+      else {
+        const [fx, fy] = pts[0];
+        const [lx, ly] = pts[pts.length - 1];
+        if (fx === lx && fy === ly) fail(`G-POLY: ${node.id}: ring is closed (last point repeats first) — author OPEN rings`);
+        for (let i = 1; i < pts.length; i++)
+          if (pts[i][0] === pts[i - 1][0] && pts[i][1] === pts[i - 1][1])
+            fail(`G-POLY: ${node.id}: repeated consecutive point at index ${i}`);
+        const area = shoelaceArea({ points: pts });
+        if (!(area > 0)) fail(`G-POLY: ${node.id}: signed shoelace area ${area} is not strictly positive — ring is wound backwards`);
+        if (selfIntersects({ points: pts })) fail(`G-POLY: ${node.id}: polygon self-intersects`);
+      }
+    }
+
+    // G-SEED — literal 16-hex, globally unique (copy-paste node creation must
+    // mint a fresh seed), integer epoch >= 0, why non-empty IFF epoch > 0.
+    const seed = node.seed;
+    if (!SEED_RE.test(seed.value)) fail(`G-SEED: ${node.id}: seed.value "${seed.value}" is not 16 lowercase hex chars`);
+    else if (seenSeeds.has(seed.value)) fail(`G-SEED: duplicate seed.value "${seed.value}" on ${node.id} and ${seenSeeds.get(seed.value)} — two places would generate identically forever`);
+    else seenSeeds.set(seed.value, node.id);
+    if (!Number.isInteger(seed.epoch) || seed.epoch < 0)
+      fail(`G-SEED: ${node.id}: seed.epoch ${JSON.stringify(seed.epoch)} must be an integer >= 0`);
+    const hasWhy = typeof seed.why === "string" && seed.why.trim() !== "";
+    if (seed.epoch > 0 && !hasWhy) fail(`G-SEED: ${node.id}: epoch ${seed.epoch} > 0 requires a non-empty seed.why`);
+    if (seed.epoch === 0 && hasWhy) fail(`G-SEED: ${node.id}: seed.why must be null while epoch is 0 — it documents a reroll that never happened`);
+
+    // G-COMP-SUM — sum 100 ± 0.5, keys ∈ BIOMES, no zero/negative values
+    // (omit the key instead of writing 0, so diffs stay honest).
+    let compSum = 0;
+    for (const [b, v] of Object.entries(node.composition ?? {})) {
+      if (!BIOMES.includes(b)) fail(`G-COMP-SUM: ${node.id}: composition key "${b}" is not a biome (${BIOMES.join(" ")})`);
+      if (typeof v !== "number" || !(v > 0)) fail(`G-COMP-SUM: ${node.id}: composition.${b} = ${JSON.stringify(v)} — values must be numbers > 0 (omit the key instead of 0)`);
+      else compSum += v;
+    }
+    if (Math.abs(compSum - 100) > 0.5) fail(`G-COMP-SUM: ${node.id}: composition sums to ${compSum} — must be 100 ± 0.5`);
   }
 
   // G-PARENT (table half) — every declared root must exist as a node …
