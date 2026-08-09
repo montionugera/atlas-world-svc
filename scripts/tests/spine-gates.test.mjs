@@ -373,8 +373,8 @@ t11("G-COMP-REPORT prints coverage and verdict for every node", () => {
   assert11.match(r.out, /spine-load: 3 nodes, \d+ bytes \(budget 10 nodes, 65536 bytes\)/);
 });
 
-// ─── F-041 Phase 1 · Task 1.11: G-OVERLAP + G-COMP-ROLLUP (WARN stage) ──────
-t11("G-OVERLAP + G-COMP-ROLLUP report as WARN on overlapping twins", () => {
+// ─── F-041 Phase 1 · Task 1.13: G-OVERLAP + G-COMP-ROLLUP (FAIL stage) ──────
+t11("G-OVERLAP + G-COMP-ROLLUP red: overlapping twins now hard-fail", () => {
   const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
     const base = JSON.parse(read11(join11(dir, "spine/nodes/n-r.json"), "utf8"));
     const twin = { ...base, id: "n-r2", seed: { value: "52fc1fdd51a099d7", epoch: 0, why: null } };
@@ -382,7 +382,18 @@ t11("G-OVERLAP + G-COMP-ROLLUP report as WARN on overlapping twins", () => {
     write11(join11(dir, "spine/nodes/n-r2.json"), JSON.stringify(twin, null, 2) + "\n");
     exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
   } }));
-  // still WARN: exit 0, but the finding is printed
-  assert11.equal(r.code, 0);
-  assert11.match(r.out, /WARN.*G-OVERLAP n-r ∩ n-r2: 400\.0 over limit 2\.0/);
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-OVERLAP n-r ∩ n-r2: 400\.0 over limit 2\.0/);
+});
+t11("G-COMP-ROLLUP red: child mix contradicts the parent beyond tolerance", () => {
+  const r = runSpineGate(spineFixture({ mutate: (dir) => {
+    const p = join11(dir, "spine/nodes/n-c.json");
+    const doc = JSON.parse(read11(p, "utf8"));
+    doc.interstitialUnsurveyed = false;
+    doc.interstitial = { rock: 100 }; // children + interstitial say rock; node claims meadow
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-COMP-ROLLUP n-c: meadow off by .* pp \(tol 3\)/);
 });

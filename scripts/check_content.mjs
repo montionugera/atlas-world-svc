@@ -1454,11 +1454,11 @@ function checkSpine(opts) {
   // every run that reaches this point (spine/ present, schema compiles).
   gSpineBudgets({ spine, tree, contentRoot: opts.contentRoot, fail });
 
-  // F-041 Phase 1 Task 1.11: G-OVERLAP + G-COMP-ROLLUP, reported as WARN
-  // until the two authoring debts (8 measured overlap pairs, the n-cluster1
-  // union identity) are paid off in Task 1.12 — Task 1.13 flips `report`
-  // from `warn` to `fail`, no other change.
-  gSpineOverlapRollup({ tree, report: warn });
+  // F-041 Phase 1 Task 1.11 reported this as WARN until the two authoring
+  // debts (8 measured overlap pairs, the n-cluster1 union identity) were
+  // paid off in Task 1.12. Task 1.13 flips `report` from `warn` to `fail` —
+  // the world is disjoint now, so G-OVERLAP + G-COMP-ROLLUP are enforced.
+  gSpineOverlapRollup({ tree, report: fail });
 
   return validNodes.length;
 }
