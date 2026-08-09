@@ -55,17 +55,21 @@ test("spine-node schema is draft-07 with an $id", () => {
 // ── the committed table parses and joins ───────────────────────────────────
 // Task 1.3 transcribed the 12 cluster-1 regions (10 zones + n-saltmire +
 // n-eastern-hills, HC-3: cluster 1 has 12 children, not 10), growing the
-// table from 4 to 16 nodes. Ids come back sorted (loadSpine reads the
-// directory sorted), so the 12 new n-* ids interleave with the original 4.
-test("the committed 16-node table loads clean: 2 roots, depths legal, no load errors", () => {
+// table from 4 to 16 nodes. Task 1.4 transcribed the 6 towns + the
+// expedition camp (tier town, depth 3, under their region parents), growing
+// the table from 16 to 23 nodes. Ids come back sorted (loadSpine reads the
+// directory sorted), so the 7 new n-* ids interleave with the existing 16.
+test("the committed 23-node table loads clean: 2 roots, depths legal, no load errors", () => {
   const spine = loadSpine({ contentRoot: join(ROOT, "content") });
   assert.equal(spine.present, true);
   assert.deepEqual(spine.errors, []);
   assert.deepEqual(spine.nodes.map((n) => n.id), [
-    "n-ashvale-front", "n-atlas", "n-cindervast", "n-cluster1", "n-eastern-hills",
-    "n-emberdown", "n-gildmark-head", "n-hollowmarch", "n-meltwash-terrace",
-    "n-millcross-ford", "n-northern-icefield", "n-playroot", "n-rooktide-reach",
-    "n-saltmire", "n-thornveil", "n-westsea",
+    "n-ashvale-front", "n-atlas", "n-cindervast-town", "n-cindervast", "n-cluster1",
+    "n-eastern-hills", "n-emberdown", "n-embervale", "n-expedition-camp",
+    "n-gildmark-head", "n-gildmark", "n-hollowmarch", "n-meltwash-terrace",
+    "n-millcross-ford", "n-millcross", "n-norhollow", "n-northern-icefield",
+    "n-playroot", "n-rooktide-reach", "n-rooktide", "n-saltmire", "n-thornveil",
+    "n-westsea",
   ]);
   assert.deepEqual(spine.roots, ["n-atlas", "n-playroot"]);
   assert.deepEqual(spine.budgets.load, { maxNodes: 48, maxBytes: 262144 });

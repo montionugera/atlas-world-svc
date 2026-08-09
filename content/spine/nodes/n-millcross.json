@@ -1,0 +1,73 @@
+{
+  "id": "n-millcross",
+  "tier": "town",
+  "parentId": "n-millcross-ford",
+  "title": "Millcross",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [86, 118],
+  "seed": {
+    "value": "dbcf5119861b0417",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "point",
+    "at": [86, 118],
+    "anchor": [86, 118]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [0, 0],
+    "originInParent": [86, 118]
+  },
+  "composition": {
+    "meadow": 63,
+    "built": 28,
+    "river": 9
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 1,
+    "emblem": "crossed roads over an empty bowl",
+    "reason": "The only cart-crossing of the river that splits the land, and the fork of the north road",
+    "labelAnchor": "east"
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 0,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [86, 118],
+    "resolvedSeedStreams": {
+      "terrain": "c579f922981c528d",
+      "settlements": "90d0166357877d7c",
+      "vegetation": "d53b1f3356234a93",
+      "names": "5a6e087d2bc90827"
+    },
+    "digest": "sha256:ea40a46d65864ca07ce2142fcaec6a570e5c2ef6916689e7d92edec0beb48871"
+  }
+}

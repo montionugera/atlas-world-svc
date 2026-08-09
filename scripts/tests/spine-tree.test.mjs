@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
-// Snapshot of the committed 16-node table. Coverage math, pinned:
+// Snapshot of the committed 23-node table. Coverage math, pinned:
 //   n-atlas: (26128 km² cluster1 land polygon + 2042 km² westsea strip) /
 //            4,000,000 km² = 0.70425% → "0.7%" (Task 1.2 replaced the
 //            Phase-0 coarse hulls with the transcribed coastline geometry);
@@ -18,27 +18,37 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 //            CHECKED threshold — expected, region children have no children
 //            of their own yet).
 //   n-westsea: no children → 0.0%; authored interstitial → ASSERTED.
-//   the 12 region nodes: no children → 0.0%; each carries an authored
-//            composition, so `interstitial` (copy or null) never fires the
-//            rollup — verdict is ASSERTED regardless.
+//   the 12 region nodes: Task 1.4 gave 6 of them a town child (7th is a
+//            camp) — every one is `placement.shape: "point"` (area 0 —
+//            research §5.3 excludes points from every rollup), so coverage
+//            stays 0.0% ASSERTED for both parent and child regardless.
+//   the 7 town-tier nodes (6 towns + n-expedition-camp): no children →
+//            0.0% ASSERTED.
 //   n-playroot: no children, unsurveyed → 0.0% UNCHECKED.
 const EXPECTED = `n-atlas · world · km · coverage 0.7% UNCHECKED
 ├── n-cluster1 · continent · km · coverage 58.2% ASSERTED
 │   ├── n-ashvale-front · region · km · coverage 0.0% ASSERTED
 │   ├── n-cindervast · region · km · coverage 0.0% ASSERTED
+│   │   └── n-cindervast-town · town · km · coverage 0.0% ASSERTED
 │   ├── n-eastern-hills · region · km · coverage 0.0% ASSERTED
 │   ├── n-emberdown · region · km · coverage 0.0% ASSERTED
+│   │   └── n-embervale · town · km · coverage 0.0% ASSERTED
 │   ├── n-gildmark-head · region · km · coverage 0.0% ASSERTED
+│   │   └── n-gildmark · town · km · coverage 0.0% ASSERTED
 │   ├── n-hollowmarch · region · km · coverage 0.0% ASSERTED
+│   │   └── n-norhollow · town · km · coverage 0.0% ASSERTED
 │   ├── n-meltwash-terrace · region · km · coverage 0.0% ASSERTED
+│   │   └── n-expedition-camp · town · km · coverage 0.0% ASSERTED
 │   ├── n-millcross-ford · region · km · coverage 0.0% ASSERTED
+│   │   └── n-millcross · town · km · coverage 0.0% ASSERTED
 │   ├── n-northern-icefield · region · km · coverage 0.0% ASSERTED
 │   ├── n-rooktide-reach · region · km · coverage 0.0% ASSERTED
+│   │   └── n-rooktide · town · km · coverage 0.0% ASSERTED
 │   ├── n-saltmire · region · km · coverage 0.0% ASSERTED
 │   └── n-thornveil · region · km · coverage 0.0% ASSERTED
 └── n-westsea · ocean · km · coverage 0.0% ASSERTED
 n-playroot · playroot · u · coverage 0.0% UNCHECKED
-16 nodes · 2 roots
+23 nodes · 2 roots
 `;
 
 test("spine-tree prints the committed table exactly (snapshot)", () => {

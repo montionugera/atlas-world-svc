@@ -76,9 +76,9 @@
     "computedComposition": {
       "meadow": 46,
       "river": 22,
+      "built": 6,
       "forest": 14,
-      "marsh": 12,
-      "built": 6
+      "marsh": 12
     },
     "rollupVerdict": "ASSERTED",
     "absoluteAnchorRoot": [104, 90],
@@ -88,6 +88,6 @@
       "vegetation": "71cd2f9b6237979c",
       "names": "a79774ad4cf050ab"
     },
-    "digest": "sha256:0afccf2574743a0da061106541eabbecf2c25614cc94e1135c7223b6c55a07b3"
+    "digest": "sha256:2329be5688b1c1630d3a698f82fbd2d796c77994a481b7cd9f74120155d32997"
   }
 }

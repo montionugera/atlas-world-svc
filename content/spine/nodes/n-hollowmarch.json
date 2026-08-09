@@ -75,11 +75,11 @@
     "coveragePct": 0,
     "unclaimedPct": 100,
     "computedComposition": {
-      "rock": 30,
+      "built": 6,
       "meadow": 28,
       "forest": 22,
-      "upland": 14,
-      "built": 6
+      "rock": 30,
+      "upland": 14
     },
     "rollupVerdict": "ASSERTED",
     "absoluteAnchorRoot": [80, 80],
@@ -89,6 +89,6 @@
       "vegetation": "a8936a95791cba1c",
       "names": "dd2eaae367055c06"
     },
-    "digest": "sha256:488d9f8b76b6feb3bb403597cb3136b8192977af46cb04af44b426fa60f897e7"
+    "digest": "sha256:4675527b5631c241c1ad40bfb3780e41f4979c35534bcc4fe105866784de96e4"
   }
 }

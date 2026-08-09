@@ -1,0 +1,74 @@
+{
+  "id": "n-norhollow",
+  "tier": "town",
+  "parentId": "n-hollowmarch",
+  "title": "Norhollow",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [74, 94],
+  "seed": {
+    "value": "4e1dc7c69b966818",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "point",
+    "at": [74, 94],
+    "anchor": [74, 94]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [0, 0],
+    "originInParent": [74, 94]
+  },
+  "composition": {
+    "built": 38,
+    "meadow": 30,
+    "forest": 20,
+    "rock": 12
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 4,
+    "emblem": "a hollow bell over crossed stakes",
+    "reason": "Where the timber line and the ore heads both begin, at the flat's eastern edge",
+    "labelAnchor": "east"
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 0,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [74, 94],
+    "resolvedSeedStreams": {
+      "terrain": "83c0cb766d249dea",
+      "settlements": "a37c19b6dcee166d",
+      "vegetation": "e0892a1f48281df8",
+      "names": "ebda62134e2ae322"
+    },
+    "digest": "sha256:629b7f8672f346faa6b5ba2e60b60cd44a320da5a5fb366352aee2ed11db18d0"
+  }
+}

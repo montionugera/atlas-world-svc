@@ -1,0 +1,74 @@
+{
+  "id": "n-gildmark",
+  "tier": "town",
+  "parentId": "n-gildmark-head",
+  "title": "Gildmark",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [11, 157],
+  "seed": {
+    "value": "905061f812c67b0b",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "point",
+    "at": [11, 157],
+    "anchor": [11, 157]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [0, 0],
+    "originInParent": [11, 157]
+  },
+  "composition": {
+    "built": 46,
+    "rock": 30,
+    "ocean": 12,
+    "meadow": 12
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 2,
+    "emblem": "a harbour scale with one pan lower",
+    "reason": "The only rock on a silted coast, next to the only water deep enough for a sea keel",
+    "labelAnchor": "east"
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 0,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [11, 157],
+    "resolvedSeedStreams": {
+      "terrain": "e267dffcf9a91599",
+      "settlements": "3f19e0e3f58de814",
+      "vegetation": "8a6f782a5738167c",
+      "names": "16b8b26a0d666df5"
+    },
+    "digest": "sha256:1e3acc77d0c00db1ed538bf5586654ce0d669789ac0674496c9cc479324b91ee"
+  }
+}

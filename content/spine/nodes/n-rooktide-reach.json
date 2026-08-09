@@ -76,10 +76,10 @@
     "coveragePct": 0,
     "unclaimedPct": 100,
     "computedComposition": {
-      "river": 30,
-      "meadow": 34,
-      "marsh": 24,
       "built": 8,
+      "river": 30,
+      "marsh": 24,
+      "meadow": 34,
       "forest": 4
     },
     "rollupVerdict": "ASSERTED",
@@ -90,6 +90,6 @@
       "vegetation": "5bcc0d3dc908f753",
       "names": "63171f215e88689a"
     },
-    "digest": "sha256:039ce19c14603fc0f8b55a21c301ad0d7d482b8de6d73903fa8c3604da3f3305"
+    "digest": "sha256:bf400d92fb8591f717fe090cc35e53d390dc8bb8e10666f52c59d9312b2471f4"
   }
 }
