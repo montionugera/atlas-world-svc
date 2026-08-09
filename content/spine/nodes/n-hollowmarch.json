@@ -1,0 +1,94 @@
+{
+  "id": "n-hollowmarch",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Hollowmarch",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [80, 80],
+  "seed": {
+    "value": "48625e50e3ad4297",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [62, 72],
+      [80, 68],
+      [92, 76],
+      [90, 96],
+      [78, 106],
+      [64, 100],
+      [58, 86]
+    ],
+    "anchor": [80, 80]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [34, 38],
+    "originInParent": [58, 68]
+  },
+  "composition": {
+    "rock": 30,
+    "meadow": 28,
+    "forest": 22,
+    "upland": 14,
+    "built": 6
+  },
+  "interstitial": {
+    "rock": 30,
+    "meadow": 28,
+    "forest": 22,
+    "upland": 14,
+    "built": 6
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "rim",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 7,
+    "labelAt": [80, 80]
+  },
+  "tags": [],
+  "levelBand": [35, 48],
+  "derived": {
+    "areaParentUnits2": 944,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {
+      "rock": 30,
+      "meadow": 28,
+      "forest": 22,
+      "upland": 14,
+      "built": 6
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [80, 80],
+    "resolvedSeedStreams": {
+      "terrain": "b40dea2ee6e81fcf",
+      "settlements": "ef4c56852ca82ad5",
+      "vegetation": "a8936a95791cba1c",
+      "names": "dd2eaae367055c06"
+    },
+    "digest": "sha256:488d9f8b76b6feb3bb403597cb3136b8192977af46cb04af44b426fa60f897e7"
+  }
+}

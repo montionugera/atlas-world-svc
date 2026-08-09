@@ -1,0 +1,80 @@
+{
+  "id": "n-eastern-hills",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "the eastern hills",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "b26a9165e766248b",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [114, 58],
+      [132, 50],
+      [148, 60],
+      [148, 96],
+      [138, 106],
+      [124, 100],
+      [113, 84]
+    ],
+    "anchor": [130, 76]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [35, 56],
+    "originInParent": [113, 50]
+  },
+  "composition": {
+    "upland": 52,
+    "forest": 26,
+    "rock": 14,
+    "meadow": 8
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "upland",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "note": "A1 §3.2: the east rim's old timber runs up to ore heads in the eastern hills, and Thornveil is the interfluve between the Meltwash and them. Terrain only — no settlement is named here anywhere in the corpus.",
+    "labelAt": [130, 76]
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 1541,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [130, 76],
+    "resolvedSeedStreams": {
+      "terrain": "da0e0b18ac3a15ac",
+      "settlements": "197e9d2c21c4d6ca",
+      "vegetation": "89e79178f26729ed",
+      "names": "83564c153ee15355"
+    },
+    "digest": "sha256:5576601211f68eb6c7ec70fc7fc94dc29b8ca76e632c4bc8c2a16d1541853c17"
+  }
+}

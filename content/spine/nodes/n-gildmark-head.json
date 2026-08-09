@@ -1,0 +1,93 @@
+{
+  "id": "n-gildmark-head",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Gildmark Head",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [22, 146],
+  "seed": {
+    "value": "80147f076c72d4d5",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [2, 142],
+      [20, 140],
+      [30, 152],
+      [28, 170],
+      [14, 180],
+      [2, 174]
+    ],
+    "anchor": [22, 146]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [28, 40],
+    "originInParent": [2, 140]
+  },
+  "composition": {
+    "rock": 38,
+    "meadow": 30,
+    "ocean": 14,
+    "built": 10,
+    "upland": 8
+  },
+  "interstitial": {
+    "rock": 38,
+    "meadow": 30,
+    "ocean": 14,
+    "built": 10,
+    "upland": 8
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "headland",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 6,
+    "labelAt": [22, 146]
+  },
+  "tags": [],
+  "levelBand": [30, 45],
+  "derived": {
+    "areaParentUnits2": 898,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {
+      "rock": 38,
+      "meadow": 30,
+      "ocean": 14,
+      "built": 10,
+      "upland": 8
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [22, 146],
+    "resolvedSeedStreams": {
+      "terrain": "11541a176ed1e9ac",
+      "settlements": "476899213eb09cba",
+      "vegetation": "dfb48aa0251d8bf1",
+      "names": "4417222909867d03"
+    },
+    "digest": "sha256:5f0ffdc6d1f8b841c9c3f1749aa4bff06c345cd7d03d0a4bfc17657c980929a9"
+  }
+}

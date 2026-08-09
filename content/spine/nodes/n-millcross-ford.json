@@ -1,0 +1,90 @@
+{
+  "id": "n-millcross-ford",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Millcross Ford",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [78, 130],
+  "seed": {
+    "value": "659ecbb6828eb66e",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [74, 110],
+      [92, 106],
+      [100, 116],
+      [98, 132],
+      [84, 138],
+      [72, 128]
+    ],
+    "anchor": [78, 130]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [28, 32],
+    "originInParent": [72, 106]
+  },
+  "composition": {
+    "river": 46,
+    "meadow": 32,
+    "built": 12,
+    "marsh": 10
+  },
+  "interstitial": {
+    "river": 46,
+    "meadow": 32,
+    "built": 12,
+    "marsh": 10
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "river-country",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 2,
+    "labelAt": [78, 130]
+  },
+  "tags": [],
+  "levelBand": [1, 15],
+  "derived": {
+    "areaParentUnits2": 664,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {
+      "river": 46,
+      "meadow": 32,
+      "built": 12,
+      "marsh": 10
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [78, 130],
+    "resolvedSeedStreams": {
+      "terrain": "f468474a8e508153",
+      "settlements": "0b41cad337ba4da5",
+      "vegetation": "a619cf0b7a56607d",
+      "names": "9933bacce8e869e5"
+    },
+    "digest": "sha256:837039bc37f08d7b1b4ffa3ff2c99aa2a7ac24bcb11eea44df524876e3ec1a4f"
+  }
+}

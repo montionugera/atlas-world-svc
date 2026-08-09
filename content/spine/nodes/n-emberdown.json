@@ -1,0 +1,94 @@
+{
+  "id": "n-emberdown",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Emberdown",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [36, 84],
+  "seed": {
+    "value": "23107573806d9fcc",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [26, 78],
+      [44, 72],
+      [56, 82],
+      [54, 102],
+      [42, 112],
+      [28, 106],
+      [22, 92]
+    ],
+    "anchor": [36, 84]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [34, 40],
+    "originInParent": [22, 72]
+  },
+  "composition": {
+    "rock": 34,
+    "meadow": 30,
+    "upland": 18,
+    "forest": 12,
+    "built": 6
+  },
+  "interstitial": {
+    "rock": 34,
+    "meadow": 30,
+    "upland": 18,
+    "forest": 12,
+    "built": 6
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "rim",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 5,
+    "labelAt": [36, 84]
+  },
+  "tags": [],
+  "levelBand": [25, 35],
+  "derived": {
+    "areaParentUnits2": 974,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {
+      "rock": 34,
+      "meadow": 30,
+      "upland": 18,
+      "forest": 12,
+      "built": 6
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [36, 84],
+    "resolvedSeedStreams": {
+      "terrain": "e150999e13b00a29",
+      "settlements": "30ed31e3eb8eff51",
+      "vegetation": "3c07e6ebeb419b2c",
+      "names": "5c827dcb6693d2b9"
+    },
+    "digest": "sha256:45b1d970f7d480e602d588ffb963ca5c2be0e382f41e0c90aaee23d3724fd8e6"
+  }
+}

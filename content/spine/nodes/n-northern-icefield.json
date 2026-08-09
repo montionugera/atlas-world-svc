@@ -1,0 +1,81 @@
+{
+  "id": "n-northern-icefield",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Northern Icefield",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "f64a1d0c1717285b",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [61, 0],
+      [96, 0],
+      [132, 0],
+      [148, 14],
+      [140, 34],
+      [110, 39],
+      [84, 33],
+      [65, 20]
+    ],
+    "anchor": [112, 18]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [87, 39],
+    "originInParent": [61, 0]
+  },
+  "composition": {
+    "ice": 62,
+    "rock": 20,
+    "upland": 12,
+    "meadow": 6
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "ice",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 9,
+    "labelAt": [112, 18]
+  },
+  "tags": [],
+  "levelBand": [55, 70],
+  "derived": {
+    "areaParentUnits2": 2654.5,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [112, 18],
+    "resolvedSeedStreams": {
+      "terrain": "f5abb70a85126dda",
+      "settlements": "88eb814701991aec",
+      "vegetation": "70592ec42d68ce41",
+      "names": "60aa4059d7837b9a"
+    },
+    "digest": "sha256:b4c27807fd8e9febe1154b8264e00c111a1b54fbf474915b05a6fc675c79ad69"
+  }
+}

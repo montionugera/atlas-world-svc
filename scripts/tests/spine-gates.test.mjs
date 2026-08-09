@@ -53,11 +53,20 @@ test("spine-node schema is draft-07 with an $id", () => {
 });
 
 // ── the committed table parses and joins ───────────────────────────────────
-test("the committed 4-node table loads clean: 2 roots, depths legal, no load errors", () => {
+// Task 1.3 transcribed the 12 cluster-1 regions (10 zones + n-saltmire +
+// n-eastern-hills, HC-3: cluster 1 has 12 children, not 10), growing the
+// table from 4 to 16 nodes. Ids come back sorted (loadSpine reads the
+// directory sorted), so the 12 new n-* ids interleave with the original 4.
+test("the committed 16-node table loads clean: 2 roots, depths legal, no load errors", () => {
   const spine = loadSpine({ contentRoot: join(ROOT, "content") });
   assert.equal(spine.present, true);
   assert.deepEqual(spine.errors, []);
-  assert.deepEqual(spine.nodes.map((n) => n.id), ["n-atlas", "n-cluster1", "n-playroot", "n-westsea"]);
+  assert.deepEqual(spine.nodes.map((n) => n.id), [
+    "n-ashvale-front", "n-atlas", "n-cindervast", "n-cluster1", "n-eastern-hills",
+    "n-emberdown", "n-gildmark-head", "n-hollowmarch", "n-meltwash-terrace",
+    "n-millcross-ford", "n-northern-icefield", "n-playroot", "n-rooktide-reach",
+    "n-saltmire", "n-thornveil", "n-westsea",
+  ]);
   assert.deepEqual(spine.roots, ["n-atlas", "n-playroot"]);
   assert.deepEqual(spine.budgets.load, { maxNodes: 48, maxBytes: 262144 });
   assert.deepEqual(spine.budgets.coverage, { maxUnchecked: 4 });

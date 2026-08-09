@@ -1,0 +1,93 @@
+{
+  "id": "n-meltwash-terrace",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Meltwash Terrace",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "c3bbf20de1587ac7",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [88, 84],
+      [100, 78],
+      [112, 84],
+      [114, 98],
+      [106, 110],
+      [94, 110],
+      [86, 98]
+    ],
+    "anchor": [104, 90]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [28, 32],
+    "originInParent": [86, 78]
+  },
+  "composition": {
+    "meadow": 46,
+    "river": 22,
+    "forest": 14,
+    "marsh": 12,
+    "built": 6
+  },
+  "interstitial": {
+    "meadow": 46,
+    "river": 22,
+    "forest": 14,
+    "marsh": 12,
+    "built": 6
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "river-country",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 1,
+    "labelAt": [104, 90]
+  },
+  "tags": [],
+  "levelBand": [1, 10],
+  "derived": {
+    "areaParentUnits2": 676,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {
+      "meadow": 46,
+      "river": 22,
+      "forest": 14,
+      "marsh": 12,
+      "built": 6
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [104, 90],
+    "resolvedSeedStreams": {
+      "terrain": "2c4db5a7b1b9e5e1",
+      "settlements": "3b89266ec1af9779",
+      "vegetation": "71cd2f9b6237979c",
+      "names": "a79774ad4cf050ab"
+    },
+    "digest": "sha256:0afccf2574743a0da061106541eabbecf2c25614cc94e1135c7223b6c55a07b3"
+  }
+}

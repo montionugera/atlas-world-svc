@@ -1,0 +1,94 @@
+{
+  "id": "n-cindervast",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Cindervast",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [40, 20],
+  "seed": {
+    "value": "bd82fd764b4bc799",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [27, 0],
+      [56, 0],
+      [59, 14],
+      [54, 31],
+      [40, 36],
+      [26, 25],
+      [25, 10]
+    ],
+    "anchor": [40, 20]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [34, 36],
+    "originInParent": [25, 0]
+  },
+  "composition": {
+    "upland": 44,
+    "rock": 30,
+    "ash": 14,
+    "meadow": 10,
+    "built": 2
+  },
+  "interstitial": {
+    "upland": 44,
+    "rock": 30,
+    "ash": 14,
+    "meadow": 10,
+    "built": 2
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "upland",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 10,
+    "labelAt": [33, 32]
+  },
+  "tags": [],
+  "levelBand": [65, 80],
+  "derived": {
+    "areaParentUnits2": 995,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {
+      "upland": 44,
+      "rock": 30,
+      "ash": 14,
+      "meadow": 10,
+      "built": 2
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [40, 20],
+    "resolvedSeedStreams": {
+      "terrain": "a8a42758e207c967",
+      "settlements": "59a62804116a9de1",
+      "vegetation": "d294ef0042526a9d",
+      "names": "866aa1759c77c621"
+    },
+    "digest": "sha256:7dad6d6a8c1eea462e8021a3c2f4aa686f065f29e19ec075dbbc663e8c75ec01"
+  }
+}
