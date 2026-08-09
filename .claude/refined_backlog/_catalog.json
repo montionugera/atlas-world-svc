@@ -469,5 +469,14 @@
     "claimed_at": "2026-08-09T02:26:34.558811+00:00",
     "shipped_at": "2026-08-09T03:56:49.856521+00:00",
     "promoted_at": "2026-08-09T09:38:37.900249+00:00"
+  },
+  {
+    "id": "F-041",
+    "title": "Seeded map data model: seed + derived file so cluster-1 map detail can grow without hand-authoring every point",
+    "from_idea": "I-089",
+    "created_at": "2026-08-09T15:20:45.101834+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
