@@ -84,6 +84,11 @@ content_gate()  { node "$REPO_ROOT/scripts/check_content.mjs" --require-complete
 # content without regenerating it.
 graph_drift()   { node "$REPO_ROOT/scripts/gen_story_graph.mjs" --check; }
 
+# content/maps/cluster1-geography.json is generated from the spine
+# (content/spine/nodes/*); drift means someone hand-edited the mirror or
+# changed the spine without re-emitting (F-041 G-EMIT-DRIFT).
+spine_emit_drift() { node "$REPO_ROOT/scripts/check_spine_emit.mjs" --check; }
+
 content_tests() { (cd "$REPO_ROOT/scripts" && npm test); }
 
 explorer_smoke() { (cd "$REPO_ROOT" && node --test tools/story-explorer/tests/*.test.mjs); }
@@ -103,6 +108,7 @@ run_section "server: jest suite"           server_tests
 run_section "server: prettier format"      server_format
 run_section "content: gate (--require-complete)" content_gate
 run_section "content: story-graph drift"   graph_drift
+run_section "content: spine emit drift (G-EMIT-DRIFT)" spine_emit_drift
 run_section "content: mapforge render --check" mapforge_check
 run_section "content: gate test suite"     content_tests
 run_section "content: story-explorer smoke" explorer_smoke
