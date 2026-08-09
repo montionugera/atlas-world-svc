@@ -1,0 +1,25 @@
+{
+  "zone": "hollowmarch",
+  "reasonToGo": "why anyone walks into hollowmarch",
+  "hazards": [
+    {
+      "id": "h-one"
+    }
+  ],
+  "resources": [
+    {
+      "id": "r-one"
+    },
+    {
+      "id": "r-two"
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "l-one"
+    },
+    {
+      "id": "l-two"
+    }
+  ]
+}

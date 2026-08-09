@@ -6,6 +6,9 @@ import { defensive } from './definitions/defensive'
 import { balanced } from './definitions/balanced'
 import { doubleAttacker } from './definitions/doubleAttacker'
 import { thorncrownDrake } from './definitions/thorncrownDrake'
+import { brambleStalker } from './definitions/brambleStalker'
+import { veilSpearling } from './definitions/veilSpearling'
+import { brambleDrake } from './definitions/brambleDrake'
 
 /**
  * Mob Type Definitions
@@ -19,6 +22,9 @@ export const MOB_TYPES: MobTypeConfig[] = [
   balanced,
   doubleAttacker,
   thorncrownDrake,
+  brambleStalker,
+  veilSpearling,
+  brambleDrake,
 ]
 
 export * from './types'

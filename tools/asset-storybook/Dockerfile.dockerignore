@@ -10,6 +10,11 @@
 !colyseus-server/generated/asset-keys.json
 !tools/asset-storybook/**
 !tools/combat-lab/**
+!content/story/**
+!content/asset-taxonomy.json
+!content/review-queue.json
+!tools/story-explorer/**
+!docs/story/undertow/**
 !k8s/local/storybook-nginx.conf
 
 # Build inputs, not page content — these would otherwise be served in the docroot.

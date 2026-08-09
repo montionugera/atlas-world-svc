@@ -28,6 +28,9 @@ mobSpawnAreas:
   - { id: meadow_wilds, x: 400, y: 400, width: 200, height: 200, mobType: balanced, count: 3, regionId: region-spawn-meadow }
   - { id: icefield_stoneguard, x: 300, y: 40, width: 400, height: 170, mobType: defensive, count: 2, spawnIntervalMs: 8000, regionId: region-icefield }
   - { id: thornveil_skirmishers, x: 790, y: 320, width: 180, height: 360, mobType: spear_thrower, count: 4, regionId: region-thornveil }
+  - { id: thornveil_route_stalkers, x: 760, y: 300, width: 110, height: 180, mobType: bramble_stalker, count: 2, regionId: region-thornveil }
+  - { id: thornveil_route_spearlings, x: 760, y: 520, width: 110, height: 180, mobType: veil_spearling, count: 2, regionId: region-thornveil }
+  - { id: thornveil_interior, x: 890, y: 400, width: 100, height: 160, mobType: bramble_drake, count: 1, regionId: region-thornveil }
 links:
   - region-spawn-meadow
   - region-icefield
@@ -78,6 +81,16 @@ overlap the meadow or the icefield. It is **skirmisher** territory, so it gets
 `spear_thrower` mobs (count 4) at `(790,320) 180×360`, kept inside the region
 bounds.
 
+F-031 adds the zone's first **tiered** population on top of that skirmisher
+band, keyed on the depth tiers F-029 established in
+`content/bestiary/placement-thornveil.json`: `bramble_stalker` (count 2) and
+`veil_spearling` (count 2) on the **route** tier, and a single `bramble_drake`
+deeper in as the **interior** step. The existing `thornveil_skirmishers` area
+is deliberately untouched — `mob:spear_thrower` is this faction's canonical mob
+in `content/story/factions.json`, `content/story/style.md` and
+`content/story/bible.md`, and retargeting it would leave canon pointing at a
+mob that spawns nowhere.
+
 ## Authoring notes
 
 - Region rects are chosen so all three lie fully within the 1000×1000 world and
@@ -89,3 +102,9 @@ bounds.
   `colyseus-server` mob definition ids; the gate hard-FAILs any mobType not in
   the generated `colyseus-server/generated/mob-types.json` (F-013).
 - `links` point back at the three bible region ids for coverage cross-check.
+- Every `mobSpawnAreas[].id` added from F-031 onward must ALSO exist in
+  `colyseus-server/src/config/mapConfig.ts` with the same `mobType` and `count`
+  (gate **G-SPAWN-PAIR**). Geometry may differ — the two maps describe
+  different worlds until I-015 lands a real map loader. The eight pre-F-031 ids
+  are allow-listed in `scripts/lib/spawn-pairing.mjs` as `LEGACY_UNPAIRED`;
+  nothing may be added to that list.

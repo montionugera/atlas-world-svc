@@ -295,15 +295,15 @@
   },
   {
     "id": "I-050",
-    "title": "Regenerate the 6 town concept placeholders with the measured recipe and drop the placeholder-quality tag",
+    "title": "Town concept art: the block-in cannot express a river - segment control, an acceptance bar, and the three missing block-ins",
     "created_at": "2026-08-01T15:12:08.990117+00:00",
-    "promoted_to": null
+    "promoted_to": "F-039"
   },
   {
     "id": "I-051",
-    "title": "L1 remainder: the god, what Void is, and deep-time legend - run Theologian, Deep-Time Historian and Political Economist against the two cited research dossiers",
+    "title": "L1 cosmology: the unsealed years, what Void is, and deep-time legend",
     "created_at": "2026-08-01T15:12:09.770579+00:00",
-    "promoted_to": null
+    "promoted_to": "F-032"
   },
   {
     "id": "I-052",
@@ -355,9 +355,9 @@
   },
   {
     "id": "I-060",
-    "title": "L2 zone content pass: for each cluster-1 zone define hazards, harvestable resources, landmarks and the reason a player goes there - the Systems Designer's three-zones-per-band model needs alternates, cluster 1 currently ships one route with no branches",
+    "title": "L2 zone content pass: give each of cluster 1's ten zones its hazards, harvestable resources, landmarks and the reason a player goes there",
     "created_at": "2026-08-01T16:23:03.859094+00:00",
-    "promoted_to": null
+    "promoted_to": "F-037"
   },
   {
     "id": "I-061",
@@ -381,7 +381,7 @@
     "id": "I-064",
     "title": "L4 promote monsters to playable: 116 designed but only 6 have server mob types and asset keys - define how many cluster-1 needs, mint the mobTypes through F-013 codegen, and wire assetKeys so character sheets stop hard-failing check_content.mjs:512",
     "created_at": "2026-08-01T16:23:06.179834+00:00",
-    "promoted_to": null
+    "promoted_to": "F-031"
   },
   {
     "id": "I-065",
@@ -448,5 +448,83 @@
     "title": "Ban global clock reads in converted gameplay directories (eslint) and update the CLAUDE.md timing invariant",
     "created_at": "2026-08-02T17:15:06.779570+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-076",
+    "title": "Unblock the spawn-entries budget line: its blockedBy reason is stale \u2014 F-030/F-031 resolved the variant axis (a species is its own MOB_TYPES entry, element? exists), and there is now a real 6-row authored spawn table; add a spawnEntries measure to scripts/lib/season1.mjs and clear the blocker",
+    "created_at": "2026-08-05T14:59:14.936865+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-077",
+    "title": "Non-humanoid silhouette anchors for art-forge: the character profile is img2img at denoise 0.82 over human-row silhouettes, and style-laws law #1 says text alone cannot hold proportion \u2014 so only 24 of 116 bestiary designs (humanoid-raider) are generatable at all; build anchors for quadruped-beast/drake, insect, plant-rooted, giant-hulk, spirit, serpentine, automaton and winged to unblock the other 92",
+    "created_at": "2026-08-05T14:59:29.933998+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-078",
+    "title": "Map mob:* asset keys to glb scenes so promoted mobs stop rendering as nothing: the storybook COVERAGE section red-cards four unmapped keys (bramble_stalker, veil_spearling, bramble_drake, thorncrown_drake). plantwarrior.glb suits bramble_stalker, but EVERY model in game-client/assets/characters is humanoid \u2014 the two drakes need a quadruped source first, and a half-wrong mapping is worse than an honest red card",
+    "created_at": "2026-08-05T14:59:30.430550+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-079",
+    "title": "maxMobs in mobSpawnConfig.ts is dead config: MobLifeCycleManager reads only area.count (:71) and never maxMobs, so the documented per-room cap of 8 does nothing and the room already runs 17 mobs after F-031 \u2014 either enforce it or delete it, but stop shipping a number that lies",
+    "created_at": "2026-08-05T14:59:30.870525+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-080",
+    "title": "Iron Regent's replacement motive - the king-taboo his ambition was built on was removed by I-051",
+    "created_at": "2026-08-06T18:17:58.288299+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-081",
+    "title": "Sharpen the five the-unsealed-years lore bodies - shipped as gate-passing drafts under world-first-prose-later",
+    "created_at": "2026-08-06T18:18:04.887282+00:00",
+    "promoted_to": "F-033"
+  },
+  {
+    "id": "I-082",
+    "title": "Story and novel reading in the asset storybook",
+    "created_at": "2026-08-08T03:54:17.541551+00:00",
+    "promoted_to": "F-034"
+  },
+  {
+    "id": "I-083",
+    "title": "The Bellfaith seal certifies provenance, not truth",
+    "created_at": "2026-08-08T04:07:34.310885+00:00",
+    "promoted_to": "F-035"
+  },
+  {
+    "id": "I-084",
+    "title": "Citation-integrity gate for every file:line reference into canon.md and the A-docs - line citations rot silently on any insert",
+    "created_at": "2026-08-08T05:10:07.014817+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-085",
+    "title": "Story reading view: full-viewport overlay instead of a cropped inline frame",
+    "created_at": "2026-08-08T09:19:50.223388+00:00",
+    "promoted_to": "F-036"
+  },
+  {
+    "id": "I-086",
+    "title": "Harden the story overlay: mark outside content inert so the sidebar exit and AT navigation behave",
+    "created_at": "2026-08-08T11:42:30.612789+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-087",
+    "title": "asset-storybook as an art-direction review surface: baked thumbnail spine + virtualized gallery + reject/rebuild verdicts",
+    "created_at": "2026-08-08T16:05:43.370656+00:00",
+    "promoted_to": "F-038"
+  },
+  {
+    "id": "I-088",
+    "title": "Town plan view: top-down town map schema (boundary, road spine with widths, building footprints, plazas, landmarks) authored from A1 section 6 themes and bound to the physics scale, plus the footprint to static-collision binder",
+    "created_at": "2026-08-09T01:17:20.139913+00:00",
+    "promoted_to": "F-040"
   }
 ]

@@ -398,5 +398,55 @@
     "anchor": "region-ashvale-front",
     "thread": "the-warded-world",
     "links": []
+  },
+  {
+    "id": "lore-the-ground-that-keeps-count",
+    "kind": "lore",
+    "title": "The Ground That Keeps Count",
+    "summary": "A burial detail on the Ashvale Front explains why the digging never stops, without knowing he is explaining anything.",
+    "body": "Two seasons on the Norhollow burial detail and I have stopped asking which side a man came from. Nineteen this week. Most weeks it is three. You get them under before dark, or in the spring you meet what grows out of them, and what grows does not stop when you shout. Embervale's detail works the same rows we do. Neither town has ever said out loud that the digging is the only thing keeping both of them standing. We just dig.",
+    "anchor": "region-ashvale-front",
+    "thread": "the-unsealed-years",
+    "links": []
+  },
+  {
+    "id": "lore-nothing-left-to-bury",
+    "kind": "lore",
+    "title": "Nothing Left to Bury",
+    "summary": "A Cindered survivor on the one thing the city could not do for its dead.",
+    "body": "People ask what we buried. We buried nothing. No body to carry, no weight to lower, no place to set a name down. The walls kept their shadows and the ground kept nothing. My sister has a place in the row all the same, in a yard in the town that took us in. It is dug and it is filled and there is dirt in it, only dirt. I put her comb in first, so the hole would hold something.",
+    "anchor": "region-cindervast",
+    "thread": "the-unsealed-years",
+    "links": []
+  },
+  {
+    "id": "lore-the-first-seal",
+    "kind": "lore",
+    "title": "The First Seal",
+    "summary": "The oldest sealed record in the tower archive, and the honest thing a bell-warden tells her students about it.",
+    "body": "It is a grain tally. Four lines, the date we count from, and the seal. Every lease and every claim in this land measures back to this page and stops. Behind it there is nothing with a seal on it, and a paper with no seal is not a date. That is the whole of what the tower can prove. I tell the students what my warden told me. This is not the oldest thing that happened. It is the oldest thing anyone signed for.",
+    "anchor": "faction-bellfaith",
+    "thread": "the-unsealed-years",
+    "links": []
+  },
+  {
+    "id": "lore-the-vacuum-holds",
+    "kind": "lore",
+    "title": "The Vacuum Holds",
+    "summary": "The Ash Prophet preaches a meaning for the erasure, and nobody corrects him.",
+    "body": "They tell me the ruin is empty. I have stood in it. It is the fullest place in this land. Everyone who was in it was taken, and they were taken on purpose, by a hand. A thing done on purpose can be answered. A famine has no hand. You cannot walk out and find a famine and make it answer for anything. So do not let them call it a famine.",
+    "anchor": "char-the-ash-prophet",
+    "thread": "the-unsealed-years",
+    "links": []
+  },
+  {
+    "id": "lore-what-the-ice-gives-back",
+    "kind": "lore",
+    "title": "What the Ice Gives Back",
+    "summary": "The expedition camp catalogues something the ground surrendered that predates every record they have.",
+    "body": "Sixth crate out of the ice this season. Same as the others. Worked metal, no maker's mark, and an edge that has not dulled in whatever time it spent down there. It gets logged as salvage because there is no other column to put it in. I have started a second book. It has one column and no dates in it.",
+    "anchor": "region-icefield",
+    "thread": "the-unsealed-years",
+    "links": []
   }
 ]

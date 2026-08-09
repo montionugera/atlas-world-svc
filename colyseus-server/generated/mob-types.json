@@ -1,12 +1,21 @@
 {
-  "version": 1,
+  "version": 2,
   "mobTypes": [
     "aggressive",
     "balanced",
+    "bramble_drake",
+    "bramble_stalker",
     "defensive",
     "double_attacker",
     "hybrid",
     "spear_thrower",
-    "thorncrown_drake"
-  ]
+    "thorncrown_drake",
+    "veil_spearling"
+  ],
+  "elements": {
+    "bramble_drake": "earth",
+    "bramble_stalker": "earth",
+    "thorncrown_drake": "earth",
+    "veil_spearling": "wind"
+  }
 }

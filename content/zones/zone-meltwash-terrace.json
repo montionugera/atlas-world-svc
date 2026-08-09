@@ -1,0 +1,46 @@
+{
+  "zone": "meltwash-terrace",
+  "reasonToGo": "The last drained ground before the crossing: grass for the stock, gravel underfoot, and a camp that is still standing when the water goes down.",
+  "hazards": [
+    {
+      "id": "meltwater-cold",
+      "name": "Meltwater cold",
+      "description": "Water off the shelf, milk-grey with rock flour. It takes the use out of a man's hands in the time it takes to wade one braid.",
+      "effect": "freeze"
+    },
+    {
+      "id": "the-thaw-rise",
+      "name": "The thaw rise",
+      "description": "The braids run hard in thaw and near-dry in deep cold. Ground that carried a cart last week carries nothing this week.",
+      "note": "Absence hazard: a river coming up displaces people, it does not tick on them. No runtime zoneHazards type fits."
+    }
+  ],
+  "resources": [
+    {
+      "id": "cropped-grass",
+      "name": "Cropped grass",
+      "kind": "forage",
+      "description": "Short turf between the braids, kept down by the stock that waits here for the crossing."
+    },
+    {
+      "id": "the-braided-heads",
+      "name": "The braided heads",
+      "kind": "water",
+      "description": "Gravel-bedded channels, fordable on foot in a dozen places, and the cleanest water on the road."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "the-expedition-camp",
+      "name": "The expedition camp",
+      "description": "Tents, picket lines and a stove that is never let out, set back from the highest braid.",
+      "source": "content/maps/cluster1-geography.json#camps[expedition-camp]"
+    },
+    {
+      "id": "the-gravel-bars",
+      "name": "The gravel bars",
+      "description": "Pale banks of washed stone standing out of the water, with willow scrub taking hold along their spines.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#4.2"
+    }
+  ]
+}

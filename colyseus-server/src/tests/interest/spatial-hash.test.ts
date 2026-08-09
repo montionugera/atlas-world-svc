@@ -31,7 +31,10 @@ describe('SpatialHash', () => {
     hash.insert(e('left-cell', 149, 100))
     hash.insert(e('right-cell', 151, 100))
 
-    const found = hash.queryRadius(150, 100, 5).map(x => x.id).sort()
+    const found = hash
+      .queryRadius(150, 100, 5)
+      .map(x => x.id)
+      .sort()
 
     expect(found).toEqual(['left-cell', 'right-cell'])
   })

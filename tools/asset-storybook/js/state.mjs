@@ -6,9 +6,12 @@
 export const MANIFEST_URL = "../../game-client/assets/manifest.json";
 export const CATALOG_MANIFEST_URL =
   "../../game-client/assets/catalog-manifest.json";
-export const AUDIO_MANIFEST_URL = "../../game-client/assets/audio-manifest.json";
-export const MUSIC_MANIFEST_URL = "../../game-client/assets/music-manifest.json";
-export const ART_MANIFEST_URL = "../../game-client/assets/art/art-manifest.json";
+export const AUDIO_MANIFEST_URL =
+  "../../game-client/assets/audio-manifest.json";
+export const MUSIC_MANIFEST_URL =
+  "../../game-client/assets/music-manifest.json";
+export const ART_MANIFEST_URL =
+  "../../game-client/assets/art/art-manifest.json";
 export const ART_GROUPS_URL = "../../game-client/assets/art/art-groups.json";
 // Fallback preserves the pre-T0 behaviour if the registry is unavailable,
 // so a missing file degrades the section rather than breaking the page.
@@ -18,6 +21,23 @@ export const ART_GROUPS_FALLBACK = [
   { id: "class", label: "Classes" },
 ];
 export const RENDER_SPEC_URL = "../../game-client/assets/render-spec.json";
+// F-038: section naming registry. Every manifest `kind` must appear here —
+// guard (H) in scripts/check_asset_manifest.mjs fails the build otherwise.
+export const TAXONOMY_URL = "../../content/asset-taxonomy.json";
+// F-038: baked thumbnail index. Fetched non-critically — a checkout that has
+// never run scripts/bake_thumbnails.mjs still renders, with LOUD cards.
+export const REVIEW_QUEUE_URL = "../../content/review-queue.json";
+// Synthetic sidebar classes for the verdict filters (F-038 Phase 4). Not asset
+// kinds — they slice the SAME items by review state.
+export const REJECTED_CLASS = "verdict:reject";
+export const REBUILD_CLASS = "verdict:rebuild";
+export const UNREVIEWED_CLASS = "verdict:unreviewed";
+export const THUMB_INDEX_URL = "../../game-client/assets/.thumbs/index.json";
+// Holder for the loaded taxonomy, set once in init(). Mirrors how
+// ART_GROUP_LABELS below is populated at load time and read by classLabel(),
+// so classLabel() stays a pure lookup rather than threading the registry
+// through buildSidebarItem's every caller (combat-lab.mjs, story.mjs).
+export const taxonomyState = { taxonomy: null };
 export const ASSET_KEYS_URL = "../../colyseus-server/generated/asset-keys.json";
 export const AUDIO_INDEX_URL = "./audio-index.json";
 export const ASSET_ROOT = "../../game-client/"; // scene/stream paths are "res://assets/..." relative to game-client/
@@ -54,7 +74,23 @@ export const COVERAGE_CLASS = "coverage"; // synthetic class for unmapped-codege
 // here because the storybook is where the team already looks.
 export const COMBAT_CLASS = "combat";
 
+// synthetic class for the embedded story surfaces (I-082): the story-explorer
+// reader + graph and the Undertow novel. Like COMBAT_CLASS above it is not an
+// asset — no manifest entry, no renderer, no per-view health.
+export const STORY_CLASS = "story";
+export const STORY_VIEWS_URL = "./story-views.json";
+// Fallback mirrors ART_GROUPS_FALLBACK: a missing/unreadable registry degrades
+// the section to the three known views instead of breaking the page.
+export const STORY_VIEWS_FALLBACK = [
+  { id: "reader", label: "Reader", src: "../story-explorer/reader.html" },
+  { id: "graph", label: "Graph", src: "../story-explorer/index.html" },
+  {
+    id: "novel",
+    label: "Undertow",
+    src: "../../docs/story/undertow/novel-illustrated-edition.html",
+  },
+];
+
 // health[kind] = { total, ok, err } — updated as models/audio finish loading,
 // sidebar badges re-render on every update.
 export const health = {};
-

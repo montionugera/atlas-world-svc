@@ -27,6 +27,15 @@ const MANIFEST = {
 
 const MOB_TYPES_FIXTURE = { version: 1, mobTypes: ["aggressive", "balanced"] };
 
+// F-031: the runtime spawn table these fixtures pair against. GOOD_MAP declares
+// `area-1`, so the default mirrors it — otherwise every map test would trip
+// G-SPAWN-PAIR on an unrelated rule. Tests that exercise the pairing rule pass
+// their own via fixture({ spawnAreas: ... }).
+const SPAWN_AREAS_FIXTURE = {
+  version: 1,
+  areas: [{ id: "area-1", mobType: "aggressive", count: 2 }],
+};
+
 const GOOD_MAP = `---
 id: test-map
 title: Test Map
@@ -67,7 +76,7 @@ Pack hunter.
 Bulked Kenney kitbash, ember palette, 1.8u.
 `;
 
-function fixture({ sheets = {}, maps = {}, keys = KEYS, manifest = MANIFEST, mobTypes = MOB_TYPES_FIXTURE } = {}) {
+function fixture({ sheets = {}, maps = {}, keys = KEYS, manifest = MANIFEST, mobTypes = MOB_TYPES_FIXTURE, spawnAreas = SPAWN_AREAS_FIXTURE } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "content-gate-"));
   mkdirSync(join(dir, "content/characters"), { recursive: true });
   mkdirSync(join(dir, "content/schemas"), { recursive: true });
@@ -87,6 +96,9 @@ function fixture({ sheets = {}, maps = {}, keys = KEYS, manifest = MANIFEST, mob
   // mobTypes: null = deliberately absent (exercises the hard-FAIL loader path).
   if (mobTypes !== null)
     writeFileSync(join(dir, "mob-types.json"), JSON.stringify(mobTypes));
+  // spawnAreas: null = deliberately absent (same hard-FAIL loader discipline).
+  if (spawnAreas !== null)
+    writeFileSync(join(dir, "spawn-areas.json"), JSON.stringify(spawnAreas));
   return dir;
 }
 
@@ -101,6 +113,7 @@ function runGate(dir, extra = []) {
       // the REAL committed artifact and these tests silently track the live
       // server mob set.
       "--mob-types", join(dir, "mob-types.json"),
+      "--spawn-areas", join(dir, "spawn-areas.json"),
       ...extra,
     ], { encoding: "utf8" });
     return { code: 0, out };
@@ -177,6 +190,35 @@ test("CRLF line endings are normalized, not a false failure", () => {
   const crlf = GOOD_SHEET.replace(/\n/g, "\r\n");
   const dir = fixture({ sheets: { "mob-aggressive-brute.md": crlf } });
   assert.equal(runGate(dir).code, 0);
+});
+
+// --- F-031: G-SPAWN-PAIR, authored spawn table <-> runtime spawn table -------
+// These go through the REAL gate binary, so they cover the WIRING. The pure
+// comparison has its own unit tests in spawn-pairing.test.mjs; a green suite
+// there would not notice check_content.mjs forgetting to call it.
+
+test("G-SPAWN-PAIR: an authored area with no runtime counterpart is a hard FAIL", () => {
+  const dir = fixture({ maps: { "test-map.md": GOOD_MAP }, spawnAreas: { version: 1, areas: [] } });
+  const r = runGate(dir);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /FAIL.*G-SPAWN-PAIR.*area-1.*no runtime counterpart/);
+});
+
+test("G-SPAWN-PAIR: a count mismatch is a hard FAIL", () => {
+  const dir = fixture({
+    maps: { "test-map.md": GOOD_MAP },
+    spawnAreas: { version: 1, areas: [{ id: "area-1", mobType: "aggressive", count: 99 }] },
+  });
+  const r = runGate(dir);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /FAIL.*G-SPAWN-PAIR.*count differs/);
+});
+
+test("G-SPAWN-PAIR: a shape-invalid spawn-areas artifact is one hard FAIL", () => {
+  const dir = fixture({ maps: { "test-map.md": GOOD_MAP }, spawnAreas: { version: 1 } });
+  const r = runGate(dir);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /FAIL.*spawn-areas.*shape-invalid/);
 });
 
 // --- F-013: map mobType hard-FAIL against mob-types.json ---------------------

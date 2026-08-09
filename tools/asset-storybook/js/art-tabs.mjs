@@ -28,10 +28,7 @@ export function buildArtTabBar(tabs) {
   filterInput.type = "search";
   filterInput.className = "art-filter-input";
   filterInput.placeholder = "Filter by title or tag…";
-  filterInput.setAttribute(
-    "aria-label",
-    "Filter concept art by title or tag",
-  );
+  filterInput.setAttribute("aria-label", "Filter concept art by title or tag");
   filterInput.addEventListener("input", () => {
     artTabState.artFilterText = filterInput.value;
     applyArtTabFilter();
@@ -66,19 +63,34 @@ export function buildArtTabBar(tabs) {
   return section;
 }
 
-// A card inside a display:none section has no layout box, so its
-// loading="lazy" <img> never fetches — the group's health dot would
-// sit at "loading…" forever if that tab is never opened (review
-// finding #1). Forcing eager on the moment a card actually becomes
-// visible restores the pre-tab behavior for any group the user does
-// look at: a full settle without needing to scroll further, exactly
-// like the old one-long-page view. Groups that stay unvisited still
-// don't fetch — that's the scale win the tab layer exists for — and
-// the existing settled-check in renderSidebarBadge (ok+err>=total)
-// means an unvisited dot never falsely paints green or red.
-export function eagerLoadCard(card) {
-  const img = card.querySelector("img");
-  if (img && img.loading === "lazy") img.loading = "eager";
+// F-038: promote on VIEWPORT ENTRY, not on section reveal.
+//
+// The previous version flipped every card in a newly-visible section from
+// loading="lazy" to "eager" in one pass. Because the tab bar defaults to the
+// first group (Cast) and applyArtTabFilter() runs at init, that downloaded all
+// 9 Cast reference sheets — 1.1-1.5 MB each — before the user had scrolled
+// anywhere near them. Measured: 16.39 MB decoded at rest, 15.98 MB of it
+// images.
+//
+// Observing preserves the reason the eager flip existed (a card inside a
+// display:none section has no layout box, so its lazy <img> never fetches at
+// all) while paying only for cards that actually reach the viewport. Cards in
+// a hidden tab still cost nothing — that is the scale win the tab layer is
+// for.
+const promoter = new IntersectionObserver(
+  (entries, obs) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      const img = e.target.querySelector("img");
+      if (img && img.loading === "lazy") img.loading = "eager";
+      obs.unobserve(e.target);
+    }
+  },
+  { rootMargin: "300px" },
+);
+
+export function observeCardForPromotion(card) {
+  promoter.observe(card);
 }
 
 // Applies the active tab + filter text to every already-rendered
@@ -100,7 +112,7 @@ export function applyArtTabFilter() {
         const hay = card.dataset.artSearch || "";
         const showCard = showGroup && (!filtering || hay.includes(term));
         card.style.display = showCard ? "" : "none";
-        if (showCard) eagerLoadCard(card);
+        if (showCard) observeCardForPromotion(card);
       });
       // Classes' race sub-headings (buildArtClassesBody) aren't
       // touched by the card loop above — without this a filter can
@@ -115,7 +127,9 @@ export function applyArtTabFilter() {
     });
 
   document.querySelectorAll(".art-tab").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.artTab === artTabState.activeArtTab);
+    btn.classList.toggle(
+      "active",
+      btn.dataset.artTab === artTabState.activeArtTab,
+    );
   });
 }
-

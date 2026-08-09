@@ -123,7 +123,10 @@ knowledge**. It does not. `canon.md` §4 describes a news system with **two** co
 - **Speed** — the hours-versus-days gap between the bell signal and the sealed detail.
 - **Authentication** — _"An unsealed proclamation is just a rumor with good staging."_ The seal is
   "state news agency and notary in one," and inter-town proclamations _count as true_ only when
-  stamped.
+  stamped. **Superseded in part by F-035** (`canon.md` §4): the seal certifies **provenance, not
+  truth** — that a statement was given to the Bellfaith and recorded, never that it is accurate.
+  The quotation above is preserved as the wording this record was written against; the
+  "count as true" half no longer holds.
 
 What the system gates is not what a person knows. It is **what a town will act on**. ND's C1 attacks
 the speed component and then treats the whole engine as if it were speed. It proves too much: taken

@@ -352,5 +352,113 @@
     "claimed_at": "2026-08-04T14:59:02.745747+00:00",
     "shipped_at": "2026-08-04T17:03:22.101884+00:00",
     "promoted_at": "2026-08-04T17:23:12.728971+00:00"
+  },
+  {
+    "id": "F-031",
+    "title": "L4 promote monsters to playable: 116 designed but only 6 have server mob types and asset keys - define how many cluster-1 needs, mint the mobTypes through F-013 codegen, and wire assetKeys so character sheets stop hard-failing check_content.mjs:512",
+    "from_idea": "I-064",
+    "created_at": "2026-08-05T01:44:35.485798+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.7",
+    "claimed_at": "2026-08-05T01:56:05.790277+00:00",
+    "shipped_at": "2026-08-05T14:48:42.043029+00:00"
+  },
+  {
+    "id": "F-032",
+    "title": "L1 cosmology: the unsealed years, what Void is, and deep-time legend",
+    "from_idea": "I-051",
+    "created_at": "2026-08-08T02:22:56.758246+00:00",
+    "claimed_by": null,
+    "status": "shipped",
+    "release_version": "1.7",
+    "shipped_at": "2026-08-08T03:15:37.882099+00:00"
+  },
+  {
+    "id": "F-033",
+    "title": "Sharpen the five the-unsealed-years lore bodies - shipped as gate-passing drafts under world-first-prose-later",
+    "from_idea": "I-081",
+    "created_at": "2026-08-08T03:27:43.592604+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.7",
+    "claimed_at": "2026-08-08T03:28:01.136604+00:00",
+    "shipped_at": "2026-08-08T03:54:17.131858+00:00"
+  },
+  {
+    "id": "F-034",
+    "title": "Story and novel reading in the asset storybook",
+    "from_idea": "I-082",
+    "created_at": "2026-08-08T04:15:28.387270+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.7",
+    "claimed_at": "2026-08-08T04:23:19.394673+00:00",
+    "shipped_at": "2026-08-08T05:25:42.500012+00:00"
+  },
+  {
+    "id": "F-035",
+    "title": "The Bellfaith seal certifies provenance, not truth",
+    "from_idea": "I-083",
+    "created_at": "2026-08-08T04:44:55.196094+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.7",
+    "claimed_at": "2026-08-08T04:49:15.489268+00:00",
+    "shipped_at": "2026-08-08T05:14:02.097698+00:00"
+  },
+  {
+    "id": "F-036",
+    "title": "Story reading view: full-viewport overlay instead of a cropped inline frame",
+    "from_idea": "I-085",
+    "created_at": "2026-08-08T10:56:06.010732+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.7",
+    "claimed_at": "2026-08-08T10:56:31.299465+00:00",
+    "shipped_at": "2026-08-08T11:46:11.395674+00:00"
+  },
+  {
+    "id": "F-037",
+    "title": "L2 zone content pass: give each of cluster 1's ten zones its hazards, harvestable resources, landmarks and the reason a player goes there",
+    "from_idea": "I-060",
+    "created_at": "2026-08-08T11:53:36.436120+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.7",
+    "claimed_at": "2026-08-08T11:54:34.512457+00:00",
+    "shipped_at": "2026-08-08T15:25:09.857414+00:00"
+  },
+  {
+    "id": "F-038",
+    "title": "asset-storybook as an art-direction review surface: baked thumbnail spine + virtualized gallery + reject/rebuild verdicts",
+    "from_idea": "I-087",
+    "created_at": "2026-08-08T16:21:51.429233+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.7",
+    "claimed_at": "2026-08-08T16:29:17.825832+00:00",
+    "shipped_at": "2026-08-09T01:03:28.340484+00:00"
+  },
+  {
+    "id": "F-039",
+    "title": "Town concept art: the block-in cannot express a river - segment control, an acceptance bar, and the three missing block-ins",
+    "from_idea": "I-050",
+    "created_at": "2026-08-08T16:48:02.808522+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-08-08T16:48:22.715160+00:00"
+  },
+  {
+    "id": "F-040",
+    "title": "Town plan view: top-down town map schema (boundary, road spine with widths, building footprints, plazas, landmarks) authored from A1 section 6 themes and bound to the physics scale, plus the footprint to static-collision binder",
+    "from_idea": "I-088",
+    "created_at": "2026-08-09T02:26:25.139979+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.7",
+    "claimed_at": "2026-08-09T02:26:34.558811+00:00",
+    "shipped_at": "2026-08-09T03:56:49.856521+00:00"
   }
 ]

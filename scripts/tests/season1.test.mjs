@@ -170,3 +170,209 @@ test("CLI still exits 0 when --budget is valid JSON but missing lines", () => {
     unlinkSync(badBudgetPath);
   }
 });
+
+// The ONLY new import. existsSync, mkdtempSync, mkdirSync and rmSync are the
+// four names nothing in this file binds yet; writeFileSync, tmpdir and
+// execFileSync are already imported at lines 154, 155 and 107 and re-importing
+// any of them is a duplicate-binding SyntaxError.
+import { existsSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";
+
+// I-060: the zones measure. Ids come from the geography rather than a literal
+// list, so a change to the ten cannot silently pass this file.
+const GEOGRAPHY_ZONE_IDS = JSON.parse(
+  readFileSync(join(ROOT, "content/maps/cluster1-geography.json"), "utf8"),
+).zones.map((z) => z.id);
+
+/** A Z3-complete record: two hazards, two resources, two landmarks, a reason. */
+const completeRecord = (zone) => ({
+  zone,
+  reasonToGo: `why anyone walks into ${zone}`,
+  hazards: [{ id: "h-one" }, { id: "h-two" }],
+  resources: [{ id: "r-one" }, { id: "r-two" }],
+  landmarks: [{ id: "l-one" }, { id: "l-two" }],
+});
+
+/** Throwaway root holding exactly the given content/zones files. */
+function zoneRoot(files) {
+  const root = mkdtempSync(join(tmpdir(), "season1-zones-"));
+  mkdirSync(join(root, "content/zones"), { recursive: true });
+  for (const [name, body] of Object.entries(files)) {
+    writeFileSync(join(root, "content/zones", name), JSON.stringify(body));
+  }
+  return root;
+}
+
+test("zones counts only records clearing the Z3 floors, once per zone", () => {
+  // The fixture holds seven zone-*.json files. Two are complete — emberdown
+  // and thornveil — and FOUR fail on exactly one Z3 floor each, one floor per
+  // file, so every branch of the conjunction in zones() has its own dedicated
+  // witness: hollowmarch has one hazard, ashvale-front has one resource,
+  // gildmark-head has one landmark, and cindervast's reasonToGo is blank
+  // whitespace. The seventh, zone-emberdown-second-file.json, is a complete
+  // DUPLICATE of emberdown and pins the Set. Two distinct zones clear.
+  //
+  // DO NOT prune these to "one representative failing record". Found by
+  // mutation testing in review: with only hollowmarch failing, deleting the
+  // resources floor or the landmarks floor from zones() left the whole suite
+  // GREEN. One floor-failing fixture per floor is what makes those two
+  // deletions go red, and it is the only thing that does.
+  assert.equal(MEASURES.zones(FIXTURE), 2);
+});
+
+test("zones ignores files that are not named zone-<id>.json", () => {
+  // notes.json sits in the same directory and is a top-level array — it would
+  // throw the shape error if the filename filter were dropped, so this test
+  // fails loudly rather than silently if the regex is loosened.
+  assert.ok(existsSync(join(FIXTURE, "content/zones/notes.json")));
+  assert.equal(MEASURES.zones(FIXTURE), 2);
+});
+
+test("zones throws on a zone file that is not a record object", () => {
+  const root = zoneRoot({ "zone-thornveil.json": ["not", "an", "object"] });
+  try {
+    assert.throws(() => MEASURES.zones(root), /zone-thornveil\.json: expected a zone record object/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("zones throws on a record with no zone id — identity is what it counts by", () => {
+  const root = zoneRoot({ "zone-thornveil.json": { reasonToGo: "x", hazards: [], resources: [], landmarks: [] } });
+  try {
+    assert.throws(() => MEASURES.zones(root), /zone-thornveil\.json: expected a non-empty string "zone"/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("buildRows reports a missing content/zones as unmeasurable, never a crash", () => {
+  // The report's always-exits-0 contract has to hold for the new measure too:
+  // zones() throws ENOENT when content/zones is absent, and buildRows absorbs it.
+  const doc = { lines: [{ id: "zones", label: "Z", target: 10, measure: "zones", source: "s" }] };
+  const [row] = buildRows(doc, join(ROOT, "scripts/tests/fixtures/does-not-exist"));
+  assert.equal(row.actual, null);
+  assert.match(row.note, /^unmeasurable: ENOENT/);
+});
+
+test("the budget's zones line is measured, not blocked, and states what it counts", () => {
+  const line = budget.lines.find((l) => l.id === "zones");
+  assert.equal(line.measure, "zones");
+  assert.equal(line.blockedBy, undefined);
+  // Design §8: the premise is REWRITTEN, not silently dropped. The source must
+  // say what the count is keyed on, and that the keyspace rename is still owed.
+  assert.match(line.source, /geography zone id/);
+  assert.match(line.source, /I-056 item 4/);
+});
+
+test("no budget line carries a note key — buildRows computes note and would clobber it", () => {
+  // Verified against buildRows: `{ ...line, actual, note }` puts the computed
+  // note last, so an authored note in the JSON never reaches the report. Any
+  // caveat belongs in `source`, which survives the spread.
+  for (const line of budget.lines) {
+    assert.equal(line.note, undefined, `${line.id}: put the caveat in source, not note`);
+  }
+});
+
+// The record-filename regex is written TWICE — `ZONE_FILE` in scripts/lib/
+// season1.mjs and an inline `/^zone-.+\.json$/` in checkZoneContent() — and
+// nothing structurally binds them. Widening one to `zones-*.json`, or narrowing
+// one to demand kebab-case, would make the gate and the budget count different
+// file sets, and the divergence would not be visible from the two numbers
+// (the gate reports records.length, the measure reports floor-passing distinct
+// zone ids). This test is the binding: one directory, four filenames chosen to
+// sit on every edge of the pattern, and both implementations must agree that
+// exactly ONE of them is a record.
+test("the gate and the zones measure agree on which filenames are records", () => {
+  const root = mkdtempSync(join(tmpdir(), "season1-filter-"));
+  try {
+    mkdirSync(join(root, "content/characters"), { recursive: true });
+    mkdirSync(join(root, "content/schemas"), { recursive: true });
+    mkdirSync(join(root, "content/maps"), { recursive: true });
+    mkdirSync(join(root, "content/zones"), { recursive: true });
+    // The same three schemas Task 4's fixture() copies, plus the geography:
+    // checkZoneContent needs zone-content.schema.json and the geography, and
+    // copying character/map schemas keeps the unrelated checkers on a fixture
+    // rather than half-reading the real tree. content/characters must EXIST or
+    // the gate emits `FAIL characters dir unreadable: … ENOENT`; empty is fine.
+    for (const rel of [
+      "content/schemas/zone-content.schema.json",
+      "content/schemas/character.schema.json",
+      "content/schemas/map.schema.json",
+      "content/maps/cluster1-geography.json",
+    ]) writeFileSync(join(root, rel), readFileSync(join(ROOT, rel), "utf8"));
+
+    // Hermeticity, exactly as Task 4's fixture()/runGate() do it. parseArgs in
+    // check_content.mjs defaults --keys, --manifest, --mob-types and
+    // --spawn-areas to the LIVE repo artifacts (colyseus-server/generated/*,
+    // game-client/assets/manifest.json). Spawning with only --content-root
+    // would make this filename-filter test read three committed generated files
+    // and go red on a worktree where codegen has not run. These four stubs plus
+    // the four flags below are what keep that from happening.
+    for (const [name, body] of [
+      ["keys.json", { version: 1, keys: [] }],
+      ["manifest.json", { version: 2, entries: {} }],
+      ["mob-types.json", { version: 1, mobTypes: [] }],
+      ["spawn-areas.json", { version: 1, areas: [] }],
+    ]) writeFileSync(join(root, name), JSON.stringify(body));
+
+    // `zone-emberdown.json` is the ONLY record. The other three sit one
+    // character off the pattern on three different sides: no hyphen, a plural
+    // stem, and no `zone` stem at all.
+    const record = completeRecord("emberdown");
+    record.hazards = [{ id: "h-one", name: "H one", description: "d", effect: "burn" },
+                      { id: "h-two", name: "H two", description: "d", effect: "poison" }];
+    record.resources = [{ id: "r-one", name: "R one", kind: "fuel", description: "d" },
+                        { id: "r-two", name: "R two", kind: "crop", description: "d" }];
+    record.landmarks = [{ id: "l-one", name: "L one", description: "d" },
+                        { id: "l-two", name: "L two", description: "d" }];
+    const decoy = ["not a zone record; both filename filters must skip this file"];
+    writeFileSync(join(root, "content/zones/zone-emberdown.json"), JSON.stringify(record));
+    writeFileSync(join(root, "content/zones/zone.json"), JSON.stringify(decoy));
+    writeFileSync(join(root, "content/zones/zones-x.json"), JSON.stringify(decoy));
+    writeFileSync(join(root, "content/zones/notes.json"), JSON.stringify(decoy));
+
+    // The measure: one record, and no throw — a throw here would mean one of
+    // the three decoys got through the filter and hit the shape check.
+    assert.equal(MEASURES.zones(root), 1);
+
+    // The gate over the SAME directory, invoked on Task 4's contract: all four
+    // sidecar flags pointed at the stubs above, so nothing outside this tmpdir
+    // is read. It exits 1 because the nine remaining geography zones have no
+    // record (Z2), which is irrelevant here — the assertion is on the `N zones`
+    // count, which is checkZoneContent()'s own view of how many files were
+    // records.
+    let out;
+    try {
+      out = execFileSync(process.execPath, [
+        join(ROOT, "scripts/check_content.mjs"),
+        "--content-root", join(root, "content"),
+        "--keys", join(root, "keys.json"),
+        "--manifest", join(root, "manifest.json"),
+        "--mob-types", join(root, "mob-types.json"),
+        "--spawn-areas", join(root, "spawn-areas.json"),
+      ], { encoding: "utf8" });
+    } catch (e) {
+      out = `${e.stdout ?? ""}${e.stderr ?? ""}`;
+    }
+    assert.match(out, /, 1 zones,/, `the gate must see exactly one record too:\n${out}`);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("the report's zones row reads 10/10 met once all ten records clear the floors", () => {
+  const root = zoneRoot(
+    Object.fromEntries(GEOGRAPHY_ZONE_IDS.map((id) => [`zone-${id}.json`, completeRecord(id)])),
+  );
+  try {
+    const row = buildRows(budget, root).find((r) => r.id === "zones");
+    assert.equal(row.actual, 10);
+    assert.equal(row.note, "met");
+    assert.equal(
+      renderTable([row]).split("\n").at(-1),
+      "zones                     10      10      met",
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

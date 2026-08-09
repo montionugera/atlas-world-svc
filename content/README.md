@@ -94,7 +94,7 @@ Character sheets link to story-node ids via `links.story`. Note the gate only ch
 - `characters/` — character sheets (`.md` with frontmatter). Files starting with `_` are templates/ignored by the gate.
 - `story/` — world bible and lore documents.
 - `maps/` — map specs (reserved for future use).
-- `schemas/` — JSON Schema v7 for validation (character, story, map).
+- `schemas/` — JSON Schema v7 for validation (character, story, map, bestiary placement, zone content).
 
 ## Gates & CI
 

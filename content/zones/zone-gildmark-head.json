@@ -1,0 +1,46 @@
+{
+  "zone": "gildmark-head",
+  "reasonToGo": "The only door the sea has, with half a day of mudflat in front of it holding everything that missed the door.",
+  "hazards": [
+    {
+      "id": "the-moving-sandbars",
+      "name": "The moving sandbars",
+      "description": "The bars in the mire shift between one tide and the next. No road crosses them and no chart holds good for a season.",
+      "note": "Absence hazard: a hazard of navigation. Nothing in the runtime enum expresses ground that has moved since the last chart."
+    },
+    {
+      "id": "the-salt",
+      "name": "The salt",
+      "description": "Every seaward face is tarred black against it, and everything left untarred goes soft inside a winter.",
+      "note": "Absence hazard: slow ruin of material, not a tick on a body."
+    }
+  ],
+  "resources": [
+    {
+      "id": "beached-cargo",
+      "name": "Beached cargo",
+      "kind": "salvage",
+      "description": "Crates and gear off the wrecked hulls, coming up on the beach a week after they go over the side."
+    },
+    {
+      "id": "dressed-headland-stone",
+      "name": "Dressed headland stone",
+      "kind": "stone",
+      "description": "Squared block cut off the standing rock and worked into the harbour terraces at the bottom of the town."
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "the-mirror-tower",
+      "name": "The mirror tower",
+      "description": "A slim square shaft with a glazed cap that catches the sun at an hour when nothing else does.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#6"
+    },
+    {
+      "id": "the-mires-bar",
+      "name": "The mire's bar",
+      "description": "The long sand shoal across the mouth of the mire, gulls standing on it and wrecked hulls half-buried along its length.",
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#4.2"
+    }
+  ]
+}

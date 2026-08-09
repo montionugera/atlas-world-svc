@@ -11,7 +11,6 @@ export function initHealth(kind, total) {
   health[kind] = { total, ok: 0, err: 0 };
 }
 
-
 export function renderSidebarBadge(kind) {
   const dot = document.querySelector(
     '.sidebar-item[data-class="' + kind + '"] .health-dot',
@@ -36,4 +35,3 @@ export function renderSidebarBadge(kind) {
   }
   if (countEl) countEl.textContent = h.total;
 }
-

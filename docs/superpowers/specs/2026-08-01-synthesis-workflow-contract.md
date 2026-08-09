@@ -1,7 +1,7 @@
 # Synthesis Workflow (SWF) — contract, research plan, quality bar
 
 **Date:** 2026-08-01
-**Status:** proposed — awaiting one decision (§7)
+**Status:** accepted 2026-08-07. Its scope decision (§7) is settled by `docs/worldbuilding/DR-006-swf-scope.md`.
 **Purpose:** define how world artifacts get made, so that every level is researched before it is written and every artifact is judged against the same bar.
 
 <div class="callout warn">
@@ -212,15 +212,23 @@ dimensions. Without it a *good* result cannot be reproduced, which makes iterati
 - **Subject noun must lead and repeat**, or later nouns outvote it.
 - **Style words alone do not carry non-humanoid subjects.** The 64 class images were consistent because of the silhouette anchor, not the prompt.
 
-## 7. The one open decision
+## 7. Scope — settled
 
-<div class="callout action">
-<strong>How much of the existing world may research overturn?</strong>
-The owner said "it can be changed", which changes the shape of every SWF run. Three readings:
-<ol>
-<li><strong>Additive only</strong> — canon, the 152 story nodes and the novel are fixed; research may only explain and extend.</li>
-<li><strong>Canon amendable</strong> — <code>canon.md</code> may be revised where research finds something better, but the shipped novel and story graph stay.</li>
-<li><strong>Everything on the table</strong> — including the 5-act epic and the 116-monster bestiary.</li>
-</ol>
-Each later level inherits this answer, so it is settled once, here.
+**Ruling: option 3, everything on the table**, including `canon.md`, the story graph, the
+shipped novel and its illustrated edition, the five-act structure and the bestiary.
+
+Settled 2026-08-06 and recorded in full, with its limits, at
+`docs/worldbuilding/DR-006-swf-scope.md`. It was forced rather than chosen: the owner's
+decision to remove the king theme reaches into `novel-complete.md` and
+`novel-illustrated-edition.html`, which options 1 and 2 both forbid.
+
+<div class="callout danger">
+
+**Option 3 is a licence to amend deliberately, never a licence to let two files disagree.**
+Every amendment names its collisions and ships the fix in the same commit (`canon.md` §6).
+
+Three things it does not reopen: **the Widow may not be resolved**; **no god may be added**
+(the 2026-07-23 exclusion holds at full strength); and **no change may ship without its
+collision list**.
+
 </div>

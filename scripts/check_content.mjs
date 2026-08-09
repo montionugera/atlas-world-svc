@@ -8,6 +8,18 @@ import { dirname, resolve, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import { STORY_FILES, loadStory, readJson, compileSchema } from "./lib/story.mjs";
+import { checkSpawnPairing } from "./lib/spawn-pairing.mjs";
+import { checkBestiarySheet } from "./lib/bestiary-sheet.mjs";
+// F-040: the town-plan geometry the T-rules need. Pure, no I/O — see the
+// module header for why it cannot live inside this file.
+import {
+  roadPolygon,
+  polyRectOverlap,
+  rectsOverlap,
+  walkableGrid,
+  floodFillRegions,
+  cellIndexAt,
+} from "./lib/town-geometry.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -17,6 +29,7 @@ function parseArgs(argv) {
     keys: join(ROOT, "colyseus-server/generated/asset-keys.json"),
     manifest: join(ROOT, "game-client/assets/manifest.json"),
     mobTypes: join(ROOT, "colyseus-server/generated/mob-types.json"),
+    spawnAreas: join(ROOT, "colyseus-server/generated/spawn-areas.json"),
     requireComplete: false,
   };
   const takeValue = (name, i) => {
@@ -30,6 +43,7 @@ function parseArgs(argv) {
     else if (a === "--keys") opts.keys = resolve(takeValue(a, ++i));
     else if (a === "--manifest") opts.manifest = resolve(takeValue(a, ++i));
     else if (a === "--mob-types") opts.mobTypes = resolve(takeValue(a, ++i));
+    else if (a === "--spawn-areas") opts.spawnAreas = resolve(takeValue(a, ++i));
     else if (a === "--require-complete") opts.requireComplete = true;
     else { console.error(`unknown arg: ${a}`); process.exit(2); }
   }
@@ -95,8 +109,35 @@ function loadGeographyZones(path) {
   return byId;
 }
 
+// F-040 T1: town records from the Cartographer's geography. The geography is
+// the authority on which towns exist and where they are; a town plan asserts
+// against it and the geography is NEVER written back (design §9). Same
+// failure-count discipline as loadGeographyZones — readJson cannot tell a
+// recorded FAIL from a file holding literal `null`.
+function loadGeographyTowns(path) {
+  const before = failures.length;
+  const doc = readJson(path, "geography", fail);
+  if (failures.length > before) return null;
+  if (!doc || !Array.isArray(doc.towns)) {
+    fail(`geography: ${path} is shape-invalid — expected { towns: [...] }`);
+    return null;
+  }
+  const byId = new Map();
+  for (const t of doc.towns) {
+    if (!t || typeof t.id !== "string") continue; // town record shape is not this gate's business
+    byId.set(t.id, t);
+  }
+  return byId;
+}
+
 const failures = [];
 const warnings = [];
+// I-060 Z5: hazards authored vs hazards the runtime can express. Module-level
+// alongside failures/warnings because finish() prints the ratio — design §7
+// makes that count the only signal of how much of the authored world the
+// engine can express, so it must never be swallowed into the warning total.
+let zoneHazardsTotal = 0;
+let zoneHazardsUnmapped = 0;
 const fail = (m) => failures.push(m);
 const warn = (m) => warnings.push(m);
 
@@ -134,7 +175,9 @@ function main() {
   const sheetCount = checkCharacters(opts, story.ids);
   const mapCount = checkMaps(opts, mobTypes);
   const placementCount = checkBestiaryPlacement(opts);
-  return finish(sheetCount, mapCount, story.count, placementCount);
+  const zoneCount = checkZoneContent(opts);
+  const townCount = checkTownPlan(opts);
+  return finish(sheetCount, mapCount, story.count, placementCount, zoneCount, townCount);
 }
 
 // F-012: loadStory() (reads all 7 per-kind story files under
@@ -529,6 +572,16 @@ function checkCharacters(opts, storyIds = null) {
   const dir = join(opts.contentRoot, "characters");
   const files = listContentFiles(dir, "characters");
 
+  // F-031 (G-BESTIARY-SHEET): the design roster and the runtime element map.
+  // Both are OPTIONAL here — a content root with no bestiary/ dir simply has
+  // no sheet that could be bound to a design (mirrors the maps soft-skip), and
+  // an unreadable mob-types.json has already been hard-FAILed by loadMobTypes.
+  const bestiaryPath = join(opts.contentRoot, "bestiary/bestiary.json");
+  const bestiaryById = existsSync(bestiaryPath)
+    ? (loadBestiaryDesigns(bestiaryPath) ?? new Map())
+    : new Map();
+  const mobElements = readJson(opts.mobTypes, "mob-types", () => {})?.elements ?? {};
+
   const sheetedKeys = new Set();
   for (const file of files) {
     const label = `characters/${file}`;
@@ -546,6 +599,12 @@ function checkCharacters(opts, storyIds = null) {
     // id = filename slug
     if (fm.id !== basename(file, ".md"))
       fail(`${label}: id "${fm.id}" != filename slug "${basename(file, ".md")}"`);
+
+    // (1b) G-BESTIARY-SHEET (F-031) — only sheets whose id IS a bestiary
+    // design id. The six legacy archetype sheets (mob-aggressive-brute etc.)
+    // are behaviour archetypes, not species, and are deliberately untouched.
+    const design = bestiaryById.get(fm.id);
+    if (design) checkBestiarySheet(fm, design, mobElements, fail);
 
     // (2) forward link-check
     const kind = keyKinds.get(fm.assetKey);
@@ -615,6 +674,20 @@ function checkMaps(opts, mobTypes) {
   if (!validate) return 0;
 
   const bibleRegions = bibleRegionIds(opts.contentRoot);
+
+  // F-031: the RUNTIME spawn table, for G-SPAWN-PAIR below. Same discipline as
+  // loadMobTypes — a recorded FAIL or a shape-invalid document yields null and
+  // the pairing check is skipped, so one loader failure isn't multiplied per
+  // area and the rule can never silently pass.
+  const spawnBefore = failures.length;
+  const spawnDoc = readJson(opts.spawnAreas, "spawn-areas", fail);
+  let spawnAreas = null;
+  if (failures.length === spawnBefore) {
+    if (!spawnDoc || !Array.isArray(spawnDoc.areas))
+      fail(`spawn-areas: ${opts.spawnAreas} is shape-invalid — expected { areas: [...] }`);
+    else spawnAreas = spawnDoc.areas;
+  }
+
   const files = listContentFiles(dir, "maps");
 
   for (const file of files) {
@@ -681,6 +754,12 @@ function checkMaps(opts, mobTypes) {
           fail(`${label}: mobType "${area.mobType}" (area "${area.id}") is not a server mob id (valid: ${[...mobTypes].join(", ")})`);
       }
     }
+
+    // (4b) G-SPAWN-PAIR (F-031) — bind this authored table to the RUNTIME one
+    // (colyseus-server/src/config/mapConfig.ts, via its codegen artifact).
+    // Identity + population only; geometry deliberately unchecked. See
+    // scripts/lib/spawn-pairing.mjs for why, and for the LEGACY_UNPAIRED list.
+    if (spawnAreas) checkSpawnPairing(fm.mobSpawnAreas ?? [], spawnAreas, fail);
 
     // (5) bible coverage — region-looking links/ids should anchor to a bible
     //     `(region-xxx)` heading. Coverage only: WARN, never FAIL.
@@ -808,10 +887,442 @@ function checkBestiaryPlacement(opts) {
   return count;
 }
 
-function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0) {
+// I-060: L2 zone content. `kind` is a closed enum drawn from what canon already
+// says cluster 1 lives on (design §6); `effect` is the seven runtime zoneHazards
+// types, whose source of truth is
+// content/schemas/map.schema.json #/properties/zoneHazards/items/properties/type/enum
+// (declared there; NOT read by colyseus-server — see design §2 item 3). Restated here deliberately:
+// this gate must not depend on a map schema the content root may not ship. A
+// test asserts the two lists are equal so the copy cannot drift silently.
+const ZONE_RESOURCE_KINDS = ["crop", "timber", "ore", "fuel", "stone", "water", "forage", "salvage"];
+const ZONE_HAZARD_EFFECTS = ["freeze", "stun", "burn", "poison", "regen", "heal", "damage"];
+const ZONE_ID_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+// I-060: the zone-content gate, rules Z1-Z7 (design §7). Zone content is
+// OPTIONAL content — a root with no zones/ dir, or none matching zone-*.json,
+// skips silently (mirrors checkBestiaryPlacement's soft-skip; without it every
+// fixture in check_content.test.mjs and bestiary-placement.test.mjs would take
+// ten Z2 FAILs). Once ONE file exists the whole cluster is checked STRICTLY:
+// Z2 asserts every zone in the geography has exactly one record, so a
+// half-finished pass cannot go green. That is what bounds the per-zone cost.
+//
+// Two passes. Z1/Z3/Z4/Z5/Z7 are per-record and run in pass 1; Z2 and Z6 are
+// cross-file — "this landmark name is taken" and "this zone is missing" are
+// only answerable once every record is in hand — so pass 1 collects the
+// accepted records and pass 2 checks them against each other.
+//
+// The schema is deliberately SHAPE-ONLY (see zone-content.schema.json's own
+// description): because a schema-invalid doc `continue`s past every rule
+// below, any constraint duplicated in the schema would make its Z-rule
+// unreachable dead code. The floors, the kebab pattern and both enums
+// therefore live here and nowhere else.
+function checkZoneContent(opts) {
+  const dir = join(opts.contentRoot, "zones");
+  if (!existsSync(dir)) return 0;
+  const files = readdirSync(dir).filter((f) => /^zone-.+\.json$/.test(f)).sort();
+  if (!files.length) return 0;
+
+  // Skip BEFORE touching the schema: a content root that never adopted zone
+  // content must not FAIL with "zone-content schema: cannot read/parse".
+  const validate = compileSchema(
+    join(opts.contentRoot, "schemas/zone-content.schema.json"),
+    "zone-content schema", fail);
+  if (!validate) return 0;
+
+  // REQUIRED once a zone file exists: Z1 and Z2 are both assertions against
+  // the Cartographer's geography, which is the authority on which zones exist.
+  const zones = loadGeographyZones(join(opts.contentRoot, "maps/cluster1-geography.json"));
+  if (!zones) return 0;
+
+  const records = []; // { label, file, doc } for every valid record naming a real zone
+
+  for (const file of files) {
+    const label = `zones/${file}`;
+    // readJson cannot distinguish "recorded a FAIL" from "parsed to a
+    // JSON-falsy value" — a file holding literal `null` parses fine — so the
+    // failure count, not the return value, is what says whether to continue.
+    const before = failures.length;
+    const doc = readJson(join(dir, file), label, fail);
+    if (failures.length > before) continue;
+
+    if (!validate(doc)) {
+      for (const err of validate.errors)
+        fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
+      continue; // downstream rules assume a valid shape
+    }
+
+    // Z1 — the zone exists in the Cartographer's geography. This is also the
+    // "no orphans" half of Z2. Unlike checkBestiaryPlacement's G1 this does
+    // NOT continue: Z3/Z4/Z5/Z7 are purely intra-record, so bailing here would
+    // hide real defects behind one typo. The orphan is FAILed and simply not
+    // pushed into `records`, which withholds it from Z2, Z6 and the count.
+    const known = zones.has(doc.zone);
+    if (!known) fail(`${label}: zone "${doc.zone}" not in cluster1-geography.json#zones`);
+
+    // Z3 — floors (design D4). Owned here, not by the schema: Ajv would emit
+    // "/hazards must NOT have fewer than 2 items" and would reject the doc
+    // before any other Z-rule could speak.
+    for (const field of ["hazards", "resources", "landmarks"]) {
+      if (doc[field].length < 2)
+        fail(`${label}: zone "${doc.zone}" has ${doc[field].length} ${field}, needs at least 2`);
+    }
+    if (doc.reasonToGo.trim() === "")
+      fail(`${label}: zone "${doc.zone}" has an empty reasonToGo`);
+
+    // Z4 — ids kebab-case and unique WITHIN their own array. Uniqueness across
+    // sibling ids is not expressible in draft-07 (uniqueItems compares whole
+    // objects and would miss two hazards sharing an id but differing by one
+    // word of description), so this rule owns it. "Within the array", not
+    // within the file: one id string may legally appear in all three arrays.
+    for (const [field, noun] of [["hazards", "hazard"], ["resources", "resource"], ["landmarks", "landmark"]]) {
+      const arr = doc[field];
+      for (const item of arr)
+        if (!ZONE_ID_RE.test(item.id))
+          fail(`${label}: ${noun} id "${item.id}" is not kebab-case`);
+      for (const [id, group] of findDuplicateGroups(arr, (i) => i.id))
+        fail(`${label}: duplicate ${noun} id "${id}" (${group.length} entries)`);
+    }
+
+    // Z5 — the optional `effect` binds an authored hazard to a runtime type.
+    // A bad value is a FAIL; an ABSENT one is only a WARN (design D3), because
+    // the Ashvale Front's defining hazard is an absence the engine cannot
+    // express. That WARN is the accepted blind spot: a zone can be
+    // content-complete with zero implementable hazards, so the ratio is
+    // counted here and printed by finish() rather than swallowed.
+    for (const h of doc.hazards) {
+      zoneHazardsTotal++;
+      if (h.effect === undefined) {
+        zoneHazardsUnmapped++;
+        warn(`${label}: hazard "${h.id}" has no effect — authored but not expressible at runtime`);
+      } else if (!ZONE_HAZARD_EFFECTS.includes(h.effect)) {
+        fail(`${label}: hazard "${h.id}" effect "${h.effect}" is not a runtime zoneHazards type (valid: ${ZONE_HAZARD_EFFECTS.join(", ")})`);
+      }
+    }
+
+    // Z7 — resource kinds come from the closed enum.
+    for (const r of doc.resources) {
+      if (!ZONE_RESOURCE_KINDS.includes(r.kind))
+        fail(`${label}: resource "${r.id}" kind "${r.kind}" is not a resource kind (valid: ${ZONE_RESOURCE_KINDS.join(", ")})`);
+    }
+
+    if (known) records.push({ label, file, doc });
+  }
+
+  // --- pass 2: the cross-file rules -----------------------------------------
+
+  // Z2 — completeness, the direct analogue of the placement gate's G4. The
+  // geography is the authority; every zone it declares must have exactly one
+  // record. Missing = the pass is half-finished; duplicated = two files claim
+  // the same ground. (An orphan was already FAILed by Z1 and is not here.)
+  for (const [zone, group] of findDuplicateGroups(records, (r) => r.doc.zone))
+    fail(`zones: zone "${zone}" has ${group.length} records (${group.map((r) => r.file).sort().join(", ")})`);
+
+  // Iterates the geography, NOT the files: the whole point of Z2 is the zone
+  // that was never written.
+  const covered = new Set(records.map((r) => r.doc.zone));
+  for (const id of zones.keys())
+    if (!covered.has(id)) fail(`zones: geography zone "${id}" has no record in content/zones/`);
+
+  // Z6 — distinctiveness (design D4/C5). Terrain is too coarse an axis to keep
+  // ten zones apart — three of them are "river-country" — so identity is
+  // enforced here rather than left to taste. Names compare trimmed and
+  // case-insensitively: "The Adits" and "the adits" are the same landmark to a
+  // player. Only a name spanning two DIFFERENT zones fires; a zone repeating a
+  // name inside its own list is deliberately not covered by any Z-rule.
+  const landmarkUses = [];
+  for (const r of records)
+    for (const l of r.doc.landmarks)
+      landmarkUses.push({ zone: r.doc.zone, name: l.name, key: l.name.trim().toLowerCase() });
+  for (const [, group] of findDuplicateGroups(landmarkUses, (u) => u.key)) {
+    const shared = [...new Set(group.map((u) => u.zone))].sort();
+    if (shared.length > 1)
+      fail(`zones: landmark name "${group[0].name.trim()}" appears in zones ${shared.map((z) => `"${z}"`).join(", ")}`);
+  }
+
+  // Compared as a SET: deduped and sorted, so {stone,ore} is {ore,stone} and a
+  // zone listing two resources of one kind has a one-element set.
+  const kindSets = records.map((r) => ({
+    zone: r.doc.zone,
+    key: [...new Set(r.doc.resources.map((x) => x.kind))].sort().join(", "),
+  }));
+  for (const [key, group] of findDuplicateGroups(kindSets, (s) => s.key))
+    fail(`zones: resource-kind set (${key}) is shared by zones ${group.map((s) => s.zone).sort().map((z) => `"${z}"`).join(", ")}`);
+
+  return records.length;
+}
+
+// --- F-040: the town-plan navigability gate, T1–T7 --------------------------
+//
+// The scale contract (design §3), MEASURED not invented: largest mob radius 5
+// → a cart road a mob can use must clear 12 world units; player radius 1.3 → a
+// player-only alley must clear 4; D1's ten-second crossing puts a town's extent
+// between 150 and 260.
+//
+// These floors live HERE and not in town-plan.schema.json, for exactly the
+// reason zone-content.schema.json stays shape-only: a schema-invalid document
+// `continue`s past every T-rule below, so a floor duplicated into the schema
+// would make its T-rule unreachable dead code whose deletion nothing notices.
+// Keyed by `roads[].kind` so the choice of floor is data-driven rather than a
+// magic number (design §2).
+const TOWN_ROAD_WIDTH_FLOORS = { cart: 12, foot: 4 };
+const TOWN_EXTENT_MIN = 150;
+const TOWN_EXTENT_MAX = 260;
+
+// T5's "touches" tolerance, in world units. A footprint whose edge sits within
+// this distance of the road's swept edge counts as opening onto it.
+//
+// INVENTED, DESIGN-OPEN — neither the design nor A1 §6 says how close is
+// "opens onto". It cannot be zero-tolerance equality (authored coordinates
+// would have to be bit-exact) and it cannot be an overlap test, because T4
+// forbids the footprint overlapping the road at all: the two rules would
+// contradict each other. Half a unit is under a third of a player diameter, so
+// nothing that passes T5 leaves a gap a body could stand in.
+const TOWN_ENTRANCE_TOUCH = 0.5;
+
+function normalizeTownRect(rect) {
+  const [ax, ay, bx, by] = rect;
+  return [Math.min(ax, bx), Math.min(ay, by), Math.max(ax, bx), Math.max(ay, by)];
+}
+
+// T5's touch test: grow the footprint by the tolerance and ask whether it now
+// shares positive area with any of the road's swept quads. polyRectOverlap is
+// strict (touching is NOT overlapping), so an exactly-abutting footprint only
+// registers because of the growth — which is the whole point.
+function footprintTouchesRoad(rect, quads) {
+  const [x0, y0, x1, y1] = normalizeTownRect(rect);
+  const grown = [
+    x0 - TOWN_ENTRANCE_TOUCH, y0 - TOWN_ENTRANCE_TOUCH,
+    x1 + TOWN_ENTRANCE_TOUCH, y1 + TOWN_ENTRANCE_TOUCH,
+  ];
+  return quads.some((q) => polyRectOverlap(q, grown));
+}
+
+// T7's "reachable from the town edge": does this flood-fill region include at
+// least one cell on the grid's border?
+//
+// The town edge is where a traveller arrives from — A1 §6's Millcross has no
+// wall and its roads run off the map at the extent, so "reachable" can only mean
+// "connected to the outside world". Scanning the four borders is enough: a
+// region that touches the extent anywhere is enterable, and one that touches it
+// nowhere is enclosed by buildings no matter how large it is.
+function townRegionTouchesEdge(grid, labels, region) {
+  const { cols, rows } = grid;
+  for (let c = 0; c < cols; c++) {
+    if (labels[c] === region) return true;
+    if (labels[(rows - 1) * cols + c] === region) return true;
+  }
+  for (let r = 0; r < rows; r++) {
+    if (labels[r * cols] === region) return true;
+    if (labels[r * cols + (cols - 1)] === region) return true;
+  }
+  return false;
+}
+
+// T1/T2/T3/T5. Mirrors checkZoneContent's structure exactly: soft-skip, compile,
+// load the geography, then one pass that FAILs a schema-invalid record and
+// `continue`s rather than letting a malformed shape reach the rules.
+function checkTownPlan(opts) {
+  const dir = join(opts.contentRoot, "towns");
+  if (!existsSync(dir)) return 0;
+  const files = readdirSync(dir).filter((f) => /^town-.+\.json$/.test(f)).sort();
+  if (!files.length) return 0;
+
+  // Skip BEFORE touching the schema: every fixture in check_content.test.mjs
+  // and bestiary-placement.test.mjs has a content root that never adopted town
+  // plans, and those roots must not FAIL with "town-plan schema: cannot
+  // read/parse".
+  const validate = compileSchema(
+    join(opts.contentRoot, "schemas/town-plan.schema.json"),
+    "town-plan schema", fail);
+  if (!validate) return 0;
+
+  // REQUIRED once a town plan exists: T1 is an assertion against the
+  // Cartographer's geography, which is the authority on which towns exist.
+  const towns = loadGeographyTowns(join(opts.contentRoot, "maps/cluster1-geography.json"));
+  if (!towns) return 0;
+
+  const records = []; // { label, file, doc, roadQuads } for every valid plan naming a real town
+
+  for (const file of files) {
+    const label = `towns/${file}`;
+    // Failure count, not the return value: a file holding literal `null`
+    // parses fine and must not be mistaken for a recorded FAIL.
+    const before = failures.length;
+    const doc = readJson(join(dir, file), label, fail);
+    if (failures.length > before) continue;
+
+    if (!validate(doc)) {
+      for (const err of validate.errors)
+        fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
+      continue; // downstream rules assume a valid shape
+    }
+
+    // T1 — the town exists in the Cartographer's geography. Like Z1 this does
+    // NOT continue: T2/T3/T5 are purely intra-record, so bailing here would
+    // hide real defects behind one typo. The orphan is FAILed and withheld
+    // from `records`, and so from the count.
+    const known = towns.has(doc.town);
+    if (!known) fail(`${label}: town "${doc.town}" not in cluster1-geography.json#towns`);
+
+    // T2 — extent within D1's 150–260 on BOTH axes. Inclusive: a town sitting
+    // exactly on either endpoint is legal, which is what lets the fixture sit
+    // on the boundary with no slack.
+    for (const axis of ["width", "height"]) {
+      const v = doc.extent[axis];
+      if (v < TOWN_EXTENT_MIN || v > TOWN_EXTENT_MAX)
+        fail(`${label}: extent ${axis} ${v} is outside ${TOWN_EXTENT_MIN}-${TOWN_EXTENT_MAX} world units`);
+    }
+
+    // T3 — every road clears its kind's floor (design §3). The floor is chosen
+    // by `kind`, so a road authored as `cart` is held to the mob-passable
+    // width whether or not a mob is ever routed down it.
+    const roadById = new Map();
+    const roadQuads = new Map();
+    for (const road of doc.roads) {
+      roadById.set(road.id, road);
+      const floor = TOWN_ROAD_WIDTH_FLOORS[road.kind];
+      if (road.width < floor)
+        fail(`${label}: road "${road.id}" (kind "${road.kind}") is ${road.width} wide, needs at least ${floor}`);
+      // The schema is shape-only, so `width` may be 0/negative and `points`
+      // may repeat — both make roadPolygon throw. Swallow it here and let T5
+      // report it against the footprint that depended on it; the gate must
+      // never die with a stack trace on authored content.
+      try { roadQuads.set(road.id, roadPolygon(road.points, road.width)); }
+      catch { /* not sweepable — T5 reports it if anything opens onto it */ }
+    }
+
+    // T5 — `entranceOn` names a real road AND the footprint touches it.
+    // `entranceOn` is optional (a ruin opens onto nothing), so an absent one is
+    // not a defect; a present one that points nowhere is.
+    for (const fp of doc.footprints) {
+      if (fp.entranceOn === undefined) continue;
+      if (!roadById.has(fp.entranceOn)) {
+        fail(`${label}: footprint "${fp.id}" entranceOn "${fp.entranceOn}" names no road in this plan`);
+        continue;
+      }
+      const quads = roadQuads.get(fp.entranceOn);
+      if (!quads) {
+        fail(`${label}: footprint "${fp.id}" opens onto road "${fp.entranceOn}", which has no swept area (degenerate width or centreline)`);
+        continue;
+      }
+      if (!footprintTouchesRoad(fp.rect, quads))
+        fail(`${label}: footprint "${fp.id}" does not touch road "${fp.entranceOn}" it opens onto (within ${TOWN_ENTRANCE_TOUCH} units)`);
+    }
+
+    // T4 — no footprint overlaps a road's swept area, and no two footprints
+    // overlap each other. Both halves are one rule because both describe the
+    // same defect: authored mass sitting where the plan says there is passage.
+    //
+    // Strictly positive-area, via the same polyRectOverlap/rectsOverlap T5
+    // uses. Touching is NOT overlapping, which is what lets T5 demand a
+    // footprint ABUT the road it opens onto while T4 forbids it entering the
+    // road — the two rules would contradict each other under a loose test.
+    //
+    // A road with no swept area (degenerate width or centreline) is absent from
+    // `roadQuads` and so cannot be overlapped; T3 already FAILed its width and
+    // T5 reports anything that opens onto it.
+    for (const fp of doc.footprints) {
+      for (const [roadId, quads] of roadQuads) {
+        if (quads.some((q) => polyRectOverlap(q, fp.rect)))
+          fail(`${label}: footprint "${fp.id}" overlaps the swept area of road "${roadId}"`);
+      }
+    }
+    for (let i = 0; i < doc.footprints.length; i++) {
+      for (let j = i + 1; j < doc.footprints.length; j++) {
+        const a = doc.footprints[i];
+        const b = doc.footprints[j];
+        if (rectsOverlap(a.rect, b.rect))
+          fail(`${label}: footprints "${a.id}" and "${b.id}" overlap`);
+      }
+    }
+
+    // The walkable grid T6 and T7 both read. Built once per plan.
+    //
+    // A shape-only schema lets `extent` be zero or negative, which makes
+    // walkableGrid throw. T2 has already FAILed that document, so swallow the
+    // throw and skip the two rules rather than die with a stack trace on
+    // authored content — there is no walkable area to measure either way.
+    let grid = null;
+    try {
+      grid = walkableGrid(doc);
+    } catch {
+      /* degenerate extent — T2 owns the report; T6/T7 have nothing to measure */
+    }
+
+    if (grid) {
+      const { count, labels, sizes } = floodFillRegions(grid);
+
+      // T6 — THE LOAD-BEARING RULE. The walkable area must be exactly ONE
+      // connected region. Two regions means a sealed courtyard or an island:
+      // a place the plan draws as open ground that a body of player radius can
+      // never actually reach. That is the failure this whole feature exists to
+      // prevent, and it is invisible to the eye on a rendered map.
+      //
+      // Zero regions (every cell blocked) is caught by the same !== 1.
+      if (count !== 1) {
+        const detail = count === 0
+          ? "no walkable cell at all"
+          : `region sizes ${sizes.join(", ")} cells`;
+        fail(`${label}: walkable area is ${count} disconnected regions (${detail}), must be exactly 1 — a sealed courtyard or an island is unreachable`);
+      }
+
+      // T7 — exactly ONE landmark is the firstSight, and it is reachable from
+      // the town edge. `firstSight` is the thing a traveller sees on arrival,
+      // so zero of them leaves the arrival undefined and two of them contradict
+      // each other; neither count is a matter of taste.
+      const firstSights = doc.landmarks.filter((l) => l.firstSight === true);
+      if (firstSights.length !== 1)
+        fail(`${label}: ${firstSights.length} landmarks are marked firstSight, must be exactly 1`);
+
+      // Reachability is asked of every candidate, not just of a lone survivor:
+      // a plan with two firstSights has two things to check, and reporting only
+      // the count would hide an unreachable one behind the count FAIL.
+      for (const lm of firstSights) {
+        const idx = cellIndexAt(grid, lm.at);
+        if (idx < 0) {
+          fail(`${label}: firstSight landmark "${lm.id}" at [${lm.at.join(", ")}] lies outside the town extent`);
+          continue;
+        }
+        if (!grid.walkable[idx]) {
+          fail(`${label}: firstSight landmark "${lm.id}" at [${lm.at.join(", ")}] stands on blocked ground — no body of radius ${grid.playerRadius} fits there`);
+          continue;
+        }
+        if (!townRegionTouchesEdge(grid, labels, labels[idx]))
+          fail(`${label}: firstSight landmark "${lm.id}" at [${lm.at.join(", ")}] is not reachable from the town edge — it sits in a walkable region enclosed by footprints`);
+      }
+    }
+
+    if (known) records.push({ label, file, doc, roadQuads });
+  }
+
+  // ===== SEAM: cross-file town rules, if any, go here =====================
+  // checkZoneContent runs a second pass over `records` for its cross-file
+  // rules (Z2 completeness, Z6 distinctiveness). T1–T7 are all intra-record,
+  // so there is nothing here yet; `records` is built the same way so a later
+  // cross-town rule has somewhere to live.
+  // =======================================================================
+
+  return records.length;
+}
+
+function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0) {
   for (const w of warnings) console.log(`WARN  ${w}`);
   for (const f of failures) console.log(`FAIL  ${f}`);
-  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${failures.length} failures, ${warnings.length} warnings`);
+  // I-060 design §7: Z5's WARN is an accepted blind spot, so the ratio it
+  // measures is printed as its own line. The generic warning total conflates
+  // it with character-coverage and story-orphan warns and is not that signal.
+  //
+  // GUARDED. A content root with no zone content has no ratio to report, and
+  // `0 of 0` would print a measurement of a thing that was never measured onto
+  // every fixture in check_content.test.mjs and bestiary-placement.test.mjs.
+  // That is the opposite of the discipline the rest of this codebase keeps —
+  // season1.mjs's buildRows returns `actual: null`, never 0, when nothing is
+  // countable. Three tests pin this (ABSENT on both soft-skip fixtures,
+  // PRESENT on the ten-record fixture), so the guard cannot be removed or
+  // inverted silently.
+  if (zoneCount > 0 || zoneHazardsTotal > 0)
+    console.log(`zone-content: ${zoneHazardsUnmapped} of ${zoneHazardsTotal} hazards have no runtime effect`);
+  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${zoneCount} zones, ${townCount} towns, ${failures.length} failures, ${warnings.length} warnings`);
   process.exit(failures.length ? 1 : 0);
 }
 

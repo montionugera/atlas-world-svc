@@ -91,6 +91,37 @@ export const MAP_CONFIG = {
       mobType: 'spear_thrower',
       count: 4,
     },
+    // F-031 — Thornveil route + interior tiers, the zone's first tiered
+    // population. These ids are PAIRED with content/maps/atlas-frontier.md
+    // (gate G-SPAWN-PAIR); the geometry is NOT, and deliberately so: the two
+    // maps describe different worlds until I-015 lands a real map loader.
+    {
+      id: 'thornveil_route_stalkers',
+      x: 700,
+      y: 300,
+      width: 150,
+      height: 200,
+      mobType: 'bramble_stalker',
+      count: 2,
+    },
+    {
+      id: 'thornveil_route_spearlings',
+      x: 700,
+      y: 550,
+      width: 150,
+      height: 200,
+      mobType: 'veil_spearling',
+      count: 2,
+    },
+    {
+      id: 'thornveil_interior',
+      x: 820,
+      y: 420,
+      width: 150,
+      height: 150,
+      mobType: 'bramble_drake',
+      count: 1,
+    },
   ] as MobSpawnArea[],
 
   // Define different terrain zones on the map
