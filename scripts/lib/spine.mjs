@@ -16,6 +16,7 @@ import { readFileSync, readdirSync, existsSync, writeFileSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createHash, randomBytes } from "node:crypto";
+import { roadPolygon, pointInPoly } from "./town-geometry.mjs";
 
 // ── constants — single source of truth ─────────────────────────────────────
 // tier is a DEPTH, not a label. Two labels may share a depth (ocean beside
@@ -448,6 +449,109 @@ export function reroll({ nodes, targetId, subtree = false, why, mintHex }) {
     changed.push({ id, oldSeed: n.seed.value, newSeed: fresh, epoch: n.seed.epoch + 1 });
   }
   return { changed, skippedFrozen, errors };
+}
+
+// ── F-041 Phase 3: town-frame gates (G-TOWN-FRAME, G-TOWN-COMP, G-TERRAINKIND) ──
+// Pure. `plans` is [{ file, doc }] of parsed town-plan documents; only plans
+// carrying a string `spineId` are examined — a missing link is G-ALIAS's
+// business (Phase 5), never silently double-owned here.
+const FRAME_EPS = 1e-6; // authored decimals (84.9 + 110/100) are not IEEE-exact; 1e-6 km = 1 mm
+const normRect = ([ax, ay, bx, by]) => [
+  Math.min(ax, bx), Math.min(ay, by), Math.max(ax, bx), Math.max(ay, by),
+];
+
+export function townFrameErrors({ tree, plans }) {
+  const errors = [];
+  for (const { file, doc } of plans) {
+    if (typeof doc?.spineId !== "string") continue;
+    const node = tree.byId.get(doc.spineId);
+    if (!node) { errors.push(`${file}: spineId "${doc.spineId}" resolves to no spine node`); continue; }
+    if (node.tier !== "town") { errors.push(`${file}: spineId "${doc.spineId}" is tier "${node.tier}", must be "town"`); continue; }
+    const i = node.interior ?? {};
+    if (!Array.isArray(i.anchorInInterior)) {
+      errors.push(`${file} -> ${node.id}: interior.anchorInInterior is missing — the plan anchor names a point in the interior frame (HC-4)`);
+      continue;
+    }
+    if (!(i.perParentUnit > 0) || !Array.isArray(i.originInParent)) {
+      errors.push(`${file} -> ${node.id}: interior.perParentUnit/originInParent missing or non-positive`);
+      continue;
+    }
+    const at = doc.anchor?.geographyAt;
+    if (!Array.isArray(at)) { errors.push(`${file}: anchor.geographyAt is not a point`); continue; }
+    const got = [
+      i.originInParent[0] + i.anchorInInterior[0] / i.perParentUnit,
+      i.originInParent[1] + i.anchorInInterior[1] / i.perParentUnit,
+    ];
+    if (Math.abs(got[0] - at[0]) > FRAME_EPS || Math.abs(got[1] - at[1]) > FRAME_EPS) {
+      errors.push(
+        `${file} -> ${node.id}: originInParent + anchorInInterior/perParentUnit = [${got[0]}, ${got[1]}] ` +
+        `but plan anchor.geographyAt = [${at[0]}, ${at[1]}] — the anchor is the centre-of-interest, not the origin corner (HC-4)`);
+    }
+  }
+  return errors;
+}
+
+export function townCompDerived({ plan, cell = SPINE_CELL_U }) {
+  const w = plan.extent?.width ?? 0;
+  const h = plan.extent?.height ?? 0;
+  if (!(w > 0) || !(h > 0)) return { builtPct: 0, riverPct: 0 };
+  const rects = [];
+  for (const fp of plan.footprints ?? []) rects.push(normRect(fp.rect));
+  for (const pz of plan.plazas ?? []) rects.push(normRect(pz.rect));
+  const quads = [];
+  for (const road of plan.roads ?? []) {
+    try { quads.push(...roadPolygon(road.points, road.width)); }
+    catch { /* degenerate width/centreline — T3 owns the report */ }
+  }
+  const waters = (plan.water ?? []).map((b) => b.poly);
+  let builtCells = 0, riverCells = 0, total = 0;
+  for (let y = cell / 2; y < h; y += cell) {
+    for (let x = cell / 2; x < w; x += cell) {
+      total += 1;
+      const p = [x, y];
+      const built =
+        rects.some((r) => x > r[0] && x < r[2] && y > r[1] && y < r[3]) ||
+        quads.some((q) => pointInPoly(p, q));
+      if (built) { builtCells += 1; continue; }   // union partition: built wins, water \ built is river
+      if (waters.some((q) => pointInPoly(p, q))) riverCells += 1;
+    }
+  }
+  return { builtPct: (100 * builtCells) / total, riverPct: (100 * riverCells) / total };
+}
+
+export function townCompErrors({ tree, plans, tolerancePp = 3, cell = SPINE_CELL_U }) {
+  const errors = [];
+  for (const { file, doc } of plans) {
+    if (typeof doc?.spineId !== "string") continue;
+    const node = tree.byId.get(doc.spineId);
+    if (!node || node.tier !== "town") continue; // join defects are G-TOWN-FRAME's report
+    const { builtPct, riverPct } = townCompDerived({ plan: doc, cell });
+    const declaredBuilt = node.composition?.built ?? 0;
+    const declaredRiver = node.composition?.river ?? 0;
+    if (Math.abs(declaredBuilt - builtPct) > tolerancePp)
+      errors.push(`${file} -> ${node.id}: declared built ${declaredBuilt} vs derived ${builtPct.toFixed(2)} (area(footprints U roads U plazas)/extent) — tolerance ±${tolerancePp} pp`);
+    if (Math.abs(declaredRiver - riverPct) > tolerancePp)
+      errors.push(`${file} -> ${node.id}: declared river ${declaredRiver} vs derived ${riverPct.toFixed(2)} (area(water minus built)/extent) — tolerance ±${tolerancePp} pp`);
+  }
+  return errors;
+}
+
+export function terrainKindErrors({ nodes }) {
+  const errors = [];
+  for (const node of nodes) {
+    const kind = node.terrainKind;
+    if (kind === null || kind === undefined) continue; // authored, optional — forward-only check
+    if (!TERRAIN_KINDS.includes(kind)) {
+      errors.push(`${node.id}: terrainKind "${kind}" is not one of ${TERRAIN_KINDS.join(", ")}`);
+      continue;
+    }
+    for (const biome of TERRAIN_IMPLIES[kind]) {
+      const share = node.composition?.[biome] ?? 0;
+      if (share < 15)
+        errors.push(`${node.id}: terrainKind "${kind}" implies biome "${biome}" at >= 15% of composition, found ${share}`);
+    }
+  }
+  return errors;
 }
 
 // ── CLI: node scripts/lib/spine.mjs reroll <id> [--subtree] --why "<reason>"

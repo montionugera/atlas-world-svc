@@ -5,6 +5,7 @@ import {
   SPINE_CELL_KM, SPINE_CELL_U, KM_TO_U, ID_RE, SEED_RE,
   shoelaceArea, polygonBBox, pointInPolygon, selfIntersects,
   placementArea, gridIntersectionArea, gridUnionArea,
+  townFrameErrors, townCompDerived, townCompErrors, terrainKindErrors,
 } from "../lib/spine.mjs";
 
 // ── constants ──────────────────────────────────────────────────────────────
@@ -375,4 +376,109 @@ test("reroll CLI: rewrites the target file, leaves frozen siblings untouched, re
   assert.equal(w.seed.why, "cli demo");
   const k = JSON.parse(readFileSync(join(dir, "spine/nodes/n-k.json"), "utf8"));
   assert.equal(k.seed.value, "5555555555555555"); // frozen: untouched
+});
+
+// ── F-041 Phase 3: town-frame gate logic ────────────────────────────────────
+function p3TownNode(overrides = {}) {
+  return {
+    id: "n-t1", tier: "town",
+    interior: { units: "u", perParentUnit: 100, size: [200, 160],
+                originInParent: [249, 249.2], anchorInInterior: [100, 80] },
+    composition: { built: 28, river: 9, meadow: 63 },
+    terrainKind: null,
+    ...overrides,
+  };
+}
+function p3PlanDoc(overrides = {}) {
+  return {
+    town: "t1", spineId: "n-t1",
+    extent: { width: 200, height: 160 },
+    anchor: { geographyAt: [250, 250] },
+    water: [{ id: "w-river", kind: "river", poly: [[120, 0], [152, 0], [152, 90], [120, 90]] }],
+    roads: [],
+    footprints: [{ id: "big-block", kind: "store", rect: [0, 0, 80, 112] }],
+    plazas: [],
+    landmarks: [{ id: "the-centre", at: [100, 80], firstSight: true }],
+    ...overrides,
+  };
+}
+const p3Tree = (node) => ({ byId: new Map([[node.id, node]]) });
+
+test("townFrameErrors: the HC-4 centre identity holds on a reverse-derived frame", () => {
+  assert.deepEqual(
+    townFrameErrors({ tree: p3Tree(p3TownNode()), plans: [{ file: "towns/town-t1.json", doc: p3PlanDoc() }] }),
+    []);
+});
+
+test("townFrameErrors: corner-as-anchor (anchorInInterior [0,0], placement unchanged) is rejected", () => {
+  const node = p3TownNode();
+  node.interior = { ...node.interior, anchorInInterior: [0, 0] };
+  const errors = townFrameErrors({ tree: p3Tree(node), plans: [{ file: "towns/town-t1.json", doc: p3PlanDoc() }] });
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /centre-of-interest, not the origin corner/);
+});
+
+test("townFrameErrors: a missing anchorInInterior is a defect, not a skip", () => {
+  const node = p3TownNode();
+  delete node.interior.anchorInInterior;
+  const errors = townFrameErrors({ tree: p3Tree(node), plans: [{ file: "towns/town-t1.json", doc: p3PlanDoc() }] });
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /anchorInInterior is missing/);
+});
+
+test("townFrameErrors: a dangling spineId is reported; a non-town target is reported", () => {
+  const dangling = townFrameErrors({ tree: p3Tree(p3TownNode()),
+    plans: [{ file: "towns/town-x.json", doc: p3PlanDoc({ spineId: "n-nope" }) }] });
+  assert.equal(dangling.length, 1);
+  assert.match(dangling[0], /resolves to no spine node/);
+  const region = townFrameErrors({ tree: p3Tree(p3TownNode({ tier: "region" })),
+    plans: [{ file: "towns/town-t1.json", doc: p3PlanDoc() }] });
+  assert.equal(region.length, 1);
+  assert.match(region[0], /tier "region", must be "town"/);
+});
+
+test("townFrameErrors: a plan without spineId is G-ALIAS's business (Phase 5), silence here", () => {
+  const doc = p3PlanDoc();
+  delete doc.spineId;
+  assert.deepEqual(townFrameErrors({ tree: p3Tree(p3TownNode()), plans: [{ file: "towns/town-t1.json", doc }] }), []);
+});
+
+test("townCompDerived: exact axis-aligned fixture rasterizes to built 28.00, river 9.00", () => {
+  const { builtPct, riverPct } = townCompDerived({ plan: p3PlanDoc() });
+  assert.ok(Math.abs(builtPct - 28) < 0.01, `builtPct ${builtPct}`);
+  assert.ok(Math.abs(riverPct - 9) < 0.01, `riverPct ${riverPct}`);
+});
+
+test("townCompDerived: water under a footprint is built, not river — union partition, not sum", () => {
+  const doc = p3PlanDoc({ water: [{ id: "w", kind: "river", poly: [[0, 0], [80, 0], [80, 112], [0, 112]] }] });
+  assert.ok(townCompDerived({ plan: doc }).riverPct < 0.01, "water fully under the footprint must contribute 0 river");
+});
+
+test("townCompDerived: a swept road counts as built", () => {
+  const doc = p3PlanDoc({ footprints: [], roads: [{ id: "r", kind: "cart", width: 16, points: [[0, 80], [200, 80]] }] });
+  const { builtPct } = townCompDerived({ plan: doc });
+  assert.ok(Math.abs(builtPct - 10) < 0.6, `builtPct ${builtPct} — 16u x 200u over 32000u² is 10%`);
+});
+
+test("townCompErrors: declared built 10 against derived 28 is outside ±3 pp (the footprints-only mistake)", () => {
+  const node = p3TownNode({ composition: { built: 10, river: 9, meadow: 81 } });
+  const errors = townCompErrors({ tree: p3Tree(node), plans: [{ file: "towns/town-t1.json", doc: p3PlanDoc() }] });
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /declared built 10 vs derived 28\.00/);
+});
+
+test("townCompErrors: the true declaration passes within ±3 pp", () => {
+  assert.deepEqual(
+    townCompErrors({ tree: p3Tree(p3TownNode()), plans: [{ file: "towns/town-t1.json", doc: p3PlanDoc() }] }),
+    []);
+});
+
+test("terrainKindErrors: implied biome under 15% is a defect; null terrainKind is silence; unknown kind is a defect", () => {
+  assert.deepEqual(terrainKindErrors({ nodes: [p3TownNode()] }), []);
+  const under = terrainKindErrors({ nodes: [{ id: "n-r1", terrainKind: "river-country", composition: { river: 10, meadow: 90 } }] });
+  assert.equal(under.length, 1);
+  assert.match(under[0], /implies biome "river" at >= 15%/);
+  const unknown = terrainKindErrors({ nodes: [{ id: "n-x", terrainKind: "volcano", composition: { rock: 100 } }] });
+  assert.equal(unknown.length, 1);
+  assert.match(unknown[0], /is not one of/);
 });
