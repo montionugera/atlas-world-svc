@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1430,7 +1430,85 @@ function checkSpine(opts) {
       fail(`G-DEPTH: ${n.id} (${n.tier}, depth ${TIER_DEPTH[n.tier]}) under ${parent.id} (${parent.tier}, depth ${TIER_DEPTH[parent.tier]}) — child depth must be parent depth + 1`);
   }
 
+  // F-041 Phase 1: G-CONTAIN + G-ANCHOR. Boundary-touching points count as
+  // inside (tolerance 0.01 parent units) — the sheet's ice edge and south rim
+  // put real vertices exactly on the continent outline.
+  gSpineGeometry({ spine, tree, fail });
+
   return validNodes.length;
+}
+
+const CONTAIN_TOL = 0.01;
+function distToSegment([px, py], [ax, ay], [bx, by]) {
+  const dx = bx - ax, dy = by - ay;
+  const t = dx || dy ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy))) : 0;
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+function ringOf(placement) {
+  if (placement.shape === "polygon") return placement.points;
+  if (placement.shape === "rect") {
+    const { x, y, w, h } = placement.rect;
+    return [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
+  }
+  return null; // point
+}
+function insideWithTol(pt, ring) {
+  if (pointInPolygon({ point: pt, points: ring })) return true;
+  for (let i = 0; i < ring.length; i++)
+    if (distToSegment(pt, ring[i], ring[(i + 1) % ring.length]) <= CONTAIN_TOL) return true;
+  return false;
+}
+function gSpineGeometry({ spine, tree, fail }) {
+  for (const node of spine.nodes) {
+    const ring = ringOf(node.placement);
+    // G-ANCHOR: anchor present, inside own placement.
+    const a = node.placement.anchor;
+    if (!Array.isArray(a) || a.length !== 2)
+      fail(`spine: G-ANCHOR ${node.id}: placement.anchor missing`);
+    else if (node.placement.shape === "point") {
+      if (a[0] !== node.placement.at[0] || a[1] !== node.placement.at[1])
+        fail(`spine: G-ANCHOR ${node.id}: point anchor must equal at`);
+    } else if (!insideWithTol(a, ring))
+      fail(`spine: G-ANCHOR ${node.id}: anchor [${a.join(", ")}] outside placement`);
+    // G-CONTAIN: child vertices + edge midpoints inside parent placement.
+    // Frame rule: a per=1 child placement continues the parent grid, so its
+    // points compare against the parent ring directly — no rebasing.
+    if (node.parentId) {
+      const parent = tree.byId.get(node.parentId);
+      const pRing = parent && ringOf(parent.placement);
+      if (pRing) {
+        const pts = node.placement.shape === "point" ? [node.placement.at] : ringOf(node.placement);
+        const samples = [...pts];
+        if (pts.length > 1)
+          for (let i = 0; i < pts.length; i++) {
+            const q = pts[(i + 1) % pts.length];
+            samples.push([(pts[i][0] + q[0]) / 2, (pts[i][1] + q[1]) / 2]);
+          }
+        for (const pt of samples)
+          if (!insideWithTol(pt, pRing)) {
+            fail(`spine: G-CONTAIN ${node.id}: placement point [${pt.join(", ")}] outside parent ${parent.id}`);
+            break;
+          }
+      }
+    }
+    // G-CONTAIN, feature half: features drawn inside this node's own placement.
+    // Frame rule: at perParentUnit === 1 a node's interior CONTINUES the parent
+    // grid, so feature coordinates are already parent-frame — identity. The
+    // rebased mapping (originInParent + p / per) applies only across a scale
+    // boundary (per ≠ 1; none exist until Phase 4).
+    for (const f of node.features ?? []) {
+      if (f.offSheet || !ring) continue;
+      const local = f.kind === "point" ? [f.at] : f.points;
+      const per = node.interior.perParentUnit, o = node.interior.originInParent;
+      for (const p of local) {
+        const inParentFrame = per === 1 ? p : [o[0] + p[0] / per, o[1] + p[1] / per];
+        if (!insideWithTol(inParentFrame, ring)) {
+          fail(`spine: G-CONTAIN ${node.id}: feature ${f.id} point [${p.join(", ")}] outside placement`);
+          break;
+        }
+      }
+    }
+  }
 }
 
 function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0) {

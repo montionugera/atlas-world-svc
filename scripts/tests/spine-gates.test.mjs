@@ -185,3 +185,38 @@ t11("spine-emit --check goes red on a hand-edited derived block", () => {
   assert11.equal(r.code, 1);
   assert11.match(r.out, /spine-emit: DRIFT .*n-cluster1\.json/);
 });
+
+// ─── F-041 Phase 1 · fixture builder (A3: reuse Phase 0's if equivalent) ────
+const FIX = join11(ROOT11, "scripts/tests/fixtures/spine");
+const GATE11 = join11(ROOT11, "scripts/check_content.mjs");
+function spineFixture({ overlayDir = null, mutate = null } = {}) {
+  const dir = mkdtemp11(join11(tmp11(), "spine-fix-"));
+  cp11(join11(FIX, "base"), dir, { recursive: true });
+  cp11(join11(ROOT11, "content/schemas/spine-node.schema.json"),
+       join11(dir, "schemas/spine-node.schema.json"), { recursive: true });
+  if (overlayDir) cp11(join11(FIX, overlayDir), dir, { recursive: true });
+  exec11(process.execPath, [EMIT, "--write", "--content-root", dir]); // fill derived
+  if (mutate) mutate(dir);
+  return dir;
+}
+function runSpineGate(dir) {
+  try {
+    const out = exec11(process.execPath, [GATE11, "--only=spine", "--content-root", dir], { encoding: "utf8" });
+    return { code: 0, out };
+  } catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+}
+
+t11("base spine fixture is green", () => {
+  const r = runSpineGate(spineFixture());
+  assert11.equal(r.code, 0, r.out);
+});
+t11("G-CONTAIN red: child polygon pokes outside its parent", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-contain-child-outside" }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-CONTAIN.*n-r.*outside parent n-c/);
+});
+t11("G-ANCHOR red: anchor outside own placement", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-anchor-outside" }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-ANCHOR.*n-r.*anchor \[5, 5\] outside placement/);
+});
