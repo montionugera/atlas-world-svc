@@ -460,3 +460,9 @@ test("G-TOWN-FRAME red: corner-as-anchor fixture (HC-2/HC-4)", () => {
   assert.match(out, /G-TOWN-FRAME: towns\/town-t1\.json -> n-t1/);
   assert.match(out, /centre-of-interest, not the origin corner/);
 });
+
+test("G-TOWN-COMP red: footprints-only built (10 declared vs 28 derived) is outside ±3 pp (HC-2)", () => {
+  const { status, out } = p3RunSpineGate(p3Root("g-town-comp-footprints-only-built"));
+  assert.equal(status, 1, out);
+  assert.match(out, /G-TOWN-COMP: towns\/town-t1\.json -> n-t1: declared built 10 vs derived 28\.00/);
+});
