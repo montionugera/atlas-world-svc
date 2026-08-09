@@ -759,6 +759,30 @@ export function checkRuntime({ tree, mobTypes, liveMapIds = LIVE_MAP_IDS }) {
   return { errors };
 }
 
+// F-041 P4 — G-SPAWN-ID-STABLE: the pinned union of spine-authored spawn-area
+// ids and the runtime artifact's ids must equal content/spine/frozen-
+// spawn-ids.json EXACTLY (set equality, not superset — a clean checkout has
+// no "previous emit" to be a superset of; the frozen file IS the pin).
+export function checkSpawnIdStable({ tree, frozenIds, runtimeIds }) {
+  const errors = [];
+  if (!Array.isArray(frozenIds)) return { errors: ["G-SPAWN-ID-STABLE: frozen-spawn-ids.json is not an array"] };
+  const emitted = new Set(runtimeIds ?? []);
+  for (const node of tree.byId.values())
+    for (const a of node.runtime?.spawnAreas ?? []) emitted.add(a.id);
+  const want = [...frozenIds].sort();
+  const got = [...emitted].sort();
+  if (JSON.stringify(want) !== JSON.stringify(got)) {
+    const frozenSet = new Set(frozenIds);
+    const missing = want.filter((i) => !emitted.has(i));
+    const extra = got.filter((i) => !frozenSet.has(i));
+    errors.push(
+      `G-SPAWN-ID-STABLE: spawn-id set != content/spine/frozen-spawn-ids.json (equality, not superset) — ` +
+      `missing: [${missing.join(", ")}] extra: [${extra.join(", ")}]`,
+    );
+  }
+  return { errors };
+}
+
 // ── CLI: node scripts/lib/spine.mjs reroll <id> [--subtree] --why "<reason>"
 //        [--content-root <dir>] ───────────────────────────────────────────
 // Entry-guarded — importing this module runs NOTHING (spawn-pairing pattern:

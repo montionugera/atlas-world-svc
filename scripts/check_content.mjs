@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1530,6 +1530,19 @@ function checkSpine(opts, mobTypes) {
 
   // F-041 P4 — G-SPAWN-FIT: the first geometric check these rects have ever had
   for (const e of checkSpawnFit({ tree }).errors) fail(e);
+
+  // F-041 P4 — G-SPAWN-ID-STABLE: pin against the committed union of both
+  // worlds' spawn ids (8 LEGACY_UNPAIRED + 3 F-031). Reads the runtime
+  // artifact; never writes it (HC-1). Soft-skip when the content root has
+  // no frozen file — Phase 1/3 minimal fixture roots don't carry the pin
+  // (conflict note #5); the real root and the Phase-4 overlay fixtures do.
+  const frozenPath = join(opts.contentRoot, "spine/frozen-spawn-ids.json");
+  if (existsSync(frozenPath)) {
+    const frozenIds = readJson(frozenPath, "frozen-spawn-ids", fail) ?? [];
+    const spawnDocForSpine = readJson(opts.spawnAreas, "spawn-areas(spine)", fail);
+    const runtimeIds = Array.isArray(spawnDocForSpine?.areas) ? spawnDocForSpine.areas.map((a) => a.id) : [];
+    for (const e of checkSpawnIdStable({ tree, frozenIds, runtimeIds }).errors) fail(e);
+  }
 
   return validNodes.length;
 }

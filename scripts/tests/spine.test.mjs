@@ -97,7 +97,7 @@ test("gridIntersectionArea / gridUnionArea are exact on cell-aligned rects", () 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit } from "../lib/spine.mjs";
+import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit, checkSpawnIdStable } from "../lib/spine.mjs";
 
 function tinyNode(id, tier, parentId, seedValue) {
   return {
@@ -572,4 +572,16 @@ test("G-SPAWN-FIT: an unknown mobType radius is its own failure, not a silent pa
   const tree = runtimeTree((ns) => { ns[2].runtime.spawnAreas[0].mobType = "ghost_mob"; });
   const { errors } = checkSpawnFit({ tree });
   assert.ok(errors.some((e) => e.includes('no radius entry in MOB_RADIUS_U')), errors.join("\n"));
+});
+
+test("G-SPAWN-ID-STABLE is set equality against the frozen file, not superset", () => {
+  const tree = runtimeTree(); // one spine area: area_x
+  const ok = checkSpawnIdStable({ tree, frozenIds: ["area_x", "runtime_only"], runtimeIds: ["runtime_only"] });
+  assert.deepEqual(ok.errors, []);
+  // a rename on the spine side is missing+extra, not a pass
+  const bad = checkSpawnIdStable({ tree, frozenIds: ["area_y", "runtime_only"], runtimeIds: ["runtime_only"] });
+  assert.equal(bad.errors.length, 1);
+  assert.match(bad.errors[0], /G-SPAWN-ID-STABLE/);
+  assert.match(bad.errors[0], /missing: \[area_y\]/);
+  assert.match(bad.errors[0], /extra: \[area_x\]/);
 });

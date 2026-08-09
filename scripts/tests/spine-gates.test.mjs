@@ -633,3 +633,11 @@ test("G-SPAWN-FIT goes red on a rect with insufficient margin (HC-2)", (t) => {
   assert.equal(code, 1);
   assert.match(out, /G-SPAWN-FIT: spawn area "thornveil_interior" east margin 3 < required 10/);
 });
+
+test("G-SPAWN-ID-STABLE goes red on a renamed spawn id (HC-2)", (t) => {
+  const { code, out } = runP4Gate(p4FixtureRoot(t, "g-spawn-id-stable-renamed"));
+  assert.equal(code, 1);
+  assert.match(out, /G-SPAWN-ID-STABLE: spawn-id set != content\/spine\/frozen-spawn-ids\.json/);
+  assert.match(out, /missing: \[east_dunes_renamed\]/);
+  assert.match(out, /extra: \[east_dunes\]/);
+});
