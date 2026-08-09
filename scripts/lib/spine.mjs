@@ -828,6 +828,43 @@ export function checkSpineComplete({ tree }) {
   return { errors, warns };
 }
 
+// F-041 P4 Task 4.9 — informational authored-vs-runtime spawn geometry
+// report (never-FAIL, mitigation b). G-SPAWN-PAIR compares ids only — the
+// two tables have described different worlds since F-031, deliberately.
+// This report makes the divergence VISIBLE in gate output instead of
+// folklore. It can never FAIL (a failing version would pressure someone
+// into HC-1's tautology). Runtime rects are read from mapConfig.ts AS TEXT
+// (the gate cannot import TS, spawn-areas.json deliberately excludes
+// geometry, and mapConfig.ts is never modified); a unit test pins that the
+// parser tracks the live format.
+export function parseRuntimeSpawnRects({ source }) {
+  const rects = new Map();
+  const errors = [];
+  const block = source.match(/mobSpawnAreas:\s*\[([\s\S]*?)\]\s*as MobSpawnArea\[\]/);
+  if (!block) {
+    errors.push("parseRuntimeSpawnRects: mobSpawnAreas block not found in mapConfig.ts");
+    return { rects, errors };
+  }
+  for (const m of block[1].matchAll(/\{[^{}]*\}/g)) {
+    const entry = m[0];
+    const idm = entry.match(/id:\s*'([a-z0-9_]+)'/);
+    if (!idm) continue;
+    const num = (key) => {
+      const mm = entry.match(new RegExp(`${key}:\\s*(-?\\d+)`));
+      return mm ? Number(mm[1]) : null;
+    };
+    rects.set(idm[1], { x: num("x"), y: num("y"), width: num("width"), height: num("height") });
+  }
+  return { rects, errors };
+}
+
+export function spawnGeometryReportLines({ areas, runtimeRects }) {
+  const fmt = (r) => (r ? `(${r.x},${r.y} ${r.width}x${r.height})` : "—");
+  const byId = new Map(areas.map((a) => [a.id, a.abs]));
+  const ids = [...new Set([...byId.keys(), ...runtimeRects.keys()])].sort();
+  return ids.map((id) => `spawn-geometry: ${id} authored=${fmt(byId.get(id))} runtime=${fmt(runtimeRects.get(id))}`);
+}
+
 // ── CLI: node scripts/lib/spine.mjs reroll <id> [--subtree] --why "<reason>"
 //        [--content-root <dir>] ───────────────────────────────────────────
 // Entry-guarded — importing this module runs NOTHING (spawn-pairing pattern:

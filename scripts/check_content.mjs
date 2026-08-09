@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1568,6 +1568,18 @@ function checkSpine(opts, mobTypes) {
   for (const w of complete.warns) warn(w);
   if (opts.requireComplete) for (const e of complete.errors) fail(e);
   else for (const e of complete.errors) warn(e);
+
+  // F-041 P4 Task 4.9 — informational authored-vs-runtime geometry report
+  // (never FAIL). console.log only, no fail(), no warn(); degrades
+  // gracefully if the server file is unreadable.
+  try {
+    const mcSource = readFileSync(join(ROOT, "colyseus-server/src/config/mapConfig.ts"), "utf8");
+    const { rects } = parseRuntimeSpawnRects({ source: mcSource });
+    const { areas } = flattenSpawnAreas({ tree });
+    for (const line of spawnGeometryReportLines({ areas, runtimeRects: rects })) console.log(line);
+  } catch {
+    console.log("spawn-geometry: mapConfig.ts unreadable — report skipped (informational only)");
+  }
 
   return validNodes.length;
 }

@@ -97,7 +97,7 @@ test("gridIntersectionArea / gridUnionArea are exact on cell-aligned rects", () 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, TRUNK_TIERS, checkSpineComplete } from "../lib/spine.mjs";
+import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, TRUNK_TIERS, checkSpineComplete, parseRuntimeSpawnRects, spawnGeometryReportLines } from "../lib/spine.mjs";
 
 function tinyNode(id, tier, parentId, seedValue) {
   return {
@@ -609,4 +609,26 @@ test("G-SPINE-COMPLETE: childless trunk tiers fail; childless region/sea/ocean o
   // leaf tiers are exempt; a full tree has no errors
   const r2 = checkSpineComplete({ tree: runtimeTree() });
   assert.deepEqual(r2.errors, []);
+});
+
+// ── F-041 P4 Task 4.9: informational authored-vs-runtime spawn geometry
+// report (never-FAIL) ───────────────────────────────────────────────────
+test("parseRuntimeSpawnRects extracts all 8 runtime rects from the live mapConfig.ts (drift pin)", () => {
+  const source = readFileSync(new URL("../../colyseus-server/src/config/mapConfig.ts", import.meta.url), "utf8");
+  const { rects, errors } = parseRuntimeSpawnRects({ source });
+  assert.deepEqual(errors, []);
+  assert.equal(rects.size, 8);   // if mapConfig's format drifts, THIS test reds — the report itself never fails
+  assert.deepEqual(rects.get("thornveil_interior"), { x: 820, y: 420, width: 150, height: 150 });
+  assert.deepEqual(rects.get("center_courtyard"), { x: 400, y: 400, width: 200, height: 200 });
+});
+
+test("spawn geometry report prints authored and runtime rects side by side, dashes when a side is absent", () => {
+  const areas = [{ id: "thornveil_interior", abs: { x: 890, y: 400, width: 95, height: 160 } }];
+  const runtimeRects = new Map([
+    ["thornveil_interior", { x: 820, y: 420, width: 150, height: 150 }],
+    ["boss_area", { x: 450, y: 450, width: 100, height: 100 }],
+  ]);
+  const lines = spawnGeometryReportLines({ areas, runtimeRects });
+  assert.ok(lines.includes("spawn-geometry: thornveil_interior authored=(890,400 95x160) runtime=(820,420 150x150)"));
+  assert.ok(lines.includes("spawn-geometry: boss_area authored=— runtime=(450,450 100x100)"));
 });
