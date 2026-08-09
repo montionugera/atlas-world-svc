@@ -359,10 +359,11 @@
     "from_idea": "I-064",
     "created_at": "2026-08-05T01:44:35.485798+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.7",
     "claimed_at": "2026-08-05T01:56:05.790277+00:00",
-    "shipped_at": "2026-08-05T14:48:42.043029+00:00"
+    "shipped_at": "2026-08-05T14:48:42.043029+00:00",
+    "promoted_at": "2026-08-09T09:37:17.115571+00:00"
   },
   {
     "id": "F-032",
@@ -370,9 +371,10 @@
     "from_idea": "I-051",
     "created_at": "2026-08-08T02:22:56.758246+00:00",
     "claimed_by": null,
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.7",
-    "shipped_at": "2026-08-08T03:15:37.882099+00:00"
+    "shipped_at": "2026-08-08T03:15:37.882099+00:00",
+    "promoted_at": "2026-08-09T09:37:29.164281+00:00"
   },
   {
     "id": "F-033",
@@ -380,10 +382,11 @@
     "from_idea": "I-081",
     "created_at": "2026-08-08T03:27:43.592604+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.7",
     "claimed_at": "2026-08-08T03:28:01.136604+00:00",
-    "shipped_at": "2026-08-08T03:54:17.131858+00:00"
+    "shipped_at": "2026-08-08T03:54:17.131858+00:00",
+    "promoted_at": "2026-08-09T09:37:30.417202+00:00"
   },
   {
     "id": "F-034",
@@ -391,10 +394,11 @@
     "from_idea": "I-082",
     "created_at": "2026-08-08T04:15:28.387270+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.7",
     "claimed_at": "2026-08-08T04:23:19.394673+00:00",
-    "shipped_at": "2026-08-08T05:25:42.500012+00:00"
+    "shipped_at": "2026-08-08T05:25:42.500012+00:00",
+    "promoted_at": "2026-08-09T09:37:40.782801+00:00"
   },
   {
     "id": "F-035",
@@ -402,10 +406,11 @@
     "from_idea": "I-083",
     "created_at": "2026-08-08T04:44:55.196094+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.7",
     "claimed_at": "2026-08-08T04:49:15.489268+00:00",
-    "shipped_at": "2026-08-08T05:14:02.097698+00:00"
+    "shipped_at": "2026-08-08T05:14:02.097698+00:00",
+    "promoted_at": "2026-08-09T09:37:53.095735+00:00"
   },
   {
     "id": "F-036",
@@ -413,10 +418,11 @@
     "from_idea": "I-085",
     "created_at": "2026-08-08T10:56:06.010732+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.7",
     "claimed_at": "2026-08-08T10:56:31.299465+00:00",
-    "shipped_at": "2026-08-08T11:46:11.395674+00:00"
+    "shipped_at": "2026-08-08T11:46:11.395674+00:00",
+    "promoted_at": "2026-08-09T09:38:04.005222+00:00"
   },
   {
     "id": "F-037",
@@ -424,10 +430,11 @@
     "from_idea": "I-060",
     "created_at": "2026-08-08T11:53:36.436120+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.7",
     "claimed_at": "2026-08-08T11:54:34.512457+00:00",
-    "shipped_at": "2026-08-08T15:25:09.857414+00:00"
+    "shipped_at": "2026-08-08T15:25:09.857414+00:00",
+    "promoted_at": "2026-08-09T09:38:14.335286+00:00"
   },
   {
     "id": "F-038",
@@ -435,9 +442,11 @@
     "from_idea": "I-087",
     "created_at": "2026-08-08T16:21:51.429233+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-08-08T16:29:17.825832+00:00"
+    "status": "promoted",
+    "release_version": "1.7",
+    "claimed_at": "2026-08-08T16:29:17.825832+00:00",
+    "shipped_at": "2026-08-09T01:03:28.340484+00:00",
+    "promoted_at": "2026-08-09T09:38:26.543549+00:00"
   },
   {
     "id": "F-039",
@@ -448,5 +457,17 @@
     "status": "claimed",
     "release_version": null,
     "claimed_at": "2026-08-08T16:48:22.715160+00:00"
+  },
+  {
+    "id": "F-040",
+    "title": "Town plan view: top-down town map schema (boundary, road spine with widths, building footprints, plazas, landmarks) authored from A1 section 6 themes and bound to the physics scale, plus the footprint to static-collision binder",
+    "from_idea": "I-088",
+    "created_at": "2026-08-09T02:26:25.139979+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "promoted",
+    "release_version": "1.7",
+    "claimed_at": "2026-08-09T02:26:34.558811+00:00",
+    "shipped_at": "2026-08-09T03:56:49.856521+00:00",
+    "promoted_at": "2026-08-09T09:38:37.900249+00:00"
   }
 ]

@@ -1,0 +1,245 @@
+{
+  "town": "millcross",
+  "extent": { "width": 220, "height": 160 },
+  "anchor": { "geographyAt": [86, 118] },
+  "water": [
+    {
+      "id": "the-meltwash",
+      "kind": "river",
+      "poly": [
+        [100, 0],
+        [118, 0],
+        [112, 160],
+        [94, 160]
+      ]
+    },
+    {
+      "id": "the-race",
+      "kind": "race",
+      "poly": [
+        [101, 30],
+        [101, 42],
+        [66, 40],
+        [66, 28]
+      ]
+    }
+  ],
+  "roads": [
+    {
+      "id": "trade-road-trunk",
+      "kind": "cart",
+      "width": 14,
+      "points": [
+        [110, 80],
+        [92, 84],
+        [64, 88],
+        [0, 88]
+      ]
+    },
+    {
+      "id": "terrace-track",
+      "kind": "cart",
+      "width": 14,
+      "points": [
+        [110, 80],
+        [130, 70],
+        [154, 54],
+        [220, 54]
+      ]
+    },
+    {
+      "id": "river-road-south",
+      "kind": "cart",
+      "width": 12,
+      "points": [
+        [110, 80],
+        [122, 96],
+        [128, 120],
+        [128, 160]
+      ]
+    },
+    {
+      "id": "mill-lane",
+      "kind": "cart",
+      "width": 12,
+      "points": [
+        [102, 84],
+        [88, 64],
+        [88, 46]
+      ]
+    },
+    {
+      "id": "bank-lane",
+      "kind": "foot",
+      "width": 6,
+      "points": [
+        [122, 88],
+        [162, 88]
+      ]
+    },
+    {
+      "id": "tent-lane-north",
+      "kind": "foot",
+      "width": 6,
+      "points": [
+        [130, 104],
+        [186, 104]
+      ]
+    },
+    {
+      "id": "tent-lane-south",
+      "kind": "foot",
+      "width": 6,
+      "points": [
+        [132, 132],
+        [176, 132]
+      ]
+    }
+  ],
+  "footprints": [
+    {
+      "id": "mill-house",
+      "kind": "mill",
+      "rect": [64, 34, 82, 48],
+      "storeys": 2,
+      "entranceOn": "mill-lane"
+    },
+    {
+      "id": "victual-shed",
+      "kind": "store",
+      "rect": [34, 67, 56, 81],
+      "storeys": 1,
+      "entranceOn": "trade-road-trunk"
+    },
+    {
+      "id": "ford-stable",
+      "kind": "stable",
+      "rect": [34, 95, 58, 109],
+      "storeys": 1,
+      "entranceOn": "trade-road-trunk"
+    },
+    {
+      "id": "west-row-a",
+      "kind": "dwelling",
+      "rect": [8, 95, 28, 107],
+      "storeys": 1,
+      "entranceOn": "trade-road-trunk"
+    },
+    {
+      "id": "west-row-b",
+      "kind": "dwelling",
+      "rect": [8, 65, 28, 81],
+      "storeys": 1,
+      "entranceOn": "trade-road-trunk"
+    },
+    {
+      "id": "ford-store",
+      "kind": "store",
+      "rect": [139, 76, 159, 85],
+      "storeys": 1,
+      "entranceOn": "bank-lane"
+    },
+    {
+      "id": "ferry-shed",
+      "kind": "store",
+      "rect": [134, 91, 150, 101],
+      "storeys": 1,
+      "entranceOn": "bank-lane"
+    },
+    {
+      "id": "tent-row-a",
+      "kind": "tent",
+      "rect": [156, 91, 168, 101],
+      "storeys": 1,
+      "entranceOn": "tent-lane-north"
+    },
+    {
+      "id": "tent-row-b",
+      "kind": "tent",
+      "rect": [174, 89, 186, 101],
+      "storeys": 1,
+      "entranceOn": "tent-lane-north"
+    },
+    {
+      "id": "tent-row-c",
+      "kind": "tent",
+      "rect": [136, 107, 148, 117],
+      "storeys": 1,
+      "entranceOn": "tent-lane-north"
+    },
+    {
+      "id": "tent-row-d",
+      "kind": "tent",
+      "rect": [156, 107, 170, 119],
+      "storeys": 1,
+      "entranceOn": "tent-lane-north"
+    },
+    {
+      "id": "tent-row-e",
+      "kind": "tent",
+      "rect": [138, 135, 150, 147],
+      "storeys": 1,
+      "entranceOn": "tent-lane-south"
+    },
+    {
+      "id": "tent-row-f",
+      "kind": "tent",
+      "rect": [158, 135, 172, 147],
+      "storeys": 1,
+      "entranceOn": "tent-lane-south"
+    },
+    {
+      "id": "terrace-row-a",
+      "kind": "dwelling",
+      "rect": [160, 33, 180, 47],
+      "storeys": 1,
+      "entranceOn": "terrace-track"
+    },
+    {
+      "id": "terrace-row-b",
+      "kind": "dwelling",
+      "rect": [190, 33, 210, 47],
+      "storeys": 1,
+      "entranceOn": "terrace-track"
+    },
+    {
+      "id": "terrace-row-c",
+      "kind": "dwelling",
+      "rect": [164, 61, 184, 75],
+      "storeys": 1,
+      "entranceOn": "terrace-track"
+    },
+    {
+      "id": "terrace-row-d",
+      "kind": "dwelling",
+      "rect": [194, 61, 208, 73],
+      "storeys": 1,
+      "entranceOn": "terrace-track"
+    }
+  ],
+  "plazas": [
+    {
+      "id": "cart-yard",
+      "rect": [66, 96, 94, 122],
+      "why": "where the queue waits: one crossing serves an entire land, so the carts stand off the road west of the ford"
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "cart-queue",
+      "at": [24, 88],
+      "firstSight": true,
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#6"
+    },
+    {
+      "id": "the-ford",
+      "at": [110, 80],
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#3.1"
+    },
+    {
+      "id": "mill-wheel",
+      "at": [86, 41],
+      "source": "docs/worldbuilding/A1-geography-cluster1.md#6"
+    }
+  ]
+}

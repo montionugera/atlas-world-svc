@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://atlas-world-svc/content/schemas/town-plan.schema.json",
+  "title": "Atlas town plan",
+  "description": "One file per town: content/towns/town-<id>.json. A top-down plan in the town's own local coordinate space, anchored to the town's `at` point in content/maps/cluster1-geography.json, which stays the authority on where a town is and is never written back to. SHAPE ONLY: `extent`, road `width` and footprint `rect` carry NO minimum/maximum and NO size floor, because the scale contract (cart road >= 12, foot road >= 4, extent 150-260, footprint >= 6 on its shorter side) is gate rules T2/T3 in scripts/check_content.mjs, and the gate `continue`s past a schema-invalid document — a floor duplicated here would make the matching T-rule unreachable dead code. Overlap (T4), entrance reachability (T5), connectivity (T6) and the exactly-one-firstSight count (T7) are likewise gate rules, not schema rules. The two closed enums below (`roads[].kind`, `footprints[].kind`) are owned by NO T-rule, so they do live here. F-040.",
+  "type": "object",
+  "required": ["town", "extent", "anchor", "roads", "footprints", "landmarks"],
+  "additionalProperties": false,
+  "properties": {
+    "town": { "type": "string", "minLength": 1 },
+    "extent": {
+      "type": "object",
+      "required": ["width", "height"],
+      "additionalProperties": false,
+      "properties": {
+        "width": { "type": "number" },
+        "height": { "type": "number" }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "required": ["geographyAt"],
+      "additionalProperties": false,
+      "properties": {
+        "geographyAt": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "number" }
+        }
+      }
+    },
+    "water": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "poly"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "minLength": 1 },
+          "poly": {
+            "type": "array",
+            "minItems": 3,
+            "items": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "roads": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "width", "points"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "enum": ["cart", "foot"] },
+          "width": { "type": "number" },
+          "points": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "footprints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "rect"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "kind": {
+            "type": "string",
+            "enum": ["mill", "dwelling", "store", "stable", "shrine", "gate", "tent", "ruin"]
+          },
+          "rect": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": { "type": "number" }
+          },
+          "storeys": { "type": "integer" },
+          "entranceOn": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "plazas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "rect"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "rect": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": { "type": "number" }
+          },
+          "why": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "landmarks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "at"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "at": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": { "type": "number" }
+          },
+          "firstSight": { "type": "boolean" },
+          "source": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { resolveSceneSrc, filenameOf, attachFileSize } from "./utils.mjs";
+import { resolveSceneSrc, filenameOf } from "./utils.mjs";
 import { bumpHealth } from "./health.mjs";
 
 // ---------- render-type resolution (§4.1) ----------
@@ -21,7 +21,6 @@ export function resolveRender(entry, spec) {
   const ext = dot === -1 ? "" : path.slice(dot).toLowerCase();
   return spec.extRender[ext] || "unknown"; // 3. ext sniff → 4. unknown
 }
-
 
 // ---------- shared card chrome ----------
 //
@@ -49,7 +48,6 @@ function buildCardShell(key, entry, render, viewportEl) {
   const sizeEl = document.createElement("span");
   sizeEl.className = "filesize";
   fileEl.appendChild(sizeEl);
-  attachFileSize(sizeEl, primaryPath(entry));
 
   const badges = document.createElement("div");
   badges.className = "badges";
@@ -76,7 +74,6 @@ function buildCardShell(key, entry, render, viewportEl) {
   card.appendChild(meta);
   return card;
 }
-
 
 // ---------- render-type registry ----------
 //
@@ -106,10 +103,12 @@ const RENDERERS = {
 export function renderEntry(key, entry, spec, healthKey) {
   const render = resolveRender(entry, spec);
   const build = RENDERERS[render] || RENDERERS.__unknown;
-  const viewportEl = build(key, entry, healthKey || render);
+  // healthKey === null means "this is an overlay mount, not a grid card".
+  // Grid health is owned by the thumbnail preload in VirtualGrid.mjs, so an
+  // overlay open must not add to any class's totals.
+  const viewportEl = build(key, entry, healthKey || "__overlay");
   return buildCardShell(key, entry, render, viewportEl);
 }
-
 
 // ---------- 3D character cards (with animation dropdown) ----------
 
@@ -238,7 +237,6 @@ function buildModel3d(key, entry, render) {
   return viewport;
 }
 
-
 // ---------- 2D image cards (icons/sprites) ----------
 
 function buildImage(key, entry, render) {
@@ -271,7 +269,6 @@ function buildImage(key, entry, render) {
   viewport.appendChild(loadState);
   return viewport;
 }
-
 
 // ---------- spritesheet cards (SpriteFrames flipbook, Canvas2D + rAF) ----------
 //
@@ -339,10 +336,7 @@ function buildSpritesheet(key, entry, render) {
   // is actually legible in a card-sized viewport; the backing canvas
   // stays at native frame resolution and image-rendering:pixelated
   // (set on the shared `.viewport canvas` rule) keeps it crisp.
-  const displayScale = Math.max(
-    1,
-    Math.floor(160 / Math.max(frameW, frameH)),
-  );
+  const displayScale = Math.max(1, Math.floor(160 / Math.max(frameW, frameH)));
   canvas.style.width = frameW * displayScale + "px";
   canvas.style.height = frameH * displayScale + "px";
   const ctx = canvas.getContext("2d");
@@ -422,8 +416,7 @@ function buildSpritesheet(key, entry, render) {
   }
 
   clipSelect.addEventListener("change", () => {
-    currentClip =
-      clips.find((c) => c.name === clipSelect.value) || clips[0];
+    currentClip = clips.find((c) => c.name === clipSelect.value) || clips[0];
     frameIndex = 0;
     elapsed = 0;
     lastTs = null;
@@ -443,12 +436,7 @@ function buildSpritesheet(key, entry, render) {
     loadState.textContent = "load error";
     loadState.classList.add("err");
     bumpHealth(render, { err: 1 });
-    console.error(
-      "[asset-storybook] spritesheet failed to load:",
-      key,
-      src,
-      e,
-    );
+    console.error("[asset-storybook] spritesheet failed to load:", key, src, e);
   };
   img.src = src;
 
@@ -457,7 +445,6 @@ function buildSpritesheet(key, entry, render) {
   viewport.appendChild(loadState);
   return viewport;
 }
-
 
 // ---------- nine-patch UI panel cards (Canvas2D 9-slice) ----------
 //
@@ -576,12 +563,7 @@ function buildNinePatch(key, entry, render) {
     loadState.textContent = "load error";
     loadState.classList.add("err");
     bumpHealth(render, { err: 1 });
-    console.error(
-      "[asset-storybook] ninepatch failed to load:",
-      key,
-      src,
-      e,
-    );
+    console.error("[asset-storybook] ninepatch failed to load:", key, src, e);
   };
   img.src = src;
 
@@ -590,7 +572,6 @@ function buildNinePatch(key, entry, render) {
   viewport.appendChild(loadState);
   return viewport;
 }
-
 
 // ---------- Godot Theme cards (baked preview only) ----------
 //
@@ -651,7 +632,6 @@ function buildTheme(key, entry, render) {
   viewport.appendChild(loadState);
   return viewport;
 }
-
 
 // ---------- tileset cards (Canvas2D grid overlay) ----------
 //
@@ -765,12 +745,7 @@ function buildTileset(key, entry, render) {
     loadState.textContent = "load error";
     loadState.classList.add("err");
     bumpHealth(render, { err: 1 });
-    console.error(
-      "[asset-storybook] tileset failed to load:",
-      key,
-      src,
-      e,
-    );
+    console.error("[asset-storybook] tileset failed to load:", key, src, e);
   };
   img.src = src;
 
@@ -786,7 +761,6 @@ function buildTileset(key, entry, render) {
   viewport.appendChild(loadState);
   return viewport;
 }
-
 
 // ---------- __unknown renderer (LOUD failure card, never silent) ----------
 //
@@ -809,4 +783,3 @@ function buildUnknown(key, entry, render) {
   bumpHealth(render, { err: 1 });
   return viewport;
 }
-

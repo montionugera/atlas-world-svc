@@ -50,4 +50,3 @@ export function mountCombatNav(sidebarNav) {
   bumpHealth(COMBAT_CLASS, { ok: 1 });
   renderSidebarBadge(COMBAT_CLASS);
 }
-

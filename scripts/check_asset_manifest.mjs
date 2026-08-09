@@ -53,6 +53,14 @@
 //       kindDefaultRender or every mapped key of that kind carries explicit
 //       render — a no-default kind may not rely on ext sniffing (see §3 of
 //       docs/superpowers/specs/2026-07-20-asset-registry-contract.md).
+//   (U) every manifest entry must have a baked thumbnail in
+//       game-client/assets/.thumbs/ whose recorded source hash matches the
+//       source bytes on disk — the storybook renders every card from one, so a
+//       stale thumbnail is a card that lies about the asset (F-038).
+//   (T) every manifest `kind` must have a section in
+//       content/asset-taxonomy.json, so tools/asset-storybook can never fall
+//       back to a munged label like "Model3d:dungeons" (F-038). Letters L/M
+//       are taken by the art-rule lettering below, hence T.
 //
 // Codegen cross-check (driftGated:true sources only):
 //   WARNING  — a key present in asset-keys.json has no manifest entry (UNMAPPED)
@@ -73,6 +81,7 @@
 //   --art-groups <path>         override art-groups.json path (testing)
 //   --art-root <dir>            override the art root dir (testing)
 //   --game-client <dir>         override the res:// root dir (testing)
+//   --taxonomy <path>           override asset-taxonomy.json path (testing)
 
 import {
   readFileSync,
@@ -86,6 +95,7 @@ import {
 import { fileURLToPath } from "node:url";
 import { dirname, resolve, join, relative } from "node:path";
 import { checkLicensePolicy } from "./lib/license-policy.mjs";
+import { thumbFilename, sourceHash } from "./lib/thumbkey.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -106,6 +116,7 @@ function parseArgs(argv) {
     artGroups: join(REPO_ROOT, "game-client/assets/art/art-groups.json"),
     artRoot: join(REPO_ROOT, "game-client/assets/art"),
     gameClient: join(REPO_ROOT, "game-client"),
+    taxonomy: join(REPO_ROOT, "content/asset-taxonomy.json"),
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -121,6 +132,7 @@ function parseArgs(argv) {
     else if (a === "--art-groups") opts.artGroups = resolve(argv[++i]);
     else if (a === "--art-root") opts.artRoot = resolve(argv[++i]);
     else if (a === "--game-client") opts.gameClient = resolve(argv[++i]);
+    else if (a === "--taxonomy") opts.taxonomy = resolve(argv[++i]);
     else {
       console.error(`Unknown argument: ${a}`);
       process.exit(2);
@@ -547,6 +559,134 @@ function validateEntry(id, entry, source, gameClient, spec, failures) {
 // (G) cross-file keyspace disjointness — the same id in two manifest sources
 // would let C# (manifest.json only) and the storybook (merges all) silently
 // resolve different entries.
+// (U) thumbnail freshness — every manifest entry must have a baked thumbnail
+// in game-client/assets/.thumbs/, baked from the source bytes now on disk.
+//
+// tools/asset-storybook renders EVERY card from a baked thumbnail (F-038), so
+// a thumbnail that does not match its source is a card that lies about what
+// the asset looks like — and the reviewer files a reject/rebuild verdict
+// against a stale image.
+//
+// CONTENT HASH, not mtime. The first cut of this guard compared
+// statSync(src).mtimeMs > statSync(thumb).mtimeMs, which holds only where the
+// tree was *edited* in place. Anywhere it is *materialised* — a fresh
+// `git checkout` in CI, a copy, an rsync, a cache restore — every file gets
+// its own write time in checkout order, and `.thumbs` sorts before every other
+// directory under assets/, so it is always written FIRST. Result: every source
+// looked "newer" than its thumbnail and CI reported 643 STALE entries on a
+// tree with zero real drift, while the same command passed locally. The bake
+// records sourceHash(src) per entry in .thumbs/index.json; this guard rehashes
+// the file on disk and compares. That is invariant under how the tree got
+// there, and still fails loudly the moment an asset is edited without a
+// re-bake — which is the drift the guard exists to catch.
+//
+// Still no Blender and no sharp in CI: hashing is stdlib. Only
+// `node scripts/bake_thumbnails.mjs` needs the renderers.
+//
+// Art entries are exempt here — they are validated by the art source's own
+// path rules and carry `file`, not a res:// scene/stream.
+function assertThumbFreshness(sourcesEntries, gameClient, failures) {
+  const thumbDir = join(gameClient, "assets/.thumbs");
+  const seen = new Set(); // several keys can share one source path
+
+  // The bake's record of which bytes each thumbnail was rendered from. An
+  // absent index is not fatal by itself — the per-entry checks below turn it
+  // into one honest failure per entry naming the bake script.
+  let thumbIndex = {};
+  const indexPath = join(thumbDir, "index.json");
+  if (existsSync(indexPath)) {
+    try {
+      thumbIndex = JSON.parse(readFileSync(indexPath, "utf8")).entries || {};
+    } catch {
+      failures.push(
+        `.thumbs/index.json is unreadable — re-run \`node scripts/bake_thumbnails.mjs\``,
+      );
+    }
+  }
+
+  for (const { entries } of sourcesEntries) {
+    for (const [id, entry] of Object.entries(entries)) {
+      // `scene` only, never `stream`. render-spec.json gives audio and music
+      // pathField "stream", and the storybook renders those as soundboard
+      // tiles (js/audio.mjs) rather than thumbnail cards — an .ogg has
+      // nothing to thumbnail. Keying on the field rather than the extension
+      // means a future audio format needs no change here.
+      const resPath = entry && entry.scene;
+      if (!resPath || typeof resPath !== "string") continue;
+      if (!resPath.startsWith("res://")) continue; // art `file` paths
+      if (seen.has(resPath)) continue;
+      seen.add(resPath);
+
+      const thumbP = join(thumbDir, thumbFilename(resPath));
+      if (!existsSync(thumbP)) {
+        failures.push(
+          `entry "${id}": missing thumbnail ${thumbFilename(resPath)} for ` +
+            `${resPath} — run \`node scripts/bake_thumbnails.mjs\``,
+        );
+        continue;
+      }
+
+      const srcP = resolveResPath(entry.preview || resPath, gameClient);
+      if (!srcP || !existsSync(srcP)) continue; // guard (B) owns missing sources
+
+      const recorded = thumbIndex[resPath] && thumbIndex[resPath].srcHash;
+      if (!recorded) {
+        failures.push(
+          `entry "${id}": thumbnail for ${resPath} is UNRECORDED — no srcHash ` +
+            `in .thumbs/index.json, so it cannot be proven current; re-run ` +
+            `\`node scripts/bake_thumbnails.mjs\``,
+        );
+        continue;
+      }
+      if (sourceHash(srcP) !== recorded) {
+        failures.push(
+          `entry "${id}": thumbnail is STALE — ${resPath} has changed since it ` +
+            `was baked (source hash differs from .thumbs/index.json); re-run ` +
+            `\`node scripts/bake_thumbnails.mjs\``,
+        );
+      }
+    }
+  }
+}
+
+// (T) taxonomy coverage — every manifest `kind` must have a section in
+// content/asset-taxonomy.json.
+//
+// tools/asset-storybook groups and labels its sections by `kind` through that
+// registry. Before this guard the storybook carried a hand-maintained label
+// lookup that fell through to a generic capitalize-and-append-s branch on a
+// miss, so an unregistered kind produced a section headed "Model3d:dungeons
+// (283)" — a silent lookup miss, not an error. Failing here turns a whole
+// class of bug into an impossibility: a new kind cannot reach the page
+// without someone naming it.
+//
+// Art entries are exempt: they carry a `group` (validated against
+// art-groups.json by assertArtCoverage), not a `kind`.
+function assertTaxonomyCoverage(sourcesEntries, taxonomyDoc, failures) {
+  if (!taxonomyDoc) return; // readJson already recorded the failure
+  const known = new Set();
+  for (const s of taxonomyDoc.sections || []) {
+    for (const k of s.kinds || []) known.add(k);
+  }
+
+  const offenders = new Map(); // kind → first "source/id" that used it
+  for (const { label, entries } of sourcesEntries) {
+    for (const [id, entry] of Object.entries(entries)) {
+      const kind = entry && entry.kind;
+      if (!kind || known.has(kind)) continue;
+      if (!offenders.has(kind)) offenders.set(kind, `${label} entry "${id}"`);
+    }
+  }
+
+  for (const [kind, where] of offenders) {
+    failures.push(
+      `kind "${kind}" (first used by ${where}) has no section in ` +
+        `content/asset-taxonomy.json — add it to a section's "kinds" array ` +
+        `so the storybook can label it`,
+    );
+  }
+}
+
 function assertDisjoint(sourcesEntries, failures) {
   const seen = new Map(); // id → source label
   for (const { label, entries } of sourcesEntries) {
@@ -739,6 +879,9 @@ function main() {
   }
 
   assertDisjoint(sourcesEntries, failures);
+  const taxonomyDoc = readJson(opts.taxonomy, "asset-taxonomy", failures);
+  assertTaxonomyCoverage(sourcesEntries, taxonomyDoc, failures);
+  assertThumbFreshness(sourcesEntries, opts.gameClient, failures);
   assertKindRenderable(keys, spec, codegenEntries, failures);
 
   return report(failures, warnings, opts);

@@ -48,10 +48,7 @@ function scheduleDecode(task) {
 }
 
 function pumpDecodeQueue() {
-  while (
-    activeDecodes < AUDIO_DECODE_CONCURRENCY &&
-    decodeQueue.length > 0
-  ) {
+  while (activeDecodes < AUDIO_DECODE_CONCURRENCY && decodeQueue.length > 0) {
     const task = decodeQueue.shift();
     activeDecodes++;
     task().finally(() => {
@@ -124,9 +121,7 @@ export function buildAudio(audioFiles, audioManifestEntries) {
           ? mapped[0].eventKey + " +" + (mapped.length - 1)
           : mapped[0].eventKey;
       keyEl.title = mapped
-        .map(
-          (m) => m.eventKey + (m.license ? " (" + m.license + ")" : ""),
-        )
+        .map((m) => m.eventKey + (m.license ? " (" + m.license + ")" : ""))
         .join(", ");
       bot.appendChild(keyEl);
     }
@@ -242,7 +237,6 @@ export function buildAudio(audioFiles, audioManifestEntries) {
 
   return board;
 }
-
 
 // ---------- music (BGM) soundboard ----------
 // Driven directly by music-manifest.json entries (not a directory
@@ -371,11 +365,7 @@ export function buildMusic(musicEntries) {
           .catch((err) => {
             state.classList.add("err");
             bumpHealth(MUSIC_CLASS, { err: 1 });
-            console.error(
-              "[asset-storybook] music decode failed:",
-              key,
-              err,
-            );
+            console.error("[asset-storybook] music decode failed:", key, err);
           }),
       );
     }
@@ -397,4 +387,3 @@ export function buildMusic(musicEntries) {
 
   return board;
 }
-
