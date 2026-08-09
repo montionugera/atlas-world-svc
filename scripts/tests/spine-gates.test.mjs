@@ -72,8 +72,11 @@ test("the committed 23-node table loads clean: 2 roots, depths legal, no load er
     "n-westsea",
   ]);
   assert.deepEqual(spine.roots, ["n-atlas", "n-playroot"]);
-  assert.deepEqual(spine.budgets.load, { maxNodes: 48, maxBytes: 262144 });
-  assert.deepEqual(spine.budgets.coverage, { maxUnchecked: 4 });
+  // Task 1.10: these were Phase-0 placeholders (48 / 4) until G-LOAD-BUDGET
+  // and G-COMP-REPORT existed to enforce them; real values as of the 23-node
+  // table (real UNCHECKED today: n-atlas, n-playroot).
+  assert.deepEqual(spine.budgets.load, { maxNodes: 40, maxBytes: 262144 });
+  assert.deepEqual(spine.budgets.coverage, { maxUnchecked: 2 });
   for (const n of spine.nodes) assert.equal(typeof TIER_DEPTH[n.tier], "number", n.id);
 });
 
@@ -342,4 +345,30 @@ t11("G-EMIT-DRIFT: emitted geography drifts red on a hand-edit and is green when
   const r = runEmit(dir, ["--check"]);
   assert11.equal(r.code, 1);
   assert11.match(r.out, /spine-emit: DRIFT .*cluster1-geography\.json/);
+});
+
+// ─── F-041 Phase 1 · Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT ───────────────
+// Note: the base fixture's committed coverage budget is maxUnchecked: 2
+// (Task 1.6) because n-w and n-c are both UNCHECKED; the red test below
+// lowers it to 0.
+t11("G-LOAD-BUDGET red: node count over a lowered budget", () => {
+  const r = runSpineGate(spineFixture({ mutate: (dir) => {
+    write11(join11(dir, "spine/load-budget.json"), '{ "maxNodes": 1, "maxBytes": 65536 }\n');
+  } }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-LOAD-BUDGET: 3 nodes > budget 1/);
+});
+t11("G-COMP-REPORT red: UNCHECKED count over the coverage budget", () => {
+  const r = runSpineGate(spineFixture({ mutate: (dir) => {
+    write11(join11(dir, "spine/coverage-budget.json"), '{ "maxUnchecked": 0 }\n');
+  } }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-COMP-REPORT: \d+ UNCHECKED nodes > budget 0/);
+});
+t11("G-COMP-REPORT prints coverage and verdict for every node", () => {
+  const r = runSpineGate(spineFixture());
+  assert11.equal(r.code, 0);
+  assert11.match(r.out, /spine-comp: n-c coverage=\d+(\.\d+)?% verdict=(CHECKED|ASSERTED|UNCHECKED)/);
+  assert11.match(r.out, /spine-comp: totals CHECKED=\d+ ASSERTED=\d+ UNCHECKED=2/);
+  assert11.match(r.out, /spine-load: 3 nodes, \d+ bytes \(budget 10 nodes, 65536 bytes\)/);
 });

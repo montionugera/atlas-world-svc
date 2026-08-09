@@ -3,7 +3,7 @@
 // Spec: docs/superpowers/specs/2026-07-19-content-pipeline-design.md
 // Discipline mirrors scripts/check_asset_manifest.mjs: warns allowed at exit 0,
 // any hard failure exits 1, --require-complete escalates coverage warns.
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { dirname, resolve, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, KM_TO_U } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1450,6 +1450,10 @@ function checkSpine(opts) {
   gSpineFrozen({ nodes: validNodes, tree, fail });
   gSpineNet({ nodes: validNodes, edges: spine.edges, tree, fail });
 
+  // F-041 Phase 1 Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT. Both PRINT on
+  // every run that reaches this point (spine/ present, schema compiles).
+  gSpineBudgets({ spine, tree, contentRoot: opts.contentRoot, fail });
+
   return validNodes.length;
 }
 
@@ -1692,6 +1696,58 @@ function gSpineNet({ nodes, edges, tree, fail }) {
       }
     }
   }
+}
+
+// F-041 Phase 1 Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT. Both PRINT on
+// every run; the budgets in content/spine/*.json are the committed caps —
+// raising one is a reviewed commit, never a code change.
+//
+// Two deliberate departures from a literal transcription of the brief:
+//   - the per-node coverage-report loop walks `tree.byId.values()` (the
+//     schema-VALID node set the tree was built from), never raw
+//     `spine.nodes` — the same validNodes discipline gSpineGeometry/
+//     gSpineFrames/gSpineFrozen/gSpineNet already follow. A schema-invalid
+//     node (e.g. the G-SCHEMA-MISSING-PLACEMENT fixture) already earned its
+//     clean FAIL and `continue`d out of validNodes; rollupComposition()
+//     reads `node.placement` unconditionally and would crash on it.
+//   - `spine.budgets.load` / `.coverage` are schema-optional (loadSpine:
+//     "a MISSING budget file is null-not-error here — G-LOAD-BUDGET owns
+//     failing on it"). The Phase-0 structural-gate fixtures
+//     (g-id-duplicate-id, g-tree-cycle, etc.) ship no budget files at all,
+//     so destructuring `spine.budgets.load` unguarded would throw and
+//     swallow every FAIL those tests assert on (finish() never runs to
+//     print them). A missing budget file is its own clean FAIL instead.
+function gSpineBudgets({ spine, tree, contentRoot, fail }) {
+  const dir = join(contentRoot, "spine");
+  let bytes = 0;
+  (function walkDir(d) {
+    for (const f of readdirSync(d, { withFileTypes: true })) {
+      if (f.isDirectory()) walkDir(join(d, f.name));
+      else if (f.name.endsWith(".json")) bytes += statSync(join(d, f.name)).size;
+    }
+  })(dir);
+
+  if (!spine.budgets.load) {
+    fail(`spine: G-LOAD-BUDGET: spine/load-budget.json is missing`);
+  } else {
+    const { maxNodes, maxBytes } = spine.budgets.load;
+    console.log(`spine-load: ${spine.nodes.length} nodes, ${bytes} bytes (budget ${maxNodes} nodes, ${maxBytes} bytes)`);
+    if (spine.nodes.length > maxNodes) fail(`spine: G-LOAD-BUDGET: ${spine.nodes.length} nodes > budget ${maxNodes}`);
+    if (bytes > maxBytes) fail(`spine: G-LOAD-BUDGET: ${bytes} bytes > budget ${maxBytes}`);
+  }
+
+  const totals = { CHECKED: 0, ASSERTED: 0, UNCHECKED: 0 };
+  for (const node of tree.byId.values()) {
+    const r = rollupComposition({ tree, id: node.id });
+    totals[r.verdict]++;
+    console.log(`spine-comp: ${node.id} coverage=${r.coveragePct.toFixed(1)}% verdict=${r.verdict}`);
+  }
+  console.log(`spine-comp: totals CHECKED=${totals.CHECKED} ASSERTED=${totals.ASSERTED} UNCHECKED=${totals.UNCHECKED}`);
+
+  if (!spine.budgets.coverage)
+    fail(`spine: G-COMP-REPORT: spine/coverage-budget.json is missing`);
+  else if (totals.UNCHECKED > spine.budgets.coverage.maxUnchecked)
+    fail(`spine: G-COMP-REPORT: ${totals.UNCHECKED} UNCHECKED nodes > budget ${spine.budgets.coverage.maxUnchecked}`);
 }
 
 function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0) {
