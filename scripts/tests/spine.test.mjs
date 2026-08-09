@@ -6,6 +6,7 @@ import {
   shoelaceArea, polygonBBox, pointInPolygon, selfIntersects,
   placementArea, gridIntersectionArea, gridUnionArea,
   townFrameErrors, townCompDerived, townCompErrors, terrainKindErrors,
+  DEPTH_EXCEPTIONS, depthLegal,
 } from "../lib/spine.mjs";
 
 // ── constants ──────────────────────────────────────────────────────────────
@@ -16,6 +17,15 @@ test("TIER_DEPTH is the pinned depth table", () => {
     region: 2, sea: 2,
     town: 3, site: 3,
   });
+});
+
+test("G-DEPTH: playspace -> site is the one legal exception pair (runtime tree has no depth-2 tier)", () => {
+  assert.equal(depthLegal({ parentTier: "playspace", childTier: "site" }), true);
+  assert.equal(DEPTH_EXCEPTIONS.has("playspace>site"), true);
+  // the normal rule still holds everywhere else
+  assert.equal(depthLegal({ parentTier: "continent", childTier: "region" }), true);
+  assert.equal(depthLegal({ parentTier: "continent", childTier: "town" }), false); // depth skip stays illegal
+  assert.equal(depthLegal({ parentTier: "playspace", childTier: "town" }), false); // exception is exactly one pair
 });
 
 test("LEAF_TIERS, BIOMES, TERRAIN_KINDS, TERRAIN_IMPLIES are the pinned enums", () => {

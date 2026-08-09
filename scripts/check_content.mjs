@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1463,7 +1463,7 @@ function checkSpine(opts) {
     if (n.parentId === null) continue;
     const parent = tree.byId.get(n.parentId);
     if (!parent) continue; // dangling — already a G-TREE failure
-    if (TIER_DEPTH[n.tier] !== TIER_DEPTH[parent.tier] + 1)
+    if (!depthLegal({ parentTier: parent.tier, childTier: n.tier }))
       fail(`G-DEPTH: ${n.id} (${n.tier}, depth ${TIER_DEPTH[n.tier]}) under ${parent.id} (${parent.tier}, depth ${TIER_DEPTH[parent.tier]}) — child depth must be parent depth + 1`);
   }
 

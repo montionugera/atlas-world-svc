@@ -27,6 +27,18 @@ export const TIER_DEPTH = Object.freeze({
   region: 2, sea: 2,
   town: 3, site: 3,
 });
+// F-041 Phase 4 — contract-conflict resolution #1. TIER_DEPTH[site] is 3
+// (fiction: region -> site), but the runtime tree has no depth-2 tier, and
+// the design's own worked example hangs sites directly off the playspace
+// (n-frontier-shelf -> n-site-*). This is the ONE legal exception pair;
+// every other edge obeys TIER_DEPTH[child] === TIER_DEPTH[parent] + 1.
+export const DEPTH_EXCEPTIONS = new Set(["playspace>site"]);
+
+export function depthLegal({ parentTier, childTier }) {
+  if (DEPTH_EXCEPTIONS.has(`${parentTier}>${childTier}`)) return true;
+  return TIER_DEPTH[childTier] === TIER_DEPTH[parentTier] + 1;
+}
+
 export const LEAF_TIERS = new Set(["town", "site", "fixture"]);
 export const BIOMES = Object.freeze([
   "ocean", "ice", "marsh", "river", "meadow", "forest",
