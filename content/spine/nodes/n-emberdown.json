@@ -72,15 +72,15 @@
   "levelBand": [25, 35],
   "derived": {
     "areaParentUnits2": 742,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
+    "childAreaParentUnits2": 3.2,
+    "coveragePct": 0.431266846361186,
+    "unclaimedPct": 99.56873315363882,
     "computedComposition": {
-      "built": 6,
-      "meadow": 30,
-      "rock": 34,
+      "built": 6.146630727762804,
+      "meadow": 30.01725067385445,
+      "rock": 33.913746630727765,
       "forest": 12,
-      "upland": 18
+      "upland": 17.922371967654986
     },
     "rollupVerdict": "ASSERTED",
     "absoluteAnchorRoot": [36, 84],
@@ -90,6 +90,6 @@
       "vegetation": "3c07e6ebeb419b2c",
       "names": "5c827dcb6693d2b9"
     },
-    "digest": "sha256:f03cfbcc1abf7d22fcde6d2d45f6eb248dbcdd460b4b0c372951431cc1e0c7d5"
+    "digest": "sha256:d62dae94bb62f012fcceb1ce879d623bbdc36e482c97e65642c0e651aef36778"
   }
 }

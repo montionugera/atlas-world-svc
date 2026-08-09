@@ -16,15 +16,21 @@
     "why": null
   },
   "placement": {
-    "shape": "point",
-    "at": [46, 12],
+    "shape": "rect",
+    "rect": {
+      "x": 45,
+      "y": 11.2,
+      "w": 2,
+      "h": 1.6
+    },
     "anchor": [46, 12]
   },
   "interior": {
-    "units": "km",
-    "perParentUnit": 1,
-    "size": [0, 0],
-    "originInParent": [46, 12]
+    "units": "u",
+    "perParentUnit": 100,
+    "size": [200, 160],
+    "originInParent": [45, 11.2],
+    "anchorInInterior": [100, 80]
   },
   "composition": {
     "ash": 34,
@@ -69,7 +75,7 @@
   "tags": ["ruin", "walls-only"],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 0,
+    "areaParentUnits2": 3.2,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
@@ -82,6 +88,6 @@
       "vegetation": "781144a9d2885081",
       "names": "b2e7a66531cf2349"
     },
-    "digest": "sha256:24824572e9c5ce1929cccfa40f293ae1dce981b3e8285ef218328f512aeb76a6"
+    "digest": "sha256:a262f666e660b69891c40decaa04f8571561bad7e2ce30c451c7d888c4c8c59a"
   }
 }

@@ -15,15 +15,21 @@
     "why": null
   },
   "placement": {
-    "shape": "point",
-    "at": [96, 104],
+    "shape": "rect",
+    "rect": {
+      "x": 95,
+      "y": 103.2,
+      "w": 2,
+      "h": 1.6
+    },
     "anchor": [96, 104]
   },
   "interior": {
-    "units": "km",
-    "perParentUnit": 1,
-    "size": [0, 0],
-    "originInParent": [96, 104]
+    "units": "u",
+    "perParentUnit": 100,
+    "size": [200, 160],
+    "originInParent": [95, 103.2],
+    "anchorInInterior": [100, 80]
   },
   "composition": {
     "meadow": 56,
@@ -52,7 +58,7 @@
   "tags": ["camp"],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 0,
+    "areaParentUnits2": 3.2,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
@@ -65,6 +71,6 @@
       "vegetation": "dc8bff9426500ef8",
       "names": "128e9fa2f7593487"
     },
-    "digest": "sha256:f74bdaef070c99168313422974362d854e3088895baebed2c0e8e805bd23a4bc"
+    "digest": "sha256:0e7d309232c89077454ee9e40fac04ea8ff232fb8c223bdf54a270bdf98e8898"
   }
 }

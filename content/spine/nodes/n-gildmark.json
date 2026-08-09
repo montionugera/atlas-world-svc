@@ -16,15 +16,21 @@
     "why": null
   },
   "placement": {
-    "shape": "point",
-    "at": [11, 157],
+    "shape": "rect",
+    "rect": {
+      "x": 10,
+      "y": 156.2,
+      "w": 2,
+      "h": 1.6
+    },
     "anchor": [11, 157]
   },
   "interior": {
-    "units": "km",
-    "perParentUnit": 1,
-    "size": [0, 0],
-    "originInParent": [11, 157]
+    "units": "u",
+    "perParentUnit": 100,
+    "size": [200, 160],
+    "originInParent": [10, 156.2],
+    "anchorInInterior": [100, 80]
   },
   "composition": {
     "built": 46,
@@ -56,7 +62,7 @@
   "tags": [],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 0,
+    "areaParentUnits2": 3.2,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
@@ -69,6 +75,6 @@
       "vegetation": "8a6f782a5738167c",
       "names": "16b8b26a0d666df5"
     },
-    "digest": "sha256:1e3acc77d0c00db1ed538bf5586654ce0d669789ac0674496c9cc479324b91ee"
+    "digest": "sha256:f1b66a5dabe03660d40813ddf7c1f2f9014877ff0a749edb9e5bee7542c7a07c"
   }
 }
