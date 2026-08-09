@@ -97,7 +97,7 @@ test("gridIntersectionArea / gridUnionArea are exact on cell-aligned rects", () 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS } from "../lib/spine.mjs";
+import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit } from "../lib/spine.mjs";
 
 function tinyNode(id, tier, parentId, seedValue) {
   return {
@@ -554,4 +554,22 @@ test("G-RUNTIME: live map ids must all resolve, and no node may claim a non-live
   const { errors } = checkRuntime({ tree, mobTypes: new Set(["bramble_drake"]) });
   assert.ok(errors.some((e) => e.includes('live mapId "map-for-play" resolves to no spine node')));
   assert.ok(errors.some((e) => e.includes('"map-ghost" which is not a live server map id')));
+});
+
+test("G-SPAWN-FIT: margins are per-area (boundary 5 + radius(mobType)), not a global max", () => {
+  assert.equal(BOUNDARY_THICKNESS_U, 5);
+  assert.equal(MOB_RADIUS_U.bramble_drake, 5);
+  // area_x abs (890,400,95,160) in 1000x1000: east margin 15 >= 10 -> green
+  assert.deepEqual(checkSpawnFit({ tree: runtimeTree() }).errors, []);
+  // push it 12 east: abs x 902, east margin 3 < 10 -> red on the east side only
+  const tree = runtimeTree((ns) => { ns[2].runtime.spawnAreas[0].x = 152; });
+  const { errors } = checkSpawnFit({ tree });
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /G-SPAWN-FIT: spawn area "area_x" east margin 3 < required 10/);
+});
+
+test("G-SPAWN-FIT: an unknown mobType radius is its own failure, not a silent pass", () => {
+  const tree = runtimeTree((ns) => { ns[2].runtime.spawnAreas[0].mobType = "ghost_mob"; });
+  const { errors } = checkSpawnFit({ tree });
+  assert.ok(errors.some((e) => e.includes('no radius entry in MOB_RADIUS_U')), errors.join("\n"));
 });

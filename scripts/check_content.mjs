@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1527,6 +1527,9 @@ function checkSpine(opts, mobTypes) {
     mobTypes,
     liveMapIds: hasMapNodes ? LIVE_MAP_IDS : [],
   }).errors) fail(e);
+
+  // F-041 P4 — G-SPAWN-FIT: the first geometric check these rects have ever had
+  for (const e of checkSpawnFit({ tree }).errors) fail(e);
 
   return validNodes.length;
 }

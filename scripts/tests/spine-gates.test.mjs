@@ -627,3 +627,9 @@ test("G-RUNTIME goes red on an originU that is not the accumulated origin (HC-2)
   // NOTE: the mutated copy may also break G-DERIVED-DRIFT's digest — expected;
   // this test asserts the G-RUNTIME line specifically.
 });
+
+test("G-SPAWN-FIT goes red on a rect with insufficient margin (HC-2)", (t) => {
+  const { code, out } = runP4Gate(p4FixtureRoot(t, "g-spawn-fit-margin"));
+  assert.equal(code, 1);
+  assert.match(out, /G-SPAWN-FIT: spawn area "thornveil_interior" east margin 3 < required 10/);
+});

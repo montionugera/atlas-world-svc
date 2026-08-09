@@ -679,6 +679,38 @@ export function flattenSpawnAreas({ tree }) {
   return { errors, areas };
 }
 
+// Mirrors of live server config, verified 2026-08-09 (conflict note #3: the
+// gate is plain .mjs and cannot import TS; mob-types.json carries no radii).
+// physicsConfig.ts:29 boundaryThickness; radii from src/config/mobs/definitions/*.
+export const BOUNDARY_THICKNESS_U = 5;
+export const MOB_RADIUS_U = {
+  aggressive: 3.5, balanced: 4, bramble_drake: 5, bramble_stalker: 3, defensive: 5,
+  double_attacker: 8, hybrid: 4, spear_thrower: 3, thorncrown_drake: 9, veil_spearling: 3,
+};
+
+export function checkSpawnFit({ tree, radii = MOB_RADIUS_U, boundary = BOUNDARY_THICKNESS_U }) {
+  const flat = flattenSpawnAreas({ tree });
+  const errors = [...flat.errors];
+  for (const a of flat.areas) {
+    const r = radii[a.mobType];
+    if (r === undefined) {
+      errors.push(`G-SPAWN-FIT: spawn area "${a.id}" mobType "${a.mobType}" has no radius entry in MOB_RADIUS_U (scripts/lib/spine.mjs)`);
+      continue;
+    }
+    const need = boundary + r;
+    const margins = {
+      west: a.abs.x,
+      north: a.abs.y,
+      east: a.mapSize[0] - (a.abs.x + a.abs.width),
+      south: a.mapSize[1] - (a.abs.y + a.abs.height),
+    };
+    for (const [side, got] of Object.entries(margins))
+      if (got < need)
+        errors.push(`G-SPAWN-FIT: spawn area "${a.id}" ${side} margin ${got} < required ${need} (boundaryThickness ${boundary} + radius(${a.mobType}) ${r})`);
+  }
+  return { errors, areas: flat.areas };
+}
+
 export function checkRuntime({ tree, mobTypes, liveMapIds = LIVE_MAP_IDS }) {
   const errors = [];
   const seen = new Map(); // mapId -> nodeId
