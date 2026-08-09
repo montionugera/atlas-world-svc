@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, cpSync, readFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, cpSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadSpine, TIER_DEPTH } from "../lib/spine.mjs";
+import { loadSpine, TIER_DEPTH, buildTree, deriveNode } from "../lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_content.mjs");
@@ -396,4 +396,60 @@ t11("G-COMP-ROLLUP red: child mix contradicts the parent beyond tolerance", () =
   } }));
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-COMP-ROLLUP n-c: meadow off by .* pp \(tol 3\)/);
+});
+
+// ── F-041 Phase 3: hermetic fixture roots for the town-frame gates ──────────
+// Copies a committed fixture dir to a tmp root, fills the codegen-owned
+// `derived` block on every node via lib deriveNode (G-DERIVED-DRIFT stays
+// green; each fixture fails ONLY on its authored defect), copies the two real
+// schemas in, then runs the real gate binary with --only=spine.
+//
+// NOTE: the brief for this task names the runner `runSpineGate(root) →
+// { status, out }`, but a same-named `runSpineGate(dir) → { code, out }`
+// already exists at module scope (added for Task 1.7's fixture builder,
+// used by ~15 tests above) — a second top-level `function runSpineGate`
+// would be a SyntaxError (duplicate declaration), not a redefinition.
+// Named `p3RunSpineGate` instead; behaviourally identical (same GATE binary,
+// same --content-root/--only=spine invocation), field renamed `status` to
+// match the brief's contract for Tasks 3.7–3.9 to reuse.
+const P3_FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "fixtures/spine");
+
+function p3Root(fixtureName) {
+  const root = mkdtempSync(join(tmpdir(), `spine-p3-`));
+  cpSync(join(P3_FIXTURES, fixtureName), root, { recursive: true });
+  mkdirSync(join(root, "schemas"), { recursive: true });
+  for (const s of ["spine-node.schema.json", "town-plan.schema.json"])
+    cpSync(join(ROOT, "content/schemas", s), join(root, "schemas", s));
+  const spine = loadSpine({ contentRoot: root });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  // plans: same [{ file, doc }] shape checkSpine hands deriveNode — verified
+  // against deriveNode's call site in check_content.mjs (gSpineFrames,
+  // G-DERIVED-DRIFT): deriveNode's `plans` param is unused inside the
+  // function today (§3.2 town reversal activates it later), so this shape
+  // is inert for now but matches the future contract.
+  const plans = readdirSync(join(root, "towns")).sort().map((f) => ({
+    file: `towns/${f}`,
+    doc: JSON.parse(readFileSync(join(root, "towns", f), "utf8")),
+  }));
+  for (const node of spine.nodes) {
+    const file = join(root, "spine/nodes", `${node.id}.json`);
+    const doc = JSON.parse(readFileSync(file, "utf8"));
+    doc.derived = deriveNode({ tree, id: node.id, plans });
+    writeFileSync(file, JSON.stringify(doc, null, 2) + "\n");
+  }
+  return root;
+}
+
+function p3RunSpineGate(root) {
+  try {
+    return { status: 0, out: execFileSync(process.execPath, [GATE, "--content-root", root, "--only=spine"], { encoding: "utf8" }) };
+  } catch (e) {
+    return { status: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` };
+  }
+}
+
+test("P3 fixture scaffolding: the green base passes --only=spine clean", () => {
+  const { status, out } = p3RunSpineGate(p3Root("g-town-gates-green-base"));
+  assert.equal(status, 0, out);
+  assert.doesNotMatch(out, /FAIL/);
 });
