@@ -315,35 +315,89 @@ export function resolveToRoot({ tree, id, point }) {
   return [origin[0] + point[0] * scale, origin[1] + point[1] * scale];
 }
 
+// ── the ONE `plans` shape ───────────────────────────────────────────────────
+// Every spine function that takes town plans takes the SAME shape:
+//
+//   plans: [{ file: string, doc: object }]
+//
+// `file` is the content-root-relative label used in error text
+// ("towns/town-millcross.json"); `doc` is the parsed plan. The list is
+// positional-free and ORDER-IRRELEVANT — a plan is joined to a node by
+// `doc.spineId`, never by index. An empty array means "no plans known", which
+// is the default: a content root with no towns/ is legal everywhere.
+// Callers: readTownPlans() below (emitters), check_content.mjs's
+// loadTownPlans() (the gate — same shape, schema-validated).
+export function planForNode({ plans = [], id }) {
+  for (const p of plans) if (p?.doc?.spineId === id) return p.doc;
+  return null;
+}
+
+// Read content/towns/*.json into the `plans` shape. PURE — no schema, no
+// reporting: check_content.mjs layers Ajv validation + FAIL lines on top
+// (a schema-invalid plan must never reach the town gates), while the
+// emitters (check_spine_emit.mjs, spine-tree.mjs) consume the raw list.
+// Unparsable files come back separately so the gate can report them and the
+// emitters can fail loudly rather than silently deriving from a short list.
+export function readTownPlans({ contentRoot }) {
+  const dir = join(contentRoot, "towns");
+  const plans = [];
+  const unreadable = [];
+  if (!existsSync(dir)) return { plans, unreadable };
+  for (const name of readdirSync(dir).filter((n) => /^town-.+\.json$/.test(n)).sort()) {
+    const path = join(dir, name);
+    const file = `towns/${name}`;
+    try { plans.push({ file, doc: JSON.parse(readFileSync(path, "utf8")) }); }
+    catch (e) { unreadable.push({ file, path, message: e.message }); }
+  }
+  return { plans, unreadable };
+}
+
 // interior.size / originInParent are DERIVED, never hand-trusted (G-FRAME):
 //   normal:  originInParent = min-corner(bbox(placement)); size = bbox dims × perParentUnit
 //   town:    the PLAN is the authority (research §3.2) — arrow reversed:
 //            size = plan.extent; rect = anchor − anchorInInterior/per, extent/per.
 // HC-4: plan.anchor.geographyAt names the CENTRE-of-interest interior point
 // (anchorInInterior), NOT the origin corner.
+//
+// `from` names which arrow produced the result — "plan" (the reversed town
+// arrow) or "placement" (bbox). G-FRAME needs it: the plan arrow divides and
+// subtracts authored decimals, so 220 comes back as 220.00000000000003 and
+// EXACT equality would red on correct content. `from: "plan"` tells the gate
+// to compare within FRAME_EPS instead of by JSON.stringify identity.
+//
+// The town branch is taken only when the join is actually usable (a linked
+// plan carrying a numeric extent + anchor, over a node carrying
+// anchorInInterior). A malformed join falls back to the bbox arrow and is
+// reported by G-TOWN-FRAME — never crashed on here.
 export function deriveInterior({ node, plan }) {
   const per = node.interior?.perParentUnit ?? 1;
-  if (node.tier === "town" && plan) {
-    const size = [plan.extent.width, plan.extent.height];
-    const anchorIn = node.interior.anchorInInterior;
-    const anchor = plan.anchor.geographyAt;
+  const anchorIn = node.interior?.anchorInInterior;
+  const at = plan?.anchor?.geographyAt;
+  const w = plan?.extent?.width, h = plan?.extent?.height;
+  if (
+    node.tier === "town" && plan && per > 0 &&
+    Array.isArray(anchorIn) && Number.isFinite(anchorIn[0]) && Number.isFinite(anchorIn[1]) &&
+    Array.isArray(at) && Number.isFinite(at[0]) && Number.isFinite(at[1]) &&
+    Number.isFinite(w) && Number.isFinite(h)
+  ) {
+    const size = [w, h];
     const rect = {
-      x: anchor[0] - anchorIn[0] / per,
-      y: anchor[1] - anchorIn[1] / per,
+      x: at[0] - anchorIn[0] / per,
+      y: at[1] - anchorIn[1] / per,
       w: size[0] / per,
       h: size[1] / per,
     };
-    return { size, originInParent: [rect.x, rect.y], placement: { shape: "rect", rect, anchor: [...anchor] } };
+    return { from: "plan", size, originInParent: [rect.x, rect.y], placement: { shape: "rect", rect, anchor: [...at] } };
   }
   const bb = placementBBoxOf(node.placement);
-  return { size: [bb.w * per, bb.h * per], originInParent: [bb.x, bb.y] };
+  return { from: "placement", size: [bb.w * per, bb.h * per], originInParent: [bb.x, bb.y] };
 }
 
 // ── composition ────────────────────────────────────────────────────────────
 // research §5.2: share_c = area(c.placement)/A (placement is in PARENT units,
 // so child areas are already in the parent's units²); point children share 0;
 // bands/features non-areal; U-weighted interstitial; verdict per §5.5.
-export function rollupComposition({ tree, id }) {
+export function rollupComposition({ tree, id, plans = [] }) {
   const node = tree.byId.get(id);
   const A = placementArea({ placement: node.placement });
   const derived = {};
@@ -366,15 +420,26 @@ export function rollupComposition({ tree, id }) {
     l1 += Math.abs(d);
   }
   const coveragePct = shareSum * 100;
-  // §5.5 — town-with-plan ⇒ CHECKED joins in Phase 3 (G-TOWN-COMP owns it).
-  const verdict = node.interstitialUnsurveyed ? "UNCHECKED" : coveragePct >= 60 ? "CHECKED" : "ASSERTED";
+  // §5.5 — a town whose spineId-linked plan exists is CHECKED even at 0%
+  // child coverage: the plan IS the survey. Its built/river shares are held
+  // against the declared composition by G-TOWN-COMP, so "checked" is a
+  // statement about evidence, not about how much area its children claim
+  // (a town has no children). `plans` reaching here is already the
+  // schema-VALID list — check_content.mjs filters before calling.
+  const planned = node.tier === "town" && planForNode({ plans, id }) !== null;
+  const verdict = node.interstitialUnsurveyed ? "UNCHECKED"
+    : planned || coveragePct >= 60 ? "CHECKED" : "ASSERTED";
   return { derived, coveragePct, unclaimedPct: U * 100, l1, verdict, perKeyDelta };
 }
 
 // The full committed `derived` block (byte-checked by G-DERIVED-DRIFT, Phase 1).
-export function deriveNode({ tree, id, plans }) {
+// `plans` is the ONE shape documented at planForNode(): [{ file, doc }],
+// defaulting to []. It feeds rollupVerdict (town-with-plan ⇒ CHECKED), so
+// every producer of a committed derived block MUST pass the same list the
+// gate will pass, or G-DERIVED-DRIFT reds.
+export function deriveNode({ tree, id, plans = [] }) {
   const node = tree.byId.get(id);
-  const roll = rollupComposition({ tree, id });
+  const roll = rollupComposition({ tree, id, plans });
   let childArea = 0;
   for (const cid of tree.childrenOf.get(id) ?? [])
     childArea += placementArea({ placement: tree.byId.get(cid).placement });
@@ -455,7 +520,9 @@ export function reroll({ nodes, targetId, subtree = false, why, mintHex }) {
 // Pure. `plans` is [{ file, doc }] of parsed town-plan documents; only plans
 // carrying a string `spineId` are examined — a missing link is G-ALIAS's
 // business (Phase 5), never silently double-owned here.
-const FRAME_EPS = 1e-6; // authored decimals (84.9 + 110/100) are not IEEE-exact; 1e-6 km = 1 mm
+// Exported: G-FRAME needs the SAME tolerance for the reversed town arrow
+// (deriveInterior `from: "plan"`), where 220 comes back as 220.00000000000003.
+export const FRAME_EPS = 1e-6; // authored decimals (84.9 + 110/100) are not IEEE-exact; 1e-6 km = 1 mm
 const normRect = ([ax, ay, bx, by]) => [
   Math.min(ax, bx), Math.min(ay, by), Math.max(ax, bx), Math.max(ay, by),
 ];

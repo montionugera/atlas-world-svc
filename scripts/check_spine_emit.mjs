@@ -15,7 +15,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pathToFileURL } from "node:url";
-import { loadSpine, buildTree, deriveInterior, deriveNode, resolveToRoot } from "./lib/spine.mjs";
+import { loadSpine, buildTree, deriveInterior, deriveNode, resolveToRoot, readTownPlans, planForNode } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -46,11 +46,16 @@ const NODE_FIELDS = [
   "tags", "levelBand", "derived",
 ];
 
-export function canonicalNode({ node, tree }) {
+// `plans` is the ONE shape documented in lib/spine.mjs (planForNode):
+// [{ file, doc }]. The writer MUST see the same plans the gate sees, or the
+// bytes it writes fail G-FRAME / G-DERIVED-DRIFT the moment the gate runs —
+// a town's interior.size comes from its plan's extent (research §3.2) and its
+// rollupVerdict is CHECKED because the plan exists (§5.5).
+export function canonicalNode({ node, tree, plans = [] }) {
   const { file, ...doc } = node; // loadSpine metadata, never serialized
   const unknown = Object.keys(doc).filter((k) => !NODE_FIELDS.includes(k));
   if (unknown.length) return { error: `${node.id}: unknown fields ${unknown.join(", ")}` };
-  const d = deriveInterior({ node, plan: null });
+  const d = deriveInterior({ node, plan: planForNode({ plans, id: doc.id }) });
   const interior = {
     units: doc.interior.units,
     perParentUnit: doc.interior.perParentUnit,
@@ -62,7 +67,7 @@ export function canonicalNode({ node, tree }) {
   const out = {};
   for (const k of NODE_FIELDS) {
     if (k === "interior") out.interior = interior;
-    else if (k === "derived") out.derived = deriveNode({ tree, id: doc.id, plans: {} });
+    else if (k === "derived") out.derived = deriveNode({ tree, id: doc.id, plans });
     else if (doc[k] !== undefined) out[k] = doc[k];
   }
   return { bytes: canonStringify(out) + "\n" };
@@ -168,9 +173,16 @@ export function collectOutputs({ contentRoot }) {
   if (spine.errors.length) return { errors: spine.errors };
   const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
   if (tree.errors.length) return { errors: tree.errors };
+  // Town plans are the authority on a town's frame (§3.2). An UNPARSABLE plan
+  // is an error here, not a silent short list: deriving a town from bbox
+  // because its plan failed to parse would write bytes the gate then rejects.
+  // Schema validation stays with the gate (check_content.mjs) — this is an
+  // emitter, and a schema-invalid plan is reported there with a clean line.
+  const { plans, unreadable } = readTownPlans({ contentRoot });
+  if (unreadable.length) return { errors: unreadable.map((u) => `${u.file}: cannot parse: ${u.message}`) };
   const outputs = [];
   for (const node of spine.nodes) {
-    const r = canonicalNode({ node, tree });
+    const r = canonicalNode({ node, tree, plans });
     if (r.error) return { errors: [r.error] };
     outputs.push({ path: join(contentRoot, "spine/nodes", node.file), bytes: r.bytes });
   }

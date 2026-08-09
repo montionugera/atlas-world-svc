@@ -43,7 +43,14 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 //            rect) rounds to 0.0% at one decimal place, so it is
 //            unchanged from before.
 //   the 7 town-tier nodes (6 towns + n-expedition-camp): no children →
-//            0.0% ASSERTED (unchanged — they gained area, not children).
+//            0.0% ASSERTED (unchanged — they gained area, not children),
+//            EXCEPT n-millcross. The P3 phase-review wave implemented §5.5's
+//            town-with-plan ⇒ CHECKED: n-millcross is the one town whose
+//            spineId-linked plan (content/towns/town-millcross.json) exists,
+//            and the plan IS the survey — its built/river shares are held
+//            against the declared composition by G-TOWN-COMP — so it reads
+//            CHECKED at 0.0% child coverage. A town has no children; coverage
+//            can never be the evidence for one.
 //   n-playroot: no children, unsurveyed → 0.0% UNCHECKED.
 const EXPECTED = `n-atlas · world · km · coverage 0.7% UNCHECKED
 ├── n-cluster1 · continent · km · coverage 53.4% ASSERTED
@@ -60,7 +67,7 @@ const EXPECTED = `n-atlas · world · km · coverage 0.7% UNCHECKED
 │   ├── n-meltwash-terrace · region · km · coverage 0.5% ASSERTED
 │   │   └── n-expedition-camp · town · u · coverage 0.0% ASSERTED
 │   ├── n-millcross-ford · region · km · coverage 0.5% ASSERTED
-│   │   └── n-millcross · town · u · coverage 0.0% ASSERTED
+│   │   └── n-millcross · town · u · coverage 0.0% CHECKED
 │   ├── n-northern-icefield · region · km · coverage 0.0% ASSERTED
 │   ├── n-rooktide-reach · region · km · coverage 0.0% ASSERTED
 │   │   └── n-rooktide · town · u · coverage 0.0% ASSERTED

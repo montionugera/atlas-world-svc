@@ -9,7 +9,7 @@
 // usage: node scripts/spine-tree.mjs [--content-root <dir>]
 import { resolve, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadSpine, buildTree, rollupComposition } from "./lib/spine.mjs";
+import { loadSpine, buildTree, rollupComposition, readTownPlans } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 let contentRoot = join(ROOT, "content");
@@ -25,10 +25,16 @@ if (spine.errors.length) { for (const e of spine.errors) console.error(`ERROR ${
 const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
 if (tree.errors.length) { for (const e of tree.errors) console.error(`ERROR ${e}`); process.exit(1); }
 
+// The verdict column must say the same thing the gate says (§5.5: a town whose
+// spineId-linked plan exists is CHECKED), so this view reads the plans too —
+// a printer that disagrees with the gate is exactly the drift the spine exists
+// to end. Raw read, no schema: an emitter, not a gate.
+const { plans } = readTownPlans({ contentRoot });
+
 const lines = [];
 function walk(id, prefix, isLast, isRoot) {
   const n = tree.byId.get(id);
-  const roll = rollupComposition({ tree, id });
+  const roll = rollupComposition({ tree, id, plans });
   const connector = isRoot ? "" : prefix + (isLast ? "└── " : "├── ");
   lines.push(`${connector}${id} · ${n.tier} · ${n.interior?.units ?? "?"} · coverage ${roll.coveragePct.toFixed(1)}% ${roll.verdict}`);
   const kids = tree.childrenOf.get(id);

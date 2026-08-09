@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, cpSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, cpSync, readFileSync, readdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -414,19 +414,25 @@ t11("G-COMP-ROLLUP red: child mix contradicts the parent beyond tolerance", () =
 // match the brief's contract for Tasks 3.7–3.9 to reuse.
 const P3_FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "fixtures/spine");
 
-function p3Root(fixtureName) {
+// `mutate(root)` runs on the copied root BEFORE the derived blocks are filled,
+// so a mutation is indistinguishable from a committed authoring defect — the
+// derived blocks are consistent with whatever the mutation left behind, and
+// the fixture still fails ONLY on the defect under test.
+function p3Root(fixtureName, mutate = null) {
   const root = mkdtempSync(join(tmpdir(), `spine-p3-`));
   cpSync(join(P3_FIXTURES, fixtureName), root, { recursive: true });
   mkdirSync(join(root, "schemas"), { recursive: true });
   for (const s of ["spine-node.schema.json", "town-plan.schema.json"])
     cpSync(join(ROOT, "content/schemas", s), join(root, "schemas", s));
+  if (mutate) mutate(root);
   const spine = loadSpine({ contentRoot: root });
   const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
-  // plans: same [{ file, doc }] shape checkSpine hands deriveNode — verified
-  // against deriveNode's call site in check_content.mjs (gSpineFrames,
-  // G-DERIVED-DRIFT): deriveNode's `plans` param is unused inside the
-  // function today (§3.2 town reversal activates it later), so this shape
-  // is inert for now but matches the future contract.
+  // plans: the ONE [{ file, doc }] shape documented at lib/spine.mjs's
+  // planForNode(). NO LONGER INERT — the P3 phase-review wave activated it:
+  // deriveNode's rollupVerdict is CHECKED for a town with a linked plan
+  // (§5.5), so the derived blocks written here must be derived from the SAME
+  // list the gate reads out of the fixture's towns/ dir, or every fixture
+  // reds on G-DERIVED-DRIFT instead of on the gate under test.
   const plans = readdirSync(join(root, "towns")).sort().map((f) => ({
     file: `towns/${f}`,
     doc: JSON.parse(readFileSync(join(root, "towns", f), "utf8")),
@@ -471,4 +477,104 @@ test("G-TERRAINKIND red: river-country with river at 10% misses the 15% implied-
   const { status, out } = p3RunSpineGate(p3Root("g-terrainkind-implied-biome-missing"));
   assert.equal(status, 1, out);
   assert.match(out, /G-TERRAINKIND: n-r1: terrainKind "river-country" implies biome "river" at >= 15% of composition, found 10/);
+});
+
+// ── F-041 P3 phase-review wave ─────────────────────────────────────────────
+// Five findings, one plumbing change: the gate now loads town plans ONCE,
+// schema-validated, at the top of checkSpine, and hands that ONE list to
+// G-FRAME (the reversed town arrow), G-COMP-REPORT (the CHECKED verdict) and
+// the G-TOWN-* gates. The tests below pin each finding's failure mode.
+
+const readJ = (p) => JSON.parse(readFileSync(p, "utf8"));
+const writeJ = (p, v) => writeFileSync(p, JSON.stringify(v, null, 2) + "\n");
+const planPath = (root) => join(root, "towns/town-t1.json");
+const nodePath = (root, id) => join(root, "spine/nodes", `${id}.json`);
+
+// Finding 1 (HIGH). checkSpine used to read towns/*.json with NO schema and
+// hand the raw docs to townCompErrors, whose normRect(fp.rect) TypeErrors on
+// a plan missing footprints[0].rect. An uncaught throw skips finish(), so
+// every FAIL recorded before it is SWALLOWED and the process still exits 0.
+// The mutation below plants BOTH defects at once: the schema-invalid plan and
+// an unrelated earlier G-COMP-SUM failure that must survive to be printed.
+test("town plans are schema-validated before the town gates consume them (a plan missing footprints[0].rect must not crash checkSpine)", () => {
+  const { status, out } = p3RunSpineGate(p3Root("g-town-gates-green-base", (root) => {
+    const plan = readJ(planPath(root));
+    delete plan.footprints[0].rect;         // the shape normRect would TypeError on
+    writeJ(planPath(root), plan);
+    const c1 = readJ(nodePath(root, "n-c1"));
+    c1.composition = { meadow: 40, forest: 40 }; // sums to 80, not 100 — an EARLIER gate
+    writeJ(nodePath(root, "n-c1"), c1);
+  }));
+  assert.equal(status, 1, out);
+  assert.doesNotMatch(out, /TypeError/);
+  // the plan earns its own clean schema FAIL line …
+  assert.match(out, /FAIL {2}towns\/town-t1\.json: schema \/footprints\/0 must have required property 'rect'/);
+  // … and the failure recorded BEFORE the town gates still reaches the report.
+  assert.match(out, /FAIL {2}G-COMP-SUM: n-c1: composition sums to 80/);
+});
+
+// Finding 2 (HIGH). deriveInterior's town branch (research §3.2: the PLAN is
+// the authority on a town's interior) was dead code — both production call
+// sites passed plan: null, so a drifted plan extent changed nothing and the
+// gate exited 0. Real plans are joined on spineId now.
+test("G-FRAME red: a drifted plan extent contradicts the committed interior.size (the plan is the authority — research §3.2)", () => {
+  const { status, out } = p3RunSpineGate(p3Root("g-town-gates-green-base", (root) => {
+    const plan = readJ(planPath(root));
+    plan.extent.width = 235;               // node n-t1 still commits size [200, 160]
+    writeJ(planPath(root), plan);
+  }));
+  assert.equal(status, 1, out);
+  assert.match(out, /G-FRAME n-t1: interior\.size \[200, 160\] != derived \[235, 160\]/);
+  assert.match(out, /the town plan's extent is the authority/);
+});
+
+// … and the epsilon half of the same finding: the reversed arrow divides and
+// subtracts authored decimals, so the SHIPPED n-millcross derives 220 as
+// 220.00000000000003. G-FRAME's JSON.stringify equality would red on correct
+// content; the town arrow compares within FRAME_EPS. Real content, not a
+// fixture — that is the whole point.
+test("G-FRAME green: real content survives the activated town arrow (float-safe, not JSON.stringify-exact)", () => {
+  const r = runGate(join(ROOT, "content"));
+  assert.equal(r.code, 0, r.stdout);
+  assert.doesNotMatch(r.stdout, /G-FRAME/);
+});
+
+// Finding 3 (MEDIUM). §5.5 / plan.md task 3.8: a town whose spineId-linked
+// plan exists is CHECKED. A town has no children, so child coverage can never
+// be its evidence — the plan is.
+test("G-COMP-REPORT: a town with a spineId-linked plan is CHECKED at 0% child coverage (§5.5)", () => {
+  const { status, out } = p3RunSpineGate(p3Root("g-town-gates-green-base"));
+  assert.equal(status, 0, out);
+  assert.match(out, /spine-comp: n-t1 coverage=0\.0% verdict=CHECKED/);
+});
+
+test("G-COMP-REPORT: the SAME town with its plan removed falls back to ASSERTED", () => {
+  const { status, out } = p3RunSpineGate(p3Root("g-town-gates-green-base", (root) => {
+    rmSync(planPath(root));
+  }));
+  assert.equal(status, 0, out);
+  assert.match(out, /spine-comp: n-t1 coverage=0\.0% verdict=ASSERTED/);
+});
+
+test("G-COMP-REPORT: the shipped table reports exactly one CHECKED node (n-millcross, the one town with a plan)", () => {
+  const r = runGate(join(ROOT, "content"));
+  assert.equal(r.code, 0, r.stdout);
+  assert.match(r.stdout, /spine-comp: n-millcross coverage=0\.0% verdict=CHECKED/);
+  assert.match(r.stdout, /spine-comp: totals CHECKED=1 ASSERTED=20 UNCHECKED=2/);
+});
+
+// Finding 4 (MEDIUM). terrainKindErrors ran over raw spine.nodes, so a node
+// that already earned a clean schema FAIL (composition missing) ALSO earned a
+// fabricated G-TERRAINKIND line claiming its implied biome sits at 0% — a
+// second failure about a field the author never wrote.
+test("G-TERRAINKIND walks validNodes: a schema-invalid node earns its schema FAIL and no fabricated implied-biome line", () => {
+  const { status, out } = p3RunSpineGate(p3Root("g-town-gates-green-base", (root) => {
+    const t1 = readJ(nodePath(root, "n-t1"));
+    t1.terrainKind = "river-country";
+    delete t1.composition;                 // schema-required — n-t1 leaves validNodes
+    writeJ(nodePath(root, "n-t1"), t1);
+  }));
+  assert.equal(status, 1, out);
+  assert.match(out, /FAIL {2}spine\/nodes\/n-t1\.json: schema \/ must have required property 'composition'/);
+  assert.doesNotMatch(out, /G-TERRAINKIND/);
 });

@@ -286,8 +286,8 @@ test("rollupComposition: shares, U-weighted interstitial, verdicts", () => {
 
 test("deriveNode: emits the full derived block with a stable digest", () => {
   const tree = fictionTree();
-  const d1 = deriveNode({ tree, id: "n-zone", plans: {} });
-  const d2 = deriveNode({ tree, id: "n-zone", plans: {} });
+  const d1 = deriveNode({ tree, id: "n-zone", plans: [] });
+  const d2 = deriveNode({ tree, id: "n-zone", plans: [] });
   assert.deepEqual(d1, d2); // deterministic
   for (const k of ["areaParentUnits2", "childAreaParentUnits2", "coveragePct", "unclaimedPct",
     "computedComposition", "rollupVerdict", "absoluteAnchorRoot", "resolvedSeedStreams", "digest"])

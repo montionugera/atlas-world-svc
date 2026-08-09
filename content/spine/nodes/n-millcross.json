@@ -28,7 +28,7 @@
   "interior": {
     "units": "u",
     "perParentUnit": 100,
-    "size": [220.00000000000003, 160],
+    "size": [220, 160],
     "originInParent": [84.9, 117.2],
     "anchorInInterior": [110, 80]
   },
@@ -66,7 +66,7 @@
     "coveragePct": 0,
     "unclaimedPct": 100,
     "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
+    "rollupVerdict": "CHECKED",
     "absoluteAnchorRoot": [86, 118],
     "resolvedSeedStreams": {
       "terrain": "c579f922981c528d",
@@ -74,6 +74,6 @@
       "vegetation": "d53b1f3356234a93",
       "names": "5a6e087d2bc90827"
     },
-    "digest": "sha256:ed37259206ce5f423f01c3ff1e537f80628ef2b030f1fb909f6b9681444b8c13"
+    "digest": "sha256:c456f92be5e50c5bcaecb7266e19e9b02680e06d1321f89ee8a0537a1ba8fc40"
   }
 }

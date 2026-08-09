@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1134,23 +1134,53 @@ function townRegionTouchesEdge(grid, labels, region) {
   return false;
 }
 
-// T1/T2/T3/T5. Mirrors checkZoneContent's structure exactly: soft-skip, compile,
-// load the geography, then one pass that FAILs a schema-invalid record and
-// `continue`s rather than letting a malformed shape reach the rules.
-function checkTownPlan(opts) {
-  const dir = join(opts.contentRoot, "towns");
-  if (!existsSync(dir)) return 0;
-  const files = readdirSync(dir).filter((f) => /^town-.+\.json$/.test(f)).sort();
-  if (!files.length) return 0;
+// The ONE read of content/towns/*.json. Two consumers need the same list —
+// checkTownPlan (the T-rules) and checkSpine (the G-TOWN-* gates) — and before
+// this was shared each read its own copy, so an unparsable plan earned TWO
+// identical FAIL lines and checkSpine consumed plans NO schema had ever seen
+// (a plan missing footprints[0].rect crashed townCompErrors, and an uncaught
+// throw skips finish(), silently dropping every FAIL recorded before it).
+//
+// Returns the ONE `plans` shape documented in lib/spine.mjs (planForNode):
+// [{ file, doc }], schema-VALID docs only. Memoised per content root because
+// the gate is one-shot per root — `--only=spine` calls this without
+// checkTownPlan ever running, and the full sweep calls it from both.
+let townPlansCache = null;
+function loadTownPlans(opts) {
+  if (townPlansCache && townPlansCache.root === opts.contentRoot) return townPlansCache.plans;
+  const { plans: raw, unreadable } = readTownPlans({ contentRoot: opts.contentRoot });
+  const plans = [];
+  // Soft-skip BEFORE touching the schema: every fixture in
+  // check_content.test.mjs and bestiary-placement.test.mjs has a content root
+  // that never adopted town plans, and those roots must not FAIL with
+  // "town-plan schema: cannot read/parse".
+  if (raw.length || unreadable.length) {
+    for (const u of unreadable) fail(`${u.file}: cannot read/parse ${u.path}: ${u.message}`);
+    const validate = compileSchema(
+      join(opts.contentRoot, "schemas/town-plan.schema.json"),
+      "town-plan schema", fail);
+    if (validate) {
+      for (const { file, doc } of raw) {
+        if (!validate(doc)) {
+          for (const err of validate.errors)
+            fail(`${file}: schema ${err.instancePath || "/"} ${err.message}`);
+          continue; // downstream rules and gates assume a valid shape
+        }
+        plans.push({ file, doc });
+      }
+    }
+  }
+  townPlansCache = { root: opts.contentRoot, plans };
+  return plans;
+}
 
-  // Skip BEFORE touching the schema: every fixture in check_content.test.mjs
-  // and bestiary-placement.test.mjs has a content root that never adopted town
-  // plans, and those roots must not FAIL with "town-plan schema: cannot
-  // read/parse".
-  const validate = compileSchema(
-    join(opts.contentRoot, "schemas/town-plan.schema.json"),
-    "town-plan schema", fail);
-  if (!validate) return 0;
+// T1/T2/T3/T5. Mirrors checkZoneContent's structure exactly: soft-skip, compile,
+// load the geography, then one pass over the SCHEMA-VALID plans (loadTownPlans
+// above already FAILed and dropped the malformed ones, so no rule below ever
+// sees a bad shape).
+function checkTownPlan(opts) {
+  const plans = loadTownPlans(opts);
+  if (!plans.length) return 0;
 
   // REQUIRED once a town plan exists: T1 is an assertion against the
   // Cartographer's geography, which is the authority on which towns exist.
@@ -1159,20 +1189,7 @@ function checkTownPlan(opts) {
 
   const records = []; // { label, file, doc, roadQuads } for every valid plan naming a real town
 
-  for (const file of files) {
-    const label = `towns/${file}`;
-    // Failure count, not the return value: a file holding literal `null`
-    // parses fine and must not be mistaken for a recorded FAIL.
-    const before = failures.length;
-    const doc = readJson(join(dir, file), label, fail);
-    if (failures.length > before) continue;
-
-    if (!validate(doc)) {
-      for (const err of validate.errors)
-        fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
-      continue; // downstream rules assume a valid shape
-    }
-
+  for (const { file: label, doc } of plans) {
     // T1 — the town exists in the Cartographer's geography. Like Z1 this does
     // NOT continue: T2/T3/T5 are purely intra-record, so bailing here would
     // hide real defects behind one typo. The orphan is FAILed and withheld
@@ -1308,7 +1325,7 @@ function checkTownPlan(opts) {
       }
     }
 
-    if (known) records.push({ label, file, doc, roadQuads });
+    if (known) records.push({ label, doc, roadQuads });
   }
 
   // ===== SEAM: cross-file town rules, if any, go here =====================
@@ -1339,6 +1356,26 @@ function checkSpine(opts) {
 
   const spine = loadSpine({ contentRoot: opts.contentRoot });
   for (const e of spine.errors) fail(`spine: ${e}`);
+
+  // F-041 P3: the town plans, SCHEMA-VALIDATED (loadTownPlans owns the read,
+  // the schema and the FAIL lines; memoised, so a full sweep shares one read
+  // with checkTownPlan and `--only=spine` — which never runs checkTownPlan —
+  // still validates before consuming). Loaded HERE, above gSpineFrames,
+  // because G-FRAME's town arrow needs the plan: research §3.2 makes the plan
+  // the authority on a town's interior.size/originInParent, and a gate that
+  // reads plan: null can never object to a drifted plan extent.
+  //
+  // JOIN CAVEAT — the two join keys are UNLINKED today. A plan carries
+  // `town` (joined to content/maps/cluster1-geography.json#towns by T1) and
+  // `spineId` (joined to this node table by G-TOWN-FRAME). Nothing checks the
+  // two name the SAME place: they agree only transitively, because
+  // anchor.geographyAt is byte-identical to the geography town's `at` and to
+  // the node's placement.anchor. Swap one plan's `spineId` for another town's
+  // node id and both joins still resolve — G-TOWN-FRAME catches it only
+  // because the anchors then disagree. G-ALIAS (Phase 5) is the gate that
+  // makes the identity explicit; until it lands, do not treat plan.town and
+  // plan.spineId as verified-equivalent handles on the same town.
+  const townPlans = loadTownPlans(opts);
 
   const seenIds = new Map();   // G-ID: node ids AND feature ids, ONE case-sensitive namespace
   const seenSeeds = new Map(); // G-SEED: seed.value → first owner
@@ -1440,8 +1477,9 @@ function checkSpine(opts) {
   gSpineGeometry({ nodes: validNodes, tree, fail });
 
   // F-041 Phase 1: G-FRAME, G-SCALE, G-DERIVED-DRIFT, G-PROVENANCE. Same
-  // validNodes discipline as gSpineGeometry above.
-  gSpineFrames({ nodes: validNodes, tree, fail });
+  // validNodes discipline as gSpineGeometry above. P3: `plans` activates
+  // G-FRAME's reversed town arrow and G-DERIVED-DRIFT's rollupVerdict.
+  gSpineFrames({ nodes: validNodes, tree, plans: townPlans, fail });
 
   // F-041 Phase 1 Task 1.8: G-FROZEN lands BEFORE G-NET/G-CANON-LEG — the
   // leg gate's both-endpoints-frozen dependency means nothing without it.
@@ -1452,7 +1490,7 @@ function checkSpine(opts) {
 
   // F-041 Phase 1 Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT. Both PRINT on
   // every run that reaches this point (spine/ present, schema compiles).
-  gSpineBudgets({ spine, tree, contentRoot: opts.contentRoot, fail });
+  gSpineBudgets({ spine, tree, plans: townPlans, contentRoot: opts.contentRoot, fail });
 
   // F-041 Phase 1 Task 1.11 reported this as WARN until the two authoring
   // debts (8 measured overlap pairs, the n-cluster1 union identity) were
@@ -1461,21 +1499,18 @@ function checkSpine(opts) {
   gSpineOverlapRollup({ tree, report: fail });
 
   // ── F-041 P3: town plans join the spine on plan.spineId (G-TOWN-FRAME) ──
-  // Plans are read here, not schema-validated — checkTownPlan owns the
-  // schema/T-rules; the failure-count discipline mirrors loadGeographyTowns.
-  const townsDir = join(opts.contentRoot, "towns");
-  const townPlans = [];
-  if (existsSync(townsDir)) {
-    for (const f of readdirSync(townsDir).filter((n) => /^town-.+\.json$/.test(n)).sort()) {
-      const before = failures.length;
-      const doc = readJson(join(townsDir, f), `towns/${f}`, fail);
-      if (failures.length > before || !doc) continue;
-      townPlans.push({ file: `towns/${f}`, doc });
-    }
-  }
+  // `townPlans` is the schema-VALID list loaded at the top of this function —
+  // a plan missing footprints[0].rect earns its own clean schema FAIL there
+  // and never reaches townCompErrors' normRect (which would TypeError, skip
+  // finish(), and swallow every FAIL recorded before it).
   for (const e of townFrameErrors({ tree, plans: townPlans })) fail(`G-TOWN-FRAME: ${e}`);
   for (const e of townCompErrors({ tree, plans: townPlans })) fail(`G-TOWN-COMP: ${e}`);
-  for (const e of terrainKindErrors({ nodes: spine.nodes })) fail(`G-TERRAINKIND: ${e}`);
+  // validNodes, not spine.nodes: a schema-invalid node already earned its
+  // clean FAIL above, and reporting a fabricated G-TERRAINKIND line on top of
+  // it (composition is missing, so every implied biome reads 0%) is noise
+  // about a defect the author cannot act on. Same discipline as every gate
+  // above — one identifier, one list.
+  for (const e of terrainKindErrors({ nodes: validNodes })) fail(`G-TERRAINKIND: ${e}`);
 
   return validNodes.length;
 }
@@ -1576,17 +1611,29 @@ function gSpineGeometry({ nodes, tree, fail }) {
 //     only nodes BFS-reached from a root (i.e. acyclic) are safe to
 //     recompute — mirrors check_spine_emit.mjs's own bail-before-derive on
 //     tree.errors.
-function gSpineFrames({ nodes, tree, fail }) {
+function gSpineFrames({ nodes, tree, plans, fail }) {
   const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  // The reversed town arrow divides and subtracts authored decimals, so a
+  // CORRECT 220 comes back as 220.00000000000003 — JSON.stringify equality is
+  // the wrong comparator for it. Only the town arrow gets the tolerance; the
+  // bbox arrow stays byte-exact, because the derive-writer produces those
+  // bytes and G-DERIVED-DRIFT byte-compares them.
+  const near = (a, b) =>
+    Array.isArray(a) && Array.isArray(b) && a.length === b.length &&
+    a.every((v, i) => Number.isFinite(v) && Number.isFinite(b[i]) && Math.abs(v - b[i]) <= FRAME_EPS);
   for (const node of nodes) {
-    // G-FRAME: interior.size/originInParent derived from bbox(placement)
-    // (§3.2 town reversal activates in Phase 3 when plans join via spineId).
+    // G-FRAME: interior.size/originInParent derived from bbox(placement) —
+    // EXCEPT a town with a spineId-linked plan, where research §3.2 reverses
+    // the arrow and the PLAN is the authority (size = plan.extent). With
+    // plan: null this branch was unreachable and a drifted plan extent
+    // changed nothing; the join is live now.
     if (node.interior) {
-      const d = deriveInterior({ node, plan: null });
-      if (!eq(node.interior.originInParent, d.originInParent))
+      const d = deriveInterior({ node, plan: planForNode({ plans, id: node.id }) });
+      const same = d.from === "plan" ? near : eq;
+      if (!same(node.interior.originInParent, d.originInParent))
         fail(`spine: G-FRAME ${node.id}: interior.originInParent [${node.interior.originInParent.join(", ")}] != derived [${d.originInParent.join(", ")}]`);
-      if (!eq(node.interior.size, d.size))
-        fail(`spine: G-FRAME ${node.id}: interior.size [${node.interior.size.join(", ")}] != derived [${d.size.join(", ")}]`);
+      if (!same(node.interior.size, d.size))
+        fail(`spine: G-FRAME ${node.id}: interior.size [${node.interior.size.join(", ")}] != derived [${d.size.join(", ")}] (${d.from === "plan" ? "the town plan's extent is the authority — research §3.2" : "bbox(placement) × perParentUnit"})`);
       // G-SCALE: units differ from parent ⇒ perParentUnit ≠ 1, drawn from the
       // pinned constant. NO area identity — HC-3.
       if (node.parentId) {
@@ -1600,7 +1647,7 @@ function gSpineFrames({ nodes, tree, fail }) {
       }
     }
     // G-DERIVED-DRIFT: recomputation reproduces the committed block.
-    if (tree.depthOf.has(node.id) && !eq(node.derived, deriveNode({ tree, id: node.id, plans: {} })))
+    if (tree.depthOf.has(node.id) && !eq(node.derived, deriveNode({ tree, id: node.id, plans })))
       fail(`spine: G-DERIVED-DRIFT ${node.id}: committed derived block does not match recomputation`);
     // G-PROVENANCE: generated ⇒ pinned generator. (Reproduce-check activates
     // with the first real generator; none exists in 1.8.)
@@ -1740,7 +1787,7 @@ function gSpineNet({ nodes, edges, tree, fail }) {
 //     so destructuring `spine.budgets.load` unguarded would throw and
 //     swallow every FAIL those tests assert on (finish() never runs to
 //     print them). A missing budget file is its own clean FAIL instead.
-function gSpineBudgets({ spine, tree, contentRoot, fail }) {
+function gSpineBudgets({ spine, tree, plans, contentRoot, fail }) {
   const dir = join(contentRoot, "spine");
   let bytes = 0;
   (function walkDir(d) {
@@ -1761,7 +1808,7 @@ function gSpineBudgets({ spine, tree, contentRoot, fail }) {
 
   const totals = { CHECKED: 0, ASSERTED: 0, UNCHECKED: 0 };
   for (const node of tree.byId.values()) {
-    const r = rollupComposition({ tree, id: node.id });
+    const r = rollupComposition({ tree, id: node.id, plans });
     totals[r.verdict]++;
     console.log(`spine-comp: ${node.id} coverage=${r.coveragePct.toFixed(1)}% verdict=${r.verdict}`);
   }
