@@ -53,7 +53,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
@@ -310,4 +310,189 @@ test("A1 §6: the roads ribbon-sprawl off the plan rather than ending in a core"
       `${id} stops inside the plan instead of spilling off it`
     );
   }
+});
+
+// ---------------------------------------------------------------------------
+// THE MOB-SIZE CEILING — a KNOWN, ACCEPTED limitation, not a bug.
+//
+// READ THIS BEFORE "FIXING" ANYTHING BELOW.
+//
+// Design §3 derives the cart-road floor of 12 units from "largest mob radius 5
+// → diameter 10, plus clearance". That premise is WRONG about the roster: the
+// registered radii are 3, 3, 3, 3.5, 4, 4, 5, 5, 8 and 9 — `double_attacker`
+// is 8 and `thorncrown_drake` is 9. A 12-unit road clears radius 5 and no more,
+// so those two mobs cannot traverse Millcross.
+//
+// THE 12-UNIT FLOOR STAYS. It is the approved T3 value, and design §10 q3 ("Do
+// mobs enter towns? T3's 12-unit floor assumes yes. If towns are mob-free,
+// `cart` roads could be much narrower and towns would tighten considerably") is
+// explicitly carried UNRESOLVED. Widening the roads would redesign a settled
+// decision and force re-authoring every road in the plan, to serve an open
+// question nobody has answered yet.
+//
+// So this block does not fix the gap — it PINS it. Prose in a design doc rots
+// silently; a test does not. The ceiling is computed from the plan's own
+// authored widths and checked against the radii read off the definition files
+// at test time, so:
+//   · adding a mob bigger than the ceiling goes red, naming it;
+//   · narrowing a cart road goes red, naming the mobs it just shut out;
+//   · widening a cart road goes red too — because that is exactly the
+//     redesign §10 q3 has to authorise first.
+// Whoever makes any of those changes must come back here, read §10 q3, and
+// update the expected table DELIBERATELY.
+// ---------------------------------------------------------------------------
+
+const MOB_DEFINITIONS_DIR = join(ROOT, "colyseus-server/src/config/mobs/definitions");
+
+/**
+ * The registered mob roster, read off the TypeScript definitions at test time.
+ *
+ * Deliberately not a hardcoded list: a hardcoded roster rots the moment a mob
+ * is added, which is the one event this whole block exists to catch.
+ *
+ * Parsed by regex rather than imported because these are `.ts` modules that
+ * pull in the Colyseus schemas; the scripts package is plain ESM with no
+ * TypeScript in it. The shape parsed is the exact one every definition uses —
+ * a top-level `id:` and `radius:` at two-space indent inside the exported
+ * `MobTypeConfig`. Two-space indent is what keeps `projectileRadius` (nested,
+ * deeper) and the several prose mentions of a radius in comments out of the
+ * result. If that shape ever changes, the guard test below goes red rather
+ * than this quietly returning a short list.
+ */
+function readMobRadii() {
+  return readdirSync(MOB_DEFINITIONS_DIR)
+    .filter((f) => f.endsWith(".ts"))
+    .sort()
+    .map((file) => {
+      const src = readFileSync(join(MOB_DEFINITIONS_DIR, file), "utf8");
+      // The trailing `,` is what makes these object properties rather than
+      // prose; several lines carry a `// bruiser`-style comment after it, so
+      // the match deliberately does not anchor to end-of-line.
+      const id = src.match(/^ {2}id: '([^']+)',/m);
+      const radius = src.match(/^ {2}radius: (\d+(?:\.\d+)?),/m);
+      return { file, id: id?.[1], radius: radius ? Number(radius[1]) : undefined };
+    });
+}
+
+/**
+ * The design premise the 12-unit cart floor was derived from. It is the number
+ * the floor was built on, NOT a true statement about the roster — see the block
+ * comment above.
+ */
+const DESIGN_LARGEST_MOB_RADIUS = 5;
+
+/**
+ * Invert design §3's derivation to recover the clearance baked into the floor:
+ * 12 − 2 × 5 = 2 units of slack beyond the body's diameter. A road of width W
+ * therefore admits a body of radius (W − 2) / 2.
+ */
+const CART_CLEARANCE = WIDTH_FLOOR.cart - 2 * DESIGN_LARGEST_MOB_RADIUS;
+
+/**
+ * The largest mob radius that can traverse the town, computed from the plan's
+ * own authored road widths.
+ *
+ * Only `cart` roads count. `foot` roads are player-only by design §3 (their
+ * 4-unit floor is derived from the player's 1.3 radius), so they never
+ * constrain what a mob can do — a mob simply does not use them, and the tent
+ * quarter's interior lanes being mob-free is intended, not a defect.
+ *
+ * The narrowest cart road is the bottleneck: a mob that cannot fit down one of
+ * them cannot cross the town on the cart network.
+ */
+function maxPassableMobRadius(plan) {
+  const cartWidths = plan.roads.filter((r) => r.kind === "cart").map((r) => r.width);
+  assert.ok(cartWidths.length > 0, "the plan has no cart roads to size mobs against");
+  return (Math.min(...cartWidths) - CART_CLEARANCE) / 2;
+}
+
+test("the mob roster is actually READ, not silently parsed away to nothing", () => {
+  // The failure this catches: someone reformats a definition, the regex stops
+  // matching, and the ceiling test below passes vacuously over an empty roster.
+  const mobs = readMobRadii();
+  assert.ok(mobs.length >= 10, `only ${mobs.length} mob definition files found`);
+  for (const m of mobs) {
+    assert.ok(m.id, `${m.file}: no top-level \`id:\` parsed — the definition shape changed`);
+    assert.ok(
+      typeof m.radius === "number" && m.radius > 0,
+      `${m.file}: no top-level \`radius:\` parsed — the definition shape changed`
+    );
+  }
+});
+
+test("KNOWN LIMIT (design §10 q3): Millcross admits mobs up to radius 5 only", () => {
+  const maxRadius = maxPassableMobRadius(PLAN);
+  assert.equal(
+    maxRadius,
+    DESIGN_LARGEST_MOB_RADIUS,
+    `the plan's narrowest cart road now admits radius ${maxRadius}, not ${DESIGN_LARGEST_MOB_RADIUS}. ` +
+      "If a road was widened or narrowed on purpose, resolve design §10 q3 first, then update the table below."
+  );
+
+  // The explicit in/out roll-call. Rendered as lines so a failure names the mob
+  // and its verdict directly in the diff.
+  const verdict = readMobRadii()
+    .map((m) => `${m.id} r=${m.radius} ${m.radius <= maxRadius ? "ENTERS" : "SHUT OUT"}`)
+    .sort();
+
+  assert.deepEqual(verdict, [
+    "aggressive r=3.5 ENTERS",
+    "balanced r=4 ENTERS",
+    "bramble_drake r=5 ENTERS",
+    "bramble_stalker r=3 ENTERS",
+    "defensive r=5 ENTERS",
+    "double_attacker r=8 SHUT OUT",
+    "hybrid r=4 ENTERS",
+    "spear_thrower r=3 ENTERS",
+    "thorncrown_drake r=9 SHUT OUT",
+    "veil_spearling r=3 ENTERS",
+  ]);
+});
+
+test("the ROADS are the binding constraint on mob size, not the buildings", () => {
+  // The ceiling above is arithmetic on widths. This is the geometry check that
+  // the arithmetic is the tight one: a body of the ceiling radius really can
+  // get from the approach (the cart queue, out at the town edge) to the ford,
+  // through the gaps the footprints actually leave. If someone crams buildings
+  // closer together, the roads stop being the limit and this goes red — which
+  // is the honest failure, because then the plan is narrower than it reads.
+  const maxRadius = maxPassableMobRadius(PLAN);
+  const grid = walkableGrid(PLAN, { playerRadius: maxRadius });
+  const regions = floodFillRegions(grid);
+  const queue = cellIndexAt(grid, PLAN.landmarks.find((l) => l.firstSight === true).at);
+  const ford = cellIndexAt(grid, PLAN.landmarks.find((l) => l.id === "the-ford").at);
+
+  assert.notEqual(regions.labels[queue], -1, `a radius-${maxRadius} body cannot stand at the cart queue`);
+  assert.notEqual(regions.labels[ford], -1, `a radius-${maxRadius} body cannot stand at the ford`);
+  assert.equal(
+    regions.labels[queue],
+    regions.labels[ford],
+    `a radius-${maxRadius} body cannot walk from the cart queue to the ford`
+  );
+});
+
+test("the ceiling rule can actually fail — narrower roads and bigger mobs both trip it", () => {
+  // A rule nobody has watched fail is a rule nobody knows works. Both mutations
+  // run on COPIES; the authored plan and the real definitions are untouched.
+  const narrowed = structuredClone(PLAN);
+  narrowed.roads.find((r) => r.id === "river-road-south").width = 10;
+  assert.equal(maxPassableMobRadius(narrowed), 4, "narrowing a cart road did not lower the ceiling");
+
+  const shutOut = readMobRadii()
+    .filter((m) => m.radius > maxPassableMobRadius(narrowed))
+    .map((m) => m.id)
+    .sort();
+  assert.deepEqual(
+    shutOut,
+    ["bramble_drake", "defensive", "double_attacker", "thorncrown_drake"],
+    "narrowing a cart road did not shut out the radius-5 bruisers"
+  );
+
+  // And a hypothetical new giant is caught by the same rule, without touching
+  // the definitions on disk.
+  const hypothetical = { id: "hypothetical_titan", radius: 20 };
+  assert.ok(
+    hypothetical.radius > maxPassableMobRadius(PLAN),
+    `${hypothetical.id} at r=${hypothetical.radius} was NOT flagged as too big for Millcross`
+  );
 });
