@@ -135,6 +135,12 @@ combat_lab() {
   node "$REPO_ROOT/tools/combat-lab/verify.mjs"
 }
 
+# F-041: the tier-spine structural gates (cycles, orphans, depth skips) are
+# the cheapest content failures to run and the most expensive to find late —
+# without this they'd surface only at Gate 2 or CI. --only=spine keeps Gate 1
+# out of the full content sweep (~1 s).
+content_spine() { node "$REPO_ROOT/scripts/check_content.mjs" --only=spine; }
+
 art_forge_tests() {
   ( cd "$REPO_ROOT/tools/art-forge" && node --test tests/*.test.mjs )
 }
@@ -158,6 +164,7 @@ run_section "client: react-client suite"    client_tests
 run_section "art-forge: node --test suite"  art_forge_tests
 run_section "asset-storybook: node --test suite" storybook_tests
 run_section "combat-lab: model gates"       combat_lab
+run_section "content: spine gates (--only=spine)" content_spine
 
 # --- Summary -----------------------------------------------------------------
 echo ""
