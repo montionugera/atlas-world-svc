@@ -97,7 +97,7 @@ test("gridIntersectionArea / gridUnionArea are exact on cell-aligned rects", () 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases } from "../lib/spine.mjs";
+import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, TRUNK_TIERS, checkSpineComplete } from "../lib/spine.mjs";
 
 function tinyNode(id, tier, parentId, seedValue) {
   return {
@@ -597,4 +597,16 @@ test("G-ALIAS playspace half: region-<slug> resolves to n-site-<slug> and prints
   const bad = checkPlayspaceAliases({ tree, regionIds: ["region-ghost"] });
   assert.equal(bad.errors.length, 1);
   assert.match(bad.errors[0], /G-ALIAS: map region "region-ghost" resolves to no spine node \(expected "n-site-ghost"\)/);
+});
+
+test("G-SPINE-COMPLETE: childless trunk tiers fail; childless region/sea/ocean only warn (Gate 2 must stay green)", () => {
+  assert.deepEqual([...TRUNK_TIERS].sort(), ["continent", "playroot", "playspace", "world"]);
+  // childless playspace -> error
+  const t1 = runtimeTree((ns) => { ns.splice(2, 1); }); // drop the site: n-shelf is now childless
+  const r1 = checkSpineComplete({ tree: t1 });
+  assert.equal(r1.errors.length, 1);
+  assert.match(r1.errors[0], /G-SPINE-COMPLETE: "n-shelf" \(tier playspace\) has no children/);
+  // leaf tiers are exempt; a full tree has no errors
+  const r2 = checkSpineComplete({ tree: runtimeTree() });
+  assert.deepEqual(r2.errors, []);
 });

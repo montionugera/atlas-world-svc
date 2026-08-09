@@ -805,6 +805,29 @@ export function checkPlayspaceAliases({ tree, regionIds }) {
   return { errors, lines };
 }
 
+// F-041 P4 — G-SPINE-COMPLETE: every non-leaf-tier node should have >= 1
+// child. Contract-conflict resolution #2: the literal "every non-leaf-tier
+// node has >= 1 child" reds Gate 2 (integration.sh runs --require-complete)
+// on real 1.8 content — n-westsea has no sea children and >=5 regions have
+// no town/site, and authoring those children is explicitly out of scope
+// (spec §6). So: trunk tiers FAIL (an empty world stays red — the failure
+// this gate exists for), everything else non-leaf is WARN-counted.
+export const TRUNK_TIERS = new Set(["world", "playroot", "continent", "playspace"]);
+
+export function checkSpineComplete({ tree }) {
+  const errors = [];
+  const warns = [];
+  for (const [id, node] of tree.byId) {
+    if (LEAF_TIERS.has(node.tier)) continue;
+    if ((tree.childrenOf.get(id) ?? []).length > 0) continue;
+    if (TRUNK_TIERS.has(node.tier))
+      errors.push(`G-SPINE-COMPLETE: "${id}" (tier ${node.tier}) has no children — a ${node.tier} may not be empty under --require-complete`);
+    else
+      warns.push(`G-SPINE-COMPLETE: "${id}" (tier ${node.tier}) has no children yet (region/sea tiling is out of scope in 1.8 — reported, not failed)`);
+  }
+  return { errors, warns };
+}
+
 // ── CLI: node scripts/lib/spine.mjs reroll <id> [--subtree] --why "<reason>"
 //        [--content-root <dir>] ───────────────────────────────────────────
 // Entry-guarded — importing this module runs NOTHING (spawn-pairing pattern:

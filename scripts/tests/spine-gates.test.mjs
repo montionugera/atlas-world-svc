@@ -647,3 +647,21 @@ test("G-ALIAS goes red on a map region id with no site node (HC-2)", (t) => {
   assert.equal(code, 1);
   assert.match(out, /G-ALIAS: map region "region-ghost" resolves to no spine node \(expected "n-site-ghost"\)/);
 });
+
+test("G-SPINE-COMPLETE goes red under --require-complete on a childless non-leaf-tier fixture (HC-2)", (t) => {
+  const root = p4FixtureRoot(t, "g-spine-complete-childless");
+  // The overlay node ships derived: null and shifts n-playroot's rollup —
+  // regenerate derived on the overlaid root so G-DERIVED-DRIFT stays out
+  // of both runs (fixture-root --write only touches the tmp copy: the
+  // emit mirrors are keyed off --content-root, Tasks 4.10/4.11).
+  const w = spawnSync(process.execPath,
+    [join(ROOT, "scripts/check_spine_emit.mjs"), "--write", "--content-root", root], { encoding: "utf8" });
+  assert.equal(w.status, 0, (w.stdout ?? "") + (w.stderr ?? ""));
+  const red = runP4Gate(root, ["--require-complete"]);
+  assert.equal(red.code, 1);
+  assert.match(red.out, /G-SPINE-COMPLETE: "n-ghost-shelf" \(tier playspace\) has no children/);
+  // without the flag the same defect is a WARN, not a FAIL — scoped to
+  // THIS gate's line so an unrelated failure can't hide behind it
+  const soft = runP4Gate(root);
+  assert.ok(!soft.out.match(/^FAIL .*G-SPINE-COMPLETE.*n-ghost-shelf/m), soft.out);
+});
