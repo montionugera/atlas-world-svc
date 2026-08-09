@@ -9,15 +9,51 @@
     "source": "content/maps/cluster1-geography.json"
   },
   "frozen": false,
-  "seed": { "value": "3f8a1c5d9e2b7406", "epoch": 0, "why": null },
+  "seed": {
+    "value": "3f8a1c5d9e2b7406",
+    "epoch": 0,
+    "why": null
+  },
   "placement": {
     "shape": "polygon",
-    "points": [[8, 4], [142, 4], [148, 120], [120, 186], [30, 186], [6, 110]],
+    "points": [
+      [8, 4],
+      [142, 4],
+      [148, 120],
+      [120, 186],
+      [30, 186],
+      [6, 110]
+    ],
     "anchor": [75, 95]
   },
-  "interior": { "units": "km", "perParentUnit": 1, "size": [142, 182], "originInParent": [6, 4] },
-  "composition": { "meadow": 31, "bramble": 12, "ice": 11, "rock": 11, "river": 9, "upland": 9, "alkali": 7, "marsh": 6, "built": 4 },
-  "interstitial": { "meadow": 31, "bramble": 12, "ice": 11, "rock": 11, "river": 9, "upland": 9, "alkali": 7, "marsh": 6, "built": 4 },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [142, 182],
+    "originInParent": [6, 4]
+  },
+  "composition": {
+    "meadow": 31,
+    "bramble": 12,
+    "ice": 11,
+    "rock": 11,
+    "river": 9,
+    "upland": 9,
+    "alkali": 7,
+    "marsh": 6,
+    "built": 4
+  },
+  "interstitial": {
+    "meadow": 31,
+    "bramble": 12,
+    "ice": 11,
+    "rock": 11,
+    "river": 9,
+    "upland": 9,
+    "alkali": 7,
+    "marsh": 6,
+    "built": 4
+  },
   "interstitialUnsurveyed": false,
   "compositionTolerance": null,
   "toleranceWhy": null,
@@ -30,5 +66,31 @@
     "summary": "Phase 0 coarse hull of the 150x190 km sheet, drawn on the sheet's own km grid (x east, y south). Phase 1 replaces it with the transcribed coastline under the HC-6 rewrite licence; until then this node has no children and its interstitial mirrors its composition."
   },
   "tags": [],
-  "levelBand": null
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 23554,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {
+      "meadow": 31,
+      "bramble": 12,
+      "ice": 11,
+      "rock": 11,
+      "river": 9,
+      "upland": 9,
+      "alkali": 7,
+      "marsh": 6,
+      "built": 4
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [75, 95],
+    "resolvedSeedStreams": {
+      "terrain": "b024f0a067a68737",
+      "settlements": "cb378ad28eea1b2e",
+      "vegetation": "dc0bba291ef8320c",
+      "names": "6aebc6c2897f33b0"
+    },
+    "digest": "sha256:59c9e3993c9770a28ceb88244a2143650359651ec4630d0109fa006b51d3963c"
+  }
 }

@@ -9,15 +9,33 @@
     "source": "content/maps/cluster1-geography.json"
   },
   "frozen": false,
-  "seed": { "value": "b2e7d4a90c6f1385", "epoch": 0, "why": null },
+  "seed": {
+    "value": "b2e7d4a90c6f1385",
+    "epoch": 0,
+    "why": null
+  },
   "placement": {
     "shape": "polygon",
-    "points": [[0, 0], [5, 0], [5, 190], [0, 190]],
+    "points": [
+      [0, 0],
+      [5, 0],
+      [5, 190],
+      [0, 190]
+    ],
     "anchor": [2.5, 95]
   },
-  "interior": { "units": "km", "perParentUnit": 1, "size": [5, 190], "originInParent": [0, 0] },
-  "composition": { "ocean": 100 },
-  "interstitial": { "ocean": 100 },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [5, 190],
+    "originInParent": [0, 0]
+  },
+  "composition": {
+    "ocean": 100
+  },
+  "interstitial": {
+    "ocean": 100
+  },
   "interstitialUnsurveyed": false,
   "compositionTolerance": null,
   "toleranceWhy": null,
@@ -30,5 +48,23 @@
     "summary": "The ocean is a SIBLING of the continent, never a bucket inside it (research §5.3) — the continent's placement polygon is land only, so sea never enters its denominator. Phase 0 strip; Phase 1 absorbs the 49.5% unclaimed ground split."
   },
   "tags": [],
-  "levelBand": null
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 950,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {
+      "ocean": 100
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [2.5, 95],
+    "resolvedSeedStreams": {
+      "terrain": "08bc7cf4db04f6d0",
+      "settlements": "2ef11b7499607e1f",
+      "vegetation": "74067f5d575933ad",
+      "names": "55883baf84485a59"
+    },
+    "digest": "sha256:81e63567ca63850ceb3a94ff62069d1651681ac9552c9bf8e696dcad245aa3b3"
+  }
 }

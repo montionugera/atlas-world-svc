@@ -124,3 +124,51 @@ test("all 7 structural gates are green on the committed 4-node spine", () => {
   assert.equal(code, 0, stdout);
   assert.match(stdout, /content-gate: .*, 0 failures/);
 });
+
+// ─── F-041 Phase 1 · Task 1.1: derive-writer ────────────────────────────────
+import { test as t11 } from "node:test";
+import assert11 from "node:assert/strict";
+import { execFileSync as exec11 } from "node:child_process";
+import { mkdtempSync as mkdtemp11, cpSync as cp11, readFileSync as read11, writeFileSync as write11 } from "node:fs";
+import { tmpdir as tmp11 } from "node:os";
+import { join as join11, resolve as resolve11, dirname as dirname11 } from "node:path";
+import { fileURLToPath as f2p11 } from "node:url";
+
+const ROOT11 = resolve11(dirname11(f2p11(import.meta.url)), "../..");
+const EMIT = join11(ROOT11, "scripts/check_spine_emit.mjs");
+
+function runEmit(dir, args) {
+  try {
+    const out = exec11(process.execPath, [EMIT, ...args, "--content-root", dir], { encoding: "utf8" });
+    return { code: 0, out };
+  } catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+}
+
+function realSpineCopy() {
+  const dir = mkdtemp11(join11(tmp11(), "spine-emit-"));
+  cp11(join11(ROOT11, "content/spine"), join11(dir, "spine"), { recursive: true });
+  cp11(join11(ROOT11, "content/schemas/spine-node.schema.json"),
+       join11(dir, "schemas/spine-node.schema.json"), { recursive: true });
+  return dir;
+}
+
+t11("spine-emit --write is idempotent and --check is green after it", () => {
+  const dir = realSpineCopy();
+  assert11.equal(runEmit(dir, ["--write"]).code, 0);
+  const first = read11(join11(dir, "spine/nodes/n-cluster1.json"), "utf8");
+  assert11.equal(runEmit(dir, ["--write"]).code, 0);
+  assert11.equal(read11(join11(dir, "spine/nodes/n-cluster1.json"), "utf8"), first);
+  assert11.equal(runEmit(dir, ["--check"]).code, 0);
+});
+
+t11("spine-emit --check goes red on a hand-edited derived block", () => {
+  const dir = realSpineCopy();
+  runEmit(dir, ["--write"]);
+  const p = join11(dir, "spine/nodes/n-cluster1.json");
+  const doc = JSON.parse(read11(p, "utf8"));
+  doc.derived.coveragePct = 99.9;
+  write11(p, JSON.stringify(doc, null, 2) + "\n");
+  const r = runEmit(dir, ["--check"]);
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /spine-emit: DRIFT .*n-cluster1\.json/);
+});

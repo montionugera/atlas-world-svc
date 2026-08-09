@@ -9,14 +9,35 @@
     "source": "content/maps/atlas-frontier.md"
   },
   "frozen": false,
-  "seed": { "value": "5d0c8f3a6b9e2417", "epoch": 0, "why": null },
+  "seed": {
+    "value": "5d0c8f3a6b9e2417",
+    "epoch": 0,
+    "why": null
+  },
   "placement": {
     "shape": "rect",
-    "rect": { "x": 0, "y": 0, "w": 2000, "h": 2000 },
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 2000,
+      "h": 2000
+    },
     "anchor": [1000, 1000]
   },
-  "interior": { "units": "u", "perParentUnit": 1, "size": [2000, 2000], "originInParent": [0, 0] },
-  "composition": { "meadow": 40, "ice": 20, "rock": 15, "marsh": 10, "bramble": 10, "built": 5 },
+  "interior": {
+    "units": "u",
+    "perParentUnit": 1,
+    "size": [2000, 2000],
+    "originInParent": [0, 0]
+  },
+  "composition": {
+    "meadow": 40,
+    "ice": 20,
+    "rock": 15,
+    "marsh": 10,
+    "bramble": 10,
+    "built": 5
+  },
   "interstitial": null,
   "interstitialUnsurveyed": true,
   "compositionTolerance": null,
@@ -30,5 +51,28 @@
     "summary": "Synthetic runtime frame in world units (u). The SECOND root: the 1000x1000 u playspace (Phase 4) hangs here, never off the fiction continent — spawn-area tuning must not redden the continent's rollup (research §7)."
   },
   "tags": ["runtime-only"],
-  "levelBand": null
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 4000000,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {
+      "meadow": 40,
+      "ice": 20,
+      "rock": 15,
+      "marsh": 10,
+      "bramble": 10,
+      "built": 5
+    },
+    "rollupVerdict": "UNCHECKED",
+    "absoluteAnchorRoot": [1000, 1000],
+    "resolvedSeedStreams": {
+      "terrain": "869e602ad7e142db",
+      "settlements": "4fc275bd2a8e71f6",
+      "vegetation": "6cd479a220b5a0b6",
+      "names": "3a6495e345a73805"
+    },
+    "digest": "sha256:a033e872a6a5c930928e8138534c4902681bd60d96403b69f817b524fbf81cb0"
+  }
 }
