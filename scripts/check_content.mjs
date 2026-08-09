@@ -12,7 +12,14 @@ import { checkSpawnPairing } from "./lib/spawn-pairing.mjs";
 import { checkBestiarySheet } from "./lib/bestiary-sheet.mjs";
 // F-040: the town-plan geometry the T-rules need. Pure, no I/O — see the
 // module header for why it cannot live inside this file.
-import { roadPolygon, polyRectOverlap } from "./lib/town-geometry.mjs";
+import {
+  roadPolygon,
+  polyRectOverlap,
+  rectsOverlap,
+  walkableGrid,
+  floodFillRegions,
+  cellIndexAt,
+} from "./lib/town-geometry.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1090,6 +1097,27 @@ function footprintTouchesRoad(rect, quads) {
   return quads.some((q) => polyRectOverlap(q, grown));
 }
 
+// T7's "reachable from the town edge": does this flood-fill region include at
+// least one cell on the grid's border?
+//
+// The town edge is where a traveller arrives from — A1 §6's Millcross has no
+// wall and its roads run off the map at the extent, so "reachable" can only mean
+// "connected to the outside world". Scanning the four borders is enough: a
+// region that touches the extent anywhere is enterable, and one that touches it
+// nowhere is enclosed by buildings no matter how large it is.
+function townRegionTouchesEdge(grid, labels, region) {
+  const { cols, rows } = grid;
+  for (let c = 0; c < cols; c++) {
+    if (labels[c] === region) return true;
+    if (labels[(rows - 1) * cols + c] === region) return true;
+  }
+  for (let r = 0; r < rows; r++) {
+    if (labels[r * cols] === region) return true;
+    if (labels[r * cols + (cols - 1)] === region) return true;
+  }
+  return false;
+}
+
 // T1/T2/T3/T5. Mirrors checkZoneContent's structure exactly: soft-skip, compile,
 // load the geography, then one pass that FAILs a schema-invalid record and
 // `continue`s rather than letting a malformed shape reach the rules.
@@ -1181,16 +1209,88 @@ function checkTownPlan(opts) {
         fail(`${label}: footprint "${fp.id}" does not touch road "${fp.entranceOn}" it opens onto (within ${TOWN_ENTRANCE_TOUCH} units)`);
     }
 
-    // ===== SEAM: T4 / T6 / T7 go here ======================================
-    // T4 (no footprint overlaps a road's swept area, no two footprints
-    // overlap), T6 (the walkable area is ONE connected region by flood fill)
-    // and T7 (exactly one firstSight landmark, reachable from the town edge)
-    // are the geometry rules and are owned by a separate task. They belong in
-    // this same per-record loop, after T5. `roadQuads` above already holds
-    // each road's swept convex quads keyed by road id — reuse it rather than
-    // re-sweeping. walkableGrid/floodFillRegions/cellIndexAt for T6/T7 come
-    // from ./lib/town-geometry.mjs, which this file already imports from.
-    // =======================================================================
+    // T4 — no footprint overlaps a road's swept area, and no two footprints
+    // overlap each other. Both halves are one rule because both describe the
+    // same defect: authored mass sitting where the plan says there is passage.
+    //
+    // Strictly positive-area, via the same polyRectOverlap/rectsOverlap T5
+    // uses. Touching is NOT overlapping, which is what lets T5 demand a
+    // footprint ABUT the road it opens onto while T4 forbids it entering the
+    // road — the two rules would contradict each other under a loose test.
+    //
+    // A road with no swept area (degenerate width or centreline) is absent from
+    // `roadQuads` and so cannot be overlapped; T3 already FAILed its width and
+    // T5 reports anything that opens onto it.
+    for (const fp of doc.footprints) {
+      for (const [roadId, quads] of roadQuads) {
+        if (quads.some((q) => polyRectOverlap(q, fp.rect)))
+          fail(`${label}: footprint "${fp.id}" overlaps the swept area of road "${roadId}"`);
+      }
+    }
+    for (let i = 0; i < doc.footprints.length; i++) {
+      for (let j = i + 1; j < doc.footprints.length; j++) {
+        const a = doc.footprints[i];
+        const b = doc.footprints[j];
+        if (rectsOverlap(a.rect, b.rect))
+          fail(`${label}: footprints "${a.id}" and "${b.id}" overlap`);
+      }
+    }
+
+    // The walkable grid T6 and T7 both read. Built once per plan.
+    //
+    // A shape-only schema lets `extent` be zero or negative, which makes
+    // walkableGrid throw. T2 has already FAILed that document, so swallow the
+    // throw and skip the two rules rather than die with a stack trace on
+    // authored content — there is no walkable area to measure either way.
+    let grid = null;
+    try {
+      grid = walkableGrid(doc);
+    } catch {
+      /* degenerate extent — T2 owns the report; T6/T7 have nothing to measure */
+    }
+
+    if (grid) {
+      const { count, labels, sizes } = floodFillRegions(grid);
+
+      // T6 — THE LOAD-BEARING RULE. The walkable area must be exactly ONE
+      // connected region. Two regions means a sealed courtyard or an island:
+      // a place the plan draws as open ground that a body of player radius can
+      // never actually reach. That is the failure this whole feature exists to
+      // prevent, and it is invisible to the eye on a rendered map.
+      //
+      // Zero regions (every cell blocked) is caught by the same !== 1.
+      if (count !== 1) {
+        const detail = count === 0
+          ? "no walkable cell at all"
+          : `region sizes ${sizes.join(", ")} cells`;
+        fail(`${label}: walkable area is ${count} disconnected regions (${detail}), must be exactly 1 — a sealed courtyard or an island is unreachable`);
+      }
+
+      // T7 — exactly ONE landmark is the firstSight, and it is reachable from
+      // the town edge. `firstSight` is the thing a traveller sees on arrival,
+      // so zero of them leaves the arrival undefined and two of them contradict
+      // each other; neither count is a matter of taste.
+      const firstSights = doc.landmarks.filter((l) => l.firstSight === true);
+      if (firstSights.length !== 1)
+        fail(`${label}: ${firstSights.length} landmarks are marked firstSight, must be exactly 1`);
+
+      // Reachability is asked of every candidate, not just of a lone survivor:
+      // a plan with two firstSights has two things to check, and reporting only
+      // the count would hide an unreachable one behind the count FAIL.
+      for (const lm of firstSights) {
+        const idx = cellIndexAt(grid, lm.at);
+        if (idx < 0) {
+          fail(`${label}: firstSight landmark "${lm.id}" at [${lm.at.join(", ")}] lies outside the town extent`);
+          continue;
+        }
+        if (!grid.walkable[idx]) {
+          fail(`${label}: firstSight landmark "${lm.id}" at [${lm.at.join(", ")}] stands on blocked ground — no body of radius ${grid.playerRadius} fits there`);
+          continue;
+        }
+        if (!townRegionTouchesEdge(grid, labels, labels[idx]))
+          fail(`${label}: firstSight landmark "${lm.id}" at [${lm.at.join(", ")}] is not reachable from the town edge — it sits in a walkable region enclosed by footprints`);
+      }
+    }
 
     if (known) records.push({ label, file, doc, roadQuads });
   }

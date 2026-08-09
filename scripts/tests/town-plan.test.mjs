@@ -405,11 +405,10 @@ test("schema rejects a non-boolean firstSight and a non-integer storeys", () => 
 // so they cover the WIRING as well as the rules: a green rule that main() never
 // calls would still let every fixture below pass.
 //
-// T1 / T2 / T3 / T5 only. T4 (overlap), T6 (connectivity) and T7 (firstSight)
-// are the geometry rules and belong to a separate task; the baseline plan below
-// is deliberately clean for them too (no footprint overlaps a road or another
-// footprint, the walkable area is one connected region, exactly one
-// firstSight), so adopting them later needs no fixture surgery.
+// All seven rules. The baseline plan below is clean for every one of them (no
+// footprint overlaps a road or another footprint, the walkable area is one
+// connected region, exactly one firstSight), so each test manufactures exactly
+// the single defect it asserts.
 // ===========================================================================
 
 // The Cartographer's authority for T1. `zones: []` because checkZoneContent
@@ -699,4 +698,238 @@ test("T5: opening onto a road with no swept area is a FAIL, not a crash", () => 
   assert.equal(r.code, 1);
   assert.match(r.out, /footprint "mill-house" opens onto road "cart-road", which has no swept area/);
   assert.doesNotMatch(r.out, /TypeError/);
+});
+
+// ---------------------------------- T4 -------------------------------------
+// No footprint overlaps a road's swept area, and no two footprints overlap.
+//
+// Every overlap fixture below is placed on a STRAIGHT stretch of road. The
+// swept area of a polyline claims slightly MORE than the drawn width near a
+// bend (roadPolygon's joint quad reaches a little past the minimal bevel), so a
+// footprint parked against a corner would register an overlap that is an
+// artefact of the sweep rather than the authored geometry. Both baseline roads
+// are two-point straights, which keeps these fixtures testing the rule.
+
+test("T4: a footprint abutting a road with a gap of exactly 0 is not an overlap", () => {
+  // The strictest thing T4 can be asked to accept, and the same fixture T5
+  // needs to pass: touching is not overlapping, or the two rules contradict.
+  const plan = gatePlan();
+  assert.equal(plan.footprints[0].rect[0], 81); // cart-road's swept edge is x = 81
+  assert.equal(plan.footprints[1].rect[1], 122); // alley's swept edge is y = 122
+  const r = runGate(fixture({ towns: onePlan() }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /overlaps the swept area/);
+});
+
+test("T4: a footprint reaching into a foot road's swept area FAILs", () => {
+  // cart-shed 2 units into the alley (swept y 118-122). It still TOUCHES the
+  // road it opens onto, so T5 stays green and only T4 can be reporting this.
+  const r = runGate(fixture({ towns: onePlan((p) => { p.footprints[1].rect = [90, 120, 106, 138]; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /footprint "cart-shed" overlaps the swept area of road "alley"/);
+  assert.doesNotMatch(r.out, /does not touch road/);
+});
+
+test("T4: a footprint reaching into a cart road's swept area FAILs", () => {
+  // old-shell has no entranceOn at all, so no other rule has an opinion about
+  // where it sits — this is T4 alone.
+  const r = runGate(fixture({ towns: onePlan((p) => { p.footprints[2].rect = [70, 200, 86, 216]; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /footprint "old-shell" overlaps the swept area of road "cart-road"/);
+});
+
+test("T4: a footprint swallowing a road whole FAILs", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.footprints[2].rect = [60, 200, 92, 216]; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /footprint "old-shell" overlaps the swept area of road "cart-road"/);
+});
+
+test("T4: two footprints sharing area FAIL, naming both", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.footprints[2].rect = [100, 130, 116, 146]; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /footprints "cart-shed" and "old-shell" overlap/);
+});
+
+test("T4: two footprints sharing only an edge do NOT overlap", () => {
+  // old-shell's west edge is cart-shed's east edge, exactly. A non-strict
+  // overlap test would reject a terrace of adjoining buildings.
+  const r = runGate(fixture({ towns: onePlan((p) => { p.footprints[2].rect = [106, 122, 122, 138]; }) }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /overlap/);
+});
+
+test("T4: a road with no swept area cannot be overlapped, and does not crash", () => {
+  // Zero width: roadPolygon throws, the road is absent from roadQuads, and T3
+  // owns the report. T4 must neither crash nor invent an overlap.
+  const r = runGate(fixture({ towns: onePlan((p) => { p.roads[1].width = 0; }) }));
+  assert.equal(r.code, 1);
+  assert.doesNotMatch(r.out, /overlaps the swept area of road "alley"/);
+  assert.doesNotMatch(r.out, /TypeError/);
+});
+
+// ---------------------------------- T6 -------------------------------------
+// THE LOAD-BEARING RULE: the walkable area must be exactly ONE connected
+// region. A town that looks fine on the render and cannot be walked is the
+// exact failure this feature exists to prevent.
+
+// Four footprints ringing an interior plaza, in empty ground south-east of the
+// baseline's alley. Walls are 8 units thick and the yard inside is 24 x 24 —
+// comfortably bigger than a player, so the sealed region is real open ground
+// and not a rounding artefact. The four rects only TOUCH each other at the
+// corners, so the ring is T4-clean and T6 is the only rule that can object.
+function ringWalls() {
+  return [
+    { id: "court-north", kind: "dwelling", rect: [100, 160, 140, 168] },
+    { id: "court-west", kind: "dwelling", rect: [100, 168, 108, 192] },
+    { id: "court-east", kind: "dwelling", rect: [132, 168, 140, 192] },
+    { id: "court-south", kind: "dwelling", rect: [100, 192, 140, 200] },
+  ];
+}
+
+// The same ring with a 6-unit doorway cut into its south wall. 6 units clears
+// the 2.6 the player-radius inflation eats from a gap, so the yard is joined to
+// the town and the plan is legal.
+function ringWallsWithDoorway() {
+  const walls = ringWalls();
+  walls.pop();
+  walls.push({ id: "court-south-west", kind: "dwelling", rect: [100, 192, 117, 200] });
+  walls.push({ id: "court-south-east", kind: "dwelling", rect: [123, 192, 140, 200] });
+  return walls;
+}
+
+function sealCourtyard(p) {
+  p.footprints.push(...ringWalls());
+  p.plazas.push({ id: "sealed-yard", rect: [110, 170, 130, 190], why: "the yard the ring encloses" });
+}
+
+test("T6: the baseline town is one connected region", () => {
+  const r = runGate(fixture({ towns: onePlan() }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /disconnected regions/);
+});
+
+test("T6: a sealed courtyard FAILs — four footprints ringing an interior plaza", () => {
+  const r = runGate(fixture({ towns: onePlan(sealCourtyard) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /walkable area is 2 disconnected regions .*must be exactly 1/);
+  // Nothing else objects: the ring is T4-clean, opens onto no road, and the
+  // firstSight landmark is outside it. Delete T6 and this plan goes green,
+  // which is exactly what its mutation test proves.
+  assert.doesNotMatch(r.out, /overlap/);
+  assert.doesNotMatch(r.out, /firstSight/);
+});
+
+test("T6: the same ring with a doorway PASSES — the rule is about connectivity, not about rings", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => {
+    p.footprints.push(...ringWallsWithDoorway());
+    p.plazas.push({ id: "open-yard", rect: [110, 170, 130, 190], why: "the yard the ring encloses" });
+  }) }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /disconnected regions/);
+});
+
+test("T6: a doorway narrower than the player is NOT a doorway", () => {
+  // The same south wall, but the gap is 2 units — under the 2.6 the player
+  // radius eats from either side, so no body can pass and the yard is sealed
+  // again. This is the case an eye on a rendered map cannot judge.
+  const r = runGate(fixture({ towns: onePlan((p) => {
+    const walls = ringWalls();
+    walls.pop();
+    walls.push({ id: "court-south-west", kind: "dwelling", rect: [100, 192, 119, 200] });
+    walls.push({ id: "court-south-east", kind: "dwelling", rect: [121, 192, 140, 200] });
+    p.footprints.push(...walls);
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /walkable area is 2 disconnected regions/);
+});
+
+test("T6: a pocket severed against the town edge FAILs too", () => {
+  // Two footprints meeting at an edge, one reaching the west extent and one the
+  // south, cut the bottom-left corner off. The pocket TOUCHES the town edge, so
+  // a rule that only asked "does this region reach the extent" would wave it
+  // through — it is unreachable because no path connects it to the rest.
+  const r = runGate(fixture({ towns: onePlan((p) => {
+    p.footprints.push({ id: "corner-bar", kind: "dwelling", rect: [0, 230, 32, 238] });
+    p.footprints.push({ id: "corner-post", kind: "dwelling", rect: [32, 230, 40, 260] });
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /walkable area is 2 disconnected regions/);
+  assert.doesNotMatch(r.out, /overlap/);
+});
+
+test("T6: a degenerate extent is a T2 FAIL, not a thrown walkableGrid", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.extent.width = 0; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /extent width 0 is outside 150-260/);
+  assert.doesNotMatch(r.out, /disconnected regions/);
+  assert.doesNotMatch(r.out, /TypeError/);
+});
+
+// ---------------------------------- T7 -------------------------------------
+// Exactly one firstSight landmark, and it is reachable from the town edge.
+
+test("T7: exactly one firstSight, standing on walkable ground, passes", () => {
+  const plan = gatePlan();
+  assert.equal(plan.landmarks.filter((l) => l.firstSight === true).length, 1);
+  const r = runGate(fixture({ towns: onePlan() }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /firstSight/);
+});
+
+test("T7: zero firstSight landmarks FAILs", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { delete p.landmarks[0].firstSight; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /0 landmarks are marked firstSight, must be exactly 1/);
+});
+
+test("T7: firstSight: false counts as zero, not as a marking", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.landmarks[0].firstSight = false; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /0 landmarks are marked firstSight, must be exactly 1/);
+});
+
+test("T7: two firstSight landmarks FAIL", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.landmarks[1].firstSight = true; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /2 landmarks are marked firstSight, must be exactly 1/);
+});
+
+test("T7: a firstSight standing inside a building FAILs", () => {
+  // Inside mill-house [81, 20, 101, 40]. The plan draws an arrival marker where
+  // no body of player radius can stand.
+  const r = runGate(fixture({ towns: onePlan((p) => { p.landmarks[0].at = [91, 30]; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /firstSight landmark "mill-wheel" at \[91, 30\] stands on blocked ground/);
+  assert.doesNotMatch(r.out, /disconnected regions/);
+});
+
+test("T7: a firstSight outside the town extent FAILs", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.landmarks[0].at = [200, 30]; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /firstSight landmark "mill-wheel" at \[200, 30\] lies outside the town extent/);
+});
+
+test("T7: a firstSight sealed inside a courtyard is unreachable from the town edge", () => {
+  // The reachability branch, distinct from the count and from blocked ground:
+  // the landmark stands on perfectly walkable open ground that no traveller can
+  // ever arrive at. T6 reports the severance, T7 reports the consequence.
+  const r = runGate(fixture({ towns: onePlan((p) => {
+    sealCourtyard(p);
+    p.landmarks[0].at = [120, 180];
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /firstSight landmark "mill-wheel" at \[120, 180\] is not reachable from the town edge/);
+  assert.match(r.out, /walkable area is 2 disconnected regions/);
+});
+
+test("T7: reachability is asked of EVERY candidate, not just of a lone survivor", () => {
+  // Two firstSights, the second of them inside a building. Reporting only the
+  // count would hide the unreachable one behind it.
+  const r = runGate(fixture({ towns: onePlan((p) => {
+    p.landmarks[1].firstSight = true;
+    p.landmarks[1].at = [91, 30];
+  }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /2 landmarks are marked firstSight/);
+  assert.match(r.out, /firstSight landmark "cart-queue" at \[91, 30\] stands on blocked ground/);
 });
