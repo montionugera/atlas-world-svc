@@ -25,31 +25,45 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 //            unaffected within rounding).
 //   n-westsea: no children → 0.0%; authored interstitial → ASSERTED.
 //   the 12 region nodes: Task 1.4 gave 6 of them a town child (7th is a
-//            camp) — every one is `placement.shape: "point"` (area 0 —
-//            research §5.3 excludes points from every rollup), so coverage
-//            stays 0.0% ASSERTED for both parent and child regardless.
+//            camp) — every one was originally `placement.shape: "point"`
+//            (area 0 — research §5.3 excludes points from every rollup),
+//            so coverage stayed 0.0% ASSERTED for both parent and child.
+//            Task 3.4 (F-041 P3) landed the km→u frame on all 7 town-tier
+//            nodes: their units flip from `km` to `u`, and the six
+//            plan-less ones convert their point placement to a real
+//            2.0×1.6 km rect centred on the same anchor (millcross uses
+//            its plan-derived 2.2×1.6 km rect; rooktide's anchor sits only
+//            0.438 km from its parent's boundary, so it's quartered to
+//            0.5×0.4 km to clear G-CONTAIN). Real rect area now rolls up
+//            into the parent region's coverage: n-cindervast 0.3%,
+//            n-emberdown 0.4%, n-gildmark-head 0.5%, n-hollowmarch 0.9%,
+//            n-meltwash-terrace 0.5%, n-millcross-ford 0.5% — all still
+//            ASSERTED (well under the 60% CHECKED threshold).
+//            n-rooktide-reach's child area (0.2 km² from the quartered
+//            rect) rounds to 0.0% at one decimal place, so it is
+//            unchanged from before.
 //   the 7 town-tier nodes (6 towns + n-expedition-camp): no children →
-//            0.0% ASSERTED.
+//            0.0% ASSERTED (unchanged — they gained area, not children).
 //   n-playroot: no children, unsurveyed → 0.0% UNCHECKED.
 const EXPECTED = `n-atlas · world · km · coverage 0.7% UNCHECKED
 ├── n-cluster1 · continent · km · coverage 53.4% ASSERTED
 │   ├── n-ashvale-front · region · km · coverage 0.0% ASSERTED
-│   ├── n-cindervast · region · km · coverage 0.0% ASSERTED
-│   │   └── n-cindervast-town · town · km · coverage 0.0% ASSERTED
+│   ├── n-cindervast · region · km · coverage 0.3% ASSERTED
+│   │   └── n-cindervast-town · town · u · coverage 0.0% ASSERTED
 │   ├── n-eastern-hills · region · km · coverage 0.0% ASSERTED
-│   ├── n-emberdown · region · km · coverage 0.0% ASSERTED
-│   │   └── n-embervale · town · km · coverage 0.0% ASSERTED
-│   ├── n-gildmark-head · region · km · coverage 0.0% ASSERTED
-│   │   └── n-gildmark · town · km · coverage 0.0% ASSERTED
-│   ├── n-hollowmarch · region · km · coverage 0.0% ASSERTED
-│   │   └── n-norhollow · town · km · coverage 0.0% ASSERTED
-│   ├── n-meltwash-terrace · region · km · coverage 0.0% ASSERTED
-│   │   └── n-expedition-camp · town · km · coverage 0.0% ASSERTED
-│   ├── n-millcross-ford · region · km · coverage 0.0% ASSERTED
-│   │   └── n-millcross · town · km · coverage 0.0% ASSERTED
+│   ├── n-emberdown · region · km · coverage 0.4% ASSERTED
+│   │   └── n-embervale · town · u · coverage 0.0% ASSERTED
+│   ├── n-gildmark-head · region · km · coverage 0.5% ASSERTED
+│   │   └── n-gildmark · town · u · coverage 0.0% ASSERTED
+│   ├── n-hollowmarch · region · km · coverage 0.9% ASSERTED
+│   │   └── n-norhollow · town · u · coverage 0.0% ASSERTED
+│   ├── n-meltwash-terrace · region · km · coverage 0.5% ASSERTED
+│   │   └── n-expedition-camp · town · u · coverage 0.0% ASSERTED
+│   ├── n-millcross-ford · region · km · coverage 0.5% ASSERTED
+│   │   └── n-millcross · town · u · coverage 0.0% ASSERTED
 │   ├── n-northern-icefield · region · km · coverage 0.0% ASSERTED
 │   ├── n-rooktide-reach · region · km · coverage 0.0% ASSERTED
-│   │   └── n-rooktide · town · km · coverage 0.0% ASSERTED
+│   │   └── n-rooktide · town · u · coverage 0.0% ASSERTED
 │   ├── n-saltmire · region · km · coverage 0.0% ASSERTED
 │   └── n-thornveil · region · km · coverage 0.0% ASSERTED
 └── n-westsea · ocean · km · coverage 0.0% ASSERTED
