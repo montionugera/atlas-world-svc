@@ -82,3 +82,89 @@ test("gridIntersectionArea / gridUnionArea are exact on cell-aligned rects", () 
   const far = { shape: "rect", rect: { x: 100, y: 100, w: 2, h: 2 } };
   assert.equal(gridIntersectionArea({ a, b: far, cell: 1.0 }), 0);
 });
+
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { loadSpine, buildTree, ancestorChain, subtreeIds } from "../lib/spine.mjs";
+
+function tinyNode(id, tier, parentId, seedValue) {
+  return {
+    id, tier, parentId, title: id,
+    seed: { value: seedValue, epoch: 0, why: null },
+    placement: { shape: "rect", rect: { x: 0, y: 0, w: 10, h: 10 }, anchor: [5, 5] },
+    composition: { meadow: 100 },
+  };
+}
+
+function writeSpineRoot({ nodes, roots }) {
+  const dir = mkdtempSync(join(tmpdir(), "spine-lib-"));
+  mkdirSync(join(dir, "spine", "nodes"), { recursive: true });
+  writeFileSync(join(dir, "spine", "roots.json"), JSON.stringify(roots, null, 2) + "\n");
+  for (const n of nodes)
+    writeFileSync(join(dir, "spine", "nodes", `${n.id}.json`), JSON.stringify(n, null, 2) + "\n");
+  return dir;
+}
+
+test("loadSpine: present:false on a root with no spine/ dir", () => {
+  const dir = mkdtempSync(join(tmpdir(), "spine-lib-"));
+  const spine = loadSpine({ contentRoot: dir });
+  assert.equal(spine.present, false);
+  assert.deepEqual(spine.errors, []);
+});
+
+test("loadSpine: loads nodes sorted, retains file, reports parse errors in-band", () => {
+  const dir = writeSpineRoot({
+    nodes: [tinyNode("n-b", "world", null, "00000000000000b1"), tinyNode("n-a", "world", null, "00000000000000a1")],
+    roots: ["n-a", "n-b"],
+  });
+  writeFileSync(join(dir, "spine", "nodes", "n-broken.json"), "{ not json");
+  const spine = loadSpine({ contentRoot: dir });
+  assert.equal(spine.present, true);
+  assert.deepEqual(spine.nodes.map((n) => n.file), ["n-a.json", "n-b.json"]); // sorted, broken skipped
+  assert.deepEqual(spine.roots, ["n-a", "n-b"]);
+  assert.equal(spine.errors.length, 1);
+  assert.match(spine.errors[0], /n-broken\.json/);
+  assert.equal(spine.budgets.load, null);   // missing budget files are null, not errors (G-LOAD-BUDGET is Phase 1)
+  assert.equal(spine.budgets.coverage, null);
+});
+
+test("buildTree: happy path — depths, sorted children", () => {
+  const nodes = [
+    tinyNode("n-root", "world", null, "0000000000000001"),
+    tinyNode("n-zeta", "continent", "n-root", "0000000000000002"),
+    tinyNode("n-alpha", "continent", "n-root", "0000000000000003"),
+    tinyNode("n-deep", "region", "n-alpha", "0000000000000004"),
+  ];
+  const tree = buildTree({ nodes, rootIds: ["n-root"] });
+  assert.deepEqual(tree.errors, []);
+  assert.equal(tree.depthOf.get("n-deep"), 2);
+  assert.deepEqual(tree.childrenOf.get("n-root"), ["n-alpha", "n-zeta"]); // sorted-id order
+});
+
+test("buildTree: dangling parent, cycle, root-not-listed all reported", () => {
+  const nodes = [
+    tinyNode("n-root", "world", null, "0000000000000005"),
+    tinyNode("n-lost", "continent", "n-ghost", "0000000000000006"),
+    tinyNode("n-loop-a", "continent", "n-loop-b", "0000000000000007"),
+    tinyNode("n-loop-b", "continent", "n-loop-a", "0000000000000008"),
+    tinyNode("n-rogue", "world", null, "0000000000000009"),
+  ];
+  const tree = buildTree({ nodes, rootIds: ["n-root"] });
+  assert.ok(tree.errors.some((e) => /dangling parentId: n-lost/.test(e)), tree.errors.join("\n"));
+  assert.ok(tree.errors.some((e) => /cycle detected/.test(e)), tree.errors.join("\n"));
+  assert.ok(tree.errors.some((e) => /^root n-rogue is not listed in roots\.json$/.test(e)), tree.errors.join("\n"));
+  assert.ok(tree.errors.some((e) => /unreachable/.test(e)), tree.errors.join("\n"));
+});
+
+test("ancestorChain (self first, root last) and subtreeIds (DFS preorder, sorted)", () => {
+  const nodes = [
+    tinyNode("n-root", "world", null, "000000000000000a"),
+    tinyNode("n-mid", "continent", "n-root", "000000000000000b"),
+    tinyNode("n-leafb", "region", "n-mid", "000000000000000c"),
+    tinyNode("n-leafa", "region", "n-mid", "000000000000000d"),
+  ];
+  const tree = buildTree({ nodes, rootIds: ["n-root"] });
+  assert.deepEqual(ancestorChain({ tree, id: "n-leafa" }), ["n-leafa", "n-mid", "n-root"]);
+  assert.deepEqual(subtreeIds({ tree, id: "n-root" }), ["n-root", "n-mid", "n-leafa", "n-leafb"]);
+});

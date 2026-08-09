@@ -163,3 +163,121 @@ export function gridUnionArea({ placements, cell }) {
       if (placements.some((p) => placementContains(p, x, y))) count++;
   return count * cell * cell;
 }
+
+// ── load / join / traverse ─────────────────────────────────────────────────
+// The ONLY function in this library that touches the filesystem. Soft-skip:
+// a content root with no spine/ dir returns present:false and NO errors —
+// checkSpine() must bail before compiling any schema (every pre-existing
+// gate fixture depends on that pattern).
+export function loadSpine({ contentRoot }) {
+  const errors = [];
+  const dir = join(contentRoot, "spine");
+  const empty = { present: false, nodes: [], edges: [], sheet: null, roots: [], budgets: { load: null, coverage: null }, errors };
+  if (!existsSync(dir)) return empty;
+
+  const readJsonInBand = (path, label) => {
+    try { return JSON.parse(readFileSync(path, "utf8")); }
+    catch (e) { errors.push(`${label}: ${e.message}`); return null; }
+  };
+
+  let roots = [];
+  if (existsSync(join(dir, "roots.json"))) {
+    const doc = readJsonInBand(join(dir, "roots.json"), "spine/roots.json");
+    if (Array.isArray(doc) && doc.every((r) => typeof r === "string")) roots = doc;
+    else if (doc !== null) errors.push("spine/roots.json: expected a JSON array of node ids");
+  } else errors.push("spine/roots.json is missing");
+
+  const nodes = [];
+  const nodesDir = join(dir, "nodes");
+  if (existsSync(nodesDir)) {
+    // readdir explicitly sorted — never rely on platform order (G-ID discipline).
+    const files = readdirSync(nodesDir).filter((f) => f.endsWith(".json")).sort();
+    for (const f of files) {
+      const doc = readJsonInBand(join(nodesDir, f), `spine/nodes/${f}`);
+      if (doc === null) continue;
+      if (typeof doc !== "object" || Array.isArray(doc)) { errors.push(`spine/nodes/${f}: not a JSON object`); continue; }
+      nodes.push({ ...doc, file: f }); // `file` retained for the G-ID stem check
+    }
+  } else errors.push("spine/nodes/ is missing");
+
+  // Optional siblings: edges/sheet arrive in Phase 1, budgets are committed in
+  // Phase 0 but a MISSING budget file is null-not-error here — G-LOAD-BUDGET
+  // (Phase 1) owns failing on it.
+  const edges = existsSync(join(dir, "edges.json")) ? (readJsonInBand(join(dir, "edges.json"), "spine/edges.json") ?? []) : [];
+  const sheet = existsSync(join(dir, "sheet.json")) ? readJsonInBand(join(dir, "sheet.json"), "spine/sheet.json") : null;
+  const budgets = {
+    load: existsSync(join(dir, "load-budget.json")) ? readJsonInBand(join(dir, "load-budget.json"), "spine/load-budget.json") : null,
+    coverage: existsSync(join(dir, "coverage-budget.json")) ? readJsonInBand(join(dir, "coverage-budget.json"), "spine/coverage-budget.json") : null,
+  };
+  return { present: true, nodes, edges, sheet, roots, budgets, errors };
+}
+
+// Join the flat table on parentId. Duplicate ids are G-ID's business — the
+// FIRST occurrence wins here so one defect yields one failure, not a cascade.
+export function buildTree({ nodes, rootIds }) {
+  const errors = [];
+  const byId = new Map();
+  for (const n of nodes) if (!byId.has(n.id)) byId.set(n.id, n);
+
+  const childrenOf = new Map();
+  for (const id of byId.keys()) childrenOf.set(id, []);
+  const roots = [];
+  for (const n of byId.values()) {
+    if (n.parentId === null) {
+      roots.push(n.id);
+      if (!rootIds.includes(n.id)) errors.push(`root ${n.id} is not listed in roots.json`);
+    } else if (!byId.has(n.parentId)) {
+      errors.push(`dangling parentId: ${n.id} → ${n.parentId}`);
+    } else {
+      childrenOf.get(n.parentId).push(n.id);
+    }
+  }
+  for (const kids of childrenOf.values()) kids.sort();
+
+  const depthOf = new Map();
+  const queue = [...roots].sort();
+  for (const r of queue) depthOf.set(r, 0);
+  while (queue.length) {
+    const id = queue.shift();
+    for (const c of childrenOf.get(id)) { depthOf.set(c, depthOf.get(id) + 1); queue.push(c); }
+  }
+
+  if (depthOf.size !== byId.size) {
+    const unreached = [...byId.keys()].filter((id) => !depthOf.has(id)).sort();
+    errors.push(`${unreached.length} node(s) unreachable from any root: ${unreached.join(", ")}`);
+    // Name cycles explicitly: walk parents from each unreached node.
+    const inCycle = new Set();
+    for (const id of unreached) {
+      if (inCycle.has(id)) continue;
+      const seen = new Set();
+      let cur = id;
+      while (cur !== null && byId.has(cur) && !seen.has(cur)) { seen.add(cur); cur = byId.get(cur).parentId; }
+      if (cur !== null && seen.has(cur)) {
+        errors.push(`cycle detected through ${cur}`);
+        for (const s of seen) inCycle.add(s);
+      }
+    }
+  }
+  return { byId, childrenOf, depthOf, errors };
+}
+
+// Self first, root last. Assumes a tree that buildTree reported clean.
+export function ancestorChain({ tree, id }) {
+  const out = [];
+  let cur = id;
+  while (cur !== null && tree.byId.has(cur)) {
+    out.push(cur);
+    cur = tree.byId.get(cur).parentId;
+  }
+  return out;
+}
+
+// DFS preorder, children in sorted-id order (childrenOf is pre-sorted).
+export function subtreeIds({ tree, id }) {
+  const out = [];
+  (function dfs(cur) {
+    out.push(cur);
+    for (const c of tree.childrenOf.get(cur) ?? []) dfs(c);
+  })(id);
+  return out;
+}
