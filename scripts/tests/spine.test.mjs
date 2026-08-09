@@ -295,3 +295,73 @@ test("deriveNode: emits the full derived block with a stable digest", () => {
   assert.match(d1.digest, /^sha256:[0-9a-f]{64}$/);
   assert.match(d1.resolvedSeedStreams.terrain, /^[0-9a-f]{16}$/);
 });
+
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { streamSeed, reroll } from "../lib/spine.mjs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+
+test("streamSeed: 16 lowercase hex, deterministic, name-namespaced", () => {
+  const node = { seed: { value: "9f2c4a1b77de0351", epoch: 0, why: null } };
+  const a = streamSeed({ node, name: "terrain" });
+  assert.match(a, /^[0-9a-f]{16}$/);
+  assert.equal(a, streamSeed({ node, name: "terrain" }));       // pure
+  assert.notEqual(a, streamSeed({ node, name: "settlements" })); // namespaced
+});
+
+test("reroll: bumps epoch, records why, skips frozen, requires why (pure, mintHex injected)", () => {
+  const nodes = [
+    { id: "n-p", tier: "world", parentId: null, frozen: false, seed: { value: "1111111111111111", epoch: 0, why: null } },
+    { id: "n-c", tier: "continent", parentId: "n-p", frozen: true, seed: { value: "2222222222222222", epoch: 0, why: null } },
+    { id: "n-d", tier: "continent", parentId: "n-p", frozen: false, seed: { value: "3333333333333333", epoch: 2, why: "old" } },
+  ];
+  let i = 0;
+  const mintHex = () => ["aaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbb"][i++];
+  const res = reroll({ nodes, targetId: "n-p", subtree: true, why: "test reroll", mintHex });
+  assert.deepEqual(res.errors, []);
+  assert.deepEqual(res.skippedFrozen, ["n-c"]);
+  assert.deepEqual(res.changed, [
+    { id: "n-p", oldSeed: "1111111111111111", newSeed: "aaaaaaaaaaaaaaaa", epoch: 1 },
+    { id: "n-d", oldSeed: "3333333333333333", newSeed: "bbbbbbbbbbbbbbbb", epoch: 3 },
+  ]);
+  // nodes were NOT mutated (pure)
+  assert.equal(nodes[0].seed.value, "1111111111111111");
+  // no why → in-band error, nothing changed
+  const bad = reroll({ nodes, targetId: "n-p", subtree: false, why: "", mintHex: () => "cccccccccccccccc" });
+  assert.equal(bad.changed.length, 0);
+  assert.match(bad.errors[0], /--why/);
+  // without --subtree only the target itself
+  const solo = reroll({ nodes, targetId: "n-p", subtree: false, why: "solo", mintHex: () => "dddddddddddddddd" });
+  assert.deepEqual(solo.changed.map((c) => c.id), ["n-p"]);
+});
+
+test("reroll CLI: rewrites the target file, leaves frozen siblings untouched, refuses without --why", () => {
+  const dir = writeSpineRoot({
+    nodes: [
+      { ...tinyNode("n-w", "world", null, "4444444444444444"), frozen: false },
+      { ...tinyNode("n-k", "continent", "n-w", "5555555555555555"), frozen: true },
+    ],
+    roots: ["n-w"],
+  });
+  const cli = join(REPO, "scripts/lib/spine.mjs");
+  // refuses without --why
+  let code = 0;
+  try { execFileSync(process.execPath, [cli, "reroll", "n-w", "--content-root", dir], { encoding: "utf8" }); }
+  catch (e) { code = e.status; }
+  assert.equal(code, 2);
+  // rerolls the unfrozen root, skips the frozen child
+  const out = execFileSync(process.execPath,
+    [cli, "reroll", "n-w", "--subtree", "--why", "cli demo", "--content-root", dir], { encoding: "utf8" });
+  assert.match(out, /rerolled n-w: 4444444444444444 → [0-9a-f]{16} \(epoch 1\)/);
+  assert.match(out, /skipped frozen n-k/);
+  const w = JSON.parse(readFileSync(join(dir, "spine/nodes/n-w.json"), "utf8"));
+  assert.notEqual(w.seed.value, "4444444444444444");
+  assert.match(w.seed.value, /^[0-9a-f]{16}$/);
+  assert.equal(w.seed.epoch, 1);
+  assert.equal(w.seed.why, "cli demo");
+  const k = JSON.parse(readFileSync(join(dir, "spine/nodes/n-k.json"), "utf8"));
+  assert.equal(k.seed.value, "5555555555555555"); // frozen: untouched
+});

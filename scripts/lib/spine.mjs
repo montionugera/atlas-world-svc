@@ -407,3 +407,74 @@ export function deriveNode({ tree, id, plans }) {
 export function streamSeed({ node, name }) {
   return createHash("sha256").update(`${node.seed.value}:${name}`).digest("hex").slice(0, 16);
 }
+
+// research §6.3 — reroll is a REVIEWABLE operation, never a silent one-token
+// diff: epoch bumps, why is required, frozen nodes are skipped. Pure: mintHex
+// is injected; the CLI below owns file I/O.
+export function reroll({ nodes, targetId, subtree = false, why, mintHex }) {
+  const changed = [];
+  const skippedFrozen = [];
+  const errors = [];
+  if (typeof why !== "string" || why.trim() === "") errors.push("reroll: --why is required and must be non-empty");
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  if (!byId.has(targetId)) errors.push(`reroll: unknown node "${targetId}"`);
+  if (errors.length) return { changed, skippedFrozen, errors };
+
+  const childrenOf = new Map();
+  for (const n of nodes) {
+    if (n.parentId === null || n.parentId === undefined) continue;
+    if (!childrenOf.has(n.parentId)) childrenOf.set(n.parentId, []);
+    childrenOf.get(n.parentId).push(n.id);
+  }
+  for (const kids of childrenOf.values()) kids.sort();
+  const targets = [];
+  (function dfs(id) {
+    targets.push(id);
+    if (subtree) for (const c of childrenOf.get(id) ?? []) dfs(c);
+  })(targetId);
+
+  const used = new Set(nodes.map((n) => n.seed?.value));
+  for (const id of targets) {
+    const n = byId.get(id);
+    if (n.frozen === true) { skippedFrozen.push(id); continue; }
+    const fresh = mintHex();
+    if (!SEED_RE.test(fresh)) { errors.push(`reroll: mintHex returned "${fresh}" — not 16 lowercase hex chars`); continue; }
+    if (used.has(fresh)) { errors.push(`reroll: mintHex returned an already-used seed "${fresh}"`); continue; }
+    used.add(fresh);
+    changed.push({ id, oldSeed: n.seed.value, newSeed: fresh, epoch: n.seed.epoch + 1 });
+  }
+  return { changed, skippedFrozen, errors };
+}
+
+// ── CLI: node scripts/lib/spine.mjs reroll <id> [--subtree] --why "<reason>"
+//        [--content-root <dir>] ───────────────────────────────────────────
+// Entry-guarded — importing this module runs NOTHING (spawn-pairing pattern:
+// lib, never bare-main).
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const USAGE = 'usage: spine.mjs reroll <id> [--subtree] --why "<reason>" [--content-root <dir>]';
+  const [cmd, ...rest] = process.argv.slice(2);
+  if (cmd !== "reroll") { console.error(USAGE); process.exit(2); }
+  let targetId = null, subtree = false, why = null;
+  let contentRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../content");
+  for (let i = 0; i < rest.length; i++) {
+    const a = rest[i];
+    if (a === "--subtree") subtree = true;
+    else if (a === "--why") why = rest[++i];
+    else if (a === "--content-root") contentRoot = resolve(rest[++i]);
+    else if (targetId === null && !a.startsWith("--")) targetId = a;
+    else { console.error(`unknown arg: ${a}\n${USAGE}`); process.exit(2); }
+  }
+  if (!targetId || !why) { console.error(USAGE); process.exit(2); }
+  const spine = loadSpine({ contentRoot });
+  if (!spine.present) { console.error(`no spine/ under ${contentRoot}`); process.exit(1); }
+  const res = reroll({ nodes: spine.nodes, targetId, subtree, why, mintHex: () => randomBytes(8).toString("hex") });
+  if (res.errors.length) { for (const e of res.errors) console.error(e); process.exit(1); }
+  for (const ch of res.changed) {
+    const path = join(contentRoot, "spine/nodes", `${ch.id}.json`);
+    const doc = JSON.parse(readFileSync(path, "utf8"));
+    doc.seed = { value: ch.newSeed, epoch: ch.epoch, why };
+    writeFileSync(path, JSON.stringify(doc, null, 2) + "\n");
+    console.log(`rerolled ${ch.id}: ${ch.oldSeed} → ${ch.newSeed} (epoch ${ch.epoch})`);
+  }
+  for (const id of res.skippedFrozen) console.log(`skipped frozen ${id}`);
+}
