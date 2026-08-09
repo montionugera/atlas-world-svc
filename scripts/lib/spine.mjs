@@ -644,6 +644,89 @@ export function terrainKindErrors({ nodes }) {
   return errors;
 }
 
+// ── F-041 Phase 4: runtime-root gates ──────────────────────────────────
+// The four mapIds the server actually joins (GameRoom default + client
+// picker + the two test-map branches of getMobSpawnAreasForMap /
+// MAP_DIMENSIONS). Mirrors colyseus-server/src — verified 2026-08-09.
+export const LIVE_MAP_IDS = ["map-01-sector-a", "map-for-play", "map-for-test-deflect", "map-for-test-projectile"];
+
+export function flattenSpawnAreas({ tree }) {
+  const errors = [];
+  const areas = [];
+  for (const node of tree.byId.values()) {
+    const list = node.runtime?.spawnAreas;
+    if (!Array.isArray(list) || list.length === 0) continue;
+    // Owning map node = nearest self-or-ancestor with mapIds non-empty;
+    // accumulate this node's offset in that map's interior frame (the
+    // runtime tree is all units "u", perParentUnit 1).
+    let cur = node, ox = 0, oy = 0, mapNode = null;
+    while (cur) {
+      if (Array.isArray(cur.runtime?.mapIds) && cur.runtime.mapIds.length > 0) { mapNode = cur; break; }
+      const o = cur.interior?.originInParent;
+      if (!Array.isArray(o)) { errors.push(`G-RUNTIME: "${cur.id}" cannot flatten spawn areas — interior.originInParent missing`); break; }
+      ox += o[0]; oy += o[1];
+      cur = cur.parentId ? tree.byId.get(cur.parentId) : null;
+    }
+    if (!mapNode) {
+      errors.push(`G-RUNTIME: spawn areas on "${node.id}" have no self-or-ancestor map node (runtime.mapIds non-empty)`);
+      continue;
+    }
+    for (const a of list)
+      areas.push({ ...a, nodeId: node.id, mapNodeId: mapNode.id, mapSize: mapNode.interior.size,
+                   abs: { x: a.x + ox, y: a.y + oy, width: a.width, height: a.height } });
+  }
+  areas.sort((p, q) => (p.id < q.id ? -1 : p.id > q.id ? 1 : 0));
+  return { errors, areas };
+}
+
+export function checkRuntime({ tree, mobTypes, liveMapIds = LIVE_MAP_IDS }) {
+  const errors = [];
+  const seen = new Map(); // mapId -> nodeId
+  for (const node of tree.byId.values()) {
+    const rt = node.runtime;
+    if (rt == null) continue;
+    if (!Array.isArray(rt.mapIds)) {
+      errors.push(`G-RUNTIME: "${node.id}" runtime.mapIds must be a string[] (HC-5), got ${JSON.stringify(rt.mapIds)}`);
+      continue;
+    }
+    for (const m of rt.mapIds) {
+      if (seen.has(m)) errors.push(`G-RUNTIME: mapId "${m}" claimed by both "${seen.get(m)}" and "${node.id}"`);
+      else seen.set(m, node.id);
+    }
+    if (rt.mapIds.length > 0 && node.interior?.units !== "u")
+      errors.push(`G-RUNTIME: map node "${node.id}" interior.units must be "u", got "${node.interior?.units}"`);
+    for (const a of rt.spawnAreas ?? [])
+      if (mobTypes && !mobTypes.has(a.mobType))
+        errors.push(`G-RUNTIME: spawn area "${a.id}" on "${node.id}" mobType "${a.mobType}" not in mob-types.json`);
+    if (rt.originU != null) {
+      // Contract §3: originU = originInParent x perParentUnit ACCUMULATED
+      // to the root — the same walk flattenSpawnAreas does. Deliberately
+      // NOT composeToRoot: that is the fiction-tree transform, and its
+      // per!==1-only accumulation returns [0,0] for every node of the
+      // all-per-1 runtime tree, which would red every authored originU.
+      let ex = 0, ey = 0, cur = node, walkable = true;
+      while (cur && cur.parentId) {
+        const o = cur.interior?.originInParent;
+        const per = cur.interior?.perParentUnit ?? 1;
+        if (!Array.isArray(o)) {
+          errors.push(`G-RUNTIME: "${node.id}" originU cannot be verified — "${cur.id}" interior.originInParent missing`);
+          walkable = false; break;
+        }
+        ex = ex * per + o[0]; ey = ey * per + o[1];
+        cur = tree.byId.get(cur.parentId);
+      }
+      if (walkable && (!Array.isArray(rt.originU) || rt.originU[0] !== ex || rt.originU[1] !== ey))
+        errors.push(`G-RUNTIME: "${node.id}" runtime.originU [${rt.originU}] !== accumulated origin [${ex},${ey}] (originInParent x perParentUnit to root)`);
+    }
+  }
+  for (const live of liveMapIds)
+    if (!seen.has(live)) errors.push(`G-RUNTIME: live mapId "${live}" resolves to no spine node`);
+  for (const [m, nid] of seen)
+    if (!liveMapIds.includes(m)) errors.push(`G-RUNTIME: "${nid}" declares mapId "${m}" which is not a live server map id (LIVE_MAP_IDS)`);
+  errors.push(...flattenSpawnAreas({ tree }).errors);
+  return { errors };
+}
+
 // ── CLI: node scripts/lib/spine.mjs reroll <id> [--subtree] --why "<reason>"
 //        [--content-root <dir>] ───────────────────────────────────────────
 // Entry-guarded — importing this module runs NOTHING (spawn-pairing pattern:

@@ -97,7 +97,7 @@ test("gridIntersectionArea / gridUnionArea are exact on cell-aligned rects", () 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadSpine, buildTree, ancestorChain, subtreeIds } from "../lib/spine.mjs";
+import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS } from "../lib/spine.mjs";
 
 function tinyNode(id, tier, parentId, seedValue) {
   return {
@@ -498,4 +498,60 @@ test("terrainKindErrors: implied biome under 15% is a defect; null terrainKind i
   const unknown = terrainKindErrors({ nodes: [{ id: "n-x", terrainKind: "volcano", composition: { rock: 100 } }] });
   assert.equal(unknown.length, 1);
   assert.match(unknown[0], /is not one of/);
+});
+
+// ── F-041 Phase 4: G-RUNTIME (mapIds string[] resolve, units u, rect
+// flattening, accumulated-originU identity) ─────────────────────────────
+function runtimeTree(mutate = () => {}) {
+  const nodes = [
+    { id: "n-playroot", tier: "playroot", parentId: null,
+      interior: { units: "u", perParentUnit: 1, size: [2000, 2000], originInParent: [0, 0] },
+      runtime: { mapIds: [], originU: null, spawnAreas: [], mobSettings: null, seedDemoNPCs: false, collision: "none" } },
+    { id: "n-shelf", tier: "playspace", parentId: "n-playroot",
+      placement: { shape: "rect", rect: { x: 0, y: 0, w: 1000, h: 1000 }, anchor: [500, 500] },
+      interior: { units: "u", perParentUnit: 1, size: [1000, 1000], originInParent: [0, 0] },
+      runtime: { mapIds: ["map-01-sector-a", "map-for-play", "map-for-test-deflect", "map-for-test-projectile"],
+                 originU: [0, 0], spawnAreas: [], mobSettings: null, seedDemoNPCs: true, collision: "none" } },
+    { id: "n-site-a", tier: "site", parentId: "n-shelf",
+      placement: { shape: "rect", rect: { x: 750, y: 250, w: 250, h: 500 }, anchor: [875, 500] },
+      interior: { units: "u", perParentUnit: 1, size: [250, 500], originInParent: [750, 250] },
+      runtime: { mapIds: [], originU: [750, 250],
+                 spawnAreas: [{ id: "area_x", x: 140, y: 150, width: 95, height: 160, mobType: "bramble_drake", count: 1 }],
+                 mobSettings: null, seedDemoNPCs: false, collision: "none" } },
+  ];
+  mutate(nodes);
+  return buildTree({ nodes, rootIds: ["n-playroot"] });
+}
+
+test("flattenSpawnAreas flattens a site rect into its owning map node's frame", () => {
+  const { errors, areas } = flattenSpawnAreas({ tree: runtimeTree() });
+  assert.deepEqual(errors, []);
+  assert.equal(areas.length, 1);
+  assert.deepEqual(areas[0].abs, { x: 890, y: 400, width: 95, height: 160 });
+  assert.equal(areas[0].mapNodeId, "n-shelf");
+  assert.deepEqual(areas[0].mapSize, [1000, 1000]);
+});
+
+test("G-RUNTIME: a scalar mapIds is an HC-5 violation", () => {
+  const tree = runtimeTree((ns) => { ns[1].runtime.mapIds = "map-01-sector-a"; });
+  const { errors } = checkRuntime({ tree, mobTypes: new Set(["bramble_drake"]) });
+  assert.ok(errors.some((e) => e.includes("HC-5")), errors.join("\n"));
+});
+
+test("G-RUNTIME: originU must equal the accumulated origin in root units (NOT composeToRoot, which is [0,0] on an all-per-1 tree)", () => {
+  // the authored value [750,250] passes: it equals the originInParent walk to the root
+  const ok = checkRuntime({ tree: runtimeTree(), mobTypes: new Set(["bramble_drake"]) });
+  assert.deepEqual(ok.errors, []);
+  // one unit off fails
+  const tree = runtimeTree((ns) => { ns[2].runtime.originU = [751, 250]; });
+  const { errors } = checkRuntime({ tree, mobTypes: new Set(["bramble_drake"]) });
+  assert.ok(errors.some((e) => e.includes('G-RUNTIME: "n-site-a" runtime.originU')), errors.join("\n"));
+});
+
+test("G-RUNTIME: live map ids must all resolve, and no node may claim a non-live id", () => {
+  assert.deepEqual(LIVE_MAP_IDS, ["map-01-sector-a", "map-for-play", "map-for-test-deflect", "map-for-test-projectile"]);
+  const tree = runtimeTree((ns) => { ns[1].runtime.mapIds = ["map-01-sector-a", "map-ghost"]; });
+  const { errors } = checkRuntime({ tree, mobTypes: new Set(["bramble_drake"]) });
+  assert.ok(errors.some((e) => e.includes('live mapId "map-for-play" resolves to no spine node')));
+  assert.ok(errors.some((e) => e.includes('"map-ghost" which is not a live server map id')));
 });

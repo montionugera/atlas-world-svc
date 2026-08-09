@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, cpSync, readFileSync, readdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
@@ -583,4 +583,47 @@ test("G-TERRAINKIND walks validNodes: a schema-invalid node earns its schema FAI
   assert.equal(status, 1, out);
   assert.match(out, /FAIL {2}spine\/nodes\/n-t1\.json: schema \/ must have required property 'composition'/);
   assert.doesNotMatch(out, /G-TERRAINKIND/);
+});
+
+// ── F-041 Phase 4 helpers: overlay fixtures on the real content root ──
+// (rmSync added to the existing node:fs import; tmpdir/spawnSync added
+//  only if not already imported. FIXTURES = Phase 0's constant for
+//  scripts/tests/fixtures/spine — if your checkout's FIXTURES points one
+//  level higher, use join(FIXTURES, "spine", overlayDir) below.)
+
+// NOTE (brief bug, corrected): the brief's version of this helper omits
+// schemas/ — checkSpine compiles content/schemas/spine-node.schema.json
+// BEFORE it ever reaches the tree walk, so without it the gate exits 1 on
+// "cannot read/parse .../schemas/spine-node.schema.json: ENOENT" and the
+// G-RUNTIME line never prints (confirmed red-for-the-wrong-reason before
+// this fix). towns/ is NOT required: loadTownPlans soft-skips a missing
+// towns/ dir, so the real n-millcross town plan being absent here just
+// drops its CHECKED verdict to ASSERTED (and trips G-DERIVED-DRIFT on it),
+// which is exactly the "may also break G-DERIVED-DRIFT" noise the test
+// below already expects and does not assert against.
+function p4FixtureRoot(t, overlayDir) {
+  const tmp = mkdtempSync(join(tmpdir(), "spine-fix-"));
+  t.after(() => rmSync(tmp, { recursive: true, force: true }));
+  mkdirSync(join(tmp, "schemas"), { recursive: true });
+  cpSync(join(ROOT, "content/schemas/spine-node.schema.json"), join(tmp, "schemas/spine-node.schema.json"));
+  cpSync(join(ROOT, "content/spine"), join(tmp, "spine"), { recursive: true });
+  cpSync(join(ROOT, "content/maps"), join(tmp, "maps"), { recursive: true });
+  if (overlayDir) cpSync(join(FIXTURES, overlayDir), tmp, { recursive: true });
+  return tmp;
+}
+
+// Unique name on purpose — never shadows Task 1.6's or Task 3.6's runners.
+function runP4Gate(root, extraArgs = []) {
+  const r = spawnSync(process.execPath,
+    [join(ROOT, "scripts/check_content.mjs"), "--only=spine", "--content-root", root, ...extraArgs],
+    { encoding: "utf8" });
+  return { code: r.status, out: (r.stdout ?? "") + (r.stderr ?? "") };
+}
+
+test("G-RUNTIME goes red on an originU that is not the accumulated origin (HC-2)", (t) => {
+  const { code, out } = runP4Gate(p4FixtureRoot(t, "g-runtime-originu-mismatch"));
+  assert.equal(code, 1);
+  assert.match(out, /G-RUNTIME: "n-frontier-shelf" runtime\.originU \[1,0\]/);
+  // NOTE: the mutated copy may also break G-DERIVED-DRIFT's digest — expected;
+  // this test asserts the G-RUNTIME line specifically.
 });

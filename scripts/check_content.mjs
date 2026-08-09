@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -182,7 +182,10 @@ function main() {
   if (opts.only === "spine") {
     // Gate 1 fast path (--only=spine): structural spine gates only (~1 s),
     // not the whole content sweep. finish() still owns exit-code semantics.
-    checkSpine(opts);
+    // G-RUNTIME (F-041 P4) needs the mob-type set too, so load it here —
+    // same loader, same null-on-failure discipline as the full sweep below.
+    const mobTypes = loadMobTypes(opts.mobTypes);
+    checkSpine(opts, mobTypes);
     return finish();
   }
   const mobTypes = loadMobTypes(opts.mobTypes);
@@ -192,7 +195,7 @@ function main() {
   const placementCount = checkBestiaryPlacement(opts);
   const zoneCount = checkZoneContent(opts);
   const townCount = checkTownPlan(opts);
-  checkSpine(opts);
+  checkSpine(opts, mobTypes);
   return finish(sheetCount, mapCount, story.count, placementCount, zoneCount, townCount);
 }
 
@@ -1344,7 +1347,7 @@ function checkTownPlan(opts) {
 // G-TREE, G-DEPTH, G-POLY, G-SEED, G-COMP-SUM. Geometry/derivation gates
 // (G-CONTAIN, G-FRAME, …) land in Phase 1. Returns the valid-node count
 // (finish() starts printing it in Phase 6).
-function checkSpine(opts) {
+function checkSpine(opts, mobTypes) {
   // Soft-skip BEFORE compiling the schema: a content root with no spine/ is
   // valid (mirrors the maps/ soft-skip) and must not record a spurious
   // "schema unreadable" failure — every pre-existing gate fixture depends on
@@ -1511,6 +1514,19 @@ function checkSpine(opts) {
   // about a defect the author cannot act on. Same discipline as every gate
   // above — one identifier, one list.
   for (const e of terrainKindErrors({ nodes: validNodes })) fail(`G-TERRAINKIND: ${e}`);
+
+  // F-041 P4 — G-RUNTIME (HC-5: mapIds is string[], never a scalar).
+  // Live-map resolution only when the tree actually carries runtime map
+  // nodes — minimal fixture roots (Phase 1/3, runtime.mapIds: [] everywhere)
+  // must stay green (conflict note #5).
+  const hasMapNodes = [...tree.byId.values()].some(
+    (n) => Array.isArray(n.runtime?.mapIds) && n.runtime.mapIds.length > 0,
+  );
+  for (const e of checkRuntime({
+    tree,
+    mobTypes,
+    liveMapIds: hasMapNodes ? LIVE_MAP_IDS : [],
+  }).errors) fail(e);
 
   return validNodes.length;
 }
