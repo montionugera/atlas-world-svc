@@ -327,3 +327,19 @@ t11("G-CANON-LEG red: straight-line distance breaks the ±8% budget", () => {
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-CANON-LEG e-leg-r-c: straight-line .* vs straightKm 200 breaks ±8%/);
 });
+
+// ─── F-041 Phase 1 · Task 1.9: spine → geography emitter (G-EMIT-DRIFT) ─────
+t11("G-EMIT-DRIFT: emitted geography drifts red on a hand-edit and is green when clean", () => {
+  const dir = mkdtemp11(join11(tmp11(), "spine-geo-"));
+  cp11(join11(ROOT11, "content/spine"), join11(dir, "spine"), { recursive: true });
+  cp11(join11(ROOT11, "content/maps"), join11(dir, "maps"), { recursive: true });
+  cp11(join11(ROOT11, "content/schemas/spine-node.schema.json"),
+       join11(dir, "schemas/spine-node.schema.json"), { recursive: true });
+  assert11.equal(runEmit(dir, ["--write"]).code, 0);
+  assert11.equal(runEmit(dir, ["--check"]).code, 0);
+  const p = join11(dir, "maps/cluster1-geography.json");
+  write11(p, read11(p, "utf8").replace('"Millcross"', '"Milcros"'));
+  const r = runEmit(dir, ["--check"]);
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /spine-emit: DRIFT .*cluster1-geography\.json/);
+});

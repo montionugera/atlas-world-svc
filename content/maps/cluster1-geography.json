@@ -7,7 +7,10 @@
   "coordinateSystem": {
     "units": "km",
     "convention": "x increases EAST, y increases SOUTH (north is smaller y) — inherited unchanged from content/maps/atlas-frontier.md",
-    "extentKm": { "width": 150, "height": 190 },
+    "extentKm": {
+      "width": 150,
+      "height": 190
+    },
     "origin": "x=0 is the west edge of the sheet (open sea); y=0 is the hard parchment edge at the top (the ice). A1 §2: the land is roughly 190 km north-south and 150 km east-west.",
     "tolerance": "Positions are authored to reproduce A1 §5.1's straight-line distances within ~8%. A1 §5.3 is explicit that the world preserves topology, adjacency, ordering and terrain — NOT exact metric distance — so these coordinates are a faithful schematic, not a survey. `distances[].deltaPct` records the residual for every canon-bearing leg."
   },
@@ -506,7 +509,11 @@
       "days": 3,
       "daysLabel": "3 d to Gildmark",
       "roadKm": 43,
-      "throughRoute": { "to": "gildmark", "roadKm": 95, "days": 3 },
+      "throughRoute": {
+        "to": "gildmark",
+        "roadKm": 95,
+        "days": 3
+      },
       "labelAtIndex": 2,
       "note": "A1 §5.1: the east-rim track joins the spur near Emberdown; the 3-day count is for the whole Norhollow → Gildmark run (~95 km), of which this leg is the eastern ~43 km.",
       "points": [
@@ -634,31 +641,7 @@
       {
         "id": "trunk-chain",
         "note": "Gildmark → Embervale → Millcross → Rooktide, the length of the coastal spur, the trade road and the river road",
-        "towerIds": [
-          "tower-01",
-          "tower-02",
-          "tower-03",
-          "tower-04",
-          "tower-05",
-          "tower-06",
-          "tower-07",
-          "tower-08",
-          "tower-09",
-          "tower-10",
-          "tower-11",
-          "tower-12",
-          "tower-13",
-          "tower-14",
-          "tower-15",
-          "tower-16",
-          "tower-17",
-          "tower-18",
-          "tower-19",
-          "tower-20",
-          "tower-21",
-          "tower-22",
-          "tower-23"
-        ]
+        "towerIds": ["tower-01", "tower-02", "tower-03", "tower-04", "tower-05", "tower-06", "tower-07", "tower-08", "tower-09", "tower-10", "tower-11", "tower-12", "tower-13", "tower-14", "tower-15", "tower-16", "tower-17", "tower-18", "tower-19", "tower-20", "tower-21", "tower-22", "tower-23"]
       },
       {
         "id": "flat-chain",
@@ -667,33 +650,119 @@
       }
     ],
     "towers": [
-      { "id": "tower-01", "at": [11, 157], "town": "gildmark" },
-      { "id": "tower-02", "at": [16.2, 150.8] },
-      { "id": "tower-03", "at": [19.6, 143.8] },
-      { "id": "tower-04", "at": [22.8, 136.6] },
-      { "id": "tower-05", "at": [27.3, 130] },
-      { "id": "tower-06", "at": [29.4, 122.2] },
-      { "id": "tower-07", "at": [33.5, 115.4] },
-      { "id": "tower-08", "at": [37.1, 108.4] },
-      { "id": "tower-09", "at": [39.7, 100.8] },
-      { "id": "tower-10", "at": [44, 94], "town": "embervale" },
-      { "id": "tower-11", "at": [51.6, 96.8] },
-      { "id": "tower-12", "at": [58.9, 100.5] },
-      { "id": "tower-13", "at": [65.9, 104.6] },
-      { "id": "tower-14", "at": [72, 110] },
-      { "id": "tower-15", "at": [79.7, 112.9] },
-      { "id": "tower-16", "at": [86, 118], "town": "millcross" },
-      { "id": "tower-17", "at": [90.7, 125.1] },
-      { "id": "tower-18", "at": [93.1, 133.2] },
-      { "id": "tower-19", "at": [93.7, 141.6] },
-      { "id": "tower-20", "at": [93, 150.1] },
-      { "id": "tower-21", "at": [90.9, 158.4] },
-      { "id": "tower-22", "at": [87.8, 166.4] },
-      { "id": "tower-23", "at": [84, 174], "town": "rooktide" },
-      { "id": "tower-24", "at": [51.3, 91.2] },
-      { "id": "tower-25", "at": [59.1, 90.1] },
-      { "id": "tower-26", "at": [66.9, 90.9] },
-      { "id": "tower-27", "at": [74, 94], "town": "norhollow" }
+      {
+        "id": "tower-01",
+        "at": [11, 157],
+        "town": "gildmark"
+      },
+      {
+        "id": "tower-02",
+        "at": [16.2, 150.8]
+      },
+      {
+        "id": "tower-03",
+        "at": [19.6, 143.8]
+      },
+      {
+        "id": "tower-04",
+        "at": [22.8, 136.6]
+      },
+      {
+        "id": "tower-05",
+        "at": [27.3, 130]
+      },
+      {
+        "id": "tower-06",
+        "at": [29.4, 122.2]
+      },
+      {
+        "id": "tower-07",
+        "at": [33.5, 115.4]
+      },
+      {
+        "id": "tower-08",
+        "at": [37.1, 108.4]
+      },
+      {
+        "id": "tower-09",
+        "at": [39.7, 100.8]
+      },
+      {
+        "id": "tower-10",
+        "at": [44, 94],
+        "town": "embervale"
+      },
+      {
+        "id": "tower-11",
+        "at": [51.6, 96.8]
+      },
+      {
+        "id": "tower-12",
+        "at": [58.9, 100.5]
+      },
+      {
+        "id": "tower-13",
+        "at": [65.9, 104.6]
+      },
+      {
+        "id": "tower-14",
+        "at": [72, 110]
+      },
+      {
+        "id": "tower-15",
+        "at": [79.7, 112.9]
+      },
+      {
+        "id": "tower-16",
+        "at": [86, 118],
+        "town": "millcross"
+      },
+      {
+        "id": "tower-17",
+        "at": [90.7, 125.1]
+      },
+      {
+        "id": "tower-18",
+        "at": [93.1, 133.2]
+      },
+      {
+        "id": "tower-19",
+        "at": [93.7, 141.6]
+      },
+      {
+        "id": "tower-20",
+        "at": [93, 150.1]
+      },
+      {
+        "id": "tower-21",
+        "at": [90.9, 158.4]
+      },
+      {
+        "id": "tower-22",
+        "at": [87.8, 166.4]
+      },
+      {
+        "id": "tower-23",
+        "at": [84, 174],
+        "town": "rooktide"
+      },
+      {
+        "id": "tower-24",
+        "at": [51.3, 91.2]
+      },
+      {
+        "id": "tower-25",
+        "at": [59.1, 90.1]
+      },
+      {
+        "id": "tower-26",
+        "at": [66.9, 90.9]
+      },
+      {
+        "id": "tower-27",
+        "at": [74, 94],
+        "town": "norhollow"
+      }
     ],
     "detachedTowers": [
       {
@@ -772,15 +841,10 @@
     "hand": "A1 §7: a world map is an artifact made by someone, for a purpose. This one is drawn by the institution that owns the towers, maintained because the towers must be maintained, and copied for anyone who asks.",
     "noScaleBar": true,
     "scaleBarNote": "A1 §7.1: the map has no scale bar; it has a walking table.",
-    "northMark": { "at": [136, 172], "label": "N" },
-    "withheld": [
-      "the far-mirror stations",
-      "which ground is buried and which is not",
-      "Cindervast's interior",
-      "the icefield beyond the shelf lip",
-      "the pass behind Cindervast",
-      "the sea beyond a day's sail",
-      "villages — there are none named anywhere in the corpus"
-    ]
+    "northMark": {
+      "at": [136, 172],
+      "label": "N"
+    },
+    "withheld": ["the far-mirror stations", "which ground is buried and which is not", "Cindervast's interior", "the icefield beyond the shelf lip", "the pass behind Cindervast", "the sea beyond a day's sail", "villages — there are none named anywhere in the corpus"]
   }
 }
