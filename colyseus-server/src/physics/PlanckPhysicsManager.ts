@@ -6,6 +6,18 @@ import { NPC } from '../schemas/NPC'
 import { Projectile } from '../schemas/Projectile'
 import { eventBus, RoomEventType, DamageProducedData } from '../events/EventBus'
 
+/** Options for {@link PlanckPhysicsManager.createStaticBox}. All values are world units. */
+export interface CreateStaticBoxOptions {
+  /** Identifier stored alongside the body as `{ type: 'townStatic', id }`. */
+  id: string
+  /** Body centre in world coordinates (not a corner). */
+  center: { x: number; y: number }
+  /** Half the box's full width. */
+  halfWidth: number
+  /** Half the box's full height. */
+  halfHeight: number
+}
+
 export class PlanckPhysicsManager {
   private world: planck.World
   private bodies: Map<string, planck.Body> = new Map()
@@ -87,6 +99,36 @@ export class PlanckPhysicsManager {
       // Store entity data
       this.entityDataByBody.set(wall, { type: 'boundary', id: wallName })
     })
+  }
+
+  /**
+   * Create an axis-aligned static box in world units.
+   *
+   * Exists on the manager because `world` is private: callers that need a static
+   * obstacle (town building footprints, F-040) cannot reach the planck world. Mirrors
+   * `createWorldBoundaries`' static-body + `entityDataByBody` registration.
+   *
+   * Unlike the boundary walls this uses `restitution: 0` — walls deliberately bounce
+   * entities back into the arena, whereas an obstacle inside the play area should be
+   * slid along, not bounced off.
+   */
+  createStaticBox(options: CreateStaticBoxOptions): planck.Body {
+    const { id, center, halfWidth, halfHeight } = options
+
+    const body = this.world.createBody({
+      type: 'static',
+      position: planck.Vec2(center.x, center.y),
+    })
+
+    body.createFixture({
+      shape: planck.Box(halfWidth, halfHeight),
+      isSensor: false,
+      restitution: 0,
+    })
+
+    this.entityDataByBody.set(body, { type: 'townStatic', id })
+
+    return body
   }
 
   // Set up collision event handlers
