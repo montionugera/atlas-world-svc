@@ -210,6 +210,14 @@ test("the design's own §2 example validates", () => {
   assert.ok(validate(doc), JSON.stringify(validate.errors, null, 2));
 });
 
+test("schema accepts a root spineId — the F-041 foreign key to content/spine/nodes/", () => {
+  const validate = compile();
+  assert.ok(
+    validate({ ...townPlan(), spineId: "n-millcross" }),
+    JSON.stringify(validate.errors, null, 2)
+  );
+});
+
 test("water and plazas are optional", () => {
   const validate = compile();
   const doc = townPlan();
