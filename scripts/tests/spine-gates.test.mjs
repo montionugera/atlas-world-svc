@@ -277,3 +277,53 @@ t11("G-PROVENANCE red: generated node without a generator pin", () => {
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-PROVENANCE n-r: authored "generated" requires generator \{name, version\}/);
 });
+
+// F-041 Phase 1 Task 1.8: G-FROZEN, then G-NET + G-CANON-LEG.
+t11("G-FROZEN red: frozen node under an unfrozen ancestor", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-frozen-unfrozen-ancestor" }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-FROZEN n-r: frozen but ancestor n-c is not/);
+});
+t11("G-FROZEN red: absoluteAnchor drifted from the composed transform", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-frozen-unfrozen-ancestor", mutate: (dir) => {
+    for (const id of ["n-w", "n-c"]) {  // freeze the chain properly first…
+      const p = join11(dir, `spine/nodes/${id}.json`);
+      const doc = JSON.parse(read11(p, "utf8"));
+      doc.frozen = true; doc.absoluteAnchor = doc.placement.anchor;
+      write11(p, JSON.stringify(doc, null, 2) + "\n");
+    }
+    const p = join11(dir, "spine/nodes/n-r.json");   // …then poison the leaf's pin
+    const doc = JSON.parse(read11(p, "utf8"));
+    doc.absoluteAnchor = [1, 1];
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+  } }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-FROZEN n-r: absoluteAnchor \[1, 1\] != composed \[30, 30\]/);
+});
+t11("G-NET red: edge endpoint does not resolve", () => {
+  const r = runSpineGate(spineFixture({ mutate: (dir) => {
+    write11(join11(dir, "spine/edges.json"), JSON.stringify([
+      { id: "e-bad", kind: "road", from: { node: "n-r" }, to: { node: "n-ghost" },
+        points: [[30, 30], [50, 50]], attrs: {} },
+    ], null, 2) + "\n");
+  } }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-NET e-bad: endpoint node "n-ghost" does not resolve/);
+});
+t11("G-CANON-LEG red: straight-line distance breaks the ±8% budget", () => {
+  const r = runSpineGate(spineFixture({ mutate: (dir) => {
+    for (const id of ["n-w", "n-c", "n-r"]) {
+      const p = join11(dir, `spine/nodes/${id}.json`);
+      const doc = JSON.parse(read11(p, "utf8"));
+      doc.frozen = true;
+      doc.absoluteAnchor = id === "n-r" ? [30, 30] : [50, 50];
+      write11(p, JSON.stringify(doc, null, 2) + "\n");
+    }
+    write11(join11(dir, "spine/edges.json"), JSON.stringify([
+      { id: "e-leg-r-c", kind: "leg", from: { node: "n-r" }, to: { node: "n-c" },
+        attrs: { canonDays: "x", roadKm: 300, straightKm: 200 } },
+    ], null, 2) + "\n");
+  } }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-CANON-LEG e-leg-r-c: straight-line .* vs straightKm 200 breaks ±8%/);
+});

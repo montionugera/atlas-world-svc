@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, KM_TO_U } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, KM_TO_U } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1443,6 +1443,13 @@ function checkSpine(opts) {
   // validNodes discipline as gSpineGeometry above.
   gSpineFrames({ nodes: validNodes, tree, fail });
 
+  // F-041 Phase 1 Task 1.8: G-FROZEN lands BEFORE G-NET/G-CANON-LEG — the
+  // leg gate's both-endpoints-frozen dependency means nothing without it.
+  // Same validNodes discipline; edges have no schema so spine.edges is
+  // passed through as-is (nothing to filter against).
+  gSpineFrozen({ nodes: validNodes, tree, fail });
+  gSpineNet({ nodes: validNodes, edges: spine.edges, tree, fail });
+
   return validNodes.length;
 }
 
@@ -1573,6 +1580,117 @@ function gSpineFrames({ nodes, tree, fail }) {
     const p = node.provenance;
     if (p && p.authored === "generated" && (!p.generator || typeof p.generator.name !== "string" || typeof p.generator.version !== "string"))
       fail(`spine: G-PROVENANCE ${node.id}: authored "generated" requires generator {name, version}`);
+  }
+}
+
+// F-041 Phase 1 Task 1.8: G-FROZEN — transitive freeze + byte-checked
+// absoluteAnchor. A node's composed anchor is its placement.anchor (which
+// lives in the PARENT's interior frame — same frame-continuation rule
+// gSpineGeometry's G-CONTAIN relies on) resolved up through the parent's own
+// chain to root; a root's composed anchor is its own anchor (no parent frame
+// to resolve through).
+function composedAnchor({ tree, node }) {
+  return node.parentId === null
+    ? node.placement.anchor
+    : resolveToRoot({ tree, id: node.parentId, point: node.placement.anchor });
+}
+// Walks the SCHEMA-VALIDATED node list (validNodes), same discipline as
+// gSpineGeometry/gSpineFrames. composedAnchor() resolves through
+// composeToRoot(), which — like deriveNode()'s composeToRoot call in
+// gSpineFrames — has no cycle detection and LOOPS FOREVER on a cyclic
+// parentId chain. Guarded the same way Task 1.7 established: only nodes
+// BFS-reached from a root (tree.depthOf.has(id)) are safe to recompute; a
+// cyclic/orphan island already carries its own G-TREE failure.
+function gSpineFrozen({ nodes, tree, fail }) {
+  const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  for (const node of nodes) {
+    if (!node.frozen) {
+      if (node.absoluteAnchor !== undefined)
+        fail(`spine: G-FROZEN ${node.id}: absoluteAnchor on an unfrozen node`);
+      continue;
+    }
+    if (node.parentId) {
+      const parent = tree.byId.get(node.parentId);
+      if (parent && !parent.frozen) fail(`spine: G-FROZEN ${node.id}: frozen but ancestor ${parent.id} is not`);
+    }
+    if (node.absoluteAnchor === undefined) {
+      fail(`spine: G-FROZEN ${node.id}: frozen without absoluteAnchor`);
+      continue;
+    }
+    if (!tree.depthOf.has(node.id)) continue; // cyclic/orphan — already a G-TREE failure, don't hang
+    const composed = composedAnchor({ tree, node });
+    if (!eq(node.absoluteAnchor, composed))
+      fail(`spine: G-FROZEN ${node.id}: absoluteAnchor [${node.absoluteAnchor.join(", ")}] != composed [${composed.join(", ")}]`);
+  }
+}
+
+// F-041 Phase 1 Task 1.8: G-NET (endpoint resolution + road-end proximity)
+// and G-CANON-LEG (±8% straight-line + frozen endpoints + relay hop ≤ 10).
+// `edges` is spine.edges — edges have no schema to validate against, unlike
+// nodes, so there is no "validEdges" list to filter through.
+function gSpineNet({ nodes, edges, tree, fail }) {
+  const featOwner = new Map(); // feature id -> owning node
+  for (const n of nodes) for (const f of n.features ?? []) featOwner.set(f.id, n);
+  const edgeById = new Map(edges.map((e) => [e.id, e]));
+  if (edgeById.size !== edges.length) fail(`spine: G-NET duplicate edge ids`);
+  const rootPoint = (ref, label) => {
+    if (ref.node) {
+      const n = tree.byId.get(ref.node);
+      if (!n) { fail(`spine: G-NET ${label}: endpoint node "${ref.node}" does not resolve`); return null; }
+      if (!tree.depthOf.has(n.id)) return null; // cyclic/orphan — already a G-TREE failure
+      return composedAnchor({ tree, node: n });
+    }
+    if (ref.feature) {
+      const owner = featOwner.get(ref.feature);
+      if (!owner) { fail(`spine: G-NET ${label}: endpoint feature "${ref.feature}" does not resolve`); return null; }
+      const f = owner.features.find((x) => x.id === ref.feature);
+      if (f.offSheet) return "offsheet";
+      if (!tree.depthOf.has(owner.id)) return null; // cyclic/orphan — already a G-TREE failure
+      return resolveToRoot({ tree, id: owner.id, point: f.at ?? f.points[0] });
+    }
+    if (ref.edge !== undefined) {
+      const target = edgeById.get(ref.edge);
+      if (!target) { fail(`spine: G-NET ${label}: endpoint edge "${ref.edge}" does not resolve`); return null; }
+      if (!Number.isInteger(ref.atIndex) || !target.points?.[ref.atIndex])
+        fail(`spine: G-NET ${label}: atIndex ${ref.atIndex} out of range on ${ref.edge}`);
+      return "edge-ref"; // proximity rule skipped by contract
+    }
+    fail(`spine: G-NET ${label}: endpoint is not {node}|{feature}|{edge, atIndex}`);
+    return null;
+  };
+  for (const e of edges) {
+    const ends = [rootPoint(e.from, e.id), rootPoint(e.to, e.id)];
+    for (const v of e.via ?? []) rootPoint(v, e.id);
+    if (e.kind === "road" && e.points?.length) {
+      // Edge points are authored in sheet km == root km under the per=1
+      // identity frame rule; road ends must sit within 1 root unit.
+      const tips = [e.points[0], e.points[e.points.length - 1]];
+      ends.forEach((end, i) => {
+        if (!Array.isArray(end)) return; // unresolved / offsheet / edge-ref
+        const d = Math.hypot(tips[i][0] - end[0], tips[i][1] - end[1]);
+        if (d > 1) fail(`spine: G-NET ${e.id}: road end [${tips[i].join(", ")}] is ${d.toFixed(2)} from its endpoint anchor`);
+      });
+    }
+    if (e.kind === "leg") {
+      for (const ref of [e.from, e.to]) {
+        const n = ref.node && tree.byId.get(ref.node);
+        if (n && !n.frozen) fail(`spine: G-CANON-LEG ${e.id}: endpoint ${n.id} is not frozen`);
+      }
+      if (Array.isArray(ends[0]) && Array.isArray(ends[1])) {
+        const d = Math.hypot(ends[0][0] - ends[1][0], ends[0][1] - ends[1][1]);
+        const s = e.attrs.straightKm;
+        if (Math.abs(d - s) / s > 0.08)
+          fail(`spine: G-CANON-LEG ${e.id}: straight-line ${d.toFixed(1)} vs straightKm ${s} breaks ±8%`);
+      }
+    }
+    if (e.kind === "relay") {
+      const chain = [e.from, ...(e.via ?? []), e.to].map((r) => rootPoint(r, e.id));
+      for (let i = 1; i < chain.length; i++) {
+        if (!Array.isArray(chain[i - 1]) || !Array.isArray(chain[i])) continue;
+        const hop = Math.hypot(chain[i][0] - chain[i - 1][0], chain[i][1] - chain[i - 1][1]);
+        if (hop > 10) fail(`spine: G-CANON-LEG ${e.id}: relay hop ${i} is ${hop.toFixed(1)} km > 10`);
+      }
+    }
   }
 }
 
