@@ -97,7 +97,7 @@ test("gridIntersectionArea / gridUnionArea are exact on cell-aligned rects", () 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, TRUNK_TIERS, checkSpineComplete, parseRuntimeSpawnRects, spawnGeometryReportLines } from "../lib/spine.mjs";
+import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, TRUNK_TIERS, checkSpineComplete, parseRuntimeSpawnRects, spawnGeometryReportLines, renderFrontierFile, FRONTIER_DOC } from "../lib/spine.mjs";
 
 function tinyNode(id, tier, parentId, seedValue) {
   return {
@@ -631,4 +631,15 @@ test("spawn geometry report prints authored and runtime rects side by side, dash
   const lines = spawnGeometryReportLines({ areas, runtimeRects });
   assert.ok(lines.includes("spawn-geometry: thornveil_interior authored=(890,400 95x160) runtime=(820,420 150x150)"));
   assert.ok(lines.includes("spawn-geometry: boss_area authored=— runtime=(450,450 100x100)"));
+});
+
+// ── atlas-frontier.md emitter (G-EMIT-DRIFT mirror #2) ─────────────────────
+test("frontier emitter reproduces content/maps/atlas-frontier.md byte-exactly from the spine", () => {
+  const contentRoot = new URL("../../content", import.meta.url).pathname;
+  const spine = loadSpine({ contentRoot });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  const current = readFileSync(`${contentRoot}/maps/atlas-frontier.md`, "utf8");
+  const { text, errors } = renderFrontierFile({ tree, currentText: current });
+  assert.deepEqual(errors, []);
+  assert.equal(text, current);
 });

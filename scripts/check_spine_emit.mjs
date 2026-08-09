@@ -15,7 +15,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pathToFileURL } from "node:url";
-import { loadSpine, buildTree, deriveInterior, deriveNode, resolveToRoot, readTownPlans, planForNode } from "./lib/spine.mjs";
+import { loadSpine, buildTree, deriveInterior, deriveNode, resolveToRoot, readTownPlans, planForNode, renderFrontierFile } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -188,6 +188,26 @@ export function collectOutputs({ contentRoot }) {
   }
   if (tree.byId.has("n-cluster1")) {
     outputs.push({ path: join(contentRoot, "maps/cluster1-geography.json"), bytes: emitGeography({ spine, tree }) });
+  }
+  // F-041 P4 mirror #2: the runtime map's frontmatter (body preserved
+  // verbatim). Guard + contentRoot keying mirror the n-cluster1 geography
+  // push above — fixture roots without the runtime subtree skip it, and
+  // --write on a fixture root can only touch the fixture's own copy. Unlike
+  // the geography mirror (a pure computed emit), this one PRESERVES the
+  // body of the existing file, so it also needs the file to exist — several
+  // spine-gates.test.mjs fixtures (realSpineCopy, spineFixture's `base` +
+  // overlays) copy content/spine wholesale but never content/maps, so
+  // n-frontier-shelf can be present with no maps/atlas-frontier.md on disk;
+  // that is a fixture-completeness gap, not drift, so it's skipped too.
+  if (tree.byId.has("n-frontier-shelf")) {
+    const frontierPath = join(contentRoot, "maps/atlas-frontier.md");
+    let currentText = null;
+    try { currentText = readFileSync(frontierPath, "utf8"); } catch { /* fixture root has no maps/ — skip */ }
+    if (currentText != null) {
+      const fr = renderFrontierFile({ tree, currentText });
+      if (fr.errors.length) return { errors: fr.errors };
+      outputs.push({ path: frontierPath, bytes: fr.text });
+    }
   }
   return { outputs, spine, tree };
 }

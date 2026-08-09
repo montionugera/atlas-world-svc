@@ -865,6 +865,76 @@ export function spawnGeometryReportLines({ areas, runtimeRects }) {
   return ids.map((id) => `spawn-geometry: ${id} authored=${fmt(byId.get(id))} runtime=${fmt(runtimeRects.get(id))}`);
 }
 
+// ── atlas-frontier.md emitter (G-EMIT-DRIFT mirror #2) ─────────────────────
+export const FRONTIER_DOC = {
+  file: "maps/atlas-frontier.md",
+  nodeId: "n-frontier-shelf",
+  docId: "atlas-frontier",
+  // Emit order is a committed, reviewable constant (the flat table has no
+  // intrinsic order and the mirror's row order is meaningful history).
+  siteOrder: ["n-site-spawn-meadow", "n-site-icefield", "n-site-thornveil"],
+};
+
+export function renderFrontierFrontmatter({ tree, doc = FRONTIER_DOC }) {
+  const errors = [];
+  const map = tree.byId.get(doc.nodeId);
+  if (!map) return { text: null, errors: [`emit-frontier: node "${doc.nodeId}" not found`] };
+  const regionIdOf = (siteId) => "region-" + siteId.replace(/^n-site-/, "");
+  const sites = [];
+  for (const id of doc.siteOrder) {
+    const s = tree.byId.get(id);
+    if (s) sites.push(s);
+    else errors.push(`emit-frontier: site "${id}" not found`);
+  }
+  const L = ["---", `id: ${doc.docId}`, `title: "${map.title}"`,
+             "world:", `  width: ${map.interior.size[0]}`, `  height: ${map.interior.size[1]}`];
+  const ps = (map.features ?? []).find((f) => f.attrs?.role === "playerSpawn");
+  if (!ps) errors.push(`emit-frontier: "${doc.nodeId}" has no playerSpawn feature`);
+  else L.push("playerSpawn:", `  x: ${ps.at[0]}`, `  y: ${ps.at[1]}`);
+  L.push("regions:");
+  for (const s of sites) {
+    const r = s.placement.rect;
+    const sp = (s.features ?? []).find((f) => f.attrs?.role === "spawnPoint");
+    L.push(`  - id: ${regionIdOf(s.id)}`, `    title: "${s.title}"`,
+           `    bounds: { x: ${r.x}, y: ${r.y}, width: ${r.w}, height: ${r.h} }`);
+    // Feature `at` coordinates are already root-frame (FRAME RULE: a
+    // perParentUnit === 1 interior continues its parent's grid unchanged),
+    // unlike runtime.spawnAreas below which are genuinely site-local — do
+    // NOT add the site rect origin here, it would double-count it.
+    if (sp) L.push(`    spawnPoint: { x: ${sp.at[0]}, y: ${sp.at[1]} }`);
+    else errors.push(`emit-frontier: site "${s.id}" has no spawnPoint feature`);
+  }
+  L.push("zoneHazards:");
+  for (const s of sites) {
+    for (const f of s.features ?? []) {
+      const h = f.attrs?.hazard;
+      if (!h) continue;
+      const cast = h.castTime !== undefined ? `, castTime: ${h.castTime}` : "";
+      L.push(`  - { type: ${h.type}, x: ${f.at[0]}, y: ${f.at[1]}, radius: ${h.radius}, value: ${h.value}, interval: ${h.interval}, duration: ${h.duration}${cast}, regionId: ${regionIdOf(s.id)} }`);
+    }
+  }
+  L.push("mobSpawnAreas:");
+  for (const s of sites) {
+    const r = s.placement.rect;
+    for (const a of s.runtime?.spawnAreas ?? []) {
+      const iv = a.spawnIntervalMs !== undefined ? `, spawnIntervalMs: ${a.spawnIntervalMs}` : "";
+      L.push(`  - { id: ${a.id}, x: ${a.x + r.x}, y: ${a.y + r.y}, width: ${a.width}, height: ${a.height}, mobType: ${a.mobType}, count: ${a.count}${iv}, regionId: ${regionIdOf(s.id)} }`);
+    }
+  }
+  L.push("links:");
+  for (const s of sites) L.push(`  - ${regionIdOf(s.id)}`);
+  L.push("---");
+  return { text: L.join("\n") + "\n", errors };
+}
+
+export function renderFrontierFile({ tree, currentText, doc = FRONTIER_DOC }) {
+  const fm = renderFrontierFrontmatter({ tree, doc });
+  if (fm.text == null || fm.errors.length) return fm;
+  const close = currentText.indexOf("\n---\n", 4);
+  if (close === -1) return { text: null, errors: ["emit-frontier: current file has no closing frontmatter fence — body cannot be preserved"] };
+  return { text: fm.text + currentText.slice(close + 5), errors: [] };
+}
+
 // ── CLI: node scripts/lib/spine.mjs reroll <id> [--subtree] --why "<reason>"
 //        [--content-root <dir>] ───────────────────────────────────────────
 // Entry-guarded — importing this module runs NOTHING (spawn-pairing pattern:
