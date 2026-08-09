@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, KM_TO_U } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1439,6 +1439,10 @@ function checkSpine(opts) {
   // `placement` here would crash instead of reporting.
   gSpineGeometry({ nodes: validNodes, tree, fail });
 
+  // F-041 Phase 1: G-FRAME, G-SCALE, G-DERIVED-DRIFT, G-PROVENANCE. Same
+  // validNodes discipline as gSpineGeometry above.
+  gSpineFrames({ nodes: validNodes, tree, fail });
+
   return validNodes.length;
 }
 
@@ -1516,6 +1520,59 @@ function gSpineGeometry({ nodes, tree, fail }) {
         }
       }
     }
+  }
+}
+
+// F-041 Phase 1: G-FRAME, G-SCALE, G-DERIVED-DRIFT, G-PROVENANCE. Walks the
+// SCHEMA-VALIDATED node list (validNodes), never raw spine.nodes — the
+// same discipline gSpineGeometry follows above, and the fix Task 1.6
+// established for this exact class of bug.
+//
+// Two guards beyond a literal transcription of the brief, both required to
+// avoid crashing/hanging the PRE-EXISTING Phase-0 structural-gate fixtures
+// (g-id-duplicate-id, g-tree-cycle, etc.), whose nodes predate F-041 and
+// carry no `interior`/`provenance`/`derived` at all:
+//   - `interior`/`provenance` are schema-OPTIONAL — bare `node.interior.x`
+//     would TypeError on those fixtures; guarded with `if (node.interior)`
+//     / `if (p)` instead.
+//   - G-DERIVED-DRIFT's deriveNode() resolves absoluteAnchorRoot via
+//     composeToRoot(), which walks the FULL ancestor chain to root and
+//     LOOPS FOREVER on a cyclic parentId chain (g-tree-cycle fixture) —
+//     already a G-TREE failure on its own. Guarded on tree.depthOf.has(id):
+//     only nodes BFS-reached from a root (i.e. acyclic) are safe to
+//     recompute — mirrors check_spine_emit.mjs's own bail-before-derive on
+//     tree.errors.
+function gSpineFrames({ nodes, tree, fail }) {
+  const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  for (const node of nodes) {
+    // G-FRAME: interior.size/originInParent derived from bbox(placement)
+    // (§3.2 town reversal activates in Phase 3 when plans join via spineId).
+    if (node.interior) {
+      const d = deriveInterior({ node, plan: null });
+      if (!eq(node.interior.originInParent, d.originInParent))
+        fail(`spine: G-FRAME ${node.id}: interior.originInParent [${node.interior.originInParent.join(", ")}] != derived [${d.originInParent.join(", ")}]`);
+      if (!eq(node.interior.size, d.size))
+        fail(`spine: G-FRAME ${node.id}: interior.size [${node.interior.size.join(", ")}] != derived [${d.size.join(", ")}]`);
+      // G-SCALE: units differ from parent ⇒ perParentUnit ≠ 1, drawn from the
+      // pinned constant. NO area identity — HC-3.
+      if (node.parentId) {
+        const parent = tree.byId.get(node.parentId);
+        if (parent && parent.interior && node.interior.units !== parent.interior.units) {
+          if (node.interior.perParentUnit === 1)
+            fail(`spine: G-SCALE ${node.id}: units ${node.interior.units} under ${parent.interior.units} parent but perParentUnit 1`);
+          else if (node.interior.perParentUnit !== KM_TO_U)
+            fail(`spine: G-SCALE ${node.id}: perParentUnit ${node.interior.perParentUnit} is not the pinned km→u constant ${KM_TO_U}`);
+        }
+      }
+    }
+    // G-DERIVED-DRIFT: recomputation reproduces the committed block.
+    if (tree.depthOf.has(node.id) && !eq(node.derived, deriveNode({ tree, id: node.id, plans: {} })))
+      fail(`spine: G-DERIVED-DRIFT ${node.id}: committed derived block does not match recomputation`);
+    // G-PROVENANCE: generated ⇒ pinned generator. (Reproduce-check activates
+    // with the first real generator; none exists in 1.8.)
+    const p = node.provenance;
+    if (p && p.authored === "generated" && (!p.generator || typeof p.generator.name !== "string" || typeof p.generator.version !== "string"))
+      fail(`spine: G-PROVENANCE ${node.id}: authored "generated" requires generator {name, version}`);
   }
 }
 

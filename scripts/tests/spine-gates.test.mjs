@@ -244,3 +244,36 @@ t11("G-SCHEMA-MISSING-PLACEMENT: a node missing placement FAILs cleanly, no cras
   assert11.match(r.out, /FAIL {2}spine\/nodes\/n-r\.json: schema .*placement/);
   assert11.doesNotMatch(r.out, /TypeError/);
 });
+
+// ─── F-041 Phase 1 · Task 1.7: G-FRAME + G-SCALE + G-DERIVED-DRIFT +
+// G-PROVENANCE ──────────────────────────────────────────────────────────────
+t11("G-FRAME red: hand-edited originInParent", () => {
+  const r = runSpineGate(spineFixture({ mutate: (dir) => {
+    const p = join11(dir, "spine/nodes/n-r.json");
+    const doc = JSON.parse(read11(p, "utf8"));
+    doc.interior.originInParent = [0, 0]; // truth is [20, 20]
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+  } }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-FRAME n-r: interior\.originInParent \[0, 0\] != derived \[20, 20\]/);
+});
+t11("G-SCALE red: units flip without a scale factor", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-scale-units-flip" }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-SCALE n-r: units u under km parent but perParentUnit 1/);
+});
+t11("G-DERIVED-DRIFT red: hand-edited derived block", () => {
+  const r = runSpineGate(spineFixture({ mutate: (dir) => {
+    const p = join11(dir, "spine/nodes/n-c.json");
+    const doc = JSON.parse(read11(p, "utf8"));
+    doc.derived.coveragePct = 99.9;
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+  } }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-DERIVED-DRIFT n-c: committed derived block does not match recomputation/);
+});
+t11("G-PROVENANCE red: generated node without a generator pin", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-provenance-unpinned" }));
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /G-PROVENANCE n-r: authored "generated" requires generator \{name, version\}/);
+});
