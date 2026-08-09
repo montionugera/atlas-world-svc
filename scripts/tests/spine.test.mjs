@@ -168,3 +168,130 @@ test("ancestorChain (self first, root last) and subtreeIds (DFS preorder, sorted
   assert.deepEqual(ancestorChain({ tree, id: "n-leafa" }), ["n-leafa", "n-mid", "n-root"]);
   assert.deepEqual(subtreeIds({ tree, id: "n-root" }), ["n-root", "n-mid", "n-leafa", "n-leafb"]);
 });
+
+import { composeToRoot, resolveToRoot, deriveInterior, rollupComposition, deriveNode } from "../lib/spine.mjs";
+
+const close = (a, b, msg) => assert.ok(Math.abs(a - b) < 1e-9, `${msg}: ${a} vs ${b}`);
+
+function fictionTree() {
+  // world → region(per=1, same km grid) → town(per=100, rebased) — the
+  // Millcross numbers from HANDOFF.md (HC-4 fixed input).
+  const nodes = [
+    {
+      id: "n-root", tier: "world", parentId: null, title: "root",
+      seed: { value: "00000000000000e1", epoch: 0, why: null },
+      placement: { shape: "rect", rect: { x: 0, y: 0, w: 2000, h: 2000 }, anchor: [1000, 1000] },
+      interior: { units: "km", perParentUnit: 1, size: [2000, 2000], originInParent: [0, 0] },
+      composition: { ocean: 100 },
+    },
+    {
+      id: "n-zone", tier: "continent", parentId: "n-root", title: "zone",
+      seed: { value: "00000000000000e2", epoch: 0, why: null },
+      placement: { shape: "polygon", points: [[72, 106], [100, 106], [100, 132], [84, 138], [72, 136]], anchor: [86, 118] },
+      interior: { units: "km", perParentUnit: 1, size: [28, 32], originInParent: [72, 106] },
+      composition: { river: 46, meadow: 32, built: 12, marsh: 10 },
+    },
+    {
+      id: "n-town", tier: "region", parentId: "n-zone", title: "town",
+      seed: { value: "00000000000000e3", epoch: 0, why: null },
+      placement: { shape: "rect", rect: { x: 84.9, y: 117.2, w: 2.2, h: 1.6 }, anchor: [86, 118] },
+      interior: { units: "u", perParentUnit: 100, size: [220, 160], originInParent: [84.9, 117.2], anchorInInterior: [110, 80] },
+      composition: { built: 28, river: 9, meadow: 63 },
+    },
+  ];
+  return buildTree({ nodes, rootIds: ["n-root"] });
+}
+
+test("composeToRoot: per=1 frames are identity; the town frame rebases at 1/100", () => {
+  const tree = fictionTree();
+  const zone = composeToRoot({ tree, id: "n-zone" });
+  assert.deepEqual(zone.origin, [0, 0]);
+  assert.equal(zone.scale, 1);
+  const town = composeToRoot({ tree, id: "n-town" });
+  close(town.origin[0], 84.9, "town origin x");
+  close(town.origin[1], 117.2, "town origin y");
+  close(town.scale, 0.01, "town scale");
+});
+
+test("resolveToRoot: the ford at town-local [110,80] resolves to km [86,118] (HC-4)", () => {
+  const tree = fictionTree();
+  const p = resolveToRoot({ tree, id: "n-town", point: [110, 80] });
+  close(p[0], 86, "ford x");
+  close(p[1], 118, "ford y");
+});
+
+test("deriveInterior normal arrow: size/originInParent from bbox(placement)", () => {
+  const node = {
+    tier: "continent",
+    placement: { shape: "polygon", points: [[8, 4], [142, 4], [148, 120], [120, 186], [30, 186], [6, 110]], anchor: [75, 95] },
+    interior: { units: "km", perParentUnit: 1 },
+  };
+  const d = deriveInterior({ node, plan: null });
+  assert.deepEqual(d.originInParent, [6, 4]);
+  assert.deepEqual(d.size, [142, 182]);
+});
+
+test("deriveInterior town arrow REVERSED: plan extent is authority, anchor is the CENTRE-of-interest (HC-4)", () => {
+  const node = {
+    tier: "town",
+    interior: { units: "u", perParentUnit: 100, anchorInInterior: [110, 80] },
+  };
+  const plan = { extent: { width: 220, height: 160 }, anchor: { geographyAt: [86, 118] } };
+  const d = deriveInterior({ node, plan });
+  assert.deepEqual(d.size, [220, 160]);
+  close(d.originInParent[0], 84.9, "town origin x"); // 86 - 110/100 — NOT 86 (corner ≠ centre)
+  close(d.originInParent[1], 117.2, "town origin y");
+  assert.equal(d.placement.shape, "rect");
+  close(d.placement.rect.w, 2.2, "rect w");
+  close(d.placement.rect.h, 1.6, "rect h");
+  assert.deepEqual(d.placement.anchor, [86, 118]);
+});
+
+test("rollupComposition: shares, U-weighted interstitial, verdicts", () => {
+  const mk = (id, tier, parentId, seedTail, placement, composition, extra = {}) => ({
+    id, tier, parentId, title: id,
+    seed: { value: `000000000000${seedTail}`, epoch: 0, why: null },
+    placement, composition, ...extra,
+  });
+  // parent 10×10, child rect 40 u² → share 0.4, U 0.6
+  const parent = mk("n-p", "world", null, "00f1",
+    { shape: "rect", rect: { x: 0, y: 0, w: 10, h: 10 }, anchor: [5, 5] },
+    { meadow: 60, forest: 40 },
+    { interstitial: { meadow: 100 }, interstitialUnsurveyed: false });
+  const child = mk("n-c", "continent", "n-p", "00f2",
+    { shape: "rect", rect: { x: 0, y: 0, w: 8, h: 5 }, anchor: [4, 2] },
+    { forest: 100 });
+  const pointChild = mk("n-pt", "continent", "n-p", "00f3",
+    { shape: "point", at: [9, 9], anchor: [9, 9] },
+    { built: 100 });
+  const tree = buildTree({ nodes: [parent, child, pointChild], rootIds: ["n-p"] });
+  const r = rollupComposition({ tree, id: "n-p" });
+  close(r.coveragePct, 40, "coverage");           // point child contributes ZERO area
+  close(r.unclaimedPct, 60, "unclaimed");
+  close(r.derived.forest, 40, "derived forest");  // 0.4 × 100
+  close(r.derived.meadow, 60, "derived meadow");  // 0.6 × 100 interstitial
+  close(r.l1, 0, "l1");
+  assert.equal(r.verdict, "ASSERTED");            // coverage 40% < 60
+  // verdict CHECKED at coverage ≥ 60
+  const bigChild = mk("n-big", "continent", "n-p", "00f4",
+    { shape: "rect", rect: { x: 0, y: 5, w: 10, h: 5 }, anchor: [5, 7] }, { meadow: 100 });
+  const tree2 = buildTree({ nodes: [parent, child, bigChild], rootIds: ["n-p"] });
+  assert.equal(rollupComposition({ tree: tree2, id: "n-p" }).verdict, "CHECKED"); // 90%
+  // verdict UNCHECKED under interstitialUnsurveyed
+  const unsurveyed = { ...parent, interstitial: null, interstitialUnsurveyed: true };
+  const tree3 = buildTree({ nodes: [unsurveyed, child], rootIds: ["n-p"] });
+  assert.equal(rollupComposition({ tree: tree3, id: "n-p" }).verdict, "UNCHECKED");
+});
+
+test("deriveNode: emits the full derived block with a stable digest", () => {
+  const tree = fictionTree();
+  const d1 = deriveNode({ tree, id: "n-zone", plans: {} });
+  const d2 = deriveNode({ tree, id: "n-zone", plans: {} });
+  assert.deepEqual(d1, d2); // deterministic
+  for (const k of ["areaParentUnits2", "childAreaParentUnits2", "coveragePct", "unclaimedPct",
+    "computedComposition", "rollupVerdict", "absoluteAnchorRoot", "resolvedSeedStreams", "digest"])
+    assert.ok(k in d1, `missing derived.${k}`);
+  assert.deepEqual(d1.absoluteAnchorRoot, [86, 118]); // per=1 chain: anchor already in root km
+  assert.match(d1.digest, /^sha256:[0-9a-f]{64}$/);
+  assert.match(d1.resolvedSeedStreams.terrain, /^[0-9a-f]{16}$/);
+});

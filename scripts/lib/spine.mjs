@@ -281,3 +281,129 @@ export function subtreeIds({ tree, id }) {
   })(id);
   return out;
 }
+
+// ── transforms ─────────────────────────────────────────────────────────────
+// Frame rule, verified against the shipped corpus (HANDOFF.md): a frame with
+// perParentUnit === 1 CONTINUES its parent's grid unchanged — the region
+// polygon [72,106]… and the frozen absoluteAnchor [86,118] live on the same
+// km grid. Only a unit-changing frame (town, perParentUnit 100) rebases:
+//   p_parent = originInParent + p_local / perParentUnit.
+export function composeToRoot({ tree, id }) {
+  let origin = [0, 0];
+  let scale = 1; // root units per 1 local unit
+  let cur = tree.byId.get(id);
+  if (!cur) return { origin: null, scale: null };
+  while (cur.parentId !== null) {
+    const per = cur.interior?.perParentUnit ?? 1;
+    if (per !== 1) {
+      const o = cur.interior?.originInParent ?? [0, 0];
+      origin = [o[0] + origin[0] / per, o[1] + origin[1] / per];
+      scale = scale / per;
+    }
+    cur = tree.byId.get(cur.parentId);
+    if (!cur) return { origin: null, scale: null };
+  }
+  return { origin, scale };
+}
+
+// point is in `id`'s INTERIOR units → root units. All distance gates resolve
+// through this — never cross-subtract two frames (research §8.4).
+export function resolveToRoot({ tree, id, point }) {
+  const { origin, scale } = composeToRoot({ tree, id });
+  if (origin === null) return null;
+  return [origin[0] + point[0] * scale, origin[1] + point[1] * scale];
+}
+
+// interior.size / originInParent are DERIVED, never hand-trusted (G-FRAME):
+//   normal:  originInParent = min-corner(bbox(placement)); size = bbox dims × perParentUnit
+//   town:    the PLAN is the authority (research §3.2) — arrow reversed:
+//            size = plan.extent; rect = anchor − anchorInInterior/per, extent/per.
+// HC-4: plan.anchor.geographyAt names the CENTRE-of-interest interior point
+// (anchorInInterior), NOT the origin corner.
+export function deriveInterior({ node, plan }) {
+  const per = node.interior?.perParentUnit ?? 1;
+  if (node.tier === "town" && plan) {
+    const size = [plan.extent.width, plan.extent.height];
+    const anchorIn = node.interior.anchorInInterior;
+    const anchor = plan.anchor.geographyAt;
+    const rect = {
+      x: anchor[0] - anchorIn[0] / per,
+      y: anchor[1] - anchorIn[1] / per,
+      w: size[0] / per,
+      h: size[1] / per,
+    };
+    return { size, originInParent: [rect.x, rect.y], placement: { shape: "rect", rect, anchor: [...anchor] } };
+  }
+  const bb = placementBBoxOf(node.placement);
+  return { size: [bb.w * per, bb.h * per], originInParent: [bb.x, bb.y] };
+}
+
+// ── composition ────────────────────────────────────────────────────────────
+// research §5.2: share_c = area(c.placement)/A (placement is in PARENT units,
+// so child areas are already in the parent's units²); point children share 0;
+// bands/features non-areal; U-weighted interstitial; verdict per §5.5.
+export function rollupComposition({ tree, id }) {
+  const node = tree.byId.get(id);
+  const A = placementArea({ placement: node.placement });
+  const derived = {};
+  let shareSum = 0;
+  for (const cid of tree.childrenOf.get(id) ?? []) {
+    const c = tree.byId.get(cid);
+    const share = A > 0 ? placementArea({ placement: c.placement }) / A : 0;
+    shareSum += share;
+    for (const [b, v] of Object.entries(c.composition ?? {})) derived[b] = (derived[b] ?? 0) + share * v;
+  }
+  const U = 1 - shareSum;
+  const interstitial = node.interstitialUnsurveyed ? node.composition : node.interstitial;
+  if (U > 0.005 && interstitial)
+    for (const [b, v] of Object.entries(interstitial)) derived[b] = (derived[b] ?? 0) + U * v;
+  const perKeyDelta = {};
+  let l1 = 0;
+  for (const b of new Set([...Object.keys(node.composition ?? {}), ...Object.keys(derived)])) {
+    const d = (node.composition?.[b] ?? 0) - (derived[b] ?? 0);
+    perKeyDelta[b] = d;
+    l1 += Math.abs(d);
+  }
+  const coveragePct = shareSum * 100;
+  // §5.5 — town-with-plan ⇒ CHECKED joins in Phase 3 (G-TOWN-COMP owns it).
+  const verdict = node.interstitialUnsurveyed ? "UNCHECKED" : coveragePct >= 60 ? "CHECKED" : "ASSERTED";
+  return { derived, coveragePct, unclaimedPct: U * 100, l1, verdict, perKeyDelta };
+}
+
+// The full committed `derived` block (byte-checked by G-DERIVED-DRIFT, Phase 1).
+export function deriveNode({ tree, id, plans }) {
+  const node = tree.byId.get(id);
+  const roll = rollupComposition({ tree, id });
+  let childArea = 0;
+  for (const cid of tree.childrenOf.get(id) ?? [])
+    childArea += placementArea({ placement: tree.byId.get(cid).placement });
+  const anchor = node.placement?.anchor ?? null;
+  // anchor is in PARENT units — resolve through the PARENT's frame.
+  const absoluteAnchorRoot =
+    anchor === null ? null
+    : node.parentId === null ? [...anchor]
+    : resolveToRoot({ tree, id: node.parentId, point: anchor });
+  const resolvedSeedStreams = {};
+  for (const name of ["terrain", "settlements", "vegetation", "names"])
+    resolvedSeedStreams[name] = streamSeed({ node, name });
+  const body = {
+    areaParentUnits2: placementArea({ placement: node.placement }),
+    childAreaParentUnits2: childArea,
+    coveragePct: roll.coveragePct,
+    unclaimedPct: roll.unclaimedPct,
+    computedComposition: roll.derived,
+    rollupVerdict: roll.verdict,
+    absoluteAnchorRoot,
+    resolvedSeedStreams,
+  };
+  const digest = "sha256:" + createHash("sha256").update(JSON.stringify(body)).digest("hex");
+  return { ...body, digest };
+}
+
+// ── seeds ──────────────────────────────────────────────────────────────────
+// I-089's construction, retained verbatim: first 8 bytes (16 hex chars) of
+// sha256(seed.value + ":" + name). Namespaced so adding a rivers pass never
+// reshuffles the settlements pass (research §6.2).
+export function streamSeed({ node, name }) {
+  return createHash("sha256").update(`${node.seed.value}:${name}`).digest("hex").slice(0, 16);
+}
