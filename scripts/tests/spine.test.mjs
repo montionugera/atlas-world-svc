@@ -338,6 +338,17 @@ test("reroll: bumps epoch, records why, skips frozen, requires why (pure, mintHe
   assert.deepEqual(solo.changed.map((c) => c.id), ["n-p"]);
 });
 
+test("reroll: a cyclic parentId under --subtree is an in-band error, not a stack overflow", () => {
+  const nodes = [
+    { id: "n-a", tier: "world", parentId: "n-b", frozen: false, seed: { value: "6666666666666666", epoch: 0, why: null } },
+    { id: "n-b", tier: "world", parentId: "n-a", frozen: false, seed: { value: "7777777777777777", epoch: 0, why: null } },
+  ];
+  const res = reroll({ nodes, targetId: "n-a", subtree: true, why: "cycle test", mintHex: () => "eeeeeeeeeeeeeeee" });
+  assert.deepEqual(res.changed, []);
+  assert.deepEqual(res.skippedFrozen, []);
+  assert.ok(res.errors.some((e) => /cycle/.test(e)), res.errors.join("\n"));
+});
+
 test("reroll CLI: rewrites the target file, leaves frozen siblings untouched, refuses without --why", () => {
   const dir = writeSpineRoot({
     nodes: [

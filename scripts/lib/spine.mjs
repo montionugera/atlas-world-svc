@@ -416,22 +416,26 @@ export function reroll({ nodes, targetId, subtree = false, why, mintHex }) {
   const skippedFrozen = [];
   const errors = [];
   if (typeof why !== "string" || why.trim() === "") errors.push("reroll: --why is required and must be non-empty");
-  const byId = new Map(nodes.map((n) => [n.id, n]));
+  // FIRST occurrence wins on duplicate ids — align with buildTree's "one
+  // defect yields one failure, not a cascade" rule.
+  const byId = new Map();
+  for (const n of nodes) if (!byId.has(n.id)) byId.set(n.id, n);
   if (!byId.has(targetId)) errors.push(`reroll: unknown node "${targetId}"`);
   if (errors.length) return { changed, skippedFrozen, errors };
 
-  const childrenOf = new Map();
-  for (const n of nodes) {
-    if (n.parentId === null || n.parentId === undefined) continue;
-    if (!childrenOf.has(n.parentId)) childrenOf.set(n.parentId, []);
-    childrenOf.get(n.parentId).push(n.id);
+  // --subtree walks via buildTree + subtreeIds — NOT a hand-rolled dfs — so a
+  // cyclic or dangling parentId in real content surfaces as an in-band error
+  // here instead of sending an inline recursion into a stack overflow.
+  let targets = [targetId];
+  if (subtree) {
+    const rootIds = nodes.filter((n) => n.parentId === null).map((n) => n.id);
+    const tree = buildTree({ nodes, rootIds });
+    if (tree.errors.length) {
+      errors.push(...tree.errors.map((e) => `reroll: ${e}`));
+      return { changed, skippedFrozen, errors };
+    }
+    targets = subtreeIds({ tree, id: targetId });
   }
-  for (const kids of childrenOf.values()) kids.sort();
-  const targets = [];
-  (function dfs(id) {
-    targets.push(id);
-    if (subtree) for (const c of childrenOf.get(id) ?? []) dfs(c);
-  })(targetId);
 
   const used = new Set(nodes.map((n) => n.seed?.value));
   for (const id of targets) {
@@ -467,6 +471,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (!targetId || !why) { console.error(USAGE); process.exit(2); }
   const spine = loadSpine({ contentRoot });
   if (!spine.present) { console.error(`no spine/ under ${contentRoot}`); process.exit(1); }
+  if (spine.errors.length) { for (const e of spine.errors) console.error(e); process.exit(1); }
   const res = reroll({ nodes: spine.nodes, targetId, subtree, why, mintHex: () => randomBytes(8).toString("hex") });
   if (res.errors.length) { for (const e of res.errors) console.error(e); process.exit(1); }
   for (const ch of res.changed) {
