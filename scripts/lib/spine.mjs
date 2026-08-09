@@ -783,6 +783,28 @@ export function checkSpawnIdStable({ tree, frozenIds, runtimeIds }) {
   return { errors };
 }
 
+// F-041 P4 — G-ALIAS (playspace half): map region ids and representsNodeId
+// resolve, tiers printed. Deterministic, no lookup table: region-<slug> ⇔
+// n-site-<slug>. Every resolution is printed with its tier so the cross-tree
+// duplication (fiction region <-> runtime site) is named data, not implicit.
+export function checkPlayspaceAliases({ tree, regionIds }) {
+  const errors = [];
+  const lines = [];
+  for (const rid of [...new Set(regionIds ?? [])].sort()) {
+    const nodeId = "n-site-" + rid.replace(/^region-/, "");
+    const node = tree.byId.get(nodeId);
+    if (!node) errors.push(`G-ALIAS: map region "${rid}" resolves to no spine node (expected "${nodeId}")`);
+    else lines.push(`G-ALIAS: ${rid} → ${nodeId} (${node.tier})`);
+  }
+  for (const node of [...tree.byId.values()].sort((a, b) => (a.id < b.id ? -1 : 1))) {
+    if (node.representsNodeId == null) continue;
+    const target = tree.byId.get(node.representsNodeId);
+    if (!target) errors.push(`G-ALIAS: "${node.id}" representsNodeId "${node.representsNodeId}" resolves to no spine node`);
+    else lines.push(`G-ALIAS: ${node.id} represents ${target.id} (${target.tier})`);
+  }
+  return { errors, lines };
+}
+
 // ── CLI: node scripts/lib/spine.mjs reroll <id> [--subtree] --why "<reason>"
 //        [--content-root <dir>] ───────────────────────────────────────────
 // Entry-guarded — importing this module runs NOTHING (spawn-pairing pattern:

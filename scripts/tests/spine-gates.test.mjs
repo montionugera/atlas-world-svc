@@ -641,3 +641,9 @@ test("G-SPAWN-ID-STABLE goes red on a renamed spawn id (HC-2)", (t) => {
   assert.match(out, /missing: \[east_dunes_renamed\]/);
   assert.match(out, /extra: \[east_dunes\]/);
 });
+
+test("G-ALIAS goes red on a map region id with no site node (HC-2)", (t) => {
+  const { code, out } = runP4Gate(p4FixtureRoot(t, "g-alias-dangling-region"));
+  assert.equal(code, 1);
+  assert.match(out, /G-ALIAS: map region "region-ghost" resolves to no spine node \(expected "n-site-ghost"\)/);
+});

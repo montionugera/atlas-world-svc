@@ -97,7 +97,7 @@ test("gridIntersectionArea / gridUnionArea are exact on cell-aligned rects", () 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit, checkSpawnIdStable } from "../lib/spine.mjs";
+import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases } from "../lib/spine.mjs";
 
 function tinyNode(id, tier, parentId, seedValue) {
   return {
@@ -584,4 +584,17 @@ test("G-SPAWN-ID-STABLE is set equality against the frozen file, not superset", 
   assert.match(bad.errors[0], /G-SPAWN-ID-STABLE/);
   assert.match(bad.errors[0], /missing: \[area_y\]/);
   assert.match(bad.errors[0], /extra: \[area_x\]/);
+});
+
+test("G-ALIAS playspace half: region-<slug> resolves to n-site-<slug> and prints the tier", () => {
+  const tree = runtimeTree((ns) => {
+    ns[2].id = "n-site-thornveil"; ns[2].representsNodeId = "n-shelf"; // any resolvable id works for the unit test
+  });
+  const ok = checkPlayspaceAliases({ tree, regionIds: ["region-thornveil"] });
+  assert.deepEqual(ok.errors, []);
+  assert.ok(ok.lines.includes("G-ALIAS: region-thornveil → n-site-thornveil (site)"));
+  assert.ok(ok.lines.includes("G-ALIAS: n-site-thornveil represents n-shelf (playspace)"));
+  const bad = checkPlayspaceAliases({ tree, regionIds: ["region-ghost"] });
+  assert.equal(bad.errors.length, 1);
+  assert.match(bad.errors[0], /G-ALIAS: map region "region-ghost" resolves to no spine node \(expected "n-site-ghost"\)/);
 });

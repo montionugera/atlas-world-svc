@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1542,6 +1542,25 @@ function checkSpine(opts, mobTypes) {
     const spawnDocForSpine = readJson(opts.spawnAreas, "spawn-areas(spine)", fail);
     const runtimeIds = Array.isArray(spawnDocForSpine?.areas) ? spawnDocForSpine.areas.map((a) => a.id) : [];
     for (const e of checkSpawnIdStable({ tree, frozenIds, runtimeIds }).errors) fail(e);
+  }
+
+  // F-041 P4 — G-ALIAS (playspace half): map region ids and representsNodeId
+  // resolve, tiers printed. Soft-skip when the map mirror is absent — fixture
+  // content roots without maps/ must not fail.
+  const frontierPath = join(opts.contentRoot, "maps/atlas-frontier.md");
+  if (existsSync(frontierPath)) {
+    const raw = readFileSync(frontierPath, "utf8");
+    const fmMatch = raw.match(/^---\n([\s\S]*?)\n---\n/);
+    const fm = fmMatch ? yaml.load(fmMatch[1]) : null;
+    const regionIds = [
+      ...(fm?.regions ?? []).map((r) => r.id),
+      ...(fm?.zoneHazards ?? []).map((h) => h.regionId),
+      ...(fm?.mobSpawnAreas ?? []).map((a) => a.regionId),
+      ...(fm?.links ?? []),
+    ].filter(Boolean);
+    const alias = checkPlayspaceAliases({ tree, regionIds });
+    for (const e of alias.errors) fail(e);
+    for (const l of alias.lines) console.log(l);
   }
 
   return validNodes.length;
