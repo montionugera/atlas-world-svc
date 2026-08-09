@@ -475,8 +475,9 @@
     "title": "Seeded map data model: seed + derived file so cluster-1 map detail can grow without hand-authoring every point",
     "from_idea": "I-089",
     "created_at": "2026-08-09T15:20:45.101834+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-08-09T15:21:11.116081+00:00"
   }
 ]
