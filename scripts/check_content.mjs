@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1459,6 +1459,21 @@ function checkSpine(opts) {
   // paid off in Task 1.12. Task 1.13 flips `report` from `warn` to `fail` —
   // the world is disjoint now, so G-OVERLAP + G-COMP-ROLLUP are enforced.
   gSpineOverlapRollup({ tree, report: fail });
+
+  // ── F-041 P3: town plans join the spine on plan.spineId (G-TOWN-FRAME) ──
+  // Plans are read here, not schema-validated — checkTownPlan owns the
+  // schema/T-rules; the failure-count discipline mirrors loadGeographyTowns.
+  const townsDir = join(opts.contentRoot, "towns");
+  const townPlans = [];
+  if (existsSync(townsDir)) {
+    for (const f of readdirSync(townsDir).filter((n) => /^town-.+\.json$/.test(n)).sort()) {
+      const before = failures.length;
+      const doc = readJson(join(townsDir, f), `towns/${f}`, fail);
+      if (failures.length > before || !doc) continue;
+      townPlans.push({ file: `towns/${f}`, doc });
+    }
+  }
+  for (const e of townFrameErrors({ tree, plans: townPlans })) fail(`G-TOWN-FRAME: ${e}`);
 
   return validNodes.length;
 }

@@ -453,3 +453,10 @@ test("P3 fixture scaffolding: the green base passes --only=spine clean", () => {
   assert.equal(status, 0, out);
   assert.doesNotMatch(out, /FAIL/);
 });
+
+test("G-TOWN-FRAME red: corner-as-anchor fixture (HC-2/HC-4)", () => {
+  const { status, out } = p3RunSpineGate(p3Root("g-town-frame-corner-as-anchor"));
+  assert.equal(status, 1, out);
+  assert.match(out, /G-TOWN-FRAME: towns\/town-t1\.json -> n-t1/);
+  assert.match(out, /centre-of-interest, not the origin corner/);
+});
