@@ -13,7 +13,6 @@ import {
   ART_CLASS,
   ART_GROUP_LABELS,
   COVERAGE_CLASS,
-  artTabState,
   TAXONOMY_URL,
   taxonomyState,
   THUMB_INDEX_URL,
@@ -24,17 +23,16 @@ import {
 } from "./state.mjs";
 import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
 import { resolveRender } from "./renderers.mjs";
-import { buildAudio, buildMusic } from "./audio.mjs";
-import { bucketArtEntries, buildArtGroupSection } from "./art.mjs";
-import { buildArtTabBar, applyArtTabFilter } from "./art-tabs.mjs";
+import { bucketArtEntries } from "./art.mjs";
 import { classLabel, buildSidebarItem } from "./sidebar.mjs";
 import { loadTaxonomy, groupEntries } from "./data/taxonomy.mjs";
 import { loadThumbIndex, thumbUrlFor } from "./data/thumbs.mjs";
 import { buildCard } from "./view/Card.mjs";
 import { VirtualGrid, preloadThumbnails } from "./view/VirtualGrid.mjs";
 import { openDetail } from "./view/DetailOverlay.mjs";
-import { initReview, getStore } from "./review/ui.mjs";
-import { buildCoverageSection } from "./coverage.mjs";
+import { initReview } from "./review/ui.mjs";
+import { mountVerdictFilters } from "./review/filters.mjs";
+import { mountBespokeSections } from "./view/sections.mjs";
 import { mountCombatLab, mountCombatNav } from "./combat-lab.mjs";
 import { mountStory, mountStoryNav } from "./story.mjs";
 
@@ -336,187 +334,26 @@ async function init() {
     );
   }
 
-  // --- verdict filters (Task 18). These slice the SAME item set by review
-  //     state rather than by kind, so filtering re-windows the grids instead
-  //     of hiding DOM — the point of virtualization is that a filter on 653
-  //     items stays instant. ---
-  const allItems = entries;
-  const sectionGrids = new Map(gridsBySection);
-
-  function applyVerdictFilter(cls) {
-    const store = getStore();
-    if (!store) return;
-    const keep = (key) => {
-      const rec = store.get(key);
-      if (cls === REJECTED_CLASS) return rec?.verdict === "reject";
-      if (cls === REBUILD_CLASS) return rec?.verdict === "rebuild";
-      if (cls === UNREVIEWED_CLASS) return !rec;
-      return true;
-    };
-    for (const [groupKey, grid] of sectionGrids) {
-      const list = groups.get(groupKey).filter(([key]) => keep(key));
-      grid.setItems(list);
-      const sec = document.getElementById("section-" + groupKey);
-      if (sec) {
-        sec.style.display = list.length === 0 ? "none" : "";
-        const h2 = sec.querySelector("h2");
-        if (h2)
-          h2.textContent = classLabel(groupKey) + " (" + list.length + ")";
-      }
-    }
-  }
-
-  function clearVerdictFilter() {
-    for (const [groupKey, grid] of sectionGrids) {
-      const list = groups.get(groupKey);
-      grid.setItems(list);
-      const sec = document.getElementById("section-" + groupKey);
-      if (sec) {
-        const h2 = sec.querySelector("h2");
-        if (h2)
-          h2.textContent = classLabel(groupKey) + " (" + list.length + ")";
-      }
-    }
-  }
-
-  function refreshVerdictNav() {
-    const store = getStore();
-    if (!store) return;
-    const c = store.counts();
-    const reviewed = store.allKeys().length;
-    const totals = {
-      [REJECTED_CLASS]: c.reject,
-      [REBUILD_CLASS]: c.rebuild,
-      [UNREVIEWED_CLASS]: allItems.length - reviewed,
-    };
-    for (const [cls, n] of Object.entries(totals)) {
-      const btn = document.querySelector(
-        '.sidebar-item[data-class="' + cls + '"] .count',
-      );
-      if (btn) btn.textContent = n;
-    }
-  }
-
-  for (const cls of [REJECTED_CLASS, REBUILD_CLASS, UNREVIEWED_CLASS]) {
-    const btn = buildSidebarItem(cls, 0);
-    btn.addEventListener("click", () => applyVerdictFilter(cls));
-    sidebarNav.appendChild(btn);
-  }
-  // "All" must also drop any active verdict filter, or the page stays
-  // filtered while claiming to show everything.
-  document.addEventListener("storybook:class-change", (e) => {
-    if (e.detail && e.detail.cls === "all") clearVerdictFilter();
+  mountVerdictFilters({
+    sidebarNav,
+    groups,
+    gridsBySection,
+    totalItems: entries.length,
   });
-  document.addEventListener("storybook:verdict-change", refreshVerdictNav);
-  refreshVerdictNav();
 
   mountCombatLab(main);
   await mountStory(main);
 
-  // --- soundboard section (bespoke, driven by audio-index.json — not
-  //     the registry; see the RENDERERS comment above) ---
-  if (audioFiles.length > 0) {
-    const section = document.createElement("section");
-    section.className = "kind-section";
-    section.id = "section-" + SFX_CLASS;
-    section.dataset.kind = SFX_CLASS;
-
-    const h2 = document.createElement("h2");
-    h2.textContent = "SFX (" + audioFiles.length + ")";
-    section.appendChild(h2);
-
-    const note = document.createElement("p");
-    note.className = "empty-state";
-    note.style.padding = "0 0 1rem";
-    note.style.textAlign = "left";
-    const mappedCount = Object.keys(audioManifest.entries || {}).length;
-    note.textContent =
-      "Baked SFX the game ships, from game-client/assets/audio/ (CC0 — Kenney Impact Sounds + RPG Audio). " +
-      mappedCount +
-      " of " +
-      audioFiles.length +
-      " are wired to gameplay events (audio-manifest.json) — highlighted below. Hover a tile to preview (loops); click to pin.";
-    section.appendChild(note);
-
-    section.appendChild(buildAudio(audioFiles, audioManifest.entries || {}));
-    main.appendChild(section);
-  }
-
-  // --- music (BGM) section, driven by music-manifest.json ---
-  if (musicCount > 0) {
-    const section = document.createElement("section");
-    section.className = "kind-section";
-    section.id = "section-" + MUSIC_CLASS;
-    section.dataset.kind = MUSIC_CLASS;
-
-    const h2 = document.createElement("h2");
-    h2.textContent = "Music (" + musicCount + ")";
-    section.appendChild(h2);
-
-    const note = document.createElement("p");
-    note.className = "empty-state";
-    note.style.padding = "0 0 1rem";
-    note.style.textAlign = "left";
-    note.textContent =
-      "Background music from game-client/assets/music-manifest.json (CC0 / CC-BY-4.0). " +
-      "Each tile shows its license and, for CC-BY, the required attribution. Hover to preview (loops); click to pin.";
-    section.appendChild(note);
-
-    section.appendChild(buildMusic(musicEntries));
-    main.appendChild(section);
-  }
-
-  // --- concept art: tab bar (Task 8) + one <section> per non-empty
-  //     group instead of a single "Concept Art" bucket holding all of
-  //     them (see buildArtGroupSection). The tab bar is mounted first
-  //     so it lands above the group sections in the DOM; artTabState.activeArtTab
-  //     defaults to the first tab (same order the sections use — the
-  //     registry order in artBuckets.order, filtered to non-empty
-  //     groups) and applyArtTabFilter() below hides the rest. ---
-  if (artCount > 0) {
-    const artTabs = [];
-    for (const g of artBuckets.order) {
-      const list = artBuckets.buckets.get(g.id);
-      if (!list || list.length === 0) continue;
-      artTabs.push({
-        id: g.id,
-        label: g.label || g.id,
-        count: list.length,
-      });
-    }
-    for (const [gid, list] of [...artBuckets.unregistered].sort((a, b) =>
-      a[0].localeCompare(b[0]),
-    )) {
-      artTabs.push({
-        id: gid,
-        label: gid + " (unregistered)",
-        count: list.length,
-      });
-    }
-    artTabState.activeArtTab = artTabs.length > 0 ? artTabs[0].id : null;
-    main.appendChild(buildArtTabBar(artTabs));
-
-    for (const g of artBuckets.order) {
-      const list = artBuckets.buckets.get(g.id);
-      if (!list || list.length === 0) continue;
-      main.appendChild(buildArtGroupSection(g.id, g.label || g.id, list));
-    }
-
-    for (const [gid, list] of [...artBuckets.unregistered].sort((a, b) =>
-      a[0].localeCompare(b[0]),
-    )) {
-      main.appendChild(
-        buildArtGroupSection(gid, gid + " (unregistered)", list),
-      );
-    }
-
-    applyArtTabFilter();
-  }
-
-  // --- coverage panel: codegen keys with no manifest entry ---
-  if (missingKeys.length > 0) {
-    main.appendChild(buildCoverageSection(missingKeys));
-  }
+  mountBespokeSections({
+    main,
+    audioFiles,
+    audioManifest,
+    musicEntries,
+    musicCount,
+    artCount,
+    artBuckets,
+    missingKeys,
+  });
 }
 
 init();
