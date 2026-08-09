@@ -10,6 +10,9 @@ import yaml from "js-yaml";
 import { STORY_FILES, loadStory, readJson, compileSchema } from "./lib/story.mjs";
 import { checkSpawnPairing } from "./lib/spawn-pairing.mjs";
 import { checkBestiarySheet } from "./lib/bestiary-sheet.mjs";
+// F-040: the town-plan geometry the T-rules need. Pure, no I/O — see the
+// module header for why it cannot live inside this file.
+import { roadPolygon, polyRectOverlap } from "./lib/town-geometry.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -99,6 +102,27 @@ function loadGeographyZones(path) {
   return byId;
 }
 
+// F-040 T1: town records from the Cartographer's geography. The geography is
+// the authority on which towns exist and where they are; a town plan asserts
+// against it and the geography is NEVER written back (design §9). Same
+// failure-count discipline as loadGeographyZones — readJson cannot tell a
+// recorded FAIL from a file holding literal `null`.
+function loadGeographyTowns(path) {
+  const before = failures.length;
+  const doc = readJson(path, "geography", fail);
+  if (failures.length > before) return null;
+  if (!doc || !Array.isArray(doc.towns)) {
+    fail(`geography: ${path} is shape-invalid — expected { towns: [...] }`);
+    return null;
+  }
+  const byId = new Map();
+  for (const t of doc.towns) {
+    if (!t || typeof t.id !== "string") continue; // town record shape is not this gate's business
+    byId.set(t.id, t);
+  }
+  return byId;
+}
+
 const failures = [];
 const warnings = [];
 // I-060 Z5: hazards authored vs hazards the runtime can express. Module-level
@@ -145,7 +169,8 @@ function main() {
   const mapCount = checkMaps(opts, mobTypes);
   const placementCount = checkBestiaryPlacement(opts);
   const zoneCount = checkZoneContent(opts);
-  return finish(sheetCount, mapCount, story.count, placementCount, zoneCount);
+  const townCount = checkTownPlan(opts);
+  return finish(sheetCount, mapCount, story.count, placementCount, zoneCount, townCount);
 }
 
 // F-012: loadStory() (reads all 7 per-kind story files under
@@ -1019,7 +1044,168 @@ function checkZoneContent(opts) {
   return records.length;
 }
 
-function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0) {
+// --- F-040: the town-plan navigability gate, T1–T7 --------------------------
+//
+// The scale contract (design §3), MEASURED not invented: largest mob radius 5
+// → a cart road a mob can use must clear 12 world units; player radius 1.3 → a
+// player-only alley must clear 4; D1's ten-second crossing puts a town's extent
+// between 150 and 260.
+//
+// These floors live HERE and not in town-plan.schema.json, for exactly the
+// reason zone-content.schema.json stays shape-only: a schema-invalid document
+// `continue`s past every T-rule below, so a floor duplicated into the schema
+// would make its T-rule unreachable dead code whose deletion nothing notices.
+// Keyed by `roads[].kind` so the choice of floor is data-driven rather than a
+// magic number (design §2).
+const TOWN_ROAD_WIDTH_FLOORS = { cart: 12, foot: 4 };
+const TOWN_EXTENT_MIN = 150;
+const TOWN_EXTENT_MAX = 260;
+
+// T5's "touches" tolerance, in world units. A footprint whose edge sits within
+// this distance of the road's swept edge counts as opening onto it.
+//
+// INVENTED, DESIGN-OPEN — neither the design nor A1 §6 says how close is
+// "opens onto". It cannot be zero-tolerance equality (authored coordinates
+// would have to be bit-exact) and it cannot be an overlap test, because T4
+// forbids the footprint overlapping the road at all: the two rules would
+// contradict each other. Half a unit is under a third of a player diameter, so
+// nothing that passes T5 leaves a gap a body could stand in.
+const TOWN_ENTRANCE_TOUCH = 0.5;
+
+function normalizeTownRect(rect) {
+  const [ax, ay, bx, by] = rect;
+  return [Math.min(ax, bx), Math.min(ay, by), Math.max(ax, bx), Math.max(ay, by)];
+}
+
+// T5's touch test: grow the footprint by the tolerance and ask whether it now
+// shares positive area with any of the road's swept quads. polyRectOverlap is
+// strict (touching is NOT overlapping), so an exactly-abutting footprint only
+// registers because of the growth — which is the whole point.
+function footprintTouchesRoad(rect, quads) {
+  const [x0, y0, x1, y1] = normalizeTownRect(rect);
+  const grown = [
+    x0 - TOWN_ENTRANCE_TOUCH, y0 - TOWN_ENTRANCE_TOUCH,
+    x1 + TOWN_ENTRANCE_TOUCH, y1 + TOWN_ENTRANCE_TOUCH,
+  ];
+  return quads.some((q) => polyRectOverlap(q, grown));
+}
+
+// T1/T2/T3/T5. Mirrors checkZoneContent's structure exactly: soft-skip, compile,
+// load the geography, then one pass that FAILs a schema-invalid record and
+// `continue`s rather than letting a malformed shape reach the rules.
+function checkTownPlan(opts) {
+  const dir = join(opts.contentRoot, "towns");
+  if (!existsSync(dir)) return 0;
+  const files = readdirSync(dir).filter((f) => /^town-.+\.json$/.test(f)).sort();
+  if (!files.length) return 0;
+
+  // Skip BEFORE touching the schema: every fixture in check_content.test.mjs
+  // and bestiary-placement.test.mjs has a content root that never adopted town
+  // plans, and those roots must not FAIL with "town-plan schema: cannot
+  // read/parse".
+  const validate = compileSchema(
+    join(opts.contentRoot, "schemas/town-plan.schema.json"),
+    "town-plan schema", fail);
+  if (!validate) return 0;
+
+  // REQUIRED once a town plan exists: T1 is an assertion against the
+  // Cartographer's geography, which is the authority on which towns exist.
+  const towns = loadGeographyTowns(join(opts.contentRoot, "maps/cluster1-geography.json"));
+  if (!towns) return 0;
+
+  const records = []; // { label, file, doc, roadQuads } for every valid plan naming a real town
+
+  for (const file of files) {
+    const label = `towns/${file}`;
+    // Failure count, not the return value: a file holding literal `null`
+    // parses fine and must not be mistaken for a recorded FAIL.
+    const before = failures.length;
+    const doc = readJson(join(dir, file), label, fail);
+    if (failures.length > before) continue;
+
+    if (!validate(doc)) {
+      for (const err of validate.errors)
+        fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
+      continue; // downstream rules assume a valid shape
+    }
+
+    // T1 — the town exists in the Cartographer's geography. Like Z1 this does
+    // NOT continue: T2/T3/T5 are purely intra-record, so bailing here would
+    // hide real defects behind one typo. The orphan is FAILed and withheld
+    // from `records`, and so from the count.
+    const known = towns.has(doc.town);
+    if (!known) fail(`${label}: town "${doc.town}" not in cluster1-geography.json#towns`);
+
+    // T2 — extent within D1's 150–260 on BOTH axes. Inclusive: a town sitting
+    // exactly on either endpoint is legal, which is what lets the fixture sit
+    // on the boundary with no slack.
+    for (const axis of ["width", "height"]) {
+      const v = doc.extent[axis];
+      if (v < TOWN_EXTENT_MIN || v > TOWN_EXTENT_MAX)
+        fail(`${label}: extent ${axis} ${v} is outside ${TOWN_EXTENT_MIN}-${TOWN_EXTENT_MAX} world units`);
+    }
+
+    // T3 — every road clears its kind's floor (design §3). The floor is chosen
+    // by `kind`, so a road authored as `cart` is held to the mob-passable
+    // width whether or not a mob is ever routed down it.
+    const roadById = new Map();
+    const roadQuads = new Map();
+    for (const road of doc.roads) {
+      roadById.set(road.id, road);
+      const floor = TOWN_ROAD_WIDTH_FLOORS[road.kind];
+      if (road.width < floor)
+        fail(`${label}: road "${road.id}" (kind "${road.kind}") is ${road.width} wide, needs at least ${floor}`);
+      // The schema is shape-only, so `width` may be 0/negative and `points`
+      // may repeat — both make roadPolygon throw. Swallow it here and let T5
+      // report it against the footprint that depended on it; the gate must
+      // never die with a stack trace on authored content.
+      try { roadQuads.set(road.id, roadPolygon(road.points, road.width)); }
+      catch { /* not sweepable — T5 reports it if anything opens onto it */ }
+    }
+
+    // T5 — `entranceOn` names a real road AND the footprint touches it.
+    // `entranceOn` is optional (a ruin opens onto nothing), so an absent one is
+    // not a defect; a present one that points nowhere is.
+    for (const fp of doc.footprints) {
+      if (fp.entranceOn === undefined) continue;
+      if (!roadById.has(fp.entranceOn)) {
+        fail(`${label}: footprint "${fp.id}" entranceOn "${fp.entranceOn}" names no road in this plan`);
+        continue;
+      }
+      const quads = roadQuads.get(fp.entranceOn);
+      if (!quads) {
+        fail(`${label}: footprint "${fp.id}" opens onto road "${fp.entranceOn}", which has no swept area (degenerate width or centreline)`);
+        continue;
+      }
+      if (!footprintTouchesRoad(fp.rect, quads))
+        fail(`${label}: footprint "${fp.id}" does not touch road "${fp.entranceOn}" it opens onto (within ${TOWN_ENTRANCE_TOUCH} units)`);
+    }
+
+    // ===== SEAM: T4 / T6 / T7 go here ======================================
+    // T4 (no footprint overlaps a road's swept area, no two footprints
+    // overlap), T6 (the walkable area is ONE connected region by flood fill)
+    // and T7 (exactly one firstSight landmark, reachable from the town edge)
+    // are the geometry rules and are owned by a separate task. They belong in
+    // this same per-record loop, after T5. `roadQuads` above already holds
+    // each road's swept convex quads keyed by road id — reuse it rather than
+    // re-sweeping. walkableGrid/floodFillRegions/cellIndexAt for T6/T7 come
+    // from ./lib/town-geometry.mjs, which this file already imports from.
+    // =======================================================================
+
+    if (known) records.push({ label, file, doc, roadQuads });
+  }
+
+  // ===== SEAM: cross-file town rules, if any, go here =====================
+  // checkZoneContent runs a second pass over `records` for its cross-file
+  // rules (Z2 completeness, Z6 distinctiveness). T1–T7 are all intra-record,
+  // so there is nothing here yet; `records` is built the same way so a later
+  // cross-town rule has somewhere to live.
+  // =======================================================================
+
+  return records.length;
+}
+
+function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0) {
   for (const w of warnings) console.log(`WARN  ${w}`);
   for (const f of failures) console.log(`FAIL  ${f}`);
   // I-060 design §7: Z5's WARN is an accepted blind spot, so the ratio it
@@ -1036,7 +1222,7 @@ function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0
   // inverted silently.
   if (zoneCount > 0 || zoneHazardsTotal > 0)
     console.log(`zone-content: ${zoneHazardsUnmapped} of ${zoneHazardsTotal} hazards have no runtime effect`);
-  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${zoneCount} zones, ${failures.length} failures, ${warnings.length} warnings`);
+  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${zoneCount} zones, ${townCount} towns, ${failures.length} failures, ${warnings.length} warnings`);
   process.exit(failures.length ? 1 : 0);
 }
 

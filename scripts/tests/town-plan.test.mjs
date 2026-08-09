@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, cpSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
@@ -10,6 +12,7 @@ import Ajv from "ajv";
 const AjvClass = Ajv.default ?? Ajv;
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const GATE = join(ROOT, "scripts/check_content.mjs");
 const SCHEMA_PATH = join(ROOT, "content/schemas/town-plan.schema.json");
 
 const SCHEMA = JSON.parse(readFileSync(SCHEMA_PATH, "utf8"));
@@ -393,4 +396,307 @@ test("schema rejects a non-boolean firstSight and a non-integer storeys", () => 
   const bad2 = townPlan();
   bad2.footprints[0].storeys = 1.5;
   assert.equal(compile()(bad2), false);
+});
+
+// ===========================================================================
+// The gate — checkTownPlan() in scripts/check_content.mjs.
+//
+// These go through the REAL gate binary against a hermetic temp content root,
+// so they cover the WIRING as well as the rules: a green rule that main() never
+// calls would still let every fixture below pass.
+//
+// T1 / T2 / T3 / T5 only. T4 (overlap), T6 (connectivity) and T7 (firstSight)
+// are the geometry rules and belong to a separate task; the baseline plan below
+// is deliberately clean for them too (no footprint overlaps a road or another
+// footprint, the walkable area is one connected region, exactly one
+// firstSight), so adopting them later needs no fixture surgery.
+// ===========================================================================
+
+// The Cartographer's authority for T1. `zones: []` because checkZoneContent
+// soft-skips a root with no content/zones dir and never reads it — but
+// loadGeographyZones would FAIL shape-invalid if some other check did.
+const GEOGRAPHY = {
+  zones: [],
+  towns: [
+    { id: "millcross", name: "Millcross", at: [86, 118], zone: "millcross-ford" },
+    { id: "gildmark", name: "Gildmark", at: [11, 157], zone: "gildmark-head" },
+  ],
+};
+
+// A plan that satisfies T1, T2, T3 and T5 and sits EXACTLY on every floor, so
+// no test has slack and no test can pass by accident:
+//
+//   extent 150 x 260 — exactly T2's minimum on one axis and its maximum on the
+//                      other, proving the range is inclusive at both ends
+//   cart-road width 12 — exactly T3's cart floor (mob diameter 10 + clearance)
+//   alley width 4      — exactly T3's foot floor (player diameter 2.6 + clearance)
+//   mill-house x0 = 81 — the cart road's swept edge is x = 81, so the footprint
+//                        abuts it with a gap of exactly 0, the strictest thing
+//                        T5 can be asked to accept while T4 still forbids overlap
+//   cart-shed y0 = 122 — same, against the alley's lower swept edge (y = 122)
+function gatePlan() {
+  return {
+    town: "millcross",
+    extent: { width: 150, height: 260 },
+    anchor: { geographyAt: [86, 118] },
+    water: [{ id: "the-meltwash", kind: "river", poly: [[0, 150], [150, 150], [150, 170], [0, 170]] }],
+    roads: [
+      { id: "cart-road", kind: "cart", width: 12, points: [[75, 0], [75, 260]] },
+      { id: "alley", kind: "foot", width: 4, points: [[75, 120], [110, 120]] },
+    ],
+    footprints: [
+      { id: "mill-house", kind: "mill", rect: [81, 20, 101, 40], storeys: 2, entranceOn: "cart-road" },
+      { id: "cart-shed", kind: "stable", rect: [90, 122, 106, 138], entranceOn: "alley" },
+      // No entranceOn: T5 must not silently require one (a ruin opens onto
+      // nothing). If it did, this footprint would FAIL and the baseline would
+      // never be green.
+      { id: "old-shell", kind: "ruin", rect: [10, 200, 26, 216] },
+    ],
+    plazas: [{ id: "cart-yard", rect: [100, 60, 130, 90], why: "where the queue waits when the ford is busy" }],
+    landmarks: [
+      {
+        id: "mill-wheel", at: [78, 30], firstSight: true,
+        source: "docs/worldbuilding/A1-geography-cluster1.md#6",
+      },
+      { id: "cart-queue", at: [75, 250] },
+    ],
+  };
+}
+
+// `mutate` runs on the baseline plan, so each test manufactures exactly the one
+// defect it asserts and inherits a clean plan for every other rule.
+function onePlan(mutate) {
+  const plan = gatePlan();
+  if (mutate) mutate(plan);
+  return { "town-millcross.json": plan };
+}
+
+// `towns: null` = do not create content/towns at all (the first soft-skip
+// shape). `townSchema: false` = do not copy the schema either, which is what a
+// content root that never adopted town plans actually looks like.
+function fixture({ towns = {}, geography = GEOGRAPHY, townSchema = true } = {}) {
+  const dir = mkdtempSync(join(tmpdir(), "town-gate-"));
+  mkdirSync(join(dir, "content/characters"), { recursive: true });
+  mkdirSync(join(dir, "content/schemas"), { recursive: true });
+  mkdirSync(join(dir, "content/maps"), { recursive: true });
+  const schemas = ["character.schema.json", "map.schema.json"];
+  if (townSchema) schemas.push("town-plan.schema.json");
+  for (const s of schemas)
+    cpSync(join(ROOT, "content/schemas", s), join(dir, "content/schemas", s));
+  writeFileSync(join(dir, "content/maps/cluster1-geography.json"), JSON.stringify(geography));
+  if (towns !== null) {
+    mkdirSync(join(dir, "content/towns"), { recursive: true });
+    for (const [name, body] of Object.entries(towns))
+      writeFileSync(join(dir, "content/towns", name),
+        typeof body === "string" ? body : JSON.stringify(body));
+  }
+  // Hermeticity: every external artifact the gate reads is a fixture, so these
+  // tests can never silently track the live committed files.
+  writeFileSync(join(dir, "keys.json"), JSON.stringify({ version: 1, keys: [] }));
+  writeFileSync(join(dir, "manifest.json"), JSON.stringify({ version: 2, entries: {} }));
+  writeFileSync(join(dir, "mob-types.json"), JSON.stringify({ version: 1, mobTypes: [] }));
+  writeFileSync(join(dir, "spawn-areas.json"), JSON.stringify({ version: 1, areas: [] }));
+  return dir;
+}
+
+function runGate(dir, extra = []) {
+  try {
+    const out = execFileSync(process.execPath, [
+      GATE,
+      "--content-root", join(dir, "content"),
+      "--keys", join(dir, "keys.json"),
+      "--manifest", join(dir, "manifest.json"),
+      "--mob-types", join(dir, "mob-types.json"),
+      "--spawn-areas", join(dir, "spawn-areas.json"),
+      ...extra,
+    ], { encoding: "utf8" });
+    return { code: 0, out };
+  } catch (e) {
+    return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` };
+  }
+}
+
+// --------------------------- wiring + soft-skip ----------------------------
+// The soft-skip is what protects every pre-existing fixture in
+// check_content.test.mjs and bestiary-placement.test.mjs: none of them has a
+// content/towns dir OR a town-plan schema, so the skip MUST happen before the
+// schema is compiled.
+
+test("no content/towns directory skips silently", () => {
+  const r = runGate(fixture({ towns: null, townSchema: false }));
+  assert.equal(r.code, 0);
+  assert.match(r.out, /, 0 towns,/);
+  assert.doesNotMatch(r.out, /town-plan schema/);
+});
+
+test("a content/towns directory with no town-*.json skips silently", () => {
+  const r = runGate(fixture({ towns: {}, townSchema: false }));
+  assert.equal(r.code, 0);
+  assert.match(r.out, /, 0 towns,/);
+  assert.doesNotMatch(r.out, /town-plan schema/);
+});
+
+test("the townCount reaches the finish() count line", () => {
+  const r = runGate(fixture({ towns: onePlan() }));
+  assert.equal(r.code, 0);
+  assert.match(r.out, /, 1 towns,/);
+});
+
+test("the baseline plan passes every T-rule and raises nothing", () => {
+  const r = runGate(fixture({ towns: onePlan() }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /FAIL/);
+});
+
+test("a schema-invalid plan is a FAIL, not a crash, and its T-rules are skipped", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.surprise = true; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /towns\/town-millcross\.json: schema /);
+  assert.doesNotMatch(r.out, /at Object\.<anonymous>/); // no stack trace
+  assert.match(r.out, /, 0 towns,/);
+});
+
+test("an unparsable town file is one FAIL, not a crash", () => {
+  const r = runGate(fixture({ towns: { "town-millcross.json": "{ not json" } }));
+  assert.equal(r.code, 1);
+  assert.doesNotMatch(r.out, /at Object\.<anonymous>/);
+});
+
+test("a geography with no towns array is one shape-invalid FAIL, not a skip", () => {
+  const r = runGate(fixture({ towns: onePlan(), geography: { zones: [] } }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /geography: .* is shape-invalid/);
+});
+
+// ---------------------------------- T1 -------------------------------------
+
+test("T1: a plan naming a town the geography declares passes", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.town = "gildmark"; }) }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /not in cluster1-geography/);
+});
+
+test("T1: a plan naming a town the geography does not declare FAILs and is not counted", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.town = "nowhere-ford"; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /towns\/town-millcross\.json: town "nowhere-ford" not in cluster1-geography\.json#towns/);
+  assert.match(r.out, /, 0 towns,/);
+});
+
+// ---------------------------------- T2 -------------------------------------
+
+test("T2: an extent exactly on both endpoints of 150-260 passes", () => {
+  // The baseline already is 150 x 260; assert it explicitly so a later edit
+  // that gives the fixture slack is visible here rather than silently
+  // weakening every T2 test.
+  assert.deepEqual(gatePlan().extent, { width: 150, height: 260 });
+  const r = runGate(fixture({ towns: onePlan() }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /is outside 150-260/);
+});
+
+test("T2: an extent width below 150 FAILs", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.extent.width = 149.9; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /extent width 149\.9 is outside 150-260 world units/);
+});
+
+test("T2: an extent height below 150 FAILs", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.extent.height = 149.9; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /extent height 149\.9 is outside 150-260 world units/);
+});
+
+test("T2: an extent width above 260 FAILs", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.extent.width = 260.1; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /extent width 260\.1 is outside 150-260 world units/);
+});
+
+test("T2: an extent height above 260 FAILs", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.extent.height = 260.1; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /extent height 260\.1 is outside 150-260 world units/);
+});
+
+// ---------------------------------- T3 -------------------------------------
+
+test("T3: roads exactly on the 12 and 4 unit floors pass", () => {
+  const plan = gatePlan();
+  assert.equal(plan.roads.find((r) => r.kind === "cart").width, 12);
+  assert.equal(plan.roads.find((r) => r.kind === "foot").width, 4);
+  const r = runGate(fixture({ towns: onePlan() }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /needs at least/);
+});
+
+test("T3: a cart road under 12 FAILs — a mob of radius 5 could not pass", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.roads[0].width = 11.9; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /road "cart-road" \(kind "cart"\) is 11\.9 wide, needs at least 12/);
+});
+
+test("T3: a foot road under 4 FAILs — a player of radius 1.3 could not pass", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.roads[1].width = 3.9; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /road "alley" \(kind "foot"\) is 3\.9 wide, needs at least 4/);
+});
+
+test("T3: the floor is chosen by kind — a 4-wide road is legal as foot and illegal as cart", () => {
+  const asFoot = runGate(fixture({ towns: onePlan((p) => { p.roads[0].kind = "foot"; p.roads[0].width = 4; }) }));
+  assert.doesNotMatch(asFoot.out, /road "cart-road".*needs at least/);
+  const asCart = runGate(fixture({ towns: onePlan((p) => { p.roads[1].kind = "cart"; }) }));
+  assert.equal(asCart.code, 1);
+  assert.match(asCart.out, /road "alley" \(kind "cart"\) is 4 wide, needs at least 12/);
+});
+
+test("T3: a degenerate road width is a FAIL, not a thrown roadPolygon", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.roads[0].width = 0; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /is 0 wide, needs at least 12/);
+  assert.doesNotMatch(r.out, /TypeError/);
+});
+
+// ---------------------------------- T5 -------------------------------------
+
+test("T5: a footprint abutting the road it opens onto passes, and entranceOn is optional", () => {
+  const plan = gatePlan();
+  assert.equal(plan.footprints[0].rect[0], 81); // exactly the cart road's swept edge
+  assert.equal(plan.footprints[1].rect[1], 122); // exactly the alley's swept edge
+  assert.equal(plan.footprints[2].entranceOn, undefined);
+  const r = runGate(fixture({ towns: onePlan() }));
+  assert.equal(r.code, 0);
+  assert.doesNotMatch(r.out, /entranceOn|does not touch road/);
+});
+
+test("T5: an entranceOn naming no road in the plan FAILs", () => {
+  const r = runGate(fixture({ towns: onePlan((p) => { p.footprints[0].entranceOn = "no-such-road"; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /footprint "mill-house" entranceOn "no-such-road" names no road in this plan/);
+});
+
+test("T5: a footprint set back from the road it opens onto FAILs", () => {
+  // One unit clear of the cart road's swept edge — twice the touch tolerance,
+  // so it is unambiguously not opening onto anything.
+  const r = runGate(fixture({ towns: onePlan((p) => { p.footprints[0].rect = [82, 20, 102, 40]; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /footprint "mill-house" does not touch road "cart-road" it opens onto/);
+});
+
+test("T5: touching the WRONG road is not touching the one it opens onto", () => {
+  // cart-shed physically abuts the alley, but claims to open onto cart-road,
+  // which is 15 units west of it. A rule that only asked "does this footprint
+  // touch SOME road" would wave this through.
+  const r = runGate(fixture({ towns: onePlan((p) => { p.footprints[1].entranceOn = "cart-road"; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /footprint "cart-shed" does not touch road "cart-road" it opens onto/);
+});
+
+test("T5: opening onto a road with no swept area is a FAIL, not a crash", () => {
+  // A zero-width road cannot be swept, so roadPolygon throws. T3 already FAILs
+  // the width; T5 must report the dependency rather than let the throw escape.
+  const r = runGate(fixture({ towns: onePlan((p) => { p.roads[0].width = 0; }) }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /footprint "mill-house" opens onto road "cart-road", which has no swept area/);
+  assert.doesNotMatch(r.out, /TypeError/);
 });
