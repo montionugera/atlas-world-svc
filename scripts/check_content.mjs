@@ -1496,16 +1496,34 @@ function checkSpineExternalAliases({ opts, report }) {
     }
   }
 
-  // (5) art:town-* manifest keys
-  const artDoc = readJson(opts.artManifest, "spine-alias art-manifest", fail);
-  for (const key of Object.keys(artDoc?.entries ?? {}).filter((k) => k.startsWith("art:town-")).sort()) {
-    const slug = key.slice("art:town-".length);
-    const node = townNode(slug);
-    if (!node) {
-      report(`spine-alias: art-manifest ${key}: no town-tier spine node n-${slug} / n-${slug}-town`);
-      continue;
+  // (5) art:town-* manifest keys. Unlike (1)-(4), this reads opts.artManifest
+  // — a path OUTSIDE opts.contentRoot that defaults to the REAL committed
+  // art-manifest.json regardless of which content root is under test. That
+  // default is only meaningful paired with the REAL content root (the six
+  // real town ids it lists). Any other content root — every one of
+  // spine-gates.test.mjs's ~45 minimal structural fixtures included — would
+  // otherwise always FAIL this the moment report is `fail`, a false red
+  // about content the fixture never claimed to carry. Soft-skip precisely
+  // that false-positive pairing (default manifest + non-real content root);
+  // an explicit `--art-manifest` override (the Task 5.2 HC-2 test) or the
+  // real content root (production, and the Task 5.2 alias-copy fixtures,
+  // which clone the full real content/ tree) still run the check. Found
+  // while running Task 5.2's flip: pre-existing gate tests ("base spine
+  // fixture is green", G-COMP-REPORT ×2, "P3 fixture scaffolding") went
+  // newly red with no in-plan explanation.
+  const usingDefaultArtManifest = opts.artManifest === join(ROOT, "game-client/assets/art/art-manifest.json");
+  const contentRootIsRealTree = opts.contentRoot === join(ROOT, "content");
+  if (!usingDefaultArtManifest || contentRootIsRealTree) {
+    const artDoc = readJson(opts.artManifest, "spine-alias art-manifest", fail);
+    for (const key of Object.keys(artDoc?.entries ?? {}).filter((k) => k.startsWith("art:town-")).sort()) {
+      const slug = key.slice("art:town-".length);
+      const node = townNode(slug);
+      if (!node) {
+        report(`spine-alias: art-manifest ${key}: no town-tier spine node n-${slug} / n-${slug}-town`);
+        continue;
+      }
+      say(`art-manifest ${key}`, node);
     }
-    say(`art-manifest ${key}`, node);
   }
 }
 
@@ -1749,8 +1767,8 @@ function checkSpine(opts, mobTypes) {
     console.log("spawn-geometry: mapConfig.ts unreadable — report skipped (informational only)");
   }
 
-  checkSpineStoryAlias({ opts, report: warn }); // Phase 5 flips report to `fail`
-  checkSpineExternalAliases({ opts, report: warn }); // Phase 5 flips report to `fail`
+  checkSpineStoryAlias({ opts, report: fail }); // flipped from `warn` — Phase 5 deliberate red
+  checkSpineExternalAliases({ opts, report: fail }); // flipped from `warn` — Phase 5 deliberate red
 
   return validNodes.length;
 }

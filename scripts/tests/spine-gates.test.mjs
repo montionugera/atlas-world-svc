@@ -746,3 +746,108 @@ test("spine-emit: a non-ENOENT failure reading the frontier mirror is an error, 
   assert.ok(r.errors, "expected an in-band error, got outputs");
   assert.match(r.errors[0], /maps\/atlas-frontier\.md: cannot read/);
 });
+
+// ── F-041 Phase 5: G-ALIAS (story half + external sweep) — HC-2 reds ─────
+// The fixture is a full copy of the repo's content/ tree: the only content
+// root guaranteed to hold a valid spine + populated story regions without
+// re-authoring one. keys/manifest/mob-types/art-manifest fall back to the
+// gate's real committed default artifacts, so a clean copy behaves exactly
+// like the repo (exit 0) and one dangling reference is the single
+// difference per test. Assertions on WARN-able sources pin the
+// "FAIL  spine-alias:" prefix, not just exit code 1 — some tampered values
+// also trip pre-existing FAIL-severity gates (G-TOWN-FRAME on the town
+// plan, the bestiary bible-region check, the season-1 art:town count), so
+// exit 1 alone would not prove the flip below is load-bearing.
+
+function aliasContentCopy() {
+  const dir = mkdtempSync(join(tmpdir(), "spine-alias-"));
+  cpSync(join(ROOT, "content"), join(dir, "content"), { recursive: true });
+  return dir;
+}
+
+function runAliasGate(dir, extraArgs = []) {
+  try {
+    const out = execFileSync(
+      process.execPath,
+      [GATE, "--content-root", join(dir, "content"), ...extraArgs],
+      { encoding: "utf8" },
+    );
+    return { code: 0, out };
+  } catch (e) {
+    return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` };
+  }
+}
+
+function editJson(path, mutate) {
+  const doc = JSON.parse(readFileSync(path, "utf8"));
+  mutate(doc);
+  writeFileSync(path, JSON.stringify(doc, null, 2));
+}
+
+test("G-ALIAS story half: a dangling spineId is a hard FAIL", () => {
+  const dir = aliasContentCopy();
+  editJson(join(dir, "content/story/regions.json"), (regions) => {
+    regions[0].spineId = "n-nope"; // regions[0] is region-spawn-meadow
+  });
+  const r = runAliasGate(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /FAIL\s+spine-alias: story\/regions\.json#region-spawn-meadow: spineId "n-nope" does not resolve to a spine node/);
+});
+
+test("G-ALIAS story half: prints each record's resolved tier on the clean tree", () => {
+  const r = runAliasGate(aliasContentCopy());
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /spine-alias: region-millcross → n-millcross \(town\)/);
+  assert.match(r.out, /spine-alias: region-icefield → n-northern-icefield \(region\)/);
+});
+
+test("G-ALIAS sweep: a dangling zone-content spineId is a hard FAIL", () => {
+  const dir = aliasContentCopy();
+  editJson(join(dir, "content/zones/zone-thornveil.json"), (z) => {
+    z.spineId = "n-nope"; // optional field: present-but-dangling must fail
+  });
+  const r = runAliasGate(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /FAIL\s+spine-alias: zones\/zone-thornveil\.json: spineId "n-nope" does not resolve to a spine node/);
+});
+
+test("G-ALIAS sweep: a dangling town-plan spineId is a hard FAIL", () => {
+  const dir = aliasContentCopy();
+  editJson(join(dir, "content/towns/town-millcross.json"), (t) => {
+    t.spineId = "n-nope";
+  });
+  const r = runAliasGate(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /FAIL\s+spine-alias: towns\/town-millcross\.json: spineId "n-nope" does not resolve to a spine node/);
+});
+
+test("G-ALIAS sweep: a bestiary region slug with no spine node is a hard FAIL", () => {
+  const dir = aliasContentCopy();
+  editJson(join(dir, "content/bestiary/bestiary.json"), (rows) => {
+    rows[0].region = "nopeland";
+  });
+  const r = runAliasGate(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /FAIL\s+spine-alias: bestiary\.json region "nopeland": n-nopeland is not a spine node/);
+});
+
+test("G-ALIAS sweep: a character region link whose record lost its spineId is a hard FAIL", () => {
+  const dir = aliasContentCopy();
+  editJson(join(dir, "content/story/regions.json"), (regions) => {
+    delete regions.find((r) => r.id === "region-thornveil").spineId;
+  });
+  const r = runAliasGate(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /FAIL\s+spine-alias: characters\/mob-bramble-drake\.md: links\.story "region-thornveil" has no resolving spineId in story\/regions\.json/);
+});
+
+test("G-ALIAS sweep: an art:town-* key with no town-tier node is a hard FAIL", () => {
+  const dir = aliasContentCopy();
+  const artPath = join(dir, "art-manifest.json");
+  const art = JSON.parse(readFileSync(join(ROOT, "game-client/assets/art/art-manifest.json"), "utf8"));
+  art.entries["art:town-nopeville"] = { ...Object.values(art.entries)[0] };
+  writeFileSync(artPath, JSON.stringify(art, null, 2));
+  const r = runAliasGate(dir, ["--art-manifest", artPath]);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /FAIL\s+spine-alias: art-manifest art:town-nopeville: no town-tier spine node n-nopeville \/ n-nopeville-town/);
+});
