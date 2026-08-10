@@ -1,0 +1,80 @@
+{
+  "id": "n-embervale",
+  "tier": "town",
+  "parentId": "n-emberdown",
+  "title": "Embervale",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [44, 94],
+  "seed": {
+    "value": "5f0f56025350919f",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "rect",
+    "rect": {
+      "x": 43,
+      "y": 93.2,
+      "w": 2,
+      "h": 1.6
+    },
+    "anchor": [44, 94]
+  },
+  "interior": {
+    "units": "u",
+    "perParentUnit": 100,
+    "size": [200, 160],
+    "originInParent": [43, 93.2],
+    "anchorInInterior": [100, 80]
+  },
+  "composition": {
+    "built": 40,
+    "meadow": 34,
+    "rock": 14,
+    "forest": 12
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 3,
+    "emblem": "a caravan wheel wreathed in ember-red",
+    "reason": "Hill loam over a burning-stone seam, at the junction of the trade road and the coast spur",
+    "labelAnchor": "west"
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 3.2,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [44, 94],
+    "resolvedSeedStreams": {
+      "terrain": "75544ba30636faf7",
+      "settlements": "afa1aa9898873d3b",
+      "vegetation": "4deed63d3178e18f",
+      "names": "f70d053d5b1b0f8b"
+    },
+    "digest": "sha256:7e5bd6df9e8281e4bee6552399cac05fb603fc3952b9f96e3360942a48555038"
+  }
+}

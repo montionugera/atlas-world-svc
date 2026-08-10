@@ -1,0 +1,95 @@
+{
+  "id": "n-emberdown",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Emberdown",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [36, 84],
+  "seed": {
+    "value": "23107573806d9fcc",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [26, 78],
+      [40, 78],
+      [44, 82],
+      [52, 96],
+      [54, 102],
+      [42, 112],
+      [28, 106],
+      [22, 92]
+    ],
+    "anchor": [36, 84]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [32, 34],
+    "originInParent": [22, 78]
+  },
+  "composition": {
+    "rock": 34,
+    "meadow": 30,
+    "upland": 18,
+    "forest": 12,
+    "built": 6
+  },
+  "interstitial": {
+    "rock": 34,
+    "meadow": 30,
+    "upland": 18,
+    "forest": 12,
+    "built": 6
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "rim",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 5,
+    "labelAt": [36, 84]
+  },
+  "tags": [],
+  "levelBand": [25, 35],
+  "derived": {
+    "areaParentUnits2": 742,
+    "childAreaParentUnits2": 3.2,
+    "coveragePct": 0.431266846361186,
+    "unclaimedPct": 99.56873315363882,
+    "computedComposition": {
+      "built": 6.146630727762804,
+      "meadow": 30.01725067385445,
+      "rock": 33.913746630727765,
+      "forest": 12,
+      "upland": 17.922371967654986
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [36, 84],
+    "resolvedSeedStreams": {
+      "terrain": "e150999e13b00a29",
+      "settlements": "30ed31e3eb8eff51",
+      "vegetation": "3c07e6ebeb419b2c",
+      "names": "5c827dcb6693d2b9"
+    },
+    "digest": "sha256:d62dae94bb62f012fcceb1ce879d623bbdc36e482c97e65642c0e651aef36778"
+  }
+}

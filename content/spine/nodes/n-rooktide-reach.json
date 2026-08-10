@@ -1,0 +1,96 @@
+{
+  "id": "n-rooktide-reach",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Rooktide Reach",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [74, 154],
+  "seed": {
+    "value": "88a0c09525f89669",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [74, 139.5],
+      [94, 137.5],
+      [100, 148],
+      [98, 166],
+      [90, 176],
+      [84, 174.5],
+      [74, 169],
+      [66, 160],
+      [66, 146]
+    ],
+    "anchor": [74, 154]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [34, 38.5],
+    "originInParent": [66, 137.5]
+  },
+  "composition": {
+    "river": 30,
+    "meadow": 34,
+    "marsh": 24,
+    "built": 8,
+    "forest": 4
+  },
+  "interstitial": {
+    "river": 30,
+    "meadow": 34,
+    "marsh": 24,
+    "built": 8,
+    "forest": 4
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "river-country",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 3,
+    "labelAt": [74, 154]
+  },
+  "tags": [],
+  "levelBand": [10, 20],
+  "derived": {
+    "areaParentUnits2": 998.5,
+    "childAreaParentUnits2": 0.2,
+    "coveragePct": 0.020030045067601403,
+    "unclaimedPct": 99.9799699549324,
+    "computedComposition": {
+      "built": 8.006810215322984,
+      "river": 29.999198798197295,
+      "marsh": 23.998798197295944,
+      "meadow": 33.99599399098648,
+      "forest": 3.999198798197296
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [74, 154],
+    "resolvedSeedStreams": {
+      "terrain": "23561f79dffec39a",
+      "settlements": "a67d94a40ddc4f73",
+      "vegetation": "5bcc0d3dc908f753",
+      "names": "63171f215e88689a"
+    },
+    "digest": "sha256:4a83527b06d19db0b81b793c5fb22b7173c3b5c0a5b02a96ead8f88c7cc654ee"
+  }
+}

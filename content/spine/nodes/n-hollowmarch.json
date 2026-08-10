@@ -1,0 +1,93 @@
+{
+  "id": "n-hollowmarch",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Hollowmarch",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [80, 80],
+  "seed": {
+    "value": "48625e50e3ad4297",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [78, 66],
+      [86, 74],
+      [85, 96],
+      [78, 106],
+      [68, 100],
+      [77, 84]
+    ],
+    "anchor": [80, 80]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [18, 40],
+    "originInParent": [68, 66]
+  },
+  "composition": {
+    "rock": 30,
+    "meadow": 28,
+    "forest": 22,
+    "upland": 14,
+    "built": 6
+  },
+  "interstitial": {
+    "rock": 30,
+    "meadow": 28,
+    "forest": 22,
+    "upland": 14,
+    "built": 6
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "rim",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 7,
+    "labelAt": [80, 80]
+  },
+  "tags": [],
+  "levelBand": [35, 48],
+  "derived": {
+    "areaParentUnits2": 359,
+    "childAreaParentUnits2": 3.2,
+    "coveragePct": 0.8913649025069639,
+    "unclaimedPct": 99.10863509749304,
+    "computedComposition": {
+      "built": 6.285236768802229,
+      "meadow": 28.01782729805014,
+      "forest": 21.98217270194986,
+      "rock": 29.839554317548746,
+      "upland": 13.875208913649026
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [80, 80],
+    "resolvedSeedStreams": {
+      "terrain": "b40dea2ee6e81fcf",
+      "settlements": "ef4c56852ca82ad5",
+      "vegetation": "a8936a95791cba1c",
+      "names": "dd2eaae367055c06"
+    },
+    "digest": "sha256:44936062bec888a0807416df1498e0cc016615f90f47d9c382f12fef43c411bc"
+  }
+}

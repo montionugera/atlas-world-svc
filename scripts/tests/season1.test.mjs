@@ -354,7 +354,7 @@ test("the gate and the zones measure agree on which filenames are records", () =
     } catch (e) {
       out = `${e.stdout ?? ""}${e.stderr ?? ""}`;
     }
-    assert.match(out, /, 1 zones,/, `the gate must see exactly one record too:\n${out}`);
+    assert.match(out, /, 1 zones, \d+ towns, 0 nodes,/, `the gate must see exactly one record too:\n${out}`);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -102,6 +102,14 @@ jobs:
       - name: Story graph drift-gate (docs/story/story-graph.md)
         run: node scripts/gen_story_graph.mjs --check
 
+      # Spine emit drift-gate (F-041 G-EMIT-DRIFT): content/maps/
+      # cluster1-geography.json is generated from content/spine/nodes/* by
+      # scripts/check_spine_emit.mjs. Fails the build if the committed mirror
+      # is stale relative to the spine, or was hand-edited. scripts/ deps are
+      # already installed by the Content gate step above (npm ci --prefix scripts).
+      - name: Spine emit drift-gate (G-EMIT-DRIFT)
+        run: node scripts/check_spine_emit.mjs --check
+
       # Story explorer (F-012 Task 6): graph.mjs is the pure buildGraph()
       # shared by tools/story-explorer/index.html and this smoke test — every
       # real story file resolves, no dangling edges, no prereq cycle, and a

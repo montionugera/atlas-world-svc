@@ -1,0 +1,87 @@
+{
+  "id": "n-saltmire",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "the Saltmire",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "cdf5094d463ca0fa",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [9, 172],
+      [20, 168],
+      [34, 166],
+      [48, 168],
+      [62, 166],
+      [74, 170],
+      [86, 176],
+      [88, 186],
+      [70, 190],
+      [52, 189],
+      [38, 186],
+      [24, 182],
+      [14, 177]
+    ],
+    "anchor": [50, 178]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [79, 24],
+    "originInParent": [9, 166]
+  },
+  "composition": {
+    "marsh": 58,
+    "ocean": 18,
+    "river": 12,
+    "meadow": 8,
+    "alkali": 4
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "geoId": "the-saltmire",
+    "note": "A1 §3.1: a tidal basin of channels, mud, salt scrub and moving sandbars. No road crosses it and no keel drafts it. A1 §7.1: the channels are deliberately NOT drawn — they move.",
+    "labelAt": [50, 178]
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 1325.5,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [50, 178],
+    "resolvedSeedStreams": {
+      "terrain": "6a51ceff9e9b3d6a",
+      "settlements": "186056b83a75f47e",
+      "vegetation": "e018b751ecc10589",
+      "names": "11d56f680a7488dc"
+    },
+    "digest": "sha256:ba6adc8c1dea51dd3ff8264d9662616a12993448789519f50bbac568eef50a31"
+  }
+}

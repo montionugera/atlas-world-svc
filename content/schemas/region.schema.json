@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Atlas story node: region",
-  "description": "One entry of content/story/regions.json. Part of the F-012 per-kind story graph (see docs/superpowers/specs/2026-07-22-epic-story-pipeline-design.md).",
+  "description": "One entry of content/story/regions.json. Part of the F-012 per-kind story graph (see docs/superpowers/specs/2026-07-22-epic-story-pipeline-design.md). F-041: spineId is the foreign key into content/spine/nodes/ — resolution, uniqueness and tier printing are G-ALIAS (story half) in scripts/check_content.mjs.",
   "type": "object",
-  "required": ["id", "title", "kind", "summary", "links", "dangerTier"],
+  "required": ["id", "title", "kind", "summary", "links", "dangerTier", "spineId"],
   "additionalProperties": false,
   "properties": {
     "id": { "type": "string", "pattern": "^region-[a-z0-9]+(-[a-z0-9]+)*$" },
@@ -14,6 +14,7 @@
       "type": "array",
       "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
     },
-    "dangerTier": { "enum": ["safe", "low", "mid", "high"] }
+    "dangerTier": { "enum": ["safe", "low", "mid", "high"] },
+    "spineId": { "type": "string", "pattern": "^n-[a-z0-9]+(-[a-z0-9]+)*$" }
   }
 }

@@ -41,7 +41,7 @@ function run(scriptRelPath, args = []) {
 test("content gate is green on the real tree (no --require-complete)", () => {
   const { status, output } = run("scripts/check_content.mjs");
   assert.equal(status, 0, `expected exit 0, got ${status}:\n${output}`);
-  assert.match(output, /0 failures/);
+  assert.match(output, /[1-9]\d* nodes, 0 failures/);
 });
 
 // F-016 (Undertow) Task 2 deliberately reintroduces orphans: the plan's
@@ -85,7 +85,7 @@ test("content gate is green on the real tree (no --require-complete)", () => {
 test("content gate --require-complete: no orphans remain after Undertow Task 7", () => {
   const { status, output } = run("scripts/check_content.mjs", ["--require-complete"]);
   assert.equal(status, 0, `expected exit 0 (all orphans closed by Undertow Task 7), got ${status}:\n${output}`);
-  assert.match(output, /0 failures/);
+  assert.match(output, /[1-9]\d* nodes, 0 failures/);
   assert.doesNotMatch(output, /character ".*" is referenced by no quest, faction, event, or dialogue \(orphan\)/);
   assert.doesNotMatch(output, /faction ".*" is referenced by no quest, character, or event \(orphan\)/);
 });

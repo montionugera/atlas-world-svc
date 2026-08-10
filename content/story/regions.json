@@ -5,7 +5,8 @@
     "title": "Spawn Meadow",
     "summary": "The safe-ish landing: tall grass, expedition tents, training dummies.",
     "dangerTier": "safe",
-    "links": ["faction-expedition"]
+    "links": ["faction-expedition"],
+    "spineId": "n-frontier-shelf"
   },
   {
     "id": "region-icefield",
@@ -13,7 +14,8 @@
     "title": "Northern Icefield",
     "summary": "A frozen shelf ~175u north where freeze/stun zones occur naturally.",
     "dangerTier": "mid",
-    "links": ["faction-stoneguard"]
+    "links": ["faction-stoneguard"],
+    "spineId": "n-northern-icefield"
   },
   {
     "id": "region-thornveil",
@@ -21,7 +23,8 @@
     "title": "Thornveil",
     "summary": "Bramble forest east of the meadow; dense sightlines, ranged ambushes.",
     "dangerTier": "mid",
-    "links": ["faction-thornveil"]
+    "links": ["faction-thornveil"],
+    "spineId": "n-thornveil"
   },
   {
     "id": "region-millcross",
@@ -29,7 +32,8 @@
     "title": "Millcross",
     "summary": "Where every road's leftovers end up, and every leftover finds a place to stand.",
     "dangerTier": "safe",
-    "links": ["faction-expedition"]
+    "links": ["faction-expedition"],
+    "spineId": "n-millcross"
   },
   {
     "id": "region-embervale",
@@ -37,7 +41,8 @@
     "title": "Embervale",
     "summary": "A town that grieved its way into a war it didn't start.",
     "dangerTier": "low",
-    "links": ["faction-embervale-banner"]
+    "links": ["faction-embervale-banner"],
+    "spineId": "n-embervale"
   },
   {
     "id": "region-norhollow",
@@ -45,7 +50,8 @@
     "title": "Norhollow",
     "summary": "A town holding its palisade line and its temper by the same nail.",
     "dangerTier": "low",
-    "links": ["faction-norhollow-banner"]
+    "links": ["faction-norhollow-banner"],
+    "spineId": "n-norhollow"
   },
   {
     "id": "region-gildmark",
@@ -53,7 +59,8 @@
     "title": "Gildmark",
     "summary": "The port that sells peace by the pound and war by the crate — same ledger, different columns.",
     "dangerTier": "low",
-    "links": ["faction-gildmark-council", "faction-bellfaith"]
+    "links": ["faction-gildmark-council", "faction-bellfaith"],
+    "spineId": "n-gildmark"
   },
   {
     "id": "region-rooktide",
@@ -61,7 +68,8 @@
     "title": "Rooktide",
     "summary": "The town that came back — proof it can be done, if anyone's still willing to try.",
     "dangerTier": "safe",
-    "links": []
+    "links": [],
+    "spineId": "n-rooktide"
   },
   {
     "id": "region-ashvale-front",
@@ -69,7 +77,8 @@
     "title": "Ashvale Front",
     "summary": "The dead ground between Embervale and Norhollow where the war is fought in earnest; neither town claims it, and both bury their dead in it.",
     "dangerTier": "high",
-    "links": ["faction-embervale-banner", "faction-norhollow-banner", "faction-ashen-column"]
+    "links": ["faction-embervale-banner", "faction-norhollow-banner", "faction-ashen-column"],
+    "spineId": "n-ashvale-front"
   },
   {
     "id": "region-cindervast",
@@ -77,6 +86,7 @@
     "title": "Cindervast",
     "summary": "The city that answered a rebellion with a relic, and has been paying for it since.",
     "dangerTier": "high",
-    "links": ["faction-ashen-column", "faction-stoneguard"]
+    "links": ["faction-ashen-column", "faction-stoneguard"],
+    "spineId": "n-cindervast-town"
   }
 ]

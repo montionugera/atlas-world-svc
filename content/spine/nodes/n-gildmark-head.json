@@ -1,0 +1,93 @@
+{
+  "id": "n-gildmark-head",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Gildmark Head",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [22, 146],
+  "seed": {
+    "value": "80147f076c72d4d5",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [2, 142],
+      [20, 140],
+      [30, 152],
+      [28, 164],
+      [16, 168],
+      [2, 172]
+    ],
+    "anchor": [22, 146]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [28, 32],
+    "originInParent": [2, 140]
+  },
+  "composition": {
+    "rock": 38,
+    "meadow": 30,
+    "ocean": 14,
+    "built": 10,
+    "upland": 8
+  },
+  "interstitial": {
+    "rock": 38,
+    "meadow": 30,
+    "ocean": 14,
+    "built": 10,
+    "upland": 8
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "headland",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 6,
+    "labelAt": [22, 146]
+  },
+  "tags": [],
+  "levelBand": [30, 45],
+  "derived": {
+    "areaParentUnits2": 690,
+    "childAreaParentUnits2": 3.2,
+    "coveragePct": 0.463768115942029,
+    "unclaimedPct": 99.53623188405797,
+    "computedComposition": {
+      "built": 10.16695652173913,
+      "rock": 37.96289855072464,
+      "ocean": 13.99072463768116,
+      "meadow": 29.916521739130435,
+      "upland": 7.9628985507246375
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [22, 146],
+    "resolvedSeedStreams": {
+      "terrain": "11541a176ed1e9ac",
+      "settlements": "476899213eb09cba",
+      "vegetation": "dfb48aa0251d8bf1",
+      "names": "4417222909867d03"
+    },
+    "digest": "sha256:ece17451c81e9f4cfd7a6a69908e41bf16b37c86105f7f33fc44a352a9ddee9e"
+  }
+}

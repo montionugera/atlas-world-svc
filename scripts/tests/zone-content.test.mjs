@@ -123,6 +123,14 @@ test("schema rejects an unknown top-level property", () => {
   assert.equal(compile()({ ...zoneRecord("emberdown"), surprise: true }), false);
 });
 
+test("schema accepts an optional root spineId — the F-041 foreign key to content/spine/nodes/", () => {
+  const validate = compile();
+  assert.ok(
+    validate({ ...zoneRecord("emberdown"), spineId: "n-emberdown" }),
+    JSON.stringify(validate.errors, null, 2)
+  );
+});
+
 test("schema rejects an unknown property inside a resource", () => {
   const doc = zoneRecord("emberdown");
   doc.resources[0].yield = 3;
@@ -476,7 +484,7 @@ test("Z1: a record naming a zone the geography does not have fails", () => {
   // The orphan must be withheld from the summary count too, not just FAILed:
   // it is not pushed into `records`, so the ten real geography zones — not
   // eleven — are what the gate reports as covered.
-  assert.match(r.out, /\b10 zones,/);
+  assert.match(r.out, /\b10 zones, \d+ towns, 0 nodes,/);
 });
 
 test("Z1: all ten geography zone ids are accepted", () => {

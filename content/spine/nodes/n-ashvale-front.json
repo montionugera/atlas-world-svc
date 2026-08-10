@@ -1,0 +1,121 @@
+{
+  "id": "n-ashvale-front",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Ashvale Front",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "fea688ddeefe8c42",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [46, 44],
+      [72, 42],
+      [78, 60],
+      [76, 86],
+      [66, 96],
+      [50, 94],
+      [42, 76],
+      [42, 58]
+    ],
+    "anchor": [60, 60]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [36, 54],
+    "originInParent": [42, 42]
+  },
+  "composition": {
+    "alkali": 44,
+    "ash": 22,
+    "meadow": 18,
+    "rock": 10,
+    "marsh": 6
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "alkali-flat",
+  "features": [],
+  "bands": [
+    {
+      "id": "b-southern-lip",
+      "label": "the southern lip",
+      "levelBand": [10, 25],
+      "axis": "y",
+      "fromKm": 78,
+      "toKm": 96,
+      "attrs": {
+        "graveRows": true,
+        "note": "old burials, settled, marked, grassed over"
+      }
+    },
+    {
+      "id": "b-the-middle",
+      "label": "the middle",
+      "levelBand": [25, 50],
+      "axis": "y",
+      "fromKm": 60,
+      "toKm": 78,
+      "attrs": {
+        "graveRows": true,
+        "note": "rows still legible, some subsidence"
+      }
+    },
+    {
+      "id": "b-northern-deep",
+      "label": "the northern deep",
+      "levelBand": [55, 80],
+      "axis": "y",
+      "fromKm": 42,
+      "toKm": 60,
+      "attrs": {
+        "graveRows": false,
+        "note": "A1 §7.2: drawn as BARE hatch with no rows — the Bell School does not publish an inventory of its own unfinished work"
+      }
+    }
+  ],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 8,
+    "gradient": true,
+    "note": "A1 §4.3: not a band but a gradient, deepening north. Only region in the bestiary with species in all eight level bands.",
+    "labelAt": [70, 36]
+  },
+  "tags": [],
+  "levelBand": [10, 80],
+  "derived": {
+    "areaParentUnits2": 1628,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [60, 60],
+    "resolvedSeedStreams": {
+      "terrain": "c49af60a9fb6ecaf",
+      "settlements": "89408b622aa41e5b",
+      "vegetation": "0e2d0e9b931c67a9",
+      "names": "b8329bc7e025c23e"
+    },
+    "digest": "sha256:5a9aa503739fc0e4bc5f80e24c5512b1566748fdf69b8b851151e31ee15cb3c6"
+  }
+}

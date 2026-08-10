@@ -1,0 +1,80 @@
+{
+  "id": "n-gildmark",
+  "tier": "town",
+  "parentId": "n-gildmark-head",
+  "title": "Gildmark",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [11, 157],
+  "seed": {
+    "value": "905061f812c67b0b",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "rect",
+    "rect": {
+      "x": 10,
+      "y": 156.2,
+      "w": 2,
+      "h": 1.6
+    },
+    "anchor": [11, 157]
+  },
+  "interior": {
+    "units": "u",
+    "perParentUnit": 100,
+    "size": [200, 160],
+    "originInParent": [10, 156.2],
+    "anchorInInterior": [100, 80]
+  },
+  "composition": {
+    "built": 46,
+    "rock": 30,
+    "ocean": 12,
+    "meadow": 12
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 2,
+    "emblem": "a harbour scale with one pan lower",
+    "reason": "The only rock on a silted coast, next to the only water deep enough for a sea keel",
+    "labelAnchor": "east"
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 3.2,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [11, 157],
+    "resolvedSeedStreams": {
+      "terrain": "e267dffcf9a91599",
+      "settlements": "3f19e0e3f58de814",
+      "vegetation": "8a6f782a5738167c",
+      "names": "16b8b26a0d666df5"
+    },
+    "digest": "sha256:f1b66a5dabe03660d40813ddf7c1f2f9014877ff0a749edb9e5bee7542c7a07c"
+  }
+}

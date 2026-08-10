@@ -12,5 +12,5 @@ test("story.json is gone; per-kind files exist", () => {
 });
 test("gate is green on migrated content", () => {
   const out = execFileSync(process.execPath, [join(ROOT,"scripts/check_content.mjs")], { encoding:"utf8" });
-  assert.match(out, /0 failures/);
+  assert.match(out, /[1-9]\d* nodes, 0 failures/);
 });

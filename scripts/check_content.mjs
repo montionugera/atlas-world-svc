@@ -3,7 +3,7 @@
 // Spec: docs/superpowers/specs/2026-07-19-content-pipeline-design.md
 // Discipline mirrors scripts/check_asset_manifest.mjs: warns allowed at exit 0,
 // any hard failure exits 1, --require-complete escalates coverage warns.
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { dirname, resolve, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
@@ -20,6 +20,10 @@ import {
   floodFillRegions,
   cellIndexAt,
 } from "./lib/town-geometry.mjs";
+// F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
+// file ends in a bare main() + process.exit() and is not importable, so gate
+// tests spawn it as a child process against fixture content roots.
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -30,7 +34,9 @@ function parseArgs(argv) {
     manifest: join(ROOT, "game-client/assets/manifest.json"),
     mobTypes: join(ROOT, "colyseus-server/generated/mob-types.json"),
     spawnAreas: join(ROOT, "colyseus-server/generated/spawn-areas.json"),
+    artManifest: join(ROOT, "game-client/assets/art/art-manifest.json"),
     requireComplete: false,
+    only: null,
   };
   const takeValue = (name, i) => {
     const v = argv[i];
@@ -44,7 +50,12 @@ function parseArgs(argv) {
     else if (a === "--manifest") opts.manifest = resolve(takeValue(a, ++i));
     else if (a === "--mob-types") opts.mobTypes = resolve(takeValue(a, ++i));
     else if (a === "--spawn-areas") opts.spawnAreas = resolve(takeValue(a, ++i));
+    else if (a === "--art-manifest") opts.artManifest = resolve(takeValue(a, ++i));
     else if (a === "--require-complete") opts.requireComplete = true;
+    else if (a === "--only" || a.startsWith("--only=")) {
+      opts.only = a.startsWith("--only=") ? a.slice("--only=".length) : takeValue(a, ++i);
+      if (opts.only !== "spine") { console.error(`unsupported --only value: ${opts.only} (only "spine" exists)`); process.exit(2); }
+    }
     else { console.error(`unknown arg: ${a}`); process.exit(2); }
   }
   return opts;
@@ -170,6 +181,15 @@ function listContentFiles(dir, label) {
 
 function main() {
   const opts = parseArgs(process.argv);
+  if (opts.only === "spine") {
+    // Gate 1 fast path (--only=spine): structural spine gates only (~1 s),
+    // not the whole content sweep. finish() still owns exit-code semantics.
+    // G-RUNTIME (F-041 P4) needs the mob-type set too, so load it here —
+    // same loader, same null-on-failure discipline as the full sweep below.
+    const mobTypes = loadMobTypes(opts.mobTypes);
+    const nodeCount = checkSpine(opts, mobTypes);
+    return finish(0, 0, 0, 0, 0, 0, nodeCount);
+  }
   const mobTypes = loadMobTypes(opts.mobTypes);
   const story = checkStory(opts, mobTypes);
   const sheetCount = checkCharacters(opts, story.ids);
@@ -177,7 +197,8 @@ function main() {
   const placementCount = checkBestiaryPlacement(opts);
   const zoneCount = checkZoneContent(opts);
   const townCount = checkTownPlan(opts);
-  return finish(sheetCount, mapCount, story.count, placementCount, zoneCount, townCount);
+  const nodeCount = checkSpine(opts, mobTypes);
+  return finish(sheetCount, mapCount, story.count, placementCount, zoneCount, townCount, nodeCount);
 }
 
 // F-012: loadStory() (reads all 7 per-kind story files under
@@ -1118,23 +1139,53 @@ function townRegionTouchesEdge(grid, labels, region) {
   return false;
 }
 
-// T1/T2/T3/T5. Mirrors checkZoneContent's structure exactly: soft-skip, compile,
-// load the geography, then one pass that FAILs a schema-invalid record and
-// `continue`s rather than letting a malformed shape reach the rules.
-function checkTownPlan(opts) {
-  const dir = join(opts.contentRoot, "towns");
-  if (!existsSync(dir)) return 0;
-  const files = readdirSync(dir).filter((f) => /^town-.+\.json$/.test(f)).sort();
-  if (!files.length) return 0;
+// The ONE read of content/towns/*.json. Two consumers need the same list —
+// checkTownPlan (the T-rules) and checkSpine (the G-TOWN-* gates) — and before
+// this was shared each read its own copy, so an unparsable plan earned TWO
+// identical FAIL lines and checkSpine consumed plans NO schema had ever seen
+// (a plan missing footprints[0].rect crashed townCompErrors, and an uncaught
+// throw skips finish(), silently dropping every FAIL recorded before it).
+//
+// Returns the ONE `plans` shape documented in lib/spine.mjs (planForNode):
+// [{ file, doc }], schema-VALID docs only. Memoised per content root because
+// the gate is one-shot per root — `--only=spine` calls this without
+// checkTownPlan ever running, and the full sweep calls it from both.
+let townPlansCache = null;
+function loadTownPlans(opts) {
+  if (townPlansCache && townPlansCache.root === opts.contentRoot) return townPlansCache.plans;
+  const { plans: raw, unreadable } = readTownPlans({ contentRoot: opts.contentRoot });
+  const plans = [];
+  // Soft-skip BEFORE touching the schema: every fixture in
+  // check_content.test.mjs and bestiary-placement.test.mjs has a content root
+  // that never adopted town plans, and those roots must not FAIL with
+  // "town-plan schema: cannot read/parse".
+  if (raw.length || unreadable.length) {
+    for (const u of unreadable) fail(`${u.file}: cannot read/parse ${u.path}: ${u.message}`);
+    const validate = compileSchema(
+      join(opts.contentRoot, "schemas/town-plan.schema.json"),
+      "town-plan schema", fail);
+    if (validate) {
+      for (const { file, doc } of raw) {
+        if (!validate(doc)) {
+          for (const err of validate.errors)
+            fail(`${file}: schema ${err.instancePath || "/"} ${err.message}`);
+          continue; // downstream rules and gates assume a valid shape
+        }
+        plans.push({ file, doc });
+      }
+    }
+  }
+  townPlansCache = { root: opts.contentRoot, plans };
+  return plans;
+}
 
-  // Skip BEFORE touching the schema: every fixture in check_content.test.mjs
-  // and bestiary-placement.test.mjs has a content root that never adopted town
-  // plans, and those roots must not FAIL with "town-plan schema: cannot
-  // read/parse".
-  const validate = compileSchema(
-    join(opts.contentRoot, "schemas/town-plan.schema.json"),
-    "town-plan schema", fail);
-  if (!validate) return 0;
+// T1/T2/T3/T5. Mirrors checkZoneContent's structure exactly: soft-skip, compile,
+// load the geography, then one pass over the SCHEMA-VALID plans (loadTownPlans
+// above already FAILed and dropped the malformed ones, so no rule below ever
+// sees a bad shape).
+function checkTownPlan(opts) {
+  const plans = loadTownPlans(opts);
+  if (!plans.length) return 0;
 
   // REQUIRED once a town plan exists: T1 is an assertion against the
   // Cartographer's geography, which is the authority on which towns exist.
@@ -1143,20 +1194,7 @@ function checkTownPlan(opts) {
 
   const records = []; // { label, file, doc, roadQuads } for every valid plan naming a real town
 
-  for (const file of files) {
-    const label = `towns/${file}`;
-    // Failure count, not the return value: a file holding literal `null`
-    // parses fine and must not be mistaken for a recorded FAIL.
-    const before = failures.length;
-    const doc = readJson(join(dir, file), label, fail);
-    if (failures.length > before) continue;
-
-    if (!validate(doc)) {
-      for (const err of validate.errors)
-        fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
-      continue; // downstream rules assume a valid shape
-    }
-
+  for (const { file: label, doc } of plans) {
     // T1 — the town exists in the Cartographer's geography. Like Z1 this does
     // NOT continue: T2/T3/T5 are purely intra-record, so bailing here would
     // hide real defects behind one typo. The orphan is FAILed and withheld
@@ -1292,7 +1330,7 @@ function checkTownPlan(opts) {
       }
     }
 
-    if (known) records.push({ label, file, doc, roadQuads });
+    if (known) records.push({ label, doc, roadQuads });
   }
 
   // ===== SEAM: cross-file town rules, if any, go here =====================
@@ -1305,7 +1343,806 @@ function checkTownPlan(opts) {
   return records.length;
 }
 
-function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0) {
+// F-041 Phase 5 — G-ALIAS (story half). Every content/story/regions.json
+// record must name the spine node it stands on (spineId), the reference
+// must resolve, and no two regions may claim the same node. Prints each
+// record's resolved tier ("spine-alias: region-millcross → n-millcross
+// (town)") so the story keyspace's tier contradiction is visible in gate
+// output rather than in someone's memory (research §8 G-ALIAS). `report`
+// is `warn` while region.schema.json keeps spineId optional, and `fail`
+// once it is required — that flip is this phase's deliberate red.
+// Self-contained: does its own loadSpine so it cannot depend on
+// checkSpine's internals; a content root without spine/ (every story-test
+// fixture) soft-skips, the same discipline checkSpine itself keeps. A
+// schema-invalid record missing spineId reports here AND as a schema FAIL
+// — uniform defense in depth, same as resolveStoryRefs states above.
+function checkSpineStoryAlias({ opts, report }) {
+  const spine = loadSpine({ contentRoot: opts.contentRoot });
+  if (!spine.present) return; // no spine table in this content root
+  const regionsPath = join(opts.contentRoot, "story", "regions.json");
+  if (!existsSync(regionsPath)) return; // no story in this content root
+  const before = failures.length;
+  const doc = readJson(regionsPath, "spine-alias", fail);
+  if (failures.length > before || !Array.isArray(doc)) return;
+  const byId = new Map(spine.nodes.map((n) => [n.id, n]));
+  const claimed = new Map(); // spineId -> region id (unique per node)
+  for (const r of doc) {
+    if (!r || typeof r.id !== "string") continue; // record shape is checkStory's business
+    if (typeof r.spineId !== "string") {
+      report(`spine-alias: story/regions.json#${r.id}: missing spineId`);
+      continue;
+    }
+    const node = byId.get(r.spineId);
+    if (!node) {
+      report(`spine-alias: story/regions.json#${r.id}: spineId "${r.spineId}" does not resolve to a spine node`);
+      continue;
+    }
+    if (claimed.has(r.spineId)) {
+      report(`spine-alias: story/regions.json#${r.id}: spineId "${r.spineId}" already claimed by ${claimed.get(r.spineId)}`);
+      continue;
+    }
+    claimed.set(r.spineId, r.id);
+    console.log(`spine-alias: ${r.id} → ${r.spineId} (${node.tier})`);
+  }
+}
+
+// F-041 Phase 5 — G-ALIAS (external-reference sweep). Spec: "G-ALIAS
+// sweeps every external spatial reference … and prints each record's
+// resolved tier." The story-regions half lives above; this function sweeps
+// the other five sources. Resolution rules (documented HERE, nowhere else;
+// enumerated against the real content on 2026-08-09):
+//   1. content/zones/zone-*.json  — `spineId` is OPTIONAL (contract §1,
+//      Task 3.3): absent is legal and swept over silently; present must
+//      resolve to a spine node.
+//   2. content/towns/town-*.json  — `spineId` REQUIRED since Phase 3; must
+//      resolve. The sweep line prints HERE — G-TOWN-FRAME joins the
+//      geometry but never prints the "<file> → <node> (<tier>)" line.
+//   3. content/bestiary/bestiary.json[].region and placement-*.json `zone`
+//      — bare slugs ("millcross", "thornveil", …); rule: `n-<slug>` must
+//      be a spine node (any tier). bestiary.json prints one line per
+//      DISTINCT slug with a row count, not one per mob row (116 rows,
+//      9 distinct regions).
+//   4. content/characters/*.md links.story `region-*` ids — two-step join:
+//      the story regions record with that id, then its spineId. A region
+//      record with a missing or dangling spineId reports here per
+//      character file (defense in depth with the story half above).
+//   5. art-manifest `art:town-<slug>` keys — rule: exactly one of
+//      [n-<slug>, n-<slug>-town] with tier "town" wins; the "-town" suffix
+//      is Phase 1's zone/town id-collision escape (art:town-cindervast →
+//      n-cindervast-town, because n-cindervast is the tier-region zone).
+// Same report-severity contract as checkSpineStoryAlias: `warn` in this
+// task, `fail` after the Task 5.2 flip. Same soft-skip: a content root
+// without spine/ (every pre-F-041 fixture) returns immediately.
+function checkSpineExternalAliases({ opts, report }) {
+  const spine = loadSpine({ contentRoot: opts.contentRoot });
+  if (!spine.present) return;
+  const byId = new Map(spine.nodes.map((n) => [n.id, n]));
+  const say = (label, node) => console.log(`spine-alias: ${label} → ${node.id} (${node.tier})`);
+  const slugNode = (slug) => byId.get(`n-${slug}`) ?? null;
+  const townNode = (slug) =>
+    [byId.get(`n-${slug}`), byId.get(`n-${slug}-town`)].find((n) => n && n.tier === "town") ?? null;
+
+  // (1) zone content (spineId optional) + (2) town plans (spineId required)
+  for (const [dir, required] of [["zones", false], ["towns", true]]) {
+    const d = join(opts.contentRoot, dir);
+    if (!existsSync(d)) continue;
+    for (const f of readdirSync(d).filter((n) => n.endsWith(".json")).sort()) {
+      const before = failures.length;
+      const doc = readJson(join(d, f), `spine-alias ${dir}/${f}`, fail);
+      if (failures.length > before || !doc) continue;
+      if (typeof doc.spineId !== "string") {
+        if (required) report(`spine-alias: ${dir}/${f}: missing spineId`);
+        continue;
+      }
+      const node = byId.get(doc.spineId);
+      if (!node) {
+        report(`spine-alias: ${dir}/${f}: spineId "${doc.spineId}" does not resolve to a spine node`);
+        continue;
+      }
+      say(`${dir}/${f}`, node);
+    }
+  }
+
+  // (3) bestiary regions (distinct, counted) + placement zones
+  const bdir = join(opts.contentRoot, "bestiary");
+  if (existsSync(bdir)) {
+    const rows = readJson(join(bdir, "bestiary.json"), "spine-alias bestiary", () => {});
+    if (Array.isArray(rows)) {
+      const counts = new Map();
+      for (const m of rows)
+        if (m && typeof m.region === "string") counts.set(m.region, (counts.get(m.region) ?? 0) + 1);
+      for (const [slug, n] of [...counts.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
+        const node = slugNode(slug);
+        if (!node) {
+          report(`spine-alias: bestiary.json region "${slug}": n-${slug} is not a spine node`);
+          continue;
+        }
+        say(`bestiary.json region "${slug}" ×${n}`, node);
+      }
+    }
+    for (const f of readdirSync(bdir).filter((n) => n.startsWith("placement-") && n.endsWith(".json")).sort()) {
+      const doc = readJson(join(bdir, f), `spine-alias bestiary/${f}`, fail);
+      const slug = doc && typeof doc.zone === "string" ? doc.zone : null;
+      if (!slug) continue;
+      const node = slugNode(slug);
+      if (!node) {
+        report(`spine-alias: bestiary/${f}: zone "${slug}": n-${slug} is not a spine node`);
+        continue;
+      }
+      say(`bestiary/${f}`, node);
+    }
+  }
+
+  // (4) characters links.story region-* → story regions record → spineId
+  const regionsPath = join(opts.contentRoot, "story", "regions.json");
+  const regionRecords = existsSync(regionsPath) ? readJson(regionsPath, "spine-alias regions", () => {}) : null;
+  const spineIdOfRegion = new Map(
+    (Array.isArray(regionRecords) ? regionRecords : []).map((r) => [r?.id, r?.spineId]),
+  );
+  const charDir = join(opts.contentRoot, "characters");
+  if (existsSync(charDir)) {
+    for (const f of listContentFiles(charDir, "characters")) {
+      const parsed = splitFrontmatter(readFileSync(join(charDir, f), "utf8").replace(/\r\n/g, "\n"), `characters/${f}`);
+      const storyLinks = Array.isArray(parsed?.fm?.links?.story) ? parsed.fm.links.story : [];
+      for (const sid of storyLinks.filter((s) => typeof s === "string" && s.startsWith("region-"))) {
+        const spineId = spineIdOfRegion.get(sid);
+        const node = typeof spineId === "string" ? byId.get(spineId) : null;
+        if (!node) {
+          report(`spine-alias: characters/${f}: links.story "${sid}" has no resolving spineId in story/regions.json`);
+          continue;
+        }
+        say(`characters/${f} ${sid}`, node);
+      }
+    }
+  }
+
+  // (5) art:town-* manifest keys. Unlike (1)-(4), this reads opts.artManifest
+  // — a path OUTSIDE opts.contentRoot that defaults to the REAL committed
+  // art-manifest.json regardless of which content root is under test. That
+  // default is only meaningful paired with the REAL content root (the six
+  // real town ids it lists). Any other content root — every one of
+  // spine-gates.test.mjs's ~45 minimal structural fixtures included — would
+  // otherwise always FAIL this the moment report is `fail`, a false red
+  // about content the fixture never claimed to carry. Soft-skip precisely
+  // that false-positive pairing (default manifest + non-real content root);
+  // an explicit `--art-manifest` override (the Task 5.2 HC-2 test) or the
+  // real content root (production, and the Task 5.2 alias-copy fixtures,
+  // which clone the full real content/ tree) still run the check. Found
+  // while running Task 5.2's flip: pre-existing gate tests ("base spine
+  // fixture is green", G-COMP-REPORT ×2, "P3 fixture scaffolding") went
+  // newly red with no in-plan explanation.
+  const usingDefaultArtManifest = opts.artManifest === join(ROOT, "game-client/assets/art/art-manifest.json");
+  const contentRootIsRealTree = opts.contentRoot === join(ROOT, "content");
+  if (!usingDefaultArtManifest || contentRootIsRealTree) {
+    const artDoc = readJson(opts.artManifest, "spine-alias art-manifest", fail);
+    for (const key of Object.keys(artDoc?.entries ?? {}).filter((k) => k.startsWith("art:town-")).sort()) {
+      const slug = key.slice("art:town-".length);
+      const node = townNode(slug);
+      if (!node) {
+        report(`spine-alias: art-manifest ${key}: no town-tier spine node n-${slug} / n-${slug}-town`);
+        continue;
+      }
+      say(`art-manifest ${key}`, node);
+    }
+  }
+}
+
+// ═══════════════════════ SPINE (F-041 Phase 0) ══════════════════════════
+// The tier-spine node table: content/spine/nodes/<id>.json, a flat table
+// joined on parentId. Phase 0 wires the structural gates G-ID, G-PARENT,
+// G-TREE, G-DEPTH, G-POLY, G-SEED, G-COMP-SUM. Geometry/derivation gates
+// (G-CONTAIN, G-FRAME, …) land in Phase 1. Returns the valid-node count
+// (finish() starts printing it in Phase 6).
+function checkSpine(opts, mobTypes) {
+  // Soft-skip BEFORE compiling the schema: a content root with no spine/ is
+  // valid (mirrors the maps/ soft-skip) and must not record a spurious
+  // "schema unreadable" failure — every pre-existing gate fixture depends on
+  // this ordering.
+  if (!existsSync(join(opts.contentRoot, "spine"))) return 0;
+
+  const validate = compileSchema(join(opts.contentRoot, "schemas/spine-node.schema.json"), "spine-node schema", fail);
+  if (!validate) return 0;
+
+  const spine = loadSpine({ contentRoot: opts.contentRoot });
+  for (const e of spine.errors) fail(`spine: ${e}`);
+
+  // F-041 P3: the town plans, SCHEMA-VALIDATED (loadTownPlans owns the read,
+  // the schema and the FAIL lines; memoised, so a full sweep shares one read
+  // with checkTownPlan and `--only=spine` — which never runs checkTownPlan —
+  // still validates before consuming). Loaded HERE, above gSpineFrames,
+  // because G-FRAME's town arrow needs the plan: research §3.2 makes the plan
+  // the authority on a town's interior.size/originInParent, and a gate that
+  // reads plan: null can never object to a drifted plan extent.
+  //
+  // JOIN CAVEAT — the two join keys are UNLINKED today. A plan carries
+  // `town` (joined to content/maps/cluster1-geography.json#towns by T1) and
+  // `spineId` (joined to this node table by G-TOWN-FRAME). Nothing checks the
+  // two name the SAME place: they agree only transitively, because
+  // anchor.geographyAt is byte-identical to the geography town's `at` and to
+  // the node's placement.anchor. Swap one plan's `spineId` for another town's
+  // node id and both joins still resolve — G-TOWN-FRAME catches it only
+  // because the anchors then disagree. G-ALIAS (Phase 5) is the gate that
+  // makes the identity explicit; until it lands, do not treat plan.town and
+  // plan.spineId as verified-equivalent handles on the same town.
+  const townPlans = loadTownPlans(opts);
+
+  const seenIds = new Map();   // G-ID: node ids AND feature ids, ONE case-sensitive namespace
+  const seenSeeds = new Map(); // G-SEED: seed.value → first owner
+  const validNodes = [];
+
+  for (const node of spine.nodes) {
+    const label = `spine/nodes/${node.file}`;
+    if (!validate(node)) {
+      for (const err of validate.errors) fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
+      continue; // downstream gates assume a valid shape
+    }
+    validNodes.push(node);
+
+    // G-ID — id === filename stem, keyspace regex, global uniqueness.
+    const stem = node.file.replace(/\.json$/, "");
+    if (node.id !== stem) fail(`G-ID: ${label}: id "${node.id}" !== filename stem "${stem}"`);
+    if (!ID_RE.test(node.id)) fail(`G-ID: ${label}: id "${node.id}" does not match ^n-[a-z0-9]+(-[a-z0-9]+)*$`);
+    if (seenIds.has(node.id)) fail(`G-ID: duplicate id "${node.id}" in ${label} (first seen in ${seenIds.get(node.id)})`);
+    else seenIds.set(node.id, label);
+    for (const f of node.features ?? []) {
+      if (typeof f?.id !== "string") continue;
+      if (seenIds.has(f.id)) fail(`G-ID: duplicate id "${f.id}" (feature in ${label}, first seen in ${seenIds.get(f.id)})`);
+      else seenIds.set(f.id, label);
+    }
+
+    // G-PARENT (per-node half) — parentId null iff depth 0.
+    const depth = TIER_DEPTH[node.tier];
+    if ((node.parentId === null) !== (depth === 0))
+      fail(`G-PARENT: ${node.id} (${node.tier}, depth ${depth}) has parentId ${JSON.stringify(node.parentId)} — parentId must be null iff depth 0`);
+
+    // G-POLY — polygon rings: >= 3 points, OPEN ring, no repeated consecutive
+    // point, strictly POSITIVE signed shoelace (abs() nowhere — a negative
+    // area is a winding failure, not a magnitude), no self-intersection.
+    if (node.placement?.shape === "polygon") {
+      const pts = node.placement.points ?? [];
+      if (pts.length < 3) fail(`G-POLY: ${node.id}: polygon has ${pts.length} points (need >= 3)`);
+      else {
+        const [fx, fy] = pts[0];
+        const [lx, ly] = pts[pts.length - 1];
+        if (fx === lx && fy === ly) fail(`G-POLY: ${node.id}: ring is closed (last point repeats first) — author OPEN rings`);
+        for (let i = 1; i < pts.length; i++)
+          if (pts[i][0] === pts[i - 1][0] && pts[i][1] === pts[i - 1][1])
+            fail(`G-POLY: ${node.id}: repeated consecutive point at index ${i}`);
+        const area = shoelaceArea({ points: pts });
+        if (!(area > 0)) fail(`G-POLY: ${node.id}: signed shoelace area ${area} is not strictly positive — ring is wound backwards`);
+        if (selfIntersects({ points: pts })) fail(`G-POLY: ${node.id}: polygon self-intersects`);
+      }
+    }
+
+    // G-SEED — literal 16-hex, globally unique (copy-paste node creation must
+    // mint a fresh seed), integer epoch >= 0, why non-empty IFF epoch > 0.
+    const seed = node.seed;
+    if (!SEED_RE.test(seed.value)) fail(`G-SEED: ${node.id}: seed.value "${seed.value}" is not 16 lowercase hex chars`);
+    else if (seenSeeds.has(seed.value)) fail(`G-SEED: duplicate seed.value "${seed.value}" on ${node.id} and ${seenSeeds.get(seed.value)} — two places would generate identically forever`);
+    else seenSeeds.set(seed.value, node.id);
+    if (!Number.isInteger(seed.epoch) || seed.epoch < 0)
+      fail(`G-SEED: ${node.id}: seed.epoch ${JSON.stringify(seed.epoch)} must be an integer >= 0`);
+    const hasWhy = typeof seed.why === "string" && seed.why.trim() !== "";
+    if (seed.epoch > 0 && !hasWhy) fail(`G-SEED: ${node.id}: epoch ${seed.epoch} > 0 requires a non-empty seed.why`);
+    if (seed.epoch === 0 && hasWhy) fail(`G-SEED: ${node.id}: seed.why must be null while epoch is 0 — it documents a reroll that never happened`);
+
+    // G-COMP-SUM — sum 100 ± 0.5, keys ∈ BIOMES, no zero/negative values
+    // (omit the key instead of writing 0, so diffs stay honest).
+    let compSum = 0;
+    for (const [b, v] of Object.entries(node.composition ?? {})) {
+      if (!BIOMES.includes(b)) fail(`G-COMP-SUM: ${node.id}: composition key "${b}" is not a biome (${BIOMES.join(" ")})`);
+      if (typeof v !== "number" || !(v > 0)) fail(`G-COMP-SUM: ${node.id}: composition.${b} = ${JSON.stringify(v)} — values must be numbers > 0 (omit the key instead of 0)`);
+      else compSum += v;
+    }
+    if (Math.abs(compSum - 100) > 0.5) fail(`G-COMP-SUM: ${node.id}: composition sums to ${compSum} — must be 100 ± 0.5`);
+  }
+
+  // G-PARENT (table half) — every declared root must exist as a node …
+  for (const r of spine.roots)
+    if (!validNodes.some((n) => n.id === r)) fail(`G-PARENT: roots.json lists ${r} but no such node exists`);
+
+  // … and buildTree reports the reverse (a depth-0 node roots.json omits),
+  // plus dangling parents, cycles and orphan islands.
+  const tree = buildTree({ nodes: validNodes, rootIds: spine.roots });
+  for (const e of tree.errors) fail(e.startsWith("root ") ? `G-PARENT: ${e}` : `G-TREE: ${e}`);
+
+  // G-DEPTH — child depth === parent depth + 1, the rule that kills
+  // "region means three things" permanently.
+  for (const n of validNodes) {
+    if (n.parentId === null) continue;
+    const parent = tree.byId.get(n.parentId);
+    if (!parent) continue; // dangling — already a G-TREE failure
+    if (!depthLegal({ parentTier: parent.tier, childTier: n.tier }))
+      fail(`G-DEPTH: ${n.id} (${n.tier}, depth ${TIER_DEPTH[n.tier]}) under ${parent.id} (${parent.tier}, depth ${TIER_DEPTH[parent.tier]}) — child depth must be parent depth + 1`);
+  }
+
+  // F-041 Phase 1: G-CONTAIN + G-ANCHOR. Boundary-touching points count as
+  // inside (tolerance 0.01 parent units) — the sheet's ice edge and south rim
+  // put real vertices exactly on the continent outline. Mirrors checkTownPlan/
+  // checkZoneContent's discipline: walk the SCHEMA-VALIDATED list, never the
+  // raw loadSpine() one — a schema-invalid node already got its clean FAIL
+  // line above and `continue`d out of validNodes; reaching into its missing
+  // `placement` here would crash instead of reporting.
+  gSpineGeometry({ nodes: validNodes, tree, fail });
+
+  // F-041 Phase 1: G-FRAME, G-SCALE, G-DERIVED-DRIFT, G-PROVENANCE. Same
+  // validNodes discipline as gSpineGeometry above. P3: `plans` activates
+  // G-FRAME's reversed town arrow and G-DERIVED-DRIFT's rollupVerdict.
+  gSpineFrames({ nodes: validNodes, tree, plans: townPlans, fail });
+
+  // F-041 Phase 1 Task 1.8: G-FROZEN lands BEFORE G-NET/G-CANON-LEG — the
+  // leg gate's both-endpoints-frozen dependency means nothing without it.
+  // Same validNodes discipline; edges have no schema so spine.edges is
+  // passed through as-is (nothing to filter against).
+  gSpineFrozen({ nodes: validNodes, tree, fail });
+  gSpineNet({ nodes: validNodes, edges: spine.edges, tree, fail });
+
+  // F-041 Phase 1 Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT. Both PRINT on
+  // every run that reaches this point (spine/ present, schema compiles).
+  gSpineBudgets({ spine, tree, plans: townPlans, contentRoot: opts.contentRoot, fail });
+
+  // F-041 Phase 1 Task 1.11 reported this as WARN until the two authoring
+  // debts (8 measured overlap pairs, the n-cluster1 union identity) were
+  // paid off in Task 1.12. Task 1.13 flips `report` from `warn` to `fail` —
+  // the world is disjoint now, so G-OVERLAP + G-COMP-ROLLUP are enforced.
+  gSpineOverlapRollup({ tree, report: fail });
+
+  // ── F-041 P3: town plans join the spine on plan.spineId (G-TOWN-FRAME) ──
+  // `townPlans` is the schema-VALID list loaded at the top of this function —
+  // a plan missing footprints[0].rect earns its own clean schema FAIL there
+  // and never reaches townCompErrors' normRect (which would TypeError, skip
+  // finish(), and swallow every FAIL recorded before it).
+  for (const e of townFrameErrors({ tree, plans: townPlans })) fail(`G-TOWN-FRAME: ${e}`);
+  for (const e of townCompErrors({ tree, plans: townPlans })) fail(`G-TOWN-COMP: ${e}`);
+  // validNodes, not spine.nodes: a schema-invalid node already earned its
+  // clean FAIL above, and reporting a fabricated G-TERRAINKIND line on top of
+  // it (composition is missing, so every implied biome reads 0%) is noise
+  // about a defect the author cannot act on. Same discipline as every gate
+  // above — one identifier, one list.
+  for (const e of terrainKindErrors({ nodes: validNodes })) fail(`G-TERRAINKIND: ${e}`);
+
+  // F-041 P4 — G-RUNTIME (HC-5: mapIds is string[], never a scalar).
+  // Live-map resolution only when the tree actually carries runtime map
+  // nodes — minimal fixture roots (Phase 1/3, runtime.mapIds: [] everywhere)
+  // must stay green (conflict note #5).
+  const hasMapNodes = [...tree.byId.values()].some(
+    (n) => Array.isArray(n.runtime?.mapIds) && n.runtime.mapIds.length > 0,
+  );
+  for (const e of checkRuntime({
+    tree,
+    mobTypes,
+    liveMapIds: hasMapNodes ? LIVE_MAP_IDS : [],
+  }).errors) fail(e);
+
+  // F-041 P4 — G-SPAWN-FIT: the first geometric check these rects have ever had
+  for (const e of checkSpawnFit({ tree }).errors) fail(e);
+
+  // F-041 P4 — G-SPAWN-ID-STABLE: pin against the committed union of both
+  // worlds' spawn ids (8 LEGACY_UNPAIRED + 3 F-031). Reads the runtime
+  // artifact; never writes it (HC-1). Soft-skip when the content root has
+  // no frozen file — Phase 1/3 minimal fixture roots don't carry the pin
+  // (conflict note #5); the real root and the Phase-4 overlay fixtures do.
+  const frozenPath = join(opts.contentRoot, "spine/frozen-spawn-ids.json");
+  if (existsSync(frozenPath)) {
+    const frozenIds = readJson(frozenPath, "frozen-spawn-ids", fail) ?? [];
+    const spawnDocForSpine = readJson(opts.spawnAreas, "spawn-areas(spine)", fail);
+    const runtimeIds = Array.isArray(spawnDocForSpine?.areas) ? spawnDocForSpine.areas.map((a) => a.id) : [];
+    for (const e of checkSpawnIdStable({ tree, frozenIds, runtimeIds }).errors) fail(e);
+  }
+
+  // F-041 P4 — G-ALIAS (playspace half): map region ids and representsNodeId
+  // resolve, tiers printed. Soft-skip when the map mirror is absent — fixture
+  // content roots without maps/ must not fail.
+  const frontierPath = join(opts.contentRoot, "maps/atlas-frontier.md");
+  if (existsSync(frontierPath)) {
+    const raw = readFileSync(frontierPath, "utf8");
+    const fmMatch = raw.match(/^---\n([\s\S]*?)\n---\n/);
+    const fm = fmMatch ? yaml.load(fmMatch[1]) : null;
+    const regionIds = [
+      ...(fm?.regions ?? []).map((r) => r.id),
+      ...(fm?.zoneHazards ?? []).map((h) => h.regionId),
+      ...(fm?.mobSpawnAreas ?? []).map((a) => a.regionId),
+      ...(fm?.links ?? []),
+    ].filter(Boolean);
+    const alias = checkPlayspaceAliases({ tree, regionIds });
+    for (const e of alias.errors) fail(e);
+    for (const l of alias.lines) console.log(l);
+  }
+
+  // F-041 P4 — G-SPINE-COMPLETE (both trees; escalates only under the flag)
+  const complete = checkSpineComplete({ tree });
+  for (const w of complete.warns) warn(w);
+  if (opts.requireComplete) for (const e of complete.errors) fail(e);
+  else for (const e of complete.errors) warn(e);
+
+  // F-041 P4 Task 4.9 — informational authored-vs-runtime geometry report
+  // (never FAIL). console.log only, no fail(), no warn(); degrades
+  // gracefully if the server file is unreadable.
+  try {
+    const mcSource = readFileSync(join(ROOT, "colyseus-server/src/config/mapConfig.ts"), "utf8");
+    const { rects } = parseRuntimeSpawnRects({ source: mcSource });
+    const { areas } = flattenSpawnAreas({ tree });
+    for (const line of spawnGeometryReportLines({ areas, runtimeRects: rects })) console.log(line);
+  } catch {
+    console.log("spawn-geometry: mapConfig.ts unreadable — report skipped (informational only)");
+  }
+
+  checkSpineStoryAlias({ opts, report: fail }); // flipped from `warn` — Phase 5 deliberate red
+  checkSpineExternalAliases({ opts, report: fail }); // flipped from `warn` — Phase 5 deliberate red
+
+  return validNodes.length;
+}
+
+const CONTAIN_TOL = 0.01;
+function distToSegment([px, py], [ax, ay], [bx, by]) {
+  const dx = bx - ax, dy = by - ay;
+  const t = dx || dy ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy))) : 0;
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+function ringOf(placement) {
+  if (placement.shape === "polygon") return placement.points;
+  if (placement.shape === "rect") {
+    const { x, y, w, h } = placement.rect;
+    return [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
+  }
+  return null; // point
+}
+function insideWithTol(pt, ring) {
+  if (pointInPolygon({ point: pt, points: ring })) return true;
+  for (let i = 0; i < ring.length; i++)
+    if (distToSegment(pt, ring[i], ring[(i + 1) % ring.length]) <= CONTAIN_TOL) return true;
+  return false;
+}
+function gSpineGeometry({ nodes, tree, fail }) {
+  for (const node of nodes) {
+    const ring = ringOf(node.placement);
+    // G-ANCHOR: anchor present, inside own placement.
+    const a = node.placement.anchor;
+    if (!Array.isArray(a) || a.length !== 2)
+      fail(`spine: G-ANCHOR ${node.id}: placement.anchor missing`);
+    else if (node.placement.shape === "point") {
+      if (a[0] !== node.placement.at[0] || a[1] !== node.placement.at[1])
+        fail(`spine: G-ANCHOR ${node.id}: point anchor must equal at`);
+    } else if (!insideWithTol(a, ring))
+      fail(`spine: G-ANCHOR ${node.id}: anchor [${a.join(", ")}] outside placement`);
+    // G-CONTAIN: child vertices + edge midpoints inside parent placement.
+    // Frame rule: a per=1 child placement continues the parent grid, so its
+    // points compare against the parent ring directly — no rebasing.
+    if (node.parentId) {
+      const parent = tree.byId.get(node.parentId);
+      const pRing = parent && ringOf(parent.placement);
+      if (pRing) {
+        const pts = node.placement.shape === "point" ? [node.placement.at] : ringOf(node.placement);
+        const samples = [...pts];
+        if (pts.length > 1)
+          for (let i = 0; i < pts.length; i++) {
+            const q = pts[(i + 1) % pts.length];
+            samples.push([(pts[i][0] + q[0]) / 2, (pts[i][1] + q[1]) / 2]);
+          }
+        for (const pt of samples)
+          if (!insideWithTol(pt, pRing)) {
+            fail(`spine: G-CONTAIN ${node.id}: placement point [${pt.join(", ")}] outside parent ${parent.id}`);
+            break;
+          }
+      }
+    }
+    // G-CONTAIN, feature half: features drawn inside this node's own placement.
+    // Frame rule: at perParentUnit === 1 a node's interior CONTINUES the parent
+    // grid, so feature coordinates are already parent-frame — identity. The
+    // rebased mapping (originInParent + p / per) applies only across a scale
+    // boundary (per ≠ 1; none exist until Phase 4).
+    for (const f of node.features ?? []) {
+      if (f.offSheet || !ring) continue;
+      const local = f.kind === "point" ? [f.at] : f.points;
+      // `interior` is schema-optional (spine-node.schema.json: {"type":"object"},
+      // no required sub-fields) — a node authored without it but WITH features
+      // must still get a clean skip here, not a TypeError.
+      if (!node.interior) continue;
+      const per = node.interior.perParentUnit, o = node.interior.originInParent;
+      for (const p of local) {
+        const inParentFrame = per === 1 ? p : [o[0] + p[0] / per, o[1] + p[1] / per];
+        if (!insideWithTol(inParentFrame, ring)) {
+          fail(`spine: G-CONTAIN ${node.id}: feature ${f.id} point [${p.join(", ")}] outside placement`);
+          break;
+        }
+      }
+    }
+  }
+}
+
+// F-041 Phase 1: G-FRAME, G-SCALE, G-DERIVED-DRIFT, G-PROVENANCE. Walks the
+// SCHEMA-VALIDATED node list (validNodes), never raw spine.nodes — the
+// same discipline gSpineGeometry follows above, and the fix Task 1.6
+// established for this exact class of bug.
+//
+// Two guards beyond a literal transcription of the brief, both required to
+// avoid crashing/hanging the PRE-EXISTING Phase-0 structural-gate fixtures
+// (g-id-duplicate-id, g-tree-cycle, etc.), whose nodes predate F-041 and
+// carry no `interior`/`provenance`/`derived` at all:
+//   - `interior`/`provenance` are schema-OPTIONAL — bare `node.interior.x`
+//     would TypeError on those fixtures; guarded with `if (node.interior)`
+//     / `if (p)` instead.
+//   - G-DERIVED-DRIFT's deriveNode() resolves absoluteAnchorRoot via
+//     composeToRoot(), which walks the FULL ancestor chain to root and
+//     LOOPS FOREVER on a cyclic parentId chain (g-tree-cycle fixture) —
+//     already a G-TREE failure on its own. Guarded on tree.depthOf.has(id):
+//     only nodes BFS-reached from a root (i.e. acyclic) are safe to
+//     recompute — mirrors check_spine_emit.mjs's own bail-before-derive on
+//     tree.errors.
+function gSpineFrames({ nodes, tree, plans, fail }) {
+  const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  // The reversed town arrow divides and subtracts authored decimals, so a
+  // CORRECT 220 comes back as 220.00000000000003 — JSON.stringify equality is
+  // the wrong comparator for it. Only the town arrow gets the tolerance; the
+  // bbox arrow stays byte-exact, because the derive-writer produces those
+  // bytes and G-DERIVED-DRIFT byte-compares them.
+  const near = (a, b) =>
+    Array.isArray(a) && Array.isArray(b) && a.length === b.length &&
+    a.every((v, i) => Number.isFinite(v) && Number.isFinite(b[i]) && Math.abs(v - b[i]) <= FRAME_EPS);
+  for (const node of nodes) {
+    // G-FRAME: interior.size/originInParent derived from bbox(placement) —
+    // EXCEPT a town with a spineId-linked plan, where research §3.2 reverses
+    // the arrow and the PLAN is the authority (size = plan.extent). With
+    // plan: null this branch was unreachable and a drifted plan extent
+    // changed nothing; the join is live now.
+    if (node.interior) {
+      const d = deriveInterior({ node, plan: planForNode({ plans, id: node.id }) });
+      const same = d.from === "plan" ? near : eq;
+      if (!same(node.interior.originInParent, d.originInParent))
+        fail(`spine: G-FRAME ${node.id}: interior.originInParent [${node.interior.originInParent.join(", ")}] != derived [${d.originInParent.join(", ")}]`);
+      if (!same(node.interior.size, d.size))
+        fail(`spine: G-FRAME ${node.id}: interior.size [${node.interior.size.join(", ")}] != derived [${d.size.join(", ")}] (${d.from === "plan" ? "the town plan's extent is the authority — research §3.2" : "bbox(placement) × perParentUnit"})`);
+      // G-SCALE: units differ from parent ⇒ perParentUnit ≠ 1, drawn from the
+      // pinned constant. NO area identity — HC-3.
+      if (node.parentId) {
+        const parent = tree.byId.get(node.parentId);
+        if (parent && parent.interior && node.interior.units !== parent.interior.units) {
+          if (node.interior.perParentUnit === 1)
+            fail(`spine: G-SCALE ${node.id}: units ${node.interior.units} under ${parent.interior.units} parent but perParentUnit 1`);
+          else if (node.interior.perParentUnit !== KM_TO_U)
+            fail(`spine: G-SCALE ${node.id}: perParentUnit ${node.interior.perParentUnit} is not the pinned km→u constant ${KM_TO_U}`);
+        }
+      }
+    }
+    // G-DERIVED-DRIFT: recomputation reproduces the committed block.
+    if (tree.depthOf.has(node.id) && !eq(node.derived, deriveNode({ tree, id: node.id, plans })))
+      fail(`spine: G-DERIVED-DRIFT ${node.id}: committed derived block does not match recomputation`);
+    // G-PROVENANCE: generated ⇒ pinned generator. (Reproduce-check activates
+    // with the first real generator; none exists in 1.8.)
+    const p = node.provenance;
+    if (p && p.authored === "generated" && (!p.generator || typeof p.generator.name !== "string" || typeof p.generator.version !== "string"))
+      fail(`spine: G-PROVENANCE ${node.id}: authored "generated" requires generator {name, version}`);
+  }
+}
+
+// F-041 Phase 1 Task 1.8: G-FROZEN — transitive freeze + byte-checked
+// absoluteAnchor. A node's composed anchor is its placement.anchor (which
+// lives in the PARENT's interior frame — same frame-continuation rule
+// gSpineGeometry's G-CONTAIN relies on) resolved up through the parent's own
+// chain to root; a root's composed anchor is its own anchor (no parent frame
+// to resolve through).
+function composedAnchor({ tree, node }) {
+  return node.parentId === null
+    ? node.placement.anchor
+    : resolveToRoot({ tree, id: node.parentId, point: node.placement.anchor });
+}
+// Walks the SCHEMA-VALIDATED node list (validNodes), same discipline as
+// gSpineGeometry/gSpineFrames. composedAnchor() resolves through
+// composeToRoot(), which — like deriveNode()'s composeToRoot call in
+// gSpineFrames — has no cycle detection and LOOPS FOREVER on a cyclic
+// parentId chain. Guarded the same way Task 1.7 established: only nodes
+// BFS-reached from a root (tree.depthOf.has(id)) are safe to recompute; a
+// cyclic/orphan island already carries its own G-TREE failure.
+function gSpineFrozen({ nodes, tree, fail }) {
+  const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  for (const node of nodes) {
+    if (!node.frozen) {
+      if (node.absoluteAnchor !== undefined)
+        fail(`spine: G-FROZEN ${node.id}: absoluteAnchor on an unfrozen node`);
+      continue;
+    }
+    if (node.parentId) {
+      const parent = tree.byId.get(node.parentId);
+      if (parent && !parent.frozen) fail(`spine: G-FROZEN ${node.id}: frozen but ancestor ${parent.id} is not`);
+    }
+    if (node.absoluteAnchor === undefined) {
+      fail(`spine: G-FROZEN ${node.id}: frozen without absoluteAnchor`);
+      continue;
+    }
+    if (!tree.depthOf.has(node.id)) continue; // cyclic/orphan — already a G-TREE failure, don't hang
+    const composed = composedAnchor({ tree, node });
+    if (!eq(node.absoluteAnchor, composed))
+      fail(`spine: G-FROZEN ${node.id}: absoluteAnchor [${node.absoluteAnchor.join(", ")}] != composed [${composed.join(", ")}]`);
+  }
+}
+
+// F-041 Phase 1 Task 1.8: G-NET (endpoint resolution + road-end proximity)
+// and G-CANON-LEG (±8% straight-line + frozen endpoints + relay hop ≤ 10).
+// `edges` is spine.edges — edges have no schema to validate against, unlike
+// nodes, so there is no "validEdges" list to filter through.
+function gSpineNet({ nodes, edges, tree, fail }) {
+  const featOwner = new Map(); // feature id -> owning node
+  for (const n of nodes) for (const f of n.features ?? []) featOwner.set(f.id, n);
+  const edgeById = new Map(edges.map((e) => [e.id, e]));
+  if (edgeById.size !== edges.length) fail(`spine: G-NET duplicate edge ids`);
+  const rootPoint = (ref, label) => {
+    if (ref.node) {
+      const n = tree.byId.get(ref.node);
+      if (!n) { fail(`spine: G-NET ${label}: endpoint node "${ref.node}" does not resolve`); return null; }
+      if (!tree.depthOf.has(n.id)) return null; // cyclic/orphan — already a G-TREE failure
+      return composedAnchor({ tree, node: n });
+    }
+    if (ref.feature) {
+      const owner = featOwner.get(ref.feature);
+      if (!owner) { fail(`spine: G-NET ${label}: endpoint feature "${ref.feature}" does not resolve`); return null; }
+      const f = owner.features.find((x) => x.id === ref.feature);
+      if (f.offSheet) return "offsheet";
+      if (!tree.depthOf.has(owner.id)) return null; // cyclic/orphan — already a G-TREE failure
+      return resolveToRoot({ tree, id: owner.id, point: f.at ?? f.points[0] });
+    }
+    if (ref.edge !== undefined) {
+      const target = edgeById.get(ref.edge);
+      if (!target) { fail(`spine: G-NET ${label}: endpoint edge "${ref.edge}" does not resolve`); return null; }
+      if (!Number.isInteger(ref.atIndex) || !target.points?.[ref.atIndex])
+        fail(`spine: G-NET ${label}: atIndex ${ref.atIndex} out of range on ${ref.edge}`);
+      return "edge-ref"; // proximity rule skipped by contract
+    }
+    fail(`spine: G-NET ${label}: endpoint is not {node}|{feature}|{edge, atIndex}`);
+    return null;
+  };
+  for (const e of edges) {
+    const ends = [rootPoint(e.from, e.id), rootPoint(e.to, e.id)];
+    for (const v of e.via ?? []) rootPoint(v, e.id);
+    if (e.kind === "road" && e.points?.length) {
+      // Edge points are authored in sheet km == root km under the per=1
+      // identity frame rule; road ends must sit within 1 root unit.
+      const tips = [e.points[0], e.points[e.points.length - 1]];
+      ends.forEach((end, i) => {
+        if (!Array.isArray(end)) return; // unresolved / offsheet / edge-ref
+        const d = Math.hypot(tips[i][0] - end[0], tips[i][1] - end[1]);
+        if (d > 1) fail(`spine: G-NET ${e.id}: road end [${tips[i].join(", ")}] is ${d.toFixed(2)} from its endpoint anchor`);
+      });
+    }
+    if (e.kind === "leg") {
+      for (const ref of [e.from, e.to]) {
+        const n = ref.node && tree.byId.get(ref.node);
+        if (n && !n.frozen) fail(`spine: G-CANON-LEG ${e.id}: endpoint ${n.id} is not frozen`);
+      }
+      if (Array.isArray(ends[0]) && Array.isArray(ends[1])) {
+        const d = Math.hypot(ends[0][0] - ends[1][0], ends[0][1] - ends[1][1]);
+        const s = e.attrs.straightKm;
+        if (Math.abs(d - s) / s > 0.08)
+          fail(`spine: G-CANON-LEG ${e.id}: straight-line ${d.toFixed(1)} vs straightKm ${s} breaks ±8%`);
+      }
+    }
+    if (e.kind === "relay") {
+      const chain = [e.from, ...(e.via ?? []), e.to].map((r) => rootPoint(r, e.id));
+      for (let i = 1; i < chain.length; i++) {
+        if (!Array.isArray(chain[i - 1]) || !Array.isArray(chain[i])) continue;
+        const hop = Math.hypot(chain[i][0] - chain[i - 1][0], chain[i][1] - chain[i - 1][1]);
+        if (hop > 10) fail(`spine: G-CANON-LEG ${e.id}: relay hop ${i} is ${hop.toFixed(1)} km > 10`);
+      }
+    }
+  }
+}
+
+// F-041 Phase 1 Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT. Both PRINT on
+// every run; the budgets in content/spine/*.json are the committed caps —
+// raising one is a reviewed commit, never a code change.
+//
+// Two deliberate departures from a literal transcription of the brief:
+//   - the per-node coverage-report loop walks `tree.byId.values()` (the
+//     schema-VALID node set the tree was built from), never raw
+//     `spine.nodes` — the same validNodes discipline gSpineGeometry/
+//     gSpineFrames/gSpineFrozen/gSpineNet already follow. A schema-invalid
+//     node (e.g. the G-SCHEMA-MISSING-PLACEMENT fixture) already earned its
+//     clean FAIL and `continue`d out of validNodes; rollupComposition()
+//     reads `node.placement` unconditionally and would crash on it.
+//   - `spine.budgets.load` / `.coverage` are schema-optional (loadSpine:
+//     "a MISSING budget file is null-not-error here — G-LOAD-BUDGET owns
+//     failing on it"). The Phase-0 structural-gate fixtures
+//     (g-id-duplicate-id, g-tree-cycle, etc.) ship no budget files at all,
+//     so destructuring `spine.budgets.load` unguarded would throw and
+//     swallow every FAIL those tests assert on (finish() never runs to
+//     print them). A missing budget file is its own clean FAIL instead.
+function gSpineBudgets({ spine, tree, plans, contentRoot, fail }) {
+  const dir = join(contentRoot, "spine");
+  let bytes = 0;
+  (function walkDir(d) {
+    for (const f of readdirSync(d, { withFileTypes: true })) {
+      if (f.isDirectory()) walkDir(join(d, f.name));
+      else if (f.name.endsWith(".json")) bytes += statSync(join(d, f.name)).size;
+    }
+  })(dir);
+
+  if (!spine.budgets.load) {
+    fail(`spine: G-LOAD-BUDGET: spine/load-budget.json is missing`);
+  } else {
+    const { maxNodes, maxBytes } = spine.budgets.load;
+    console.log(`spine-load: ${spine.nodes.length} nodes, ${bytes} bytes (budget ${maxNodes} nodes, ${maxBytes} bytes)`);
+    if (spine.nodes.length > maxNodes) fail(`spine: G-LOAD-BUDGET: ${spine.nodes.length} nodes > budget ${maxNodes}`);
+    if (bytes > maxBytes) fail(`spine: G-LOAD-BUDGET: ${bytes} bytes > budget ${maxBytes}`);
+  }
+
+  const totals = { CHECKED: 0, ASSERTED: 0, UNCHECKED: 0 };
+  for (const node of tree.byId.values()) {
+    const r = rollupComposition({ tree, id: node.id, plans });
+    totals[r.verdict]++;
+    console.log(`spine-comp: ${node.id} coverage=${r.coveragePct.toFixed(1)}% verdict=${r.verdict}`);
+  }
+  console.log(`spine-comp: totals CHECKED=${totals.CHECKED} ASSERTED=${totals.ASSERTED} UNCHECKED=${totals.UNCHECKED}`);
+
+  if (!spine.budgets.coverage)
+    fail(`spine: G-COMP-REPORT: spine/coverage-budget.json is missing`);
+  else if (totals.UNCHECKED > spine.budgets.coverage.maxUnchecked)
+    fail(`spine: G-COMP-REPORT: ${totals.UNCHECKED} UNCHECKED nodes > budget ${spine.budgets.coverage.maxUnchecked}`);
+}
+
+// F-041 Phase 1: G-OVERLAP + G-COMP-ROLLUP. `report` is warn until the two
+// authoring debts are paid (Task 1.12), then flipped to fail (Task 1.13) —
+// that flip changes only the argument at the call site above, not this body.
+//
+// One deliberate departure from a literal transcription of the brief: walks
+// `tree.byId.values()` (the schema-VALID node set the tree was built from),
+// never raw `spine.nodes` — the same validNodes discipline gSpineGeometry/
+// gSpineFrames/gSpineFrozen/gSpineNet/gSpineBudgets already follow. A
+// schema-invalid node has no entry in `tree.byId`, so treating it as
+// `parent` here (`parent.interior.units`, `rollupComposition({ tree, id })`
+// which does `tree.byId.get(id).placement`) would throw on `undefined`
+// instead of reporting — and an uncaught throw skips `finish()`, silently
+// dropping every FAIL recorded before it. `spine` is dropped from the
+// signature since nothing else in this function needs it. `parent.interior`
+// is also read optionally (`?.`) — schema doesn't require it — mirroring
+// gSpineFrames' `if (node.interior)` guard, even though every committed
+// node ships one today.
+function gSpineOverlapRollup({ tree, report }) {
+  for (const parent of tree.byId.values()) {
+    const kids = (tree.childrenOf.get(parent.id) ?? [])
+      .map((i) => tree.byId.get(i))
+      .filter((n) => n.placement.shape !== "point");
+    const cell = parent.interior?.units === "u" ? SPINE_CELL_U : SPINE_CELL_KM;
+    for (let i = 0; i < kids.length; i++)
+      for (let j = i + 1; j < kids.length; j++) {
+        const inter = gridIntersectionArea({ a: kids[i].placement, b: kids[j].placement, cell });
+        const limit = 0.005 * Math.min(placementArea({ placement: kids[i].placement }),
+                                       placementArea({ placement: kids[j].placement }));
+        if (inter > limit)
+          report(`spine: G-OVERLAP ${kids[i].id} ∩ ${kids[j].id}: ${inter.toFixed(1)} over limit ${limit.toFixed(1)}`);
+      }
+    if (kids.length >= 2) {
+      const sum = kids.reduce((s, k) => s + placementArea({ placement: k.placement }), 0);
+      const union = gridUnionArea({ placements: kids.map((k) => k.placement), cell });
+      const A = placementArea({ placement: parent.placement });
+      if (sum - union > 0.005 * A)
+        report(`spine: G-OVERLAP ${parent.id}: children double-count ${(sum - union).toFixed(1)} (limit ${(0.005 * A).toFixed(1)})`);
+    }
+    // G-COMP-ROLLUP — nodes with ≥ 1 child only (preamble note 3).
+    if ((tree.childrenOf.get(parent.id) ?? []).length === 0) {
+      if (parent.interstitial)
+        report(`spine: G-COMP-ROLLUP ${parent.id}: interstitial on a childless node`);
+      continue;
+    }
+    const r = rollupComposition({ tree, id: parent.id });
+    const U = r.unclaimedPct / 100;
+    if (U > 0.005 && !parent.interstitial && !parent.interstitialUnsurveyed)
+      report(`spine: G-COMP-ROLLUP ${parent.id}: unclaimed ${r.unclaimedPct.toFixed(1)}% but no interstitial`);
+    if (U <= 0.005 && parent.interstitial)
+      report(`spine: G-COMP-ROLLUP ${parent.id}: interstitial forbidden at U ≤ 0.005`);
+    const tol = parent.compositionTolerance ?? 3.0;
+    if (tol > 5.0) report(`spine: G-COMP-ROLLUP ${parent.id}: tolerance ${tol} over ceiling 5.0`);
+    if (parent.compositionTolerance !== null && !parent.toleranceWhy)
+      report(`spine: G-COMP-ROLLUP ${parent.id}: compositionTolerance without toleranceWhy`);
+    let l1 = 0;
+    for (const [k, delta] of Object.entries(r.perKeyDelta)) {
+      l1 += Math.abs(delta);
+      if (Math.abs(delta) > tol)
+        report(`spine: G-COMP-ROLLUP ${parent.id}: ${k} off by ${delta.toFixed(1)} pp (tol ${tol})`);
+    }
+    if (l1 > 8.0) report(`spine: G-COMP-ROLLUP ${parent.id}: L1 ${l1.toFixed(1)} pp > 8.0`);
+  }
+}
+
+function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0, nodeCount = 0) {
   for (const w of warnings) console.log(`WARN  ${w}`);
   for (const f of failures) console.log(`FAIL  ${f}`);
   // I-060 design §7: Z5's WARN is an accepted blind spot, so the ratio it
@@ -1322,7 +2159,7 @@ function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0
   // inverted silently.
   if (zoneCount > 0 || zoneHazardsTotal > 0)
     console.log(`zone-content: ${zoneHazardsUnmapped} of ${zoneHazardsTotal} hazards have no runtime effect`);
-  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${zoneCount} zones, ${townCount} towns, ${failures.length} failures, ${warnings.length} warnings`);
+  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${zoneCount} zones, ${townCount} towns, ${nodeCount} nodes, ${failures.length} failures, ${warnings.length} warnings`);
   process.exit(failures.length ? 1 : 0);
 }
 

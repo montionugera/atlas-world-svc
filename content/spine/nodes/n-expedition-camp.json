@@ -1,0 +1,76 @@
+{
+  "id": "n-expedition-camp",
+  "tier": "town",
+  "parentId": "n-meltwash-terrace",
+  "title": "the expedition camp",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "6aac045e702ae00e",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "rect",
+    "rect": {
+      "x": 95,
+      "y": 103.2,
+      "w": 2,
+      "h": 1.6
+    },
+    "anchor": [96, 104]
+  },
+  "interior": {
+    "units": "u",
+    "perParentUnit": 100,
+    "size": [200, 160],
+    "originInParent": [95, 103.2],
+    "anchorInInterior": [100, 80]
+  },
+  "composition": {
+    "meadow": 56,
+    "river": 20,
+    "built": 12,
+    "forest": 12
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "note": "canon.md §4: the Northern Icefield lies further north past Millcross's expedition camp."
+  },
+  "tags": ["camp"],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 3.2,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [96, 104],
+    "resolvedSeedStreams": {
+      "terrain": "01b9b4ea31a871e1",
+      "settlements": "9b20d247fb4951fb",
+      "vegetation": "dc8bff9426500ef8",
+      "names": "128e9fa2f7593487"
+    },
+    "digest": "sha256:0e7d309232c89077454ee9e40fac04ea8ff232fb8c223bdf54a270bdf98e8898"
+  }
+}

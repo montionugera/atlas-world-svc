@@ -1,0 +1,112 @@
+{
+  "id": "n-site-spawn-meadow",
+  "tier": "site",
+  "parentId": "n-frontier-shelf",
+  "title": "Spawn Meadow",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/atlas-frontier.md"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "a1c4e7902b5d38f6",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "rect",
+    "rect": {
+      "x": 350,
+      "y": 350,
+      "w": 300,
+      "h": 300
+    },
+    "anchor": [
+      500,
+      500
+    ]
+  },
+  "interior": {
+    "units": "u",
+    "perParentUnit": 1,
+    "size": [
+      300,
+      300
+    ],
+    "originInParent": [
+      350,
+      350
+    ]
+  },
+  "composition": {
+    "meadow": 90,
+    "built": 10
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [
+    {
+      "id": "f-spawnpoint-meadow",
+      "kind": "point",
+      "at": [
+        500,
+        500
+      ],
+      "attrs": {
+        "role": "spawnPoint"
+      }
+    }
+  ],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": [
+      350,
+      350
+    ],
+    "spawnAreas": [
+      {
+        "id": "meadow_wilds",
+        "x": 400,
+        "y": 400,
+        "width": 200,
+        "height": 200,
+        "mobType": "balanced",
+        "count": 3
+      }
+    ],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "summary": "The safe-ish landing: a 300u box around camp. Runtime-only ground; absent from the fiction geography."
+  },
+  "tags": [
+    "runtime-only"
+  ],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 90000,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [
+      500,
+      500
+    ],
+    "resolvedSeedStreams": {
+      "terrain": "f7132d60865e144d",
+      "settlements": "4da1eb02f0f980c5",
+      "vegetation": "454dd64251daf7a6",
+      "names": "39d46a1e98bfff50"
+    },
+    "digest": "sha256:1ec5c2d82ade632110f1f237fd5822db9b77fa443708f3b41ee617c38aef84cf"
+  }
+}
