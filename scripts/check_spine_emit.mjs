@@ -202,7 +202,15 @@ export function collectOutputs({ contentRoot }) {
   if (tree.byId.has("n-frontier-shelf")) {
     const frontierPath = join(contentRoot, "maps/atlas-frontier.md");
     let currentText = null;
-    try { currentText = readFileSync(frontierPath, "utf8"); } catch { /* fixture root has no maps/ — skip */ }
+    // ENOENT ONLY. A bare catch{} here turns every other read failure
+    // (EACCES, EISDIR, a directory where the mirror should be) into a
+    // silent mirror LOSS: the emitter would report "check clean" while one
+    // of its outputs simply stopped being emitted.
+    try { currentText = readFileSync(frontierPath, "utf8"); }
+    catch (e) {
+      if (e.code !== "ENOENT") return { errors: [`maps/atlas-frontier.md: cannot read: ${e.message}`] };
+      /* fixture root has no maps/ — skip */
+    }
     if (currentText != null) {
       const fr = renderFrontierFile({ tree, currentText });
       if (fr.errors.length) return { errors: fr.errors };

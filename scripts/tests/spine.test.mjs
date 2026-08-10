@@ -97,7 +97,7 @@ test("gridIntersectionArea / gridUnionArea are exact on cell-aligned rects", () 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, TRUNK_TIERS, checkSpineComplete, parseRuntimeSpawnRects, spawnGeometryReportLines, renderFrontierFile, FRONTIER_DOC } from "../lib/spine.mjs";
+import { loadSpine, buildTree, ancestorChain, subtreeIds, flattenSpawnAreas, checkRuntime, LIVE_MAP_IDS, BOUNDARY_THICKNESS_U, MOB_RADIUS_U, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, TRUNK_TIERS, checkSpineComplete, parseRuntimeSpawnRects, spawnGeometryReportLines, renderFrontierFile, FRONTIER_DOC, frontierSiteIds } from "../lib/spine.mjs";
 
 function tinyNode(id, tier, parentId, seedValue) {
   return {
@@ -574,16 +574,34 @@ test("G-SPAWN-FIT: an unknown mobType radius is its own failure, not a silent pa
   assert.ok(errors.some((e) => e.includes('no radius entry in MOB_RADIUS_U')), errors.join("\n"));
 });
 
+// `exempt` names the ids allowed to be frozen WITHOUT spine authorship (the
+// real gate passes LEGACY_UNPAIRED). Here that is the synthetic runtime-only
+// id, so the subset direction added by the Phase-4 review can't fire.
+const EXEMPT_RUNTIME_ONLY = new Set(["runtime_only"]);
+
 test("G-SPAWN-ID-STABLE is set equality against the frozen file, not superset", () => {
   const tree = runtimeTree(); // one spine area: area_x
-  const ok = checkSpawnIdStable({ tree, frozenIds: ["area_x", "runtime_only"], runtimeIds: ["runtime_only"] });
+  const ok = checkSpawnIdStable({ tree, frozenIds: ["area_x", "runtime_only"], runtimeIds: ["runtime_only"], exempt: EXEMPT_RUNTIME_ONLY });
   assert.deepEqual(ok.errors, []);
   // a rename on the spine side is missing+extra, not a pass
-  const bad = checkSpawnIdStable({ tree, frozenIds: ["area_y", "runtime_only"], runtimeIds: ["runtime_only"] });
+  const bad = checkSpawnIdStable({ tree, frozenIds: ["area_y", "runtime_only"], runtimeIds: ["runtime_only"], exempt: new Set(["runtime_only", "area_y"]) });
   assert.equal(bad.errors.length, 1);
   assert.match(bad.errors[0], /G-SPAWN-ID-STABLE/);
   assert.match(bad.errors[0], /missing: \[area_y\]/);
   assert.match(bad.errors[0], /extra: \[area_x\]/);
+});
+
+// Review finding 1 (MEDIUM), unit level. The union was seeded from the
+// runtime artifact, so an id present in BOTH tables could be deleted from the
+// spine with zero change to the union — and zero gate signal.
+test("G-SPAWN-ID-STABLE: a spine-side deletion of a DUAL-listed id is caught by the subset direction, not by the union", () => {
+  const tree = runtimeTree((ns) => { ns[2].runtime.spawnAreas = []; }); // area_x deleted from the spine
+  const frozenIds = ["area_x", "runtime_only"];
+  const runtimeIds = ["area_x", "runtime_only"]; // area_x is dual-listed: the union is UNCHANGED
+  const { errors } = checkSpawnIdStable({ tree, frozenIds, runtimeIds, exempt: EXEMPT_RUNTIME_ONLY });
+  assert.equal(errors.length, 1, errors.join("\n"));
+  assert.match(errors[0], /no longer authored in content\/spine\/nodes\/\*: \[area_x\]/);
+  assert.doesNotMatch(errors[0], /missing:/); // the union really is still equal — this is the added direction
 });
 
 test("G-ALIAS playspace half: region-<slug> resolves to n-site-<slug> and prints the tier", () => {
@@ -642,4 +660,90 @@ test("frontier emitter reproduces content/maps/atlas-frontier.md byte-exactly fr
   const { text, errors } = renderFrontierFile({ tree, currentText: current });
   assert.deepEqual(errors, []);
   assert.equal(text, current);
+});
+
+// ── F-041 P4 phase-review fix wave (unit level) ───────────────────────────
+
+// Review finding 2 (MEDIUM): a spawnAreas rect is ALWAYS node-local, but the
+// margin test bounds it against the MAP. area_x on the 250x500 site, moved to
+// (400,400), sits fully outside its owner yet keeps legal map margins.
+test("G-SPAWN-FIT: a spawn rect outside its OWNING node reds even when every map margin is legal", () => {
+  // n-site-a is (750,250) 250x500 inside a 1000x1000 map. Local (-700,-200)
+  // lands the rect at abs (50,50) 95x160: comfortable margins on all four
+  // sides, yet the rect is nowhere near the node that owns it.
+  const tree = runtimeTree((ns) => { ns[2].runtime.spawnAreas[0].x = -700; ns[2].runtime.spawnAreas[0].y = -200; });
+  const { errors } = checkSpawnFit({ tree });
+  assert.equal(errors.length, 1, errors.join("\n"));
+  assert.match(errors[0], /"area_x" rect \(-700,-200 95x160\) is not contained by its owning node "n-site-a" interior\.size \[250, 500\]/);
+  assert.doesNotMatch(errors[0], /margin/); // the margins really do pass — that was the hole
+  // overflowing the far edge is the same defect from the other side
+  const over = checkSpawnFit({ tree: runtimeTree((ns) => { ns[2].runtime.spawnAreas[0].x = 200; }) });
+  assert.ok(over.errors.some((e) => e.includes('is not contained by its owning node')), over.errors.join("\n"));
+});
+
+// Review finding 4 (MEDIUM): three readings of the same coordinate —
+// composeToRoot (canonical: o + origin/per), checkRuntime's originU walk and
+// flattenSpawnAreas (both plain sums) — agree ONLY at perParentUnit 1. A
+// per !== 1 in a runtime-bearing subtree is rejected rather than silently
+// resolved by whichever walk got there first.
+test("G-RUNTIME: perParentUnit !== 1 anywhere above a runtime-bearing node is an in-band FAIL", () => {
+  const tree = runtimeTree((ns) => { ns[2].interior.perParentUnit = 2; });
+  const { errors } = checkRuntime({ tree, mobTypes: new Set(["bramble_drake"]) });
+  assert.ok(errors.some((e) => /"n-site-a" carries runtime data under a scale boundary — "n-site-a" interior\.perParentUnit is 2/.test(e)),
+    errors.join("\n"));
+  assert.ok(errors.some((e) => e.includes("composeToRoot")), errors.join("\n"));
+});
+
+test("G-RUNTIME: the empty runtime stub every fiction node ships does NOT trip the per-unit guard (towns are legitimately per 100)", () => {
+  const tree = runtimeTree((ns) => {
+    ns[2].interior.perParentUnit = 100;
+    ns[2].runtime = { mapIds: [], originU: null, spawnAreas: [], mobSettings: null, seedDemoNPCs: false, collision: "none" };
+  });
+  const { errors } = checkRuntime({ tree, mobTypes: new Set(["bramble_drake"]) });
+  assert.deepEqual(errors.filter((e) => e.includes("scale boundary")), []);
+});
+
+// Review finding 3 (MEDIUM): FRONTIER_DOC.siteOrder hardcoded three sites, so
+// a 4th was silently omitted from the mirror. It is now an ORDER PIN over a
+// list DERIVED from the tree, and G-ALIAS gained the reverse direction.
+test("frontierSiteIds derives the site list from the tree; the constant only pins the order of known ids", () => {
+  const tree = runtimeTree((ns) => {
+    ns[1].id = "n-frontier-shelf";
+    for (const n of ns) if (n.parentId === "n-shelf") n.parentId = "n-frontier-shelf";
+    ns[2].id = "n-site-thornveil";
+    ns.push({ ...ns[2], id: "n-site-newvale", runtime: { mapIds: [], originU: null, spawnAreas: [], mobSettings: null, seedDemoNPCs: false, collision: "none" } });
+  });
+  const { ids, errors } = frontierSiteIds({ tree });
+  // pinned ids keep their committed order; the unknown 4th appends
+  assert.deepEqual(ids, ["n-site-thornveil", "n-site-newvale"]);
+  assert.deepEqual(errors.filter((e) => !e.includes("not found")), []);
+});
+
+test("G-ALIAS reverse: a site authored under the playspace but missing from the map mirror reds", () => {
+  const tree = runtimeTree((ns) => {
+    ns[1].id = "n-frontier-shelf";
+    for (const n of ns) if (n.parentId === "n-shelf") n.parentId = "n-frontier-shelf";
+    ns[2].id = "n-site-thornveil";
+  });
+  assert.deepEqual(checkPlayspaceAliases({ tree, regionIds: ["region-thornveil"] }).errors, []);
+  const { errors } = checkPlayspaceAliases({ tree, regionIds: [] });
+  assert.equal(errors.length, 1, errors.join("\n"));
+  assert.match(errors[0], /spine site "n-site-thornveil" has no map region "region-thornveil"/);
+});
+
+// Review finding 7 (LOW/OPTIONAL): LIVE_MAP_IDS was triplicated (this
+// library, mapDimensions.test.ts, and the mapConfig/mobSpawnConfig branches)
+// with nothing binding the copies. mapConfig.ts is NOT scannable — two of the
+// four ids never appear in it (map-01-sector-a and map-for-play live in
+// GameRoom/the client picker), so a scan there would be a false-green. But
+// colyseus-server/src/config/mobSpawnConfig.ts keys MAP_MOB_SETTINGS by
+// exactly the live ids, in one top-level object literal: that IS the list, so
+// bind to it. A format change cannot silently pass — the parse would yield a
+// different set and this test reds.
+test("LIVE_MAP_IDS equals the per-map override keys in the live mobSpawnConfig.ts (no fourth copy drifting alone)", () => {
+  const source = readFileSync(new URL("../../colyseus-server/src/config/mobSpawnConfig.ts", import.meta.url), "utf8");
+  const block = source.match(/const MAP_MOB_SETTINGS[^=]*=\s*\{([\s\S]*?)\n\}/);
+  assert.ok(block, "MAP_MOB_SETTINGS object literal not found — mobSpawnConfig.ts format changed");
+  const keys = [...block[1].matchAll(/^ {2}'([^']+)':/gm)].map((m) => m[1]);
+  assert.deepEqual(keys.sort(), [...LIVE_MAP_IDS].sort());
 });

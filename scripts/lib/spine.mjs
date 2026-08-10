@@ -17,6 +17,10 @@ import { join, resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createHash, randomBytes } from "node:crypto";
 import { roadPolygon, pointInPoly } from "./town-geometry.mjs";
+// LEGACY_UNPAIRED doubles as G-SPAWN-ID-STABLE's spine-authorship EXEMPTION
+// list — see checkSpawnIdStable for the exact (weaker-but-safe) reading.
+// spawn-pairing.mjs imports nothing, so this cannot cycle.
+import { LEGACY_UNPAIRED } from "./spawn-pairing.mjs";
 
 // ── constants — single source of truth ─────────────────────────────────────
 // tier is a DEPTH, not a label. Two labels may share a depth (ocean beside
@@ -672,7 +676,8 @@ export function flattenSpawnAreas({ tree }) {
       continue;
     }
     for (const a of list)
-      areas.push({ ...a, nodeId: node.id, mapNodeId: mapNode.id, mapSize: mapNode.interior.size,
+      areas.push({ ...a, nodeId: node.id, nodeSize: node.interior?.size,
+                   mapNodeId: mapNode.id, mapSize: mapNode.interior.size,
                    abs: { x: a.x + ox, y: a.y + oy, width: a.width, height: a.height } });
   }
   areas.sort((p, q) => (p.id < q.id ? -1 : p.id > q.id ? 1 : 0));
@@ -692,6 +697,19 @@ export function checkSpawnFit({ tree, radii = MOB_RADIUS_U, boundary = BOUNDARY_
   const flat = flattenSpawnAreas({ tree });
   const errors = [...flat.errors];
   for (const a of flat.areas) {
+    // Intra-node containment FIRST. The margin test below bounds the rect
+    // against the MAP, so a rect authored in the wrong frame (root-frame
+    // coordinates pasted into a site-local spawnAreas list) can pass every
+    // margin while sitting entirely outside the node that owns it — and the
+    // emitted mirror then silently displaces it by the site origin. A
+    // spawnAreas rect is ALWAYS in its own node's interior frame.
+    const sz = a.nodeSize;
+    if (!Array.isArray(sz))
+      errors.push(`G-SPAWN-FIT: spawn area "${a.id}" owner "${a.nodeId}" has no interior.size — intra-node containment cannot be checked`);
+    else if (a.x < 0 || a.y < 0 || a.x + a.width > sz[0] || a.y + a.height > sz[1])
+      errors.push(
+        `G-SPAWN-FIT: spawn area "${a.id}" rect (${a.x},${a.y} ${a.width}x${a.height}) is not contained by its owning node ` +
+        `"${a.nodeId}" interior.size [${sz[0]}, ${sz[1]}] — spawnAreas coordinates are node-LOCAL, not root-frame`);
     const r = radii[a.mobType];
     if (r === undefined) {
       errors.push(`G-SPAWN-FIT: spawn area "${a.id}" mobType "${a.mobType}" has no radius entry in MOB_RADIUS_U (scripts/lib/spine.mjs)`);
@@ -730,25 +748,47 @@ export function checkRuntime({ tree, mobTypes, liveMapIds = LIVE_MAP_IDS }) {
     for (const a of rt.spawnAreas ?? [])
       if (mobTypes && !mobTypes.has(a.mobType))
         errors.push(`G-RUNTIME: spawn area "${a.id}" on "${node.id}" mobType "${a.mobType}" not in mob-types.json`);
+    // ── one coordinate convention, enforced ────────────────────────────
+    // composeToRoot() is the CANONICAL frame transform (origin = o +
+    // origin/per). The runtime tree deliberately uses a plain sum instead —
+    // legal ONLY because every runtime frame is perParentUnit === 1, where
+    // the two agree and composeToRoot's per!==1-only accumulation would
+    // return [0,0] for every runtime node. flattenSpawnAreas plain-sums for
+    // the same reason. A per !== 1 anywhere above a runtime node would make
+    // those three readings disagree, so it is rejected outright rather than
+    // silently picking one — HC-2 fixture: a runtime ancestor with
+    // perParentUnit 2.
+    // "Runtime-bearing" = actually carries runtime COORDINATES, not the
+    // empty `runtime` stub every fiction node also ships (mapIds [], no
+    // spawn areas, originU null) — those never reach either walk, and every
+    // town legitimately sits at perParentUnit 100.
+    const bearsRuntime =
+      rt.mapIds.length > 0 || (rt.spawnAreas ?? []).length > 0 || rt.originU != null;
+    for (let cur = node; bearsRuntime && cur && cur.parentId; cur = tree.byId.get(cur.parentId)) {
+      const per = cur.interior?.perParentUnit ?? 1;
+      if (per !== 1) {
+        errors.push(
+          `G-RUNTIME: "${node.id}" carries runtime data under a scale boundary — "${cur.id}" interior.perParentUnit is ${per}. ` +
+          `The runtime subtree must be all-per-1: originU accumulation and flattenSpawnAreas plain-sum origins, ` +
+          `which only agrees with the canonical composeToRoot transform at perParentUnit 1`);
+        break;
+      }
+    }
     if (rt.originU != null) {
-      // Contract §3: originU = originInParent x perParentUnit ACCUMULATED
-      // to the root — the same walk flattenSpawnAreas does. Deliberately
-      // NOT composeToRoot: that is the fiction-tree transform, and its
-      // per!==1-only accumulation returns [0,0] for every node of the
-      // all-per-1 runtime tree, which would red every authored originU.
+      // Contract §3: originU = originInParent accumulated to the root (plain
+      // sum — see the all-per-1 guard above, which is what makes it valid).
       let ex = 0, ey = 0, cur = node, walkable = true;
       while (cur && cur.parentId) {
         const o = cur.interior?.originInParent;
-        const per = cur.interior?.perParentUnit ?? 1;
         if (!Array.isArray(o)) {
           errors.push(`G-RUNTIME: "${node.id}" originU cannot be verified — "${cur.id}" interior.originInParent missing`);
           walkable = false; break;
         }
-        ex = ex * per + o[0]; ey = ey * per + o[1];
+        ex = ex + o[0]; ey = ey + o[1];
         cur = tree.byId.get(cur.parentId);
       }
       if (walkable && (!Array.isArray(rt.originU) || rt.originU[0] !== ex || rt.originU[1] !== ey))
-        errors.push(`G-RUNTIME: "${node.id}" runtime.originU [${rt.originU}] !== accumulated origin [${ex},${ey}] (originInParent x perParentUnit to root)`);
+        errors.push(`G-RUNTIME: "${node.id}" runtime.originU [${rt.originU}] !== accumulated origin [${ex},${ey}] (sum of interior.originInParent to the root)`);
     }
   }
   for (const live of liveMapIds)
@@ -763,12 +803,24 @@ export function checkRuntime({ tree, mobTypes, liveMapIds = LIVE_MAP_IDS }) {
 // ids and the runtime artifact's ids must equal content/spine/frozen-
 // spawn-ids.json EXACTLY (set equality, not superset — a clean checkout has
 // no "previous emit" to be a superset of; the frozen file IS the pin).
-export function checkSpawnIdStable({ tree, frozenIds, runtimeIds }) {
+// The union alone cannot see a spine-side DELETION of an id the runtime
+// artifact also lists (3 such ids today: the thornveil route/interior trio) —
+// the union stays identical while the emitted atlas-frontier.md silently
+// loses a row. So the spine-authored SUBSET is asserted separately:
+//   frozen ⊇ spineIds          (covered by the union equality above)
+//   spineIds ⊇ frozen \ exempt (the direction added here)
+// `exempt` defaults to LEGACY_UNPAIRED — the ids that predate the content
+// layer. It is a deliberately WEAK reading of that list (it also contains
+// three ids the spine does author, so those stay unpinned by this direction)
+// but it is SAFE: it can never red on a runtime-only id, and it does close
+// the proven hole, since none of the dual-listed trio is on it.
+export function checkSpawnIdStable({ tree, frozenIds, runtimeIds, exempt = LEGACY_UNPAIRED }) {
   const errors = [];
   if (!Array.isArray(frozenIds)) return { errors: ["G-SPAWN-ID-STABLE: frozen-spawn-ids.json is not an array"] };
-  const emitted = new Set(runtimeIds ?? []);
+  const spineIds = new Set();
   for (const node of tree.byId.values())
-    for (const a of node.runtime?.spawnAreas ?? []) emitted.add(a.id);
+    for (const a of node.runtime?.spawnAreas ?? []) spineIds.add(a.id);
+  const emitted = new Set([...(runtimeIds ?? []), ...spineIds]);
   const want = [...frozenIds].sort();
   const got = [...emitted].sort();
   if (JSON.stringify(want) !== JSON.stringify(got)) {
@@ -780,6 +832,13 @@ export function checkSpawnIdStable({ tree, frozenIds, runtimeIds }) {
       `missing: [${missing.join(", ")}] extra: [${extra.join(", ")}]`,
     );
   }
+  const unauthored = [...new Set(frozenIds)]
+    .filter((i) => !exempt.has(i) && !spineIds.has(i)).sort();
+  if (unauthored.length)
+    errors.push(
+      `G-SPAWN-ID-STABLE: frozen spawn id(s) no longer authored in content/spine/nodes/*: [${unauthored.join(", ")}] — ` +
+      `a spine-side deletion the union with the runtime artifact would otherwise hide (emitted rows vanish silently)`,
+    );
   return { errors };
 }
 
@@ -787,15 +846,27 @@ export function checkSpawnIdStable({ tree, frozenIds, runtimeIds }) {
 // resolve, tiers printed. Deterministic, no lookup table: region-<slug> ⇔
 // n-site-<slug>. Every resolution is printed with its tier so the cross-tree
 // duplication (fiction region <-> runtime site) is named data, not implicit.
-export function checkPlayspaceAliases({ tree, regionIds }) {
+export function checkPlayspaceAliases({ tree, regionIds, playspaceId = "n-frontier-shelf" }) {
   const errors = [];
   const lines = [];
-  for (const rid of [...new Set(regionIds ?? [])].sort()) {
+  const known = new Set(regionIds ?? []);
+  for (const rid of [...known].sort()) {
     const nodeId = "n-site-" + rid.replace(/^region-/, "");
     const node = tree.byId.get(nodeId);
     if (!node) errors.push(`G-ALIAS: map region "${rid}" resolves to no spine node (expected "${nodeId}")`);
     else lines.push(`G-ALIAS: ${rid} → ${nodeId} (${node.tier})`);
   }
+  // Reverse direction. The forward walk above only proves the map's rows
+  // resolve; a site authored in the spine but never emitted into the mirror
+  // is invisible to it. Skipped entirely when the playspace is absent (unit
+  // trees and the Phase 1/3 fixture roots).
+  if (tree.byId.has(playspaceId))
+    for (const sid of (tree.childrenOf.get(playspaceId) ?? [])) {
+      if (tree.byId.get(sid)?.tier !== "site") continue;
+      const rid = "region-" + sid.replace(/^n-site-/, "");
+      if (!known.has(rid))
+        errors.push(`G-ALIAS: spine site "${sid}" has no map region "${rid}" — it is authored under "${playspaceId}" but missing from the emitted map mirror`);
+    }
   for (const node of [...tree.byId.values()].sort((a, b) => (a.id < b.id ? -1 : 1))) {
     if (node.representsNodeId == null) continue;
     const target = tree.byId.get(node.representsNodeId);
@@ -870,22 +941,40 @@ export const FRONTIER_DOC = {
   file: "maps/atlas-frontier.md",
   nodeId: "n-frontier-shelf",
   docId: "atlas-frontier",
-  // Emit order is a committed, reviewable constant (the flat table has no
-  // intrinsic order and the mirror's row order is meaningful history).
+  // ORDER PIN, not the site list. The list itself is DERIVED from the tree
+  // (frontierSiteIds below) so a newly authored site cannot be silently
+  // omitted from the mirror; this constant only fixes the row order of the
+  // ids already shipped (the flat table has no intrinsic order and the
+  // mirror's row order is meaningful history). Unknown ids append in
+  // sorted-id order, which is deterministic.
   siteOrder: ["n-site-spawn-meadow", "n-site-icefield", "n-site-thornveil"],
 };
 
-export function renderFrontierFrontmatter({ tree, doc = FRONTIER_DOC }) {
+// Sites of the frontier playspace, in emit order: pinned ids first (in
+// FRONTIER_DOC.siteOrder), then any newly authored site by sorted id.
+export function frontierSiteIds({ tree, doc = FRONTIER_DOC }) {
   const errors = [];
+  const kids = (tree.childrenOf.get(doc.nodeId) ?? []).filter((id) => tree.byId.get(id)?.tier === "site");
+  const kidSet = new Set(kids);
+  for (const id of doc.siteOrder)
+    if (!kidSet.has(id))
+      errors.push(tree.byId.has(id)
+        ? `emit-frontier: pinned site "${id}" is no longer a site child of "${doc.nodeId}"`
+        : `emit-frontier: pinned site "${id}" not found`);
+  const ids = [
+    ...doc.siteOrder.filter((id) => kidSet.has(id)),
+    ...kids.filter((id) => !doc.siteOrder.includes(id)).sort(),
+  ];
+  return { ids, errors };
+}
+
+export function renderFrontierFrontmatter({ tree, doc = FRONTIER_DOC }) {
   const map = tree.byId.get(doc.nodeId);
   if (!map) return { text: null, errors: [`emit-frontier: node "${doc.nodeId}" not found`] };
   const regionIdOf = (siteId) => "region-" + siteId.replace(/^n-site-/, "");
-  const sites = [];
-  for (const id of doc.siteOrder) {
-    const s = tree.byId.get(id);
-    if (s) sites.push(s);
-    else errors.push(`emit-frontier: site "${id}" not found`);
-  }
+  const order = frontierSiteIds({ tree, doc });
+  const errors = [...order.errors];
+  const sites = order.ids.map((id) => tree.byId.get(id));
   const L = ["---", `id: ${doc.docId}`, `title: "${map.title}"`,
              "world:", `  width: ${map.interior.size[0]}`, `  height: ${map.interior.size[1]}`];
   const ps = (map.features ?? []).find((f) => f.attrs?.role === "playerSpawn");

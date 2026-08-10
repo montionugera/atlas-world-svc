@@ -665,3 +665,84 @@ test("G-SPINE-COMPLETE goes red under --require-complete on a childless non-leaf
   const soft = runP4Gate(root);
   assert.ok(!soft.out.match(/^FAIL .*G-SPINE-COMPLETE.*n-ghost-shelf/m), soft.out);
 });
+
+// ── F-041 P4 phase-review fix wave: HC-2 red proofs ───────────────────────
+// Each of these reds a hole the Phase-4 review PROVED was silent. They use
+// the same p4FixtureRoot overlay harness as the Task 4.x gate tests above.
+
+// Review finding 1: G-SPAWN-ID-STABLE's union was seeded from the runtime
+// artifact, so deleting one of the three dual-listed ids from the SPINE left
+// the union identical — zero gate signal, and the emitted atlas-frontier.md
+// silently lost a mobSpawnAreas row.
+test("G-SPAWN-ID-STABLE goes red on a spine-side deletion of a dual-listed id (HC-2)", (t) => {
+  const { code, out } = runP4Gate(p4FixtureRoot(t, "g-spawn-id-stable-spine-deletion"));
+  assert.equal(code, 1);
+  assert.match(out, /G-SPAWN-ID-STABLE: frozen spawn id\(s\) no longer authored in content\/spine\/nodes\/\*: \[thornveil_interior\]/);
+});
+
+// Review finding 2: checkSpawnFit bounded every rect against the MAP only, so
+// a root-frame authoring mistake inside a 300x300 site passed all four
+// margins and displaced the emitted row by the site origin (350u here).
+test("G-SPAWN-FIT goes red on a spawn rect authored outside its OWNING node (HC-2)", (t) => {
+  const { code, out } = runP4Gate(p4FixtureRoot(t, "g-spawn-fit-intra-node"));
+  assert.equal(code, 1);
+  assert.match(out, /G-SPAWN-FIT: spawn area "meadow_wilds" rect \(400,400 200x200\) is not contained by its owning node "n-site-spawn-meadow" interior\.size \[300, 300\]/);
+});
+
+// Review finding 3: FRONTIER_DOC.siteOrder hardcoded three sites, so a fourth
+// site under n-frontier-shelf was silently omitted from the emitted mirror and
+// the one-directional G-ALIAS said nothing. Two proofs in one fixture:
+//   (a) the reverse G-ALIAS direction reds while the mirror lacks the region;
+//   (b) --write then puts the row in the mirror, because the site list is now
+//       derived from the tree rather than from the constant.
+test("G-ALIAS reverse + derived siteOrder: a 4th site reds until the mirror is regenerated, then emits (HC-2)", (t) => {
+  const root = p4FixtureRoot(t, "g-alias-unemitted-site");
+  const pristineMirror = readFileSync(join(ROOT, "content/maps/atlas-frontier.md"), "utf8");
+  const write = () => {
+    const w = spawnSync(process.execPath,
+      [join(ROOT, "scripts/check_spine_emit.mjs"), "--write", "--content-root", root], { encoding: "utf8" });
+    assert.equal(w.status, 0, (w.stdout ?? "") + (w.stderr ?? ""));
+  };
+  write();                                                        // fill the new node's derived block
+  writeFileSync(join(root, "maps/atlas-frontier.md"), pristineMirror); // ...but hold the mirror at 3 sites
+  const red = runP4Gate(root);
+  assert.equal(red.code, 1);
+  assert.match(red.out, /G-ALIAS: spine site "n-site-newvale" has no map region "region-newvale"/);
+  // (b) the emitter is no longer pinned to the 3 hardcoded ids
+  write();
+  const emitted = readFileSync(join(root, "maps/atlas-frontier.md"), "utf8");
+  assert.match(emitted, /- id: region-newvale/);
+  assert.equal(runP4Gate(root).code, 0);
+});
+
+// Review finding 5 (LOW): mirror-loss hardening. The frontier mirror's read
+// was wrapped in a bare catch{}, so any non-ENOENT failure silently dropped
+// an OUTPUT while the emitter still printed "check clean". Two pins:
+// the emitted file set, and that a non-ENOENT read is an error.
+const { collectOutputs } = await import("../check_spine_emit.mjs");
+
+test("spine-emit emits every node file plus all three mirrors — a silently dropped mirror reds", () => {
+  const contentRoot = join(ROOT, "content");
+  const { outputs, errors } = collectOutputs({ contentRoot });
+  assert.equal(errors, undefined, JSON.stringify(errors));
+  const paths = outputs.map((o) => o.path);
+  const nodeFiles = readdirSync(join(contentRoot, "spine/nodes")).filter((f) => f.endsWith(".json")).length;
+  assert.equal(outputs.length, nodeFiles + 3, paths.join("\n"));
+  for (const suffix of ["maps/cluster1-geography.json", "maps/atlas-frontier.md",
+                        "colyseus-server/src/config/generated/mapDimensions.ts"])
+    assert.ok(paths.some((p) => p.endsWith(suffix)), `missing mirror ${suffix} in:\n${paths.join("\n")}`);
+});
+
+test("spine-emit: a non-ENOENT failure reading the frontier mirror is an error, not a silent skip (HC-2)", (t) => {
+  const tmp = mkdtempSync(join(tmpdir(), "spine-emit-eisdir-"));
+  t.after(() => rmSync(tmp, { recursive: true, force: true }));
+  cpSync(join(ROOT, "content/spine"), join(tmp, "spine"), { recursive: true });
+  cpSync(join(ROOT, "content/maps"), join(tmp, "maps"), { recursive: true });
+  // a DIRECTORY where the mirror should be: readFileSync throws EISDIR, which
+  // the old bare catch{} swallowed as "fixture root has no maps/".
+  rmSync(join(tmp, "maps/atlas-frontier.md"));
+  mkdirSync(join(tmp, "maps/atlas-frontier.md"));
+  const r = collectOutputs({ contentRoot: tmp });
+  assert.ok(r.errors, "expected an in-band error, got outputs");
+  assert.match(r.errors[0], /maps\/atlas-frontier\.md: cannot read/);
+});
