@@ -11,11 +11,11 @@
 // (originInParent + p / perParentUnit) applies only across a scale boundary
 // (per ≠ 1). Corollary sanity check: n-cluster1's polygon touches x=0/y=0,
 // so its derived interior.originInParent is [0,0].
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pathToFileURL } from "node:url";
-import { loadSpine, buildTree, deriveInterior, deriveNode, resolveToRoot, readTownPlans, planForNode, renderFrontierFile } from "./lib/spine.mjs";
+import { loadSpine, buildTree, deriveInterior, deriveNode, resolveToRoot, readTownPlans, planForNode, renderFrontierFile, renderMapDimensionsTs } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -208,6 +208,16 @@ export function collectOutputs({ contentRoot }) {
       if (fr.errors.length) return { errors: fr.errors };
       outputs.push({ path: frontierPath, bytes: fr.text });
     }
+  }
+  // F-041 P4 mirror #3: generated TypeScript world sizes, imported at build
+  // time (never JSON-at-room-create — GameRoom.onCreate has no try/catch).
+  // Path is derived FROM the content root: on a fixture root the sibling
+  // colyseus-server/ doesn't exist and the mirror is skipped entirely.
+  const serverDir = join(contentRoot, "..", "colyseus-server");
+  if (tree.byId.has("n-frontier-shelf") && existsSync(serverDir)) {
+    const md = renderMapDimensionsTs({ tree });
+    if (md.errors.length) return { errors: md.errors };
+    outputs.push({ path: join(serverDir, "src/config/generated/mapDimensions.ts"), bytes: md.text });
   }
   return { outputs, spine, tree };
 }
