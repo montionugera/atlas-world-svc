@@ -5952,7 +5952,6 @@ Steps:
 
 ---
 
-```markdown
 **Contract/spec conflict note (verified against the worktree, 2026-08-09):** the contract and spec predict "the exact five predicted reds" (`story-refs.test.mjs`, `story-acts.test.mjs`, `story-unlocks.test.mjs`, `story-fates-lore.test.mjs`, `tools/story-explorer/tests/smoke.test.mjs`). I read all candidate files: **(a)** `scripts/tests/story-coherence.test.mjs:85` carries the identical `REGION` fixture and copies the real `region.schema.json` into its content root, so it ALSO goes red; **(b)** `scripts/tests/story-graph-drift.test.mjs:59-69` pushes a region record into a copy of the real `regions.json` and asserts the gen script prints `out of date` — once `spineId` is required, `gen_story_graph.mjs` exits with `story content failed to load` instead, so it ALSO goes red (the spec explicitly and wrongly predicts it green); **(c)** `tools/story-explorer/tests/smoke.test.mjs:62` exercises `buildGraph` only — no ajv, no schema — and mechanically CANNOT go red. The plan below follows repo reality (7 files edited: 6 that go red + smoke's fixture updated anyway to stay representative) and records the prediction mismatch in the fix commit body, as spec §5 requires ("the predicted red/green test outcomes matched or the mismatch is explained in the phase's commit").
 
 ---
