@@ -8,7 +8,12 @@
 import { GENERATED_MAP_DIMENSIONS } from '../config/generated/mapDimensions'
 import { getMapDimensions } from '../config/mapConfig'
 
-const LIVE_MAP_IDS = ['map-01-sector-a', 'map-for-play', 'map-for-test-deflect', 'map-for-test-projectile']
+const LIVE_MAP_IDS = [
+  'map-01-sector-a',
+  'map-for-play',
+  'map-for-test-deflect',
+  'map-for-test-projectile',
+]
 
 describe('generated mapDimensions mirrors live server config', () => {
   it('covers exactly the four live map ids', () => {
