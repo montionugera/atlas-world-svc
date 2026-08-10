@@ -59,7 +59,7 @@ test('real content has no dangling edges and includes act/lore nodes', () => {
 // rendered picture.
 const FIXTURE = {
   acts: [{ id: 'act-a', kind: 'act', title: 'Act A', order: 1 }],
-  regions: [{ id: 'region-x', kind: 'region', title: 'Region X' }],
+  regions: [{ id: 'region-x', kind: 'region', title: 'Region X', spineId: 'n-x' }],
   factions: [
     { id: 'faction-a', kind: 'faction', title: 'Faction A', relationships: [{ factionId: 'faction-b', stance: 'rival' }] },
     { id: 'faction-b', kind: 'faction', title: 'Faction B' },

@@ -72,7 +72,7 @@ function runGate(dir, extra = []) {
 const clone = (o) => JSON.parse(JSON.stringify(o));
 
 const ACT1 = { id: "act-1", kind: "act", title: "Act One", summary: "s", links: [], order: 1, theme: "foothold" };
-const REGION = { id: "region-town", kind: "region", title: "T", summary: "s", links: [], dangerTier: "safe" };
+const REGION = { id: "region-town", kind: "region", title: "T", summary: "s", links: [], dangerTier: "safe", spineId: "n-town" };
 const FACTION = { id: "faction-a", kind: "faction", title: "A", summary: "s", links: [], disposition: "friendly", mobFamily: [], relationships: [] };
 const CHARACTER = { id: "char-npc", kind: "character", title: "N", summary: "s", links: [], role: "npc", faction: "faction-a", region: "region-town" };
 const QUEST = { id: "quest-x", kind: "quest", title: "X", summary: "s", links: [], narrative: { description: "d", offerText: "o", completeText: "c" }, giver: "char-npc", arcId: "arc-a", objectives: [{ type: "MOB_KILLED", targetId: "mob:aggressive", count: 1 }] };
