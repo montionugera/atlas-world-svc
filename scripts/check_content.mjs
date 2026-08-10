@@ -34,6 +34,7 @@ function parseArgs(argv) {
     manifest: join(ROOT, "game-client/assets/manifest.json"),
     mobTypes: join(ROOT, "colyseus-server/generated/mob-types.json"),
     spawnAreas: join(ROOT, "colyseus-server/generated/spawn-areas.json"),
+    artManifest: join(ROOT, "game-client/assets/art/art-manifest.json"),
     requireComplete: false,
     only: null,
   };
@@ -49,6 +50,7 @@ function parseArgs(argv) {
     else if (a === "--manifest") opts.manifest = resolve(takeValue(a, ++i));
     else if (a === "--mob-types") opts.mobTypes = resolve(takeValue(a, ++i));
     else if (a === "--spawn-areas") opts.spawnAreas = resolve(takeValue(a, ++i));
+    else if (a === "--art-manifest") opts.artManifest = resolve(takeValue(a, ++i));
     else if (a === "--require-complete") opts.requireComplete = true;
     else if (a === "--only" || a.startsWith("--only=")) {
       opts.only = a.startsWith("--only=") ? a.slice("--only=".length) : takeValue(a, ++i);
@@ -1341,6 +1343,172 @@ function checkTownPlan(opts) {
   return records.length;
 }
 
+// F-041 Phase 5 — G-ALIAS (story half). Every content/story/regions.json
+// record must name the spine node it stands on (spineId), the reference
+// must resolve, and no two regions may claim the same node. Prints each
+// record's resolved tier ("spine-alias: region-millcross → n-millcross
+// (town)") so the story keyspace's tier contradiction is visible in gate
+// output rather than in someone's memory (research §8 G-ALIAS). `report`
+// is `warn` while region.schema.json keeps spineId optional, and `fail`
+// once it is required — that flip is this phase's deliberate red.
+// Self-contained: does its own loadSpine so it cannot depend on
+// checkSpine's internals; a content root without spine/ (every story-test
+// fixture) soft-skips, the same discipline checkSpine itself keeps. A
+// schema-invalid record missing spineId reports here AND as a schema FAIL
+// — uniform defense in depth, same as resolveStoryRefs states above.
+function checkSpineStoryAlias({ opts, report }) {
+  const spine = loadSpine({ contentRoot: opts.contentRoot });
+  if (!spine.present) return; // no spine table in this content root
+  const regionsPath = join(opts.contentRoot, "story", "regions.json");
+  if (!existsSync(regionsPath)) return; // no story in this content root
+  const before = failures.length;
+  const doc = readJson(regionsPath, "spine-alias", fail);
+  if (failures.length > before || !Array.isArray(doc)) return;
+  const byId = new Map(spine.nodes.map((n) => [n.id, n]));
+  const claimed = new Map(); // spineId -> region id (unique per node)
+  for (const r of doc) {
+    if (!r || typeof r.id !== "string") continue; // record shape is checkStory's business
+    if (typeof r.spineId !== "string") {
+      report(`spine-alias: story/regions.json#${r.id}: missing spineId`);
+      continue;
+    }
+    const node = byId.get(r.spineId);
+    if (!node) {
+      report(`spine-alias: story/regions.json#${r.id}: spineId "${r.spineId}" does not resolve to a spine node`);
+      continue;
+    }
+    if (claimed.has(r.spineId)) {
+      report(`spine-alias: story/regions.json#${r.id}: spineId "${r.spineId}" already claimed by ${claimed.get(r.spineId)}`);
+      continue;
+    }
+    claimed.set(r.spineId, r.id);
+    console.log(`spine-alias: ${r.id} → ${r.spineId} (${node.tier})`);
+  }
+}
+
+// F-041 Phase 5 — G-ALIAS (external-reference sweep). Spec: "G-ALIAS
+// sweeps every external spatial reference … and prints each record's
+// resolved tier." The story-regions half lives above; this function sweeps
+// the other five sources. Resolution rules (documented HERE, nowhere else;
+// enumerated against the real content on 2026-08-09):
+//   1. content/zones/zone-*.json  — `spineId` is OPTIONAL (contract §1,
+//      Task 3.3): absent is legal and swept over silently; present must
+//      resolve to a spine node.
+//   2. content/towns/town-*.json  — `spineId` REQUIRED since Phase 3; must
+//      resolve. The sweep line prints HERE — G-TOWN-FRAME joins the
+//      geometry but never prints the "<file> → <node> (<tier>)" line.
+//   3. content/bestiary/bestiary.json[].region and placement-*.json `zone`
+//      — bare slugs ("millcross", "thornveil", …); rule: `n-<slug>` must
+//      be a spine node (any tier). bestiary.json prints one line per
+//      DISTINCT slug with a row count, not one per mob row (116 rows,
+//      9 distinct regions).
+//   4. content/characters/*.md links.story `region-*` ids — two-step join:
+//      the story regions record with that id, then its spineId. A region
+//      record with a missing or dangling spineId reports here per
+//      character file (defense in depth with the story half above).
+//   5. art-manifest `art:town-<slug>` keys — rule: exactly one of
+//      [n-<slug>, n-<slug>-town] with tier "town" wins; the "-town" suffix
+//      is Phase 1's zone/town id-collision escape (art:town-cindervast →
+//      n-cindervast-town, because n-cindervast is the tier-region zone).
+// Same report-severity contract as checkSpineStoryAlias: `warn` in this
+// task, `fail` after the Task 5.2 flip. Same soft-skip: a content root
+// without spine/ (every pre-F-041 fixture) returns immediately.
+function checkSpineExternalAliases({ opts, report }) {
+  const spine = loadSpine({ contentRoot: opts.contentRoot });
+  if (!spine.present) return;
+  const byId = new Map(spine.nodes.map((n) => [n.id, n]));
+  const say = (label, node) => console.log(`spine-alias: ${label} → ${node.id} (${node.tier})`);
+  const slugNode = (slug) => byId.get(`n-${slug}`) ?? null;
+  const townNode = (slug) =>
+    [byId.get(`n-${slug}`), byId.get(`n-${slug}-town`)].find((n) => n && n.tier === "town") ?? null;
+
+  // (1) zone content (spineId optional) + (2) town plans (spineId required)
+  for (const [dir, required] of [["zones", false], ["towns", true]]) {
+    const d = join(opts.contentRoot, dir);
+    if (!existsSync(d)) continue;
+    for (const f of readdirSync(d).filter((n) => n.endsWith(".json")).sort()) {
+      const before = failures.length;
+      const doc = readJson(join(d, f), `spine-alias ${dir}/${f}`, fail);
+      if (failures.length > before || !doc) continue;
+      if (typeof doc.spineId !== "string") {
+        if (required) report(`spine-alias: ${dir}/${f}: missing spineId`);
+        continue;
+      }
+      const node = byId.get(doc.spineId);
+      if (!node) {
+        report(`spine-alias: ${dir}/${f}: spineId "${doc.spineId}" does not resolve to a spine node`);
+        continue;
+      }
+      say(`${dir}/${f}`, node);
+    }
+  }
+
+  // (3) bestiary regions (distinct, counted) + placement zones
+  const bdir = join(opts.contentRoot, "bestiary");
+  if (existsSync(bdir)) {
+    const rows = readJson(join(bdir, "bestiary.json"), "spine-alias bestiary", () => {});
+    if (Array.isArray(rows)) {
+      const counts = new Map();
+      for (const m of rows)
+        if (m && typeof m.region === "string") counts.set(m.region, (counts.get(m.region) ?? 0) + 1);
+      for (const [slug, n] of [...counts.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
+        const node = slugNode(slug);
+        if (!node) {
+          report(`spine-alias: bestiary.json region "${slug}": n-${slug} is not a spine node`);
+          continue;
+        }
+        say(`bestiary.json region "${slug}" ×${n}`, node);
+      }
+    }
+    for (const f of readdirSync(bdir).filter((n) => n.startsWith("placement-") && n.endsWith(".json")).sort()) {
+      const doc = readJson(join(bdir, f), `spine-alias bestiary/${f}`, fail);
+      const slug = doc && typeof doc.zone === "string" ? doc.zone : null;
+      if (!slug) continue;
+      const node = slugNode(slug);
+      if (!node) {
+        report(`spine-alias: bestiary/${f}: zone "${slug}": n-${slug} is not a spine node`);
+        continue;
+      }
+      say(`bestiary/${f}`, node);
+    }
+  }
+
+  // (4) characters links.story region-* → story regions record → spineId
+  const regionsPath = join(opts.contentRoot, "story", "regions.json");
+  const regionRecords = existsSync(regionsPath) ? readJson(regionsPath, "spine-alias regions", () => {}) : null;
+  const spineIdOfRegion = new Map(
+    (Array.isArray(regionRecords) ? regionRecords : []).map((r) => [r?.id, r?.spineId]),
+  );
+  const charDir = join(opts.contentRoot, "characters");
+  if (existsSync(charDir)) {
+    for (const f of listContentFiles(charDir, "characters")) {
+      const parsed = splitFrontmatter(readFileSync(join(charDir, f), "utf8").replace(/\r\n/g, "\n"), `characters/${f}`);
+      const storyLinks = Array.isArray(parsed?.fm?.links?.story) ? parsed.fm.links.story : [];
+      for (const sid of storyLinks.filter((s) => typeof s === "string" && s.startsWith("region-"))) {
+        const spineId = spineIdOfRegion.get(sid);
+        const node = typeof spineId === "string" ? byId.get(spineId) : null;
+        if (!node) {
+          report(`spine-alias: characters/${f}: links.story "${sid}" has no resolving spineId in story/regions.json`);
+          continue;
+        }
+        say(`characters/${f} ${sid}`, node);
+      }
+    }
+  }
+
+  // (5) art:town-* manifest keys
+  const artDoc = readJson(opts.artManifest, "spine-alias art-manifest", fail);
+  for (const key of Object.keys(artDoc?.entries ?? {}).filter((k) => k.startsWith("art:town-")).sort()) {
+    const slug = key.slice("art:town-".length);
+    const node = townNode(slug);
+    if (!node) {
+      report(`spine-alias: art-manifest ${key}: no town-tier spine node n-${slug} / n-${slug}-town`);
+      continue;
+    }
+    say(`art-manifest ${key}`, node);
+  }
+}
+
 // ═══════════════════════ SPINE (F-041 Phase 0) ══════════════════════════
 // The tier-spine node table: content/spine/nodes/<id>.json, a flat table
 // joined on parentId. Phase 0 wires the structural gates G-ID, G-PARENT,
@@ -1580,6 +1748,9 @@ function checkSpine(opts, mobTypes) {
   } catch {
     console.log("spawn-geometry: mapConfig.ts unreadable — report skipped (informational only)");
   }
+
+  checkSpineStoryAlias({ opts, report: warn }); // Phase 5 flips report to `fail`
+  checkSpineExternalAliases({ opts, report: warn }); // Phase 5 flips report to `fail`
 
   return validNodes.length;
 }
