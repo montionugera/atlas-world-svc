@@ -6580,7 +6580,6 @@ Steps:
 - [ ] Script suite: `cd scripts && npm test; echo "exit=$?"` → `exit=0`, zero failures (includes the seven appended G-ALIAS tests in `spine-gates.test.mjs`: two story-half, five external-sweep dangling-reference reds).
 - [ ] Story-explorer suite: `cd .. && node --test tools/story-explorer/tests/*.test.mjs; echo "exit=$?"` → `exit=0`.
 - [ ] Commit ledger check: `git log --oneline -3` shows, newest first, the fix commit (`test: add spineId to synthetic region fixtures...`), the red commit (`feat!: require region.spineId...`), and the WARN-stage commit (`feat: story spineId foreign key (optional)...`) — three commits, red and fix separate, per the spec's "second deliberate red" structure. All green: Phase 5 is done; hand to the Phase 6 writer (the gate counter, third deliberate red, shipped alone).
-```
 
 ---
 
