@@ -532,21 +532,21 @@ function runGate(dir, extra = []) {
 test("no content/towns directory skips silently", () => {
   const r = runGate(fixture({ towns: null, townSchema: false }));
   assert.equal(r.code, 0);
-  assert.match(r.out, /, 0 towns,/);
+  assert.match(r.out, /, 0 towns, 0 nodes,/);
   assert.doesNotMatch(r.out, /town-plan schema/);
 });
 
 test("a content/towns directory with no town-*.json skips silently", () => {
   const r = runGate(fixture({ towns: {}, townSchema: false }));
   assert.equal(r.code, 0);
-  assert.match(r.out, /, 0 towns,/);
+  assert.match(r.out, /, 0 towns, 0 nodes,/);
   assert.doesNotMatch(r.out, /town-plan schema/);
 });
 
 test("the townCount reaches the finish() count line", () => {
   const r = runGate(fixture({ towns: onePlan() }));
   assert.equal(r.code, 0);
-  assert.match(r.out, /, 1 towns,/);
+  assert.match(r.out, /, 1 towns, 0 nodes,/);
 });
 
 test("the baseline plan passes every T-rule and raises nothing", () => {
@@ -560,7 +560,7 @@ test("a schema-invalid plan is a FAIL, not a crash, and its T-rules are skipped"
   assert.equal(r.code, 1);
   assert.match(r.out, /towns\/town-millcross\.json: schema /);
   assert.doesNotMatch(r.out, /at Object\.<anonymous>/); // no stack trace
-  assert.match(r.out, /, 0 towns,/);
+  assert.match(r.out, /, 0 towns, 0 nodes,/);
 });
 
 test("an unparsable town file is one FAIL, not a crash", () => {
@@ -587,7 +587,7 @@ test("T1: a plan naming a town the geography does not declare FAILs and is not c
   const r = runGate(fixture({ towns: onePlan((p) => { p.town = "nowhere-ford"; }) }));
   assert.equal(r.code, 1);
   assert.match(r.out, /towns\/town-millcross\.json: town "nowhere-ford" not in cluster1-geography\.json#towns/);
-  assert.match(r.out, /, 0 towns,/);
+  assert.match(r.out, /, 0 towns, 0 nodes,/);
 });
 
 // ---------------------------------- T2 -------------------------------------

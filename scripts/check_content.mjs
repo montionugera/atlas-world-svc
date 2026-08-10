@@ -187,8 +187,8 @@ function main() {
     // G-RUNTIME (F-041 P4) needs the mob-type set too, so load it here —
     // same loader, same null-on-failure discipline as the full sweep below.
     const mobTypes = loadMobTypes(opts.mobTypes);
-    checkSpine(opts, mobTypes);
-    return finish();
+    const nodeCount = checkSpine(opts, mobTypes);
+    return finish(0, 0, 0, 0, 0, 0, nodeCount);
   }
   const mobTypes = loadMobTypes(opts.mobTypes);
   const story = checkStory(opts, mobTypes);
@@ -197,8 +197,8 @@ function main() {
   const placementCount = checkBestiaryPlacement(opts);
   const zoneCount = checkZoneContent(opts);
   const townCount = checkTownPlan(opts);
-  checkSpine(opts, mobTypes);
-  return finish(sheetCount, mapCount, story.count, placementCount, zoneCount, townCount);
+  const nodeCount = checkSpine(opts, mobTypes);
+  return finish(sheetCount, mapCount, story.count, placementCount, zoneCount, townCount, nodeCount);
 }
 
 // F-012: loadStory() (reads all 7 per-kind story files under
@@ -2142,7 +2142,7 @@ function gSpineOverlapRollup({ tree, report }) {
   }
 }
 
-function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0) {
+function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0, nodeCount = 0) {
   for (const w of warnings) console.log(`WARN  ${w}`);
   for (const f of failures) console.log(`FAIL  ${f}`);
   // I-060 design §7: Z5's WARN is an accepted blind spot, so the ratio it
@@ -2159,7 +2159,7 @@ function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0
   // inverted silently.
   if (zoneCount > 0 || zoneHazardsTotal > 0)
     console.log(`zone-content: ${zoneHazardsUnmapped} of ${zoneHazardsTotal} hazards have no runtime effect`);
-  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${zoneCount} zones, ${townCount} towns, ${failures.length} failures, ${warnings.length} warnings`);
+  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${zoneCount} zones, ${townCount} towns, ${nodeCount} nodes, ${failures.length} failures, ${warnings.length} warnings`);
   process.exit(failures.length ? 1 : 0);
 }
 
