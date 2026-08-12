@@ -505,13 +505,31 @@
       "gen": {
         "method": "authored-vector",
         "generated": false,
-        "tool": "tools/mapforge/render-map.mjs",
-        "input": "content/maps/cluster1-geography.json",
+        "tool": "tools/mapforge/render-sheet.mjs",
+        "input": "content/spine/",
         "vector": "maps/cluster1-world.svg",
         "raster": "rsvg-convert -w 2000",
         "deterministic": true,
         "width": 2000,
-        "note": "No model, no sampler, no seed — this sheet is drawn from geometry, so there are no generation parameters to record. Re-run the tool to reproduce it byte-for-byte."
+        "note": "No model, no sampler, no seed — this sheet is drawn from geometry, so there are no generation parameters to record. Re-run the tool to reproduce it byte-for-byte. Since F-042 the sheet renders from content/spine/ via render-sheet.mjs; content/maps/cluster1-geography.json remains a generated mirror."
+      }
+    },
+    "art:map-atlas": {
+      "group": "map",
+      "title": "The Atlas World — surveyed ground",
+      "file": "maps/atlas-world.png",
+      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-sheet.mjs --sheet atlas from content/spine/ (nodes + sheet-atlas.json); the SVG beside this PNG (maps/atlas-world.svg) is the artifact, the PNG is a 2000px raster of it for the storybook.",
+      "description": "The world sheet: the full 2000×2000 km frame of n-atlas with the Meltwash basin drawn as a surveyed miniature in its corner — coastline, river, continent outline and seven town marks — the western sea strip, the Gildmark sea-lane leaving the sheet with its season, and honest empty parchment everywhere the survey has never reached. No scale bar; the hand note says why.",
+      "tags": ["world", "map", "bellfaith", "authored-vector", "svg", "spine"],
+      "source": "docs/superpowers/specs/2026-08-12-world-map-render-design.md",
+      "gen": {
+        "method": "authored-vector", "generated": false,
+        "tool": "tools/mapforge/render-sheet.mjs",
+        "input": "content/spine/",
+        "vector": "maps/atlas-world.svg",
+        "raster": "rsvg-convert -w 2000",
+        "deterministic": true, "width": 2000,
+        "note": "No model, no sampler, no seed — drawn from spine geometry. Re-run the tool to reproduce it byte-for-byte."
       }
     },
     "art:town-millcross": {

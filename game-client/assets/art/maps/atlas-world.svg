@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1504" height="1542" viewBox="0 0 1504 1542" role="img" aria-label="THE ATLAS WORLD — such ground as the Bellfaith can vouch for">
+<title>THE ATLAS WORLD — such ground as the Bellfaith can vouch for</title>
+<desc>Authored vector map drawn from content/spine/ (nodes + sheet-atlas.json) by tools/mapforge/render-sheet.mjs. Not a generated image.</desc>
+<defs>
+<clipPath id="clip-sheet"><rect x="58" y="96" width="1400" height="1400"/></clipPath>
+</defs>
+<style>
+  text { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; fill: #241f18; }
+  .lbl { paint-order: stroke fill; stroke: #f3e7ce; stroke-width: 3.4px; stroke-linejoin: round; }
+  .zn { paint-order: stroke fill; stroke: #f3e7ce; stroke-width: 3.8px; stroke-linejoin: round; }
+</style>
+<rect width="1504" height="1542" fill="#f3e7ce"/>
+<rect x="58" y="96" width="1400" height="1400" fill="#efe4ca"/>
+<g clip-path="url(#clip-sheet)">
+<path d="M58,96 L74.8,96 L72,103 L69.9,112.8 L68.5,124 L67.8,135.2 L67.1,146.4 L66.4,157.6 L66.4,168.8 L67.1,178.6 L67.8,187 L66.4,194 L58,194 Z" fill="#dcd0b0"/>
+<path d="M74.8,96 C74.33,97.17 72.82,100.2 72,103 C71.18,105.8 70.48,109.3 69.9,112.8 C69.32,116.3 68.85,120.27 68.5,124 C68.15,127.73 68.03,131.47 67.8,135.2 C67.57,138.93 67.33,142.67 67.1,146.4 C66.87,150.13 66.52,153.87 66.4,157.6 C66.28,161.33 66.28,165.3 66.4,168.8 C66.52,172.3 66.87,175.57 67.1,178.6 C67.33,181.63 67.92,184.43 67.8,187 C67.68,189.57 66.98,191.9 66.4,194 C65.82,196.1 65,197.85 64.3,199.6 C63.6,201.35 62.67,202.75 62.2,204.5 C61.73,206.25 61.27,208.23 61.5,210.1 C61.73,211.97 62.55,214.07 63.6,215.7 C64.65,217.33 65.93,218.62 67.8,219.9 C69.67,221.18 72,222.35 74.8,223.4 C77.6,224.45 81.33,225.38 84.6,226.2 C87.87,227.02 91.13,227.83 94.4,228.3 C97.67,228.77 102.57,228.88 104.2,229 L58,229 L58,96 Z" fill="#dcd0b0"/>
+<path d="M74.8,96 C74.33,97.17 72.82,100.2 72,103 C71.18,105.8 70.48,109.3 69.9,112.8 C69.32,116.3 68.85,120.27 68.5,124 C68.15,127.73 68.03,131.47 67.8,135.2 C67.57,138.93 67.33,142.67 67.1,146.4 C66.87,150.13 66.52,153.87 66.4,157.6 C66.28,161.33 66.28,165.3 66.4,168.8 C66.52,172.3 66.87,175.57 67.1,178.6 C67.33,181.63 67.92,184.43 67.8,187 C67.68,189.57 66.98,191.9 66.4,194 C65.82,196.1 65,197.85 64.3,199.6 C63.6,201.35 62.67,202.75 62.2,204.5 C61.73,206.25 61.27,208.23 61.5,210.1 C61.73,211.97 62.55,214.07 63.6,215.7 C64.65,217.33 65.93,218.62 67.8,219.9 C69.67,221.18 72,222.35 74.8,223.4 C77.6,224.45 81.33,225.38 84.6,226.2 C87.87,227.02 91.13,227.83 94.4,228.3 C97.67,228.77 102.57,228.88 104.2,229" fill="none" stroke="#241f18" stroke-width="0.9"/>
+<path d="M163,96 C171.82,109.3 168.88,215.7 163,229 C157.12,242.3 111.06,229.07 104.2,229 C97.34,228.93 96.36,228.58 94.4,228.3 C92.44,228.02 86.56,226.69 84.6,226.2 C82.64,225.71 76.48,224.03 74.8,223.4 C73.12,222.77 69.48,220.53 67.8,219.9 C66.12,219.27 58.98,219.69 58,217.1 C57.02,214.51 57.16,196.31 58,194 C58.84,191.69 65.42,194.7 66.4,194 C67.38,193.3 67.73,188.54 67.8,187 C67.87,185.46 67.24,180.42 67.1,178.6 C66.96,176.78 66.47,170.9 66.4,168.8 C66.33,166.7 66.33,159.84 66.4,157.6 C66.47,155.36 66.96,148.64 67.1,146.4 C67.24,144.16 67.66,137.44 67.8,135.2 C67.94,132.96 68.29,126.24 68.5,124 C68.71,121.76 69.55,114.9 69.9,112.8 C70.25,110.7 71.51,104.68 72,103 C72.49,101.32 65.7,96.7 74.8,96 C83.9,95.3 154.18,82.7 163,96 Z" fill="none" stroke="#241f18" stroke-width="1"/>
+<path d="M130.8,119.8 C130.57,120.73 129.87,123.53 129.4,125.4 C128.93,127.27 128.47,128.9 128,131 C127.53,133.1 127.07,135.67 126.6,138 C126.13,140.33 125.67,142.43 125.2,145 C124.73,147.57 124.27,150.6 123.8,153.4 C123.33,156.2 122.87,159 122.4,161.8 C121.93,164.6 121.7,167.4 121,170.2 C120.3,173 118.43,176.03 118.2,178.6 C117.97,181.17 119.25,183.03 119.6,185.6 C119.95,188.17 120.3,191.2 120.3,194 C120.3,196.8 119.95,199.72 119.6,202.4 C119.25,205.08 118.67,207.53 118.2,210.1 C117.73,212.67 118.2,216.28 116.8,217.8 C115.4,219.32 112.6,218.85 109.8,219.2 C107,219.55 103.27,219.9 100,219.9 C96.73,219.9 93.47,219.43 90.2,219.2 C86.93,218.97 83.43,218.73 80.4,218.5 C77.37,218.27 74.68,218.15 72,217.8 C69.32,217.45 65.58,216.63 64.3,216.4" fill="none" stroke="#241f18" stroke-width="1" stroke-linecap="round"/>
+<circle class="town-dot" cx="90.2" cy="104.4" r="1.6" fill="#241f18"/>
+<circle class="town-dot" cx="88.8" cy="161.8" r="1.6" fill="#241f18"/>
+<circle class="town-dot" cx="125.2" cy="168.8" r="1.6" fill="#241f18"/>
+<circle class="town-dot" cx="65.7" cy="205.9" r="1.6" fill="#241f18"/>
+<circle class="town-dot" cx="118.2" cy="178.6" r="1.6" fill="#241f18"/>
+<circle class="town-dot" cx="109.8" cy="161.8" r="1.6" fill="#241f18"/>
+<circle class="town-dot" cx="116.8" cy="217.8" r="1.6" fill="#241f18"/>
+<text class="lbl" x="173.5" y="162.5" font-size="12.5" font-style="italic" letter-spacing="1.2" fill="#5d5344">surveyed ground: see the basin sheet — CLUSTER 1 · THE MELTWASH BASIN</text>
+</g>
+<path d="M65.7,205.9 L53.8,199.6" stroke="#241f18" stroke-width="1.2"/>
+<path d="M53.8,199.6 l7,-3 l0,6 Z" fill="#241f18" transform="rotate(27.900000000000006 53.8 199.6)"/>
+<text x="45.8" y="199.6" font-size="11.5" font-style="italic" fill="#5d5344" text-anchor="middle" transform="rotate(-90 45.8 199.6)">the trade wind · once a year</text>
+<text x="758" y="520" text-anchor="middle" font-size="42" letter-spacing="10">THE ATLAS WORLD</text>
+<text x="758" y="560" text-anchor="middle" font-size="17" font-style="italic" fill="#5d5344">such ground as the Bellfaith can vouch for</text>
+<text x="758" y="612" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">A world sheet drawn by the same hands that keep the basin map. It records</text>
+<text x="758" y="631" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">what has been walked, sounded, or seen from a tower; it does not guess. The</text>
+<text x="758" y="650" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">empty parchment is not modesty — it is the honest extent of the survey.</text>
+<text x="758" y="699" text-anchor="middle" font-size="13" letter-spacing="4" fill="#5d5344">NOT SHOWN ON THIS SHEET</text>
+<text x="758" y="721" text-anchor="middle" font-size="12.5" fill="#5d5344">·  every coast, reef and landmass beyond a day's sail of Gildmark</text>
+<text x="758" y="739" text-anchor="middle" font-size="12.5" fill="#5d5344">·  whatever lies past the ice</text>
+<text x="758" y="757" text-anchor="middle" font-size="12.5" fill="#5d5344">·  the far shore of the western sea, if it has one</text>
+<g stroke="#241f18" stroke-width="1.6" fill="none"><path d="M1346,1448 L1346,1406"/><path d="M1341,1414 L1346,1404 L1351,1414 Z" fill="#241f18"/></g>
+<text x="1346" y="1464" text-anchor="middle" font-size="15" letter-spacing="2" fill="#241f18">N</text>
+<rect x="58" y="96" width="1400" height="1400" fill="none" stroke="#241f18" stroke-width="1.6"/>
+</svg>
