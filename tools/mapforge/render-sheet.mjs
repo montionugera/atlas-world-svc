@@ -19,6 +19,7 @@ import { fileURLToPath } from "node:url";
 import { pathToFileURL } from "node:url";
 import { C } from "./lib/draft.mjs";
 import { drawBasinSheet } from "./lib/basin-sheet.mjs";
+import { buildAtlasSheet } from "./lib/atlas-sheet.mjs";
 import { rasterize } from "./lib/raster.mjs";
 import { loadSpine, buildTree } from "../../scripts/lib/spine.mjs";
 import { emitGeography } from "../../scripts/check_spine_emit.mjs";
@@ -40,7 +41,11 @@ export const SHEETS = {
     outPng: "game-client/assets/art/maps/cluster1-world.png",
     build: buildCluster1Sheet,
   },
-  atlas: {/* added in Task 6 */},
+  atlas: {
+    outSvg: "game-client/assets/art/maps/atlas-world.svg",
+    outPng: "game-client/assets/art/maps/atlas-world.png",
+    build: buildAtlasSheet,
+  },
 };
 
 function main() {
