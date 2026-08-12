@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-12
 **Idea:** I-092 — seeded continent/ocean generation from the n-atlas seed + composition, hand-polished into canon
-**Status:** Approved design (owner, 2026-08-12) — awaiting plan
+**Status:** Approved design (owner, 2026-08-12; ultracode adversarial panel ACCEPT-WITH-FIXES 2026-08-12, all 6 fixes applied in this revision) — awaiting plan
 **Origin:** Owner reaction to the shipped F-042 world sheet: *"I want complete high level map not emptiness."* The renderer works; the world-scale content does not exist. This feature authors it.
 
 ## 1. Goal
@@ -30,13 +30,13 @@ Scope decisions made with the owner (2026-08-12):
 | Sea-lanes | ≥2 `sealane` edges | at least the canonical Gildmark annual lane now terminates at a REAL named foreign port; edges carry season + passage-days attrs |
 | Lore | 1 line per named node | "reported, not surveyed" hooks; no interior detail (F-033 lesson: added specificity is the fastest canon contradiction) |
 
-After generation, `deriveNode(n-atlas)` area-weighted rollup must match the committed 96/2/2 composition within **±2 percentage points per biome**, and coverage of the frame approaches 100% (open-water nodes claim the remainder; `interstitialUnsurveyed` drops to `false`).
+After generation, `deriveNode(n-atlas)` area-weighted rollup must match the committed 96/2/2 composition within **±2 percentage points per biome** — note the rollup is per-biome, not gross land: cluster-1's 26,017 km² is only ~13% rock (~3,400 km² of the 80,000 km² 2%-rock target), so unless new land is authored strongly rock-dominant the computed rock share lands well under 2% and passes only via the tolerance's 0% floor; the generator's composition fitting must account for this — and coverage of the frame approaches 100% (open-water nodes claim the remainder; `interstitialUnsurveyed` drops to `false`).
 
 ## 3. The generator — `tools/mapforge/gen-world.mjs`
 
 Deterministic from the **existing** `n-atlas` seed streams (`resolvedSeedStreams` in the node file): `terrain` drives placement + shape noise, `names` drives name-candidate ordering. No `Math.random`, no `Date` — same seed, same world, byte-identical output.
 
-- **Placement:** landmass seed points sampled in the 2000×2000 frame with exclusion zones: the authored basin corner ([0..150, 0..190] km plus a 100 km sea margin) and the frame edges (except the north edge for the ice cap). Sea-lane reachability constraint: every new continent's coast is reachable from Gildmark without crossing land.
+- **Placement:** landmass seed points sampled in the 2000×2000 frame with exclusion zones: the authored basin corner ([0..150, 0..190] km plus a 100 km sea margin — the ice cap alone is exempt from this margin where it must abut the basin's northern ice shelf near [150, 0..~14]) and the frame edges (except the north edge for the ice cap). Sea-lane reachability constraint: every new continent's coast is reachable from Gildmark without crossing land.
 - **Shape:** seeded radial-noise polygons (12–24 vertices), area-fitted to the budget table, then validated against the existing spine geometry rules (counter-clockwise winding, no self-intersection, min-area) — reusing `scripts/lib/spine.mjs` helpers (`shoelaceArea`, `selfIntersects`, `placementArea`), never re-implementing them.
 - **Output:** candidate spine node JSONs + a candidate `edges.json` addition, written to a staging dir `content/spine/candidates/` (gitignored), each already schema-valid (`content/schemas/spine-node.schema.json`), with `provenance.authored: "generated"` and fresh unique seeds minted per node (derived from the parent stream, spine `streamSeed` pattern).
 - **CLI:** `node tools/mapforge/gen-world.mjs [--out <dir>]` prints a summary table (name-candidate, area, composition, region count) and exits 1 if any candidate violates a spine gate rule or the composition budget.
@@ -48,7 +48,7 @@ A three-role worldbuilding panel (the I-048 format, run as subagents): **Namer**
 1. Reviews generator candidates; may adjust shapes (move/scale a landmass, re-noise a coast) by editing candidate JSON — never by re-rolling the seed.
 2. Names everything; writes the one-line lore hooks.
 3. Promotes candidates: `provenance.authored` flips to `"hand"`, files move to `content/spine/nodes/`, `edges.json` gains the sea-lanes, `roots.json` unchanged (all new nodes hang off `n-atlas`).
-4. Ships the canon amendment: a "§ the wider world" section in `docs/worldbuilding/A1-geography-cluster1.md` (or a new A2 doc if A1 grows unwieldy) naming the chart's contents, plus the required collision fixes to `content/story/canon.md` lines that say nothing beyond the basin is known — same commit (DR-006 no-silent-drift rule).
+4. Ships the canon amendment: a "§ the wider world" section in `docs/worldbuilding/A1-geography-cluster1.md` (or a new A2 doc if A1 grows unwieldy) naming the chart's contents, plus the required collision fixes to the files that actually say nothing beyond the basin is known — `docs/worldbuilding/A1-geography-cluster1.md` (the two "doors out", ~lines 250–255, and the map-edge passage, ~444–450), `docs/worldbuilding/A0-current-world.md` (V8, G18 and related lines), and the shipped narrative `docs/story/undertow/core-story.md:26` (an explicit DR-006 option-3 amendment to shipped story) — same commit (DR-006 no-silent-drift rule). `content/story/canon.md` carries no such collision line; it only gains the new canon entries.
 
 The panel's verdict artifact (ACCEPT per node) is committed alongside, matching the I-051 gate pattern.
 
@@ -61,10 +61,10 @@ The panel's verdict artifact (ACCEPT per node) is committed alongside, matching 
 
 ## 6. Gates and verification
 
-1. **All existing spine gates stay green** (`scripts/check_content.mjs --only=spine`, `check_spine_emit.mjs --check`): schema, tier depth, unique ids/seeds, polygon winding/self-intersection, containment, composition sums. G-EMIT-DRIFT is untouched by design — the basin mirror reads only `n-cluster1`'s subtree.
+1. **All existing spine gates stay green** (`scripts/check_content.mjs --only=spine`, `check_spine_emit.mjs --check`): schema, tier depth, unique ids/seeds, polygon winding/self-intersection, containment, composition sums. G-EMIT-DRIFT WILL go red: it byte-checks every spine node's canonical form (canonicalNode recomputes each node's `derived` block, so adding children changes `n-atlas.json`'s canonical bytes and every new node file is checked too), and the emitter resolves sea-lane termini against `n-cluster1`'s features only — run `check_spine_emit.mjs --write` and commit its output in the same change, and verify the re-terminated Gildmark lane resolves in the emitter (its `feat()` lookup throws on non-cluster-1 termini) rather than crashing it.
 2. **Composition rollup:** `n-atlas` `rollupVerdict` becomes **CHECKED** with computed composition within ±2 pp of 96/2/2 — this is the new hard gate of the feature (a `check_content` spine rule, red-then-green proven).
 3. **Generator determinism test:** two runs produce byte-identical candidates (node --test, mapforge tests glob form).
-4. **G-MAP-DRIFT (existing, from F-042):** forces the re-rendered `atlas-world.{svg,png}` to be committed in the same change.
+4. **G-MAP-DRIFT (existing, from F-042):** forces the re-rendered `atlas-world.svg` to be committed in the same change (the gate byte-compares only the SVG; the PNG is regenerated by `--write` but never compared — re-commit it alongside as a manual step).
 5. **Renderer self-checks extend:** every drawn label traces to a node/edge/sheet string; no coast crosses another landmass; sea-lanes terminate on named ports.
 6. **Panel verdict artifact** committed (ACCEPT per node) before promote.
 
@@ -87,8 +87,8 @@ The panel's verdict artifact (ACCEPT per node) is committed alongside, matching 
 ## 9. Acceptance criteria
 
 1. `node tools/mapforge/gen-world.mjs` is deterministic (two runs byte-identical) and its candidates pass all spine gate rules standalone.
-2. `content/spine/nodes/` gains the promoted world nodes (2 continents + 2–4 archipelagos + ice cap + 2–3 seas, each `authored: "hand"` with panel verdict ACCEPT), and `n-atlas`'s derived rollup is CHECKED within ±2 pp of 96/2/2.
-3. Every new continent has 2–4 named tier-2 regions (one being its unsurveyed interior) and 1–2 features; ≥2 sea-lanes exist and the Gildmark lane terminates at a named foreign port.
-4. The re-rendered world sheet shows all of it — complete map, no large empty frame — with surveyed-vs-reported visual grammar, and G-MAP-DRIFT passes on the committed artifacts.
+2. `content/spine/nodes/` gains the promoted world nodes (2 continents + 2–4 archipelagos + ice cap + 2–3 seas, each `authored: "hand"` with panel verdict ACCEPT), and `n-atlas`'s derived rollup is CHECKED within ±2 pp of 96/2/2 — enforced by the new `check_content` spine rule, red-then-green proven.
+3. Every new continent has 2–4 named tier-2 regions (one being its unsurveyed interior) and 1–2 features; ≥2 sea-lanes exist and the Gildmark lane terminates at a named foreign port; every named new node carries its one-line "reported, not surveyed" lore hook.
+4. The re-rendered world sheet shows all of it — complete map, no large empty frame — with surveyed-vs-reported visual grammar, G-MAP-DRIFT passes on the committed artifacts, and the extended renderer self-checks pass (every label traces to a node/edge/sheet string; no coast crosses another landmass; sea-lanes terminate on named ports).
 5. Canon amendment committed in the same change as the nodes (wider-world section + collision fixes to the "nothing beyond the basin" statements), citation-checked.
 6. All pre-existing gates green: spine suite, G-EMIT-DRIFT, mapforge tests, manifest gate, precheck 13/13.
