@@ -38,8 +38,7 @@ order is fixed).
 
 ### The PNG step
 
-The renderer shells out to `rsvg-convert` (librsvg) when it is on `PATH`. If it
-is not, the SVG is still written and the exact command is printed:
+The renderer shells out to `rsvg-convert` (librsvg), equivalent to running:
 
 ```bash
 rsvg-convert -w 2000 -b '#f3e7ce' \
@@ -47,8 +46,10 @@ rsvg-convert -w 2000 -b '#f3e7ce' \
   -o game-client/assets/art/maps/cluster1-world.png
 ```
 
-rsvg-convert (librsvg) is the **only** supported converter — install it with
-`brew install librsvg`. Do NOT substitute ImageMagick: without the librsvg
+If `rsvg-convert` is not on `PATH`, the SVG is still written and a message
+tells you to install librsvg (`brew install librsvg`) — no command is
+printed, and the CLI exits 0. rsvg-convert (librsvg) is the **only**
+supported converter. Do NOT substitute ImageMagick: without the librsvg
 delegate it silently drops every stroke, producing a blank-looking PNG with
 no error.
 
