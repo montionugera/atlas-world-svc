@@ -206,6 +206,25 @@ function buildBayLandmass({ rand, bayCenter, targetArea, vertices, roughness }) 
   throw new Error(`buildBayLandmass: failed to produce a valid ring after 5 attempts (center ${bayCenter})`);
 }
 
+// Chord-splits `points` at vertex 0 and the vertex nearest `target`, trying
+// nearby vertex indices (target, target+1, target-1, target+2, ...) in a
+// fixed deterministic order until BOTH resulting rings validate — a chord
+// between two arbitrary vertices of a non-convex noised ring can clip
+// through another edge (self-intersect) even though the source ring itself
+// is valid, so a single fixed index isn't reliable.
+function findValidSplit({ points, target }) {
+  const n = points.length;
+  for (let d = 0; d < n; d++) {
+    const candidates = d === 0 ? [target] : [target + d, target - d];
+    for (const j of candidates) {
+      if (j < 1 || j > n - 1) continue;
+      const [a, b] = splitAtVertices({ points, i: 0, j });
+      if (validRing({ points: a }).length === 0 && validRing({ points: b }).length === 0) return [a, b];
+    }
+  }
+  throw new Error(`findValidSplit: no valid chord split found near vertex ${target} of ${n}`);
+}
+
 // Chord-splits `points` into 2-3 region rings: an initial split near 1/3 of
 // the way around by vertex count, then — per the layout decision — whichever
 // side's ACTUAL area (via shoelaceArea, not assumed from vertex count)
@@ -215,14 +234,14 @@ function splitIntoRegions({ points }) {
   const totalArea = shoelaceArea({ points });
   const n = points.length;
   const j1 = Math.max(1, Math.round(n / 3));
-  const [partA, rest] = splitAtVertices({ points, i: 0, j: j1 });
+  const [partA, rest] = findValidSplit({ points, target: j1 });
   const areaA = shoelaceArea({ points: partA }), areaRest = shoelaceArea({ points: rest });
   const big = areaRest >= areaA ? "rest" : "partA";
   const bigArea = big === "rest" ? areaRest : areaA;
   if (bigArea / totalArea <= 0.55) return [partA, rest];
   const target = big === "rest" ? rest : partA;
   const j2 = Math.max(1, Math.round(target.length / 2));
-  const [half1, half2] = splitAtVertices({ points: target, i: 0, j: j2 });
+  const [half1, half2] = findValidSplit({ points: target, target: j2 });
   return big === "rest" ? [partA, half1, half2] : [half1, half2, rest];
 }
 
@@ -297,13 +316,32 @@ export function buildWorld({ atlasNode }) {
   summary.push({ id: capId, tier: "continent", nameCandidates: capCands, areaKm2: r1(shoelaceArea({ points: capRaw })), composition: CAP_COMPOSITION, regionCount: 0 });
 
   // Step 4: bays (reserved water rects on the seams) + landmasses inside them.
-  const bays = {
+  // Each bay's y-window is jittered ±40 km, seeded from `rand()` in a fixed
+  // draw order (majorA, majorB, chainA, chainB, chainC) so bay positions
+  // vary with the seed instead of reusing the layout decision's literal
+  // example numbers verbatim. The jitter shifts the whole window (preserving
+  // its height), then clamps deterministically so it never crosses the
+  // 25 km frame margin or comes within 40 km of the ice cap's fitted south
+  // edge (`capClearY`, already known at this point).
+  const bayDefs = {
     majorA: { x0: seamA - 170, x1: seamA + 170, y0: 560, y1: 900, targetArea: 22000, vertices: 18, kind: "major" },
     majorB: { x0: seamB - 160, x1: seamB + 160, y0: 1150, y1: 1470, targetArea: 18000, vertices: 16, kind: "major" },
     chainA: { x0: seamA - 90, x1: seamA + 90, y0: 1300, y1: 1520, targetArea: 4000, vertices: 14, kind: "chain" },
     chainB: { x0: seamB - 80, x1: seamB + 80, y0: 420, y1: 600, targetArea: 3500, vertices: 12, kind: "chain" },
     chainC: { x0: seamA - 80, x1: seamA + 80, y0: 240, y1: 420, targetArea: 3000, vertices: 12, kind: "chain" },
   };
+  const BAY_ORDER = ["majorA", "majorB", "chainA", "chainB", "chainC"];
+  const minBayY = Math.max(MARGIN, capClearY + 40);
+  const maxBayY = FRAME - MARGIN;
+  const bays = {};
+  for (const key of BAY_ORDER) {
+    const def = bayDefs[key];
+    const jitter = Math.floor((rand() * 2 - 1) * 40);
+    let y0 = def.y0 + jitter, y1 = def.y1 + jitter;
+    if (y0 < minBayY) { const shift = minBayY - y0; y0 += shift; y1 += shift; }
+    if (y1 > maxBayY) { const shift = y1 - maxBayY; y0 -= shift; y1 -= shift; }
+    bays[key] = { ...def, y0, y1 };
+  }
 
   const majors = [];
   const chains = [];
@@ -423,6 +461,8 @@ export function buildWorld({ atlasNode }) {
       ],
     },
   });
+  const band1Errors = validRing({ points: band1 });
+  if (band1Errors.length) throw new Error(`buildWorld: ocean band band-1 invalid: ${band1Errors.join(", ")}`);
 
   // Band 2: x in [seamA, seamB]. Cap clearance only where x < CAP_X1.
   const band2Rect = { x0: seamA, y0: MARGIN, x1: seamB, y1: FRAME - MARGIN };
@@ -441,6 +481,8 @@ export function buildWorld({ atlasNode }) {
       ],
     },
   });
+  const band2Errors = validRing({ points: band2 });
+  if (band2Errors.length) throw new Error(`buildWorld: ocean band band-2 invalid: ${band2Errors.join(", ")}`);
 
   // Band 3: x in [seamB, 1975]. Fully east of the cap; no basin overlap.
   const band3Rect = { x0: seamB, y0: MARGIN, x1: FRAME - MARGIN, y1: FRAME - MARGIN };
@@ -453,6 +495,8 @@ export function buildWorld({ atlasNode }) {
       ],
     },
   });
+  const band3Errors = validRing({ points: band3 });
+  if (band3Errors.length) throw new Error(`buildWorld: ocean band band-3 invalid: ${band3Errors.join(", ")}`);
 
   const oceanRings = [band1, band2, band3];
   const oceans = [];
