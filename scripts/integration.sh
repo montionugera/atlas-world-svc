@@ -101,6 +101,16 @@ art_forge_tests() { (cd "$REPO_ROOT" && node --test tools/art-forge/tests/*.test
 # self-checks and writes nothing.
 mapforge_check() { node "$REPO_ROOT/tools/mapforge/render-map.mjs" --check; }
 
+# F-042 G-MAP-DRIFT: the committed sheet SVGs (cluster1-world.svg,
+# atlas-world.svg) must byte-match tools/mapforge/render-sheet.mjs's SHEETS
+# registry rebuilt from the live spine.
+map_render_drift() { node "$REPO_ROOT/scripts/check_map_render.mjs"; }
+
+# F-042: mapforge's own unit + parity test suite (basin-sheet, atlas-sheet,
+# raster, render-sheet). Glob form, not a directory arg — `node --test
+# <directory>` fails on newer Node (ledger ruling, Task 1).
+mapforge_tests() { node --test "$REPO_ROOT"/tools/mapforge/tests/*.test.mjs; }
+
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace + content-gate + contracts build" deps_install
 run_section "server: tsc build"            server_build
@@ -110,6 +120,8 @@ run_section "content: gate (--require-complete)" content_gate
 run_section "content: story-graph drift"   graph_drift
 run_section "content: spine emit drift (G-EMIT-DRIFT)" spine_emit_drift
 run_section "content: mapforge render --check" mapforge_check
+run_section "content: map render drift (G-MAP-DRIFT)" map_render_drift
+run_section "content: mapforge test suite" mapforge_tests
 run_section "content: gate test suite"     content_tests
 run_section "content: story-explorer smoke" explorer_smoke
 run_section "art-forge: intake tests" art_forge_tests

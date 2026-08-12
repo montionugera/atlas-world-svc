@@ -394,7 +394,9 @@ test("world sheet title comes from the sheet record", () => {
 - [ ] **Step 5: Run all mapforge tests — PASS**; also `node tools/mapforge/render-sheet.mjs --sheet atlas --no-png` writes the SVG; open it once in Chrome (`open -a "Google Chrome" game-client/assets/art/maps/atlas-world.svg`) for a human-eyeball sanity check of composition.
 - [ ] **Step 6: Discard the working-tree SVG (`git checkout --` it if written), commit code + sheet record only** — `git commit -m "feat(mapforge): world/atlas sheet — sheet-atlas.json record + drawAtlasSheet"`
 
----### Task 7: Commit the rendered artifacts + manifest entry
+---
+
+### Task 7: Commit the rendered artifacts + manifest entry
 
 **Files:**
 - Modify: `game-client/assets/art/maps/cluster1-world.svg`, `cluster1-world.png` (re-rendered — boundary redraw now baked in)

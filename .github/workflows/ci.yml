@@ -110,6 +110,15 @@ jobs:
       - name: Spine emit drift-gate (G-EMIT-DRIFT)
         run: node scripts/check_spine_emit.mjs --check
 
+      # Map render drift-gate (F-042 G-MAP-DRIFT): the committed sheet SVGs
+      # under game-client/assets/art/maps/ (cluster1-world.svg,
+      # atlas-world.svg) must byte-match tools/mapforge/render-sheet.mjs's
+      # SHEETS registry rebuilt from the live spine. Fails the build if a
+      # sheet is stale or missing. scripts/ deps are already installed by
+      # the Content gate step above (npm ci --prefix scripts).
+      - name: Map render drift-gate (G-MAP-DRIFT)
+        run: node scripts/check_map_render.mjs
+
       # Story explorer (F-012 Task 6): graph.mjs is the pure buildGraph()
       # shared by tools/story-explorer/index.html and this smoke test — every
       # real story file resolves, no dangling edges, no prereq cycle, and a
