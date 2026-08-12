@@ -491,5 +491,14 @@
     "release_version": "1.8",
     "claimed_at": "2026-08-12T11:44:46.979274+00:00",
     "shipped_at": "2026-08-12T15:29:11.333024+00:00"
+  },
+  {
+    "id": "F-043",
+    "title": "World-scale geography: seeded continent/ocean generation from n-atlas seed + composition, hand-polished into canon, so the atlas world sheet renders a complete map",
+    "from_idea": "I-092",
+    "created_at": "2026-08-12T17:08:27.156237+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
