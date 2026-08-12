@@ -55,3 +55,10 @@ red claimed twice, dark unclaimed).
 
 **Owner ack required before Phase 1 closes** — reply "ack" or name the boundary
 to re-draw.
+
+## Owner ack
+
+**Acked 2026-08-12** by the owner, wording: "ack" — given in response to the
+F-042 (world map render) ship report, covering the 8 region∩region redraws and
+the continent-outline change listed above. No boundary named for re-draw.
+Phase 1 is closed.
