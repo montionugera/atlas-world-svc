@@ -17,9 +17,9 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pathToFileURL } from "node:url";
-import { spawnSync } from "node:child_process";
 import { C } from "./lib/draft.mjs";
 import { drawBasinSheet } from "./lib/basin-sheet.mjs";
+import { rasterize } from "./lib/raster.mjs";
 import { loadSpine, buildTree } from "../../scripts/lib/spine.mjs";
 import { emitGeography } from "../../scripts/check_spine_emit.mjs";
 
@@ -99,28 +99,17 @@ function main() {
   console.log(`\n  wrote ${outSvg} (${svg.length} bytes)`);
 
   if (wantPng) {
-    const probe = spawnSync("rsvg-convert", ["--version"], {
-      encoding: "utf8",
+    const result = rasterize({
+      svgPath: outSvg,
+      pngPath: outPng,
+      width: PNG_WIDTH,
+      background: C.parchment,
     });
-    if (probe.status === 0) {
-      const res = spawnSync(
-        "rsvg-convert",
-        ["-w", String(PNG_WIDTH), "-b", C.parchment, outSvg, "-o", outPng],
-        { encoding: "utf8" },
-      );
-      if (res.status === 0)
-        console.log(`  wrote ${outPng} (${PNG_WIDTH}px wide)`);
-      else {
-        console.error(`  rsvg-convert failed: ${res.stderr || res.status}`);
-        process.exit(1);
-      }
-    } else {
-      console.log(
-        `  rsvg-convert not on PATH — PNG not written. To produce it:\n` +
-          `    rsvg-convert -w ${PNG_WIDTH} -b '${C.parchment}' ${outSvg} -o ${outPng}\n` +
-          `  (any of: librsvg, ImageMagick 'magick -density 200', or\n` +
-          `   'Google Chrome' --headless --screenshot will do; the SVG is self-contained)`,
-      );
+    if (result.ok) console.log(`  wrote ${outPng} (${PNG_WIDTH}px wide)`);
+    else if (result.skipped) console.log(`  ${result.message}`);
+    else {
+      console.error(`  rsvg-convert failed: ${result.message}`);
+      process.exit(1);
     }
   }
 }

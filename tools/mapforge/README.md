@@ -47,14 +47,10 @@ rsvg-convert -w 2000 -b '#f3e7ce' \
   -o game-client/assets/art/maps/cluster1-world.png
 ```
 
-Equivalent alternatives, all local:
-
-```bash
-magick -density 200 -background '#f3e7ce' cluster1-world.svg cluster1-world.png
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-  --headless --disable-gpu --window-size=1614,1396 \
-  --screenshot=cluster1-world.png file:///abs/path/cluster1-world.svg
-```
+rsvg-convert (librsvg) is the **only** supported converter — install it with
+`brew install librsvg`. Do NOT substitute ImageMagick: without the librsvg
+delegate it silently drops every stroke, producing a blank-looking PNG with
+no error.
 
 The PNG exists only because the asset storybook renders raster art today; the
 SVG is the artifact.
