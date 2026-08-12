@@ -538,5 +538,11 @@
     "title": "World map render: spine-driven world-scale map (F-041 tier spine has no renderer; cluster1-world.svg is region-scale)",
     "created_at": "2026-08-11T17:26:48.680292+00:00",
     "promoted_to": "F-042"
+  },
+  {
+    "id": "I-091",
+    "title": "check_map_render --write with rsvg-convert missing leaves PNGs stale (gate byte-compares SVG only; F-042 final-review flag)",
+    "created_at": "2026-08-12T13:22:27.331789+00:00",
+    "promoted_to": null
   }
 ]
