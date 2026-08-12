@@ -480,5 +480,14 @@
     "release_version": "1.8",
     "claimed_at": "2026-08-09T15:21:11.116081+00:00",
     "shipped_at": "2026-08-10T02:14:08.325583+00:00"
+  },
+  {
+    "id": "F-042",
+    "title": "World map render: spine-driven world-scale map (F-041 tier spine has no renderer; cluster1-world.svg is region-scale)",
+    "from_idea": "I-090",
+    "created_at": "2026-08-12T11:36:50.610553+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
