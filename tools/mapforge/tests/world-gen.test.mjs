@@ -5,7 +5,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import { rng, noiseRing, fitArea, splitAtVertices, validRing, buildWorld } from "../lib/world-gen.mjs";
-import { shoelaceArea, placementArea } from "../../../scripts/lib/spine.mjs";
+import { shoelaceArea, placementArea, pointInPolygon } from "../../../scripts/lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const atlasNode = JSON.parse(readFileSync(resolve(ROOT, "content/spine/nodes/n-atlas.json"), "utf8"));
@@ -58,10 +58,15 @@ test("buildWorld is deterministic and meets the budget table", () => {
   assert.ok(Math.abs(capArea - 80000) / 80000 < 0.05, `cap ${capArea}`);
   for (const n of w1.nodes) {
     assert.equal(n.provenance.authored, "generated");
-    assert.deepEqual(n.provenance.generator, { name: "gen-world", version: 1 });
+    assert.deepEqual(n.provenance.generator, { name: "gen-world", version: "1" });
     assert.match(n.seed.value, /^[0-9a-f]{16}$/);
     assert.ok(n.lore.reported === true, n.id);
     if (n.placement.shape === "polygon") assert.deepEqual(validRing({ points: n.placement.points }), [], n.id);
+    if (n.placement.shape === "polygon") {
+      for (const f of n.features ?? []) {
+        if (f.kind === "point") assert.ok(pointInPolygon({ point: f.at, points: n.placement.points }), `${n.id} feature ${f.id} not contained`);
+      }
+    }
   }
   const seeds = new Set(w1.nodes.map((n) => n.seed.value));
   assert.equal(seeds.size, w1.nodes.length);

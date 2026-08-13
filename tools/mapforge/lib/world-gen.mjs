@@ -9,7 +9,7 @@
 //   - abs() appears nowhere for winding — a negative signed shoelace area is
 //     a G-POLY failure, not a magnitude.
 import { createHash } from "node:crypto";
-import { shoelaceArea, selfIntersects } from "../../../scripts/lib/spine.mjs";
+import { shoelaceArea, selfIntersects, pointInPolygon } from "../../../scripts/lib/spine.mjs";
 
 // ── core primitives (brief-specified, transcribed verbatim) ────────────────
 
@@ -255,7 +255,7 @@ function makeNode({ id, tier, parentId, title, seedStream, points, composition, 
     tier,
     parentId,
     title,
-    provenance: { authored: "generated", generator: { name: "gen-world", version: 1 }, source: "tools/mapforge/gen-world.mjs" },
+    provenance: { authored: "generated", generator: { name: "gen-world", version: "1" }, source: "tools/mapforge/gen-world.mjs" },
     frozen: false,
     seed: { value: mintSeed({ parentStream: seedStream, name: id }), epoch: 0, why: null },
     placement: { shape: "polygon", points, anchor },
@@ -286,6 +286,21 @@ const OCEAN_COMPOSITION = { ocean: 100 };
 // the port feature on the western major continent.
 function westernmostPoint({ points }) {
   return points.reduce((best, p) => (p[0] < best[0] || (p[0] === best[0] && p[1] < best[1]) ? p : best), points[0]);
+}
+
+// Places a point feature INSIDE `points` by stepping from `vertex` toward
+// `centroid` in fixed, deterministic fractions, verifying containment with
+// pointInPolygon at each step (a ring's own centroid isn't guaranteed
+// interior for a non-convex shape, and neither is an arbitrary offset from
+// a vertex, so this never emits an unverified point — the last fraction
+// tried is 1.0, i.e. the centroid itself).
+const CENTROID_STEP_FRACTIONS = [0.35, 0.5, 0.65, 0.8, 0.95, 1.0];
+function pointTowardCentroid({ vertex, centroid, points }) {
+  for (const frac of CENTROID_STEP_FRACTIONS) {
+    const at = [r1(vertex[0] + frac * (centroid[0] - vertex[0])), r1(vertex[1] + frac * (centroid[1] - vertex[1]))];
+    if (pointInPolygon({ point: at, points })) return at;
+  }
+  throw new Error(`pointTowardCentroid: no interior point found stepping from ${vertex} toward centroid ${centroid}`);
 }
 
 export function buildWorld({ atlasNode }) {
@@ -431,10 +446,12 @@ export function buildWorld({ atlasNode }) {
     const seaward = points.filter((p) => p[0] <= bbox.x + bbox.w / 2);
     const reefPts = seaward.length >= 2 ? seaward : points.slice(0, 2);
     const isleCount = 1 + (Math.floor(rand() * 3) % 3); // 1-3, deterministic
+    const chainCentroid = centroidOf({ points });
     const isles = [];
     for (let k = 0; k < isleCount; k++) {
       const p = points[(k * 3 + 1) % points.length];
-      isles.push({ id: `f-${chain.id.slice(2)}-isle-${k + 1}`, kind: "point", at: [r1(p[0] + 4 + k), r1(p[1] - 3 - k)], attrs: { role: "outlying-isle", name: null } });
+      const at = pointTowardCentroid({ vertex: p, centroid: chainCentroid, points });
+      isles.push({ id: `f-${chain.id.slice(2)}-isle-${k + 1}`, kind: "point", at, attrs: { role: "outlying-isle", name: null } });
     }
     chain.features = [
       { id: `f-${chain.id.slice(2)}-reef`, kind: "line", points: reefPts, attrs: { note: "generated reef — panel rewrites" } },
