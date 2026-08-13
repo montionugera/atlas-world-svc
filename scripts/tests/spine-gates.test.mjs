@@ -390,6 +390,13 @@ t11("G-OVERLAP + G-COMP-ROLLUP red: overlapping twins now hard-fail", () => {
   } }));
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-OVERLAP n-r ∩ n-r2: 400\.0 over limit 2\.0/);
+  // F-043 perf fix: the parent-level double-count check (gSpineOverlapRollup)
+  // switched from a gridUnionArea() scan to summing the pairwise
+  // gridIntersectionArea() values from the loop above. n-r/n-r2 are full
+  // duplicates with a single pair, so the pairwise sum equals the old
+  // union-based figure exactly (400.0) — this pins that the fixture's
+  // reported double-count number did not change after the swap.
+  assert11.match(r.out, /G-OVERLAP n-c: children double-count 400\.0 \(limit 32\.0\)/);
 });
 t11("G-COMP-ROLLUP red: child mix contradicts the parent beyond tolerance", () => {
   const r = runSpineGate(spineFixture({ mutate: (dir) => {

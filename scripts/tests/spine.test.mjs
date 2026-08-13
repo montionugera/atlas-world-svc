@@ -94,6 +94,31 @@ test("gridIntersectionArea / gridUnionArea are exact on cell-aligned rects", () 
   assert.equal(gridIntersectionArea({ a, b: far, cell: 1.0 }), 0);
 });
 
+// F-043 perf fix: gSpineOverlapRollup's double-count check replaces the
+// O(area) gridUnionArea() scan with a running Σ of the pairwise
+// gridIntersectionArea() values it already computes in the sibling loop.
+// By inclusion-exclusion, Σareas − union = Σpairwise − Σtriple + …, so this
+// is exact whenever no three placements overlap at a shared point (the case
+// pinned here) and only ever OVER-reports otherwise — never masks a real
+// double-count. This test pins that equivalence directly against the
+// exported grid helpers, independent of the rollup function itself.
+test("pairwise Σ(gridIntersectionArea) equals Σareas − gridUnionArea when no triple overlap", () => {
+  const cell = 1.0;
+  const a = { shape: "rect", rect: { x: 0, y: 0, w: 4, h: 4 } }; // area 16
+  const b = { shape: "rect", rect: { x: 2, y: 0, w: 4, h: 4 } }; // area 16, a∩b = 8
+  const c = { shape: "rect", rect: { x: 4, y: 0, w: 4, h: 4 } }; // area 16, b∩c = 8, a∩c = 0 (touch only)
+  const kids = [a, b, c];
+  let pairSum = 0;
+  for (let i = 0; i < kids.length; i++)
+    for (let j = i + 1; j < kids.length; j++)
+      pairSum += gridIntersectionArea({ a: kids[i], b: kids[j], cell });
+  const sum = kids.reduce((s, k) => s + placementArea({ placement: k }), 0);
+  const union = gridUnionArea({ placements: kids, cell });
+  assert.equal(pairSum, 16); // a∩b=8 + b∩c=8 + a∩c=0
+  assert.equal(sum - union, 16);
+  assert.equal(pairSum, sum - union);
+});
+
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
