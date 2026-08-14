@@ -550,5 +550,11 @@
     "title": "World-scale geography: seeded continent/ocean generation from n-atlas seed + composition, hand-polished into canon, so the atlas world sheet renders a complete map",
     "created_at": "2026-08-12T16:21:51.957968+00:00",
     "promoted_to": "F-043"
+  },
+  {
+    "id": "I-093",
+    "title": "harden G-ATLAS-ROLLUP: iterate union of committed+rolled-up biome keys so a rogue uncommitted biome (bounded ~6pp today) cannot pass silently",
+    "created_at": "2026-08-14T15:54:34.426311+00:00",
+    "promoted_to": null
   }
 ]
