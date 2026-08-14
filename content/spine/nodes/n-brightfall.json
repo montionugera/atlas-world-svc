@@ -1,0 +1,122 @@
+{
+  "id": "n-brightfall",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Brightfall",
+  "provenance": {
+    "authored": "hand",
+    "generator": {
+      "name": "gen-world",
+      "version": "1"
+    },
+    "source": "tools/mapforge/gen-world.mjs"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "b23fa47324723cbd",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [1028.5, 295],
+      [1025.3, 312.5],
+      [1013.3, 326.9],
+      [995, 331.2],
+      [979.8, 321.4],
+      [969.1, 310],
+      [970.1, 295],
+      [962.8, 276.4],
+      [983.1, 274.4],
+      [995, 266.9],
+      [1015.4, 259.7],
+      [1016.2, 282.7]
+    ],
+    "anchor": [996.1, 296]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [65.70000000000005, 71.5],
+    "originInParent": [962.8, 259.7]
+  },
+  "composition": {
+    "rock": 50,
+    "meadow": 30,
+    "forest": 20
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [
+    {
+      "id": "f-brightfall-reef",
+      "kind": "line",
+      "points": [
+        [995, 331.2],
+        [979.8, 321.4],
+        [969.1, 310],
+        [970.1, 295],
+        [962.8, 276.4],
+        [983.1, 274.4],
+        [995, 266.9]
+      ],
+      "attrs": {
+        "note": "Teeth of rock logged at the fall's foot by crews that kept their distance.",
+        "name": "the Brightfall Teeth"
+      }
+    },
+    {
+      "id": "f-brightfall-isle-1",
+      "kind": "point",
+      "at": [1015.1, 306.7],
+      "attrs": {
+        "role": "outlying-isle",
+        "name": null
+      }
+    },
+    {
+      "id": "f-brightfall-isle-2",
+      "kind": "point",
+      "at": [985.5, 312.5],
+      "attrs": {
+        "role": "outlying-isle",
+        "name": null
+      }
+    }
+  ],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "reported": true,
+    "summary": "Named for white water reported falling off its seaward rocks; one isle charted, the rest claimed."
+  },
+  "tags": ["archipelago"],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 2998.384999999922,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [996.1, 296],
+    "resolvedSeedStreams": {
+      "terrain": "4a3265ec121f76f9",
+      "settlements": "52f7f808f7a7c9fc",
+      "vegetation": "ff380abe0d4afbfe",
+      "names": "f378e4ce82891efe"
+    },
+    "digest": "sha256:3d80271aebd41eaeb7bb385fe553a056dcede948cd84075a9f0b043e13010da1"
+  }
+}

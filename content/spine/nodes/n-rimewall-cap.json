@@ -1,0 +1,93 @@
+{
+  "id": "n-rimewall-cap",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "the Rimewall Cap",
+  "provenance": {
+    "authored": "hand",
+    "generator": {
+      "name": "gen-world",
+      "version": "1"
+    },
+    "source": "tools/mapforge/gen-world.mjs"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "3a20e12a9d0c5028",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [150, 0],
+      [1150, 0],
+      [1150, 93.8],
+      [1087.5, 78.8],
+      [1025, 72.2],
+      [962.5, 88.3],
+      [900, 91.4],
+      [837.5, 87],
+      [775, 84.8],
+      [712.5, 69.6],
+      [650, 80.6],
+      [587.5, 87.4],
+      [525, 80.1],
+      [462.5, 75.9],
+      [400, 66.6],
+      [337.5, 90],
+      [275, 81.7],
+      [212.5, 85.2],
+      [150, 14]
+    ],
+    "anchor": [650, 69.9]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [1000, 93.8],
+    "originInParent": [150, 0]
+  },
+  "composition": {
+    "ice": 92,
+    "rock": 8
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": 10,
+  "toleranceWhy": "mariners' report, not surveyed — a chartman's allowance, not a survey figure",
+  "terrainKind": "ice",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "reported": true,
+    "summary": "Every master who has run far enough north reports the same white wall shutting the horizon; none reports an end to it."
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 79593.75,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [650, 69.9],
+    "resolvedSeedStreams": {
+      "terrain": "9a46492ca6ed7e66",
+      "settlements": "70490129a3737160",
+      "vegetation": "15a632f07d110070",
+      "names": "1932d10fc491e603"
+    },
+    "digest": "sha256:d4df27408870ce223ca3070b09ef8d848d2c2c6009ed0ad995d4787c74f67317"
+  }
+}

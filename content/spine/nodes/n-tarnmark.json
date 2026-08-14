@@ -1,0 +1,84 @@
+{
+  "id": "n-tarnmark",
+  "tier": "ocean",
+  "parentId": "n-atlas",
+  "title": "The Tarnmark Sea",
+  "provenance": {
+    "authored": "hand",
+    "generator": {
+      "name": "gen-world",
+      "version": "1"
+    },
+    "source": "tools/mapforge/gen-world.mjs"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "f97dd1ad2bcf4bcf",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [1466, 25],
+      [1975, 25],
+      [1975, 1975],
+      [1466, 1975],
+      [1466, 1438],
+      [1626, 1438],
+      [1626, 1118],
+      [1466, 1118],
+      [1466, 605],
+      [1546, 605],
+      [1546, 425],
+      [1466, 425]
+    ],
+    "anchor": [1590.8, 931]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [509, 1950],
+    "originInParent": [1466, 25]
+  },
+  "composition": {
+    "ocean": 100
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "reported": true,
+    "summary": "The eastern water past Stonemoor, dark and still by every account, where the charts run out."
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 926950,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [1590.8, 931],
+    "resolvedSeedStreams": {
+      "terrain": "2b111ac20f9bada1",
+      "settlements": "da37002159ef8c0f",
+      "vegetation": "648d97e1973a687f",
+      "names": "baaf0f0a4f807e26"
+    },
+    "digest": "sha256:9b24f81e24fe1cb28a8aef6a28a8c68ac02e27a326eee8e94f862b7f11f49846"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "id": "n-peatrun-coast",
+  "tier": "region",
+  "parentId": "n-coldreach",
+  "title": "the Peatrun Coast",
+  "provenance": {
+    "authored": "hand",
+    "generator": {
+      "name": "gen-world",
+      "version": "1"
+    },
+    "source": "tools/mapforge/gen-world.mjs"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "499d17fae3283272",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [1098.8, 742],
+      [1052.6, 762.9],
+      [1071.6, 806.3],
+      [1026.2, 796.1],
+      [1006.4, 806.6],
+      [978.2, 837.3],
+      [945.5, 827.8],
+      [917.4, 807.1]
+    ],
+    "anchor": [1012.1, 798.3]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [181.39999999999998, 95.29999999999995],
+    "originInParent": [917.4, 742]
+  },
+  "composition": {
+    "rock": 55,
+    "upland": 20,
+    "forest": 15,
+    "meadow": 10
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "reported": true,
+    "summary": "The far run of coast where the Peatrun stains the sea brown a mile out, or so the wreck-reports swear."
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 4967.349999999977,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [1012.1, 798.3],
+    "resolvedSeedStreams": {
+      "terrain": "ec87b7952194be28",
+      "settlements": "a74173f73ef2340b",
+      "vegetation": "ead62a937cff1cc7",
+      "names": "98711964e7a41477"
+    },
+    "digest": "sha256:9a2fddda9fcb609dfb8cc1317ab78899a84d600758d260596e64cda66d048031"
+  }
+}

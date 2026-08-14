@@ -1,0 +1,99 @@
+{
+  "id": "n-galereach",
+  "tier": "ocean",
+  "parentId": "n-atlas",
+  "title": "The Galereach Sea",
+  "provenance": {
+    "authored": "hand",
+    "generator": {
+      "name": "gen-world",
+      "version": "1"
+    },
+    "source": "tools/mapforge/gen-world.mjs"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "19b5809355a5271d",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [995, 25],
+      [995, 108.8],
+      [1150, 108.8],
+      [1150, 25],
+      [1466, 25],
+      [1466, 425],
+      [1386, 425],
+      [1386, 605],
+      [1466, 605],
+      [1466, 1118],
+      [1306, 1118],
+      [1306, 1438],
+      [1466, 1438],
+      [1466, 1975],
+      [995, 1975],
+      [995, 1504],
+      [1085, 1504],
+      [1085, 1284],
+      [995, 1284],
+      [995, 912],
+      [1165, 912],
+      [1165, 572],
+      [995, 572],
+      [995, 385],
+      [1075, 385],
+      [1075, 205],
+      [995, 205]
+    ],
+    "anchor": [1188.3, 782.9]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [471, 1950],
+    "originInParent": [995, 25]
+  },
+  "composition": {
+    "ocean": 100
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "reported": true,
+    "summary": "The middle water the trade wind crosses; its gales are the one entry every log agrees on."
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 747861,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [1188.3, 782.9],
+    "resolvedSeedStreams": {
+      "terrain": "3db2682fad574543",
+      "settlements": "f17623790ef4159a",
+      "vegetation": "22b26e58d3d80b68",
+      "names": "8893b02b0601c937"
+    },
+    "digest": "sha256:7afae8b4b1c996caa13d4928fd278c048648b8ec192b7f5820df447e860757de"
+  }
+}

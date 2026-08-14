@@ -1,0 +1,134 @@
+{
+  "id": "n-coldreach",
+  "tier": "continent",
+  "parentId": "n-atlas",
+  "title": "Coldreach",
+  "provenance": {
+    "authored": "hand",
+    "generator": {
+      "name": "gen-world",
+      "version": "1"
+    },
+    "source": "tools/mapforge/gen-world.mjs"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "a6105f8765a90fc4",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [1098.8, 742],
+      [1052.6, 762.9],
+      [1071.6, 806.3],
+      [1026.2, 796.1],
+      [1006.4, 806.6],
+      [978.2, 837.3],
+      [945.5, 827.8],
+      [917.4, 807.1],
+      [919.6, 769.4],
+      [936.6, 742],
+      [896.7, 706.2],
+      [940.2, 696],
+      [944.3, 654.2],
+      [978.4, 647.3],
+      [1008.6, 664.9],
+      [1034.1, 674.3],
+      [1053.6, 692.8],
+      [1082.4, 710.2]
+    ],
+    "anchor": [994, 741.3]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [202.0999999999999, 190],
+    "originInParent": [896.7, 647.3]
+  },
+  "composition": {
+    "rock": 55,
+    "upland": 20,
+    "forest": 15,
+    "meadow": 10
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [
+    {
+      "id": "f-coldreach-ridge",
+      "kind": "line",
+      "points": [
+        [1098.8, 742],
+        [936.6, 742]
+      ],
+      "attrs": {
+        "note": "A ridge logged from open water as one unbroken skyline, end to end.",
+        "name": "the Coldreach Spine"
+      }
+    },
+    {
+      "id": "f-coldreach-river-mouth",
+      "kind": "line",
+      "points": [
+        [995, 742],
+        [1006.4, 806.6],
+        [978.2, 837.3]
+      ],
+      "attrs": {
+        "note": "A river known only by its mouth and the peat-dark stain it pushes to sea.",
+        "name": "the Peatrun"
+      }
+    },
+    {
+      "id": "f-port-tallowquay",
+      "kind": "point",
+      "at": [896.7, 706.2],
+      "attrs": {
+        "role": "port",
+        "name": "Tallowquay",
+        "note": "The one foreign quay Gildmark hulls have tied at, named by crews for the tallow-smoke over its anchorage; past the waterline, hearsay."
+      }
+    }
+  ],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "reported": true,
+    "summary": "Six days out on the trade wind, masters log a cold grey coast under one long spine of rock; no log claims what stands behind it."
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 21995.440000000002,
+    "childAreaParentUnits2": 21995.440000000002,
+    "coveragePct": 100,
+    "unclaimedPct": 0,
+    "computedComposition": {
+      "rock": 55,
+      "upland": 20,
+      "forest": 15,
+      "meadow": 10
+    },
+    "rollupVerdict": "CHECKED",
+    "absoluteAnchorRoot": [994, 741.3],
+    "resolvedSeedStreams": {
+      "terrain": "0c151c7f6fcc1034",
+      "settlements": "05f0e72c8fbc3089",
+      "vegetation": "a37079184a7bea3b",
+      "names": "700e225c53464cc6"
+    },
+    "digest": "sha256:16c5ea288752fd5c0276cf359a69b3a2a100fcb0943cec878fad3bd284320c16"
+  }
+}

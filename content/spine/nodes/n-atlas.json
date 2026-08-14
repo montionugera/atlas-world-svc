@@ -36,8 +36,10 @@
     "rock": 2,
     "ice": 2
   },
-  "interstitial": null,
-  "interstitialUnsurveyed": true,
+  "interstitial": {
+    "ocean": 100
+  },
+  "interstitialUnsurveyed": false,
   "compositionTolerance": null,
   "toleranceWhy": null,
   "terrainKind": null,
@@ -52,24 +54,24 @@
   "levelBand": null,
   "derived": {
     "areaParentUnits2": 4000000,
-    "childAreaParentUnits2": 28059,
-    "coveragePct": 0.701475,
-    "unclaimedPct": 99.298525,
+    "childAreaParentUnits2": 3510394.325,
+    "coveragePct": 87.759858125,
+    "unclaimedPct": 12.24014187500001,
     "computedComposition": {
-      "meadow": 0.16260624999999998,
-      "forest": 0.08910822499999999,
-      "rock": 2.071176175,
-      "upland": 0.0754493,
+      "rock": 0.9254673249999993,
+      "meadow": 0.3412877124999988,
+      "forest": 0.29154913749999944,
+      "upland": 0.2754171500000006,
       "marsh": 0.0676442,
       "river": 0.042277625,
-      "ice": 2.026947275,
+      "ice": 1.8716330250000002,
       "bramble": 0.038375075,
       "alkali": 0.01951275,
       "ash": 0.012358074999999998,
       "built": 0.009105949999999998,
-      "ocean": 95.386089525
+      "ocean": 96.1060224
     },
-    "rollupVerdict": "UNCHECKED",
+    "rollupVerdict": "CHECKED",
     "absoluteAnchorRoot": [1000, 1000],
     "resolvedSeedStreams": {
       "terrain": "d9a0051d32afab59",
@@ -77,6 +79,6 @@
       "vegetation": "4430c6c4193ad72b",
       "names": "6033b1b1f52e861c"
     },
-    "digest": "sha256:f28bef3c272d68ccf18f27eeceb46e73deff31382b5ed203a4d80a5291c32112"
+    "digest": "sha256:ed5b0a4f7d94a9886b42f9030679a9a595fa8bc7d233b7c2dd27d8e38bbb6e16"
   }
 }
