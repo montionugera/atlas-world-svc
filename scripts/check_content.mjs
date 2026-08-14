@@ -1687,6 +1687,27 @@ function checkSpine(opts, mobTypes) {
   // the world is disjoint now, so G-OVERLAP + G-COMP-ROLLUP are enforced.
   gSpineOverlapRollup({ tree, report: fail });
 
+  // F-043 Task 4: G-ATLAS-ROLLUP — every world-tier root that has claimed
+  // its water (interstitialUnsurveyed false) must roll up CHECKED and
+  // within ±2 pp of its committed composition on every committed biome.
+  // Fixed ±2pp, independent of compositionTolerance — tighter than
+  // G-COMP-ROLLUP's per-node tolerance (default 3.0, ceiling 5.0) above,
+  // by design: this is the world-level pin, not the general per-node rule.
+  // The interstitialUnsurveyed guard means the rule self-activates the
+  // moment a world root claims its water — dormant (never reported) until
+  // then, so it never breaks mid-branch on a not-yet-surveyed world.
+  for (const node of validNodes) {
+    if (node.tier !== "world" || node.interstitialUnsurveyed || !tree.depthOf.has(node.id)) continue;
+    const d = deriveNode({ tree, id: node.id, plans: townPlans });
+    if (d.rollupVerdict !== "CHECKED")
+      fail(`G-ATLAS-ROLLUP: ${node.id}: rollupVerdict ${d.rollupVerdict} — world coverage must reach CHECKED (>= 60% claimed)`);
+    for (const [b, v] of Object.entries(node.composition ?? {})) {
+      const got = d.computedComposition[b] ?? 0;
+      if (Math.abs(got - v) > 2)
+        fail(`G-ATLAS-ROLLUP: ${node.id}: ${b} rolls up to ${got.toFixed(2)} vs committed ${v} (tolerance ±2 pp)`);
+    }
+  }
+
   // ── F-041 P3: town plans join the spine on plan.spineId (G-TOWN-FRAME) ──
   // `townPlans` is the schema-VALID list loaded at the top of this function —
   // a plan missing footprints[0].rect earns its own clean schema FAIL there

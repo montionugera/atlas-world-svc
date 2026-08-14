@@ -858,3 +858,20 @@ test("G-ALIAS sweep: an art:town-* key with no town-tier node is a hard FAIL", (
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, /FAIL\s+spine-alias: art-manifest art:town-nopeville: no town-tier spine node n-nopeville \/ n-nopeville-town/);
 });
+
+// ── F-043 Task 4: G-ATLAS-ROLLUP — the world rollup is pinned to committed
+// composition (±2pp), independent of G-COMP-ROLLUP's looser per-node
+// tolerance. Red fixture: g-atlas-rollup-drift/ (copied from base/, world
+// root n-w flipped to interstitialUnsurveyed:false with a committed
+// composition 4pp off its true rollup). Green half runs the real content
+// root — valid only once Task 3's n-atlas promotion has landed.
+test("G-ATLAS-ROLLUP red: world rollup off committed composition by >2pp", () => {
+  const { code, stdout } = runGate(contentRootFor("g-atlas-rollup-drift"));
+  assert.equal(code, 1, stdout);
+  assert.match(stdout, /FAIL {2}G-ATLAS-ROLLUP: /);
+});
+
+test("G-ATLAS-ROLLUP green: the committed content passes", () => {
+  const { code, stdout } = runGate(join(ROOT, "content"));
+  assert.equal(code, 0, stdout);
+});
