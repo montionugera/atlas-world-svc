@@ -51,10 +51,51 @@ function writeJson(path, doc) {
   writeFileSync(path, JSON.stringify(doc, null, 2) + "\n");
 }
 
-// Builds a synthetic content root (mkdtempSync) carrying the real committed
-// spine table PLUS the candidates, so the real gate can validate the
-// candidates standalone (AC 1) without touching the real content/ tree.
-// Returns { tmp, tree, candidateNodes, candidateEdges, summary }; caller owns
+// Real n-atlas children this generator never regenerates — the pre-F-043
+// world frame. Everything else directly under n-atlas is a PREVIOUS
+// gen-world/promotion run's output; once Task 3 promotes a candidate set
+// into content/spine/nodes/, the real root already contains it, so merging
+// a freshly-regenerated (old-id) candidate set on top would double every
+// F-043 landmass (duplicate seeds, self-overlap, blown budget/composition).
+const PRE_WORLD_ATLAS_CHILDREN = new Set(["n-cluster1", "n-westsea"]);
+
+// Real edges this generator never regenerates: everything except the
+// original e-sea-lane. Promoted F-043 sealanes (e-lane-*) point at feature
+// ids (e.g. f-port-tallowquay) that only exist on the PROMOTED nodes, not
+// on the freshly-regenerated candidate set this run produces — so they'd
+// dangle (G-NET) if carried into the synthetic pre-world root.
+const PRE_WORLD_SEALANE_ID = "e-sea-lane";
+
+// Nodes to drop when reconstructing the pre-world state: every direct child
+// of n-atlas that isn't in PRE_WORLD_ATLAS_CHILDREN, plus all of its
+// descendants (walked via parentId, not just F-043's own subtree shape, so
+// this stays correct if a future feature adds more n-atlas children).
+function postWorldNodeIds({ nodes }) {
+  const childrenOf = new Map();
+  for (const n of nodes) {
+    if (!childrenOf.has(n.parentId)) childrenOf.set(n.parentId, []);
+    childrenOf.get(n.parentId).push(n.id);
+  }
+  const excluded = new Set();
+  for (const id of childrenOf.get("n-atlas") ?? []) {
+    if (PRE_WORLD_ATLAS_CHILDREN.has(id)) continue;
+    const stack = [id];
+    while (stack.length) {
+      const cur = stack.pop();
+      excluded.add(cur);
+      for (const c of childrenOf.get(cur) ?? []) stack.push(c);
+    }
+  }
+  return excluded;
+}
+
+// Builds a synthetic content root (mkdtempSync) carrying the PRE-F-043 real
+// spine table (see postWorldNodeIds above) PLUS a freshly-regenerated
+// candidate set, so the real gate proves buildWorld()'s output is gate-valid
+// from scratch — a reproduction proof against the pre-F-043 world, not a
+// no-op merge against a root that may already contain a promoted (possibly
+// renamed) copy of the same generation. Returns
+// { tmp, tree, candidateNodes, candidateEdges, summary }; caller owns
 // cleanup (rmSync the tmp dir).
 function buildSyntheticRoot({ repoRoot }) {
   const realContentRoot = join(repoRoot, "content");
@@ -62,47 +103,61 @@ function buildSyntheticRoot({ repoRoot }) {
   const { nodes: candidateNodes, edges: candidateEdges, summary } = buildWorld({ atlasNode });
 
   const tmp = mkdtempSync(join(tmpdir(), "gen-world-"));
-  mkdirSync(join(tmp, "schemas"), { recursive: true });
-  mkdirSync(join(tmp, "spine/nodes"), { recursive: true });
+  // Self-cleaning: if anything below throws (schema/tree/canonicalization
+  // errors), rmSync the half-built tmp dir before rethrowing — otherwise it
+  // leaks, since a throw here means buildSyntheticRoot never returns `tmp`
+  // for a caller-side finally to find.
+  try {
+    mkdirSync(join(tmp, "schemas"), { recursive: true });
+    mkdirSync(join(tmp, "spine/nodes"), { recursive: true });
 
-  writeFileSync(join(tmp, "schemas/spine-node.schema.json"), readFileSync(join(realContentRoot, "schemas/spine-node.schema.json")));
-  writeFileSync(join(tmp, "spine/sheet-atlas.json"), readFileSync(join(realContentRoot, "spine/sheet-atlas.json")));
-  writeFileSync(join(tmp, "spine/coverage-budget.json"), readFileSync(join(realContentRoot, "spine/coverage-budget.json")));
-  writeJson(join(tmp, "spine/load-budget.json"), SYNTHETIC_LOAD_BUDGET);
+    writeFileSync(join(tmp, "schemas/spine-node.schema.json"), readFileSync(join(realContentRoot, "schemas/spine-node.schema.json")));
+    writeFileSync(join(tmp, "spine/sheet-atlas.json"), readFileSync(join(realContentRoot, "spine/sheet-atlas.json")));
+    writeFileSync(join(tmp, "spine/coverage-budget.json"), readFileSync(join(realContentRoot, "spine/coverage-budget.json")));
+    writeJson(join(tmp, "spine/load-budget.json"), SYNTHETIC_LOAD_BUDGET);
 
-  const roots = readJson(join(realContentRoot, "spine/roots.json"));
-  writeJson(join(tmp, "spine/roots.json"), roots);
+    const roots = readJson(join(realContentRoot, "spine/roots.json"));
+    writeJson(join(tmp, "spine/roots.json"), roots);
 
-  // Real nodes, with n-atlas overlaid: the survey is complete enough now
-  // (the generated continents/oceans cover most of the sheet) that the
-  // world stops being blanket-UNCHECKED and falls back to a pure-ocean
-  // interstitial for whatever sliver of frame remains undrawn.
-  const nodesDir = join(realContentRoot, "spine/nodes");
-  const realNodes = readdirSync(nodesDir)
-    .filter((f) => f.endsWith(".json"))
-    .sort()
-    .map((f) => readJson(join(nodesDir, f)));
-  const atlasIdx = realNodes.findIndex((n) => n.id === "n-atlas");
-  if (atlasIdx === -1) throw new Error("gen-world: content/spine/nodes/n-atlas.json not found in real node set");
-  realNodes[atlasIdx] = { ...realNodes[atlasIdx], interstitialUnsurveyed: false, interstitial: { ocean: 100 } };
+    // Real nodes, restricted to the PRE-F-043 world (postWorldNodeIds drops
+    // any already-promoted F-043 landmass under n-atlas), with n-atlas
+    // overlaid: the survey is complete enough now (the freshly-regenerated
+    // continents/oceans cover most of the sheet) that the world stops being
+    // blanket-UNCHECKED and falls back to a pure-ocean interstitial for
+    // whatever sliver of frame remains undrawn.
+    const nodesDir = join(realContentRoot, "spine/nodes");
+    const allRealNodes = readdirSync(nodesDir)
+      .filter((f) => f.endsWith(".json"))
+      .sort()
+      .map((f) => readJson(join(nodesDir, f)));
+    const excluded = postWorldNodeIds({ nodes: allRealNodes });
+    const realNodes = allRealNodes.filter((n) => !excluded.has(n.id));
+    const atlasIdx = realNodes.findIndex((n) => n.id === "n-atlas");
+    if (atlasIdx === -1) throw new Error("gen-world: content/spine/nodes/n-atlas.json not found in real node set");
+    realNodes[atlasIdx] = { ...realNodes[atlasIdx], interstitialUnsurveyed: false, interstitial: { ocean: 100 } };
 
-  const mergedNodes = [...realNodes, ...candidateNodes];
-  const tree = buildTree({ nodes: mergedNodes, rootIds: roots });
-  if (tree.errors.length) throw new Error(`gen-world: merged tree is invalid: ${tree.errors.join("; ")}`);
+    const mergedNodes = [...realNodes, ...candidateNodes];
+    const tree = buildTree({ nodes: mergedNodes, rootIds: roots });
+    if (tree.errors.length) throw new Error(`gen-world: merged tree is invalid: ${tree.errors.join("; ")}`);
 
-  // Canonicalize EVERY node (real + candidate) over the merged tree — the
-  // real nodes' own interior/derived is unaffected by new siblings except
-  // n-atlas, whose rollup now includes the candidates as children; the
-  // candidates get their derived block computed for the first time here.
-  for (const node of mergedNodes) {
-    const bytes = canonicalBytes({ node, tree, keepDerived: true });
-    writeFileSync(join(tmp, "spine/nodes", `${node.id}.json`), bytes);
+    // Canonicalize EVERY node (real + candidate) over the merged tree — the
+    // real nodes' own interior/derived is unaffected by new siblings except
+    // n-atlas, whose rollup now includes the candidates as children; the
+    // candidates get their derived block computed for the first time here.
+    for (const node of mergedNodes) {
+      const bytes = canonicalBytes({ node, tree, keepDerived: true });
+      writeFileSync(join(tmp, "spine/nodes", `${node.id}.json`), bytes);
+    }
+
+    const allRealEdges = readJson(join(realContentRoot, "spine/edges.json"));
+    const realEdges = allRealEdges.filter((e) => e.kind !== "sealane" || e.id === PRE_WORLD_SEALANE_ID);
+    writeJson(join(tmp, "spine/edges.json"), [...realEdges, ...candidateEdges]);
+
+    return { tmp, tree, candidateNodes, candidateEdges, summary };
+  } catch (e) {
+    rmSync(tmp, { recursive: true, force: true });
+    throw e;
   }
-
-  const realEdges = readJson(join(realContentRoot, "spine/edges.json"));
-  writeJson(join(tmp, "spine/edges.json"), [...realEdges, ...candidateEdges]);
-
-  return { tmp, tree, candidateNodes, candidateEdges, summary };
 }
 
 function runSpineGate({ repoRoot, syntheticRoot }) {
@@ -132,8 +187,18 @@ function summaryTable(summary) {
 // The core pipeline. Exits the process on any validation failure (exit 1);
 // returns normally after printing the summary + "gen-world: OK" on success.
 export function generate({ repoRoot, outDir }) {
-  const { tmp, tree, candidateNodes, candidateEdges, summary } = buildSyntheticRoot({ repoRoot });
+  // buildSyntheticRoot() is called INSIDE the try (not before it, as an
+  // earlier revision had it) so that a throw from IT is also covered by the
+  // finally below — it already self-cleans on its own throw (see its own
+  // try/catch above), but keeping the call in here too means every path
+  // that can create `tmp` is covered by exactly one cleanup, not two
+  // separate ones a future edit could drift apart.
+  let tmp;
   try {
+    const built = buildSyntheticRoot({ repoRoot });
+    tmp = built.tmp;
+    const { tree, candidateNodes, candidateEdges, summary } = built;
+
     const gate = runSpineGate({ repoRoot, syntheticRoot: tmp });
     if (!gate.ok) {
       process.stdout.write(gate.stdout);
@@ -172,7 +237,7 @@ export function generate({ repoRoot, outDir }) {
     console.log(summaryTable(summary));
     console.log("gen-world: OK");
   } finally {
-    rmSync(tmp, { recursive: true, force: true });
+    if (tmp) rmSync(tmp, { recursive: true, force: true });
   }
 }
 
