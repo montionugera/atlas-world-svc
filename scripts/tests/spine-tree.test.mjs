@@ -88,21 +88,21 @@ const EXPECTED = `n-atlas · world · km · coverage 87.8% CHECKED
 ├── n-brightfall · continent · km · coverage 0.0% ASSERTED
 ├── n-cluster1 · continent · km · coverage 53.4% ASSERTED
 │   ├── n-ashvale-front · region · km · coverage 0.0% ASSERTED
-│   ├── n-cindervast · region · km · coverage 0.3% ASSERTED
+│   ├── n-cindervast · region · km · coverage 8.0% ASSERTED
 │   │   └── n-cindervast-town · town · u · coverage 0.0% ASSERTED
 │   ├── n-eastern-hills · region · km · coverage 0.0% ASSERTED
-│   ├── n-emberdown · region · km · coverage 0.4% ASSERTED
+│   ├── n-emberdown · region · km · coverage 10.8% ASSERTED
 │   │   └── n-embervale · town · u · coverage 0.0% ASSERTED
-│   ├── n-gildmark-head · region · km · coverage 0.5% ASSERTED
+│   ├── n-gildmark-head · region · km · coverage 11.6% ASSERTED
 │   │   └── n-gildmark · town · u · coverage 0.0% ASSERTED
-│   ├── n-hollowmarch · region · km · coverage 0.9% ASSERTED
+│   ├── n-hollowmarch · region · km · coverage 22.3% ASSERTED
 │   │   └── n-norhollow · town · u · coverage 0.0% ASSERTED
-│   ├── n-meltwash-terrace · region · km · coverage 0.5% ASSERTED
+│   ├── n-meltwash-terrace · region · km · coverage 12.8% ASSERTED
 │   │   └── n-expedition-camp · town · u · coverage 0.0% ASSERTED
-│   ├── n-millcross-ford · region · km · coverage 0.5% ASSERTED
+│   ├── n-millcross-ford · region · km · coverage 13.3% ASSERTED
 │   │   └── n-millcross · town · u · coverage 0.0% CHECKED
 │   ├── n-northern-icefield · region · km · coverage 0.0% ASSERTED
-│   ├── n-rooktide-reach · region · km · coverage 0.0% ASSERTED
+│   ├── n-rooktide-reach · region · km · coverage 0.5% ASSERTED
 │   │   └── n-rooktide · town · u · coverage 0.0% ASSERTED
 │   ├── n-saltmire · region · km · coverage 0.0% ASSERTED
 │   └── n-thornveil · region · km · coverage 0.0% ASSERTED

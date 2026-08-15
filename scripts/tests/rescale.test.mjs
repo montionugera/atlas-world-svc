@@ -260,22 +260,12 @@ test("geography tier: region lore.labelAt scales by 0.2", () => {
   rmSync(root, { recursive: true, force: true });
 });
 
-test("site tier: a site's feature (spawn point) translates by the same shift as its placement, staying glued to it", () => {
+test("site tier: a playspace child is left completely untouched (F-045 Task 2: playroot subtree reverted — u-world runtime mirror must not move)", () => {
   const root = contentRoot();
   const before = readNode(root, "n-site-thornveil");
   runRescale({ contentRoot: root });
   const after = readNode(root, "n-site-thornveil");
-  // bbox unchanged (same footprint rule as towns)
-  assert.equal(after.placement.rect.w, before.placement.rect.w);
-  assert.equal(after.placement.rect.h, before.placement.rect.h);
-  // the feature (at the site's anchor) must move exactly as far as the anchor did
-  const anchorShift = [after.placement.anchor[0] - before.placement.anchor[0], after.placement.anchor[1] - before.placement.anchor[1]];
-  const beforeFeat = before.features.find((f) => f.id === "f-spawnpoint-thornveil");
-  const afterFeat = after.features.find((f) => f.id === "f-spawnpoint-thornveil");
-  assert.deepEqual(afterFeat.at, [r1(beforeFeat.at[0] + anchorShift[0]), r1(beforeFeat.at[1] + anchorShift[1])]);
-  // interior + runtime are left completely untouched for site tier
-  assert.deepEqual(after.interior, before.interior);
-  assert.deepEqual(after.runtime, before.runtime);
+  assert.deepEqual(after, before);
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -289,22 +279,26 @@ test("town tier: interior and runtime are left byte-identical (plan-derived; che
   rmSync(root, { recursive: true, force: true });
 });
 
-test("playroot and fixture tiers are left completely untouched (documented deviation from plan.md's tier list; see header)", () => {
+test("the whole playroot subtree (playroot, playspace, fixture) is left completely untouched (F-045 Task 2: reverted after Task 1 scaled it by mistake)", () => {
   const root = contentRoot();
   const beforeRoot = readNode(root, "n-playroot");
+  const beforeShelf = readNode(root, "n-frontier-shelf");
   const beforeFixture = readNode(root, "n-fixture-deflect");
   runRescale({ contentRoot: root });
   assert.deepEqual(readNode(root, "n-playroot"), beforeRoot);
+  assert.deepEqual(readNode(root, "n-frontier-shelf"), beforeShelf);
   assert.deepEqual(readNode(root, "n-fixture-deflect"), beforeFixture);
   rmSync(root, { recursive: true, force: true });
 });
 
-test("tier partition sanity: playroot and fixture are in neither transformed set (documents the deviation from plan.md)", () => {
+test("tier partition sanity: playroot, playspace, site, and fixture are all in neither transformed set (F-045 Task 2: the entire runtime u-world subtree is excluded — see rescale_spine.mjs header)", () => {
   assert.equal(GEOGRAPHY_TIERS.has("fixture"), false);
   assert.equal(GEOGRAPHY_TIERS.has("playroot"), false);
+  assert.equal(GEOGRAPHY_TIERS.has("playspace"), false);
   assert.equal(FOOTPRINT_TIERS.has("fixture"), false);
-  for (const t of ["world", "continent", "ocean", "region", "sea", "playspace"]) assert.ok(GEOGRAPHY_TIERS.has(t));
-  for (const t of ["town", "site"]) assert.ok(FOOTPRINT_TIERS.has(t));
+  assert.equal(FOOTPRINT_TIERS.has("site"), false);
+  for (const t of ["world", "continent", "ocean", "region", "sea"]) assert.ok(GEOGRAPHY_TIERS.has(t));
+  assert.ok(FOOTPRINT_TIERS.has("town"));
 });
 
 // ── unit coverage for the edge-transform helper directly ────────────────

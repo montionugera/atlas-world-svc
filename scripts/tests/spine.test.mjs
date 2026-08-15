@@ -38,7 +38,7 @@ test("LEAF_TIERS, BIOMES, TERRAIN_KINDS, TERRAIN_IMPLIES are the pinned enums", 
     ice: ["ice"], upland: ["upland"], "alkali-flat": ["alkali"], rim: ["rock"],
     bramble: ["bramble"], headland: ["rock", "meadow"], "river-country": ["river", "meadow"],
   });
-  assert.equal(SPINE_CELL_KM, 0.25);
+  assert.equal(SPINE_CELL_KM, 0.05); // F-045 Task 2 (spec §2.2): 0.25 -> 0.05, ÷5 with the world frame
   assert.equal(SPINE_CELL_U, 1.0);
   assert.equal(KM_TO_U, 100);
 });
