@@ -35,6 +35,7 @@ import { mountVerdictFilters } from "./review/filters.mjs";
 import { mountBespokeSections } from "./view/sections.mjs";
 import { mountCombatLab, mountCombatNav } from "./combat-lab.mjs";
 import { mountStory, mountStoryNav } from "./story.mjs";
+import { mountMaps, mountMapsNav } from "./maps.mjs";
 
 async function fetchJson(url, label) {
   const res = await fetch(url);
@@ -83,6 +84,9 @@ async function init() {
     // Story doesn't either (I-082) — same reason, same treatment.
     mountStoryNav(sidebarNav);
     await mountStory(main);
+    // Nor does Maps (F-044) — same reason, same treatment.
+    mountMapsNav(sidebarNav);
+    await mountMaps(main);
     return;
   }
 
@@ -215,6 +219,7 @@ async function init() {
   // below the fold on a short window.
   mountCombatNav(sidebarNav);
   mountStoryNav(sidebarNav);
+  mountMapsNav(sidebarNav);
 
   for (const groupKey of groups.keys()) {
     initHealth(groupKey, groups.get(groupKey).length);
@@ -343,6 +348,7 @@ async function init() {
 
   mountCombatLab(main);
   await mountStory(main);
+  await mountMaps(main);
 
   mountBespokeSections({
     main,

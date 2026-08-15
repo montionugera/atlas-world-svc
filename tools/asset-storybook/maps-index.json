@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "note": "One row per tools/mapforge/render-sheet.mjs SHEETS entry. svg/png are repo-relative, matching SHEETS[id].outSvg/outPng exactly — see tools/asset-storybook/tests/maps-index.test.mjs for the parity gate.",
+  "sheets": [
+    {
+      "id": "cluster1",
+      "title": "Cluster 1 — Basin Survey",
+      "svg": "game-client/assets/art/maps/cluster1-world.svg",
+      "png": "game-client/assets/art/maps/cluster1-world.png",
+      "note": "The first settled basin, drawn at cluster scale — zones, roads, and hazard bands from content/spine/."
+    },
+    {
+      "id": "atlas",
+      "title": "The Atlas World — Mariners' Chart",
+      "svg": "game-client/assets/art/maps/atlas-world.svg",
+      "png": "game-client/assets/art/maps/atlas-world.png",
+      "note": "The compiled world chart — every cluster, tier, and boundary in one sheet."
+    }
+  ]
+}
