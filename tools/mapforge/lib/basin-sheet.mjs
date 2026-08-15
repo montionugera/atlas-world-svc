@@ -587,7 +587,9 @@ export function drawBasinSheet({ doc }) {
     (x, y) =>
       `<path d="M${x},${y} h56" stroke="${C.ink}" stroke-width="3.2" stroke-linecap="round"/>`,
     "the trade road",
-    "day-counts are lettered on the legs",
+    // F-045 Task 5: was "day-counts are lettered on the legs" — the sheet's
+    // roads now carry hour labels (rescale_spine.mjs, Task 1), not day-counts.
+    "hours are lettered on the legs",
   );
   legendRow(
     (x, y) =>
@@ -608,7 +610,9 @@ export function drawBasinSheet({ doc }) {
     (x, y) =>
       `<circle cx="${x + 28}" cy="${y}" r="3.4" fill="${C.parchment}" stroke="${C.ink}" stroke-width="1.3"/>`,
     "a waystation",
-    "where a day's walk ends",
+    // F-045 Task 5: was "where a day's walk ends" — waystations are now
+    // drawn at hour boundaries (see the road loop above), not day boundaries.
+    "where an hour of the road ends",
   );
   legendRow(
     (x, y) =>
@@ -690,7 +694,10 @@ export function drawBasinSheet({ doc }) {
     py += 19;
   }
   py += 2;
-  panelText(`a travel-day is about ${geo.distances.paceKmPerDay} km of road`, {
+  // F-045 Task 5: was `paceKmPerDay` ("a travel-day is about 30 km of
+  // road") — the walking table above already prints hours per leg
+  // (leg.canonHours), so the footnote now speaks in the same unit.
+  panelText(`a travel-hour is about ${geo.distances.paceKmPerHour} km of road`, {
     size: 11.5,
     italic: true,
     fill: C.inkSoft,

@@ -188,6 +188,7 @@ official reading of the first caravan burning says beneath the tower.
   is the contested middle ground between them — neither town claims it, both
   bury their dead in it; wartime crossing is under a day, which is exactly
   why the front is so lethal.
+  **AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.**
 - **Embervale farms the Ashvale loam and works the ember-seam beneath it.**
   Norhollow remains a forest-and-mine town. Both readings are true and
   neither is a correction of the other: the loam is what the year's harvest
@@ -209,6 +210,7 @@ official reading of the first caravan burning says beneath the tower.
   id resolves, not that the two agree.
 - **Gildmark** sits on the coast: reachable from Millcross by the old trade
   road (4–5 days) and from both war towns by a coastal spur (about 3 days).
+  **AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.**
   Its harbor is the only deepwater port on this coast — there is no other
   route to bring bound war-beasts or relic-cargo in by ship, which is why
   the arms flow, in either direction, must pass Gildmark's harbor. Its
@@ -220,6 +222,7 @@ official reading of the first caravan burning says beneath the tower.
   direct war road entirely — part of why it recovered undisturbed, and why
   it's the natural place for the first crossing (act 5) to happen quietly,
   away from either capital's watching eyes.
+  **AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.**
 - **Cindervast**, the fallen city, lies beyond Ashvale Front to the
   north-west, on ground both war towns avoid; its ruin districts border the
   same wild ground the Ash Prophet's raiders use to strike Embervale's and

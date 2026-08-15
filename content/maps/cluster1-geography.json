@@ -638,6 +638,7 @@
     "owner": "the Bellfaith",
     "derivation": "Towers were sampled at even intervals along the spine (Gildmark → Embervale → Millcross → Rooktide, 182 km — A1's '~190 km of ridge-line and road') and along the flat crossing, then frozen here as explicit coordinates. Sight-line spans are 7.8–8.4 km, inside A1 §5.2's 8–10 km line-of-sight budget. 27 towers are drawn: 22 on the ridgelines and roads (A1 says 21–24) plus 5 town towers. Cindervast has none — A1 §7.2: the Bellfaith will not draw a city it does not ring.",
     "withheld": "A1 §7.2: the far-mirror stations sit on these same ridgelines and are deliberately NOT drawn — a Bellfaith map will not publish a Gildmark monopoly it cannot regulate.",
+    "amendedPending": "AMENDED-PENDING (I-095): note/derivation above cite pre-F-045 absolute km (190 km ridge-line, 8–10 km tower spacing, 182 km spine, 7.8–8.4 km sight-line spans) — the actual tower coordinates already sit on the rescaled 400 km world; this prose re-voice is deferred.",
     "chains": [
       {
         "id": "trunk-chain",
@@ -776,8 +777,10 @@
   },
   "distances": {
     "paceKmPerDay": 30,
+    "paceKmPerHour": 11,
     "drawnRoadsAreCentrelines": "roads[].points is a simplified centre-line, so its measured length runs 0–15% short of roads[].roadKm (A1 §5.1's surveyed figure). The day-counts lettered on the sheet come from roadKm/days, never from the drawn length.",
     "note": "A1 §5.1. `straightKm` is the Cartographer's figure; `computedKm` is what this file's own coordinates give, and `deltaPct` is the residual. A1 §5.3: the world preserves topology, not metric distance.",
+    "amendedPending": "AMENDED-PENDING (I-095): paceKmPerDay, drawnRoadsAreCentrelines and note above describe the pre-F-045 day-count travel model — distances are now hour-scale on the 400 km world (paceKmPerHour: 11). Prose re-voice deferred.",
     "legs": [
       {
         "from": "embervale",
