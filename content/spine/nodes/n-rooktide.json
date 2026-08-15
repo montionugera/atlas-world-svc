@@ -9,7 +9,7 @@
     "source": "content/maps/cluster1-geography.json"
   },
   "frozen": true,
-  "absoluteAnchor": [16.8, 34.8],
+  "absoluteAnchor": [17, 34.5],
   "seed": {
     "value": "4e123f3190b0a10d",
     "epoch": 0,
@@ -18,18 +18,18 @@
   "placement": {
     "shape": "rect",
     "rect": {
-      "x": 16.5,
-      "y": 34.6,
+      "x": 16.7,
+      "y": 34.3,
       "w": 0.5,
       "h": 0.4
     },
-    "anchor": [16.8, 34.8]
+    "anchor": [17, 34.5]
   },
   "interior": {
     "units": "u",
     "perParentUnit": 100,
     "size": [50, 40],
-    "originInParent": [16.5, 34.6],
+    "originInParent": [16.7, 34.3],
     "anchorInInterior": [25, 20]
   },
   "composition": {
@@ -68,13 +68,13 @@
     "unclaimedPct": 100,
     "computedComposition": {},
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [16.8, 34.8],
+    "absoluteAnchorRoot": [17, 34.5],
     "resolvedSeedStreams": {
       "terrain": "ef3f8eec5d1903cb",
       "settlements": "033c9c3d13928e41",
       "vegetation": "9b5de8323ffa935a",
       "names": "dff7940f8b8aeafa"
     },
-    "digest": "sha256:6fe8717d69271871f6e960970c1ad1d96ddab57a734b584f67ce566c85c6f953"
+    "digest": "sha256:033a54490937ef122f287c55ca477654403269f24dd5ee9dccbebada25ec9e4a"
   }
 }

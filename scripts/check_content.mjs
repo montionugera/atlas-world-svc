@@ -2037,11 +2037,17 @@ function gSpineNet({ nodes, edges, tree, fail }) {
       }
     }
     if (e.kind === "relay") {
+      // F-045 Task 2 (spec §2.2): relay sight-line 10km -> 2km, ÷5 with the
+      // world (S=0.2). The old 10km bound was already lenient pre-rescale
+      // and became meaningless once the world shrank (hops fell to
+      // ~1.6-1.7km and trivially passed); this keeps the gate meaningful
+      // at the new 400x400 scale.
+      const RELAY_HOP_MAX_KM = 2;
       const chain = [e.from, ...(e.via ?? []), e.to].map((r) => rootPoint(r, e.id));
       for (let i = 1; i < chain.length; i++) {
         if (!Array.isArray(chain[i - 1]) || !Array.isArray(chain[i])) continue;
         const hop = Math.hypot(chain[i][0] - chain[i - 1][0], chain[i][1] - chain[i - 1][1]);
-        if (hop > 10) fail(`spine: G-CANON-LEG ${e.id}: relay hop ${i} is ${hop.toFixed(1)} km > 10`);
+        if (hop > RELAY_HOP_MAX_KM) fail(`spine: G-CANON-LEG ${e.id}: relay hop ${i} is ${hop.toFixed(1)} km > ${RELAY_HOP_MAX_KM}`);
       }
     }
   }

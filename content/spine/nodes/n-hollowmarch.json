@@ -34,11 +34,11 @@
     "originInParent": [13.6, 13.2]
   },
   "composition": {
-    "rock": 30,
-    "meadow": 28,
-    "forest": 22,
-    "upland": 14,
-    "built": 6
+    "built": 13.1,
+    "meadow": 28.4,
+    "forest": 21.6,
+    "rock": 26,
+    "upland": 10.9
   },
   "interstitial": {
     "rock": 30,

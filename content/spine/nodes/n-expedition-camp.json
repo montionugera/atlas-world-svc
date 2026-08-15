@@ -17,18 +17,18 @@
   "placement": {
     "shape": "rect",
     "rect": {
-      "x": 18.2,
-      "y": 20,
+      "x": 18.6,
+      "y": 19.6,
       "w": 2,
       "h": 1.6
     },
-    "anchor": [19.2, 20.8]
+    "anchor": [19.6, 20.4]
   },
   "interior": {
     "units": "u",
     "perParentUnit": 100,
     "size": [200, 160],
-    "originInParent": [18.2, 20],
+    "originInParent": [18.6, 19.6],
     "anchorInInterior": [100, 80]
   },
   "composition": {
@@ -64,13 +64,13 @@
     "unclaimedPct": 100,
     "computedComposition": {},
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [19.2, 20.8],
+    "absoluteAnchorRoot": [19.6, 20.4],
     "resolvedSeedStreams": {
       "terrain": "01b9b4ea31a871e1",
       "settlements": "9b20d247fb4951fb",
       "vegetation": "dc8bff9426500ef8",
       "names": "128e9fa2f7593487"
     },
-    "digest": "sha256:f0530b411eb0c0bdb70a154be9ce0d6a14dca2c8108ccf2af7bc99c74b025b4a"
+    "digest": "sha256:212a39c960124cc8a7bb5d6f530c4d040bb3837ee37e7248220a50bc715d06dc"
   }
 }

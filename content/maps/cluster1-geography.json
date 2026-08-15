@@ -397,7 +397,7 @@
     {
       "id": "embervale",
       "name": "Embervale",
-      "at": [8.8, 18.8],
+      "at": [8.7, 18.9],
       "zone": "emberdown",
       "emblem": "a caravan wheel wreathed in ember-red",
       "reason": "Hill loam over a burning-stone seam, at the junction of the trade road and the coast spur",
@@ -406,7 +406,7 @@
     {
       "id": "norhollow",
       "name": "Norhollow",
-      "at": [14.8, 18.8],
+      "at": [15.8, 18.7],
       "zone": "hollowmarch",
       "emblem": "a hollow bell over crossed stakes",
       "reason": "Where the timber line and the ore heads both begin, at the flat's eastern edge",
@@ -415,7 +415,7 @@
     {
       "id": "rooktide",
       "name": "Rooktide",
-      "at": [16.8, 34.8],
+      "at": [17, 34.5],
       "zone": "rooktide-reach",
       "emblem": "a rook in flight over a rising tideline",
       "reason": "The head of tide — sea barges stop, river barges start, and cargo has to change hulls",
@@ -448,7 +448,7 @@
     {
       "id": "expedition-camp",
       "name": "the expedition camp",
-      "at": [19.2, 20.8],
+      "at": [19.6, 20.4],
       "zone": "meltwash-terrace",
       "note": "canon.md §4: the Northern Icefield lies further north past Millcross's expedition camp."
     }
@@ -461,6 +461,8 @@
       "to": "embervale",
       "weight": "trunk",
       "dashed": false,
+      "hours": 1,
+      "hoursLabel": "1 h",
       "roadKm": 11,
       "labelAtIndex": 1,
       "note": "A1 §5.1: north-west off the ford, around the mire's head. canon.md §4 does not state this leg; A1 derives 2 days.",
@@ -471,7 +473,7 @@
         [12.8, 20.6],
         [11.2, 19.8],
         [9.6, 19],
-        [8.8, 18.8]
+        [8.7, 18.9]
       ]
     },
     {
@@ -481,11 +483,13 @@
       "to": "gildmark",
       "weight": "spur",
       "dashed": false,
+      "hours": 1.5,
+      "hoursLabel": "1.5 h",
       "roadKm": 17,
       "labelAtIndex": 5,
       "note": "canon.md §4: Gildmark is about 3 days from both war towns by a coastal spur. Already past the mire when it starts.",
       "points": [
-        [8.8, 18.8],
+        [8.7, 18.9],
         [7.8, 20.4],
         [7.2, 22.4],
         [6, 24],
@@ -503,6 +507,8 @@
       "to": "coastal-spur",
       "weight": "track",
       "dashed": false,
+      "hours": 1,
+      "hoursLabel": "1 h",
       "roadKm": 8.6,
       "throughRoute": {
         "to": "gildmark",
@@ -512,7 +518,7 @@
       "labelAtIndex": 2,
       "note": "A1 §5.1: the east-rim track joins the spur near Emberdown; the 3-day count is for the whole Norhollow → Gildmark run (~95 km), of which this leg is the eastern ~43 km.",
       "points": [
-        [14.8, 18.8],
+        [15.8, 18.7],
         [13.2, 19.6],
         [11.6, 20.4],
         [10, 20.8],
@@ -527,15 +533,17 @@
       "to": "norhollow",
       "weight": "track",
       "dashed": false,
+      "hours": 0.5,
+      "hoursLabel": "0.5 h",
       "roadKm": 6,
       "labelAtIndex": 2,
       "note": "canon.md §4: sister towns roughly a day's ride apart; wartime crossing is under a day, which is exactly why the front is so lethal.",
       "points": [
-        [8.8, 18.8],
+        [8.7, 18.9],
         [10.4, 18.2],
         [12, 18],
         [13.6, 18.2],
-        [14.8, 18.8]
+        [15.8, 18.7]
       ]
     },
     {
@@ -545,6 +553,8 @@
       "to": "rooktide",
       "weight": "spur",
       "dashed": false,
+      "hours": 1,
+      "hoursLabel": "1 h",
       "roadKm": 12,
       "labelAtIndex": 2,
       "note": "canon.md §4: Rooktide sits inland, south of Millcross, about 2 days. Follows the river's south bank.",
@@ -554,7 +564,7 @@
         [18.8, 27.6],
         [18.6, 30],
         [18, 32.4],
-        [16.8, 34.8]
+        [17, 34.5]
       ]
     },
     {
@@ -564,6 +574,8 @@
       "to": "expedition-camp",
       "weight": "track",
       "dashed": false,
+      "hours": 0.5,
+      "hoursLabel": "0.5 h",
       "roadKm": 3.4,
       "labelAtIndex": 1,
       "note": "A1 §5.3 quotes atlas-frontier's own placement — north-east of the ford, one morning's walk.",
@@ -571,7 +583,7 @@
         [17.2, 23.6],
         [18, 22.4],
         [18.8, 21.4],
-        [19.2, 20.8]
+        [19.6, 20.4]
       ]
     },
     {
@@ -581,11 +593,13 @@
       "to": "northern-icefield",
       "weight": "track",
       "dashed": false,
+      "hours": null,
+      "hoursLabel": null,
       "roadKm": null,
       "labelAtIndex": 3,
       "note": "A1 §2: the north-east fork runs up the river terrace to the camp, Thornveil's edge and the ice. No day-count is stated anywhere in the corpus, so none is lettered.",
       "points": [
-        [19.2, 20.8],
+        [19.6, 20.4],
         [20.4, 18.6],
         [21.6, 16.4],
         [22, 14],
@@ -601,6 +615,8 @@
       "to": "cindervast",
       "weight": "track",
       "dashed": true,
+      "hours": null,
+      "hoursLabel": "not maintained",
       "roadKm": null,
       "labelAtIndex": 4,
       "note": "A1 §7.1: drawn as a dashed line because it is not maintained. A1 §2: the only pass north runs behind Cindervast's shoulder. No leg day-count is stated; the walking table carries the end-to-end figure instead.",
@@ -766,42 +782,49 @@
       {
         "from": "embervale",
         "to": "norhollow",
+        "canonHours": "~0.5 h",
         "roadKm": 6,
-        "straightKm": 6
+        "straightKm": 7.1
       },
       {
         "from": "millcross",
         "to": "rooktide",
+        "canonHours": "~1 h",
         "roadKm": 12,
-        "straightKm": 11
+        "straightKm": 10.9
       },
       {
         "from": "millcross",
         "to": "embervale",
+        "canonHours": "~1 h (A1-derived)",
         "roadKm": 11,
-        "straightKm": 10
+        "straightKm": 9.7
       },
       {
         "from": "embervale",
         "to": "gildmark",
+        "canonHours": "~1.5 h",
         "roadKm": 17,
-        "straightKm": 15
+        "straightKm": 14.1
       },
       {
         "from": "millcross",
         "to": "gildmark",
+        "canonHours": "~2.5 h",
         "roadKm": 28,
         "straightKm": 17
       },
       {
         "from": "norhollow",
         "to": "gildmark",
+        "canonHours": "~1.5 h",
         "roadKm": 19,
-        "straightKm": 17
+        "straightKm": 18.6
       },
       {
         "from": "cindervast",
         "to": "rooktide",
+        "canonHours": "~3.5 h",
         "roadKm": 38,
         "straightKm": 34
       }

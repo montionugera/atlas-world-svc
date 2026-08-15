@@ -32,9 +32,9 @@
     "originInParent": [0, 0]
   },
   "composition": {
-    "ocean": 96,
+    "ocean": 96.1,
     "rock": 2,
-    "ice": 2
+    "ice": 1.9
   },
   "interstitial": {
     "ocean": 100

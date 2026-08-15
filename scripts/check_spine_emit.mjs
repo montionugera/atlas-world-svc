@@ -142,9 +142,14 @@ export function emitGeography({ spine, tree }) {
       ...(n.lore.wallsOnly ? { wallsOnly: n.lore.wallsOnly } : {}) })),
     camps: camps.map((n) => ({ id: strip(n), name: n.title, at: rootAt(n),
       zone: strip(tree.byId.get(n.parentId)), note: n.lore.note })),
+    // F-045 Task 2: days/daysLabel -> hours/hoursLabel — edges.json stopped
+    // carrying the day-count fields once rescale_spine.mjs (Task 1)
+    // relabeled travel time to hours; this mirror was silently dropping the
+    // travel-time data (canonStringify drops undefined-valued keys) until
+    // it was updated to read the new field names.
     roads: spine.edges.filter((e) => e.kind === "road").map((e) => ({
       id: e.id.slice(2), name: e.attrs.name, from: endName(e, "from"), to: endName(e, "to"),
-      weight: e.weight, dashed: e.dashed, days: e.attrs.days, daysLabel: e.attrs.daysLabel,
+      weight: e.weight, dashed: e.dashed, hours: e.attrs.hours, hoursLabel: e.attrs.hoursLabel,
       roadKm: e.attrs.roadKm, ...(e.attrs.throughRoute ? { throughRoute: e.attrs.throughRoute } : {}),
       labelAtIndex: e.attrs.labelAtIndex, note: e.attrs.note, points: e.points })),
     relay: { ...C.lore.relay,
@@ -157,7 +162,7 @@ export function emitGeography({ spine, tree }) {
         id: f.id.slice(2), at: f.at, town: f.attrs.town, note: f.attrs.note })) },
     distances: { ...C.lore.distances,
       legs: spine.edges.filter((e) => e.kind === "leg").map((e) => ({
-        from: endName(e, "from"), to: endName(e, "to"), canonDays: e.attrs.canonDays,
+        from: endName(e, "from"), to: endName(e, "to"), canonHours: e.attrs.canonHours,
         roadKm: e.attrs.roadKm, straightKm: e.attrs.straightKm })) },
     seaLane: (() => { const e = spine.edges.find((x) => x.kind === "sealane");
       return { note: e.attrs.note, from: rootAt(tree.byId.get(e.from.node)),

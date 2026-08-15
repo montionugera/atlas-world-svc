@@ -6,27 +6,33 @@
 // Scale contract — spec docs/superpowers/specs/2026-08-15-world-rescale-design.md
 // §1 "the scale contract (locked)" is the LAW this file implements:
 //
-//   S = 0.2 (÷5) on every GEOGRAPHY-tier (world/continent/ocean/region/sea/
-//   playspace) coordinate pair, rounded to 1 decimal (r1):
+//   S = 0.2 (÷5) on every GEOGRAPHY-tier (world/continent/ocean/region/sea —
+//   NOT "playspace", see the playroot-subtree note below) coordinate pair,
+//   rounded to 1 decimal (r1):
 //     placement (rect x/y/w/h, or polygon points) + placement.anchor,
 //     absoluteAnchor, features[].points/at and the coordinate fields inside
 //     features[].attrs (labelAt, tidalLimit.at, ford.at), interior.size,
 //     interior.originInParent, lore.labelAt.
 //
-//   TOWN + SITE tiers keep their absolute footprint (spec: "towns keep
-//   physical size"): placement.anchor (+ absoluteAnchor, when present)
-//   scales ×0.2 the same way, then the WHOLE placement (rect or polygon) is
-//   TRANSLATED by (newAnchor − oldAnchor) so every vertex's offset from the
-//   OLD anchor is preserved exactly — width/height never change. A site's
-//   features (e.g. its spawn point) translate by the same shift so they
-//   stay glued to the site (site nodes have no absoluteAnchor field in the
-//   committed content; towns' features arrays are empty today, but the same
-//   shift is applied defensively). `interior` and `runtime` are left
-//   completely untouched for town/site nodes — the spec calls interior
+//   TOWN tier keeps its absolute footprint (spec: "towns keep physical
+//   size"): placement.anchor (+ absoluteAnchor, when present) scales ×0.2
+//   the same way, then the WHOLE placement (rect or polygon) is TRANSLATED
+//   by (newAnchor − oldAnchor) so every vertex's offset from the OLD anchor
+//   is preserved exactly — width/height never change. A town's features
+//   (e.g. a spawn point) would translate by the same shift so they stay
+//   glued to it (towns' features arrays are empty today, so this is a
+//   defensive no-op in practice). `interior` and `runtime` are left
+//   completely untouched for town nodes — the spec calls interior
 //   "plan-derived" for towns, and `check_spine_emit.mjs --write` (run AFTER
 //   this script, never hand-duplicated here) re-derives interior for every
 //   node from its (possibly-plan-backed) placement bbox; `derived` blocks
 //   are ALWAYS regenerated there too, never written by this script.
+//   (F-045 Task 2: tier "site" no longer goes through this path at all —
+//   see the playroot-subtree note below. transformFootprintNode still
+//   contains the general site-translation logic, dead code for now, kept
+//   because FOOTPRINT_TIERS is what gates it, not a hardcoded tier check —
+//   if a future non-playroot site tier is introduced, re-adding "site" to
+//   FOOTPRINT_TIERS is a one-line change, not a rewrite.)
 //
 //   edges.json: `points` arrays ×0.2 (r1); `attrs.roadKm` / `attrs.straightKm`
 //   ×0.2 (r1); `attrs.days`/`attrs.daysLabel` (road edges) and
@@ -49,20 +55,27 @@
 //   to {0,0,400,400} and interior.size to [400,400] — exactly the outcome
 //   the plan calls out by name.
 //
-// DEVIATION FROM plan.md's Task 1 tier list — documented, not silent: the
-// approved spec's own §1 enumerates geography tiers as
-// "world/continent/ocean/region/sea/playspace" — it does NOT include
-// "fixture", even though plan.md's Task-1 paraphrase says
-// "world/continent/ocean/region/sea/playspace/fixture". This script treats
-// the spec as the law and leaves tier:"fixture" nodes (and tier:"playroot",
-// which neither list mentions) completely untouched. Reason: both fixture
-// nodes (n-fixture-deflect, n-fixture-projectile) are parented directly to
-// n-playroot — an unscaled runtime root — and their runtime.originU is
-// checked by the G-RUNTIME gate against interior.originInParent summed to
-// the root. Scaling a fixture's own interior.originInParent while its
-// parent (playroot) and its own runtime.originU stay fixed would silently
-// break that accumulation with no compensating fix inside this task's
-// scope. See .superpowers/sdd/plan/task-1-report.md for the full writeup.
+// THE ENTIRE PLAYROOT SUBTREE IS EXCLUDED — documented, not silent (F-045
+// Task 2, controller ruling; corrects a Task 1 mistake). n-playroot is a
+// second, independent tree root (parentId: null) — it IS the runtime
+// u-world mirror, not a geography node, and the spec's own "out of scope"
+// list says "runtime map/unit changes (u-world untouched)". Task 1 read the
+// spec's geography-tier list ("world/continent/ocean/region/sea/playspace")
+// literally and scaled tier:"playspace" (n-frontier-shelf) and, via
+// FOOTPRINT_TIERS, tier:"site" (its 3 children) — but "playspace" in that
+// list means the geography-tree feature, not this runtime subtree, and
+// scaling it broke G-CONTAIN/G-OVERLAP/G-RUNTIME/G-SPAWN-FIT for the whole
+// playroot subtree (see .superpowers/sdd/plan/task-1-report.md). Task 2
+// reverted n-playroot, n-frontier-shelf, and its 3 site children to their
+// pre-rescale content (git show 22b7960) and moved "playspace" out of
+// GEOGRAPHY_TIERS and "site" out of FOOTPRINT_TIERS below — every tier in
+// this subtree (playroot, playspace, site, fixture) is now excluded, so the
+// script and the committed content agree. Fixture nodes
+// (n-fixture-deflect, n-fixture-projectile) were already untouched by Task 1
+// (they round-tripped to a byte-for-byte no-op) because their
+// runtime.originU is checked by G-RUNTIME against interior.originInParent
+// summed to the (unscaled) root — same reasoning now applies to the whole
+// subtree, not just fixtures.
 import { readFileSync, writeFileSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -72,8 +85,12 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 export const SCALE = 0.2;
 export const KM_PER_HOUR = 11;
-export const GEOGRAPHY_TIERS = new Set(["world", "continent", "ocean", "region", "sea", "playspace"]);
-export const FOOTPRINT_TIERS = new Set(["town", "site"]);
+// "playspace" deliberately excluded: it is the runtime u-world root's child,
+// not a geography-tree feature — see the playroot-subtree note above.
+export const GEOGRAPHY_TIERS = new Set(["world", "continent", "ocean", "region", "sea"]);
+// "site" deliberately excluded: every tier:"site" node in the committed
+// content is a child of the (excluded) playspace subtree — see above.
+export const FOOTPRINT_TIERS = new Set(["town"]);
 
 // ── numeric helpers ─────────────────────────────────────────────────────
 export function r1(x) {
@@ -208,7 +225,7 @@ export function transformEdge(e) {
 function transformNode(node) {
   if (GEOGRAPHY_TIERS.has(node.tier)) return transformGeographyNode(node);
   if (FOOTPRINT_TIERS.has(node.tier)) return transformFootprintNode(node);
-  return node; // playroot, fixture (see header note), or an unknown tier — untouched
+  return node; // playroot, playspace, site, fixture (see header note), or an unknown tier — untouched
 }
 
 // ── driver ───────────────────────────────────────────────────────────────

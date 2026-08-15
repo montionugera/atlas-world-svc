@@ -34,10 +34,10 @@
     "originInParent": [14.4, 21.2]
   },
   "composition": {
-    "river": 46,
-    "meadow": 32,
-    "built": 12,
-    "marsh": 10
+    "meadow": 36.1,
+    "built": 14.1,
+    "river": 41.1,
+    "marsh": 8.7
   },
   "interstitial": {
     "river": 46,
