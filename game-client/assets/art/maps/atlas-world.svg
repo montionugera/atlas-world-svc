@@ -67,37 +67,37 @@
 <path d="M685.69,590.34 l7,-3 l0,6 Z" fill="#241f18" transform="rotate(204.96 685.69 590.34)"/>
 <path d="M685.69,590.34 Q834.06,799.26 1027.64,967.15" fill="none" stroke="#241f18" stroke-width="0.8" stroke-dasharray="6 5" class="sea-lane"/>
 <path d="M1027.64,967.15 l7,-3 l0,6 Z" fill="#241f18" transform="rotate(220.93 1027.64 967.15)"/>
-<text class="zn" x="758" y="520" text-anchor="middle" font-size="42" letter-spacing="10">THE ATLAS WORLD</text>
-<text class="zn" x="758" y="560" text-anchor="middle" font-size="17" font-style="italic" fill="#5d5344">Bellfaith survey where the towers see; mariners' report beyond</text>
-<text class="zn" x="758" y="612" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">This is a compiled chart, not a single hand's survey. The basin ground is</text>
-<text class="zn" x="758" y="631" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">the Bellfaith's own work, walked, sounded, and towered. Every coast beyond</text>
-<text class="zn" x="758" y="650" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">it is set down from masters' logs sworn at Gildmark harbour, not from any</text>
-<text class="zn" x="758" y="669" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">keel of ours. A hatched coast is reported, never vouched.</text>
-<text class="zn" x="758" y="718" text-anchor="middle" font-size="13" letter-spacing="4" fill="#5d5344">NOT SHOWN ON THIS SHEET</text>
-<text class="zn" x="758" y="740" text-anchor="middle" font-size="12.5" fill="#5d5344">·  the far interiors, past what any crew has walked</text>
-<text class="zn" x="758" y="758" text-anchor="middle" font-size="12.5" fill="#5d5344">·  whatever lies past the ice-cap's edge</text>
-<text class="lbl" x="755.27" y="303.2" dy="-5" transform="rotate(0 755.27 303.2)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">BRIGHTFALL</text>
+<text class="zn" x="420" y="950" text-anchor="middle" font-size="42" letter-spacing="10">THE ATLAS WORLD</text>
+<text class="zn" x="420" y="990" text-anchor="middle" font-size="17" font-style="italic" fill="#5d5344">Bellfaith survey where the towers see; mariners' report beyond</text>
+<text class="zn" x="420" y="1042" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">This is a compiled chart, not a single hand's survey. The basin ground is</text>
+<text class="zn" x="420" y="1061" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">the Bellfaith's own work, walked, sounded, and towered. Every coast beyond</text>
+<text class="zn" x="420" y="1080" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">it is set down from masters' logs sworn at Gildmark harbour, not from any</text>
+<text class="zn" x="420" y="1099" text-anchor="middle" font-size="13" font-style="italic" fill="#5d5344">keel of ours. A hatched coast is reported, never vouched.</text>
+<text class="zn" x="420" y="1148" text-anchor="middle" font-size="13" letter-spacing="4" fill="#5d5344">NOT SHOWN ON THIS SHEET</text>
+<text class="zn" x="420" y="1170" text-anchor="middle" font-size="12.5" fill="#5d5344">·  the far interiors, past what any crew has walked</text>
+<text class="zn" x="420" y="1188" text-anchor="middle" font-size="12.5" fill="#5d5344">·  whatever lies past the ice-cap's edge</text>
 <text class="lbl" x="736.34" y="300.65" dy="-5" transform="rotate(68.57 736.34 300.65)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Brightfall Teeth</text>
-<text class="lbl" x="753.8" y="614.91" dy="-5" transform="rotate(0 753.8 614.91)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">COLDREACH</text>
-<text class="lbl" x="711.31" y="598.25" dy="-5" transform="rotate(0 711.31 598.25)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Coldreach Interior</text>
+<text class="lbl" x="755.27" y="316.65" dy="-5" transform="rotate(0 755.27 316.65)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">BRIGHTFALL</text>
 <text class="lbl" x="775.36" y="589.85" dy="-5" transform="rotate(0 775.36 589.85)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Coldreach Shore</text>
-<text class="lbl" x="766.47" y="654.81" dy="-5" transform="rotate(0 766.47 654.81)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Peatrun Coast</text>
-<text class="lbl" x="770.39" y="615.4" dy="-5" transform="rotate(0 770.39 615.4)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Coldreach Spine</text>
-<text class="lbl" x="761.03" y="652.38" dy="-5" transform="rotate(79.99 761.03 652.38)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Peatrun</text>
-<text class="lbl" x="685.69" y="590.34" dy="-5" transform="rotate(0 685.69 590.34)" text-anchor="middle" font-size="10" fill="#5d5344" letter-spacing="0.6" font-style="italic">Tallowquay</text>
+<text class="lbl" x="685.69" y="605.85" dy="-5" transform="rotate(0 685.69 605.85)" text-anchor="middle" font-size="10" fill="#5d5344" letter-spacing="0.6" font-style="italic">Tallowquay</text>
+<text class="lbl" x="711.31" y="621.85" dy="-5" transform="rotate(0 711.31 621.85)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Coldreach Interior</text>
+<text class="lbl" x="753.8" y="637.85" dy="-5" transform="rotate(0 753.8 637.85)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">COLDREACH</text>
+<text class="lbl" x="770.39" y="653.85" dy="-5" transform="rotate(0 770.39 653.85)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Coldreach Spine</text>
+<text class="lbl" x="761.03" y="669.85" dy="-5" transform="rotate(79.99 761.03 669.85)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Peatrun</text>
+<text class="lbl" x="766.47" y="685.85" dy="-5" transform="rotate(0 766.47 685.85)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Peatrun Coast</text>
 <text class="lbl" x="755.13" y="1071.87" dy="-5" transform="rotate(0 755.13 1071.87)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">DRIFTHOLT</text>
-<text class="lbl" x="729.32" y="1072.38" dy="-5" transform="rotate(48.42 729.32 1072.38)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Driftholt Saw</text>
+<text class="lbl" x="729.32" y="1087.87" dy="-5" transform="rotate(48.42 729.32 1087.87)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Driftholt Saw</text>
 <text class="lbl" x="1083.92" y="455.52" dy="-5" transform="rotate(0 1083.92 455.52)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">REEDSTRAND</text>
-<text class="lbl" x="1056.21" y="455.85" dy="-5" transform="rotate(-66.32 1056.21 455.85)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Reedstrand Breakers</text>
+<text class="lbl" x="1056.21" y="471.52" dy="-5" transform="rotate(-66.32 1056.21 471.52)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Reedstrand Breakers</text>
 <text class="lbl" x="513" y="144.93" dy="-5" transform="rotate(0 513 144.93)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">THE RIMEWALL CAP</text>
-<text class="lbl" x="1082.17" y="991.72" dy="-5" transform="rotate(0 1082.17 991.72)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">STONEMOOR</text>
-<text class="lbl" x="1106.39" y="1027.35" dy="-5" transform="rotate(0 1106.39 1027.35)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Slateflow Coast</text>
-<text class="lbl" x="1044.58" y="990.74" dy="-5" transform="rotate(0 1044.58 990.74)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Stonemoor Interior</text>
 <text class="lbl" x="1098.41" y="965.96" dy="-5" transform="rotate(0 1098.41 965.96)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Stonemoor Shore</text>
-<text class="lbl" x="1076.92" y="990.6" dy="-5" transform="rotate(0 1076.92 990.6)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Stonemoor Spine</text>
-<text class="lbl" x="1084.2" y="1039.89" dy="-5" transform="rotate(90 1084.2 1039.89)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Slateflow</text>
-<text class="lbl" x="1027.64" y="967.15" dy="-5" transform="rotate(0 1027.64 967.15)" text-anchor="middle" font-size="10" fill="#5d5344" letter-spacing="0.6" font-style="italic">Netstead</text>
-<text class="lbl" x="889.83" y="644.04" dy="-5" transform="rotate(-7.91 889.83 644.04)" text-anchor="middle" font-size="15" fill="#8a7f6c" letter-spacing="4" font-style="italic">The Galereach Sea</text>
+<text class="lbl" x="1027.64" y="981.96" dy="-5" transform="rotate(0 1027.64 981.96)" text-anchor="middle" font-size="10" fill="#5d5344" letter-spacing="0.6" font-style="italic">Netstead</text>
+<text class="lbl" x="1076.92" y="997.96" dy="-5" transform="rotate(0 1076.92 997.96)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Stonemoor Spine</text>
+<text class="lbl" x="1044.58" y="1013.96" dy="-5" transform="rotate(0 1044.58 1013.96)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Stonemoor Interior</text>
+<text class="lbl" x="1082.17" y="1029.96" dy="-5" transform="rotate(0 1082.17 1029.96)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">STONEMOOR</text>
+<text class="lbl" x="1106.39" y="1045.96" dy="-5" transform="rotate(0 1106.39 1045.96)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Slateflow Coast</text>
+<text class="lbl" x="1084.2" y="1061.96" dy="-5" transform="rotate(90 1084.2 1061.96)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Slateflow</text>
+<text class="lbl" x="889.83" y="896.04" dy="-5" transform="rotate(-7.91 889.83 896.04)" text-anchor="middle" font-size="15" fill="#8a7f6c" letter-spacing="4" font-style="italic">The Galereach Sea</text>
 <text class="lbl" x="560.33" y="580.89" dy="-5" transform="rotate(-7.91 560.33 580.89)" text-anchor="middle" font-size="15" fill="#8a7f6c" letter-spacing="4" font-style="italic">The Keelbreak Sea</text>
 <text class="lbl" x="1171.58" y="747.7" dy="-5" transform="rotate(-7.91 1171.58 747.7)" text-anchor="middle" font-size="15" fill="#8a7f6c" letter-spacing="4" font-style="italic">The Tarnmark Sea</text>
 <text class="lbl" x="352.63" y="435.32" dy="-5" transform="rotate(31.8 352.63 435.32)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the trade wind · once a year</text>
