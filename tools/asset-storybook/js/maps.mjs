@@ -281,7 +281,9 @@ export async function mountMaps(main) {
     const viewport = document.createElement("div");
     viewport.className = "viewport maps-thumb-viewport";
     const thumb = document.createElement("img");
-    thumb.src = repoPath(sheet.svg);
+    // PNG for the card thumb: the SVG's sub-pixel ink strokes vanish when the
+    // sheet scales down to card size; the raster downscale keeps them visible.
+    thumb.src = repoPath(sheet.png);
     thumb.alt = sheet.title;
     thumb.loading = "lazy";
     viewport.appendChild(thumb);
