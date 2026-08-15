@@ -20,35 +20,35 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [25, 25],
-      [25, 290],
-      [250, 290],
-      [250, 25],
-      [250, 108.8],
-      [995, 108.8],
-      [995, 25],
-      [995, 205],
-      [915, 205],
-      [915, 385],
-      [995, 385],
-      [995, 572],
-      [825, 572],
-      [825, 912],
-      [995, 912],
-      [995, 1284],
-      [905, 1284],
-      [905, 1504],
-      [995, 1504],
-      [995, 1975],
-      [25, 1975]
+      [5, 5],
+      [5, 58],
+      [50, 58],
+      [50, 5],
+      [50, 21.8],
+      [199, 21.8],
+      [199, 5],
+      [199, 41],
+      [183, 41],
+      [183, 77],
+      [199, 77],
+      [199, 114.4],
+      [165, 114.4],
+      [165, 182.4],
+      [199, 182.4],
+      [199, 256.8],
+      [181, 256.8],
+      [181, 300.8],
+      [199, 300.8],
+      [199, 395],
+      [5, 395]
     ],
-    "anchor": [717.6, 692.7]
+    "anchor": [143.5, 138.5]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [970, 1950],
-    "originInParent": [25, 25]
+    "size": [194, 390],
+    "originInParent": [5, 5]
   },
   "composition": {
     "ocean": 100
@@ -75,19 +75,19 @@
   "tags": [],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 1677444,
+    "areaParentUnits2": 67091.8,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
     "computedComposition": {},
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [717.6, 692.7],
+    "absoluteAnchorRoot": [143.5, 138.5],
     "resolvedSeedStreams": {
       "terrain": "d8a283ab078bdc99",
       "settlements": "6d8143a6623f7483",
       "vegetation": "a9210cadeb5ae374",
       "names": "75faca29d303018b"
     },
-    "digest": "sha256:b9cd0cb70ddf40a111951e193e4f66d089012b434b67f74577acdd54d2a48ca1"
+    "digest": "sha256:f44c46a5e8ff24708ad9fe07afe7b5187c6f46978181aef181ee7c77a66bcd99"
   }
 }

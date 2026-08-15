@@ -27,7 +27,10 @@ import {
 // Sheet geometry. km -> px is a single uniform scale; A1 §5.3 is explicit that
 // the world must not be unevenly compressed.
 // ---------------------------------------------------------------------------
-const PX_PER_KM = 6.6;
+// F-045 Task 4: 6.6 -> 33 (×5) — the basin's own km extent (extentKm, from
+// content/maps/cluster1-geography.json) shrank ÷5 in the same rescale, so
+// canvas size (extentKm * PX_PER_KM) is unchanged; only density improves.
+const PX_PER_KM = 33;
 const MAP_LEFT = 58;
 const MAP_TOP = 96; // room above for the hard parchment edge + its caption
 const PANEL_GAP = 34;
@@ -106,9 +109,12 @@ export function drawBasinSheet({ doc }) {
       );
     }
   }
-  if (maxSpan > 10)
+  // F-045 Task 4: 10 -> 2 (÷5) — matches scripts/check_content.mjs's Task 2
+  // relay-hop gate constant (same budget, this is the basin sheet's own
+  // independent self-check of it).
+  if (maxSpan > 2)
     problems.push(
-      `relay: longest sight-line ${maxSpan.toFixed(1)} km exceeds the 10 km line-of-sight budget`,
+      `relay: longest sight-line ${maxSpan.toFixed(1)} km exceeds the 2 km line-of-sight budget`,
     );
   notes.push(
     `relay towers ${geo.relay.towers.length} (${geo.relay.towers.filter((t) => !t.town).length} field, ` +
@@ -181,7 +187,9 @@ export function drawBasinSheet({ doc }) {
   put(
     `<g fill="none" stroke="${C.inkSoft}" stroke-width="0.8" opacity="0.62">`,
   );
-  for (const d of [1.6, 3.4, 5.6]) {
+  // F-045 Task 4: 1.6/3.4/5.6 -> 0.32/0.68/1.12 (÷5) — coast-echo offset
+  // distances (offsetKm call sites), true km against the now-30x38 basin.
+  for (const d of [0.32, 0.68, 1.12]) {
     put(`<path d="${smooth(offsetKm(coast, d))}"/>`);
   }
   put("</g>");
@@ -214,11 +222,15 @@ export function drawBasinSheet({ doc }) {
   put(
     `<g clip-path="url(#clip-ashvale-front)" stroke="${C.inkMid}" stroke-width="1" opacity="0.85">`,
   );
+  // F-045 Task 4: row spacing 3 -> 0.6, column range 40-80 -> 8-16 (was a
+  // hardcoded x-window bracketing ashvale-front's own pre-rescale x-extent,
+  // ~42-78 — now the region's real 8.4-15.6 x-range), column step 3.4 -> 0.68,
+  // tick length 1.5 -> 0.3 km — all real km values, ÷5.
   for (const seg of front.gradientSegments) {
     if (!seg.graveRows) continue;
-    for (let y = seg.yFromKm; y <= seg.yToKm; y += 3) {
-      for (let x = 40; x <= 80; x += 3.4) {
-        put(`<path d="M${X(x)},${Y(y)} v${r2(1.5 * PX_PER_KM)}"/>`);
+    for (let y = seg.yFromKm; y <= seg.yToKm; y += 0.6) {
+      for (let x = 8; x <= 16; x += 0.68) {
+        put(`<path d="M${X(x)},${Y(y)} v${r2(0.3 * PX_PER_KM)}"/>`);
       }
     }
   }
@@ -265,13 +277,16 @@ export function drawBasinSheet({ doc }) {
   );
 
   // tidal limit tick
+  // F-045 Task 4: tick half-extent 3.2/1.6 -> 0.64/0.32, label offset
+  // 8.5/3.4 -> 1.7/0.68 (÷5) — real km offsets from tl.at (a rescaled
+  // geo-anchor), fed through X()/Y() same as offsetKm/alongKm call sites.
   {
     const tl = geo.river.tidalLimit;
     put(
-      `<path d="M${X(tl.at[0] - 3.2)},${Y(tl.at[1] - 1.6)} L${X(tl.at[0] + 3.2)},${Y(tl.at[1] + 1.6)}" stroke="${C.ink}" stroke-width="1.6"/>`,
+      `<path d="M${X(tl.at[0] - 0.64)},${Y(tl.at[1] - 0.32)} L${X(tl.at[0] + 0.64)},${Y(tl.at[1] + 0.32)}" stroke="${C.ink}" stroke-width="1.6"/>`,
     );
     put(
-      lineLabel(tl.label, [tl.at[0] - 8.5, tl.at[1] - 3.4], 0, {
+      lineLabel(tl.label, [tl.at[0] - 1.7, tl.at[1] - 0.68], 0, {
         size: 12,
         italic: true,
         fill: C.inkMid,
@@ -281,16 +296,19 @@ export function drawBasinSheet({ doc }) {
   }
 
   // the ford — a ROAD symbol, not a town symbol (A1 §7.1)
+  // F-045 Task 4: mark half-extent 2.6/1.4 -> 0.52/0.28, label offset
+  // 1/4.6 -> 0.2/0.92 (÷5) — same real-km-offset-from-anchor pattern as the
+  // tidal-limit tick above.
   {
     const f = geo.river.ford;
     put(
       `<g stroke="${C.ink}" stroke-width="1.5" fill="none">` +
-        `<path d="M${X(f.at[0] - 2.6)},${Y(f.at[1] - 1.4)} L${X(f.at[0] + 2.6)},${Y(f.at[1] - 1.4)}"/>` +
-        `<path d="M${X(f.at[0] - 2.6)},${Y(f.at[1] + 1.4)} L${X(f.at[0] + 2.6)},${Y(f.at[1] + 1.4)}"/>` +
+        `<path d="M${X(f.at[0] - 0.52)},${Y(f.at[1] - 0.28)} L${X(f.at[0] + 0.52)},${Y(f.at[1] - 0.28)}"/>` +
+        `<path d="M${X(f.at[0] - 0.52)},${Y(f.at[1] + 0.28)} L${X(f.at[0] + 0.52)},${Y(f.at[1] + 0.28)}"/>` +
         `</g>`,
     );
     put(
-      lineLabel(f.label, [f.at[0] - 1, f.at[1] + 4.6], 0, {
+      lineLabel(f.label, [f.at[0] - 0.2, f.at[1] + 0.92], 0, {
         size: 12,
         italic: true,
         fill: C.inkMid,
@@ -311,32 +329,38 @@ export function drawBasinSheet({ doc }) {
     );
   }
 
-  // waystations at the interior day boundaries — A1 §7.2: the map draws
-  // waystations because the day-counts need somewhere to end.
+  // waystations at the interior hour boundaries — A1 §7.2: the map draws
+  // waystations because the day-counts need somewhere to end (F-045 Task 4:
+  // road.days/daysLabel -> road.hours/hoursLabel — the field rescale_spine.mjs
+  // (Task 1) applied to edges.json/cluster1-geography.json, but this
+  // renderer still read the old names, so every road silently evaluated
+  // `undefined` here: zero waystations and zero road labels were drawn on
+  // the pre-fix render — a "green" chart with an invisible whole layer
+  // missing, caught by the Task 4 controller visual pass).
   put(`<g fill="${C.parchment}" stroke="${C.ink}" stroke-width="1.3">`);
   for (const road of geo.roads) {
-    if (!road.days || road.days < 2) continue;
+    if (!road.hours || road.hours < 2) continue;
     const L = polylineKm(road.points);
-    for (let k = 1; k < road.days; k++) {
-      const s = alongKm(road.points, (L * k) / road.days);
+    for (let k = 1; k < road.hours; k++) {
+      const s = alongKm(road.points, (L * k) / road.hours);
       put(`<circle cx="${X(s.at[0])}" cy="${Y(s.at[1])}" r="3.4"/>`);
     }
   }
   put("</g>");
 
-  // day-counts lettered ALONG the roads
+  // hour-counts lettered ALONG the roads
   for (const road of geo.roads) {
-    if (!road.daysLabel) continue;
+    if (!road.hoursLabel) continue;
     const i = Math.min(road.labelAtIndex ?? 1, road.points.length - 2);
     const a = road.points[i];
     const b = road.points[i + 1];
     const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
     const ang = (Math.atan2(b[1] - a[1], b[0] - a[0]) * 180) / Math.PI;
     put(
-      lineLabel(road.daysLabel, mid, ang, {
-        size: road.days ? 14 : 12,
-        italic: !road.days,
-        fill: road.days ? C.ink : C.inkMid,
+      lineLabel(road.hoursLabel, mid, ang, {
+        size: road.hours ? 14 : 12,
+        italic: !road.hours,
+        fill: road.hours ? C.ink : C.inkMid,
         dy: -7,
         tracking: 1,
       }),
@@ -420,10 +444,13 @@ export function drawBasinSheet({ doc }) {
     );
   }
   // the Front's three gradient segments, lettered inside it
+  // F-045 Task 4: fixed label column x=59 -> 11.8 (÷5) — a hardcoded km
+  // x-position for this zone's gradient-segment lettering, was tuned to sit
+  // inside ashvale-front's pre-rescale x-extent.
   for (const seg of front.gradientSegments) {
     const y = seg.yFromKm + (seg.yToKm - seg.yFromKm) * 0.25;
     put(
-      `<text class="lbl" x="${X(59)}" y="${Y(y)}" text-anchor="middle" font-size="11.5" ` +
+      `<text class="lbl" x="${X(11.8)}" y="${Y(y)}" text-anchor="middle" font-size="11.5" ` +
         `font-style="italic" fill="${C.inkMid}">${esc(seg.label)} · ${seg.levelBand[0]}–${seg.levelBand[1]}</text>`,
     );
   }
@@ -433,8 +460,11 @@ export function drawBasinSheet({ doc }) {
   // A1 §7.2: one arrow off the west edge with the trade wind's season written
   // on it, and nothing else. It is meant to leave the sheet.
   {
+    // F-045 Task 4: tail offset 4/3 -> 0.8/0.6 (÷5) — real km offset from
+    // s.from (a rescaled geo-anchor); the tip stays MAP_LEFT-relative px,
+    // untouched (it deliberately leaves the sheet off the west edge).
     const s = geo.seaLane;
-    const tail = [X(s.from[0] - 4), Y(s.from[1] - 3)];
+    const tail = [X(s.from[0] - 0.8), Y(s.from[1] - 0.6)];
     const tip = [r2(MAP_LEFT - 26), Y(s.to[1])];
     put(
       `<path d="M${tail[0]},${tail[1]} L${tip[0]},${tip[1]}" stroke="${C.ink}" stroke-width="1.5"/>`,
@@ -452,10 +482,12 @@ export function drawBasinSheet({ doc }) {
   }
 
   // ---- the sea, named -------------------------------------------------------
+  // F-045 Task 4: fixed position (5,70) -> (1,14) (÷5) — hardcoded km spot
+  // for "THE SEA" in the open water west of the coast.
   put(
-    `<text class="lbl" x="${X(5)}" y="${Y(70)}" text-anchor="middle" font-size="15" ` +
+    `<text class="lbl" x="${X(1)}" y="${Y(14)}" text-anchor="middle" font-size="15" ` +
       `letter-spacing="6" font-style="italic" fill="${C.inkSoft}" ` +
-      `transform="rotate(-90 ${X(5)} ${Y(70)})">THE SEA</text>`,
+      `transform="rotate(-90 ${X(1)} ${Y(14)})">THE SEA</text>`,
   );
 
   // ---- the north mark (no compass rose — A1-ART-01) -------------------------
@@ -555,7 +587,9 @@ export function drawBasinSheet({ doc }) {
     (x, y) =>
       `<path d="M${x},${y} h56" stroke="${C.ink}" stroke-width="3.2" stroke-linecap="round"/>`,
     "the trade road",
-    "day-counts are lettered on the legs",
+    // F-045 Task 5: was "day-counts are lettered on the legs" — the sheet's
+    // roads now carry hour labels (rescale_spine.mjs, Task 1), not day-counts.
+    "hours are lettered on the legs",
   );
   legendRow(
     (x, y) =>
@@ -576,7 +610,9 @@ export function drawBasinSheet({ doc }) {
     (x, y) =>
       `<circle cx="${x + 28}" cy="${y}" r="3.4" fill="${C.parchment}" stroke="${C.ink}" stroke-width="1.3"/>`,
     "a waystation",
-    "where a day's walk ends",
+    // F-045 Task 5: was "where a day's walk ends" — waystations are now
+    // drawn at hour boundaries (see the road loop above), not day boundaries.
+    "where an hour of the road ends",
   );
   legendRow(
     (x, y) =>
@@ -650,12 +686,18 @@ export function drawBasinSheet({ doc }) {
       `<text x="${PANEL_X}" y="${r2(py)}" font-size="12.5" fill="${C.ink}">${esc(a)} — ${esc(b)}</text>`,
     );
     put(
-      `<text x="${r2(PANEL_X + PANEL_W)}" y="${r2(py)}" font-size="12.5" text-anchor="end" fill="${C.ink}">${esc(leg.canonDays)}</text>`,
+      // F-045 Task 4: leg.canonDays -> leg.canonHours (same rename bug as
+      // the road waystations above — this printed literal "undefined" for
+      // every row in the walking table until fixed).
+      `<text x="${r2(PANEL_X + PANEL_W)}" y="${r2(py)}" font-size="12.5" text-anchor="end" fill="${C.ink}">${esc(leg.canonHours)}</text>`,
     );
     py += 19;
   }
   py += 2;
-  panelText(`a travel-day is about ${geo.distances.paceKmPerDay} km of road`, {
+  // F-045 Task 5: was `paceKmPerDay` ("a travel-day is about 30 km of
+  // road") — the walking table above already prints hours per leg
+  // (leg.canonHours), so the footnote now speaks in the same unit.
+  panelText(`a travel-hour is about ${geo.distances.paceKmPerHour} km of road`, {
     size: 11.5,
     italic: true,
     fill: C.inkSoft,

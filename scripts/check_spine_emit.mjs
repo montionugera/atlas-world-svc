@@ -86,8 +86,16 @@ const GEO_HEADER = {
   coordinateSystem: {
     units: "km",
     convention: "x increases EAST, y increases SOUTH (north is smaller y) — inherited unchanged from content/maps/atlas-frontier.md",
-    extentKm: { width: 150, height: 190 },
-    origin: "x=0 is the west edge of the sheet (open sea); y=0 is the hard parchment edge at the top (the ice). A1 §2: the land is roughly 190 km north-south and 150 km east-west.",
+    // F-045 Task 4 fix: this header was frozen boilerplate copied verbatim
+    // from the pre-rescale file and never updated when rescale_spine.mjs
+    // (Task 1) scaled n-cluster1's interior.size (and every town/road
+    // coordinate this document's other fields derive from) 150x190 -> 30x38.
+    // The towns/roads arrays below were already correct (they read live off
+    // the spine); only this metadata literal had drifted, which silently
+    // made basin-sheet.mjs's MAP_W/MAP_H 5x too big once its own px-per-km
+    // was bumped for the F-045 density change.
+    extentKm: { width: 30, height: 38 },
+    origin: "x=0 is the west edge of the sheet (open sea); y=0 is the hard parchment edge at the top (the ice). A1 §2 (pre-F-045): the land was roughly 190 km north-south and 150 km east-west; F-045 (I-095) scales the basin ÷5 to 38 km north-south and 30 km east-west, same schematic.",
     tolerance: "Positions are authored to reproduce A1 §5.1's straight-line distances within ~8%. A1 §5.3 is explicit that the world preserves topology, adjacency, ordering and terrain — NOT exact metric distance — so these coordinates are a faithful schematic, not a survey. `distances[].deltaPct` records the residual for every canon-bearing leg.",
   },
 };
@@ -142,11 +150,22 @@ export function emitGeography({ spine, tree }) {
       ...(n.lore.wallsOnly ? { wallsOnly: n.lore.wallsOnly } : {}) })),
     camps: camps.map((n) => ({ id: strip(n), name: n.title, at: rootAt(n),
       zone: strip(tree.byId.get(n.parentId)), note: n.lore.note })),
+    // F-045 Task 2: days/daysLabel -> hours/hoursLabel — edges.json stopped
+    // carrying the day-count fields once rescale_spine.mjs (Task 1)
+    // relabeled travel time to hours; this mirror was silently dropping the
+    // travel-time data (canonStringify drops undefined-valued keys) until
+    // it was updated to read the new field names.
     roads: spine.edges.filter((e) => e.kind === "road").map((e) => ({
       id: e.id.slice(2), name: e.attrs.name, from: endName(e, "from"), to: endName(e, "to"),
-      weight: e.weight, dashed: e.dashed, days: e.attrs.days, daysLabel: e.attrs.daysLabel,
+      weight: e.weight, dashed: e.dashed, hours: e.attrs.hours, hoursLabel: e.attrs.hoursLabel,
       roadKm: e.attrs.roadKm, ...(e.attrs.throughRoute ? { throughRoute: e.attrs.throughRoute } : {}),
-      labelAtIndex: e.attrs.labelAtIndex, note: e.attrs.note, points: e.points })),
+      labelAtIndex: e.attrs.labelAtIndex, note: e.attrs.note,
+      // F-045 Task 5 (final-review sweep): a handful of road notes still cite
+      // pre-rescale day-counts/absolute km (I-095) — surfaced on the emitted
+      // mirror the same way n-cluster1's lore fields are, so the marker is
+      // visible wherever the note itself is.
+      ...(e.attrs.amendedPending ? { amendedPending: e.attrs.amendedPending } : {}),
+      points: e.points })),
     relay: { ...C.lore.relay,
       chains: spine.edges.filter((e) => e.kind === "relay").map((e) => ({
         id: e.id.slice(2), note: e.attrs.note,
@@ -157,7 +176,7 @@ export function emitGeography({ spine, tree }) {
         id: f.id.slice(2), at: f.at, town: f.attrs.town, note: f.attrs.note })) },
     distances: { ...C.lore.distances,
       legs: spine.edges.filter((e) => e.kind === "leg").map((e) => ({
-        from: endName(e, "from"), to: endName(e, "to"), canonDays: e.attrs.canonDays,
+        from: endName(e, "from"), to: endName(e, "to"), canonHours: e.attrs.canonHours,
         roadKm: e.attrs.roadKm, straightKm: e.attrs.straightKm })) },
     seaLane: (() => { const e = spine.edges.find((x) => x.kind === "sealane");
       return { note: e.attrs.note, from: rootAt(tree.byId.get(e.from.node)),

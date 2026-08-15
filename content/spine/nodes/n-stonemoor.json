@@ -20,30 +20,30 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [1521.8, 1278],
-      [1542.1, 1309.5],
-      [1510.2, 1322.2],
-      [1502.9, 1367.2],
-      [1466, 1373],
-      [1443.1, 1333.3],
-      [1405.9, 1338.1],
-      [1385.5, 1311.4],
-      [1389.4, 1278],
-      [1385.2, 1244.5],
-      [1417.8, 1229.8],
-      [1438.8, 1212.3],
-      [1466, 1184.2],
-      [1497.5, 1202],
-      [1504.3, 1239.7],
-      [1532.4, 1250.4]
+      [304.4, 255.6],
+      [308.4, 261.9],
+      [302, 264.4],
+      [300.6, 273.4],
+      [293.2, 274.6],
+      [288.6, 266.7],
+      [281.2, 267.6],
+      [277.1, 262.3],
+      [277.9, 255.6],
+      [277, 248.9],
+      [283.6, 246],
+      [287.8, 242.5],
+      [293.2, 236.8],
+      [299.5, 240.4],
+      [300.9, 247.9],
+      [306.5, 250.1]
     ],
-    "anchor": [1463.1, 1279.6]
+    "anchor": [292.6, 255.9]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [156.89999999999986, 188.79999999999995],
-    "originInParent": [1385.2, 1184.2]
+    "size": [31.399999999999977, 37.80000000000001],
+    "originInParent": [277, 236.8]
   },
   "composition": {
     "rock": 55,
@@ -60,8 +60,8 @@
       "id": "f-stonemoor-ridge",
       "kind": "line",
       "points": [
-        [1521.8, 1278],
-        [1389.4, 1278]
+        [304.4, 255.6],
+        [277.9, 255.6]
       ],
       "attrs": {
         "note": "The moor-line ridge masters are told to fix the coast by, and nothing more.",
@@ -72,9 +72,9 @@
       "id": "f-stonemoor-river-mouth",
       "kind": "line",
       "points": [
-        [1466, 1278],
-        [1466, 1373],
-        [1443.1, 1333.3]
+        [293.2, 255.6],
+        [293.2, 274.6],
+        [288.6, 266.7]
       ],
       "attrs": {
         "note": "A grey-running mouth reported by the one lane that passes it; its course inland is no one's claim.",
@@ -84,7 +84,7 @@
     {
       "id": "f-port-netstead",
       "kind": "point",
-      "at": [1385.2, 1244.5],
+      "at": [277, 248.9],
       "attrs": {
         "role": "port",
         "name": "Netstead",
@@ -104,29 +104,30 @@
   "representsNodeId": null,
   "lore": {
     "reported": true,
-    "summary": "A second continent set down from wharf-talk at Tallowquay: a moor-backed coast four days along a foreign lane, nothing sworn beyond the shore."
+    "summary": "A second continent set down from wharf-talk at Tallowquay: a moor-backed coast four days along a foreign lane, nothing sworn beyond the shore.",
+    "amendedPending": "AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred."
   },
   "tags": [],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 17998.13000000012,
-    "childAreaParentUnits2": 17998.13000000012,
+    "areaParentUnits2": 719.7449999999953,
+    "childAreaParentUnits2": 719.7449999999953,
     "coveragePct": 100,
     "unclaimedPct": 0,
     "computedComposition": {
       "rock": 55,
       "upland": 20,
-      "forest": 15,
+      "forest": 14.999999999999998,
       "meadow": 10
     },
     "rollupVerdict": "CHECKED",
-    "absoluteAnchorRoot": [1463.1, 1279.6],
+    "absoluteAnchorRoot": [292.6, 255.9],
     "resolvedSeedStreams": {
       "terrain": "7cd6d0a64dc4995c",
       "settlements": "5b457144f63faa5f",
       "vegetation": "b531f42afc968eef",
       "names": "0da9a31a4c92746d"
     },
-    "digest": "sha256:3bf1eb373f4a871f869adfe39586366017719962a9fd7d55131de5e93470cc5b"
+    "digest": "sha256:a5d50d4aa866c9baa36cca2b3ce690a53ac15b1d73f4bb9b0e9bdee0797b5219"
   }
 }

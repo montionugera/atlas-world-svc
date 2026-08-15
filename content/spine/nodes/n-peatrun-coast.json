@@ -20,22 +20,22 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [1098.8, 742],
-      [1052.6, 762.9],
-      [1071.6, 806.3],
-      [1026.2, 796.1],
-      [1006.4, 806.6],
-      [978.2, 837.3],
-      [945.5, 827.8],
-      [917.4, 807.1]
+      [219.8, 148.4],
+      [210.5, 152.6],
+      [214.3, 161.3],
+      [205.2, 159.2],
+      [201.3, 161.3],
+      [195.6, 167.5],
+      [189.1, 165.6],
+      [183.5, 161.4]
     ],
-    "anchor": [1012.1, 798.3]
+    "anchor": [202.4, 159.7]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [181.39999999999998, 95.29999999999995],
-    "originInParent": [917.4, 742]
+    "size": [36.30000000000001, 19.099999999999994],
+    "originInParent": [183.5, 148.4]
   },
   "composition": {
     "rock": 55,
@@ -65,19 +65,19 @@
   "tags": [],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 4967.349999999977,
+    "areaParentUnits2": 198.875,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
     "computedComposition": {},
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [1012.1, 798.3],
+    "absoluteAnchorRoot": [202.4, 159.7],
     "resolvedSeedStreams": {
       "terrain": "ec87b7952194be28",
       "settlements": "a74173f73ef2340b",
       "vegetation": "ead62a937cff1cc7",
       "names": "98711964e7a41477"
     },
-    "digest": "sha256:9a2fddda9fcb609dfb8cc1317ab78899a84d600758d260596e64cda66d048031"
+    "digest": "sha256:f629636c4d813119ff939c6119b2ece722a667e96021f096f270d436d324dbfb"
   }
 }

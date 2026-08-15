@@ -9,7 +9,7 @@
     "source": "content/maps/cluster1-geography.json"
   },
   "frozen": true,
-  "absoluteAnchor": [75, 95],
+  "absoluteAnchor": [15, 19],
   "seed": {
     "value": "3f8a1c5d9e2b7406",
     "epoch": 0,
@@ -18,33 +18,33 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [150, 0],
-      [150, 190],
-      [66, 190],
-      [52, 189],
-      [38, 186],
-      [24, 182],
-      [14, 177],
-      [0, 173],
-      [0, 140],
-      [12, 140],
-      [14, 130],
-      [13, 118],
-      [12, 104],
-      [12, 88],
-      [13, 72],
-      [14, 56],
-      [15, 40],
-      [17, 24],
-      [20, 10],
-      [24, 0]
+      [30, 0],
+      [30, 38],
+      [13.2, 38],
+      [10.4, 37.8],
+      [7.6, 37.2],
+      [4.8, 36.4],
+      [2.8, 35.4],
+      [0, 34.6],
+      [0, 28],
+      [2.4, 28],
+      [2.8, 26],
+      [2.6, 23.6],
+      [2.4, 20.8],
+      [2.4, 17.6],
+      [2.6, 14.4],
+      [2.8, 11.2],
+      [3, 8],
+      [3.4, 4.8],
+      [4, 2],
+      [4.8, 0]
     ],
-    "anchor": [75, 95]
+    "anchor": [15, 19]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [150, 190],
+    "size": [30, 38],
     "originInParent": [0, 0]
   },
   "composition": {
@@ -78,26 +78,26 @@
       "id": "f-west-coast",
       "kind": "line",
       "points": [
-        [24, 0],
-        [20, 10],
-        [17, 24],
-        [15, 40],
-        [14, 56],
-        [13, 72],
-        [12, 88],
-        [12, 104],
-        [13, 118],
-        [14, 130],
-        [12, 140],
-        [9, 148],
-        [6, 155],
-        [5, 163],
-        [8, 171],
-        [14, 177],
-        [24, 182],
-        [38, 186],
-        [52, 189],
-        [66, 190]
+        [4.8, 0],
+        [4, 2],
+        [3.4, 4.8],
+        [3, 8],
+        [2.8, 11.2],
+        [2.6, 14.4],
+        [2.4, 17.6],
+        [2.4, 20.8],
+        [2.6, 23.6],
+        [2.8, 26],
+        [2.4, 28],
+        [1.8, 29.6],
+        [1.2, 31],
+        [1, 32.6],
+        [1.6, 34.2],
+        [2.8, 35.4],
+        [4.8, 36.4],
+        [7.6, 37.2],
+        [10.4, 37.8],
+        [13.2, 38]
       ],
       "attrs": {
         "note": "A1 §1: the basin silts its whole coast except one rock headland. The sea lies WEST of this line; the line runs north to south and then turns east along the Saltmire's seaward bar."
@@ -107,26 +107,26 @@
       "id": "f-the-meltwash",
       "kind": "line",
       "points": [
-        [104, 34],
-        [102, 42],
-        [100, 50],
-        [98, 60],
-        [96, 70],
-        [94, 82],
-        [92, 94],
-        [90, 106],
-        [86, 118],
-        [88, 128],
-        [89, 140],
-        [88, 152],
-        [86, 163],
-        [84, 174],
-        [74, 176],
-        [60, 177],
-        [46, 176],
-        [32, 175],
-        [20, 174],
-        [9, 172]
+        [20.8, 6.8],
+        [20.4, 8.4],
+        [20, 10],
+        [19.6, 12],
+        [19.2, 14],
+        [18.8, 16.4],
+        [18.4, 18.8],
+        [18, 21.2],
+        [17.2, 23.6],
+        [17.6, 25.6],
+        [17.8, 28],
+        [17.6, 30.4],
+        [17.2, 32.6],
+        [16.8, 34.8],
+        [14.8, 35.2],
+        [12, 35.4],
+        [9.2, 35.2],
+        [6.4, 35],
+        [4, 34.8],
+        [1.8, 34.4]
       ],
       "attrs": {
         "name": "the Meltwash",
@@ -161,14 +161,14 @@
             "toIndex": 19
           }
         ],
-        "labelAt": [101, 58],
+        "labelAt": [20.2, 11.6],
         "tidalLimit": {
-          "at": [84, 174],
+          "at": [16.8, 34.8],
           "label": "head of tide",
           "note": "A1 §3.1 / §4.2 zone 3: the sea reaches Rooktide's landing and no further."
         },
         "ford": {
-          "at": [86, 118],
+          "at": [17.2, 23.6],
           "label": "the ford",
           "note": "A1 §7.1: the crossing is drawn as a ROAD symbol, not a town symbol — on a relay map it is infrastructure."
         }
@@ -178,13 +178,13 @@
       "id": "f-northern-ice-edge",
       "kind": "line",
       "points": [
-        [62, 26],
-        [76, 30],
-        [92, 33],
-        [108, 36],
-        [124, 32],
-        [138, 28],
-        [148, 22]
+        [12.4, 5.2],
+        [15.2, 6],
+        [18.4, 6.6],
+        [21.6, 7.2],
+        [24.8, 6.4],
+        [27.6, 5.6],
+        [29.6, 4.4]
       ],
       "attrs": {
         "note": "A1 §7.2 / A1-ART-01: the parchment ends at a hard edge along the top. The map does not pretend to know what lies past the ice; this is a sheet boundary, not a coastline.",
@@ -194,7 +194,7 @@
     {
       "id": "f-tower-01",
       "kind": "point",
-      "at": [11, 157],
+      "at": [2.2, 31.4],
       "attrs": {
         "town": "gildmark"
       }
@@ -202,55 +202,55 @@
     {
       "id": "f-tower-02",
       "kind": "point",
-      "at": [16.2, 150.8],
+      "at": [3.2, 30.2],
       "attrs": {}
     },
     {
       "id": "f-tower-03",
       "kind": "point",
-      "at": [19.6, 143.8],
+      "at": [3.9, 28.8],
       "attrs": {}
     },
     {
       "id": "f-tower-04",
       "kind": "point",
-      "at": [22.8, 136.6],
+      "at": [4.6, 27.3],
       "attrs": {}
     },
     {
       "id": "f-tower-05",
       "kind": "point",
-      "at": [27.3, 130],
+      "at": [5.5, 26],
       "attrs": {}
     },
     {
       "id": "f-tower-06",
       "kind": "point",
-      "at": [29.4, 122.2],
+      "at": [5.9, 24.4],
       "attrs": {}
     },
     {
       "id": "f-tower-07",
       "kind": "point",
-      "at": [33.5, 115.4],
+      "at": [6.7, 23.1],
       "attrs": {}
     },
     {
       "id": "f-tower-08",
       "kind": "point",
-      "at": [37.1, 108.4],
+      "at": [7.4, 21.7],
       "attrs": {}
     },
     {
       "id": "f-tower-09",
       "kind": "point",
-      "at": [39.7, 100.8],
+      "at": [7.9, 20.2],
       "attrs": {}
     },
     {
       "id": "f-tower-10",
       "kind": "point",
-      "at": [44, 94],
+      "at": [8.8, 18.8],
       "attrs": {
         "town": "embervale"
       }
@@ -258,37 +258,37 @@
     {
       "id": "f-tower-11",
       "kind": "point",
-      "at": [51.6, 96.8],
+      "at": [10.3, 19.4],
       "attrs": {}
     },
     {
       "id": "f-tower-12",
       "kind": "point",
-      "at": [58.9, 100.5],
+      "at": [11.8, 20.1],
       "attrs": {}
     },
     {
       "id": "f-tower-13",
       "kind": "point",
-      "at": [65.9, 104.6],
+      "at": [13.2, 20.9],
       "attrs": {}
     },
     {
       "id": "f-tower-14",
       "kind": "point",
-      "at": [72, 110],
+      "at": [14.4, 22],
       "attrs": {}
     },
     {
       "id": "f-tower-15",
       "kind": "point",
-      "at": [79.7, 112.9],
+      "at": [15.9, 22.6],
       "attrs": {}
     },
     {
       "id": "f-tower-16",
       "kind": "point",
-      "at": [86, 118],
+      "at": [17.2, 23.6],
       "attrs": {
         "town": "millcross"
       }
@@ -296,43 +296,43 @@
     {
       "id": "f-tower-17",
       "kind": "point",
-      "at": [90.7, 125.1],
+      "at": [18.1, 25],
       "attrs": {}
     },
     {
       "id": "f-tower-18",
       "kind": "point",
-      "at": [93.1, 133.2],
+      "at": [18.6, 26.6],
       "attrs": {}
     },
     {
       "id": "f-tower-19",
       "kind": "point",
-      "at": [93.7, 141.6],
+      "at": [18.7, 28.3],
       "attrs": {}
     },
     {
       "id": "f-tower-20",
       "kind": "point",
-      "at": [93, 150.1],
+      "at": [18.6, 30],
       "attrs": {}
     },
     {
       "id": "f-tower-21",
       "kind": "point",
-      "at": [90.9, 158.4],
+      "at": [18.2, 31.7],
       "attrs": {}
     },
     {
       "id": "f-tower-22",
       "kind": "point",
-      "at": [87.8, 166.4],
+      "at": [17.6, 33.3],
       "attrs": {}
     },
     {
       "id": "f-tower-23",
       "kind": "point",
-      "at": [84, 174],
+      "at": [16.8, 34.8],
       "attrs": {
         "town": "rooktide"
       }
@@ -340,25 +340,25 @@
     {
       "id": "f-tower-24",
       "kind": "point",
-      "at": [51.3, 91.2],
+      "at": [10.3, 18.2],
       "attrs": {}
     },
     {
       "id": "f-tower-25",
       "kind": "point",
-      "at": [59.1, 90.1],
+      "at": [11.8, 18],
       "attrs": {}
     },
     {
       "id": "f-tower-26",
       "kind": "point",
-      "at": [66.9, 90.9],
+      "at": [13.4, 18.2],
       "attrs": {}
     },
     {
       "id": "f-tower-27",
       "kind": "point",
-      "at": [74, 94],
+      "at": [14.8, 18.8],
       "attrs": {
         "town": "norhollow"
       }
@@ -366,7 +366,7 @@
     {
       "id": "f-tower-cindervast",
       "kind": "point",
-      "at": [46, 12],
+      "at": [9.2, 2.4],
       "attrs": {
         "town": "cindervast",
         "detached": true,
@@ -376,7 +376,7 @@
     {
       "id": "f-ashvale-road-head",
       "kind": "point",
-      "at": [66, 88],
+      "at": [13.2, 17.6],
       "attrs": {
         "role": "road-head"
       }
@@ -384,7 +384,7 @@
     {
       "id": "f-cindervast-approach-end",
       "kind": "point",
-      "at": [46, 18],
+      "at": [9.2, 3.6],
       "attrs": {
         "role": "road-head"
       }
@@ -392,7 +392,7 @@
     {
       "id": "f-ice-road-head",
       "kind": "point",
-      "at": [107, 36],
+      "at": [21.4, 7.2],
       "attrs": {
         "role": "road-head"
       }
@@ -400,7 +400,7 @@
     {
       "id": "f-trade-wind-far",
       "kind": "point",
-      "at": [-6, 148],
+      "at": [-1.2, 29.6],
       "offSheet": true,
       "attrs": {
         "role": "sea-lane-far-end"
@@ -423,43 +423,46 @@
       "spacingKm": 8,
       "owner": "the Bellfaith",
       "derivation": "Towers were sampled at even intervals along the spine (Gildmark → Embervale → Millcross → Rooktide, 182 km — A1's '~190 km of ridge-line and road') and along the flat crossing, then frozen here as explicit coordinates. Sight-line spans are 7.8–8.4 km, inside A1 §5.2's 8–10 km line-of-sight budget. 27 towers are drawn: 22 on the ridgelines and roads (A1 says 21–24) plus 5 town towers. Cindervast has none — A1 §7.2: the Bellfaith will not draw a city it does not ring.",
-      "withheld": "A1 §7.2: the far-mirror stations sit on these same ridgelines and are deliberately NOT drawn — a Bellfaith map will not publish a Gildmark monopoly it cannot regulate."
+      "withheld": "A1 §7.2: the far-mirror stations sit on these same ridgelines and are deliberately NOT drawn — a Bellfaith map will not publish a Gildmark monopoly it cannot regulate.",
+      "amendedPending": "AMENDED-PENDING (I-095): note/derivation above cite pre-F-045 absolute km (190 km ridge-line, 8–10 km tower spacing, 182 km spine, 7.8–8.4 km sight-line spans) — the actual tower coordinates already sit on the rescaled 400 km world; this prose re-voice is deferred."
     },
     "distances": {
       "paceKmPerDay": 30,
+      "paceKmPerHour": 11,
       "drawnRoadsAreCentrelines": "roads[].points is a simplified centre-line, so its measured length runs 0–15% short of roads[].roadKm (A1 §5.1's surveyed figure). The day-counts lettered on the sheet come from roadKm/days, never from the drawn length.",
-      "note": "A1 §5.1. `straightKm` is the Cartographer's figure; `computedKm` is what this file's own coordinates give, and `deltaPct` is the residual. A1 §5.3: the world preserves topology, not metric distance."
+      "note": "A1 §5.1. `straightKm` is the Cartographer's figure; `computedKm` is what this file's own coordinates give, and `deltaPct` is the residual. A1 §5.3: the world preserves topology, not metric distance.",
+      "amendedPending": "AMENDED-PENDING (I-095): paceKmPerDay, drawnRoadsAreCentrelines and note above describe the pre-F-045 day-count travel model — distances are now hour-scale on the 400 km world (paceKmPerHour: 11). Prose re-voice deferred."
     }
   },
   "tags": [],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 26017,
-    "childAreaParentUnits2": 13885.5,
-    "coveragePct": 53.37087289080217,
-    "unclaimedPct": 46.62912710919783,
+    "areaParentUnits2": 1040.6800000000005,
+    "childAreaParentUnits2": 555.4199999999997,
+    "coveragePct": 53.370872890802126,
+    "unclaimedPct": 46.629127109197874,
     "computedComposition": {
       "alkali": 2.957066533420456,
       "ash": 1.9120575008648193,
-      "meadow": 25.01660452780874,
-      "rock": 13.140869431525541,
-      "marsh": 10.39093669523773,
-      "upland": 11.56870507744936,
-      "built": 1.3532690164123458,
-      "forest": 13.662912710919784,
-      "ocean": 1.2883499250490065,
-      "river": 6.519352730906714,
-      "ice": 6.325825421839567,
-      "bramble": 5.864050428565937
+      "meadow": 25.08247684206481,
+      "rock": 12.999062151670064,
+      "marsh": 10.357758388745822,
+      "upland": 11.447872544874508,
+      "built": 1.7217473190606123,
+      "forest": 13.657393242879659,
+      "ocean": 1.2830457008878802,
+      "river": 6.39429603720644,
+      "ice": 6.325825421839562,
+      "bramble": 5.8640504285659345
     },
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [75, 95],
+    "absoluteAnchorRoot": [15, 19],
     "resolvedSeedStreams": {
       "terrain": "b024f0a067a68737",
       "settlements": "cb378ad28eea1b2e",
       "vegetation": "dc0bba291ef8320c",
       "names": "6aebc6c2897f33b0"
     },
-    "digest": "sha256:5be87d76b99c6f0133325ac3a08c55f732bab4a11ad9f07661c28aacc303d68e"
+    "digest": "sha256:db8525db1364a6e8bae73409aa9c16f457e8fdff5dfc6d7f1f222ad7f8f17b6c"
   }
 }

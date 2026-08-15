@@ -9,7 +9,7 @@
     "source": "content/maps/cluster1-geography.json"
   },
   "frozen": true,
-  "absoluteAnchor": [36, 84],
+  "absoluteAnchor": [7.2, 16.8],
   "seed": {
     "value": "23107573806d9fcc",
     "epoch": 0,
@@ -18,29 +18,29 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [26, 78],
-      [40, 78],
-      [44, 82],
-      [52, 96],
-      [54, 102],
-      [42, 112],
-      [28, 106],
-      [22, 92]
+      [5.2, 15.6],
+      [8, 15.6],
+      [8.8, 16.4],
+      [10.4, 19.2],
+      [10.8, 20.4],
+      [8.4, 22.4],
+      [5.6, 21.2],
+      [4.4, 18.4]
     ],
-    "anchor": [36, 84]
+    "anchor": [7.2, 16.8]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [32, 34],
-    "originInParent": [22, 78]
+    "size": [6.4, 6.799999999999999],
+    "originInParent": [4.4, 15.6]
   },
   "composition": {
-    "rock": 34,
-    "meadow": 30,
-    "upland": 18,
+    "built": 9.7,
+    "meadow": 30.4,
+    "rock": 31.8,
     "forest": 12,
-    "built": 6
+    "upland": 16.1
   },
   "interstitial": {
     "rock": 34,
@@ -66,30 +66,30 @@
   "representsNodeId": null,
   "lore": {
     "order": 5,
-    "labelAt": [36, 84]
+    "labelAt": [7.2, 16.8]
   },
   "tags": [],
   "levelBand": [25, 35],
   "derived": {
-    "areaParentUnits2": 742,
+    "areaParentUnits2": 29.680000000000007,
     "childAreaParentUnits2": 3.2,
-    "coveragePct": 0.431266846361186,
-    "unclaimedPct": 99.56873315363882,
+    "coveragePct": 10.781671159029647,
+    "unclaimedPct": 89.21832884097036,
     "computedComposition": {
-      "built": 6.146630727762804,
-      "meadow": 30.01725067385445,
-      "rock": 33.913746630727765,
+      "built": 9.665768194070079,
+      "meadow": 30.431266846361183,
+      "rock": 31.84366576819407,
       "forest": 12,
-      "upland": 17.922371967654986
+      "upland": 16.059299191374663
     },
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [36, 84],
+    "absoluteAnchorRoot": [7.2, 16.8],
     "resolvedSeedStreams": {
       "terrain": "e150999e13b00a29",
       "settlements": "30ed31e3eb8eff51",
       "vegetation": "3c07e6ebeb419b2c",
       "names": "5c827dcb6693d2b9"
     },
-    "digest": "sha256:d62dae94bb62f012fcceb1ce879d623bbdc36e482c97e65642c0e651aef36778"
+    "digest": "sha256:b30fd6e455a50e6b88a8631ed68557300c9ec6a4652e5b743ff22e9fedcb12ab"
   }
 }

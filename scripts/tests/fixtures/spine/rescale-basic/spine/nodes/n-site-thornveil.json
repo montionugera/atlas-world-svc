@@ -1,0 +1,118 @@
+{
+  "id": "n-site-thornveil",
+  "tier": "site",
+  "parentId": "n-frontier-shelf",
+  "title": "Thornveil",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/atlas-frontier.md"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "e82f5a1c9d0347b6",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "rect",
+    "rect": {
+      "x": 750,
+      "y": 250,
+      "w": 250,
+      "h": 500
+    },
+    "anchor": [875, 500]
+  },
+  "interior": {
+    "units": "u",
+    "perParentUnit": 1,
+    "size": [250, 500],
+    "originInParent": [750, 250]
+  },
+  "composition": {
+    "bramble": 100
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [
+    {
+      "id": "f-spawnpoint-thornveil",
+      "kind": "point",
+      "at": [875, 500],
+      "attrs": {
+        "role": "spawnPoint"
+      }
+    }
+  ],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": [750, 250],
+    "spawnAreas": [
+      {
+        "id": "thornveil_skirmishers",
+        "x": 40,
+        "y": 70,
+        "width": 180,
+        "height": 360,
+        "mobType": "spear_thrower",
+        "count": 4
+      },
+      {
+        "id": "thornveil_route_stalkers",
+        "x": 10,
+        "y": 50,
+        "width": 110,
+        "height": 180,
+        "mobType": "bramble_stalker",
+        "count": 2
+      },
+      {
+        "id": "thornveil_route_spearlings",
+        "x": 10,
+        "y": 270,
+        "width": 110,
+        "height": 180,
+        "mobType": "veil_spearling",
+        "count": 2
+      },
+      {
+        "id": "thornveil_interior",
+        "x": 140,
+        "y": 150,
+        "width": 95,
+        "height": 160,
+        "mobType": "bramble_drake",
+        "count": 1
+      }
+    ],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": "n-thornveil",
+  "lore": {
+    "summary": "Skirmisher territory: the tall eastern band with the F-031 tiered route/interior population."
+  },
+  "tags": ["runtime-only"],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 125000,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [875, 500],
+    "resolvedSeedStreams": {
+      "terrain": "304be8c712c8be17",
+      "settlements": "f74ac48293f23836",
+      "vegetation": "636d0363d47b8cd1",
+      "names": "652dc9ac6aff4917"
+    },
+    "digest": "sha256:48e8fcabed5611ecd2a136edb93b3fb4633a618939a04448ff8aa547b36066f2"
+  }
+}

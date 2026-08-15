@@ -20,26 +20,26 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [1028.5, 295],
-      [1025.3, 312.5],
-      [1013.3, 326.9],
-      [995, 331.2],
-      [979.8, 321.4],
-      [969.1, 310],
-      [970.1, 295],
-      [962.8, 276.4],
-      [983.1, 274.4],
-      [995, 266.9],
-      [1015.4, 259.7],
-      [1016.2, 282.7]
+      [205.7, 59],
+      [205.1, 62.5],
+      [202.7, 65.4],
+      [199, 66.2],
+      [196, 64.3],
+      [193.8, 62],
+      [194, 59],
+      [192.6, 55.3],
+      [196.6, 54.9],
+      [199, 53.4],
+      [203.1, 51.9],
+      [203.2, 56.5]
     ],
-    "anchor": [996.1, 296]
+    "anchor": [199.2, 59.2]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [65.70000000000005, 71.5],
-    "originInParent": [962.8, 259.7]
+    "size": [13.099999999999994, 14.300000000000004],
+    "originInParent": [192.6, 51.9]
   },
   "composition": {
     "rock": 50,
@@ -55,13 +55,13 @@
       "id": "f-brightfall-reef",
       "kind": "line",
       "points": [
-        [995, 331.2],
-        [979.8, 321.4],
-        [969.1, 310],
-        [970.1, 295],
-        [962.8, 276.4],
-        [983.1, 274.4],
-        [995, 266.9]
+        [199, 66.2],
+        [196, 64.3],
+        [193.8, 62],
+        [194, 59],
+        [192.6, 55.3],
+        [196.6, 54.9],
+        [199, 53.4]
       ],
       "attrs": {
         "note": "Teeth of rock logged at the fall's foot by crews that kept their distance.",
@@ -71,7 +71,7 @@
     {
       "id": "f-brightfall-isle-1",
       "kind": "point",
-      "at": [1015.1, 306.7],
+      "at": [203, 61.3],
       "attrs": {
         "role": "outlying-isle",
         "name": null
@@ -80,7 +80,7 @@
     {
       "id": "f-brightfall-isle-2",
       "kind": "point",
-      "at": [985.5, 312.5],
+      "at": [197.1, 62.5],
       "attrs": {
         "role": "outlying-isle",
         "name": null
@@ -104,19 +104,19 @@
   "tags": ["archipelago"],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 2998.384999999922,
+    "areaParentUnits2": 119.95999999999913,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
     "computedComposition": {},
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [996.1, 296],
+    "absoluteAnchorRoot": [199.2, 59.2],
     "resolvedSeedStreams": {
       "terrain": "4a3265ec121f76f9",
       "settlements": "52f7f808f7a7c9fc",
       "vegetation": "ff380abe0d4afbfe",
       "names": "f378e4ce82891efe"
     },
-    "digest": "sha256:3d80271aebd41eaeb7bb385fe553a056dcede948cd84075a9f0b043e13010da1"
+    "digest": "sha256:1fe0a23a1aeca7c1019beb6c5c60f73f51cd2d8603b89ddf6c8f88c63a9a1c1e"
   }
 }

@@ -413,6 +413,7 @@ is re-derived from <code>content/zones/</code> after any hazard edit, never copi
 - **That Millcross, being the hub, is closest to the sea.** Every road passes through it and it is
   still **4–5 days** from the port, while a town on a side spur is **3** (A1 §5.1). The carters know
   the day-counts and still say the hub is nearest, because the hub is where they turn around.
+  **AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.**
 
 ---
 

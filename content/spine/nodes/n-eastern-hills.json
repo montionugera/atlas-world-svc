@@ -17,21 +17,21 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [114, 58],
-      [132, 50],
-      [148, 60],
-      [148, 96],
-      [138, 106],
-      [124, 100],
-      [113, 84]
+      [22.8, 11.6],
+      [26.4, 10],
+      [29.6, 12],
+      [29.6, 19.2],
+      [27.6, 21.2],
+      [24.8, 20],
+      [22.6, 16.8]
     ],
-    "anchor": [130, 76]
+    "anchor": [26, 15.2]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [35, 56],
-    "originInParent": [113, 50]
+    "size": [7, 11.2],
+    "originInParent": [22.6, 10]
   },
   "composition": {
     "upland": 52,
@@ -57,24 +57,24 @@
   "representsNodeId": null,
   "lore": {
     "note": "A1 §3.2: the east rim's old timber runs up to ore heads in the eastern hills, and Thornveil is the interfluve between the Meltwash and them. Terrain only — no settlement is named here anywhere in the corpus.",
-    "labelAt": [130, 76]
+    "labelAt": [26, 15.2]
   },
   "tags": [],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 1541,
+    "areaParentUnits2": 61.64000000000004,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
     "computedComposition": {},
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [130, 76],
+    "absoluteAnchorRoot": [26, 15.2],
     "resolvedSeedStreams": {
       "terrain": "da0e0b18ac3a15ac",
       "settlements": "197e9d2c21c4d6ca",
       "vegetation": "89e79178f26729ed",
       "names": "83564c153ee15355"
     },
-    "digest": "sha256:5576601211f68eb6c7ec70fc7fc94dc29b8ca76e632c4bc8c2a16d1541853c17"
+    "digest": "sha256:89d25935fbd580bd7806d1e5f843cedcabbcdb32d137d123b8a9da59c8eeb403"
   }
 }

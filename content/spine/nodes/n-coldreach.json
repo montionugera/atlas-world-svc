@@ -20,32 +20,32 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [1098.8, 742],
-      [1052.6, 762.9],
-      [1071.6, 806.3],
-      [1026.2, 796.1],
-      [1006.4, 806.6],
-      [978.2, 837.3],
-      [945.5, 827.8],
-      [917.4, 807.1],
-      [919.6, 769.4],
-      [936.6, 742],
-      [896.7, 706.2],
-      [940.2, 696],
-      [944.3, 654.2],
-      [978.4, 647.3],
-      [1008.6, 664.9],
-      [1034.1, 674.3],
-      [1053.6, 692.8],
-      [1082.4, 710.2]
+      [219.8, 148.4],
+      [210.5, 152.6],
+      [214.3, 161.3],
+      [205.2, 159.2],
+      [201.3, 161.3],
+      [195.6, 167.5],
+      [189.1, 165.6],
+      [183.5, 161.4],
+      [183.9, 153.9],
+      [187.3, 148.4],
+      [179.3, 141.2],
+      [188, 139.2],
+      [188.9, 130.8],
+      [195.7, 129.5],
+      [201.7, 133],
+      [206.8, 134.9],
+      [210.7, 138.6],
+      [216.5, 142]
     ],
-    "anchor": [994, 741.3]
+    "anchor": [198.8, 148.3]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [202.0999999999999, 190],
-    "originInParent": [896.7, 647.3]
+    "size": [40.5, 38],
+    "originInParent": [179.3, 129.5]
   },
   "composition": {
     "rock": 55,
@@ -62,8 +62,8 @@
       "id": "f-coldreach-ridge",
       "kind": "line",
       "points": [
-        [1098.8, 742],
-        [936.6, 742]
+        [219.8, 148.4],
+        [187.3, 148.4]
       ],
       "attrs": {
         "note": "A ridge logged from open water as one unbroken skyline, end to end.",
@@ -74,9 +74,9 @@
       "id": "f-coldreach-river-mouth",
       "kind": "line",
       "points": [
-        [995, 742],
-        [1006.4, 806.6],
-        [978.2, 837.3]
+        [199, 148.4],
+        [201.3, 161.3],
+        [195.6, 167.5]
       ],
       "attrs": {
         "note": "A river known only by its mouth and the peat-dark stain it pushes to sea.",
@@ -86,7 +86,7 @@
     {
       "id": "f-port-tallowquay",
       "kind": "point",
-      "at": [896.7, 706.2],
+      "at": [179.3, 141.2],
       "attrs": {
         "role": "port",
         "name": "Tallowquay",
@@ -106,13 +106,14 @@
   "representsNodeId": null,
   "lore": {
     "reported": true,
-    "summary": "Six days out on the trade wind, masters log a cold grey coast under one long spine of rock; no log claims what stands behind it."
+    "summary": "Six days out on the trade wind, masters log a cold grey coast under one long spine of rock; no log claims what stands behind it.",
+    "amendedPending": "AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred."
   },
   "tags": [],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 21995.440000000002,
-    "childAreaParentUnits2": 21995.440000000002,
+    "areaParentUnits2": 880.0449999999983,
+    "childAreaParentUnits2": 880.0449999999983,
     "coveragePct": 100,
     "unclaimedPct": 0,
     "computedComposition": {
@@ -122,13 +123,13 @@
       "meadow": 10
     },
     "rollupVerdict": "CHECKED",
-    "absoluteAnchorRoot": [994, 741.3],
+    "absoluteAnchorRoot": [198.8, 148.3],
     "resolvedSeedStreams": {
       "terrain": "0c151c7f6fcc1034",
       "settlements": "05f0e72c8fbc3089",
       "vegetation": "a37079184a7bea3b",
       "names": "700e225c53464cc6"
     },
-    "digest": "sha256:16c5ea288752fd5c0276cf359a69b3a2a100fcb0943cec878fad3bd284320c16"
+    "digest": "sha256:3e0e587fe023a0709ca2e0c73c5c4e5284ef375638aeccdcfeb487c14095e05a"
   }
 }

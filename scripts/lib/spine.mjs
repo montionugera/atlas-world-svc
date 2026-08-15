@@ -57,7 +57,11 @@ export const TERRAIN_IMPLIES = Object.freeze({
   ice: ["ice"], upland: ["upland"], "alkali-flat": ["alkali"], rim: ["rock"],
   bramble: ["bramble"], headland: ["rock", "meadow"], "river-country": ["river", "meadow"],
 });
-export const SPINE_CELL_KM = 0.25; // grid-sample cell, fiction tree (km)
+// F-045 Task 2 (spec §2.2): 0.25 -> 0.05, ÷5 with the world — the world
+// frame shrank 2000km -> 400km (S=0.2) so the sample cell shrinks by the
+// same factor to keep the SAME relative sampling resolution (cell/frame
+// ratio unchanged), not a coarser gate on the new, smaller geography.
+export const SPINE_CELL_KM = 0.05; // grid-sample cell, fiction tree (km)
 export const SPINE_CELL_U = 1.0;   // grid-sample cell, runtime tree (u)
 export const KM_TO_U = 100;        // the one pinned unit constant (region→town)
 export const ID_RE = /^n-[a-z0-9]+(-[a-z0-9]+)*$/;

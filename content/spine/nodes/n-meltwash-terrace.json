@@ -17,21 +17,21 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [88, 84],
-      [100, 78],
-      [112, 84],
-      [114, 98],
-      [106, 107],
-      [94, 108],
-      [86, 98]
+      [17.6, 16.8],
+      [20, 15.6],
+      [22.4, 16.8],
+      [22.8, 19.6],
+      [21.2, 21.4],
+      [18.8, 21.6],
+      [17.2, 19.6]
     ],
-    "anchor": [104, 90]
+    "anchor": [20.8, 18]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [28, 30],
-    "originInParent": [86, 78]
+    "size": [5.600000000000001, 6.000000000000002],
+    "originInParent": [17.2, 15.6]
   },
   "composition": {
     "meadow": 46,
@@ -64,30 +64,30 @@
   "representsNodeId": null,
   "lore": {
     "order": 1,
-    "labelAt": [104, 90]
+    "labelAt": [20.8, 18]
   },
   "tags": [],
   "levelBand": [1, 10],
   "derived": {
-    "areaParentUnits2": 626,
+    "areaParentUnits2": 25.039999999999964,
     "childAreaParentUnits2": 3.2,
-    "coveragePct": 0.5111821086261981,
-    "unclaimedPct": 99.4888178913738,
+    "coveragePct": 12.77955271565497,
+    "unclaimedPct": 87.22044728434503,
     "computedComposition": {
-      "meadow": 46.051118210862626,
-      "river": 21.989776357827477,
-      "built": 6.030670926517572,
-      "forest": 13.989776357827475,
-      "marsh": 11.938658146964856
+      "meadow": 47.277955271565496,
+      "river": 21.7444089456869,
+      "built": 6.766773162939298,
+      "forest": 13.7444089456869,
+      "marsh": 10.466453674121404
     },
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [104, 90],
+    "absoluteAnchorRoot": [20.8, 18],
     "resolvedSeedStreams": {
       "terrain": "2c4db5a7b1b9e5e1",
       "settlements": "3b89266ec1af9779",
       "vegetation": "71cd2f9b6237979c",
       "names": "a79774ad4cf050ab"
     },
-    "digest": "sha256:f4d3d706b4ae22a885da49367fd87ff6216ad013c4e0673aefb316874dd26b54"
+    "digest": "sha256:88e0f0408edb477615445b8e726a31d4ce5b9a6355639dba583fd095591797a3"
   }
 }

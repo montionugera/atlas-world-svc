@@ -1,0 +1,84 @@
+{
+  "id": "n-playroot",
+  "tier": "playroot",
+  "parentId": null,
+  "title": "The Playroot",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/atlas-frontier.md"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "5d0c8f3a6b9e2417",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "rect",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 2000,
+      "h": 2000
+    },
+    "anchor": [1000, 1000]
+  },
+  "interior": {
+    "units": "u",
+    "perParentUnit": 1,
+    "size": [2000, 2000],
+    "originInParent": [0, 0]
+  },
+  "composition": {
+    "meadow": 36,
+    "ice": 16,
+    "rock": 7.5,
+    "marsh": 5,
+    "bramble": 8,
+    "built": 27.5
+  },
+  "interstitial": {
+    "meadow": 45,
+    "ice": 20,
+    "rock": 15,
+    "marsh": 10,
+    "bramble": 10
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": null,
+  "features": [],
+  "bands": [],
+  "runtime": null,
+  "representsNodeId": null,
+  "lore": {
+    "summary": "Synthetic runtime frame in world units (u). The SECOND root: the 1000x1000 u playspace (Phase 4) hangs here, never off the fiction continent — spawn-area tuning must not redden the continent's rollup (research §7)."
+  },
+  "tags": ["runtime-only"],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 4000000,
+    "childAreaParentUnits2": 2010000,
+    "coveragePct": 50.24999999999999,
+    "unclaimedPct": 49.75000000000001,
+    "computedComposition": {
+      "built": 27,
+      "ice": 16.200000000000003,
+      "bramble": 8.225000000000001,
+      "meadow": 36.1375,
+      "rock": 7.4625,
+      "marsh": 4.9750000000000005
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [1000, 1000],
+    "resolvedSeedStreams": {
+      "terrain": "869e602ad7e142db",
+      "settlements": "4fc275bd2a8e71f6",
+      "vegetation": "6cd479a220b5a0b6",
+      "names": "3a6495e345a73805"
+    },
+    "digest": "sha256:18c1f04c605c6bb84b49063e2f5643b10242e93b4d4b5461958782d832a9309a"
+  }
+}

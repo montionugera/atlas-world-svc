@@ -108,3 +108,43 @@ Systems' second blocking item (confirm two live Gildmark sea-lanes — old `e-se
 ## Known concern (not blocking promotion, reported per Task 3 step 8)
 
 `tools/mapforge/tests/gen-world.test.mjs` — both tests now fail. `gen-world.mjs`'s synthetic-root builder merges the REAL content root's nodes with a freshly-regenerated candidate set from `buildWorld()`. Before promotion, `content/spine/nodes/` had no F-043 nodes, so the merge was collision-free. After promotion, the real root already contains the promoted nodes (7 with unchanged ids: n-coldreach, n-stonemoor, n-brightfall, n-galereach, n-tarnmark, n-coldreach-interior, n-stonemoor-interior; 8 with renamed ids), and `buildWorld()` still deterministically regenerates the *original* candidate set on every run — so the synthetic root now doubles up every F-043 landmass (52 nodes instead of 44, duplicate seeds, self-overlap, budget/composition failures). This is the generator test asserting against a root shape that Task 3 intentionally changed; the generator itself (`tools/mapforge/lib/world-gen.mjs`) was not modified. Per this task's brief, this is reported here rather than patched — it is a Task 4/6 concern (the synthetic-root builder needs to exclude nodes already promoted, or gen-world.mjs's test scope needs revisiting) since patching the test or the generator is out of scope for a promotion task.
+
+---
+
+## Addendum — F-045 world rescale (2026-08-15)
+
+**F-045** ("World Rescale to 400×400", I-095) scaled every geography-tier coordinate in the committed spine — including this panel's 15 promoted F-043 nodes — by **S = 0.2 (÷5)**, per `docs/superpowers/specs/2026-08-15-world-rescale-design.md` §1. Area scales with the square of a linear factor, so each node's footprint is **÷25** of its F-043 value. The transform (`scripts/rescale_spine.mjs`, F-045 Task 1) re-centered every polygon on its scaled anchor and re-ran the derive-writer; it did not touch names, lore, or any of this panel's ACCEPT verdicts — those carry over unchanged, since the panel ruled on naming/canon-safety/composition, none of which the rescale altered.
+
+`tools/mapforge/lib/world-gen.mjs` — the generator this panel's 15 nodes came from — was rescaled to match in the same feature (F-045 Task 3): every template constant (frame, seam positions, bay rects, margins, cap geometry including the cap's abutment segment) ÷5, every target area ÷25, same seeded RNG calls in the same order. Two runs of the generator remain byte-identical; a fresh regen at the new 400 frame draws the exact same name-candidate sequence as the original F-043 run (the naming RNG stream is untouched by the geometry rescale) and lands within a fraction of a percent of this panel's committed, promoted areas — see the table below.
+
+### Per-node area: F-043 original → F-045 rescaled (committed)
+
+| node id (final) | role | F-043 area (km²) | F-045 area (km²), committed | ratio |
+|---|---|---:|---:|---:|
+| n-coldreach | major continent | 21995.4 | 880.0 | ÷25.0 |
+| n-stonemoor | major continent | 17998.1 | 719.7 | ÷25.0 |
+| n-driftholt | archipelago chain | 3998.9 | 159.6 | ÷25.1 |
+| n-reedstrand | archipelago chain | 3495.7 | 139.7 | ÷25.0 |
+| n-brightfall | archipelago chain | 2998.4 | 120.0 | ÷25.0 |
+| n-rimewall-cap | ice cap | 79593.8 | 3183.8 | ÷25.0 |
+| n-keelbreak | ocean | 1677444.0 | 67091.8 | ÷25.0 |
+| n-galereach | ocean | 747861.0 | 29913.2 | ÷25.0 |
+| n-tarnmark | ocean | 926950.0 | 37078.0 | ÷25.0 |
+
+### Generator reproduction check (fresh regen vs committed, both at the 400 frame)
+
+A fresh `node tools/mapforge/gen-world.mjs` run at the rescaled generator does NOT byte-match the committed nodes above — expected, since the committed content is this panel's hand-promoted canon (renamed ids, rewritten lore, tolerance annotations) while a regen is a from-scratch candidate set. What should hold, and does: matched by area (not id, since promotion renamed 8 of 15), every regenerated world-tier area lands within a fraction of a percent of its committed counterpart —
+
+| role | committed node | committed km² | regen candidate | regen km² | diff |
+|---|---|---:|---|---:|---:|
+| ice cap | n-rimewall-cap | 3183.8 | n-harrowreach-cap | 3183.8 | 0.0% |
+| major A | n-coldreach | 880.0 | n-coldreach | 880.9 | +0.1% |
+| major B | n-stonemoor | 719.7 | n-stonemoor | 719.8 | +0.0% |
+| chain (was n-rookwick) | n-driftholt | 159.6 | n-rookwick | 160.0 | +0.3% |
+| chain (was n-stonehollow) | n-reedstrand | 139.7 | n-stonehollow | 139.3 | -0.3% |
+| chain | n-brightfall | 120.0 | n-brightfall | 120.2 | +0.2% |
+| ocean (was n-rookmark) | n-keelbreak | 67091.8 | n-rookmark | 67091.8 | 0.0% |
+| ocean | n-galereach | 29913.2 | n-galereach | 29835.2 | -0.3% |
+| ocean | n-tarnmark | 37078.0 | n-tarnmark | 37156.0 | +0.2% |
+
+All 9 world-tier areas land within 0.3% (well inside the 10% acceptance bar) — asserted by `tools/mapforge/tests/world-gen.test.mjs`'s "regenerated world-tier areas land within 10% of the committed world nodes (F-045 Task 3)" test, plus the pre-existing "candidates pass the spine gate standalone" and composition-rollup CHECKED assertions in `gen-world.mjs` itself. See `.superpowers/sdd/plan/task-3-report.md` for the full verification record (F-045 Task 3).

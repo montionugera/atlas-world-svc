@@ -17,22 +17,22 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [61, 0],
-      [96, 0],
-      [132, 0],
-      [148, 14],
-      [140, 34],
-      [110, 39],
-      [84, 33],
-      [65, 20]
+      [12.2, 0],
+      [19.2, 0],
+      [26.4, 0],
+      [29.6, 2.8],
+      [28, 6.8],
+      [22, 7.8],
+      [16.8, 6.6],
+      [13, 4]
     ],
-    "anchor": [112, 18]
+    "anchor": [22.4, 3.6]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [87, 39],
-    "originInParent": [61, 0]
+    "size": [17.400000000000002, 7.8],
+    "originInParent": [12.2, 0]
   },
   "composition": {
     "ice": 62,
@@ -58,24 +58,24 @@
   "representsNodeId": null,
   "lore": {
     "order": 9,
-    "labelAt": [112, 18]
+    "labelAt": [22.4, 3.6]
   },
   "tags": [],
   "levelBand": [55, 70],
   "derived": {
-    "areaParentUnits2": 2654.5,
+    "areaParentUnits2": 106.17999999999998,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
     "computedComposition": {},
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [112, 18],
+    "absoluteAnchorRoot": [22.4, 3.6],
     "resolvedSeedStreams": {
       "terrain": "f5abb70a85126dda",
       "settlements": "88eb814701991aec",
       "vegetation": "70592ec42d68ce41",
       "names": "60aa4059d7837b9a"
     },
-    "digest": "sha256:b4c27807fd8e9febe1154b8264e00c111a1b54fbf474915b05a6fc675c79ad69"
+    "digest": "sha256:9fadcfb60982bf93956f496054ba8d930079cd7cc9e56d24224fb50fd81d7a13"
   }
 }

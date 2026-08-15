@@ -9,7 +9,7 @@
     "source": "content/maps/cluster1-geography.json"
   },
   "frozen": true,
-  "absoluteAnchor": [78, 130],
+  "absoluteAnchor": [15.6, 26],
   "seed": {
     "value": "659ecbb6828eb66e",
     "epoch": 0,
@@ -18,26 +18,26 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [74, 110],
-      [92, 106],
-      [100, 116],
-      [98, 132],
-      [84, 138],
-      [72, 128]
+      [14.8, 22],
+      [18.4, 21.2],
+      [20, 23.2],
+      [19.6, 26.4],
+      [16.8, 27.6],
+      [14.4, 25.6]
     ],
-    "anchor": [78, 130]
+    "anchor": [15.6, 26]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [28, 32],
-    "originInParent": [72, 106]
+    "size": [5.6, 6.400000000000002],
+    "originInParent": [14.4, 21.2]
   },
   "composition": {
-    "river": 46,
-    "meadow": 32,
-    "built": 12,
-    "marsh": 10
+    "meadow": 36.1,
+    "built": 14.1,
+    "river": 41.1,
+    "marsh": 8.7
   },
   "interstitial": {
     "river": 46,
@@ -62,29 +62,29 @@
   "representsNodeId": null,
   "lore": {
     "order": 2,
-    "labelAt": [78, 130]
+    "labelAt": [15.6, 26]
   },
   "tags": [],
   "levelBand": [1, 15],
   "derived": {
-    "areaParentUnits2": 664,
+    "areaParentUnits2": 26.559999999999974,
     "childAreaParentUnits2": 3.5200000000000005,
-    "coveragePct": 0.5301204819277109,
-    "unclaimedPct": 99.46987951807229,
+    "coveragePct": 13.253012048192787,
+    "unclaimedPct": 86.74698795180721,
     "computedComposition": {
-      "meadow": 32.16433734939759,
-      "built": 12.084819277108435,
-      "river": 45.80385542168675,
-      "marsh": 9.946987951807229
+      "meadow": 36.108433734939766,
+      "built": 14.120481927710845,
+      "river": 41.096385542168676,
+      "marsh": 8.674698795180722
     },
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [78, 130],
+    "absoluteAnchorRoot": [15.6, 26],
     "resolvedSeedStreams": {
       "terrain": "f468474a8e508153",
       "settlements": "0b41cad337ba4da5",
       "vegetation": "a619cf0b7a56607d",
       "names": "9933bacce8e869e5"
     },
-    "digest": "sha256:03223916aba89d1112bf3bbcb47592aea1adeaafdd2b56015c5e2949b0616a29"
+    "digest": "sha256:52540088ea57d6afe29f946dc4a8ccc82b933f556cae377ab762ef1501d0b747"
   }
 }

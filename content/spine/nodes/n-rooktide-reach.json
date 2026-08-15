@@ -9,7 +9,7 @@
     "source": "content/maps/cluster1-geography.json"
   },
   "frozen": true,
-  "absoluteAnchor": [74, 154],
+  "absoluteAnchor": [14.8, 30.8],
   "seed": {
     "value": "88a0c09525f89669",
     "epoch": 0,
@@ -18,23 +18,23 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [74, 139.5],
-      [94, 137.5],
-      [100, 148],
-      [98, 166],
-      [90, 176],
-      [84, 174.5],
-      [74, 169],
-      [66, 160],
-      [66, 146]
+      [14.8, 27.9],
+      [18.8, 27.5],
+      [20, 29.6],
+      [19.6, 33.2],
+      [18, 35.2],
+      [16.8, 34.9],
+      [14.8, 33.8],
+      [13.2, 32],
+      [13.2, 29.2]
     ],
-    "anchor": [74, 154]
+    "anchor": [14.8, 30.8]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [34, 38.5],
-    "originInParent": [66, 137.5]
+    "size": [6.800000000000001, 7.700000000000003],
+    "originInParent": [13.2, 27.5]
   },
   "composition": {
     "river": 30,
@@ -67,30 +67,30 @@
   "representsNodeId": null,
   "lore": {
     "order": 3,
-    "labelAt": [74, 154]
+    "labelAt": [14.8, 30.8]
   },
   "tags": [],
   "levelBand": [10, 20],
   "derived": {
-    "areaParentUnits2": 998.5,
+    "areaParentUnits2": 39.93999999999997,
     "childAreaParentUnits2": 0.2,
-    "coveragePct": 0.020030045067601403,
-    "unclaimedPct": 99.9799699549324,
+    "coveragePct": 0.5007511266900354,
+    "unclaimedPct": 99.49924887330997,
     "computedComposition": {
-      "built": 8.006810215322984,
-      "river": 29.999198798197295,
-      "marsh": 23.998798197295944,
-      "meadow": 33.99599399098648,
-      "forest": 3.999198798197296
+      "built": 8.170255383074611,
+      "river": 29.979969954932397,
+      "marsh": 23.969954932398597,
+      "meadow": 33.899849774661995,
+      "forest": 3.9799699549323986
     },
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [74, 154],
+    "absoluteAnchorRoot": [14.8, 30.8],
     "resolvedSeedStreams": {
       "terrain": "23561f79dffec39a",
       "settlements": "a67d94a40ddc4f73",
       "vegetation": "5bcc0d3dc908f753",
       "names": "63171f215e88689a"
     },
-    "digest": "sha256:4a83527b06d19db0b81b793c5fb22b7173c3b5c0a5b02a96ead8f88c7cc654ee"
+    "digest": "sha256:3b9502b90547e240c4488ff9184d0f2c01c0535744ae21daf40570aef25f325d"
   }
 }

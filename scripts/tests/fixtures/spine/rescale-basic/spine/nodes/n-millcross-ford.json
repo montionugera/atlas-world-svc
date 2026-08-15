@@ -1,0 +1,90 @@
+{
+  "id": "n-millcross-ford",
+  "tier": "region",
+  "parentId": "n-cluster1",
+  "title": "Millcross Ford",
+  "provenance": {
+    "authored": "hand",
+    "generator": null,
+    "source": "content/maps/cluster1-geography.json"
+  },
+  "frozen": true,
+  "absoluteAnchor": [78, 130],
+  "seed": {
+    "value": "659ecbb6828eb66e",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [74, 110],
+      [92, 106],
+      [100, 116],
+      [98, 132],
+      [84, 138],
+      [72, 128]
+    ],
+    "anchor": [78, 130]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [28, 32],
+    "originInParent": [72, 106]
+  },
+  "composition": {
+    "river": 46,
+    "meadow": 32,
+    "built": 12,
+    "marsh": 10
+  },
+  "interstitial": {
+    "river": 46,
+    "meadow": 32,
+    "built": 12,
+    "marsh": 10
+  },
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "terrainKind": "river-country",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "order": 2,
+    "labelAt": [78, 130]
+  },
+  "tags": [],
+  "levelBand": [1, 15],
+  "derived": {
+    "areaParentUnits2": 664,
+    "childAreaParentUnits2": 3.5200000000000005,
+    "coveragePct": 0.5301204819277109,
+    "unclaimedPct": 99.46987951807229,
+    "computedComposition": {
+      "meadow": 32.16433734939759,
+      "built": 12.084819277108435,
+      "river": 45.80385542168675,
+      "marsh": 9.946987951807229
+    },
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [78, 130],
+    "resolvedSeedStreams": {
+      "terrain": "f468474a8e508153",
+      "settlements": "0b41cad337ba4da5",
+      "vegetation": "a619cf0b7a56607d",
+      "names": "9933bacce8e869e5"
+    },
+    "digest": "sha256:03223916aba89d1112bf3bbcb47592aea1adeaafdd2b56015c5e2949b0616a29"
+  }
+}

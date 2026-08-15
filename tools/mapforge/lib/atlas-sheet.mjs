@@ -26,7 +26,9 @@ import {
 } from "./draft.mjs";
 import { loadSpine, buildTree, resolveToRoot } from "../../../scripts/lib/spine.mjs";
 
-export const ATLAS_PX_PER_KM = 0.7; // 2000 km → 1400 px map frame
+// F-045 Task 4: 0.7 -> 3.5 (÷5 up), the world frame's own 2000 -> 400 km
+// (÷5 down) — net canvas size unchanged, 5x denser per km.
+export const ATLAS_PX_PER_KM = 3.5; // 400 km → 1400 px map frame
 export const ATLAS_MAP_LEFT = 58;
 export const ATLAS_MAP_TOP = 96;
 const SHEET_PAD = 46;
@@ -163,16 +165,19 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   }
 
   // ---- F-043 fix: land-bbox helper for the ocean-label clear-of-land nudge -
-  // (used below, ocean-name loop). 60km (the spec'd "steer clear of the
+  // (used below, ocean-name loop). 12km (the spec'd "steer clear of the
   // coast" margin) left a real overlap on Galereach/Coldreach in visual QA —
   // the thing that has to stay clear is a rotated, ~18-character label's
   // rendered footprint, not just its single anchor point — but a much wider
-  // margin (tried 220km) over-triggers: Keelbreak's own centroid then reads
+  // margin (tried 44km) over-triggers: Keelbreak's own centroid then reads
   // as "inside" Coldreach's expanded box too, nudging a sea that was never
-  // near land. 100km is the smallest margin that clears the real Galereach/
+  // near land. 20km is the smallest margin that clears the real Galereach/
   // Coldreach overlap (confirmed against the built SVG) without dragging in
   // Keelbreak or Tarnmark, which both stay a no-op at this value.
-  const LAND_CLEARANCE_KM = 100;
+  // (F-045 Task 4: these three figures — 12/20/44 — are the F-043 tuning
+  // narrative's 60/100/220 ÷5'd; the world these margins operate on shrank
+  // ÷5 too, so the same relative margin now reads as a fifth the km value.)
+  const LAND_CLEARANCE_KM = 20;
   const landBboxes = landPolys.map(({ id, pts }) => {
     const xs = pts.map((p) => p[0]);
     const ys = pts.map((p) => p[1]);
@@ -219,16 +224,19 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
     const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2));
     return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
   };
-  const LANE_CLEARANCE_KM = 60;
+  // F-045 Task 4: 60 -> 12 (÷5), same reasoning as LAND_CLEARANCE_KM above —
+  // a real km distance to a sea-lane segment, and the world it measures
+  // against shrank ÷5.
+  const LANE_CLEARANCE_KM = 12;
   const nearAnySeaLane = (pt) =>
     laneSegments.some(([a, b]) => distToSegment(pt, a, b) < LANE_CLEARANCE_KM);
 
   const blocked = (pt) => insideAnyLandBbox(pt) || nearAnySeaLane(pt);
   // Deterministic nudge: step the point along y, away from the offending
   // land box's own vertical center (toward more open water in a strip-
-  // shaped sea), in fixed 40km increments, until clear of every land bbox
-  // AND every sea-lane. Bounded at 10 steps (400km) — comfortably more than
-  // this 2000km frame needs.
+  // shaped sea), in fixed 8km increments (F-045 Task 4: 40km ÷5), until
+  // clear of every land bbox AND every sea-lane. Bounded at 10 steps (80km,
+  // was 400km) — comfortably more than this 400km frame (was 2000km) needs.
   const nudgeClearOfLand = (pt) => {
     if (!blocked(pt)) return pt;
     const hit = landBboxes.find(
@@ -236,7 +244,7 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
     );
     const dir = !hit || pt[1] <= (hit.minY + hit.maxY) / 2 ? -1 : 1;
     for (let step = 1; step <= 10; step++) {
-      const candidate = [pt[0], pt[1] + dir * 40 * step];
+      const candidate = [pt[0], pt[1] + dir * 8 * step];
       if (!blocked(candidate)) return candidate;
     }
     return pt; // exhausted the bound — leave as-is rather than loop forever
@@ -333,8 +341,10 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   // ---- the basin label, right of the miniature -------------------------------
   // placed just east of the polygon's extent, level with its anchor
   const clusterMaxX = Math.max(...cluster.placement.points.map((p) => p[0]));
+  // F-045 Task 4: +15 -> +3 (÷5) — a km offset east of the basin polygon's
+  // own (already-rescaled) extent, placing the label just clear of it.
   put(
-    `<text class="lbl" x="${X(clusterMaxX + 15)}" y="${Y(cluster.placement.anchor[1])}" font-size="12.5" font-style="italic" ` +
+    `<text class="lbl" x="${X(clusterMaxX + 3)}" y="${Y(cluster.placement.anchor[1])}" font-size="12.5" font-style="italic" ` +
       `letter-spacing="1.2" fill="${C.inkMid}">${esc(sheet.surveyNote)}</text>`,
   );
 
@@ -490,10 +500,15 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
     // the coast — Galereach's did, next to Coldreach — so nudge off any
     // nearby land before drawing, rather than trusting the raw centroid.
     const c = nudgeClearOfLand(centroid(ocean.placement.points));
+    // F-045 Task 4: arm 180 -> 36, rise 25 -> 5 (÷5) — real km offsets from
+    // the sea's centroid, used only to derive the label's rotation angle
+    // (this arc is never drawn); at the pre-fix values the arm alone
+    // exceeded the 400km frame for several seas (Galereach, Keelbreak,
+    // Tarnmark all failed checkFrame below before this fix).
     const arcPts = [
-      [c[0] - 180, c[1] + 25],
+      [c[0] - 36, c[1] + 5],
       [c[0], c[1]],
-      [c[0] + 180, c[1] - 25],
+      [c[0] + 36, c[1] - 5],
     ];
     checkFrame(`${ocean.id} label arc`, arcPts);
     const angle = r2(
