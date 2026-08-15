@@ -562,5 +562,11 @@
     "title": "storybook Maps tab: serve game-client/assets/art/maps (cluster1-world, atlas-world) with pan/zoom in asset-storybook, honoring the new every-artifact-observable rule",
     "created_at": "2026-08-15T07:39:53.582607+00:00",
     "promoted_to": "F-044"
+  },
+  {
+    "id": "I-095",
+    "title": "world rescale to 400x400: uniform /5 geography scale, towns keep physical size, hour-scale travel \u2014 owner-approved scale model",
+    "created_at": "2026-08-15T11:12:30.592907+00:00",
+    "promoted_to": null
   }
 ]
