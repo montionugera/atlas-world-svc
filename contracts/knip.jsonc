@@ -1,0 +1,8 @@
+{
+  // knip — dead code + unused dependency detection (Gate 1, added W5 Phase A).
+  // Ratchet plan: see colyseus-server/knip.jsonc. Baseline here (2026-08-15):
+  // fully clean — keep it that way.
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/index.ts"],
+  "exclude": ["exports", "types", "duplicates"],
+}

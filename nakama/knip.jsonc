@@ -1,0 +1,22 @@
+{
+  // knip — dead code + unused dependency detection (Gate 1, added W5 Phase A).
+  // Ratchet plan: see colyseus-server/knip.jsonc. Baseline here (2026-08-15):
+  // 1 unused export + 5 unused exported types, excluded below (Phase C).
+  // Never widen this config to make a failure pass — fix the code instead.
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    // The Nakama runtime bundle entry (see esbuild.config.mjs entryPoints).
+    "src/main.ts",
+  ],
+  "ignoreDependencies": [
+    // False positive in per-package (standalone) mode: this workspace-internal
+    // dep resolves through the pnpm symlink to ../contracts/dist — outside
+    // this package — so knip loses the usage once contracts is built. Goes
+    // away if/when knip moves to root workspace mode (ratchet option).
+    "@atlas/contracts",
+    // False positive: used only via `/// <reference path=...>` in
+    // src/global.d.ts (ambient nkruntime namespace) — knip can't see it.
+    "nakama-runtime",
+  ],
+  "exclude": ["exports", "types", "duplicates"],
+}

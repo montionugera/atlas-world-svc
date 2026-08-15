@@ -1,0 +1,47 @@
+{
+  // knip — dead code + unused dependency detection (Gate 1, added W5 Phase A).
+  //
+  // RATCHET PLAN — day one this config is tuned to PASS current code:
+  //  1. Now:      gate on unused files / unused deps / unlisted deps.
+  //               Known-dead files + dep false-positives are pinned in the
+  //               targeted ignore lists below.
+  //  2. Phase B:  delete the dead files listed under "ignore", remove the
+  //               truly-unused deps from "ignoreDependencies", and shrink both
+  //               lists to empty. Every entry removed here is a real cleanup.
+  //  3. Phase C:  drop "exports"/"types"/"duplicates" from "exclude" (59 open
+  //               findings at baseline 2026-08-15) and burn those down.
+  // Never widen these lists to make a failure pass — fix the code instead.
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/index.ts",
+    // Codegen entry points invoked via scripts/codegen/*.sh shell wrappers,
+    // which knip does not parse — without these they read as unused files.
+    "scripts/codegen/*.ts",
+    "src/codegen/run-isolate.ts",
+  ],
+  // Known-dead code at baseline (2026-08-15) — kept out of the gate so day one
+  // passes; scheduled for deletion in Phase B. Do NOT add new entries.
+  "ignore": [
+    ".eslintrc.js", // stale config: no eslint dependency exists in this package
+    "test-client.js", // manual ws debug client (root-level, not wired to any script)
+    "src/ai/behaviors/AttackBehavior.ts",
+    "src/events/EventHandler.ts",
+    "src/schemas/PlayerSettings.ts",
+    "src/systems/MobController.ts",
+    "src/tests/test-helpers.ts",
+  ],
+  "ignoreDependencies": [
+    // False positive in per-package (standalone) mode: this workspace-internal
+    // dep resolves through the pnpm symlink to ../contracts/dist — outside
+    // this package — so knip loses the usage once contracts is built. Goes
+    // away if/when knip moves to root workspace mode (ratchet option).
+    "@atlas/contracts",
+    "lint-staged", // used by repo-root .husky pre-commit hook, outside knip's view
+    "@asyncapi/html-template", // manual docs generation (npm run docs:generate note)
+    "@types/matter-js", // baseline unused — remove in Phase B triage
+    "colyseus.js", // only used by test-client.js (ignored above) — Phase B triage
+  ],
+  // Phase C targets — 15 unused exports, 44 unused exported types, 1 duplicate
+  // export at baseline. Excluded so the gate is green day one.
+  "exclude": ["exports", "types", "duplicates"],
+}

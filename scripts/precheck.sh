@@ -151,6 +151,54 @@ storybook_tests() {
   ( cd "$REPO_ROOT" && node --test tools/asset-storybook/tests/*.test.mjs )
 }
 
+# W5 Phase A: dead code + unused/unlisted dependency detection, per workspace
+# package. Each package carries a knip.jsonc pinning the day-one baseline via
+# TARGETED ignore lists (known-dead files, dep false-positives) and excluding
+# the exports/types issue classes for now — so this gate fails only on NEW
+# dead files or dependency drift. Ratchet plan (burn down the ignore lists,
+# then enable exports/types) is documented in colyseus-server/knip.jsonc.
+# Skipped cleanly on branches predating the knip configs.
+knip_scan() {
+  local pkg rc=0
+  for pkg in contracts colyseus-server nakama; do
+    if [ ! -f "$REPO_ROOT/$pkg/knip.jsonc" ]; then
+      echo "· $pkg: no knip.jsonc on this branch — skipping"
+      continue
+    fi
+    echo "· knip: $pkg"
+    ( cd "$REPO_ROOT/$pkg" && npx knip --no-config-hints ) || rc=1
+  done
+  return "$rc"
+}
+
+# W5 Phase A: known-CVE scan of the dependency lockfiles (root pnpm-lock.yaml
+# + the standalone client/react-client npm lockfile).
+#
+# - osv-scanner is NOT preinstalled on every dev machine. When the binary is
+#   absent this step SKIPS (green) so the gate stays runnable everywhere.
+#   One-line install:  brew install osv-scanner
+# - REPORT-ONLY day one: pre-existing vulnerabilities must be triaged before
+#   this can block ships, so findings print loudly but do not fail the gate.
+#   RATCHET: once the baseline triage lands, delete the report-only fallback
+#   (the final `return 0`) so findings fail the section.
+osv_scan() {
+  if ! command -v osv-scanner >/dev/null 2>&1; then
+    echo "osv-scanner not installed — skipping lockfile CVE scan"
+    echo "  install:  brew install osv-scanner"
+    return 0
+  fi
+  local rc=0
+  osv-scanner scan --lockfile "$REPO_ROOT/pnpm-lock.yaml" || rc=1
+  if [ -f "$REPO_ROOT/client/react-client/package-lock.json" ]; then
+    osv-scanner scan --lockfile "$REPO_ROOT/client/react-client/package-lock.json" || rc=1
+  fi
+  if [ "$rc" -ne 0 ]; then
+    echo "⚠️  osv-scanner reported findings — REPORT-ONLY for now: triage above,"
+    echo "    then make this section blocking (see ratchet note in precheck.sh)."
+  fi
+  return 0
+}
+
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace install" deps_install
 run_section "contracts: tsc build"          contracts_build
@@ -165,6 +213,8 @@ run_section "art-forge: node --test suite"  art_forge_tests
 run_section "asset-storybook: node --test suite" storybook_tests
 run_section "combat-lab: model gates"       combat_lab
 run_section "content: spine gates (--only=spine)" content_spine
+run_section "knip: dead code + unused deps" knip_scan
+run_section "osv-scanner: lockfile CVEs"    osv_scan
 
 # --- Summary -----------------------------------------------------------------
 echo ""
