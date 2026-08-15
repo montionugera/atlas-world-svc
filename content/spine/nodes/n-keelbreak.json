@@ -1,0 +1,93 @@
+{
+  "id": "n-keelbreak",
+  "tier": "ocean",
+  "parentId": "n-atlas",
+  "title": "The Keelbreak Sea",
+  "provenance": {
+    "authored": "hand",
+    "generator": {
+      "name": "gen-world",
+      "version": "1"
+    },
+    "source": "tools/mapforge/gen-world.mjs"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "834c48ae56aec272",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [25, 25],
+      [25, 290],
+      [250, 290],
+      [250, 25],
+      [250, 108.8],
+      [995, 108.8],
+      [995, 25],
+      [995, 205],
+      [915, 205],
+      [915, 385],
+      [995, 385],
+      [995, 572],
+      [825, 572],
+      [825, 912],
+      [995, 912],
+      [995, 1284],
+      [905, 1284],
+      [905, 1504],
+      [995, 1504],
+      [995, 1975],
+      [25, 1975]
+    ],
+    "anchor": [717.6, 692.7]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [970, 1950],
+    "originInParent": [25, 25]
+  },
+  "composition": {
+    "ocean": 100
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "reported": true,
+    "summary": "The western water, named in wreck-ledgers: more keels opened there than in every other sea the logs keep."
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 1677444,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [717.6, 692.7],
+    "resolvedSeedStreams": {
+      "terrain": "d8a283ab078bdc99",
+      "settlements": "6d8143a6623f7483",
+      "vegetation": "a9210cadeb5ae374",
+      "names": "75faca29d303018b"
+    },
+    "digest": "sha256:b9cd0cb70ddf40a111951e193e4f66d089012b434b67f74577acdd54d2a48ca1"
+  }
+}

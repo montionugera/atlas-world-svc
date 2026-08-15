@@ -59,29 +59,40 @@ test("spine-node schema is draft-07 with an $id", () => {
 // expedition camp (tier town, depth 3, under their region parents), growing
 // the table from 16 to 23 nodes. Task 4.3 (F-041 P4) authored the runtime
 // subtree — n-frontier-shelf + 3 sites + 2 fixtures — growing the table from
-// 23 to 29 nodes. Ids come back sorted (loadSpine reads the directory
-// sorted), so the 6 new n-* ids interleave with the existing 23.
-test("the committed 29-node table loads clean: 2 roots, depths legal, no load errors", () => {
+// 23 to 29 nodes. F-043 ("the wider world", commit 415a765) panel-promoted
+// 15 world-scale spine nodes from candidates/ into nodes/ — 2 more
+// continents (n-coldreach, n-stonemoor) each with 3 regions, 3 archipelago
+// continents with no regions yet (n-brightfall, n-driftholt, n-reedstrand),
+// 1 ice cap (n-rimewall-cap, tier continent), and 3 oceans (n-galereach,
+// n-keelbreak, n-tarnmark) — growing the table from 29 to 44 nodes. Ids come
+// back sorted (loadSpine reads the directory sorted), so the 15 new n-* ids
+// interleave with the existing 29.
+test("the committed 44-node table loads clean: 2 roots, depths legal, no load errors", () => {
   const spine = loadSpine({ contentRoot: join(ROOT, "content") });
   assert.equal(spine.present, true);
   assert.deepEqual(spine.errors, []);
   assert.deepEqual(spine.nodes.map((n) => n.id), [
-    "n-ashvale-front", "n-atlas", "n-cindervast-town", "n-cindervast", "n-cluster1",
-    "n-eastern-hills", "n-emberdown", "n-embervale", "n-expedition-camp",
-    "n-fixture-deflect", "n-fixture-projectile", "n-frontier-shelf",
-    "n-gildmark-head", "n-gildmark", "n-hollowmarch", "n-meltwash-terrace",
-    "n-millcross-ford", "n-millcross", "n-norhollow", "n-northern-icefield",
-    "n-playroot", "n-rooktide-reach", "n-rooktide", "n-saltmire",
-    "n-site-icefield", "n-site-spawn-meadow", "n-site-thornveil", "n-thornveil",
-    "n-westsea",
+    "n-ashvale-front", "n-atlas", "n-brightfall", "n-cindervast-town", "n-cindervast",
+    "n-cluster1", "n-coldreach-interior", "n-coldreach-shore", "n-coldreach",
+    "n-driftholt", "n-eastern-hills", "n-emberdown", "n-embervale",
+    "n-expedition-camp", "n-fixture-deflect", "n-fixture-projectile",
+    "n-frontier-shelf", "n-galereach", "n-gildmark-head", "n-gildmark",
+    "n-hollowmarch", "n-keelbreak", "n-meltwash-terrace", "n-millcross-ford",
+    "n-millcross", "n-norhollow", "n-northern-icefield", "n-peatrun-coast",
+    "n-playroot", "n-reedstrand", "n-rimewall-cap", "n-rooktide-reach",
+    "n-rooktide", "n-saltmire", "n-site-icefield", "n-site-spawn-meadow",
+    "n-site-thornveil", "n-slateflow-coast", "n-stonemoor-interior",
+    "n-stonemoor-shore", "n-stonemoor", "n-tarnmark", "n-thornveil", "n-westsea",
   ]);
   assert.deepEqual(spine.roots, ["n-atlas", "n-playroot"]);
   // Task 1.10: these were Phase-0 placeholders (48 / 4) until G-LOAD-BUDGET
-  // and G-COMP-REPORT existed to enforce them; real values as of the 29-node
-  // table (real UNCHECKED today: n-atlas only — Task 4.3 flipped n-playroot's
-  // interstitialUnsurveyed to false, so it now reads ASSERTED; maxUnchecked
-  // stays 2, well over the actual count of 1, so no budget bump was needed).
-  assert.deepEqual(spine.budgets.load, { maxNodes: 40, maxBytes: 262144 });
+  // and G-COMP-REPORT existed to enforce them. F-043 bumped the load budget
+  // to {48, 393216} (Systems panel blocking item #1) to make room for the 15
+  // promoted nodes; the coverage budget's maxUnchecked stayed at 2 — F-043
+  // also hand-edited n-atlas's interstitialUnsurveyed to false (its
+  // composition is now real: {ocean:100}), which flips n-atlas from
+  // UNCHECKED to CHECKED, so the real UNCHECKED count today is 0.
+  assert.deepEqual(spine.budgets.load, { maxNodes: 48, maxBytes: 393216 });
   assert.deepEqual(spine.budgets.coverage, { maxUnchecked: 2 });
   for (const n of spine.nodes) assert.equal(typeof TIER_DEPTH[n.tier], "number", n.id);
 });
@@ -390,6 +401,13 @@ t11("G-OVERLAP + G-COMP-ROLLUP red: overlapping twins now hard-fail", () => {
   } }));
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-OVERLAP n-r ∩ n-r2: 400\.0 over limit 2\.0/);
+  // F-043 perf fix: the parent-level double-count check (gSpineOverlapRollup)
+  // switched from a gridUnionArea() scan to summing the pairwise
+  // gridIntersectionArea() values from the loop above. n-r/n-r2 are full
+  // duplicates with a single pair, so the pairwise sum equals the old
+  // union-based figure exactly (400.0) — this pins that the fixture's
+  // reported double-count number did not change after the swap.
+  assert11.match(r.out, /G-OVERLAP n-c: children double-count 400\.0 \(limit 32\.0\)/);
 });
 t11("G-COMP-ROLLUP red: child mix contradicts the parent beyond tolerance", () => {
   const r = runSpineGate(spineFixture({ mutate: (dir) => {
@@ -562,11 +580,21 @@ test("G-COMP-REPORT: the SAME town with its plan removed falls back to ASSERTED"
   assert.match(out, /spine-comp: n-t1 coverage=0\.0% verdict=ASSERTED/);
 });
 
-test("G-COMP-REPORT: the shipped table reports exactly one CHECKED node (n-millcross, the one town with a plan)", () => {
+// F-043 hand-edited n-atlas's interstitialUnsurveyed to false (real
+// composition {ocean:100} replaces the coarse guess), which flips it to
+// CHECKED; the promotion also added 2 continents whose full composition is
+// now authored+rolled-up (n-coldreach, n-stonemoor — both 100% covered by
+// their 3 regions each), so the shipped table now reports FOUR CHECKED
+// nodes, not one. The other 13 promoted nodes (regions/oceans/archipelago
+// continents) stay ASSERTED — same as every other unsurveyed-so-far node.
+test("G-COMP-REPORT: the shipped table reports exactly four CHECKED nodes (n-atlas, n-coldreach, n-millcross, n-stonemoor)", () => {
   const r = runGate(join(ROOT, "content"));
   assert.equal(r.code, 0, r.stdout);
+  assert.match(r.stdout, /spine-comp: n-atlas coverage=87\.8% verdict=CHECKED/);
+  assert.match(r.stdout, /spine-comp: n-coldreach coverage=100\.0% verdict=CHECKED/);
   assert.match(r.stdout, /spine-comp: n-millcross coverage=0\.0% verdict=CHECKED/);
-  assert.match(r.stdout, /spine-comp: totals CHECKED=1 ASSERTED=27 UNCHECKED=1/);
+  assert.match(r.stdout, /spine-comp: n-stonemoor coverage=100\.0% verdict=CHECKED/);
+  assert.match(r.stdout, /spine-comp: totals CHECKED=4 ASSERTED=40 UNCHECKED=0/);
 });
 
 // Finding 4 (MEDIUM). terrainKindErrors ran over raw spine.nodes, so a node
@@ -850,4 +878,21 @@ test("G-ALIAS sweep: an art:town-* key with no town-tier node is a hard FAIL", (
   const r = runAliasGate(dir, ["--art-manifest", artPath]);
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, /FAIL\s+spine-alias: art-manifest art:town-nopeville: no town-tier spine node n-nopeville \/ n-nopeville-town/);
+});
+
+// ── F-043 Task 4: G-ATLAS-ROLLUP — the world rollup is pinned to committed
+// composition (±2pp), independent of G-COMP-ROLLUP's looser per-node
+// tolerance. Red fixture: g-atlas-rollup-drift/ (copied from base/, world
+// root n-w flipped to interstitialUnsurveyed:false with a committed
+// composition 4pp off its true rollup). Green half runs the real content
+// root — valid only once Task 3's n-atlas promotion has landed.
+test("G-ATLAS-ROLLUP red: world rollup off committed composition by >2pp", () => {
+  const { code, stdout } = runGate(contentRootFor("g-atlas-rollup-drift"));
+  assert.equal(code, 1, stdout);
+  assert.match(stdout, /FAIL {2}G-ATLAS-ROLLUP: /);
+});
+
+test("G-ATLAS-ROLLUP green: the committed content passes", () => {
+  const { code, stdout } = runGate(join(ROOT, "content"));
+  assert.equal(code, 0, stdout);
 });

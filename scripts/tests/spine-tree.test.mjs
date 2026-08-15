@@ -65,7 +65,27 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 //            derived total — n-playroot reads ASSERTED, not UNCHECKED, from
 //            here on. n-frontier-shelf itself: 465,000 of 1,000,000 u² claimed
 //            by its 3 sites = 46.5% → "46.5%" ASSERTED.
-const EXPECTED = `n-atlas · world · km · coverage 0.7% UNCHECKED
+//   F-043 ("the wider world", commit 415a765) panel-promoted 15 world-scale
+//            nodes and hand-edited n-atlas: interstitialUnsurveyed → false,
+//            interstitial → {ocean:100}. n-atlas's own composition rollup is
+//            no longer just cluster1's 0.7% land fraction of the 4,000,000
+//            km² world — it now also carries the 2 new fully-tiled
+//            continents (n-coldreach, n-stonemoor, both 100% covered by
+//            their 3 regions each) and everything else newly charted, so
+//            n-atlas reads 87.8% CHECKED (flipped from 0.7% UNCHECKED — the
+//            interstitialUnsurveyed flip is what promotes world-tier
+//            evidence from "reported" to "surveyed"). n-coldreach and
+//            n-stonemoor each roll up to 100.0% CHECKED (3 regions apiece,
+//            each still 0.0% ASSERTED with no children of their own yet —
+//            same "children have no children yet" shape as cluster1's
+//            regions). n-brightfall, n-driftholt, n-reedstrand (archipelago
+//            continents) and n-rimewall-cap (ice cap, tier continent) have
+//            no region children yet — 0.0% ASSERTED, same as any other
+//            childless non-leaf node before it earns real coverage.
+//            n-galereach, n-keelbreak, n-tarnmark (oceans) are leaf-shaped
+//            like n-westsea — 0.0% ASSERTED, no children.
+const EXPECTED = `n-atlas · world · km · coverage 87.8% CHECKED
+├── n-brightfall · continent · km · coverage 0.0% ASSERTED
 ├── n-cluster1 · continent · km · coverage 53.4% ASSERTED
 │   ├── n-ashvale-front · region · km · coverage 0.0% ASSERTED
 │   ├── n-cindervast · region · km · coverage 0.3% ASSERTED
@@ -86,6 +106,20 @@ const EXPECTED = `n-atlas · world · km · coverage 0.7% UNCHECKED
 │   │   └── n-rooktide · town · u · coverage 0.0% ASSERTED
 │   ├── n-saltmire · region · km · coverage 0.0% ASSERTED
 │   └── n-thornveil · region · km · coverage 0.0% ASSERTED
+├── n-coldreach · continent · km · coverage 100.0% CHECKED
+│   ├── n-coldreach-interior · region · km · coverage 0.0% ASSERTED
+│   ├── n-coldreach-shore · region · km · coverage 0.0% ASSERTED
+│   └── n-peatrun-coast · region · km · coverage 0.0% ASSERTED
+├── n-driftholt · continent · km · coverage 0.0% ASSERTED
+├── n-galereach · ocean · km · coverage 0.0% ASSERTED
+├── n-keelbreak · ocean · km · coverage 0.0% ASSERTED
+├── n-reedstrand · continent · km · coverage 0.0% ASSERTED
+├── n-rimewall-cap · continent · km · coverage 0.0% ASSERTED
+├── n-stonemoor · continent · km · coverage 100.0% CHECKED
+│   ├── n-slateflow-coast · region · km · coverage 0.0% ASSERTED
+│   ├── n-stonemoor-interior · region · km · coverage 0.0% ASSERTED
+│   └── n-stonemoor-shore · region · km · coverage 0.0% ASSERTED
+├── n-tarnmark · ocean · km · coverage 0.0% ASSERTED
 └── n-westsea · ocean · km · coverage 0.0% ASSERTED
 n-playroot · playroot · u · coverage 50.2% ASSERTED
 ├── n-fixture-deflect · fixture · u · coverage 0.0% ASSERTED
@@ -94,7 +128,7 @@ n-playroot · playroot · u · coverage 50.2% ASSERTED
     ├── n-site-icefield · site · u · coverage 0.0% ASSERTED
     ├── n-site-spawn-meadow · site · u · coverage 0.0% ASSERTED
     └── n-site-thornveil · site · u · coverage 0.0% ASSERTED
-29 nodes · 2 roots
+44 nodes · 2 roots
 `;
 
 test("spine-tree prints the committed table exactly (snapshot)", () => {

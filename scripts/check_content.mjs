@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, gridUnionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, gridIntersectionArea, placementArea, SPINE_CELL_KM, SPINE_CELL_U, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1687,6 +1687,27 @@ function checkSpine(opts, mobTypes) {
   // the world is disjoint now, so G-OVERLAP + G-COMP-ROLLUP are enforced.
   gSpineOverlapRollup({ tree, report: fail });
 
+  // F-043 Task 4: G-ATLAS-ROLLUP — every world-tier root that has claimed
+  // its water (interstitialUnsurveyed false) must roll up CHECKED and
+  // within ±2 pp of its committed composition on every committed biome.
+  // Fixed ±2pp, independent of compositionTolerance — tighter than
+  // G-COMP-ROLLUP's per-node tolerance (default 3.0, ceiling 5.0) above,
+  // by design: this is the world-level pin, not the general per-node rule.
+  // The interstitialUnsurveyed guard means the rule self-activates the
+  // moment a world root claims its water — dormant (never reported) until
+  // then, so it never breaks mid-branch on a not-yet-surveyed world.
+  for (const node of validNodes) {
+    if (node.tier !== "world" || node.interstitialUnsurveyed || !tree.depthOf.has(node.id)) continue;
+    const d = deriveNode({ tree, id: node.id, plans: townPlans });
+    if (d.rollupVerdict !== "CHECKED")
+      fail(`G-ATLAS-ROLLUP: ${node.id}: rollupVerdict ${d.rollupVerdict} — world coverage must reach CHECKED (>= 60% claimed)`);
+    for (const [b, v] of Object.entries(node.composition ?? {})) {
+      const got = d.computedComposition[b] ?? 0;
+      if (Math.abs(got - v) > 2)
+        fail(`G-ATLAS-ROLLUP: ${node.id}: ${b} rolls up to ${got.toFixed(2)} vs committed ${v} (tolerance ±2 pp)`);
+    }
+  }
+
   // ── F-041 P3: town plans join the spine on plan.spineId (G-TOWN-FRAME) ──
   // `townPlans` is the schema-VALID list loaded at the top of this function —
   // a plan missing footprints[0].rect earns its own clean schema FAIL there
@@ -2101,20 +2122,27 @@ function gSpineOverlapRollup({ tree, report }) {
       .map((i) => tree.byId.get(i))
       .filter((n) => n.placement.shape !== "point");
     const cell = parent.interior?.units === "u" ? SPINE_CELL_U : SPINE_CELL_KM;
+    let pairSum = 0;
     for (let i = 0; i < kids.length; i++)
       for (let j = i + 1; j < kids.length; j++) {
         const inter = gridIntersectionArea({ a: kids[i].placement, b: kids[j].placement, cell });
+        pairSum += inter;
         const limit = 0.005 * Math.min(placementArea({ placement: kids[i].placement }),
                                        placementArea({ placement: kids[j].placement }));
         if (inter > limit)
           report(`spine: G-OVERLAP ${kids[i].id} ∩ ${kids[j].id}: ${inter.toFixed(1)} over limit ${limit.toFixed(1)}`);
       }
     if (kids.length >= 2) {
-      const sum = kids.reduce((s, k) => s + placementArea({ placement: k.placement }), 0);
-      const union = gridUnionArea({ placements: kids.map((k) => k.placement), cell });
+      // F-043 perf: gridUnionArea() over ALL children scans the parent's full
+      // bbox lattice — O(area/cell²), ~5 min for the 2000x2000km world root.
+      // By inclusion-exclusion, Σareas − union = Σpairwise − Σtriple + …, so
+      // pairSum (already accumulated above) is exact when no three children
+      // share an overlap point, and only ever OVER-reports otherwise — a
+      // genuine triple overlap still trips the pairwise G-OVERLAP check above
+      // at its own tolerance, so this never masks a real double-count.
       const A = placementArea({ placement: parent.placement });
-      if (sum - union > 0.005 * A)
-        report(`spine: G-OVERLAP ${parent.id}: children double-count ${(sum - union).toFixed(1)} (limit ${(0.005 * A).toFixed(1)})`);
+      if (pairSum > 0.005 * A)
+        report(`spine: G-OVERLAP ${parent.id}: children double-count ${pairSum.toFixed(1)} (limit ${(0.005 * A).toFixed(1)})`);
     }
     // G-COMP-ROLLUP — nodes with ≥ 1 child only (preamble note 3).
     if ((tree.childrenOf.get(parent.id) ?? []).length === 0) {

@@ -1,0 +1,82 @@
+{
+  "id": "n-stonemoor-interior",
+  "tier": "region",
+  "parentId": "n-stonemoor",
+  "title": "the Stonemoor Interior",
+  "provenance": {
+    "authored": "hand",
+    "generator": {
+      "name": "gen-world",
+      "version": "1"
+    },
+    "source": "tools/mapforge/gen-world.mjs"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "e212bbc42eb4f9bb",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [1443.1, 1333.3],
+      [1405.9, 1338.1],
+      [1385.5, 1311.4],
+      [1389.4, 1278],
+      [1385.2, 1244.5],
+      [1417.8, 1229.8],
+      [1438.8, 1212.3]
+    ],
+    "anchor": [1409.4, 1278.2]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [57.899999999999864, 125.79999999999995],
+    "originInParent": [1385.2, 1212.3]
+  },
+  "composition": {
+    "rock": 55,
+    "upland": 20,
+    "forest": 15,
+    "meadow": 10
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": 10,
+  "toleranceWhy": "mariners' report, not surveyed — a chartman's allowance, not a survey figure",
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "reported": true,
+    "summary": "Unsurveyed by any keel-borne account; the moor's far side is not even rumor."
+  },
+  "tags": ["unsurveyed-interior"],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 5514.679999999935,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [1409.4, 1278.2],
+    "resolvedSeedStreams": {
+      "terrain": "1732a8c477a51983",
+      "settlements": "be0280fa74c6054b",
+      "vegetation": "29185d33b9944bf9",
+      "names": "b49d0ee801de04cf"
+    },
+    "digest": "sha256:26db009f669b764d7022d9772aafaef18bd0a6ea447ffe3cc5af18700951ec51"
+  }
+}

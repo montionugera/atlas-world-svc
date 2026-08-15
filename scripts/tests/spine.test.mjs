@@ -94,6 +94,31 @@ test("gridIntersectionArea / gridUnionArea are exact on cell-aligned rects", () 
   assert.equal(gridIntersectionArea({ a, b: far, cell: 1.0 }), 0);
 });
 
+// F-043 perf fix: gSpineOverlapRollup's double-count check replaces the
+// O(area) gridUnionArea() scan with a running Σ of the pairwise
+// gridIntersectionArea() values it already computes in the sibling loop.
+// By inclusion-exclusion, Σareas − union = Σpairwise − Σtriple + …, so this
+// is exact whenever no three placements overlap at a shared point (the case
+// pinned here) and only ever OVER-reports otherwise — never masks a real
+// double-count. This test pins that equivalence directly against the
+// exported grid helpers, independent of the rollup function itself.
+test("pairwise Σ(gridIntersectionArea) equals Σareas − gridUnionArea when no triple overlap", () => {
+  const cell = 1.0;
+  const a = { shape: "rect", rect: { x: 0, y: 0, w: 4, h: 4 } }; // area 16
+  const b = { shape: "rect", rect: { x: 2, y: 0, w: 4, h: 4 } }; // area 16, a∩b = 8
+  const c = { shape: "rect", rect: { x: 4, y: 0, w: 4, h: 4 } }; // area 16, b∩c = 8, a∩c = 0 (touch only)
+  const kids = [a, b, c];
+  let pairSum = 0;
+  for (let i = 0; i < kids.length; i++)
+    for (let j = i + 1; j < kids.length; j++)
+      pairSum += gridIntersectionArea({ a: kids[i], b: kids[j], cell });
+  const sum = kids.reduce((s, k) => s + placementArea({ placement: k }), 0);
+  const union = gridUnionArea({ placements: kids, cell });
+  assert.equal(pairSum, 16); // a∩b=8 + b∩c=8 + a∩c=0
+  assert.equal(sum - union, 16);
+  assert.equal(pairSum, sum - union);
+});
+
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -627,6 +652,41 @@ test("G-SPINE-COMPLETE: childless trunk tiers fail; childless region/sea/ocean o
   // leaf tiers are exempt; a full tree has no errors
   const r2 = checkSpineComplete({ tree: runtimeTree() });
   assert.deepEqual(r2.errors, []);
+});
+
+// F-043 amendment: reported-world nodes (mariners' chart entries, `lore.reported:
+// true`) are deliberately childless — unsurveyed regions the spec says must stay
+// bare. checkSpineComplete predates that concept, so a childless trunk-tier node
+// still needs the same hard FAIL unless it is explicitly marked reported.
+test("G-SPINE-COMPLETE: a childless trunk-tier node WITHOUT lore.reported still errors", () => {
+  const t = runtimeTree((ns) => { ns.splice(2, 1); }); // n-shelf (playspace) childless, no lore field at all
+  const { errors, warns } = checkSpineComplete({ tree: t });
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /G-SPINE-COMPLETE: "n-shelf" \(tier playspace\) has no children/);
+  assert.ok(!warns.some((w) => w.includes("n-shelf")));
+});
+
+test("G-SPINE-COMPLETE: a childless trunk-tier node WITH lore.reported: true is a WARN, not an error", () => {
+  const t = runtimeTree((ns) => {
+    ns.splice(2, 1); // drop the site: n-shelf is now childless
+    ns[1].lore = { reported: true, summary: "charted by mariners, never surveyed" };
+  });
+  const { errors, warns } = checkSpineComplete({ tree: t });
+  assert.ok(!errors.some((e) => e.includes("n-shelf")), errors.join("\n"));
+  assert.equal(warns.filter((w) => w.includes("n-shelf")).length, 1);
+  assert.match(
+    warns.find((w) => w.includes("n-shelf")),
+    /G-SPINE-COMPLETE: "n-shelf" \(tier playspace\) is childless — reported, not surveyed; childless by design \(F-043\)/,
+  );
+});
+
+test("G-SPINE-COMPLETE: a reported trunk-tier node WITH children has no warn at all", () => {
+  const t = runtimeTree((ns) => {
+    ns[1].lore = { reported: true, summary: "charted by mariners, and later surveyed" };
+  }); // n-shelf keeps its site child (n-site-a)
+  const { errors, warns } = checkSpineComplete({ tree: t });
+  assert.ok(!errors.some((e) => e.includes("n-shelf")));
+  assert.ok(!warns.some((w) => w.includes("n-shelf")));
 });
 
 // ── F-041 P4 Task 4.9: informational authored-vs-runtime spawn geometry

@@ -118,3 +118,8 @@ docs/worldbuilding/**/*.html
 docs/research/**/*.html
 .claude/idea_backlog/**/*.html
 .claude/refined_backlog/**/*.html
+
+# F-043: gen-world CLI output — candidate spine nodes staged for panel review
+# (tools/mapforge/gen-world.mjs), never committed directly; promotion renames
+# and moves them into content/spine/nodes/ as a reviewed commit.
+content/spine/candidates/

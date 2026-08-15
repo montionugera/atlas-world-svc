@@ -165,8 +165,12 @@ export { centroid, pointInPolygon, polylineKm, alongKm, offsetKm, wrap };
 export const pat = (id, w, h, body, transform = "") =>
   `<pattern id="${id}" width="${w}" height="${h}" patternUnits="userSpaceOnUse"${transform}>${body}</pattern>`;
 
-export function patternDefs() {
-  return [
+// `includeReported` is opt-in (default false) so the ONE existing caller
+// (basin-sheet.mjs, via render-map.mjs) keeps byte-identical output —
+// parity.test.mjs pins that. The atlas sheet (F-043) is the only caller that
+// passes `includeReported: true`, for the mariners'-report hatch.
+export function patternDefs({ includeReported = false } = {}) {
+  const patterns = [
     // ice — broken horizontal shelf lines
     pat(
       "pIce",
@@ -224,7 +228,20 @@ export function patternDefs() {
       18,
       `<path d="M3,12 v-5 M6,14 v-4 M13,7 v-5 M16,9 v-4" stroke="${C.inkSoft}" stroke-width="0.8" fill="none"/>`,
     ),
-  ].join("\n");
+  ];
+  if (includeReported) {
+    // mariners' report, not surveyed — an open diagonal hatch, lighter than
+    // any of the six surveyed fills above (F-043 A1-ART-01 extension).
+    patterns.push(
+      pat(
+        "pReported",
+        7,
+        7,
+        `<path d="M0,7 L7,0" stroke="${C.ink}" stroke-width="0.45" opacity="0.5"/>`,
+      ),
+    );
+  }
+  return patterns.join("\n");
 }
 
 export function createDraft({ pxPerKm, mapLeft, mapTop }) {

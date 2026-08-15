@@ -45,5 +45,11 @@
   { "id": "e-leg-norhollow-gildmark", "kind": "leg", "from": { "node": "n-norhollow" }, "to": { "node": "n-gildmark" }, "attrs": { "canonDays": "~3 days", "roadKm": 95, "straightKm": 85 } },
   { "id": "e-leg-cindervast-rooktide", "kind": "leg", "from": { "node": "n-cindervast-town" }, "to": { "node": "n-rooktide" }, "attrs": { "canonDays": "under a week", "roadKm": 190, "straightKm": 170 } },
   { "id": "e-sea-lane", "kind": "sealane", "from": { "node": "n-gildmark" }, "to": { "feature": "f-trade-wind-far" },
-    "attrs": { "label": "the trade wind · once a year", "note": "A1 §7.2 / A1-ART-01: one arrow off the west edge with the trade wind's season written on it, and nothing else. canon.md §4 / V8: once a year merchantmen arrive on the trade wind." } }
+    "attrs": { "label": "the trade wind · once a year", "note": "A1 §7.2 / A1-ART-01: one arrow off the west edge with the trade wind's season written on it, and nothing else. canon.md §4 / V8: once a year merchantmen arrive on the trade wind." } },
+  { "id": "e-lane-coldreach", "kind": "sealane", "from": { "node": "n-gildmark" }, "to": { "feature": "f-port-tallowquay" },
+    "attrs": { "label": "the trade wind · once a year", "season": "the trade wind", "passageDays": 6,
+      "note": "The same once-a-year trade-wind voyage as e-sea-lane, its far end now charted: the merchantmen that reach Gildmark on the trade wind are the ones that tied up at Tallowquay first." } },
+  { "id": "e-lane-stonemoor-foreign", "kind": "sealane", "from": { "feature": "f-port-tallowquay" }, "to": { "feature": "f-port-netstead" },
+    "attrs": { "label": "a foreign coastal lane", "season": "reported year-round", "passageDays": 4,
+      "note": "A foreign-to-foreign coastal lane; no Gildmark keel has run it. Mariners say it runs the year round — no log from Gildmark confirms the claim." } }
 ]

@@ -1,0 +1,81 @@
+{
+  "id": "n-slateflow-coast",
+  "tier": "region",
+  "parentId": "n-stonemoor",
+  "title": "the Slateflow Coast",
+  "provenance": {
+    "authored": "hand",
+    "generator": {
+      "name": "gen-world",
+      "version": "1"
+    },
+    "source": "tools/mapforge/gen-world.mjs"
+  },
+  "frozen": false,
+  "seed": {
+    "value": "3cfbfbb9efed641c",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [1521.8, 1278],
+      [1542.1, 1309.5],
+      [1510.2, 1322.2],
+      [1502.9, 1367.2],
+      [1466, 1373],
+      [1443.1, 1333.3]
+    ],
+    "anchor": [1497.7, 1330.5]
+  },
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1,
+    "size": [99, 95],
+    "originInParent": [1443.1, 1278]
+  },
+  "composition": {
+    "rock": 55,
+    "upland": 20,
+    "forest": 15,
+    "meadow": 10
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {
+    "reported": true,
+    "summary": "A coast reported grey to the tideline where the Slateflow comes out; no chart of it was drawn ashore."
+  },
+  "tags": [],
+  "levelBand": null,
+  "derived": {
+    "areaParentUnits2": 4317.9700000000885,
+    "childAreaParentUnits2": 0,
+    "coveragePct": 0,
+    "unclaimedPct": 100,
+    "computedComposition": {},
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [1497.7, 1330.5],
+    "resolvedSeedStreams": {
+      "terrain": "9b25e15330e62068",
+      "settlements": "2d01abbf867c3a52",
+      "vegetation": "0a8187f439d8913a",
+      "names": "3ce1f1b307802bc4"
+    },
+    "digest": "sha256:d06ca6b71d3d7bcf40d9d0b9fa8be68dea653f8b1711330b4bdef4235e505aeb"
+  }
+}
