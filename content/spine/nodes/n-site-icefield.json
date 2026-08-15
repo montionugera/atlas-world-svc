@@ -17,18 +17,18 @@
   "placement": {
     "shape": "rect",
     "rect": {
-      "x": 0,
-      "y": 0,
+      "x": -400,
+      "y": -100,
       "w": 1000,
       "h": 250
     },
-    "anchor": [500, 125]
+    "anchor": [100, 25]
   },
   "interior": {
     "units": "u",
     "perParentUnit": 1,
     "size": [1000, 250],
-    "originInParent": [0, 0]
+    "originInParent": [-400, -100]
   },
   "composition": {
     "ice": 100
@@ -41,7 +41,7 @@
     {
       "id": "f-spawnpoint-icefield",
       "kind": "point",
-      "at": [500, 125],
+      "at": [100, 25],
       "attrs": {
         "role": "spawnPoint"
       }
@@ -49,7 +49,7 @@
     {
       "id": "f-hazard-freeze-icefield-1",
       "kind": "point",
-      "at": [380, 110],
+      "at": [-20, 10],
       "attrs": {
         "hazard": {
           "type": "freeze",
@@ -63,7 +63,7 @@
     {
       "id": "f-hazard-freeze-icefield-2",
       "kind": "point",
-      "at": [640, 150],
+      "at": [240, 50],
       "attrs": {
         "hazard": {
           "type": "freeze",
@@ -77,7 +77,7 @@
     {
       "id": "f-hazard-stun-icefield",
       "kind": "point",
-      "at": [500, 90],
+      "at": [100, -10],
       "attrs": {
         "hazard": {
           "type": "stun",
@@ -123,13 +123,13 @@
     "unclaimedPct": 100,
     "computedComposition": {},
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [500, 125],
+    "absoluteAnchorRoot": [100, 25],
     "resolvedSeedStreams": {
       "terrain": "bf31b65067438eb9",
       "settlements": "5c93c8b91996e527",
       "vegetation": "9142393d8663e87a",
       "names": "265c8e8448ee8bf2"
     },
-    "digest": "sha256:77567008498aee7199e1442fb9f0c15b3afbfeb1c7a37423efebd17e31ca7af6"
+    "digest": "sha256:00d433cc57c09200db75a582c9ef0df5dc90f94812f85ca2968f2f65fcb32202"
   }
 }

@@ -20,26 +20,26 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [1491.2, 515],
-      [1499.5, 534.3],
-      [1479.9, 539],
-      [1466, 547.2],
-      [1449.8, 543.1],
-      [1439.4, 530.3],
-      [1425.6, 515],
-      [1433.8, 496.3],
-      [1450.9, 488.7],
-      [1466, 477.7],
-      [1485.8, 480.6],
-      [1499.6, 495.6]
+      [298.2, 103],
+      [299.9, 106.9],
+      [296, 107.8],
+      [293.2, 109.4],
+      [290, 108.6],
+      [287.9, 106.1],
+      [285.1, 103],
+      [286.8, 99.3],
+      [290.2, 97.7],
+      [293.2, 95.5],
+      [297.2, 96.1],
+      [299.9, 99.1]
     ],
-    "anchor": [1465.6, 513.6]
+    "anchor": [293.1, 102.7]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [74, 69.50000000000006],
-    "originInParent": [1425.6, 477.7]
+    "size": [14.799999999999955, 13.900000000000006],
+    "originInParent": [285.1, 95.5]
   },
   "composition": {
     "rock": 50,
@@ -55,11 +55,11 @@
       "id": "f-reedstrand-reef",
       "kind": "line",
       "points": [
-        [1449.8, 543.1],
-        [1439.4, 530.3],
-        [1425.6, 515],
-        [1433.8, 496.3],
-        [1450.9, 488.7]
+        [290, 108.6],
+        [287.9, 106.1],
+        [285.1, 103],
+        [286.8, 99.3],
+        [290.2, 97.7]
       ],
       "attrs": {
         "note": "A white line of breakers every report puts in a different place.",
@@ -69,7 +69,7 @@
     {
       "id": "f-reedstrand-isle-1",
       "kind": "point",
-      "at": [1487.6, 527.1],
+      "at": [297.5, 105.4],
       "attrs": {
         "role": "outlying-isle",
         "name": null
@@ -78,7 +78,7 @@
     {
       "id": "f-reedstrand-isle-2",
       "kind": "point",
-      "at": [1455.3, 532.8],
+      "at": [291.1, 106.6],
       "attrs": {
         "role": "outlying-isle",
         "name": null
@@ -87,7 +87,7 @@
     {
       "id": "f-reedstrand-isle-3",
       "kind": "point",
-      "at": [1444.9, 502.4],
+      "at": [289, 100.5],
       "attrs": {
         "role": "outlying-isle",
         "name": null
@@ -111,19 +111,19 @@
   "tags": ["archipelago"],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 3495.6849999999395,
+    "areaParentUnits2": 139.71500000000015,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
     "computedComposition": {},
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [1465.6, 513.6],
+    "absoluteAnchorRoot": [293.1, 102.7],
     "resolvedSeedStreams": {
       "terrain": "b892a9addabe4d33",
       "settlements": "a228bddadce35296",
       "vegetation": "0a755bd5365c7f1b",
       "names": "67a158f51350b58d"
     },
-    "digest": "sha256:480a2e84e497e9927510f57475bae4a539a867a6eb915f70b1020b7ccd15d2df"
+    "digest": "sha256:938d5c28514cdb3e91a3f4efb288fa33b763bea5bd5d489bebf1785b77e2717f"
   }
 }

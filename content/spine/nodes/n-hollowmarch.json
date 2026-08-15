@@ -9,7 +9,7 @@
     "source": "content/maps/cluster1-geography.json"
   },
   "frozen": true,
-  "absoluteAnchor": [80, 80],
+  "absoluteAnchor": [16, 16],
   "seed": {
     "value": "48625e50e3ad4297",
     "epoch": 0,
@@ -18,20 +18,20 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [78, 66],
-      [86, 74],
-      [85, 96],
-      [78, 106],
-      [68, 100],
-      [77, 84]
+      [15.6, 13.2],
+      [17.2, 14.8],
+      [17, 19.2],
+      [15.6, 21.2],
+      [13.6, 20],
+      [15.4, 16.8]
     ],
-    "anchor": [80, 80]
+    "anchor": [16, 16]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [18, 40],
-    "originInParent": [68, 66]
+    "size": [3.5999999999999996, 8],
+    "originInParent": [13.6, 13.2]
   },
   "composition": {
     "rock": 30,
@@ -64,30 +64,30 @@
   "representsNodeId": null,
   "lore": {
     "order": 7,
-    "labelAt": [80, 80]
+    "labelAt": [16, 16]
   },
   "tags": [],
   "levelBand": [35, 48],
   "derived": {
-    "areaParentUnits2": 359,
+    "areaParentUnits2": 14.359999999999971,
     "childAreaParentUnits2": 3.2,
-    "coveragePct": 0.8913649025069639,
-    "unclaimedPct": 99.10863509749304,
+    "coveragePct": 22.284122562674142,
+    "unclaimedPct": 77.71587743732586,
     "computedComposition": {
-      "built": 6.285236768802229,
-      "meadow": 28.01782729805014,
-      "forest": 21.98217270194986,
-      "rock": 29.839554317548746,
-      "upland": 13.875208913649026
+      "built": 13.130919220055725,
+      "meadow": 28.445682451253482,
+      "forest": 21.554317548746518,
+      "rock": 25.988857938718656,
+      "upland": 10.88022284122562
     },
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [80, 80],
+    "absoluteAnchorRoot": [16, 16],
     "resolvedSeedStreams": {
       "terrain": "b40dea2ee6e81fcf",
       "settlements": "ef4c56852ca82ad5",
       "vegetation": "a8936a95791cba1c",
       "names": "dd2eaae367055c06"
     },
-    "digest": "sha256:44936062bec888a0807416df1498e0cc016615f90f47d9c382f12fef43c411bc"
+    "digest": "sha256:1201a6821f8490893fabf22779d7f00264c4c933a464c593e6cad742ce2c5c4e"
   }
 }

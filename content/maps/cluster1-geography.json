@@ -18,26 +18,26 @@
     "id": "west-coast",
     "note": "A1 §1: the basin silts its whole coast except one rock headland. The sea lies WEST of this line; the line runs north to south and then turns east along the Saltmire's seaward bar.",
     "points": [
-      [24, 0],
-      [20, 10],
-      [17, 24],
-      [15, 40],
-      [14, 56],
-      [13, 72],
-      [12, 88],
-      [12, 104],
-      [13, 118],
-      [14, 130],
-      [12, 140],
-      [9, 148],
-      [6, 155],
-      [5, 163],
-      [8, 171],
-      [14, 177],
-      [24, 182],
-      [38, 186],
-      [52, 189],
-      [66, 190]
+      [4.8, 0],
+      [4, 2],
+      [3.4, 4.8],
+      [3, 8],
+      [2.8, 11.2],
+      [2.6, 14.4],
+      [2.4, 17.6],
+      [2.4, 20.8],
+      [2.6, 23.6],
+      [2.8, 26],
+      [2.4, 28],
+      [1.8, 29.6],
+      [1.2, 31],
+      [1, 32.6],
+      [1.6, 34.2],
+      [2.8, 35.4],
+      [4.8, 36.4],
+      [7.6, 37.2],
+      [10.4, 37.8],
+      [13.2, 38]
     ]
   },
   "river": {
@@ -75,35 +75,35 @@
       }
     ],
     "points": [
-      [104, 34],
-      [102, 42],
-      [100, 50],
-      [98, 60],
-      [96, 70],
-      [94, 82],
-      [92, 94],
-      [90, 106],
-      [86, 118],
-      [88, 128],
-      [89, 140],
-      [88, 152],
-      [86, 163],
-      [84, 174],
-      [74, 176],
-      [60, 177],
-      [46, 176],
-      [32, 175],
-      [20, 174],
-      [9, 172]
+      [20.8, 6.8],
+      [20.4, 8.4],
+      [20, 10],
+      [19.6, 12],
+      [19.2, 14],
+      [18.8, 16.4],
+      [18.4, 18.8],
+      [18, 21.2],
+      [17.2, 23.6],
+      [17.6, 25.6],
+      [17.8, 28],
+      [17.6, 30.4],
+      [17.2, 32.6],
+      [16.8, 34.8],
+      [14.8, 35.2],
+      [12, 35.4],
+      [9.2, 35.2],
+      [6.4, 35],
+      [4, 34.8],
+      [1.8, 34.4]
     ],
-    "labelAt": [101, 58],
+    "labelAt": [20.2, 11.6],
     "tidalLimit": {
-      "at": [84, 174],
+      "at": [16.8, 34.8],
       "label": "head of tide",
       "note": "A1 §3.1 / §4.2 zone 3: the sea reaches Rooktide's landing and no further."
     },
     "ford": {
-      "at": [86, 118],
+      "at": [17.2, 23.6],
       "label": "the ford",
       "note": "A1 §7.1: the crossing is drawn as a ROAD symbol, not a town symbol — on a relay map it is infrastructure."
     }
@@ -113,19 +113,19 @@
     "name": "the Saltmire",
     "note": "A1 §3.1: a tidal basin of channels, mud, salt scrub and moving sandbars. No road crosses it and no keel drafts it. A1 §7.1: the channels are deliberately NOT drawn — they move.",
     "polygon": [
-      [9, 172],
-      [20, 168],
-      [34, 166],
-      [48, 168],
-      [62, 166],
-      [74, 170],
-      [86, 176],
-      [88, 186],
-      [70, 190],
-      [52, 189],
-      [38, 186],
-      [24, 182],
-      [14, 177]
+      [1.8, 34.4],
+      [4, 33.6],
+      [6.8, 33.2],
+      [9.6, 33.6],
+      [12.4, 33.2],
+      [14.8, 34],
+      [17.2, 35.2],
+      [17.6, 37.2],
+      [14, 38],
+      [10.4, 37.8],
+      [7.6, 37.2],
+      [4.8, 36.4],
+      [2.8, 35.4]
     ]
   },
   "iceEdge": {
@@ -133,13 +133,13 @@
     "note": "A1 §7.2 / A1-ART-01: the parchment ends at a hard edge along the top. The map does not pretend to know what lies past the ice; this is a sheet boundary, not a coastline.",
     "hardEdgeAtY": 0,
     "shelfLip": [
-      [62, 26],
-      [76, 30],
-      [92, 33],
-      [108, 36],
-      [124, 32],
-      [138, 28],
-      [148, 22]
+      [12.4, 5.2],
+      [15.2, 6],
+      [18.4, 6.6],
+      [21.6, 7.2],
+      [24.8, 6.4],
+      [27.6, 5.6],
+      [29.6, 4.4]
     ]
   },
   "terrainPatches": [
@@ -147,16 +147,16 @@
       "id": "eastern-hills",
       "label": "the eastern hills",
       "terrainKind": "upland",
-      "labelAt": [130, 76],
+      "labelAt": [26, 15.2],
       "note": "A1 §3.2: the east rim's old timber runs up to ore heads in the eastern hills, and Thornveil is the interfluve between the Meltwash and them. Terrain only — no settlement is named here anywhere in the corpus.",
       "polygon": [
-        [114, 58],
-        [132, 50],
-        [148, 60],
-        [148, 96],
-        [138, 106],
-        [124, 100],
-        [113, 84]
+        [22.8, 11.6],
+        [26.4, 10],
+        [29.6, 12],
+        [29.6, 19.2],
+        [27.6, 21.2],
+        [24.8, 20],
+        [22.6, 16.8]
       ]
     }
   ],
@@ -168,15 +168,15 @@
       "levelBand": [1, 10],
       "terrainKind": "river-country",
       "town": null,
-      "labelAt": [104, 90],
+      "labelAt": [20.8, 18],
       "polygon": [
-        [88, 84],
-        [100, 78],
-        [112, 84],
-        [114, 98],
-        [106, 107],
-        [94, 108],
-        [86, 98]
+        [17.6, 16.8],
+        [20, 15.6],
+        [22.4, 16.8],
+        [22.8, 19.6],
+        [21.2, 21.4],
+        [18.8, 21.6],
+        [17.2, 19.6]
       ]
     },
     {
@@ -186,14 +186,14 @@
       "levelBand": [1, 15],
       "terrainKind": "river-country",
       "town": "millcross",
-      "labelAt": [78, 130],
+      "labelAt": [15.6, 26],
       "polygon": [
-        [74, 110],
-        [92, 106],
-        [100, 116],
-        [98, 132],
-        [84, 138],
-        [72, 128]
+        [14.8, 22],
+        [18.4, 21.2],
+        [20, 23.2],
+        [19.6, 26.4],
+        [16.8, 27.6],
+        [14.4, 25.6]
       ]
     },
     {
@@ -203,17 +203,17 @@
       "levelBand": [10, 20],
       "terrainKind": "river-country",
       "town": "rooktide",
-      "labelAt": [74, 154],
+      "labelAt": [14.8, 30.8],
       "polygon": [
-        [74, 139.5],
-        [94, 137.5],
-        [100, 148],
-        [98, 166],
-        [90, 176],
-        [84, 174.5],
-        [74, 169],
-        [66, 160],
-        [66, 146]
+        [14.8, 27.9],
+        [18.8, 27.5],
+        [20, 29.6],
+        [19.6, 33.2],
+        [18, 35.2],
+        [16.8, 34.9],
+        [14.8, 33.8],
+        [13.2, 32],
+        [13.2, 29.2]
       ]
     },
     {
@@ -223,15 +223,15 @@
       "levelBand": [15, 28],
       "terrainKind": "bramble",
       "town": null,
-      "labelAt": [122, 130],
+      "labelAt": [24.4, 26],
       "polygon": [
-        [104, 108],
-        [126, 104],
-        [140, 116],
-        [142, 140],
-        [130, 158],
-        [112, 156],
-        [104, 138]
+        [20.8, 21.6],
+        [25.2, 20.8],
+        [28, 23.2],
+        [28.4, 28],
+        [26, 31.6],
+        [22.4, 31.2],
+        [20.8, 27.6]
       ]
     },
     {
@@ -241,16 +241,16 @@
       "levelBand": [25, 35],
       "terrainKind": "rim",
       "town": "embervale",
-      "labelAt": [36, 84],
+      "labelAt": [7.2, 16.8],
       "polygon": [
-        [26, 78],
-        [40, 78],
-        [44, 82],
-        [52, 96],
-        [54, 102],
-        [42, 112],
-        [28, 106],
-        [22, 92]
+        [5.2, 15.6],
+        [8, 15.6],
+        [8.8, 16.4],
+        [10.4, 19.2],
+        [10.8, 20.4],
+        [8.4, 22.4],
+        [5.6, 21.2],
+        [4.4, 18.4]
       ]
     },
     {
@@ -260,14 +260,14 @@
       "levelBand": [30, 45],
       "terrainKind": "headland",
       "town": "gildmark",
-      "labelAt": [22, 146],
+      "labelAt": [4.4, 29.2],
       "polygon": [
-        [2, 142],
-        [20, 140],
-        [30, 152],
-        [28, 164],
-        [16, 168],
-        [2, 172]
+        [0.4, 28.4],
+        [4, 28],
+        [6, 30.4],
+        [5.6, 32.8],
+        [3.2, 33.6],
+        [0.4, 34.4]
       ]
     },
     {
@@ -277,14 +277,14 @@
       "levelBand": [35, 48],
       "terrainKind": "rim",
       "town": "norhollow",
-      "labelAt": [80, 80],
+      "labelAt": [16, 16],
       "polygon": [
-        [78, 66],
-        [86, 74],
-        [85, 96],
-        [78, 106],
-        [68, 100],
-        [77, 84]
+        [15.6, 13.2],
+        [17.2, 14.8],
+        [17, 19.2],
+        [15.6, 21.2],
+        [13.6, 20],
+        [15.4, 16.8]
       ]
     },
     {
@@ -295,16 +295,16 @@
       "gradient": true,
       "terrainKind": "alkali-flat",
       "town": null,
-      "labelAt": [70, 36],
+      "labelAt": [14, 7.2],
       "polygon": [
-        [46, 44],
-        [72, 42],
-        [78, 60],
-        [76, 86],
-        [66, 96],
-        [50, 94],
-        [42, 76],
-        [42, 58]
+        [9.2, 8.8],
+        [14.4, 8.4],
+        [15.6, 12],
+        [15.2, 17.2],
+        [13.2, 19.2],
+        [10, 18.8],
+        [8.4, 15.2],
+        [8.4, 11.6]
       ],
       "note": "A1 §4.3: not a band but a gradient, deepening north. Only region in the bestiary with species in all eight level bands.",
       "gradientSegments": [
@@ -344,16 +344,16 @@
       "levelBand": [55, 70],
       "terrainKind": "ice",
       "town": null,
-      "labelAt": [112, 18],
+      "labelAt": [22.4, 3.6],
       "polygon": [
-        [61, 0],
-        [96, 0],
-        [132, 0],
-        [148, 14],
-        [140, 34],
-        [110, 39],
-        [84, 33],
-        [65, 20]
+        [12.2, 0],
+        [19.2, 0],
+        [26.4, 0],
+        [29.6, 2.8],
+        [28, 6.8],
+        [22, 7.8],
+        [16.8, 6.6],
+        [13, 4]
       ]
     },
     {
@@ -363,15 +363,15 @@
       "levelBand": [65, 80],
       "terrainKind": "upland",
       "town": "cindervast",
-      "labelAt": [33, 32],
+      "labelAt": [6.6, 6.4],
       "polygon": [
-        [27, 0],
-        [56, 0],
-        [59, 14],
-        [54, 31],
-        [40, 36],
-        [26, 25],
-        [25, 10]
+        [5.4, 0],
+        [11.2, 0],
+        [11.8, 2.8],
+        [10.8, 6.2],
+        [8, 7.2],
+        [5.2, 5],
+        [5, 2]
       ]
     }
   ],
@@ -379,7 +379,7 @@
     {
       "id": "millcross",
       "name": "Millcross",
-      "at": [86, 118],
+      "at": [17.2, 23.6],
       "zone": "millcross-ford",
       "emblem": "crossed roads over an empty bowl",
       "reason": "The only cart-crossing of the river that splits the land, and the fork of the north road",
@@ -388,7 +388,7 @@
     {
       "id": "gildmark",
       "name": "Gildmark",
-      "at": [11, 157],
+      "at": [2.2, 31.4],
       "zone": "gildmark-head",
       "emblem": "a harbour scale with one pan lower",
       "reason": "The only rock on a silted coast, next to the only water deep enough for a sea keel",
@@ -397,7 +397,7 @@
     {
       "id": "embervale",
       "name": "Embervale",
-      "at": [44, 94],
+      "at": [8.8, 18.8],
       "zone": "emberdown",
       "emblem": "a caravan wheel wreathed in ember-red",
       "reason": "Hill loam over a burning-stone seam, at the junction of the trade road and the coast spur",
@@ -406,7 +406,7 @@
     {
       "id": "norhollow",
       "name": "Norhollow",
-      "at": [74, 94],
+      "at": [14.8, 18.8],
       "zone": "hollowmarch",
       "emblem": "a hollow bell over crossed stakes",
       "reason": "Where the timber line and the ore heads both begin, at the flat's eastern edge",
@@ -415,7 +415,7 @@
     {
       "id": "rooktide",
       "name": "Rooktide",
-      "at": [84, 174],
+      "at": [16.8, 34.8],
       "zone": "rooktide-reach",
       "emblem": "a rook in flight over a rising tideline",
       "reason": "The head of tide — sea barges stop, river barges start, and cargo has to change hulls",
@@ -424,7 +424,7 @@
     {
       "id": "cindervast",
       "name": "Cindervast",
-      "at": [46, 12],
+      "at": [9.2, 2.4],
       "zone": "cindervast",
       "ruin": true,
       "emblem": "a broken crown over ash",
@@ -448,7 +448,7 @@
     {
       "id": "expedition-camp",
       "name": "the expedition camp",
-      "at": [96, 104],
+      "at": [19.2, 20.8],
       "zone": "meltwash-terrace",
       "note": "canon.md §4: the Northern Icefield lies further north past Millcross's expedition camp."
     }
@@ -461,19 +461,17 @@
       "to": "embervale",
       "weight": "trunk",
       "dashed": false,
-      "days": 2,
-      "daysLabel": "2 d",
-      "roadKm": 55,
+      "roadKm": 11,
       "labelAtIndex": 1,
       "note": "A1 §5.1: north-west off the ford, around the mire's head. canon.md §4 does not state this leg; A1 derives 2 days.",
       "points": [
-        [86, 118],
-        [80, 113],
-        [72, 110],
-        [64, 103],
-        [56, 99],
-        [48, 95],
-        [44, 94]
+        [17.2, 23.6],
+        [16, 22.6],
+        [14.4, 22],
+        [12.8, 20.6],
+        [11.2, 19.8],
+        [9.6, 19],
+        [8.8, 18.8]
       ]
     },
     {
@@ -483,21 +481,19 @@
       "to": "gildmark",
       "weight": "spur",
       "dashed": false,
-      "days": 3,
-      "daysLabel": "3 d",
-      "roadKm": 85,
+      "roadKm": 17,
       "labelAtIndex": 5,
       "note": "canon.md §4: Gildmark is about 3 days from both war towns by a coastal spur. Already past the mire when it starts.",
       "points": [
-        [44, 94],
-        [39, 102],
-        [36, 112],
-        [30, 120],
-        [27, 131],
-        [21, 139],
-        [18, 149],
-        [15, 152],
-        [11, 157]
+        [8.8, 18.8],
+        [7.8, 20.4],
+        [7.2, 22.4],
+        [6, 24],
+        [5.4, 26.2],
+        [4.2, 27.8],
+        [3.6, 29.8],
+        [3, 30.4],
+        [2.2, 31.4]
       ]
     },
     {
@@ -507,23 +503,21 @@
       "to": "coastal-spur",
       "weight": "track",
       "dashed": false,
-      "days": 3,
-      "daysLabel": "3 d to Gildmark",
-      "roadKm": 43,
+      "roadKm": 8.6,
       "throughRoute": {
         "to": "gildmark",
-        "roadKm": 95,
-        "days": 3
+        "roadKm": 19,
+        "hours": 1.5
       },
       "labelAtIndex": 2,
       "note": "A1 §5.1: the east-rim track joins the spur near Emberdown; the 3-day count is for the whole Norhollow → Gildmark run (~95 km), of which this leg is the eastern ~43 km.",
       "points": [
-        [74, 94],
-        [66, 98],
-        [58, 102],
-        [50, 104],
-        [42, 106],
-        [36, 112]
+        [14.8, 18.8],
+        [13.2, 19.6],
+        [11.6, 20.4],
+        [10, 20.8],
+        [8.4, 21.2],
+        [7.2, 22.4]
       ]
     },
     {
@@ -533,17 +527,15 @@
       "to": "norhollow",
       "weight": "track",
       "dashed": false,
-      "days": 1,
-      "daysLabel": "1 d",
-      "roadKm": 30,
+      "roadKm": 6,
       "labelAtIndex": 2,
       "note": "canon.md §4: sister towns roughly a day's ride apart; wartime crossing is under a day, which is exactly why the front is so lethal.",
       "points": [
-        [44, 94],
-        [52, 91],
-        [60, 90],
-        [68, 91],
-        [74, 94]
+        [8.8, 18.8],
+        [10.4, 18.2],
+        [12, 18],
+        [13.6, 18.2],
+        [14.8, 18.8]
       ]
     },
     {
@@ -553,18 +545,16 @@
       "to": "rooktide",
       "weight": "spur",
       "dashed": false,
-      "days": 2,
-      "daysLabel": "2 d",
-      "roadKm": 60,
+      "roadKm": 12,
       "labelAtIndex": 2,
       "note": "canon.md §4: Rooktide sits inland, south of Millcross, about 2 days. Follows the river's south bank.",
       "points": [
-        [86, 118],
-        [92, 127],
-        [94, 138],
-        [93, 150],
-        [90, 162],
-        [84, 174]
+        [17.2, 23.6],
+        [18.4, 25.4],
+        [18.8, 27.6],
+        [18.6, 30],
+        [18, 32.4],
+        [16.8, 34.8]
       ]
     },
     {
@@ -574,16 +564,14 @@
       "to": "expedition-camp",
       "weight": "track",
       "dashed": false,
-      "days": 0.5,
-      "daysLabel": "½ d",
-      "roadKm": 17,
+      "roadKm": 3.4,
       "labelAtIndex": 1,
       "note": "A1 §5.3 quotes atlas-frontier's own placement — north-east of the ford, one morning's walk.",
       "points": [
-        [86, 118],
-        [90, 112],
-        [94, 107],
-        [96, 104]
+        [17.2, 23.6],
+        [18, 22.4],
+        [18.8, 21.4],
+        [19.2, 20.8]
       ]
     },
     {
@@ -593,19 +581,17 @@
       "to": "northern-icefield",
       "weight": "track",
       "dashed": false,
-      "days": null,
-      "daysLabel": null,
       "roadKm": null,
       "labelAtIndex": 3,
       "note": "A1 §2: the north-east fork runs up the river terrace to the camp, Thornveil's edge and the ice. No day-count is stated anywhere in the corpus, so none is lettered.",
       "points": [
-        [96, 104],
-        [102, 93],
-        [108, 82],
-        [110, 70],
-        [110, 58],
-        [109, 46],
-        [107, 36]
+        [19.2, 20.8],
+        [20.4, 18.6],
+        [21.6, 16.4],
+        [22, 14],
+        [22, 11.6],
+        [21.8, 9.2],
+        [21.4, 7.2]
       ]
     },
     {
@@ -615,20 +601,18 @@
       "to": "cindervast",
       "weight": "track",
       "dashed": true,
-      "days": null,
-      "daysLabel": "not maintained",
       "roadKm": null,
       "labelAtIndex": 4,
       "note": "A1 §7.1: drawn as a dashed line because it is not maintained. A1 §2: the only pass north runs behind Cindervast's shoulder. No leg day-count is stated; the walking table carries the end-to-end figure instead.",
       "points": [
-        [66, 88],
-        [66, 76],
-        [64, 62],
-        [60, 52],
-        [56, 42],
-        [52, 32],
-        [48, 22],
-        [46, 18]
+        [13.2, 17.6],
+        [13.2, 15.2],
+        [12.8, 12.4],
+        [12, 10.4],
+        [11.2, 8.4],
+        [10.4, 6.4],
+        [9.6, 4.4],
+        [9.2, 3.6]
       ]
     }
   ],
@@ -653,122 +637,122 @@
     "towers": [
       {
         "id": "tower-01",
-        "at": [11, 157],
+        "at": [2.2, 31.4],
         "town": "gildmark"
       },
       {
         "id": "tower-02",
-        "at": [16.2, 150.8]
+        "at": [3.2, 30.2]
       },
       {
         "id": "tower-03",
-        "at": [19.6, 143.8]
+        "at": [3.9, 28.8]
       },
       {
         "id": "tower-04",
-        "at": [22.8, 136.6]
+        "at": [4.6, 27.3]
       },
       {
         "id": "tower-05",
-        "at": [27.3, 130]
+        "at": [5.5, 26]
       },
       {
         "id": "tower-06",
-        "at": [29.4, 122.2]
+        "at": [5.9, 24.4]
       },
       {
         "id": "tower-07",
-        "at": [33.5, 115.4]
+        "at": [6.7, 23.1]
       },
       {
         "id": "tower-08",
-        "at": [37.1, 108.4]
+        "at": [7.4, 21.7]
       },
       {
         "id": "tower-09",
-        "at": [39.7, 100.8]
+        "at": [7.9, 20.2]
       },
       {
         "id": "tower-10",
-        "at": [44, 94],
+        "at": [8.8, 18.8],
         "town": "embervale"
       },
       {
         "id": "tower-11",
-        "at": [51.6, 96.8]
+        "at": [10.3, 19.4]
       },
       {
         "id": "tower-12",
-        "at": [58.9, 100.5]
+        "at": [11.8, 20.1]
       },
       {
         "id": "tower-13",
-        "at": [65.9, 104.6]
+        "at": [13.2, 20.9]
       },
       {
         "id": "tower-14",
-        "at": [72, 110]
+        "at": [14.4, 22]
       },
       {
         "id": "tower-15",
-        "at": [79.7, 112.9]
+        "at": [15.9, 22.6]
       },
       {
         "id": "tower-16",
-        "at": [86, 118],
+        "at": [17.2, 23.6],
         "town": "millcross"
       },
       {
         "id": "tower-17",
-        "at": [90.7, 125.1]
+        "at": [18.1, 25]
       },
       {
         "id": "tower-18",
-        "at": [93.1, 133.2]
+        "at": [18.6, 26.6]
       },
       {
         "id": "tower-19",
-        "at": [93.7, 141.6]
+        "at": [18.7, 28.3]
       },
       {
         "id": "tower-20",
-        "at": [93, 150.1]
+        "at": [18.6, 30]
       },
       {
         "id": "tower-21",
-        "at": [90.9, 158.4]
+        "at": [18.2, 31.7]
       },
       {
         "id": "tower-22",
-        "at": [87.8, 166.4]
+        "at": [17.6, 33.3]
       },
       {
         "id": "tower-23",
-        "at": [84, 174],
+        "at": [16.8, 34.8],
         "town": "rooktide"
       },
       {
         "id": "tower-24",
-        "at": [51.3, 91.2]
+        "at": [10.3, 18.2]
       },
       {
         "id": "tower-25",
-        "at": [59.1, 90.1]
+        "at": [11.8, 18]
       },
       {
         "id": "tower-26",
-        "at": [66.9, 90.9]
+        "at": [13.4, 18.2]
       },
       {
         "id": "tower-27",
-        "at": [74, 94],
+        "at": [14.8, 18.8],
         "town": "norhollow"
       }
     ],
     "detachedTowers": [
       {
         "id": "tower-cindervast",
-        "at": [46, 12],
+        "at": [9.2, 2.4],
         "town": "cindervast",
         "note": "A1 §7.2: the Bellfaith has no tower at Cindervast and will not draw a city it does not ring — the six-town count is towns, not standing towers. Drawn hollow, unjoined."
       }
@@ -782,58 +766,51 @@
       {
         "from": "embervale",
         "to": "norhollow",
-        "canonDays": "~1 day's ride",
-        "roadKm": 30,
-        "straightKm": 30
+        "roadKm": 6,
+        "straightKm": 6
       },
       {
         "from": "millcross",
         "to": "rooktide",
-        "canonDays": "~2 days",
-        "roadKm": 60,
-        "straightKm": 55
+        "roadKm": 12,
+        "straightKm": 11
       },
       {
         "from": "millcross",
         "to": "embervale",
-        "canonDays": "2 days (A1-derived)",
-        "roadKm": 55,
-        "straightKm": 50
+        "roadKm": 11,
+        "straightKm": 10
       },
       {
         "from": "embervale",
         "to": "gildmark",
-        "canonDays": "~3 days",
-        "roadKm": 85,
-        "straightKm": 75
+        "roadKm": 17,
+        "straightKm": 15
       },
       {
         "from": "millcross",
         "to": "gildmark",
-        "canonDays": "4–5 days",
-        "roadKm": 140,
-        "straightKm": 85
+        "roadKm": 28,
+        "straightKm": 17
       },
       {
         "from": "norhollow",
         "to": "gildmark",
-        "canonDays": "~3 days",
-        "roadKm": 95,
-        "straightKm": 85
+        "roadKm": 19,
+        "straightKm": 17
       },
       {
         "from": "cindervast",
         "to": "rooktide",
-        "canonDays": "under a week",
-        "roadKm": 190,
-        "straightKm": 170
+        "roadKm": 38,
+        "straightKm": 34
       }
     ]
   },
   "seaLane": {
     "note": "A1 §7.2 / A1-ART-01: one arrow off the west edge with the trade wind's season written on it, and nothing else. canon.md §4 / V8: once a year merchantmen arrive on the trade wind.",
-    "from": [11, 157],
-    "to": [-6, 148],
+    "from": [2.2, 31.4],
+    "to": [-1.2, 29.6],
     "label": "the trade wind · once a year"
   },
   "sheet": {

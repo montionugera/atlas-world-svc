@@ -19,15 +19,15 @@
     "rect": {
       "x": 0,
       "y": 0,
-      "w": 200,
-      "h": 200
+      "w": 1000,
+      "h": 1000
     },
-    "anchor": [100, 100]
+    "anchor": [500, 500]
   },
   "interior": {
     "units": "u",
     "perParentUnit": 1,
-    "size": [200, 200],
+    "size": [1000, 1000],
     "originInParent": [0, 0]
   },
   "composition": {
@@ -47,7 +47,7 @@
     {
       "id": "f-player-spawn",
       "kind": "point",
-      "at": [100, 100],
+      "at": [500, 500],
       "attrs": {
         "role": "playerSpawn",
         "inert": true
@@ -74,24 +74,24 @@
   "tags": ["runtime-only"],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 40000,
+    "areaParentUnits2": 1000000,
     "childAreaParentUnits2": 465000,
-    "coveragePct": 1162.5,
-    "unclaimedPct": -1062.5,
+    "coveragePct": 46.5,
+    "unclaimedPct": 53.5,
     "computedComposition": {
-      "ice": 625,
-      "meadow": 202.5,
-      "built": 22.5,
-      "bramble": 312.5
+      "ice": 25,
+      "meadow": 55.18000000000001,
+      "built": 7.32,
+      "bramble": 12.5
     },
-    "rollupVerdict": "CHECKED",
-    "absoluteAnchorRoot": [100, 100],
+    "rollupVerdict": "ASSERTED",
+    "absoluteAnchorRoot": [500, 500],
     "resolvedSeedStreams": {
       "terrain": "b90ab6488dd8b04f",
       "settlements": "ee7dd4352de4e75f",
       "vegetation": "56bcfc50c7b9c5cb",
       "names": "9f975389a0997c60"
     },
-    "digest": "sha256:9931cc9f62d3e2a0c0dc1fa6b06110d43886cad50033a830a4e7b1f6c1aeb10e"
+    "digest": "sha256:9686344c9b7019788c013cf4150066c3dad5fe7795ba29a15e694e20495486ae"
   }
 }

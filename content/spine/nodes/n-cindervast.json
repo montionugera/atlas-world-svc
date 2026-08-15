@@ -9,7 +9,7 @@
     "source": "content/maps/cluster1-geography.json"
   },
   "frozen": true,
-  "absoluteAnchor": [40, 20],
+  "absoluteAnchor": [8, 4],
   "seed": {
     "value": "bd82fd764b4bc799",
     "epoch": 0,
@@ -18,21 +18,21 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [27, 0],
-      [56, 0],
-      [59, 14],
-      [54, 31],
-      [40, 36],
-      [26, 25],
-      [25, 10]
+      [5.4, 0],
+      [11.2, 0],
+      [11.8, 2.8],
+      [10.8, 6.2],
+      [8, 7.2],
+      [5.2, 5],
+      [5, 2]
     ],
-    "anchor": [40, 20]
+    "anchor": [8, 4]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [34, 36],
-    "originInParent": [25, 0]
+    "size": [6.800000000000001, 7.2],
+    "originInParent": [5, 0]
   },
   "composition": {
     "upland": 44,
@@ -65,30 +65,30 @@
   "representsNodeId": null,
   "lore": {
     "order": 10,
-    "labelAt": [33, 32]
+    "labelAt": [6.6, 6.4]
   },
   "tags": [],
   "levelBand": [65, 80],
   "derived": {
-    "areaParentUnits2": 995,
+    "areaParentUnits2": 39.80000000000002,
     "childAreaParentUnits2": 3.2,
-    "coveragePct": 0.32160804020100503,
-    "unclaimedPct": 99.678391959799,
+    "coveragePct": 8.040201005025123,
+    "unclaimedPct": 91.95979899497488,
     "computedComposition": {
-      "ash": 14.064321608040203,
-      "built": 2.0900502512562813,
-      "rock": 29.98713567839196,
-      "upland": 43.89065326633166,
-      "meadow": 9.967839195979899
+      "ash": 15.608040201005025,
+      "built": 4.251256281407034,
+      "rock": 29.678391959798994,
+      "upland": 41.266331658291456,
+      "meadow": 9.195979899497488
     },
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [40, 20],
+    "absoluteAnchorRoot": [8, 4],
     "resolvedSeedStreams": {
       "terrain": "a8a42758e207c967",
       "settlements": "59a62804116a9de1",
       "vegetation": "d294ef0042526a9d",
       "names": "866aa1759c77c621"
     },
-    "digest": "sha256:fa67bbd9380e6e7fdfc1e9c623f5b5b531dd3fd42b8b1bc0a6bae33574d73ba0"
+    "digest": "sha256:8c83d03a79d1e8c3bfd9471a7a516bac9f017579738bed4a0c8f22126dbe9e31"
   }
 }

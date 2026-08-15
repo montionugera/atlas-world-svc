@@ -1,42 +1,41 @@
 {
-  "id": "n-embervale",
+  "id": "n-millcross",
   "tier": "town",
-  "parentId": "n-emberdown",
-  "title": "Embervale",
+  "parentId": "n-millcross-ford",
+  "title": "Millcross",
   "provenance": {
     "authored": "hand",
     "generator": null,
     "source": "content/maps/cluster1-geography.json"
   },
   "frozen": true,
-  "absoluteAnchor": [8.8, 18.8],
+  "absoluteAnchor": [86, 118],
   "seed": {
-    "value": "5f0f56025350919f",
+    "value": "dbcf5119861b0417",
     "epoch": 0,
     "why": null
   },
   "placement": {
     "shape": "rect",
     "rect": {
-      "x": 7.8,
-      "y": 18,
-      "w": 2,
+      "x": 84.9,
+      "y": 117.2,
+      "w": 2.2,
       "h": 1.6
     },
-    "anchor": [8.8, 18.8]
+    "anchor": [86, 118]
   },
   "interior": {
     "units": "u",
     "perParentUnit": 100,
-    "size": [200, 160],
-    "originInParent": [7.8, 18],
-    "anchorInInterior": [100, 80]
+    "size": [220, 160],
+    "originInParent": [84.9, 117.2],
+    "anchorInInterior": [110, 80]
   },
   "composition": {
-    "built": 40,
-    "meadow": 34,
-    "rock": 14,
-    "forest": 12
+    "meadow": 63,
+    "built": 28,
+    "river": 9
   },
   "interstitial": null,
   "interstitialUnsurveyed": false,
@@ -54,27 +53,27 @@
   },
   "representsNodeId": null,
   "lore": {
-    "order": 3,
-    "emblem": "a caravan wheel wreathed in ember-red",
-    "reason": "Hill loam over a burning-stone seam, at the junction of the trade road and the coast spur",
-    "labelAnchor": "west"
+    "order": 1,
+    "emblem": "crossed roads over an empty bowl",
+    "reason": "The only cart-crossing of the river that splits the land, and the fork of the north road",
+    "labelAnchor": "east"
   },
   "tags": [],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 3.2,
+    "areaParentUnits2": 3.5200000000000005,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
     "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [8.8, 18.8],
+    "rollupVerdict": "CHECKED",
+    "absoluteAnchorRoot": [86, 118],
     "resolvedSeedStreams": {
-      "terrain": "75544ba30636faf7",
-      "settlements": "afa1aa9898873d3b",
-      "vegetation": "4deed63d3178e18f",
-      "names": "f70d053d5b1b0f8b"
+      "terrain": "c579f922981c528d",
+      "settlements": "90d0166357877d7c",
+      "vegetation": "d53b1f3356234a93",
+      "names": "5a6e087d2bc90827"
     },
-    "digest": "sha256:7c6c35bd747b1f2cc33be01bcad414e2c43f2ec20218d6bece177341192c6ea7"
+    "digest": "sha256:c456f92be5e50c5bcaecb7266e19e9b02680e06d1321f89ee8a0537a1ba8fc40"
   }
 }

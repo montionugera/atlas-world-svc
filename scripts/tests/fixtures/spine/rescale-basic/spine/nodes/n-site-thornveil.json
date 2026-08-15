@@ -17,18 +17,18 @@
   "placement": {
     "shape": "rect",
     "rect": {
-      "x": 50,
-      "y": -150,
+      "x": 750,
+      "y": 250,
       "w": 250,
       "h": 500
     },
-    "anchor": [175, 100]
+    "anchor": [875, 500]
   },
   "interior": {
     "units": "u",
     "perParentUnit": 1,
     "size": [250, 500],
-    "originInParent": [50, -150]
+    "originInParent": [750, 250]
   },
   "composition": {
     "bramble": 100
@@ -41,7 +41,7 @@
     {
       "id": "f-spawnpoint-thornveil",
       "kind": "point",
-      "at": [175, 100],
+      "at": [875, 500],
       "attrs": {
         "role": "spawnPoint"
       }
@@ -106,13 +106,13 @@
     "unclaimedPct": 100,
     "computedComposition": {},
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [175, 100],
+    "absoluteAnchorRoot": [875, 500],
     "resolvedSeedStreams": {
       "terrain": "304be8c712c8be17",
       "settlements": "f74ac48293f23836",
       "vegetation": "636d0363d47b8cd1",
       "names": "652dc9ac6aff4917"
     },
-    "digest": "sha256:c2b060aee3c7c6a617f5be958a7415106576a01fd389d4debc3fd91cfd970857"
+    "digest": "sha256:48e8fcabed5611ecd2a136edb93b3fb4633a618939a04448ff8aa547b36066f2"
   }
 }

@@ -2,35 +2,35 @@
 id: atlas-frontier
 title: "Atlas Frontier"
 world:
-  width: 1000
-  height: 1000
+  width: 200
+  height: 200
 playerSpawn:
-  x: 500
-  y: 500
+  x: 100
+  y: 100
 regions:
   - id: region-spawn-meadow
     title: "Spawn Meadow"
-    bounds: { x: 350, y: 350, width: 300, height: 300 }
-    spawnPoint: { x: 500, y: 500 }
+    bounds: { x: -50, y: -50, width: 300, height: 300 }
+    spawnPoint: { x: 100, y: 100 }
   - id: region-icefield
     title: "Northern Icefield"
-    bounds: { x: 0, y: 0, width: 1000, height: 250 }
-    spawnPoint: { x: 500, y: 125 }
+    bounds: { x: -400, y: -100, width: 1000, height: 250 }
+    spawnPoint: { x: 100, y: 25 }
   - id: region-thornveil
     title: "Thornveil"
-    bounds: { x: 750, y: 250, width: 250, height: 500 }
-    spawnPoint: { x: 875, y: 500 }
+    bounds: { x: 50, y: -150, width: 250, height: 500 }
+    spawnPoint: { x: 175, y: 100 }
 zoneHazards:
-  - { type: freeze, x: 380, y: 110, radius: 60, value: 4, interval: 1000, duration: 2000, regionId: region-icefield }
-  - { type: freeze, x: 640, y: 150, radius: 55, value: 4, interval: 1000, duration: 2000, regionId: region-icefield }
-  - { type: stun, x: 500, y: 90, radius: 45, value: 1, interval: 1500, duration: 800, castTime: 400, regionId: region-icefield }
+  - { type: freeze, x: -20, y: 10, radius: 60, value: 4, interval: 1000, duration: 2000, regionId: region-icefield }
+  - { type: freeze, x: 240, y: 50, radius: 55, value: 4, interval: 1000, duration: 2000, regionId: region-icefield }
+  - { type: stun, x: 100, y: -10, radius: 45, value: 1, interval: 1500, duration: 800, castTime: 400, regionId: region-icefield }
 mobSpawnAreas:
-  - { id: meadow_wilds, x: 400, y: 400, width: 200, height: 200, mobType: balanced, count: 3, regionId: region-spawn-meadow }
-  - { id: icefield_stoneguard, x: 300, y: 40, width: 400, height: 170, mobType: defensive, count: 2, spawnIntervalMs: 8000, regionId: region-icefield }
-  - { id: thornveil_skirmishers, x: 790, y: 320, width: 180, height: 360, mobType: spear_thrower, count: 4, regionId: region-thornveil }
-  - { id: thornveil_route_stalkers, x: 760, y: 300, width: 110, height: 180, mobType: bramble_stalker, count: 2, regionId: region-thornveil }
-  - { id: thornveil_route_spearlings, x: 760, y: 520, width: 110, height: 180, mobType: veil_spearling, count: 2, regionId: region-thornveil }
-  - { id: thornveil_interior, x: 890, y: 400, width: 95, height: 160, mobType: bramble_drake, count: 1, regionId: region-thornveil }
+  - { id: meadow_wilds, x: 0, y: 0, width: 200, height: 200, mobType: balanced, count: 3, regionId: region-spawn-meadow }
+  - { id: icefield_stoneguard, x: -100, y: -60, width: 400, height: 170, mobType: defensive, count: 2, spawnIntervalMs: 8000, regionId: region-icefield }
+  - { id: thornveil_skirmishers, x: 90, y: -80, width: 180, height: 360, mobType: spear_thrower, count: 4, regionId: region-thornveil }
+  - { id: thornveil_route_stalkers, x: 60, y: -100, width: 110, height: 180, mobType: bramble_stalker, count: 2, regionId: region-thornveil }
+  - { id: thornveil_route_spearlings, x: 60, y: 120, width: 110, height: 180, mobType: veil_spearling, count: 2, regionId: region-thornveil }
+  - { id: thornveil_interior, x: 190, y: 0, width: 95, height: 160, mobType: bramble_drake, count: 1, regionId: region-thornveil }
 links:
   - region-spawn-meadow
   - region-icefield

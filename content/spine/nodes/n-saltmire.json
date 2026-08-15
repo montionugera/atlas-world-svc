@@ -17,27 +17,27 @@
   "placement": {
     "shape": "polygon",
     "points": [
-      [9, 172],
-      [20, 168],
-      [34, 166],
-      [48, 168],
-      [62, 166],
-      [74, 170],
-      [86, 176],
-      [88, 186],
-      [70, 190],
-      [52, 189],
-      [38, 186],
-      [24, 182],
-      [14, 177]
+      [1.8, 34.4],
+      [4, 33.6],
+      [6.8, 33.2],
+      [9.6, 33.6],
+      [12.4, 33.2],
+      [14.8, 34],
+      [17.2, 35.2],
+      [17.6, 37.2],
+      [14, 38],
+      [10.4, 37.8],
+      [7.6, 37.2],
+      [4.8, 36.4],
+      [2.8, 35.4]
     ],
-    "anchor": [50, 178]
+    "anchor": [10, 35.6]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [79, 24],
-    "originInParent": [9, 166]
+    "size": [15.8, 4.799999999999997],
+    "originInParent": [1.8, 33.2]
   },
   "composition": {
     "marsh": 58,
@@ -64,24 +64,24 @@
   "lore": {
     "geoId": "the-saltmire",
     "note": "A1 §3.1: a tidal basin of channels, mud, salt scrub and moving sandbars. No road crosses it and no keel drafts it. A1 §7.1: the channels are deliberately NOT drawn — they move.",
-    "labelAt": [50, 178]
+    "labelAt": [10, 35.6]
   },
   "tags": [],
   "levelBand": null,
   "derived": {
-    "areaParentUnits2": 1325.5,
+    "areaParentUnits2": 53.019999999999996,
     "childAreaParentUnits2": 0,
     "coveragePct": 0,
     "unclaimedPct": 100,
     "computedComposition": {},
     "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [50, 178],
+    "absoluteAnchorRoot": [10, 35.6],
     "resolvedSeedStreams": {
       "terrain": "6a51ceff9e9b3d6a",
       "settlements": "186056b83a75f47e",
       "vegetation": "e018b751ecc10589",
       "names": "11d56f680a7488dc"
     },
-    "digest": "sha256:ba6adc8c1dea51dd3ff8264d9662616a12993448789519f50bbac568eef50a31"
+    "digest": "sha256:65a0b68d71b3da5125265559541c17140730ee299d1b87a89d7e64c05a927aaf"
   }
 }

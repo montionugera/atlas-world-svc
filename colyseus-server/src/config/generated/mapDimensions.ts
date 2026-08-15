@@ -2,8 +2,8 @@
 // Source: content/spine/nodes/* (runtime tree: runtime.mapIds x interior.size).
 // Do not edit by hand — regenerate with: node scripts/check_spine_emit.mjs --write
 export const GENERATED_MAP_DIMENSIONS: Record<string, { width: number; height: number }> = {
-  'map-01-sector-a': { width: 1000, height: 1000 },
-  'map-for-play': { width: 1000, height: 1000 },
+  'map-01-sector-a': { width: 200, height: 200 },
+  'map-for-play': { width: 200, height: 200 },
   'map-for-test-deflect': { width: 100, height: 100 },
   'map-for-test-projectile': { width: 1000, height: 1000 },
 }
