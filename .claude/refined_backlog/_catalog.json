@@ -508,8 +508,9 @@
     "title": "storybook Maps tab: serve game-client/assets/art/maps (cluster1-world, atlas-world) with pan/zoom in asset-storybook, honoring the new every-artifact-observable rule",
     "from_idea": "I-094",
     "created_at": "2026-08-15T07:42:33.493281+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-08-15T07:42:38.068848+00:00"
   }
 ]
