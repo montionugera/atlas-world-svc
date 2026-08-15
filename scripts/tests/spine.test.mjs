@@ -654,6 +654,41 @@ test("G-SPINE-COMPLETE: childless trunk tiers fail; childless region/sea/ocean o
   assert.deepEqual(r2.errors, []);
 });
 
+// F-043 amendment: reported-world nodes (mariners' chart entries, `lore.reported:
+// true`) are deliberately childless — unsurveyed regions the spec says must stay
+// bare. checkSpineComplete predates that concept, so a childless trunk-tier node
+// still needs the same hard FAIL unless it is explicitly marked reported.
+test("G-SPINE-COMPLETE: a childless trunk-tier node WITHOUT lore.reported still errors", () => {
+  const t = runtimeTree((ns) => { ns.splice(2, 1); }); // n-shelf (playspace) childless, no lore field at all
+  const { errors, warns } = checkSpineComplete({ tree: t });
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /G-SPINE-COMPLETE: "n-shelf" \(tier playspace\) has no children/);
+  assert.ok(!warns.some((w) => w.includes("n-shelf")));
+});
+
+test("G-SPINE-COMPLETE: a childless trunk-tier node WITH lore.reported: true is a WARN, not an error", () => {
+  const t = runtimeTree((ns) => {
+    ns.splice(2, 1); // drop the site: n-shelf is now childless
+    ns[1].lore = { reported: true, summary: "charted by mariners, never surveyed" };
+  });
+  const { errors, warns } = checkSpineComplete({ tree: t });
+  assert.ok(!errors.some((e) => e.includes("n-shelf")), errors.join("\n"));
+  assert.equal(warns.filter((w) => w.includes("n-shelf")).length, 1);
+  assert.match(
+    warns.find((w) => w.includes("n-shelf")),
+    /G-SPINE-COMPLETE: "n-shelf" \(tier playspace\) is childless — reported, not surveyed; childless by design \(F-043\)/,
+  );
+});
+
+test("G-SPINE-COMPLETE: a reported trunk-tier node WITH children has no warn at all", () => {
+  const t = runtimeTree((ns) => {
+    ns[1].lore = { reported: true, summary: "charted by mariners, and later surveyed" };
+  }); // n-shelf keeps its site child (n-site-a)
+  const { errors, warns } = checkSpineComplete({ tree: t });
+  assert.ok(!errors.some((e) => e.includes("n-shelf")));
+  assert.ok(!warns.some((w) => w.includes("n-shelf")));
+});
+
 // ── F-041 P4 Task 4.9: informational authored-vs-runtime spawn geometry
 // report (never-FAIL) ───────────────────────────────────────────────────
 test("parseRuntimeSpawnRects extracts all 8 runtime rects from the live mapConfig.ts (drift pin)", () => {

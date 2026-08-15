@@ -20,6 +20,15 @@
 // F-043's promotion seeded 4 continents with no region children yet, and
 // that trips the SPINE completeness gate, not the story one. See the test
 // below for the exact pin.
+//
+// F-043 gate amendment (this commit): those 4 continents
+// (n-brightfall, n-driftholt, n-reedstrand, n-rimewall-cap) are mariners'
+// chart entries (`lore.reported: true`) — unsurveyed by spec, so childless is
+// correct, not an outstanding gap. checkSpineComplete now recognizes
+// lore.reported and steps a childless trunk-tier node down from FAIL to WARN
+// instead of erroring. The gate is green again; the test below now pins a
+// clean exit 0 with zero FAILs, and pins the 4 new WARN lines by exact text
+// so the reported-childless state stays covered.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -99,14 +108,15 @@ test("content gate is green on the real tree (no --require-complete)", () => {
 // entirely from spine-completeness, a different gate. Pinned by exact FAIL
 // count and exact text so a real regression (a 5th failure, a changed id, or
 // a re-opened orphan) still fails this test loudly.
-test("content gate --require-complete: no story orphans remain after Undertow Task 7 (F-043's 4 childless continents are the only expected failures)", () => {
+test("content gate --require-complete: no story orphans remain, and F-043's 4 reported continents are WARNs not failures", () => {
   const { status, output } = run("scripts/check_content.mjs", ["--require-complete"]);
-  assert.equal(status, 1, `expected exit 1 (4 known G-SPINE-COMPLETE continent-empty failures from F-043), got ${status}:\n${output}`);
-  assert.match(output, /44 nodes, 4 failures/);
-  assert.match(output, /FAIL {2}G-SPINE-COMPLETE: "n-brightfall" \(tier continent\) has no children — a continent may not be empty under --require-complete/);
-  assert.match(output, /FAIL {2}G-SPINE-COMPLETE: "n-driftholt" \(tier continent\) has no children — a continent may not be empty under --require-complete/);
-  assert.match(output, /FAIL {2}G-SPINE-COMPLETE: "n-reedstrand" \(tier continent\) has no children — a continent may not be empty under --require-complete/);
-  assert.match(output, /FAIL {2}G-SPINE-COMPLETE: "n-rimewall-cap" \(tier continent\) has no children — a continent may not be empty under --require-complete/);
+  assert.equal(status, 0, `expected exit 0 (the 4 F-043 continents are reported-childless WARNs, not FAILs), got ${status}:\n${output}`);
+  assert.match(output, /44 nodes, 0 failures/);
+  assert.doesNotMatch(output, /^FAIL /m);
+  assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-brightfall" \(tier continent\) is childless — reported, not surveyed; childless by design \(F-043\)/);
+  assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-driftholt" \(tier continent\) is childless — reported, not surveyed; childless by design \(F-043\)/);
+  assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-reedstrand" \(tier continent\) is childless — reported, not surveyed; childless by design \(F-043\)/);
+  assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-rimewall-cap" \(tier continent\) is childless — reported, not surveyed; childless by design \(F-043\)/);
   assert.doesNotMatch(output, /character ".*" is referenced by no quest, faction, event, or dialogue \(orphan\)/);
   assert.doesNotMatch(output, /faction ".*" is referenced by no quest, character, or event \(orphan\)/);
 });

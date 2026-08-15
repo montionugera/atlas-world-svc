@@ -891,9 +891,15 @@ export function checkSpineComplete({ tree }) {
   for (const [id, node] of tree.byId) {
     if (LEAF_TIERS.has(node.tier)) continue;
     if ((tree.childrenOf.get(id) ?? []).length > 0) continue;
-    if (TRUNK_TIERS.has(node.tier))
-      errors.push(`G-SPINE-COMPLETE: "${id}" (tier ${node.tier}) has no children — a ${node.tier} may not be empty under --require-complete`);
-    else
+    if (TRUNK_TIERS.has(node.tier)) {
+      // F-043: a reported-world node (mariners' chart entry, lore.reported ===
+      // true) is deliberately childless — unsurveyed, by spec — so it steps
+      // down to a WARN instead of the hard FAIL every other empty trunk gets.
+      if (node.lore?.reported === true)
+        warns.push(`G-SPINE-COMPLETE: "${id}" (tier ${node.tier}) is childless — reported, not surveyed; childless by design (F-043)`);
+      else
+        errors.push(`G-SPINE-COMPLETE: "${id}" (tier ${node.tier}) has no children — a ${node.tier} may not be empty under --require-complete`);
+    } else
       warns.push(`G-SPINE-COMPLETE: "${id}" (tier ${node.tier}) has no children yet (region/sea tiling is out of scope in 1.8 — reported, not failed)`);
   }
   return { errors, warns };
