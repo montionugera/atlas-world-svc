@@ -19,6 +19,11 @@ import {
   pointInPolygon,
   wrap,
   createDraft,
+  centroid,
+  polylineKm,
+  alongKm,
+  patternDefs,
+  curveLabel,
 } from "./draft.mjs";
 import { loadSpine, buildTree, resolveToRoot } from "../../../scripts/lib/spine.mjs";
 
@@ -112,6 +117,62 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   if (laneFrom) checkFrame("sea-lane tail", [laneFrom]);
   // laneFar is declared offSheet — exempt by design (it leaves the sheet).
 
+  // ---- F-043: the wider world — tier-1 children of n-atlas beyond the -------
+  // basin pair (n-cluster1/n-westsea already joined above). Sorted by id for
+  // determinism, same rule the basin block's town list uses.
+  const worldChildren = [...tree.byId.values()]
+    .filter((n) => n.parentId === "n-atlas" && n.id !== "n-cluster1" && n.id !== "n-westsea")
+    .sort((a, b) => (a.id < b.id ? -1 : 1));
+  const worldLand = worldChildren.filter((n) => n.tier === "continent");
+  const worldOceans = worldChildren.filter((n) => n.tier === "ocean");
+
+  // self-check: pairwise coast-crossing, over every tier-1 land polygon
+  // (the surveyed basin's n-cluster1 counts as land too). Reuses the proper-
+  // crossing test scripts/lib/spine.mjs's selfIntersects() is built on.
+  const orient = (p, q, r) =>
+    Math.sign((q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]));
+  const properCross = (p1, p2, p3, p4) => {
+    const o1 = orient(p1, p2, p3);
+    const o2 = orient(p1, p2, p4);
+    const o3 = orient(p3, p4, p1);
+    const o4 = orient(p3, p4, p2);
+    return o1 !== o2 && o3 !== o4 && o1 !== 0 && o2 !== 0 && o3 !== 0 && o4 !== 0;
+  };
+  const landPolys = [
+    { id: cluster.id, pts: cluster.placement.points },
+    ...worldLand.map((n) => ({ id: n.id, pts: n.placement.points })),
+  ];
+  for (let i = 0; i < landPolys.length; i++) {
+    for (let j = i + 1; j < landPolys.length; j++) {
+      const A = landPolys[i];
+      const B = landPolys[j];
+      let crossed = false;
+      for (let a = 0; a < A.pts.length && !crossed; a++) {
+        const a1 = A.pts[a];
+        const a2 = A.pts[(a + 1) % A.pts.length];
+        for (let b = 0; b < B.pts.length; b++) {
+          const b1 = B.pts[b];
+          const b2 = B.pts[(b + 1) % B.pts.length];
+          if (properCross(a1, a2, b1, b2)) {
+            crossed = true;
+            break;
+          }
+        }
+      }
+      if (crossed) problems.push(`coast ${A.id} crosses ${B.id}`);
+    }
+  }
+
+  // self-check: label traceability — every tier-1/2 node this sheet draws
+  // must carry a real title (the string a lineLabel/curveLabel draws from).
+  for (const n of [
+    ...worldLand,
+    ...worldOceans,
+    ...worldLand.flatMap((land) => (tree.childrenOf.get(land.id) ?? []).map((id) => tree.byId.get(id))),
+  ])
+    if (typeof n.title !== "string" || n.title.trim() === "")
+      problems.push(`${n.id}: missing title — nothing to letter on the sheet`);
+
   // ---- sheet geometry -------------------------------------------------------
   const MAP_W = EXT_W * ATLAS_PX_PER_KM;
   const MAP_H = EXT_H * ATLAS_PX_PER_KM;
@@ -119,7 +180,7 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   const SHEET_H = Math.round(ATLAS_MAP_TOP + MAP_H + SHEET_PAD);
   const CX = ATLAS_MAP_LEFT + MAP_W / 2;
 
-  const { X, Y, poly, smooth } = createDraft({
+  const { X, Y, poly, smooth, lineLabel } = createDraft({
     pxPerKm: ATLAS_PX_PER_KM,
     mapLeft: ATLAS_MAP_LEFT,
     mapTop: ATLAS_MAP_TOP,
@@ -137,6 +198,7 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   );
 
   put("<defs>");
+  put(patternDefs({ includeReported: true }));
   // nothing may spill past the sheet's own border
   put(
     `<clipPath id="clip-sheet"><rect x="${ATLAS_MAP_LEFT}" y="${ATLAS_MAP_TOP}" width="${r2(MAP_W)}" height="${r2(MAP_H)}"/></clipPath>`,
@@ -198,58 +260,195 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
       `letter-spacing="1.2" fill="${C.inkMid}">${esc(sheet.surveyNote)}</text>`,
   );
 
+  // ---- F-043: the wider world — surveyed-vs-reported mariners'-chart -------
+  // grammar. Everything below traces to a spine node/feature; no invented
+  // geography. Drawn INSIDE the sheet clip, after the basin block, which
+  // stays byte-for-byte untouched above this line.
+  for (const land of worldLand) {
+    checkFrame(`${land.id} polygon`, land.placement.points);
+    const isIce = land.terrainKind === "ice";
+    put(
+      `<path d="${smooth(land.placement.points, true, ZONE_TENSION)}" ` +
+        `fill="url(#${isIce ? "pIce" : "pReported"})" stroke="${C.ink}" stroke-width="${isIce ? 0.7 : 0.55}"` +
+        `${isIce ? "" : ' class="coast-reported"'}/>`,
+    );
+    put(lineLabel(land.title.toUpperCase(), land.placement.anchor, 0, { size: 13, tracking: 2 }));
+
+    // tier-2 regions of this continent, dashed administrative boundaries
+    const regionIds = (tree.childrenOf.get(land.id) ?? []).filter(
+      (id) => tree.byId.get(id)?.tier === "region",
+    );
+    for (const rid of regionIds) {
+      const region = tree.byId.get(rid);
+      checkFrame(`${region.id} polygon`, region.placement.points);
+      put(
+        `<path d="${smooth(region.placement.points, true)}" fill="none" stroke="${C.ink}" ` +
+          `stroke-width="0.4" stroke-dasharray="3 3" class="region-bound"/>`,
+      );
+      put(lineLabel(region.title, region.placement.anchor, 0, { size: 9.5, fill: C.inkSoft }));
+    }
+
+    // features on the continent itself (reef/ridge/river-mouth lines, port
+    // and outlying-isle points) — regions carry none in this corpus, but the
+    // loop reads `.features ?? []` so a future authored region draws too.
+    for (const node of [land, ...regionIds.map((id) => tree.byId.get(id))]) {
+      for (const f of node.features ?? []) {
+        if (f.kind === "line") {
+          checkFrame(`${f.id} line`, f.points);
+          const isReef = f.id.includes("reef");
+          put(
+            `<path d="${smooth(f.points)}" fill="none" stroke="${C.ink}" stroke-width="0.7"` +
+              `${isReef ? ' stroke-dasharray="1 3"' : ""}/>`,
+          );
+          if (f.attrs?.name) {
+            const mid = alongKm(f.points, polylineKm(f.points) / 2);
+            put(lineLabel(f.attrs.name, mid.at, mid.angle, { size: 10.5, italic: true, fill: C.inkMid }));
+          } else {
+            problems.push(`${f.id}: line feature has no attrs.name for its label`);
+          }
+        } else if (f.kind === "point") {
+          checkFrame(`${f.id} point`, [f.at]);
+          const isPort = f.attrs?.role === "port";
+          put(`<circle cx="${X(f.at[0])}" cy="${Y(f.at[1])}" r="${isPort ? 2 : 1.1}" fill="${C.ink}"/>`);
+          if (isPort) {
+            if (!f.attrs?.name) problems.push(`${f.id}: port feature has no attrs.name`);
+            else put(lineLabel(f.attrs.name, f.at, 0, { size: 10, italic: true, fill: C.inkMid }));
+          }
+          // outlying-isle points carry attrs.name: null by design — an
+          // unnamed circle, no label attempted (F-043 spec).
+        }
+      }
+    }
+  }
+
+  // ocean names, lettered along a gentle arc through each sea's centroid —
+  // no polygon fill is drawn for oceans on this sheet (bare parchment IS
+  // the sea here; only the basin block fills real water).
+  for (const ocean of worldOceans) {
+    const c = centroid(ocean.placement.points);
+    const arcPts = [
+      [c[0] - 180, c[1] + 25],
+      [c[0], c[1]],
+      [c[0] + 180, c[1] - 25],
+    ];
+    checkFrame(`${ocean.id} label arc`, arcPts);
+    const { defs, text } = curveLabel({
+      id: `curve-${ocean.id}`,
+      d: smooth(arcPts),
+      text: ocean.title,
+      size: 15,
+      tracking: 4,
+      fill: C.inkSoft,
+    });
+    put(defs);
+    put(text);
+  }
+
   put("</g>"); // end sheet clip
 
-  // ---- the sea-lane, leaving the sheet ---------------------------------------
-  // Same reading as the basin sheet: one arrow with the trade wind's season
-  // written on it, and nothing else. It is meant to leave the sheet.
-  if (laneFrom && laneFar) {
-    const tail = [X(laneFrom[0]), Y(laneFrom[1])];
-    const tip = [X(laneFar.at[0]), Y(laneFar.at[1])];
+  // ---- F-043: every sea-lane, curved and lettered with its season -----------
+  // Replaces the single leaving-the-sheet arrow above: this sheet draws ALL
+  // charted lanes, skipping only the one whose far end is declared offSheet
+  // (e-sea-lane, f-trade-wind-far) — that legacy arrow stays the basin
+  // sheet's business (basin-sheet.mjs is untouched by F-043).
+  const findFeatureGlobal = (id) => {
+    for (const n of tree.byId.values())
+      for (const f of n.features ?? []) if (f.id === id) return f;
+    return null;
+  };
+  const resolveLaneEnd = (ref) => {
+    if (ref?.node) {
+      const node = tree.byId.get(ref.node);
+      if (!node) return { at: null, feature: null };
+      return {
+        at: resolveToRoot({ tree, id: node.parentId, point: node.placement.anchor }),
+        feature: null,
+      };
+    }
+    if (ref?.feature) {
+      const f = findFeatureGlobal(ref.feature);
+      return { at: f ? f.at : null, feature: f };
+    }
+    return { at: null, feature: null };
+  };
+  for (const lane of (spine.edges ?? []).filter((e) => e.kind === "sealane")) {
+    const toEnd = resolveLaneEnd(lane.to);
+    if (toEnd.feature?.offSheet) continue; // the legacy basin arrow
+    const fromEnd = resolveLaneEnd(lane.from);
+    if (!fromEnd.at || !toEnd.at) {
+      problems.push(`sealane ${lane.id}: could not resolve its endpoints`);
+      continue;
+    }
+    if (!lane.attrs?.label) problems.push(`sealane ${lane.id}: attrs.label missing`);
+    // the "to" end must ALWAYS resolve to a named port feature (not just
+    // when one happens to be present) — a {node}-style "to" ref would
+    // otherwise skip this check entirely instead of failing it.
+    if (!toEnd.feature || toEnd.feature.attrs?.role !== "port" || !toEnd.feature.attrs?.name)
+      problems.push(
+        `sealane ${lane.id}: "to" does not resolve to a named port feature` +
+          (toEnd.feature ? ` (got "${toEnd.feature.id}")` : ""),
+      );
+    checkFrame(`sealane ${lane.id} tail`, [fromEnd.at]);
+    checkFrame(`sealane ${lane.id} head`, [toEnd.at]);
+
+    // quadratic arc: control point offset 6% of the lane's length, sideways
+    const dx = toEnd.at[0] - fromEnd.at[0];
+    const dy = toEnd.at[1] - fromEnd.at[1];
+    const len = Math.hypot(dx, dy) || 1;
+    const off = len * 0.06;
+    const ctrl = [
+      (fromEnd.at[0] + toEnd.at[0]) / 2 - (dy / len) * off,
+      (fromEnd.at[1] + toEnd.at[1]) / 2 + (dx / len) * off,
+    ];
+    const tail = [X(fromEnd.at[0]), Y(fromEnd.at[1])];
+    const tip = [X(toEnd.at[0]), Y(toEnd.at[1])];
+    const ctrlPx = [X(ctrl[0]), Y(ctrl[1])];
     put(
-      `<path d="M${tail[0]},${tail[1]} L${tip[0]},${tip[1]}" stroke="${C.ink}" stroke-width="1.2"/>`,
+      `<path d="M${tail[0]},${tail[1]} Q${ctrlPx[0]},${ctrlPx[1]} ${tip[0]},${tip[1]}" ` +
+        `fill="none" stroke="${C.ink}" stroke-width="0.8" stroke-dasharray="6 5" class="sea-lane"/>`,
     );
-    const ang = r2(
-      (Math.atan2(tip[1] - tail[1], tip[0] - tail[0]) * 180) / Math.PI,
-    );
+    const ang = r2((Math.atan2(tip[1] - ctrlPx[1], tip[0] - ctrlPx[0]) * 180) / Math.PI);
     put(
       `<path d="M${tip[0]},${tip[1]} l7,-3 l0,6 Z" fill="${C.ink}" transform="rotate(${ang + 180} ${tip[0]} ${tip[1]})"/>`,
     );
-    const lx = r2(X(laneFar.at[0]) - 8);
-    const ly = Y(laneFar.at[1]);
-    put(
-      `<text x="${lx}" y="${ly}" font-size="11.5" font-style="italic" fill="${C.inkMid}" ` +
-        `text-anchor="middle" transform="rotate(-90 ${lx} ${ly})">${esc(seaLane.attrs.label)}</text>`,
-    );
+    if (lane.attrs?.label)
+      put(lineLabel(lane.attrs.label, ctrl, r2((Math.atan2(dy, dx) * 180) / Math.PI), { size: 10.5, italic: true, fill: C.inkMid }));
   }
 
   // ---- chrome from the sheet record: title, subtitle, hand, withheld --------
+  // F-043: the world content now covers most of the sheet, so the chrome
+  // block (centred here since before F-043) is guaranteed to sit over some
+  // of it — no fixed position dodges every promoted landmass and lane. Give
+  // it the same parchment halo (class="lbl") every other label on this
+  // sheet already uses for exactly this — legible over a hatch or a line —
+  // rather than chasing coordinates for a "clear" spot that may not exist
+  // once more tier-1 content is promoted later.
   let py = 520;
   put(
-    `<text x="${r2(CX)}" y="${py}" text-anchor="middle" font-size="42" letter-spacing="10">${esc(sheet.title)}</text>`,
+    `<text class="zn" x="${r2(CX)}" y="${py}" text-anchor="middle" font-size="42" letter-spacing="10">${esc(sheet.title)}</text>`,
   );
   py += 40;
   put(
-    `<text x="${r2(CX)}" y="${py}" text-anchor="middle" font-size="17" font-style="italic" ` +
+    `<text class="zn" x="${r2(CX)}" y="${py}" text-anchor="middle" font-size="17" font-style="italic" ` +
       `fill="${C.inkMid}">${esc(sheet.subtitle)}</text>`,
   );
   py += 52;
   for (const ln of wrap(sheet.hand, 76)) {
     put(
-      `<text x="${r2(CX)}" y="${py}" text-anchor="middle" font-size="13" font-style="italic" ` +
+      `<text class="zn" x="${r2(CX)}" y="${py}" text-anchor="middle" font-size="13" font-style="italic" ` +
         `fill="${C.inkMid}">${esc(ln)}</text>`,
     );
     py += 19;
   }
   py += 30;
   put(
-    `<text x="${r2(CX)}" y="${py}" text-anchor="middle" font-size="13" letter-spacing="4" ` +
+    `<text class="zn" x="${r2(CX)}" y="${py}" text-anchor="middle" font-size="13" letter-spacing="4" ` +
       `fill="${C.inkMid}">NOT SHOWN ON THIS SHEET</text>`,
   );
   py += 22;
   for (const w of sheet.withheld) {
     put(
-      `<text x="${r2(CX)}" y="${py}" text-anchor="middle" font-size="12.5" ` +
+      `<text class="zn" x="${r2(CX)}" y="${py}" text-anchor="middle" font-size="12.5" ` +
         `fill="${C.inkMid}">·  ${esc(w)}</text>`,
     );
     py += 18;

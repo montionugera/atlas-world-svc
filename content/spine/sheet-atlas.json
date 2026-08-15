@@ -1,14 +1,13 @@
 {
   "title": "THE ATLAS WORLD",
-  "subtitle": "such ground as the Bellfaith can vouch for",
-  "hand": "A world sheet drawn by the same hands that keep the basin map. It records what has been walked, sounded, or seen from a tower; it does not guess. The empty parchment is not modesty — it is the honest extent of the survey.",
+  "subtitle": "Bellfaith survey where the towers see; mariners' report beyond",
+  "hand": "This is a compiled chart, not a single hand's survey. The basin ground is the Bellfaith's own work, walked, sounded, and towered. Every coast beyond it is set down from masters' logs sworn at Gildmark harbour, not from any keel of ours. A hatched coast is reported, never vouched.",
   "noScaleBar": true,
   "scaleBarNote": "no scale bar; distances inside the surveyed ground are the basin sheet's business",
   "northMark": { "at": [1840, 1900], "label": "N" },
   "surveyNote": "surveyed ground: see the basin sheet — CLUSTER 1 · THE MELTWASH BASIN",
   "withheld": [
-    "every coast, reef and landmass beyond a day's sail of Gildmark",
-    "whatever lies past the ice",
-    "the far shore of the western sea, if it has one"
+    "the far interiors, past what any crew has walked",
+    "whatever lies past the ice-cap's edge"
   ]
 }
