@@ -833,6 +833,62 @@
         color: var(--text-faint);
       }
 
+      /* ---------- F-044: Maps tab (mapforge sheets) ---------- */
+
+      .maps-card {
+        cursor: pointer;
+      }
+
+      .viewport.maps-thumb-viewport {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e9e1cf; /* parchment — mapforge's C.parchment fill, so the thumbnail's own background doesn't clash with the checkerboard */
+        padding: 0.5rem;
+      }
+
+      .viewport.maps-thumb-viewport img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+      }
+
+      .maps-png-link {
+        display: inline-block;
+        margin-top: 0.3rem;
+      }
+
+      /* The overlay reuses .story-overlay's chrome (header/backdrop/exit) —
+         only the stage differs: an SVG under a CSS transform instead of an
+         iframe. */
+      .maps-overlay-title {
+        font-size: 0.86rem;
+        font-weight: 650;
+        color: var(--text);
+        padding: 0 0.4rem;
+      }
+
+      .maps-overlay-stage {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+        overflow: hidden;
+        background: #12151d;
+        touch-action: none; /* pointer events drive pan/zoom directly; don't let the browser also scroll/zoom the page */
+      }
+
+      .maps-overlay-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        max-width: none;
+        transform-origin: 0 0;
+        user-select: none;
+        pointer-events: none; /* the stage, not the img, owns wheel/pointer handling */
+      }
+
       /* ---------- F-038: thumbnail cards + virtual grid ---------- */
 
       .vgrid {

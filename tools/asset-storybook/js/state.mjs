@@ -78,6 +78,26 @@ export const COMBAT_CLASS = "combat";
 // reader + graph and the Undertow novel. Like COMBAT_CLASS above it is not an
 // asset — no manifest entry, no renderer, no per-view health.
 export const STORY_CLASS = "story";
+
+// synthetic class for the Maps tab (F-044): mapforge world/basin sheets.
+// Not an asset-manifest kind — driven by its own registry, maps-index.json,
+// kept in parity with tools/mapforge/render-sheet.mjs's SHEETS export by
+// tests/maps-index.test.mjs (the "every produced artifact must be observable
+// in a review surface" rule, owner intent 2026-08-15).
+//
+// Named "map-sheets" / "Map Sheets", NOT "maps" / "Maps": game-client/assets
+// /art/art-groups.json already registers a concept-art group
+// { id: "map", label: "Maps" } (2 pieces, T2 track) — a plain "maps" class
+// here would collide with that group's label in the sidebar, and confuse a
+// click between "the mapforge SVG sheets" and "concept art of maps".
+export const MAPS_CLASS = "map-sheets";
+export const MAPS_INDEX_URL = "./maps-index.json";
+// maps-index.json's svg/png fields are REPO-relative (they mirror
+// SHEETS[id].outSvg/outPng byte-for-byte, e.g.
+// "game-client/assets/art/maps/atlas-world.svg") — unlike ASSET_ROOT above,
+// which already assumes the "game-client/" prefix is stripped from res://
+// scene paths. From tools/asset-storybook/, two directories up is repo root.
+export const REPO_ROOT_REL = "../../";
 export const STORY_VIEWS_URL = "./story-views.json";
 // Fallback mirrors ART_GROUPS_FALLBACK: a missing/unreadable registry degrades
 // the section to the three known views instead of breaking the page.
