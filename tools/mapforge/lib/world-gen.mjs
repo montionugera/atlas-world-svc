@@ -148,11 +148,17 @@ function carveRect({ rect, notches = {} }) {
 }
 
 // ── frame constants (seam-and-bay template, plan.md "World layout decision") ─
-const FRAME = 2000;
-const MARGIN = 25;
-const BASIN_EXCLUSION = { x0: 0, y0: 0, x1: 250, y1: 290 }; // basin + 100 km sea margin
-const CAP_X0 = 150;
-const CAP_W = 1000; // ice cap spans x in [150, 1150]
+// F-045 Task 3 (spec §2.3): every constant in this section is ÷5 from its
+// F-043 original so the generator matches the 400x400 frame Tasks 1-2
+// already rescaled the committed world tier onto — same seam/bay/cap
+// TEMPLATE, five times smaller. Target areas (below, in buildWorld) are ÷25
+// (area scales with the square of a linear ÷5). Seed logic is untouched —
+// two runs stay byte-identical.
+const FRAME = 400;
+const MARGIN = 5;
+const BASIN_EXCLUSION = { x0: 0, y0: 0, x1: 50, y1: 58 }; // basin + 20 km sea margin
+const CAP_X0 = 30;
+const CAP_W = 200; // ice cap spans x in [30, 230]
 const CAP_X1 = CAP_X0 + CAP_W;
 
 function bboxOf({ points }) {
@@ -173,21 +179,22 @@ function centroidOf({ points }) {
 }
 
 // Builds the ice cap ring: flat north edge along the frame's top (the one
-// exception to the 25 km margin), a noised southern edge, and an exact
-// abutment segment [150,0] -> [150,14] against the basin's shelf corner
-// (n-cluster1's own NE tip is [150,0]). Left un-scaled by fitArea so that
+// exception to the 5 km margin), a noised southern edge, and an exact
+// abutment segment [30,0] -> [30,2.8] against the basin's shelf corner
+// (n-cluster1's own NE tip is [30,0]). Left un-scaled by fitArea so that
 // abutment segment stays byte-exact; the raw depth already averages
-// 80000/1000 = 80 km, so area lands within the test's 5% tolerance without
-// rescaling (see task-1-report.md deviations).
+// 3200/200 = 16 km, so area lands within the test's 5% tolerance without
+// rescaling (F-045 Task 3: both figures ÷5 from F-043's 80000/1000 = 80 km —
+// same relative fit, see task-1-report.md deviations for the original).
 function buildIceCapRing({ rand }) {
   const southVerts = 16;
-  const avgDepth = 80000 / CAP_W; // 80
+  const avgDepth = 3200 / CAP_W; // 16
   const jitterAmp = avgDepth * 0.18;
   const southPts = [];
   for (let i = 0; i <= southVerts; i++) {
-    const t = i / southVerts; // 0 at the east corner, 1 back at x=150
+    const t = i / southVerts; // 0 at the east corner, 1 back at x=30
     const x = CAP_X1 - t * CAP_W;
-    const y = i === southVerts ? 14 : Math.max(20, avgDepth + jitterAmp * (rand() * 2 - 1));
+    const y = i === southVerts ? 2.8 : Math.max(4, avgDepth + jitterAmp * (rand() * 2 - 1));
     southPts.push([r1(x), r1(y)]);
   }
   return [[CAP_X0, 0], [CAP_X1, 0], ...southPts];
@@ -310,9 +317,10 @@ export function buildWorld({ atlasNode }) {
   const usedNames = new Set();
   const summary = [];
 
-  // Step 2: seeded seam positions.
-  const seamA = 900 + Math.floor(rand() * 120);
-  const seamB = 1450 + Math.floor(rand() * 120);
+  // Step 2: seeded seam positions. F-045 Task 3: base + jitter range both ÷5
+  // (was 900 + [0,120), 1450 + [0,120)) — same seed logic, smaller frame.
+  const seamA = 180 + Math.floor(rand() * 24);
+  const seamB = 290 + Math.floor(rand() * 24);
 
   // Step 3: ice cap.
   const capRaw = buildIceCapRing({ rand });
@@ -327,31 +335,33 @@ export function buildWorld({ atlasNode }) {
   });
   const capBBox = bboxOf({ points: capRaw });
   const capSouthMaxY = capBBox.y + capBBox.h;
-  const capClearY = r1(capSouthMaxY + 15);
+  const capClearY = r1(capSouthMaxY + 3); // F-045 Task 3: clearance ÷5 (was 15)
   summary.push({ id: capId, tier: "continent", nameCandidates: capCands, areaKm2: r1(shoelaceArea({ points: capRaw })), composition: CAP_COMPOSITION, regionCount: 0 });
 
   // Step 4: bays (reserved water rects on the seams) + landmasses inside them.
-  // Each bay's y-window is jittered ±40 km, seeded from `rand()` in a fixed
-  // draw order (majorA, majorB, chainA, chainB, chainC) so bay positions
-  // vary with the seed instead of reusing the layout decision's literal
-  // example numbers verbatim. The jitter shifts the whole window (preserving
-  // its height), then clamps deterministically so it never crosses the
-  // 25 km frame margin or comes within 40 km of the ice cap's fitted south
-  // edge (`capClearY`, already known at this point).
+  // Each bay's y-window is jittered ±8 km (F-045 Task 3: was ±40), seeded
+  // from `rand()` in a fixed draw order (majorA, majorB, chainA, chainB,
+  // chainC) so bay positions vary with the seed instead of reusing the
+  // layout decision's literal example numbers verbatim. The jitter shifts
+  // the whole window (preserving its height), then clamps deterministically
+  // so it never crosses the 5 km frame margin or comes within 8 km of the
+  // ice cap's fitted south edge (`capClearY`, already known at this point).
+  // F-045 Task 3: x0/x1/y0/y1 offsets ÷5, targetArea ÷25 (area scales with
+  // the square of the linear ÷5) — same bay template, new frame.
   const bayDefs = {
-    majorA: { x0: seamA - 170, x1: seamA + 170, y0: 560, y1: 900, targetArea: 22000, vertices: 18, kind: "major" },
-    majorB: { x0: seamB - 160, x1: seamB + 160, y0: 1150, y1: 1470, targetArea: 18000, vertices: 16, kind: "major" },
-    chainA: { x0: seamA - 90, x1: seamA + 90, y0: 1300, y1: 1520, targetArea: 4000, vertices: 14, kind: "chain" },
-    chainB: { x0: seamB - 80, x1: seamB + 80, y0: 420, y1: 600, targetArea: 3500, vertices: 12, kind: "chain" },
-    chainC: { x0: seamA - 80, x1: seamA + 80, y0: 240, y1: 420, targetArea: 3000, vertices: 12, kind: "chain" },
+    majorA: { x0: seamA - 34, x1: seamA + 34, y0: 112, y1: 180, targetArea: 880, vertices: 18, kind: "major" },
+    majorB: { x0: seamB - 32, x1: seamB + 32, y0: 230, y1: 294, targetArea: 720, vertices: 16, kind: "major" },
+    chainA: { x0: seamA - 18, x1: seamA + 18, y0: 260, y1: 304, targetArea: 160, vertices: 14, kind: "chain" },
+    chainB: { x0: seamB - 16, x1: seamB + 16, y0: 84, y1: 120, targetArea: 140, vertices: 12, kind: "chain" },
+    chainC: { x0: seamA - 16, x1: seamA + 16, y0: 48, y1: 84, targetArea: 120, vertices: 12, kind: "chain" },
   };
   const BAY_ORDER = ["majorA", "majorB", "chainA", "chainB", "chainC"];
-  const minBayY = Math.max(MARGIN, capClearY + 40);
+  const minBayY = Math.max(MARGIN, capClearY + 8); // F-045 Task 3: clearance ÷5 (was 40)
   const maxBayY = FRAME - MARGIN;
   const bays = {};
   for (const key of BAY_ORDER) {
     const def = bayDefs[key];
-    const jitter = Math.floor((rand() * 2 - 1) * 40);
+    const jitter = Math.floor((rand() * 2 - 1) * 8); // F-045 Task 3: jitter amplitude ÷5 (was 40)
     let y0 = def.y0 + jitter, y1 = def.y1 + jitter;
     if (y0 < minBayY) { const shift = minBayY - y0; y0 += shift; y1 += shift; }
     if (y1 > maxBayY) { const shift = y1 - maxBayY; y0 -= shift; y1 -= shift; }
@@ -460,10 +470,10 @@ export function buildWorld({ atlasNode }) {
   }
 
   // Step 5: ocean band polygons.
-  // Band 1: x in [25, seamA].
+  // Band 1: x in [5, seamA].
   const band1Rect = { x0: MARGIN, y0: MARGIN, x1: seamA, y1: FRAME - MARGIN };
   const band1N = [];
-  // Basin exclusion corner (deeper than cap clearance) for x in [25, 250].
+  // Basin exclusion corner (deeper than cap clearance) for x in [5, 50].
   band1N.push({ lo: MARGIN, hi: BASIN_EXCLUSION.x1, to: BASIN_EXCLUSION.y1 });
   // Cap clearance for the rest of band1's width, up to seamA (< CAP_X1).
   band1N.push({ lo: BASIN_EXCLUSION.x1, hi: seamA, to: capClearY });
@@ -501,7 +511,7 @@ export function buildWorld({ atlasNode }) {
   const band2Errors = validRing({ points: band2 });
   if (band2Errors.length) throw new Error(`buildWorld: ocean band band-2 invalid: ${band2Errors.join(", ")}`);
 
-  // Band 3: x in [seamB, 1975]. Fully east of the cap; no basin overlap.
+  // Band 3: x in [seamB, 395]. Fully east of the cap; no basin overlap.
   const band3Rect = { x0: seamB, y0: MARGIN, x1: FRAME - MARGIN, y1: FRAME - MARGIN };
   const band3 = carveRect({
     rect: band3Rect,
