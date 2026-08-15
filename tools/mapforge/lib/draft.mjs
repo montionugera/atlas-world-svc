@@ -244,31 +244,6 @@ export function patternDefs({ includeReported = false } = {}) {
   return patterns.join("\n");
 }
 
-/**
- * Lettering that rides a curve — used where a straight lineLabel would cut
- * across open water at the wrong angle (ocean names, F-043). `d` is a ready
- * SVG path string (build it with `smooth(...)` first); the returned `defs`
- * path carries no stroke/fill of its own (fill="none", no stroke attr —
- * SVG's default stroke is "none"), so it is safe to place inline without a
- * wrapping <defs> element.
- */
-export function curveLabel({
-  id,
-  d,
-  text,
-  size = 14,
-  tracking = 3,
-  fill = C.inkMid,
-  startOffset = "50%",
-}) {
-  return {
-    defs: `<path id="${id}" d="${d}" fill="none"/>`,
-    text:
-      `<text font-size="${size}" letter-spacing="${tracking}" fill="${fill}" font-style="italic">` +
-      `<textPath href="#${id}" startOffset="${startOffset}" text-anchor="middle">${esc(text)}</textPath></text>`,
-  };
-}
-
 export function createDraft({ pxPerKm, mapLeft, mapTop }) {
   const X = (km) => r2(mapLeft + km * pxPerKm);
   const Y = (km) => r2(mapTop + km * pxPerKm);

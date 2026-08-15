@@ -23,7 +23,6 @@ import {
   polylineKm,
   alongKm,
   patternDefs,
-  curveLabel,
 } from "./draft.mjs";
 import { loadSpine, buildTree, resolveToRoot } from "../../../scripts/lib/spine.mjs";
 
@@ -164,7 +163,7 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   }
 
   // self-check: label traceability — every tier-1/2 node this sheet draws
-  // must carry a real title (the string a lineLabel/curveLabel draws from).
+  // must carry a real title (the string a lineLabel draws from).
   for (const n of [
     ...worldLand,
     ...worldOceans,
@@ -342,14 +341,16 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   // repo uses (tools/mapforge/lib/raster.mjs explicitly forbids the
   // ImageMagick fallback) — does not render <textPath> text at all. Verified
   // directly: a minimal <path>+<textPath>HELLO</textPath> test SVG rasterized
-  // with the curve visible and the text completely absent. So curveLabel's
-  // output renders correctly in a real SVG viewer (Chrome) but is silently
-  // dropped in the shipped PNG asset regardless of document order — no
-  // z-order fix can paint text a renderer can't draw at all. curveLabel
-  // stays (the brief's interface contract; it still produces a real
-  // <textPath> a capable viewer honors), but each ocean ALSO gets a plain
-  // straight lineLabel at the same spot — same style, so it reads as one
-  // label, not two — which is what actually paints in the PNG.
+  // with the curve visible and the text completely absent. curveLabel's
+  // <textPath> output renders correctly in a real SVG viewer (Chrome) but is
+  // silently dropped in the shipped PNG asset regardless of document order —
+  // no z-order fix can paint text a renderer can't draw at all. A follow-up
+  // review found the fix had been applied by ADDING a straight lineLabel
+  // alongside the curveLabel rather than replacing it, so every sea name
+  // painted twice in any textPath-capable viewer (browsers). Straight
+  // rotated labels are the deliberate, SOLE rendering here — spec §5's
+  // "curved water labels" resolved to the plan's Risk 4 fallback, not the
+  // curved treatment (F-043).
   for (const ocean of worldOceans) {
     const c = centroid(ocean.placement.points);
     const arcPts = [
@@ -358,16 +359,6 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
       [c[0] + 180, c[1] - 25],
     ];
     checkFrame(`${ocean.id} label arc`, arcPts);
-    const { defs, text } = curveLabel({
-      id: `curve-${ocean.id}`,
-      d: smooth(arcPts),
-      text: ocean.title,
-      size: 15,
-      tracking: 4,
-      fill: C.inkSoft,
-    });
-    putLabel(defs);
-    putLabel(text);
     const angle = r2(
       (Math.atan2(arcPts[2][1] - arcPts[0][1], arcPts[2][0] - arcPts[0][0]) * 180) / Math.PI,
     );

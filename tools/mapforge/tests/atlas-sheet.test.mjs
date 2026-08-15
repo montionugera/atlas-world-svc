@@ -39,7 +39,23 @@ test("world sheet draws every reported tier-1 node with the reported grammar", (
   assert.ok(svg.includes('class="coast-reported"'));
   assert.ok(svg.includes("pReported"));
   assert.ok(svg.includes('class="region-bound"'));
-  assert.ok(svg.includes("textPath"));
+  assert.ok(!svg.includes("textPath"));
+});
+
+// Regression: ocean names used to be drawn TWICE — once via a curveLabel
+// <textPath> (silently dropped by rsvg-convert, so a straight lineLabel
+// fallback was added) and once via that straight lineLabel, at the same
+// centroid. The committed SVG is viewed directly in browsers (textPath-
+// capable), so the fallback was doubling every sea name there even though
+// the shipped PNG only ever showed one copy. Fix: the straight lineLabel is
+// the sole rendering now — each sea name must appear EXACTLY once.
+test("each ocean name appears exactly once (no doubled textPath + lineLabel)", () => {
+  const { svg, problems } = buildAtlasSheet({ repoRoot: ROOT });
+  assert.deepEqual(problems, []);
+  for (const name of ["The Keelbreak Sea", "The Galereach Sea", "The Tarnmark Sea"]) {
+    const count = svg.split(esc(name)).length - 1;
+    assert.equal(count, 1, `${name}: expected exactly 1 occurrence, found ${count}`);
+  }
 });
 
 test("sea-lanes terminate on named ports and carry season marks", () => {
