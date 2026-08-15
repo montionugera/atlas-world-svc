@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildAtlasSheet } from "../lib/atlas-sheet.mjs";
@@ -47,4 +48,24 @@ test("sea-lanes terminate on named ports and carry season marks", () => {
   const lanes = svg.match(/class="sea-lane"/g) ?? [];
   assert.ok(lanes.length >= 2);
   assert.ok(svg.includes("the trade wind"));
+});
+
+// Regression: the chrome block (title/subtitle/hand text) carries an opaque
+// parchment halo and used to paint OVER world labels drawn earlier in
+// document order — ocean names and some Coldreach labels were fully erased
+// on the rendered chart even though svg.includes(...) still found the text.
+// Document order is the actual paint order for overlapping SVG text, so
+// this asserts each mandated label's index is AFTER the chrome's last line.
+test("world labels paint above the sheet chrome (document order)", () => {
+  const { svg, problems } = buildAtlasSheet({ repoRoot: ROOT });
+  assert.deepEqual(problems, []);
+  const sheet = JSON.parse(readFileSync(join(ROOT, "content/spine/sheet-atlas.json"), "utf8"));
+  const lastChromeLine = sheet.withheld[sheet.withheld.length - 1];
+  const chromeEndIdx = svg.indexOf(esc(lastChromeLine));
+  assert.ok(chromeEndIdx > -1, "chrome withheld list not found in svg");
+  for (const needle of ["Keelbreak Sea", "Galereach Sea", "Tarnmark Sea", "Tallowquay", "the Coldreach Interior"]) {
+    const idx = svg.indexOf(needle);
+    assert.ok(idx > -1, `${needle}: not found in svg at all`);
+    assert.ok(idx > chromeEndIdx, `${needle}: must paint after the chrome block (document order)`);
+  }
 });

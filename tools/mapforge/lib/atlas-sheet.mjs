@@ -264,6 +264,19 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   // grammar. Everything below traces to a spine node/feature; no invented
   // geography. Drawn INSIDE the sheet clip, after the basin block, which
   // stays byte-for-byte untouched above this line.
+  //
+  // Fix (post-review): world content is spread across the whole 2000x2000 km
+  // frame, so no fixed position for the chrome block (title/subtitle/hand
+  // text, below) can dodge every promoted landmass/lane, and the chrome's
+  // opaque halo was painting OVER world labels drawn earlier in document
+  // order — three ocean names and two Coldreach labels were being fully
+  // erased on the rendered chart (0/3 ocean names visible). Every LABEL
+  // (not fill/stroke geometry — that stays put() in place, painting order
+  // among opaque hatches doesn't matter) is buffered via putLabel() and
+  // flushed after the chrome block, so labels always paint on top of it
+  // regardless of where either one falls on the sheet.
+  const labelBuf = [];
+  const putLabel = (s) => labelBuf.push(s);
   for (const land of worldLand) {
     checkFrame(`${land.id} polygon`, land.placement.points);
     const isIce = land.terrainKind === "ice";
@@ -272,7 +285,7 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
         `fill="url(#${isIce ? "pIce" : "pReported"})" stroke="${C.ink}" stroke-width="${isIce ? 0.7 : 0.55}"` +
         `${isIce ? "" : ' class="coast-reported"'}/>`,
     );
-    put(lineLabel(land.title.toUpperCase(), land.placement.anchor, 0, { size: 13, tracking: 2 }));
+    putLabel(lineLabel(land.title.toUpperCase(), land.placement.anchor, 0, { size: 13, tracking: 2 }));
 
     // tier-2 regions of this continent, dashed administrative boundaries
     const regionIds = (tree.childrenOf.get(land.id) ?? []).filter(
@@ -285,7 +298,7 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
         `<path d="${smooth(region.placement.points, true)}" fill="none" stroke="${C.ink}" ` +
           `stroke-width="0.4" stroke-dasharray="3 3" class="region-bound"/>`,
       );
-      put(lineLabel(region.title, region.placement.anchor, 0, { size: 9.5, fill: C.inkSoft }));
+      putLabel(lineLabel(region.title, region.placement.anchor, 0, { size: 9.5, fill: C.inkSoft }));
     }
 
     // features on the continent itself (reef/ridge/river-mouth lines, port
@@ -302,7 +315,7 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
           );
           if (f.attrs?.name) {
             const mid = alongKm(f.points, polylineKm(f.points) / 2);
-            put(lineLabel(f.attrs.name, mid.at, mid.angle, { size: 10.5, italic: true, fill: C.inkMid }));
+            putLabel(lineLabel(f.attrs.name, mid.at, mid.angle, { size: 10.5, italic: true, fill: C.inkMid }));
           } else {
             problems.push(`${f.id}: line feature has no attrs.name for its label`);
           }
@@ -312,7 +325,7 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
           put(`<circle cx="${X(f.at[0])}" cy="${Y(f.at[1])}" r="${isPort ? 2 : 1.1}" fill="${C.ink}"/>`);
           if (isPort) {
             if (!f.attrs?.name) problems.push(`${f.id}: port feature has no attrs.name`);
-            else put(lineLabel(f.attrs.name, f.at, 0, { size: 10, italic: true, fill: C.inkMid }));
+            else putLabel(lineLabel(f.attrs.name, f.at, 0, { size: 10, italic: true, fill: C.inkMid }));
           }
           // outlying-isle points carry attrs.name: null by design — an
           // unnamed circle, no label attempted (F-043 spec).
@@ -324,6 +337,19 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   // ocean names, lettered along a gentle arc through each sea's centroid —
   // no polygon fill is drawn for oceans on this sheet (bare parchment IS
   // the sea here; only the basin block fills real water).
+  //
+  // Fix (post-review, visual QA): rsvg-convert — the ONLY rasterizer this
+  // repo uses (tools/mapforge/lib/raster.mjs explicitly forbids the
+  // ImageMagick fallback) — does not render <textPath> text at all. Verified
+  // directly: a minimal <path>+<textPath>HELLO</textPath> test SVG rasterized
+  // with the curve visible and the text completely absent. So curveLabel's
+  // output renders correctly in a real SVG viewer (Chrome) but is silently
+  // dropped in the shipped PNG asset regardless of document order — no
+  // z-order fix can paint text a renderer can't draw at all. curveLabel
+  // stays (the brief's interface contract; it still produces a real
+  // <textPath> a capable viewer honors), but each ocean ALSO gets a plain
+  // straight lineLabel at the same spot — same style, so it reads as one
+  // label, not two — which is what actually paints in the PNG.
   for (const ocean of worldOceans) {
     const c = centroid(ocean.placement.points);
     const arcPts = [
@@ -340,8 +366,12 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
       tracking: 4,
       fill: C.inkSoft,
     });
-    put(defs);
-    put(text);
+    putLabel(defs);
+    putLabel(text);
+    const angle = r2(
+      (Math.atan2(arcPts[2][1] - arcPts[0][1], arcPts[2][0] - arcPts[0][0]) * 180) / Math.PI,
+    );
+    putLabel(lineLabel(ocean.title, c, angle, { size: 15, tracking: 4, italic: true, fill: C.inkSoft }));
   }
 
   put("</g>"); // end sheet clip
@@ -412,17 +442,19 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
       `<path d="M${tip[0]},${tip[1]} l7,-3 l0,6 Z" fill="${C.ink}" transform="rotate(${ang + 180} ${tip[0]} ${tip[1]})"/>`,
     );
     if (lane.attrs?.label)
-      put(lineLabel(lane.attrs.label, ctrl, r2((Math.atan2(dy, dx) * 180) / Math.PI), { size: 10.5, italic: true, fill: C.inkMid }));
+      putLabel(lineLabel(lane.attrs.label, ctrl, r2((Math.atan2(dy, dx) * 180) / Math.PI), { size: 10.5, italic: true, fill: C.inkMid }));
   }
 
   // ---- chrome from the sheet record: title, subtitle, hand, withheld --------
   // F-043: the world content now covers most of the sheet, so the chrome
   // block (centred here since before F-043) is guaranteed to sit over some
   // of it — no fixed position dodges every promoted landmass and lane. Give
-  // it the same parchment halo (class="lbl") every other label on this
+  // it the same parchment halo (class="zn") every other label on this
   // sheet already uses for exactly this — legible over a hatch or a line —
   // rather than chasing coordinates for a "clear" spot that may not exist
-  // once more tier-1 content is promoted later.
+  // once more tier-1 content is promoted later. World LABELS are buffered
+  // (putLabel, above) and flushed below, AFTER this block, so they paint
+  // on top of the chrome instead of being erased by its opaque halo.
   let py = 520;
   put(
     `<text class="zn" x="${r2(CX)}" y="${py}" text-anchor="middle" font-size="42" letter-spacing="10">${esc(sheet.title)}</text>`,
@@ -453,6 +485,11 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
     );
     py += 18;
   }
+
+  // ---- F-043: flush every buffered world label — AFTER the chrome block, --
+  // so continent/region/feature/port/ocean/sea-lane labels always paint on
+  // top of it (fixes the erased-label defect above).
+  for (const l of labelBuf) put(l);
 
   // ---- the north mark ---------------------------------------------------------
   {
