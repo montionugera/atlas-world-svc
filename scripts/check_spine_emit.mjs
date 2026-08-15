@@ -86,8 +86,16 @@ const GEO_HEADER = {
   coordinateSystem: {
     units: "km",
     convention: "x increases EAST, y increases SOUTH (north is smaller y) — inherited unchanged from content/maps/atlas-frontier.md",
-    extentKm: { width: 150, height: 190 },
-    origin: "x=0 is the west edge of the sheet (open sea); y=0 is the hard parchment edge at the top (the ice). A1 §2: the land is roughly 190 km north-south and 150 km east-west.",
+    // F-045 Task 4 fix: this header was frozen boilerplate copied verbatim
+    // from the pre-rescale file and never updated when rescale_spine.mjs
+    // (Task 1) scaled n-cluster1's interior.size (and every town/road
+    // coordinate this document's other fields derive from) 150x190 -> 30x38.
+    // The towns/roads arrays below were already correct (they read live off
+    // the spine); only this metadata literal had drifted, which silently
+    // made basin-sheet.mjs's MAP_W/MAP_H 5x too big once its own px-per-km
+    // was bumped for the F-045 density change.
+    extentKm: { width: 30, height: 38 },
+    origin: "x=0 is the west edge of the sheet (open sea); y=0 is the hard parchment edge at the top (the ice). A1 §2 (pre-F-045): the land was roughly 190 km north-south and 150 km east-west; F-045 (I-095) scales the basin ÷5 to 38 km north-south and 30 km east-west, same schematic.",
     tolerance: "Positions are authored to reproduce A1 §5.1's straight-line distances within ~8%. A1 §5.3 is explicit that the world preserves topology, adjacency, ordering and terrain — NOT exact metric distance — so these coordinates are a faithful schematic, not a survey. `distances[].deltaPct` records the residual for every canon-bearing leg.",
   },
 };

@@ -151,6 +151,22 @@ export function transformGeographyNode(node) {
   }
   for (const f of node.features ?? []) scaleFeatureCoords(f);
   if (node.lore && Array.isArray(node.lore.labelAt)) node.lore.labelAt = scalePoint(node.lore.labelAt);
+  // F-045 Task 4 fix: `bands[].fromKm/toKm` (region gradient bands, e.g.
+  // n-ashvale-front's 3 grave-row segments) were missed by the original
+  // Task 1 pass — this field wasn't in the walked list above, so the bytes
+  // shipped with the OLD (pre-rescale) km values while the region's own
+  // `placement.points` correctly scaled ÷5. Caught during the Task 4 chart
+  // audit: the mismatch put grave-row segments 42-96km down a 0-38km-tall
+  // region, entirely outside its own polygon (and its render clip-path), so
+  // the basin sheet silently drew zero grave rows. This script can no longer
+  // be re-run (idempotence guard, frame already 400) — the one affected node
+  // (content/spine/nodes/n-ashvale-front.json) was hand-patched with the
+  // exact r1(x*SCALE) arithmetic this loop performs, verified against this
+  // fix by scripts/tests/rescale.test.mjs.
+  for (const b of node.bands ?? []) {
+    if (typeof b.fromKm === "number") b.fromKm = r1(b.fromKm * SCALE);
+    if (typeof b.toKm === "number") b.toKm = r1(b.toKm * SCALE);
+  }
   return node;
 }
 

@@ -8,10 +8,10 @@
     "units": "km",
     "convention": "x increases EAST, y increases SOUTH (north is smaller y) — inherited unchanged from content/maps/atlas-frontier.md",
     "extentKm": {
-      "width": 150,
-      "height": 190
+      "width": 30,
+      "height": 38
     },
-    "origin": "x=0 is the west edge of the sheet (open sea); y=0 is the hard parchment edge at the top (the ice). A1 §2: the land is roughly 190 km north-south and 150 km east-west.",
+    "origin": "x=0 is the west edge of the sheet (open sea); y=0 is the hard parchment edge at the top (the ice). A1 §2 (pre-F-045): the land was roughly 190 km north-south and 150 km east-west; F-045 (I-095) scales the basin ÷5 to 38 km north-south and 30 km east-west, same schematic.",
     "tolerance": "Positions are authored to reproduce A1 §5.1's straight-line distances within ~8%. A1 §5.3 is explicit that the world preserves topology, adjacency, ordering and terrain — NOT exact metric distance — so these coordinates are a faithful schematic, not a survey. `distances[].deltaPct` records the residual for every canon-bearing leg."
   },
   "coastline": {
@@ -313,8 +313,8 @@
           "label": "the southern lip",
           "levelBand": [10, 25],
           "graveRows": true,
-          "yFromKm": 78,
-          "yToKm": 96,
+          "yFromKm": 15.6,
+          "yToKm": 19.2,
           "note": "old burials, settled, marked, grassed over"
         },
         {
@@ -322,8 +322,8 @@
           "label": "the middle",
           "levelBand": [25, 50],
           "graveRows": true,
-          "yFromKm": 60,
-          "yToKm": 78,
+          "yFromKm": 12,
+          "yToKm": 15.6,
           "note": "rows still legible, some subsidence"
         },
         {
@@ -331,8 +331,8 @@
           "label": "the northern deep",
           "levelBand": [55, 80],
           "graveRows": false,
-          "yFromKm": 42,
-          "yToKm": 60,
+          "yFromKm": 8.4,
+          "yToKm": 12,
           "note": "A1 §7.2: drawn as BARE hatch with no rows — the Bell School does not publish an inventory of its own unfinished work"
         }
       ]
@@ -843,7 +843,7 @@
     "noScaleBar": true,
     "scaleBarNote": "A1 §7.1: the map has no scale bar; it has a walking table.",
     "northMark": {
-      "at": [136, 172],
+      "at": [27.2, 34.4],
       "label": "N"
     },
     "withheld": ["the far-mirror stations", "which ground is buried and which is not", "Cindervast's interior", "the icefield beyond the shelf lip", "the pass behind Cindervast", "the sea beyond a day's sail", "villages — there are none named anywhere in the corpus"]

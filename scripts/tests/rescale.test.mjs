@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  runRescale, transformEdge, r1, roundHalf, SCALE, KM_PER_HOUR,
+  runRescale, transformEdge, transformGeographyNode, r1, roundHalf, SCALE, KM_PER_HOUR,
   GEOGRAPHY_TIERS, FOOTPRINT_TIERS,
 } from "../rescale_spine.mjs";
 
@@ -322,4 +322,35 @@ test("transformEdge: relay/sealane-without-passageDays edges are left with no sp
   const relay = { id: "e-r", kind: "relay", via: [{ feature: "f-tower-02" }], attrs: { note: "x" } };
   transformEdge(relay);
   assert.deepEqual(relay.attrs, { note: "x" });
+});
+
+// F-045 Task 4 regression: transformGeographyNode originally walked
+// placement/interior/features/lore.labelAt but never `bands[].fromKm/toKm`
+// (region gradient segments, e.g. n-ashvale-front's 3 grave-row bands).
+// Caught live: content/spine/nodes/n-ashvale-front.json shipped from Task 1
+// with its `placement.points` correctly ÷5'd but `bands` still at the OLD
+// scale, putting grave-row segments outside the region's own (rescaled)
+// polygon — basin-sheet.mjs's clip-path silently hid the whole layer, no
+// error, no red gate. Hand-patched on the one affected node; this test
+// covers the transform itself so a future full re-run (or a new bands-
+// bearing region) can't regress the same way silently again.
+test("geography tier: bands[].fromKm/toKm scale by 0.2 (r1-rounded), non-numeric bands untouched", () => {
+  const node = {
+    id: "n-x", tier: "region",
+    bands: [
+      { id: "b-1", axis: "y", fromKm: 78, toKm: 96 },
+      { id: "b-2", axis: "y", fromKm: 60.3, toKm: 78 },
+    ],
+  };
+  transformGeographyNode(node);
+  assert.deepEqual(node.bands, [
+    { id: "b-1", axis: "y", fromKm: 15.6, toKm: 19.2 },
+    { id: "b-2", axis: "y", fromKm: 12.1, toKm: 15.6 },
+  ]);
+});
+
+test("geography tier: a node with no bands field is untouched (defensive no-op)", () => {
+  const node = { id: "n-y", tier: "region", placement: { anchor: [1, 1] } };
+  transformGeographyNode(node);
+  assert.equal("bands" in node, false);
 });

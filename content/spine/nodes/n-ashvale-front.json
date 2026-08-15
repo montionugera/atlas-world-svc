@@ -53,8 +53,8 @@
       "label": "the southern lip",
       "levelBand": [10, 25],
       "axis": "y",
-      "fromKm": 78,
-      "toKm": 96,
+      "fromKm": 15.6,
+      "toKm": 19.2,
       "attrs": {
         "graveRows": true,
         "note": "old burials, settled, marked, grassed over"
@@ -65,8 +65,8 @@
       "label": "the middle",
       "levelBand": [25, 50],
       "axis": "y",
-      "fromKm": 60,
-      "toKm": 78,
+      "fromKm": 12,
+      "toKm": 15.6,
       "attrs": {
         "graveRows": true,
         "note": "rows still legible, some subsidence"
@@ -77,8 +77,8 @@
       "label": "the northern deep",
       "levelBand": [55, 80],
       "axis": "y",
-      "fromKm": 42,
-      "toKm": 60,
+      "fromKm": 8.4,
+      "toKm": 12,
       "attrs": {
         "graveRows": false,
         "note": "A1 §7.2: drawn as BARE hatch with no rows — the Bell School does not publish an inventory of its own unfinished work"
