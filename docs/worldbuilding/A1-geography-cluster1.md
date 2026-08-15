@@ -254,6 +254,10 @@ Gildmark, and the far side of the eastern hills behind Thornveil.
 2. **The pass behind Cindervast** — the only land route out of the basin, and the reason the city was
    built on that shoulder in the first place. It has been shut by a dead city for a generation.
 
+**AMENDED 2026-08-15 (F-043, DR-006 option 3).** Both doors now point at named places: the
+sea-lane's far end is charted to the port of Tallowquay on Coldreach (`A2-wider-world.md`;
+`e-lane-coldreach`, `n-coldreach`), and the pass stays shut.
+
 ---
 
 ## 5. Distances and travel
@@ -443,11 +447,16 @@ own reticence, not a UI decision.
 - **Cindervast's interior.** The walls and the gate; nothing inside. No street grid, no squares, no
   statues. The Bellfaith has no tower there and will not draw a city it does not ring.
 - **The icefield beyond the shelf lip.** The map ends where the ice starts moving. There is a
-  north edge to the parchment and it is not a coastline.
+  north edge to the parchment and it is not a coastline. **AMENDED 2026-08-15 (F-043, DR-006
+  option 3).** This sheet is the basin survey, unchanged; the atlas sheet (`A2-wider-world.md`)
+  reports the cap's <em>seaward</em> margin from mariners' logs (`n-rimewall-cap`) — a reported
+  ice edge, never a coastline.
 - **The pass behind Cindervast.** Known, unmarked. It leads out of the basin and the map is a map of
   the basin.
 - **The sea beyond a day's sail**, and everything the annual merchantmen come from. One arrow off
-  the west edge with the trade wind's season written on it, and nothing else.
+  the west edge with the trade wind's season written on it, and nothing else. **AMENDED
+  2026-08-15 (F-043, DR-006 option 3).** This sheet is the basin survey, unchanged; the wider
+  chart — the named far coasts, seas and lanes — is the atlas sheet (`A2-wider-world.md`).
 - **Villages.** There are none named anywhere in the corpus (gap G17), and the map does not invent
   them — but it does draw **waystations** on the road legs, because the day-counts need somewhere to
   end.
@@ -483,7 +492,9 @@ Six town emblems mark six towns; a pale alkali flat occupies the upper middle wi
 band across it, its northern end left as bare hatch. Roads are drawn as solid lines with day-counts
 lettered along them, and one dashed line runs north to a walled outline with no interior. No scale
 bar, no compass rose beyond a small north mark, no decorative sea monsters. The parchment ends at a
-hard edge along the top — the map does not pretend to know what is past the ice.
+hard edge along the top — the map does not pretend to know what is past the ice. **AMENDED
+2026-08-15 (F-043, DR-006 option 3).** This brief describes the basin survey and is unchanged —
+the hard edge stays; the wider chart is a separate artifact, the atlas sheet (`A2-wider-world.md`).
 
 **A1-ART-02 · Millcross.** A sprawling, wall-less crossing town on both banks of a grey river,
 viewed from the road at cart height, late afternoon. One mill-wheel housing is the only structure

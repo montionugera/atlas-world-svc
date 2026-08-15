@@ -231,6 +231,38 @@ official reading of the first caravan burning says beneath the tower.
   ends of the same road. Their home turf in seed content is the icefield;
   their reason for existing is the gate.
 
+- **Coldreach is the far end of the trade wind.** Six days out, masters log
+  a cold grey coast under one long spine of rock, and no log claims what
+  stands behind it; the once-a-year merchantmen that reach Gildmark are the
+  ones that tied up at its port, Tallowquay, first — the same voyage, its
+  far end now charted, not a second service. *(By mariners' report —
+  `A2-wider-world.md`; `n-coldreach`, `e-lane-coldreach`.)*
+- **Stonemoor is set down from wharf-talk at Tallowquay.** A moor-backed
+  coast four days along a foreign lane, with a second reported port,
+  Netstead; no Gildmark keel has run that lane, and nothing is sworn beyond
+  the shore. *(`n-stonemoor`, `e-lane-stonemoor-foreign`.)*
+- **Three island chains are marks on a chart and no more.** Driftholt,
+  Reedstrand and Brightfall exist by fog-sight and wreck-report; a handful
+  of their isles are fixed, the rest claimed, and the outlying isles carry
+  no names at all. *(`n-driftholt`, `n-reedstrand`, `n-brightfall`.)*
+- **The three seas are named from the logs.** The Keelbreak Sea is the
+  western water of the wreck-ledgers; the Galereach Sea is the middle water
+  the trade wind crosses; the Tarnmark Sea is the eastern water past
+  Stonemoor, where the charts run out. *(`n-keelbreak`, `n-galereach`,
+  `n-tarnmark`.)*
+- **The Rimewall Cap shuts the north.** Every master who has run far enough
+  north reports the same white wall and none reports an end to it — a
+  reported ice edge, never a coastline; the basin map's own northern
+  parchment edge is unchanged. *(`n-rimewall-cap`; A1 §7.2.)*
+- **The wider chart changes none of this coast's arithmetic.** Everything
+  above is charted from shipmasters' logs sworn at Gildmark harbor —
+  reported, not surveyed; the interiors are blank and nobody from the basin
+  has walked them. Both far ports are foreign harbors on foreign coasts, so
+  **Gildmark remains the only deepwater port on this coast and the land's
+  only door to the sea** — the sister towns still have neither ships nor
+  ports, and whoever controls the door still controls the price of the
+  whole land. *(`A2-wider-world.md`; A0 §2.1 V8.)*
+
 ### How news travels (the Bellfaith, three layers, two speeds)
 
 Bells alone cannot carry detail — a single tolling tower has no way to ring
@@ -482,3 +514,4 @@ failure this section exists to prevent is a contradiction being marked
 | Six *peoples* and eight *races* are separate axes | `style.md` §"Peoples", copied to `core-story.md` |
 | Magic is rune-gated, not scarcity-gated (F-017) | §5, and the scarcity rule retired from `core-story.md` |
 | The seal certifies provenance, not truth (F-035) | §4 |
+| The wider world is charted from mariners' reports; reported ≠ surveyed; Gildmark stays the only door (F-043, DR-006 opt. 3) | §4 |
