@@ -240,10 +240,12 @@ official reading of the first caravan burning says beneath the tower.
   ones that tied up at its port, Tallowquay, first — the same voyage, its
   far end now charted, not a second service. *(By mariners' report —
   `A2-wider-world.md`; `n-coldreach`, `e-lane-coldreach`.)*
+  **AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.**
 - **Stonemoor is set down from wharf-talk at Tallowquay.** A moor-backed
   coast four days along a foreign lane, with a second reported port,
   Netstead; no Gildmark keel has run that lane, and nothing is sworn beyond
   the shore. *(`n-stonemoor`, `e-lane-stonemoor-foreign`.)*
+  **AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred.**
 - **Three island chains are marks on a chart and no more.** Driftholt,
   Reedstrand and Brightfall exist by fog-sight and wreck-report; a handful
   of their isles are fixed, the rest claimed, and the outlying isles carry

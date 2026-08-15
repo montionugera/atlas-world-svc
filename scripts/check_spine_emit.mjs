@@ -159,7 +159,13 @@ export function emitGeography({ spine, tree }) {
       id: e.id.slice(2), name: e.attrs.name, from: endName(e, "from"), to: endName(e, "to"),
       weight: e.weight, dashed: e.dashed, hours: e.attrs.hours, hoursLabel: e.attrs.hoursLabel,
       roadKm: e.attrs.roadKm, ...(e.attrs.throughRoute ? { throughRoute: e.attrs.throughRoute } : {}),
-      labelAtIndex: e.attrs.labelAtIndex, note: e.attrs.note, points: e.points })),
+      labelAtIndex: e.attrs.labelAtIndex, note: e.attrs.note,
+      // F-045 Task 5 (final-review sweep): a handful of road notes still cite
+      // pre-rescale day-counts/absolute km (I-095) — surfaced on the emitted
+      // mirror the same way n-cluster1's lore fields are, so the marker is
+      // visible wherever the note itself is.
+      ...(e.attrs.amendedPending ? { amendedPending: e.attrs.amendedPending } : {}),
+      points: e.points })),
     relay: { ...C.lore.relay,
       chains: spine.edges.filter((e) => e.kind === "relay").map((e) => ({
         id: e.id.slice(2), note: e.attrs.note,

@@ -106,7 +106,8 @@
   "representsNodeId": null,
   "lore": {
     "reported": true,
-    "summary": "Six days out on the trade wind, masters log a cold grey coast under one long spine of rock; no log claims what stands behind it."
+    "summary": "Six days out on the trade wind, masters log a cold grey coast under one long spine of rock; no log claims what stands behind it.",
+    "amendedPending": "AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred."
   },
   "tags": [],
   "levelBand": null,

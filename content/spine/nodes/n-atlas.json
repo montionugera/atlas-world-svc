@@ -48,7 +48,8 @@
   "runtime": null,
   "representsNodeId": null,
   "lore": {
-    "summary": "The whole charted and uncharted world. Sized 2000x2000 km with slack so adding cluster 2 never rebases every descendant frame (research open question 3, owner default: yes)."
+    "summary": "The whole charted and uncharted world. Sized 400x400 km with slack so adding cluster 2 never rebases every descendant frame (research open question 3, owner default: yes).",
+    "amendedPending": "AMENDED-PENDING (I-095): frame was 2000x2000 km before the F-045 rescale (S=0.2); summary corrected to the current 400x400 km frame — the slack rationale is unchanged."
   },
   "tags": [],
   "levelBand": null,
