@@ -513,5 +513,14 @@
     "release_version": "1.8",
     "claimed_at": "2026-08-15T07:42:38.068848+00:00",
     "shipped_at": "2026-08-15T09:32:15.309407+00:00"
+  },
+  {
+    "id": "F-045",
+    "title": "world rescale to 400x400: uniform /5 geography scale, towns keep physical size, hour-scale travel \u2014 owner-approved scale model",
+    "from_idea": "I-095",
+    "created_at": "2026-08-15T11:13:13.887291+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
