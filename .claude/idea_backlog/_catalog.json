@@ -568,5 +568,11 @@
     "title": "world rescale to 400x400: uniform /5 geography scale, towns keep physical size, hour-scale travel \u2014 owner-approved scale model",
     "created_at": "2026-08-15T11:12:30.592907+00:00",
     "promoted_to": "F-045"
+  },
+  {
+    "id": "I-096",
+    "title": "check_spine_emit.mjs silently drops any region lacking lore.order, so a region can cease to exist on the chart with every gate green (found 2026-08-16 during world-fill design; see design doc R3)",
+    "created_at": "2026-08-16T01:59:48.203571+00:00",
+    "promoted_to": null
   }
 ]
