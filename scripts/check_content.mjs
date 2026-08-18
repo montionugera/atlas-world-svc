@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, bboxOfPlacement, buildBBoxIndex, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -2140,28 +2140,36 @@ function gSpineOverlapRollup({ tree, report }) {
     const kids = (tree.childrenOf.get(parent.id) ?? [])
       .map((i) => tree.byId.get(i))
       .filter((n) => n.placement.shape !== "point");
-    // Plan A Task 3: an O(n) bbox bucket index replaces the implicit all-pairs
-    // bbox test. The OUTER i<j loop order is unchanged on purpose — it is what
-    // makes the G-OVERLAP message order a function of the data alone, and
-    // scripts/tests/spine-gates.test.mjs:403,410 pin two literal messages that
-    // would reorder if this became an index-driven walk. The index only ever
-    // ADDS a `continue`; it never adds a pair and never reorders one.
+    // Plan A Task 3 review fix (MAJOR): the bbox bucket index this task wired
+    // in here is UNWIRED again, and the plain i<j walk restored. It is not a
+    // style preference, it is a measurement. buildBBoxIndex's confirmation
+    // predicate (lib/geometry.mjs) and exactIntersectionArea's stage-1 bbox
+    // reject differ only on ZERO-EXTENT boxes, which no spine placement has —
+    // so on real data "the index skipped it" and "stage 1 would have returned
+    // 0" are the same set, measured: 133 pairs, 105 index-skips, 105 stage-1
+    // rejects, 0 disagreements. The index therefore cannot save a single
+    // ringsDisjoint or triangulation call that stage 1 does not already save
+    // for free; it only replaces an inline comparison with a bucket build, a
+    // Map lookup and a Set allocation, and leaves exactIntersectionArea
+    // recomputing both bboxes anyway. Benchmarked here over the real 6 parents
+    // / 133 pairs (500 runs x 6 alternating trials, 50 warmup rounds): plain
+    // 0.400 ms/run vs indexed 0.497 ms/run — 1.24x SLOWER, sums bit-identical.
+    // On the plan's own target shape (3 ocean rings + 13 nested land rings, 40
+    // points each, 120 pairs): plain 3.208 ms vs indexed 3.081 ms — a wash.
+    // maxChildrenPerParent is 24, so this loop can never exceed 276 pairs and
+    // the index can never pay. buildBBoxIndex stays exported for Plan C/D,
+    // where a genuinely coarser predicate could earn its keep; wiring it in
+    // front of THIS gate bought a permanent false-negative surface (any future
+    // drift between the two predicates silently blinds G-OVERLAP) for negative
+    // measured value.
     //
-    // Soundness, including for the `problems` collector below: the index
-    // confirms a bucket hit with the SAME strict predicate as
-    // exactIntersectionArea's stage-1 bbox reject (lib/geometry.mjs:352-354,
-    // 440-441), and stage 1 returns 0 BEFORE triangulating. So every pair the
-    // index drops is a pair that would have returned 0 without ever pushing a
-    // problem — the untriangulable report cannot be lost by skipping.
-    const boxes = kids.map((k) => ({ id: k.id, bbox: bboxOfPlacement({ placement: k.placement }) }));
-    const index = buildBBoxIndex({ items: boxes });
+    // The i<j walk order is load-bearing regardless of kernel: it is what makes
+    // the G-OVERLAP message order a function of the data alone, which
+    // scripts/tests/spine-gates.test.mjs pins at :403 and :410 (two literals)
+    // and again at the five-child ordering fixture at the end of that file.
     let pairSum = 0;
     for (let i = 0; i < kids.length; i++) {
-      // Built from the bbox the item REGISTERED with (boxes[i].bbox), never a
-      // recomputed one, so the query and the registration can never disagree.
-      const near = new Set(index.query({ bbox: boxes[i].bbox }));
       for (let j = i + 1; j < kids.length; j++) {
-        if (!near.has(kids[j].id)) continue; // bounding boxes cannot meet
         // Plan A Task 2: exact clipping replaces lattice sampling. Measured on
         // the committed 133 sibling pairs: 3,038 ms -> 19.7 ms, verdict
         // identical on all 133, max deviation 0.0027 km². The per-parent `cell`

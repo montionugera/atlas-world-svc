@@ -380,14 +380,32 @@ export function exactIntersectionArea({ a, b, problems }) {
 // data alone.
 //
 // DECLARED DEVIATION from the plan's Step-3 listing: bucket hits are then
-// confirmed against the bbox the item REGISTERED with, using the same strict
-// predicate as exactIntersectionArea's stage-1 reject (`x1 <= x0 || y1 <= y0
-// -> 0`). That makes the result a superset of the truly-INTERSECTING set but
-// not of the bbox-TOUCHING set — a pair whose boxes only touch is dropped,
-// and its exact area is 0 either way. The two predicates are one contract:
-// widen stage 1 and this confirmation must widen with it, which is what
-// geometry-exact.test.mjs's superset test pins, by asserting against
-// exactIntersectionArea rather than against a copy of this predicate.
+// confirmed against the bboxes the item REGISTERED with, using a strict
+// overlap test. That makes the result a superset of the truly-INTERSECTING
+// set but not of the bbox-TOUCHING set — a pair whose boxes only touch is
+// dropped, and its exact area is 0 either way.
+//
+// Review fix (MINOR): the confirmation is NOT identical to
+// exactIntersectionArea's stage-1 reject, and an earlier comment here claiming
+// it was is corrected. Confirmation requires only the two CROSS conditions
+// (a.x < b.x+b.w && b.x < a.x+a.w, and likewise in y). Stage 1 additionally
+// requires each box to have positive extent, because `x1 <= x0` is false only
+// when min(a.x1,b.x1) > max(a.x0,b.x0), which fails outright for a
+// zero-extent box. So confirmation is a strict SUPERSET of stage-1-pass: a
+// zero-width box straddled by a neighbour is confirmed here and rejected by
+// stage 1. That direction is the sound one — this filter may only ever hand
+// stage 1 MORE pairs than it needs, never fewer. Do NOT "fix" the asymmetry
+// by tightening this predicate to match stage 1; that would turn a harmless
+// superset into a real false negative. geometry-exact.test.mjs pins the wider
+// behaviour directly (the zero-extent-bbox test) and pins soundness by
+// asserting against exactIntersectionArea rather than a copy of a predicate.
+//
+// CONTRACT: ids need not be unique. Every bbox registered under an id is
+// retained and a query confirms against ANY of them, so a duplicate id widens
+// the candidate set rather than silently replacing a box — the conservative
+// direction. (An earlier revision kept one bbox per id, which lost the first
+// registration and was a genuine false-negative path for callers that key on
+// instance rather than node ids.)
 const INDEX_DIVISIONS = 8;
 export function buildBBoxIndex({ items }) {
   if (items.length === 0) return { query: () => [] };
@@ -403,16 +421,27 @@ export function buildBBoxIndex({ items }) {
   const cellX = spanX > 0 ? spanX / INDEX_DIVISIONS : 1;
   const cellY = spanY > 0 ? spanY / INDEX_DIVISIONS : 1;
   const buckets = new Map(); // "cx,cy" -> Set<id>
-  const boxOf = new Map(); // id -> the bbox it REGISTERED with, never a recomputed one
+  const boxOf = new Map(); // id -> every bbox REGISTERED under it, never a recomputed one
+  // Review fix (MINOR): the cell range is CLAMPED to the index extent. Items
+  // define the extent so their own range is always inside it, but a QUERY bbox
+  // is caller-supplied and unbounded — an unclamped world-sized probe box
+  // walked ~1e9 empty columns and never returned (reproduced: a 2-item index
+  // queried with {x:-1e9,y:-1e9,w:2e9,h:2e9} did not finish in 15 s). Buckets
+  // outside [0, INDEX_DIVISIONS] are empty by construction, so clamping drops
+  // no candidate. A probe entirely outside the extent clamps to an empty range
+  // (cx0 > cx1), and the loops simply do not run. NaN clamps to NaN, which
+  // likewise runs zero iterations — this function never throws.
   const range = (bbox) => {
-    const cx0 = Math.floor((bbox.x - minX) / cellX);
-    const cy0 = Math.floor((bbox.y - minY) / cellY);
-    const cx1 = Math.floor((bbox.x + bbox.w - minX) / cellX);
-    const cy1 = Math.floor((bbox.y + bbox.h - minY) / cellY);
+    const cx0 = Math.max(0, Math.floor((bbox.x - minX) / cellX));
+    const cy0 = Math.max(0, Math.floor((bbox.y - minY) / cellY));
+    const cx1 = Math.min(INDEX_DIVISIONS, Math.floor((bbox.x + bbox.w - minX) / cellX));
+    const cy1 = Math.min(INDEX_DIVISIONS, Math.floor((bbox.y + bbox.h - minY) / cellY));
     return { cx0, cy0, cx1, cy1 };
   };
   for (const { id, bbox } of items) {
-    boxOf.set(id, bbox);
+    const prior = boxOf.get(id);
+    if (prior) prior.push(bbox);
+    else boxOf.set(id, [bbox]);
     const { cx0, cy0, cx1, cy1 } = range(bbox);
     for (let cy = cy0; cy <= cy1; cy++)
       for (let cx = cx0; cx <= cx1; cx++) {
@@ -430,16 +459,22 @@ export function buildBBoxIndex({ items }) {
         for (let cx = cx0; cx <= cx1; cx++)
           for (const id of buckets.get(`${cx},${cy}`) ?? []) {
             // Buckets are coarse, so a bucket hit is only a CANDIDATE. Confirm
-            // it against the bbox the item registered with, using the SAME
-            // strict predicate as exactIntersectionArea's stage-1 reject
-            // (x1 <= x0 || y1 <= y0 -> 0). Sound by construction: a pair with
-            // a non-zero exact intersection area must have strictly
-            // overlapping bounding boxes, so this can drop only pairs whose
-            // exact area is already 0 — it can never hide a real overlap.
-            const o = boxOf.get(id);
-            if (bbox.x < o.x + o.w && o.x < bbox.x + bbox.w &&
-                bbox.y < o.y + o.h && o.y < bbox.y + bbox.h) hit.add(id);
+            // it against the bboxes the item registered with, strictly. Sound
+            // by construction: a pair with a non-zero exact intersection area
+            // must have strictly overlapping bounding boxes, so this can drop
+            // only pairs whose exact area is already 0 — it can never hide a
+            // real overlap. See the header for why this predicate is a strict
+            // SUPERSET of exactIntersectionArea's stage-1 pass, not a copy.
+            if (hit.has(id)) continue;
+            for (const o of boxOf.get(id))
+              if (bbox.x < o.x + o.w && o.x < bbox.x + bbox.w &&
+                  bbox.y < o.y + o.h && o.y < bbox.y + bbox.h) { hit.add(id); break; }
           }
+      // Sorted output is a deliberate contract, not incidental: a consumer that
+      // emits one gate message per candidate needs the candidate order to be a
+      // function of the data alone, never of bucket traversal. It costs 3.2% of
+      // this index's total work (measured, 0.1331 -> 0.1288 ms/run over the real
+      // spine) and sits on no production path today.
       return [...hit].sort();
     },
   };

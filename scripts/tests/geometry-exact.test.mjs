@@ -406,6 +406,46 @@ test("buildBBoxIndex: a query result is a SUPERSET of every truly intersecting p
   assert.ok(checked > 20, `only ${checked} genuinely intersecting pairs were exercised`);
 });
 
+// ── Task 3 review fix (MINOR): an unbounded probe box must TERMINATE ────────
+// The cell range came straight from the caller's bbox with no clamp, so a
+// world-sized probe walked ~1e9 empty columns. Reproduced before the fix: this
+// exact call did not return in 15 s. Now it clamps to the index extent.
+test("buildBBoxIndex: a query bbox far larger than the extent returns promptly", () => {
+  const idx = buildBBoxIndex({
+    items: [
+      { id: "a", bbox: { x: 0, y: 0, w: 15, h: 15 } },
+      { id: "b", bbox: { x: 5, y: 5, w: 10, h: 10 } },
+    ],
+  });
+  const t0 = Date.now();
+  assert.deepEqual(idx.query({ bbox: { x: -1e9, y: -1e9, w: 2e9, h: 2e9 } }), ["a", "b"]);
+  assert.ok(Date.now() - t0 < 1000, "an unbounded query bbox did not clamp to the extent");
+  // A probe wholly outside the extent clamps to an empty range on BOTH sides.
+  assert.deepEqual(idx.query({ bbox: { x: -1e6, y: -1e6, w: 10, h: 10 } }), []);
+  assert.deepEqual(idx.query({ bbox: { x: 1e6, y: 1e6, w: 10, h: 10 } }), []);
+  // Malformed input degrades to "no candidates", never to a throw.
+  assert.deepEqual(idx.query({ bbox: { x: NaN, y: 0, w: 1, h: 1 } }), []);
+});
+
+// ── Task 3 review fix (MINOR): duplicate ids must not lose a bbox ───────────
+// `boxOf` used to be id -> ONE bbox, so a second registration under the same
+// id overwrote the first and a probe overlapping only the first box was
+// silently dropped — a real false negative for any caller keying on instance
+// rather than node ids (Plan C's fabric census, Plan D's landform joins).
+test("buildBBoxIndex: a duplicate id keeps EVERY bbox registered under it", () => {
+  const idx = buildBBoxIndex({
+    items: [
+      { id: "dup", bbox: { x: 0, y: 0, w: 10, h: 10 } },
+      { id: "dup", bbox: { x: 90, y: 90, w: 10, h: 10 } },
+      { id: "probe", bbox: { x: 5, y: 5, w: 2, h: 2 } },
+    ],
+  });
+  // Overlaps the FIRST box registered under "dup" — the one the old code lost.
+  assert.deepEqual(idx.query({ bbox: { x: 5, y: 5, w: 2, h: 2 } }), ["dup", "probe"]);
+  // …and the second is still found too.
+  assert.deepEqual(idx.query({ bbox: { x: 92, y: 92, w: 2, h: 2 } }), ["dup"]);
+});
+
 // ── the equivalence pre-flight, run over the REAL committed spine ──────────
 // This is the proof the swap is allowed. It must pass BEFORE the call site
 // changes, because exact clipping is strictly MORE sensitive than lattice
@@ -534,9 +574,19 @@ test("the G-OVERLAP call site runs the exact kernel AND passes the problems coll
   assert.match(body, /exactIntersectionArea\(\{ a: kids\[i\]\.placement, b: kids\[j\]\.placement, problems \}\)/);
   assert.doesNotMatch(body, /gridIntersectionArea\(/);
   assert.doesNotMatch(src, /import \{[^}]*\bgridIntersectionArea\b/s);
+  // Task 3 review fix (MAJOR): and it walks ALL pairs. The bbox index was
+  // wired in here, measured 1.24x SLOWER on the real spine (its skip set is
+  // exactly stage 1's reject set, so it saves no clipping work at all), and
+  // unwired again. Re-wiring it would re-buy a false-negative surface for a
+  // measured regression, so the absence is pinned rather than left to a
+  // comment. buildBBoxIndex itself stays exported and tested for Plan C/D.
+  assert.doesNotMatch(body, /buildBBoxIndex\(/);
 });
 
-// ── the index must never make the gate blinder ─────────────────────────────
+// ── the index must never be blinder than the kernel it filters for ─────────
+// Kept after the Task 3 review unwired the index from gSpineOverlapRollup:
+// buildBBoxIndex is still exported library surface that Plan C/D are expected
+// to call, and this is the standing proof that it cannot drop a real overlap.
 test("index: on the real spine, the candidate filter skips only pairs whose exact area is 0", () => {
   const spine = loadSpine({ contentRoot: join(REPO, "content") });
   const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
@@ -566,9 +616,14 @@ test("index: on the real spine, the candidate filter skips only pairs whose exac
 // ── Task 3 review fix (b): degenerate bboxes still register and still match ──
 // A rect with w: 0 (or a ring collapsed onto a line) has a zero-extent bbox.
 // The index's confirmation predicate is STRICT, so such a box never matches
-// ITSELF — irrelevant to the gate, which only ever asks about j > i. What
-// matters is that it is still registered and still found by, and finds, a
-// neighbour. Its exact area is 0 either way, so no verdict can move.
+// ITSELF. What matters is that it is still registered and still found by, and
+// finds, a neighbour. Its exact area is 0 either way, so no verdict can move.
+//
+// This is also the case that proves the confirmation predicate is a strict
+// SUPERSET of exactIntersectionArea's stage-1 pass rather than a copy of it:
+// n0 (zero WIDTH) is confirmed against n2 here, while stage 1 rejects that
+// same pair outright. The superset direction is the sound one — see the
+// CONTRACT note in lib/geometry.mjs.
 test("index: a zero-extent bbox still registers, and still pairs with its neighbour", () => {
   const zero = rect(5, 0, 0, 10); // zero WIDTH
   const flat = rect(0, 5, 10, 0); // zero HEIGHT
