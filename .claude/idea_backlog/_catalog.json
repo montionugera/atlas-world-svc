@@ -574,5 +574,11 @@
     "title": "check_spine_emit.mjs silently drops any region lacking lore.order, so a region can cease to exist on the chart with every gate green (found 2026-08-16 during world-fill design; see design doc R3)",
     "created_at": "2026-08-16T01:59:48.203571+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-097",
+    "title": "World fill Plan A: unblock and afford \u2014 exact geometry, spatial index, places.mjs join authority, render lock",
+    "created_at": "2026-08-18T13:58:23.925477+00:00",
+    "promoted_to": null
   }
 ]
