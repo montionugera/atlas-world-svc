@@ -405,3 +405,82 @@ test("buildBBoxIndex: a query result is a SUPERSET of every truly intersecting p
     }
   assert.ok(checked > 20, `only ${checked} genuinely intersecting pairs were exercised`);
 });
+
+// ── the equivalence pre-flight, run over the REAL committed spine ──────────
+// This is the proof the swap is allowed. It must pass BEFORE the call site
+// changes, because exact clipping is strictly MORE sensitive than lattice
+// sampling — a sub-cell sliver the sampler rounds to zero becomes visible,
+// and that is the correct direction of change but it must be seen first.
+import { join, dirname, resolve as pathResolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  loadSpine, buildTree, gridIntersectionArea, placementArea,
+  SPINE_CELL_KM, SPINE_CELL_U,
+} from "../lib/spine.mjs";
+
+const REPO = pathResolve(dirname(fileURLToPath(import.meta.url)), "../..");
+
+function realSiblingPairs() {
+  const spine = loadSpine({ contentRoot: join(REPO, "content") });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  const pairs = [];
+  for (const parent of tree.byId.values()) {
+    const kids = (tree.childrenOf.get(parent.id) ?? [])
+      .map((i) => tree.byId.get(i))
+      .filter((n) => n.placement.shape !== "point");
+    const cell = parent.interior?.units === "u" ? SPINE_CELL_U : SPINE_CELL_KM;
+    for (let i = 0; i < kids.length; i++)
+      for (let j = i + 1; j < kids.length; j++)
+        pairs.push({ a: kids[i], b: kids[j], cell });
+  }
+  return pairs;
+}
+
+test("equivalence: exactly 133 sibling pairs exist on the committed spine", () => {
+  assert.equal(realSiblingPairs().length, 133);
+});
+
+test("equivalence: exact clipping agrees with grid sampling on every G-OVERLAP VERDICT", () => {
+  const disagreements = [];
+  for (const { a, b, cell } of realSiblingPairs()) {
+    const grid = gridIntersectionArea({ a: a.placement, b: b.placement, cell });
+    const exact = exactIntersectionArea({ a: a.placement, b: b.placement });
+    const limit = 0.005 * Math.min(
+      placementArea({ placement: a.placement }),
+      placementArea({ placement: b.placement }),
+    );
+    if ((grid > limit) !== (exact > limit))
+      disagreements.push(`${a.id} ∩ ${b.id}: grid ${grid} exact ${exact} limit ${limit}`);
+  }
+  assert.deepEqual(disagreements, []);
+});
+
+test("equivalence: the largest numeric deviation stays under 0.01 km²", () => {
+  let maxDev = 0, worst = null;
+  for (const { a, b, cell } of realSiblingPairs()) {
+    const grid = gridIntersectionArea({ a: a.placement, b: b.placement, cell });
+    const exact = exactIntersectionArea({ a: a.placement, b: b.placement });
+    const dev = Math.max(grid, exact) - Math.min(grid, exact);
+    if (dev > maxDev) { maxDev = dev; worst = `${a.id} ∩ ${b.id} grid ${grid} exact ${exact}`; }
+  }
+  // Measured 2026-08-16: 0.00269 km² on n-ashvale-front ∩ n-emberdown, two
+  // orders of magnitude below the 0.5%-of-the-smaller-polygon tolerance.
+  assert.ok(maxDev < 0.01, `max deviation ${maxDev} at ${worst}`);
+});
+
+test("equivalence: exact clipping is at least 20x faster on the same 133 pairs", () => {
+  const pairs = realSiblingPairs();
+  let tGrid = 0, tExact = 0;
+  for (const { a, b, cell } of pairs) {
+    let t0 = process.hrtime.bigint();
+    gridIntersectionArea({ a: a.placement, b: b.placement, cell });
+    let t1 = process.hrtime.bigint();
+    exactIntersectionArea({ a: a.placement, b: b.placement });
+    let t2 = process.hrtime.bigint();
+    tGrid += Number(t1 - t0);
+    tExact += Number(t2 - t1);
+  }
+  // Measured 154x on this hardware. 20x is the floor a slower CI box must
+  // still clear; below it, the O(n²) problem is not actually solved.
+  assert.ok(tGrid / tExact > 20, `only ${(tGrid / tExact).toFixed(1)}x (grid ${tGrid / 1e6}ms exact ${tExact / 1e6}ms)`);
+});

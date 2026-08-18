@@ -4,7 +4,7 @@ import {
   TIER_DEPTH, LEAF_TIERS, BIOMES, TERRAIN_KINDS, TERRAIN_IMPLIES,
   SPINE_CELL_KM, SPINE_CELL_U, KM_TO_U, ID_RE, SEED_RE,
   shoelaceArea, polygonBBox, pointInPolygon, selfIntersects,
-  placementArea, gridIntersectionArea, gridUnionArea,
+  placementArea, gridIntersectionArea, exactIntersectionArea,
   townFrameErrors, townCompDerived, townCompErrors, terrainKindErrors,
   DEPTH_EXCEPTIONS, depthLegal,
 } from "../lib/spine.mjs";
@@ -85,38 +85,45 @@ test("placementArea: polygon signed shoelace, rect w*h, point 0", () => {
   assert.equal(placementArea({ placement: { shape: "point", at: [2, 2] } }), 0);
 });
 
-test("gridIntersectionArea / gridUnionArea are exact on cell-aligned rects", () => {
+test("gridIntersectionArea is exact on cell-aligned rects", () => {
   const a = { shape: "rect", rect: { x: 0, y: 0, w: 4, h: 4 } };
   const b = { shape: "rect", rect: { x: 2, y: 0, w: 4, h: 4 } };
   assert.equal(gridIntersectionArea({ a, b, cell: 1.0 }), 8);
-  assert.equal(gridUnionArea({ placements: [a, b], cell: 1.0 }), 24);
   const far = { shape: "rect", rect: { x: 100, y: 100, w: 2, h: 2 } };
   assert.equal(gridIntersectionArea({ a, b: far, cell: 1.0 }), 0);
 });
 
 // F-043 perf fix: gSpineOverlapRollup's double-count check replaces the
-// O(area) gridUnionArea() scan with a running Σ of the pairwise
-// gridIntersectionArea() values it already computes in the sibling loop.
-// By inclusion-exclusion, Σareas − union = Σpairwise − Σtriple + …, so this
-// is exact whenever no three placements overlap at a shared point (the case
-// pinned here) and only ever OVER-reports otherwise — never masks a real
-// double-count. This test pins that equivalence directly against the
-// exported grid helpers, independent of the rollup function itself.
-test("pairwise Σ(gridIntersectionArea) equals Σareas − gridUnionArea when no triple overlap", () => {
+// O(area) union scan with a running Σ of the pairwise intersection values it
+// already computes in the sibling loop. By inclusion-exclusion,
+// Σareas − union = Σpairwise − Σtriple + …, so this is exact whenever no three
+// placements overlap at a shared point (the case pinned here) and only ever
+// OVER-reports otherwise — never masks a real double-count.
+//
+// Plan A Task 2 retired gridUnionArea (its only two consumers were in this
+// file). The identity is NOT retired with it: the union of these three
+// cell-aligned rects is computable in closed form (they tile [0,8]x[0,4] with
+// two 2x4 overlaps), so the identity is pinned against a literal, and against
+// BOTH kernels, which is what makes this test the equivalence proof for the
+// double-count half of G-OVERLAP.
+test("pairwise Σ intersection equals Σareas − union under both kernels", () => {
   const cell = 1.0;
   const a = { shape: "rect", rect: { x: 0, y: 0, w: 4, h: 4 } }; // area 16
   const b = { shape: "rect", rect: { x: 2, y: 0, w: 4, h: 4 } }; // area 16, a∩b = 8
   const c = { shape: "rect", rect: { x: 4, y: 0, w: 4, h: 4 } }; // area 16, b∩c = 8, a∩c = 0 (touch only)
   const kids = [a, b, c];
-  let pairSum = 0;
+  const UNION = 32; // [0,8] x [0,4], by construction — the closed form the scan used to compute
+  let gridPairSum = 0, exactPairSum = 0;
   for (let i = 0; i < kids.length; i++)
-    for (let j = i + 1; j < kids.length; j++)
-      pairSum += gridIntersectionArea({ a: kids[i], b: kids[j], cell });
+    for (let j = i + 1; j < kids.length; j++) {
+      gridPairSum += gridIntersectionArea({ a: kids[i], b: kids[j], cell });
+      exactPairSum += exactIntersectionArea({ a: kids[i], b: kids[j] });
+    }
   const sum = kids.reduce((s, k) => s + placementArea({ placement: k }), 0);
-  const union = gridUnionArea({ placements: kids, cell });
-  assert.equal(pairSum, 16); // a∩b=8 + b∩c=8 + a∩c=0
-  assert.equal(sum - union, 16);
-  assert.equal(pairSum, sum - union);
+  assert.equal(sum, 48);
+  assert.equal(gridPairSum, 16); // a∩b=8 + b∩c=8 + a∩c=0
+  assert.equal(exactPairSum, 16); // the exact kernel agrees, including on the touching pair
+  assert.equal(sum - UNION, 16);
 });
 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
