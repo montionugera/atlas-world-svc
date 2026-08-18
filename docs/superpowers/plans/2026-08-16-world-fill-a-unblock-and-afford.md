@@ -21,7 +21,9 @@
 - `G-ATLAS-ROLLUP` tolerance stays +/-2 pp (`check_content.mjs:1690-1707`). If the generated world cannot roll up within it, the generator is wrong, not the gate.
 
 **Target counts (gated against `content/world/manifest.json`)**
-- 13 landmasses, 3 oceans, 9 seas, 160 regions = 40 surveyed + 120 reported, 45 settlements (3 capital / 12 hub / 30 village), 8 town plans, 60 dungeon complexes / 190 floors (3 families x 8 + 36 bespoke), 164 distinct landform types / 172 group memberships / 8 dual-listed, 1,740 instances / 336 named, 20 biomes, 18 terrain kinds, 626 distinct names.
+- 13 landmasses, 3 oceans, 9 seas, 160 regions = 40 surveyed + 120 reported, 45 settlements (3 capital / 12 hub / 30 village), 8 town plans, 60 dungeon complexes / 190 floors (3 families x 8 + 36 bespoke), **170** distinct landform types / **178** group memberships / 8 dual-listed / 23 `dungeonCapable` / 40 glyph families / 12 groups, 1,740 instances / 336 named, 20 biomes, 18 terrain kinds, 626 distinct names.
+- **The landform census is 170/178, not the spec's 164/172.** Plan B Task 1 is the sole authority for the lexicon and ships six types the spec table omits — three bound by a named pinned record (`headland`, `ford`, `sea-waterfall`) and three that are fabric-generator vocabulary for c01's shelf ice and c10's tephra ground (`ice-shelf`, `ash-front`, `ash-plain`), all single-group, none `dungeonCapable` — so memberships move 172 -> 178 while the 8 dual-listed and 23 `dungeonCapable` counts are unchanged. Every downstream number reads 170: Plan C's `G-WORLD-BUDGET` band, Plan D's `requires.landform` join test, and the `world-budget: landforms <n> types` / `G-LANDFORM: types placed: <n> / <n>` print lines. Plan A gates none of these, but its Global Constraints block is quoted verbatim by the other four plans, so the number is corrected here rather than re-derived there.
+- The `requires` predicate vocabulary is likewise Plan B's, closed at exactly 11 keys (`rock`, `precipDecileMin/Max`, `tempDecileMin/Max`, `slopeMin/Max`, `nearFlag`, `flowAccMin`, `elevMin/Max`) under `additionalProperties: false`. No plan may add `coastal`, `flagsAny/All/None`, `tempMin` or `tempMax`.
 - Land split: cap 6,000 + 4 major x 11,000 + 3 minor x 3,000 + 5 chains x 1,000 = 64,000.
 - Surveyed region 160 km2 +/-25%; reported region 480 km2 +/-20% = [384, 576]. 40x160 + 120x480 = 64,000.
 - Ocean polygons 41,800 / 30,400 / 19,000 = 91,200; attributed water 44,000 / 32,000 / 20,000. Sea polygons are SUBSETS of their ocean polygon (G-CONTAIN); their 20,600 km2 is already inside the 91,200 and is never added again.
@@ -98,7 +100,8 @@ node scripts/check_render_lock.mjs --check             # NEW in Task 10
 node scripts/check_render_lock.mjs --write             # NEW in Task 10
 node tools/mapforge/render-sheet.mjs --sheet cluster1 --no-png --check
 node tools/mapforge/render-sheet.mjs --sheet atlas --no-png --check
-node --test 'tools/mapforge/tests/*.test.mjs'          # QUOTED GLOB — a bare dir arg fails
+node --test 'tools/mapforge/tests/*.test.mjs'          # LOCAL ONLY (Node >= 22): Node expands it
+node --test tools/mapforge/tests/*.test.mjs            # CI / bash -e: the SHELL expands it (Node 18)
 node --test scripts/tests/spine-gates.test.mjs         # the heavy one: 93.3 s / 62 tests today
 npm test --prefix scripts                              # the whole gate suite, ~108 s today
 (cd colyseus-server && npm test -- mapDimensions)      # the jest pin, EVERY commit
@@ -141,7 +144,7 @@ The spec's §3.3 C3 names six. **One of them is wrong and this plan corrects it:
 
 - **`tools/mapforge/tests/parity.test.mjs:14-16` renders into the TRACKED `game-client/assets/art/maps/cluster1-world.svg` and then runs `git checkout -- <that file>`.** `integration.sh` runs `map_render_drift` *before* `mapforge_tests`, so during a redraw the suite silently reverts a freshly regenerated uncommitted sheet mid-Gate-2. **Fix this before any task regenerates a sheet** (Task 11).
 - **Three test fixture roots write their own `content/maps/cluster1-geography.json` and have no `content/spine/` at all**: `scripts/tests/zone-content.test.mjs:355`, `scripts/tests/town-plan.test.mjs:493`, `scripts/tests/bestiary-placement.test.mjs:95`. They also assert on the literal message `not in cluster1-geography.json#zones`. `loadPlaces()` therefore **needs a fallback branch that reads the mirror file when the spine is absent or does not resolve**, and the three failure messages at `check_content.mjs:835`, `:981`, `:1203` must stay verbatim.
-- **`scripts/tests/spine-gates.test.mjs:751-762` asserts `outputs.length === nodeFiles + 3`** and requires `maps/cluster1-geography.json` among the emitted paths. Task 12 changes it to `+ 2`.
+- **`scripts/tests/spine-gates.test.mjs:752-762` asserts `outputs.length === nodeFiles + 3`** (the assertion itself is `:758`) and requires `maps/cluster1-geography.json` among the emitted paths. Task 12 changes it to `+ 2`.
 - **`check_content.mjs` ends in a bare `main();` at line 2200** — importing it *runs the whole gate*. That is why gate tests spawn it. Task 13 adds the `import.meta.url` guard that makes an in-process call possible.
 - **`checkSpine()` is NOT parameterised with an injected fail/warn collector.** `check_content.mjs:144-153` has module-level `const failures = []` / `const fail = …` and `checkSpine` closes over them. Only the sub-gate helpers take injected collectors. The spec §8.6 claim that "the function is already parameterised that way" is wrong.
 - **`TIER_DEPTH` already has `sea: 2`** (`scripts/lib/spine.mjs:31`). The spec §8.2's "G-DEPTH gains a real depth for sea" is wrong; there is nothing to change.
@@ -161,7 +164,7 @@ The spec's §3.3 C3 names six. **One of them is wrong and this plan corrects it:
 | C | `scripts/lib/geometry.mjs` | Exact polygon intersection: segment/collinear tests, ring disjointness, ear clip, convex Sutherland–Hodgman, bbox index, ring vertex count. Pure — no `fs`, no deps, no `abs()` | 1 |
 | C | `scripts/tests/geometry-exact.test.mjs` | Degenerate / touching / contained / collinear / concave unit tests, plus the grid-vs-exact equivalence over the real 133 sibling pairs | 1, 2, 3 |
 | M | `scripts/lib/spine.mjs` | Re-export `exactIntersectionArea` and `buildBBoxIndex`; keep `gridIntersectionArea` exported for the equivalence test only; **delete `gridUnionArea`** (zero *production* consumers since F-043 — but **two live test consumers** in `scripts/tests/spine.test.mjs`, retired in the same commit) | 2 |
-| M | `scripts/tests/spine.test.mjs:7,88-92,98-118` | The two `gridUnionArea` consumers retired: dropped from the import, the union assertion deleted, and the F-043 pairSum identity re-anchored on `exactIntersectionArea` so the proof survives the swap instead of vanishing with it | 2 |
+| M | `scripts/tests/spine.test.mjs:7,88-95,97-120` | The two `gridUnionArea` consumers retired: dropped from the import, the union assertion deleted, and the F-043 pairSum identity re-anchored on `exactIntersectionArea` so the proof survives the swap instead of vanishing with it | 2 |
 | M | `scripts/check_content.mjs` | `gSpineOverlapRollup` call site swaps to exact clipping + the bbox index; `gSpineBudgets` becomes the three-term budget; new `G-VERTEX-BUDGET`; the three joins at `:816`, `:955`, `:1192` re-point at `places.mjs`; the alias sweep at `:1416-1528` gains the resolved-world second chance; the entry guard + `runGateInProcess` export | 2,3,4,6,9,13 |
 | M | `content/spine/load-budget.json` | Three-term budget: `maxNodes` 96, `maxChildrenPerParent` 24, `maxRingPoints` 160, `maxBytes` 786432 | 4 |
 | C | `scripts/lib/places.mjs` | `resolveWorld` + `loadPlaces` — the ONE join authority that replaces the legacy mirror for the three gate joins and both sheet builders | 5 |
@@ -731,7 +734,7 @@ This is the change spec §7.2 says must land **by itself, before any geometry ch
 **Files:**
 - Create: `scripts/tools/overlap-preflight.mjs`
 - Modify: `scripts/lib/spine.mjs:160-186` (re-export `exactIntersectionArea`; delete `gridUnionArea`)
-- Modify: `scripts/tests/spine.test.mjs:7,88-92,98-118` (retire the two `gridUnionArea` consumers **in the same commit as the deletion**)
+- Modify: `scripts/tests/spine.test.mjs:7,88-95,97-120` (retire the two `gridUnionArea` consumers **in the same commit as the deletion**)
 - Modify: `scripts/check_content.mjs:27` (import), `:2134` (the one call site)
 - Modify: `scripts/tests/geometry-exact.test.mjs` (append the equivalence test)
 - Modify: `scripts/tests/spine-gates.test.mjs:394-411` (re-run, do not assume, the two pinned literals)
@@ -740,7 +743,7 @@ This is the change spec §7.2 says must land **by itself, before any geometry ch
 - Consumes: `exactIntersectionArea({ a, b }): number`, `bboxOfPlacement({ placement }): BBox` from Task 1.
 - Produces: `exactIntersectionArea` re-exported from `scripts/lib/spine.mjs` (so `check_content.mjs` keeps one import source); `gridIntersectionArea` stays exported but becomes **production-dead** — only the equivalence tests call it; `gridUnionArea` **no longer exists**.
 
-**`gridUnionArea` has two live test consumers — verified, not assumed.** `grep -n gridUnionArea` returns `scripts/lib/spine.mjs:172` (the definition), and in `scripts/tests/spine.test.mjs`: `:7` (the import), `:88` and `:92` (the cell-aligned-rects test), and `:105-118` (the F-043 pairSum-identity test, which uses the union scan as its reference). Deleting the export without touching that file makes `spine.test.mjs` fail **at import time**, taking the whole file dark inside `npm test --prefix scripts`, which runs in Gate 2 and in CI. Step 5 below retires both consumers in the same commit; the pairSum identity is not deleted, it is re-anchored on `exactIntersectionArea` — that identity is the F-043 proof and must survive the swap.
+**`gridUnionArea` has two live test consumers — verified, not assumed.** `grep -n gridUnionArea` returns `scripts/lib/spine.mjs:172` (the definition), and in `scripts/tests/spine.test.mjs`: `:7` (the import), `:88-95` (the cell-aligned-rects test, with the union assertion at `:92`), and `:97-120` (the F-043 comment block plus the pairSum-identity test at `:105-120`, which uses the union scan at `:116` as its reference). Deleting the export without touching that file makes `spine.test.mjs` fail **at import time**, taking the whole file dark inside `npm test --prefix scripts`, which runs in Gate 2 and in CI. Step 5 below retires both consumers in the same commit; the pairSum identity is not deleted, it is re-anchored on `exactIntersectionArea` — that identity is the F-043 proof and must survive the swap.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -939,7 +942,7 @@ test("gridIntersectionArea is exact on cell-aligned rects", () => {
 
 (The `gridUnionArea` assertion at `:92` is the only line dropped; the `gridIntersectionArea` half of the test survives verbatim.)
 
-Third — and this is the load-bearing half — the F-043 pairSum-identity test at `:98-118`. It currently proves `Σpairwise === Σareas − union` using the union scan as its reference. The union scan is going away, so re-anchor the identity on the new kernel instead of deleting the proof. Replace the whole comment block and test with:
+Third — and this is the load-bearing half — the F-043 comment block and pairSum-identity test at `:97-120`. It currently proves `Σpairwise === Σareas − union` using the union scan as its reference. The union scan is going away, so re-anchor the identity on the new kernel instead of deleting the proof. Replace the whole comment block and test with:
 
 ```js
 // F-043 perf fix: gSpineOverlapRollup's double-count check replaces the
@@ -1225,6 +1228,8 @@ Fix findings as new commits. Re-run Step 6.
 ```js
 const VERTEX_CAP = { continent: 800, ocean: 800, sea: 800, region: 200, town: 200, site: 200, playspace: 800, fixture: 200, world: 800, playroot: 800 };
 ```
+
+**The third tier has two named owners — it is not left to whoever gets there first.** The 40-vertex landform-instance cap is enforced in two places, both outside Plan A and both required: (1) **Plan B Task 2** puts `"maxItems": 40` on `geometry.points` and `geometry.ring` in `content/schemas/landform-instance.schema.json`, with a rejecting case in `scripts/tests/landform-instance-schema.test.mjs`; (2) **Plan C Task 11** adds the world-gate message `G-VERTEX-BUDGET: <id> ring has <n> vertices > 40 for tier landform-instance`, so an over-long generated ring names its remedy instead of surfacing as a raw ajv error. Plan A's `VERTEX_CAP` table deliberately has no `landform-instance` row; if a future reader adds one, the spine gate would silently claim coverage it does not have.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -3392,11 +3397,18 @@ This task is deliberately two commits: a proof commit that changes nothing, and 
 
 **Files:**
 - Delete: `content/maps/cluster1-geography.json`, `tools/mapforge/render-map.mjs`, `tools/mapforge/tests/parity.test.mjs`, `tools/mapforge/tests/fixtures/basin-baseline.svg`, `scripts/check_map_render.mjs`, `scripts/tests/check_map_render.test.mjs`
-- Modify: `tools/mapforge/tests/basin-sheet.test.mjs`, `tools/mapforge/tests/render-sheet.test.mjs`, `scripts/tests/spine-gates.test.mjs`, `scripts/integration.sh`, `.github/workflows/ci.yml`, `game-client/assets/art/art-manifest.json`, `tools/mapforge/README.md`
+- Modify: `tools/mapforge/tests/basin-sheet.test.mjs:10-12,14-21` (doc source + the baseline test)
+- Modify: `tools/mapforge/tests/render-sheet.test.mjs:11-18` (the baseline test)
+- Modify: `scripts/tests/spine-gates.test.mjs:752-762` (the emitted-mirror count)
+- Modify: `scripts/integration.sh:87-89,98-107,122-123` (the emit comment, the two doomed function definitions, their two `run_section` lines)
+- Modify: `.github/workflows/ci.yml:113-120` (the `Map render drift-gate (G-MAP-DRIFT)` step)
+- Modify: `game-client/assets/art/art-manifest.json:494,514` (the two `note` strings)
+- Modify: `tools/mapforge/README.md:24-36,70-73,118` (the mirror section, the legacy command block, the mirror schema heading)
 
 **Interfaces:**
 - Consumes: `computeLock`, `checkLock` from Task 10; `loadPlaces` from Task 5.
 - Produces: `collectOutputs` emits **46** files, not 47. `integration.sh` and `ci.yml` both run `check_render_lock.mjs --check`.
+- **Produces, and owns exclusively: the three new CI steps** — `Render lock (G-RENDER-LOCK)`, `Mapforge test suite` and `Sheet self-check (render-sheet --check)` are added to `.github/workflows/ci.yml` **once, here, in Step 5**. Plan B Task 12 must *verify their presence*, not re-add them: two identically named workflow steps would double the mapforge suite's CI time and make a failure ambiguous about which copy reddened.
 
 - [ ] **Step 1: Prove green with the mirror still committed and unread**
 
@@ -3464,7 +3476,7 @@ git commit -m "test: prove the legacy mirror has no remaining readers"
 
 - [ ] **Step 2: Write the failing test for the post-deletion state**
 
-Modify `tools/mapforge/tests/basin-sheet.test.mjs` — replace the baseline comparison in the first test (`:15-22`) with a lock-hash assertion, and re-point the doc source:
+Modify `tools/mapforge/tests/basin-sheet.test.mjs` — replace the baseline comparison in the first test (`:14-21`) with a lock-hash assertion, and re-point the doc source (`:10-12`, which reads the deleted mirror):
 
 ```js
 import { createHash } from "node:crypto";
@@ -3494,7 +3506,7 @@ test("drawBasinSheet matches the committed render lock", () => {
 });
 ```
 
-Modify `tools/mapforge/tests/render-sheet.test.mjs` the same way:
+Modify `tools/mapforge/tests/render-sheet.test.mjs:11-18` the same way — the test title changes because it no longer names a baseline:
 
 ```js
 test("the spine-driven cluster1 sheet matches the committed render lock", () => {
@@ -3508,7 +3520,7 @@ test("the spine-driven cluster1 sheet matches the committed render lock", () => 
 });
 ```
 
-Modify `scripts/tests/spine-gates.test.mjs:751-762` — the emitted-file count:
+Modify `scripts/tests/spine-gates.test.mjs:752-762` — the emitted-file count (the `nodeFiles + 3` assertion is `:758`, the three-mirror loop `:759-761`):
 
 ```js
 test("spine-emit emits every node file plus BOTH surviving mirrors — a silently dropped mirror reds", () => {
@@ -3600,7 +3612,7 @@ Also update the `spine_emit_drift` comment at `:87-89`, which names the deleted 
 
 `game-client/assets/art/art-manifest.json` — the two `note` strings at `:494` and `:514` name `tools/mapforge/render-map.mjs` and `content/maps/cluster1-geography.json`. Rewrite both to name `tools/mapforge/render-sheet.mjs` and `content/spine/`. These are prose fields; `check_asset_manifest.mjs`'s thumbnail-freshness guard (U) rehashes **source image bytes**, not notes, so this cannot invalidate a thumb — verify that claim by running the gate in Step 6.
 
-`tools/mapforge/README.md` — delete the "legacy, mirror-driven" section (`:24-30`, `:70`, `:118`) and the mirror schema block.
+`tools/mapforge/README.md` — delete the generated-mirror paragraph and the "legacy mirror-driven CLI" paragraph (`:24-36`), the three legacy command lines (`:70-73`), and the mirror schema section headed at `:118`.
 
 - [ ] **Step 6: Run everything**
 
@@ -3931,12 +3943,21 @@ git branch --show-current && git log --oneline -1
 
 Plan A is done when every line below is demonstrated with pasted command output, not asserted.
 
+The commands below compare against `plan-a-base`, a lightweight git tag marking the commit Plan A started from. Create it as the very first thing you do, before Task 1 Step 1:
+
+```bash
+git tag plan-a-base HEAD
+git rev-parse --short plan-a-base   # record this in the task log
+```
+
+Delete it (`git tag -d plan-a-base`) only after the acceptance table below is signed off — it is the sole reference point for the "nothing moved" criteria.
+
 | # | Criterion | The command that proves it |
 | --- | --- | --- |
-| 1 | **The committed SVGs are byte-identical to what was committed before Plan A started.** | `git diff --stat <plan-A-base-sha> -- game-client/assets/art/maps/` prints nothing |
-| 2 | **No node file moved.** | `git diff --stat <plan-A-base-sha> -- content/spine/nodes/` prints nothing |
-| 3 | **The runtime emitter is untouched.** | `git diff --stat <plan-A-base-sha> -- colyseus-server/` prints nothing; `(cd colyseus-server && npm test -- mapDimensions)` passes |
-| 4 | Exactly **two** content files changed in the whole plan, both reviewable as one added block each: `content/spine/sheet.json` and `content/spine/sheet-atlas.json` (plus the one-time regeneration of the mirror before it was deleted). | `git diff --stat <plan-A-base-sha> -- content/` |
+| 1 | **The committed SVGs are byte-identical to what was committed before Plan A started.** | `git diff --stat plan-a-base -- game-client/assets/art/maps/` prints nothing |
+| 2 | **No node file moved.** | `git diff --stat plan-a-base -- content/spine/nodes/` prints nothing |
+| 3 | **The runtime emitter is untouched.** | `git diff --stat plan-a-base -- colyseus-server/` prints nothing; `(cd colyseus-server && npm test -- mapDimensions)` passes |
+| 4 | `git diff --stat` over `content/` shows exactly **four** entries and no others: two MODIFIED (`content/spine/sheet.json`, `content/spine/sheet-atlas.json` — one added `subjects` block each, Tasks 7 and 8), one CREATED (`content/world/render-lock.json`, Task 10), one DELETED (`content/maps/cluster1-geography.json`, Task 12). `content/spine/nodes/**` and `content/maps/atlas-frontier.md` must NOT appear. The mirror is regenerated once, in Task 7 Step 5, and that regeneration must be inside the same commit as the `sheet.json` edit — a mirror diff surviving into any later commit is a `G-EMIT-DRIFT` failure, not an accepted cost. | `git diff --stat plan-a-base -- content/` |
 | 5 | `G-OVERLAP` verdicts are identical on all 133 sibling pairs, max deviation < 0.01 km². | `node scripts/tools/overlap-preflight.mjs` |
 | 6 | Gate 1's spine lane is **under 1 s** (baseline 3.75 s). | `time node scripts/check_content.mjs --only=spine` |
 | 7 | The gate's own test suite is **under 60 s** (baseline 93.3 s for `spine-gates.test.mjs`). | `time npm test --prefix scripts` |
@@ -3960,7 +3981,7 @@ The same two sheets, byte-identical, with the legacy mirror and both hard-coded 
 | `exactIntersectionArea({ a, b }): number` | C (fabric polygon checks), E (the redraw's overlap verification) |
 | `ringVertexCount({ placement }): number`, `bboxOfPlacement({ placement }): BBox`, `buildBBoxIndex({ items })` | C, E |
 | `resolveWorld({ spine, tree, descriptor, fabric, civil }): { doc, problems }` | **D** — supplies `fabric`/`civil` and makes `spine`/`tree` optional; the `problems.push` guard for those arguments is D's first edit |
-| `loadPlaces({ contentRoot }): { doc, problems }` | D — removes the mirror fallback branch and points it at `content/world/resolved/` |
+| `loadPlaces({ contentRoot }): { doc, problems }` | **D** — points it at `content/world/resolved/` and removes the mirror fallback branch. **The fallback is load-bearing, not vestigial** (risk A4): three fixture suites build a content root containing only `content/maps/cluster1-geography.json` with no `content/spine/` at all — `scripts/tests/zone-content.test.mjs:355`, `scripts/tests/town-plan.test.mjs:493`, `scripts/tests/bestiary-placement.test.mjs:95`. Removing the branch without migrating those three roots to the `ResolvedWorld` shape makes `loadPlaces` return `{doc: null}` for them, the three joins at `check_content.mjs:816/955/1192` take their `if (!zones) return 0` early-out, and the two assertions that require a FAIL to fire (`zone-content.test.mjs:483`, `town-plan.test.mjs:589`) go red. The migration, the three literal expectations and the three gate messages at `check_content.mjs:835/:981/:1203` move in **one** commit in D, whose verify step compares the `npm test --prefix scripts` pass count against the pre-task baseline — exiting 0 is not the check |
 | `WORLD_DOC_KEYS: string[]` | D, E |
 | The `subjects` descriptor block in `sheet.json` / `sheet-atlas.json` | B (new sheets declare their own), E (the redraw rewrites `zoneRoot` and the id arrays) |
 | `computeLock({ repoRoot, sheets, extraPaths })`, `checkLock`, `unifiedDiff` | C (`extraPaths` gains the fabric files), E (the R12 re-baseline order) |

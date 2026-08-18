@@ -25,7 +25,9 @@
 - `G-ATLAS-ROLLUP` tolerance stays +/-2 pp (`check_content.mjs:1690-1707`). If the generated world cannot roll up within it, the generator is wrong, not the gate.
 
 **Target counts (gated against `content/world/manifest.json`)**
-- 13 landmasses, 3 oceans, 9 seas, 160 regions = 40 surveyed + 120 reported, 45 settlements (3 capital / 12 hub / 30 village), 8 town plans, 60 dungeon complexes / 190 floors (3 families x 8 + 36 bespoke), 164 distinct landform types / 172 group memberships / 8 dual-listed, 1,740 instances / 336 named, 20 biomes, 18 terrain kinds, 626 distinct names.
+- 13 landmasses, 3 oceans, 9 seas, 160 regions = 40 surveyed + 120 reported, 45 settlements (3 capital / 12 hub / 30 village), 8 town plans, 60 dungeon complexes / 190 floors (3 families x 8 + 36 bespoke), **170** distinct landform types / **178** group memberships / 8 dual-listed / 23 `dungeonCapable` / 40 glyph families / 12 groups, 1,740 instances / 336 named, 20 biomes, 18 terrain kinds, 626 distinct names.
+- **The landform census is 170/178, not the spec's 164/172.** Plan B Task 1 is the sole authority for the lexicon and ships six types the spec table omits — three bound by a named pinned record (`headland`, `ford`, `sea-waterfall`) and three that are vocabulary THIS plan's instance placement needs for c01's shelf ice and c10's tephra ground (`ice-shelf`, `ash-front`, `ash-plain`), all single-group, none `dungeonCapable` — so memberships move 172 -> 178 while the 8 dual-listed and 23 `dungeonCapable` counts are unchanged. Every downstream number in THIS plan reads 170: `manifest.landformCatalogue.distinctTypes`, the `G-WORLD-BUDGET` band, and the `world-budget: landforms <n> types` / `G-LANDFORM: types placed: <n> / <n>` print lines. Task 1's test joins the manifest number to the committed lexicon's row count so the two can never drift apart again.
+- The `requires` predicate vocabulary is likewise Plan B's, closed at exactly 11 keys (`rock`, `precipDecileMin/Max`, `tempDecileMin/Max`, `slopeMin/Max`, `nearFlag`, `flowAccMin`, `elevMin/Max`) under `additionalProperties: false`. No plan may add `coastal`, `flagsAny/All/None`, `tempMin` or `tempMax`. `requires.rock` is closed to `["carbonate", "clastic", "volcanic"]`, which is why Task 3 Step 6 assigns a substrate class to every land cell and `FLAG` carries `CARBONATE`, `SAND` and `VOLCANIC` bits — a `rock` value the generator cannot produce is 19 desert types or 15 volcanic types silently degrading to `substitutions`.
 - Land split: cap 6,000 + 4 major x 11,000 + 3 minor x 3,000 + 5 chains x 1,000 = 64,000.
 - Surveyed region 160 km2 +/-25%; reported region 480 km2 +/-20% = [384, 576]. 40x160 + 120x480 = 64,000.
 - Ocean polygons 41,800 / 30,400 / 19,000 = 91,200; attributed water 44,000 / 32,000 / 20,000. Sea polygons are SUBSETS of their ocean polygon (G-CONTAIN); their 20,600 km2 is already inside the 91,200 and is never added again.
@@ -128,7 +130,7 @@ Everything Plan C creates (`C`), modifies (`M`) or deletes (`D`). Paths are repo
 | C | `tools/mapforge/lib/noise.mjs` | Integer-hash value noise, fbm, polynomial smoothstep, committed unit-vector table, `q()` |
 | C | `tools/mapforge/lib/grid.mjs` | Structure-of-arrays cell grid + the `FLAG` bitfield |
 | C | `tools/mapforge/lib/passes/mask.mjs` | P1 — hard premise masks and plate assignment |
-| C | `tools/mapforge/lib/passes/elevation.mjs` | P2 — fbm + ridged orogen + arc cones, clamped to the premise |
+| C | `tools/mapforge/lib/passes/elevation.mjs` | P2 — fbm + ridged orogen + arc cones, clamped to the premise; P2b `assignSubstrate` — one of CARBONATE / VOLCANIC / SAND per land cell, which is what makes `requires.rock` matchable |
 | C | `tools/mapforge/lib/passes/sea-level.mjs` | P3 — `selectSeaLevelByRank`, the integer rank selection |
 | C | `tools/mapforge/lib/arcs.mjs` | P4/P14 — planar arc topology, one-shot Douglas-Peucker, ring assembly, fractalise |
 | C | `tools/mapforge/lib/passes/winds.mjs` | P5 — prevailing winds + orographic rain shadow |
@@ -153,9 +155,13 @@ Everything Plan C creates (`C`), modifies (`M`) or deletes (`D`). Paths are repo
 | C | `tools/mapforge/tests/rank-select.test.mjs` | Exact k-th largest; 1-ULP immunity; the premise-footprint failure message |
 | C | `tools/mapforge/tests/arcs.test.mjs` | Shared arcs are bit-identical in both neighbours; simplify-once; winding |
 | C | `tools/mapforge/tests/hydrology.test.mjs` | No sinks after priority-flood; D8 determinism; accumulation monotonicity |
+| C | `tools/mapforge/tests/water.test.mjs` | Rain shadow; winds determinism and clamping; interior-water budget; SEA/LAKE exclusivity |
 | C | `tools/mapforge/tests/partition.test.mjs` | Owner histogram identity; quota adherence; insertion-order independence |
 | C | `tools/mapforge/tests/landforms.test.mjs` | `requires` predicates honoured; count targets; handle grammar; total ordering |
-| C | `tools/mapforge/tests/settlements.test.mjs` | Vetoes; tier quotas; minimum separations; level-band rings |
+| C | `tools/mapforge/tests/settlements.test.mjs` | Vetoes; tier quotas; minimum separations; level-band rings; raw-pinned-record rejection |
+| C | `tools/mapforge/tests/roads.test.mjs` | One road component; no sea crossing; water-only sea lanes; one unnamed trunk river per continent |
+| C | `tools/mapforge/tests/dungeons.test.mjs` | `dungeonCapable` filter; serialised `hopsToSettlement`; shortfall reporting; determinism |
+| C | `tools/mapforge/tests/fixtures/coast-world.mjs` | The synthetic continent Tasks 9a and 9b share (fixture module, not a test file) |
 | C | `tools/mapforge/tests/generate-world.test.mjs` | The whole CLI: draft root shape, real gate green on it, stage timings |
 | C | `tools/mapforge/tests/promote.test.mjs` | Six-step promotion; reconciliation deletes; runtime edges preserved; twice is a no-op |
 | C | `tools/mapforge/tests/repro.test.mjs` | `G-REPRO`'s three properties |
@@ -187,11 +193,15 @@ Everything Plan C creates (`C`), modifies (`M`) or deletes (`D`). Paths are repo
 | 3 | `content/world/premises/*.json`, `content/schemas/premise.schema.json`, `tools/mapforge/lib/passes/{mask,elevation}.mjs` |
 | 4 | `tools/mapforge/lib/passes/sea-level.mjs` + `tests/rank-select.test.mjs` |
 | 5 | `tools/mapforge/lib/arcs.mjs` + `tests/arcs.test.mjs` |
-| 6 | `tools/mapforge/lib/hydrology.mjs`, `lib/passes/{winds,water}.mjs` |
+| 6a | `tools/mapforge/lib/hydrology.mjs` + `tests/hydrology.test.mjs` |
+| 6b | `tools/mapforge/lib/passes/{winds,water}.mjs` + `tests/water.test.mjs` |
 | 7 | `tools/mapforge/lib/passes/{biome,partition}.mjs` |
 | 8 | `tools/mapforge/lib/passes/landforms.mjs`, `tests/fixtures/mini-lexicon/` |
-| 9 | `tools/mapforge/lib/passes/{settlements,roads,dungeons}.mjs` |
-| 10 | `tools/mapforge/lib/fabric.mjs`, `tools/mapforge/generate-world.mjs` |
+| 9a | `tools/mapforge/lib/passes/settlements.mjs` + `tests/settlements.test.mjs` + `tests/fixtures/coast-world.mjs` |
+| 9b | `tools/mapforge/lib/passes/roads.mjs` + `tests/roads.test.mjs` |
+| 9c | `tools/mapforge/lib/passes/dungeons.mjs` + `tests/dungeons.test.mjs` |
+| 10a | `tools/mapforge/lib/fabric.mjs` + `tests/fabric.test.mjs` |
+| 10b | `tools/mapforge/generate-world.mjs` + `tests/generate-world.test.mjs`, `.gitignore` |
 | 11 | `scripts/lib/world.mjs`, `scripts/check_content.mjs`, `scripts/tests/world-gates.test.mjs`, `content/schemas/{fabric-file,handle-ledger}.schema.json` |
 | 12 | `tools/mapforge/promote-world.mjs`, `tests/{promote,repro}.test.mjs`, `.release.json`, `.github/workflows/ci.yml`, `scripts/integration.sh` |
 | 13 | `content/world/fabric/*`, `content/world/handles/*`, `tools/mapforge/lib/{overlay-sheet,fabric-sheet}.mjs`, `render-sheet.mjs`, storybook, art manifest, deletions |
@@ -255,7 +265,9 @@ export function makeGrid({ w = 800, h = 800, cellKm = 0.5 }): Grid
 //   freshKm:  Float32Array,      // km to nearest fresh water, -1 = unset     (filled by P6)
 //   biomeNames: string[], regionIds: string[],
 //   biomeName(i), regionId(i), elevM(i) }
-export const FLAG: Readonly<{SEA:1,LAKE:2,RIVER:4,DELTA:8,GLACIER:16,ARC:32,CARBONATE:64,SAND:128,CLIFF:256}>
+export const FLAG: Readonly<{SEA:1,LAKE:2,RIVER:4,DELTA:8,GLACIER:16,ARC:32,CARBONATE:64,SAND:128,CLIFF:256,VOLCANIC:512}>
+export const SUBSTRATE_FLAGS: ReadonlyArray<number>   // [CARBONATE, VOLCANIC, SAND] — exactly one per land cell
+export const SUBSTRATE_MASK: number                   // CARBONATE | VOLCANIC | SAND
 
 // tools/mapforge/lib/passes/sea-level.mjs
 export function selectSeaLevelByRank({ elev, targetLandCells }):
@@ -288,7 +300,9 @@ export function loadFabric({ contentRoot }):
 export function gWorldSeaLand({ world, manifest, report, note }): void
 export function gWorldTrunkArea({ nodes, fabric, report }): void
 export function gWorldPoi({ fabric, report }): void
-export function gWorldOrder({ handles, report }): void
+export function gWorldOrder({ handles, orderHandlesFn, orderDigestFn, report }): void
+// the REGION half of the same ordering rule is Plan D's gZoneOrder (resolved
+// zones carry `order`; fabric regions cannot — fabric-file.schema.json forbids it)
 export function gWorldBudget({ contentRoot, budgets, manifest, fabric, handles, report, note }): void
 ```
 
@@ -306,7 +320,8 @@ export function gWorldBudget({ contentRoot, budgets, manifest, fabric, handles, 
                  "terrainKind": "karst-plateau", "biomeShares": { "karst": 62, "forest": 38 },
                  "ring": [[0,0]], "levelBand": [24,40], "adjacent": ["c03/r06"] } ],
   "instances": [ /* landform-instance.schema.json records */ ],
-  "settlements": [ { "id": "c03/s01", "rank": "capital", "at": [31.4,44.8], "cell": [62,89],
+  "settlements": [ { "id": "c03/s01", "title": "Netstead", "rank": "capital",
+                     "atKm": [31.4,44.8], "cell": [62,89], "continent": "c03",
                      "region": "c03/r07", "score": 0.81 } ],                       // (C)
   "roads": [ { "id": "c03/rd01", "from": "c03/s01", "to": "c03/s04",
                "km": 23.5, "points": [[31.4,44.8]] } ],                            // (C)
@@ -346,7 +361,7 @@ The manifest is the single numeric authority every later task reads. It must lan
 - Create: `scripts/lib/world.mjs`
 - Create: `scripts/tests/world-gates.test.mjs`
 - Create: `scripts/tests/fixtures/world/base/` (a minimal world root: manifest + budgets, no fabric)
-- Modify: `content/world/budgets.json` (Plan B created it with `landforms` + `sheets`; add `fabric` + `civil` + `cellKm`)
+- Modify: `content/world/budgets.json` (append `fabric`, `civil`, `cellKm` and `loop` — created by Plan B Task 5 with only the `landforms` and `sheets` sections, so there is no pre-existing line to anchor to; if Plan B has not landed, create the file with all six sections and Plan B's two rebase onto it)
 - Modify: `scripts/check_content.mjs:1536-1560` (import + call `checkWorld`), `:1682` (after `gSpineBudgets`)
 - Test: `scripts/tests/world-gates.test.mjs`
 
@@ -365,7 +380,7 @@ Create `scripts/tests/world-gates.test.mjs`:
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { cpSync, mkdtempSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -447,6 +462,47 @@ test("the landmass columns close: net 64000, interior water 1600, 40 surveyed, 1
     assert.ok(doc.landmasses.find((l) => l.id === id).why.length > 0, `${id} needs a written why`);
 });
 
+test("landformCatalogue.distinctTypes IS the committed lexicon's row count, not a copy of it", () => {
+  // Two independently-maintained counts of one list is how a committed
+  // authority file ends up six short: the spec table says 164, Plan B Task 1
+  // ships 170, and nothing joined the two. Skipped until Plan B's lexicon
+  // lands, exactly as landforms.test.mjs's mirror test is.
+  const doc = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
+  assert.equal(doc.landformCatalogue.distinctTypes, 170);
+  assert.equal(doc.landformCatalogue.groupMemberships, 178);
+  assert.equal(doc.landformCatalogue.dualListed, 8);
+  const lexPath = join(ROOT, "content/world/lexicon/landforms.json");
+  if (!existsSync(lexPath)) return;                    // Plan B not merged yet
+  const lex = JSON.parse(readFileSync(lexPath, "utf8"));
+  assert.equal(doc.landformCatalogue.distinctTypes, lex.length,
+    `manifest says ${doc.landformCatalogue.distinctTypes} landform types, the lexicon holds ${lex.length}`);
+  const memberships = lex.reduce((a, t) => a + 1 + (t.alsoGroups?.length ?? 0), 0);
+  assert.equal(doc.landformCatalogue.groupMemberships, memberships);
+  assert.equal(doc.landformCatalogue.dualListed, lex.filter((t) => (t.alsoGroups?.length ?? 0) > 0).length);
+});
+
+test("every landmass carries an explicit nodeId, and c02's is n-cluster1", () => {
+  // buildTrunk mints `id: lm.nodeId`, NEVER `n-${slugOf(title)}`. Slugging
+  // "Wealdmarch" would mint n-wealdmarch, and promote-world's reconciliation
+  // would then delete n-cluster1 as an n-atlas descendant absent from the
+  // draft — taking twelve parentId references, check_spine_emit.mjs:104,
+  // atlas-sheet.mjs:42, spine-coverage.mjs:14 and Plan D's PIN_OFFSET anchor
+  // with it. The id is DATA, in exactly one place, and this is that place.
+  const doc = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
+  for (const lm of doc.landmasses)
+    assert.match(lm.nodeId, /^n-[a-z0-9-]+$/, `${lm.id} has no usable nodeId`);
+  assert.equal(new Set(doc.landmasses.map((l) => l.nodeId)).size, 13, "two landmasses share a nodeId");
+  assert.equal(doc.landmasses.find((l) => l.id === "c02").nodeId, "n-cluster1");
+  assert.ok(doc.landmasses.find((l) => l.id === "c02").nodeIdWhy.length > 0,
+    "c02's nodeId disagrees with its title — that needs a written reason on the row");
+  assert.equal(doc.landmasses.find((l) => l.id === "c03").nodeId, "n-coldreach");
+  assert.equal(doc.landmasses.find((l) => l.id === "c04").nodeId, "n-stonemoor");
+  // No landmass may collide with a water node id.
+  const water = new Set([...doc.oceans, ...doc.seas].map((w) => w.nodeId));
+  for (const lm of doc.landmasses)
+    assert.ok(!water.has(lm.nodeId), `${lm.id} nodeId collides with a water node`);
+});
+
 test("the water columns close: 3 oceans summing to the polygon budget, 9 nested seas", () => {
   const doc = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
   assert.equal(doc.oceans.length, 3);
@@ -497,7 +553,7 @@ test("the committed budgets file pins cellKm at 0.5 and the six loop stages", ()
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `node --test --test-name-pattern "world" 'scripts/tests/*.test.mjs'`
+Run: `node --test 'scripts/tests/world-gates.test.mjs'`
 Expected: FAIL — `Cannot find module .../content/world/manifest.json` on the manifest test, and `world-budget:` never appears in the gate output because `checkWorld` does not exist.
 
 - [ ] **Step 3: Write `content/world/manifest.json`**
@@ -523,7 +579,7 @@ Expected: FAIL — `Cannot find module .../content/world/manifest.json` on the m
     "reported": { "count": 120, "nominalKm2": 480, "tolerancePct": 20 }
   },
   "landformCatalogue": {
-    "distinctTypes": 164, "groupMemberships": 172, "dualListed": 8,
+    "distinctTypes": 170, "groupMemberships": 178, "dualListed": 8,
     "instances": { "total": 1740 }, "named": { "total": 336 }
   },
   "names": { "targetDistinct": 626, "reservedFile": "content/world/names/reserved.json" },
@@ -543,21 +599,22 @@ Expected: FAIL — `Cannot find module .../content/world/manifest.json` on the m
     "bands": [[1,10],[8,20],[16,30],[24,40],[32,50],[40,58],[46,64],[52,70],[58,80]]
   },
   "landmasses": [
-    { "id": "c01", "title": "Rimewall Cap",  "class": "cap",   "netKm2": 6000,  "interiorWaterKm2": 0,    "surveyed": 0, "reported": 12 },
-    { "id": "c02", "title": "Wealdmarch",    "class": "major", "netKm2": 11000, "interiorWaterKm2": 1100, "surveyed": 10, "reported": 20,
-      "why": "10, not the spec table's 8: content/zones/ already holds 10 committed zone records for the basin and 116 bestiary placement rows are sworn to those 10 region slugs. Eight surveyed regions here would destroy two hand-written zone records and re-home ~23 bestiary rows for no gain. The two seats come from Coldreach, which has no committed zone prose at all. Column still sums to 40." },
-    { "id": "c03", "title": "Coldreach",     "class": "major", "netKm2": 11000, "interiorWaterKm2": 0,    "surveyed": 6, "reported": 20,
+    { "id": "c01", "title": "Rimewall Cap",  "nodeId": "n-rimewall-cap", "class": "cap",   "netKm2": 6000,  "interiorWaterKm2": 0,    "surveyed": 0, "reported": 12 },
+    { "id": "c02", "title": "Wealdmarch",    "nodeId": "n-cluster1",     "class": "major", "netKm2": 11000, "interiorWaterKm2": 1100, "surveyed": 10, "reported": 20,
+      "why": "10, not the spec table's 8: content/zones/ already holds 10 committed zone records for the basin and 116 bestiary placement rows are sworn to those 10 region slugs. Eight surveyed regions here would destroy two hand-written zone records and re-home ~23 bestiary rows for no gain. The two seats come from Coldreach, which has no committed zone prose at all. Column still sums to 40.",
+      "nodeIdWhy": "n-cluster1, NOT n-wealdmarch. The live node for this landmass is content/spine/nodes/n-cluster1.json and twelve committed node files name it as their parentId. scripts/check_spine_emit.mjs:104 and tools/mapforge/lib/atlas-sheet.mjs:42 both resolve it by literal id and hard-fail without it, scripts/spine-coverage.mjs:14 walks its children, and Plan D derives PIN_OFFSET from its committed placement.anchor. Slugging the title would mint a NEW id, delete this one through reconciliation, and take all of that with it. Every other row's nodeId happens to equal n-<slug of title> because those nodes are new or already named that way — this column is the authority regardless, and buildTrunk reads it instead of slugging." },
+    { "id": "c03", "title": "Coldreach",     "nodeId": "n-coldreach",    "class": "major", "netKm2": 11000, "interiorWaterKm2": 0,    "surveyed": 6, "reported": 20,
       "why": "6, not 8 — the two seats moved to Wealdmarch so the 10 committed basin zone records survive the redraw. See c02's why." },
-    { "id": "c04", "title": "Stonemoor",     "class": "major", "netKm2": 11000, "interiorWaterKm2": 300,  "surveyed": 7, "reported": 21 },
-    { "id": "c05", "title": "Thirstwold",    "class": "major", "netKm2": 11000, "interiorWaterKm2": 0,    "surveyed": 7, "reported": 21 },
-    { "id": "c06", "title": "Reedstrand",    "class": "minor", "netKm2": 3000,  "interiorWaterKm2": 200,  "surveyed": 3, "reported": 5 },
-    { "id": "c07", "title": "Driftholt",     "class": "minor", "netKm2": 3000,  "interiorWaterKm2": 0,    "surveyed": 3, "reported": 5 },
-    { "id": "c08", "title": "Wracklow",      "class": "minor", "netKm2": 3000,  "interiorWaterKm2": 0,    "surveyed": 2, "reported": 6 },
-    { "id": "c09", "title": "Brightfall",    "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 1, "reported": 2 },
-    { "id": "c10", "title": "Ashen Spar",    "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 1, "reported": 2 },
-    { "id": "c11", "title": "Quillreef",     "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 0, "reported": 2 },
-    { "id": "c12", "title": "Skerryfast",    "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 0, "reported": 2 },
-    { "id": "c13", "title": "Loamspit",      "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 0, "reported": 2 }
+    { "id": "c04", "title": "Stonemoor",     "nodeId": "n-stonemoor",    "class": "major", "netKm2": 11000, "interiorWaterKm2": 300,  "surveyed": 7, "reported": 21 },
+    { "id": "c05", "title": "Thirstwold",    "nodeId": "n-thirstwold",   "class": "major", "netKm2": 11000, "interiorWaterKm2": 0,    "surveyed": 7, "reported": 21 },
+    { "id": "c06", "title": "Reedstrand",    "nodeId": "n-reedstrand",   "class": "minor", "netKm2": 3000,  "interiorWaterKm2": 200,  "surveyed": 3, "reported": 5 },
+    { "id": "c07", "title": "Driftholt",     "nodeId": "n-driftholt",    "class": "minor", "netKm2": 3000,  "interiorWaterKm2": 0,    "surveyed": 3, "reported": 5 },
+    { "id": "c08", "title": "Wracklow",      "nodeId": "n-wracklow",     "class": "minor", "netKm2": 3000,  "interiorWaterKm2": 0,    "surveyed": 2, "reported": 6 },
+    { "id": "c09", "title": "Brightfall",    "nodeId": "n-brightfall",   "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 1, "reported": 2 },
+    { "id": "c10", "title": "Ashen Spar",    "nodeId": "n-ashen-spar",   "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 1, "reported": 2 },
+    { "id": "c11", "title": "Quillreef",     "nodeId": "n-quillreef",    "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 0, "reported": 2 },
+    { "id": "c12", "title": "Skerryfast",    "nodeId": "n-skerryfast",   "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 0, "reported": 2 },
+    { "id": "c13", "title": "Loamspit",      "nodeId": "n-loamspit",     "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 0, "reported": 2 }
   ],
   "oceans": [
     { "id": "o01", "title": "Galereach", "nodeId": "n-galereach", "polygonKm2": 41800, "attributedWaterKm2": 44000 },
@@ -662,14 +719,16 @@ Verify by hand before moving on: `netKm2` sums to 64,000 (6,000 + 4×11,000 + 3�
       "type": "array", "minItems": 1,
       "items": {
         "type": "object", "additionalProperties": false,
-        "required": ["id", "title", "class", "netKm2", "interiorWaterKm2", "surveyed", "reported"],
+        "required": ["id", "title", "nodeId", "class", "netKm2", "interiorWaterKm2", "surveyed", "reported"],
         "properties": {
           "id": { "type": "string", "pattern": "^c[0-9]{2}$" },
           "title": { "type": "string" },
+          "nodeId": { "type": "string", "pattern": "^n-[a-z0-9-]+$" },
           "class": { "enum": ["cap", "major", "minor", "chain"] },
           "netKm2": { "type": "number" }, "interiorWaterKm2": { "type": "number" },
           "surveyed": { "type": "integer" }, "reported": { "type": "integer" },
-          "why": { "type": "string" }
+          "why": { "type": "string" },
+          "nodeIdWhy": { "type": "string" }
         }
       }
     },
@@ -833,10 +892,14 @@ export function gWorldBudget({ contentRoot, budgets, manifest = null, report, no
     report(`G-WORLD-BUDGET: budgets.cellKm is ${budgets.cellKm} — 0.5 is a pinned constant, not a tuning knob`);
 
   // Town plans: a QUOTA with a staged delivery, so the shortfall must be
-  // visible rather than silently closed. D2's taken default is "3 capitals'
-  // plans now, 5 deferred" — Millcross exists today and Plan E Task 8 authors
-  // the three capitals, giving 4 of 8. Printed, never failed: a gate here
-  // would block the release the staging exists to permit.
+  // visible rather than silently closed. Millcross exists today; E-C9 defers
+  // the other 7, so the line reads 1 authored / 8 quota until a future release
+  // adds one plan, one node and one census line. (E-C9's argument is a census
+  // one: a town plan joins the world by spineId, so each new plan forces a
+  // tier:"town" node into the trunk, and Task 10's readdirSync(draftNodes)
+  // .length === 36 assertion goes red on the plan-authoring commit.) Printed,
+  // never failed: a gate here would block the release the staging exists to
+  // permit.
   if (manifest?.quotas?.townPlans) {
     const dir = join(contentRoot, "towns");
     const authored = existsSync(dir)
@@ -935,8 +998,8 @@ The fixture root has **no `spine/` directory**, so `checkSpine` soft-skips and o
 
 - [ ] **Step 9: Run test to verify it passes**
 
-Run: `node --test --test-name-pattern "world" 'scripts/tests/*.test.mjs'`
-Expected: PASS — all six tests.
+Run: `node --test 'scripts/tests/world-gates.test.mjs'`
+Expected: PASS — 9 tests, 0 fail. (The two lexicon-join assertions inside *"landformCatalogue.distinctTypes IS the committed lexicon's row count"* return early until Plan B's `content/world/lexicon/landforms.json` is merged; the three literal 170 / 178 / 8 assertions above them run unconditionally.)
 
 - [ ] **Step 10: Commit**
 
@@ -1284,10 +1347,26 @@ Note the `Math.sqrt` in the *test*'s unit-vector assertion is fine — the ban a
 // multiples of cellKm — which is why a shared arc vertex is bit-identical in
 // both neighbours' rings (spec §7.4).
 
+// THE flag set. Three of these — CARBONATE, SAND, VOLCANIC — are SUBSTRATE
+// bits, mutually exclusive on any one cell, written once by P2 (Task 3 Step 6b)
+// and read back by P10's `cellView` as `requires.rock`. They exist because
+// Plan B closes `requires.rock` to exactly "carbonate" | "clastic" |
+// "volcanic": without a bit to set, 19 desert types (rock: clastic) and 15
+// volcanic types (rock: volcanic) can never match a cell, and 35 of the 170
+// lexicon rows degrade to `substitutions` with every gate green.
+//
+// The `nearFlag` predicate domain is deliberately SMALLER than this set:
+// CARBONATE, SAND and VOLCANIC are reachable through `rock`, not through
+// `nearFlag`, so a lexicon row can never ask to be "near sandstone".
 export const FLAG = Object.freeze({
   SEA: 1, LAKE: 2, RIVER: 4, DELTA: 8, GLACIER: 16,
-  ARC: 32, CARBONATE: 64, SAND: 128, CLIFF: 256,
+  ARC: 32, CARBONATE: 64, SAND: 128, CLIFF: 256, VOLCANIC: 512,
 });
+
+// The substrate bits, in the order `cellView` tests them. Exactly one is set
+// per land cell; a cell with none is "clastic" by default.
+export const SUBSTRATE_FLAGS = Object.freeze([FLAG.CARBONATE, FLAG.VOLCANIC, FLAG.SAND]);
+export const SUBSTRATE_MASK = FLAG.CARBONATE | FLAG.VOLCANIC | FLAG.SAND;
 
 export function makeGrid({ w = 800, h = 800, cellKm = 0.5 }) {
   const n = w * h;
@@ -1392,7 +1471,7 @@ git branch --show-current && git log --oneline -1
 
 ---
 
-### Task 3: The thirteen premises, P1 (continental mask) and P2 (elevation)
+### Task 3: The thirteen premises, P1 (continental mask), P2 (elevation) and P2b (substrate)
 
 The first refutation forced this task's shape: over 40 free seeds, landmasses ≥ 1,000 km² came out `{1:9, 2:13, 3:11, 4:6, 5:1}` and **0 of 40 seeds produced the 7 named continents** the address space assumes. Premises are therefore **hard geometric masks**, not hints — they pin continent count, footprint centre, area band and coastline class, and P8's biome table is *clamped* to the premise palette afterwards.
 
@@ -1404,7 +1483,7 @@ The first refutation forced this task's shape: over 40 free seeds, landmasses �
 - Test: `tools/mapforge/tests/mask.test.mjs`
 
 **Interfaces:**
-- Consumes: `makeGrid`, `FLAG`, `idx`, `cellCentreKm`, `D8` (Task 2); `fbm`, `smoothstep`, `falloff`, `UNIT_VECTORS`, `q` (Task 2); `mintSeed` (Task 2); `content/world/manifest.json` (Task 1)
+- Consumes: `makeGrid`, `FLAG`, `SUBSTRATE_FLAGS`, `SUBSTRATE_MASK`, `idx`, `cellCentreKm`, `D8` (Task 2); `fbm`, `smoothstep`, `falloff`, `UNIT_VECTORS`, `q` (Task 2); `mintSeed` (Task 2); `content/world/manifest.json` (Task 1)
 - Produces:
 ```js
 // tools/mapforge/lib/passes/mask.mjs
@@ -1413,6 +1492,7 @@ export function applyPremiseMasks({ grid, premises, stream }):
 export function premiseMaskAt({ premise, xKm, yKm, stream }): number   // [0,1]
 // tools/mapforge/lib/passes/elevation.mjs
 export function buildElevation({ grid, premises, maskField, stream }): void  // writes grid.elev in place
+export function assignSubstrate({ grid, premises, maskField, stream }): void // writes ONE of CARBONATE|VOLCANIC|SAND per masked cell
 ```
 
 - [ ] **Step 1: Write the failing test**
@@ -1426,9 +1506,9 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { makeGrid, idx, cellCentreKm } from "../lib/grid.mjs";
+import { makeGrid, idx, cellCentreKm, FLAG, SUBSTRATE_FLAGS } from "../lib/grid.mjs";
 import { applyPremiseMasks, premiseMaskAt } from "../lib/passes/mask.mjs";
-import { buildElevation } from "../lib/passes/elevation.mjs";
+import { buildElevation, assignSubstrate } from "../lib/passes/elevation.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const PREM_DIR = join(ROOT, "content/world/premises");
@@ -1456,6 +1536,38 @@ test("premise area bands bracket the manifest's netKm2 for that landmass", () =>
     const l = MANIFEST.landmasses.find((m) => m.id === p.id);
     assert.ok(p.areaBandKm2[0] <= l.netKm2 && l.netKm2 <= p.areaBandKm2[1],
       `${p.id}: manifest netKm2 ${l.netKm2} outside premise band ${JSON.stringify(p.areaBandKm2)}`);
+  }
+});
+
+test("every premise carries a register from the closed enum and a levelBand on the ring ladder", () => {
+  const REGISTERS = ["basin-anglic", "north-log", "moorstone", "sandtongue", "reedspeech"];
+  for (const p of premises) {
+    assert.ok(REGISTERS.includes(p.register), `${p.id}: register "${p.register}" is not one of the five`);
+    const [lo, hi] = p.levelBand;
+    assert.ok(Number.isInteger(lo) && Number.isInteger(hi), `${p.id}: levelBand is not integral`);
+    assert.ok(lo >= 1 && hi <= 80, `${p.id}: levelBand ${JSON.stringify(p.levelBand)} leaves the 1..80 ladder`);
+    assert.ok(lo < hi, `${p.id}: levelBand is not increasing`);
+  }
+  // c02 is the starter landmass and MUST open at 1: Gildmark is the origin of
+  // the 40 km level rings, so a band that did not reach 1 would leave the
+  // starter capital unreachable at level 1.
+  assert.deepEqual(premises.find((p) => p.id === "c02").levelBand, [1, 40]);
+});
+
+test("footprint.centreKm is THE authority Plan D re-derives its pins from, and it is quantised", () => {
+  // Plan D places ~40 pinned records against these centres and Plan E's
+  // canon-leg solve reads them. A centre that drifted by a quantisation step
+  // would move every pin bound to that landmass, so pin the exact values here
+  // rather than trusting the JSON to stay put.
+  const CENTRES = {
+    c01: [200, 34], c02: [96, 148], c03: [286, 112], c04: [306, 246], c05: [176, 300],
+    c06: [70, 268], c07: [46, 92], c08: [252, 344], c09: [352, 186], c10: [122, 356],
+    c11: [338, 66], c12: [254, 44], c13: [40, 344],
+  };
+  for (const p of premises) {
+    assert.deepEqual(p.footprint.centreKm, CENTRES[p.id], `${p.id} centreKm moved`);
+    for (const v of p.footprint.centreKm)
+      assert.equal(v, Math.round(v * 100) / 100, `${p.id} centreKm is not quantised through q()`);
   }
 });
 
@@ -1517,6 +1629,68 @@ test("buildElevation is deterministic", () => {
     return Array.from(g.elev);
   };
   assert.deepEqual(run(), run());
+});
+
+// ── P2b: substrate. THE reason 35 of 170 lexicon rows can match anything ──
+function substrateWorld() {
+  const grid = makeGrid({ w: 200, h: 200, cellKm: 2 });
+  const { maskField } = applyPremiseMasks({ grid, premises, stream: "d9a0051d32afab59" });
+  buildElevation({ grid, premises, maskField, stream: "d9a0051d32afab59" });
+  assignSubstrate({ grid, premises, maskField, stream: "d9a0051d32afab59" });
+  return { grid, maskField };
+}
+
+test("every masked cell carries exactly one substrate bit, and no unmasked cell carries any", () => {
+  const { grid, maskField } = substrateWorld();
+  for (let i = 0; i < grid.n; i++) {
+    const set = SUBSTRATE_FLAGS.filter((f) => (grid.flags[i] & f) !== 0).length;
+    if (maskField[i] === 0) assert.equal(set, 0, `cell ${i} is ocean floor but carries a substrate bit`);
+    else assert.equal(set, 1, `cell ${i} carries ${set} substrate bits — they are mutually exclusive`);
+  }
+});
+
+test("all THREE requires.rock values Plan B's schema permits are actually produced", () => {
+  // The key-set cross-check in landforms.test.mjs proves matchesRequires
+  // HANDLES `rock`; it says nothing about the VALUES. Plan B closes the enum
+  // to carbonate | clastic | volcanic, so a generator that only ever produces
+  // one of them silently starves 19 desert types and 15 volcanic types.
+  const { grid } = substrateWorld();
+  const seen = new Set();
+  for (let i = 0; i < grid.n; i++) {
+    if ((grid.flags[i] & FLAG.CARBONATE) !== 0) seen.add("carbonate");
+    else if ((grid.flags[i] & FLAG.VOLCANIC) !== 0) seen.add("volcanic");
+    else if ((grid.flags[i] & FLAG.SAND) !== 0) seen.add("clastic");
+  }
+  assert.deepEqual([...seen].sort(), ["carbonate", "clastic", "volcanic"]);
+});
+
+test("substrate follows the premise kit: c04's karst ground is carbonate, c10's arc is volcanic", () => {
+  const { grid } = substrateWorld();
+  const share = (contIndex, flag) => {
+    let hit = 0, total = 0;
+    for (let i = 0; i < grid.n; i++) {
+      if (grid.plate[i] !== contIndex) continue;
+      total++;
+      if ((grid.flags[i] & flag) !== 0) hit++;
+    }
+    return total === 0 ? 0 : hit / total;
+  };
+  const k04 = premises.findIndex((p) => p.id === "c04");
+  const k10 = premises.findIndex((p) => p.id === "c10");
+  assert.ok(share(k04, FLAG.CARBONATE) > 0.5, "Stonemoor's karst kit needs carbonate ground under it");
+  assert.ok(share(k10, FLAG.VOLCANIC) > 0.5, "Ashen Spar's volcanic kit needs volcanic ground under it");
+  // And ARC is set wherever VOLCANIC is, because Plan B's volcanic group
+  // default is `{ rock: "volcanic", nearFlag: "ARC" }` — one without the
+  // other places zero instances.
+  for (let i = 0; i < grid.n; i++)
+    if ((grid.flags[i] & FLAG.VOLCANIC) !== 0)
+      assert.notEqual(grid.flags[i] & FLAG.ARC, 0, `cell ${i} is volcanic ground with no ARC bit`);
+});
+
+test("assignSubstrate is deterministic", () => {
+  const a = Array.from(substrateWorld().grid.flags);
+  const b = Array.from(substrateWorld().grid.flags);
+  assert.deepEqual(a, b);
 });
 ```
 
@@ -1601,7 +1775,7 @@ Write one file per landmass. The full content for `c02` (Wealdmarch, the major t
 }
 ```
 
-The remaining twelve follow the same shape, taking `title`, `class`, `netKm2` (→ `areaBandKm2` = ±10%), `interiorWaterKm2`, `register` and `levelBand` **verbatim from the manifest's `landmasses` table and the spec §6.3 table**, and `structuralIdea` verbatim from the spec's "Structural idea the climate model must satisfy" column:
+The remaining twelve follow the same shape. `title`, `class` and `netKm2` come **verbatim from Task 1's `manifest.landmasses` table** (`areaBandKm2` = `netKm2` ±10%, both ends integral); `register`, `levelBand` and `structuralIdea` come **verbatim from spec §6.3's table** (its `Register`, `Band` and "Structural idea the climate model must satisfy" columns — the manifest carries none of the three, so do not look for them there). Geometry — `centreKm`, `radiiKm`, `coastClass`, `structures` — is fixed here and nowhere else:
 
 | id | title | class | centreKm | radiiKm | coastClass | structures |
 |---|---|---|---|---|---|---|
@@ -1617,6 +1791,26 @@ The remaining twelve follow the same shape, taking `title`, `class`, `netKm2` (�
 | c11 | Quillreef | chain | `[338, 66]` | `[15, 15]` | `atoll-ring` | `atoll-lagoon atKm [338,66] radiusKm 9 amplitude 0.50` |
 | c12 | Skerryfast | chain | `[254, 44]` | `[20, 12]` | `fjordland` | `rift-valley fromKm [236,42] toKm [272,48] amplitude 0.38` |
 | c13 | Loamspit | chain | `[40, 344]` | `[22, 12]` | `sandbar` | `delta-fan atKm [40,344] radiusKm 14 amplitude 0.16` |
+
+`areaBandKm2`, `register` and `levelBand` per landmass — written out rather than left as a derivation, because **these thirteen files are the single authority for every downstream plan** (Plan D re-derives its ~40 pinned coordinates from `footprint.centreKm` above, and Plan E's zone allocation reads `levelBand`), and an authority that only says "compute it from elsewhere" is not one:
+
+| id | title | areaBandKm2 | register | levelBand |
+|---|---|---|---|---|
+| c01 | Rimewall Cap | `[5400, 6600]` | `north-log` | `[58, 80]` |
+| c02 | Wealdmarch | `[9900, 12100]` | `basin-anglic` | `[1, 40]` |
+| c03 | Coldreach | `[9900, 12100]` | `north-log` | `[24, 64]` |
+| c04 | Stonemoor | `[9900, 12100]` | `moorstone` | `[32, 70]` |
+| c05 | Thirstwold | `[9900, 12100]` | `sandtongue` | `[40, 80]` |
+| c06 | Reedstrand | `[2700, 3300]` | `reedspeech` | `[16, 48]` |
+| c07 | Driftholt | `[2700, 3300]` | `reedspeech` | `[10, 36]` |
+| c08 | Wracklow | `[2700, 3300]` | `reedspeech` | `[20, 52]` |
+| c09 | Brightfall | `[900, 1100]` | `reedspeech` | `[30, 56]` |
+| c10 | Ashen Spar | `[900, 1100]` | `sandtongue` | `[55, 80]` |
+| c11 | Quillreef | `[900, 1100]` | `reedspeech` | `[12, 30]` |
+| c12 | Skerryfast | `[900, 1100]` | `north-log` | `[44, 68]` |
+| c13 | Loamspit | `[900, 1100]` | `reedspeech` | `[8, 24]` |
+
+The five registers are the closed enum `premise.schema.json` pins (`basin-anglic`, `north-log`, `moorstone`, `sandtongue`, `reedspeech`) — island chains inherit the nearest continent's register, which is why `reedspeech` carries seven rows. Every `levelBand` sits inside the 9-ring ladder `[1,10] [8,20] [16,30] [24,40] [32,50] [40,58] [46,64] [52,70] [58,80]` and the ceiling is 80, matching the committed corpus (`n-cindervast` is `[65,80]`, `n-meltwash-terrace` is `[1,10]`).
 
 `palette` and `landformKit` per landmass, taken from the spec's contrast-coverage line (§6.3):
 
@@ -1724,7 +1918,7 @@ export const maskSummary = ({ premises, plateArea, cellAreaKm2 }) =>
 // elevation can only ever pick ocean floor if the masks cannot supply k
 // cells — which is exactly the premise-footprint bug P3's message names.
 import { fbm, smoothstep, falloff } from "../noise.mjs";
-import { idx, cellCentreKm } from "../grid.mjs";
+import { idx, cellCentreKm, FLAG, SUBSTRATE_MASK } from "../grid.mjs";
 
 const BASE_FREQ = 0.006;    // ~165 km wavelength — continental relief
 const DETAIL_FREQ = 0.05;   // ~20 km wavelength  — hill and valley grain
@@ -1780,12 +1974,53 @@ export function buildElevation({ grid, premises, maskField, stream }) {
     }
   }
 }
+
+// P2b — SUBSTRATE. Not decoration: Plan B closes `requires.rock` to
+// "carbonate" | "clastic" | "volcanic", so a cell with no substrate bit makes
+// 19 desert rows (rock: clastic) and 15 volcanic rows (rock: volcanic)
+// unmatchable, and `instanceLandforms` drops all 34 into `substitutions` with
+// every gate green. Exactly one bit per masked cell, and none off the mask.
+//
+// The distribution is driven by the premise, not by taste: a premise whose
+// `landformKit` names `karst` gets carbonate ground under most of it, one
+// naming `volcanic` gets volcanic ground under its arc, one naming `desert`
+// gets sand. Everything else falls through to clastic (no bit set), which is
+// what `cellView` returns by default.
+const SUBSTRATE_FREQ = 0.012;     // ~83 km wavelength — province-scale banding
+
+export function assignSubstrate({ grid, premises, maskField, stream }) {
+  const kitOf = premises.map((p) => new Set(p.landformKit));
+  for (let cyi = 0; cyi < grid.h; cyi++) {
+    for (let cxi = 0; cxi < grid.w; cxi++) {
+      const i = idx({ grid, cx: cxi, cy: cyi });
+      grid.flags[i] &= ~SUBSTRATE_MASK;            // idempotent: safe to re-run
+      if (maskField[i] === 0) continue;            // ocean floor carries none
+      const k = grid.plate[i];
+      const kit = kitOf[k];
+      if (!kit) continue;
+      const [x, y] = cellCentreKm({ grid, cx: cxi, cy: cyi });
+      // One noise field, three thresholds — so a province is a contiguous
+      // band rather than per-cell salt and pepper.
+      const t = 0.5 + 0.5 * fbm({ x: x * SUBSTRATE_FREQ, y: y * SUBSTRATE_FREQ, stream, octaves: 4 });
+      if (kit.has("volcanic") && t >= 0.25) {
+        // ARC is the flag Plan B's volcanic group default pairs with
+        // `rock: "volcanic"`. Setting one without the other places nothing.
+        grid.flags[i] |= FLAG.VOLCANIC | FLAG.ARC;
+      } else if (kit.has("karst") && t >= 0.3) {
+        grid.flags[i] |= FLAG.CARBONATE;
+      } else if (kit.has("desert") && t >= 0.2) {
+        grid.flags[i] |= FLAG.SAND;
+      }
+      // else: no bit — `cellView` reads that as "clastic", the default class.
+    }
+  }
+}
 ```
 
 - [ ] **Step 7: Run test to verify it passes**
 
 Run: `node --test 'tools/mapforge/tests/mask.test.mjs'`
-Expected: PASS — 9 tests. In particular *"buildElevation raises masked ground above unmasked ground everywhere"* must pass: `minMaskedCore >= 0.01 > -0.5 >= maxOcean`.
+Expected: PASS — 15 tests. In particular *"buildElevation raises masked ground above unmasked ground everywhere"* must pass (`minMaskedCore >= 0.01 > -0.5 >= maxOcean`), and *"all THREE requires.rock values Plan B's schema permits are actually produced"* must pass — that one is the whole reason P2b exists.
 
 - [ ] **Step 8: Commit**
 
@@ -1793,7 +2028,7 @@ Expected: PASS — 9 tests. In particular *"buildElevation raises masked ground 
 git add content/schemas/premise.schema.json content/world/premises \
         tools/mapforge/lib/passes/mask.mjs tools/mapforge/lib/passes/elevation.mjs \
         tools/mapforge/tests/mask.test.mjs
-git commit -m "feat: 13 hard premise masks, P1 continental mask, P2 elevation"
+git commit -m "feat: 13 hard premise masks, P1 continental mask, P2 elevation, P2b substrate"
 ```
 
 #### Task 3 quality gate
@@ -1810,7 +2045,7 @@ Expected: all green; `world-budget:` lines still print; 47 files clean.
 
 - [ ] **Step 10: Independent adversarial review**
 
-Brief: *the premises are the load-bearing artefact of this whole plan — attack them. Do any two footprints overlap so badly that the argmax starves one premise (the "every premise claims ≥ 1 cell" test uses a 1 km grid — does it still hold at 0.5 km)? Do the footprint areas, summed, plausibly supply 262,400 land cells at the target sea level, or will P3's band check fire on day one? Is the ocean-floor band genuinely disjoint from the land band at every mask value, including `m` just above 0? Does `premiseMaskAt` return exactly 0 (not 1e-18) outside the ellipse, so `maskField[i] > 0` is a clean predicate? Check the twelve table-driven premise files against the spec §6.3 table line by line.*
+Brief: *the premises are the load-bearing artefact of this whole plan — attack them. Do any two footprints overlap so badly that the argmax starves one premise (the "every premise claims ≥ 1 cell" test uses a 1 km grid — does it still hold at 0.5 km)? Do the footprint areas, summed, plausibly supply 262,400 land cells at the target sea level, or will P3's band check fire on day one? Is the ocean-floor band genuinely disjoint from the land band at every mask value, including `m` just above 0? Does `premiseMaskAt` return exactly 0 (not 1e-18) outside the ellipse, so `maskField[i] > 0` is a clean predicate? Check the twelve table-driven premise files against the spec §6.3 table line by line. Then attack P2b: is `assignSubstrate` idempotent (it clears `SUBSTRATE_MASK` before setting — confirm re-running it twice produces identical flags), does the `t` threshold ladder leave any premise whose kit names `karst`, `desert` AND `volcanic` with a starved class, and does every premise whose `landformKit` names `volcanic` actually get `FLAG.ARC` set — because Plan B's volcanic group default is `{ rock: "volcanic", nearFlag: "ARC" }` and setting one bit without the other places exactly zero volcanic landforms?*
 
 - [ ] **Step 11: Refactor** — most likely finding: the footprint areas need re-scaling so the masked cell count comfortably exceeds 262,400. Adjust `radiiKm`, never the mask code.
 
@@ -2491,11 +2726,20 @@ git branch --show-current && git log --oneline -1
 
 This task is where the 1,600 km² of interior water comes from, so it is what turns the **gross** ratio from Task 4 into the **net** 1.500 the manifest demands.
 
+**This task lands as TWO commits with TWO quality gates**, because `hydrology.mjs` is a pure numeric library over raw typed arrays while `winds.mjs`/`water.mjs` are grid passes with premise and manifest semantics. One adversarial review cannot hold both: the first is attacked on heap ties and epsilon choice, the second on sweep coverage and budget arithmetic. The interfaces are already disjoint — `hydrology.mjs` takes `{elev, w, h}` and returns typed arrays; the two passes take `{grid, premises, …}` and mutate the grid.
+
+| Sub-task | Module | Failing test | Commit subject |
+|---|---|---|---|
+| **6a** | `tools/mapforge/lib/hydrology.mjs` | `tests/hydrology.test.mjs` | `feat: P6 priority-flood, D8 flow direction and accumulation` |
+| **6b** | `tools/mapforge/lib/passes/winds.mjs`, `tools/mapforge/lib/passes/water.mjs` | `tests/water.test.mjs` | `feat: P5 winds and P7 lakes/deltas/glaciers` |
+
+Each runs the full five-step gate (implement → verify → independent review → refactor → re-verify) on its own diff before the next begins.
+
 **Files:**
-- Create: `tools/mapforge/lib/hydrology.mjs`
-- Create: `tools/mapforge/lib/passes/winds.mjs`
-- Create: `tools/mapforge/lib/passes/water.mjs`
-- Test: `tools/mapforge/tests/hydrology.test.mjs`
+- Create: `tools/mapforge/lib/hydrology.mjs` *(6a)*
+- Create: `tools/mapforge/lib/passes/winds.mjs` *(6b)*
+- Create: `tools/mapforge/lib/passes/water.mjs` *(6b)*
+- Test: `tools/mapforge/tests/hydrology.test.mjs` *(6a)*, `tools/mapforge/tests/water.test.mjs` *(6b)*
 
 **Interfaces:**
 - Consumes: `makeGrid`, `FLAG`, `D8`, `idx`, `cellCentreKm` (Task 2); `fbm`, `falloff`, `UNIT_VECTORS` (Task 2)
@@ -2511,6 +2755,8 @@ export function carveWater({ grid, premises, filled, manifest }):
   { lakeCells: number, deltaCells: number, glacierCells: number, riverCells: number }
 ```
 
+#### Task 6a — `hydrology.mjs`: priority-flood, D8 flow direction, accumulation
+
 - [ ] **Step 1: Write the failing test**
 
 Create `tools/mapforge/tests/hydrology.test.mjs`:
@@ -2520,9 +2766,6 @@ Create `tools/mapforge/tests/hydrology.test.mjs`:
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { priorityFlood, d8FlowDir, flowAccumulate } from "../lib/hydrology.mjs";
-import { makeGrid, FLAG, idx } from "../lib/grid.mjs";
-import { applyWinds } from "../lib/passes/winds.mjs";
-import { carveWater } from "../lib/passes/water.mjs";
 
 // A 5x5 bowl: a rim of 1.0 with a 0.2 pit at the centre, one 0.0 outlet.
 function bowl() {
@@ -2589,46 +2832,6 @@ test("flowAccumulate is independent of cell visiting order", () => {
                    Array.from(flowAccumulate({ flowDir: dir, w, h })));
 });
 
-test("applyWinds produces a rain shadow: the lee of a ridge is drier than its windward side", () => {
-  const grid = makeGrid({ w: 60, h: 20, cellKm: 2 });
-  for (let y = 0; y < 20; y++) for (let x = 0; x < 60; x++) {
-    const i = idx({ grid, cx: x, cy: y });
-    grid.elev[i] = x === 30 ? 1.0 : 0.2;   // a single north-south wall at x = 30
-    grid.plate[i] = 0;
-  }
-  const premises = [{ id: "c01", title: "T", class: "major", palette: ["meadow"],
-                      footprint: { centreKm: [60, 20], radiiKm: [60, 20], warpKm: 0 },
-                      structures: [] }];
-  applyWinds({ grid, premises, stream: "d9a0051d32afab59" });
-  const windward = grid.moist[idx({ grid, cx: 28, cy: 10 })];
-  const lee = grid.moist[idx({ grid, cx: 32, cy: 10 })];
-  assert.ok(windward > lee, `no rain shadow: windward ${windward} <= lee ${lee}`);
-});
-
-test("carveWater carves interior water close to the manifest's budget", () => {
-  const grid = makeGrid({ w: 200, h: 200, cellKm: 2 });
-  // A synthetic continent: a raised disc with a depression in it.
-  for (let y = 0; y < 200; y++) for (let x = 0; x < 200; x++) {
-    const i = idx({ grid, cx: x, cy: y });
-    const dx = x - 100, dy = y - 100;
-    const r = Math.sqrt(dx * dx + dy * dy);
-    grid.elev[i] = r < 70 ? 0.6 - r / 400 : -0.7;
-    if (r >= 70) grid.flags[i] |= FLAG.SEA;
-    grid.plate[i] = r < 70 ? 0 : -1;
-    grid.moist[i] = 0.6;
-    grid.temp[i] = 0.5;
-  }
-  const filled = priorityFlood({ elev: grid.elev, w: grid.w, h: grid.h });
-  const premises = [{ id: "c01", title: "T", class: "major", palette: ["meadow", "lake", "river"],
-                      footprint: { centreKm: [200, 200], radiiKm: [140, 140], warpKm: 0 },
-                      structures: [{ kind: "inland-sea", atKm: [200, 200], radiusKm: 40, amplitude: 0.5 }] }];
-  const manifest = JSON.parse(JSON.stringify({ budget: { interiorWaterKm2: 400 }, grid: { cellKm: 2 } }));
-  const r = carveWater({ grid, premises, filled, manifest });
-  const carvedKm2 = r.lakeCells * 4;
-  assert.ok(carvedKm2 > 0, "no interior water was carved");
-  assert.ok(Math.abs(carvedKm2 - 400) / 400 < 0.25,
-    `carved ${carvedKm2} km2 against a 400 km2 budget — more than 25% out`);
-});
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -2765,7 +2968,156 @@ export function flowAccumulate({ flowDir, w, h }) {
 }
 ```
 
-- [ ] **Step 4: Write `tools/mapforge/lib/passes/winds.mjs`**
+- [ ] **Step 4: Run the test to verify it passes**
+
+Run: `node --test 'tools/mapforge/tests/hydrology.test.mjs'`
+Expected: PASS — 6 tests.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add tools/mapforge/lib/hydrology.mjs tools/mapforge/tests/hydrology.test.mjs
+git commit -m "feat: P6 priority-flood, D8 flow direction and accumulation"
+```
+
+#### Task 6a quality gate
+
+- [ ] **Step 6: Verify**
+
+```bash
+node --test 'tools/mapforge/tests/*.test.mjs'
+node scripts/check_content.mjs --only=spine
+node scripts/check_spine_emit.mjs --check
+(cd colyseus-server && npm test -- mapDimensions)
+```
+
+- [ ] **Step 7: Independent adversarial review**
+
+Brief: *attack `priorityFlood` as if the epsilon were wrong. Is it large enough to give D8 a usable gradient across 640,000 cells and small enough not to distort real relief; can `filled` exceed 1.0 and break the biome table's assumption of a [0,1] elevation? The heap is keyed (value, index) — prove the index tiebreak is actually reached, i.e. that two equal elevations pop in index order and not in push order, because that is the whole determinism claim. `flowAccumulate` uses an in-degree queue: confirm a cycle in `flowDir` (which `priorityFlood` is supposed to make impossible) would hang or drop cells rather than silently under-count, and say which. Confirm `d8FlowDir` marks a frame-edge cell as an outlet (`-1`) rather than pointing off-grid.*
+
+- [ ] **Step 8: Refactor** — apply the findings; the likeliest is the heap tiebreak, which must compare index whenever the values are equal, including at `-0`/`0`.
+
+- [ ] **Step 9: Re-verify** — re-run Step 6.
+
+- [ ] **Step 10: Commit and report**
+
+```bash
+git add -A && git commit -m "refactor: hydrology review findings"
+git branch --show-current && git log --oneline -1
+```
+
+#### Task 6b — `winds.mjs` and `water.mjs`: P5 rain shadow, P7 interior water
+
+- [ ] **Step 11: Write the failing test**
+
+Create `tools/mapforge/tests/water.test.mjs`:
+
+```js
+// tools/mapforge/tests/water.test.mjs
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { priorityFlood } from "../lib/hydrology.mjs";
+import { makeGrid, FLAG, idx } from "../lib/grid.mjs";
+import { applyWinds } from "../lib/passes/winds.mjs";
+import { carveWater } from "../lib/passes/water.mjs";
+
+test("applyWinds produces a rain shadow: the lee of a ridge is drier than its windward side", () => {
+  const grid = makeGrid({ w: 60, h: 20, cellKm: 2 });
+  for (let y = 0; y < 20; y++) for (let x = 0; x < 60; x++) {
+    const i = idx({ grid, cx: x, cy: y });
+    grid.elev[i] = x === 30 ? 1.0 : 0.2;   // a single north-south wall at x = 30
+    grid.plate[i] = 0;
+  }
+  const premises = [{ id: "c01", title: "T", class: "major", palette: ["meadow"],
+                      footprint: { centreKm: [60, 20], radiiKm: [60, 20], warpKm: 0 },
+                      structures: [] }];
+  applyWinds({ grid, premises, stream: "d9a0051d32afab59" });
+  const windward = grid.moist[idx({ grid, cx: 28, cy: 10 })];
+  const lee = grid.moist[idx({ grid, cx: 32, cy: 10 })];
+  assert.ok(windward > lee, `no rain shadow: windward ${windward} <= lee ${lee}`);
+});
+
+test("applyWinds is deterministic and leaves moist and temp inside [0,1]", () => {
+  const build = () => {
+    const grid = makeGrid({ w: 60, h: 20, cellKm: 2 });
+    for (let y = 0; y < 20; y++) for (let x = 0; x < 60; x++) {
+      const i = idx({ grid, cx: x, cy: y });
+      grid.elev[i] = x === 30 ? 1.0 : 0.2;
+      grid.plate[i] = 0;
+    }
+    return grid;
+  };
+  const premises = [{ id: "c01", title: "T", class: "major", palette: ["meadow"],
+                      footprint: { centreKm: [60, 20], radiiKm: [60, 20], warpKm: 0 },
+                      structures: [] }];
+  const a = build(), b = build();
+  applyWinds({ grid: a, premises, stream: "d9a0051d32afab59" });
+  applyWinds({ grid: b, premises, stream: "d9a0051d32afab59" });
+  assert.deepEqual(Array.from(a.moist), Array.from(b.moist));
+  assert.deepEqual(Array.from(a.temp), Array.from(b.temp));
+  for (let i = 0; i < a.n; i++) {
+    assert.ok(a.moist[i] >= 0 && a.moist[i] <= 1, `moist out of range at ${i}: ${a.moist[i]}`);
+    assert.ok(a.temp[i] >= 0 && a.temp[i] <= 1, `temp out of range at ${i}: ${a.temp[i]}`);
+  }
+});
+
+test("carveWater carves interior water close to the manifest's budget", () => {
+  const grid = makeGrid({ w: 200, h: 200, cellKm: 2 });
+  // A synthetic continent: a raised disc with a depression in it.
+  for (let y = 0; y < 200; y++) for (let x = 0; x < 200; x++) {
+    const i = idx({ grid, cx: x, cy: y });
+    const dx = x - 100, dy = y - 100;
+    const r = Math.sqrt(dx * dx + dy * dy);
+    grid.elev[i] = r < 70 ? 0.6 - r / 400 : -0.7;
+    if (r >= 70) grid.flags[i] |= FLAG.SEA;
+    grid.plate[i] = r < 70 ? 0 : -1;
+    grid.moist[i] = 0.6;
+    grid.temp[i] = 0.5;
+  }
+  const filled = priorityFlood({ elev: grid.elev, w: grid.w, h: grid.h });
+  const premises = [{ id: "c01", title: "T", class: "major", palette: ["meadow", "lake", "river"],
+                      footprint: { centreKm: [200, 200], radiiKm: [140, 140], warpKm: 0 },
+                      structures: [{ kind: "inland-sea", atKm: [200, 200], radiusKm: 40, amplitude: 0.5 }] }];
+  const manifest = JSON.parse(JSON.stringify({ budget: { interiorWaterKm2: 400 }, grid: { cellKm: 2 } }));
+  const r = carveWater({ grid, premises, filled, manifest });
+  const carvedKm2 = r.lakeCells * 4;
+  assert.ok(carvedKm2 > 0, "no interior water was carved");
+  assert.ok(Math.abs(carvedKm2 - 400) / 400 < 0.25,
+    `carved ${carvedKm2} km2 against a 400 km2 budget — more than 25% out`);
+});
+
+test("carveWater never re-flags a cell that is already SEA", () => {
+  const grid = makeGrid({ w: 60, h: 60, cellKm: 2 });
+  for (let y = 0; y < 60; y++) for (let x = 0; x < 60; x++) {
+    const i = idx({ grid, cx: x, cy: y });
+    const dx = x - 30, dy = y - 30;
+    const r = Math.sqrt(dx * dx + dy * dy);
+    grid.elev[i] = r < 20 ? 0.6 - r / 400 : -0.7;
+    if (r >= 20) grid.flags[i] |= FLAG.SEA;
+    grid.plate[i] = r < 20 ? 0 : -1;
+    grid.moist[i] = 0.6; grid.temp[i] = 0.5;
+  }
+  const seaBefore = [...grid.flags].filter((f) => (f & FLAG.SEA) !== 0).length;
+  const filled = priorityFlood({ elev: grid.elev, w: grid.w, h: grid.h });
+  const premises = [{ id: "c01", title: "T", class: "major", palette: ["meadow", "lake"],
+                      footprint: { centreKm: [60, 60], radiiKm: [40, 40], warpKm: 0 }, structures: [] }];
+  const r = carveWater({ grid, premises, filled,
+                         manifest: { budget: { interiorWaterKm2: 40 }, grid: { cellKm: 2 } } });
+  const seaAfter = [...grid.flags].filter((f) => (f & FLAG.SEA) !== 0).length;
+  assert.equal(seaAfter, seaBefore, "carveWater changed the SEA mask");
+  for (let i = 0; i < grid.n; i++)
+    assert.ok(!((grid.flags[i] & FLAG.SEA) !== 0 && (grid.flags[i] & FLAG.LAKE) !== 0),
+      `cell ${i} is both SEA and LAKE — the lake budget double-counts it`);
+  assert.ok(r.lakeCells > 0, "no lake was carved at all, so the assertion is vacuous");
+});
+```
+
+- [ ] **Step 12: Run test to verify it fails**
+
+Run: `node --test 'tools/mapforge/tests/water.test.mjs'`
+Expected: FAIL — `Cannot find module '.../lib/passes/winds.mjs'`.
+
+- [ ] **Step 13: Write `tools/mapforge/lib/passes/winds.mjs`**
 
 ```js
 // tools/mapforge/lib/passes/winds.mjs — P5: prevailing winds + orographic
@@ -2838,7 +3190,7 @@ export function applyWinds({ grid, premises, stream }) {
 }
 ```
 
-- [ ] **Step 5: Write `tools/mapforge/lib/passes/water.mjs`**
+- [ ] **Step 14: Write `tools/mapforge/lib/passes/water.mjs`**
 
 ```js
 // tools/mapforge/lib/passes/water.mjs — P7: lakes, deltas, glaciers, rivers.
@@ -2938,22 +3290,22 @@ function interiorWaterFor({ manifest, id }) {
 }
 ```
 
-- [ ] **Step 6: Run test to verify it passes**
+- [ ] **Step 15: Run test to verify it passes**
 
-Run: `node --test 'tools/mapforge/tests/hydrology.test.mjs'`
-Expected: PASS — 8 tests.
+Run: `node --test 'tools/mapforge/tests/water.test.mjs'`
+Expected: PASS — 4 tests.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 16: Commit**
 
 ```bash
-git add tools/mapforge/lib/hydrology.mjs tools/mapforge/lib/passes/winds.mjs \
-        tools/mapforge/lib/passes/water.mjs tools/mapforge/tests/hydrology.test.mjs
-git commit -m "feat: P5 winds, P6 hydrology, P7 lakes/deltas/glaciers"
+git add tools/mapforge/lib/passes/winds.mjs tools/mapforge/lib/passes/water.mjs \
+        tools/mapforge/tests/water.test.mjs
+git commit -m "feat: P5 winds and P7 lakes/deltas/glaciers"
 ```
 
-#### Task 6 quality gate
+#### Task 6b quality gate
 
-- [ ] **Step 8: Verify**
+- [ ] **Step 17: Verify**
 
 ```bash
 node --test 'tools/mapforge/tests/*.test.mjs'
@@ -2962,18 +3314,18 @@ node scripts/check_spine_emit.mjs --check
 ```
 Plus re-run Task 4's Step 5 probe with `carveWater` appended, and paste the **net** figures: `netLandKm2` must land within 1% of 64,000 and `seaToLandRatio` within [1.20, 1.80].
 
-- [ ] **Step 9: Independent adversarial review**
+- [ ] **Step 18: Independent adversarial review**
 
-Brief: *`applyWinds`'s sweep-start arithmetic is the weakest code in this task — read it as if it were wrong. Does every cell actually get visited by at least one sweep at every wind direction, or do diagonal directions leave stripes? Prove it with a coverage counter. Attack `priorityFlood`: is the epsilon large enough to give D8 a gradient at 640,000 cells and small enough not to distort real relief; can `filled` exceed 1.0 and break the biome table's assumptions? Attack `carveWater`: it reads `grid.flowAcc`, which the caller must have filled — is there any guard, and what happens if it is all zeros? Does the lake budget double-count a cell already flagged SEA?*
+Brief: *`applyWinds`'s sweep-start arithmetic is the weakest code in this task — read it as if it were wrong. Does every cell actually get visited by at least one sweep at every wind direction, or do diagonal directions leave stripes? Prove it with a coverage counter. Attack `carveWater`: it reads `grid.flowAcc`, which the caller must have filled — is there any guard, and what happens if it is all zeros? Does the lake budget double-count a cell already flagged SEA (Step 11's fourth test says it must not — confirm the test can actually fail)? Does the per-premise share loop terminate when a premise's depressions cannot absorb its whole share, or does it spin?*
 
-- [ ] **Step 10: Refactor** — the expected finding is the sweep-start arithmetic; replace it with an explicit per-direction edge enumeration if the coverage counter shows stripes.
+- [ ] **Step 19: Refactor** — the expected finding is the sweep-start arithmetic; replace it with an explicit per-direction edge enumeration if the coverage counter shows stripes.
 
-- [ ] **Step 11: Re-verify** — re-run Step 8 including the probe.
+- [ ] **Step 20: Re-verify** — re-run Step 17 including the probe.
 
-- [ ] **Step 12: Commit and report**
+- [ ] **Step 21: Commit and report**
 
 ```bash
-git add -A && git commit -m "refactor: hydrology and winds review findings"
+git add -A && git commit -m "refactor: winds and interior-water review findings"
 git branch --show-current && git log --oneline -1
 ```
 
@@ -3594,6 +3946,7 @@ export function instanceLandforms({ grid, premises, regions, lexicon, manifest, 
   { instances: Instance[], ledgers: Array<{ continent, orderDigest, handles: Handle[] }>,
     substitutions: Array<{ wanted, used, why }>, coverage: { placed: number, total: number } }
 export const REQUIRES_KEYS: ReadonlyArray<string>  // the 11-key predicate language, mirroring landform-type.schema.json
+export const PRODUCIBLE_ROCK: ReadonlySet<string>  // exactly what cellView can return: carbonate | clastic | volcanic
 export function matchesRequires({ requires, cell }): boolean
 export function mintHandle({ continent, group, contentHash }): string
 export function orderHandles({ handles }): Handle[]     // total order: (-area, contentHash)
@@ -3613,7 +3966,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { makeGrid, FLAG, idx } from "../lib/grid.mjs";
-import { instanceLandforms, matchesRequires, REQUIRES_KEYS, mintHandle, orderHandles, orderDigestOf, GROUP_TARGETS }
+import { instanceLandforms, matchesRequires, REQUIRES_KEYS, PRODUCIBLE_ROCK, mintHandle, orderHandles, orderDigestOf, GROUP_TARGETS }
   from "../lib/passes/landforms.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -3633,7 +3986,12 @@ const CELL = { rock: "carbonate", precipDecile: 6, tempDecile: 5, elev: 0.5, slo
 
 test("matchesRequires reads cell fields, never invents them", () => {
   assert.equal(matchesRequires({ requires: { rock: "carbonate" }, cell: CELL }), true);
-  assert.equal(matchesRequires({ requires: { rock: "granite" }, cell: CELL }), false);
+  assert.equal(matchesRequires({ requires: { rock: "volcanic" }, cell: CELL }), false);
+  assert.equal(matchesRequires({ requires: { rock: "clastic" }, cell: CELL }), false);
+  // "granite" and "sandstone" were an earlier draft's classifier output. They
+  // are not in Plan B's enum, so they THROW rather than quietly never match.
+  for (const dead of ["granite", "sandstone"])
+    assert.throws(() => matchesRequires({ requires: { rock: dead }, cell: CELL }), /is not a substrate class/, dead);
   assert.equal(matchesRequires({ requires: { precipDecileMin: 4 }, cell: CELL }), true);
   assert.equal(matchesRequires({ requires: { precipDecileMin: 8 }, cell: CELL }), false);
   assert.equal(matchesRequires({ requires: { tempDecileMax: 2 }, cell: CELL }), false);
@@ -3670,6 +4028,29 @@ test("EVERY requires key in the committed lexicon is handled by matchesRequires"
   assert.deepEqual([...REQUIRES_KEYS].sort(),
     Object.keys(schema.properties.requires.properties).sort(),
     "the switch and the committed schema disagree about the predicate language");
+
+  // KEYS are only half of it. The key-set cross-check above passes happily
+  // while `requires.rock: "volcanic"` matches nothing, because cellView's
+  // classifier and the schema's enum are two different enumerations of one
+  // vocabulary. 19 desert rows and 15 volcanic rows would silently degrade to
+  // `substitutions` and G-LANDFORM would under-report with every gate green.
+  const rockEnum = schema.properties.requires.properties.rock.enum;
+  assert.deepEqual([...rockEnum].sort(), ["carbonate", "clastic", "volcanic"]);
+  const usedRock = new Set(lex.map((r) => r.requires?.rock).filter(Boolean));
+  for (const v of usedRock)
+    assert.ok(PRODUCIBLE_ROCK.has(v),
+      `the lexicon requires rock "${v}", which cellView can never return (it returns ${[...PRODUCIBLE_ROCK].join(", ")})`);
+  // And the same flags: every nearFlag the lexicon names must be a real bit.
+  for (const want of new Set(lex.map((r) => r.requires?.nearFlag).filter(Boolean)))
+    assert.ok(FLAG[want] !== undefined, `the lexicon requires nearFlag "${want}", which is not a FLAG bit`);
+});
+
+test("PRODUCIBLE_ROCK is exactly what cellView can return, and every value is reachable", () => {
+  // The generator side of the same closure. PRODUCIBLE_ROCK is exported from
+  // landforms.mjs beside cellView so the two cannot drift; assignSubstrate
+  // (Task 3 Step 6) is what makes each value actually occur on the real grid,
+  // and mask.test.mjs's "all THREE requires.rock values" test proves that.
+  assert.deepEqual([...PRODUCIBLE_ROCK].sort(), ["carbonate", "clastic", "volcanic"]);
 });
 
 test("mintHandle follows the pinned grammar cNN/group/h-XXXX", () => {
@@ -3752,6 +4133,44 @@ test("every instance satisfies its type's requires predicate", () => {
     if (t.requires.rock === "carbonate")
       assert.ok((grid.flags[i] & FLAG.CARBONATE) !== 0, `${inst.id} placed off carbonate`);
   }
+});
+
+test("the COASTAL kit places instances — nearFlag: SEA is not silently false", () => {
+  // The test the previous suite did not have, and the reason it did not have
+  // it: karstWorld's only assertions were `instances.length > 0` and a
+  // carbonate check, both of which the karst rows satisfy alone. So a
+  // cellView that never wrote `nearFlags` — making `undefined & FLAG.SEA`
+  // zero, i.e. EVERY nearFlag predicate false — left this suite fully green
+  // while roughly 100 of the 170 real types placed nothing at all.
+  const grid = karstWorld();
+  assignOwners(grid);
+  const premises = [{ id: "c01", title: "T", class: "major", landformKit: ["karst", "fluvial", "coastal"],
+                      palette: ["karst", "river", "meadow"], footprint: { centreKm: [100, 100], radiiKm: [70, 70], warpKm: 0 }, structures: [] }];
+  const r = instanceLandforms({ grid, premises, regions: REGIONS, lexicon: MINI, manifest: MANIFEST, stream: "d9a0051d32afab59" });
+  const coastal = r.instances.filter((i) => MINI.find((t) => t.id === i.type).group === "coastal");
+  assert.ok(coastal.length > 0,
+    `zero coastal instances — every nearFlag predicate returned false. substitutions: ${JSON.stringify(r.substitutions)}`);
+  assert.ok(coastal.some((i) => i.type === "sea-stack"),
+    "sea-stack requires only { nearFlag: SEA } and the land square is ringed by sea — it must place");
+  // Each one is on LAND but with sea in its 9-cell neighbourhood: "near the
+  // sea", not "is sea". A cellView that ORed only the cell's own flags would
+  // place none of these, and one that forgot the land cell itself would break
+  // `nearFlag: RIVER` on the river row instead.
+  for (const inst of coastal) {
+    const [cx, cy] = inst.cell;
+    const i = idx({ grid, cx, cy });
+    assert.equal(grid.flags[i] & FLAG.SEA, 0, `${inst.id} is IN the sea, not near it`);
+    let sawSea = false;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const nx = cx + dx, ny = cy + dy;
+      if (nx < 0 || ny < 0 || nx >= grid.w || ny >= grid.h) continue;
+      if ((grid.flags[idx({ grid, cx: nx, cy: ny })] & FLAG.SEA) !== 0) sawSea = true;
+    }
+    assert.ok(sawSea, `${inst.id} claims nearFlag SEA with no sea cell in its neighbourhood`);
+  }
+  // And the fluvial rows, whose default is nearFlag: RIVER, place on the y=50 row.
+  assert.ok(r.instances.some((i) => MINI.find((t) => t.id === i.type).group === "fluvial"),
+    "zero fluvial instances — nearFlag: RIVER is false too");
 });
 
 test("instances are never placed in a sea cell", () => {
@@ -3958,10 +4377,10 @@ const FLAG_NAMES = Object.keys(FLAG);
 // THE predicate language, and there is exactly ONE definition of it.
 //
 // The authority is `requires` in content/schemas/landform-type.schema.json
-// (Plan B Task 1), because that schema is COMMITTED and validates all 164
+// (Plan B Task 1), because that schema is COMMITTED and validates all 170
 // lexicon rows with additionalProperties: false. This switch must be its exact
 // mirror: eleven keys, no more and no fewer. An unknown key THROWS rather than
-// silently matching, because a typo in a 164-row lexicon that quietly matches
+// silently matching, because a typo in a 170-row lexicon that quietly matches
 // everything is exactly the failure this design cannot afford (a landform
 // appearing where its substrate does not exist).
 //
@@ -3982,10 +4401,28 @@ export const REQUIRES_KEYS = Object.freeze([
   "slopeMin", "slopeMax", "nearFlag", "flowAccMin", "elevMin", "elevMax",
 ]);
 
+// The `rock` VALUE domain, and it must equal the schema's enum exactly. This
+// is a separate closure from REQUIRES_KEYS because the key-set cross-check
+// passes while a value never matches: an earlier draft's cellView returned
+// "sandstone" | "granite", so `rock: "clastic"` (19 desert rows) and
+// `rock: "volcanic"` (15 volcanic rows) matched nothing at all and 35 of the
+// 170 types degraded to `substitutions` with G-LANDFORM quietly short.
+export const PRODUCIBLE_ROCK = Object.freeze(new Set(["carbonate", "clastic", "volcanic"]));
+
 export function matchesRequires({ requires, cell }) {
   for (const [key, want] of Object.entries(requires ?? {})) {
     switch (key) {
-      case "rock":            if (cell.rock !== want) return false; break;
+      case "rock": {
+        // Loud on a value cellView can never return, for the same reason an
+        // unknown KEY throws: a `rock` the generator cannot produce matches
+        // nothing, and "matches nothing" is indistinguishable from "this
+        // terrain is rare" once it reaches the substitutions list.
+        if (!PRODUCIBLE_ROCK.has(want))
+          throw new Error(`landforms: rock "${want}" is not a substrate class ` +
+            `(${[...PRODUCIBLE_ROCK].join(", ")}) — cellView can never return it`);
+        if (cell.rock !== want) return false;
+        break;
+      }
       case "precipDecileMin": if (!(cell.precipDecile >= want)) return false; break;
       case "precipDecileMax": if (!(cell.precipDecile <= want)) return false; break;
       case "tempDecileMin":   if (!(cell.tempDecile >= want)) return false; break;
@@ -4000,8 +4437,9 @@ export function matchesRequires({ requires, cell }) {
         if (bit === undefined)
           throw new Error(`landforms: nearFlag "${want}" is not a FLAG (${FLAG_NAMES.join(", ")})`);
         // "near", not "is": the cell itself or any of its 8 neighbours.
-        // cell.nearFlags is the OR of the 9-cell neighbourhood, precomputed
-        // once per cell by instanceLandforms rather than re-walked per type.
+        // cell.nearFlags is the OR of the 9-cell neighbourhood, accumulated
+        // by cellView's single D8 walk (the same walk that computes slope)
+        // rather than re-walked once per type.
         if ((cell.nearFlags & bit) === 0) return false;
         break;
       }
@@ -4038,9 +4476,30 @@ export function orderDigestOf({ handles }) {
 }
 
 // Cell view: everything a predicate can read, derived once per candidate.
+//
+// EVERY field `matchesRequires` names must be produced here. Two of the
+// eleven keys read fields an earlier draft of this function never wrote:
+//   - `nearFlag` reads `cell.nearFlags`, the OR of the 9-cell neighbourhood
+//     (the cell itself plus its 8 D8 neighbours). `undefined & bit === 0`, so
+//     a missing field is not a crash — it is a SILENT false, and Plan B's
+//     group defaults put `nearFlag` on coastal, fluvial, glacial, lakes,
+//     island and oceanic plus five wetland overrides: roughly 100 of the 170
+//     types would produce zero candidates and fall into `substitutions`.
+//   - `tempDecileMin/Max` read `cell.tempDecile`. The glacial default is
+//     `{ nearFlag: "GLACIER", tempDecileMax: 2 }`; `!(undefined <= 2)` is
+//     true, so all 22 glacial types would fail the same silent way.
+// The `coastal` field an earlier draft computed is DEAD — `coastal` is not a
+// predicate key; it is spelled `{ nearFlag: "SEA" }` — so it is gone, and
+// `nearFlags` is what the same D8 walk now accumulates.
+//
+// `rock` returns the closed enum Plan B's landform-type.schema.json declares:
+// "carbonate" | "clastic" | "volcanic", and nothing else. The three substrate
+// bits are written by P2b (`assignSubstrate`, Task 3 Step 6); a cell with no
+// substrate bit is clastic, the default class.
 function cellView({ grid, i }) {
   const cx = i % grid.w, cy = (i / grid.w) | 0;
-  let slope = 0, coastal = false;
+  let slope = 0;
+  let nearFlags = grid.flags[i];              // "near" includes the cell itself
   for (const [dx, dy] of D8) {
     const nx = cx + dx, ny = cy + dy;
     if (nx < 0 || ny < 0 || nx >= grid.w || ny >= grid.h) continue;
@@ -4048,14 +4507,15 @@ function cellView({ grid, i }) {
     const d = grid.elev[i] - grid.elev[ni];
     const a = d > 0 ? d : -d;
     if (a > slope) slope = a;
-    if ((grid.flags[ni] & FLAG.SEA) !== 0) coastal = true;
+    nearFlags |= grid.flags[ni];
   }
   return {
-    elev: grid.elev[i], moist: grid.moist[i], temp: grid.temp[i], flowAcc: grid.flowAcc[i],
-    flags: grid.flags[i], slope, coastal,
+    elev: grid.elev[i], flowAcc: grid.flowAcc[i],
+    flags: grid.flags[i], nearFlags, slope,
     precipDecile: Math.min(9, Math.floor(grid.moist[i] * 10)),
+    tempDecile: Math.min(9, Math.floor(grid.temp[i] * 10)),
     rock: (grid.flags[i] & FLAG.CARBONATE) !== 0 ? "carbonate"
-        : (grid.flags[i] & FLAG.SAND) !== 0 ? "sandstone" : "granite",
+        : (grid.flags[i] & FLAG.VOLCANIC) !== 0 ? "volcanic" : "clastic",
   };
 }
 
@@ -4247,7 +4707,7 @@ export function instanceLandforms({ grid, premises, regions, lexicon, manifest, 
 - [ ] **Step 5: Run test to verify it passes**
 
 Run: `node --test 'tools/mapforge/tests/landforms.test.mjs'`
-Expected: PASS — 12 tests (the last one skipped until Plan B's lexicon exists).
+Expected: PASS — 19 tests, 1 skipped (*"every real premise landformKit entry is a real lexicon group"*, until Plan B's lexicon exists). *"the COASTAL kit places instances"* is the one to watch: it is the only test in the file that fails if `cellView` stops writing `nearFlags`, and every `nearFlag` predicate in the real 170-row lexicon depends on that field.
 
 - [ ] **Step 6: Commit**
 
@@ -4269,9 +4729,9 @@ node scripts/check_spine_emit.mjs --check
 
 - [ ] **Step 8: Independent adversarial review**
 
-Brief: *the handle grammar is the seam Plan D binds to — a defect here strands 336 authored records. Attack the collision path: 4 hex is 65,536 values against 1,740 instances, so by the birthday bound a collision is near-certain; is the disambiguation deterministic under re-ordering, and does it produce a handle that still matches the grammar regex? Attack the candidate scan: it is O(cells × types) = 640,000 × 164 = 105 M predicate evaluations per continent, which will blow the 4 s generate budget — measure it and index candidates by flag bits once per continent instead. Attack `orderHandles`: it sorts on `sizeKm²` but the spec says the key is area, so is `sizeKm²` the right proxy for a line or area geometry? Attack the naming census: it is per-tier by construction (40x6 surveyed / 60-of-120 reported / 12x3 water), so check the ARITHMETIC rather than the cap — does the two-phase fill always reach exactly `named.total`, and what happens when a continent has fewer eligible surveyed instances than the remainder needs? Does `Math.round(reportedIds.length / 2)` do the right thing for an odd count?*
+Brief: *the handle grammar is the seam Plan D binds to — a defect here strands 336 authored records. Attack the collision path: 4 hex is 65,536 values against 1,740 instances, so by the birthday bound a collision is near-certain; is the disambiguation deterministic under re-ordering, and does it produce a handle that still matches the grammar regex? Attack the candidate scan: it is O(cells × types) = 640,000 × 170 = 108.8 M predicate evaluations per continent, which will blow the 4 s generate budget — measure it and index candidates by flag bits once per continent instead. Attack `orderHandles`: it sorts on `sizeKm²` but the spec says the key is area, so is `sizeKm²` the right proxy for a line or area geometry? Attack the naming census: it is per-tier by construction (40x6 surveyed / 60-of-120 reported / 12x3 water), so check the ARITHMETIC rather than the cap — does the two-phase fill always reach exactly `named.total`, and what happens when a continent has fewer eligible surveyed instances than the remainder needs? Does `Math.round(reportedIds.length / 2)` do the right thing for an odd count?*
 
-- [ ] **Step 9: Refactor** — the expected finding is the O(cells × types) scan (640,000 × 164 = 105 M predicate evaluations per continent, which will blow the 4 s generate budget), fixed with a per-continent candidate index keyed on the flag bits each predicate reads. Measure it before and after and paste both numbers.
+- [ ] **Step 9: Refactor** — the expected finding is the O(cells × types) scan (640,000 × 170 = 108.8 M predicate evaluations per continent, which will blow the 4 s generate budget), fixed with a per-continent candidate index keyed on the flag bits each predicate reads. Measure it before and after and paste both numbers.
 
 - [ ] **Step 10: Re-verify** — re-run Step 7 and time `instanceLandforms` on the real 800 × 800 grid; under 1,200 ms.
 
@@ -4302,7 +4762,9 @@ Each runs the full five-step gate (implement → verify → independent review �
 - Create: `tools/mapforge/lib/passes/settlements.mjs` *(9a)*
 - Create: `tools/mapforge/lib/passes/roads.mjs` *(9b)*
 - Create: `tools/mapforge/lib/passes/dungeons.mjs` *(9c)*
+- Create: `tools/mapforge/tests/fixtures/coast-world.mjs` *(9a — the synthetic continent 9a and 9b share; a fixture module, not a test file, so `tests/*.test.mjs` does not match it)*
 - Test: `tools/mapforge/tests/settlements.test.mjs` *(9a)*, `tools/mapforge/tests/roads.test.mjs` *(9b)*, `tools/mapforge/tests/dungeons.test.mjs` *(9c)*
+- Modify: `tools/mapforge/lib/passes/partition.mjs` *(9a — append `rec.centroidKm` to the census loop; created in Task 7)*
 
 **Interfaces:**
 - Consumes: grid + hydrology + partition + landform output; `content/world/manifest.json` (`quotas.settlements`, `levelBands`)
@@ -4310,7 +4772,16 @@ Each runs the full five-step gate (implement → verify → independent review �
 ```js
 export function scoreSettlement({ grid, i, view }): number       // 0 means vetoed
 export function placeSettlements({ grid, premises, regions, manifest, pinned = [], stream, BIOME_NAME = null }):
-  { settlements: Array<{ id, title, continent, rank, atKm, cell, region, score }>, problems: string[] }
+  { settlements: Array<{ id, title, continent, rank, atKm, cell, region, score,
+                         portEligible: boolean, pinned?: true }>, problems: string[] }
+// SIDE EFFECT, declared because a caller depends on it: it sets
+// `region.settlements = [<settlement id>, …]` on every element of `regions`,
+// empty array included. That back-reference is a REQUIRED key of
+// content/schemas/fabric-file.schema.json and is what Plan D's
+// G-DUNGEON-REACH walks instead of re-deriving the settlement -> region join.
+// `portEligible` and `pinned` are WORKING keys: buildFabricFile projects the
+// eight schema keys and drops these two, because fabric-file.schema.json is
+// additionalProperties:false.
 // `pinned` is the OUTPUT of Plan D's placePinned — elements shaped
 // { id, at, cell, continent, region, rank } — NOT raw pinned records. Plan D
 // owns the pinned pass entirely; this function only consumes its result and
@@ -4339,30 +4810,28 @@ export const VETO = Object.freeze({ slopeMax: 0.08, freshWaterMin: 0.20 });
 export const SEPARATION_KM = Object.freeze({ capital: 60, hub: 24, village: 9 });
 ```
 
-- [ ] **Step 1: Write the failing test**
+#### Task 9a — `settlements.mjs`: P11 placement, hard vetoes, tiered separation, level bands
 
-Create `tools/mapforge/tests/settlements.test.mjs`:
+- [ ] **Step 1: Write the shared test fixture and the failing test**
+
+9a and 9b both need the same synthetic continent, so it becomes a module rather than a copy. Create `tools/mapforge/tests/fixtures/coast-world.mjs`:
 
 ```js
-// tools/mapforge/tests/settlements.test.mjs
-import { test } from "node:test";
-import assert from "node:assert/strict";
+// tools/mapforge/tests/fixtures/coast-world.mjs
+// The synthetic continent 9a and 9b share: a 120x120 km square of gentle land
+// with a river down the middle and a sheltered bay on the west side. It is a
+// FIXTURE MODULE, not a test file — tests/*.test.mjs is the glob node --test
+// expands, and this file deliberately does not match it.
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { makeGrid, FLAG, idx } from "../lib/grid.mjs";
-import { placeSettlements, assignLevelBands, SEPARATION_KM, VETO } from "../lib/passes/settlements.mjs";
-import { routeRoads } from "../lib/passes/roads.mjs";
-import { anchorDungeons } from "../lib/passes/dungeons.mjs";
+import { makeGrid, FLAG, idx } from "../../lib/grid.mjs";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-const MANIFEST = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
-const MINI = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)),
-  "fixtures/mini-lexicon/landforms.json"), "utf8"));
+const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(HERE, "../../../..");
+export const MANIFEST = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
 
-// One continent: a 120x120 km square of gentle land with a river down the
-// middle and a sheltered bay on the west side.
-function coastWorld() {
+export function coastWorld() {
   const grid = makeGrid({ w: 120, h: 120, cellKm: 1 });
   for (let y = 0; y < 120; y++) for (let x = 0; x < 120; x++) {
     const i = idx({ grid, cx: x, cy: y });
@@ -4371,7 +4840,10 @@ function coastWorld() {
     if (land && !bay) {
       grid.plate[i] = 0; grid.elev[i] = 0.25 + 0.001 * (x - 20);
       grid.moist[i] = 0.6; grid.temp[i] = 0.5;
-      if (x === 60) { grid.flags[i] |= FLAG.RIVER; grid.flowAcc[i] = 800; }
+      // The river column drains SOUTH into the sea at y = 110, accumulating as
+      // it goes, so 9b's trunk-river trace has a real mouth to start from.
+      // D8[2] is [0, 1].
+      if (x === 60) { grid.flags[i] |= FLAG.RIVER; grid.flowAcc[i] = 100 + y; grid.flowDir[i] = 2; }
     } else {
       grid.plate[i] = -1; grid.elev[i] = -0.6; grid.flags[i] |= FLAG.SEA;
     }
@@ -4379,23 +4851,34 @@ function coastWorld() {
   return grid;
 }
 
-const REGIONS = Array.from({ length: 8 }, (_, n) => ({
+export const REGIONS = Array.from({ length: 8 }, (_, n) => ({
   id: `c01/r0${n + 1}`, continent: "c01", survey: n < 5 ? "surveyed" : "reported",
   cells: 800, areaKm2: 800, adjacent: [], levelBand: null, siteCell: 0,
 }));
 
-function ownRegions(grid) {
+export function ownRegions(grid) {
   let n = 0;
   for (let i = 0; i < grid.n; i++) { if (grid.plate[i] < 0) continue; grid.owner[i] = (n / 800 | 0) % 8; n++; }
 }
 
-const PREMISES = [{ id: "c01", title: "T", class: "major", palette: ["meadow", "river"],
+export const PREMISES = [{ id: "c01", title: "T", class: "major", palette: ["meadow", "river"],
                     landformKit: ["coastal", "fluvial"], footprint: { centreKm: [60, 60], radiiKm: [60, 60], warpKm: 0 },
                     structures: [], register: "basin-anglic", levelBand: [1, 40] }];
 
-const M = { ...MANIFEST, landmasses: [{ id: "c01", title: "T", class: "major", netKm2: 8000,
+export const M = { ...MANIFEST, landmasses: [{ id: "c01", title: "T", class: "major", netKm2: 8000,
                                         interiorWaterKm2: 0, surveyed: 5, reported: 3 }],
             quotas: { ...MANIFEST.quotas, settlements: { capital: 1, hub: 2, village: 3, total: 6 } } };
+```
+
+Then create `tools/mapforge/tests/settlements.test.mjs`:
+
+```js
+// tools/mapforge/tests/settlements.test.mjs
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { FLAG, idx } from "../lib/grid.mjs";
+import { placeSettlements, assignLevelBands, SEPARATION_KM, VETO } from "../lib/passes/settlements.mjs";
+import { coastWorld, ownRegions, REGIONS, PREMISES, M } from "./fixtures/coast-world.mjs";
 
 test("the pinned constants are the spec's", () => {
   assert.equal(SEPARATION_KM.capital, 60);
@@ -4430,7 +4913,7 @@ test("minimum separations hold within each tier", () => {
   for (const tier of ["capital", "hub", "village"]) {
     const list = r.settlements.filter((s) => s.rank === tier);
     for (let a = 0; a < list.length; a++) for (let b = a + 1; b < list.length; b++) {
-      const dx = list[a].at[0] - list[b].at[0], dy = list[a].at[1] - list[b].at[1];
+      const dx = list[a].atKm[0] - list[b].atKm[0], dy = list[a].atKm[1] - list[b].atKm[1];
       const d = Math.sqrt(dx * dx + dy * dy);
       assert.ok(d >= SEPARATION_KM[tier] - 1e-9,
         `${tier}s ${list[a].id} and ${list[b].id} are ${d.toFixed(1)} km apart, min ${SEPARATION_KM[tier]}`);
@@ -4453,13 +4936,23 @@ test("at most 2 settlements land in any one region (the 9 km separation cap)", (
   for (const [rid, n] of per) assert.ok(n <= 2, `${rid} holds ${n} settlements`);
 });
 
+test("every region gets a settlements[] back-reference, empty ones included", () => {
+  const grid = coastWorld(); ownRegions(grid);
+  const regions = REGIONS.map((x) => ({ ...x }));
+  const r = placeSettlements({ grid, premises: PREMISES, regions, manifest: M, stream: "da45bd8930d33bb0" });
+  for (const reg of regions)
+    assert.ok(Array.isArray(reg.settlements), `${reg.id} has no settlements[] — G-DUNGEON-REACH reads it`);
+  const flat = regions.flatMap((x) => x.settlements).sort();
+  assert.deepEqual(flat, r.settlements.map((s) => s.id).sort());
+});
+
 test("assignLevelBands is non-decreasing in distance from the origin capital", () => {
   const grid = coastWorld(); ownRegions(grid);
   const r = placeSettlements({ grid, premises: PREMISES, regions: REGIONS, manifest: M, stream: "da45bd8930d33bb0" });
   assignLevelBands({ regions: REGIONS, settlements: r.settlements, manifest: M });
   const origin = r.settlements.find((s) => s.rank === "capital");
   const withDist = REGIONS.filter((x) => x.levelBand).map((x) => {
-    const dx = x.centroidKm[0] - origin.at[0], dy = x.centroidKm[1] - origin.at[1];
+    const dx = x.centroidKm[0] - origin.atKm[0], dy = x.centroidKm[1] - origin.atKm[1];
     return { d: Math.sqrt(dx * dx + dy * dy), lo: x.levelBand[0], id: x.id };
   }).sort((a, b) => a.d - b.d);
   for (let i = 1; i < withDist.length; i++)
@@ -4467,63 +4960,25 @@ test("assignLevelBands is non-decreasing in distance from the origin capital", (
       `${withDist[i].id} is further out but banded lower (${withDist[i].lo} < ${withDist[i - 1].lo})`);
 });
 
-test("routeRoads connects every settlement into one component", () => {
-  const grid = coastWorld(); ownRegions(grid);
-  const s = placeSettlements({ grid, premises: PREMISES, regions: REGIONS, manifest: M, stream: "da45bd8930d33bb0" });
-  const r = routeRoads({ grid, settlements: s.settlements, regions: REGIONS });
-  const adj = new Map(s.settlements.map((x) => [x.id, []]));
-  for (const road of r.roads) { adj.get(road.from).push(road.to); adj.get(road.to).push(road.from); }
-  const seen = new Set([s.settlements[0].id]);
-  const q = [s.settlements[0].id];
-  while (q.length) for (const n of adj.get(q.pop())) if (!seen.has(n)) { seen.add(n); q.push(n); }
-  assert.equal(seen.size, s.settlements.length, "the road network is disconnected");
-});
-
-test("road points never cross a sea cell", () => {
-  const grid = coastWorld(); ownRegions(grid);
-  const s = placeSettlements({ grid, premises: PREMISES, regions: REGIONS, manifest: M, stream: "da45bd8930d33bb0" });
-  const r = routeRoads({ grid, settlements: s.settlements, regions: REGIONS });
-  for (const road of r.roads)
-    for (const [x, y] of road.points) {
-      const i = idx({ grid, cx: Math.floor(x / grid.cellKm), cy: Math.floor(y / grid.cellKm) });
-      assert.equal(grid.flags[i] & FLAG.SEA, 0, `road ${road.id} crosses the sea at ${x},${y}`);
-    }
-});
-
-test("anchorDungeons only picks dungeonCapable landforms within 2 region hops of a settlement", () => {
-  const instances = [
-    { handle: "c01/karst/h-0001", type: "karst-cenote", region: "c01/r01", dungeonCapable: true },
-    { handle: "c01/karst/h-0002", type: "karst-pavement", region: "c01/r01", dungeonCapable: false },
-    { handle: "c01/karst/h-0003", type: "karst-fenster", region: "c01/r08", dungeonCapable: true },
-  ];
-  const regions = [
-    { id: "c01/r01", continent: "c01", survey: "surveyed", adjacent: ["c01/r02"] },
-    { id: "c01/r02", continent: "c01", survey: "surveyed", adjacent: ["c01/r01"] },
-    { id: "c01/r08", continent: "c01", survey: "reported", adjacent: [] },
-  ];
-  const settlements = [{ id: "c01/s01", region: "c01/r02", rank: "hub" }];
-  const r = anchorDungeons({ instances, regions, settlements, lexicon: MINI,
-                             manifest: { quotas: { dungeons: { complexes: 5 } } }, stream: "seedseedseedseed" });
-  assert.deepEqual(r.anchors.map((a) => a.handle), ["c01/karst/h-0001"]);
-  assert.equal(r.anchors[0].hopsToSettlement, 1);
-});
-
-test("anchorDungeons reports a shortfall rather than inventing an anchor", () => {
-  const r = anchorDungeons({ instances: [], regions: [], settlements: [], lexicon: MINI,
-                             manifest: { quotas: { dungeons: { complexes: 60 } } }, stream: "seedseedseedseed" });
-  assert.equal(r.anchors.length, 0);
-  assert.ok(r.problems.some((p) => /60/.test(p)), `no shortfall reported: ${JSON.stringify(r.problems)}`);
-});
-
-test("all three passes are deterministic", () => {
+test("placeSettlements is deterministic", () => {
   const run = () => {
     const grid = coastWorld(); ownRegions(grid);
     const regions = REGIONS.map((x) => ({ ...x }));
     const s = placeSettlements({ grid, premises: PREMISES, regions, manifest: M, stream: "da45bd8930d33bb0" });
-    const r = routeRoads({ grid, settlements: s.settlements, regions });
-    return JSON.stringify({ s: s.settlements, r });
+    return JSON.stringify(s.settlements);
   };
   assert.equal(run(), run());
+});
+
+test("a raw pinned record is a loud TypeError, never a silent mis-placement", () => {
+  const grid = coastWorld(); ownRegions(grid);
+  // The shape Plan D's placePinned RETURNS is { id, at, cell, continent,
+  // region, rank }. A RAW pinned record (with `.pin` and `.settlementRank`)
+  // must be rejected here rather than half-read — F5's whole point.
+  assert.throws(() => placeSettlements({
+    grid, premises: PREMISES, regions: REGIONS, manifest: M, stream: "da45bd8930d33bb0",
+    pinned: [{ id: "gildmark", pin: { at: [60, 60] }, settlementRank: "capital" }],
+  }), /is not a placePinned\(\) result/);
 });
 ```
 
@@ -4694,6 +5149,17 @@ export function placeSettlements({ grid, premises, regions, manifest, pinned = [
       problems.push(`settlements: only ${placed} of ${want} ${tier}s could be placed — the veto set or the ${SEPARATION_KM[tier]} km separation is starving the tier`);
   }
   settlements.sort((a, b) => (a.continent < b.continent ? -1 : a.continent > b.continent ? 1 : a.id < b.id ? -1 : 1));
+  // THE REGION BACK-REFERENCE. `regions[].settlements` is a REQUIRED key of
+  // fabric-file.schema.json and it exists so Plan D's G-DUNGEON-REACH can walk
+  // the region adjacency graph without re-deriving the settlement -> region
+  // join. Written here, after the sort, so the array order is the settlement
+  // order and a re-seed cannot reshuffle it. Every region gets the key, empty
+  // included: an absent key and an empty array read the same at a call site
+  // that uses `?? []`, and that is exactly how the join silently returned
+  // Infinity hops for all 60 dungeons.
+  for (const r of regions) r.settlements = [];
+  const regionById = new Map(regions.map((r) => [r.id, r]));
+  for (const s of settlements) regionById.get(s.region)?.settlements.push(s.id);
   return { settlements, problems };
 }
 
@@ -4710,7 +5176,7 @@ export function assignLevelBands({ regions, settlements, manifest }) {
   if (!origin) return;
   for (const r of regions) {
     if (!r.centroidKm) continue;
-    const dx = r.centroidKm[0] - origin.at[0], dy = r.centroidKm[1] - origin.at[1];
+    const dx = r.centroidKm[0] - origin.atKm[0], dy = r.centroidKm[1] - origin.atKm[1];
     const d = Math.sqrt(dx * dx + dy * dy);
     const ring = Math.min(bands.length - 1, Math.floor(d / ringKm));
     r.levelBand = [...bands[ring]];
@@ -4720,7 +5186,124 @@ export function assignLevelBands({ regions, settlements, manifest }) {
 
 The caller must set `region.centroidKm` before `assignLevelBands` — add that to `partitionRegions`'s census loop (`rec.centroidKm = [q(sumX / cells * cellKm), q(sumY / cells * cellKm)]`) as part of this task's diff.
 
-- [ ] **Step 4: Write `tools/mapforge/lib/passes/roads.mjs`**
+- [ ] **Step 4: Run the test to verify it passes**
+
+Run: `node --test 'tools/mapforge/tests/settlements.test.mjs'`
+Expected: PASS — 10 tests.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add tools/mapforge/lib/passes/settlements.mjs tools/mapforge/lib/passes/partition.mjs \
+        tools/mapforge/tests/fixtures/coast-world.mjs tools/mapforge/tests/settlements.test.mjs
+git commit -m "feat: P11 settlement placement with hard vetoes and tiered separation"
+```
+
+#### Task 9a quality gate
+
+- [ ] **Step 6: Verify**
+
+```bash
+node --test 'tools/mapforge/tests/*.test.mjs'
+node scripts/check_content.mjs --only=spine
+node scripts/check_spine_emit.mjs --check
+(cd colyseus-server && npm test -- mapDimensions)
+```
+
+- [ ] **Step 7: Independent adversarial review**
+
+Brief: *`waterFetchKm` returns `Infinity` when no D8 ray starts in water — confirm the caller cannot then score a landlocked cell as a port, because `Infinity < SHELTER_FETCH_KM_MAX` is false but `!(Infinity > COAST_FAR_KM)` is also false and one of those branches is inverted somewhere. Confirm `farEnough` compares against ALL taken settlements rather than same-tier only, and decide which the spec means (it says "tiered minimum separation", so same-tier; a village 3 km from a capital is fine) — then make the test say so. `assignLevelBands` requires `region.centroidKm`, which this task adds to `partitionRegions` — confirm the addition is present, quantised through `q()`, and that Task 7's tests still pass. Attack the pinned path: does the quota decrement handle a pinned entry whose `rank` is `null`, and does a pinned capital still count against the 60 km separation for the generated ones?*
+
+- [ ] **Step 8: Refactor** — apply the findings; adjust `farEnough` to the decided semantics and update the test to match.
+
+- [ ] **Step 9: Re-verify** — re-run Step 6.
+
+- [ ] **Step 10: Commit and report**
+
+```bash
+git add -A && git commit -m "refactor: settlement placement review findings"
+git branch --show-current && git log --oneline -1
+```
+
+#### Task 9b — `roads.mjs`: P12 road network, sea lanes, trunk rivers
+
+- [ ] **Step 11: Write the failing test**
+
+Create `tools/mapforge/tests/roads.test.mjs`:
+
+```js
+// tools/mapforge/tests/roads.test.mjs
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { FLAG, idx } from "../lib/grid.mjs";
+import { placeSettlements } from "../lib/passes/settlements.mjs";
+import { routeRoads } from "../lib/passes/roads.mjs";
+import { coastWorld, ownRegions, REGIONS, PREMISES, M } from "./fixtures/coast-world.mjs";
+
+function settled() {
+  const grid = coastWorld(); ownRegions(grid);
+  const s = placeSettlements({ grid, premises: PREMISES, regions: REGIONS, manifest: M,
+                               stream: "da45bd8930d33bb0" });
+  return { grid, settlements: s.settlements };
+}
+
+test("routeRoads connects every settlement into one component", () => {
+  const { grid, settlements } = settled();
+  const r = routeRoads({ grid, settlements, regions: REGIONS });
+  const adj = new Map(settlements.map((x) => [x.id, []]));
+  for (const road of r.roads) { adj.get(road.from).push(road.to); adj.get(road.to).push(road.from); }
+  const seen = new Set([settlements[0].id]);
+  const q = [settlements[0].id];
+  while (q.length) for (const n of adj.get(q.pop())) if (!seen.has(n)) { seen.add(n); q.push(n); }
+  assert.equal(seen.size, settlements.length, "the road network is disconnected");
+});
+
+test("road points never cross a sea cell", () => {
+  const { grid, settlements } = settled();
+  const r = routeRoads({ grid, settlements, regions: REGIONS });
+  for (const road of r.roads)
+    for (const [x, y] of road.points) {
+      const i = idx({ grid, cx: Math.floor(x / grid.cellKm), cy: Math.floor(y / grid.cellKm) });
+      assert.equal(grid.flags[i] & FLAG.SEA, 0, `road ${road.id} crosses the sea at ${x},${y}`);
+    }
+});
+
+test("a sea lane is water end to end except at its two endpoints", () => {
+  const { grid, settlements } = settled();
+  const r = routeRoads({ grid, settlements, regions: REGIONS });
+  for (const lane of r.seaLanes) {
+    const pts = lane.points;
+    for (let k = 1; k < pts.length - 1; k++) {
+      const i = idx({ grid, cx: Math.floor(pts[k][0] / grid.cellKm), cy: Math.floor(pts[k][1] / grid.cellKm) });
+      assert.notEqual(grid.flags[i] & FLAG.SEA, 0,
+        `sea lane ${lane.id} runs over land at ${pts[k][0]},${pts[k][1]} — it can cut across a continent`);
+    }
+  }
+});
+
+test("routeRoads emits exactly one trunk river per continent, unnamed", () => {
+  const { grid, settlements } = settled();
+  const r = routeRoads({ grid, settlements, regions: REGIONS });
+  assert.deepEqual(Object.keys(r.trunkRivers), ["c01"]);
+  assert.ok(r.trunkRivers.c01.points.length >= 2, "the trunk river has no course");
+  assert.equal(r.trunkRivers.c01.name, null, "a name is meaning; Plan D mints it, not this pass");
+});
+
+test("routeRoads is deterministic", () => {
+  const run = () => {
+    const { grid, settlements } = settled();
+    return JSON.stringify(routeRoads({ grid, settlements, regions: REGIONS.map((x) => ({ ...x })) }));
+  };
+  assert.equal(run(), run());
+});
+```
+
+- [ ] **Step 12: Run test to verify it fails**
+
+Run: `node --test 'tools/mapforge/tests/roads.test.mjs'`
+Expected: FAIL — `Cannot find module '.../lib/passes/roads.mjs'`.
+
+- [ ] **Step 13: Write `tools/mapforge/lib/passes/roads.mjs`**
 
 ```js
 // tools/mapforge/lib/passes/roads.mjs — P12: roads and sea lanes.
@@ -4795,6 +5378,66 @@ const pathKm = ({ grid, path }) => {
   return q(km);
 };
 
+// The single highest-flowAccumulation chain per continent, traced from its
+// mouth. ONE river per continent is a DRAWING decision, not a hydrology claim
+// — a sheet with thirteen equal rivers reads as noise. `name` is always null:
+// a name is meaning, and Plan D mints it.
+//
+// `grid.owner[i]` is the INDEX into `regions` (the invariant partitionRegions
+// establishes when it sets grid.regionIds = byIndex.map(r => r.id)), which is
+// how a cell is attributed to a continent without this pass needing premises.
+function traceTrunkRivers({ grid, regions }) {
+  const contOf = (i) => (grid.owner[i] < 0 ? null : (regions[grid.owner[i]]?.continent ?? null));
+  // 1. The mouth per continent: the RIVER cell with the largest flowAcc whose
+  //    D8 target is sea or off-grid. Ties break on CELL INDEX, never on scan
+  //    order — the same determinism rule the region partition follows.
+  const mouth = new Map();
+  for (let i = 0; i < grid.n; i++) {
+    if ((grid.flags[i] & FLAG.RIVER) === 0) continue;
+    const cont = contOf(i);
+    if (cont === null) continue;
+    const d = grid.flowDir[i];
+    let drains = true;
+    if (d >= 0) {
+      const nx = (i % grid.w) + D8[d][0], ny = ((i / grid.w) | 0) + D8[d][1];
+      const inside = nx >= 0 && ny >= 0 && nx < grid.w && ny < grid.h;
+      drains = !inside || (grid.flags[ny * grid.w + nx] & FLAG.SEA) !== 0;
+    }
+    if (!drains) continue;
+    const cur = mouth.get(cont);
+    if (cur === undefined || grid.flowAcc[i] > grid.flowAcc[cur]
+        || (grid.flowAcc[i] === grid.flowAcc[cur] && i < cur)) mouth.set(cont, i);
+  }
+  // 2. Walk upstream, always taking the inflowing RIVER neighbour with the
+  //    largest flowAcc (index-tiebroken). The guard bounds the walk by grid.n
+  //    so a flowDir cycle can never hang the generator.
+  const out = {};
+  for (const cont of [...mouth.keys()].sort()) {
+    const chain = [mouth.get(cont)];
+    for (let guard = 0; guard < grid.n; guard++) {
+      const i = chain[chain.length - 1];
+      const cx = i % grid.w, cy = (i / grid.w) | 0;
+      let best = -1;
+      for (let d = 0; d < 8; d++) {
+        const nx = cx + D8[d][0], ny = cy + D8[d][1];
+        if (nx < 0 || ny < 0 || nx >= grid.w || ny >= grid.h) continue;
+        const ni = ny * grid.w + nx;
+        if ((grid.flags[ni] & FLAG.RIVER) === 0) continue;
+        const nd = grid.flowDir[ni];
+        if (nd < 0) continue;
+        if ((ny + D8[nd][1]) * grid.w + (nx + D8[nd][0]) !== i) continue;   // not an inflow
+        if (best === -1 || grid.flowAcc[ni] > grid.flowAcc[best]
+            || (grid.flowAcc[ni] === grid.flowAcc[best] && ni < best)) best = ni;
+      }
+      if (best === -1) break;
+      chain.push(best);
+    }
+    chain.reverse();                                     // source -> mouth
+    out[cont] = { points: chain.map((i) => toKm({ grid, i })), name: null };
+  }
+  return out;
+}
+
 export function routeRoads({ grid, settlements, regions }) {
   const roads = [], seaLanes = [];
   const byCont = new Map();
@@ -4836,20 +5479,148 @@ export function routeRoads({ grid, settlements, regions }) {
   // Sea lanes: capitals, in id order, chained.
   const capitals = settlements.filter((s) => s.rank === "capital").sort((a, b) => (a.id < b.id ? -1 : 1));
   for (let i = 1; i < capitals.length; i++) {
+    const from = idx({ grid, cx: capitals[i - 1].cell[0], cy: capitals[i - 1].cell[1] });
+    const to = idx({ grid, cx: capitals[i].cell[0], cy: capitals[i].cell[1] });
     const r = shortestPath({
-      grid, from: idx({ grid, cx: capitals[i - 1].cell[0], cy: capitals[i - 1].cell[1] }),
-      to: idx({ grid, cx: capitals[i].cell[0], cy: capitals[i].cell[1] }),
-      passable: (j) => (grid.flags[j] & FLAG.SEA) !== 0 || true,   // start/end are land
+      grid, from, to,
+      // WATER ONLY, with the two LAND endpoints whitelisted by index. Writing
+      // this as `(grid.flags[j] & FLAG.SEA) !== 0 || true` passes every cell
+      // including land, which lets a lane cut straight across a continent.
+      passable: (j) => (grid.flags[j] & FLAG.SEA) !== 0 || j === from || j === to,
     });
     if (!r) continue;
     seaLanes.push({ id: `lane-${String(i).padStart(2, "0")}`, from: capitals[i - 1].id, to: capitals[i].id,
                     km: pathKm({ grid, path: r.path }), points: r.path.map((j) => toKm({ grid, i: j })) });
   }
-  return { roads, seaLanes };
+  return { roads, seaLanes, trunkRivers: traceTrunkRivers({ grid, regions }) };
 }
 ```
 
-- [ ] **Step 5: Write `tools/mapforge/lib/passes/dungeons.mjs`**
+- [ ] **Step 14: Run test to verify it passes**
+
+Run: `node --test 'tools/mapforge/tests/roads.test.mjs'`
+Expected: PASS — 5 tests.
+
+- [ ] **Step 15: Commit**
+
+```bash
+git add tools/mapforge/lib/passes/roads.mjs tools/mapforge/tests/roads.test.mjs \
+        tools/mapforge/tests/fixtures/coast-world.mjs
+git commit -m "feat: P12 road network and sea lanes"
+```
+
+#### Task 9b quality gate
+
+- [ ] **Step 16: Verify**
+
+```bash
+node --test 'tools/mapforge/tests/*.test.mjs'
+node scripts/check_content.mjs --only=spine
+node scripts/check_spine_emit.mjs --check
+(cd colyseus-server && npm test -- mapDimensions)
+```
+
+- [ ] **Step 17: Independent adversarial review**
+
+Brief: *`routeRoads` runs a full Dijkstra per candidate pair per Prim step — that is O(V² × grid) and at 11 settlements on an 800 × 800 grid it is 121 × 640,000 heap operations per continent. Measure it; it will not fit the 4 s generate budget. Replace it with ONE multi-source Dijkstra from the already-in-tree frontier per Prim step, and confirm the tie-break still resolves on the target id so the tree is unchanged. Attack `traceTrunkRivers`: the mouth test treats `flowDir < 0` as "drains", so an interior sink that P6 failed to fill would be picked as a mouth — is that reachable after `priorityFlood`, and if it is, should the guard be `flowDir < 0 && the cell touches sea`? Confirm the upstream walk cannot revisit a cell (the guard bounds it, but a two-cell mutual inflow would still emit a chain of 640,000 points). Confirm the sea-lane endpoint whitelist admits exactly two land cells and that a lane between two capitals on the SAME landmass is not emitted at all.*
+
+- [ ] **Step 18: Refactor** — fix the road-routing complexity; apply the trunk-river findings.
+
+- [ ] **Step 19: Re-verify** — re-run Step 16; time `routeRoads` on the real 800 × 800 grid, under 800 ms.
+
+- [ ] **Step 20: Commit and report**
+
+```bash
+git add -A && git commit -m "refactor: road routing and trunk-river review findings"
+git branch --show-current && git log --oneline -1
+```
+
+#### Task 9c — `dungeons.mjs`: P13 anchoring and region-hop reachability
+
+- [ ] **Step 21: Write the failing test**
+
+Create `tools/mapforge/tests/dungeons.test.mjs`:
+
+```js
+// tools/mapforge/tests/dungeons.test.mjs
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { anchorDungeons, MAX_HOPS } from "../lib/passes/dungeons.mjs";
+
+const MINI = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)),
+  "fixtures/mini-lexicon/landforms.json"), "utf8"));
+
+test("MAX_HOPS is the spec's 2", () => {
+  assert.equal(MAX_HOPS, 2);
+});
+
+test("anchorDungeons only picks dungeonCapable landforms within 2 region hops of a settlement", () => {
+  const instances = [
+    { handle: "c01/karst/h-0001", type: "karst-cenote", region: "c01/r01", dungeonCapable: true },
+    { handle: "c01/karst/h-0002", type: "karst-pavement", region: "c01/r01", dungeonCapable: false },
+    { handle: "c01/karst/h-0003", type: "karst-fenster", region: "c01/r08", dungeonCapable: true },
+  ];
+  const regions = [
+    { id: "c01/r01", continent: "c01", survey: "surveyed", adjacent: ["c01/r02"] },
+    { id: "c01/r02", continent: "c01", survey: "surveyed", adjacent: ["c01/r01"] },
+    { id: "c01/r08", continent: "c01", survey: "reported", adjacent: [] },
+  ];
+  const settlements = [{ id: "c01/s01", region: "c01/r02", rank: "hub" }];
+  const r = anchorDungeons({ instances, regions, settlements, lexicon: MINI,
+                             manifest: { quotas: { dungeons: { complexes: 5 } } }, stream: "seedseedseedseed" });
+  assert.deepEqual(r.anchors.map((a) => a.handle), ["c01/karst/h-0001"]);
+  assert.equal(r.anchors[0].hopsToSettlement, 1);
+});
+
+test("hopsToSettlement is SERIALISED, so G-DUNGEON-REACH reads it instead of re-walking the graph", () => {
+  const instances = [
+    { handle: "c01/karst/h-0001", type: "karst-cenote", region: "c01/r03", dungeonCapable: true },
+  ];
+  const regions = [
+    { id: "c01/r01", continent: "c01", survey: "surveyed", adjacent: ["c01/r02"] },
+    { id: "c01/r02", continent: "c01", survey: "surveyed", adjacent: ["c01/r01", "c01/r03"] },
+    { id: "c01/r03", continent: "c01", survey: "surveyed", adjacent: ["c01/r02"] },
+  ];
+  const settlements = [{ id: "c01/s01", region: "c01/r01", rank: "hub" }];
+  const r = anchorDungeons({ instances, regions, settlements, lexicon: MINI,
+                             manifest: { quotas: { dungeons: { complexes: 1 } } }, stream: "seedseedseedseed" });
+  assert.equal(r.anchors.length, 1);
+  assert.equal(r.anchors[0].hopsToSettlement, 2, "r03 is two hops from the settled r01");
+  assert.equal(r.anchors[0].entranceType, "karst-cenote", "entranceType is serialised, not re-derivable");
+});
+
+test("anchorDungeons reports a shortfall rather than inventing an anchor", () => {
+  const r = anchorDungeons({ instances: [], regions: [], settlements: [], lexicon: MINI,
+                             manifest: { quotas: { dungeons: { complexes: 60 } } }, stream: "seedseedseedseed" });
+  assert.equal(r.anchors.length, 0);
+  assert.ok(r.problems.some((p) => /60/.test(p)), `no shortfall reported: ${JSON.stringify(r.problems)}`);
+});
+
+test("anchorDungeons is deterministic", () => {
+  const mk = () => ({
+    instances: Array.from({ length: 12 }, (_, n) => ({
+      handle: `c01/karst/h-00${String(n).padStart(2, "0")}`, type: "karst-cenote",
+      region: `c01/r0${(n % 2) + 1}`, dungeonCapable: true })),
+    regions: [
+      { id: "c01/r01", continent: "c01", survey: "surveyed", adjacent: ["c01/r02"] },
+      { id: "c01/r02", continent: "c01", survey: "surveyed", adjacent: ["c01/r01"] },
+    ],
+    settlements: [{ id: "c01/s01", region: "c01/r01", rank: "hub" }],
+    lexicon: MINI, manifest: { quotas: { dungeons: { complexes: 5 } } }, stream: "seedseedseedseed",
+  });
+  assert.equal(JSON.stringify(anchorDungeons(mk())), JSON.stringify(anchorDungeons(mk())));
+});
+```
+
+- [ ] **Step 22: Run test to verify it fails**
+
+Run: `node --test 'tools/mapforge/tests/dungeons.test.mjs'`
+Expected: FAIL — `Cannot find module '.../lib/passes/dungeons.mjs'`.
+
+- [ ] **Step 23: Write `tools/mapforge/lib/passes/dungeons.mjs`**
 
 ```js
 // tools/mapforge/lib/passes/dungeons.mjs — P13: dungeon anchoring.
@@ -4925,23 +5696,21 @@ export function anchorDungeons({ instances, regions, settlements, lexicon, manif
 }
 ```
 
-- [ ] **Step 6: Run test to verify it passes**
+- [ ] **Step 24: Run test to verify it passes**
 
-Run: `node --test 'tools/mapforge/tests/settlements.test.mjs'`
-Expected: PASS — 12 tests.
+Run: `node --test 'tools/mapforge/tests/dungeons.test.mjs'`
+Expected: PASS — 5 tests.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 25: Commit**
 
 ```bash
-git add tools/mapforge/lib/passes/settlements.mjs tools/mapforge/lib/passes/roads.mjs \
-        tools/mapforge/lib/passes/dungeons.mjs tools/mapforge/lib/passes/partition.mjs \
-        tools/mapforge/tests/settlements.test.mjs
-git commit -m "feat: P11 settlements, P12 roads and sea lanes, P13 dungeon anchors"
+git add tools/mapforge/lib/passes/dungeons.mjs tools/mapforge/tests/dungeons.test.mjs
+git commit -m "feat: P13 dungeon anchoring and region-hop reachability"
 ```
 
-#### Task 9 quality gate
+#### Task 9c quality gate
 
-- [ ] **Step 8: Verify**
+- [ ] **Step 26: Verify**
 
 ```bash
 node --test 'tools/mapforge/tests/*.test.mjs'
@@ -4950,18 +5719,18 @@ node scripts/check_spine_emit.mjs --check
 (cd colyseus-server && npm test -- mapDimensions)
 ```
 
-- [ ] **Step 9: Independent adversarial review**
+- [ ] **Step 27: Independent adversarial review**
 
-Brief: *`routeRoads` runs a full Dijkstra per candidate pair per Prim step — that is O(V² × grid) and at 11 settlements on an 800 × 800 grid it is 121 × 640,000 heap operations per continent. Measure it; it will not fit the 4 s budget. Replace it with one multi-source Dijkstra per already-in-tree frontier. The sea-lane `passable` callback is `(j) => ... || true`, which passes everything including land — is that intentional (start and end are land) and does it let a lane cut across a continent? Fix it to allow land only at the two endpoints. `waterFetchKm` returns `Infinity` when no D8 ray starts in water — confirm the caller cannot then score a landlocked cell as a port. `assignLevelBands` requires `region.centroidKm`, which this task adds to `partitionRegions` — confirm the addition is present, quantised, and that Task 7's tests still pass. Confirm `placeSettlements`'s `farEnough` compares against ALL taken settlements rather than same-tier only, and decide which the spec means (it says "tiered minimum separation", so same-tier; a village 3 km from a capital is fine).*
+Brief: *`hopsToSettlement` is the number Plan D's `G-DUNGEON-REACH` reads instead of walking the region graph itself, so a wrong value here is a gate that lies rather than a gate that fails. Prove the BFS is over UNDIRECTED adjacency — `regions[].adjacent` is written by `partitionRegions` and a one-sided entry would make hops asymmetric. Confirm an instance in a region with NO settled region in range gets `hopsToSettlement: null` and is excluded, not given `Infinity` (the fabric schema types it `["integer","null"]`). Attack the quota path: with 60 complexes and fewer eligible instances, does it report the shortfall once with the requested count in the message, or once per missing anchor? Confirm the selection order is the handle order, not `instances` insertion order, so a re-ordering upstream cannot silently move a dungeon.*
 
-- [ ] **Step 10: Refactor** — fix the road routing complexity and the sea-lane passability; adjust `farEnough` to the decided semantics and update the test to match.
+- [ ] **Step 28: Refactor** — apply the findings; the likeliest is the undirected-adjacency assumption.
 
-- [ ] **Step 11: Re-verify** — re-run Step 8; time `routeRoads` on the real grid, under 800 ms.
+- [ ] **Step 29: Re-verify** — re-run Step 26.
 
-- [ ] **Step 12: Commit and report**
+- [ ] **Step 30: Commit and report**
 
 ```bash
-git add -A && git commit -m "refactor: settlement and road routing review findings"
+git add -A && git commit -m "refactor: dungeon anchoring review findings"
 git branch --show-current && git log --oneline -1
 ```
 
@@ -4986,7 +5755,7 @@ export function runPasses({ manifest, premises, pinned = [], relations = [] }): 
 export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [] }): { files: string[] }
 export function runIdOf({ seed, version }): string     // `${seed.slice(0,8)}-${version}`
 export function preservedChartNodes({ repoRoot, live }): Set<string>
-export function buildWaterTrunk({ manifest, grid, generator }): { nodes, problems }
+export function buildWaterTrunk({ manifest, grid, generator, landCellCount }): { nodes, problems }
 export const townFeatureId = (slug) => `f-town-${slug}`   // the id grammar Plan E's edges point at
 // tools/mapforge/lib/fabric.mjs additionally exports:
 //   oceanSeedCell, seaSeedCell, assignByQuota, ringsFromOwner, MAX_TRUNK_RING_POINTS
@@ -5164,6 +5933,60 @@ test("the draft trunk is EXACTLY 36 node files, with the per-tier tally Plan E c
       playroot: 1, playspace: 1, site: 3, fixture: 2,
     }, files.sort().join("\n"));
     assert.equal(files.length, 36);
+  } finally { rmSync(out, { recursive: true, force: true }); }
+});
+
+test("every continent node id comes from manifest.landmasses[].nodeId, and c02 stays n-cluster1", { timeout: 240000 }, () => {
+  // Slugging the title would mint n-wealdmarch for c02, and promote's
+  // reconciliation would then delete n-cluster1 as an n-atlas descendant
+  // absent from the draft. That takes twelve parentId references,
+  // check_spine_emit.mjs:104, atlas-sheet.mjs:42, spine-coverage.mjs:14 and
+  // Plan D's PIN_OFFSET anchor with it — none of which any gate would name.
+  const out = mkdtempSync(join(tmpdir(), "genw-nodeid-"));
+  try {
+    generate(out);
+    const dir = join(out, "content/spine/nodes");
+    const man = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
+    const conts = readdirSync(dir).map((f) => JSON.parse(readFileSync(join(dir, f), "utf8")))
+      .filter((n) => n.tier === "continent");
+    assert.deepEqual(conts.map((n) => n.id).sort(), man.landmasses.map((l) => l.nodeId).sort());
+    const c02 = man.landmasses.find((l) => l.id === "c02");
+    assert.equal(c02.nodeId, "n-cluster1");
+    const node = conts.find((n) => n.id === "n-cluster1");
+    assert.ok(node, "the Wealdmarch continent node must still be n-cluster1 after generation");
+    assert.equal(node.title, "Wealdmarch");
+    assert.ok(!conts.some((n) => n.id === "n-wealdmarch"),
+      "a slugged n-wealdmarch appeared — buildTrunk is deriving the id instead of reading nodeId");
+  } finally { rmSync(out, { recursive: true, force: true }); }
+});
+
+test("every authored edge survives into the draft, and a dangling endpoint is NAMED not dropped", { timeout: 240000 }, () => {
+  // Measured against the live file, ZERO of the 20 committed edges touches an
+  // n-playroot descendant: 7 canon legs, 8 roads, 2 relays and 3 sea lanes are
+  // all between chart nodes and features. A "keep the runtime edges" filter
+  // therefore promotes an EMPTY edges.json and G-NET, G-CANON-LEG and Plan E
+  // Task 6 Step 6's leg re-fit lose their subject at once. Two of the three
+  // endpoint SHAPES are not `{node}` at all — `{feature}` and
+  // `{edge, atIndex}` — so a node-only filter cannot even see them.
+  const out = mkdtempSync(join(tmpdir(), "genw-edges-"));
+  try {
+    generate(out);
+    const live = JSON.parse(readFileSync(join(ROOT, "content/spine/edges.json"), "utf8"));
+    const draft = JSON.parse(readFileSync(join(out, "content/spine/edges.json"), "utf8"));
+    const draftIds = new Set(draft.map((e) => e.id));
+    for (const e of live)
+      assert.ok(draftIds.has(e.id), `edge ${e.id} (${e.kind}) was dropped by generation`);
+    // Endpoint shapes preserved verbatim — the relay chains and the
+    // e-east-rim-track mid-edge attachment must come through unmangled.
+    const byId = new Map(draft.map((e) => [e.id, e]));
+    assert.deepEqual(byId.get("e-trunk-chain").from, { feature: "f-tower-01" });
+    assert.deepEqual(byId.get("e-east-rim-track").to, { edge: "e-coastal-spur", atIndex: 2 });
+    // And the redraw's real consequence is REPORTED: the six canon-leg town
+    // endpoints that do not survive are named in run problems, so Plan E Task
+    // 6 Step 6 has a work order instead of a silent hole.
+    const man = JSON.parse(readFileSync(join(out, "manifest.json"), "utf8"));
+    assert.ok(man.problems.some((p) => /^edge e-leg-millcross-gildmark: endpoint node .*n-gildmark/.test(p)),
+      `a vanished leg endpoint must be named. problems: ${JSON.stringify(man.problems)}`);
   } finally { rmSync(out, { recursive: true, force: true }); }
 });
 
@@ -5445,7 +6268,17 @@ export function buildFabricFile({ premise, generator, seaLevel, cellKm, census, 
     // dereferences UNCONDITIONALLY (:181, :157, :249) — emit them as null and
     // drawBasinSheet throws the exact TypeError Plan A Task 5 removed.
     outerRing, trunkRiver,
-    regions, instances, settlements, roads, dungeonAnchors, pinReceipts,
+    regions, instances,
+    // PROJECT, do not pass through. placeSettlements carries two working keys
+    // the schema does not admit — `portEligible` (P11's port restriction) and
+    // `pinned` (whether Plan D placed it) — and fabric-file.schema.json is
+    // additionalProperties:false, so a spread would fail validation with an
+    // ajv message naming neither the key nor the pass that added it.
+    settlements: settlements.map((s) => ({
+      id: s.id, title: s.title, rank: s.rank, atKm: s.atKm, cell: s.cell,
+      region: s.region, continent: s.continent, score: s.score,
+    })),
+    roads, dungeonAnchors, pinReceipts,
   };
 }
 
@@ -5669,6 +6502,13 @@ Brief: *`git show HEAD`. This is the geometry half of P14 and every downstream a
 
 The one finding to expect is (b): an ocean split by a continent is legitimately multi-ring. Fix it by keeping every ring whose area exceeds one cell and emitting the largest as `placement` with the rest reported as `problems`, or by accepting a multi-part ocean as three separate nodes — decide it here, with the reason written into the code, not in Task 10b.
 
+- [ ] **Step 3g5: Commit and report Task 10a**
+
+```bash
+git add -A && git commit -m "refactor: fabric ring-building review findings"
+git branch --show-current && git log --oneline -1
+```
+
 ---
 
 #### Task 10b — `generate-world.mjs`: the CLI, `writeRun`, and the draft root
@@ -5704,7 +6544,7 @@ import { makeGrid, FLAG, idx } from "./lib/grid.mjs";
 import { mintSeed } from "./lib/seed.mjs";
 import { q } from "./lib/noise.mjs";
 import { applyPremiseMasks } from "./lib/passes/mask.mjs";
-import { buildElevation } from "./lib/passes/elevation.mjs";
+import { buildElevation, assignSubstrate } from "./lib/passes/elevation.mjs";
 import { selectSeaLevelByRank, classifySea, CELL_AREA_KM2 } from "./lib/passes/sea-level.mjs";
 import { applyWinds } from "./lib/passes/winds.mjs";
 import { priorityFlood, d8FlowDir, flowAccumulate } from "./lib/hydrology.mjs";
@@ -5741,6 +6581,9 @@ export function runPasses({ manifest, premises, pinned = [], relations = [], onS
   const { maskField, plateArea } = time("P1", "premise-masks", () =>
     applyPremiseMasks({ grid, premises, stream: terrainStream }));
   time("P2", "elevation", () => buildElevation({ grid, premises, maskField, stream: terrainStream }));
+  // P2b runs INSIDE the P2 slot, before P3: it writes flag bits, never elev,
+  // so the "P2 is the last pass that writes elev" ordering rule still holds.
+  time("P2b", "substrate", () => assignSubstrate({ grid, premises, maskField, stream: terrainStream }));
 
   const target = Math.round(manifest.budget.grossLandPolygonKm2 / CELL_AREA_KM2);
   const sea = time("P3", "sea-level-rank", () => selectSeaLevelByRank({ elev: grid.elev, targetLandCells: target }));
@@ -5850,17 +6693,30 @@ export function runPasses({ manifest, premises, pinned = [], relations = [], onS
                              settlements: settle.settlements });
   // The water trunk is part of P14, not an afterthought: without it the frame
   // closure has no polygons behind its 91,200 km2 of ocean.
-  const water = time("P14w", "water-trunk", () =>
-    buildWaterTrunk({ manifest, grid, generator, seaLevelCells: sea.landCells }));
+  //
+  // NAMED `waterTrunk`, not `water` — `const water` is already bound sixty
+  // lines up by the P7 carve, and a second `const water` in the same block
+  // scope is a hard `SyntaxError: Identifier 'water' has already been
+  // declared`. The module would not parse, so the CLI, every Task 10b test,
+  // promote, G-REPRO and Plan E Task 6 would all fail at import.
+  const waterTrunk = time("P14w", "water-trunk", () =>
+    buildWaterTrunk({ manifest, grid, generator, landCellCount: sea.landCells }));
 
   timings.total = Object.values(timings).reduce((a, b) => a + b, 0);
   return { grid, fabric, world: worldFile, handles: land.ledgers,
-           trunk: [...trunk.nodes, ...water.nodes], edges: trunk.edges,
-           problems: [...settle.problems, ...dung.problems, ...water.problems],
+           trunk: [...trunk.nodes, ...waterTrunk.nodes], edges: trunk.edges,
+           problems: [...settle.problems, ...dung.problems, ...waterTrunk.problems],
            substitutions: land.substitutions, coverage: land.coverage,
+           // The run manifest is COMMITTED (build/mapforge/<runId>/manifest.json
+           // is hashed by promote step 1), so it carries the water trunk's
+           // problem COUNT, never the trunk object itself: 12 polygons of up to
+           // 160 points each would be ~200 KB of duplicated ring data in a file
+           // whose whole job is to be diffable between two seeds.
            runManifest: { seed, version: GENERATOR_VERSION, seaLevel: q(sea.seaLevel), rank: sea.rank,
                           landKm2: netLandKm2, waterKm2: q(160000 - netLandKm2),
-                          seaToLandRatio: worldFile.seaToLandRatio, water, plateArea: Array.from(plateArea) },
+                          seaToLandRatio: worldFile.seaToLandRatio,
+                          waterProblems: waterTrunk.problems.length,
+                          plateArea: Array.from(plateArea) },
            timings };
 }
 
@@ -5879,15 +6735,29 @@ export function runPasses({ manifest, premises, pinned = [], relations = [], onS
 export const townFeatureId = (slug) => `f-town-${slug}`;
 export const slugOf = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
+// A CONTINENT'S NODE ID IS DATA, NOT A DERIVATION. It comes from
+// manifest.landmasses[].nodeId — the same column the oceans and seas already
+// carry — and never from slugging the title. c02 "Wealdmarch" is the reason:
+// its live node is n-cluster1, twelve committed node files name it as their
+// parentId, check_spine_emit.mjs:104 and atlas-sheet.mjs:42 resolve it by
+// literal id and hard-fail without it, spine-coverage.mjs:14 walks its
+// children, and Plan D derives PIN_OFFSET from its committed anchor. Slugging
+// would mint n-wealdmarch, and promote's reconciliation would then delete
+// n-cluster1 as an n-atlas descendant absent from the draft — taking all of
+// that with it. `slugOf` survives for the f-town-<slug> feature ids, which are
+// minted fresh every run and have no live counterpart to preserve.
 function buildTrunk({ manifest, premises, rings, generator, settlements }) {
   const nodes = [], edges = [];
   premises.forEach((p, k) => {
     const r = rings.get(p.id);
     if (!r) return;
     const lm = manifest.landmasses.find((m) => m.id === p.id);
+    if (!lm?.nodeId)
+      throw new Error(`buildTrunk: manifest.landmasses has no nodeId for ${p.id} — ` +
+        `the continent node id is authored in content/world/manifest.json, never derived from the title`);
     const mine = settlements.filter((s) => s.continent === p.id);
     nodes.push({
-      id: `n-${slugOf(p.title)}`,
+      id: lm.nodeId,
       tier: "continent", parentId: "n-atlas", title: p.title,
       provenance: { authored: "generated",
                     generator: { name: generator.name, version: generator.version,
@@ -5932,15 +6802,30 @@ function buildTrunk({ manifest, premises, rings, generator, settlements }) {
 // among sea cells only. Seas are carved from their parent ocean's own cells,
 // which is what makes each sea ring a strict SUBSET of its ocean ring and
 // therefore G-CONTAIN-legal.
-export function buildWaterTrunk({ manifest, grid, generator, seaLevelCells }) {
+export function buildWaterTrunk({ manifest, grid, generator, landCellCount }) {
   const nodes = [], problems = [];
   const CELL_KM2 = grid.cellKm * grid.cellKm;
+  const quotas = manifest.oceans.map((o) => Math.round(o.polygonKm2 / CELL_KM2));
+
+  // 0. The ocean quotas are drawn from the SEA cells, i.e. every cell the
+  //    sea-level pass did NOT classify as land. `landCellCount` is that pass's
+  //    own count (`selectSeaLevelByRank(...).landCells`), so the sea-cell
+  //    supply is `grid.n - landCellCount`. If the three quotas ask for more
+  //    than that, `assignByQuota` under-fills silently and the ocean rings come
+  //    out short of their committed `polygonKm2` — which surfaces two tasks
+  //    later as a G-ATLAS-ROLLUP miss with no local symptom. Catch it here,
+  //    where both numbers are still in hand, as a `problems` entry (the run
+  //    reports problems; it does not throw mid-pass).
+  const seaCellSupply = grid.n - landCellCount;
+  const quotaSum = quotas.reduce((a, b) => a + b, 0);
+  if (quotaSum > seaCellSupply)
+    problems.push(`buildWaterTrunk: ocean quotas total ${quotaSum} cells but only ` +
+                  `${seaCellSupply} sea cells exist (${landCellCount} of ${grid.n} are land)`);
 
   // 1. partition the sea cells among the three oceans by area quota, using the
   //    same budgeted multi-source Dijkstra the region partition uses, keyed
   //    (cost, cellIndex) so the result is insertion-order independent.
   const oceanOwner = new Int8Array(grid.n).fill(-1);
-  const quotas = manifest.oceans.map((o) => Math.round(o.polygonKm2 / CELL_KM2));
   const seeds = manifest.oceans.map((o, i) => oceanSeedCell({ grid, index: i }));
   assignByQuota({ grid, owner: oceanOwner, seeds, quotas, mask: (i) => (grid.flags[i] & FLAG.SEA) !== 0 });
 
@@ -6125,10 +7010,32 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [] }
     if (r.error) throw new Error(`generate-world: ${r.error}`);
     write(`content/spine/nodes/${node.id}.json`, r.bytes);
   }
-  // 5. edges: runtime edges preserved by ROOT MEMBERSHIP, generated edges appended
+  // 5. edges: every AUTHORED edge is carried over, generated edges appended.
+  //
+  // Filtering by `runtimeIds.has(e.from?.node)` — an earlier draft's rule —
+  // keeps NOTHING: measured against the live file, zero of the 20 committed
+  // edges touches an n-playroot descendant. The 7 canon `leg` edges, 8
+  // `road` edges, 2 `relay` edges and 3 `sealane` edges are all hand-authored
+  // canon between chart nodes and features, and `run.edges` is empty (the
+  // generator authors no edges), so that rule promotes an EMPTY edges.json:
+  // G-NET, G-CANON-LEG and Plan E Task 6 Step 6's leg re-fit all lose their
+  // subject at once. Two of the three endpoint SHAPES are not `{node}` at all
+  // — `{feature: "f-tower-01"}` and `{edge: "e-coastal-spur", atIndex: 2}` —
+  // which is the class of bug PRE_WORLD_SEALANE_ID existed to paper over.
+  //
+  // So: carry them all. An edge whose `{node}` endpoint the redraw deleted is
+  // re-pointed at the continent's `f-town-<slug>` feature by Plan E Task 6
+  // Step 6, and `dangling` below turns "the endpoint vanished and nobody
+  // re-pointed it" into a named problem instead of a silent drop.
   const liveEdges = JSON.parse(readFileSync(join(repoRoot, "content/spine/edges.json"), "utf8"));
-  const runtimeEdges = liveEdges.filter((e) => runtimeIds.has(e.from?.node) || runtimeIds.has(e.to?.node));
-  write("content/spine/edges.json", canonStringify([...runtimeEdges, ...run.edges]) + "\n");
+  const promotedNodeIds = new Set([atlas.id, ...generated.map((n) => n.id), ...runtimeIds]);
+  const dangling = liveEdges.filter((e) =>
+    [e.from, e.to].some((end) => end?.node && !promotedNodeIds.has(end.node)));
+  for (const e of dangling)
+    run.problems.push(`edge ${e.id}: endpoint node ${JSON.stringify([e.from, e.to]
+      .filter((end) => end?.node && !promotedNodeIds.has(end.node)).map((end) => end.node))} ` +
+      `does not survive the redraw — re-point it at the owning continent's f-town-<slug> feature`);
+  write("content/spine/edges.json", canonStringify([...liveEdges, ...run.edges]) + "\n");
 
   // 6. the fabric, the world file and the handle ledgers
   run.fabric.forEach((f) => write(`content/world/fabric/continent-${f.continent.slice(1)}.json`, canonStringify(f) + "\n"));
@@ -6311,7 +7218,7 @@ Then **delete the `content/spine/candidates/` rule at `.gitignore:125`**. The di
 - [ ] **Step 6: Run test to verify it passes**
 
 Run: `node --test 'tools/mapforge/tests/generate-world.test.mjs'`
-Expected: PASS — 9 tests. This is the first moment the whole pipeline runs end to end; expect to iterate here.
+Expected: PASS — 19 tests. This is the first moment the whole pipeline runs end to end; expect to iterate here. The two that catch cross-plan breakage rather than pipeline bugs are *"every continent node id comes from manifest.landmasses[].nodeId"* (Plan E Task 7 freezes `n-cluster1` by literal id) and *"every authored edge survives into the draft"* (Plan E Task 6 Step 6 re-points them).
 
 - [ ] **Step 7: Commit Task 10b**
 
@@ -6613,25 +7520,22 @@ export function gWorldPoi({ fabric, report }) {
 // lore.order. R3's failure mode (a member silently disappearing or silently
 // reordering) applies identically to a handle ledger.
 //
-// R3's mitigation is THREE-part and this function carries all three: (1) the
-// sort key is content hash, never lore.order; (2) the digest is committed and
-// recomputed; (3) **the resulting order is a DENSE PERMUTATION of 0..n-1**.
-// Clause (3) is the one that catches a member silently vanishing, and it
-// applies to the REGION order as well as the handle order — Plan D's resolver
-// emits `order` on every resolved zone from the same (-area, contentHash) rule,
-// so there is one ordering discipline in the programme rather than two.
-export function gWorldOrder({ handles, fabric = [], orderHandlesFn, orderDigestFn, report }) {
-  // (3) for regions: the surveyed regions of each continent must carry a dense
-  // 0..n-1 rank. A gap means a region ceased to exist with every gate green,
-  // which is exactly the live defect R3 names (check_spine_emit.mjs:111).
-  for (const f of fabric) {
-    const surveyed = (f.regions ?? []).filter((r) => r.survey === "surveyed" && r.order != null);
-    if (surveyed.length === 0) continue;      // Plan C emits no order; Plan D does
-    const ranks = surveyed.map((r) => r.order).sort((a, b) => a - b);
-    const dense = ranks.every((v, i) => v === i);
-    if (!dense)
-      report(`G-ORDER: ${f.continent} zone order is not a dense permutation of 0..${surveyed.length - 1} — got [${ranks.join(", ")}]`);
-  }
+// R3's mitigation is THREE-part: (1) the sort key is content hash, never
+// lore.order; (2) the digest is committed and recomputed; (3) **the resulting
+// order is a DENSE PERMUTATION of 0..n-1**, which is the clause that catches a
+// member silently vanishing.
+//
+// This function carries all three FOR THE HANDLE LEDGERS, and only those.
+// Clause (3) applies to the REGION order too, but `order` is not a fabric
+// field: `content/schemas/fabric-file.schema.json` is `additionalProperties:
+// false` on `regions[]` and does not list it, so a fabric region carrying one
+// would be schema-invalid. The resolver mints `order` onto the RESOLVED zones
+// in `content/world/resolved/*.json` from the same (-area, contentHash) rule,
+// so the region half of clause (3) is asserted where those documents are
+// already loaded — Plan D's `gZoneOrder`, called from `checkWorldCivil`.
+// Checking it here instead would read a field that can never be present, and
+// the loop would `continue` on every continent forever.
+export function gWorldOrder({ handles, orderHandlesFn, orderDigestFn, report }) {
   for (const ledger of handles) {
     const recomputed = orderHandlesFn({ handles: ledger.handles.map(({ rank, ...h }) => h) });
     const digest = orderDigestFn({ handles: recomputed });
@@ -6688,7 +7592,7 @@ function checkWorld(opts, { nodes = [], tree = null } = {}) {
   gWorldSeaLand({ world: world.world, manifest: world.manifest, trunkLandKm2, report: fail, note });
   gWorldTrunkArea({ nodes, fabric: world.fabric, placementArea, report: fail });
   gWorldPoi({ fabric: world.fabric, report: fail });
-  gWorldOrder({ handles: world.handles, fabric: world.fabric,
+  gWorldOrder({ handles: world.handles,
                 orderHandlesFn: orderHandles, orderDigestFn: orderDigestOf, report: fail });
   gWorldInstanceGeometry({ fabric: world.fabric, shoelaceArea, selfIntersects, report: fail });
   gWorldBudget({ contentRoot: opts.contentRoot, budgets: world.budgets, manifest: world.manifest, report: fail, note });
@@ -7014,7 +7918,7 @@ Promotion today is **two hand steps, not one**: `gen-world.mjs` writes candidate
 **Files:**
 - Create: `tools/mapforge/promote-world.mjs`
 - Test: `tools/mapforge/tests/promote.test.mjs`, `tools/mapforge/tests/repro.test.mjs`
-- Modify: `.release.json` (add `"nodeMajor": 18`)
+- Modify: `.release.json:2-7` (add `"nodeMajor": 18` after `"version"`)
 - Modify: `.github/workflows/ci.yml:30-34` (read the Node major from `.release.json`)
 - Modify: `scripts/integration.sh:117-121` (name G-REPRO in the section label)
 - Create: `scripts/tests/node-pin.test.mjs`
@@ -7608,9 +8512,9 @@ The owner rule is not a follow-up: **every produced artifact must be observable 
 - Create: `tools/mapforge/lib/fabric-sheet.mjs`, `tools/mapforge/lib/overlay-sheet.mjs`
 - Create: `game-client/assets/art/maps/world-fabric.svg`, `world-overlay.svg` + their `<= 512 px` PNG thumbs
 - Modify: `tools/mapforge/render-sheet.mjs:38-51` (`SHEETS` gains two entries)
-- Modify: `tools/asset-storybook/maps-index.json` (two rows), `tools/asset-storybook/js/maps.mjs` (a fabric census panel)
-- Modify: `game-client/assets/art/art-manifest.json` (`art:map-fabric`, `art:map-overlay` + license rows)
-- Modify: `content/world/render-lock.json` (Plan A's lock gains the fabric paths)
+- Modify: `tools/asset-storybook/maps-index.json:4-19` (two rows appended to `sheets[]`), `tools/asset-storybook/js/maps.mjs:292-306` (a fabric census panel below the card grid, following the fetch-and-degrade pattern at `:23-30`)
+- Modify: `game-client/assets/art/art-manifest.json:517` (`art:map-fabric`, `art:map-overlay`, copying the shape of the `art:map-atlas` entry that starts there, + license rows)
+- Modify: `content/world/render-lock.json` (append the fabric paths; created by Plan A Task 10, so there is no pre-existing line to anchor to — and it is REGENERATED by `node scripts/check_render_lock.mjs --write`, never hand-edited)
 - Delete: `tools/mapforge/gen-world.mjs`, `tools/mapforge/lib/world-gen.mjs`, `tools/mapforge/tests/gen-world.test.mjs`, `tools/mapforge/tests/world-gen.test.mjs`
 
 (The `.gitignore` edits — explicit `build/mapforge/`, and dropping the retired `content/spine/candidates/` rule — land in Task 10b Step 5, with the CLI that retires the concept.)
@@ -7803,7 +8707,7 @@ export function buildFabricSheet({ repoRoot }) {
                 `fill="none" stroke="${C.ink}" stroke-width="0.6" stroke-dasharray="3 2"/>`);
     for (const s of f.settlements ?? []) {
       const r = s.rank === "capital" ? 3.2 : s.rank === "hub" ? 2.2 : 1.4;
-      body.push(`<circle cx="${px(s.at[0])}" cy="${px(s.at[1])}" r="${r}" fill="${C.ink}"/>`);
+      body.push(`<circle cx="${px(s.atKm[0])}" cy="${px(s.atKm[1])}" r="${r}" fill="${C.ink}"/>`);
     }
     // One title per landmass, at the area-weighted centroid of its regions.
     let cx = 0, cy = 0, tot = 0;
@@ -8068,12 +8972,19 @@ Plan C is done when every one of these is demonstrated with pasted command outpu
 ## Handoff to Plan D and Plan E
 
 **Plan D consumes, by exact path and signature:**
+- `content/world/premises/continent-01..13.json` — **THE single authority for `footprint.centreKm`, `footprint.radiiKm`, `areaBandKm2`, `coastClass`, `register` and `levelBand`.** Plan C owns these files; Plan D re-derives every pinned coordinate from them and states no centre of its own. The thirteen centres, in km, are `c01 [200,34] · c02 [96,148] · c03 [286,112] · c04 [306,246] · c05 [176,300] · c06 [70,268] · c07 [46,92] · c08 [252,344] · c09 [352,186] · c10 [122,356] · c11 [338,66] · c12 [254,44] · c13 [40,344]`, pinned by the Task 3 test *"footprint.centreKm is THE authority Plan D re-derives its pins from"*. Any pin offset Plan D computes — including the basin re-fit vector — is `premise.footprint.centreKm − <anchor>`, evaluated against these values and nothing else.
 - `content/world/fabric/continent-01..13.json` + `world.json` — regions with `id`, `survey`, `ring`, `levelBand`, `adjacent`, `centroidKm`; instances with `handle`, `type`, `sizeKm`, `region`, `named`, `dungeonCapable`.
 - `content/world/handles/continent-01..13.json` — the handle a bound record's `bind.handle` names, with the committed `orderDigest` `G-ORDER` re-checks.
 - `runPasses({ manifest, premises, pinned, relations })` — Plan D supplies the ~40 pinned records and the relation set; `placeSettlements` already places `pinned` **before** scoring, so `G-PIN-SAT` is a generation failure rather than a join failure.
 - `scripts/lib/world.mjs`'s `loadFabric({ contentRoot })` — returns `{ present, manifest, budgets, fabric, world, handles, errors }`. **It is named `loadFabric`, not `loadWorld`, deliberately**: Plan D adds `loadCivil({ contentRoot, fabric })` in `scripts/lib/resolve.mjs` for the authored half, and two exported functions called `loadWorld` reading the same directory with different return shapes is exactly the ambiguity a reviewer cannot resolve from a call site. `loadCivil` takes this function's result as an argument rather than re-reading the same 27 files on every gate run.
 
 **Plan E consumes:**
+- **The continent node ids, from `manifest.landmasses[].nodeId` — not from the titles.** `buildTrunk` sets `id: lm.nodeId`; the column is authored in `content/world/manifest.json` (Task 1 Step 3) and pinned by the Task 1 test *"every landmass carries an explicit nodeId, and c02's is n-cluster1"* plus the Task 10 test *"every continent node id comes from manifest.landmasses[].nodeId"*. **c02 Wealdmarch keeps the id `n-cluster1`**, because that is its live node: twelve committed files name it as their `parentId`, `check_spine_emit.mjs:104` and `tools/mapforge/lib/atlas-sheet.mjs:42` resolve it by literal id and hard-fail without it, `scripts/spine-coverage.mjs:14` walks its children, and Plan D derives `PIN_OFFSET` from its committed `placement.anchor`. Plan E therefore freezes, re-anchors and re-parents `n-cluster1` under its existing name and does **not** rename anything. The other twelve ids are `n-rimewall-cap`, `n-coldreach`, `n-stonemoor`, `n-thirstwold`, `n-reedstrand`, `n-driftholt`, `n-wracklow`, `n-brightfall`, `n-ashen-spar`, `n-quillreef`, `n-skerryfast`, `n-loamspit`.
+- **Continent nodes are REGENERATED, so their `lore` is regenerated too.** `buildTrunk` writes `lore: { summary: premise.structuralIdea }` on every continent node, which means the three `amendedPending` markers living on `n-cluster1` (2) and `n-coldreach` / `n-stonemoor` (1 each) today do **not** survive the promotion — they retire with the node body rather than being re-voiced. Only `n-atlas` is carried over verbatim, so it is the one node file that still carries a marker after the redraw. Plan E Task 15 Step 4's expected counts are stated against that.
+- **Every authored edge survives the promotion.** `writeRun` carries `content/spine/edges.json` forward whole (the generator authors no edges of its own) and pushes a named problem for any `{node}` endpoint the redraw deleted, so Plan E Task 6 Step 6's leg and road re-fit gets a work order rather than an empty file. Pinned by the Task 10 test *"every authored edge survives into the draft, and a dangling endpoint is NAMED not dropped"*.
+- **The `f-town-<slug>` point-feature id grammar.** `buildTrunk` emits exactly one `kind: "point"` feature per settlement onto its owning continent node, id `f-town-<slug>` (`townFeatureId` in `tools/mapforge/lib/fabric.mjs`), carrying the settlement's km coordinates and `type: null`. Plan E's canon-leg re-fit points its 7 `leg` edges and 8 `road` edges at `{ "feature": "f-town-gildmark" }` and similar; `gSpineNet` (`scripts/check_content.mjs:1986-1999`) resolves those endpoints against `node.features`, so the grammar is a hard interface, not a convention.
+- **The 36-file trunk census.** A promotion emits n-atlas + 13 continents + 3 oceans + 9 seas + `n-thornveil` + `n-northern-icefield` + `n-millcross` + the 7 runtime nodes = 36. Plan E's `content/spine/trunk-census.json` consumes that number from here rather than declaring it as a guarantee Plan C must meet.
+- `content/world/premises/continent-01..13.json` — `levelBand` per landmass is the ladder Plan E's zone allocation reads; it is fixed in Plan C Task 3 and Plan E does not restate it.
 - `tools/mapforge/promote-world.mjs` — the redraw commit *is* one `promote-world.mjs` run plus the re-baseline order of R12.
 - `content/world/fabric/*.json` as the authority `G-TRUNK-AREA` joins the redrawn trunk against, via each continent node's `provenance.generator.fabric`.
 - `tools/mapforge/lib/overlay-sheet.mjs` — the before/after the redraw review reads.

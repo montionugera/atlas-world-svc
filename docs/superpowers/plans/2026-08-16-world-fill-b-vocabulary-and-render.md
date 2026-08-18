@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Give the repo a content vocabulary and a renderer that can draw the target world *before* the target world exists — a 164-type landform lexicon with four new JSON schemas, 20 biomes and 18 terrain kinds with a closed ink loop, 40 distinguishable glyph families, deterministic label decluttering with zoom tiers, and a baked-texture rasteriser — all proved on a synthetic sheet at full target density (13 landmasses, 160 regions, 1,740 glyphs, 340 labels) that renders with **zero** `G-BIOME-INK`, `G-GLYPH` and `G-LABEL` problems and rasterises in **≤ 2 s at 2000 px**, none of which is true at the start.
+**Goal:** Give the repo a content vocabulary and a renderer that can draw the target world *before* the target world exists — a 170-type landform lexicon with four new JSON schemas, 20 biomes and 18 terrain kinds with a closed ink loop, 40 distinguishable glyph families, deterministic label decluttering with zoom tiers, and a baked-texture rasteriser — all proved on a synthetic sheet at full target density (13 landmasses, 160 regions, 1,740 glyphs, 340 labels) that renders with **zero** `G-BIOME-INK`, `G-GLYPH` and `G-LABEL` problems and rasterises in **≤ 2 s at 2000 px**, none of which is true at the start.
 
 **Architecture:** Two halves with a hard boundary between them. The **vocabulary half** (Tasks 1–5) writes content-model artifacts — `content/world/lexicon/landforms.json`, three new schemas, a hoisted `content/spine/derived.json`, and the grown `BIOMES`/`TERRAIN_KINDS` vocabulary in `scripts/lib/spine.mjs` — and is the explicit handoff Plan C's fabric generator consumes. The **render half** (Tasks 6–12) adds four new pure modules under `tools/mapforge/lib/` (`glyphs.mjs`, `labels.mjs`, `texture-bake.mjs`, `version.mjs`), grows `draft.mjs`'s ink layer, and proves every capability on a committed synthetic fixture sheet before adopting it on the two live sheets in one final, separately-reviewed re-ink commit.
 
-**Tech Stack:** Node ESM (`.mjs`), zero dependencies under `tools/mapforge/` (pure `node`); `ajv` + `sharp` under `scripts/` (its own `package.json`, `npm ci --prefix scripts`); `node --test` for map tooling (**glob form, quoted**); jest for `colyseus-server`; `rsvg-convert` (librsvg) for rasterisation.
+**Tech Stack:** Node ESM (`.mjs`), zero dependencies under `tools/mapforge/` (pure `node`); `ajv` + `sharp` under `scripts/` (its own `package.json`, `npm ci --prefix scripts`); `node --test` for map tooling (**a file LIST, never a bare directory** — quoted glob locally on Node >= 22, UNQUOTED shell-expanded glob in CI, which is pinned to Node 18; see Process); jest for `colyseus-server`; `rsvg-convert` (librsvg) for rasterisation.
 
 **Spec:** /Users/pasitnusso/workspace/repos/atlas-world-svc/.claude/worktrees/_release/docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md
 
@@ -21,7 +21,11 @@
 - `G-ATLAS-ROLLUP` tolerance stays +/-2 pp (`check_content.mjs:1690-1707`). If the generated world cannot roll up within it, the generator is wrong, not the gate.
 
 **Target counts (gated against `content/world/manifest.json`)**
-- 13 landmasses, 3 oceans, 9 seas, 160 regions = 40 surveyed + 120 reported, 45 settlements (3 capital / 12 hub / 30 village), 8 town plans, 60 dungeon complexes / 190 floors (3 families x 8 + 36 bespoke), 164 distinct landform types / 172 group memberships / 8 dual-listed, 1,740 instances / 336 named, 20 biomes, 18 terrain kinds, 626 distinct names.
+- 13 landmasses, 3 oceans, 9 seas, 160 regions = 40 surveyed + 120 reported, 45 settlements (3 capital / 12 hub / 30 village), 8 town plans, 60 dungeon complexes / 190 floors (3 families x 8 + 36 bespoke), **170** distinct landform types / **178** group memberships / 8 dual-listed, 1,740 instances / 336 named, 20 biomes, 18 terrain kinds, 626 distinct names.
+- **Why 170 and not the spec's 164.** **Six ids name real, place-forming ground the 164-row draft had no id for**, and they divide into two halves with two different consumers.
+  **Three are cited by a named row of Plan D's pinned roster** (Task 4 Step 2), and each one replaced an id that was wrong or unsatisfiable there: `headland` for `c-lm-gildmark-head` (a cliffed promontory, not `marine-terrace`'s flat bench), `ford` for `c-lm-millcross-ford` (the crossing point, not `braided-channel`'s line of bars), and `sea-waterfall` for `c-lm-brightfall-leap` — that last one is not a nicety, because `knickpoint-gorge` requires `nearFlag: RIVER` and biomes `river,rock` and therefore can NEVER be satisfied at a cell that also satisfies the row's `water.kind: "sea"`, which is a `G-PIN-SAT` failure by construction.
+  **Three are fabric-generator vocabulary**, needed by Plan C's instance placement for two continents' structural ideas and cited by no pinned record: `ice-shelf` for c01 Rimewall Cap (floating shelf ice over sea — every glacial id in the draft is grounded ice or its debris), and `ash-front` + `ash-plain` for c10 Ashen Spar (the tephra-fall margin, which is the group's only edge form, and the walkable tephra plain — every other volcanic area id is `lava` or `caldera`). Without them an arc continent's ash ground has no form to draw and c01's seaward margin renders as moraine.
+  A record cannot bind to a type that does not exist, and inventing an id downstream would put the vocabulary in two files. Plan B owns the lexicon, so the six are added HERE and the census is re-run: 164 + 6 = **170** types, 172 + 6 = **178** memberships, dual-listed unchanged at **8** (all six are single-group), `dungeonCapable` unchanged at **23**, glyph families unchanged at **40** (each new row reuses its own group's existing glyph, so `G-GLYPH`'s no-two-groups-share-a-mark rule is untouched), groups unchanged at **12**. 170 sits inside `budgets.landforms` `minTypes 100 / maxTypes 200` with no cap change.
 - Land split: cap 6,000 + 4 major x 11,000 + 3 minor x 3,000 + 5 chains x 1,000 = 64,000.
 - Surveyed region 160 km2 +/-25%; reported region 480 km2 +/-20% = [384, 576]. 40x160 + 120x480 = 64,000.
 - Ocean polygons 41,800 / 30,400 / 19,000 = 91,200; attributed water 44,000 / 32,000 / 20,000. Sea polygons are SUBSETS of their ocean polygon (G-CONTAIN); their 20,600 km2 is already inside the 91,200 and is never added again.
@@ -59,9 +63,11 @@
 
 ## Deviations from the shared contract, argued (read before Task 1)
 
-Three, all deliberate. Each is stated here so a reviewer does not have to discover it in a diff.
+Four, all deliberate. Each is stated here so a reviewer does not have to discover it in a diff.
 
-**D-B1 — Plan B ADDS `alsoGroups` to the lexicon row.** The shared contract's row carries a single `"group": "karst"` string, but the census requires **164 distinct types across 172 group memberships with 8 dual-listed**. One string cannot express 172 memberships over 164 rows. Plan B owns `content/schemas/landform-type.schema.json`, so it adds `"alsoGroups": string[]` (default `[]`, `maxItems: 1` — every dual listing in the spec is a pair, never a triple). `group` stays the **primary** key and is what `G-GLYPH`'s group-uniqueness is computed over; `alsoGroups` is a query tag only. Memberships = 164 + 8 = 172, checked by test.
+**D-B1 — Plan B ADDS `alsoGroups` to the lexicon row.** The shared contract's row carries a single `"group": "karst"` string, but the census requires **170 distinct types across 178 group memberships with 8 dual-listed**. One string cannot express 178 memberships over 170 rows. Plan B owns `content/schemas/landform-type.schema.json`, so it adds `"alsoGroups": string[]` (default `[]`, `maxItems: 1` — every dual listing in the spec is a pair, never a triple). `group` stays the **primary** key and is what `G-GLYPH`'s group-uniqueness is computed over; `alsoGroups` is a query tag only. Memberships = 170 + 8 = 178, checked by test.
+
+**D-B4 — the lexicon ships 170 types, not the spec's 164.** Six ids name ground no 164-row id covered. **Three are bound by a named pinned record** — `headland` (`c-lm-gildmark-head`), `ford` (`c-lm-millcross-ford`) and `sea-waterfall` (`c-lm-brightfall-leap`, whose previous `knickpoint-gorge` was unsatisfiable beside `water.kind: "sea"` and would have failed `G-PIN-SAT`). **Three are fabric-generator vocabulary with no pinned citation** — `ice-shelf` (c01's floating seaward margin), `ash-front` and `ash-plain` (c10's tephra margin and plain, the arc's only edge form and its only non-`lava`/`caldera` area). They are added to the lexicon in Task 1 with the census re-run (see Global Constraints and Task 1 Step 4b), rather than invented in Plan D, because a vocabulary with two homes is the defect `requires.landform` exists to prevent. Everything downstream that quotes a census — Plan C's `G-WORLD-BUDGET` band, Plan D's `requires.landform` join test, the `world-budget: landforms <n> types` print line — reads 170/178/8/23/40/12.
 
 **D-B2 — the dungeon-capable set is 23 types, not 18.** Spec §5.5 writes "**Dungeon-capable types (18):**" and then enumerates **23** names. The plan adopts the enumerated list (a plan must resolve an ambiguity, not carry it): cave, cenote, sinkhole, foiba, karst fenster, ponor, lava tube, fumarole vent, caldera floor, glacier cave, moulin, nunatak shelter, sea cave, sea arch, blowhole, gorge, plunge-pool undercut, slot canyon, hoodoo hollow, rift fissure, tectonic cave, yardang hollow, sub-lacustrine vent. `content/world/budgets.json` pins `landforms.dungeonCapableTypes: 23` and Task 1's test asserts it, so Plan D's 60 dungeons bind against a number that is written down.
 
@@ -126,9 +132,16 @@ node tools/mapforge/render-sheet.mjs --sheet atlas --check
 node scripts/check_render_lock.mjs --check                 # from Plan A
 node scripts/check_render_lock.mjs --write                 # re-baseline (Task 12 ONLY)
 
-# tests — GLOB FORM, QUOTED. A bare directory argument fails on newer Node.
+# tests — a FILE LIST, never a bare directory.
+# LOCAL (this worktree runs Node >= 22): quote the pattern and let Node expand it.
 node --test 'tools/mapforge/tests/*.test.mjs'
 node --test 'tools/asset-storybook/tests/*.test.mjs'
+# CI and any `bash -e` harness step: DO NOT QUOTE — .github/workflows/ci.yml:34
+# pins node-version 18, and Node-side --test glob patterns only exist from v22,
+# so a quoted pattern reaches Node 18 as a literal path and runs ZERO tests
+# (a green step proving nothing). The shell must do the expanding:
+node --test tools/mapforge/tests/*.test.mjs
+node --test tools/asset-storybook/tests/*.test.mjs
 npm ci --prefix scripts && npm test --prefix scripts
 (cd colyseus-server && npm test -- mapDimensions)
 
@@ -139,7 +152,7 @@ npm ci --prefix scripts && npm test --prefix scripts
 
 ### Traps this repo has actually hit
 
-- **`node --test <dir>` fails on newer Node.** Always the quoted glob. `integration.sh:109-112` carries the note.
+- **`node --test <dir>` fails on newer Node, and the fix is NOT one string.** Two different mechanisms are easy to conflate. Locally (Node >= 22) `node --test 'tools/mapforge/tests/*.test.mjs'` works because *Node* expands the pattern. In `.github/workflows/ci.yml` the same quoted string is a silent no-op: `ci.yml:34` pins `node-version: 18`, Node-side `--test` globbing landed in v22, so Node 18 treats the quoted pattern as a literal filename and either errors or runs zero tests. **In CI and in any `bash -e` harness step, drop the quotes so the SHELL expands the pattern** — which is exactly what the repo already does: `scripts/integration.sh:112` is `node --test "$REPO_ROOT"/tools/mapforge/tests/*.test.mjs` (pattern unquoted) and `scripts/package.json:6` is `node --test tests/*.test.mjs`. Copy those, never the quoted form, into a workflow file.
 - **`tools/mapforge/` has NO `package.json` and NO dependencies.** Do not add one. If a dependency is genuinely needed it belongs under `scripts/` (`ajv`, `js-yaml`, `sharp` live there, installed with `npm ci --prefix scripts`). `tools/mapforge` imports `scripts/lib/spine.mjs` by relative path — that direction is established and fine.
 - **Gate functions never throw; sheet builders never throw.** Errors return in-band.
 - **`abs()` appears nowhere in the geometry.** A negative signed shoelace is a `G-POLY` failure, not a magnitude.
@@ -157,11 +170,11 @@ Every file this plan creates (`C`), modifies (`M`) or deletes (`D`). Nothing out
 
 | Op | Path | Responsibility | Task |
 | --- | --- | --- | ---: |
-| C | `content/world/lexicon/landforms.json` | The 164-type flat array. `group` is the primary key column, `alsoGroups` the many-to-many tag (8 dual listings -> 172 memberships) | 1 |
+| C | `content/world/lexicon/landforms.json` | The 170-type flat array. `group` is the primary key column, `alsoGroups` the many-to-many tag (8 dual listings -> 178 memberships) | 1 |
 | C | `content/schemas/landform-type.schema.json` | Lexicon row shape, `additionalProperties: false`, closed `requires` predicate vocabulary | 1 |
-| C | `scripts/tests/landform-lexicon.test.mjs` | 164/172/8/23 census, glyph group-uniqueness, `requires` key closure, gloss rules | 1 |
+| C | `scripts/tests/landform-lexicon.test.mjs` | 170/178/8/23 census, glyph group-uniqueness, `requires` key closure, the six D-B4 additions, gloss rules | 1 |
 | C | `content/schemas/landform-instance.schema.json` | Fabric instance shape (Plan C writes the records). `point`/`line`/`area`, `additionalProperties: false`, and `maxItems: 40` on every ring — G-VERTEX-BUDGET's landform tier. It does **not** check winding: a signed shoelace is not expressible in JSON Schema, and that half is Plan C Task 11 Step 5c's `gWorldInstanceGeometry` | 2 |
-| M | `content/schemas/spine-node.schema.json` | Typed `features[]` item every existing feature validates against unchanged, plus nullable `type` citing a lexicon id; root `additionalProperties: false` | 2 |
+| M | `content/schemas/spine-node.schema.json:7,59,66` | Typed `features[]` item every existing feature validates against unchanged, plus nullable `type` citing a lexicon id; root `additionalProperties: false` | 2 |
 | C | `scripts/tests/landform-instance-schema.test.mjs` | The instance schema accepts the three geometries and rejects a coordinate-free record, an unknown key, and a 41-point ring (`maxItems: 40`, G-VERTEX-BUDGET's landform tier). It does **not** claim to reject a negative-shoelace record — JSON Schema cannot evaluate winding; that is `gWorldInstanceGeometry`'s job in Plan C Task 11 | 2 |
 | C | `content/schemas/spine-edge.schema.json` | The `edges.json` schema that has never existed — 4 `kind`s, discriminated endpoint refs | 3 |
 | C | `scripts/tests/edges-schema.test.mjs` | All 20 committed edges validate; a bad endpoint ref fails | 3 |
@@ -169,7 +182,7 @@ Every file this plan creates (`C`), modifies (`M`) or deletes (`D`). Nothing out
 | M | `scripts/check_spine_emit.mjs:41-47,68-71,189-250` | Drop `derived` from `NODE_FIELDS`; emit the sidecar as output #48 | 4 |
 | M | `scripts/lib/spine.mjs:227-233` | `loadSpine` returns `derived` alongside `edges`/`sheet` | 4 |
 | M | `scripts/check_content.mjs:1928-1930` | `G-DERIVED-DRIFT` becomes one whole-file canonical-bytes comparison | 4 |
-| M | `tools/mapforge/lib/world-gen.mjs:313-316` + `gen-world.mjs:102-103` + `tests/world-gen.test.mjs` | `buildWorld({ atlasNode, seedStreams })` — the only reader of `atlasNode.derived` | 4 |
+| M | `tools/mapforge/lib/world-gen.mjs:313-316` + `gen-world.mjs:102-103` + `tests/world-gen.test.mjs:7,37-39,89` | `buildWorld({ atlasNode, seedStreams })` — the only reader of `atlasNode.derived` | 4 |
 | M | `scripts/lib/spine.mjs:47-60` | `BIOMES` 12 -> 20, `TERRAIN_KINDS` 7 -> 18, `TERRAIN_IMPLIES` extended | 5 |
 | C | `content/world/budgets.json` | `landforms` + `sheets` sections and the pinned `cellKm: 0.5` (Plan C adds `fabric`/`civil`) | 5 |
 | M | `scripts/check_content.mjs:1682` (new `gSpineWorld`, called after `gSpineBudgets`) | `G-LANDFORM` (lexicon census, type/geometry join, instance + named caps) and `G-SHEET-BUDGET` (sheet count + SVG bytes). **`G-WORLD-BUDGET` is Plan C's, not this plan's** — Plan C owns `content/world/budgets.json`'s existence and the contract's pinned `world-budget: <family> …` print line | 5 |
@@ -179,7 +192,7 @@ Every file this plan creates (`C`), modifies (`M`) or deletes (`D`). Nothing out
 
 | Op | Path | Responsibility | Task |
 | --- | --- | --- | ---: |
-| M | `tools/mapforge/lib/draft.mjs:36-53,165-246` | `BIOME_FILL` (20, NEW), `FILL_FOR` (18), `patternDefs({includeReported, baked})`, `LEGEND` zoom-tiered; `TERRAIN_LEGEND` kept as a derived alias | 6 |
+| M | `tools/mapforge/lib/draft.mjs:36-53,165-246` | `BIOME_FILL` (20, NEW), `FILL_FOR` (18), `patternDefs({includeReported, frontierTiers, baked, ids})`, `LEGEND` (25 rows) zoom-tiered; `TERRAIN_LEGEND` kept as a derived alias | 6 |
 | C | `tools/mapforge/lib/ink.mjs` | `checkBiomeInk()` — the three-loop `G-BIOME-INK` closure, importable by every sheet builder | 6 |
 | C | `tools/mapforge/tests/biome-ink.test.mjs` | All three loops, both unreachable directions | 6 |
 | C | `tools/mapforge/lib/glyphs.mjs` | 40 glyph families, pure `({x,y,size,seed}) -> svg path d`; `symbolDefs`, `glyphForType`, `checkGlyphCoverage` | 7 |
@@ -195,14 +208,14 @@ Every file this plan creates (`C`), modifies (`M`) or deletes (`D`). Nothing out
 | C | `game-client/assets/art/maps/synthetic-density.svg` + `.png` | The committed canary artifact (SVG + a <= 512 px thumb) | 10 |
 | M | `tools/mapforge/render-sheet.mjs:31-50,52-120` | Register `synthetic`; `--png` becomes opt-in with `--png-width` (default 512) | 10, 11 |
 | C | `tools/mapforge/tests/synthetic-sheet.test.mjs` | Zero ink/glyph/label problems at target density; <= 2 s raster at 2000 px | 10 |
-| M | `tools/asset-storybook/maps-index.json` | The `synthetic` row; `png` is now the <= 512 px thumb | 10, 11 |
+| M | `tools/asset-storybook/maps-index.json` (data file, rewritten wholesale) | The `synthetic` row; `png` is now the <= 512 px thumb | 10, 11 |
 | M | `tools/asset-storybook/tests/maps-index.test.mjs:44-71` | Assert the thumb on disk and its size cap, not a 2000 px raster | 11 |
 | M | `tools/asset-storybook/js/maps.mjs:243-330` | The lexicon / glyph / legend panel | 11 |
 | M | `scripts/bake_thumbnails.mjs:60` | Map sheets bake at <= 512 px | 11 |
 | M | `game-client/assets/art/art-manifest.json:490-535` | `art:map-*` `gen.raster` records the thumb width; the SVG stays the artifact | 11 |
 | M | `tools/mapforge/lib/atlas-sheet.mjs:366-477,451,286-292` | Greedy stack -> `placeLabels`; circles -> `glyphs.mjs`; gains a legend block | 12 |
 | M | `tools/mapforge/lib/basin-sheet.mjs:199-207,647-665` | Same label swap; legend reads `LEGEND` at its tier | 12 |
-| M | `content/world/render-lock.json` | Re-baselined ONCE, in Task 12 only | 12 |
+| M | `content/world/render-lock.json` (generated by `check_render_lock.mjs --write`) | Re-baselined ONCE, in Task 12 only | 12 |
 | — | `.github/workflows/ci.yml:113-125` | **Not modified.** Plan A Task 12 already added the mapforge suite, the render lock and `render-sheet --check` (X6). Task 12 Step 8 verifies they are present rather than adding them twice | 12 |
 
 ### Files this plan explicitly does NOT touch
@@ -246,7 +259,7 @@ export function unifiedDiff({ a, b, maxLines = 40 }): string
 
 # PHASE 2 — VOCABULARY AND SCHEMAS (Tasks 1–5)
 
-### Task 1: The landform lexicon — 164 types
+### Task 1: The landform lexicon — 170 types
 
 **Files:**
 - Create: `content/world/lexicon/landforms.json`
@@ -258,7 +271,8 @@ export function unifiedDiff({ a, b, maxLines = 40 }): string
 - Produces:
   - `content/world/lexicon/landforms.json` — a flat JSON **array** of rows shaped `{ id, group, alsoGroups, geometry, biomes, sizeKm, dungeonCapable, glyph, rarity, requires, gloss, absentBecause }`. Plan C's P10 reads `requires` and `sizeKm`; Plan D's bound records cite `id` in `bind.expect.type`; Task 7's `G-GLYPH` reads `group` + `glyph`.
   - `content/schemas/landform-type.schema.json` — `$id: "landform-type.schema.json"`, `additionalProperties: false`.
-  - Census constants other tasks assert on: **164** distinct types, **172** group memberships, **8** dual-listed, **23** `dungeonCapable`, **40** distinct glyph ids, **12** groups.
+  - Census constants other tasks assert on: **170** distinct types, **178** group memberships, **8** dual-listed, **23** `dungeonCapable`, **40** distinct glyph ids, **12** groups.
+  - The **id resolution table** (Step 4b) — the authoritative mapping from every `requires.landform` id Plan D's pinned roster cites onto a lexicon id. Plan D rewrites its roster against it; nothing downstream invents a landform id.
 
 **Domain notes.** A *landform* is a named kind of ground ("cenote", "esker", "barchan dune"), not an instance. The lexicon is the vocabulary; Plan C stamps out 1,740 *instances* against it. `group` is one of twelve families (coastal, fluvial, mountain, glacial, karst, erosional, desert, volcanic, wetland, lakes, island, oceanic) and is the **primary** key — `G-GLYPH` computes glyph uniqueness over `group` alone. Eight types genuinely belong to two families (a sea cave is coastal *and* karst); those carry the second family in `alsoGroups` (see D-B1). `requires` is a **predicate over fabric cell fields** and is what stops a karst quota deadlocking in a region with no carbonate: a type can only be placed where the model produced its substrate.
 
@@ -269,8 +283,9 @@ Create `scripts/tests/landform-lexicon.test.mjs`:
 ```js
 // Plan B Task 1 — the landform lexicon is the vocabulary Plan C instances
 // against and Plan D binds to. Its census is a contract, not a preference:
-// 164 distinct types / 172 group memberships / 8 dual-listed / 23
-// dungeon-capable / 40 glyph families over 12 groups.
+// 170 distinct types / 178 group memberships / 8 dual-listed / 23
+// dungeon-capable / 40 glyph families over 12 groups. (170, not the spec's
+// 164: six ids Plan D's pinned roster needs had no equivalent — D-B4.)
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
@@ -284,9 +299,19 @@ const SCHEMA = JSON.parse(readFileSync(join(ROOT, "content/schemas/landform-type
 
 const GROUPS = ["coastal", "fluvial", "mountain", "glacial", "karst", "erosional",
   "desert", "volcanic", "wetland", "lakes", "island", "oceanic"];
-// The membership census, per group, from spec section 5.5 (20+13+16+21+12+9+19+13+17+14+8+10).
-const MEMBERSHIPS = { coastal: 20, fluvial: 13, mountain: 16, glacial: 21, karst: 12,
-  erosional: 9, desert: 19, volcanic: 13, wetland: 17, lakes: 14, island: 8, oceanic: 10 };
+// The membership census, per group: spec section 5.5's table plus the six
+// D-B4 additions (coastal +2 headland/sea-waterfall, fluvial +1 ford,
+// glacial +1 ice-shelf, volcanic +2 ash-front/ash-plain).
+// 22+14+16+22+12+9+19+15+17+14+8+10 = 178.
+const MEMBERSHIPS = { coastal: 22, fluvial: 14, mountain: 16, glacial: 22, karst: 12,
+  erosional: 9, desert: 19, volcanic: 15, wetland: 17, lakes: 14, island: 8, oceanic: 10 };
+// The six D-B4 ids: headland/ford/sea-waterfall are bound by a named pinned
+// record, ice-shelf/ash-front/ash-plain are Plan C generator vocabulary for
+// c01's shelf ice and c10's tephra ground. Pinned by test so a later "tidy the
+// lexicon" commit cannot quietly unbind a pin or blank a continent's ground.
+const DB4_ADDITIONS = {
+  headland: "coastal", "sea-waterfall": "coastal", ford: "fluvial",
+  "ice-shelf": "glacial", "ash-front": "volcanic", "ash-plain": "volcanic" };
 // The closed predicate vocabulary — every key here must be a field the Plan C
 // grid actually carries (grid.mjs: elev, moist, temp, flowAcc, flags).
 const REQUIRES_KEYS = new Set(["rock", "precipDecileMin", "precipDecileMax",
@@ -299,13 +324,31 @@ test("every lexicon row validates against landform-type.schema.json", () => {
     assert.ok(validate(row), `${row?.id}: ${JSON.stringify(validate.errors)}`);
 });
 
-test("census: 164 distinct types, 172 memberships, 8 dual-listed", () => {
-  assert.equal(LEX.length, 164);
-  assert.equal(new Set(LEX.map((r) => r.id)).size, 164, "ids must be unique");
+test("census: 170 distinct types, 178 memberships, 8 dual-listed", () => {
+  assert.equal(LEX.length, 170);
+  assert.equal(new Set(LEX.map((r) => r.id)).size, 170, "ids must be unique");
   const dual = LEX.filter((r) => r.alsoGroups.length > 0);
   assert.equal(dual.length, 8);
   const memberships = LEX.reduce((n, r) => n + 1 + r.alsoGroups.length, 0);
-  assert.equal(memberships, 172);
+  assert.equal(memberships, 178);
+});
+
+test("the six D-B4 additions exist, in the right group, single-listed", () => {
+  // Six ids had no equivalent in the 164-row draft, so they live here (D-B4)
+  // rather than being invented downstream. Three are bound by a named pinned
+  // record (headland, ford, sea-waterfall) and deleting one silently unbinds
+  // that pin; three are Plan C generator vocabulary (ice-shelf, ash-front,
+  // ash-plain) and deleting one leaves c01's shelf ice or c10's tephra ground
+  // with no form to draw. Both failures are silent, which is why they are
+  // asserted here rather than left to a downstream gate.
+  const byId = new Map(LEX.map((r) => [r.id, r]));
+  for (const [id, group] of Object.entries(DB4_ADDITIONS)) {
+    const row = byId.get(id);
+    assert.ok(row, `${id}: a D-B4 addition the lexicon does not ship`);
+    assert.equal(row.group, group, `${id}: primary group`);
+    assert.deepEqual(row.alsoGroups, [], `${id}: an addition is single-listed — dual stays 8`);
+    assert.equal(row.dungeonCapable, false, `${id}: dungeonCapable stays pinned at 23`);
+  }
 });
 
 test("per-group membership counts match the spec table", () => {
@@ -344,7 +387,7 @@ test("every requires key is in the closed predicate vocabulary", () => {
 
 test("the predicate vocabulary is EXACTLY what the committed schema declares", () => {
   // One language, one definition. The schema is the authority because it is
-  // committed and validates all 164 rows with additionalProperties: false.
+  // committed and validates all 170 rows with additionalProperties: false.
   assert.deepEqual([...REQUIRES_KEYS].sort(),
     Object.keys(SCHEMA.properties.requires.properties).sort());
 });
@@ -403,7 +446,7 @@ Create `content/schemas/landform-type.schema.json`:
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "landform-type.schema.json",
-  "title": "Landform type — one row of content/world/lexicon/landforms.json. SHAPE ONLY: the census (164/172/8/23/40) is asserted by scripts/tests/landform-lexicon.test.mjs and by G-LANDFORM, never duplicated here — a bound written into a schema turns its gate rule into dead code.",
+  "title": "Landform type — one row of content/world/lexicon/landforms.json. SHAPE ONLY: the census (170/178/8/23/40) is asserted by scripts/tests/landform-lexicon.test.mjs and by G-LANDFORM, never duplicated here — a bound written into a schema turns its gate rule into dead code.",
   "type": "object",
   "required": ["id", "group", "alsoGroups", "geometry", "biomes", "sizeKm", "dungeonCapable", "glyph", "rarity", "requires", "gloss", "absentBecause"],
   "additionalProperties": false,
@@ -444,14 +487,14 @@ Create `content/schemas/landform-type.schema.json`:
 }
 ```
 
-- [ ] **Step 4: Author the 164 rows**
+- [ ] **Step 4: Author the 170 rows**
 
 Create `content/world/lexicon/landforms.json` as a flat JSON array. Transcribe the table below **row for row, in this order** (the file's order is the reviewable order; nothing in the pipeline depends on it, but a stable order keeps diffs honest).
 
 Columns: `id` · `group` · `also` (goes into `alsoGroups`; `-` means `[]`) · `geometry` · `glyph` · `D` (`dungeonCapable`; `D` = true) · `rarity` (`c`/`u`/`r` -> common/uncommon/rare) · `sizeKm` lo–hi · `biomes`.
 
 ```
-# COASTAL (18 primary, 20 memberships)
+# COASTAL (20 primary, 22 memberships)
 coastal-drowned-valley   coastal  -        area   g-lagoon  .  u  1-12       ocean,meadow
 sea-cave                 coastal  karst    point  g-cliff   D  u  0.02-0.3   ocean,rock
 sea-arch                 coastal  -        point  g-arch    D  r  0.02-0.2   ocean,rock
@@ -470,8 +513,10 @@ cuspate-foreland         coastal  -        area   g-spit    .  r  0.5-7      oce
 machair                  coastal  -        area   g-lagoon  .  r  0.2-3      meadow,ocean
 raised-beach             coastal  -        line   g-cliff   .  u  0.3-5      rock,meadow
 tidal-flat               coastal  -        area   g-lagoon  .  c  0.5-10     ocean,marsh
+headland                 coastal  -        area   g-cliff   .  c  0.3-6      rock,meadow
+sea-waterfall            coastal  -        point  g-cliff   .  r  0.02-0.3   ocean,rock
 
-# FLUVIAL (13 primary, 13 memberships)
+# FLUVIAL (14 primary, 14 memberships)
 delta                    fluvial  coastal  area   g-delta   .  u  2-20       river,marsh,ocean
 braided-channel          fluvial  -        line   g-meander .  c  1-12       river,scree
 meander-scroll-plain     fluvial  -        area   g-meander .  c  1-15       river,meadow
@@ -485,6 +530,7 @@ canyon                   fluvial  -        line   g-falls   .  u  1-18       roc
 confluence-bench         fluvial  -        point  g-meander .  c  0.1-1.2    river,meadow
 anabranch-island         fluvial  -        area   g-meander .  u  0.1-2.5    river,forest
 sinking-river            fluvial  -        line   g-falls   .  r  0.5-9      river,karst
+ford                     fluvial  -        point  g-meander .  c  0.02-0.4   river,meadow
 
 # MOUNTAIN (16 primary, 16 memberships)
 ridge-spine              mountain -        line   g-ridge   .  c  3-40       upland,rock
@@ -504,7 +550,7 @@ foothill-belt            mountain -        area   g-ridge   .  c  3-30       upl
 massif-dome              mountain -        area   g-peak    .  r  4-35       rock,upland
 tectonic-cave            mountain -        point  g-peak    D  r  0.02-0.4   rock,upland
 
-# GLACIAL (21 primary, 21 memberships)
+# GLACIAL (22 primary, 22 memberships)
 cirque                   glacial  -        area   g-cirque   .  c  0.3-4     ice,rock
 arete                    glacial  -        line   g-cirque   .  c  0.5-8     ice,rock
 horn-peak                glacial  -        point  g-cirque   .  u  0.2-2     ice,rock
@@ -526,6 +572,7 @@ outlet-glacier           glacial  -        line   g-crevasse .  c  2-30      ice
 glacier-cave             glacial  karst    point  g-crevasse D  r  0.02-0.4  ice,rock
 moulin                   glacial  karst    point  g-crevasse D  u  0.01-0.1  ice
 fjord                    glacial  coastal  area   g-cirque   .  u  2-30      ocean,ice,rock
+ice-shelf                glacial  -        area   g-crevasse .  r  3-40      ice,ocean
 
 # KARST (9 primary, 12 memberships)
 karst-cenote             karst    lakes    point  g-cenote   D  u  0.05-0.6  karst,forest
@@ -570,7 +617,7 @@ nebkha-field             desert   -        area   g-dune   .  u  0.2-4      dese
 zeugen-ridge             desert   -        line   g-playa  .  r  0.2-4      desert,rock
 sand-sheet               desert   -        area   g-dune   .  c  2-30       desert
 
-# VOLCANIC (13 primary, 13 memberships)
+# VOLCANIC (15 primary, 15 memberships)
 shield-cone              volcanic -        area   g-cone      .  u  2-25     lava,ash
 stratocone               volcanic -        point  g-cone      .  u  1-9      ash,lava
 cinder-cone              volcanic -        point  g-cone      .  c  0.2-2    ash
@@ -584,6 +631,8 @@ volcanic-plug            volcanic -        point  g-cone      .  u  0.1-1.2  roc
 tuff-ring                volcanic -        area   g-caldera   .  r  0.3-4    ash,lake
 lahar-fan                volcanic -        area   g-lavafield .  u  1-14     ash,scree
 rift-fissure             volcanic -        line   g-vent      D  u  0.5-12   lava,rock
+ash-front                volcanic -        line   g-lavafield .  u  1-20     ash,scree
+ash-plain                volcanic -        area   g-lavafield .  c  2-30     ash
 
 # WETLAND (17 primary, 17 memberships)
 tidal-mire               wetland  -        area   g-tuft     .  c  0.5-12    marsh,ocean
@@ -675,9 +724,53 @@ submarine-canyon         oceanic  -        line   g-seamount .  u  2-25      oce
 "mangrove-flat":       { "precipDecileMin": 5, "slopeMax": 0.02, "nearFlag": "SEA", "tempDecileMin": 7 }
 "brackish-lagoon-marsh": { "precipDecileMin": 5, "slopeMax": 0.02, "nearFlag": "SEA" }
 "delta-lobe-marsh":    { "precipDecileMin": 5, "slopeMax": 0.02, "nearFlag": "DELTA" }
+
+// the six D-B4 additions — each override is the substrate fact that
+// makes the id a PLACE rather than a synonym for its group default
+"headland":            { "nearFlag": "SEA", "slopeMin": 0.04 }
+"sea-waterfall":       { "nearFlag": "SEA", "flowAccMin": 40 }
+"ford":                { "nearFlag": "RIVER", "slopeMax": 0.02 }
+"ice-shelf":           { "nearFlag": "GLACIER", "tempDecileMax": 2, "elevMax": 0.42 }
+"ash-front":           { "rock": "volcanic", "nearFlag": "ARC" }
+"ash-plain":           { "rock": "volcanic", "nearFlag": "ARC", "slopeMax": 0.03 }
 ```
 
-**`gloss`** is authored prose under four mechanical rules the test enforces: one sentence, `<= 120` characters, ends in a full stop, and never simply restates the id. It must say what a **player standing there would see**, not what a geologist would call it. One worked example per group — write the other 152 in the same register:
+- [ ] **Step 4b: The id resolution table — the single authority for every downstream `requires.landform`**
+
+Plan D's pinned roster binds every record through `requires.landform`, and this table is the authority for what each candidate name resolves to; Plan D's fix pass rewrites its roster against it, and Plan D's own join test — every `requires.landform` is an id in `content/world/lexicon/landforms.json` — is what proves the rewrite landed. **Of the six D-B4 additions, three are resolutions of a name a pinned record uses (the record is named in the row); the other three are marked *no pinned citation* and are listed here only because Plan C's generator needs them and this file is the vocabulary's one home.** Every other row resolves onto an id the lexicon already ships. Two families of error are being corrected here: ids that are really `TERRAIN_KINDS` or Plan C `coastClass` values (a different namespace — `karst-pavement`, `sand-sea`, `cloud-forest`, `atoll-ring`, `delta-lobe`), and ids that are plain-English near-synonyms of a catalogued type (`lagoon`, `upland-ridge`, `rock-shore`, `volcanic-cone`).
+
+| Plan D cites | Resolves to | Why |
+| --- | --- | --- |
+| `atoll-ring` | `atoll` | `atoll-ring` is the island group's own shape, not a second type |
+| `braided-terrace` | `braided-channel` | the terrace is the channel's own bar surface |
+| `bramble-thicket` | `carr-thicket` | wetland scrub; its `biomes` already carry `bramble` |
+| `cloud-forest` | `foothill-belt` | `cloud-forest` is a **terrain kind** (Task 5), not a landform |
+| `coastal-range-lee` | `spur-ridge` | a lee-side ridge is a mountain spur; "lee" is a bearing, not a form |
+| `delta-lobe` | `delta` | the lobe is the delta's unit; `delta-lobe-marsh` is the *marsh* on it |
+| `headland` (`c-lm-gildmark-head`) | **`headland` (NEW)** | erosional cliffed promontory — `cuspate-foreland` is depositional and `marine-terrace` is a flat bench, so neither is the same place |
+| `hollow` | `deflation-hollow` | the only catalogued hollow |
+| `ice-margin` | `moraine-terminal` | the terminal moraine IS the ice margin, drawn |
+| `ice-shelf` (no pinned citation — c01 generator vocabulary) | **`ice-shelf` (NEW)** | floating shelf ice over sea; every other glacial id is grounded ice or its debris, so Rimewall Cap's seaward margin would otherwise render as moraine |
+| `inland-basin` | `inland-sea-basin` | same feature, catalogued under `lakes` |
+| `karst-pavement` | `limestone-pavement` | exact synonym; `karst-plateau` is the terrain kind |
+| `lagoon` | `coastal-lagoon` | exact synonym |
+| `migrating-bar` | `spit` | the catalogued migrating bar form |
+| `open-down` | `cuesta` | chalk downland is a cuesta dip-slope |
+| `peat-coast` | `blanket-mire` | peat at the shore; `peat-hag` is an erosion scar within it |
+| `rock-shore` | `wave-cut-platform` | exact synonym, `ocean,rock` |
+| `sand-sea` | `erg-dune-sea` | `sand-sea` is a **terrain kind** (Task 5); the erg is the landform |
+| `sea-waterfall` (`c-lm-brightfall-leap`) | **`sea-waterfall` (NEW)** | `plunge-pool` and `knickpoint-gorge` both require `nearFlag: RIVER` with biomes `river,rock`, so neither can be satisfied at a cell that also satisfies the row's `water.kind: "sea"` — a `G-PIN-SAT` failure by construction, and the reason this row is not a nicety |
+| `upland-ridge` | `ridge-spine` | exact synonym |
+| `volcanic-cone` | `stratocone` | the catalogued cone; `cinder-cone` is the smaller monogenetic form |
+| `ash-front` (no pinned citation — c10 generator vocabulary) | **`ash-front` (NEW)** | the tephra-fall margin — a line, and the only volcanic edge form |
+| `ash-plain` (no pinned citation — c10 generator vocabulary) | **`ash-plain` (NEW)** | walkable tephra plain; every other volcanic area is `lava` or `caldera` |
+| `ford` (`c-lm-millcross-ford`) | **`ford` (NEW)** | a crossing point; `confluence-bench` is a bank and `braided-channel` is a line of bars, neither is a crossing |
+
+Ids Plan D cites that are already lexicon ids need no row and are unchanged — among them `cave-system`, `karst-cenote`, `estuary`, `fjord`, `esker`, `polje`, `tidal-mire`, `salt-marsh` and `barrier-island`.
+
+**This table is content, not commentary:** transcribe the six new rows into `landforms.json` in Step 4 and hand this table to Plan D's fix pass verbatim. Nothing else in the programme may mint a landform id.
+
+**`gloss`** is authored prose under four mechanical rules the test enforces: one sentence, `<= 120` characters, ends in a full stop, and never simply restates the id. It must say what a **player standing there would see**, not what a geologist would call it. One worked example per group, plus all six D-B4 additions written out (they are new vocabulary and must not be improvised) — write the other 152 in the same register:
 
 ```jsonc
 "coastal-drowned-valley": "A river mouth the sea has walked up, so the water is salt a long way inland."
@@ -692,9 +785,17 @@ submarine-canyon         oceanic  -        line   g-seamount .  u  2-25      oce
 "tarn":                   "A small cold lake sitting in a rock bowl, fed by snow and nothing else."
 "skerry":                 "A bare rock the sea covers and uncovers; a hazard, never a landing."
 "fringing-reef":          "Living rock built right against the shore, breaking every swell before it lands."
+
+// the six D-B4 additions
+"headland":               "A shoulder of cliff shoved out into the water; the coast road goes over it or not at all."
+"sea-waterfall":          "A stream that runs off the cliff lip and never reaches a beach, because there is none."
+"ford":                   "A gravel shallow where the river spreads wide enough to walk, in the right season."
+"ice-shelf":              "Ice floating on sea, thick enough to stand on and flat to the horizon."
+"ash-front":              "The line where the fall stopped: grey to one side, green to the other, and nothing between."
+"ash-plain":              "Soft grey ground that takes a bootprint and keeps it until the next fall covers it."
 ```
 
-Set `"absentBecause": null` on all 164 rows.
+Set `"absentBecause": null` on all 170 rows.
 
 - [ ] **Step 5: Run the test to verify it passes**
 
@@ -702,7 +803,7 @@ Run:
 ```bash
 node --test 'scripts/tests/landform-lexicon.test.mjs'
 ```
-Expected: PASS — 10 tests, 0 fail. If the per-group census test fails, the message prints the whole `got` object next to `MEMBERSHIPS`; fix the **file**, never the expected counts.
+Expected: PASS — 13 tests, 0 fail. If the per-group census test fails, the message prints the whole `got` object next to `MEMBERSHIPS`; fix the **file**, never the expected counts.
 
 - [ ] **Step 6: Verify nothing else moved**
 
@@ -716,7 +817,7 @@ Expected: all four exit 0. `content/world/` is a new directory no existing gate 
 
 ```bash
 git add content/world/lexicon/landforms.json content/schemas/landform-type.schema.json scripts/tests/landform-lexicon.test.mjs
-git commit -m "feat: 164-type landform lexicon + row schema"
+git commit -m "feat: 170-type landform lexicon + row schema"
 ```
 
 - [ ] **Step 8: QUALITY GATE — verify**
@@ -730,7 +831,7 @@ git branch --show-current && git log --oneline -1
 
 - [ ] **Step 9: QUALITY GATE — independent adversarial review**
 
-Dispatch a fresh subagent (or `/code-review`) with this brief: *"Review `git show HEAD` only. The lexicon is a vocabulary Plan C generates against and Plan D binds to. Check specifically: (a) does any `requires` predicate name a field the Plan C grid does not carry — the grid is `elev, moist, temp, flowAcc, flowDir, owner, plate, biome, flags{SEA,LAKE,RIVER,DELTA,GLACIER,ARC,CARBONATE,SAND,CLIFF}`; (b) is any `sizeKm` band unsatisfiable against the 0.5 km cell grid (a `point` type with a low bound under 0.5 km is fine — it is a mark, not a cell count — but an `area` type with a **high** bound under 0.5 km can never be drawn); (c) do the 23 dungeon-capable types actually match the spec's enumerated list one for one; (d) is any `biomes` entry outside the 20-value vocabulary Task 5 will pin."*
+Dispatch a fresh subagent (or `/code-review`) with this brief: *"Review `git show HEAD` only. The lexicon is a vocabulary Plan C generates against and Plan D binds to. Check specifically: (a) does any `requires` predicate name a field the Plan C grid does not carry — the grid is `elev, moist, temp, flowAcc, flowDir, owner, plate, biome, flags{SEA,LAKE,RIVER,DELTA,GLACIER,ARC,CARBONATE,SAND,CLIFF}`; (b) is any `sizeKm` band unsatisfiable against the 0.5 km cell grid (a `point` type with a low bound under 0.5 km is fine — it is a mark, not a cell count — but an `area` type with a **high** bound under 0.5 km can never be drawn); (c) do the 23 dungeon-capable types actually match the spec's enumerated list one for one; (d) is any `biomes` entry outside the 20-value vocabulary Task 5 will pin; (e) the six D-B4 additions (`headland`, `sea-waterfall`, `ford`, `ice-shelf`, `ash-front`, `ash-plain`) — confirm each reuses a glyph already owned by its own primary group (so the 40-family count and the no-two-groups-share-a-mark rule are both unmoved), carries `alsoGroups: []` and `dungeonCapable: false`, and that its `requires` override is satisfiable at the same time as its `biomes` list (an `ice-shelf` requiring `GLACIER` and claiming biome `ocean` must be reachable on a real shelf cell, not only in principle); (f) walk Step 4b's resolution table and name any row where the target id's `requires` block makes the pinned place unplaceable — that is the failure `sea-waterfall` was added to avoid."*
 
 - [ ] **Step 10: QUALITY GATE — refactor on the findings**
 
@@ -1365,7 +1466,7 @@ Brief: *"Review `git show HEAD`. (a) Cross-check the schema's `attrs.properties`
 - Modify: `scripts/lib/spine.mjs:227-233` (`loadSpine` returns `derived`)
 - Modify: `scripts/check_content.mjs:1928-1930` (G-DERIVED-DRIFT) and `:1668-1671` (call site)
 - Modify: `content/schemas/spine-node.schema.json:66` (drop the `derived` property)
-- Modify: `tools/mapforge/lib/world-gen.mjs:313-316`, `tools/mapforge/gen-world.mjs:102-103`, `tools/mapforge/tests/world-gen.test.mjs`
+- Modify: `tools/mapforge/lib/world-gen.mjs:313-316`, `tools/mapforge/gen-world.mjs:102-103`, `tools/mapforge/tests/world-gen.test.mjs:7,37-39,89` (the four `buildWorld({ atlasNode })` call sites)
 - Test: extend `scripts/tests/spine-gates.test.mjs` (new cases only — every existing case survives verbatim)
 
 **Interfaces:**
@@ -1721,7 +1822,7 @@ Brief: *"Review `git show HEAD`. This commit moves 20% of the spine's bytes. (a)
 
 `lava` and `ash` are deliberately **split**: ash is a walkable depositional plain (the Cindervast reading), lava is an impassable flow field. Splitting them is what lets a volcanic arc read as an arc rather than a smudge.
 
-`G-LANDFORM` in this task is the **catalogue half only** — there is no fabric yet, so the instance half soft-skips and prints a score. Spec R8's discipline applies: it *scores* coverage (`types placed: 148 / 164`) and fails only below the floor, the always-exit-0-report pattern `scripts/report_season1.mjs` already proves.
+`G-LANDFORM` in this task is the **catalogue half only** — there is no fabric yet, so the instance half soft-skips and prints a score. Spec R8's discipline applies: it *scores* coverage (`types placed: 154 / 170`) and fails only below the floor, the always-exit-0-report pattern `scripts/report_season1.mjs` already proves.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1799,8 +1900,8 @@ test("budgets.json pins cellKm and the landform + sheet caps", () => {
 test("the gate PRINTS a world-budget line for landforms on every run", () => {
   const r = runGate(realRoot());
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /^world-budget: landforms 164 types, 0 instances \(budget 100-200 types, 2400 instances\)$/m);
-  assert.match(r.out, /^G-LANDFORM: types placed: 0 \/ 164$/m);
+  assert.match(r.out, /^world-budget: landforms 170 types, 0 instances \(budget 100-200 types, 2400 instances\)$/m);
+  assert.match(r.out, /^G-LANDFORM: types placed: 0 \/ 170$/m);
 });
 
 test("G-LANDFORM red: a spine feature cites a type that is not in the lexicon", () => {
@@ -1925,7 +2026,7 @@ In `scripts/check_content.mjs`, add beside the other `gSpine*` helpers:
 // This mirrors checkSpine's own bail on a missing content/spine.
 //
 // The instance half is dormant until Plan C writes content/world/fabric/.
-// Until then the coverage line still PRINTS ("types placed: 0 / 164") — a
+// Until then the coverage line still PRINTS ("types placed: 0 / 170") — a
 // score, not a failure, exactly as scripts/report_season1.mjs does. The floor
 // only bites once a fabric exists, because a quota that cannot be met against
 // real terrain must degrade and be reported, never deadlock (spec R8).
@@ -2080,7 +2181,7 @@ node scripts/check_render_lock.mjs --check
 
 | Must be true | Value |
 | --- | --- |
-| `landforms.json` census | `types 164 memberships 172 dual 8 dungeon 23` |
+| `landforms.json` census | `types 170 memberships 178 dual 8 dungeon 23` |
 | Vocabulary | `BIOMES 20 KINDS 18` |
 | Schemas on disk | `landform-instance`, `spine-edge`, plus the tightened `spine-node` |
 | `budgets.json` | present, `cellKm: 0.5` |
@@ -2089,7 +2190,19 @@ node scripts/check_render_lock.mjs --check
 
 **Plan C additionally needs, and Plan B does not provide:** `content/world/manifest.json`, `content/world/premises/*.json`, `content/world/fabric/`, `content/world/handles/`. Those are Plan C's own first tasks.
 
-Tasks 6–12 below are Plan B's render half and run **in parallel with Plan C**, in the same worktree or a separate one. They touch only `tools/mapforge/`, `tools/asset-storybook/`, `scripts/bake_thumbnails.mjs` and the two sheet SVGs — no overlap with Plan C's file set except `content/world/budgets.json` (Plan C appends sections; Plan B never edits it again after Task 5).
+Tasks 6–12 below are Plan B's render half and run **in parallel with Plan C**, in the same worktree or a separate one. They touch `tools/mapforge/`, `tools/asset-storybook/`, `scripts/bake_thumbnails.mjs`, `game-client/assets/art/art-manifest.json` and the two sheet SVGs.
+
+**Parallel does not mean disjoint — five files are written by BOTH lanes, and four of them are hash-bearing or generated. Merge order is therefore part of the contract, not a preference:**
+
+| Contested file | Plan B writes | Plan C writes | Rule |
+| --- | --- | --- | --- |
+| `content/world/budgets.json` | `landforms` + `sheets` + `cellKm` (Task 5) | appends `fabric`, `civil`, `loop` | Plan B never edits it again after Task 5; a genuine append, safe to text-merge |
+| `content/world/render-lock.json` | one artifact line (Task 10), re-baselined (Task 12) | adds the fabric/overlay artifact paths (its Task 13) | **NEVER TEXT-MERGE.** Plan C rebases onto Plan B's Task 12 and re-runs `node scripts/check_render_lock.mjs --write` |
+| `tools/asset-storybook/maps-index.json` | adds `synthetic`; rewrites every `png` to a ≤ 512 px thumb path (Tasks 10, 11) | adds `fabric` + `overlay` | Plan C re-applies its two rows **on top of** B's thumb-path rewrite, then re-runs `node --test tools/asset-storybook/tests/*.test.mjs` |
+| `game-client/assets/art/art-manifest.json` | `art:map-*` `gen.raster` thumb width (Task 11) | adds its own `art:map-*` rows | Plan C re-applies on top of B's rewritten `gen.raster` block, then `node scripts/bake_thumbnails.mjs` + `node scripts/check_asset_manifest.mjs` |
+| `tools/mapforge/render-sheet.mjs` `SHEETS` | registers `synthetic` (Task 10) + the `--png` opt-in (Task 11) | registers `fabric` + `overlay` | Plan C's registry entries are re-applied after B's `--png`/`--png-width` change, never merged around it |
+
+**The rule in one line: Plan C's Task 13 rebases onto Plan B's Task 12 and REGENERATES the lock and the thumbs (`node scripts/check_render_lock.mjs --write`, `node scripts/bake_thumbnails.mjs`) rather than resolving a JSON conflict by hand.** A textual auto-merge of a hash-bearing lock produces a file that is green against neither lane, and the failure surfaces two tasks later as an unexplained drift line. Plan B's Task 12 is unaffected by the ordering and does not wait for Plan C.
 
 ---
 
@@ -2113,16 +2226,16 @@ Tasks 6–12 below are Plan B's render half and run **in parallel with Plan C**,
   // tools/mapforge/lib/draft.mjs
   export const BIOME_FILL: Record<string /*biome*/, string /*patternId*/>   // 20 entries, NEW
   export const FILL_FOR:   Record<string /*terrainKind*/, string>           // 18 entries
-  export const LEGEND: Array<{ pattern: string, label: string, tier: number }>  // 22 rows
+  export const LEGEND: Array<{ pattern: string, label: string, tier: number }>  // 25 rows
   export const PATTERNS: Record<string /*patternId*/, string /*svg <pattern> markup*/>
   export const LEGACY_PATTERN_IDS: readonly string[]  // the 8 ids today's sheets emit, in order
-  export function patternDefs({ includeReported = false, baked = false, ids = LEGACY_PATTERN_IDS }): string
+  export function patternDefs({ includeReported = false, frontierTiers = false, baked = false, ids = LEGACY_PATTERN_IDS }): string
   export const TERRAIN_LEGEND: Array<[string, string]>  // derived alias: LEGEND tier <= 1 as [pattern, label]
 
   // tools/mapforge/lib/ink.mjs
   export function checkBiomeInk({ emittedIds = null, referencedIds = null, legendTier = null }): string[]
   ```
-- **Owned addition to the shared contract:** `patternDefs` gains an `ids` parameter. Without it, adding 13 patterns to the global emit list changes both live sheets' `<defs>` bytes and breaks the Task 6–11 invariant. `ids` defaults to `LEGACY_PATTERN_IDS`, so both live sheets are byte-identical by construction.
+- **Owned addition to the shared contract:** `patternDefs` gains an `ids` parameter and a `frontierTiers` parameter. Without `ids`, adding 13 patterns to the global emit list changes both live sheets' `<defs>` bytes and breaks the Task 6–11 invariant. `ids` defaults to `LEGACY_PATTERN_IDS`, so both live sheets are byte-identical by construction. **`frontierTiers` exists for the same reason and is the easier one to get wrong:** `tools/mapforge/lib/atlas-sheet.mjs:287` calls `patternDefs({ includeReported: true })` today and emits **9** patterns. Folding the three new provenance hatches (`pReportedSworn`, `pReportedHearsay`, `pReportedInferred`) into `includeReported` would make that same call emit 12 — so `atlas-world.svg`'s `<defs>` would move at **Task 6**, two tasks before its licensed re-ink, and Task 6 Step 7's `git status --porcelain game-client/` + `check_render_lock --check` would both go red. So `includeReported` still appends exactly `pReported`, and the three densities need `frontierTiers: true`. The synthetic sheet (Task 10) and Plan E's continent sheets pass them explicitly; Task 12's Adoption 1 rewrites the atlas `<defs>` to a computed `ids` list and can then drop both flags.
 
 **Domain notes.** Spec correction **C7**, verified: `FILL_FOR` (`draft.mjs:36-44`) has 7 entries keyed by **`terrainKind`, not biome** — there are **zero biome fills in the repo**. `patternDefs()` emits **8** patterns plus `pReported`. `TERRAIN_LEGEND` has **6** rows, listing `pMire` (unreachable until Task 5 wired `tidal-mire`) and omitting `pRock`/`pRiver` (reachable). The atlas sheet is worse: `atlas-sheet.mjs:373` is its only `fill="url(...)"` call, choosing between exactly two patterns, and the file has **no legend block at all**.
 
@@ -2166,7 +2279,7 @@ test("loop 4: every reachable pattern has exactly one legend row, and nothing el
   const legendIds = LEGEND.map((r) => r.pattern);
   assert.equal(new Set(legendIds).size, legendIds.length, "a pattern is legended twice");
   assert.deepEqual(new Set(legendIds), reachable());
-  assert.equal(LEGEND.length, 22);
+  assert.equal(LEGEND.length, 25);   // 21 distinct fill patterns + pReported + the 3 provenance densities
 });
 
 test("checkBiomeInk() reports nothing on the shipped tables", () => {
@@ -2207,9 +2320,26 @@ test("BYTE PARITY: patternDefs() with no ids emits exactly today's 8 patterns in
   const out = patternDefs();
   const ids = [...out.matchAll(/<pattern id="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(ids, [...LEGACY_PATTERN_IDS]);
+  // THE atlas call site, unchanged: atlas-sheet.mjs:287 passes exactly this
+  // and must keep getting exactly NINE patterns until Task 12 re-inks it.
   const withReported = patternDefs({ includeReported: true });
-  assert.deepEqual([...withReported.matchAll(/<pattern id="([^"]+)"/g)].map((m) => m[1]),
+  const reportedIds = [...withReported.matchAll(/<pattern id="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(reportedIds, [...LEGACY_PATTERN_IDS, "pReported"]);
+  assert.equal(reportedIds.length, 9,
+    "atlas-world.svg's <defs> moves at Task 6 if this is not 9 — two tasks before its licensed re-ink");
+});
+
+test("the three provenance densities are behind their OWN flag, not includeReported", () => {
+  const withTiers = patternDefs({ includeReported: true, frontierTiers: true });
+  assert.deepEqual([...withTiers.matchAll(/<pattern id="([^"]+)"/g)].map((m) => m[1]),
     [...LEGACY_PATTERN_IDS, "pReported", "pReportedSworn", "pReportedHearsay", "pReportedInferred"]);
+  // frontierTiers alone, without includeReported, is legal and adds only three.
+  assert.deepEqual([...patternDefs({ frontierTiers: true }).matchAll(/<pattern id="([^"]+)"/g)].map((m) => m[1]),
+    [...LEGACY_PATTERN_IDS, "pReportedSworn", "pReportedHearsay", "pReportedInferred"]);
+  // And neither flag can duplicate an id already named in `ids`.
+  assert.deepEqual([...patternDefs({ ids: ["pKarst", "pReported"], includeReported: true, frontierTiers: true })
+    .matchAll(/<pattern id="([^"]+)"/g)].map((m) => m[1]),
+    ["pKarst", "pReported", "pReportedSworn", "pReportedHearsay", "pReportedInferred"]);
 });
 
 test("BYTE PARITY: TERRAIN_LEGEND is still the same six rows in the same order", () => {
@@ -2390,17 +2520,29 @@ export const PATTERNS = {
 
 // `ids` (Plan B Task 6) is what keeps the live sheets byte-identical: the
 // default IS today's emit list, so the existing two callers change nothing.
-// `includeReported` stays a separate opt-in for the same reason.
+//
+// `includeReported` and `frontierTiers` are TWO flags, not one, and that is
+// load-bearing. atlas-sheet.mjs:287 calls `patternDefs({ includeReported:
+// true })` today and gets exactly nine patterns. If the three provenance
+// densities rode along on `includeReported`, that untouched call site would
+// start emitting twelve, atlas-world.svg's <defs> would move at Task 6, and
+// the Task 6-11 byte-identity invariant would break two tasks before its one
+// recorded carve-out (Task 12). So `includeReported` appends exactly
+// `pReported`, forever, and the densities are opt-in separately.
+//
 // `baked` swaps the vector patterns for the single <image> underlay
 // texture-bake.mjs produces (Task 9) — a sheet passes it when the pattern
 // layer would otherwise cover most of the canvas, which is 100% of
 // rsvg-convert's cost.
-export function patternDefs({ includeReported = false, baked = false, ids = LEGACY_PATTERN_IDS } = {}) {
+const FRONTIER_TIER_IDS = ["pReportedSworn", "pReportedHearsay", "pReportedInferred"];
+
+export function patternDefs({ includeReported = false, frontierTiers = false,
+                              baked = false, ids = LEGACY_PATTERN_IDS } = {}) {
   if (baked) return "";
-  const frontier = ["pReported", "pReportedSworn", "pReportedHearsay", "pReportedInferred"];
-  const wanted = includeReported
-    ? [...ids, ...frontier.filter((f) => !ids.includes(f))]
-    : [...ids];
+  const wanted = [...ids];
+  const add = (id) => { if (!wanted.includes(id)) wanted.push(id); };
+  if (includeReported) add("pReported");
+  if (frontierTiers) FRONTIER_TIER_IDS.forEach(add);
   return wanted.map((id) => PATTERNS[id]).filter(Boolean).join("\n");
 }
 ```
@@ -2501,7 +2643,7 @@ Run:
 ```bash
 node --test 'tools/mapforge/tests/biome-ink.test.mjs'
 ```
-Expected: PASS — 12 tests, 0 fail.
+Expected: PASS — 13 tests, 0 fail. The one to read the output of is *"BYTE PARITY: patternDefs() with no ids emits exactly today's 8 patterns"* — its second half pins the atlas call site at nine patterns, and that is the assertion standing between Task 6 and an unlicensed re-ink of `atlas-world.svg`.
 
 - [ ] **Step 7: Prove the live sheets did not move a byte**
 
@@ -2559,7 +2701,7 @@ Brief: *"Review `git show HEAD`. (a) The eight original patterns were moved from
 
 **Domain notes.** Spec correction **C8**, verified: the committed `atlas-world.svg` carries **19 circles in 5 variants** (r 0.7/0.8/1.1/1.6/2), differing only in radius and ink. There is no shape vocabulary at all.
 
-**40 families cover 164 types** — all dune types share the dune family, all cave mouths share the cave family. `G-GLYPH` asserts three things: every catalogued type with `>= 1` **named** instance has a family; every glyph id resolves to an emitted `<symbol>`; **no two landform *groups* share a glyph**. Within a group sharing is intended (20 glacial forms do not need 20 icons). The **1,404 unnamed instances are deliberately exempt** from the coverage rule — giving them each a distinct glyph is how you get 1,400 identical dots by a different route.
+**40 families cover 170 types** — all dune types share the dune family, all cave mouths share the cave family. `G-GLYPH` asserts three things: every catalogued type with `>= 1` **named** instance has a family; every glyph id resolves to an emitted `<symbol>`; **no two landform *groups* share a glyph**. Within a group sharing is intended (20 glacial forms do not need 20 icons). The **1,404 unnamed instances are deliberately exempt** from the coverage rule — giving them each a distinct glyph is how you get 1,400 identical dots by a different route.
 
 `glyphUse` exists because the target sheet carries 1,740 instances: emitting 1,740 inline `<path d="...">` elements is hundreds of KB, while 40 `<symbol>` definitions plus 1,740 `<use>` references is a few KB. Symbols are defined at origin `(0,0)` at size 10 in a `viewBox="-6 -6 12 12"`; `glyphUse` places and scales them.
 
@@ -2570,7 +2712,7 @@ Brief: *"Review `git show HEAD`. (a) The eight original patterns were moved from
 Create `tools/mapforge/tests/glyphs.test.mjs`:
 
 ```js
-// Plan B Task 7 — G-GLYPH. 40 families cover 164 types; a group never shares
+// Plan B Task 7 — G-GLYPH. 40 families cover 170 types; a group never shares
 // a glyph with another group; every emitted glyph resolves to a symbol; and
 // the 1,404 unnamed texture instances are exempt by design.
 import { test } from "node:test";
@@ -2689,7 +2831,7 @@ Create `tools/mapforge/lib/glyphs.mjs`:
 ```js
 // tools/mapforge/lib/glyphs.mjs — the shape vocabulary.
 //
-// 40 families cover the 164 catalogued landform types: all dune types share
+// 40 families cover the 170 catalogued landform types: all dune types share
 // the dune family, all cave mouths share the cave family. Within a GROUP,
 // sharing is intended — 21 glacial forms do not need 21 icons. ACROSS groups
 // it is a failure, because two groups drawn with one mark are two things a
@@ -2977,7 +3119,7 @@ Expected: pass, and `0`. `glyphs.mjs` has no consumer yet, so this is provably i
 
 ```bash
 git add tools/mapforge/lib/glyphs.mjs tools/mapforge/tests/glyphs.test.mjs
-git commit -m "feat: G-GLYPH — 40 glyph families for the 164-type lexicon"
+git commit -m "feat: G-GLYPH — 40 glyph families for the 170-type lexicon"
 ```
 
 - [ ] **Step 8: QUALITY GATE — verify**
@@ -3433,7 +3575,7 @@ Brief: *"Review `git show HEAD`. (a) Determinism is the whole claim — find any
 - Create: `tools/mapforge/lib/texture-bake.mjs`
 - Create: `tools/mapforge/tests/texture-bake.test.mjs`
 - Modify: `tools/mapforge/tests/raster.test.mjs:11` (fixture re-point)
-- Modify: `scripts/lib/render-lock.mjs` — the `export const GENERATOR_VERSION = "3.0.0"` line Plan A Task 10 created near the top of the file. It becomes a **re-export**, so the constant has exactly one definition in the repo.
+- Modify: `scripts/lib/render-lock.mjs` (no line anchor available and none needed: the file does not exist yet — Plan A Task 10 CREATES it, and the target is the single `export const GENERATOR_VERSION = "3.0.0"` line it writes near the top, Plan A plan `:2859`). It becomes a **re-export**, so the constant has exactly one definition in the repo.
 
 **Interfaces:**
 - Consumes: `PATTERNS`, `BIOME_FILL`, `C` from `draft.mjs` (Task 6); `tools/mapforge/tests/fixtures/raster-probe.svg` (created by Plan A); `scripts/lib/render-lock.mjs`'s `computeLock` (Plan A Task 10), whose `generator.version` field this task re-points.
@@ -3975,8 +4117,8 @@ Brief: *"Review `git show HEAD`. (a) `encodePng` — verify the IHDR fields, the
 - Create: `tools/mapforge/lib/synthetic-sheet.mjs`
 - Create: `game-client/assets/art/maps/synthetic-density.svg`
 - Modify: `tools/mapforge/render-sheet.mjs:38-50` (register the sheet)
-- Modify: `tools/asset-storybook/maps-index.json` (the third row)
-- Modify: `content/world/render-lock.json` (one new artifact line)
+- Modify: `tools/asset-storybook/maps-index.json` (20-line data file, no anchor: the whole `sheets[]` array is rewritten by hand and re-checked by `tools/asset-storybook/tests/maps-index.test.mjs`; this task adds the third row)
+- Modify: `content/world/render-lock.json` (generated file, no anchor: created by Plan A Task 10 and only ever rewritten wholesale by `node scripts/check_render_lock.mjs --write` — never hand-edited)
 - Test: `tools/mapforge/tests/synthetic-sheet.test.mjs`
 
 **Interfaces:**
@@ -4338,7 +4480,7 @@ node tools/mapforge/render-sheet.mjs --sheet synthetic --check
 node scripts/check_render_lock.mjs --check
 node scripts/check_content.mjs --only=spine 2>&1 | grep world-budget
 ```
-Expected: all exit 0. The `world-budget: sheets 3 files, ... (budget 16, 524288)` line must show the canary inside the byte cap.
+Expected: all exit 0. The `world-budget: sheets 3 files, ... (budget 18, 524288)` line must show the canary inside the byte cap.
 
 - [ ] **Step 8: Look at it**
 
@@ -4382,7 +4524,7 @@ Brief: *"Review `git show HEAD` and open `game-client/assets/art/maps/synthetic-
 - Modify: `tools/asset-storybook/tests/maps-index.test.mjs:44-71`
 - Modify: `tools/asset-storybook/js/maps.mjs:243-330` (the legend/glyph panel)
 - Modify: `game-client/assets/art/art-manifest.json:490-535`
-- Modify: `tools/asset-storybook/maps-index.json` (`png` values unchanged; the files behind them shrink)
+- Modify: `tools/asset-storybook/maps-index.json` (data file, no anchor — `png` values unchanged; the files behind them shrink)
 
 **Interfaces:**
 - Consumes: `SHEETS` (Task 10), `LEGEND` + `GLYPHS` (Tasks 6–7), `content/world/lexicon/landforms.json` (Task 1).
@@ -4618,7 +4760,7 @@ Expected: all exit 0, and the last command prints `0` — **no SVG moved**.
 (cd tools/asset-storybook && python3 -m http.server 6007) &
 sleep 2 && open -a "Google Chrome" http://localhost:6007/#map-sheets
 ```
-**Kill any stale server on 6007 first** (`lsof -ti:6007 | xargs kill`) — an F-039 `http.server` left running on that port once made a whole new tab look missing for a day. Acceptance: three sheet cards render with legible thumbs; the "Map vocabulary" panel expands to 22 fill swatches and 40 glyph marks; the browser console has no errors.
+**Kill any stale server on 6007 first** (`lsof -ti:6007 | xargs kill`) — an F-039 `http.server` left running on that port once made a whole new tab look missing for a day. Acceptance: three sheet cards render with legible thumbs; the "Map vocabulary" panel expands to 25 fill swatches and 40 glyph marks; the browser console has no errors.
 
 - [ ] **Step 10: Commit**
 
@@ -4655,10 +4797,10 @@ Brief: *"Review `git show HEAD`, and open the storybook Maps tab. (a) THREE mech
   ```
   `ink.mjs` imports from `draft.mjs` and `draft.mjs` imports nothing, so this cannot cycle — the same check Task 6's review brief already makes.
 - Modify: `tools/mapforge/lib/basin-sheet.mjs:199-207` (fill lookup), `:647-665` (the legend block)
-- Modify: `content/world/render-lock.json` (re-baselined — **the only time in this plan**)
-- Modify: `game-client/assets/art/maps/atlas-world.svg`, `cluster1-world.svg` and their thumbs
+- Modify: `content/world/render-lock.json` (generated file, no anchor — re-baselined via `check_render_lock.mjs --write`, **the only time in this plan**)
+- Modify: `game-client/assets/art/maps/atlas-world.svg`, `cluster1-world.svg` and their thumbs (generated artifacts, no anchor — rewritten wholesale by `render-sheet.mjs` and `bake_thumbnails.mjs`)
 - Verify (do NOT edit): `.github/workflows/ci.yml:113-125` already carries the mapforge suite, the render lock and `render-sheet --check`, added by Plan A Task 12. Adding them again produces two identically-named steps and doubles the CI cost of the suite.
-- Modify: `tools/mapforge/tests/basin-sheet.test.mjs`, `tools/mapforge/tests/atlas-sheet.test.mjs` (behavioural assertions only)
+- Modify: `tools/mapforge/tests/basin-sheet.test.mjs`, `tools/mapforge/tests/atlas-sheet.test.mjs` — their four NON-baseline behavioural assertions only; the byte-baseline tests in both files are untouched (Global Constraints, the migration invariant)
 
 **Interfaces:**
 - Consumes: everything from Tasks 6–10.
@@ -4689,7 +4831,7 @@ Replace with the table lookup:
     // STILL byte-identical today: no committed node carries `provenance`, and
     // frontierPattern(undefined) is exactly "pReported" — the three densities
     // only start drawing once Plan C's fabric supplies the field.
-    const fill = FILL_FOR[land.terrainKind] ?? frontierPattern(land.provenance);
+    const fill = patternFor(land);
     const isIce = fill === "pIce";
     put(
       `<path d="${smooth(land.placement.points, true, ZONE_TENSION)}" ` +
@@ -4697,10 +4839,21 @@ Replace with the table lookup:
         `${isIce ? "" : ' class="coast-reported"'}/>`,
     );
 ```
-Import `FILL_FOR` from `./draft.mjs`. Also change the `<defs>` block at `:287` so it emits exactly the patterns this sheet references:
+Import `FILL_FOR` from `./draft.mjs`, and declare the lookup **once at module scope** so the `<defs>` list and the draw loop cannot diverge:
 ```js
-  const referencedPatterns = [...new Set([
-    ...worldLand.map((n) => FILL_FOR[n.terrainKind] ?? "pReported"), "pReported"])].sort();
+// ONE expression, used by both the <defs> builder and the draw loop. Writing
+// the fallback twice is how a sheet ends up referencing pReportedSworn while
+// <defs> emits only pReported — a self-inflicted G-BIOME-INK
+// 'referenced but not emitted' at the first node that carries provenance.
+const patternFor = (n) => FILL_FOR[n.terrainKind] ?? frontierPattern(n.provenance);
+```
+Also change the `<defs>` block at `:287` so it emits exactly the patterns this sheet references:
+```js
+  // No forced "pReported" entry: every non-ice world child resolves to it
+  // today via frontierPattern(undefined), so the set is {pIce, pReported}
+  // either way and the sheet stays byte-identical — while a node that later
+  // carries provenance emits the density it actually draws with.
+  const referencedPatterns = [...new Set(worldLand.map(patternFor))].sort();
   put(patternDefs({ ids: referencedPatterns }));
   problems.push(...checkBiomeInk({ emittedIds: referencedPatterns, referencedIds: referencedPatterns }));
 ```
@@ -4940,7 +5093,7 @@ git branch --show-current && git log --oneline -1
 
 - [ ] **Step 12: QUALITY GATE — independent adversarial review**
 
-Brief: *"Review `git show HEAD` and open both SVGs in Chrome. This is the only commit in Plan B that changes a committed pixel, so the bar is higher. (a) **Prove the world did not move**: confirm `git show --stat HEAD` lists no file under `content/spine/`, `content/maps/` or `colyseus-server/`, and run `node scripts/check_spine_emit.mjs --check` yourself. (b) Read the full SVG diff. Every changed line must be a `<text>`, a legend element or a `<defs>` pattern. Report **any** changed `<path d>` belonging to a coast, river, region boundary, road or sea lane. (c) Adoptions 1 and 2 were predicted byte-zero — confirm from the commit history that each was verified alone before the next was applied. (d) Count `<text>` elements on the atlas sheet and check it against the `G-LABEL` tier-1 budget of 40. (e) Confirm the `render-lock.json` diff changed exactly two hashes and no keys. (f) Confirm the new CI steps use the QUOTED GLOB form. (g) The label rank assignment is a design choice with consequences — does anything important now fall below the sheet's `maxLabelRank` and silently disappear? Compare the label list before and after."*
+Brief: *"Review `git show HEAD` and open both SVGs in Chrome. This is the only commit in Plan B that changes a committed pixel, so the bar is higher. (a) **Prove the world did not move**: confirm `git show --stat HEAD` lists no file under `content/spine/`, `content/maps/` or `colyseus-server/`, and run `node scripts/check_spine_emit.mjs --check` yourself. (b) Read the full SVG diff. Every changed line must be a `<text>`, a legend element or a `<defs>` pattern. Report **any** changed `<path d>` belonging to a coast, river, region boundary, road or sea lane. (c) Adoptions 1 and 2 were predicted byte-zero — confirm from the commit history that each was verified alone before the next was applied. (d) Count `<text>` elements on the atlas sheet and check it against the `G-LABEL` tier-1 budget of 40. (e) Confirm the `render-lock.json` diff changed exactly two hashes and no keys. (f) Confirm the CI steps use the SHELL-EXPANDED, UNQUOTED form (`node --test tools/mapforge/tests/*.test.mjs`) — `ci.yml` pins `node-version: 18` and Node-side `--test` globbing only exists from v22. (g) The label rank assignment is a design choice with consequences — does anything important now fall below the sheet's `maxLabelRank` and silently disappear? Compare the label list before and after."*
 
 - [ ] **Step 13: QUALITY GATE — refactor** — new `fix:` commit; if the SVG changes, redo Step 7 in full (re-render → lock → thumbs), never partially.
 - [ ] **Step 14: QUALITY GATE — re-verify**
@@ -4961,7 +5114,7 @@ Run all of it. Every line must hold.
 # vocabulary half
 node -e "const l=require('./content/world/lexicon/landforms.json'); \
   console.log(l.length, l.reduce((n,r)=>n+1+r.alsoGroups.length,0), \
-  l.filter(r=>r.alsoGroups.length).length, l.filter(r=>r.dungeonCapable).length)"   # 164 172 8 23
+  l.filter(r=>r.alsoGroups.length).length, l.filter(r=>r.dungeonCapable).length)"   # 170 178 8 23
 node -e "import('./scripts/lib/spine.mjs').then(m=>console.log(m.BIOMES.length, m.TERRAIN_KINDS.length))"  # 20 18
 
 # render half
@@ -4980,12 +5133,12 @@ node scripts/check_spine_emit.mjs --check
 
 | # | Claim | Proof |
 | --- | --- | --- |
-| 1 | 164 types / 172 memberships / 8 dual-listed / 23 dungeon-capable exist as content | `scripts/tests/landform-lexicon.test.mjs` |
+| 1 | 170 types / 178 memberships / 8 dual-listed / 23 dungeon-capable exist as content | `scripts/tests/landform-lexicon.test.mjs` |
 | 2 | Three new schemas exist and the node schema is closed in both directions | `scripts/tests/landform-instance-schema.test.mjs`, `scripts/tests/edges-schema.test.mjs` |
 | 3 | `derived` is one sidecar file and `G-DERIVED-DRIFT` is one whole-file comparison | `scripts/tests/spine-gates.test.mjs` new cases |
 | 4 | 20 biomes and 18 terrain kinds, with `G-LANDFORM` + `G-SHEET-BUDGET` printing every run | `scripts/tests/world-budget.test.mjs`; the `world-budget:` lines in the gate output |
 | 5 | Every biome and every terrain kind inks, and unreachable ink fails in both directions | `tools/mapforge/tests/biome-ink.test.mjs` |
-| 6 | 40 distinguishable glyph families cover 164 types; no two groups share a mark | `tools/mapforge/tests/glyphs.test.mjs` + the Task 7 contact sheet |
+| 6 | 40 distinguishable glyph families cover 170 types; no two groups share a mark | `tools/mapforge/tests/glyphs.test.mjs` + the Task 7 contact sheet |
 | 7 | **340 labels place with zero collisions and no hand-tuning** | `tools/mapforge/tests/labels.test.mjs` acceptance test + the Task 8 measurement |
 | 8 | A target-density sheet rasterises in **<= 2 s at 2000 px** | `tools/mapforge/tests/synthetic-sheet.test.mjs` budget test |
 | 9 | Committed PNGs are `<= 512` px review thumbs; the ship raster is never committed | `tools/asset-storybook/tests/maps-index.test.mjs` thumb-budget test |

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Join hand-authored meaning onto generated land so that, at the end, the repository holds ~40 PINNED places the generator must honour (verified by `G-PIN-SAT` against a committed per-pin fabric receipt), 336 BOUND landmark records that carry a stable generated handle and a declared size band and **no coordinate anywhere** (verified by `G-BIND` + `G-HANDLE-BAND`), 60 dungeon complexes / 190 floors whose entrances sit on cave-capable landforms within 2 region hops of a settlement (`G-DUNGEON-REACH`), a machine-checkable relation layer covering the n-ary claims the existing prose actually makes, and `G-MEANING` — a gate that re-derives every declared claim from the new ground and **fails, naming the citation and the drifted value**, instead of resolving quietly. None of that exists today: today there are zero civil records, zero relations, zero dungeons, a 120-combination name pool against 626 needed names, and the only join authority is a legacy mirror.
+**Goal:** Join hand-authored meaning onto generated land so that, at the end, the repository holds 41 PINNED places (the spec's "~40", made exact and asserted) the generator must honour (verified by `G-PIN-SAT` against a committed per-pin fabric receipt), 336 BOUND landmark records that carry a stable generated handle and a declared size band and **no coordinate anywhere** (verified by `G-BIND` + `G-HANDLE-BAND`), 60 dungeon complexes / 190 floors whose entrances sit on cave-capable landforms within 2 region hops of a settlement (`G-DUNGEON-REACH`), a machine-checkable relation layer covering the n-ary claims the existing prose actually makes, and `G-MEANING` — a gate that re-derives every declared claim from the new ground and **fails, naming the citation and the drifted value**, instead of resolving quietly. None of that exists today: today there are zero civil records, zero relations, zero dungeons, a 120-combination name pool against 626 needed names, and the only join authority is a legacy mirror.
 
 **Architecture:** Three files families sit between the generated fabric and the renderer. `content/world/civil/pinned/*.json` are **generator inputs** — a seed point plus a constraint block the generator satisfies before it settles a coastline; `content/world/civil/bound/*.json` name a generated **handle** (`c03/karst/h-0f42`) plus a size band and never a coordinate; `content/world/relations/*.json` carry the n-ary claims (bearing, betweenness, distance, adjacency, road-connectivity, co-location, uniqueness-in-scope) with a section citation back to the prose. `scripts/lib/resolve.mjs` joins fabric + handles + civil into `content/world/resolved/*.json` — the only file renderers read — and `scripts/lib/relations.mjs` re-derives every relation from that resolved world so a re-seed reports exactly which authored claims it broke.
 
@@ -21,7 +21,7 @@
 - `G-ATLAS-ROLLUP` tolerance stays +/-2 pp (`check_content.mjs:1690-1707`). If the generated world cannot roll up within it, the generator is wrong, not the gate.
 
 **Target counts (gated against `content/world/manifest.json`)**
-- 13 landmasses, 3 oceans, 9 seas, 160 regions = 40 surveyed + 120 reported, 45 settlements (3 capital / 12 hub / 30 village), 8 town plans, 60 dungeon complexes / 190 floors (3 families x 8 + 36 bespoke), 164 distinct landform types / 172 group memberships / 8 dual-listed, 1,740 instances / 336 named, 20 biomes, 18 terrain kinds, 626 distinct names.
+- 13 landmasses, 3 oceans, 9 seas, 160 regions = 40 surveyed + 120 reported, 45 settlements (3 capital / 12 hub / 30 village), 8 town plans, 60 dungeon complexes / 190 floors (3 families x 8 + 36 bespoke), **170 distinct landform types / 178 group memberships / 8 dual-listed / 23 `dungeonCapable`**, 1,740 instances / 336 named, 20 biomes, 18 terrain kinds, 626 distinct names. The landform census is **170/178**, not the spec's 164/172: Plan B Task 1 ships six additional rows. **Three of them this plan's roster cites by name** — `headland` (`c-lm-gildmark-head`), `ford` (`c-lm-millcross-ford`) and `sea-waterfall` (`c-lm-brightfall-leap`, where the previous `knickpoint-gorge` was unsatisfiable beside `water.kind: "sea"` and would have failed `G-PIN-SAT`). The other three (`ice-shelf`, `ash-front`, `ash-plain`) are Plan C's generator vocabulary for c01's shelf ice and c10's tephra ground and are cited by no record here. **Plan B owns the lexicon; this plan never adds a type, it only cites one.**
 - Land split: cap 6,000 + 4 major x 11,000 + 3 minor x 3,000 + 5 chains x 1,000 = 64,000.
 - Surveyed region 160 km2 +/-25%; reported region 480 km2 +/-20% = [384, 576]. 40x160 + 120x480 = 64,000.
 - Ocean polygons 41,800 / 30,400 / 19,000 = 91,200; attributed water 44,000 / 32,000 / 20,000. Sea polygons are SUBSETS of their ocean polygon (G-CONTAIN); their 20,600 km2 is already inside the 91,200 and is never added again.
@@ -134,8 +134,10 @@ node tools/mapforge/scaffold-civil.mjs --bound              # mint/reconcile bou
 node tools/mapforge/scaffold-civil.mjs --dungeons           # mint/reconcile dungeon records
 npm ci --prefix scripts                                     # scripts/ deps (ajv, js-yaml, sharp)
 npm test --prefix scripts                                   # node --test tests/*.test.mjs
-node --test 'tools/mapforge/tests/*.test.mjs'               # GLOB FORM, QUOTED
+node --test 'tools/mapforge/tests/*.test.mjs'               # QUOTED = Node-side glob, LOCAL ONLY (>= v22)
 node --test 'tools/asset-storybook/tests/*.test.mjs'
+node --test tools/mapforge/tests/*.test.mjs                 # UNQUOTED = shell-expanded; the ONLY form
+                                                            # legal in ci.yml (node 18) or a bash -e step
 (cd colyseus-server && npm test -- mapDimensions)           # the jest pin, EVERY commit
 ./scripts/precheck.sh --no-install                          # Gate 1
 ./scripts/integration.sh --no-install                       # Gate 2
@@ -152,7 +154,8 @@ The task brief for this lane listed three items the programme's shared contract 
 | Item | Owner | What Plan D does instead |
 | --- | --- | --- |
 | The silent region-drop at `check_spine_emit.mjs:111` (`regions.filter(n => n.lore?.order != null)`) | **Plan A** — replaced by the `subjects.zoneRoot` descriptor, which enumerates ALL `region`-tier children and FAILs on a missing `lore.order` inside that scope | Consumes the descriptor; `resolveCivil` never filters on `lore.order` |
-| `G-ORDER` (total ordering `(-area, contentHash)`, committed `orderDigest`) | **Plan C** — it is a property of the handle ledger the generator emits | Consumes `orderDigest`; `G-BIND` asserts handle uniqueness only |
+| `G-ORDER` over the HANDLE LEDGERS (total ordering `(-area, contentHash)`, committed `orderDigest`) | **Plan C** — it is a property of the handle ledger the generator emits | Consumes `orderDigest`; `G-BIND` asserts handle uniqueness only |
+| `G-ORDER`'s dense-permutation clause over the REGION order | **Plan D**, Task 7's `gZoneOrder` — `order` is minted onto the RESOLVED zones, and `content/schemas/fabric-file.schema.json` (`additionalProperties: false` on `regions[]`) forbids the field on a fabric region, so Plan C's gate could never see it | Implements it: same rule, same message string, asserted where the resolved documents are already loaded |
 | The spine-alias sweep re-point (116 bestiary rows, 10 story regions, 6 `art:town-*` keys, 10 zone files, 1 town plan) | **Plan A** owns the mechanism (`check_content.mjs:1416-1528` re-pointed at `places.mjs`); **Plan E** owns the data re-homing onto new region ids | Task 11 changes what `places.mjs` reads (`content/world/resolved/`), which is the half of the sweep that belongs to this plan |
 
 Also out of scope: any change to a spawn id, spawn rectangle, live map id or runtime coordinate; the 40 zone prose records and `survey` field (Plan E); the redraw commit itself (Plan E); the renderer's glyphs, fills and label declutter (Plan B).
@@ -167,8 +170,8 @@ Also out of scope: any change to a spawn id, spawn rectangle, live map id or run
 | C | `content/schemas/relation.schema.json` | The 8-relation closed vocabulary, discriminated on `rel` |
 | C | `content/schemas/dungeon.schema.json` | Dungeon complex record |
 | C | `content/schemas/dungeon-family.schema.json` | Family template (floor graph, hazards, room-count curve, band function) |
-| C | `content/world/civil/pinned-roster.json` | The 40-row authoring table: id, kind, continent, `pin.at`, `requires`, prose source |
-| C | `content/world/civil/pinned/*.json` | 40 pinned records — generator INPUTS with constraint blocks |
+| C | `content/world/civil/pinned-roster.json` | The 41-row authoring table: id, kind, continent, `pin.at`, `requires`, prose source |
+| C | `content/world/civil/pinned/*.json` | 41 pinned records — generator INPUTS with constraint blocks |
 | C | `content/world/civil/bound/*.json` | 336 bound landmark records: handle + size band, no coordinates |
 | C | `content/world/relations/c01..c13.json` | 13 relation files carrying the n-ary claims with section citations |
 | C | `content/world/names/registers.json` | 5 registers x (16 onsets, 12 rimes, 6 links, 30 classifiers) |
@@ -192,13 +195,14 @@ Also out of scope: any change to a spawn id, spawn rectangle, live map id or run
 | C | `tools/asset-storybook/tests/world-index.test.mjs` | Parity: every continent with a resolved file has a row, and vice versa |
 | M | `scripts/check_content.mjs:26` | Import `checkWorldCivil` from `lib/resolve.mjs` |
 | M | `scripts/check_content.mjs:1790` | Call `checkWorldCivil({ opts, fail, warn })` immediately before `checkSpineStoryAlias` |
-| M | `scripts/lib/places.mjs` | Task 11: fallback branch removed; `loadPlaces` reads `content/world/resolved/` |
-| M | `tools/mapforge/lib/passes/settlements.mjs` | P11 places pinned records first, then scores; emits `pinReceipts` |
-| M | `tools/mapforge/lib/passes/dungeons.mjs` | P13 anchors bound entrances on `dungeonCapable` landforms, emits handles |
-| M | `content/world/manifest.json` | `names.reservedFile`, `quotas.dungeons` cross-checked against the committed files |
-| M | `tools/asset-storybook/js/maps.mjs` | Places & Meaning panel below the sheet grid |
-| M | `scripts/integration.sh` | Add `check_resolved --check` |
-| M | `.github/workflows/ci.yml` | Add `check_resolved --check` |
+| M | `scripts/lib/places.mjs` (created by Plan A Task 5 — no line to anchor to in today's tree) | Task 11: fallback branch removed; `loadPlaces` reads `content/world/resolved/` |
+| M | `tools/mapforge/lib/passes/settlements.mjs` (created by Plan C Task 9a) | P11 adds `placePinned` + `measureCell`; `placeSettlements` is unchanged by this plan |
+| M | `tools/mapforge/lib/passes/dungeons.mjs` (created by Plan C Task 9c) | P13 adds `anchorBoundEntrances` — bound entrances on `dungeonCapable` landforms |
+| M | `content/world/manifest.json` (created by Plan C Task 1) | `names.reservedFile`, `relations.coverageFloorPct`, `quotas.dungeons` cross-checked against the committed files |
+| M | `tools/asset-storybook/js/maps.mjs:17` (`loadIndex`), `:244-333` (`mountMaps`, panel inserted before `main.appendChild(section)` at `:333`) | Places & Meaning panel below the sheet grid |
+| M | `tools/asset-storybook/js/state.mjs:94` (beside `MAPS_INDEX_URL`) | `export const WORLD_INDEX_URL` |
+| M | `scripts/integration.sh:90` (fn, beside `spine_emit_drift`), `:121` (the `run_section` line it follows) | Add `check_resolved --check` and the `relation_coverage` report |
+| M | `.github/workflows/ci.yml:107-111` (beside the `check_spine_emit --check` step) | Add `check_resolved --check` and the relation-coverage report step |
 
 ---
 
@@ -774,17 +778,18 @@ Create these files. This is the miniature world every gate in this plan tests ag
 }
 ```
 
-`scripts/tests/fixtures/world/base/world/lexicon/landforms.json`:
+`scripts/tests/fixtures/world/base/world/lexicon/landforms.json`. **Every `id` here is a real row of Plan B's 170-type lexicon and every `requires` key is one of its eleven** (`rock`, `precipDecileMin/Max`, `tempDecileMin/Max`, `slopeMin/Max`, `nearFlag`, `flowAccMin`, `elevMin/Max`) — the fixture is a SUBSET of the shipped vocabulary, never a parallel one, or the gates pass here and fail on the real world:
 ```json
 [
-  { "id": "karst-cenote", "group": "karst", "geometry": "point", "biomes": ["karst"], "sizeKm": [0.05, 0.6], "dungeonCapable": true, "glyph": "g-cenote", "rarity": "uncommon", "requires": { "rock": "carbonate" }, "gloss": "A collapsed limestone shaft flooded to the water table.", "absentBecause": null },
-  { "id": "coastal-drowned-valley", "group": "coastal", "geometry": "area", "biomes": ["meadow"], "sizeKm": [0.5, 8.0], "dungeonCapable": false, "glyph": "g-ria", "rarity": "common", "requires": {}, "gloss": "A river valley the sea has walked up.", "absentBecause": null },
-  { "id": "lava-tube", "group": "volcanic", "geometry": "line", "biomes": ["lava"], "sizeKm": [0.2, 4.0], "dungeonCapable": true, "glyph": "g-tube", "rarity": "rare", "requires": {}, "gloss": "A drained conduit under a cooled flow.", "absentBecause": null },
-  { "id": "salt-pan", "group": "desert", "geometry": "area", "biomes": ["alkali"], "sizeKm": [0.3, 12.0], "dungeonCapable": false, "glyph": "g-pan", "rarity": "common", "requires": {}, "gloss": "Flat evaporite crust over a closed basin.", "absentBecause": null }
+  { "id": "karst-cenote", "group": "karst", "geometry": "point", "biomes": ["karst"], "sizeKm": [0.05, 0.6], "dungeonCapable": true, "glyph": "g-cenote", "rarity": "uncommon", "requires": { "rock": "carbonate", "precipDecileMin": 4 }, "gloss": "A collapsed limestone shaft flooded to the water table.", "absentBecause": null },
+  { "id": "coastal-drowned-valley", "group": "coastal", "geometry": "area", "biomes": ["meadow"], "sizeKm": [0.5, 8.0], "dungeonCapable": false, "glyph": "g-ria", "rarity": "common", "requires": { "nearFlag": "SEA" }, "gloss": "A river valley the sea has walked up.", "absentBecause": null },
+  { "id": "lava-tube", "group": "volcanic", "geometry": "line", "biomes": ["lava"], "sizeKm": [0.2, 4.0], "dungeonCapable": true, "glyph": "g-tube", "rarity": "rare", "requires": { "rock": "volcanic", "nearFlag": "ARC" }, "gloss": "A drained conduit under a cooled flow.", "absentBecause": null },
+  { "id": "tidal-mire", "group": "wetland", "geometry": "area", "biomes": ["marsh"], "sizeKm": [0.5, 20.0], "dungeonCapable": false, "glyph": "g-mire", "rarity": "common", "requires": { "precipDecileMin": 5, "slopeMax": 0.02 }, "gloss": "Salt-worked mire the tide walks in and out of.", "absentBecause": null },
+  { "id": "salt-pan-crust", "group": "desert", "geometry": "area", "biomes": ["alkali"], "sizeKm": [0.3, 12.0], "dungeonCapable": false, "glyph": "g-pan", "rarity": "common", "requires": { "rock": "clastic", "precipDecileMax": 1 }, "gloss": "Flat evaporite crust over a closed basin.", "absentBecause": null }
 ]
 ```
 
-`scripts/tests/fixtures/world/base/world/fabric/continent-02.json`:
+`scripts/tests/fixtures/world/base/world/fabric/continent-02.json`. **This carries every key Plan D's gates dereference, not just the ones G-BIND needs** — `outerRing` and `trunkRiver` (`resolveCivil`'s coastline/river), an `area` instance of a `SALTMIRE_TYPES` type (`resolveCivil`'s saltmire), a `terrainKind` that is a patch kind (`terrainPatches`), and `dungeonAnchors` (`gDungeonReach`). A fixture that omits one of these makes the gate that reads it pass vacuously, which is indistinguishable from the gate working:
 ```json
 {
   "continent": "c02",
@@ -793,6 +798,8 @@ Create these files. This is the miniature world every gate in this plan tests ag
   "cellKm": 0.5,
   "cellCensus": { "land": 640, "sea": 0, "lake": 0, "unowned": 0 },
   "ownerHistogram": { "c02/r01": 320, "c02/r02": 320 },
+  "outerRing": [[136, 158], [182, 158], [182, 186], [136, 186]],
+  "trunkRiver": { "points": [[141, 160], [148, 168], [152, 175], [158, 184]], "name": null },
   "regions": [
     { "id": "c02/r01", "survey": "surveyed", "areaKm2": 160.0, "terrainKind": "river-country", "biomeShares": { "meadow": 100 }, "ring": [[140, 160], [160, 160], [160, 180], [140, 180]], "levelBand": [1, 10], "adjacent": ["c02/r02"], "settlements": ["c-town-millcross"], "poi": 14 },
     { "id": "c02/r02", "survey": "surveyed", "areaKm2": 160.0, "terrainKind": "bramble", "biomeShares": { "bramble": 100 }, "ring": [[160, 160], [180, 160], [180, 180], [160, 180]], "levelBand": [15, 28], "adjacent": ["c02/r01"], "settlements": [], "poi": 12 }
@@ -800,7 +807,16 @@ Create these files. This is the miniature world every gate in this plan tests ag
   "instances": [
     { "id": "lf-c02-r01-0001", "type": "coastal-drowned-valley", "geometry": { "shape": "point", "at": [137.2, 182.4] }, "sizeKm": 2.4, "cell": [274, 364], "handle": "c02/coastal/h-a1b2", "region": "c02/r01", "named": true, "glyph": "g-ria", "dungeonCapable": false, "provenance": { "authored": "generated", "generator": { "pass": "coastal", "seedStream": "landform", "epoch": 0 }, "fabric": "fabric/continent-02" } },
     { "id": "lf-c02-r02-0002", "type": "karst-cenote", "geometry": { "shape": "point", "at": [166.0, 172.0] }, "sizeKm": 0.31, "cell": [332, 344], "handle": "c02/karst/h-0f42", "region": "c02/r02", "named": true, "glyph": "g-cenote", "dungeonCapable": true, "provenance": { "authored": "generated", "generator": { "pass": "karst", "seedStream": "landform", "epoch": 0 }, "fabric": "fabric/continent-02" } },
-    { "id": "lf-c02-r02-0003", "type": "karst-cenote", "geometry": { "shape": "point", "at": [170.0, 175.0] }, "sizeKm": 0.12, "cell": [340, 350], "handle": "c02/karst/h-77aa", "region": "c02/r02", "named": false, "glyph": "g-cenote", "dungeonCapable": true, "provenance": { "authored": "generated", "generator": { "pass": "karst", "seedStream": "landform", "epoch": 0 }, "fabric": "fabric/continent-02" } }
+    { "id": "lf-c02-r02-0003", "type": "karst-cenote", "geometry": { "shape": "point", "at": [170.0, 175.0] }, "sizeKm": 0.12, "cell": [340, 350], "handle": "c02/karst/h-77aa", "region": "c02/r02", "named": false, "glyph": "g-cenote", "dungeonCapable": true, "provenance": { "authored": "generated", "generator": { "pass": "karst", "seedStream": "landform", "epoch": 0 }, "fabric": "fabric/continent-02" } },
+    { "id": "lf-c02-r01-0004", "type": "tidal-mire", "geometry": { "shape": "area", "ring": [[142, 178], [150, 178], [150, 184], [142, 184]] }, "sizeKm": 6.0, "cell": [288, 362], "handle": "c02/wetland/h-5e10", "region": "c02/r01", "named": false, "glyph": "g-mire", "dungeonCapable": false, "provenance": { "authored": "generated", "generator": { "pass": "wetland", "seedStream": "landform", "epoch": 0 }, "fabric": "fabric/continent-02" } }
+  ],
+  "settlements": [
+    { "id": "c-town-millcross", "title": "Millcross", "rank": "hub", "atKm": [152.2, 174.6], "cell": [304, 349], "region": "c02/r01", "continent": "c02", "score": 0.71 }
+  ],
+  "roads": [],
+  "dungeonAnchors": [
+    { "handle": "c02/karst/h-0f42", "region": "c02/r02", "hopsToSettlement": 1 },
+    { "handle": "c02/coastal/h-a1b2", "region": "c02/r01", "hopsToSettlement": 0 }
   ],
   "pinReceipts": [
     { "id": "c-town-millcross", "at": [152.2, 174.6], "cell": [304, 349], "continent": "c02", "region": "c02/r01", "measured": { "landform": "river-terrace", "waterKind": "river", "shelterFetchKm": 0, "depthM": 0, "slope": 0.02, "freshWaterWithinKm": 0.1, "biome": "meadow", "elevationM": 40 } },
@@ -818,15 +834,24 @@ Create these files. This is the miniature world every gate in this plan tests ag
   "cellKm": 0.5,
   "cellCensus": { "land": 320, "sea": 0, "lake": 0, "unowned": 0 },
   "ownerHistogram": { "c10/r01": 320 },
+  "outerRing": [[328, 203], [352, 203], [352, 227], [328, 227]],
+  "trunkRiver": null,
   "regions": [
     { "id": "c10/r01", "survey": "reported", "areaKm2": 480.0, "terrainKind": null, "biomeShares": { "lava": 100 }, "ring": [[330, 205], [350, 205], [350, 225], [330, 225]], "levelBand": [55, 80], "adjacent": [], "settlements": [], "poi": 0 }
   ],
   "instances": [
     { "id": "lf-c10-r01-0001", "type": "lava-tube", "geometry": { "shape": "point", "at": [340.0, 215.0] }, "sizeKm": 1.2, "cell": [680, 430], "handle": "c10/volcanic/h-3c9d", "region": "c10/r01", "named": true, "glyph": "g-tube", "dungeonCapable": true, "provenance": { "authored": "generated", "generator": { "pass": "volcanic", "seedStream": "landform", "epoch": 0 }, "fabric": "fabric/continent-10" } }
   ],
+  "settlements": [],
+  "roads": [],
+  "dungeonAnchors": [
+    { "handle": "c10/volcanic/h-3c9d", "region": "c10/r01", "hopsToSettlement": 2 }
+  ],
   "pinReceipts": []
 }
 ```
+
+**c10 is deliberately the awkward continent.** It is `reported` (so `terrainKind` is `null` and it contributes no `terrainPatch`), it has no settlement of its own, and its single dungeon anchor sits at exactly `hopsToSettlement: 2` — the boundary `G-DUNGEON-REACH` allows. Green here means the gate accepts 2 and the `g-dungeon-reach-far` overlay is the only thing that reds it.
 
 `scripts/tests/fixtures/world/base/world/handles/continent-02.json`:
 ```json
@@ -836,7 +861,8 @@ Create these files. This is the miniature world every gate in this plan tests ag
   "handles": [
     { "handle": "c02/coastal/h-a1b2", "type": "coastal-drowned-valley", "sizeKm": 2.4, "region": "c02/r01", "contentHash": "sha256:a1b2000000000000000000000000000000000000000000000000000000000000", "rank": 0 },
     { "handle": "c02/karst/h-0f42", "type": "karst-cenote", "sizeKm": 0.31, "region": "c02/r02", "contentHash": "sha256:0f42000000000000000000000000000000000000000000000000000000000000", "rank": 1 },
-    { "handle": "c02/karst/h-77aa", "type": "karst-cenote", "sizeKm": 0.12, "region": "c02/r02", "contentHash": "sha256:77aa000000000000000000000000000000000000000000000000000000000000", "rank": 2 }
+    { "handle": "c02/karst/h-77aa", "type": "karst-cenote", "sizeKm": 0.12, "region": "c02/r02", "contentHash": "sha256:77aa000000000000000000000000000000000000000000000000000000000000", "rank": 2 },
+    { "handle": "c02/wetland/h-5e10", "type": "tidal-mire", "sizeKm": 6.0, "region": "c02/r01", "contentHash": "sha256:5e10000000000000000000000000000000000000000000000000000000000000", "rank": 3 }
   ]
 }
 ```
@@ -874,7 +900,7 @@ Create these files. This is the miniature world every gate in this plan tests ag
   },
   "properties": ["deepwater-port"],
   "coasts": ["wealdmarch-west"],
-  "plan": "content/towns/town-gildmark.json",
+  "plan": null,
   "prose": "authored",
   "provenance": { "authored": "hand", "generator": null },
   "resolution": null
@@ -959,7 +985,7 @@ test("loadCivil reads two continents, three families and the lexicon", () => {
   assert.equal(w.present, true);
   assert.deepEqual(w.errors, []);
   assert.deepEqual(Object.keys(w.fabric).sort(), ["c02", "c10"]);
-  assert.equal(w.handles.size, 4);
+  assert.equal(w.handles.size, 5);
   assert.equal(w.pinned.length, 1);
   assert.equal(w.bound.length, 1);
   assert.equal(w.relations.length, 1);
@@ -1001,7 +1027,7 @@ test("G-BIND red: a handle no ledger carries", () => {
 test("the gate wires G-BIND into --only=spine and still exits 0 on the green world", () => {
   const r = runWorldGate(worldFixture());
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /world-civil: 1 pinned, 1 bound, 1 relations, 4 handles/);
+  assert.match(r.out, /world-civil: 1 pinned, 1 bound, 1 relations, 5 handles/);
 });
 
 test("the gate goes red, with the exact message, on the coordinate overlay", () => {
@@ -1333,7 +1359,7 @@ Expected: all PASS.
 - Create: `content/world/names/reserved.json`
 - Create: `tools/mapforge/lib/name-gen.mjs`
 - Test: `scripts/tests/name-gen.test.mjs`
-- Modify: `scripts/lib/resolve.mjs` (add `gNames`, call it from `checkWorldCivil`)
+- Modify: `scripts/lib/resolve.mjs` (append `gNames`, call it from `checkWorldCivil`; created in Task 2)
 
 **Interfaces:**
 - Consumes: nothing from other plans.
@@ -1785,7 +1811,7 @@ Apply findings as a NEW commit. Re-run every command in Step 7. Expected: all PA
 
 ---
 
-### Task 4: The 40 pinned places and G-PIN-SAT
+### Task 4: The 41 pinned places and G-PIN-SAT
 
 A pinned record is a **generator input**. The prose places have to be constraints the generator honours before it settles a coastline, because the alternative was tested and failed: bearings between slot-addressed places came out at a 17-27% modal direction against a 12.5% coin-toss baseline, and 0 of 40 test seeds produced the named continents the address space assumes.
 
@@ -1793,14 +1819,14 @@ A pinned record is a **generator input**. The prose places have to be constraint
 - Create: `content/world/civil/pinned-roster.json`
 - Create: `content/world/civil/pinned/*.json` (40 files)
 - Create: `scripts/tests/fixtures/world/g-pin-sat-slope/**`, `.../g-pin-sat-moved/**`
-- Modify: `scripts/lib/resolve.mjs` (add `gPinSat`, call from `checkWorldCivil`)
-- Modify: `scripts/tests/resolve.test.mjs` (add the G-PIN-SAT block)
+- Modify: `scripts/lib/resolve.mjs` (append `gPinSat`, call from `checkWorldCivil`; created in Task 2)
+- Modify: `scripts/tests/resolve.test.mjs` (append Step 1b's four premise/roster tests and the G-PIN-SAT block; created in Task 2)
 
 **Interfaces:**
 - Consumes (Plan C): `content/world/fabric/continent-NN.json` **`pinReceipts[]`** — `{ id, at: [x,y], cell: [i,j], continent, region, measured: { landform, waterKind, shelterFetchKm, depthM, slope, freshWaterWithinKm, biome, elevationM } }`. Plan D owns this field's shape; Task 10 wires the generator to emit it.
 - Produces: `export function gPinSat({ world }): string[]`
 
-**The pin translation rule.** The six canon towns and the fourteen basin landmarks keep their committed geometry exactly, translated by one shared vector
+**The pin translation rule.** The six canon towns and the twelve basin landmarks **that are children of `n-cluster1`** keep their committed geometry exactly, translated by one shared vector
 
 ```
 PIN_OFFSET = c02.footprint.centreKm - n-cluster1.placement.anchor = [96, 148] - [15, 19] = [81, 129]
@@ -1808,7 +1834,7 @@ PIN_OFFSET = c02.footprint.centreKm - n-cluster1.placement.anchor = [96, 148] - 
 
 which puts the basin anchor on c02 Wealdmarch's centre `[96, 148]`. **`[96, 148]` is Plan C's committed premise value** (`content/world/premises/continent-02.json`, Task 3 Step 4) — it is read from the file, never retyped. A pure translation preserves every straight-line distance, so all seven `leg` edges keep today's residuals — `e-leg-millcross-gildmark` measures `sqrt(15^2 + 7.8^2) = 16.906 km` against its committed `straightKm: 17` before and after — and `G-CANON-LEG`'s +/-8% cannot break.
 
-**Every `requires.landform` below is an id from `content/world/lexicon/landforms.json` (Plan B Task 1).** That is not a style note: `G-PIN-SAT` compares the record's declared landform against `grid.landform` under the seed point, and a value the lexicon does not contain can never be satisfied by any world. Step 1's test asserts it for all 40 rows. Where canon prose names a landform the lexicon has no row for, the row below names the lexicon's nearest real substrate and the `why` still quotes the prose — the prose is the constraint, the id is how the machine checks it. `requires.landform` is a **type id**, never a `terrainKind` (`karst-plateau`, `sand-sea`, `cloud-forest`, `fjordland` are terrain kinds and are not legal here) and never a `coastClass`.
+**Every `requires.landform` below is an id from `content/world/lexicon/landforms.json` (Plan B Task 1).** That is not a style note: `G-PIN-SAT` compares the record's declared landform against `grid.landform` under the seed point, and a value the lexicon does not contain can never be satisfied by any world. Step 1b's test asserts it for all 41 rows against the committed `landforms.json`. Where canon prose names a landform the lexicon has no row for, the row below names the lexicon's nearest real substrate and the `why` still quotes the prose — the prose is the constraint, the id is how the machine checks it. `requires.landform` is a **type id**, never a `terrainKind` (`karst-plateau`, `sand-sea`, `cloud-forest`, `fjordland` are terrain kinds and are not legal here) and never a `coastClass`.
 
 - [ ] **Step 1: Print the twenty translated basin coordinates**
 
@@ -1826,26 +1852,41 @@ const OFF = [PREM.footprint.centreKm[0] - BASIN.placement.anchor[0],
 console.log("PIN_OFFSET", JSON.stringify(OFF));   // expect [81, 129]
 const t = (p) => [Math.round((p[0] + OFF[0]) * 10) / 10, Math.round((p[1] + OFF[1]) * 10) / 10];
 const towns = ["n-millcross","n-gildmark","n-rooktide","n-cindervast-town","n-embervale","n-norhollow"];
+// EXACTLY the twelve region nodes whose parentId is n-cluster1. Two ids that
+// look like they belong here do NOT: `n-peatrun-coast` is a child of
+// n-coldreach and its anchor [202.4, 159.7] is an ABSOLUTE chart coordinate
+// (A2-wider-world.md §2 puts the Peatrun on Coldreach, and A1 contains no peat
+// at all), and `n-frontier-shelf` is a `playspace` under n-playroot whose
+// anchor is the [500, 500] runtime sentinel. Translating either by PIN_OFFSET
+// puts a pin outside c02 — [283.4, 288.7] and [581, 629] — which is exactly
+// the class of error Step 1b exists to catch. Assert the parentage rather
+// than trusting the list.
 const marks = ["n-thornveil","n-northern-icefield","n-ashvale-front","n-emberdown","n-hollowmarch",
                "n-meltwash-terrace","n-millcross-ford","n-gildmark-head","n-rooktide-reach",
-               "n-peatrun-coast","n-saltmire","n-eastern-hills","n-expedition-camp","n-frontier-shelf"];
+               "n-saltmire","n-eastern-hills","n-expedition-camp"];
 for (const id of [...towns, ...marks]) {
   const d = JSON.parse(fs.readFileSync(`content/spine/nodes/${id}.json`, "utf8"));
+  if (d.parentId !== "n-cluster1") { console.error(`${id} parent is ${d.parentId}, not n-cluster1 — its anchor is not basin-local, do NOT translate it`); process.exit(1); }
   const at = d.absoluteAnchor ?? d.lore?.labelAt ?? d.placement.anchor;
   console.log(id.padEnd(24), JSON.stringify(t(at)));
 }'
 ```
 
-Expected: `PIN_OFFSET [81, 129]`, then (the eight are pinned here so a reviewer can check the arithmetic without running it) `n-millcross [98.2, 152.6]`, `n-gildmark [83.2, 160.4]`, `n-rooktide [98, 163.5]`, `n-cindervast-town [90.2, 131.4]`, `n-embervale [89.7, 147.9]`, `n-norhollow [96.8, 147.7]`, `n-thornveil [105.4, 155]`, `n-northern-icefield [103.4, 132.6]`. The remaining twelve print from their committed `lore.labelAt`.
+Expected: `PIN_OFFSET [81, 129]`, then eighteen rows. The eight below are pinned here so a reviewer can check the arithmetic without running it — `n-millcross [98.2, 152.6]`, `n-gildmark [83.2, 160.4]`, `n-rooktide [98, 163.5]`, `n-cindervast-town [90.2, 131.4]`, `n-embervale [89.7, 147.9]`, `n-norhollow [96.8, 147.7]`, `n-thornveil [105.4, 155]`, `n-northern-icefield [103.4, 132.6]` — and the remaining **ten** print from their committed `lore.labelAt`: `n-ashvale-front [95, 136.2]`, `n-emberdown [88.2, 145.8]`, `n-hollowmarch [97, 145]`, `n-meltwash-terrace [101.8, 147]`, `n-millcross-ford [96.6, 155]`, `n-gildmark-head [85.4, 158.2]`, `n-rooktide-reach [95.8, 159.8]`, `n-saltmire [91, 164.6]`, `n-eastern-hills [107, 144.2]`, `n-expedition-camp [100.6, 149.4]`.
 
-Every one of the eight sits inside c02's footprint ellipse (centre `[96, 148]`, radii `[58, 44]`) — the furthest is `n-cindervast-town` at `((90.2-96)/58)² + ((131.4-148)/44)² = 0.010 + 0.142 = 0.152`, well inside 1. Step 1b turns that into a test.
+All eighteen sit inside c02's footprint ellipse (centre `[96, 148]`, radii `[58, 44]`) — the furthest is `n-saltmire` at `((91-96)/58)² + ((164.6-148)/44)² = 0.007 + 0.144 = 0.152`, well inside 1. Step 1b turns that into a test.
+
+The roster's remaining two c02-and-elsewhere landmark rows have **no basin spine node to translate** and carry literal coordinates instead: `c-lm-the-meltwash-mouth` at `[88.5, 166]` (A1 §4 "The Meltwash from the ice to the mire" — the river's seaward end, 2.9 km from the translated Saltmire, `t = 0.184` inside c02) and `c-lm-peatrun-coast` at `[262, 150]` on **c03**, not c02 (`t = 0.840` inside Coldreach), because `n-peatrun-coast` is a Coldreach region and A2 §2 is its only source.
 
 - [ ] **Step 1b: Write the failing test that stops the roster and the premises diverging**
 
-Append to `scripts/tests/pin-sat.test.mjs`. This is the test whose absence let a whole roster be authored against continent centres that were never in any premise file:
+Append to `scripts/tests/resolve.test.mjs` (Task 2 created it; `test`, `assert`, `join` and `ROOT` are already in scope there, and `ROOT` is the repo root, which is what these four assertions read). This is the test whose absence let a whole roster be authored against continent centres that were never in any premise file:
 
 ```js
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+// Task 2's import line becomes:
+//   import { mkdtempSync, cpSync, readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
+// — `readdirSync` and `existsSync` are new here, `readFileSync`/`writeFileSync`
+// are added by Task 4 Step 4 anyway.
 
 const PREMISE_DIR = join(ROOT, "content/world/premises");
 const ROSTER = join(ROOT, "content/world/civil/pinned-roster.json");
@@ -1884,6 +1925,52 @@ test("every pinned row lands INSIDE its declared continent's footprint ellipse",
   assert.deepEqual(outside, []);
 });
 
+test("every re-fitted basin row IS its spine node's anchor plus pinOffset", () => {
+  // The other half of the divergence guard. The ellipse test above catches a
+  // pin that left its continent; this one catches a pin that was hand-typed
+  // instead of translated, and it catches the sharper error Step 1 warns about
+  // — translating a node whose anchor is not basin-local. Both `at` values
+  // below MUST come from a node whose parentId is n-cluster1.
+  const BASIN = {
+    "c-town-millcross": "n-millcross", "c-town-gildmark": "n-gildmark",
+    "c-town-rooktide": "n-rooktide", "c-town-cindervast": "n-cindervast-town",
+    "c-town-embervale": "n-embervale", "c-town-norhollow": "n-norhollow",
+    "c-lm-thornveil": "n-thornveil", "c-lm-northern-icefield": "n-northern-icefield",
+    "c-lm-ashvale-front": "n-ashvale-front", "c-lm-emberdown": "n-emberdown",
+    "c-lm-hollowmarch": "n-hollowmarch", "c-lm-meltwash-terrace": "n-meltwash-terrace",
+    "c-lm-millcross-ford": "n-millcross-ford", "c-lm-gildmark-head": "n-gildmark-head",
+    "c-lm-rooktide-reach": "n-rooktide-reach", "c-lm-the-saltmire": "n-saltmire",
+    "c-lm-eastern-hills": "n-eastern-hills", "c-lm-expedition-camp": "n-expedition-camp",
+  };
+  const roster = JSON.parse(readFileSync(ROSTER, "utf8"));
+  const rows = new Map(roster.rows.map((r) => [r.id, r]));
+  const [ox, oy] = roster.pinOffset;
+  const wrong = [];
+  for (const [rowId, nodeId] of Object.entries(BASIN)) {
+    const node = JSON.parse(readFileSync(join(ROOT, `content/spine/nodes/${nodeId}.json`), "utf8"));
+    assert.equal(node.parentId, "n-cluster1",
+      `${nodeId} is a child of ${node.parentId}; its anchor is not basin-local and must not be translated`);
+    const a = node.absoluteAnchor ?? node.lore?.labelAt ?? node.placement.anchor;
+    const want = [Math.round((a[0] + ox) * 10) / 10, Math.round((a[1] + oy) * 10) / 10];
+    const got = rows.get(rowId)?.at;
+    if (JSON.stringify(got) !== JSON.stringify(want))
+      wrong.push(`${rowId}: roster ${JSON.stringify(got)} != ${nodeId} + pinOffset ${JSON.stringify(want)}`);
+  }
+  assert.deepEqual(wrong, []);
+});
+
+test("the roster is 41 rows and expands to 41 records", () => {
+  // The spec says "~40". 41 is that made exact, and it is asserted so the
+  // count cannot drift silently under a later edit: 8 towns + 13 c02
+  // landmarks + 20 landmarks on the other twelve landmasses.
+  const roster = JSON.parse(readFileSync(ROSTER, "utf8"));
+  assert.equal(roster.rows.length, 41);
+  assert.equal(new Set(roster.rows.map((r) => r.id)).size, 41, "ids are unique");
+  assert.equal(roster.rows.filter((r) => r.kind === "town").length, 8);
+  assert.equal(roster.rows.filter((r) => r.continent === "c02").length, 19);
+  assert.equal(roster.rows.filter((r) => r.continent === "c03").length, 4);
+});
+
 test("every requires.landform is an id in the committed lexicon", () => {
   // `requires.landform` is a TYPE ID. terrainKinds (karst-plateau, sand-sea,
   // cloud-forest, fjordland) and coastClasses are NOT legal here: G-PIN-SAT
@@ -1900,38 +1987,52 @@ test("every requires.landform is an id in the committed lexicon", () => {
 });
 
 test("a `plan` path, when present, names a file that will exist", () => {
-  // D2's default is "3 capitals' plans now, 5 deferred". A `plan` pointing at
-  // a file nobody writes is worse than an honest null: check_content.mjs:1192
-  // (T1) joins on it. Only four rows may carry one — Millcross (committed
-  // today) and the three capitals Plan E Task 8 authors.
+  // EXACTLY ONE row may carry a `plan`, and it is Millcross — the only town
+  // plan committed today. A `plan` pointing at a file nobody writes is worse
+  // than an honest null: check_content.mjs:1192 (T1) joins on it.
+  //
+  // E-C9 is why the three capitals carry null. A town plan joins the world by
+  // `spineId`, so each plan needs a tier:"town" spine node — and the trunk
+  // census Plan C owns budgets exactly ONE (n-millcross, the alias of the one
+  // committed plan). Authoring town-gildmark.json, town-tallowquay.json and
+  // town-netstead.json would force three more town nodes into the trunk,
+  // making the census 39 and reddening Plan C Task 10's
+  // `readdirSync(draftNodes).length === 36` assertion on a plan-authoring
+  // commit. No plan in this programme authors a file under content/towns/;
+  // the quota stays 8 as a target and G-WORLD-BUDGET prints
+  // `world-budget: town-plans 1 authored / 8 quota` so the debt is visible.
   const roster = JSON.parse(readFileSync(ROSTER, "utf8"));
   const withPlan = roster.rows.filter((r) => r.plan).map((r) => r.id).sort();
-  assert.deepEqual(withPlan,
-    ["c-town-gildmark", "c-town-millcross", "c-town-netstead", "c-town-tallowquay"]);
+  assert.deepEqual(withPlan, ["c-town-millcross"]);
+  // And the one path that IS declared must be the file that exists today.
+  assert.equal(roster.rows.find((r) => r.id === "c-town-millcross").plan,
+    "content/towns/town-millcross.json");
+  assert.ok(existsSync(join(ROOT, "content/towns/town-millcross.json")),
+    "the only declared plan path must name a committed file");
 });
 ```
 
-Run: `node --test --test-name-pattern "PIN_OFFSET|footprint ellipse|committed lexicon|plan\` path" 'scripts/tests/*.test.mjs'`
+Run: `node --test --test-name-pattern "PIN_OFFSET|footprint ellipse|pinOffset|41 rows|committed lexicon|plan\` path" 'scripts/tests/*.test.mjs'`
 Expected: FAIL — `ENOENT ... content/world/civil/pinned-roster.json`. Step 2 writes it.
 
 - [ ] **Step 2: Write the roster**
 
-Create `content/world/civil/pinned-roster.json`. It is the authoring table — 40 rows, one per pinned record. The `at` column for the first twenty rows is Step 1's output; the last twenty are literals placed inside their premise footprint (Domain primer's centre table).
+Create `content/world/civil/pinned-roster.json`. It is the authoring table — **41 rows**, one per pinned record: 8 towns, 13 Wealdmarch landmarks, 20 landmarks on the other twelve landmasses. The spec's figure is "~40"; 41 is that made exact, and Step 1b asserts it so the count cannot drift under a later edit. Eighteen `at` values are Step 1's printed output; the other twenty-three are literals placed inside their premise footprint (Domain primer's centre table).
 
 ```jsonc
 {
   "version": 1,
-  "note": "The authoring table for content/world/civil/pinned/*.json. Rows 1-20 are the re-fitted basin: committed anchor + PIN_OFFSET [81, 129], a pure translation that preserves every canon leg distance exactly. PIN_OFFSET is DERIVED from content/world/premises/continent-02.json's footprint.centreKm minus n-cluster1's anchor, never retyped. Rows 21-40 are placed inside their premise footprint, and every `at` here is checked against the committed premise ellipse by Step 1b. Every requires.landform is an id from content/world/lexicon/landforms.json — never a terrainKind, never a coastClass. If Plan C's packing moves a continent centre, re-run Step 1 and Step 1b rather than editing coordinates by hand.",
+  "note": "The authoring table for content/world/civil/pinned/*.json. The eighteen re-fitted basin rows are their committed n-cluster1-child anchor + PIN_OFFSET [81, 129], a pure translation that preserves every canon leg distance exactly; Step 1b re-derives each one from its spine node and fails on a hand-typed drift. PIN_OFFSET is DERIVED from content/world/premises/continent-02.json's footprint.centreKm minus n-cluster1's anchor, never retyped. Every other row is a literal placed inside its premise footprint, and every `at` here is checked against the committed premise ellipse by Step 1b. Every requires.landform is an id from content/world/lexicon/landforms.json (170 rows after Plan B Task 1) — never a terrainKind, never a coastClass. If Plan C's packing moves a continent centre, re-run Step 1 and Step 1b rather than editing coordinates by hand.",
   "pinOffset": [81, 129],
   "rows": [
     { "id": "c-town-millcross",   "kind": "town", "continent": "c02", "at": [98.2, 152.6], "rank": "hub",     "requires": { "landform": "river-terrace", "water": { "kind": "river" }, "slopeMax": 0.05, "freshWaterWithinKm": 0.5 }, "plan": "content/towns/town-millcross.json", "why": "canon §4: the literal hub — every road elsewhere passes through or near it; the mill, race and ford are all river facts" },
-    { "id": "c-town-gildmark",    "kind": "town", "continent": "c02", "at": [83.2, 160.4], "rank": "capital", "requires": { "landform": "coastal-drowned-valley", "water": { "kind": "sea", "shelterFetchKmMax": 15, "minDepthM": 12 }, "slopeMax": 0.06, "freshWaterWithinKm": 4 }, "plan": "content/towns/town-gildmark.json", "why": "canon §4: the only deepwater port on this coast and the land's only door to the sea" },
+    { "id": "c-town-gildmark",    "kind": "town", "continent": "c02", "at": [83.2, 160.4], "rank": "capital", "requires": { "landform": "coastal-drowned-valley", "water": { "kind": "sea", "shelterFetchKmMax": 15, "minDepthM": 12 }, "slopeMax": 0.06, "freshWaterWithinKm": 4 }, "plan": null, "why": "canon §4: the only deepwater port on this coast and the land's only door to the sea. plan: null per E-C9 — a town plan joins by spineId, so authoring town-gildmark.json would force a tier:\"town\" node into the trunk and red Plan C Task 10's 36-file census" },
     { "id": "c-town-rooktide",    "kind": "town", "continent": "c02", "at": [98.0, 163.5], "rank": "hub",     "requires": { "landform": "lake-terrace", "water": { "kind": "lake" }, "slopeMax": 0.06, "freshWaterWithinKm": 3 }, "plan": null, "why": "canon §4: sits inland, south of Millcross, off the direct war road entirely — a terrace above the inland sea, which is why it has fresh water and no harbour" },
     { "id": "c-town-cindervast",  "kind": "town", "continent": "c02", "at": [90.2, 131.4], "rank": "hub",     "requires": { "landform": "alluvial-fan", "water": { "kind": "none" }, "slopeMax": 0.07, "freshWaterWithinKm": 5 }, "plan": null, "why": "canon §4: the fallen city beyond Ashvale Front to the north-west, on the stony fan both war towns avoid" },
     { "id": "c-town-embervale",   "kind": "town", "continent": "c02", "at": [89.7, 147.9], "rank": "hub",     "requires": { "landform": "river-terrace", "water": { "kind": "river" }, "slopeMax": 0.05, "freshWaterWithinKm": 1 }, "plan": null, "why": "canon §4: sister town on one side of the river, paired with Norhollow" },
     { "id": "c-town-norhollow",   "kind": "town", "continent": "c02", "at": [96.8, 147.7], "rank": "hub",     "requires": { "landform": "river-terrace", "water": { "kind": "river" }, "slopeMax": 0.05, "freshWaterWithinKm": 1 }, "plan": null, "why": "canon §4: the other sister town; its outer farms border Cindervast's ruin districts" },
-    { "id": "c-town-tallowquay",  "kind": "town", "continent": "c03", "at": [252, 128],    "rank": "capital", "requires": { "landform": "coastal-drowned-valley", "water": { "kind": "sea", "shelterFetchKmMax": 15, "minDepthM": 12 }, "slopeMax": 0.06, "freshWaterWithinKm": 4 }, "plan": "content/towns/town-tallowquay.json", "why": "A2 §2: one of the two charted foreign lane termini — capital tier costs zero new canon" },
-    { "id": "c-town-netstead",    "kind": "town", "continent": "c04", "at": [274, 262],    "rank": "capital", "requires": { "landform": "coastal-drowned-valley", "water": { "kind": "sea", "shelterFetchKmMax": 15, "minDepthM": 12 }, "slopeMax": 0.06, "freshWaterWithinKm": 4 }, "plan": "content/towns/town-netstead.json", "why": "A2 §2: the other charted lane terminus, on the drowned karst coast" },
+    { "id": "c-town-tallowquay",  "kind": "town", "continent": "c03", "at": [252, 128],    "rank": "capital", "requires": { "landform": "coastal-drowned-valley", "water": { "kind": "sea", "shelterFetchKmMax": 15, "minDepthM": 12 }, "slopeMax": 0.06, "freshWaterWithinKm": 4 }, "plan": null, "why": "A2 §2: one of the two charted foreign lane termini — capital tier costs zero new canon. plan: null per E-C9, same census argument as Gildmark" },
+    { "id": "c-town-netstead",    "kind": "town", "continent": "c04", "at": [274, 262],    "rank": "capital", "requires": { "landform": "coastal-drowned-valley", "water": { "kind": "sea", "shelterFetchKmMax": 15, "minDepthM": 12 }, "slopeMax": 0.06, "freshWaterWithinKm": 4 }, "plan": null, "why": "A2 §2: the other charted lane terminus, on the drowned karst coast. plan: null per E-C9, same census argument as Gildmark" },
 
     { "id": "c-lm-thornveil",            "kind": "landmark", "continent": "c02", "at": [105.4, 155.0], "requires": { "landform": "carr-thicket" },      "why": "canon §4: Thornveil's bramble forest lies east of Millcross — carr is exactly wet bramble thicket" },
     { "id": "c-lm-northern-icefield",    "kind": "landmark", "continent": "c02", "at": [103.4, 132.6], "requires": { "landform": "outlet-glacier" },   "why": "canon §4: the Stoneguard's detached watch keeps the old trade road here" },
@@ -1939,19 +2040,19 @@ Create `content/world/civil/pinned-roster.json`. It is the authoring table — 4
     { "id": "c-lm-emberdown",            "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "river-terrace" },    "why": "A1 §4: Embervale's downland, the dry bench above the river" },
     { "id": "c-lm-hollowmarch",          "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "peat-hag" },         "why": "A1 §4: the smallest surveyed ground in the basin — a peat hollow" },
     { "id": "c-lm-meltwash-terrace",     "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "river-terrace", "water": { "kind": "river" } }, "why": "A1 §4.2: the last drained ground before the crossing" },
-    { "id": "c-lm-millcross-ford",       "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "braided-channel", "water": { "kind": "river" } }, "why": "canon §4: the only cart-crossing of the river that splits the land — a braided reach is where a river IS fordable" },
-    { "id": "c-lm-gildmark-head",        "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "marine-terrace", "water": { "kind": "sea" } }, "why": "A1 §4: the head above Gildmark's roads" },
+    { "id": "c-lm-millcross-ford",       "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "ford", "water": { "kind": "river" } }, "why": "canon §4: the only cart-crossing of the river that splits the land. `ford` (D-B4), not `braided-channel`: the braided reach is a LINE of river,scree bars, and what canon names is the crossing POINT on it — `confluence-bench` is a bank, not a crossing, which is why no 164-row id fit" },
+    { "id": "c-lm-gildmark-head",        "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "headland", "water": { "kind": "sea" } }, "why": "A1 §4: the head above Gildmark's roads. `headland` (D-B4), not `marine-terrace`: both are coastal rock,meadow areas, but a terrace is a flat bench and this is the cliffed promontory the coast road goes over — `headland`'s slopeMin 0.04 is the difference" },
     { "id": "c-lm-rooktide-reach",       "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "endorheic-lake" },   "why": "A1 §4: Rooktide's reach — an inland basin with no outlet, which is what an inland sea's arm is" },
-    { "id": "c-lm-peatrun-coast",        "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "blanket-mire", "water": { "kind": "sea" } }, "why": "A1 §4: the peat shore south of the roads" },
     { "id": "c-lm-the-saltmire",         "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "tidal-mire" },       "why": "A1 §4: the mire the trade road bends around" },
     { "id": "c-lm-eastern-hills",        "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "spur-ridge" },       "why": "A1 §4: the eastern rise behind Thornveil" },
     { "id": "c-lm-expedition-camp",      "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "confluence-bench" }, "why": "canon §4: Millcross's expedition camp, on the road north to the icefield" },
-    { "id": "c-lm-the-meltwash-mouth",   "kind": "landmark", "continent": "c02", "at": null,           "requires": { "landform": "estuary", "water": { "kind": "sea" } }, "why": "A1 §4: where the Meltwash reaches the sea" },
+    { "id": "c-lm-the-meltwash-mouth",   "kind": "landmark", "continent": "c02", "at": [88.5, 166.0],  "requires": { "landform": "estuary", "water": { "kind": "sea" } }, "why": "A1 §4: \"the Meltwash from the ice to the mire\" — the river's seaward end. NO spine node exists for it, so this `at` is a literal, 2.9 km from the translated Saltmire and t=0.184 inside c02's ellipse; it is not derived from Step 1 and must not be" },
 
     { "id": "c-lm-the-ice-divide",        "kind": "landmark", "continent": "c01", "at": [200, 34],  "requires": { "landform": "ice-divide" },        "why": "A2 §1: one ice divide shedding outlet glaciers to every quarter; no rivers" },
     { "id": "c-lm-rimewall-margin",       "kind": "landmark", "continent": "c01", "at": [200, 56],  "requires": { "landform": "moraine-terminal" },  "why": "A2 §1: the margin the Tarnmark charts stop at" },
     { "id": "c-lm-coldreach-shore",       "kind": "landmark", "continent": "c03", "at": [250, 120], "requires": { "landform": "wave-cut-platform", "water": { "kind": "sea" } }, "why": "canon §4: Coldreach is the far end of the trade wind; the shore is what masters log" },
     { "id": "c-lm-the-trade-wind-landfall","kind": "landmark","continent": "c03", "at": [246, 100], "requires": { "landform": "marine-terrace", "water": { "kind": "sea" } }, "why": "canon §4: six days out, the first land a master sights" },
+    { "id": "c-lm-peatrun-coast",         "kind": "landmark", "continent": "c03", "at": [262, 150], "requires": { "landform": "blanket-mire", "water": { "kind": "sea" } }, "why": "A2 §2: \"The far run of coast where the Peatrun stains the sea brown a mile out, or so the wreck-reports swear.\" The committed spine node n-peatrun-coast is a child of n-coldreach, NOT of n-cluster1 — A1 (the basin) contains no peat at all — so this row is c03 with a literal `at` (t=0.840 inside Coldreach) and is never translated by PIN_OFFSET" },
     { "id": "c-lm-stonemoor-shore",       "kind": "landmark", "continent": "c04", "at": [272, 250], "requires": { "landform": "limestone-pavement", "water": { "kind": "sea" } }, "why": "A2 §3: sea level cuts through a limestone pavement" },
     { "id": "c-lm-slateflow-sink",        "kind": "landmark", "continent": "c04", "at": [306, 246], "requires": { "landform": "sinking-river" },     "why": "A2 §3: the Slateflow is a sinking river on a drowned plateau" },
     { "id": "c-lm-the-drowned-pavement",  "kind": "landmark", "continent": "c04", "at": [296, 282], "requires": { "landform": "limestone-pavement", "water": { "kind": "sea" } }, "why": "A2 §3: nothing sworn beyond the shore" },
@@ -1962,7 +2063,7 @@ Create `content/world/civil/pinned-roster.json`. It is the authoring table — 4
     { "id": "c-lm-driftholt-fog-forest",  "kind": "landmark", "continent": "c07", "at": [46, 92],   "requires": { "landform": "swamp-forest" },      "why": "A2 §6: fog forest on a windward slope — the wettest ground in the world" },
     { "id": "c-lm-wracklow-stacks",       "kind": "landmark", "continent": "c08", "at": [236, 344], "requires": { "landform": "sea-stack", "water": { "kind": "sea" } }, "why": "A2 §7: an entirely erosional coast — stacks, arches, geos, blowholes" },
     { "id": "c-lm-the-blowhole-coast",    "kind": "landmark", "continent": "c08", "at": [262, 352], "requires": { "landform": "blowhole", "water": { "kind": "sea" } }, "why": "A2 §7: no river reaches the sea intact" },
-    { "id": "c-lm-brightfall-leap",       "kind": "landmark", "continent": "c09", "at": [352, 196], "requires": { "landform": "knickpoint-gorge", "water": { "kind": "sea" } }, "why": "A2 §8: cliff-hung waterfalls straight into the sea" },
+    { "id": "c-lm-brightfall-leap",       "kind": "landmark", "continent": "c09", "at": [352, 196], "requires": { "landform": "sea-waterfall", "water": { "kind": "sea" } }, "why": "A2 §8: cliff-hung waterfalls straight into the sea. `sea-waterfall` (D-B4), not `knickpoint-gorge`: the gorge's biomes are river,rock and its requires block is nearFlag RIVER, so it can never be satisfied at a cell that also satisfies water.kind sea — a G-PIN-SAT failure by construction. This is the exact unsatisfiable-coastal-pin the addition exists to prevent" },
     { "id": "c-lm-fumewater-cone",        "kind": "landmark", "continent": "c10", "at": [122, 356], "requires": { "landform": "stratocone" },        "why": "A2 §9: the volcanic arc — a strung line of cones, calderas, lava tubes" },
     { "id": "c-lm-quillreef-ring",        "kind": "landmark", "continent": "c11", "at": [338, 66],  "requires": { "landform": "atoll", "water": { "kind": "sea" } }, "why": "A2 §10: an atoll ring — every settlement a port, no interior" },
     { "id": "c-lm-skerryfast-fjord",      "kind": "landmark", "continent": "c12", "at": [254, 44],  "requires": { "landform": "fjord", "water": { "kind": "sea" } }, "why": "A2 §11: drowned glacial valleys — fjord, skerry, roche moutonnee" },
@@ -1971,11 +2072,15 @@ Create `content/world/civil/pinned-roster.json`. It is the authoring table — 4
 }
 ```
 
-**Only four rows carry a non-null `plan`**, and that is decision D2's default made explicit: *3 capitals' plans now, 5 deferred*. `town-millcross.json` exists today; `town-gildmark.json`, `town-tallowquay.json` and `town-netstead.json` are authored by Plan E's Task 8, together with the three town-tier spine nodes their `spineId` joins need. The other four hub rows carry `"plan": null` — a `plan` pointing at a file nobody writes is worse than an honest null, because `check_content.mjs:1192`'s T1 join reads it. Plan C's manifest keeps `quotas.townPlans: 8` as the target and `G-WORLD-BUDGET` prints `world-budget: town-plans 4 authored / 8 quota` every run so the debt stays visible instead of silently closing.
+**Exactly ONE row carries a non-null `plan`** — Millcross, the only town plan committed today. The other seven town rows carry `"plan": null`, because a `plan` pointing at a file nobody writes is worse than an honest null: `check_content.mjs:1192`'s T1 join reads it.
 
-The twelve `"at": null` rows are filled from Step 1's printed output before the file is committed — they are the committed `lore.labelAt` of the corresponding spine node plus `PIN_OFFSET`, and Step 3's expansion refuses to run while any `at` is null.
+That is **E-C9**, and it overrides D2's taken default of *"3 capitals' plans now, 5 deferred"*. The argument is a census one, not an appetite one. A town plan joins the world by `spineId`, so each plan needs a `tier: "town"` spine node — and the trunk census Plan C owns budgets exactly **one** (`n-millcross`, the host of the one committed plan). Authoring `town-gildmark.json`, `town-tallowquay.json` and `town-netstead.json` would force `n-gildmark`, `n-tallowquay` and `n-netstead` into the trunk, making the census **39** and reddening Plan C Task 10's `readdirSync(draftNodes).length === 36` assertion on the plan-authoring commit. **No plan in this programme authors a file under `content/towns/`** — Plan E's Task 8 builds the 13 continent sheets, not town plans.
 
-- [ ] **Step 3: Expand the roster into 40 records**
+Plan C's manifest keeps `quotas.townPlans: 8` as the **target**, and `G-WORLD-BUDGET` prints `world-budget: town-plans 1 authored / 8 quota` every run so the shortfall stays a visible number rather than a silently-closed claim. Raising it is a future release: one plan, one node, one census line, one reviewed commit — the mechanism is written into `content/spine/trunk-census.json`'s `why.town`.
+
+The ten `"at": null` rows are filled from Step 1's printed output before the file is committed — they are the committed `lore.labelAt` of the corresponding **`n-cluster1`-child** spine node plus `PIN_OFFSET`, and Step 3's expansion refuses to run while any `at` is null. The two rows that have no `n-cluster1`-child node to translate already carry literals above, for the reasons written into their `why`: `c-lm-the-meltwash-mouth` (c02, no spine node exists) and `c-lm-peatrun-coast` (c03 — its spine node is a child of `n-coldreach`).
+
+- [ ] **Step 3: Expand the roster into 41 records**
 
 Run:
 
@@ -2007,7 +2112,7 @@ for (const r of roster.rows) {
 console.log("wrote", roster.rows.length, "pinned records");
 '
 ```
-Expected: `wrote 40 pinned records`.
+Expected: `wrote 41 pinned records`.
 
 Then hand-correct the eight town titles and the canon landmark titles to their canon spelling (`Millcross`, `Gildmark`, `Rooktide`, `Cindervast`, `Embervale`, `Norhollow`, `Tallowquay`, `Netstead`, `Thornveil`, `Northern Icefield`, `Ashvale Front`, `Emberdown`, `Hollowmarch`, `Meltwash Terrace`, `Millcross Ford`, `Gildmark Head`, `Rooktide Reach`, `Peatrun Coast`, `The Saltmire`, `Eastern Hills`, `Expedition Camp`, `The Meltwash`) and add `"properties": ["deepwater-port"]` + `"coasts": ["wealdmarch-west"]` to Gildmark, `"coasts": ["coldreach-north"]` to Tallowquay, `"coasts": ["stonemoor-north"]` to Netstead. Every one of those titles is already in `reserved.json`.
 
@@ -2113,7 +2218,7 @@ and in `checkWorldCivil`: `for (const p of gPinSat({ world })) fail(p);`
 Run: `node --test --test-name-pattern "G-PIN-SAT" 'scripts/tests/*.test.mjs'`
 Expected: PASS — 4 tests.
 
-- [ ] **Step 8: Validate the 40 committed records against the schema**
+- [ ] **Step 8: Validate the 41 committed records against the schema**
 
 Run:
 ```bash
@@ -2132,13 +2237,13 @@ console.log(`${n} pinned records, ${bad} schema-invalid`);
 node scripts/check_content.mjs --only=spine
 (cd colyseus-server && npm test -- mapDimensions)
 ```
-Expected: `40 pinned records, 0 schema-invalid`. `check_content.mjs --only=spine` will now print `world-civil: 40 pinned, 0 bound, 0 relations, 0 handles` and **fail** with 40 `G-PIN-SAT: ... requires.receipt = present but fabric has none` lines — that is correct and expected until Task 10 wires the generator. Record the exact count in the phase report.
+Expected: `41 pinned records, 0 schema-invalid`. `check_content.mjs --only=spine` will now print `world-civil: 41 pinned, 0 bound, 0 relations, 0 handles` and **fail** with 41 `G-PIN-SAT: ... requires.receipt = present but fabric has none` lines — that is correct and expected until Task 10 wires the generator. Record the exact count in the phase report.
 
 - [ ] **Step 9: Commit**
 
 ```bash
 git add content/world/civil scripts/lib/resolve.mjs scripts/tests
-git commit -m "feat: 40 pinned places and G-PIN-SAT"
+git commit -m "feat: 41 pinned places and G-PIN-SAT"
 git branch --show-current && git log --oneline -1
 ```
 
@@ -2146,7 +2251,7 @@ git branch --show-current && git log --oneline -1
 
 Reviewer brief:
 
-> Review `git diff HEAD~1` against spec §5.2, §7.3 P11 and §9.4. Attack: (a) verify the translation rule arithmetically — compute `sqrt((152.2-137.2)^2 + (174.6-182.4)^2)` and compare against `e-leg-millcross-gildmark`'s committed `straightKm: 17` and `G-CANON-LEG`'s +/-8%; do the same for `e-leg-cindervast-rooktide` (34 km). (b) Do all 40 `pin.at` values lie inside the frame `[0,400]^2` and inside their declared premise footprint per the Domain primer's centre + radius table? (c) Does `gPinSat` compare `undefined <= 0.06` anywhere — a missing measurement must be a failure, not a silent pass. (d) Is the failure message identical in shape to the spec's representative message?
+> Review `git diff HEAD~1` against spec §5.2, §7.3 P11 and §9.4. Attack: (a) verify the translation rule arithmetically — compute `sqrt((152.2-137.2)^2 + (174.6-182.4)^2)` and compare against `e-leg-millcross-gildmark`'s committed `straightKm: 17` and `G-CANON-LEG`'s +/-8%; do the same for `e-leg-cindervast-rooktide` (34 km). (b) Do all 41 `pin.at` values lie inside the frame `[0,400]^2` and inside their declared premise footprint per the Domain primer's centre + radius table? Independently: does any row translate a spine node whose `parentId` is not `n-cluster1`? (c) Does `gPinSat` compare `undefined <= 0.06` anywhere — a missing measurement must be a failure, not a silent pass. (d) Is the failure message identical in shape to the spec's representative message?
 
 - [ ] **Step 11: Refactor on the findings, then re-verify**
 
@@ -2162,8 +2267,8 @@ Ordinal role ranks are what the design cut: "the largest karst group" resolves c
 - Create: `tools/mapforge/scaffold-civil.mjs`
 - Create: `content/world/civil/bound/*.json` (336 files)
 - Create: `scripts/tests/fixtures/world/g-handle-band-oversize/**`
-- Modify: `scripts/lib/resolve.mjs` (add `gHandleBand`, call from `checkWorldCivil`)
-- Modify: `scripts/tests/resolve.test.mjs`
+- Modify: `scripts/lib/resolve.mjs` (append `gHandleBand`, call from `checkWorldCivil`; created in Task 2)
+- Modify: `scripts/tests/resolve.test.mjs` (append, created in Task 2)
 - Test: `tools/mapforge/tests/scaffold-civil.test.mjs`
 
 **Interfaces:**
@@ -2445,11 +2550,11 @@ test("G-HANDLE-BAND red: the resolved type is not the type the record expects", 
   const dir = worldFixture();
   const p = join(dir, "world/handles/continent-02.json");
   const led = JSON.parse(readFileSync(p, "utf8"));
-  led.handles.find((h) => h.handle === "c02/karst/h-0f42").type = "salt-pan";
+  led.handles.find((h) => h.handle === "c02/karst/h-0f42").type = "salt-pan-crust";
   writeFileSync(p, JSON.stringify(led, null, 2) + "\n");
   const problems = gHandleBand({ world: loadCivil({ contentRoot: dir }) });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /expects type "karst-cenote" but the handle resolves to "salt-pan"/);
+  assert.match(problems[0], /expects type "karst-cenote" but the handle resolves to "salt-pan-crust"/);
 });
 ```
 
@@ -2495,7 +2600,7 @@ ls content/world/civil/bound | wc -l
 node scripts/check_content.mjs --only=spine
 (cd colyseus-server && npm test -- mapDimensions)
 ```
-Expected: the dry run reports `336 written`; the real run writes them; `ls | wc -l` prints `336`; the gate prints `world-civil: 40 pinned, 336 bound, ...`. `G-PIN-SAT` still reports its 40 receipt failures until Task 10 — record the count and confirm it has not grown.
+Expected: the dry run reports `336 written`; the real run writes them; `ls | wc -l` prints `336`; the gate prints `world-civil: 41 pinned, 336 bound, ...`. `G-PIN-SAT` still reports its 41 receipt failures until Task 10 — record the count and confirm it has not grown.
 
 - [ ] **Step 9: Commit**
 
@@ -2528,8 +2633,8 @@ Making a dungeon a spine node would drag its area into the composition rollup an
 - Create: `scripts/lib/dungeons.mjs`
 - Create: `scripts/tests/dungeons.test.mjs`
 - Create: `scripts/tests/fixtures/world/g-dungeon-reach-uncapable/**`, `.../g-dungeon-reach-far/**`
-- Modify: `tools/mapforge/scaffold-civil.mjs` (the `--dungeons` branch)
-- Modify: `scripts/lib/resolve.mjs` (call `gDungeonReach` from `checkWorldCivil`)
+- Modify: `tools/mapforge/scaffold-civil.mjs` (append the `--dungeons` branch; created in Task 5)
+- Modify: `scripts/lib/resolve.mjs` (call `gDungeonReach` from `checkWorldCivil`; created in Task 2)
 
 **Interfaces:**
 - Consumes: Plan B's lexicon `dungeonCapable`; Plan C's fabric `regions[].adjacent` and `regions[].settlements`.
@@ -2548,7 +2653,7 @@ Create `scripts/tests/dungeons.test.mjs`:
 ```js
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadDungeons, expandFamily, gDungeonReach, dungeonDensityLines } from "../lib/dungeons.mjs";
@@ -2585,6 +2690,30 @@ test("no dungeon is a spine node", () => {
   for (const d of dungeons) assert.equal(nodeIds.has("n-" + d.id.replace(/^dungeon-/, "")), false);
 });
 
+test("every entranceType — on a family and on a record — is a dungeonCapable LEXICON id", () => {
+  // The namespace trap this catches: `cave`, `sinkhole` and `gorge` read as
+  // English but are not lexicon ids (the real rows are `cave-system`,
+  // `sinkhole-doline`, `knickpoint-gorge`), and `karst-plateau` / `sand-sea` /
+  // `fjordland` / `cloud-forest` are TERRAIN KINDS, not landform types.
+  // scaffoldDungeons matches family.entranceTypes against ledger handle TYPES,
+  // so a string outside the lexicon silently matches nothing: eight family
+  // members go unminted and the only symptom is a short corpus.
+  const lexPath = join(ROOT, "content/world/lexicon/landforms.json");
+  if (!existsSync(lexPath)) return;                       // Plan B not merged: skip
+  const capable = new Set(JSON.parse(readFileSync(lexPath, "utf8"))
+    .filter((r) => r.dungeonCapable === true).map((r) => r.id));
+  assert.equal(capable.size, 23, "Plan B ships exactly 23 dungeonCapable types");
+
+  const { families, dungeons } = loadDungeons({ contentRoot: join(ROOT, "content") });
+  const bad = [];
+  for (const fam of families.values())
+    for (const t of fam.entranceTypes)
+      if (!capable.has(t)) bad.push(`${fam.id}.entranceTypes: "${t}"`);
+  for (const d of dungeons)
+    if (!capable.has(d.entranceType)) bad.push(`${d.id}.entranceType: "${d.entranceType}"`);
+  assert.deepEqual(bad, []);
+});
+
 test("G-DUNGEON-REACH is silent on the green fixture", () => {
   const dir = worldFixture();
   const world = loadCivil({ contentRoot: dir });
@@ -2607,7 +2736,41 @@ test("G-DUNGEON-REACH red: more than two region hops from any settlement", () =>
   const { dungeons } = loadDungeons({ contentRoot: dir });
   const p = gDungeonReach({ world, dungeons, lexicon: world.lexicon });
   assert.equal(p.length, 1);
-  assert.match(p[0], /^G-DUNGEON-REACH: dungeon-fumewater-tube nearest settlement is Infinity region hops \(max 2\)$/);
+  assert.match(p[0], /^G-DUNGEON-REACH: dungeon-fumewater-tube nearest settlement is 4 region hops \(max 2\)$/);
+});
+
+test("G-DUNGEON-REACH red: unreachable reads DIFFERENTLY from merely far", () => {
+  // "4 hops" and "no settled region at any distance" are different bugs — one
+  // is a placement to move, the other is a continent with no settlement — so
+  // they get different sentences. `null` is Plan C's serialisation of the
+  // unreachable case; there is no Infinity in JSON and the gate must never
+  // print one.
+  const dir = worldFixture();
+  const p = join(dir, "world/fabric/continent-10.json");
+  const doc = JSON.parse(readFileSync(p, "utf8"));
+  doc.dungeonAnchors[0].hopsToSettlement = null;
+  writeFileSync(p, JSON.stringify(doc, null, 2) + "\n");
+  const world = loadCivil({ contentRoot: dir });
+  const { dungeons } = loadDungeons({ contentRoot: dir });
+  const problems = gDungeonReach({ world, dungeons, lexicon: world.lexicon });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /^G-DUNGEON-REACH: dungeon-fumewater-tube has no settled region reachable at any distance$/);
+});
+
+test("G-DUNGEON-REACH red: a ledger handle with no dungeonAnchors row names the generator", () => {
+  // The failure mode this replaces: reading `?? Infinity` and reporting an
+  // unreachable dungeon when the real defect is that the generator never
+  // anchored it. A missing anchor is a GENERATOR bug and says so.
+  const dir = worldFixture();
+  const p = join(dir, "world/fabric/continent-10.json");
+  const doc = JSON.parse(readFileSync(p, "utf8"));
+  doc.dungeonAnchors = [];
+  writeFileSync(p, JSON.stringify(doc, null, 2) + "\n");
+  const world = loadCivil({ contentRoot: dir });
+  const { dungeons } = loadDungeons({ contentRoot: dir });
+  const problems = gDungeonReach({ world, dungeons, lexicon: world.lexicon });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /has no dungeonAnchors row in the fabric — re-run the generator/);
 });
 
 test("density is REPORTED, never failed", () => {
@@ -2625,11 +2788,15 @@ test("the gate wires G-DUNGEON-REACH into --only=spine", () => {
 });
 ```
 
-Add to `scripts/tests/fixtures/world/base/dungeons/`: `families/family-catacomb.json` and two records `dungeon-drowned-stair.json` (bound to `c02/karst/h-0f42`) and `dungeon-fumewater-tube.json` (bound to `c10/volcanic/h-3c9d`). Overlay `g-dungeon-reach-uncapable` adds `dungeon-shallow-ria.json` bound to `c02/coastal/h-a1b2`. Overlay `g-dungeon-reach-far` replaces `continent-10.json`'s region with one whose `adjacent` is `[]` and whose continent has no settlement at all.
+Add to `scripts/tests/fixtures/world/base/dungeons/`: `families/family-catacomb.json` and two records `dungeon-drowned-stair.json` (bound to `c02/karst/h-0f42`, `entranceType` `karst-cenote`) and `dungeon-fumewater-tube.json` (bound to `c10/volcanic/h-3c9d`, `entranceType` `lava-tube`). Both handles already have a `dungeonAnchors` row in the base fabric above — a dungeon whose handle has no anchor row is its own named failure, so the green fixture must supply one.
+
+Overlay `g-dungeon-reach-uncapable` adds **two** files: `dungeons/dungeon-shallow-ria.json` bound to `c02/coastal/h-a1b2` (a `coastal-drowned-valley`, `dungeonCapable: false`) and nothing else — the anchor row for that handle is already in the base fabric, which is what keeps this overlay to exactly ONE problem instead of two.
+
+Overlay `g-dungeon-reach-far` is one file: a copy of `world/fabric/continent-10.json` with its single `dungeonAnchors` row's `hopsToSettlement` changed from `2` to `4`.
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `node --test --test-name-pattern "levelBand|60 complexes|spine node|G-DUNGEON-REACH|density" 'scripts/tests/*.test.mjs'`
+Run: `node --test --test-name-pattern "levelBand|60 complexes|spine node|entranceType|G-DUNGEON-REACH|density" 'scripts/tests/*.test.mjs'`
 Expected: FAIL with `Cannot find module '.../scripts/lib/dungeons.mjs'`.
 
 - [ ] **Step 3: Write the two schemas**
@@ -2683,11 +2850,45 @@ Create `content/schemas/dungeon.schema.json`:
     "floors": { "type": "integer", "minimum": 1, "maximum": 12 },
     "levelBand": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 1, "maximum": 80 } },
     "hazards": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "roomCountCurve": { "type": "array", "minItems": 1, "items": { "type": "integer", "minimum": 1 } },
     "note": { "type": "string" },
+    "prose": { "type": "string", "enum": ["authored", "frontier"] },
+    "lore": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "note": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["authored", "generator"],
+      "additionalProperties": false,
+      "properties": {
+        "authored": { "type": "string", "enum": ["hand", "generated"] },
+        "generator": { "type": ["object", "null"] }
+      }
+    },
     "spineId": { "type": "null" }
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "family": { "type": "null" } }, "required": ["family"] },
+      "then": {
+        "not": { "required": ["familyIndex"] },
+        "required": ["roomCountCurve", "lore", "prose", "provenance"]
+      }
+    },
+    {
+      "if": { "properties": { "family": { "type": "string" } }, "required": ["family"] },
+      "then": { "required": ["familyIndex"] }
+    }
+  ]
 }
 ```
+
+**The `allOf` is the half a prose enumeration would have lost.** A bespoke record (`family: null`) carries its own `roomCountCurve`, `lore`, `prose` and `provenance` and must NOT carry `familyIndex` — that key only means something relative to a template. A family member is the mirror image: `familyIndex` is required, and the four bespoke-only keys come from the template rather than the file. Without the conditional, `additionalProperties: false` alone lets a member carry a stray `familyIndex: 0` alongside `family: null` and calls it valid.
 
 - [ ] **Step 4: Write the three families**
 
@@ -2702,7 +2903,7 @@ Create `content/dungeons/families/family-catacomb.json`:
   "hazards": ["bad-air", "collapse", "grave-damp"],
   "roomCountCurve": [8, 12, 9],
   "levelBand": { "base": 18, "step": 3, "span": 6 },
-  "entranceTypes": ["karst-cenote", "karst-fenster", "cave", "sinkhole"]
+  "entranceTypes": ["karst-cenote", "karst-fenster", "cave-system", "sinkhole-doline"]
 }
 ```
 
@@ -2717,7 +2918,7 @@ Create `content/dungeons/families/family-necropolis.json`:
   "hazards": ["grave-damp", "cold", "silence"],
   "roomCountCurve": [10, 14, 11],
   "levelBand": { "base": 30, "step": 3, "span": 6 },
-  "entranceTypes": ["ponor", "foiba", "cave", "gorge"]
+  "entranceTypes": ["ponor", "foiba", "cave-system", "knickpoint-gorge"]
 }
 ```
 
@@ -2900,7 +3101,7 @@ and extend the CLI block with `if (process.argv.includes("--dungeons")) { ... }`
 
 Run `node tools/mapforge/scaffold-civil.mjs --dungeons` (writes 24).
 
-Then author the 36 bespoke records from **this table** — it is the deliverable, not a guideline. The floors column sums to **118**, exactly three rows are the mega-dungeons at 7, 9 and 12 floors, every `entranceType` is one of the 23 `dungeonCapable` ids in `content/world/lexicon/landforms.json`, and every `levelBand` is one of the nine rings from Gildmark, so `G-BAND`'s "every dungeon band overlaps its host region's" holds by construction rather than by luck.
+Then author the 36 bespoke records from **this table** — it is the deliverable, not a guideline. The floors column sums to **118**, exactly three rows are the mega-dungeons at 7, 9 and 12 floors, every `entranceType` is one of the 23 `dungeonCapable` ids in `content/world/lexicon/landforms.json`, and every `levelBand` is **either one of the nine rings from Gildmark or its own continent's committed `levelBand`** from `content/world/premises/continent-NN.json` — the four that are the latter are `c07 [10, 36]`, `c08 [20, 52]`, `c09 [30, 56]` and `c10 [55, 80]`, because those four landmasses sit at a distance the ring ladder does not resolve finely enough to distinguish. Under either rule every row overlaps its continent's premise band, so `G-BAND`'s "every dungeon band overlaps its host region's" holds by construction rather than by luck. Check it with the one-liner below before committing; do **not** widen a band to make the check pass.
 
 | slug (`content/dungeons/dungeon-<slug>.json`) | continent | `entranceType` | floors | `levelBand` |
 |---|---|---|---:|---|
@@ -2929,7 +3130,7 @@ Then author the 36 bespoke records from **this table** — it is the deliverable
 | `thirstwold-slot-canyons` | c05 | `slot-canyon` | 3 | `[40, 58]` |
 | `thirstwold-yardang-hollows` | c05 | `yardang` | 2 | `[40, 58]` |
 | `erg-hoodoo-warren` | c05 | `hoodoo` | 3 | `[46, 64]` |
-| `one-wet-strip-undercuts` | c05 | `undercut-alcove` | 2 | `[32, 50]` |
+| `one-wet-strip-gorges` | c05 | `knickpoint-gorge` | 2 | `[32, 50]` |
 | `reedstrand-lobe-hollows` | c06 | `cave-system` | 2 | `[16, 30]` |
 | `reed-shallows-sea-caves` | c06 | `sea-cave` | 2 | `[16, 30]` |
 | `driftholt-fog-caverns` | c07 | `cave-system` | 3 | `[10, 36]` |
@@ -2975,18 +3176,39 @@ Verify continuously with:
 ```bash
 node -e '
 const {loadDungeons} = await import("./scripts/lib/dungeons.mjs");
+const fs = await import("node:fs");
 const {dungeons} = loadDungeons({contentRoot: "content"});
 const bespoke = dungeons.filter(d=>d.family===null);
 console.log("complexes", dungeons.length, "floors", dungeons.reduce((n,d)=>n+d.floors,0),
             "bespoke", bespoke.length, "bespoke floors", bespoke.reduce((n,d)=>n+d.floors,0),
-            "mega", bespoke.filter(d=>d.floors>=7).length);' --input-type=module
+            "mega", bespoke.filter(d=>d.floors>=7).length);
+
+// entranceType is a dungeonCapable LEXICON id, never an English word and never
+// a terrainKind: `cave`, `sinkhole`, `gorge`, `undercut-alcove` all read fine
+// and all match zero handles, which shows up only as a short corpus.
+const lex = JSON.parse(fs.readFileSync("content/world/lexicon/landforms.json","utf8"));
+const cap = new Set(lex.filter(r=>r.dungeonCapable).map(r=>r.id));
+console.log("dungeonCapable types", cap.size,
+            "bad entranceType", dungeons.filter(d=>!cap.has(d.entranceType)).map(d=>d.id));
+
+// every band overlaps its continent premise band
+const prem = Object.fromEntries(fs.readdirSync("content/world/premises")
+  .filter(f=>f.endsWith(".json"))
+  .map(f=>{const p=JSON.parse(fs.readFileSync("content/world/premises/"+f,"utf8")); return [p.id,p.levelBand];}));
+const led = Object.fromEntries(fs.readdirSync("content/world/handles")
+  .flatMap(f=>JSON.parse(fs.readFileSync("content/world/handles/"+f,"utf8")).handles.map(h=>[h.handle,h])));
+const off = dungeons.filter(d=>{
+  const c = (d.bind.handle||"").slice(0,3), b = prem[c];
+  return b && !(d.levelBand[0] <= b[1] && b[0] <= d.levelBand[1]);
+}).map(d=>d.id);
+console.log("bands off their continent", off);' --input-type=module
 ```
-Expected when complete: `complexes 60 floors 190 bespoke 36 bespoke floors 118 mega 3`.
+Expected when complete: `complexes 60 floors 190 bespoke 36 bespoke floors 118 mega 3`, then `dungeonCapable types 23 bad entranceType []`, then `bands off their continent []`.
 
 - [ ] **Step 8: Run test to verify it passes**
 
-Run: `node --test --test-name-pattern "levelBand|60 complexes|spine node|G-DUNGEON-REACH|density" 'scripts/tests/*.test.mjs'`
-Expected: PASS — 8 tests.
+Run: `node --test --test-name-pattern "levelBand|60 complexes|spine node|entranceType|G-DUNGEON-REACH|density" 'scripts/tests/*.test.mjs'`
+Expected: PASS — 11 tests.
 
 - [ ] **Step 9: Full verification**
 
@@ -3011,7 +3233,7 @@ git branch --show-current && git log --oneline -1
 
 Reviewer brief:
 
-> Review `git diff HEAD~1` against spec §5.8 and §8.3. Attack: (a) is the floor arithmetic actually 190, or does the test assert a number the corpus does not carry — recompute it from the files, not from the test. (b) `hopsToSettlement` walks a graph the fabric supplies; what does it return when `adjacent` is missing rather than empty, and is that the right answer? (c) Does `dungeonDensityLines` print on EVERY run, including a run with zero dungeons? Should it? (d) Can `scaffoldDungeons` assign the same handle to two families across separate invocations, given `taken` is rebuilt per run? (e) Do all 60 records validate against `dungeon.schema.json` — run ajv over the directory and paste the count.
+> Review `git diff HEAD~1` against spec §5.8 and §8.3. Attack: (a) is the floor arithmetic actually 190, or does the test assert a number the corpus does not carry — recompute it from the files, not from the test. (b) `gDungeonReach` READS `dungeonAnchors[].hopsToSettlement` rather than re-walking the region graph. Confirm Plan C's `anchorDungeons` emits one row per anchored handle and serialises the unreachable case as `null` (never `Infinity`, which JSON cannot carry); then confirm the three distinct sentences — missing row, `null`, `> 2` — each have a test, because collapsing them is how a generator bug gets reported as a placement bug. (c) Does `dungeonDensityLines` print on EVERY run, including a run with zero dungeons? Should it? (d) Can `scaffoldDungeons` assign the same handle to two families across separate invocations, given `taken` is rebuilt per run? (e) Do all 60 records validate against `dungeon.schema.json` — run ajv over the directory and paste the count.
 
 Apply findings as a NEW commit and re-run Step 9. End with `git branch --show-current && git log --oneline -1`.
 
@@ -3026,24 +3248,42 @@ The join is the moment fabric and civil become one document. Decision D5 is take
 - Create: `scripts/check_resolved.mjs`
 - Create: `tools/asset-storybook/world-index.json`
 - Create: `tools/asset-storybook/tests/world-index.test.mjs`
-- Modify: `scripts/lib/resolve.mjs` (add `resolveCivil`)
-- Modify: `scripts/tests/resolve.test.mjs`
-- Modify: `tools/asset-storybook/js/maps.mjs`
-- Modify: `scripts/integration.sh`, `.github/workflows/ci.yml`
+- Modify: `scripts/lib/resolve.mjs` (append `resolveCivil` and `gZoneOrder`, created in Task 2)
+- Modify: `scripts/tests/resolve.test.mjs` (append, created in Task 2)
+- Modify: `tools/asset-storybook/js/maps.mjs:17` (a `fetchJson`/`loadWorldIndex` pair beside `loadIndex`) and `:333` (the panel, immediately before `main.appendChild(section)`)
+- Modify: `tools/asset-storybook/js/state.mjs:94` (add `WORLD_INDEX_URL` beside `MAPS_INDEX_URL`)
+- Modify: `scripts/integration.sh:90` (the `resolved_drift` fn beside `spine_emit_drift`) and `:121` (its `run_section` line)
+- Modify: `.github/workflows/ci.yml:107-111` (the step beside `check_spine_emit --check`)
 
 **Interfaces:**
 - Consumes (Plan A): `scripts/lib/places.mjs`'s `WORLD_DOC_KEYS` and the `PlaceZone` / `PlaceTown` / `PlaceCamp` / `PlaceRoad` typedefs; `resolveWorld({ spine, tree, descriptor, fabric, civil })`. Plan A's `resolveWorld` keeps producing the single legacy-shaped doc; this task produces the **per-continent** `ResolvedWorld` that Task 11 feeds it.
 - Produces:
-  - `export function resolveCivil({ fabric, handles, civil }): { resolved: ResolvedWorld, problems: string[] }` where `ResolvedWorld = { continent, zones: PlaceZone[], towns: PlaceTown[], camps: PlaceCamp[], roads: PlaceRoad[], landmarks: [...], dungeons: [...], instances: [...], relay, distances, seaLane, sheet }`
+  - `export function resolveCivil({ fabric, handles, civil, dungeons }): { resolved: ResolvedWorld, problems: string[] }`
+  - `export const RESOLVED_KEYS: readonly string[]` — the **seventeen** keys, in the one order every consumer asserts. Key order is load-bearing (`canonStringify` serialises insertion order), so this constant is the single statement of it and the tests below deep-equal against it rather than re-typing the list:
+    ```js
+    ResolvedWorld = {
+      continent,
+      // the five GEOGRAPHIC keys — basin-sheet.mjs dereferences
+      // coastline.points (:181) and saltmire.polygon (:157, :249) and iterates
+      // terrainPatches (:151, :198, :210) UNCONDITIONALLY. They are derived
+      // from the fabric, never supplied by a civil record.
+      coastline, river, saltmire, iceEdge, terrainPatches,
+      zones: PlaceZone[], towns: PlaceTown[], camps: PlaceCamp[], roads: PlaceRoad[],
+      landmarks: [...], dungeons: [...], instances: [...],
+      relay, distances, seaLane, sheet,
+    }
+    ```
+  - `export function gZoneOrder({ resolvedByContinent }): string[]` — R3's dense-permutation clause over the REGION order. Plan C's `gWorldOrder` carries the same clause for the handle ledgers and **cannot** carry this one: `order` is minted here, onto the resolved zones, and `content/schemas/fabric-file.schema.json` is `additionalProperties: false` on `regions[]` without an `order` key, so a fabric region carrying one would be schema-invalid. Same rule, same message string, asserted against the documents that actually hold the field. Wired into `checkWorldCivil` in Task 8 Step 4, which is where `resolvedByContinent` is first built.
   - CLI `node scripts/check_resolved.mjs --write | --check`
   - `G-SLOT-STABLE` failure text: `G-SLOT-STABLE: content/world/resolved/continent-03.json differs from the recomputed join — a record rebound without a commit saying so`
+  - `G-ORDER` region failure text: `G-ORDER: c02 zone order is not a dense permutation of 0..2 — got [0, 1, 3]`
 
 - [ ] **Step 1: Write the failing test**
 
 Append to `scripts/tests/resolve.test.mjs`:
 
 ```js
-import { resolveCivil } from "../lib/resolve.mjs";
+import { resolveCivil, RESOLVED_KEYS, gZoneOrder } from "../lib/resolve.mjs";
 import { execFileSync } from "node:child_process";
 
 function worldParts(dir) {
@@ -3054,10 +3294,27 @@ function worldParts(dir) {
 test("resolveCivil emits every family in a fixed key order", () => {
   const { resolved, problems } = resolveCivil(worldParts(worldFixture()));
   assert.deepEqual(problems, []);
-  assert.deepEqual(Object.keys(resolved), [
-    "continent", "zones", "towns", "camps", "roads", "landmarks",
+  // The order is asserted against RESOLVED_KEYS, not against a re-typed list:
+  // one statement of a load-bearing order, and the literal below exists so a
+  // reviewer can see what that order IS without opening the module.
+  assert.deepEqual([...RESOLVED_KEYS], [
+    "continent", "coastline", "river", "saltmire", "iceEdge", "terrainPatches",
+    "zones", "towns", "camps", "roads", "landmarks",
     "dungeons", "instances", "relay", "distances", "seaLane", "sheet",
   ]);
+  assert.deepEqual(Object.keys(resolved), [...RESOLVED_KEYS]);
+});
+
+test("the five geographic keys are DERIVED, so basin-sheet.mjs cannot throw", () => {
+  // The failure this catches, concretely: emitting coastline/saltmire as null
+  // reintroduces the `TypeError: Cannot read properties of undefined` that
+  // Plan A Task 5 removed, and it surfaces two commits later as
+  // `render-sheet --sheet cluster1` dying and G-RENDER-LOCK going red.
+  const { resolved } = resolveCivil(worldParts(worldFixture()));
+  assert.ok(Array.isArray(resolved.coastline?.points), "coastline.points must be an array");
+  assert.ok(Array.isArray(resolved.saltmire?.polygon), "saltmire.polygon must be an array");
+  assert.ok(Array.isArray(resolved.terrainPatches), "terrainPatches must be an array");
+  for (const p of resolved.terrainPatches) assert.ok(Array.isArray(p.polygon));
 });
 
 test("a pinned town resolves to its pin, a bound landmark to its instance", () => {
@@ -3089,6 +3346,38 @@ test("a bound record whose handle has no instance is a problem, never a throw", 
   assert.equal(resolved.landmarks.length, 0);
 });
 
+test("gZoneOrder is green on a real resolveCivil output", () => {
+  const { resolved } = resolveCivil(worldParts(worldFixture()));
+  assert.deepEqual(gZoneOrder({ resolvedByContinent: { c02: resolved } }), []);
+});
+
+test("gZoneOrder reds on a gapped rank — the silent-disappearance failure R3 names", () => {
+  // Built by hand, not via a fixture overlay, and deliberately so: resolveCivil
+  // mints `order` as 0..n-1 by construction, so no input it accepts can produce
+  // a gap. The failure being guarded against is a LATER hand edit or a partial
+  // regeneration of a committed content/world/resolved/*.json — a surveyed zone
+  // vanishing while every other gate stays green.
+  const zones = [
+    { id: "c02/r01", survey: "surveyed", order: 0 },
+    { id: "c02/r02", survey: "surveyed", order: 1 },
+    { id: "c02/r03", survey: "surveyed", order: 3 },
+    { id: "c02/r04", survey: "reported", order: undefined },
+  ];
+  const problems = gZoneOrder({ resolvedByContinent: { c02: { continent: "c02", zones } } });
+  assert.equal(problems.length, 1);
+  assert.equal(problems[0],
+    "G-ORDER: c02 zone order is not a dense permutation of 0..2 — got [0, 1, 3]");
+});
+
+test("gZoneOrder ignores reported zones, which carry no order at all", () => {
+  const zones = [
+    { id: "c02/r01", survey: "surveyed", order: 0 },
+    { id: "c02/r02", survey: "reported" },
+    { id: "c02/r03", survey: "reported" },
+  ];
+  assert.deepEqual(gZoneOrder({ resolvedByContinent: { c02: { continent: "c02", zones } } }), []);
+});
+
 test("resolveCivil is a pure function of its inputs — same in, byte-same out", () => {
   const a = JSON.stringify(resolveCivil(worldParts(worldFixture())).resolved);
   const b = JSON.stringify(resolveCivil(worldParts(worldFixture())).resolved);
@@ -3115,8 +3404,8 @@ test("G-SLOT-STABLE: --write then --check is green, and a hand edit reds it", ()
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `node --test --test-name-pattern "resolveCivil|G-SLOT-STABLE|pinned town resolves" 'scripts/tests/*.test.mjs'`
-Expected: FAIL with `does not provide an export named 'resolveCivil'`.
+Run: `node --test --test-name-pattern "resolveCivil|G-SLOT-STABLE|pinned town resolves|geographic keys|gZoneOrder" 'scripts/tests/*.test.mjs'`
+Expected: FAIL with `does not provide an export named 'resolveCivil'` (the import of `gZoneOrder` from the same module fails in the same statement).
 
 - [ ] **Step 3: Write `resolveCivil`**
 
@@ -3274,7 +3563,7 @@ export function resolveCivil({ fabric, handles, civil, dungeons = [] }) {
   // ledgers, which left the region ordering with no total order at all after
   // the redraw. The rule is the SAME one the ledgers use — (-area, contentHash)
   // — so the programme has one ordering discipline, not two, and the result is
-  // a DENSE permutation of 0..n-1 that gWorldOrder re-checks.
+  // a DENSE permutation of 0..n-1 that gZoneOrder (below) re-checks.
   const surveyed = out.zones.filter((z) => z.survey === "surveyed");
   surveyed
     .map((z) => ({ z, key: [-z.areaKm2, hashOfZone(z)] }))
@@ -3282,6 +3571,30 @@ export function resolveCivil({ fabric, handles, civil, dungeons = [] }) {
     .forEach(({ z }, n) => { z.order = n; });
 
   return { resolved: out, problems };
+}
+
+// ── G-ORDER, region half ───────────────────────────────────────────────────
+// R3's third clause — the resulting order is a DENSE PERMUTATION of 0..n-1 —
+// applied to the REGION order. Plan C's gWorldOrder carries clauses (1)-(3)
+// for the handle ledgers and stops there on purpose: `order` is minted twenty
+// lines above this comment, onto the RESOLVED zones, and
+// content/schemas/fabric-file.schema.json is `additionalProperties: false` on
+// regions[] without an `order` key, so a fabric region can never legally carry
+// one. A gap here means a surveyed zone ceased to exist with every other gate
+// green — the live defect R3 names — so it is a FAIL, not a warn.
+//
+// Reported zones are skipped: they are unsurveyed ground with no area to rank.
+export function gZoneOrder({ resolvedByContinent }) {
+  const problems = [];
+  for (const [cont, doc] of Object.entries(resolvedByContinent ?? {}).sort()) {
+    const surveyed = (doc?.zones ?? []).filter((z) => z.survey === "surveyed");
+    if (surveyed.length === 0) continue;
+    const ranks = surveyed.map((z) => z.order).sort((a, b) => a - b);
+    if (!ranks.every((v, i) => v === i))
+      problems.push(`G-ORDER: ${cont} zone order is not a dense permutation of ` +
+                    `0..${surveyed.length - 1} — got [${ranks.join(", ")}]`);
+  }
+  return problems;
 }
 
 // The content hash a zone is ordered by: its id, area and ring, canonicalised.
@@ -3378,8 +3691,8 @@ main();
 
 - [ ] **Step 5: Run test to verify it passes**
 
-Run: `node --test --test-name-pattern "resolveCivil|G-SLOT-STABLE|pinned town resolves|pure function" 'scripts/tests/*.test.mjs'`
-Expected: PASS — 6 tests.
+Run: `node --test --test-name-pattern "resolveCivil|G-SLOT-STABLE|pinned town resolves|geographic keys|pure function|gZoneOrder" 'scripts/tests/*.test.mjs'`
+Expected: PASS — 10 tests.
 
 - [ ] **Step 6: Generate the real resolved world**
 
@@ -3437,13 +3750,20 @@ test("every committed resolved file has a row — a continent cannot hide", () =
   assert.deepEqual(indexed, onDisk);
 });
 
-test("each resolved file exposes the twelve families in order", () => {
+test("each resolved file exposes the seventeen keys in RESOLVED_KEYS order", () => {
+  // Byte-for-byte key order, not a set: canonStringify serialises insertion
+  // order, so a reordered build changes the committed bytes for no semantic
+  // reason and reds G-SLOT-STABLE on a no-op commit.
+  const KEYS = [
+    "continent", "coastline", "river", "saltmire", "iceEdge", "terrainPatches",
+    "zones", "towns", "camps", "roads", "landmarks",
+    "dungeons", "instances", "relay", "distances", "seaLane", "sheet",
+  ];
   for (const row of index.continents) {
     const doc = JSON.parse(readFileSync(join(REPO_ROOT, row.resolved), "utf8"));
-    assert.deepEqual(Object.keys(doc), [
-      "continent", "zones", "towns", "camps", "roads", "landmarks",
-      "dungeons", "instances", "relay", "distances", "seaLane", "sheet",
-    ], `${row.resolved} key order`);
+    assert.deepEqual(Object.keys(doc), KEYS, `${row.resolved} key order`);
+    assert.ok(Array.isArray(doc.coastline?.points),
+      `${row.resolved} has no coastline.points — basin-sheet.mjs dereferences it unconditionally`);
   }
 });
 ```
@@ -3451,7 +3771,7 @@ test("each resolved file exposes the twelve families in order", () => {
 Modify `tools/asset-storybook/js/maps.mjs` — add a `WORLD_INDEX_URL` fetch and append a panel below the sheet grid inside `mountMaps`, immediately before `main.appendChild(section);`:
 
 ```js
-  // Plan D — Places & Meaning. The civil layer is an ARTIFACT: 40 pinned
+  // Plan D — Places & Meaning. The civil layer is an ARTIFACT: 41 pinned
   // places, 336 bound records, 60 dungeons and a relation set that no sheet
   // shows on its own. Owner rule (2026-08-15): if it is produced, it is
   // reviewable here.
@@ -3564,10 +3884,10 @@ This is the gate that changes the failure mode. F-045 was a *uniform 5x rescale*
 - Create: `content/world/relations/c01..c13.json` (13 files, ~45 relations)
 - Create: `scripts/report_relation_coverage.mjs` (always exits 0)
 - Create: `scripts/tests/fixtures/world/g-meaning-bearing/**`
-- Modify: `content/world/manifest.json` (Plan C Task 1 owns the file; this adds the `relations.coverageFloorPct` block)
-- Modify: `scripts/integration.sh` (a `relation_coverage` report section) and `.github/workflows/ci.yml` (the matching step)
-- Modify: `scripts/lib/resolve.mjs` (add `gMeaning`, call from `checkWorldCivil`)
-- Modify: `scripts/tests/relations.test.mjs`
+- Modify: `content/world/manifest.json` (created by Plan C Task 1; this adds the `relations.coverageFloorPct` block)
+- Modify: `scripts/integration.sh:90-121` (a `relation_coverage` report section beside the other `report_*` sections) and `.github/workflows/ci.yml:107-111` (the matching step)
+- Modify: `scripts/lib/resolve.mjs` (append `gMeaning`, call it and Task 7's `gZoneOrder` from `checkWorldCivil`; created in Task 2)
+- Modify: `scripts/tests/relations.test.mjs` (append, created in Task 1)
 
 **Interfaces:**
 - Consumes: Task 1's `checkRelations`; Task 7's `resolveCivil`.
@@ -3605,7 +3925,7 @@ Create `content/world/relations/c02.json`. This is the whole basin claim set, ea
   { "rel": "distance", "a": "c-town-embervale", "b": "c-town-gildmark", "km": 14.1, "tolerancePct": 8, "cite": "content/spine/edges.json e-leg-embervale-gildmark" },
   { "rel": "distance", "a": "c-town-norhollow", "b": "c-town-gildmark", "km": 18.6, "tolerancePct": 8, "cite": "content/spine/edges.json e-leg-norhollow-gildmark" },
   { "rel": "distance", "a": "c-town-cindervast", "b": "c-town-rooktide", "km": 34, "tolerancePct": 8, "cite": "content/spine/edges.json e-leg-cindervast-rooktide" },
-  { "rel": "colocated_with", "subject": "c-lm-the-meltwash-mouth", "host": "c-lm-peatrun-coast", "withinKm": 6.0, "cite": "docs/worldbuilding/A1-geography-cluster1.md §4 \"The coast\"" },
+  { "rel": "colocated_with", "subject": "c-lm-the-meltwash-mouth", "host": "c-lm-the-saltmire", "withinKm": 6.0, "cite": "docs/worldbuilding/A1-geography-cluster1.md §4 \"Water\"", "note": "\"The Meltwash from the ice to the mire\" — the river's seaward end is the mire's, and both are c02. NOT the Peatrun Coast: that is a Coldreach (c03) place, A2 §2, and a colocation across two landmasses is a claim the prose never makes." },
   { "rel": "bearing", "from": "c-town-gildmark", "to": "c-lm-the-saltmire", "dir": "E", "toleranceDeg": 40, "cite": "docs/worldbuilding/A1-geography-cluster1.md §5.1 \"The trade road\"", "note": "the trade road bends around the mire's head" },
   { "rel": "bearing", "from": "c-town-millcross", "to": "c-lm-eastern-hills", "dir": "E", "toleranceDeg": 40, "cite": "docs/worldbuilding/A1-geography-cluster1.md §4 \"The eastern rise\"" },
   { "rel": "unique_in_scope", "subject": "c-town-cindervast", "property": "fallen-city", "scope": "continent:c02", "cite": "canon.md §4 \"Geography & trade logic\"" },
@@ -3877,6 +4197,11 @@ and in `checkWorldCivil`, build the resolved map first:
     for (const p of problems) fail(p);
     resolvedByContinent[cont] = resolved;
   }
+  // G-ORDER's region half (Task 7's gZoneOrder) is wired HERE and not in Task 7,
+  // because this loop is the first place in checkWorldCivil where the resolved
+  // documents exist. It runs before gMeaning so a vanished zone is reported as
+  // a broken ordering rather than as a pile of unresolvable relation subjects.
+  for (const p of gZoneOrder({ resolvedByContinent })) fail(p);
   for (const p of gMeaning({ world, resolvedByContinent })) fail(p);
 ```
 
@@ -3918,8 +4243,8 @@ Apply findings as a NEW commit; re-run Step 7's commands.
 
 **Files:**
 - Create: `scripts/tests/fixtures/world/g-band-inversion/**`
-- Modify: `scripts/lib/resolve.mjs` (add `gBand`, `LEVEL_RINGS`, `STARTER_CAPITAL`)
-- Modify: `scripts/tests/resolve.test.mjs`
+- Modify: `scripts/lib/resolve.mjs` (append `gBand`, `LEVEL_RINGS`, `STARTER_CAPITAL`; created in Task 2)
+- Modify: `scripts/tests/resolve.test.mjs` (append, created in Task 2)
 
 **Interfaces:**
 - Consumes: Plan C's fabric `regions[].levelBand` and `regions[].ring`; Task 6's dungeon `levelBand`.
@@ -4080,12 +4405,12 @@ Apply findings as a NEW commit; re-run Step 5.
 
 ### Task 10: Generator integration — pinned settlements first, bound dungeon entrances
 
-Until this task, `G-PIN-SAT` fails 40 times on the real content root because no `pinReceipts` exist. This is where the pinned layer stops being a document and becomes a **generation input**: the ~40 pinned records are placed at their committed seed points **before scoring begins**, and a constraint violation is a generation failure, not a join failure.
+Until this task, `G-PIN-SAT` fails 41 times on the real content root because no `pinReceipts` exist. This is where the pinned layer stops being a document and becomes a **generation input**: the 41 pinned records are placed at their committed seed points **before scoring begins**, and a constraint violation is a generation failure, not a join failure.
 
 **Files:**
-- Modify: `tools/mapforge/lib/passes/settlements.mjs` (P11)
-- Modify: `tools/mapforge/lib/passes/dungeons.mjs` (P13)
-- Modify: `content/world/manifest.json`
+- Modify: `tools/mapforge/lib/passes/settlements.mjs` (P11 — append `placePinned` + `measureCell`; created by Plan C Task 9a, whose `placeSettlements` this task does NOT edit)
+- Modify: `tools/mapforge/lib/passes/dungeons.mjs` (P13 — append `anchorBoundEntrances`; created by Plan C Task 9c)
+- Modify: `content/world/manifest.json` (created by Plan C Task 1)
 - Test: `tools/mapforge/tests/settlements-pinned.test.mjs`
 - Test: `tools/mapforge/tests/dungeon-anchor.test.mjs`
 
@@ -4204,7 +4529,7 @@ Modify `tools/mapforge/lib/passes/settlements.mjs` — **add** `placePinned` and
 ```js
 // Plan D — P11 reads the pinned layer BEFORE it scores anything.
 //
-// The ~40 pinned records are placed at their committed seed points, their
+// The 41 pinned records are placed at their committed seed points, their
 // constraint blocks are measured against the fabric, and a violation is a
 // GENERATION failure rather than a join failure. Only then does the greedy
 // scored placement fill the remaining slots AROUND them, which is why the
@@ -4280,7 +4605,7 @@ placeSettlements({ grid, premises, regions, manifest, pinned = [], stream, BIOME
 
 and already places `pinned` before scoring, marks each at its rank's separation radius and decrements that tier's quota. What this task supplies is the **argument**: the `placed` array above, not the raw records. Plan C's loop asserts that shape and throws a named `TypeError` on a raw record, so the two halves cannot silently disagree.
 
-`receipts` reaches the committed bytes through Plan C's `buildFabricFile({ …, pinReceipts })`, which serialises it as `pinReceipts[]` — the key `content/schemas/fabric-file.schema.json` requires and `G-PIN-SAT` reads.
+`receipts` reaches the committed bytes through Plan C **Task 10a**'s `buildFabricFile({ …, pinReceipts = [] })`, which serialises it as `pinReceipts[]` — a key `content/schemas/fabric-file.schema.json` (Plan C Task 11) already carries, with item `additionalProperties: false` and required `id, at, cell, continent, region, measured`. Plan C owns the file and the writer; **Plan D owns this array's shape**, which is why the `PinReceipt` typedef above is stated here in full rather than referenced. Plan C Task 10a's fabric-shape test asserts the key is present even when no pinned layer exists (an empty array, never a missing key), so `gPinSat`'s `f.pinReceipts ?? []` never silently reads `undefined` on a real fabric file.
 
 - [ ] **Step 3b: Add the receipt-completeness test**
 
@@ -4398,7 +4723,7 @@ node scripts/check_resolved.mjs --write
 node scripts/check_content.mjs --only=spine 2>&1 | grep -E "G-PIN-SAT|world-civil" | head -20
 (cd colyseus-server && npm test -- mapDimensions)
 ```
-Expected: `world-civil: 40 pinned, 336 bound, 45 relations, ... handles` and **zero** `G-PIN-SAT` lines. If a pinned record fails, the fix is either the roster's `pin.at` or the premise — never the tolerance.
+Expected: `world-civil: 41 pinned, 336 bound, 45 relations, ... handles` and **zero** `G-PIN-SAT` lines. `41` is the roster count Task 4 Step 1b pinned — a smaller number means a pinned record failed to expand, not that the gate is quiet. If a pinned record fails, the fix is either the roster's `pin.at` or the premise — never the tolerance.
 
 - [ ] **Step 7: Commit**
 
@@ -4423,9 +4748,10 @@ Apply findings as a NEW commit; re-run Step 6.
 Plan A re-pointed the three gate joins and the sheet builders at `scripts/lib/places.mjs`, which still derives its document from the spine with a fallback branch. This task removes the fallback and makes `content/world/resolved/` the source. **The acceptance test is that the gates still COUNT records, not merely that they exit 0** — all three joins `return 0` when their load fails, so a botched re-home silently disables the gate rather than failing it.
 
 **Files:**
-- Modify: `scripts/lib/places.mjs`
-- Modify: `scripts/tests/places.test.mjs` (Plan A's file)
-- Modify: `scripts/tests/resolve.test.mjs`
+- Modify: `scripts/lib/places.mjs` — `loadPlaces` body and the `resolveWorld` `fabric = null, civil = null` fallback branch (created by Plan A Task 5; no line to anchor to in today's tree, the file does not exist yet)
+- Modify: `scripts/tests/places.test.mjs` (created by Plan A Task 5)
+- Modify: `scripts/tests/resolve.test.mjs` (append, created in Task 2)
+- Read-only consumer, NOT modified: `tools/mapforge/lib/basin-sheet.mjs:40` (`drawBasinSheet`), whose unguarded `geo.saltmire.polygon` (`:157`, `:249`) and `geo.coastline.points` (`:181`) are what Step 1's RENDER ASSERTION exercises
 - Modify: `scripts/tests/zone-content.test.mjs:355,483,493,507`, `scripts/tests/town-plan.test.mjs:493,583,589`, `scripts/tests/bestiary-placement.test.mjs:95` — the three fixture roots that write ONLY the legacy mirror, migrated onto `content/world/resolved/` (Step 3b)
 - Modify: `scripts/check_content.mjs:835`, `:981`, `:1203` — the three join failure messages still name the file Plan A deleted
 
@@ -4439,6 +4765,7 @@ Append to `scripts/tests/resolve.test.mjs`:
 
 ```js
 import { loadPlaces, WORLD_DOC_KEYS } from "../lib/places.mjs";
+import { drawBasinSheet } from "../../tools/mapforge/lib/basin-sheet.mjs";
 
 test("loadPlaces reads content/world/resolved and keeps the load-bearing key order", () => {
   const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
@@ -4465,6 +4792,33 @@ test("a missing resolved dir is a PROBLEM, not a silent empty document", () => {
   assert.match(problems[0], /content\/world\/resolved\/ holds no continent files/);
 });
 
+test("THE RENDER ASSERTION: drawBasinSheet survives the doc loadPlaces now returns", () => {
+  // The failure this exists to stop: `loadPlaces` emitting coastline/river/
+  // saltmire/iceEdge as null because ResolvedWorld "has no equivalent".
+  // tools/mapforge/lib/basin-sheet.mjs dereferences `geo.saltmire.polygon`
+  // at :157 (a clipPath) and :249 (the mire path) and `geo.coastline.points`
+  // at :181 (the sea path) with NO guard at all — `geo.terrainPatches` at
+  // :151 is `?? []`-guarded and is the one that would NOT have crashed. So a
+  // null coastline or saltmire is a TypeError two commits later, surfacing as
+  // `render-sheet --sheet cluster1` dying, which reds G-RENDER-LOCK and Plan
+  // E Task 6's "render every sheet" step. Asserting KEY ORDER cannot catch
+  // it; this asserts CONTENT, by rendering.
+  const { doc } = loadPlaces({ contentRoot: join(ROOT, "content") });
+  const { svg, problems } = drawBasinSheet({ doc });
+  // A non-empty list here is a RESOLVER bug — most likely `regionAt` returning
+  // null for a pin that fell outside every region ring, so a town names zone
+  // "null". Fix resolveCivil; never relax this assertion.
+  assert.deepEqual(problems, []);
+  assert.match(svg, /^<svg /);
+  assert.ok(svg.length > 4000, `the sheet is degenerate at ${svg.length} bytes`);
+  // Proof the two UNGUARDED dereferences produced geometry rather than merely
+  // not throwing: `clip-saltmire` is emitted from geo.saltmire.polygon, and
+  // the sea path is built from geo.coastline.points.
+  assert.match(svg, /<clipPath id="clip-saltmire"><path d="M/);
+  assert.ok(doc.coastline.points.length >= 3, "the coastline has no course");
+  assert.ok(doc.saltmire.polygon.length >= 3, "the saltmire has no outline");
+});
+
 test("THE COUNTING ASSERTION: the three gate joins still count records after the cutover", () => {
   const out = execFileSync(process.execPath, [join(ROOT, "scripts/check_content.mjs"), "--require-complete"], { encoding: "utf8" });
   const m = out.match(/content-gate: (\d+) sheets, (\d+) maps, (\d+) story, (\d+) placements, (\d+) zones, (\d+) towns, (\d+) nodes, (\d+) failures/);
@@ -4478,8 +4832,10 @@ test("THE COUNTING ASSERTION: the three gate joins still count records after the
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `node --test --test-name-pattern "loadPlaces|fallback branch|COUNTING ASSERTION" 'scripts/tests/*.test.mjs'`
+Run: `node --test --test-name-pattern "loadPlaces|fallback branch|RENDER ASSERTION|COUNTING ASSERTION" 'scripts/tests/*.test.mjs'`
 Expected: FAIL — `loadPlaces` still reads the spine and the fallback signature is still present.
+
+Note the direction of the new import: `scripts/tests/` → `tools/mapforge/lib/basin-sheet.mjs`. That is the same `scripts/ → tools/mapforge/` direction Plan B Task 9 introduces for `version.mjs`, and it is deliberate here for the same reason — the renderer is the consumer whose contract is being asserted, and the only honest way to assert "the sheet still draws" is to draw it. Confirm it resolves under `npm test --prefix scripts`, which runs from `scripts/` and not from the repo root.
 
 - [ ] **Step 3: Rewrite `loadPlaces`**
 
@@ -4583,10 +4939,10 @@ The messages must change **with** the fixtures, not after: a fixture writing the
 
 Run:
 ```bash
-node --test --test-name-pattern "loadPlaces|fallback branch|COUNTING ASSERTION" 'scripts/tests/*.test.mjs'
+node --test --test-name-pattern "loadPlaces|fallback branch|RENDER ASSERTION|COUNTING ASSERTION" 'scripts/tests/*.test.mjs'
 node --test 'scripts/tests/zone-content.test.mjs' 'scripts/tests/town-plan.test.mjs' 'scripts/tests/bestiary-placement.test.mjs'
 ```
-Expected: PASS on both — 5 tests in the first, and **the same pass count as the pre-task baseline** in the second. Record that baseline (`node --test 'scripts/tests/zone-content.test.mjs' … | tail -5`) BEFORE Step 3 and compare: three suites going silently green because their gate now early-outs is exactly the failure Step 3b exists to prevent, and it looks identical to success.
+Expected: PASS on both — 6 tests in the first, and **the same pass count as the pre-task baseline** in the second. Record that baseline (`node --test 'scripts/tests/zone-content.test.mjs' … | tail -5`) BEFORE Step 3 and compare: three suites going silently green because their gate now early-outs is exactly the failure Step 3b exists to prevent, and it looks identical to success.
 
 - [ ] **Step 4b: Make promotion write the resolved world — one command, not two**
 
@@ -4695,7 +5051,7 @@ git branch --show-current && git log --oneline -1
 
 This is the plan-level gate, not a task-level one. Dispatch a fresh reviewer with:
 
-> Review `git diff <the commit before Task 1>..HEAD` against `docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md` §5 in full and the shared contract's Plan D rows. Answer each with evidence, not reasoning: (1) does `G-MEANING` report ZERO unresolved drifts on the real content root — paste the grep. (2) Does `G-BIND` find no coordinate key outside the pinned tier and no shared handle — paste the count of bound records scanned. (3) Is `G-HANDLE-BAND` green on all 336? (4) Is `G-DUNGEON-REACH` green on all 60, and does the corpus total 190 floors? (5) Is `G-PIN-SAT` green on all 40? (6) Has any commit in this range changed a spawn id, spawn rectangle, live map id or runtime coordinate — run `git diff <base>..HEAD -- colyseus-server content/spine/frozen-spawn-ids.json content/maps/atlas-frontier.md` and report. (7) Is `colyseus-server/src/tests/mapDimensions.test.ts` green? (8) Does `time node scripts/check_content.mjs --only=spine` stay under 4 s and `time npm test --prefix scripts` under 60 s? (9) Is every artifact this plan produces reachable in the asset-storybook? (10) Name the single weakest thing in this diff and say what would break first in production.
+> Review `git diff <the commit before Task 1>..HEAD` against `docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md` §5 in full and the shared contract's Plan D rows. Answer each with evidence, not reasoning: (1) does `G-MEANING` report ZERO unresolved drifts on the real content root — paste the grep. (2) Does `G-BIND` find no coordinate key outside the pinned tier and no shared handle — paste the count of bound records scanned. (3) Is `G-HANDLE-BAND` green on all 336? (4) Is `G-DUNGEON-REACH` green on all 60, and does the corpus total 190 floors? (5) Is `G-PIN-SAT` green on all 41? (6) Has any commit in this range changed a spawn id, spawn rectangle, live map id or runtime coordinate — run `git diff <base>..HEAD -- colyseus-server content/spine/frozen-spawn-ids.json content/maps/atlas-frontier.md` and report. (7) Is `colyseus-server/src/tests/mapDimensions.test.ts` green? (8) Does `time node scripts/check_content.mjs --only=spine` stay under 4 s and `time npm test --prefix scripts` under 60 s? (9) Is every artifact this plan produces reachable in the asset-storybook? (10) Name the single weakest thing in this diff and say what would break first in production.
 
 - [ ] **Step 9: Refactor on the findings, then re-verify**
 
@@ -4723,13 +5079,13 @@ Two budgets are themselves gates:
 
 | Before | After |
 | --- | --- |
-| Zero civil records; the only join authority is a legacy mirror | 40 pinned + 336 bound records, schema-validated, joined into 13 committed resolved files |
+| Zero civil records; the only join authority is a legacy mirror | 41 pinned + 336 bound records, schema-validated, joined into 13 committed resolved files |
 | Zero dungeons | 60 complexes / 190 floors, entrances proved cave-capable and within 2 region hops of a settlement |
 | Zero machine-checkable prose claims (`grep -ri constraint` returns one comment) | 45 relations across 8 relation kinds, each citing a section, each re-derived from the ground on every gate run |
 | A re-seed silently voids Gildmark's port monopoly while every binding resolves | `G-MEANING` names the relation, the citation and the drifted value, and blocks promote |
 | An ordinal rank resolves cleanly across a 17.5x size swing | `G-HANDLE-BAND` fails on the swing |
 | 120 name combinations against 626 names needed | 5 registers converging at 630 distinct names with register, sound and prosody gates |
-| Nothing in the repo can say whether a pinned place got the ground its prose assumes | `G-PIN-SAT` compares 40 constraint blocks against committed fabric receipts in 0.05 s |
+| Nothing in the repo can say whether a pinned place got the ground its prose assumes | `G-PIN-SAT` compares 41 constraint blocks against committed fabric receipts in 0.05 s |
 | The civil layer would be invisible to review | A Places & Meaning panel in the asset-storybook, parity-gated by `world-index.test.mjs` |
 
 

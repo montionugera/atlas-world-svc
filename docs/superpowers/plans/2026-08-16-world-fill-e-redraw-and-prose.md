@@ -6,7 +6,7 @@
 
 **What is demonstrably true at the end that was not true at the start:** `git revert -m 1 <merge-sha>` restores the previous green world *and* its renderings in one step; `node scripts/check_canon_legs.mjs` proves all 7 canon distances hold against the pinned coordinates *before* a continent exists; `node scripts/check_content.mjs --require-complete` passes on a 36-node trunk with 13 landmasses; a zone record written for unwalked ground is a hard FAIL instead of silently-accepted prose debt; and `grep -rn "canon\.md:[0-9]" content/story docs/worldbuilding` returns nothing.
 
-**Architecture:** Three ordered movements. **(1) Pre-redraw capability** — four commits that change zero drawn pixels: a citation gate, `survey` promoted from free-form `lore` to a schema field, a canon-leg pre-flight solver, and a whole-world digest. **(2) The redraw** — unfreeze deepest-first in three commits, then ONE commit that runs Plan C's `promoteWorld`, re-fits the edges, re-baselines every byte comparison in the R12 order, and re-homes the aliases; then refreeze root-first with a shrunken, reasoned freeze set. **(3) Prose** — Z2 rewritten in both directions against the fabric, a committed allocation table that solves the 40-zone set-packing before a word is written, 40 zone records, and the 33 `AMENDED-PENDING` re-voicings.
+**Architecture:** Three ordered movements. **(1) Pre-redraw capability** — four commits that change zero drawn pixels: a citation gate, `survey` promoted from free-form `lore` to a schema field, a canon-leg pre-flight solver, and a whole-world digest. **(2) The redraw** — unfreeze deepest-first in three commits, then ONE commit that runs Plan C's `promoteWorld`, re-fits the edges, re-baselines every byte comparison in the R12 order, and re-homes the aliases; then refreeze root-first with a shrunken, reasoned freeze set. **(3) Prose** — Z2 rewritten in both directions against the fabric, a committed allocation table that solves the 40-zone set-packing before a word is written, 40 zone records, and the `AMENDED-PENDING` re-voicings.
 
 **Tech Stack:** Node ESM (`.mjs`, no dependencies) for map tooling under `tools/mapforge/`; Node ESM with `ajv` under `scripts/` (its own `package.json`, outside the pnpm workspace); `node --test` for both; jest for `colyseus-server`; JSON Schema draft-07 for content shapes; SVG sheets rendered by `tools/mapforge/render-sheet.mjs`.
 
@@ -23,7 +23,8 @@
 - `G-ATLAS-ROLLUP` tolerance stays +/-2 pp (`check_content.mjs:1690-1707`). If the generated world cannot roll up within it, the generator is wrong, not the gate.
 
 **Target counts (gated against `content/world/manifest.json`)**
-- 13 landmasses, 3 oceans, 9 seas, 160 regions = 40 surveyed + 120 reported, 45 settlements (3 capital / 12 hub / 30 village), 8 town plans, 60 dungeon complexes / 190 floors (3 families x 8 + 36 bespoke), 164 distinct landform types / 172 group memberships / 8 dual-listed, 1,740 instances / 336 named, 20 biomes, 18 terrain kinds, 626 distinct names.
+- 13 landmasses, 3 oceans, 9 seas, 160 regions = 40 surveyed + 120 reported, 45 settlements (3 capital / 12 hub / 30 village), 8 town plans QUOTA with 1 authored (E-C9), 60 dungeon complexes / 190 floors (3 families x 8 + 36 bespoke), **170** distinct landform types / **178** group memberships / 8 dual-listed / 23 `dungeonCapable` / 40 glyph families / 12 groups, 1,740 instances / 336 named, 20 biomes, 18 terrain kinds, 626 distinct names.
+- The landform census is **170 / 178**, not the spec's 164 / 172: Plan B Task 1 ships six additional rows — `headland`, `ford` and `sea-waterfall`, each bound by a named row of Plan D's pinned roster, plus `ice-shelf`, `ash-front` and `ash-plain`, which are Plan C's generator vocabulary for c01's shelf ice and c10's tephra ground — and Plan B owns the lexicon. Every count printed by `G-LANDFORM` and `world-budget: landforms <n> types` reads 170. Nothing in this plan may re-derive it.
 - Land split: cap 6,000 + 4 major x 11,000 + 3 minor x 3,000 + 5 chains x 1,000 = 64,000.
 - Surveyed region 160 km2 +/-25%; reported region 480 km2 +/-20% = [384, 576]. 40x160 + 120x480 = 64,000.
 - Ocean polygons 41,800 / 30,400 / 19,000 = 91,200; attributed water 44,000 / 32,000 / 20,000. Sea polygons are SUBSETS of their ocean polygon (G-CONTAIN); their 20,600 km2 is already inside the 91,200 and is never added again.
@@ -123,9 +124,11 @@ These are not licence to change scope. Each is a measured fact that a step below
 | **E-C3** | §8.2 implies continents keep spine children | Post-redraw the 160 regions are fabric rows, not nodes, so all 13 continents are childless and take 13 hard FAILs. | `checkSpineComplete` gains `fabricRegionCounts`, built by following each trunk node's `provenance.generator.fabric` pin (Plan C's `G-PROVENANCE` addition) and counting `regions.length`. A continent with >= 1 fabric region is complete. |
 | **E-C4** | "Spine trunk shrinks 44 -> 36 node files" without a census | 36 only closes with an exact composition. Verified arithmetic: 1 world + 13 continents + 3 oceans + 9 seas + **2 alias-anchor regions** (`n-thornveil`, `n-northern-icefield` — targets of the two `representsNodeId` pointers, hard-failed by `spine.mjs:875-877` if they vanish) + **1 town** (`n-millcross`, the `spineId` host of the one committed town plan) + 7 runtime nodes (`n-playroot`, `n-frontier-shelf`, 3 sites, 2 fixtures) = **36 exactly**. | `content/spine/trunk-census.json` commits that census with a written reason per line. `n-millcross` under a continent needs a second depth exception, `continent>town` — added in Task 6 alongside the census. |
 | **E-C5** | §6.3: Wealdmarch 8 surveyed / Coldreach 8 surveyed | 10 zone records and 116 bestiary placement rows are already sworn to the 10 committed basin zones. Folding 10 zones into 8 regions destroys two hand-written records and re-homes ~23 bestiary rows for nothing. | **Wealdmarch 10 surveyed / Coldreach 6 surveyed.** Totals unchanged: 10+6+7+7+3+3+2+1+1 = **40 surveyed**, 120 reported. The per-landmass area residual is absorbed by `G-REGION-SIZE`'s +/-25% surveyed band, which the original 8/8 split also relied on. **Already committed by Plan C Task 1** in `content/world/manifest.json`'s `landmasses[]` (`c02.surveyed: 10`, `c03.surveyed: 6`, each with a written `why`), and pinned by that task's own assertions — this plan consumes it, it does not amend anything. The premise files carry no `regions` key; `premise.schema.json` is `additionalProperties: false`. |
-| **E-C6** | §11 D2: "zone records staged one continent per release" | `Z2` iterates the geography, not the files (`check_content.mjs:1042-1045`): once **one** zone file exists, every surveyed region must have exactly one record or the gate fails. Staging would require weakening Z2, which R13 explicitly forbids. | D2's staging applies to **town plans** (3 capitals now, 5 deferred) — which have no completeness gate. **All 40 zone records land in this plan** (Tasks 10 and 11). |
+| **E-C6** | §11 D2: "zone records staged one continent per release" | `Z2` iterates the geography, not the files (`check_content.mjs:1042-1045`): once **one** zone file exists, every surveyed region must have exactly one record or the gate fails. Staging would require weakening Z2, which R13 explicitly forbids. | D2's staging applies to **town plans**, which have no completeness gate — see E-C9 for the corrected split. **All 40 zone records land in this plan** (Tasks 11–14). |
 | **E-C7** | §9.4: canon legs pinned "with both endpoints required frozen" | Post-redraw, 6 of the 7 legs' endpoint town nodes cease to exist (only `n-millcross` survives, per E-C4). `gSpineNet`'s `rootPoint` would FAIL with `G-NET ... endpoint node "n-gildmark" does not resolve`. | The 7 legs are re-pointed at **trunk point features** (`f-town-gildmark` etc. — "trunk features are the network", spec §5.6), and `G-CANON-LEG`'s endpoint rule becomes **frozen OR pinned**, resolved through the new `content/spine/canon-legs.json`. This lands in Task 3, *before* the unfreeze, or Task 5 reds seven legs at once. |
 | **E-C8** | G-CITE scope unstated | `canon.md:<digits>` appears in 4 live worldbuilding docs **and** in ~15 dated design/backlog documents under `docs/superpowers/` and `.claude/`. | G-CITE's scope is **live lore only**: `content/story/**/*.md`, `content/**/*.json` string values, `docs/worldbuilding/**/*.md`. Dated records under `docs/superpowers/` and `.claude/` are excluded by construction — rewriting a dated record is falsifying it. The scope list is a committed constant, not a regex guess. |
+| **E-C9** | §11 D2's taken default: "3 capitals' plans now, 5 deferred", against `manifest.quotas.townPlans: 8` | **Three capital town plans cannot be authored inside this programme.** A town plan joins the world by `spineId` (`content/towns/town-millcross.json`, `check_content.mjs:1192`), so each plan needs a `tier:"town"` spine node — and E-C4's census, which Plan C owns and pins with a test, budgets exactly **one** town node. Authoring `town-gildmark.json`, `town-tallowquay.json` and `town-netstead.json` would force `n-gildmark`/`n-tallowquay`/`n-netstead` into the trunk, making the census 39 and reddening Plan C Task 10's `readdirSync(draftNodes).length === 36` assertion on a plan-authoring commit. | **1 town plan authored, 7 deferred.** The quota in `content/world/manifest.json` stays `8` — it is the target, not a claim — and Plan C Task 1's `gSpineBudgets` already prints `world-budget: town-plans <authored> / <quota>` on every gate run, so the debt is a visible number rather than an unknown. This plan authors **no** file under `content/towns/`, and Plan D's roster carries `"plan": null` on the three deferred capitals for the same reason — a `plan` path naming a file nobody writes is worse than an honest null, because `check_content.mjs:1192`'s T1 join reads it. Exactly one roster row (`c-town-millcross`) carries a path, and Plan D Task 4 Step 1b asserts that with `assert.deepEqual(withPlan, ["c-town-millcross"])`. Raising the count is a future release: one plan, one node, one census line, one reviewed commit — the mechanism is written into `trunk-census.json`'s `why.town`. |
+| **E-C10** | §11's sheet budget "≤ 16 (1 atlas + 13 continents + 1 basin + 1 overlay)" names 13 continent sheets that no plan builds | Across Plans A–D the `SHEETS` registry ends at five entries: `cluster1`, `atlas` (live today), `synthetic` (Plan B Task 10), `fabric` and `overlay` (Plan C Task 13). Nothing creates a per-continent builder, so 1,740 instances, 336 named landforms and 45 settlements would be generated with no sheet that draws them, and §7.4's `maxLabelRank: 8` continent zoom tier would never be exercised on real content. | **Task 8 of this plan builds them**: `tools/mapforge/lib/continent-sheet.mjs`, one builder parameterised by continent id over `content/world/resolved/continent-NN.json`, and 13 `SHEETS` entries with their storybook rows, art-manifest entries and baked thumbs. The roster then closes at **18** (1 atlas + 1 basin + 13 continent + 1 overlay + 1 fabric + 1 synthetic), which is the number `budgets.sheets.maxSheets` carries and the number Task 16 Step 7 checks. |
 
 ---
 
@@ -152,35 +155,38 @@ Every file this plan creates (`C`), modifies (`M`) or deletes (`D`).
 | C | `scripts/tests/zone-allocation.test.mjs` | The allocation table is Z6-clean: 40 distinct kind-sets, 80 globally unique landmark names, every row names a real fabric region |
 | C | `scripts/tests/fixtures/spine/e-water-childless/` | Overlay fixture: a childless ocean and sea are complete |
 | C | `scripts/tests/fixtures/spine/e-continent-fabric/` | Overlay fixture: a childless continent with a fabric pin is complete; without one it FAILs |
+| C | `tools/mapforge/lib/continent-sheet.mjs` | `buildContinentSheet({ repoRoot, continent })` — the per-continent zoom tier (`maxLabelRank: 8`), one builder for all 13 (E-C10) |
+| C | `tools/mapforge/tests/continent-sheet.test.mjs` | 13 registry entries, one storybook row each, zero `PROBLEMS` on the densest continent, the committed SVGs are not stale |
+| C | `game-client/assets/art/maps/<continent>.svg` | 13 continent sheets (`wealdmarch.svg` … `loamspit.svg`) |
 | M | `scripts/lib/spine.mjs:890-909` | `TRUNK_TIERS` gains `ocean`, `sea`; new `WATER_TIERS`; `checkSpineComplete({tree, fabricRegionCounts})`; `surveyOf` re-export; `DEPTH_EXCEPTIONS` gains `continent>town` |
 | M | `scripts/check_content.mjs:198-201` | `checkCitations(opts)` wired into the full sweep only (never `--only=spine`) |
 | M | `scripts/check_content.mjs:940-1071` | `checkZoneContent`: `Z2` in both directions against the fabric survey index; the completeness universe becomes the surveyed regions, not the mirror's zone list |
 | M | `scripts/check_content.mjs:1773-1777` | `checkSpineComplete` call passes `fabricRegionCounts` |
 | M | `scripts/check_content.mjs:2027-2038` | `G-CANON-LEG` endpoint rule: frozen **or** pinned via `content/spine/canon-legs.json` |
-| M | `content/schemas/spine-node.schema.json` | `survey: {"enum": ["surveyed","reported"]}` as a first-class optional property (Plan B already flipped the root to `additionalProperties: false`, so this is required to add it at all) |
-| M | `content/schemas/zone-content.schema.json` | `region` and `survey` join keys, both required |
-| M | `content/spine/nodes/*.json` | 44 -> 36 files in ONE redraw commit; unfreeze deepest-first, refreeze root-first |
-| M | `content/spine/edges.json` | 7 leg edges re-pointed at trunk point features and re-fit; 8 road edges re-pointed; runtime edges preserved by root membership |
-| M | `content/spine/derived.json` | Re-emitted by `check_spine_emit.mjs --write` |
-| M | `content/world/render-lock.json` | Re-baselined in the strict R12 order |
-| M | `content/zones/zone-*.json` (10 existing) | Gain `region` + `survey`; re-homed onto the new Wealdmarch region ids |
-| M | `content/story/canon.md` | ~30 line citations -> section citations; 5 `AMENDED-PENDING` markers re-voiced |
-| M | `docs/worldbuilding/A0-current-world.md` | ~26 line citations; 3 `AMENDED-PENDING` markers |
-| M | `docs/worldbuilding/A1-cosmology.md` | 4 line citations |
-| M | `docs/worldbuilding/A1-geography-cluster1.md` | 7 `AMENDED-PENDING` markers; basin geography re-voiced onto Wealdmarch |
-| M | `docs/worldbuilding/A2-zones-cluster1.md` | 1 `AMENDED-PENDING` marker |
-| M | `docs/worldbuilding/A2-wider-world.md` | Driftholt/Reedstrand promoted to minor continent; the 9 sea names knitted in |
-| M | `docs/worldbuilding/F-043-wider-world-panel.md` | 1 line citation |
-| M | `docs/worldbuilding/DR-003-season-1-budget.md` | 1 line citation |
+| M | `content/schemas/spine-node.schema.json:6-8` | `survey: {"enum": ["surveyed","reported"]}` as a first-class optional property in the root `properties` block (Plan B already flipped the root to `additionalProperties: false`, so this is required to add it at all) |
+| M | `content/schemas/zone-content.schema.json:6-8` | `region` and `survey` join keys, added to both the root `required` array (`:6`) and the root `properties` block (`:8`) |
+| M | `content/spine/nodes/*.json` | 44 -> 36 files in ONE redraw commit; unfreeze deepest-first, refreeze root-first (generated data files, rewritten wholesale by `promote-world.mjs` — no anchor to give) |
+| M | `content/spine/edges.json:1-654` | 7 leg edges re-pointed at trunk point features and re-fit; 8 road edges re-pointed (the first at `:4`); runtime edges preserved by root membership. Whole-array rewrite, not a hunk |
+| M | `content/spine/derived.json` | Re-emitted wholesale by `check_spine_emit.mjs --write` — never hand-edited, no anchor |
+| M | `content/world/render-lock.json` | Re-baselined in the strict R12 order. Generated file, created by Plan A Task 10 and only ever rewritten by `node scripts/check_render_lock.mjs --write` — no anchor |
+| M | `content/zones/zone-*.json` (10 existing) | Gain `region` + `survey`; re-homed onto the new Wealdmarch region ids (two added keys per file, at the top level beside `zone`) |
+| M | `content/story/canon.md` | ~30 line citations -> section citations; 5 `AMENDED-PENDING` markers re-voiced. Whole-file sweep — the citations are scattered across all 522 lines, so no anchor is meaningful |
+| M | `docs/worldbuilding/A0-current-world.md` | ~26 line citations (whole-file sweep); 3 `AMENDED-PENDING` markers, one of them at `:454` |
+| M | `docs/worldbuilding/A1-cosmology.md` | 4 line citations (whole-file sweep) |
+| M | `docs/worldbuilding/A1-geography-cluster1.md:290,319,331` | 7 `AMENDED-PENDING` markers; the reconciliation table, ridge-line length and tower spacing at those three lines are recomputed, not re-voiced; basin geography re-voiced onto Wealdmarch |
+| M | `docs/worldbuilding/A2-zones-cluster1.md` | 1 `AMENDED-PENDING` marker (whole-file sweep to find it — `grep -n AMENDED-PENDING`) |
+| M | `docs/worldbuilding/A2-wider-world.md:43-91` | §3 "The continents" and §4 "The chains, the seas, the cap": Driftholt/Reedstrand promoted to minor continent, `n-westsea` demoted to `sea`, the 9 sea names knitted in |
+| M | `docs/worldbuilding/F-043-wider-world-panel.md:71` | 1 line citation |
+| M | `docs/worldbuilding/DR-003-season-1-budget.md:135` | 1 line citation |
 | M | `scripts/tests/seal-provenance.test.mjs:80-108` | The blank-line citation test and its `KNOWN_STALE` set are superseded by G-CITE and deleted |
-| M | `scripts/tests/zone-content.test.mjs` | Fixtures gain `region` + `survey`; new Z2 both-direction tests |
-| M | `scripts/tests/spine-gates.test.mjs` | Water-tier and fabric-count completeness tests; the 4 removed warnings |
-| M | `game-client/assets/art/maps/*.svg` | Regenerated sheets (up to 16) |
-| M | `game-client/assets/art/art-manifest.json` | New `art:map-*` entries, license rows, thumbnail re-bake |
-| M | `tools/asset-storybook/maps-index.json` | Up to 16 rows |
-| M | `content/bestiary/*.json`, `content/story/regions.json`, `content/towns/town-millcross.json` | Alias re-homing under D1 default (a) — ids preserved wherever possible |
-| M | `scripts/integration.sh` | Add `canon_legs` and `world_digest` sections |
-| M | `.github/workflows/ci.yml` | Add `check_canon_legs.mjs` and `check_world_digest.mjs --check` |
+| M | `scripts/tests/zone-content.test.mjs:334-370,483,493,507` | `allZones`/`fixture` gain `region` + `survey`; the fixture root at `:355` moves off `content/maps/cluster1-geography.json`; the three literal expectations move with the gate messages; new Z2 both-direction tests |
+| M | `scripts/tests/spine-gates.test.mjs:180-200,393-410` | Water-tier and fabric-count completeness tests; the `realSpineCopy()` counts at `:180-200` move to the new census; the two hermetic `G-OVERLAP` assertions at `:403,410` must NOT move |
+| M | `game-client/assets/art/maps/*.svg` | Regenerated sheets — 18 after Task 8 (generated artifacts, no anchor) |
+| M | `game-client/assets/art/art-manifest.json:517` | New `art:map-*` entries modelled on the committed `art:map-atlas` block at `:517`, license rows, thumbnail re-bake |
+| M | `tools/asset-storybook/maps-index.json:4-19` | The `sheets[]` array grows to 18 rows (2 today at `:5-19`); parity is asserted both directions by `tools/asset-storybook/tests/maps-index.test.mjs:33-61` |
+| M | `content/bestiary/*.json`, `content/story/regions.json`, `content/towns/town-millcross.json` | Alias re-homing under D1 default (a) — ids preserved wherever possible. Data files keyed by region slug; the rows to touch are enumerated by the gate, not by a line range |
+| M | `scripts/integration.sh:90-112,114-127` | Add `canon_legs` and `world_digest` section functions beside `spine_emit_drift` (`:90`) and `mapforge_tests` (`:112`), and their `run_section` lines in the `--- Execute ---` block (`:114-127`) |
+| M | `.github/workflows/ci.yml:102-103` | Add `check_canon_legs.mjs` and `check_world_digest.mjs --check` steps beside the story-graph drift-gate step at `:102-103` |
 
 ---
 
@@ -207,6 +213,18 @@ export const TERRAIN_KINDS // 18 entries
 // content/schemas/spine-node.schema.json — root additionalProperties:false, `derived` removed
 // content/spine/derived.json — hoisted derived blocks keyed by node id
 // content/schemas/spine-edge.schema.json — the edges.json schema
+// content/world/lexicon/landforms.json — 170 types / 178 group memberships / 8 dual-listed
+// the render capability Task 8's continent sheets are built from:
+// tools/mapforge/lib/draft.mjs   — C, r2, esc, createDraft, patternDefs({ids}), LEGEND,
+//                                  FILL_FOR (terrainKind -> pattern), BIOME_FILL (biome -> pattern), ROAD_W
+// tools/mapforge/lib/ink.mjs     — checkBiomeInk({emittedIds, referencedIds, legendTier}),
+//                                  frontierPattern(provenance) -> pattern id (the ONE
+//                                  provenance -> hatch mapping; do not re-declare it)
+// tools/mapforge/lib/glyphs.mjs  — GLYPHS, symbolDefs({ids}), glyphUse({id,x,y,size}),
+//                                  checkGlyphCoverage({lexicon, namedCounts, emittedIds})
+// tools/mapforge/lib/labels.mjs  — RANKS, placeLabels({labels, obstacles, maxLabelRank, frame}),
+//                                  checkLabels({placed, dropped, tier})
+// tools/mapforge/lib/texture-bake.mjs — bakedUnderlay({regions, pxPerKm})
 ```
 
 **From Plan C**
@@ -256,6 +274,11 @@ export function computeWorldDigest({ repoRoot, inputs }):
   { version: 1, inputs: Record<string, string>, digest: string }   // per-input "sha256:<hex>" or "absent"
 export function checkWorldDigest({ committed, computed }): string[]
 
+// tools/mapforge/lib/continent-sheet.mjs
+export const CONTINENT_SHEETS: ReadonlyArray<{ id: string, continent: string, title: string }>  // 13 rows, c01..c13
+export function buildContinentSheet({ repoRoot, continent }): { svg: string, notes: string[], problems: string[] }
+// and 13 SHEETS entries in tools/mapforge/render-sheet.mjs, each maxLabelRank 8
+
 // scripts/lib/spine.mjs (extended here)
 export const WATER_TIERS: ReadonlySet<string>              // {"ocean","sea"}
 export const TRUNK_TIERS: ReadonlySet<string>              // {world, playroot, continent, ocean, sea, playspace}
@@ -275,17 +298,21 @@ export function checkSpineComplete({ tree, fabricRegionCounts }): { errors: stri
                  └──> 5 unfreeze (3 commits) ───────────┘
                             └──> 6 THE REDRAW (1 commit)
                                       └──> 7 refreeze root-first
-                                                └──> 8 Z2 both ways
-                                                          └──> 9 allocation table
-                                                                   └──> 10, 11 zone records
-                                                                            └──> 12 prose
-                                                                                     └──> 13 final green
+                                              └──> 8 the 13 continent sheets
+                                                └──> 9 Z2 both ways
+                                                          └──> 10 allocation table
+                                                                └──> 11 zone records: Wealdmarch + Coldreach
+                                                                     └──> 12 Stonemoor · 13 Thirstwold · 14 the minors
+                                                                            └──> 15 prose
+                                                                                     └──> 16 final green
 ```
 
 - **Task 3 must precede Task 5.** Unfreezing the six canon towns while `G-CANON-LEG` still demands frozen endpoints reds seven legs at once, and someone will "just disable the gate for now."
 - **Tasks 1, 2, 4 change zero drawn pixels.** All six byte comparisons stay green **without re-baselining**. If one of them needs a re-baseline, the change is not scaffolding — stop and re-scope it.
 - **Task 6 is one commit.** Its steps re-baseline in the strict R12 order — spine canonicalisation, geography emit, sheets, fixtures, storybook index, art manifest + thumbs — each verified alone before the single `git commit`. Any failure surviving a completed step is a real defect, not whiplash.
-- **Task 8 must follow Task 6.** Before the redraw the fabric describes a world the spine has not adopted; a fabric-keyed Z2 would demand 40 records against a 10-zone chart.
+- **Task 8 must follow Task 7 and precede Task 9.** The continent sheets read `content/world/resolved/*.json`, which only exists after the redraw; and they must exist before the prose lane starts, because Tasks 11–14 are written by looking at a region and the sheet is how a human looks at one. It is also the last commit that adds a drawn artifact, so the render lock stops moving after it.
+- **Task 9 must follow Task 6.** Before the redraw the fabric describes a world the spine has not adopted; a fabric-keyed Z2 would demand 40 records against a 10-zone chart.
+- **Tasks 12, 13 and 14 are three tasks, not one.** 24 zone records is three independent editorial units (Stonemoor's karst, Thirstwold's erg, the seven small landmasses), each with its own register and its own review — a single 24-record diff cannot be reviewed by one adversarial reader in one pass, which is exactly how a filler record ships.
 
 ---
 
@@ -649,8 +676,8 @@ Today "is this ground walked or merely reported?" is a free-form `lore.reported 
 - Create: `scripts/tests/fixtures/spine/e-continent-fabric/` (overlay: one childless continent + a fabric file)
 - Modify: `scripts/lib/spine.mjs:890-909` (`TRUNK_TIERS`, new `WATER_TIERS`, `checkSpineComplete` signature), `scripts/lib/spine.mjs:40` (`DEPTH_EXCEPTIONS`)
 - Modify: `scripts/check_content.mjs:1773-1777` (pass `fabricRegionCounts`)
-- Modify: `content/schemas/spine-node.schema.json` (add `survey`)
-- Modify: `scripts/tests/spine-gates.test.mjs` (the four removed warnings)
+- Modify: `content/schemas/spine-node.schema.json:8-66` (add `survey` to the root `properties` block, beside `lore` at `:63`)
+- Modify: `scripts/tests/spine-gates.test.mjs:180-200` (the `realSpineCopy()` cases — the four removed warnings)
 - Test: `scripts/tests/survey.test.mjs`
 
 **Interfaces:**
@@ -738,11 +765,14 @@ test("loadFabricRegionIndex counts regions per fabric file and reads their surve
   assert.equal(idx.byRegionId.get("c02/r01").survey, "surveyed");
   assert.equal(idx.countByFabricPath.get("content/world/fabric/continent-02.json"), 2);
 
+  // n-cluster1, not n-wealdmarch: the c02 continent node keeps its live id
+  // (Plan C manifest.landmasses[].nodeId, pinned by Plan C Task 10's
+  // "every continent node id comes from manifest.landmasses[].nodeId").
   const counts = fabricRegionCountsFor({
-    nodes: [{ id: "n-wealdmarch",
+    nodes: [{ id: "n-cluster1",
               provenance: { generator: { fabric: "content/world/fabric/continent-02.json" } } }],
     index: idx });
-  assert.equal(counts.get("n-wealdmarch"), 2);
+  assert.equal(counts.get("n-cluster1"), 2);
 });
 
 test("loadFabricRegionIndex soft-skips a content root with no fabric dir", () => {
@@ -1024,8 +1054,8 @@ A free redraw breaks most of them at once (R9: seven simultaneous errors that lo
 - Create: `content/spine/canon-legs.json`
 - Create: `scripts/tests/canon-legs.test.mjs`
 - Modify: `scripts/check_content.mjs:2027-2038` (the `e.kind === "leg"` block inside `gSpineNet`)
-- Modify: `scripts/integration.sh` (add a `canon_legs` section)
-- Modify: `.github/workflows/ci.yml` (add the pre-flight step)
+- Modify: `scripts/integration.sh:90-112,114-127` (add a `canon_legs` section function beside `spine_emit_drift` at `:90`, and its `run_section` line in the Execute block at `:114-127`)
+- Modify: `.github/workflows/ci.yml:102-103` (add the pre-flight step beside the story-graph drift-gate step)
 - Test: `scripts/tests/canon-legs.test.mjs`
 
 **Interfaces:**
@@ -1439,7 +1469,7 @@ Apply findings, then: `./scripts/integration.sh --no-install && git branch --sho
 **Files:**
 - Create: `scripts/lib/world-digest.mjs`, `scripts/check_world_digest.mjs`, `content/spine/world-digest.json`
 - Create: `scripts/tests/world-digest.test.mjs`
-- Modify: `scripts/integration.sh`, `.github/workflows/ci.yml`
+- Modify: `scripts/integration.sh:90-112,114-127`, `.github/workflows/ci.yml:102-103`
 - Test: `scripts/tests/world-digest.test.mjs`
 
 **Interfaces:**
@@ -1832,13 +1862,17 @@ This is the commit the whole programme exists to make survivable. It replaces th
 1. **A redraw commit may not contain a hand edit.** If a ring needs adjusting, adjust the premise or the seed and regenerate. `G-PROVENANCE`'s `generator.fabric` pin and `G-TRUNK-AREA` together make a hand edit detectable.
 2. **Do not commit until every step below has been verified alone.** The reason is R12: the redraw legitimately reds six comparisons, and any failure surviving a *completed* step is a real defect.
 
+**The lock has already moved once, and that is expected.** Plan B Task 12 ("re-ink the two live sheets") re-baselined `content/world/render-lock.json` and the two committed SVGs under the one recorded carve-out in the Global Constraints. So the baseline this task re-writes is Plan B's, not the pre-programme one, and `git log --oneline -- content/world/render-lock.json` will show that earlier commit. That is the *only* legitimate prior re-baseline: if the log shows a third, find it before you generate anything, because something re-inked a sheet outside its licence.
+
+**Which sheets this task re-renders.** Every sheet **already registered** when the task starts — `cluster1`, `atlas` (live), `synthetic` (Plan B Task 10), `fabric` and `overlay` (Plan C Task 13). The 13 per-continent sheets do **not** exist yet; they are Task 8's deliverable (E-C10), deliberately after the redraw because their builder reads `content/world/resolved/`, which promotion writes in Step 5 of this task. Steps 10 and 11 below therefore touch the storybook index and the art manifest only for sheets whose bytes moved, and the continent rows land in Task 8.
+
 **Files:**
 - Create: `content/spine/trunk-census.json`
-- Modify: `content/spine/nodes/*.json` (44 → 36 files), `content/spine/edges.json`, `content/spine/derived.json`
-- Modify: `content/world/render-lock.json`, `content/spine/world-digest.json`
-- Modify: `game-client/assets/art/maps/*.svg` (up to 16), `game-client/assets/art/art-manifest.json`, `game-client/assets/.thumbs/index.json`
-- Modify: `tools/asset-storybook/maps-index.json`
-- Modify: `content/bestiary/*.json`, `content/story/regions.json`, `content/towns/town-millcross.json` (alias re-homing, ids preserved wherever possible)
+- Modify: `content/spine/nodes/*.json` (44 → 36 files — rewritten wholesale by `promote-world.mjs`, no anchor), `content/spine/edges.json:1-654` (endpoint refs only; the first `road` edge is at `:4`), `content/spine/derived.json` (re-emitted wholesale by `check_spine_emit.mjs --write`)
+- Modify: `content/world/render-lock.json`, `content/spine/world-digest.json` (both generated — only ever rewritten by their own `--write` CLI, never hand-edited)
+- Modify: `game-client/assets/art/maps/*.svg` (the **5** sheets registered at this point — `cluster1`, `atlas`, `synthetic`, `fabric`, `overlay`; the 13 continent sheets arrive in Task 8), `game-client/assets/art/art-manifest.json:517`, `game-client/assets/.thumbs/index.json` (generated by `bake_thumbnails.mjs`, no anchor)
+- Modify: `tools/asset-storybook/maps-index.json:4-19` (the two live rows' `note` strings; the array does not grow here)
+- Modify: `content/bestiary/*.json`, `content/story/regions.json`, `content/towns/town-millcross.json` (alias re-homing, ids preserved wherever possible; the rows to touch are enumerated by the gate at Step 12, not by a line range)
 - Modify: `content/maps/atlas-frontier.md`, `colyseus-server/src/config/generated/mapDimensions.ts` (emitter output — must be byte-UNCHANGED)
 - Test: `scripts/tests/trunk-census.test.mjs`
 
@@ -1920,7 +1954,7 @@ Create `content/spine/trunk-census.json`:
     "ocean": "Galereach, Keelbreak, Tarnmark. Polygons 41,800 / 30,400 / 19,000 km².",
     "sea": "The 9 marginal seas. Each is a SUBSET of its ocean polygon (G-CONTAIN); its area is already inside the 91,200 and is never added again.",
     "region": "n-thornveil and n-northern-icefield ONLY. The runtime tree points at both through representsNodeId and scripts/lib/spine.mjs:875-877 hard-FAILs G-ALIAS if either vanishes. Every other region is a fabric row.",
-    "town": "n-millcross ONLY — the spineId host of content/towns/town-millcross.json, the one committed town plan. Hangs directly off its continent via the DEPTH_EXCEPTIONS entry \"continent>town\". Each future town plan (D2 defers 5) adds one node here and one line to this census, as a reviewed commit.",
+    "town": "n-millcross ONLY — the spineId host of content/towns/town-millcross.json, the one committed town plan. Hangs directly off its continent via the DEPTH_EXCEPTIONS entry \"continent>town\". Each future town plan (E-C9 defers 7) adds one node here and one line to this census, as a reviewed commit.",
     "playroot": "The runtime root, copied verbatim by promote-world.mjs via roots.json membership.",
     "playspace": "n-frontier-shelf — runtime, copied verbatim.",
     "site": "n-site-spawn-meadow, n-site-thornveil, n-site-icefield — runtime, copied verbatim.",
@@ -2030,40 +2064,40 @@ Expected: PASS. Two specific fixtures need attention if they fail:
 
 - [ ] **Step 10: R12 step 5 — storybook index, verified alone**
 
-Add one row to `tools/asset-storybook/maps-index.json` per new `SHEETS` entry, mirroring `id` / `title` / `outSvg` / `outPng` exactly. Example row for a continent sheet:
+No sheet is **added** here (the 13 continent rows land in Task 8), but every existing row's `note` now describes a world that no longer exists. Re-voice the two live rows in `tools/asset-storybook/maps-index.json:5-19` against the redrawn chart — `svg`/`png`/`id`/`title` must keep byte-matching `SHEETS[id]`, because `maps-index.test.mjs:33-61` compares those four fields in both directions:
 
 ```json
     {
-      "id": "wealdmarch",
-      "title": "Wealdmarch — the inland-sea basin",
-      "svg": "game-client/assets/art/maps/wealdmarch.svg",
-      "png": "game-client/assets/art/maps/wealdmarch.png",
-      "note": "The redrawn playable basin: 10 surveyed regions, 20 hatched frontier regions, the inland sea fed by the Meltwash."
+      "id": "atlas",
+      "title": "The Atlas World — Mariners' Chart",
+      "svg": "game-client/assets/art/maps/atlas-world.svg",
+      "png": "game-client/assets/art/maps/atlas-world.png",
+      "note": "The compiled world chart on the redrawn 400 x 400 km frame: 13 landmasses, 3 oceans, 9 marginal seas, and the honest parchment where no keel has been."
     },
 ```
 Then run: `node --test 'tools/asset-storybook/tests/*.test.mjs'`
 
-Expected: PASS. `maps-index.test.mjs:33-61` asserts the correspondence in **both** directions and runs in Gate 1 *and* CI — a sheet added without a row reds Gate 1.
+Expected: PASS, and the `sheets[]` array still holds exactly the ids `SHEETS` declares — **5 rows at this point**, not 18. `maps-index.test.mjs:33-61` asserts the correspondence in **both** directions and runs in Gate 1 *and* CI, so a row invented ahead of its `SHEETS` entry reds Gate 1 just as hard as a missing one.
 
 - [ ] **Step 11: R12 step 6 — art manifest, license rows and thumbnails, verified alone**
 
-For each new sheet add an `art:map-<id>` entry to `game-client/assets/art/art-manifest.json`, modelled on the committed `art:map-atlas` block at `:517`. Example:
+Same rule: no new `art:map-*` key here, but the existing ones now describe the old world. Re-voice `note`/`description`/`tags` on `art:map-atlas` (`game-client/assets/art/art-manifest.json:517`) and on `art:map-cluster1`, keeping every path field untouched. The block that Task 8 copies for each continent is the one at `:517`:
 
 ```json
-    "art:map-wealdmarch": {
+    "art:map-atlas": {
       "group": "map",
-      "title": "Wealdmarch — the inland-sea basin",
-      "file": "maps/wealdmarch.png",
-      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-sheet.mjs --sheet wealdmarch from content/world/resolved/ + content/spine/; the SVG beside this PNG (maps/wealdmarch.svg) is the artifact, the PNG is a <=512px thumbnail of it for the storybook.",
-      "description": "The playable continent at basin scale: ten surveyed regions in full ink, twenty frontier regions under the epistemic hatch, the inland sea the Meltwash feeds with no ocean outlet, and every settlement, road and named landform the resolved join carries.",
-      "tags": ["wealdmarch", "map", "bellfaith", "authored-vector", "svg", "spine"],
+      "title": "The Atlas World — Mariners' Chart",
+      "file": "maps/atlas-world.png",
+      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-sheet.mjs --sheet atlas from content/spine/; the SVG beside this PNG (maps/atlas-world.svg) is the artifact, the PNG is a <=512px thumbnail of it for the storybook.",
+      "description": "The compiled world chart on the redrawn frame: thirteen landmasses generated from one seed, three ocean polygons, nine marginal seas nested inside them, and the parchment left empty everywhere the survey has never reached.",
+      "tags": ["atlas", "map", "bellfaith", "authored-vector", "svg", "spine"],
       "source": "docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md",
       "gen": {
         "method": "authored-vector",
         "generated": false,
         "tool": "tools/mapforge/render-sheet.mjs",
-        "input": "content/world/resolved/",
-        "vector": "maps/wealdmarch.svg",
+        "input": "content/spine/",
+        "vector": "maps/atlas-world.svg",
         "raster": "rsvg-convert -w 512",
         "deterministic": true,
         "width": 512,
@@ -2087,7 +2121,29 @@ node scripts/check_content.mjs --require-complete 2>&1 | grep -E "G-ALIAS|spine-
 wc -l /tmp/alias-red.txt
 ```
 For each line, re-home the record — never the resolver:
-- `content/bestiary/*.json` — 116 placement rows across 9 region slugs. A row naming a slug that no longer exists moves to the surveyed region that inherited that ground, chosen by the allocation table in Task 9.
+- `content/bestiary/*.json` — 116 placement rows across 9 region slugs. A row naming a slug that no longer exists moves to the surveyed region that inherited that ground — the fabric region whose ring contains the old zone's `labelAt` point, computed here, not guessed.
+
+**Where the old `labelAt` values come from, and why not from disk.** Both pre-redraw copies are gone from the working tree by the time this step runs: Plan A Task 12 `git rm`s `content/maps/cluster1-geography.json`, and Step 6's promotion has already overwritten the ten basin region nodes that carried `lore.labelAt`. **The source is git**, and specifically the legacy mirror one commit before Plan A deleted it — that file is the exact document these 10 `id`/`labelAt` pairs were authored against. Do not reintroduce a working-tree read of the deleted path; it will `ENOENT` and this step is what Task 10's allocation table transcribes.
+
+```bash
+# The last commit touching the mirror path IS Plan A Task 12's deletion, so its
+# parent is the last tree that still holds the file. No sha is hand-substituted.
+DEL=$(git rev-list -n 1 HEAD -- content/maps/cluster1-geography.json)
+test -n "$DEL" || { echo "mirror not in this branch's history — is Plan A merged?"; exit 1; }
+git show "$DEL^:content/maps/cluster1-geography.json" > /tmp/old-geography.json
+node -e '
+const fs=require("fs");
+const old=JSON.parse(fs.readFileSync("/tmp/old-geography.json","utf8"));
+const fab=JSON.parse(fs.readFileSync("content/world/fabric/continent-02.json","utf8"));
+const inRing=(p,ring)=>{let c=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+  const[xi,yi]=ring[i],[xj,yj]=ring[j];
+  if((yi>p[1])!==(yj>p[1])&&p[0]<((xj-xi)*(p[1]-yi))/(yj-yi)+xi)c=!c;}return c;};
+for(const z of old.zones){
+  const hit=fab.regions.find(r=>r.survey==="surveyed"&&inRing(z.labelAt,r.ring));
+  console.log(z.id,"->",hit?hit.id:"NO SURVEYED REGION CONTAINS IT — report it");
+}'
+```
+Expected: exactly **10** lines, one per pre-redraw basin zone, and no `NO SURVEYED REGION` line. Paste that mapping into the phase report; Task 10's allocation table transcribes the same column, so the two can never disagree. A zone whose ground fell outside every surveyed region is a redraw defect, not a re-homing decision — stop and report it.
 - `content/story/regions.json` — 10 story regions. `region-spawn-meadow → n-frontier-shelf` is a **runtime** pointer and must not change.
 - `game-client/assets/art/art-manifest.json` — 6 `art:town-*` keys resolve against the resolved world's towns.
 - `content/towns/town-millcross.json` — `spineId: "n-millcross"` is preserved by the census; if it is not, the census is wrong.
@@ -2157,6 +2213,8 @@ Apply findings **as a new commit on top** — never `git commit --amend`, and ne
 ### Task 7: Refreeze root-first, and the shrunken freeze
 
 The freeze bought one thing: a coordinate change became a loud reviewable byte diff. Under generated land, coordinates are generated, so pinning individual anchors is wrong *and* useless — but a small, reasoned freeze still guards the handful of places whose position is load-bearing for canon. §9.3: refreeze **root-first**, recomputing each anchor from the new geometry, because G-FROZEN's ancestor rule reds every intermediate commit under any other order.
+
+**`n-cluster1` IS the post-redraw Wealdmarch continent node — do not look for `n-wealdmarch`.** Plan C's `buildTrunk` mints continent ids from `manifest.landmasses[].nodeId`, never by slugging the title, and c02's column reads `n-cluster1` with a written `nodeIdWhy` on the row. That is deliberate: twelve committed node files name `n-cluster1` as their `parentId`, `scripts/check_spine_emit.mjs:104` and `tools/mapforge/lib/atlas-sheet.mjs:42` resolve it by literal id and hard-fail without it, `scripts/spine-coverage.mjs:14` walks its children, and Plan D derives `PIN_OFFSET` from its committed anchor. A slugged `n-wealdmarch` would be a NEW node, and promotion's reconciliation would delete `n-cluster1` as an `n-atlas` descendant absent from the draft — taking all of the above with it. Plan C Task 10's test *"every continent node id comes from manifest.landmasses[].nodeId, and c02 stays n-cluster1"* fails the generation if anyone changes this. So every `n-cluster1` below is the redrawn Wealdmarch, and E-C4's "re-parented onto Wealdmarch" and Step 5's "their parent `n-cluster1`" are the same statement.
 
 **The shrunken freeze set (10 nodes), each with a written reason:**
 
@@ -2352,7 +2410,527 @@ Apply findings as new commits, then: `./scripts/integration.sh --no-install && g
 
 ---
 
-### Task 8: Z2 in both directions, against the fabric
+### Task 8: The 13 continent sheets — the zoom tier nobody built
+
+Spec §11 fixes the sheet roster at "1 atlas + 13 continents + 1 basin + 1 overlay" and §7.4 declares `maxLabelRank: 8` as the **continent** zoom tier; §11's `G-LABEL` decision caps the world tier at ≤ 40 labels *"and everything else deferred to continent sheets."* Across Plans A–D the `SHEETS` registry ends at five entries and no builder is parameterised by continent (E-C10). Without this task the redraw ships 1,740 landform instances, 336 named landforms, 45 settlements and 160 regions with **one** sheet that draws them all at world scale, the continent tier is never exercised, and the world tier's label budget defers to sheets that do not exist.
+
+**One builder, thirteen sheets.** A per-continent module would be thirteen files to review and thirteen places for a divergence to hide. `buildContinentSheet({ repoRoot, continent })` is a single function; the registry entries are generated from `CONTINENT_SHEETS`, so adding a fourteenth landmass is one row.
+
+**This is the last commit that adds a drawn artifact.** After it the render lock stops growing and every later task's `check_render_lock --check` must pass *without* a re-baseline. Prose does not reach the sheets.
+
+**Files:**
+- Create: `tools/mapforge/lib/continent-sheet.mjs`
+- Create: `tools/mapforge/tests/continent-sheet.test.mjs`
+- Create: `game-client/assets/art/maps/rimewall-cap.svg`, `wealdmarch.svg`, `coldreach.svg`, `stonemoor.svg`, `thirstwold.svg`, `reedstrand.svg`, `driftholt.svg`, `wracklow.svg`, `brightfall.svg`, `ashen-spar.svg`, `quillreef.svg`, `skerryfast.svg`, `loamspit.svg`
+- Modify: `tools/mapforge/render-sheet.mjs:38-50` (the `SHEETS` registry; Plan B Task 10 and Plan C Task 13 have already added `synthetic`, `fabric` and `overlay` by the time this runs)
+- Modify: `tools/asset-storybook/maps-index.json:4-19` (the `sheets[]` array grows from 5 rows to 18)
+- Modify: `game-client/assets/art/art-manifest.json:517` (13 new `art:map-*` entries modelled on the `art:map-atlas` block at `:517`)
+- Modify: `content/world/render-lock.json` (generated — extended by `node scripts/check_render_lock.mjs --write`, never hand-edited)
+- Test: `tools/mapforge/tests/continent-sheet.test.mjs`
+
+**Interfaces:**
+- Consumes: `content/world/resolved/continent-NN.json` (Plan D `resolveCivil`, promoted in Task 6) and `content/world/fabric/continent-NN.json` (Plan C) for `regions[].biomeShares`; `C`, `r2`, `esc`, `createDraft`, `patternDefs({ids})`, `FILL_FOR`, `LEGEND`, `ROAD_W` (Plan B Task 6); `checkBiomeInk` and `frontierPattern` (Plan B Task 6, `tools/mapforge/lib/ink.mjs` — the single provenance→hatch mapping; this sheet must not declare its own); `GLYPHS`, `symbolDefs`, `glyphUse`, `checkGlyphCoverage` (Plan B Task 7); `RANKS`, `placeLabels`, `checkLabels` (Plan B Task 8); `bakedUnderlay` (Plan B Task 9); `SHEETS` (Plan A).
+- Produces: `CONTINENT_SHEETS`, `buildContinentSheet({repoRoot, continent})`, and 13 `SHEETS` entries at `maxLabelRank: 8`.
+
+- [ ] **Step 1: Write the failing test**
+
+Create `tools/mapforge/tests/continent-sheet.test.mjs`:
+
+```js
+// Plan E Task 8 — the continent zoom tier. Spec §7.4 gives it maxLabelRank 8
+// and §11 counts 13 of them in the sheet roster. This suite is the proof that
+// all thirteen exist, that each is indexed, and that the densest one renders
+// the real world at real density with zero PROBLEMS.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync, existsSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { CONTINENT_SHEETS, buildContinentSheet } from "../lib/continent-sheet.mjs";
+import { SHEETS } from "../render-sheet.mjs";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(HERE, "../../..");
+const idx = () => JSON.parse(readFileSync(join(ROOT, "tools/asset-storybook/maps-index.json"), "utf8"));
+
+test("thirteen continent sheets, one per landmass, ids unique and non-colliding", () => {
+  assert.equal(CONTINENT_SHEETS.length, 13);
+  assert.deepEqual([...new Set(CONTINENT_SHEETS.map((s) => s.continent))].sort(),
+    ["c01","c02","c03","c04","c05","c06","c07","c08","c09","c10","c11","c12","c13"]);
+  for (const s of CONTINENT_SHEETS) {
+    assert.match(s.id, /^[a-z][a-z-]*$/, `${s.id} is not a slug`);
+    assert.ok(!["atlas", "cluster1", "synthetic", "fabric", "overlay"].includes(s.id),
+      `${s.id} collides with a sheet another plan registered`);
+    assert.equal(typeof s.title, "string");
+  }
+});
+
+test("every continent sheet is registered at the continent zoom tier", () => {
+  for (const s of CONTINENT_SHEETS) {
+    const entry = SHEETS[s.id];
+    assert.ok(entry, `${s.id} is not in SHEETS — render-sheet.mjs was not wired`);
+    assert.equal(entry.maxLabelRank, 8, `${s.id}: spec §7.4 fixes the continent tier at 8`);
+    assert.equal(entry.outSvg, `game-client/assets/art/maps/${s.id}.svg`);
+    assert.equal(entry.outPng, `game-client/assets/art/maps/${s.id}.png`);
+    assert.equal(typeof entry.build, "function");
+  }
+});
+
+test("the roster closes at 18 — 1 atlas + 1 basin + 13 continent + 1 overlay + 1 fabric + 1 synthetic", () => {
+  const budgets = JSON.parse(readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"));
+  assert.equal(Object.keys(SHEETS).length, 18);
+  assert.ok(Object.keys(SHEETS).length <= budgets.sheets.maxSheets,
+    `${Object.keys(SHEETS).length} sheets > budget ${budgets.sheets.maxSheets}`);
+});
+
+test("X8 parity: every continent sheet has a storybook row, both directions", () => {
+  const rows = new Map(idx().sheets.map((r) => [r.id, r]));
+  for (const s of CONTINENT_SHEETS) {
+    const row = rows.get(s.id);
+    assert.ok(row, `${s.id} has no maps-index.json row — maps-index.test.mjs reds Gate 1`);
+    assert.equal(row.svg, SHEETS[s.id].outSvg);
+    assert.equal(row.png, SHEETS[s.id].outPng);
+    assert.equal(row.title, SHEETS[s.id].title);
+    assert.ok(row.note.length >= 40, `${s.id}: a note nobody can read is not a review surface`);
+  }
+  assert.equal(idx().sheets.length, 18);
+});
+
+test("ACCEPTANCE: the densest continent builds with ZERO problems", () => {
+  const { svg, notes, problems } = buildContinentSheet({ repoRoot: ROOT, continent: "c02" });
+  assert.deepEqual(problems, [], problems.join("\n"));
+  assert.ok(svg.startsWith("<svg "), "not an svg");
+  assert.ok(notes.some((n) => /regions 30 /.test(n)), notes.join(" | "));
+  assert.ok(notes.some((n) => /dropped 0/.test(n)), `a label was dropped: ${notes.join(" | ")}`);
+});
+
+test("all thirteen build, and none of them throws", () => {
+  for (const s of CONTINENT_SHEETS) {
+    const out = buildContinentSheet({ repoRoot: ROOT, continent: s.continent });
+    assert.deepEqual(out.problems, [], `${s.id}: ${out.problems.join("\n")}`);
+    assert.ok(out.svg.length > 0, `${s.id}: empty svg`);
+  }
+});
+
+test("the continent tier draws NO label above rank 8", () => {
+  const { svg } = buildContinentSheet({ repoRoot: ROOT, continent: "c02" });
+  const texts = [...svg.matchAll(/<text class="lbl"[^>]*data-rank="(\d+)"/g)].map((m) => Number(m[1]));
+  assert.ok(texts.length > 0, "no ranked labels emitted");
+  assert.ok(Math.max(...texts) <= 8, `rank ${Math.max(...texts)} escaped the tier cap`);
+});
+
+test("buildContinentSheet is deterministic — same bytes twice", () => {
+  assert.equal(buildContinentSheet({ repoRoot: ROOT, continent: "c04" }).svg,
+               buildContinentSheet({ repoRoot: ROOT, continent: "c04" }).svg);
+});
+
+test("every committed continent SVG is current", () => {
+  for (const s of CONTINENT_SHEETS) {
+    const p = join(ROOT, SHEETS[s.id].outSvg);
+    assert.ok(existsSync(p), `${p} was never rendered`);
+    assert.equal(readFileSync(p, "utf8"), buildContinentSheet({ repoRoot: ROOT, continent: s.continent }).svg,
+      `stale: node tools/mapforge/render-sheet.mjs --sheet ${s.id}`);
+  }
+});
+
+test("every continent sheet stays inside the committed byte budget", () => {
+  const budgets = JSON.parse(readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"));
+  for (const s of CONTINENT_SHEETS) {
+    const bytes = Buffer.byteLength(buildContinentSheet({ repoRoot: ROOT, continent: s.continent }).svg, "utf8");
+    assert.ok(bytes <= budgets.sheets.maxSvgBytes, `${s.id}: ${bytes} > ${budgets.sheets.maxSvgBytes}`);
+  }
+});
+
+test("a missing resolved file is a diagnosable PROBLEM, never a throw", () => {
+  const out = buildContinentSheet({ repoRoot: ROOT, continent: "c99" });
+  assert.equal(out.svg, "");
+  assert.match(out.problems.join("\n"), /continent-99\.json/);
+});
+```
+
+- [ ] **Step 2: Run it to verify it fails**
+
+Run: `node --test 'tools/mapforge/tests/continent-sheet.test.mjs'`
+
+Expected: FAIL — `ERR_MODULE_NOT_FOUND ... lib/continent-sheet.mjs`.
+
+- [ ] **Step 3: Write `tools/mapforge/lib/continent-sheet.mjs`**
+
+```js
+// tools/mapforge/lib/continent-sheet.mjs — the continent zoom tier (spec §7.4).
+//
+// ONE builder for all thirteen landmasses. It draws what the resolved join
+// carries and nothing else: surveyed regions in baked biome ink, reported
+// regions under the provenance-keyed frontier hatch (§6.4 extension 1),
+// the coast and trunk river, roads, settlements, named landforms as glyphs
+// with labels, unnamed instances as glyphs without them.
+//
+// Builder contract, identical to basin-sheet.mjs and synthetic-sheet.mjs:
+// NEVER throw — a CLI treats a throw as a crash, not as a diagnosable red.
+// Return { svg, notes, problems }.
+import { readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
+import { C, r2, esc, createDraft, patternDefs, FILL_FOR, LEGEND, ROAD_W } from "./draft.mjs";
+// frontierPattern, NOT a local provenance->pattern table: checkBiomeInk builds
+// its reachability set from ink.mjs's own FRONTIER_PATTERNS, so a second copy
+// here would be a mapping this gate cannot see. One home, per the same rule
+// that put `requires` and GENERATOR_VERSION in one place.
+import { checkBiomeInk, frontierPattern } from "./ink.mjs";
+import { GLYPHS, symbolDefs, glyphUse, checkGlyphCoverage } from "./glyphs.mjs";
+import { RANKS, placeLabels, checkLabels } from "./labels.mjs";
+import { bakedUnderlay } from "./texture-bake.mjs";
+
+// The thirteen landmasses of content/world/manifest.json, in premise order.
+// `id` is the sheet id, the SVG basename and the storybook row id — one string,
+// three uses, so a rename is one edit. Titles are the premise `title` plus the
+// structural idea, because a storybook card with a bare name teaches nothing.
+export const CONTINENT_SHEETS = Object.freeze([
+  { id: "rimewall-cap", continent: "c01", title: "Rimewall Cap — the ice divide" },
+  { id: "wealdmarch",   continent: "c02", title: "Wealdmarch — the inland-sea basin" },
+  { id: "coldreach",    continent: "c03", title: "Coldreach — one spine, one rain shadow" },
+  { id: "stonemoor",    continent: "c04", title: "Stonemoor — the drowned karst plateau" },
+  { id: "thirstwold",   continent: "c05", title: "Thirstwold — the rain-shadow erg" },
+  { id: "reedstrand",   continent: "c06", title: "Reedstrand — the bird's-foot delta" },
+  { id: "driftholt",    continent: "c07", title: "Driftholt — the fog forest" },
+  { id: "wracklow",     continent: "c08", title: "Wracklow — the erosional coast" },
+  { id: "brightfall",   continent: "c09", title: "Brightfall — the cliff-hung falls" },
+  { id: "ashen-spar",   continent: "c10", title: "Ashen Spar — the volcanic arc" },
+  { id: "quillreef",    continent: "c11", title: "Quillreef — the atoll ring" },
+  { id: "skerryfast",   continent: "c12", title: "Skerryfast — the fjord skerries" },
+  { id: "loamspit",     continent: "c13", title: "Loamspit — the sandbar chain" },
+]);
+
+const MAP_PX = 1400;          // the drawn square, before padding
+const PAD = 46;
+const MAX_PX_PER_KM = 24;     // a 12 km chain must not be drawn at 100 px/km
+const LEGEND_TIER = 3;        // continent sheets carry the full legend
+
+/** Dominant biome of a fabric region — the highest share, ties broken by name. */
+function dominantBiome(shares) {
+  let best = null;
+  for (const [biome, share] of Object.entries(shares ?? {}))
+    if (!best || share > best[1] || (share === best[1] && biome < best[0])) best = [biome, share];
+  return best ? best[0] : null;
+}
+
+/** Axis-aligned bounds of every km point the sheet will draw. */
+function bounds(rings) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const ring of rings)
+    for (const [x, y] of ring ?? []) {
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+    }
+  return { minX, minY, maxX, maxY };
+}
+
+export function buildContinentSheet({ repoRoot, continent }) {
+  const problems = [];
+  const notes = [];
+  const nn = String(continent ?? "").replace(/^c/, "");
+  const resolvedPath = join(repoRoot, `content/world/resolved/continent-${nn}.json`);
+  const fabricPath = join(repoRoot, `content/world/fabric/continent-${nn}.json`);
+  const lexPath = join(repoRoot, "content/world/lexicon/landforms.json");
+  for (const p of [resolvedPath, fabricPath, lexPath])
+    if (!existsSync(p)) problems.push(`continent-sheet: ${p.replace(repoRoot + "/", "")} is missing`);
+  if (problems.length) return { svg: "", notes, problems };
+
+  let world, fabric, lexicon;
+  try {
+    world = JSON.parse(readFileSync(resolvedPath, "utf8"));
+    fabric = JSON.parse(readFileSync(fabricPath, "utf8"));
+    lexicon = JSON.parse(readFileSync(lexPath, "utf8"));
+  } catch (e) {
+    problems.push(`continent-sheet ${continent}: cannot read inputs: ${e.message}`);
+    return { svg: "", notes, problems };
+  }
+  if (!world.coastline?.points) {
+    problems.push(`continent-sheet ${continent}: resolved doc has no coastline.points`);
+    return { svg: "", notes, problems };
+  }
+  // The builder contract is "never throw". A resolved doc missing one of the
+  // array keys is a Plan D defect and must surface as a PROBLEM with the key
+  // named, not as a TypeError three loops later.
+  for (const k of ["zones", "towns", "camps", "roads", "landmarks", "dungeons", "instances", "terrainPatches"])
+    if (!Array.isArray(world[k])) {
+      problems.push(`continent-sheet ${continent}: resolved key "${k}" is not an array`);
+      world[k] = [];
+    }
+
+  const meta = CONTINENT_SHEETS.find((s) => s.continent === continent);
+  const biomeOf = new Map((fabric.regions ?? []).map((r) => [r.id, dominantBiome(r.biomeShares)]));
+
+  // ---- frame: fit the drawn extent, never re-centre per element -------------
+  const b = bounds([world.coastline.points, ...world.zones.map((z) => z.polygon)]);
+  const spanKm = Math.max(b.maxX - b.minX, b.maxY - b.minY) || 1;
+  const pxPerKm = Math.min(MAX_PX_PER_KM, r2(MAP_PX / spanKm));
+  const drawnW = (b.maxX - b.minX) * pxPerKm, drawnH = (b.maxY - b.minY) * pxPerKm;
+  const mapLeft = r2(PAD + (MAP_PX - drawnW) / 2 - b.minX * pxPerKm);
+  const mapTop = r2(PAD + 40 + (MAP_PX - drawnH) / 2 - b.minY * pxPerKm);
+  const { poly, smooth, X, Y } = createDraft({ pxPerKm, mapLeft, mapTop });
+  const SHEET_W = MAP_PX + PAD * 2, SHEET_H = MAP_PX + PAD * 2 + 40 + 28;
+
+  // ---- G-BIOME-INK: emit exactly what is referenced -------------------------
+  const referenced = [];
+  for (const z of world.zones)
+    if (z.survey === "reported") referenced.push(frontierPattern(z.provenance));
+  for (const row of LEGEND) if (row.tier <= LEGEND_TIER) referenced.push(row.pattern);
+  const emitted = [...new Set(referenced)].sort();
+  problems.push(...checkBiomeInk({ emittedIds: emitted, referencedIds: referenced, legendTier: LEGEND_TIER }));
+
+  // ---- G-GLYPH: every named landform's type must have a drawn family --------
+  const glyphInstances = [
+    ...world.instances.map((i) => ({ glyph: i.glyph, at: i.at, size: 7 })),
+    ...world.landmarks.filter((l) => l.glyph && l.at).map((l) => ({ glyph: l.glyph, at: l.at, size: 10 })),
+  ].filter((g) => g.at);
+  const usedGlyphs = [...new Set(glyphInstances.map((g) => g.glyph))].sort();
+  const namedCounts = {};
+  for (const row of lexicon) namedCounts[row.id] = 0;
+  for (const l of world.landmarks) if (l.type && l.type in namedCounts) namedCounts[l.type] += 1;
+  problems.push(...checkGlyphCoverage({ lexicon, namedCounts, emittedIds: usedGlyphs }));
+
+  // ---- labels: the continent tier, rank 8 and below -------------------------
+  const labels = [];
+  for (const z of world.zones)
+    if (z.survey === "surveyed" && z.labelAt)
+      labels.push({ id: z.id, text: z.name, rank: RANKS.region, at: z.labelAt });
+  for (const t of world.towns)
+    labels.push({ id: t.id, text: t.name, at: t.at,
+      rank: t.settlementRank === "capital" ? RANKS.capital
+          : t.settlementRank === "hub" ? RANKS.hub : RANKS.village });
+  for (const l of world.landmarks)
+    if (l.at) labels.push({ id: l.id, text: l.name, rank: RANKS.namedLandform, at: l.at });
+  for (const d of world.dungeons)
+    if (d.at) labels.push({ id: d.id, text: d.name, rank: RANKS.dungeon, at: d.at });
+  const frame = { x: PAD, y: PAD + 40, w: MAP_PX, h: MAP_PX };
+  // placeLabels returns { id, x, y, anchor, box, size, text, leader? } and
+  // deliberately does NOT return `rank` (Plan B Task 8, labels.mjs:3389-3441),
+  // so the tier attribute is looked up here rather than read off the result.
+  const rankById = new Map(labels.map((l) => [l.id, l.rank]));
+  const { placed, dropped } = placeLabels({
+    labels: labels.map((l) => ({ ...l, at: [X(l.at[0]), Y(l.at[1])] })),
+    obstacles: [], maxLabelRank: 8, frame });
+  problems.push(...checkLabels({ placed, dropped, tier: LEGEND_TIER }));
+
+  // ---- the baked biome underlay, surveyed regions only ----------------------
+  let underlay = "";
+  try {
+    underlay = bakedUnderlay({
+      regions: world.zones.filter((z) => z.survey === "surveyed")
+        .map((z) => ({ id: z.id, biome: biomeOf.get(z.id) ?? "meadow", ring: z.polygon })),
+      pxPerKm });
+  } catch (e) { problems.push(`continent-sheet ${continent}: bake failed: ${e.message}`); }
+
+  notes.push(`continent ${continent} · ${meta ? meta.title : "(unregistered)"}`);
+  notes.push(`regions ${world.zones.length} surveyed ${world.zones.filter((z) => z.survey === "surveyed").length}`);
+  notes.push(`instances ${world.instances.length} · named ${world.landmarks.length} · towns ${world.towns.length}`);
+  notes.push(`labels ${labels.length} placed ${placed.length} dropped ${dropped.length}`);
+  notes.push(`scale ${pxPerKm} px/km over ${r2(spanKm)} km`);
+
+  // ---- draw ----------------------------------------------------------------
+  const o = [];
+  o.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${SHEET_W}" height="${SHEET_H}" viewBox="0 0 ${SHEET_W} ${SHEET_H}" role="img" aria-label="${esc(meta ? meta.title : continent)}">`);
+  o.push(`<title>${esc(meta ? meta.title : continent)}</title>`);
+  o.push(`<desc>Drawn by tools/mapforge/render-sheet.mjs from content/world/resolved/continent-${nn}.json. Surveyed regions carry biome ink; reported regions carry the provenance hatch and no terrain claim.</desc>`);
+  o.push("<defs>");
+  o.push(patternDefs({ ids: emitted }));
+  o.push(symbolDefs({ ids: usedGlyphs }));
+  o.push("</defs>");
+  o.push(`<style>text { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; fill: ${C.ink}; }
+  .lbl { paint-order: stroke fill; stroke: ${C.parchment}; stroke-width: 3.4px; stroke-linejoin: round; }</style>`);
+  o.push(`<rect width="${SHEET_W}" height="${SHEET_H}" fill="${C.parchment}"/>`);
+  o.push(`<text x="${PAD}" y="${PAD + 22}" font-size="22">${esc(meta ? meta.title : continent)}</text>`);
+
+  // bakedUnderlay draws in km*pxPerKm from its own origin, so it is translated
+  // by exactly the offsets createDraft's X/Y add — otherwise the ink sits a
+  // continent's width away from the outlines it belongs to.
+  o.push(`<g transform="translate(${mapLeft} ${mapTop})">${underlay}</g>`);
+  for (const z of world.zones)
+    if (z.survey === "reported")
+      o.push(`<path d="${poly(z.polygon)} Z" fill="url(#${frontierPattern(z.provenance)})" stroke="${C.inkSoft}" stroke-width="0.5"/>`);
+  // terrainPatches are keyed by terrainKind, so they read FILL_FOR (draft.mjs:36)
+  // — NOT BIOME_FILL, which Plan B adds for the 20 biomes. The two namespaces
+  // are distinct and mixing them is the terrain-kind/landform-id conflation
+  // the lexicon warns about.
+  for (const tp of world.terrainPatches)
+    o.push(`<path d="${poly(tp.polygon)} Z" fill="url(#${FILL_FOR[tp.terrainKind] ?? "pRock"})" fill-opacity="0.6" stroke="none"/>`);
+  o.push(`<path d="${smooth(world.coastline.points, true)}" fill="none" stroke="${C.ink}" stroke-width="1.6"/>`);
+  if (world.river) o.push(`<path d="${smooth(world.river.points)}" fill="none" stroke="${C.sea}" stroke-width="2.2"/>`);
+  if (world.iceEdge) o.push(`<path d="${poly(world.iceEdge.points)}" fill="none" stroke="${C.inkSoft}" stroke-width="1.2" stroke-dasharray="6 4"/>`);
+  if (world.saltmire) o.push(`<path d="${poly(world.saltmire.polygon)} Z" fill="url(#pMire)" stroke="${C.inkMid}" stroke-width="1.2" stroke-dasharray="3 3"/>`);
+  // Roads carry a parchment casing under the ink line, exactly as
+  // basin-sheet.mjs:320-330 draws them — the casing is what stops a road
+  // disappearing into a hatched region.
+  for (const road of world.roads) {
+    const w = ROAD_W[road.weight] ?? 1.5;
+    o.push(`<path d="${smooth(road.points)}" fill="none" stroke="${C.parchmentDeep}" stroke-width="${w + 3}" stroke-linecap="round"/>`);
+    o.push(`<path d="${smooth(road.points)}" fill="none" stroke="${C.ink}" stroke-width="${w}" stroke-linecap="round"${road.dashed ? ' stroke-dasharray="7 6"' : ""}/>`);
+  }
+
+  o.push(`<g color="${C.inkMid}" fill="none" stroke="currentColor" stroke-width="0.9">`);
+  for (const g of glyphInstances)
+    o.push(glyphUse({ id: g.glyph, x: X(g.at[0]), y: Y(g.at[1]), size: g.size }));
+  o.push("</g>");
+  for (const t of world.towns)
+    o.push(`<circle cx="${X(t.at[0])}" cy="${Y(t.at[1])}" r="${t.settlementRank === "capital" ? 5 : t.settlementRank === "hub" ? 3.5 : 2.2}" fill="${C.ink}"/>`);
+  for (const p of placed) {
+    if (p.leader)
+      o.push(`<path d="M${p.leader[0][0]},${p.leader[0][1]} L${p.leader[1][0]},${p.leader[1][1]}" stroke="${C.inkSoft}" stroke-width="0.5" fill="none"/>`);
+    o.push(`<text class="lbl" data-rank="${rankById.get(p.id)}" x="${p.x}" y="${p.y}" font-size="${p.size}">${esc(p.text)}</text>`);
+  }
+
+  let lx = PAD, ly = SHEET_H - 16;
+  for (const row of LEGEND.filter((r) => r.tier <= LEGEND_TIER)) {
+    o.push(`<rect x="${r2(lx)}" y="${r2(ly - 10)}" width="18" height="12" fill="url(#${row.pattern})" stroke="${C.inkSoft}" stroke-width="0.5"/>`);
+    o.push(`<text x="${r2(lx + 22)}" y="${r2(ly)}" font-size="8" fill="${C.inkMid}">${esc(row.label)}</text>`);
+    lx += 128;
+    if (lx > SHEET_W - 130) { lx = PAD; ly += 14; }
+  }
+  o.push("</svg>");
+  return { svg: o.join("\n") + "\n", notes, problems };
+}
+```
+
+**Three facts this code depends on, each verified against the repo before it was written.** (1) `createDraft` already returns `{ X, Y, poly, smooth, lineLabel, towerGlyph }` (`tools/mapforge/lib/draft.mjs:324`), so `X`/`Y` need no change. (2) The palette at `draft.mjs:13-23` has exactly `parchment, parchmentDeep, sea, ink, ink2, inkMid, inkSoft, accent, accentSoft` — there is **no** `C.water` or `C.road`; water is `C.sea` and a road is a `C.parchmentDeep` casing under a `C.ink` line, which is why the road block copies `basin-sheet.mjs:320-330` rather than inventing a colour. (3) `ROAD_W = { trunk: 3.2, spur: 2.2, track: 1.5 }` (`draft.mjs:34`) is the width table, and the resolved road record carries `weight`, `dashed` and `points` (`content/maps/cluster1-geography.json#roads` is the shape Plan D's `PlaceRoad` preserves).
+
+- [ ] **Step 4: Register the thirteen sheets**
+
+In `tools/mapforge/render-sheet.mjs`, import the builder and generate the entries from the roster — thirteen hand-written blocks is thirteen chances for a typo:
+
+```js
+import { CONTINENT_SHEETS, buildContinentSheet } from "./lib/continent-sheet.mjs";
+```
+then, immediately after the `SHEETS` object literal:
+```js
+// Plan E Task 8 / spec §7.4: the continent zoom tier. One builder, thirteen
+// entries, generated from the roster so a fourteenth landmass is one row.
+for (const s of CONTINENT_SHEETS) {
+  if (SHEETS[s.id]) throw new Error(`render-sheet: sheet id "${s.id}" is already registered`);
+  SHEETS[s.id] = {
+    title: s.title,
+    outSvg: `game-client/assets/art/maps/${s.id}.svg`,
+    outPng: `game-client/assets/art/maps/${s.id}.png`,
+    maxLabelRank: 8,
+    build: ({ repoRoot }) => buildContinentSheet({ repoRoot, continent: s.continent }),
+  };
+}
+```
+
+- [ ] **Step 5: Build all thirteen**
+
+Run:
+```bash
+for s in rimewall-cap wealdmarch coldreach stonemoor thirstwold reedstrand driftholt \
+         wracklow brightfall ashen-spar quillreef skerryfast loamspit; do
+  node tools/mapforge/render-sheet.mjs --sheet "$s" --no-png || exit 1
+done
+ls -la game-client/assets/art/maps/*.svg | wc -l
+```
+Expected: thirteen builds, each printing its five `notes` lines and an **empty** `PROBLEMS` block; 18 SVGs on disk. A `G-BIOME-INK`, `G-GLYPH` or `G-LABEL` problem here is a **Plan B defect surfacing on real density** — report it against Plan B Task 6/7/8 and do not hand-tune this sheet.
+
+- [ ] **Step 6: Index them in the storybook**
+
+Add thirteen rows to `tools/asset-storybook/maps-index.json`'s `sheets[]` array, in `CONTINENT_SHEETS` order after the five existing rows. `id`/`title`/`svg`/`png` must byte-match the registry. First row, as the pattern for the other twelve:
+
+```json
+    {
+      "id": "wealdmarch",
+      "title": "Wealdmarch — the inland-sea basin",
+      "svg": "game-client/assets/art/maps/wealdmarch.svg",
+      "png": "game-client/assets/art/maps/wealdmarch.png",
+      "note": "The playable continent at basin scale: ten surveyed regions in full biome ink, twenty reported regions under the provenance hatch, the inland sea the Meltwash feeds with no ocean outlet, and every settlement, road and named landform the resolved join carries."
+    },
+```
+Then run: `node --test 'tools/asset-storybook/tests/*.test.mjs'`
+
+Expected: PASS with 18 rows. `maps-index.test.mjs:33-61` checks the correspondence in both directions, so a missing row and an invented row fail identically.
+
+- [ ] **Step 7: Art manifest, license rows and thumbnails**
+
+Add one `art:map-<id>` entry per continent to `game-client/assets/art/art-manifest.json`, modelled on the `art:map-atlas` block at `:517`. The `note` string is the same authored-vector declaration every map key carries — only the paths, title and description change:
+
+```json
+    "art:map-wealdmarch": {
+      "group": "map",
+      "title": "Wealdmarch — the inland-sea basin",
+      "file": "maps/wealdmarch.png",
+      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-sheet.mjs --sheet wealdmarch from content/world/resolved/continent-02.json; the SVG beside this PNG (maps/wealdmarch.svg) is the artifact, the PNG is a <=512px thumbnail of it for the storybook.",
+      "description": "The playable continent at its own scale: ten surveyed regions in biome ink, twenty reported regions under the epistemic hatch, the inland sea with no ocean outlet, and the roads, settlements and named landforms the civil join binds to the fabric.",
+      "tags": ["wealdmarch", "map", "continent", "authored-vector", "svg", "spine"],
+      "source": "docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md",
+      "gen": {
+        "method": "authored-vector",
+        "generated": false,
+        "tool": "tools/mapforge/render-sheet.mjs",
+        "input": "content/world/resolved/continent-02.json",
+        "vector": "maps/wealdmarch.svg",
+        "raster": "rsvg-convert -w 512",
+        "deterministic": true,
+        "width": 512,
+        "note": "No model, no sampler, no seed — drawn from geometry. Re-run the tool to reproduce it byte-for-byte."
+      }
+    },
+```
+Then bake the thumbs and run the manifest gate:
+```bash
+for s in rimewall-cap wealdmarch coldreach stonemoor thirstwold reedstrand driftholt \
+         wracklow brightfall ashen-spar quillreef skerryfast loamspit; do
+  node tools/mapforge/render-sheet.mjs --sheet "$s" || exit 1
+done
+node scripts/bake_thumbnails.mjs --only maps
+node scripts/check_asset_manifest.mjs
+```
+Expected: PASS. `bake_thumbnails.mjs` needs `sharp` from `scripts/` — run `npm ci --prefix scripts` first if it is missing. **CI never runs the bake, only the guard**, so a skipped bake reds CI rather than your laptop.
+
+- [ ] **Step 8: Extend the lock — additions only**
+
+Run:
+```bash
+node scripts/check_render_lock.mjs --write
+git diff --stat content/world/render-lock.json
+git diff content/world/render-lock.json | grep -c '^-[^-]' || echo "0 removed lines"
+```
+Expected: **26 added lines** (13 SVGs + 13 PNGs) and **zero** changed or removed lines. If an existing artifact's hash moved, a live sheet changed under a commit that was only supposed to add sheets — find it before continuing.
+
+- [ ] **Step 9: Look at them**
+
+```bash
+open -a "Google Chrome" game-client/assets/art/maps/wealdmarch.svg \
+  game-client/assets/art/maps/thirstwold.svg game-client/assets/art/maps/quillreef.svg
+```
+Judged against the written criteria, not taste: **no two labels overlap**; **surveyed and reported ground are distinguishable at a glance**, and the three hatch densities read as three; **the glyph field reads as many different marks**; **the legend explains every texture on the canvas**; and the smallest chain (`quillreef`) is legible rather than a dot in a field of parchment. A failure here is a real defect in Plan B Tasks 6–9 or in the scale rule at Step 3 — fix the module, never the sheet.
+
+- [ ] **Step 10: Run the full suite and commit**
+
+```bash
+node --test 'tools/mapforge/tests/*.test.mjs'
+node --test 'tools/asset-storybook/tests/*.test.mjs'
+node scripts/check_render_lock.mjs --check
+node scripts/check_content.mjs --only=spine 2>&1 | grep world-budget
+(cd colyseus-server && npm test -- mapDimensions)
+git add tools/mapforge/lib/continent-sheet.mjs tools/mapforge/tests/continent-sheet.test.mjs \
+        tools/mapforge/render-sheet.mjs tools/asset-storybook/maps-index.json \
+        game-client/assets/art/maps game-client/assets/art/art-manifest.json \
+        game-client/assets/.thumbs content/world/render-lock.json
+git commit -m "feat: the 13 continent sheets at the rank-8 zoom tier"
+```
+Expected: every command PASS; the `world-budget: sheets 18 files, <n> bytes (budget 18, 524288)` line inside its caps; the jest pin green (no runtime file is in this diff at all).
+
+- [ ] **Step 11: Quality gate — verify**
+
+Run: `node --test 'tools/mapforge/tests/continent-sheet.test.mjs' && ./scripts/integration.sh --no-install` and paste the output.
+
+- [ ] **Step 12: Quality gate — independent adversarial review**
+
+Fresh reviewer on `git show HEAD`, with three of the sheets open in Chrome, brief: *"(a) Is the scale rule honest — does `pxPerKm = min(24, MAP_PX / span)` make the small chains legible, or does it just draw them tiny in a huge frame? Compute the drawn extent of `quillreef` and `loamspit` and say what fraction of the canvas each fills. (b) Can `buildContinentSheet` throw for ANY input — a resolved doc with an empty `zones` array, a zone with a two-point polygon, a `null` `labelAt`, a landmark with no `glyph`? Construct each and run it. (c) The `data-rank` attribute is looked up from `rankById`, because `placeLabels` does not return a rank. Confirm every placed label resolves to a real rank — a `data-rank="undefined"` anywhere means an id diverged between the label list and the placer, and the tier test would then be asserting on nothing. (d) Are 18 sheets × their thumbnails inside `budgets.sheets`, and does the world-budget line report 18 rather than the spec's 16? (e) Does the reported hatch key on `zone.provenance` for every reported region, or does the `?? "pReported"` fallback quietly swallow a fabric that forgot to emit it? Count how many regions take the fallback."*
+
+- [ ] **Step 13: Quality gate — refactor, re-verify, report**
+
+Apply findings as a new commit (re-render and re-lock if any SVG byte changes), then: `node --test 'tools/mapforge/tests/continent-sheet.test.mjs' && node scripts/check_render_lock.mjs --check && git branch --show-current && git log --oneline -1`
+
+---
+
+### Task 9: Z2 in both directions, against the fabric
 
 `Z2` today (`check_content.mjs:1034-1045`) iterates *the geography, not the files* — every zone the mirror declares needs exactly one `content/zones/zone-*.json` record. That is half a policy. Without the second rule, "40 written, 120 hatched" degrades into 160 thin stubs and the frontier stops meaning anything (R13). **A zone record on a `reported` region is a FAILURE, not a warning** — writing prose for unwalked ground is exactly the dishonesty the hatching exists to prevent.
 
@@ -2362,9 +2940,9 @@ This task must run **after** the redraw: before it, the fabric describes a world
 
 **Files:**
 - Modify: `scripts/check_content.mjs:940-1071` (`checkZoneContent`)
-- Modify: `content/schemas/zone-content.schema.json` (add `region`, `survey` to `properties` and `required`)
+- Modify: `content/schemas/zone-content.schema.json:6-8` (add `region`, `survey` to the root `required` array at `:6` and the root `properties` block at `:8`)
 - Modify: `content/zones/zone-*.json` (the 10 existing records gain `region` + `survey`)
-- Modify: `scripts/tests/zone-content.test.mjs` (fixtures gain the two keys; new both-direction tests)
+- Modify: `scripts/tests/zone-content.test.mjs:334-370,483,493,507` (the `allZones`/`fixture` builders gain the two keys, the fixture root at `:355` moves off the deleted mirror, and the three literal expectations move with the gate messages; new both-direction tests)
 - Test: `scripts/tests/zone-content.test.mjs`
 
 **Interfaces:**
@@ -2565,7 +3143,7 @@ with:
 
 - [ ] **Step 5: Add the two join keys to the 10 existing records**
 
-Each of the 10 committed records gains two lines, taken from the allocation table produced in Task 9 (run Task 9 first if it is not yet merged — this step depends only on its `region` column). Example, `content/zones/zone-thornveil.json`:
+Each of the 10 committed records gains two lines, taken from the allocation table produced in Task 10 (run Task 10 first if it is not yet merged — this step depends only on its `region` column). Example, `content/zones/zone-thornveil.json`:
 
 ```json
 {
@@ -2595,7 +3173,7 @@ git commit -m "feat: Z2 fails in both directions against the fabric"
 
 - [ ] **Step 8: Quality gate — verify**
 
-Run: `node --test 'scripts/tests/zone-content.test.mjs' && ./scripts/precheck.sh --no-install` and paste the output. Gate 1 does not run `checkZoneContent` (it is a full-sweep check, not `--only=spine`), so precheck must be **green** even with 30 outstanding zone failures. Gate 2 will be red until Task 11 lands — say so in the phase report rather than papering over it.
+Run: `node --test 'scripts/tests/zone-content.test.mjs' && ./scripts/precheck.sh --no-install` and paste the output. Gate 1 does not run `checkZoneContent` (it is a full-sweep check, not `--only=spine`), so precheck must be **green** even with 30 outstanding zone failures. Gate 2 will be red until Task 14 lands — say so in the phase report rather than papering over it.
 
 - [ ] **Step 9: Quality gate — independent adversarial review**
 
@@ -2607,7 +3185,7 @@ Apply findings, then: `node --test 'scripts/tests/zone-content.test.mjs' && git 
 
 ---
 
-### Task 9: The zone allocation table — solve the set-packing before writing a word
+### Task 10: The zone allocation table — solve the set-packing before writing a word
 
 `Z6` requires every zone's deduped resource-**kind set** to be globally unique against a closed 8-value enum (`crop, timber, ore, fuel, stone, water, forage, salvage` — `check_content.mjs:918`), and every landmark name to be globally unique across zones, compared trimmed and case-insensitively. **That is a set-packing problem with 255 available sets, and it is the largest unlisted authoring cost in the whole programme (X5).** Discovering a collision on record 37 means rewriting the resources *and the prose that justifies them*. So the allocation is solved, committed and tested **first**.
 
@@ -2815,9 +3393,9 @@ is solved here first and gated by `scripts/tests/zone-allocation.test.mjs`.
 | cone-line | Ashen Spar | c10/r01 | salvage, stone, timber | The Cone Row / The Tube Mouth |
 ```
 
-**How these 60 were minted, so a re-mint reproduces them.** Each name is `The <register stem> <classifier>`, the stem taken from its landmass's `onsets`/`rimes` in `content/world/names/registers.json` (Plan D Task 3) and the classifier from the zone's dominant landform group in `content/world/names/classifiers.json`. Register assignment follows `registers.json`'s `byContinent` map: `c03` → `north-log`, `c04` → `moorstone`, `c05` and `c10` → `sandtongue`, `c06`–`c09` → `reedspeech`. The ten Wealdmarch rows are the committed records' own landmark names, transcribed verbatim and never re-minted.
+**How these 60 were minted, so a re-mint reproduces them.** Each name is `The <register stem> <classifier>`, the stem taken from its landmass's `onsets`/`rimes` in `content/world/names/registers.json` (Plan D Task 3) and the classifier from the zone's dominant landform group in `content/world/names/classifiers.json`. Register assignment follows `registers.json`'s `continentRegister` map: `c03` → `north-log`, `c04` → `moorstone`, `c05` and `c10` → `sandtongue`, `c06`–`c09` → `reedspeech`. The ten Wealdmarch rows are the committed records' own landmark names, transcribed verbatim and never re-minted.
 
-Three collisions were resolved during minting and are recorded so nobody re-introduces them:
+Five collisions were resolved during minting and are recorded so nobody re-introduces them:
 - Coldreach `The Dry Sound` → **`The Empty Sound`** — `Dry Sound` and `Dark Stain` share initial /d/, are both two syllables, and differ by one character in length.
 - Stonemoor `The Shaft Steps` → **`The Cut Steps`** — `Shaft Steps` and `Shale Mole` share initial /ʃ/ and both are two syllables at 11 and 10 characters (a length difference of 1), which is exactly `G-NAME-SOUND`'s confusability rule.
 - Stonemoor `The Winter Lake` → **`The Drowned Meadow`** — `Winter Lake` and `Water Table` share initial /w/ at the same syllable count and equal length.
@@ -2848,7 +3426,7 @@ Run: `node --test 'scripts/tests/zone-allocation.test.mjs' && npm test --prefix 
 
 - [ ] **Step 7: Quality gate — independent adversarial review**
 
-Fresh reviewer on `git diff HEAD~1`, brief: *"(a) Does the table's parser in the test silently drop a malformed row instead of failing on it? A dropped row means a zone with no allocation goes unnoticed. (b) Are any two landmark names confusable in the way the spec's `G-NAME-SOUND` describes, even though they are technically distinct? Check within each continent. (c) Do the 12 three-element sets waste a scarce resource — would a different packing leave more room for the 5 deferred town plans' zones? (d) Does any new zone id collide with a committed spine node slug, a landform type id or a `region-*` story id?"*
+Fresh reviewer on `git diff HEAD~1`, brief: *"(a) Does the table's parser in the test silently drop a malformed row instead of failing on it? A dropped row means a zone with no allocation goes unnoticed. (b) Are any two landmark names confusable in the way the spec's `G-NAME-SOUND` describes, even though they are technically distinct? Check within each continent. (c) Do the 12 three-element sets waste a scarce resource — would a different packing leave more room for the 7 deferred town plans' zones (E-C9)? (d) Does any new zone id collide with a committed spine node slug, a landform type id or a `region-*` story id?"*
 
 - [ ] **Step 8: Quality gate — refactor, re-verify, report**
 
@@ -2856,9 +3434,9 @@ Apply findings, then: `node --test 'scripts/tests/zone-allocation.test.mjs' && g
 
 ---
 
-### Task 10: 16 zone records — Wealdmarch (10) and Coldreach (6)
+### Task 11: 16 zone records — Wealdmarch (10) and Coldreach (6)
 
-The 10 Wealdmarch records already exist and were re-joined in Task 8 Step 5; this task **verifies** them against the new ground and writes Coldreach's 6 from scratch. Doing one continent-and-a-half first is deliberate: the craft rules below are cheaper to correct across 6 records than across 30.
+The 10 Wealdmarch records already exist and were re-joined in Task 9 Step 5; this task **verifies** them against the new ground and writes Coldreach's 6 from scratch. Doing one continent-and-a-half first is deliberate: the craft rules below are cheaper to correct across 6 records than across 30.
 
 **Craft rules (from `story-content-writer`, distilled from the Undertow epic and F-033's finding that *adding specificity is the fastest way to contradict canon* — 4 of 6 defects in that pass came from added detail).**
 1. **`reasonToGo` is one sentence and answers "what does a person walk in to take out again?"** Not scenery. Not history. A reason.
@@ -2874,7 +3452,7 @@ The 10 Wealdmarch records already exist and were re-joined in Task 8 Step 5; thi
 - Test: `scripts/tests/zone-content.test.mjs` (existing; no new tests — the gate is the test)
 
 **Interfaces:**
-- Consumes: `docs/worldbuilding/A4-zone-allocation.md` (Task 9) for every zone's `region`, kind set and landmark names; the `Z1–Z7` rules in `checkZoneContent` (Task 8).
+- Consumes: `docs/worldbuilding/A4-zone-allocation.md` (Task 10) for every zone's `region`, kind set and landmark names; the `Z1–Z7` rules in `checkZoneContent` (Task 9).
 - Produces: nothing programmatic.
 
 - [ ] **Step 1: Verify the 10 Wealdmarch records against the new ground**
@@ -3130,7 +3708,7 @@ wc -l /tmp/zones-red.txt
 node --test 'scripts/tests/zone-content.test.mjs'
 node --test 'scripts/tests/zone-allocation.test.mjs'
 ```
-Expected: `/tmp/zones-red.txt` holds exactly **24** lines, all of the form `surveyed region "..." has no record` — the remaining work in Task 11. No `Z1`–`Z7` failure survives.
+Expected: `/tmp/zones-red.txt` holds exactly **24** lines, all of the form `surveyed region "..." has no record` — the remaining work in Tasks 12, 13 and 14. No `Z1`–`Z7` failure survives.
 
 - [ ] **Step 10: Commit**
 
@@ -3153,99 +3731,995 @@ Apply findings, then: `node --test 'scripts/tests/zone-content.test.mjs' && git 
 
 ---
 
-### Task 11: 24 zone records — Stonemoor, Thirstwold and the minors
+### Task 12: Stonemoor's seven zone records — the drowned karst plateau
 
-The remaining 24: Stonemoor 7, Thirstwold 7, Reedstrand 3, Driftholt 3, Wracklow 2, Brightfall 1, Ashen Spar 1. This is the task that closes `Z2`.
+Seven records on `c04`, register **moorstone**. **Stonemoor's structural idea is that sea level cuts *through* a limestone pavement** (spec §6.3), so its coast is fenster, cenote and sinking river rather than beach and headland, and its rivers end in the ground instead of in the sea. Write from that or the seven read as one moor described seven times.
 
-**Each landmass's premise is a constraint on its prose, not decoration** (spec §6.3) — write from it, and the six continents will read as six places instead of one:
+**The craft rules are Task 11's** — `reasonToGo` answers what a person walks in to take out again; every hazard happens to a body and names its cost; the resource *kind* is fixed by A4 and the prose justifies it; landmarks are things a traveller remembers; add no fact the fabric does not carry; cite in the section form. They are not restated per record.
 
-| Continent | The structural idea the prose must honour | Register |
-|---|---|---|
-| Stonemoor | A drowned karst plateau — sea level cuts *through* a pavement, so the coast is fenster, cenote and sinking river. The Slateflow is a **sinking** river. | moorstone |
-| Thirstwold | A rain-shadow erg behind a coastal range: one wet strip, then 9,000 km² of cheap reported sand. Only the wet strip and the scarp are surveyed. | sandtongue |
-| Reedstrand | A bird's-foot delta with no bedrock — every region is a lobe, and the chart is provisional by nature. | reedspeech |
-| Driftholt | Fog forest on a windward slope — the wettest ground in the world. | reedspeech |
-| Wracklow | An entirely erosional coast: stacks, arches, geos, blowholes; **no river reaches the sea intact**. | reedspeech |
-| Brightfall | Cliff-hung waterfalls straight into the sea. | reedspeech |
-| Ashen Spar | The volcanic arc — a strung line of cones, calderas and lava tubes. `ash` is a walkable depositional plain; `lava` is an impassable flow field. Do not blur them. | sandtongue |
+**Where a landmark's `source` points.** `docs/worldbuilding/A2-wider-world.md#3` already swears to Stonemoor's shore, the Slateflow and the moor's unsurveyed interior, so every landmark that is a coast or river fact cites it. A landmark that exists only because the fabric placed a `karst-cenote`, a `polje` or a `karst-fenster` instance cites `content/world/resolved/continent-04.json` — the join that put it there. Never cite a doc for a fact the doc does not carry; that is how the last four rounds of drift started.
 
-**Files:**
-- Create: `content/zones/zone-netstead-bight.json`, `zone-drowned-pavement.json`, `zone-slateflow-sink.json`, `zone-fenster-clints.json`, `zone-polje-lake.json`, `zone-cenote-stair.json`, `zone-pavement-edge.json`, `zone-sandtongue-strand.json`, `zone-one-wet-strip.json`, `zone-erg-margin.json`, `zone-yardang-fields.json`, `zone-dry-wadi.json`, `zone-mirage-flats.json`, `zone-scarp-shade.json`, `zone-reed-lobes.json`, `zone-lagoon-crescent.json`, `zone-birdsfoot-mouth.json`, `zone-fogforest-slope.json`, `zone-drip-terraces.json`, `zone-windward-crown.json`, `zone-stack-coast.json`, `zone-blowhole-shelf.json`, `zone-cliffhang-falls.json`, `zone-cone-line.json`
-- Test: `scripts/tests/zone-content.test.mjs` (existing)
-
-**Interfaces:**
-- Consumes: `docs/worldbuilding/A4-zone-allocation.md`; the `Z1–Z7` rules; `content/world/resolved/*.json` for what is actually on each region.
-
-- [ ] **Step 1: Write Stonemoor's seven**
-
-Same shape as Task 10 Step 2, with A4's regions (`c04/r01`–`c04/r07`), kind sets and landmark names. Before writing each, read what the region actually holds:
-
+**Before writing, read what the ground actually holds:**
 ```bash
 node -e '
 const r = require("./content/world/resolved/continent-04.json");
-for (const z of r.zones) console.log(z.id, z.terrainKind, JSON.stringify(z.levelBand),
-  "instances:", (r.instances ?? []).filter(i => i.region === z.region).map(i => i.type).join(","));
+for (const z of r.zones.filter((z) => z.survey === "surveyed"))
+  console.log(z.id, z.terrainKind, JSON.stringify(z.levelBand),
+    "instances:", r.instances.filter((i) => i.region === z.id).map((i) => i.type).join(","));
 '
 ```
-Write only what that output supports. A cenote in `cenote-stair` must be a `karst-cenote` instance the fabric placed; if it is not there, the zone name is wrong, not the fabric.
+A cenote in `cenote-stair` must be a `karst-cenote` instance the fabric placed. If it is not there, the zone name is wrong and the fix is in A4, not in the prose.
 
-- [ ] **Step 2: Verify Stonemoor and commit**
+**Files:**
+- Create: `content/zones/zone-netstead-bight.json`, `zone-drowned-pavement.json`, `zone-slateflow-sink.json`, `zone-fenster-clints.json`, `zone-polje-lake.json`, `zone-cenote-stair.json`, `zone-pavement-edge.json`
+- Test: `scripts/tests/zone-content.test.mjs` (existing; the gate is the test)
 
-```bash
-node scripts/check_content.mjs --require-complete 2>&1 | grep -E "^zones:" | grep -v "has no record"
-node --test 'scripts/tests/zone-content.test.mjs'
-git add content/zones && git commit -m "content: zone records for Stonemoor"
+**Interfaces:**
+- Consumes: `docs/worldbuilding/A4-zone-allocation.md` rows `c04/r01`–`c04/r07` for every `region`, kind set and landmark name; the `Z1`–`Z7` rules in `checkZoneContent` (Task 9); `content/world/resolved/continent-04.json` for what is on the ground.
+- Produces: nothing programmatic.
+
+- [ ] **Step 1: `zone-netstead-bight.json` — c04/r01, forage + stone**
+
+```json
+{
+  "zone": "netstead-bight",
+  "region": "c04/r01",
+  "survey": "surveyed",
+  "reasonToGo": "Netstead is the only place on a pavement coast where a hull can be laid alongside instead of hauled out, so anything Stonemoor sells leaves from this one bight or does not leave.",
+  "hazards": [
+    { "id": "the-flooding-clints", "name": "The flooding clints",
+      "description": "The bight's floor is pavement, and the tide comes up through the grikes as fast as it comes round the mole; a party working the low water is cut off from underneath before it is cut off from the sea.",
+      "effect": "damage" },
+    { "id": "no-holding-ground", "name": "No holding ground",
+      "description": "There is nothing here for an anchor to bite — bare rock under two feet of silt — so a hull that is not made fast to the mole is a hull adrift by morning.",
+      "note": "Absence hazard: the harm is what the seabed is not. Nothing in the runtime enum expresses ground that will not hold." }
+  ],
+  "resources": [
+    { "id": "bight-cockles", "name": "Bight cockles", "kind": "forage",
+      "description": "Raked out of the silt pockets between the clints at low water, the one food on this coast that does not have to be shipped in." },
+    { "id": "mole-shale", "name": "Mole shale", "kind": "stone",
+      "description": "Flat shale split off the bight's low cliff and barrowed straight onto the mole, which is rebuilt after every winter it survives." }
+  ],
+  "landmarks": [
+    { "id": "the-shale-mole", "name": "The Shale Mole",
+      "description": "A dry-laid mole of split shale running out to deep water, holed and rebuilt so often that no two courses of it are the same age.",
+      "source": "docs/worldbuilding/A2-wider-world.md#3" },
+    { "id": "the-bight-beacons", "name": "The Bight Beacons",
+      "description": "Two stone-cairn beacons on the north lip; kept in line, they carry a hull over the pavement bar, and lost, they put it on it.",
+      "source": "docs/worldbuilding/A2-wider-world.md#3" }
+  ]
+}
 ```
-Expected: the first command prints nothing.
 
-- [ ] **Step 3: Write Thirstwold's seven, verify, commit**
+- [ ] **Step 2: `zone-drowned-pavement.json` — c04/r02, forage + timber**
 
-Same procedure against `content/world/resolved/continent-05.json`. The register discipline matters most here: seven `sandtongue` names in one continent is where `G-NAME-SOUND`'s confusability rule earns its keep. Run the allocation test after writing to prove no landmark collided.
-
-```bash
-node scripts/check_content.mjs --require-complete 2>&1 | grep -E "^zones:" | grep -v "has no record"
-node --test 'scripts/tests/zone-allocation.test.mjs'
-git add content/zones && git commit -m "content: zone records for Thirstwold"
+```json
+{
+  "zone": "drowned-pavement",
+  "region": "c04/r02",
+  "survey": "surveyed",
+  "reasonToGo": "The tideline here is limestone pavement rather than beach, and everything that lives in a grike — crab, herb, rooted oak — is reachable on foot for the four hours the sea allows it.",
+  "hazards": [
+    { "id": "the-grike-leg", "name": "The grike leg",
+      "description": "The clints look like a floor and are not: the cracks between them run deeper than a man is tall and take a leg to the hip without warning.",
+      "effect": "damage" },
+    { "id": "the-blind-return", "name": "The blind return",
+      "description": "The pavement floods evenly and from every side at once, so there is no line of water to walk away from — parties drown here facing the land.",
+      "effect": "damage" }
+  ],
+  "resources": [
+    { "id": "grike-herbs", "name": "Grike herbs", "kind": "forage",
+      "description": "Sheltered growth taken out of the cracks — samphire, sorrel and wild thyme all in one hand's reach, because the grike keeps the salt wind off them." },
+    { "id": "clint-oak", "name": "Clint oak", "kind": "timber",
+      "description": "Stunted oak rooted in the grikes and cut in short crooked lengths, worthless as plank and the best knee-timber on the coast." }
+  ],
+  "landmarks": [
+    { "id": "the-clint-reef", "name": "The Clint Reef",
+      "description": "The outermost pavement, awash at every tide and level as a table, which is why the wrecks on it are all sitting upright.",
+      "source": "content/world/resolved/continent-04.json" },
+    { "id": "the-grike-channels", "name": "The Grike Channels",
+      "description": "The straight water-filled cracks that run the whole pavement in one direction, deep enough to swim and too narrow to turn in.",
+      "source": "content/world/resolved/continent-04.json" }
+  ]
+}
 ```
 
-- [ ] **Step 4: Write the ten minor-continent and chain records, verify, commit**
+- [ ] **Step 3: `zone-slateflow-sink.json` — c04/r03, fuel + ore**
 
-Reedstrand 3, Driftholt 3, Wracklow 2, Brightfall 1, Ashen Spar 1. These are the smallest landmasses and the easiest to write thin — resist it. Each carries a structural idea nothing else in the world carries (a chart redrawn every decade, the wettest ground in the world, a coast no river reaches intact), and one sentence naming that idea is worth more than three of scenery.
+Ground: `A2-wider-world.md` §3 swears the Slateflow *"comes out"* grey to the tideline. The fabric makes it a **sinking river** — it goes into the ground before it reaches the sea and comes out as a spring at the tideline. Write the sink; do not invent the underground course.
 
-```bash
-node scripts/check_content.mjs --require-complete 2>&1 | grep -E "^zones:"
-git add content/zones && git commit -m "content: zone records for the minor continents and chains"
+```json
+{
+  "zone": "slateflow-sink",
+  "region": "c04/r03",
+  "survey": "surveyed",
+  "reasonToGo": "The river goes into the hill here and the dry bed it leaves behind is the only open cut into Stonemoor's coal and iron, so the ground gives up in one place what it hides everywhere else.",
+  "hazards": [
+    { "id": "the-swallow-surge", "name": "The swallow surge",
+      "description": "A day's rain upstream fills the swallow faster than it drains and backs the river out across the dry bed; the surge arrives under a clear sky and takes whoever is working the cut.",
+      "effect": "damage" },
+    { "id": "the-bad-air", "name": "The bad air",
+      "description": "Air standing in the swallow's mouth kills a lamp before it kills a man, which is the only warning anyone gets.",
+      "effect": "poison" }
+  ],
+  "resources": [
+    { "id": "sink-lignite", "name": "Sink lignite", "kind": "fuel",
+      "description": "Brown coal in a seam the dry bed cuts clean through, dug out in slabs and burned wet because it will not keep." },
+    { "id": "sink-iron", "name": "Sink iron", "kind": "ore",
+      "description": "Bog iron gathered where the river's old channel stood in pools, panned out of the bed gravel a bucket at a time." }
+  ],
+  "landmarks": [
+    { "id": "the-slateflow-swallow", "name": "The Slateflow Swallow",
+      "description": "The rock mouth the whole river walks into, taking every stick and body the flood carries with it and giving none of them back.",
+      "source": "docs/worldbuilding/A2-wider-world.md#3" },
+    { "id": "the-dry-bed", "name": "The Dry Bed",
+      "description": "A league of scoured river channel below the swallow with no water in it, holding the cut, the workings and every mark the last flood left.",
+      "source": "docs/worldbuilding/A2-wider-world.md#3" }
+  ]
+}
 ```
-Expected: the grep prints **nothing**. `Z2` is closed in both directions.
 
-- [ ] **Step 5: Prove the full census**
+- [ ] **Step 4: `zone-fenster-clints.json` — c04/r04, fuel + stone**
+
+```json
+{
+  "zone": "fenster-clints",
+  "region": "c04/r04",
+  "survey": "surveyed",
+  "reasonToGo": "A roof of pavement has fallen in here and left a window straight down onto the water the moor swallowed, and it is the only place a body reaches that water without a rope.",
+  "hazards": [
+    { "id": "the-undercut-lip", "name": "The undercut lip",
+      "description": "The window's rim is cut away underneath by the same water it looks down on; the ground a party stands on to look is the ground that goes.",
+      "effect": "damage" },
+    { "id": "the-cold-draught", "name": "The cold draught",
+      "description": "The fenster breathes out of the hill all summer at the temperature of the water below, and a wet body standing in that draught stops being able to climb out.",
+      "effect": "freeze" }
+  ],
+  "resources": [
+    { "id": "grike-juniper", "name": "Grike juniper", "kind": "fuel",
+      "description": "Knotted juniper cut out of the cracks and dried standing in bundles; it is the hottest faggot on the moor and there is never much of it." },
+    { "id": "rake-stone", "name": "Rake stone", "kind": "stone",
+      "description": "Long clean blocks levered off the clints along the natural rake, carried out whole and sold as lintels wherever the moor has none." }
+  ],
+  "landmarks": [
+    { "id": "the-fenster-window", "name": "The Fenster Window",
+      "description": "The collapsed roof-hole, wider than it is deep, with the swallowed river running visibly across the bottom of it in daylight.",
+      "source": "content/world/resolved/continent-04.json" },
+    { "id": "the-rake-path", "name": "The Rake Path",
+      "description": "The one line across the clints where the blocks run end to end and a laden sledge can cross the pavement without bridging a grike.",
+      "source": "content/world/resolved/continent-04.json" }
+  ]
+}
+```
+
+- [ ] **Step 5: `zone-polje-lake.json` — c04/r05, fuel + timber**
+
+```json
+{
+  "zone": "polje-lake",
+  "region": "c04/r05",
+  "survey": "surveyed",
+  "reasonToGo": "A flat-floored basin that is a lake for half the year and a meadow for the other half, which makes it the only ground on Stonemoor that grows both peat and hay.",
+  "hazards": [
+    { "id": "the-winter-flood", "name": "The winter flood",
+      "description": "The floor fills from below when the swallows choke, and it fills level and fast — a camp pitched on the meadow in autumn is under four feet of water by the turn of the year.",
+      "effect": "damage" },
+    { "id": "the-false-floor", "name": "The false floor",
+      "description": "Where the water has just gone off, the peat holds a man for two steps and then does not, and there is nothing within reach to pull on.",
+      "effect": "stun" }
+  ],
+  "resources": [
+    { "id": "polje-peat", "name": "Polje peat", "kind": "fuel",
+      "description": "Cut off the dry floor in high summer in a six-week window, stacked to dry on the rim because nothing dries on the floor itself." },
+    { "id": "polje-alder", "name": "Polje alder", "kind": "timber",
+      "description": "Alder ringing the flood line, coppiced on a short rotation and used green for anything that has to stand in water." }
+  ],
+  "landmarks": [
+    { "id": "the-polje-shore", "name": "The Polje Shore",
+      "description": "The hard line around the basin where the winter water stops dead, marked by alder on one side and bare stone on the other.",
+      "source": "content/world/resolved/continent-04.json" },
+    { "id": "the-drowned-meadow", "name": "The Drowned Meadow",
+      "description": "The basin floor itself: hay in one season, lake in the next, with the cutting-marks of the last hay still visible under the water.",
+      "source": "content/world/resolved/continent-04.json" }
+  ]
+}
+```
+
+- [ ] **Step 6: `zone-cenote-stair.json` — c04/r06, fuel + water**
+
+```json
+{
+  "zone": "cenote-stair",
+  "region": "c04/r06",
+  "survey": "surveyed",
+  "reasonToGo": "Sweet water on a moor that swallows all of it, reached by a cut stair instead of a rope, which is why every road on this side of Stonemoor bends to pass it.",
+  "hazards": [
+    { "id": "the-greased-steps", "name": "The greased steps",
+      "description": "The stair is wet its whole length and grows the same weed the water does; a carrier who slips takes the load and the two people below down with him.",
+      "effect": "damage" },
+    { "id": "the-still-cold", "name": "The still cold",
+      "description": "The shaft holds winter all year. A body that goes into that water comes out unable to grip, and the stair needs a grip.",
+      "effect": "freeze" }
+  ],
+  "resources": [
+    { "id": "rush-cake", "name": "Rush cake", "kind": "fuel",
+      "description": "Lake rush cut at the water table, pressed into cakes and dried on the rim — the only fuel that will take a light in a shaft this wet." },
+    { "id": "table-water", "name": "Table water", "kind": "water",
+      "description": "Drawn straight off the standing table at the stair's foot, sweet all year and tallied by the yoke because the stair fixes how much can come up in a day." }
+  ],
+  "landmarks": [
+    { "id": "the-cut-steps", "name": "The Cut Steps",
+      "description": "A hundred and forty steps cut round the inside of the shaft in one continuous turn, worn hollow in the middle and nowhere else.",
+      "source": "content/world/resolved/continent-04.json" },
+    { "id": "the-water-table", "name": "The Water Table",
+      "description": "The flat, unmoving surface at the bottom, at the same height as every other water in the moor and never a finger different.",
+      "source": "content/world/resolved/continent-04.json" }
+  ]
+}
+```
+
+- [ ] **Step 7: `zone-pavement-edge.json` — c04/r07, ore + salvage**
+
+```json
+{
+  "zone": "pavement-edge",
+  "region": "c04/r07",
+  "survey": "surveyed",
+  "reasonToGo": "The pavement ends in a brink over the sea, and everything the moor loses over that brink — ore out of the veins, wreck off the reef — ends on the one shelf below it.",
+  "hazards": [
+    { "id": "the-brink-fall", "name": "The brink fall",
+      "description": "The edge is undercut and unfenced for a league, and the pavement gives no warning underfoot before it stops being pavement.",
+      "effect": "damage" },
+    { "id": "the-shelf-tide", "name": "The shelf tide",
+      "description": "The salvage shelf below is dry for three hours and then is not, and the only way back up is the way that took twenty minutes to come down.",
+      "effect": "damage" }
+  ],
+  "resources": [
+    { "id": "brink-lead", "name": "Brink lead", "kind": "ore",
+      "description": "Galena in the veins the brink cuts open, worked from above with a bucket and a line because no adit will stand in this rock." },
+    { "id": "brink-wrack", "name": "Brink wrack", "kind": "salvage",
+      "description": "Iron, cordage and worked timber off the reef, carried up the one gully by the same crews that carry the ore down." }
+  ],
+  "landmarks": [
+    { "id": "the-limestone-brink", "name": "The Limestone Brink",
+      "description": "The straight white edge where the pavement stops and the sea starts, visible from further out than any other mark on this coast.",
+      "source": "docs/worldbuilding/A2-wider-world.md#3" },
+    { "id": "the-karn-marker", "name": "The Karn Marker",
+      "description": "The single stack left standing off the brink, used as the range mark for the gully and as the count of how much edge the sea has taken since it was joined on.",
+      "source": "content/world/resolved/continent-04.json" }
+  ]
+}
+```
+
+- [ ] **Step 8: Verify Stonemoor and commit**
 
 Run:
 ```bash
+node scripts/check_content.mjs --require-complete 2>&1 | grep -E "^zones:" | grep -v "has no record"
+node --test 'scripts/tests/zone-content.test.mjs'
+node --test 'scripts/tests/zone-allocation.test.mjs'
+```
+Expected: the first command prints **nothing** — no `Z1`–`Z7` failure on any of the seven; both suites PASS. The `has no record` lines that remain are Thirstwold's 7 and the minors' 10, which are Tasks 13 and 14.
+
+```bash
+git add content/zones && git commit -m "content: zone records for Stonemoor"
+```
+
+- [ ] **Step 9: Quality gate — verify**
+
+Run: `node --test 'scripts/tests/zone-content.test.mjs' && node --test 'scripts/tests/zone-allocation.test.mjs'` and paste the output.
+
+- [ ] **Step 10: Quality gate — independent adversarial review**
+
+Fresh reviewer on `git diff HEAD~1`, brief: *"Review as an editor. (a) Check every concrete noun against `content/world/resolved/continent-04.json` — is the cenote, the fenster, the polje, the sinking river actually placed in that region? Name any that is not. (b) Stonemoor's idea is that the sea cuts THROUGH a pavement. Does any record describe an ordinary beach-and-headland coast instead? (c) Do the seven read as seven places, or as one moor described seven times — say which two are closest and why. (d) Four records take `fuel`. Are the four fuels four different substances with four different gathering seasons, or one fuel renamed? (e) Does any landmark cite `A2-wider-world.md#3` for a fact §3 does not carry?"*
+
+- [ ] **Step 11: Quality gate — refactor, re-verify, report**
+
+Apply findings, then: `node --test 'scripts/tests/zone-content.test.mjs' && git branch --show-current && git log --oneline -1`
+
+---
+
+### Task 13: Thirstwold's seven zone records — the rain-shadow erg
+
+Seven records on `c05`, register **sandtongue**. **Thirstwold is a rain-shadow erg behind a coastal range** (spec §6.3): one wet strip along the range's seaward foot, then 9,000 km² of cheap reported sand. Only the wet strip, the strand and the scarp are surveyed — the erg itself is frontier and stays hatched. Seven `sandtongue` names in one landmass is also where `G-NAME-SOUND`'s confusability rule earns its keep, which is why Task 10 recorded two collisions resolved during minting; do not undo them.
+
+**Where a landmark's `source` points.** No committed worldbuilding doc describes Thirstwold — it is new ground the survey has only just acquired — so every landmark cites `content/world/resolved/continent-05.json`, the join that places it. **Do not cite `A2-wider-world.md`**: §3 and §4 do not mention this landmass and a citation to a doc that does not carry the fact is the exact failure `G-CITE` exists to make impossible.
+
+**Files:**
+- Create: `content/zones/zone-sandtongue-strand.json`, `zone-one-wet-strip.json`, `zone-erg-margin.json`, `zone-yardang-fields.json`, `zone-dry-wadi.json`, `zone-mirage-flats.json`, `zone-scarp-shade.json`
+- Test: `scripts/tests/zone-content.test.mjs` (existing)
+
+**Interfaces:**
+- Consumes: `docs/worldbuilding/A4-zone-allocation.md` rows `c05/r01`–`c05/r07`; the `Z1`–`Z7` rules (Task 9); `content/world/resolved/continent-05.json`.
+- Produces: nothing programmatic.
+
+- [ ] **Step 1: Read the ground**
+
+```bash
+node -e '
+const r = require("./content/world/resolved/continent-05.json");
+for (const z of r.zones.filter((z) => z.survey === "surveyed"))
+  console.log(z.id, z.terrainKind, JSON.stringify(z.levelBand),
+    "instances:", r.instances.filter((i) => i.region === z.id).map((i) => i.type).join(","));
+console.log("reported:", r.zones.filter((z) => z.survey === "reported").length);
+'
+```
+Expected: seven surveyed rows and 20-odd reported ones. The reported majority is the point — write nothing about it.
+
+- [ ] **Step 2: `zone-sandtongue-strand.json` — c05/r01, ore + stone**
+
+```json
+{
+  "zone": "sandtongue-strand",
+  "region": "c05/r01",
+  "survey": "surveyed",
+  "reasonToGo": "The sea sorts the desert here: everything heavy the erg sends down the coast lies in one black band on this strand, and it can be shovelled instead of mined.",
+  "hazards": [
+    { "id": "the-glass-cut", "name": "The glass cut",
+      "description": "Lightning fuses the strand into thin sheets that break to edges sharper than a knife, and the sand hides all of it until a bare foot finds it.",
+      "effect": "damage" },
+    { "id": "the-onshore-blast", "name": "The onshore blast",
+      "description": "The afternoon wind comes across the strand carrying its own sand and strips exposed skin in an hour; a party without cloth over its face works blind and then stops working.",
+      "effect": "damage" }
+  ],
+  "resources": [
+    { "id": "strand-black-sand", "name": "Strand black sand", "kind": "ore",
+      "description": "The heavy black band the swell leaves at the top of every tide, shovelled straight into sacks and smelted inland by whoever buys it." },
+    { "id": "wind-stone", "name": "Wind stone", "kind": "stone",
+      "description": "Ventifact cores left standing when the sand around them blew away — three-faced, harder than anything quarried, and used for millstones the length of the coast." }
+  ],
+  "landmarks": [
+    { "id": "the-glass-beach", "name": "The Glass Beach",
+      "description": "A half-league of strand studded with fulgurite and fused sheet, which rings underfoot and cuts anything dragged across it.",
+      "source": "content/world/resolved/continent-05.json" },
+    { "id": "the-wind-ripple", "name": "The Wind Ripple",
+      "description": "The fixed rock ripple behind the strand — a wave form cut in stone by wind, not water, and the mark every caravan turns inland at.",
+      "source": "content/world/resolved/continent-05.json" }
+  ]
+}
+```
+
+- [ ] **Step 3: `zone-one-wet-strip.json` — c05/r02, ore + water**
+
+```json
+{
+  "zone": "one-wet-strip",
+  "region": "c05/r02",
+  "survey": "surveyed",
+  "reasonToGo": "This is the only water in Thirstwold that runs all year, and every road, camp and claim in the landmass exists because of where it comes out of the ground.",
+  "hazards": [
+    { "id": "the-crowded-water", "name": "The crowded water",
+      "description": "Everything alive on this coast comes to the strip, which means everything alive on this coast is at the strip at dusk, and most of it was here first.",
+      "effect": "damage" },
+    { "id": "the-strip-fever", "name": "The strip fever",
+      "description": "Standing water this heavily used goes bad in the hot months, and a party that drinks below the camps instead of above them loses a week.",
+      "effect": "poison" }
+  ],
+  "resources": [
+    { "id": "spring-iron", "name": "Spring iron", "kind": "ore",
+      "description": "Iron laid down as a red crust wherever the spring water meets air, broken off in plates and carried out on the same donkeys that carry water in." },
+    { "id": "strip-water", "name": "Strip water", "kind": "water",
+      "description": "Drawn above the camps, carried below them, and tallied by the skin — the price of everything else in Thirstwold is quoted against it." }
+  ],
+  "landmarks": [
+    { "id": "the-living-strip", "name": "The Living Strip",
+      "description": "A green line a hundred paces wide and four leagues long, with dead sand on both sides of it and no gradient between.",
+      "source": "content/world/resolved/continent-05.json" },
+    { "id": "the-spring-head", "name": "The Spring Head",
+      "description": "The rock cleft the whole strip comes out of, roofed over with matting and watched by whoever holds the strip that year.",
+      "source": "content/world/resolved/continent-05.json" }
+  ]
+}
+```
+
+- [ ] **Step 4: `zone-erg-margin.json` — c05/r03, salvage + timber**
+
+Ground: the surveyed edge of the sand sea. The erg beyond it is **reported and stays reported** — the record describes the margin a body can stand on and the front that walks over it.
+
+```json
+{
+  "zone": "erg-margin",
+  "region": "c05/r03",
+  "survey": "surveyed",
+  "reasonToGo": "The dune front walks over the old road a few paces every year and uncovers what it buried a generation ago, so the margin gives up caravans and wells in the same season it takes new ones.",
+  "hazards": [
+    { "id": "the-walking-front", "name": "The walking front",
+      "description": "The lee face of a barchan stands at the angle sand will just hold, and a party that digs at its foot brings the whole face down on itself.",
+      "effect": "damage" },
+    { "id": "no-mark-holds", "name": "No mark holds",
+      "description": "Every cairn, stake and wheel-rut on this ground is gone within a season, so a route that was walked last year cannot be walked back by memory.",
+      "note": "Absence hazard: the harm is the missing landmark, not a thing in the sand. Nothing in the runtime enum expresses ground that forgets." }
+  ],
+  "resources": [
+    { "id": "dune-salvage", "name": "Dune salvage", "kind": "salvage",
+      "description": "Iron, glass and worked leather off caravans the erg buried and has now uncovered, gathered in the weeks before the front covers them again." },
+    { "id": "buried-holt", "name": "Buried holt", "kind": "timber",
+      "description": "Tamarisk trunks the sand killed standing and preserved whole, cut out of the exposed hollows — the only structural timber in Thirstwold." }
+  ],
+  "landmarks": [
+    { "id": "the-barchan-front", "name": "The Barchan Front",
+      "description": "The line of crescent dunes crossing the margin all facing the same way, close enough to walk between and moving at the pace of a slow tide.",
+      "source": "content/world/resolved/continent-05.json" },
+    { "id": "the-last-well", "name": "The Last Well",
+      "description": "A stone-lined well at the margin's edge, dug out and re-dug each time the front passes over it, and the last certain water before the reported sand.",
+      "source": "content/world/resolved/continent-05.json" }
+  ]
+}
+```
+
+- [ ] **Step 5: `zone-yardang-fields.json` — c05/r04, salvage + water**
+
+```json
+{
+  "zone": "yardang-fields",
+  "region": "c05/r04",
+  "survey": "surveyed",
+  "reasonToGo": "The wind has cut the bedrock into parallel combs that hold shade and night-dew, which makes a waterless field the one place in the erg's lee a party can cross in daylight and drink at dawn.",
+  "hazards": [
+    { "id": "the-comb-maze", "name": "The comb maze",
+      "description": "Every corridor looks like every other corridor and all of them run the same way; a party that turns across the grain loses its line and then loses its water.",
+      "effect": "stun" },
+    { "id": "the-noon-oven", "name": "The noon oven",
+      "description": "The corridors trap the day's heat between two rock walls with no wind through them, and a body caught mid-field at noon cooks where it stands.",
+      "effect": "burn" }
+  ],
+  "resources": [
+    { "id": "comb-salvage", "name": "Comb salvage", "kind": "salvage",
+      "description": "Gear abandoned by parties that went across the grain instead of along it, found intact because nothing here rots and nothing here moves it." },
+    { "id": "comb-dew", "name": "Comb dew", "kind": "water",
+      "description": "Night dew condensing on the shaded rock faces and led into cut channels at their foot, a cupful per face per night and the reason the crossing is possible at all." }
+  ],
+  "landmarks": [
+    { "id": "the-yardang-combs", "name": "The Yardang Combs",
+      "description": "Rank on rank of wind-cut rock ridges, all parallel, all pointing the same way — a compass a body can read lying down.",
+      "source": "content/world/resolved/continent-05.json" },
+    { "id": "the-wind-cut-ridge", "name": "The Wind-Cut Ridge",
+      "description": "The one comb that stands twice the height of the rest, carrying the dew channels that supply the whole crossing.",
+      "source": "content/world/resolved/continent-05.json" }
+  ]
+}
+```
+
+- [ ] **Step 6: `zone-dry-wadi.json` — c05/r05, stone + timber**
+
+```json
+{
+  "zone": "dry-wadi",
+  "region": "c05/r05",
+  "survey": "surveyed",
+  "reasonToGo": "A dry channel is the only shade, the only standing wood and the only graded road out of the scarp, so everything that moves inland moves up this wadi.",
+  "hazards": [
+    { "id": "the-far-rain", "name": "The far rain",
+      "description": "The flood comes from weather nobody in the wadi can see, arrives as a wall with the noise a few seconds ahead of it, and fills the channel bank to bank.",
+      "effect": "damage" },
+    { "id": "the-undercut-collapse", "name": "The undercut collapse",
+      "description": "Every bank here is cut away underneath by the last flood, so the shaded ground a party camps under is the ground that comes down on it.",
+      "effect": "damage" }
+  ],
+  "resources": [
+    { "id": "flood-cobble", "name": "Flood cobble", "kind": "stone",
+      "description": "Rounded cobble sorted by size along the channel and lifted straight out of it — the whole coast's building stone, delivered by water that runs twice a decade." },
+    { "id": "wadi-tamarisk", "name": "Wadi tamarisk", "kind": "timber",
+      "description": "Tamarisk rooted in the undercut banks, cut on a long rotation and the only living wood a Thirstwold carpenter ever sees." }
+  ],
+  "landmarks": [
+    { "id": "the-flood-marks", "name": "The Flood Marks",
+      "description": "Cut lines on the wadi wall, one per flood, the highest of them well above a standing man and none of them made by anyone still alive.",
+      "source": "content/world/resolved/continent-05.json" },
+    { "id": "the-undercut-bank", "name": "The Undercut Bank",
+      "description": "A half-league of hollowed bank that gives the only continuous shade in the region and drops a section of itself every flood.",
+      "source": "content/world/resolved/continent-05.json" }
+  ]
+}
+```
+
+- [ ] **Step 7: `zone-mirage-flats.json` — c05/r06, crop + forage + fuel**
+
+```json
+{
+  "zone": "mirage-flats",
+  "region": "c05/r06",
+  "survey": "surveyed",
+  "reasonToGo": "A salt flat with a thin freshwater lens under one edge of it, which is the only ground in Thirstwold that grows a grain, and the only ground that kills a party for walking at it.",
+  "hazards": [
+    { "id": "the-false-water", "name": "The false water",
+      "description": "The flat throws a standing sheet of water on the horizon every hot afternoon and it is never there; parties walk toward it past the last real well and are found on the crust.",
+      "note": "Absence hazard: the harm is that the water does not exist. Nothing in the runtime enum expresses a thing that is only apparent." },
+    { "id": "the-crust-break", "name": "The crust break",
+      "description": "The salt crust carries a man over brine mud that will not, and it breaks without warning at the flat's centre where it looks thickest.",
+      "effect": "damage" }
+  ],
+  "resources": [
+    { "id": "pan-millet", "name": "Pan millet", "kind": "crop",
+      "description": "Short millet sown on the lens edge where the salt gives out, watered by hand from the pan wells and harvested green before the crust creeps back." },
+    { "id": "glasswort", "name": "Glasswort", "kind": "forage",
+      "description": "Salt-fed glasswort picked off the crust margin, eaten raw and burned for the ash the tanners buy." },
+    { "id": "sabkha-scrub", "name": "Sabkha scrub", "kind": "fuel",
+      "description": "Saltbush cut on the flat's dry rim and dried in a week; it burns fast and dirty and is the only fuel within two days' walk." }
+  ],
+  "landmarks": [
+    { "id": "the-sabkha-pan", "name": "The Sabkha Pan",
+      "description": "The flat itself: white, level to the eye in every direction, and soft under its own crust everywhere but the rim.",
+      "source": "content/world/resolved/continent-05.json" },
+    { "id": "the-false-water", "name": "The False Water",
+      "description": "The mirage line that stands over the pan every afternoon of the hot season, in the same place, at the same height, and has never once been water.",
+      "source": "content/world/resolved/continent-05.json" }
+  ]
+}
+```
+
+**Note the deliberate id reuse:** `the-false-water` is both a hazard id and a landmark id in this record. `Z4` scopes id uniqueness **within each array**, not across the file (`check_content.mjs:1000-1006`, "one id string may legally appear in all three arrays"), and the mirage is genuinely both the hazard and the landmark. If a reviewer flags it, the answer is the gate's own comment.
+
+- [ ] **Step 8: `zone-scarp-shade.json` — c05/r07, crop + forage + ore**
+
+```json
+{
+  "zone": "scarp-shade",
+  "region": "c05/r07",
+  "survey": "surveyed",
+  "reasonToGo": "The coastal range's inland face throws a shadow that lasts until mid-morning, and everything Thirstwold grows for itself is grown in that strip of ground before the sun reaches it.",
+  "hazards": [
+    { "id": "the-rockfall-hour", "name": "The rockfall hour",
+      "description": "The scarp sheds stone when the shade line crosses it and the rock expands; the fall comes at the same hour each morning and the terraces are directly under it.",
+      "effect": "damage" },
+    { "id": "the-scarp-heat", "name": "The scarp heat",
+      "description": "After the shade goes off, the rock face gives back the whole morning's sun at once, and the terraces become the hottest ground in the landmass for four hours.",
+      "effect": "burn" }
+  ],
+  "resources": [
+    { "id": "ledge-wheat", "name": "Ledge wheat", "kind": "crop",
+      "description": "Hard wheat on narrow terraces along the shaded foot, sown to the shade line exactly — a row planted a pace out is a row that does not come up." },
+    { "id": "noon-greens", "name": "Noon greens", "kind": "forage",
+      "description": "Bitter herbs that grow only in the rockfall apron where the shade holds longest, gathered at the same hour the fall makes it dangerous to." },
+    { "id": "scarp-copper", "name": "Scarp copper", "kind": "ore",
+      "description": "Green-stained ore in the scarp's broken face, prised out of the fallen blocks rather than the wall, which is why nobody digs here and everybody looks." }
+  ],
+  "landmarks": [
+    { "id": "the-scarp-shadow", "name": "The Scarp Shadow",
+      "description": "The moving line of shade that crosses the terraces each morning at a walking pace, and which every field boundary in the region is set against.",
+      "source": "content/world/resolved/continent-05.json" },
+    { "id": "the-noon-camp", "name": "The Noon Camp",
+      "description": "The walled camp under the scarp's one overhang, where everyone working the terraces sits out the four hours nobody works.",
+      "source": "content/world/resolved/continent-05.json" }
+  ]
+}
+```
+
+- [ ] **Step 9: Verify Thirstwold and commit**
+
+Run:
+```bash
+node scripts/check_content.mjs --require-complete 2>&1 | grep -E "^zones:" | grep -v "has no record"
+node --test 'scripts/tests/zone-content.test.mjs'
+node --test 'scripts/tests/zone-allocation.test.mjs'
+```
+Expected: the first command prints **nothing**; both suites PASS — in particular the allocation test's `every landmark name is globally unique` case, which is the one that catches a `sandtongue` collision.
+
+```bash
+git add content/zones && git commit -m "content: zone records for Thirstwold"
+```
+
+- [ ] **Step 10: Quality gate — verify**
+
+Run: `node --test 'scripts/tests/zone-content.test.mjs' && node --test 'scripts/tests/zone-allocation.test.mjs'` and paste the output.
+
+- [ ] **Step 11: Quality gate — independent adversarial review**
+
+Fresh reviewer on `git diff HEAD~1`, brief: *"Review as an editor. (a) Do Thirstwold's seven read as seven places or as one desert seven times? Name the two that are closest. (b) Check every noun against `content/world/resolved/continent-05.json` — the yardangs, the sabkha, the barchans, the wadi. Is each actually placed in that region? (c) Two records claim `timber` in a desert. Is each justified by a real mechanism, or is one of them there because A4 said `timber`? (d) Does any record describe the reported erg as if someone had walked it? That is the exact dishonesty the hatching exists to prevent. (e) Are `The Living Strip` and `The Wind-Cut Ridge` — the two names Task 10 re-minted to clear a collision — still the names used, or did an author quietly restore `The Green Line` / `The Scoured Ridge`?"*
+
+- [ ] **Step 12: Quality gate — refactor, re-verify, report**
+
+Apply findings, then: `node --test 'scripts/tests/zone-content.test.mjs' && git branch --show-current && git log --oneline -1`
+
+---
+
+### Task 14: The ten minor-continent and chain records — and `Z2` closed
+
+The last ten: Reedstrand 3, Driftholt 3, Wracklow 2, Brightfall 1, Ashen Spar 1. **This is the task that closes `Z2` in both directions.** These are the smallest landmasses and the easiest to write thin — resist it. Each carries a structural idea nothing else in the world carries, and one sentence naming that idea is worth more than three of scenery:
+
+| Continent | The structural idea the prose must honour | Register | `source` for landmarks |
+|---|---|---|---|
+| Reedstrand (`c06`) | A bird's-foot delta with **no bedrock** — every region is a lobe and the chart is provisional by nature. Every stone on it arrived by river or as ballast. | reedspeech | `docs/worldbuilding/A2-wider-world.md#4` (the chain is committed there; the promotion to minor continent lands in Task 15) |
+| Driftholt (`c07`) | Fog forest on a windward slope — **the wettest ground in the world**. | reedspeech | `docs/worldbuilding/A2-wider-world.md#4` |
+| Wracklow (`c08`) | An entirely erosional coast: stacks, arches, geos, blowholes; **no river reaches the sea intact**. | reedspeech | `content/world/resolved/continent-08.json` |
+| Brightfall (`c09`) | Cliff-hung waterfalls straight into the sea. | reedspeech | `docs/worldbuilding/A2-wider-world.md#4` |
+| Ashen Spar (`c10`) | The volcanic arc — a strung line of cones, calderas and lava tubes. **`ash` is a walkable depositional plain; `lava` is an impassable flow field. Do not blur them.** | sandtongue | `content/world/resolved/continent-10.json` |
+
+**Files:**
+- Create: `content/zones/zone-reed-lobes.json`, `zone-lagoon-crescent.json`, `zone-birdsfoot-mouth.json`, `zone-fogforest-slope.json`, `zone-drip-terraces.json`, `zone-windward-crown.json`, `zone-stack-coast.json`, `zone-blowhole-shelf.json`, `zone-cliffhang-falls.json`, `zone-cone-line.json`
+- Test: `scripts/tests/zone-content.test.mjs` (existing)
+
+**Interfaces:**
+- Consumes: `docs/worldbuilding/A4-zone-allocation.md` rows `c06/r01`–`c10/r01`; the `Z1`–`Z7` rules (Task 9); `content/world/resolved/continent-06.json` … `continent-10.json`.
+- Produces: nothing programmatic.
+
+- [ ] **Step 1: `zone-reed-lobes.json` — c06/r01, crop + fuel + stone**
+
+```json
+{
+  "zone": "reed-lobes",
+  "region": "c06/r01",
+  "survey": "surveyed",
+  "reasonToGo": "Every osier bed on the delta is cut from this lobe, and osier is what the whole of Reedstrand is built out of — hull, hurdle, wall and creel.",
+  "hazards": [
+    { "id": "the-shifting-channel", "name": "The shifting channel",
+      "description": "The lobe's channels re-cut themselves every spate, so a boat left on a bank at dusk is on dry mud or in deep water by morning, and never the one that was expected.",
+      "effect": "stun" },
+    { "id": "no-ground-that-stays", "name": "No ground that stays",
+      "description": "There is no rock under any of this, and the bank a camp is pitched on is silt the river is still moving; it goes in a night and takes the camp with it.",
+      "note": "Absence hazard: the harm is the missing bedrock. Nothing in the runtime enum expresses ground that is only temporarily ground." }
+  ],
+  "resources": [
+    { "id": "lobe-rice", "name": "Lobe rice", "kind": "crop",
+      "description": "Wet-sown grain broadcast onto the fresh silt behind the osier and reaped from a flat boat, because there is nowhere on the lobe dry enough to stand and cut." },
+    { "id": "reed-faggots", "name": "Reed faggots", "kind": "fuel",
+      "description": "Cut reed dried on the osier hurdles and burned in bound bundles — it gives a fierce short heat and it is the only fuel the delta grows." },
+    { "id": "ballast-stone", "name": "Ballast stone", "kind": "stone",
+      "description": "Stone landed as ballast by hulls loading osier, stacked at the beds and re-sold by the barrow; not one piece of it came out of Reedstrand." }
+  ],
+  "landmarks": [
+    { "id": "the-osier-beds", "name": "The Osier Beds",
+      "description": "Rank after rank of cut willow standing in water, the only worked ground on the delta and the only thing on it that is in the same place twice.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" },
+    { "id": "the-lobe-channels", "name": "The Lobe Channels",
+      "description": "The braid of shallow cuts that splits and rejoins across the whole lobe, redrawn by every spate and charted afresh every decade.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" }
+  ]
+}
+```
+
+- [ ] **Step 2: `zone-lagoon-crescent.json` — c06/r02, crop + ore + timber**
+
+```json
+{
+  "zone": "lagoon-crescent",
+  "region": "c06/r02",
+  "survey": "surveyed",
+  "reasonToGo": "The bar closes a crescent of still brackish water behind it, which is the only water on the delta calm enough to build a hull in and shallow enough to work bog iron out of.",
+  "hazards": [
+    { "id": "the-bar-overwash", "name": "The bar overwash",
+      "description": "A gale over the bar puts the sea into the lagoon in one push; the water rises a fathom in an hour and everything drawn up on the inner shore floats off it.",
+      "effect": "damage" },
+    { "id": "the-brackish-rot", "name": "The brackish rot",
+      "description": "Standing water this warm and this salt breeds a fever that comes on in the third week; the yards work the crescent in shifts for exactly that reason.",
+      "effect": "poison" }
+  ],
+  "resources": [
+    { "id": "crescent-saltgrain", "name": "Crescent saltgrain", "kind": "crop",
+      "description": "Salt-tolerant grain sown on the lagoon's inner shelf, the only crop that takes brackish flooding and the reason the crescent is settled at all." },
+    { "id": "lagoon-bog-iron", "name": "Lagoon bog iron", "kind": "ore",
+      "description": "Iron pans lifted out of the lagoon floor with a dredge basket, thin and impure and smelted on the bar because there is no fuel inland." },
+    { "id": "lagoon-alder", "name": "Lagoon alder", "kind": "timber",
+      "description": "Alder off the crescent's landward rim, cut for boat frames because it holds in brackish water where every other wood on the delta gives up." }
+  ],
+  "landmarks": [
+    { "id": "the-crescent-bar", "name": "The Crescent Bar",
+      "description": "The long sand bar that closes the lagoon, breached and re-closed by the sea often enough that the yards keep a boat on both sides of it.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" },
+    { "id": "the-bittern-reach", "name": "The Bittern Reach",
+      "description": "The reed-walled inner end of the crescent, where the water is fresh enough to drink at the top of the ebb and nowhere else.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" }
+  ]
+}
+```
+
+- [ ] **Step 3: `zone-birdsfoot-mouth.json` — c06/r03, crop + stone + water**
+
+```json
+{
+  "zone": "birdsfoot-mouth",
+  "region": "c06/r03",
+  "survey": "surveyed",
+  "reasonToGo": "The river splits into its last fingers here and drops everything it has carried, so this is where the delta's fresh water, its new ground and its only imported stone all arrive.",
+  "hazards": [
+    { "id": "the-finger-bar", "name": "The finger bar",
+      "description": "Each finger ends in a bar that moves with the season, and a laden boat that takes last year's finger grounds broadside to the swell.",
+      "effect": "damage" },
+    { "id": "the-mouth-fog", "name": "The mouth fog",
+      "description": "Cold sea over warm river water fogs the mouth in minutes and holds for a day; crews caught in it anchor where they are and lose the tide.",
+      "effect": "stun" }
+  ],
+  "resources": [
+    { "id": "finger-rice", "name": "Finger rice", "kind": "crop",
+      "description": "Grain sown on the newest silt between two fingers, on ground that did not exist five years ago and will be under water in another five." },
+    { "id": "head-cobble", "name": "Head cobble", "kind": "stone",
+      "description": "River cobble brought down from the head of the catchment and dropped at the mouth — the only stone Reedstrand produces itself, and it arrives one flood at a time." },
+    { "id": "mouth-water", "name": "Mouth water", "kind": "water",
+      "description": "Fresh water taken from the top of the ebb above the eyot, the delta's whole supply, and undrinkable within an hour either side of it." }
+  ],
+  "landmarks": [
+    { "id": "the-silt-fingers", "name": "The Silt Fingers",
+      "description": "The three splayed channels the river ends in, each walled by its own levee and each a little longer every year.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" },
+    { "id": "the-alder-eyot", "name": "The Alder Eyot",
+      "description": "The wooded island between the two western fingers, the oldest fixed ground on the delta and the mark every crew takes the fresh water above.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" }
+  ]
+}
+```
+
+- [ ] **Step 4: `zone-fogforest-slope.json` — c07/r01, forage + fuel + water**
+
+```json
+{
+  "zone": "fogforest-slope",
+  "region": "c07/r01",
+  "survey": "surveyed",
+  "reasonToGo": "The trees here comb water out of standing fog and drop it, so a body can fill a barrel on a slope where it has not rained for a month — and everything that grows on wet bark grows here and nowhere else.",
+  "hazards": [
+    { "id": "the-slick-slope", "name": "The slick slope",
+      "description": "Every surface on this slope carries a skin of moss and running water; the ground gives under a boot exactly as often as the moss does, and the slope is long.",
+      "effect": "damage" },
+    { "id": "the-wet-cold", "name": "The wet cold",
+      "description": "Nothing dries. A party that is soaked on the first morning is soaked on the fourth, and the cold gets in through wet cloth in weather that would not otherwise trouble anyone.",
+      "effect": "freeze" }
+  ],
+  "resources": [
+    { "id": "bark-fungus", "name": "Bark fungus", "kind": "forage",
+      "description": "Shelf fungus cut off the drip-fed trunks, dried over the only fire in the camp and traded out as the one thing Driftholt exports by weight." },
+    { "id": "resin-billets", "name": "Resin billets", "kind": "fuel",
+      "description": "Resin-soaked heartwood split out of fallen trunks, the only wood on the slope that will take a light in air this wet." },
+    { "id": "comb-water", "name": "Comb water", "kind": "water",
+      "description": "Fog-drip led off the drip line into troughs, a barrel a night from a good tree, and the reason the camps sit where they sit." }
+  ],
+  "landmarks": [
+    { "id": "the-drip-line", "name": "The Drip Line",
+      "description": "The height on the slope where the fog first touches the canopy and the constant rain under it begins — a hard line a body can walk into and hear.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" },
+    { "id": "the-moss-ladder", "name": "The Moss Ladder",
+      "description": "A pitch of old trunks fallen across the steepest ground, climbed like a stair for four generations and thick enough with moss to be soft the whole way.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" }
+  ]
+}
+```
+
+- [ ] **Step 5: `zone-drip-terraces.json` — c07/r02, forage + ore + stone**
+
+```json
+{
+  "zone": "drip-terraces",
+  "region": "c07/r02",
+  "survey": "surveyed",
+  "reasonToGo": "The slope steps here, and every step holds a flat of gravel the fog-fed streams have been sorting for a long time — which is where Driftholt's tin comes from and the only level ground on the island.",
+  "hazards": [
+    { "id": "the-terrace-slip", "name": "The terrace slip",
+      "description": "A terrace is gravel resting on wet clay; working the face undercuts it, and the whole step goes at once onto the step below.",
+      "effect": "damage" },
+    { "id": "the-fog-ceiling-blind", "name": "The blind ceiling",
+      "description": "The cloud base sits on the terraces most days and takes visibility to a few paces; a party that keeps working in it walks off a terrace edge it has known for years.",
+      "effect": "stun" }
+  ],
+  "resources": [
+    { "id": "terrace-greens", "name": "Terrace greens", "kind": "forage",
+      "description": "Thick-leaved herbs on the terrace flats, the only green food that grows where the sun reaches for two hours a day." },
+    { "id": "stream-tin", "name": "Stream tin", "kind": "ore",
+      "description": "Placer tin washed out of the terrace gravel in a wooden box fed by the same stream that laid it down; the only metal Driftholt has ever sold." },
+    { "id": "terrace-slab", "name": "Terrace slab", "kind": "stone",
+      "description": "Flat slabs from the terrace risers, split along the bedding and carried down for hearths and doorsteps because nothing else here is dry enough to build with." }
+  ],
+  "landmarks": [
+    { "id": "the-terrace-steps", "name": "The Terrace Steps",
+      "description": "Five gravel flats stacked up the slope with a stream falling between each, worked from the bottom one upward for as long as anyone has counted.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" },
+    { "id": "the-fog-ceiling", "name": "The Fog Ceiling",
+      "description": "The flat grey underside of the cloud that sits on the third terrace nine days in ten, and which the workings are measured up to rather than the sky.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" }
+  ]
+}
+```
+
+- [ ] **Step 6: `zone-windward-crown.json` — c07/r03, forage + timber + water**
+
+```json
+{
+  "zone": "windward-crown",
+  "region": "c07/r03",
+  "survey": "surveyed",
+  "reasonToGo": "The crown of the slope takes the weather first and grows the tallest straight timber in the world for it, and the gap through it is the only crossing between Driftholt's two coasts.",
+  "hazards": [
+    { "id": "the-crown-wind", "name": "The crown wind",
+      "description": "The gap funnels the whole windward gale into one saddle; a party crossing at the wrong hour is put on the ground and kept there, wet, until it drops.",
+      "effect": "stun" },
+    { "id": "the-widowmaker", "name": "The widowmaker",
+      "description": "Dead limbs hang up in this canopy for years because nothing here is dry enough to snap clean, and they come down in the gusts onto whatever is beneath.",
+      "effect": "damage" }
+  ],
+  "resources": [
+    { "id": "crown-fern", "name": "Crown fern", "kind": "forage",
+      "description": "Fern crosiers cut in the wet spring on the crown flats, the one bulk food Driftholt gathers rather than grows." },
+    { "id": "crown-mast", "name": "Crown mast", "kind": "timber",
+      "description": "Single-stick mast timber out of the windward stand, felled uphill and walked down the gap — the reason foreign hulls come here at all." },
+    { "id": "face-water", "name": "Face water", "kind": "water",
+      "description": "Run-off taken straight off the wet face into cut troughs, more of it than anyone can use and the only resource on Driftholt nobody counts." }
+  ],
+  "landmarks": [
+    { "id": "the-crown-gap", "name": "The Crown Gap",
+      "description": "The single saddle through the crown, floored with laid timber, and the whole island's road between its windward and leeward coasts.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" },
+    { "id": "the-wet-face", "name": "The Wet Face",
+      "description": "The windward wall below the crown, running with water down its whole height in any weather, and green from the tideline to the cloud.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" }
+  ]
+}
+```
+
+- [ ] **Step 7: `zone-stack-coast.json` — c08/r01, fuel + ore + salvage**
+
+```json
+{
+  "zone": "stack-coast",
+  "region": "c08/r01",
+  "survey": "surveyed",
+  "reasonToGo": "A coast of standing stacks with a vein cut open in every geo between them, and the wrecks the stacks make are dismantled on the same shore that made them.",
+  "hazards": [
+    { "id": "the-collapsing-stack", "name": "The collapsing stack",
+      "description": "Every stack here is a stack because the arch it used to be fell down; the ones still standing are the ones that have not yet, and they give no notice.",
+      "effect": "damage" },
+    { "id": "the-geo-surge", "name": "The geo surge",
+      "description": "A swell entering a geo has nowhere to go but up; it comes up the throat as a solid column and takes anything on the floor out with it on the way back.",
+      "effect": "damage" }
+  ],
+  "resources": [
+    { "id": "bramble-faggots", "name": "Bramble faggots", "kind": "fuel",
+      "description": "Thorn cut off the stacks' landward backslope and dried on the rock — the only thing that grows on Wracklow and the only thing that burns on it." },
+    { "id": "geo-vein-iron", "name": "Geo vein iron", "kind": "ore",
+      "description": "Iron out of the vein the geo cuts open, chipped from the walls at low water by crews who work to the tide and not to the day." },
+    { "id": "wreck-salvage", "name": "Wreck salvage", "kind": "salvage",
+      "description": "Iron, cordage and cut timber off hulls the stacks caught, stripped on the shore and sold at Netstead because there is no market nearer." }
+  ],
+  "landmarks": [
+    { "id": "the-standing-stacks", "name": "The Standing Stacks",
+      "description": "A line of sea stacks a league long, each the remains of a headland, with clear water and a following swell between every pair.",
+      "source": "content/world/resolved/continent-08.json" },
+    { "id": "the-geo-throat", "name": "The Geo Throat",
+      "description": "The deepest geo on the coast, a cleft driven back into the cliff with a vein down one wall and a blowing surge up the other.",
+      "source": "content/world/resolved/continent-08.json" }
+  ]
+}
+```
+
+- [ ] **Step 8: `zone-blowhole-shelf.json` — c08/r02, fuel + stone + timber**
+
+Ground: Wracklow's structural idea is that **no river reaches the sea intact**. Every scrap of wood on this shelf therefore arrived by sea, which is what makes `timber` a salvage-adjacent resource here and not a forestry one.
+
+```json
+{
+  "zone": "blowhole-shelf",
+  "region": "c08/r02",
+  "survey": "surveyed",
+  "reasonToGo": "The shelf is the one walkable ground on an erosional coast, and everything the sea takes from the rest of Wracklow — coal, timber, wrack — is laid out on it by the same swell that made it.",
+  "hazards": [
+    { "id": "the-blowhole-jet", "name": "The blowhole jet",
+      "description": "The field is holed straight through to the sea in a dozen places, and on a big swell each hole throws a column of water higher than a mast with no pattern to when.",
+      "effect": "damage" },
+    { "id": "the-shelf-sweep", "name": "The shelf sweep",
+      "description": "A swell that overtops the shelf runs its whole width and takes everything loose seaward, including bodies that were a hundred paces from the edge.",
+      "effect": "damage" }
+  ],
+  "resources": [
+    { "id": "sea-coal", "name": "Sea coal", "kind": "fuel",
+      "description": "Coal washed out of a drowned seam offshore and thrown up along the wrack line, gathered after every gale and the warmest fuel on the island." },
+    { "id": "shelf-flag", "name": "Shelf flag", "kind": "stone",
+      "description": "Flagstone levered off the shelf where the swell has already loosened it, walked up the one gully and used for every roof on the coast." },
+    { "id": "wrack-timber", "name": "Wrack timber", "kind": "timber",
+      "description": "Driftwood and wreck timber off the wrack line — no tree grows on Wracklow and no river brings one down, so every plank here crossed open water to arrive." }
+  ],
+  "landmarks": [
+    { "id": "the-blowhole-field", "name": "The Blowhole Field",
+      "description": "A shelf pocked with a dozen holes to the sea, each roaring on a different swell, audible from inland long before it is visible.",
+      "source": "content/world/resolved/continent-08.json" },
+    { "id": "the-wrack-line", "name": "The Wrack Line",
+      "description": "The high tide's litter along the shelf's inner edge, re-laid by every gale, and the closest thing Wracklow has to a market.",
+      "source": "content/world/resolved/continent-08.json" }
+  ]
+}
+```
+
+- [ ] **Step 9: `zone-cliffhang-falls.json` — c09/r01, ore + salvage + water**
+
+```json
+{
+  "zone": "cliffhang-falls",
+  "region": "c09/r01",
+  "survey": "surveyed",
+  "reasonToGo": "Fresh water falls off this cliff straight into the sea, so a hull can fill its casks without landing — which is the only reason anyone stops at Brightfall and the only trade the chain has.",
+  "hazards": [
+    { "id": "the-spray-slick", "name": "The spray slick",
+      "description": "The ledge under the fall is wet its whole length and weeded to the colour of the rock; a cask crew works it roped, and the ones who do not are why it is roped.",
+      "effect": "damage" },
+    { "id": "the-fall-cold", "name": "The fall cold",
+      "description": "The water comes off the height with the cold of the height still in it, and standing under it to fill a cask takes the strength out of a pair of hands in minutes.",
+      "effect": "freeze" }
+  ],
+  "resources": [
+    { "id": "ledge-float", "name": "Ledge float", "kind": "ore",
+      "description": "Ore-bearing float the fall has cut out of the cliff and dropped on the ledge, picked over between hulls and never dug for." },
+    { "id": "ledge-wreck", "name": "Ledge wreck", "kind": "salvage",
+      "description": "Gear off hulls that misjudged the swell while lying under the fall, taken off the ledge by the next crew to manage it better." },
+    { "id": "fall-water", "name": "Fall water", "kind": "water",
+      "description": "Caught in the fall's own plunge basin, the sweetest water on the eastern lanes and the entire reason for the chain's name and its charting." }
+  ],
+  "landmarks": [
+    { "id": "the-hanging-fall", "name": "The Hanging Fall",
+      "description": "White water leaving the cliff top clear of the rock and reaching the sea without touching it — the mark mariners named the chain for.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" },
+    { "id": "the-spray-ledge", "name": "The Spray Ledge",
+      "description": "The narrow shelf at the fall's foot, the only landing on the isle, and never dry in any season.",
+      "source": "docs/worldbuilding/A2-wider-world.md#4" }
+  ]
+}
+```
+
+- [ ] **Step 10: `zone-cone-line.json` — c10/r01, salvage + stone + timber**
+
+Ground: Ashen Spar's two ground types are **not interchangeable**. `ash` is a walkable depositional plain that buries things intact; `lava` is an impassable flow field. Every sentence below keeps them apart, and a reviewer will check that it does.
+
+```json
+{
+  "zone": "cone-line",
+  "region": "c10/r01",
+  "survey": "surveyed",
+  "reasonToGo": "The ash plain between the cones buries a camp whole and gives it back a decade later, so the one line of walkable ground on the arc is also the only place anything of the arc's history can be dug up.",
+  "hazards": [
+    { "id": "the-flow-field", "name": "The flow field",
+      "description": "The lava fields between the ash plains are not crossable at any pace: broken block that turns an ankle every third step and cuts through boot leather in a morning.",
+      "effect": "damage" },
+    { "id": "the-vent-air", "name": "The vent air",
+      "description": "The tube mouths and fissures breathe out gas that sits in the hollows without smell until a body is already in it and already down.",
+      "effect": "poison" }
+  ],
+  "resources": [
+    { "id": "buried-gear", "name": "Buried gear", "kind": "salvage",
+      "description": "Tools, iron and stores dug out of the ash that buried the last camps, preserved by the same fall that killed them and worth more than anything the arc produces." },
+    { "id": "tube-basalt", "name": "Tube basalt", "kind": "stone",
+      "description": "Dense basalt cut out of collapsed lava-tube roofs — the hardest building stone in the world and quarried nowhere else because nowhere else is it lying broken and reachable." },
+    { "id": "ash-buried-pine", "name": "Ash-buried pine", "kind": "timber",
+      "description": "Standing pine killed and preserved by an ash fall, cut off at the new ground level; it is seasoned, it is upright, and there is a finite amount of it." }
+  ],
+  "landmarks": [
+    { "id": "the-cone-row", "name": "The Cone Row",
+      "description": "A dozen cinder cones strung in one line down the arc, each with its ash plain on the lee side and its flow field on the other, in the same order every time.",
+      "source": "content/world/resolved/continent-10.json" },
+    { "id": "the-tube-mouth", "name": "The Tube Mouth",
+      "description": "The open end of the longest lava tube on the arc, walked into for a hundred paces before the roof drops and nobody has walked further.",
+      "source": "content/world/resolved/continent-10.json" }
+  ]
+}
+```
+
+- [ ] **Step 11: Prove `Z2` is closed in both directions**
+
+Run:
+```bash
+node scripts/check_content.mjs --require-complete 2>&1 | grep -E "^zones:"
 ls content/zones/zone-*.json | wc -l
 node --test 'scripts/tests/zone-content.test.mjs'
 node --test 'scripts/tests/zone-allocation.test.mjs'
-node scripts/check_content.mjs --require-complete
+node scripts/check_content.mjs --require-complete 2>&1 | grep -E "^zones: [0-9]+ records"
 ```
-Expected: **40** files; every test PASS; the gate PASS with `zones: 40 records` in its `finish()` summary. The polar cap (Rimewall Cap) and the four remaining chains have **zero** records, by design — that is the honest frontier, and it is the reason the world can be ten times larger without ten times the prose.
+Expected: the first grep prints **nothing** — no missing record and no record on unwalked ground; **40** zone files; both suites PASS; and the last line reports `zones: 40 records`, which is the counting assertion that proves the gate did not silently early-out. The polar cap (Rimewall Cap) and the four remaining chains carry **zero** records by design — that is the honest frontier, and it is why the world can be ten times larger without ten times the prose.
 
-- [ ] **Step 6: Quality gate — verify**
+```bash
+git add content/zones && git commit -m "content: zone records for the minor continents and chains"
+```
+
+- [ ] **Step 12: Quality gate — verify**
 
 Run: `./scripts/integration.sh --no-install` and paste the output. Expected: every section PASS. This is the first moment since Task 6 that Gate 2 is green end to end.
 
-- [ ] **Step 7: Quality gate — independent adversarial review**
+- [ ] **Step 13: Quality gate — independent adversarial review**
 
-Fresh reviewer on `git diff HEAD~3..HEAD`, brief: *"Editorial review of 24 records. (a) Pick any five at random and check every concrete noun against `content/world/resolved/` — is the cenote, the wadi, the blowhole actually placed there? (b) Do Thirstwold's seven read as seven places or as one desert seven times? Same question for Stonemoor. (c) Does any record on a chain or minor continent read as filler written to satisfy a count? Name it. (d) Does `ash` get used where `lava` is meant, or vice versa, on Ashen Spar? The split is deliberate and the whole arc reads as a smudge if it is blurred."*
+Fresh reviewer on `git diff HEAD~1`, brief: *"Editorial review of ten records on five landmasses. (a) Pick any five concrete nouns and check each against `content/world/resolved/` — is the blowhole, the lagoon, the terrace, the fall actually placed in that region? (b) Does any record read as filler written to satisfy a count? Name it and say what is missing. (c) Does `ash` get used where `lava` is meant, or vice versa, on Ashen Spar? The split is deliberate and the whole arc reads as a smudge if it is blurred. (d) Reedstrand has no bedrock and Wracklow has no river reaching the sea. Does every `stone` and `timber` resource on those two landmasses say how it arrived? (e) Run the whole 40-record corpus through the Z6 checks by hand — 40 distinct kind sets, 80 distinct landmark names — independently of `zone-allocation.test.mjs`, and report the two closest near-collisions."*
 
-- [ ] **Step 8: Quality gate — refactor, re-verify, report**
+- [ ] **Step 14: Quality gate — refactor, re-verify, report**
 
 Apply findings, then: `./scripts/integration.sh --no-install && git branch --show-current && git log --oneline -3`
 
 ---
 
-### Task 12: Prose reconciliation — the 33 `AMENDED-PENDING` re-voicings and the wider-world amendments
+### Task 15: Prose reconciliation — the 22 surviving `AMENDED-PENDING` re-voicings and the wider-world amendments
 
-F-045 was a *uniform 5× rescale* — it preserved every topological relation, bearing, rank and betweenness — and it still stranded **33 prose claims across 10 content files**, each stamped `AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred`. This task pays that debt on the redrawn world, where the claims are finally checkable. **This is not cosmetic:** every one of these markers is a sentence that currently asserts something false, and G-MEANING (Plan D) will flag the ones that are also machine-checkable.
+F-045 was a *uniform 5× rescale* — it preserved every topological relation, bearing, rank and betweenness — and it still stranded **33 prose claims across 10 content files**, of which **22 are still standing when this task runs** (7 retired with the legacy mirror Plan A deleted, 4 with the continent node bodies Task 6 regenerated), each stamped `AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred`. This task pays that debt on the redrawn world, where the claims are finally checkable. **This is not cosmetic:** every one of these markers is a sentence that currently asserts something false, and G-MEANING (Plan D) will flag the ones that are also machine-checkable.
 
 **The live markers, counted by file** (`grep -rc "AMENDED-PENDING" content docs`):
 
@@ -3255,12 +4729,12 @@ F-045 was a *uniform 5× rescale* — it preserved every topological relation, b
 | `docs/worldbuilding/A1-geography-cluster1.md` | 7 | The "~30 km per travel-day" pace, the "~190 km of ridge-line", "8–10 km" tower spacing, "six days", "a day's walk away" |
 | `docs/worldbuilding/A0-current-world.md` | 3 | The day-count bullet list, "crossable in under a week", "slow detail (days)" |
 | `content/spine/edges.json` | 5 | Road-note day-counts on the trade road, coastal spur, east-rim track and two more |
-| `content/spine/nodes/*.json` | 5 | `n-atlas` 1, `n-cluster1` **2**, `n-coldreach` 1, `n-stonemoor` 1 — lore summaries citing "six days out on the trade wind". **Four files, five markers: `n-cluster1.json` carries two.** |
+| `content/spine/nodes/*.json` | 5 **pre-redraw**, **1 post-redraw** | Pre-redraw: `n-atlas` 1, `n-cluster1` **2**, `n-coldreach` 1, `n-stonemoor` 1 — lore summaries citing "six days out on the trade wind". Post-redraw, only `n-atlas`'s survives: `buildTrunk` writes `lore: { summary: premise.structuralIdea }` on every continent node it generates, so `n-cluster1`, `n-coldreach` and `n-stonemoor` are **regenerated wholesale by Task 6** and their four markers retire with the old node bodies rather than being re-voiced. `n-atlas` is the one node promotion carries over verbatim. **This task therefore re-voices ONE node file, not four.** |
 | `docs/worldbuilding/A2-zones-cluster1.md` | 1 | One distance claim inside a zone essay |
-| **Total (live corpus)** | **26** | The remaining 7 sit in `content/maps/cluster1-geography.json`, which Plan A **deletes**, so they retire with it. Verified: `grep -rc "AMENDED-PENDING" content docs` — 5 + 7 + 3 + 5 + 5 + 1 = 26 live, 7 retiring. |
+| **Total (live corpus)** | **26 pre-redraw**, **22 at this task** | Verified pre-redraw: `grep -rc "AMENDED-PENDING" content docs` — 5 + 7 + 3 + 5 + 5 + 1 = 26 live, plus 7 more in `content/maps/cluster1-geography.json` which Plan A **deletes**, so those retire with it. By the time this task runs, Task 6's promotion has already retired the 4 continent-node markers with the node bodies they lived in, leaving **22** for this task to re-voice by hand: 5 canon + 7 A1 + 3 A0 + 5 edges + 1 A2-zones + 1 n-atlas. |
 
 **Files:**
-- Modify: `content/story/canon.md`, `content/spine/edges.json`, `content/spine/nodes/n-atlas.json`, `n-cluster1.json`, `n-coldreach.json`, `n-stonemoor.json`
+- Modify: `content/story/canon.md`, `content/spine/edges.json`, `content/spine/nodes/n-atlas.json`
 - Modify: `docs/worldbuilding/A0-current-world.md`, `A1-geography-cluster1.md`, `A2-zones-cluster1.md`, `A2-wider-world.md`, `F-043-wider-world-panel.md`, `DR-003-season-1-budget.md`
 - Test: none new — `G-CITE`, `G-MEANING` and `scripts/tests/story-*.test.mjs` are the tests
 
@@ -3306,15 +4780,23 @@ Same procedure for the 11 markers in those three files. Two are structural, not 
 - `A0-current-world.md:454` — *"The whole land is crossable in under a week."* On the 400 km world with 13 landmasses this is false at world scale and true at basin scale. Rewrite it to say which: *"The settled basin is crossable in a day; the world beyond it is a season's sailing and no one has crossed it."*
 - `A1-geography-cluster1.md:290,319,331` — the reconciliation table, the ridge-line length and the tower spacing. These derive from geometry that the redraw replaced; recompute each from `content/spine/edges.json` and `content/world/resolved/`, and state in the doc that the numbers are derived, with the command that derives them.
 
-- [ ] **Step 4: Re-voice the five node markers across four files, and the five road notes**
+- [ ] **Step 4: Re-voice the one surviving node marker, and the five road notes**
 
-`content/spine/nodes/n-coldreach.json`'s `lore.summary` reads *"Six days out on the trade wind, masters log a cold grey coast…"* and carries an `amendedPending` key. Re-voice the summary and **delete the `amendedPending` key** — do not blank it. Same for `n-stonemoor` (1 marker), `n-atlas` (1 marker) and **`n-cluster1`, which carries TWO** — count markers, not files, or one `amendedPending` key survives in `n-cluster1.json` and Step 8's grep-empty check goes red at the very end of the task. Then the five `attrs.amendedPending` keys in `content/spine/edges.json`.
+**Count what is actually there before you start.** Four of the five node markers are already gone by the time this task runs: `n-cluster1` (2), `n-coldreach` (1) and `n-stonemoor` (1) are regenerated wholesale by Task 6's promotion, which writes `lore: { summary: premise.structuralIdea }` and no `amendedPending` key at all. Only `n-atlas` is carried over verbatim, so it is the only node file still carrying one. The five `attrs.amendedPending` keys in `content/spine/edges.json` **do** survive — `writeRun` carries every authored edge forward whole — so the road notes are the bulk of this step.
 
-Verify the per-file count before you start and again after:
 ```bash
 grep -c AMENDED-PENDING content/spine/nodes/*.json content/spine/edges.json
 ```
-Expected before: `n-atlas.json:1`, `n-cluster1.json:2`, `n-coldreach.json:1`, `n-stonemoor.json:1`, `edges.json:5`. Expected after: every count **0**.
+Expected before: `n-atlas.json:1` and `edges.json:5`, and **nothing else** — `grep -c` prints `:0` for the other node files. If `n-cluster1.json` still shows 2, the promotion did not regenerate it and Task 6 is incomplete; stop and check `provenance.authored` on that node (it must read `"generated"`).
+
+`content/spine/nodes/n-atlas.json`'s `lore.summary` carries the surviving marker — a "six days out on the trade wind" claim. Re-voice the summary against Step 1's table and **delete the `amendedPending` key** — do not blank it. Then do the same for the five `attrs.amendedPending` keys on `e-trade-road-trunk`, `e-coastal-spur`, `e-east-rim-track`, `e-flat-crossing` and `e-river-road-south` in `content/spine/edges.json`, substituting each edge's own `attrs.hoursLabel` from Step 1.
+
+The four retired markers still need their **claims** honoured, because retiring a marker is not the same as making the sentence true: `n-cluster1`, `n-coldreach` and `n-stonemoor` now carry generated `lore.summary` prose from their premise files, and A2-wider-world.md's day-count claims about those three landmasses are handled in Step 5's amendments rather than here.
+
+```bash
+grep -c AMENDED-PENDING content/spine/nodes/*.json content/spine/edges.json
+```
+Expected after: every count **0**.
 
 **These are node-body edits inside a post-redraw tree**, so re-emit and re-baseline afterwards:
 ```bash
@@ -3370,7 +4852,7 @@ Apply findings, then: `./scripts/integration.sh --no-install && git branch --sho
 
 ---
 
-### Task 13: Final green, the rollback drill, and the ship report
+### Task 16: Final green, the rollback drill, and the ship report
 
 The last task proves the three things this plan promised and nothing else. No new code.
 
@@ -3453,11 +4935,11 @@ node --test 'tools/asset-storybook/tests/*.test.mjs'
 node scripts/check_asset_manifest.mjs
 node -e '
 const idx = require("./tools/asset-storybook/maps-index.json");
-console.log(idx.sheets.length, "sheets indexed");
+console.log(idx.sheets.length, "sheets indexed");   // 18
 for (const s of idx.sheets) console.log(" ", s.id, s.svg);
 '
 ```
-Expected: PASS, and one indexed row per `SHEETS` entry (≤ 16, per the budget). The owner rule is not satisfied by a committed SVG — it is satisfied by a row a reviewer can open.
+Expected: PASS, and one indexed row per `SHEETS` entry — **18**, per `budgets.sheets.maxSheets` and E-C10. The owner rule is not satisfied by a committed SVG — it is satisfied by a row a reviewer can open.
 
 - [ ] **Step 8: Write the phase report**
 
