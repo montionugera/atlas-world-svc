@@ -929,3 +929,42 @@ test("G-ATLAS-ROLLUP green: the committed content passes", () => {
   const { code, stdout } = runGate(join(ROOT, "content"));
   assert.equal(code, 0, stdout);
 });
+
+// ─── Plan A Task 3 review fix (d): message ORDER under the bbox index ───────
+// The two literal fixtures above pin a TWO-child parent, where there is only
+// one pair and therefore no order to get wrong. The index's real risk (plan
+// Risk A8) is that it turns the pair walk into an index-driven one and
+// reorders G-OVERLAP reports — only ~2 of the ~130 possible messages are
+// pinned anywhere, so a reordering would ship silently. This fixture gives
+// n-c FIVE children: three mutually overlapping (n-r, n-r2, n-r3) and two
+// sitting far away inside n-c (n-r4, n-r5). Ten pairs, three reported, seven
+// skipped by the index — so the index is demonstrably doing work AND the
+// surviving reports must still come out in outer-i<j order.
+t11("G-OVERLAP order: three overlapping children report in i<j order, index or not", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const base = JSON.parse(read11(join11(dir, "spine/nodes/n-r.json"), "utf8"));
+    const mk = (id, seed, points) => {
+      const n = { ...base, id, seed: { value: seed, epoch: 0, why: null } };
+      n.placement = { shape: "polygon", points, anchor: points[0] };
+      delete n.derived;
+      write11(join11(dir, `spine/nodes/${id}.json`), JSON.stringify(n, null, 2) + "\n");
+    };
+    mk("n-r2", "52fc1fdd51a099d7", [[25, 25], [45, 25], [45, 45], [25, 45]]);
+    mk("n-r3", "62fc1fdd51a099d7", [[30, 30], [50, 30], [50, 50], [30, 50]]);
+    mk("n-r4", "72fc1fdd51a099d7", [[70, 70], [85, 70], [85, 85], [70, 85]]);
+    mk("n-r5", "82fc1fdd51a099d7", [[70, 20], [85, 20], [85, 35], [70, 35]]);
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1);
+  // deepEqual on the ORDERED list, not three independent `match`es: a match
+  // sweep passes no matter what order the lines came out in.
+  assert11.deepEqual(
+    r.out.split("\n").filter((l) => l.includes("G-OVERLAP")).map((l) => l.trim()),
+    [
+      "FAIL  spine: G-OVERLAP n-r ∩ n-r2: 225.0 over limit 2.0",
+      "FAIL  spine: G-OVERLAP n-r ∩ n-r3: 100.0 over limit 2.0",
+      "FAIL  spine: G-OVERLAP n-r2 ∩ n-r3: 225.0 over limit 2.0",
+      "FAIL  spine: G-OVERLAP n-c: children double-count 550.0 (limit 32.0)",
+    ],
+  );
+});

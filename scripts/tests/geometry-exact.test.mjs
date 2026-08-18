@@ -562,3 +562,58 @@ test("index: on the real spine, the candidate filter skips only pairs whose exac
   assert.deepEqual(skippedNonZero, [], "the index skipped a pair with a real overlap");
   assert.ok(skipped > 0, "the index skipped nothing — it is not doing any work");
 });
+
+// ── Task 3 review fix (b): degenerate bboxes still register and still match ──
+// A rect with w: 0 (or a ring collapsed onto a line) has a zero-extent bbox.
+// The index's confirmation predicate is STRICT, so such a box never matches
+// ITSELF — irrelevant to the gate, which only ever asks about j > i. What
+// matters is that it is still registered and still found by, and finds, a
+// neighbour. Its exact area is 0 either way, so no verdict can move.
+test("index: a zero-extent bbox still registers, and still pairs with its neighbour", () => {
+  const zero = rect(5, 0, 0, 10); // zero WIDTH
+  const flat = rect(0, 5, 10, 0); // zero HEIGHT
+  const sq = rect(0, 0, 10, 10);
+  const items = [zero, flat, sq].map((p, i) => ({ id: `n${i}`, bbox: bboxOfPlacement({ placement: p }) }));
+  const idx = buildBBoxIndex({ items });
+  // n0 and n1 cross at (5,5), so each finds the other AND the square; neither
+  // finds itself, because a zero-extent box cannot strictly overlap itself —
+  // which the gate never asks, since its inner loop starts at j = i + 1.
+  assert.deepEqual(idx.query({ bbox: items[0].bbox }), ["n1", "n2"]);
+  assert.deepEqual(idx.query({ bbox: items[1].bbox }), ["n0", "n2"]);
+  assert.deepEqual(idx.query({ bbox: items[2].bbox }), ["n0", "n1", "n2"]);
+  for (const a of [zero, flat])
+    for (const b of [zero, flat, sq]) assert.equal(exactIntersectionArea({ a, b }), 0);
+});
+
+// ── Task 3 review fix (c): pairSum cannot lose a contribution ───────────────
+// The parent double-count check sums exactIntersectionArea over every pair.
+// A skipped pair must therefore contribute exactly 0 — asserted here as a sum
+// identity over the REAL spine, which is the number the gate actually reports,
+// rather than only as a per-pair predicate.
+test("index: the indexed pairSum equals the all-pairs pairSum on every real parent", () => {
+  const spine = loadSpine({ contentRoot: join(REPO, "content") });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  let compared = 0;
+  for (const parent of tree.byId.values()) {
+    const kids = (tree.childrenOf.get(parent.id) ?? [])
+      .map((i) => tree.byId.get(i))
+      .filter((n) => n.placement.shape !== "point");
+    if (kids.length < 2) continue;
+    const boxes = kids.map((k) => ({ id: k.id, bbox: bboxOfPlacement({ placement: k.placement }) }));
+    const index = buildBBoxIndex({ items: boxes });
+    let all = 0, indexed = 0;
+    for (let i = 0; i < kids.length; i++) {
+      const near = new Set(index.query({ bbox: boxes[i].bbox }));
+      for (let j = i + 1; j < kids.length; j++) {
+        const inter = exactIntersectionArea({ a: kids[i].placement, b: kids[j].placement });
+        all += inter;
+        if (near.has(kids[j].id)) indexed += inter;
+      }
+    }
+    // Exact equality, not a tolerance: the skipped terms are each exactly 0,
+    // so the two sums are the same float additions in the same order.
+    assert.equal(indexed, all, `pairSum moved on ${parent.id}: ${indexed} vs ${all}`);
+    compared++;
+  }
+  assert.ok(compared >= 6, `only ${compared} parents had 2+ non-point children`);
+});
