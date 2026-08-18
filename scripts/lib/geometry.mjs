@@ -81,10 +81,41 @@ const cross2 = (a, b, c) => (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0
 const pointInTriInclusive = (p, a, b, c) =>
   cross2(a, b, p) >= 0 && cross2(b, c, p) >= 0 && cross2(c, a, p) >= 0;
 
+// Drop vertices that are EXACTLY collinear with their neighbours, and exact
+// duplicate points, to a fixed point. Area-preserving by construction: a
+// vertex with cross2 === 0 spans a zero-area triangle, so the shoelace is
+// unchanged. This is not cosmetic — content/spine/nodes/n-keelbreak.json is a
+// legal committed ring (G-POLY green: simple by properCross, shoelace
+// +67091.8) that walks x=50 down from y=58 to y=5 and straight back up to
+// y=21.8. That zero-WIDTH spike has a collinear apex, ear clipping can never
+// consume it, and the loop below would find no ear and return [] — which made
+// exactIntersectionArea report 0 for every pair touching that node and
+// silently disabled G-OVERLAP for it.
+function cleanRing(points) {
+  let ring = points;
+  for (let pass = 0; pass < points.length; pass++) {
+    const next = [];
+    for (let i = 0; i < ring.length; i++) {
+      const P = ring[(i - 1 + ring.length) % ring.length];
+      const C = ring[i];
+      const N = ring[(i + 1) % ring.length];
+      if (C[0] === N[0] && C[1] === N[1]) continue; // exact duplicate
+      if (cross2(P, C, N) === 0) continue; // collinear: spans no area
+      next.push(C);
+    }
+    if (next.length === ring.length) return ring;
+    if (next.length < 3) return next;
+    ring = next;
+  }
+  return ring;
+}
+
 // Positively-wound simple ring -> positively-wound triangles. G-POLY already
 // guarantees simple + open + strictly positive, so no orientation fix-up is
 // needed; a ring that violates it yields [] and its own G-POLY FAIL elsewhere.
 export function earClip({ points }) {
+  if (!Array.isArray(points) || points.length < 3) return [];
+  points = cleanRing(points);
   const n = points.length;
   if (n < 3) return [];
   const idx = [...points.keys()];
@@ -152,11 +183,17 @@ function shoelace(points) {
 // A rect becomes a POSITIVELY wound ring: [x,y] -> [x+w,y] -> [x+w,y+h] ->
 // [x,y+h] has shoelace +w*h. The reverse order gives -w*h and every clip
 // against it silently returns nothing.
+// A ring needs 3 points to bound anything. Anything less — and any malformed
+// placement — yields null rather than a throw, per this module's no-throw
+// contract: an uncaught throw inside a gate skips finish() and silently drops
+// every FAIL recorded before it.
 function ringOf(placement) {
   if (!placement) return null;
-  if (placement.shape === "polygon") return placement.points;
+  if (placement.shape === "polygon")
+    return Array.isArray(placement.points) && placement.points.length >= 3 ? placement.points : null;
   if (placement.shape === "rect") {
     const r = placement.rect;
+    if (!r) return null;
     return [[r.x, r.y], [r.x + r.w, r.y], [r.x + r.w, r.y + r.h], [r.x, r.y + r.h]];
   }
   return null; // point placements have no area — spine.mjs:131 agrees
@@ -164,7 +201,15 @@ function ringOf(placement) {
 
 export function bboxOfPlacement({ placement }) {
   const ring = ringOf(placement);
-  if (!ring) return { x: placement.at[0], y: placement.at[1], w: 0, h: 0 };
+  // No ring: a point placement is its own zero-extent bbox; anything else
+  // degrades to a zero-extent bbox at the origin, which the strict overlap
+  // predicate in query() can never match.
+  if (!ring) {
+    const at = placement?.at;
+    return Array.isArray(at)
+      ? { x: at[0], y: at[1], w: 0, h: 0 }
+      : { x: 0, y: 0, w: 0, h: 0 };
+  }
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const [x, y] of ring) {
     if (x < minX) minX = x;

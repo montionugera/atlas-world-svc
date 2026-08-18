@@ -140,6 +140,70 @@ test("bboxOfPlacement + ringVertexCount cover all three shapes", () => {
   assert.equal(ringVertexCount({ placement: pt(0, 0) }), 0);
 });
 
+// ── Task 1 Step 9: defects found by the adversarial review, pinned ─────────
+
+test("earClip: a ring with exactly-collinear spikes still triangulates (n-keelbreak)", () => {
+  // The real committed ring content/spine/nodes/n-keelbreak.json. It walks
+  // x=50 from y=58 to y=5 and back to y=21.8 — a zero-WIDTH spike whose apex
+  // is exactly collinear with its neighbours. selfIntersects() passes it
+  // (it tests PROPER crossings only) and its shoelace is a healthy +67091.8,
+  // so G-POLY is green and the ring is legal. Ear clipping cannot consume a
+  // collinear reversal, so the unguarded loop found no ear and returned [] —
+  // which made exactIntersectionArea report 0 for every pair involving this
+  // node, silently disabling G-OVERLAP for it. Collinear vertices are dropped
+  // before clipping; that is exactly area-preserving.
+  const KEELBREAK = [
+    [5, 5], [5, 58], [50, 58], [50, 5], [50, 21.8], [199, 21.8], [199, 5],
+    [199, 41], [183, 41], [183, 77], [199, 77], [199, 114.4], [165, 114.4],
+    [165, 182.4], [199, 182.4], [199, 256.8], [181, 256.8], [181, 300.8],
+    [199, 300.8], [199, 395], [5, 395],
+  ];
+  const tris = earClip({ points: KEELBREAK });
+  assert.ok(tris.length > 0, "the ring produced no triangles at all");
+  let sum = 0;
+  for (const [A, B, C] of tris) {
+    const cross = (B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0]);
+    assert.ok(cross > 0, `triangle ${JSON.stringify([A, B, C])} is wound backwards`);
+    sum += cross / 2;
+  }
+  assert.equal(sum.toFixed(4), "67091.8000");
+  // The under-report this defect caused, stated as the assertion that catches it.
+  const placement = { shape: "polygon", points: KEELBREAK, anchor: KEELBREAK[0] };
+  assert.equal(exactIntersectionArea({ a: placement, b: placement }).toFixed(1), "67091.8");
+});
+
+test("earClip: a collinear run on a convex ring does not become a zero-area triangle", () => {
+  // [5,0] is redundant, not a spike. Dropping it must leave 2 real triangles
+  // whose areas sum to the square's, with no degenerate slivers.
+  const tris = earClip({ points: [[0, 0], [5, 0], [10, 0], [10, 10], [0, 10]] });
+  let sum = 0;
+  for (const [A, B, C] of tris) {
+    const cross = (B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0]);
+    assert.ok(cross > 0, "a degenerate or backwards triangle survived");
+    sum += cross / 2;
+  }
+  assert.equal(sum, 100);
+});
+
+test("nothing throws on malformed placements — a gate throw drops every FAIL before it", () => {
+  // check_content.mjs records failures in a module-level array and prints them
+  // in finish(); an uncaught throw skips finish() entirely. Every entry point
+  // must degrade to 0 / [] / a zero bbox instead.
+  const junk = [
+    null, undefined, {}, { shape: "polygon" }, { shape: "polygon", points: [] },
+    { shape: "polygon", points: [[0, 0]] }, { shape: "polygon", points: [[0, 0], [1, 1]] },
+    { shape: "rect", rect: { x: 0, y: 0, w: 0, h: 0 } }, { shape: "point", at: [1, 1] },
+    { shape: "point" },
+  ];
+  for (const a of junk) {
+    assert.deepEqual(typeof bboxOfPlacement({ placement: a }), "object");
+    assert.equal(typeof ringVertexCount({ placement: a }), "number");
+    for (const b of junk) assert.equal(typeof exactIntersectionArea({ a, b }), "number");
+    assert.equal(exactIntersectionArea({ a, b: poly(UNIT) }) >= 0, true);
+  }
+  assert.deepEqual(earClip({ points: [] }), []);
+});
+
 test("buildBBoxIndex: query returns every bbox-overlapping id, sorted, and no id twice", () => {
   const idx = buildBBoxIndex({
     items: [
