@@ -17,6 +17,7 @@ import {
   bboxOfPlacement,
   ringVertexCount,
   buildBBoxIndex,
+  ringStructureProblem,
 } from "../lib/geometry.mjs";
 
 const poly = (points) => ({ shape: "polygon", points, anchor: points[0] });
@@ -671,4 +672,61 @@ test("index: the indexed pairSum equals the all-pairs pairSum on every real pare
     compared++;
   }
   assert.ok(compared >= 6, `only ${compared} parents had 2+ non-point children`);
+});
+
+// ── ringStructureProblem: the per-RING hook the gate calls at G-POLY time ───
+// This is the library half of G-RING-SIMPLE. The gate half is pinned in
+// scripts/tests/spine-gates.test.mjs.
+test("ringStructureProblem: a strictly simple ring, and a collinear-spike ring, are sound", () => {
+  assert.equal(ringStructureProblem({ points: [[0, 0], [10, 0], [10, 10], [0, 10]] }), null);
+  // The n-keelbreak shape: a zero-WIDTH spike walking down x=50 and straight
+  // back up it. Not simple as authored, but cleanRing() drops the collinear
+  // apex first — and the drop is area-preserving, so refusing this ring would
+  // be a FALSE FAIL on legal committed content.
+  assert.equal(ringStructureProblem({ points: [[0, 0], [50, 0], [50, 58], [50, 5], [50, 21.8], [0, 30]] }), null);
+});
+test("ringStructureProblem: a vertex on a non-adjacent edge is refused", () => {
+  const points = [[20, 20], [80, 20], [80, 60], [50, 20], [20, 60]];
+  assert.match(ringStructureProblem({ points }), /non-adjacent edges meet/);
+  // …and this is exactly the ring the pair path reports 0 for, silently.
+  assert.equal(earClip({ points }).length, 0);
+});
+// The headline finding of review round 3, and the reason this rule is
+// STRUCTURAL rather than the area identity all three reviews prescribed.
+test("ringStructureProblem: overlapping lobes are refused THOUGH the area identity passes", () => {
+  const points = [[0, 0], [10, 0], [10, 10], [0, 10], [0, 0], [2, 2], [8, 2], [8, 8], [2, 8]];
+  // triangulateOrNull's conservation check (Σ shoelace(tri) === shoelace(ring))
+  // PASSES here: splitAtRepeat cuts the ring at the repeated [0,0] into two
+  // lobes that cover the same ground twice, ear clipping returns 5
+  // positively-wound triangles, and their areas sum to the ring's own +142 —
+  // because the shoelace double-counts a doubly-wound region too. So the
+  // kernel reports 142 with an EMPTY problems collector while the true covered
+  // area is 58.01. An over-report is a false FAIL against an innocent sibling,
+  // or a parent double-count pushed over its limit, on area that does not
+  // exist. Only a structural test catches it.
+  const tris = earClip({ points });
+  assert.equal(tris.length, 5);
+  const problems = [];
+  assert.equal(
+    exactIntersectionArea({ a: { shape: "polygon", points }, b: { shape: "rect", rect: { x: -1, y: -1, w: 20, h: 20 } }, problems }),
+    142,
+  );
+  assert.equal(problems.length, 0);
+  assert.match(ringStructureProblem({ points }), /non-adjacent edges meet/);
+});
+test("ringStructureProblem: never throws, and defers to G-POLY on rings it does not own", () => {
+  assert.equal(ringStructureProblem({ points: undefined }), null);
+  assert.equal(ringStructureProblem({ points: [[0, 0], [1, 1]] }), null); // < 3 points: G-POLY's rule
+  assert.equal(ringStructureProblem({ points: [[0, 0], [1, 1], [2, 2]] }), null); // collapses to zero area
+  assert.equal(ringStructureProblem({ points: [[0, 0], [0, 10], [10, 0]] }), null); // backwards: G-POLY's rule
+});
+// NEW-MINOR-shoelace: the shoelace is translated to the ring's own first
+// vertex, so a legal ring far from the origin is not FALSELY refused.
+test("ringStructureProblem/earClip: a small ring far from the origin is not falsely refused", () => {
+  const at = (ox, oy, r) => [[ox, oy], [ox + r, oy], [ox + r, oy + r], [ox, oy + r]];
+  for (const [ox, oy, r] of [[0, 0, 1e-5], [200, 200, 1e-5], [1e6, 1e6, 0.01]]) {
+    const points = at(ox, oy, r);
+    assert.equal(ringStructureProblem({ points }), null, `${ox},${oy},${r}`);
+    assert.equal(earClip({ points }).length, 2, `${ox},${oy},${r}`);
+  }
 });

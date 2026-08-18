@@ -130,7 +130,7 @@ function cleanRing(points) {
 // Adjacent edges need no test: they share an endpoint by construction, and
 // cleanRing() has already removed every vertex collinear with its neighbours,
 // so a spike that folds one adjacent edge back along another cannot survive.
-function ringIsSimple(points) {
+function firstNonAdjacentMeet(points) {
   const n = points.length;
   for (let i = 0; i < n; i++)
     for (let j = i + 1; j < n; j++) {
@@ -139,9 +139,50 @@ function ringIsSimple(points) {
       if (segmentsIntersect({
         p1: points[i], p2: points[(i + 1) % n],
         p3: points[j], p4: points[(j + 1) % n],
-      })) return false;
+      })) return { i, j };
     }
-  return true;
+  return null;
+}
+function ringIsSimple(points) {
+  return firstNonAdjacentMeet(points) === null;
+}
+
+// ── the per-RING gate hook ─────────────────────────────────────────────────
+// Structural soundness of ONE ring, judged on its own, with no sibling in
+// sight. This exists because every earlier detector was a per-PAIR side
+// effect: exactIntersectionArea only reaches triangulation after a bbox
+// overlap AND a failed ringsDisjoint(), so an unsound ring on an only-child
+// node, or beside a sibling it does not happen to touch, was never examined at
+// all — the gate printed nothing and exited 0. Detection was an accident of
+// two rings meeting, and the world-fill programme's goal state (correctly
+// tiled, non-overlapping children) makes that accident RARER, so the hole
+// widens exactly as the plan succeeds.
+//
+// The test is STRUCTURAL, deliberately, and not the area identity that three
+// separate reviews converged on. `Sum(shoelace of each triangle) ===
+// shoelace(ring)` already runs inside triangulateOrNull and it is NOT
+// sufficient: on a ring whose lobes overlap each other
+// ([[0,0],[10,0],[10,10],[0,10],[0,0],[2,2],[8,2],[8,8],[2,8]] — G-POLY green,
+// 9 points, no repeated CONSECUTIVE point, shoelace +142, selfIntersects
+// false) splitAtRepeat cuts it into two lobes that cover the same ground
+// twice; ear clipping returns 5 positively-wound triangles summing to exactly
+// 142, so the identity HOLDS while the true covered area is 58.01. The
+// shoelace double-counts a doubly-wound region, so it cannot police itself.
+// Strict simplicity refuses the ring before any of that arithmetic runs.
+//
+// Returns null when the ring is sound, else a message. Never throws, per this
+// module's no-throw contract.
+export function ringStructureProblem({ points }) {
+  if (!Array.isArray(points) || points.length < 3) return null; // G-POLY's >= 3 rule owns this
+  const ring = cleanRing(points);
+  // Cleaning is area-preserving, so a ring that collapses below a triangle
+  // bounds exactly zero area — which G-POLY's strictly-positive shoelace rule
+  // already fails, loudly. Not this rule's business.
+  if (ring.length < 3) return null;
+  const meet = firstNonAdjacentMeet(ring);
+  if (!meet) return null;
+  const a = ring[meet.i], b = ring[meet.j];
+  return `non-adjacent edges meet — edge ${meet.i} at [${a}] and edge ${meet.j} at [${b}] share a point`;
 }
 
 // A ring that revisits a vertex is a PINCH: two lobes joined at a point. It
@@ -280,11 +321,28 @@ export function clipConvex({ subject, clip }) {
 
 // Same pinned formula as spine.mjs:73 — sum(x_i*y_{i+1} - x_{i+1}*y_i)/2 over
 // the OPEN ring. Duplicated (not imported) so this module stays leaf-level.
+//
+// TRANSLATED to the ring's own first vertex before accumulating. Algebraically
+// identical (the translation terms telescope to zero around a closed loop) and
+// exact for the ring's true area, but it removes a catastrophic cancellation
+// the untranslated form has far from the origin: triangulateOrNull compares
+// triangle areas built from cross2 — which differences its inputs and so is
+// already translation-invariant — against this sum, and the two disagree once
+// the coordinates dwarf the ring. Measured on star-shaped strictly-simple
+// rings, 8,000 samples per row: centred on (200,200) with radius 1e-5 km, 2 of
+// 7,846 legal rings were FALSELY refused (12 of 3,359 at radius 1e-6); the
+// same rings centred on the origin, 0 refusals at every radius; centred on
+// (1e6,1e6) with extent 0.01, all 19,426 were refused. A false refusal is a
+// gate FAIL no data change can clear, which is the worse of the two error
+// directions. The world frame is 400x400 km quantised to 0.01 km, so the onset
+// sits about nine orders of magnitude out of domain today — this keeps the
+// library sound if a later plan reuses it at a different coordinate origin.
 function shoelace(points) {
   let s = 0;
+  const [ox, oy] = points[0];
   for (let i = 0; i < points.length; i++) {
     const [x1, y1] = points[i], [x2, y2] = points[(i + 1) % points.length];
-    s += x1 * y2 - x2 * y1;
+    s += (x1 - ox) * (y2 - oy) - (x2 - ox) * (y1 - oy);
   }
   return s / 2;
 }

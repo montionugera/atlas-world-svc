@@ -17,9 +17,6 @@ import { join, resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createHash, randomBytes } from "node:crypto";
 import { roadPolygon, pointInPoly } from "./town-geometry.mjs";
-// Plan A Task 1: exact polygon intersection. spine.mjs imports FROM geometry.mjs;
-// geometry.mjs imports nothing, so this cannot cycle.
-import { exactIntersectionArea } from "./geometry.mjs";
 // LEGACY_UNPAIRED doubles as G-SPAWN-ID-STABLE's spine-authorship EXEMPTION
 // list — see checkSpawnIdStable for the exact (weaker-but-safe) reading.
 // spawn-pairing.mjs imports nothing, so this cannot cycle.
@@ -183,7 +180,11 @@ export function gridIntersectionArea({ a, b, cell }) {
 // check_content.mjs:2141-2151 — and exactly TWO TEST consumers, both in
 // scripts/tests/spine.test.mjs, retired in the same commit (Step 5). Anything
 // that still names it after this commit is a real break, not a leftover.
-export { exactIntersectionArea, bboxOfPlacement, ringVertexCount, buildBBoxIndex } from "./geometry.mjs";
+// Plan A Task 1: exact polygon intersection. spine.mjs re-exports FROM
+// geometry.mjs; geometry.mjs imports nothing, so this cannot cycle. A
+// re-export creates no local binding here — nothing in this module body calls
+// any of them, and an import that pretended otherwise was deleted.
+export { exactIntersectionArea, bboxOfPlacement, ringVertexCount, buildBBoxIndex, ringStructureProblem } from "./geometry.mjs";
 
 // ── load / join / traverse ─────────────────────────────────────────────────
 // The ONLY function in this library that touches the filesystem. Soft-skip:

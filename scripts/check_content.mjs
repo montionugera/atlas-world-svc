@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1612,6 +1612,43 @@ function checkSpine(opts, mobTypes) {
         if (!(area > 0)) fail(`G-POLY: ${node.id}: signed shoelace area ${area} is not strictly positive — ring is wound backwards`);
         if (selfIntersects({ points: pts })) fail(`G-POLY: ${node.id}: polygon self-intersects`);
       }
+    }
+
+    // G-RING-SIMPLE — STRICT ring simplicity, once per placement, here in the
+    // node sweep. Deliberately NOT folded into G-POLY: spine-gates.test.mjs
+    // pins that the untriangulable-ring fixture produces no `G-POLY: n-r2`
+    // line, because G-POLY's selfIntersects() tests PROPER crossings only and
+    // that gap is precisely what this rule covers.
+    //
+    // Why a SEPARATE per-ring rule rather than the per-pair collector that
+    // gSpineOverlapRollup already wires up: that collector sits at stage 3 of
+    // exactIntersectionArea, reached only after a bbox overlap AND a failed
+    // ringsDisjoint(). A node with no sibling, or with a sibling its ring
+    // simply does not touch, was never examined — the gate printed nothing and
+    // exited 0 on a ring the kernel refuses. Both hold today: an only-child
+    // n-r with ring [[20,20],[80,20],[80,60],[50,20],[20,60]] passed clean,
+    // and so did a non-meeting sibling pair. Detection was an accident of two
+    // rings meeting, and correct tiling — the goal state of the world-fill
+    // programme — makes that accident rarer. The pair-path collector stays as
+    // a backstop; it costs nothing.
+    //
+    // The check is NOT hoisted into the pair loop, on purpose: any candidate
+    // filter in front of that loop would then be able to swallow the report.
+    if (node.placement?.shape === "polygon") {
+      const ringProblem = ringStructureProblem({ points: node.placement.points ?? [] });
+      if (ringProblem)
+        fail(`G-RING-SIMPLE: ${node.id}: ${ringProblem} — ear clipping cannot triangulate it, so G-OVERLAP would silently report 0 or over-report a doubly-wound lobe`);
+    }
+
+    // G-RECT — a rect with a non-positive extent is the last placement shape
+    // the two overlap kernels disagree about: {w:-10,h:-10} builds a
+    // POSITIVELY wound ring over [-10,0]², so exactIntersectionArea reports a
+    // real 25 where the grid sampler reports 0. Nothing else checks the sign —
+    // the schema types w/h as bare `number` with no minimum.
+    if (node.placement?.shape === "rect") {
+      const r = node.placement.rect ?? {};
+      if (!(r.w > 0 && r.h > 0))
+        fail(`G-RECT: ${node.id}: rect extent w=${JSON.stringify(r.w)} h=${JSON.stringify(r.h)} — both must be strictly positive (a negative extent winds the ring the wrong way and the two area kernels disagree)`);
     }
 
     // G-SEED — literal 16-hex, globally unique (copy-paste node creation must

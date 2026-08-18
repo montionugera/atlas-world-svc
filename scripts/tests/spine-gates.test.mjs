@@ -968,3 +968,82 @@ t11("G-OVERLAP order: three overlapping children report in i<j order, index or n
     ],
   );
 });
+
+// ─── Plan A review round 3 · G-RING-SIMPLE and G-RECT ──────────────────────
+// The per-PAIR triangulability report pinned above only fires at stage 3 of
+// exactIntersectionArea — after a bbox overlap AND a failed ringsDisjoint().
+// Every fixture below is a ring the kernel refuses (or mis-measures) that the
+// pair path CANNOT reach, and each one exited 0 with no output at all before
+// G-RING-SIMPLE existed. Delete the rule in check_content.mjs and all four go
+// green again; that is the mutation test these exist to survive.
+t11("G-RING-SIMPLE red: an ONLY-CHILD unsound ring fails — no sibling needed", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const p = join11(dir, "spine/nodes/n-r.json");
+    const doc = JSON.parse(read11(p, "utf8"));
+    // [50,20] sits on the INTERIOR of the non-adjacent edge [20,20]→[80,20].
+    // G-POLY green: 5 points, open, no repeated consecutive point, shoelace
+    // +1200, selfIntersects() sees no PROPER crossing. earClip finds no ear.
+    doc.placement = { shape: "polygon", points: [[20, 20], [80, 20], [80, 60], [50, 20], [20, 60]], anchor: [30, 30] };
+    delete doc.derived;
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-RING-SIMPLE: n-r: non-adjacent edges meet/);
+  assert11.doesNotMatch(r.out, /G-POLY: n-r:/); // the gap this rule exists to cover
+  assert11.doesNotMatch(r.out, /G-OVERLAP n-r: not triangulable/); // unreachable: no sibling
+});
+t11("G-RING-SIMPLE red: an unsound ring beside a NON-meeting sibling fails", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const base = JSON.parse(read11(join11(dir, "spine/nodes/n-r.json"), "utf8"));
+    const mk = (id, seed, points, anchor) => {
+      const n = { ...base, id, seed: { value: seed, epoch: 0, why: null } };
+      n.placement = { shape: "polygon", points, anchor };
+      delete n.derived;
+      write11(join11(dir, `spine/nodes/${id}.json`), JSON.stringify(n, null, 2) + "\n");
+    };
+    // Bboxes strictly overlap on both axes, so neither the stage-1 reject nor
+    // any candidate filter skips the pair — but the rings do not meet, so
+    // ringsDisjoint() returns before triangulation is ever attempted.
+    mk("n-r", "42fc1fdd51a099d7", [[20, 20], [40, 20], [40, 40], [20, 40]], [30, 30]);
+    mk("n-r2", "52fc1fdd51a099d7", [[55, 35], [85, 35], [85, 85], [60, 35], [35, 85], [35, 55]], [78, 50]);
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-RING-SIMPLE: n-r2: non-adjacent edges meet/);
+  assert11.doesNotMatch(r.out, /G-OVERLAP n-r2: not triangulable/); // unreachable: rings do not meet
+});
+t11("G-RING-SIMPLE red: overlapping lobes — the shape the area identity passes", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const p = join11(dir, "spine/nodes/n-r.json");
+    const doc = JSON.parse(read11(p, "utf8"));
+    // The ring revisits [20,20], and splitAtRepeat cuts it into two lobes that
+    // cover the same ground TWICE. Ear clipping returns positively-wound
+    // triangles whose shoelaces sum to the ring's own — so triangulateOrNull's
+    // conservation check PASSES and no `problems` entry is ever emitted —
+    // while the true covered area is a third of the number reported. Only a
+    // STRUCTURAL rule catches this; the area identity cannot police itself,
+    // because the shoelace double-counts a doubly-wound region too.
+    doc.placement = { shape: "polygon", points: [[20, 20], [80, 20], [80, 80], [20, 80], [20, 20], [30, 30], [70, 30], [70, 70], [30, 70]], anchor: [25, 50] };
+    delete doc.derived;
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-RING-SIMPLE: n-r: non-adjacent edges meet/);
+  assert11.doesNotMatch(r.out, /G-POLY: n-r:/);
+});
+t11("G-RECT red: a rect with both extents negative fails", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const p = join11(dir, "spine/nodes/n-r.json");
+    const doc = JSON.parse(read11(p, "utf8"));
+    // Both negative winds the ring POSITIVELY over [10,30]x[10,30], so the
+    // exact kernel reports a real area there while the grid sampler reports 0.
+    doc.placement = { shape: "rect", rect: { x: 30, y: 30, w: -20, h: -20 }, anchor: [20, 20] };
+    delete doc.derived;
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-RECT: n-r: rect extent w=-20 h=-20/);
+});
