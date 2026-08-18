@@ -535,3 +535,30 @@ test("the G-OVERLAP call site runs the exact kernel AND passes the problems coll
   assert.doesNotMatch(body, /gridIntersectionArea\(/);
   assert.doesNotMatch(src, /import \{[^}]*\bgridIntersectionArea\b/s);
 });
+
+// ── the index must never make the gate blinder ─────────────────────────────
+test("index: on the real spine, the candidate filter skips only pairs whose exact area is 0", () => {
+  const spine = loadSpine({ contentRoot: join(REPO, "content") });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  let skipped = 0, skippedNonZero = [];
+  for (const parent of tree.byId.values()) {
+    const kids = (tree.childrenOf.get(parent.id) ?? [])
+      .map((i) => tree.byId.get(i))
+      .filter((n) => n.placement.shape !== "point");
+    if (kids.length < 2) continue;
+    const index = buildBBoxIndex({
+      items: kids.map((k) => ({ id: k.id, bbox: bboxOfPlacement({ placement: k.placement }) })),
+    });
+    for (let i = 0; i < kids.length; i++) {
+      const near = new Set(index.query({ bbox: bboxOfPlacement({ placement: kids[i].placement }) }));
+      for (let j = i + 1; j < kids.length; j++) {
+        if (near.has(kids[j].id)) continue;
+        skipped++;
+        const area = exactIntersectionArea({ a: kids[i].placement, b: kids[j].placement });
+        if (area !== 0) skippedNonZero.push(`${kids[i].id} ∩ ${kids[j].id} = ${area}`);
+      }
+    }
+  }
+  assert.deepEqual(skippedNonZero, [], "the index skipped a pair with a real overlap");
+  assert.ok(skipped > 0, "the index skipped nothing — it is not doing any work");
+});

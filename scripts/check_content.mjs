@@ -23,7 +23,7 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, bboxOfPlacement, buildBBoxIndex, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -2140,9 +2140,28 @@ function gSpineOverlapRollup({ tree, report }) {
     const kids = (tree.childrenOf.get(parent.id) ?? [])
       .map((i) => tree.byId.get(i))
       .filter((n) => n.placement.shape !== "point");
+    // Plan A Task 3: an O(n) bbox bucket index replaces the implicit all-pairs
+    // bbox test. The OUTER i<j loop order is unchanged on purpose — it is what
+    // makes the G-OVERLAP message order a function of the data alone, and
+    // scripts/tests/spine-gates.test.mjs:403,410 pin two literal messages that
+    // would reorder if this became an index-driven walk. The index only ever
+    // ADDS a `continue`; it never adds a pair and never reorders one.
+    //
+    // Soundness, including for the `problems` collector below: the index
+    // confirms a bucket hit with the SAME strict predicate as
+    // exactIntersectionArea's stage-1 bbox reject (lib/geometry.mjs:352-354,
+    // 440-441), and stage 1 returns 0 BEFORE triangulating. So every pair the
+    // index drops is a pair that would have returned 0 without ever pushing a
+    // problem — the untriangulable report cannot be lost by skipping.
+    const boxes = kids.map((k) => ({ id: k.id, bbox: bboxOfPlacement({ placement: k.placement }) }));
+    const index = buildBBoxIndex({ items: boxes });
     let pairSum = 0;
-    for (let i = 0; i < kids.length; i++)
+    for (let i = 0; i < kids.length; i++) {
+      // Built from the bbox the item REGISTERED with (boxes[i].bbox), never a
+      // recomputed one, so the query and the registration can never disagree.
+      const near = new Set(index.query({ bbox: boxes[i].bbox }));
       for (let j = i + 1; j < kids.length; j++) {
+        if (!near.has(kids[j].id)) continue; // bounding boxes cannot meet
         // Plan A Task 2: exact clipping replaces lattice sampling. Measured on
         // the committed 133 sibling pairs: 3,038 ms -> 19.7 ms, verdict
         // identical on all 133, max deviation 0.0027 km². The per-parent `cell`
@@ -2165,6 +2184,7 @@ function gSpineOverlapRollup({ tree, report }) {
         if (inter > limit)
           report(`spine: G-OVERLAP ${kids[i].id} ∩ ${kids[j].id}: ${inter.toFixed(1)} over limit ${limit.toFixed(1)}`);
       }
+    }
     if (kids.length >= 2) {
       // F-043 perf: gridUnionArea() over ALL children scans the parent's full
       // bbox lattice — O(area/cell²), ~5 min for the 2000x2000km world root.
