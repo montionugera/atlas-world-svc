@@ -1,7 +1,8 @@
 ---
 title: "World fill Plan A: unblock and afford — exact geometry, spatial index, places.mjs join authority, render lock"
-id: I-097
-status: idea
+id: F-046
+status: refined
+from_idea: I-097
 ---
 
 # World fill Plan A: unblock and afford

@@ -524,5 +524,14 @@
     "release_version": "1.8",
     "claimed_at": "2026-08-15T11:13:19.907833+00:00",
     "shipped_at": "2026-08-15T13:51:28.091058+00:00"
+  },
+  {
+    "id": "F-046",
+    "title": "World fill Plan A: unblock and afford \u2014 exact geometry, spatial index, places.mjs join authority, render lock",
+    "from_idea": "I-097",
+    "created_at": "2026-08-18T13:58:51.036761+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
