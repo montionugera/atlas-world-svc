@@ -2190,15 +2190,41 @@ function gSpineOverlapRollup({ tree, report }) {
     // Map lookup and a Set allocation, and leaves exactIntersectionArea
     // recomputing both bboxes anyway. Benchmarked here over the real 6 parents
     // / 133 pairs (500 runs x 6 alternating trials, 50 warmup rounds): plain
-    // 0.400 ms/run vs indexed 0.497 ms/run — 1.24x SLOWER, sums bit-identical.
-    // On the plan's own target shape (3 ocean rings + 13 nested land rings, 40
-    // points each, 120 pairs): plain 3.208 ms vs indexed 3.081 ms — a wash.
-    // maxChildrenPerParent is 24, so this loop can never exceed 276 pairs and
-    // the index can never pay. buildBBoxIndex stays exported for Plan C/D,
-    // where a genuinely coarser predicate could earn its keep; wiring it in
-    // front of THIS gate bought a permanent false-negative surface (any future
-    // drift between the two predicates silently blinds G-OVERLAP) for negative
-    // measured value.
+    // 0.3848 ms/run vs indexed 0.4768 ms/run — 1.239x SLOWER, sums
+    // bit-identical (0.11905015776303106), 105 of 133 pairs index-skipped.
+    //
+    // CORRECTION to an earlier revision of this comment, which justified the
+    // unwiring with "maxChildrenPerParent is 24, so this loop can never exceed
+    // 276 pairs and the index can never pay". That clause is measurably FALSE
+    // and it is false in the direction that would mislead Plans C/D, which
+    // inherit this library. Re-measured here (median of 7 alternating trials,
+    // ring vertices quantised to 0.01 like committed content, sums equal in
+    // every row):
+    //
+    //   24 children, 160-pt rings, DISJOINT : plain 1.147 ms  indexed 0.106 ms  10.77x FASTER indexed
+    //   24 children,  40-pt rings, DISJOINT : plain 0.285 ms  indexed 0.055 ms   5.17x FASTER indexed
+    //   16 children,   8-pt rings, DISJOINT : plain 0.026 ms  indexed 0.021 ms   1.22x FASTER indexed
+    //   12 children,   8-pt rings, DISJOINT : plain 0.015 ms  indexed 0.020 ms   0.74x — index LOSES
+    //   24 children, 160-pt rings, NESTED   : plain 994.9 ms  indexed 980.4 ms   1.01x — a wash
+    //   24 children,  40-pt rings, NESTED   : plain 70.05 ms  indexed 71.28 ms   0.98x — index LOSES
+    //
+    // The governing variable is DISJOINTNESS, not n: the index pays iff most
+    // children are disjoint, because then most pairs can be skipped; when
+    // every child is nested inside its neighbours nothing is skippable and the
+    // bucket build is pure overhead. A threshold on n would be a threshold on
+    // the wrong variable. Today's spine loses because its largest group
+    // (n-cluster1, 12 children, ~8-point rings) sits right at the measured
+    // crossover and n-atlas is half-nested — the exception, not the rule, and
+    // correct tiling is the goal state this programme is building toward.
+    //
+    // The DECISION to unwire still stands, on the honest reason: even in the
+    // budget-ceiling row where the index wins 10.77x, the absolute saving is
+    // 1.04 ms against a 761 ms gate lane — 0.14% — in exchange for a permanent
+    // false-negative surface, since any future drift between the index's
+    // confirmation predicate and exactIntersectionArea's stage-1 reject
+    // silently blinds G-OVERLAP. Sub-millisecond savings do not buy that.
+    // buildBBoxIndex stays exported and tested for Plan C/D, where 1,740
+    // landform instances make the same trade at a scale where it can pay.
     //
     // The i<j walk order is load-bearing regardless of kernel: it is what makes
     // the G-OVERLAP message order a function of the data alone, which

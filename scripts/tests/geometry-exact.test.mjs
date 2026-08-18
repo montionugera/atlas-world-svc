@@ -576,11 +576,17 @@ test("the G-OVERLAP call site runs the exact kernel AND passes the problems coll
   assert.doesNotMatch(body, /gridIntersectionArea\(/);
   assert.doesNotMatch(src, /import \{[^}]*\bgridIntersectionArea\b/s);
   // Task 3 review fix (MAJOR): and it walks ALL pairs. The bbox index was
-  // wired in here, measured 1.24x SLOWER on the real spine (its skip set is
+  // wired in here, measured 1.239x SLOWER on the real spine (its skip set is
   // exactly stage 1's reject set, so it saves no clipping work at all), and
-  // unwired again. Re-wiring it would re-buy a false-negative surface for a
-  // measured regression, so the absence is pinned rather than left to a
-  // comment. buildBBoxIndex itself stays exported and tested for Plan C/D.
+  // unwired again. Re-wiring it would re-buy a false-negative surface — any
+  // drift between the index's confirmation predicate and stage 1 silently
+  // blinds G-OVERLAP — for a saving that stays sub-millisecond against a
+  // ~761 ms gate lane. Note the reason is the SAVING, not the pair count: a
+  // 24-child parent of DISJOINT children measures 5-11x faster indexed, so
+  // "the index can never pay at 24 children" (an earlier revision of the
+  // comment at the call site) is false. See check_content.mjs's
+  // gSpineOverlapRollup for the crossover table Plan C/D should inherit.
+  // buildBBoxIndex itself stays exported and tested for Plan C/D.
   assert.doesNotMatch(body, /buildBBoxIndex\(/);
 });
 

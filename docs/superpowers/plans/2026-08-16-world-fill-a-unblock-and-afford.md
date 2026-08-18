@@ -1086,6 +1086,48 @@ Fix findings as new commits. Re-run Step 9 and Step 11. `git diff --stat content
 ---
 ### Task 3: The bbox spatial index — stop testing pairs that cannot touch
 
+> **RECORDED DEVIATION (2026-08-18): implemented, measured, and deliberately UNWIRED.**
+> The index was built, wired into `gSpineOverlapRollup`, and then removed again;
+> `scripts/lib/geometry.mjs` keeps `buildBBoxIndex` exported and tested for Plans C
+> and D. It is written here because the reversal previously lived only in code
+> comments and in a commit with an empty body, while this plan still read as if
+> the task had shipped as specified.
+>
+> **What was measured.** On the real spine (133 sibling pairs, 105 index-skipped;
+> median of 7 alternating trials x 300 runs): plain `0.3848 ms/run` vs indexed
+> `0.4768 ms/run` — **1.239x slower**, sums bit-identical
+> (`0.11905015776303106`). The index's skip set is exactly stage 1's bbox-reject
+> set, so it saves no `ringsDisjoint` or triangulation call that the kernel does
+> not already skip for free.
+>
+> **The reason recorded in the first pass was wrong**, and wrong in the direction
+> that would mislead the plans inheriting this library. It said "`maxChildrenPerParent`
+> is 24, so this loop can never exceed 276 pairs and the index can never pay."
+> Re-measured, the governing variable is **disjointness, not n**:
+>
+> | Parent shape | plain | indexed | verdict |
+> | --- | --- | --- | --- |
+> | 24 children, 160-pt rings, **disjoint** | 1.147 ms | 0.106 ms | **10.77x faster indexed** |
+> | 24 children, 40-pt rings, **disjoint** | 0.285 ms | 0.055 ms | **5.17x faster indexed** |
+> | 16 children, 8-pt rings, **disjoint** | 0.026 ms | 0.021 ms | 1.22x faster indexed |
+> | 12 children, 8-pt rings, **disjoint** | 0.015 ms | 0.020 ms | index loses (0.74x) |
+> | 24 children, 160-pt rings, **nested** | 994.9 ms | 980.4 ms | a wash (1.01x) |
+> | 24 children, 40-pt rings, **nested** | 70.05 ms | 71.28 ms | index loses (0.98x) |
+>
+> The index pays iff most children are **disjoint** — which is the goal state the
+> world-fill programme is building toward. Today's spine is the exception: its
+> largest group (`n-cluster1`, 12 children, ~8-point rings) sits at the measured
+> crossover, and `n-atlas` is half-nested.
+>
+> **Why it stays unwired anyway.** Even in the row where it wins 10.77x, the
+> absolute saving is `1.04 ms` against a `761 ms` gate lane — 0.14% — bought with
+> a permanent false-negative surface: any future drift between the index's
+> confirmation predicate and `exactIntersectionArea`'s stage-1 reject silently
+> blinds `G-OVERLAP`. Re-wiring behind a threshold on `n` was explicitly rejected;
+> `n` is not the predictor. `scripts/tests/geometry-exact.test.mjs` pins the
+> absence (`assert.doesNotMatch(body, /buildBBoxIndex\(/)`), so re-wiring goes red
+> rather than happening by accident.
+
 At the target the 16 direct children of `n-atlas` are 3 oceans + 13 landmasses with **every land bbox nested inside an ocean bbox**, so the bbox reject inside `exactIntersectionArea` stops eliminating anything and the disjointness pre-filter runs on all 120 pairs. The index makes the pair loop skip candidates whose bounding boxes cannot meet, **without changing the order in which failure messages are emitted** — message order is part of what the two pinned literal fixtures assert against, and it must stay a function of the data alone.
 
 **Files:**
@@ -3979,7 +4021,7 @@ The same two sheets, byte-identical, with the legacy mirror and both hard-coded 
 | Signature | Consumed by |
 | --- | --- |
 | `exactIntersectionArea({ a, b }): number` | C (fabric polygon checks), E (the redraw's overlap verification) |
-| `ringVertexCount({ placement }): number`, `bboxOfPlacement({ placement }): BBox`, `buildBBoxIndex({ items })` | C, E |
+| `ringVertexCount({ placement }): number`, `bboxOfPlacement({ placement }): BBox`, `buildBBoxIndex({ items })` | C, E — **three interface notes on `buildBBoxIndex`, all latent because Plan A leaves it on no production path.** (1) **The extent is derived from the ITEMS, so one outlier collapses the grid.** Measured at n=1,740 (Plan C's landform-instance count) scattered over the 400x400 km frame, warmed, median of 7 build+query-all: no outlier **3.0 ms**; one item at `+1e6` **69.0 ms**; one item at `-1e5` **71.1 ms** — a 23x scan degradation. Candidates/query stays 1.3 in every row, so correctness is untouched and only the scan degrades. A legitimately huge sea strip does **not** hurt, because it lies inside the frame and so does not extend the extent (**3.2 ms**); only geometry OUTSIDE the frame does. When Plan C wires it in, derive the extent from the world frame rather than from the items, or divert wholly-outside items to an overflow list. (2) **`query`'s confirmation predicate requires strict overlap**, so a fully zero-extent item box sitting on the query's low edge is dropped. Correct for area overlap, wrong for point containment — if Plan C/D need containment, add an explicit `containsPoint` query rather than loosening this predicate, which would turn a harmless superset into noise. (3) `INDEX_DIVISIONS` is a fixed 8 over the whole extent; at Plan C's scale size the grid from a robust extent (median box size x sqrt(n)) or a fixed cell edge. |
 | `resolveWorld({ spine, tree, descriptor, fabric, civil }): { doc, problems }` | **D** — supplies `fabric`/`civil` and makes `spine`/`tree` optional; the `problems.push` guard for those arguments is D's first edit |
 | `loadPlaces({ contentRoot }): { doc, problems }` | **D** — points it at `content/world/resolved/` and removes the mirror fallback branch. **The fallback is load-bearing, not vestigial** (risk A4): three fixture suites build a content root containing only `content/maps/cluster1-geography.json` with no `content/spine/` at all — `scripts/tests/zone-content.test.mjs:355`, `scripts/tests/town-plan.test.mjs:493`, `scripts/tests/bestiary-placement.test.mjs:95`. Removing the branch without migrating those three roots to the `ResolvedWorld` shape makes `loadPlaces` return `{doc: null}` for them, the three joins at `check_content.mjs:816/955/1192` take their `if (!zones) return 0` early-out, and the two assertions that require a FAIL to fire (`zone-content.test.mjs:483`, `town-plan.test.mjs:589`) go red. The migration, the three literal expectations and the three gate messages at `check_content.mjs:835/:981/:1203` move in **one** commit in D, whose verify step compares the `npm test --prefix scripts` pass count against the pre-task baseline — exiting 0 is not the check |
 | `WORLD_DOC_KEYS: string[]` | D, E |
