@@ -91,21 +91,27 @@ const pointInTriInclusive = (p, a, b, c) =>
 // consume it, and the loop below would find no ear and return [] — which made
 // exactIntersectionArea report 0 for every pair touching that node and
 // silently disabled G-OVERLAP for it.
+// Exactly ONE vertex is dropped per pass, lowest index first, and the next
+// pass re-reads its neighbours from the shortened ring. Sweeping a whole pass
+// at once is wrong and silently changes area: on a ring that visits the same
+// point twice ([2,1] → [6,3] → [2,1] → …) a single sweep drops the apex as
+// collinear AND both copies of the notch — one as an adjacent duplicate, the
+// other as collinear with the copy that is about to vanish — turning a 75.5
+// ring into a 78 one. One-at-a-time keeps every removal area-preserving.
 function cleanRing(points) {
-  let ring = points;
-  for (let pass = 0; pass < points.length; pass++) {
-    const next = [];
+  const ring = points.slice();
+  for (let pass = 0; pass < points.length && ring.length >= 3; pass++) {
+    let drop = -1;
     for (let i = 0; i < ring.length; i++) {
       const P = ring[(i - 1 + ring.length) % ring.length];
       const C = ring[i];
       const N = ring[(i + 1) % ring.length];
-      if (C[0] === N[0] && C[1] === N[1]) continue; // exact duplicate
-      if (cross2(P, C, N) === 0) continue; // collinear: spans no area
-      next.push(C);
+      // Exact duplicate of its successor, or exactly collinear with its
+      // neighbours: either way this vertex spans no area.
+      if ((C[0] === N[0] && C[1] === N[1]) || cross2(P, C, N) === 0) { drop = i; break; }
     }
-    if (next.length === ring.length) return ring;
-    if (next.length < 3) return next;
-    ring = next;
+    if (drop < 0) break;
+    ring.splice(drop, 1);
   }
   return ring;
 }

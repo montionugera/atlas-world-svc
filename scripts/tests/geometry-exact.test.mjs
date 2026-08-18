@@ -185,6 +185,22 @@ test("earClip: a collinear run on a convex ring does not become a zero-area tria
   assert.equal(sum, 100);
 });
 
+test("earClip: a ring that visits the same point twice keeps its exact area", () => {
+  // selfIntersects() passes this ring (it tests PROPER crossings only), so
+  // G-POLY accepts it and the clipper must handle it. [2,1] is a real notch
+  // visited twice around a zero-area spike through [6,3]. Collapsing the
+  // spike is area-preserving; collapsing the NOTCH is not — 75.5 becomes 78.
+  const R = [[2, 1], [6, 3], [2, 1], [0, 10], [-3, 8], [-10, 2], [-3, -1], [-2, -1], [3, -1]];
+  const tris = earClip({ points: R });
+  let sum = 0;
+  for (const [A, B, C] of tris) {
+    const cross = (B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0]);
+    assert.ok(cross > 0, "a backwards or degenerate triangle survived");
+    sum += cross / 2;
+  }
+  assert.equal(sum, 75.5);
+});
+
 test("nothing throws on malformed placements — a gate throw drops every FAIL before it", () => {
   // check_content.mjs records failures in a module-level array and prints them
   // in finish(); an uncaught throw skips finish() entirely. Every entry point
