@@ -413,6 +413,7 @@ test("buildBBoxIndex: a query result is a SUPERSET of every truly intersecting p
 // and that is the correct direction of change but it must be seen first.
 import { join, dirname, resolve as pathResolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readFileSync } from "node:fs";
 import {
   loadSpine, buildTree, gridIntersectionArea, placementArea,
   SPINE_CELL_KM, SPINE_CELL_U,
@@ -420,67 +421,117 @@ import {
 
 const REPO = pathResolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
-function realSiblingPairs() {
+// Review fix (MINOR, two reviewers): the three assertions below used to walk
+// the real spine — and therefore re-run the RETIRED O(area) lattice sampler
+// over all 133 pairs — once each. Measured on this box before the fix: 63 ms +
+// 3082 ms + 2996 ms + 2840 ms = 8.98 s of the 9.30 s file, inside every
+// `npm test --prefix scripts`, therefore inside Gate 2 and CI. Plan A's goal is
+// to make the map lane AFFORDABLE, so the scan is now memoised: the spine loads
+// once, each kernel runs ONCE per pair, and the timings come from that same
+// single interleaved pass. The assertions are unchanged in strength.
+let SCAN = null;
+function equivalenceScan() {
+  if (SCAN) return SCAN;
   const spine = loadSpine({ contentRoot: join(REPO, "content") });
   const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
   const pairs = [];
+  const parents = [];
+  let tGrid = 0, tExact = 0;
   for (const parent of tree.byId.values()) {
     const kids = (tree.childrenOf.get(parent.id) ?? [])
       .map((i) => tree.byId.get(i))
       .filter((n) => n.placement.shape !== "point");
     const cell = parent.interior?.units === "u" ? SPINE_CELL_U : SPINE_CELL_KM;
+    let gridPairSum = 0, exactPairSum = 0;
     for (let i = 0; i < kids.length; i++)
-      for (let j = i + 1; j < kids.length; j++)
-        pairs.push({ a: kids[i], b: kids[j], cell });
+      for (let j = i + 1; j < kids.length; j++) {
+        const a = kids[i], b = kids[j];
+        const t0 = process.hrtime.bigint();
+        const grid = gridIntersectionArea({ a: a.placement, b: b.placement, cell });
+        const t1 = process.hrtime.bigint();
+        const exact = exactIntersectionArea({ a: a.placement, b: b.placement });
+        const t2 = process.hrtime.bigint();
+        tGrid += Number(t1 - t0);
+        tExact += Number(t2 - t1);
+        gridPairSum += grid;
+        exactPairSum += exact;
+        const limit = 0.005 * Math.min(
+          placementArea({ placement: a.placement }),
+          placementArea({ placement: b.placement }),
+        );
+        pairs.push({ a, b, grid, exact, limit });
+      }
+    // Review fix (MINOR): G-OVERLAP has TWO verdicts and the equivalence proof
+    // used to cover only the pairwise one. check_content.mjs:2170 also fails a
+    // PARENT on `pairSum > 0.005 * A`, and exact clipping strictly increases
+    // pairSum (0.115 -> 0.1177 on n-ashvale-front / n-emberdown), so that
+    // second verdict can move without the pairwise scan noticing. Recorded per
+    // parent here and asserted below.
+    if (kids.length >= 2)
+      parents.push({
+        id: parent.id,
+        limit: 0.005 * placementArea({ placement: parent.placement }),
+        gridPairSum, exactPairSum,
+      });
   }
-  return pairs;
+  SCAN = { pairs, parents, tGrid, tExact };
+  return SCAN;
 }
 
 test("equivalence: exactly 133 sibling pairs exist on the committed spine", () => {
-  assert.equal(realSiblingPairs().length, 133);
+  assert.equal(equivalenceScan().pairs.length, 133);
 });
 
-test("equivalence: exact clipping agrees with grid sampling on every G-OVERLAP VERDICT", () => {
+test("equivalence: exact clipping agrees with grid sampling on every PAIRWISE G-OVERLAP verdict", () => {
   const disagreements = [];
-  for (const { a, b, cell } of realSiblingPairs()) {
-    const grid = gridIntersectionArea({ a: a.placement, b: b.placement, cell });
-    const exact = exactIntersectionArea({ a: a.placement, b: b.placement });
-    const limit = 0.005 * Math.min(
-      placementArea({ placement: a.placement }),
-      placementArea({ placement: b.placement }),
-    );
+  for (const { a, b, grid, exact, limit } of equivalenceScan().pairs)
     if ((grid > limit) !== (exact > limit))
-      disagreements.push(`${a.id} ∩ ${b.id}: grid ${grid} exact ${exact} limit ${limit}`);
-  }
+      disagreements.push(`${a.id} \u2229 ${b.id}: grid ${grid} exact ${exact} limit ${limit}`);
   assert.deepEqual(disagreements, []);
 });
 
-test("equivalence: the largest numeric deviation stays under 0.01 km²", () => {
+test("equivalence: exact clipping agrees on every PARENT double-count verdict too", () => {
+  const { parents } = equivalenceScan();
+  const disagreements = [];
+  for (const { id, limit, gridPairSum, exactPairSum } of parents)
+    if ((gridPairSum > limit) !== (exactPairSum > limit))
+      disagreements.push(`${id}: grid \u03a3 ${gridPairSum} exact \u03a3 ${exactPairSum} limit ${limit}`);
+  assert.deepEqual(disagreements, []);
+  assert.ok(parents.length >= 6, `only ${parents.length} parents carry a double-count verdict`);
+});
+
+test("equivalence: the largest numeric deviation stays under 0.01 km\u00b2", () => {
   let maxDev = 0, worst = null;
-  for (const { a, b, cell } of realSiblingPairs()) {
-    const grid = gridIntersectionArea({ a: a.placement, b: b.placement, cell });
-    const exact = exactIntersectionArea({ a: a.placement, b: b.placement });
+  for (const { a, b, grid, exact } of equivalenceScan().pairs) {
     const dev = Math.max(grid, exact) - Math.min(grid, exact);
-    if (dev > maxDev) { maxDev = dev; worst = `${a.id} ∩ ${b.id} grid ${grid} exact ${exact}`; }
+    if (dev > maxDev) { maxDev = dev; worst = `${a.id} \u2229 ${b.id} grid ${grid} exact ${exact}`; }
   }
-  // Measured 2026-08-16: 0.00269 km² on n-ashvale-front ∩ n-emberdown, two
+  // Measured 2026-08-16: 0.00269 km\u00b2 on n-ashvale-front \u2229 n-emberdown, two
   // orders of magnitude below the 0.5%-of-the-smaller-polygon tolerance.
   assert.ok(maxDev < 0.01, `max deviation ${maxDev} at ${worst}`);
 });
 
 test("equivalence: exact clipping is at least 20x faster on the same 133 pairs", () => {
-  const pairs = realSiblingPairs();
-  let tGrid = 0, tExact = 0;
-  for (const { a, b, cell } of pairs) {
-    let t0 = process.hrtime.bigint();
-    gridIntersectionArea({ a: a.placement, b: b.placement, cell });
-    let t1 = process.hrtime.bigint();
-    exactIntersectionArea({ a: a.placement, b: b.placement });
-    let t2 = process.hrtime.bigint();
-    tGrid += Number(t1 - t0);
-    tExact += Number(t2 - t1);
-  }
-  // Measured 154x on this hardware. 20x is the floor a slower CI box must
-  // still clear; below it, the O(n²) problem is not actually solved.
+  // Timings come from the single interleaved pass in equivalenceScan(), so this
+  // assertion costs nothing beyond the scan the tests above already paid for.
+  // 20x is the floor a slower CI box must still clear; below it, the O(n\u00b2)
+  // problem is not actually solved.
+  const { tGrid, tExact } = equivalenceScan();
   assert.ok(tGrid / tExact > 20, `only ${(tGrid / tExact).toFixed(1)}x (grid ${tGrid / 1e6}ms exact ${tExact / 1e6}ms)`);
+});
+
+// ── the call site itself: nothing above proves WHICH kernel the gate runs ───
+// Review fix (MINOR): reverting check_content.mjs:2139 to gridIntersectionArea
+// left every test in this repo green — the timing assertion above benchmarks
+// the two library functions directly and is indifferent to the gate, and the
+// two pinned spine-gates literals (400.0 / 400.0) come out identical under both
+// kernels. The 154x win and the problems-collector wiring were unguarded. This
+// reads the gate's own source, so it cannot be fooled by either.
+test("the G-OVERLAP call site runs the exact kernel AND passes the problems collector", () => {
+  const src = readFileSync(join(REPO, "scripts/check_content.mjs"), "utf8");
+  const fn = src.slice(src.indexOf("function gSpineOverlapRollup"));
+  const body = fn.slice(0, fn.indexOf("\nfunction "));
+  assert.match(body, /exactIntersectionArea\(\{ a: kids\[i\]\.placement, b: kids\[j\]\.placement, problems \}\)/);
+  assert.doesNotMatch(body, /gridIntersectionArea\(/);
+  assert.doesNotMatch(src, /import \{[^}]*\bgridIntersectionArea\b/s);
 });

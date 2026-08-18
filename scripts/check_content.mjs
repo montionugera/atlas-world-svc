@@ -2123,6 +2123,19 @@ function gSpineBudgets({ spine, tree, plans, contentRoot, fail }) {
 // gSpineFrames' `if (node.interior)` guard, even though every committed
 // node ships one today.
 function gSpineOverlapRollup({ tree, report }) {
+  // Plan A Task 2 review fix (MAJOR). exactIntersectionArea returns 0 both for
+  // "genuinely disjoint" and for "this ring could not be triangulated", and
+  // only the injected `problems` collector separates the two
+  // (lib/geometry.mjs:340-346). G-POLY does NOT close that gap: it rejects
+  // PROPER self-crossing only (via selfIntersects/properCross), so a ring that
+  // self-TOUCHES — a vertex sitting on a non-adjacent edge — passes G-POLY
+  // clean while the kernel refuses it. The retired lattice sampler needed no
+  // triangulation and reported such a ring loudly; without this collector the
+  // swap would turn that loud FAIL into a silent pass. Reproduced:
+  // R = [[10,8],[8,4],[2,7],[1,0],[8,4],[9,7]] vs the square [1,0][6,0][6,8][1,8]
+  // — G-POLY green (shoelace +21.5, selfIntersects false), grid 20.75, exact 0.
+  // Reported once per node id, not once per sibling pair.
+  const untriangulable = new Set();
   for (const parent of tree.byId.values()) {
     const kids = (tree.childrenOf.get(parent.id) ?? [])
       .map((i) => tree.byId.get(i))
@@ -2136,7 +2149,16 @@ function gSpineOverlapRollup({ tree, report }) {
         // constant is no longer read here at all — SPINE_CELL_KM /
         // SPINE_CELL_U remain the town-geometry sampler's constants, exported
         // from lib/spine.mjs, but check_content.mjs no longer needs either.
-        const inter = exactIntersectionArea({ a: kids[i].placement, b: kids[j].placement });
+        const problems = [];
+        const inter = exactIntersectionArea({ a: kids[i].placement, b: kids[j].placement, problems });
+        // The "ring a" / "ring b" prefixes are the collector's pinned contract
+        // (scripts/tests/geometry-exact.test.mjs:293), not an incidental string.
+        for (const p of problems) {
+          const bad = p.startsWith("ring b") ? kids[j] : kids[i];
+          if (untriangulable.has(bad.id)) continue;
+          untriangulable.add(bad.id);
+          report(`spine: G-OVERLAP ${bad.id}: ${p.replace(/^ring [ab] is /, "")}`);
+        }
         pairSum += inter;
         const limit = 0.005 * Math.min(placementArea({ placement: kids[i].placement }),
                                        placementArea({ placement: kids[j].placement }));

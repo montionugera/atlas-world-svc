@@ -123,7 +123,14 @@ test("pairwise Σ intersection equals Σareas − union under both kernels", () 
   assert.equal(sum, 48);
   assert.equal(gridPairSum, 16); // a∩b=8 + b∩c=8 + a∩c=0
   assert.equal(exactPairSum, 16); // the exact kernel agrees, including on the touching pair
-  assert.equal(sum - UNION, 16);
+  // Review fix (MINOR): `assert.equal(sum - UNION, 16)` stood here and could
+  // not fail for any change to any code under test — with `sum` already pinned
+  // at 48 on the line above, it asserted 48 − 32 === 16, arithmetic on
+  // constants. The identity is a RELATION between two independently computed
+  // quantities, so state it as one: each kernel's pairwise Σ against Σareas
+  // (computed by placementArea) minus the closed-form union.
+  assert.equal(gridPairSum, sum - UNION);
+  assert.equal(exactPairSum, sum - UNION);
 });
 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";

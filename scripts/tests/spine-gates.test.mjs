@@ -409,6 +409,39 @@ t11("G-OVERLAP + G-COMP-ROLLUP red: overlapping twins now hard-fail", () => {
   // reported double-count number did not change after the swap.
   assert11.match(r.out, /G-OVERLAP n-c: children double-count 400\.0 \(limit 32\.0\)/);
 });
+
+// ─── Plan A Task 2 review fix (MAJOR): the silent-blindness path ────────────
+// The exact kernel returns 0 for a ring it cannot triangulate, which is
+// indistinguishable from "genuinely disjoint". G-POLY does not catch that
+// class — it rejects PROPER self-crossing only, so this ring (shoelace +537.5,
+// selfIntersects false, open, no repeated CONSECUTIVE point, 6 points) passes
+// G-POLY clean. The retired lattice sampler needed no triangulation and
+// reported it loudly; the swap must not turn that into a silent pass. This
+// test fails if the `problems` collector is dropped from the call site.
+t11("G-OVERLAP red: a ring the exact kernel cannot triangulate FAILS, never silently reports 0", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const base = JSON.parse(read11(join11(dir, "spine/nodes/n-r.json"), "utf8"));
+    const bad = {
+      ...base,
+      id: "n-r2",
+      seed: { value: "52fc1fdd51a099d7", epoch: 0, why: null },
+      // [60,40] is revisited from index 4 and one lobe is negatively wound, so
+      // no honest triangulation exists. Wholly inside n-c ([10,10]-[90,90]);
+      // anchor sits inside the ring, so G-CONTAIN and G-ANCHOR stay green.
+      placement: {
+        shape: "polygon",
+        points: [[70, 60], [60, 40], [30, 55], [25, 20], [60, 40], [65, 55]],
+        anchor: [45, 45],
+      },
+    };
+    delete bad.derived;
+    write11(join11(dir, "spine/nodes/n-r2.json"), JSON.stringify(bad, null, 2) + "\n");
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.doesNotMatch(r.out, /G-POLY: n-r2/); // the gap this FAIL exists to cover
+  assert11.match(r.out, /G-OVERLAP n-r2: not triangulable/);
+});
 t11("G-COMP-ROLLUP red: child mix contradicts the parent beyond tolerance", () => {
   const r = runSpineGate(spineFixture({ mutate: (dir) => {
     const p = join11(dir, "spine/nodes/n-c.json");
