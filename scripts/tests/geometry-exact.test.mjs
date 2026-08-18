@@ -185,7 +185,7 @@ test("earClip: a collinear run on a convex ring does not become a zero-area tria
   assert.equal(sum, 100);
 });
 
-test("earClip: a ring that visits the same point twice keeps its exact area", () => {
+test("earClip: a ring that visits the same point twice ADJACENTLY keeps its exact area", () => {
   // selfIntersects() passes this ring (it tests PROPER crossings only), so
   // G-POLY accepts it and the clipper must handle it. [2,1] is a real notch
   // visited twice around a zero-area spike through [6,3]. Collapsing the
@@ -199,6 +199,151 @@ test("earClip: a ring that visits the same point twice keeps its exact area", ()
     sum += cross / 2;
   }
   assert.equal(sum, 75.5);
+});
+
+// ---------------------------------------------------------------------------
+// Review regressions. G-POLY's selfIntersects() tests PROPER crossings only,
+// so it accepts rings that TOUCH themselves. Ear clipping's premise is strict
+// simplicity, and every defect found in review was the same premise violation
+// wearing a different mask. The invariant these tests pin is one sentence:
+// earClip either returns positively wound triangles whose areas sum EXACTLY
+// to the ring's shoelace, or it returns nothing and exactIntersectionArea
+// says so out of band. It never returns a plausible wrong number.
+// ---------------------------------------------------------------------------
+
+const shoelaceOf = (points) => {
+  let s = 0;
+  for (let i = 0; i < points.length; i++) {
+    const [x1, y1] = points[i], [x2, y2] = points[(i + 1) % points.length];
+    s += x1 * y2 - x2 * y1;
+  }
+  return s / 2;
+};
+const triAreaOf = ([A, B, C]) =>
+  ((B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0])) / 2;
+
+// Every triangle positive, and the set sums to the ring's own area — or the
+// set is empty. Returns the triangle count so callers can assert on it.
+function assertSoundTriangulation(ring, label) {
+  const tris = earClip({ points: ring });
+  let sum = 0;
+  for (const t of tris) {
+    assert.ok(triAreaOf(t) > 0, `${label}: a backwards or degenerate triangle survived`);
+    sum += triAreaOf(t);
+  }
+  if (tris.length) {
+    const d = sum - shoelaceOf(ring);
+    assert.ok(d < 1e-9 && d > -1e-9, `${label}: triangles sum ${sum}, ring is ${shoelaceOf(ring)}`);
+  }
+  return tris.length;
+}
+
+test("earClip: a self-touching ring never yields a NEGATIVE residual triangle", () => {
+  // Review BLOCKER, geometry.mjs:151. Vertex [2,-4] sits exactly on the
+  // closing edge [2,-5]->[2,1]. The residue used to be pushed with no winding
+  // check, shipping a -3 triangle; clipConvex then mis-clipped it and
+  // exactIntersectionArea(p, p) reported 39 against a true 38.5 — an
+  // over-report is a FALSE G-OVERLAP FAIL no data change can clear.
+  const R = [[2, 1], [-4, 2], [-3, -5], [-1, -7], [2, -4], [3, -5], [2, -5]];
+  assert.equal(shoelaceOf(R), 38.5);
+  assertSoundTriangulation(R, "residual-winding");
+  const problems = [];
+  const self = exactIntersectionArea({ a: poly(R), b: poly(R), problems });
+  assert.ok(self === 0 || self === 38.5, `self-intersection was ${self}, never 39`);
+  if (self === 0) assert.ok(problems.length > 0, "a 0 from an untriangulable ring must be signalled");
+});
+
+test("earClip: ears never overlap each other on a self-touching ring", () => {
+  // Review brief item (b). This ring's triangles summed to the right 53.5 but
+  // OVERLAPPED, so clipping it against itself reported 55.5.
+  const R = [[-2, 5], [-3, 1], [-2, 1], [-5, 0], [-2, -2], [0, -7], [5, -2], [3, -2], [4, -3], [6, -2]];
+  assert.equal(shoelaceOf(R), 53.5);
+  assertSoundTriangulation(R, "overlapping-ears");
+  const problems = [];
+  const self = exactIntersectionArea({ a: poly(R), b: poly(R), problems });
+  assert.ok(self === 0 || self === 53.5, `self-intersection was ${self}, never 55.5`);
+  if (self === 0) assert.ok(problems.length > 0, "a 0 from an untriangulable ring must be signalled");
+});
+
+test("earClip: a pinched ring (a repeat at index distance > 1) keeps its exact area", () => {
+  // Review BLOCKER. [2,2] is revisited from index 3. cleanRing only removes
+  // EXACTLY-collinear and adjacent-duplicate vertices, so the pinch survived,
+  // the inclusive ear test then blocked every candidate ear, and earClip
+  // returned [] -> exactIntersectionArea 0 -> G-OVERLAP silently disabled.
+  // A pinch is two lobes joined at a point and splits area-preservingly.
+  const R = [[2, 2], [5, 3], [4, 3], [2, 2], [-2, 3], [-4, 0], [-7, 0], [-5, -1], [-4, -1], [3, 0]];
+  assert.equal(shoelaceOf(R), 20);
+  assert.ok(assertSoundTriangulation(R, "pinch") > 0, "the pinch must triangulate, not vanish");
+  assert.equal(exactIntersectionArea({ a: poly(R), b: poly(R) }), 20);
+});
+
+test("exactIntersectionArea: an untriangulable ring reports 0 OUT OF BAND, never silently", () => {
+  // Review BLOCKER. This pinch has a NEGATIVELY wound lobe, so no honest
+  // triangulation exists — the ring doubles back on itself. Against the
+  // square the grid sampler being replaced reported 20.383 (a loud
+  // G-OVERLAP FAIL); the exact kernel reported 0 with no signal at all,
+  // a REGRESSION from a loud fail to a silent pass. The number is still 0
+  // (a gate must not throw), but the caller can now see why.
+  const R = [[10, 8], [8, 4], [2, 7], [1, 0], [8, 4], [9, 7]];
+  const S = [[1, 0], [6, 0], [6, 8], [1, 8]];
+  assert.equal(shoelaceOf(R), 21.5);
+  const problems = [];
+  assert.equal(exactIntersectionArea({ a: poly(R), b: poly(S), problems }), 0);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /ring a is not triangulable/);
+  assert.deepEqual(earClip({ points: R }), []);
+});
+
+test("exactIntersectionArea: a legal overlap reports NO problem", () => {
+  const problems = [];
+  assert.equal(exactIntersectionArea({ a: poly(UNIT), b: rect(5, 5, 10, 10), problems }), 25);
+  assert.deepEqual(problems, []);
+});
+
+test("earClip: fuzz — 4000 rings, no plausible wrong number ever escapes", () => {
+  // The class-covering test the pinned cases cannot be. A seeded integer LCG
+  // (deterministic, no Math.random) walks small rings, keeps the ones G-POLY
+  // would accept (simple by PROPER crossing, strictly positive shoelace), and
+  // asserts the one invariant: sound triangles or none. The defects above
+  // were found by exactly this sweep and every one of them lands in here.
+  let seed = 0x7c9e4a2f;
+  const rnd = (n) => {
+    seed = (Math.imul(seed, 1103515245) + 12345) | 0;
+    return ((seed >>> 16) & 0x7fff) % n;
+  };
+  const properCross = (p1, p2, p3, p4) => {
+    const o = (a, b, c) => Math.sign((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]));
+    const o1 = o(p1, p2, p3), o2 = o(p1, p2, p4), o3 = o(p3, p4, p1), o4 = o(p3, p4, p2);
+    return o1 !== o2 && o3 !== o4 && o1 !== 0 && o2 !== 0 && o3 !== 0 && o4 !== 0;
+  };
+  const gPolyGreen = (P) => {
+    const n = P.length;
+    for (let i = 0; i < n; i++)
+      for (let j = i + 1; j < n; j++) {
+        if (j === i + 1 || (i === 0 && j === n - 1)) continue;
+        if (properCross(P[i], P[(i + 1) % n], P[j], P[(j + 1) % n])) return false;
+      }
+    return shoelaceOf(P) > 0;
+  };
+  let legal = 0, triangulated = 0, refused = 0;
+  for (let t = 0; t < 4000; t++) {
+    const n = 4 + rnd(7);
+    const P = [];
+    for (let i = 0; i < n; i++) P.push([rnd(9) - 4, rnd(9) - 4]);
+    if (!gPolyGreen(P)) continue;
+    legal++;
+    if (assertSoundTriangulation(P, `fuzz ring ${JSON.stringify(P)}`) > 0) triangulated++;
+    else refused++;
+    const problems = [];
+    const self = exactIntersectionArea({ a: poly(P), b: poly(P), problems });
+    const d = self - shoelaceOf(P);
+    assert.ok(
+      (d < 1e-9 && d > -1e-9) || (self === 0 && problems.length > 0),
+      `ring ${JSON.stringify(P)}: self-overlap ${self} vs area ${shoelaceOf(P)}, problems ${problems.length}`,
+    );
+  }
+  assert.ok(legal > 200, `the fuzz produced only ${legal} legal rings`);
+  assert.ok(triangulated > 0 && refused >= 0, `${triangulated} triangulated / ${refused} refused`);
 });
 
 test("nothing throws on malformed placements — a gate throw drops every FAIL before it", () => {
@@ -237,15 +382,26 @@ test("buildBBoxIndex: a query result is a SUPERSET of every truly intersecting p
   // The index is only ever allowed to be conservative. A false negative here
   // silently disables G-OVERLAP for that pair, which is the one bug in this
   // library that a green gate would never reveal.
-  const items = [];
-  for (let i = 0; i < 20; i++) items.push({ id: `n${i}`, bbox: { x: i, y: 0, w: 2.5, h: 2.5 } });
+  //
+  // The oracle is exactIntersectionArea, NOT a copy of the index's own
+  // overlap predicate: the implementation confirms bucket hits with the same
+  // strict box test, so re-deriving that test here would assert the
+  // implementation against itself and could never catch a loss of
+  // conservatism. Truth is "these two placements actually share area".
+  const placements = [];
+  for (let i = 0; i < 20; i++) placements.push({ id: `n${i}`, placement: rect(i, i % 3, 2.5, 2.5) });
+  const items = placements.map(({ id, placement }) => ({ id, bbox: bboxOfPlacement({ placement }) }));
   const idx = buildBBoxIndex({ items });
-  for (const a of items)
-    for (const b of items) {
+  let checked = 0;
+  for (const a of placements)
+    for (const b of placements) {
       if (a.id === b.id) continue;
-      const overlaps =
-        a.bbox.x < b.bbox.x + b.bbox.w && b.bbox.x < a.bbox.x + a.bbox.w &&
-        a.bbox.y < b.bbox.y + b.bbox.h && b.bbox.y < a.bbox.y + a.bbox.h;
-      if (overlaps) assert.ok(idx.query({ bbox: a.bbox }).includes(b.id), `${a.id} missed ${b.id}`);
+      if (exactIntersectionArea({ a: a.placement, b: b.placement }) <= 0) continue;
+      checked++;
+      assert.ok(
+        idx.query({ bbox: bboxOfPlacement({ placement: a.placement }) }).includes(b.id),
+        `${a.id} shares area with ${b.id} but the index missed it`,
+      );
     }
+  assert.ok(checked > 20, `only ${checked} genuinely intersecting pairs were exercised`);
 });

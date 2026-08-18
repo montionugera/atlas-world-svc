@@ -116,14 +116,54 @@ function cleanRing(points) {
   return ring;
 }
 
-// Positively-wound simple ring -> positively-wound triangles. G-POLY already
-// guarantees simple + open + strictly positive, so no orientation fix-up is
-// needed; a ring that violates it yields [] and its own G-POLY FAIL elsewhere.
-export function earClip({ points }) {
-  if (!Array.isArray(points) || points.length < 3) return [];
-  points = cleanRing(points);
+// STRICT simplicity: no two NON-ADJACENT edges may meet at all — not cross,
+// not touch, not share a vertex. This is a stronger condition than G-POLY's
+// selfIntersects() (spine.mjs:107 properCross), which tests PROPER crossings
+// only and therefore accepts a ring that touches itself. That gap is the
+// single root cause of every earClip defect found in review: a ring whose
+// vertex sits on a non-adjacent edge, or which revisits a vertex from a
+// distance, breaks ear clipping's premise, and the failure is silent —
+// either no ear is ever found (0 triangles, a 0 overlap, G-OVERLAP disabled
+// for that node) or the ears overlap each other and the area OVER-reports
+// (a false FAIL no data change can clear). Both reproduce today; see the
+// pinned rings in scripts/tests/geometry-exact.test.mjs.
+// Adjacent edges need no test: they share an endpoint by construction, and
+// cleanRing() has already removed every vertex collinear with its neighbours,
+// so a spike that folds one adjacent edge back along another cannot survive.
+function ringIsSimple(points) {
   const n = points.length;
-  if (n < 3) return [];
+  for (let i = 0; i < n; i++)
+    for (let j = i + 1; j < n; j++) {
+      if (j === i + 1) continue;
+      if (i === 0 && j === n - 1) continue;
+      if (segmentsIntersect({
+        p1: points[i], p2: points[(i + 1) % n],
+        p3: points[j], p4: points[(j + 1) % n],
+      })) return false;
+    }
+  return true;
+}
+
+// A ring that revisits a vertex is a PINCH: two lobes joined at a point. It
+// is not simple, but it is exactly repairable — cut it at the repeat and the
+// two closed sub-rings have shoelaces summing to the original's, so the split
+// is area-preserving rather than a guess. Returns [lobe, rest] or null.
+function splitAtRepeat(ring) {
+  const seen = new Map();
+  for (let i = 0; i < ring.length; i++) {
+    const key = `${ring[i][0]},${ring[i][1]}`;
+    const j = seen.get(key);
+    if (j !== undefined) return [ring.slice(j, i), [...ring.slice(0, j), ...ring.slice(i)]];
+    seen.set(key, i);
+  }
+  return null;
+}
+
+// Ear clipping proper. Requires a cleaned, STRICTLY simple, positively wound
+// ring; returns null (never a partial or a backwards triangle) if the ring
+// turns out not to be one.
+function earClipSimple(points) {
+  const n = points.length;
   const idx = [...points.keys()];
   const out = [];
   let guard = 0;
@@ -146,10 +186,73 @@ export function earClip({ points }) {
       clipped = true;
       break;
     }
-    if (!clipped) return []; // not a simple positively-wound ring — report nothing
+    if (!clipped) return null; // no ear on a ring that promised one
   }
-  if (idx.length === 3) out.push([points[idx[0]], points[idx[1]], points[idx[2]]]);
+  // The guard expiring with more than a triangle left would otherwise leak a
+  // PARTIAL triangle set — a quietly shrunken area, the one failure mode this
+  // module does not degrade safely into. Every other exit is [] or 0.
+  if (idx.length !== 3) return null;
+  const A = points[idx[0]], B = points[idx[1]], Cc = points[idx[2]];
+  // The residue is gated exactly like every ear above it. Without this an
+  // inverted residue ships a NEGATIVE triangle, which clipConvex (positively
+  // wound inputs only) then mis-clips into an over-report.
+  if (cross2(A, B, Cc) <= 0) return null;
+  out.push([A, B, Cc]);
   return out;
+}
+
+// Clean -> split every pinch -> ear-clip each strictly simple lobe.
+function triangulateParts(ring) {
+  const split = splitAtRepeat(ring);
+  if (!split) {
+    if (shoelace(ring) <= 0) return null; // G-POLY owns backwards/degenerate rings
+    if (!ringIsSimple(ring)) return null;
+    return earClipSimple(ring);
+  }
+  const out = [];
+  for (const part of split) {
+    if (part.length < 3) continue; // fewer than 3 points bound no area
+    const cleaned = cleanRing(part);
+    if (cleaned.length < 3) continue;
+    const tris = triangulateParts(cleaned);
+    if (tris === null) return null;
+    out.push(...tris);
+  }
+  return out;
+}
+
+// The one triangulation entry point. Returns null — NOT [] — when the ring
+// could not be triangulated, so callers can tell "no area" from "no answer".
+// Every returned triangle is positively wound and the set's areas sum to the
+// ring's own shoelace; a triangulation that fails either invariant is
+// rejected rather than returned, because a plausible wrong number in a gate
+// is worse than a loud refusal.
+function triangulateOrNull(points) {
+  if (!Array.isArray(points) || points.length < 3) return null;
+  const ring = cleanRing(points);
+  if (ring.length < 3) return []; // area-preserving cleaning collapsed it: area 0
+  const target = shoelace(ring);
+  const tris = triangulateParts(ring);
+  if (tris === null) return null;
+  let total = 0;
+  for (const [A, B, Cc] of tris) {
+    const c = cross2(A, B, Cc);
+    if (c <= 0) return null;
+    total += c / 2;
+  }
+  // No abs(): the two-sided comparison keeps the sign meaningful.
+  const tol = 1e-9 * target + 1e-9;
+  const d = total - target;
+  if (d > tol || d < -tol) return null;
+  return tris;
+}
+
+// Positively-wound simple ring -> positively-wound triangles. `[]` for a
+// negatively wound, degenerate or untriangulable ring, never a throw and
+// never a partial set. Callers that need to distinguish "no area" from "no
+// answer" pass a `problems` collector to exactIntersectionArea().
+export function earClip({ points }) {
+  return triangulateOrNull(points) ?? [];
 }
 
 // Sutherland-Hodgman. Both arguments must be convex and positively wound;
@@ -233,7 +336,15 @@ export function ringVertexCount({ placement }) {
 
 // The drop-in replacement for gridIntersectionArea({a, b, cell}). No `cell`:
 // there is no sampling any more. Three stages, cheapest first.
-export function exactIntersectionArea({ a, b }) {
+//
+// `problems` is an OPTIONAL injected collector, the same shape the sub-gate
+// helpers in check_content.mjs already take. It carries the one outcome the
+// return value cannot: a ring this kernel could not triangulate returns 0,
+// which is indistinguishable from "genuinely disjoint" and would silently
+// disable G-OVERLAP for that node. Passing the collector does not change the
+// number returned — it only makes the third case visible. Callers inside a
+// gate MUST pass it and MUST turn every entry into a FAIL.
+export function exactIntersectionArea({ a, b, problems }) {
   const ra = ringOf(a), rb = ringOf(b);
   if (!ra || !rb) return 0;
   // (1) bounding-box reject — verbatim from spine.mjs:161-164.
@@ -244,7 +355,15 @@ export function exactIntersectionArea({ a, b }) {
   // (2) exact disjointness pre-filter.
   if (ringsDisjoint({ a: ra, b: rb })) return 0;
   // (3) exact clipped area for the survivors.
-  const ta = earClip({ points: ra }), tb = earClip({ points: rb });
+  const ta = triangulateOrNull(ra), tb = triangulateOrNull(rb);
+  if (ta === null || tb === null) {
+    if (Array.isArray(problems)) {
+      const why = "not a strictly simple, positively wound ring — overlap reported as 0";
+      if (ta === null) problems.push(`ring a is not triangulable: ${why}`);
+      if (tb === null) problems.push(`ring b is not triangulable: ${why}`);
+    }
+    return 0;
+  }
   let area = 0;
   for (const t1 of ta)
     for (const t2 of tb) {
@@ -254,10 +373,21 @@ export function exactIntersectionArea({ a, b }) {
   return area;
 }
 
-// Uniform-grid bbox index. Conservative by construction: an item registers in
-// every bucket its bbox touches, and a query unions every bucket its own bbox
-// touches, so the result can only ever be a SUPERSET of the truly overlapping
-// set. Sorted output keeps gate message order a function of the data alone.
+// Uniform-grid bbox index. Conservative where it counts: an item registers in
+// every bucket its bbox touches and a query unions every bucket its own bbox
+// touches, so the result is a SUPERSET of every pair with a non-zero exact
+// intersection area. Sorted output keeps gate message order a function of the
+// data alone.
+//
+// DECLARED DEVIATION from the plan's Step-3 listing: bucket hits are then
+// confirmed against the bbox the item REGISTERED with, using the same strict
+// predicate as exactIntersectionArea's stage-1 reject (`x1 <= x0 || y1 <= y0
+// -> 0`). That makes the result a superset of the truly-INTERSECTING set but
+// not of the bbox-TOUCHING set — a pair whose boxes only touch is dropped,
+// and its exact area is 0 either way. The two predicates are one contract:
+// widen stage 1 and this confirmation must widen with it, which is what
+// geometry-exact.test.mjs's superset test pins, by asserting against
+// exactIntersectionArea rather than against a copy of this predicate.
 const INDEX_DIVISIONS = 8;
 export function buildBBoxIndex({ items }) {
   if (items.length === 0) return { query: () => [] };
