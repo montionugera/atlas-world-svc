@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 // mapforge — spine-driven sheet builder (F-042 Task 4).
 //
-// Same drawn-from-data contract as render-map.mjs, but the data comes from
-// the spine (content/spine/) instead of the committed mirror JSON:
+// The drawn-from-data contract render-map.mjs used to carry, with the data
+// coming from the spine (content/spine/) instead of a committed mirror JSON:
 //   loadSpine -> buildTree -> resolveWorld (scripts/lib/places.mjs)
-//   -> drawBasinSheet. Because the mirror file is itself byte-emitted from
-//   that same join by check_spine_emit.mjs, this path produces a
-//   byte-identical SVG to the mirror-driven render-map.mjs path.
-//   Plan A Task 6 dropped the intermediate emitGeography serialise/parse.
+//   -> drawBasinSheet. That equivalence was proved before the switch: the
+//   mirror was itself byte-emitted from this same join by check_spine_emit.mjs,
+//   so this path produced a byte-identical SVG to the mirror-driven one.
+//   Plan A Task 6 dropped the intermediate emitGeography serialise/parse, and
+//   Task 12 deleted both the mirror and render-map.mjs — this is now the only
+//   sheet builder, and G-RENDER-LOCK is what holds its bytes.
 //
 // Usage:
 //   node tools/mapforge/render-sheet.mjs --sheet <id> [--no-png] [--check]

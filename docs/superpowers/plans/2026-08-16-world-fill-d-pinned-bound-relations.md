@@ -166,6 +166,7 @@ Also out of scope: any change to a spawn id, spawn rectangle, live map id or run
 
 | Op | Path | Responsibility |
 | --- | --- | --- |
+| M | `content/schemas/zone-content.schema.json:4`, `content/schemas/town-plan.schema.json:5` | **Inherited from Plan A, prose only.** Both `description` strings still tell an author that `content/maps/cluster1-geography.json` "stays the authority on where a zone/town is and is never written back to". Plan A Task 12 deleted that file; the authority is now the spine, resolved by `resolveWorld()` in `scripts/lib/places.mjs`. Plan A could not correct it — its `content/` diff is a closed five-file list and either edit would have been a sixth entry. No gate catches a stale `description`; `git grep -n cluster1-geography -- content/schemas/` returning zero hits is the check. Fix it in **Task 11**, the task that re-points `places.mjs` at the resolved world and therefore already owns this sentence's subject |
 | C | `content/schemas/civil-record.schema.json` | Pinned + bound record shapes, discriminated on `tier`, `additionalProperties: false` |
 | C | `content/schemas/relation.schema.json` | The 8-relation closed vocabulary, discriminated on `rel` |
 | C | `content/schemas/dungeon.schema.json` | Dungeon complex record |

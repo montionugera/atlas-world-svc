@@ -35,10 +35,17 @@ const RESOLVED_WORLD_SHA256 =
 /** Assert a resolved doc serialises to the exact bytes the retired mirror held. */
 function assertResolvedBytes(doc, what) {
   const bytes = canonStringify(doc) + "\n";
+  // Buffer.byteLength, NOT String.length. The world document's prose carries
+  // 84 non-ASCII characters (39 §, 25 —, 9 →, 8 –, 2 ·, 1 ÷), which cost
+  // exactly 126 extra UTF-8 bytes, so the two counts disagree: the retired blob
+  // was 26,547 BYTES and 26,421 UTF-16 code units. Printing the string length
+  // under the word "bytes" is how commit 9cd227c's body came to record 26,421
+  // for a 26,547-byte file. The sha256 above hashes the same UTF-8 encoding
+  // this now counts, so the two numbers finally describe one thing.
   assert.equal(
     createHash("sha256").update(bytes, "utf8").digest("hex"),
     RESOLVED_WORLD_SHA256,
-    `${what}: serialised world drifted from the retired mirror's bytes (${bytes.length} bytes)`,
+    `${what}: serialised world drifted from the retired mirror's bytes (${Buffer.byteLength(bytes, "utf8")} bytes)`,
   );
 }
 
@@ -96,6 +103,28 @@ test("resolveWorld REPORTS the Plan D fabric/civil joins it cannot do", () => {
   assert.ok(problems.some((p) => p.includes("Plan D")), JSON.stringify(problems));
 });
 
+// Review finding (Task 12, MINOR): this message lost its only pin. It used to
+// be asserted by spine-gates' "sheet.json has NO subjects block" test, which ran
+// check_spine_emit.mjs; Task 12 deleted the emitter's call into places.mjs and
+// re-pointed that test at check_content.mjs, where loadPlaces (places.mjs:315)
+// gates its ONLY resolveWorld call on `subjects` being truthy — so a root with
+// no descriptor falls through to the mirror and this message is now unreachable
+// from loadPlaces by construction. It stays reachable from every DIRECT
+// resolveWorld caller, i.e. both sheet builders, which is exactly the path
+// check_render_lock.mjs runs; render-lock.test.mjs's brokenSheetRepo() exercises
+// it but asserts only the CLI's "PROBLEM:" prefix. Pinned here, in process, so
+// the wording cannot drift silently for the callers that can still hit it.
+test("resolveWorld REPORTS a spine whose sheet carries no `subjects` descriptor", () => {
+  const { spine, tree } = realTree();
+  const noSubjects = { ...spine, sheet: { ...spine.sheet } };
+  delete noSubjects.sheet.subjects;
+  const { doc, problems } = resolveWorld({ spine: noSubjects, tree });
+  assert.equal(doc, null);
+  assert.deepEqual(problems, [
+    "sheet: content/spine/sheet.json has no `subjects` descriptor — the sheet's subject ids are DATA, not code",
+  ]);
+});
+
 test("resolveWorld never returns a doc alongside problems (the seaLane late-push path)", () => {
   // seaLane is the ONLY subject resolved during doc construction, i.e. after
   // the early return. A half-built doc escaping with problems attached would
@@ -110,7 +139,7 @@ test("resolveWorld never returns a doc alongside problems (the seaLane late-push
 test("loadPlaces on the real content root resolves from the SPINE and matches the mirror", () => {
   const { doc, problems } = loadPlaces({ contentRoot: CONTENT });
   assert.deepEqual(problems, []);
-  assertResolvedBytes(doc, "resolveWorld");
+  assertResolvedBytes(doc, "loadPlaces");
 });
 
 test("loadPlaces FALLS BACK to the mirror file when the root has no spine (the fixture path)", () => {
@@ -323,7 +352,7 @@ test("resolveWorld REPORTS a partial descriptor, never throws (the Task 7 sheet.
   // shape Task 7 is about to commit into content/spine/sheet.json.
   const ok = resolveWorld({ spine, tree, descriptor: full });
   assert.deepEqual(ok.problems, []);
-  assertResolvedBytes(ok.doc, "loadPlaces");
+  assertResolvedBytes(ok.doc, "resolveWorld");
 
   for (const key of ["zoneRoot", "featureIds", "mireIds", "terrainPatchIds"]) {
     const partial = { ...full };

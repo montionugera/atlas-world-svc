@@ -5,8 +5,11 @@
 // transform-closured drawing helpers (X, Y, poly, smooth, lineLabel,
 // towerGlyph), wrapped in createDraft({ pxPerKm, mapLeft, mapTop }).
 //
-// No behavior change. Byte parity of render-map.mjs's output is the bar —
-// see tools/mapforge/tests/parity.test.mjs.
+// No behavior change: byte parity of the drawn sheet was the bar for the F-042
+// extraction, and it still is. Plan A Task 12 deleted render-map.mjs and
+// parity.test.mjs (which this line used to cite); the same guarantee is now
+// held by content/world/render-lock.json via scripts/check_render_lock.mjs,
+// which hashes every built sheet against a committed sha256.
 
 // Ink on cream. ONE accent colour, reserved entirely for the relay towers and
 // their sight-lines (A1-ART-01).
@@ -166,8 +169,10 @@ export const pat = (id, w, h, body, transform = "") =>
   `<pattern id="${id}" width="${w}" height="${h}" patternUnits="userSpaceOnUse"${transform}>${body}</pattern>`;
 
 // `includeReported` is opt-in (default false) so the ONE existing caller
-// (basin-sheet.mjs, via render-map.mjs) keeps byte-identical output —
-// parity.test.mjs pins that. The atlas sheet (F-043) is the only caller that
+// (basin-sheet.mjs, reached through render-sheet.mjs's SHEETS registry since
+// Plan A Task 12 retired render-map.mjs) keeps byte-identical output —
+// G-RENDER-LOCK pins that, in place of the deleted parity.test.mjs.
+// The atlas sheet (F-043) is the only caller that
 // passes `includeReported: true`, for the mariners'-report hatch.
 export function patternDefs({ includeReported = false } = {}) {
   const patterns = [

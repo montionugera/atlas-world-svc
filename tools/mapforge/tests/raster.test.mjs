@@ -82,7 +82,8 @@ test("rasterize() reports a non-ok, non-skipped result for a bad svgPath", (t) =
 // pattern only catches the spellings you thought of, and three evasions were
 // built and observed to slip past it while the guard stayed green —
 //   1. a test that spawns a render CLI (`render-map.mjs`, and after Task 12
-//      `render-sheet.mjs`, which writes the same directory at :118) never
+//      `render-sheet.mjs`, whose writeFileSync(outSvg, …) targets the same
+//      tracked directory) never
 //      names the path at all, so the conjunction cannot fire. OBSERVED: guard
 //      4 pass / 0 fail while the tracked sheet was silently rewritten;
 //   2. `git restore --` — the spelling git itself now recommends — is not
@@ -97,8 +98,10 @@ test("rasterize() reports a non-ok, non-skipped result for a bad svgPath", (t) =
 // That is spelling-proof — it does not care how the bytes got there — and it
 // has no false positives, because it observes the actual hazard rather than a
 // proxy for it. Identical-byte rewrites count too: the snapshot carries mtime
-// alongside the hash, because `render-map.mjs` re-emitting the committed bytes
-// is still a test writing the tracked tree.
+// alongside the hash, because `render-sheet.mjs` re-emitting the committed
+// bytes is still a test writing the tracked tree. (This named render-map.mjs
+// until Plan A Task 12 deleted it; render-sheet.mjs is the surviving writer
+// of that directory.)
 //
 // The source scan survives for ONE idiom the behavioural check provably cannot
 // see: `git checkout --` / `git restore --` against an UNMODIFIED file rewrites

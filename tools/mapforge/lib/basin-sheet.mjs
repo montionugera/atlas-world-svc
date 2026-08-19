@@ -1,8 +1,17 @@
 // tools/mapforge/lib/basin-sheet.mjs — the basin sheet as a function.
 //
-// Moved verbatim out of render-map.mjs: the self-check block, sheet-size
-// derivation, the whole draw pass, and the join. File loading, argv parsing,
-// writing, and PNG rasterization stay in render-map.mjs (the thin CLI).
+// Moved verbatim out of render-map.mjs (F-042 Task 3): the self-check block,
+// sheet-size derivation, the whole draw pass, and the join. Argv parsing,
+// writing and PNG rasterization stayed behind in that thin CLI — which Plan A
+// Task 12 deleted, so those now live in render-sheet.mjs, the only caller.
+//
+// KNOWN STALE, DELIBERATELY UNFIXED — carried to Plan B Task 12. The <desc> at
+// :143 and the footer at :729 still letter "render-map.mjs" and
+// "content/maps/cluster1-geography.json" into the sheet, and both are gone.
+// Those are DRAWN BYTES: correcting them moves the committed SVG and reds
+// G-RENDER-LOCK, and Plan B Task 12 is the one commit licensed to re-baseline
+// the lock. Nothing gates this, so it is written here rather than only in a
+// commit body.
 
 import {
   C,

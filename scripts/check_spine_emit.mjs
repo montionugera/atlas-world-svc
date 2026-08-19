@@ -101,10 +101,13 @@ export function collectOutputs({ contentRoot }) {
     outputs.push({ path: join(contentRoot, "spine/nodes", node.file), bytes: r.bytes });
   }
   // F-041 P4 mirror #2: the runtime map's frontmatter (body preserved
-  // verbatim). Guard + contentRoot keying mirror the n-cluster1 geography
-  // push above — fixture roots without the runtime subtree skip it, and
-  // --write on a fixture root can only touch the fixture's own copy. Unlike
-  // the geography mirror (a pure computed emit), this one PRESERVES the
+  // verbatim). It is guarded on a node id and keyed on contentRoot — fixture
+  // roots without the runtime subtree skip it, and --write on a fixture root
+  // can only touch the fixture's own copy. (This comment used to say the guard
+  // "mirrors the n-cluster1 geography push above"; Plan A Task 12 deleted that
+  // push along with content/maps/cluster1-geography.json, so the pattern is
+  // now described on its own terms rather than by reference to dead code.)
+  // Unlike a pure computed emit, this one PRESERVES the
   // body of the existing file, so it also needs the file to exist — several
   // spine-gates.test.mjs fixtures (realSpineCopy, spineFixture's `base` +
   // overlays) copy content/spine wholesale but never content/maps, so
