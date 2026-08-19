@@ -73,6 +73,17 @@ test("resolveWorld REPORTS the Plan D fabric/civil joins it cannot do", () => {
   assert.ok(problems.some((p) => p.includes("Plan D")), JSON.stringify(problems));
 });
 
+test("resolveWorld never returns a doc alongside problems (the seaLane late-push path)", () => {
+  // seaLane is the ONLY subject resolved during doc construction, i.e. after
+  // the early return. A half-built doc escaping with problems attached would
+  // be re-pointed straight into two sheet builders in Task 6.
+  const { spine, tree } = realTree();
+  const noLane = { ...spine, edges: spine.edges.filter((e) => e.kind !== "sealane") };
+  const { doc, problems } = resolveWorld({ spine: noLane, tree });
+  assert.equal(doc, null);
+  assert.ok(problems.some((p) => p.includes("sealane")), JSON.stringify(problems));
+});
+
 test("loadPlaces on the real content root resolves from the SPINE and matches the mirror", () => {
   const { doc, problems } = loadPlaces({ contentRoot: CONTENT });
   assert.deepEqual(problems, []);
