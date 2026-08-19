@@ -1471,3 +1471,15 @@ t11("in-process: placesByRoot does NOT leak — a geography problem FAILs on EVE
   assert11.equal(geoOf(second).length, 1, second.out);
   assert11.equal(second.out, first.out);
 });
+
+t11("in-process: no test in this file is async — the console capture's safety argument depends on it", () => {
+  // runSpineGateInProcess swaps console.log/console.error and restores them in
+  // a `finally`. That is safe against interleaving for ONE reason: the call and
+  // its caller are both synchronous, so nothing can run in between — a stronger
+  // guarantee than any --test-concurrency setting. The moment a test in this
+  // file becomes `async`, that reasoning lapses silently and a concurrent
+  // test's output could land in another test's captured buffer. This pins the
+  // premise so the lapse cannot be silent.
+  const src = read11(join11(ROOT11, "scripts/tests/spine-gates.test.mjs"), "utf8");
+  assert11.doesNotMatch(src, /,\s*async\s*\(/);
+});

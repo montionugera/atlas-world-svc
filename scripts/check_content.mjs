@@ -56,6 +56,27 @@ const VERTEX_CAP = Object.freeze({
   playspace: 800, fixture: 200, region: 200, town: 200, site: 200,
 });
 
+// Plan A Task 13, review finding 2. parseArgs' three bad-argument exits were
+// `console.error(...) + process.exit(2)`, which is right for a CLI and fatal
+// in-process: process.exit is uncatchable, so it skips runSpineGateInProcess'
+// `finally` (leaving console swapped) and takes the whole test runner with it.
+// Measured on a 5-test probe file: `node --test` reports the exit as ONE
+// synthetic "test failed" with no exit code and no offending flag, and the
+// tests that had ALREADY PASSED are erased from the totals (5 tests -> 1
+// reported). Exit is 1, so CI notices — but "the count shrank" instead of "a
+// test went red" is the same silent-shrink shape that bit this task at Step 2.
+//
+// So: exit when this file IS the CLI entry (byte-identical to before), throw
+// an ArgError when it is not. The predicate is the SAME one the entry guard at
+// the bottom of this file uses. runSpineGateInProcess turns an ArgError into
+// `{code: 2, out}` — the exit code and the message a spawn produces.
+class ArgError extends Error {}
+const isCliEntry = () => Boolean(process.argv[1]) && import.meta.url === pathToFileURL(process.argv[1]).href;
+function argFail(message) {
+  if (isCliEntry()) { console.error(message); process.exit(2); }
+  throw new ArgError(message);
+}
+
 function parseArgs(argv) {
   const opts = {
     contentRoot: join(ROOT, "content"),
@@ -69,7 +90,7 @@ function parseArgs(argv) {
   };
   const takeValue = (name, i) => {
     const v = argv[i];
-    if (v === undefined) { console.error(`missing value for ${name}`); process.exit(2); }
+    if (v === undefined) argFail(`missing value for ${name}`);
     return v;
   };
   for (let i = 2; i < argv.length; i++) {
@@ -83,9 +104,9 @@ function parseArgs(argv) {
     else if (a === "--require-complete") opts.requireComplete = true;
     else if (a === "--only" || a.startsWith("--only=")) {
       opts.only = a.startsWith("--only=") ? a.slice("--only=".length) : takeValue(a, ++i);
-      if (opts.only !== "spine") { console.error(`unsupported --only value: ${opts.only} (only "spine" exists)`); process.exit(2); }
+      if (opts.only !== "spine") argFail(`unsupported --only value: ${opts.only} (only "spine" exists)`);
     }
-    else { console.error(`unknown arg: ${a}`); process.exit(2); }
+    else argFail(`unknown arg: ${a}`);
   }
   return opts;
 }
@@ -2572,6 +2593,16 @@ function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0
 // swap is restored in a `finally`, so a throw inside checkSpine cannot leave
 // the test runner's console broken.
 //
+// The capture cannot swallow an unrelated test's output, and the reason is
+// stronger than the runner's concurrency setting: this function is entirely
+// SYNCHRONOUS, and every one of its ~60 callers is a synchronous test body
+// (`grep -c "async () =>" scripts/tests/spine-gates.test.mjs` -> 0; the file's
+// only `await` is a top-level module import). A synchronous call cannot yield,
+// so nothing can run between the swap and the `finally` that restores it —
+// true whatever `--test-concurrency` is, and `node --test` runs each FILE in
+// its own process anyway. If a future test in this file becomes `async`, that
+// argument lapses and the capture must move to an explicit sink.
+//
 // EVERY module-level mutable binding in this file is reset here. There are
 // SIX, not the four the plan's risk A7 names — the enumeration below is the
 // contract, and `no-leak: …` in spine-gates.test.mjs pins the ones a run can
@@ -2589,10 +2620,19 @@ function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0
 //      because main() already clears it (see the note there: checkSpine ->
 //      checkSpineExternalAliases -> placesDoc is reachable under --only=spine
 //      whenever an alias misses the spine).
-// A seventh candidate, `compileSchema`'s ajv cache, lives in lib/story.mjs and
-// is keyed by absolute schema path; fixture roots get fresh mkdtemp paths, so
-// it is a cache, not state. It is deliberately NOT reset — clearing it would
-// give back the ajv-compile cost this task exists to remove.
+// There is NO seventh. An independent review checked the whole transitive
+// local-import closure — lib/story.mjs, spawn-pairing, places, bestiary-sheet,
+// town-geometry, spine, geometry — for module-level reassignment, container
+// mutation and property assignment, and found zero mutable module state in any
+// of them. lib/story.mjs's `compileSchema` (:51-55) holds nothing to reset: it
+// constructs a fresh `new AjvClass(...).compile(schema)` on EVERY call, with no
+// cache and no memo. (An earlier draft of this comment claimed it had a
+// path-keyed ajv cache that was deliberately left alone. It does not. The
+// conclusion "not state" was right; the stated reason was invented, and the
+// cost claim that came with it was wrong too — the in-process path still pays
+// full ajv compile per run, so ALL of this task's measured speed-up is saved
+// Node startup, none of it schema reuse. A real memo here is unclaimed work,
+// not a thing this task did.)
 export function runSpineGateInProcess({ argv }) {
   failures.length = 0;
   warnings.length = 0;
