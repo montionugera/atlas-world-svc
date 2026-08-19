@@ -105,8 +105,11 @@ export function collectOutputs({ contentRoot }) {
   // roots without the runtime subtree skip it, and --write on a fixture root
   // can only touch the fixture's own copy. (This comment used to say the guard
   // "mirrors the n-cluster1 geography push above"; Plan A Task 12 deleted that
-  // push along with content/maps/cluster1-geography.json, so the pattern is
-  // now described on its own terms rather than by reference to dead code.)
+  // push along with the legacy geography mirror it wrote, so the pattern is
+  // now described on its own terms rather than by reference to dead code.
+  // The mirror is deliberately NOT named by path here: places.test.mjs's
+  // STEP 5 PROOF greps every executable file for that path and this file is
+  // not on its allowlist — naming it, even in a comment, reds the suite.)
   // Unlike a pure computed emit, this one PRESERVES the
   // body of the existing file, so it also needs the file to exist — several
   // spine-gates.test.mjs fixtures (realSpineCopy, spineFixture's `base` +
