@@ -528,3 +528,85 @@ test("places.mjs names no spine id in its source — every id comes from the des
   assert.deepEqual(hits, [],
     `places.mjs still spells spine ids in code: ${hits.join(", ")}`);
 });
+
+// ---------------------------------------------------------------------------
+// Plan A Task 12 Step 1 — the proof that precedes the deletion.
+// ---------------------------------------------------------------------------
+//
+// SCOPE, stated because a grep's scope IS its coverage claim. This sweeps the
+// EXECUTABLE surface only — .mjs/.js/.cjs/.ts/.sh/.yml/.yaml/.html. A `source`
+// string in content/spine/nodes/n-saltmire.json, a `note` in
+// game-client/assets/art/art-manifest.json, a row in content/story/canon.md and
+// the description in content/schemas/town-plan.schema.json all name the mirror
+// too, and all of them are PROSE: a JSON data field cannot open a file, so
+// deleting the mirror cannot break them. Only code can read a path, so only
+// code is swept.
+//
+// THE PLAN'S OWN ALLOWLIST WAS WRONG, and this is enumeration defect #4 of this
+// plan (flagged, not absorbed). It listed 14 paths and omitted THREE REAL READS
+// in two files the plan never mentions:
+//   scripts/tests/season1.test.mjs:183  — a MODULE-LEVEL readFileSync of the
+//       mirror. Deleting the file would have thrown at import and reddened
+//       that entire suite, not one test.
+//   scripts/tests/season1.test.mjs:301  — copies the mirror into a fixture root.
+//   scripts/tests/town-millcross.test.mjs:237 — reads it for the town anchor.
+// All three were re-pointed at loadPlaces()/resolveWorld() in this same commit,
+// which is what makes the claim below true rather than aspirational.
+const MIRROR_NAMERS = new Set([
+  // Writers/readers retired by the deletion commit that follows this one.
+  "scripts/check_spine_emit.mjs",          // collectOutputs — the only writer
+  "tools/mapforge/render-map.mjs",         // the legacy mirror-driven CLI
+  "tools/mapforge/tests/parity.test.mjs",  // that CLI's parity test
+  // The fallback branch, and its own tests.
+  "scripts/lib/places.mjs",
+  "scripts/tests/places.test.mjs",
+  // Fixture roots that WRITE their own mirror (no content/spine/ at all), so
+  // they exercise loadPlaces()'s fallback rather than reading the committed one.
+  "scripts/tests/zone-content.test.mjs",
+  "scripts/tests/town-plan.test.mjs",
+  "scripts/tests/bestiary-placement.test.mjs",
+  "scripts/tests/season1.test.mjs",
+  // Comments and verbatim gate messages only — no path is opened.
+  "scripts/check_content.mjs",             // "…not in cluster1-geography.json#zones"
+  "scripts/lib/season1.mjs",
+  "scripts/integration.sh",
+  ".github/workflows/ci.yml",
+  "tools/mapforge/lib/basin-sheet.mjs",
+  "tools/mapforge/tests/basin-sheet.test.mjs",
+  "scripts/tests/spine-gates.test.mjs",
+  "scripts/tests/town-millcross.test.mjs", // canon provenance in comments
+]);
+
+const CODE_GLOBS = ["*.mjs", "*.js", "*.cjs", "*.ts", "*.sh", "*.yml", "*.yaml", "*.html"];
+
+function codeFilesNamingTheMirror() {
+  // `git grep -l` exits 1 with no output when nothing matches — that is the
+  // post-deletion end state, not an error, so it must not throw.
+  let out;
+  try {
+    out = execFileSync("git", ["grep", "-l", "cluster1-geography", "--", ...CODE_GLOBS],
+      { cwd: ROOT, encoding: "utf8" });
+  } catch (e) {
+    if (e.status === 1 && !e.stdout) return [];
+    throw e;
+  }
+  return out.split("\n").filter(Boolean).sort();
+}
+
+test("STEP 5 PROOF: no executable file outside the allowlist names the legacy mirror", () => {
+  const unexpected = codeFilesNamingTheMirror().filter((p) => !MIRROR_NAMERS.has(p));
+  assert.deepEqual(unexpected, [],
+    "an unlisted executable file still names content/maps/cluster1-geography.json — " +
+    "deleting the mirror would break it. Re-point it at scripts/lib/places.mjs, " +
+    "then add it here with the reason it is safe.");
+});
+
+test("the mirror allowlist has no stale entries — a deleted reader must leave it", () => {
+  // Without this the list rots into a permission slip: Task 12's deletion
+  // removes three of the entries above, and an allowlist that still names them
+  // would silently re-admit a file resurrected under the same path.
+  const live = new Set(codeFilesNamingTheMirror());
+  const stale = [...MIRROR_NAMERS].filter((p) => !live.has(p)).sort();
+  assert.deepEqual(stale, [],
+    "these allowlist entries no longer name the mirror; delete them from MIRROR_NAMERS");
+});

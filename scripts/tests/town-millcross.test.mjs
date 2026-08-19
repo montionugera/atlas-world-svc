@@ -67,6 +67,7 @@ import {
   floodFillRegions,
   cellIndexAt,
 } from "../lib/town-geometry.mjs";
+import { loadPlaces } from "../lib/places.mjs";
 
 // Same ESM/CJS interop guard as scripts/lib/story.mjs:11 — `ajv` is CJS, so
 // under ESM the constructor may arrive as the module namespace's `.default`.
@@ -75,7 +76,6 @@ const AjvClass = Ajv.default ?? Ajv;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const SCHEMA_PATH = join(ROOT, "content/schemas/town-plan.schema.json");
 const PLAN_PATH = join(ROOT, "content/towns/town-millcross.json");
-const GEOGRAPHY_PATH = join(ROOT, "content/maps/cluster1-geography.json");
 
 const PLAN = JSON.parse(readFileSync(PLAN_PATH, "utf8"));
 
@@ -233,10 +233,16 @@ test("the extent is the ten-second crossing, 150-260 on both axes", () => {
   }
 });
 
-test("the anchor is Millcross's own `at` in cluster1-geography.json", () => {
-  const geography = JSON.parse(readFileSync(GEOGRAPHY_PATH, "utf8"));
-  const town = geography.towns.find((t) => t.id === PLAN.town);
-  assert.ok(town, `${PLAN.town} is not a town in cluster1-geography.json`);
+// Plan A Task 12: the town's `at` used to be read straight out of the deleted
+// content/maps/cluster1-geography.json. This file was NOT on the plan's list of
+// remaining readers (enumeration defect #4). It now resolves through the same
+// loadPlaces() every gate join uses, so the assertion binds to the live spine
+// rather than to a generated mirror that no longer exists.
+test("the anchor is Millcross's own `at` in the resolved world", () => {
+  const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
+  assert.deepEqual(problems, []);
+  const town = doc.towns.find((t) => t.id === PLAN.town);
+  assert.ok(town, `${PLAN.town} is not a town in the resolved world`);
   assert.deepEqual(PLAN.anchor.geographyAt, town.at);
 });
 
