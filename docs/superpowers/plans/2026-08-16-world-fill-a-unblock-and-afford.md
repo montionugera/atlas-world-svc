@@ -3510,6 +3510,8 @@ git status --short
 
 Expected: **all green, and `git status --short` shows nothing modified** — no re-baseline anywhere. That is the migration invariant (spec §9.1): *for every commit before the redraw, all six byte comparisons stay green without being re-baselined.* Paste every line into the phase report.
 
+**One extra assertion this deletion owes, added by Task 9's review.** Task 9 gave the alias sweep a second resolution path through `placesDoc()`, and `loadPlaces` falls THROUGH to `content/maps/cluster1-geography.json` for any root whose spine carries no `subjects` descriptor. That means that between Task 9 and this deletion, a slug present in NEITHER the spine nor the spine-derived world can still be answered by the stale committed mirror, with no diagnostic (reproduced: strip the `subjects` key from a copied root, rename `n-thornveil` -> `n-thornveil-zone`, and the sweep prints `→ thornveil (resolved-zone)` off the mirror; `rm` the mirror and the same root goes red). Deleting the mirror closes that path. **After the deletion, re-run one unresolvable-slug fixture and confirm the alias sweep is RED, not green** — a green run there would mean the mirror was never what answered and some other stale source is.
+
 Commit the proof:
 ```bash
 git add scripts/tests/places.test.mjs

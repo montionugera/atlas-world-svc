@@ -265,10 +265,19 @@ function main() {
   //
   // Task 13 adds `runSpineGateInProcess`, which resets `failures`, `warnings`,
   // `zoneHazardsTotal` and `zoneHazardsUnmapped` and calls `checkSpine`
-  // directly. That entry is `--only=spine` only, and --only=spine never reaches
-  // placesDoc, so it cannot serve a stale doc as written — but any widening of
-  // it to the full sweep must reset this map too, or a second in-process run
-  // gets run one's geography and re-reports none of its problems.
+  // directly. TASK 13, READ THIS: that entry MUST reset `placesByRoot` too —
+  // unconditionally, not "only if it is ever widened to the full sweep".
+  //
+  // This comment used to say `--only=spine` never reaches placesDoc, which was
+  // true when it was written and was falsified by Task 9 in the same plan.
+  // checkSpine (:1954) calls checkSpineExternalAliases, whose second
+  // resolution path calls resolvedWorld() -> placesDoc() whenever a slug misses
+  // the spine. Measured on a fixture with n-rooktide renamed to n-rooktide-town:
+  // `--only=spine` printed `FAIL spine-alias: bestiary.json region "rooktide":
+  // …` — a message only reachable AFTER placesDoc() has run. Today's real
+  // content never misses, so the memo stays empty on a green run; a red one
+  // fills it. Without the reset, a second in-process `--only=spine` run gets
+  // run one's geography document and re-reports none of its problems.
   placesByRoot.clear();
   const opts = parseArgs(process.argv);
   if (opts.only === "spine") {
@@ -1541,6 +1550,18 @@ function checkSpineExternalAliases({ opts, report }) {
   //       Lazily, they never reach it, because none of their slugs miss.
   // The memo is placesDoc's, so a full run shares ONE resolve with the three
   // joins and one problem is reported once, not four times.
+  //
+  // Severity, reviewed and left as-is deliberately. placesDoc() routes the
+  // world document's OWN problems through the module-level fail(), not through
+  // this function's injected `report`. That asymmetry is the intended one:
+  // `report` grades the severity of an ALIAS RECORD (is a dangling slug a warn
+  // or a fail — the Phase 5 flip), while an unresolvable world document is
+  // content corruption whose severity is not this sweep's to downgrade. The
+  // three other joins that call placesDoc already hard-fail on it, so a full
+  // run reports it as FAIL no matter what this caller asked for; making it
+  // follow `report` would mean a `--only=spine` run alone could demote it. The
+  // single call site passes fail (:1954), so nothing observes the difference
+  // today either way.
   let resolvedWorldSets = null;
   const resolvedWorld = () => {
     if (!resolvedWorldSets) {
@@ -1552,6 +1573,33 @@ function checkSpineExternalAliases({ opts, report }) {
     return resolvedWorldSets;
   };
   const sayResolved = (label, slug, kind) => console.log(`spine-alias: ${label} → ${slug} (resolved-${kind})`);
+
+  // Task 9 review finding, MAJOR, fixed here. The fallback must mirror the
+  // PRIMARY lookup's tier-agnosticism or it does not deliver this task.
+  // `slugNode` is `byId.get("n-"+slug)` — it accepts a node of ANY tier, and
+  // on today's content 5 of the 9 bestiary region slugs (millcross, embervale,
+  // gildmark, norhollow, rooktide — 48 of the 116 rows) resolve to TOWN-tier
+  // nodes, not region-tier ones. The resolved world keeps the two tiers in
+  // DISJOINT arrays (measured on content/: zones = meltwash-terrace,
+  // millcross-ford, rooktide-reach, thornveil, emberdown, gildmark-head,
+  // hollowmarch, ashvale-front, northern-icefield, cindervast; towns =
+  // millcross, gildmark, embervale, norhollow, rooktide, cindervast — only
+  // cindervast is in both). A zones-ONLY fallback therefore left those 48
+  // references red in exactly the Plan E redraw this task exists to survive,
+  // while printing `nor "millcross" (resolved world) exists` — a claim that is
+  // factually false. Reproduced before the fix by renaming n-rooktide ->
+  // n-rooktide-town (lore.geoId "rooktide", the Plan E shape): loadPlaces
+  // resolved 0 problems with "rooktide" in towns, and the gate still printed
+  // `FAIL spine-alias: bestiary.json region "rooktide": neither n-rooktide
+  // (spine) nor "rooktide" (resolved world) exists`.
+  // Zones are consulted FIRST so the printed kind names the narrower tier when
+  // a slug is in both (cindervast today). The art:town-* site below stays
+  // towns-ONLY on purpose: ITS primary (`townNode`) is tier-restricted too,
+  // and widening it would let a zone satisfy a town key.
+  const resolvedKind = (slug) => {
+    const w = resolvedWorld();
+    return w.zones.has(slug) ? "zone" : w.towns.has(slug) ? "town" : null;
+  };
 
   // (1) zone content (spineId optional) + (2) town plans (spineId required)
   for (const [dir, required] of [["zones", false], ["towns", true]]) {
@@ -1585,7 +1633,8 @@ function checkSpineExternalAliases({ opts, report }) {
       for (const [slug, n] of [...counts.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
         const node = slugNode(slug);
         if (node) { say(`bestiary.json region "${slug}" ×${n}`, node); continue; }
-        if (resolvedWorld().zones.has(slug)) { sayResolved(`bestiary.json region "${slug}" ×${n}`, slug, "zone"); continue; }
+        const kind = resolvedKind(slug);
+        if (kind) { sayResolved(`bestiary.json region "${slug}" ×${n}`, slug, kind); continue; }
         report(`spine-alias: bestiary.json region "${slug}": neither n-${slug} (spine) nor "${slug}" (resolved world) exists`);
       }
     }
@@ -1595,7 +1644,8 @@ function checkSpineExternalAliases({ opts, report }) {
       if (!slug) continue;
       const node = slugNode(slug);
       if (node) { say(`bestiary/${f}`, node); continue; }
-      if (resolvedWorld().zones.has(slug)) { sayResolved(`bestiary/${f}`, slug, "zone"); continue; }
+      const kind = resolvedKind(slug);
+      if (kind) { sayResolved(`bestiary/${f}`, slug, kind); continue; }
       report(`spine-alias: bestiary/${f}: zone "${slug}": neither n-${slug} (spine) nor "${slug}" (resolved world) exists`);
     }
   }

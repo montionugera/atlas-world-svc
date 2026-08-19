@@ -1116,6 +1116,38 @@ t11("alias sweep: a slug in NEITHER source names both attempts in one message", 
   assert11.match(r.out, /spine-alias: bestiary\/placement-thornveil\.json: zone "nowhereshire": neither n-nowhereshire \(spine\) nor "nowhereshire" \(resolved world\) exists/);
 });
 
+// Task 9 review finding, MAJOR: the fallback originally consulted the resolved
+// world's ZONES only, while the primary lookup it backs up (`byId.get("n-"+
+// slug)`) is tier-agnostic. 5 of the 9 bestiary region slugs — millcross,
+// embervale, gildmark, norhollow, rooktide, 48 of the 116 rows — are TOWN-tier
+// nodes, and the resolved world keeps zones and towns in disjoint arrays, so
+// those 48 would still have gone red in Plan E's redraw. The thornveil test
+// above only ever exercised the zone half. This is the town half, and without
+// the `resolvedKind` fix it FAILS (measured: `FAIL spine-alias: bestiary.json
+// region "rooktide": neither n-rooktide (spine) nor "rooktide" (resolved
+// world) exists`, on a fixture where loadPlaces resolves 0 problems and lists
+// "rooktide" among its 6 towns).
+t11("alias sweep: a TOWN-tier slug with no spine node resolves through the world document too", () => {
+  const dir = aliasContentCopy();
+  // Same Plan E shape as the thornveil fixture: the node keeps existing, it
+  // just stops answering to `n-<slug>`. edges.json is re-pointed with it
+  // because the roads/legs join dereferences the edge endpoints by node id —
+  // leave it and resolveWorld reports instead of resolving, and the fixture
+  // would prove nothing about the fallback.
+  const src = join(dir, "content/spine/nodes/n-rooktide.json");
+  const node = JSON.parse(readFileSync(src, "utf8"));
+  assert11.equal(node.tier, "town");
+  node.id = "n-rooktide-town";
+  node.lore = { ...(node.lore ?? {}), geoId: "rooktide" };
+  writeFileSync(join(dir, "content/spine/nodes/n-rooktide-town.json"), JSON.stringify(node, null, 2) + "\n");
+  rmSync(src);
+  const edgesPath = join(dir, "content/spine/edges.json");
+  writeFileSync(edgesPath, readFileSync(edgesPath, "utf8").replaceAll('"n-rooktide"', '"n-rooktide-town"'));
+  const r = runAliasGate(dir);
+  assert11.doesNotMatch(r.out, /spine-alias: bestiary\.json region "rooktide": /);
+  assert11.match(r.out, /spine-alias: bestiary\.json region "rooktide" ×\d+ → rooktide \(resolved-town\)/);
+});
+
 // ── F-043 Task 4: G-ATLAS-ROLLUP — the world rollup is pinned to committed
 // composition (±2pp), independent of G-COMP-ROLLUP's looser per-node
 // tolerance. Red fixture: g-atlas-rollup-drift/ (copied from base/, world
