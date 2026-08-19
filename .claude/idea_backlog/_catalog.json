@@ -580,5 +580,11 @@
     "title": "World fill Plan A: unblock and afford \u2014 exact geometry, spatial index, places.mjs join authority, render lock",
     "created_at": "2026-08-18T13:58:23.925477+00:00",
     "promoted_to": "F-046"
+  },
+  {
+    "id": "I-098",
+    "title": "Stale references to the deleted cluster1-geography mirror and render-map.mjs survive in schema prose, three comments, and the basin sheet's drawn bytes",
+    "created_at": "2026-08-19T07:28:09.510343+00:00",
+    "promoted_to": null
   }
 ]
