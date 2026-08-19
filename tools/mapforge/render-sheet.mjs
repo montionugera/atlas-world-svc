@@ -3,10 +3,11 @@
 //
 // Same drawn-from-data contract as render-map.mjs, but the data comes from
 // the spine (content/spine/) instead of the committed mirror JSON:
-//   loadSpine -> buildTree -> emitGeography (canonical JSON string) -> parse
+//   loadSpine -> buildTree -> resolveWorld (scripts/lib/places.mjs)
 //   -> drawBasinSheet. Because the mirror file is itself byte-emitted from
-//   the spine by check_spine_emit.mjs's emitGeography, this path produces a
+//   that same join by check_spine_emit.mjs, this path produces a
 //   byte-identical SVG to the mirror-driven render-map.mjs path.
+//   Plan A Task 6 dropped the intermediate emitGeography serialise/parse.
 //
 // Usage:
 //   node tools/mapforge/render-sheet.mjs --sheet <id> [--no-png] [--check]
@@ -22,7 +23,12 @@ import { drawBasinSheet } from "./lib/basin-sheet.mjs";
 import { buildAtlasSheet } from "./lib/atlas-sheet.mjs";
 import { rasterize } from "./lib/raster.mjs";
 import { loadSpine, buildTree } from "../../scripts/lib/spine.mjs";
-import { emitGeography } from "../../scripts/check_spine_emit.mjs";
+// Plan A Task 6: the sheet reads the world document from the join authority
+// directly. It used to import emitGeography from check_spine_emit.mjs and
+// JSON.parse its output — the round-trip through a string was pure overhead:
+// the mirror FILE was never read here (that was render-map.mjs), so this is
+// a pure import swap with no byte consequence, proved by render-sheet.test.mjs.
+import { resolveWorld } from "../../scripts/lib/places.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, "../..");
@@ -31,23 +37,29 @@ const PNG_WIDTH = 2000;
 export function buildCluster1Sheet({ repoRoot }) {
   const spine = loadSpine({ contentRoot: join(repoRoot, "content") });
   const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
-  // Plan A Task 5: emitGeography returns { bytes, problems } and no longer
-  // throws on a missing subject. Task 6 re-points this at places.mjs entirely.
-  const { bytes, problems } = emitGeography({ spine, tree });
+  const { doc, problems } = resolveWorld({ spine, tree });
   if (problems.length) return { svg: "", notes: [], problems };
-  const doc = JSON.parse(bytes);
   return drawBasinSheet({ doc });
 }
 
 export const SHEETS = {
   cluster1: {
+    // `title` mirrors tools/asset-storybook/maps-index.json's row title —
+    // the storybook parity gate (X8) checks paths today and Plan B extends it
+    // to the title. `maxLabelRank` is declared here and consumed by Plan B's
+    // labels.mjs: a region sheet draws every priority rank 0-10, a world
+    // sheet stops at rank 3 (world title, ocean, continent, sea).
+    title: "Cluster 1 — Basin Survey",
     outSvg: "game-client/assets/art/maps/cluster1-world.svg",
     outPng: "game-client/assets/art/maps/cluster1-world.png",
+    maxLabelRank: 10,
     build: buildCluster1Sheet,
   },
   atlas: {
+    title: "The Atlas World — Mariners' Chart",
     outSvg: "game-client/assets/art/maps/atlas-world.svg",
     outPng: "game-client/assets/art/maps/atlas-world.png",
+    maxLabelRank: 3,
     build: buildAtlasSheet,
   },
 };

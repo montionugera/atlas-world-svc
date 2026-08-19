@@ -8,6 +8,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, cpSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -229,4 +230,25 @@ test("resolveWorld REPORTS a tree that is not a built tree, never throws", () =>
     assert.equal(doc, null);
     assert.ok(problems.some((p) => p.includes("tree")), JSON.stringify(problems));
   }
+});
+
+// ── the three gate joins must still COUNT, not merely exit 0 ───────────────
+// All three call sites `return 0` when the geography load fails, so a botched
+// re-home silently disables the gate rather than failing it. These assert the
+// printed record counts, which is the only signal that the join still joined.
+
+function runFullGate(contentRoot) {
+  try {
+    return { code: 0, out: execFileSync(process.execPath,
+      [join(ROOT, "scripts/check_content.mjs"), "--content-root", contentRoot],
+      { encoding: "utf8" }) };
+  } catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+}
+
+test("gate joins: the real content root still counts 10 zones, 1 town and its placements", () => {
+  const r = runFullGate(CONTENT);
+  assert.equal(r.code, 0, r.out);
+  // The counts the gate printed BEFORE the re-home. If the join went dark,
+  // every one of these drops to 0 while the gate still exits 0.
+  assert.match(r.out, /content-gate: \d+ sheets, \d+ maps, \d+ story, [1-9]\d* placements, 10 zones, 1 towns, 44 nodes, 0 failures/);
 });

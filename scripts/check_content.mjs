@@ -9,6 +9,9 @@ import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 import { STORY_FILES, loadStory, readJson, compileSchema } from "./lib/story.mjs";
 import { checkSpawnPairing } from "./lib/spawn-pairing.mjs";
+// Plan A Task 6: the ONE geography join authority. Replaces three direct
+// reads of content/maps/cluster1-geography.json.
+import { loadPlaces } from "./lib/places.mjs";
 import { checkBestiarySheet } from "./lib/bestiary-sheet.mjs";
 // F-040: the town-plan geometry the T-rules need. Pure, no I/O — see the
 // module header for why it cannot live inside this file.
@@ -124,15 +127,53 @@ function loadBestiaryDesigns(path) {
   return byId;
 }
 
+// Plan A Task 6 — the ONE geography document, resolved once per content root.
+//
+// Review finding (c), decided deliberately rather than left to chance:
+// loadGeographyZones runs TWICE per full gate run (bestiary placement at the
+// G-rules, zone content at the Z-rules) and loadGeographyTowns once more, and
+// before this task each call re-read the same file. Re-pointing them at
+// loadPlaces would have turned that into three full spine loads + joins, and —
+// the part that actually bites — would have pushed the SAME problem onto
+// `failures` once per call, so one broken geography would print as two or
+// three identical FAIL lines. Memoise per content root: the gate is a
+// single-shot process reading a frozen tree, so one resolve per root is
+// correct as well as cheap, and each problem is reported exactly once.
+//
+// The prefix is applied ONLY when loadPlaces has not already applied it.
+// loadPlaces' own disk-facing problems are contractually prefixed
+// "geography: " (pinned by scripts/tests/places.test.mjs:121), while
+// resolveWorld's are prefixed "resolveWorld: " / "sheet: " and need the
+// context. Prefixing unconditionally — as the plan text spells it — would
+// print "geography: geography: <path> is shape-invalid". DEVIATION FROM PLAN,
+// cosmetic only: every fixture assertion is /geography: .* is shape-invalid/,
+// which both spellings satisfy.
+const placesByRoot = new Map();
+function placesDoc(contentRoot) {
+  if (!placesByRoot.has(contentRoot)) {
+    const { doc, problems } = loadPlaces({ contentRoot });
+    for (const p of problems) fail(p.startsWith("geography: ") ? p : `geography: ${p}`);
+    placesByRoot.set(contentRoot, doc ?? null);
+  }
+  return placesByRoot.get(contentRoot);
+}
+
 // I-059: zone records from the Cartographer's geography. levelBand is the
 // authority for a placement file's routeBand (G8) — the band is asserted
 // across files, never retyped from prose.
-function loadGeographyZones(path) {
-  const before = failures.length;
-  const doc = readJson(path, "geography", fail);
-  if (failures.length > before) return null;
-  if (!doc || !Array.isArray(doc.zones)) {
-    fail(`geography: ${path} is shape-invalid — expected { zones: [...] }`);
+//
+// Plan A Task 6: the SOURCE moved from the legacy content/maps/
+// cluster1-geography.json mirror to scripts/lib/places.mjs, which resolves
+// the same document from content/spine/ and falls back to the mirror file for
+// content roots that ship one but no spine. `contentRoot` is now the content
+// ROOT, not a file path. The failure messages downstream still name
+// "cluster1-geography.json#zones" verbatim — ~10 fixture tests regex them and
+// the mirror is still the concept even after the file is gone.
+function loadGeographyZones(contentRoot) {
+  const doc = placesDoc(contentRoot);
+  if (!doc) return null;
+  if (!Array.isArray(doc.zones)) {
+    fail(`geography: ${contentRoot} is shape-invalid — expected { zones: [...] }`);
     return null;
   }
   const byId = new Map();
@@ -145,15 +186,15 @@ function loadGeographyZones(path) {
 
 // F-040 T1: town records from the Cartographer's geography. The geography is
 // the authority on which towns exist and where they are; a town plan asserts
-// against it and the geography is NEVER written back (design §9). Same
-// failure-count discipline as loadGeographyZones — readJson cannot tell a
-// recorded FAIL from a file holding literal `null`.
-function loadGeographyTowns(path) {
-  const before = failures.length;
-  const doc = readJson(path, "geography", fail);
-  if (failures.length > before) return null;
-  if (!doc || !Array.isArray(doc.towns)) {
-    fail(`geography: ${path} is shape-invalid — expected { towns: [...] }`);
+// against it and the geography is NEVER written back (design §9).
+//
+// Plan A Task 6: same re-home as loadGeographyZones — `contentRoot`, not a
+// file path, and the document comes from placesDoc()'s single resolve.
+function loadGeographyTowns(contentRoot) {
+  const doc = placesDoc(contentRoot);
+  if (!doc) return null;
+  if (!Array.isArray(doc.towns)) {
+    fail(`geography: ${contentRoot} is shape-invalid — expected { towns: [...] }`);
     return null;
   }
   const byId = new Map();
@@ -836,7 +877,7 @@ function checkBestiaryPlacement(opts) {
   // Both are REQUIRED once a placement file exists: every rule below is a
   // cross-file assertion against one of them.
   const designs = loadBestiaryDesigns(join(dir, "bestiary.json"));
-  const zones = loadGeographyZones(join(opts.contentRoot, "maps/cluster1-geography.json"));
+  const zones = loadGeographyZones(opts.contentRoot);
   if (!designs || !zones) return 0;
 
   let count = 0;
@@ -975,7 +1016,7 @@ function checkZoneContent(opts) {
 
   // REQUIRED once a zone file exists: Z1 and Z2 are both assertions against
   // the Cartographer's geography, which is the authority on which zones exist.
-  const zones = loadGeographyZones(join(opts.contentRoot, "maps/cluster1-geography.json"));
+  const zones = loadGeographyZones(opts.contentRoot);
   if (!zones) return 0;
 
   const records = []; // { label, file, doc } for every valid record naming a real zone
@@ -1212,7 +1253,7 @@ function checkTownPlan(opts) {
 
   // REQUIRED once a town plan exists: T1 is an assertion against the
   // Cartographer's geography, which is the authority on which towns exist.
-  const towns = loadGeographyTowns(join(opts.contentRoot, "maps/cluster1-geography.json"));
+  const towns = loadGeographyTowns(opts.contentRoot);
   if (!towns) return 0;
 
   const records = []; // { label, file, doc, roadQuads } for every valid plan naming a real town
