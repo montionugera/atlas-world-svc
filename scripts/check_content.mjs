@@ -23,9 +23,21 @@ import {
 // F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
 // file ends in a bare main() + process.exit() and is not importable, so gate
 // tests spawn it as a child process against fixture content roots.
-import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+// Plan A Task 4 — G-VERTEX-BUDGET. Every cost in the map lane is linear or
+// worse in ring vertex count and nothing constrained it before this. The
+// EFFECTIVE cap is min(load-budget.maxRingPoints, VERTEX_CAP[tier]) — the
+// global term is the loader's ceiling, the per-tier term is the geometry
+// gate's. Landform instances are NOT spine nodes (they are Plan C's fabric
+// records) so their 40-vertex cap is not enforced here and must not be
+// pretended into this table.
+const VERTEX_CAP = Object.freeze({
+  world: 800, playroot: 800, continent: 800, ocean: 800, sea: 800,
+  playspace: 800, fixture: 200, region: 200, town: 200, site: 200,
+});
 
 function parseArgs(argv) {
   const opts = {
@@ -2119,13 +2131,49 @@ function gSpineBudgets({ spine, tree, plans, contentRoot, fail }) {
     }
   })(dir);
 
+  // Plan A Task 4: three terms, not one. A global node count is the wrong
+  // proxy — 96 nodes with <= 3 siblings each cost ~30 pairs; 48 nodes all
+  // under ONE parent cost 1,128 while passing maxNodes: 48. The quadratic
+  // term is Σ_parents C(children, 2), and after Task 2 the per-pair constant
+  // is dominated by ring vertex count. All three PRINT on every run, the
+  // G-COMP-REPORT discipline, so drift is visible before it is a failure.
+  // Walks tree.byId.values() (the schema-VALID set), never raw spine.nodes —
+  // the same discipline the rest of this function follows.
+  let maxKids = 0, maxRing = 0;
+  for (const node of tree.byId.values()) {
+    const kids = (tree.childrenOf.get(node.id) ?? []).length;
+    if (kids > maxKids) maxKids = kids;
+    const v = ringVertexCount({ placement: node.placement });
+    if (v > maxRing) maxRing = v;
+  }
+
   if (!spine.budgets.load) {
     fail(`spine: G-LOAD-BUDGET: spine/load-budget.json is missing`);
   } else {
-    const { maxNodes, maxBytes } = spine.budgets.load;
-    console.log(`spine-load: ${spine.nodes.length} nodes, ${bytes} bytes (budget ${maxNodes} nodes, ${maxBytes} bytes)`);
+    const { maxNodes, maxBytes, maxChildrenPerParent, maxRingPoints } = spine.budgets.load;
+    console.log(`spine-load: ${spine.nodes.length} nodes, ${bytes} bytes, max children ${maxKids}/${maxChildrenPerParent}, max ring ${maxRing}/${maxRingPoints} (budget ${maxNodes} nodes, ${maxBytes} bytes)`);
     if (spine.nodes.length > maxNodes) fail(`spine: G-LOAD-BUDGET: ${spine.nodes.length} nodes > budget ${maxNodes}`);
     if (bytes > maxBytes) fail(`spine: G-LOAD-BUDGET: ${bytes} bytes > budget ${maxBytes}`);
+    // The two new terms. A MISSING term is not a silent pass: an old budget
+    // file that predates this task would otherwise disable both governors
+    // exactly when a redraw needs them most.
+    if (typeof maxChildrenPerParent !== "number")
+      fail(`spine: G-LOAD-BUDGET: spine/load-budget.json has no maxChildrenPerParent`);
+    else
+      for (const node of tree.byId.values()) {
+        const kids = (tree.childrenOf.get(node.id) ?? []).length;
+        if (kids > maxChildrenPerParent)
+          fail(`G-LOAD-BUDGET: ${node.id} has ${kids} children > budget ${maxChildrenPerParent} — the pairwise overlap check is quadratic in siblings (${(kids * (kids - 1)) / 2} pairs); introduce an intermediate node rather than raising the cap`);
+      }
+    if (typeof maxRingPoints !== "number")
+      fail(`spine: G-LOAD-BUDGET: spine/load-budget.json has no maxRingPoints`);
+    else
+      for (const node of tree.byId.values()) {
+        const cap = Math.min(maxRingPoints, VERTEX_CAP[node.tier] ?? maxRingPoints);
+        const v = ringVertexCount({ placement: node.placement });
+        if (v > cap)
+          fail(`G-VERTEX-BUDGET: ${node.id} ring has ${v} vertices > ${cap} for tier ${node.tier}`);
+      }
   }
 
   const totals = { CHECKED: 0, ASSERTED: 0, UNCHECKED: 0 };

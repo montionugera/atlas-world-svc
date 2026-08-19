@@ -29,7 +29,11 @@ const REPO_ROOT = resolve(HERE, "../..");
 
 const COMPOSITION_TARGET = { ocean: 96, rock: 2, ice: 2 };
 const COMPOSITION_TOLERANCE = 2;
-const SYNTHETIC_LOAD_BUDGET = { maxNodes: 48, maxBytes: 393216 }; // mirrors Task 3's committed bump
+// Mirrors the committed content/spine/load-budget.json. All four terms are
+// required: G-LOAD-BUDGET fails on a missing maxChildrenPerParent/maxRingPoints
+// rather than silently skipping the two governors, so a two-key synthetic
+// budget would make this generator's own gate run red (Plan A Task 4).
+const SYNTHETIC_LOAD_BUDGET = { maxNodes: 96, maxChildrenPerParent: 24, maxRingPoints: 160, maxBytes: 786432 };
 
 // Canonical bytes for a node (2-space indent, trailing newline), reusing the
 // derive-writer's own serializer so `interior`/`derived` are byte-consistent

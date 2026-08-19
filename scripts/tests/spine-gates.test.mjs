@@ -92,7 +92,12 @@ test("the committed 44-node table loads clean: 2 roots, depths legal, no load er
   // also hand-edited n-atlas's interstitialUnsurveyed to false (its
   // composition is now real: {ocean:100}), which flips n-atlas from
   // UNCHECKED to CHECKED, so the real UNCHECKED count today is 0.
-  assert.deepEqual(spine.budgets.load, { maxNodes: 48, maxBytes: 393216 });
+  // Plan A Task 4 replaced the single node-count term with three: maxNodes 96
+  // is loader sanity only, maxChildrenPerParent 24 is the real governor (the
+  // sibling-overlap check is quadratic — 24 children is 276 pairs), and
+  // maxRingPoints 160 is where the per-pair cost curve flattens. maxBytes
+  // doubles to 786432 because hoisting `derived` lands the trunk near 150 KB.
+  assert.deepEqual(spine.budgets.load, { maxNodes: 96, maxChildrenPerParent: 24, maxRingPoints: 160, maxBytes: 786432 });
   assert.deepEqual(spine.budgets.coverage, { maxUnchecked: 2 });
   for (const n of spine.nodes) assert.equal(typeof TIER_DEPTH[n.tier], "number", n.id);
 });
@@ -387,7 +392,10 @@ t11("G-COMP-REPORT prints coverage and verdict for every node", () => {
   assert11.equal(r.code, 0);
   assert11.match(r.out, /spine-comp: n-c coverage=\d+(\.\d+)?% verdict=(CHECKED|ASSERTED|UNCHECKED)/);
   assert11.match(r.out, /spine-comp: totals CHECKED=\d+ ASSERTED=\d+ UNCHECKED=2/);
-  assert11.match(r.out, /spine-load: 3 nodes, \d+ bytes \(budget 10 nodes, 65536 bytes\)/);
+  // Plan A Task 4 widened this line to three measured terms; the F-041 shape
+  // it pinned (`3 nodes, N bytes (budget 10 nodes, 65536 bytes)`) is still
+  // asserted here, with the two new terms spliced in where they now print.
+  assert11.match(r.out, /spine-load: 3 nodes, \d+ bytes, max children \d+\/\d+, max ring \d+\/\d+ \(budget 10 nodes, 65536 bytes\)/);
 });
 
 // ─── F-041 Phase 1 · Task 1.13: G-OVERLAP + G-COMP-ROLLUP (FAIL stage) ──────
@@ -453,6 +461,48 @@ t11("G-COMP-ROLLUP red: child mix contradicts the parent beyond tolerance", () =
   } }));
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-COMP-ROLLUP n-c: meadow off by .* pp \(tol 3\)/);
+});
+
+// ─── Plan A Task 4: the three-term load budget + G-VERTEX-BUDGET ───────────
+t11("G-LOAD-BUDGET prints all three measured terms on every run", () => {
+  const r = runSpineGate(spineFixture());
+  assert11.equal(r.code, 0, r.out);
+  assert11.match(r.out, /spine-load: 3 nodes, \d+ bytes, max children \d+\/\d+, max ring \d+\/\d+ \(budget 10 nodes, 65536 bytes\)/);
+});
+
+t11("G-LOAD-BUDGET red: a parent over maxChildrenPerParent names the quadratic cost", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-children-cap" }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-LOAD-BUDGET: n-c has 2 children > budget 1 — the pairwise overlap check is quadratic in siblings \(1 pairs\); introduce an intermediate node rather than raising the cap/);
+});
+
+t11("G-VERTEX-BUDGET red: a ring over the global maxRingPoints", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-vertex-budget-region" }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-VERTEX-BUDGET: n-r ring has 4 vertices > 3 for tier region/);
+});
+
+// A budget file that predates this task must not silently disable the two new
+// governors: both missing terms are their own clean FAIL, not a skipped rule.
+t11("G-LOAD-BUDGET red: a two-key budget file fails on both missing terms", () => {
+  const r = runSpineGate(spineFixture({ mutate: (dir) => {
+    write11(join11(dir, "spine/load-budget.json"), '{ "maxNodes": 10, "maxBytes": 65536 }\n');
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-LOAD-BUDGET: spine\/load-budget\.json has no maxChildrenPerParent/);
+  assert11.match(r.out, /G-LOAD-BUDGET: spine\/load-budget\.json has no maxRingPoints/);
+});
+
+t11("G-VERTEX-BUDGET green: every committed node is inside its tier cap", () => {
+  const r = runGate(join(ROOT, "content"));
+  assert11.equal(r.code, 0, r.stdout);
+  assert11.doesNotMatch(r.stdout, /G-VERTEX-BUDGET/);
+});
+
+t11("G-LOAD-BUDGET green: the committed table is inside all three terms", () => {
+  const r = runGate(join(ROOT, "content"));
+  // 44 nodes / 96, n-cluster1's 12 children / 24, n-galereach's 27 points / 160.
+  assert11.match(r.stdout, /spine-load: 44 nodes, \d+ bytes, max children 12\/24, max ring 27\/160 \(budget 96 nodes, 786432 bytes\)/);
 });
 
 // ── F-041 Phase 3: hermetic fixture roots for the town-frame gates ──────────

@@ -1,1 +1,1 @@
-{ "maxNodes": 40, "maxBytes": 400000 }
+{ "maxNodes": 40, "maxChildrenPerParent": 24, "maxRingPoints": 160, "maxBytes": 400000 }
