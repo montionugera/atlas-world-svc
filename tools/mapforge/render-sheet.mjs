@@ -31,7 +31,11 @@ const PNG_WIDTH = 2000;
 export function buildCluster1Sheet({ repoRoot }) {
   const spine = loadSpine({ contentRoot: join(repoRoot, "content") });
   const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
-  const doc = JSON.parse(emitGeography({ spine, tree }));
+  // Plan A Task 5: emitGeography returns { bytes, problems } and no longer
+  // throws on a missing subject. Task 6 re-points this at places.mjs entirely.
+  const { bytes, problems } = emitGeography({ spine, tree });
+  if (problems.length) return { svg: "", notes: [], problems };
+  const doc = JSON.parse(bytes);
   return drawBasinSheet({ doc });
 }
 
