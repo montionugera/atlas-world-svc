@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildAtlasSheet } from "../lib/atlas-sheet.mjs";
+import { buildAtlasSheet, drawAtlasSheet } from "../lib/atlas-sheet.mjs";
 import { esc } from "../lib/draft.mjs";
 import { loadSpine, buildTree } from "../../../scripts/lib/spine.mjs";
 
@@ -84,4 +84,93 @@ test("world labels paint above the sheet chrome (document order)", () => {
     assert.ok(idx > -1, `${needle}: not found in svg at all`);
     assert.ok(idx > chromeEndIdx, `${needle}: must paint after the chrome block (document order)`);
   }
+});
+
+// ── Plan A Task 8: the second adapter's ids are DATA ───────────────────────
+const realSheet = () =>
+  JSON.parse(readFileSync(join(ROOT, "content/spine/sheet-atlas.json"), "utf8"));
+const realTree = () => {
+  const spine = loadSpine({ contentRoot: join(ROOT, "content") });
+  return { spine, tree: buildTree({ nodes: spine.nodes, rootIds: spine.roots }) };
+};
+
+test("sheet-atlas.json carries the subjects descriptor", () => {
+  const sheet = realSheet();
+  assert.ok(sheet.subjects, "content/spine/sheet-atlas.json has no `subjects` block");
+  assert.equal(sheet.subjects.rootId, "n-atlas");
+  assert.deepEqual(sheet.subjects.landIds, ["n-cluster1"]);
+  assert.deepEqual(sheet.subjects.seaIds, ["n-westsea"]);
+  assert.deepEqual(sheet.subjects.featureIds, {
+    coast: "f-west-coast", river: "f-the-meltwash", iceEdge: "f-northern-ice-edge",
+  });
+});
+
+test("the atlas adapter names no spine id in its source — every id comes from the descriptor", () => {
+  const src = readFileSync(join(ROOT, "tools/mapforge/lib/atlas-sheet.mjs"), "utf8");
+  // Comments and problem-message templates are allowed to name ids; CODE is
+  // not. Strip line comments, then look for quoted spine ids.
+  const code = src.split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
+  for (const id of ["n-atlas", "n-cluster1", "n-westsea", "f-west-coast", "f-the-meltwash"]) {
+    assert.ok(
+      !code.includes(`"${id}"`) && !code.includes(`'${id}'`),
+      `atlas-sheet.mjs still hard-codes "${id}" — a redraw that renames it needs a code edit`,
+    );
+  }
+});
+
+test("a descriptor naming a missing land node REPORTS and returns an empty svg, never throws", () => {
+  const { spine, tree } = realTree();
+  const sheet = realSheet();
+  const bad = { ...sheet, subjects: { ...sheet.subjects, landIds: ["n-not-a-node"] } };
+  const { svg, problems } = drawAtlasSheet({ spine, tree, sheet: bad });
+  assert.equal(svg, "");
+  assert.ok(problems.some((p) => p.includes("n-not-a-node")), JSON.stringify(problems));
+});
+
+test("a sheet record with NO subjects block REPORTS and returns an empty svg", () => {
+  const { spine, tree } = realTree();
+  const { subjects, ...noSubjects } = realSheet();
+  assert.ok(subjects, "fixture precondition: the committed sheet has subjects");
+  const { svg, problems } = drawAtlasSheet({ spine, tree, sheet: noSubjects });
+  assert.equal(svg, "");
+  assert.ok(problems.some((p) => p.includes("`subjects` descriptor")), JSON.stringify(problems));
+});
+
+test("an EMPTY landIds/seaIds array is diagnosed by shape, not by indexing [0] of nothing", () => {
+  const { spine, tree } = realTree();
+  const sheet = realSheet();
+  for (const key of ["landIds", "seaIds"]) {
+    const bad = { ...sheet, subjects: { ...sheet.subjects, [key]: [] } };
+    const { svg, problems } = drawAtlasSheet({ spine, tree, sheet: bad });
+    assert.equal(svg, "");
+    assert.ok(
+      problems.some((p) => p.includes(`subjects.${key} is missing or empty`)),
+      `${key}: ${JSON.stringify(problems)}`,
+    );
+    assert.ok(!problems.some((p) => p.includes('"undefined"')), `${key} indexed [0] of nothing`);
+  }
+});
+
+test("dropping the mire from the tree no longer crashes the atlas sheet (correction C2)", () => {
+  const { spine, tree } = realTree();
+  const sheet = realSheet();
+  tree.byId.delete("n-saltmire");
+  // Must not throw. It may or may not report — the atlas sheet does not draw
+  // the mire — but a raw TypeError is the failure mode this task removes.
+  assert.doesNotThrow(() => drawAtlasSheet({ spine, tree, sheet }));
+});
+
+test("the descriptor-driven worldChildren set is the same 9 nodes the two !== literals selected", () => {
+  const { tree } = realTree();
+  const S = realSheet().subjects;
+  const viaDescriptor = [...tree.byId.values()]
+    .filter((n) => n.parentId === S.rootId && !S.landIds.includes(n.id) && !S.seaIds.includes(n.id))
+    .map((n) => n.id)
+    .sort();
+  const viaOldLiterals = [...tree.byId.values()]
+    .filter((n) => n.parentId === "n-atlas" && n.id !== "n-cluster1" && n.id !== "n-westsea")
+    .map((n) => n.id)
+    .sort();
+  assert.deepEqual(viaDescriptor, viaOldLiterals);
+  assert.equal(viaDescriptor.length, 9);
 });

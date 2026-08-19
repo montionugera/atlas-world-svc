@@ -38,24 +38,56 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   const notes = [];
 
   // ---- data joins — everything drawn is looked up here ---------------------
-  const atlas = tree.byId.get("n-atlas");
-  const cluster = tree.byId.get("n-cluster1");
-  const westsea = tree.byId.get("n-westsea");
-  if (!atlas || !cluster || !westsea) {
+  // Plan A Task 8: every subject id comes from content/spine/sheet-atlas.json's
+  // `subjects` block, never from a literal in this file. Correction C2: this
+  // adapter was the SECOND hard-coded one — a redraw that renames the basin
+  // land or sea node used to need a code edit here, and the same rename in the
+  // spine alone reached `.title`/`.features` on undefined. Same descriptor
+  // shape scripts/lib/places.mjs reads for the basin sheet.
+  const S = sheet?.subjects;
+  if (!S || typeof S !== "object" || Array.isArray(S)) {
     problems.push(
-      `missing spine node(s): ${["n-atlas", "n-cluster1", "n-westsea"]
-        .filter((id) => !tree.byId.get(id))
-        .join(", ")}`,
+      "sheet-atlas.json has no `subjects` descriptor — the sheet's subject ids are DATA, not code",
     );
     return { svg: "", notes, problems };
   }
+  // Shape checked BEFORE anything dereferences it. `S.landIds[0]` on an empty
+  // array is `undefined`, which would report `"undefined" does not resolve` —
+  // a report rather than a throw, but a message naming nothing an author can
+  // fix. Diagnose by shape instead, the rule places.mjs applies to
+  // mireIds/terrainPatchIds. `iceEdge` is the basin sheet's business; this
+  // adapter draws only the coast and the river, so it requires only those.
+  if (typeof S.rootId !== "string")
+    problems.push("sheet-atlas.json: subjects.rootId is missing or not a string");
+  for (const k of ["landIds", "seaIds"])
+    if (!Array.isArray(S[k]) || S[k].length === 0)
+      problems.push(`sheet-atlas.json: subjects.${k} is missing or empty`);
+  if (!S.featureIds || typeof S.featureIds !== "object")
+    problems.push("sheet-atlas.json: subjects.featureIds is missing or not an object");
+  else
+    for (const k of ["coast", "river"])
+      if (typeof S.featureIds[k] !== "string")
+        problems.push(`sheet-atlas.json: subjects.featureIds.${k} is missing or not a string`);
+  if (problems.length) return { svg: "", notes, problems };
 
-  const [EXT_W, EXT_H] = atlas.interior.size; // [2000, 2000] atlas-km
+  const need = (key, id) => {
+    const n = tree.byId.get(id);
+    if (!n) problems.push(`sheet: subject "${key}" -> "${id}" does not resolve`);
+    return n ?? null;
+  };
+  const atlas = need("rootId", S.rootId);
+  const cluster = need("landIds[0]", S.landIds[0]);
+  const westsea = need("seaIds[0]", S.seaIds[0]);
+  if (!atlas || !cluster || !westsea) return { svg: "", notes, problems };
+
+  const [EXT_W, EXT_H] = atlas.interior.size; // the root frame, in its own km
   const feature = (id) => (cluster.features ?? []).find((f) => f.id === id);
-  const coast = feature("f-west-coast");
-  const river = feature("f-the-meltwash");
-  if (!coast) problems.push("n-cluster1: feature f-west-coast not found");
-  if (!river) problems.push("n-cluster1: feature f-the-meltwash not found");
+  const coast = feature(S.featureIds.coast);
+  const river = feature(S.featureIds.river);
+  if (!coast)
+    problems.push(`sheet: subject "coast" -> "${S.featureIds.coast}" does not resolve`);
+  if (!river)
+    problems.push(`sheet: subject "river" -> "${S.featureIds.river}" does not resolve`);
 
   const seaLane = (spine.edges ?? []).find((e) => e.kind === "sealane");
   let laneFrom = null;
@@ -92,7 +124,7 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
       continue;
     }
     if (!pointInPolygon(at, cluster.placement.points))
-      problems.push(`town ${t.id} at [${at}] is outside the n-cluster1 polygon`);
+      problems.push(`town ${t.id} at [${at}] is outside the ${cluster.id} polygon`);
     townDots.push({ id: t.id, at });
   }
   if (townDots.length !== towns.length)
@@ -109,20 +141,25 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
           `${label}: point [${p}] outside the ${EXT_W}x${EXT_H} km frame`,
         );
   };
-  checkFrame("n-cluster1 polygon", cluster.placement.points);
-  checkFrame("n-westsea polygon", westsea.placement.points);
-  if (coast) checkFrame("f-west-coast", coast.points);
-  if (river) checkFrame("f-the-meltwash", river.points);
+  checkFrame(`${cluster.id} polygon`, cluster.placement.points);
+  checkFrame(`${westsea.id} polygon`, westsea.placement.points);
+  if (coast) checkFrame(S.featureIds.coast, coast.points);
+  if (river) checkFrame(S.featureIds.river, river.points);
   checkFrame("town dots", townDots.map((d) => d.at));
   checkFrame("north mark", [sheet.northMark.at]);
   if (laneFrom) checkFrame("sea-lane tail", [laneFrom]);
   // laneFar is declared offSheet — exempt by design (it leaves the sheet).
 
-  // ---- F-043: the wider world — tier-1 children of n-atlas beyond the -------
-  // basin pair (n-cluster1/n-westsea already joined above). Sorted by id for
+  // ---- F-043: the wider world — tier-1 children of the root beyond the ------
+  // basin pair (landIds/seaIds are already joined above). Sorted by id for
   // determinism, same rule the basin block's town list uses.
   const worldChildren = [...tree.byId.values()]
-    .filter((n) => n.parentId === "n-atlas" && n.id !== "n-cluster1" && n.id !== "n-westsea")
+    .filter(
+      (n) =>
+        n.parentId === S.rootId &&
+        !S.landIds.includes(n.id) &&
+        !S.seaIds.includes(n.id),
+    )
     .sort((a, b) => (a.id < b.id ? -1 : 1));
   const worldLand = worldChildren.filter((n) => n.tier === "continent");
   const worldOceans = worldChildren.filter((n) => n.tier === "ocean");
