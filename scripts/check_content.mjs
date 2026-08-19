@@ -34,6 +34,17 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 // gate's. Landform instances are NOT spine nodes (they are Plan C's fabric
 // records) so their 40-vertex cap is not enforced here and must not be
 // pretended into this table.
+//
+// COVERAGE NOTE (review fix). With the committed budget the global term is
+// the tighter of the two for every tier — maxRingPoints 160 vs rows of 200
+// and 800, so min() returns 160 everywhere and this table binds NOTHING
+// today. Deleting it flipped no test when that was measured (74/74 still
+// passed). It is a forward contract for the redraw, when maxRingPoints
+// rises; the pair of tests named "G-VERTEX-BUDGET: the PER-TIER cap binds
+// …" in scripts/tests/spine-gates.test.mjs is what proves the tier term is
+// live — one 208-vertex ring under a global cap of 300, red as a region
+// (200) and green as a continent (800). Do not delete this table without
+// deleting those tests, and do not delete those tests at all.
 const VERTEX_CAP = Object.freeze({
   world: 800, playroot: 800, continent: 800, ocean: 800, sea: 800,
   playspace: 800, fixture: 200, region: 200, town: 200, site: 200,
@@ -2151,12 +2162,25 @@ function gSpineBudgets({ spine, tree, plans, contentRoot, fail }) {
     fail(`spine: G-LOAD-BUDGET: spine/load-budget.json is missing`);
   } else {
     const { maxNodes, maxBytes, maxChildrenPerParent, maxRingPoints } = spine.budgets.load;
-    console.log(`spine-load: ${spine.nodes.length} nodes, ${bytes} bytes, max children ${maxKids}/${maxChildrenPerParent}, max ring ${maxRing}/${maxRingPoints} (budget ${maxNodes} nodes, ${maxBytes} bytes)`);
+    // Review fix: the report line runs BEFORE the typeof guards below, so a
+    // budget file missing a term used to print the literal `undefined` in the
+    // one artifact an operator reads. A missing term reports as `n/a`; a
+    // present term is unchanged, which is what the three regexes pin.
+    const shown = (t) => (typeof t === "number" ? t : "n/a");
+    console.log(`spine-load: ${spine.nodes.length} nodes, ${bytes} bytes, max children ${maxKids}/${shown(maxChildrenPerParent)}, max ring ${maxRing}/${shown(maxRingPoints)} (budget ${shown(maxNodes)} nodes, ${shown(maxBytes)} bytes)`);
     if (spine.nodes.length > maxNodes) fail(`spine: G-LOAD-BUDGET: ${spine.nodes.length} nodes > budget ${maxNodes}`);
     if (bytes > maxBytes) fail(`spine: G-LOAD-BUDGET: ${bytes} bytes > budget ${maxBytes}`);
     // The two new terms. A MISSING term is not a silent pass: an old budget
     // file that predates this task would otherwise disable both governors
     // exactly when a redraw needs them most.
+    //
+    // Message-prefix divergence, recorded as a DECISION rather than left to
+    // look like an accident: the file-level failures above carry the `spine: `
+    // prefix, the two PER-NODE failures below deliberately do not. The plan's
+    // Task 4 Interfaces block gives those two strings verbatim without it and
+    // later plans assert on them character-for-character, so the prefix stays
+    // off. Nothing greps the prefix (`grep -rn 'spine: G-' scripts/*.sh
+    // .github/workflows/*.yml` -> no matches), so this is log-shape only.
     if (typeof maxChildrenPerParent !== "number")
       fail(`spine: G-LOAD-BUDGET: spine/load-budget.json has no maxChildrenPerParent`);
     else

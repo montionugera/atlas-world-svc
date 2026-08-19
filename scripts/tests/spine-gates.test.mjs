@@ -373,10 +373,17 @@ t11("G-EMIT-DRIFT: emitted geography drifts red on a hand-edit and is green when
 // Note: the base fixture's committed coverage budget is maxUnchecked: 2
 // (Task 1.6) because n-w and n-c are both UNCHECKED; the red test below
 // lowers it to 0.
+// Review fix: this fixture stayed two-key when Plan A Task 4 migrated the six
+// on-disk budget files, so it was also tripping the two missing-term rules —
+// three FAILs where the test isolates one, and `code === 1` satisfiable
+// without the node-count rule firing at all. Carries all four terms now, with
+// only maxNodes lowered, so the rule under test is the only one that can fire.
 t11("G-LOAD-BUDGET red: node count over a lowered budget", () => {
   const r = runSpineGate(spineFixture({ mutate: (dir) => {
-    write11(join11(dir, "spine/load-budget.json"), '{ "maxNodes": 1, "maxBytes": 65536 }\n');
+    write11(join11(dir, "spine/load-budget.json"),
+      '{ "maxNodes": 1, "maxChildrenPerParent": 24, "maxRingPoints": 160, "maxBytes": 65536 }\n');
   } }));
+  assert11.doesNotMatch(r.out, /has no maxChildrenPerParent|has no maxRingPoints/);
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-LOAD-BUDGET: 3 nodes > budget 1/);
 });
@@ -482,6 +489,70 @@ t11("G-VERTEX-BUDGET red: a ring over the global maxRingPoints", () => {
   assert11.match(r.out, /G-VERTEX-BUDGET: n-r ring has 4 vertices > 3 for tier region/);
 });
 
+// ── review fix: the PER-TIER half of G-VERTEX-BUDGET had ZERO coverage ─────
+// The effective cap is min(maxRingPoints, VERTEX_CAP[tier]). Everything above
+// exercises only the GLOBAL term: the committed budget sets maxRingPoints 160
+// against table rows of 200 and 800, so min() returns 160 for every tier, and
+// the red fixture lowers the global to 3, so min() returns 3 for every tier.
+// MEASURED before this test existed: replacing the whole expression with
+// `const cap = maxRingPoints` left spine-gates.test.mjs at 74 pass / 0 fail —
+// the table was a rule the suite could not tell from deleted.
+//
+// The pair below is the missing half. One ring, 208 vertices, under a global
+// cap of 300 that cannot bind: RED on n-r (tier region, table cap 200), GREEN
+// on n-c (tier continent, table cap 800). Same ring, same budget, opposite
+// verdicts — only the tier differs, so only the table can explain it.
+//
+// Densifying inserts collinear points on the EXISTING edges, so the polygon is
+// geometrically identical: shoelace area, containment, anchor and sibling
+// overlap are all unchanged and only the vertex count moves. That keeps the
+// fixture green on every other gate, and keeps a 208-point literal out of the
+// repo — the same reason Task 4 chose to lower the cap rather than author a
+// 201-point ring by hand.
+function densifyRing(points, per) {
+  const out = [];
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i], b = points[(i + 1) % points.length];
+    out.push(a);
+    for (let k = 1; k < per; k++)
+      out.push([
+        Math.round((a[0] + (b[0] - a[0]) * k / per) * 100) / 100,
+        Math.round((a[1] + (b[1] - a[1]) * k / per) * 100) / 100,
+      ]);
+  }
+  return out;
+}
+
+// maxRingPoints 300 is deliberately ABOVE every vertex count here, so a
+// failure can only have come from the per-tier row.
+function tierCapFixture({ nodeId, per = 52 }) {
+  return spineFixture({ mutate: (dir) => {
+    write11(join11(dir, "spine/load-budget.json"), JSON.stringify(
+      { maxNodes: 10, maxChildrenPerParent: 24, maxRingPoints: 300, maxBytes: 262144 }, null, 2) + "\n");
+    const p = join11(dir, `spine/nodes/${nodeId}.json`);
+    const doc = JSON.parse(read11(p, "utf8"));
+    doc.placement.points = densifyRing(doc.placement.points, per);
+    delete doc.derived;
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]); // re-derive the widened ring
+  } });
+}
+
+t11("G-VERTEX-BUDGET: the PER-TIER cap binds — 208 vertices is RED for tier region under a global 300", () => {
+  const r = runSpineGate(tierCapFixture({ nodeId: "n-r" }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-VERTEX-BUDGET: n-r ring has 208 vertices > 200 for tier region/);
+  // The global term is 300 and prints as such: it is not what fired.
+  assert11.match(r.out, /max ring 208\/300/);
+});
+
+t11("G-VERTEX-BUDGET: the PER-TIER cap is read per tier — the SAME 208-vertex ring is GREEN for tier continent", () => {
+  const r = runSpineGate(tierCapFixture({ nodeId: "n-c" }));
+  assert11.equal(r.code, 0, r.out);
+  assert11.doesNotMatch(r.out, /G-VERTEX-BUDGET/);
+  assert11.match(r.out, /max ring 208\/300/);
+});
+
 // A budget file that predates this task must not silently disable the two new
 // governors: both missing terms are their own clean FAIL, not a skipped rule.
 t11("G-LOAD-BUDGET red: a two-key budget file fails on both missing terms", () => {
@@ -493,6 +564,10 @@ t11("G-LOAD-BUDGET red: a two-key budget file fails on both missing terms", () =
   assert11.match(r.out, /G-LOAD-BUDGET: spine\/load-budget\.json has no maxRingPoints/);
 });
 
+// This is a FALSE-POSITIVE guard, not rule coverage, and the distinction is
+// worth naming: `doesNotMatch` passes identically when the rule is deleted, so
+// it proves the rule does not fire on committed content and nothing more. The
+// evidence that the rule EXISTS is the three red tests above.
 t11("G-VERTEX-BUDGET green: every committed node is inside its tier cap", () => {
   const r = runGate(join(ROOT, "content"));
   assert11.equal(r.code, 0, r.stdout);
