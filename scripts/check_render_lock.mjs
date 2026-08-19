@@ -14,6 +14,12 @@
 // what keeps computeLock's `continue`-past-a-broken-sheet from ever producing
 // a green --check or a silently shrunken --write.
 //
+// --repo-root <dir> points every read and write at a different tree. It exists
+//          so the suite can prove this gate FIRES without truncating the real,
+//          TRACKED committed SVG: two test files doing that concurrently is a
+//          lost-update race on a drawn artifact (see
+//          scripts/tests/helpers/temp-repo.mjs for the measurement).
+//
 // main() guarded by import.meta.url, same pattern as check_spine_emit.mjs:277.
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -21,12 +27,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { SHEETS } from "../tools/mapforge/render-sheet.mjs";
 import { computeLock, checkLock, unifiedDiff } from "./lib/render-lock.mjs";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const LOCK_PATH = join(ROOT, "content/world/render-lock.json");
+const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const LOCK_REL = "content/world/render-lock.json";
 
-function readLock() {
+function readLock(lockPath) {
   try {
-    return JSON.parse(readFileSync(LOCK_PATH, "utf8"));
+    return JSON.parse(readFileSync(lockPath, "utf8"));
   } catch {
     return null;
   }
@@ -35,20 +41,31 @@ function readLock() {
 function main() {
   const argv = process.argv.slice(2);
   let mode = "check";
-  for (const arg of argv) {
+  let root = DEFAULT_ROOT;
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
     if (arg === "--check") mode = "check";
     else if (arg === "--write") mode = "write";
-    else {
+    else if (arg === "--repo-root") {
+      const dir = argv[++i];
+      if (!dir) {
+        console.error("check-render-lock: --repo-root needs a directory");
+        process.exit(2);
+      }
+      root = resolve(dir);
+    } else {
       console.error(`check-render-lock: unknown arg ${arg}`);
       process.exit(2);
     }
   }
+  const LOCK_PATH = join(root, LOCK_REL);
 
-  // Build once; both modes need the same bytes.
+  // Build once; both modes need the same bytes, and computeLock below is
+  // handed these rather than rebuilding every sheet a second time.
   const built = {};
   const problems = [];
   for (const [id, sheet] of Object.entries(SHEETS)) {
-    const r = sheet.build({ repoRoot: ROOT });
+    const r = sheet.build({ repoRoot: root });
     if (r.problems.length)
       problems.push(...r.problems.map((p) => `${id}: ${p}`));
     else built[sheet.outSvg] = r.svg;
@@ -58,18 +75,18 @@ function main() {
     process.exit(1);
   }
 
-  const computed = computeLock({ repoRoot: ROOT, sheets: SHEETS });
+  const computed = computeLock({ repoRoot: root, sheets: SHEETS, built });
 
   if (mode === "write") {
     mkdirSync(dirname(LOCK_PATH), { recursive: true });
     writeFileSync(LOCK_PATH, JSON.stringify(computed, null, 2) + "\n");
     console.log(
-      `check-render-lock: wrote ${Object.keys(computed.artifacts).length} artifact hashes to content/world/render-lock.json`,
+      `check-render-lock: wrote ${Object.keys(computed.artifacts).length} artifact hashes to ${LOCK_REL}`,
     );
     process.exit(0);
   }
 
-  const committed = readLock();
+  const committed = readLock(LOCK_PATH);
   if (!committed) {
     console.error(
       "G-RENDER-LOCK: content/world/render-lock.json is missing — baseline it with `node scripts/check_render_lock.mjs --write`",
@@ -78,6 +95,30 @@ function main() {
   }
 
   let bad = 0;
+
+  // The lock's HEADER is part of the record, not decoration. GENERATOR_VERSION
+  // exists so a re-baseline caused by a tool change is distinguishable from one
+  // caused by a world change — which it cannot be if the committed field is
+  // allowed to say 3.0.0 while the tool says 3.1.0 and --check stays green.
+  // Checked here rather than inside checkLock() because checkLock's signature
+  // ({committed, computed} -> {drift, missing, extra}) is the artifacts-only
+  // contract Plans C and E consume.
+  if (committed.version !== computed.version) {
+    console.error(
+      `G-RENDER-LOCK: lock version ${JSON.stringify(committed.version)} != ${computed.version} — re-baseline with --write`,
+    );
+    bad++;
+  }
+  if (
+    committed.generator?.name !== computed.generator.name ||
+    committed.generator?.version !== computed.generator.version
+  ) {
+    console.error(
+      `G-RENDER-LOCK: lock generator ${JSON.stringify(committed.generator ?? null)} != ${JSON.stringify(computed.generator)} — re-baseline with --write`,
+    );
+    bad++;
+  }
+
   const { drift, missing, extra } = checkLock({
     committed: committed.artifacts,
     computed: computed.artifacts,
@@ -88,7 +129,7 @@ function main() {
     );
     let onDisk = "";
     try {
-      onDisk = readFileSync(join(ROOT, path), "utf8");
+      onDisk = readFileSync(join(root, path), "utf8");
     } catch {
       /* missing */
     }
@@ -115,7 +156,7 @@ function main() {
   for (const [path, svg] of Object.entries(built)) {
     let onDisk = null;
     try {
-      onDisk = readFileSync(join(ROOT, path), "utf8");
+      onDisk = readFileSync(join(root, path), "utf8");
     } catch {
       /* missing = stale */
     }

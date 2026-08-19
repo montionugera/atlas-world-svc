@@ -9,7 +9,14 @@
 // mitigation ships in the same module — unifiedDiff() — because the two must
 // never be separable.
 //
-// Pure apart from readFileSync on extraPaths. Never throws.
+// checkLock and unifiedDiff are pure and never throw. computeLock is NOT:
+// it reads extraPaths from disk (guarded — a missing path is simply absent
+// from the lock) and it calls sheet.build(), which is arbitrary caller code
+// and can throw. That throw is deliberately not swallowed — a renderer that
+// dies is a loud non-zero exit, whereas catching it here would drop the sheet
+// and hand back a quietly shrunken lock, the one outcome a drift gate must
+// never produce. Callers that must not throw (a check_content.mjs gate) build
+// the sheets themselves and pass `built`.
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
@@ -23,19 +30,34 @@ export const GENERATOR_VERSION = "3.0.0";
 const sha256 = (text) =>
   "sha256:" + createHash("sha256").update(text, "utf8").digest("hex");
 
-export function computeLock({ repoRoot, sheets, extraPaths = [] }) {
+// `built` is an OPTIONAL map of outSvg -> already-rendered svg text. Callers
+// that had to build every sheet anyway — check_render_lock.mjs builds them all
+// up front to collect problems — pass it so the renderer runs once per sheet
+// per invocation instead of twice. Omitting it keeps the original behaviour.
+export function computeLock({
+  repoRoot,
+  sheets,
+  extraPaths = [],
+  built = null,
+}) {
   const artifacts = {};
   // Sorted so the committed file's key order is a function of the data alone.
   for (const id of Object.keys(sheets).sort()) {
     const sheet = sheets[id];
-    const built = sheet.build({ repoRoot });
+    if (built && Object.prototype.hasOwnProperty.call(built, sheet.outSvg)) {
+      artifacts[sheet.outSvg] = sha256(built[sheet.outSvg]);
+      continue;
+    }
+    const r = sheet.build({ repoRoot });
     // A sheet with build problems has no meaningful bytes to lock. Recording
     // a hash of "" here would make the lock GREEN on a broken renderer, which
     // is the one outcome a drift gate must never produce. The CLI refuses to
     // run at all when any sheet reports problems, so this `continue` can
-    // never quietly shrink a committed lock — see check_render_lock.mjs.
-    if (built.problems.length) continue;
-    artifacts[sheet.outSvg] = sha256(built.svg);
+    // never quietly shrink a committed lock — see check_render_lock.mjs, and
+    // the "refuses to run" tests in scripts/tests/render-lock.test.mjs that
+    // hold that guard in place.
+    if (r.problems.length) continue;
+    artifacts[sheet.outSvg] = sha256(r.svg);
   }
   for (const p of [...extraPaths].sort()) {
     let text = null;
@@ -90,9 +112,7 @@ export function unifiedDiff({ a, b, maxLines = 40 }) {
     tail++;
   const aMid = A.slice(head, A.length - tail);
   const bMid = B.slice(head, B.length - tail);
-  const out = [
-    `@@ -${head + 1},${aMid.length} +${head + 1},${bMid.length} @@`,
-  ];
+  const out = [`@@ -${head + 1},${aMid.length} +${head + 1},${bMid.length} @@`];
   let budget = maxLines;
   let truncated = false;
   for (const line of aMid) {

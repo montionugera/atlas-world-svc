@@ -26,13 +26,45 @@ test("every SHEETS outSvg has a lock row", () => {
     );
 });
 
-test("the Maps tab reads the lock URL from state.mjs", () => {
+// This is a SOURCE-level binding, and it says so rather than pretending
+// otherwise: the storybook has no DOM harness and no dependencies, so nothing
+// here mounts maps.mjs and reads a rendered card. The behavioural half is the
+// manual load of the page (Task 10 Step 8).
+//
+// What matters is that the binding covers the FEATURE and not merely the
+// import. The first shape of this test asserted only that the identifier
+// RENDER_LOCK_URL appears in maps.mjs — which it does from the import line
+// alone, so the whole `locked <hash>` card line could be deleted with both
+// storybook suites green. Each assertion below names one thing whose removal
+// makes the hash invisible on the card.
+test("the Maps tab renders each sheet's locked hash on its card", () => {
   const state = readFileSync(join(HERE, "../js/state.mjs"), "utf8");
   assert.match(state, /RENDER_LOCK_URL\s*=\s*.*render-lock\.json/);
+
   const maps = readFileSync(join(HERE, "../js/maps.mjs"), "utf8");
   assert.match(
     maps,
-    /RENDER_LOCK_URL/,
-    "maps.mjs does not read the lock — the artifact is unobservable",
+    /fetch\(RENDER_LOCK_URL\)/,
+    "maps.mjs never fetches the lock — the artifact is unobservable",
+  );
+  assert.match(
+    maps,
+    /lock\[sheet\.svg\]/,
+    "maps.mjs fetches the lock but never looks a sheet up in it",
+  );
+  assert.match(
+    maps,
+    /"locked "/,
+    "no `locked <hash>` text is produced for the card",
+  );
+  assert.match(
+    maps,
+    /NOT LOCKED/,
+    "a sheet with no lock row must say so on the card, not render blank",
+  );
+  assert.match(
+    maps,
+    /meta\.appendChild\(hashP\)/,
+    "the hash line is built but never attached to the card",
   );
 });

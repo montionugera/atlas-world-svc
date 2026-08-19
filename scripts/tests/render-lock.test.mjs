@@ -18,6 +18,7 @@ import {
   GENERATOR_VERSION,
 } from "../lib/render-lock.mjs";
 import { SHEETS } from "../../tools/mapforge/render-sheet.mjs";
+import { makeTempRepo } from "./helpers/temp-repo.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const LOCK_PATH = join(ROOT, "content/world/render-lock.json");
@@ -57,6 +58,39 @@ test("computeLock hashes extraPaths from DISK (the growth point for Plan C's fab
   }
 });
 
+test("computeLock uses caller-supplied built bytes instead of rendering twice", () => {
+  // check_render_lock.mjs builds every sheet up front to collect problems.
+  // Before `built` existed it then handed computeLock the sheets registry and
+  // the renderer ran a second time on every sheet — measured at ~20 ms per
+  // sheet here, ~40 ms of the CLI's 204 ms, and it scales with Plan B's
+  // 18-sheet roster.
+  let calls = 0;
+  const fake = {
+    probe: {
+      outSvg: "probe/out.svg",
+      build: () => {
+        calls++;
+        return { svg: "rebuilt", notes: [], problems: [] };
+      },
+    },
+  };
+  const withBytes = computeLock({
+    repoRoot: ROOT,
+    sheets: fake,
+    built: { "probe/out.svg": "handed-in\n" },
+  });
+  assert.equal(
+    calls,
+    0,
+    "computeLock rebuilt a sheet whose bytes it was given",
+  );
+  assert.equal(withBytes.artifacts["probe/out.svg"], sha("handed-in\n"));
+
+  const withoutBytes = computeLock({ repoRoot: ROOT, sheets: fake });
+  assert.equal(calls, 1, "omitting `built` must still build");
+  assert.equal(withoutBytes.artifacts["probe/out.svg"], sha("rebuilt"));
+});
+
 test("the committed lock matches what the sheets build right now", () => {
   const committed = JSON.parse(readFileSync(LOCK_PATH, "utf8"));
   const computed = computeLock({ repoRoot: ROOT, sheets: SHEETS });
@@ -94,7 +128,10 @@ test("unifiedDiff truncates and says so", () => {
   const a = Array.from({ length: 500 }, (_, i) => `a${i}`).join("\n");
   const b = Array.from({ length: 500 }, (_, i) => `b${i}`).join("\n");
   const d = unifiedDiff({ a, b, maxLines: 10 });
-  assert.ok(d.split("\n").length <= 12, `diff is ${d.split("\n").length} lines`);
+  assert.ok(
+    d.split("\n").length <= 12,
+    `diff is ${d.split("\n").length} lines`,
+  );
   assert.match(d, /truncated/);
 });
 
@@ -114,45 +151,65 @@ test("unifiedDiff survives an empty side, a strict prefix and a missing trailing
   );
 });
 
-test("the CLI --check exits 0 today and 1 on a tampered lock", () => {
-  execFileSync(process.execPath, [CLI, "--check"], { encoding: "utf8" }); // throws on non-zero
-  const original = readFileSync(LOCK_PATH, "utf8");
+// ---------------------------------------------------------------------------
+// CLI tests.
+//
+// Everything that has to prove the gate FIRES runs against a sandbox repo root
+// (--repo-root). The earlier shape of these tests truncated the real, TRACKED
+// game-client/assets/art/maps/cluster1-world.svg and restored it in a
+// `finally`. That is safe with one mutator and unsafe with two, and Task 10
+// created the second: scripts/tests/check_map_render.test.mjs mutates the same
+// file, `node --test` runs test FILES in parallel, and a lost update there
+// writes truncated bytes over a drawn artifact permanently. Measured before
+// this change: 1 of 4 runs of this file failed with check_map_render looping
+// alongside it. See scripts/tests/helpers/temp-repo.mjs.
+//
+// Only the read-only smoke test below still touches the real root.
+// ---------------------------------------------------------------------------
+
+const runCli = (args) => {
   try {
-    const doc = JSON.parse(original);
-    const firstKey = Object.keys(doc.artifacts)[0];
-    doc.artifacts[firstKey] = "sha256:" + "0".repeat(64);
-    writeFileSync(LOCK_PATH, JSON.stringify(doc, null, 2) + "\n");
-    let failed = false,
-      out = "";
-    try {
-      execFileSync(process.execPath, [CLI, "--check"], { encoding: "utf8" });
-    } catch (e) {
-      failed = true;
-      out = `${e.stdout ?? ""}${e.stderr ?? ""}`;
-    }
+    return {
+      failed: false,
+      out: execFileSync(process.execPath, [CLI, ...args], {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+      }),
+    };
+  } catch (e) {
+    return { failed: true, out: `${e.stdout ?? ""}${e.stderr ?? ""}` };
+  }
+};
+
+test("the CLI --check exits 0 on the committed tree", () => {
+  execFileSync(process.execPath, [CLI, "--check"], { encoding: "utf8" }); // throws on non-zero
+});
+
+test("the CLI --check exits 1 on a tampered lock", () => {
+  const repo = makeTempRepo({ sheets: SHEETS });
+  try {
+    const lockPath = join(repo.root, "content/world/render-lock.json");
+    const doc = JSON.parse(readFileSync(lockPath, "utf8"));
+    doc.artifacts[Object.keys(doc.artifacts)[0]] = "sha256:" + "0".repeat(64);
+    writeFileSync(lockPath, JSON.stringify(doc, null, 2) + "\n");
+    const { failed, out } = runCli(["--check", "--repo-root", repo.root]);
     assert.ok(failed, "--check exited 0 on a tampered lock");
     assert.match(
       out,
       /G-RENDER-LOCK: .+ sha256 sha256:[0-9a-f]{64} != locked sha256:0{64}/,
     );
   } finally {
-    writeFileSync(LOCK_PATH, original);
+    repo.cleanup();
   }
 });
 
 test("the CLI --check catches a STALE committed svg, not just a stale lock", () => {
-  const svgPath = join(ROOT, SHEETS.cluster1.outSvg);
-  const original = readFileSync(svgPath, "utf8");
+  const repo = makeTempRepo({ sheets: SHEETS });
   try {
+    const svgPath = join(repo.root, SHEETS.cluster1.outSvg);
+    const original = readFileSync(svgPath, "utf8");
     writeFileSync(svgPath, original.slice(0, Math.floor(original.length / 2)));
-    let failed = false,
-      out = "";
-    try {
-      execFileSync(process.execPath, [CLI, "--check"], { encoding: "utf8" });
-    } catch (e) {
-      failed = true;
-      out = `${e.stdout ?? ""}${e.stderr ?? ""}`;
-    }
+    const { failed, out } = runCli(["--check", "--repo-root", repo.root]);
     assert.ok(failed, "--check exited 0 on a truncated committed svg");
     assert.match(
       out,
@@ -160,8 +217,84 @@ test("the CLI --check catches a STALE committed svg, not just a stale lock", () 
       "no unified diff was printed — the checksum's whole mitigation",
     );
   } finally {
-    // Self-healing: restore from the file we read, never `git checkout --`,
-    // which is exactly the parity.test.mjs footgun this plan removes.
-    writeFileSync(svgPath, original);
+    repo.cleanup();
+  }
+});
+
+test("the CLI --check reports a lock whose generator/version no longer matches the tool", () => {
+  // GENERATOR_VERSION only distinguishes a tool-caused re-baseline from a
+  // world-caused one if a stale header is actually caught. Without this the
+  // constant is decoration: the lock can claim 0.0.0 forever and stay green.
+  const repo = makeTempRepo({ sheets: SHEETS });
+  try {
+    const lockPath = join(repo.root, "content/world/render-lock.json");
+    const doc = JSON.parse(readFileSync(lockPath, "utf8"));
+    doc.generator.version = "0.0.0";
+    doc.version = 99;
+    writeFileSync(lockPath, JSON.stringify(doc, null, 2) + "\n");
+    const { failed, out } = runCli(["--check", "--repo-root", repo.root]);
+    assert.ok(failed, "--check exited 0 on a lock with a stale header");
+    assert.match(out, /G-RENDER-LOCK: lock version 99 != 2/);
+    assert.match(out, /G-RENDER-LOCK: lock generator .*0\.0\.0/);
+  } finally {
+    repo.cleanup();
+  }
+});
+
+// --- the build-problems refusal guard -------------------------------------
+//
+// computeLock `continue`s past a sheet whose build reports problems. The only
+// thing standing between that and a silently shrunken lock is the CLI's
+// refusal to run at all when any sheet has problems. Deleting that guard used
+// to leave all ten tests green; these two hold it in place. Both are the
+// Task 10 Step 11 review brief items (a) and (b), pinned as tests rather than
+// asserted in a commit body.
+//
+// A sheet is broken WITHOUT touching code by removing the `subjects`
+// descriptor Task 7 added to content/spine/sheet.json: resolveWorld then
+// reports "no `subjects` descriptor" and buildCluster1Sheet returns problems.
+// The atlas sheet reads sheet-atlas.json and still builds — so exactly one of
+// two sheets is broken, which is precisely the shrunken-lock scenario.
+function brokenSheetRepo() {
+  const repo = makeTempRepo({ sheets: SHEETS });
+  const sheetJson = join(repo.root, "content/spine/sheet.json");
+  const doc = JSON.parse(readFileSync(sheetJson, "utf8"));
+  delete doc.subjects;
+  writeFileSync(sheetJson, JSON.stringify(doc, null, 2) + "\n");
+  return repo;
+}
+
+test("--check REFUSES to run when a sheet reports build problems", () => {
+  const repo = brokenSheetRepo();
+  try {
+    const { failed, out } = runCli(["--check", "--repo-root", repo.root]);
+    assert.ok(failed, "--check exited 0 with a broken renderer");
+    assert.match(out, /check-render-lock: PROBLEM: cluster1: /);
+    assert.doesNotMatch(
+      out,
+      /check clean/,
+      "a broken renderer must never produce a clean check",
+    );
+  } finally {
+    repo.cleanup();
+  }
+});
+
+test("--write REFUSES to run when a sheet reports build problems", () => {
+  const repo = brokenSheetRepo();
+  try {
+    const lockPath = join(repo.root, "content/world/render-lock.json");
+    const before = readFileSync(lockPath, "utf8");
+    const { failed, out } = runCli(["--write", "--repo-root", repo.root]);
+    assert.ok(failed, "--write exited 0 with a broken renderer");
+    assert.match(out, /check-render-lock: PROBLEM: cluster1: /);
+    assert.equal(
+      readFileSync(lockPath, "utf8"),
+      before,
+      "--write shrank the lock instead of refusing — the next --check would " +
+        "report `missing` instead of the real problem",
+    );
+  } finally {
+    repo.cleanup();
   }
 });
