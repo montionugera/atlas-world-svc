@@ -1184,7 +1184,16 @@ t11("sheet subjects: a descriptor naming a missing node REPORTS, never a raw Typ
   const r = runEmit(dir, ["--check"]);
   assert11.equal(r.code, 1, r.out);
   assert11.doesNotMatch(r.out, /TypeError/);
-  assert11.match(r.out, /does not resolve/);
+  // The exit code alone proves NOTHING here and the assertions below are what
+  // carry the test: realSpineCopy() copies content/spine and content/schemas
+  // but never content/maps, so `--check` exits 1 on a missing-mirror DRIFT
+  // whatever the descriptor says. Measured by pointing the fixture at a node
+  // that DOES resolve: exit stayed 1, output was two DRIFT lines. So pin the
+  // exact message, and pin that the run stopped at the ERROR path — a
+  // descriptor failure is returned from collectOutputs before any output is
+  // compared, so a genuine report prints no DRIFT line at all.
+  assert11.match(r.out, /sheet: subject "mireIds\[0\]" -> "n-not-a-node" does not resolve/);
+  assert11.doesNotMatch(r.out, /DRIFT/);
 });
 
 t11("sheet subjects: a spine whose sheet.json has NO subjects block REPORTS", () => {

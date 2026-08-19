@@ -167,6 +167,107 @@ test("loadPlaces falls back to the mirror when the spine is present but BROKEN",
   }
 });
 
+// ── the three branches of the descriptor discriminator, pinned separately ──
+// Task 7 moved loadPlaces's spine/mirror discriminator from a hard-coded
+// zoneRoot onto `spine.sheet.subjects`. That turned ONE condition into three
+// cases with three different correct answers, and none of them had a test.
+
+test("loadPlaces falls back for a root whose spine carries NO `subjects` descriptor", () => {
+  // Plan Task 7 Step 9 item (d), pinned. This is DELIBERATE, not an oversight:
+  // four committed fixture roots ship a spine/sheet.json that is
+  // title/hand/withheld only, and ~45 minimal roots have no sheet at all.
+  // With no descriptor there is no zoneRoot to look for, so the root is
+  // indistinguishable from a root with no spine and must take the mirror.
+  const dir = mkdtempSync(join(tmpdir(), "places-no-subjects-"));
+  try {
+    cpSync(join(CONTENT, "spine"), join(dir, "spine"), { recursive: true });
+    const p = join(dir, "spine/sheet.json");
+    const sheet = JSON.parse(readFileSync(p, "utf8"));
+    delete sheet.subjects;
+    writeFileSync(p, JSON.stringify(sheet, null, 2) + "\n");
+    mkdirSync(join(dir, "maps"), { recursive: true });
+    writeFileSync(join(dir, "maps/cluster1-geography.json"), JSON.stringify({ zones: [{ id: "only-one" }], towns: [] }));
+    const { doc, problems } = loadPlaces({ contentRoot: dir });
+    assert.deepEqual(problems, []);
+    assert.deepEqual(doc.zones, [{ id: "only-one" }]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("loadPlaces REPORTS — never silently prefers a stale mirror — when the descriptor's zoneRoot does not resolve", () => {
+  // The other side of the same discriminator, and the reason the two cases
+  // must be told apart. A REAL content root whose descriptor has a typo'd
+  // zoneRoot is corruption. Before this split it fell through to the mirror
+  // and the full gate printed unchanged counts at exit 0 — a world silently
+  // served from a stale file with every gate green.
+  const dir = mkdtempSync(join(tmpdir(), "places-bad-zoneroot-"));
+  try {
+    cpSync(join(CONTENT, "spine"), join(dir, "spine"), { recursive: true });
+    const p = join(dir, "spine/sheet.json");
+    const sheet = JSON.parse(readFileSync(p, "utf8"));
+    sheet.subjects.zoneRoot = "n-does-not-exist";
+    writeFileSync(p, JSON.stringify(sheet, null, 2) + "\n");
+    mkdirSync(join(dir, "maps"), { recursive: true });
+    writeFileSync(join(dir, "maps/cluster1-geography.json"), JSON.stringify({ zones: [{ id: "stale" }], towns: [] }));
+    const { doc, problems } = loadPlaces({ contentRoot: dir });
+    assert.equal(doc, null);
+    assert.equal(problems.length, 1, JSON.stringify(problems));
+    assert.match(problems[0], /zoneRoot "n-does-not-exist" does not resolve/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("the emitted document's subject ids FOLLOW the descriptor — they are not literals", () => {
+  // Acceptance criterion 12, the half the source-grep above cannot see. The
+  // grep matches QUOTED `n-`/`f-` ids; five ids lived in this file in their
+  // STRIPPED form ("west-coast", "the-meltwash", "the-saltmire",
+  // "northern-ice-edge", "eastern-hills") and were invisible to it, so the
+  // descriptor could be re-pointed at another node and the document would
+  // still carry the old subject's id. Behavioural pin: swap the mire subject
+  // and the emitted id must move with it.
+  const { spine, tree } = realTree();
+  const S = spine.sheet.subjects;
+  // Every one of the five is re-pointed, so every one of the five assertions
+  // below fails if its literal comes back. Swapping (rather than inventing an
+  // id) keeps the same node/feature set, so the zone list stays 10 and nothing
+  // else in the document moves.
+  const swapped = {
+    ...S,
+    mireIds: [...S.terrainPatchIds],
+    terrainPatchIds: [...S.mireIds],
+    // a 3-CYCLE, not a pairwise swap: with only two of the three moved, the
+    // third id would still equal its literal and that literal would survive
+    // the mutation test. Verified by mutation — all five go red.
+    featureIds: { coast: S.featureIds.river, river: S.featureIds.iceEdge, iceEdge: S.featureIds.coast },
+  };
+  const { doc, problems } = resolveWorld({ spine, tree, descriptor: swapped });
+  assert.deepEqual(problems, []);
+  const stripId = (id) => tree.byId.get(id).lore?.geoId ?? id.slice(2);
+  assert.equal(doc.saltmire.id, stripId(swapped.mireIds[0]));
+  assert.equal(doc.terrainPatches[0].id, stripId(swapped.terrainPatchIds[0]));
+  assert.equal(doc.coastline.id, swapped.featureIds.coast.slice(2));
+  assert.equal(doc.river.id, swapped.featureIds.river.slice(2));
+  assert.equal(doc.iceEdge.id, swapped.featureIds.iceEdge.slice(2));
+  // and none of them kept the id the un-swapped descriptor would have given
+  assert.notEqual(doc.saltmire.id, stripId(S.mireIds[0]));
+  assert.notEqual(doc.terrainPatches[0].id, stripId(S.terrainPatchIds[0]));
+  assert.notEqual(doc.coastline.id, S.featureIds.coast.slice(2));
+  assert.notEqual(doc.river.id, S.featureIds.river.slice(2));
+  assert.notEqual(doc.iceEdge.id, S.featureIds.iceEdge.slice(2));
+  assert.equal(doc.zones.length, 10);
+});
+
+test("resolveWorld REPORTS an array descriptor by shape, not by array index", () => {
+  // `typeof [] === "object"`, so an array used to slip past the shape guard
+  // and be diagnosed one key at a time as though it were a descriptor object.
+  const { spine, tree } = realTree();
+  const { doc, problems } = resolveWorld({ spine, tree, descriptor: [] });
+  assert.equal(doc, null);
+  assert.deepEqual(problems, ["resolveWorld: descriptor is not an object"]);
+});
+
 // ── the contract in the direction that matters: doc null => problems non-empty ──
 // The suite above pins the converse (never a doc WITH problems). This half is
 // the one Task 6 leans on: all three gate joins `return 0` on a null doc, so a

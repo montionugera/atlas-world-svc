@@ -122,7 +122,11 @@ function resolveWorldFromSpine({ spine, tree, descriptor = null, fabric = null, 
   //     null/absent read, so an edges.json that parses to a non-array reaches
   //     the three `.filter()` calls below with no error recorded upstream.
   //   - `tree`: duck-typed on .get so a cross-realm Map still passes.
-  if (!S || typeof S !== "object") {
+  // `!S` was re-tested here and is dead: the guard above already returned on a
+  // falsy S. What is NOT dead is the array case — `typeof [] === "object"`, so
+  // an array descriptor used to reach the per-key checks and be diagnosed by
+  // array index instead of by shape.
+  if (typeof S !== "object" || Array.isArray(S)) {
     problems.push("resolveWorld: descriptor is not an object");
   } else {
     if (typeof S.zoneRoot !== "string")
@@ -198,13 +202,25 @@ function resolveWorldFromSpine({ spine, tree, descriptor = null, fabric = null, 
 
   const doc = {
     ...GEO_HEADER,
-    coastline: { id: "west-coast", note: coast.attrs.note, points: coast.points },
-    river: { id: "the-meltwash", name: river.attrs.name, note: river.attrs.note,
+    // Review finding (Task 7): the five document ids used to be typed here as
+    // literals — "west-coast", "the-meltwash", "the-saltmire",
+    // "northern-ice-edge", "eastern-hills". They are the STRIPPED form of the
+    // very subjects the descriptor names, so a literal here meant the
+    // descriptor could be re-pointed at a different node and the emitted
+    // document would keep the OLD subject's id: criterion 12 held for quoted
+    // `n-`/`f-` ids only, and these five slipped under that regex. Derived via
+    // strip() they follow the descriptor. Byte-identical today, and proven so
+    // rather than argued: strip() returns exactly the five former literals
+    // (n-saltmire carries lore.geoId "the-saltmire"; the other four are the
+    // id minus its two-character prefix), and check_spine_emit --check is
+    // clean over the regenerated mirror.
+    coastline: { id: strip(coast), note: coast.attrs.note, points: coast.points },
+    river: { id: strip(river), name: river.attrs.name, note: river.attrs.note,
       reaches: river.attrs.reaches, points: river.points, labelAt: river.attrs.labelAt,
       tidalLimit: river.attrs.tidalLimit, ford: river.attrs.ford },
-    saltmire: { id: "the-saltmire", name: salt.title, note: salt.lore.note, polygon: salt.placement.points },
-    iceEdge: { id: "northern-ice-edge", note: ice.attrs.note, hardEdgeAtY: ice.attrs.hardEdgeAtY, shelfLip: ice.points },
-    terrainPatches: [{ id: "eastern-hills", label: hills.title, terrainKind: hills.terrainKind,
+    saltmire: { id: strip(salt), name: salt.title, note: salt.lore.note, polygon: salt.placement.points },
+    iceEdge: { id: strip(ice), note: ice.attrs.note, hardEdgeAtY: ice.attrs.hardEdgeAtY, shelfLip: ice.points },
+    terrainPatches: [{ id: strip(hills), label: hills.title, terrainKind: hills.terrainKind,
       labelAt: hills.lore.labelAt, note: hills.lore.note, polygon: hills.placement.points }],
     // `regions` is already the descriptor-scoped list: the mire and the
     // terrain patch were excluded before the lore.order rule ran, so there is
@@ -282,12 +298,28 @@ export function loadPlaces({ contentRoot }) {
     if (spine.present && spine.errors.length === 0) {
       const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
       // Task 7: the zoneRoot is the descriptor's, not a constant's. A content
-      // root whose spine carries no sheet.json (or no `subjects` in it) has no
-      // zoneRoot to test, so it falls THROUGH to the mirror exactly as a root
-      // with no spine does — which is what the ~45 minimal fixture roots need.
-      const zoneRoot = spine.sheet?.subjects?.zoneRoot;
-      if (tree.errors.length === 0 && zoneRoot && tree.byId.has(zoneRoot))
+      // root whose spine carries no `subjects` descriptor has no zoneRoot to
+      // test, so it falls THROUGH to the mirror exactly as a root with no
+      // spine does — which is what the ~45 minimal fixture roots need (four of
+      // them ship a spine/sheet.json that is title/hand/withheld only, with no
+      // `subjects` block at all).
+      //
+      // Review finding (Task 7): "no descriptor" and "a descriptor that does
+      // not resolve" are NOT the same case and used to share one silent exit.
+      // A real content root whose descriptor names a zoneRoot the tree does not
+      // have is CORRUPTION, and falling through to a stale mirror let the full
+      // gate print unchanged counts and exit 0 — the going-dark failure this
+      // module exists to prevent. Absent descriptor: fall through. Present but
+      // unresolvable: report.
+      const subjects = spine.sheet?.subjects ?? null;
+      const zoneRoot = subjects?.zoneRoot;
+      if (tree.errors.length === 0 && subjects) {
+        if (typeof zoneRoot !== "string" || !tree.byId.has(zoneRoot)) {
+          problems.push(`geography: content/spine/sheet.json has a \`subjects\` descriptor whose zoneRoot ${JSON.stringify(zoneRoot ?? null)} does not resolve in the spine — refusing to fall back to maps/cluster1-geography.json, which would report a stale world with every gate green`);
+          return { doc: null, problems };
+        }
         return resolveWorld({ spine, tree });
+      }
     }
   }
   const mirror = join(contentRoot, "maps/cluster1-geography.json");
