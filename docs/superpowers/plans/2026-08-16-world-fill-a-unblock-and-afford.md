@@ -1086,6 +1086,48 @@ Fix findings as new commits. Re-run Step 9 and Step 11. `git diff --stat content
 ---
 ### Task 3: The bbox spatial index — stop testing pairs that cannot touch
 
+> **RECORDED DEVIATION (2026-08-18): implemented, measured, and deliberately UNWIRED.**
+> The index was built, wired into `gSpineOverlapRollup`, and then removed again;
+> `scripts/lib/geometry.mjs` keeps `buildBBoxIndex` exported and tested for Plans C
+> and D. It is written here because the reversal previously lived only in code
+> comments and in a commit with an empty body, while this plan still read as if
+> the task had shipped as specified.
+>
+> **What was measured.** On the real spine (133 sibling pairs, 105 index-skipped;
+> median of 7 alternating trials x 300 runs): plain `0.3848 ms/run` vs indexed
+> `0.4768 ms/run` — **1.239x slower**, sums bit-identical
+> (`0.11905015776303106`). The index's skip set is exactly stage 1's bbox-reject
+> set, so it saves no `ringsDisjoint` or triangulation call that the kernel does
+> not already skip for free.
+>
+> **The reason recorded in the first pass was wrong**, and wrong in the direction
+> that would mislead the plans inheriting this library. It said "`maxChildrenPerParent`
+> is 24, so this loop can never exceed 276 pairs and the index can never pay."
+> Re-measured, the governing variable is **disjointness, not n**:
+>
+> | Parent shape | plain | indexed | verdict |
+> | --- | --- | --- | --- |
+> | 24 children, 160-pt rings, **disjoint** | 1.147 ms | 0.106 ms | **10.77x faster indexed** |
+> | 24 children, 40-pt rings, **disjoint** | 0.285 ms | 0.055 ms | **5.17x faster indexed** |
+> | 16 children, 8-pt rings, **disjoint** | 0.026 ms | 0.021 ms | 1.22x faster indexed |
+> | 12 children, 8-pt rings, **disjoint** | 0.015 ms | 0.020 ms | index loses (0.74x) |
+> | 24 children, 160-pt rings, **nested** | 994.9 ms | 980.4 ms | a wash (1.01x) |
+> | 24 children, 40-pt rings, **nested** | 70.05 ms | 71.28 ms | index loses (0.98x) |
+>
+> The index pays iff most children are **disjoint** — which is the goal state the
+> world-fill programme is building toward. Today's spine is the exception: its
+> largest group (`n-cluster1`, 12 children, ~8-point rings) sits at the measured
+> crossover, and `n-atlas` is half-nested.
+>
+> **Why it stays unwired anyway.** Even in the row where it wins 10.77x, the
+> absolute saving is `1.04 ms` against a `761 ms` gate lane — 0.14% — bought with
+> a permanent false-negative surface: any future drift between the index's
+> confirmation predicate and `exactIntersectionArea`'s stage-1 reject silently
+> blinds `G-OVERLAP`. Re-wiring behind a threshold on `n` was explicitly rejected;
+> `n` is not the predictor. `scripts/tests/geometry-exact.test.mjs` pins the
+> absence (`assert.doesNotMatch(body, /buildBBoxIndex\(/)`), so re-wiring goes red
+> rather than happening by accident.
+
 At the target the 16 direct children of `n-atlas` are 3 oceans + 13 landmasses with **every land bbox nested inside an ocean bbox**, so the bbox reject inside `exactIntersectionArea` stops eliminating anything and the disjointness pre-filter runs on all 120 pairs. The index makes the pair loop skip candidates whose bounding boxes cannot meet, **without changing the order in which failure messages are emitted** — message order is part of what the two pinned literal fixtures assert against, and it must stay a function of the data alone.
 
 **Files:**
@@ -1228,6 +1270,8 @@ Fix findings as new commits. Re-run Step 6.
 ```js
 const VERTEX_CAP = { continent: 800, ocean: 800, sea: 800, region: 200, town: 200, site: 200, playspace: 800, fixture: 200, world: 800, playroot: 800 };
 ```
+
+**AMENDED 2026-08-19 (Task 4 review) — the tier table is INERT under today's budget, and needed its own coverage.** The effective cap is `min(maxRingPoints, VERTEX_CAP[tier])`. Every row above is 200 or 800 while the committed `maxRingPoints` is **160**, so `min()` returns 160 for all ten tiers and the table lowers nothing today; the red fixture below lowers the global term to 3, so it returns 3 for every tier there too. Measured: replacing the whole expression with `const cap = maxRingPoints` left `spine-gates.test.mjs` at **74 pass / 0 fail** — the table was a rule the suite could not distinguish from deleted, the repo's documented *"green suite is not a covering suite"* failure mode. **The table is kept, not deleted** — it is the forward contract for the redraw, when `maxRingPoints` rises above 200 and the per-tier row becomes the binding term — and Step 1 below gains a two-test pair that proves it binds: one 208-vertex ring under a global cap of 300, **red** on `n-r` (tier `region`, cap 200) and **green** on `n-c` (tier `continent`, cap 800). Same ring, same budget, opposite verdicts, so only the table can explain the difference. The ring is produced by densifying an existing ring with collinear points on its own edges — area, containment, anchor and overlap are unchanged, and no 208-point literal enters the repo. Both mutations are proven red: dropping the `min()` fails the region test, flattening every row to 200 fails the continent test.
 
 **The third tier has two named owners — it is not left to whoever gets there first.** The 40-vertex landform-instance cap is enforced in two places, both outside Plan A and both required: (1) **Plan B Task 2** puts `"maxItems": 40` on `geometry.points` and `geometry.ring` in `content/schemas/landform-instance.schema.json`, with a rejecting case in `scripts/tests/landform-instance-schema.test.mjs`; (2) **Plan C Task 11** adds the world-gate message `G-VERTEX-BUDGET: <id> ring has <n> vertices > 40 for tier landform-instance`, so an over-long generated ring names its remedy instead of surfacing as a raw ajv error. Plan A's `VERTEX_CAP` table deliberately has no `landform-instance` row; if a future reader adds one, the spine gate would silently claim coverage it does not have.
 
@@ -3383,6 +3427,12 @@ Fresh reviewer on `git diff HEAD~1`. Brief:
 
 > A test that mutated the working tree was rewritten and a fixture was replaced. Check: (a) that `scripts/tests/check_map_render.test.mjs` still uses `git checkout --` — it does, and it is deleted in Task 12; confirm that it is the ONLY remaining instance repo-wide (`grep -rn 'checkout' --include='*.test.mjs' .`) and say so; (b) that the rewritten `parity.test.mjs` still asserts something the other two baseline tests do not (it reads the MIRROR FILE; `render-sheet.test.mjs` reads the SPINE — that difference is the whole point of a parity test and must survive until Task 12 removes both); (c) that `raster-probe.svg` actually rasterises non-trivially — check the produced PNG is more than a few hundred bytes, not a blank canvas; (d) whether the new "no test writes into game-client/" guard has false positives on a test that merely mentions the path in a string.
 
+**AMENDMENT (Task 11 Step 10, after review). Two premises in the brief above were false when it was written. Do not carry either into Task 12.**
+
+- **(a) is stale.** Task 10's commit `616d74f` already replaced `check_map_render.test.mjs`'s `git checkout --` with `makeTempRepo({sheets: SHEETS})`. Measured at Task 11 Step 10: `grep -rnE '(execFileSync|spawnSync|execSync)\s*\(\s*["'"'"']git["'"'"']' --include='*.test.mjs' .` returns **nothing** — repo-wide there are now zero live git subprocesses in any test file. The six surviving `checkout` hits are all inside comments, which is exactly why the guard strips comments before scanning.
+- **(b) is false — a THIRD enumeration defect of the family already recorded for criterion 4 and for `cluster1-geography.json`.** `parity.test.mjs` reads the MIRROR, but so does `basin-sheet.test.mjs:9-12` — it is `render-sheet.test.mjs` alone that reads the SPINE. The rewritten `parity.test.mjs` is therefore a functional duplicate of `basin-sheet.test.mjs`'s first test (same doc source, same `drawBasinSheet({doc})` call, same two assertions) and contributes **zero incremental coverage**. This is a defect in the plan, not in the implementation: Step 3's own prescribed snippet is that duplicate. It is left in place because Task 12 deletes `parity.test.mjs` outright and deleting it early would move a deletion out of the task that owns the proof-then-delete ordering. **Task 12 must not treat it as coverage to be preserved.**
+- **(d) had a real false positive, since removed.** The source-scan write rule flagged any file that both mentioned the tracked path in live code and called a write function anywhere — `render-sheet.test.mjs:38-39` already matched the path inside a regex literal and was one added `spawnSync` from a spurious red. More seriously the scan was *incomplete*: three evasions were built and observed to pass it while it stayed green (a test spawning a render CLI never names the path; `git restore --` is not the word `checkout`; `cpSync` and `join("game-client","assets",…)` are neither literal). The write half is now behavioural — run the suite, diff the directory by size+mtime+sha256 — and only the git-subprocess rule remains a source scan, because a `checkout`/`restore` of an *unmodified* file rewrites nothing and is invisible to a behavioural check on a clean tree.
+
 - [ ] **Step 10: QUALITY GATE — refactor and re-verify**
 
 Fix findings as new commits. Re-run Step 8.
@@ -3465,6 +3515,8 @@ git status --short
 ```
 
 Expected: **all green, and `git status --short` shows nothing modified** — no re-baseline anywhere. That is the migration invariant (spec §9.1): *for every commit before the redraw, all six byte comparisons stay green without being re-baselined.* Paste every line into the phase report.
+
+**One extra assertion this deletion owes, added by Task 9's review.** Task 9 gave the alias sweep a second resolution path through `placesDoc()`, and `loadPlaces` falls THROUGH to `content/maps/cluster1-geography.json` for any root whose spine carries no `subjects` descriptor. That means that between Task 9 and this deletion, a slug present in NEITHER the spine nor the spine-derived world can still be answered by the stale committed mirror, with no diagnostic (reproduced: strip the `subjects` key from a copied root, rename `n-thornveil` -> `n-thornveil-zone`, and the sweep prints `→ thornveil (resolved-zone)` off the mirror; `rm` the mirror and the same root goes red). Deleting the mirror closes that path. **After the deletion, re-run one unresolvable-slug fixture and confirm the alias sweep is RED, not green** — a green run there would mean the mirror was never what answered and some other stale source is.
 
 Commit the proof:
 ```bash
@@ -3957,7 +4009,7 @@ Delete it (`git tag -d plan-a-base`) only after the acceptance table below is si
 | 1 | **The committed SVGs are byte-identical to what was committed before Plan A started.** | `git diff --stat plan-a-base -- game-client/assets/art/maps/` prints nothing |
 | 2 | **No node file moved.** | `git diff --stat plan-a-base -- content/spine/nodes/` prints nothing |
 | 3 | **The runtime emitter is untouched.** | `git diff --stat plan-a-base -- colyseus-server/` prints nothing; `(cd colyseus-server && npm test -- mapDimensions)` passes |
-| 4 | `git diff --stat` over `content/` shows exactly **four** entries and no others: two MODIFIED (`content/spine/sheet.json`, `content/spine/sheet-atlas.json` — one added `subjects` block each, Tasks 7 and 8), one CREATED (`content/world/render-lock.json`, Task 10), one DELETED (`content/maps/cluster1-geography.json`, Task 12). `content/spine/nodes/**` and `content/maps/atlas-frontier.md` must NOT appear. The mirror is regenerated once, in Task 7 Step 5, and that regeneration must be inside the same commit as the `sheet.json` edit — a mirror diff surviving into any later commit is a `G-EMIT-DRIFT` failure, not an accepted cost. | `git diff --stat plan-a-base -- content/` |
+| 4 | **AMENDED 2026-08-19 (Task 4 review) — four became five.** `git diff --stat` over `content/` shows exactly **five** entries and no others: three MODIFIED (`content/spine/load-budget.json` — the three-term budget, **Task 4**; `content/spine/sheet.json`, `content/spine/sheet-atlas.json` — one added `subjects` block each, Tasks 7 and 8), one CREATED (`content/world/render-lock.json`, Task 10), one DELETED (`content/maps/cluster1-geography.json`, Task 12). `content/spine/nodes/**` and `content/maps/atlas-frontier.md` must NOT appear. The mirror is regenerated once, in Task 7 Step 5, and that regeneration must be inside the same commit as the `sheet.json` edit — a mirror diff surviving into any later commit is a `G-EMIT-DRIFT` failure, not an accepted cost. **Why the amendment:** the criterion as first written enumerated four entries and omitted `load-budget.json`, but the Global Constraints (line 33), the File Structure table (line 169) and Task 4 Step 3 all mandate that edit — so the criterion was incomplete, and the commit that made it (`b449a91`) was plan-faithful. `load-budget.json` is a **budget**, not drawn content: it holds no coordinate and no node, and criterion 2 (`content/spine/nodes/` prints nothing) remains the real "zero content change" test. Any per-commit restatement of this invariant that reads "`content/` must print nothing" is over-broad from Task 4 onward and should be read as "`content/spine/nodes/` must print nothing, and `content/` must show only the entries enumerated here". | `git diff --stat plan-a-base -- content/` |
 | 5 | `G-OVERLAP` verdicts are identical on all 133 sibling pairs, max deviation < 0.01 km². | `node scripts/tools/overlap-preflight.mjs` |
 | 6 | Gate 1's spine lane is **under 1 s** (baseline 3.75 s). | `time node scripts/check_content.mjs --only=spine` |
 | 7 | The gate's own test suite is **under 60 s** (baseline 93.3 s for `spine-gates.test.mjs`). | `time npm test --prefix scripts` |
@@ -3979,7 +4031,7 @@ The same two sheets, byte-identical, with the legacy mirror and both hard-coded 
 | Signature | Consumed by |
 | --- | --- |
 | `exactIntersectionArea({ a, b }): number` | C (fabric polygon checks), E (the redraw's overlap verification) |
-| `ringVertexCount({ placement }): number`, `bboxOfPlacement({ placement }): BBox`, `buildBBoxIndex({ items })` | C, E |
+| `ringVertexCount({ placement }): number`, `bboxOfPlacement({ placement }): BBox`, `buildBBoxIndex({ items })` | C, E — **three interface notes on `buildBBoxIndex`, all latent because Plan A leaves it on no production path.** (1) **The extent is derived from the ITEMS, so one outlier collapses the grid.** Measured at n=1,740 (Plan C's landform-instance count) scattered over the 400x400 km frame, warmed, median of 7 build+query-all: no outlier **3.0 ms**; one item at `+1e6` **69.0 ms**; one item at `-1e5` **71.1 ms** — a 23x scan degradation. Candidates/query stays 1.3 in every row, so correctness is untouched and only the scan degrades. A legitimately huge sea strip does **not** hurt, because it lies inside the frame and so does not extend the extent (**3.2 ms**); only geometry OUTSIDE the frame does. When Plan C wires it in, derive the extent from the world frame rather than from the items, or divert wholly-outside items to an overflow list. (2) **`query`'s confirmation predicate requires strict overlap**, so a fully zero-extent item box sitting on the query's low edge is dropped. Correct for area overlap, wrong for point containment — if Plan C/D need containment, add an explicit `containsPoint` query rather than loosening this predicate, which would turn a harmless superset into noise. (3) `INDEX_DIVISIONS` is a fixed 8 over the whole extent; at Plan C's scale size the grid from a robust extent (median box size x sqrt(n)) or a fixed cell edge. |
 | `resolveWorld({ spine, tree, descriptor, fabric, civil }): { doc, problems }` | **D** — supplies `fabric`/`civil` and makes `spine`/`tree` optional; the `problems.push` guard for those arguments is D's first edit |
 | `loadPlaces({ contentRoot }): { doc, problems }` | **D** — points it at `content/world/resolved/` and removes the mirror fallback branch. **The fallback is load-bearing, not vestigial** (risk A4): three fixture suites build a content root containing only `content/maps/cluster1-geography.json` with no `content/spine/` at all — `scripts/tests/zone-content.test.mjs:355`, `scripts/tests/town-plan.test.mjs:493`, `scripts/tests/bestiary-placement.test.mjs:95`. Removing the branch without migrating those three roots to the `ResolvedWorld` shape makes `loadPlaces` return `{doc: null}` for them, the three joins at `check_content.mjs:816/955/1192` take their `if (!zones) return 0` early-out, and the two assertions that require a FAIL to fire (`zone-content.test.mjs:483`, `town-plan.test.mjs:589`) go red. The migration, the three literal expectations and the three gate messages at `check_content.mjs:835/:981/:1203` move in **one** commit in D, whose verify step compares the `npm test --prefix scripts` pass count against the pre-task baseline — exiting 0 is not the check |
 | `WORLD_DOC_KEYS: string[]` | D, E |

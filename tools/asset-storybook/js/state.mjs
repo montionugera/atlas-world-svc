@@ -98,6 +98,9 @@ export const MAPS_INDEX_URL = "./maps-index.json";
 // which already assumes the "game-client/" prefix is stripped from res://
 // scene paths. From tools/asset-storybook/, two directories up is repo root.
 export const REPO_ROOT_REL = "../../";
+// Plan A Task 10: the render lock is an artifact this repo produces, so it is
+// observable here — each Map Sheets card shows the sha256 the gate pins.
+export const RENDER_LOCK_URL = "../../content/world/render-lock.json";
 export const STORY_VIEWS_URL = "./story-views.json";
 // Fallback mirrors ART_GROUPS_FALLBACK: a missing/unreadable registry degrades
 // the section to the three known views instead of breaking the page.

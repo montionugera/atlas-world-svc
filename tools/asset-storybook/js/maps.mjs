@@ -1,4 +1,9 @@
-import { MAPS_CLASS, MAPS_INDEX_URL, REPO_ROOT_REL } from "./state.mjs";
+import {
+  MAPS_CLASS,
+  MAPS_INDEX_URL,
+  RENDER_LOCK_URL,
+  REPO_ROOT_REL,
+} from "./state.mjs";
 import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
 import { buildSidebarItem } from "./sidebar.mjs";
 
@@ -28,6 +33,23 @@ async function loadIndex() {
       err,
     );
     return [];
+  }
+}
+
+// Same defensive shape as loadIndex(): a missing or unreadable lock disables
+// the hash line, it never takes the Maps section down.
+async function loadLock() {
+  try {
+    const res = await fetch(RENDER_LOCK_URL);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const doc = await res.json();
+    return doc.artifacts ?? {};
+  } catch (err) {
+    console.warn(
+      "[asset-storybook] render-lock.json unavailable — sheet hashes hidden:",
+      err,
+    );
+    return {};
   }
 }
 
@@ -245,6 +267,11 @@ export async function mountMaps(main) {
   const sheets = await loadIndex();
   if (sheets.length === 0) return; // degrade silently — same treatment as a missing story-views.json
 
+  // Plan A Task 10: content/world/render-lock.json is the gate's pinned
+  // sha256 per sheet. Showing it here is what makes the lock observable
+  // rather than merely committed.
+  const lock = await loadLock();
+
   // Re-init with the real count now that it's known; mountMapsNav below only
   // had a placeholder of 1 available before this resolved.
   initHealth(MAPS_CLASS, sheets.length);
@@ -303,6 +330,14 @@ export async function mountMaps(main) {
       noteP.textContent = sheet.note;
       meta.appendChild(noteP);
     }
+
+    const locked = lock[sheet.svg];
+    const hashP = document.createElement("p");
+    hashP.className = "filename";
+    hashP.textContent = locked
+      ? "locked " + locked.replace(/^sha256:/, "").slice(0, 12)
+      : "NOT LOCKED — no row in content/world/render-lock.json";
+    meta.appendChild(hashP);
 
     const pngA = document.createElement("a");
     pngA.className = "story-tab maps-png-link";

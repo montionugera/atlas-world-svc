@@ -33,6 +33,12 @@ COPY content/asset-taxonomy.json content/asset-taxonomy.json
 # F-038 Phase 4: committed verdicts. Non-critical (the page starts empty if
 # absent), but shipping it means the container shows the same review state.
 COPY content/review-queue.json content/review-queue.json
+# Plan A Task 10: the render lock. Non-critical (loadLock() degrades to a
+# hidden hash line), but WITHOUT this line the containerised storybook shows
+# "NOT LOCKED" on every card — i.e. the artifact would be observable locally
+# and invisible in the deployed review surface, which is the failure the
+# every-artifact-observable rule exists to prevent.
+COPY content/world content/world
 COPY tools/story-explorer tools/story-explorer
 COPY docs/story/undertow docs/story/undertow
 

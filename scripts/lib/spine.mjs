@@ -169,21 +169,22 @@ export function gridIntersectionArea({ a, b, cell }) {
   return count * cell * cell;
 }
 
-export function gridUnionArea({ placements, cell }) {
-  if (placements.length === 0) return 0;
-  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-  for (const p of placements) {
-    const b = placementBBoxOf(p);
-    x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y);
-    x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h);
-  }
-  if (x1 <= x0 || y1 <= y0) return 0;
-  let count = 0;
-  for (const y of lattice(y0, y1, cell))
-    for (const x of lattice(x0, x1, cell))
-      if (placements.some((p) => placementContains(p, x, y))) count++;
-  return count * cell * cell;
-}
+// Plan A Task 2 — the exact replacement. gridIntersectionArea above stays
+// EXPORTED but is production-dead: its only remaining caller is
+// scripts/tests/geometry-exact.test.mjs's equivalence pre-flight. Do not
+// delete it — it is the reference implementation the swap is checked against,
+// and deleting it deletes the proof.
+//
+// gridUnionArea was removed here. It had ZERO PRODUCTION consumers — F-043
+// replaced it with the inclusion-exclusion pairSum identity at
+// check_content.mjs:2141-2151 — and exactly TWO TEST consumers, both in
+// scripts/tests/spine.test.mjs, retired in the same commit (Step 5). Anything
+// that still names it after this commit is a real break, not a leftover.
+// Plan A Task 1: exact polygon intersection. spine.mjs re-exports FROM
+// geometry.mjs; geometry.mjs imports nothing, so this cannot cycle. A
+// re-export creates no local binding here — nothing in this module body calls
+// any of them, and an import that pretended otherwise was deleted.
+export { exactIntersectionArea, bboxOfPlacement, ringVertexCount, buildBBoxIndex, ringStructureProblem } from "./geometry.mjs";
 
 // ── load / join / traverse ─────────────────────────────────────────────────
 // The ONLY function in this library that touches the filesystem. Soft-skip:

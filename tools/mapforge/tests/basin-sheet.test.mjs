@@ -1,23 +1,44 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { drawBasinSheet } from "../lib/basin-sheet.mjs";
+import { loadSpine, buildTree } from "../../../scripts/lib/spine.mjs";
+import { resolveWorld } from "../../../scripts/lib/places.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../../..");
-const doc = JSON.parse(
-  readFileSync(join(ROOT, "content/maps/cluster1-geography.json"), "utf8"),
-);
+const LOCK = join(ROOT, "content/world/render-lock.json");
+const LOCKED_ARTIFACT = "game-client/assets/art/maps/cluster1-world.svg";
 
-test("drawBasinSheet matches the baseline fixture", () => {
+// Plan A Task 12: the doc came from content/maps/cluster1-geography.json,
+// which no longer exists. The four behavioural tests below are unchanged and
+// still mutate this doc — resolveWorld returns a fresh object each call, so
+// structuredClone is still the right tool.
+const doc = (() => {
+  const spine = loadSpine({ contentRoot: join(ROOT, "content") });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  const { doc: d, problems } = resolveWorld({ spine, tree });
+  assert.deepEqual(problems, [], "the real spine must resolve a world");
+  return d;
+})();
+
+function lockedHash() {
+  return JSON.parse(readFileSync(LOCK, "utf8")).artifacts[LOCKED_ARTIFACT];
+}
+
+test("drawBasinSheet matches the committed render lock", () => {
+  // Was: a byte comparison against fixtures/basin-baseline.svg — 47,020 bytes
+  // byte-identical to game-client/assets/art/maps/cluster1-world.svg, one of
+  // three consumers of one redundant copy. Now: one line in one lock file.
   const { svg, problems } = drawBasinSheet({ doc });
   assert.deepEqual(problems, []);
-  assert.equal(
-    svg,
-    readFileSync(join(HERE, "fixtures/basin-baseline.svg"), "utf8"),
-  );
+  const expected = lockedHash();
+  assert.equal(typeof expected, "string",
+    `render-lock.json has no row for ${LOCKED_ARTIFACT} — the assertion below would compare against undefined`);
+  assert.equal("sha256:" + createHash("sha256").update(svg, "utf8").digest("hex"), expected);
 });
 
 test("drawBasinSheet flags a town outside its zone", () => {

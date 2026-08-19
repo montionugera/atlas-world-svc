@@ -14,10 +14,11 @@ import Ajv from "ajv";
 // under ESM the constructor may arrive as the module namespace's `.default`.
 const AjvClass = Ajv.default ?? Ajv;
 
+import { loadPlaces } from "../lib/places.mjs";
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_content.mjs");
 const SCHEMA_PATH = join(ROOT, "content/schemas/zone-content.schema.json");
-const GEOGRAPHY_PATH = join(ROOT, "content/maps/cluster1-geography.json");
 
 // I-060 spec §6 / §7. The ten cluster-1 zones, in geography order.
 const ZONE_IDS = [
@@ -241,9 +242,12 @@ test("every committed zone record validates against the committed schema", () =>
   }
 });
 
-test("the committed records cover exactly the geography's zones", () => {
-  const geo = JSON.parse(readFileSync(GEOGRAPHY_PATH, "utf8"));
-  assert.deepEqual([...geo.zones.map((z) => z.id)].sort(), [...ZONE_IDS].sort());
+test("the committed records cover exactly the resolved world's zones", () => {
+  // Plan A Task 12: was a read of content/maps/cluster1-geography.json, which
+  // this task deleted. Same join, same assertion, resolved from the spine.
+  const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
+  assert.deepEqual(problems, []);
+  assert.deepEqual([...doc.zones.map((z) => z.id)].sort(), [...ZONE_IDS].sort());
 });
 
 // ENUMERATES the directory instead of addressing it by constructed name. Every

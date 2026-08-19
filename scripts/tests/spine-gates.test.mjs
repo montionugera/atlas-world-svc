@@ -6,6 +6,12 @@ import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadSpine, TIER_DEPTH, buildTree, deriveNode } from "../lib/spine.mjs";
+// Plan A Task 13: the gate, imported rather than spawned. Safe only because
+// check_content.mjs now ends in an `import.meta.url` entry guard — before it
+// did, this import ran the whole gate and called process.exit(), and `node
+// --test` reported that as "tests 1 / pass 1 / fail 0", exit 0. A green run
+// of one test out of 87. The last test in this file pins the guard's source.
+import { runSpineGateInProcess } from "../check_content.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_content.mjs");
@@ -23,13 +29,14 @@ export function contentRootFor(fixture) {
   return dir;
 }
 
+// Plan A Task 13: in-process, not spawned. ~60 spawns at ~0.4 s of Node
+// startup + ajv compile each was 93.3 s of a 108 s content-gate suite.
+// Return-property names are UNCHANGED (`code`/`stdout`) — ~50 tests across the
+// four helpers destructure them, and renaming would have made this diff touch
+// assertion lines, which is precisely what a harness change must not do.
 export function runGate(contentRoot) {
-  try {
-    const stdout = execFileSync(process.execPath, [GATE, "--content-root", contentRoot, "--only=spine"], { encoding: "utf8" });
-    return { code: 0, stdout };
-  } catch (e) {
-    return { code: e.status, stdout: (e.stdout ?? "").toString() };
-  }
+  const r = runSpineGateInProcess({ argv: ["--content-root", contentRoot, "--only=spine"] });
+  return { code: r.code, stdout: r.out };
 }
 
 // ── schema discipline (the town-plan.test.mjs:105-118 pin, applied here) ───
@@ -92,7 +99,12 @@ test("the committed 44-node table loads clean: 2 roots, depths legal, no load er
   // also hand-edited n-atlas's interstitialUnsurveyed to false (its
   // composition is now real: {ocean:100}), which flips n-atlas from
   // UNCHECKED to CHECKED, so the real UNCHECKED count today is 0.
-  assert.deepEqual(spine.budgets.load, { maxNodes: 48, maxBytes: 393216 });
+  // Plan A Task 4 replaced the single node-count term with three: maxNodes 96
+  // is loader sanity only, maxChildrenPerParent 24 is the real governor (the
+  // sibling-overlap check is quadratic — 24 children is 276 pairs), and
+  // maxRingPoints 160 is where the per-pair cost curve flattens. maxBytes
+  // doubles to 786432 because hoisting `derived` lands the trunk near 150 KB.
+  assert.deepEqual(spine.budgets.load, { maxNodes: 96, maxChildrenPerParent: 24, maxRingPoints: 160, maxBytes: 786432 });
   assert.deepEqual(spine.budgets.coverage, { maxUnchecked: 2 });
   for (const n of spine.nodes) assert.equal(typeof TIER_DEPTH[n.tier], "number", n.id);
 });
@@ -219,11 +231,9 @@ function spineFixture({ overlayDir = null, mutate = null } = {}) {
   if (mutate) mutate(dir);
   return dir;
 }
+// Plan A Task 13: in-process, not spawned. See runGate's header.
 function runSpineGate(dir) {
-  try {
-    const out = exec11(process.execPath, [GATE11, "--only=spine", "--content-root", dir], { encoding: "utf8" });
-    return { code: 0, out };
-  } catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+  return runSpineGateInProcess({ argv: ["--content-root", dir, "--only=spine"] }); // {code, out}
 }
 
 t11("base spine fixture is green", () => {
@@ -348,8 +358,14 @@ t11("G-CANON-LEG red: straight-line distance breaks the ±8% budget", () => {
   assert11.match(r.out, /G-CANON-LEG e-leg-r-c: straight-line .* vs straightKm 200 breaks ±8%/);
 });
 
-// ─── F-041 Phase 1 · Task 1.9: spine → geography emitter (G-EMIT-DRIFT) ─────
-t11("G-EMIT-DRIFT: emitted geography drifts red on a hand-edit and is green when clean", () => {
+// ─── F-041 Phase 1 · Task 1.9: an emitted MIRROR drifts red (G-EMIT-DRIFT) ──
+// Plan A Task 12 retargeted this from maps/cluster1-geography.json, which the
+// same task deleted, onto maps/atlas-frontier.md — the surviving mirror in the
+// same fixture. The SHAPE being tested is what matters and is unchanged: a
+// hand-edit to an emitted MIRROR (as opposed to a node file, covered above at
+// the n-cluster1.json drift test) must red. Dropping the test instead would
+// have left G-EMIT-DRIFT's mirror half with no red-path coverage in this file.
+t11("G-EMIT-DRIFT: an emitted mirror drifts red on a hand-edit and is green when clean", () => {
   const dir = mkdtemp11(join11(tmp11(), "spine-geo-"));
   cp11(join11(ROOT11, "content/spine"), join11(dir, "spine"), { recursive: true });
   cp11(join11(ROOT11, "content/maps"), join11(dir, "maps"), { recursive: true });
@@ -357,21 +373,31 @@ t11("G-EMIT-DRIFT: emitted geography drifts red on a hand-edit and is green when
        join11(dir, "schemas/spine-node.schema.json"), { recursive: true });
   assert11.equal(runEmit(dir, ["--write"]).code, 0);
   assert11.equal(runEmit(dir, ["--check"]).code, 0);
-  const p = join11(dir, "maps/cluster1-geography.json");
-  write11(p, read11(p, "utf8").replace('"Millcross"', '"Milcros"'));
+  const p = join11(dir, "maps/atlas-frontier.md");
+  const before = read11(p, "utf8");
+  const after = before.replace(/^ {2}width: \d+$/m, "  width: 999");
+  assert11.notEqual(after, before, "the front-matter key this test edits is gone — re-point it");
+  write11(p, after);
   const r = runEmit(dir, ["--check"]);
-  assert11.equal(r.code, 1);
-  assert11.match(r.out, /spine-emit: DRIFT .*cluster1-geography\.json/);
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /spine-emit: DRIFT .*atlas-frontier\.md/);
 });
 
 // ─── F-041 Phase 1 · Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT ───────────────
 // Note: the base fixture's committed coverage budget is maxUnchecked: 2
 // (Task 1.6) because n-w and n-c are both UNCHECKED; the red test below
 // lowers it to 0.
+// Review fix: this fixture stayed two-key when Plan A Task 4 migrated the six
+// on-disk budget files, so it was also tripping the two missing-term rules —
+// three FAILs where the test isolates one, and `code === 1` satisfiable
+// without the node-count rule firing at all. Carries all four terms now, with
+// only maxNodes lowered, so the rule under test is the only one that can fire.
 t11("G-LOAD-BUDGET red: node count over a lowered budget", () => {
   const r = runSpineGate(spineFixture({ mutate: (dir) => {
-    write11(join11(dir, "spine/load-budget.json"), '{ "maxNodes": 1, "maxBytes": 65536 }\n');
+    write11(join11(dir, "spine/load-budget.json"),
+      '{ "maxNodes": 1, "maxChildrenPerParent": 24, "maxRingPoints": 160, "maxBytes": 65536 }\n');
   } }));
+  assert11.doesNotMatch(r.out, /has no maxChildrenPerParent|has no maxRingPoints/);
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-LOAD-BUDGET: 3 nodes > budget 1/);
 });
@@ -387,7 +413,10 @@ t11("G-COMP-REPORT prints coverage and verdict for every node", () => {
   assert11.equal(r.code, 0);
   assert11.match(r.out, /spine-comp: n-c coverage=\d+(\.\d+)?% verdict=(CHECKED|ASSERTED|UNCHECKED)/);
   assert11.match(r.out, /spine-comp: totals CHECKED=\d+ ASSERTED=\d+ UNCHECKED=2/);
-  assert11.match(r.out, /spine-load: 3 nodes, \d+ bytes \(budget 10 nodes, 65536 bytes\)/);
+  // Plan A Task 4 widened this line to three measured terms; the F-041 shape
+  // it pinned (`3 nodes, N bytes (budget 10 nodes, 65536 bytes)`) is still
+  // asserted here, with the two new terms spliced in where they now print.
+  assert11.match(r.out, /spine-load: 3 nodes, \d+ bytes, max children \d+\/\d+, max ring \d+\/\d+ \(budget 10 nodes, 65536 bytes\)/);
 });
 
 // ─── F-041 Phase 1 · Task 1.13: G-OVERLAP + G-COMP-ROLLUP (FAIL stage) ──────
@@ -409,6 +438,39 @@ t11("G-OVERLAP + G-COMP-ROLLUP red: overlapping twins now hard-fail", () => {
   // reported double-count number did not change after the swap.
   assert11.match(r.out, /G-OVERLAP n-c: children double-count 400\.0 \(limit 32\.0\)/);
 });
+
+// ─── Plan A Task 2 review fix (MAJOR): the silent-blindness path ────────────
+// The exact kernel returns 0 for a ring it cannot triangulate, which is
+// indistinguishable from "genuinely disjoint". G-POLY does not catch that
+// class — it rejects PROPER self-crossing only, so this ring (shoelace +537.5,
+// selfIntersects false, open, no repeated CONSECUTIVE point, 6 points) passes
+// G-POLY clean. The retired lattice sampler needed no triangulation and
+// reported it loudly; the swap must not turn that into a silent pass. This
+// test fails if the `problems` collector is dropped from the call site.
+t11("G-OVERLAP red: a ring the exact kernel cannot triangulate FAILS, never silently reports 0", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const base = JSON.parse(read11(join11(dir, "spine/nodes/n-r.json"), "utf8"));
+    const bad = {
+      ...base,
+      id: "n-r2",
+      seed: { value: "52fc1fdd51a099d7", epoch: 0, why: null },
+      // [60,40] is revisited from index 4 and one lobe is negatively wound, so
+      // no honest triangulation exists. Wholly inside n-c ([10,10]-[90,90]);
+      // anchor sits inside the ring, so G-CONTAIN and G-ANCHOR stay green.
+      placement: {
+        shape: "polygon",
+        points: [[70, 60], [60, 40], [30, 55], [25, 20], [60, 40], [65, 55]],
+        anchor: [45, 45],
+      },
+    };
+    delete bad.derived;
+    write11(join11(dir, "spine/nodes/n-r2.json"), JSON.stringify(bad, null, 2) + "\n");
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.doesNotMatch(r.out, /G-POLY: n-r2/); // the gap this FAIL exists to cover
+  assert11.match(r.out, /G-OVERLAP n-r2: not triangulable/);
+});
 t11("G-COMP-ROLLUP red: child mix contradicts the parent beyond tolerance", () => {
   const r = runSpineGate(spineFixture({ mutate: (dir) => {
     const p = join11(dir, "spine/nodes/n-c.json");
@@ -420,6 +482,116 @@ t11("G-COMP-ROLLUP red: child mix contradicts the parent beyond tolerance", () =
   } }));
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-COMP-ROLLUP n-c: meadow off by .* pp \(tol 3\)/);
+});
+
+// ─── Plan A Task 4: the three-term load budget + G-VERTEX-BUDGET ───────────
+t11("G-LOAD-BUDGET prints all three measured terms on every run", () => {
+  const r = runSpineGate(spineFixture());
+  assert11.equal(r.code, 0, r.out);
+  assert11.match(r.out, /spine-load: 3 nodes, \d+ bytes, max children \d+\/\d+, max ring \d+\/\d+ \(budget 10 nodes, 65536 bytes\)/);
+});
+
+t11("G-LOAD-BUDGET red: a parent over maxChildrenPerParent names the quadratic cost", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-children-cap" }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-LOAD-BUDGET: n-c has 2 children > budget 1 — the pairwise overlap check is quadratic in siblings \(1 pairs\); introduce an intermediate node rather than raising the cap/);
+});
+
+t11("G-VERTEX-BUDGET red: a ring over the global maxRingPoints", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: "g-vertex-budget-region" }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-VERTEX-BUDGET: n-r ring has 4 vertices > 3 for tier region/);
+});
+
+// ── review fix: the PER-TIER half of G-VERTEX-BUDGET had ZERO coverage ─────
+// The effective cap is min(maxRingPoints, VERTEX_CAP[tier]). Everything above
+// exercises only the GLOBAL term: the committed budget sets maxRingPoints 160
+// against table rows of 200 and 800, so min() returns 160 for every tier, and
+// the red fixture lowers the global to 3, so min() returns 3 for every tier.
+// MEASURED before this test existed: replacing the whole expression with
+// `const cap = maxRingPoints` left spine-gates.test.mjs at 74 pass / 0 fail —
+// the table was a rule the suite could not tell from deleted.
+//
+// The pair below is the missing half. One ring, 208 vertices, under a global
+// cap of 300 that cannot bind: RED on n-r (tier region, table cap 200), GREEN
+// on n-c (tier continent, table cap 800). Same ring, same budget, opposite
+// verdicts — only the tier differs, so only the table can explain it.
+//
+// Densifying inserts collinear points on the EXISTING edges, so the polygon is
+// geometrically identical: shoelace area, containment, anchor and sibling
+// overlap are all unchanged and only the vertex count moves. That keeps the
+// fixture green on every other gate, and keeps a 208-point literal out of the
+// repo — the same reason Task 4 chose to lower the cap rather than author a
+// 201-point ring by hand.
+function densifyRing(points, per) {
+  const out = [];
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i], b = points[(i + 1) % points.length];
+    out.push(a);
+    for (let k = 1; k < per; k++)
+      out.push([
+        Math.round((a[0] + (b[0] - a[0]) * k / per) * 100) / 100,
+        Math.round((a[1] + (b[1] - a[1]) * k / per) * 100) / 100,
+      ]);
+  }
+  return out;
+}
+
+// maxRingPoints 300 is deliberately ABOVE every vertex count here, so a
+// failure can only have come from the per-tier row.
+function tierCapFixture({ nodeId, per = 52 }) {
+  return spineFixture({ mutate: (dir) => {
+    write11(join11(dir, "spine/load-budget.json"), JSON.stringify(
+      { maxNodes: 10, maxChildrenPerParent: 24, maxRingPoints: 300, maxBytes: 262144 }, null, 2) + "\n");
+    const p = join11(dir, `spine/nodes/${nodeId}.json`);
+    const doc = JSON.parse(read11(p, "utf8"));
+    doc.placement.points = densifyRing(doc.placement.points, per);
+    delete doc.derived;
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]); // re-derive the widened ring
+  } });
+}
+
+t11("G-VERTEX-BUDGET: the PER-TIER cap binds — 208 vertices is RED for tier region under a global 300", () => {
+  const r = runSpineGate(tierCapFixture({ nodeId: "n-r" }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-VERTEX-BUDGET: n-r ring has 208 vertices > 200 for tier region/);
+  // The global term is 300 and prints as such: it is not what fired.
+  assert11.match(r.out, /max ring 208\/300/);
+});
+
+t11("G-VERTEX-BUDGET: the PER-TIER cap is read per tier — the SAME 208-vertex ring is GREEN for tier continent", () => {
+  const r = runSpineGate(tierCapFixture({ nodeId: "n-c" }));
+  assert11.equal(r.code, 0, r.out);
+  assert11.doesNotMatch(r.out, /G-VERTEX-BUDGET/);
+  assert11.match(r.out, /max ring 208\/300/);
+});
+
+// A budget file that predates this task must not silently disable the two new
+// governors: both missing terms are their own clean FAIL, not a skipped rule.
+t11("G-LOAD-BUDGET red: a two-key budget file fails on both missing terms", () => {
+  const r = runSpineGate(spineFixture({ mutate: (dir) => {
+    write11(join11(dir, "spine/load-budget.json"), '{ "maxNodes": 10, "maxBytes": 65536 }\n');
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-LOAD-BUDGET: spine\/load-budget\.json has no maxChildrenPerParent/);
+  assert11.match(r.out, /G-LOAD-BUDGET: spine\/load-budget\.json has no maxRingPoints/);
+});
+
+// This is a FALSE-POSITIVE guard, not rule coverage, and the distinction is
+// worth naming: `doesNotMatch` passes identically when the rule is deleted, so
+// it proves the rule does not fire on committed content and nothing more. The
+// evidence that the rule EXISTS is the three red tests above.
+t11("G-VERTEX-BUDGET green: every committed node is inside its tier cap", () => {
+  const r = runGate(join(ROOT, "content"));
+  assert11.equal(r.code, 0, r.stdout);
+  assert11.doesNotMatch(r.stdout, /G-VERTEX-BUDGET/);
+});
+
+t11("G-LOAD-BUDGET green: the committed table is inside all three terms", () => {
+  const r = runGate(join(ROOT, "content"));
+  // 44 nodes / 96, n-cluster1's 12 children / 24, n-galereach's 27 points / 160.
+  assert11.match(r.stdout, /spine-load: 44 nodes, \d+ bytes, max children 12\/24, max ring 27\/160 \(budget 96 nodes, 786432 bytes\)/);
 });
 
 // ── F-041 Phase 3: hermetic fixture roots for the town-frame gates ──────────
@@ -470,12 +642,11 @@ function p3Root(fixtureName, mutate = null) {
   return root;
 }
 
+// Plan A Task 13: in-process, not spawned. `status` (not `code`) is kept —
+// ten P3 tests destructure it. See runGate's header.
 function p3RunSpineGate(root) {
-  try {
-    return { status: 0, out: execFileSync(process.execPath, [GATE, "--content-root", root, "--only=spine"], { encoding: "utf8" }) };
-  } catch (e) {
-    return { status: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` };
-  }
+  const r = runSpineGateInProcess({ argv: ["--content-root", root, "--only=spine"] });
+  return { status: r.code, out: r.out };
 }
 
 test("P3 fixture scaffolding: the green base passes --only=spine clean", () => {
@@ -641,11 +812,12 @@ function p4FixtureRoot(t, overlayDir) {
 }
 
 // Unique name on purpose — never shadows Task 1.6's or Task 3.6's runners.
+// Plan A Task 13: in-process, not spawned. See runGate's header. The one
+// `extraArgs` caller passes `--require-complete`, which parseArgs accepts
+// alongside `--only=spine`; anything parseArgs rejects still exits the process
+// (it always did), so this helper must never be handed an unparseable flag.
 function runP4Gate(root, extraArgs = []) {
-  const r = spawnSync(process.execPath,
-    [join(ROOT, "scripts/check_content.mjs"), "--only=spine", "--content-root", root, ...extraArgs],
-    { encoding: "utf8" });
-  return { code: r.status, out: (r.stdout ?? "") + (r.stderr ?? "") };
+  return runSpineGateInProcess({ argv: ["--only=spine", "--content-root", root, ...extraArgs] }); // {code, out}
 }
 
 test("G-RUNTIME goes red on an originU that is not the accumulated origin (HC-2)", (t) => {
@@ -749,16 +921,21 @@ test("G-ALIAS reverse + derived siteOrder: a 4th site reds until the mirror is r
 // the emitted file set, and that a non-ENOENT read is an error.
 const { collectOutputs } = await import("../check_spine_emit.mjs");
 
-test("spine-emit emits every node file plus all three mirrors — a silently dropped mirror reds", () => {
+test("spine-emit emits every node file plus BOTH surviving mirrors — a silently dropped mirror reds", () => {
   const contentRoot = join(ROOT, "content");
   const { outputs, errors } = collectOutputs({ contentRoot });
   assert.equal(errors, undefined, JSON.stringify(errors));
   const paths = outputs.map((o) => o.path);
   const nodeFiles = readdirSync(join(contentRoot, "spine/nodes")).filter((f) => f.endsWith(".json")).length;
-  assert.equal(outputs.length, nodeFiles + 3, paths.join("\n"));
-  for (const suffix of ["maps/cluster1-geography.json", "maps/atlas-frontier.md",
+  // Plan A Task 12: 3 -> 2. The geography mirror was retired once every
+  // consumer moved to scripts/lib/places.mjs; the two RUNTIME-facing mirrors
+  // stay, and mapDimensions.ts is compiled server code.
+  assert.equal(outputs.length, nodeFiles + 2, paths.join("\n"));
+  for (const suffix of ["maps/atlas-frontier.md",
                         "colyseus-server/src/config/generated/mapDimensions.ts"])
     assert.ok(paths.some((p) => p.endsWith(suffix)), `missing mirror ${suffix} in:\n${paths.join("\n")}`);
+  assert.ok(!paths.some((p) => p.endsWith("cluster1-geography.json")),
+    "the retired geography mirror is being emitted again");
 });
 
 test("spine-emit: a non-ENOENT failure reading the frontier mirror is an error, not a silent skip (HC-2)", (t) => {
@@ -856,7 +1033,11 @@ test("G-ALIAS sweep: a bestiary region slug with no spine node is a hard FAIL", 
   });
   const r = runAliasGate(dir);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /FAIL\s+spine-alias: bestiary\.json region "nopeland": n-nopeland is not a spine node/);
+  // Plan A Task 9 rewrote this message to name BOTH attempts. This test keeps
+  // its own job — pinning the FAIL severity, not just exit 1 — and follows the
+  // wording. (The plan's Step 3 named only the art:town string as changing;
+  // the two bestiary strings change too, and both live assertions are here.)
+  assert.match(r.out, /FAIL\s+spine-alias: bestiary\.json region "nopeland": neither n-nopeland \(spine\) nor "nopeland" \(resolved world\) exists/);
 });
 
 test("G-ALIAS sweep: a character region link whose record lost its spineId is a hard FAIL", () => {
@@ -877,7 +1058,113 @@ test("G-ALIAS sweep: an art:town-* key with no town-tier node is a hard FAIL", (
   writeFileSync(artPath, JSON.stringify(art, null, 2));
   const r = runAliasGate(dir, ["--art-manifest", artPath]);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /FAIL\s+spine-alias: art-manifest art:town-nopeville: no town-tier spine node n-nopeville \/ n-nopeville-town/);
+  assert.match(r.out, /FAIL\s+spine-alias: art-manifest art:town-nopeville: neither a town-tier spine node n-nopeville \/ n-nopeville-town nor "nopeville" \(resolved world\) exists/);
+});
+
+// ─── Plan A Task 9: the alias sweep's second resolution path ───────────────
+// X4: 116 bestiary rows + 10 story regions + 6 art:town keys + 10 zone files
+// + 1 town plan all resolve against `n-<slug>` spine nodes today. Plan E's
+// 36-node trunk removes region and town tiers from content/spine/nodes/, so
+// the sweep needs a path through the resolved world document. Landed HERE,
+// with the spine path still PRIMARY, so today's output is byte-identical.
+
+// The RECORD COUNT, not just the exit code. Risk A2: a re-pointed join whose
+// resolution silently returns nothing still exits 0 while checking nothing.
+// 35 is the measured count of printed `spine-alias:` lines on the committed
+// content root at HEAD~1 (10 story regions + 1 town plan + 9 distinct bestiary
+// regions + 1 placement + 8 character links + 6 art:town keys). If the sweep
+// stops examining records this number drops and the test reds; the literal is
+// compared against gate OUTPUT, never against a second copy of itself.
+t11("alias sweep: today's output resolves entirely through the spine (no resolved-* lines)", () => {
+  const r = runGate(join(ROOT, "content"));
+  assert11.equal(r.code, 0, r.stdout);
+  const printed = r.stdout.split("\n").filter((l) => l.includes("spine-alias: "));
+  assert11.equal(printed.length, 35, printed.join("\n"));
+  assert11.match(r.stdout, /spine-alias: bestiary\.json region "millcross" ×\d+ → n-millcross \(town\)/);
+  assert11.doesNotMatch(r.stdout, /\(resolved-zone\)/);
+  assert11.doesNotMatch(r.stdout, /\(resolved-town\)/);
+});
+
+t11("alias sweep: a slug with NO spine node resolves through the world document instead", () => {
+  const dir = aliasContentCopy();
+  // DEVIATION FROM PLAN, load-bearing. The plan's fixture DELETES
+  // content/spine/nodes/n-thornveil.json and expects the resolved world to
+  // still answer. Measured: it does not. The world document is DERIVED from
+  // the spine (places.mjs resolveWorld), so deleting the node deletes the zone
+  // from the world as well — with n-thornveil.json removed, loadPlaces returns
+  // 9 zones and no "thornveil", and the fixture proves nothing. What Plan E
+  // actually does is move the slug OFF the `n-<slug>` id convention while the
+  // world keeps carrying it, so that is what this fixture models: the node is
+  // renamed to n-thornveil-zone and pinned to geoId "thornveil". The world
+  // document still lists zone "thornveil" (measured: 10 zones, unchanged); the
+  // spine lookup for `n-thornveil` now misses. Before this task that is an
+  // immediate FAIL; after it the resolved world answers.
+  const src = join(dir, "content/spine/nodes/n-thornveil.json");
+  const node = JSON.parse(readFileSync(src, "utf8"));
+  node.id = "n-thornveil-zone";
+  node.lore = { ...(node.lore ?? {}), geoId: "thornveil" };
+  writeFileSync(join(dir, "content/spine/nodes/n-thornveil-zone.json"), JSON.stringify(node, null, 2) + "\n");
+  rmSync(src);
+  const r = runAliasGate(dir);
+  // The tree loses the id `n-thornveil`, so OTHER gates go red (the zone-file
+  // and story-region spineId joins, the n-site-thornveil representsNodeId
+  // pointer). This test asserts ONLY that the alias sweep itself no longer
+  // contributes an unresolved-slug failure for thornveil, and that it says so
+  // through the new path rather than by falling silent.
+  assert11.doesNotMatch(r.out, /spine-alias: bestiary\.json region "thornveil": /);
+  assert11.match(r.out, /spine-alias: bestiary\.json region "thornveil" ×\d+ → thornveil \(resolved-zone\)/);
+});
+
+t11("alias sweep: a slug in NEITHER source names both attempts in one message", () => {
+  // Both bestiary families in one fixture. The nopeland test above already
+  // covers the region site's severity, so this one earns its place on the
+  // placement-file site, which nothing else pins, and on the both-attempts
+  // wording that is this task's contract.
+  const dir = aliasContentCopy();
+  const bestiary = join(dir, "content/bestiary/bestiary.json");
+  const rows = JSON.parse(readFileSync(bestiary, "utf8"));
+  rows[0].region = "nowhereshire";
+  writeFileSync(bestiary, JSON.stringify(rows, null, 2) + "\n");
+  const placement = join(dir, "content/bestiary/placement-thornveil.json");
+  const doc = JSON.parse(readFileSync(placement, "utf8"));
+  doc.zone = "nowhereshire";
+  writeFileSync(placement, JSON.stringify(doc, null, 2) + "\n");
+  const r = runAliasGate(dir);
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /spine-alias: bestiary\.json region "nowhereshire": neither n-nowhereshire \(spine\) nor "nowhereshire" \(resolved world\) exists/);
+  assert11.match(r.out, /spine-alias: bestiary\/placement-thornveil\.json: zone "nowhereshire": neither n-nowhereshire \(spine\) nor "nowhereshire" \(resolved world\) exists/);
+});
+
+// Task 9 review finding, MAJOR: the fallback originally consulted the resolved
+// world's ZONES only, while the primary lookup it backs up (`byId.get("n-"+
+// slug)`) is tier-agnostic. 5 of the 9 bestiary region slugs — millcross,
+// embervale, gildmark, norhollow, rooktide, 48 of the 116 rows — are TOWN-tier
+// nodes, and the resolved world keeps zones and towns in disjoint arrays, so
+// those 48 would still have gone red in Plan E's redraw. The thornveil test
+// above only ever exercised the zone half. This is the town half, and without
+// the `resolvedKind` fix it FAILS (measured: `FAIL spine-alias: bestiary.json
+// region "rooktide": neither n-rooktide (spine) nor "rooktide" (resolved
+// world) exists`, on a fixture where loadPlaces resolves 0 problems and lists
+// "rooktide" among its 6 towns).
+t11("alias sweep: a TOWN-tier slug with no spine node resolves through the world document too", () => {
+  const dir = aliasContentCopy();
+  // Same Plan E shape as the thornveil fixture: the node keeps existing, it
+  // just stops answering to `n-<slug>`. edges.json is re-pointed with it
+  // because the roads/legs join dereferences the edge endpoints by node id —
+  // leave it and resolveWorld reports instead of resolving, and the fixture
+  // would prove nothing about the fallback.
+  const src = join(dir, "content/spine/nodes/n-rooktide.json");
+  const node = JSON.parse(readFileSync(src, "utf8"));
+  assert11.equal(node.tier, "town");
+  node.id = "n-rooktide-town";
+  node.lore = { ...(node.lore ?? {}), geoId: "rooktide" };
+  writeFileSync(join(dir, "content/spine/nodes/n-rooktide-town.json"), JSON.stringify(node, null, 2) + "\n");
+  rmSync(src);
+  const edgesPath = join(dir, "content/spine/edges.json");
+  writeFileSync(edgesPath, readFileSync(edgesPath, "utf8").replaceAll('"n-rooktide"', '"n-rooktide-town"'));
+  const r = runAliasGate(dir);
+  assert11.doesNotMatch(r.out, /spine-alias: bestiary\.json region "rooktide": /);
+  assert11.match(r.out, /spine-alias: bestiary\.json region "rooktide" ×\d+ → rooktide \(resolved-town\)/);
 });
 
 // ── F-043 Task 4: G-ATLAS-ROLLUP — the world rollup is pinned to committed
@@ -895,4 +1182,343 @@ test("G-ATLAS-ROLLUP red: world rollup off committed composition by >2pp", () =>
 test("G-ATLAS-ROLLUP green: the committed content passes", () => {
   const { code, stdout } = runGate(join(ROOT, "content"));
   assert.equal(code, 0, stdout);
+});
+
+// ─── Plan A Task 3 review fix (d): message ORDER under the bbox index ───────
+// The two literal fixtures above pin a TWO-child parent, where there is only
+// one pair and therefore no order to get wrong. The index's real risk (plan
+// Risk A8) is that it turns the pair walk into an index-driven one and
+// reorders G-OVERLAP reports — only ~2 of the ~130 possible messages are
+// pinned anywhere, so a reordering would ship silently. This fixture gives
+// n-c FIVE children: three mutually overlapping (n-r, n-r2, n-r3) and two
+// sitting far away inside n-c (n-r4, n-r5). Ten pairs, three reported, seven
+// skipped by the index — so the index is demonstrably doing work AND the
+// surviving reports must still come out in outer-i<j order.
+t11("G-OVERLAP order: three overlapping children report in i<j order, index or not", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const base = JSON.parse(read11(join11(dir, "spine/nodes/n-r.json"), "utf8"));
+    const mk = (id, seed, points) => {
+      const n = { ...base, id, seed: { value: seed, epoch: 0, why: null } };
+      n.placement = { shape: "polygon", points, anchor: points[0] };
+      delete n.derived;
+      write11(join11(dir, `spine/nodes/${id}.json`), JSON.stringify(n, null, 2) + "\n");
+    };
+    mk("n-r2", "52fc1fdd51a099d7", [[25, 25], [45, 25], [45, 45], [25, 45]]);
+    mk("n-r3", "62fc1fdd51a099d7", [[30, 30], [50, 30], [50, 50], [30, 50]]);
+    mk("n-r4", "72fc1fdd51a099d7", [[70, 70], [85, 70], [85, 85], [70, 85]]);
+    mk("n-r5", "82fc1fdd51a099d7", [[70, 20], [85, 20], [85, 35], [70, 35]]);
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1);
+  // deepEqual on the ORDERED list, not three independent `match`es: a match
+  // sweep passes no matter what order the lines came out in.
+  assert11.deepEqual(
+    r.out.split("\n").filter((l) => l.includes("G-OVERLAP")).map((l) => l.trim()),
+    [
+      "FAIL  spine: G-OVERLAP n-r ∩ n-r2: 225.0 over limit 2.0",
+      "FAIL  spine: G-OVERLAP n-r ∩ n-r3: 100.0 over limit 2.0",
+      "FAIL  spine: G-OVERLAP n-r2 ∩ n-r3: 225.0 over limit 2.0",
+      "FAIL  spine: G-OVERLAP n-c: children double-count 550.0 (limit 32.0)",
+    ],
+  );
+});
+
+// ─── Plan A review round 3 · G-RING-SIMPLE and G-RECT ──────────────────────
+// The per-PAIR triangulability report pinned above only fires at stage 3 of
+// exactIntersectionArea — after a bbox overlap AND a failed ringsDisjoint().
+// Every fixture below is a ring the kernel refuses (or mis-measures) that the
+// pair path CANNOT reach, and each one exited 0 with no output at all before
+// G-RING-SIMPLE existed. Delete the rule in check_content.mjs and all four go
+// green again; that is the mutation test these exist to survive.
+t11("G-RING-SIMPLE red: an ONLY-CHILD unsound ring fails — no sibling needed", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const p = join11(dir, "spine/nodes/n-r.json");
+    const doc = JSON.parse(read11(p, "utf8"));
+    // [50,20] sits on the INTERIOR of the non-adjacent edge [20,20]→[80,20].
+    // G-POLY green: 5 points, open, no repeated consecutive point, shoelace
+    // +1200, selfIntersects() sees no PROPER crossing. earClip finds no ear.
+    doc.placement = { shape: "polygon", points: [[20, 20], [80, 20], [80, 60], [50, 20], [20, 60]], anchor: [30, 30] };
+    delete doc.derived;
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-RING-SIMPLE: n-r: non-adjacent edges meet/);
+  assert11.doesNotMatch(r.out, /G-POLY: n-r:/); // the gap this rule exists to cover
+  assert11.doesNotMatch(r.out, /G-OVERLAP n-r: not triangulable/); // unreachable: no sibling
+});
+t11("G-RING-SIMPLE red: an unsound ring beside a NON-meeting sibling fails", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const base = JSON.parse(read11(join11(dir, "spine/nodes/n-r.json"), "utf8"));
+    const mk = (id, seed, points, anchor) => {
+      const n = { ...base, id, seed: { value: seed, epoch: 0, why: null } };
+      n.placement = { shape: "polygon", points, anchor };
+      delete n.derived;
+      write11(join11(dir, `spine/nodes/${id}.json`), JSON.stringify(n, null, 2) + "\n");
+    };
+    // Bboxes strictly overlap on both axes, so neither the stage-1 reject nor
+    // any candidate filter skips the pair — but the rings do not meet, so
+    // ringsDisjoint() returns before triangulation is ever attempted.
+    mk("n-r", "42fc1fdd51a099d7", [[20, 20], [40, 20], [40, 40], [20, 40]], [30, 30]);
+    mk("n-r2", "52fc1fdd51a099d7", [[55, 35], [85, 35], [85, 85], [60, 35], [35, 85], [35, 55]], [78, 50]);
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-RING-SIMPLE: n-r2: non-adjacent edges meet/);
+  assert11.doesNotMatch(r.out, /G-OVERLAP n-r2: not triangulable/); // unreachable: rings do not meet
+});
+t11("G-RING-SIMPLE red: overlapping lobes — the shape the area identity passes", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const p = join11(dir, "spine/nodes/n-r.json");
+    const doc = JSON.parse(read11(p, "utf8"));
+    // The ring revisits [20,20], and splitAtRepeat cuts it into two lobes that
+    // cover the same ground TWICE. Ear clipping returns positively-wound
+    // triangles whose shoelaces sum to the ring's own — so triangulateOrNull's
+    // conservation check PASSES and no `problems` entry is ever emitted —
+    // while the true covered area is a third of the number reported. Only a
+    // STRUCTURAL rule catches this; the area identity cannot police itself,
+    // because the shoelace double-counts a doubly-wound region too.
+    doc.placement = { shape: "polygon", points: [[20, 20], [80, 20], [80, 80], [20, 80], [20, 20], [30, 30], [70, 30], [70, 70], [30, 70]], anchor: [25, 50] };
+    delete doc.derived;
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-RING-SIMPLE: n-r: non-adjacent edges meet/);
+  assert11.doesNotMatch(r.out, /G-POLY: n-r:/);
+});
+t11("G-RECT red: a rect with both extents negative fails", () => {
+  const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
+    const p = join11(dir, "spine/nodes/n-r.json");
+    const doc = JSON.parse(read11(p, "utf8"));
+    // Both negative winds the ring POSITIVELY over [10,30]x[10,30], so the
+    // exact kernel reports a real area there while the grid sampler reports 0.
+    doc.placement = { shape: "rect", rect: { x: 30, y: 30, w: -20, h: -20 }, anchor: [20, 20] };
+    delete doc.derived;
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+    exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
+  } }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-RECT: n-r: rect extent w=-20 h=-20/);
+});
+
+// ─── Plan A Task 7 · the sheet subject descriptor ───────────────────────────
+// Built on a real content copy, NOT on the `base` fixture: base's nodes are
+// n-c/n-r/n-w, so it has no zoneRoot at all and nothing resolves a world —
+// the test would prove nothing. Only spine/sheet.json is overwritten, so the
+// ONLY difference from a green run is the bad subject.
+//
+// PLAN A TASK 12 RE-POINT, and the reason matters. These three ran the EMITTER
+// (check_spine_emit.mjs), because check_spine_emit.mjs called resolveWorld() to
+// write content/maps/cluster1-geography.json. Task 12 deleted that mirror and
+// with it the emitter's only call into places.mjs, so run against the emitter
+// these tests would have gone quietly vacuous — exit 1 for unrelated reasons,
+// asserting on messages nothing prints any more. The descriptor is now
+// validated where it is actually consumed: check_content.mjs's placesDoc(),
+// which fail()s every problem loadPlaces reports. Same three messages, same
+// no-TypeError contract, one binary downstream. Verified by running the full
+// gate on each fixture by hand before this edit.
+function realContentCopy() {
+  const dir = mkdtemp11(join11(tmp11(), "sheet-subject-"));
+  for (const sub of ["spine", "schemas", "zones", "towns", "characters"])
+    cp11(join11(ROOT11, "content", sub), join11(dir, sub), { recursive: true });
+  return dir;
+}
+
+function runContentGate(dir) {
+  try {
+    return { code: 0, out: exec11(process.execPath, [GATE11, "--content-root", dir], { encoding: "utf8" }) };
+  } catch (e) {
+    return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` };
+  }
+}
+t11("sheet subjects: a descriptor naming a missing node REPORTS, never a raw TypeError", () => {
+  const dir = realContentCopy();
+  cp11(join11(FIX, "g-sheet-subject-missing"), dir, { recursive: true });
+  const r = runContentGate(dir);
+  assert11.equal(r.code, 1, r.out);
+  assert11.doesNotMatch(r.out, /TypeError/);
+  // The exit code alone proves little — pin the exact message, prefixed
+  // "geography: " by placesDoc(), so a descriptor fault that stopped being
+  // diagnosed cannot hide behind an unrelated red.
+  assert11.match(r.out, /FAIL {2}geography: sheet: subject "mireIds\[0\]" -> "n-not-a-node" does not resolve/);
+});
+
+t11("sheet subjects: a spine whose sheet.json has NO subjects block REPORTS", () => {
+  // The other half of "the ids are data": deleting the descriptor must be a
+  // named diagnosis, not a crash and not a silently-skipped mirror.
+  const dir = realContentCopy();
+  const p = join11(dir, "spine/sheet.json");
+  const doc = JSON.parse(read11(p, "utf8"));
+  delete doc.subjects;
+  write11(p, JSON.stringify(doc, null, 2) + "\n");
+  const r = runContentGate(dir);
+  assert11.equal(r.code, 1, r.out);
+  assert11.doesNotMatch(r.out, /TypeError/);
+  // No descriptor means loadPlaces falls through to the legacy mirror FILE,
+  // which Task 12 deleted — so the root resolves to nothing and says so by
+  // name. Before Task 12 this same fixture reported "has no `subjects`
+  // descriptor" from the emitter; the diagnosis moved with the consumer.
+  assert11.match(r.out, /FAIL {2}geography: .* has neither a resolvable spine nor maps\/cluster1-geography\.json/);
+});
+
+t11("sheet subjects: a zone region losing its lore.order REPORTS instead of vanishing", () => {
+  // R3 end-to-end, through the emitter the gate actually runs. Before Task 7
+  // this produced a mirror with NINE zones and exit 0.
+  const dir = realContentCopy();
+  const p = join11(dir, "spine/nodes/n-thornveil.json");
+  const doc = JSON.parse(read11(p, "utf8"));
+  delete doc.lore.order;
+  write11(p, JSON.stringify(doc, null, 2) + "\n");
+  const r = runContentGate(dir);
+  assert11.equal(r.code, 1, r.out);
+  assert11.doesNotMatch(r.out, /TypeError/);
+  assert11.match(r.out, /has no lore\.order/);
+});
+
+// ─── Plan A Task 13: in-process gate runs ──────────────────────────────────
+// 66 child-process spawns, ~0.38 s each of pure Node startup + ajv compile,
+// is 93.3 s of a 108 s content-gate suite. The gate's own tests cost more
+// than the gate. These pin the in-process entry's contract: identical
+// {code, out} shape, and no state leaking between runs.
+// `runSpineGateInProcess` is imported statically at the top of this file.
+
+t11("in-process: a green fixture returns code 0 and the same summary line as a spawn", () => {
+  const dir = spineFixture();
+  const inproc = runSpineGateInProcess({ argv: ["--content-root", dir, "--only=spine"] });
+  const spawned = (() => {
+    try { return { code: 0, out: exec11(process.execPath, [GATE11, "--only=spine", "--content-root", dir], { encoding: "utf8" }) }; }
+    catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+  })();
+  assert11.equal(inproc.code, spawned.code);
+  assert11.equal(inproc.out, spawned.out);
+});
+
+t11("in-process: a red fixture returns code 1 and the same output as a spawn", () => {
+  const dir = spineFixture({ overlayDir: "g-contain-child-outside" });
+  const inproc = runSpineGateInProcess({ argv: ["--content-root", dir, "--only=spine"] });
+  const spawned = (() => {
+    try { return { code: 0, out: exec11(process.execPath, [GATE11, "--only=spine", "--content-root", dir], { encoding: "utf8" }) }; }
+    catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+  })();
+  assert11.equal(inproc.code, 1);
+  assert11.equal(inproc.out, spawned.out);
+});
+
+t11("in-process: failures do NOT leak from one run into the next", () => {
+  const red = spineFixture({ overlayDir: "g-contain-child-outside" });
+  const green = spineFixture();
+  assert11.equal(runSpineGateInProcess({ argv: ["--content-root", red, "--only=spine"] }).code, 1);
+  const second = runSpineGateInProcess({ argv: ["--content-root", green, "--only=spine"] });
+  assert11.equal(second.code, 0, second.out);
+  assert11.doesNotMatch(second.out, /G-CONTAIN/);
+});
+
+t11("in-process: importing check_content.mjs does NOT run the gate", () => {
+  // Before this task the file ended in a bare `main();` — importing it ran
+  // the whole gate against the real content root and called process.exit().
+  // The entry guard is what makes every other test in this block possible.
+  const src = read11(join11(ROOT11, "scripts/check_content.mjs"), "utf8");
+  assert11.match(src, /if \(process\.argv\[1\] && import\.meta\.url === pathToFileURL\(process\.argv\[1\]\)\.href\) main\(\);/);
+  assert11.doesNotMatch(src, /^main\(\);$/m);
+});
+
+// The two tests above cover `failures`/`warnings`. Risk A7's quieter half is
+// the two MEMOS. Both are keyed by content root, so the naive reading —
+// "cross-root reuse is impossible, therefore they are safe" — is true and
+// beside the point: the leak is SAME-root re-entry. Each memo short-circuits
+// BEFORE the fail() calls that populate it, so run two of the same root prints
+// fewer failures than run one, and fewer than a spawn. Both are pinned by the
+// same rule (two runs of one root are byte-identical) because that is the rule
+// a future edit would break, and both were mutation-checked: deleting the
+// matching reset line in runSpineGateInProcess turns each of these red
+// (2 FAILs -> 1, and 1 geography FAIL -> 0 respectively).
+
+t11("in-process: townPlansCache does NOT leak — an unparsable town plan FAILs on EVERY run", () => {
+  const dir = spineFixture();
+  cp11(join11(ROOT11, "content/schemas/town-plan.schema.json"), join11(dir, "schemas/town-plan.schema.json"));
+  mkdirSync(join11(dir, "towns"), { recursive: true });
+  // readTownPlans only reads /^town-.+\.json$/ — a differently-named file is
+  // invisible to the loader and would make this test pass for no reason.
+  write11(join11(dir, "towns/town-broken.json"), "{ not json");
+  const first = runSpineGateInProcess({ argv: ["--content-root", dir, "--only=spine"] });
+  const second = runSpineGateInProcess({ argv: ["--content-root", dir, "--only=spine"] });
+  const failsOf = (r) => r.out.split("\n").filter((l) => l.startsWith("FAIL  towns/town-broken.json: cannot read/parse"));
+  assert11.equal(first.code, 1, first.out);
+  assert11.equal(failsOf(first).length, 1, first.out);
+  assert11.equal(failsOf(second).length, 1, second.out);
+  assert11.equal(second.out, first.out);
+});
+
+t11("in-process: placesByRoot does NOT leak — a geography problem FAILs on EVERY run", () => {
+  // Reaching placesDoc() under --only=spine needs BOTH halves, and the test is
+  // vacuous without either: (1) an alias that MISSES the spine, which is what
+  // sends checkSpineExternalAliases down its resolvedWorld() second chance,
+  // and (2) a content root loadPlaces cannot resolve, so there is a problem to
+  // swallow. The rename in (1) is main()'s own documented reproduction.
+  const dir = realContentCopy();
+  cp11(join11(ROOT11, "content/bestiary"), join11(dir, "bestiary"), { recursive: true });
+  const from = join11(dir, "spine/nodes/n-rooktide.json");
+  const doc = JSON.parse(read11(from, "utf8"));
+  doc.id = "n-rooktide-town";
+  write11(join11(dir, "spine/nodes/n-rooktide-town.json"), JSON.stringify(doc, null, 2) + "\n");
+  rmSync(from);
+  rmSync(join11(dir, "spine/sheet.json"), { force: true });
+  const first = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", dir] });
+  const second = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", dir] });
+  const geoOf = (r) => r.out.split("\n").filter((l) => /^FAIL {2}geography: .* has neither a resolvable spine nor/.test(l));
+  assert11.equal(geoOf(first).length, 1, first.out);
+  assert11.equal(geoOf(second).length, 1, second.out);
+  assert11.equal(second.out, first.out);
+});
+
+t11("in-process: no test in this file is async — the console capture's safety argument depends on it", () => {
+  // runSpineGateInProcess swaps console.log/console.error and restores them in
+  // a `finally`. That is safe against interleaving for ONE reason: the call and
+  // its caller are both synchronous, so nothing can run in between — a stronger
+  // guarantee than any --test-concurrency setting. The moment a test in this
+  // file becomes `async`, that reasoning lapses silently and a concurrent
+  // test's output could land in another test's captured buffer. This pins the
+  // premise so the lapse cannot be silent.
+  const src = read11(join11(ROOT11, "scripts/tests/spine-gates.test.mjs"), "utf8");
+  assert11.doesNotMatch(src, /,\s*async\s*\(/);
+});
+
+t11("in-process: a bad flag returns code 2 like a spawn, instead of killing the test runner", () => {
+  // Review finding 2. parseArgs used to `console.error(...) + process.exit(2)`
+  // unconditionally; in-process that is uncatchable, skips the `finally` that
+  // restores console, and takes the runner down — `node --test` then reports
+  // ONE synthetic "test failed" and ERASES the tests that had already passed
+  // from the totals. The three arg-error sites now exit only when
+  // check_content.mjs is the CLI entry, and throw otherwise.
+  const dir = spineFixture();
+  const argv = ["--content-root", dir, "--only=spine", "--nonsense"];
+  const inproc = runSpineGateInProcess({ argv });
+  const spawned = (() => {
+    try { return { code: 0, out: exec11(process.execPath, [GATE11, ...argv], { encoding: "utf8" }) }; }
+    catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+  })();
+  assert11.equal(spawned.code, 2, spawned.out);   // the behaviour being matched, not a constant
+  assert11.equal(inproc.code, 2, inproc.out);
+  assert11.equal(inproc.out, spawned.out);
+  // The runner is still alive and the console still works: this assertion, and
+  // every test after it, only run at all because process.exit() did not fire.
+  assert11.equal(runSpineGateInProcess({ argv: ["--content-root", dir, "--only=spine"] }).code, 0);
+});
+
+t11("in-process: an unsupported --only value also returns 2, and --only=spine is still required", () => {
+  const dir = spineFixture();
+  // Rejected by parseArgs -> ArgError -> code 2, same as a spawn.
+  assert11.equal(runSpineGateInProcess({ argv: ["--content-root", dir, "--only=full"] }).code, 2);
+  // Rejected by runSpineGateInProcess' own --only=spine-only contract. NOT a
+  // spawn-equivalent case by design: a spawn with no --only runs the full
+  // sweep. The plan refuses that here, so it is code 1 with the refusal named.
+  const none = runSpineGateInProcess({ argv: ["--content-root", dir] });
+  assert11.equal(none.code, 1);
+  assert11.match(none.out, /supports --only=spine only/);
+  // A supported input must not answer with a stack trace. This is the whole
+  // point of ModeError having its own branch rather than falling into the
+  // gate-threw one — collapse the two and this assertion goes red.
+  assert11.equal(none.out, "check-content: runSpineGateInProcess supports --only=spine only\n");
+  assert11.doesNotMatch(none.out, /\n {4}at |check_content\.mjs:\d+/);
 });

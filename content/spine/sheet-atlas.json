@@ -9,5 +9,18 @@
   "withheld": [
     "the far interiors, past what any crew has walked",
     "whatever lies past the ice-cap's edge"
-  ]
+  ],
+  "subjects": {
+    "rootId": "n-atlas",
+    "zoneRoot": "n-cluster1",
+    "landIds": ["n-cluster1"],
+    "seaIds": ["n-westsea"],
+    "terrainPatchIds": ["n-eastern-hills"],
+    "mireIds": ["n-saltmire"],
+    "featureIds": {
+      "coast": "f-west-coast",
+      "river": "f-the-meltwash",
+      "iceEdge": "f-northern-ice-edge"
+    }
+  }
 }

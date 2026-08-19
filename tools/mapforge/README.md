@@ -21,26 +21,19 @@ game-client/assets/art/maps/atlas-world.svg       the world sheet
 game-client/assets/art/maps/atlas-world.png       2000 px raster for the storybook
 ```
 
-`content/maps/cluster1-geography.json` is a **generated mirror** of the
-spine (byte-emitted by `emitGeography` in `scripts/check_spine_emit.mjs`),
-kept committed for tooling that still reads flat geography JSON. It is not
-edited by hand and it is not where a map change starts — edit the spine.
+There is **one** source of map truth: the spine, `content/spine/`. A sheet is
+resolved from it in memory by `resolveWorld()` in `scripts/lib/places.mjs` and
+drawn by `render-sheet.mjs`. Plan A retired the generated
+`content/maps/cluster1-geography.json` mirror and the legacy `render-map.mjs`
+CLI that read it; nothing is written to disk between the spine and the sheet.
 
-`render-map.mjs` is the **legacy mirror-driven CLI**: it reads
-`content/maps/cluster1-geography.json` directly and draws the same
-`cluster1` sheet through `lib/basin-sheet.mjs`. It's kept around because its
-`--check` wiring and the byte-parity test (`tests/parity.test.mjs`) pin the
-renderer's determinism against a committed fixture; since the mirror is
-byte-emitted from the spine, `render-map.mjs` and `render-sheet.mjs --sheet
-cluster1` produce identical output. Prefer `render-sheet.mjs` for anything
-new.
-
-`scripts/check_map_render.mjs` is the drift gate (**G-MAP-DRIFT**): it
+`scripts/check_render_lock.mjs` is the drift gate (**G-RENDER-LOCK**): it
 rebuilds every sheet in `render-sheet.mjs`'s `SHEETS` registry from the live
-spine and byte-compares against the committed SVGs, the same contract one
-layer downstream of `check_spine_emit.mjs`'s spine→mirror drift check. Run
-it with `--check` (default, writes nothing) or `--write` (regenerates every
-sheet) after a spine edit.
+spine, hashes each one, and compares against both `content/world/render-lock.json`
+and the committed SVG on disk, printing a unified diff on mismatch. It replaced
+`check_map_render.mjs`, `render-map.mjs --check`, the byte-parity test and its
+47 KB baseline fixture — five comparisons of one artifact collapsed into one
+hash. Run it with `--check` (default, writes nothing) or `--write`.
 
 ## Why this is not a generated image
 
@@ -63,14 +56,9 @@ node tools/mapforge/render-sheet.mjs --sheet atlas               # SVG + PNG
 node tools/mapforge/render-sheet.mjs --sheet cluster1 --no-png   # SVG only
 node tools/mapforge/render-sheet.mjs --sheet cluster1 --check    # self-checks + drift check, write nothing
 
-# drift gate — every sheet in SHEETS, rebuilt from the live spine
-node scripts/check_map_render.mjs             # --check (default): compare, write nothing
-node scripts/check_map_render.mjs --write     # regenerate every sheet's SVG + PNG
-
-# legacy, mirror-driven — reads content/maps/cluster1-geography.json directly
-node tools/mapforge/render-map.mjs            # SVG + PNG (PNG needs rsvg-convert)
-node tools/mapforge/render-map.mjs --no-png   # SVG only
-node tools/mapforge/render-map.mjs --check    # run the self-checks, write nothing
+# drift gate — every sheet in SHEETS, rebuilt from the live spine and hashed
+node scripts/check_render_lock.mjs             # --check (default): compare, write nothing
+node scripts/check_render_lock.mjs --write     # re-baseline content/world/render-lock.json
 ```
 
 Pure Node — **no dependencies, no network, no GPU**. Deterministic: the same
@@ -115,11 +103,11 @@ length runs 0–15% short of `roads[].roadKm` (A1 §5.1's surveyed figure). The
 day-counts lettered on the sheet come from `days`/`roadKm`, never from the
 drawn length.
 
-## Schema — `content/maps/cluster1-geography.json` (mirror shape)
+## Schema — the resolved world document
 
-This is the shape `emitGeography` writes into the mirror and the shape
-`drawBasinSheet` draws from — useful as a reference even though the spine,
-not this file, is what you edit.
+This is the shape `resolveWorld()` (`scripts/lib/places.mjs`) returns in memory
+and the shape `drawBasinSheet` draws from — useful as a reference even though
+the spine, not this document, is what you edit. It is never written to disk.
 
 Coordinates are **km**, `x` east, `y` south (north is smaller `y`) — the
 convention inherited from `content/maps/atlas-frontier.md`. The sheet is
@@ -161,11 +149,11 @@ the residual is always visible.
 ### Changing the map
 
 Edit the spine (`content/spine/`), then `node scripts/check_spine_emit.mjs
---write` to regenerate the mirror and `node tools/mapforge/render-sheet.mjs
---sheet cluster1` (or `--sheet atlas`) to redraw the sheet — read its
-self-check output and look at the PNG. `node scripts/check_map_render.mjs`
-byte-compares every committed sheet against a fresh spine build so drift
-can't slip in. If a town moves, its zone polygon and any road endpoint
+--write` to regenerate every node's `derived` block and `node
+tools/mapforge/render-sheet.mjs --sheet cluster1` (or `--sheet atlas`) to
+redraw the sheet — read its self-check output and look at the PNG. `node
+scripts/check_render_lock.mjs --write` re-baselines
+`content/world/render-lock.json` so drift can't slip in. If a town moves, its zone polygon and any road endpoint
 referencing it must move with it, and the relay towers sampled along that
 road must be recomputed — the tower coordinates are frozen on purpose, so
 that downstream consumers get stable ids.

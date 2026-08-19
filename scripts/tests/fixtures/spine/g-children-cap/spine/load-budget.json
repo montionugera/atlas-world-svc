@@ -1,0 +1,6 @@
+{
+  "maxNodes": 10,
+  "maxChildrenPerParent": 1,
+  "maxRingPoints": 160,
+  "maxBytes": 65536
+}
