@@ -67,7 +67,45 @@ const GEO_HEADER = {
 
 const strip = (n) => n.lore?.geoId ?? n.id.slice(2);
 
-export function resolveWorld({ spine, tree, descriptor = null, fabric = null, civil = null }) {
+// "NEVER throws" is a CONTRACT, and until this wrapper existed it was only an
+// intention. The validation block below guards the descriptor, the tree, the
+// edges array and the EXISTENCE of every subject node — but nothing guards the
+// SHAPE of a node once it resolves. `salt.lore.note`, `coast.attrs.note`,
+// `hills.lore.labelAt`, `C.features.filter`, `C.lore.relay` and ~30 more
+// dereferences in the assembly below all assume an optional block is present,
+// and loadSpine does not require any of them: deleting `lore` from
+// content/spine/nodes/n-saltmire.json loads clean and then throws a raw
+// TypeError here.
+//
+// That throw is not a cosmetic failure. From Task 6 this runs INSIDE
+// check_content.mjs (placesDoc -> loadGeographyZones -> checkBestiaryPlacement),
+// where an uncaught throw skips finish() and takes every gate after it with it.
+// Measured on that exact fixture: the gate printed 0 FAIL lines and 0
+// `content-gate:` summary lines, and the `G-LOAD-BUDGET` failure the same
+// fixture reports under --only=spine vanished completely. A gate that stops
+// checking and says nothing is the failure mode this whole task exists to
+// prevent.
+//
+// Guarding the five fields the reviewer happened to name would leave the sixth
+// open, and Plans B/C/D each add fields to the assembly below. So the guarantee
+// is structural: one wrapper, and every dereference inside is covered — now and
+// for every field added later. A caught error becomes an ordinary in-band
+// problem, which is strictly MORE visible than a stack trace that kills the
+// process before finish() can print anything.
+export function resolveWorld(args) {
+  try {
+    return resolveWorldFromSpine(args);
+  } catch (e) {
+    // Reaching here means a node resolved but was missing a block the assembly
+    // assumes. Name the node-shape cause, and keep the stack for the human.
+    return {
+      doc: null,
+      problems: [`resolveWorld: threw while assembling the world document — a spine node is missing a block the join requires: ${e?.stack ?? e?.message ?? e}`],
+    };
+  }
+}
+
+function resolveWorldFromSpine({ spine, tree, descriptor = null, fabric = null, civil = null }) {
   const problems = [];
   const S = descriptor ?? DEFAULT_SUBJECTS;
   // Plan D supplies fabric/civil and makes spine/tree optional. Until then a

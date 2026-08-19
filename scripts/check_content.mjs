@@ -153,6 +153,20 @@ function placesDoc(contentRoot) {
   if (!placesByRoot.has(contentRoot)) {
     const { doc, problems } = loadPlaces({ contentRoot });
     for (const p of problems) fail(p.startsWith("geography: ") ? p : `geography: ${p}`);
+    // The Risk A2 backstop, and the plan's Step 8(a) acceptance criterion.
+    // All three joins `return 0` on a null doc, so a null doc carrying NO
+    // problem is the one input that zeroes every count while the gate still
+    // exits 0 — checking nothing, reporting nothing, and looking green.
+    // Measured with loadPlaces stubbed to `{doc: null, problems: []}`: exit 0,
+    // `0 placements, 0 zones, 0 towns, 0 failures`.
+    //
+    // loadPlaces holds the other half of this contract today (every one of its
+    // null-doc returns pushes a problem), so this is unreachable from inside
+    // the current library. That is exactly why it is worth one line here: it
+    // turns a cross-module promise that nothing enforces into a local
+    // invariant that cannot be broken silently by a later edit to places.mjs.
+    if (!doc && problems.length === 0)
+      fail(`geography: ${contentRoot} resolved to no document and reported no problem`);
     placesByRoot.set(contentRoot, doc ?? null);
   }
   return placesByRoot.get(contentRoot);
@@ -244,6 +258,18 @@ function listContentFiles(dir, label) {
 }
 
 function main() {
+  // `placesByRoot` is run-scoped state, not process-scoped state — the same
+  // category as `failures` and `warnings`. Clearing it here is a no-op for a
+  // spawned run, and that is the point: it gives the memo an invalidation path
+  // that exists rather than one that is merely unnecessary today.
+  //
+  // Task 13 adds `runSpineGateInProcess`, which resets `failures`, `warnings`,
+  // `zoneHazardsTotal` and `zoneHazardsUnmapped` and calls `checkSpine`
+  // directly. That entry is `--only=spine` only, and --only=spine never reaches
+  // placesDoc, so it cannot serve a stale doc as written — but any widening of
+  // it to the full sweep must reset this map too, or a second in-process run
+  // gets run one's geography and re-reports none of its problems.
+  placesByRoot.clear();
   const opts = parseArgs(process.argv);
   if (opts.only === "spine") {
     // Gate 1 fast path (--only=spine): structural spine gates only (~1 s),

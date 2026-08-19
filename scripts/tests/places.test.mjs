@@ -252,3 +252,65 @@ test("gate joins: the real content root still counts 10 zones, 1 town and its pl
   // every one of these drops to 0 while the gate still exits 0.
   assert.match(r.out, /content-gate: \d+ sheets, \d+ maps, \d+ story, [1-9]\d* placements, 10 zones, 1 towns, 44 nodes, 0 failures/);
 });
+
+// ── the no-throw contract, at the shape level ──────────────────────────────
+// The existing "never throws" tests all break a subject's EXISTENCE, which the
+// validation block guards. None of them broke a resolved node's SHAPE, which
+// nothing guarded — so `resolveWorld` threw a raw TypeError on a node that
+// loadSpine accepts. From Task 6 that throw lands inside check_content.mjs and
+// skips finish(), taking every FAIL and the summary line with it.
+
+test("resolveWorld REPORTS a node missing an optional block, never throws", () => {
+  const { spine, tree } = realTree();
+  // n-saltmire loads clean without `lore`; the assembly reads salt.lore.note.
+  tree.byId.set("n-saltmire", { ...tree.byId.get("n-saltmire"), lore: undefined });
+  const { doc, problems } = resolveWorld({ spine, tree });
+  assert.equal(doc, null);
+  assert.equal(problems.length, 1, JSON.stringify(problems));
+  assert.match(problems[0], /^resolveWorld: threw while assembling the world document/, problems[0]);
+});
+
+test("the gate REPORTS a shape-broken spine node instead of dying without printing", () => {
+  // The whole point: a throw here is not just an ugly failure, it is a gate
+  // that stops checking. Assert the two things a throw destroys — a FAIL line,
+  // and the `content-gate:` summary that only finish() prints.
+  const dir = mkdtempSync(join(tmpdir(), "places-shape-"));
+  try {
+    cpSync(CONTENT, join(dir, "content"), { recursive: true });
+    const node = join(dir, "content/spine/nodes/n-saltmire.json");
+    const parsed = JSON.parse(readFileSync(node, "utf8"));
+    delete parsed.lore;
+    writeFileSync(node, JSON.stringify(parsed, null, 2));
+
+    const r = runFullGate(join(dir, "content"));
+    assert.equal(r.code, 1, r.out);
+    assert.match(r.out, /FAIL {2}geography: resolveWorld: threw while assembling/, r.out);
+    assert.match(r.out, /content-gate: .* failures, .* warnings/, r.out);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("the gate FAILS rather than zeroing its counts when the document is null (Risk A2)", () => {
+  // Plan Step 8(a): "confirm the gate FAILS rather than exiting 0 with zeroed
+  // counts". A null document is the one input that zeroes every count — all
+  // three joins `return 0` on it — so it must never be reachable without a
+  // FAIL. Exercised through the mirror-fallback branch, which is the only
+  // route to a null doc a fixture can actually build.
+  const dir = mkdtempSync(join(tmpdir(), "places-null-"));
+  try {
+    // Real content, minus the spine, plus a mirror holding literal `null`:
+    // enough of a root that the gate reaches the geography join at all.
+    cpSync(CONTENT, join(dir, "content"), { recursive: true });
+    rmSync(join(dir, "content/spine"), { recursive: true, force: true });
+    writeFileSync(join(dir, "content/maps/cluster1-geography.json"), "null\n");
+
+    const r = runFullGate(join(dir, "content"));
+    assert.equal(r.code, 1, r.out);
+    assert.match(r.out, /FAIL {2}geography: .*(shape-invalid|reported no problem)/, r.out);
+    // finish() still ran — the counts are zeroed, but loudly, not silently.
+    assert.match(r.out, /content-gate: .* 0 zones, 0 towns, .* [1-9]\d* failures/, r.out);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

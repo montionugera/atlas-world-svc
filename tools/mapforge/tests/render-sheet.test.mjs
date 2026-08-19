@@ -25,6 +25,13 @@ test("building twice is deterministic", () => {
 });
 
 test("SHEETS entries declare title, outSvg, outPng and maxLabelRank", () => {
+  // Pin the roster before iterating it. A `for…of Object.entries()` over an
+  // empty registry passes every assertion below vacuously — verified: with
+  // `export const SHEETS = {}` this test still reported ok. A test written to
+  // stop the registry going dark must not be able to go dark itself, so the
+  // key set is asserted first. Plan B extends this roster; updating this line
+  // is the deliberate acknowledgement that the roster changed.
+  assert.deepEqual(Object.keys(SHEETS).sort(), ["atlas", "cluster1"]);
   for (const [id, sheet] of Object.entries(SHEETS)) {
     assert.equal(typeof sheet.title, "string", `${id}.title`);
     assert.ok(sheet.title.length > 0, `${id}.title is empty`);
