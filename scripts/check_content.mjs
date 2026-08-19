@@ -71,6 +71,11 @@ const VERTEX_CAP = Object.freeze({
 // the bottom of this file uses. runSpineGateInProcess turns an ArgError into
 // `{code: 2, out}` — the exit code and the message a spawn produces.
 class ArgError extends Error {}
+// The in-process runner's own --only=spine-only refusal. A SEPARATE type from
+// ArgError because it is neither a bad flag (code 2, spawn-identical) nor a
+// gate throwing (code 1 with a stack) — it is a supported call this entry
+// declines, and it earns a one-line answer instead of a stack trace.
+class ModeError extends Error {}
 const isCliEntry = () => Boolean(process.argv[1]) && import.meta.url === pathToFileURL(process.argv[1]).href;
 function argFail(message) {
   if (isCliEntry()) { console.error(message); process.exit(2); }
@@ -2546,6 +2551,15 @@ function gSpineOverlapRollup({ tree, report }) {
 // emits BYTE-IDENTICAL output to a spawn. Duplicating this format string in
 // two places is exactly the drift the gate's own tests would then stop
 // catching, so there is one copy and both callers use it.
+//
+// EXPORTED because the plan's interface table hands it to Plans C, D and E
+// alongside runSpineGateInProcess. Review finding 4, and the reason it is a
+// caution rather than a removal: it READS module state (`failures`,
+// `warnings`, the two hazard counters) and resets nothing, and
+// runSpineGateInProcess resets on ENTRY rather than on exit, so the module is
+// left dirty after a run. Calling this from outside therefore reports the LAST
+// run's numbers, not a fresh zero. It is only meaningful immediately after the
+// run whose totals you want. Nothing outside this file calls it today.
 export function summaryLines({ sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0,
                                zoneCount = 0, townCount = 0, nodeCount = 0 }) {
   const lines = [];
@@ -2647,15 +2661,35 @@ export function runSpineGateInProcess({ argv }) {
   try {
     const opts = parseArgs(["node", "check_content.mjs", ...argv]);
     if (opts.only !== "spine")
-      throw new Error("runSpineGateInProcess supports --only=spine only");
+      throw new ModeError("runSpineGateInProcess supports --only=spine only");
     const mobTypes = loadMobTypes(opts.mobTypes);
     const nodeCount = checkSpine(opts, mobTypes);
     captured.push(...summaryLines({ nodeCount }));
     return { code: failures.length ? 1 : 0, out: captured.join("\n") + "\n" };
   } catch (e) {
-    // Gate functions never throw by contract; if one does, surface it the way
-    // a spawn would (non-zero exit, the message on the output) rather than
-    // taking down the test runner.
+    // THREE distinct outcomes, because two of them are ordinary inputs and
+    // only the third is a bug. Collapsing them was the review's second
+    // comment-contradicts-code finding: the generic branch below was labelled
+    // "unreachable while the no-throw contract holds", and the --only refusal
+    // reached it on a documented input and rendered a supported answer as a
+    // stack trace.
+    //
+    // 1. A bad flag: exactly what a spawn prints, and exactly the code it exits.
+    if (e instanceof ArgError) return { code: 2, out: `${captured.concat(e.message).join("\n")}\n` };
+    // 2. The deliberate --only=spine-only refusal — reached whenever `--only`
+    //    is ABSENT, which is a supported call, not a fault. Deliberately NOT
+    //    spawn-equivalent: a spawn with no --only runs the full sweep and can
+    //    exit 0. Code 1 with a one-line reason, no stack.
+    if (e instanceof ModeError) return { code: 1, out: `${captured.concat(`check-content: ${e.message}`).join("\n")}\n` };
+    // 3. A gate function threw, which its contract says it never does. Surface
+    //    it the way a spawn would (non-zero exit, the message on the output)
+    //    rather than taking down the test runner. Review finding 5, accepted:
+    //    this is the ONE place `out` is not byte-identical to a spawn — a spawn
+    //    puts the stack on stderr, and runGate's spawn form dropped stderr
+    //    entirely, so a spawn's `out` would be empty here while this one
+    //    carries the stack. It fails safe (more diagnosis, non-zero code), and
+    //    the two `equal(inproc.out, spawned.out)` parity tests above go red the
+    //    moment a gate starts throwing on an input they cover.
     captured.push(`check-content: ${e.stack ?? e.message}`);
     return { code: 1, out: captured.join("\n") + "\n" };
   } finally {
@@ -2664,4 +2698,17 @@ export function runSpineGateInProcess({ argv }) {
   }
 }
 
+// Review finding 3, KNOWN AND DELIBERATELY NOT HARDENED. `import.meta.url` is
+// realpath-resolved by Node; `process.argv[1]` is not — so invoking this file
+// through a SYMLINK makes the predicate false and the gate prints nothing and
+// exits 0. A silently-green gate is the worst failure this repo has, so the
+// reasons for leaving it are on the record: every real call site was RUN, not
+// reasoned about — absolute (precheck.sh:142, integration.sh:81), bare relative
+// (ci.yml:79, which sets no working-directory), ./-prefixed, and a path with a
+// `..` segment — and all four print exactly one `content-gate:` line and exit
+// 0; no .sh/.yml/.json/.mjs in the repo invokes it through a symlink; and this
+// line's exact text is pinned by spine-gates.test.mjs and named verbatim in
+// the plan, so loosening it would trade a proven pin for an unproven one
+// inside a task whose whole remit is harness cost. If a symlinked call site
+// ever appears, compare `realpathSync` on both sides.
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();

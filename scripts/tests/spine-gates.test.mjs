@@ -1483,3 +1483,42 @@ t11("in-process: no test in this file is async — the console capture's safety 
   const src = read11(join11(ROOT11, "scripts/tests/spine-gates.test.mjs"), "utf8");
   assert11.doesNotMatch(src, /,\s*async\s*\(/);
 });
+
+t11("in-process: a bad flag returns code 2 like a spawn, instead of killing the test runner", () => {
+  // Review finding 2. parseArgs used to `console.error(...) + process.exit(2)`
+  // unconditionally; in-process that is uncatchable, skips the `finally` that
+  // restores console, and takes the runner down — `node --test` then reports
+  // ONE synthetic "test failed" and ERASES the tests that had already passed
+  // from the totals. The three arg-error sites now exit only when
+  // check_content.mjs is the CLI entry, and throw otherwise.
+  const dir = spineFixture();
+  const argv = ["--content-root", dir, "--only=spine", "--nonsense"];
+  const inproc = runSpineGateInProcess({ argv });
+  const spawned = (() => {
+    try { return { code: 0, out: exec11(process.execPath, [GATE11, ...argv], { encoding: "utf8" }) }; }
+    catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+  })();
+  assert11.equal(spawned.code, 2, spawned.out);   // the behaviour being matched, not a constant
+  assert11.equal(inproc.code, 2, inproc.out);
+  assert11.equal(inproc.out, spawned.out);
+  // The runner is still alive and the console still works: this assertion, and
+  // every test after it, only run at all because process.exit() did not fire.
+  assert11.equal(runSpineGateInProcess({ argv: ["--content-root", dir, "--only=spine"] }).code, 0);
+});
+
+t11("in-process: an unsupported --only value also returns 2, and --only=spine is still required", () => {
+  const dir = spineFixture();
+  // Rejected by parseArgs -> ArgError -> code 2, same as a spawn.
+  assert11.equal(runSpineGateInProcess({ argv: ["--content-root", dir, "--only=full"] }).code, 2);
+  // Rejected by runSpineGateInProcess' own --only=spine-only contract. NOT a
+  // spawn-equivalent case by design: a spawn with no --only runs the full
+  // sweep. The plan refuses that here, so it is code 1 with the refusal named.
+  const none = runSpineGateInProcess({ argv: ["--content-root", dir] });
+  assert11.equal(none.code, 1);
+  assert11.match(none.out, /supports --only=spine only/);
+  // A supported input must not answer with a stack trace. This is the whole
+  // point of ModeError having its own branch rather than falling into the
+  // gate-threw one — collapse the two and this assertion goes red.
+  assert11.equal(none.out, "check-content: runSpineGateInProcess supports --only=spine only\n");
+  assert11.doesNotMatch(none.out, /\n {4}at |check_content\.mjs:\d+/);
+});
