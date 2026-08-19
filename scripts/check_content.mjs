@@ -1512,6 +1512,47 @@ function checkSpineExternalAliases({ opts, report }) {
   const townNode = (slug) =>
     [byId.get(`n-${slug}`), byId.get(`n-${slug}-town`)].find((n) => n && n.tier === "town") ?? null;
 
+  // Plan A Task 9 (X4): the SECOND resolution path. The spine lookup above
+  // stays PRIMARY — on today's content all 35 printed records resolve through
+  // it, byte-identically, and nothing below ever runs. Plan E's 36-node trunk
+  // moves the region and town tiers out of content/spine/nodes/ entirely; at
+  // that point the resolved world document is the only place a zone or town
+  // slug exists, and this path is what stops those references going red in the
+  // redraw commit.
+  //
+  // DEVIATION FROM PLAN, deliberate, and it is the plan's own Step 7 remedy
+  // taken up front. The plan spells this `const world = loadPlaces({...}).doc`
+  // evaluated eagerly at the top of the sweep. Two measured reasons not to:
+  //   (b)/(c) cost — loadPlaces() is a full spine load + tree build + join, and
+  //       this function already did its own loadSpine(). Eager, it is a fourth
+  //       resolve per gate run and a second spine parse inside this function
+  //       alone. Routed through the memoised placesDoc() and called ONLY when a
+  //       slug misses the spine, today's real content never resolves the world
+  //       here at all: `--only=spine` measured 0.55/0.61/0.62 s before and
+  //       0.56/0.55/0.62 s after, with both runs' stdout byte-identical —
+  //       versus a resolve Gate 1 would pay on every run for a path that
+  //       never fires.
+  //   correctness — loadPlaces() REPORTS on a root it cannot resolve
+  //       ("has neither a resolvable spine nor maps/cluster1-geography.json"),
+  //       and placesDoc() turns every such problem into a FAIL. ~45 minimal
+  //       spine fixtures have a spine and no mirror and no subjects descriptor;
+  //       resolving eagerly would have handed every one of them a brand-new
+  //       geography FAIL for a document the fixture never claimed to carry.
+  //       Lazily, they never reach it, because none of their slugs miss.
+  // The memo is placesDoc's, so a full run shares ONE resolve with the three
+  // joins and one problem is reported once, not four times.
+  let resolvedWorldSets = null;
+  const resolvedWorld = () => {
+    if (!resolvedWorldSets) {
+      const doc = placesDoc(opts.contentRoot);
+      const ids = (rows) =>
+        new Set((Array.isArray(rows) ? rows : []).map((r) => r?.id).filter((s) => typeof s === "string"));
+      resolvedWorldSets = { zones: ids(doc?.zones), towns: ids(doc?.towns) };
+    }
+    return resolvedWorldSets;
+  };
+  const sayResolved = (label, slug, kind) => console.log(`spine-alias: ${label} → ${slug} (resolved-${kind})`);
+
   // (1) zone content (spineId optional) + (2) town plans (spineId required)
   for (const [dir, required] of [["zones", false], ["towns", true]]) {
     const d = join(opts.contentRoot, dir);
@@ -1543,11 +1584,9 @@ function checkSpineExternalAliases({ opts, report }) {
         if (m && typeof m.region === "string") counts.set(m.region, (counts.get(m.region) ?? 0) + 1);
       for (const [slug, n] of [...counts.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
         const node = slugNode(slug);
-        if (!node) {
-          report(`spine-alias: bestiary.json region "${slug}": n-${slug} is not a spine node`);
-          continue;
-        }
-        say(`bestiary.json region "${slug}" ×${n}`, node);
+        if (node) { say(`bestiary.json region "${slug}" ×${n}`, node); continue; }
+        if (resolvedWorld().zones.has(slug)) { sayResolved(`bestiary.json region "${slug}" ×${n}`, slug, "zone"); continue; }
+        report(`spine-alias: bestiary.json region "${slug}": neither n-${slug} (spine) nor "${slug}" (resolved world) exists`);
       }
     }
     for (const f of readdirSync(bdir).filter((n) => n.startsWith("placement-") && n.endsWith(".json")).sort()) {
@@ -1555,11 +1594,9 @@ function checkSpineExternalAliases({ opts, report }) {
       const slug = doc && typeof doc.zone === "string" ? doc.zone : null;
       if (!slug) continue;
       const node = slugNode(slug);
-      if (!node) {
-        report(`spine-alias: bestiary/${f}: zone "${slug}": n-${slug} is not a spine node`);
-        continue;
-      }
-      say(`bestiary/${f}`, node);
+      if (node) { say(`bestiary/${f}`, node); continue; }
+      if (resolvedWorld().zones.has(slug)) { sayResolved(`bestiary/${f}`, slug, "zone"); continue; }
+      report(`spine-alias: bestiary/${f}: zone "${slug}": neither n-${slug} (spine) nor "${slug}" (resolved world) exists`);
     }
   }
 
@@ -1608,11 +1645,9 @@ function checkSpineExternalAliases({ opts, report }) {
     for (const key of Object.keys(artDoc?.entries ?? {}).filter((k) => k.startsWith("art:town-")).sort()) {
       const slug = key.slice("art:town-".length);
       const node = townNode(slug);
-      if (!node) {
-        report(`spine-alias: art-manifest ${key}: no town-tier spine node n-${slug} / n-${slug}-town`);
-        continue;
-      }
-      say(`art-manifest ${key}`, node);
+      if (node) { say(`art-manifest ${key}`, node); continue; }
+      if (resolvedWorld().towns.has(slug)) { sayResolved(`art-manifest ${key}`, slug, "town"); continue; }
+      report(`spine-alias: art-manifest ${key}: neither a town-tier spine node n-${slug} / n-${slug}-town nor "${slug}" (resolved world) exists`);
     }
   }
 }

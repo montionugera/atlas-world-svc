@@ -1014,7 +1014,11 @@ test("G-ALIAS sweep: a bestiary region slug with no spine node is a hard FAIL", 
   });
   const r = runAliasGate(dir);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /FAIL\s+spine-alias: bestiary\.json region "nopeland": n-nopeland is not a spine node/);
+  // Plan A Task 9 rewrote this message to name BOTH attempts. This test keeps
+  // its own job — pinning the FAIL severity, not just exit 1 — and follows the
+  // wording. (The plan's Step 3 named only the art:town string as changing;
+  // the two bestiary strings change too, and both live assertions are here.)
+  assert.match(r.out, /FAIL\s+spine-alias: bestiary\.json region "nopeland": neither n-nopeland \(spine\) nor "nopeland" \(resolved world\) exists/);
 });
 
 test("G-ALIAS sweep: a character region link whose record lost its spineId is a hard FAIL", () => {
@@ -1035,7 +1039,81 @@ test("G-ALIAS sweep: an art:town-* key with no town-tier node is a hard FAIL", (
   writeFileSync(artPath, JSON.stringify(art, null, 2));
   const r = runAliasGate(dir, ["--art-manifest", artPath]);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /FAIL\s+spine-alias: art-manifest art:town-nopeville: no town-tier spine node n-nopeville \/ n-nopeville-town/);
+  assert.match(r.out, /FAIL\s+spine-alias: art-manifest art:town-nopeville: neither a town-tier spine node n-nopeville \/ n-nopeville-town nor "nopeville" \(resolved world\) exists/);
+});
+
+// ─── Plan A Task 9: the alias sweep's second resolution path ───────────────
+// X4: 116 bestiary rows + 10 story regions + 6 art:town keys + 10 zone files
+// + 1 town plan all resolve against `n-<slug>` spine nodes today. Plan E's
+// 36-node trunk removes region and town tiers from content/spine/nodes/, so
+// the sweep needs a path through the resolved world document. Landed HERE,
+// with the spine path still PRIMARY, so today's output is byte-identical.
+
+// The RECORD COUNT, not just the exit code. Risk A2: a re-pointed join whose
+// resolution silently returns nothing still exits 0 while checking nothing.
+// 35 is the measured count of printed `spine-alias:` lines on the committed
+// content root at HEAD~1 (10 story regions + 1 town plan + 9 distinct bestiary
+// regions + 1 placement + 8 character links + 6 art:town keys). If the sweep
+// stops examining records this number drops and the test reds; the literal is
+// compared against gate OUTPUT, never against a second copy of itself.
+t11("alias sweep: today's output resolves entirely through the spine (no resolved-* lines)", () => {
+  const r = runGate(join(ROOT, "content"));
+  assert11.equal(r.code, 0, r.stdout);
+  const printed = r.stdout.split("\n").filter((l) => l.includes("spine-alias: "));
+  assert11.equal(printed.length, 35, printed.join("\n"));
+  assert11.match(r.stdout, /spine-alias: bestiary\.json region "millcross" ×\d+ → n-millcross \(town\)/);
+  assert11.doesNotMatch(r.stdout, /\(resolved-zone\)/);
+  assert11.doesNotMatch(r.stdout, /\(resolved-town\)/);
+});
+
+t11("alias sweep: a slug with NO spine node resolves through the world document instead", () => {
+  const dir = aliasContentCopy();
+  // DEVIATION FROM PLAN, load-bearing. The plan's fixture DELETES
+  // content/spine/nodes/n-thornveil.json and expects the resolved world to
+  // still answer. Measured: it does not. The world document is DERIVED from
+  // the spine (places.mjs resolveWorld), so deleting the node deletes the zone
+  // from the world as well — with n-thornveil.json removed, loadPlaces returns
+  // 9 zones and no "thornveil", and the fixture proves nothing. What Plan E
+  // actually does is move the slug OFF the `n-<slug>` id convention while the
+  // world keeps carrying it, so that is what this fixture models: the node is
+  // renamed to n-thornveil-zone and pinned to geoId "thornveil". The world
+  // document still lists zone "thornveil" (measured: 10 zones, unchanged); the
+  // spine lookup for `n-thornveil` now misses. Before this task that is an
+  // immediate FAIL; after it the resolved world answers.
+  const src = join(dir, "content/spine/nodes/n-thornveil.json");
+  const node = JSON.parse(readFileSync(src, "utf8"));
+  node.id = "n-thornveil-zone";
+  node.lore = { ...(node.lore ?? {}), geoId: "thornveil" };
+  writeFileSync(join(dir, "content/spine/nodes/n-thornveil-zone.json"), JSON.stringify(node, null, 2) + "\n");
+  rmSync(src);
+  const r = runAliasGate(dir);
+  // The tree loses the id `n-thornveil`, so OTHER gates go red (the zone-file
+  // and story-region spineId joins, the n-site-thornveil representsNodeId
+  // pointer). This test asserts ONLY that the alias sweep itself no longer
+  // contributes an unresolved-slug failure for thornveil, and that it says so
+  // through the new path rather than by falling silent.
+  assert11.doesNotMatch(r.out, /spine-alias: bestiary\.json region "thornveil": /);
+  assert11.match(r.out, /spine-alias: bestiary\.json region "thornveil" ×\d+ → thornveil \(resolved-zone\)/);
+});
+
+t11("alias sweep: a slug in NEITHER source names both attempts in one message", () => {
+  // Both bestiary families in one fixture. The nopeland test above already
+  // covers the region site's severity, so this one earns its place on the
+  // placement-file site, which nothing else pins, and on the both-attempts
+  // wording that is this task's contract.
+  const dir = aliasContentCopy();
+  const bestiary = join(dir, "content/bestiary/bestiary.json");
+  const rows = JSON.parse(readFileSync(bestiary, "utf8"));
+  rows[0].region = "nowhereshire";
+  writeFileSync(bestiary, JSON.stringify(rows, null, 2) + "\n");
+  const placement = join(dir, "content/bestiary/placement-thornveil.json");
+  const doc = JSON.parse(readFileSync(placement, "utf8"));
+  doc.zone = "nowhereshire";
+  writeFileSync(placement, JSON.stringify(doc, null, 2) + "\n");
+  const r = runAliasGate(dir);
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /spine-alias: bestiary\.json region "nowhereshire": neither n-nowhereshire \(spine\) nor "nowhereshire" \(resolved world\) exists/);
+  assert11.match(r.out, /spine-alias: bestiary\/placement-thornveil\.json: zone "nowhereshire": neither n-nowhereshire \(spine\) nor "nowhereshire" \(resolved world\) exists/);
 });
 
 // ── F-043 Task 4: G-ATLAS-ROLLUP — the world rollup is pinned to committed
