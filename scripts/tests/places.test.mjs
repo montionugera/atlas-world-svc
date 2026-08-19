@@ -314,3 +314,116 @@ test("the gate FAILS rather than zeroing its counts when the document is null (R
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+// ── Task 7: the descriptor, and the two silent filters it kills ────────────
+// The subject ids were spelled into code (DEFAULT_SUBJECTS). Two filters made
+// that worse than a hard-coded list: `n.lore?.order != null` SILENTLY DROPPED
+// any region without the field, and a two-element id exclusion was typed in
+// literally. Scaled to 160 regions, the first is how a region ceases to exist
+// with every gate green.
+
+test("the subject descriptor lives in content/spine/sheet.json, not in code", () => {
+  const sheet = JSON.parse(readFileSync(join(CONTENT, "spine/sheet.json"), "utf8"));
+  assert.ok(sheet.subjects, "content/spine/sheet.json has no `subjects` block");
+  assert.equal(sheet.subjects.rootId, "n-atlas");
+  assert.equal(sheet.subjects.zoneRoot, "n-cluster1");
+  assert.deepEqual(sheet.subjects.landIds, ["n-cluster1"]);
+  assert.deepEqual(sheet.subjects.seaIds, ["n-westsea"]);
+  assert.deepEqual(sheet.subjects.terrainPatchIds, ["n-eastern-hills"]);
+  assert.deepEqual(sheet.subjects.mireIds, ["n-saltmire"]);
+  assert.deepEqual(sheet.subjects.featureIds, {
+    coast: "f-west-coast", river: "f-the-meltwash", iceEdge: "f-northern-ice-edge",
+  });
+});
+
+test("resolveWorld reads subjects from the descriptor and still reproduces the mirror", () => {
+  const { spine, tree } = realTree();
+  const { doc, problems } = resolveWorld({ spine, tree, descriptor: spine.sheet.subjects });
+  assert.deepEqual(problems, []);
+  assert.equal(canonStringify(doc) + "\n", readFileSync(MIRROR, "utf8"));
+});
+
+test("resolveWorld with a descriptor naming a node that does not exist REPORTS with the pinned message", () => {
+  const { spine, tree } = realTree();
+  const bad = { ...spine.sheet.subjects, mireIds: ["n-not-a-node"] };
+  const { doc, problems } = resolveWorld({ spine, tree, descriptor: bad });
+  assert.equal(doc, null);
+  assert.ok(problems.includes('sheet: subject "mireIds[0]" -> "n-not-a-node" does not resolve'), JSON.stringify(problems));
+});
+
+test("resolveWorld with a descriptor naming a feature that does not exist REPORTS", () => {
+  const { spine, tree } = realTree();
+  const bad = { ...spine.sheet.subjects, featureIds: { ...spine.sheet.subjects.featureIds, river: "f-nope" } };
+  const { problems } = resolveWorld({ spine, tree, descriptor: bad });
+  assert.ok(problems.includes('sheet: subject "river" -> "f-nope" does not resolve'), JSON.stringify(problems));
+});
+
+test("R3: a region under zoneRoot with NO lore.order now FAILS instead of vanishing", () => {
+  const { spine, tree } = realTree();
+  // The mire and the terrain patch are region-tier children that are NOT
+  // zones, and neither carries a lore.order — so the rule is scoped by the
+  // descriptor's own exclusion, not by a null check. Pick a victim that IS a
+  // zone.
+  const S = spine.sheet.subjects;
+  const notAZone = new Set([...S.mireIds, ...S.terrainPatchIds]);
+  const victim = (tree.childrenOf.get(S.zoneRoot) ?? [])
+    .map((i) => tree.byId.get(i))
+    .find((n) => n.tier === "region" && !notAZone.has(n.id));
+  assert.ok(victim, "no eligible region found in the committed spine");
+  tree.byId.set(victim.id, { ...victim, lore: { ...victim.lore, order: undefined } });
+  const { doc, problems } = resolveWorld({ spine, tree, descriptor: S });
+  assert.equal(doc, null);
+  assert.ok(
+    problems.some((p) => p.includes(victim.id) && p.includes("lore.order")),
+    `expected a lore.order problem naming ${victim.id}, got ${JSON.stringify(problems)}`,
+  );
+});
+
+test("R3 is scoped: the descriptor's own mire and terrain patch are exempt", () => {
+  // The counterpart of the test above, and the one that keeps the rule honest:
+  // n-saltmire and n-eastern-hills are region-tier children of the zoneRoot
+  // that carry NO lore.order in the committed spine. A rule that demanded one
+  // from every region child would go red on content that is correct.
+  const { spine, tree } = realTree();
+  const S = spine.sheet.subjects;
+  for (const id of [...S.mireIds, ...S.terrainPatchIds]) {
+    const n = tree.byId.get(id);
+    assert.equal(n.tier, "region", `${id} is not a region child — the exemption is testing nothing`);
+    assert.equal(n.lore?.order, undefined, `${id} now carries a lore.order — the exemption is testing nothing`);
+  }
+  const { problems } = resolveWorld({ spine, tree, descriptor: S });
+  assert.deepEqual(problems, []);
+});
+
+test("the emitted zones array is exactly the region children minus the descriptor's non-zones", () => {
+  const { spine, tree } = realTree();
+  const S = spine.sheet.subjects;
+  const kids = (tree.childrenOf.get(S.zoneRoot) ?? []).map((i) => tree.byId.get(i));
+  const regionKids = kids.filter((n) => n.tier === "region");
+  const { doc } = resolveWorld({ spine, tree, descriptor: S });
+  assert.equal(regionKids.length, 12);
+  assert.equal(doc.zones.length, regionKids.length - S.mireIds.length - S.terrainPatchIds.length);
+  assert.equal(doc.zones.length, 10);
+});
+
+test("the DEFAULT_SUBJECTS constant is gone — the descriptor is the only source", async () => {
+  const mod = await import("../lib/places.mjs");
+  assert.equal(mod.DEFAULT_SUBJECTS, undefined,
+    "DEFAULT_SUBJECTS still exists: two sources of subject ids means two ways for a sheet to break");
+});
+
+test("places.mjs names no spine id in its source — every id comes from the descriptor", () => {
+  // Acceptance criterion 12, this adapter's half. `DEFAULT_SUBJECTS is gone`
+  // above only pins the export NAME; this pins the property the criterion is
+  // actually about, so re-spelling the same ids under a different constant
+  // (or inline at a call site) still goes red.
+  //
+  // Scope, stated so the test does not overclaim: it matches QUOTED spine ids
+  // (n-… / f-…). One spine-id-shaped token survives deliberately and is not a
+  // quoted id — the /^f-tower-\d/ regex in the relay assembly — because it
+  // names a FAMILY of features, not one id; moving that is Plan B's job.
+  const src = readFileSync(join(ROOT, "scripts/lib/places.mjs"), "utf8");
+  const hits = src.match(/["'`](n|f)-[a-z0-9-]+["'`]/g) ?? [];
+  assert.deepEqual(hits, [],
+    `places.mjs still spells spine ids in code: ${hits.join(", ")}`);
+});

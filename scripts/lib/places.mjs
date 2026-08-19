@@ -25,19 +25,12 @@ export const WORLD_DOC_KEYS = Object.freeze([
   "zones", "towns", "camps", "roads", "relay", "distances", "seaLane", "sheet",
 ]);
 
-// The subject descriptor. Task 7 moves this into content/spine/sheet.json's
-// `subjects` block and deletes this constant; until then it holds EXACTLY the
-// ids check_spine_emit.mjs:104-132 spelled inline, so the move is a pure
-// relocation with no behaviour change.
-export const DEFAULT_SUBJECTS = Object.freeze({
-  rootId: "n-atlas",
-  zoneRoot: "n-cluster1",
-  landIds: ["n-cluster1"],
-  seaIds: ["n-westsea"],
-  terrainPatchIds: ["n-eastern-hills"],
-  mireIds: ["n-saltmire"],
-  featureIds: { coast: "f-west-coast", river: "f-the-meltwash", iceEdge: "f-northern-ice-edge" },
-});
+// Plan A Task 7: the subject descriptor is DATA. It lives in
+// content/spine/sheet.json's `subjects` block — the same file the sheet's
+// title, hand and withheld list already live in — and there is no in-code
+// default. Two sources of subject ids would be two ways for a sheet to break,
+// and the code half would be the one nobody reviews when the basin is renamed.
+// scripts/tests/places.test.mjs pins that no spine id is quoted in this file.
 
 export const GEOGRAPHY_VERSION = 2;
 
@@ -107,7 +100,11 @@ export function resolveWorld(args) {
 
 function resolveWorldFromSpine({ spine, tree, descriptor = null, fabric = null, civil = null }) {
   const problems = [];
-  const S = descriptor ?? DEFAULT_SUBJECTS;
+  const S = descriptor ?? spine?.sheet?.subjects ?? null;
+  if (!S) {
+    problems.push("sheet: content/spine/sheet.json has no `subjects` descriptor — the sheet's subject ids are DATA, not code");
+    return { doc: null, problems };
+  }
   // Plan D supplies fabric/civil and makes spine/tree optional. Until then a
   // caller passing either is asking for a join this build cannot do, and
   // silently ignoring it would be the worst of the three options.
@@ -167,9 +164,29 @@ function resolveWorldFromSpine({ spine, tree, descriptor = null, fabric = null, 
   if (problems.length) return { doc: null, problems };
 
   const kids = (id) => (tree.childrenOf.get(id) ?? []).map((i) => tree.byId.get(i));
-  const regions = kids(S.zoneRoot)
-    .filter((n) => n.tier === "region" && n.lore?.order != null)
-    .sort((a, b) => a.lore.order - b.lore.order);
+
+  // R3: enumerate the region children of zoneRoot and REQUIRE a lore.order on
+  // every one that is a zone. The old `.filter(n => n.lore?.order != null)`
+  // SILENTLY DROPPED any region without the field — with a null-check scaled to
+  // 160 regions, a region ceases to exist with every gate green. A missing
+  // order inside this scope is now a FAIL.
+  //
+  // DEVIATION FROM PLAN (Task 7 Step 4c), and the reason for it: the plan
+  // scopes the rule to `n.tier === "region"` alone and asserts "all 12
+  // committed children carry one". They do not — the mire and the terrain
+  // patch are region-tier children that are NOT zones and carry no lore.order,
+  // so the plan's literal rule goes RED on content that is correct. The scope
+  // is therefore the descriptor's own non-zone lists, which is also what the
+  // plan wanted from the second filter it kills: the two-element id exclusion
+  // that used to be typed into the emitter is now read from the descriptor.
+  // Byte-identical today: the same 10 zones, in the same order.
+  const excluded = new Set([...S.mireIds, ...S.terrainPatchIds]);
+  const scoped = kids(S.zoneRoot).filter((n) => n.tier === "region" && !excluded.has(n.id));
+  for (const r of scoped)
+    if (r.lore?.order == null)
+      problems.push(`sheet: region "${r.id}" under "${S.zoneRoot}" has no lore.order — a region without an order is dropped silently, which is how a region ceases to exist with every gate green`);
+  if (problems.length) return { doc: null, problems };
+  const regions = [...scoped].sort((a, b) => a.lore.order - b.lore.order);
   const rootAt = (n) => n.parentId === null
     ? n.placement.anchor
     : resolveToRoot({ tree, id: n.parentId, point: n.placement.anchor });
@@ -178,7 +195,6 @@ function resolveWorldFromSpine({ spine, tree, descriptor = null, fabric = null, 
   const camps = townNodes.filter((n) => n.tags.includes("camp"));
   const endName = (e, side) => e.attrs[side === "from" ? "geoFrom" : "geoTo"]
     ?? strip(tree.byId.get(e[side].node));
-  const excluded = new Set([...S.mireIds, ...S.terrainPatchIds]);
 
   const doc = {
     ...GEO_HEADER,
@@ -190,7 +206,10 @@ function resolveWorldFromSpine({ spine, tree, descriptor = null, fabric = null, 
     iceEdge: { id: "northern-ice-edge", note: ice.attrs.note, hardEdgeAtY: ice.attrs.hardEdgeAtY, shelfLip: ice.points },
     terrainPatches: [{ id: "eastern-hills", label: hills.title, terrainKind: hills.terrainKind,
       labelAt: hills.lore.labelAt, note: hills.lore.note, polygon: hills.placement.points }],
-    zones: regions.filter((r) => !excluded.has(r.id)).map((r) => {
+    // `regions` is already the descriptor-scoped list: the mire and the
+    // terrain patch were excluded before the lore.order rule ran, so there is
+    // no second filter here.
+    zones: regions.map((r) => {
       const town = kids(r.id).find((n) => n.tier === "town" && !n.tags.includes("camp"));
       return {
         id: strip(r), name: r.title, order: r.lore.order, levelBand: r.levelBand,
@@ -262,7 +281,12 @@ export function loadPlaces({ contentRoot }) {
     const spine = loadSpine({ contentRoot });
     if (spine.present && spine.errors.length === 0) {
       const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
-      if (tree.errors.length === 0 && tree.byId.has(DEFAULT_SUBJECTS.zoneRoot))
+      // Task 7: the zoneRoot is the descriptor's, not a constant's. A content
+      // root whose spine carries no sheet.json (or no `subjects` in it) has no
+      // zoneRoot to test, so it falls THROUGH to the mirror exactly as a root
+      // with no spine does — which is what the ~45 minimal fixture roots need.
+      const zoneRoot = spine.sheet?.subjects?.zoneRoot;
+      if (tree.errors.length === 0 && zoneRoot && tree.byId.has(zoneRoot))
         return resolveWorld({ spine, tree });
     }
   }

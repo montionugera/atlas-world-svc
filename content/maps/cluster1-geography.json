@@ -854,6 +854,19 @@
       "at": [27.2, 34.4],
       "label": "N"
     },
-    "withheld": ["the far-mirror stations", "which ground is buried and which is not", "Cindervast's interior", "the icefield beyond the shelf lip", "the pass behind Cindervast", "the sea beyond a day's sail", "villages — there are none named anywhere in the corpus"]
+    "withheld": ["the far-mirror stations", "which ground is buried and which is not", "Cindervast's interior", "the icefield beyond the shelf lip", "the pass behind Cindervast", "the sea beyond a day's sail", "villages — there are none named anywhere in the corpus"],
+    "subjects": {
+      "rootId": "n-atlas",
+      "zoneRoot": "n-cluster1",
+      "landIds": ["n-cluster1"],
+      "seaIds": ["n-westsea"],
+      "terrainPatchIds": ["n-eastern-hills"],
+      "mireIds": ["n-saltmire"],
+      "featureIds": {
+        "coast": "f-west-coast",
+        "river": "f-the-meltwash",
+        "iceEdge": "f-northern-ice-edge"
+      }
+    }
   }
 }

@@ -4,7 +4,13 @@
   "hand": "A1 §7: a world map is an artifact made by someone, for a purpose. This one is drawn by the institution that owns the towers, maintained because the towers must be maintained, and copied for anyone who asks.",
   "noScaleBar": true,
   "scaleBarNote": "A1 §7.1: the map has no scale bar; it has a walking table.",
-  "northMark": { "at": [27.2, 34.4], "label": "N" },
+  "northMark": {
+    "at": [
+      27.2,
+      34.4
+    ],
+    "label": "N"
+  },
   "withheld": [
     "the far-mirror stations",
     "which ground is buried and which is not",
@@ -17,10 +23,18 @@
   "subjects": {
     "rootId": "n-atlas",
     "zoneRoot": "n-cluster1",
-    "landIds": ["n-cluster1"],
-    "seaIds": ["n-westsea"],
-    "terrainPatchIds": ["n-eastern-hills"],
-    "mireIds": ["n-saltmire"],
+    "landIds": [
+      "n-cluster1"
+    ],
+    "seaIds": [
+      "n-westsea"
+    ],
+    "terrainPatchIds": [
+      "n-eastern-hills"
+    ],
+    "mireIds": [
+      "n-not-a-node"
+    ],
     "featureIds": {
       "coast": "f-west-coast",
       "river": "f-the-meltwash",

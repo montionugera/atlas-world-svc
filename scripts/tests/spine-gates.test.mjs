@@ -1172,3 +1172,45 @@ t11("G-RECT red: a rect with both extents negative fails", () => {
   assert11.equal(r.code, 1, r.out);
   assert11.match(r.out, /G-RECT: n-r: rect extent w=-20 h=-20/);
 });
+
+// ─── Plan A Task 7 · the sheet subject descriptor ───────────────────────────
+// Built on realSpineCopy(), NOT on the `base` fixture: base's nodes are
+// n-c/n-r/n-w, so it has no zoneRoot at all and collectOutputs skips the
+// geography emit entirely — the test would prove nothing. Only spine/sheet.json
+// is overwritten, so the ONLY difference from a green run is the bad subject.
+t11("sheet subjects: a descriptor naming a missing node REPORTS, never a raw TypeError", () => {
+  const dir = realSpineCopy();
+  cp11(join11(FIX, "g-sheet-subject-missing"), dir, { recursive: true });
+  const r = runEmit(dir, ["--check"]);
+  assert11.equal(r.code, 1, r.out);
+  assert11.doesNotMatch(r.out, /TypeError/);
+  assert11.match(r.out, /does not resolve/);
+});
+
+t11("sheet subjects: a spine whose sheet.json has NO subjects block REPORTS", () => {
+  // The other half of "the ids are data": deleting the descriptor must be a
+  // named diagnosis, not a crash and not a silently-skipped mirror.
+  const dir = realSpineCopy();
+  const p = join11(dir, "spine/sheet.json");
+  const doc = JSON.parse(read11(p, "utf8"));
+  delete doc.subjects;
+  write11(p, JSON.stringify(doc, null, 2) + "\n");
+  const r = runEmit(dir, ["--check"]);
+  assert11.equal(r.code, 1, r.out);
+  assert11.doesNotMatch(r.out, /TypeError/);
+  assert11.match(r.out, /has no `subjects` descriptor/);
+});
+
+t11("sheet subjects: a zone region losing its lore.order REPORTS instead of vanishing", () => {
+  // R3 end-to-end, through the emitter the gate actually runs. Before Task 7
+  // this produced a mirror with NINE zones and exit 0.
+  const dir = realSpineCopy();
+  const p = join11(dir, "spine/nodes/n-thornveil.json");
+  const doc = JSON.parse(read11(p, "utf8"));
+  delete doc.lore.order;
+  write11(p, JSON.stringify(doc, null, 2) + "\n");
+  const r = runEmit(dir, ["--check"]);
+  assert11.equal(r.code, 1, r.out);
+  assert11.doesNotMatch(r.out, /TypeError/);
+  assert11.match(r.out, /has no lore\.order/);
+});
