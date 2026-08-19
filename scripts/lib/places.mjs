@@ -76,6 +76,37 @@ export function resolveWorld({ spine, tree, descriptor = null, fabric = null, ci
   if (fabric !== null || civil !== null)
     problems.push("resolveWorld: fabric/civil joins are Plan D — this build resolves from the spine only");
 
+  // Input shape, checked BEFORE anything dereferences it. "NEVER throws" is
+  // load-bearing rather than stylistic: from Task 6 three gate joins call this
+  // from inside check_content.mjs, where an uncaught throw skips finish() and
+  // silently drops every FAIL already recorded.
+  //   - `descriptor`: Task 7 feeds it from content/spine/sheet.json, so a
+  //     missing `featureIds`/`mireIds` key is the realistic failure and must be
+  //     a named diagnosis, not `TypeError: … reading 'coast'`.
+  //   - `spine.edges`: loadSpine (spine.mjs:228) only applies `?? []` to a
+  //     null/absent read, so an edges.json that parses to a non-array reaches
+  //     the three `.filter()` calls below with no error recorded upstream.
+  //   - `tree`: duck-typed on .get so a cross-realm Map still passes.
+  if (!S || typeof S !== "object") {
+    problems.push("resolveWorld: descriptor is not an object");
+  } else {
+    if (typeof S.zoneRoot !== "string")
+      problems.push("resolveWorld: descriptor.zoneRoot is missing or not a string");
+    for (const k of ["mireIds", "terrainPatchIds"])
+      if (!Array.isArray(S[k]) || S[k].length === 0)
+        problems.push(`resolveWorld: descriptor.${k} is missing or empty`);
+    if (!S.featureIds || typeof S.featureIds !== "object")
+      problems.push("resolveWorld: descriptor.featureIds is missing or not an object");
+    else
+      for (const k of ["coast", "river", "iceEdge"])
+        if (typeof S.featureIds[k] !== "string")
+          problems.push(`resolveWorld: descriptor.featureIds.${k} is missing or not a string`);
+  }
+  if (typeof tree?.byId?.get !== "function" || typeof tree?.childrenOf?.get !== "function")
+    problems.push("resolveWorld: tree is missing its byId/childrenOf maps");
+  if (!Array.isArray(spine?.edges)) problems.push("resolveWorld: spine.edges is not an array");
+  if (problems.length) return { doc: null, problems };
+
   const node = (key, id) => {
     const n = tree.byId.get(id);
     if (!n) problems.push(`sheet: subject "${key}" -> "${id}" does not resolve`);
@@ -199,12 +230,27 @@ export function loadPlaces({ contentRoot }) {
   }
   const mirror = join(contentRoot, "maps/cluster1-geography.json");
   if (existsSync(mirror)) {
+    let parsed;
     try {
-      return { doc: JSON.parse(readFileSync(mirror, "utf8")), problems };
+      parsed = JSON.parse(readFileSync(mirror, "utf8"));
     } catch (e) {
       problems.push(`geography: ${mirror}: ${e.message}`);
       return { doc: null, problems };
     }
+    // A mirror holding literal `null` (or an array, or a bare scalar) PARSES
+    // fine. Without this guard it returned { doc: null, problems: [] } — a null
+    // doc with zero diagnostics — and all three gate joins `return 0` on a null
+    // doc, so the gate goes silently dark instead of red. This guard is not new
+    // defensiveness: it is the one check_content.mjs's loadGeographyZones /
+    // loadGeographyTowns already carry ("is shape-invalid — expected { zones:
+    // [...] }"), whose own comment records that a file holding literal `null`
+    // bit this repo once. Task 6 re-points those loaders here, so the guard has
+    // to arrive with the source it protects.
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      problems.push(`geography: ${mirror} is shape-invalid — expected a JSON object`);
+      return { doc: null, problems };
+    }
+    return { doc: parsed, problems };
   }
   problems.push(`geography: ${contentRoot} has neither a resolvable spine nor maps/cluster1-geography.json`);
   return { doc: null, problems };

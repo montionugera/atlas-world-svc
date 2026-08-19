@@ -165,3 +165,68 @@ test("loadPlaces falls back to the mirror when the spine is present but BROKEN",
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+// ── the contract in the direction that matters: doc null => problems non-empty ──
+// The suite above pins the converse (never a doc WITH problems). This half is
+// the one Task 6 leans on: all three gate joins `return 0` on a null doc, so a
+// null doc carrying ZERO problems is a gate that stopped checking while still
+// exiting 0.
+
+test("loadPlaces REPORTS a mirror that parses to a non-object, never returns a silent null", () => {
+  for (const body of ["null", "[]", "123", '"hi"', "true"]) {
+    const dir = mkdtempSync(join(tmpdir(), "places-shape-"));
+    try {
+      mkdirSync(join(dir, "maps"), { recursive: true });
+      writeFileSync(join(dir, "maps/cluster1-geography.json"), body);
+      const { doc, problems } = loadPlaces({ contentRoot: dir });
+      assert.equal(doc, null, `mirror body ${body} was accepted as a doc`);
+      assert.equal(problems.length, 1, `mirror body ${body}: ${JSON.stringify(problems)}`);
+      assert.match(problems[0], /shape-invalid/, problems[0]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+});
+
+test("resolveWorld REPORTS a partial descriptor, never throws (the Task 7 sheet.json path)", () => {
+  const { spine, tree } = realTree();
+  const full = {
+    rootId: "n-atlas", zoneRoot: "n-cluster1", landIds: ["n-cluster1"], seaIds: ["n-westsea"],
+    terrainPatchIds: ["n-eastern-hills"], mireIds: ["n-saltmire"],
+    featureIds: { coast: "f-west-coast", river: "f-the-meltwash", iceEdge: "f-northern-ice-edge" },
+  };
+  // The full descriptor must still resolve — the guard may not reject the
+  // shape Task 7 is about to commit into content/spine/sheet.json.
+  const ok = resolveWorld({ spine, tree, descriptor: full });
+  assert.deepEqual(ok.problems, []);
+  assert.equal(canonStringify(ok.doc) + "\n", readFileSync(MIRROR, "utf8"));
+
+  for (const key of ["zoneRoot", "featureIds", "mireIds", "terrainPatchIds"]) {
+    const partial = { ...full };
+    delete partial[key];
+    const { doc, problems } = resolveWorld({ spine, tree, descriptor: partial });
+    assert.equal(doc, null, `descriptor without ${key} produced a doc`);
+    assert.ok(problems.some((p) => p.includes(key)), `${key}: ${JSON.stringify(problems)}`);
+  }
+  const { doc, problems } = resolveWorld({ spine, tree, descriptor: { ...full, featureIds: { coast: "f-west-coast" } } });
+  assert.equal(doc, null);
+  assert.ok(problems.some((p) => p.includes("featureIds.river")), JSON.stringify(problems));
+});
+
+test("resolveWorld REPORTS a non-array spine.edges, never throws", () => {
+  // loadSpine only applies `?? []` to a null/absent edges.json, so an
+  // edges.json holding {"edges": []} reaches the three .filter() calls.
+  const { spine, tree } = realTree();
+  const { doc, problems } = resolveWorld({ spine: { ...spine, edges: { edges: [] } }, tree });
+  assert.equal(doc, null);
+  assert.ok(problems.some((p) => p.includes("spine.edges")), JSON.stringify(problems));
+});
+
+test("resolveWorld REPORTS a tree that is not a built tree, never throws", () => {
+  const { spine } = realTree();
+  for (const tree of [null, {}, { byId: {}, childrenOf: {} }]) {
+    const { doc, problems } = resolveWorld({ spine, tree });
+    assert.equal(doc, null);
+    assert.ok(problems.some((p) => p.includes("tree")), JSON.stringify(problems));
+  }
+});
