@@ -5,7 +5,7 @@
 // any hard failure exits 1, --require-complete escalates coverage warns.
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { dirname, resolve, join, basename } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import yaml from "js-yaml";
 import { STORY_FILES, loadStory, readJson, compileSchema } from "./lib/story.mjs";
 import { checkSpawnPairing } from "./lib/spawn-pairing.mjs";
@@ -23,9 +23,12 @@ import {
   floodFillRegions,
   cellIndexAt,
 } from "./lib/town-geometry.mjs";
-// F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs — this
-// file ends in a bare main() + process.exit() and is not importable, so gate
-// tests spawn it as a child process against fixture content roots.
+// F-041: the tier-spine gates. ALL pure logic lives in lib/spine.mjs.
+// Plan A Task 13: this file used to end in a bare `main();`, so importing it
+// ran the whole gate and called process.exit() — that is why gate tests
+// spawned it. It now ends in an `import.meta.url` entry guard and exports
+// `runSpineGateInProcess`, so `--only=spine` fixture runs are in-process.
+// The full sweep still spawns (see that export's header for why).
 import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -2518,9 +2521,15 @@ function gSpineOverlapRollup({ tree, report }) {
   }
 }
 
-function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0, nodeCount = 0) {
-  for (const w of warnings) console.log(`WARN  ${w}`);
-  for (const f of failures) console.log(`FAIL  ${f}`);
+// Plan A Task 13: the summary lines, extracted so the in-process entry below
+// emits BYTE-IDENTICAL output to a spawn. Duplicating this format string in
+// two places is exactly the drift the gate's own tests would then stop
+// catching, so there is one copy and both callers use it.
+export function summaryLines({ sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0,
+                               zoneCount = 0, townCount = 0, nodeCount = 0 }) {
+  const lines = [];
+  for (const w of warnings) lines.push(`WARN  ${w}`);
+  for (const f of failures) lines.push(`FAIL  ${f}`);
   // I-060 design §7: Z5's WARN is an accepted blind spot, so the ratio it
   // measures is printed as its own line. The generic warning total conflates
   // it with character-coverage and story-orphan warns and is not that signal.
@@ -2534,9 +2543,85 @@ function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0
   // PRESENT on the ten-record fixture), so the guard cannot be removed or
   // inverted silently.
   if (zoneCount > 0 || zoneHazardsTotal > 0)
-    console.log(`zone-content: ${zoneHazardsUnmapped} of ${zoneHazardsTotal} hazards have no runtime effect`);
-  console.log(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${zoneCount} zones, ${townCount} towns, ${nodeCount} nodes, ${failures.length} failures, ${warnings.length} warnings`);
+    lines.push(`zone-content: ${zoneHazardsUnmapped} of ${zoneHazardsTotal} hazards have no runtime effect`);
+  lines.push(`content-gate: ${sheetCount} sheets, ${mapCount} maps, ${storyCount} story, ${placementCount} placements, ${zoneCount} zones, ${townCount} towns, ${nodeCount} nodes, ${failures.length} failures, ${warnings.length} warnings`);
+  return lines;
+}
+
+function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0, nodeCount = 0) {
+  for (const line of summaryLines({ sheetCount, mapCount, storyCount, placementCount, zoneCount, townCount, nodeCount }))
+    console.log(line);
   process.exit(failures.length ? 1 : 0);
 }
 
-main();
+// Plan A Task 13 — the in-process entry, for the gate's own test suite.
+//
+// scripts/tests/spine-gates.test.mjs spawned check_content.mjs ~60 times at
+// ~0.4 s of Node startup + ajv compile each; the suite cost 93.3 s of a
+// 108 s content lane when this plan was written. This runs the SAME
+// checkSpine() against the SAME parsed options and returns the SAME
+// {code, out} a spawn produces.
+//
+// --only=spine ONLY. The full sweep mutates far more module state (the story
+// loader, the character/manifest sweeps) and resetting it safely is not worth
+// the risk; runAliasGate, runContentGate and runEmit stay as spawns.
+//
+// console is captured rather than threaded through a collector because every
+// gate helper already writes with console.log and rewriting ~40 call sites to
+// take an injected sink would be a far larger diff for the same result. The
+// swap is restored in a `finally`, so a throw inside checkSpine cannot leave
+// the test runner's console broken.
+//
+// EVERY module-level mutable binding in this file is reset here. There are
+// SIX, not the four the plan's risk A7 names — the enumeration below is the
+// contract, and `no-leak: …` in spine-gates.test.mjs pins the ones a run can
+// actually observe:
+//   1. `failures`   (:225)  — reset; the exit code and every FAIL line read it
+//   2. `warnings`   (:226)  — reset; every WARN line reads it
+//   3. `zoneHazardsTotal`   (:231) — reset; summaryLines' guard reads it
+//   4. `zoneHazardsUnmapped`(:232) — reset; the ratio line reads it
+//   5. `townPlansCache`     (:1255) — reset. It IS keyed by content root, so
+//      cross-root reuse is already impossible; the leak it carries is
+//      SAME-root re-entry, where the memo short-circuits before the
+//      `cannot read/parse` + schema FAILs are pushed, so a second run against
+//      one root would print fewer failures than a spawn.
+//   6. `placesByRoot`       (:154) — reset, for exactly the same reason, and
+//      because main() already clears it (see the note there: checkSpine ->
+//      checkSpineExternalAliases -> placesDoc is reachable under --only=spine
+//      whenever an alias misses the spine).
+// A seventh candidate, `compileSchema`'s ajv cache, lives in lib/story.mjs and
+// is keyed by absolute schema path; fixture roots get fresh mkdtemp paths, so
+// it is a cache, not state. It is deliberately NOT reset — clearing it would
+// give back the ajv-compile cost this task exists to remove.
+export function runSpineGateInProcess({ argv }) {
+  failures.length = 0;
+  warnings.length = 0;
+  zoneHazardsTotal = 0;
+  zoneHazardsUnmapped = 0;
+  townPlansCache = null;
+  placesByRoot.clear();
+  const captured = [];
+  const realLog = console.log, realError = console.error;
+  console.log = (...a) => captured.push(a.join(" "));
+  console.error = (...a) => captured.push(a.join(" "));
+  try {
+    const opts = parseArgs(["node", "check_content.mjs", ...argv]);
+    if (opts.only !== "spine")
+      throw new Error("runSpineGateInProcess supports --only=spine only");
+    const mobTypes = loadMobTypes(opts.mobTypes);
+    const nodeCount = checkSpine(opts, mobTypes);
+    captured.push(...summaryLines({ nodeCount }));
+    return { code: failures.length ? 1 : 0, out: captured.join("\n") + "\n" };
+  } catch (e) {
+    // Gate functions never throw by contract; if one does, surface it the way
+    // a spawn would (non-zero exit, the message on the output) rather than
+    // taking down the test runner.
+    captured.push(`check-content: ${e.stack ?? e.message}`);
+    return { code: 1, out: captured.join("\n") + "\n" };
+  } finally {
+    console.log = realLog;
+    console.error = realError;
+  }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();

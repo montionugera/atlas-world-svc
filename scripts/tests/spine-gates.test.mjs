@@ -6,6 +6,12 @@ import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadSpine, TIER_DEPTH, buildTree, deriveNode } from "../lib/spine.mjs";
+// Plan A Task 13: the gate, imported rather than spawned. Safe only because
+// check_content.mjs now ends in an `import.meta.url` entry guard — before it
+// did, this import ran the whole gate and called process.exit(), and `node
+// --test` reported that as "tests 1 / pass 1 / fail 0", exit 0. A green run
+// of one test out of 87. The last test in this file pins the guard's source.
+import { runSpineGateInProcess } from "../check_content.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_content.mjs");
@@ -23,13 +29,14 @@ export function contentRootFor(fixture) {
   return dir;
 }
 
+// Plan A Task 13: in-process, not spawned. ~60 spawns at ~0.4 s of Node
+// startup + ajv compile each was 93.3 s of a 108 s content-gate suite.
+// Return-property names are UNCHANGED (`code`/`stdout`) — ~50 tests across the
+// four helpers destructure them, and renaming would have made this diff touch
+// assertion lines, which is precisely what a harness change must not do.
 export function runGate(contentRoot) {
-  try {
-    const stdout = execFileSync(process.execPath, [GATE, "--content-root", contentRoot, "--only=spine"], { encoding: "utf8" });
-    return { code: 0, stdout };
-  } catch (e) {
-    return { code: e.status, stdout: (e.stdout ?? "").toString() };
-  }
+  const r = runSpineGateInProcess({ argv: ["--content-root", contentRoot, "--only=spine"] });
+  return { code: r.code, stdout: r.out };
 }
 
 // ── schema discipline (the town-plan.test.mjs:105-118 pin, applied here) ───
@@ -224,11 +231,9 @@ function spineFixture({ overlayDir = null, mutate = null } = {}) {
   if (mutate) mutate(dir);
   return dir;
 }
+// Plan A Task 13: in-process, not spawned. See runGate's header.
 function runSpineGate(dir) {
-  try {
-    const out = exec11(process.execPath, [GATE11, "--only=spine", "--content-root", dir], { encoding: "utf8" });
-    return { code: 0, out };
-  } catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+  return runSpineGateInProcess({ argv: ["--content-root", dir, "--only=spine"] }); // {code, out}
 }
 
 t11("base spine fixture is green", () => {
@@ -637,12 +642,11 @@ function p3Root(fixtureName, mutate = null) {
   return root;
 }
 
+// Plan A Task 13: in-process, not spawned. `status` (not `code`) is kept —
+// ten P3 tests destructure it. See runGate's header.
 function p3RunSpineGate(root) {
-  try {
-    return { status: 0, out: execFileSync(process.execPath, [GATE, "--content-root", root, "--only=spine"], { encoding: "utf8" }) };
-  } catch (e) {
-    return { status: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` };
-  }
+  const r = runSpineGateInProcess({ argv: ["--content-root", root, "--only=spine"] });
+  return { status: r.code, out: r.out };
 }
 
 test("P3 fixture scaffolding: the green base passes --only=spine clean", () => {
@@ -808,11 +812,12 @@ function p4FixtureRoot(t, overlayDir) {
 }
 
 // Unique name on purpose — never shadows Task 1.6's or Task 3.6's runners.
+// Plan A Task 13: in-process, not spawned. See runGate's header. The one
+// `extraArgs` caller passes `--require-complete`, which parseArgs accepts
+// alongside `--only=spine`; anything parseArgs rejects still exits the process
+// (it always did), so this helper must never be handed an unparseable flag.
 function runP4Gate(root, extraArgs = []) {
-  const r = spawnSync(process.execPath,
-    [join(ROOT, "scripts/check_content.mjs"), "--only=spine", "--content-root", root, ...extraArgs],
-    { encoding: "utf8" });
-  return { code: r.status, out: (r.stdout ?? "") + (r.stderr ?? "") };
+  return runSpineGateInProcess({ argv: ["--only=spine", "--content-root", root, ...extraArgs] }); // {code, out}
 }
 
 test("G-RUNTIME goes red on an originU that is not the accumulated origin (HC-2)", (t) => {
@@ -1369,4 +1374,100 @@ t11("sheet subjects: a zone region losing its lore.order REPORTS instead of vani
   assert11.equal(r.code, 1, r.out);
   assert11.doesNotMatch(r.out, /TypeError/);
   assert11.match(r.out, /has no lore\.order/);
+});
+
+// ─── Plan A Task 13: in-process gate runs ──────────────────────────────────
+// 66 child-process spawns, ~0.38 s each of pure Node startup + ajv compile,
+// is 93.3 s of a 108 s content-gate suite. The gate's own tests cost more
+// than the gate. These pin the in-process entry's contract: identical
+// {code, out} shape, and no state leaking between runs.
+// `runSpineGateInProcess` is imported statically at the top of this file.
+
+t11("in-process: a green fixture returns code 0 and the same summary line as a spawn", () => {
+  const dir = spineFixture();
+  const inproc = runSpineGateInProcess({ argv: ["--content-root", dir, "--only=spine"] });
+  const spawned = (() => {
+    try { return { code: 0, out: exec11(process.execPath, [GATE11, "--only=spine", "--content-root", dir], { encoding: "utf8" }) }; }
+    catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+  })();
+  assert11.equal(inproc.code, spawned.code);
+  assert11.equal(inproc.out, spawned.out);
+});
+
+t11("in-process: a red fixture returns code 1 and the same output as a spawn", () => {
+  const dir = spineFixture({ overlayDir: "g-contain-child-outside" });
+  const inproc = runSpineGateInProcess({ argv: ["--content-root", dir, "--only=spine"] });
+  const spawned = (() => {
+    try { return { code: 0, out: exec11(process.execPath, [GATE11, "--only=spine", "--content-root", dir], { encoding: "utf8" }) }; }
+    catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+  })();
+  assert11.equal(inproc.code, 1);
+  assert11.equal(inproc.out, spawned.out);
+});
+
+t11("in-process: failures do NOT leak from one run into the next", () => {
+  const red = spineFixture({ overlayDir: "g-contain-child-outside" });
+  const green = spineFixture();
+  assert11.equal(runSpineGateInProcess({ argv: ["--content-root", red, "--only=spine"] }).code, 1);
+  const second = runSpineGateInProcess({ argv: ["--content-root", green, "--only=spine"] });
+  assert11.equal(second.code, 0, second.out);
+  assert11.doesNotMatch(second.out, /G-CONTAIN/);
+});
+
+t11("in-process: importing check_content.mjs does NOT run the gate", () => {
+  // Before this task the file ended in a bare `main();` — importing it ran
+  // the whole gate against the real content root and called process.exit().
+  // The entry guard is what makes every other test in this block possible.
+  const src = read11(join11(ROOT11, "scripts/check_content.mjs"), "utf8");
+  assert11.match(src, /if \(process\.argv\[1\] && import\.meta\.url === pathToFileURL\(process\.argv\[1\]\)\.href\) main\(\);/);
+  assert11.doesNotMatch(src, /^main\(\);$/m);
+});
+
+// The two tests above cover `failures`/`warnings`. Risk A7's quieter half is
+// the two MEMOS. Both are keyed by content root, so the naive reading —
+// "cross-root reuse is impossible, therefore they are safe" — is true and
+// beside the point: the leak is SAME-root re-entry. Each memo short-circuits
+// BEFORE the fail() calls that populate it, so run two of the same root prints
+// fewer failures than run one, and fewer than a spawn. Both are pinned by the
+// same rule (two runs of one root are byte-identical) because that is the rule
+// a future edit would break, and both were mutation-checked: deleting the
+// matching reset line in runSpineGateInProcess turns each of these red
+// (2 FAILs -> 1, and 1 geography FAIL -> 0 respectively).
+
+t11("in-process: townPlansCache does NOT leak — an unparsable town plan FAILs on EVERY run", () => {
+  const dir = spineFixture();
+  cp11(join11(ROOT11, "content/schemas/town-plan.schema.json"), join11(dir, "schemas/town-plan.schema.json"));
+  mkdirSync(join11(dir, "towns"), { recursive: true });
+  // readTownPlans only reads /^town-.+\.json$/ — a differently-named file is
+  // invisible to the loader and would make this test pass for no reason.
+  write11(join11(dir, "towns/town-broken.json"), "{ not json");
+  const first = runSpineGateInProcess({ argv: ["--content-root", dir, "--only=spine"] });
+  const second = runSpineGateInProcess({ argv: ["--content-root", dir, "--only=spine"] });
+  const failsOf = (r) => r.out.split("\n").filter((l) => l.startsWith("FAIL  towns/town-broken.json: cannot read/parse"));
+  assert11.equal(first.code, 1, first.out);
+  assert11.equal(failsOf(first).length, 1, first.out);
+  assert11.equal(failsOf(second).length, 1, second.out);
+  assert11.equal(second.out, first.out);
+});
+
+t11("in-process: placesByRoot does NOT leak — a geography problem FAILs on EVERY run", () => {
+  // Reaching placesDoc() under --only=spine needs BOTH halves, and the test is
+  // vacuous without either: (1) an alias that MISSES the spine, which is what
+  // sends checkSpineExternalAliases down its resolvedWorld() second chance,
+  // and (2) a content root loadPlaces cannot resolve, so there is a problem to
+  // swallow. The rename in (1) is main()'s own documented reproduction.
+  const dir = realContentCopy();
+  cp11(join11(ROOT11, "content/bestiary"), join11(dir, "bestiary"), { recursive: true });
+  const from = join11(dir, "spine/nodes/n-rooktide.json");
+  const doc = JSON.parse(read11(from, "utf8"));
+  doc.id = "n-rooktide-town";
+  write11(join11(dir, "spine/nodes/n-rooktide-town.json"), JSON.stringify(doc, null, 2) + "\n");
+  rmSync(from);
+  rmSync(join11(dir, "spine/sheet.json"), { force: true });
+  const first = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", dir] });
+  const second = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", dir] });
+  const geoOf = (r) => r.out.split("\n").filter((l) => /^FAIL {2}geography: .* has neither a resolvable spine nor/.test(l));
+  assert11.equal(geoOf(first).length, 1, first.out);
+  assert11.equal(geoOf(second).length, 1, second.out);
+  assert11.equal(second.out, first.out);
 });
