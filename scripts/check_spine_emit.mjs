@@ -16,7 +16,6 @@ import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pathToFileURL } from "node:url";
 import { loadSpine, buildTree, deriveInterior, deriveNode, readTownPlans, planForNode, renderFrontierFile, renderMapDimensionsTs } from "./lib/spine.mjs";
-import { resolveWorld } from "./lib/places.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -74,17 +73,13 @@ export function canonicalNode({ node, tree, plans = [] }) {
   return { bytes: canonStringify(out) + "\n" };
 }
 
-// ── spine → content/maps/cluster1-geography.json (G-EMIT-DRIFT, Phase 1) ──
-// The join itself moved to scripts/lib/places.mjs in Plan A Task 5 — this is
-// now only the serialiser. GEOGRAPHY_VERSION is re-exported because it is
-// part of the emitted document's contract and callers reference it by name.
+// Plan A Task 12: emitGeography() and the mirror it wrote are gone. Every
+// consumer — the three content-gate joins, both sheet builders, the alias
+// sweep — now resolves the world through scripts/lib/places.mjs instead.
+// GEOGRAPHY_VERSION stays re-exported: content/zones/zone-cindervast.json and
+// content/spine/nodes/n-saltmire.json still cite the document in provenance
+// strings, and Plan D's resolved files inherit the version number.
 export { GEOGRAPHY_VERSION } from "./lib/places.mjs";
-
-export function emitGeography({ spine, tree }) {
-  const { doc, problems } = resolveWorld({ spine, tree });
-  if (problems.length) return { bytes: null, problems };
-  return { bytes: canonStringify(doc) + "\n", problems: [] };
-}
 
 export function collectOutputs({ contentRoot }) {
   const spine = loadSpine({ contentRoot });
@@ -104,15 +99,6 @@ export function collectOutputs({ contentRoot }) {
     const r = canonicalNode({ node, tree, plans });
     if (r.error) return { errors: [r.error] };
     outputs.push({ path: join(contentRoot, "spine/nodes", node.file), bytes: r.bytes });
-  }
-  if (tree.byId.has("n-cluster1")) {
-    // Plan A Task 5: emitGeography now returns { bytes, problems } and never
-    // throws. A missing subject is an in-band error here, exactly like an
-    // unparsable town plan five lines above — a raw TypeError would skip
-    // main()'s error printing and exit with a stack instead of a diagnosis.
-    const geo = emitGeography({ spine, tree });
-    if (geo.problems.length) return { errors: geo.problems };
-    outputs.push({ path: join(contentRoot, "maps/cluster1-geography.json"), bytes: geo.bytes });
   }
   // F-041 P4 mirror #2: the runtime map's frontmatter (body preserved
   // verbatim). Guard + contentRoot keying mirror the n-cluster1 geography

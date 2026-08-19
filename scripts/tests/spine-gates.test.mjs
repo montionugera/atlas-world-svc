@@ -353,8 +353,14 @@ t11("G-CANON-LEG red: straight-line distance breaks the ±8% budget", () => {
   assert11.match(r.out, /G-CANON-LEG e-leg-r-c: straight-line .* vs straightKm 200 breaks ±8%/);
 });
 
-// ─── F-041 Phase 1 · Task 1.9: spine → geography emitter (G-EMIT-DRIFT) ─────
-t11("G-EMIT-DRIFT: emitted geography drifts red on a hand-edit and is green when clean", () => {
+// ─── F-041 Phase 1 · Task 1.9: an emitted MIRROR drifts red (G-EMIT-DRIFT) ──
+// Plan A Task 12 retargeted this from maps/cluster1-geography.json, which the
+// same task deleted, onto maps/atlas-frontier.md — the surviving mirror in the
+// same fixture. The SHAPE being tested is what matters and is unchanged: a
+// hand-edit to an emitted MIRROR (as opposed to a node file, covered above at
+// the n-cluster1.json drift test) must red. Dropping the test instead would
+// have left G-EMIT-DRIFT's mirror half with no red-path coverage in this file.
+t11("G-EMIT-DRIFT: an emitted mirror drifts red on a hand-edit and is green when clean", () => {
   const dir = mkdtemp11(join11(tmp11(), "spine-geo-"));
   cp11(join11(ROOT11, "content/spine"), join11(dir, "spine"), { recursive: true });
   cp11(join11(ROOT11, "content/maps"), join11(dir, "maps"), { recursive: true });
@@ -362,11 +368,14 @@ t11("G-EMIT-DRIFT: emitted geography drifts red on a hand-edit and is green when
        join11(dir, "schemas/spine-node.schema.json"), { recursive: true });
   assert11.equal(runEmit(dir, ["--write"]).code, 0);
   assert11.equal(runEmit(dir, ["--check"]).code, 0);
-  const p = join11(dir, "maps/cluster1-geography.json");
-  write11(p, read11(p, "utf8").replace('"Millcross"', '"Milcros"'));
+  const p = join11(dir, "maps/atlas-frontier.md");
+  const before = read11(p, "utf8");
+  const after = before.replace(/^ {2}width: \d+$/m, "  width: 999");
+  assert11.notEqual(after, before, "the front-matter key this test edits is gone — re-point it");
+  write11(p, after);
   const r = runEmit(dir, ["--check"]);
-  assert11.equal(r.code, 1);
-  assert11.match(r.out, /spine-emit: DRIFT .*cluster1-geography\.json/);
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /spine-emit: DRIFT .*atlas-frontier\.md/);
 });
 
 // ─── F-041 Phase 1 · Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT ───────────────
@@ -907,16 +916,21 @@ test("G-ALIAS reverse + derived siteOrder: a 4th site reds until the mirror is r
 // the emitted file set, and that a non-ENOENT read is an error.
 const { collectOutputs } = await import("../check_spine_emit.mjs");
 
-test("spine-emit emits every node file plus all three mirrors — a silently dropped mirror reds", () => {
+test("spine-emit emits every node file plus BOTH surviving mirrors — a silently dropped mirror reds", () => {
   const contentRoot = join(ROOT, "content");
   const { outputs, errors } = collectOutputs({ contentRoot });
   assert.equal(errors, undefined, JSON.stringify(errors));
   const paths = outputs.map((o) => o.path);
   const nodeFiles = readdirSync(join(contentRoot, "spine/nodes")).filter((f) => f.endsWith(".json")).length;
-  assert.equal(outputs.length, nodeFiles + 3, paths.join("\n"));
-  for (const suffix of ["maps/cluster1-geography.json", "maps/atlas-frontier.md",
+  // Plan A Task 12: 3 -> 2. The geography mirror was retired once every
+  // consumer moved to scripts/lib/places.mjs; the two RUNTIME-facing mirrors
+  // stay, and mapDimensions.ts is compiled server code.
+  assert.equal(outputs.length, nodeFiles + 2, paths.join("\n"));
+  for (const suffix of ["maps/atlas-frontier.md",
                         "colyseus-server/src/config/generated/mapDimensions.ts"])
     assert.ok(paths.some((p) => p.endsWith(suffix)), `missing mirror ${suffix} in:\n${paths.join("\n")}`);
+  assert.ok(!paths.some((p) => p.endsWith("cluster1-geography.json")),
+    "the retired geography mirror is being emitted again");
 });
 
 test("spine-emit: a non-ENOENT failure reading the frontier mirror is an error, not a silent skip (HC-2)", (t) => {
@@ -1284,51 +1298,74 @@ t11("G-RECT red: a rect with both extents negative fails", () => {
 });
 
 // ─── Plan A Task 7 · the sheet subject descriptor ───────────────────────────
-// Built on realSpineCopy(), NOT on the `base` fixture: base's nodes are
-// n-c/n-r/n-w, so it has no zoneRoot at all and collectOutputs skips the
-// geography emit entirely — the test would prove nothing. Only spine/sheet.json
-// is overwritten, so the ONLY difference from a green run is the bad subject.
+// Built on a real content copy, NOT on the `base` fixture: base's nodes are
+// n-c/n-r/n-w, so it has no zoneRoot at all and nothing resolves a world —
+// the test would prove nothing. Only spine/sheet.json is overwritten, so the
+// ONLY difference from a green run is the bad subject.
+//
+// PLAN A TASK 12 RE-POINT, and the reason matters. These three ran the EMITTER
+// (check_spine_emit.mjs), because check_spine_emit.mjs called resolveWorld() to
+// write content/maps/cluster1-geography.json. Task 12 deleted that mirror and
+// with it the emitter's only call into places.mjs, so run against the emitter
+// these tests would have gone quietly vacuous — exit 1 for unrelated reasons,
+// asserting on messages nothing prints any more. The descriptor is now
+// validated where it is actually consumed: check_content.mjs's placesDoc(),
+// which fail()s every problem loadPlaces reports. Same three messages, same
+// no-TypeError contract, one binary downstream. Verified by running the full
+// gate on each fixture by hand before this edit.
+function realContentCopy() {
+  const dir = mkdtemp11(join11(tmp11(), "sheet-subject-"));
+  for (const sub of ["spine", "schemas", "zones", "towns", "characters"])
+    cp11(join11(ROOT11, "content", sub), join11(dir, sub), { recursive: true });
+  return dir;
+}
+
+function runContentGate(dir) {
+  try {
+    return { code: 0, out: exec11(process.execPath, [GATE11, "--content-root", dir], { encoding: "utf8" }) };
+  } catch (e) {
+    return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` };
+  }
+}
 t11("sheet subjects: a descriptor naming a missing node REPORTS, never a raw TypeError", () => {
-  const dir = realSpineCopy();
+  const dir = realContentCopy();
   cp11(join11(FIX, "g-sheet-subject-missing"), dir, { recursive: true });
-  const r = runEmit(dir, ["--check"]);
+  const r = runContentGate(dir);
   assert11.equal(r.code, 1, r.out);
   assert11.doesNotMatch(r.out, /TypeError/);
-  // The exit code alone proves NOTHING here and the assertions below are what
-  // carry the test: realSpineCopy() copies content/spine and content/schemas
-  // but never content/maps, so `--check` exits 1 on a missing-mirror DRIFT
-  // whatever the descriptor says. Measured by pointing the fixture at a node
-  // that DOES resolve: exit stayed 1, output was two DRIFT lines. So pin the
-  // exact message, and pin that the run stopped at the ERROR path — a
-  // descriptor failure is returned from collectOutputs before any output is
-  // compared, so a genuine report prints no DRIFT line at all.
-  assert11.match(r.out, /sheet: subject "mireIds\[0\]" -> "n-not-a-node" does not resolve/);
-  assert11.doesNotMatch(r.out, /DRIFT/);
+  // The exit code alone proves little — pin the exact message, prefixed
+  // "geography: " by placesDoc(), so a descriptor fault that stopped being
+  // diagnosed cannot hide behind an unrelated red.
+  assert11.match(r.out, /FAIL {2}geography: sheet: subject "mireIds\[0\]" -> "n-not-a-node" does not resolve/);
 });
 
 t11("sheet subjects: a spine whose sheet.json has NO subjects block REPORTS", () => {
   // The other half of "the ids are data": deleting the descriptor must be a
   // named diagnosis, not a crash and not a silently-skipped mirror.
-  const dir = realSpineCopy();
+  const dir = realContentCopy();
   const p = join11(dir, "spine/sheet.json");
   const doc = JSON.parse(read11(p, "utf8"));
   delete doc.subjects;
   write11(p, JSON.stringify(doc, null, 2) + "\n");
-  const r = runEmit(dir, ["--check"]);
+  const r = runContentGate(dir);
   assert11.equal(r.code, 1, r.out);
   assert11.doesNotMatch(r.out, /TypeError/);
-  assert11.match(r.out, /has no `subjects` descriptor/);
+  // No descriptor means loadPlaces falls through to the legacy mirror FILE,
+  // which Task 12 deleted — so the root resolves to nothing and says so by
+  // name. Before Task 12 this same fixture reported "has no `subjects`
+  // descriptor" from the emitter; the diagnosis moved with the consumer.
+  assert11.match(r.out, /FAIL {2}geography: .* has neither a resolvable spine nor maps\/cluster1-geography\.json/);
 });
 
 t11("sheet subjects: a zone region losing its lore.order REPORTS instead of vanishing", () => {
   // R3 end-to-end, through the emitter the gate actually runs. Before Task 7
   // this produced a mirror with NINE zones and exit 0.
-  const dir = realSpineCopy();
+  const dir = realContentCopy();
   const p = join11(dir, "spine/nodes/n-thornveil.json");
   const doc = JSON.parse(read11(p, "utf8"));
   delete doc.lore.order;
   write11(p, JSON.stringify(doc, null, 2) + "\n");
-  const r = runEmit(dir, ["--check"]);
+  const r = runContentGate(dir);
   assert11.equal(r.code, 1, r.out);
   assert11.doesNotMatch(r.out, /TypeError/);
   assert11.match(r.out, /has no lore\.order/);

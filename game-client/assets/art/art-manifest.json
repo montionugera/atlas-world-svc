@@ -491,7 +491,7 @@
       "group": "map",
       "title": "Cluster 1 — the Meltwash basin",
       "file": "maps/cluster1-world.png",
-      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-map.mjs from content/maps/cluster1-geography.json; the SVG beside this PNG (maps/cluster1-world.svg) is the artifact, the PNG is a 2000px raster of it for the storybook. Replaces an earlier Z-Image Turbo attempt, which could not draw this world’s coastline, roads or place names.",
+      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-sheet.mjs from content/spine/; the SVG beside this PNG (maps/cluster1-world.svg) is the artifact, the PNG is a 2000px raster of it for the storybook. Replaces an earlier Z-Image Turbo attempt, which could not draw this world’s coastline, roads or place names.",
       "description": "A single-sheet Bellfaith relay map of the Meltwash basin, drafted rather than painted: ink on cream parchment with one accent colour (bell-bronze) reserved for the 27 relay towers and their sight-lines. Real paths for the coastline, the Meltwash and the hatched Saltmire; roads carry their canon day-counts lettered along the legs, with waystations where each day ends; six towns, ten zones with level bands, the Ashvale Front drawn as a gradient whose northern deep is left as bare hatch, and a hard parchment edge along the top because the map does not pretend to know what lies past the ice.",
       "tags": [
         "cluster-1",
@@ -511,7 +511,7 @@
         "raster": "rsvg-convert -w 2000",
         "deterministic": true,
         "width": 2000,
-        "note": "No model, no sampler, no seed — this sheet is drawn from geometry, so there are no generation parameters to record. Re-run the tool to reproduce it byte-for-byte. Since F-042 the sheet renders from content/spine/ via render-sheet.mjs; content/maps/cluster1-geography.json remains a generated mirror."
+        "note": "No model, no sampler, no seed — this sheet is drawn from geometry, so there are no generation parameters to record. Re-run the tool to reproduce it byte-for-byte. Since F-042 the sheet renders from content/spine/ via render-sheet.mjs, and Plan A retired the content/maps/cluster1-geography.json mirror it used to read."
       }
     },
     "art:map-atlas": {

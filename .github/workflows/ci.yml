@@ -102,22 +102,42 @@ jobs:
       - name: Story graph drift-gate (docs/story/story-graph.md)
         run: node scripts/gen_story_graph.mjs --check
 
-      # Spine emit drift-gate (F-041 G-EMIT-DRIFT): content/maps/
-      # cluster1-geography.json is generated from content/spine/nodes/* by
-      # scripts/check_spine_emit.mjs. Fails the build if the committed mirror
-      # is stale relative to the spine, or was hand-edited. scripts/ deps are
-      # already installed by the Content gate step above (npm ci --prefix scripts).
+      # Spine emit drift-gate (F-041 G-EMIT-DRIFT): every content/spine/nodes/
+      # *.json `derived` block and the two surviving mirrors are emitted from
+      # content/spine/nodes/* by scripts/check_spine_emit.mjs. Fails the build
+      # if a committed emitted file is stale relative to the spine, or was
+      # hand-edited. scripts/ deps are already installed by the Content gate
+      # step above (npm ci --prefix scripts).
       - name: Spine emit drift-gate (G-EMIT-DRIFT)
         run: node scripts/check_spine_emit.mjs --check
 
-      # Map render drift-gate (F-042 G-MAP-DRIFT): the committed sheet SVGs
-      # under game-client/assets/art/maps/ (cluster1-world.svg,
-      # atlas-world.svg) must byte-match tools/mapforge/render-sheet.mjs's
-      # SHEETS registry rebuilt from the live spine. Fails the build if a
-      # sheet is stale or missing. scripts/ deps are already installed by
-      # the Content gate step above (npm ci --prefix scripts).
-      - name: Map render drift-gate (G-MAP-DRIFT)
-        run: node scripts/check_map_render.mjs
+      # Render lock (Plan A G-RENDER-LOCK): every sheet in
+      # tools/mapforge/render-sheet.mjs's SHEETS registry is rebuilt from the
+      # live spine, hashed, and compared against content/world/render-lock.json
+      # AND against the committed SVG on disk. Replaces G-MAP-DRIFT.
+      - name: Render lock (G-RENDER-LOCK)
+        run: node scripts/check_render_lock.mjs --check
+
+      # X6: CI ran NEITHER the mapforge tests NOR render-sheet --check, so five
+      # of six byte comparisons were Gate-2-only (local). That is the wrong
+      # place for them once the map lane is the feature under active
+      # development.
+      #
+      # SHELL-EXPANDED FILE LIST, UNQUOTED — this is NOT the quoted form used in
+      # the local verify commands. The `node-version` pinned above is 18, and
+      # Node's own `--test <glob-pattern>` support only arrived in v22. Quoting
+      # here would hand Node 18 the literal string
+      # "tools/mapforge/tests/*.test.mjs" as a path: the step would either error
+      # on a nonexistent file or, worse, run zero tests and go green while
+      # proving nothing. The working form is the one scripts/integration.sh and
+      # scripts/package.json already use — let the shell expand it.
+      - name: Mapforge test suite
+        run: node --test tools/mapforge/tests/*.test.mjs
+
+      - name: Sheet self-check (render-sheet --check)
+        run: |
+          node tools/mapforge/render-sheet.mjs --sheet cluster1 --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet atlas --no-png --check
 
       # Story explorer (F-012 Task 6): graph.mjs is the pure buildGraph()
       # shared by tools/story-explorer/index.html and this smoke test — every

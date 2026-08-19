@@ -1,14 +1,17 @@
 // Plan A Task 5 — scripts/lib/places.mjs.
 //
 // The ONE assertion that matters is byte-identity: canonStringify over
-// resolveWorld's doc must equal the committed content/maps/cluster1-geography.json
-// EXACTLY. Everything downstream (three gate joins, two sheet builders) is
-// only safe to re-point because of it, and key ORDER is half of it —
-// canonStringify walks Object.keys() in insertion order.
+// resolveWorld's doc must equal, EXACTLY, the bytes the retired
+// content/maps/cluster1-geography.json held. Everything downstream (three gate
+// joins, two sheet builders) is only safe to re-point because of it, and key
+// ORDER is half of it — canonStringify walks Object.keys() in insertion order.
+// Task 12 deleted that file; the comparison now runs against the committed
+// sha256 of its bytes (RESOLVED_WORLD_SHA256 below), not a re-baseline.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, cpSync } from "node:fs";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,7 +21,26 @@ import { WORLD_DOC_KEYS, resolveWorld, loadPlaces } from "../lib/places.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const CONTENT = join(ROOT, "content");
-const MIRROR = join(CONTENT, "maps/cluster1-geography.json");
+// Plan A Task 12: content/maps/cluster1-geography.json is DELETED, so the
+// byte-identity proof below has no file to point at. The proof is not weakened
+// — it is re-anchored on a committed sha256 of the EXACT bytes that file held,
+// the same instrument the sheets moved to in content/world/render-lock.json.
+// This hash is NOT a re-baseline: it was taken from the deleted blob
+// (`git show <proof-commit>:content/maps/cluster1-geography.json | shasum -a 256`)
+// and independently from a fresh resolveWorld() run, and the two agreed. Only
+// Plan E's redraw commit may ever move it.
+const RESOLVED_WORLD_SHA256 =
+  "ce60b7841e7a0a2626df4cad599d0f51ddbe69b6c82e19336c09c4dd2070bd2f";
+
+/** Assert a resolved doc serialises to the exact bytes the retired mirror held. */
+function assertResolvedBytes(doc, what) {
+  const bytes = canonStringify(doc) + "\n";
+  assert.equal(
+    createHash("sha256").update(bytes, "utf8").digest("hex"),
+    RESOLVED_WORLD_SHA256,
+    `${what}: serialised world drifted from the retired mirror's bytes (${bytes.length} bytes)`,
+  );
+}
 
 function realTree() {
   const spine = loadSpine({ contentRoot: CONTENT });
@@ -29,7 +51,7 @@ test("resolveWorld reproduces the committed mirror BYTE for BYTE", () => {
   const { spine, tree } = realTree();
   const { doc, problems } = resolveWorld({ spine, tree });
   assert.deepEqual(problems, []);
-  assert.equal(canonStringify(doc) + "\n", readFileSync(MIRROR, "utf8"));
+  assertResolvedBytes(doc, "resolveWorld");
 });
 
 test("resolveWorld builds the doc in the pinned key order", () => {
@@ -88,7 +110,7 @@ test("resolveWorld never returns a doc alongside problems (the seaLane late-push
 test("loadPlaces on the real content root resolves from the SPINE and matches the mirror", () => {
   const { doc, problems } = loadPlaces({ contentRoot: CONTENT });
   assert.deepEqual(problems, []);
-  assert.equal(canonStringify(doc) + "\n", readFileSync(MIRROR, "utf8"));
+  assertResolvedBytes(doc, "resolveWorld");
 });
 
 test("loadPlaces FALLS BACK to the mirror file when the root has no spine (the fixture path)", () => {
@@ -301,7 +323,7 @@ test("resolveWorld REPORTS a partial descriptor, never throws (the Task 7 sheet.
   // shape Task 7 is about to commit into content/spine/sheet.json.
   const ok = resolveWorld({ spine, tree, descriptor: full });
   assert.deepEqual(ok.problems, []);
-  assert.equal(canonStringify(ok.doc) + "\n", readFileSync(MIRROR, "utf8"));
+  assertResolvedBytes(ok.doc, "loadPlaces");
 
   for (const key of ["zoneRoot", "featureIds", "mireIds", "terrainPatchIds"]) {
     const partial = { ...full };
@@ -441,7 +463,7 @@ test("resolveWorld reads subjects from the descriptor and still reproduces the m
   const { spine, tree } = realTree();
   const { doc, problems } = resolveWorld({ spine, tree, descriptor: spine.sheet.subjects });
   assert.deepEqual(problems, []);
-  assert.equal(canonStringify(doc) + "\n", readFileSync(MIRROR, "utf8"));
+  assertResolvedBytes(doc, "resolveWorld");
 });
 
 test("resolveWorld with a descriptor naming a node that does not exist REPORTS with the pinned message", () => {
@@ -553,10 +575,6 @@ test("places.mjs names no spine id in its source — every id comes from the des
 // All three were re-pointed at loadPlaces()/resolveWorld() in this same commit,
 // which is what makes the claim below true rather than aspirational.
 const MIRROR_NAMERS = new Set([
-  // Writers/readers retired by the deletion commit that follows this one.
-  "scripts/check_spine_emit.mjs",          // collectOutputs — the only writer
-  "tools/mapforge/render-map.mjs",         // the legacy mirror-driven CLI
-  "tools/mapforge/tests/parity.test.mjs",  // that CLI's parity test
   // The fallback branch, and its own tests.
   "scripts/lib/places.mjs",
   "scripts/tests/places.test.mjs",
@@ -569,8 +587,10 @@ const MIRROR_NAMERS = new Set([
   // Comments and verbatim gate messages only — no path is opened.
   "scripts/check_content.mjs",             // "…not in cluster1-geography.json#zones"
   "scripts/lib/season1.mjs",
-  "scripts/integration.sh",
-  ".github/workflows/ci.yml",
+  // basin-sheet.mjs names the mirror in the sheet's own <desc> and footer —
+  // those strings are DRAWN BYTES inside the committed SVG, so correcting them
+  // would move pixels and red the render lock. They belong to Plan B Task 12,
+  // the one commit permitted to re-baseline the lock and the two sheets.
   "tools/mapforge/lib/basin-sheet.mjs",
   "tools/mapforge/tests/basin-sheet.test.mjs",
   "scripts/tests/spine-gates.test.mjs",
