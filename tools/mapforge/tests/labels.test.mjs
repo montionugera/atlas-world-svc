@@ -173,6 +173,36 @@ test("anchorPref moves a candidate to the front without dropping any of the eigh
   assert.equal(placed[0].anchor, "SW");
 });
 
+test("every one of the eight anchors puts its box on the side its name claims", () => {
+  // `boxFor` resolves 8 anchors with two nested ternaries, which is exactly the
+  // shape a wrong-side bug hides in. Drive each anchor via anchorPref in open
+  // space and assert the geometric relation the compass letter promises:
+  // E/W constrain x, N/S constrain y, and the two-letter anchors constrain both.
+  const at = [700, 700];
+  const sides = {
+    NE: { x: "right", y: "above" }, NW: { x: "left", y: "above" },
+    SE: { x: "right", y: "below" }, SW: { x: "left", y: "below" },
+    N: { x: "centred", y: "above" }, S: { x: "centred", y: "below" },
+    E: { x: "right", y: "centred" }, W: { x: "left", y: "centred" },
+  };
+  for (const [anchor, want] of Object.entries(sides)) {
+    const { placed } = placeLabels({
+      labels: [{ id: "a", text: "Gildmark", at, rank: RANKS.capital, anchorPref: anchor }],
+      obstacles: [], maxLabelRank: 10, frame: FRAME });
+    assert.equal(placed.length, 1, anchor);
+    const b = placed[0].box;
+    assert.equal(placed[0].anchor, anchor);
+    if (want.x === "right") assert.ok(b.x > at[0], `${anchor}: box must start right of the point`);
+    if (want.x === "left") assert.ok(b.x + b.w < at[0], `${anchor}: box must end left of the point`);
+    if (want.x === "centred")
+      assert.ok(Math.abs(b.x + b.w / 2 - at[0]) < 0.51, `${anchor}: box must be centred on the point`);
+    if (want.y === "above") assert.ok(b.y + b.h < at[1], `${anchor}: box must end above the point`);
+    if (want.y === "below") assert.ok(b.y > at[1], `${anchor}: box must start below the point`);
+    if (want.y === "centred")
+      assert.ok(Math.abs(b.y + b.h / 2 - at[1]) < 0.51, `${anchor}: box must straddle the point`);
+  }
+});
+
 test("zoom tier: labels above maxLabelRank are neither drawn nor counted", () => {
   const labels = [
     { id: "a", text: "Galereach", at: [200, 200], rank: RANKS.ocean },
