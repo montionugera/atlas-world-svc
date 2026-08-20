@@ -1,0 +1,205 @@
+# World Fill — running state
+
+**A living handover file. Read this before starting any of Plans B, C, D or E.**
+
+It exists so a new session does not need the previous session's conversation. If something here
+is wrong, fix the file — do not work around it in a prompt.
+
+Last updated: 2026-08-20, after **Plan A shipped** (F-046 → release/1.8, merge `618abe5`).
+
+---
+
+## 1. Where the programme is
+
+| Plan | Feature | State |
+| --- | --- | --- |
+| A — Unblock and Afford | F-046 | **SHIPPED** to release/1.8, 2026-08-19. All 15 acceptance criteria verified. |
+| B — Vocabulary and Render | — | next; needs its own I-NNN → F-NNN → claim |
+| C — The Fabric Layer | — | not started |
+| D — Pinned, Bound, Relations | — | not started |
+| E — Redraw and Prose | — | not started |
+
+Design: `docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md`
+Plans: `docs/superpowers/plans/2026-08-16-world-fill-{a..e}-*.md`
+
+---
+
+## 2. Measured baselines — compare against these, do not re-derive
+
+Taken on release/1.8 with F-046 merged, on a **quiet machine**.
+
+| Command | Result |
+| --- | --- |
+| `node scripts/check_content.mjs --only=spine` | 44 nodes / 0 failures / 19 warnings, **0.79 s** |
+| `node scripts/check_content.mjs --require-complete` | exit 0 — 12 sheets, 1 maps, 158 story, 1 placements, 10 zones, 1 towns, 44 nodes, 0 failures, 32 warnings |
+| `node --test 'scripts/tests/*.test.mjs'` | **698 pass / 0 fail, 44.8 s** |
+| `node --test 'tools/mapforge/tests/*.test.mjs'` | 34 pass / 0 fail |
+| `node --test 'tools/asset-storybook/tests/*.test.mjs'` | 32 pass / 0 fail |
+| `node scripts/check_spine_emit.mjs --check` | clean, **46 files** |
+| `node scripts/check_render_lock.mjs --check` | clean, 2 artifacts |
+| `node scripts/tools/overlap-preflight.mjs` | 133 pairs, 0 non-triangulable, 0 verdict differences, max deviation 0.002692 km² |
+| `( cd colyseus-server && npx jest mapDimensions )` | 5 passed |
+| `./scripts/precheck.sh --no-install` (Gate 1) | PASS 12/12 |
+| `./scripts/integration.sh --no-install` (Gate 2) | PASS 11/11 |
+
+**Measure timing on a QUIET machine.** With concurrent agents the same suite read 60–76 s
+against its 60 s cap; idle it is 44.8 s. Never quote the flattering run — but do not accept a
+contended one as a regression either.
+
+---
+
+## 3. The invariant — what "nothing moved" means
+
+Tag the starting commit as the very first act of any plan, then compare against it:
+
+```bash
+git tag plan-<x>-base HEAD
+git diff --stat plan-<x>-base -- colyseus-server/
+git diff --stat plan-<x>-base -- game-client/assets/art/maps/
+```
+
+Both must print **nothing** on every commit, in every plan except E's single redraw commit.
+`colyseus-server/src/tests/mapDimensions.test.ts` staying green is an acceptance criterion on
+**every** commit in **every** plan.
+
+**Keep an enumerated list of which files under `content/` a plan is allowed to change**, and
+make agents check it every commit. It is what stopped scope creep four times in Plan A. If a
+task legitimately needs a sixth file, that is a finding to raise — never a diff to widen quietly.
+
+**The one carve-out, agreed once:** Plan B Task 12 may re-baseline
+`content/world/render-lock.json` and the two committed SVGs. Nothing else, ever, outside Plan E's
+redraw commit.
+
+---
+
+## 4. What Plan A built that the later plans consume
+
+All exported and under test. Signatures are contracts — do not change them casually.
+
+| Signature | Consumed by |
+| --- | --- |
+| `exactIntersectionArea({ a, b })` | C, E |
+| `ringVertexCount({ placement })`, `bboxOfPlacement({ placement })`, `buildBBoxIndex({ items })` | C, E |
+| `resolveWorld({ spine, tree, descriptor, fabric, civil }) -> { doc, problems }` | D |
+| `loadPlaces({ contentRoot }) -> { doc, problems }` | D |
+| `WORLD_DOC_KEYS: string[]` | D, E |
+| `computeLock({ repoRoot, sheets, extraPaths })`, `checkLock`, `unifiedDiff` | C, E |
+| `runSpineGateInProcess({ argv })`, `summaryLines(...)` | C, D, E — new gate fixture tests should use this, not a spawn |
+| the `subjects` descriptor block in `sheet.json` / `sheet-atlas.json` | B, E |
+| the three-term `content/spine/load-budget.json` shape | C, E |
+| `GENERATOR_VERSION` | B Task 9 Step 3b **deletes Plan A's literal** and re-exports from `tools/mapforge/lib/version.mjs` |
+
+Notes carried forward:
+
+- **`buildBBoxIndex` is exported but deliberately NOT wired into the gate.** Measured: the
+  governing variable is *disjointness*, not n. On the real spine it is 1.24× **slower**; at 24
+  children with 160-point disjoint rings it is 10.8× faster. Full measurement table in commit
+  `a780a4e`. Its grid extent is derived from the items, so **one out-of-frame item degrades the
+  scan 23× at n=1,740** — a frame-spanning sea strip costs nothing.
+- **`loadPlaces`' mirror fallback is load-bearing, not vestigial.** Three fixture suites build a
+  content root with no `content/spine/` at all. **Plan D removes the fallback only together with
+  migrating those three roots** — `scripts/tests/zone-content.test.mjs:355`,
+  `town-plan.test.mjs:493`, `bestiary-placement.test.mjs:95`.
+
+---
+
+## 5. Where the plan documents are WRONG
+
+Nine confirmed. Each was found by running code, not by reading. **Verify a brief against the
+tree before trusting it** — this is the single most reliable source of defects in the programme.
+
+| Where | The plan says | Actually |
+| --- | --- | --- |
+| A, acceptance criterion 4 | four `content/` entries | five — it omits `load-budget.json`, which Task 4 requires |
+| A, Task 7 Step 4c | all 12 region children carry `lore.order` | only 10 do; the rule as literally written goes **RED on correct content** |
+| A, Task 10 file list | — | omits the asset-storybook `Dockerfile` + `.dockerignore`; without them the *containerised* storybook 404s and every card reads "NOT LOCKED" |
+| A, Task 10 Step 8 | `cd tools/asset-storybook && python3 -m http.server` | wrong document root — assets escape the directory. Serve from the **repo root**, open `/tools/asset-storybook/index.html` |
+| A, Task 11 Step 9 (a) | `check_map_render.test.mjs` still uses `git checkout --` | it does not; Task 10 had already replaced it |
+| A, Task 12 Step 1 allowlist | — | omits three real reads: `scripts/tests/season1.test.mjs:183` (module-level — deletion would throw at import), `season1.test.mjs:301`, `town-millcross.test.mjs:237` |
+| A, Task 12 file list | — | omits four suites whose coverage the deletion would have silently voided |
+| A, Risk A7 | four module-level mutable bindings | **six**: `placesByRoot:154`, `failures:225`, `warnings:226`, `zoneHazardsTotal:231`, `zoneHazardsUnmapped:232`, `townPlansCache:1255` |
+| A, Task 3 fixture | the `g-children-cap` fixture triggers the rule | unreachable as written — the base fixture has no parent with 2 children |
+
+The plan text already self-corrects two more: spec §8.6's "checkSpine is already parameterised
+with an injected collector" (it is not — it closes over module-level bindings) and §8.2's
+"G-DEPTH gains a real depth for sea" (`TIER_DEPTH` already has `sea: 2`).
+
+**Numbers the plans disagree on — Plan B Task 1 is the sole authority:**
+**170** landform types / **178** group memberships (not the spec's 164/172), 8 dual-listed,
+23 `dungeonCapable`. The `requires` predicate vocabulary is closed at exactly **11 keys** under
+`additionalProperties: false`.
+
+---
+
+## 6. Traps that will bite again
+
+**Setup, every plan:**
+
+1. `psrw claim` branches from **`main`**, not from `release/<v>`. The fresh worktree will not have
+   the map machinery. Run `git merge release/1.8 --no-edit` in it before anything else.
+2. The worktree's root `plan.md` is a **stale leftover from whichever feature ran last**, and
+   `psrw claim` tells you to read it. Overwrite it with a pointer to the real plan document
+   before dispatching any agent.
+3. A fresh worktree has no `node_modules`. `scripts/` installs with `npm install --prefix scripts`.
+   `colyseus-server` and `nakama` are **pnpm workspace members** — `npm install` there dies on
+   `workspace:*`. Use `pnpm install --frozen-lockfile`; `npx jest` works directly.
+
+**Testing:**
+
+4. `node --test` needs a FILE LIST. Locally use the **quoted** glob `node --test 'path/*.test.mjs'`.
+   In CI and any `bash -e` step it must be **UNQUOTED** — `.github/workflows/ci.yml` pins Node 18,
+   which has no Node-side glob. Quoting it there runs **zero tests and still goes green**.
+5. `node --test` runs files **in parallel**. Two files that mutate the same tracked artifact will
+   collide — in Plan A that reproduced 1 run in 3 and could have permanently written truncated
+   bytes over a committed map. **Run a suite more than once**, and check `git status` after.
+6. Deleting a small test file does **not** speed up a parallel suite — it removes a worker, not
+   critical path. One file dominates the wall time.
+7. A gate that "passes" may have stopped checking. **Assert the printed record counts**, not just
+   exit 0. All three gate joins `return 0` on a failed load.
+8. **Mutation-test every new rule**: delete it, watch the suite go red, restore. A rule whose
+   deletion leaves the suite green protects nothing. A test comparing two hardcoded constants is
+   not a test.
+
+**Coordination:**
+
+9. This repo has **13 live worktrees**, six for features that already shipped. A session that
+   believes it owns its worktree may be editing a sibling's branch. Always pass `-C <worktree>`
+   to git — the shell's working directory silently reset to the main checkout during Plan A, and
+   a git command run there does not error, it answers a different question plausibly.
+10. `general-purpose` is an agent **type**, not a routable identity. Several sessions message
+    under it; replies fail and authorship gets mis-assigned. Only agent IDs route.
+11. Concurrent reviewers detect each other's deliberate break-and-observe probes as bugs. Say in
+    the brief that other sessions may be probing.
+
+---
+
+## 7. How to run a plan
+
+What worked for Plan A, in one paragraph. Claim the feature, merge the release branch in, tag the
+base, then run the tasks in seams of two or three as background workflows — each task being
+implement → two independent adversarial reviewers → one fix pass that adjudicates rather than
+obeys. Reviewers must **re-run the commands themselves**; an implementer's green run is not
+evidence. The fix agent must be told to **refute** wrong findings with evidence rather than
+"fix" correct code — in Plan A a fixer overturned a remedy three reviews had agreed on, by
+building the counterexample, and was right. Between seams, verify the baselines in §2 yourself
+before dispatching the next one.
+
+**Keep the orchestrator thin.** Point agents at this file and at their task section; do not read
+plan preambles into the main conversation. Have workflows return a per-task
+`{task, verdict, commit, status}` summary — not the full findings objects — and have long review
+reports written to a file that returns only its path.
+
+---
+
+## 8. Open follow-ups
+
+- **I-098** — stale references to what Plan A deleted: two committed schema `description` fields
+  still name the deleted mirror as the authority (→ Plan D); three comments describe deleted code
+  as present, one asserting test coverage that no longer exists (→ any time); and
+  `tools/mapforge/lib/basin-sheet.mjs:143,:729` name the deleted `render-map.mjs` **inside the
+  committed SVG's drawn bytes** (→ **Plan B Task 12**, the one commit permitted to re-ink).
+- **I-096** — `check_spine_emit.mjs` silently drops any region it cannot resolve. Real in today's
+  map, independent of this programme.
+- Unclaimed work Plan A left on the table: a path-keyed ajv memo. `lib/story.mjs:51-55` builds a
+  fresh `Ajv` and recompiles on **every** call — none of Task 13's speed-up came from schema
+  reuse, it was all process startup.
