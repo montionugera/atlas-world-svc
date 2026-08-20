@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "landform-type.schema.json",
+  "title": "Landform type — one row of content/world/lexicon/landforms.json. SHAPE ONLY: the census (170/178/8/23/40) is asserted by scripts/tests/landform-lexicon.test.mjs and by G-LANDFORM, never duplicated here — a bound written into a schema turns its gate rule into dead code.",
+  "type": "object",
+  "required": ["id", "group", "alsoGroups", "geometry", "biomes", "sizeKm", "dungeonCapable", "glyph", "rarity", "requires", "gloss", "absentBecause"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "group": { "enum": ["coastal", "fluvial", "mountain", "glacial", "karst", "erosional", "desert", "volcanic", "wetland", "lakes", "island", "oceanic"] },
+    "alsoGroups": {
+      "type": "array",
+      "maxItems": 1,
+      "items": { "enum": ["coastal", "fluvial", "mountain", "glacial", "karst", "erosional", "desert", "volcanic", "wetland", "lakes", "island", "oceanic"] }
+    },
+    "geometry": { "enum": ["point", "line", "area"] },
+    "biomes": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "sizeKm": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+    "dungeonCapable": { "type": "boolean" },
+    "glyph": { "type": "string", "pattern": "^g-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "rarity": { "enum": ["common", "uncommon", "rare"] },
+    "requires": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rock": { "enum": ["carbonate", "clastic", "volcanic"] },
+        "precipDecileMin": { "type": "integer", "minimum": 0, "maximum": 9 },
+        "precipDecileMax": { "type": "integer", "minimum": 0, "maximum": 9 },
+        "tempDecileMin": { "type": "integer", "minimum": 0, "maximum": 9 },
+        "tempDecileMax": { "type": "integer", "minimum": 0, "maximum": 9 },
+        "slopeMin": { "type": "number", "minimum": 0 },
+        "slopeMax": { "type": "number", "minimum": 0 },
+        "nearFlag": { "enum": ["SEA", "LAKE", "RIVER", "DELTA", "GLACIER", "ARC", "CLIFF"] },
+        "flowAccMin": { "type": "number", "minimum": 0 },
+        "elevMin": { "type": "number", "minimum": 0, "maximum": 1 },
+        "elevMax": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "gloss": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "absentBecause": { "type": ["string", "null"] }
+  }
+}
