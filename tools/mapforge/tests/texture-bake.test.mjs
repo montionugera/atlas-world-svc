@@ -31,15 +31,22 @@ import { computeLock } from "../../../scripts/lib/render-lock.mjs";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const MODULE = join(ROOT, "tools/mapforge/lib/texture-bake.mjs");
 
-// Three regions that OVERLAP. Disjoint fixtures make the ascending-id
+// Four regions that OVERLAP. Disjoint fixtures make the ascending-id
 // composite rule untestable — deleting the sort cannot change a pixel when no
 // pixel is claimed twice, which is how that rule survived its own deletion.
 // r1 and r2 share x 30..40 / y 0..30; r1 and r3 share y 25..30; r2 and r3
-// share x 30..40 / y 25..40. Ascending id means r3 beats r2 beats r1.
+// share x 30..40 / y 25..40. Ascending id means r4 beats r3 beats r2 beats r1.
+//
+// r4 is deliberately NOT axis-aligned. Every ring here was a rectangle, and on
+// a rectangle deleting the even-odd y-guard in rowCrossings is INVISIBLE: a
+// horizontal edge divides by zero, both horizontal edges contribute the same
+// signed infinity, and adding two crossings never changes a parity. A slanted
+// edge contributes exactly one spurious crossing and flips it.
 const REGIONS = [
   { id: "r1", biome: "karst", ring: [[0, 0], [40, 0], [40, 30], [0, 30]] },
   { id: "r2", biome: "desert", ring: [[30, 0], [90, 0], [90, 40], [30, 40]] },
   { id: "r3", biome: "forest", ring: [[0, 25], [40, 25], [40, 70], [0, 70]] },
+  { id: "r4", biome: "lava", ring: [[45, 30], [75, 20], [90, 50], [60, 60]] },
 ];
 const PX_PER_KM = 3.5;
 // The atlas sheet's own frame: ATLAS_PX_PER_KM = 3.5 over a 400 km world.
@@ -499,7 +506,7 @@ test("the underlay's pixels ARE the tiles, phase-locked to the frame", () => {
   assert.equal(d.w, Math.ceil(90 * PX_PER_KM), "W must be ceil(maxX * pxPerKm)");
   assert.equal(d.h, Math.ceil(70 * PX_PER_KM), "H must be ceil(maxY * pxPerKm)");
   const tiles = Object.fromEntries(
-    ["karst", "desert", "forest"].map((b) => [b, decodePng(bakeBiomeTexture({ biome: b, pxPerKm: PX_PER_KM }).dataUri)]),
+    [...new Set(REGIONS.map((r) => r.biome))].map((b) => [b, decodePng(bakeBiomeTexture({ biome: b, pxPerKm: PX_PER_KM }).dataUri)]),
   );
   // Ascending id composites r1, then r2, then r3 — so the LAST region whose
   // ring contains the pixel centre owns it.
@@ -534,14 +541,14 @@ test("the underlay's pixels ARE the tiles, phase-locked to the frame", () => {
       checked++;
     }
   // the three named overlaps resolve to the HIGHER id, not to the first drawn
-  for (const [kmX, kmY, biome] of [[35, 10, "desert"], [10, 27, "forest"], [35, 30, "forest"], [10, 10, "karst"], [60, 10, "desert"]]) {
+  for (const [kmX, kmY, biome] of [[35, 10, "desert"], [10, 27, "forest"], [35, 30, "forest"], [10, 10, "karst"], [60, 10, "desert"], [70, 40, "lava"]]) {
     const px = Math.floor(kmX * PX_PER_KM), py = Math.floor(kmY * PX_PER_KM);
     const t = tiles[biome];
     assert.deepEqual(d.at(px, py), t.at(px % t.w, py % t.h), `${kmX},${kmY} km must be ${biome}`);
     overlapChecked++;
   }
   assert.ok(checked > 8000, `only ${checked} pixels sampled`);
-  assert.equal(overlapChecked, 5);
+  assert.equal(overlapChecked, 6);
   assert.ok(inkSeen > 200, `only ${inkSeen} inked pixels — the underlay is nearly blank`);
 });
 
@@ -560,7 +567,7 @@ test("bakedUnderlay is deterministic and independent of region input order", () 
   assert.equal(a.svg, bakedUnderlay({ regions: REGIONS, pxPerKm: PX_PER_KM }).svg);
   assert.equal(a.svg, bakedUnderlay({ regions: [...REGIONS].reverse(), pxPerKm: PX_PER_KM }).svg,
     "reversing the input changed the picture — the composite is order-dependent");
-  assert.equal(a.svg, bakedUnderlay({ regions: [REGIONS[1], REGIONS[2], REGIONS[0]], pxPerKm: PX_PER_KM }).svg);
+  assert.equal(a.svg, bakedUnderlay({ regions: [REGIONS[2], REGIONS[0], REGIONS[3], REGIONS[1]], pxPerKm: PX_PER_KM }).svg);
 });
 
 test("bakeBiomeTexture is deterministic and covers every biome", () => {
@@ -576,7 +583,7 @@ test("bakeBiomeTexture is deterministic and covers every biome", () => {
 test("bakedUnderlay actually inks each region with its OWN biome tile", () => {
   const one = (biome) => bakedUnderlay({ regions: [{ id: "r1", biome, ring: REGIONS[0].ring }], pxPerKm: PX_PER_KM }).svg;
   assert.notEqual(one("karst"), one("desert"), "two biomes baked to identical bytes");
-  const swapped = [{ ...REGIONS[0], biome: "lava" }, REGIONS[1], REGIONS[2]];
+  const swapped = [{ ...REGIONS[0], biome: "ocean" }, ...REGIONS.slice(1)];
   assert.notEqual(bakedUnderlay({ regions: REGIONS, pxPerKm: PX_PER_KM }).svg,
     bakedUnderlay({ regions: swapped, pxPerKm: PX_PER_KM }).svg, "changing a biome changed nothing");
 });
