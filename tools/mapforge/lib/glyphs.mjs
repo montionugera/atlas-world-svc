@@ -13,6 +13,29 @@
 // Pure — no fs, no deps. The lexicon is passed in, never read here.
 import { r2 } from "./draft.mjs";
 
+/**
+ * INSTANCE SIZE CONTRACT — the size a sheet may place a family-specific mark at.
+ *
+ * Measured, not asserted: the 40 families were rasterised through the shipped
+ * symbolDefs/glyphUse path at 8, 14, 18 and 26 px and looked at.
+ *
+ *   - `hero` 26 — every family reads as itself with room to spare.
+ *   - `preferred` 20 — the working size for a named feature.
+ *   - `min` 18 — the floor. At 18 px cenote's rings are still open, reef's
+ *     three heads still separate, arch-rock's void is still a hole.
+ *   - `generic` 16 — BELOW THIS, DO NOT USE A FAMILY-SPECIFIC MARK. At 14 px
+ *     reef's circles start merging and cenote's rings start closing; at 8 px
+ *     discrimination collapses across the WHOLE set, not just the dense
+ *     families: cenote goes solid, pavement and playa go to blocks, and every
+ *     dome (arch, cave, tower, isle) is the same blob. A family-specific glyph
+ *     below 16 px costs render budget and buys no information — place one
+ *     generic mark instead.
+ *
+ * This exists so Tasks 10 and 12 cannot pick 8 px by accident.
+ * `checkGlyphSizes` is the enforcement; it is not advice.
+ */
+export const GLYPH_SIZE = Object.freeze({ generic: 16, min: 18, preferred: 20, hero: 26 });
+
 // xor-shift + Math.imul: exact integer arithmetic, identical on every engine.
 //
 // The mixing is a murmur3 fmix32 finalizer, NOT the plain
@@ -179,15 +202,23 @@ export const GLYPHS = {
       L(x + 4.5 * u, y + 2.5 * u),
     );
   },
+  // A cap-rock TABLE: an overhanging flat summit bar, two faces beneath it and
+  // a base. It was a plain trapezoid, which the raster rule scores at 0.80
+  // against g-cave (karst) and 0.70 against g-cone (volcanic) — the two closest
+  // cross-group pairs in the whole set. A trapezoid is the one silhouette this
+  // vocabulary cannot afford twice; a table is not a silhouette at all.
   "g-mesa": ({ x, y, size, seed }) => {
     const u = size / 10,
-      d = j(seed, 11) * 0.6 * u;
+      d = j(seed, 11) * 0.5 * u;
     return P(
-      M(x - 4.5 * u, y + 3 * u),
-      L(x - 2.6 * u, y - 2.5 * u),
-      L(x + 2.6 * u + d, y - 2.5 * u),
-      L(x + 4.5 * u, y + 3 * u),
-      "Z",
+      M(x - 4.4 * u, y - 1.8 * u),
+      L(x + 4.4 * u, y - 1.8 * u),
+      M(x - 3.2 * u, y - 1.8 * u),
+      L(x - 2.6 * u, y + 2.4 * u),
+      M(x + 3.2 * u + d, y - 1.8 * u),
+      L(x + 2.6 * u, y + 2.4 * u),
+      M(x - 3.4 * u, y + 2.4 * u),
+      L(x + 3.4 * u, y + 2.4 * u),
     );
   },
   "g-scree": ({ x, y, size, seed }) => {
@@ -248,16 +279,22 @@ export const GLYPHS = {
       gash(x + 2.7 * u, y - 0.2 * u),
     );
   },
+  // An angular boulder PERCHED on a short bedrock ledge. The old outline was a
+  // near-symmetric five-sided blob that the raster rule scores at 0.76 against
+  // g-cave (karst): at 26 px both were one wide dome. The perch is the whole
+  // point of an erratic — a boulder the ice left somewhere it does not belong.
   "g-erratic": ({ x, y, size, seed }) => {
     const u = size / 10,
-      d = j(seed, 19) * 0.7 * u;
+      d = j(seed, 19) * 0.6 * u;
     return P(
-      M(x - 2.6 * u, y + 2.4 * u),
-      L(x - 3 * u, y - 0.6 * u),
-      L(x - 0.6 * u, y - 2.6 * u + d),
-      L(x + 2.6 * u, y - 1.4 * u),
-      L(x + 3 * u, y + 2.4 * u),
+      M(x - 2.6 * u, y + 0.8 * u),
+      L(x - 1.8 * u, y - 1.6 * u),
+      L(x + 0.4 * u + d, y - 3.2 * u),
+      L(x + 2.2 * u, y - 1.2 * u),
+      L(x + 2.8 * u, y + 0.8 * u),
       "Z",
+      M(x - 1.6 * u, y + 2.6 * u),
+      L(x + 1.6 * u, y + 2.6 * u),
     );
   },
 
@@ -336,18 +373,24 @@ export const GLYPHS = {
       L(x + 0.4 * u, y - 3.6 * u),
     );
   },
+  // A HOLLOW horseshoe with unequal legs — you can see through it, which is
+  // what makes a land arch an arch. It was "squared dome plus one internal
+  // mark", the same skeleton as g-arch (coastal); the two differed only in
+  // which squiggle sat inside the shell. Openness, not the squiggle, is the
+  // separator, and the unequal legs keep it off its own mirror.
   "g-arch-rock": ({ x, y, size, seed }) => {
     const u = size / 10,
       d = j(seed, 26) * 0.4 * u;
     return P(
-      M(x - 4.2 * u, y + 3.4 * u),
-      L(x - 4.2 * u, y - u),
-      L(x - 2.4 * u, y - 2.6 * u + d),
-      L(x + 2.4 * u, y - 2.6 * u),
-      L(x + 4.2 * u, y - u),
-      L(x + 4.2 * u, y + 3.4 * u),
-      M(x - 2.2 * u, y + 3.4 * u),
-      Q(x, y - 1.6 * u, x + 2.2 * u, y + 3.4 * u),
+      M(x - 4 * u, y + 3.4 * u),
+      L(x - 4 * u, y - 0.8 * u),
+      Q(x - 0.4 * u + d, y - 4.8 * u, x + 3.6 * u, y - 1.2 * u),
+      L(x + 3.6 * u, y + 3.4 * u),
+      L(x + 2.2 * u, y + 3.4 * u),
+      L(x + 2.2 * u, y - 0.4 * u),
+      Q(x - 0.4 * u + d, y - 2.6 * u, x - 2 * u, y),
+      L(x - 2 * u, y + 3.4 * u),
+      "Z",
     );
   },
 
@@ -419,17 +462,25 @@ export const GLYPHS = {
   },
 
   // ── volcanic (4) ───────────────────────────────────────────────────────
+  // Concave flanks, an OPEN crater and two ash ticks above it. It was a
+  // trapezoid whose only discriminator from g-mesa (mountain) was a ~3 px
+  // notch in the top edge — one notch is not a mark. The plume is the picture
+  // a reader actually recognises as volcanic.
   "g-cone": ({ x, y, size, seed }) => {
     const u = size / 10,
-      d = j(seed, 31) * 0.5 * u;
+      d = j(seed, 31) * 0.4 * u;
     return P(
       M(x - 4.2 * u, y + 3.4 * u),
-      L(x - 1.4 * u + d, y - 3.4 * u),
-      L(x - 0.5 * u, y - 2.4 * u),
-      L(x + 0.5 * u, y - 3.4 * u),
-      L(x + 1.4 * u + d, y - 3.4 * u),
-      L(x + 4.2 * u, y + 3.4 * u),
+      Q(x - 2.4 * u, y + 0.8 * u, x - 1.6 * u, y - 1.4 * u),
+      L(x + 1.6 * u + d, y - 1.4 * u),
+      Q(x + 2.4 * u, y + 0.8 * u, x + 4.2 * u, y + 3.4 * u),
       "Z",
+      // The plume is DETACHED. Joined to the rim it read as a zigzag
+      // continuation of the flanks and the mark came out as a lampshade.
+      M(x - 1.2 * u, y - 2.6 * u),
+      L(x - 2 * u, y - 4.4 * u),
+      M(x + 1.2 * u + d, y - 2.6 * u),
+      L(x + 2 * u, y - 4.4 * u),
     );
   },
   "g-caldera": ({ x, y, size, seed }) => {
@@ -471,18 +522,26 @@ export const GLYPHS = {
   },
 
   // ── wetland (3) ────────────────────────────────────────────────────────
+  // Three CURVED blades splaying from one root, over a BROKEN waterline. It
+  // was three parallel verticals on a continuous bar — which is g-falls
+  // (fluvial) with the pool curve moved. Splayed-and-curved against
+  // parallel-and-straight is the separator; the broken line is standing water.
   "g-tuft": ({ x, y, size, seed }) => {
     const u = size / 10,
       d = j(seed, 35) * 0.4 * u;
     return P(
-      M(x - 4 * u, y + 2 * u),
-      L(x + 4 * u, y + 2 * u),
-      M(x - 2 * u, y + 2 * u),
-      L(x - 2.2 * u, y - 1.4 * u),
-      M(x + d, y + 2 * u),
-      L(x + d, y - 2.6 * u),
-      M(x + 2 * u, y + 2 * u),
-      L(x + 2.2 * u, y - 1.4 * u),
+      // Three SEPARATE roots, not one. Sharing a root point made the blades a
+      // trident and the mark read as a down-arrow.
+      M(x - 1.8 * u, y + 1.6 * u),
+      Q(x - 2.2 * u, y - 0.4 * u, x - 3.4 * u, y - 2 * u),
+      M(x + d, y + 1.6 * u),
+      Q(x - 0.2 * u, y - 0.8 * u, x - 0.4 * u, y - 3.2 * u),
+      M(x + 1.8 * u, y + 1.6 * u),
+      Q(x + 2.4 * u, y - 0.4 * u, x + 3.2 * u, y - 2.4 * u),
+      M(x - 4.2 * u, y + 3.2 * u),
+      L(x - 1.2 * u, y + 3.2 * u),
+      M(x + 0.6 * u, y + 3.2 * u),
+      L(x + 3.6 * u, y + 3.2 * u),
     );
   },
   "g-bog": ({ x, y, size, seed }) => {
@@ -619,7 +678,8 @@ export const GLYPHS = {
  * broken — checkGlyphCoverage({ emittedIds }) is what turns that into a
  * reported failure.
  */
-export function symbolDefs({ ids }) {
+export function symbolDefs({ ids } = {}) {
+  if (!Array.isArray(ids)) return ""; // a sheet builder never throws (trap 6)
   return ids
     .filter((id) => GLYPHS[id])
     .map(
@@ -639,9 +699,48 @@ export function glyphUse({ id, x, y, size }) {
   );
 }
 
-export function glyphForType({ lexicon, typeId }) {
-  const row = lexicon.find((r) => r.id === typeId);
-  return row ? row.glyph : null;
+export function glyphForType({ lexicon, typeId } = {}) {
+  if (!Array.isArray(lexicon)) return null;
+  const row = lexicon.find((r) => r && r.id === typeId);
+  return row ? (row.glyph ?? null) : null;
+}
+
+/** What a malformed argument IS, for an in-band message a reader can act on. */
+const kindOf = (v) => (v === null ? "null" : Array.isArray(v) ? "an array" : typeof v);
+
+/**
+ * G-GLYPH, size half. Every family-specific instance must be placed at
+ * `GLYPH_SIZE.min` or above; anything under `GLYPH_SIZE.generic` is a hard
+ * report because family identity is not recoverable there at all.
+ *
+ * `instances` is [{ id, size }]. Never throws; returns problems in-band.
+ */
+export function checkGlyphSizes({ instances } = {}) {
+  if (!Array.isArray(instances))
+    return [`G-GLYPH: instances is ${kindOf(instances)}, not an array — no size was checked`];
+  const problems = [];
+  for (const inst of instances) {
+    if (!inst || typeof inst !== "object") {
+      problems.push(`G-GLYPH: instance is ${kindOf(inst)}, not a record — no size was checked`);
+      continue;
+    }
+    const { id, size } = inst;
+    if (typeof size !== "number" || !Number.isFinite(size)) {
+      problems.push(`G-GLYPH: glyph "${id}" has a non-numeric size (${kindOf(size)})`);
+      continue;
+    }
+    if (size < GLYPH_SIZE.generic)
+      problems.push(
+        `G-GLYPH: glyph "${id}" is placed at ${r2(size)} px, under the ${GLYPH_SIZE.generic} px ` +
+          `floor where family identity is unreadable — place one generic mark instead`,
+      );
+    else if (size < GLYPH_SIZE.min)
+      problems.push(
+        `G-GLYPH: glyph "${id}" is placed at ${r2(size)} px, below the ` +
+          `${GLYPH_SIZE.min} px family-identity minimum`,
+      );
+  }
+  return problems;
 }
 
 /**
@@ -663,18 +762,34 @@ export function glyphForType({ lexicon, typeId }) {
  *     exempt by design: giving each of them a distinct glyph is how you get
  *     1,400 identical dots by another route.
  *
- * Never throws; returns the problem strings in-band.
+ * NEVER THROWS — every degenerate argument comes back as a problem string.
+ * A gate that throws skips its caller's finish() and silently drops every
+ * failure recorded before it, so `lexicon: null` (what a failed readJson
+ * hands you, and the repo's gate joins `return 0` on a failed load) has to
+ * report, not crash.
  */
-export function checkGlyphCoverage({ lexicon, namedCounts = null, emittedIds = null }) {
+export function checkGlyphCoverage({ lexicon, namedCounts = null, emittedIds = null } = {}) {
+  if (!Array.isArray(lexicon))
+    return [`G-GLYPH: lexicon is ${kindOf(lexicon)}, not an array — nothing was checked`];
   const problems = [];
-  const owner = new Map(); // glyph -> primary group (alsoGroups is a query tag, not a claim)
+  if (namedCounts !== null && (typeof namedCounts !== "object" || Array.isArray(namedCounts)))
+    return [`G-GLYPH: namedCounts is ${kindOf(namedCounts)}, not a census object`];
+  const rows = [];
   for (const row of lexicon) {
+    if (!row || typeof row !== "object") {
+      problems.push(`G-GLYPH: lexicon row is ${kindOf(row)}, not a record`);
+      continue;
+    }
+    rows.push(row);
+  }
+  const owner = new Map(); // glyph -> primary group (alsoGroups is a query tag, not a claim)
+  for (const row of rows) {
     const prev = owner.get(row.glyph);
     if (prev === undefined) owner.set(row.glyph, row.group);
     else if (prev !== row.group)
       problems.push(`G-GLYPH: groups "${prev}" and "${row.group}" share glyph "${row.glyph}"`);
   }
-  for (const row of lexicon) {
+  for (const row of rows) {
     const named = namedCounts ? (namedCounts[row.id] ?? 0) : 0;
     if (!GLYPHS[row.glyph] && (named > 0 || namedCounts === null))
       problems.push(
@@ -683,11 +798,15 @@ export function checkGlyphCoverage({ lexicon, namedCounts = null, emittedIds = n
           : `G-GLYPH: type "${row.id}" names glyph "${row.glyph}" with no family`,
       );
   }
-  if (emittedIds) {
-    const emitted = new Set(emittedIds);
-    for (const id of new Set(lexicon.map((r) => r.glyph)))
-      if (!emitted.has(id))
-        problems.push(`G-GLYPH: glyph "${id}" is referenced but no <symbol> was emitted`);
+  if (emittedIds !== null && emittedIds !== undefined) {
+    if (!Array.isArray(emittedIds))
+      problems.push(`G-GLYPH: emittedIds is ${kindOf(emittedIds)}, not an array of symbol ids`);
+    else {
+      const emitted = new Set(emittedIds);
+      for (const id of new Set(rows.map((r) => r.glyph)))
+        if (!emitted.has(id))
+          problems.push(`G-GLYPH: glyph "${id}" is referenced but no <symbol> was emitted`);
+    }
   }
   return problems;
 }
