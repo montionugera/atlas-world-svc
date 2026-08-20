@@ -535,5 +535,14 @@
     "release_version": "1.8",
     "claimed_at": "2026-08-18T13:58:59.554590+00:00",
     "shipped_at": "2026-08-19T06:46:25.268443+00:00"
+  },
+  {
+    "id": "F-047",
+    "title": "World fill Plan B: vocabulary and render \u2014 170-type landform lexicon, four schemas, 20 biomes, 40 glyph families, deterministic label declutter, baked-texture rasteriser",
+    "from_idea": "I-099",
+    "created_at": "2026-08-20T12:52:02.379109+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]

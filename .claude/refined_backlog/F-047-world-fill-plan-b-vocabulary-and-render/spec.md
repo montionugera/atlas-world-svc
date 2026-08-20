@@ -1,7 +1,8 @@
 ---
 title: "World fill Plan B: vocabulary and render — 170-type landform lexicon, four schemas, 20 biomes, 40 glyph families, deterministic label declutter, baked-texture rasteriser"
-id: I-099
-status: idea
+id: F-047
+status: refined
+from_idea: I-099
 ---
 
 # World fill Plan B: vocabulary and render
