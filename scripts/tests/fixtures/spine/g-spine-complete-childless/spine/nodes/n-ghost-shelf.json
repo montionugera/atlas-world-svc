@@ -19,6 +19,5 @@
   "representsNodeId": null,
   "lore": { "summary": "Childless playspace fixture for the G-SPINE-COMPLETE red demo." },
   "tags": ["runtime-only"],
-  "levelBand": null,
-  "derived": null
+  "levelBand": null
 }

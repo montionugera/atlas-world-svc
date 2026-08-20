@@ -29,6 +29,12 @@ import {
 // spawned it. It now ends in an `import.meta.url` entry guard and exports
 // `runSpineGateInProcess`, so `--only=spine` fixture runs are in-process.
 // The full sweep still spawns (see that export's header for why).
+// Plan B Task 4: the ONE producer of content/spine/derived.json's bytes, so
+// G-DERIVED-DRIFT compares against exactly what --write would put on disk.
+// No cycle: check_spine_emit.mjs imports only lib/spine.mjs + lib/places.mjs,
+// never this file, and both modules end in an `import.meta.url` entry guard
+// so importing either runs no main().
+import { derivedSidecar } from "./check_spine_emit.mjs";
 import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -1984,6 +1990,10 @@ function checkSpine(opts, mobTypes) {
   // G-FRAME's reversed town arrow and G-DERIVED-DRIFT's rollupVerdict.
   gSpineFrames({ nodes: validNodes, tree, plans: townPlans, fail });
 
+  // Plan B Task 4: G-DERIVED-DRIFT, hoisted out of gSpineFrames' per-node
+  // loop into one whole-file comparison against content/spine/derived.json.
+  gSpineDerived({ tree, plans: townPlans, contentRoot: opts.contentRoot, fail });
+
   // F-041 Phase 1 Task 1.8: G-FROZEN lands BEFORE G-NET/G-CANON-LEG — the
   // leg gate's both-endpoints-frozen dependency means nothing without it.
   // Same validNodes discipline, and since Plan B Task 3 the same for edges:
@@ -2244,15 +2254,59 @@ function gSpineFrames({ nodes, tree, plans, fail }) {
         }
       }
     }
-    // G-DERIVED-DRIFT: recomputation reproduces the committed block.
-    if (tree.depthOf.has(node.id) && !eq(node.derived, deriveNode({ tree, id: node.id, plans })))
-      fail(`spine: G-DERIVED-DRIFT ${node.id}: committed derived block does not match recomputation`);
+    // Plan B Task 4: G-DERIVED-DRIFT used to live here, as 44 per-node
+    // comparisons against an inline `derived` block. The block now lives in
+    // content/spine/derived.json and the rule is gSpineDerived() below —
+    // ONE whole-file byte comparison.
     // G-PROVENANCE: generated ⇒ pinned generator. (Reproduce-check activates
     // with the first real generator; none exists in 1.8.)
     const p = node.provenance;
     if (p && p.authored === "generated" && (!p.generator || typeof p.generator.name !== "string" || typeof p.generator.version !== "string"))
       fail(`spine: G-PROVENANCE ${node.id}: authored "generated" requires generator {name, version}`);
   }
+}
+
+// Plan B Task 4 — G-DERIVED-DRIFT, now ONE whole-file comparison against
+// content/spine/derived.json instead of 44 per-node byte comparisons.
+//
+// Skipped entirely when the tree has errors, because check_spine_emit's
+// collectOutputs bails on tree.errors before writing ANY output — so on a
+// cyclic or dangling tree the sidecar legitimately does not exist and the
+// G-TREE failure is the honest one to report. Recomputing here would also
+// hang: deriveNode -> composeToRoot walks the ancestor chain to root.
+//
+// A checksum says THAT something changed, not WHAT — so the remedy is in the
+// message, and `node scripts/check_spine_emit.mjs --write` regenerates it.
+// Both id-set diffs are reported (stale AND missing) rather than the first
+// one found: a rename produces one of each and naming only half of it sends
+// the reader looking for a deletion that never happened.
+function gSpineDerived({ tree, plans, contentRoot, fail }) {
+  if (tree.errors.length) return;
+  const path = join(contentRoot, "spine/derived.json");
+  if (!existsSync(path)) {
+    fail("spine: G-DERIVED-DRIFT: content/spine/derived.json is missing — run `node scripts/check_spine_emit.mjs --write`");
+    return;
+  }
+  let committed;
+  try { committed = readFileSync(path, "utf8"); }
+  catch (e) { fail(`spine: G-DERIVED-DRIFT: content/spine/derived.json is unreadable: ${e.message}`); return; }
+  const recomputed = derivedSidecar({ tree, plans });
+  if (committed === recomputed) return;
+  // The id-set diff is a COURTESY on top of the byte comparison, so a sidecar
+  // that is not parseable JSON must still produce the drift line rather than
+  // an uncaught throw (a throw here skips finish() and drops every failure
+  // recorded before it — the rule this whole file is built around).
+  let extra = "";
+  try {
+    const cIds = Object.keys(JSON.parse(committed));
+    const rIds = Object.keys(JSON.parse(recomputed));
+    const stale = cIds.filter((i) => !rIds.includes(i));
+    const missing = rIds.filter((i) => !cIds.includes(i));
+    if (stale.length) extra += ` — stale ids: ${stale.join(", ")}`;
+    if (missing.length) extra += ` — missing ids: ${missing.join(", ")}`;
+  } catch { extra = " — and is not parseable JSON"; }
+  fail("spine: G-DERIVED-DRIFT: content/spine/derived.json differs from the recomputed block" +
+    extra + " — run `node scripts/check_spine_emit.mjs --write`");
 }
 
 // F-041 Phase 1 Task 1.8: G-FROZEN — transitive freeze + byte-checked

@@ -56,21 +56,5 @@
     "summary": "Projectile-only playground map; falls back to the 1000x1000 default world size."
   },
   "tags": ["runtime-only"],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 1000000,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [500, 1500],
-    "resolvedSeedStreams": {
-      "terrain": "c617fcc78e2d8079",
-      "settlements": "227c2092f2a02682",
-      "vegetation": "2092a268f5722a37",
-      "names": "66dd00068af22f6c"
-    },
-    "digest": "sha256:b6a2b4bfdf1f95d60331d2ad05f7efd86bf8521825befac686833ca0929c41d0"
-  }
+  "levelBand": null
 }

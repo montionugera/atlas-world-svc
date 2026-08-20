@@ -310,10 +310,17 @@ function pointTowardCentroid({ vertex, centroid, points }) {
   throw new Error(`pointTowardCentroid: no interior point found stepping from ${vertex} toward centroid ${centroid}`);
 }
 
-export function buildWorld({ atlasNode }) {
-  const terrain = atlasNode.derived.resolvedSeedStreams.terrain;
+// Plan B Task 4: `derived` moved out of the node file into
+// content/spine/derived.json, so the caller passes the streams in. Keeping
+// the read inside this function would make a pure library do file I/O.
+// `seedStreams` is content/spine/derived.json's ["n-atlas"].resolvedSeedStreams.
+// `atlasNode` is retained in the signature (unread today) because it is the
+// plan-pinned interface Plan C consumes and the frame this generator draws
+// into — dropping it would churn four call sites for no behaviour change.
+export function buildWorld({ atlasNode, seedStreams }) {
+  const terrain = seedStreams.terrain;
   const rand = rng(terrain);
-  const nameRand = rng(atlasNode.derived.resolvedSeedStreams.names);
+  const nameRand = rng(seedStreams.names);
   const usedNames = new Set();
   const summary = [];
 

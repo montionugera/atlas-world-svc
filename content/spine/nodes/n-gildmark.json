@@ -60,21 +60,5 @@
     "labelAnchor": "east"
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 3.2,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [2.2, 31.4],
-    "resolvedSeedStreams": {
-      "terrain": "e267dffcf9a91599",
-      "settlements": "3f19e0e3f58de814",
-      "vegetation": "8a6f782a5738167c",
-      "names": "16b8b26a0d666df5"
-    },
-    "digest": "sha256:26039b7a7ee4f6133fb39400e55dd689c77573c41f5132c23335a800681acb9e"
-  }
+  "levelBand": null
 }

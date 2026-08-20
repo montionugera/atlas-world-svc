@@ -435,34 +435,5 @@
     }
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 1040.6800000000005,
-    "childAreaParentUnits2": 555.4199999999997,
-    "coveragePct": 53.370872890802126,
-    "unclaimedPct": 46.629127109197874,
-    "computedComposition": {
-      "alkali": 2.957066533420456,
-      "ash": 1.9120575008648193,
-      "meadow": 25.08247684206481,
-      "rock": 12.999062151670064,
-      "marsh": 10.357758388745822,
-      "upland": 11.447872544874508,
-      "built": 1.7217473190606123,
-      "forest": 13.657393242879659,
-      "ocean": 1.2830457008878802,
-      "river": 6.39429603720644,
-      "ice": 6.325825421839562,
-      "bramble": 5.8640504285659345
-    },
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [15, 19],
-    "resolvedSeedStreams": {
-      "terrain": "b024f0a067a68737",
-      "settlements": "cb378ad28eea1b2e",
-      "vegetation": "dc0bba291ef8320c",
-      "names": "6aebc6c2897f33b0"
-    },
-    "digest": "sha256:db8525db1364a6e8bae73409aa9c16f457e8fdff5dfc6d7f1f222ad7f8f17b6c"
-  }
+  "levelBand": null
 }

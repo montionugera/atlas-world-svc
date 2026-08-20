@@ -63,21 +63,5 @@
     "summary": "The far run of coast where the Peatrun stains the sea brown a mile out, or so the wreck-reports swear."
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 198.875,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [202.4, 159.7],
-    "resolvedSeedStreams": {
-      "terrain": "ec87b7952194be28",
-      "settlements": "a74173f73ef2340b",
-      "vegetation": "ead62a937cff1cc7",
-      "names": "98711964e7a41477"
-    },
-    "digest": "sha256:f629636c4d813119ff939c6119b2ece722a667e96021f096f270d436d324dbfb"
-  }
+  "levelBand": null
 }

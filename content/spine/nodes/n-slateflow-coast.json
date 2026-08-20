@@ -61,21 +61,5 @@
     "summary": "A coast reported grey to the tideline where the Slateflow comes out; no chart of it was drawn ashore."
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 172.0399999999936,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [299.5, 266.1],
-    "resolvedSeedStreams": {
-      "terrain": "9b25e15330e62068",
-      "settlements": "2d01abbf867c3a52",
-      "vegetation": "0a8187f439d8913a",
-      "names": "3ce1f1b307802bc4"
-    },
-    "digest": "sha256:b43c2b084cb22e0c91f042987308a2ccfa71cd6687fb46d27ee64f5c7dc6e402"
-  }
+  "levelBand": null
 }

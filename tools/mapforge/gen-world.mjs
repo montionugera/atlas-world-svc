@@ -3,10 +3,11 @@
 //
 // Turns Task 1's pure library (lib/world-gen.mjs's buildWorld) into
 // gate-valid candidate spine-node files: it builds a synthetic content root
-// in a temp dir, canonicalizes every node's `interior`/`derived` blocks the
-// same way scripts/check_spine_emit.mjs's derive-writer does (reusing its
-// exported canonicalNode/canonStringify — never hand-rolled), and spawns the
-// REAL spine gate (scripts/check_content.mjs --only=spine) against it. ajv
+// in a temp dir, canonicalizes every node's `interior` block and emits the
+// `derived` sidecar the same way scripts/check_spine_emit.mjs's derive-writer
+// does (reusing its exported canonicalNode/derivedSidecar — never
+// hand-rolled), and spawns the REAL spine gate
+// (scripts/check_content.mjs --only=spine) against it. ajv
 // is only installed under scripts/, so this is the only way to validate
 // against the schema without adding a dependency.
 //
@@ -22,7 +23,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { execFileSync } from "node:child_process";
 import { buildWorld } from "./lib/world-gen.mjs";
 import { buildTree, deriveNode } from "../../scripts/lib/spine.mjs";
-import { canonicalNode, canonStringify } from "../../scripts/check_spine_emit.mjs";
+import { canonicalNode, derivedSidecar } from "../../scripts/check_spine_emit.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, "../..");
@@ -36,15 +37,16 @@ const COMPOSITION_TOLERANCE = 2;
 const SYNTHETIC_LOAD_BUDGET = { maxNodes: 96, maxChildrenPerParent: 24, maxRingPoints: 160, maxBytes: 786432 };
 
 // Canonical bytes for a node (2-space indent, trailing newline), reusing the
-// derive-writer's own serializer so `interior`/`derived` are byte-consistent
-// with every other committed spine node — never hand-rolled JSON.stringify.
-function canonicalBytes({ node, tree, keepDerived }) {
+// derive-writer's own serializer so `interior` is byte-consistent with every
+// other committed spine node — never hand-rolled JSON.stringify.
+//
+// Plan B Task 4: `derived` is no longer part of a node's bytes at all, so the
+// old `keepDerived` flag (and its `delete obj.derived` re-serialize) is gone;
+// the computed blocks are written once, as a sidecar, by derivedSidecar().
+function canonicalBytes({ node, tree }) {
   const { bytes, error } = canonicalNode({ node, tree, plans: [] });
   if (error) throw new Error(`gen-world: ${error}`);
-  if (keepDerived) return bytes;
-  const obj = JSON.parse(bytes);
-  delete obj.derived;
-  return canonStringify(obj) + "\n";
+  return bytes;
 }
 
 function readJson(path) {
@@ -104,7 +106,12 @@ function postWorldNodeIds({ nodes }) {
 function buildSyntheticRoot({ repoRoot }) {
   const realContentRoot = join(repoRoot, "content");
   const atlasNode = readJson(join(realContentRoot, "spine/nodes/n-atlas.json"));
-  const { nodes: candidateNodes, edges: candidateEdges, summary } = buildWorld({ atlasNode });
+  // Plan B Task 4: the seed streams moved out of the node file into the one
+  // content/spine/derived.json sidecar; buildWorld takes them as an argument
+  // rather than doing file I/O inside a pure library.
+  const seedStreams = readJson(join(realContentRoot, "spine/derived.json"))["n-atlas"].resolvedSeedStreams;
+  const { nodes: candidateNodes, edges: candidateEdges, summary } =
+    buildWorld({ atlasNode, seedStreams });
 
   const tmp = mkdtempSync(join(tmpdir(), "gen-world-"));
   // Self-cleaning: if anything below throws (schema/tree/canonicalization
@@ -145,13 +152,16 @@ function buildSyntheticRoot({ repoRoot }) {
     if (tree.errors.length) throw new Error(`gen-world: merged tree is invalid: ${tree.errors.join("; ")}`);
 
     // Canonicalize EVERY node (real + candidate) over the merged tree — the
-    // real nodes' own interior/derived is unaffected by new siblings except
-    // n-atlas, whose rollup now includes the candidates as children; the
-    // candidates get their derived block computed for the first time here.
+    // real nodes' own interior is unaffected by new siblings except n-atlas,
+    // whose rollup now includes the candidates as children.
     for (const node of mergedNodes) {
-      const bytes = canonicalBytes({ node, tree, keepDerived: true });
-      writeFileSync(join(tmp, "spine/nodes", `${node.id}.json`), bytes);
+      writeFileSync(join(tmp, "spine/nodes", `${node.id}.json`), canonicalBytes({ node, tree }));
     }
+    // Plan B Task 4: the derived sidecar is now a gated output, so the
+    // synthetic root needs one or G-DERIVED-DRIFT reds this generator's own
+    // gate run. Written from the SAME merged tree the nodes were written
+    // from, by the emitter's own producer — never hand-rolled.
+    writeFileSync(join(tmp, "spine/derived.json"), derivedSidecar({ tree, plans: [] }));
 
     const allRealEdges = readJson(join(realContentRoot, "spine/edges.json"));
     const realEdges = allRealEdges.filter((e) => e.kind !== "sealane" || e.id === PRE_WORLD_SEALANE_ID);
@@ -228,13 +238,13 @@ export function generate({ repoRoot, outDir }) {
       process.exit(1);
     }
 
-    // Write candidates to outDir: canonical bytes, WITHOUT derived —
-    // promotion (Task 3) + a future --write owns computing that once the
-    // candidates are renamed/hand-polished into the real content root.
+    // Write candidates to outDir: canonical bytes. Since Plan B Task 4 a
+    // node file carries no `derived` block at all, so promotion (Task 3) +
+    // `check_spine_emit --write` own regenerating content/spine/derived.json
+    // once the candidates are renamed/hand-polished into the real root.
     mkdirSync(outDir, { recursive: true });
     for (const node of candidateNodes) {
-      const bytes = canonicalBytes({ node, tree, keepDerived: false });
-      writeFileSync(join(outDir, `${node.id}.json`), bytes);
+      writeFileSync(join(outDir, `${node.id}.json`), canonicalBytes({ node, tree }));
     }
     writeJson(join(outDir, "edges-addition.json"), candidateEdges);
 

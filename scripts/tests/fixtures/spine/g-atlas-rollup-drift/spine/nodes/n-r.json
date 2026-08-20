@@ -13,22 +13,6 @@
   "interstitialUnsurveyed": false,
   "compositionTolerance": null,
   "toleranceWhy": null,
-  "derived": {
-    "areaParentUnits2": 400,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [30, 30],
-    "resolvedSeedStreams": {
-      "terrain": "baaa326a8933f467",
-      "settlements": "07e9397a6b365d14",
-      "vegetation": "84eabd9c39fc23c3",
-      "names": "6ed8af810b7ef392"
-    },
-    "digest": "sha256:a2f61b38b405649c2fac9e2384632bfd1cc6d65119b5cb0af129b46fab3a608f"
-  },
   "features": [],
   "bands": [],
   "runtime": { "mapIds": [], "originU": null, "spawnAreas": [], "mobSettings": null, "seedDemoNPCs": false, "collision": "none" },

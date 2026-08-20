@@ -79,6 +79,5 @@
   "tags": [
     "runtime-only"
   ],
-  "levelBand": null,
-  "derived": null
+  "levelBand": null
 }

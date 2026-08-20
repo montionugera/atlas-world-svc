@@ -56,21 +56,5 @@
     "summary": "Debug fixture map: 100x100 deflection/projectile test frame."
   },
   "tags": ["runtime-only"],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 10000,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [1250, 50],
-    "resolvedSeedStreams": {
-      "terrain": "55142d1f3bcd3453",
-      "settlements": "d524249606133b16",
-      "vegetation": "7c0c71d222c89eb1",
-      "names": "547267d0bed70205"
-    },
-    "digest": "sha256:9b4f5746321ff43e542cd38aec867e4d66ec605406f5244004237d0a1f5e58e2"
-  }
+  "levelBand": null
 }

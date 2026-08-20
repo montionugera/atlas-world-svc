@@ -102,21 +102,5 @@
     "summary": "Named for white water reported falling off its seaward rocks; one isle charted, the rest claimed."
   },
   "tags": ["archipelago"],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 119.95999999999913,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [199.2, 59.2],
-    "resolvedSeedStreams": {
-      "terrain": "4a3265ec121f76f9",
-      "settlements": "52f7f808f7a7c9fc",
-      "vegetation": "ff380abe0d4afbfe",
-      "names": "f378e4ce82891efe"
-    },
-    "digest": "sha256:1fe0a23a1aeca7c1019beb6c5c60f73f51cd2d8603b89ddf6c8f88c63a9a1c1e"
-  }
+  "levelBand": null
 }

@@ -62,21 +62,5 @@
     "summary": "The shore the lane raises first — charted as a run of headlands taken from the deck, nothing landed."
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 551.5099999999984,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [205, 141.1],
-    "resolvedSeedStreams": {
-      "terrain": "0924737d4147c952",
-      "settlements": "8db3b96b61bc1acc",
-      "vegetation": "3d8f3e6c3204fa3c",
-      "names": "474813a606b1f87b"
-    },
-    "digest": "sha256:1d8a211cad7dded37478f7454ac3e0ab66a2bea31c0edf1e8ae8dcf5a5c4b9d6"
-  }
+  "levelBand": null
 }

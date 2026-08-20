@@ -56,21 +56,5 @@
     "note": "canon.md §4: the Northern Icefield lies further north past Millcross's expedition camp."
   },
   "tags": ["camp"],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 3.2,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [19.6, 20.4],
-    "resolvedSeedStreams": {
-      "terrain": "01b9b4ea31a871e1",
-      "settlements": "9b20d247fb4951fb",
-      "vegetation": "dc8bff9426500ef8",
-      "names": "128e9fa2f7593487"
-    },
-    "digest": "sha256:212a39c960124cc8a7bb5d6f530c4d040bb3837ee37e7248220a50bc715d06dc"
-  }
+  "levelBand": null
 }

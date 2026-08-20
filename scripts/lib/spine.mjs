@@ -217,7 +217,7 @@ export { exactIntersectionArea, bboxOfPlacement, ringVertexCount, buildBBoxIndex
 export function loadSpine({ contentRoot }) {
   const errors = [];
   const dir = join(contentRoot, "spine");
-  const empty = { present: false, nodes: [], edges: [], sheet: null, roots: [], budgets: { load: null, coverage: null }, errors };
+  const empty = { present: false, nodes: [], edges: [], derived: {}, sheet: null, roots: [], budgets: { load: null, coverage: null }, errors };
   if (!existsSync(dir)) return empty;
 
   const readJsonInBand = (path, label) => {
@@ -250,11 +250,19 @@ export function loadSpine({ contentRoot }) {
   // (Phase 1) owns failing on it.
   const edges = existsSync(join(dir, "edges.json")) ? (readJsonInBand(join(dir, "edges.json"), "spine/edges.json") ?? []) : [];
   const sheet = existsSync(join(dir, "sheet.json")) ? readJsonInBand(join(dir, "sheet.json"), "spine/sheet.json") : null;
+  // Plan B Task 4: the hoisted derived block. ABSENT is not an error here —
+  // G-DERIVED-DRIFT owns failing on it, exactly as G-LOAD-BUDGET owns a
+  // missing budget file. Same soft-skip contract as edges/sheet above.
+  // `null` distinguishes ABSENT from present-but-empty; `empty` above uses
+  // `{}` so the no-spine soft-skip shape stays harmless to destructure.
+  const derived = existsSync(join(dir, "derived.json"))
+    ? (readJsonInBand(join(dir, "derived.json"), "spine/derived.json") ?? {})
+    : null;
   const budgets = {
     load: existsSync(join(dir, "load-budget.json")) ? readJsonInBand(join(dir, "load-budget.json"), "spine/load-budget.json") : null,
     coverage: existsSync(join(dir, "coverage-budget.json")) ? readJsonInBand(join(dir, "coverage-budget.json"), "spine/coverage-budget.json") : null,
   };
-  return { present: true, nodes, edges, sheet, roots, budgets, errors };
+  return { present: true, nodes, edges, derived, sheet, roots, budgets, errors };
 }
 
 // Join the flat table on parentId. Duplicate ids are G-ID's business — the

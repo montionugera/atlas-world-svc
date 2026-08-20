@@ -64,21 +64,5 @@
     "summary": "The eastern water past Stonemoor, dark and still by every account, where the charts run out."
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 37078.000000000015,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [318.2, 186.2],
-    "resolvedSeedStreams": {
-      "terrain": "2b111ac20f9bada1",
-      "settlements": "da37002159ef8c0f",
-      "vegetation": "648d97e1973a687f",
-      "names": "baaf0f0a4f807e26"
-    },
-    "digest": "sha256:954d98eed7dab98d99920ba2b4999f73c6f7c455b4b8a9f8c31130054769e197"
-  }
+  "levelBand": null
 }

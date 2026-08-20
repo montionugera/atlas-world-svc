@@ -72,26 +72,5 @@
     "summary": "The v0 authored shelf: expedition camp dead-centre, escalating wilds fanning north and east."
   },
   "tags": ["runtime-only"],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 1000000,
-    "childAreaParentUnits2": 465000,
-    "coveragePct": 46.5,
-    "unclaimedPct": 53.5,
-    "computedComposition": {
-      "ice": 25,
-      "meadow": 55.18000000000001,
-      "built": 7.32,
-      "bramble": 12.5
-    },
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [500, 500],
-    "resolvedSeedStreams": {
-      "terrain": "b90ab6488dd8b04f",
-      "settlements": "ee7dd4352de4e75f",
-      "vegetation": "56bcfc50c7b9c5cb",
-      "names": "9f975389a0997c60"
-    },
-    "digest": "sha256:9686344c9b7019788c013cf4150066c3dad5fe7795ba29a15e694e20495486ae"
-  }
+  "levelBand": null
 }

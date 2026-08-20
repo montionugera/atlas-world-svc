@@ -109,21 +109,5 @@
     "summary": "Mariners swear to a low strand walled in reed-beds; three of its isles are marks on a chart and no more."
   },
   "tags": ["archipelago"],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 139.71500000000015,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [293.1, 102.7],
-    "resolvedSeedStreams": {
-      "terrain": "b892a9addabe4d33",
-      "settlements": "a228bddadce35296",
-      "vegetation": "0a755bd5365c7f1b",
-      "names": "67a158f51350b58d"
-    },
-    "digest": "sha256:938d5c28514cdb3e91a3f4efb288fa33b763bea5bd5d489bebf1785b77e2717f"
-  }
+  "levelBand": null
 }

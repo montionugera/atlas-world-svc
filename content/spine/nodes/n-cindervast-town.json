@@ -73,21 +73,5 @@
     }
   },
   "tags": ["ruin", "walls-only"],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 3.2,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [9.2, 2.4],
-    "resolvedSeedStreams": {
-      "terrain": "fc4440dc2239e4e5",
-      "settlements": "546d2f15b2f9bef4",
-      "vegetation": "781144a9d2885081",
-      "names": "b2e7a66531cf2349"
-    },
-    "digest": "sha256:7196d649ebeaf469d41b9118b288e9534088dc1a90435093c043c497418e6337"
-  }
+  "levelBand": null
 }

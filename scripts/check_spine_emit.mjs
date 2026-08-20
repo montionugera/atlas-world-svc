@@ -43,7 +43,7 @@ const NODE_FIELDS = [
   "seed", "placement", "interior", "composition", "interstitial",
   "interstitialUnsurveyed", "compositionTolerance", "toleranceWhy",
   "terrainKind", "features", "bands", "runtime", "representsNodeId", "lore",
-  "tags", "levelBand", "derived",
+  "tags", "levelBand",
 ];
 
 // `plans` is the ONE shape documented in lib/spine.mjs (planForNode):
@@ -67,7 +67,6 @@ export function canonicalNode({ node, tree, plans = [] }) {
   const out = {};
   for (const k of NODE_FIELDS) {
     if (k === "interior") out.interior = interior;
-    else if (k === "derived") out.derived = deriveNode({ tree, id: doc.id, plans });
     else if (doc[k] !== undefined) out[k] = doc[k];
   }
   return { bytes: canonStringify(out) + "\n" };
@@ -80,6 +79,21 @@ export function canonicalNode({ node, tree, plans = [] }) {
 // content/spine/nodes/n-saltmire.json still cite the document in provenance
 // strings, and Plan D's resolved files inherit the version number.
 export { GEOGRAPHY_VERSION } from "./lib/places.mjs";
+
+// Plan B Task 4 — the hoisted `derived` block. One object keyed by node id,
+// ids ASCENDING (readdir is already sorted and G-ID pins id === filename
+// stem, but the sort is explicit so the bytes never depend on that coupling).
+// Only ids BFS-reached from a root are derived: deriveNode -> composeToRoot
+// loops forever on a cyclic parentId chain, which is already a G-TREE
+// failure. collectOutputs bails on tree.errors before reaching here, so the
+// gate's matching bail keeps emitter and gate agreeing on when this file
+// should exist at all.
+export function derivedSidecar({ tree, plans = [] }) {
+  const out = {};
+  for (const id of [...tree.byId.keys()].filter((i) => tree.depthOf.has(i)).sort())
+    out[id] = deriveNode({ tree, id, plans });
+  return canonStringify(out) + "\n";
+}
 
 export function collectOutputs({ contentRoot }) {
   const spine = loadSpine({ contentRoot });
@@ -100,6 +114,11 @@ export function collectOutputs({ contentRoot }) {
     if (r.error) return { errors: [r.error] };
     outputs.push({ path: join(contentRoot, "spine/nodes", node.file), bytes: r.bytes });
   }
+  // Plan B Task 4 output: the one sidecar carrying every node's `derived`
+  // block. Unconditional — every root that reaches this point has a valid
+  // tree, so every root gets one (that is what lets G-DERIVED-DRIFT fail
+  // hard on its absence instead of soft-skipping into blindness).
+  outputs.push({ path: join(contentRoot, "spine/derived.json"), bytes: derivedSidecar({ tree, plans }) });
   // F-041 P4 mirror #2: the runtime map's frontmatter (body preserved
   // verbatim). It is guarded on a node id and keyed on contentRoot — fixture
   // roots without the runtime subtree skip it, and --write on a fixture root
