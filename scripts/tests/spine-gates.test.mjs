@@ -1579,6 +1579,30 @@ t11("G-DERIVED-DRIFT red: one hand-edited number in the sidecar", () => {
   assert11.equal(r.code, 1, r.out);
   assert11.match(r.out,
     /G-DERIVED-DRIFT: content\/spine\/derived\.json differs from the recomputed block/);
+  // Per-node diagnosability, given up when 44 messages became one and restored
+  // in the seam-2 fix pass (migration review MINOR-2): a VALUE change leaves
+  // both id sets equal, so without this the operator gets "differs" and a
+  // 44-entry file to diff by hand.
+  assert11.match(r.out, /— changed ids: n-/);
+});
+
+// The one no-throw branch in Task 4 with no test holding it in place: deleting
+// the try/catch around readFileSync left all 817 tests green (coverage review
+// M57). existsSync passes for a DIRECTORY and readFileSync then throws EISDIR;
+// uncaught, that throw skips finish() and silently drops every failure
+// recorded before it — the exact crash class seam 1 closed.
+t11("G-DERIVED-DRIFT red, not a throw: the sidecar is a DIRECTORY (EISDIR)", () => {
+  const dir = spineFixture({ mutate: (d) => {
+    const p = join11(d, "spine/derived.json");
+    rmSync(p);
+    mkdirSync(p, { recursive: true });
+  } });
+  const r = runSpineGate(dir);
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-DERIVED-DRIFT: content\/spine\/derived\.json is unreadable: EISDIR/);
+  // finish() ran: the summary line is its output, and no stack escaped.
+  assert11.match(r.out, /content-gate: .* failures/);
+  assert11.doesNotMatch(r.out, /check-content: \w*Error|\n\s+at /);
 });
 
 t11("G-DERIVED-DRIFT red: the sidecar is missing entirely", () => {

@@ -8,7 +8,6 @@ import { rng, noiseRing, fitArea, splitAtVertices, validRing, buildWorld } from 
 import { shoelaceArea, placementArea, pointInPolygon } from "../../../scripts/lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-const atlasNode = JSON.parse(readFileSync(resolve(ROOT, "content/spine/nodes/n-atlas.json"), "utf8"));
 // Plan B Task 4: the seed streams live in the hoisted sidecar, not in the
 // node file — buildWorld takes them as an argument now.
 const seedStreams = JSON.parse(
@@ -39,8 +38,8 @@ test("splitAtVertices partitions area exactly", () => {
 });
 
 test("buildWorld is deterministic and meets the budget table", () => {
-  const w1 = buildWorld({ atlasNode, seedStreams });
-  const w2 = buildWorld({ atlasNode, seedStreams });
+  const w1 = buildWorld({ seedStreams });
+  const w2 = buildWorld({ seedStreams });
   assert.deepEqual(w1, w2);
   const land = w1.nodes.filter((n) => n.tier === "continent" && n.terrainKind !== "ice");
   const majors = land.filter((n) => !n.tags.includes("archipelago"));
@@ -90,7 +89,7 @@ test("buildWorld is deterministic and meets the budget table", () => {
 // (not id) since promotion may rename/reorder — geometry is what this task
 // rescaled, not naming.
 test("regenerated world-tier areas land within 10% of the committed world nodes (F-045 Task 3)", () => {
-  const w = buildWorld({ atlasNode, seedStreams });
+  const w = buildWorld({ seedStreams });
   const regenAreas = w.nodes
     .filter((n) => n.tier === "continent" || n.tier === "ocean")
     .map((n) => shoelaceArea({ points: n.placement.points }));

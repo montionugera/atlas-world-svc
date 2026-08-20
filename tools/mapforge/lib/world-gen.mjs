@@ -314,10 +314,15 @@ function pointTowardCentroid({ vertex, centroid, points }) {
 // content/spine/derived.json, so the caller passes the streams in. Keeping
 // the read inside this function would make a pure library do file I/O.
 // `seedStreams` is content/spine/derived.json's ["n-atlas"].resolvedSeedStreams.
-// `atlasNode` is retained in the signature (unread today) because it is the
-// plan-pinned interface Plan C consumes and the frame this generator draws
-// into — dropping it would churn four call sites for no behaviour change.
-export function buildWorld({ atlasNode, seedStreams }) {
+//
+// `atlasNode` was retained here unread on the argument that Plan C would
+// consume it. Dropped in the seam-2 fix pass (migration review MINOR-1): the
+// body never read it, no test or gate could tell a stale, wrong or undefined
+// value from a correct one, and it dragged a whole dead readJson of
+// n-atlas.json along at gen-world.mjs's call site. A parameter no reader can
+// distinguish from garbage is an interface that lies. Plan C can add it back
+// with a real reader and a real assertion in one commit.
+export function buildWorld({ seedStreams }) {
   const terrain = seedStreams.terrain;
   const rand = rng(terrain);
   const nameRand = rng(seedStreams.names);

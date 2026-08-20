@@ -39,8 +39,8 @@ function tmpRoot() {
   cpSync(join(ROOT, "content"), contentRoot, { recursive: true });
   return { base, contentRoot, drop: () => rmSync(base, { recursive: true, force: true }) };
 }
-function runGate(contentRoot) {
-  return runSpineGateInProcess({ argv: ["--content-root", contentRoot, "--only=spine"] });
+function runGate(contentRoot, ...extra) {
+  return runSpineGateInProcess({ argv: ["--content-root", contentRoot, "--only=spine", ...extra] });
 }
 const readNode = (contentRoot, id) =>
   JSON.parse(readFileSync(join(contentRoot, "spine/nodes", `${id}.json`), "utf8"));
@@ -208,12 +208,56 @@ test("G-LANDFORM red: the dungeonCapable count drifts off the pinned 23", () => 
   drop();
 });
 
+// The label is repo-relative, like every sibling message. An absolute path
+// here moves with the content root, so a fixture could never pin the line.
 test("G-LANDFORM red: the lexicon file is missing under an existing content/world/", () => {
   const { contentRoot, drop } = tmpRoot();
   rmSync(join(contentRoot, "world/lexicon"), { recursive: true, force: true });
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-LANDFORM: .*landforms\.json is missing/);
+  assert.match(r.out, /^FAIL {2}G-LANDFORM: world\/lexicon\/landforms\.json is missing$/m);
+  drop();
+});
+
+// The lexicon <-> BIOMES join as a GATE rule, not only a unit test on the
+// repo's own file: any other content root — a fixture, Plan C's generated
+// lexicon — could name a biome the spine vocabulary lacks, and before this
+// the gate exited 0 on it.
+test("G-LANDFORM red: a lexicon row names a biome outside BIOMES", () => {
+  const { contentRoot, drop } = tmpRoot();
+  const lex = structuredClone(LEX);
+  lex[0].biomes = ["swamp"];
+  writeJson(join(contentRoot, "world/lexicon/landforms.json"), lex);
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, new RegExp(`G-LANDFORM: type "${lex[0].id}": biome "swamp" is outside BIOMES`));
+  drop();
+});
+
+test("G-LANDFORM red, not a throw: a lexicon row's biomes is not an array", () => {
+  const { contentRoot, drop } = tmpRoot();
+  const lex = structuredClone(LEX);
+  lex[0].biomes = "forest";
+  writeJson(join(contentRoot, "world/lexicon/landforms.json"), lex);
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, new RegExp(`G-LANDFORM: type "${lex[0].id}": biomes is not an array`));
+  assert.doesNotMatch(r.out, /check-content: \w*Error/);
+  drop();
+});
+
+// typeof [] === "object", so a section saved as a list used to pass the guard,
+// destructure to six `undefined`s, and silently switch the catalogue-band rule
+// off inside a run that still exited 1 for another reason.
+test("G-LANDFORM red, not a throw: the landforms section is an array", () => {
+  const { contentRoot, drop } = tmpRoot();
+  const b = structuredClone(BUDGETS);
+  b.landforms = [];
+  writeJson(join(contentRoot, "world/budgets.json"), b);
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-LANDFORM: world\/budgets\.json has no landforms section/);
+  assert.doesNotMatch(r.out, /budget undefined-undefined/);
   drop();
 });
 
@@ -255,7 +299,54 @@ test("G-SHEET-BUDGET red, not a throw: budgets.json has no sheets section", () =
   drop();
 });
 
+// Same array hole as the landforms section: typeof [] === "object" passed the
+// guard and both sheet caps then compared against `undefined`, i.e. never.
+test("G-SHEET-BUDGET red, not a throw: the sheets section is an array", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  for (let i = 0; i < 19; i++) writeFileSync(join(maps, `s${i}.svg`), "<svg/>");
+  const b = structuredClone(BUDGETS);
+  b.sheets = [];
+  writeJson(join(contentRoot, "world/budgets.json"), b);
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-SHEET-BUDGET: world\/budgets\.json has no sheets section/);
+  assert.doesNotMatch(r.out, /budget undefined, undefined/);
+  drop();
+});
+
 // ── the instance census, dormant until Plan C writes content/world/fabric/ ──
+
+// R8 — degrade, never deadlock. `mkdir content/world/fabric` is Plan C's very
+// first commit, and it used to arm the coverage floor plus all 170
+// absentBecause rules at once: 171 failures for creating a folder. An empty
+// container is not content, so the census arms on INSTANCES.
+test("degrade: an EMPTY content/world/fabric/ directory arms nothing", () => {
+  const { contentRoot, drop } = tmpRoot();
+  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /^G-LANDFORM: types placed: 0 \/ 170$/m);
+  assert.doesNotMatch(r.out, /below the floor|no absentBecause/);
+  // …and it stays green under Gate 2's flag too: an empty dir is not a
+  // half-built world, it is no world.
+  const rc = runGate(contentRoot, "--require-complete");
+  assert.equal(rc.code, 0, rc.out);
+  drop();
+});
+
+// The same, one step later: fabric files exist but hold no instances yet.
+test("degrade: fabric files with empty instance arrays arm nothing", () => {
+  const { contentRoot, drop } = tmpRoot();
+  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  writeJson(join(contentRoot, "world/fabric/c01.json"), { instances: [] });
+  const r = runGate(contentRoot, "--require-complete");
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /^G-LANDFORM: types placed: 0 \/ 170$/m);
+  assert.doesNotMatch(r.out, /below the floor|no absentBecause/);
+  drop();
+});
 
 test("G-LANDFORM counts fabric instances and scores type coverage", () => {
   const { contentRoot, drop } = tmpRoot();
@@ -264,25 +355,76 @@ test("G-LANDFORM counts fabric instances and scores type coverage", () => {
   writeJson(join(contentRoot, "world/fabric/c01.json"), {
     instances: ids.map((id, i) => ({ id: `i-${i}`, type: id, named: i < 3 })),
   });
-  const r = runGate(contentRoot);
+  const r = runGate(contentRoot, "--require-complete");
   assert.match(r.out, /^world-budget: landforms 170 types, 120 instances \(budget 100-200 types, 2400 instances\)$/m);
   assert.match(r.out, /^G-LANDFORM: types placed: 120 \/ 170$/m);
-  // The 50 unplaced rows each earn an absentBecause failure — that half of the
-  // rule is what makes the score honest rather than decorative.
-  assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-LANDFORM: type "\S+" has 0 instances and no absentBecause/);
+  // 120 clears the floor of 100, so this passes even under Gate 2's flag —
+  // which is the whole point of pinning the floor at 100. The 50 unplaced
+  // rows are REPORTED, aggregated and capped, never failed: as a failure that
+  // rule demanded 170/170 and made budgets.json's own number unreachable.
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /^WARN {2}G-LANDFORM: 50 type\(s\) have 0 instances and no absentBecause: \S+, \S+, \S+, \S+, \S+ \(\+45 more\)$/m);
   drop();
 });
 
-test("G-LANDFORM red: type coverage below the floor", () => {
+// The floor is a real, reachable rule — and it ESCALATES: a warning while the
+// fabric is being built (precheck.sh, CI's bare sweep), a failure only under
+// --require-complete, which is Gate 2 at promote.
+test("G-LANDFORM: type coverage below the floor WARNs by default", () => {
   const { contentRoot, drop } = tmpRoot();
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
   writeJson(join(contentRoot, "world/fabric/c01.json"), {
     instances: LEX.slice(0, 99).map((r, i) => ({ id: `i-${i}`, type: r.id })),
   });
   const r = runGate(contentRoot);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /^WARN {2}G-LANDFORM: types placed: 99 \/ 170 — below the floor of 100$/m);
+  drop();
+});
+
+test("G-LANDFORM red: type coverage below the floor under --require-complete", () => {
+  const { contentRoot, drop } = tmpRoot();
+  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  writeJson(join(contentRoot, "world/fabric/c01.json"), {
+    instances: LEX.slice(0, 99).map((r, i) => ({ id: `i-${i}`, type: r.id })),
+  });
+  const r = runGate(contentRoot, "--require-complete");
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-LANDFORM: types placed: 99 \/ 170 — below the floor of 100/);
+  assert.match(r.out, /^FAIL {2}G-LANDFORM: types placed: 99 \/ 170 — below the floor of 100$/m);
+  drop();
+});
+
+// absentBecause's teeth: a declared reason for absence contradicted by a real
+// instance is a lie in the catalogue. Always a failure — nothing reaches it
+// until an author writes a reason, so it can never deadlock.
+test("G-LANDFORM red: a type declares absentBecause and is placed anyway", () => {
+  const { contentRoot, drop } = tmpRoot();
+  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  const lex = structuredClone(LEX);
+  lex[0].absentBecause = "no terrain in Season 1 supports it";
+  writeJson(join(contentRoot, "world/lexicon/landforms.json"), lex);
+  writeJson(join(contentRoot, "world/fabric/c01.json"), {
+    instances: LEX.slice(0, 120).map((r, i) => ({ id: `i-${i}`, type: r.id })),
+  });
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, new RegExp(`G-LANDFORM: type "${lex[0].id}" declares absentBecause .* but has instances`));
+  drop();
+});
+
+// …and a HONEST declaration excuses the row from the shortfall report.
+test("G-LANDFORM: a declared-absent type is excused from the shortfall report", () => {
+  const { contentRoot, drop } = tmpRoot();
+  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  const lex = structuredClone(LEX);
+  for (const row of lex.slice(120)) row.absentBecause = "out of scope for Season 1";
+  writeJson(join(contentRoot, "world/lexicon/landforms.json"), lex);
+  writeJson(join(contentRoot, "world/fabric/c01.json"), {
+    instances: LEX.slice(0, 120).map((r, i) => ({ id: `i-${i}`, type: r.id })),
+  });
+  const r = runGate(contentRoot, "--require-complete");
+  assert.equal(r.code, 0, r.out);
+  assert.doesNotMatch(r.out, /no absentBecause/);
   drop();
 });
 
@@ -342,6 +484,20 @@ test("G-SHEET-BUDGET red: one sheet over the SVG byte cap", () => {
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, /G-SHEET-BUDGET: sheet fat\.svg is 524289 bytes > budget 524288/);
+  drop();
+});
+
+// …but a case-only rename must not walk past either cap. macOS preserves
+// case, so `Basin.SVG` is a real sheet that `.endsWith(".svg")` could not see:
+// nineteen of them censused as 0 files and exited 0.
+test("G-SHEET-BUDGET is case-insensitive: .SVG sheets still count", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  for (let i = 0; i < 19; i++) writeFileSync(join(maps, `S${i}.SVG`), "<svg/>");
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-SHEET-BUDGET: 19 sheets > budget 18/);
   drop();
 });
 

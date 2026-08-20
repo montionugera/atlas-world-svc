@@ -2008,7 +2008,7 @@ function checkSpine(opts, mobTypes) {
 
   // Plan B Task 5: G-LANDFORM + G-SHEET-BUDGET, reading content/world/. Placed
   // immediately after gSpineBudgets so the four budget lines print together.
-  gSpineWorld({ tree, contentRoot: opts.contentRoot, fail });
+  gSpineWorld({ tree, contentRoot: opts.contentRoot, fail, warn, requireComplete: opts.requireComplete });
 
   // F-041 Phase 1 Task 1.11 reported this as WARN until the two authoring
   // debts (8 measured overlap pairs, the n-cluster1 union identity) were
@@ -2275,11 +2275,22 @@ function gSpineFrames({ nodes, tree, plans, fail }) {
 // G-TREE failure is the honest one to report. Recomputing here would also
 // hang: deriveNode -> composeToRoot walks the ancestor chain to root.
 //
+// COVERAGE COST OF THAT BAIL, recorded rather than left implicit (seam-2
+// migration review MINOR-3): at plan-b-base the per-node rule still ran for
+// every tree.depthOf node, so a cyclic tree reported its G-TREE failure AND
+// one G-DERIVED-DRIFT line (the g-tree-cycle fixture: 13 failures at base,
+// 12 here — the missing one is exactly that). A corrupt sidecar plus an
+// unrelated tree error therefore now yields no drift signal where it once
+// yielded one. That is a deliberate trade: the run is already red for the
+// honest reason, and the alternative is a hang, not a better message.
+//
 // A checksum says THAT something changed, not WHAT — so the remedy is in the
 // message, and `node scripts/check_spine_emit.mjs --write` regenerates it.
 // Both id-set diffs are reported (stale AND missing) rather than the first
 // one found: a rename produces one of each and naming only half of it sends
-// the reader looking for a deletion that never happened.
+// the reader looking for a deletion that never happened; and a pure VALUE
+// change (both id sets equal) names the ids whose blocks moved, so the
+// whole-file comparison keeps the per-node diagnosability it replaced.
 function gSpineDerived({ tree, plans, contentRoot, fail }) {
   if (tree.errors.length) return;
   const path = join(contentRoot, "spine/derived.json");
@@ -2298,12 +2309,19 @@ function gSpineDerived({ tree, plans, contentRoot, fail }) {
   // recorded before it — the rule this whole file is built around).
   let extra = "";
   try {
-    const cIds = Object.keys(JSON.parse(committed));
-    const rIds = Object.keys(JSON.parse(recomputed));
+    const cDoc = JSON.parse(committed), rDoc = JSON.parse(recomputed);
+    const cIds = Object.keys(cDoc), rIds = Object.keys(rDoc);
     const stale = cIds.filter((i) => !rIds.includes(i));
     const missing = rIds.filter((i) => !cIds.includes(i));
     if (stale.length) extra += ` — stale ids: ${stale.join(", ")}`;
     if (missing.length) extra += ` — missing ids: ${missing.join(", ")}`;
+    // The VALUE case: both id sets match and only numbers moved. "differs"
+    // alone leaves the operator diffing a 44-entry file by hand, so name the
+    // blocks that actually changed. Capped at 5 + a count because a rescale
+    // moves every one of them and a 44-id list is not a diagnosis.
+    const changed = rIds.filter((i) => cIds.includes(i) && JSON.stringify(cDoc[i]) !== JSON.stringify(rDoc[i]));
+    if (changed.length)
+      extra += ` — changed ids: ${changed.slice(0, 5).join(", ")}${changed.length > 5 ? ` (+${changed.length - 5} more)` : ""}`;
   } catch { extra = " — and is not parseable JSON"; }
   fail("spine: G-DERIVED-DRIFT: content/spine/derived.json differs from the recomputed block" +
     extra + " — run `node scripts/check_spine_emit.mjs --write`");
@@ -2543,9 +2561,34 @@ function gSpineBudgets({ spine, tree, plans, contentRoot, fail }) {
 //
 // The instance half is dormant until Plan C writes content/world/fabric/.
 // Until then the coverage line still PRINTS ("types placed: 0 / 170") — a
-// score, not a failure, exactly as scripts/report_season1.mjs does. The floor
-// only bites once a fabric exists, because a quota that cannot be met against
-// real terrain must degrade and be reported, never deadlock (spec R8).
+// score, not a failure, exactly as scripts/report_season1.mjs does.
+//
+// R8, THE DEADLOCK RULE, and what seam 2's fix pass changed (both halves were
+// adjudicated findings of the seam-2 coverage review, MAJOR-3):
+//
+//  1. The census arms on INSTANCES, never on the directory. `mkdir
+//     content/world/fabric` used to arm the coverage floor plus all 170
+//     absentBecause rules at once — 171 failures from creating a folder,
+//     which is Plan C's very first commit. An empty container is not content;
+//     a gate that reds on it is measuring the filesystem, not the world.
+//  2. The coverage floor ESCALATES rather than fails: a warning on the
+//     development gates (precheck.sh --only=spine, CI's bare sweep) and a
+//     failure only under --require-complete, which is Gate 2 at promote. That
+//     is checkStoryCoherence's and G-SPINE-COMPLETE's own pattern. An
+//     incrementally built fabric degrades and reports; a release with a
+//     half-built one does not ship.
+//
+// The two absentBecause rules are deliberately asymmetric, and that asymmetry
+// is what makes budgets.json's typeCoverageFloor reachable at all:
+//   * unplaced with absentBecause: null  -> WARN, always, aggregated. As a
+//     failure it is a strict superset of the floor (all 170 committed rows
+//     carry null), so it pinned the effective floor at 170/170 and made the
+//     budget's own number unreachable — a pinned constant no behaviour could
+//     satisfy. It is the diagnosis that tells an author what to place next.
+//   * absentBecause declared, yet the type IS placed -> FAIL, always. A
+//     stated reason for absence contradicted by a real instance is a lie in
+//     the catalogue, it is cheap to detect, and it can never deadlock,
+//     because nothing reaches it until an author writes a reason.
 //
 // NEVER THROWS. Every shape this function destructures is content an author
 // can get wrong — a lexicon saved as an object, a budgets.json that lost a
@@ -2553,13 +2596,15 @@ function gSpineBudgets({ spine, tree, plans, contentRoot, fail }) {
 // plan's transcription destructured all three unguarded; an uncaught throw
 // here skips finish() and silently drops every failure recorded before it, so
 // each one reports in-band instead.
-function gSpineWorld({ tree, contentRoot, fail }) {
+function gSpineWorld({ tree, contentRoot, fail, warn, requireComplete }) {
   const worldDir = join(contentRoot, "world");
   if (!existsSync(worldDir)) return;
 
   const lexPath = join(worldDir, "lexicon/landforms.json");
   const budPath = join(worldDir, "budgets.json");
-  if (!existsSync(lexPath)) { fail(`G-LANDFORM: ${lexPath} is missing`); return; }
+  // Repo-relative label, like every sibling message: an absolute path here
+  // changes with the content root, so a fixture could never pin the line.
+  if (!existsSync(lexPath)) { fail(`G-LANDFORM: world/lexicon/landforms.json is missing`); return; }
   // The budgets.json-missing branch belongs to Plan C's G-WORLD-BUDGET, which
   // owns that file and prints the contract-pinned `world-budget: <family> …`
   // line. Reporting it here too would double-report once Plan C lands, so this
@@ -2573,12 +2618,16 @@ function gSpineWorld({ tree, contentRoot, fail }) {
     return;
   }
 
-  gWorldLandforms({ tree, worldDir, lex, budgets, fail });
+  gWorldLandforms({ tree, worldDir, lex, budgets, fail, warn, requireComplete });
   gWorldSheets({ contentRoot, budgets, fail });
 }
 
-function gWorldLandforms({ tree, worldDir, lex, budgets, fail }) {
-  if (!budgets.landforms || typeof budgets.landforms !== "object") {
+function gWorldLandforms({ tree, worldDir, lex, budgets, fail, warn, requireComplete }) {
+  // Array.isArray too: typeof [] === "object", so a landforms section saved as
+  // a list passed the old guard, destructured to six `undefined`s, and turned
+  // the catalogue-band rule into a silent no-op inside a still-failing run —
+  // one rule going dark inside a gate that looks like it is checking.
+  if (!budgets.landforms || typeof budgets.landforms !== "object" || Array.isArray(budgets.landforms)) {
     fail(`G-LANDFORM: world/budgets.json has no landforms section`);
     return;
   }
@@ -2591,10 +2640,28 @@ function gWorldLandforms({ tree, worldDir, lex, budgets, fail }) {
   if (dCount !== dungeonCapableTypes)
     fail(`G-LANDFORM: ${dCount} dungeonCapable types, budget pins ${dungeonCapableTypes} — dungeon binding depends on this number`);
 
+  // The lexicon <-> BIOMES join, as a GATE rule. It was only ever a unit test
+  // (world-budget.test.mjs) reading the repo's own path at import time, so any
+  // OTHER content root — a fixture, or the lexicon Plan C generates — could
+  // name a biome the spine vocabulary does not have and nothing would notice
+  // (seam-2 coverage review MAJOR-2, proved: a row naming "swamp" exited 0).
+  for (const row of lex) {
+    if (row?.biomes === undefined) continue; // shape is landform-type.schema.json's business
+    if (!Array.isArray(row.biomes)) { fail(`G-LANDFORM: type "${row?.id}": biomes is not an array`); continue; }
+    for (const b of row.biomes)
+      if (!BIOMES.includes(b)) fail(`G-LANDFORM: type "${row?.id}": biome "${b}" is outside BIOMES`);
+  }
+
   // Trunk features may cite a lexicon type. Fabric instances are NOT node
   // features (spec 5.6) — trunk features are the network, fabric is texture.
   // tree.byId, never spine.nodes: the same validNodes discipline every gate
   // above follows.
+  //
+  // ZERO REAL INPUTS TODAY, measured 2026-08-20: the 44 committed nodes carry
+  // 58 features between them and not one of them has a `type`. Plan D is the
+  // first writer, so this limb cannot fail on the committed tree — it is held
+  // live only by world-budget.test.mjs' two fixture reds. "G-LANDFORM is
+  // live" today rests on the catalogue-band and dungeonCapable limbs.
   for (const node of tree.byId.values())
     for (const f of node.features ?? []) {
       if (f.type == null) continue;
@@ -2627,13 +2694,26 @@ function gWorldLandforms({ tree, worldDir, lex, budgets, fail }) {
   console.log(`G-LANDFORM: types placed: ${placed.size} / ${lex.length}`);
   if (instances > maxInstances) fail(`G-LANDFORM: ${instances} landform instances > budget ${maxInstances}`);
   if (named > maxNamed) fail(`G-LANDFORM: ${named} named landforms > budget ${maxNamed}`);
-  if (existsSync(fabricDir)) {
-    if (placed.size < typeCoverageFloor)
-      fail(`G-LANDFORM: types placed: ${placed.size} / ${lex.length} — below the floor of ${typeCoverageFloor}`);
-    for (const row of lex)
-      if (!placed.has(row?.id) && row?.absentBecause === null)
-        fail(`G-LANDFORM: type "${row?.id}" has 0 instances and no absentBecause`);
-  }
+
+  // A declared reason for absence, contradicted by a real instance. Always a
+  // failure; unreachable until an author writes a reason, so it cannot
+  // deadlock anything. This is the rule that gives absentBecause teeth.
+  for (const row of lex)
+    if (row?.absentBecause != null && placed.has(row?.id))
+      fail(`G-LANDFORM: type "${row?.id}" declares absentBecause "${row.absentBecause}" but has instances`);
+
+  // Coverage arms on CONTENT, not on the directory — see the header. No
+  // instances anywhere means the fabric layer does not exist yet, and the
+  // printed score above is the whole report.
+  if (instances === 0) return;
+  if (placed.size < typeCoverageFloor)
+    (requireComplete ? fail : warn)(`G-LANDFORM: types placed: ${placed.size} / ${lex.length} — below the floor of ${typeCoverageFloor}`);
+  // The shortfall list: a report at every flag level (see the header for why
+  // it must never be a failure), capped so a young fabric cannot bury the
+  // rest of the run under 170 lines.
+  const unexplained = lex.filter((r) => r?.absentBecause === null && !placed.has(r?.id)).map((r) => r?.id);
+  if (unexplained.length)
+    warn(`G-LANDFORM: ${unexplained.length} type(s) have 0 instances and no absentBecause: ${unexplained.slice(0, 5).join(", ")}${unexplained.length > 5 ? ` (+${unexplained.length - 5} more)` : ""}`);
 }
 
 // Measured against whatever sheets exist on disk today. The maps directory is
@@ -2643,13 +2723,15 @@ function gWorldLandforms({ tree, worldDir, lex, budgets, fail }) {
 function gWorldSheets({ contentRoot, budgets, fail }) {
   const mapsDir = join(contentRoot, "../game-client/assets/art/maps");
   if (!existsSync(mapsDir)) return;
-  if (!budgets.sheets || typeof budgets.sheets !== "object") {
+  if (!budgets.sheets || typeof budgets.sheets !== "object" || Array.isArray(budgets.sheets)) {
     fail(`G-SHEET-BUDGET: world/budgets.json has no sheets section`);
     return;
   }
   // .svg ONLY: each committed sheet ships a .png thumb beside it, so counting
-  // every file would read the two live sheets as four.
-  const svgs = readdirSync(mapsDir).filter((f) => f.endsWith(".svg")).sort();
+  // every file would read the two live sheets as four. Case-INSENSITIVE: the
+  // emitter writes lowercase, but macOS preserves case, so a sheet committed
+  // as Basin.SVG is a real sheet and was invisible to both caps.
+  const svgs = readdirSync(mapsDir).filter((f) => f.toLowerCase().endsWith(".svg")).sort();
   let worst = 0, worstName = "";
   for (const f of svgs) {
     const b = statSync(join(mapsDir, f)).size;

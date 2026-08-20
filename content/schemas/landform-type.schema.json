@@ -15,7 +15,7 @@
     },
     "geometry": { "enum": ["point", "line", "area"] },
     "biomes": {
-      "title": "OPEN on purpose, and NOT the spine's biome vocabulary. The 170 rows use 19 distinct strings; scripts/lib/spine.mjs's BIOMES is a CLOSED 12 (ocean ice marsh river meadow forest bramble rock upland alkali ash built), and 8 of the 19 are outside it (badland desert karst lake lava reef scree tundra). Measured 2026-08-20: 93 of the 170 rows name at least one. Plan Task 5's mandated test \"every biome named by a lexicon row is in BIOMES\" therefore reds on 93 rows as written — Task 5 must first decide whether to widen BIOMES or to declare this a separate namespace. The strings themselves are dictated verbatim by the plan's Task 1 row table and are transcribed exactly, so the discrepancy is the plan's, not the data's.",
+      "title": "Free-form in SHAPE (a schema bound would duplicate a gate rule), but CLOSED in fact against scripts/lib/spine.mjs's BIOMES, which Task 5 widened from 12 to 20 precisely so this join could hold. The 170 rows name 19 distinct strings and all 19 are members; the 8 Task 5 added (badland desert karst lake lava reef scree tundra) are exercised by 93 rows. `built` is the one BIOMES member no row names — it is a composition biome, not a landform biome. The join is enforced twice: G-LANDFORM fails on any row naming a non-member (any content root), and world-budget.test.mjs pins both the join and the fact that the added 8 are used.",
       "type": "array",
       "minItems": 1,
       "items": { "type": "string" }
@@ -42,6 +42,9 @@
       }
     },
     "gloss": { "type": "string", "minLength": 1, "maxLength": 120 },
-    "absentBecause": { "type": ["string", "null"] }
+    "absentBecause": {
+      "title": "null = this type is INTENDED to be placed in content/world/fabric/; a string = deliberately absent, and the string is the reason. G-LANDFORM enforces the declaration in one direction only: declared-yet-placed is a failure (a stated reason contradicted by a real instance). Unplaced-with-null is a WARNING, never a failure — as a failure it demanded 170/170 coverage and made budgets.json's typeCoverageFloor unreachable. See content/world/budgets.json landformsWhy.",
+      "type": ["string", "null"]
+    }
   }
 }

@@ -1,6 +1,7 @@
 {
   "version": 1,
   "about": "Budgets for the layers that live OUTSIDE content/spine/ and are therefore invisible to G-LOAD-BUDGET. Every gate that reads this file PRINTS its measurement on every run — the G-LOAD-BUDGET / G-COMP-REPORT discipline — so drift is visible long before it is a failure. Plan B's gSpineWorld owns the `landforms` and `sheets` sections (G-LANDFORM, G-SHEET-BUDGET); Plan C adds `fabric`, `civil` and `loop` and owns G-WORLD-BUDGET, including this file's existence check.",
+  "reportLineGrammar": "`world-budget: <family> <n> files, <n> bytes (budget <n>, <n>)` is the grammar for families measured as FILES ON DISK — `sheets` today, `fabric` and `civil` when Plan C lands. A family whose budget is not files and bytes prints its own units after the same prefix: `landforms` reports `<n> types, <n> instances (budget <lo>-<hi> types, <n> instances)`, because it has no files of its own to count. Any parser of these lines must key on the family name, not on a single fixed shape.",
   "cellKm": 0.5,
   "cellKmWhy": "PINNED CONSTANT, same discipline as KM_TO_U = 100 and SPINE_CELL_KM = 0.05. 0.5 km over the 400 x 400 km frame is an 800 x 800 grid = 640,000 cells ~= 14.7 MB resident. Changing it changes every landform predicate's meaning.",
   "landforms": {
@@ -10,6 +11,10 @@
     "maxTypes": 200,
     "typeCoverageFloor": 100,
     "dungeonCapableTypes": 23
+  },
+  "landformsWhy": {
+    "typeCoverageFloor": "100 of the catalogue's types must actually appear in content/world/fabric/ — a QUOTA, not a target, and the number is real: G-LANDFORM enforces exactly it. It arms only once the fabric holds at least one instance (an empty content/world/fabric/ directory is not a fabric layer), and it WARNS on the development gates while FAILING under --require-complete, which is Gate 2 at promote. An incrementally built fabric therefore degrades and reports; a release with a half-built one does not ship. Raising this number without adding a line here is a budget failure, not a fix.",
+    "absentBecause": "A lexicon row's absentBecause is a DECLARATION, not a second floor. Declared-and-yet-placed is a hard failure (a stated reason contradicted by a real instance). Unplaced-with-null is a WARNING only: as a failure it demanded all 170 rows be placed or excused, which is a strict superset of typeCoverageFloor and made the number above unreachable — 100 types placed still failed 70 times."
   },
   "sheets": {
     "maxSheets": 18,

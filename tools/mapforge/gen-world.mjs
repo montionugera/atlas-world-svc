@@ -16,7 +16,7 @@
 //
 // Deterministic: no Math.random, no Date, no performance.now anywhere in
 // this file or in buildWorld — two runs must be byte-identical (AC 1).
-import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -105,13 +105,20 @@ function postWorldNodeIds({ nodes }) {
 // cleanup (rmSync the tmp dir).
 function buildSyntheticRoot({ repoRoot }) {
   const realContentRoot = join(repoRoot, "content");
-  const atlasNode = readJson(join(realContentRoot, "spine/nodes/n-atlas.json"));
   // Plan B Task 4: the seed streams moved out of the node file into the one
   // content/spine/derived.json sidecar; buildWorld takes them as an argument
-  // rather than doing file I/O inside a pure library.
-  const seedStreams = readJson(join(realContentRoot, "spine/derived.json"))["n-atlas"].resolvedSeedStreams;
+  // rather than doing file I/O inside a pure library. Named, not opaque: an
+  // absent sidecar, or one regenerated on a root where n-atlas is unreachable,
+  // used to surface as `Cannot read properties of undefined` with no file in
+  // the message (seam-2 migration review MINOR-4).
+  const sidecarPath = join(realContentRoot, "spine/derived.json");
+  if (!existsSync(sidecarPath))
+    throw new Error(`gen-world: ${sidecarPath} is missing — run \`node scripts/check_spine_emit.mjs --write\``);
+  const seedStreams = readJson(sidecarPath)["n-atlas"]?.resolvedSeedStreams;
+  if (!seedStreams)
+    throw new Error(`gen-world: ${sidecarPath} has no n-atlas.resolvedSeedStreams — run \`node scripts/check_spine_emit.mjs --write\``);
   const { nodes: candidateNodes, edges: candidateEdges, summary } =
-    buildWorld({ atlasNode, seedStreams });
+    buildWorld({ seedStreams });
 
   const tmp = mkdtempSync(join(tmpdir(), "gen-world-"));
   // Self-cleaning: if anything below throws (schema/tree/canonicalization
