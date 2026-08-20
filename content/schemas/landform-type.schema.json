@@ -14,7 +14,12 @@
       "items": { "enum": ["coastal", "fluvial", "mountain", "glacial", "karst", "erosional", "desert", "volcanic", "wetland", "lakes", "island", "oceanic"] }
     },
     "geometry": { "enum": ["point", "line", "area"] },
-    "biomes": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "biomes": {
+      "title": "OPEN on purpose, and NOT the spine's biome vocabulary. The 170 rows use 19 distinct strings; scripts/lib/spine.mjs's BIOMES is a CLOSED 12 (ocean ice marsh river meadow forest bramble rock upland alkali ash built), and 8 of the 19 are outside it (badland desert karst lake lava reef scree tundra). Measured 2026-08-20: 93 of the 170 rows name at least one. Plan Task 5's mandated test \"every biome named by a lexicon row is in BIOMES\" therefore reds on 93 rows as written — Task 5 must first decide whether to widen BIOMES or to declare this a separate namespace. The strings themselves are dictated verbatim by the plan's Task 1 row table and are transcribed exactly, so the discrepancy is the plan's, not the data's.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
     "sizeKm": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
     "dungeonCapable": { "type": "boolean" },
     "glyph": { "type": "string", "pattern": "^g-[a-z0-9]+(-[a-z0-9]+)*$" },

@@ -1750,6 +1750,68 @@ function checkSpine(opts, mobTypes) {
   const spine = loadSpine({ contentRoot: opts.contentRoot });
   for (const e of spine.errors) fail(`spine: ${e}`);
 
+  // Plan B Task 3 — G-EDGE-SCHEMA. content/spine/edges.json carried 20 edges
+  // and no schema until now, and gSpineNet read it raw. Validation is SHAPE
+  // only (G-NET owns endpoint resolution, G-CANON-LEG owns the distances), and
+  // it runs HERE, above every consumer, so a malformed edge earns a shape
+  // failure naming its index instead of an obscure G-NET one.
+  //
+  // TWO soft-skips, both load-bearing, both measured rather than assumed:
+  //
+  //  1. NO EDGES. loadSpine returns [] for a content root with no edges.json
+  //     and all 30 fixture roots under scripts/tests/fixtures/spine have none,
+  //     so an empty list must not compile the schema at all.
+  //  2. NO SCHEMA. The plan's Step 4 text says a missing schema file should be
+  //     one clean `fail`. That is WRONG against this tree and was corrected
+  //     here: two live callers build a content root that HAS edges.json and
+  //     copies only spine-node.schema.json — spine-gates.test.mjs's
+  //     p4FixtureRoot (:803, cpSync of the whole content/spine) and
+  //     tools/mapforge/gen-world.mjs (:158 writes edges.json, :118 copies just
+  //     the node schema). Failing on the absent file reds both, and neither is
+  //     this task's to edit. So an absent schema skips, exactly as checkSpine's
+  //     own header skips before compiling on a missing spine/ dir. The real
+  //     content root's wiring is held live by edges-schema.test.mjs's
+  //     gate-level tests, which run the gate against a copy of content/.
+  //
+  // NEVER THROWS (the gate-function contract): compileSchema returns null on an
+  // unreadable file, ajv's compile() throws on a structurally invalid schema and
+  // a validator can throw on an exotic document — all three are caught and land
+  // as in-band failures, because an uncaught throw here would skip finish() and
+  // silently drop every failure recorded before it.
+  //
+  // Schema-invalid edges are FILTERED OUT of validEdges, mirroring validNodes
+  // below. Before this, an edge with no `to` crashed gSpineNet's rootPoint with
+  // an uncaught TypeError — a fail line plus a crash is strictly worse than a
+  // fail line, since the crash takes the rest of the report with it.
+  let validEdges = spine.edges;
+  const edgeSchemaPath = join(opts.contentRoot, "schemas/spine-edge.schema.json");
+  if (spine.edges.length && existsSync(edgeSchemaPath)) {
+    let validateEdge = null;
+    try {
+      validateEdge = compileSchema(edgeSchemaPath, "spine-edge schema", fail);
+    } catch (e) {
+      fail(`spine-edge schema: cannot compile ${edgeSchemaPath}: ${e.message}`);
+    }
+    if (validateEdge) {
+      validEdges = [];
+      spine.edges.forEach((edge, i) => {
+        let ok = false;
+        try {
+          ok = validateEdge(edge);
+        } catch (e) {
+          fail(`G-EDGE-SCHEMA: spine/edges.json[${i}]: validator error: ${e.message}`);
+          return;
+        }
+        if (!ok) {
+          for (const err of validateEdge.errors)
+            fail(`G-EDGE-SCHEMA: spine/edges.json[${i}] (${edge?.id ?? "?"}): ${err.instancePath || "/"} ${err.message}`);
+          return; // downstream gates assume a valid shape
+        }
+        validEdges.push(edge);
+      });
+    }
+  }
+
   // F-041 P3: the town plans, SCHEMA-VALIDATED (loadTownPlans owns the read,
   // the schema and the FAIL lines; memoised, so a full sweep shares one read
   // with checkTownPlan and `--only=spine` — which never runs checkTownPlan —
@@ -1776,7 +1838,18 @@ function checkSpine(opts, mobTypes) {
 
   for (const node of spine.nodes) {
     const label = `spine/nodes/${node.file}`;
-    if (!validate(node)) {
+    // Plan B Task 3 review — validate the DOCUMENT, not the loader's copy of
+    // it. loadSpine (lib/spine.mjs:220) pushes `{ ...doc, file }`, so a closed
+    // root would fail all 44 nodes on `must NOT have additional properties`
+    // unless `file` were either enumerated in the schema or stripped here.
+    // Stripped, because spine-node.schema.json is the contract on the FILE on
+    // disk: enumerating a key no committed node may carry would make a node
+    // that really does carry `file` schema-valid, and loadSpine's spread then
+    // silently overwrites the authored value with the real stem. Same move,
+    // same reason, as check_spine_emit.mjs:55. `node.file` itself is untouched
+    // and G-ID still reads it two lines below.
+    const { file: _loaderStem, ...doc } = node;
+    if (!validate(doc)) {
       for (const err of validate.errors) fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
       continue; // downstream gates assume a valid shape
     }
@@ -1913,10 +1986,11 @@ function checkSpine(opts, mobTypes) {
 
   // F-041 Phase 1 Task 1.8: G-FROZEN lands BEFORE G-NET/G-CANON-LEG — the
   // leg gate's both-endpoints-frozen dependency means nothing without it.
-  // Same validNodes discipline; edges have no schema so spine.edges is
-  // passed through as-is (nothing to filter against).
+  // Same validNodes discipline, and since Plan B Task 3 the same for edges:
+  // validEdges is spine.edges filtered by G-EDGE-SCHEMA above (and, on a root
+  // with no edge schema to compile, spine.edges itself).
   gSpineFrozen({ nodes: validNodes, tree, fail });
-  gSpineNet({ nodes: validNodes, edges: spine.edges, tree, fail });
+  gSpineNet({ nodes: validNodes, edges: validEdges, tree, fail });
 
   // F-041 Phase 1 Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT. Both PRINT on
   // every run that reaches this point (spine/ present, schema compiles).
@@ -2220,8 +2294,10 @@ function gSpineFrozen({ nodes, tree, fail }) {
 
 // F-041 Phase 1 Task 1.8: G-NET (endpoint resolution + road-end proximity)
 // and G-CANON-LEG (±8% straight-line + frozen endpoints + relay hop ≤ 10).
-// `edges` is spine.edges — edges have no schema to validate against, unlike
-// nodes, so there is no "validEdges" list to filter through.
+// `edges` is checkSpine's validEdges — the G-EDGE-SCHEMA-validated list, the
+// same discipline as validNodes. Before Plan B Task 3 there was no edge schema
+// and spine.edges was passed raw, which is why rootPoint below could be handed
+// an edge with no `to` and crash on `ref.node` instead of reporting.
 function gSpineNet({ nodes, edges, tree, fail }) {
   const featOwner = new Map(); // feature id -> owning node
   for (const n of nodes) for (const f of n.features ?? []) featOwner.set(f.id, n);

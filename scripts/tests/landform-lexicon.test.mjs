@@ -103,6 +103,24 @@ test("23 types are dungeonCapable and only the named exception is an area", () =
     "a dungeon door is an entrance, not a field — see DUNGEON_AREA_EXCEPTIONS");
 });
 
+// The 40 family NAMES, not just the count. `owner.size === 40` is genuinely
+// derived and catches a collapse (two families merging -> 39), but it cannot
+// see a RENAME: one family leaves the set, one joins, the count never moves.
+// Four glyphs are used by exactly one row each (g-arch, g-delta, g-tower,
+// g-oasis), so four families could be renamed or typo'd invisibly — and Task 7
+// builds the glyph atlas by joining on exactly these strings.
+const GLYPH_FAMILIES = ["g-arch", "g-arch-rock", "g-atoll", "g-bog", "g-caldera",
+  "g-cave", "g-cenote", "g-cirque", "g-cliff", "g-cone", "g-crevasse", "g-delta",
+  "g-dune", "g-erratic", "g-falls", "g-fan", "g-gully", "g-hoodoo", "g-isle",
+  "g-lagoon", "g-lake", "g-lavafield", "g-mangrove", "g-meander", "g-mesa",
+  "g-moraine", "g-oasis", "g-pavement", "g-peak", "g-playa", "g-reef", "g-ridge",
+  "g-scree", "g-seamount", "g-spit", "g-tarn", "g-tower", "g-tuft", "g-vent", "g-wadi"];
+
+test("the 40 glyph family names are exactly these — Task 7's atlas joins on them", () => {
+  assert.equal(GLYPH_FAMILIES.length, 40);
+  assert.deepEqual([...new Set(LEX.map((r) => r.glyph))].sort(), [...GLYPH_FAMILIES].sort());
+});
+
 test("40 glyph families, and no glyph is shared by two PRIMARY groups", () => {
   const owner = new Map(); // glyph -> primary group
   for (const r of LEX) {
@@ -127,14 +145,50 @@ test("the predicate vocabulary is EXACTLY what the committed schema declares", (
     Object.keys(SCHEMA.properties.requires.properties).sort());
 });
 
-test("every requires key is handled by Plan C's matchesRequires — the cross-check", () => {
-  // Two independently-maintained enumerations of one predicate language is how
-  // P10 ends up THROWING on the first coastal row it meets, which is
-  // essentially the whole lexicon. Plan C's landforms.mjs exports its switch's
-  // key list precisely so this test can exist; Plan C Task 8 carries the
-  // mirror. Skipped, not failed, until Plan C is merged into this branch.
-  const impl = join(ROOT, "tools/mapforge/lib/passes/landforms.mjs");
-  if (!existsSync(impl)) return;
+// The commit subject for this task is "a closed row schema" and the brief names
+// the closure as authority-level: "the requires predicate vocabulary is closed
+// at exactly 11 keys under additionalProperties: false". The test above asserts
+// the eleven NAMES; nothing asserted the object was CLOSED, so flipping either
+// `additionalProperties` to true shipped green — after which the very next
+// commit could add a twelfth predicate that Plan C's matchesRequires throws on.
+// Negative cases, because a closure is only observable through a rejection.
+test("the row schema is CLOSED — at the root and on requires", () => {
+  assert.equal(SCHEMA.additionalProperties, false, "root");
+  assert.equal(SCHEMA.properties.requires.additionalProperties, false, "requires");
+  const validate = new AjvClass({ allErrors: true }).compile(SCHEMA);
+  const row = JSON.parse(JSON.stringify(LEX[0]));
+  assert.ok(validate(row), `the base row must be valid first: ${JSON.stringify(validate.errors)}`);
+  for (const key of ["notes", "tags", "biome", "Glyph"])
+    assert.equal(validate({ ...row, [key]: "x" }), false, `a row carrying \`${key}\` must be rejected`);
+  for (const key of ["moistMin", "wetness", "rocks", "elevMinimum"])
+    assert.equal(validate({ ...row, requires: { ...row.requires, [key]: 1 } }), false,
+      `requires.${key} is outside the closed predicate vocabulary and must be rejected`);
+  // ...and every one of the eleven declared keys is still accepted, so the
+  // closure cannot be "fixed" by narrowing the vocabulary instead.
+  const sample = { rock: "carbonate", precipDecileMin: 1, precipDecileMax: 8, tempDecileMin: 1,
+    tempDecileMax: 8, slopeMin: 0.1, slopeMax: 0.9, nearFlag: "SEA", flowAccMin: 2,
+    elevMin: 0.1, elevMax: 0.9 };
+  assert.deepEqual(Object.keys(sample).sort(), [...REQUIRES_KEYS].sort());
+  assert.ok(validate({ ...row, requires: sample }), JSON.stringify(validate.errors));
+});
+
+// Two independently-maintained enumerations of one predicate language is how
+// P10 ends up THROWING on the first coastal row it meets, which is essentially
+// the whole lexicon. Plan C's landforms.mjs exports its switch's key list
+// precisely so this test can exist; Plan C Task 8 carries the mirror.
+//
+// SKIPPED, and reported as skipped. The earlier form did `if (!existsSync(impl))
+// return;`, which printed a tick and counted as a pass — so a cross-check that
+// has never once executed read as covered. node:test's own skip option is the
+// honest form (the sibling instance test already uses it), and it makes the
+// dark cross-check visible in the summary line.
+const MATCHES_REQUIRES = join(ROOT, "tools/mapforge/lib/passes/landforms.mjs");
+test("every requires key is handled by Plan C's matchesRequires — the cross-check", {
+  skip: existsSync(MATCHES_REQUIRES)
+    ? false
+    : "tools/mapforge/lib/passes/landforms.mjs is not present yet (Plan C)",
+}, () => {
+  const impl = MATCHES_REQUIRES;
   const src = readFileSync(impl, "utf8");
   const m = /export const REQUIRES_KEYS = Object\.freeze\(\[([\s\S]*?)\]\)/.exec(src);
   assert.ok(m, "landforms.mjs does not export REQUIRES_KEYS");

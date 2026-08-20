@@ -101,7 +101,13 @@
       "if": { "required": ["kind"], "properties": { "kind": { "const": "relay" } } },
       "then": {
         "required": ["via"],
-        "not": { "anyOf": [{ "required": ["points"] }, { "required": ["weight"] }] }
+        "not": {
+          "anyOf": [
+            { "required": ["points"] },
+            { "required": ["weight"] },
+            { "required": ["dashed"] }
+          ]
+        }
       }
     },
     {
@@ -111,7 +117,8 @@
           "anyOf": [
             { "required": ["points"] },
             { "required": ["weight"] },
-            { "required": ["via"] }
+            { "required": ["via"] },
+            { "required": ["dashed"] }
           ]
         }
       }
@@ -123,7 +130,8 @@
           "anyOf": [
             { "required": ["points"] },
             { "required": ["weight"] },
-            { "required": ["via"] }
+            { "required": ["via"] },
+            { "required": ["dashed"] }
           ]
         }
       }

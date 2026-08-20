@@ -7,14 +7,17 @@
 //
 // SHAPE ONLY. G-NET owns endpoint resolution; G-CANON-LEG owns the distances.
 //
-// SCOPE NOTE: this task's file contract is the schema + this test. Wiring a
-// G-EDGE-SCHEMA rule into scripts/check_content.mjs (plan Task 3 Step 4) is NOT
-// in it, so the gate-level tests the plan sketches are deliberately absent —
-// they would assert wiring that does not exist. Until that wiring lands, this
-// file is the only thing holding edges.json to the schema.
+// (An earlier revision of this file carried a SCOPE NOTE claiming Task 3's file
+// contract was "the schema + this test" and that wiring G-EDGE-SCHEMA into
+// scripts/check_content.mjs was outside it. That was FALSE: the plan's Task 3
+// Files block names `Modify: scripts/check_content.mjs` on its second line. The
+// wiring landed in the fix pass and the gate-level tests below are the plan's
+// mandated Step 1 tests, restored.)
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
@@ -24,6 +27,7 @@ import Ajv from "ajv";
 const AjvClass = Ajv.default ?? Ajv;
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const GATE = join(ROOT, "scripts/check_content.mjs");
 const SCHEMA_PATH = join(ROOT, "content/schemas/spine-edge.schema.json");
 const EDGES_PATH = join(ROOT, "content/spine/edges.json");
 
@@ -113,14 +117,57 @@ test("an unknown kind is rejected", () => {
 });
 
 // The four if/then blocks each carry `required: ["kind"]`, so none of them can
-// match vacuously on a kind-less document and impose its `then` on it. A
-// kind-less edge must fail for the ONE honest reason: `kind` is required.
+// match vacuously on a kind-less document and impose its `then` on it.
+//
+// REVIEW FIX (was a tautology): the earlier version of this test asserted only
+// that the errors on a kind-less doc include `missingProperty: "kind"`. The
+// ROOT `required` already contains `kind`, so that assertion held no matter
+// what the four `if`s did — deleting `required: ["kind"]` from all four of
+// them, and even deleting the whole `allOf`, left it green. What the guard
+// actually buys is the ABSENCE of the `then`-imposed errors, so that is what
+// is measured now: with the guard, a kind-less road produces exactly one
+// missing-property error (`kind`); without it, all four `if`s match vacuously
+// and `relay`'s `then` demands `via` while `leg`/`sealane`'s `then` forbid the
+// `points`/`weight`/`dashed` the document still carries.
 test("a kind-less edge fails on the missing discriminator, not on a vacuous then", () => {
   const v = compile();
   const { kind, ...noKind } = anyOfKind("road");
   assert.equal(v(noKind), false);
-  const paths = v.errors.map((e) => e.params?.missingProperty);
-  assert.ok(paths.includes("kind"), JSON.stringify(v.errors));
+  const missing = v.errors.map((e) => e.params?.missingProperty).filter(Boolean);
+  assert.deepEqual(missing, ["kind"],
+    `only the root's own \`kind\` may be reported — a vacuous then leaked: ${JSON.stringify(v.errors)}`);
+  assert.deepEqual(v.errors.filter((e) => e.keyword === "not"), [],
+    `a vacuous then imposed a \`not\` on a kind-less doc: ${JSON.stringify(v.errors)}`);
+  assert.equal(v.errors.length, 1, JSON.stringify(v.errors));
+});
+
+// MA-5: the conditional requireds were covered, the unconditional ones were
+// not — root `required` could be cut to ["kind"] with the suite green. A
+// missing `to` is the corruption that used to CRASH gSpineNet (see the gate
+// tests at the foot of this file), so it is the one worth pinning most.
+test("every unconditionally-required top-level key is required", () => {
+  assert.deepEqual([...SCHEMA.required].sort(), ["attrs", "from", "id", "kind", "to"]);
+  const v = compile();
+  for (const key of ["id", "kind", "from", "to", "attrs"]) {
+    const doc = anyOfKind("road");
+    delete doc[key];
+    assert.equal(v(doc), false, `an edge with no \`${key}\` must be rejected`);
+    assert.ok(
+      v.errors.some((e) => e.keyword === "required" && e.params?.missingProperty === key),
+      `${key}: ${JSON.stringify(v.errors)}`,
+    );
+  }
+});
+
+// MINOR-4: `dashed` is a road-only key on all 20 committed edges (8 roads carry
+// it, nothing else does), but it was the one road key the three non-road
+// branches forgot to exclude, while `points`/`weight`/`via` were all excluded.
+test("dashed is road-only — the other three kinds reject it", () => {
+  const v = compile();
+  for (const e of EDGES) assert.equal("dashed" in e, e.kind === "road", e.id);
+  for (const kind of ["relay", "leg", "sealane"])
+    assert.equal(v({ ...anyOfKind(kind), dashed: true }), false, `${kind} must reject dashed`);
+  assert.ok(v(anyOfKind("road")), "a road still carries dashed legitimately");
 });
 
 // --- endpoint refs ----------------------------------------------------------
@@ -267,4 +314,125 @@ test("the schema declares its $id so a future $ref can name it", () => {
   assert.equal(SCHEMA.$id, "spine-edge.schema.json");
   assert.equal(SCHEMA.$schema, "http://json-schema.org/draft-07/schema#");
   assert.equal(SCHEMA.additionalProperties, false);
+});
+
+// --- G-EDGE-SCHEMA at the GATE (plan Task 3 Step 1's mandated tests) --------
+//
+// A schema nothing compiles protects nothing. These spawn the real gate over a
+// copy of content/, which is the only thing that can tell the wiring apart
+// from a schema file sitting inertly in the tree. Measured before the wiring
+// landed: `kind: "ferry"` passed --only=spine with 0 failures, an unknown
+// `attrs` key passed, a leg carrying road `points` passed, and a missing `to`
+// CRASHED the gate outright.
+
+function realRoot(t) {
+  const dir = mkdtempSync(join(tmpdir(), "edges-schema-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  cpSync(join(ROOT, "content"), dir, { recursive: true });
+  return dir;
+}
+function runGate(dir) {
+  try {
+    return { code: 0, out: execFileSync(process.execPath,
+      [GATE, "--only=spine", "--content-root", dir], { encoding: "utf8" }) };
+  } catch (e) { return { code: e.status ?? -1, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+}
+function writeEdges(dir, mutate) {
+  const p = join(dir, "spine/edges.json");
+  const edges = JSON.parse(readFileSync(p, "utf8"));
+  mutate(edges);
+  writeFileSync(p, JSON.stringify(edges, null, 2));
+}
+
+test("the real content root is green under the wired-in validation", (t) => {
+  const r = runGate(realRoot(t));
+  assert.equal(r.code, 0, r.out);
+  // Trap 3: assert the printed record counts, never just exit 0 — a gate that
+  // stopped checking also exits 0.
+  assert.match(r.out, /44 nodes, 0 failures, 19 warnings/, r.out);
+  assert.doesNotMatch(r.out, /G-EDGE-SCHEMA/);
+});
+
+test("the gate reports G-EDGE-SCHEMA on a malformed edge", (t) => {
+  const dir = realRoot(t);
+  writeEdges(dir, (edges) => { edges[0].weight = 7; }); // weight is an enum of three strings
+  const r = runGate(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-EDGE-SCHEMA: spine\/edges\.json\[0\]/, r.out);
+});
+
+// The three corruption classes the reviewers measured as invisible to every
+// gate. Named individually so a regression says WHICH one came back.
+for (const [name, mutate, needle] of [
+  ["a fifth kind", (E) => { E[0].kind = "ferry"; }, /\[0\] \(e-trade-road-trunk\): \/kind must be equal to one of the allowed values/],
+  ["an unknown attrs key", (E) => { E[0].attrs.tollFee = 3; }, /\[0\] \(e-trade-road-trunk\): \/attrs must NOT have additional properties/],
+  ["a leg smuggling road geometry", (E) => { E[E.findIndex((e) => e.kind === "leg")].points = [[0, 0], [1, 1]]; }, /G-EDGE-SCHEMA: spine\/edges\.json\[\d+\] \(e-leg-/],
+]) {
+  test(`the gate catches ${name}`, (t) => {
+    const dir = realRoot(t);
+    writeEdges(dir, mutate);
+    const r = runGate(dir);
+    assert.equal(r.code, 1, r.out);
+    assert.match(r.out, needle, r.out);
+  });
+}
+
+// Brief trap 6 — "gate functions never throw; an uncaught throw skips finish()
+// and silently drops every failure recorded before it." An edge with no `to`
+// used to reach gSpineNet's rootPoint and die on
+// `TypeError: Cannot read properties of undefined (reading 'node')`, taking the
+// whole report with it. G-EDGE-SCHEMA filters the edge out of validEdges, so
+// the gate now reports and REACHES finish().
+test("a `to`-less edge is one clean failure, not a crash", (t) => {
+  const dir = realRoot(t);
+  writeEdges(dir, (E) => { delete E[0].to; });
+  const r = runGate(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-EDGE-SCHEMA: spine\/edges\.json\[0\] \(e-trade-road-trunk\): \/ must have required property 'to'/, r.out);
+  assert.doesNotMatch(r.out, /TypeError/, "the gate must not throw");
+  // finish() ran: the record counts printed, which is what a crash suppresses.
+  assert.match(r.out, /44 nodes, 1 failures, 19 warnings/, r.out);
+});
+
+test("a content root with no edges.json is still green (soft-skip)", (t) => {
+  const dir = realRoot(t);
+  rmSync(join(dir, "spine/edges.json"));
+  const r = runGate(dir);
+  assert.doesNotMatch(r.out, /G-EDGE-SCHEMA/, r.out);
+  assert.doesNotMatch(r.out, /spine-edge schema/, r.out);
+});
+
+// The plan's Step 4 text says a MISSING schema file should be one clean `fail`.
+// That is wrong against this tree and was corrected: two live callers build a
+// content root that has edges.json and copies only spine-node.schema.json —
+// spine-gates.test.mjs's p4FixtureRoot and tools/mapforge/gen-world.mjs — and
+// failing on the absent file reds both. Pinned as a test so the "correct" the
+// plan asks for cannot be reapplied without seeing what it costs.
+test("a content root with edges but no edge schema soft-skips (plan Step 4 corrected)", (t) => {
+  const dir = realRoot(t);
+  rmSync(join(dir, "schemas/spine-edge.schema.json"));
+  const r = runGate(dir);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /44 nodes, 0 failures, 19 warnings/, r.out);
+  assert.doesNotMatch(r.out, /spine-edge schema/, r.out);
+});
+
+// ...but a schema that IS present and unreadable is a clean in-band failure,
+// never a crash, and finish() still prints.
+test("an unparsable edge schema fails in-band and still reaches finish()", (t) => {
+  const dir = realRoot(t);
+  writeFileSync(join(dir, "schemas/spine-edge.schema.json"), "{ not json");
+  const r = runGate(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /spine-edge schema: cannot read\/parse/, r.out);
+  assert.doesNotMatch(r.out, /SyntaxError|TypeError/, r.out);
+  assert.match(r.out, /44 nodes, 1 failures, 19 warnings/, r.out);
+});
+
+// The soft-skip on an absent schema means a DELETED content/schemas/
+// spine-edge.schema.json would silently turn the gate off. This is the guard
+// that makes that loud: the schema is a committed artifact of the real root.
+test("the edge schema is committed in the real content root", () => {
+  assert.ok(SCHEMA.$id === "spine-edge.schema.json" && Array.isArray(SCHEMA.allOf),
+    "content/schemas/spine-edge.schema.json must exist and be the discriminated schema");
 });
