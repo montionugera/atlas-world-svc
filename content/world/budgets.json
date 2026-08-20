@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "about": "Budgets for the layers that live OUTSIDE content/spine/ and are therefore invisible to G-LOAD-BUDGET. Every gate that reads this file PRINTS its measurement on every run — the G-LOAD-BUDGET / G-COMP-REPORT discipline — so drift is visible long before it is a failure. Plan B's gSpineWorld owns the `landforms` and `sheets` sections (G-LANDFORM, G-SHEET-BUDGET); Plan C adds `fabric`, `civil` and `loop` and owns G-WORLD-BUDGET, including this file's existence check.",
+  "cellKm": 0.5,
+  "cellKmWhy": "PINNED CONSTANT, same discipline as KM_TO_U = 100 and SPINE_CELL_KM = 0.05. 0.5 km over the 400 x 400 km frame is an 800 x 800 grid = 640,000 cells ~= 14.7 MB resident. Changing it changes every landform predicate's meaning.",
+  "landforms": {
+    "maxInstances": 2400,
+    "maxNamed": 500,
+    "minTypes": 100,
+    "maxTypes": 200,
+    "typeCoverageFloor": 100,
+    "dungeonCapableTypes": 23
+  },
+  "sheets": {
+    "maxSheets": 18,
+    "maxSvgBytes": 524288,
+    "maxRasterSeconds": 2,
+    "rasterWidthPx": 2000
+  },
+  "sheetsWhy": {
+    "maxSheets": "The roster, enumerated: 1 atlas + 1 basin + 13 continent (Plan E) + 1 overlay + 1 fabric (Plan C) + 1 synthetic (Plan B) = 18. The design's \"<= 16\" counted the shipped chart only (1 atlas + 13 continents + 1 basin + 1 overlay) and omitted the review sheets the owner's every-artifact-observable rule requires. Raising this cap without adding a line here is a budget failure, not a fix.",
+    "maxRasterSeconds": "Read by Plan B Task 10's synthetic-sheet raster test, not by a spine gate — a gate must not shell out to rsvg-convert.",
+    "rasterWidthPx": "The width maxRasterSeconds is measured at. A raster budget without its width is not a budget."
+  }
+}

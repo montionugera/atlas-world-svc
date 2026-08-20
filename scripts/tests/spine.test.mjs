@@ -30,13 +30,27 @@ test("G-DEPTH: playspace -> site is the one legal exception pair (runtime tree h
 
 test("LEAF_TIERS, BIOMES, TERRAIN_KINDS, TERRAIN_IMPLIES are the pinned enums", () => {
   assert.deepEqual([...LEAF_TIERS].sort(), ["fixture", "site", "town"]);
+  // Plan B Task 5 grew these three from 12/7/7 to 20/18/18. This pin is the
+  // ORIGINAL home and stays exact rather than being softened to a length
+  // check; scripts/tests/world-budget.test.mjs pins the same three rosters
+  // plus the rules that only make sense beside the lexicon and budgets.json
+  // (every implied biome is a biome, no kind implies three, every biome a
+  // lexicon row names is in BIOMES). Two exact copies, deliberately: the
+  // vocabulary is the one thing in this repo that must not drift quietly.
   assert.deepEqual(BIOMES, ["ocean", "ice", "marsh", "river", "meadow", "forest",
-    "bramble", "rock", "upland", "alkali", "ash", "built"]);
+    "bramble", "rock", "upland", "alkali", "ash", "built",
+    "tundra", "lake", "scree", "karst", "badland", "desert", "lava", "reef"]);
   assert.deepEqual(TERRAIN_KINDS, ["ice", "upland", "alkali-flat", "rim",
-    "bramble", "headland", "river-country"]);
+    "bramble", "headland", "river-country",
+    "tundra-steppe", "sand-sea", "badlands", "karst-plateau", "volcanic-arc",
+    "lava-field", "cloud-forest", "reef-shelf", "fjordland", "lake-country", "tidal-mire"]);
   assert.deepEqual(TERRAIN_IMPLIES, {
     ice: ["ice"], upland: ["upland"], "alkali-flat": ["alkali"], rim: ["rock"],
     bramble: ["bramble"], headland: ["rock", "meadow"], "river-country": ["river", "meadow"],
+    "tundra-steppe": ["tundra"], "sand-sea": ["desert"], badlands: ["badland"],
+    "karst-plateau": ["karst"], "volcanic-arc": ["ash"], "lava-field": ["lava"],
+    "cloud-forest": ["forest"], "reef-shelf": ["reef"], fjordland: ["rock", "ice"],
+    "lake-country": ["lake"], "tidal-mire": ["marsh"],
   });
   assert.equal(SPINE_CELL_KM, 0.05); // F-045 Task 2 (spec §2.2): 0.25 -> 0.05, ÷5 with the world frame
   assert.equal(SPINE_CELL_U, 1.0);

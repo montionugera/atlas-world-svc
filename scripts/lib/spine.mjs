@@ -44,18 +44,41 @@ export function depthLegal({ parentTier, childTier }) {
 }
 
 export const LEAF_TIERS = new Set(["town", "site", "fixture"]);
+// Widening BIOMES LOOSENS G-COMP-SUM: a composition key that was a failure
+// before is silently accepted after. Swept before this edit — every
+// `composition` / `computedComposition` / `interstitialComposition` object in
+// content/, scripts/tests/ and tools/ (13 distinct keys over 408 sites) is
+// inside the OLD 12, and the only out-of-vocabulary terrainKind in the tree is
+// spine.test.mjs's "volcano", which the 18 below still reject. Nothing that
+// was rejected is now accepted.
 export const BIOMES = Object.freeze([
   "ocean", "ice", "marsh", "river", "meadow", "forest",
   "bramble", "rock", "upland", "alkali", "ash", "built",
+  // Plan B Task 5 (+8): `lava` and `ash` are deliberately SPLIT — ash is a
+  // walkable depositional plain (the Cindervast reading), lava an impassable
+  // flow field. Splitting them is what lets a volcanic arc read as an arc.
+  "tundra", "lake", "scree", "karst", "badland", "desert", "lava", "reef",
 ]);
 export const TERRAIN_KINDS = Object.freeze([
   "ice", "upland", "alkali-flat", "rim", "bramble", "headland", "river-country",
+  // Plan B Task 5 (+11). `tidal-mire` is WIRED, NOT NEW: the pMire pattern and
+  // its legend row already exist (draft.mjs) and no terrainKind reached them —
+  // legended-but-unreachable, one of the three loops G-BIOME-INK closes.
+  "tundra-steppe", "sand-sea", "badlands", "karst-plateau", "volcanic-arc",
+  "lava-field", "cloud-forest", "reef-shelf", "fjordland", "lake-country", "tidal-mire",
 ]);
 // forward-only: terrainKind is AUTHORED; each implied biome must appear in
 // composition at >= 15% (G-TERRAINKIND, Phase 3). Never derived backwards.
+// No row names three biomes: each implied biome must reach 15% of a single
+// 100-point composition, so a three-biome kind spends 45 points before the
+// region has said anything else and becomes unauthorable in practice.
 export const TERRAIN_IMPLIES = Object.freeze({
   ice: ["ice"], upland: ["upland"], "alkali-flat": ["alkali"], rim: ["rock"],
   bramble: ["bramble"], headland: ["rock", "meadow"], "river-country": ["river", "meadow"],
+  "tundra-steppe": ["tundra"], "sand-sea": ["desert"], badlands: ["badland"],
+  "karst-plateau": ["karst"], "volcanic-arc": ["ash"], "lava-field": ["lava"],
+  "cloud-forest": ["forest"], "reef-shelf": ["reef"], fjordland: ["rock", "ice"],
+  "lake-country": ["lake"], "tidal-mire": ["marsh"],
 });
 // F-045 Task 2 (spec §2.2): 0.25 -> 0.05, ÷5 with the world — the world
 // frame shrank 2000km -> 400km (S=0.2) so the sample cell shrinks by the

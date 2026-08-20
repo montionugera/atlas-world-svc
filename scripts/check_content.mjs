@@ -1996,6 +1996,10 @@ function checkSpine(opts, mobTypes) {
   // every run that reaches this point (spine/ present, schema compiles).
   gSpineBudgets({ spine, tree, plans: townPlans, contentRoot: opts.contentRoot, fail });
 
+  // Plan B Task 5: G-LANDFORM + G-SHEET-BUDGET, reading content/world/. Placed
+  // immediately after gSpineBudgets so the four budget lines print together.
+  gSpineWorld({ tree, contentRoot: opts.contentRoot, fail });
+
   // F-041 Phase 1 Task 1.11 reported this as WARN until the two authoring
   // debts (8 measured overlap pairs, the n-cluster1 union identity) were
   // paid off in Task 1.12. Task 1.13 flips `report` from `warn` to `fail` —
@@ -2469,6 +2473,139 @@ function gSpineBudgets({ spine, tree, plans, contentRoot, fail }) {
     fail(`spine: G-COMP-REPORT: spine/coverage-budget.json is missing`);
   else if (totals.UNCHECKED > spine.budgets.coverage.maxUnchecked)
     fail(`spine: G-COMP-REPORT: ${totals.UNCHECKED} UNCHECKED nodes > budget ${spine.budgets.coverage.maxUnchecked}`);
+}
+
+// Plan B Task 5 — G-LANDFORM + G-SHEET-BUDGET.
+//
+// OWNERSHIP: G-WORLD-BUDGET is Plan C's gate. It owns content/world/
+// budgets.json's existence, the fabric/civil families, and the contract-pinned
+// `world-budget: <family> <n> files, <n> bytes (budget <n>, <n>)` line. This
+// gate reads two SECTIONS of the same file and reports under its own ids, so
+// the two never double-report the same defect.
+//
+// SOFT-SKIP is load-bearing: a content root with no content/world/ is legal
+// (every one of the ~27 spine fixtures is one), so absence reports NOTHING.
+// This mirrors checkSpine's own bail on a missing content/spine.
+//
+// The instance half is dormant until Plan C writes content/world/fabric/.
+// Until then the coverage line still PRINTS ("types placed: 0 / 170") — a
+// score, not a failure, exactly as scripts/report_season1.mjs does. The floor
+// only bites once a fabric exists, because a quota that cannot be met against
+// real terrain must degrade and be reported, never deadlock (spec R8).
+//
+// NEVER THROWS. Every shape this function destructures is content an author
+// can get wrong — a lexicon saved as an object, a budgets.json that lost a
+// section to a bad merge, a fabric file whose `instances` is not an array. The
+// plan's transcription destructured all three unguarded; an uncaught throw
+// here skips finish() and silently drops every failure recorded before it, so
+// each one reports in-band instead.
+function gSpineWorld({ tree, contentRoot, fail }) {
+  const worldDir = join(contentRoot, "world");
+  if (!existsSync(worldDir)) return;
+
+  const lexPath = join(worldDir, "lexicon/landforms.json");
+  const budPath = join(worldDir, "budgets.json");
+  if (!existsSync(lexPath)) { fail(`G-LANDFORM: ${lexPath} is missing`); return; }
+  // The budgets.json-missing branch belongs to Plan C's G-WORLD-BUDGET, which
+  // owns that file and prints the contract-pinned `world-budget: <family> …`
+  // line. Reporting it here too would double-report once Plan C lands, so this
+  // gate only bails quietly and lets the owner speak.
+  if (!existsSync(budPath)) return;
+  const lex = readJson(lexPath, "world/lexicon/landforms.json", fail);
+  const budgets = readJson(budPath, "world/budgets.json", fail);
+  if (!lex || !budgets) return;
+  if (!Array.isArray(lex)) {
+    fail(`G-LANDFORM: world/lexicon/landforms.json is not a JSON array`);
+    return;
+  }
+
+  gWorldLandforms({ tree, worldDir, lex, budgets, fail });
+  gWorldSheets({ contentRoot, budgets, fail });
+}
+
+function gWorldLandforms({ tree, worldDir, lex, budgets, fail }) {
+  if (!budgets.landforms || typeof budgets.landforms !== "object") {
+    fail(`G-LANDFORM: world/budgets.json has no landforms section`);
+    return;
+  }
+  const byId = new Map(lex.map((r) => [r?.id, r]));
+  const { minTypes, maxTypes, maxInstances, maxNamed, typeCoverageFloor, dungeonCapableTypes } = budgets.landforms;
+
+  if (lex.length < minTypes || lex.length > maxTypes)
+    fail(`G-LANDFORM: catalogue holds ${lex.length} types — budget is ${minTypes}-${maxTypes}`);
+  const dCount = lex.filter((r) => r?.dungeonCapable).length;
+  if (dCount !== dungeonCapableTypes)
+    fail(`G-LANDFORM: ${dCount} dungeonCapable types, budget pins ${dungeonCapableTypes} — dungeon binding depends on this number`);
+
+  // Trunk features may cite a lexicon type. Fabric instances are NOT node
+  // features (spec 5.6) — trunk features are the network, fabric is texture.
+  // tree.byId, never spine.nodes: the same validNodes discipline every gate
+  // above follows.
+  for (const node of tree.byId.values())
+    for (const f of node.features ?? []) {
+      if (f.type == null) continue;
+      const row = byId.get(f.type);
+      if (!row) { fail(`G-LANDFORM: ${node.id}/${f.id}: type "${f.type}" is not in the lexicon`); continue; }
+      if (row.geometry !== f.kind)
+        fail(`G-LANDFORM: ${node.id}/${f.id}: kind "${f.kind}" but lexicon geometry is "${row.geometry}"`);
+    }
+
+  // Instance census over content/world/fabric/, dormant until Plan C.
+  const fabricDir = join(worldDir, "fabric");
+  const placed = new Set();
+  let instances = 0, named = 0;
+  if (existsSync(fabricDir))
+    for (const f of readdirSync(fabricDir).filter((x) => x.endsWith(".json")).sort()) {
+      const doc = readJson(join(fabricDir, f), `world/fabric/${f}`, fail);
+      if (!doc) continue;
+      if (doc.instances !== undefined && !Array.isArray(doc.instances)) {
+        fail(`G-LANDFORM: world/fabric/${f}: instances is not an array`);
+        continue;
+      }
+      for (const inst of doc.instances ?? []) {
+        instances++;
+        if (inst?.named) named++;
+        placed.add(inst?.type);
+      }
+    }
+
+  console.log(`world-budget: landforms ${lex.length} types, ${instances} instances (budget ${minTypes}-${maxTypes} types, ${maxInstances} instances)`);
+  console.log(`G-LANDFORM: types placed: ${placed.size} / ${lex.length}`);
+  if (instances > maxInstances) fail(`G-LANDFORM: ${instances} landform instances > budget ${maxInstances}`);
+  if (named > maxNamed) fail(`G-LANDFORM: ${named} named landforms > budget ${maxNamed}`);
+  if (existsSync(fabricDir)) {
+    if (placed.size < typeCoverageFloor)
+      fail(`G-LANDFORM: types placed: ${placed.size} / ${lex.length} — below the floor of ${typeCoverageFloor}`);
+    for (const row of lex)
+      if (!placed.has(row?.id) && row?.absentBecause === null)
+        fail(`G-LANDFORM: type "${row?.id}" has 0 instances and no absentBecause`);
+  }
+}
+
+// Measured against whatever sheets exist on disk today. The maps directory is
+// a SIBLING of the content root, so this is the one gate that reaches outside
+// it — guarded by existsSync, because a temp fixture root has no such sibling
+// and must stay silent rather than fail.
+function gWorldSheets({ contentRoot, budgets, fail }) {
+  const mapsDir = join(contentRoot, "../game-client/assets/art/maps");
+  if (!existsSync(mapsDir)) return;
+  if (!budgets.sheets || typeof budgets.sheets !== "object") {
+    fail(`G-SHEET-BUDGET: world/budgets.json has no sheets section`);
+    return;
+  }
+  // .svg ONLY: each committed sheet ships a .png thumb beside it, so counting
+  // every file would read the two live sheets as four.
+  const svgs = readdirSync(mapsDir).filter((f) => f.endsWith(".svg")).sort();
+  let worst = 0, worstName = "";
+  for (const f of svgs) {
+    const b = statSync(join(mapsDir, f)).size;
+    if (b > worst) { worst = b; worstName = f; }
+  }
+  console.log(`world-budget: sheets ${svgs.length} files, ${worst} bytes largest (${worstName || "none"}) (budget ${budgets.sheets.maxSheets}, ${budgets.sheets.maxSvgBytes})`);
+  if (svgs.length > budgets.sheets.maxSheets)
+    fail(`G-SHEET-BUDGET: ${svgs.length} sheets > budget ${budgets.sheets.maxSheets}`);
+  if (worst > budgets.sheets.maxSvgBytes)
+    fail(`G-SHEET-BUDGET: sheet ${worstName} is ${worst} bytes > budget ${budgets.sheets.maxSvgBytes}`);
 }
 
 // F-041 Phase 1: G-OVERLAP + G-COMP-ROLLUP. `report` is warn until the two
