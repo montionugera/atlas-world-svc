@@ -5,7 +5,8 @@ import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildAtlasSheet, drawAtlasSheet } from "../lib/atlas-sheet.mjs";
 import { esc, LEGEND } from "../lib/draft.mjs";
-import { measureText } from "../lib/labels.mjs";
+import { GLYPHS } from "../lib/glyphs.mjs";
+import { measureText, checkLabels } from "../lib/labels.mjs";
 import { ATLAS_MAX_LABEL_RANK, ATLAS_LABEL_BUDGET, ATLAS_LEGEND_TIER } from "../lib/atlas-sheet.mjs";
 import { SHEETS } from "../render-sheet.mjs";
 import { loadSpine, buildTree } from "../../../scripts/lib/spine.mjs";
@@ -219,7 +220,14 @@ test("the atlas sheet places every label through the declutter, with none droppe
   assert.deepEqual(problems, [], problems.join("\n"));
   const note = notes.find((n) => n.startsWith("labels "));
   assert.ok(note, notes.join(" | "));
-  assert.match(note, /dropped 0$/, note);
+  // The note now RECONCILES: asked = placed + dropped + above tier. Before the
+  // seam-4 fix it reported only placed/dropped, so a name lost to the tier was
+  // invisible in the very line that claimed to account for the labels.
+  const m = /^labels (\d+) asked · (\d+) placed · (\d+) dropped · (\d+) above rank (\d+)/.exec(note);
+  assert.ok(m, note);
+  const [, asked, placed, dropped, above] = m.map(Number);
+  assert.equal(dropped, 0, note);
+  assert.equal(placed + dropped + above, asked, note);
 });
 
 // Re-derived from the EMITTED text, so the assertion does not trust the
@@ -276,7 +284,7 @@ test("the sheet's zoom tier keeps every name the chart draws, and the registry r
   assert.equal(SHEETS.atlas.maxLabelRank, ATLAS_MAX_LABEL_RANK);
   const { svg, notes } = buildAtlasSheet({ repoRoot: ROOT });
   const note = notes.find((n) => n.startsWith("labels "));
-  const [, asked, placed] = /labels (\d+) placed (\d+)/.exec(note);
+  const [, asked, placed] = /^labels (\d+) asked · (\d+) placed/.exec(note);
   assert.equal(asked, placed, `${asked} labels asked, ${placed} placed — the tier is eating names`);
   for (const needle of ["the Coldreach Interior", "Tallowquay", "the Stonemoor Spine"])
     assert.ok(svg.includes(needle), `${needle}: a rank-4+ name vanished`);
@@ -289,12 +297,130 @@ test("a tighter zoom tier really does drop the lower ranks (the tier is not deco
   assert.ok(tight.svg.includes("The Keelbreak Sea"), "a rank-1 name was dropped at tier 3");
 });
 
+// THE SILENT-DELETION FINDING, as a positive control (review A finding 6 and
+// review B's open class). At tier 3 this sheet loses 20 of its 26 names, and
+// before the fix that loss appeared NOWHERE: not in problems, not in notes,
+// not in any count checkLabels was given. It is still not a FAILURE — a zoom
+// tier exists to drop names — but it is now on the record, by id.
+test("names lost to the zoom tier are COUNTED, not silently deleted", () => {
+  const { spine, tree } = realTree();
+  const tight = drawAtlasSheet({ spine, tree, sheet: realSheet(), maxLabelRank: 3 });
+  const note = tight.notes.find((n) => n.startsWith("labels "));
+  const m = /^labels (\d+) asked · (\d+) placed · (\d+) dropped · (\d+) above rank 3/.exec(note);
+  assert.ok(m, note);
+  const [, asked, placed, dropped, above] = m.map(Number);
+  assert.ok(above >= 15, `only ${above} names counted as above-tier: ${note}`);
+  assert.equal(placed + dropped + above, asked, note);
+  assert.ok(note.includes("the Coldreach Interior") || /\(.*\)/.test(note), `the note names no ids: ${note}`);
+  // and it is a REPORT, not a failure
+  assert.deepEqual(tight.problems, [], tight.problems.join("\n"));
+});
+
+// The accounting rule itself, driven from the gate rather than from a sheet:
+// a label that reaches none of the three buckets is what "vanished" means, and
+// it is the ONE thing here that is a hard failure.
+test("G-LABEL reports a label that lands in no bucket at all", () => {
+  const problems = checkLabels({ placed: [], dropped: [], aboveTier: [], asked: 3, tier: 8 });
+  assert.ok(
+    problems.some((p) => /3 labels asked for at tier 8 but 0 accounted for .* 3 vanished with no record/.test(p)),
+    JSON.stringify(problems),
+  );
+  // the reconciled case is silent
+  assert.deepEqual(
+    checkLabels({ placed: [], dropped: [{ id: "a" }], aboveTier: [{ id: "b" }], asked: 2, tier: 8 }),
+    [`G-LABEL: 1 labels dropped at tier 8: a`],
+  );
+});
+
 test("G-LABEL's budget is armed on this sheet", () => {
   const { spine, tree } = realTree();
   const over = drawAtlasSheet({ spine, tree, sheet: realSheet(), labelBudget: 3 });
   assert.ok(
-    over.problems.some((p) => /G-LABEL: \d+ labels at zoom tier 1 > budget 3/.test(p)),
+    // `tier 1` was a literal in the sheet while the placer ran at rank 8, so
+    // every G-LABEL message named a tier the sheet is not drawn at.
+    over.problems.some((p) => /G-LABEL: \d+ labels at zoom tier 8 > budget 3/.test(p)),
     JSON.stringify(over.problems),
   );
   assert.ok(ATLAS_LABEL_BUDGET >= 26, "the committed budget is below the sheet's own label count");
+});
+
+// ── the two G-GLYPH checks, ARMED (seam-4 review B, survivors 5 and 6) ──────
+//
+// Both deleted clean with the whole 204-test mapforge suite green, and the
+// reason is stated in the sheet itself: "No committed feature carries a type
+// today, so this is byte-zero until Plan D writes the first one." A rule whose
+// subject does not exist yet is not covered by a sheet that has none of it.
+// These build the subject. Nothing on the shipped path looks like this.
+const typedTree = ({ glyph }) => {
+  const { spine, tree } = realTree();
+  let hit = null;
+  for (const n of tree.byId.values())
+    for (const f of n.features ?? [])
+      if (f.kind === "point" && !hit) hit = f;
+  assert.ok(hit, "the spine has no point feature to hang a lexicon type on");
+  hit.type = "t-probe";
+  return { spine, tree, featureId: hit.id, lexicon: [{ id: "t-probe", group: "g-probe", glyph }] };
+};
+
+test("G-GLYPH FIRES: a glyph is drawn but symbolDefs emitted no <symbol> for it", () => {
+  // symbolDefs DROPS an id with no family rather than writing broken markup,
+  // so without this loop the sheet would draw <use href="#nosuch"> at a symbol
+  // that is not in the file — an invisible mark, and a silent one.
+  const { spine, tree, lexicon } = typedTree({ glyph: "nosuch-family" });
+  const out = drawAtlasSheet({ spine, tree, sheet: realSheet(), lexicon });
+  assert.ok(
+    out.problems.some((p) => p === 'G-GLYPH: glyph "nosuch-family" is drawn on this sheet but no <symbol> was emitted'),
+    JSON.stringify(out.problems),
+  );
+  assert.ok(out.svg.includes('href="#nosuch-family"'), "the sheet did not actually draw the glyph");
+  assert.ok(!out.svg.includes('<symbol id="nosuch-family"'), "a symbol WAS emitted; the fixture proves nothing");
+});
+
+test("G-GLYPH does NOT fire when the family exists — the rule is not just noise", () => {
+  const { spine, tree, lexicon } = typedTree({ glyph: Object.keys(GLYPHS)[0] });
+  const out = drawAtlasSheet({ spine, tree, sheet: realSheet(), lexicon });
+  assert.deepEqual(
+    out.problems.filter((p) => p.includes("no <symbol> was emitted")),
+    [],
+    JSON.stringify(out.problems),
+  );
+});
+
+test("G-GLYPH FIRES: checkGlyphCoverage catches two groups sharing one glyph", () => {
+  // The catalogue half. `alsoGroups` is a query tag, not a claim — two PRIMARY
+  // groups keying the same mark means the reader cannot tell them apart.
+  const { spine, tree } = realTree();
+  const g = Object.keys(GLYPHS)[0];
+  const lexicon = [
+    { id: "t-a", group: "group-one", glyph: g },
+    { id: "t-b", group: "group-two", glyph: g },
+  ];
+  const out = drawAtlasSheet({ spine, tree, sheet: realSheet(), lexicon });
+  assert.ok(
+    out.problems.some((p) => /^G-GLYPH: groups "group-one" and "group-two" share glyph/.test(p)),
+    JSON.stringify(out.problems),
+  );
+});
+
+// ── the atlas's G-BIOME-INK push, ARMED (seam-4 review B, survivor 4) ───────
+//
+// It was called `{ emittedIds: referencedPatterns, referencedIds:
+// referencedPatterns }` — the same array twice — which the sibling canary's own
+// comment says "can never fire". The two sides come from two places now, and
+// `legendTier` is passed at all, which it was not.
+test("G-BIOME-INK FIRES on the atlas: a tier that hides a fill the chart draws", () => {
+  const { spine, tree } = realTree();
+  for (const [tier, want] of [[0, 2], [1, 1]]) {
+    const out = drawAtlasSheet({ spine, tree, sheet: realSheet(), legendTier: tier });
+    const hidden = out.problems.filter((p) =>
+      new RegExp(`^G-BIOME-INK: pattern "p\\w+" is drawn at legend tier ${tier} but has no visible legend row$`).test(p),
+    );
+    assert.equal(hidden.length, want, `tier ${tier}: ${JSON.stringify(out.problems)}`);
+  }
+});
+
+test("the atlas's committed legend tier explains every fill it draws", () => {
+  const { problems } = buildAtlasSheet({ repoRoot: ROOT });
+  assert.deepEqual(problems.filter((p) => p.startsWith("G-BIOME-INK")), [], problems.join("\n"));
+  assert.equal(ATLAS_LEGEND_TIER, 2);
 });

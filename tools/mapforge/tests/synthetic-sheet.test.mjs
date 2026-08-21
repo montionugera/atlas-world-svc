@@ -23,7 +23,7 @@ import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { makeSyntheticWorld, buildSyntheticSheet } from "../lib/synthetic-sheet.mjs";
+import { makeSyntheticWorld, buildSyntheticSheet , SYNTHETIC_LEGEND_TIER } from "../lib/synthetic-sheet.mjs";
 import { GLYPHS, GLYPH_SIZE } from "../lib/glyphs.mjs";
 import { RANKS } from "../lib/labels.mjs";
 import { LEGEND } from "../lib/draft.mjs";
@@ -141,7 +141,10 @@ test("ACCEPTANCE: the canary builds with ZERO problems at target density", () =>
   const { svg, notes, problems } = buildSyntheticSheet({ repoRoot: ROOT });
   assert.deepEqual(problems, [], problems.join("\n"));
   assert.ok(svg.startsWith("<svg "), "not an svg");
-  assert.ok(notes.some((n) => /labels 340 placed 340 dropped 0/.test(n)), notes.join(" | "));
+  assert.ok(
+    notes.some((n) => /^labels 340 asked · 340 placed · 0 dropped · 0 above tier$/.test(n)),
+    notes.join(" | "),
+  );
   assert.ok(notes.some((n) => /instances 1740/.test(n)), notes.join(" | "));
   assert.ok(notes.some((n) => /regions 160 · landmasses 13/.test(n)), notes.join(" | "));
 });
@@ -458,5 +461,37 @@ test("POSITIVE CONTROL: G-LABEL fires when 340 names cannot fit the frame", () =
   assert.ok(
     problems.some((p) => /^G-LABEL: \d+ labels dropped/.test(p)),
     problems.join("\n").slice(0, 400),
+  );
+});
+
+// ── the canary's G-BIOME-INK push, ARMED (seam-4 review B, survivor 3) ─────
+//
+// The line `problems.push(...checkBiomeInk({...}))` used to delete clean with
+// the whole 204-test mapforge suite green. Not because the rule is weak, but
+// because the sheet was built from data that is correct by construction AND
+// its legend tier was hardcoded at the vocabulary's maximum, so every pattern
+// it draws necessarily had a visible legend row. A gate that is never handed
+// anything wrong cannot be shown to work — "a green suite that has stopped
+// covering" is this programme's recorded failure mode.
+//
+// The tier is a parameter now. Nothing on the shipped path passes it.
+test("G-BIOME-INK FIRES on the canary: a tier that hides a fill the sheet draws", () => {
+  const tight = buildSyntheticSheet({ repoRoot: ROOT, legendTier: 1 });
+  const hidden = tight.problems.filter((p) =>
+    /^G-BIOME-INK: pattern "p\w+" is drawn at legend tier 1 but has no visible legend row$/.test(p),
+  );
+  assert.ok(
+    hidden.length >= 10,
+    `only ${hidden.length} hidden fills reported at tier 1: ${JSON.stringify(tight.problems.slice(0, 5))}`,
+  );
+});
+
+test("the canary's committed tier keeps every fill it draws explained", () => {
+  const { problems } = buildSyntheticSheet({ repoRoot: ROOT });
+  assert.equal(SYNTHETIC_LEGEND_TIER, 3);
+  assert.deepEqual(
+    problems.filter((p) => p.startsWith("G-BIOME-INK")),
+    [],
+    problems.join("\n"),
   );
 });

@@ -35,7 +35,7 @@
 import { readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { C, r2, esc, LEGEND, patternDefs } from "./draft.mjs";
+import { C, r2, esc, LEGEND, patternDefs, BIOME_FILL } from "./draft.mjs";
 import { checkBiomeInk } from "./ink.mjs";
 import {
   symbolDefs,
@@ -254,6 +254,10 @@ const MEMO = new Map();
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_PATH = join(HERE, "../tests/fixtures/synthetic-world/world.json");
 
+// The canary keys every LEGEND row it can reach: this sheet exists to draw the
+// WHOLE vocabulary at target density, so its tier is the vocabulary's maximum.
+export const SYNTHETIC_LEGEND_TIER = 3;
+
 // The key is the repo root PLUS a stamp of every file the build reads. Keying
 // on the path alone returns the first answer forever, so a caller that reuses
 // one --repo-root across a change to content/world/lexicon/landforms.json gets
@@ -293,15 +297,15 @@ function memoKey(repoRoot) {
  * An injected fixture bypasses the memo: it is a different world, and caching
  * it under the repo root would poison the real answer.
  */
-export function buildSyntheticSheet({ repoRoot, fixture = null } = {}) {
-  if (fixture) return buildUncached({ repoRoot, fixture });
+export function buildSyntheticSheet({ repoRoot, fixture = null, legendTier = null } = {}) {
+  if (fixture || legendTier !== null) return buildUncached({ repoRoot, fixture, legendTier });
   const key = memoKey(repoRoot);
   if (!MEMO.has(key)) MEMO.set(key, buildUncached({ repoRoot }));
   const r = MEMO.get(key);
   return { svg: r.svg, notes: [...r.notes], problems: [...r.problems] };
 }
 
-function buildUncached({ repoRoot, fixture: injected = null }) {
+function buildUncached({ repoRoot, fixture: injected = null, legendTier: legendTierArg = null }) {
   const problems = [];
   const notes = [];
   let fixture, lexicon, budgets;
@@ -377,12 +381,19 @@ function buildUncached({ repoRoot, fixture: injected = null }) {
   const W = Math.round(frameKm * pxPerKm);
   const PAD = 46;
   const LEGEND_COL = 152;
-  const legendRows = LEGEND.filter((r) => r.tier <= 3);
+  // The legend tier is a PARAMETER, defaulting to the committed 3 — seam-4
+  // review B, survivor 3. It was two hardcoded 3s, and with the tier fixed at
+  // the maximum every reachable pattern necessarily has a visible legend row,
+  // so checkBiomeInk's tier half could never fire and the whole
+  // `problems.push(...checkBiomeInk(...))` line below deleted clean with the
+  // suite green. A gate that is never handed anything wrong cannot be shown to
+  // work; nothing on the shipped path passes this.
+  const legendTier = Number.isFinite(legendTierArg) ? legendTierArg : SYNTHETIC_LEGEND_TIER;
+  const legendRows = LEGEND.filter((r) => r.tier <= legendTier);
   const perRow = Math.max(1, Math.floor((W + PAD) / LEGEND_COL));
   const legendH = Math.ceil(legendRows.length / perRow) * 15 + 16;
   const SHEET_W = W + PAD * 2;
   const SHEET_H = W + PAD * 2 + legendH;
-  const legendTier = 3;
 
   // ---- the baked texture underlay -----------------------------------------
   const bake = bakedUnderlay({ regions: world.regions, pxPerKm, maxHrefBytes });
@@ -414,7 +425,7 @@ function buildUncached({ repoRoot, fixture: injected = null }) {
 
   // ---- G-LABEL -------------------------------------------------------------
   const frame = { x: PAD, y: PAD, w: W, h: W };
-  const { placed, dropped } = placeLabels({
+  const { placed, dropped, aboveTier, asked } = placeLabels({
     labels: world.labels.map((l) => ({
       ...l,
       at: [r2(PAD + l.at[0] * pxPerKm), r2(PAD + l.at[1] * pxPerKm)],
@@ -423,11 +434,13 @@ function buildUncached({ repoRoot, fixture: injected = null }) {
     maxLabelRank: 10,
     frame,
   });
-  problems.push(...checkLabels({ placed, dropped, tier: legendTier }));
+  problems.push(...checkLabels({ placed, dropped, aboveTier, asked, tier: legendTier }));
 
   notes.push(`regions ${world.regions.length} · landmasses ${census.landmasses}`);
   notes.push(`instances ${world.instances.length} at ${glyphPx} px · glyph families ${usedGlyphs.length} / ${Object.keys(GLYPHS).length}`);
-  notes.push(`labels ${world.labels.length} placed ${placed.length} dropped ${dropped.length}`);
+  notes.push(
+    `labels ${asked} asked · ${placed.length} placed · ${dropped.length} dropped · ${aboveTier.length} above tier`,
+  );
 
   // ---- draw ---------------------------------------------------------------
   const body = [];
@@ -470,14 +483,28 @@ function buildUncached({ repoRoot, fixture: injected = null }) {
   }
 
   // ---- G-BIOME-INK ---------------------------------------------------------
-  // `referencedIds` is scanned out of the markup ABOVE, so the two sides of the
-  // rule come from two different places: emitted from the table, referenced
-  // from what was actually drawn. Derive both from LEGEND and the per-sheet
-  // half of checkBiomeInk compares a table with itself and can never fire.
+  // Seam-4 review B, survivor 3, and the comment that used to sit here was the
+  // reason it survived. It said "derive both from LEGEND and the per-sheet half
+  // compares a table with itself and can never fire" — and then scanned
+  // `referencedIds` out of markup whose ONLY url(#…) references are the legend
+  // swatches this same `legendRows` list drew. Measured: 25 emitted, 25
+  // referenced, identical at every tier. It was doing exactly what its own
+  // comment warns against.
+  //
+  // The canary's regions are painted by the BAKED <image> underlay, not by a
+  // pattern fill, so the fills it actually draws are invisible to a markup
+  // scan. They are named here from the same table bakedUnderlay renders from,
+  // which makes the rule a real statement about this sheet: every biome the
+  // underlay paints must have a legend row the reader can look it up in. At
+  // the committed tier 3 that holds; at tier 1 it reports 13 hidden fills.
   const emitted = [...new Set(legendRows.map((r) => r.pattern))];
-  const referenced = [
-    ...new Set([...body.join("\n").matchAll(/url\(#([^)"]+)\)/g)].map((m) => m[1])),
+  const painted = [...new Set([...body.join("\n").matchAll(/url\(#([^)"]+)\)/g)].map((m) => m[1]))];
+  const underlaid = [
+    ...new Set(
+      (world.regions ?? []).map((r) => BIOME_FILL[r && r.biome]).filter((id) => typeof id === "string"),
+    ),
   ];
+  const referenced = [...new Set([...painted, ...underlaid])].sort();
   problems.push(
     ...checkBiomeInk({ emittedIds: emitted, referencedIds: referenced, legendTier }),
   );

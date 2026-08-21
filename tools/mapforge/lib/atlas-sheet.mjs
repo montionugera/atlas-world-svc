@@ -411,11 +411,16 @@ export function drawAtlasSheet({
   // than the whole legacy roster. It was emitting nine and referencing two.
   // G-BIOME-INK checks both directions, so an id that appears here and nowhere
   // else is now a reported problem instead of seven dead <pattern> blocks.
-  const referencedPatterns = [...new Set([...worldLand.map(patternFor), ...legendPatterns])].sort();
-  put(patternDefs({ ids: referencedPatterns }));
-  problems.push(
-    ...checkBiomeInk({ emittedIds: referencedPatterns, referencedIds: referencedPatterns }),
-  );
+  const wantedPatterns = [...new Set([...worldLand.map(patternFor), ...legendPatterns])].sort();
+  // patternDefs DROPS an id with no PATTERNS entry rather than writing broken
+  // markup, exactly as symbolDefs does, so the emitted set is scanned back out
+  // of the markup it produced. Handing checkBiomeInk the REQUESTED list would
+  // make the sheet claim it emitted patterns it did not.
+  const patternMarkup = patternDefs({ ids: wantedPatterns });
+  put(patternMarkup);
+  const emittedPatterns = [...patternMarkup.matchAll(/<pattern id="([^"]+)"/g)].map((m) => m[1]).sort();
+  // G-BIOME-INK's per-sheet half runs AFTER the draw pass — see the note by
+  // the symbol slot fill. Asking the same list twice is not a check.
   // Plan B Task 12, adoption 2: the <symbol> block is a RESERVED SLOT, filled
   // after the draw pass. Which glyph families this sheet uses is not knowable
   // until every feature has been walked, and <defs> has to come first in the
@@ -801,13 +806,25 @@ export function drawAtlasSheet({
   // cannot place is REPORTED by checkLabels, never silently absent.
   const frame = { x: ATLAS_MAP_LEFT, y: ATLAS_MAP_TOP, w: MAP_W, h: MAP_H };
   const byId = new Map(sheetLabels.map((l) => [l.id, l]));
-  const { placed, dropped } = placeLabels({
+  const { placed, dropped, aboveTier, asked } = placeLabels({
     labels: sheetLabels.map((l) => ({ id: l.id, text: l.text, rank: l.rank, at: [X(l.at[0]), Y(l.at[1])] })),
     obstacles: [],
     maxLabelRank,
     frame,
   });
-  problems.push(...checkLabels({ placed, dropped, tier: 1, budget: labelBudget }));
+  // `tier` was the LITERAL 1 while placeLabels ran at `maxLabelRank` (8), so
+  // every G-LABEL message this sheet could emit named a tier the sheet was not
+  // drawn at. `asked` and `aboveTier` are the seam-4 accounting fix: a name
+  // dropped for being over the tier is now counted, and a name in none of the
+  // three buckets is a reported failure instead of a silence.
+  problems.push(
+    ...checkLabels({ placed, dropped, aboveTier, asked, tier: maxLabelRank, budget: labelBudget }),
+  );
+  notes.push(
+    `labels ${asked} asked · ${placed.length} placed · ${dropped.length} dropped · ` +
+      `${aboveTier.length} above rank ${maxLabelRank}` +
+      (aboveTier.length ? ` (${aboveTier.map((a) => a.id).sort().join(", ")})` : ""),
+  );
   for (const p of placed) {
     const src = byId.get(p.id);
     if (p.leader)
@@ -882,6 +899,41 @@ export function drawAtlasSheet({
   // so the emitted set is scanned back out of the markup it produced — asking
   // the same list twice is not a check. Same discipline as synthetic-sheet.mjs.
   const emittedGlyphIds = [...symbols.matchAll(/<symbol id="([^"]+)"/g)].map((m) => m[1]);
+  // ---- G-BIOME-INK's per-sheet half (seam-4 review B, survivor 4) -----------
+  // This was called `{ emittedIds: referencedPatterns, referencedIds:
+  // referencedPatterns }` — the SAME array on both sides, so the emitted-vs-
+  // referenced comparison was a list against itself and could never fire. The
+  // sibling canary's own comment says exactly that ("derive both from LEGEND
+  // and the per-sheet half of checkBiomeInk compares a table with itself and
+  // can never fire"); the atlas did the thing the comment warns about.
+  //
+  // Now the two sides come from two different places: the emitted set is
+  // scanned out of the <defs> markup, the referenced set out of the markup
+  // that was actually drawn. Paint references only (`fill=` / `stroke=`) — a
+  // bare `url(#…)` scan would also pick up clip-path and report `clip-sheet`
+  // as a missing pattern.
+  //
+  // HONEST LIMIT, recorded so the next reviewer does not have to re-derive it:
+  // on THIS sheet the two sets coincide by construction — every land in
+  // `worldLand` is painted unconditionally and every legend row gets a swatch —
+  // so restoring the self-comparison is a mutation NO fixture can kill here.
+  // Measured: emitted 3, painted 3, identical at every legend tier. This half
+  // is a guard against a future sheet whose draw pass can skip a subject, and
+  // it is written the correct way for that day. What IS armed on this sheet is
+  // the `legendTier` half below, which was not being passed at all — deleting
+  // that argument now reds atlas-sheet.test.mjs.
+  const paintedPatterns = [
+    ...new Set(
+      [...o.join("\n").matchAll(/\s(?:fill|stroke)="url\(#([^)"]+)\)"/g)].map((m) => m[1]),
+    ),
+  ].sort();
+  problems.push(
+    ...checkBiomeInk({
+      emittedIds: emittedPatterns,
+      referencedIds: paintedPatterns,
+      legendTier,
+    }),
+  );
   for (const id of wanted)
     if (!emittedGlyphIds.includes(id))
       problems.push(`G-GLYPH: glyph "${id}" is drawn on this sheet but no <symbol> was emitted`);

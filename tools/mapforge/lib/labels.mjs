@@ -238,18 +238,29 @@ function makeCollider({ obstacles }) {
  * @param maxLabelRank  the sheet's zoom tier; labels with a HIGHER rank are
  *                      out of scope entirely (not drawn, not dropped)
  * @param frame         { x, y, w, h } in sheet px
+ *
+ * Returns `{ placed, dropped, aboveTier }`. `aboveTier` exists because of the
+ * seam-4 review's silent-deletion finding (A6, and B's open class): a label
+ * whose rank is over the sheet's tier used to `continue` with NO RECORD AT
+ * ALL, and checkLabels was never told how many labels were ASKED for, so
+ * G-LABEL structurally could not see a tier deletion. Task 12 worked around
+ * that on ONE sheet by raising the tier; every other sheet still lost names in
+ * silence. Above-tier is not a fault — it is what a zoom tier is FOR — so it
+ * is a third bucket rather than a drop, and the rule is ACCOUNTING: every
+ * label asked for lands in exactly one of the three, and checkLabels says so.
  */
 export function placeLabels({ labels, obstacles = [], maxLabelRank = 10, frame } = {}) {
   const placed = [];
   const dropped = [];
+  const aboveTier = [];
   // Never throw: a caller whose own load failed hands us null, and a crash
   // here would take its `finish()` with it. Report and return instead.
-  if (!Array.isArray(labels)) return { placed, dropped };
+  if (!Array.isArray(labels)) return { placed, dropped, aboveTier, asked: 0 };
   const obs = (Array.isArray(obstacles) ? obstacles : []).filter((o) => o && isBox(o.bbox));
   if (!isBox(frame)) {
     for (const l of labels)
       dropped.push({ id: l && l.id, why: "no usable frame was supplied" });
-    return { placed, dropped };
+    return { placed, dropped, aboveTier, asked: labels.length };
   }
 
   // Priority THEN id — never insertion order. This is what makes the output a
@@ -259,7 +270,10 @@ export function placeLabels({ labels, obstacles = [], maxLabelRank = 10, frame }
   const usable = [];
   for (const l of labels) {
     if (!l || typeof l.rank !== "number") { dropped.push({ id: l && l.id, why: MALFORMED }); continue; }
-    if (l.rank > tier) continue; // above the zoom tier: not drawn AND not counted
+    // Above the zoom tier: not drawn, but COUNTED. This line used to be a bare
+    // `continue` with the comment "not drawn AND not counted" — the silent
+    // deletion the seam-4 review found.
+    if (l.rank > tier) { aboveTier.push({ id: l.id, rank: l.rank }); continue; }
     if (!isPoint(l.at) || l.text === undefined || l.text === null) { dropped.push({ id: l.id, why: MALFORMED }); continue; }
     usable.push(l);
   }
@@ -313,7 +327,7 @@ export function placeLabels({ labels, obstacles = [], maxLabelRank = 10, frame }
     }
     if (!leadered) dropped.push({ id: l.id, why: "no candidate position and no clear margin for a leader" });
   }
-  return { placed, dropped };
+  return { placed, dropped, aboveTier, asked: labels.length };
 }
 
 /**
@@ -337,12 +351,41 @@ export function placeLabels({ labels, obstacles = [], maxLabelRank = 10, frame }
  * WORSE (3 -> 14 on a 400-label corpus). The displacement ladder above is what
  * actually fixes it, by not sending the label to the margin at all.
  */
-export function checkLabels({ placed, dropped = [], tier, budget = null } = {}) {
+export function checkLabels({ placed, dropped = [], aboveTier = [], asked = null, tier, budget = null } = {}) {
   const problems = [];
   if (!Array.isArray(placed)) return [`G-LABEL: placed is not an array — the gate could not run at tier ${tier}`];
   const drops = Array.isArray(dropped) ? dropped : [];
   if (!Array.isArray(dropped))
     problems.push(`G-LABEL: dropped is not an array — drops could not be checked at tier ${tier}`);
+
+  // THE ACCOUNTING RULE (seam-4 review, the silent-deletion class: A6 and B's
+  // open finding). Until this existed, checkLabels was never told how many
+  // labels were ASKED for, so a sheet could lose a name — to a zoom tier, or
+  // to any future filter — with the gate green and nothing on the record.
+  // G-LABEL structurally could not see a tier deletion. Task 12 worked around
+  // that on ONE sheet by raising its tier; every other sheet still lost names
+  // in silence, which is a mechanism problem, not a per-sheet one.
+  //
+  // Above-tier is NOT a fault: dropping names is exactly what a zoom tier is
+  // for, and reporting it as a failure would make every sheet red. What IS a
+  // fault is a label in none of the three buckets — which is what "vanished"
+  // looks like from in here.
+  const above = Array.isArray(aboveTier) ? aboveTier : [];
+  if (!Array.isArray(aboveTier))
+    problems.push(`G-LABEL: aboveTier is not an array — above-tier names could not be accounted for at tier ${tier}`);
+  if (asked !== null) {
+    if (typeof asked !== "number" || !Number.isFinite(asked))
+      problems.push(`G-LABEL: asked is ${asked === null ? "null" : typeof asked}, not a number — the label census could not be reconciled at tier ${tier}`);
+    else {
+      const accounted = placed.length + drops.length + above.length;
+      if (accounted !== asked)
+        problems.push(
+          `G-LABEL: ${asked} labels asked for at tier ${tier} but ${accounted} accounted for ` +
+            `(${placed.length} placed, ${drops.length} dropped, ${above.length} above tier) — ` +
+            `${asked - accounted} vanished with no record`,
+        );
+    }
+  }
 
   const bad = [];
   for (let i = 0; i < placed.length; i++)
