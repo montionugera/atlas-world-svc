@@ -152,25 +152,187 @@ export const r2 = (n) => {
 // and a userSpaceOnUse pattern's tile phase is anchored to the user-space
 // origin, not to the rect — so the picture is the same and the work is not.
 //
-// This returns a SUPERSET of the true bounds and must: a cubic Bezier lies
-// inside the convex hull of its own control points, so scanning every
-// coordinate pair of an absolute M/L/C/Z path covers the curve with room to
-// spare. Under-covering would clip the fill; over-covering only costs pixels.
-// Returns null on anything it cannot read as coordinate pairs, so a caller
-// falls back to the full frame rather than draw a hole.
+// This returns a SUPERSET of the true bounds and MUST: under-covering crops
+// the fill and leaves a hole where the map should be; over-covering only costs
+// pixels. Returns null on anything it cannot read, so a caller falls back to
+// the whole frame — the behaviour the sheet had before this existed.
+//
+// SEAM-4 REVIEW A, FINDING 1 — REPRODUCED AND FIXED. This was a regex that
+// scraped every number out of the string and paired them off. That is only
+// correct for a path made entirely of ABSOLUTE two-coordinate commands, which
+// is all today's `smooth`/`poly` emit — so the bug was latent, not live. It
+// broke the superset contract on anything else, and the direct area rule added
+// in the same seam actively REWARDS the smaller rect:
+//
+//   pathBounds("M100,100 c10,0 20,10 30,10")  ->  { 10, 0, 100, 100 }
+//
+// against a true x-span of 100-130. The emitted rect would have been
+// x="8" width="94" — a fill cropped to a hole. Odd-count paths fell back
+// safely by accident; even-count relative ones did not.
+//
+// So this walks the path data as SVG defines it: a command letter, its own
+// parameter count, a current point, and a subpath origin for Z. A cubic or
+// quadratic lies inside the convex hull of its own control points, so taking
+// every control point is a superset with room to spare — no curve is
+// subdivided, and nothing here is transcendental (the determinism rule bans
+// them on any path that reaches a committed byte). An elliptical arc is
+// bounded by expanding the chord's box by 2*max(rx,ry): the centre is within
+// max(rx,ry) of the start point and every arc point within max(rx,ry) of the
+// centre, so 2*max is a true bound without touching a trig function.
+//
+// Arc flags are read as SINGLE CHARACTERS, not as numbers, because SVG lets
+// them run together with what follows ("a5 5 0 0160 60"), and a plain number
+// scanner mis-splits exactly there.
+const CMD_ARGS = { M: 2, L: 2, H: 1, V: 1, C: 6, S: 4, Q: 4, T: 2, A: 7, Z: 0 };
+
 export function pathBounds(d) {
-  const nums = String(d).match(/-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?/g);
-  if (!nums || nums.length < 2 || nums.length % 2 !== 0) return null;
+  const s = String(d);
+  let i = 0;
+  const skipSep = () => {
+    while (i < s.length && (s[i] === " " || s[i] === "," || s[i] === "\t" || s[i] === "\n" || s[i] === "\r")) i++;
+  };
+  const peekNumber = () => {
+    skipSep();
+    const c = s[i];
+    return c !== undefined && (c === "-" || c === "+" || c === "." || (c >= "0" && c <= "9"));
+  };
+  const readNumber = () => {
+    skipSep();
+    const start = i;
+    if (s[i] === "-" || s[i] === "+") i++;
+    while (i < s.length && s[i] >= "0" && s[i] <= "9") i++;
+    if (s[i] === ".") {
+      i++;
+      while (i < s.length && s[i] >= "0" && s[i] <= "9") i++;
+    }
+    if (s[i] === "e" || s[i] === "E") {
+      const save = i;
+      i++;
+      if (s[i] === "-" || s[i] === "+") i++;
+      if (i < s.length && s[i] >= "0" && s[i] <= "9") {
+        while (i < s.length && s[i] >= "0" && s[i] <= "9") i++;
+      } else i = save;
+    }
+    if (i === start) return NaN;
+    const v = Number(s.slice(start, i));
+    return Number.isFinite(v) ? v : NaN;
+  };
+  const readFlag = () => {
+    skipSep();
+    const c = s[i];
+    if (c !== "0" && c !== "1") return NaN;
+    i++;
+    return c === "1" ? 1 : 0;
+  };
+
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (let i = 0; i < nums.length; i += 2) {
-    const x = Number(nums[i]);
-    const y = Number(nums[i + 1]);
-    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  let seen = false;
+  const hit = (x, y) => {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
     if (x < minX) minX = x;
     if (x > maxX) maxX = x;
     if (y < minY) minY = y;
     if (y > maxY) maxY = y;
+    seen = true;
+    return true;
+  };
+
+  let cx = 0, cy = 0;      // current point
+  let sx = 0, sy = 0;      // subpath origin, for Z
+  let started = false;     // a path must open with a moveto
+  let prevCtrl = null;     // last curve control, for S/T reflection
+  let cmd = "";
+
+  skipSep();
+  while (i < s.length) {
+    skipSep();
+    if (i >= s.length) break;
+    const c = s[i];
+    if (/[a-zA-Z]/.test(c)) {
+      cmd = c;
+      i++;
+    } else if (cmd === "") {
+      return null; // data before any command letter
+    } else if (cmd === "M" || cmd === "m") {
+      // a repeated moveto parameter set is an implicit lineto (spec 8.3.2)
+      cmd = cmd === "M" ? "L" : "l";
+    }
+    const up = cmd.toUpperCase();
+    const rel = cmd !== up;
+    let nextCtrl = null;
+    const n = CMD_ARGS[up];
+    if (n === undefined) return null;
+    if (up !== "M" && !started) return null;
+
+    if (up === "Z") {
+      cx = sx;
+      cy = sy;
+      continue;
+    }
+    const args = [];
+    for (let k = 0; k < n; k++) {
+      // the two arc flags are parameters 4 and 5
+      const v = up === "A" && (k === 3 || k === 4) ? readFlag() : readNumber();
+      if (!Number.isFinite(v)) return null;
+      args.push(v);
+    }
+
+    if (up === "M") {
+      cx = rel ? cx + args[0] : args[0];
+      cy = rel ? cy + args[1] : args[1];
+      sx = cx;
+      sy = cy;
+      started = true;
+      if (!hit(cx, cy)) return null;
+    } else if (up === "L") {
+      cx = rel ? cx + args[0] : args[0];
+      cy = rel ? cy + args[1] : args[1];
+      if (!hit(cx, cy)) return null;
+    } else if (up === "T") {
+      // the smooth quadratic's only control point is implicit
+      const q = prevCtrl ? [2 * cx - prevCtrl[0], 2 * cy - prevCtrl[1]] : [cx, cy];
+      if (!hit(q[0], q[1])) return null;
+      cx = rel ? cx + args[0] : args[0];
+      cy = rel ? cy + args[1] : args[1];
+      if (!hit(cx, cy)) return null;
+      nextCtrl = q;
+    } else if (up === "H") {
+      cx = rel ? cx + args[0] : args[0];
+      if (!hit(cx, cy)) return null;
+    } else if (up === "V") {
+      cy = rel ? cy + args[0] : args[0];
+      if (!hit(cx, cy)) return null;
+    } else if (up === "C" || up === "S" || up === "Q") {
+      const pts = [];
+      for (let k = 0; k < n; k += 2)
+        pts.push([rel ? cx + args[k] : args[k], rel ? cy + args[k + 1] : args[k + 1]]);
+      // S and Q-after-T carry an IMPLICIT first control point: the reflection
+      // of the previous curve's last control about the current point, or the
+      // current point itself when the previous command was not a curve of the
+      // same family (spec 8.3.6). Taking it explicitly keeps the hull tight;
+      // an earlier draft "bounded" it by doubling the running span, which is a
+      // superset but grows without limit over a chain of S commands.
+      if (up === "S")
+        pts.unshift(prevCtrl ? [2 * cx - prevCtrl[0], 2 * cy - prevCtrl[1]] : [cx, cy]);
+      for (const [px, py] of pts) if (!hit(px, py)) return null;
+      nextCtrl = pts[pts.length - 2];
+      cx = pts[pts.length - 1][0];
+      cy = pts[pts.length - 1][1];
+    } else {
+      // A: rx ry rot large sweep x y
+      const r = Math.max(Math.abs(args[0]), Math.abs(args[1]));
+      const ex = rel ? cx + args[5] : args[5];
+      const ey = rel ? cy + args[6] : args[6];
+      if (!hit(cx - 2 * r, cy - 2 * r)) return null;
+      if (!hit(cx + 2 * r, cy + 2 * r)) return null;
+      if (!hit(ex - 2 * r, ey - 2 * r)) return null;
+      if (!hit(ex + 2 * r, ey + 2 * r)) return null;
+      cx = ex;
+      cy = ey;
+    }
+    prevCtrl = nextCtrl;
   }
+  if (!seen) return null;
   return { minX, minY, maxX, maxY };
 }
 

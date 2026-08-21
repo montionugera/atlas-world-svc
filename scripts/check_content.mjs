@@ -40,6 +40,9 @@ import { derivedSidecar } from "./check_spine_emit.mjs";
 // for why node:zlib is allowed on a DECOMPRESS path and banned on the
 // committed-byte COMPRESS path.
 import { inkStats } from "../tools/mapforge/lib/png-ink.mjs";
+// The same superset-bounds reader the sheet builders use, so the gate's idea
+// of "the shape this fill is clipped to" cannot drift from the emitter's.
+import { pathBounds } from "../tools/mapforge/lib/draft.mjs";
 import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -2748,6 +2751,7 @@ function gWorldSheets({ contentRoot, budgets, fail, warn }) {
   if (worst > budgets.sheets.maxSvgBytes)
     fail(`G-SHEET-BUDGET: sheet ${worstName} is ${worst} bytes > budget ${budgets.sheets.maxSvgBytes}`);
   gWorldSheetPatternArea({ mapsDir, svgs, budgets, fail });
+  gWorldSheetClipFit({ mapsDir, svgs, budgets, fail });
   gWorldSheetInk({ mapsDir, budgets, fail, warn });
 }
 
@@ -2830,6 +2834,144 @@ function gWorldSheetPatternArea({ mapsDir, svgs, budgets, fail }) {
     fail(`G-SHEET-BUDGET: sheet ${worstSheet} pattern-filled rects cover ${worstRatio.toFixed(2)}x its own canvas > budget ${cap} — a pattern fill must be bounded to the shape it inks`);
 }
 
+// F-047 seam-4 fix pass — THE DIRECT CHECK, and why it sits BESIDE the
+// aggregate one rather than replacing it.
+//
+// The two seam-4 reviewers disagreed here and both measurements were right.
+// Reviewer B verified the aggregate cap fires at 6.61x on the twelve-zone
+// defect and called it an honest backstop; reviewer A showed it is a proxy
+// that PASSES the same defect at two zones (0.397 + 2 x 0.49 = 1.38 < 1.5),
+// and is blind to <circle>/<ellipse>/<polygon>, to single quotes and to
+// style="fill:url()". Adjudicated: BOTH rules, because they are budgets on
+// different things.
+//
+//  * The AGGREGATE cap is a real TOTAL-cost budget. Raster time is driven by
+//    the total tiled area, so a sheet of fifty individually-reasonable fills
+//    can still miss the 2 s target. Nothing else measures that, and it is the
+//    rule the 6.61 positive control is calibrated on.
+//  * This DIRECT rule measures the MISTAKE — paint the frame, then hide most
+//    of it — one fill at a time, so it fires on the FIRST regressed zone
+//    instead of waiting for a quorum. On the committed sheets the worst is
+//    1.058 (cluster1 clip-hollowmarch); a single full-frame regression on the
+//    LARGEST zone there scores 24x, and on a small one several hundred.
+//
+// A shape with NO clip-path is exempt, and deliberately: it is not hiding
+// anything, and the legend swatches on the atlas (14 x 960 px^2) and the canary
+// (25 x 216 px^2) are exactly that. A clip this gate cannot resolve is REPORTED
+// in the printed line and left to the aggregate rule, rather than failed —
+// world-budget.test.mjs's fixtures reference clip ids they never define, and
+// hard-failing there would police the fixture rather than the sheet.
+function gWorldSheetClipFit({ mapsDir, svgs, budgets, fail }) {
+  const cap = budgets.sheets.maxPatternRectClipRatio;
+  if (typeof cap !== "number") {
+    fail(`G-SHEET-BUDGET: world/budgets.json sheets has no numeric maxPatternRectClipRatio`);
+    return;
+  }
+  let worst = 0, worstWhere = "", checked = 0, unresolved = 0;
+  for (const f of svgs) {
+    const svg = readTextIfFile(join(mapsDir, f));
+    if (svg === null) continue; // already reported by the aggregate rule
+    const clips = clipBoxes(svg);
+    for (const s of patternFilledShapes(svg)) {
+      if (!s.clipId) continue;
+      const box = clips.get(s.clipId);
+      if (!box) { unresolved++; continue; }
+      const cw = box.maxX - box.minX, chh = box.maxY - box.minY;
+      // Under 32 px on a side the emitter's own 2 px edge slack dominates the
+      // ratio and the absolute cost is nil. The twelve fills that caused this
+      // rule were 1,241,460 px^2 each; this exemption tops out near 1,000.
+      if (!(cw >= 32 && chh >= 32)) continue;
+      checked++;
+      const ratio = s.area / (cw * chh);
+      if (ratio > worst) { worst = ratio; worstWhere = `${f} ${s.clipId}`; }
+      if (ratio > cap)
+        fail(`G-SHEET-BUDGET: sheet ${f} <${s.tag}> fill clipped to #${s.clipId} covers ${ratio.toFixed(2)}x that clip's own box > budget ${cap} — a pattern fill must be bounded to the shape it inks, not to the frame`);
+    }
+  }
+  console.log(`world-budget: pattern fill vs its own clip ${worst.toFixed(2)}x worst (${worstWhere || "none"}) over ${checked} clipped fill(s), ${unresolved} unresolved (budget ${cap})`);
+}
+
+// Every clipPath's id -> the union bounds of the shapes inside it. Only <path>
+// and <rect> children are read; a clipPath this cannot measure is simply absent
+// from the map, which the caller treats as "unresolved".
+function clipBoxes(svg) {
+  const out = new Map();
+  for (const m of svg.matchAll(/<clipPath\b[^>]*\bid=["']([^"']+)["'][^>]*>([\s\S]*?)<\/clipPath>/g)) {
+    let box = null;
+    let bad = false;
+    const grow = (b) => {
+      if (!b) { bad = true; return; }
+      box = box
+        ? { minX: Math.min(box.minX, b.minX), minY: Math.min(box.minY, b.minY), maxX: Math.max(box.maxX, b.maxX), maxY: Math.max(box.maxY, b.maxY) }
+        : b;
+    };
+    for (const pm of m[2].matchAll(/<path\b[^>]*\bd=["']([^"']+)["']/g)) grow(pathBounds(pm[1]));
+    for (const rm of m[2].matchAll(/<rect\b[^>]*>/g)) grow(rectBox(rm[0]));
+    if (!bad && box) out.set(m[1], box);
+  }
+  return out;
+}
+
+const attrNum = (tag, name) => {
+  const m = new RegExp(`\\s${name}=["']([-\\d.eE+]+)["']`).exec(tag);
+  const v = m ? Number(m[1]) : NaN;
+  return Number.isFinite(v) ? v : null;
+};
+function rectBox(tag) {
+  const x = attrNum(tag, "x") ?? 0, y = attrNum(tag, "y") ?? 0;
+  const w = attrNum(tag, "width"), h = attrNum(tag, "height");
+  return w === null || h === null ? null : { minX: x, minY: y, maxX: x + w, maxY: y + h };
+}
+
+// Every shape in the file whose paint is a pattern (or any other paint server),
+// with the AREA it asks the renderer to tile.
+//
+// Broadened past `<rect ...fill="url(#` on review A's finding 4: single quotes,
+// `style="fill:url(#…)"`, and <circle>/<ellipse>/<polygon>/<polyline> were all
+// invisible to the aggregate rule. <path> stays excluded on purpose — a pattern
+// on a path costs the shape it actually inks, which is the map, not a defect.
+export function patternFilledShapes(svg) {
+  const out = [];
+  for (const m of svg.matchAll(/<(rect|circle|ellipse|polygon|polyline)\b[^>]*>/g)) {
+    const tag = m[0];
+    const paint = /\sfill=["']url\(#/.test(tag) || /\sstyle=["'][^"']*\bfill\s*:\s*url\(#/.test(tag);
+    if (!paint) continue;
+    const clipId =
+      /\sclip-path=["']url\(#([^)"']+)\)["']/.exec(tag)?.[1] ??
+      /\sstyle=["'][^"']*\bclip-path\s*:\s*url\(#([^)"']+)\)/.exec(tag)?.[1] ??
+      null;
+    const kind = m[1];
+    let area = null;
+    if (kind === "rect") {
+      const w = attrNum(tag, "width"), h = attrNum(tag, "height");
+      if (w !== null && h !== null) area = w * h;
+    } else if (kind === "circle") {
+      const r = attrNum(tag, "r");
+      // The BOUNDING BOX, not pi*r^2: what a renderer tiles is the box, and a
+      // gate on this file may not reach for a transcendental.
+      if (r !== null) area = 4 * r * r;
+    } else if (kind === "ellipse") {
+      const rx = attrNum(tag, "rx"), ry = attrNum(tag, "ry");
+      if (rx !== null && ry !== null) area = 4 * rx * ry;
+    } else {
+      const pts = /\spoints=["']([^"']+)["']/.exec(tag)?.[1];
+      const nums = pts ? pts.match(/-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?/g) : null;
+      if (nums && nums.length >= 4 && nums.length % 2 === 0) {
+        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (let i = 0; i < nums.length; i += 2) {
+          const x = Number(nums[i]), y = Number(nums[i + 1]);
+          x0 = Math.min(x0, x); x1 = Math.max(x1, x);
+          y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+        }
+        area = (x1 - x0) * (y1 - y0);
+      }
+    }
+    if (area === null || !Number.isFinite(area)) continue;
+    out.push({ tag: kind, area, clipId });
+  }
+  return out;
+}
+
 // Private: reads one sheet's text and answers a ratio. The pattern area is
 // summed FIRST, so a file with no pattern-filled rect scores 0 without its
 // canvas ever being needed — the soft-skip discipline this repo runs on, and
@@ -2837,15 +2979,12 @@ function gWorldSheetPatternArea({ mapsDir, svgs, budgets, fail }) {
 // demanded only when there is something to divide, where being unable to read
 // it is a real measurement failure rather than an absent subject.
 function patternRectAreaRatio(svg) {
+  // Review A finding 4, second half: this read `<rect ...fill="url(#` and
+  // nothing else, so a pattern on a <circle>, an <ellipse>, a <polygon>, or
+  // written with single quotes or as style="fill:url(#…)" was invisible to the
+  // cap. patternFilledShapes() sees all of them.
   let total = 0;
-  for (const m of svg.matchAll(/<rect\b[^>]*>/g)) {
-    const tag = m[0];
-    if (!/fill="url\(#/.test(tag)) continue;
-    const w = /\swidth="([-\d.]+)"/.exec(tag);
-    const h = /\sheight="([-\d.]+)"/.exec(tag);
-    if (!w || !h) continue;
-    total += Number(w[1]) * Number(h[1]);
-  }
+  for (const s of patternFilledShapes(svg)) total += s.area;
   if (total === 0) return 0;
   const head = /<svg\b[^>]*?\swidth="([\d.]+)"[^>]*?\sheight="([\d.]+)"/.exec(svg);
   if (!head) return null;

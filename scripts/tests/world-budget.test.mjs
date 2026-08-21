@@ -206,6 +206,9 @@ test("budgets.json pins cellKm and the landform + sheet caps", () => {
     // Plan B Task 12: the structural companion to maxSvgBytes. Bytes were the
     // only guard and they guarded nothing — 47 KB of sheet, 11.31 s of raster.
     maxPatternRectAreaRatio: 1.5,
+    // F-047 seam-4 fix pass: the DIRECT half. The aggregate above passes a
+    // two-zone regression (0.397 + 2 x 0.49 = 1.38); this fires on the first.
+    maxPatternRectClipRatio: 3,
     rasterWidthPx: 2000,
     thumbWidthPx: 512,
     maxThumbBytes: 393216,
@@ -309,6 +312,120 @@ test("G-SHEET-BUDGET red, not a throw: budgets.json sheets has no maxPatternRect
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, /G-SHEET-BUDGET: world\/budgets\.json sheets has no numeric maxPatternRectAreaRatio/);
+  assert.doesNotMatch(r.out, /check-content: \w*Error/);
+  drop();
+});
+
+// ── G-SHEET-BUDGET's DIRECT half (F-047 seam-4 fix pass) ──────────────────
+//
+// THE POSITIVE CONTROL IS THE HOLE IN THE AGGREGATE RULE. Reviewer A measured
+// it: cluster1's real pattern area is 0.397x its canvas, one full-frame rect
+// adds 0.49, so TWO regressed zones score 1.38 and PASS the 1.5 cap. The
+// fixture below is exactly that shape — a sheet whose aggregate is comfortably
+// inside the cap and which has nonetheless gone back to painting the frame.
+const withClip = (id, d) => `<clipPath id="${id}"><path d="${d}"/></clipPath>`;
+
+test("G-SHEET-BUDGET: ONE regressed zone is caught, at an aggregate the old cap PASSES", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  // 1000x1000 canvas; one 120x120 zone painted with a full-frame rect.
+  const svg =
+    `<svg ${FRAME}><defs>${withClip("z0", "M10,10 L130,10 L130,130 L10,130 Z")}</defs>` +
+    `<rect x="0" y="0" width="1000" height="1000" fill="url(#pRim)" clip-path="url(#z0)"/></svg>`;
+  writeFileSync(join(maps, "one-regressed.svg"), svg);
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  // The aggregate rule sees 1.00x and is HAPPY. That is the finding.
+  assert.match(r.out, /^world-budget: sheet pattern-rect area 1\.00x canvas worst/m);
+  assert.doesNotMatch(r.out, /pattern-filled rects cover .* > budget 1\.5/);
+  // The direct rule is what fires.
+  assert.match(
+    r.out,
+    /G-SHEET-BUDGET: sheet one-regressed\.svg <rect> fill clipped to #z0 covers 69\.44x that clip's own box > budget 3/,
+  );
+  assert.doesNotMatch(r.out, /check-content: \w*Error/);
+  drop();
+});
+
+test("G-SHEET-BUDGET: the same fill BOUNDED to its clip passes both halves", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  const svg =
+    `<svg ${FRAME}><defs>${withClip("z0", "M10,10 L130,10 L130,130 L10,130 Z")}</defs>` +
+    `<rect x="8" y="8" width="124" height="124" fill="url(#pRim)" clip-path="url(#z0)"/></svg>`;
+  writeFileSync(join(maps, "bounded-one.svg"), svg);
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /^world-budget: pattern fill vs its own clip 1\.0\dx worst \(bounded-one\.svg z0\)/m);
+  drop();
+});
+
+test("G-SHEET-BUDGET: an UNCLIPPED pattern fill is exempt — it is not hiding anything", () => {
+  // The atlas legend draws 14 x 960 px^2 swatches and the canary 25 x 216 px^2,
+  // all unclipped. A rule that policed those would be measuring the legend.
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  writeFileSync(
+    join(maps, "legend.svg"),
+    `<svg ${FRAME}><rect x="5" y="5" width="40" height="24" fill="url(#pRim)"/></svg>`,
+  );
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /pattern fill vs its own clip 0\.00x worst \(none\) over 0 clipped fill\(s\), 0 unresolved/);
+  drop();
+});
+
+test("G-SHEET-BUDGET: a clip the gate cannot resolve is COUNTED, not failed", () => {
+  // The aggregate rule still sees the shape; hard-failing here would police the
+  // fixtures above, which name clip ids they never define.
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  writeFileSync(join(maps, "dangling.svg"), `<svg ${FRAME}>${fullFrameRect("nowhere")}</svg>`);
+  const r = runGate(contentRoot);
+  assert.match(r.out, /pattern fill vs its own clip 0\.00x worst \(none\) over 0 clipped fill\(s\), 1 unresolved/);
+  // the aggregate rule still MEASURES it — the shape is not invisible, only
+  // exempt from the per-clip ratio
+  assert.match(r.out, /^world-budget: sheet pattern-rect area 1\.00x canvas worst \(dangling\.svg\)/m);
+  assert.equal(r.code, 0, r.out);
+  drop();
+});
+
+// Review A finding 4, second half: the aggregate rule read `<rect ...
+// fill="url(#` and NOTHING else. Each shape below was invisible to it.
+test("G-SHEET-BUDGET sees pattern fills the old regex could not: shapes and quoting", () => {
+  const cases = [
+    ['<circle cx="500" cy="500" r="500" fill="url(#pRim)"/>', "circle"],
+    ['<ellipse cx="500" cy="500" rx="500" ry="500" fill="url(#pRim)"/>', "ellipse"],
+    ['<polygon points="0,0 1000,0 1000,1000 0,1000" fill="url(#pRim)"/>', "polygon"],
+    [`<rect x="0" y="0" width="1000" height="1000" fill='url(#pRim)'/>`, "single quotes"],
+    ['<rect x="0" y="0" width="1000" height="1000" style="fill:url(#pRim)"/>', "style fill"],
+  ];
+  for (const [shape, label] of cases) {
+    const { base, contentRoot, drop } = tmpRoot();
+    const maps = join(base, "game-client/assets/art/maps");
+    mkdirSync(maps, { recursive: true });
+    // Two of them: one alone is 1.00x and inside the 1.5 cap.
+    writeFileSync(join(maps, "hidden.svg"), `<svg ${FRAME}>${shape}${shape}</svg>`);
+    const r = runGate(contentRoot);
+    assert.equal(r.code, 1, `${label}: ${r.out}`);
+    assert.match(r.out, /G-SHEET-BUDGET: sheet hidden\.svg pattern-filled rects cover 2\.00x/, label);
+    drop();
+  }
+});
+
+test("G-SHEET-BUDGET red, not a throw: budgets.json sheets has no maxPatternRectClipRatio", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  mkdirSync(join(base, "game-client/assets/art/maps"), { recursive: true });
+  const b = structuredClone(BUDGETS);
+  delete b.sheets.maxPatternRectClipRatio;
+  writeJson(join(contentRoot, "world/budgets.json"), b);
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-SHEET-BUDGET: world\/budgets\.json sheets has no numeric maxPatternRectClipRatio/);
   assert.doesNotMatch(r.out, /check-content: \w*Error/);
   drop();
 });
