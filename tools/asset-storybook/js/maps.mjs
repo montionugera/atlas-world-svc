@@ -6,6 +6,7 @@ import {
 } from "./state.mjs";
 import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
 import { buildSidebarItem } from "./sidebar.mjs";
+import { mountVocabulary } from "./maps-vocabulary.mjs";
 
 /**
  * The Maps tab (F-044): every mapforge sheet (tools/mapforge/render-sheet.mjs
@@ -365,6 +366,13 @@ export async function mountMaps(main) {
   }
 
   section.appendChild(grid);
+
+  // Plan B Task 11 — the ink and glyph reference, below the sheets. Awaited
+  // so the section is complete before it is appended, but mountVocabulary
+  // never rejects: a missing lexicon or an unreachable tools/mapforge/lib/
+  // removes the PANEL, not the tab.
+  await mountVocabulary(section);
+
   main.appendChild(section);
 }
 

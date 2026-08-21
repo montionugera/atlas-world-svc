@@ -14,6 +14,7 @@
 !content/asset-taxonomy.json
 !content/review-queue.json
 !content/world/**
+!tools/mapforge/lib/**
 !tools/story-explorer/**
 !docs/story/undertow/**
 !k8s/local/storybook-nginx.conf
