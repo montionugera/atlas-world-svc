@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1614" height="1396" viewBox="0 0 1614 1396" role="img" aria-label="Cluster 1 — the Meltwash basin — a Bellfaith relay map">
 <title>Cluster 1 — the Meltwash basin — a Bellfaith relay map</title>
-<desc>Authored vector map drawn from content/maps/cluster1-geography.json by tools/mapforge/render-map.mjs. Not a generated image.</desc>
+<desc>Authored vector map drawn from content/spine/ by tools/mapforge/render-sheet.mjs. Not a generated image.</desc>
 <defs>
 <pattern id="pIce" width="26" height="13" patternUnits="userSpaceOnUse"><path d="M0,4 h11 M15,4 h9 M4,9.5 h13 M20,9.5 h6" stroke="#8a7f6c" stroke-width="0.9" fill="none"/></pattern>
 <pattern id="pUpland" width="18" height="14" patternUnits="userSpaceOnUse"><path d="M2,10 l4,-6 l4,6 M11,13 l3,-4.5 l3,4.5" stroke="#8a7f6c" stroke-width="0.9" fill="none"/></pattern>
@@ -38,17 +38,17 @@
 <path d="M237.24,104.33 C232.95,114.99 219.03,142.66 211.54,168.28 C204.06,193.91 197.7,225.79 192.33,258.09 C186.97,290.39 182.6,327.28 179.34,362.09 C176.09,396.91 174.99,431.92 172.8,467 C170.61,502.08 168.39,537.52 166.2,572.6 C164,607.68 160.72,642.66 159.63,677.5 C158.53,712.34 158.54,749.06 159.63,781.65 C160.72,814.25 163.98,844.18 166.17,873.08 C168.37,901.97 174.04,929.53 172.82,955.02 C171.59,980.51 164.58,1004.99 158.82,1026.01 C153.06,1047.03 144.82,1064.67 138.24,1081.13 C131.65,1097.6 123.44,1110.13 119.28,1124.78 C115.12,1139.43 111.53,1154.4 113.27,1169.02 C115,1183.63 121.37,1199.68 129.68,1212.47 C137.98,1225.25 147.35,1235.09 163.11,1245.71 C178.88,1256.33 199.09,1266.84 224.28,1276.19 C249.47,1285.54 284.23,1294.33 314.24,1301.83 C344.26,1309.33 374.21,1316.89 404.37,1321.19 C434.53,1325.48 480.06,1326.55 495.2,1327.62"/>
 <path d="M250.72,109.73 C246.51,120.16 232.82,147.22 225.48,172.35 C218.14,197.47 211.94,228.63 206.66,260.48 C201.38,292.33 197.03,328.88 193.8,363.45 C190.57,398.02 189.47,432.9 187.29,467.91 C185.1,502.91 182.88,538.5 180.69,573.51 C178.5,608.51 175.23,643.34 174.14,677.95 C173.05,712.56 173.05,748.83 174.14,781.17 C175.22,813.5 178.45,842.88 180.65,871.97 C182.85,901.05 188.63,929.36 187.32,955.68 C186.02,982 178.75,1008.08 172.81,1029.89 C166.88,1051.7 158.3,1070.09 151.72,1086.53 C145.13,1102.97 137.32,1115.08 133.31,1128.52 C129.31,1141.97 126.24,1154.53 127.67,1167.22 C129.1,1179.9 134.61,1193.53 141.89,1204.61 C149.17,1215.7 156.76,1224.08 171.34,1233.74 C185.92,1243.41 204.97,1253.59 229.38,1262.59 C253.78,1271.59 288.26,1280.37 317.76,1287.74 C347.27,1295.11 376.68,1302.58 406.43,1306.81 C436.17,1311.04 481.27,1312.08 496.23,1313.13"/>
 </g>
-<rect x="58" y="96" width="990" height="1254" fill="url(#pUpland)" clip-path="url(#clip-eastern-hills)" opacity="0.8"/>
-<rect x="58" y="96" width="990" height="1254" fill="url(#pRiver)" clip-path="url(#clip-meltwash-terrace)" opacity="0.8"/>
-<rect x="58" y="96" width="990" height="1254" fill="url(#pRiver)" clip-path="url(#clip-millcross-ford)" opacity="0.8"/>
-<rect x="58" y="96" width="990" height="1254" fill="url(#pRiver)" clip-path="url(#clip-rooktide-reach)" opacity="0.8"/>
-<rect x="58" y="96" width="990" height="1254" fill="url(#pBramble)" clip-path="url(#clip-thornveil)" opacity="0.8"/>
-<rect x="58" y="96" width="990" height="1254" fill="url(#pRim)" clip-path="url(#clip-emberdown)" opacity="0.8"/>
-<rect x="58" y="96" width="990" height="1254" fill="url(#pRock)" clip-path="url(#clip-gildmark-head)" opacity="0.8"/>
-<rect x="58" y="96" width="990" height="1254" fill="url(#pRim)" clip-path="url(#clip-hollowmarch)" opacity="0.8"/>
-<rect x="58" y="96" width="990" height="1254" fill="url(#pFlat)" clip-path="url(#clip-ashvale-front)" opacity="0.8"/>
-<rect x="58" y="96" width="990" height="1254" fill="url(#pIce)" clip-path="url(#clip-northern-icefield)" opacity="0.8"/>
-<rect x="58" y="96" width="990" height="1254" fill="url(#pUpland)" clip-path="url(#clip-cindervast)" opacity="0.8"/>
+<rect x="795" y="422" width="253" height="379" fill="url(#pUpland)" clip-path="url(#clip-eastern-hills)" opacity="0.8"/>
+<rect x="619" y="608" width="198" height="209" fill="url(#pRiver)" clip-path="url(#clip-meltwash-terrace)" opacity="0.8"/>
+<rect x="524" y="789" width="200" height="223" fill="url(#pRiver)" clip-path="url(#clip-millcross-ford)" opacity="0.8"/>
+<rect x="486" y="995" width="237" height="271" fill="url(#pRiver)" clip-path="url(#clip-rooktide-reach)" opacity="0.8"/>
+<rect x="727" y="775" width="277" height="377" fill="url(#pBramble)" clip-path="url(#clip-thornveil)" opacity="0.8"/>
+<rect x="199" y="599" width="224" height="241" fill="url(#pRim)" clip-path="url(#clip-emberdown)" opacity="0.8"/>
+<rect x="58" y="1010" width="206" height="241" fill="url(#pRock)" clip-path="url(#clip-gildmark-head)" opacity="0.8"/>
+<rect x="504" y="523" width="129" height="278" fill="url(#pRim)" clip-path="url(#clip-hollowmarch)" opacity="0.8"/>
+<rect x="327" y="360" width="251" height="377" fill="url(#pFlat)" clip-path="url(#clip-ashvale-front)" opacity="0.8"/>
+<rect x="438" y="96" width="605" height="261" fill="url(#pIce)" clip-path="url(#clip-northern-icefield)" opacity="0.8"/>
+<rect x="213" y="96" width="238" height="244" fill="url(#pUpland)" clip-path="url(#clip-cindervast)" opacity="0.8"/>
 <text class="lbl" x="916" y="597.6" text-anchor="middle" font-size="13" font-style="italic" letter-spacing="1.2" fill="#5d5344">the eastern hills</text>
 <g clip-path="url(#clip-ashvale-front)" stroke="#5d5344" stroke-width="1" opacity="0.85">
 <path d="M322,610.8 v9.9"/>
@@ -221,7 +221,7 @@
 <path d="M236.2,96 C256.66,89.4 406.48,86.76 427.6,96 C448.72,105.24 448.72,167.94 447.4,188.4 C446.08,208.86 426.94,286.08 414.4,300.6 C401.86,315.12 340.48,337.56 322,333.6 C303.52,329.64 239.5,278.16 229.6,261 C219.7,243.84 222.34,178.5 223,162 C223.66,145.5 215.74,102.6 236.2,96 Z"/>
 </g>
 <path d="M117.4,1231.2 C122.35,1223.77 169.38,1209.75 190,1204.8 C210.63,1199.85 259.3,1191.6 282.4,1191.6 C305.5,1191.6 351.7,1204.8 374.8,1204.8 C397.9,1204.8 445.75,1189.95 467.2,1191.6 C488.65,1193.25 526.6,1209.75 546.4,1218 C566.2,1226.25 614.05,1244.4 625.6,1257.6 C637.15,1270.8 652,1312.05 638.8,1323.6 C625.6,1335.15 549.7,1347.53 520,1350 C490.3,1352.48 427.6,1346.7 401.2,1343.4 C374.8,1340.1 331.9,1329.38 308.8,1323.6 C285.7,1317.83 236.2,1304.63 216.4,1297.2 C196.6,1289.77 162.77,1272.45 150.4,1264.2 C138.02,1255.95 112.45,1238.63 117.4,1231.2 Z" fill="#dcd0b0" stroke="#5d5344" stroke-width="1.2" stroke-dasharray="3 3"/>
-<rect x="58" y="96" width="990" height="1254" fill="url(#pMire)" clip-path="url(#clip-saltmire)"/>
+<rect x="110" y="1187" width="544" height="163" fill="url(#pMire)" clip-path="url(#clip-saltmire)"/>
 <path d="M744.4,320.4 C742.2,329.2 735.6,355.6 731.2,373.2 C726.8,390.8 722.4,406.2 718,426 C713.6,445.8 707,481 704.8,492" fill="none" stroke="#241f18" stroke-width="1.4" stroke-linecap="round"/>
 <path d="M731.2,373.2 C729,382 722.4,406.2 718,426 C713.6,445.8 709.2,470 704.8,492 C700.4,514 696,533.8 691.6,558 C687.2,582.2 682.8,610.8 678.4,637.2 C674,663.6 669.6,690 665.2,716.4 C660.8,742.8 658.6,769.2 652,795.6 C645.4,822 627.8,850.6 625.6,874.8 C623.4,899 636.6,929.8 638.8,940.8" fill="none" stroke="#241f18" stroke-width="2.4" stroke-linecap="round"/>
 <path d="M652,795.6 C647.6,808.8 627.8,850.6 625.6,874.8 C623.4,899 635.5,916.6 638.8,940.8 C642.1,965 645.4,993.6 645.4,1020 C645.4,1046.4 642.1,1073.9 638.8,1099.2 C635.5,1124.5 630,1147.6 625.6,1171.8 C621.2,1196 625.6,1230.1 612.4,1244.4 C599.2,1258.7 557.4,1255.4 546.4,1257.6" fill="none" stroke="#241f18" stroke-width="3.6" stroke-linecap="round"/>
@@ -375,7 +375,7 @@
 <path d="M1110,541.4 L1111.1,534.8 L1114.1,534.8 L1115.2,541.4 Z" fill="#a86f22"/><path d="M1109,534.8 h7.2" stroke="#a86f22" stroke-width="1.4"/><path d="M1086,538 h20 M1119,538 h23" stroke="#c8933f" stroke-width="1.1" stroke-dasharray="2 4"/>
 <text x="1160" y="542" font-size="13" fill="#241f18">a relay tower and its sight-line</text>
 <text x="1160" y="557" font-size="11.5" font-style="italic" fill="#8a7f6c">the Bellfaith's chain — this sheet's subject</text>
-<text x="1082" y="583" font-size="12" letter-spacing="2" fill="#5d5344">SIX FILLS · NO CONTOURS</text>
+<text x="1082" y="583" font-size="12" letter-spacing="2" fill="#5d5344">FILLS · NO CONTOURS</text>
 <rect x="1082" y="599" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
 <rect x="1082" y="599" width="40" height="24" fill="url(#pIce)"/>
 <text x="1130" y="615" font-size="12.5" fill="#241f18">ice shelf</text>
@@ -421,6 +421,6 @@
 <text x="1082" y="1018" font-size="12" fill="#5d5344">·  the pass behind Cindervast</text>
 <text x="1082" y="1035" font-size="12" fill="#5d5344">·  the sea beyond a day's sail</text>
 <text x="1082" y="1052" font-size="12" fill="#5d5344">·  villages — there are none named anywhere in the corpus</text>
-<text x="1082" y="1334" font-size="11" font-style="italic" fill="#8a7f6c">drawn from content/maps/cluster1-geography.json</text>
-<text x="1082" y="1350" font-size="11" font-style="italic" fill="#8a7f6c">by tools/mapforge/render-map.mjs — authored vector, not generated</text>
+<text x="1082" y="1334" font-size="11" font-style="italic" fill="#8a7f6c">drawn from content/spine/</text>
+<text x="1082" y="1350" font-size="11" font-style="italic" fill="#8a7f6c">by tools/mapforge/render-sheet.mjs — authored vector, not generated</text>
 </svg>

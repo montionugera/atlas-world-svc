@@ -29,6 +29,20 @@ import {
 // spawned it. It now ends in an `import.meta.url` entry guard and exports
 // `runSpineGateInProcess`, so `--only=spine` fixture runs are in-process.
 // The full sweep still spawns (see that export's header for why).
+// Plan B Task 4: the ONE producer of content/spine/derived.json's bytes, so
+// G-DERIVED-DRIFT compares against exactly what --write would put on disk.
+// No cycle: check_spine_emit.mjs imports only lib/spine.mjs + lib/places.mjs,
+// never this file, and both modules end in an `import.meta.url` entry guard
+// so importing either runs no main().
+import { derivedSidecar } from "./check_spine_emit.mjs";
+// F-047 seam-4 fix: the ink floor. Decodes committed PNG bytes; no rendering
+// library, so it runs in CI, which has none. See tools/mapforge/lib/png-ink.mjs
+// for why node:zlib is allowed on a DECOMPRESS path and banned on the
+// committed-byte COMPRESS path.
+import { inkStats } from "../tools/mapforge/lib/png-ink.mjs";
+// The same superset-bounds reader the sheet builders use, so the gate's idea
+// of "the shape this fill is clipped to" cannot drift from the emitter's.
+import { pathBounds } from "../tools/mapforge/lib/draft.mjs";
 import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -1750,6 +1764,68 @@ function checkSpine(opts, mobTypes) {
   const spine = loadSpine({ contentRoot: opts.contentRoot });
   for (const e of spine.errors) fail(`spine: ${e}`);
 
+  // Plan B Task 3 — G-EDGE-SCHEMA. content/spine/edges.json carried 20 edges
+  // and no schema until now, and gSpineNet read it raw. Validation is SHAPE
+  // only (G-NET owns endpoint resolution, G-CANON-LEG owns the distances), and
+  // it runs HERE, above every consumer, so a malformed edge earns a shape
+  // failure naming its index instead of an obscure G-NET one.
+  //
+  // TWO soft-skips, both load-bearing, both measured rather than assumed:
+  //
+  //  1. NO EDGES. loadSpine returns [] for a content root with no edges.json
+  //     and all 30 fixture roots under scripts/tests/fixtures/spine have none,
+  //     so an empty list must not compile the schema at all.
+  //  2. NO SCHEMA. The plan's Step 4 text says a missing schema file should be
+  //     one clean `fail`. That is WRONG against this tree and was corrected
+  //     here: two live callers build a content root that HAS edges.json and
+  //     copies only spine-node.schema.json — spine-gates.test.mjs's
+  //     p4FixtureRoot (:803, cpSync of the whole content/spine) and
+  //     tools/mapforge/gen-world.mjs (:158 writes edges.json, :118 copies just
+  //     the node schema). Failing on the absent file reds both, and neither is
+  //     this task's to edit. So an absent schema skips, exactly as checkSpine's
+  //     own header skips before compiling on a missing spine/ dir. The real
+  //     content root's wiring is held live by edges-schema.test.mjs's
+  //     gate-level tests, which run the gate against a copy of content/.
+  //
+  // NEVER THROWS (the gate-function contract): compileSchema returns null on an
+  // unreadable file, ajv's compile() throws on a structurally invalid schema and
+  // a validator can throw on an exotic document — all three are caught and land
+  // as in-band failures, because an uncaught throw here would skip finish() and
+  // silently drop every failure recorded before it.
+  //
+  // Schema-invalid edges are FILTERED OUT of validEdges, mirroring validNodes
+  // below. Before this, an edge with no `to` crashed gSpineNet's rootPoint with
+  // an uncaught TypeError — a fail line plus a crash is strictly worse than a
+  // fail line, since the crash takes the rest of the report with it.
+  let validEdges = spine.edges;
+  const edgeSchemaPath = join(opts.contentRoot, "schemas/spine-edge.schema.json");
+  if (spine.edges.length && existsSync(edgeSchemaPath)) {
+    let validateEdge = null;
+    try {
+      validateEdge = compileSchema(edgeSchemaPath, "spine-edge schema", fail);
+    } catch (e) {
+      fail(`spine-edge schema: cannot compile ${edgeSchemaPath}: ${e.message}`);
+    }
+    if (validateEdge) {
+      validEdges = [];
+      spine.edges.forEach((edge, i) => {
+        let ok = false;
+        try {
+          ok = validateEdge(edge);
+        } catch (e) {
+          fail(`G-EDGE-SCHEMA: spine/edges.json[${i}]: validator error: ${e.message}`);
+          return;
+        }
+        if (!ok) {
+          for (const err of validateEdge.errors)
+            fail(`G-EDGE-SCHEMA: spine/edges.json[${i}] (${edge?.id ?? "?"}): ${err.instancePath || "/"} ${err.message}`);
+          return; // downstream gates assume a valid shape
+        }
+        validEdges.push(edge);
+      });
+    }
+  }
+
   // F-041 P3: the town plans, SCHEMA-VALIDATED (loadTownPlans owns the read,
   // the schema and the FAIL lines; memoised, so a full sweep shares one read
   // with checkTownPlan and `--only=spine` — which never runs checkTownPlan —
@@ -1776,7 +1852,18 @@ function checkSpine(opts, mobTypes) {
 
   for (const node of spine.nodes) {
     const label = `spine/nodes/${node.file}`;
-    if (!validate(node)) {
+    // Plan B Task 3 review — validate the DOCUMENT, not the loader's copy of
+    // it. loadSpine (lib/spine.mjs:220) pushes `{ ...doc, file }`, so a closed
+    // root would fail all 44 nodes on `must NOT have additional properties`
+    // unless `file` were either enumerated in the schema or stripped here.
+    // Stripped, because spine-node.schema.json is the contract on the FILE on
+    // disk: enumerating a key no committed node may carry would make a node
+    // that really does carry `file` schema-valid, and loadSpine's spread then
+    // silently overwrites the authored value with the real stem. Same move,
+    // same reason, as check_spine_emit.mjs:55. `node.file` itself is untouched
+    // and G-ID still reads it two lines below.
+    const { file: _loaderStem, ...doc } = node;
+    if (!validate(doc)) {
       for (const err of validate.errors) fail(`${label}: schema ${err.instancePath || "/"} ${err.message}`);
       continue; // downstream gates assume a valid shape
     }
@@ -1911,16 +1998,25 @@ function checkSpine(opts, mobTypes) {
   // G-FRAME's reversed town arrow and G-DERIVED-DRIFT's rollupVerdict.
   gSpineFrames({ nodes: validNodes, tree, plans: townPlans, fail });
 
+  // Plan B Task 4: G-DERIVED-DRIFT, hoisted out of gSpineFrames' per-node
+  // loop into one whole-file comparison against content/spine/derived.json.
+  gSpineDerived({ tree, plans: townPlans, contentRoot: opts.contentRoot, fail });
+
   // F-041 Phase 1 Task 1.8: G-FROZEN lands BEFORE G-NET/G-CANON-LEG — the
   // leg gate's both-endpoints-frozen dependency means nothing without it.
-  // Same validNodes discipline; edges have no schema so spine.edges is
-  // passed through as-is (nothing to filter against).
+  // Same validNodes discipline, and since Plan B Task 3 the same for edges:
+  // validEdges is spine.edges filtered by G-EDGE-SCHEMA above (and, on a root
+  // with no edge schema to compile, spine.edges itself).
   gSpineFrozen({ nodes: validNodes, tree, fail });
-  gSpineNet({ nodes: validNodes, edges: spine.edges, tree, fail });
+  gSpineNet({ nodes: validNodes, edges: validEdges, tree, fail });
 
   // F-041 Phase 1 Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT. Both PRINT on
   // every run that reaches this point (spine/ present, schema compiles).
   gSpineBudgets({ spine, tree, plans: townPlans, contentRoot: opts.contentRoot, fail });
+
+  // Plan B Task 5: G-LANDFORM + G-SHEET-BUDGET, reading content/world/. Placed
+  // immediately after gSpineBudgets so the four budget lines print together.
+  gSpineWorld({ tree, contentRoot: opts.contentRoot, fail, warn, requireComplete: opts.requireComplete });
 
   // F-041 Phase 1 Task 1.11 reported this as WARN until the two authoring
   // debts (8 measured overlap pairs, the n-cluster1 union identity) were
@@ -2166,15 +2262,77 @@ function gSpineFrames({ nodes, tree, plans, fail }) {
         }
       }
     }
-    // G-DERIVED-DRIFT: recomputation reproduces the committed block.
-    if (tree.depthOf.has(node.id) && !eq(node.derived, deriveNode({ tree, id: node.id, plans })))
-      fail(`spine: G-DERIVED-DRIFT ${node.id}: committed derived block does not match recomputation`);
+    // Plan B Task 4: G-DERIVED-DRIFT used to live here, as 44 per-node
+    // comparisons against an inline `derived` block. The block now lives in
+    // content/spine/derived.json and the rule is gSpineDerived() below —
+    // ONE whole-file byte comparison.
     // G-PROVENANCE: generated ⇒ pinned generator. (Reproduce-check activates
     // with the first real generator; none exists in 1.8.)
     const p = node.provenance;
     if (p && p.authored === "generated" && (!p.generator || typeof p.generator.name !== "string" || typeof p.generator.version !== "string"))
       fail(`spine: G-PROVENANCE ${node.id}: authored "generated" requires generator {name, version}`);
   }
+}
+
+// Plan B Task 4 — G-DERIVED-DRIFT, now ONE whole-file comparison against
+// content/spine/derived.json instead of 44 per-node byte comparisons.
+//
+// Skipped entirely when the tree has errors, because check_spine_emit's
+// collectOutputs bails on tree.errors before writing ANY output — so on a
+// cyclic or dangling tree the sidecar legitimately does not exist and the
+// G-TREE failure is the honest one to report. Recomputing here would also
+// hang: deriveNode -> composeToRoot walks the ancestor chain to root.
+//
+// COVERAGE COST OF THAT BAIL, recorded rather than left implicit (seam-2
+// migration review MINOR-3): at plan-b-base the per-node rule still ran for
+// every tree.depthOf node, so a cyclic tree reported its G-TREE failure AND
+// one G-DERIVED-DRIFT line (the g-tree-cycle fixture: 13 failures at base,
+// 12 here — the missing one is exactly that). A corrupt sidecar plus an
+// unrelated tree error therefore now yields no drift signal where it once
+// yielded one. That is a deliberate trade: the run is already red for the
+// honest reason, and the alternative is a hang, not a better message.
+//
+// A checksum says THAT something changed, not WHAT — so the remedy is in the
+// message, and `node scripts/check_spine_emit.mjs --write` regenerates it.
+// Both id-set diffs are reported (stale AND missing) rather than the first
+// one found: a rename produces one of each and naming only half of it sends
+// the reader looking for a deletion that never happened; and a pure VALUE
+// change (both id sets equal) names the ids whose blocks moved, so the
+// whole-file comparison keeps the per-node diagnosability it replaced.
+function gSpineDerived({ tree, plans, contentRoot, fail }) {
+  if (tree.errors.length) return;
+  const path = join(contentRoot, "spine/derived.json");
+  if (!existsSync(path)) {
+    fail("spine: G-DERIVED-DRIFT: content/spine/derived.json is missing — run `node scripts/check_spine_emit.mjs --write`");
+    return;
+  }
+  let committed;
+  try { committed = readFileSync(path, "utf8"); }
+  catch (e) { fail(`spine: G-DERIVED-DRIFT: content/spine/derived.json is unreadable: ${e.message}`); return; }
+  const recomputed = derivedSidecar({ tree, plans });
+  if (committed === recomputed) return;
+  // The id-set diff is a COURTESY on top of the byte comparison, so a sidecar
+  // that is not parseable JSON must still produce the drift line rather than
+  // an uncaught throw (a throw here skips finish() and drops every failure
+  // recorded before it — the rule this whole file is built around).
+  let extra = "";
+  try {
+    const cDoc = JSON.parse(committed), rDoc = JSON.parse(recomputed);
+    const cIds = Object.keys(cDoc), rIds = Object.keys(rDoc);
+    const stale = cIds.filter((i) => !rIds.includes(i));
+    const missing = rIds.filter((i) => !cIds.includes(i));
+    if (stale.length) extra += ` — stale ids: ${stale.join(", ")}`;
+    if (missing.length) extra += ` — missing ids: ${missing.join(", ")}`;
+    // The VALUE case: both id sets match and only numbers moved. "differs"
+    // alone leaves the operator diffing a 44-entry file by hand, so name the
+    // blocks that actually changed. Capped at 5 + a count because a rescale
+    // moves every one of them and a 44-id list is not a diagnosis.
+    const changed = rIds.filter((i) => cIds.includes(i) && JSON.stringify(cDoc[i]) !== JSON.stringify(rDoc[i]));
+    if (changed.length)
+      extra += ` — changed ids: ${changed.slice(0, 5).join(", ")}${changed.length > 5 ? ` (+${changed.length - 5} more)` : ""}`;
+  } catch { extra = " — and is not parseable JSON"; }
+  fail("spine: G-DERIVED-DRIFT: content/spine/derived.json differs from the recomputed block" +
+    extra + " — run `node scripts/check_spine_emit.mjs --write`");
 }
 
 // F-041 Phase 1 Task 1.8: G-FROZEN — transitive freeze + byte-checked
@@ -2220,8 +2378,10 @@ function gSpineFrozen({ nodes, tree, fail }) {
 
 // F-041 Phase 1 Task 1.8: G-NET (endpoint resolution + road-end proximity)
 // and G-CANON-LEG (±8% straight-line + frozen endpoints + relay hop ≤ 10).
-// `edges` is spine.edges — edges have no schema to validate against, unlike
-// nodes, so there is no "validEdges" list to filter through.
+// `edges` is checkSpine's validEdges — the G-EDGE-SCHEMA-validated list, the
+// same discipline as validNodes. Before Plan B Task 3 there was no edge schema
+// and spine.edges was passed raw, which is why rootPoint below could be handed
+// an edge with no `to` and crash on `ref.node` instead of reporting.
 function gSpineNet({ nodes, edges, tree, fail }) {
   const featOwner = new Map(); // feature id -> owning node
   for (const n of nodes) for (const f of n.features ?? []) featOwner.set(f.id, n);
@@ -2393,6 +2553,518 @@ function gSpineBudgets({ spine, tree, plans, contentRoot, fail }) {
     fail(`spine: G-COMP-REPORT: spine/coverage-budget.json is missing`);
   else if (totals.UNCHECKED > spine.budgets.coverage.maxUnchecked)
     fail(`spine: G-COMP-REPORT: ${totals.UNCHECKED} UNCHECKED nodes > budget ${spine.budgets.coverage.maxUnchecked}`);
+}
+
+// Plan B Task 5 — G-LANDFORM + G-SHEET-BUDGET.
+//
+// OWNERSHIP: G-WORLD-BUDGET is Plan C's gate. It owns content/world/
+// budgets.json's existence, the fabric/civil families, and the contract-pinned
+// `world-budget: <family> <n> files, <n> bytes (budget <n>, <n>)` line. This
+// gate reads two SECTIONS of the same file and reports under its own ids, so
+// the two never double-report the same defect.
+//
+// SOFT-SKIP is load-bearing: a content root with no content/world/ is legal
+// (every one of the ~27 spine fixtures is one), so absence reports NOTHING.
+// This mirrors checkSpine's own bail on a missing content/spine.
+//
+// The instance half is dormant until Plan C writes content/world/fabric/.
+// Until then the coverage line still PRINTS ("types placed: 0 / 170") — a
+// score, not a failure, exactly as scripts/report_season1.mjs does.
+//
+// R8, THE DEADLOCK RULE, and what seam 2's fix pass changed (both halves were
+// adjudicated findings of the seam-2 coverage review, MAJOR-3):
+//
+//  1. The census arms on INSTANCES, never on the directory. `mkdir
+//     content/world/fabric` used to arm the coverage floor plus all 170
+//     absentBecause rules at once — 171 failures from creating a folder,
+//     which is Plan C's very first commit. An empty container is not content;
+//     a gate that reds on it is measuring the filesystem, not the world.
+//  2. The coverage floor ESCALATES rather than fails: a warning on the
+//     development gates (precheck.sh --only=spine, CI's bare sweep) and a
+//     failure only under --require-complete, which is Gate 2 at promote. That
+//     is checkStoryCoherence's and G-SPINE-COMPLETE's own pattern. An
+//     incrementally built fabric degrades and reports; a release with a
+//     half-built one does not ship.
+//
+// The two absentBecause rules are deliberately asymmetric, and that asymmetry
+// is what makes budgets.json's typeCoverageFloor reachable at all:
+//   * unplaced with absentBecause: null  -> WARN, always, aggregated. As a
+//     failure it is a strict superset of the floor (all 170 committed rows
+//     carry null), so it pinned the effective floor at 170/170 and made the
+//     budget's own number unreachable — a pinned constant no behaviour could
+//     satisfy. It is the diagnosis that tells an author what to place next.
+//   * absentBecause declared, yet the type IS placed -> FAIL, always. A
+//     stated reason for absence contradicted by a real instance is a lie in
+//     the catalogue, it is cheap to detect, and it can never deadlock,
+//     because nothing reaches it until an author writes a reason.
+//
+// NEVER THROWS. Every shape this function destructures is content an author
+// can get wrong — a lexicon saved as an object, a budgets.json that lost a
+// section to a bad merge, a fabric file whose `instances` is not an array. The
+// plan's transcription destructured all three unguarded; an uncaught throw
+// here skips finish() and silently drops every failure recorded before it, so
+// each one reports in-band instead.
+function gSpineWorld({ tree, contentRoot, fail, warn, requireComplete }) {
+  const worldDir = join(contentRoot, "world");
+  if (!existsSync(worldDir)) return;
+
+  const lexPath = join(worldDir, "lexicon/landforms.json");
+  const budPath = join(worldDir, "budgets.json");
+  // Repo-relative label, like every sibling message: an absolute path here
+  // changes with the content root, so a fixture could never pin the line.
+  if (!existsSync(lexPath)) { fail(`G-LANDFORM: world/lexicon/landforms.json is missing`); return; }
+  // The budgets.json-missing branch belongs to Plan C's G-WORLD-BUDGET, which
+  // owns that file and prints the contract-pinned `world-budget: <family> …`
+  // line. Reporting it here too would double-report once Plan C lands, so this
+  // gate only bails quietly and lets the owner speak.
+  if (!existsSync(budPath)) return;
+  const lex = readJson(lexPath, "world/lexicon/landforms.json", fail);
+  const budgets = readJson(budPath, "world/budgets.json", fail);
+  if (!lex || !budgets) return;
+  if (!Array.isArray(lex)) {
+    fail(`G-LANDFORM: world/lexicon/landforms.json is not a JSON array`);
+    return;
+  }
+
+  gWorldLandforms({ tree, worldDir, lex, budgets, fail, warn, requireComplete });
+  gWorldSheets({ contentRoot, budgets, fail, warn });
+}
+
+function gWorldLandforms({ tree, worldDir, lex, budgets, fail, warn, requireComplete }) {
+  // Array.isArray too: typeof [] === "object", so a landforms section saved as
+  // a list passed the old guard, destructured to six `undefined`s, and turned
+  // the catalogue-band rule into a silent no-op inside a still-failing run —
+  // one rule going dark inside a gate that looks like it is checking.
+  if (!budgets.landforms || typeof budgets.landforms !== "object" || Array.isArray(budgets.landforms)) {
+    fail(`G-LANDFORM: world/budgets.json has no landforms section`);
+    return;
+  }
+  const byId = new Map(lex.map((r) => [r?.id, r]));
+  const { minTypes, maxTypes, maxInstances, maxNamed, typeCoverageFloor, dungeonCapableTypes } = budgets.landforms;
+
+  if (lex.length < minTypes || lex.length > maxTypes)
+    fail(`G-LANDFORM: catalogue holds ${lex.length} types — budget is ${minTypes}-${maxTypes}`);
+  const dCount = lex.filter((r) => r?.dungeonCapable).length;
+  if (dCount !== dungeonCapableTypes)
+    fail(`G-LANDFORM: ${dCount} dungeonCapable types, budget pins ${dungeonCapableTypes} — dungeon binding depends on this number`);
+
+  // The lexicon <-> BIOMES join, as a GATE rule. It was only ever a unit test
+  // (world-budget.test.mjs) reading the repo's own path at import time, so any
+  // OTHER content root — a fixture, or the lexicon Plan C generates — could
+  // name a biome the spine vocabulary does not have and nothing would notice
+  // (seam-2 coverage review MAJOR-2, proved: a row naming "swamp" exited 0).
+  for (const row of lex) {
+    if (row?.biomes === undefined) continue; // shape is landform-type.schema.json's business
+    if (!Array.isArray(row.biomes)) { fail(`G-LANDFORM: type "${row?.id}": biomes is not an array`); continue; }
+    for (const b of row.biomes)
+      if (!BIOMES.includes(b)) fail(`G-LANDFORM: type "${row?.id}": biome "${b}" is outside BIOMES`);
+  }
+
+  // Trunk features may cite a lexicon type. Fabric instances are NOT node
+  // features (spec 5.6) — trunk features are the network, fabric is texture.
+  // tree.byId, never spine.nodes: the same validNodes discipline every gate
+  // above follows.
+  //
+  // ZERO REAL INPUTS TODAY, measured 2026-08-20: the 44 committed nodes carry
+  // 58 features between them and not one of them has a `type`. Plan D is the
+  // first writer, so this limb cannot fail on the committed tree — it is held
+  // live only by world-budget.test.mjs' two fixture reds. "G-LANDFORM is
+  // live" today rests on the catalogue-band and dungeonCapable limbs.
+  for (const node of tree.byId.values())
+    for (const f of node.features ?? []) {
+      if (f.type == null) continue;
+      const row = byId.get(f.type);
+      if (!row) { fail(`G-LANDFORM: ${node.id}/${f.id}: type "${f.type}" is not in the lexicon`); continue; }
+      if (row.geometry !== f.kind)
+        fail(`G-LANDFORM: ${node.id}/${f.id}: kind "${f.kind}" but lexicon geometry is "${row.geometry}"`);
+    }
+
+  // Instance census over content/world/fabric/, dormant until Plan C.
+  const fabricDir = join(worldDir, "fabric");
+  const placed = new Set();
+  let instances = 0, named = 0;
+  if (existsSync(fabricDir))
+    for (const f of readdirSync(fabricDir).filter((x) => x.endsWith(".json")).sort()) {
+      const doc = readJson(join(fabricDir, f), `world/fabric/${f}`, fail);
+      if (!doc) continue;
+      if (doc.instances !== undefined && !Array.isArray(doc.instances)) {
+        fail(`G-LANDFORM: world/fabric/${f}: instances is not an array`);
+        continue;
+      }
+      for (const inst of doc.instances ?? []) {
+        instances++;
+        if (inst?.named) named++;
+        placed.add(inst?.type);
+      }
+    }
+
+  console.log(`world-budget: landforms ${lex.length} types, ${instances} instances (budget ${minTypes}-${maxTypes} types, ${maxInstances} instances)`);
+  console.log(`G-LANDFORM: types placed: ${placed.size} / ${lex.length}`);
+  if (instances > maxInstances) fail(`G-LANDFORM: ${instances} landform instances > budget ${maxInstances}`);
+  if (named > maxNamed) fail(`G-LANDFORM: ${named} named landforms > budget ${maxNamed}`);
+
+  // A declared reason for absence, contradicted by a real instance. Always a
+  // failure; unreachable until an author writes a reason, so it cannot
+  // deadlock anything. This is the rule that gives absentBecause teeth.
+  for (const row of lex)
+    if (row?.absentBecause != null && placed.has(row?.id))
+      fail(`G-LANDFORM: type "${row?.id}" declares absentBecause "${row.absentBecause}" but has instances`);
+
+  // Coverage arms on CONTENT, not on the directory — see the header. No
+  // instances anywhere means the fabric layer does not exist yet, and the
+  // printed score above is the whole report.
+  if (instances === 0) return;
+  if (placed.size < typeCoverageFloor)
+    (requireComplete ? fail : warn)(`G-LANDFORM: types placed: ${placed.size} / ${lex.length} — below the floor of ${typeCoverageFloor}`);
+  // The shortfall list: a report at every flag level (see the header for why
+  // it must never be a failure), capped so a young fabric cannot bury the
+  // rest of the run under 170 lines.
+  const unexplained = lex.filter((r) => r?.absentBecause === null && !placed.has(r?.id)).map((r) => r?.id);
+  if (unexplained.length)
+    warn(`G-LANDFORM: ${unexplained.length} type(s) have 0 instances and no absentBecause: ${unexplained.slice(0, 5).join(", ")}${unexplained.length > 5 ? ` (+${unexplained.length - 5} more)` : ""}`);
+}
+
+// Measured against whatever sheets exist on disk today. The maps directory is
+// a SIBLING of the content root, so this is the one gate that reaches outside
+// it — guarded by existsSync, because a temp fixture root has no such sibling
+// and must stay silent rather than fail.
+function gWorldSheets({ contentRoot, budgets, fail, warn }) {
+  const mapsDir = join(contentRoot, "../game-client/assets/art/maps");
+  if (!existsSync(mapsDir)) return;
+  if (!budgets.sheets || typeof budgets.sheets !== "object" || Array.isArray(budgets.sheets)) {
+    fail(`G-SHEET-BUDGET: world/budgets.json has no sheets section`);
+    return;
+  }
+  // .svg ONLY: each committed sheet ships a .png thumb beside it, so counting
+  // every file would read the two live sheets as four. Case-INSENSITIVE: the
+  // emitter writes lowercase, but macOS preserves case, so a sheet committed
+  // as Basin.SVG is a real sheet and was invisible to both caps.
+  const svgs = readdirSync(mapsDir).filter((f) => f.toLowerCase().endsWith(".svg")).sort();
+  let worst = 0, worstName = "";
+  for (const f of svgs) {
+    const b = statSync(join(mapsDir, f)).size;
+    if (b > worst) { worst = b; worstName = f; }
+  }
+  console.log(`world-budget: sheets ${svgs.length} files, ${worst} bytes largest (${worstName || "none"}) (budget ${budgets.sheets.maxSheets}, ${budgets.sheets.maxSvgBytes})`);
+  if (svgs.length > budgets.sheets.maxSheets)
+    fail(`G-SHEET-BUDGET: ${svgs.length} sheets > budget ${budgets.sheets.maxSheets}`);
+  if (worst > budgets.sheets.maxSvgBytes)
+    fail(`G-SHEET-BUDGET: sheet ${worstName} is ${worst} bytes > budget ${budgets.sheets.maxSvgBytes}`);
+  gWorldSheetPatternArea({ mapsDir, svgs, budgets, fail });
+  gWorldSheetClipFit({ mapsDir, svgs, budgets, fail });
+  gWorldSheetInk({ mapsDir, budgets, fail, warn });
+}
+
+// Read a file that a directory listing said exists, without ever throwing.
+//
+// Seam-4 review finding A3, REPRODUCED and REAL: readdirSync happily lists a
+// DIRECTORY named `weird.svg`, and readFileSync on it raises EISDIR. That is
+// not a cosmetic stack trace — `fail()` only PUSHES, and the failure list is
+// rendered by finish()/summaryLines(), so a throw here means every FAIL
+// already recorded is never printed. Measured on the same fixture: with the
+// directory absent the run prints `FAIL  G-LANDFORM: 0 landform instances >
+// budget -1` and a `content-gate:` summary; with it present both lines vanish
+// and only the stack survives. The exit code stays 1 only by the accident of
+// the throw itself, which is not a guarantee anything should rest on.
+function readTextIfFile(path) {
+  try {
+    if (!statSync(path).isFile()) return null;
+    return readFileSync(path, "utf8");
+  } catch {
+    return null;
+  }
+}
+function readBytesIfFile(path) {
+  try {
+    if (!statSync(path).isFile()) return null;
+    return readFileSync(path);
+  } catch {
+    return null;
+  }
+}
+
+// Plan B Task 12 — the STRUCTURAL companion to the byte cap above.
+//
+// The byte cap was the only thing guarding sheet cost, and bytes are the wrong
+// variable. The basin sheet was 47 KB — 11x inside maxSvgBytes — and took
+// 11.31 s to rasterise at rasterWidthPx, 5.7x OVER maxRasterSeconds. The two
+// numbers are not correlated: it drew twelve <rect>s each covering the whole
+// 990x1254 map frame and clipped each down to one small zone, so it paid to
+// tile the entire frame twelve times and 47 KB of text described all of it.
+//
+// A raster-time budget cannot live in a gate — a gate must not shell out to
+// rsvg-convert, and CI has no librsvg (the same reason maxThumbBytes and
+// maxRasterSeconds are enforced by tests rather than here). So the gate
+// measures the STRUCTURE that drives the cost and can be read straight out of
+// the committed text: the total area of pattern-filled <rect>s, as a multiple
+// of the sheet's own canvas. That number was 6.61 on the defective sheet and
+// is 0.40 on the fixed one, so the rule fires on exactly what it was
+// calibrated to catch, and it is deterministic everywhere the gate runs.
+//
+// It is deliberately scoped to <rect>: a pattern on a <path> costs the area of
+// the shape it actually inks, which is the map, not a defect. An oversized
+// rect is the specific mistake — paint the frame, then hide most of it.
+//
+// PRINTS on every run, like every other budget in this file.
+function gWorldSheetPatternArea({ mapsDir, svgs, budgets, fail }) {
+  const cap = budgets.sheets.maxPatternRectAreaRatio;
+  if (typeof cap !== "number") {
+    fail(`G-SHEET-BUDGET: world/budgets.json sheets has no numeric maxPatternRectAreaRatio`);
+    return;
+  }
+  let worstRatio = 0;
+  let worstSheet = "";
+  for (const f of svgs) {
+    const text = readTextIfFile(join(mapsDir, f));
+    if (text === null) {
+      fail(`G-SHEET-BUDGET: sheet ${f} could not be read as a file — its pattern area could not be measured`);
+      continue;
+    }
+    const ratio = patternRectAreaRatio(text);
+    // A sheet whose canvas cannot be read reports rather than scoring 0 —
+    // silence is how a cap stops covering.
+    if (ratio === null) {
+      fail(`G-SHEET-BUDGET: sheet ${f} has no readable <svg width/height> — its pattern area could not be measured`);
+      continue;
+    }
+    if (ratio > worstRatio) { worstRatio = ratio; worstSheet = f; }
+  }
+  console.log(`world-budget: sheet pattern-rect area ${worstRatio.toFixed(2)}x canvas worst (${worstSheet || "none"}) (budget ${cap})`);
+  if (worstRatio > cap)
+    fail(`G-SHEET-BUDGET: sheet ${worstSheet} pattern-filled rects cover ${worstRatio.toFixed(2)}x its own canvas > budget ${cap} — a pattern fill must be bounded to the shape it inks`);
+}
+
+// F-047 seam-4 fix pass — THE DIRECT CHECK, and why it sits BESIDE the
+// aggregate one rather than replacing it.
+//
+// The two seam-4 reviewers disagreed here and both measurements were right.
+// Reviewer B verified the aggregate cap fires at 6.61x on the twelve-zone
+// defect and called it an honest backstop; reviewer A showed it is a proxy
+// that PASSES the same defect at two zones (0.397 + 2 x 0.49 = 1.38 < 1.5),
+// and is blind to <circle>/<ellipse>/<polygon>, to single quotes and to
+// style="fill:url()". Adjudicated: BOTH rules, because they are budgets on
+// different things.
+//
+//  * The AGGREGATE cap is a real TOTAL-cost budget. Raster time is driven by
+//    the total tiled area, so a sheet of fifty individually-reasonable fills
+//    can still miss the 2 s target. Nothing else measures that, and it is the
+//    rule the 6.61 positive control is calibrated on.
+//  * This DIRECT rule measures the MISTAKE — paint the frame, then hide most
+//    of it — one fill at a time, so it fires on the FIRST regressed zone
+//    instead of waiting for a quorum. On the committed sheets the worst is
+//    1.058 (cluster1 clip-hollowmarch); a single full-frame regression on the
+//    LARGEST zone there scores 24x, and on a small one several hundred.
+//
+// A shape with NO clip-path is exempt, and deliberately: it is not hiding
+// anything, and the legend swatches on the atlas (14 x 960 px^2) and the canary
+// (25 x 216 px^2) are exactly that. A clip this gate cannot resolve is REPORTED
+// in the printed line and left to the aggregate rule, rather than failed —
+// world-budget.test.mjs's fixtures reference clip ids they never define, and
+// hard-failing there would police the fixture rather than the sheet.
+function gWorldSheetClipFit({ mapsDir, svgs, budgets, fail }) {
+  const cap = budgets.sheets.maxPatternRectClipRatio;
+  if (typeof cap !== "number") {
+    fail(`G-SHEET-BUDGET: world/budgets.json sheets has no numeric maxPatternRectClipRatio`);
+    return;
+  }
+  let worst = 0, worstWhere = "", checked = 0, unresolved = 0;
+  for (const f of svgs) {
+    const svg = readTextIfFile(join(mapsDir, f));
+    if (svg === null) continue; // already reported by the aggregate rule
+    const clips = clipBoxes(svg);
+    for (const s of patternFilledShapes(svg)) {
+      if (!s.clipId) continue;
+      const box = clips.get(s.clipId);
+      if (!box) { unresolved++; continue; }
+      const cw = box.maxX - box.minX, chh = box.maxY - box.minY;
+      // Under 32 px on a side the emitter's own 2 px edge slack dominates the
+      // ratio and the absolute cost is nil. The twelve fills that caused this
+      // rule were 1,241,460 px^2 each; this exemption tops out near 1,000.
+      if (!(cw >= 32 && chh >= 32)) continue;
+      checked++;
+      const ratio = s.area / (cw * chh);
+      if (ratio > worst) { worst = ratio; worstWhere = `${f} ${s.clipId}`; }
+      if (ratio > cap)
+        fail(`G-SHEET-BUDGET: sheet ${f} <${s.tag}> fill clipped to #${s.clipId} covers ${ratio.toFixed(2)}x that clip's own box > budget ${cap} — a pattern fill must be bounded to the shape it inks, not to the frame`);
+    }
+  }
+  console.log(`world-budget: pattern fill vs its own clip ${worst.toFixed(2)}x worst (${worstWhere || "none"}) over ${checked} clipped fill(s), ${unresolved} unresolved (budget ${cap})`);
+}
+
+// Every clipPath's id -> the union bounds of the shapes inside it. Only <path>
+// and <rect> children are read; a clipPath this cannot measure is simply absent
+// from the map, which the caller treats as "unresolved".
+function clipBoxes(svg) {
+  const out = new Map();
+  for (const m of svg.matchAll(/<clipPath\b[^>]*\bid=["']([^"']+)["'][^>]*>([\s\S]*?)<\/clipPath>/g)) {
+    let box = null;
+    let bad = false;
+    const grow = (b) => {
+      if (!b) { bad = true; return; }
+      box = box
+        ? { minX: Math.min(box.minX, b.minX), minY: Math.min(box.minY, b.minY), maxX: Math.max(box.maxX, b.maxX), maxY: Math.max(box.maxY, b.maxY) }
+        : b;
+    };
+    for (const pm of m[2].matchAll(/<path\b[^>]*\bd=["']([^"']+)["']/g)) grow(pathBounds(pm[1]));
+    for (const rm of m[2].matchAll(/<rect\b[^>]*>/g)) grow(rectBox(rm[0]));
+    if (!bad && box) out.set(m[1], box);
+  }
+  return out;
+}
+
+const attrNum = (tag, name) => {
+  const m = new RegExp(`\\s${name}=["']([-\\d.eE+]+)["']`).exec(tag);
+  const v = m ? Number(m[1]) : NaN;
+  return Number.isFinite(v) ? v : null;
+};
+function rectBox(tag) {
+  const x = attrNum(tag, "x") ?? 0, y = attrNum(tag, "y") ?? 0;
+  const w = attrNum(tag, "width"), h = attrNum(tag, "height");
+  return w === null || h === null ? null : { minX: x, minY: y, maxX: x + w, maxY: y + h };
+}
+
+// Every shape in the file whose paint is a pattern (or any other paint server),
+// with the AREA it asks the renderer to tile.
+//
+// Broadened past `<rect ...fill="url(#` on review A's finding 4: single quotes,
+// `style="fill:url(#…)"`, and <circle>/<ellipse>/<polygon>/<polyline> were all
+// invisible to the aggregate rule. <path> stays excluded on purpose — a pattern
+// on a path costs the shape it actually inks, which is the map, not a defect.
+export function patternFilledShapes(svg) {
+  const out = [];
+  for (const m of svg.matchAll(/<(rect|circle|ellipse|polygon|polyline)\b[^>]*>/g)) {
+    const tag = m[0];
+    const paint = /\sfill=["']url\(#/.test(tag) || /\sstyle=["'][^"']*\bfill\s*:\s*url\(#/.test(tag);
+    if (!paint) continue;
+    const clipId =
+      /\sclip-path=["']url\(#([^)"']+)\)["']/.exec(tag)?.[1] ??
+      /\sstyle=["'][^"']*\bclip-path\s*:\s*url\(#([^)"']+)\)/.exec(tag)?.[1] ??
+      null;
+    const kind = m[1];
+    let area = null;
+    if (kind === "rect") {
+      const w = attrNum(tag, "width"), h = attrNum(tag, "height");
+      if (w !== null && h !== null) area = w * h;
+    } else if (kind === "circle") {
+      const r = attrNum(tag, "r");
+      // The BOUNDING BOX, not pi*r^2: what a renderer tiles is the box, and a
+      // gate on this file may not reach for a transcendental.
+      if (r !== null) area = 4 * r * r;
+    } else if (kind === "ellipse") {
+      const rx = attrNum(tag, "rx"), ry = attrNum(tag, "ry");
+      if (rx !== null && ry !== null) area = 4 * rx * ry;
+    } else {
+      const pts = /\spoints=["']([^"']+)["']/.exec(tag)?.[1];
+      const nums = pts ? pts.match(/-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?/g) : null;
+      if (nums && nums.length >= 4 && nums.length % 2 === 0) {
+        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (let i = 0; i < nums.length; i += 2) {
+          const x = Number(nums[i]), y = Number(nums[i + 1]);
+          x0 = Math.min(x0, x); x1 = Math.max(x1, x);
+          y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+        }
+        area = (x1 - x0) * (y1 - y0);
+      }
+    }
+    if (area === null || !Number.isFinite(area)) continue;
+    out.push({ tag: kind, area, clipId });
+  }
+  return out;
+}
+
+// Private: reads one sheet's text and answers a ratio. The pattern area is
+// summed FIRST, so a file with no pattern-filled rect scores 0 without its
+// canvas ever being needed — the soft-skip discipline this repo runs on, and
+// the reason a one-line `<svg/>` fixture does not red the gate. The canvas is
+// demanded only when there is something to divide, where being unable to read
+// it is a real measurement failure rather than an absent subject.
+function patternRectAreaRatio(svg) {
+  // Review A finding 4, second half: this read `<rect ...fill="url(#` and
+  // nothing else, so a pattern on a <circle>, an <ellipse>, a <polygon>, or
+  // written with single quotes or as style="fill:url(#…)" was invisible to the
+  // cap. patternFilledShapes() sees all of them.
+  let total = 0;
+  for (const s of patternFilledShapes(svg)) total += s.area;
+  if (total === 0) return 0;
+  const head = /<svg\b[^>]*?\swidth="([\d.]+)"[^>]*?\sheight="([\d.]+)"/.exec(svg);
+  if (!head) return null;
+  const canvas = Number(head[1]) * Number(head[2]);
+  if (!Number.isFinite(canvas) || canvas <= 0) return null;
+  return total / canvas;
+}
+
+// F-047 seam-4 fix pass — THE INK FLOOR.
+//
+// The most serious result of seam 4, found independently by both reviewers:
+// at d86f948 nothing in this repo could tell a blank image from a real one. A
+// blank 512 px PNG dropped in place of the atlas thumb passed the storybook
+// suite, check_render_lock, check_asset_manifest and THIS GATE. Every rule on
+// a committed raster bound it from above (maxThumbBytes) or pinned its width;
+// none of them looked at a pixel.
+//
+// The standing rule on this programme is that every produced artifact must be
+// observable in a review surface (owner intent, 2026-08-15). An artifact that
+// can silently go blank and stay green fails that rule, so the floor belongs
+// in the gate and not only in a test — and it is measured from the COMMITTED
+// BYTES, which is why it can live here at all: no rsvg-convert, no librsvg,
+// deterministic on every box. The same three floors are asserted against the
+// sheet ROSTER in tools/asset-storybook/tests/maps-index.test.mjs (Gate 1 and
+// CI); this one arms on whatever PNGs are on disk, which is what catches a
+// file nobody remembered to index.
+//
+// SOFT-SKIP DISCIPLINE: a maps directory with no PNG in it is not a failure —
+// ~27-30 fixture roots have no sheets at all, and Plan C/D/E fixtures write
+// .svg without a thumb. The rule arms on PNGs that exist, and PRINTS on every
+// run like every other budget in this file.
+function gWorldSheetInk({ mapsDir, budgets, fail, warn }) {
+  const minInk = budgets.sheets.minThumbInkFraction;
+  const minRows = budgets.sheets.minThumbInkRowFraction;
+  const minColours = budgets.sheets.minThumbDistinctColours;
+  if (typeof minInk !== "number" || typeof minRows !== "number" || typeof minColours !== "number") {
+    fail(`G-SHEET-BUDGET: world/budgets.json sheets is missing a numeric minThumbInkFraction / minThumbInkRowFraction / minThumbDistinctColours`);
+    return;
+  }
+  let pngs = [];
+  try {
+    pngs = readdirSync(mapsDir).filter((f) => f.toLowerCase().endsWith(".png")).sort();
+  } catch {
+    return;
+  }
+  // The WORST sheet is the one the floor is about, so the report names the
+  // minimum, not the maximum — the mirror image of every cap above it.
+  let worstInk = Infinity, worstName = "";
+  for (const f of pngs) {
+    const bytes = readBytesIfFile(join(mapsDir, f));
+    if (bytes === null) {
+      fail(`G-SHEET-BUDGET: thumb ${f} could not be read as a file — its ink could not be measured`);
+      continue;
+    }
+    // THE PNG SIGNATURE IS THE CLAIM, not the file extension. A file that
+    // announces itself as a PNG and then cannot be decoded is a real defect and
+    // FAILS. A file that never made that claim is not this rule's subject — it
+    // WARNS and is left to check_asset_manifest, which owns "is this a real art
+    // file". The line is drawn there for the soft-skip discipline this repo
+    // runs on: `world-budget.test.mjs`'s ".svg only" fixture plants thirty
+    // 600 KB junk files named *.png to prove the SHEET census ignores them, and
+    // a floor that reds that fixture would be policing the wrong thing loudly.
+    const st = inkStats(bytes);
+    if (st.error) {
+      const claimed = bytes.subarray(0, 8).toString("hex") === "89504e470d0a1a0a";
+      (claimed ? fail : warn)(
+        `G-SHEET-BUDGET: thumb ${f} could not be measured for ink: ${st.error}`,
+      );
+      continue;
+    }
+    if (st.inkFraction < worstInk) { worstInk = st.inkFraction; worstName = f; }
+    if (st.inkFraction < minInk)
+      fail(`G-SHEET-BUDGET: thumb ${f} is ${(st.inkFraction * 100).toFixed(2)}% ink < floor ${(minInk * 100).toFixed(2)}% — a committed raster that is blank passes every OTHER rule about it`);
+    if (st.inkRowFraction < minRows)
+      fail(`G-SHEET-BUDGET: thumb ${f} draws on ${(st.inkRowFraction * 100).toFixed(1)}% of its scanlines < floor ${(minRows * 100).toFixed(1)}% — the ink is all in one band`);
+    if (st.distinct < minColours)
+      fail(`G-SHEET-BUDGET: thumb ${f} has ${st.distinct} distinct colours < floor ${minColours} — that is a placeholder, not a drawing`);
+  }
+  const shown = worstInk === Infinity ? 0 : worstInk;
+  console.log(`world-budget: thumb ink ${(shown * 100).toFixed(2)}% least (${worstName || "none"}) of ${pngs.length} thumb(s) (floor ${(minInk * 100).toFixed(2)}%)`);
 }
 
 // F-041 Phase 1: G-OVERLAP + G-COMP-ROLLUP. `report` is warn until the two

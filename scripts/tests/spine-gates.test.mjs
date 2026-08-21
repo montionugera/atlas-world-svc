@@ -5,7 +5,10 @@ import { mkdtempSync, mkdirSync, cpSync, readFileSync, readdirSync, writeFileSyn
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadSpine, TIER_DEPTH, buildTree, deriveNode } from "../lib/spine.mjs";
+import { loadSpine, TIER_DEPTH, buildTree } from "../lib/spine.mjs";
+// Plan B Task 4: the ONE producer of content/spine/derived.json's bytes. The
+// P3 fixture builder below uses it so its roots match `--write` byte for byte.
+import { derivedSidecar } from "../check_spine_emit.mjs";
 // Plan A Task 13: the gate, imported rather than spawned. Safe only because
 // check_content.mjs now ends in an `import.meta.url` entry guard — before it
 // did, this import ran the whole gate and called process.exit(), and `node
@@ -206,16 +209,20 @@ t11("spine-emit --write is idempotent and --check is green after it", () => {
   assert11.equal(runEmit(dir, ["--check"]).code, 0);
 });
 
+// Plan B Task 4 retarget: `derived` is no longer inside n-cluster1.json, so
+// the hand-edit this test exists to catch now lands in the sidecar. Same
+// claim as before — the emitter's --check sees a hand-edited derived value —
+// against the file the value actually lives in.
 t11("spine-emit --check goes red on a hand-edited derived block", () => {
   const dir = realSpineCopy();
   runEmit(dir, ["--write"]);
-  const p = join11(dir, "spine/nodes/n-cluster1.json");
-  const doc = JSON.parse(read11(p, "utf8"));
-  doc.derived.coveragePct = 99.9;
-  write11(p, JSON.stringify(doc, null, 2) + "\n");
+  const p = join11(dir, "spine/derived.json");
+  const side = JSON.parse(read11(p, "utf8"));
+  side["n-cluster1"].coveragePct = 99.9;
+  write11(p, JSON.stringify(side, null, 2) + "\n");
   const r = runEmit(dir, ["--check"]);
   assert11.equal(r.code, 1);
-  assert11.match(r.out, /spine-emit: DRIFT .*n-cluster1\.json/);
+  assert11.match(r.out, /spine-emit: DRIFT .*derived\.json/);
 });
 
 // ─── F-041 Phase 1 · fixture builder (A3: reuse Phase 0's if equivalent) ────
@@ -292,16 +299,12 @@ t11("G-SCALE red: units flip without a scale factor", () => {
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-SCALE n-r: units u under km parent but perParentUnit 1/);
 });
-t11("G-DERIVED-DRIFT red: hand-edited derived block", () => {
-  const r = runSpineGate(spineFixture({ mutate: (dir) => {
-    const p = join11(dir, "spine/nodes/n-c.json");
-    const doc = JSON.parse(read11(p, "utf8"));
-    doc.derived.coveragePct = 99.9;
-    write11(p, JSON.stringify(doc, null, 2) + "\n");
-  } }));
-  assert11.equal(r.code, 1);
-  assert11.match(r.out, /G-DERIVED-DRIFT n-c: committed derived block does not match recomputation/);
-});
+// (Plan B Task 4: the per-node "G-DERIVED-DRIFT red: hand-edited derived
+// block" case that stood here is replaced, not dropped — `derived` no longer
+// lives in n-c.json, so the same hand-edit is made in the sidecar by
+// "G-DERIVED-DRIFT red: one hand-edited number in the sidecar" at the end of
+// this file, together with five more cases the whole-file rule needs:
+// missing, stale id, missing id, malformed, and the two soft-skip shapes.)
 t11("G-PROVENANCE red: generated node without a generator pin", () => {
   const r = runSpineGate(spineFixture({ overlayDir: "g-provenance-unpinned" }));
   assert11.equal(r.code, 1);
@@ -424,7 +427,6 @@ t11("G-OVERLAP + G-COMP-ROLLUP red: overlapping twins now hard-fail", () => {
   const r = runSpineGate(spineFixture({ overlayDir: null, mutate: (dir) => {
     const base = JSON.parse(read11(join11(dir, "spine/nodes/n-r.json"), "utf8"));
     const twin = { ...base, id: "n-r2", seed: { value: "52fc1fdd51a099d7", epoch: 0, why: null } };
-    delete twin.derived;
     write11(join11(dir, "spine/nodes/n-r2.json"), JSON.stringify(twin, null, 2) + "\n");
     exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
   } }));
@@ -463,7 +465,6 @@ t11("G-OVERLAP red: a ring the exact kernel cannot triangulate FAILS, never sile
         anchor: [45, 45],
       },
     };
-    delete bad.derived;
     write11(join11(dir, "spine/nodes/n-r2.json"), JSON.stringify(bad, null, 2) + "\n");
     exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
   } }));
@@ -546,7 +547,6 @@ function tierCapFixture({ nodeId, per = 52 }) {
     const p = join11(dir, `spine/nodes/${nodeId}.json`);
     const doc = JSON.parse(read11(p, "utf8"));
     doc.placement.points = densifyRing(doc.placement.points, per);
-    delete doc.derived;
     write11(p, JSON.stringify(doc, null, 2) + "\n");
     exec11(process.execPath, [EMIT, "--write", "--content-root", dir]); // re-derive the widened ring
   } });
@@ -595,10 +595,11 @@ t11("G-LOAD-BUDGET green: the committed table is inside all three terms", () => 
 });
 
 // ── F-041 Phase 3: hermetic fixture roots for the town-frame gates ──────────
-// Copies a committed fixture dir to a tmp root, fills the codegen-owned
-// `derived` block on every node via lib deriveNode (G-DERIVED-DRIFT stays
-// green; each fixture fails ONLY on its authored defect), copies the two real
-// schemas in, then runs the real gate binary with --only=spine.
+// Copies a committed fixture dir to a tmp root, writes the codegen-owned
+// content/spine/derived.json sidecar via the emitter's own derivedSidecar
+// (G-DERIVED-DRIFT stays green; each fixture fails ONLY on its authored
+// defect), copies the two real schemas in, then runs the real gate binary
+// with --only=spine.
 //
 // NOTE: the brief for this task names the runner `runSpineGate(root) →
 // { status, out }`, but a same-named `runSpineGate(dir) → { code, out }`
@@ -633,12 +634,12 @@ function p3Root(fixtureName, mutate = null) {
     file: `towns/${f}`,
     doc: JSON.parse(readFileSync(join(root, "towns", f), "utf8")),
   }));
-  for (const node of spine.nodes) {
-    const file = join(root, "spine/nodes", `${node.id}.json`);
-    const doc = JSON.parse(readFileSync(file, "utf8"));
-    doc.derived = deriveNode({ tree, id: node.id, plans });
-    writeFileSync(file, JSON.stringify(doc, null, 2) + "\n");
-  }
+  // Plan B Task 4: one sidecar instead of 3-per-fixture inline blocks. Built
+  // by the emitter's OWN producer (derivedSidecar), not a hand-rolled loop, so
+  // these roots are byte-identical to what `check_spine_emit --write` would
+  // write — the whole-file G-DERIVED-DRIFT compares bytes, and a locally
+  // JSON.stringify'd copy would red every P3 fixture on formatting alone.
+  writeFileSync(join(root, "spine/derived.json"), derivedSidecar({ tree, plans }));
   return root;
 }
 
@@ -930,8 +931,11 @@ test("spine-emit emits every node file plus BOTH surviving mirrors — a silentl
   // Plan A Task 12: 3 -> 2. The geography mirror was retired once every
   // consumer moved to scripts/lib/places.mjs; the two RUNTIME-facing mirrors
   // stay, and mapDimensions.ts is compiled server code.
-  assert.equal(outputs.length, nodeFiles + 2, paths.join("\n"));
-  for (const suffix of ["maps/atlas-frontier.md",
+  // Plan B Task 4: +1 — content/spine/derived.json, the hoisted `derived`
+  // sidecar. 44 nodes + 3 = 47 outputs on the committed root.
+  assert.equal(outputs.length, nodeFiles + 3, paths.join("\n"));
+  for (const suffix of ["spine/derived.json",
+                        "maps/atlas-frontier.md",
                         "colyseus-server/src/config/generated/mapDimensions.ts"])
     assert.ok(paths.some((p) => p.endsWith(suffix)), `missing mirror ${suffix} in:\n${paths.join("\n")}`);
   assert.ok(!paths.some((p) => p.endsWith("cluster1-geography.json")),
@@ -1200,7 +1204,6 @@ t11("G-OVERLAP order: three overlapping children report in i<j order, index or n
     const mk = (id, seed, points) => {
       const n = { ...base, id, seed: { value: seed, epoch: 0, why: null } };
       n.placement = { shape: "polygon", points, anchor: points[0] };
-      delete n.derived;
       write11(join11(dir, `spine/nodes/${id}.json`), JSON.stringify(n, null, 2) + "\n");
     };
     mk("n-r2", "52fc1fdd51a099d7", [[25, 25], [45, 25], [45, 45], [25, 45]]);
@@ -1238,7 +1241,6 @@ t11("G-RING-SIMPLE red: an ONLY-CHILD unsound ring fails — no sibling needed",
     // G-POLY green: 5 points, open, no repeated consecutive point, shoelace
     // +1200, selfIntersects() sees no PROPER crossing. earClip finds no ear.
     doc.placement = { shape: "polygon", points: [[20, 20], [80, 20], [80, 60], [50, 20], [20, 60]], anchor: [30, 30] };
-    delete doc.derived;
     write11(p, JSON.stringify(doc, null, 2) + "\n");
     exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
   } }));
@@ -1253,7 +1255,6 @@ t11("G-RING-SIMPLE red: an unsound ring beside a NON-meeting sibling fails", () 
     const mk = (id, seed, points, anchor) => {
       const n = { ...base, id, seed: { value: seed, epoch: 0, why: null } };
       n.placement = { shape: "polygon", points, anchor };
-      delete n.derived;
       write11(join11(dir, `spine/nodes/${id}.json`), JSON.stringify(n, null, 2) + "\n");
     };
     // Bboxes strictly overlap on both axes, so neither the stage-1 reject nor
@@ -1279,7 +1280,6 @@ t11("G-RING-SIMPLE red: overlapping lobes — the shape the area identity passes
     // STRUCTURAL rule catches this; the area identity cannot police itself,
     // because the shoelace double-counts a doubly-wound region too.
     doc.placement = { shape: "polygon", points: [[20, 20], [80, 20], [80, 80], [20, 80], [20, 20], [30, 30], [70, 30], [70, 70], [30, 70]], anchor: [25, 50] };
-    delete doc.derived;
     write11(p, JSON.stringify(doc, null, 2) + "\n");
     exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
   } }));
@@ -1294,7 +1294,6 @@ t11("G-RECT red: a rect with both extents negative fails", () => {
     // Both negative winds the ring POSITIVELY over [10,30]x[10,30], so the
     // exact kernel reports a real area there while the grid sampler reports 0.
     doc.placement = { shape: "rect", rect: { x: 30, y: 30, w: -20, h: -20 }, anchor: [20, 20] };
-    delete doc.derived;
     write11(p, JSON.stringify(doc, null, 2) + "\n");
     exec11(process.execPath, [EMIT, "--write", "--content-root", dir]);
   } }));
@@ -1521,4 +1520,197 @@ t11("in-process: an unsupported --only value also returns 2, and --only=spine is
   // gate-threw one — collapse the two and this assertion goes red.
   assert11.equal(none.out, "check-content: runSpineGateInProcess supports --only=spine only\n");
   assert11.doesNotMatch(none.out, /\n {4}at |check_content\.mjs:\d+/);
+});
+
+// ─── Plan B Task 4 · derived hoisted to content/spine/derived.json ──────────
+// The block that used to sit inline in all 44 node files is now ONE sidecar,
+// content/spine/derived.json, emitted by check_spine_emit and byte-compared
+// whole by G-DERIVED-DRIFT. Three independent things make a leftover inline
+// block loud: the emitter's NODE_FIELDS whitelist, the node schema's closed
+// root, and this gate.
+t11("no committed node file carries an inline derived block", () => {
+  const dir = join11(ROOT11, "content/spine/nodes");
+  for (const f of readdirSync(dir).filter((x) => x.endsWith(".json"))) {
+    const doc = JSON.parse(read11(join11(dir, f), "utf8"));
+    assert11.equal(doc.derived, undefined, `${f} still carries derived`);
+  }
+});
+
+t11("the sidecar covers exactly the committed node ids, in ascending order", () => {
+  const ids = readdirSync(join11(ROOT11, "content/spine/nodes"))
+    .filter((f) => f.endsWith(".json")).map((f) => f.replace(/\.json$/, "")).sort();
+  const side = JSON.parse(read11(join11(ROOT11, "content/spine/derived.json"), "utf8"));
+  assert11.deepEqual(Object.keys(side), ids);
+  for (const id of ids)
+    assert11.ok(typeof side[id].digest === "string" && side[id].digest.startsWith("sha256:"), id);
+});
+
+t11("spine-emit --write emits the sidecar and --check is green after it", () => {
+  const dir = realSpineCopy();
+  assert11.equal(runEmit(dir, ["--write"]).code, 0);
+  const first = read11(join11(dir, "spine/derived.json"), "utf8");
+  assert11.equal(runEmit(dir, ["--write"]).code, 0);
+  assert11.equal(read11(join11(dir, "spine/derived.json"), "utf8"), first, "not idempotent");
+  assert11.equal(runEmit(dir, ["--check"]).code, 0);
+});
+
+// The emitter's half of the whitelist: a node file that still carries an
+// inline `derived` is an EMITTER error, not a silently-stripped field.
+t11("spine-emit rejects a node file that still carries an inline derived block", () => {
+  const dir = realSpineCopy();
+  assert11.equal(runEmit(dir, ["--write"]).code, 0);
+  const p = join11(dir, "spine/nodes/n-cluster1.json");
+  const doc = JSON.parse(read11(p, "utf8"));
+  doc.derived = { anything: 1 };
+  write11(p, JSON.stringify(doc, null, 2) + "\n");
+  const r = runEmit(dir, ["--check"]);
+  assert11.equal(r.code, 1);
+  assert11.match(r.out, /n-cluster1: unknown fields derived/);
+});
+
+t11("G-DERIVED-DRIFT red: one hand-edited number in the sidecar", () => {
+  const dir = spineFixture({ mutate: (d) => {
+    const p = join11(d, "spine/derived.json");
+    const side = JSON.parse(read11(p, "utf8"));
+    side[Object.keys(side)[0]].coveragePct = 99.9;
+    write11(p, JSON.stringify(side, null, 2) + "\n");
+  } });
+  const r = runSpineGate(dir);
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out,
+    /G-DERIVED-DRIFT: content\/spine\/derived\.json differs from the recomputed block/);
+  // Per-node diagnosability, given up when 44 messages became one and restored
+  // in the seam-2 fix pass (migration review MINOR-2): a VALUE change leaves
+  // both id sets equal, so without this the operator gets "differs" and a
+  // 44-entry file to diff by hand.
+  assert11.match(r.out, /— changed ids: n-/);
+});
+
+// The one no-throw branch in Task 4 with no test holding it in place: deleting
+// the try/catch around readFileSync left all 817 tests green (coverage review
+// M57). existsSync passes for a DIRECTORY and readFileSync then throws EISDIR;
+// uncaught, that throw skips finish() and silently drops every failure
+// recorded before it — the exact crash class seam 1 closed.
+t11("G-DERIVED-DRIFT red, not a throw: the sidecar is a DIRECTORY (EISDIR)", () => {
+  const dir = spineFixture({ mutate: (d) => {
+    const p = join11(d, "spine/derived.json");
+    rmSync(p);
+    mkdirSync(p, { recursive: true });
+  } });
+  const r = runSpineGate(dir);
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-DERIVED-DRIFT: content\/spine\/derived\.json is unreadable: EISDIR/);
+  // finish() ran: the summary line is its output, and no stack escaped.
+  assert11.match(r.out, /content-gate: .* failures/);
+  assert11.doesNotMatch(r.out, /check-content: \w*Error|\n\s+at /);
+});
+
+t11("G-DERIVED-DRIFT red: the sidecar is missing entirely", () => {
+  const dir = spineFixture({ mutate: (d) => rmSync(join11(d, "spine/derived.json")) });
+  const r = runSpineGate(dir);
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-DERIVED-DRIFT: content\/spine\/derived\.json is missing/);
+});
+
+t11("G-DERIVED-DRIFT red: a stale id left in the sidecar after a node is deleted", () => {
+  const dir = spineFixture({ mutate: (d) => {
+    const p = join11(d, "spine/derived.json");
+    const side = JSON.parse(read11(p, "utf8"));
+    side["n-ghost"] = side[Object.keys(side)[0]];
+    write11(p, JSON.stringify(side, null, 2) + "\n");
+  } });
+  const r = runSpineGate(dir);
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-DERIVED-DRIFT: .* — stale ids: n-ghost/);
+});
+
+t11("G-DERIVED-DRIFT red: an id missing from the sidecar is named as missing", () => {
+  const dir = spineFixture({ mutate: (d) => {
+    const p = join11(d, "spine/derived.json");
+    const side = JSON.parse(read11(p, "utf8"));
+    delete side["n-r"];
+    write11(p, JSON.stringify(side, null, 2) + "\n");
+  } });
+  const r = runSpineGate(dir);
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-DERIVED-DRIFT: .* — missing ids: n-r/);
+});
+
+// Gate functions never throw. A sidecar that is present but not parseable
+// JSON must still produce ONE clean in-band line — an uncaught SyntaxError
+// here would skip finish() and swallow every failure recorded before it.
+t11("G-DERIVED-DRIFT red: a malformed sidecar fails in-band, no crash", () => {
+  const dir = spineFixture({ mutate: (d) => write11(join11(d, "spine/derived.json"), "{ not json") });
+  const r = runSpineGate(dir);
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-DERIVED-DRIFT: content\/spine\/derived\.json differs from the recomputed block/);
+  assert11.match(r.out, /is not parseable JSON/);
+  assert11.doesNotMatch(r.out, /SyntaxError|TypeError/);
+});
+
+// Soft-skip discipline, both halves. loadSpine must still answer present:false
+// with NO errors for a content root that has no spine/ at all, and the derived
+// key must be a harmless {} in that shape rather than undefined.
+t11("loadSpine soft-skip: no spine/ dir is present:false, derived {}, zero errors", () => {
+  const dir = mkdtemp11(join11(tmp11(), "spine-nospine-"));
+  const s = loadSpine({ contentRoot: dir });
+  assert11.equal(s.present, false);
+  assert11.deepEqual(s.errors, []);
+  assert11.deepEqual(s.derived, {});
+});
+
+// ...and a spine root that HAS nodes but no sidecar reads `derived: null` —
+// ABSENT is distinguishable from present-but-empty, which is what lets
+// G-DERIVED-DRIFT report "is missing" rather than a byte diff against "{}".
+t11("loadSpine: a spine root with no derived.json reads derived: null, not an error", () => {
+  const dir = spineFixture({ mutate: (d) => rmSync(join11(d, "spine/derived.json")) });
+  const s = loadSpine({ contentRoot: dir });
+  assert11.equal(s.present, true);
+  assert11.equal(s.derived, null);
+  assert11.deepEqual(s.errors, []);
+});
+
+// The node schema's half of the three-way enforcement. Removing the
+// `derived` property from the closed root is what makes a leftover inline
+// block a SCHEMA failure as well as an emitter one — put the property back
+// and this test is the only thing that notices, which is the point: without
+// it the schema edit was a green mutation.
+t11("a node file carrying an inline derived block is a SCHEMA failure", () => {
+  const dir = spineFixture({ mutate: (d) => {
+    const p = join11(d, "spine/nodes/n-c.json");
+    const doc = JSON.parse(read11(p, "utf8"));
+    doc.derived = { areaParentUnits2: 1 };
+    write11(p, JSON.stringify(doc, null, 2) + "\n");
+  } });
+  const r = runSpineGate(dir);
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /FAIL {2}spine\/nodes\/n-c\.json: schema \/ must NOT have additional properties/);
+});
+
+// The `tree.errors.length` bail in gSpineDerived, pinned. check_spine_emit's
+// collectOutputs returns before writing ANY output when the tree is broken,
+// so on a CYCLIC tree the sidecar legitimately does not exist — reporting
+// "content/spine/derived.json is missing" there would be a second, false
+// diagnosis stacked on the honest G-TREE one. Delete the bail and this goes
+// red with exactly that spurious line.
+//
+// PLAN CORRECTION: Task 4's "Fixture safety" note names g-id-duplicate-id
+// alongside g-tree-cycle as handled by this bail. It is not, and cannot be:
+// buildTree treats a duplicate id as G-ID's business and keeps the FIRST
+// occurrence, so tree.errors stays EMPTY and the bail never fires. The
+// emitter would happily write a sidecar for that root, so the gate saying
+// one is missing is agreement, not noise — the second half below pins that
+// boundary so a future reader does not "fix" the bail to cover it.
+t11("G-DERIVED-DRIFT stays silent on a CYCLIC tree — G-TREE is the honest failure", () => {
+  const { code, stdout } = runGate(contentRootFor("g-tree-cycle"));
+  assert11.equal(code, 1, stdout);
+  assert11.doesNotMatch(stdout, /G-DERIVED-DRIFT/, "spurious G-DERIVED-DRIFT on a cyclic tree");
+  assert11.match(stdout, /G-TREE: cycle detected/);
+});
+
+t11("...but a duplicate id leaves the tree valid, so the missing sidecar IS reported", () => {
+  const { code, stdout } = runGate(contentRootFor("g-id-duplicate-id"));
+  assert11.equal(code, 1, stdout);
+  assert11.match(stdout, /G-ID: duplicate id/);
+  assert11.match(stdout, /G-DERIVED-DRIFT: content\/spine\/derived\.json is missing/);
 });

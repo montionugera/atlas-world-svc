@@ -73,21 +73,5 @@
     "summary": "The western water, named in wreck-ledgers: more keels opened there than in every other sea the logs keep."
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 67091.8,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [143.5, 138.5],
-    "resolvedSeedStreams": {
-      "terrain": "d8a283ab078bdc99",
-      "settlements": "6d8143a6623f7483",
-      "vegetation": "a9210cadeb5ae374",
-      "names": "75faca29d303018b"
-    },
-    "digest": "sha256:f44c46a5e8ff24708ad9fe07afe7b5187c6f46978181aef181ee7c77a66bcd99"
-  }
+  "levelBand": null
 }

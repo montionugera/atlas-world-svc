@@ -44,18 +44,41 @@ export function depthLegal({ parentTier, childTier }) {
 }
 
 export const LEAF_TIERS = new Set(["town", "site", "fixture"]);
+// Widening BIOMES LOOSENS G-COMP-SUM: a composition key that was a failure
+// before is silently accepted after. Swept before this edit — every
+// `composition` / `computedComposition` / `interstitialComposition` object in
+// content/, scripts/tests/ and tools/ (13 distinct keys over 408 sites) is
+// inside the OLD 12, and the only out-of-vocabulary terrainKind in the tree is
+// spine.test.mjs's "volcano", which the 18 below still reject. Nothing that
+// was rejected is now accepted.
 export const BIOMES = Object.freeze([
   "ocean", "ice", "marsh", "river", "meadow", "forest",
   "bramble", "rock", "upland", "alkali", "ash", "built",
+  // Plan B Task 5 (+8): `lava` and `ash` are deliberately SPLIT — ash is a
+  // walkable depositional plain (the Cindervast reading), lava an impassable
+  // flow field. Splitting them is what lets a volcanic arc read as an arc.
+  "tundra", "lake", "scree", "karst", "badland", "desert", "lava", "reef",
 ]);
 export const TERRAIN_KINDS = Object.freeze([
   "ice", "upland", "alkali-flat", "rim", "bramble", "headland", "river-country",
+  // Plan B Task 5 (+11). `tidal-mire` is WIRED, NOT NEW: the pMire pattern and
+  // its legend row already exist (draft.mjs) and no terrainKind reached them —
+  // legended-but-unreachable, one of the three loops G-BIOME-INK closes.
+  "tundra-steppe", "sand-sea", "badlands", "karst-plateau", "volcanic-arc",
+  "lava-field", "cloud-forest", "reef-shelf", "fjordland", "lake-country", "tidal-mire",
 ]);
 // forward-only: terrainKind is AUTHORED; each implied biome must appear in
 // composition at >= 15% (G-TERRAINKIND, Phase 3). Never derived backwards.
+// No row names three biomes: each implied biome must reach 15% of a single
+// 100-point composition, so a three-biome kind spends 45 points before the
+// region has said anything else and becomes unauthorable in practice.
 export const TERRAIN_IMPLIES = Object.freeze({
   ice: ["ice"], upland: ["upland"], "alkali-flat": ["alkali"], rim: ["rock"],
   bramble: ["bramble"], headland: ["rock", "meadow"], "river-country": ["river", "meadow"],
+  "tundra-steppe": ["tundra"], "sand-sea": ["desert"], badlands: ["badland"],
+  "karst-plateau": ["karst"], "volcanic-arc": ["ash"], "lava-field": ["lava"],
+  "cloud-forest": ["forest"], "reef-shelf": ["reef"], fjordland: ["rock", "ice"],
+  "lake-country": ["lake"], "tidal-mire": ["marsh"],
 });
 // F-045 Task 2 (spec §2.2): 0.25 -> 0.05, ÷5 with the world — the world
 // frame shrank 2000km -> 400km (S=0.2) so the sample cell shrinks by the
@@ -194,7 +217,7 @@ export { exactIntersectionArea, bboxOfPlacement, ringVertexCount, buildBBoxIndex
 export function loadSpine({ contentRoot }) {
   const errors = [];
   const dir = join(contentRoot, "spine");
-  const empty = { present: false, nodes: [], edges: [], sheet: null, roots: [], budgets: { load: null, coverage: null }, errors };
+  const empty = { present: false, nodes: [], edges: [], derived: {}, sheet: null, roots: [], budgets: { load: null, coverage: null }, errors };
   if (!existsSync(dir)) return empty;
 
   const readJsonInBand = (path, label) => {
@@ -227,11 +250,19 @@ export function loadSpine({ contentRoot }) {
   // (Phase 1) owns failing on it.
   const edges = existsSync(join(dir, "edges.json")) ? (readJsonInBand(join(dir, "edges.json"), "spine/edges.json") ?? []) : [];
   const sheet = existsSync(join(dir, "sheet.json")) ? readJsonInBand(join(dir, "sheet.json"), "spine/sheet.json") : null;
+  // Plan B Task 4: the hoisted derived block. ABSENT is not an error here —
+  // G-DERIVED-DRIFT owns failing on it, exactly as G-LOAD-BUDGET owns a
+  // missing budget file. Same soft-skip contract as edges/sheet above.
+  // `null` distinguishes ABSENT from present-but-empty; `empty` above uses
+  // `{}` so the no-spine soft-skip shape stays harmless to destructure.
+  const derived = existsSync(join(dir, "derived.json"))
+    ? (readJsonInBand(join(dir, "derived.json"), "spine/derived.json") ?? {})
+    : null;
   const budgets = {
     load: existsSync(join(dir, "load-budget.json")) ? readJsonInBand(join(dir, "load-budget.json"), "spine/load-budget.json") : null,
     coverage: existsSync(join(dir, "coverage-budget.json")) ? readJsonInBand(join(dir, "coverage-budget.json"), "spine/coverage-budget.json") : null,
   };
-  return { present: true, nodes, edges, sheet, roots, budgets, errors };
+  return { present: true, nodes, edges, derived, sheet, roots, budgets, errors };
 }
 
 // Join the flat table on parentId. Duplicate ids are G-ID's business — the

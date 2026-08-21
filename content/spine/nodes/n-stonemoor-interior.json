@@ -62,21 +62,5 @@
     "summary": "Unsurveyed by any keel-borne account; the moor's far side is not even rumor."
   },
   "tags": ["unsurveyed-interior"],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 220.37000000000262,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [281.9, 255.6],
-    "resolvedSeedStreams": {
-      "terrain": "1732a8c477a51983",
-      "settlements": "be0280fa74c6054b",
-      "vegetation": "29185d33b9944bf9",
-      "names": "b49d0ee801de04cf"
-    },
-    "digest": "sha256:debc1b2dc24b462ad25388858b33ac3ce583cdba6dcb654e68bd0960ddc168a0"
-  }
+  "levelBand": null
 }

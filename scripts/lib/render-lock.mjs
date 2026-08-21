@@ -21,14 +21,30 @@ import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 
-// Bump when the RENDERER's output format changes for reasons other than
-// content — it is recorded in the lock so a re-baseline caused by a tool
-// change is distinguishable from one caused by a world change. Plan B moves
-// this constant to tools/mapforge/lib/version.mjs and imports it here.
-export const GENERATOR_VERSION = "3.0.0";
+// The generator version has ONE home: tools/mapforge/lib/version.mjs. This is
+// the only scripts/ -> tools/mapforge/ import in the repo (every other edge
+// runs the other way, tools/mapforge -> scripts/lib/spine.mjs). It is
+// deliberate: the version belongs to the generator, version.mjs imports
+// nothing, so no cycle is possible. The re-export keeps every existing
+// importer of render-lock.mjs — including scripts/tests/render-lock.test.mjs,
+// which imports GENERATOR_VERSION from here — resolving unchanged.
+//
+// The named `import` alongside the `export … from` is required: computeLock
+// reads the constant in its own body, and a re-export alone creates no local
+// binding. Bump the constant THERE, not here.
+export { GENERATOR_VERSION } from "../../tools/mapforge/lib/version.mjs";
+import { GENERATOR_VERSION } from "../../tools/mapforge/lib/version.mjs";
 
-const sha256 = (text) =>
-  "sha256:" + createHash("sha256").update(text, "utf8").digest("hex");
+// A sheet's bytes arrive as a JS string (hashed as UTF-8, which is what the
+// renderer will write) and an extraPath's arrive as a Buffer (hashed as-is).
+// The Buffer path is not cosmetic: reading a file with encoding "utf8" is a
+// LOSSY decode — every byte sequence that is not valid UTF-8 collapses to
+// U+FFFD, so two PNGs differing at one byte hash IDENTICALLY. Harmless while
+// every locked artifact is SVG; a silent hole the moment Task 11 commits PNG
+// thumbs. For valid UTF-8 the two paths agree byte for byte, which is why the
+// committed lock is unchanged by this.
+const sha256 = (data) =>
+  "sha256:" + createHash("sha256").update(data).digest("hex");
 
 // `built` is an OPTIONAL map of outSvg -> already-rendered svg text. Callers
 // that had to build every sheet anyway — check_render_lock.mjs builds them all
@@ -60,13 +76,13 @@ export function computeLock({
     artifacts[sheet.outSvg] = sha256(r.svg);
   }
   for (const p of [...extraPaths].sort()) {
-    let text = null;
+    let bytes = null;
     try {
-      text = readFileSync(join(repoRoot, p), "utf8");
+      bytes = readFileSync(join(repoRoot, p)); // BYTES, never "utf8" — see sha256
     } catch {
       /* missing = absent from the lock */
     }
-    if (text !== null) artifacts[p] = sha256(text);
+    if (bytes !== null) artifacts[p] = sha256(bytes);
   }
   return {
     version: 2,

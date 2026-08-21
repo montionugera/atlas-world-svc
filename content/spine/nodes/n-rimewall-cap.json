@@ -73,21 +73,5 @@
     "summary": "Every master who has run far enough north reports the same white wall shutting the horizon; none reports an end to it."
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 3183.75,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [130, 14],
-    "resolvedSeedStreams": {
-      "terrain": "9a46492ca6ed7e66",
-      "settlements": "70490129a3737160",
-      "vegetation": "15a632f07d110070",
-      "names": "1932d10fc491e603"
-    },
-    "digest": "sha256:d5aa234e5fc3cb48c2b22764f14956b59c5358927bdb93cd1a0a96c3065c39bd"
-  }
+  "levelBand": null
 }

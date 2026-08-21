@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spine-edge.schema.json",
+  "title": "Spine edge — one element of content/spine/edges.json. SHAPE ONLY: G-NET resolves the endpoints, G-CANON-LEG holds the leg distances to +/-8%, and neither bound is repeated here (spine-node.schema.json discipline — a bound duplicated into the schema turns its gate rule into dead code).",
+  "definitions": {
+    "ref": {
+      "title": "An endpoint reference. Exactly the three shapes committed edges use: a spine node, a node feature, or a point at an index along another edge's points[].",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["node"],
+          "additionalProperties": false,
+          "properties": { "node": { "type": "string" } }
+        },
+        {
+          "type": "object",
+          "required": ["feature"],
+          "additionalProperties": false,
+          "properties": { "feature": { "type": "string" } }
+        },
+        {
+          "type": "object",
+          "required": ["edge", "atIndex"],
+          "additionalProperties": false,
+          "properties": {
+            "edge": { "type": "string" },
+            "atIndex": { "type": "integer", "minimum": 0 }
+          }
+        }
+      ]
+    },
+    "km": {
+      "title": "A polyline in km, in the parent frame. Vertex budgets are G-VERTEX-BUDGET's, not this schema's.",
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": { "type": "number" }
+      }
+    }
+  },
+  "type": "object",
+  "required": ["id", "kind", "from", "to", "attrs"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^e-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "kind": { "enum": ["road", "relay", "leg", "sealane"] },
+    "from": { "$ref": "#/definitions/ref" },
+    "to": { "$ref": "#/definitions/ref" },
+    "weight": { "enum": ["trunk", "spur", "track"] },
+    "dashed": { "type": "boolean" },
+    "points": { "$ref": "#/definitions/km" },
+    "via": {
+      "title": "Relay hops, in order. An ARRAY of endpoint refs — not an object.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/ref" }
+    },
+    "attrs": {
+      "title": "Closed to the union of keys the committed edges actually carry. A null is a deliberate 'the corpus states no figure', not a missing key.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "note": { "type": "string" },
+        "label": { "type": "string" },
+        "hours": { "type": ["number", "null"] },
+        "hoursLabel": { "type": ["string", "null"] },
+        "roadKm": { "type": ["number", "null"] },
+        "straightKm": { "type": "number" },
+        "canonHours": { "type": "string" },
+        "labelAtIndex": { "type": "integer", "minimum": 0 },
+        "throughRoute": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "to": { "type": "string" },
+            "roadKm": { "type": "number" },
+            "hours": { "type": "number" }
+          }
+        },
+        "geoFrom": { "type": "string" },
+        "geoTo": { "type": "string" },
+        "sailDays": { "type": "number" },
+        "season": { "type": "string" },
+        "amendedPending": { "type": "string" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "required": ["kind"], "properties": { "kind": { "const": "road" } } },
+      "then": {
+        "required": ["weight", "dashed", "points"],
+        "not": { "required": ["via"] }
+      }
+    },
+    {
+      "if": { "required": ["kind"], "properties": { "kind": { "const": "relay" } } },
+      "then": {
+        "required": ["via"],
+        "not": {
+          "anyOf": [
+            { "required": ["points"] },
+            { "required": ["weight"] },
+            { "required": ["dashed"] }
+          ]
+        }
+      }
+    },
+    {
+      "if": { "required": ["kind"], "properties": { "kind": { "const": "leg" } } },
+      "then": {
+        "not": {
+          "anyOf": [
+            { "required": ["points"] },
+            { "required": ["weight"] },
+            { "required": ["via"] },
+            { "required": ["dashed"] }
+          ]
+        }
+      }
+    },
+    {
+      "if": { "required": ["kind"], "properties": { "kind": { "const": "sealane" } } },
+      "then": {
+        "not": {
+          "anyOf": [
+            { "required": ["points"] },
+            { "required": ["weight"] },
+            { "required": ["via"] },
+            { "required": ["dashed"] }
+          ]
+        }
+      }
+    }
+  ]
+}

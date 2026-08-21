@@ -1,13 +1,32 @@
-# F-046 — World Fill Plan A: Unblock and Afford
+# F-047 — World Fill Plan B: Vocabulary and Render
 
-**The plan for this feature is NOT in this file.** Read it here:
+**This file is a pointer. Do not implement from it.**
 
-> `docs/superpowers/plans/2026-08-16-world-fill-a-unblock-and-afford.md`
+The real documents, in the order you must read them:
 
-**Design (approved, do not redesign):**
+1. **`docs/superpowers/plans/world-fill-STATE.md`** — the running handover. Read this FIRST.
+   It carries the measured baselines, the "nothing moved" invariant, the nine places the plan
+   documents are wrong, and the traps that have already bitten.
+2. **`docs/superpowers/plans/2026-08-16-world-fill-b-vocabulary-and-render.md`** — the plan.
+   12 tasks in two halves. Read only the sections you were dispatched for.
+3. **`docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md`** —
+   the approved design, for background only.
 
-> `docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md`
+`.claude/refined_backlog/F-047-world-fill-plan-b-vocabulary-and-render/plan.md` is a verbatim
+copy of (2), kept there by the release workflow.
 
-Plan A is the first of five slices (A–E) of the world-fill programme. Its tasks run in strict
-numeric order 1 → 13. It changes **zero content**: the two committed map SVGs must be
-byte-identical at the end, measured against the `plan-a-base` git tag.
+## The one-line goal
+
+Give the repo a content vocabulary and a renderer that can draw the target world *before* the
+target world exists — and move no part of the world while doing it.
+
+## The invariant, on every commit
+
+```bash
+node scripts/check_spine_emit.mjs --check          # clean, no drift
+node scripts/check_render_lock.mjs --check         # clean, WITHOUT --write (Tasks 1-11)
+(cd colyseus-server && npx jest mapDimensions)     # green
+git diff --stat plan-b-base -- colyseus-server/    # prints nothing
+```
+
+The base tag is `plan-b-base`.

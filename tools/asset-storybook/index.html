@@ -860,6 +860,89 @@
         margin-top: 0.3rem;
       }
 
+      /* Plan B Task 11 — the map vocabulary panel. Collapsed by default: it is
+         a reference, not the subject of the tab, and expanding it mounts 65
+         inline SVGs. */
+      .maps-ref {
+        margin: 1.4rem 0 0.4rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-elev);
+      }
+
+      .maps-ref > summary {
+        cursor: pointer;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.86rem;
+        font-weight: 650;
+        color: var(--text);
+        user-select: none;
+      }
+
+      .maps-ref > summary:hover {
+        background: var(--bg-card);
+      }
+
+      .maps-ref-body {
+        padding: 0 0.8rem 1rem;
+      }
+
+      .maps-vocab-stats {
+        padding: 0 0 0.8rem !important;
+        font-size: 0.8rem;
+      }
+
+      .maps-vocab-subhead {
+        margin: 1rem 0 0.6rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+
+      /* Denser than the sheet grid: these are swatches, not artifacts. */
+      .maps-vocab-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      }
+
+      .maps-vocab-grid.maps-vocab-marks {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      }
+
+      .maps-vocab-card {
+        padding: 0.55rem;
+        margin: 0;
+        text-align: center;
+      }
+
+      .maps-vocab-card .key,
+      .maps-vocab-card .filename {
+        text-align: center;
+        word-break: break-word;
+      }
+
+      /* The swatch and the mark carry mapforge's own parchment ground so the
+         ink reads the way it reads on a sheet, in either page theme. */
+      .maps-vocab-swatch,
+      .maps-vocab-mark {
+        display: block;
+        margin: 0 auto 0.4rem;
+        max-width: 100%;
+        border-radius: 3px;
+      }
+
+      .maps-vocab-mark {
+        background: #e9e1cf;
+        padding: 2px;
+      }
+
+      /* A glyph family bound to no landform type is drawn and unused — worth
+         seeing, not worth failing on. */
+      .maps-vocab-card.maps-vocab-warn {
+        outline: 1px solid #b4762f;
+      }
+
       /* The overlay reuses .story-overlay's chrome (header/backdrop/exit) —
          only the stage differs: an SVG under a CSS transform instead of an
          iframe. */

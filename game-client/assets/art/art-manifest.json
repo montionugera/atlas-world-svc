@@ -491,7 +491,7 @@
       "group": "map",
       "title": "Cluster 1 — the Meltwash basin",
       "file": "maps/cluster1-world.png",
-      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-sheet.mjs from content/spine/; the SVG beside this PNG (maps/cluster1-world.svg) is the artifact, the PNG is a 2000px raster of it for the storybook. Replaces an earlier Z-Image Turbo attempt, which could not draw this world’s coastline, roads or place names.",
+      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-sheet.mjs from content/spine/; the SVG beside this PNG (maps/cluster1-world.svg) is the artifact, the PNG beside it is a 512px review thumb of it for the storybook card. Replaces an earlier Z-Image Turbo attempt, which could not draw this world’s coastline, roads or place names.",
       "description": "A single-sheet Bellfaith relay map of the Meltwash basin, drafted rather than painted: ink on cream parchment with one accent colour (bell-bronze) reserved for the 27 relay towers and their sight-lines. Real paths for the coastline, the Meltwash and the hatched Saltmire; roads carry their canon day-counts lettered along the legs, with waystations where each day ends; six towns, ten zones with level bands, the Ashvale Front drawn as a gradient whose northern deep is left as bare hatch, and a hard parchment edge along the top because the map does not pretend to know what lies past the ice.",
       "tags": [
         "cluster-1",
@@ -508,9 +508,9 @@
         "tool": "tools/mapforge/render-sheet.mjs",
         "input": "content/spine/",
         "vector": "maps/cluster1-world.svg",
-        "raster": "rsvg-convert -w 2000",
+        "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
         "deterministic": true,
-        "width": 2000,
+        "width": 512,
         "note": "No model, no sampler, no seed — this sheet is drawn from geometry, so there are no generation parameters to record. Re-run the tool to reproduce it byte-for-byte. Since F-042 the sheet renders from content/spine/ via render-sheet.mjs, and Plan A retired the content/maps/cluster1-geography.json mirror it used to read."
       }
     },
@@ -518,7 +518,7 @@
       "group": "map",
       "title": "The Atlas World — surveyed ground",
       "file": "maps/atlas-world.png",
-      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-sheet.mjs --sheet atlas from content/spine/ (nodes + sheet-atlas.json); the SVG beside this PNG (maps/atlas-world.svg) is the artifact, the PNG is a 2000px raster of it for the storybook.",
+      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-sheet.mjs --sheet atlas from content/spine/ (nodes + sheet-atlas.json); the SVG beside this PNG (maps/atlas-world.svg) is the artifact, the PNG beside it is a 512px review thumb of it for the storybook card.",
       "description": "The world sheet: the full 2000×2000 km frame of n-atlas with the Meltwash basin drawn as a surveyed miniature in its corner — coastline, river, continent outline and seven town marks — the western sea strip, the Gildmark sea-lane leaving the sheet with its season, and honest empty parchment everywhere the survey has never reached. No scale bar; the hand note says why.",
       "tags": ["world", "map", "bellfaith", "authored-vector", "svg", "spine"],
       "source": "docs/superpowers/specs/2026-08-12-world-map-render-design.md",
@@ -527,9 +527,27 @@
         "tool": "tools/mapforge/render-sheet.mjs",
         "input": "content/spine/",
         "vector": "maps/atlas-world.svg",
-        "raster": "rsvg-convert -w 2000",
-        "deterministic": true, "width": 2000,
+        "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+        "deterministic": true, "width": 512,
         "note": "No model, no sampler, no seed — drawn from spine geometry. Re-run the tool to reproduce it byte-for-byte."
+      }
+    },
+    "art:map-synthetic-density": {
+      "group": "map",
+      "title": "Target-Density Canary — not geography",
+      "file": "maps/synthetic-density.png",
+      "note": "TEST INSTRUMENT, NOT SHIPPED ART. No player ever sees this sheet: it is drawn by tools/mapforge/lib/synthetic-sheet.mjs from a committed parameter fixture, at the size of the world Plan C generates, so a render regression at target density is visible against today's small chart. It is manifested because scripts/check_asset_manifest.mjs FAILS on any file under game-client/assets/art/ with no entry — the earlier plan to leave it out was checked against the gate and does not survive it.",
+      "description": "A synthetic chart at the agreed target density — 13 landmasses, 160 regions, 1,740 landform glyph instances at the 18 px family-identity minimum, and 340 decluttered labels — on the atlas sheet's own 400 km, 1400 x 1400 px frame, over a baked biome-texture underlay with the full 25-row legend beneath it. Every ring, mark and name is generated from one integer hash; none of it is a place.",
+      "tags": ["map", "canary", "test-instrument", "authored-vector", "svg", "not-geography"],
+      "source": "docs/superpowers/plans/2026-08-16-world-fill-b-vocabulary-and-render.md",
+      "gen": {
+        "method": "authored-vector", "generated": false,
+        "tool": "tools/mapforge/render-sheet.mjs --sheet synthetic",
+        "input": "tools/mapforge/tests/fixtures/synthetic-world/world.json + content/world/lexicon/landforms.json",
+        "vector": "maps/synthetic-density.svg",
+        "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+        "deterministic": true, "width": 512,
+        "note": "No model, no sampler, no seed — every shape falls out of the fixture's seed. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
       }
     },
     "art:town-millcross": {

@@ -61,21 +61,5 @@
     "summary": "The ocean is a SIBLING of the continent, never a bucket inside it (research §5.3) — the continent's placement polygon is land only, so sea never enters its denominator. Phase 0 strip; Phase 1 absorbs the 49.5% unclaimed ground split."
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 81.68,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [1.6, 12],
-    "resolvedSeedStreams": {
-      "terrain": "08bc7cf4db04f6d0",
-      "settlements": "2ef11b7499607e1f",
-      "vegetation": "74067f5d575933ad",
-      "names": "55883baf84485a59"
-    },
-    "digest": "sha256:f4af1348f8ac5d3c56fb60ea94d35f6a626c65eb3058cd8aa51023d577240db5"
-  }
+  "levelBand": null
 }

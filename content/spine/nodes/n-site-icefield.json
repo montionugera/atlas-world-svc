@@ -115,21 +115,5 @@
     "summary": "The Stoneguard's home turf on the runtime shelf; stands in for the fiction Northern Icefield."
   },
   "tags": ["runtime-only"],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 250000,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [500, 125],
-    "resolvedSeedStreams": {
-      "terrain": "bf31b65067438eb9",
-      "settlements": "5c93c8b91996e527",
-      "vegetation": "9142393d8663e87a",
-      "names": "265c8e8448ee8bf2"
-    },
-    "digest": "sha256:77567008498aee7199e1442fb9f0c15b3afbfeb1c7a37423efebd17e31ca7af6"
-  }
+  "levelBand": null
 }

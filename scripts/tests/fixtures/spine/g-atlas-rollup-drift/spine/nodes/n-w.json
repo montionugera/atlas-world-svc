@@ -13,22 +13,6 @@
   "interstitialUnsurveyed": false,
   "compositionTolerance": 5.0,
   "toleranceWhy": "fixture: keep G-COMP-ROLLUP quiet so G-ATLAS-ROLLUP's tighter ±2pp pin is the only red",
-  "derived": {
-    "areaParentUnits2": 10000,
-    "childAreaParentUnits2": 6400,
-    "coveragePct": 64,
-    "unclaimedPct": 36,
-    "computedComposition": { "meadow": 100 },
-    "rollupVerdict": "CHECKED",
-    "absoluteAnchorRoot": [50, 50],
-    "resolvedSeedStreams": {
-      "terrain": "bdea648ad63eb43e",
-      "settlements": "fecd22c2f69cdab7",
-      "vegetation": "d125c0b5491e18da",
-      "names": "cbb688537282742b"
-    },
-    "digest": "sha256:247c024d6f981435220d6fff15584f80567819c6b9b57d067eab5c6b3b91e916"
-  },
   "features": [],
   "bands": [],
   "runtime": { "mapIds": [], "originU": null, "spawnAreas": [], "mobSettings": null, "seedDemoNPCs": false, "collision": "none" },

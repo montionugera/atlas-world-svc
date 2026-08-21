@@ -110,26 +110,5 @@
     "amendedPending": "AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred."
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 880.0449999999983,
-    "childAreaParentUnits2": 880.0449999999983,
-    "coveragePct": 100,
-    "unclaimedPct": 0,
-    "computedComposition": {
-      "rock": 55,
-      "upland": 20,
-      "forest": 15,
-      "meadow": 10
-    },
-    "rollupVerdict": "CHECKED",
-    "absoluteAnchorRoot": [198.8, 148.3],
-    "resolvedSeedStreams": {
-      "terrain": "0c151c7f6fcc1034",
-      "settlements": "05f0e72c8fbc3089",
-      "vegetation": "a37079184a7bea3b",
-      "names": "700e225c53464cc6"
-    },
-    "digest": "sha256:3e0e587fe023a0709ca2e0c73c5c4e5284ef375638aeccdcfeb487c14095e05a"
-  }
+  "levelBand": null
 }

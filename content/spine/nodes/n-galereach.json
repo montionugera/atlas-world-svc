@@ -79,21 +79,5 @@
     "summary": "The middle water the trade wind crosses; its gales are the one entry every log agrees on."
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 29913.20000000001,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [237.7, 156.6],
-    "resolvedSeedStreams": {
-      "terrain": "3db2682fad574543",
-      "settlements": "f17623790ef4159a",
-      "vegetation": "22b26e58d3d80b68",
-      "names": "8893b02b0601c937"
-    },
-    "digest": "sha256:7da0b87d1378f08b017b8f66f72b2d8d93df65b81cbaf530b18fc946a7d33c75"
-  }
+  "levelBand": null
 }

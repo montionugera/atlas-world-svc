@@ -70,6 +70,25 @@ task legitimately needs a sixth file, that is a finding to raise — never a dif
 `content/world/render-lock.json` and the two committed SVGs. Nothing else, ever, outside Plan E's
 redraw commit.
 
+**What Task 12's carve-out ACTUALLY moved — measured 2026-08-22 by the seam-4 fix pass, because
+the seam's own commit messages overstate it in two places and a commit message cannot be
+amended.** Counted with `grep -o` against `plan-b-base`, not with a remembered figure:
+
+| | `<path d=` | `<rect ` | `<text` | `rotate(` | canvas |
+| --- | --- | --- | --- | --- | --- |
+| `cluster1-world.svg` base → head | 297 → **297** | 28 → **28** | 100 → **100** | 12 → **12** | 1614x1396, **unchanged** |
+| `atlas-world.svg` base → head | 39 → **44** | 4 → **32** | 37 → **52** | 28 → **2** | 1542 → **1672 tall** |
+
+- **"nothing moved" is true of the BASIN sheet's element census and of every `<path d>` on both
+  sheets — and of nothing else.** On the atlas, every `<text class="lbl">` moved: 26 of the 28
+  `rotate()` transforms were dropped along with `text-anchor`, the canvas grew 130 px, 28 legend
+  rects and 5 patterns were added. All of that is *permitted* by the carve-out. The phrasing
+  oversold it, and a later plan reading "nothing moved" would draw the wrong conclusion.
+- **The basin sheet has 277 DRAWN paths, not 289.** 297 `<path d=` occurrences in the file, of
+  which 13 belong to `<clipPath>` blocks and 7 to `<pattern>` blocks. The pattern `<rect>`
+  geometry DID change on all 13 zones — that was the point of the raster-cost fix — while the
+  drawn paths did not.
+
 ---
 
 ## 4. What Plan A built that the later plans consume
@@ -192,6 +211,51 @@ reports written to a file that returns only its path.
 ---
 
 ## 8. Open follow-ups
+
+**From the F-047 seam-4 (Tasks 10-12) fix pass, 2026-08-22.** Each was reproduced before being
+filed; none is a guess.
+
+- **`SHEETS.cluster1.maxLabelRank` is INERT.** `basin-sheet.mjs` never calls `placeLabels` — it
+  draws its names directly — so the number nothing reads sits beside a test asserting it exists.
+  Wiring it in re-inks `cluster1-world.svg`, which is **Plan E's redraw**, not a fix. The
+  registry row now says so, and `render-sheet.test.mjs`'s "which sheets actually RUN a label
+  declutter" test pins the fact from the source so the note cannot rot.
+- **`bake_thumbnails.mjs`'s call to `carryForwardFiltered` has no test on its WIRING** (the pure
+  function is covered 4/4). Covering it means running `main()`, which needs `sharp` and Blender.
+  Recorded rather than chased because the failure is LOUD: without it a `--only` run wipes the
+  other 640 index rows, and `check_asset_manifest.mjs` guard (U) fails on every one of them —
+  `thumb_freshness.test.mjs` pins that case. Worth doing when the baker is next refactored.
+- **~200 lines of `scripts/tests/world-budget.test.mjs` were reformatted by prettier** during
+  seam 4, unrelated to the tasks. Verified: no semantic change, and `scripts/`+`tools/` are NOT
+  in the repo's prettier scope (husky/lint-staged runs it on `colyseus-server/src/**/*.ts` only),
+  so this was an out-of-scope reformat. NOT reverted — the fix pass has since added ~280 lines to
+  the same file, so undoing it now costs a large diff for no behavioural gain.
+- **Two recorded mutation SURVIVORS, both benign and both explained at the call site**, so the
+  next reviewer does not re-derive them: (a) restoring `atlas-sheet.mjs`'s `checkBiomeInk`
+  self-comparison stays green — on that sheet the emitted and painted pattern sets coincide by
+  construction (measured: 3 and 3, at every legend tier), so no fixture can separate them;
+  (b) dropping `asked` from the atlas's `checkLabels` call stays green — the three label buckets
+  always reconcile there. Both arguments are defence for a future sheet whose draw pass can skip
+  a subject; the rules themselves are killed by direct fixtures.
+- **`G-RASTER-BUDGET` still runs in ONE venue (Gate 2) and that is a DECISION, not an oversight.**
+  Review A observed it correctly: `ci.yml` installs no librsvg, so all six raster tests skip
+  there. Installing `librsvg2-bin` in CI was considered and REJECTED — it would put a wall-clock
+  performance assertion on a shared, contended GitHub runner, which is the exact condition that
+  produced review A's own 1-in-8 red on a developer box. What DOES run in CI is the deterministic
+  half, and it now reads the same defects out of committed bytes: the aggregate pattern-area cap,
+  the new per-clip direct rule, and the ink floor. Verified on Node 18 in a container: mapforge
+  251 tests / 245 pass / 6 skipped, storybook 54/54, content gate 0 failures — and blanking the
+  atlas thumb reds the storybook suite and prints three `G-SHEET-BUDGET` failures on that same
+  Node 18.
+- **The determinism ban is now an INVENTORY, not a prose rule.** "`Math.hypot` BANNED" named one
+  function while the committed-byte path uses hypot x7, `atan2` x6, `Math.PI` x8, and — in
+  `world-gen.mjs`, which builds the *committed* canary sheet — `Math.cos`, `Math.sin` and `**`.
+  All predate `plan-b-base` and all are empirically byte-identical on CI's Node 18 and local
+  Node 26, which is what `check_render_lock` measures on every run. They are frozen by file and
+  count in `tools/mapforge/tests/determinism-inventory.test.mjs`; a NEW one goes red. `Math.sqrt`
+  is explicitly outside the rule (IEEE 754 mandates correct rounding for it and not for the
+  others). **Plans B-E should stop repeating the hypot-only wording.**
+
 
 - **I-098** — stale references to what Plan A deleted: two committed schema `description` fields
   still name the deleted mirror as the authority (→ Plan D); three comments describe deleted code

@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "spine-node.schema.json",
-  "title": "Spine node — SHAPE ONLY. Every numeric floor/ceiling lives in checkSpine()'s G-* gates, never here: the gate continues past a schema-invalid doc, so a bound duplicated into the schema turns its gate rule into dead code (town-plan.test.mjs:105-118 discipline).",
+  "title": "Spine node — SHAPE ONLY. Every numeric floor/ceiling lives in checkSpine()'s G-* gates, never here: the gate continues past a schema-invalid doc, so a bound duplicated into the schema turns its gate rule into dead code (town-plan.test.mjs:105-118 discipline). Plan B Task 2 closed the root: the union of keys across all committed node files is exactly the enumerated set, so a typo'd field name is now a schema failure instead of a silent accept. The contract is on the FILE ON DISK — loadSpine's injected `file` stem is stripped by checkSpine before validating (check_content.mjs), never enumerated here. Plan B Task 4 removed the `derived` property: the computed block now lives in the one content/spine/derived.json sidecar, so a leftover inline block is BOTH a schema failure (this closed root) and an emitter failure (check_spine_emit's NODE_FIELDS).",
   "type": "object",
   "required": ["id", "tier", "parentId", "title", "seed", "placement", "composition"],
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
     "id": { "type": "string" },
     "tier": { "enum": ["world", "playroot", "continent", "ocean", "playspace", "fixture", "region", "sea", "town", "site"] },
@@ -56,13 +56,55 @@
     "compositionTolerance": { "type": ["number", "null"] },
     "toleranceWhy": { "type": ["string", "null"] },
     "terrainKind": { "type": ["string", "null"] },
-    "features": { "type": "array" },
+    "features": {
+      "type": "array",
+      "items": {
+        "title": "A node feature. `kind` is COUPLED to its geometry payload (point->at, line->points, area->ring) the same way landform-instance.schema.json's geometry oneOf couples shape to payload: without it a point with no `at` validated, and so did a point carrying an area's ring. Swept before adding: 100 features across the committed nodes and every gate fixture, 0 affected.",
+        "type": "object",
+        "required": ["id", "kind", "attrs"],
+        "additionalProperties": false,
+        "allOf": [
+          { "if": { "required": ["kind"], "properties": { "kind": { "const": "point" } } },
+            "then": { "required": ["at"], "not": { "anyOf": [{ "required": ["points"] }, { "required": ["ring"] }] } } },
+          { "if": { "required": ["kind"], "properties": { "kind": { "const": "line" } } },
+            "then": { "required": ["points"], "not": { "anyOf": [{ "required": ["at"] }, { "required": ["ring"] }] } } },
+          { "if": { "required": ["kind"], "properties": { "kind": { "const": "area" } } },
+            "then": { "required": ["ring"], "not": { "anyOf": [{ "required": ["at"] }, { "required": ["points"] }] } } }
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "enum": ["point", "line", "area"] },
+          "at": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+          "points": { "type": "array", "minItems": 2, "items": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } } },
+          "ring": { "type": "array", "minItems": 3, "items": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } } },
+          "offSheet": { "type": "boolean" },
+          "type": { "type": ["string", "null"] },
+          "attrs": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": ["string", "null"] },
+              "note": { "type": "string" },
+              "role": { "type": "string" },
+              "town": { "type": "string" },
+              "reaches": { "type": "array" },
+              "labelAt": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+              "tidalLimit": { "type": "object" },
+              "ford": { "type": "object" },
+              "hardEdgeAtY": { "type": "number" },
+              "detached": { "type": "boolean" },
+              "inert": { "type": "boolean" },
+              "hazard": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
     "bands": { "type": "array" },
     "runtime": { "type": ["object", "null"] },
     "representsNodeId": { "type": ["string", "null"] },
     "lore": { "type": "object" },
     "tags": { "type": "array", "items": { "type": "string" } },
-    "levelBand": { "type": ["array", "null"] },
-    "derived": { "type": "object" }
+    "levelBand": { "type": ["array", "null"] }
   }
 }

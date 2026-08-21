@@ -1,0 +1,3870 @@
+[
+  {
+    "id": "coastal-drowned-valley",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ocean",
+      "meadow"
+    ],
+    "sizeKm": [
+      1,
+      12
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lagoon",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A river mouth the sea has walked up, so the water is salt a long way inland.",
+    "absentBecause": null
+  },
+  {
+    "id": "sea-cave",
+    "group": "coastal",
+    "alsoGroups": [
+      "karst"
+    ],
+    "geometry": "point",
+    "biomes": [
+      "ocean",
+      "rock"
+    ],
+    "sizeKm": [
+      0.02,
+      0.3
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-cliff",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A dark mouth in the cliff foot that the tide fills twice a day and empties again.",
+    "absentBecause": null
+  },
+  {
+    "id": "sea-arch",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "ocean",
+      "rock"
+    ],
+    "sizeKm": [
+      0.02,
+      0.2
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-arch",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A rib of rock the waves have holed clean through, still standing on two legs.",
+    "absentBecause": null
+  },
+  {
+    "id": "sea-stack",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "ocean",
+      "rock"
+    ],
+    "sizeKm": [
+      0.01,
+      0.15
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cliff",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A pillar left offshore when the arch beside it fell; birds own the top of it.",
+    "absentBecause": null
+  },
+  {
+    "id": "blowhole",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "ocean",
+      "rock"
+    ],
+    "sizeKm": [
+      0.01,
+      0.05
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-cliff",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A hole in the cliff top that spits spray and thunder whenever a big swell comes in.",
+    "absentBecause": null
+  },
+  {
+    "id": "geo",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "ocean",
+      "rock"
+    ],
+    "sizeKm": [
+      0.05,
+      0.6
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cliff",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A narrow slot cut back into the cliff along a weak seam, loud with water at the far end.",
+    "absentBecause": null
+  },
+  {
+    "id": "wave-cut-platform",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ocean",
+      "rock"
+    ],
+    "sizeKm": [
+      0.1,
+      2
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cliff",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A flat shelf of scoured rock below the cliff, bare at low water and slick with weed.",
+    "absentBecause": null
+  },
+  {
+    "id": "marine-terrace",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "rock",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.5,
+      6
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cliff",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "An old shoreline stranded above the present one, level enough to build a road on.",
+    "absentBecause": null
+  },
+  {
+    "id": "tombolo",
+    "group": "coastal",
+    "alsoGroups": [
+      "island"
+    ],
+    "geometry": "line",
+    "biomes": [
+      "ocean",
+      "rock"
+    ],
+    "sizeKm": [
+      0.2,
+      3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-spit",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A neck of sand and shingle joining an island to the shore; it drowns on the big tides.",
+    "absentBecause": null
+  },
+  {
+    "id": "spit",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "ocean",
+      "marsh"
+    ],
+    "sizeKm": [
+      0.3,
+      6
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-spit",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A finger of shingle the drift keeps building out across open water, growing every year.",
+    "absentBecause": null
+  },
+  {
+    "id": "baymouth-bar",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "ocean",
+      "marsh"
+    ],
+    "sizeKm": [
+      0.3,
+      4
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-spit",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A bank of sand grown right across a bay mouth, shutting the water in behind it.",
+    "absentBecause": null
+  },
+  {
+    "id": "barrier-island",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ocean",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.5,
+      9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-spit",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A low ridge of sand lying offshore, taking the weather so the mainland does not.",
+    "absentBecause": null
+  },
+  {
+    "id": "coastal-lagoon",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ocean",
+      "marsh"
+    ],
+    "sizeKm": [
+      0.3,
+      8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lagoon",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "Shallow brackish water penned behind a bar, calm when the sea outside is not.",
+    "absentBecause": null
+  },
+  {
+    "id": "estuary",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ocean",
+      "river",
+      "marsh"
+    ],
+    "sizeKm": [
+      1,
+      14
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lagoon",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "Where the river's water and the sea's argue twice a day over the same mudflats.",
+    "absentBecause": null
+  },
+  {
+    "id": "cuspate-foreland",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ocean",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.5,
+      7
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-spit",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A blunt triangle of shingle thrown out from the coast where two drifts meet.",
+    "absentBecause": null
+  },
+  {
+    "id": "machair",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "meadow",
+      "ocean"
+    ],
+    "sizeKm": [
+      0.2,
+      3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lagoon",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "Shell sand blown inland and gone to grass; grazing on top of what was once a beach.",
+    "absentBecause": null
+  },
+  {
+    "id": "raised-beach",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "rock",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.3,
+      5
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cliff",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "A band of rounded cobbles well above the waterline, from a sea that has since dropped.",
+    "absentBecause": null
+  },
+  {
+    "id": "tidal-flat",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ocean",
+      "marsh"
+    ],
+    "sizeKm": [
+      0.5,
+      10
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lagoon",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA"
+    },
+    "gloss": "Ground that is mud at low water and sea at high, with no clear edge between them.",
+    "absentBecause": null
+  },
+  {
+    "id": "headland",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "rock",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.3,
+      6
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cliff",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA",
+      "slopeMin": 0.04
+    },
+    "gloss": "A shoulder of cliff shoved out into the water; the coast road goes over it or not at all.",
+    "absentBecause": null
+  },
+  {
+    "id": "sea-waterfall",
+    "group": "coastal",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "ocean",
+      "rock"
+    ],
+    "sizeKm": [
+      0.02,
+      0.3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cliff",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "SEA",
+      "flowAccMin": 40
+    },
+    "gloss": "A stream that runs off the cliff lip and never reaches a beach, because there is none.",
+    "absentBecause": null
+  },
+  {
+    "id": "delta",
+    "group": "fluvial",
+    "alsoGroups": [
+      "coastal"
+    ],
+    "geometry": "area",
+    "biomes": [
+      "river",
+      "marsh",
+      "ocean"
+    ],
+    "sizeKm": [
+      2,
+      20
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-delta",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "RIVER"
+    },
+    "gloss": "The river gives up and splits, laying its load down in a fan of shifting channels.",
+    "absentBecause": null
+  },
+  {
+    "id": "braided-channel",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "river",
+      "scree"
+    ],
+    "sizeKm": [
+      1,
+      12
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-meander",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "RIVER"
+    },
+    "gloss": "A wide bed of gravel bars where the river runs in a dozen shallow threads at once.",
+    "absentBecause": null
+  },
+  {
+    "id": "meander-scroll-plain",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "river",
+      "meadow"
+    ],
+    "sizeKm": [
+      1,
+      15
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-meander",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "RIVER"
+    },
+    "gloss": "Flat ground ribbed with the ghosts of old bends the river has already abandoned.",
+    "absentBecause": null
+  },
+  {
+    "id": "oxbow-lake",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake",
+      "river"
+    ],
+    "sizeKm": [
+      0.05,
+      0.8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-meander",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "RIVER"
+    },
+    "gloss": "A cut-off loop of river left standing on its own, going quietly green at the edges.",
+    "absentBecause": null
+  },
+  {
+    "id": "alluvial-fan",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "scree",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.5,
+      8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-fan",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "RIVER"
+    },
+    "gloss": "A spread of stone and grit laid out where a steep stream hits the flat and slows.",
+    "absentBecause": null
+  },
+  {
+    "id": "floodplain-levee",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "river",
+      "meadow"
+    ],
+    "sizeKm": [
+      1,
+      14
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-meander",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "RIVER"
+    },
+    "gloss": "A low natural bank along the water, built from what the floods dropped first.",
+    "absentBecause": null
+  },
+  {
+    "id": "river-terrace",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "river",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.5,
+      8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-fan",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "RIVER"
+    },
+    "gloss": "A dry step above the present river, cut when the water ran higher than it does now.",
+    "absentBecause": null
+  },
+  {
+    "id": "plunge-pool",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "river",
+      "rock"
+    ],
+    "sizeKm": [
+      0.02,
+      0.3
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-falls",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "RIVER"
+    },
+    "gloss": "A deep scoured basin under a fall, cold and loud, with an undercut behind the water.",
+    "absentBecause": null
+  },
+  {
+    "id": "knickpoint-gorge",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "river",
+      "rock"
+    ],
+    "sizeKm": [
+      0.3,
+      6
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-falls",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "RIVER"
+    },
+    "gloss": "A steep-walled reach where the river is still cutting its way down through hard rock.",
+    "absentBecause": null
+  },
+  {
+    "id": "canyon",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "rock",
+      "river"
+    ],
+    "sizeKm": [
+      1,
+      18
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-falls",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "RIVER",
+      "slopeMin": 0.05
+    },
+    "gloss": "A long cut with the sky in a strip overhead and no way out for miles either side.",
+    "absentBecause": null
+  },
+  {
+    "id": "confluence-bench",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "river",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.1,
+      1.2
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-meander",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "RIVER"
+    },
+    "gloss": "The dry tongue of ground between two rivers, just before they become one.",
+    "absentBecause": null
+  },
+  {
+    "id": "anabranch-island",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "river",
+      "forest"
+    ],
+    "sizeKm": [
+      0.1,
+      2.5
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-meander",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "RIVER"
+    },
+    "gloss": "A wooded island the river has split around and not yet decided to take back.",
+    "absentBecause": null
+  },
+  {
+    "id": "sinking-river",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "river",
+      "karst"
+    ],
+    "sizeKm": [
+      0.5,
+      9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-falls",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "RIVER",
+      "rock": "carbonate"
+    },
+    "gloss": "A stream that runs into a hole in the ground and does not come out anywhere near.",
+    "absentBecause": null
+  },
+  {
+    "id": "ford",
+    "group": "fluvial",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "river",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.02,
+      0.4
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-meander",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "RIVER",
+      "slopeMax": 0.02
+    },
+    "gloss": "A gravel shallow where the river spreads wide enough to walk, in the right season.",
+    "absentBecause": null
+  },
+  {
+    "id": "ridge-spine",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "upland",
+      "rock"
+    ],
+    "sizeKm": [
+      3,
+      40
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-ridge",
+    "rarity": "common",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "One unbroken backbone of rock; the only ways over it are the notches.",
+    "absentBecause": null
+  },
+  {
+    "id": "summit-pyramid",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "rock",
+      "ice"
+    ],
+    "sizeKm": [
+      0.2,
+      2
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-peak",
+    "rarity": "uncommon",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "A peak with three clean faces meeting at a point, and nothing above it for a long way.",
+    "absentBecause": null
+  },
+  {
+    "id": "col-pass",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "upland",
+      "rock"
+    ],
+    "sizeKm": [
+      0.1,
+      1.5
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-ridge",
+    "rarity": "common",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "The low saddle between two summits: the crossing everyone uses, and everyone watches.",
+    "absentBecause": null
+  },
+  {
+    "id": "spur-ridge",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "upland",
+      "rock"
+    ],
+    "sizeKm": [
+      1,
+      12
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-ridge",
+    "rarity": "common",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "A shoulder running down off the main ridge, easy walking until it steepens.",
+    "absentBecause": null
+  },
+  {
+    "id": "cuesta",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "rock",
+      "meadow"
+    ],
+    "sizeKm": [
+      2,
+      20
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-mesa",
+    "rarity": "uncommon",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "A long hill with one gentle back and one abrupt face, like a wave about to break.",
+    "absentBecause": null
+  },
+  {
+    "id": "hogback",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "rock",
+      "scree"
+    ],
+    "sizeKm": [
+      1,
+      14
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-mesa",
+    "rarity": "uncommon",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "A sharp ridge of tilted strata standing at the same steep angle on both sides.",
+    "absentBecause": null
+  },
+  {
+    "id": "mesa",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "rock",
+      "badland"
+    ],
+    "sizeKm": [
+      1,
+      16
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-mesa",
+    "rarity": "uncommon",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "A table of ground standing above everything else, flat on top and cliffed all round.",
+    "absentBecause": null
+  },
+  {
+    "id": "butte",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "rock",
+      "badland"
+    ],
+    "sizeKm": [
+      0.1,
+      1.5
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-mesa",
+    "rarity": "common",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "The last stump of a table left standing after the rest of it wore away.",
+    "absentBecause": null
+  },
+  {
+    "id": "plateau-scarp",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "rock",
+      "upland"
+    ],
+    "sizeKm": [
+      2,
+      25
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-mesa",
+    "rarity": "uncommon",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "The cliffed edge where the high ground stops and the low country begins.",
+    "absentBecause": null
+  },
+  {
+    "id": "talus-cone",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "scree",
+      "rock"
+    ],
+    "sizeKm": [
+      0.1,
+      1.5
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-scree",
+    "rarity": "common",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "A cone of loose stone piled under a gully, sliding underfoot at every step.",
+    "absentBecause": null
+  },
+  {
+    "id": "rockfall-apron",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "scree",
+      "rock"
+    ],
+    "sizeKm": [
+      0.2,
+      3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-scree",
+    "rarity": "common",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "A skirt of broken blocks below a cliff, from small chips to house-sized.",
+    "absentBecause": null
+  },
+  {
+    "id": "avalanche-chute",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "scree",
+      "ice"
+    ],
+    "sizeKm": [
+      0.3,
+      4
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-scree",
+    "rarity": "uncommon",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "A stripe of scoured, treeless ground where the snow comes down every winter.",
+    "absentBecause": null
+  },
+  {
+    "id": "saddle-notch",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "upland",
+      "rock"
+    ],
+    "sizeKm": [
+      0.1,
+      1
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-ridge",
+    "rarity": "common",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "A shallow dip in a ridge line, the only place to cross without using hands.",
+    "absentBecause": null
+  },
+  {
+    "id": "foothill-belt",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "upland",
+      "forest"
+    ],
+    "sizeKm": [
+      3,
+      30
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-ridge",
+    "rarity": "common",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "The wooded rise between the plain and the real mountains, cut by short steep valleys.",
+    "absentBecause": null
+  },
+  {
+    "id": "massif-dome",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "rock",
+      "upland"
+    ],
+    "sizeKm": [
+      4,
+      35
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-peak",
+    "rarity": "rare",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "A single great swell of rock with all its valleys running off it like spokes.",
+    "absentBecause": null
+  },
+  {
+    "id": "tectonic-cave",
+    "group": "mountain",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "rock",
+      "upland"
+    ],
+    "sizeKm": [
+      0.02,
+      0.4
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-peak",
+    "rarity": "rare",
+    "requires": {
+      "slopeMin": 0.06
+    },
+    "gloss": "A cave that is a split rather than a dissolved passage, opened when the rock moved.",
+    "absentBecause": null
+  },
+  {
+    "id": "cirque",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ice",
+      "rock"
+    ],
+    "sizeKm": [
+      0.3,
+      4
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cirque",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A bowl bitten out of a mountain head, usually with meltwater standing in the floor.",
+    "absentBecause": null
+  },
+  {
+    "id": "arete",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "ice",
+      "rock"
+    ],
+    "sizeKm": [
+      0.5,
+      8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cirque",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A knife edge between two hollows, wide enough to walk along and no wider.",
+    "absentBecause": null
+  },
+  {
+    "id": "horn-peak",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "ice",
+      "rock"
+    ],
+    "sizeKm": [
+      0.2,
+      2
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cirque",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A summit chewed to a point from three or more sides at once.",
+    "absentBecause": null
+  },
+  {
+    "id": "moraine-terminal",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "scree",
+      "ice"
+    ],
+    "sizeKm": [
+      0.5,
+      9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-moraine",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A ridge of dumped rubble marking how far the ice got before it gave up.",
+    "absentBecause": null
+  },
+  {
+    "id": "moraine-lateral",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "scree",
+      "ice"
+    ],
+    "sizeKm": [
+      0.5,
+      12
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-moraine",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A long bank of debris along a valley side, dropped where the ice edge used to ride.",
+    "absentBecause": null
+  },
+  {
+    "id": "moraine-medial",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "scree",
+      "ice"
+    ],
+    "sizeKm": [
+      0.5,
+      10
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-moraine",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A dark stripe of rubble down the middle of the ice, where two flows joined.",
+    "absentBecause": null
+  },
+  {
+    "id": "drumlin",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "meadow",
+      "scree"
+    ],
+    "sizeKm": [
+      0.2,
+      2
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-moraine",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A smooth whaleback hill, steep at one end and tapered away at the other.",
+    "absentBecause": null
+  },
+  {
+    "id": "esker",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "scree",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.5,
+      14
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-moraine",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A winding gravel ridge that follows no valley, because it was a river inside the ice.",
+    "absentBecause": null
+  },
+  {
+    "id": "kame",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "scree",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.1,
+      1.5
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-moraine",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A lumpy mound of sorted sand and gravel let down when the ice around it melted.",
+    "absentBecause": null
+  },
+  {
+    "id": "kettle-hole",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "lake",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.05,
+      0.8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-erratic",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A round hollow, often with water in it, where a buried block of ice finally went.",
+    "absentBecause": null
+  },
+  {
+    "id": "outwash-plain",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "scree",
+      "tundra"
+    ],
+    "sizeKm": [
+      2,
+      25
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-moraine",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A wide flat wash of sand and gravel spread beyond the ice front by meltwater.",
+    "absentBecause": null
+  },
+  {
+    "id": "roche-moutonnee",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "rock",
+      "ice"
+    ],
+    "sizeKm": [
+      0.05,
+      0.6
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-erratic",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A rock knob smoothed on the side the ice came from and torn ragged on the other.",
+    "absentBecause": null
+  },
+  {
+    "id": "glacial-erratic",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "rock",
+      "tundra"
+    ],
+    "sizeKm": [
+      0.01,
+      0.1
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-erratic",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A boulder of the wrong rock entirely, set down where nothing like it belongs.",
+    "absentBecause": null
+  },
+  {
+    "id": "u-valley",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ice",
+      "rock"
+    ],
+    "sizeKm": [
+      2,
+      25
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cirque",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A trough with a flat floor and steep sides, far too big for the stream now in it.",
+    "absentBecause": null
+  },
+  {
+    "id": "hanging-valley",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ice",
+      "rock"
+    ],
+    "sizeKm": [
+      0.5,
+      6
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cirque",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A side valley left stranded high above the main floor, its stream falling out of it.",
+    "absentBecause": null
+  },
+  {
+    "id": "nunatak",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "ice",
+      "rock"
+    ],
+    "sizeKm": [
+      0.1,
+      1.5
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-crevasse",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A crag standing clear of the ice sheet, the only bare ground for miles around.",
+    "absentBecause": null
+  },
+  {
+    "id": "ice-divide",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "ice"
+    ],
+    "sizeKm": [
+      5,
+      60
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-crevasse",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "The high line where the ice sheet parts and flows two different ways.",
+    "absentBecause": null
+  },
+  {
+    "id": "outlet-glacier",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "ice",
+      "scree"
+    ],
+    "sizeKm": [
+      2,
+      30
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-crevasse",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A river of ice draining the sheet through a gap, crevassed all the way down.",
+    "absentBecause": null
+  },
+  {
+    "id": "glacier-cave",
+    "group": "glacial",
+    "alsoGroups": [
+      "karst"
+    ],
+    "geometry": "point",
+    "biomes": [
+      "ice",
+      "rock"
+    ],
+    "sizeKm": [
+      0.02,
+      0.4
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-crevasse",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A blue tunnel melted through the ice by running water, and still being melted.",
+    "absentBecause": null
+  },
+  {
+    "id": "moulin",
+    "group": "glacial",
+    "alsoGroups": [
+      "karst"
+    ],
+    "geometry": "point",
+    "biomes": [
+      "ice"
+    ],
+    "sizeKm": [
+      0.01,
+      0.1
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-crevasse",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2
+    },
+    "gloss": "A shaft in the ice that swallows a meltwater stream whole and drops it out of sight.",
+    "absentBecause": null
+  },
+  {
+    "id": "fjord",
+    "group": "glacial",
+    "alsoGroups": [
+      "coastal"
+    ],
+    "geometry": "area",
+    "biomes": [
+      "ocean",
+      "ice",
+      "rock"
+    ],
+    "sizeKm": [
+      2,
+      30
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cirque",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2,
+      "elevMax": 0.5
+    },
+    "gloss": "A drowned ice-cut trough: deep water with a wall on either side and no beach at all.",
+    "absentBecause": null
+  },
+  {
+    "id": "ice-shelf",
+    "group": "glacial",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ice",
+      "ocean"
+    ],
+    "sizeKm": [
+      3,
+      40
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-crevasse",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "GLACIER",
+      "tempDecileMax": 2,
+      "elevMax": 0.42
+    },
+    "gloss": "Ice floating on sea, thick enough to stand on and flat to the horizon.",
+    "absentBecause": null
+  },
+  {
+    "id": "karst-cenote",
+    "group": "karst",
+    "alsoGroups": [
+      "lakes"
+    ],
+    "geometry": "point",
+    "biomes": [
+      "karst",
+      "forest"
+    ],
+    "sizeKm": [
+      0.05,
+      0.6
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-cenote",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "carbonate",
+      "precipDecileMin": 4
+    },
+    "gloss": "A collapsed limestone shaft flooded to the water table.",
+    "absentBecause": null
+  },
+  {
+    "id": "cave-system",
+    "group": "karst",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "karst",
+      "rock"
+    ],
+    "sizeKm": [
+      0.05,
+      1.2
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-cave",
+    "rarity": "common",
+    "requires": {
+      "rock": "carbonate",
+      "precipDecileMin": 4
+    },
+    "gloss": "A network of dissolved passages, some walkable and most not, going further than anyone has.",
+    "absentBecause": null
+  },
+  {
+    "id": "sinkhole-doline",
+    "group": "karst",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "karst",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.05,
+      0.9
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-cenote",
+    "rarity": "common",
+    "requires": {
+      "rock": "carbonate",
+      "precipDecileMin": 4
+    },
+    "gloss": "A funnel in the ground where the roof of something underneath came down.",
+    "absentBecause": null
+  },
+  {
+    "id": "polje",
+    "group": "karst",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "karst",
+      "meadow"
+    ],
+    "sizeKm": [
+      1,
+      14
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-pavement",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "carbonate",
+      "precipDecileMin": 4
+    },
+    "gloss": "A wide flat-floored basin ringed by limestone hills, farmed in summer and flooded in winter.",
+    "absentBecause": null
+  },
+  {
+    "id": "limestone-pavement",
+    "group": "karst",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "karst",
+      "rock"
+    ],
+    "sizeKm": [
+      0.5,
+      9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-pavement",
+    "rarity": "common",
+    "requires": {
+      "rock": "carbonate",
+      "precipDecileMin": 4
+    },
+    "gloss": "Bare rock split into blocks by deep grooves, with whole plants living down in the cracks.",
+    "absentBecause": null
+  },
+  {
+    "id": "karst-fenster",
+    "group": "karst",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "karst",
+      "river"
+    ],
+    "sizeKm": [
+      0.02,
+      0.3
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-cave",
+    "rarity": "rare",
+    "requires": {
+      "rock": "carbonate",
+      "precipDecileMin": 4
+    },
+    "gloss": "A window where an underground river shows itself for a few paces, then goes back under.",
+    "absentBecause": null
+  },
+  {
+    "id": "ponor",
+    "group": "karst",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "karst",
+      "river"
+    ],
+    "sizeKm": [
+      0.02,
+      0.4
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-cave",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "carbonate",
+      "precipDecileMin": 4
+    },
+    "gloss": "The hole a surface stream disappears into, and does not come back out of.",
+    "absentBecause": null
+  },
+  {
+    "id": "foiba",
+    "group": "karst",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "karst",
+      "rock"
+    ],
+    "sizeKm": [
+      0.02,
+      0.3
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-cenote",
+    "rarity": "rare",
+    "requires": {
+      "rock": "carbonate",
+      "precipDecileMin": 4
+    },
+    "gloss": "A vertical shaft dropping straight into the dark, with no ledge to start from.",
+    "absentBecause": null
+  },
+  {
+    "id": "karst-tower",
+    "group": "karst",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "karst",
+      "forest"
+    ],
+    "sizeKm": [
+      0.1,
+      1.2
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-tower",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "carbonate",
+      "precipDecileMin": 4
+    },
+    "gloss": "A steep-sided limestone stack rising sheer out of flat ground, wooded on top.",
+    "absentBecause": null
+  },
+  {
+    "id": "badland-gully",
+    "group": "erosional",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "badland",
+      "rock"
+    ],
+    "sizeKm": [
+      0.2,
+      4
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-gully",
+    "rarity": "common",
+    "requires": {
+      "precipDecileMax": 3,
+      "slopeMin": 0.03
+    },
+    "gloss": "A raw channel cut into soft ground, deepening every storm and safe to cross nowhere.",
+    "absentBecause": null
+  },
+  {
+    "id": "hoodoo",
+    "group": "erosional",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "badland",
+      "desert"
+    ],
+    "sizeKm": [
+      0.01,
+      0.15
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-hoodoo",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMax": 3,
+      "slopeMin": 0.03
+    },
+    "gloss": "A standing column of soft rock left behind because a harder cap protected it.",
+    "absentBecause": null
+  },
+  {
+    "id": "yardang",
+    "group": "erosional",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "desert",
+      "badland"
+    ],
+    "sizeKm": [
+      0.1,
+      2
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-hoodoo",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMax": 3,
+      "slopeMin": 0.03
+    },
+    "gloss": "A ridge carved along the wind's line, streamlined like a hull left on the desert floor.",
+    "absentBecause": null
+  },
+  {
+    "id": "slot-canyon",
+    "group": "erosional",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "rock",
+      "desert"
+    ],
+    "sizeKm": [
+      0.1,
+      2.5
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-gully",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMax": 3,
+      "slopeMin": 0.03
+    },
+    "gloss": "A crack you can touch both walls of, dark at noon and lethal when it rains upstream.",
+    "absentBecause": null
+  },
+  {
+    "id": "pediment",
+    "group": "erosional",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "desert",
+      "scree"
+    ],
+    "sizeKm": [
+      1,
+      16
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-gully",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMax": 3,
+      "slopeMin": 0.03
+    },
+    "gloss": "A gently sloping rock apron running out from the hills under a thin skin of gravel.",
+    "absentBecause": null
+  },
+  {
+    "id": "inselberg",
+    "group": "erosional",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "rock",
+      "desert"
+    ],
+    "sizeKm": [
+      0.2,
+      2.5
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-hoodoo",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMax": 3,
+      "slopeMin": 0.03
+    },
+    "gloss": "A lone dome of hard rock standing out of the plain, visible a day's walk away.",
+    "absentBecause": null
+  },
+  {
+    "id": "deflation-hollow",
+    "group": "erosional",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "desert",
+      "alkali"
+    ],
+    "sizeKm": [
+      0.2,
+      3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-gully",
+    "rarity": "common",
+    "requires": {
+      "precipDecileMax": 3,
+      "slopeMin": 0.03
+    },
+    "gloss": "A shallow basin the wind has scooped out down to where the ground holds damp.",
+    "absentBecause": null
+  },
+  {
+    "id": "undercut-alcove",
+    "group": "erosional",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "rock",
+      "badland"
+    ],
+    "sizeKm": [
+      0.02,
+      0.3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-arch-rock",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMax": 3,
+      "slopeMin": 0.03
+    },
+    "gloss": "A scooped recess in a cliff face, dry underneath and out of the weather.",
+    "absentBecause": null
+  },
+  {
+    "id": "natural-bridge",
+    "group": "erosional",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "rock",
+      "badland"
+    ],
+    "sizeKm": [
+      0.02,
+      0.2
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-arch-rock",
+    "rarity": "rare",
+    "requires": {
+      "precipDecileMax": 3,
+      "slopeMin": 0.03
+    },
+    "gloss": "A span of rock left standing over a gap after the stream cut through beneath it.",
+    "absentBecause": null
+  },
+  {
+    "id": "erg-dune-sea",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "desert"
+    ],
+    "sizeKm": [
+      5,
+      60
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-dune",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "Sand to the horizon in ranks, each crest moving a little every year.",
+    "absentBecause": null
+  },
+  {
+    "id": "barchan-dune",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "desert"
+    ],
+    "sizeKm": [
+      0.05,
+      0.8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-dune",
+    "rarity": "common",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "A crescent of sand with its horns pointed downwind, walking a few paces a year.",
+    "absentBecause": null
+  },
+  {
+    "id": "seif-dune",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "desert"
+    ],
+    "sizeKm": [
+      0.5,
+      9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-dune",
+    "rarity": "common",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "A long sharp-crested ridge of sand lying with the wind rather than across it.",
+    "absentBecause": null
+  },
+  {
+    "id": "star-dune",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "desert"
+    ],
+    "sizeKm": [
+      0.2,
+      2
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-dune",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "A high mound with arms running off several ways, because the wind cannot decide.",
+    "absentBecause": null
+  },
+  {
+    "id": "transverse-dune-field",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "desert"
+    ],
+    "sizeKm": [
+      1,
+      18
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-dune",
+    "rarity": "common",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "Rank after rank of sand ridges set square across the wind, like a frozen swell.",
+    "absentBecause": null
+  },
+  {
+    "id": "draa",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "desert"
+    ],
+    "sizeKm": [
+      3,
+      40
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-dune",
+    "rarity": "rare",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "A sand ridge so large that the ordinary dunes ride along on its back.",
+    "absentBecause": null
+  },
+  {
+    "id": "desert-pavement-reg",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "desert",
+      "rock"
+    ],
+    "sizeKm": [
+      1,
+      20
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-playa",
+    "rarity": "common",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "A floor of close-packed stones polished flat, the fine stuff all blown out between.",
+    "absentBecause": null
+  },
+  {
+    "id": "playa",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "alkali",
+      "desert"
+    ],
+    "sizeKm": [
+      0.5,
+      12
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-playa",
+    "rarity": "common",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "A dry lake bed cracked to a tile pattern, sheet water for one week in a year.",
+    "absentBecause": null
+  },
+  {
+    "id": "sabkha",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "alkali",
+      "ocean"
+    ],
+    "sizeKm": [
+      0.5,
+      10
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-playa",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "A salt-crusted coastal flat where the water table sits just under a treacherous crust.",
+    "absentBecause": null
+  },
+  {
+    "id": "wadi",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "desert",
+      "river"
+    ],
+    "sizeKm": [
+      1,
+      18
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-wadi",
+    "rarity": "common",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "A dry stone channel that is a road most of the year and a torrent for one afternoon.",
+    "absentBecause": null
+  },
+  {
+    "id": "alluvial-bajada",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "scree",
+      "desert"
+    ],
+    "sizeKm": [
+      1,
+      16
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-wadi",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "A continuous slope of merged gravel fans running the whole foot of a range.",
+    "absentBecause": null
+  },
+  {
+    "id": "ventifact-field",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "desert",
+      "rock"
+    ],
+    "sizeKm": [
+      0.2,
+      3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-playa",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "Ground littered with stones the blown sand has cut into facets and hard edges.",
+    "absentBecause": null
+  },
+  {
+    "id": "oasis-spring",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "desert",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.05,
+      0.9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-oasis",
+    "rarity": "rare",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1,
+      "flowAccMin": 50
+    },
+    "gloss": "Water reaching the surface where nothing else does, and everything alive for miles at it.",
+    "absentBecause": null
+  },
+  {
+    "id": "salt-pan-crust",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "alkali"
+    ],
+    "sizeKm": [
+      0.3,
+      8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-playa",
+    "rarity": "common",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "A white glaring plain that crunches underfoot and bleeds brine where it breaks.",
+    "absentBecause": null
+  },
+  {
+    "id": "gypsum-dune",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "alkali",
+      "desert"
+    ],
+    "sizeKm": [
+      0.5,
+      7
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-dune",
+    "rarity": "rare",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "Dunes of pale crystal sand, cool to the hand where ordinary sand would burn.",
+    "absentBecause": null
+  },
+  {
+    "id": "desert-varnish-scarp",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "desert",
+      "rock"
+    ],
+    "sizeKm": [
+      0.3,
+      6
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-playa",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "A rock face gone black-brown with age, old marks cut through it to lighter stone.",
+    "absentBecause": null
+  },
+  {
+    "id": "nebkha-field",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "desert",
+      "bramble"
+    ],
+    "sizeKm": [
+      0.2,
+      4
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-dune",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "Hummocks of sand each anchored by one stubborn bush, scoured bare in between.",
+    "absentBecause": null
+  },
+  {
+    "id": "zeugen-ridge",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "desert",
+      "rock"
+    ],
+    "sizeKm": [
+      0.2,
+      4
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-playa",
+    "rarity": "rare",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "A rock ridge undercut by sand-blast, standing on a narrower foot than its top.",
+    "absentBecause": null
+  },
+  {
+    "id": "sand-sheet",
+    "group": "desert",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "desert"
+    ],
+    "sizeKm": [
+      2,
+      30
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-dune",
+    "rarity": "common",
+    "requires": {
+      "rock": "clastic",
+      "precipDecileMax": 1
+    },
+    "gloss": "Flat wind-laid sand with no dunes at all: easy going, and the same in every direction.",
+    "absentBecause": null
+  },
+  {
+    "id": "shield-cone",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lava",
+      "ash"
+    ],
+    "sizeKm": [
+      2,
+      25
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cone",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "A broad low mountain of runny flows, so gentle you are on it before you notice.",
+    "absentBecause": null
+  },
+  {
+    "id": "stratocone",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "ash",
+      "lava"
+    ],
+    "sizeKm": [
+      1,
+      9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cone",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "A steep layered peak of ash and lava, symmetrical enough to look built on purpose.",
+    "absentBecause": null
+  },
+  {
+    "id": "cinder-cone",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "ash"
+    ],
+    "sizeKm": [
+      0.2,
+      2
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cone",
+    "rarity": "common",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "A small loose heap of cinder with a crater in the top, still warm in places.",
+    "absentBecause": null
+  },
+  {
+    "id": "caldera-floor",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ash",
+      "lava"
+    ],
+    "sizeKm": [
+      1,
+      14
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-caldera",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "The flat floor of a mountain that emptied itself and fell in.",
+    "absentBecause": null
+  },
+  {
+    "id": "lava-tube",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "lava",
+      "rock"
+    ],
+    "sizeKm": [
+      0.1,
+      3
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-vent",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "A drained tunnel the flow left behind when its crust set and its middle ran on.",
+    "absentBecause": null
+  },
+  {
+    "id": "lava-field-aa",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lava"
+    ],
+    "sizeKm": [
+      1,
+      20
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lavafield",
+    "rarity": "common",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "A field of black clinker that will take a pair of boots apart in an afternoon.",
+    "absentBecause": null
+  },
+  {
+    "id": "lava-field-pahoehoe",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lava"
+    ],
+    "sizeKm": [
+      1,
+      20
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lavafield",
+    "rarity": "common",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "Rope-coiled black rock, smooth enough to walk on and glassy enough to cut.",
+    "absentBecause": null
+  },
+  {
+    "id": "fumarole-vent",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "ash",
+      "lava"
+    ],
+    "sizeKm": [
+      0.01,
+      0.2
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-vent",
+    "rarity": "common",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "A hole breathing sulphur steam, with yellow crystals grown round its lip.",
+    "absentBecause": null
+  },
+  {
+    "id": "spatter-rampart",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "lava",
+      "ash"
+    ],
+    "sizeKm": [
+      0.1,
+      2
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cone",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "A wall of welded blobs built along a fissure where the fountain once played.",
+    "absentBecause": null
+  },
+  {
+    "id": "volcanic-plug",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "rock",
+      "ash"
+    ],
+    "sizeKm": [
+      0.1,
+      1.2
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-cone",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "The hard throat of a dead volcano, left standing after the cone around it went.",
+    "absentBecause": null
+  },
+  {
+    "id": "tuff-ring",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ash",
+      "lake"
+    ],
+    "sizeKm": [
+      0.3,
+      4
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-caldera",
+    "rarity": "rare",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "A low ash rampart round a wide shallow crater, usually with water in the middle.",
+    "absentBecause": null
+  },
+  {
+    "id": "lahar-fan",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ash",
+      "scree"
+    ],
+    "sizeKm": [
+      1,
+      14
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lavafield",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "A spread of grey mud and boulders that came down a valley at once and set hard.",
+    "absentBecause": null
+  },
+  {
+    "id": "rift-fissure",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "lava",
+      "rock"
+    ],
+    "sizeKm": [
+      0.5,
+      12
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-vent",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "A crack in the ground running straight for miles, with warm air coming out of it.",
+    "absentBecause": null
+  },
+  {
+    "id": "ash-front",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "ash",
+      "scree"
+    ],
+    "sizeKm": [
+      1,
+      20
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lavafield",
+    "rarity": "uncommon",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC"
+    },
+    "gloss": "The line where the fall stopped: grey to one side, green to the other, and nothing between.",
+    "absentBecause": null
+  },
+  {
+    "id": "ash-plain",
+    "group": "volcanic",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ash"
+    ],
+    "sizeKm": [
+      2,
+      30
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lavafield",
+    "rarity": "common",
+    "requires": {
+      "rock": "volcanic",
+      "nearFlag": "ARC",
+      "slopeMax": 0.03
+    },
+    "gloss": "Soft grey ground that takes a bootprint and keeps it until the next fall covers it.",
+    "absentBecause": null
+  },
+  {
+    "id": "tidal-mire",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "ocean"
+    ],
+    "sizeKm": [
+      0.5,
+      12
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-tuft",
+    "rarity": "common",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02,
+      "nearFlag": "SEA"
+    },
+    "gloss": "Grass and channel by turns, walkable at low water and not at high.",
+    "absentBecause": null
+  },
+  {
+    "id": "salt-marsh",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "alkali"
+    ],
+    "sizeKm": [
+      0.5,
+      10
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-tuft",
+    "rarity": "common",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02,
+      "nearFlag": "SEA"
+    },
+    "gloss": "Low turf cut by creeks that fill with sea; grazed in summer, under water in a surge.",
+    "absentBecause": null
+  },
+  {
+    "id": "mangrove-flat",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "forest"
+    ],
+    "sizeKm": [
+      0.5,
+      9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-mangrove",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02,
+      "nearFlag": "SEA",
+      "tempDecileMin": 7
+    },
+    "gloss": "A tangle of stilt roots standing in salt mud, impassable except by the tide channels.",
+    "absentBecause": null
+  },
+  {
+    "id": "reed-fen",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "river"
+    ],
+    "sizeKm": [
+      0.3,
+      8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-tuft",
+    "rarity": "common",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02
+    },
+    "gloss": "Standing reed higher than a person, water underfoot, and paths only where it is cut.",
+    "absentBecause": null
+  },
+  {
+    "id": "raised-bog",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "tundra"
+    ],
+    "sizeKm": [
+      0.5,
+      9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-bog",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02
+    },
+    "gloss": "A dome of peat that has grown above the water table and drinks nothing but rain.",
+    "absentBecause": null
+  },
+  {
+    "id": "blanket-mire",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "tundra"
+    ],
+    "sizeKm": [
+      1,
+      16
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-bog",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02
+    },
+    "gloss": "Peat laid over everything, hill and hollow alike, wet enough to swallow a boot.",
+    "absentBecause": null
+  },
+  {
+    "id": "peat-hag",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "marsh",
+      "tundra"
+    ],
+    "sizeKm": [
+      0.02,
+      0.4
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-bog",
+    "rarity": "common",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02
+    },
+    "gloss": "A ragged bank of bare peat where the surface tore open and started washing away.",
+    "absentBecause": null
+  },
+  {
+    "id": "swamp-forest",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "forest"
+    ],
+    "sizeKm": [
+      1,
+      14
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-mangrove",
+    "rarity": "common",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02
+    },
+    "gloss": "Trees standing in water, with the ground somewhere below and no telling where.",
+    "absentBecause": null
+  },
+  {
+    "id": "carr-thicket",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "bramble"
+    ],
+    "sizeKm": [
+      0.2,
+      3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-mangrove",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02
+    },
+    "gloss": "Wet scrub of willow and alder, thorny, and slower to cross than open water.",
+    "absentBecause": null
+  },
+  {
+    "id": "seasonal-marsh",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.3,
+      7
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-tuft",
+    "rarity": "common",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02
+    },
+    "gloss": "Ground that is meadow in one season and shallow lake in another, without warning.",
+    "absentBecause": null
+  },
+  {
+    "id": "spring-mire",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "marsh",
+      "river"
+    ],
+    "sizeKm": [
+      0.05,
+      0.7
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-bog",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02
+    },
+    "gloss": "A patch kept permanently wet by water rising from below, greener than all round it.",
+    "absentBecause": null
+  },
+  {
+    "id": "floating-mat",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake",
+      "marsh"
+    ],
+    "sizeKm": [
+      0.05,
+      0.8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-bog",
+    "rarity": "rare",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02
+    },
+    "gloss": "A raft of roots and moss lying on open water, taking weight until it does not.",
+    "absentBecause": null
+  },
+  {
+    "id": "saltmire-pan",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "alkali",
+      "marsh"
+    ],
+    "sizeKm": [
+      0.2,
+      4
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-tuft",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02
+    },
+    "gloss": "A bare salt patch inside the marsh where nothing grows and the crust holds water.",
+    "absentBecause": null
+  },
+  {
+    "id": "quaking-bog",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "lake"
+    ],
+    "sizeKm": [
+      0.1,
+      1.5
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-bog",
+    "rarity": "rare",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02
+    },
+    "gloss": "Ground that shivers for several paces around every footfall, because it is floating.",
+    "absentBecause": null
+  },
+  {
+    "id": "delta-lobe-marsh",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "river"
+    ],
+    "sizeKm": [
+      0.5,
+      8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-mangrove",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02,
+      "nearFlag": "DELTA"
+    },
+    "gloss": "New marsh grown on the river's freshest deposits, changing shape within a lifetime.",
+    "absentBecause": null
+  },
+  {
+    "id": "brackish-lagoon-marsh",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "ocean"
+    ],
+    "sizeKm": [
+      0.3,
+      6
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-mangrove",
+    "rarity": "uncommon",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02,
+      "nearFlag": "SEA"
+    },
+    "gloss": "Reed and salt grass mixed together where a lagoon is neither sea nor river.",
+    "absentBecause": null
+  },
+  {
+    "id": "wet-meadow",
+    "group": "wetland",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "marsh",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.3,
+      7
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-tuft",
+    "rarity": "common",
+    "requires": {
+      "precipDecileMin": 5,
+      "slopeMax": 0.02
+    },
+    "gloss": "Grass that stays green all summer because the water is never far under it.",
+    "absentBecause": null
+  },
+  {
+    "id": "tarn",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake",
+      "ice"
+    ],
+    "sizeKm": [
+      0.05,
+      0.9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-tarn",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "LAKE"
+    },
+    "gloss": "A small cold lake sitting in a rock bowl, fed by snow and nothing else.",
+    "absentBecause": null
+  },
+  {
+    "id": "crater-lake",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake",
+      "ash"
+    ],
+    "sizeKm": [
+      0.2,
+      3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lake",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "LAKE"
+    },
+    "gloss": "Deep still water filling an old vent, steep walls all round and one way down.",
+    "absentBecause": null
+  },
+  {
+    "id": "ribbon-lake",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake",
+      "ice"
+    ],
+    "sizeKm": [
+      0.5,
+      9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lake",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "LAKE"
+    },
+    "gloss": "A long narrow lake in a glacial trough, deeper than it has any right to be.",
+    "absentBecause": null
+  },
+  {
+    "id": "moraine-dammed-lake",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake",
+      "scree"
+    ],
+    "sizeKm": [
+      0.2,
+      4
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-tarn",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "LAKE"
+    },
+    "gloss": "Water held back by a bank of loose rubble that was never built to hold anything.",
+    "absentBecause": null
+  },
+  {
+    "id": "landslide-dammed-lake",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake",
+      "scree"
+    ],
+    "sizeKm": [
+      0.1,
+      3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-tarn",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "LAKE"
+    },
+    "gloss": "A new lake behind a hillside that came down across the valley and stayed there.",
+    "absentBecause": null
+  },
+  {
+    "id": "endorheic-lake",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake",
+      "alkali"
+    ],
+    "sizeKm": [
+      1,
+      16
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lake",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "LAKE"
+    },
+    "gloss": "A lake with no outlet, so everything the rivers bring stays and concentrates.",
+    "absentBecause": null
+  },
+  {
+    "id": "salt-lake",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake",
+      "alkali"
+    ],
+    "sizeKm": [
+      0.5,
+      14
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lake",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "LAKE"
+    },
+    "gloss": "Water too salty to drink and heavy enough to float in, rimmed all round with white.",
+    "absentBecause": null
+  },
+  {
+    "id": "meromictic-lake",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake"
+    ],
+    "sizeKm": [
+      0.2,
+      3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lake",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "LAKE"
+    },
+    "gloss": "A lake whose depths never mix with its surface; nothing lives down there at all.",
+    "absentBecause": null
+  },
+  {
+    "id": "sub-lacustrine-vent",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "lake",
+      "ash"
+    ],
+    "sizeKm": [
+      0.01,
+      0.1
+    ],
+    "dungeonCapable": true,
+    "glyph": "g-tarn",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "LAKE",
+      "rock": "volcanic"
+    },
+    "gloss": "A place on the lake bed that steams, with dead fish and warm water above it.",
+    "absentBecause": null
+  },
+  {
+    "id": "lake-delta-bench",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake",
+      "river"
+    ],
+    "sizeKm": [
+      0.2,
+      3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lake",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "LAKE"
+    },
+    "gloss": "A flat shelf built out into the lake where a river drops what it was carrying.",
+    "absentBecause": null
+  },
+  {
+    "id": "lake-terrace",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "lake",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.3,
+      6
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lake",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "LAKE"
+    },
+    "gloss": "An old waterline cut round the basin, level for miles, from when the lake stood higher.",
+    "absentBecause": null
+  },
+  {
+    "id": "inland-sea-basin",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake",
+      "ocean"
+    ],
+    "sizeKm": [
+      5,
+      60
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-lake",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "LAKE"
+    },
+    "gloss": "Water wide enough to have weather of its own, with no way out to the ocean.",
+    "absentBecause": null
+  },
+  {
+    "id": "ephemeral-pan-lake",
+    "group": "lakes",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lake",
+      "alkali"
+    ],
+    "sizeKm": [
+      0.2,
+      4
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-tarn",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "LAKE"
+    },
+    "gloss": "A shallow sheet that appears after rain, breeds a season's life, and dries.",
+    "absentBecause": null
+  },
+  {
+    "id": "atoll",
+    "group": "island",
+    "alsoGroups": [
+      "oceanic"
+    ],
+    "geometry": "area",
+    "biomes": [
+      "reef",
+      "ocean"
+    ],
+    "sizeKm": [
+      0.5,
+      9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-atoll",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.55,
+      "tempDecileMin": 7
+    },
+    "gloss": "A ring of low reef islands round a lagoon, with nothing but ocean outside it.",
+    "absentBecause": null
+  },
+  {
+    "id": "volcanic-high-island",
+    "group": "island",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "lava",
+      "forest"
+    ],
+    "sizeKm": [
+      1,
+      14
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-isle",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.55
+    },
+    "gloss": "A steep green island built on its own cone, with cloud caught on the top of it.",
+    "absentBecause": null
+  },
+  {
+    "id": "continental-fragment-isle",
+    "group": "island",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "rock",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.5,
+      12
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-isle",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.55
+    },
+    "gloss": "An island of proper old rock: a piece of the mainland the sea got in between.",
+    "absentBecause": null
+  },
+  {
+    "id": "skerry",
+    "group": "island",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "rock",
+      "ocean"
+    ],
+    "sizeKm": [
+      0.01,
+      0.2
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-isle",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.55
+    },
+    "gloss": "A bare rock the sea covers and uncovers; a hazard, never a landing.",
+    "absentBecause": null
+  },
+  {
+    "id": "motu",
+    "group": "island",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "reef",
+      "meadow"
+    ],
+    "sizeKm": [
+      0.05,
+      0.9
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-atoll",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.55,
+      "tempDecileMin": 7
+    },
+    "gloss": "A low sand islet sitting on the reef rim, a few palms and no fresh water on it.",
+    "absentBecause": null
+  },
+  {
+    "id": "cay",
+    "group": "island",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "reef",
+      "ocean"
+    ],
+    "sizeKm": [
+      0.05,
+      0.8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-atoll",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.55,
+      "tempDecileMin": 7
+    },
+    "gloss": "A heap of coral sand built up on the reef flat, moved by every serious storm.",
+    "absentBecause": null
+  },
+  {
+    "id": "barrier-reef-island",
+    "group": "island",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "reef",
+      "ocean"
+    ],
+    "sizeKm": [
+      0.2,
+      3
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-atoll",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.55,
+      "tempDecileMin": 7
+    },
+    "gloss": "A wooded island standing inside its own reef, with quiet water all round it.",
+    "absentBecause": null
+  },
+  {
+    "id": "abyssal-plain",
+    "group": "oceanic",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "ocean"
+    ],
+    "sizeKm": [
+      10,
+      90
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-seamount",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.4
+    },
+    "gloss": "The flattest ground in the world, under more water than the light can cross.",
+    "absentBecause": null
+  },
+  {
+    "id": "mid-ocean-ridge",
+    "group": "oceanic",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "ocean"
+    ],
+    "sizeKm": [
+      10,
+      120
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-seamount",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.4
+    },
+    "gloss": "A submerged mountain chain where new sea floor is made and pushed aside.",
+    "absentBecause": null
+  },
+  {
+    "id": "seamount",
+    "group": "oceanic",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "ocean"
+    ],
+    "sizeKm": [
+      0.5,
+      8
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-seamount",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.4
+    },
+    "gloss": "A drowned peak rising off the deep floor and stopping short of the surface.",
+    "absentBecause": null
+  },
+  {
+    "id": "guyot",
+    "group": "oceanic",
+    "alsoGroups": [],
+    "geometry": "point",
+    "biomes": [
+      "ocean"
+    ],
+    "sizeKm": [
+      0.5,
+      7
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-seamount",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.4
+    },
+    "gloss": "A drowned peak with its top planed flat, from when it still stood up in the surf.",
+    "absentBecause": null
+  },
+  {
+    "id": "oceanic-trench",
+    "group": "oceanic",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "ocean"
+    ],
+    "sizeKm": [
+      10,
+      100
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-seamount",
+    "rarity": "rare",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.4
+    },
+    "gloss": "A long gash in the sea floor: the deepest water anywhere, and the coldest.",
+    "absentBecause": null
+  },
+  {
+    "id": "fringing-reef",
+    "group": "oceanic",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "reef",
+      "ocean"
+    ],
+    "sizeKm": [
+      0.5,
+      12
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-reef",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.4,
+      "tempDecileMin": 7
+    },
+    "gloss": "Living rock built right against the shore, breaking every swell before it lands.",
+    "absentBecause": null
+  },
+  {
+    "id": "barrier-reef",
+    "group": "oceanic",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "reef",
+      "ocean"
+    ],
+    "sizeKm": [
+      2,
+      30
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-reef",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.4,
+      "tempDecileMin": 7
+    },
+    "gloss": "A wall of living rock standing offshore with a channel of quiet water behind it.",
+    "absentBecause": null
+  },
+  {
+    "id": "reef-shelf-bank",
+    "group": "oceanic",
+    "alsoGroups": [],
+    "geometry": "area",
+    "biomes": [
+      "reef",
+      "ocean"
+    ],
+    "sizeKm": [
+      1,
+      20
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-reef",
+    "rarity": "common",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.4,
+      "tempDecileMin": 7
+    },
+    "gloss": "A broad shallow platform of coral where the water goes suddenly pale.",
+    "absentBecause": null
+  },
+  {
+    "id": "submarine-canyon",
+    "group": "oceanic",
+    "alsoGroups": [],
+    "geometry": "line",
+    "biomes": [
+      "ocean"
+    ],
+    "sizeKm": [
+      2,
+      25
+    ],
+    "dungeonCapable": false,
+    "glyph": "g-seamount",
+    "rarity": "uncommon",
+    "requires": {
+      "nearFlag": "SEA",
+      "elevMax": 0.4
+    },
+    "gloss": "A gorge cut into the shelf edge, funnelling everything that falls into the deep.",
+    "absentBecause": null
+  }
+]

@@ -104,21 +104,5 @@
     "summary": "A chain named for the wooded holt that drifts in and out of fog-sight; only the main isle is fixed on any chart."
   },
   "tags": ["archipelago"],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 159.60500000001048,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [199.2, 278.8],
-    "resolvedSeedStreams": {
-      "terrain": "6ffa322aa87552aa",
-      "settlements": "a0e81dca0167bbe1",
-      "vegetation": "b85ffec87a4236c7",
-      "names": "15371a1d0f17afe3"
-    },
-    "digest": "sha256:37e8faed8a1665252f7101c57dbba2089e4a5228b46f3b5a4b4432a075b55051"
-  }
+  "levelBand": null
 }

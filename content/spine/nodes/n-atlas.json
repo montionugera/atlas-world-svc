@@ -52,34 +52,5 @@
     "amendedPending": "AMENDED-PENDING (I-095): frame was 2000x2000 km before the F-045 rescale (S=0.2); summary corrected to the current 400x400 km frame — the slack rationale is unchanged."
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 160000,
-    "childAreaParentUnits2": 140408.18000000002,
-    "coveragePct": 87.75511250000002,
-    "unclaimedPct": 12.24488749999998,
-    "computedComposition": {
-      "rock": 0.9253459875000009,
-      "meadow": 0.34120812500000147,
-      "forest": 0.29149853750000065,
-      "upland": 0.2754230499999992,
-      "marsh": 0.06764420000000003,
-      "river": 0.04227762500000002,
-      "ice": 1.8716330250000002,
-      "bramble": 0.03837507500000002,
-      "alkali": 0.01951275000000001,
-      "ash": 0.012358075000000005,
-      "built": 0.009105950000000003,
-      "ocean": 96.10626802499999
-    },
-    "rollupVerdict": "CHECKED",
-    "absoluteAnchorRoot": [200, 200],
-    "resolvedSeedStreams": {
-      "terrain": "d9a0051d32afab59",
-      "settlements": "da45bd8930d33bb0",
-      "vegetation": "4430c6c4193ad72b",
-      "names": "6033b1b1f52e861c"
-    },
-    "digest": "sha256:938def1add0085a32212cd35c43c0cbc6f4cbae577877e4cbd3a0f4e13180a06"
-  }
+  "levelBand": null
 }

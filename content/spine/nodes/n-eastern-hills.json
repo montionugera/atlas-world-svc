@@ -60,21 +60,5 @@
     "labelAt": [26, 15.2]
   },
   "tags": [],
-  "levelBand": null,
-  "derived": {
-    "areaParentUnits2": 61.64000000000004,
-    "childAreaParentUnits2": 0,
-    "coveragePct": 0,
-    "unclaimedPct": 100,
-    "computedComposition": {},
-    "rollupVerdict": "ASSERTED",
-    "absoluteAnchorRoot": [26, 15.2],
-    "resolvedSeedStreams": {
-      "terrain": "da0e0b18ac3a15ac",
-      "settlements": "197e9d2c21c4d6ca",
-      "vegetation": "89e79178f26729ed",
-      "names": "83564c153ee15355"
-    },
-    "digest": "sha256:89d25935fbd580bd7806d1e5f843cedcabbcdb32d137d123b8a9da59c8eeb403"
-  }
+  "levelBand": null
 }
