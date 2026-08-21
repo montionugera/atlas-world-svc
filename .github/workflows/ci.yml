@@ -138,6 +138,7 @@ jobs:
         run: |
           node tools/mapforge/render-sheet.mjs --sheet cluster1 --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet atlas --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet synthetic --no-png --check
 
       # Story explorer (F-012 Task 6): graph.mjs is the pure buildGraph()
       # shared by tools/story-explorer/index.html and this smoke test — every

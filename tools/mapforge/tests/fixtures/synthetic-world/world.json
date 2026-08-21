@@ -1,0 +1,29 @@
+{
+  "about": "Parameters for the target-density canary sheet. The 160 rings, 1,740 landform instances and 340 labels are GENERATED from `seed` by an integer hash in tools/mapforge/lib/synthetic-sheet.mjs, not committed — half a megabyte of fixture nobody reads is not a fixture. What is committed is the parameter set and the census it must hit, so the sheet is reviewable on one screen and reproducible byte for byte.",
+  "params": {
+    "seed": 20260816,
+    "landmasses": 13,
+    "regions": 160,
+    "instances": 1740,
+    "labels": 340,
+    "frameKm": 400,
+    "pxPerKm": 3.5
+  },
+  "paramsWhy": {
+    "frameKm/pxPerKm": "400 km at 3.5 px/km is the ATLAS SHEET'S OWN frame, 1400 x 1400 px — the canary is only evidence about the real chart if it is the real chart's size. content/world/budgets.json's maxSvgBytes rationale is measured at exactly this frame.",
+    "instances": "All 1,740 are drawn as FAMILY-SPECIFIC marks at GLYPH_SIZE.min. The live world will draw ~340 named marks and leave the rest as texture; a canary that did the same would be measuring an easier sheet than the one it is meant to warn about."
+  },
+  "rankMix": {
+    "about": "Labels per RANKS key, summing to `params.labels`. NOT a uniform draw: a uniform mix over nine ranks would put ~38 labels at rank 0-1, where the font is 15 px, and none of the 160 region names that actually crowd a world chart. This mirrors the world Plan C will generate — one name per region, one capital per landmass — so the declutter is exercised on the real shape of the problem. Low rank means HIGH priority and a BIGGER box, so a mix cannot be made easy by tilting it downward either way; it is made honest by matching the census.",
+    "ocean": 3,
+    "continent": 13,
+    "sea": 6,
+    "region": 160,
+    "capital": 13,
+    "hub": 20,
+    "dungeon": 25,
+    "namedLandform": 60,
+    "village": 40
+  },
+  "expect": { "landmasses": 13, "regions": 160, "instances": 1740, "labels": 340 }
+}

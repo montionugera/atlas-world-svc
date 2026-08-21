@@ -23,6 +23,7 @@ import { pathToFileURL } from "node:url";
 import { C } from "./lib/draft.mjs";
 import { drawBasinSheet } from "./lib/basin-sheet.mjs";
 import { buildAtlasSheet } from "./lib/atlas-sheet.mjs";
+import { buildSyntheticSheet } from "./lib/synthetic-sheet.mjs";
 import { rasterize } from "./lib/raster.mjs";
 import { loadSpine, buildTree } from "../../scripts/lib/spine.mjs";
 // Plan A Task 6: the sheet reads the world document from the join authority
@@ -63,6 +64,21 @@ export const SHEETS = {
     outPng: "game-client/assets/art/maps/atlas-world.png",
     maxLabelRank: 3,
     build: buildAtlasSheet,
+  },
+  // Plan B Task 10 — the target-density canary. NOT geography: a synthetic
+  // sheet at the size of the world Plan C generates (13 landmasses, 160
+  // regions, 1,740 landform instances, 340 labels), so a render regression at
+  // scale is visible against today's small chart. It is a registry entry, an
+  // index row and a lock line like anything else the tree produces — the
+  // "every produced artifact must be observable in a review surface" rule
+  // applies to a test instrument too. `maxLabelRank: 10` because a canary that
+  // hid seven of the ten ranks would be measuring the easy half.
+  synthetic: {
+    title: "Target-Density Canary",
+    outSvg: "game-client/assets/art/maps/synthetic-density.svg",
+    outPng: "game-client/assets/art/maps/synthetic-density.png",
+    maxLabelRank: 10,
+    build: buildSyntheticSheet,
   },
 };
 

@@ -532,6 +532,24 @@
         "note": "No model, no sampler, no seed — drawn from spine geometry. Re-run the tool to reproduce it byte-for-byte."
       }
     },
+    "art:map-synthetic-density": {
+      "group": "map",
+      "title": "Target-Density Canary — not geography",
+      "file": "maps/synthetic-density.png",
+      "note": "TEST INSTRUMENT, NOT SHIPPED ART. No player ever sees this sheet: it is drawn by tools/mapforge/lib/synthetic-sheet.mjs from a committed parameter fixture, at the size of the world Plan C generates, so a render regression at target density is visible against today's small chart. It is manifested because scripts/check_asset_manifest.mjs FAILS on any file under game-client/assets/art/ with no entry — the earlier plan to leave it out was checked against the gate and does not survive it.",
+      "description": "A synthetic chart at the agreed target density — 13 landmasses, 160 regions, 1,740 landform glyph instances at the 18 px family-identity minimum, and 340 decluttered labels — on the atlas sheet's own 400 km, 1400 x 1400 px frame, over a baked biome-texture underlay with the full 25-row legend beneath it. Every ring, mark and name is generated from one integer hash; none of it is a place.",
+      "tags": ["map", "canary", "test-instrument", "authored-vector", "svg", "not-geography"],
+      "source": "docs/superpowers/plans/2026-08-16-world-fill-b-vocabulary-and-render.md",
+      "gen": {
+        "method": "authored-vector", "generated": false,
+        "tool": "tools/mapforge/render-sheet.mjs --sheet synthetic",
+        "input": "tools/mapforge/tests/fixtures/synthetic-world/world.json + content/world/lexicon/landforms.json",
+        "vector": "maps/synthetic-density.svg",
+        "raster": "rsvg-convert -w 2000",
+        "deterministic": true, "width": 2000,
+        "note": "No model, no sampler, no seed — every shape falls out of the fixture's seed. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash."
+      }
+    },
     "art:town-millcross": {
       "group": "town",
       "title": "Millcross — the crossing",

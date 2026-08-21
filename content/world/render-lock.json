@@ -6,6 +6,7 @@
   },
   "artifacts": {
     "game-client/assets/art/maps/atlas-world.svg": "sha256:7a860649b980982ba39791dfe05e1b3cab25e82594db65b966524158a278b3ae",
-    "game-client/assets/art/maps/cluster1-world.svg": "sha256:b71586fe78643d5f8979a0aa4b361be60a76c179eedd9dfda9ce3d2828ebd519"
+    "game-client/assets/art/maps/cluster1-world.svg": "sha256:b71586fe78643d5f8979a0aa4b361be60a76c179eedd9dfda9ce3d2828ebd519",
+    "game-client/assets/art/maps/synthetic-density.svg": "sha256:7b7a2c5c9f7ae3853d9b44fee07ba0977b8ea324c2a1ff16437a52e54d0b9912"
   }
 }

@@ -15,6 +15,13 @@
       "svg": "game-client/assets/art/maps/atlas-world.svg",
       "png": "game-client/assets/art/maps/atlas-world.png",
       "note": "The compiled world chart — every cluster, tier, and boundary in one sheet."
+    },
+    {
+      "id": "synthetic",
+      "title": "Target-Density Canary",
+      "svg": "game-client/assets/art/maps/synthetic-density.svg",
+      "png": "game-client/assets/art/maps/synthetic-density.png",
+      "note": "NOT GEOGRAPHY \u2014 a synthetic sheet at the agreed target density (13 landmasses, 160 regions, 1,740 landform instances, 340 labels) on the atlas sheet's own 400 km frame. It exists so a render regression at scale is visible before the real world exists."
     }
   ]
 }
