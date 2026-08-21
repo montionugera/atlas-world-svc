@@ -2742,6 +2742,77 @@ function gWorldSheets({ contentRoot, budgets, fail }) {
     fail(`G-SHEET-BUDGET: ${svgs.length} sheets > budget ${budgets.sheets.maxSheets}`);
   if (worst > budgets.sheets.maxSvgBytes)
     fail(`G-SHEET-BUDGET: sheet ${worstName} is ${worst} bytes > budget ${budgets.sheets.maxSvgBytes}`);
+  gWorldSheetPatternArea({ mapsDir, svgs, budgets, fail });
+}
+
+// Plan B Task 12 — the STRUCTURAL companion to the byte cap above.
+//
+// The byte cap was the only thing guarding sheet cost, and bytes are the wrong
+// variable. The basin sheet was 47 KB — 11x inside maxSvgBytes — and took
+// 11.31 s to rasterise at rasterWidthPx, 5.7x OVER maxRasterSeconds. The two
+// numbers are not correlated: it drew twelve <rect>s each covering the whole
+// 990x1254 map frame and clipped each down to one small zone, so it paid to
+// tile the entire frame twelve times and 47 KB of text described all of it.
+//
+// A raster-time budget cannot live in a gate — a gate must not shell out to
+// rsvg-convert, and CI has no librsvg (the same reason maxThumbBytes and
+// maxRasterSeconds are enforced by tests rather than here). So the gate
+// measures the STRUCTURE that drives the cost and can be read straight out of
+// the committed text: the total area of pattern-filled <rect>s, as a multiple
+// of the sheet's own canvas. That number was 6.61 on the defective sheet and
+// is 0.40 on the fixed one, so the rule fires on exactly what it was
+// calibrated to catch, and it is deterministic everywhere the gate runs.
+//
+// It is deliberately scoped to <rect>: a pattern on a <path> costs the area of
+// the shape it actually inks, which is the map, not a defect. An oversized
+// rect is the specific mistake — paint the frame, then hide most of it.
+//
+// PRINTS on every run, like every other budget in this file.
+function gWorldSheetPatternArea({ mapsDir, svgs, budgets, fail }) {
+  const cap = budgets.sheets.maxPatternRectAreaRatio;
+  if (typeof cap !== "number") {
+    fail(`G-SHEET-BUDGET: world/budgets.json sheets has no numeric maxPatternRectAreaRatio`);
+    return;
+  }
+  let worstRatio = 0;
+  let worstSheet = "";
+  for (const f of svgs) {
+    const ratio = patternRectAreaRatio(readFileSync(join(mapsDir, f), "utf8"));
+    // A sheet whose canvas cannot be read reports rather than scoring 0 —
+    // silence is how a cap stops covering.
+    if (ratio === null) {
+      fail(`G-SHEET-BUDGET: sheet ${f} has no readable <svg width/height> — its pattern area could not be measured`);
+      continue;
+    }
+    if (ratio > worstRatio) { worstRatio = ratio; worstSheet = f; }
+  }
+  console.log(`world-budget: sheet pattern-rect area ${worstRatio.toFixed(2)}x canvas worst (${worstSheet || "none"}) (budget ${cap})`);
+  if (worstRatio > cap)
+    fail(`G-SHEET-BUDGET: sheet ${worstSheet} pattern-filled rects cover ${worstRatio.toFixed(2)}x its own canvas > budget ${cap} — a pattern fill must be bounded to the shape it inks`);
+}
+
+// Private: reads one sheet's text and answers a ratio. The pattern area is
+// summed FIRST, so a file with no pattern-filled rect scores 0 without its
+// canvas ever being needed — the soft-skip discipline this repo runs on, and
+// the reason a one-line `<svg/>` fixture does not red the gate. The canvas is
+// demanded only when there is something to divide, where being unable to read
+// it is a real measurement failure rather than an absent subject.
+function patternRectAreaRatio(svg) {
+  let total = 0;
+  for (const m of svg.matchAll(/<rect\b[^>]*>/g)) {
+    const tag = m[0];
+    if (!/fill="url\(#/.test(tag)) continue;
+    const w = /\swidth="([-\d.]+)"/.exec(tag);
+    const h = /\sheight="([-\d.]+)"/.exec(tag);
+    if (!w || !h) continue;
+    total += Number(w[1]) * Number(h[1]);
+  }
+  if (total === 0) return 0;
+  const head = /<svg\b[^>]*?\swidth="([\d.]+)"[^>]*?\sheight="([\d.]+)"/.exec(svg);
+  if (!head) return null;
+  const canvas = Number(head[1]) * Number(head[2]);
+  if (!Number.isFinite(canvas) || canvas <= 0) return null;
+  return total / canvas;
 }
 
 // F-041 Phase 1: G-OVERLAP + G-COMP-ROLLUP. `report` is warn until the two

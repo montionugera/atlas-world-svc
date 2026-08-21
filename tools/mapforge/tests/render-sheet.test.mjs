@@ -1,7 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, mkdtempSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildCluster1Sheet, SHEETS, parseArgs } from "../render-sheet.mjs";
@@ -119,4 +121,53 @@ test("bad arguments answer in-band, never by throwing", () => {
       /positive number/,
       `--png-width ${JSON.stringify(bad)} should be rejected`,
     );
+});
+
+// ── G-RASTER-BUDGET, across the WHOLE roster (Plan B Task 12) ──────────────
+//
+// The 2 s budget existed and only the canary was measured against it. The
+// canary passed at 0.77 s while the committed basin sheet took 11.31 s — 5.7x
+// over — because the canary's regions carry a baked <image> underlay and its
+// only pattern fills are 40x24 legend swatches. It was not covering the thing
+// the live sheets do. Every sheet in the registry is measured here.
+//
+// SKIPS without librsvg, like every other raster test in this repo: CI has no
+// rsvg-convert (see tests/raster.test.mjs). The deterministic backstop that
+// runs everywhere is G-SHEET-BUDGET's maxPatternRectAreaRatio, which reads the
+// same defect straight out of the committed text.
+//
+// Takes the BEST of three runs. `node --test` runs files in parallel and this
+// suite shares a machine with a dozen others; a performance floor is a claim
+// about what the renderer can do, not about what a contended box happened to
+// do on one pass. The margin it is asserting is large (cluster1 1.08 s against
+// a 2 s cap), so this is not a way of squeezing under the number.
+const rsvg = (args) => spawnSync("rsvg-convert", args, { stdio: "pipe", maxBuffer: 1 << 26 });
+
+test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at rasterWidthPx", (t) => {
+  const probe = rsvg(["--version"]);
+  if (probe.error || probe.status !== 0) {
+    t.skip("rsvg-convert not installed");
+    return;
+  }
+  const budgets = JSON.parse(readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"));
+  const width = budgets.sheets.rasterWidthPx;
+  const cap = budgets.sheets.maxRasterSeconds;
+  const dir = mkdtempSync(join(tmpdir(), "sheet-raster-"));
+  const slow = [];
+  for (const [id, sheet] of Object.entries(SHEETS)) {
+    const out = join(dir, `${id}.png`);
+    let best = Infinity;
+    for (let i = 0; i < 3; i++) {
+      const t0 = process.hrtime.bigint();
+      const run = rsvg(["-w", String(width), "-b", "#f3e7ce", join(ROOT, sheet.outSvg), "-o", out]);
+      const secs = Number(process.hrtime.bigint() - t0) / 1e9;
+      assert.equal(run.status, 0, `${id}: ${String(run.stderr)}`);
+      if (secs < best) best = secs;
+    }
+    // rsvg-convert EXITS 0 on a page it drew nothing on, so a timing that is
+    // fast because the sheet is empty must not read as a pass.
+    assert.ok(statSync(out).size > 10000, `${id}: ${statSync(out).size} B — nothing was drawn`);
+    if (best > cap) slow.push(`${id} ${best.toFixed(2)} s`);
+  }
+  assert.deepEqual(slow, [], `G-RASTER-BUDGET: over ${cap} s at ${width} px: ${slow.join(", ")}`);
 });

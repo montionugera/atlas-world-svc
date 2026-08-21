@@ -202,6 +202,9 @@ test("budgets.json pins cellKm and the landform + sheet caps", () => {
     maxSheets: 18,
     maxSvgBytes: 524288,
     maxRasterSeconds: 2,
+    // Plan B Task 12: the structural companion to maxSvgBytes. Bytes were the
+    // only guard and they guarded nothing — 47 KB of sheet, 11.31 s of raster.
+    maxPatternRectAreaRatio: 1.5,
     rasterWidthPx: 2000,
     thumbWidthPx: 512,
     maxThumbBytes: 393216,
@@ -212,6 +215,96 @@ test("budgets.json pins cellKm and the landform + sheet caps", () => {
         BUDGETS.sheetsWhy[k].length > 40,
       `budgets.json sheets.${k} has no sheetsWhy line — a number without a stated reason`,
     );
+});
+
+// ── G-SHEET-BUDGET's structural half (Plan B Task 12) ──────────────────────
+//
+// POSITIVE CONTROL FIRST. The fixture below is the defect this rule was
+// calibrated on, reduced to its shape: a sheet that draws its pattern fills as
+// full-frame rects and clips each one down to a small zone. The real basin
+// sheet measured 6.61x its own canvas that way, at 47 KB and 11.31 s. If this
+// fixture ever stops failing, the rule has stopped covering the thing it was
+// built for, whatever else is green.
+const FRAME = 'width="1000" height="1000"';
+const fullFrameRect = (id) =>
+  `<rect x="0" y="0" width="1000" height="1000" fill="url(#pRim)" clip-path="url(#${id})"/>`;
+const boundedRect = (id) =>
+  `<rect x="10" y="10" width="120" height="120" fill="url(#pRim)" clip-path="url(#${id})"/>`;
+
+test("G-SHEET-BUDGET: pattern rects that cover the frame and are clipped small are REJECTED", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  const rects = Array.from({ length: 12 }, (_, i) => fullFrameRect(`z${i}`)).join("");
+  writeFileSync(join(maps, "greedy.svg"), `<svg ${FRAME}>${rects}</svg>`);
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-SHEET-BUDGET: sheet greedy\.svg pattern-filled rects cover 12\.00x its own canvas > budget 1\.5/);
+  assert.doesNotMatch(r.out, /check-content: \w*Error/);
+  drop();
+});
+
+test("G-SHEET-BUDGET: the same twelve fills, bounded to their clips, PASS", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  const rects = Array.from({ length: 12 }, (_, i) => boundedRect(`z${i}`)).join("");
+  writeFileSync(join(maps, "bounded.svg"), `<svg ${FRAME}>${rects}</svg>`);
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /^world-budget: sheet pattern-rect area 0\.17x canvas worst \(bounded\.svg\) \(budget 1\.5\)$/m);
+  drop();
+});
+
+// The measurement PRINTS on every run, like every other budget in this file —
+// a cap that has stopped measuring is invisible unless it says what it saw.
+test("the gate PRINTS a world-budget line for sheet pattern area on every run", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  mkdirSync(join(base, "game-client/assets/art/maps"), { recursive: true });
+  const r = runGate(contentRoot);
+  assert.match(r.out, /^world-budget: sheet pattern-rect area 0\.00x canvas worst \(none\) \(budget 1\.5\)$/m);
+  drop();
+});
+
+// A sheet with no pattern rect at all must not be asked for a canvas it has no
+// reason to carry — the soft-skip discipline. `<svg/>` is a real fixture shape
+// in this file and in three other suites.
+test("G-SHEET-BUDGET: a sheet with no pattern fill needs no readable canvas", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  writeFileSync(join(maps, "a.svg"), "<svg/>");
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 0, r.out);
+  assert.doesNotMatch(r.out, /could not be measured/);
+  drop();
+});
+
+// ...but a sheet that DOES pattern-fill and hides its canvas reports, rather
+// than scoring zero. Silence is how a cap stops covering.
+test("G-SHEET-BUDGET red, not silent: a pattern-filled sheet with no readable canvas", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  writeFileSync(join(maps, "headless.svg"), `<svg viewBox="0 0 10 10">${fullFrameRect("z0")}</svg>`);
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-SHEET-BUDGET: sheet headless\.svg has no readable <svg width\/height>/);
+  assert.doesNotMatch(r.out, /check-content: \w*Error/);
+  drop();
+});
+
+test("G-SHEET-BUDGET red, not a throw: budgets.json sheets has no maxPatternRectAreaRatio", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  mkdirSync(join(base, "game-client/assets/art/maps"), { recursive: true });
+  const b = structuredClone(BUDGETS);
+  delete b.sheets.maxPatternRectAreaRatio;
+  writeJson(join(contentRoot, "world/budgets.json"), b);
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-SHEET-BUDGET: world\/budgets\.json sheets has no numeric maxPatternRectAreaRatio/);
+  assert.doesNotMatch(r.out, /check-content: \w*Error/);
+  drop();
 });
 
 // Plan C adds `fabric`, `civil` and `loop` to this same file and owns
