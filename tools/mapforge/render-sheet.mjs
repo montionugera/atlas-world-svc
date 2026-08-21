@@ -28,7 +28,7 @@ import { fileURLToPath } from "node:url";
 import { pathToFileURL } from "node:url";
 import { C } from "./lib/draft.mjs";
 import { drawBasinSheet } from "./lib/basin-sheet.mjs";
-import { buildAtlasSheet } from "./lib/atlas-sheet.mjs";
+import { buildAtlasSheet, ATLAS_MAX_LABEL_RANK } from "./lib/atlas-sheet.mjs";
 import { buildSyntheticSheet } from "./lib/synthetic-sheet.mjs";
 import { rasterize } from "./lib/raster.mjs";
 import { loadSpine, buildTree } from "../../scripts/lib/spine.mjs";
@@ -64,8 +64,9 @@ export const SHEETS = {
     // `title` mirrors tools/asset-storybook/maps-index.json's row title —
     // the storybook parity gate (X8) checks paths today and Plan B extends it
     // to the title. `maxLabelRank` is declared here and consumed by Plan B's
-    // labels.mjs: a region sheet draws every priority rank 0-10, a world
-    // sheet stops at rank 3 (world title, ocean, continent, sea).
+    // labels.mjs: a region sheet draws every priority rank 0-10. A world sheet
+    // was described here as stopping at rank 3 — see the atlas row below for
+    // why that was wrong about the sheet the repo actually ships.
     title: "Cluster 1 — Basin Survey",
     outSvg: "game-client/assets/art/maps/cluster1-world.svg",
     outPng: "game-client/assets/art/maps/cluster1-world.png",
@@ -76,7 +77,14 @@ export const SHEETS = {
     title: "The Atlas World — Mariners' Chart",
     outSvg: "game-client/assets/art/maps/atlas-world.svg",
     outPng: "game-client/assets/art/maps/atlas-world.png",
-    maxLabelRank: 3,
+    // Plan B Task 12: read from the builder, not written twice. The literal
+    // that used to sit here was 3, and the comment above described a world
+    // sheet as drawing only "world title, ocean, continent, sea" — but this
+    // sheet has lettered region titles (rank 4), port names (6) and
+    // line-feature names (8) since F-043. Adopting the declutter at 3 would
+    // have silently deleted 20 of its 26 names, because a label above the
+    // tier is not drawn AND not counted as dropped.
+    maxLabelRank: ATLAS_MAX_LABEL_RANK,
     build: buildAtlasSheet,
   },
   // Plan B Task 10 — the target-density canary. NOT geography: a synthetic

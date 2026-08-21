@@ -4,7 +4,10 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildAtlasSheet, drawAtlasSheet } from "../lib/atlas-sheet.mjs";
-import { esc } from "../lib/draft.mjs";
+import { esc, LEGEND } from "../lib/draft.mjs";
+import { measureText } from "../lib/labels.mjs";
+import { ATLAS_MAX_LABEL_RANK, ATLAS_LABEL_BUDGET, ATLAS_LEGEND_TIER } from "../lib/atlas-sheet.mjs";
+import { SHEETS } from "../render-sheet.mjs";
 import { loadSpine, buildTree } from "../../../scripts/lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -207,4 +210,91 @@ test("the shipped worldChildren filter reads landIds/seaIds — 9 world children
     `${victim.id} is still drawn after landIds absorbed it — the filter is not reading the descriptor`,
   );
   assert.notEqual(after.svg, base.svg);
+});
+
+// ── Plan B Task 12: the sheet adopts the Phase 3 capabilities ──────────────
+
+test("the atlas sheet places every label through the declutter, with none dropped", () => {
+  const { notes, problems } = buildAtlasSheet({ repoRoot: ROOT });
+  assert.deepEqual(problems, [], problems.join("\n"));
+  const note = notes.find((n) => n.startsWith("labels "));
+  assert.ok(note, notes.join(" | "));
+  assert.match(note, /dropped 0$/, note);
+});
+
+// Re-derived from the EMITTED text, so the assertion does not trust the
+// placer's own bookkeeping — a collider bug has to show up here as an overlap
+// rather than as a clean report from the thing that made the mistake.
+test("no two label boxes overlap on the built atlas sheet", () => {
+  const { svg } = buildAtlasSheet({ repoRoot: ROOT });
+  const texts = [
+    ...svg.matchAll(
+      /<text class="lbl" x="([-\d.]+)" y="([-\d.]+)" font-size="([\d.]+)"[^>]*letter-spacing="([\d.]+)"[^>]*>([^<]*)<\/text>/g,
+    ),
+  ];
+  assert.ok(texts.length >= 25, `only ${texts.length} placed labels on the sheet`);
+  const boxes = texts.map((m) => {
+    const size = Number(m[3]);
+    const { w, h } = measureText({ text: m[5], size, tracking: Number(m[4]) });
+    return { x: Number(m[1]), y: Number(m[2]) - h * 0.78, w, h, t: m[5] };
+  });
+  for (let i = 0; i < boxes.length; i++)
+    for (let k = i + 1; k < boxes.length; k++) {
+      const a = boxes[i], b = boxes[k];
+      assert.ok(
+        !(a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h),
+        `"${a.t}" overlaps "${b.t}"`,
+      );
+    }
+});
+
+test("the atlas sheet now carries a legend block", () => {
+  const { svg } = buildAtlasSheet({ repoRoot: ROOT });
+  assert.ok(svg.includes("reported, not surveyed"), "no legend row for the frontier hatch");
+  assert.ok(
+    [...svg.matchAll(/<rect [^>]*fill="url\(#p/g)].length >= 2,
+    "no legend swatches",
+  );
+  for (const row of LEGEND.filter((r) => r.tier <= ATLAS_LEGEND_TIER))
+    assert.ok(svg.includes(esc(row.label)), `legend row "${row.label}" is missing`);
+});
+
+// Both directions. The sheet used to emit nine <pattern> blocks and point a
+// fill at two of them.
+test("the atlas sheet emits only the patterns it references", () => {
+  const { svg } = buildAtlasSheet({ repoRoot: ROOT });
+  const emitted = new Set([...svg.matchAll(/<pattern id="([^"]+)"/g)].map((m) => m[1]));
+  const referenced = new Set([...svg.matchAll(/url\(#(p[A-Za-z]+)\)/g)].map((m) => m[1]));
+  assert.deepEqual([...emitted].sort(), [...referenced].sort());
+});
+
+// The zoom tier is a CONTENT decision with teeth: at the registry's old
+// literal 3 the declutter would have deleted every region title, port name and
+// line-feature name on the chart — 20 of the 26 — and reported nothing,
+// because a label above the tier is not drawn AND not counted as dropped.
+test("the sheet's zoom tier keeps every name the chart draws, and the registry reads it", () => {
+  assert.equal(SHEETS.atlas.maxLabelRank, ATLAS_MAX_LABEL_RANK);
+  const { svg, notes } = buildAtlasSheet({ repoRoot: ROOT });
+  const note = notes.find((n) => n.startsWith("labels "));
+  const [, asked, placed] = /labels (\d+) placed (\d+)/.exec(note);
+  assert.equal(asked, placed, `${asked} labels asked, ${placed} placed — the tier is eating names`);
+  for (const needle of ["the Coldreach Interior", "Tallowquay", "the Stonemoor Spine"])
+    assert.ok(svg.includes(needle), `${needle}: a rank-4+ name vanished`);
+});
+
+test("a tighter zoom tier really does drop the lower ranks (the tier is not decorative)", () => {
+  const { spine, tree } = realTree();
+  const tight = drawAtlasSheet({ spine, tree, sheet: realSheet(), maxLabelRank: 3 });
+  assert.ok(!tight.svg.includes("the Coldreach Interior"), "a rank-4 name survived tier 3");
+  assert.ok(tight.svg.includes("The Keelbreak Sea"), "a rank-1 name was dropped at tier 3");
+});
+
+test("G-LABEL's budget is armed on this sheet", () => {
+  const { spine, tree } = realTree();
+  const over = drawAtlasSheet({ spine, tree, sheet: realSheet(), labelBudget: 3 });
+  assert.ok(
+    over.problems.some((p) => /G-LABEL: \d+ labels at zoom tier 1 > budget 3/.test(p)),
+    JSON.stringify(over.problems),
+  );
+  assert.ok(ATLAS_LABEL_BUDGET >= 26, "the committed budget is below the sheet's own label count");
 });

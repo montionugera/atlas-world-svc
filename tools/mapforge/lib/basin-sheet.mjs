@@ -5,13 +5,13 @@
 // writing and PNG rasterization stayed behind in that thin CLI — which Plan A
 // Task 12 deleted, so those now live in render-sheet.mjs, the only caller.
 //
-// KNOWN STALE, DELIBERATELY UNFIXED — carried to Plan B Task 12. The <desc> at
-// :143 and the footer at :729 still letter "render-map.mjs" and
-// "content/maps/cluster1-geography.json" into the sheet, and both are gone.
-// Those are DRAWN BYTES: correcting them moves the committed SVG and reds
-// G-RENDER-LOCK, and Plan B Task 12 is the one commit licensed to re-baseline
-// the lock. Nothing gates this, so it is written here rather than only in a
-// commit body.
+// The <desc> and the provenance footer both used to letter "render-map.mjs"
+// and "content/maps/cluster1-geography.json" into the drawn sheet, months
+// after Plan A Task 12 deleted both files. They are DRAWN BYTES, so correcting
+// them reds G-RENDER-LOCK and only Plan B Task 12 was licensed to re-baseline
+// it; that is this commit, and they now name the surviving truth — the sheet
+// is drawn from content/spine/ by tools/mapforge/render-sheet.mjs. Nothing in
+// the tree gates either string, so the check is a grep for the dead names.
 
 import {
   C,
@@ -19,7 +19,7 @@ import {
   REACH_W,
   ROAD_W,
   FILL_FOR,
-  TERRAIN_LEGEND,
+  LEGEND,
   r2,
   esc,
   centroid,
@@ -152,7 +152,7 @@ export function drawBasinSheet({ doc }) {
   );
   put(`<title>${esc(geo.title)} — ${esc(geo.sheet.subtitle)}</title>`);
   put(
-    `<desc>Authored vector map drawn from content/maps/cluster1-geography.json by tools/mapforge/render-map.mjs. Not a generated image.</desc>`,
+    `<desc>Authored vector map drawn from content/spine/ by tools/mapforge/render-sheet.mjs. Not a generated image.</desc>`,
   );
 
   // ---- defs: the six terrain fills, plus road/relay furniture ---------------
@@ -672,11 +672,18 @@ export function drawBasinSheet({ doc }) {
   );
 
   py += 4;
+  // Plan B Task 12, adoption 4: the legend reads the tiered LEGEND table
+  // directly instead of the TERRAIN_LEGEND alias, and both "SIX" and the
+  // hard-coded three rows of two are gone — each was an assumption that six
+  // fills is forever. This sheet stays at tier 1, so it draws the same six
+  // rows in the same order today; a seventh tier-1 fill now lands in the
+  // legend instead of silently off the bottom of it.
   put(
-    `<text x="${PANEL_X}" y="${r2(py)}" font-size="12" letter-spacing="2" fill="${C.inkMid}">SIX FILLS · NO CONTOURS</text>`,
+    `<text x="${PANEL_X}" y="${r2(py)}" font-size="12" letter-spacing="2" fill="${C.inkMid}">FILLS · NO CONTOURS</text>`,
   );
   py += 16;
-  for (let i = 0; i < TERRAIN_LEGEND.length; i++) {
+  const legendRows = LEGEND.filter((r) => r.tier <= 1);
+  for (let i = 0; i < legendRows.length; i++) {
     const col = i % 2;
     const row = Math.floor(i / 2);
     const bx = PANEL_X + col * 250;
@@ -685,13 +692,13 @@ export function drawBasinSheet({ doc }) {
       `<rect x="${bx}" y="${r2(by)}" width="40" height="24" fill="${C.parchmentDeep}" stroke="${C.inkSoft}" stroke-width="0.8"/>`,
     );
     put(
-      `<rect x="${bx}" y="${r2(by)}" width="40" height="24" fill="url(#${TERRAIN_LEGEND[i][0]})"/>`,
+      `<rect x="${bx}" y="${r2(by)}" width="40" height="24" fill="url(#${legendRows[i].pattern})"/>`,
     );
     put(
-      `<text x="${bx + 48}" y="${r2(by + 16)}" font-size="12.5" fill="${C.ink}">${esc(TERRAIN_LEGEND[i][1])}</text>`,
+      `<text x="${bx + 48}" y="${r2(by + 16)}" font-size="12.5" fill="${C.ink}">${esc(legendRows[i].label)}</text>`,
     );
   }
-  py += 3 * 34 + 4;
+  py += Math.ceil(legendRows.length / 2) * 34 + 4;
   rule(8);
 
   // --- the walking table (A1 §7.1: no scale bar; a walking table) ------------
@@ -750,11 +757,11 @@ export function drawBasinSheet({ doc }) {
   // --- provenance foot ------------------------------------------------------
   put(
     `<text x="${PANEL_X}" y="${r2(MAP_BOTTOM - 16)}" font-size="11" font-style="italic" fill="${C.inkSoft}">` +
-      `drawn from content/maps/cluster1-geography.json</text>`,
+      `drawn from content/spine/</text>`,
   );
   put(
     `<text x="${PANEL_X}" y="${r2(MAP_BOTTOM)}" font-size="11" font-style="italic" fill="${C.inkSoft}">` +
-      `by tools/mapforge/render-map.mjs — authored vector, not generated</text>`,
+      `by tools/mapforge/render-sheet.mjs — authored vector, not generated</text>`,
   );
 
   put("</svg>");

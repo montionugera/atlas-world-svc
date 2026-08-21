@@ -1,24 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1504" height="1542" viewBox="0 0 1504 1542" role="img" aria-label="THE ATLAS WORLD — Bellfaith survey where the towers see; mariners' report beyond">
+<svg xmlns="http://www.w3.org/2000/svg" width="1504" height="1672" viewBox="0 0 1504 1672" role="img" aria-label="THE ATLAS WORLD — Bellfaith survey where the towers see; mariners' report beyond">
 <title>THE ATLAS WORLD — Bellfaith survey where the towers see; mariners' report beyond</title>
 <desc>Authored vector map drawn from content/spine/ (nodes + sheet-atlas.json) by tools/mapforge/render-sheet.mjs. Not a generated image.</desc>
 <defs>
-<pattern id="pIce" width="26" height="13" patternUnits="userSpaceOnUse"><path d="M0,4 h11 M15,4 h9 M4,9.5 h13 M20,9.5 h6" stroke="#8a7f6c" stroke-width="0.9" fill="none"/></pattern>
-<pattern id="pUpland" width="18" height="14" patternUnits="userSpaceOnUse"><path d="M2,10 l4,-6 l4,6 M11,13 l3,-4.5 l3,4.5" stroke="#8a7f6c" stroke-width="0.9" fill="none"/></pattern>
-<pattern id="pFlat" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="3" cy="4" r="0.8" fill="#8a7f6c"/><circle cx="11" cy="9" r="0.8" fill="#8a7f6c"/><circle cx="6" cy="13" r="0.7" fill="#8a7f6c"/></pattern>
-<pattern id="pRim" width="11" height="11" patternUnits="userSpaceOnUse"><path d="M0,11 l11,-11" stroke="#8a7f6c" stroke-width="0.75" fill="none"/></pattern>
 <pattern id="pBramble" width="9" height="9" patternUnits="userSpaceOnUse"><path d="M0,9 l9,-9 M0,0 l9,9" stroke="#8a7f6c" stroke-width="0.65" fill="none"/></pattern>
+<pattern id="pFlat" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="3" cy="4" r="0.8" fill="#8a7f6c"/><circle cx="11" cy="9" r="0.8" fill="#8a7f6c"/><circle cx="6" cy="13" r="0.7" fill="#8a7f6c"/></pattern>
+<pattern id="pForest" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M5,14 l3,-6 l3,6 Z M12,17 l2.5,-5 l2.5,5 Z" fill="none" stroke="#8a7f6c" stroke-width="0.7"/></pattern>
+<pattern id="pIce" width="26" height="13" patternUnits="userSpaceOnUse"><path d="M0,4 h11 M15,4 h9 M4,9.5 h13 M20,9.5 h6" stroke="#8a7f6c" stroke-width="0.9" fill="none"/></pattern>
+<pattern id="pMeadow" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M4,15 v-3 M10,18 v-3 M16,13 v-3" stroke="#8a7f6c" stroke-width="0.6" fill="none"/></pattern>
 <pattern id="pMire" width="22" height="16" patternUnits="userSpaceOnUse"><path d="M2,8 h9 M6.5,8 v-3.5 M4,8 v-2.5 M9,8 v-2.5" stroke="#5d5344" stroke-width="0.8" fill="none"/><path d="M13,15 h8 M17,15 v-3 M14.8,15 v-2.2 M19.2,15 v-2.2" stroke="#5d5344" stroke-width="0.8" fill="none"/></pattern>
-<pattern id="pRock" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M2,2 v4 M7,5 v4 M10,1 v3 M4,9 v3" stroke="#8a7f6c" stroke-width="0.9" fill="none"/></pattern>
-<pattern id="pRiver" width="20" height="18" patternUnits="userSpaceOnUse"><path d="M3,12 v-5 M6,14 v-4 M13,7 v-5 M16,9 v-4" stroke="#8a7f6c" stroke-width="0.8" fill="none"/></pattern>
 <pattern id="pReported" width="7" height="7" patternUnits="userSpaceOnUse"><path d="M0,7 L7,0" stroke="#241f18" stroke-width="0.45" opacity="0.5"/></pattern>
+<pattern id="pReportedHearsay" width="11" height="11" patternUnits="userSpaceOnUse"><path d="M0,11 L11,0" stroke="#241f18" stroke-width="0.45" opacity="0.42"/></pattern>
+<pattern id="pReportedInferred" width="15" height="15" patternUnits="userSpaceOnUse"><path d="M0,15 L15,0" stroke="#241f18" stroke-width="0.45" opacity="0.3"/></pattern>
+<pattern id="pReportedSworn" width="7" height="7" patternUnits="userSpaceOnUse"><path d="M0,7 L7,0" stroke="#241f18" stroke-width="0.45" opacity="0.5"/></pattern>
+<pattern id="pRim" width="11" height="11" patternUnits="userSpaceOnUse"><path d="M0,11 l11,-11" stroke="#8a7f6c" stroke-width="0.75" fill="none"/></pattern>
+<pattern id="pRiver" width="20" height="18" patternUnits="userSpaceOnUse"><path d="M3,12 v-5 M6,14 v-4 M13,7 v-5 M16,9 v-4" stroke="#8a7f6c" stroke-width="0.8" fill="none"/></pattern>
+<pattern id="pRock" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M2,2 v4 M7,5 v4 M10,1 v3 M4,9 v3" stroke="#8a7f6c" stroke-width="0.9" fill="none"/></pattern>
+<pattern id="pUpland" width="18" height="14" patternUnits="userSpaceOnUse"><path d="M2,10 l4,-6 l4,6 M11,13 l3,-4.5 l3,4.5" stroke="#8a7f6c" stroke-width="0.9" fill="none"/></pattern>
 <clipPath id="clip-sheet"><rect x="58" y="96" width="1400" height="1400"/></clipPath>
 </defs>
 <style>
   text { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; fill: #241f18; }
   .lbl { paint-order: stroke fill; stroke: #f3e7ce; stroke-width: 3.4px; stroke-linejoin: round; }
   .zn { paint-order: stroke fill; stroke: #f3e7ce; stroke-width: 3.8px; stroke-linejoin: round; }
+  use { color: #241f18; fill: none; }
 </style>
-<rect width="1504" height="1542" fill="#f3e7ce"/>
+<rect width="1504" height="1672" fill="#f3e7ce"/>
 <rect x="58" y="96" width="1400" height="1400" fill="#efe4ca"/>
 <g clip-path="url(#clip-sheet)">
 <path d="M58,96 L74.8,96 L72,103 L69.9,112.8 L68.5,124 L67.8,135.2 L67.1,146.4 L66.4,157.6 L66.4,168.8 L67.1,178.6 L67.8,187 L66.4,194 L58,194 Z" fill="#dcd0b0"/>
@@ -76,33 +82,76 @@
 <text class="zn" x="420" y="1148" text-anchor="middle" font-size="13" letter-spacing="4" fill="#5d5344">NOT SHOWN ON THIS SHEET</text>
 <text class="zn" x="420" y="1170" text-anchor="middle" font-size="12.5" fill="#5d5344">·  the far interiors, past what any crew has walked</text>
 <text class="zn" x="420" y="1188" text-anchor="middle" font-size="12.5" fill="#5d5344">·  whatever lies past the ice-cap's edge</text>
-<text class="lbl" x="736.34" y="300.76" dy="-5" transform="rotate(69.27 736.34 300.76)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Brightfall Teeth</text>
-<text class="lbl" x="755.2" y="316.76" dy="-5" transform="rotate(0 755.2 316.76)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">BRIGHTFALL</text>
-<text class="lbl" x="775.5" y="589.85" dy="-5" transform="rotate(0 775.5 589.85)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Coldreach Shore</text>
-<text class="lbl" x="685.55" y="605.85" dy="-5" transform="rotate(0 685.55 605.85)" text-anchor="middle" font-size="10" fill="#5d5344" letter-spacing="0.6" font-style="italic">Tallowquay</text>
-<text class="lbl" x="711.45" y="621.85" dy="-5" transform="rotate(0 711.45 621.85)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Coldreach Interior</text>
-<text class="lbl" x="753.8" y="637.85" dy="-5" transform="rotate(0 753.8 637.85)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">COLDREACH</text>
-<text class="lbl" x="770.43" y="653.85" dy="-5" transform="rotate(0 770.43 653.85)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Coldreach Spine</text>
-<text class="lbl" x="761.11" y="669.85" dy="-5" transform="rotate(79.89 761.11 669.85)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Peatrun</text>
-<text class="lbl" x="766.4" y="685.85" dy="-5" transform="rotate(0 766.4 685.85)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Peatrun Coast</text>
-<text class="lbl" x="755.2" y="1071.8" dy="-5" transform="rotate(0 755.2 1071.8)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">DRIFTHOLT</text>
-<text class="lbl" x="729.51" y="1087.8" dy="-5" transform="rotate(48.65 729.51 1087.8)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Driftholt Saw</text>
-<text class="lbl" x="1083.85" y="455.45" dy="-5" transform="rotate(0 1083.85 455.45)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">REEDSTRAND</text>
-<text class="lbl" x="1056.13" y="471.45" dy="-5" transform="rotate(-65.32 1056.13 471.45)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Reedstrand Breakers</text>
-<text class="lbl" x="513" y="145" dy="-5" transform="rotate(0 513 145)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">THE RIMEWALL CAP</text>
-<text class="lbl" x="1098.55" y="966.1" dy="-5" transform="rotate(0 1098.55 966.1)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Stonemoor Shore</text>
-<text class="lbl" x="1027.5" y="982.1" dy="-5" transform="rotate(0 1027.5 982.1)" text-anchor="middle" font-size="10" fill="#5d5344" letter-spacing="0.6" font-style="italic">Netstead</text>
-<text class="lbl" x="1077.02" y="998.1" dy="-5" transform="rotate(0 1077.02 998.1)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Stonemoor Spine</text>
-<text class="lbl" x="1044.65" y="1014.1" dy="-5" transform="rotate(0 1044.65 1014.1)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Stonemoor Interior</text>
-<text class="lbl" x="1082.1" y="1030.1" dy="-5" transform="rotate(0 1082.1 1030.1)" text-anchor="middle" font-size="13" fill="#241f18" letter-spacing="2">STONEMOOR</text>
-<text class="lbl" x="1106.25" y="1046.1" dy="-5" transform="rotate(0 1106.25 1046.1)" text-anchor="middle" font-size="9.5" fill="#8a7f6c" letter-spacing="0.6">the Slateflow Coast</text>
-<text class="lbl" x="1084.2" y="1062.1" dy="-5" transform="rotate(90 1084.2 1062.1)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the Slateflow</text>
-<text class="lbl" x="889.83" y="896.05" dy="-5" transform="rotate(-7.91 889.83 896.05)" text-anchor="middle" font-size="15" fill="#8a7f6c" letter-spacing="4" font-style="italic">The Galereach Sea</text>
-<text class="lbl" x="560.33" y="580.9" dy="-5" transform="rotate(-7.91 560.33 580.9)" text-anchor="middle" font-size="15" fill="#8a7f6c" letter-spacing="4" font-style="italic">The Keelbreak Sea</text>
-<text class="lbl" x="1171.58" y="747.7" dy="-5" transform="rotate(-7.91 1171.58 747.7)" text-anchor="middle" font-size="15" fill="#8a7f6c" letter-spacing="4" font-style="italic">The Tarnmark Sea</text>
-<text class="lbl" x="352.57" y="435.24" dy="-5" transform="rotate(31.8 352.57 435.24)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">the trade wind · once a year</text>
-<text class="lbl" x="833.91" y="799.19" dy="-5" transform="rotate(47.79 833.91 799.19)" text-anchor="middle" font-size="10.5" fill="#5d5344" letter-spacing="0.6" font-style="italic">a foreign coastal lane</text>
+<text class="lbl" x="898.83" y="883.75" font-size="15" font-style="italic" fill="#8a7f6c" letter-spacing="2">The Galereach Sea</text>
+<text class="lbl" x="569.33" y="568.6" font-size="15" font-style="italic" fill="#8a7f6c" letter-spacing="2">The Keelbreak Sea</text>
+<text class="lbl" x="1180.58" y="735.4" font-size="15" font-style="italic" fill="#8a7f6c" letter-spacing="2">The Tarnmark Sea</text>
+<text class="lbl" x="763" y="292.54" font-size="13" fill="#241f18" letter-spacing="2">BRIGHTFALL</text>
+<text class="lbl" x="761.6" y="604.39" font-size="13" fill="#241f18" letter-spacing="2">COLDREACH</text>
+<text class="lbl" x="763" y="1061.14" font-size="13" fill="#241f18" letter-spacing="2">DRIFTHOLT</text>
+<text class="lbl" x="1091.65" y="444.79" font-size="13" fill="#241f18" letter-spacing="2">REEDSTRAND</text>
+<text class="lbl" x="520.8" y="134.34" font-size="13" fill="#241f18" letter-spacing="2">THE RIMEWALL CAP</text>
+<text class="lbl" x="1089.9" y="980.99" font-size="13" fill="#241f18" letter-spacing="2">STONEMOOR</text>
+<text class="lbl" x="360.37" y="424.58" font-size="13" font-style="italic" fill="#5d5344" letter-spacing="2">the trade wind · once a year</text>
+<text class="lbl" x="841.71" y="788.53" font-size="13" font-style="italic" fill="#5d5344" letter-spacing="2">a foreign coastal lane</text>
+<text class="lbl" x="718.05" y="589.23" font-size="11" fill="#241f18" letter-spacing="0.6">the Coldreach Interior</text>
+<text class="lbl" x="788.7" y="574.23" font-size="11" fill="#241f18" letter-spacing="0.6">the Coldreach Shore</text>
+<text class="lbl" x="773" y="645.93" font-size="11" fill="#241f18" letter-spacing="0.6">the Peatrun Coast</text>
+<text class="lbl" x="1112.85" y="1018.33" font-size="11" fill="#241f18" letter-spacing="0.6">the Slateflow Coast</text>
+<text class="lbl" x="915.45" y="981.58" font-size="11" fill="#241f18" letter-spacing="0.6">the Stonemoor Interior</text>
+<text class="lbl" x="1105.15" y="957.08" font-size="11" fill="#241f18" letter-spacing="0.6">the Stonemoor Shore</text>
+<text class="lbl" x="1034.1" y="958.13" font-size="11" font-style="italic" fill="#5d5344" letter-spacing="0.6">Netstead</text>
+<text class="lbl" x="618.55" y="581.18" font-size="11" font-style="italic" fill="#5d5344" letter-spacing="0.6">Tallowquay</text>
+<text class="lbl" x="638.97" y="292.97" font-size="9.5" font-style="italic" fill="#5d5344" letter-spacing="0.6">the Brightfall Teeth</text>
+<text class="lbl" x="776.13" y="628.51" font-size="9.5" font-style="italic" fill="#5d5344" letter-spacing="0.6">the Coldreach Spine</text>
+<text class="lbl" x="701.82" y="644.69" font-size="9.5" font-style="italic" fill="#5d5344" letter-spacing="0.6">the Peatrun</text>
+<text class="lbl" x="643.15" y="1064.65" font-size="9.5" font-style="italic" fill="#5d5344" letter-spacing="0.6">the Driftholt Saw</text>
+<text class="lbl" x="936.63" y="448.09" font-size="9.5" font-style="italic" fill="#5d5344" letter-spacing="0.6">the Reedstrand Breakers</text>
+<text class="lbl" x="1082.72" y="1003.71" font-size="9.5" font-style="italic" fill="#5d5344" letter-spacing="0.6">the Stonemoor Spine</text>
+<text class="lbl" x="1089.9" y="1032.06" font-size="9.5" font-style="italic" fill="#5d5344" letter-spacing="0.6">the Slateflow</text>
 <g stroke="#241f18" stroke-width="1.6" fill="none"><path d="M1346,1448 L1346,1406"/><path d="M1341,1414 L1346,1404 L1351,1414 Z" fill="#241f18"/></g>
 <text x="1346" y="1464" text-anchor="middle" font-size="15" letter-spacing="2" fill="#241f18">N</text>
 <rect x="58" y="96" width="1400" height="1400" fill="none" stroke="#241f18" stroke-width="1.6"/>
+<text x="58" y="1516" font-size="12" letter-spacing="2" fill="#5d5344">FILLS · SURVEYED AND REPORTED</text>
+<rect x="58" y="1528" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="58" y="1528" width="40" height="24" fill="url(#pIce)"/>
+<text x="106" y="1544" font-size="12.5" fill="#241f18">ice shelf</text>
+<rect x="308" y="1528" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="308" y="1528" width="40" height="24" fill="url(#pUpland)"/>
+<text x="356" y="1544" font-size="12.5" fill="#241f18">upland</text>
+<rect x="558" y="1528" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="558" y="1528" width="40" height="24" fill="url(#pFlat)"/>
+<text x="606" y="1544" font-size="12.5" fill="#241f18">alkali flat</text>
+<rect x="808" y="1528" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="808" y="1528" width="40" height="24" fill="url(#pRim)"/>
+<text x="856" y="1544" font-size="12.5" fill="#241f18">rim country</text>
+<rect x="1058" y="1528" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="1058" y="1528" width="40" height="24" fill="url(#pBramble)"/>
+<text x="1106" y="1544" font-size="12.5" fill="#241f18">bramble</text>
+<rect x="58" y="1562" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="58" y="1562" width="40" height="24" fill="url(#pMire)"/>
+<text x="106" y="1578" font-size="12.5" fill="#241f18">tidal mire</text>
+<rect x="308" y="1562" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="308" y="1562" width="40" height="24" fill="url(#pRock)"/>
+<text x="356" y="1578" font-size="12.5" fill="#241f18">headland rock</text>
+<rect x="558" y="1562" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="558" y="1562" width="40" height="24" fill="url(#pRiver)"/>
+<text x="606" y="1578" font-size="12.5" fill="#241f18">river country</text>
+<rect x="808" y="1562" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="808" y="1562" width="40" height="24" fill="url(#pForest)"/>
+<text x="856" y="1578" font-size="12.5" fill="#241f18">forest</text>
+<rect x="1058" y="1562" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="1058" y="1562" width="40" height="24" fill="url(#pMeadow)"/>
+<text x="1106" y="1578" font-size="12.5" fill="#241f18">meadow</text>
+<rect x="58" y="1596" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="58" y="1596" width="40" height="24" fill="url(#pReported)"/>
+<text x="106" y="1612" font-size="12.5" fill="#241f18">reported, not surveyed</text>
+<rect x="308" y="1596" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="308" y="1596" width="40" height="24" fill="url(#pReportedSworn)"/>
+<text x="356" y="1612" font-size="12.5" fill="#241f18">reported — sworn log</text>
+<rect x="558" y="1596" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="558" y="1596" width="40" height="24" fill="url(#pReportedHearsay)"/>
+<text x="606" y="1612" font-size="12.5" fill="#241f18">reported — hearsay</text>
+<rect x="808" y="1596" width="40" height="24" fill="#efe4ca" stroke="#8a7f6c" stroke-width="0.8"/>
+<rect x="808" y="1596" width="40" height="24" fill="url(#pReportedInferred)"/>
+<text x="856" y="1612" font-size="12.5" fill="#241f18">reported — inferred</text>
 </svg>

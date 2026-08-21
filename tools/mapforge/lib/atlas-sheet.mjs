@@ -18,24 +18,88 @@ import {
   esc,
   pointInPolygon,
   wrap,
+  LEGEND,
   createDraft,
   centroid,
   polylineKm,
   alongKm,
   patternDefs,
+  FILL_FOR,
 } from "./draft.mjs";
+import { frontierPattern, checkBiomeInk } from "./ink.mjs";
+import { symbolDefs, glyphUse, glyphForType, checkGlyphCoverage } from "./glyphs.mjs";
+import { placeLabels, checkLabels, RANKS } from "./labels.mjs";
 import { loadSpine, buildTree, resolveToRoot } from "../../../scripts/lib/spine.mjs";
 
 // F-045 Task 4: 0.7 -> 3.5 (÷5 up), the world frame's own 2000 -> 400 km
 // (÷5 down) — net canvas size unchanged, 5x denser per km.
+// Plan B Task 12, adoption 1. ONE expression, read by both the <defs> builder
+// and the draw loop. Writing the fallback twice is how a sheet ends up
+// referencing a pattern <defs> never emitted — a self-inflicted G-BIOME-INK
+// "referenced but not emitted" at the first node that carries provenance.
+//
+// A reported region has NO terrainKind by construction, so it falls through to
+// the frontier hatch keyed on its provenance rather than to a flat default.
+// Byte-zero on today's corpus: n-rimewall-cap is the only world child with a
+// terrainKind (ice -> pIce), no committed node carries `provenance` at all,
+// and frontierPattern(undefined) is exactly "pReported". It stops being a
+// no-op the moment Plan C's fabric supplies either field.
+const patternFor = (n) => FILL_FOR[n.terrainKind] ?? frontierPattern(n.provenance);
+
+// Plan B Task 12, adoption 3. The sheet's zoom tier lives HERE, and
+// render-sheet.mjs's registry row reads it — one number, one home. It is not a
+// caller argument on purpose: sheet.build() is invoked from three places
+// (the CLI, check_render_lock, render-lock.mjs) and a tier passed in would make
+// the committed bytes depend on which caller built them.
+//
+// 8 (namedLandform), not the 3 the registry used to carry as a literal. The
+// registry's comment described a world sheet as drawing "world title, ocean,
+// continent, sea" — but this sheet has drawn region titles (rank 4), port names
+// (6) and line-feature names (8) since F-043, and two committed tests require
+// "Tallowquay" and "the Coldreach Interior" to be on it. At tier 3 the
+// declutter would have silently deleted 24 of the 33 names on the chart, which
+// is a REDRAW, and the redraw is Plan E's. Lowering this number is a content
+// decision, not a rendering one.
+export const ATLAS_MAX_LABEL_RANK = 8;
+
+// G-LABEL's hard cap for this sheet. MEASURED, not transcribed: the chart
+// carries 26 map labels through the declutter — 6 continent titles, 3 ocean
+// names, 6 region titles, 7 line-feature names, 2 port names and 2 sea-lane
+// labels. The other 11 <text> elements on the sheet are chrome (title,
+// subtitle, hand paragraph, withheld list, north mark, survey note) and never
+// go through a placement pass. 32 is that count plus a quarter, so a name or
+// two added by an authoring change reports rather than reds; a rank assignment
+// that pushes past it is the gate saying the name belongs on a continent
+// sheet, not on the world sheet. The plan's 40 was a tier-1 number for a
+// four-rank sheet; this one draws eight ranks.
+export const ATLAS_LABEL_BUDGET = 32;
+
+// Which LEGEND rows this sheet keys. Tier 2 is the surveyed fills plus the
+// four "reported" densities — the vocabulary this chart's grammar is built on.
+export const ATLAS_LEGEND_TIER = 2;
+
 export const ATLAS_PX_PER_KM = 3.5; // 400 km → 1400 px map frame
 export const ATLAS_MAP_LEFT = 58;
 export const ATLAS_MAP_TOP = 96;
 const SHEET_PAD = 46;
 
-export function drawAtlasSheet({ spine, tree, sheet }) {
+export function drawAtlasSheet({
+  spine,
+  tree,
+  sheet,
+  lexicon = null,
+  maxLabelRank = ATLAS_MAX_LABEL_RANK,
+  labelBudget = ATLAS_LABEL_BUDGET,
+  legendTier = ATLAS_LEGEND_TIER,
+}) {
   const problems = [];
   const notes = [];
+  // Plan B Task 12, adoption 2. The landform lexicon is DATA the caller reads;
+  // a builder that opened a file would be the second thing in this module able
+  // to fail on io. A null lexicon is a legitimate state (a fixture root with no
+  // content/world/), and glyphForType answers null for it rather than throwing.
+  const usedGlyphs = new Set();
+  const namedCounts = {};
 
   // ---- data joins — everything drawn is looked up here ---------------------
   // Plan A Task 8: every subject id comes from content/spine/sheet-atlas.json's
@@ -297,11 +361,32 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
     if (typeof n.title !== "string" || n.title.trim() === "")
       problems.push(`${n.id}: missing title — nothing to letter on the sheet`);
 
+  // ---- the legend band (Plan B Task 12, adoption 4) -------------------------
+  // Declared BEFORE <defs> because <defs> must emit every pattern the legend
+  // swatches point at, and drawn after the frame below.
+  // Tier 2, not tier 1: this sheet's grammar is surveyed-versus-reported, and
+  // the three frontier densities (sworn / hearsay / inferred) are tier-2 rows.
+  // A chart that hatches a coast "reported" and never says so in a key is a
+  // chart the reader has to be told about out of band.
+  const legendRows = LEGEND.filter((r) => r.tier <= legendTier);
+  const legendPatterns = legendRows.map((r) => r.pattern);
+
   // ---- sheet geometry -------------------------------------------------------
   const MAP_W = EXT_W * ATLAS_PX_PER_KM;
   const MAP_H = EXT_H * ATLAS_PX_PER_KM;
   const SHEET_W = Math.round(ATLAS_MAP_LEFT + MAP_W + SHEET_PAD);
-  const SHEET_H = Math.round(ATLAS_MAP_TOP + MAP_H + SHEET_PAD);
+  // The legend band lives BELOW the frame — this sheet has no side panel, the
+  // map fills it edge to edge. Column count is derived from the frame's own
+  // width rather than pinned at the basin sheet's two, so widening the chart
+  // re-flows the key instead of running it off the page.
+  const LEGEND_COL_W = 250;
+  const LEGEND_ROW_H = 34;
+  const legendCols = Math.max(1, Math.floor(MAP_W / LEGEND_COL_W));
+  const legendBandH =
+    legendRows.length === 0
+      ? 0
+      : 8 + 16 + Math.ceil(legendRows.length / legendCols) * LEGEND_ROW_H + 4;
+  const SHEET_H = Math.round(ATLAS_MAP_TOP + MAP_H + legendBandH + SHEET_PAD);
 
   const { X, Y, poly, smooth, lineLabel } = createDraft({
     pxPerKm: ATLAS_PX_PER_KM,
@@ -321,7 +406,22 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   );
 
   put("<defs>");
-  put(patternDefs({ includeReported: true }));
+  // Plan B Task 12, adoption 1: <defs> emits exactly the patterns this sheet
+  // points a fill at — the map's own fills plus the legend's swatches — rather
+  // than the whole legacy roster. It was emitting nine and referencing two.
+  // G-BIOME-INK checks both directions, so an id that appears here and nowhere
+  // else is now a reported problem instead of seven dead <pattern> blocks.
+  const referencedPatterns = [...new Set([...worldLand.map(patternFor), ...legendPatterns])].sort();
+  put(patternDefs({ ids: referencedPatterns }));
+  problems.push(
+    ...checkBiomeInk({ emittedIds: referencedPatterns, referencedIds: referencedPatterns }),
+  );
+  // Plan B Task 12, adoption 2: the <symbol> block is a RESERVED SLOT, filled
+  // after the draw pass. Which glyph families this sheet uses is not knowable
+  // until every feature has been walked, and <defs> has to come first in the
+  // document. An empty string here is a no-op line the join drops.
+  const symbolSlot = o.length;
+  put("");
   // nothing may spill past the sheet's own border
   put(
     `<clipPath id="clip-sheet"><rect x="${ATLAS_MAP_LEFT}" y="${ATLAS_MAP_TOP}" width="${r2(MAP_W)}" height="${r2(MAP_H)}"/></clipPath>`,
@@ -332,6 +432,7 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   text { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; fill: ${C.ink}; }
   .lbl { paint-order: stroke fill; stroke: ${C.parchment}; stroke-width: 3.4px; stroke-linejoin: round; }
   .zn { paint-order: stroke fill; stroke: ${C.parchment}; stroke-width: 3.8px; stroke-linejoin: round; }
+  use { color: ${C.ink}; fill: none; }
 </style>`);
 
   // ---- parchment ------------------------------------------------------------
@@ -400,14 +501,21 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
   // among opaque hatches doesn't matter) is buffered via putLabel() and
   // flushed after the chrome block, so labels always paint on top of it
   // regardless of where either one falls on the sheet.
-  const labelBuf = [];
-  const putLabel = (s) => labelBuf.push(s);
+  // Plan B Task 12, adoption 3: ONE placement pass over the WHOLE sheet,
+  // flushed after the chrome block. Labels are collected as data here and
+  // positioned once, below — the greedy per-continent vertical stack this
+  // replaces could not see a collision between two continents, and needed
+  // three hand-tuning attempts to fix a single one inside one.
+  const sheetLabels = [];
+  const putLabel = (l) => sheetLabels.push(l);
   for (const land of worldLand) {
     checkFrame(`${land.id} polygon`, land.placement.points);
-    const isIce = land.terrainKind === "ice";
+    // Plan B Task 12: the fill comes from the table, not from a boolean.
+    const fill = patternFor(land);
+    const isIce = fill === "pIce";
     put(
       `<path d="${smooth(land.placement.points, true, ZONE_TENSION)}" ` +
-        `fill="url(#${isIce ? "pIce" : "pReported"})" stroke="${C.ink}" stroke-width="${isIce ? 0.7 : 0.55}"` +
+        `fill="url(#${fill})" stroke="${C.ink}" stroke-width="${isIce ? 0.7 : 0.55}"` +
         `${isIce ? "" : ' class="coast-reported"'}/>`,
     );
     // ---- F-043 fix (controller visual pass): the majors (Coldreach,
@@ -428,15 +536,12 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
     // it. Singleton continents (Brightfall/Driftholt/Reedstrand, one reef
     // label + title) are 2 items that are already far enough apart, so no
     // push happens — a no-op, same as before.
-    const clusterLabels = [
-      {
-        id: land.id,
-        text: land.title.toUpperCase(),
-        at: land.placement.anchor,
-        angleDeg: 0,
-        opts: { size: 13, tracking: 2 },
-      },
-    ];
+    putLabel({
+      id: land.id,
+      text: land.title.toUpperCase(),
+      at: land.placement.anchor,
+      rank: RANKS.continent,
+    });
 
     // tier-2 regions of this continent, dashed administrative boundaries
     const regionIds = (tree.childrenOf.get(land.id) ?? []).filter(
@@ -449,12 +554,11 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
         `<path d="${smooth(region.placement.points, true)}" fill="none" stroke="${C.ink}" ` +
           `stroke-width="0.4" stroke-dasharray="3 3" class="region-bound"/>`,
       );
-      clusterLabels.push({
+      putLabel({
         id: region.id,
         text: region.title,
         at: region.placement.anchor,
-        angleDeg: 0,
-        opts: { size: 9.5, fill: C.inkSoft },
+        rank: RANKS.region,
       });
     }
 
@@ -472,12 +576,18 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
           );
           if (f.attrs?.name) {
             const mid = alongKm(f.points, polylineKm(f.points) / 2);
-            clusterLabels.push({
+            // The rotation this label used to carry is gone with the greedy
+            // stack: placeLabels' collision boxes are axis-aligned, so a
+            // rotated name's box would describe a rectangle the glyphs do not
+            // occupy — the gate would be checking the wrong shape. Horizontal
+            // and provably uncollided beats angled and overlapping.
+            putLabel({
               id: f.id,
               text: f.attrs.name,
               at: mid.at,
-              angleDeg: mid.angle,
-              opts: { size: 10.5, italic: true, fill: C.inkMid },
+              rank: RANKS.namedLandform,
+              italic: true,
+              fill: C.inkMid,
             });
           } else {
             problems.push(`${f.id}: line feature has no attrs.name for its label`);
@@ -485,16 +595,31 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
         } else if (f.kind === "point") {
           checkFrame(`${f.id} point`, [f.at]);
           const isPort = f.attrs?.role === "port";
-          put(`<circle cx="${X(f.at[0])}" cy="${Y(f.at[1])}" r="${isPort ? 2 : 1.1}" fill="${C.ink}"/>`);
+          // Plan B Task 12, adoption 2: a port is a mark, not a bigger dot. A
+          // feature carrying a lexicon `type` draws its family's glyph; an
+          // untyped point keeps the plain dot, so nothing untyped changes
+          // meaning. No committed feature carries a type today, so this is
+          // byte-zero until Plan D writes the first one.
+          const gid = f.type ? glyphForType({ lexicon, typeId: f.type }) : null;
+          if (f.type) namedCounts[f.type] = (namedCounts[f.type] ?? 0) + 1;
+          if (f.type && !gid)
+            problems.push(`${f.id}: type "${f.type}" resolves to no glyph family`);
+          if (gid) {
+            usedGlyphs.add(gid);
+            put(glyphUse({ id: gid, x: X(f.at[0]), y: Y(f.at[1]), size: isPort ? 9 : 7 }));
+          } else {
+            put(`<circle cx="${X(f.at[0])}" cy="${Y(f.at[1])}" r="${isPort ? 2 : 1.1}" fill="${C.ink}"/>`);
+          }
           if (isPort) {
             if (!f.attrs?.name) problems.push(`${f.id}: port feature has no attrs.name`);
             else
-              clusterLabels.push({
+              putLabel({
                 id: f.id,
                 text: f.attrs.name,
                 at: f.at,
-                angleDeg: 0,
-                opts: { size: 10, italic: true, fill: C.inkMid },
+                rank: RANKS.hub,
+                italic: true,
+                fill: C.inkMid,
               });
           }
           // outlying-isle points carry attrs.name: null by design — an
@@ -503,14 +628,6 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
       }
     }
 
-    clusterLabels.sort((a, b) => (a.at[1] - b.at[1] || (a.id < b.id ? -1 : 1)));
-    const MIN_GAP_KM = 16 / ATLAS_PX_PER_KM; // ~16px baseline-to-baseline at map scale
-    let lastY = -Infinity;
-    for (const l of clusterLabels) {
-      const y = Math.max(l.at[1], lastY + MIN_GAP_KM);
-      lastY = y;
-      putLabel(lineLabel(l.text, [l.at[0], y], l.angleDeg, l.opts));
-    }
   }
 
   // ocean names, lettered along a gentle arc through each sea's centroid —
@@ -551,7 +668,11 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
     const angle = r2(
       (Math.atan2(arcPts[2][1] - arcPts[0][1], arcPts[2][0] - arcPts[0][0]) * 180) / Math.PI,
     );
-    putLabel(lineLabel(ocean.title, c, angle, { size: 15, tracking: 4, italic: true, fill: C.inkSoft }));
+    // `angle` above is still computed and still checkFrame'd — the arc is what
+    // proves the label's own span stays inside the frame — but the name is
+    // lettered horizontally now, for the same reason as the line features.
+    void angle;
+    putLabel({ id: ocean.id, text: ocean.title, at: c, rank: RANKS.ocean, italic: true, fill: C.inkSoft });
   }
 
   put("</g>"); // end sheet clip
@@ -622,7 +743,7 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
       `<path d="M${tip[0]},${tip[1]} l7,-3 l0,6 Z" fill="${C.ink}" transform="rotate(${ang + 180} ${tip[0]} ${tip[1]})"/>`,
     );
     if (lane.attrs?.label)
-      putLabel(lineLabel(lane.attrs.label, ctrl, r2((Math.atan2(dy, dx) * 180) / Math.PI), { size: 10.5, italic: true, fill: C.inkMid }));
+      putLabel({ id: lane.id, text: lane.attrs.label, at: ctrl, rank: RANKS.sea, italic: true, fill: C.inkMid });
   }
 
   // ---- chrome from the sheet record: title, subtitle, hand, withheld --------
@@ -671,10 +792,40 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
     py += 18;
   }
 
-  // ---- F-043: flush every buffered world label — AFTER the chrome block, --
-  // so continent/region/feature/port/ocean/sea-lane labels always paint on
-  // top of it (fixes the erased-label defect above).
-  for (const l of labelBuf) put(l);
+  // ---- F-043 + Plan B Task 12: place, then flush, every world label — AFTER
+  // the chrome block, so continent/region/feature/port/ocean/sea-lane labels
+  // always paint on top of it (fixes the erased-label defect above).
+  //
+  // placeLabels is priority-then-id, so the result is a function of the data
+  // alone: no insertion order, no hand-tuned nudge, no clock. A label it
+  // cannot place is REPORTED by checkLabels, never silently absent.
+  const frame = { x: ATLAS_MAP_LEFT, y: ATLAS_MAP_TOP, w: MAP_W, h: MAP_H };
+  const byId = new Map(sheetLabels.map((l) => [l.id, l]));
+  const { placed, dropped } = placeLabels({
+    labels: sheetLabels.map((l) => ({ id: l.id, text: l.text, rank: l.rank, at: [X(l.at[0]), Y(l.at[1])] })),
+    obstacles: [],
+    maxLabelRank,
+    frame,
+  });
+  problems.push(...checkLabels({ placed, dropped, tier: 1, budget: labelBudget }));
+  for (const p of placed) {
+    const src = byId.get(p.id);
+    if (p.leader)
+      put(
+        `<path d="M${p.leader[0][0]},${p.leader[0][1]} L${p.leader[1][0]},${p.leader[1][1]}" ` +
+          `stroke="${C.inkSoft}" stroke-width="0.5" fill="none"/>`,
+      );
+    // The tracking DRAWN is the tracking placeLabels MEASURED with. Letting the
+    // two differ is how a sheet passes its own collision gate and still reads
+    // as overlapping: the box would describe a narrower name than the one on
+    // the page.
+    put(
+      `<text class="lbl" x="${p.x}" y="${p.y}" font-size="${p.size}"` +
+        `${src?.italic ? ' font-style="italic"' : ""} fill="${src?.fill ?? C.ink}"` +
+        ` letter-spacing="${(src?.rank ?? 10) <= 3 ? 2 : 0.6}">${esc(p.text)}</text>`,
+    );
+  }
+  notes.push(`labels ${sheetLabels.length} placed ${placed.length} dropped ${dropped.length}`);
 
   // ---- the north mark ---------------------------------------------------------
   {
@@ -698,8 +849,56 @@ export function drawAtlasSheet({ spine, tree, sheet }) {
       `fill="none" stroke="${C.ink}" stroke-width="1.6"/>`,
   );
 
+  // ---- the legend band (Plan B Task 12, adoption 4) --------------------------
+  // The sheet drew two fills and explained neither. Same swatch grammar as the
+  // basin sheet's key — a parchment ground under the hatch, so a light pattern
+  // reads against the page instead of floating on it.
+  if (legendRows.length) {
+    let ly = ATLAS_MAP_TOP + MAP_H + 8 + 16;
+    put(
+      `<text x="${ATLAS_MAP_LEFT}" y="${r2(ly - 4)}" font-size="12" letter-spacing="2" ` +
+        `fill="${C.inkMid}">FILLS · SURVEYED AND REPORTED</text>`,
+    );
+    ly += 8;
+    for (let i = 0; i < legendRows.length; i++) {
+      const bx = ATLAS_MAP_LEFT + (i % legendCols) * LEGEND_COL_W;
+      const by = ly + Math.floor(i / legendCols) * LEGEND_ROW_H;
+      put(
+        `<rect x="${r2(bx)}" y="${r2(by)}" width="40" height="24" fill="${C.parchmentDeep}" ` +
+          `stroke="${C.inkSoft}" stroke-width="0.8"/>`,
+      );
+      put(`<rect x="${r2(bx)}" y="${r2(by)}" width="40" height="24" fill="url(#${legendRows[i].pattern})"/>`);
+      put(
+        `<text x="${r2(bx + 48)}" y="${r2(by + 16)}" font-size="12.5" fill="${C.ink}">${esc(legendRows[i].label)}</text>`,
+      );
+    }
+  }
+
+  // ---- fill the reserved <symbol> slot (adoption 2) -------------------------
+  const wanted = [...usedGlyphs].sort();
+  const symbols = symbolDefs({ ids: wanted });
+  o[symbolSlot] = symbols;
+  // symbolDefs DROPS an id with no family rather than writing broken markup,
+  // so the emitted set is scanned back out of the markup it produced — asking
+  // the same list twice is not a check. Same discipline as synthetic-sheet.mjs.
+  const emittedGlyphIds = [...symbols.matchAll(/<symbol id="([^"]+)"/g)].map((m) => m[1]);
+  for (const id of wanted)
+    if (!emittedGlyphIds.includes(id))
+      problems.push(`G-GLYPH: glyph "${id}" is drawn on this sheet but no <symbol> was emitted`);
+  // The catalogue half runs in CENSUS mode: this sheet draws a handful of
+  // types, not the whole lexicon, so the vacuous whole-catalogue audit
+  // (namedCounts null) belongs to the canary and the lexicon test, not here.
+  // `emittedIds` is deliberately NOT passed: its rule is "every glyph any
+  // lexicon row names has a <symbol>", which is a claim about a sheet that
+  // draws the entire catalogue and would report 40 problems on this one.
+  if (lexicon) problems.push(...checkGlyphCoverage({ lexicon, namedCounts }));
+  if (usedGlyphs.size) notes.push(`glyphs ${wanted.length} families, ${Object.keys(namedCounts).length} types`);
+
   put("</svg>");
-  const svg = o.join("\n") + "\n";
+  // Empty lines are dropped: the reserved <symbol> slot above contributes ""
+  // on a sheet that draws no glyph, and a blank line in the middle of <defs>
+  // is a byte nobody asked for.
+  const svg = o.filter((line) => line !== "").join("\n") + "\n";
   return { svg, notes, problems };
 }
 
@@ -709,5 +908,15 @@ export function buildAtlasSheet({ repoRoot }) {
   const sheet = JSON.parse(
     readFileSync(join(repoRoot, "content/spine/sheet-atlas.json"), "utf8"),
   );
-  return drawAtlasSheet({ spine, tree, sheet });
+  // A tree with no content/world/ is a real fixture state, not an error — the
+  // sheet simply has no glyph vocabulary to draw from. Reported, never thrown.
+  let lexicon = null;
+  try {
+    lexicon = JSON.parse(
+      readFileSync(join(repoRoot, "content/world/lexicon/landforms.json"), "utf8"),
+    );
+  } catch {
+    lexicon = null;
+  }
+  return drawAtlasSheet({ spine, tree, sheet, lexicon });
 }
