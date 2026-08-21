@@ -29,6 +29,7 @@ import {
   offsetKm,
   wrap,
   patternDefs,
+  patternFillRect,
   createDraft,
 } from "./draft.mjs";
 
@@ -140,6 +141,8 @@ export function drawBasinSheet({ doc }) {
   const SHEET_H = Math.round(MAP_TOP + MAP_H + SHEET_PAD);
   const MAP_RIGHT = MAP_LEFT + MAP_W;
   const MAP_BOTTOM = MAP_TOP + MAP_H;
+  // The drawable map frame — the clip every pattern fill is bounded inside.
+  const MAP_FRAME = { x: MAP_LEFT, y: MAP_TOP, w: MAP_W, h: MAP_H };
 
   const o = [];
   const put = (s) => o.push(s);
@@ -157,14 +160,19 @@ export function drawBasinSheet({ doc }) {
   put(patternDefs());
   // sea — the parchment stays bare; the coast echoes carry it
 
+  // Plan B Task 12: every clip path string is REMEMBERED as it is emitted, so
+  // the pattern rect that will be clipped by it is bounded from the very same
+  // string. Writing the geometry twice is how a fill ends up covering a shape
+  // it no longer matches.
+  const clipD = new Map();
+  const clipPathDef = (id, d) => {
+    clipD.set(id, d);
+    put(`<clipPath id="${id}"><path d="${d}"/></clipPath>`);
+  };
   for (const z of geo.zones.concat(geo.terrainPatches ?? [])) {
-    put(
-      `<clipPath id="clip-${z.id}"><path d="${smooth(z.polygon, true, ZONE_TENSION)}"/></clipPath>`,
-    );
+    clipPathDef(`clip-${z.id}`, smooth(z.polygon, true, ZONE_TENSION));
   }
-  put(
-    `<clipPath id="clip-saltmire"><path d="${smooth(geo.saltmire.polygon, true, 8)}"/></clipPath>`,
-  );
+  clipPathDef("clip-saltmire", smooth(geo.saltmire.polygon, true, 8));
   // nothing may spill past the sheet's own border
   put(
     `<clipPath id="clip-sheet"><rect x="${MAP_LEFT}" y="${MAP_TOP}" width="${r2(MAP_W)}" height="${r2(MAP_H)}"/></clipPath>`,
@@ -211,7 +219,13 @@ export function drawBasinSheet({ doc }) {
       continue;
     }
     put(
-      `<rect x="${MAP_LEFT}" y="${MAP_TOP}" width="${r2(MAP_W)}" height="${r2(MAP_H)}" fill="url(#${fill})" clip-path="url(#clip-${z.id})" opacity="0.8"/>`,
+      patternFillRect({
+        fill,
+        clipId: `clip-${z.id}`,
+        clipD: clipD.get(`clip-${z.id}`),
+        frame: MAP_FRAME,
+        opacity: 0.8,
+      }),
     );
   }
   // terrain patches are ground, not zones: named in lower case, no level band,
@@ -258,7 +272,12 @@ export function drawBasinSheet({ doc }) {
     `<path d="${smooth(geo.saltmire.polygon, true, 8)}" fill="${C.sea}" stroke="${C.inkMid}" stroke-width="1.2" stroke-dasharray="3 3"/>`,
   );
   put(
-    `<rect x="${MAP_LEFT}" y="${MAP_TOP}" width="${r2(MAP_W)}" height="${r2(MAP_H)}" fill="url(#pMire)" clip-path="url(#clip-saltmire)"/>`,
+    patternFillRect({
+      fill: "pMire",
+      clipId: "clip-saltmire",
+      clipD: clipD.get("clip-saltmire"),
+      frame: MAP_FRAME,
+    }),
   );
 
   // ---- the river ------------------------------------------------------------

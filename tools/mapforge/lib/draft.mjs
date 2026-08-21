@@ -133,6 +133,73 @@ export const r2 = (n) => {
   return Object.is(v, -0) ? 0 : v;
 };
 
+// Plan B Task 12 — the raster-cost fix's one piece of arithmetic.
+//
+// MEASURED, on the committed sheets at the 2000 px raster width the budget is
+// stated at (content/world/budgets.json sheets.rasterWidthPx):
+//
+//   cluster1-world.svg           11.31 s   <- 5.7x over the 2 s budget
+//   the same file, every url(#p) swapped for a flat colour   0.41 s
+//   atlas-world.svg               0.58 s
+//   synthetic-density.svg         0.77 s
+//
+// librsvg's cost for a pattern fill scales with the PIXEL AREA the fill
+// covers, not with the shape that is finally visible: a full-frame <rect> that
+// is clipped down to one small zone still tiles the whole frame first. The
+// basin sheet drew twelve such full-frame rects, so it tiled 1614x1396 px
+// twelve times over to show twelve small zones. Bounding each rect to its own
+// clip's box is a pure rendering change — the clip decides what is painted,
+// and a userSpaceOnUse pattern's tile phase is anchored to the user-space
+// origin, not to the rect — so the picture is the same and the work is not.
+//
+// This returns a SUPERSET of the true bounds and must: a cubic Bezier lies
+// inside the convex hull of its own control points, so scanning every
+// coordinate pair of an absolute M/L/C/Z path covers the curve with room to
+// spare. Under-covering would clip the fill; over-covering only costs pixels.
+// Returns null on anything it cannot read as coordinate pairs, so a caller
+// falls back to the full frame rather than draw a hole.
+export function pathBounds(d) {
+  const nums = String(d).match(/-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?/g);
+  if (!nums || nums.length < 2 || nums.length % 2 !== 0) return null;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (let i = 0; i < nums.length; i += 2) {
+    const x = Number(nums[i]);
+    const y = Number(nums[i + 1]);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  return { minX, minY, maxX, maxY };
+}
+
+/**
+ * A pattern fill bounded to the shape it inks, clamped to the frame it lives
+ * in. `clipD` is the EXACT path string the matching <clipPath> was built from,
+ * so the rect and the clip cannot drift apart; hand it null and the rect falls
+ * back to the whole frame, which is what the sheet did before this existed.
+ */
+export function patternFillRect({ fill, clipId, clipD, frame, opacity = null }) {
+  const b = clipD ? pathBounds(clipD) : null;
+  const fx = frame.x, fy = frame.y;
+  const fx1 = frame.x + frame.w, fy1 = frame.y + frame.h;
+  // One tile-width of slack on every side: the clip's own bounds are what must
+  // be covered, and a fractional edge should never shave a tile.
+  const PAD = 2;
+  const x0 = b ? Math.max(fx, Math.floor(b.minX - PAD)) : fx;
+  const y0 = b ? Math.max(fy, Math.floor(b.minY - PAD)) : fy;
+  const x1 = b ? Math.min(fx1, Math.ceil(b.maxX + PAD)) : fx1;
+  const y1 = b ? Math.min(fy1, Math.ceil(b.maxY + PAD)) : fy1;
+  const w = Math.max(0, x1 - x0);
+  const h = Math.max(0, y1 - y0);
+  return (
+    `<rect x="${r2(x0)}" y="${r2(y0)}" width="${r2(w)}" height="${r2(h)}" ` +
+    `fill="url(#${fill})" clip-path="url(#${clipId})"` +
+    `${opacity === null ? "" : ` opacity="${opacity}"`}/>`
+  );
+}
+
 export const esc = (s) =>
   String(s)
     .replace(/&/g, "&amp;")
