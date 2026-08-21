@@ -237,6 +237,16 @@ filed; none is a guess.
   (b) dropping `asked` from the atlas's `checkLabels` call stays green — the three label buckets
   always reconcile there. Both arguments are defence for a future sheet whose draw pass can skip
   a subject; the rules themselves are killed by direct fixtures.
+- **`G-RASTER-BUDGET` still runs in ONE venue (Gate 2) and that is a DECISION, not an oversight.**
+  Review A observed it correctly: `ci.yml` installs no librsvg, so all six raster tests skip
+  there. Installing `librsvg2-bin` in CI was considered and REJECTED — it would put a wall-clock
+  performance assertion on a shared, contended GitHub runner, which is the exact condition that
+  produced review A's own 1-in-8 red on a developer box. What DOES run in CI is the deterministic
+  half, and it now reads the same defects out of committed bytes: the aggregate pattern-area cap,
+  the new per-clip direct rule, and the ink floor. Verified on Node 18 in a container: mapforge
+  251 tests / 245 pass / 6 skipped, storybook 54/54, content gate 0 failures — and blanking the
+  atlas thumb reds the storybook suite and prints three `G-SHEET-BUDGET` failures on that same
+  Node 18.
 - **The determinism ban is now an INVENTORY, not a prose rule.** "`Math.hypot` BANNED" named one
   function while the committed-byte path uses hypot x7, `atan2` x6, `Math.PI` x8, and — in
   `world-gen.mjs`, which builds the *committed* canary sheet — `Math.cos`, `Math.sin` and `**`.
