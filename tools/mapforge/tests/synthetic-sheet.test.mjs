@@ -17,7 +17,7 @@
 // somebody else's PNG has no committed bytes to keep stable.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, statSync, mkdtempSync, writeFileSync } from "node:fs";
+import { readFileSync, statSync, mkdtempSync, mkdirSync, copyFileSync, writeFileSync } from "node:fs";
 import { inflateSync } from "node:zlib";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
@@ -102,6 +102,39 @@ test("makeSyntheticWorld never throws, whatever it is handed", () => {
     assert.doesNotThrow(() => makeSyntheticWorld(arg));
 });
 
+test("a count too large to hold degrades to an empty census instead of killing the process", () => {
+  // `Number.isInteger(n) && n > 0` has no upper bound, and `instances:
+  // 5_000_000` does not throw — it exhausts the heap. A V8 OOM is a fatal
+  // process abort, so buildUncached's try/catch cannot intercept it and the
+  // CLI dies with no diagnosable report. Reproduced under
+  // --max-old-space-size=256 before the ceiling existed.
+  const huge = { ...FIXTURE.params, lexicon: LEXICON, rankMix: FIXTURE.rankMix };
+  for (const key of ["regions", "instances"]) {
+    const w = makeSyntheticWorld({ ...huge, [key]: 5_000_000 });
+    assert.equal(w[key].length, 0, `${key} was not refused`);
+  }
+  const wl = makeSyntheticWorld({ ...huge, rankMix: { region: 5_000_000 } });
+  assert.equal(wl.labels.length, 0, "an over-large rank mix was not refused");
+});
+
+test("POSITIVE CONTROL: G-CANARY fires when the fixture outruns the world budget", () => {
+  const over = BUDGETS.landforms.maxInstances + 1;
+  const f = JSON.parse(JSON.stringify(FIXTURE));
+  f.params.instances = over;
+  const { problems } = buildSyntheticSheet({ repoRoot: ROOT, fixture: f });
+  assert.ok(
+    problems.some((p) => new RegExp(`^G-CANARY: the fixture asks for ${over} landform instances`).test(p)),
+    problems.join("\n").slice(0, 400),
+  );
+});
+
+test("POSITIVE CONTROL: a fixture with no seed is reported, not silently redrawn", () => {
+  const f = JSON.parse(JSON.stringify(FIXTURE));
+  delete f.params.seed;
+  const { problems } = buildSyntheticSheet({ repoRoot: ROOT, fixture: f });
+  assert.ok(problems.some((p) => /^synthetic: seed is undefined/.test(p)), problems.join("\n"));
+});
+
 // ── the sheet ──────────────────────────────────────────────────────────────
 
 test("ACCEPTANCE: the canary builds with ZERO problems at target density", () => {
@@ -123,6 +156,35 @@ test("buildSyntheticSheet never throws and answers in-band", () => {
   assert.ok(
     buildSyntheticSheet({ repoRoot: "/nonexistent-root-for-this-test" }).problems.length > 0,
     "an unreadable repo root produced no problem",
+  );
+});
+
+test("the memo notices when the content it read changes under one repo root", () => {
+  // Keyed on the path alone, the first answer is returned forever: a caller
+  // that reuses one --repo-root across a change to the lexicon gets a stale
+  // sheet with no way to tell. Proven here by changing the file on disk
+  // between two builds at the SAME root.
+  const root = mkdtempSync(join(tmpdir(), "canary-memo-"));
+  mkdirSync(join(root, "content/world/lexicon"), { recursive: true });
+  const lexPath = join(root, "content/world/lexicon/landforms.json");
+  copyFileSync(join(ROOT, "content/world/lexicon/landforms.json"), lexPath);
+  copyFileSync(join(ROOT, "content/world/budgets.json"), join(root, "content/world/budgets.json"));
+
+  const first = buildSyntheticSheet({ repoRoot: root });
+  assert.deepEqual(first.problems, [], first.problems.join("\n"));
+
+  const bent = [...LEXICON, { ...LEXICON[0], id: "s-invented-type", glyph: "g-no-such-family" }];
+  writeFileSync(lexPath, JSON.stringify(bent, null, 2) + "\n");
+  const second = buildSyntheticSheet({ repoRoot: root });
+  assert.ok(
+    second.problems.some((p) => /s-invented-type/.test(p)),
+    "the memo served a stale sheet after its input changed on disk",
+  );
+  // And the missing family reports as a missing <symbol>, not merely as a bad
+  // type — which is only true because emittedIds is scanned from the markup.
+  assert.ok(
+    second.problems.some((p) => /glyph "g-no-such-family" is referenced but no <symbol> was emitted/.test(p)),
+    second.problems.join("\n"),
   );
 });
 

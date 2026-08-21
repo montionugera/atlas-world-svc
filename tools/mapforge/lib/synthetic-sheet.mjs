@@ -28,8 +28,11 @@
 //
 // Builder contract, exactly as basin-sheet.mjs: NEVER THROW, return
 // { svg, notes, problems }. Deterministic: no Math.random, no clock, no
-// transcendental, no Math.hypot.
-import { readFileSync } from "node:fs";
+// Math.hypot. `Math.sqrt` IS used (one lattice-side calculation) and is not
+// the same risk: IEEE 754 mandates it be correctly rounded, so it is exact on
+// every engine — unlike sin/cos/hypot, which are the real determinism hazard
+// and appear nowhere. Same distinction labels.mjs draws.
+import { readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { C, r2, esc, LEGEND, patternDefs } from "./draft.mjs";
@@ -64,6 +67,17 @@ function rnd(seed, i) {
 // name rather than by index so a reordering of BIOMES cannot silently swap it
 // for something else.
 const LAND_BIOMES = BIOMES.filter((b) => b !== "ocean");
+
+// Self-defence, NOT a design budget. `Number.isInteger(n) && n > 0` has no
+// upper bound, and `instances: 5_000_000` does not throw — it exhausts the
+// heap, and a V8 OOM is a fatal process abort that `buildUncached`'s try/catch
+// cannot intercept. Measured under --max-old-space-size=256. A count past this
+// is treated exactly like an unusable one (degrade to an empty census), which
+// the G-CANARY census gate then reports in-band. The REAL budget is
+// content/world/budgets.json, enforced by the caller below; this number only
+// has to be far enough above any sane world to never bind, and low enough that
+// the collection fits in memory.
+const SANE_MAX = 100000;
 
 // Place names, committed. Widths matter (the declutter is driven by
 // measureText), the words themselves do not — but a chart of eleven repeated
@@ -112,8 +126,9 @@ export function makeSyntheticWorld(opts) {
   const rows = Array.isArray(lexicon)
     ? lexicon.filter((r) => r && typeof r.id === "string")
     : [];
-  const nRegions = Number.isInteger(regions) && regions > 0 ? regions : 0;
-  const nInst = Number.isInteger(instances) && instances > 0 ? instances : 0;
+  const usable = (n) => (Number.isInteger(n) && n > 0 && n <= SANE_MAX ? n : 0);
+  const nRegions = usable(regions);
+  const nInst = usable(instances);
   const groups = Number.isInteger(landmasses) && landmasses > 0 ? landmasses : 1;
   const km = Number.isFinite(frameKm) && frameKm > 0 ? frameKm : 1;
 
@@ -202,7 +217,7 @@ export function makeSyntheticWorld(opts) {
   const lbl = [];
   let n = 0;
   for (const key of Object.keys(RANKS)) {
-    const want = Number.isInteger(mix[key]) ? mix[key] : 0;
+    const want = Math.min(usable(mix[key]), Math.max(0, SANE_MAX - lbl.length));
     for (let k = 0; k < want; k++) {
       const at =
         key === "region" && rs[k]
@@ -239,6 +254,30 @@ const MEMO = new Map();
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_PATH = join(HERE, "../tests/fixtures/synthetic-world/world.json");
 
+// The key is the repo root PLUS a stamp of every file the build reads. Keying
+// on the path alone returns the first answer forever, so a caller that reuses
+// one --repo-root across a change to content/world/lexicon/landforms.json gets
+// a stale sheet with no way to tell. Cheap: three stats against a 340 ms bake,
+// and a stat that fails simply contributes "?" — a missing input is a problem
+// the builder reports, not something the memo should decide.
+function memoKey(repoRoot) {
+  const root = typeof repoRoot === "string" ? repoRoot : String(repoRoot);
+  const stamp = (p) => {
+    try {
+      const st = statSync(p);
+      return `${st.size}:${st.mtimeMs}`;
+    } catch {
+      return "?";
+    }
+  };
+  return [
+    root,
+    stamp(FIXTURE_PATH),
+    stamp(join(root, "content/world/lexicon/landforms.json")),
+    stamp(join(root, "content/world/budgets.json")),
+  ].join("|");
+}
+
 /**
  * `fixture` overrides the committed parameter file, and it exists for ONE
  * reason: without it, deleting any of the three `problems.push(...check*())`
@@ -256,7 +295,7 @@ const FIXTURE_PATH = join(HERE, "../tests/fixtures/synthetic-world/world.json");
  */
 export function buildSyntheticSheet({ repoRoot, fixture = null } = {}) {
   if (fixture) return buildUncached({ repoRoot, fixture });
-  const key = typeof repoRoot === "string" ? repoRoot : String(repoRoot);
+  const key = memoKey(repoRoot);
   if (!MEMO.has(key)) MEMO.set(key, buildUncached({ repoRoot }));
   const r = MEMO.get(key);
   return { svg: r.svg, notes: [...r.notes], problems: [...r.problems] };
@@ -287,7 +326,18 @@ function buildUncached({ repoRoot, fixture: injected = null }) {
   }
 
   const params = (fixture && fixture.params) || {};
-  const { seed, frameKm, pxPerKm } = params;
+  const { frameKm, pxPerKm } = params;
+  if (!Number.isInteger(params.seed))
+    problems.push(
+      `synthetic: seed is ${JSON.stringify(params.seed)}, not an integer — every ring, mark and name is a function of it, so a missing seed silently redraws the committed sheet`,
+    );
+  // The canary may not claim to be a world the real world may not be. 2,400 is
+  // budgets.json's own landforms.maxInstances, not a number invented here.
+  const maxInstances = budgets?.landforms?.maxInstances;
+  if (Number.isFinite(maxInstances) && params.instances > maxInstances)
+    problems.push(
+      `G-CANARY: the fixture asks for ${params.instances} landform instances, over content/world/budgets.json's maxInstances ${maxInstances} — the canary would be claiming a density the world budget forbids`,
+    );
   // Declared in the fixture rather than hardcoded, so checkGlyphSizes is the
   // thing that stops a future re-census picking 8 px to make 1,740 marks fit.
   // The contract wins; the layout accommodates it.
@@ -346,8 +396,20 @@ function buildUncached({ repoRoot, fixture: injected = null }) {
   const usedGlyphs = [...new Set(world.instances.map((i) => i.glyph))].sort();
   const sized = world.instances.map((i) => ({ id: i.glyph, size: glyphPx }));
   problems.push(...checkGlyphSizes({ instances: sized }));
+  // `emittedIds` is scanned out of the <symbol> markup, NOT taken from
+  // `usedGlyphs` — same reason as referencedIds below. symbolDefs DROPS an id
+  // with no family rather than writing broken markup, so handing it the
+  // requested list makes the sheet claim it emitted symbols it did not, and a
+  // lexicon row naming a family that does not exist reports as a type problem
+  // only, never as the missing <symbol> it actually is.
+  const symbols = symbolDefs({ ids: usedGlyphs });
+  const emittedGlyphIds = [...symbols.matchAll(/<symbol id="([^"]+)"/g)].map((m) => m[1]);
   problems.push(
-    ...checkGlyphCoverage({ lexicon, namedCounts: world.namedCounts, emittedIds: usedGlyphs }),
+    ...checkGlyphCoverage({
+      lexicon,
+      namedCounts: world.namedCounts,
+      emittedIds: emittedGlyphIds,
+    }),
   );
 
   // ---- G-LABEL -------------------------------------------------------------
@@ -430,7 +492,7 @@ function buildUncached({ repoRoot, fixture: injected = null }) {
   );
   o.push("<defs>");
   o.push(patternDefs({ ids: emitted }));
-  o.push(symbolDefs({ ids: usedGlyphs }));
+  o.push(symbols);
   o.push("</defs>");
   o.push(
     `<style>text { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; fill: ${C.ink}; }
