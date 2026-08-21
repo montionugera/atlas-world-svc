@@ -344,6 +344,17 @@ async function main() {
       ...(srcHash ? { srcHash } : {}),
     };
   }
+  // Seam-4 review B, survivor 2: deleting this call leaves thumbkey.test.mjs
+  // 12/0 and thumb_freshness.test.mjs 6/0. The pure function is covered (4 of
+  // 4 mutants killed); its WIRING is not, because covering it means running
+  // main(), which needs sharp and Blender and is not a CI-shaped test.
+  //
+  // VERIFIED BACKSTOP, which is why this is recorded rather than chased: the
+  // failure is loud, not silent. Without this call a `--only` run drops every
+  // unrelated row from index.json, and check_asset_manifest.mjs guard (U)
+  // reads a thumbnail with no index row as UNRECORDED and FAILS —
+  // scripts/tests/thumb_freshness.test.mjs pins exactly that case. A wiped
+  // index cannot reach a green commit.
   index.entries = carryForwardFiltered({
     entries: index.entries,
     prior,

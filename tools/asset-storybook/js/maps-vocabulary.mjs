@@ -51,9 +51,17 @@ export function repoUrl(path, baseUrl) {
   ).href;
 }
 
-/** Escape for text interpolated into innerHTML. Ids and labels are ours, but
- *  the lexicon is content and content is edited by hand. */
-function esc(s) {
+/**
+ * Escape for text interpolated into innerHTML. Ids and labels are ours, but
+ * the lexicon is content and content is edited by hand.
+ *
+ * Seam-4 review B, survivor 9: this reduced to the identity function with the
+ * storybook suite 11/0, because the stated reason ("content is edited by
+ * hand") was an argument, not a test. Everything here is exported now solely
+ * so the three renderers can be driven with hostile input from
+ * maps-vocabulary.test.mjs — nothing else imports them.
+ */
+export function esc(s) {
   return String(s).replace(
     /[&<>"']/g,
     (c) =>
@@ -119,7 +127,7 @@ export function buildVocabulary({ legend, glyphs, lexicon } = {}) {
 }
 
 /** One fill swatch: parchment ground, then the real <pattern> over it. */
-function fillCardHtml({ pattern, label, tier }, patternDefs, parchment) {
+export function fillCardHtml({ pattern, label, tier }, patternDefs, parchment) {
   const defs = patternDefs({ ids: [pattern] });
   return (
     `<figure class="card maps-vocab-card">` +
@@ -136,7 +144,7 @@ function fillCardHtml({ pattern, label, tier }, patternDefs, parchment) {
 }
 
 /** One glyph family mark, drawn at the family-identity size. */
-function markCardHtml({ id, types, unbound }, GLYPHS) {
+export function markCardHtml({ id, types, unbound }, GLYPHS) {
   const d = GLYPHS[id]({ x: 32, y: 32, size: 34, seed: 1 });
   return (
     `<figure class="card maps-vocab-card${unbound ? " maps-vocab-warn" : ""}">` +
@@ -150,7 +158,7 @@ function markCardHtml({ id, types, unbound }, GLYPHS) {
   );
 }
 
-function statsHtml(s) {
+export function statsHtml(s) {
   const dangling = s.danglingGlyphs.length
     ? ` · <strong>${s.danglingGlyphs.length} lexicon rows name a family that does not exist: ` +
       `${esc(s.danglingGlyphs.join(", "))}</strong>`

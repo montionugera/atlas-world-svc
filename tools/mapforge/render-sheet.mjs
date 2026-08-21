@@ -63,10 +63,19 @@ export const SHEETS = {
   cluster1: {
     // `title` mirrors tools/asset-storybook/maps-index.json's row title —
     // the storybook parity gate (X8) checks paths today and Plan B extends it
-    // to the title. `maxLabelRank` is declared here and consumed by Plan B's
-    // labels.mjs: a region sheet draws every priority rank 0-10. A world sheet
-    // was described here as stopping at rank 3 — see the atlas row below for
-    // why that was wrong about the sheet the repo actually ships.
+    // to the title.
+    //
+    // `maxLabelRank` on THIS row is INERT, and saying so is the point (seam-4
+    // review A, finding 6, verified): basin-sheet.mjs never calls placeLabels
+    // at all — it draws its names directly — so nothing reads this number. It
+    // stays because the roster is a contract every sheet answers the same
+    // shape for, and because Plan E's redraw is where the basin sheet gets a
+    // declutter pass; it is NOT a claim that the sheet declutters today. The
+    // "which sheets actually RUN a label declutter" test in
+    // tests/render-sheet.test.mjs pins that from the source, so this comment
+    // cannot quietly stop being true. A world sheet was described here as
+    // stopping at rank 3 — see the atlas row below for why that was wrong
+    // about the sheet the repo actually ships.
     title: "Cluster 1 — Basin Survey",
     outSvg: "game-client/assets/art/maps/cluster1-world.svg",
     outPng: "game-client/assets/art/maps/cluster1-world.png",

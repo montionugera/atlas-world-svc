@@ -103,6 +103,29 @@ test("SHEETS entries declare title, outSvg, outPng and maxLabelRank", () => {
   }
 });
 
+// Seam-4 review A, finding 6, second half — VERIFIED, and recorded rather than
+// papered over. The test above asserts every sheet DECLARES a maxLabelRank; it
+// does not and cannot assert that anything reads one. basin-sheet.mjs never
+// calls placeLabels, so `SHEETS.cluster1.maxLabelRank: 10` is inert, and a
+// reader who saw only the assertion above would reasonably conclude otherwise.
+//
+// This pins WHICH sheets run a declutter pass, from the source rather than
+// from a comment. Wiring the basin sheet into placeLabels would re-ink
+// cluster1-world.svg — a redraw, which belongs to Plan E and not to a fix
+// pass. When Plan E does it, this list changes, and the change is deliberate.
+test("which sheets actually RUN a label declutter — the registry field is not proof", () => {
+  const consumes = (file) =>
+    /placeLabels\(/.test(readFileSync(join(ROOT, "tools/mapforge/lib", file), "utf8"));
+  assert.equal(consumes("atlas-sheet.mjs"), true, "the atlas stopped decluttering");
+  assert.equal(consumes("synthetic-sheet.mjs"), true, "the canary stopped decluttering");
+  assert.equal(
+    consumes("basin-sheet.mjs"),
+    false,
+    "basin-sheet.mjs now calls placeLabels — SHEETS.cluster1.maxLabelRank is no longer " +
+      "inert, so update the note on that row and re-baseline the render lock deliberately",
+  );
+});
+
 // ── the PNG policy (Plan B Task 11) ───────────────────────────────────────
 //
 // spec 2026-08-16 §7.5: the committed raster is a 512 px review thumb; the
@@ -219,6 +242,16 @@ test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at raster
       `${id}: ink on only ${(st.inkRowFraction * 100).toFixed(1)}% of scanlines at ${width} px`,
     );
     if (best > cap) slow.push(`${id} ${best.toFixed(2)} s`);
+  }
+  // raster.test.mjs's tracked-tree guard spawns a child that re-runs this
+  // WHOLE file concurrently with the parent, so inside that child every sheet
+  // is timed against a box already busy rasterising the same three sheets.
+  // The child exists to detect writes into the tracked maps directory, not to
+  // measure performance, and timing there is what made review A's 1-in-8 red
+  // possible. Everything above still runs; only the CLAIM is withheld.
+  if (process.env.MAPFORGE_TRACKED_TREE_CHILD) {
+    t.diagnostic(`G-RASTER-BUDGET not asserted in the nested child run: ${slow.length} over cap`);
+    return;
   }
   assert.deepEqual(slow, [], `G-RASTER-BUDGET: over ${cap} s at ${width} px: ${slow.join(", ")}`);
 });

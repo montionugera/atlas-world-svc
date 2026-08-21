@@ -20,7 +20,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildVocabulary, repoUrl } from "../js/maps-vocabulary.mjs";
+import {
+  buildVocabulary,
+  repoUrl,
+  esc,
+  fillCardHtml,
+  markCardHtml,
+  statsHtml,
+} from "../js/maps-vocabulary.mjs";
 import { LEGEND, patternDefs } from "../../mapforge/lib/draft.mjs";
 import { GLYPHS } from "../../mapforge/lib/glyphs.mjs";
 
@@ -236,4 +243,74 @@ test("every glyph family draws a non-empty path at the panel's call shape", () =
     assert.ok(d.length > 4, `${id} drew an empty path`);
     assert.ok(!/NaN|undefined/.test(d), `${id} drew ${d.slice(0, 60)}`);
   }
+});
+
+// ── the escape, ARMED (seam-4 review B, survivor 9) ────────────────────────
+//
+// `esc` reduced to the identity function with this suite 11/0. The reason
+// given for not testing it — "the lexicon is content and content is edited by
+// hand" — is exactly why it needs one: hand-edited content is where an
+// ampersand or an angle bracket comes from, and every string below reaches
+// `innerHTML`. The panel is a local file:// review surface, so this is a
+// correctness rule about markup before it is anything else: an unescaped `<`
+// in a fill label silently swallows the rest of the card.
+const HOSTILE = '<img src=x onerror="boom">&\'"';
+
+test("esc neutralises every character that changes the meaning of the markup", () => {
+  const out = esc(HOSTILE);
+  assert.ok(!out.includes("<"), out);
+  assert.ok(!out.includes(">"), out);
+  assert.ok(!/&(?!amp;|lt;|gt;|quot;|#39;)/.test(out), out);
+  assert.ok(!/"/.test(out), out);
+  assert.ok(!/'/.test(out), out);
+  assert.equal(esc("a&b"), "a&amp;b");
+  // non-strings must not throw their way out of a render
+  assert.equal(esc(3), "3");
+  assert.equal(esc(null), "null");
+  assert.equal(esc(undefined), "undefined");
+});
+
+test("a hostile fill LABEL cannot open a tag in the swatch card", () => {
+  const html = fillCardHtml(
+    { pattern: "pIce", label: HOSTILE, tier: 1 },
+    patternDefs,
+    "#f3e7ce",
+  );
+  assert.ok(!html.includes("<img"), html);
+  assert.ok(html.includes("&lt;img"), html);
+  // the attribute it is interpolated into must still close where it should
+  assert.equal((html.match(/aria-label="/g) ?? []).length, 1);
+  assert.ok(/aria-label="[^"]*"/.test(html), html);
+});
+
+test("a hostile PATTERN id cannot escape the url() or the tier text", () => {
+  const html = fillCardHtml(
+    { pattern: '"><script>x</script>', label: "ok", tier: '"><b>' },
+    patternDefs,
+    "#f3e7ce",
+  );
+  assert.ok(!html.includes("<script"), html);
+  assert.ok(!html.includes("<b>"), html);
+});
+
+test("a hostile GLYPH id cannot open a tag in the mark card", () => {
+  const id = Object.keys(GLYPHS)[0];
+  const html = markCardHtml({ id, types: 1, unbound: false }, {
+    [id]: () => '"/><script>x</script><path d="',
+  });
+  assert.ok(!html.includes("<script"), html);
+  assert.equal((html.match(/<path /g) ?? []).length, 1, html);
+});
+
+test("the dangling-family warning escapes the ids it names", () => {
+  const html = statsHtml({
+    fills: 1,
+    families: 1,
+    types: 1,
+    dungeonCapable: 0,
+    unboundFamilies: 0,
+    danglingGlyphs: [HOSTILE],
+  });
+  assert.ok(!html.includes("<img"), html);
+  assert.ok(html.includes("&lt;img"), html);
 });

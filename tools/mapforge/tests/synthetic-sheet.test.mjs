@@ -18,7 +18,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, statSync, mkdtempSync, mkdirSync, copyFileSync, writeFileSync } from "node:fs";
-import { inflateSync } from "node:zlib";
+import { decodePng } from "../lib/png-ink.mjs";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
@@ -259,51 +259,20 @@ test("the registry entry carries a title and a zoom tier", () => {
 
 // ── the raster ─────────────────────────────────────────────────────────────
 
-/** Minimal PNG decode: IHDR + concatenated IDAT + the five filter types. */
-function decodePng(buf) {
-  assert.equal(buf.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", "not a PNG");
-  let o = 8, w = 0, h = 0, ct = -1, depth = 0;
-  const idat = [];
-  while (o + 8 <= buf.length) {
-    const len = buf.readUInt32BE(o);
-    const type = buf.toString("latin1", o + 4, o + 8);
-    if (type === "IHDR") {
-      w = buf.readUInt32BE(o + 8); h = buf.readUInt32BE(o + 12);
-      depth = buf[o + 16]; ct = buf[o + 17];
-      assert.equal(buf[o + 20], 0, "interlaced PNG — this decoder does not handle Adam7");
-    } else if (type === "IDAT") idat.push(buf.subarray(o + 8, o + 8 + len));
-    o += 12 + len;
-    if (type === "IEND") break;
-  }
-  assert.equal(depth, 8, "expected 8 bits per channel");
-  const bpp = ct === 2 ? 3 : ct === 6 ? 4 : 0;
-  assert.ok(bpp, `unsupported colour type ${ct}`);
-  const raw = inflateSync(Buffer.concat(idat));
-  const stride = w * bpp;
-  assert.equal(raw.length, h * (stride + 1), "the inflated stream is not h x (filter + row)");
-  const px = Buffer.alloc(h * stride);
-  for (let y = 0; y < h; y++) {
-    const f = raw[y * (stride + 1)];
-    const src = y * (stride + 1) + 1, dst = y * stride, up = dst - stride;
-    for (let x = 0; x < stride; x++) {
-      const a = x >= bpp ? px[dst + x - bpp] : 0;
-      const b = y > 0 ? px[up + x] : 0;
-      const c = y > 0 && x >= bpp ? px[up + x - bpp] : 0;
-      const r = raw[src + x];
-      let v;
-      if (f === 0) v = r;
-      else if (f === 1) v = r + a;
-      else if (f === 2) v = r + b;
-      else if (f === 3) v = r + ((a + b) >> 1);
-      else if (f === 4) {
-        const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
-        v = r + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c);
-      } else assert.fail(`unknown PNG filter type ${f} on row ${y}`);
-      px[dst + x] = v & 0xff;
-    }
-  }
-  return { w, h, bpp, px };
-}
+/**
+ * PNG decoding is `tools/mapforge/lib/png-ink.mjs`'s job — this file carried
+ * its own 45-line copy of the inflate + unfilter walk until the seam-4 fix
+ * pass gave the repo one. The ink METRIC below stays local and deliberately
+ * so: it is calibrated against this sheet's known background and its floors
+ * were measured on it, which is a different question from "is this image
+ * blank at all".
+ */
+const pixels = (buf) => {
+  const img = decodePng(buf);
+  assert.equal(img.error, undefined, `${img.error}`);
+  return { w: img.width, h: img.height, bpp: 3, px: img.rgb };
+};
+
 
 /**
  * The three things a page has to have to be a drawn sheet rather than a blank
@@ -350,27 +319,37 @@ const haveRsvg = () => {
   return !probe.error && probe.status === 0;
 };
 
-test("BUDGET: rsvg-convert rasterises the canary in under 2 s at 2000 px, with real ink on it", (t) => {
+// SEAM-4 REVIEW A, FINDING 2 — the flake, and where G-RASTER-BUDGET lives now.
+//
+// This test used to carry its own SINGLE-RUN timing assertion against the same
+// 2 s budget, on the same sheet, at the same width as
+// render-sheet.test.mjs's roster test — which measures every sheet BEST OF
+// THREE. Two consequences, both measured by the reviewer: 1 full-suite run in
+// 8 went red here at 2.07 s on an assertion that typically reads 1.05 s, and
+// the duplicate itself was part of the cause, because `node --test` runs these
+// files in parallel and raster.test.mjs additionally spawns a child that
+// re-runs the WHOLE suite concurrently. A gate that fails one run in eight is
+// worse than no gate: it teaches people to re-run.
+//
+// So the timing claim now lives in exactly ONE place, best-of-three, and this
+// test keeps what only it does — proving the canary rasterises to a page with
+// real ink on it. The rasterising still happens; it is simply not timed twice.
+test("the canary rasterises at 2000 px to a page with real ink on it", (t) => {
   if (!haveRsvg()) { t.skip("rsvg-convert not installed"); return; }
   const dir = mkdtempSync(join(tmpdir(), "canary-"));
   const out = join(dir, "out.png");
   const svgPath = join(ROOT, SHEETS.synthetic.outSvg);
-  const t0 = process.hrtime.bigint();
   const run = rsvg(["-w", String(BUDGETS.sheets.rasterWidthPx), "-b", "#f3e7ce", svgPath, "-o", out]);
-  const secs = Number(process.hrtime.bigint() - t0) / 1e9;
   assert.equal(run.status, 0, String(run.stderr));
 
   // Everything below this line exists because rsvg-convert EXITS 0 on a
   // corrupt PNG. A green status and a non-zero size prove nothing.
   const bytes = statSync(out).size;
   assert.ok(bytes > 250000, `${bytes} B — a blank page of this frame measures ~17 KB`);
-  const img = decodePng(readFileSync(out));
+  const img = pixels(readFileSync(out));
   assert.equal(img.w, BUDGETS.sheets.rasterWidthPx, "not rasterised at the budgeted width");
   assert.ok(img.h > img.w, "the sheet is taller than it is wide — the legend band is missing");
   assertRealInk(inkStats(img), "canary");
-
-  assert.ok(secs <= BUDGETS.sheets.maxRasterSeconds,
-    `G-RASTER-BUDGET: ${secs.toFixed(2)} s > budget ${BUDGETS.sheets.maxRasterSeconds} s at ${BUDGETS.sheets.rasterWidthPx} px`);
 });
 
 test("POSITIVE CONTROL: the ink metric still rejects the blank page it was calibrated on", (t) => {
@@ -384,7 +363,7 @@ test("POSITIVE CONTROL: the ink metric still rejects the blank page it was calib
   assert.equal(run.status, 0, "rsvg-convert refused the blank page — it is supposed to exit 0");
   assert.ok(statSync(out).size > 0, "the blank page is supposed to have bytes; that is the point");
   assert.throws(
-    () => assertRealInk(inkStats(decodePng(readFileSync(out))), "blank"),
+    () => assertRealInk(inkStats(pixels(readFileSync(out))), "blank"),
     /the page is flat/,
     "the ink metric passed a blank page — it is not a test",
   );
@@ -404,7 +383,7 @@ test("POSITIVE CONTROL: the ink metric rejects a page whose glyph and label laye
   writeFileSync(svgPath, stripped);
   const run = rsvg(["-w", String(BUDGETS.sheets.rasterWidthPx), "-b", "#f3e7ce", svgPath, "-o", out]);
   assert.equal(run.status, 0, String(run.stderr));
-  const stats = inkStats(decodePng(readFileSync(out)));
+  const stats = inkStats(pixels(readFileSync(out)));
   assert.ok(stats.inkFraction >= FLOORS.inkFraction,
     "the underlay is supposed to survive this strip — otherwise the control proves the wrong thing");
   assert.throws(
