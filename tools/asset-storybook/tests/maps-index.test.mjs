@@ -104,6 +104,79 @@ test("every committed sheet PNG is a review THUMB, not a ship raster", () => {
   }
 });
 
+/**
+ * A PNG's pixel width, straight out of the IHDR chunk — bytes 16-19,
+ * big-endian, right after the 8-byte signature and the 8-byte chunk header.
+ * Parsed here rather than imported because this suite runs in Gate 1 AND in
+ * CI, and `sharp` lives in scripts/, which the storybook tests do not install.
+ */
+function pngWidth(absPath) {
+  const head = readFileSync(absPath).subarray(0, 24);
+  assert.equal(
+    head.subarray(0, 8).toString("hex"),
+    "89504e470d0a1a0a",
+    `${absPath} is not a PNG`,
+  );
+  return head.readUInt32BE(16);
+}
+
+// The byte cap alone does NOT enforce the policy, and adversarial review
+// proved it: `--png --png-width 2000` on the atlas sheet produces a 2000 px
+// SHIP RASTER of 373,157 B, which is UNDER the 393,216 B cap. Committed by
+// mistake it would pass every other mechanism — check_render_lock.mjs hashes
+// only the SVGs, and art-manifest.json's `"width": 512` is prose. So the
+// width claim is checked against the actual file, not against the budget's
+// own copy of the number.
+test("every committed sheet PNG is at the thumb WIDTH, not merely under the byte cap", () => {
+  const budgets = JSON.parse(
+    readFileSync(join(REPO_ROOT, "content/world/budgets.json"), "utf8"),
+  );
+  const want = budgets.sheets.thumbWidthPx;
+  assert.equal(typeof want, "number");
+  for (const sheet of loadIndex().sheets) {
+    const abs = join(REPO_ROOT, sheet.png);
+    assert.equal(
+      pngWidth(abs),
+      want,
+      `${sheet.png} is ${pngWidth(abs)} px wide, not ${want} — a committed ` +
+        `sheet PNG is a review thumb; the ship raster (--png-width ` +
+        `${budgets.sheets.rasterWidthPx}) is never committed. Re-bake with ` +
+        `\`node tools/mapforge/render-sheet.mjs --sheet ${sheet.id} --png\``,
+    );
+  }
+});
+
+// The art manifest records the raster settings each committed PNG was made
+// with. That record is read by humans deciding whether to trust the file, so
+// a stale number there is a lie about a shipped artifact — and it was one
+// until this task, since all three entries still claimed `"width": 2000`.
+test("art-manifest's recorded raster width matches the committed thumbs", () => {
+  const budgets = JSON.parse(
+    readFileSync(join(REPO_ROOT, "content/world/budgets.json"), "utf8"),
+  );
+  const manifest = JSON.parse(
+    readFileSync(
+      join(REPO_ROOT, "game-client/assets/art/art-manifest.json"),
+      "utf8",
+    ),
+  );
+  const mapEntries = Object.entries(manifest.entries).filter(
+    ([, e]) => e && e.group === "map",
+  );
+  assert.equal(
+    mapEntries.length,
+    loadIndex().sheets.length,
+    "every sheet PNG needs an art-manifest entry — check_asset_manifest.mjs guard (M) fails on an unmanifested art file",
+  );
+  for (const [id, entry] of mapEntries) {
+    assert.equal(
+      entry.gen.width,
+      budgets.sheets.thumbWidthPx,
+      `art-manifest "${id}".gen.width is ${entry.gen.width}, but the committed PNG is a ${budgets.sheets.thumbWidthPx} px thumb`,
+    );
+  }
+});
+
 // The card is the review surface; a thumb with no words beside it is an image,
 // not a review. Both fields are already carried by maps-index.json — this
 // pins them so a fourth sheet cannot be indexed as a bare path pair.
