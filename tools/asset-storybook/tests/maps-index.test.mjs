@@ -13,6 +13,8 @@ import { readFileSync, existsSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SHEETS } from "../../mapforge/render-sheet.mjs";
+import { inkStats } from "../../mapforge/lib/png-ink.mjs";
+import { encodePng } from "../../mapforge/lib/texture-bake.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const STORYBOOK_ROOT = resolve(HERE, "..");
@@ -142,6 +144,82 @@ test("every committed sheet PNG is at the thumb WIDTH, not merely under the byte
         `sheet PNG is a review thumb; the ship raster (--png-width ` +
         `${budgets.sheets.rasterWidthPx}) is never committed. Re-bake with ` +
         `\`node tools/mapforge/render-sheet.mjs --sheet ${sheet.id} --png\``,
+    );
+  }
+});
+
+// ── THE INK FLOOR (F-047 seam-4 fix pass) ─────────────────────────────────
+//
+// Every rule above binds a committed thumb from ABOVE — under a byte cap, at
+// exactly this width — and none of them looks at a pixel. Both seam-4
+// reviewers found the consequence independently: a blank 512 px PNG dropped
+// in place of the atlas thumb left THIS SUITE 47/0 and check_render_lock,
+// check_asset_manifest and check_content all clean. The review surface could
+// silently go blank, which is exactly what the owner's standing
+// every-artifact-observable rule (2026-08-15) exists to prevent.
+//
+// The measure decodes the committed bytes (tools/mapforge/lib/png-ink.mjs) and
+// needs no rendering library, so unlike G-RASTER-BUDGET it runs HERE — Gate 1
+// and CI — and in check_content.mjs's G-SHEET-BUDGET. Three venues, none of
+// them needing librsvg.
+//
+// POSITIVE CONTROL FIRST, and it is not a fixture file: the blank page is
+// built here from the repo's own encoder, so the control cannot rot into
+// agreement with whatever the thumbs happen to be.
+const blankThumb = (w, h) => {
+  const rgba = Buffer.alloc(w * h * 4);
+  for (let i = 0; i < w * h; i++) {
+    rgba[i * 4] = 243;
+    rgba[i * 4 + 1] = 231;
+    rgba[i * 4 + 2] = 206;
+    rgba[i * 4 + 3] = 255;
+  }
+  const { dataUri, problems } = encodePng({ w, h, rgba });
+  assert.deepEqual(problems, [], "the blank control could not be encoded");
+  return Buffer.from(dataUri.slice("data:image/png;base64,".length), "base64");
+};
+
+test("a BLANK thumb is rejected by the same measure the committed ones pass", () => {
+  const budgets = JSON.parse(
+    readFileSync(join(REPO_ROOT, "content/world/budgets.json"), "utf8"),
+  );
+  const st = inkStats(blankThumb(budgets.sheets.thumbWidthPx, 570));
+  assert.equal(st.error, undefined, st.error);
+  assert.ok(
+    st.inkFraction < budgets.sheets.minThumbInkFraction,
+    `a blank page measured ${st.inkFraction} ink — the floor has stopped separating blank from drawn`,
+  );
+  assert.ok(st.distinct < budgets.sheets.minThumbDistinctColours);
+});
+
+test("every committed sheet PNG carries INK, not just bytes and a width", () => {
+  const budgets = JSON.parse(
+    readFileSync(join(REPO_ROOT, "content/world/budgets.json"), "utf8"),
+  );
+  const { minThumbInkFraction, minThumbInkRowFraction, minThumbDistinctColours } =
+    budgets.sheets;
+  for (const k of [minThumbInkFraction, minThumbInkRowFraction, minThumbDistinctColours])
+    assert.equal(typeof k, "number", "budgets.json sheets is missing an ink floor");
+  const sheets = loadIndex().sheets;
+  assert.ok(sheets.length > 0, "an empty roster passes this test vacuously");
+  for (const sheet of sheets) {
+    const st = inkStats(readFileSync(join(REPO_ROOT, sheet.png)));
+    assert.equal(st.error, undefined, `${sheet.png}: ${st.error}`);
+    assert.ok(
+      st.inkFraction >= minThumbInkFraction,
+      `${sheet.png} is ${(st.inkFraction * 100).toFixed(2)}% ink, floor ` +
+        `${(minThumbInkFraction * 100).toFixed(2)}% — a committed raster that is ` +
+        `blank passes every OTHER rule about it. Re-bake with \`node ` +
+        `scripts/bake_thumbnails.mjs\` and look at the file.`,
+    );
+    assert.ok(
+      st.inkRowFraction >= minThumbInkRowFraction,
+      `${sheet.png} draws on ${(st.inkRowFraction * 100).toFixed(1)}% of its ` +
+        `scanlines, floor ${(minThumbInkRowFraction * 100).toFixed(1)}% — the ink is all in one band`,
+    );
+    assert.ok(
+      st.distinct >= minThumbDistinctColours,
+      `${sheet.png} has ${st.distinct} distinct colours, floor ${minThumbDistinctColours} — that is a placeholder, not a drawing`,
     );
   }
 });

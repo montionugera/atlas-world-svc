@@ -35,6 +35,11 @@ import {
 // never this file, and both modules end in an `import.meta.url` entry guard
 // so importing either runs no main().
 import { derivedSidecar } from "./check_spine_emit.mjs";
+// F-047 seam-4 fix: the ink floor. Decodes committed PNG bytes; no rendering
+// library, so it runs in CI, which has none. See tools/mapforge/lib/png-ink.mjs
+// for why node:zlib is allowed on a DECOMPRESS path and banned on the
+// committed-byte COMPRESS path.
+import { inkStats } from "../tools/mapforge/lib/png-ink.mjs";
 import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -2619,7 +2624,7 @@ function gSpineWorld({ tree, contentRoot, fail, warn, requireComplete }) {
   }
 
   gWorldLandforms({ tree, worldDir, lex, budgets, fail, warn, requireComplete });
-  gWorldSheets({ contentRoot, budgets, fail });
+  gWorldSheets({ contentRoot, budgets, fail, warn });
 }
 
 function gWorldLandforms({ tree, worldDir, lex, budgets, fail, warn, requireComplete }) {
@@ -2720,7 +2725,7 @@ function gWorldLandforms({ tree, worldDir, lex, budgets, fail, warn, requireComp
 // a SIBLING of the content root, so this is the one gate that reaches outside
 // it — guarded by existsSync, because a temp fixture root has no such sibling
 // and must stay silent rather than fail.
-function gWorldSheets({ contentRoot, budgets, fail }) {
+function gWorldSheets({ contentRoot, budgets, fail, warn }) {
   const mapsDir = join(contentRoot, "../game-client/assets/art/maps");
   if (!existsSync(mapsDir)) return;
   if (!budgets.sheets || typeof budgets.sheets !== "object" || Array.isArray(budgets.sheets)) {
@@ -2743,6 +2748,35 @@ function gWorldSheets({ contentRoot, budgets, fail }) {
   if (worst > budgets.sheets.maxSvgBytes)
     fail(`G-SHEET-BUDGET: sheet ${worstName} is ${worst} bytes > budget ${budgets.sheets.maxSvgBytes}`);
   gWorldSheetPatternArea({ mapsDir, svgs, budgets, fail });
+  gWorldSheetInk({ mapsDir, budgets, fail, warn });
+}
+
+// Read a file that a directory listing said exists, without ever throwing.
+//
+// Seam-4 review finding A3, REPRODUCED and REAL: readdirSync happily lists a
+// DIRECTORY named `weird.svg`, and readFileSync on it raises EISDIR. That is
+// not a cosmetic stack trace — `fail()` only PUSHES, and the failure list is
+// rendered by finish()/summaryLines(), so a throw here means every FAIL
+// already recorded is never printed. Measured on the same fixture: with the
+// directory absent the run prints `FAIL  G-LANDFORM: 0 landform instances >
+// budget -1` and a `content-gate:` summary; with it present both lines vanish
+// and only the stack survives. The exit code stays 1 only by the accident of
+// the throw itself, which is not a guarantee anything should rest on.
+function readTextIfFile(path) {
+  try {
+    if (!statSync(path).isFile()) return null;
+    return readFileSync(path, "utf8");
+  } catch {
+    return null;
+  }
+}
+function readBytesIfFile(path) {
+  try {
+    if (!statSync(path).isFile()) return null;
+    return readFileSync(path);
+  } catch {
+    return null;
+  }
 }
 
 // Plan B Task 12 — the STRUCTURAL companion to the byte cap above.
@@ -2777,7 +2811,12 @@ function gWorldSheetPatternArea({ mapsDir, svgs, budgets, fail }) {
   let worstRatio = 0;
   let worstSheet = "";
   for (const f of svgs) {
-    const ratio = patternRectAreaRatio(readFileSync(join(mapsDir, f), "utf8"));
+    const text = readTextIfFile(join(mapsDir, f));
+    if (text === null) {
+      fail(`G-SHEET-BUDGET: sheet ${f} could not be read as a file — its pattern area could not be measured`);
+      continue;
+    }
+    const ratio = patternRectAreaRatio(text);
     // A sheet whose canvas cannot be read reports rather than scoring 0 —
     // silence is how a cap stops covering.
     if (ratio === null) {
@@ -2813,6 +2852,80 @@ function patternRectAreaRatio(svg) {
   const canvas = Number(head[1]) * Number(head[2]);
   if (!Number.isFinite(canvas) || canvas <= 0) return null;
   return total / canvas;
+}
+
+// F-047 seam-4 fix pass — THE INK FLOOR.
+//
+// The most serious result of seam 4, found independently by both reviewers:
+// at d86f948 nothing in this repo could tell a blank image from a real one. A
+// blank 512 px PNG dropped in place of the atlas thumb passed the storybook
+// suite, check_render_lock, check_asset_manifest and THIS GATE. Every rule on
+// a committed raster bound it from above (maxThumbBytes) or pinned its width;
+// none of them looked at a pixel.
+//
+// The standing rule on this programme is that every produced artifact must be
+// observable in a review surface (owner intent, 2026-08-15). An artifact that
+// can silently go blank and stay green fails that rule, so the floor belongs
+// in the gate and not only in a test — and it is measured from the COMMITTED
+// BYTES, which is why it can live here at all: no rsvg-convert, no librsvg,
+// deterministic on every box. The same three floors are asserted against the
+// sheet ROSTER in tools/asset-storybook/tests/maps-index.test.mjs (Gate 1 and
+// CI); this one arms on whatever PNGs are on disk, which is what catches a
+// file nobody remembered to index.
+//
+// SOFT-SKIP DISCIPLINE: a maps directory with no PNG in it is not a failure —
+// ~27-30 fixture roots have no sheets at all, and Plan C/D/E fixtures write
+// .svg without a thumb. The rule arms on PNGs that exist, and PRINTS on every
+// run like every other budget in this file.
+function gWorldSheetInk({ mapsDir, budgets, fail, warn }) {
+  const minInk = budgets.sheets.minThumbInkFraction;
+  const minRows = budgets.sheets.minThumbInkRowFraction;
+  const minColours = budgets.sheets.minThumbDistinctColours;
+  if (typeof minInk !== "number" || typeof minRows !== "number" || typeof minColours !== "number") {
+    fail(`G-SHEET-BUDGET: world/budgets.json sheets is missing a numeric minThumbInkFraction / minThumbInkRowFraction / minThumbDistinctColours`);
+    return;
+  }
+  let pngs = [];
+  try {
+    pngs = readdirSync(mapsDir).filter((f) => f.toLowerCase().endsWith(".png")).sort();
+  } catch {
+    return;
+  }
+  // The WORST sheet is the one the floor is about, so the report names the
+  // minimum, not the maximum — the mirror image of every cap above it.
+  let worstInk = Infinity, worstName = "";
+  for (const f of pngs) {
+    const bytes = readBytesIfFile(join(mapsDir, f));
+    if (bytes === null) {
+      fail(`G-SHEET-BUDGET: thumb ${f} could not be read as a file — its ink could not be measured`);
+      continue;
+    }
+    // THE PNG SIGNATURE IS THE CLAIM, not the file extension. A file that
+    // announces itself as a PNG and then cannot be decoded is a real defect and
+    // FAILS. A file that never made that claim is not this rule's subject — it
+    // WARNS and is left to check_asset_manifest, which owns "is this a real art
+    // file". The line is drawn there for the soft-skip discipline this repo
+    // runs on: `world-budget.test.mjs`'s ".svg only" fixture plants thirty
+    // 600 KB junk files named *.png to prove the SHEET census ignores them, and
+    // a floor that reds that fixture would be policing the wrong thing loudly.
+    const st = inkStats(bytes);
+    if (st.error) {
+      const claimed = bytes.subarray(0, 8).toString("hex") === "89504e470d0a1a0a";
+      (claimed ? fail : warn)(
+        `G-SHEET-BUDGET: thumb ${f} could not be measured for ink: ${st.error}`,
+      );
+      continue;
+    }
+    if (st.inkFraction < worstInk) { worstInk = st.inkFraction; worstName = f; }
+    if (st.inkFraction < minInk)
+      fail(`G-SHEET-BUDGET: thumb ${f} is ${(st.inkFraction * 100).toFixed(2)}% ink < floor ${(minInk * 100).toFixed(2)}% — a committed raster that is blank passes every OTHER rule about it`);
+    if (st.inkRowFraction < minRows)
+      fail(`G-SHEET-BUDGET: thumb ${f} draws on ${(st.inkRowFraction * 100).toFixed(1)}% of its scanlines < floor ${(minRows * 100).toFixed(1)}% — the ink is all in one band`);
+    if (st.distinct < minColours)
+      fail(`G-SHEET-BUDGET: thumb ${f} has ${st.distinct} distinct colours < floor ${minColours} — that is a placeholder, not a drawing`);
+  }
+  const shown = worstInk === Infinity ? 0 : worstInk;
+  console.log(`world-budget: thumb ink ${(shown * 100).toFixed(2)}% least (${worstName || "none"}) of ${pngs.length} thumb(s) (floor ${(minInk * 100).toFixed(2)}%)`);
 }
 
 // F-041 Phase 1: G-OVERLAP + G-COMP-ROLLUP. `report` is warn until the two

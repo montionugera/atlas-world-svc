@@ -32,6 +32,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { BIOMES, TERRAIN_KINDS, TERRAIN_IMPLIES } from "../lib/spine.mjs";
+import { encodePng } from "../../tools/mapforge/lib/texture-bake.mjs";
 import { runSpineGateInProcess } from "../check_content.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -208,6 +209,11 @@ test("budgets.json pins cellKm and the landform + sheet caps", () => {
     rasterWidthPx: 2000,
     thumbWidthPx: 512,
     maxThumbBytes: 393216,
+    // F-047 seam-4 fix pass: the FLOOR that did not exist. Every rule above
+    // bounds a committed raster from the top; a blank one passed all of them.
+    minThumbInkFraction: 0.02,
+    minThumbInkRowFraction: 0.5,
+    minThumbDistinctColours: 64,
   });
   for (const k of Object.keys(BUDGETS.sheets))
     assert.ok(
@@ -305,6 +311,175 @@ test("G-SHEET-BUDGET red, not a throw: budgets.json sheets has no maxPatternRect
   assert.match(r.out, /G-SHEET-BUDGET: world\/budgets\.json sheets has no numeric maxPatternRectAreaRatio/);
   assert.doesNotMatch(r.out, /check-content: \w*Error/);
   drop();
+});
+
+// ── the gate NEVER THROWS, even on a directory named like a sheet ──────────
+//
+// Seam-4 review A finding 3, reproduced and REAL. `readdirSync` lists a
+// DIRECTORY named `weird.svg`, and `readFileSync` on it raises EISDIR. `fail()`
+// only PUSHES onto a list that finish()/summaryLines() renders, so a throw
+// anywhere in a gate means every failure already recorded is never printed.
+// MEASURED both ways on this fixture: without the directory the run prints
+// `FAIL  G-LANDFORM: 0 landform instances > budget -1` and a `content-gate:`
+// summary; with it, both lines vanished and only a stack survived.
+test("G-SHEET-BUDGET: a DIRECTORY named *.svg reports, and does not eat the report", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(join(maps, "weird.svg"), { recursive: true });
+  // A real failure recorded BEFORE the sheet census runs. If the gate throws,
+  // this line is the one that disappears — which is the whole finding.
+  const b = structuredClone(BUDGETS);
+  b.landforms.maxInstances = -1;
+  writeJson(join(contentRoot, "world/budgets.json"), b);
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.doesNotMatch(r.out, /check-content: \w*Error/, r.out);
+  assert.match(r.out, /G-SHEET-BUDGET: sheet weird\.svg could not be read as a file/);
+  assert.match(r.out, /G-LANDFORM: 0 landform instances > budget -1/, "the earlier failure was dropped");
+  assert.match(r.out, /^content-gate: .*failures/m, "finish() was skipped");
+  drop();
+});
+
+test("G-SHEET-BUDGET: a DIRECTORY named *.png reports too, and still no throw", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(join(maps, "weird.png"), { recursive: true });
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.doesNotMatch(r.out, /check-content: \w*Error/, r.out);
+  assert.match(r.out, /G-SHEET-BUDGET: thumb weird\.png could not be read as a file/);
+  assert.match(r.out, /^content-gate: .*failures/m);
+  drop();
+});
+
+// ── G-SHEET-BUDGET's INK floor (F-047 seam-4 fix pass) ─────────────────────
+//
+// POSITIVE CONTROL FIRST, and it is the exact defect: at d86f948 a blank 512 px
+// PNG substituted for a committed thumb passed the storybook suite,
+// check_render_lock, check_asset_manifest AND this gate. Nothing looked at a
+// pixel. The blank page is built from the repo's own encoder rather than
+// checked in, so the control cannot rot into agreement with the thumbs.
+const solidPng = (w, h, rgb) => {
+  const rgba = Buffer.alloc(w * h * 4);
+  for (let i = 0; i < w * h; i++) {
+    rgba[i * 4] = rgb[0];
+    rgba[i * 4 + 1] = rgb[1];
+    rgba[i * 4 + 2] = rgb[2];
+    rgba[i * 4 + 3] = 255;
+  }
+  const { dataUri, problems } = encodePng({ w, h, rgba });
+  assert.deepEqual(problems, []);
+  return Buffer.from(dataUri.slice("data:image/png;base64,".length), "base64");
+};
+
+test("G-SHEET-BUDGET: a BLANK committed thumb is REJECTED", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  writeFileSync(join(maps, "blank.png"), solidPng(256, 256, [243, 231, 206]));
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-SHEET-BUDGET: thumb blank\.png is 0\.00% ink < floor 2\.00%/);
+  assert.match(r.out, /G-SHEET-BUDGET: thumb blank\.png has 1 distinct colours < floor 64/);
+  assert.doesNotMatch(r.out, /check-content: \w*Error/);
+  drop();
+});
+
+test("G-SHEET-BUDGET: a REAL committed thumb passes the same floor", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  cpSync(join(ROOT, "game-client/assets/art/maps/atlas-world.png"), join(maps, "atlas-world.png"));
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /^world-budget: thumb ink 5\.\d\d% least \(atlas-world\.png\) of 1 thumb\(s\) \(floor 2\.00%\)$/m);
+  drop();
+});
+
+test("G-SHEET-BUDGET: a thumb whose ink is all in ONE BAND is rejected on rows", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  // 300x300, the top 30 rows a 100-colour gradient, the rest parchment: 10% ink
+  // and 100 colours — over both of those floors — on 10% of the scanlines.
+  const w = 300, h = 300;
+  const rgba = Buffer.alloc(w * h * 4);
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      const band = y < 30;
+      rgba[i] = band ? (x * 7) % 200 : 243;
+      rgba[i + 1] = band ? 20 : 231;
+      rgba[i + 2] = band ? 30 : 206;
+      rgba[i + 3] = 255;
+    }
+  const { dataUri, problems } = encodePng({ w, h, rgba });
+  assert.deepEqual(problems, []);
+  writeFileSync(join(maps, "band.png"), Buffer.from(dataUri.slice("data:image/png;base64,".length), "base64"));
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-SHEET-BUDGET: thumb band\.png draws on 10\.0% of its scanlines < floor 50\.0%/);
+  assert.doesNotMatch(r.out, /is 0\.00% ink/, "the fraction floor should NOT be what caught this");
+  drop();
+});
+
+// THE PNG SIGNATURE IS THE CLAIM. A file that says it is a PNG and then will
+// not decode FAILS; a file that never said so warns and is left to
+// check_asset_manifest. Both branches are pinned, because the difference is
+// what keeps the ".svg only" fixture below (thirty 600 KB junk *.png files)
+// green while a genuinely corrupt committed raster still goes red.
+test("G-SHEET-BUDGET: a file that CLAIMS to be a PNG and will not decode FAILS", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  const real = solidPng(64, 64, [243, 231, 206]);
+  writeFileSync(join(maps, "corrupt.png"), real.subarray(0, 40));
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-SHEET-BUDGET: thumb corrupt\.png could not be measured for ink:/);
+  assert.doesNotMatch(r.out, /check-content: \w*Error/);
+  drop();
+});
+
+test("G-SHEET-BUDGET: a file that never claimed to be a PNG warns, and does not red the run", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  writeFileSync(join(maps, "notreally.png"), Buffer.from("this is not a PNG, but it is long enough to be tested"));
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /WARN.*thumb notreally\.png could not be measured for ink: not a PNG/);
+  drop();
+});
+
+// Soft-skip discipline: ~27-30 fixture roots have no sheets at all, and Plan
+// C/D/E fixtures write .svg without a thumb beside it. An absent subject is
+// not a failure — but the measurement still PRINTS, because a floor that has
+// stopped measuring is invisible unless it says what it saw.
+test("G-SHEET-BUDGET: a maps directory with no PNG is silent, and still prints", () => {
+  const { base, contentRoot, drop } = tmpRoot();
+  const maps = join(base, "game-client/assets/art/maps");
+  mkdirSync(maps, { recursive: true });
+  writeFileSync(join(maps, "a.svg"), "<svg/>");
+  const r = runGate(contentRoot);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /^world-budget: thumb ink 0\.00% least \(none\) of 0 thumb\(s\) \(floor 2\.00%\)$/m);
+  drop();
+});
+
+test("G-SHEET-BUDGET red, not a throw: budgets.json sheets has no ink floor", () => {
+  for (const key of ["minThumbInkFraction", "minThumbInkRowFraction", "minThumbDistinctColours"]) {
+    const { base, contentRoot, drop } = tmpRoot();
+    mkdirSync(join(base, "game-client/assets/art/maps"), { recursive: true });
+    const b = structuredClone(BUDGETS);
+    delete b.sheets[key];
+    writeJson(join(contentRoot, "world/budgets.json"), b);
+    const r = runGate(contentRoot);
+    assert.equal(r.code, 1, `${key}: ${r.out}`);
+    assert.match(r.out, /G-SHEET-BUDGET: world\/budgets\.json sheets is missing a numeric minThumbInkFraction/);
+    assert.doesNotMatch(r.out, /check-content: \w*Error/);
+    drop();
+  }
 });
 
 // Plan C adds `fabric`, `civil` and `loop` to this same file and owns

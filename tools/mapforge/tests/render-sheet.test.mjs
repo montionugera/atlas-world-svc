@@ -1,12 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, mkdtempSync, statSync } from "node:fs";
+import { readFileSync, mkdtempSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildCluster1Sheet, SHEETS, parseArgs } from "../render-sheet.mjs";
+import { inkStats } from "../lib/png-ink.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../../..");
@@ -31,6 +32,38 @@ test("the spine-driven cluster1 sheet matches the committed render lock", () => 
     "sha256:" + createHash("sha256").update(svg, "utf8").digest("hex"),
     expected,
   );
+});
+
+// Seam-4 review B, survivors 7 and 8: `atlas-sheet.mjs`'s drawn letter-spacing
+// could be replaced by a constant, and `patternFor` reduced to the old ice
+// boolean, with the whole 204-test mapforge suite still GREEN. The root cause
+// was not either rule — it was that only cluster1 had a hash here, so the atlas
+// and canary sheets had no byte assertion in `node --test` at all. They were
+// caught by scripts/check_render_lock.mjs (Gate 2 and CI line 119) and nowhere
+// else, so a mapforge-only run could not see a redraw.
+//
+// This builds EVERY sheet in the registry and hashes it, which is the same
+// guarantee check_render_lock gives, in the venue that runs on every mapforge
+// change. Both mutants die here now.
+test("EVERY sheet in the registry matches the committed render lock", () => {
+  const lock = JSON.parse(readFileSync(LOCK, "utf8")).artifacts;
+  const ids = Object.keys(SHEETS);
+  assert.ok(ids.length >= 3, `the registry has ${ids.length} sheets — this test cannot go dark`);
+  for (const id of ids) {
+    const { svg, problems } = SHEETS[id].build({ repoRoot: ROOT });
+    assert.deepEqual(problems, [], `${id}: ${problems.join("; ")}`);
+    const expected = lock[SHEETS[id].outSvg];
+    assert.equal(
+      typeof expected,
+      "string",
+      `render-lock.json has no row for ${SHEETS[id].outSvg} — this assertion would compare against undefined`,
+    );
+    assert.equal(
+      "sha256:" + createHash("sha256").update(svg, "utf8").digest("hex"),
+      expected,
+      `${id} no longer renders to its locked bytes — re-baseline deliberately or fix the drift`,
+    );
+  }
 });
 
 test("building twice is deterministic", () => {
@@ -166,7 +199,25 @@ test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at raster
     }
     // rsvg-convert EXITS 0 on a page it drew nothing on, so a timing that is
     // fast because the sheet is empty must not read as a pass.
-    assert.ok(statSync(out).size > 10000, `${id}: ${statSync(out).size} B — nothing was drawn`);
+    //
+    // This WAS `statSync(out).size > 10000`, and that could not do the job it
+    // claimed: a BLANK 2000 px raster measures 14,079-18,074 B depending on the
+    // librsvg build, comfortably over its own floor. Reviewer B proved it in
+    // situ — blanking the committed cluster1 sheet left this suite 8/0 green.
+    // Compressed size is a function of the width as much as of the content, so
+    // no byte floor can separate a big blank page from a small drawn one. This
+    // reads the PIXELS, against the same budget floors the committed thumbs
+    // are held to.
+    const st = inkStats(readFileSync(out));
+    assert.equal(st.error, undefined, `${id}: ${st.error}`);
+    assert.ok(
+      st.inkFraction >= budgets.sheets.minThumbInkFraction,
+      `${id}: ${(st.inkFraction * 100).toFixed(2)}% ink at ${width} px — nothing was drawn`,
+    );
+    assert.ok(
+      st.inkRowFraction >= budgets.sheets.minThumbInkRowFraction,
+      `${id}: ink on only ${(st.inkRowFraction * 100).toFixed(1)}% of scanlines at ${width} px`,
+    );
     if (best > cap) slow.push(`${id} ${best.toFixed(2)} s`);
   }
   assert.deepEqual(slow, [], `G-RASTER-BUDGET: over ${cap} s at ${width} px: ${slow.join(", ")}`);
