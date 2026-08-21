@@ -324,3 +324,77 @@ test("POSITIVE CONTROL: the ink metric still rejects the blank page it was calib
     "the ink metric passed a blank page — it is not a test",
   );
 });
+
+test("POSITIVE CONTROL: the ink metric rejects a page whose glyph and label layer vanished", (t) => {
+  if (!haveRsvg()) { t.skip("rsvg-convert not installed"); return; }
+  // The failure this floor exists for is NOT a blank page — it is a page that
+  // rasterises, fills 87% of itself with biome texture, and has lost every
+  // mark and every name. inkFraction RISES in that state; only darkFraction
+  // separates it, and without this control that floor's value is unproven.
+  const dir = mkdtempSync(join(tmpdir(), "canary-noink-"));
+  const svgPath = join(dir, "noink.svg"), out = join(dir, "noink.png");
+  const stripped = readFileSync(join(ROOT, SHEETS.synthetic.outSvg), "utf8")
+    .replace(/<use [^>]*\/>/g, "")
+    .replace(/<text class="lbl"[^>]*>[^<]*<\/text>/g, "");
+  writeFileSync(svgPath, stripped);
+  const run = rsvg(["-w", String(BUDGETS.sheets.rasterWidthPx), "-b", "#f3e7ce", svgPath, "-o", out]);
+  assert.equal(run.status, 0, String(run.stderr));
+  const stats = inkStats(decodePng(readFileSync(out)));
+  assert.ok(stats.inkFraction >= FLOORS.inkFraction,
+    "the underlay is supposed to survive this strip — otherwise the control proves the wrong thing");
+  assert.throws(
+    () => assertRealInk(stats, "stripped"),
+    /ink layer did not draw/,
+    "the ink metric passed a sheet with no marks and no names on it",
+  );
+});
+
+// ── the gates are WIRED, not decorative ────────────────────────────────────
+//
+// Every assertion above runs against committed data that is correct by
+// construction, so each `problems.push(...check*())` line in the builder could
+// be deleted with the whole suite still green — three of them measurably
+// were. These hand the builder a deliberately broken fixture and assert that
+// the matching gate FIRES. They are positive controls: they must keep
+// detecting what they were calibrated on, or the suite has stopped covering.
+
+const bent = (over) => {
+  const f = JSON.parse(JSON.stringify(FIXTURE));
+  Object.assign(f.params, over.params ?? {});
+  return buildSyntheticSheet({ repoRoot: ROOT, fixture: f });
+};
+
+test("POSITIVE CONTROL: G-CANARY fires when the world is not at the declared density", () => {
+  const { problems, svg } = bent({ params: { regions: 120 } });
+  assert.ok(
+    problems.some((p) => /^G-CANARY: the synthetic world has 120 regions, not the 160/.test(p)),
+    problems.join("\n"),
+  );
+  assert.equal(svg, "", "a sheet with problems must not hand back bytes");
+});
+
+test("POSITIVE CONTROL: G-GLYPH's size half fires below the family-identity minimum", () => {
+  const { problems } = bent({ params: { glyphSizePx: 8 } });
+  assert.ok(
+    problems.some((p) => /^G-GLYPH: glyph .* is placed at 8 px/.test(p)),
+    problems.join("\n").slice(0, 400),
+  );
+});
+
+test("POSITIVE CONTROL: G-GLYPH's coverage half fires when a family is never emitted", () => {
+  // 100 instances cannot reach all 40 families, so the lexicon references a
+  // glyph for which no <symbol> was written.
+  const { problems } = bent({ params: { instances: 100 } });
+  assert.ok(
+    problems.some((p) => /^G-GLYPH: glyph "g-.*" is referenced but no <symbol> was emitted/.test(p)),
+    problems.join("\n").slice(0, 400),
+  );
+});
+
+test("POSITIVE CONTROL: G-LABEL fires when 340 names cannot fit the frame", () => {
+  const { problems } = bent({ params: { pxPerKm: 0.35 } });
+  assert.ok(
+    problems.some((p) => /^G-LABEL: \d+ labels dropped/.test(p)),
+    problems.join("\n").slice(0, 400),
+  );
+});

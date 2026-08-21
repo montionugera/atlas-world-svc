@@ -239,14 +239,30 @@ const MEMO = new Map();
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_PATH = join(HERE, "../tests/fixtures/synthetic-world/world.json");
 
-export function buildSyntheticSheet({ repoRoot } = {}) {
+/**
+ * `fixture` overrides the committed parameter file, and it exists for ONE
+ * reason: without it, deleting any of the three `problems.push(...check*())`
+ * lines below leaves the whole suite green. Measured, not assumed — a mutation
+ * run killed checkGlyphSizes and left checkGlyphCoverage, checkLabels and
+ * checkBiomeInk as survivors. The sheet is built from committed data that is
+ * correct by construction, so a gate that is never handed anything wrong
+ * cannot be shown to work, and "a green suite that has stopped covering" is
+ * this programme's recorded failure mode. The tests pass deliberately broken
+ * fixtures through this argument and assert that each gate FIRES; nothing on
+ * the shipped path ever supplies it.
+ *
+ * An injected fixture bypasses the memo: it is a different world, and caching
+ * it under the repo root would poison the real answer.
+ */
+export function buildSyntheticSheet({ repoRoot, fixture = null } = {}) {
+  if (fixture) return buildUncached({ repoRoot, fixture });
   const key = typeof repoRoot === "string" ? repoRoot : String(repoRoot);
   if (!MEMO.has(key)) MEMO.set(key, buildUncached({ repoRoot }));
   const r = MEMO.get(key);
   return { svg: r.svg, notes: [...r.notes], problems: [...r.problems] };
 }
 
-function buildUncached({ repoRoot }) {
+function buildUncached({ repoRoot, fixture: injected = null }) {
   const problems = [];
   const notes = [];
   let fixture, lexicon, budgets;
@@ -258,7 +274,7 @@ function buildUncached({ repoRoot }) {
     // their data from content/ and their code from the module, and so does
     // this one. Reading the fixture through repoRoot made every temp-root
     // caller fail on ENOENT, which is how this was found.
-    fixture = JSON.parse(readFileSync(FIXTURE_PATH, "utf8"));
+    fixture = injected ?? JSON.parse(readFileSync(FIXTURE_PATH, "utf8"));
     lexicon = JSON.parse(
       readFileSync(join(repoRoot, "content/world/lexicon/landforms.json"), "utf8"),
     );
@@ -272,6 +288,10 @@ function buildUncached({ repoRoot }) {
 
   const params = (fixture && fixture.params) || {};
   const { seed, frameKm, pxPerKm } = params;
+  // Declared in the fixture rather than hardcoded, so checkGlyphSizes is the
+  // thing that stops a future re-census picking 8 px to make 1,740 marks fit.
+  // The contract wins; the layout accommodates it.
+  const glyphPx = Number.isFinite(params.glyphSizePx) ? params.glyphSizePx : GLYPH_SIZE.min;
   if (!Number.isFinite(frameKm) || !Number.isFinite(pxPerKm) || pxPerKm <= 0) {
     problems.push(
       `synthetic: frameKm/pxPerKm are ${JSON.stringify(frameKm)}/${JSON.stringify(pxPerKm)}, not a usable frame`,
@@ -324,7 +344,7 @@ function buildUncached({ repoRoot }) {
 
   // ---- G-GLYPH -------------------------------------------------------------
   const usedGlyphs = [...new Set(world.instances.map((i) => i.glyph))].sort();
-  const sized = world.instances.map((i) => ({ id: i.glyph, size: GLYPH_SIZE.min }));
+  const sized = world.instances.map((i) => ({ id: i.glyph, size: glyphPx }));
   problems.push(...checkGlyphSizes({ instances: sized }));
   problems.push(
     ...checkGlyphCoverage({ lexicon, namedCounts: world.namedCounts, emittedIds: usedGlyphs }),
@@ -344,7 +364,7 @@ function buildUncached({ repoRoot }) {
   problems.push(...checkLabels({ placed, dropped, tier: legendTier }));
 
   notes.push(`regions ${world.regions.length} · landmasses ${census.landmasses}`);
-  notes.push(`instances ${world.instances.length} at ${GLYPH_SIZE.min} px · glyph families ${usedGlyphs.length} / ${Object.keys(GLYPHS).length}`);
+  notes.push(`instances ${world.instances.length} at ${glyphPx} px · glyph families ${usedGlyphs.length} / ${Object.keys(GLYPHS).length}`);
   notes.push(`labels ${world.labels.length} placed ${placed.length} dropped ${dropped.length}`);
 
   // ---- draw ---------------------------------------------------------------
@@ -358,7 +378,7 @@ function buildUncached({ repoRoot }) {
         id: i.glyph,
         x: r2(PAD + i.at[0] * pxPerKm),
         y: r2(PAD + i.at[1] * pxPerKm),
-        size: GLYPH_SIZE.min,
+        size: glyphPx,
       }),
     );
   body.push("</g>");

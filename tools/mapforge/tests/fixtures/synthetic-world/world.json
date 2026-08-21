@@ -7,10 +7,12 @@
     "instances": 1740,
     "labels": 340,
     "frameKm": 400,
-    "pxPerKm": 3.5
+    "pxPerKm": 3.5,
+    "glyphSizePx": 18
   },
   "paramsWhy": {
     "frameKm/pxPerKm": "400 km at 3.5 px/km is the ATLAS SHEET'S OWN frame, 1400 x 1400 px — the canary is only evidence about the real chart if it is the real chart's size. content/world/budgets.json's maxSvgBytes rationale is measured at exactly this frame.",
+    "glyphSizePx": "GLYPH_SIZE.min. Declared here rather than hardcoded so checkGlyphSizes is what stops a future re-census picking a small size to make 1,740 marks fit — the size contract wins and the layout accommodates it, not the other way round.",
     "instances": "All 1,740 are drawn as FAMILY-SPECIFIC marks at GLYPH_SIZE.min. The live world will draw ~340 named marks and leave the rest as texture; a canary that did the same would be measuring an easier sheet than the one it is meant to warn about."
   },
   "rankMix": {
