@@ -50,11 +50,17 @@ the sheet is real SVG `<text>`, positioned from the data.
 ## Commands
 
 ```bash
-# spine-driven (current) — pick a sheet
-node tools/mapforge/render-sheet.mjs --sheet cluster1           # SVG + PNG
-node tools/mapforge/render-sheet.mjs --sheet atlas               # SVG + PNG
-node tools/mapforge/render-sheet.mjs --sheet cluster1 --no-png   # SVG only
+# spine-driven (current) — pick a sheet. SVG only by default.
+node tools/mapforge/render-sheet.mjs --sheet cluster1            # SVG only
+node tools/mapforge/render-sheet.mjs --sheet atlas               # SVG only
+node tools/mapforge/render-sheet.mjs --sheet cluster1 --png      # SVG + 512px review thumb (the committed one)
 node tools/mapforge/render-sheet.mjs --sheet cluster1 --check    # self-checks + drift check, write nothing
+
+# the ship raster: on demand, and NEVER committed. .gitattributes:29 tracks
+# game-client/assets/**/*.png in LFS with no cross-version dedup, so a full
+# roster redraw at 2000px is tens of MB of blobs for a file only a printer
+# wants. Write it somewhere outside the tree and delete it when you are done.
+node tools/mapforge/render-sheet.mjs --sheet atlas --png --png-width 2000
 
 # drift gate — every sheet in SHEETS, rebuilt from the live spine and hashed
 node scripts/check_render_lock.mjs             # --check (default): compare, write nothing
@@ -150,8 +156,9 @@ the residual is always visible.
 
 Edit the spine (`content/spine/`), then `node scripts/check_spine_emit.mjs
 --write` to regenerate every node's `derived` block and `node
-tools/mapforge/render-sheet.mjs --sheet cluster1` (or `--sheet atlas`) to
-redraw the sheet — read its self-check output and look at the PNG. `node
+tools/mapforge/render-sheet.mjs --sheet cluster1 --png` (or `--sheet atlas`)
+to redraw the sheet and its 512 px review thumb — read the self-check output
+and look at the thumb, or open the Map Sheets tab in the asset storybook. `node
 scripts/check_render_lock.mjs --write` re-baselines
 `content/world/render-lock.json` so drift can't slip in. If a town moves, its zone polygon and any road endpoint
 referencing it must move with it, and the relay towers sampled along that

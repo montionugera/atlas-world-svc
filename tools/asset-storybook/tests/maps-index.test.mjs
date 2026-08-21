@@ -9,7 +9,7 @@
 // without indexing it here, and this suite goes red.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SHEETS } from "../../mapforge/render-sheet.mjs";
@@ -67,6 +67,55 @@ test("every indexed sheet's svg/png paths match SHEETS and exist on disk", () =>
     assert.ok(
       existsSync(join(REPO_ROOT, sheet.png)),
       `${sheet.png} does not exist on disk`,
+    );
+  }
+});
+
+// Plan B Task 11 — PNGs left the review loop (spec 2026-08-16 §7.5). What is
+// committed at SHEETS[id].outPng is a <= `thumbWidthPx` REVIEW THUMB, because
+// F-044 proved SVG ink vanishes at card scale, so the storybook card cannot
+// simply point at the vector. The 2000 px ship raster is produced on demand
+// with `--png-width 2000` and is NEVER committed: .gitattributes:29 puts
+// game-client/assets/**/*.png in LFS but not *.svg, so every redraw of a full
+// sheet roster at ship width is tens of MB of undeduplicated LFS blobs. The
+// synthetic canary alone was 2,534,694 B before this rule existed.
+//
+// The budget lives in content/world/budgets.json so the number has one home
+// and a stated reason (`sheetsWhy`), not three copies.
+test("every committed sheet PNG is a review THUMB, not a ship raster", () => {
+  const index = loadIndex();
+  const budgets = JSON.parse(
+    readFileSync(join(REPO_ROOT, "content/world/budgets.json"), "utf8"),
+  );
+  const max = budgets.sheets.maxThumbBytes;
+  assert.equal(
+    typeof max,
+    "number",
+    "content/world/budgets.json sheets.maxThumbBytes must be a number",
+  );
+  for (const sheet of index.sheets) {
+    const bytes = statSync(join(REPO_ROOT, sheet.png)).size;
+    assert.ok(
+      bytes <= max,
+      `${sheet.png} is ${bytes} bytes — a committed sheet PNG must be a ` +
+        `<= ${budgets.sheets.thumbWidthPx} px thumb (budget ${max}); re-bake ` +
+        `with \`node tools/mapforge/render-sheet.mjs --sheet ${sheet.id} --png\``,
+    );
+  }
+});
+
+// The card is the review surface; a thumb with no words beside it is an image,
+// not a review. Both fields are already carried by maps-index.json — this
+// pins them so a fourth sheet cannot be indexed as a bare path pair.
+test("every sheet also has a card title and note, so the storybook explains what it is", () => {
+  for (const sheet of loadIndex().sheets) {
+    assert.ok(
+      typeof sheet.title === "string" && sheet.title.length > 0,
+      `${sheet.id}: maps-index.json row needs a title`,
+    );
+    assert.ok(
+      typeof sheet.note === "string" && sheet.note.length > 20,
+      `${sheet.id}: maps-index.json row needs a note explaining what the sheet is`,
     );
   }
 });

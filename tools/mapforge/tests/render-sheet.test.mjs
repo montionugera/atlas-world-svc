@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildCluster1Sheet, SHEETS } from "../render-sheet.mjs";
+import { buildCluster1Sheet, SHEETS, parseArgs } from "../render-sheet.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../../..");
@@ -17,10 +17,18 @@ const LOCKED_ARTIFACT = "game-client/assets/art/maps/cluster1-world.svg";
 test("the spine-driven cluster1 sheet matches the committed render lock", () => {
   const { svg, problems } = buildCluster1Sheet({ repoRoot: ROOT });
   assert.deepEqual(problems, []);
-  const expected = JSON.parse(readFileSync(LOCK, "utf8")).artifacts[LOCKED_ARTIFACT];
-  assert.equal(typeof expected, "string",
-    `render-lock.json has no row for ${LOCKED_ARTIFACT} — the assertion below would compare against undefined`);
-  assert.equal("sha256:" + createHash("sha256").update(svg, "utf8").digest("hex"), expected);
+  const expected = JSON.parse(readFileSync(LOCK, "utf8")).artifacts[
+    LOCKED_ARTIFACT
+  ];
+  assert.equal(
+    typeof expected,
+    "string",
+    `render-lock.json has no row for ${LOCKED_ARTIFACT} — the assertion below would compare against undefined`,
+  );
+  assert.equal(
+    "sha256:" + createHash("sha256").update(svg, "utf8").digest("hex"),
+    expected,
+  );
 });
 
 test("building twice is deterministic", () => {
@@ -37,13 +45,78 @@ test("SHEETS entries declare title, outSvg, outPng and maxLabelRank", () => {
   // stop the registry going dark must not be able to go dark itself, so the
   // key set is asserted first. Plan B extends this roster; updating this line
   // is the deliberate acknowledgement that the roster changed.
-  assert.deepEqual(Object.keys(SHEETS).sort(), ["atlas", "cluster1", "synthetic"]);
+  assert.deepEqual(Object.keys(SHEETS).sort(), [
+    "atlas",
+    "cluster1",
+    "synthetic",
+  ]);
   for (const [id, sheet] of Object.entries(SHEETS)) {
     assert.equal(typeof sheet.title, "string", `${id}.title`);
     assert.ok(sheet.title.length > 0, `${id}.title is empty`);
-    assert.match(sheet.outSvg, /^game-client\/assets\/art\/maps\/.+\.svg$/, `${id}.outSvg`);
-    assert.match(sheet.outPng, /^game-client\/assets\/art\/maps\/.+\.png$/, `${id}.outPng`);
+    assert.match(
+      sheet.outSvg,
+      /^game-client\/assets\/art\/maps\/.+\.svg$/,
+      `${id}.outSvg`,
+    );
+    assert.match(
+      sheet.outPng,
+      /^game-client\/assets\/art\/maps\/.+\.png$/,
+      `${id}.outPng`,
+    );
     assert.equal(typeof sheet.maxLabelRank, "number", `${id}.maxLabelRank`);
     assert.equal(typeof sheet.build, "function", `${id}.build`);
   }
+});
+
+// ── the PNG policy (Plan B Task 11) ───────────────────────────────────────
+//
+// spec 2026-08-16 §7.5: the committed raster is a 512 px review thumb; the
+// 2000 px ship raster is on demand and never committed. Asserted on the pure
+// parser, not by running the CLI — raster.test.mjs forbids any mapforge test
+// from writing game-client/assets/art/maps/, and rendering is the only other
+// way to observe the default.
+
+test("--png is OPT-IN: the default writes no raster at all", () => {
+  assert.equal(parseArgs(["--sheet", "atlas"]).wantPng, false);
+  assert.equal(parseArgs(["--sheet", "atlas", "--check"]).wantPng, false);
+  assert.equal(parseArgs(["--sheet", "atlas", "--png"]).wantPng, true);
+});
+
+test("the default png width is the committed-thumb width, not the ship width", () => {
+  const budgets = JSON.parse(
+    readFileSync(
+      new URL("../../../content/world/budgets.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  // One number, one home. If these ever disagree, the tool and the budget that
+  // polices it are describing different artifacts.
+  assert.equal(
+    parseArgs(["--sheet", "atlas", "--png"]).pngWidth,
+    budgets.sheets.thumbWidthPx,
+  );
+  assert.notEqual(budgets.sheets.thumbWidthPx, budgets.sheets.rasterWidthPx);
+  assert.equal(
+    parseArgs(["--sheet", "atlas", "--png", "--png-width", "2000"]).pngWidth,
+    budgets.sheets.rasterWidthPx,
+  );
+});
+
+test("--no-png stays accepted as a no-op, so CI's three --no-png lines still run", () => {
+  const p = parseArgs(["--sheet", "cluster1", "--no-png", "--check"]);
+  assert.equal(p.error, undefined);
+  assert.equal(p.wantPng, false);
+  assert.equal(p.checkOnly, true);
+  assert.equal(p.sheetId, "cluster1");
+});
+
+test("bad arguments answer in-band, never by throwing", () => {
+  assert.match(parseArgs(["--sheet", "atlas", "--bogus"]).error, /unknown arg/);
+  assert.match(parseArgs([]).error, /--sheet/);
+  for (const bad of ["nope", "0", "-5", ""])
+    assert.match(
+      parseArgs(["--sheet", "atlas", "--png-width", bad]).error,
+      /positive number/,
+      `--png-width ${JSON.stringify(bad)} should be rejected`,
+    );
 });

@@ -20,7 +20,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, cpSync, rmSync } from "node:fs";
+import {
+  readFileSync,
+  writeFileSync,
+  mkdtempSync,
+  mkdirSync,
+  cpSync,
+  rmSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,46 +37,104 @@ import { runSpineGateInProcess } from "../check_content.mjs";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const LEX_PATH = join(ROOT, "content/world/lexicon/landforms.json");
 const LEX = JSON.parse(readFileSync(LEX_PATH, "utf8"));
-const BUDGETS = JSON.parse(readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"));
+const BUDGETS = JSON.parse(
+  readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"),
+);
 
 // `<tmp>/content` — see note 2 in the header.
 function tmpRoot() {
   const base = mkdtempSync(join(tmpdir(), "world-budget-"));
   const contentRoot = join(base, "content");
   cpSync(join(ROOT, "content"), contentRoot, { recursive: true });
-  return { base, contentRoot, drop: () => rmSync(base, { recursive: true, force: true }) };
+  return {
+    base,
+    contentRoot,
+    drop: () => rmSync(base, { recursive: true, force: true }),
+  };
 }
 function runGate(contentRoot, ...extra) {
-  return runSpineGateInProcess({ argv: ["--content-root", contentRoot, "--only=spine", ...extra] });
+  return runSpineGateInProcess({
+    argv: ["--content-root", contentRoot, "--only=spine", ...extra],
+  });
 }
 const readNode = (contentRoot, id) =>
-  JSON.parse(readFileSync(join(contentRoot, "spine/nodes", `${id}.json`), "utf8"));
+  JSON.parse(
+    readFileSync(join(contentRoot, "spine/nodes", `${id}.json`), "utf8"),
+  );
 const writeNode = (contentRoot, id, doc) =>
-  writeFileSync(join(contentRoot, "spine/nodes", `${id}.json`), JSON.stringify(doc, null, 2) + "\n");
-const writeJson = (path, doc) => writeFileSync(path, JSON.stringify(doc, null, 2) + "\n");
+  writeFileSync(
+    join(contentRoot, "spine/nodes", `${id}.json`),
+    JSON.stringify(doc, null, 2) + "\n",
+  );
+const writeJson = (path, doc) =>
+  writeFileSync(path, JSON.stringify(doc, null, 2) + "\n");
 
 // ── the vocabulary ─────────────────────────────────────────────────────────
 
 test("BIOMES is exactly the 20 pinned ids in the pinned order", () => {
-  assert.deepEqual([...BIOMES], [
-    "ocean", "ice", "marsh", "river", "meadow", "forest", "bramble", "rock",
-    "upland", "alkali", "ash", "built",
-    "tundra", "lake", "scree", "karst", "badland", "desert", "lava", "reef"]);
+  assert.deepEqual(
+    [...BIOMES],
+    [
+      "ocean",
+      "ice",
+      "marsh",
+      "river",
+      "meadow",
+      "forest",
+      "bramble",
+      "rock",
+      "upland",
+      "alkali",
+      "ash",
+      "built",
+      "tundra",
+      "lake",
+      "scree",
+      "karst",
+      "badland",
+      "desert",
+      "lava",
+      "reef",
+    ],
+  );
 });
 
 test("TERRAIN_KINDS is exactly the 18 pinned ids in the pinned order", () => {
-  assert.deepEqual([...TERRAIN_KINDS], [
-    "ice", "upland", "alkali-flat", "rim", "bramble", "headland", "river-country",
-    "tundra-steppe", "sand-sea", "badlands", "karst-plateau", "volcanic-arc",
-    "lava-field", "cloud-forest", "reef-shelf", "fjordland", "lake-country", "tidal-mire"]);
+  assert.deepEqual(
+    [...TERRAIN_KINDS],
+    [
+      "ice",
+      "upland",
+      "alkali-flat",
+      "rim",
+      "bramble",
+      "headland",
+      "river-country",
+      "tundra-steppe",
+      "sand-sea",
+      "badlands",
+      "karst-plateau",
+      "volcanic-arc",
+      "lava-field",
+      "cloud-forest",
+      "reef-shelf",
+      "fjordland",
+      "lake-country",
+      "tidal-mire",
+    ],
+  );
 });
 
 test("every terrain kind implies at least one biome, and every implied biome is a biome", () => {
   assert.equal(Object.keys(TERRAIN_IMPLIES).length, 18);
   for (const kind of TERRAIN_KINDS) {
     const implied = TERRAIN_IMPLIES[kind];
-    assert.ok(Array.isArray(implied) && implied.length > 0, `${kind}: no implication`);
-    for (const b of implied) assert.ok(BIOMES.includes(b), `${kind} implies non-biome "${b}"`);
+    assert.ok(
+      Array.isArray(implied) && implied.length > 0,
+      `${kind}: no implication`,
+    );
+    for (const b of implied)
+      assert.ok(BIOMES.includes(b), `${kind} implies non-biome "${b}"`);
   }
 });
 
@@ -78,12 +143,17 @@ test("every terrain kind implies at least one biome, and every implied biome is 
 // region has only 100 points to spend across everything else too.
 test("no terrain kind implies three or more biomes", () => {
   for (const kind of TERRAIN_KINDS)
-    assert.ok(TERRAIN_IMPLIES[kind].length <= 2,
-      `${kind} implies ${TERRAIN_IMPLIES[kind].length} biomes — unusable under G-TERRAINKIND's 15% floor`);
+    assert.ok(
+      TERRAIN_IMPLIES[kind].length <= 2,
+      `${kind} implies ${TERRAIN_IMPLIES[kind].length} biomes — unusable under G-TERRAINKIND's 15% floor`,
+    );
 });
 
 test("TERRAIN_IMPLIES has a row for every kind and no row for a non-kind", () => {
-  assert.deepEqual(Object.keys(TERRAIN_IMPLIES).sort(), [...TERRAIN_KINDS].sort());
+  assert.deepEqual(
+    Object.keys(TERRAIN_IMPLIES).sort(),
+    [...TERRAIN_KINDS].sort(),
+  );
 });
 
 test("every biome named by a lexicon row is in BIOMES", () => {
@@ -98,7 +168,16 @@ test("every biome named by a lexicon row is in BIOMES", () => {
 // could be satisfied by a lexicon that never left the old vocabulary.
 test("the lexicon exercises the 8 biomes Task 5 added", () => {
   const used = new Set(LEX.flatMap((r) => r.biomes));
-  for (const b of ["tundra", "lake", "scree", "karst", "badland", "desert", "lava", "reef"])
+  for (const b of [
+    "tundra",
+    "lake",
+    "scree",
+    "karst",
+    "badland",
+    "desert",
+    "lava",
+    "reef",
+  ])
     assert.ok(used.has(b), `no lexicon row names the added biome "${b}"`);
 });
 
@@ -107,17 +186,43 @@ test("the lexicon exercises the 8 biomes Task 5 added", () => {
 test("budgets.json pins cellKm and the landform + sheet caps", () => {
   assert.equal(BUDGETS.cellKm, 0.5);
   assert.deepEqual(BUDGETS.landforms, {
-    maxInstances: 2400, maxNamed: 500, minTypes: 100, maxTypes: 200,
-    typeCoverageFloor: 100, dungeonCapableTypes: 23 });
+    maxInstances: 2400,
+    maxNamed: 500,
+    minTypes: 100,
+    maxTypes: 200,
+    typeCoverageFloor: 100,
+    dungeonCapableTypes: 23,
+  });
+  // Plan B Task 11 added thumbWidthPx + maxThumbBytes: the committed raster is
+  // a 512 px review thumb, the 2000 px ship raster is on demand and never
+  // committed. deepEqual (not a subset check) is the point — a key added
+  // without a `sheetsWhy` line beside it should red this test, which is how
+  // the budget file keeps its stated reasons.
   assert.deepEqual(BUDGETS.sheets, {
-    maxSheets: 18, maxSvgBytes: 524288, maxRasterSeconds: 2, rasterWidthPx: 2000 });
+    maxSheets: 18,
+    maxSvgBytes: 524288,
+    maxRasterSeconds: 2,
+    rasterWidthPx: 2000,
+    thumbWidthPx: 512,
+    maxThumbBytes: 393216,
+  });
+  for (const k of Object.keys(BUDGETS.sheets))
+    assert.ok(
+      typeof BUDGETS.sheetsWhy[k] === "string" &&
+        BUDGETS.sheetsWhy[k].length > 40,
+      `budgets.json sheets.${k} has no sheetsWhy line — a number without a stated reason`,
+    );
 });
 
 // Plan C adds `fabric`, `civil` and `loop` to this same file and owns
 // G-WORLD-BUDGET. Task 5 must not have pre-empted them.
 test("budgets.json does not pre-empt Plan C's sections", () => {
   for (const k of ["fabric", "civil", "loop"])
-    assert.equal(BUDGETS[k], undefined, `budgets.json already carries Plan C's "${k}" section`);
+    assert.equal(
+      BUDGETS[k],
+      undefined,
+      `budgets.json already carries Plan C's "${k}" section`,
+    );
 });
 
 // ── the printed record — a gate that passes may have stopped checking ──────
@@ -126,7 +231,10 @@ test("the gate PRINTS a world-budget line for landforms on every run", () => {
   const { contentRoot, drop } = tmpRoot();
   const r = runGate(contentRoot);
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /^world-budget: landforms 170 types, 0 instances \(budget 100-200 types, 2400 instances\)$/m);
+  assert.match(
+    r.out,
+    /^world-budget: landforms 170 types, 0 instances \(budget 100-200 types, 2400 instances\)$/m,
+  );
   assert.match(r.out, /^G-LANDFORM: types placed: 0 \/ 170$/m);
   drop();
 });
@@ -139,16 +247,24 @@ test("the gate PRINTS a world-budget line for sheets when the maps dir exists", 
   writeFileSync(join(maps, "b.svg"), "<svg>xx</svg>");
   const r = runGate(contentRoot);
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /^world-budget: sheets 2 files, 13 bytes largest \(b\.svg\) \(budget 18, 524288\)$/m);
+  assert.match(
+    r.out,
+    /^world-budget: sheets 2 files, 13 bytes largest \(b\.svg\) \(budget 18, 524288\)$/m,
+  );
   drop();
 });
 
 test("the real repo tree prints its own sheet census and stays inside budget", () => {
   const r = runGate(join(ROOT, "content"));
   assert.equal(r.code, 0, r.out);
-  const m = r.out.match(/^world-budget: sheets (\d+) files, (\d+) bytes largest \((\S+)\) \(budget 18, 524288\)$/m);
+  const m = r.out.match(
+    /^world-budget: sheets (\d+) files, (\d+) bytes largest \((\S+)\) \(budget 18, 524288\)$/m,
+  );
   assert.ok(m, `no sheet census line in:\n${r.out}`);
-  assert.ok(Number(m[1]) <= 18 && Number(m[2]) <= 524288, `sheet census out of budget: ${m[0]}`);
+  assert.ok(
+    Number(m[1]) <= 18 && Number(m[2]) <= 524288,
+    `sheet census out of budget: ${m[0]}`,
+  );
 });
 
 // ── G-LANDFORM reds ────────────────────────────────────────────────────────
@@ -160,7 +276,10 @@ test("G-LANDFORM red: a spine feature cites a type that is not in the lexicon", 
   writeNode(contentRoot, "n-cluster1", doc);
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-LANDFORM: .*type "not-a-landform" is not in the lexicon/);
+  assert.match(
+    r.out,
+    /G-LANDFORM: .*type "not-a-landform" is not in the lexicon/,
+  );
   drop();
 });
 
@@ -172,7 +291,10 @@ test("G-LANDFORM red: a feature's kind contradicts its lexicon geometry", () => 
   writeNode(contentRoot, "n-cluster1", doc);
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-LANDFORM: .*kind "line" but lexicon geometry is "point"/);
+  assert.match(
+    r.out,
+    /G-LANDFORM: .*kind "line" but lexicon geometry is "point"/,
+  );
   drop();
 });
 
@@ -190,10 +312,16 @@ test("G-LANDFORM green: a feature citing a type of its own geometry", () => {
 
 test("G-LANDFORM red: the catalogue falls outside the 100-200 type band", () => {
   const { contentRoot, drop } = tmpRoot();
-  writeJson(join(contentRoot, "world/lexicon/landforms.json"), LEX.slice(0, 42));
+  writeJson(
+    join(contentRoot, "world/lexicon/landforms.json"),
+    LEX.slice(0, 42),
+  );
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-LANDFORM: catalogue holds 42 types — budget is 100-200/);
+  assert.match(
+    r.out,
+    /G-LANDFORM: catalogue holds 42 types — budget is 100-200/,
+  );
   drop();
 });
 
@@ -215,7 +343,10 @@ test("G-LANDFORM red: the lexicon file is missing under an existing content/worl
   rmSync(join(contentRoot, "world/lexicon"), { recursive: true, force: true });
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /^FAIL {2}G-LANDFORM: world\/lexicon\/landforms\.json is missing$/m);
+  assert.match(
+    r.out,
+    /^FAIL {2}G-LANDFORM: world\/lexicon\/landforms\.json is missing$/m,
+  );
   drop();
 });
 
@@ -230,7 +361,12 @@ test("G-LANDFORM red: a lexicon row names a biome outside BIOMES", () => {
   writeJson(join(contentRoot, "world/lexicon/landforms.json"), lex);
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, new RegExp(`G-LANDFORM: type "${lex[0].id}": biome "swamp" is outside BIOMES`));
+  assert.match(
+    r.out,
+    new RegExp(
+      `G-LANDFORM: type "${lex[0].id}": biome "swamp" is outside BIOMES`,
+    ),
+  );
   drop();
 });
 
@@ -241,7 +377,10 @@ test("G-LANDFORM red, not a throw: a lexicon row's biomes is not an array", () =
   writeJson(join(contentRoot, "world/lexicon/landforms.json"), lex);
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, new RegExp(`G-LANDFORM: type "${lex[0].id}": biomes is not an array`));
+  assert.match(
+    r.out,
+    new RegExp(`G-LANDFORM: type "${lex[0].id}": biomes is not an array`),
+  );
   assert.doesNotMatch(r.out, /check-content: \w*Error/);
   drop();
 });
@@ -256,7 +395,10 @@ test("G-LANDFORM red, not a throw: the landforms section is an array", () => {
   writeJson(join(contentRoot, "world/budgets.json"), b);
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-LANDFORM: world\/budgets\.json has no landforms section/);
+  assert.match(
+    r.out,
+    /G-LANDFORM: world\/budgets\.json has no landforms section/,
+  );
   assert.doesNotMatch(r.out, /budget undefined-undefined/);
   drop();
 });
@@ -281,7 +423,10 @@ test("G-LANDFORM red, not a throw: budgets.json has no landforms section", () =>
   writeJson(join(contentRoot, "world/budgets.json"), b);
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-LANDFORM: world\/budgets\.json has no landforms section/);
+  assert.match(
+    r.out,
+    /G-LANDFORM: world\/budgets\.json has no landforms section/,
+  );
   assert.doesNotMatch(r.out, /check-content: \w*Error/);
   drop();
 });
@@ -294,7 +439,10 @@ test("G-SHEET-BUDGET red, not a throw: budgets.json has no sheets section", () =
   writeJson(join(contentRoot, "world/budgets.json"), b);
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-SHEET-BUDGET: world\/budgets\.json has no sheets section/);
+  assert.match(
+    r.out,
+    /G-SHEET-BUDGET: world\/budgets\.json has no sheets section/,
+  );
   assert.doesNotMatch(r.out, /check-content: \w*Error/);
   drop();
 });
@@ -311,7 +459,10 @@ test("G-SHEET-BUDGET red, not a throw: the sheets section is an array", () => {
   writeJson(join(contentRoot, "world/budgets.json"), b);
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-SHEET-BUDGET: world\/budgets\.json has no sheets section/);
+  assert.match(
+    r.out,
+    /G-SHEET-BUDGET: world\/budgets\.json has no sheets section/,
+  );
   assert.doesNotMatch(r.out, /budget undefined, undefined/);
   drop();
 });
@@ -356,14 +507,20 @@ test("G-LANDFORM counts fabric instances and scores type coverage", () => {
     instances: ids.map((id, i) => ({ id: `i-${i}`, type: id, named: i < 3 })),
   });
   const r = runGate(contentRoot, "--require-complete");
-  assert.match(r.out, /^world-budget: landforms 170 types, 120 instances \(budget 100-200 types, 2400 instances\)$/m);
+  assert.match(
+    r.out,
+    /^world-budget: landforms 170 types, 120 instances \(budget 100-200 types, 2400 instances\)$/m,
+  );
   assert.match(r.out, /^G-LANDFORM: types placed: 120 \/ 170$/m);
   // 120 clears the floor of 100, so this passes even under Gate 2's flag —
   // which is the whole point of pinning the floor at 100. The 50 unplaced
   // rows are REPORTED, aggregated and capped, never failed: as a failure that
   // rule demanded 170/170 and made budgets.json's own number unreachable.
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /^WARN {2}G-LANDFORM: 50 type\(s\) have 0 instances and no absentBecause: \S+, \S+, \S+, \S+, \S+ \(\+45 more\)$/m);
+  assert.match(
+    r.out,
+    /^WARN {2}G-LANDFORM: 50 type\(s\) have 0 instances and no absentBecause: \S+, \S+, \S+, \S+, \S+ \(\+45 more\)$/m,
+  );
   drop();
 });
 
@@ -378,7 +535,10 @@ test("G-LANDFORM: type coverage below the floor WARNs by default", () => {
   });
   const r = runGate(contentRoot);
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /^WARN {2}G-LANDFORM: types placed: 99 \/ 170 — below the floor of 100$/m);
+  assert.match(
+    r.out,
+    /^WARN {2}G-LANDFORM: types placed: 99 \/ 170 — below the floor of 100$/m,
+  );
   drop();
 });
 
@@ -390,7 +550,10 @@ test("G-LANDFORM red: type coverage below the floor under --require-complete", (
   });
   const r = runGate(contentRoot, "--require-complete");
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /^FAIL {2}G-LANDFORM: types placed: 99 \/ 170 — below the floor of 100$/m);
+  assert.match(
+    r.out,
+    /^FAIL {2}G-LANDFORM: types placed: 99 \/ 170 — below the floor of 100$/m,
+  );
   drop();
 });
 
@@ -408,7 +571,12 @@ test("G-LANDFORM red: a type declares absentBecause and is placed anyway", () =>
   });
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, new RegExp(`G-LANDFORM: type "${lex[0].id}" declares absentBecause .* but has instances`));
+  assert.match(
+    r.out,
+    new RegExp(
+      `G-LANDFORM: type "${lex[0].id}" declares absentBecause .* but has instances`,
+    ),
+  );
   drop();
 });
 
@@ -417,7 +585,8 @@ test("G-LANDFORM: a declared-absent type is excused from the shortfall report", 
   const { contentRoot, drop } = tmpRoot();
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
   const lex = structuredClone(LEX);
-  for (const row of lex.slice(120)) row.absentBecause = "out of scope for Season 1";
+  for (const row of lex.slice(120))
+    row.absentBecause = "out of scope for Season 1";
   writeJson(join(contentRoot, "world/lexicon/landforms.json"), lex);
   writeJson(join(contentRoot, "world/fabric/c01.json"), {
     instances: LEX.slice(0, 120).map((r, i) => ({ id: `i-${i}`, type: r.id })),
@@ -432,7 +601,8 @@ test("G-LANDFORM red: more instances than the budget allows", () => {
   const { contentRoot, drop } = tmpRoot();
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
   const instances = [];
-  for (let i = 0; i < 2401; i++) instances.push({ id: `i-${i}`, type: LEX[i % LEX.length].id });
+  for (let i = 0; i < 2401; i++)
+    instances.push({ id: `i-${i}`, type: LEX[i % LEX.length].id });
   writeJson(join(contentRoot, "world/fabric/c01.json"), { instances });
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
@@ -444,7 +614,8 @@ test("G-LANDFORM red: more named landforms than the budget allows", () => {
   const { contentRoot, drop } = tmpRoot();
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
   const instances = [];
-  for (let i = 0; i < 501; i++) instances.push({ id: `i-${i}`, type: LEX[i % LEX.length].id, named: true });
+  for (let i = 0; i < 501; i++)
+    instances.push({ id: `i-${i}`, type: LEX[i % LEX.length].id, named: true });
   writeJson(join(contentRoot, "world/fabric/c01.json"), { instances });
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
@@ -455,10 +626,15 @@ test("G-LANDFORM red: more named landforms than the budget allows", () => {
 test("G-LANDFORM red, not a throw: a fabric file whose instances are not an array", () => {
   const { contentRoot, drop } = tmpRoot();
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
-  writeJson(join(contentRoot, "world/fabric/c01.json"), { instances: { a: 1 } });
+  writeJson(join(contentRoot, "world/fabric/c01.json"), {
+    instances: { a: 1 },
+  });
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-LANDFORM: world\/fabric\/c01\.json: instances is not an array/);
+  assert.match(
+    r.out,
+    /G-LANDFORM: world\/fabric\/c01\.json: instances is not an array/,
+  );
   assert.doesNotMatch(r.out, /check-content: \w*Error/);
   drop();
 });
@@ -483,7 +659,10 @@ test("G-SHEET-BUDGET red: one sheet over the SVG byte cap", () => {
   writeFileSync(join(maps, "fat.svg"), "x".repeat(524289));
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-SHEET-BUDGET: sheet fat\.svg is 524289 bytes > budget 524288/);
+  assert.match(
+    r.out,
+    /G-SHEET-BUDGET: sheet fat\.svg is 524289 bytes > budget 524288/,
+  );
   drop();
 });
 
@@ -508,10 +687,14 @@ test("G-SHEET-BUDGET counts .svg only", () => {
   const maps = join(base, "game-client/assets/art/maps");
   mkdirSync(maps, { recursive: true });
   writeFileSync(join(maps, "a.svg"), "<svg/>");
-  for (let i = 0; i < 30; i++) writeFileSync(join(maps, `p${i}.png`), "x".repeat(600000));
+  for (let i = 0; i < 30; i++)
+    writeFileSync(join(maps, `p${i}.png`), "x".repeat(600000));
   const r = runGate(contentRoot);
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /^world-budget: sheets 1 files, 6 bytes largest \(a\.svg\) \(budget 18, 524288\)$/m);
+  assert.match(
+    r.out,
+    /^world-budget: sheets 1 files, 6 bytes largest \(a\.svg\) \(budget 18, 524288\)$/m,
+  );
   drop();
 });
 
@@ -545,13 +728,25 @@ test("soft-skip: content/world/ without budgets.json reports nothing", () => {
 test("soft-skip: the minimal spine fixture root stays green", () => {
   const base = mkdtempSync(join(tmpdir(), "world-budget-min-"));
   const contentRoot = join(base, "content");
-  cpSync(join(ROOT, "scripts/tests/fixtures/spine/base"), contentRoot, { recursive: true });
-  cpSync(join(ROOT, "content/schemas/spine-node.schema.json"),
-         join(contentRoot, "schemas/spine-node.schema.json"), { recursive: true });
-  cpSync(join(ROOT, "content/schemas/spine-edge.schema.json"),
-         join(contentRoot, "schemas/spine-edge.schema.json"), { recursive: true });
-  execFileSync(process.execPath,
-    [join(ROOT, "scripts/check_spine_emit.mjs"), "--write", "--content-root", contentRoot]);
+  cpSync(join(ROOT, "scripts/tests/fixtures/spine/base"), contentRoot, {
+    recursive: true,
+  });
+  cpSync(
+    join(ROOT, "content/schemas/spine-node.schema.json"),
+    join(contentRoot, "schemas/spine-node.schema.json"),
+    { recursive: true },
+  );
+  cpSync(
+    join(ROOT, "content/schemas/spine-edge.schema.json"),
+    join(contentRoot, "schemas/spine-edge.schema.json"),
+    { recursive: true },
+  );
+  execFileSync(process.execPath, [
+    join(ROOT, "scripts/check_spine_emit.mjs"),
+    "--write",
+    "--content-root",
+    contentRoot,
+  ]);
   const r = runGate(contentRoot);
   assert.equal(r.code, 0, r.out);
   assert.doesNotMatch(r.out, /G-LANDFORM|G-SHEET-BUDGET|world-budget/);

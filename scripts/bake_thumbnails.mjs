@@ -28,7 +28,11 @@
 //
 // Flags:
 //   --force            re-bake everything, ignoring recorded hashes
-//   --only <substr>    only sources whose path contains <substr>
+//   --only <substr>    only BAKE sources whose path contains <substr>. Matches
+//                      the SOURCE PATH (e.g. "maps/", "concept/"), not the
+//                      manifest key — `--only art:map-cluster1` matches nothing.
+//                      Rows outside the filter are carried forward unchanged,
+//                      never dropped from the index.
 //   --skip-3d          skip the Blender queue (useful without Blender installed)
 //   --dry-run          report what would be baked, write nothing
 
@@ -45,7 +49,11 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve, join } from "node:path";
 import { tmpdir } from "node:os";
 import sharp from "sharp";
-import { thumbFilename, sourceHash } from "./lib/thumbkey.mjs";
+import {
+  thumbFilename,
+  sourceHash,
+  carryForwardFiltered,
+} from "./lib/thumbkey.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -187,8 +195,17 @@ async function main() {
 
   if (!opts.dryRun) mkdirSync(THUMB_DIR, { recursive: true });
 
-  let jobs = collectJobs(spec);
+  const allJobs = collectJobs(spec);
+  // `--only` filters what gets BAKED. It must not filter what gets INDEXED:
+  // the index is written whole, so a filtered run used to erase every row it
+  // did not visit — 643 of them — and turn guard (U) red on a clean tree.
+  // See carryForwardFiltered() in lib/thumbkey.mjs for the full account.
+  let jobs = allJobs;
   if (opts.only) jobs = jobs.filter((j) => j.srcPath.includes(opts.only));
+  const bakedPaths = new Set(jobs.map((j) => j.srcPath));
+  const retainPaths = new Set(
+    allJobs.map((j) => j.srcPath).filter((p) => !bakedPaths.has(p)),
+  );
 
   // Several manifest keys can share one source file — projectile:spear and
   // projectile:magicSpear both point at res://assets/vfx/projectile-spear.glb.
@@ -327,6 +344,11 @@ async function main() {
       ...(srcHash ? { srcHash } : {}),
     };
   }
+  index.entries = carryForwardFiltered({
+    entries: index.entries,
+    prior,
+    retainPaths,
+  });
   writeFileSync(
     join(THUMB_DIR, "index.json"),
     JSON.stringify(index, null, 2) + "\n",

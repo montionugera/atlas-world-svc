@@ -617,12 +617,26 @@
       "h": 256,
       "srcHash": "fea7f29dd3798296"
     },
+    "maps/atlas-world.png": {
+      "thumb": "8de7e6c8ad855c16.webp",
+      "bytes": 50523,
+      "w": 250,
+      "h": 256,
+      "srcHash": "73686f9818716566"
+    },
     "maps/cluster1-world.png": {
       "thumb": "d0571e8e5c96aef6.webp",
-      "bytes": 1326403,
+      "bytes": 152208,
       "w": 256,
-      "h": 221,
-      "srcHash": "10462605507cfc36"
+      "h": 222,
+      "srcHash": "9a416a3c657cbcc3"
+    },
+    "maps/synthetic-density.png": {
+      "thumb": "8350f6799f8ce7b8.webp",
+      "bytes": 312224,
+      "w": 246,
+      "h": 256,
+      "srcHash": "bababe0470145470"
     },
     "res://assets/characters/4gtn_forgotten.glb": {
       "thumb": "94672f24b8fad226.webp",
