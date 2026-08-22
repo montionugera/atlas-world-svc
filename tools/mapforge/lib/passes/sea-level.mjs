@@ -17,13 +17,34 @@
 // On the committed-byte path and scanned by determinism-inventory.test.mjs:
 // no transcendental, no `**`, no clock, no random.
 import { FLAG as GRID_FLAG } from "../grid.mjs";
+import { ELEVATION_BANDS } from "./elevation.mjs";
 
 export const CELL_AREA_KM2 = 0.25;          // 0.5 km x 0.5 km, pinned in budgets.json
 export const FRAME_AREA_KM2 = 160000;
 export const LAND_CELL_BAND = Object.freeze([228572, 290908]);   // manifest.grid.landCellBand
 
+// The 0.01 land floor as the Float32Array actually stores it
+// (0.009999999776482582). Comparing a Float32 field against the float64 literal
+// would make the guard below fire on a legitimate world whose sea level sits
+// exactly on the clamp.
+const LAND_FLOOR_F32 = new Float32Array([ELEVATION_BANDS.landFloor])[0];
+
 export function selectSeaLevelByRank({ elev, targetLandCells }) {
   const n = elev.length;
+  // THE 800 x 800 COUPLING, asserted instead of described. FRAME_AREA_KM2 and
+  // CELL_AREA_KM2 are unconditional constants and nothing here consults
+  // grid.w/h/cellKm, so on a 500 x 500 grid this function used to return
+  // `landKm2 60000, seaKm2 100000` — 160,000 km2 of frame from a grid holding
+  // 62,500 — silently, in band. Review D measured exactly that. LAND_CELL_BAND
+  // only IMPLIES n = 640,000; any n above its ceiling slips through. Task 9a's
+  // fixture world must supply its own threshold rather than calling this, and
+  // this is what makes that a contract rather than a note it has to have read.
+  if (n * CELL_AREA_KM2 !== FRAME_AREA_KM2)
+    throw new Error(
+      `sea-level: ${n} cells x ${CELL_AREA_KM2} km2 is ${n * CELL_AREA_KM2} km2, not the pinned ` +
+      `${FRAME_AREA_KM2} km2 frame. This selector is calibrated for the 800 x 800 grid ONLY — its ` +
+      `cell area, frame area and land-cell band are all absolute. Supply your own threshold for a ` +
+      `coarser grid; do not rescale the band.`);
   if (!Number.isInteger(targetLandCells) || targetLandCells <= 0 || targetLandCells >= n)
     throw new Error(`sea-level: targetLandCells ${targetLandCells} is not a valid rank in ${n} cells`);
 
@@ -52,7 +73,11 @@ export function selectSeaLevelByRank({ elev, targetLandCells }) {
 
   const landKm2 = landCells * CELL_AREA_KM2;
   const seaKm2 = FRAME_AREA_KM2 - landKm2;
-  const seaToLandRatio = landKm2 === 0 ? Infinity : seaKm2 / landKm2;
+  // No `landKm2 === 0 ? Infinity` guard: IEEE division already answers Infinity
+  // for 94400 / 0, and the band floor below makes landCells === 0 unreachable
+  // anyway. It was a mutation survivor that could not be killed by construction
+  // — two independent reasons a fixture can never separate the branches.
+  const seaToLandRatio = seaKm2 / landKm2;
 
   if (landCells < LAND_CELL_BAND[0] || landCells > LAND_CELL_BAND[1])
     throw new Error(
@@ -66,6 +91,32 @@ export function selectSeaLevelByRank({ elev, targetLandCells }) {
       `by the size of the block. Widen content/world/premises/*.json ` +
       `footprint radii; do not reroll toward the target and do not widen the band.`,
     );
+
+  // PHANTOM LAND — the failure the message above only CLAIMED to catch.
+  //
+  // "selecting the k-th largest elevation can only ever pick ocean floor if the
+  // masks cannot supply k cells, which is exactly the premise-footprint bug P3's
+  // message names" was false in the direction that matters. MEASURED on the
+  // plan's own Step 4 radii: this function did NOT throw. It returned
+  // landCells === 262,400, dead on target and comfortably in band — by
+  // classifying 73,831 OCEAN-FLOOR cells (18,458 km2, 28% of all "land") as
+  // land, scattered over the whole frame wherever the ocean fbm happened to
+  // peak. Every gate green, and a world growing continents in the open ocean.
+  //
+  // The band cannot see it, because the count is exactly right. What separates
+  // the two worlds is WHERE the threshold fell. buildElevation puts ocean floor
+  // in [-1, -0.5] and land in [0.01, 1], so a sea level inside the 0.49-wide gap
+  // is impossible: it is either at or above the land floor (every land cell is a
+  // masked cell — `land subset of mask`) or down in the ocean band (some of what
+  // this function just called land is ocean floor). One comparison decides it.
+  if (seaLevel < LAND_FLOOR_F32)
+    throw new Error(
+      `sea-level: the threshold fell to ${seaLevel}, below the ${ELEVATION_BANDS.landFloor} land floor, ` +
+      `so ${landCells} "land" cells include ocean floor that no premise mask covers. Rank selection does ` +
+      `NOT throw on this by itself — the count lands exactly on target and inside the band — so this is ` +
+      `the guard that catches it. The masks supply fewer cells than the rank target: widen ` +
+      `content/world/premises/*.json footprint radii (re-run tools/mapforge/fit-premises.mjs, which holds ` +
+      `the shell factor that keeps mask area above the target), and do not lower the target.`);
 
   return { seaLevel, rank: targetLandCells, landCells, landKm2, seaToLandRatio };
 }

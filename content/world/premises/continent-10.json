@@ -4,7 +4,7 @@
   "class": "chain",
   "footprint": {
     "centreKm": [122,356],
-    "radiiKm": [27.86,11.79],
+    "radiiKm": [27.49,11.63],
     "warpKm": 3
   },
   "areaBandKm2": [900,1100],
@@ -15,8 +15,8 @@
   "structures": [
     {
       "kind": "volcanic-spine",
-      "fromKm": [98,352],
-      "toKm": [148,362],
+      "fromKm": [96.63,351.77],
+      "toKm": [149.49,362.34],
       "amplitude": 0.72
     }
   ],

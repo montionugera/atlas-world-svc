@@ -4,7 +4,7 @@
   "class": "major",
   "footprint": {
     "centreKm": [176,300],
-    "radiiKm": [74.02,55.52],
+    "radiiKm": [73.79,55.34],
     "warpKm": 15
   },
   "areaBandKm2": [9900,12100],
@@ -15,8 +15,8 @@
   "structures": [
     {
       "kind": "spine-ridge",
-      "fromKm": [128,272],
-      "toKm": [136,336],
+      "fromKm": [112.75,263.11],
+      "toKm": [123.29,347.44],
       "amplitude": 0.66
     }
   ],

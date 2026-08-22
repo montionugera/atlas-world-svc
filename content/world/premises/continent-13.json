@@ -4,7 +4,7 @@
   "class": "chain",
   "footprint": {
     "centreKm": [40,344],
-    "radiiKm": [28.27,15.42],
+    "radiiKm": [28.17,15.37],
     "warpKm": 4
   },
   "areaBandKm2": [900,1100],
@@ -16,7 +16,7 @@
     {
       "kind": "delta-fan",
       "atKm": [40,344],
-      "radiusKm": 14,
+      "radiusKm": 17.93,
       "amplitude": 0.16
     }
   ],

@@ -14,6 +14,14 @@
 import { fbm, smoothstep, falloff } from "../noise.mjs";
 import { idx, cellCentreKm, FLAG, SUBSTRATE_MASK } from "../grid.mjs";
 
+// THE TWO BANDS, exported because P3's phantom-land guard is a statement ABOUT
+// them: ocean floor is [-1, -0.5] and land is [0.01, 1], with 0.49 of empty
+// space between. A sea level inside that gap is impossible; one at or below
+// `oceanCeil` means rank selection ran out of masked cells and reached into the
+// ocean floor. sea-level.mjs imports these rather than restating them, so the
+// guard cannot drift away from the field it guards.
+export const ELEVATION_BANDS = Object.freeze({ landFloor: 0.01, oceanCeil: -0.5 });
+
 const BASE_FREQ = 0.006;    // ~165 km wavelength — continental relief
 const DETAIL_FREQ = 0.05;   // ~20 km wavelength  — hill and valley grain
 

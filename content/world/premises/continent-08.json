@@ -4,7 +4,7 @@
   "class": "minor",
   "footprint": {
     "centreKm": [252,344],
-    "radiiKm": [45.51,32.51],
+    "radiiKm": [44.71,31.93],
     "warpKm": 9
   },
   "areaBandKm2": [2700,3300],
@@ -16,7 +16,7 @@
     {
       "kind": "plateau",
       "atKm": [252,344],
-      "radiusKm": 16,
+      "radiusKm": 25.55,
       "amplitude": 0.22
     }
   ],

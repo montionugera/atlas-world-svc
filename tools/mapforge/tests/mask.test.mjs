@@ -16,6 +16,8 @@ import { makeGrid, idx, cellCentreKm, FLAG, SUBSTRATE_FLAGS } from "../lib/grid.
 import { applyPremiseMasks, premiseMaskAt, maskSummary } from "../lib/passes/mask.mjs";
 import { buildElevation, assignSubstrate } from "../lib/passes/elevation.mjs";
 import { BIOMES } from "../../../scripts/lib/spine.mjs";
+import { PLAN_FOOTPRINTS, SCALE, MASK_SHELL_FACTOR, materialise, premiseAtScale, grossTargetsKm2 }
+  from "../fit-premises.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const PREM_DIR = join(ROOT, "content/world/premises");
@@ -156,7 +158,7 @@ test("premiseMaskAt is ~1 at an unsubtracted footprint centre and 0 far outside"
   // by up to warpKm before the ellipse test — so a centre reads "deep inside",
   // not "exactly at the peak", and how deep depends on the stream. Both streams
   // are swept for that reason. Measured worst over the 11 additive premises x 2
-  // streams: 0.8887 (c03 on the a-stream).
+  // streams: 0.8883 (c03 on the a-stream).
   const additive = premises.filter((p) => !p.structures.some(
     (s) => s.kind === "inland-sea" || s.kind === "atoll-lagoon"));
   assert.equal(additive.length, 11);
@@ -516,12 +518,12 @@ function goldenWorld() {
 
 test("GOLDEN: premiseMaskAt at six named coordinates", () => {
   const GOLD = [
-    ["c02", 96, 148, 0.7927373616341917],    // its own centre, hollowed by the inland sea
-    ["c02", 60, 180, 0.3226767427522486],    // out on the shell
-    ["c04", 306, 246, 0.9761540258157704],
-    ["c10", 122, 356, 0.98438678643163],
-    ["c11", 338, 66, 0.4899769000184042],    // hollowed by the atoll lagoon
-    ["c03", 285, 113, 0.9644921472390013],
+    ["c02", 96, 148, 0.7920269567786462],    // its own centre, hollowed by the inland sea
+    ["c02", 60, 180, 0.3515649265482552],    // out on the shell
+    ["c04", 306, 246, 0.9760882760034855],
+    ["c10", 122, 356, 0.9839658741791759],
+    ["c11", 338, 66, 0.4896907923753331],    // hollowed by the atoll lagoon
+    ["c03", 285, 113, 0.9634520627789198],
   ];
   for (const [id, x, y, want] of GOLD) {
     const p = premises.find((q) => q.id === id);
@@ -532,22 +534,22 @@ test("GOLDEN: premiseMaskAt at six named coordinates", () => {
 
 test("GOLDEN: the mask field and the plate histogram", () => {
   const { maskField, plateArea } = goldenWorld();
-  assert.equal(DIGEST(maskField), 6088911720, "the mask field moved");
+  assert.equal(DIGEST(maskField), 6027727444, "the mask field moved");
   assert.deepEqual(Array.from(plateArea),
-    [1868, 3449, 2995, 4034, 3122, 1105, 764, 1026, 255, 256, 330, 445, 359],
+    [1797, 3632, 2912, 4030, 3105, 1151, 752, 998, 248, 248, 325, 456, 357],
     "the plate histogram moved — a premise radius or the argmax changed");
 });
 
 test("GOLDEN: the elevation field, whole and at six points", () => {
   const { grid } = goldenWorld();
-  assert.equal(DIGEST(grid.elev), -11056922549, "the elevation field moved");
+  assert.equal(DIGEST(grid.elev), -11020021893, "the elevation field moved");
   const GOLD = [
     [10, 10, -0.5790703892707825],       // ocean floor: pins the -0.75 + 0.25*fbm band
-    [48, 74, 0.2761702537536621],
-    [153, 123, 0.5547865629196167],
-    [176, 33, 0.08689439296722412],      // the cap's shell, near the waterline
-    [35, 133, 0.2798057198524475],
-    [63, 177, 0.9305899739265442],       // high ground under a structural term
+    [48, 74, 0.2732815742492676],
+    [153, 123, 0.5552642941474915],
+    [176, 33, 0.08274099230766296],      // the cap's shell, near the waterline
+    [35, 133, 0.27921026945114136],
+    [63, 177, 0.9274309277534485],       // high ground under a structural term
   ];
   for (const [cx, cy, want] of GOLD)
     assert.equal(grid.elev[idx({ grid, cx, cy })], want, `elevation moved at (${cx}, ${cy})`);
@@ -555,7 +557,7 @@ test("GOLDEN: the elevation field, whole and at six points", () => {
   // bounding it, a coefficient change hides inside a saturated field.
   const elev = Array.from(grid.elev);
   assert.equal(elev.filter((v) => v === 1).length, 10, "the high clamp moved");
-  assert.equal(elev.filter((v) => v === new Float32Array([0.01])[0]).length, 106, "the low clamp moved");
+  assert.equal(elev.filter((v) => v === new Float32Array([0.01])[0]).length, 141, "the low clamp moved");
 });
 
 test("GOLDEN: the substrate assignment", () => {
@@ -569,9 +571,9 @@ test("GOLDEN: the substrate assignment", () => {
     if ((grid.flags[i] & FLAG.ARC) !== 0) arc++;
   }
   assert.deepEqual({ carbonate, volcanic, clastic, arc },
-    { carbonate: 4034, volcanic: 256, clastic: 15718, arc: 256 },
+    { carbonate: 4030, volcanic: 248, clastic: 15733, arc: 248 },
     "the substrate split moved — SUBSTRATE_FREQ, a threshold or a kit changed");
-  assert.equal(DIGEST(grid.flags), 2409344000000, "the flag field moved");
+  assert.equal(DIGEST(grid.flags), 2406656000000, "the flag field moved");
   // At this resolution c04 is wholly carbonate and c10 wholly volcanic, so the
   // two counts are exactly their plate areas. Stated, not left to be noticed:
   // a reviewer who spots the coincidence should not have to re-derive it.
@@ -600,31 +602,136 @@ test("GOLDEN: c04 is WHOLLY carbonate and c10 WHOLLY volcanic — the shares are
   assert.equal(share("c05", FLAG.SAND), 1, "c05 names the desert kit and is wholly clastic ground");
 });
 
-test("GOLDEN: the calibrated footprint radii, and the land split they were fitted to", () => {
-  // Task 3 Step 11. The plan's table radii mask 47,142 km2 — 72% of the 65,600
-  // the rank target needs — so P3 threw on day one, exactly as the plan's own
-  // Step 11 predicted. The radii below are the fitted point of a damped
-  // fixed-point iteration on POST-RANK land area per continent (8 iterations,
-  // converged to worst error 0.1%); centres, aspect ratios, coastClass,
-  // structures and every other field are the plan's, untouched.
+test("GOLDEN: the fit — every footprint is the PLAN's, re-materialised at the fitted scale", () => {
+  // Task 3 Step 11. Summing the plan's own Step 4 ellipses gives 48,415 km2
+  // against the 65,600 km2 `grossLandPolygonKm2` demands — a CEILING no mask
+  // implementation can clear — so the footprints had to be fitted, exactly as
+  // that step predicted ("adjust radiiKm, never the mask code").
   //
-  // warpKm is NOT in the plan's table — only c02's example value, 12, written
-  // against the pre-calibration radii [58, 44]. It is derived here by one rule,
-  // `round(min(rx, ry) * 0.27)`, which reproduces that 12 exactly at those radii
-  // and keeps the outline wobble proportional as the footprints grow.
-  const RADII = {
-    c01: [97.48, 27.55], c02: [79.7, 60.46], c03: [68.89, 63.59], c04: [70.31, 70.31],
-    c05: [74.02, 55.52], c06: [41.51, 32.61], c07: [30.66, 30.66], c08: [45.51, 32.51],
-    c09: [15.74, 21.64], c10: [27.86, 11.79], c11: [21.73, 21.73], c12: [38.25, 22.95],
-    c13: [28.27, 15.42],
-  };
+  // WHAT THIS TEST IS, and why it is not a table of 26 numbers any more. The
+  // first fit committed only its OUTPUT, which left three things unverifiable:
+  // what it was fitted to, whether it converged, and whether the `structures`
+  // still described the landform. They did not — radii grew by up to 1.913x
+  // while `structures` stayed in absolute km, so c03's "one unbroken spine ridge
+  // END TO END" reached 0.88 of the rim and c12's rift-valley 0.48, and the
+  // committed prose contradicted the committed geometry in the same file.
+  //
+  // So the procedure is committed (tools/mapforge/fit-premises.mjs) and this is
+  // the JOIN: every one of the thirteen files must equal the plan's footprint
+  // re-materialised at the fitted scale — radii, the derived warp, AND every
+  // structure carried across in footprint-relative coordinates. A structure that
+  // stops scaling with its continent reds here, which is the failure the first
+  // fit shipped.
+  assert.equal(Object.keys(PLAN_FOOTPRINTS).length, 13);
   for (const p of premises) {
-    assert.deepEqual(p.footprint.radiiKm, RADII[p.id], `${p.id} radiiKm moved`);
+    const want = premiseAtScale({ committed: p, scale: SCALE[p.id] });
+    assert.deepEqual(p.footprint, want.footprint, `${p.id} footprint is not the plan's at SCALE[${p.id}]`);
+    assert.deepEqual(p.structures, want.structures,
+      `${p.id} structures are not the plan's scaled about centreKm — the geometry and the ` +
+      `committed structuralIdea prose have come apart`);
     for (const v of p.footprint.radiiKm)
       assert.equal(v, Math.round(v * 100) / 100, `${p.id} radiiKm is not quantised through q()`);
     assert.equal(p.footprint.warpKm, Math.round(Math.min(...p.footprint.radiiKm) * 0.27),
       `${p.id} warpKm left the round(min(rx, ry) * 0.27) rule`);
   }
+  // The fitted point itself, pinned. Re-fitting means re-baselining this
+  // deliberately — that is what it is for.
+  assert.deepEqual(SCALE, {
+    c01: 1.041765, c02: 1.409942, c03: 1.304916, c04: 1.404124,
+    c05: 1.317649, c06: 1.518138, c07: 1.267898, c08: 1.596717,
+    c09: 0.973083, c10: 1.057198, c11: 1.428197, c12: 1.911695,
+    c13: 1.280557,
+  });
+  assert.equal(MASK_SHELL_FACTOR, 1.22);
+});
+
+test("the fit target is the manifest's PER-CONTINENT gross split, not a uniform uplift", () => {
+  // THE defect the seam-2 review found in the first fit, pinned so it cannot
+  // come back. That fit measured against `netKm2 * 1.025` — the 2.5% gross
+  // uplift spread UNIFORMLY — while `interiorWaterKm2` is per-continent. Both
+  // splits sum to 65,600, which is precisely why an aggregate that closed hid
+  // two continents that did not: c02 was -6.75% against its real target and c06
+  // -3.95%, so after P7 carves c02's 1,100 km2 of inland sea the STARTER
+  // continent would have landed on ~10,183 km2 against `netKm2: 11,000`.
+  const targets = grossTargetsKm2(MANIFEST);
+  assert.deepEqual(targets, {
+    c01: 6000, c02: 12100, c03: 11000, c04: 11300, c05: 11000, c06: 3200, c07: 3000,
+    c08: 3000, c09: 1000, c10: 1000, c11: 1000, c12: 1000, c13: 1000,
+  });
+  // …and the split is the manifest's own arithmetic, not a second copy of it.
+  let sum = 0;
+  for (const l of MANIFEST.landmasses) {
+    assert.equal(targets[l.id], l.netKm2 + l.interiorWaterKm2, `${l.id}: target is not net + interiorWater`);
+    sum += targets[l.id];
+  }
+  assert.equal(sum, MANIFEST.budget.grossLandPolygonKm2);
+  assert.notEqual(targets.c02, MANIFEST.landmasses.find((l) => l.id === "c02").netKm2 * 1.025,
+    "the uniform-uplift split is back — it closes in aggregate and is wrong per continent");
+});
+
+test("materialise is a SIMILARITY about the centre: normalised structure coordinates never move", () => {
+  // What makes "the structures are the plan's" true after a 1.9x refit. The fit
+  // preserves each aspect ratio exactly, so re-materialising is a uniform scale
+  // about centreKm — and a structure's position measured in FOOTPRINT radii is
+  // therefore identical to the plan's. That is the quantity the committed
+  // `structuralIdea` prose describes ("end to end", "an atoll ring — no
+  // interior"), and the quantity the first fit silently changed.
+  const norm = (fp, pt) => {
+    const [cx, cy] = fp.centreKm, [rx, ry] = fp.radiiKm;
+    const nx = (pt[0] - cx) / rx, ny = (pt[1] - cy) / ry;
+    return Math.sqrt(nx * nx + ny * ny);
+  };
+  let checked = 0;
+  for (const p of premises) {
+    const base = PLAN_FOOTPRINTS[p.id];
+    const planFp = { centreKm: base.centreKm, radiiKm: base.radiiKm };
+    for (let i = 0; i < p.structures.length; i++) {
+      const now = p.structures[i], was = base.structures[i];
+      assert.equal(now.kind, was.kind);
+      assert.equal(now.amplitude, was.amplitude, `${p.id}: amplitudes are dimensionless and must not scale`);
+      for (const key of ["atKm", "fromKm", "toKm"]) {
+        if (!was[key]) continue;
+        assert.ok(Math.abs(norm(p.footprint, now[key]) - norm(planFp, was[key])) < 0.002,
+          `${p.id} ${now.kind} ${key}: ${norm(p.footprint, now[key]).toFixed(3)} rim-radii, ` +
+          `the plan puts it at ${norm(planFp, was[key]).toFixed(3)}`);
+        checked++;
+      }
+      if (was.radiusKm !== undefined) {
+        const a = now.radiusKm / Math.min(...p.footprint.radiiKm);
+        const b = was.radiusKm / Math.min(...base.radiiKm);
+        assert.ok(Math.abs(a - b) < 0.002, `${p.id} ${now.kind} radiusKm is ${a.toFixed(3)} of the minor axis, plan says ${b.toFixed(3)}`);
+        checked++;
+      }
+    }
+  }
+  // 7 disc structures (atKm + radiusKm) and 7 segments (fromKm + toKm) = 28.
+  assert.equal(checked, 28, "the structure census changed");
+  // The two claims the prose makes that the first fit broke, as direct numbers.
+  const spanOf = (id) => {
+    const p = premises.find((x) => x.id === id), s = p.structures.find((y) => y.fromKm);
+    return [norm(p.footprint, s.fromKm), norm(p.footprint, s.toKm)];
+  };
+  for (const [id, floor, what] of [["c03", 1.1, "one unbroken spine ridge end to end"],
+                                   ["c05", 1.05, "a coastal range with an erg behind it"]])
+    for (const v of spanOf(id))
+      assert.ok(v > floor, `${id}: "${what}" but the ridge reaches only ${v.toFixed(3)} of the rim`);
+  const c12 = spanOf("c12");
+  assert.ok(c12[0] > 0.9 && c12[1] > 0.9, `c12's rift-valley spans only ${JSON.stringify(c12.map((v) => +v.toFixed(3)))} of the rim`);
+});
+
+test("no footprint touches the frame edge — the fitted masks stay off the border", () => {
+  // The fit grows footprints, and a mask clipped by the frame would put a
+  // coastline along a straight edge that no coastClass describes. Measured on
+  // the real 800 x 800 grid rather than from the ellipse algebra, because the
+  // domain warp displaces the rim by up to warpKm beyond it.
+  const grid = makeGrid({ w: 800, h: 800, cellKm: 0.5 });
+  const { maskField } = applyPremiseMasks({ grid, premises, stream: STREAM });
+  let border = 0;
+  for (let cy = 0; cy < grid.h; cy++)
+    for (let cx = 0; cx < grid.w; cx++)
+      if (maskField[idx({ grid, cx, cy })] > 0 && (cx === 0 || cy === 0 || cx === grid.w - 1 || cy === grid.h - 1))
+        border++;
+  assert.equal(border, 0, `${border} masked cells sit on the frame border`);
 });
 
 test("a lobe that over-subtracts returns POSITIVE zero, not -0", () => {

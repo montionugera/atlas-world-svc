@@ -4,7 +4,7 @@
   "class": "minor",
   "footprint": {
     "centreKm": [70,268],
-    "radiiKm": [41.51,32.61],
+    "radiiKm": [42.51,33.4],
     "warpKm": 9
   },
   "areaBandKm2": [2700,3300],
@@ -16,7 +16,7 @@
     {
       "kind": "delta-fan",
       "atKm": [70,268],
-      "radiusKm": 20,
+      "radiusKm": 30.36,
       "amplitude": 0.2
     }
   ],

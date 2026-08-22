@@ -4,7 +4,7 @@
   "class": "chain",
   "footprint": {
     "centreKm": [338,66],
-    "radiiKm": [21.73,21.73],
+    "radiiKm": [21.42,21.42],
     "warpKm": 6
   },
   "areaBandKm2": [900,1100],
@@ -16,7 +16,7 @@
     {
       "kind": "atoll-lagoon",
       "atKm": [338,66],
-      "radiusKm": 9,
+      "radiusKm": 12.85,
       "amplitude": 0.5
     }
   ],

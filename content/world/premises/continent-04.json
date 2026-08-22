@@ -4,7 +4,7 @@
   "class": "major",
   "footprint": {
     "centreKm": [306,246],
-    "radiiKm": [70.31,70.31],
+    "radiiKm": [70.21,70.21],
     "warpKm": 19
   },
   "areaBandKm2": [9900,12100],
@@ -16,7 +16,7 @@
     {
       "kind": "plateau",
       "atKm": [306,246],
-      "radiusKm": 40,
+      "radiusKm": 56.16,
       "amplitude": 0.28
     }
   ],

@@ -4,7 +4,7 @@
   "class": "cap",
   "footprint": {
     "centreKm": [200,34],
-    "radiiKm": [97.48,27.55],
+    "radiiKm": [95.84,27.09],
     "warpKm": 7
   },
   "areaBandKm2": [5400,6600],
@@ -16,7 +16,7 @@
     {
       "kind": "ice-divide",
       "atKm": [200,34],
-      "radiusKm": 60,
+      "radiusKm": 62.51,
       "amplitude": 0.45
     }
   ],

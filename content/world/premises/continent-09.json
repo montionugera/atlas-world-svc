@@ -4,7 +4,7 @@
   "class": "chain",
   "footprint": {
     "centreKm": [352,186],
-    "radiiKm": [15.74,21.64],
+    "radiiKm": [15.57,21.41],
     "warpKm": 4
   },
   "areaBandKm2": [900,1100],
@@ -15,8 +15,8 @@
   "structures": [
     {
       "kind": "spine-ridge",
-      "fromKm": [348,168],
-      "toKm": [356,206],
+      "fromKm": [348.11,168.48],
+      "toKm": [355.89,205.46],
       "amplitude": 0.5
     }
   ],

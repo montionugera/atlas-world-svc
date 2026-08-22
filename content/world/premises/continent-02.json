@@ -4,8 +4,8 @@
   "class": "major",
   "footprint": {
     "centreKm": [96,148],
-    "radiiKm": [79.7,60.46],
-    "warpKm": 16
+    "radiiKm": [81.78,62.04],
+    "warpKm": 17
   },
   "areaBandKm2": [9900,12100],
   "coastClass": "drowned-valley",
@@ -15,14 +15,14 @@
   "structures": [
     {
       "kind": "inland-sea",
-      "atKm": [104,156],
-      "radiusKm": 19,
+      "atKm": [107.28,159.28],
+      "radiusKm": 26.79,
       "amplitude": 0.55
     },
     {
       "kind": "spine-ridge",
-      "fromKm": [46,118],
-      "toKm": [70,186],
+      "fromKm": [25.5,105.7],
+      "toKm": [59.34,201.58],
       "amplitude": 0.32
     }
   ],
