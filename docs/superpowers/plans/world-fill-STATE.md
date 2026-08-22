@@ -5,8 +5,9 @@
 It exists so a new session does not need the previous session's conversation. If something here
 is wrong, fix the file — do not work around it in a prompt.
 
-Last updated: 2026-08-22, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`) and
-**Plan C was claimed** as F-048.
+Last updated: 2026-08-22, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`),
+**Plan C was claimed** as F-048, and **Plan C seam 1 (Tasks 1-2) was reviewed and fixed** — see
+the new §9, and eight more confirmed plan errors in §5.
 
 ---
 
@@ -151,6 +152,13 @@ tree before trusting it** — this is the single most reliable source of defects
 | A, Task 12 file list | — | omits four suites whose coverage the deletion would have silently voided |
 | A, Risk A7 | four module-level mutable bindings | **six**: `placesByRoot:154`, `failures:225`, `warnings:226`, `zoneHazardsTotal:231`, `zoneHazardsUnmapped:232`, `townPlansCache:1255` |
 | A, Task 3 fixture | the `g-children-cap` fixture triggers the rule | unreachable as written — the base fixture has no parent with 2 children |
+| **C, Task 1 Step 8** | call `checkWorld` after `gSpineBudgets` (:1682) | **unreachable for exactly the roots that step describes.** `checkSpine` returns at its own first statement on a root with no `spine/`, which is before `gSpineBudgets` — so the world gate printed nothing at all. It is called from the TOP of `checkSpine`. Verified both ways by the reviewer. |
+| **C, Task 1 Step 6** | `(budget ${fam.maxFiles}, ${fam.maxTotal ?? fam.maxPer})` | prints `civil`'s PER-FILE cap in the aggregate slot; `civil` has no aggregate cap at all. Reproduced: 3 files of ~5 KB read as `civil 3 files, 15030 bytes (budget 600, 8192)` and exit 0. Every term now carries its unit. The plan's own Task-1 test asserted the wrong line. |
+| **C, Task 2 preamble** (and line 1341, and `budgets.json` `cellKmWhy`) | "640,000 cells x 9 fields is ~14.7 MB resident" | **13 fields, 23,680,000 bytes = 22.58 MB.** The four pinned-constraint fields (`landform`, `fetchKm`, `depthM`, `freshKm`) landed in the same commit and were counted in none of the three places. 14.7 MB was an ESTIMATE, never a budget — **do not shrink the grid to reach it.** |
+| **C, Task 2 continuity fixture** (~:1113) | samples a named stream via `stream: "seedseedseedseed"` | not hex: `Number.parseInt(…, 16)` is `NaN`, `NaN \| 0` is `0`, so **every non-hex stream collapses onto the same field, deterministically, green**. `streamInt` now throws; fixtures were re-based onto real 16-hex streams. |
+| **C, Task 2 `makeGrid` signature** | `({ w = 800, h = 800, cellKm = 0.5 })` | no `= {}`, so `makeGrid()` throws. The default was added and is now under test. |
+| **C, Task 1 Step 3 manifest** | Global Constraints says 20 biomes / 18 terrain kinds / 40 glyph families / 12 groups are "gated against `content/world/manifest.json`" | the plan's own manifest carries **none of the four**, and `additionalProperties: false` means a later task cannot add one without a schema edit. 20 is already `BIOMES.length` in `scripts/lib/spine.mjs`; `dungeonCapableTypes: 23` lives in Plan B's `budgets.landforms`. **The manifest is not the authority for those four.** |
+| **C, Task 1 manifest schema** | `landmasses: { minItems: 1 }` | no ceiling, while the neighbouring `oceans`/`seas` are pinned 3/3 and 9/9 — a 14-row manifest was schema-legal. Now `minItems: 13, maxItems: 13`. |
 
 The plan text already self-corrects two more: spec §8.6's "checkSpine is already parameterised
 with an injected collector" (it is not — it closes over module-level bindings) and §8.2's
@@ -280,3 +288,91 @@ filed; none is a guess.
 - Unclaimed work Plan A left on the table: a path-keyed ajv memo. `lib/story.mjs:51-55` builds a
   fresh `Ajv` and recompiles on **every** call — none of Task 13's speed-up came from schema
   reuse, it was all process startup.
+
+---
+
+## 9. Plan C seam 1 (Tasks 1-2) — settled, do not re-raise
+
+Appended 2026-08-22 by the seam-1 adjudicating fix pass, after two independent adversarial
+reviews (A: 1 major / 9 minor, 23 mutations killed / 0 survived; B: 4 major / 7 minor, 20 killed
+/ **12 survived**). The two survivor counts were not a disagreement about rigour — they covered
+different files. Every one of B's twelve was checked.
+
+**What the seam now guarantees that it did not.**
+
+- **The noise field is pinned to VALUES, not only to itself.** This was the seam's real defect:
+  six mutations — `hash3`'s multiplier, `hash3`'s final xor-shift, `toSigned`'s divisor, `fbm`'s
+  `freq *= lacunarity`, `mintSeed` sha256→sha512, `mintSeed`'s join order — each produced a
+  **different world** with the whole suite green. Golden literals now pin `hashNoise2D` (one
+  positive and one negative sample), `fbm`, `smoothstep` and `falloff`, and `mintSeed` is joined
+  to **all 176 committed streams in `content/spine/derived.json`** (44 nodes × 4 names), which
+  ties `tools/mapforge/lib/seed.mjs` to `scripts/lib/spine.mjs`'s `streamSeed()` at the same
+  time. **If a later plan deliberately changes the field, those literals are what must be
+  re-baselined — that is the point of them, not an obstacle.**
+- **One comment policy for the two determinism scans.** `tools/mapforge/tests/_source-scan.mjs`
+  holds the single stripper; `determinism-inventory.test.mjs` and `noise-determinism.test.mjs`
+  both use it. Before this, a `/* … Math.cos … */` block or a `/** @see Math.hypot */` JSDoc
+  reddened the suite on prose, and a legitimate `Math\n  .floor()` reddened it on correct code,
+  while the inventory three files away deliberately stripped comments and its header said why.
+  Stripping preserves line numbers, and the `Math` scan takes its tail **across newlines**.
+- **The two scans are COMPLEMENTARY, not redundant — REFUTED as a contradiction.** The inventory
+  reads the whole of `lib/` by directory (so it covers new files, e.g. Task 3's passes) and
+  catches dotted forms; the whitelist covers three files by name and catches indirect spellings.
+  Keep both.
+- **`tools/mapforge/*.mjs` — one level ABOVE `lib/` — is now scanned too.** A `Math.cos` helper
+  there evaded both scans while being importable from `lib/`. Measured clean today, so its
+  inventory is empty; Task 10's CLI lands in exactly that directory.
+
+**Decisions taken deliberately — with the evidence, so they are not re-litigated.**
+
+- **`idx` is NOT bounds-guarded, and cost was not the reason.** `idx({cx: 800, cy: 10})` returns
+  8800, which decodes to (0, 11): the east edge wraps to the west, one row up. Measured cost of a
+  guard inside `idx`: ~0.7 ns/call, 13.5 ms over 20 M calls — **0.34 % of the 4 s generate
+  budget, affordable.** It is still not there because of SHAPE: a guard returning −1 makes the
+  typed-array read `undefined`, which is equally silent, and one that throws can abort a pass at
+  cell 639,999. The guard is a **named accessor** instead — `inBounds` and `neighbourIdx` (−1 off
+  grid) in `tools/mapforge/lib/grid.mjs` — with the wrap pinned as a fixture, including the
+  corner-has-3-neighbours / edge-has-5 counts a wrap would silently report as 8.
+  **Tasks 3-9 must use `neighbourIdx` for D8 walks.**
+- **The `civil` byte budget was NOT invented; the PRINT was fixed.** There is no aggregate byte
+  cap for `civil` by design (600 × 8 KB is unbounded in aggregate) — so adding one would have been
+  a design decision the plan never made, while the line was simply untrue. `world-budget:` lines
+  for file-measured families now name every term's unit and print only terms the family has.
+- **The ban's "indirect route" scan is ACCIDENT prevention, not an adversarial sandbox.** Measured
+  by the reviewer: `globalThis["Ma"+"th"].cos`, `Reflect.get`, `const E = eval`,
+  `[].constructor.constructor`, `(1/3).toFixed(4)` and `toLocaleString` all evade it. Every form
+  that SPELLS `Math` is caught, which is every form a later pass reaching for `Math.cos` by name
+  will use. The comment claiming completeness was the defect and is now what is true; `CODEGEN`
+  was broadened to ban `eval` and `Function` by NAME rather than by call shape. **Do not build the
+  sandbox.**
+- **`SUBSTRATE_MASK`'s test is not a tautology — REFUTED.** The reviewer's first mask mutation
+  (`0x2c0`) was not a mutation at all (`64|128|512 === 0x2c0`); a genuinely different mask IS
+  killed, by the `deepEqual` on `SUBSTRATE_FLAGS`.
+- **`streamInt` keys the field on 32 bits, not 64 — verified harmless and left alone.** All 176
+  committed streams have 176 distinct 8-character prefixes and all 176 pass the hex guard.
+
+**Recorded mutation SURVIVOR, benign, explained at the call site** (`grid.mjs`): deleting
+`regionId`'s `< 0` guard stays green — `regionIds` is a plain array, `regionIds[-1]` is
+`undefined`, and the `?? null` tail answers `null` for both paths, so no fixture can separate
+them. The companion `?? null` rule IS live and is killed by a fixture. Do not re-file this.
+
+**Open, recorded rather than chased.**
+
+- **`./scripts/precheck.sh` (Gate 1) has no scripts-suite lane and no mapforge lane.** So the
+  whole determinism ban, and every `world-gates.test.mjs` rule that is not reachable through
+  `check_content.mjs --only=spine`, runs only in Gate 2 (`integration.sh`) and CI. Pre-existing
+  wiring, outside this seam. It is why `content/world/manifest.json` being deleted was green at
+  Gate 1 until this pass added the gate rule.
+- **Substrate mutual exclusion is prose, not code.** `setFlag(CARBONATE)` then `setFlag(VOLCANIC)`
+  leaves both bits set; there is no `setSubstrate` that clears `SUBSTRATE_MASK` first. **P2 must
+  either clear the mask itself or add that helper.** Likewise `hasFlag` on a multi-bit mask has
+  ANY semantics (`hasFlag(SUBSTRATE_MASK)` is true with only `SAND` set) — reasonable, and now
+  written down.
+- **`budget.interstitialComposition` is the single object the manifest schema leaves open**
+  (`additionalProperties: {type: number}`; the reviewer's probe found 42 of 43 object paths
+  locked). It is joined to `BIOMES` by a test rather than closed with an enum in the schema,
+  because a second copy of the biome vocabulary is the exact drift the `n-atlas` join exists to
+  prevent.
+- **`content/world/manifest.json` and `content/spine/nodes/n-atlas.json` are now joined** on seed,
+  frame, grid tiling and interstitial composition. **Plan D and E: add to that join, do not start
+  a second one.**
