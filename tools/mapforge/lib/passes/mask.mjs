@@ -39,6 +39,13 @@ function maskFromWarp({ premise, xKm, yKm, n0, n1 }) {
   const wy = yKm + a * n1;
   const nx = (wx - cx) / rx, ny = (wy - cy) / ry;
   const d = Math.sqrt(nx * nx + ny * ny);        // 1 at the ellipse boundary
+  // RECORDED MUTATION SURVIVOR, and un-killable BY CONSTRUCTION rather than by
+  // luck — do not re-file it. `d >= 1` and `d > 1` are exactly equivalent, not
+  // merely equal almost everywhere: the only input they treat differently is
+  // d === 1, where `smoothstep(1 - d)` is smoothstep(0) = 0 and every structural
+  // term below only SUBTRACTS, so the tail returns +0 down both paths. `>=` is
+  // kept because it says what the rule is ("nothing outside the ellipse") in one
+  // comparison instead of leaving the boundary to the arithmetic.
   if (d >= 1) return 0;                          // hard mask: nothing outside the ellipse
   // Structural terms bite INSIDE the footprint only.
   let m = smoothstep(1 - d);
@@ -59,6 +66,14 @@ function maskFromWarp({ premise, xKm, yKm, n0, n1 }) {
   // downstream passes use would agree — but `Object.is(m, 0)` would not, and a
   // -0 stored in a Float32Array survives into every later comparison. Return
   // the positive zero.
+  //
+  // The `m > 1 ? 1` half is the OTHER recorded survivor, also un-killable by
+  // construction: `smoothstep(1 - d)` is at most 1 for d in [0, 1) and both
+  // structure kinds above only subtract, so m can never exceed 1 and no fixture
+  // can separate the branches. It is defence for a future structure kind that
+  // ADDS to the mask — which is why it stays — and it is written down here so
+  // the next mutation reviewer does not re-derive it. The `m <= 0 ? 0` half IS
+  // live and is killed by the synthetic over-subtracting premise in mask.test.
   return m <= 0 ? 0 : m > 1 ? 1 : m;
 }
 

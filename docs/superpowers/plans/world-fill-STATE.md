@@ -6,8 +6,8 @@ It exists so a new session does not need the previous session's conversation. If
 is wrong, fix the file — do not work around it in a prompt.
 
 Last updated: 2026-08-22, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`),
-**Plan C was claimed** as F-048, and **Plan C seam 1 (Tasks 1-2) was reviewed and fixed** — see
-the new §9, and eight more confirmed plan errors in §5.
+**Plan C was claimed** as F-048, and **Plan C seams 1 and 2 (Tasks 1-4) were reviewed and fixed** —
+see §9 and §10, and thirteen more confirmed plan errors in §5.
 
 ---
 
@@ -159,7 +159,13 @@ tree before trusting it** — this is the single most reliable source of defects
 | **C, Task 2 `makeGrid` signature** | `({ w = 800, h = 800, cellKm = 0.5 })` | no `= {}`, so `makeGrid()` throws. The default was added and is now under test. |
 | **C, Task 1 Step 3 manifest** | Global Constraints says 20 biomes / 18 terrain kinds / 40 glyph families / 12 groups are "gated against `content/world/manifest.json`" | the plan's own manifest carries **none of the four**, and `additionalProperties: false` means a later task cannot add one without a schema edit. 20 is already `BIOMES.length` in `scripts/lib/spine.mjs`; `dungeonCapableTypes: 23` lives in Plan B's `budgets.landforms`. **The manifest is not the authority for those four.** |
 | **C, Task 1 manifest schema** | `landmasses: { minItems: 1 }` | no ceiling, while the neighbouring `oceans`/`seas` are pinned 3/3 and 9/9 — a 14-row manifest was schema-legal. Now `minItems: 13, maxItems: 13`. |
-| **C, Task 3 Step 4** geometry table | thirteen footprint radii | they mask **47,142 km², 72%** of the 65,600 km² the rank target needs, so **P3 throws on day one**. The plan's own Step 11 predicted this ("adjust `radiiKm`, never the mask code") — recorded here because the fitted radii, not the table's, are now the committed authority. |
+| **C, Task 3 Step 4** geometry table | thirteen footprint radii | Σ π·rx·ry over the plan's own table is **48,415 km²** against the **65,600 km²** `budget.grossLandPolygonKm2` demands — a **ceiling no mask implementation can clear**, so the refit was unavoidable exactly as Step 11 predicted ("adjust `radiiKm`, never the mask code"). **The reason recorded here on 2026-08-22 was WRONG and is corrected: P3 did NOT throw.** With the plan's radii `selectSeaLevelByRank` returned `landCells` exactly 262,400, in band, at the on-plan ratio — by classifying **73,831 ocean-floor cells (18,458 km², 28% of all "land") as land**. See §10; the guard that catches it now exists. |
+| **C, Task 3 Step 4** — the fit TARGET | the plan gives no per-continent gross split | the target is `netKm2 + interiorWaterKm2` **per continent** (c02 1,100, c04 300, c06 200, the other ten 0), not `netKm2 × 1.025` spread uniformly. Both sum to 65,600, so an aggregate that closes hides c02 at −6.75% and c06 at −3.95%. Re-fitted 2026-08-22; worst error 0.100%. |
+| **C, Task 3 Step 4** — `structures` | absolute km, unchanged by the refit | a footprint that grows 1.3–1.9× with its structures left where they were is a **different landform**. c03's committed "one unbroken spine ridge **end to end**" reached 0.88 of the rim, c12's rift-valley 0.48. Structures are now carried in footprint-relative coordinates and re-materialised at the fitted radii. |
+| **C, Task 3 Step 6** substrate noise | a 4-octave fbm gated at 0.25 (volcanic) / 0.3 (karst) | **both gates are dead, and the ladder could never have interleaved two kits.** Measured: `t` over EVERY masked cell in the frame is [0.2603, 0.8333], so the 0.25 gate cannot reject anywhere; c04, the only karst premise, has min 0.376. And the volcanic branch runs first with an always-true gate, so a two-kit premise would get volcanic everywhere and karst nowhere. The field cost 173 ms for a value nothing read; deleted. |
+| **C, Global Constraints line 43** | "Target land fraction 0.40 = 256,000 of 640,000 cells" | that is the **NET** figure. P3's rank target is the **GROSS 262,400** (`grossLandPolygonKm2 / 0.25`), per Task 4 Step 5 and Task 10 line 6588. A later reader "fixing" the target to 256,000 would put the world 5% under its land budget. |
+| **C, Task 8 lexicon** (forward) | 45 rows carry `requires.rock` and all are satisfiable | **`sub-lacustrine-vent` (`{nearFlag: LAKE, rock: volcanic}`, group `lakes`) can never be placed.** Volcanic ground exists only on c10, whose `landformKit` is `["volcanic","erosional","island"]` with no `lakes`. Task 8's problem, filed before a green run gets read as coverage. |
+| **C, Task 4 / D** `selectSeaLevelByRank` | prose says it is 800 × 800 only | it was **prose only**: a 500 × 500 grid returned `landKm2 60000` against a 160,000 km² frame the grid does not have, silently and in band. Now a guard. |
 | **C, Task 3 Step 1** test | `premiseMaskAt(c02 centre) > 0.9` | **unsatisfiable by the plan's own c02 premise.** Its inland sea sits at `[104,156]`, 11.31 km from the centre, radius 19, amplitude 0.55 — it subtracts 0.197 there before any warp. Measured **0.7705**. Replaced by a sweep over the 11 purely-additive premises (worst 0.8887) plus a direct test that c02's and c11's lobes bite. |
 | **C, Task 3 Step 6** code | `assignSubstrate` sets a bit only for `karst` / `volcanic` / `desert` kits, "else: no bit — clastic by default" | **contradicts the plan's own Step 1 test**, which asserts *exactly one* substrate bit per masked cell. `FLAG.SAND` is now the explicit clastic default, so the invariant is measurable instead of remembered at each of P10's read sites. Coverage measured 100.00%, 0 violations. |
 | **C, Task 4 Step 1** test | `ramp(64000)` with `targetLandCells: 26240` | **throws.** `LAND_CELL_BAND` is an ABSOLUTE count for the pinned 640,000-cell grid, not a fraction — 26,240 is 8.7× under the floor. The band is the manifest's own `grid.landCellBand`, so the fixture moved, not the contract. Consequence: `selectSeaLevelByRank` is usable on the 800 × 800 grid and nothing coarser. |
@@ -387,65 +393,139 @@ them. The companion `?? null` rule IS live and is killed by a fixture. Do not re
 
 ## 10. Plan C seam 2 (Tasks 3-4) — settled, do not re-raise
 
-Appended 2026-08-22 by the seam-2 implementation. Six more plan errors are in §5 above.
-42 mutations run, **1 recorded survivor**.
+Appended 2026-08-22 by the seam-2 implementation, then **revised the same day by the seam-2
+adjudicating fix pass** after two independent adversarial reviews (C: Task 3 / the refit —
+5 major, 9 minor, 18 mutations killed / 9 survived; D: Task 4 / sea level / determinism —
+4 major, 4 minor, 21 killed / 3 survived). Ten more plan errors are in §5 above.
+**Where this section and the seam's own commit messages disagree, this section is right** —
+a commit message cannot be amended, and two of the seam's overstated what they had proved.
 
-**What the seam guarantees.**
+### What the seam guarantees NOW
 
-- **The premise footprints are FITTED, not tabulated, and the fit is pinned.** `radiiKm` came out of
-  a damped fixed-point iteration on **post-rank land area per continent** (8 iterations, converged to
-  0.1% worst error; validated at 800 × 800 to 0.71% worst error against the manifest split).
-  Centres, aspect ratios, `coastClass`, `structures`, `areaBandKm2`, `register`, `levelBand`,
-  `palette` and `landformKit` are all the plan's, untouched. **`mask.test.mjs`'s
-  `GOLDEN: the calibrated footprint radii` is the authority** — re-fitting means re-baselining it
-  deliberately.
-- **`warpKm` is derived by one rule, `round(min(rx, ry) * 0.27)`.** The plan gives no table for it —
-  only c02's example value 12, written against the *pre-calibration* radii `[58, 44]`, which the rule
-  reproduces exactly. Keeping the ratio is what stops the outline wobble shrinking as footprints grow.
-- **Golden vectors, not just properties.** Every pass in this seam is pinned by a field digest
-  (`sum of round(v * 1e6)`) plus point samples: the mask field, the plate histogram, the elevation
-  field, the substrate split, the flag field, and the real 800 × 800 sea-level record. Measured:
-  a nudged `WARP_FREQ`, `BASE_FREQ`, relief mix, ridge falloff or premise radius all go red, and
-  **none of them would have** under the property tests alone.
-- **`applyPremiseMasks` hoists the domain warp out of the premise loop** — it is a function of
-  (cell, stream) only. 4,725 ms → 766 ms on the real grid, bit-identical, with a parity test against
-  `premiseMaskAt` over a 60 × 60 sweep. The two entry points share one body; a second copy of the
-  mask arithmetic is exactly what the hoist would otherwise buy.
+- **LAND IS A SUBSET OF THE CONTINENTAL MASK, and it is asserted.** This was the seam's real
+  defect and it was hiding behind a false justification. `elevation.mjs` claimed "selecting the
+  k-th largest elevation can only ever pick ocean floor if the masks cannot supply k cells —
+  which is exactly the premise-footprint bug P3's message names". **False in the direction that
+  matters.** With the plan's own Step 4 radii, `selectSeaLevelByRank` did **not** throw: it
+  returned `landCells` exactly 262,400 — dead on target, inside the band, at the on-plan ratio —
+  by classifying **73,831 ocean-floor cells (28% of all "land")** as land, scattered wherever the
+  ocean fbm peaked. The band cannot see it, because the count is right. What separates the two
+  worlds is WHERE the threshold fell: `buildElevation` puts ocean floor in [−1, −0.5] and land in
+  [0.01, 1], so a sea level below the land floor means rank selection reached into the ocean. That
+  is now **one comparison in `selectSeaLevelByRank`**, plus a cell-by-cell `land ⊆ mask` assertion
+  on the real 800 × 800 field, plus a fixture that reproduces the phantom shape (a *varied* ocean
+  floor — the flat-plateau fixture cannot reproduce it, because identical ocean values all tie at
+  the threshold and the band catches the undershoot instead) and the boundary case where the
+  threshold sits exactly ON the clamp. `ELEVATION_BANDS` is one constant read by both the clamp
+  and the guard, not two literals kept in step by hand.
+- **The premise footprints are FITTED, the procedure is COMMITTED, and the files are joined to
+  it.** `tools/mapforge/fit-premises.mjs` holds the plan's Step 4 table, the target derivation and
+  the fitted `SCALE` vector; `mask.test.mjs` rebuilds all thirteen footprints from it and compares.
+  Centres, `coastClass`, `areaBandKm2`, `register`, `levelBand`, `palette`, `landformKit`,
+  `structuralIdea` and every structure `kind`/`amplitude` are the plan's, untouched.
+- **The fit target is the manifest's own per-continent split**, `netKm2 + interiorWaterKm2`, not
+  `netKm2 × 1.025` spread uniformly. Worst error **0.100%** (was 0.71% against the wrong target);
+  every continent lands inside its `areaBandKm2` after P7 carves its interior water.
+- **`structures` scale with the footprint.** All 28 normalised structure coordinates are the plan's
+  again (c03's ridge back to 1.16/1.17 of the rim, c12's rift to 0.92/0.96, c11's lagoon to 0.600),
+  so the committed `structuralIdea` prose and the committed geometry agree. A structure that stops
+  scaling reds `materialise is a SIMILARITY about the centre`.
+- **`MASK_SHELL_FACTOR = 1.22` is the free parameter the first fit left implicit.** The rank target
+  pins TOTAL land, so the thirteen per-continent errors fix only the SPLIT — the overall scale is a
+  degree of freedom they cannot see. Left free, the damped iteration walks it downhill until every
+  masked cell is above water: **measured, by iteration 8 the sea level had fallen onto the 0.01
+  clamp and the fit oscillated between 1% and 6.5% forever.** That collapse *is* phantom land in
+  slow motion. Mask area is now pinned at 1.22× the rank target (320,133 cells), asserted in the
+  800 × 800 golden.
+- **`warpKm` is derived by one rule, `round(min(rx, ry) * 0.27)`** — the plan gives only c02's
+  example value 12, written against the pre-fit radii `[58, 44]`, which the rule reproduces exactly.
+- **P2b's noise field is GONE, and the substrate rule is measurable.** See §5. Substrate output is
+  byte-identical; P2b went 173 ms → 5 ms. The rule that replaced the plan's "> 0.5 majority" test is
+  the exact one: **one class per plate, decided by the kit**. `FLAG.ARC` is minted in
+  `assignSubstrate` and nowhere else, always with `FLAG.VOLCANIC`, and the stale-bit fixture now
+  pre-sets ARC too — without that, deleting `flags &= ~FLAG.ARC` survived, and a stale ARC is
+  exactly the blanket-ARC world (cones on the ice cap) the neighbouring test exists to prevent.
 - **Seam 1's two open items are closed.** Substrate mutual exclusion: `assignSubstrate` clears
   `SUBSTRATE_MASK` (and `FLAG.ARC`) before setting, so it is idempotent and exactly one class lands
-  per masked cell — fixtured by pre-setting all three bits and re-running. `hasFlag`'s ANY semantics
+  per masked cell — fixtured by pre-setting all four bits and re-running. `hasFlag`'s ANY semantics
   are never relied on: every read counts bits explicitly.
-- **`FLAG.ARC` is minted in `assignSubstrate` and nowhere else**, always together with
-  `FLAG.VOLCANIC`. Both directions are fixtured, because Plan B's volcanic group default is
-  `{ rock: "volcanic", nearFlag: "ARC" }` — one bit without the other places zero instances, and a
-  blanket ARC would put cones on the ice cap with the first test still green.
+- **`applyPremiseMasks` hoists the domain warp out of the premise loop** — it is a function of
+  (cell, stream) only. 4,725 ms → **766 ms cold / 525 ms warm** (the seam's own comment said 460 ms;
+  that did not reproduce on a second machine), bit-identical, with a parity test against
+  `premiseMaskAt` over a 60 × 60 sweep.
+- **Golden vectors, not just properties.** A field digest plus point samples pin the mask field, the
+  plate histogram, the elevation field, the substrate split, the flag field and the real 800 × 800
+  sea-level record. All re-baselined for the refit **and for nothing else**; `rank`, `landCells`,
+  `landKm2` and `seaToLandRatio` did not move (`seaLevel` 0.043910134583711624 →
+  0.043565794825553894, `deepest` 916.3983764648438 → 916.0540771484375).
+- **The determinism ban's coverage is DERIVED FROM THE TREE.** It had been found holed in two
+  consecutive seams, both times because it read a maintained list. `tests/_source-scan.mjs` now owns
+  one recursive walk, one extension class (`.js .cjs .mjs .ts .cts .mts` — a `lib/helper.js` is
+  CommonJS and importable from every `.mjs`, and carried `Math.cos` + `Date.now()` past both scans)
+  and the four grandfathered lib files. The census inventories `lib/` and requires everything else
+  under `tools/mapforge/` outside `tests/` to be empty; the whitelist takes every lib file except
+  the four. **A new directory, extension or pass is covered by default — there is no list left to
+  forget**, and the coverage rule itself is a test.
+- **Task 4's headline test can now fail.** The committed "HALF-field nudge" test claimed in its own
+  comment to permute rank order across the threshold; measured, consecutive `ramp(640000)` values at
+  the rank index are **26 float32 ULPs** apart, so a one-ULP nudge cannot reorder anything and it
+  reported 0 differing cells under an `<= 1` assertion, by construction. Replaced with a real
+  adjacent-pair permutation across the threshold.
 
-**Recorded mutation SURVIVOR, benign, explained at the call site** (`elevation.mjs`): changing
-`SUBSTRATE_FREQ` from 0.012 to 0.013 leaves the suite green. At the plan's thresholds the noise field
-**does no work** — `t = 0.5 + 0.5 * fbm(4 octaves)` is concentrated around 0.5 and the gates are 0.25
-and 0.3, so not one cell of c04 or c10 falls under its gate. It is not dead by accident either: no
-premise names two of the three substrate kits, so even a working field would have nothing to
-interleave. Left as the plan wrote it — the thresholds are plan data, and 100% carbonate under "the
-karst continent" and 100% volcanic under "the volcanic arc" is what those premises say — with the
-shares pinned at exactly 1.0 by a golden so a threshold move is loud. **Do not re-file this.**
+### REFUTED — with the evidence, so nobody re-raises them
 
-**Open, recorded rather than chased.**
+- **"P3 throws on day one" — REFUTED, and it was the seam's own justification.** Measured above:
+  no throw, 73,831 phantom land cells, every gate green. The *decision* to refit was right (the
+  48,415 km² ceiling is arithmetic); the *reason* recorded for it was not. §5 is corrected.
+- **"The refit is unnecessary" — REFUTED by review C, which tried to build the counterexample and
+  could not.** Σ π·rx·ry over the plan's thirteen rows = π × 15,411 = 48,415 km² against 65,600
+  required. No implementation of `mask.mjs` can mask more area than the ellipses it is handed.
+  Do not re-litigate this.
+- **Gross vs net is NOT conflated — REFUTED.** The manifest closes exactly (64,000 + 1,600 = 65,600;
+  + 91,200 ocean + 3,200 interstitial = 160,000, zero residue), and plan lines 2280 and 6588 both
+  compute the rank target as `grossLandPolygonKm2 / CELL_AREA_KM2` = 262,400. 262,400 is the gross
+  target BY DESIGN. P7's lakes carry `FLAG.LAKE` inside it and are not re-subtracted.
+- **The rank selection is genuinely order-independent — attacked and unbroken.** Three shuffles and
+  a full field reversal, on Node 26 and Node 18, all return the identical `seaLevel` and
+  `landCells`. Only the value at one index is read, never a position, so sort stability cannot reach
+  it; `Float32Array.from` is lossless so no ties are manufactured. 623,518 distinct float32
+  elevations of 640,000; exactly 1 cell sits at `=== seaLevel`. `-0`/`+0` is not a hazard.
+- **`d >= 1` → `d > 1` and the `m > 1 ? 1` clamp are UN-KILLABLE BY CONSTRUCTION, not gaps.**
+  Both explained at the call site in `mask.mjs`. `d === 1` gives `smoothstep(0) = 0` and every
+  structure only subtracts, so both spellings return +0 there; `smoothstep(1 - d) ≤ 1` and the
+  subtractive terms mean `m` can never exceed 1. **Do not re-file these.**
+- **`sort()` → an explicit numeric comparator survives, and that is a deliberate control.**
+  `TypedArray.prototype.sort` is numeric and total; the two are provably equivalent.
+- **Dropping `"desert"` from c05's `landformKit` survives P2b, and that is correct.** Plan B's
+  desert types are `rock: clastic`, so `desert` is not a substrate kit and there is deliberately no
+  branch for it — the old `["desert", FLAG.SAND]` test row was vacuously true for all 13 premises.
+  The kit IS read, by Task 8's instancing; a kit census belongs there. Explained at the call site.
 
-- **c09 (Brightfall) and c10 (Ashen Spar) have NO coastal shell.** Measured on the real grid: their
-  masked cell count equals their post-rank land count, so every cell inside the footprint is above
-  sea level and the coastline *is* the warped mask rim rather than a relief contour. Cause: a
-  high-amplitude ridge (0.50 / 0.72) over a small footprint lifts the whole thing clear of the
-  0.0439 threshold. **Task 5 traces its arcs off the sea/land boundary and will get a clean warped
-  ellipse for those two.** Fixing it means lowering those two amplitudes — premise data, and a
-  re-fit of every radius — so it is Task 5's call to make with the arc quality in front of it.
-- **`content/schemas/premise.schema.json` has no ajv validation venue.** Task 11's file list names
-  `fabric-file` and `handle-ledger` and not this one, and `check_content.mjs` compiles schemas by
-  name. Until then `mask.test.mjs` holds the join — it reads the schema file and checks the key set,
-  `additionalProperties: false` and all four closed enums against the 13 committed premises, so the
-  two cannot drift. **Task 11 should add it to `checkWorld` beside the other two.**
-- **`selectSeaLevelByRank` works on the 800 × 800 grid only** (see §5). Task 9a's `coast-world.mjs`
-  fixture must supply its own threshold rather than calling it.
-- **P1+P2+P2b+P3 measured 1,605 ms** of the 4,000 ms `generate` budget (766 / 553 / 174 / 100).
-  Ten passes remain. `applyPremiseMasks` is the dominant term and is already hoisted; the next
-  saving available there is skipping premises whose bounding box excludes the cell.
+### Open, recorded rather than chased
+
+- **THREE continents have no coastal shell, not two.** Measured on the refitted grid: c07
+  (Driftholt), c09 (Brightfall) and c10 (Ashen Spar) have masked cell count === post-rank land
+  count, so every cell inside the footprint is above sea level and the coastline *is* the warped
+  mask rim rather than a relief contour. **Task 5 traces its arcs off the sea/land boundary and will
+  get a clean warped ellipse for those three.** Fixing it means lowering those premises' ridge
+  amplitudes — premise data, and a re-fit — so it is Task 5's call with the arc quality in front of
+  it. `tools/mapforge/fit-premises.mjs` is what re-runs the fit.
+- **c02's inland-sea lobe scaled from radius 19 to 26.79** (2,255 km² of disc) while c02's
+  `interiorWaterKm2` budget is 1,100. The lobe is a MASK subtraction, not a lake: measured, zero of
+  its cells are below sea level today. **P7 must carve interior water to the budget, not to the
+  disc** — the disc's plan radius happening to be ≈ 1,100 km² was not a join anything enforced.
+- **`content/schemas/premise.schema.json` has no ajv venue.** Task 11's file list names `fabric-file`
+  and `handle-ledger` and not this one. Until then `mask.test.mjs` holds the join in BOTH directions
+  (files → schema and schema → the four enums verbatim; the one-directional version let the
+  `register` enum be silently widened). **Task 11 should add it to `checkWorld`.**
+- **`content/world/premises/` matches no family in `content/world/budgets.json`** (`fabric`, `civil`,
+  `loop`, `landforms`, `sheets`), and `check_content.mjs` never mentions `premise`, so the 13 files
+  are under no byte budget. Task 11's business, filed here because the ajv half was disclosed and
+  this half was not.
+- **P1+P2+P2b+P3 measured 1,405 ms cold / 1,120 ms warm** of the 4,000 ms `generate` budget
+  (766 / 518 / 28 / 93). Ten passes remain. `applyPremiseMasks` is the dominant term and is already
+  hoisted; the next saving there is skipping premises whose bounding box excludes the cell.
+- **`selectSeaLevelByRank` is 800 × 800 ONLY, and that is now enforced.** Task 9a's `coast-world.mjs`
+  fixture must supply its own threshold rather than calling it — it will get a throw naming the
+  frame if it does not.
 
