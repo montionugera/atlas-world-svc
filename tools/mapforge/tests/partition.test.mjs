@@ -575,6 +575,34 @@ test("REAL WORLD — terrainKind, provenance and adjacency", () => {
   assert.deepEqual([...cross].sort(), ["c01-c12", "c02-c07", "c03-c11", "c05-c08"]);
 });
 
+test("REAL WORLD — no region states a 0% share of a biome it actually holds", () => {
+  // The synthetic fixture cannot see this: it needs a region big enough that
+  // one or two cells of a biome round to 0.0 at the record's 0.1% resolution.
+  // c03/r07 and c03/r09 shipped {"tundra": 100, "river": 0} — two regions of
+  // 2,009 cells each holding a single river cell.
+  const { grid, regions } = realPartition();
+  const cellsOf = new Map(regions.map((r) => [r.id, new Map()]));
+  for (let i = 0; i < grid.n; i++) {
+    if (grid.owner[i] < 0) continue;
+    const m = cellsOf.get(regions[grid.owner[i]].id);
+    const b = grid.biomeNames[grid.biome[i]];
+    m.set(b, (m.get(b) ?? 0) + 1);
+  }
+  const zeroes = [];
+  const dropped = [];
+  for (const r of regions) {
+    for (const [b, pct] of Object.entries(r.biomeShares))
+      if (pct === 0) zeroes.push(`${r.id}:${b}`);
+    for (const [b, n] of cellsOf.get(r.id))
+      if (r.biomeShares[b] === undefined) dropped.push(`${r.id}:${b}:${n}`);
+  }
+  assert.deepEqual(zeroes, [], "a region states a 0% share");
+  // …and the entries that were dropped are exactly the ones below resolution,
+  // each still genuinely present on the ground. A drop that removed a biome the
+  // region has a lot of would show here as a large cell count.
+  assert.deepEqual(dropped, ["c03/r07:river:1", "c03/r09:river:1"]);
+});
+
 test("REAL WORLD — the 330-pair adjacency list is PINNED, not merely symmetric", () => {
   // `adjacent` is a committed fabric field and Plan D binds relations on it,
   // and the suite asserted only symmetry, non-emptiness and the four
