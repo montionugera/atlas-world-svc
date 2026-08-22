@@ -36,7 +36,29 @@ const RULES = Object.freeze([
   { biome: "lake", when: (c) => (c.flags & FLAG.LAKE) !== 0 },
   { biome: "river", when: (c) => (c.flags & FLAG.RIVER) !== 0 },
   { biome: "marsh", when: (c) => (c.flags & FLAG.DELTA) !== 0 || (c.moist > 0.8 && c.elev < 0.12) },
-  { biome: "reef", when: (c) => c.elev < 0.06 && c.temp > 0.7 },
+  // NO TEMPERATURE TERM, and the removal is the c11 ruling rather than a
+  // loosening. The plan's rule is `elev < 0.06 && temp > 0.7`. Measured:
+  // `temp` is `latitude - lapse` on a 400 km frame, c11 Quillreef's footprint
+  // centre is committed at y = 66 km, and its warmest land cell reads 0.183 —
+  // so the rule could not fire on the one continent whose title, `coastClass:
+  // "atoll-ring"` and `structuralIdea` ("an atoll ring - every settlement a
+  // port, no interior") are all about reef, and Quillreef came out 100.0%
+  // MEADOW. A coral atoll that can carry no reef is the committed premise
+  // losing silently to a generated climate.
+  //
+  // The remedy is seam 3's ICE remedy in mirror image. Ice was a global
+  // temperature threshold that painted three landmasses whose own palettes
+  // forbid it; it became premise-gated (FLAG.GLACIER, minted only where a
+  // premise asks for it) and the palette clamp finished the job. Reef is the
+  // same shape: `reef` appears in exactly four palettes (c06, c08, c11, c13),
+  // so THE PALETTE HAS ALREADY DECIDED which continents may carry it, and a
+  // second global climate gate inside the rule only lets the two disagree.
+  // What is left is the geometry a reef actually is: ground within 0.06 of sea
+  // level. Measured effect, whole world: c08 11.0% -> 11.0% and c13 11.1% ->
+  // 11.7% (both are southern and already warm, so nothing moves), c06
+  // Reedstrand 1.0% -> 13.7%, c11 Quillreef 0.0% -> 11.8%. No continent
+  // outside those four can take it at all.
+  { biome: "reef", when: (c) => c.elev < 0.06 },
   { biome: "tundra", when: (c) => c.temp < 0.22 },
   { biome: "scree", when: (c) => c.elev > 0.78 },
   { biome: "rock", when: (c) => c.elev > 0.62 },
@@ -77,6 +99,21 @@ export const BIOME_RULE_NAMES = Object.freeze(RULES.map((r) => r.biome));
  *    so the palette[0] tail is a MEASURED share and not a silent path. It is
  *    8.80% of land today and 44.4% of c05 alone; a change that pushes it up is
  *    a change in what the world is made of and must be visible.
+ *  - `paletteRealisation[k]` — for premise k, which of its palette entries
+ *    actually occur on its own plate. THE SAME DEFECT ONE SCOPE UP: `ruleWins`
+ *    is a WORLD census, so a rule that fires somewhere passes the dead-rule
+ *    assertion while promising a biome a continent never gets. Twenty-one of
+ *    the sixty-seven palette entries are in that position today (c02 bramble,
+ *    c03 upland/rock/scree, c04 rock/forest/meadow, …) and nothing measured it
+ *    — the two the seam happened to notice were written in prose. A premise
+ *    palette is committed content; a promise it does not keep must be a
+ *    committed NUMBER, not a note.
+ *
+ *    THE DENOMINATOR IS THE PLATE, NOT THE OWNED LAND. `ocean` and `lake` are
+ *    palette entries on six premises and regions tile NET land, so a census
+ *    over owned cells alone reports six water promises broken that are in fact
+ *    kept — the first count of this taken read 25 dead entries and six of them
+ *    were that artefact.
  */
 export function classifyBiomes({ grid, premises, BIOMES }) {
   const histogram = new Int32Array(BIOMES.length);
@@ -110,8 +147,16 @@ export function classifyBiomes({ grid, premises, BIOMES }) {
       throw new Error(`biome: ${p.id} palette[0] "${p.palette[0]}" is not a biome`);
     return first;
   });
+  // Per-plate biome sets, for the palette-realisation census below. Filled on
+  // the same single pass — a second 640,000-cell walk to count what this one
+  // already knows is exactly the waste the clamp table above avoids.
+  const seenByPlate = premises.map(() => new Set());
   for (let i = 0; i < grid.n; i++) {
-    if ((grid.flags[i] & FLAG.SEA) !== 0) { grid.biome[i] = oceanIdx; histogram[oceanIdx]++; continue; }
+    if ((grid.flags[i] & FLAG.SEA) !== 0) {
+      grid.biome[i] = oceanIdx; histogram[oceanIdx]++;
+      if (grid.plate[i] >= 0 && grid.plate[i] < premises.length) seenByPlate[grid.plate[i]].add(oceanIdx);
+      continue;
+    }
     const k = grid.plate[i];
     // A plate index with no premise is a wiring bug — say so here rather than
     // reading `undefined[r]` eight rules later.
@@ -140,8 +185,18 @@ export function classifyBiomes({ grid, premises, BIOMES }) {
     }
     grid.biome[i] = bi;
     histogram[bi]++;
+    if (k >= 0) seenByPlate[k].add(bi);
   }
-  return { histogram, ruleWins, fallbacks, fallbacksByPlate };
+  const paletteRealisation = premises.map((p, k) => {
+    const names = new Set([...seenByPlate[k]].map((b) => BIOMES[b]));
+    return {
+      continent: p.id,
+      promised: p.palette.length,
+      realised: p.palette.filter((b) => names.has(b)).length,
+      absent: p.palette.filter((b) => !names.has(b)),
+    };
+  });
+  return { histogram, ruleWins, fallbacks, fallbacksByPlate, paletteRealisation };
 }
 
 // Region terrainKind: the single kind implied by the region's dominant biome.
