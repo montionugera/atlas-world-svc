@@ -5,7 +5,8 @@
 It exists so a new session does not need the previous session's conversation. If something here
 is wrong, fix the file — do not work around it in a prompt.
 
-Last updated: 2026-08-20, after **Plan A shipped** (F-046 → release/1.8, merge `618abe5`).
+Last updated: 2026-08-22, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`) and
+**Plan C was claimed** as F-048.
 
 ---
 
@@ -14,8 +15,8 @@ Last updated: 2026-08-20, after **Plan A shipped** (F-046 → release/1.8, merge
 | Plan | Feature | State |
 | --- | --- | --- |
 | A — Unblock and Afford | F-046 | **SHIPPED** to release/1.8, 2026-08-19. All 15 acceptance criteria verified. |
-| B — Vocabulary and Render | — | next; needs its own I-NNN → F-NNN → claim |
-| C — The Fabric Layer | — | not started |
+| B — Vocabulary and Render | F-047 | **SHIPPED** to release/1.8, 2026-08-22. All 12 tasks; Gate 1 13/13. |
+| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. |
 | D — Pinned, Bound, Relations | — | not started |
 | E — Redraw and Prose | — | not started |
 
@@ -26,17 +27,29 @@ Plans: `docs/superpowers/plans/2026-08-16-world-fill-{a..e}-*.md`
 
 ## 2. Measured baselines — compare against these, do not re-derive
 
-Taken on release/1.8 with F-046 merged, on a **quiet machine**.
+**Re-measured 2026-08-22 in the F-048 worktree** (release/1.8 merged in, Plan B present,
+Node v26.5.0). The Plan A column is kept alongside so a mover is visible.
+
+| Command | At `plan-c-base` (F-047 merged) | Was, at Plan A |
+| --- | --- | --- |
+| `node scripts/check_content.mjs --only=spine` | 44 nodes / 0 failures / 19 warnings, **0.76 s** | 0.79 s |
+| `node --test 'scripts/tests/*.test.mjs'` | **854 pass / 1 skip / 0 fail, 35.6 s** | 698 pass, 44.8 s |
+| `node --test 'tools/mapforge/tests/*.test.mjs'` | **251 pass / 0 fail, 11.1 s** | 34 pass |
+| `node --test 'tools/asset-storybook/tests/*.test.mjs'` | **54 pass / 0 fail, 0.5 s** | 32 pass |
+| `node scripts/check_spine_emit.mjs --check` | clean, **47 files** | 46 files |
+| `node scripts/check_render_lock.mjs --check` | clean, **3 artifacts** | 2 artifacts |
+| `( cd colyseus-server && npx jest mapDimensions )` | **5 passed** | 5 passed |
+
+The three movers are all Plan B's and all expected: the `derived.json` sidecar makes the emit
+census 47, the synthetic canary sheet makes the render lock 3, and the lexicon/schema/render
+work is the +156 scripts and +217 mapforge tests. **Plan C's acceptance criterion 7 reads
+`clean, 47 files` — that is this number, not a target to move.**
+
+The older whole-suite readings, unchanged and not re-measured here:
 
 | Command | Result |
 | --- | --- |
-| `node scripts/check_content.mjs --only=spine` | 44 nodes / 0 failures / 19 warnings, **0.79 s** |
 | `node scripts/check_content.mjs --require-complete` | exit 0 — 12 sheets, 1 maps, 158 story, 1 placements, 10 zones, 1 towns, 44 nodes, 0 failures, 32 warnings |
-| `node --test 'scripts/tests/*.test.mjs'` | **698 pass / 0 fail, 44.8 s** |
-| `node --test 'tools/mapforge/tests/*.test.mjs'` | 34 pass / 0 fail |
-| `node --test 'tools/asset-storybook/tests/*.test.mjs'` | 32 pass / 0 fail |
-| `node scripts/check_spine_emit.mjs --check` | clean, **46 files** |
-| `node scripts/check_render_lock.mjs --check` | clean, 2 artifacts |
 | `node scripts/tools/overlap-preflight.mjs` | 133 pairs, 0 non-triangulable, 0 verdict differences, max deviation 0.002692 km² |
 | `( cd colyseus-server && npx jest mapDimensions )` | 5 passed |
 | `./scripts/precheck.sh --no-install` (Gate 1) | PASS 12/12 |
