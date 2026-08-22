@@ -10,8 +10,18 @@
 //
 // tests/noise-determinism.test.mjs scans this file's own source for
 // violations, in TWO passes — the dotted call form, and the indirect forms
-// (Math["cos"], Reflect.get, new Function) a text scan would otherwise miss.
-// Do not add one and "fix" the test.
+// (Math["cos"], `const M = Math`, `const { cos } = Math`, globalThis.Math.cos,
+// new Function / eval) a naive text scan would otherwise miss. Do not add one
+// and "fix" the test.
+//
+// The scan is ACCIDENT prevention, not an adversarial sandbox, and the
+// difference is measured, not assumed: every form that SPELLS the token `Math`
+// is caught, and that is every form a later pass reaching for `Math.cos` by
+// name will actually use. Forms that assemble the name at run time —
+// globalThis["Ma" + "th"].cos, Reflect.get(globalThis, "Mat" + "h") — are NOT
+// caught and are not meant to be. Nor is engine-dependent formatting reached
+// without Math at all (toFixed, toLocaleString). Do not read the scan as a
+// completeness guarantee.
 
 // -- the hash --------------------------------------------------------------
 // xor-shift / multiply finaliser. Math.imul is exact 32-bit multiplication.
@@ -53,6 +63,15 @@ export function smoothstep(t) {
 // under both. tests/noise-determinism.test.mjs sweeps across zero for exactly
 // this reason.
 export function hashNoise2D({ x, y, stream }) {
+  // Same rule as streamInt's, for the same reason: a NaN or undefined
+  // coordinate makes `Math.floor(x)` NaN, `NaN | 0` 0 inside hash3, and the
+  // result NaN — which q() carries through to `null` in a COMMITTED json
+  // (JSON.stringify(NaN) is "null"). A silent collapse is worse than a throw,
+  // and this is the one place it is cheap to catch. Measured cost of the two
+  // Number.isFinite calls: ~3.6 ns/call, against a streamInt regex test this
+  // function already runs on every call.
+  if (!Number.isFinite(x) || !Number.isFinite(y))
+    throw new TypeError(`noise: x and y must be finite, got (${x}, ${y})`);
   const s = streamInt(stream);
   const xi = Math.floor(x), yi = Math.floor(y);
   const tx = smoothstep(x - xi), ty = smoothstep(y - yi);
@@ -70,10 +89,15 @@ export function hashNoise2D({ x, y, stream }) {
 // each octave keeps amplitude 1 and an un-normalised sum would leave the range
 // on the second octave.
 export function fbm({ x, y, stream, octaves = 6, lacunarity = 2, gain = 0.5 }) {
+  // fbm needs its OWN guard, not hashNoise2D's: it passes `x * freq`, and
+  // `null * 1` is 0 while `"3" * 1` is 3 — so a bad coordinate is coerced to a
+  // plausible one before the inner guard ever sees it.
+  if (!Number.isFinite(x) || !Number.isFinite(y))
+    throw new TypeError(`noise: x and y must be finite, got (${x}, ${y})`);
   let amp = 1, freq = 1, sum = 0, norm = 0;
   for (let o = 0; o < octaves; o++) {
     sum += amp * hashNoise2D({ x: x * freq, y: y * freq, stream });
-    norm += amp;
+    norm += amp < 0 ? -amp : amp;   // |amp|: a negative gain alternates the sign, and a SIGNED sum cancels instead of normalising (measured: gain -0.9, 7 octaves left fbm at -2.419)
     amp *= gain;
     freq *= lacunarity;
   }

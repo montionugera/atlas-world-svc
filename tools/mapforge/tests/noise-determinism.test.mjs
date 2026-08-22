@@ -1,25 +1,38 @@
 // tools/mapforge/tests/noise-determinism.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { hashNoise2D, fbm, smoothstep, UNIT_VECTORS, q } from "../lib/noise.mjs";
+import { hashNoise2D, fbm, falloff, smoothstep, UNIT_VECTORS, q } from "../lib/noise.mjs";
 import { mintSeed } from "../lib/seed.mjs";
+import { codeOfFile, lineOf, stripComments } from "./_source-scan.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const LIB = resolve(HERE, "../lib");
+const REPO = resolve(HERE, "../../..");
+const SCANNED = ["noise.mjs", "seed.mjs", "grid.mjs"];
 
 // The spec's R5 mitigation is "no transcendentals on any path reaching a
 // committed byte". A comment cannot enforce that; a source scan can.
+//
+// EVERY scan below reads COMMENT-STRIPPED source, through the one stripper
+// tests/_source-scan.mjs holds — see its header. Before the seam-1 fix pass
+// this file excluded only a line whose trimmed start was `//`, so a JSDoc
+// block or a trailing comment naming Math.cos reddened the suite on prose,
+// while determinism-inventory.test.mjs three files away deliberately stripped
+// comments and said why. Two scans, one repo, contradictory policies. This is
+// the reconciliation: same stripper, same policy, and the scan gets STRICTER
+// as a side effect (a violation parked after a `*/` on a kept line no longer
+// survives).
 const BANNED = /Math\.(sin|cos|tan|asin|acos|atan|atan2|exp|log|log2|log10|pow|hypot|cbrt|sinh|cosh|tanh)\b|\*\*/;
 
 test("noise.mjs and seed.mjs contain no transcendental call and no ** operator", () => {
-  for (const f of ["noise.mjs", "seed.mjs", "grid.mjs"]) {
-    const src = readFileSync(join(LIB, f), "utf8");
-    const offending = src.split("\n")
+  for (const f of SCANNED) {
+    const code = codeOfFile(join(LIB, f));
+    const offending = code.split("\n")
       .map((line, i) => [i + 1, line])
-      .filter(([, line]) => BANNED.test(line) && !line.trimStart().startsWith("//"));
+      .filter(([, line]) => BANNED.test(line));
     assert.deepEqual(offending, [], `${f} uses a banned operation: ${JSON.stringify(offending)}`);
   }
 });
@@ -33,32 +46,70 @@ test("noise.mjs and seed.mjs contain no transcendental call and no ** operator",
 // dotted call on one of the operations ECMA-262 pins exactly — the integer and
 // comparison ops, and Math.sqrt, which IEEE 754 mandates be correctly rounded.
 // Every other appearance of the token, in any spelling — an alias, a
-// destructure, a computed access, a Reflect hop — is a violation by
-// construction, because none of them can be written without the token.
+// destructure, a computed access, a Reflect hop — is a violation.
+//
+// WHAT THIS DOES NOT CLAIM, measured by the review rather than assumed: a name
+// ASSEMBLED at run time (`globalThis["Ma" + "th"].cos`, `Reflect.get(globalThis,
+// "Mat" + "h")`) is not caught, and neither is engine-dependent formatting that
+// never names Math (`toFixed`, `toLocaleString`). This is accident prevention:
+// the realistic failure is a later pass reaching for `Math.cos` BY NAME, and
+// every plain named form is caught. An earlier version of this comment argued
+// the indirect routes "cannot be written without the token" — they can, and
+// claiming completeness invites the next author to trust it.
 const ALLOWED_MATH = /^\.(imul|floor|ceil|round|trunc|abs|min|max|sqrt|sign)\b/;
 // The one way to reach a transcendental without naming Math: build the name at
-// runtime. `new Function`, bare `Function(...)` and `eval` are all banned.
-const CODEGEN = /\bnew\s+Function\b|(?<![.\w$])Function\s*\(|(?<![.\w$])eval\s*\(/;
-
-const scanLines = (src) =>
-  src.split("\n").map((line, i) => [i + 1, line]).filter(([, line]) => !line.trimStart().startsWith("//"));
+// runtime. `new Function`, `Function` and `eval` are banned by NAME, not by
+// call shape — `const E = eval; E(...)` and `(0, eval)(...)` both dodge a
+// regex that requires an immediately-following `(`.
+const CODEGEN = /\bnew\s+Function\b|(?<![.\w$])Function\b|(?<![.\w$])eval\b/;
 
 test("the transcendental ban is a WHITELIST: `Math` may only be a dotted exact op", () => {
-  for (const f of ["noise.mjs", "seed.mjs", "grid.mjs"]) {
-    for (const [n, line] of scanLines(readFileSync(join(LIB, f), "utf8"))) {
-      for (const m of line.matchAll(/\bMath\b/g)) {
-        const tail = line.slice(m.index + 4);
-        assert.ok(ALLOWED_MATH.test(tail),
-          `${f}:${n} uses Math in a form the ban cannot check: ${line.trim()}`);
-      }
+  for (const f of SCANNED) {
+    const code = codeOfFile(join(LIB, f));
+    for (const m of code.matchAll(/\bMath\b/g)) {
+      // The tail is taken across NEWLINES and with leading whitespace dropped,
+      // so a legitimate call wrapped as `Math\n  .floor(x)` reads as `.floor`
+      // and not as a bare `Math`. Line-at-a-time reddened correct code.
+      const tail = code.slice(m.index + 4).replace(/^\s+/, "");
+      assert.ok(ALLOWED_MATH.test(tail),
+        `${f}:${lineOf(code, m.index)} uses Math in a form the ban cannot check: ${tail.slice(0, 60)}`);
     }
   }
 });
 
 test("the ban cannot be stepped over by building the name at runtime", () => {
-  for (const f of ["noise.mjs", "seed.mjs", "grid.mjs"])
-    for (const [n, line] of scanLines(readFileSync(join(LIB, f), "utf8")))
-      assert.ok(!CODEGEN.test(line), `${f}:${n} builds code at runtime: ${line.trim()}`);
+  for (const f of SCANNED) {
+    const code = codeOfFile(join(LIB, f));
+    const m = CODEGEN.exec(code);
+    assert.equal(m, null, m && `${f}:${lineOf(code, m.index)} builds code at runtime: ${m[0]}`);
+  }
+});
+
+// The stripper is now load-bearing for BOTH scans, so it has its own fixtures:
+// each string below is a shape that reddened the suite before the fix pass.
+test("the scans read CODE: prose naming a banned op is not a violation, and a wrapped call is not one either", () => {
+  for (const prose of [
+    "/* Math.cos is not used here */",
+    "/** @see Math.hypot */",
+    "const probe = () => 1; // avoid Math.cos here",
+  ]) {
+    const stripped = stripComments(prose);
+    assert.ok(!BANNED.test(stripped), `prose read as code: ${prose}`);
+    assert.equal([...stripped.matchAll(/\bMath\b/g)].length, 0, prose);
+  }
+  // …while a real call, however it is spelled or wrapped, still reads as code.
+  const wrapped = stripComments("Math\n  .floor(1.7);");
+  const hits = [...wrapped.matchAll(/\bMath\b/g)];
+  assert.equal(hits.length, 1);
+  assert.ok(ALLOWED_MATH.test(wrapped.slice(hits[0].index + 4).replace(/^\s+/, "")),
+    "a legitimate Math.floor wrapped over two lines must not read as a violation");
+  assert.ok(BANNED.test(stripComments("const v = Math.cos(0); // not a comment")),
+    "a real banned call on a line that also carries a comment must still be caught");
+  // Line numbers survive stripping, or a violation reports the wrong place.
+  const src = "a\n/* two\n   lines */\nMath.cos(0)\n";
+  const code = stripComments(src);
+  assert.equal(code.split("\n").length, src.split("\n").length);
+  assert.equal(lineOf(code, code.indexOf("Math")), 4);
 });
 
 test("smoothstep is the polynomial form and is exact at the endpoints", () => {
@@ -137,9 +188,15 @@ test("UNIT_VECTORS is a committed literal table of 16 unit vectors", () => {
     assert.ok(Math.abs(len - 1) < 1e-9, `not a unit vector: ${dx},${dy} (len ${len})`);
   }
   assert.throws(() => { UNIT_VECTORS.push([0, 0]); });
-  // Frozen one level down too: a frozen array of live rows is not a frozen
-  // table, and a pass that normalised a row in place would move the world.
-  assert.throws(() => { UNIT_VECTORS[0][0] = 99; });
+  // Frozen one level down too, on EVERY row — a frozen array of live rows is
+  // not a frozen table, and a pass that normalised a row in place would move
+  // the world. Checking row 0 only left rows 1..15 unprotected: unfreezing row
+  // 1 and row 8 both survived a full mutation run (review finding).
+  for (const [r, row] of UNIT_VECTORS.entries()) {
+    assert.ok(Object.isFrozen(row), `UNIT_VECTORS row ${r} is not frozen`);
+    assert.throws(() => { row[0] = 99; }, `UNIT_VECTORS row ${r} is writable`);
+    assert.throws(() => { row.push(0); }, `UNIT_VECTORS row ${r} is extensible`);
+  }
 });
 
 test("q quantises to 2 decimals and is idempotent", () => {
@@ -162,6 +219,108 @@ test("mintSeed is the pinned sha256 construction", () => {
   assert.match(s, /^[0-9a-f]{16}$/);
   assert.equal(s, mintSeed({ parentStream: "d9a0051d32afab59", name: "landform" }));
   assert.notEqual(s, mintSeed({ parentStream: "d9a0051d32afab59", name: "landforms" }));
+});
+
+// ── THE FIELD ITSELF, not just its shape ──────────────────────────────────
+// Every test above this line proves f(a) === f(a), a range, or a continuity
+// property. None of them names a VALUE, and six mutations that each produce a
+// DIFFERENT WORLD survived a full run because of it (review, reproduced):
+// hash3's multiplier constant, hash3's final xor-shift, toSigned's divisor,
+// fbm's `freq *= lacunarity`, mintSeed's sha256 -> sha512, and mintSeed's join
+// order. Plans C, D and E all inherit this field; a silent fork of it is a
+// silently different world, on every sheet, with every gate green.
+//
+// So: literals. They are not magic numbers — each was READ OFF the
+// implementation at f40d80b and every one of the six mutations moves at least
+// one of them. If a deliberate change to the field is ever made, these are the
+// lines that must be re-baselined, and having to do that is the point.
+test("the noise field is pinned to committed golden values, not merely to itself", () => {
+  assert.equal(hashNoise2D({ x: 12.25, y: 88.75, stream: "d9a0051d32afab59" }), -0.25916076946836725);
+  // A negative-coordinate sample too: `| 0` for Math.floor folds the field
+  // about the origin, and only this side of zero can see it.
+  assert.equal(hashNoise2D({ x: -3.5, y: -0.25, stream: "d9a0051d32afab59" }), -0.3176275987364649);
+  assert.equal(fbm({ x: 3.5, y: 7.25, stream: "d9a0051d32afab59", octaves: 6, lacunarity: 2, gain: 0.5 }),
+               0.4815606085063886);
+  assert.equal(smoothstep(0.25), 0.15625);
+  assert.equal(falloff({ d: 1, k: 3 }), 0.07692307692307693);
+});
+
+// The strongest single assertion available in this file: it ties the new module
+// to content/spine/derived.json AND to scripts/lib/spine.mjs's streamSeed() at
+// once. seed.mjs's header CLAIMS the construction is unchanged from streamSeed;
+// this is the claim under test rather than in a comment.
+test("mintSeed reproduces every seed stream already committed in derived.json", () => {
+  const derived = JSON.parse(readFileSync(join(REPO, "content/spine/derived.json"), "utf8"));
+  // The golden literal first, so this test still pins a value if derived.json
+  // is ever regenerated: n-ashvale-front's seed is fea688ddeefe8c42 and its
+  // committed `terrain` stream is c49af60a9fb6ecaf.
+  assert.equal(mintSeed({ parentStream: "fea688ddeefe8c42", name: "terrain" }), "c49af60a9fb6ecaf");
+  let joined = 0;
+  for (const [id, rec] of Object.entries(derived)) {
+    const streams = rec?.resolvedSeedStreams;
+    if (!streams) continue;
+    const nodePath = join(REPO, "content/spine/nodes", `${id}.json`);
+    if (!existsSync(nodePath)) continue;
+    const parentStream = JSON.parse(readFileSync(nodePath, "utf8"))?.seed?.value;
+    if (typeof parentStream !== "string") continue;
+    for (const [name, value] of Object.entries(streams)) {
+      assert.equal(mintSeed({ parentStream, name }), value,
+        `${id}/${name}: mapforge's mintSeed has forked from the construction that minted the committed stream`);
+      joined++;
+    }
+  }
+  // 44 committed nodes x 4 named streams. A join that stops joining is a test
+  // that stopped testing (STATE §6 trap 7), so the count is asserted.
+  assert.ok(joined >= 170, `only ${joined} committed streams joined — this test has gone dark`);
+});
+
+// falloff was EXPORTED WITH NO TEST AT ALL: `grep -c falloff` over both test
+// files returned 0 and 0, and changing 1/(1+t+t²) to 1/(2+t+t²) — which breaks
+// the f(0) = 1 the elevation and mask passes rely on — survived a full run.
+// It is the one export whose whole purpose is to keep a later pass away from
+// Math.exp.
+test("falloff is the rational replacement for exp(-k*d): f(0) = 1, monotone, no pole", () => {
+  assert.equal(falloff({ d: 0, k: 3 }), 1);
+  assert.equal(falloff({ d: 0, k: 0 }), 1);
+  assert.equal(falloff({ d: 12.5, k: 0 }), 1, "k = 0 is no falloff at all, at every distance");
+  let prev = Infinity;
+  for (let i = 0; i <= 400; i++) {
+    const v = falloff({ d: i * 0.05, k: 3 });
+    assert.ok(v > 0 && v <= 1, `falloff out of (0, 1] at d=${i * 0.05}: ${v}`);
+    assert.ok(v < prev || i === 0, `falloff is not monotone decreasing at d=${i * 0.05}`);
+    prev = v;
+  }
+  assert.ok(falloff({ d: 10, k: 3 }) < 0.01, "falloff must actually fall off");
+  // The denominator 1 + t + t² has no real root, so there is no division by
+  // zero anywhere on d >= 0 — the property that makes this safe as a mask.
+  assert.ok(Number.isFinite(falloff({ d: 1e9, k: 1e9 })));
+});
+
+test("fbm stays in [-1, 1] for a NEGATIVE gain too, which a signed normaliser does not", () => {
+  // The header claims "every gain". With `norm += amp` the amplitudes cancel
+  // instead of normalising: measured -2.419 at gain -0.9, octaves 7.
+  for (const gain of [-0.9, -1, -0.5]) {
+    for (let i = 0; i < 60; i++) {
+      const v = fbm({ x: i * 0.17 - 5, y: i * 0.23 - 3, stream: "d9a0051d32afab59", octaves: 7, lacunarity: 2, gain });
+      assert.ok(v >= -1.001 && v <= 1.001, `gain ${gain}: fbm out of range: ${v}`);
+    }
+  }
+  // …and the sign fix must not have moved the field for the gains anything
+  // actually uses: the golden fbm value above is at gain 0.5.
+  assert.equal(fbm({ x: 3.5, y: 7.25, stream: "d9a0051d32afab59", octaves: 6, lacunarity: 2, gain: 0.5 }),
+               0.4815606085063886);
+});
+
+test("a non-finite coordinate is a THROW, matching streamInt rather than collapsing to a committed null", () => {
+  // JSON.stringify(NaN) is "null", so an unguarded NaN coordinate reaches a
+  // COMMITTED file as a plausible-looking null. Same class as the stream guard,
+  // and it was the asymmetry the review named.
+  for (const bad of [undefined, NaN, Infinity, -Infinity, null, "3"])
+    for (const key of ["x", "y"]) {
+      const args = { x: 1, y: 2, stream: "d9a0051d32afab59", [key]: bad };
+      assert.throws(() => hashNoise2D(args), /x and y must be finite/, `${key} = ${String(bad)} was accepted`);
+      assert.throws(() => fbm(args), /x and y must be finite/, `fbm accepted ${key} = ${String(bad)}`);
+    }
 });
 
 test("a stream that is not hex is a THROW, never a silent collapse onto field 0", () => {

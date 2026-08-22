@@ -1,8 +1,18 @@
 // tools/mapforge/lib/grid.mjs — Plan C: the throwaway cell grid.
 //
 // Structure-of-arrays, one typed array per field, NEVER an array of objects:
-// 640,000 cells x 9 fields is ~14.7 MB resident this way and ~250 MB as
-// objects. Built, consumed and dropped inside one process; never committed.
+// 640,000 cells x 13 fields is 23,680,000 bytes = 22.58 MB resident this way,
+// and ~250 MB as objects. Built, consumed and dropped inside one process;
+// never committed.
+//
+// THE NUMBER WAS WRONG UNTIL 2026-08-22. The plan preamble, this header and
+// content/world/budgets.json's cellKmWhy all said "9 fields, ~14.7 MB"; the
+// four pinned-constraint fields below (landform, fetchKm, depthM, freshKm) were
+// added in the same commit and counted in none of them, and grid.test.mjs's
+// footprint assertion summed the same nine. 14.7 MB was an ESTIMATE, never a
+// budget — the fix is the measurement, not a smaller grid. grid.test.mjs now
+// sums every ArrayBuffer view on the object, so a fourteenth field cannot be
+// added outside the count.
 //
 // Index convention: i = cy * w + cx. Cell (cx, cy) covers the km rectangle
 // [cx*cellKm, (cx+1)*cellKm) x [cy*cellKm, (cy+1)*cellKm); its CENTRE is
@@ -89,7 +99,34 @@ export function makeGrid({ w = 800, h = 800, cellKm = 0.5 } = {}) {
   };
 }
 
+// idx is DELIBERATELY UNGUARDED, and the alternative was measured before that
+// was decided. `idx({ cx: 800, cy: 10 })` on the 800-wide grid returns 8800,
+// which decodes to (0, 11): the east edge wraps onto the west edge one row up,
+// silently. Tasks 3-9 walk D8 neighbours, flood-fill, route D8 flow and site
+// Poisson discs over all 640,000 cells, and a wrap there is a plausible world,
+// not a crash — exactly the class this programme keeps getting bitten by.
+//
+// It is still not guarded HERE, for a reason that is about shape and not about
+// cost (measured: a bounds test inside idx costs ~0.7 ns/call, 13.5 ms over
+// 20 M calls, 0.34% of the 4 s generate budget — affordable). A guard that
+// returns -1 turns a wrap into an out-of-range typed-array read of `undefined`,
+// which is just as silent; a guard that throws turns the arithmetic primitive
+// into something that can abort a whole pass at cell 639,999. And callers
+// legitimately compute an index for a candidate coordinate before deciding.
+// So the guard is a NAMED accessor instead: use `inBounds` before an index you
+// are unsure of, and `neighbourIdx` for the D8 walk, which is the operation
+// that would actually wrap.
 export function idx({ grid, cx, cy }) { return cy * grid.w + cx; }
+export function inBounds({ grid, cx, cy }) {
+  return cx >= 0 && cx < grid.w && cy >= 0 && cy < grid.h;
+}
+// The D8 step, with the edge answered rather than wrapped: -1 means "off the
+// grid", the same sentinel `flowDir` already uses for "no outlet".
+export function neighbourIdx({ grid, i, d }) {
+  const [dx, dy] = D8[d];
+  const nx = (i % grid.w) + dx, ny = ((i / grid.w) | 0) + dy;
+  return inBounds({ grid, cx: nx, cy: ny }) ? ny * grid.w + nx : -1;
+}
 export function cx({ grid, i }) { return i % grid.w; }
 export function cy({ grid, i }) { return (i / grid.w) | 0; }
 export function cellCentreKm({ grid, cx: x, cy: y }) {

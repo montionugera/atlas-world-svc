@@ -1,7 +1,7 @@
 // tools/mapforge/tests/grid.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { makeGrid, FLAG, SUBSTRATE_FLAGS, SUBSTRATE_MASK, D8, idx, cx, cy, cellCentreKm, cellAreaKm2, setFlag, hasFlag, clearFlag } from "../lib/grid.mjs";
+import { makeGrid, FLAG, SUBSTRATE_FLAGS, SUBSTRATE_MASK, D8, idx, inBounds, neighbourIdx, cx, cy, cellCentreKm, cellAreaKm2, setFlag, hasFlag, clearFlag } from "../lib/grid.mjs";
 
 test("makeGrid allocates one typed array per field at the pinned resolution", () => {
   const g = makeGrid({ w: 800, h: 800, cellKm: 0.5 });
@@ -104,7 +104,51 @@ test("D8 is eight distinct unit steps in a FIXED order, frozen", () => {
     assert.ok(dx !== 0 || dy !== 0);
   }
   assert.throws(() => { D8.push([0, 0]); });
-  assert.throws(() => { D8[0][0] = 5; });
+  // EVERY row, not row 0: unfreezing D8 row 2 survived a full mutation run
+  // (review finding). A frozen array of live rows is not a frozen table.
+  for (const [r, row] of D8.entries()) {
+    assert.ok(Object.isFrozen(row), `D8 row ${r} is not frozen`);
+    assert.throws(() => { row[0] = 5; }, `D8 row ${r} is writable`);
+    assert.throws(() => { row.push(0); }, `D8 row ${r} is extensible`);
+  }
+});
+
+// THE EAST EDGE WRAPS. `idx({ cx: 800, cy: 10 })` on the 800-wide grid returns
+// 8800, which decodes to (0, 11) — the east coast joined to the west coast one
+// row up. Tasks 3-9 walk D8 neighbours over all 640,000 cells for flow routing,
+// flood fill, Poisson siting and Dijkstra; a wrap there produces a plausible
+// world rather than a crash, which is the class this programme keeps shipping.
+// idx stays unguarded on purpose (see its header); `inBounds` and
+// `neighbourIdx` are the guard, and this is the fixture that proves the edge is
+// answered rather than wrapped.
+test("the grid has a named bounds guard, and the east edge does NOT wrap to the west", () => {
+  const g = makeGrid({});
+  // The hazard itself, pinned so nobody "fixes" idx and drops the helpers.
+  assert.equal(idx({ grid: g, cx: 800, cy: 10 }), 8800);
+  assert.equal(cx({ grid: g, i: 8800 }), 0);
+  assert.equal(cy({ grid: g, i: 8800 }), 11);
+
+  assert.ok(inBounds({ grid: g, cx: 0, cy: 0 }));
+  assert.ok(inBounds({ grid: g, cx: 799, cy: 799 }));
+  for (const [x, y] of [[800, 10], [-1, 10], [10, 800], [10, -1], [800, 800]])
+    assert.ok(!inBounds({ grid: g, cx: x, cy: y }), `(${x}, ${y}) must be out of bounds`);
+
+  // D8[0] is east. From the east edge that is off-grid, not the west edge.
+  assert.equal(neighbourIdx({ grid: g, i: idx({ grid: g, cx: 799, cy: 10 }), d: 0 }), -1);
+  assert.equal(neighbourIdx({ grid: g, i: idx({ grid: g, cx: 0, cy: 10 }), d: 4 }), -1);   // west from the west edge
+  assert.equal(neighbourIdx({ grid: g, i: idx({ grid: g, cx: 10, cy: 0 }), d: 6 }), -1);   // north from the north edge
+  assert.equal(neighbourIdx({ grid: g, i: idx({ grid: g, cx: 10, cy: 799 }), d: 2 }), -1); // south from the south edge
+  // …and an interior walk still visits exactly the eight D8 offsets.
+  const here = idx({ grid: g, cx: 400, cy: 400 });
+  const got = D8.map((_, d) => neighbourIdx({ grid: g, i: here, d }));
+  assert.deepEqual(got, D8.map(([dx, dy]) => idx({ grid: g, cx: 400 + dx, cy: 400 + dy })));
+  assert.equal(new Set(got).size, 8);
+  // Every corner cell has exactly three in-bounds neighbours; every edge cell
+  // five. A wrap would report eight everywhere, which is how it stays invisible.
+  const live = (x, y) => D8.filter((_, d) => neighbourIdx({ grid: g, i: idx({ grid: g, cx: x, cy: y }), d }) >= 0).length;
+  for (const [x, y] of [[0, 0], [799, 0], [0, 799], [799, 799]]) assert.equal(live(x, y), 3, `corner (${x}, ${y})`);
+  for (const [x, y] of [[400, 0], [0, 400], [799, 400], [400, 799]]) assert.equal(live(x, y), 5, `edge (${x}, ${y})`);
+  assert.equal(live(400, 400), 8);
 });
 
 test("setFlag / hasFlag / clearFlag touch one bit and leave the rest alone", () => {
@@ -140,6 +184,10 @@ test("elevM turns the model's 0..1 elevation into metres", () => {
 });
 
 test("makeGrid defaults to the pinned 800 x 800 x 0.5 km frame", () => {
+  // makeGrid() with NO argument at all, not just `{}`: the plan's signature had
+  // no `= {}` default and would have thrown here, and removing the default the
+  // implementer added survived a full mutation run.
+  assert.deepEqual([makeGrid().w, makeGrid().h, makeGrid().cellKm, makeGrid().n], [800, 800, 0.5, 640000]);
   const g = makeGrid({});
   assert.equal(g.w, 800);
   assert.equal(g.h, 800);
@@ -148,10 +196,24 @@ test("makeGrid defaults to the pinned 800 x 800 x 0.5 km frame", () => {
   assert.equal(g.w * g.cellKm, 400, "the grid must cover the 400 km frame exactly");
 });
 
-test("resident footprint stays under 16 MB", () => {
+test("resident footprint is measured over EVERY field and stays under 24 MB", () => {
+  // THE MEASUREMENT WAS WRONG, and its own guard comment ("a field is missing")
+  // was the thing that was false. This test summed a hardcoded NINE arrays; the
+  // same commit added four more (landform, fetchKm, depthM, freshKm) for Plan
+  // D's G-PIN-SAT and counted them nowhere. 14.04 MB measured, 22.58 MB
+  // actually allocated — and a tenth field added outside the list would not
+  // have reddened it either. STATE §6 trap 7 in its literal form.
+  //
+  // 14.7 MB was an ESTIMATE in the plan preamble, never a budget, so the fix is
+  // the measurement and not a smaller grid. The cap below is set from the real
+  // number with headroom for one more Float32 field.
   const g = makeGrid({ w: 800, h: 800, cellKm: 0.5 });
-  const bytes = [g.elev, g.moist, g.temp, g.flowAcc, g.flowDir, g.owner, g.plate, g.biome, g.flags]
-    .reduce((s, a) => s + a.byteLength, 0);
-  assert.ok(bytes < 16 * 1024 * 1024, `${bytes} bytes resident`);
-  assert.ok(bytes > 14 * 1024 * 1024, `${bytes} bytes — a field is missing`);
+  const fields = Object.entries(g).filter(([, v]) => ArrayBuffer.isView(v));
+  assert.equal(fields.length, 13, `${fields.length} typed arrays — a field was added or removed without re-measuring`);
+  const bytes = fields.reduce((s, [, a]) => s + a.byteLength, 0);
+  assert.equal(bytes, 23680000, "the footprint moved; re-state it in grid.mjs's header and in budgets.json's cellKmWhy");
+  assert.ok(bytes < 24 * 1024 * 1024, `${bytes} bytes resident`);
+  // Every field is n cells long: a short one is a field allocated against the
+  // wrong extent, which no byte total can see.
+  for (const [k, a] of fields) assert.equal(a.length, g.n, `${k} is ${a.length} cells, not ${g.n}`);
 });

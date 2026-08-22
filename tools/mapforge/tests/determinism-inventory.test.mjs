@@ -41,8 +41,11 @@ import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { codeOfFile } from "./_source-scan.mjs";
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const LIB = resolve(HERE, "../lib");
+const MAPFORGE = resolve(HERE, "..");
 
 // `Date`, `performance.now` and `Math.random` are a different class: they are
 // not merely imprecise, they are not FUNCTIONS of the input at all. Those stay
@@ -57,11 +60,13 @@ const NEVER = [
 
 /** Source with comments removed: the headers legitimately NAME these to say
  *  they are not used, and a scan that reads prose as code gets worked around
- *  instead of obeyed. */
-const codeOf = (file) =>
-  readFileSync(join(LIB, file), "utf8")
-    .replace(/\/\*[\s\S]*?\*\//g, " ")
-    .replace(/(^|[^:])\/\/.*$/gm, "$1");
+ *  instead of obeyed.
+ *
+ *  The stripper moved to tests/_source-scan.mjs in the seam-1 fix pass so that
+ *  noise-determinism.test.mjs — which read prose as code, and reddened on a
+ *  JSDoc block — uses the SAME one. Two scans over the same files with
+ *  opposite comment policies is not a rule anybody can obey. */
+const codeOf = (file) => codeOfFile(join(LIB, file));
 
 function census(file) {
   const counts = {};
@@ -116,15 +121,44 @@ test("Math.sqrt is NOT in the inventory — it is correctly rounded and always a
   for (const f of users) assert.ok(!(census(f)["Math.sqrt"] ?? 0), `${f}: sqrt was inventoried`);
 });
 
+// THE GAP ONE LEVEL UP. Measured by the review: a `Math.cos` helper placed in
+// lib/ is caught by the census above, but the SAME helper at
+// tools/mapforge/trig-helper.mjs — beside gen-world.mjs and render-sheet.mjs —
+// left the whole suite green with Math.cos reachable from lib/. That is not an
+// adversary's route, it is an ordinary one: Plan C Task 10 puts a CLI at
+// tools/mapforge/generate-world.mjs, and a helper dropped next to it is exactly
+// where a later task would put one.
+//
+// The top-level files are on the committed-byte path (gen-world.mjs writes the
+// draft trunk; render-sheet.mjs writes the locked SVGs), and MEASURED 2026-08-22
+// both are clean of every entry in IMPRECISE and of every NEVER. So their
+// inventory is EMPTY, and an empty inventory is the strongest kind: the next
+// author who needs one of these here has to decide deliberately and write it
+// down, which is the whole point of the inventory form.
+test("the mapforge CLI layer, one level above lib/, carries no imprecise Math at all", () => {
+  const files = readdirSync(MAPFORGE).filter((f) => f.endsWith(".mjs")).sort();
+  assert.ok(files.length >= 2, `only ${files.length} top-level mapforge files scanned — this test cannot go dark`);
+  const actual = {};
+  for (const f of files) {
+    const counts = {};
+    for (const m of codeOfFile(join(MAPFORGE, f)).matchAll(IMPRECISE)) counts[m[0]] = (counts[m[0]] ?? 0) + 1;
+    if (Object.keys(counts).length) actual[f] = counts;
+  }
+  assert.deepEqual(actual, {},
+    "a file directly under tools/mapforge/ gained an imprecise Math call. lib/ is inventoried; this layer is not, " +
+      "because nothing here has ever needed one. Adding the first is a determinism decision — make it here, in writing.");
+});
+
 test("nothing on the committed-byte path reads a clock or a random number", () => {
   // A flat ban, no inventory and no grandfathering: these are not imprecise,
   // they are not functions of the input at all. A single one of them makes the
   // artifact unreproducible rather than merely engine-dependent.
   const offenders = [];
-  for (const f of readdirSync(LIB).filter((x) => x.endsWith(".mjs"))) {
-    const src = codeOf(f);
-    for (const [re, name] of NEVER) if (re.test(src)) offenders.push(`${f}: ${name}`);
-  }
+  for (const [dir, label] of [[LIB, "lib"], [MAPFORGE, "."]])
+    for (const f of readdirSync(dir).filter((x) => x.endsWith(".mjs"))) {
+      const src = codeOfFile(join(dir, f));
+      for (const [re, name] of NEVER) if (re.test(src)) offenders.push(`${label}/${f}: ${name}`);
+    }
   assert.deepEqual(offenders.sort(), []);
 });
 
