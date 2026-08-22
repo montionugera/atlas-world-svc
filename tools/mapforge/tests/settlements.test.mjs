@@ -32,6 +32,7 @@ import { applyWinds } from "../lib/passes/winds.mjs";
 import { carveWater } from "../lib/passes/water.mjs";
 import { terrainStream, namedStream } from "../lib/seed.mjs";
 import { routeRoads } from "../lib/passes/roads.mjs";
+import { anchorDungeons, MAX_HOPS, MAX_PER_REGION } from "../lib/passes/dungeons.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const MANIFEST = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
@@ -399,7 +400,9 @@ function realWorld() {
   const bands = assignLevelBands({
     regions: part.regions, settlements: p11.settlements, manifest: MANIFEST, problems: bandProblems });
   const p12 = routeRoads({ grid, settlements: p11.settlements, regions: part.regions });
-  REAL = { grid, sea, part, lf, p11, bands, bandProblems, settleStream, p12 };
+  const p13 = anchorDungeons({ instances: lf.instances, regions: part.regions,
+    settlements: p11.settlements, lexicon: LEXICON, manifest: MANIFEST, stream: settleStream });
+  REAL = { grid, sea, part, lf, p11, bands, bandProblems, settleStream, p12, p13 };
   return REAL;
 }
 
@@ -685,4 +688,74 @@ test("REAL WORLD — routeRoads is independent of the heap tiebreak and of input
   for (const less of variants) for (const order of orders)
     assert.equal(JSON.stringify(routeRoads({ grid, settlements: order, regions: part.regions, less })),
       baseline, "the road network moved under a comparator or input permutation");
+});
+
+// ── THE REAL WORLD: P13 dungeon anchors ───────────────────────────────────
+
+test("REAL WORLD — 60 complexes anchored against the manifest quota, no problems", () => {
+  const { p13 } = realWorld();
+  assert.deepEqual(p13.problems, []);
+  assert.equal(p13.anchors.length, MANIFEST.quotas.dungeons.complexes);
+  assert.equal(p13.anchors.length, 60);
+  assert.equal(new Set(p13.anchors.map((a) => a.handle)).size, 60, "an instance was anchored twice");
+  // FLOORS ARE NOT PRODUCED HERE, and no pass in Plan C produces them. The
+  // manifest declares `floors: 190` beside `complexes: 60`; P13 anchors the
+  // DOOR. The count is pinned so the omission is a stated fact rather than a
+  // number someone later assumes was generated.
+  assert.equal(MANIFEST.quotas.dungeons.floors, 190);
+});
+
+test("REAL WORLD — every anchor is dungeonCapable, in range, and its hops are serialised", () => {
+  const { part, p11, p13 } = realWorld();
+  const capable = new Set(LEXICON.filter((t) => t.dungeonCapable).map((t) => t.id));
+  const byId = new Map(part.regions.map((r) => [r.id, r]));
+  const settledRegions = new Set(p11.settlements.map((s) => s.region));
+  for (const a of p13.anchors) {
+    assert.ok(capable.has(a.entranceType), `${a.handle} entrance ${a.entranceType} is not dungeonCapable`);
+    assert.ok(byId.has(a.region), `${a.handle} names region ${a.region}`);
+    assert.equal(a.continent, a.region.split("/")[0]);
+    assert.ok(Number.isInteger(a.hopsToSettlement) && a.hopsToSettlement >= 0 &&
+              a.hopsToSettlement <= MAX_HOPS, `${a.handle} hops ${a.hopsToSettlement}`);
+    if (a.hopsToSettlement === 0)
+      assert.ok(settledRegions.has(a.region), `${a.handle} claims 0 hops from an unsettled region`);
+  }
+  // all three hop distances occur — the number carries information
+  const hist = {};
+  for (const a of p13.anchors) hist[a.hopsToSettlement] = (hist[a.hopsToSettlement] ?? 0) + 1;
+  assert.deepEqual(hist, { 0: 18, 1: 19, 2: 23 });
+});
+
+test("REAL WORLD — the per-region cap does not bind, and the supply says why", () => {
+  // RECORDED, so the next reviewer does not read the cap as dead: 235 anchors
+  // are reachable against a quota of 60, over 117 regions holding a
+  // dungeonCapable instance, so round 1 alone fills the quota and
+  // MAX_PER_REGION never rejects anybody on THIS world. The rule is killed by
+  // dungeons.test.mjs's two direct fixtures instead.
+  const { lf, p13 } = realWorld();
+  const capable = new Set(LEXICON.filter((t) => t.dungeonCapable).map((t) => t.id));
+  const supply = lf.instances.filter((i) => capable.has(i.type));
+  assert.equal(supply.length, 307);
+  assert.equal(new Set(supply.map((i) => i.region)).size, 117);
+  const per = new Map();
+  for (const a of p13.anchors) per.set(a.region, (per.get(a.region) ?? 0) + 1);
+  assert.equal(Math.max(...per.values()), 1, "round 1 no longer fills the quota");
+  assert.equal(per.size, 60);
+  assert.ok(MAX_PER_REGION >= 1);
+});
+
+test("REAL WORLD — anchors are spread across the settled continents", () => {
+  const { p13 } = realWorld();
+  const byCont = {};
+  for (const a of p13.anchors) byCont[a.continent] = (byCont[a.continent] ?? 0) + 1;
+  assert.deepEqual(byCont, { c02: 11, c03: 10, c04: 26, c05: 6, c06: 2, c07: 3, c08: 1, c09: 1 });
+  assert.equal(Object.values(byCont).reduce((a, b) => a + b, 0), 60);
+  assert.ok(new Set(p13.anchors.map((a) => a.entranceType)).size >= 5,
+    "the 60 doors are all the same kind of hole");
+});
+
+test("REAL WORLD — anchorDungeons does not move when instances[] is re-ordered", () => {
+  const { part, p11, lf, p13, settleStream } = realWorld();
+  const again = anchorDungeons({ instances: [...lf.instances].reverse(), regions: part.regions,
+    settlements: p11.settlements, lexicon: LEXICON, manifest: MANIFEST, stream: settleStream });
+  assert.deepEqual(again.anchors, p13.anchors);
 });
