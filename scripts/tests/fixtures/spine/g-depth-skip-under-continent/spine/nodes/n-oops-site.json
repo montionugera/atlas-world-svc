@@ -1,0 +1,9 @@
+{
+  "id": "n-oops-site",
+  "tier": "site",
+  "parentId": "n-shore",
+  "title": "Oops Site",
+  "seed": { "value": "0000000000000d03", "epoch": 0, "why": null },
+  "placement": { "shape": "rect", "rect": { "x": 12, "y": 12, "w": 2, "h": 2 }, "anchor": [13, 13] },
+  "composition": { "built": 100 }
+}

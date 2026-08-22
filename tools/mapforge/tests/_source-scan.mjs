@@ -22,10 +22,64 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
+// ONE PASS, NOT TWO REGEXES — and the reason is a measured hole, not taste.
+// The two-regex form ran the BLOCK rule first, so a `/*` appearing inside a
+// LINE comment opened a block comment and blanked everything down to the next
+// `*/` anywhere in the file. That is not a hypothetical spelling: a header line
+// as ordinary as
+//
+//     // 2. content/world/premises/*.json
+//
+// blanked the whole of tools/mapforge/generate-world.mjs. Reproduced against
+// the ban itself on 2026-08-22: prepending that comment plus
+// `export const PROBE = Math.cos(1) + Date.now();` to lib/fabric.mjs left BOTH
+// determinism scans at 30 pass / 0 fail. This is the third time the ban's
+// COVERAGE has been found holed (seam 1: lib/passes/ never walked; seam 2: a
+// maintained file list), and the pattern each time is that the scan reads
+// something other than the code.
+//
+// The scanner also skips STRING and TEMPLATE literals, so a path in a string
+// cannot open a comment either. REGEX literals are still not detected — the
+// two-regex form did not detect them either — and a `/*` inside one would
+// still open a block comment; the census tests below are what would catch the
+// consequence.
 export function stripComments(src) {
-  return src
-    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
-    .replace(/(^|[^:])\/\/.*$/gm, "$1");
+  const out = new Array(src.length);
+  let i = 0;
+  const blank = (n) => { for (let k = 0; k < n; k++) out[i + k] = src[i + k] === "\n" ? "\n" : " "; i += n; };
+  while (i < src.length) {
+    const c = src[i], d = src[i + 1];
+    if (c === "/" && d === "/") {
+      let j = i;
+      while (j < src.length && src[j] !== "\n") j++;
+      blank(j - i);
+      continue;
+    }
+    if (c === "/" && d === "*") {
+      let j = i + 2;
+      while (j < src.length && !(src[j] === "*" && src[j + 1] === "/")) j++;
+      blank(Math.min(src.length, j + 2) - i);
+      continue;
+    }
+    if (c === '"' || c === "'" || c === "`") {
+      // A `'` or `"` string cannot cross a newline in valid JS, and REGEX
+      // LITERALS are full of unpaired quotes — ink.mjs:38's
+      // `/^<pattern id="([^"]*)" …/` carries NINE of them. Without the newline
+      // bound the scanner ran off the end of that line and read the next
+      // twenty lines, JSDoc included, as string content. Backticks may span
+      // lines and are allowed to.
+      const multiline = c === "`";
+      out[i] = c; i++;
+      while (i < src.length && src[i] !== c && (multiline || src[i] !== "\n")) {
+        if (src[i] === "\\") { out[i] = src[i]; i++; if (i < src.length) { out[i] = src[i]; i++; } continue; }
+        out[i] = src[i]; i++;
+      }
+      if (i < src.length && src[i] === c) { out[i] = c; i++; }
+      continue;
+    }
+    out[i] = c; i++;
+  }
+  return out.join("");
 }
 
 /** A file's source with comments blanked out, line numbering intact. */

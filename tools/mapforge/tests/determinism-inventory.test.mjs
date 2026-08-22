@@ -41,7 +41,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { codeOfFile, sourceFilesUnder, isSourceFile, LEGACY_IMPRECISE_FILES } from "./_source-scan.mjs";
+import { stripComments, codeOfFile, sourceFilesUnder, isSourceFile, LEGACY_IMPRECISE_FILES } from "./_source-scan.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const LIB = resolve(HERE, "../lib");
@@ -164,8 +164,35 @@ test("everything under tools/mapforge/ outside lib/ carries no imprecise Math at
       "because nothing here has ever needed one. Adding the first is a determinism decision — make it here, in writing.");
 });
 
+// The ONE file allowed to read a wall clock, and the reason, written where the
+// ban is rather than in the file that wants the exception.
+//
+// `generate-world.mjs` MEASURES the run: the plan's `--stage-report` prints a
+// millisecond figure per pass and the CLI compares the total against
+// content/world/budgets.json's `generate` row, failing the run over `failMs`.
+// A generator that cannot time itself cannot hold a loop budget, and the loop
+// budget is goal G4's whole measure.
+//
+// The exemption is narrow and it is NOT a promise made in prose: what enforces
+// the property the ban exists for is
+// tools/mapforge/tests/generate-world.test.mjs' "REPRODUCIBLE" test, which
+// runs the CLI twice and compares the sha256 of EVERY file it wrote under
+// content/. A clock reaching a committed byte reds that immediately. The
+// timings themselves live in the draft folder's manifest.json, outside
+// content/, and are deliberately excluded from that comparison.
+const CLOCK_EXEMPT = Object.freeze(["generate-world.mjs"]);
+
+test("the clock exemption is exactly one file, and it is the CLI", () => {
+  assert.deepEqual([...CLOCK_EXEMPT], ["generate-world.mjs"],
+    "a second file wants a wall clock — write its reason above before adding it");
+  assert.ok(outsideLibFiles().includes("generate-world.mjs"),
+    "the exempt file is not in the scanned set, so the exemption is exempting nothing");
+  // and it really does read one, so the exemption is not vestigial
+  assert.match(codeOfFile(join(MAPFORGE, "generate-world.mjs")), /\bDate\b/);
+});
+
 test("nothing on the committed-byte path reads a clock or a random number", () => {
-  // A flat ban, no inventory and no grandfathering: these are not imprecise,
+  // A flat ban with ONE declared exception (above): these are not imprecise,
   // they are not functions of the input at all. A single one of them makes the
   // artifact unreproducible rather than merely engine-dependent.
   const offenders = [];
@@ -175,10 +202,57 @@ test("nothing on the committed-byte path reads a clock or a random number", () =
   for (const [label, files] of [["lib", libFiles().map((f) => [join(LIB, f), `lib/${f}`])],
                                 [".", outsideLibFiles().map((f) => [join(MAPFORGE, f), f])]])
     for (const [path, name] of files) {
+      if (label !== "lib" && CLOCK_EXEMPT.includes(name)) continue;
       const src = codeOfFile(path);
       for (const [re, n] of NEVER) if (re.test(src)) offenders.push(`${label === "lib" ? "" : "./"}${name}: ${n}`);
     }
   assert.deepEqual(offenders.sort(), []);
+});
+
+// THE STRIPPER ITSELF, because a scan is only as good as what it reads and
+// this is the THIRD time the ban's coverage has been found holed. The
+// two-regex form ran the block rule first, so a `/*` inside a LINE comment —
+// `// 2. content/world/premises/*.json`, an ordinary header line — opened a
+// block comment and blanked the file down to the next `*/`. Reproduced
+// 2026-08-22: that comment plus `Math.cos(1) + Date.now()` prepended to
+// lib/fabric.mjs left BOTH determinism scans at 30 pass / 0 fail.
+test("stripComments: a /* inside a // comment does not open a block comment", () => {
+  const src = [
+    "// reads content/world/premises/*.json",
+    "export const PROBE = Math.cos(1) + Date.now();",
+    "/** a real jsdoc mentioning Math.hypot */",
+    "export const REAL = 1;",
+  ].join("\n");
+  const out = stripComments(src);
+  assert.equal(out.split("\n").length, src.split("\n").length, "line numbering must survive stripping");
+  assert.ok(out.includes("Math.cos(1) + Date.now()"), "the planted violation was blanked with the comment");
+  assert.ok(out.includes("export const REAL = 1;"), "the stripper ran past the jsdoc and ate live code");
+  assert.ok(!out.includes("premises/*.json"), "the line comment itself must still be stripped");
+  assert.ok(!out.includes("Math.hypot"), "the jsdoc must still be stripped");
+});
+
+test("stripComments: a REGEX literal full of quotes does not open a string", () => {
+  // ink.mjs:38 is `/^<pattern id="([^"]*)" width="([^"]*)" …/` — NINE quotes,
+  // an odd number. A string scanner without a newline bound read the next
+  // twenty lines as string content and left a `/**` block comment unstripped.
+  const src = [
+    'const RE = /^<pattern id="([^"]*)" width="([^"]*)"/;',
+    "/**",
+    " * Math.hypot in a jsdoc",
+    " */",
+    "export const AFTER = 2;",
+  ].join("\n");
+  const out = stripComments(src);
+  assert.ok(out.includes("const RE = /^<pattern"), "the regex line is code and must survive");
+  assert.ok(!out.includes("Math.hypot"), "the block comment after the regex was not stripped");
+  assert.ok(out.includes("export const AFTER = 2;"));
+});
+
+test("stripComments: a comment opener inside a STRING is not a comment", () => {
+  const out = stripComments('const p = "path/*.json"; const q = "// not a comment";\nexport const X = 1;');
+  assert.ok(out.includes('"path/*.json"'), "a path in a string must not open a block comment");
+  assert.ok(out.includes('"// not a comment"'));
+  assert.ok(out.includes("export const X = 1;"));
 });
 
 test("the scan reads CODE, not the prose that names these to disclaim them", () => {
