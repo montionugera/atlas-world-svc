@@ -369,6 +369,61 @@ test("areaKm2 equals the cell census over EVERY 3x3 field of three owners", () =
   assert.equal(instances, 38342, "the sweep stopped covering what it used to");
 });
 
+test("assembleRings THROWS on a chain that CLOSES but encloses nothing", () => {
+  // The second half of MAJOR 3, and it is a different guard from the closure
+  // one: this chain closes perfectly and has four distinct vertices, so neither
+  // the closure test nor `pts.length < 3` can see it. It is a there-and-back
+  // walk with signed area exactly 0 — the shape the plan's inverted frame edges
+  // actually emitted, inside an otherwise plausible five-ring decomposition.
+  const arcs = [
+    { id: "arc-000000", left: 0, right: -1, points: [[0, 0], [1, 0], [2, 0]] },
+    { id: "arc-000001", left: 0, right: -1, points: [[2, 0], [1, 0], [0, 0]] },
+  ];
+  assert.throws(() => assembleRings({ arcs, ownerId: 0 }), /zero signed area/);
+});
+
+test("THREE distinct vertices is a polygon and is accepted", () => {
+  // Pins `pts.length < 3` against `< 4`. Every ring a square lattice can
+  // produce has at least four corners — a single cell has exactly four — so on
+  // any real owner field the two spellings are the same rule, and only a
+  // synthetic arc set separates them. assembleRings' contract is over ARCS, not
+  // over lattice fields (the degenerate case above is synthetic too), and three
+  // vertices is where a polygon starts.
+  const arcs = [
+    { id: "arc-000000", left: 0, right: -1, points: [[0, 0], [4, 0]] },
+    { id: "arc-000001", left: 0, right: -1, points: [[4, 0], [4, 3]] },
+    { id: "arc-000002", left: 0, right: -1, points: [[4, 3], [0, 0]] },
+  ];
+  const r = assembleRings({ arcs, ownerId: 0 });
+  assert.equal(r.rings.length, 1);
+  assert.equal(r.rings[0].length, 3);
+  assert.equal(r.areaKm2, 6);
+});
+
+test("a LOBE INSIDE A HOLE is a lobe again — nesting is counted, not detected", () => {
+  // An island in a lake in a continent. Depth 2, so it is land: the parity is
+  // the rule, not "contained by anything". Without it the island's area is
+  // subtracted and the owner comes back 2 cells short of its census.
+  const { owner, w, h } = field(11, 11, (set) => {
+    for (let y = 1; y < 10; y++) for (let x = 1; x < 10; x++) set(x, y, 0);   // continent
+    for (let y = 3; y < 8; y++) for (let x = 3; x < 8; x++) set(x, y, 1);     // lake
+    for (let y = 5; y < 6; y++) for (let x = 5; x < 6; x++) set(x, y, 0);     // island
+  });
+  const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
+  const r = assembleRings({ arcs, ownerId: 0 });
+  assert.equal(r.rings.length, 2, "the island is not counted as a second lobe");
+  assert.equal(r.holes.length, 1);
+  let cells = 0;
+  for (let i = 0; i < owner.length; i++) if (owner[i] === 0) cells++;
+  assert.equal(cells, 81 - 25 + 1);
+  assert.equal(r.areaKm2, cells * 0.25, "a lobe inside a hole was subtracted instead of added");
+  // and owner 1's own ring, with the island as ITS hole
+  const r1 = assembleRings({ arcs, ownerId: 1 });
+  assert.equal(r1.rings.length, 1);
+  assert.equal(r1.holes.length, 1);
+  assert.equal(r1.areaKm2, 24 * 0.25);
+});
+
 test("assembleRings THROWS on a chain that cannot close", () => {
   // MAJOR 3, and it is not hypothetical: the plan's inverted frame edges
   // produced exactly this — a chain that ran out of arcs, was emitted anyway,

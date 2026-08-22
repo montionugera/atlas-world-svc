@@ -352,8 +352,13 @@ function ringDepth({ closed, i }) {
   let depth = 0;
   for (let j = 0; j < closed.length; j++) {
     if (j === i) continue;
-    // Only a STRICTLY LARGER ring can contain this one; equal areas cannot
-    // nest, and the sort has already put larger first.
+    // RECORDED MUTATION SURVIVOR, redundant rather than dead. Two rings of one
+    // owner never cross — they are boundaries of the same cell set — so a
+    // smaller ring geometrically cannot contain a larger one, and two
+    // equal-area rings are necessarily disjoint. `pointInRing` therefore
+    // answers false on its own for every case this rejects. It is the early-out
+    // (containment is the O(vertices) half of this loop) and the statement of
+    // why the depth count is well defined. Deleting it stays green, correctly.
     if (closed[j].area <= closed[i].area) continue;
     if (pointInRing({ ring: closed[j].points, px, py })) depth++;
   }
@@ -364,6 +369,14 @@ function pointInRing({ ring, px, py }) {
   let inside = false;
   for (let k = 0, m = ring.length - 1; k < ring.length; m = k++) {
     const [xk, yk] = ring[k], [xm, ym] = ring[m];
+    // RECORDED MUTATION SURVIVOR: `>` -> `>=` stays green. This is the
+    // half-open crossing convention, and the two spellings can only disagree
+    // when some vertex has y EXACTLY py. They do not disagree here: the
+    // exhaustive 3x3 three-owner sweep (19,683 fields, 38,342 owner instances),
+    // the hole-and-lobe case, the island-in-a-lake case and the real 800 x 800
+    // coastline all return identical classifications under both. Left as the
+    // half-open form because that is the one that stays correct if a future
+    // caller does hand in a ray through a vertex.
     if ((yk > py) === (ym > py)) continue;
     // The x of the edge at height py, compared to px without dividing:
     //   px < xk + (py - yk) * (xm - xk) / (ym - yk)

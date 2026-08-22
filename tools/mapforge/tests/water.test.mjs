@@ -185,6 +185,24 @@ test("GOLDEN: winds pin moisture and temperature to VALUES", () => {
   assert.equal(r.referenceAcc, 0.06549188494682312);
 });
 
+test("the reference is the 75th-percentile land cell — the INDEX, pinned", () => {
+  // A recorded mutation survivor turned into a kill. `Math.round(0.75 * (n-1))`
+  // and `Math.floor(...)` agree whenever n is not 3 mod 4, which the real field
+  // (262,400 land cells) and every other fixture here happen to satisfy — so
+  // the quantile DEFINITION was unpinned. Seven land cells is the smallest case
+  // that separates them: 0.75 * 6 = 4.5, so round takes the 5th-smallest and
+  // floor the 4th.
+  const grid = makeGrid({ w: 9, h: 1, cellKm: 1 });
+  for (let x = 0; x < 9; x++) {
+    const i = idx({ grid, cx: x, cy: 0 });
+    if (x === 0 || x === 8) { grid.elev[i] = -0.5; grid.flags[i] |= FLAG.SEA; grid.plate[i] = -1; }
+    else { grid.elev[i] = 0.05 * x; grid.plate[i] = 0; }
+  }
+  const r = applyWinds({ grid, stream: STREAM });
+  assert.equal(r.landCells, 7);
+  assert.equal(r.referenceAcc, 7.021875381469727);
+});
+
 test("the moisture normalisation is SCALE INVARIANT — the property acc/max never had", () => {
   // Multiply every drop by a constant and the normalised field must not move.
   // PICKUP, LEEWARD_DROP and OROGRAPHIC are per-CELL rates on a grid whose
