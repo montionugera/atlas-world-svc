@@ -11,19 +11,28 @@
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 
+// `!doc` and `doc === null` CANNOT distinguish "the read failed" from "the
+// file parsed to a JSON-falsy value" — and a file whose whole content is the
+// four bytes `null` is the second. Treating them alike is how a broken record
+// becomes a silent skip; check_content.mjs's own loaders (loadMobTypes,
+// loadBestiaryDesigns) solve it by comparing the failure COUNT before and
+// after, and this is the same discipline. Reproduced by review fixtures, 2026-08-22.
 const readJsonInBand = (path, label, errors) => {
+  const before = errors.length;
+  let doc = null;
   try {
-    return JSON.parse(readFileSync(path, "utf8"));
+    doc = JSON.parse(readFileSync(path, "utf8"));
   } catch (e) {
     errors.push(`${label}: cannot read: ${e.message}`);
-    return null;
   }
+  return { doc, ok: errors.length === before };
 };
 
-// readdirSync itself throws on an unreadable directory (a permissions bit, a
-// dangling symlink, a file where a directory is expected). listJson is called
-// from loadFabric, which contracts never to throw — so the guard is here and
-// not at each call site.
+// readdirSync itself throws on an unreadable directory — a permissions bit, a
+// dangling symlink, or a FILE where a directory is expected (ENOTDIR, which is
+// how the fixtures reproduce it portably). listJson is called from loadFabric,
+// which contracts never to throw, so the guard is here and not at each call
+// site. The wording matches walkJson's below: one grammar for one condition.
 function listJson(dir, label, errors) {
   if (!existsSync(dir)) return [];
   try {
@@ -31,9 +40,23 @@ function listJson(dir, label, errors) {
       .filter((f) => f.endsWith(".json"))
       .sort();
   } catch (e) {
-    errors.push(`${label}: cannot list: ${e.message}`);
+    errors.push(`${label} cannot be listed: ${e.message}`);
     return [];
   }
+}
+
+// One shape rule for both families: a record file must be a JSON OBJECT. An
+// array, a bare number, a string or a literal `null` would spread into nothing
+// and arrive at the gates as an empty record carrying only its `file` key —
+// a silent skip dressed up as data.
+function readRecord(path, label, errors) {
+  const { doc, ok } = readJsonInBand(path, label, errors);
+  if (!ok) return null;                        // the read already recorded its own failure
+  if (doc === null || typeof doc !== "object" || Array.isArray(doc)) {
+    errors.push(`${label}: is not a JSON object`);
+    return null;
+  }
+  return doc;
 }
 
 export function loadFabric({ contentRoot }) {
@@ -43,24 +66,18 @@ export function loadFabric({ contentRoot }) {
   if (!existsSync(dir)) return empty;
 
   const manifest = existsSync(join(dir, "manifest.json"))
-    ? readJsonInBand(join(dir, "manifest.json"), "world/manifest.json", errors)
+    ? readRecord(join(dir, "manifest.json"), "world/manifest.json", errors)
     : null;
   const budgets = existsSync(join(dir, "budgets.json"))
-    ? readJsonInBand(join(dir, "budgets.json"), "world/budgets.json", errors)
+    ? readRecord(join(dir, "budgets.json"), "world/budgets.json", errors)
     : null;
 
   const fabricDir = join(dir, "fabric");
   const fabric = [];
   let world = null;
   for (const f of listJson(fabricDir, "world/fabric", errors)) {
-    const doc = readJsonInBand(join(fabricDir, f), `world/fabric/${f}`, errors);
-    if (doc === null || typeof doc !== "object" || Array.isArray(doc)) {
-      // A fabric file that parses to a non-object (null, a bare array, a
-      // number) would spread into nothing and arrive at the gates as an
-      // empty record with a `file` key — a silent skip dressed as data.
-      if (doc !== null) errors.push(`world/fabric/${f}: is not a JSON object`);
-      continue;
-    }
+    const doc = readRecord(join(fabricDir, f), `world/fabric/${f}`, errors);
+    if (doc === null) continue;
     if (f === "world.json") world = { file: f, ...doc };
     else fabric.push({ file: f, ...doc });
   }
@@ -68,13 +85,8 @@ export function loadFabric({ contentRoot }) {
   const handleDir = join(dir, "handles");
   const handles = [];
   for (const f of listJson(handleDir, "world/handles", errors)) {
-    const doc = readJsonInBand(join(handleDir, f), `world/handles/${f}`, errors);
-    if (doc === null) continue;
-    if (typeof doc !== "object" || Array.isArray(doc)) {
-      errors.push(`world/handles/${f}: is not a JSON object`);
-      continue;
-    }
-    handles.push({ file: f, ...doc });
+    const doc = readRecord(join(handleDir, f), `world/handles/${f}`, errors);
+    if (doc !== null) handles.push({ file: f, ...doc });
   }
 
   return { present: true, manifest, budgets, fabric, world, handles, errors };
@@ -172,7 +184,7 @@ export function gWorldBudget({ contentRoot, budgets, manifest = null, report, no
       try {
         authored = readdirSync(dir).filter((f) => /^town-.+\.json$/.test(f)).length;
       } catch (e) {
-        report(`G-WORLD-BUDGET: content/towns cannot be listed: ${e.message}`);
+        report(`G-WORLD-BUDGET: towns cannot be listed: ${e.message}`);
       }
     }
     note(`world-budget: town-plans ${authored} authored / ${manifest.quotas.townPlans} quota`);

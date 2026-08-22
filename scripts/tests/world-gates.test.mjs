@@ -296,13 +296,32 @@ test("an unparsable fabric file is ONE in-band failure, never a throw", () => {
 });
 
 test("a fabric file that parses to a non-object is a shape failure, not a silent skip", () => {
-  const dir = worldFixture({ mutate: (d) => {
-    mkdirSync(join(d, "world/fabric"), { recursive: true });
-    writeFileSync(join(d, "world/fabric/continent-01.json"), "[]");
-  } });
-  const r = runWorldGate(dir);
-  assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /world: world\/fabric\/continent-01\.json: is not a JSON object/);
+  // `null` is the one that bit: JSON.parse("null") SUCCEEDS, so a loader that
+  // tests `doc === null` to mean "the read failed" skips the file in silence.
+  // That is the readJson-falsy trap this repo has hit before, and it is why
+  // readJsonInBand reports through an error COUNT rather than a return value.
+  for (const body of ["[]", "null", "5", '"c01"', "false"]) {
+    const dir = worldFixture({ mutate: (d) => {
+      mkdirSync(join(d, "world/fabric"), { recursive: true });
+      writeFileSync(join(d, "world/fabric/continent-01.json"), body);
+    } });
+    const r = runWorldGate(dir);
+    assert.equal(r.code, 1, `${body}: ${r.out}`);
+    assert.match(r.out, /world: world\/fabric\/continent-01\.json: is not a JSON object/, body);
+    // ONE failure for one broken file, not one per limb that touched it.
+    assert.equal((r.out.match(/world\/fabric\/continent-01\.json: is not a JSON object/g) ?? []).length, 1, r.out);
+  }
+});
+
+test("a manifest or budgets file that parses to null is a shape failure too", () => {
+  for (const [file, extra] of [["manifest.json", /world\/manifest\.json: is not a JSON object/],
+                               ["budgets.json", /world\/budgets\.json: is not a JSON object/]]) {
+    const dir = worldFixture({ mutate: (d) => writeFileSync(join(d, "world", file), "null") });
+    const r = runWorldGate(dir);
+    assert.equal(r.code, 1, `${file}: ${r.out}`);
+    assert.match(r.out, extra, file);
+    assert.doesNotMatch(r.out, /check-content: \w*Error/, "a stack trace means the gate threw");
+  }
 });
 
 test("checkWorld cannot change the exit code of a pre-existing spine fixture", () => {
@@ -314,7 +333,105 @@ test("checkWorld cannot change the exit code of a pre-existing spine fixture", (
   assert.ok(roots.length > 0, "no spine fixtures found — this test would pass vacuously");
   for (const e of roots) {
     const r = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", join(spineFix, e.name)] });
-    assert.ok(!/world-budget:|G-WORLD-BUDGET|^FAIL world:/m.test(r.out),
+    assert.ok(!/world-budget:|G-WORLD-BUDGET|FAIL\s+world:/.test(r.out),
       `${e.name}: world gates spoke on a root with no world/: ${r.out}`);
+  }
+});
+
+// ── review findings, 2026-08-22 ────────────────────────────────────────────
+// Three MEDIUMs from the independent adversarial review of this task's diff,
+// each reproduced before being fixed: two catch branches and one shape guard
+// had no fixture, and four sub-objects of the manifest schema were bare
+// `{ "type": "object" }` — so a stray numeric key was invisible.
+
+// A FILE where a directory is expected is the portable way to make readdirSync
+// throw (ENOTDIR): no chmod, no root, works the same on macOS and the CI
+// container. Without the catch, the gate throws out of checkWorld, finish()
+// never runs, and every failure recorded before it is silently dropped.
+//
+// The EXPECTED MESSAGE is asserted per limb, not as a shared `/cannot be
+// listed/`: world/fabric is walked by BOTH loadFabric's listJson and
+// gWorldBudget's walkJson, so a loose regex let one of the two catches be
+// deleted while the suite stayed green (review finding, reproduced).
+for (const [path, expected] of [
+  ["world/fabric", [/FAIL\s+world: world\/fabric cannot be listed: /, /FAIL\s+G-WORLD-BUDGET: world\/fabric cannot be listed: /]],
+  ["world/handles", [/FAIL\s+world: world\/handles cannot be listed: /]],
+  ["world/civil", [/FAIL\s+G-WORLD-BUDGET: world\/civil cannot be listed: /]],
+  ["towns", [/FAIL\s+G-WORLD-BUDGET: towns cannot be listed: /]],
+]) {
+  test(`an unlistable ${path} is an in-band failure, and finish() still runs`, () => {
+    const dir = worldFixture({ mutate: (d) => writeFileSync(join(d, path), "not a directory") });
+    const r = runWorldGate(dir);
+    assert.equal(r.code, 1, r.out);
+    for (const re of expected) assert.match(r.out, re);
+    assert.doesNotMatch(r.out, /check-content: \w*Error/, "a stack trace means the gate threw");
+    assert.match(r.out, /content-gate: .* failures,/, "finish() did not run");
+  });
+}
+
+test("a malformed handle ledger is reported, even though no gate reads handles yet", () => {
+  // loadFabric's handles limb is scaffolding for Task 11/13 — but its errors
+  // already reach the gate through checkWorld's `world.errors` sweep, so the
+  // shape guard is live today and must have a fixture that proves it.
+  for (const [body, pattern] of [
+    ["{ not json", /world: world\/handles\/continent-01\.json: cannot read:/],
+    ["[]", /world: world\/handles\/continent-01\.json: is not a JSON object/],
+    ["null", /world: world\/handles\/continent-01\.json: is not a JSON object/],
+  ]) {
+    const dir = worldFixture({ mutate: (d) => {
+      mkdirSync(join(d, "world/handles"), { recursive: true });
+      writeFileSync(join(d, "world/handles/continent-01.json"), body);
+    } });
+    const r = runWorldGate(dir);
+    assert.equal(r.code, 1, `${body}: ${r.out}`);
+    assert.match(r.out, pattern);
+  }
+});
+
+test("the manifest schema locks EVERY object that carries a number, not just the outer ones", () => {
+  // Reproduced by the review: landformCatalogue, names, quotas and the two
+  // regions classes were bare `{ "type": "object" }`, so a stray numeric key
+  // in any of them exited 0. Each row below is one of those objects.
+  const cases = [
+    ["landformCatalogue", (m) => { m.landformCatalogue.sneakyCount = 5; }],
+    ["landformCatalogue.instances", (m) => { m.landformCatalogue.instances.sneaky = 5; }],
+    ["names", (m) => { m.names.sneakyName = 5; }],
+    ["quotas", (m) => { m.quotas.sneakyQuota = 5; }],
+    ["quotas.settlements", (m) => { m.quotas.settlements.extraSneaky = 5; }],
+    ["quotas.dungeons", (m) => { m.quotas.dungeons.sneakyFloor = 5; }],
+    ["regions.surveyed", (m) => { m.regions.surveyed.sneakyRegion = 5; }],
+    ["regions.reported", (m) => { m.regions.reported.sneakyRegion = 5; }],
+  ];
+  for (const [label, mutateDoc] of cases) {
+    const dir = worldFixture({ mutate: (d) => {
+      const p = join(d, "world/manifest.json");
+      const m = JSON.parse(readFileSync(p, "utf8"));
+      mutateDoc(m);
+      writeFileSync(p, JSON.stringify(m, null, 2));
+    } });
+    const r = runWorldGate(dir);
+    assert.equal(r.code, 1, `${label} was accepted: ${r.out}`);
+    assert.match(r.out, /world\/manifest\.json: schema .*additional properties/, label);
+  }
+});
+
+test("the manifest schema still requires the keys those objects are made of", () => {
+  const cases = [
+    ["landformCatalogue.distinctTypes", (m) => { delete m.landformCatalogue.distinctTypes; }],
+    ["names.reservedFile", (m) => { delete m.names.reservedFile; }],
+    ["quotas.settlements.total", (m) => { delete m.quotas.settlements.total; }],
+    ["quotas.dungeons.floors", (m) => { delete m.quotas.dungeons.floors; }],
+    ["regions.reported.count", (m) => { delete m.regions.reported.count; }],
+  ];
+  for (const [label, mutateDoc] of cases) {
+    const dir = worldFixture({ mutate: (d) => {
+      const p = join(d, "world/manifest.json");
+      const m = JSON.parse(readFileSync(p, "utf8"));
+      mutateDoc(m);
+      writeFileSync(p, JSON.stringify(m, null, 2));
+    } });
+    const r = runWorldGate(dir);
+    assert.equal(r.code, 1, `${label} was accepted: ${r.out}`);
+    assert.match(r.out, /world\/manifest\.json: schema .*required/, label);
   }
 });

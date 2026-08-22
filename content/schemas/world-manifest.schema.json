@@ -2,6 +2,24 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "world-manifest.schema.json",
   "title": "World manifest — SHAPE ONLY. Every numeric relationship (closure, quota sums, band arithmetic) lives in checkWorld()'s G-* gates, never here: the gate continues past a schema-invalid doc, so a bound duplicated into the schema turns its gate rule into dead code.",
+  "definitions": {
+    "regionClass": {
+      "type": "object", "additionalProperties": false,
+      "required": ["count", "nominalKm2", "tolerancePct"],
+      "properties": {
+        "count": { "type": "integer" },
+        "nominalKm2": { "type": "number" },
+        "tolerancePct": { "type": "number" },
+        "acrossKm": { "type": "number" },
+        "walkHours": { "type": "number" }
+      }
+    },
+    "total": {
+      "type": "object", "additionalProperties": false,
+      "required": ["total"],
+      "properties": { "total": { "type": "integer" } }
+    }
+  },
   "type": "object",
   "required": ["version", "seed", "frame", "ratio", "budget", "grid", "regions",
                "landformCatalogue", "names", "relations", "quotas", "levelBands",
@@ -46,12 +64,29 @@
     "regions": {
       "type": "object", "additionalProperties": false, "required": ["surveyed", "reported"],
       "properties": {
-        "surveyed": { "type": "object" },
-        "reported": { "type": "object" }
+        "surveyed": { "$ref": "#/definitions/regionClass" },
+        "reported": { "$ref": "#/definitions/regionClass" }
       }
     },
-    "landformCatalogue": { "type": "object" },
-    "names": { "type": "object" },
+    "landformCatalogue": {
+      "type": "object", "additionalProperties": false,
+      "required": ["distinctTypes", "groupMemberships", "dualListed", "instances", "named"],
+      "properties": {
+        "distinctTypes": { "type": "integer" },
+        "groupMemberships": { "type": "integer" },
+        "dualListed": { "type": "integer" },
+        "instances": { "$ref": "#/definitions/total" },
+        "named": { "$ref": "#/definitions/total" }
+      }
+    },
+    "names": {
+      "type": "object", "additionalProperties": false,
+      "required": ["targetDistinct", "reservedFile"],
+      "properties": {
+        "targetDistinct": { "type": "integer" },
+        "reservedFile": { "type": "string", "minLength": 1 }
+      }
+    },
     "relations": {
       "type": "object", "additionalProperties": false,
       "required": ["coverageFloorPct", "why"],
@@ -60,7 +95,30 @@
         "why": { "type": "string", "minLength": 1 }
       }
     },
-    "quotas": { "type": "object" },
+    "quotas": {
+      "type": "object", "additionalProperties": false,
+      "required": ["settlements", "townPlans", "dungeons"],
+      "properties": {
+        "settlements": {
+          "type": "object", "additionalProperties": false,
+          "required": ["capital", "hub", "village", "total"],
+          "properties": {
+            "capital": { "type": "integer" }, "hub": { "type": "integer" },
+            "village": { "type": "integer" }, "total": { "type": "integer" }
+          }
+        },
+        "townPlans": { "type": "integer" },
+        "dungeons": {
+          "type": "object", "additionalProperties": false,
+          "required": ["complexes", "floors", "families", "familySize", "bespoke"],
+          "properties": {
+            "complexes": { "type": "integer" }, "floors": { "type": "integer" },
+            "families": { "type": "integer" }, "familySize": { "type": "integer" },
+            "bespoke": { "type": "integer" }
+          }
+        }
+      }
+    },
     "levelBands": {
       "type": "object", "additionalProperties": false,
       "required": ["originPinnedId", "originFallbackContinent", "ringKm", "bands"],
