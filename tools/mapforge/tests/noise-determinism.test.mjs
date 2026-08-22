@@ -24,26 +24,41 @@ test("noise.mjs and seed.mjs contain no transcendental call and no ** operator",
   }
 });
 
-// The scan above reads TEXT, so the ways round it are textual: a computed
-// member access (Math["cos"]), a built-up name, or a Reflect/globalThis hop.
-// A regex that only knows the dotted form is a rule anyone can step over by
-// accident. This half closes that, and it is the half the review asked for.
-const EVASIONS = [
-  /Math\s*\[/,                       // Math["cos"], Math[name]
-  /Reflect\.get\s*\(\s*Math\b/,      // Reflect.get(Math, "cos")
-  /globalThis\s*\[\s*["'`]Math/,     // globalThis["Math"]
-  /\bnew\s+Function\b|\beval\s*\(/,  // a name assembled at runtime
-];
+// The scan above reads TEXT, so the ways round it are textual — and a
+// BLACKLIST of spellings loses that race. Review finding, reproduced: with a
+// blacklist, `const _trig = Math; _trig.sin(0)` and `Function("return " + "Ma"
+// + "th.si" + "n(0)")()` both left the whole 278-test mapforge suite green.
+//
+// So the rule is a WHITELIST instead: the token `Math` may appear only as a
+// dotted call on one of the operations ECMA-262 pins exactly — the integer and
+// comparison ops, and Math.sqrt, which IEEE 754 mandates be correctly rounded.
+// Every other appearance of the token, in any spelling — an alias, a
+// destructure, a computed access, a Reflect hop — is a violation by
+// construction, because none of them can be written without the token.
+const ALLOWED_MATH = /^\.(imul|floor|ceil|round|trunc|abs|min|max|sqrt|sign)\b/;
+// The one way to reach a transcendental without naming Math: build the name at
+// runtime. `new Function`, bare `Function(...)` and `eval` are all banned.
+const CODEGEN = /\bnew\s+Function\b|(?<![.\w$])Function\s*\(|(?<![.\w$])eval\s*\(/;
 
-test("the transcendental ban cannot be stepped over by a computed member access", () => {
+const scanLines = (src) =>
+  src.split("\n").map((line, i) => [i + 1, line]).filter(([, line]) => !line.trimStart().startsWith("//"));
+
+test("the transcendental ban is a WHITELIST: `Math` may only be a dotted exact op", () => {
   for (const f of ["noise.mjs", "seed.mjs", "grid.mjs"]) {
-    const src = readFileSync(join(LIB, f), "utf8");
-    for (const [i, line] of src.split("\n").entries()) {
-      if (line.trimStart().startsWith("//")) continue;
-      for (const re of EVASIONS)
-        assert.ok(!re.test(line), `${f}:${i + 1} reaches Math indirectly: ${line.trim()}`);
+    for (const [n, line] of scanLines(readFileSync(join(LIB, f), "utf8"))) {
+      for (const m of line.matchAll(/\bMath\b/g)) {
+        const tail = line.slice(m.index + 4);
+        assert.ok(ALLOWED_MATH.test(tail),
+          `${f}:${n} uses Math in a form the ban cannot check: ${line.trim()}`);
+      }
     }
   }
+});
+
+test("the ban cannot be stepped over by building the name at runtime", () => {
+  for (const f of ["noise.mjs", "seed.mjs", "grid.mjs"])
+    for (const [n, line] of scanLines(readFileSync(join(LIB, f), "utf8")))
+      assert.ok(!CODEGEN.test(line), `${f}:${n} builds code at runtime: ${line.trim()}`);
 });
 
 test("smoothstep is the polynomial form and is exact at the endpoints", () => {

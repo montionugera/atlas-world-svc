@@ -89,6 +89,14 @@ test("cx and cy invert idx for every cell of a small grid", () => {
 });
 
 test("D8 is eight distinct unit steps in a FIXED order, frozen", () => {
+  // The ORDER is the contract, not just the membership: every tie-break in the
+  // pipeline resolves to the lowest index in THIS order, so a reordering
+  // silently moves flow directions, Poisson siting and Dijkstra results. The
+  // previous version of this test asserted only count, distinctness and
+  // magnitude — swapping entries 0 and 1 left it green (review finding).
+  assert.deepEqual(D8.map(([a, b]) => [a, b]), [
+    [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1],
+  ]);
   assert.equal(D8.length, 8);
   assert.equal(new Set(D8.map(([a, b]) => `${a},${b}`)).size, 8);
   for (const [dx, dy] of D8) {
