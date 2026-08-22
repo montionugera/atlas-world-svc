@@ -1,32 +1,27 @@
-# F-047 — World Fill Plan B: Vocabulary and Render
+# F-048 — World Fill Plan C: The Fabric Layer
 
-**This file is a pointer. Do not implement from it.**
+**This file is a pointer. The real plan is elsewhere. Do not implement from this file.**
 
-The real documents, in the order you must read them:
-
-1. **`docs/superpowers/plans/world-fill-STATE.md`** — the running handover. Read this FIRST.
-   It carries the measured baselines, the "nothing moved" invariant, the nine places the plan
-   documents are wrong, and the traps that have already bitten.
-2. **`docs/superpowers/plans/2026-08-16-world-fill-b-vocabulary-and-render.md`** — the plan.
-   12 tasks in two halves. Read only the sections you were dispatched for.
-3. **`docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md`** —
-   the approved design, for background only.
-
-`.claude/refined_backlog/F-047-world-fill-plan-b-vocabulary-and-render/plan.md` is a verbatim
-copy of (2), kept there by the release workflow.
+| What | Where |
+| --- | --- |
+| **The plan you implement** | `docs/superpowers/plans/2026-08-16-world-fill-c-fabric-layer.md` (13 tasks) |
+| **Read BEFORE any task** | `docs/superpowers/plans/world-fill-STATE.md` — running handover state, measured baselines, the traps |
+| **Approved design** | `docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md` |
+| Backlog spec stub | `.claude/refined_backlog/F-048-world-fill-plan-c-the-fabric-layer-seede/spec.md` |
+| Base tag for the "nothing moved" invariant | `plan-c-base` |
 
 ## The one-line goal
 
-Give the repo a content vocabulary and a renderer that can draw the target world *before* the
-target world exists — and move no part of the world while doing it.
+Generate a reproducible 400 x 400 km world — 13 landmasses, 160 regions, 1,740 landform
+instances, 45 settlements, 60 dungeon anchors — from a committed seed and 13 premise files,
+commit it as a new `content/world/fabric/` layer whose sea-to-land ratio is 1.5 : 1 **by
+construction**, and prove promotion into a spine trunk is byte-idempotent — without changing a
+single committed spine byte, sheet byte, or runtime coordinate.
 
-## The invariant, on every commit
+## The invariant on EVERY commit
 
-```bash
-node scripts/check_spine_emit.mjs --check          # clean, no drift
-node scripts/check_render_lock.mjs --check         # clean, WITHOUT --write (Tasks 1-11)
-(cd colyseus-server && npx jest mapDimensions)     # green
-git diff --stat plan-b-base -- colyseus-server/    # prints nothing
-```
+- `node scripts/check_spine_emit.mjs --check` -> clean
+- `(cd colyseus-server && npx jest mapDimensions)` -> green
+- `git diff --stat plan-c-base -- content/spine content/maps game-client/assets/art/maps/` -> empty
 
-The base tag is `plan-b-base`.
+Plan C commits **ZERO** spine node bytes. Trunk output goes to the gitignored draft folder only.
