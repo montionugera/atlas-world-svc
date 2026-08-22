@@ -1,9 +1,0 @@
-{
-  "id": "n-shore",
-  "tier": "continent",
-  "parentId": "n-atlas",
-  "title": "Shore",
-  "seed": { "value": "0000000000000d02", "epoch": 0, "why": null },
-  "placement": { "shape": "rect", "rect": { "x": 10, "y": 10, "w": 40, "h": 40 }, "anchor": [30, 30] },
-  "composition": { "meadow": 100 }
-}

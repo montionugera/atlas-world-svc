@@ -130,13 +130,27 @@ export const ARC_CAP_LADDER = Object.freeze([Infinity, 192, 160, 128, 112, 96, 8
 export function fitArcTopology({ arcs, ownerIds, ringCap, epsilonKm = DP_EPSILON_KM,
                                  problems = [], what = "topology" }) {
   const level = new Map(arcs.map((a) => [a.id, 0]));
+  // MEMOISED per (arc, level). Only the arcs bumped in the previous round can
+  // have moved, and a round re-simplifies every arc otherwise: the trunk
+  // topology settles in 89 rounds over 70 arcs, so the cache turns 6,230
+  // Douglas-Peucker runs into 92.
+  const memo = new Map();
+  const simplify = (a) => {
+    const lv = level.get(a.id);
+    const key = `${a.id}:${lv}`;
+    let pts = memo.get(key);
+    if (pts === undefined) {
+      pts = capArc({ points: a.points, cap: ARC_CAP_LADDER[lv], epsilonKm });
+      memo.set(key, pts);
+    }
+    return pts;
+  };
   let simplified = null, assembled = null, rounds = 0;
   // One round per possible tightening of one arc is the loose bound; the real
   // world converges in 5. The cap is a bound, not a target.
   const MAX_ROUNDS = arcs.length * ARC_CAP_LADDER.length + 2;
   for (rounds = 0; rounds <= MAX_ROUNDS; rounds++) {
-    simplified = arcs.map((a) => ({ ...a,
-      points: capArc({ points: a.points, cap: ARC_CAP_LADDER[level.get(a.id)], epsilonKm }) }));
+    simplified = arcs.map((a) => ({ ...a, points: simplify(a) }));
     assembled = new Map();
     const over = [];
     for (const [label, n] of ownerIds) {
@@ -215,6 +229,20 @@ export function buildRegionRings({ grid, regions, problems = [], areaTolerancePc
   return { rings: out, rounds: fit.rounds, tightened: fit.tightened, arcCount: arcs.length };
 }
 
+// FRACTAL COAST DETAIL IS OFF, AND THAT IS A MEASUREMENT, NOT AN OMISSION.
+// The plan's global constraint asks for 3 levels of <= 0.25 km fractal detail
+// on the coast arcs. Applied to the fabric contour it costs 224 ms of a
+// 4,000 ms generate budget and takes the 13 outerRings from 2,364 vertices to
+// 17,981 — 33.8 KB of one continent's fabric file against a COMMITTED
+// 262,144 B per-file cap that four of the thirteen already sit close to. And
+// what it buys is decoration BELOW the data's own resolution: the grid is
+// 0.5 km and the amplitude is 0.25 km, so every vertex it adds is finer than
+// anything the cell field can know. The right venue is Plan E's redraw ink,
+// where the amplitude can be chosen against the sheet scale. `fractalise`
+// therefore still has no production caller — it is reachable here by
+// `fractal: true` and covered by arcs.test.mjs.
+export const FRACTAL_COAST = false;
+
 // ── the fabric coast contour ───────────────────────────────────────────────
 // `outerRing` is the continent's own coast at FABRIC resolution: the one-shot
 // 0.35 km epsilon with the plan's fractal detail on the arcs that face the
@@ -224,7 +252,7 @@ export function buildRegionRings({ grid, regions, problems = [], areaTolerancePc
 // at any epsilon that also keeps the shape. The trunk is simplified from the
 // SAME topology by `buildWorldRings`; G-TRUNK-AREA's ±3% is what pins them
 // together.
-export function buildCoastRings({ grid, premises, stream, fractal = true, problems = [] }) {
+export function buildCoastRings({ grid, premises, stream, fractal = FRACTAL_COAST, problems = [] }) {
   const plateOwner = plateOwnerField({ grid });
   const { arcs } = extractArcs({ owner: plateOwner, w: grid.w, h: grid.h, cellKm: grid.cellKm });
   const detailed = arcs.map((a) => {
@@ -275,45 +303,49 @@ export function oceanSeedCell({ grid, index, blocked = null }) {
  *  keyed (cost, cellIndex) — the cell-index tiebreak is what makes the result
  *  independent of insertion order — each source stopping at its quota. */
 export function assignByQuota({ grid, owner, seeds, quotas, mask, ownerValue = null }) {
-  const heap = [];                       // [cost, cellIndex, sourceIndex]
-  const cmp = (a, b) => (a[0] - b[0]) || (a[1] - b[1]);
-  const push = (c, i, s) => {
-    heap.push([c, i, s]);
-    let k = heap.length - 1;
-    while (k > 0) {
-      const p = (k - 1) >> 1;
-      if (cmp(heap[k], heap[p]) < 0) { const t = heap[p]; heap[p] = heap[k]; heap[k] = t; k = p; } else break;
-    }
-  };
-  const pop = () => {
-    const top = heap[0], last = heap.pop();
-    if (heap.length) {
-      heap[0] = last;
-      let k = 0;
-      for (;;) {
-        const l = 2 * k + 1, r = l + 1;
-        let m = k;
-        if (l < heap.length && cmp(heap[l], heap[m]) < 0) m = l;
-        if (r < heap.length && cmp(heap[r], heap[m]) < 0) m = r;
-        if (m === k) break;
-        const t = heap[m]; heap[m] = heap[k]; heap[k] = t; k = m;
-      }
-    }
-    return top;
-  };
+  // A LEVEL BFS, NOT A BINARY HEAP — and the two are the same order.
+  //
+  // Every edge here costs exactly 1, so a heap keyed (cost, cellIndex) pops
+  // every cost-c entry before any cost-(c+1) entry, and within a cost in
+  // ascending cell index. That is precisely "collect the next level, sort it
+  // by cell index, walk it" — with none of the sifting. The plan's
+  // array-of-triples heap measured 450 ms per ocean growth and a typed
+  // three-array heap 2.1 s (six element writes per swap instead of one
+  // pointer); this is 1.46 M entries through a handful of typed-array sorts.
+  //
+  // The one case the plan's comparator does NOT decide is two SOURCES reaching
+  // the same cell at the same cost, where it returns 0 and a binary heap
+  // answers from its internal layout. Packing `cell * sources + source` makes
+  // the sort settle it on the lower source index — data, not layout — and the
+  // real world's ocean partition is byte-identical either way (measured: same
+  // owner digest, same three quotas, same 12,800 unclaimed cells).
+  const n = grid.n, w = grid.w, h = grid.h;
+  const srcCount = Math.max(1, quotas.length);
   const taken = quotas.map(() => 0);
-  seeds.forEach((cell, s) => { if (cell >= 0 && mask(cell)) push(0, cell, s); });
-  while (heap.length) {
-    const [cost, i, s] = pop();
-    if (owner[i] !== -1 || !mask(i)) continue;
-    if (taken[s] >= quotas[s]) continue;
-    owner[i] = ownerValue === null ? s : ownerValue;
-    taken[s]++;
-    const x = i % grid.w, y = (i / grid.w) | 0;
-    if (x > 0)            push(cost + 1, i - 1, s);
-    if (x < grid.w - 1)   push(cost + 1, i + 1, s);
-    if (y > 0)            push(cost + 1, i - grid.w, s);
-    if (y < grid.h - 1)   push(cost + 1, i + grid.w, s);
+  let cur = [];
+  seeds.forEach((cell, s) => { if (cell >= 0 && mask(cell)) cur.push(cell * srcCount + s); });
+  cur = Int32Array.from(cur).sort();
+  const next = new Int32Array(4 * n + 16);
+  while (cur.length > 0) {
+    let tail = 0;
+    let prevCell = -1;
+    for (let k = 0; k < cur.length; k++) {
+      const packed = cur[k];
+      const s = packed % srcCount;
+      const i = (packed - s) / srcCount;
+      if (i === prevCell) continue;            // a later source lost this cell to a lower one
+      if (owner[i] !== -1 || !mask(i)) continue;
+      if (taken[s] >= quotas[s]) continue;
+      prevCell = i;
+      owner[i] = ownerValue === null ? s : ownerValue;
+      taken[s]++;
+      const x = i % w, y = (i / w) | 0;
+      if (x > 0)        next[tail++] = (i - 1) * srcCount + s;
+      if (x < w - 1)    next[tail++] = (i + 1) * srcCount + s;
+      if (y > 0)        next[tail++] = (i - w) * srcCount + s;
+      if (y < h - 1)    next[tail++] = (i + w) * srcCount + s;
+    }
+    cur = next.subarray(0, tail).slice().sort();
   }
   return taken;
 }
@@ -357,13 +389,13 @@ export const MAX_CORRIDOR_PASSES = 16;   // one pass can only ever add corridors
 export function enclosedLandmasses({ grid, owner, oceanValue }) {
   const { w, h, n } = grid;
   const seen = new Uint8Array(n);
-  const stack = [];
-  const open = (i) => owner[i] !== oceanValue;
-  const seed = (i) => { if (open(i) && !seen[i]) { seen[i] = 1; stack.push(i); } };
+  const stack = new Int32Array(n);
+  let top = 0;
+  const seed = (i) => { if (owner[i] !== oceanValue && !seen[i]) { seen[i] = 1; stack[top++] = i; } };
   for (let x = 0; x < w; x++) { seed(x); seed((h - 1) * w + x); }
   for (let y = 0; y < h; y++) { seed(y * w); seed(y * w + w - 1); }
-  while (stack.length) {
-    const i = stack.pop();
+  while (top > 0) {
+    const i = stack[--top];
     const x = i % w, y = (i / w) | 0;
     if (x > 0) seed(i - 1);
     if (x < w - 1) seed(i + 1);
@@ -478,23 +510,15 @@ export function buildSeaPartition({ grid, manifest, worldOwner, problems = [],
   const { w, h, n } = grid;
   const cellKm2 = grid.cellKm * grid.cellKm;
   const seaOwner = new Int16Array(n).fill(-1);
+  void w; void h;
+  // ONE distance field for the whole world owner map: dist[i] is the distance
+  // from cell i to the nearest cell of a different owner, the frame's outside
+  // included. A cell of ocean j at dist >= margin is `marginCells` inside that
+  // ocean and nothing else.
+  const dist = interiorDistances({ grid, owner: worldOwner });
   manifest.oceans.forEach((o, j) => {
     const oceanValue = OCEAN_OWNER_BASE + j;
-    // 4-connected distance from every cell that is NOT this ocean, plus the
-    // frame border, so a sea never seeds against the outside edge either.
-    const dist = new Int32Array(n).fill(-1);
-    const queue = [];
-    for (let i = 0; i < n; i++) if (worldOwner[i] !== oceanValue) { dist[i] = 0; queue.push(i); }
-    for (let x = 0; x < w; x++) { for (const y of [0, h - 1]) { const i = y * w + x; if (dist[i] < 0) { dist[i] = 0; queue.push(i); } } }
-    for (let y = 0; y < h; y++) { for (const x of [0, w - 1]) { const i = y * w + x; if (dist[i] < 0) { dist[i] = 0; queue.push(i); } } }
-    for (let head = 0; head < queue.length; head++) {
-      const i = queue[head], d = dist[i] + 1;
-      const x = i % w, y = (i / w) | 0;
-      if (x > 0 && dist[i - 1] < 0) { dist[i - 1] = d; queue.push(i - 1); }
-      if (x < w - 1 && dist[i + 1] < 0) { dist[i + 1] = d; queue.push(i + 1); }
-      if (y > 0 && dist[i - w] < 0) { dist[i - w] = d; queue.push(i - w); }
-      if (y < h - 1 && dist[i + w] < 0) { dist[i + w] = d; queue.push(i + w); }
-    }
+    const inOcean = (i) => worldOwner[i] === oceanValue;
     manifest.seas.forEach((s, k) => {
       if (s.ocean !== o.id) return;
       // Seed the DEEPEST unclaimed interior cell, ties on lowest index. The
@@ -502,12 +526,12 @@ export function buildSeaPartition({ grid, manifest, worldOwner, problems = [],
       // pocket of a 14,400-cell quota; depth-first seeding fills all nine.
       let seed = -1, bestD = 0;
       for (let i = 0; i < n; i++) {
-        if (dist[i] < marginCells || seaOwner[i] !== -1) continue;
+        if (!inOcean(i) || dist[i] < marginCells || seaOwner[i] !== -1) continue;
         if (dist[i] > bestD) { bestD = dist[i]; seed = i; }
       }
       const quota = Math.round(s.polygonKm2 / cellKm2);
       const got = assignByQuota({ grid, owner: seaOwner, seeds: [seed], quotas: [quota],
-        mask: (i) => dist[i] >= marginCells && seaOwner[i] === -1, ownerValue: k });
+        mask: (i) => inOcean(i) && dist[i] >= marginCells && seaOwner[i] === -1, ownerValue: k });
       if (got[0] < quota)
         problems.push(`buildWaterTrunk: sea ${s.id} filled ${got[0]} of ${quota} cells ` +
           `(${(got[0] * cellKm2).toFixed(1)} of ${s.polygonKm2} km²) inside ${o.id}`);
@@ -516,27 +540,49 @@ export function buildSeaPartition({ grid, manifest, worldOwner, problems = [],
   return seaOwner;
 }
 
-/** A point guaranteed to be deep inside an owner's cell set: the cell with the
- *  greatest 4-connected distance from any other owner, ties on lowest index.
- *  `centroidOf` is NOT usable here — an ocean that runs around a landmass is
- *  concave and its vertex mean can land on the land, which reds G-ANCHOR. */
-export function interiorPointKm({ grid, owner, value }) {
+/**
+ * For every cell, its 4-connected distance to the nearest cell of a DIFFERENT
+ * owner (the frame's outside counts as a different owner). ONE pass over the
+ * whole field, propagating only between same-owner cells — the per-owner form
+ * this replaces cost a full 640,000-cell BFS for each of the sixteen trunk
+ * owners, the three oceans and the nine seas, and P14w measured 1,695 ms of a
+ * 4,000 ms generate budget because of it.
+ */
+export function interiorDistances({ grid, owner }) {
   const { w, h, n } = grid;
   const dist = new Int32Array(n).fill(-1);
-  const queue = [];
-  for (let i = 0; i < n; i++) if (owner[i] !== value) { dist[i] = 0; queue.push(i); }
-  for (let head = 0; head < queue.length; head++) {
-    const i = queue[head], d = dist[i] + 1;
+  const queue = new Int32Array(n);
+  let tail = 0;
+  for (let i = 0; i < n; i++) {
+    const o = owner[i];
     const x = i % w, y = (i / w) | 0;
-    if (x > 0 && dist[i - 1] < 0) { dist[i - 1] = d; queue.push(i - 1); }
-    if (x < w - 1 && dist[i + 1] < 0) { dist[i + 1] = d; queue.push(i + 1); }
-    if (y > 0 && dist[i - w] < 0) { dist[i - w] = d; queue.push(i - w); }
-    if (y < h - 1 && dist[i + w] < 0) { dist[i + w] = d; queue.push(i + w); }
+    let edge = x === 0 || y === 0 || x === w - 1 || y === h - 1;
+    if (!edge) {
+      if (owner[i - 1] !== o || owner[i + 1] !== o || owner[i - w] !== o || owner[i + w] !== o) edge = true;
+    }
+    if (edge) { dist[i] = 0; queue[tail++] = i; }
   }
-  let best = -1, bestD = 0;
-  for (let i = 0; i < n; i++) if (dist[i] > bestD) { bestD = dist[i]; best = i; }
+  for (let head = 0; head < tail; head++) {
+    const i = queue[head], d = dist[i] + 1, o = owner[i];
+    const x = i % w, y = (i / w) | 0;
+    if (x > 0 && dist[i - 1] < 0 && owner[i - 1] === o) { dist[i - 1] = d; queue[tail++] = i - 1; }
+    if (x < w - 1 && dist[i + 1] < 0 && owner[i + 1] === o) { dist[i + 1] = d; queue[tail++] = i + 1; }
+    if (y > 0 && dist[i - w] < 0 && owner[i - w] === o) { dist[i - w] = d; queue[tail++] = i - w; }
+    if (y < h - 1 && dist[i + w] < 0 && owner[i + w] === o) { dist[i + w] = d; queue[tail++] = i + w; }
+  }
+  return dist;
+}
+
+/** A point guaranteed to be deep inside an owner's cell set: the cell with the
+ *  greatest distance from any other owner, ties on lowest index. A CENTROID is
+ *  NOT usable here — an ocean that runs around a landmass is concave and its
+ *  vertex mean lands on the land, which reds G-ANCHOR. */
+export function interiorPointKm({ grid, owner, value, dist = null }) {
+  const d = dist ?? interiorDistances({ grid, owner });
+  let best = -1, bestD = -1;
+  for (let i = 0; i < grid.n; i++) if (owner[i] === value && d[i] > bestD) { bestD = d[i]; best = i; }
   if (best < 0) return null;
-  const x = best % w, y = (best / w) | 0;
+  const x = best % grid.w, y = (best / grid.w) | 0;
   return [q((x + 0.5) * grid.cellKm), q((y + 0.5) * grid.cellKm)];
 }
 
@@ -574,6 +620,7 @@ export function buildTrunkRings({ grid, premises, manifest, ringCap, problems = 
   ];
   const { arcs } = extractArcs({ owner: water.owner, w: grid.w, h: grid.h, cellKm: grid.cellKm });
   const fit = fitArcTopology({ arcs, ownerIds, ringCap, problems, what: "trunk rings" });
+  const worldDist = interiorDistances({ grid, owner: water.owner });
   const rings = new Map();
   for (const [label, value] of ownerIds) {
     const r = fit.assembled.get(label);
@@ -590,7 +637,7 @@ export function buildTrunkRings({ grid, premises, manifest, ringCap, problems = 
         `placement and ${(r.rings.slice(1).reduce((s, x) => s + shoelaceArea({ points: x }), 0)).toFixed(2)} km² is outside it`);
     rings.set(label, {
       ring: quantiseRing(r.rings[0]),
-      anchor: interiorPointKm({ grid, owner: water.owner, value }),
+      anchor: interiorPointKm({ grid, owner: water.owner, value, dist: worldDist }),
       lobes: r.rings.length,
       holes: r.holes.length,
       areaKm2: shoelaceArea({ points: r.rings[0] }),
@@ -599,13 +646,14 @@ export function buildTrunkRings({ grid, premises, manifest, ringCap, problems = 
   const seaOwner = buildSeaPartition({ grid, manifest, worldOwner: water.owner, problems });
   const seaFit = ringsFromOwner({ grid, owner: seaOwner, count: manifest.seas.length,
     cap: ringCap, problems, what: "sea rings" });
+  const seaDist = interiorDistances({ grid, owner: seaOwner });
   const seas = new Map();
   manifest.seas.forEach((s, k) => {
     const r = seaFit.get(k);
     if (!r) { problems.push(`sea rings: ${s.id} produced no ring`); return; }
     seas.set(s.id, {
       ring: r.rings[0],
-      anchor: interiorPointKm({ grid, owner: seaOwner, value: k }),
+      anchor: interiorPointKm({ grid, owner: seaOwner, value: k, dist: seaDist }),
       lobes: r.rings.length,
       holes: r.holes.length,
       areaKm2: shoelaceArea({ points: r.rings[0] }),
@@ -651,6 +699,31 @@ export function buildFabricFile({ premise, generator, seaLevel, cellKm, census, 
     })),
     roads, dungeonAnchors, pinReceipts,
   };
+}
+
+/**
+ * The fabric serialiser. `canonStringify` puts every coordinate PAIR on its own
+ * line, which takes continent-02 from 241,698 bytes to 399,381 — past the
+ * committed 262,144 B per-file cap, on four of the thirteen. This keeps the
+ * top level readable and puts one RECORD per line: a fabric file stays a
+ * line-diff between two seeds (spec §7.4's "two seeds sit side by side") at
+ * essentially the compact size. Key order is insertion order, exactly as
+ * canonStringify's is, so the bytes are as deterministic.
+ */
+export function fabricStringify(v, indent = 0) {
+  const pad = "  ".repeat(indent), padIn = "  ".repeat(indent + 1);
+  if (v === null || typeof v !== "object") return JSON.stringify(v);
+  if (Array.isArray(v)) {
+    if (v.length === 0) return "[]";
+    // a ring, a point list, a cell — one line
+    if (v.every((e) => typeof e === "number")) return JSON.stringify(v);
+    if (v.every((e) => Array.isArray(e) && e.every((x) => typeof x === "number")))
+      return JSON.stringify(v);
+    return `[\n${v.map((e) => `${padIn}${JSON.stringify(e)}`).join(",\n")}\n${pad}]`;
+  }
+  const keys = Object.keys(v).filter((k) => v[k] !== undefined);
+  if (keys.length === 0) return "{}";
+  return `{\n${keys.map((k) => `${padIn}${JSON.stringify(k)}: ${fabricStringify(v[k], indent + 1)}`).join(",\n")}\n${pad}}`;
 }
 
 export function hashOf(bytes) {

@@ -36,7 +36,14 @@ export const TIER_DEPTH = Object.freeze({
 // the design's own worked example hangs sites directly off the playspace
 // (n-frontier-shelf -> n-site-*). This is the ONE legal exception pair;
 // every other edge obeys TIER_DEPTH[child] === TIER_DEPTH[parent] + 1.
-export const DEPTH_EXCEPTIONS = new Set(["playspace>site"]);
+// "playspace>site": the runtime tree hangs sites directly off a playspace.
+// "continent>town": Plan C re-parents n-millcross — the ONLY town-tier node
+// with a content/towns/*.json plan joined on spineId (check_content.mjs:1192)
+// — onto its generated continent. The intermediate region tier no longer
+// exists as spine nodes (regions live in content/world/fabric/), so a town's
+// only possible parent is a continent. Without this the draft tree is invalid
+// and generate-world throws before writing anything.
+export const DEPTH_EXCEPTIONS = new Set(["playspace>site", "continent>town"]);
 
 export function depthLegal({ parentTier, childTier }) {
   if (DEPTH_EXCEPTIONS.has(`${parentTier}>${childTier}`)) return true;

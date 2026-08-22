@@ -142,10 +142,15 @@ test("HC-2 G-TREE red: a two-node parent cycle", () => {
   assert.match(stdout, /unreachable from any root/);
 });
 
-test("HC-2 G-DEPTH red: a town (depth 3) under a continent (depth 1)", () => {
-  const { code, stdout } = runGate(contentRootFor("g-depth-town-under-continent"));
+// The fixture was `continent > town` until Plan C Task 10. That pair is now a
+// DEPTH_EXCEPTION — Plan C's regions live in content/world/fabric/ and are not
+// spine nodes at all, so a town's only possible parent is a continent and
+// n-millcross is re-parented onto one. The rule still has to have a red case,
+// so the fixture skips a depth with `site` instead, which is not an exception.
+test("HC-2 G-DEPTH red: a depth skip (site, depth 3) under a continent (depth 1)", () => {
+  const { code, stdout } = runGate(contentRootFor("g-depth-skip-under-continent"));
   assert.equal(code, 1, stdout);
-  assert.match(stdout, /FAIL {2}G-DEPTH: n-oops-town \(town, depth 3\) under n-shore \(continent, depth 1\)/);
+  assert.match(stdout, /FAIL {2}G-DEPTH: n-oops-site \(site, depth 3\) under n-shore \(continent, depth 1\)/);
 });
 
 test("HC-2 G-POLY red: a clockwise ring has strictly negative signed shoelace", () => {
