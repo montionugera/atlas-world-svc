@@ -19,7 +19,9 @@ const WARP_FREQ = 0.011;   // ~90 km wavelength: warps the outline, not the pixe
 // nothing but the amplitude it is scaled by. Computing it once per cell instead
 // of once per (cell, premise) is a 13x cut in fbm calls and it is the whole
 // reason this pass fits the 4 s generate budget: MEASURED on the real 800 x 800
-// grid, 4,725 ms before this hoist and 460 ms after, bit-for-bit identical
+// grid, 4,725 ms before this hoist and 766 ms cold / 525 ms warm after (the
+// "460 ms" an earlier draft of this comment claimed did not reproduce on a
+// second machine — 766 is the honest cold figure), bit-for-bit identical
 // output. The two entry points below therefore share ONE body — a second copy
 // of the mask arithmetic is exactly the drift the hoist would otherwise buy.
 function warpNoise({ xKm, yKm, stream }) {

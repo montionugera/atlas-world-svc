@@ -72,9 +72,12 @@ export function buildElevation({ grid, premises, maskField, stream }) {
           }
         }
       }
-      // Clamp into [0.01, 1]: strictly above every ocean-floor value, and
-      // bounded so rank selection compares a well-conditioned range.
-      grid.elev[i] = e < 0.01 ? 0.01 : e > 1 ? 1 : e;
+      // Clamp into [landFloor, 1]: strictly above every ocean-floor value, and
+      // bounded so rank selection compares a well-conditioned range. The floor
+      // is ELEVATION_BANDS' own, not a second copy of 0.01 — P3's phantom-land
+      // guard compares against that constant, and two literals that must agree
+      // are the drift this join exists to prevent.
+      grid.elev[i] = e < ELEVATION_BANDS.landFloor ? ELEVATION_BANDS.landFloor : e > 1 ? 1 : e;
     }
   }
 }
@@ -93,61 +96,69 @@ export function buildElevation({ grid, premises, maskField, stream }) {
 //    lets a cell read as two rock types. Clearing SUBSTRATE_MASK first is what
 //    makes this pass idempotent and the classes mutually exclusive; and
 //  * a bare cell is only "clastic by default" if every reader agrees on that
-//    default. Making the default EXPLICIT — FLAG.SAND, which cellView reads as
-//    "clastic" (sandstone is a clastic rock) — means the invariant is one that
-//    can be MEASURED (`exactly one bit`) rather than one that has to be
-//    remembered at each of P10's read sites.
+//    default. Making the default EXPLICIT — FLAG.SAND, which the cell reader
+//    Task 10 writes will read as "clastic" (sandstone is a clastic rock; that
+//    reader does not exist yet, so the mapping is a convention until it does) —
+//    means the invariant is one that can be MEASURED (`exactly one bit`) rather
+//    than one that has to be remembered at each of P10's read sites.
 //
-// The distribution is driven by the premise, not by taste: a premise whose
-// `landformKit` names `karst` gets carbonate ground under most of it, one
-// naming `volcanic` gets volcanic ground under its arc, one naming `desert`
-// gets sand explicitly. Everything else is clastic.
-// RECORDED MUTATION SURVIVOR, measured 2026-08-22 — do not re-derive it.
-// Changing SUBSTRATE_FREQ from 0.012 to 0.013 leaves the whole suite green,
-// because at the plan's thresholds the noise field DOES NO WORK: `t` is
-// 0.5 + 0.5 * fbm(4 octaves), which is tightly concentrated around 0.5, and the
-// gates below are 0.25 and 0.3. Measured on the real 800 x 800 grid: c04 is
-// 100.00% carbonate and c10 is 100.00% volcanic — not a single cell of either
-// falls under its gate, so the ladder never branches and the frequency is
-// unobservable. It is NOT dead by accident: no premise names two of the three
-// substrate kits, so even a working field would have nothing to interleave.
+// THE NOISE FIELD THE PLAN PUT HERE IS GONE, and that is a decision with
+// measurements behind it, not a simplification. The plan gated the ladder on
+// `t = 0.5 + 0.5 * fbm(4 octaves)` at 0.25 (volcanic) and 0.3 (karst). Measured
+// on the real 800 x 800 grid:
 //
-// It is left as the plan wrote it rather than retuned, for two reasons. The
-// thresholds are plan data, and retuning them re-rolls the substrate of every
-// continent for no stated requirement; and 100% carbonate under "the karst
-// continent" and 100% volcanic under "the volcanic arc" is what those premises
-// actually say. The GOLDEN test pins both shares at 1.0, so the day a premise
-// names two kits — or a threshold moves — it is loud rather than silent.
-const SUBSTRATE_FREQ = 0.012;     // ~83 km wavelength — province-scale banding
-
-export function assignSubstrate({ grid, premises, maskField, stream }) {
+//  * `t` over EVERY masked cell in the frame ranges [0.2603, 0.8333]. The
+//    volcanic gate at 0.25 therefore cannot reject a cell ANYWHERE — not on
+//    c10, not on any premise that could ever name the kit. That branch was
+//    unconditional;
+//  * the karst gate at 0.3 is reachable in principle (4,126 cells in the frame
+//    sit below it) but not on c04, the only premise naming `karst`, whose
+//    minimum `t` is 0.376. So both gates were dead;
+//  * and the ladder could not have interleaved two kits even if they were live:
+//    the volcanic branch comes first and `t >= 0.25` is always true, so a
+//    premise naming BOTH volcanic and karst would get volcanic on every cell
+//    and karst on none. "Banding between two substrate kits" was never a thing
+//    this shape could do.
+//
+// Four mutations proved the same thing from the other side — the frequency, both
+// thresholds, and replacing the whole fbm with `const t = 0.5` all left the
+// suite green — while the field cost 173 ms of the 4,000 ms generate budget for
+// a value nothing read. Retuning the thresholds was rejected (they are plan
+// data, and re-rolling the substrate of every continent for no stated
+// requirement is a content decision nobody made); so the honest form is the one
+// the output has always had: substrate is a pure function of (plate, kit), and
+// the whole plate carries one class. That property is now a TEST, which the
+// noise version could not have.
+//
+// If a later plan does want banding, it needs a mechanism this one never was: a
+// PARTITION of `t` rather than a shadowing if/else, with thresholds inside the
+// field's measured range above — and a premise that names two kits to band
+// between.
+export function assignSubstrate({ grid, premises, maskField }) {
   const kitOf = premises.map((p) => new Set(p.landformKit));
-  for (let cyi = 0; cyi < grid.h; cyi++) {
-    for (let cxi = 0; cxi < grid.w; cxi++) {
-      const i = idx({ grid, cx: cxi, cy: cyi });
-      grid.flags[i] &= ~SUBSTRATE_MASK;            // idempotent: safe to re-run
-      grid.flags[i] &= ~FLAG.ARC;                  // ARC is minted here too, and only here
-      if (maskField[i] === 0) continue;            // ocean floor carries none
-      const k = grid.plate[i];
-      const kit = kitOf[k];
-      if (!kit) continue;
-      const [x, y] = cellCentreKm({ grid, cx: cxi, cy: cyi });
-      // One noise field, two gates. See the SUBSTRATE_FREQ note above: at
-      // these thresholds neither gate ever rejects a cell, so this is the
-      // banding MECHANISM and not, today, banding.
-      const t = 0.5 + 0.5 * fbm({ x: x * SUBSTRATE_FREQ, y: y * SUBSTRATE_FREQ, stream, octaves: 4 });
-      if (kit.has("volcanic") && t >= 0.25) {
-        // ARC is the flag Plan B's volcanic group default pairs with
-        // `rock: "volcanic"`. Setting one without the other places nothing.
-        // It is set HERE and nowhere else, so `ARC` means "volcanic ground"
-        // and a lexicon row asking for `nearFlag: ARC` cannot match the ice cap.
-        grid.flags[i] |= FLAG.VOLCANIC | FLAG.ARC;
-      } else if (kit.has("karst") && t >= 0.3) {
-        grid.flags[i] |= FLAG.CARBONATE;
-      } else {
-        // The explicit default, including the `desert` kit: clastic ground.
-        grid.flags[i] |= FLAG.SAND;
-      }
+  for (let i = 0; i < grid.n; i++) {
+    grid.flags[i] &= ~SUBSTRATE_MASK;            // idempotent: safe to re-run
+    grid.flags[i] &= ~FLAG.ARC;                  // ARC is minted here too, and only here
+    if (maskField[i] === 0) continue;            // ocean floor carries none
+    const kit = kitOf[grid.plate[i]];
+    if (!kit) continue;
+    if (kit.has("volcanic")) {
+      // ARC is the flag Plan B's volcanic group default pairs with
+      // `rock: "volcanic"`. Setting one without the other places nothing.
+      // It is set HERE and nowhere else, so `ARC` means "volcanic ground"
+      // and a lexicon row asking for `nearFlag: ARC` cannot match the ice cap.
+      grid.flags[i] |= FLAG.VOLCANIC | FLAG.ARC;
+    } else if (kit.has("karst")) {
+      grid.flags[i] |= FLAG.CARBONATE;
+    } else {
+      // The explicit default: clastic ground. RECORDED MUTATION SURVIVOR —
+      // removing "desert" from c05's landformKit leaves this suite green, and
+      // that is correct rather than a gap: Plan B's own desert types are
+      // `rock: clastic`, so `desert` is not a substrate kit at all and there is
+      // deliberately no branch for it. The kit IS read — by Task 8's landform
+      // instancing, which picks groups from it — so a kit census belongs there,
+      // where dropping a group changes what gets placed.
+      grid.flags[i] |= FLAG.SAND;
     }
   }
 }

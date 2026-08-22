@@ -25,11 +25,16 @@
 
 // THE flag set. Three of these — CARBONATE, SAND, VOLCANIC — are SUBSTRATE
 // bits, mutually exclusive on any one cell, written once by P2 and read back
-// by P10's cellView as `requires.rock`. They exist because Plan B closes
-// `requires.rock` to exactly "carbonate" | "clastic" | "volcanic": without a
-// bit to set, 19 desert types (rock: clastic) and 15 volcanic types (rock:
-// volcanic) can never match a cell, and 35 of the 170 lexicon rows degrade to
+// by the cell reader Task 10 writes (P10's `cellView` — NOT YET WRITTEN; the
+// SAND -> "clastic" mapping is a convention until it exists). They are here
+// because Plan B closes `requires.rock` to exactly "carbonate" | "clastic" |
+// "volcanic": without a bit to set, every constrained row degrades into
 // `substitutions` with every gate green.
+//
+// COUNTED against the committed lexicon, 2026-08-22, because this comment and
+// the plan's Global Constraints both said "35 of the 170 rows" and both were
+// wrong: 45 rows carry a `requires.rock` — carbonate 10, clastic 19,
+// volcanic 16. The direction of the claim was right; the number was not.
 //
 // The `nearFlag` predicate domain is deliberately SMALLER than this set:
 // CARBONATE, SAND and VOLCANIC are reachable through `rock`, not through

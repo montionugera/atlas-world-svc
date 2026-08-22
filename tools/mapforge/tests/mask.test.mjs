@@ -14,7 +14,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { makeGrid, idx, cellCentreKm, FLAG, SUBSTRATE_FLAGS } from "../lib/grid.mjs";
 import { applyPremiseMasks, premiseMaskAt, maskSummary } from "../lib/passes/mask.mjs";
-import { buildElevation, assignSubstrate } from "../lib/passes/elevation.mjs";
+import { buildElevation, assignSubstrate, ELEVATION_BANDS } from "../lib/passes/elevation.mjs";
 import { BIOMES } from "../../../scripts/lib/spine.mjs";
 import { PLAN_FOOTPRINTS, SCALE, MASK_SHELL_FACTOR, materialise, premiseAtScale, grossTargetsKm2 }
   from "../fit-premises.mjs";
@@ -109,6 +109,24 @@ test("every premise carries exactly the schema's key set — no missing key, no 
     for (const k of Object.keys(p.footprint))
       assert.ok(k in fp.properties, `${p.id}: footprint stray key "${k}"`);
   }
+});
+
+test("the schema's four closed enums are the ones this feature agreed, verbatim", () => {
+  // The join below runs FILES -> SCHEMA, so the schema can be silently WIDENED
+  // and nothing notices: adding "extra" to the `register` enum was a surviving
+  // mutation. STATE 10 claimed the join meant "the two cannot drift"; it meant
+  // one direction only. These are the other direction, until Task 11 gives
+  // premise.schema.json an ajv venue in checkWorld.
+  assert.deepEqual(SCHEMA.properties.register.enum,
+    ["basin-anglic", "north-log", "moorstone", "sandtongue", "reedspeech"]);
+  assert.deepEqual(SCHEMA.properties.class.enum, ["cap", "major", "minor", "chain"]);
+  assert.deepEqual(SCHEMA.properties.structures.items.properties.kind.enum,
+    ["inland-sea", "spine-ridge", "rift-valley", "volcanic-spine", "ice-divide",
+     "plateau", "delta-fan", "atoll-lagoon"]);
+  assert.equal(SCHEMA.properties.coastClass.enum.length, 13,
+    "one coastClass per landmass — a 14th row would be unreachable");
+  assert.deepEqual([...SCHEMA.properties.coastClass.enum].sort(),
+    [...new Set(premises.map((p) => p.coastClass))].sort());
 });
 
 test("every closed enum the schema declares is honoured by all 13 files", () => {
@@ -294,9 +312,15 @@ test("the two elevation bands are disjoint at EVERY mask value, including m just
   }
   assert.ok(minLand > maxOcean, `land floor ${minLand} does not clear ocean ceiling ${maxOcean}`);
   assert.ok(maxOcean < 0, `ocean floor reached ${maxOcean}; the band must stay strictly negative`);
-  // 0.01 through a Float32Array is 0.009999999776482582, so compare against
+  // …and the two bands P3's phantom-land guard is a statement about are the
+  // ones this field actually produces, not a pair of literals kept in step by
+  // hand: the ocean must stay under oceanCeil and land at or above landFloor.
+  assert.ok(maxOcean <= ELEVATION_BANDS.oceanCeil,
+    `ocean ceiling ${maxOcean} broke ELEVATION_BANDS.oceanCeil ${ELEVATION_BANDS.oceanCeil} — ` +
+    `P3's guard reads that constant to decide whether the threshold fell into the ocean`);
+  // landFloor through a Float32Array is 0.009999999776482582, so compare against
   // the float32 the clamp actually stores rather than the decimal literal.
-  const CLAMP = new Float32Array([0.01])[0];
+  const CLAMP = new Float32Array([ELEVATION_BANDS.landFloor])[0];
   assert.ok(minLand >= CLAMP, `land floor ${minLand} fell below the 0.01 clamp`);
 });
 
@@ -347,7 +371,7 @@ function substrateWorld() {
   const grid = makeGrid({ w: 200, h: 200, cellKm: 2 });
   const { maskField } = applyPremiseMasks({ grid, premises, stream: STREAM });
   buildElevation({ grid, premises, maskField, stream: STREAM });
-  assignSubstrate({ grid, premises, maskField, stream: STREAM });
+  assignSubstrate({ grid, premises, maskField });
   return { grid, maskField };
 }
 
@@ -424,22 +448,41 @@ test("ARC is set ONLY on volcanic ground — it is not a blanket bit", () => {
       assert.notEqual(grid.flags[i] & FLAG.VOLCANIC, 0, `cell ${i} carries ARC without volcanic ground`);
 });
 
-test("every premise whose kit names volcanic, karst or desert gets that class as its majority", () => {
-  const { grid } = substrateWorld();
-  const KIT_FLAG = [["volcanic", FLAG.VOLCANIC], ["karst", FLAG.CARBONATE], ["desert", FLAG.SAND]];
-  for (let k = 0; k < premises.length; k++) {
-    const p = premises[k];
-    for (const [kit, flag] of KIT_FLAG) {
-      if (!p.landformKit.includes(kit)) continue;
-      let hit = 0, total = 0;
-      for (let i = 0; i < grid.n; i++) {
-        if (grid.plate[i] !== k) continue;
-        total++;
-        if ((grid.flags[i] & flag) !== 0) hit++;
-      }
-      assert.ok(total > 0 && hit / total > 0.5,
-        `${p.id} names kit "${kit}" but only ${hit}/${total} of its ground carries that substrate`);
-    }
+test("substrate is a PURE function of (plate, kit): one class per plate, kit-determined", () => {
+  // THE rule that replaces the plan's "> 0.5 majority" test, which was
+  // satisfied by a world in which the substrate noise did nothing — and it did
+  // nothing (see elevation.mjs: `t` never fell below the volcanic gate anywhere
+  // in the frame, and c04's minimum cleared the karst gate by 0.076). The noise
+  // is gone, so the honest property is the exact one: every cell of a plate
+  // carries the SAME class, and which class is decided by the kit alone.
+  //
+  // This is strictly stronger than the majority form and it is what a reader of
+  // `requires.rock` can rely on. It also kills every mutation the majority test
+  // let through: a re-introduced gate, a swapped branch order, or any
+  // per-cell variation reds here.
+  const { grid, maskField } = substrateWorld();
+  const classOf = (i) => (grid.flags[i] & FLAG.VOLCANIC) !== 0 ? "volcanic"
+    : (grid.flags[i] & FLAG.CARBONATE) !== 0 ? "carbonate"
+    : (grid.flags[i] & FLAG.SAND) !== 0 ? "clastic" : null;
+  const seen = new Map();
+  for (let i = 0; i < grid.n; i++) {
+    if (maskField[i] === 0) continue;
+    const k = grid.plate[i], c = classOf(i);
+    assert.ok(c, `cell ${i} on plate ${k} carries no substrate class`);
+    if (!seen.has(k)) seen.set(k, c);
+    assert.equal(c, seen.get(k),
+      `${premises[k].id} carries both "${seen.get(k)}" and "${c}" — substrate is no longer one class per plate`);
+  }
+  assert.equal(seen.size, 13, "a landmass produced no ground at all");
+  // …and the class each plate got is the one its kit names. `desert` is
+  // deliberately absent from this table: Plan B's desert types are
+  // `rock: clastic`, so clastic is the universal default and there is no
+  // desert branch to test. Saying so here stops the next reader reading the
+  // old `["desert", FLAG.SAND]` row as a live distinction — it was vacuous.
+  for (const [k, c] of seen) {
+    const kit = premises[k].landformKit;
+    const want = kit.includes("volcanic") ? "volcanic" : kit.includes("karst") ? "carbonate" : "clastic";
+    assert.equal(c, want, `${premises[k].id} kit ${JSON.stringify(kit)} should be ${want} ground, got ${c}`);
   }
 });
 
@@ -447,9 +490,9 @@ test("assignSubstrate is idempotent — running it twice leaves identical flags"
   const grid = makeGrid({ w: 120, h: 120, cellKm: 400 / 120 });
   const { maskField } = applyPremiseMasks({ grid, premises, stream: STREAM });
   buildElevation({ grid, premises, maskField, stream: STREAM });
-  assignSubstrate({ grid, premises, maskField, stream: STREAM });
+  assignSubstrate({ grid, premises, maskField });
   const once = Array.from(grid.flags);
-  assignSubstrate({ grid, premises, maskField, stream: STREAM });
+  assignSubstrate({ grid, premises, maskField });
   assert.deepEqual(Array.from(grid.flags), once);
 });
 
@@ -461,11 +504,19 @@ test("assignSubstrate CLEARS a stale substrate bit rather than OR-ing a second o
   const grid = makeGrid({ w: 120, h: 120, cellKm: 400 / 120 });
   const { maskField } = applyPremiseMasks({ grid, premises, stream: STREAM });
   buildElevation({ grid, premises, maskField, stream: STREAM });
-  for (let i = 0; i < grid.n; i++) grid.flags[i] |= FLAG.CARBONATE | FLAG.SAND | FLAG.VOLCANIC;
-  assignSubstrate({ grid, premises, maskField, stream: STREAM });
+  // ARC is pre-set TOO, and that one character is the point. Without it the
+  // `flags &= ~FLAG.ARC` line was a surviving mutation: a STALE arc bit is
+  // precisely the blanket-ARC world the next test exists to prevent — cones on
+  // the ice cap, with 15 of the 16 `rock: volcanic` lexicon rows asking for
+  // `nearFlag: ARC` and every one of them matching everywhere.
+  for (let i = 0; i < grid.n; i++)
+    grid.flags[i] |= FLAG.CARBONATE | FLAG.SAND | FLAG.VOLCANIC | FLAG.ARC;
+  assignSubstrate({ grid, premises, maskField });
   for (let i = 0; i < grid.n; i++) {
     const set = SUBSTRATE_FLAGS.filter((f) => (grid.flags[i] & f) !== 0).length;
     assert.equal(set, maskField[i] === 0 ? 0 : 1, `cell ${i} kept ${set} substrate bits`);
+    if ((grid.flags[i] & FLAG.ARC) !== 0)
+      assert.notEqual(grid.flags[i] & FLAG.VOLCANIC, 0, `cell ${i} kept a STALE ARC bit off volcanic ground`);
   }
 });
 
@@ -557,12 +608,13 @@ test("GOLDEN: the elevation field, whole and at six points", () => {
   // bounding it, a coefficient change hides inside a saturated field.
   const elev = Array.from(grid.elev);
   assert.equal(elev.filter((v) => v === 1).length, 10, "the high clamp moved");
-  assert.equal(elev.filter((v) => v === new Float32Array([0.01])[0]).length, 141, "the low clamp moved");
+  assert.equal(elev.filter((v) => v === new Float32Array([ELEVATION_BANDS.landFloor])[0]).length, 141,
+    "the low clamp moved");
 });
 
 test("GOLDEN: the substrate assignment", () => {
   const { grid, maskField, plateArea } = goldenWorld();
-  assignSubstrate({ grid, premises, maskField, stream: STREAM });
+  assignSubstrate({ grid, premises, maskField });
   let carbonate = 0, volcanic = 0, clastic = 0, arc = 0;
   for (let i = 0; i < grid.n; i++) {
     if ((grid.flags[i] & FLAG.CARBONATE) !== 0) carbonate++;
@@ -590,7 +642,7 @@ test("GOLDEN: c04 is WHOLLY carbonate and c10 WHOLLY volcanic — the shares are
   // makes that fact a fixture instead of a comment — the day a gate moves, or a
   // premise names two substrate kits, this reds.
   const { grid, maskField, plateArea } = goldenWorld();
-  assignSubstrate({ grid, premises, maskField, stream: STREAM });
+  assignSubstrate({ grid, premises, maskField });
   const share = (id, flag) => {
     const k = premises.findIndex((p) => p.id === id);
     let hit = 0;
