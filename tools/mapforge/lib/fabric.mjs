@@ -507,10 +507,9 @@ export const SEA_MARGIN_CELLS = 16;
 
 export function buildSeaPartition({ grid, manifest, worldOwner, problems = [],
                                     marginCells = SEA_MARGIN_CELLS }) {
-  const { w, h, n } = grid;
+  const n = grid.n;
   const cellKm2 = grid.cellKm * grid.cellKm;
   const seaOwner = new Int16Array(n).fill(-1);
-  void w; void h;
   // ONE distance field for the whole world owner map: dist[i] is the distance
   // from cell i to the nearest cell of a different owner, the frame's outside
   // included. A cell of ocean j at dist >= margin is `marginCells` inside that

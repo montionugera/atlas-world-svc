@@ -277,7 +277,7 @@ tree before trusting it** — this is the single most reliable source of defects
 | **C, Task 10** `buildTrunk` (:6769) | every continent gets `interstitial: null` | a continent that ADOPTS a preserved chart anchor has children, so its unclaimed share is > 0.5% and G-COMP-ROLLUP demands one. Measured: `n-cluster1: unclaimed 98.5% but no interstitial` plus four per-key deltas and `L1 100.8 pp > 8.0`. |
 | **C, Task 10** `writeRun` collision guard (:6998) | walks `[atlas, ...generated]` | `generated` in the plan is `run.trunk` only; the CARRIED anchors share the same id space and the guard cannot see them. |
 | **C, Task 10** `canonStringify` for the fabric (:7041) | the spine's canonical serialiser | it puts every coordinate PAIR on its own line, which takes `continent-02.json` from 241,698 to **399,381 bytes** against the COMMITTED 262,144 B per-file cap — over on 4 of the 13. `fabricStringify` keeps the top level readable and puts one RECORD per line: worst file **214,037 B, 81.6% of budget**, and a fabric file is still a line diff between two seeds. |
-| **C, Global Constraints line 46** fractal coast detail | 3 levels, ≤ 0.25 km amplitude, on the coast arcs | applied to the fabric contour it costs **224 ms** of a 4,000 ms budget and takes the 13 outer rings from 2,364 to **17,981 vertices** — 33.8 KB of one fabric file — and what it buys is detail BELOW the data's own resolution (0.5 km cells, 0.25 km amplitude). OFF in P14 (`FRACTAL_COAST = false`, reachable by argument); the right venue is Plan E's redraw ink, where the amplitude can be chosen against the sheet scale. **`fractalise` therefore still has no production caller.** |
+| **C, Global Constraints line 46** fractal coast detail | 3 levels, ≤ 0.25 km amplitude, on the coast arcs | a CALIBRATION, and the numbers are both measured on the real world under the shipped serialiser: fractal ON takes the 13 emitted outer rings from **2,413 to 18,030 vertices** (7.5x), costs **+211 ms** of a 4,000 ms budget and **+237,691 bytes**, and moves the largest fabric file from **81.6% to 93.1%** of its committed 262,144 B cap — which is the headroom Plan D's `pinReceipts` have to fit in. It is NOT over the cap (an earlier note here said it was; that was true of `canonStringify`, not of `fabricStringify`). What it buys is detail BELOW the data's own resolution — 0.5 km cells, 0.25 km amplitude. OFF in P14 (`FRACTAL_COAST = false`, reachable by argument and pinned by the emitted vertex COUNT, not by reading the flag back); the venue is Plan E's redraw ink, where the amplitude can be chosen against the sheet scale. **`fractalise` therefore still has no production caller.** |
 | **`tools/mapforge/tests/_source-scan.mjs`** `stripComments` | one stripper, one policy | **the fourth hole in the determinism ban's COVERAGE.** It ran the block-comment regex FIRST, so a `/*` inside a LINE comment — `// 2. content/world/premises/*.json`, an ordinary header line — opened a block comment and blanked the file down to the next `*/`. Reproduced: that comment plus `Math.cos(1) + Date.now()` prepended to `lib/fabric.mjs` left BOTH determinism scans at **30 pass / 0 fail**. Fixed to a single pass; the two `**` entries the old form reported turn out to have been artefacts of the same overrun. |
 
 The plan text already self-corrects two more: spec §8.6's "checkSpine is already parameterised
@@ -1889,8 +1889,10 @@ already 12× cheaper than the plan's heap.
 
 ### Open, recorded rather than chased
 
-- **`fractalise` still has no production caller.** See §5's fractal-coast row: 224 ms and 33.8 KB
-  of one fabric file for detail below the grid's own resolution. Plan E's redraw ink is the venue.
+- **`fractalise` still has no production caller.** See §5's fractal-coast row: +211 ms, +237,691
+  bytes and the largest fabric file at 93.1% of its cap instead of 81.6%, for detail below the
+  grid's own resolution. It is a CALIBRATION, not a constraint — an owner who wants a ragged coast
+  in the fabric can have it inside budget. Plan E's redraw ink is the better venue.
 - **`scripts/tests/places.test.mjs`'s two mirror-allowlist tests fail inside a Node 18 container**
   — `codeFilesNamingTheMirror()` shells out to git and the worktree's `.git` pointer does not
   resolve inside the container (`fatal: not a git repository`). PRE-EXISTING: they fail with this

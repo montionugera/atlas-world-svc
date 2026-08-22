@@ -63,7 +63,6 @@ after(() => { if (RUN) rmSync(RUN.out, { recursive: true, force: true }); });
 const MANIFEST = rj(join(ROOT, "content/world/manifest.json"));
 const LOAD_BUDGET = rj(join(ROOT, "content/spine/load-budget.json"));
 const BUDGETS = rj(join(ROOT, "content/world/budgets.json"));
-const poly = (points) => ({ shape: "polygon", points, anchor: points[0] });
 const fabricFiles = ({ out }) => readdirSync(join(out, "content/world/fabric"))
   .filter((f) => f !== "world.json").sort()
   .map((f) => rj(join(out, "content/world/fabric", f)));
@@ -419,6 +418,7 @@ test("every settlement gets an f-town-<slug> point feature on its continent node
 
 test("every fabric file carries a pinReceipts array, empty in Plan C", { timeout: 240000 }, () => {
   const { out } = run();
+  let verts = 0;
   for (const doc of fabricFiles({ out })) {
     // Plan D's G-PIN-SAT reads this key. If it is not serialised the gate has
     // nothing to check and passes vacuously on all 40 pinned records.
@@ -426,7 +426,18 @@ test("every fabric file carries a pinReceipts array, empty in Plan C", { timeout
     assert.equal(doc.pinReceipts.length, 0, "Plan C has no pinned layer yet");
     assert.ok(Array.isArray(doc.outerRing) && doc.outerRing.length >= 3,
       `${doc.continent} has no outerRing — basin-sheet.mjs dereferences it unconditionally`);
+    assert.ok(Array.isArray(doc.outerHoles));
+    verts += doc.outerRing.length + doc.outerHoles.reduce((a, r) => a + r.length, 0);
   }
+  // THE COAST IS NOT FRACTALISED, PINNED BY ITS VERTEX COUNT rather than by
+  // reading the flag back. `FRACTAL_COAST = true` takes this to 18,030 — 7.5x —
+  // for +211 ms of a 4,000 ms budget and +237,691 bytes, and it takes the
+  // largest fabric file from 81.6% to 93.1% of its committed 262,144 B cap,
+  // which is the headroom Plan D's pinReceipts have to fit in. What it buys is
+  // detail BELOW the data's own resolution: 0.5 km cells, 0.25 km amplitude.
+  // The venue is Plan E's redraw ink.
+  assert.equal(verts, 2413,
+    "the fabric coast contour moved — if FRACTAL_COAST was turned on, re-read the note above");
 });
 
 test("regions carry rings AND holes, and every region's levelBand is banded", { timeout: 240000 }, () => {

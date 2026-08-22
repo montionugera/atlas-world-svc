@@ -8,8 +8,8 @@
 //   1. content/spine/nodes/n-atlas.json  (the frozen frame + seed streams)
 //   2. content/world/premises/*.json
 //   3. content/world/civil/ and content/world/relations/ (empty in Plan C)
-//   4. the runtime subtree, copied VERBATIM — identified by ROOT MEMBERSHIP
-//      from content/spine/roots.json, never by a pinned id list.
+//   4. the runtime subtree, byte-for-byte unchanged — identified by ROOT
+//      MEMBERSHIP from content/spine/roots.json, never by a pinned id list.
 // So there is no previous output to subtract, no synthetic budget, and no
 // sealane id to special-case.
 //
@@ -51,8 +51,15 @@ const readJson = (p) => JSON.parse(readFileSync(p, "utf8"));
 export function runIdOf({ seed, version }) { return `${seed.slice(0, 8)}-${version}`; }
 
 // ── the pass pipeline ──────────────────────────────────────────────────────
-export function runPasses({ manifest, premises, lexicon, loadBudget, pinned = [], relations = [],
-                            onStage = () => {} }) {
+// The plan declares `runPasses({ manifest, premises, pinned, relations })` and
+// Plan D quotes that signature, so `lexicon` and `loadBudget` DEFAULT to the
+// committed files rather than becoming required arguments — the plan's own
+// version reads the lexicon inside the function for the same reason. A caller
+// with its own fixture lexicon (Task 8's mini-lexicon) passes one.
+export function runPasses({ manifest, premises,
+                            lexicon = readJson(join(REPO_ROOT, "content/world/lexicon/landforms.json")),
+                            loadBudget = readJson(join(REPO_ROOT, "content/spine/load-budget.json")),
+                            pinned = [], relations = [], onStage = () => {} }) {
   const timings = {};
   const problems = [];
   const time = (name, label, fn) => {
@@ -158,7 +165,6 @@ export function runPasses({ manifest, premises, lexicon, loadBudget, pinned = []
     if (grid.owner[i] < 0) unownedLandCells++;
   }
 
-  const bandOf = (regionId) => part.regions.find((r) => r.id === regionId)?.levelBand ?? null;
   premises.forEach((p, k) => {
     const rs = part.regions.filter((r) => r.continent === p.id);
     const ids = new Set(rs.map((r) => r.id));
@@ -215,7 +221,6 @@ export function runPasses({ manifest, premises, lexicon, loadBudget, pinned = []
                       grossLandKm2: q((census.land + census.lake) * CELL_AREA_KM2),
                       fabric: `content/world/fabric/continent-${p.id.slice(1)}.json` });
   });
-  void bandOf;
 
   const netLandKm2 = q((grossLandCells - lakeCells) * CELL_AREA_KM2);
   const worldFile = {
@@ -281,8 +286,11 @@ export function runPasses({ manifest, premises, lexicon, loadBudget, pinned = []
 // that with it.
 export function buildTrunk({ manifest, premises, grid, rings, generator, settlements, problems = [] }) {
   const nodes = [], edges = [];
-  const featureIds = townFeatureIds({ settlements });
-  void featureIds;                       // throws on a collision; the ids are minted per node below
+  // Throws on a collision across the WHOLE world before a single node is built.
+  // Minting them per continent below would let two landmasses agree on a slug
+  // and produce one feature id at two points, which is the one thing G-NET
+  // cannot resolve.
+  townFeatureIds({ settlements });
   premises.forEach((p, k) => {
     const r = rings.rings.get(p.id);
     if (!r) { problems.push(`buildTrunk: ${p.id} produced no ring`); return; }
@@ -534,7 +542,14 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [] }
     if (existsSync(join(repoRoot, dir)))
       cpSync(join(repoRoot, dir), join(outDir, dir), { recursive: true });
 
-  // 2. the runtime subtree, VERBATIM, found by root membership
+  // 2. the runtime subtree, found by ROOT MEMBERSHIP from roots.json — never by
+  //    a pinned id list. Its nodes are not `cp`-ed: they go through
+  //    `canonicalNode` with every other node, over the DRAFT tree. "Copied
+  //    verbatim" is then a MEASURED consequence (generate-world.test.mjs
+  //    compares the draft bytes to the live file byte for byte) rather than an
+  //    artefact of the copy, and a canonicaliser that started producing
+  //    different bytes for an unchanged node reds that test instead of hiding
+  //    behind the copy.
   const liveNodesDir = join(repoRoot, "content/spine/nodes");
   const live = readdirSync(liveNodesDir).filter((f) => f.endsWith(".json"))
     .map((f) => ({ f, doc: JSON.parse(readFileSync(join(liveNodesDir, f), "utf8")) }));
@@ -576,8 +591,10 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [] }
     if (!placementInside({ placement, ring: host.placement.points }))
       run.problems.push(`preserved chart node ${id}: translated by [${q(dx)}, ${q(dy)}] onto ` +
         `${host.id} and still not inside its ring — G-CONTAIN will red it; Plan E's redraw must re-pin it`);
-    const { derived, absoluteAnchor, ...rest } = doc;
-    void derived; void absoluteAnchor;
+    // `derived` and `absoluteAnchor` are DROPPED, not overwritten: the sidecar
+    // is regenerated for the whole draft tree, and G-FROZEN is directional —
+    // an unfrozen node still carrying absoluteAnchor fails too.
+    const { derived: _d, absoluteAnchor: _a, ...rest } = doc;
     carried.push({ ...rest, parentId: host.id, frozen: false, placement,
                    interior: { units: doc.interior?.units ?? "km",
                                perParentUnit: doc.interior?.perParentUnit ?? 1,
