@@ -1,0 +1,15 @@
+{
+  "cellKm": 0.5,
+  "fabric": { "maxFiles": 20, "maxBytesPerFile": 262144, "maxBytesTotal": 4194304 },
+  "civil": { "maxFiles": 600, "maxBytesPerFile": 8192 },
+  "landforms": { "maxInstances": 2400, "maxNamed": 500, "minTypes": 100, "maxTypes": 200 },
+  "sheets": { "maxSheets": 18, "maxSvgBytes": 524288, "maxRasterSeconds": 2 },
+  "loop": [
+    { "stage": "generate",    "budgetMs": 4000,  "failMs": 8000 },
+    { "stage": "join",        "budgetMs": 2000,  "failMs": 4000 },
+    { "stage": "gates",       "budgetMs": 15000, "failMs": 20000 },
+    { "stage": "sheets",      "budgetMs": 5000,  "failMs": 8000 },
+    { "stage": "rasterise",   "budgetMs": 30000, "failMs": 60000 },
+    { "stage": "commit-lock", "budgetMs": 10000, "failMs": 15000 }
+  ]
+}

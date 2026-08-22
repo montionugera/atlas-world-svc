@@ -43,6 +43,9 @@ import { inkStats } from "../tools/mapforge/lib/png-ink.mjs";
 // The same superset-bounds reader the sheet builders use, so the gate's idea
 // of "the shape this fill is clipped to" cannot drift from the emitter's.
 import { pathBounds } from "../tools/mapforge/lib/draft.mjs";
+// Plan C: the content/world/ layer. Same lib/ discipline as spine.mjs — all
+// pure logic lives there; this file is not importable (bare main() + exit).
+import { loadFabric, gWorldBudget } from "./lib/world.mjs";
 import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -1751,7 +1754,53 @@ function checkSpineExternalAliases({ opts, report }) {
 // G-TREE, G-DEPTH, G-POLY, G-SEED, G-COMP-SUM. Geometry/derivation gates
 // (G-CONTAIN, G-FRAME, …) land in Phase 1. Returns the valid-node count
 // (finish() starts printing it in Phase 6).
+// ═══════════════════════ WORLD (Plan C, spec phase 4) ═══════════════════
+// content/world/ — the generated fabric layer. SOFT-SKIPS a content root
+// with no world/ directory, before touching any schema: ~45 pre-existing
+// spine fixtures have no world/ and a hard-fail here reds every one.
+// Returns the fabric-file count.
+//
+// CALLED FROM THE TOP OF checkSpine, not from after gSpineBudgets as the plan
+// text says — DEVIATION, with evidence. checkSpine returns 0 at its own first
+// statement on a content root with no spine/ directory, so a call placed after
+// gSpineBudgets is unreachable for exactly the roots Task 1 Step 8 describes
+// ("the fixture root has no spine/ directory, so checkSpine soft-skips and
+// only checkWorld runs"). Measured: with the call after gSpineBudgets the base
+// world fixture printed no `world-budget:` line at all and the "prints its
+// measurements on every run" test failed. The world layer still rides the
+// spine harness — `--only=spine` covers it either way — it just cannot ride
+// behind the spine's own soft-skip.
+function checkWorld(opts) {
+  const world = loadFabric({ contentRoot: opts.contentRoot });
+  if (!world.present) return 0;
+  for (const e of world.errors) fail(`world: ${e}`);
+
+  const schemaPath = join(opts.contentRoot, "schemas/world-manifest.schema.json");
+  // Same ordering discipline as checkSpine's: only compile when there is a
+  // document to validate, so a world root carrying only budgets.json (the
+  // shape Plan D's civil fixtures will use) earns no "schema unreadable" FAIL.
+  if (world.manifest) {
+    const validate = compileSchema(schemaPath, "world-manifest schema", fail);
+    if (validate && !validate(world.manifest))
+      for (const err of validate.errors) fail(`world/manifest.json: schema ${err.instancePath || "/"} ${err.message}`);
+  }
+
+  gWorldBudget({
+    contentRoot: opts.contentRoot,
+    budgets: world.budgets,
+    manifest: world.manifest,
+    report: fail,
+    note: (m) => console.log(m),
+  });
+  return world.fabric.length;
+}
+
 function checkSpine(opts, mobTypes) {
+  // Plan C: the world layer rides the same harness as the spine gates, so
+  // `--only=spine` (Gate 1) covers it automatically. It runs BEFORE the
+  // spine soft-skip below — see checkWorld's header for why.
+  checkWorld(opts);
+
   // Soft-skip BEFORE compiling the schema: a content root with no spine/ is
   // valid (mirrors the maps/ soft-skip) and must not record a spurious
   // "schema unreadable" failure — every pre-existing gate fixture depends on

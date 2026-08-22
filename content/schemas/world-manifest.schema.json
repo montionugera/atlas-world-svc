@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "world-manifest.schema.json",
+  "title": "World manifest — SHAPE ONLY. Every numeric relationship (closure, quota sums, band arithmetic) lives in checkWorld()'s G-* gates, never here: the gate continues past a schema-invalid doc, so a bound duplicated into the schema turns its gate rule into dead code.",
+  "type": "object",
+  "required": ["version", "seed", "frame", "ratio", "budget", "grid", "regions",
+               "landformCatalogue", "names", "relations", "quotas", "levelBands",
+               "landmasses", "oceans", "seas"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "integer" },
+    "seed": { "type": "string", "pattern": "^[0-9a-f]{16}$" },
+    "frame": {
+      "type": "object", "required": ["units", "w", "h", "areaKm2"], "additionalProperties": false,
+      "properties": { "units": { "const": "km" }, "w": { "type": "number" }, "h": { "type": "number" }, "areaKm2": { "type": "number" } }
+    },
+    "ratio": {
+      "type": "object", "additionalProperties": false,
+      "required": ["measure", "target", "min", "max", "oceanPctTarget", "oceanPctMin", "oceanPctMax"],
+      "properties": {
+        "measure": { "type": "string" }, "target": { "type": "number" },
+        "min": { "type": "number" }, "max": { "type": "number" },
+        "oceanPctTarget": { "type": "number" }, "oceanPctMin": { "type": "number" }, "oceanPctMax": { "type": "number" }
+      }
+    },
+    "budget": {
+      "type": "object", "additionalProperties": false,
+      "required": ["netLandKm2", "waterKm2", "grossLandPolygonKm2", "interiorWaterKm2",
+                   "oceanPolygonKm2", "interstitialKm2", "interstitialComposition"],
+      "properties": {
+        "netLandKm2": { "type": "number" }, "waterKm2": { "type": "number" },
+        "grossLandPolygonKm2": { "type": "number" }, "interiorWaterKm2": { "type": "number" },
+        "oceanPolygonKm2": { "type": "number" }, "interstitialKm2": { "type": "number" },
+        "interstitialComposition": { "type": "object", "additionalProperties": { "type": "number" } }
+      }
+    },
+    "grid": {
+      "type": "object", "additionalProperties": false,
+      "required": ["w", "h", "cellKm", "cells", "landCellBand"],
+      "properties": {
+        "w": { "type": "integer" }, "h": { "type": "integer" }, "cellKm": { "type": "number" },
+        "cells": { "type": "integer" },
+        "landCellBand": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 }
+      }
+    },
+    "regions": {
+      "type": "object", "additionalProperties": false, "required": ["surveyed", "reported"],
+      "properties": {
+        "surveyed": { "type": "object" },
+        "reported": { "type": "object" }
+      }
+    },
+    "landformCatalogue": { "type": "object" },
+    "names": { "type": "object" },
+    "relations": {
+      "type": "object", "additionalProperties": false,
+      "required": ["coverageFloorPct", "why"],
+      "properties": {
+        "coverageFloorPct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "why": { "type": "string", "minLength": 1 }
+      }
+    },
+    "quotas": { "type": "object" },
+    "levelBands": {
+      "type": "object", "additionalProperties": false,
+      "required": ["originPinnedId", "originFallbackContinent", "ringKm", "bands"],
+      "properties": {
+        "originPinnedId": { "type": "string" },
+        "originFallbackContinent": { "type": "string" },
+        "ringKm": { "type": "number" },
+        "bands": { "type": "array", "items": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 } }
+      }
+    },
+    "landmasses": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "title", "nodeId", "class", "netKm2", "interiorWaterKm2", "surveyed", "reported"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^c[0-9]{2}$" },
+          "title": { "type": "string" },
+          "nodeId": { "type": "string", "pattern": "^n-[a-z0-9-]+$" },
+          "class": { "enum": ["cap", "major", "minor", "chain"] },
+          "netKm2": { "type": "number" }, "interiorWaterKm2": { "type": "number" },
+          "surveyed": { "type": "integer" }, "reported": { "type": "integer" },
+          "why": { "type": "string" },
+          "nodeIdWhy": { "type": "string" }
+        }
+      }
+    },
+    "oceans": {
+      "type": "array", "minItems": 3, "maxItems": 3,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "title", "nodeId", "polygonKm2", "attributedWaterKm2"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^o[0-9]{2}$" },
+          "title": { "type": "string" },
+          "nodeId": { "type": "string", "pattern": "^n-[a-z0-9-]+$" },
+          "polygonKm2": { "type": "number" },
+          "attributedWaterKm2": { "type": "number" }
+        }
+      }
+    },
+    "seas": {
+      "type": "array", "minItems": 9, "maxItems": 9,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "title", "nodeId", "ocean", "polygonKm2"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^s[0-9]{2}$" },
+          "title": { "type": "string" },
+          "nodeId": { "type": "string", "pattern": "^n-[a-z0-9-]+$" },
+          "ocean": { "type": "string", "pattern": "^o[0-9]{2}$" },
+          "polygonKm2": { "type": "number" }
+        }
+      }
+    }
+  }
+}

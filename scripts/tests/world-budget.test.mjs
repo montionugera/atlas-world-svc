@@ -600,14 +600,23 @@ test("G-SHEET-BUDGET red, not a throw: budgets.json sheets has no ink floor", ()
 });
 
 // Plan C adds `fabric`, `civil` and `loop` to this same file and owns
-// G-WORLD-BUDGET. Task 5 must not have pre-empted them.
-test("budgets.json does not pre-empt Plan C's sections", () => {
+// G-WORLD-BUDGET. Until Plan C Task 1 this test asserted Task 5 had not
+// PRE-EMPTED them (all three undefined); Task 1 landed them, so the same
+// join now runs the other way — the three sections exist and are Plan C's,
+// and the sections Plan B owns are still untouched beside them.
+test("budgets.json carries Plan C's sections beside Plan B's, and both are intact", () => {
   for (const k of ["fabric", "civil", "loop"])
-    assert.equal(
+    assert.notEqual(
       BUDGETS[k],
       undefined,
-      `budgets.json already carries Plan C's "${k}" section`,
+      `budgets.json has lost Plan C's "${k}" section`,
     );
+  assert.equal(BUDGETS.fabric.maxFiles, 20);
+  assert.equal(BUDGETS.civil.maxFiles, 600);
+  assert.equal(BUDGETS.loop.length, 6);
+  // Plan B's two sections are the ones this file's other ~40 tests read.
+  assert.equal(typeof BUDGETS.landforms, "object");
+  assert.equal(typeof BUDGETS.sheets, "object");
 });
 
 // ── the printed record — a gate that passes may have stopped checking ──────
@@ -1096,12 +1105,20 @@ test("soft-skip: a content root with no content/world/ is still green", () => {
 
 // budgets.json's absence is Plan C's G-WORLD-BUDGET to report, not this
 // gate's — so the lexicon half must go quiet too rather than half-report.
-test("soft-skip: content/world/ without budgets.json reports nothing", () => {
+// gSpineWorld's budgets-file-missing branch stays quiet — that is what this
+// test pinned before Plan C. It is still pinned: G-LANDFORM and G-SHEET-BUDGET
+// say nothing. What CHANGED is that the file now has an owner: Plan C Task 1's
+// G-WORLD-BUDGET holds this file's existence check, so a world root with no
+// budgets.json is a FAILURE, spoken by exactly one gate rather than by none.
+test("content/world/ without budgets.json: Plan B's gates stay quiet, G-WORLD-BUDGET speaks", () => {
   const { contentRoot, drop } = tmpRoot();
   rmSync(join(contentRoot, "world/budgets.json"), { force: true });
   const r = runGate(contentRoot);
-  assert.equal(r.code, 0, r.out);
-  assert.doesNotMatch(r.out, /G-LANDFORM|G-SHEET-BUDGET|world-budget/);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-WORLD-BUDGET: world\/budgets\.json is missing/);
+  assert.doesNotMatch(r.out, /G-LANDFORM|G-SHEET-BUDGET/);
+  // Exactly one gate speaks: no double-report of the same absent file.
+  assert.equal((r.out.match(/world\/budgets\.json is missing/g) ?? []).length, 1, r.out);
   drop();
 });
 
