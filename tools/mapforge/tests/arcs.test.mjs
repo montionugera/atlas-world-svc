@@ -44,7 +44,7 @@ test("assembleRings closes a ring per owner with strictly positive shoelace", ()
   const { owner, w, h } = twoBlocks();
   const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
   for (const id of [0, 1]) {
-    const rings = assembleRings({ arcs, ownerId: id });
+    const { rings } = assembleRings({ arcs, ownerId: id });
     assert.equal(rings.length, 1, `owner ${id} produced ${rings.length} rings`);
     const r = rings[0];
     assert.ok(r.length >= 4, `owner ${id} ring has ${r.length} points`);
@@ -58,8 +58,8 @@ test("assembleRings closes a ring per owner with strictly positive shoelace", ()
 test("the shared boundary vertices are BIT-IDENTICAL in both owners' rings", () => {
   const { owner, w, h } = twoBlocks();
   const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
-  const r0 = assembleRings({ arcs, ownerId: 0 })[0];
-  const r1 = assembleRings({ arcs, ownerId: 1 })[0];
+  const r0 = assembleRings({ arcs, ownerId: 0 }).rings[0];
+  const r1 = assembleRings({ arcs, ownerId: 1 }).rings[0];
   const key = ([x, y]) => `${x},${y}`;
   const s0 = new Set(r0.map(key)), s1 = new Set(r1.map(key));
   const shared = [...s0].filter((k) => s1.has(k));
@@ -71,7 +71,7 @@ test("assembled ring areas sum to the exact owner cell area", () => {
   const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
   const cellArea = 0.25;
   for (const [id, cells] of [[0, 16], [1, 8]]) {
-    const rings = assembleRings({ arcs, ownerId: id });
+    const { rings } = assembleRings({ arcs, ownerId: id });
     const area = rings.reduce((s, r) => s + shoelaceArea({ points: r }), 0);
     assert.equal(area, cells * cellArea, `owner ${id}: ring area ${area} !== census ${cells * cellArea}`);
   }
@@ -90,6 +90,18 @@ test("simplifyArc keeps a feature larger than epsilon", () => {
   const pts = [[0, 0], [5, 0], [5, 4], [10, 4], [10, 0], [15, 0]];
   const out = simplifyArc({ points: pts, epsilonKm: DP_EPSILON_KM });
   assert.deepEqual(out, pts);
+});
+
+test("simplifyArc DROPS a point exactly at epsilon — the boundary, not near it", () => {
+  // A recorded undeclared survivor: `bestD > epsilonKm` -> `>=` changed nothing,
+  // because no fixture put a vertex exactly ON the tolerance. This one does, in
+  // exact binary: the perpendicular distance is sqrt(0.25) = 0.5, and 0.5 is the
+  // epsilon. Douglas-Peucker's tolerance is "further than", so it goes.
+  const pts = [[0, 0], [1, 0.5], [2, 0]];
+  assert.deepEqual(simplifyArc({ points: pts, epsilonKm: 0.5 }), [[0, 0], [2, 0]]);
+  // …and a hair further out is kept, so the assertion is about the boundary and
+  // not about the whole predicate.
+  assert.equal(simplifyArc({ points: [[0, 0], [1, 0.5000001], [2, 0]], epsilonKm: 0.5 }).length, 3);
 });
 
 test("DP_EPSILON_KM is the pinned 0.35", () => { assert.equal(DP_EPSILON_KM, 0.35); });
@@ -125,6 +137,8 @@ import { makeGrid, FLAG } from "../lib/grid.mjs";
 import { applyPremiseMasks } from "../lib/passes/mask.mjs";
 import { buildElevation } from "../lib/passes/elevation.mjs";
 import { selectSeaLevelByRank, classifySea, CELL_AREA_KM2 } from "../lib/passes/sea-level.mjs";
+import { terrainStream } from "../lib/seed.mjs";
+import { createHash } from "node:crypto";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../../..");
@@ -138,16 +152,20 @@ const field = (w, h, fill) => {
 // ── the frame convention ───────────────────────────────────────────────────
 // PLAN DEFECT 1. The plan's two frame loops emit `left`/`right` INVERTED
 // against the convention its own main loop establishes, so an owner touching
-// the top or left frame cannot chain a closed ring. Reproduced by hand on this
-// exact field before the fix: the four arcs orient [1,0]→[1,1], [1,1]→[0,1],
-// [1,0]→[0,0], [0,0]→[0,1] — two arcs starting at [1,0], and the corner [0,1]
-// reachable but never left — so assembleRings returns a 3-point open chain and
-// the census assertion below reads 0.25 km2 against 0.25 km2 only by accident
-// of the fallback. MUTATION-PROVEN: restoring either plan spelling reds this.
+// the top or left frame cannot chain a closed ring.
+//
+// THE BY-HAND NARRATIVE THAT USED TO STAND HERE WAS FALSE, and the reviewer
+// measured it: on THIS field the plan's code returns the CORRECT single ring
+// [[0.5,0],[0.5,0.5],[0,0.5],[0,0]], identical to head's. The single-corner
+// fixture cannot see the defect at all; what makes the frame convention
+// load-bearing is the RAGGED field further down, found by sweeping 5x5 owner
+// fields. This test is kept because it is the only direct coverage the frame
+// branches have on any field, and because restoring either plan spelling still
+// reds ONE test — that one, not this one.
 test("an owner in the TOP-LEFT CORNER still closes one exact ring", () => {
   const { owner, w, h } = field(3, 3, (set) => set(0, 0, 0));
   const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
-  const rings = assembleRings({ arcs, ownerId: 0 });
+  const { rings } = assembleRings({ arcs, ownerId: 0 });
   assert.equal(rings.length, 1, `corner cell produced ${rings.length} rings, not 1`);
   // The exact ring, not just its area: a wrapped or dropped frame edge can
   // still close on 0.25 km2 by accident, and did — see the four-frame case.
@@ -163,7 +181,7 @@ test("an owner spanning ALL FOUR frame edges closes one exact ring", () => {
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) set(x, y, 0);
   });
   const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
-  const rings = assembleRings({ arcs, ownerId: 0 });
+  const { rings } = assembleRings({ arcs, ownerId: 0 });
   assert.equal(rings.length, 1);
   // 4 sides x 4 unit edges: the ring must carry every corner it crosses. AREA
   // ALONE IS NOT ENOUGH — measured, an `at()` that indexes `owner[y*w + x]`
@@ -187,12 +205,12 @@ test("TWO owners sharing the top-left corner both close, chaining frame to inter
   });
   const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
   assert.equal(arcs.length, 3, `expected 3 arcs (one shared, two frame), got ${arcs.length}`);
-  assert.deepEqual(assembleRings({ arcs, ownerId: 0 }),
+  assert.deepEqual(assembleRings({ arcs, ownerId: 0 }).rings,
     [[[0.5, 0], [0.5, 0.5], [0.5, 1], [0, 1], [0, 0.5], [0, 0]]]);
-  assert.deepEqual(assembleRings({ arcs, ownerId: 1 }),
+  assert.deepEqual(assembleRings({ arcs, ownerId: 1 }).rings,
     [[[0.5, 1], [0.5, 0.5], [0.5, 0], [1, 0], [1, 0.5], [1, 1]]]);
   for (const id of [0, 1])
-    assert.equal(shoelaceArea({ points: assembleRings({ arcs, ownerId: id })[0] }), 0.5);
+    assert.equal(shoelaceArea({ points: assembleRings({ arcs, ownerId: id }).rings[0] }), 0.5);
 });
 
 // ── diagonal touch ─────────────────────────────────────────────────────────
@@ -202,15 +220,20 @@ test("a RAGGED two-owner field on the frame closes on its exact census", () => {
   // answer. It is needed because an arc takes its `left`/`right` from its FIRST
   // edge only: a mis-oriented edge in the MIDDLE of an arc is invisible, and
   // the tidy side-by-side fixture above only ever puts a top-frame edge first.
-  // Here the plan's left-frame spelling splits owner 0 into five rings totalling
-  // 3.5 km2 against a 3.25 km2 census — the sliver this module exists to
-  // prevent, on a field with no continent in it at all.
+  // Here the plan's left-frame spelling splits owner 0 into FIVE rings where
+  // four are right, with areas [2, 0.625, 0.375, 0, 0.25] — a wrong
+  // decomposition containing a ZERO-AREA degenerate ring, on a field with no
+  // continent in it at all. (The figure recorded when this was written — "five
+  // rings totalling 3.5 km2 against a 3.25 km2 census" — did not reproduce:
+  // the five sum to exactly 3.25. The defect is the decomposition and the
+  // degenerate ring, not an overcount, and assembleRings now THROWS on it
+  // rather than emitting it.)
   const f = [0, 0, 0, 0, -1, 0, 1, -1, 0, 1, 0, -1, 0, 0, -1, 1, 0, -1, 1, 1, 0, -1, 0, 0, 1];
   const owner = Int16Array.from(f);
   const { arcs } = extractArcs({ owner, w: 5, h: 5, cellKm: 0.5 });
   assert.equal(arcs.length, 25, "the fixture's arc census moved");
   for (const [id, rings_, area] of [[0, 4, 3.25], [1, 4, 1.5]]) {
-    const rings = assembleRings({ arcs, ownerId: id });
+    const { rings } = assembleRings({ arcs, ownerId: id });
     assert.equal(rings.length, rings_, `owner ${id} produced ${rings.length} rings`);
     let cells = 0;
     for (const v of f) if (v === id) cells++;
@@ -251,7 +274,7 @@ test("a DIAGONAL touch does not produce a self-intersecting bowtie", () => {
   });
   const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
   for (const id of [0, 1]) {
-    const rings = assembleRings({ arcs, ownerId: id });
+    const { rings } = assembleRings({ arcs, ownerId: id });
     assert.ok(rings.length >= 1, `owner ${id} produced no ring at all`);
     let area = 0;
     for (const r of rings) {
@@ -263,33 +286,99 @@ test("a DIAGONAL touch does not produce a self-intersecting bowtie", () => {
   }
   // The asymmetry itself, pinned — so that if a later change makes the
   // traversal symmetric, this test says so instead of quietly agreeing.
-  assert.equal(assembleRings({ arcs, ownerId: 0 }).length, 2);
-  assert.equal(assembleRings({ arcs, ownerId: 1 }).length, 1);
+  assert.equal(assembleRings({ arcs, ownerId: 0 }).rings.length, 2);
+  assert.equal(assembleRings({ arcs, ownerId: 1 }).rings.length, 1);
 });
 
 // ── holes ──────────────────────────────────────────────────────────────────
-test("an enclosed owner makes TWO rings for its host, the OUTER one first", () => {
-  // owner 0 fills a 5x5 block; owner 1 is the single cell at its centre. The
-  // rule this pins is Task 5 Step 8's: the trunk polygon is rings[0], the outer
-  // ring, and the enclosed area is carved from the fabric CENSUS, never from
-  // the ring — G-POLY has no hole concept and rejects a negative ring outright.
+test("an enclosed owner is a HOLE, returned separately from the host's lobes", () => {
+  // owner 0 fills a 5x5 block; owner 1 is the single cell at its centre.
+  //
+  // THE RULING (see arcs.mjs' assembleRings header): rings[] holds the OUTER
+  // boundaries, holes[] holds the interior ones, and areaKm2 is the one true
+  // area. The previous contract was recorded two contradictory ways in one
+  // commit — this file said "outer minus hole", STATE said "callers must SUM
+  // the rings" — and the reviewer's counterexample kills both. It is below.
   const { owner, w, h } = field(9, 9, (set) => {
     for (let y = 2; y < 7; y++) for (let x = 2; x < 7; x++) set(x, y, 0);
     set(4, 4, 1);
   });
   const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
-  const rings = assembleRings({ arcs, ownerId: 0 });
-  assert.equal(rings.length, 2, `host produced ${rings.length} rings, not 2`);
-  for (const r of rings) assert.ok(shoelaceArea({ points: r }) > 0, "G-POLY takes no negative ring");
-  // LARGEST FIRST, so rings[0] is the trunk polygon.
+  const { rings, holes, areaKm2 } = assembleRings({ arcs, ownerId: 0 });
+  assert.equal(rings.length, 1, "the host has ONE lobe");
+  assert.equal(holes.length, 1, "the enclosed owner is not reported as a hole");
+  for (const r of [...rings, ...holes])
+    assert.ok(shoelaceArea({ points: r }) > 0, "G-POLY takes no negative ring");
   assert.equal(shoelaceArea({ points: rings[0] }), 25 * 0.25, "rings[0] is not the OUTER ring");
-  assert.equal(shoelaceArea({ points: rings[1] }), 1 * 0.25, "rings[1] is not the hole");
-  // …and the census, which is what the fabric records: 24 cells, not 25.
+  assert.equal(shoelaceArea({ points: holes[0] }), 1 * 0.25, "holes[0] is not the hole");
   let cells = 0;
   for (let i = 0; i < owner.length; i++) if (owner[i] === 0) cells++;
   assert.equal(cells, 24);
-  assert.equal(shoelaceArea({ points: rings[0] }) - shoelaceArea({ points: rings[1] }), cells * 0.25,
-    "outer minus hole is not the cell census — the carve rule does not close");
+  assert.equal(areaKm2, cells * 0.25, "areaKm2 is not the cell census — the carve rule does not close");
+});
+
+test("the case that kills BOTH old contracts: a hole AND a second lobe at once", () => {
+  // The reviewer's counterexample, pinned so neither wrong rule can come back.
+  // owner 0 is a 5x5 block with a 1-cell hole (owner 1) inside it and a
+  // separate 1-cell lobe elsewhere. Three positive rings of areas
+  // [6.25, 0.25, 0.25]: a hole and a second lobe are the SAME SHAPE at the
+  // same size, so a flat area-sorted list cannot say which is which.
+  //     SUM the rings      -> 6.75   WRONG
+  //     outer minus rest   -> 5.75   WRONG
+  //     rings[0] alone     -> 6.25   right only because the two errors cancel
+  const { owner, w, h } = field(8, 8, (set) => {
+    for (let y = 1; y <= 5; y++) for (let x = 1; x <= 5; x++) set(x, y, 0);
+    set(3, 3, 1);
+    set(7, 7, 0);
+  });
+  const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
+  const r = assembleRings({ arcs, ownerId: 0 });
+  assert.equal(r.rings.length, 2, "two disjoint lobes");
+  assert.equal(r.holes.length, 1, "one hole");
+  let cells = 0;
+  for (let i = 0; i < owner.length; i++) if (owner[i] === 0) cells++;
+  assert.equal(cells, 25);
+  assert.equal(r.areaKm2, cells * 0.25);
+  // and the two rules that used to be on the record are BOTH wrong here.
+  const sum = [...r.rings, ...r.holes].reduce((a, p) => a + shoelaceArea({ points: p }), 0);
+  assert.equal(sum, 6.75, "the SUM rule");
+  assert.equal(shoelaceArea({ points: r.rings[0] }), 6.25, "rings[0] alone");
+  assert.notEqual(sum, cells * 0.25);
+});
+
+test("areaKm2 equals the cell census over EVERY 3x3 field of three owners", () => {
+  // 19,683 fields x both owners. The reviewer measured 64 of them failing the
+  // SUM rule and 105 of 20,000 random 6x6 fields; under the nesting rule the
+  // exhaustive sweep is clean, which is what "a caller cannot get it wrong"
+  // has to mean.
+  let instances = 0;
+  for (let m = 0; m < 3 ** 9; m++) {
+    const o = new Int16Array(9);
+    let t = m;
+    for (let i = 0; i < 9; i++) { o[i] = (t % 3) - 1; t = (t / 3) | 0; }
+    const { arcs } = extractArcs({ owner: o, w: 3, h: 3, cellKm: 1 });
+    for (const id of [0, 1]) {
+      let cells = 0;
+      for (let i = 0; i < 9; i++) if (o[i] === id) cells++;
+      if (cells === 0) continue;
+      instances++;
+      const r = assembleRings({ arcs, ownerId: id });
+      assert.equal(r.areaKm2, cells, `field ${m} owner ${id}`);
+    }
+  }
+  assert.equal(instances, 38342, "the sweep stopped covering what it used to");
+});
+
+test("assembleRings THROWS on a chain that cannot close", () => {
+  // MAJOR 3, and it is not hypothetical: the plan's inverted frame edges
+  // produced exactly this — a chain that ran out of arcs, was emitted anyway,
+  // survived `pts.length >= 3`, was not negative so the winding step left it
+  // alone, and came back as a polygon of area 0 inside an otherwise plausible
+  // decomposition. Feeding assembleRings a torn arc set is the direct test.
+  const { owner, w, h } = twoBlocks();
+  const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
+  const torn = arcs.filter((a) => a.id !== arcs[arcs.length - 1].id);
+  assert.throws(() => assembleRings({ arcs: torn, ownerId: 0 }), /does not close/);
 });
 
 // ── determinism of the arc identity ────────────────────────────────────────
@@ -305,7 +394,7 @@ test("rings come back LARGEST FIRST even when the small one is traced first", ()
   });
   const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
   assert.equal(arcs.length, 2, "the two blobs are no longer two separate arcs");
-  const rings = assembleRings({ arcs, ownerId: 0 });
+  const { rings } = assembleRings({ arcs, ownerId: 0 });
   assert.deepEqual(rings.map((r) => shoelaceArea({ points: r })), [6.25, 0.25],
     "rings are not ordered largest-first");
 });
@@ -467,6 +556,20 @@ test("fractalise RETRIES — the second attempt is reached and succeeds", () => 
     "four attempts no longer exhaust on this arc, so the give-up path is unproven here");
 });
 
+test("fractalise's DEFAULT levels and amplitude are the spec's 3 and 0.25 km", () => {
+  // Two more recorded undeclared survivors: the defaults could be changed to
+  // 2 and 0.5 with the whole suite green, because every other test passes both
+  // explicitly. DP_EPSILON_KM has its own pin test; these two headline
+  // constants had none.
+  const arc = { id: "a1", left: 0, right: -1, points: [[0, 0], [8, 0], [16, 4], [24, 4]] };
+  assert.deepEqual(fractalise({ arc, stream: "d9a0051d32afab59" }),
+                   fractalise({ arc, amplitudeKm: 0.25, levels: 3, stream: "d9a0051d32afab59" }));
+  assert.notDeepEqual(fractalise({ arc, stream: "d9a0051d32afab59" }),
+                      fractalise({ arc, amplitudeKm: 0.25, levels: 2, stream: "d9a0051d32afab59" }));
+  assert.notDeepEqual(fractalise({ arc, stream: "d9a0051d32afab59" }),
+                      fractalise({ arc, amplitudeKm: 0.5, levels: 3, stream: "d9a0051d32afab59" }));
+});
+
 test("fractalise on a DIFFERENT stream produces a different coastline", () => {
   // The determinism test above proves same-in/same-out; without this one, a
   // fractalise that ignored `stream` entirely would pass it.
@@ -492,8 +595,16 @@ test("GOLDEN: the real 800 x 800 coastline traces 13 exact rings, no holes", () 
     .filter((f) => f.endsWith(".json")).sort()
     .map((f) => JSON.parse(readFileSync(join(ROOT, "content/world/premises", f), "utf8")));
   const grid = makeGrid({ w: 800, h: 800, cellKm: 0.5 });
-  const { maskField } = applyPremiseMasks({ grid, premises, stream: manifest.seed });
-  buildElevation({ grid, premises, maskField, stream: manifest.seed });
+  // THE TERRAIN STREAM, not the world seed. See lib/seed.mjs: manifest.seed is
+  // the PARENT of four named streams and the terrain field is built from the
+  // child. This test passed `manifest.seed` until 2026-08-22 and so generated a
+  // different world from the one seam 2 fitted the thirteen footprints to.
+  const stream = terrainStream({ worldSeed: manifest.seed });
+  assert.equal(stream, JSON.parse(readFileSync(join(ROOT, "content/spine/derived.json"), "utf8"))
+    ["n-atlas"].resolvedSeedStreams.terrain,
+    "the terrain stream is not the one committed in derived.json");
+  const { maskField } = applyPremiseMasks({ grid, premises, stream });
+  buildElevation({ grid, premises, maskField, stream });
   const sea = selectSeaLevelByRank({
     elev: grid.elev, targetLandCells: manifest.budget.grossLandPolygonKm2 / CELL_AREA_KM2 });
   classifySea({ grid, seaLevel: sea.seaLevel });
@@ -512,31 +623,69 @@ test("GOLDEN: the real 800 x 800 coastline traces 13 exact rings, no holes", () 
   assert.equal(frameLand, 0, "land now reaches the frame — the frame arcs are live on the real field");
 
   const { arcs, nodes } = extractArcs({ owner, w: grid.w, h: grid.h, cellKm: grid.cellKm });
-  assert.equal(arcs.length, 37, "the arc census moved");
-  assert.equal(nodes.length, 22, "the node census moved");
+  assert.equal(arcs.length, 42, "the arc census moved");
+  assert.equal(nodes.length, 23, "the node census moved");
 
+  // MAJOR 1, and the seam certified the wrong artifact. The old shape of this
+  // test simplified each arc only to COUNT its vertices, threw the result away,
+  // and then assembled the rings from the UNSIMPLIFIED arcs — while every one
+  // of the plan's three downstream callers (plan :6208, :6229, :6380) assembles
+  // from the simplified ones. So the census-exact proof was measured on a
+  // polygon nothing downstream uses. Both paths are assembled here, and the
+  // simplified one — the one Plan E inherits and G-TRUNK-AREA scores — carries
+  // its own golden.
+  //
+  // Douglas-Peucker MOVES vertices, so exactness after simplification is
+  // impossible by construction and the honest statement is a bounded loss, not
+  // equality. Per-continent losses and the world total are pinned below.
+  const simplified = arcs.map((a) => ({ ...a, points: simplifyArc({ points: a.points, epsilonKm: DP_EPSILON_KM }) }));
   let before = 0, after = 0;
-  for (const a of arcs) {
-    before += a.points.length;
-    after += simplifyArc({ points: a.points, epsilonKm: DP_EPSILON_KM }).length;
-  }
-  assert.equal(before, 7386, "the traced vertex count moved");
-  assert.equal(after, 2273, "the simplified vertex count moved");
+  for (let i = 0; i < arcs.length; i++) { before += arcs[i].points.length; after += simplified[i].points.length; }
+  assert.equal(before, 7651, "the traced vertex count moved");
+  assert.equal(after, 2364, "the simplified vertex count moved");
 
-  let total = 0, ringCount = 0;
+  const rawDigest = createHash("sha256"), simpDigest = createHash("sha256");
+  let total = 0, ringCount = 0, simpTotal = 0;
+  const losses = [];
   for (let k = 0; k < premises.length; k++) {
-    const rings = assembleRings({ arcs, ownerId: k });
-    assert.equal(rings.length, 1,
-      `${premises[k].id} traced ${rings.length} rings — a hole appeared, and the trunk polygon rule now bites`);
+    const r = assembleRings({ arcs, ownerId: k });
+    assert.equal(r.rings.length, 1,
+      `${premises[k].id} traced ${r.rings.length} rings — a second lobe appeared`);
+    assert.equal(r.holes.length, 0, `${premises[k].id} traced a hole`);
     let cells = 0;
     for (let i = 0; i < grid.n; i++) if (owner[i] === k) cells++;
-    const area = shoelaceArea({ points: rings[0] });
-    assert.equal(area, cells * CELL_AREA_KM2,
-      `${premises[k].id}: ring ${area} km2 against a ${cells * CELL_AREA_KM2} km2 census — a sliver`);
-    assert.ok(!selfIntersects({ points: rings[0] }), `${premises[k].id} self-intersects`);
-    total += area; ringCount += rings.length;
+    assert.equal(r.areaKm2, cells * CELL_AREA_KM2,
+      `${premises[k].id}: ring ${r.areaKm2} km2 against a ${cells * CELL_AREA_KM2} km2 census — a sliver`);
+    assert.ok(!selfIntersects({ points: r.rings[0] }), `${premises[k].id} self-intersects`);
+    total += r.areaKm2; ringCount += r.rings.length;
+    for (const [x, y] of r.rings[0]) rawDigest.update(`${x},${y};`);
+
+    // …and the same owner off the PRODUCTION path.
+    const sr = assembleRings({ arcs: simplified, ownerId: k });
+    assert.equal(sr.rings.length, 1, `${premises[k].id} simplified into ${sr.rings.length} rings`);
+    assert.equal(sr.holes.length, 0, `${premises[k].id} simplified into a hole`);
+    assert.ok(!selfIntersects({ points: sr.rings[0] }), `${premises[k].id} self-intersects after DP`);
+    simpTotal += sr.areaKm2;
+    losses.push(Math.round((sr.areaKm2 - r.areaKm2) * 10000) / 10000);
+    for (const [x, y] of sr.rings[0]) simpDigest.update(`${x},${y};`);
   }
   assert.equal(ringCount, 13);
   assert.equal(total, sea.landKm2, "the thirteen rings do not close on the selected land area");
   assert.equal(total, manifest.budget.grossLandPolygonKm2);
+
+  // The number Plan E inherits: what one-shot DP at 0.35 km costs the world.
+  assert.deepEqual(losses,
+    [-0.625, 0.875, -2.25, -1.125, -0.625, -1.75, 0, -0.5, -0.75, -1.875, -0.75, -0.25, -0.75],
+    "the per-continent simplification loss moved");
+  assert.equal(Math.round((simpTotal - total) * 10000) / 10000, -10.375,
+    "the world's one-shot simplification loss moved");
+  assert.ok(Math.abs(simpTotal - total) / total < 0.001,
+    "one-shot DP now costs more than 0.1% of the world's area");
+
+  // RING GEOMETRY, not only its area. `cells` is recomputed from the same owner
+  // array, so the per-continent equality above is self-consistent by
+  // construction; these two digests are the external anchors that say the
+  // coastline is in the same PLACE.
+  assert.equal(rawDigest.digest("hex").slice(0, 16), "1580dde340aa7cf0");
+  assert.equal(simpDigest.digest("hex").slice(0, 16), "57338706238d2578");
 });

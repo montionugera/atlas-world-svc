@@ -12,7 +12,53 @@
 import { idx, FLAG, D8 } from "../grid.mjs";
 
 const RIVER_ACC_MIN = 220;      // cells drained before a channel reads as a river
-const GLACIER_TEMP_MAX = 0.12;  // below this normalised temperature, ice
+// ── ICE ────────────────────────────────────────────────────────────────────
+// TWO changes from the plan, and the reason for both is committed content.
+//
+// 1. GLACIERS ARE PREMISE-GATED. The plan flags ice on ANY land cell under the
+//    temperature threshold. Measured on the real field that is 21.6% of all
+//    land, and it contradicts three landmasses' own committed palettes:
+//
+//      c11 Quillreef  atoll-ring, palette [reef, meadow, ocean]     78.6% ice
+//      c07 Driftholt  fog-forest, [forest, marsh, meadow, river,
+//                                  upland] — "the wettest ground
+//                                  in the world"                    60.3% ice
+//      c03 Coldreach  ridge-and-fjord, [upland, forest, tundra,
+//                                  rock, scree, river, meadow]      41.7% ice
+//
+//    None of the three lists `ice` at all, so Task 7's palette clamp would
+//    have to remap three-quarters of a coral atoll onto something else — and
+//    the biome rule table puts `ice` SECOND, ahead of lake and river, so it
+//    wins before anything else can fire. A world whose ice contradicts its own
+//    premises is wrong on the repo's own terms, and the premise files are the
+//    committed authority.
+//
+//    So ice is decided the way substrate is decided (seam 2: "one class per
+//    plate, decided by the kit"): the PREMISE says whether ice is possible at
+//    all, and the temperature decides the shape within it. Exactly two of the
+//    thirteen palettes carry `ice` — c01 Rimewall Cap ("one ice divide
+//    shedding outlet glaciers to every quarter; no rivers") and c12 Skerryfast
+//    ("drowned glacial valleys — fjord, skerry, roche moutonnee"). Result:
+//    10.00% of land, all of it on the two landmasses that ask for it.
+//
+//    Note what this does NOT do: it does not move a premise, re-fit a
+//    footprint, invent a global ice budget the manifest does not carry, or
+//    touch the temperature model. n-atlas's committed `ice: 1.87` is 1.87% of
+//    the FRAME in a world that is 96.1% ocean — i.e. ~48% of that world's
+//    land. It is not the small-ice constraint it looks like, and it describes
+//    the pre-Plan-C map besides.
+//
+// 2. THE THRESHOLD MOVES 0.12 -> 0.08, because at 0.12 it is INERT. Under the
+//    gate, 0.12 ices 100% of c01 and 98% of c12, so the constant could be
+//    anything from 0.09 upward and produce the identical world — a dead
+//    constant beside a test that cannot see it, which is the defect this
+//    programme keeps finding. 0.08 leaves c01 at 97% (its southern shore
+//    reading tundra/rock/scree, all in its palette) and c12 at 75%, which is
+//    what its own structuralIdea demands: roche moutonnee, skerry and fjord
+//    are DEGLACIATED rock, and rock/scree/upland stand in its palette beside
+//    ice. Sensitivity is steep either side (0.06 -> c12 52%, 0.12 -> 98%), so
+//    the constant is now pinned by behaviour and not only by a literal.
+const GLACIER_TEMP_MAX = 0.08;
 const DELTA_ACC_MIN = 900;      // a river this large builds a delta at its mouth
 // A lake is not a bay. Interior water must stand at least this far from the
 // sea-level contour, or the carve degenerates into raising sea level locally:
@@ -26,6 +72,39 @@ const DELTA_ACC_MIN = 900;      // a river this large builds a delta at its mout
 // bay however far 1.5 km sounds.
 const LAKE_SHORE_MARGIN_KM = 1.5;
 const LAKE_SHORE_MARGIN_CELLS = 2;
+
+// A LAKE IS NOT A CONTOUR RIBBON either, and growing purely on terrain
+// elevation makes one. A rising water surface admits ground in order of
+// height, which is right in a basin and wrong on a tilted plane: the mask
+// taper makes every continent a smooth ramp, so "lowest frontier cell next"
+// walks ALONG the contour, where the gradient is shallowest, indefinitely.
+// Measured with no bowl term, on bodies carved to their exact budget:
+//
+//     c04 Stonemoor  300 km2, perimeter 307 km, bbox 47 x 94.5, fill 7%
+//                    isoperimetric ratio 4*pi*A/P^2 = 0.040
+//     c06 Reedstrand 200 km2, perimeter 150 km, fill 21%,  ratio 0.112
+//
+// A circular 300 km2 lake has a 61 km shoreline. 307 km is a ribbon, and the
+// cell-set digest and the bounding boxes in the golden are equally happy with
+// a ribbon as with a lake — which is why the goldens could not see it.
+//
+// The remedy keeps relief in charge of the shape and adds a synthetic basin:
+// the growth key is terrain elevation plus a quadratic bowl centred on the
+// seed, rising by LAKE_BOWL over one budget-area side length. It is the
+// statement that interior water GATHERS — a body that would otherwise stream
+// off along a contour is instead held near where the premise put it. The
+// curvature is normalised by the body's own budget, so it means the same thing
+// for an 1,100 km2 inland sea as for a 200 km2 delta pool.
+//
+// 0.15 sits on the knee, measured across the three carved bodies (ratio, at
+// LAKE_BOWL = 0 / 0.06 / 0.15 / 0.47):
+//     c02  0.527 / 0.533 / 0.540 / 0.540
+//     c04  0.040 / 0.306 / 0.393 / 0.445
+//     c06  0.112 / 0.383 / 0.447 / 0.485
+// Below it the ribbon returns; above it the bowl starts deciding the shape
+// instead of the relief, for a gain of at most 0.05. No transcendental: the
+// normaliser is the budget AREA, so there is no pi and no square root.
+const LAKE_BOWL = 0.15;
 const lakeShoreMarginKm = ({ grid }) => {
   const cells = LAKE_SHORE_MARGIN_CELLS * grid.cellKm;
   return cells > LAKE_SHORE_MARGIN_KM ? cells : LAKE_SHORE_MARGIN_KM;
@@ -203,9 +282,19 @@ export function carveWater({ grid, premises, manifest }) {
     }
     if (seed < 0) { shortfalls.push(`${premises[k].id}: no admissible cell in its lake disc`); continue; }
 
+    // The growth key: terrain height plus the gathering bowl (see LAKE_BOWL).
+    const budgetAreaKm2 = budgetCells * cellArea;
+    const seedX = ((seed % grid.w) + 0.5) * grid.cellKm;
+    const seedY = (((seed / grid.w) | 0) + 0.5) * grid.cellKm;
+    const growthKey = (i) => {
+      const gx = ((i % grid.w) + 0.5) * grid.cellKm - seedX;
+      const gy = (((i / grid.w) | 0) + 0.5) * grid.cellKm - seedY;
+      return grid.elev[i] + LAKE_BOWL * (gx * gx + gy * gy) / budgetAreaKm2;
+    };
+
     const queued = new Uint8Array(grid.n);
     const heap = new MinHeap();
-    heap.push(grid.elev[seed], seed);
+    heap.push(growthKey(seed), seed);
     queued[seed] = 1;
     let carved = 0;
     while (heap.size && carved < budgetCells) {
@@ -220,7 +309,7 @@ export function carveWater({ grid, premises, manifest }) {
         const j = ny * grid.w + nx;
         if (queued[j]) continue;
         queued[j] = 1;
-        heap.push(grid.elev[j], j);
+        heap.push(growthKey(j), j);
       }
     }
     // TERMINATION, which the review brief asks about explicitly: the loop is
@@ -235,6 +324,14 @@ export function carveWater({ grid, premises, manifest }) {
   }
 
   // ── rivers, deltas, glaciers ─────────────────────────────────────────────
+  // Which plates may carry ice, by plate index, read from the premise the
+  // plate IS. `grid.plate[i]` is the premise index for every land cell (P3
+  // asserts land is a subset of the mask), so this is a lookup and not a
+  // search. See the GLACIER_TEMP_MAX block above for why the gate exists.
+  const glacial = new Uint8Array(premises.length);
+  for (let k = 0; k < premises.length; k++)
+    if ((premises[k].palette ?? []).includes("ice")) glacial[k] = 1;
+
   for (let cy = 0; cy < grid.h; cy++) {
     for (let cx = 0; cx < grid.w; cx++) {
       const i = idx({ grid, cx, cy });
@@ -242,8 +339,24 @@ export function carveWater({ grid, premises, manifest }) {
       // cannot also be interior water, or the 1,600 km2 budget double-counts
       // the coastline it stands on.
       if ((grid.flags[i] & FLAG.SEA) !== 0) continue;
+      // ONE CELL, ONE KIND OF INTERIOR WATER. A cell already carrying LAKE is
+      // standing water and takes no channel or ice flag on top of it. Without
+      // this, two silent overlaps exist by construction and neither is
+      // detectable downstream:
+      //   * LAKE & GLACIER — Task 7's rule order puts `ice` ahead of `lake`,
+      //     so such a cell leaves the biome map as ice while still counting
+      //     toward the 1,600 km2 interior-water budget as a lake. Measured 0
+      //     cells today, but only because both ice premises have no interior
+      //     water share; that is luck, not construction.
+      //   * LAKE & RIVER — measured 189 cells before this line, so the
+      //     reported "river channel" area overstated by 47.25 km2 of lake
+      //     surface. The flow does pass through the lake; the CELL is a lake.
+      // freshKm is unaffected either way: a lake cell is a fresh-water source.
+      if ((grid.flags[i] & FLAG.LAKE) !== 0) continue;
       if (grid.flowAcc[i] >= RIVER_ACC_MIN) { grid.flags[i] |= FLAG.RIVER; riverCells++; }
-      if (grid.temp[i] <= GLACIER_TEMP_MAX) { grid.flags[i] |= FLAG.GLACIER; glacierCells++; }
+      if (glacial[grid.plate[i]] === 1 && grid.temp[i] <= GLACIER_TEMP_MAX) {
+        grid.flags[i] |= FLAG.GLACIER; glacierCells++;
+      }
       if (grid.flowAcc[i] >= DELTA_ACC_MIN) {
         // a delta is a river cell with a sea neighbour
         for (const [dx, dy] of D8) {

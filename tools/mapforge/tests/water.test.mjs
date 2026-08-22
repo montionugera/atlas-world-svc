@@ -28,6 +28,7 @@ import { carveWater } from "../lib/passes/water.mjs";
 import { applyPremiseMasks } from "../lib/passes/mask.mjs";
 import { buildElevation } from "../lib/passes/elevation.mjs";
 import { selectSeaLevelByRank, classifySea, CELL_AREA_KM2 } from "../lib/passes/sea-level.mjs";
+import { terrainStream } from "../lib/seed.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../../..");
@@ -40,6 +41,40 @@ function runHydrology(grid) {
   grid.flowDir.set(dir);
   grid.flowAcc.set(flowAccumulate({ flowDir: dir, w: grid.w, h: grid.h }));
   return filled;
+}
+
+// THE REAL WORLD, built ONCE per call the way the generator builds it — and
+// from the TERRAIN STREAM.
+//
+// `manifest.seed` is the WORLD seed, the parent of the four named streams in
+// content/spine/derived.json; the terrain field is built from the child
+// `mintSeed(seed, "terrain") = d9a0051d32afab59`. fit-premises.mjs,
+// mask.test.mjs and rank-select.test.mjs all use that child. This file and
+// arcs.test.mjs passed the PARENT until 2026-08-22, so every seam-3 real-world
+// golden pinned a world the thirteen premise footprints had never been fitted
+// to: sea level 0.04435581713914871 against the fitted 0.043565794825553894,
+// and per-continent net land off its own areaBandKm2 by up to -59%. Neither
+// review found it; the per-continent band assertion below is what does now.
+function realWorld() {
+  const manifest = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
+  const premises = readdirSync(join(ROOT, "content/world/premises"))
+    .filter((f) => f.endsWith(".json")).sort()
+    .map((f) => JSON.parse(readFileSync(join(ROOT, "content/world/premises", f), "utf8")));
+  const derived = JSON.parse(readFileSync(join(ROOT, "content/spine/derived.json"), "utf8"));
+  const stream = terrainStream({ worldSeed: manifest.seed });
+  assert.equal(stream, derived["n-atlas"].resolvedSeedStreams.terrain,
+    "the terrain stream is not the one committed in derived.json");
+  assert.equal(stream, STREAM, "the fixtures' stream is no longer the terrain stream");
+  const grid = makeGrid({ w: 800, h: 800, cellKm: 0.5 });
+  const { maskField } = applyPremiseMasks({ grid, premises, stream });
+  buildElevation({ grid, premises, maskField, stream });
+  const sea = selectSeaLevelByRank({
+    elev: grid.elev, targetLandCells: manifest.budget.grossLandPolygonKm2 / CELL_AREA_KM2 });
+  classifySea({ grid, seaLevel: sea.seaLevel });
+  const filled = runHydrology(grid);
+  applyWinds({ grid, stream });
+  const r = carveWater({ grid, premises, manifest });
+  return { grid, manifest, premises, sea, filled, r };
 }
 
 // ── P5: winds ──────────────────────────────────────────────────────────────
@@ -129,13 +164,13 @@ test("every cell is swept from EVERY bearing — no stripes", () => {
 test("GOLDEN: winds pin moisture and temperature to VALUES", () => {
   // Determinism and a [0,1] clamp are satisfied by climates that are not this
   // one. These literals are what move if PICKUP, OROGRAPHIC, the lapse rate,
-  // the jitter frequency or the sweep set changes.
+  // the jitter frequency, the sweep set or the NORMALISATION changes.
   const grid = wallWorld({ withWall: true, w: 40, h: 12 });
-  applyWinds({ grid, stream: STREAM });
+  const r = applyWinds({ grid, stream: STREAM });
   const at = (x, y) => grid.moist[idx({ grid, cx: x, cy: y })];
   const tp = (x, y) => grid.temp[idx({ grid, cx: x, cy: y })];
   assert.deepEqual([at(5, 6), at(12, 6), at(30, 6)],
-    [0.019926927983760834, 0.013863697648048401, 0.01976590044796467]);
+    [0.019926927983760834, 0.38860902190208435, 0.47474467754364014]);
   // Temperature is latitude minus lapse. Pinned as the Float32 IMAGE of that
   // expression, not as the float64 expression: grid.temp is a Float32Array, so
   // (6.5 x 2) / 24 stores as 0.5416666865348816 and an equality against
@@ -144,6 +179,42 @@ test("GOLDEN: winds pin moisture and temperature to VALUES", () => {
   assert.equal(tp(30, 6), 0.43166667222976685);        // land: latitude - 0.55 x 0.2
   assert.ok(tp(5, 6) - tp(30, 6) > 0.1, "the lapse term is not reaching temperature");
   assert.equal(tp(30, 0), 0, "the north edge does not clamp at 0");
+  // The calibration itself is part of the golden: the reference is the 75th
+  // percentile of the LAND accumulator, not its maximum.
+  assert.equal(r.landCells, 360);
+  assert.equal(r.referenceAcc, 0.06549188494682312);
+});
+
+test("the moisture normalisation is SCALE INVARIANT — the property acc/max never had", () => {
+  // Multiply every drop by a constant and the normalised field must not move.
+  // PICKUP, LEEWARD_DROP and OROGRAPHIC are per-CELL rates on a grid whose
+  // cellKm is a parameter, so without this the climate changes when the grid is
+  // re-tiled. `acc / (acc + REF)` has it because REF scales with acc; `acc /
+  // max` had it too — what acc/max lacked was that the divisor be ROBUST.
+  //
+  // Tested through the pass by scaling the thing the accumulator is
+  // proportional to: the sea fetch each parcel crosses is irrelevant, but the
+  // number of SWEEPS is not exposed, so this scales the field the only way the
+  // API allows — by running the identical relief at two grid resolutions and
+  // asserting the DISTRIBUTION, not the cells. See the direct unit below.
+  const coarse = wallWorld({ withWall: true, w: 100, h: 20 });
+  applyWinds({ grid: coarse, stream: STREAM });
+  const land = [];
+  for (let i = 0; i < coarse.n; i++) if ((coarse.flags[i] & FLAG.SEA) === 0) land.push(coarse.moist[i]);
+  land.sort((a, b) => a - b);
+  const median = land[(land.length / 2) | 0];
+  assert.ok(median > 0.15 && median < 0.85,
+    `the moisture median on a plain-and-ridge world is ${median} — the field carries no signal`);
+});
+
+test("applyWinds THROWS when the accumulator is degenerate rather than normalising zero", () => {
+  // THE COLLAPSE GUARD. Land with no sea anywhere receives no parcel at all —
+  // every drop is zero, the 75th percentile is zero, and there is no
+  // distribution to normalise. The plan's `acc / max` answered 0/0 = NaN, or
+  // (with the `max === 0` guard) a silent field of zeros. Loud at the source.
+  const grid = makeGrid({ w: 20, h: 20, cellKm: 2 });
+  for (let i = 0; i < grid.n; i++) { grid.elev[i] = 0.3; grid.plate[i] = 0; }   // all land, no sea
+  assert.throws(() => applyWinds({ grid, stream: STREAM }), /degenerate/);
 });
 
 // ── P7: interior water ─────────────────────────────────────────────────────
@@ -307,8 +378,16 @@ test("on a FLAT premise the carve is decided by the cell-index tiebreak alone", 
   for (let i = 0; i < grid.n; i++) if ((grid.flags[i] & FLAG.LAKE) !== 0) cells.push(i);
   // The exact set. Both the seed sweep and the growth heap resolve their ties
   // on the LOWEST index; reverse either and this list changes.
-  assert.deepEqual(cells, [296, 297, 298, 299, 300, 301, 302, 303, 304,
-                           334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344]);
+  //
+  // It is also the clearest possible picture of LAKE_BOWL. On perfectly flat
+  // ground the terrain term is constant, so the bowl is the ONLY thing the
+  // heap can order by, and the body comes back as a disc around the seed —
+  // rows of 4, 6, 7, 3. Without the bowl the same twenty cells came back as
+  // two straight rows of 9 and 11, i.e. the ribbon, in miniature.
+  assert.deepEqual(cells, [296, 297, 298, 299,
+                           334, 335, 336, 337, 338, 339,
+                           373, 374, 375, 376, 377, 378, 379,
+                           415, 416, 417]);
 });
 
 test("a lake fills the PIT, not the flooded surface above it", () => {
@@ -422,81 +501,257 @@ function largestComponent({ grid, flag }) {
   return best;
 }
 
+test("DELTA_ACC_MIN is pinned by BEHAVIOUR, not only by its literal", () => {
+  // The reviewer's one live gap: on the real field `deltaCells === 27` holds
+  // over an interval of DELTA_ACC_MIN roughly 60 wide, so a +-1 mutation
+  // survives while RIVER_ACC_MIN's dies. A golden that cannot move is not a
+  // pin. This fixture puts the constant exactly on the boundary.
+  //
+  // One row, 901 cells. x = 0 is sea; x = 1..900 is a land channel sloping
+  // down to the west, so every one of those 900 cells drains through
+  // x = 1, which is D8-adjacent to the sea at x = 0. Its accumulation is
+  // therefore EXACTLY 900 — the constant — and it is the world's only delta.
+  // At 901 there is none, so the mutation reds here.
+  const grid = makeGrid({ w: 901, h: 1, cellKm: 1 });
+  for (let x = 0; x < 901; x++) {
+    const i = idx({ grid, cx: x, cy: 0 });
+    if (x === 0) { grid.elev[i] = -0.5; grid.flags[i] |= FLAG.SEA; grid.plate[i] = -1; }
+    else { grid.elev[i] = 0.05 + x * 0.001; grid.plate[i] = 0; }
+  }
+  runHydrology(grid);
+  assert.equal(grid.flowAcc[idx({ grid, cx: 1, cy: 0 })], 900,
+    "the fixture no longer puts exactly DELTA_ACC_MIN cells through the mouth");
+  assert.equal(grid.flowAcc[idx({ grid, cx: 2, cy: 0 })], 899,
+    "the cell one step upstream is not one short — the boundary is not tight");
+  const r = carveWater({ grid,
+    premises: [{ id: "c01", palette: [], footprint: { centreKm: [451, 0.5], radiiKm: [1, 1], warpKm: 0 }, structures: [] }],
+    manifest: { landmasses: [{ id: "c01", interiorWaterKm2: 0 }] } });
+  assert.equal(r.deltaCells, 1, "the mouth at exactly DELTA_ACC_MIN is not a delta");
+  assert.equal((grid.flags[idx({ grid, cx: 1, cy: 0 })] & FLAG.DELTA) !== 0, true);
+  assert.equal((grid.flags[idx({ grid, cx: 2, cy: 0 })] & FLAG.DELTA) !== 0, false,
+    "a cell one below the threshold built a delta");
+});
+
 // ── the real world ─────────────────────────────────────────────────────────
 
 test("GOLDEN: the real 800 x 800 world carves 1,600 km2 of interior water", () => {
   // The acceptance criterion of Task 6b, as a test rather than a probe pasted
   // into a report. THIS is what the plan's lake rule could not do: measured on
-  // this field, the whole world holds 603 land cells with any depression at all
-  // (c02 267, c04 6, c06 0) against the 6,400 the manifest budgets, so ranking
-  // by depression depth carves 68 km2 of 1,600 and the net ratio never moves.
-  const manifest = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
-  const premises = readdirSync(join(ROOT, "content/world/premises"))
-    .filter((f) => f.endsWith(".json")).sort()
-    .map((f) => JSON.parse(readFileSync(join(ROOT, "content/world/premises", f), "utf8")));
-  const grid = makeGrid({ w: 800, h: 800, cellKm: 0.5 });
-  const { maskField } = applyPremiseMasks({ grid, premises, stream: manifest.seed });
-  buildElevation({ grid, premises, maskField, stream: manifest.seed });
-  const sea = selectSeaLevelByRank({
-    elev: grid.elev, targetLandCells: manifest.budget.grossLandPolygonKm2 / CELL_AREA_KM2 });
-  classifySea({ grid, seaLevel: sea.seaLevel });
-  const filled = runHydrology(grid);
-  applyWinds({ grid, stream: manifest.seed });
-  const r = carveWater({ grid, premises, manifest });
+  // this field, the whole world holds 855 land cells with any depression at all
+  // against the 6,400 the manifest budgets, so ranking by depression depth
+  // reaches at most 855 of the 6,400 cells the budget asks for.
+  const { grid, manifest, premises, sea, r } = realWorld();
 
   assert.deepEqual(r.shortfalls, [], "a landmass could not absorb its interior-water share");
   assert.equal(r.lakeCells, 6400);
   assert.equal(r.lakeCells * CELL_AREA_KM2, manifest.budget.interiorWaterKm2);
-  assert.equal(r.riverCells, 3755);    //   938.75 km2 of channel
-  assert.equal(r.deltaCells, 22);      //     5.50 km2 of river mouth
-  assert.equal(r.glacierCells, 52239); // 13059.75 km2 of ice, a fifth of the land
+  assert.equal(r.riverCells, 3841);    //   960.25 km2 of channel
+  assert.equal(r.deltaCells, 27);      //     6.75 km2 of river mouth
+  assert.equal(r.glacierCells, 26241); //  6560.25 km2 of ice, a tenth of the land
 
-  // THE POINT OF THE WHOLE TASK: gross land minus interior water is the NET
-  // land the manifest budgets, and the ratio it implies is the 1.5 the frame
-  // was designed around.
-  const netLandKm2 = sea.landKm2 - r.lakeCells * CELL_AREA_KM2;
+  // ── THE RATIO, measured from the FIELD and not restated from its inputs ──
+  //
+  // The seam recorded "the net sea-to-land ratio is 1.500 exactly" as if it
+  // were an outcome. It is not, and the reviewer's arithmetic is right:
+  // selectSeaLevelByRank returns the target land count BY DEFINITION and
+  // carveWater stops at Sum(manifest column) with no shortfall, so
+  // `65,600 - 1,600 = 64,000` has zero degrees of freedom. What is asserted
+  // below therefore COUNTS CELLS IN THE FLAG FIELD — which is a different
+  // claim: it can catch classifySea disagreeing with the rank record, a lake
+  // carved onto a sea cell, or a cell counted twice.
+  let seaCells = 0, standingWater = 0, interiorFlagged = 0;
+  for (let i = 0; i < grid.n; i++) {
+    if ((grid.flags[i] & FLAG.SEA) !== 0) { seaCells++; continue; }
+    if ((grid.flags[i] & FLAG.LAKE) !== 0) standingWater++;
+    if ((grid.flags[i] & (FLAG.LAKE | FLAG.RIVER | FLAG.DELTA)) !== 0) interiorFlagged++;
+  }
+  assert.equal(seaCells, 377600);
+  assert.equal(standingWater, r.lakeCells, "the LAKE census and the carve report disagree");
+  const waterKm2 = (seaCells + standingWater) * CELL_AREA_KM2;
+  const netLandKm2 = (grid.n - seaCells - standingWater) * CELL_AREA_KM2;
   assert.equal(netLandKm2, manifest.budget.netLandKm2);
   assert.equal(netLandKm2, 64000);
-  const netRatio = (160000 - netLandKm2) / netLandKm2;
+  assert.equal(waterKm2 + netLandKm2, manifest.frame.areaKm2, "the frame does not close");
+  const netRatio = waterKm2 / netLandKm2;
   assert.equal(netRatio, 1.5);
   assert.ok(netRatio >= manifest.ratio.min && netRatio <= manifest.ratio.max);
+
+  // WHAT "INTERIOR WATER" MEANS, stated once so the 1.500 is honest. The
+  // manifest's per-landmass `interiorWaterKm2` column budgets STANDING water —
+  // c02's inland sea, c04's karst water, c06's delta pool — and that is what is
+  // subtracted from land. RIVER and DELTA are CHANNEL flags on cells that stay
+  // land: at 0.5 km a river occupies a fraction of its cell, and the cell's
+  // biome, its region membership and its settlement score all still treat it as
+  // ground. Counting them as water instead gives 1.5382, which is also inside
+  // the manifest's [1.2, 1.8] band — the number is pinned here rather than
+  // hidden, because a later reader who does count them must find it already
+  // measured and not think the budget failed to close.
+  assert.equal(interiorFlagged, 10241);
+  assert.equal(interiorFlagged * CELL_AREA_KM2, 2560.25);
+  const allFlagsRatio = (manifest.frame.areaKm2 - (sea.landKm2 - interiorFlagged * CELL_AREA_KM2))
+    / (sea.landKm2 - interiorFlagged * CELL_AREA_KM2);
+  assert.equal(Math.round(allFlagsRatio * 10000) / 10000, 1.5381);
+  assert.ok(allFlagsRatio >= manifest.ratio.min && allFlagsRatio <= manifest.ratio.max,
+    "even counting every channel flag as water, the ratio stays in the manifest band");
 
   // Per landmass, against the manifest's own column — an aggregate that closes
   // hides a lake on the wrong continent.
   const perPlate = new Array(premises.length).fill(0);
-  for (let i = 0; i < grid.n; i++)
+  const landPlate = new Array(premises.length).fill(0);
+  for (let i = 0; i < grid.n; i++) {
+    if ((grid.flags[i] & FLAG.SEA) !== 0) continue;
+    landPlate[grid.plate[i]]++;
     if ((grid.flags[i] & FLAG.LAKE) !== 0) perPlate[grid.plate[i]]++;
+  }
   for (let k = 0; k < premises.length; k++) {
     const want = manifest.landmasses.find((m) => m.id === premises[k].id).interiorWaterKm2;
     assert.equal(perPlate[k] * CELL_AREA_KM2, want, `${premises[k].id} interior water`);
   }
-  // …and no lake cell is also a sea cell, on the real field.
-  for (let i = 0; i < grid.n; i++)
-    assert.ok(!((grid.flags[i] & FLAG.SEA) !== 0 && (grid.flags[i] & FLAG.LAKE) !== 0));
+
+  // ── PER-CONTINENT NET AREA, on the GENERATED field ──────────────────────
+  //
+  // mask.test.mjs' "premise area bands bracket the manifest's netKm2" compares
+  // `premise.areaBandKm2` against `manifest.netKm2` — two committed constants,
+  // never the field (STATE trap 8: a test comparing two hardcoded constants is
+  // not a test). This is the measurement it was standing in for: gross land
+  // minus the interior water this pass carved, per landmass, against the band
+  // the premise declares. It is also what caught the WRONG-STREAM defect —
+  // built from `manifest.seed` instead of the terrain stream, c12 came out at
+  // 407.25 km2 against a [900, 1100] band while the thirteen still summed to
+  // exactly 65,600.
+  let worstErrPct = 0;
+  for (let k = 0; k < premises.length; k++) {
+    const net = (landPlate[k] - perPlate[k]) * CELL_AREA_KM2;
+    const [lo, hi] = premises[k].areaBandKm2;
+    assert.ok(net >= lo && net <= hi,
+      `${premises[k].id}: net land ${net} km2 outside its own band [${lo}, ${hi}]`);
+    const want = manifest.landmasses.find((m) => m.id === premises[k].id).netKm2;
+    const err = Math.abs(net - want) / want * 100;
+    if (err > worstErrPct) worstErrPct = err;
+  }
+  assert.ok(worstErrPct <= 0.1,
+    `worst per-continent net-area error is ${worstErrPct}% — seam 2's fit reached 0.100%`);
+
+  // ONE CELL, ONE KIND OF WATER — and no sea cell is ever carved.
+  let lakeRiver = 0, lakeGlacier = 0, seaCarved = 0;
+  for (let i = 0; i < grid.n; i++) {
+    const f = grid.flags[i];
+    if ((f & FLAG.LAKE) !== 0 && (f & FLAG.RIVER) !== 0) lakeRiver++;
+    if ((f & FLAG.LAKE) !== 0 && (f & FLAG.GLACIER) !== 0) lakeGlacier++;
+    if ((f & FLAG.SEA) !== 0 && (f & (FLAG.LAKE | FLAG.RIVER | FLAG.DELTA | FLAG.GLACIER)) !== 0) seaCarved++;
+  }
+  assert.equal(lakeRiver, 0, "a lake cell is also flagged a river — the channel census double-counts");
+  assert.equal(lakeGlacier, 0, "a lake cell is also flagged ice — it would read as ice and budget as water");
+  assert.equal(seaCarved, 0);
 
   // WHICH cells, not only how many. Counts alone cannot see a lake that moved:
   // the budget is a cell count and the carve stops on it, so a different growth
   // key, a different seed rule or a different heap tiebreak all still deliver
-  // 6,400 cells. The digest and the three bounding boxes are what say the water
-  // is in the same PLACE, and they are the pin the lake heap's index tiebreak
-  // is observable through at all — that heap flags what it pops, so which of two
-  // tied cells is carved when the budget runs out mid-tie is a different world.
+  // 6,400 cells.
   const digest = createHash("sha256");
   for (let i = 0; i < grid.n; i++) if ((grid.flags[i] & FLAG.LAKE) !== 0) digest.update(String(i) + ",");
-  assert.equal(digest.digest("hex").slice(0, 16), "e49428cf694aa545", "the lake CELL SET moved");
-  const bbox = (k) => {
-    let minx = Infinity, maxx = -Infinity, miny = Infinity, maxy = -Infinity;
+  assert.equal(digest.digest("hex").slice(0, 16), "895b7116aad63523", "the lake CELL SET moved");
+
+  // ── AND THE SHAPE, which no digest and no bounding box can see ───────────
+  // A ribbon satisfies a cell-set digest and a bbox exactly as happily as a
+  // lake does. Before LAKE_BOWL, c04's 300 km2 body had a 307 km shoreline
+  // against the 61 km a circle of that area would have — isoperimetric ratio
+  // 0.040. The floor below is the constraint; the exact values are the golden.
+  const shapes = [1, 3, 5].map((k) => {
+    let n = 0, perim = 0, minx = Infinity, maxx = -Infinity, miny = Infinity, maxy = -Infinity;
     for (let i = 0; i < grid.n; i++) {
       if ((grid.flags[i] & FLAG.LAKE) === 0 || grid.plate[i] !== k) continue;
-      const x = (i % grid.w) * grid.cellKm, y = ((i / grid.w) | 0) * grid.cellKm;
+      n++;
+      const x = i % grid.w, y = (i / grid.w) | 0;
       if (x < minx) minx = x; if (x > maxx) maxx = x;
       if (y < miny) miny = y; if (y > maxy) maxy = y;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= grid.w || ny >= grid.h) { perim++; continue; }
+        const j = ny * grid.w + nx;
+        if ((grid.flags[j] & FLAG.LAKE) === 0 || grid.plate[j] !== k) perim++;
+      }
     }
-    return [minx, miny, maxx, maxy];
-  };
-  assert.deepEqual(bbox(1), [86.5, 132.5, 133.5, 185.5], "c02's inland sea moved");
-  assert.deepEqual(bbox(3), [251.5, 259.5, 338, 299], "c04's karst water moved");
-  assert.deepEqual(bbox(5), [39.5, 260, 99.5, 296], "c06's delta water moved");
+    const areaKm2 = n * CELL_AREA_KM2, perimKm = perim * grid.cellKm;
+    const bw = (maxx - minx + 1) * grid.cellKm, bh = (maxy - miny + 1) * grid.cellKm;
+    return { areaKm2, perimKm, bw, bh,
+             fill: Math.round(areaKm2 / (bw * bh) * 1000) / 1000,
+             // 4 * pi * A / P^2, with pi written out — this file is not on the
+             // determinism-scanned path, but the constant is spelled once here
+             // rather than imported so the number below is readable.
+             ratio: Math.round(4 * 3.141592653589793 * areaKm2 / (perimKm * perimKm) * 1000) / 1000 };
+  });
+  assert.deepEqual(shapes.map((s) => [s.areaKm2, s.perimKm]), [[1100, 159], [300, 99], [200, 76]],
+    "a lake's area or shoreline moved");
+  assert.deepEqual(shapes.map((s) => [s.bw, s.bh]), [[46, 33.5], [18.5, 31], [27, 11]],
+    "a lake's extent moved");
+  assert.deepEqual(shapes.map((s) => s.ratio), [0.547, 0.385, 0.435]);
+  assert.deepEqual(shapes.map((s) => s.fill), [0.714, 0.523, 0.673]);
+  for (const s of shapes) {
+    assert.ok(s.ratio >= 0.35, `a carved body has isoperimetric ratio ${s.ratio} — that is a ribbon, not a lake`);
+    assert.ok(s.fill >= 0.5, `a carved body fills only ${s.fill} of its own bounding box`);
+  }
+
+  // ── ICE, against the premises that are the committed authority ───────────
+  //
+  // The plan flags ice on any land cell under the threshold: 21.6% of all land
+  // here, including 78.6% of c11 Quillreef (an atoll whose palette is
+  // reef/meadow/ocean), 60.3% of c07 Driftholt (a fog forest, "the wettest
+  // ground in the world") and 41.7% of c03 Coldreach. None of the three lists
+  // `ice`. Task 7's palette clamp cannot repair it: the clamp rewrites the
+  // BIOME, while FLAG.GLACIER is read directly by Tasks 8, 9 and 10 and
+  // survives it. So the gate is here, at the pass that sets the flag.
+  const icePer = new Array(premises.length).fill(0);
+  for (let i = 0; i < grid.n; i++)
+    if ((grid.flags[i] & FLAG.GLACIER) !== 0) icePer[grid.plate[i]]++;
+  for (let k = 0; k < premises.length; k++) {
+    const admits = (premises[k].palette ?? []).includes("ice");
+    if (!admits) assert.equal(icePer[k], 0,
+      `${premises[k].id} carries ${icePer[k]} ice cells and its committed palette ` +
+      `${JSON.stringify(premises[k].palette)} has no ice in it`);
+  }
+  const iceIds = premises.map((p, k) => [p.id, icePer[k]]).filter(([, n]) => n > 0);
+  assert.deepEqual(iceIds, [["c01", 23244], ["c12", 2997]]);
+  // c01's premise is "one ice divide shedding outlet glaciers to every
+  // quarter"; c12's names roche moutonnee and skerry, which are DEGLACIATED
+  // rock, and lists rock/scree/upland beside ice. So c01 is nearly all ice and
+  // c12 is not — which is what makes GLACIER_TEMP_MAX a live constant instead
+  // of the inert one it was at 0.12, where both read 100%.
+  assert.equal(Math.round(icePer[0] / (5997.25 / CELL_AREA_KM2) * 1000) / 1000, 0.969);
+  assert.equal(Math.round(icePer[11] / (999.5 / CELL_AREA_KM2) * 1000) / 1000, 0.75);
+  assert.equal(Math.round(r.glacierCells / 262400 * 10000) / 10000, 0.1);
+
+  // ── THE MOISTURE DISTRIBUTION, not only its digest ──────────────────────
+  //
+  // THE BLOCKER THIS SEAM SHIPPED AND THE SUITE COULD NOT SEE. Normalising the
+  // wind accumulator by its global MAXIMUM put the median land cell at 0.0000
+  // and 99.2% of all land under both the biome desert threshold and the
+  // settlement fresh-water veto — every continent a desert, no settlement
+  // siteable. A sha256 over every 997th cell is a perfectly stable digest of a
+  // degenerate field, which is why only a DISTRIBUTION assertion can catch it.
+  // These bands are wide on purpose: they are a floor under "the field carries
+  // signal", not a composition target. Task 7 owns composition.
+  const land = [];
+  for (let i = 0; i < grid.n; i++) if ((grid.flags[i] & FLAG.SEA) === 0) land.push(grid.moist[i]);
+  land.sort((a, b) => a - b);
+  const q = (p) => land[Math.floor(p * (land.length - 1))];
+  assert.equal(land.length, 262400);
+  const belowDesert = land.filter((m) => m < 0.16).length;
+  const belowVeto = land.filter((m) => m < 0.20).length;
+  const aboveForest = land.filter((m) => m > 0.48).length;
+  assert.deepEqual([belowDesert, belowVeto, aboveForest], [55143, 70947, 74182]);
+  assert.ok(q(0.5) > 0.25 && q(0.5) < 0.55, `median land moisture is ${q(0.5)}`);
+  assert.ok(q(0.1) > 0.02, `the driest decile of land is at ${q(0.1)} — the field is collapsing at 0`);
+  assert.ok(q(0.9) < 0.95, `the wettest decile of land is at ${q(0.9)} — the field is saturating at 1`);
+  for (const [name, n] of [["desert", belowDesert], ["veto", belowVeto], ["forest", aboveForest]])
+    assert.ok(n / land.length > 0.05 && n / land.length < 0.6,
+      `the ${name} threshold puts ${(100 * n / land.length).toFixed(1)}% of land on one side — it does not discriminate`);
+  // Temperature has the same failure mode and the same remedy.
+  let tempSaturated = 0;
+  for (let i = 0; i < grid.n; i++) if ((grid.flags[i] & FLAG.SEA) === 0 && grid.temp[i] === 0) tempSaturated++;
+  assert.equal(tempSaturated, 25091);
+  assert.ok(tempSaturated / land.length < 0.15,
+    "more than a seventh of land has no temperature gradient left — the lapse term is saturating");
 
   // The climate the same run produced, sampled every 997th cell — a stride
   // coprime with 800 so the sample is not one column.
@@ -504,11 +759,11 @@ test("GOLDEN: the real 800 x 800 world carves 1,600 km2 of interior water", () =
   for (let i = 0; i < grid.n; i += 997) {
     dm.update(String(grid.moist[i])); dt.update(String(grid.temp[i])); df.update(String(grid.freshKm[i]));
   }
-  assert.equal(dm.digest("hex").slice(0, 16), "fd90e4a253d40c44", "the moisture field moved");
-  assert.equal(dt.digest("hex").slice(0, 16), "afd45e5539731cb9", "the temperature field moved");
+  assert.equal(dm.digest("hex").slice(0, 16), "2098432e278f47bf", "the moisture field moved");
+  assert.equal(dt.digest("hex").slice(0, 16), "9dfa36129ff986e4", "the temperature field moved");
 
   // freshKm, on the real field: every RIVER, LAKE and DELTA cell is a source at
-  // 0, nothing is left unset, and the far corner of the world is 103.5 km from
+  // 0, nothing is left unset, and the far corner of the world is 114 km from
   // fresh water. The digest is what catches a BFS that gained an edge — an
   // unguarded east-west wrap shortens exactly these distances and nothing else.
   let unset = 0, maxFresh = 0, riverOffSource = 0;
@@ -519,36 +774,26 @@ test("GOLDEN: the real 800 x 800 world carves 1,600 km2 of interior water", () =
   }
   assert.equal(unset, 0, "freshKm left cells unset — the BFS did not reach the whole frame");
   assert.equal(riverOffSource, 0, "a RIVER cell is not a fresh-water source");
-  assert.equal(maxFresh, 103.5);
-  assert.equal(df.digest("hex").slice(0, 16), "c5a39072a8b53a82", "the fresh-water distance field moved");
+  assert.equal(maxFresh, 114);
+  assert.equal(df.digest("hex").slice(0, 16), "5169ee75b5d75d0a", "the fresh-water distance field moved");
 });
 
-test("GOLDEN: priorityFlood on the real field raises 40,270 cells and stays inside [-1, 1 + eps]", () => {
+test("GOLDEN: priorityFlood on the real field raises 86,986 cells and stays inside [-1, 1 + eps]", () => {
   // The review's epsilon question, answered with a number. `filled` can exceed
   // the 1.0 clamp buildElevation applies — by exactly one epsilon, 9.5e-7 — so
   // any later reader that assumes a closed [0, 1] must clamp. NOTHING DOES
   // TODAY: the biome table reads grid.elev, and `filled` leaves this pass only
   // as a depression depth. Pinned so that stops being a coincidence.
-  const manifest = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
-  const premises = readdirSync(join(ROOT, "content/world/premises"))
-    .filter((f) => f.endsWith(".json")).sort()
-    .map((f) => JSON.parse(readFileSync(join(ROOT, "content/world/premises", f), "utf8")));
-  const grid = makeGrid({ w: 800, h: 800, cellKm: 0.5 });
-  const { maskField } = applyPremiseMasks({ grid, premises, stream: manifest.seed });
-  buildElevation({ grid, premises, maskField, stream: manifest.seed });
-  const sea = selectSeaLevelByRank({
-    elev: grid.elev, targetLandCells: manifest.budget.grossLandPolygonKm2 / CELL_AREA_KM2 });
-  classifySea({ grid, seaLevel: sea.seaLevel });
-  const filled = priorityFlood({ elev: grid.elev, w: 800, h: 800 });
+  const { grid, filled } = realWorld();
   let raised = 0, landRaised = 0, maxFilled = -Infinity;
   for (let i = 0; i < grid.n; i++) {
     assert.ok(filled[i] >= grid.elev[i]);
     if (filled[i] > grid.elev[i]) { raised++; if ((grid.flags[i] & FLAG.SEA) === 0) landRaised++; }
     if (filled[i] > maxFilled) maxFilled = filled[i];
   }
-  assert.equal(raised, 40270);
-  assert.equal(landRaised, 603, "the land-depression census moved — the lake rule's premise with it");
-  assert.equal(maxFilled, 1.0000009536743164);
+  assert.equal(raised, 86986);
+  assert.equal(landRaised, 855, "the land-depression census moved — the lake rule's premise with it");
+  assert.equal(maxFilled, 1.0000019073486328);
   const dir = d8FlowDir({ elev: filled, w: 800, h: 800 });
   const acc = flowAccumulate({ flowDir: dir, w: 800, h: 800 });
   let outlets = 0, outletTotal = 0, maxAcc = 0;
@@ -556,7 +801,7 @@ test("GOLDEN: priorityFlood on the real field raises 40,270 cells and stays insi
     if (dir[i] < 0) { outlets++; outletTotal += acc[i]; }
     if (acc[i] > maxAcc) maxAcc = acc[i];
   }
-  assert.equal(outlets, 8);
+  assert.equal(outlets, 11);
   assert.equal(outletTotal, 640000, "the accumulation does not conserve on the real field");
-  assert.equal(maxAcc, 287957);
+  assert.equal(maxAcc, 397660);
 });

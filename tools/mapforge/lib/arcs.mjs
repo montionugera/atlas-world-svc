@@ -228,27 +228,66 @@ export function simplifyArc({ points, epsilonKm = DP_EPSILON_KM }) {
 // the repeated closing point (OPEN rings), and fixes winding by shoelace
 // sign — never by abs().
 //
-// HOLES. An owner that completely encloses another produces TWO rings: the
-// outer boundary and the inner boundary of the enclosed owner. Both come back
-// positive, because G-POLY rejects a negative ring outright and has no hole
-// concept at all. The rule, decided here rather than left to each caller
-// (plan Task 5 Step 8): **the trunk polygon is the OUTER ring only, and
-// interior water is carved from the fabric CENSUS, not from the ring** —
-// G-TRUNK-AREA compares against gross land, which is exactly what an outer
-// ring encloses. Rings are therefore returned LARGEST FIRST, so `rings[0]` is
-// that outer ring and `rings.slice(1)` is what the census subtracts. Sorting
-// is by signed area descending with the chaining order as the stable tiebreak,
-// so it adds no new source of nondeterminism.
+// THE HOLE-VS-LOBE RULING, settled here 2026-08-22 by the seam-3 adjudicating
+// fix pass, because the seam left TWO CONTRADICTORY CONTRACTS on the record:
+// this file's header and STATE said "callers must SUM the rings", while the
+// file's own hole fixture asserted `rings[0] - rings[1]`, and all three of the
+// plan's future callers take `rings[0]` and discard the rest. The reviewer
+// built the case that kills every one of those rules — a 5x5 block of one
+// owner with a 1-cell HOLE inside it and a separate 1-cell LOBE outside it:
+//
+//     census 6.25    rings by area [6.25, 0.25, 0.25]
+//       SUM               -> 6.75  WRONG
+//       outer minus rest  -> 5.75  WRONG
+//       rings[0] alone    -> 6.25  right only by the two errors cancelling
+//
+// A flat, positively-wound, area-sorted list CANNOT carry the answer, because
+// a hole and a second lobe are the same shape at the same size. So the answer
+// is no longer left to the caller to spell: this function RESOLVES NESTING and
+// says which is which in its return shape.
+//
+//     assembleRings({ arcs, ownerId })
+//       -> { rings, holes, areaKm2 }
+//
+//   rings   the OUTER boundaries — every disjoint lobe of the owner, largest
+//           first. `rings[0]` is the trunk polygon, which is what G-TRUNK-AREA
+//           scores and what every plan caller already reaches for.
+//   holes   the INTERIOR boundaries — an enclosed foreign owner's outline,
+//           largest first. Never empty of meaning: on today's field it is
+//           empty of members, and the golden pins that so a future split is
+//           caught rather than absorbed.
+//   areaKm2 the ONE true area, Sum(rings) - Sum(holes). Equal to the owner's
+//           cell census exactly, on the traced arcs.
+//
+// A caller cannot now sum the wrong list: the holes are not in it. Nesting is
+// resolved by even-odd containment (`ringDepth` below) — depth 0, 2, 4 ... is
+// a lobe, depth 1, 3, 5 ... is a hole. Winding stays positive on both, because
+// G-POLY rejects a negative ring outright and has no hole concept.
+//
+// CLOSURE IS NOW AN ASSERTION, not a hope. The plan's `if (nextI === -1)
+// break;` pushed an UNCLOSED chain through as a polygon: it survives
+// `pts.length >= 3`, it is not negative so the winding step leaves it alone,
+// and it is emitted with area 0. That is exactly what the plan's inverted
+// frame edges produced (a zero-area ring in a 5-ring decomposition of a
+// 4-ring owner), and the `pts.length < 3` guard is not able to see it. With
+// the frame edges oriented correctly every chain closes, so a chain that does
+// not close is a torn topology and this module's entire purpose is to be loud
+// about that.
 export function assembleRings({ arcs, ownerId }) {
   const mine = [];
   for (const a of arcs) {
     if (a.left === ownerId) mine.push({ id: a.id, points: a.points });
     else if (a.right === ownerId) mine.push({ id: a.id, points: [...a.points].reverse() });
   }
-  const rings = [];
+  const closed = [];
   const used = new Set();
   const key = ([x, y]) => `${x},${y}`;
-  // Deterministic start: lowest arc id not yet used.
+  // Deterministic start: lowest arc id not yet used. The ids are zero-padded to
+  // a fixed width and minted in ascending order, so `mine` is ALREADY in this
+  // order and the sort is a no-op today — deleting it is a recorded survivor.
+  // It stays because the padding and this sort are load-bearing TOGETHER: drop
+  // the padding and `arc-10` precedes `arc-2`, and then this sort is the only
+  // thing that puts the walk back in numeric order. Neither alone is the rule.
   const order = mine.map((_, i) => i).sort((i, j) => (mine[i].id < mine[j].id ? -1 : 1));
   for (const start of order) {
     if (used.has(start)) continue;
@@ -262,18 +301,79 @@ export function assembleRings({ arcs, ownerId }) {
         if (used.has(i)) continue;
         if (key(mine[i].points[0]) === tail) { nextI = i; break; }
       }
-      if (nextI === -1) break;            // open chain: an owner touching the frame
+      if (nextI === -1)
+        throw new Error(
+          `assembleRings: owner ${ownerId} has an arc chain that does not close — it ` +
+          `starts at ${key(pts[0])} and ends at ${key(pts[pts.length - 1])} with no arc ` +
+          `continuing it. The owner boundary is torn: every cell boundary is shared by ` +
+          `exactly two owners (the frame counts as owner -1), so a closed chain always ` +
+          `exists. Check unitEdges' frame orientation.`);
       used.add(nextI);
       pts.push(...mine[nextI].points.slice(1));
     }
-    if (key(pts[pts.length - 1]) === key(pts[0])) pts.pop();   // OPEN ring
-    if (pts.length < 3) continue;
-    if (shoelaceArea({ points: pts }) < 0) pts.reverse();
-    rings.push(pts);
+    pts.pop();                                                 // OPEN ring
+    if (pts.length < 3)
+      throw new Error(
+        `assembleRings: owner ${ownerId} closed a chain of ${pts.length} distinct ` +
+        `vertices, which encloses nothing.`);
+    let area = shoelaceArea({ points: pts });
+    if (area < 0) { pts.reverse(); area = -area; }
+    if (area === 0)
+      throw new Error(
+        `assembleRings: owner ${ownerId} closed a ring of ${pts.length} vertices with ` +
+        `zero signed area — a there-and-back chain, not a boundary.`);
+    closed.push({ points: pts, area });
   }
   // Stable sort, largest first — Array.prototype.sort is required to be stable,
   // so equal-area rings keep their chaining order.
-  return rings.sort((p, r) => shoelaceArea({ points: r }) - shoelaceArea({ points: p }));
+  closed.sort((p, r) => r.area - p.area);
+  const rings = [], holes = [];
+  let areaKm2 = 0;
+  for (let i = 0; i < closed.length; i++) {
+    const hole = (ringDepth({ closed, i }) & 1) === 1;
+    (hole ? holes : rings).push(closed[i].points);
+    areaKm2 += hole ? -closed[i].area : closed[i].area;
+  }
+  return { rings, holes, areaKm2 };
+}
+
+// How many of the OTHER rings contain this one. Even is a lobe, odd is a hole.
+//
+// A ring's vertices lie ON its own boundary and on its neighbours' — a shared
+// arc vertex is bit-identical in both — so the test point must be off every
+// boundary. The MIDPOINT of the first edge is: it is strictly interior to that
+// edge, and two distinct rings of one owner never share an edge (they would be
+// one ring). Ray casting is the even-odd rule with a horizontal ray; the
+// crossing test is written as a cross product rather than a division so it
+// stays exact on the lattice coordinates the tracer emits.
+function ringDepth({ closed, i }) {
+  const a = closed[i].points[0], b = closed[i].points[1];
+  const px = (a[0] + b[0]) / 2, py = (a[1] + b[1]) / 2;
+  let depth = 0;
+  for (let j = 0; j < closed.length; j++) {
+    if (j === i) continue;
+    // Only a STRICTLY LARGER ring can contain this one; equal areas cannot
+    // nest, and the sort has already put larger first.
+    if (closed[j].area <= closed[i].area) continue;
+    if (pointInRing({ ring: closed[j].points, px, py })) depth++;
+  }
+  return depth;
+}
+
+function pointInRing({ ring, px, py }) {
+  let inside = false;
+  for (let k = 0, m = ring.length - 1; k < ring.length; m = k++) {
+    const [xk, yk] = ring[k], [xm, ym] = ring[m];
+    if ((yk > py) === (ym > py)) continue;
+    // The x of the edge at height py, compared to px without dividing:
+    //   px < xk + (py - yk) * (xm - xk) / (ym - yk)
+    // multiplied through by (ym - yk), with the sign of that factor carried
+    // explicitly so the inequality does not flip.
+    const dy = ym - yk;
+    const lhs = (px - xk) * dy, rhs = (py - yk) * (xm - xk);
+    if (dy > 0 ? lhs < rhs : lhs > rhs) inside = !inside;
+  }
+  return inside;
 }
 
 // ── stage 5: fractal coastline detail, applied to the ARC not the ring ─────
