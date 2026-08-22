@@ -6,12 +6,24 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { hashNoise2D, fbm, falloff, smoothstep, UNIT_VECTORS, q } from "../lib/noise.mjs";
 import { mintSeed } from "../lib/seed.mjs";
-import { codeOfFile, lineOf, stripComments } from "./_source-scan.mjs";
+import { codeOfFile, lineOf, stripComments, sourceFilesUnder, LEGACY_IMPRECISE_FILES } from "./_source-scan.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const LIB = resolve(HERE, "../lib");
 const REPO = resolve(HERE, "../../..");
-const SCANNED = ["noise.mjs", "seed.mjs", "grid.mjs"];
+// DERIVED, not listed. This was `["noise.mjs", "seed.mjs", "grid.mjs"]` and
+// nobody extended it when lib/passes/ landed, so the three generator passes on
+// the committed-byte path got the census's coverage and not this file's
+// stricter whitelist. MEASURED by review D: `const _M = Math; _M.cos(x)`
+// appended to lib/passes/mask.mjs was GREEN, and the identical line in
+// lib/noise.mjs was RED — a half-covered ban reads as a covered one.
+//
+// So: every source file under lib/, recursively, MINUS the four files frozen in
+// determinism-inventory.test.mjs's INVENTORY. Those four legitimately carry
+// Math.hypot/atan2/PI on byte-frozen geometry (see that file's header); every
+// other file, present or FUTURE, gets the whitelist by default.
+const LEGACY = new Set(LEGACY_IMPRECISE_FILES);
+const SCANNED = sourceFilesUnder(LIB).filter((f) => !LEGACY.has(f));
 
 // The spec's R5 mitigation is "no transcendentals on any path reaching a
 // committed byte". A comment cannot enforce that; a source scan can.
@@ -334,4 +346,18 @@ test("a stream that is not hex is a THROW, never a silent collapse onto field 0"
   // A real minted stream is accepted, and 16 hex chars are not required — the
   // first 8 are what the field is keyed on.
   assert.equal(typeof hashNoise2D({ x: 1, y: 2, stream: mintSeed({ parentStream: "7c9e4a2f8b1d6e03", name: "elevation" }) }), "number");
+});
+
+test("the whitelist scan covers every non-legacy lib file, derived from the tree", () => {
+  // The rule that has now failed twice is a MAINTAINED LIST. Pin the derivation
+  // instead: the passes must be in, the four grandfathered sheet builders out,
+  // and the count must be large enough that a walk which stopped recursing is
+  // visible here rather than as a silent green.
+  for (const f of ["noise.mjs", "seed.mjs", "grid.mjs",
+                   "passes/mask.mjs", "passes/elevation.mjs", "passes/sea-level.mjs"])
+    assert.ok(SCANNED.includes(f), `${f} is not whitelist-scanned: ${JSON.stringify(SCANNED)}`);
+  for (const f of LEGACY_IMPRECISE_FILES)
+    assert.ok(!SCANNED.includes(f), `${f} is inventoried AND whitelist-scanned — it would be permanently red`);
+  assert.ok(SCANNED.length >= 14, `only ${SCANNED.length} files whitelist-scanned`);
+  assert.ok(SCANNED.some((f) => f.includes("/")), "no file under a lib/ SUBDIRECTORY is whitelist-scanned");
 });

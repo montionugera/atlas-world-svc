@@ -19,7 +19,8 @@
 //
 // One stripper, one policy. Stripping PRESERVES LINE NUMBERS (a block comment
 // becomes the same number of newlines) so a violation still reports `file:line`.
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 
 export function stripComments(src) {
   return src
@@ -36,3 +37,56 @@ export function lineOf(src, offset) {
   for (let i = 0; i < offset; i++) if (src.charCodeAt(i) === 10) n++;
   return n;
 }
+
+// ── COVERAGE, DERIVED FROM THE TREE ──────────────────────────────────────────
+//
+// The seam-2 reviews found this ban holed for the SECOND time in two seams, in
+// two more ways, and both holes were the same shape: a MAINTAINED LIST of what
+// to scan. Seam 1's hole was `readdirSync` not recursing, so `lib/passes/` —
+// every generator pass Plan C adds — was dark to both scans. Seam 2's holes:
+//
+//   * `endsWith(".mjs")`. There is no root package.json, so a `.js` under lib/
+//     is CommonJS — and an .mjs imports it happily. MEASURED by review D: a
+//     `lib/helper-probe.js` carrying `Math.cos` AND `Date.now` left both scans
+//     green while being reachable from every pass;
+//   * noise-determinism.test.mjs's `SCANNED = ["noise.mjs","seed.mjs","grid.mjs"]`,
+//     which nobody extended when the three passes landed. MEASURED: the
+//     indirect form `const _M = Math; _M.cos(x)` appended to lib/passes/mask.mjs
+//     was green, and the IDENTICAL line in lib/noise.mjs was red;
+//   * `tools/mapforge/<newdir>/*.mjs` — the top-level scan was deliberately
+//     non-recursive to avoid re-walking lib/ and tests/, so a sibling `cli/`
+//     (exactly where Task 10's CLI helpers would go) was dark.
+//
+// Tasks 5-10 add many more files. So the rule below is STRUCTURAL: one
+// recursive walk, one extension class, and the two scans derive their file
+// lists from it. A new directory or a new extension is covered by DEFAULT, and
+// there is no list left for a later task to forget.
+const SOURCE_EXT = /\.[mc]?[jt]s$/;   // .js .cjs .mjs .ts .cts .mts — not only .mjs
+const SKIP_DIRS = new Set(["node_modules"]);
+
+/** Every source file under `dir`, recursively, path-relative with "/"
+ *  separators so a key names the file the way an import does. Sorted, so the
+ *  scans are order-independent. */
+export function sourceFilesUnder(dir, prefix = "") {
+  const out = [];
+  for (const e of readdirSync(dir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
+    if (e.isDirectory()) {
+      if (SKIP_DIRS.has(e.name)) continue;
+      out.push(...sourceFilesUnder(join(dir, e.name), `${prefix}${e.name}/`));
+    } else if (SOURCE_EXT.test(e.name)) out.push(prefix + e.name);
+  }
+  return out;
+}
+
+/** The extension rule, exported so a test can pin it rather than restate it. */
+export const isSourceFile = (name) => SOURCE_EXT.test(name);
+
+// The four lib/ files that carried an imprecise Math call BEFORE this feature's
+// base tag. They are frozen by count in determinism-inventory.test.mjs and
+// exempted from noise-determinism.test.mjs's stricter whitelist — every OTHER
+// file under lib/, present or future, gets the whitelist. Named here, once, so
+// the exemption list and the inventory cannot drift apart: the inventory test
+// asserts its own keys are exactly this set.
+export const LEGACY_IMPRECISE_FILES = Object.freeze([
+  "atlas-sheet.mjs", "basin-sheet.mjs", "draft.mjs", "world-gen.mjs",
+]);

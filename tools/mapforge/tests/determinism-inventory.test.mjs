@@ -41,7 +41,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { codeOfFile } from "./_source-scan.mjs";
+import { codeOfFile, sourceFilesUnder, isSourceFile, LEGACY_IMPRECISE_FILES } from "./_source-scan.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const LIB = resolve(HERE, "../lib");
@@ -68,22 +68,20 @@ const NEVER = [
  *  opposite comment policies is not a rule anybody can obey. */
 const codeOf = (file) => codeOfFile(join(LIB, file));
 
-// RECURSIVE, and that is a fix not a flourish. `readdirSync(LIB)` returns the
-// files at the TOP of lib/ only, so lib/passes/*.mjs — where Plan C Task 3
-// onwards puts every generator pass, all of it on the committed-byte path —
-// was scanned by neither this census nor noise-determinism's whitelist.
-// STATE 9 says the inventory "reads the whole of lib/ by directory (so it
-// covers new files, e.g. Task 3's passes)"; it did not, and this is what makes
-// that true. Paths are returned lib-relative with "/" separators so an
-// inventory key names the file the way an import does.
-function mjsUnder(dir, prefix = "") {
-  const out = [];
-  for (const e of readdirSync(dir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
-    if (e.isDirectory()) out.push(...mjsUnder(join(dir, e.name), `${prefix}${e.name}/`));
-    else if (e.name.endsWith(".mjs")) out.push(prefix + e.name);
-  }
-  return out;
-}
+// THE FILE LIST IS DERIVED FROM THE TREE, not maintained. Two seams running,
+// this ban was found holed by a MAINTAINED LIST: seam 1 by a non-recursive
+// readdir (lib/passes/ dark to both scans), seam 2 by `endsWith(".mjs")` (a
+// `lib/helper.js` with Math.cos AND Date.now, importable from every pass, green
+// in both scans) and by a non-recursive top-level walk (`tools/mapforge/cli/`
+// dark). The walk, the extension class and the legacy exemption now all live in
+// tests/_source-scan.mjs, and both scans read them from there — so a new
+// directory, a new extension or a new pass is covered by DEFAULT.
+const libFiles = () => sourceFilesUnder(LIB);
+// Everything under tools/mapforge/ EXCEPT lib/ (inventoried above) and tests/.
+// Recursive, so a sibling directory — Task 10's CLI layer is the next one — is
+// covered without anybody remembering to add it.
+const outsideLibFiles = () =>
+  sourceFilesUnder(MAPFORGE).filter((f) => !f.startsWith("lib/") && !f.startsWith("tests/"));
 
 function census(file) {
   const counts = {};
@@ -110,7 +108,7 @@ const INVENTORY = {
 };
 
 test("the committed-byte path's imprecise-Math inventory is exactly the frozen one", () => {
-  const files = mjsUnder(LIB);
+  const files = libFiles();
   assert.ok(files.length >= 8, `only ${files.length} lib files scanned — this test cannot go dark`);
   assert.ok(files.some((f) => f.includes("/")),
     "no file under a lib/ SUBDIRECTORY was scanned — the walk stopped recursing and lib/passes/ is dark");
@@ -133,7 +131,7 @@ test("the committed-byte path's imprecise-Math inventory is exactly the frozen o
 test("Math.sqrt is NOT in the inventory — it is correctly rounded and always allowed", () => {
   // Stated as a test so the distinction survives: the ban is about functions
   // whose result is implementation-defined, not about square roots.
-  const users = mjsUnder(LIB).filter((f) => /Math\.sqrt/.test(codeOf(f)));
+  const users = libFiles().filter((f) => /Math\.sqrt/.test(codeOf(f)));
   assert.ok(users.length > 0, "nothing uses Math.sqrt — the distinction has stopped being live");
   for (const f of users) assert.ok(!(census(f)["Math.sqrt"] ?? 0), `${f}: sqrt was inventoried`);
 });
@@ -152,9 +150,9 @@ test("Math.sqrt is NOT in the inventory — it is correctly rounded and always a
 // inventory is EMPTY, and an empty inventory is the strongest kind: the next
 // author who needs one of these here has to decide deliberately and write it
 // down, which is the whole point of the inventory form.
-test("the mapforge CLI layer, one level above lib/, carries no imprecise Math at all", () => {
-  const files = readdirSync(MAPFORGE).filter((f) => f.endsWith(".mjs")).sort();
-  assert.ok(files.length >= 2, `only ${files.length} top-level mapforge files scanned — this test cannot go dark`);
+test("everything under tools/mapforge/ outside lib/ carries no imprecise Math at all", () => {
+  const files = outsideLibFiles();
+  assert.ok(files.length >= 2, `only ${files.length} non-lib mapforge files scanned — this test cannot go dark`);
   const actual = {};
   for (const f of files) {
     const counts = {};
@@ -162,7 +160,7 @@ test("the mapforge CLI layer, one level above lib/, carries no imprecise Math at
     if (Object.keys(counts).length) actual[f] = counts;
   }
   assert.deepEqual(actual, {},
-    "a file directly under tools/mapforge/ gained an imprecise Math call. lib/ is inventoried; this layer is not, " +
+    "a file under tools/mapforge/ outside lib/ gained an imprecise Math call. lib/ is inventoried; this layer is not, " +
       "because nothing here has ever needed one. Adding the first is a determinism decision — make it here, in writing.");
 });
 
@@ -171,13 +169,14 @@ test("nothing on the committed-byte path reads a clock or a random number", () =
   // they are not functions of the input at all. A single one of them makes the
   // artifact unreproducible rather than merely engine-dependent.
   const offenders = [];
-  // lib/ recursively (passes live in a subdirectory); the CLI layer at the top
-  // of tools/mapforge/ NON-recursively, or it would re-walk lib/ and tests/.
-  for (const [dir, label, files] of [[LIB, "lib", mjsUnder(LIB)],
-                                     [MAPFORGE, ".", readdirSync(MAPFORGE).filter((x) => x.endsWith(".mjs")).sort()]])
-    for (const f of files) {
-      const src = codeOfFile(join(dir, f));
-      for (const [re, name] of NEVER) if (re.test(src)) offenders.push(`${label}/${f}: ${name}`);
+  // Both derived lists: lib/ recursively, and everything else under
+  // tools/mapforge/ except tests/. No name is written down here, so nothing can
+  // be left off it.
+  for (const [label, files] of [["lib", libFiles().map((f) => [join(LIB, f), `lib/${f}`])],
+                                [".", outsideLibFiles().map((f) => [join(MAPFORGE, f), f])]])
+    for (const [path, name] of files) {
+      const src = codeOfFile(path);
+      for (const [re, n] of NEVER) if (re.test(src)) offenders.push(`${label === "lib" ? "" : "./"}${name}: ${n}`);
     }
   assert.deepEqual(offenders.sort(), []);
 });
@@ -189,4 +188,29 @@ test("the scan reads CODE, not the prose that names these to disclaim them", () 
   assert.equal(census("synthetic-sheet.mjs")["Math.hypot"], undefined);
   assert.match(readFileSync(join(LIB, "labels.mjs"), "utf8"), /Math\.hypot/);
   assert.equal(census("labels.mjs")["Math.hypot"], undefined);
+});
+
+// The coverage RULE itself, pinned — because the thing that has failed twice is
+// not the scan, it is the belief that the scan covers what it is thought to.
+test("the scan's coverage is DERIVED from the tree: extension class and directory recursion", () => {
+  // Every extension a file under tools/mapforge/ could plausibly carry and be
+  // loadable from an .mjs. `.js` is the one that was dark: no root package.json
+  // makes it CommonJS, and an .mjs imports CommonJS fine.
+  for (const name of ["a.mjs", "a.js", "a.cjs", "a.ts", "a.mts", "a.cts"])
+    assert.ok(isSourceFile(name), `${name} is not scanned — the ban has a hole one extension wide`);
+  for (const name of ["a.json", "a.svg", "a.md", "a.mjs.bak"]) assert.ok(!isSourceFile(name), name);
+
+  // Recursion, proven on the real tree rather than asserted: lib/passes/ exists
+  // and its files must appear with their directory in the key.
+  const lib = libFiles();
+  assert.ok(lib.includes("passes/mask.mjs") && lib.includes("passes/elevation.mjs")
+    && lib.includes("passes/sea-level.mjs"),
+    `lib/passes/ is not being walked: ${JSON.stringify(lib)}`);
+  assert.ok(lib.length >= 18, `only ${lib.length} lib files — the walk stopped recursing`);
+
+  // The legacy exemption and the inventory are ONE list, not two that can drift.
+  assert.deepEqual(Object.keys(INVENTORY).sort(), [...LEGACY_IMPRECISE_FILES].sort(),
+    "the inventory's files and _source-scan.mjs's LEGACY_IMPRECISE_FILES disagree — " +
+      "noise-determinism.test.mjs exempts the second list, so a file in one and not the other " +
+      "is either scanned twice or not at all");
 });
