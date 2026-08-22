@@ -1,0 +1,25 @@
+{
+  "id": "c01",
+  "title": "Rimewall Cap",
+  "class": "cap",
+  "footprint": {
+    "centreKm": [200,34],
+    "radiiKm": [97.48,27.55],
+    "warpKm": 7
+  },
+  "areaBandKm2": [5400,6600],
+  "coastClass": "ice",
+  "palette": ["ice","rock","scree","tundra","ocean"],
+  "landformKit": ["glacial","mountain","coastal"],
+  "structuralIdea": "one ice divide shedding outlet glaciers to every quarter; no rivers",
+  "structures": [
+    {
+      "kind": "ice-divide",
+      "atKm": [200,34],
+      "radiusKm": 60,
+      "amplitude": 0.45
+    }
+  ],
+  "register": "north-log",
+  "levelBand": [58,80]
+}

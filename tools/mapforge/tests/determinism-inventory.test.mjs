@@ -68,6 +68,23 @@ const NEVER = [
  *  opposite comment policies is not a rule anybody can obey. */
 const codeOf = (file) => codeOfFile(join(LIB, file));
 
+// RECURSIVE, and that is a fix not a flourish. `readdirSync(LIB)` returns the
+// files at the TOP of lib/ only, so lib/passes/*.mjs — where Plan C Task 3
+// onwards puts every generator pass, all of it on the committed-byte path —
+// was scanned by neither this census nor noise-determinism's whitelist.
+// STATE 9 says the inventory "reads the whole of lib/ by directory (so it
+// covers new files, e.g. Task 3's passes)"; it did not, and this is what makes
+// that true. Paths are returned lib-relative with "/" separators so an
+// inventory key names the file the way an import does.
+function mjsUnder(dir, prefix = "") {
+  const out = [];
+  for (const e of readdirSync(dir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
+    if (e.isDirectory()) out.push(...mjsUnder(join(dir, e.name), `${prefix}${e.name}/`));
+    else if (e.name.endsWith(".mjs")) out.push(prefix + e.name);
+  }
+  return out;
+}
+
 function census(file) {
   const counts = {};
   for (const m of codeOf(file).matchAll(IMPRECISE)) counts[m[0]] = (counts[m[0]] ?? 0) + 1;
@@ -93,8 +110,10 @@ const INVENTORY = {
 };
 
 test("the committed-byte path's imprecise-Math inventory is exactly the frozen one", () => {
-  const files = readdirSync(LIB).filter((f) => f.endsWith(".mjs")).sort();
+  const files = mjsUnder(LIB);
   assert.ok(files.length >= 8, `only ${files.length} lib files scanned — this test cannot go dark`);
+  assert.ok(files.some((f) => f.includes("/")),
+    "no file under a lib/ SUBDIRECTORY was scanned — the walk stopped recursing and lib/passes/ is dark");
   const actual = {};
   for (const f of files) {
     const c = census(f);
@@ -114,9 +133,7 @@ test("the committed-byte path's imprecise-Math inventory is exactly the frozen o
 test("Math.sqrt is NOT in the inventory — it is correctly rounded and always allowed", () => {
   // Stated as a test so the distinction survives: the ban is about functions
   // whose result is implementation-defined, not about square roots.
-  const users = readdirSync(LIB)
-    .filter((f) => f.endsWith(".mjs") && /Math\.sqrt/.test(codeOf(f)))
-    .sort();
+  const users = mjsUnder(LIB).filter((f) => /Math\.sqrt/.test(codeOf(f)));
   assert.ok(users.length > 0, "nothing uses Math.sqrt — the distinction has stopped being live");
   for (const f of users) assert.ok(!(census(f)["Math.sqrt"] ?? 0), `${f}: sqrt was inventoried`);
 });
@@ -154,8 +171,11 @@ test("nothing on the committed-byte path reads a clock or a random number", () =
   // they are not functions of the input at all. A single one of them makes the
   // artifact unreproducible rather than merely engine-dependent.
   const offenders = [];
-  for (const [dir, label] of [[LIB, "lib"], [MAPFORGE, "."]])
-    for (const f of readdirSync(dir).filter((x) => x.endsWith(".mjs"))) {
+  // lib/ recursively (passes live in a subdirectory); the CLI layer at the top
+  // of tools/mapforge/ NON-recursively, or it would re-walk lib/ and tests/.
+  for (const [dir, label, files] of [[LIB, "lib", mjsUnder(LIB)],
+                                     [MAPFORGE, ".", readdirSync(MAPFORGE).filter((x) => x.endsWith(".mjs")).sort()]])
+    for (const f of files) {
       const src = codeOfFile(join(dir, f));
       for (const [re, name] of NEVER) if (re.test(src)) offenders.push(`${label}/${f}: ${name}`);
     }

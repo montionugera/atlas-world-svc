@@ -1,0 +1,25 @@
+{
+  "id": "c13",
+  "title": "Loamspit",
+  "class": "chain",
+  "footprint": {
+    "centreKm": [40,344],
+    "radiiKm": [28.27,15.42],
+    "warpKm": 4
+  },
+  "areaBandKm2": [900,1100],
+  "coastClass": "sandbar",
+  "palette": ["marsh","meadow","reef","river"],
+  "landformKit": ["wetland","coastal","island"],
+  "structuralIdea": "migrating sandbars and mangrove — the chart is redrawn every decade",
+  "structures": [
+    {
+      "kind": "delta-fan",
+      "atKm": [40,344],
+      "radiusKm": 14,
+      "amplitude": 0.16
+    }
+  ],
+  "register": "reedspeech",
+  "levelBand": [8,24]
+}

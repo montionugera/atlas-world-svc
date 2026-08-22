@@ -1,0 +1,25 @@
+{
+  "id": "c09",
+  "title": "Brightfall",
+  "class": "chain",
+  "footprint": {
+    "centreKm": [352,186],
+    "radiiKm": [15.74,21.64],
+    "warpKm": 4
+  },
+  "areaBandKm2": [900,1100],
+  "coastClass": "cliff-fall",
+  "palette": ["rock","upland","forest","river"],
+  "landformKit": ["fluvial","mountain","coastal"],
+  "structuralIdea": "cliff-hung waterfalls straight into the sea",
+  "structures": [
+    {
+      "kind": "spine-ridge",
+      "fromKm": [348,168],
+      "toKm": [356,206],
+      "amplitude": 0.5
+    }
+  ],
+  "register": "reedspeech",
+  "levelBand": [30,56]
+}

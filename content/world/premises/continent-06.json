@@ -1,0 +1,25 @@
+{
+  "id": "c06",
+  "title": "Reedstrand",
+  "class": "minor",
+  "footprint": {
+    "centreKm": [70,268],
+    "radiiKm": [41.51,32.61],
+    "warpKm": 9
+  },
+  "areaBandKm2": [2700,3300],
+  "coastClass": "delta-lobe",
+  "palette": ["marsh","river","reef","meadow","lake"],
+  "landformKit": ["wetland","fluvial","coastal","lakes"],
+  "structuralIdea": "a bird's-foot delta with no bedrock — every region is a lobe",
+  "structures": [
+    {
+      "kind": "delta-fan",
+      "atKm": [70,268],
+      "radiusKm": 20,
+      "amplitude": 0.2
+    }
+  ],
+  "register": "reedspeech",
+  "levelBand": [16,48]
+}

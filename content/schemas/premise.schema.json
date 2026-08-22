@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "premise.schema.json",
+  "title": "Continental premise — a HARD geometric mask, not a hint. Pins continent count, footprint centre, area band and coastline class; the biome table is evaluated normally and then CLAMPED to `palette`.",
+  "type": "object",
+  "required": ["id", "title", "class", "footprint", "areaBandKm2", "coastClass",
+               "palette", "landformKit", "structuralIdea", "structures", "register", "levelBand"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^c[0-9]{2}$" },
+    "title": { "type": "string" },
+    "class": { "enum": ["cap", "major", "minor", "chain"] },
+    "footprint": {
+      "type": "object", "required": ["centreKm", "radiiKm", "warpKm"], "additionalProperties": false,
+      "properties": {
+        "centreKm": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+        "radiiKm": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+        "warpKm": { "type": "number" }
+      }
+    },
+    "areaBandKm2": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+    "coastClass": { "enum": ["ice", "drowned-valley", "ridge-and-fjord", "karst-pavement",
+                             "rain-shadow-erg", "delta-lobe", "fog-forest", "erosional-stack",
+                             "cliff-fall", "volcanic-arc", "atoll-ring", "fjordland", "sandbar"] },
+    "palette": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "landformKit": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "structuralIdea": { "type": "string" },
+    "structures": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["kind"], "additionalProperties": false,
+        "properties": {
+          "kind": { "enum": ["inland-sea", "spine-ridge", "rift-valley", "volcanic-spine",
+                             "ice-divide", "plateau", "delta-fan", "atoll-lagoon"] },
+          "fromKm": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+          "toKm": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+          "atKm": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+          "radiusKm": { "type": "number" },
+          "amplitude": { "type": "number" }
+        }
+      }
+    },
+    "register": { "enum": ["basin-anglic", "north-log", "moorstone", "sandtongue", "reedspeech"] },
+    "levelBand": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 }
+  }
+}

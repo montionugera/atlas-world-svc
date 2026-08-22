@@ -1,0 +1,25 @@
+{
+  "id": "c08",
+  "title": "Wracklow",
+  "class": "minor",
+  "footprint": {
+    "centreKm": [252,344],
+    "radiiKm": [45.51,32.51],
+    "warpKm": 9
+  },
+  "areaBandKm2": [2700,3300],
+  "coastClass": "erosional-stack",
+  "palette": ["rock","scree","meadow","bramble","reef"],
+  "landformKit": ["erosional","coastal","island"],
+  "structuralIdea": "an entirely erosional coast — stacks, arches, geos, blowholes; no river reaches the sea intact",
+  "structures": [
+    {
+      "kind": "plateau",
+      "atKm": [252,344],
+      "radiusKm": 16,
+      "amplitude": 0.22
+    }
+  ],
+  "register": "reedspeech",
+  "levelBand": [20,52]
+}
