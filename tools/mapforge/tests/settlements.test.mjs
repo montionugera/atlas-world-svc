@@ -31,6 +31,7 @@ import { priorityFlood, d8FlowDir, flowAccumulate } from "../lib/hydrology.mjs";
 import { applyWinds } from "../lib/passes/winds.mjs";
 import { carveWater } from "../lib/passes/water.mjs";
 import { terrainStream, namedStream } from "../lib/seed.mjs";
+import { routeRoads } from "../lib/passes/roads.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const MANIFEST = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
@@ -397,7 +398,8 @@ function realWorld() {
   const bandProblems = [];
   const bands = assignLevelBands({
     regions: part.regions, settlements: p11.settlements, manifest: MANIFEST, problems: bandProblems });
-  REAL = { grid, sea, part, lf, p11, bands, bandProblems, settleStream };
+  const p12 = routeRoads({ grid, settlements: p11.settlements, regions: part.regions });
+  REAL = { grid, sea, part, lf, p11, bands, bandProblems, settleStream, p12 };
   return REAL;
 }
 
@@ -591,4 +593,96 @@ test("REAL WORLD — all 9 level-band rings are populated from the Wealdmarch ca
   assert.equal(population.reduce((a, b) => a + b, 0), 160);
   for (let k = 0; k < population.length; k++)
     assert.ok(population[k] > 0, `ring ${k} (${JSON.stringify(MANIFEST.levelBands.bands[k])}) is empty`);
+});
+
+// ── THE REAL WORLD: P12 roads, sea lanes and trunk rivers ─────────────────
+
+test("REAL WORLD — every settlement is on its continent's road network", () => {
+  const { part, p11, p12 } = realWorld();
+  assert.deepEqual(p12.problems, []);
+  const byCont = new Map();
+  for (const s of p11.settlements) {
+    if (!byCont.has(s.continent)) byCont.set(s.continent, []);
+    byCont.get(s.continent).push(s);
+  }
+  let legs = 0;
+  for (const [cont, list] of [...byCont.entries()].sort()) {
+    const mine = p12.roads.filter((r) => r.continent === cont);
+    assert.equal(mine.length, list.length - 1, `${cont}: ${mine.length} roads for ${list.length} settlements`);
+    legs += mine.length;
+    const adj = new Map(list.map((x) => [x.id, []]));
+    for (const road of mine) { adj.get(road.from).push(road.to); adj.get(road.to).push(road.from); }
+    const seen = new Set([list[0].id]);
+    const queue = [list[0].id];
+    while (queue.length) for (const n of adj.get(queue.pop())) if (!seen.has(n)) { seen.add(n); queue.push(n); }
+    assert.equal(seen.size, list.length, `${cont}'s road network is disconnected`);
+  }
+  assert.equal(p12.roads.length, 38);
+  assert.equal(legs, 38);
+  assert.equal(new Set(p12.roads.map((r) => r.id)).size, 38);
+  assert.deepEqual([...byCont.keys()].sort(), ["c02", "c03", "c04", "c05", "c06", "c07", "c09"]);
+});
+
+test("REAL WORLD — no road point is at sea, and none leaves its own continent", () => {
+  const { grid, part, p12 } = realWorld();
+  let points = 0;
+  for (const road of p12.roads)
+    for (const [x, y] of road.points) {
+      const i = idx({ grid, cx: Math.floor(x / grid.cellKm), cy: Math.floor(y / grid.cellKm) });
+      assert.equal(grid.flags[i] & FLAG.SEA, 0, `road ${road.id} crosses the sea at ${x},${y}`);
+      assert.equal(part.regions[grid.owner[i]].continent, road.continent,
+        `road ${road.id} has a point on ${part.regions[grid.owner[i]].continent}`);
+      points++;
+    }
+  assert.ok(points > 1000, `only ${points} road points on the whole world`);
+});
+
+test("REAL WORLD — two sea lanes join the three capitals, water end to end", () => {
+  const { grid, p12, p11 } = realWorld();
+  const caps = p11.settlements.filter((s) => s.rank === "capital");
+  assert.equal(p12.seaLanes.length, caps.length - 1);
+  assert.deepEqual(p12.seaLanes.map((l) => [l.id, l.from, l.to]),
+    [["lane-01", "c02/s01", "c03/s01"], ["lane-02", "c03/s01", "c05/s01"]]);
+  for (const lane of p12.seaLanes) {
+    assert.ok(lane.km > 0);
+    for (let k = 1; k < lane.points.length - 1; k++) {
+      const i = idx({ grid, cx: Math.floor(lane.points[k][0] / grid.cellKm),
+                      cy: Math.floor(lane.points[k][1] / grid.cellKm) });
+      assert.notEqual(grid.flags[i] & FLAG.SEA, 0,
+        `${lane.id} runs over land at ${lane.points[k]}`);
+    }
+  }
+});
+
+test("REAL WORLD — one trunk river per continent that has a river at all", () => {
+  const { grid, part, p12 } = realWorld();
+  const withRivers = new Set();
+  for (let i = 0; i < grid.n; i++) {
+    if ((grid.flags[i] & FLAG.RIVER) === 0) continue;
+    const o = grid.owner[i];
+    if (o >= 0) withRivers.add(part.regions[o].continent);
+  }
+  const traced = Object.keys(p12.trunkRivers).sort();
+  assert.deepEqual(traced, ["c02", "c03", "c04", "c05", "c06", "c07", "c08", "c11", "c12"]);
+  for (const c of traced) assert.ok(withRivers.has(c), `${c} has a trunk river and no RIVER cell`);
+  for (const [c, r] of Object.entries(p12.trunkRivers)) {
+    assert.equal(r.name, null, `${c}'s trunk river is named — Plan D mints names`);
+    assert.ok(r.points.length >= 1);
+  }
+  assert.deepEqual(Object.fromEntries(traced.map((c) => [c, p12.trunkRivers[c].points.length])),
+    { c02: 74, c03: 47, c04: 7, c05: 87, c06: 17, c07: 29, c08: 1, c11: 1, c12: 8 });
+});
+
+test("REAL WORLD — routeRoads is independent of the heap tiebreak and of input order", () => {
+  const { grid, part, p11, p12 } = realWorld();
+  const baseline = JSON.stringify(p12);
+  const variants = [
+    function (a, b) { return this.v[a] < this.v[b] || (this.v[a] === this.v[b] && this.i[a] > this.i[b]); },
+    function (a, b) { return this.v[a] < this.v[b]; },
+  ];
+  const orders = [[...p11.settlements].reverse(),
+                  [...p11.settlements].sort((a, b) => b.score - a.score || (a.id < b.id ? -1 : 1))];
+  for (const less of variants) for (const order of orders)
+    assert.equal(JSON.stringify(routeRoads({ grid, settlements: order, regions: part.regions, less })),
+      baseline, "the road network moved under a comparator or input permutation");
 });
