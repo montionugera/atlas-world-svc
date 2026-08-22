@@ -541,6 +541,22 @@ export function buildWaterPartition({ grid, premises, manifest, problems = [] })
  * placement must contain its children's), so their boundaries are simplified
  * independently and only a margin wider than both errors keeps the sea inside.
  * `SEA_MARGIN_CELLS` 16 = 8 km; measured containment is 100.000% on all nine.
+ *
+ * THE MARGIN LADDER, measured 2026-08-22, as the area of a sea lying OUTSIDE
+ * its ocean after both rings are independently simplified:
+ *
+ *     16 cells (8.0 km)  0.000 km²      2 cells (1.0 km)  0.000 km²
+ *      8 cells (4.0 km)  0.000 km²      1 cell  (0.5 km)  0.230 km²
+ *      4 cells (2.0 km)  0.000 km²      0 cells (0.0 km) 11.455 km²
+ *
+ * RECORDED MUTATION SURVIVOR: dropping 16 to 2 leaves the suite green, and it
+ * is a genuine EQUIVALENCE rather than a hole — containment is exactly zero all
+ * the way down to 2. The committed 16 is therefore an 8x safety factor over the
+ * last rung that works, kept because the margin costs nothing (it is water an
+ * ocean keeps for itself) and because the first rung that fails, 1, fails by an
+ * amount the containment test's old 0.5 km² tolerance could not see. That
+ * tolerance is now zero, so the 16 -> 1 mutation dies even though 16 -> 2 does
+ * not — the survivor that remains is the one that is actually equivalent.
  */
 export const SEA_MARGIN_CELLS = 16;
 

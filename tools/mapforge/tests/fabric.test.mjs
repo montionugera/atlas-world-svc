@@ -567,9 +567,23 @@ test("REAL WORLD — every sea is a strict subset of its own ocean", () => {
       `G-VERTEX-BUDGET: ${s.id} ring has ${sea.ring.length} vertices > ${LOAD_BUDGET.maxRingPoints}`);
     assert.equal(sea.holes, 0);
     const own = shoelaceArea({ points: sea.ring });
-    const inter = exactIntersectionArea({ a: poly(sea.ring), b: poly(ocean.ring) });
-    assert.ok(Math.abs(inter - own) < 0.5,
-      `G-CONTAIN ${s.id}: intersection with ${s.ocean} is ${inter.toFixed(2)} vs own area ${own.toFixed(2)}`);
+    const probs = [];
+    const inter = exactIntersectionArea({ a: poly(sea.ring), b: poly(ocean.ring), problems: probs });
+    // A REFUSED ring returns 0, which is indistinguishable from "disjoint" —
+    // so the collector is not optional here, it is half the assertion.
+    assert.deepEqual(probs, [], `${s.id} or ${s.ocean} is not triangulable`);
+    // TOLERANCE TIGHTENED, 2026-08-22 (seam-6 fix pass). This was
+    // `Math.abs(inter - own) < 0.5`, and the 0.5 km² was pure slack: the sea
+    // and its ocean are traced from DIFFERENT topologies, so a sliver looked
+    // plausible — but there is no sliver. Measured across the whole margin
+    // ladder, the area of a sea lying OUTSIDE its ocean is EXACTLY 0.000 at
+    // every margin of 2 cells or more, and the slack only ever hid a real
+    // leak: at `SEA_MARGIN_CELLS = 1` it is 0.230 km² on s06 and the old
+    // tolerance passed it. Assert the direction that matters — nothing of the
+    // child outside the parent — at zero.
+    assert.ok(own - inter <= 1e-6,
+      `G-CONTAIN ${s.id}: ${(own - inter).toFixed(3)} km² of it lies OUTSIDE ${s.ocean} ` +
+      `(own ${own.toFixed(2)}, intersection ${inter.toFixed(2)})`);
     assert.ok(Math.abs(own - s.polygonKm2) / s.polygonKm2 <= 0.03,
       `${s.id} draws ${own.toFixed(1)} km² against a committed ${s.polygonKm2}`);
   }
