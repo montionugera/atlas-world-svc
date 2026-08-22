@@ -357,8 +357,30 @@ test("REAL WORLD — region rings CARRY the declared area, which one ring cannot
     for (const ring of [...r.rings, ...r.holes])
       assert.ok(shoelaceArea({ points: ring }) > 0, `${rec.id} has a non-positively-wound ring`);
   }
-  assert.equal(multi, 18, "18 of the 160 regions have a boundary of more than one ring");
-  assert.equal(holed, 3);
+  // GOLDENS MOVED, 2026-08-22, seam-6 adjudicating fix pass — 18 -> 19 and
+  // 3 -> 6, one event: `assembleRings` now splits a closed chain at its
+  // repeated vertices, so the four rings that used to pinch through a lattice
+  // corner come back as simple loops. c01/r10 becomes three lobes; c02/r13,
+  // c02/r22 and c05/r19 each declare the one-cell notch they used to fold into
+  // their outer ring. Every `areaKm2` is unchanged (the pinched shoelace was
+  // already right) — what moved is only whether the shape can be MEASURED:
+  // `scripts/lib/geometry.mjs` refuses a non-simple ring, so before the split
+  // `exactIntersectionArea(c02/r13, n-cluster1)` returned 0.00 for a region
+  // lying wholly inside n-cluster1, and now returns 471.00.
+  assert.equal(multi, 19, "19 of the 160 regions have a boundary of more than one ring");
+  assert.equal(holed, 6);
+  // THE INVARIANT THOSE TWO COUNTS EXIST TO PROTECT. A count can be met by a
+  // pinched ring; strict simplicity cannot, and it is what every downstream
+  // consumer (Plan D's pinReceipts containment, Plan E's ink, G-OVERLAP)
+  // actually needs. Region rings had no equivalent of the trunk's
+  // "sixteen DISJOINT polygons" test until this line.
+  for (const rec of part.regions) {
+    const r = built.rings.get(rec.id);
+    for (const ring of [...r.rings, ...r.holes])
+      assert.equal(new Set(ring.map((p) => p.join(","))).size, ring.length,
+        `${rec.id} emits a ring that repeats a vertex — exactIntersectionArea refuses it and ` +
+        `reports 0 km2 of overlap, which is indistinguishable from "genuinely disjoint"`);
+  }
   // THE AGGREGATE HIDES IT, and that is the whole point of measuring both
   // terms. Taking rings[0] alone drops 384.88 km² of second lobes while
   // silently ADDING 358.88 km² of enclosed holes, so the world-wide net is

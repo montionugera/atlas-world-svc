@@ -624,7 +624,7 @@ test("REAL WORLD — the 330-pair adjacency list is PINNED, not merely symmetric
   assert.equal(directed, 660);
 });
 
-test("REAL WORLD — a region's BOUNDARY is one ring for 142 of 160 and the other 18 are named", () => {
+test("REAL WORLD — a region's BOUNDARY is one ring for 141 of 160 and the other 19 are named", () => {
   // G's finding, re-derived and found to be larger than reported — and its
   // stated CONSEQUENCE refuted.
   //
@@ -664,14 +664,40 @@ test("REAL WORLD — a region's BOUNDARY is one ring for 142 of 160 and the othe
       multi.push(`${regions[o].id}:${r.rings.length}`);
     }
   }
+  // GOLDENS MOVED, 2026-08-22, by the seam-6 adjudicating fix pass, when
+  // `assembleRings` began splitting a closed chain at its repeated vertices
+  // (`splitPinches`). Four rings on this field pinched at a lattice corner and
+  // were emitted as ONE non-simple ring each; `scripts/lib/geometry.mjs`
+  // refuses a non-simple ring, so `exactIntersectionArea` reported 0 km² of
+  // overlap for them — the same number it reports for "genuinely disjoint".
+  // What moved, and why each move is the same event:
+  //   * multi 18 -> 19: c01/r10 pinched twice into three positive lobes, so it
+  //     joins the multi-ring list instead of hiding inside one bowtie ring.
+  //   * withHoles 3 -> 6: c02/r13, c02/r22 and c05/r19 each carried a one-cell
+  //     NOTCH touching their outer boundary at a corner. The pinched shoelace
+  //     already subtracted it, which is why no area gate ever saw them.
+  //   * outsideRing0 384.50 -> 385.00: c01/r10's two 0.25 km² lobes are now
+  //     COUNTED as lobes rather than folded into a bowtie ring that no overlap
+  //     primitive could measure.
+  // Every region's `areaKm2` is unchanged — asserted above, on all 160.
   assert.deepEqual(multi, [
-    "c02/r05:2", "c02/r07:2", "c02/r15:2", "c02/r19:2", "c03/r04:2", "c03/r09:2", "c03/r19:2",
-    "c03/r20:2", "c03/r26:2", "c04/r05:2", "c04/r13:2", "c04/r19:2", "c05/r04:2", "c05/r10:3",
-    "c05/r18:2", "c05/r19:2", "c06/r04:2", "c07/r02:5",
+    "c01/r10:3", "c02/r05:2", "c02/r07:2", "c02/r15:2", "c02/r19:2", "c03/r04:2", "c03/r09:2",
+    "c03/r19:2", "c03/r20:2", "c03/r26:2", "c04/r05:2", "c04/r13:2", "c04/r19:2", "c05/r04:2",
+    "c05/r10:3", "c05/r18:2", "c05/r19:2", "c06/r04:2", "c07/r02:5",
   ], "the set of regions a single-ring fabric record cannot express changed");
-  assert.deepEqual(withHoles, ["c01/r06:2", "c02/r05:1", "c06/r01:1"],
+  assert.deepEqual(withHoles,
+    ["c01/r06:2", "c02/r05:1", "c02/r13:1", "c02/r22:1", "c05/r19:2", "c06/r01:1"],
     "the regions that enclose a hole changed — a `ring` without a `holes` list overstates these");
-  assert.equal(outsideRing0, 384.5, "km2 a `rings[0]` projection would silently drop");
+  assert.equal(outsideRing0, 385, "km2 a `rings[0]` projection would silently drop");
+  // THE PROPERTY THE THREE COUNTS ABOVE EXIST TO PROTECT, stated directly so a
+  // future change cannot satisfy the counts with non-simple rings.
+  for (let o = 0; o < regions.length; o++) {
+    const r = assembleRings({ arcs, ownerId: o });
+    for (const ring of [...r.rings, ...r.holes])
+      assert.equal(new Set(ring.map((p) => p.join(","))).size, ring.length,
+        `${regions[o].id} emits a ring that repeats a vertex — exactIntersectionArea ` +
+        `refuses it and reports 0 km2 of overlap, indistinguishable from disjoint`);
+  }
 });
 
 test("REAL WORLD — every region is ONE 8-connected blob but for c04/r19's stranded cell", () => {

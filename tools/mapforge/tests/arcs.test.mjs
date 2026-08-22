@@ -1,7 +1,7 @@
 // tools/mapforge/tests/arcs.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { extractArcs, simplifyArc, assembleRings, fractalise, DP_EPSILON_KM } from "../lib/arcs.mjs";
+import { extractArcs, simplifyArc, assembleRings, splitPinches, fractalise, DP_EPSILON_KM } from "../lib/arcs.mjs";
 import { shoelaceArea, selfIntersects } from "../../../scripts/lib/spine.mjs";
 
 // A 10x10 owner field: a 4x4 block of owner 0 with a 2x4 block of owner 1
@@ -250,44 +250,95 @@ test("a DIAGONAL touch does not produce a self-intersecting bowtie", () => {
   // owner 0 at (1,1) and (2,2); owner 1 at (2,1) and (1,2). Four cells meeting
   // at one corner, which is the classic place a naive tracer emits a bowtie.
   //
-  // MEASURED, and the answer is not the tidy one. Neither owner self-intersects
-  // and both close on their exact census — but owner 0 comes back as TWO rings
-  // and owner 1 as ONE ring that passes through the pinch corner twice, and
-  // which of the two an owner gets is decided by nothing better than the arc id
-  // that happens to sit lowest at that corner. Recorded rather than "fixed":
+  // GOLDEN MOVED, 2026-08-22, by the seam-6 adjudicating fix pass. It used to
+  // pin owner 0 at TWO rings and owner 1 at ONE — a ring passing through the
+  // pinch corner twice — and recorded the asymmetry as "the better world"
+  // because a symmetric split would put half a diagonal-isthmus continent
+  // outside `rings[0]`, which is the trunk polygon. Both halves of that
+  // reasoning were measured again and both are wrong:
   //
-  //  * the properties the pipeline actually needs hold either way — exact area,
-  //    positive winding, no PROPER crossing (two lobes meeting at a single
-  //    vertex is not one, and G-POLY's selfIntersects agrees);
-  //  * routing the traversal by turn angle instead would make it symmetric, but
-  //    the symmetric answer is TWO rings, and on a continent with a one-cell
-  //    diagonal isthmus that would put half the landmass outside rings[0] —
-  //    which is the trunk polygon. The pinch-through ring is the better world;
-  //  * and on the real 800 x 800 field this is not hypothetical: 22 pinch nodes
-  //    exist and all thirteen continents still trace exactly one exact ring
-  //    (the golden below pins that, so a future split is caught, not silent).
+  //  * The asymmetry was never a choice between one ring and two. The SAME
+  //    field already answers TWO for owner 0, and which owner gets which is
+  //    decided, as the old comment itself admitted, "by nothing better than the
+  //    arc id that happens to sit lowest at that corner". So a diagonal isthmus
+  //    already truncated `rings[0]` half the time, silently and by coin flip.
+  //    `buildTrunkRings` pushes a named problem for `rings.length > 1`, so the
+  //    split makes the truncation LOUD every time instead of half the time.
+  //  * The pinch-through ring is not usable by the repo's own overlap
+  //    primitive. `scripts/lib/geometry.mjs`'s `triangulateOrNull` refuses a
+  //    non-simple ring, so `exactIntersectionArea` returns 0 for it — the same
+  //    number it returns for "genuinely disjoint". Measured on the seam-6 draft
+  //    root: 4 of 182 emitted region rings pinched, and c02/r13 — a 470.25 km²
+  //    region lying WHOLLY inside n-cluster1 — measured 0.00 km² of overlap
+  //    with it. After the split it measures 471.00 with no problems raised.
+  //    A trunk polygon no overlap gate can measure is worse than a split one.
   //
-  // THE CONTRACT FOR CALLERS, therefore: SUM the rings for area; never assume
-  // `rings.length === 1`.
+  // `assembleRings` therefore splits every closed chain at its repeated
+  // vertices (`splitPinches`) and classifies each simple loop on its own. The
+  // measured effect on the real world was exactly the four pinched region
+  // rings, on three continents: every `areaKm2` unchanged, every other region,
+  // every coast ring and every one of the 25 trunk placements byte-identical.
   const { owner, w, h } = field(5, 5, (set) => {
     set(1, 1, 0); set(2, 2, 0); set(2, 1, 1); set(1, 2, 1);
   });
   const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
   for (const id of [0, 1]) {
-    const { rings } = assembleRings({ arcs, ownerId: id });
+    const { rings, holes, areaKm2 } = assembleRings({ arcs, ownerId: id });
     assert.ok(rings.length >= 1, `owner ${id} produced no ring at all`);
-    let area = 0;
     for (const r of rings) {
       assert.ok(!selfIntersects({ points: r }), `owner ${id} ring self-intersects — a bowtie`);
       assert.ok(shoelaceArea({ points: r }) > 0, `owner ${id} ring is wound backwards`);
-      area += shoelaceArea({ points: r });
+      assert.equal(new Set(r.map((p) => p.join(","))).size, r.length,
+        `owner ${id} ring repeats a vertex — exactIntersectionArea refuses it and reports 0`);
     }
-    assert.equal(area, 2 * 0.25, `owner ${id} area ${area} against a 2-cell census`);
+    assert.equal(areaKm2, 2 * 0.25, `owner ${id} area ${areaKm2} against a 2-cell census`);
+    assert.equal(holes.length, 0, `owner ${id} has no enclosed foreign owner here`);
   }
-  // The asymmetry itself, pinned — so that if a later change makes the
-  // traversal symmetric, this test says so instead of quietly agreeing.
+  // SYMMETRY, pinned. Both owners are the same shape, so both must get the same
+  // decomposition; the old golden's 2-vs-1 was the defect, not the contract.
   assert.equal(assembleRings({ arcs, ownerId: 0 }).rings.length, 2);
-  assert.equal(assembleRings({ arcs, ownerId: 1 }).rings.length, 1);
+  assert.equal(assembleRings({ arcs, ownerId: 1 }).rings.length, 2);
+});
+
+test("a one-cell NOTCH touching the boundary at a corner is a HOLE, not a pinched ring", () => {
+  // The pinch shape the old bowtie golden did not have and the real world does:
+  // a 4x4 block of owner 0 with owner 1 taking the single cell at (2,2) AND the
+  // single cell at (3,3) — so owner 1's (2,2) cell touches the outside of the
+  // block only through the (3,3) corner, and owner 0's boundary leaves and
+  // re-enters that corner. Three of the four pinched region rings measured on
+  // the seam-6 draft root are this shape (c02/r13, c02/r22, c05/r19); their
+  // pinched shoelace was CORRECT (it adds the lobe and subtracts the notch), so
+  // no area gate could ever have seen them.
+  const { owner, w, h } = field(6, 6, (set) => {
+    for (let x = 1; x <= 4; x++) for (let y = 1; y <= 4; y++) set(x, y, 0);
+    set(2, 2, 1); set(3, 3, 1);
+  });
+  const { arcs } = extractArcs({ owner, w, h, cellKm: 0.5 });
+  const { rings, holes, areaKm2 } = assembleRings({ arcs, ownerId: 0 });
+  // 16 cells less the two owner-1 cells.
+  assert.equal(areaKm2, 14 * 0.25);
+  for (const r of [...rings, ...holes])
+    assert.equal(new Set(r.map((p) => p.join(","))).size, r.length,
+      "a ring or hole repeats a vertex — exactIntersectionArea refuses it and reports 0");
+  // The notch is named as a HOLE rather than folded into the outer ring.
+  assert.ok(holes.length >= 1, "the enclosed owner-1 cells are holes, not part of the outer ring");
+  const total = rings.reduce((s, r) => s + shoelaceArea({ points: r }), 0) -
+                holes.reduce((s, r) => s + shoelaceArea({ points: r }), 0);
+  assert.equal(total, areaKm2, "rings minus holes must be the one true area");
+});
+
+test("splitPinches is the identity on a simple ring and splits a figure-eight", () => {
+  const simple = [[0, 0], [2, 0], [2, 2], [0, 2]];
+  assert.deepEqual(splitPinches(simple), [simple]);
+  // A figure-eight through [1,1]: two unit squares meeting at one corner.
+  const eight = [[0, 0], [1, 0], [1, 1], [2, 1], [2, 2], [1, 2], [1, 1], [0, 1]];
+  const parts = splitPinches(eight);
+  assert.equal(parts.length, 2);
+  for (const p of parts)
+    assert.equal(new Set(p.map((q) => q.join(","))).size, p.length);
+  // Shoelace is additive over the split — this is why areaKm2 cannot move.
+  assert.equal(parts.reduce((s, p) => s + Math.abs(shoelaceArea({ points: p })), 0),
+               Math.abs(shoelaceArea({ points: eight })));
 });
 
 // ── holes ──────────────────────────────────────────────────────────────────

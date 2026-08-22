@@ -273,6 +273,54 @@ export function simplifyArc({ points, epsilonKm = DP_EPSILON_KM }) {
 // the frame edges oriented correctly every chain closes, so a chain that does
 // not close is a torn topology and this module's entire purpose is to be loud
 // about that.
+/**
+ * Split one closed, OPEN-form chain into its simple loops at every repeated
+ * vertex. A chain with no repeat comes back as `[chain]` — the identity, which
+ * is every ring on today's trunk and coast topologies.
+ *
+ * The scan is the same one `scripts/lib/geometry.mjs`'s `splitAtRepeat` uses,
+ * applied until nothing repeats, so the two agree on what "simple" means:
+ * walk the ring, and the first vertex seen twice at indices j < i closes the
+ * loop `ring[j..i)`; the remainder `ring[0..j) ++ ring[i..]` still shares that
+ * vertex once and is re-scanned. Terminates because every step removes at
+ * least one vertex from the remainder.
+ */
+export function splitPinches(ring) {
+  const out = [];
+  const pending = [ring];
+  // A closed chain of n vertices can pinch at most n/2 times; the bound turns a
+  // hypothetical non-terminating split into a loud failure rather than a hang.
+  let guard = 0;
+  while (pending.length) {
+    const cur = pending.pop();
+    if (guard++ > 4 * ring.length + 8)
+      throw new Error(`splitPinches: ${ring.length}-vertex chain did not resolve into simple loops`);
+    const seen = new Map();
+    let cut = null;
+    for (let i = 0; i < cur.length; i++) {
+      const k = `${cur[i][0]},${cur[i][1]}`;
+      const j = seen.get(k);
+      if (j !== undefined) { cut = [j, i]; break; }
+      seen.set(k, i);
+    }
+    if (cut === null) { out.push(cur); continue; }
+    const [j, i] = cut;
+    pending.push(cur.slice(j, i), [...cur.slice(0, j), ...cur.slice(i)]);
+  }
+  // Deterministic order regardless of the stack's pop order: the loops are
+  // sorted by area in `assembleRings` anyway, but two equal-area loops must
+  // not swap between runs, so settle them on their own lowest vertex.
+  const keyOf = (r) => {
+    let best = r[0];
+    for (const p of r) if (p[0] < best[0] || (p[0] === best[0] && p[1] < best[1])) best = p;
+    return best;
+  };
+  return out.sort((a, b) => {
+    const ka = keyOf(a), kb = keyOf(b);
+    return ka[0] - kb[0] || ka[1] - kb[1];
+  });
+}
+
 export function assembleRings({ arcs, ownerId }) {
   const mine = [];
   for (const a of arcs) {
@@ -316,13 +364,42 @@ export function assembleRings({ arcs, ownerId }) {
       throw new Error(
         `assembleRings: owner ${ownerId} closed a chain of ${pts.length} distinct ` +
         `vertices, which encloses nothing.`);
-    let area = shoelaceArea({ points: pts });
-    if (area < 0) { pts.reverse(); area = -area; }
-    if (area === 0)
-      throw new Error(
-        `assembleRings: owner ${ownerId} closed a ring of ${pts.length} vertices with ` +
-        `zero signed area — a there-and-back chain, not a boundary.`);
-    closed.push({ points: pts, area });
+    // A CHAIN THAT VISITS A LATTICE CORNER TWICE IS NOT ONE RING.
+    // `growRegions` is a D8 Dijkstra, so a region can pinch to a single
+    // lattice corner — and the pinch has two shapes, not one. The header
+    // above handles the shape where the pinch separates two disjoint LOBES.
+    // The other shape is a one-cell notch that touches the outer boundary at
+    // a corner: the chain leaves the corner, goes round the notch, and comes
+    // back to the same corner, so ONE closed chain carries both the outer
+    // boundary and the notch with a repeated vertex between them.
+    //
+    // Emitting that as a single ring is silently wrong downstream and NOT
+    // visible in the area: the shoelace of a pinched chain already adds the
+    // positive lobe and subtracts the negative notch, so `areaKm2` matches the
+    // cell census either way and no area gate can see it. What CAN see it is
+    // `scripts/lib/geometry.mjs`'s `triangulateOrNull`, which refuses a
+    // non-simple ring and makes `exactIntersectionArea` return 0 — the same
+    // number it returns for "genuinely disjoint". Measured on the seam-6 draft
+    // root before this split: 4 of 182 emitted region rings repeated a vertex
+    // (c01/r10, c02/r13, c02/r22, c05/r19), and c02/r13 — a 470.25 km² region
+    // lying wholly inside n-cluster1 — came back as 0 km² of overlap with it.
+    //
+    // So the chain is SPLIT at every repeat into its simple loops, and each
+    // loop takes its own trip through the winding fix and the depth
+    // classification below. The notch then lands in `holes` and the lobe in
+    // `rings`, which is exactly what the return shape already exists to say.
+    // `areaKm2` is unchanged by construction: shoelace is additive over the
+    // split, and the depth rule re-derives the sign the pinched shoelace had
+    // baked in.
+    for (const loop of splitPinches(pts)) {
+      let area = shoelaceArea({ points: loop });
+      if (area < 0) { loop.reverse(); area = -area; }
+      if (area === 0)
+        throw new Error(
+          `assembleRings: owner ${ownerId} closed a ring of ${loop.length} vertices with ` +
+          `zero signed area — a there-and-back chain, not a boundary.`);
+      closed.push({ points: loop, area });
+    }
   }
   // Stable sort, largest first — Array.prototype.sort is required to be stable,
   // so equal-area rings keep their chaining order.
