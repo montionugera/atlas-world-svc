@@ -1825,6 +1825,26 @@ A pinned record is a **generator input**. The prose places have to be constraint
 
 **Interfaces:**
 - Consumes (Plan C): `content/world/fabric/continent-NN.json` **`pinReceipts[]`** — `{ id, at: [x,y], cell: [i,j], continent, region, measured: { landform, waterKind, shelterFetchKm, depthM, slope, freshWaterWithinKm, biome, elevationM } }`. Plan D owns this field's shape; Task 10 wires the generator to emit it.
+- **`measured.shelterFetchKm` — DECIDE THIS BEFORE WRITING `placePinned`.** Filed here by Plan C's
+  seam-5 fix pass (2026-08-22) because it is a Plan-D decision and this is the block a Plan-D
+  implementer reads. `grid.fetchKm` (written by `classifySea`) is **max over the two axes** — wave
+  exposure. Spec §6.5's shelter test needs **min over the two axes** — enclosure. A pinned harbour
+  declaring `water.shelterFetchKmMax: 15` measured against `grid.fetchKm` is **unsatisfiable at 332
+  of the world's 520 port-eligible cells** and at all three generated capitals (their adjacent water
+  reads 240.5 / 56.5 / 48.5 km). Either `measured.shelterFetchKm` reads `narrowWaterKm` — which
+  `tools/mapforge/lib/passes/settlements.mjs` **exports for exactly this**, so it is one import and
+  not a third definition of the quantity — or the pin's threshold is restated. Reading
+  `narrowWaterKm` makes the receipt true by construction at every port-eligible cell, because
+  `isPort` already requires `narrow[near] < 15`.
+- **And `c04` Stonemoor has ZERO port-eligible cells**, so `c-town-netstead` cannot be a
+  sheltered-port capital there whatever is decided above. Both facts are measured and pinned in
+  `tools/mapforge/tests/settlements.test.mjs`'s real-world block.
+- **`placePinned`'s result must carry `title`.** `placeSettlements` (Plan C) now THROWS on a pinned
+  entry whose `title` is missing or blank, and on an `at`/`cell` that is not two finite numbers.
+  A titleless pin used to mint `f-town-c-town-gildmark` — a legal id that passes every check in
+  Plan C and reds `G-NET`/`G-CANON-LEG` at Plan E's redraw, where no fix is available. The declared
+  shape is `{ id, title, at: [xKm, yKm], cell: [cx, cy], continent, region, rank }`; Plan C's Task-9a
+  Interfaces block omits `title` and is wrong (STATE §5).
 - Produces: `export function gPinSat({ world }): string[]`
 
 **The pin translation rule.** The six canon towns and the twelve basin landmarks **that are children of `n-cluster1`** keep their committed geometry exactly, translated by one shared vector

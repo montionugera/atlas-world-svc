@@ -813,6 +813,49 @@ test("REAL WORLD — the coast term's three bands and the shelter test are all p
     "fewer than three continents carry a port — the capital tier cannot be spread");
 });
 
+test("REAL WORLD — the shelterFetchKm hazard Plan D must decide, pinned as numbers", () => {
+  // NOT A DEFECT IN THIS PASS — a decision filed in Plan D's Consumes block for
+  // `pinReceipts[].measured.shelterFetchKm`. `grid.fetchKm` is MAX over the two
+  // axes (wave exposure); the spec's shelter test is MIN over them (enclosure).
+  // A pinned harbour declaring `water.shelterFetchKmMax: 15` measured against
+  // grid.fetchKm is unsatisfiable at most of this world's ports, and measured
+  // against narrowWaterKm it is true by construction — because `isPort` already
+  // requires narrow < 15. The numbers are pinned here so the argument in Plan D
+  // cannot rot into prose.
+  const { grid, part, p11 } = realWorld();
+  const narrow = narrowWaterKm({ grid });
+  const { inlandKm, nearestSea } = seaProximity({ grid });
+  const biomeName = (b) => grid.biomeNames[b] ?? null;
+  let ports = 0, fetchOver = 0, narrowOver = 0;
+  for (let i = 0; i < grid.n; i++) {
+    if ((grid.flags[i] & FLAG.SEA) !== 0 || grid.plate[i] < 0) continue;
+    const o = grid.owner[i];
+    if (o < 0 || part.regions[o].survey !== "surveyed") continue;
+    const v = view({ grid, i });
+    const near = nearestSea[i];
+    const sheltered = near >= 0 && narrow[near] >= 0 && narrow[near] < SHELTER_FETCH_KM_MAX;
+    if (scoreSettlement({ grid, i, v, water: { inlandKm: inlandKm[i], sheltered },
+                          regionSurvey: "surveyed", biomeName }) <= 0) continue;
+    if (!(inlandKm[i] >= 0 && inlandKm[i] <= COAST_NEAR_KM && sheltered)) continue;
+    ports++;
+    if (grid.fetchKm[near] > SHELTER_FETCH_KM_MAX) fetchOver++;
+    if (narrow[near] > SHELTER_FETCH_KM_MAX) narrowOver++;
+  }
+  assert.equal(ports, 520);
+  assert.equal(fetchOver, 332, "grid.fetchKm > 15 at a port-eligible cell");
+  assert.equal(narrowOver, 0, "narrowWaterKm > 15 is impossible at a port — isPort requires < 15");
+  const capitals = p11.settlements.filter((s) => s.rank === "capital");
+  assert.deepEqual(capitals.map((s) => {
+    const near = nearestSea[idx({ grid, cx: s.cell[0], cy: s.cell[1] })];
+    return [s.id, grid.fetchKm[near], narrow[near]];
+  }), [["c02/s01", 240.5, 9], ["c03/s01", 56.5, 10.5], ["c05/s01", 48.5, 6]]);
+  // …and c04 Stonemoor has NO port-eligible cell at all, so `c-town-netstead`
+  // cannot be a sheltered-port capital there whatever Plan D decides above.
+  // (The per-continent port census two tests up has no c04 row; asserted here
+  // in the words Plan D's Consumes block uses.)
+  assert.equal(p11.settlements.filter((s) => s.continent === "c04" && s.portEligible).length, 0);
+});
+
 test("REAL WORLD — 45 settlements, 3 capital / 12 hub / 30 village, no problems", () => {
   const { p11 } = realWorld();
   assert.deepEqual(p11.problems, []);
