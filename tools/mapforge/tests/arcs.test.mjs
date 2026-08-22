@@ -339,6 +339,22 @@ test("splitPinches is the identity on a simple ring and splits a figure-eight", 
   // Shoelace is additive over the split — this is why areaKm2 cannot move.
   assert.equal(parts.reduce((s, p) => s + Math.abs(shoelaceArea({ points: p })), 0),
                Math.abs(shoelaceArea({ points: eight })));
+
+  // THE TIE-BREAK IS LOAD-BEARING, and the real world has the tie.
+  // `assembleRings` sorts the loops by area afterwards and Array.sort is
+  // stable, so on loops of DIFFERENT area the outer sort decides everything and
+  // this order is a recorded equivalence. c01/r10 is not that case: it pinches
+  // TWICE and both lobes are one cell, 0.25 km² each. With equal areas the
+  // stable sort preserves whatever order arrives here, so if this function ever
+  // returned its loops in traversal order the emitted ring order would depend
+  // on a stack's pop order. Pinned on the lowest vertex instead.
+  const twoEqual = splitPinches([[0, 0], [1, 0], [1, 1], [2, 1], [2, 2], [1, 2], [1, 1], [0, 1]]);
+  const mirrored = splitPinches([[2, 2], [1, 2], [1, 1], [0, 1], [0, 0], [1, 0], [1, 1], [2, 1]]);
+  const lowest = (r) => r.reduce((b, p) => (p[0] < b[0] || (p[0] === b[0] && p[1] < b[1]) ? p : b));
+  assert.deepEqual(twoEqual.map(lowest), [[0, 0], [1, 1]],
+    "equal-area loops must come back lowest-vertex first, not in traversal order");
+  assert.deepEqual(mirrored.map(lowest), twoEqual.map(lowest),
+    "the same two loops reached from a different start must come back in the same order");
 });
 
 // ── holes ──────────────────────────────────────────────────────────────────
