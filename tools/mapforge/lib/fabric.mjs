@@ -26,9 +26,27 @@
 //     is not merely unlikely here, it is unrepresentable.
 //   * `fitArcTopology` raises the cap level only on the LONGEST arc(s) of an
 //     owner whose ring is over budget, then re-measures. The set of arcs it
-//     tightens is a function of the field alone. Measured on the real world:
-//     the 160-region topology converges in 5 rounds with ONE arc of 532
-//     tightened, worst ring 234 -> 194, worst region area drift 0.55%.
+//     tightens is a function of the field alone.
+//
+//     THE TWO TOPOLOGIES COST WILDLY DIFFERENT AMOUNTS, and quoting only the
+//     cheap one is what this comment used to do. Both measured on the real
+//     world, 2026-08-22:
+//       REGION topology (160 owners, 532 arcs, cap 200): 5 rounds, ONE arc
+//         tightened, worst ring 234 -> 194, worst region area drift 0.55%.
+//       TRUNK topology (16 owners, 70 arcs, cap 160): 89 rounds, TWENTY-TWO
+//         arcs tightened, and the tightening is severe — arc-000002 (the
+//         Galereach/Wealdmarch coast) 820 raw / 259 one-shot -> 16, and one
+//         arc (arc-000014, the Galereach/Keelbreak seam) reaches the
+//         ARC_CAP_LADDER floor of 4. c06 Reedstrand's WHOLE ring is 16
+//         vertices where its one-shot coast would be 154.
+//
+//     That is not a defect in the rule, it is the committed budget: an ocean
+//     is one concave polygon wrapping most of the world, its one-shot ring is
+//     1,112 vertices, and G-VERTEX-BUDGET's effective cap is 160 — so ~85% of
+//     it has to go, and the longest-arc rule spends the shortage on the arcs
+//     that have the most to give. A small continent whose entire coast is two
+//     arcs of that ocean therefore pays the ocean's bill. See `buildTrunkRings`
+//     for where the detail actually survives and what Plan E must ink.
 //
 // The escalation ladder inside `capArc` is x1.125, not x2. Doubling overshoots:
 // measured, the one region arc that has to give way came back at epsilon 0.70
@@ -100,8 +118,29 @@ export function capEpsilon({ epsilonKm = DP_EPSILON_KM, rung }) {
 // tears the same seam` in fabric.test.mjs reproduces that, so the property IS
 // under test — at the level where it can fail.
 //
-// The one-shot form stays because it is the rule as stated, and because the
-// equivalence above is a property of today's data, not of the algorithm.
+// STRENGTHENED 2026-08-22 (seam-6 review): the equivalence is a THEOREM for
+// this implementation, not a property of today's data, and the sentence that
+// used to stand here understated it. An independent probe ran 7,200,000
+// comparisons — random ragged polylines, 4-13 points, three coordinate scales,
+// twelve rungs each, on the x1.125 ladder and on x1.5 and x2 ladders — with
+// zero mismatches, and the proof is short:
+//
+//   For e2 >= e1 let S1 = DP(P, e1). DP keeps BOTH endpoints, so S1 is a
+//   subsequence of P sharing its top chord. The maximum chord distance over S1
+//   is <= the maximum over P, and the maximiser m in S1 realises it;
+//   `simplifyArc`'s strict `d > bestD` tie-break selects the LOWEST INDEX,
+//   which is the same m in both lists. So DP(S1, e2) splits at m and recurses
+//   on exactly the sublists DP(P, e2) recurses on, and when the top-level
+//   distance falls in (e1, e2] both collapse to the two endpoints. Induction
+//   on the sublists closes it.
+//
+// THE TWO PREMISES ARE THEREFORE LOAD-BEARING and a change to either breaks
+// the equivalence: (a) DP keeps both endpoints, and (b) the tie-break is
+// lowest-index. Neither is incidental; a `>=` in `simplifyArc`'s comparison
+// would pick the HIGHEST index and the two forms would diverge.
+//
+// The one-shot form stays anyway, because it is the rule as stated and because
+// it does not depend on the recursion order of a previous pass.
 export function capArc({ points, cap, epsilonKm = DP_EPSILON_KM }) {
   const base = simplifyArc({ points, epsilonKm });
   if (!Number.isFinite(cap) || base.length <= cap) return base;
@@ -231,9 +270,9 @@ export function buildRegionRings({ grid, regions, problems = [], areaTolerancePc
 
 // FRACTAL COAST DETAIL IS OFF, AND THAT IS A MEASUREMENT, NOT AN OMISSION.
 // The plan's global constraint asks for 3 levels of <= 0.25 km fractal detail
-// on the coast arcs. Applied to the fabric contour it costs 224 ms of a
-// 4,000 ms generate budget and takes the 13 outerRings from 2,364 vertices to
-// 17,981 — 33.8 KB of one continent's fabric file against a COMMITTED
+// on the coast arcs. Applied to the fabric contour it costs ~220 ms of a
+// 4,000 ms generate budget and takes the 13 outerRings from 2,413 vertices to
+// 18,030 — 33.8 KB of one continent's fabric file against a COMMITTED
 // 262,144 B per-file cap that four of the thirteen already sit close to. And
 // what it buys is decoration BELOW the data's own resolution: the grid is
 // 0.5 km and the amplitude is 0.25 km, so every vertex it adds is finer than
@@ -247,7 +286,7 @@ export const FRACTAL_COAST = false;
 // `outerRing` is the continent's own coast at FABRIC resolution: the one-shot
 // 0.35 km epsilon with the plan's fractal detail on the arcs that face the
 // sea. It is NOT the trunk ring — 3 levels of fractal detail multiply an arc's
-// vertex count by ~8 (measured: 2,364 -> 17,981 over the 42 coast arcs), and
+// vertex count by ~7.5 (measured: 2,413 -> 18,030 over the coast arcs), and
 // the effective spine cap is 160, so a fractalised trunk polygon cannot exist
 // at any epsilon that also keeps the shape. The trunk is simplified from the
 // SAME topology by `buildWorldRings`; G-TRUNK-AREA's ±3% is what pins them
@@ -610,6 +649,30 @@ export function ringsFromOwner({ grid, owner, count, cap, problems = [], what = 
  *                              disjoint (measured pairwise overlap: 0.000).
  *   `seas`                   — a second topology over the sea sub-owners,
  *                              carved at a margin inside their ocean.
+ *
+ * THE TRUNK RING IS NOT THE COASTLINE, AND PLAN E MUST NOT INK IT AS ONE.
+ * G-VERTEX-BUDGET's effective cap is 160 points per placement, and an ocean
+ * that wraps most of the world spends nearly all of it on itself — so the
+ * shortage lands on the coast arcs it shares with the continents. Measured on
+ * this world (see the module header for the full figures): 22 of 70 arcs
+ * tightened over 89 rounds, and n-reedstrand's placement is SIXTEEN vertices.
+ *
+ * The detail is not lost, it is in a different file. Each continent's
+ * `content/world/fabric/continent-NN.json` carries `outerRing`, the same coast
+ * at the one-shot 0.35 km epsilon: 2,413 vertices over the thirteen, of which
+ * c06 Reedstrand has 144 against its placement's 16. `outerRing` is what a
+ * SHEET should draw; `placement.points` is what the gate walks for containment
+ * and area, and G-TRUNK-AREA's +/-3% is what pins the two together.
+ *
+ * The consequence to carry forward, measured rather than feared: a continent's
+ * coarse placement does not cover all of its own fabric. c06 leaves 53.04 km2
+ * of its regions (1.66%) outside its placement ring. No gate sees that — every
+ * trunk gate here is an AREA gate and the areas hold — so Plan D's pinReceipts
+ * containment and Plan E's redraw must both read `outerRing`, not the trunk.
+ *
+ * The one lever is `content/spine/load-budget.json`'s `maxRingPoints`, which
+ * `trunkRingCap` already reads. Plan C may not pull it: acceptance criterion 9
+ * requires `git diff plan-c-base -- content/spine` to be empty on every commit.
  */
 export function buildTrunkRings({ grid, premises, manifest, ringCap, problems = [] }) {
   const water = buildWaterPartition({ grid, premises, manifest, problems });
@@ -624,10 +687,19 @@ export function buildTrunkRings({ grid, premises, manifest, ringCap, problems = 
   for (const [label, value] of ownerIds) {
     const r = fit.assembled.get(label);
     if (!r || r.rings.length === 0) { problems.push(`trunk rings: ${label} produced no ring`); continue; }
-    // A spine placement is ONE ring with no hole support. Holes are impossible
-    // here by construction (the corridor loop above runs until the flood fill
-    // finds none) — if one appears anyway, say so rather than emit a polygon
-    // that swallows whatever is inside it.
+    // A spine placement is ONE ring with no hole support, so a hole here would
+    // be swallowed whole by the emitted polygon.
+    //
+    // THIS IS A MEASUREMENT, NOT A CONSTRUCTION PROOF — the earlier wording
+    // ("impossible here by construction") claimed more than the code shows.
+    // The corridor loop runs until the flood fill finds no enclosure, but the
+    // flood fill runs on the CELL field while holes are measured on the
+    // SIMPLIFIED polygon, and `fitArcTopology` coarsens the corridor slot's
+    // own walls AFTER that loop has settled (down to 4-vertex arcs on this
+    // world). The corridor genuinely pushes the problem — measured: 0 holes on
+    // all 16 trunk owners, on this seed — but the guarantee is empirical, and
+    // that is exactly why this branch is a named problem rather than an
+    // assertion nobody expects to fire.
     if (r.holes.length)
       problems.push(`trunk rings: ${label} still encloses ${r.holes.length} hole(s) — its polygon ` +
         `would contain them and G-OVERLAP measures that whole area`);

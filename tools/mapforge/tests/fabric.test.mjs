@@ -413,6 +413,49 @@ test("REAL WORLD — region rings CARRY the declared area, which one ring cannot
     `${built.tightened} of ${built.arcCount} arcs were tightened; the longest-arc rule keeps it at 1`);
 });
 
+test("REAL WORLD — what the 160-point cap COSTS the coastline, pinned so it cannot worsen silently", () => {
+  // The module header used to characterise `fitArcTopology` with the REGION
+  // topology's figures ("5 rounds, ONE arc of 532 tightened") as though they
+  // described the function. On the TRUNK topology — the case the module exists
+  // for — it is an order of magnitude more aggressive, and nothing saw it,
+  // because every trunk gate here is an AREA gate and the areas hold to 1.3%.
+  //
+  // ADJUDICATED (seam-6 fix pass) as ACCEPTABLE OUTPUT, not a defect to bound:
+  // an ocean's one-shot ring is 1,112 vertices against G-VERTEX-BUDGET's
+  // effective cap of 160, so ~85% has to go by arithmetic, and a floor on
+  // vertices-per-arc would only move the failure to a red G-VERTEX-BUDGET on
+  // the draft root. The single lever is `load-budget.json`'s `maxRingPoints`,
+  // which Plan C's acceptance criterion 9 forbids it from touching.
+  //
+  // What this test buys is that the cost is now a NUMBER under a golden rather
+  // than a shape nobody measured. It bounds the tightening from the harmful
+  // side only: fewer tightened arcs and a wider worst ring are both fine.
+  const { grid } = realWorld();
+  const cap = trunkRingCap({ loadBudget: LOAD_BUDGET });
+  const problems = [];
+  const trunk = buildTrunkRings({ grid, premises: PREMISES, manifest: MANIFEST, ringCap: cap, problems });
+  assert.equal(problems.length, 0, problems.join("\n"));
+  assert.equal(trunk.arcCount, 70, "the trunk arc topology changed shape");
+  assert.ok(trunk.tightened <= 22,
+    `${trunk.tightened} of ${trunk.arcCount} trunk arcs were tightened below the one-shot epsilon; ` +
+    `22 is the measured cost of the committed 160-point cap and MORE is a regression`);
+  assert.ok(trunk.rounds <= 89, `${trunk.rounds} fitting rounds; 89 is the measured figure`);
+  // The worst-hit owner, by name. c06 Reedstrand is a 3,156 km2 landmass whose
+  // whole placement is a hexadecagon; its one-shot coast would be 154 points.
+  const c06 = trunk.rings.get("c06");
+  assert.ok(c06.ring.length >= 16,
+    `n-reedstrand's placement is ${c06.ring.length} vertices — below the measured 16, the trunk ` +
+    `polygon has stopped resembling the landmass at all`);
+  // WHERE THE DETAIL SURVIVES, asserted rather than promised, because this is
+  // the half Plan E has to act on: the fabric coast contour is an order of
+  // magnitude finer than the placement on exactly the owner the cap hurt most.
+  const coast = buildCoastRings({ grid, premises: PREMISES, stream: () => 0.5, problems });
+  const c06Coast = coast.get("c06");
+  assert.ok(c06Coast.rings[0].length > 8 * c06.ring.length,
+    `c06's fabric outerRing is ${c06Coast.rings[0].length} points against a ${c06.ring.length}-point ` +
+    `placement; if these ever converge, Plan E has lost the coastline it is meant to ink`);
+});
+
 test("REAL WORLD — the trunk is sixteen DISJOINT polygons inside the committed vertex cap", () => {
   const { grid } = realWorld();
   const cap = trunkRingCap({ loadBudget: LOAD_BUDGET });
