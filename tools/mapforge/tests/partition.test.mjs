@@ -20,7 +20,7 @@ import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { makeGrid, FLAG, idx } from "../lib/grid.mjs";
-import { BIOMES, TERRAIN_KINDS } from "../../../scripts/lib/spine.mjs";
+import { BIOMES, TERRAIN_KINDS, shoelaceArea } from "../../../scripts/lib/spine.mjs";
 import { classifyBiomes, TERRAIN_FOR_BIOMES, BIOME_RULE_NAMES } from "../lib/passes/biome.mjs";
 import {
   partitionRegions, POISSON_R_KM, SMOOTHING_PASSES, allocateQuotas, poissonSites, siteOrder,
@@ -33,6 +33,7 @@ import { selectSeaLevelByRank, classifySea, CELL_AREA_KM2 } from "../lib/passes/
 import { applyWinds } from "../lib/passes/winds.mjs";
 import { carveWater } from "../lib/passes/water.mjs";
 import { terrainStream } from "../lib/seed.mjs";
+import { extractArcs, assembleRings } from "../lib/arcs.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const MANIFEST = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
@@ -226,6 +227,12 @@ test("biomeShares are keyed by biome NAME and sum to ~100", () => {
     for (const k of keys) assert.ok(BIOMES.includes(k), `${reg.id} share key "${k}" is not a biome name`);
     const sum = Object.values(reg.biomeShares).reduce((a, b) => a + b, 0);
     assert.ok(sum > 99 && sum < 101, `${reg.id} shares sum to ${sum}`);
+    // NO ZERO SHARE, EVER. Two real regions shipped {"tundra": 100, "river": 0}
+    // — a 0 states "this region has none of that biome" about a biome it holds
+    // one or two cells of. A share below the record's own 0.1% resolution is
+    // dropped rather than rounded into a false claim.
+    for (const [b, pct] of Object.entries(reg.biomeShares))
+      assert.ok(pct > 0, `${reg.id} states a 0% share of ${b}`);
   }
 });
 
@@ -406,18 +413,18 @@ test("REAL WORLD — every one of the 18 biome rules is the CHOSEN rule somewher
   // Pinned VALUES, not just "> 0" — a rule that quietly stops firing on all but
   // a handful of cells is the same defect one order of magnitude down.
   assert.deepEqual([...biomes.ruleWins],
-    [560, 26241, 6400, 3672, 770, 1884, 30078, 278, 1021, 2502, 43208, 14542, 3610, 5381, 1991,
-     962, 6441, 89768]);
+    [560, 26241, 6400, 3672, 770, 3881, 30078, 278, 1021, 2502, 43208, 14542, 3610, 5381, 1991,
+     962, 6441, 87771]);
 });
 
 test("REAL WORLD — the biome histogram and the palette fallback are pinned", () => {
   const { biomes } = realPartition();
   const hist = Object.fromEntries(BIOMES.map((b, i) => [b, biomes.histogram[i]]));
   assert.deepEqual(hist, {
-    ocean: 377600, ice: 26241, marsh: 770, river: 3672, meadow: 89768, forest: 6441,
+    ocean: 377600, ice: 26241, marsh: 770, river: 3672, meadow: 87771, forest: 6441,
     bramble: 962, rock: 4298, upland: 2502, alkali: 5381, ash: 1991, built: 0,
     tundra: 30078, lake: 6400, scree: 278, karst: 43208, badland: 3610, desert: 34082,
-    lava: 834, reef: 1884,
+    lava: 834, reef: 3881,
   });
   assert.equal([...biomes.histogram].reduce((a, b) => a + b, 0), 640000);
   // 19 of the 20 biomes occur. `built` is the exception BY DESIGN — a
@@ -446,9 +453,19 @@ test("REAL WORLD — 160 regions, 40 surveyed / 120 reported, one per manifest r
 });
 
 test("REAL WORLD — every region is inside its own manifest area tolerance", () => {
-  // The plan's per-region nominal quota puts 33 of 120 reported regions
-  // OUTSIDE this band, spread 63.5 to 744.5 km2. See allocateQuotas and
-  // rebalance in partition.mjs for the two rules that close it.
+  // THIS ASSERTION ON ITS OWN HAS LITTLE TEETH and the reason is worth stating
+  // rather than discovering: `allocateQuotas` chooses the areas and `rebalance`
+  // drives the field onto them, so "inside tolerance" is very nearly a property
+  // of the allocator rather than a measurement of the partition. What carries
+  // information is the pair below it — the REALISED cell count against the
+  // quota the allocator asked for — because that gap is the only place the
+  // geography can disagree, and the two regions that do disagree are named.
+  //
+  // For the record the numbers this replaced: the PLAN's rule (every region
+  // takes the manifest nominal, no rebalance) puts 38 of the 120 reported
+  // regions outside the band, spread 64.5-743.75 km2. THIS seam's allocator
+  // with rebalance switched off gives 33 and 63.5-744.5 — a different
+  // measurement of a different rule, and STATE conflated the two.
   const { regions } = realPartition();
   const band = (t) => {
     const spec = MANIFEST.regions[t];
@@ -466,6 +483,28 @@ test("REAL WORLD — every region is inside its own manifest area tolerance", ()
   assert.deepEqual([Math.min(...rp), Math.max(...rp)], [419.75, 504]);
   assert.equal(regions.reduce((a, r) => a + r.areaKm2, 0), MANIFEST.budget.netLandKm2,
     "the regions must tile the manifest's NET land exactly");
+});
+
+test("REAL WORLD — the REALISED partition against the quota it was asked for", () => {
+  // The measurement the tolerance assertion above cannot make. `rebalance`
+  // moves cells along the region-adjacency graph until each region reaches its
+  // quota; where it cannot, the region is REPORTED short rather than absorbed,
+  // and that shortfall is the whole distance between "the allocator's arithmetic
+  // closes" and "the field delivered it".
+  const { regions, shortfalls } = realPartition();
+  const short = new Map(shortfalls.map((s) => [s.region, s.shortBy]));
+  let offBy = 0, worst = 0;
+  for (const r of regions) {
+    const d = short.get(r.id) ?? 0;
+    offBy += d;
+    if (d > worst) worst = d;
+  }
+  assert.equal(shortfalls.length, 2, "a third region stopped reaching its quota");
+  assert.equal(offBy, 219, "total cells the field is short of the quotas it was given");
+  assert.equal(worst, 114);
+  // 219 cells of 256,000 — 0.086%. Every other region landed on its quota
+  // EXACTLY, which is why the areas are so tightly clustered.
+  assert.ok(offBy / 256000 < 0.001);
 });
 
 test("REAL WORLD — the integer proof of non-overlap closes on 640,000 cells", () => {
@@ -489,7 +528,7 @@ test("REAL WORLD — the integer proof of non-overlap closes on 640,000 cells", 
 test("REAL WORLD — the owner and biome fields are pinned by digest", () => {
   const { grid, shortfalls, starved } = realPartition();
   assert.equal(digest(grid.owner), "cb92d2923c5c8e6f", "the region partition moved");
-  assert.equal(digest(grid.biome), "cc5d943407d64136", "the biome field moved");
+  assert.equal(digest(grid.biome), "2cfd8e7ca716b242", "the biome field moved");
   assert.deepEqual(starved, [], "a continent could not seat its own region quota");
   // Two regions cannot reach their quota because no surplus is reachable across
   // the region graph at all. Both are still well inside tolerance (441.5 and
@@ -534,6 +573,151 @@ test("REAL WORLD — terrainKind, provenance and adjacency", () => {
       if (other !== r.continent) cross.add([r.continent, other].sort().join("-"));
     }
   assert.deepEqual([...cross].sort(), ["c01-c12", "c02-c07", "c03-c11", "c05-c08"]);
+});
+
+test("REAL WORLD — the 330-pair adjacency list is PINNED, not merely symmetric", () => {
+  // `adjacent` is a committed fabric field and Plan D binds relations on it,
+  // and the suite asserted only symmetry, non-emptiness and the four
+  // cross-continent pairs. Measured: dropping the vertical (South) neighbour
+  // check in `buildAdjacency` loses 6 of the 330 pairs and leaves the WHOLE
+  // suite green. A digest over the sorted edge list closes that.
+  const { regions } = realPartition();
+  const pairs = [];
+  for (const r of regions) for (const a of r.adjacent) if (r.id < a) pairs.push(`${r.id}~${a}`);
+  pairs.sort();
+  assert.equal(pairs.length, 330, "the region adjacency graph changed size");
+  assert.equal(createHash("sha256").update(pairs.join("\n")).digest("hex").slice(0, 16),
+    "c0234026a2d10e84", "the region adjacency edge list moved");
+  // Both directions are present for every pair, so the digest over `r.id < a`
+  // is a digest over the whole graph and not over half of it.
+  const byId = new Map(regions.map((r) => [r.id, new Set(r.adjacent)]));
+  let directed = 0;
+  for (const r of regions) for (const a of r.adjacent) { assert.ok(byId.get(a).has(r.id)); directed++; }
+  assert.equal(directed, 660);
+});
+
+test("REAL WORLD — a region's BOUNDARY is one ring for 142 of 160 and the other 18 are named", () => {
+  // G's finding, re-derived and found to be larger than reported — and its
+  // stated CONSEQUENCE refuted.
+  //
+  // REFUTED: "the drawn region will not equal the declared 160.00 km2". Seam 3's
+  // `assembleRings` resolves nesting and returns `{ rings, holes, areaKm2 }`;
+  // measured over all 160 owners, `areaKm2` equals the region's declared
+  // `areaKm2` EXACTLY, with 0 mismatches. The generator is right.
+  //
+  // WHAT IS TRUE, AND BIGGER: 18 regions have a boundary of more than one ring
+  // and three enclose HOLES, because `growRegions` is a D8 Dijkstra and a
+  // region can therefore pinch to a single lattice corner. The plan's fabric
+  // shape gives a region ONE `ring` (plan line 318) and its `ringsFromOwner`
+  // takes `rings[0]` (plan line 6379) — under that projection this world loses
+  // 384.50 km2, with c04/r13 drawing 308.00 of its declared 470.50 and c07/r02
+  // 346.50 of 504.00. Task 10a must carry `rings` and `holes`, not `ring`.
+  //
+  // The obvious remedy was MEASURED AND REJECTED: giving `erodeEdge` a
+  // simple-point connectivity guard removes the one 8-disconnected fragment
+  // (c04/r19) and one shortfall, but pushes erosion onto other cells and takes
+  // the multi-ring count from 18 to 20, the worst region from 5 rings to 12,
+  // and the area outside ring 0 from 384.50 km2 to 428.00. A fix that makes the
+  // measured outcome worse is not a fix.
+  const { grid, regions } = realPartition();
+  const { arcs } = extractArcs({ owner: grid.owner, w: grid.w, h: grid.h, cellKm: grid.cellKm });
+  const multi = [];
+  const withHoles = [];
+  let outsideRing0 = 0;
+  for (let o = 0; o < regions.length; o++) {
+    const r = assembleRings({ arcs, ownerId: o });
+    assert.equal(r.areaKm2, regions[o].areaKm2,
+      `${regions[o].id}: the ring set encloses ${r.areaKm2} against a declared ${regions[o].areaKm2}`);
+    if (r.holes.length) withHoles.push(`${regions[o].id}:${r.holes.length}`);
+    if (r.rings.length > 1) {
+      const areas = r.rings.map((ring) => Math.abs(shoelaceArea({ points: ring })))
+        .sort((a, b) => b - a);
+      outsideRing0 += areas.slice(1).reduce((a, b) => a + b, 0);
+      multi.push(`${regions[o].id}:${r.rings.length}`);
+    }
+  }
+  assert.deepEqual(multi, [
+    "c02/r05:2", "c02/r07:2", "c02/r15:2", "c02/r19:2", "c03/r04:2", "c03/r09:2", "c03/r19:2",
+    "c03/r20:2", "c03/r26:2", "c04/r05:2", "c04/r13:2", "c04/r19:2", "c05/r04:2", "c05/r10:3",
+    "c05/r18:2", "c05/r19:2", "c06/r04:2", "c07/r02:5",
+  ], "the set of regions a single-ring fabric record cannot express changed");
+  assert.deepEqual(withHoles, ["c01/r06:2", "c02/r05:1", "c06/r01:1"],
+    "the regions that enclose a hole changed — a `ring` without a `holes` list overstates these");
+  assert.equal(outsideRing0, 384.5, "km2 a `rings[0]` projection would silently drop");
+});
+
+test("REAL WORLD — every region is ONE 8-connected blob but for c04/r19's stranded cell", () => {
+  // `erodeEdge` moves boundary cells with no connectivity guard and here it
+  // tore one cell off a surveyed region. Pinned by name and count rather than
+  // repaired — see the ring test above for the measurement that rejected the
+  // repair. c04/r19's declared area is still exactly right; what it costs is
+  // one extra ring.
+  const { grid, regions } = realPartition();
+  const cells = regions.map(() => []);
+  for (let i = 0; i < grid.n; i++) if (grid.owner[i] >= 0) cells[grid.owner[i]].push(i);
+  const fragmented = [];
+  for (let o = 0; o < regions.length; o++) {
+    const set = new Set(cells[o]), seen = new Set();
+    let comps = 0;
+    for (const c of cells[o]) {
+      if (seen.has(c)) continue;
+      comps++;
+      const stack = [c]; seen.add(c);
+      while (stack.length) {
+        const i = stack.pop(), x = i % grid.w, y = (i / grid.w) | 0;
+        for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+          if (dx === 0 && dy === 0) continue;
+          const nx = x + dx, ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= grid.w || ny >= grid.h) continue;
+          const j = ny * grid.w + nx;
+          if (set.has(j) && !seen.has(j)) { seen.add(j); stack.push(j); }
+        }
+      }
+    }
+    if (comps > 1) fragmented.push(`${regions[o].id}:${comps}`);
+  }
+  assert.deepEqual(fragmented, ["c04/r19:2"],
+    "the set of regions erodeEdge has torn apart changed");
+});
+
+test("REAL WORLD — every premise palette entry that the world never produces is NAMED", () => {
+  // `ruleWins` is a WORLD census: a rule that fires somewhere passes the
+  // dead-rule assertion while promising a biome a continent never gets. Twenty
+  // of the 67 palette entries are in exactly that position, and until this was
+  // measured only the two somebody happened to notice were written down.
+  //
+  // THE DENOMINATOR IS THE PLATE, not the owned land: `ocean` and `lake` are
+  // palette entries on six premises and regions tile NET land, so a census over
+  // owned cells alone reports six broken promises that are in fact kept.
+  const { biomes } = realPartition();
+  assert.deepEqual(biomes.paletteRealisation, [
+    { continent: "c01", promised: 5, realised: 3, absent: ["rock", "scree"] },
+    { continent: "c02", promised: 9, realised: 5, absent: ["bramble", "rock", "upland", "built"] },
+    { continent: "c03", promised: 7, realised: 4, absent: ["upland", "rock", "scree"] },
+    { continent: "c04", promised: 6, realised: 3, absent: ["rock", "forest", "meadow"] },
+    { continent: "c05", promised: 6, realised: 4, absent: ["scree", "rock"] },
+    { continent: "c06", promised: 5, realised: 4, absent: ["marsh"] },
+    { continent: "c07", promised: 5, realised: 5, absent: [] },
+    { continent: "c08", promised: 5, realised: 3, absent: ["rock", "scree"] },
+    { continent: "c09", promised: 4, realised: 3, absent: ["river"] },
+    { continent: "c10", promised: 4, realised: 4, absent: [] },
+    { continent: "c11", promised: 3, realised: 3, absent: [] },
+    { continent: "c12", promised: 5, realised: 3, absent: ["scree", "upland"] },
+    { continent: "c13", promised: 4, realised: 3, absent: ["river"] },
+  ]);
+  const absent = biomes.paletteRealisation.flatMap((p) => p.absent);
+  assert.equal(absent.length, 21);
+  // `built` is a COMPOSITION biome no rule produces and
+  // landform-type.schema.json says so independently — the one entry on this
+  // list that is absent by design. The other twenty are calibration between a
+  // committed palette and a generated field, and they are Task 9's to close or
+  // an owner's to accept; what this seam owes is that none of them is silent.
+  assert.deepEqual(absent.filter((b) => b === "built"), ["built"]);
+  // c11 QUILLREEF IS NO LONGER ON THIS LIST, and that was the sharpest case:
+  // an atoll ring whose committed palette is ["reef","meadow","ocean"] came out
+  // 100.0% meadow, because the plan's `reef` rule carried a global
+  // `temp > 0.7` and c11's warmest land cell is 0.183. See biome.mjs.
+  assert.deepEqual(biomes.paletteRealisation.find((p) => p.continent === "c11").absent, []);
 });
 
 test("REAL WORLD — the pass is deterministic across two full runs", () => {

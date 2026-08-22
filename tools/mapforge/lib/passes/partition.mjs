@@ -367,8 +367,17 @@ export function partitionRegions({ grid, premises, manifest, stream, less = null
     // Keyed by biome NAME, which is what the fabric record's `biomeShares`
     // declares ({"karst": 62, "forest": 38}) — the plan's code keys it by the
     // Uint8Array INDEX, so a committed fabric file would have read {"15": 62}.
+    //
+    // A share that rounds to 0.0 is DROPPED, not written. Two regions shipped
+    // `{"tundra": 100, "river": 0}` — a 0 entry states "this region has none of
+    // that biome" about a biome it has one or two cells of, which is the one
+    // reading the record must never carry. The shares are percentages to one
+    // decimal, so anything under 0.05% is below the record's own resolution and
+    // belongs outside it; `dominantBiomeIndex` is taken before this and cannot
+    // be affected (the dominant share is at least 1/cells).
     rec.biomeShares = Object.fromEntries(
-      sorted.map(([b, c]) => [grid.biomeNames[b], Math.round((c / total) * 1000) / 10]));
+      sorted.map(([b, c]) => [grid.biomeNames[b], Math.round((c / total) * 1000) / 10])
+            .filter(([, pct]) => pct > 0));
   }
   buildAdjacency({ grid, byIndex });
   assignTerrainKinds({ regions, biomeNames: grid.biomeNames });
@@ -725,6 +734,19 @@ function erodeEdge({ grid, land, base, donor, taker, want, heap }) {
   return moved;
 }
 
+// REGION ADJACENCY, on 4-CONNECTIVITY — deliberately a different graph from the
+// D8 one `rebalance` walks, and the difference is exactly one pair on the real
+// world (`c07/r01 ~ c07/r05`, which touch only at a corner). This graph is a
+// COMMITTED fabric field: Plan D binds relations on `regions[].adjacent`, and
+// two regions that meet at a single lattice point share no boundary to draw, so
+// the drawn map and the declared neighbour list agree only under edge
+// adjacency. `rebalance` wants the opposite — the widest set of routes along
+// which a cell may be handed on — so it takes D8. Both are right for their
+// caller; neither may be quietly swapped for the other.
+//
+// The edge list is PINNED BY DIGEST in tests/partition.test.mjs. Dropping the
+// vertical (South) check here silently loses 6 of the 330 pairs and left the
+// whole suite green.
 function buildAdjacency({ grid, byIndex }) {
   const sets = byIndex.map(() => new Set());
   for (let cy = 0; cy < grid.h; cy++) {
