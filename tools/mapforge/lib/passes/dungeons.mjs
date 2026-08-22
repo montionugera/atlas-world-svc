@@ -52,6 +52,12 @@ export function hopsToSettlement({ regions, settlements, problems = [] }) {
   const hops = new Map();
   const queue = [];
   const settled = new Set(settlements.map((s) => s.region).filter((id) => id != null));
+  // RECORDED MUTATION SURVIVOR: dropping this `.sort()` leaves the suite green
+  // and CANNOT change the answer — every settled region is a BFS source at
+  // distance 0, so the frontier is the same set whatever order they enter the
+  // queue, and the `hops.has(a)` test makes the first arrival the only one. It
+  // is here so the QUEUE is a function of the data, which is what the
+  // neighbour sort two lines down needs to mean anything.
   for (const rid of [...settled].sort()) {
     if (!byId.has(rid)) { problems.push(`dungeons: a settlement names region ${rid}, which is not a region`); continue; }
     hops.set(rid, 0);
@@ -73,6 +79,7 @@ export function anchorDungeons({ instances, regions, settlements, lexicon, manif
   const problems = [];
   const capable = new Set(lexicon.filter((t) => t.dungeonCapable).map((t) => t.id));
   const known = new Set(lexicon.map((t) => t.id));
+  const regionIds = new Set(regions.map((r) => r.id));
   const hops = hopsToSettlement({ regions, settlements, problems });
   const want = manifest.quotas.dungeons.complexes;
 
@@ -86,6 +93,13 @@ export function anchorDungeons({ instances, regions, settlements, lexicon, manif
       problems.push(`dungeons: ${inst.handle} says dungeonCapable=${inst.dungeonCapable} and the ` +
         `lexicon row for ${inst.type} says ${capable.has(inst.type)}`);
     if (!capable.has(inst.type)) continue;
+    // An instance on a region that is not in `regions` is a wiring bug, not an
+    // unreachable dungeon: `hops.get` answers undefined for both, and only one
+    // of them should be silent (review B).
+    if (!regionIds.has(inst.region)) {
+      problems.push(`dungeons: ${inst.handle} is on region ${inst.region}, which is not a region`);
+      continue;
+    }
     const h = hops.get(inst.region);
     if (h === undefined || h > MAX_HOPS) continue;
     eligible.push({ inst, hops: h });
@@ -97,6 +111,13 @@ export function anchorDungeons({ instances, regions, settlements, lexicon, manif
   const dStream = mintSeed({ parentStream: stream, name: "dungeons" });
   const salt = streamInt(dStream);
   const scored = eligible.map((e) => ({ ...e, key: mix32(hash32(e.inst.handle), salt) }));
+  // RECORDED MUTATION SURVIVOR: deleting the handle tail of this comparator
+  // leaves the suite green and no fixture can change that. `key` is a 32-bit
+  // mix of a 32-bit hash of a handle that is itself unique, and there are 307
+  // eligible instances on the real world — measured, zero key collisions. The
+  // tail is what makes the order total rather than merely improbable; finding a
+  // colliding pair to fixture would be a 2^32 search for a property that is
+  // supposed to hold without one.
   scored.sort((a, b) => (a.key - b.key) ||
     (a.inst.handle < b.inst.handle ? -1 : a.inst.handle > b.inst.handle ? 1 : 0));
 

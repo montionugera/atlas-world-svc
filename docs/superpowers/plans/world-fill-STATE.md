@@ -6,9 +6,8 @@ It exists so a new session does not need the previous session's conversation. If
 is wrong, fix the file — do not work around it in a prompt.
 
 Last updated: 2026-08-22, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`),
-**Plan C was claimed** as F-048, and **Plan C seams 1, 2, 3 and 4 (Tasks 1-8) were built and
-seam 4 was ADJUDICATED** — see §9, §10, §11, §12 and **§13**, and **seventy** confirmed plan
-errors in §5.
+**Plan C was claimed** as F-048, and **Plan C seams 1-5 (Tasks 1-9) were built and adjudicated**
+— see §9, §10, §11, §12, §13 and **§14**, and **ninety** confirmed plan errors in §5.
 
 **If you read one thing in §13, read "THE NAMING STREAM".** The seam-3 wrong-stream defect happened
 a THIRD time, in seam 4, under the name `names`; it is now impossible to spell rather than merely
@@ -28,7 +27,7 @@ world it pinned was not the world seam 2 fitted the thirteen continents to.
 | --- | --- | --- |
 | A — Unblock and Afford | F-046 | **SHIPPED** to release/1.8, 2026-08-19. All 15 acceptance criteria verified. |
 | B — Vocabulary and Render | F-047 | **SHIPPED** to release/1.8, 2026-08-22. All 12 tasks; Gate 1 13/13. |
-| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. Tasks 1-8 built and seams 1-4 adjudicated (§13); Task 9 next. |
+| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. Tasks 1-9 built and seams 1-5 adjudicated (§14); Task 10 next. |
 | D — Pinned, Bound, Relations | — | not started |
 | E — Redraw and Prose | — | not started |
 
@@ -228,6 +227,28 @@ tree before trusting it** — this is the single most reliable source of defects
 | **C, Task 7 Step 4 / Task 10a fabric shape** (plan line 318, `ringsFromOwner` at 6379) | a region has ONE `ring`, and `rings[0]` is it | **18 of the 160 regions have a boundary of more than one ring and three enclose HOLES**, because `growRegions` is a D8 Dijkstra and a region can pinch to a single lattice corner. Under `rings[0]` this world silently drops **384.50 km²** — c04/r13 draws 308.00 of its declared 470.50 (−34.5%), c07/r02 346.50 of 504.00 (−31.3%), and c07/r02 needs five rings. `assembleRings` already returns `{rings, holes, areaKm2}` with the correct total for all 160; the fabric record must carry `rings` and `holes`. |
 | **Spec §6.6** the group census, and "the 270 karst + volcanic instances comfortably supply all 60 dungeon doors" | twelve group targets summing to 1,740, and 270 karst + volcanic | **the census cannot be met by ANY placement.** A group can only receive instances from continents whose kit names it, so each has a hard ceiling: `volcanic` targets 110 against a ceiling of **35** (c10's entire instance budget) and `oceanic` 35 against **16** (c11's). 145 targeted instances against a 51 ceiling — 94 that must land elsewhere whatever the draw does. The world holds **189** karst + volcanic, of which 120 are `dungeonCapable`. The CONCLUSION survives anyway: `dungeonCapable` spans twelve groups, **307** instances over **117** regions, so P13's ≤3-per-region rule can reach **235** anchors against a quota of 60. |
 | **C, Global Constraints / `landform-type.schema.json`** `precipDecile*` / `tempDecile*` | the name says decile (and landforms.mjs's own header said "rank-based and therefore immune to the 1-ULP problem") | **fixed-width VALUE buckets**, `min(9, floor(v * 10))`. Measured over the 256,000 owned land cells, where a true decile is 25,600 per bin: temp `50506 24053 38238 26656 25199 40821 26402 17574 6551 0`, precip `32000 38819 40725 40374 40489 34589 19082 6737 513 2672`. So `tempDecileMin: 7` selects **9.4%** of land, not 30%, and `precipDecileMax: 1` selects 27.7%, not 20%. 84 committed rows read these keys. NOT renamed — the name lives in the committed schema and in 84 authored rows; the false claim is corrected and the histograms are pinned. |
+
+| **C, Task 9a Step 3** (:5113) | `mintSeed({ parentStream: stream, name: "settlements" })` | **the call cannot be written.** `settlements` is one of the four names `derived.json` commits per node, `mintSeed` THROWS on it (§13's guard) and the source scan over `tools/mapforge` reds on the written call site. The stream is INJECTED — `namedStream({ worldSeed, name: "settlements" }) = da45bd8930d33bb0`, which is exactly the literal the plan's own Task-9a tests already pass. |
+| **C, Task 9a Step 3** (:5075 and :5161) | — | `const regionById` is declared **twice in one function scope**. The plan's `placeSettlements` is a SyntaxError and cannot be pasted and run. |
+| **C, Task 9a Interfaces** (:4773) vs its own code (:5053) | `scoreSettlement({ grid, i, view })` | the body is `({ grid, i, v, regionSurvey, BIOME_NAME })`. Two signatures for one function, in one task. |
+| **C, Task 9a Step 3** (:5013) | declares `COAST_NEAR_KM = 2, COAST_FAR_KM = 6` | **both are read by nothing.** The coast term is a plain D8 sea-adjacency test, so spec §6.5's three bands (1.0 within 2 km sheltered / 0.4 exposed / 0 beyond 6 km) collapse to two and the two named distances are dead beside a rule that cannot see them. With the bands implemented the three hold **2,574 / 6,955 / 9,366** of the 18,895 eligible cells. |
+| **C, Task 9a Step 1** fixture (:4848) | sea at `elev = -0.6` under land at ~0.25 | `localSlope` is the largest step to any D8 neighbour, **sea included**, so every coastal land cell reads 0.85 against `slopeMax` 0.08. No cell is port-eligible, and the plan's own first Task-9a test (1 capital) cannot pass. On the real field the elevation is continuous across sea level and the slope veto fires on 360 of 25,600 surveyed cells, so this is a fixture artefact. Sea is a 0.24 shelf here. |
+| **C, Task 9a Step 1** fixture, and `BIOME_NAME = null` (:5072) | — | the fixture never sets `grid.biomeNames`, so `grid.biomeName(i)` is null everywhere and the `{ice, lava}` veto **cannot fire in any fixture**; and the parameter's `null` default makes the veto silently OFF for any caller who forgets it. `placeSettlements` now refuses to run before P8, the way P9 already does. |
+| **C, Task 9a Step 7** review brief (:5215) | separation should be **same-tier only** ("a village 3 km from a capital is fine") | spec §6.5 derives the per-region cap from the 9 km separation, which is a claim about ALL settlements, and the plan's own test at :4931 asserts it. Measured under same-tier-only: village `c02/s09` lands **0.50 km — one cell —** from capital `c02/s01`. Under the shipped rule the closest pair in the world is 9.01 km. |
+| **Spec §6.5** and **C, Task 9a** test (:4931) | "a 9 km separation admits at most 2 settlements per 160 km² surveyed region, which is exactly the per-region cap" | true of a **disc** and false of these regions (mean isoperimetric 0.391). Measured with no explicit cap: `c02/r08`, `c03/r12`, `c03/r15` and `c03/r22` each take **3**. The cap is now enforced, not derived. |
+| **Spec §6.5** | "the three capitals are the three charted ports: Gildmark (Wealdmarch), Tallowquay (Coldreach), **Netstead (Stonemoor)**" | **c04 Stonemoor has ZERO port-eligible cells** — no sheltered water beside settlement-eligible ground (ports by continent: c02 38, c03 99, c05 165, c07 63, c09 155). The generated capitals are c02, c03 and c05. Plan D pins `c-town-netstead` on c04 as a capital requiring sea; it will hit this. |
+| **STATE §11 and §12** (this file) | c10 Ashen Spar's zero eligible cells are "the **treeline** veto against a volcanic arc's relief", with two remedies offered (lower the relief, exempt `volcanic-arc`) | **MISATTRIBUTED, and both remedies achieve nothing.** Of c10's 640 surveyed cells, **ZERO clear every veto other than the treeline**, so deleting the treeline outright still leaves 0. Independent veto hits: freshWater **615**, treeline 173, lava 108, slope 25. c10 carries **0 RIVER cells and 0 LAKE cells** and its moisture is p50 **0.0000** / p90 0.0219. Ashen Spar is a waterless volcanic arc and `freshWaterMin: 0.20` is doing exactly what it exists to do. **Resolution: 0 settlements on c10, accepted** — the quotas are world totals and the §6.5 per-continent table is prose. |
+| **C, Task 9a Step 3** (:5064) and the committed `grid.fetchKm` | `waterFetchKm` re-implements a shelter test from scratch, min over 8 D8 rays from the land cell | a THIRD definition of fetch beside `classifySea`'s. `grid.fetchKm` is **max over the two axes** (wave exposure); spec §6.5's "adjacent water has fetch < 15 km (bay, fjord, estuary)" needs **min over the two axes** (enclosure). Measured: max-over-axes leaves **4 port-eligible cells world-wide, all on c05** — one capital possible; min-over-axes gives **520 over six continents**. `narrowWaterKm` is the min-over-axes twin, built from the same four sweeps and joined to `classifySea` by re-deriving its output cell by cell. **PLAN D HAZARD:** a pin declaring `water.shelterFetchKmMax: 15` measured against `grid.fetchKm` is unsatisfiable at **332 of the 520** port cells and at all three generated capitals (their water reads 240.5 / 56.5 / 48.5 km). Plan D must read `narrowWaterKm` for `pinReceipts.measured.shelterFetchKm` or restate the threshold. |
+| **C, Task 9b Step 13** (:5376) | `pathKm` uses `(a[0] - b[0]) ** 2` | `**` is in the committed determinism inventory's `IMPRECISE` regex (`tools/mapforge/tests/determinism-inventory.test.mjs`). The plan's own code reds the suite in the file it lands in. |
+| **C, Task 9b Step 13** (:5456-5471) | Prim runs a **full Dijkstra per candidate PAIR per step** | O(V²) searches over the raster; the plan's own Step 17 predicts it. Replaced by ONE multi-source Dijkstra per Prim step, stopped at the nearest target. Measured **664-796 ms** with the early stop, **1,214-1,426 ms** without, of a 4,000 ms generate stage. Proved byte-identical to a run-to-completion Dijkstra on the real field. |
+| **C, Task 9b Step 13** (:5399-5405) | `flowDir < 0` counts as "drains" | an interior sink priority-flood failed to route is elected a **river mouth in the middle of a continent**. A sink now counts only if it actually touches sea. |
+| **C, Task 9b Step 13** (:5417) | the upstream walk is bounded by `grid.n` | that converts a repeated cell from a hang into a **640,000-point chain**. (The condition is unreachable on a valid field — `flowDir` is a function, so the inflow relation is a tree and a cycle has no outlet and therefore no mouth — but the plan's bound is the wrong shape for the case it names.) |
+| **C, Task 9b Step 13** (:5489) | the sea lane whitelists the two **land** endpoints into `passable` | a capital is port-eligible anywhere in a 2 km band and need not be D8-adjacent to water, so the search has no first step, `shortestPath` returns null and `if (!r) continue` **drops the lane silently**. Lanes are routed between the capitals' nearest sea cells with the two capital points prepended and appended. |
+| **C, Task 9b Step 13** (:5465) | the road raster is "not sea" | four pairs of landmasses **physically touch** on the refitted mask (§12), so a road may leave its own continent and put another continent's coordinates in this continent's fabric file. The raster is this continent's OWNED land, which also excludes lakes for free. **The same rule was missing from `traceTrunkRivers` and is now there too** — reproduced on a two-plate fixture, 24 of one continent's river points on the other's ground. |
+| **C, Task 9b** `trunkRivers` | one trunk river per continent | **c08 and c11 each hold a single RIVER cell** that drains to sea with no inflow — one point, not a polyline. Emitting it hands Plan E a river with nothing to draw. Both are omitted and NAMED in `problems`; 7 continents carry a trunk river, not 9. |
+| **C, Task 9c Step 23** (:5668) | `hashNoise2D({ x: inst.cell[0] * 0.83, … })` | the plan's OWN Task-9c fixtures (:5561-5565) build instances with no `cell`, so this is a TypeError on the plan's own test; and those fixtures pass `stream: "seedseedseedseed"`, which `streamInt` has thrown on since seam 1. The draw is keyed on the **handle** — seam 4's ruling — through an integer mix, never on array position. |
+| **C, Task 9c Step 23** (:5688) | `hopsToSettlement: hops.get(inst.region) ?? null` | the `?? null` tail is **unreachable** behind an eligibility filter that already required `h <= MAX_HOPS`. Removed; **Task 11's `fabric-file.schema.json` still types the field `["integer","null"]` for Plan D's overlay and must keep doing so.** |
+| **C, Global Constraints** and `manifest.quotas.dungeons` | `{ complexes: 60, floors: 190, families: 3, familySize: 8, bespoke: 36 }` | **P13 produces `complexes` and nothing else.** `floors` occurs exactly twice in the whole Plan C document, both times as a declaration; no pass generates a floor, a family or a bespoke marker. Pinned in `settlements.test.mjs` so the omission is a stated fact. |
 
 The plan text already self-corrects two more: spec §8.6's "checkSpine is already parameterised
 with an injected collector" (it is not — it closes over module-level bindings) and §8.2's
@@ -1351,3 +1372,168 @@ elevation, sea-level, hydrology, wind or water fields. No premise `footprint` wa
 protected diff against `plan-c-base` over `content/spine`, `content/maps`,
 `game-client/assets/art/maps/` and `colyseus-server/` is **empty**; `check_spine_emit --check` is
 clean at 47 files; `npx jest mapDimensions` is 5 passed.
+
+---
+
+## 14. Plan C seam 5 (Task 9) — settled, do not re-raise
+
+Appended 2026-08-22 by the seam-5 implementation and its adjudicating fix pass, after two
+independent adversarial reviews (A: P11 settlements — ACCEPT-WITH-FIXES, 4 major / 5 minor;
+B: P12 roads + P13 dungeons — ACCEPT-WITH-FIXES, 3 major / 7 minor). **Twenty more plan errors
+are in §5 above.** Mutations: **73 distinct, 63 killed, 9 survived** — every survivor
+explained AT ITS CALL SITE (see the end of this section) — plus one whose target (`pathBetween`'s
+`from` parameter) was deleted rather than defended.
+
+Commits: `c71bcc3` (P11), `f10af38` (P12), `789c195` (P13), plus the fix-pass commit.
+
+### What the seam guarantees
+
+- **45 settlements, exactly 3 capital / 12 hub / 30 village, zero problems.** Capitals `c02/s01`,
+  `c03/s01`, `c05/s01`, one per landmass, all port-eligible, pairwise ≥ 60 km. The closest pair of
+  settlements in the whole world is **9.01 km**, so the 9 km bound is binding and live, and no
+  region holds more than 2.
+- **Every hard veto fires and none of them fires on everything.** Counted INDEPENDENTLY over the
+  25,600-cell surveyed pool (not in the short-circuiting order the pass evaluates them):
+  slope **360**, treeline **173**, freshWater **6,345**, {ice, lava} **108**. 18,895 cells survive.
+  **But "it fires" is not "it decides":** every treeline and every ice/lava rejection is on c10,
+  which the fresh-water veto rejects entirely, so deleting either leaves the 45 placements
+  byte-identical on THIS world. Both are killed by direct fixtures instead, and both are recorded
+  in `settlements.mjs` so the next reviewer does not read the real-world counts as consequence.
+- **The coast term has spec §6.5's THREE bands and both named distances are live** — 2,574 near /
+  6,955 taper / 9,366 beyond, and sheltered 2,126 against exposed 7,403. See §5 for the two dead
+  constants this replaces.
+- **The score discriminates.** 18,895 eligible cells, **18,895 distinct scores, ZERO exact ties**;
+  all four terms vary (river {0, 0.6, 1}; coast 16 distinct with 10,246 zeros; slope 17,010 distinct
+  over 0.604–0.991; resource 18,894 distinct over 0.31–0.93). No dead weight.
+- **All 9 level-band rings are populated** — 5 / 16 / 13 / 13 / 14 / 23 / 26 / 28 / 22 over 160
+  regions — anchored on `c02/s01`, i.e. on Wealdmarch, which is where `originPinnedId`
+  `c-town-gildmark` will land in Plan D. The fallback chain reports which origin it used.
+- **38 roads, every settlement on its own continent's network, 0 road points at sea and 0 on
+  another continent.** 2 sea lanes joining the 3 capitals, water end to end. 7 trunk rivers
+  (c08 and c11 hold one river cell each and are NAMED rather than drawn — §5).
+- **60 dungeon complexes against a quota of 60**, over 60 regions, hop histogram
+  {0: 18, 1: 19, 2: 23}, 13 distinct entrance types, every entrance `dungeonCapable` by the
+  LEXICON (the instance's own flag is joined to it, never trusted beside it).
+- **Order independence, proved the way seam 3 proved flow routing:** three heap comparators ×
+  three settlement input orders on the real world, one digest; `anchorDungeons` unchanged under a
+  reversed `instances[]`; `placeSettlements` byte-identical across two full runs.
+
+### THE c10 ASHEN SPAR RESOLUTION — accepted, with the numbers
+
+§11 deferred this to Task 9 and **misattributed it**; see §5. Ashen Spar carries **0 RIVER cells
+and 0 LAKE cells** and moisture p50 0.0000, so 615 of its 640 surveyed cells fail
+`freshWaterMin: 0.20`, and **ZERO cells clear every veto other than the treeline** — deleting the
+treeline, or exempting `volcanic-arc` from it, yields nothing. **The resolution is to accept 0
+settlements on c10.** The quotas are world totals and are met exactly; spec §6.5's per-continent
+table is prose, not a gate; and a town with no fresh water is the thing the veto exists to refuse.
+This is pinned cell by cell in `settlements.test.mjs` so the attribution cannot rot again.
+
+### THE TWO MEASURES OF WATER — and the Plan D hazard this seam could not close
+
+`grid.fetchKm` (`classifySea`) is **max over the two axes**: wave exposure. Spec §6.5's shelter
+test needs **min over the two axes**: enclosure. Both come from the same four run-length sweeps,
+so `narrow ≤ fetch` is a tautology and joins nothing; `settlements.test.mjs` joins them by
+**re-deriving `classifySea`'s own output** from `narrowWaterKm`'s sweeps and comparing cell by cell.
+
+**PLAN D MUST DECIDE THIS.** A pinned harbour declaring `water.shelterFetchKmMax: 15` measured
+against `grid.fetchKm` is **unsatisfiable at 332 of the 520 port-eligible cells** and at all three
+generated capitals (their adjacent water reads 240.5 / 56.5 / 48.5 km). Either
+`pinReceipts.measured.shelterFetchKm` reads `narrowWaterKm` — which `settlements.mjs` exports for
+exactly this — or the pin's threshold is restated. **And c04 Stonemoor has zero port-eligible
+cells at all**, so `c-town-netstead` cannot be a sheltered-port capital there whatever is decided.
+
+### Decisions taken deliberately
+
+- **Separation is against ALL settlements at the candidate's own tier distance**, not same-tier.
+  See §5 — the plan's own Step 7 brief proposes the opposite and the spec, the plan's own test and
+  the measurement all contradict it.
+- **`MAX_SETTLEMENTS_PER_REGION = 2` and `MAX_CAPITALS_PER_CONTINENT = 1` are RULES, not
+  derivations.** Both fire: without the first, four regions take 3; without the second, c05 takes
+  two capitals 71.9 km apart, Wealdmarch gets none and the level-band origin moves off it. Both are
+  killed by real-world assertions.
+- **The `settlements` stream is INJECTED and joined to `derived.json`, never minted.** §13's guard
+  makes the plan's own spelling impossible; the pass validates the shape and the test validates the
+  identity BEFORE anything is measured.
+- **`placeSettlements` refuses to run before P8**, the way `partitionRegions` already does, because
+  the plan's `BIOME_NAME = null` default silently disables the {ice, lava} veto.
+- **The positional `grid.owner → regions[]` join is ASSERTED** (`assertRegionIndex`, used by P11 and
+  P12). Review A reproduced 45 settlements filed under the wrong region ids, `problems: []`, by
+  handing in a reversed array.
+- **A pin is never moved; every way it can contradict the fabric is REPORTED** — sea cell, reported
+  region, unknown region, `at`/`cell` disagreement, an over-filled tier, two pins inside the 9 km
+  separation. Duplicate ids and out-of-bounds cells THROW.
+- **`f-town-<slug>` is minted in `settlements.mjs`** (`townFeatureId`, `slugOf`, `townSlug`,
+  `townFeatureIds`) because the settlement is where a town's identity is, and because the plan's
+  `buildTrunk` writes `slugOf(s.title)` on records whose title is always `null` in Plan C — which
+  slugs to the string `"null"`, 45 times over. `townSlug` falls back to the settlement id
+  (`f-town-c02-s01`) and takes the title once Plan D mints one. **Task 10's `fabric.mjs` must
+  RE-EXPORT these, never redefine them.**
+- **`routeRoads`' Prim step is ONE multi-source Dijkstra, stopped at the nearest target**, proved
+  byte-identical to a run-to-completion Dijkstra on the real field. 664–796 ms with the early stop
+  against 1,214–1,426 ms without. **The plan's Step 19 "under 800 ms" is NOT asserted**: a
+  wall-clock assertion on a shared box is exactly `G-RASTER-BUDGET`, which reds one run in three
+  under load. The number is reported; the margin is thin.
+
+### THE BUDGET — reported, not decided
+
+Warm, median of three runs on a quiet box, from the committed terrain stream:
+
+```
+P1+P2 mask 482   P2 elevation 497   P2b substrate 8   P3 sea level 87   P6 hydrology 425
+P5 winds 505     P7 water 337       P8 biomes 50      P9 regions 838    P10 landforms 528
+P11 settlements 166   P12 roads 717   P13 dungeons 1
+TOTAL 4,641 ms
+```
+
+`content/world/budgets.json`'s `generate` stage is `budgetMs 4000` / `failMs 8000`. **This seam
+adds 884 ms and the total is over budget and not failing, with P14 fabric and the CLI still
+unwritten.** `budgets.json` was NOT edited. The decision belongs to the owner at Task 10b; the
+largest single terms are now `P9` 838, `P12` 717, `P2 elevation` 497 and `P5 winds` 505.
+
+### Recorded mutation SURVIVORS — each explained at its call site
+
+**Do not re-file these.** 73 distinct mutations, 63 killed. The nine that stand:
+
+- `settlements.mjs` — the `(a.i - b.i)` tail of the candidate sort. `scored` is built by ascending
+  cell index and `Array.prototype.sort` is stable, so equal keys already emerge in cell order. The
+  `(b.tie - a.tie)` term beside it IS killed, by the fixture golden — the real world has **zero
+  exact score ties** among 18,895 cells, so the tie-rich synthetic fixture is the only venue where
+  either term is observable.
+- `settlements.mjs` — the surveyed pre-filter in the scoring loop. An exact duplicate of
+  `scoreSettlement`'s own reported-region veto, kept because it skips the D8 walk on 230,400 cells.
+- `roads.mjs` — the early stop in `nearestOutsideTree`. Deleting it leaves every test green and
+  **that is the point**: it is a performance change and the survivor is the proof it is
+  output-neutral.
+- `roads.mjs` — `MinHeap.less`'s cell-index term. `roads.test.mjs`'s order-independence test runs
+  the comparator WITHOUT it and requires byte-identical output, so the tiebreak is the control, not
+  the rule.
+- `roads.mjs` — the upstream walk's `seen` set. **Unreachable by construction**: `flowDir` is a
+  function, so the inflow relation followed by the walk is a tree, and a `flowDir` cycle is a
+  component with no outlet and therefore no mouth to start from. Derived independently by review B.
+- `roads.mjs` — `traceTrunkRivers`' `i < cur` mouth tiebreak. The loop scans ascending, so
+  first-wins already selects the lowest index among equal accumulations.
+- `roads.mjs` — the `path[0] !== root[best.cell]` throw on a road leg. Unreachable: every search
+  source is a settlement cell with `prev === -1`. It is what makes DELETING `pathBetween`'s `from`
+  parameter safe — with `from`, a source that happened to lie ON the path truncated the road at an
+  intermediate settlement, and no test saw it.
+- `dungeons.mjs` — the handle tail of the draw comparator. Zero 32-bit key collisions among the 307
+  eligible instances; fixturing one would be a 2^32 search for a property meant to hold without one.
+- `dungeons.mjs` — the `.sort()` on the BFS sources. Every settled region enters at distance 0, so
+  the frontier is the same set whatever order they are queued in.
+
+### Open, recorded rather than chased
+
+- **c08 Wracklow gets 0 settlements**, against spec §6.5's "Wracklow ends up with a single
+  settlement despite 3,000 km² of land". Its 1,280 eligible cells never outscore the pool; the
+  greedy is a world-wide score order with no per-continent floor. Owner's call.
+- **`hopsToSettlement` can no longer be `null`**, but `fabric-file.schema.json` (Task 11) must still
+  type it `["integer","null"]` — Plan D's overlay reads that shape.
+- **50 of 7,247 shore cells have two D8 sea neighbours that disagree on sheltered/exposed**, so
+  their class comes from the BFS's fixed D8 order rather than from a rule. Deterministic, and
+  reversing the D8 order leaves all 45 placements byte-identical, but it is a tie the model does not
+  adjudicate.
+- **The mapforge suite is 593 tests / ~33 s** (was 251 / 11.1 s at `plan-c-base`). The seam adds one
+  real-world build; the civic block for P12 and P13 lives in `settlements.test.mjs` for that reason.
+- **`MAX_PER_REGION = 3` in `dungeons.mjs` does not bind on this world** — 307 dungeonCapable
+  instances over 117 regions means round 1 alone fills the 60 quota at 1 per region. Killed by two
+  direct fixtures; recorded so it is not read as dead.

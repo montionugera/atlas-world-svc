@@ -119,6 +119,17 @@ test("the LEXICON decides dungeonCapable, and a disagreeing instance is REPORTED
     JSON.stringify(r.problems));
 });
 
+test("an instance on a region that does not exist is REPORTED, not silently dropped", () => {
+  const regions = [{ id: "c01/r01", continent: "c01", survey: "surveyed", adjacent: [] }];
+  const r = anchorDungeons({
+    instances: [inst(1, "c01/r99"), inst(2, "c01/r01")], regions,
+    settlements: [{ id: "c01/s01", region: "c01/r01" }], lexicon: MINI,
+    manifest: { quotas: { dungeons: { complexes: 2 } } }, stream: S });
+  assert.deepEqual(r.anchors.map((a) => a.region), ["c01/r01"]);
+  assert.ok(r.problems.some((p) => /is on region c01\/r99, which is not a region/.test(p)),
+    JSON.stringify(r.problems));
+});
+
 test("at most MAX_PER_REGION anchors land in one region, spread round by round", () => {
   // 12 instances over 2 regions against a quota of 5: round 1 takes one from
   // each, round 2 a second from each, round 3 the fifth. Deleting the cap puts
@@ -131,6 +142,12 @@ test("at most MAX_PER_REGION anchors land in one region, spread round by round",
   const r = anchorDungeons({ instances, regions, settlements: [{ id: "c01/s01", region: "c01/r01" }],
     lexicon: MINI, manifest: { quotas: { dungeons: { complexes: 5 } } }, stream: S });
   assert.equal(r.anchors.length, 5);
+  // The EMITTED order is the handle order, not the draw order — a consumer that
+  // diffs two ledgers must not see a re-ordering when nothing moved.
+  assert.deepEqual(r.anchors.map((a) => a.handle), [...r.anchors.map((a) => a.handle)].sort());
+  assert.deepEqual(r.anchors.map((a) => a.handle),
+    ["c01/karst/h-000000", "c01/karst/h-000002", "c01/karst/h-000004",
+     "c01/karst/h-000007", "c01/karst/h-000011"]);
   const per = new Map();
   for (const a of r.anchors) per.set(a.region, (per.get(a.region) ?? 0) + 1);
   for (const [rid, n] of per) assert.ok(n <= MAX_PER_REGION, `${rid} holds ${n} anchors`);

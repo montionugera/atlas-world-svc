@@ -164,6 +164,24 @@ test("a sea lane is water end to end except at its two endpoints", () => {
   assert.equal(lane.to, "cB/s01");
   assert.deepEqual(lane.points[0], settlements[0].atKm);
   assert.deepEqual(lane.points[lane.points.length - 1], settlements[1].atKm);
+  // `km` must be the length of the line it emits, INCLUDING the two short land
+  // legs from each capital to its water. Measuring only the water path
+  // understates it, and a length that is not the length of the drawn line is a
+  // number a later reader trusts.
+  let poly = 0;
+  for (let k = 1; k < lane.points.length; k++) {
+    const dx = lane.points[k][0] - lane.points[k - 1][0];
+    const dy = lane.points[k][1] - lane.points[k - 1][1];
+    poly += Math.sqrt(dx * dx + dy * dy);
+  }
+  assert.equal(lane.km, Math.round(poly * 100) / 100);
+  const water = lane.points.slice(1, -1);
+  let inner = 0;
+  for (let k = 1; k < water.length; k++) {
+    const dx = water[k][0] - water[k - 1][0], dy = water[k][1] - water[k - 1][1];
+    inner += Math.sqrt(dx * dx + dy * dy);
+  }
+  assert.ok(lane.km > Math.round(inner * 100) / 100, "the two land legs are not in `km`");
   for (let k = 1; k < lane.points.length - 1; k++) {
     const i = idx({ grid, cx: Math.floor(lane.points[k][0] / grid.cellKm),
                     cy: Math.floor(lane.points[k][1] / grid.cellKm) });
@@ -214,14 +232,22 @@ test("an interior sink is NOT elected a river mouth", () => {
   grid.flags[sink] |= FLAG.RIVER; grid.flowAcc[sink] = 9999; grid.flowDir[sink] = -1;
   const mouth = idx({ grid, cx: 5, cy: 17 });
   grid.flags[mouth] |= FLAG.RIVER; grid.flowAcc[mouth] = 10; grid.flowDir[mouth] = 2;  // D8[2] = [0,1]
-  const out = traceTrunkRivers({ grid, regions: regs });
+  const up = idx({ grid, cx: 5, cy: 16 });
+  grid.flags[up] |= FLAG.RIVER; grid.flowAcc[up] = 5; grid.flowDir[up] = 2;
+  const problems = [];
+  const out = traceTrunkRivers({ grid, regions: regs, problems });
+  assert.deepEqual(problems, []);
   assert.deepEqual(out.c01.points[out.c01.points.length - 1], [5.5, 17.5],
     "the landlocked sink was elected the mouth");
+  assert.deepEqual(out.c01.points, [[5.5, 16.5], [5.5, 17.5]]);
 });
 
-test("a mutual two-cell inflow terminates instead of emitting 640,000 points", () => {
-  // The plan bounds the upstream walk by grid.n, which converts a flowDir cycle
-  // from a hang into a chain of every cell on the grid. A visited set stops it.
+test("the upstream walk emits a SIMPLE path — no cell twice, no branch doubling back", () => {
+  // The plan bounds the walk by grid.n, which turns a repeated cell into a
+  // 640,000-point chain rather than stopping it. The visited set cannot
+  // actually be reached on a valid field — `flowDir` is a function, so the
+  // inflow relation is its inverse and the walk is a tree traversal — so what
+  // is assertable is the property itself, on a branching river.
   const grid = makeGrid({ w: 20, h: 20, cellKm: 1 });
   for (let y = 0; y < 20; y++) for (let x = 0; x < 20; x++) {
     const i = idx({ grid, cx: x, cy: y });
@@ -229,16 +255,45 @@ test("a mutual two-cell inflow terminates instead of emitting 640,000 points", (
     else { grid.plate[i] = -1; grid.elev[i] = 0.28; grid.flags[i] |= FLAG.SEA; }
   }
   const regs = [{ id: "c01/r01", continent: "c01", survey: "surveyed", adjacent: [] }];
-  const mouth = idx({ grid, cx: 5, cy: 17 });
-  const up = idx({ grid, cx: 5, cy: 16 });
-  grid.flags[mouth] |= FLAG.RIVER; grid.flowAcc[mouth] = 50; grid.flowDir[mouth] = 2;   // -> sea
-  grid.flags[up] |= FLAG.RIVER; grid.flowAcc[up] = 40; grid.flowDir[up] = 2;            // -> mouth
-  // …and the mouth also claims to flow INTO `up`: a two-cell cycle.
-  const cyc = idx({ grid, cx: 5, cy: 15 });
-  grid.flags[cyc] |= FLAG.RIVER; grid.flowAcc[cyc] = 30; grid.flowDir[cyc] = 2;
-  grid.flowDir[up] = 2;
+  const river = (cx, cy, acc, dir) => {
+    const i = idx({ grid, cx, cy });
+    grid.flags[i] |= FLAG.RIVER; grid.flowAcc[i] = acc; grid.flowDir[i] = dir;
+  };
+  river(5, 17, 90, 2);                                   // mouth, D8[2] = [0,1] -> sea
+  river(5, 16, 80, 2);
+  river(5, 15, 70, 2);
+  river(4, 14, 30, 1);                                   // the SMALL branch, D8[1] = [1,1]
+  river(6, 14, 60, 3);                                   // the BIG branch,  D8[3] = [-1,1]
+  river(7, 13, 50, 3);
   const out = traceTrunkRivers({ grid, regions: regs });
-  assert.ok(out.c01.points.length <= 4, `the walk emitted ${out.c01.points.length} points`);
+  const pts = out.c01.points;
+  assert.equal(new Set(pts.map((p) => p.join())).size, pts.length, "a cell appears twice");
+  // the trunk follows the LARGER accumulation at the fork, not the first found
+  assert.deepEqual(pts, [[7.5, 13.5], [6.5, 14.5], [5.5, 15.5], [5.5, 16.5], [5.5, 17.5]]);
+});
+
+test("Prim's target tiebreak resolves on the TARGET ID, not on cell index", () => {
+  // A corridor with the tree's only member in the middle and two candidates at
+  // exactly equal cost. The lower cell index is the WEST one; the lower id is
+  // the EAST one, so the two rules disagree and the test can see which wins.
+  const grid = makeGrid({ w: 24, h: 5, cellKm: 1 });
+  for (let y = 0; y < 5; y++) for (let x = 0; x < 24; x++) {
+    const i = idx({ grid, cx: x, cy: y });
+    if (y === 2 && x >= 4 && x < 20) { grid.plate[i] = 0; grid.owner[i] = 0; grid.elev[i] = 0.3; }
+    else { grid.plate[i] = -1; grid.elev[i] = 0.3; grid.flags[i] |= FLAG.SEA; }
+  }
+  const regs = [{ id: "cA/r01", continent: "cA", survey: "surveyed", adjacent: [] }];
+  const settlements = [
+    { id: "cA/s01", continent: "cA", rank: "hub", cell: [12, 2], atKm: [12.5, 2.5], region: "cA/r01" },
+    { id: "cA/s02", continent: "cA", rank: "village", cell: [17, 2], atKm: [17.5, 2.5], region: "cA/r01" },
+    { id: "cA/s03", continent: "cA", rank: "village", cell: [7, 2], atKm: [7.5, 2.5], region: "cA/r01" },
+  ];
+  const r = routeRoads({ grid, settlements, regions: regs });
+  assert.deepEqual(r.problems, []);
+  assert.equal(r.roads.length, 2);
+  assert.deepEqual([r.roads[0].from, r.roads[0].to], ["cA/s01", "cA/s02"],
+    "the first leg went to the lower CELL INDEX instead of the lower target id");
+  assert.equal(r.roads[0].km, r.roads[1].km, "the two candidates were not actually tied");
 });
 
 // ── determinism ───────────────────────────────────────────────────────────
@@ -269,4 +324,54 @@ test("routeRoads is independent of heap tiebreak AND of settlement input order",
     if (baseline === null) baseline = out; else assert.equal(out, baseline);
   }
   assert.ok(baseline.length > 100);
+});
+
+test("a river never leaves its own landmass, and a one-cell river is NAMED not emitted", () => {
+  // Two plates that share a land border, one river crossing the join. The road
+  // raster has this rule; before review B the river walk did not.
+  const grid = makeGrid({ w: 30, h: 20, cellKm: 1 });
+  for (let y = 0; y < 20; y++) for (let x = 0; x < 30; x++) {
+    const i = idx({ grid, cx: x, cy: y });
+    if (y >= 4 && y < 16) { grid.plate[i] = x < 15 ? 0 : 1; grid.owner[i] = x < 15 ? 0 : 1; grid.elev[i] = 0.3; }
+    else { grid.plate[i] = -1; grid.elev[i] = 0.28; grid.flags[i] |= FLAG.SEA; }
+  }
+  const regs = [
+    { id: "cA/r01", continent: "cA", survey: "surveyed", adjacent: [] },
+    { id: "cB/r01", continent: "cB", survey: "surveyed", adjacent: [] },
+  ];
+  const river = (cx, cy, acc, dir) => {
+    const i = idx({ grid, cx, cy });
+    grid.flags[i] |= FLAG.RIVER; grid.flowAcc[i] = acc; grid.flowDir[i] = dir;
+  };
+  // cA's mouth at (12,15) draining south, with a course that runs EAST across
+  // the cA/cB border at x = 15.
+  river(12, 15, 90, 2);
+  river(13, 14, 80, 3);   // D8[3] = [-1,1]
+  river(14, 13, 70, 3);
+  river(15, 12, 60, 3);   // this and the next are on cB
+  river(16, 11, 50, 3);
+  // cB's own river: one cell draining straight to the southern sea, no inflow.
+  river(20, 15, 40, 2);
+  const problems = [];
+  const out = traceTrunkRivers({ grid, regions: regs, problems });
+  for (const [x] of out.cA.points)
+    assert.ok(x < 15, `cA's trunk river has a point at x=${x}, which is on cB`);
+  assert.deepEqual(out.cA.points, [[14.5, 13.5], [13.5, 14.5], [12.5, 15.5]]);
+  // cB's own highest-accumulation cell that drains to sea is a single cell, so
+  // cB gets no trunk river and the omission is named rather than drawn.
+  assert.equal(out.cB, undefined);
+  assert.ok(problems.some((p) => /cB's highest-accumulation river is a single cell/.test(p)),
+    JSON.stringify(problems));
+});
+
+test("a continent with a single settlement emits no road and reports nothing", () => {
+  const { grid, regs } = twoIslands();
+  const settlements = [
+    { id: "cA/s01", continent: "cA", rank: "hub", cell: [5, 8], atKm: [5.5, 8.5], region: "cA/r01" },
+    { id: "cB/s01", continent: "cB", rank: "village", cell: [70, 8], atKm: [70.5, 8.5], region: "cB/r01" },
+  ];
+  const r = routeRoads({ grid, settlements, regions: regs });
+  assert.deepEqual(r.roads, []);
+  assert.deepEqual(r.seaLanes, [], "neither is a capital");
+  assert.deepEqual(r.problems, []);
 });

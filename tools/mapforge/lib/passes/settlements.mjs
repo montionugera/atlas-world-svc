@@ -10,7 +10,7 @@
 // PINNED RECORDS ARE AN INPUT, NOT A JOIN. `pinned` defaults to [] in Plan C;
 // Plan D supplies the ~40 records and this pass places them BEFORE scoring
 // begins, so a contradiction is impossible rather than merely detectable.
-import { FLAG, idx, neighbourIdx } from "../grid.mjs";
+import { FLAG, idx, inBounds, neighbourIdx, cellCentreKm } from "../grid.mjs";
 import { hashNoise2D, q } from "../noise.mjs";
 import { mintSeed } from "../seed.mjs";
 
@@ -51,6 +51,24 @@ const RIVER_NEAR_WEIGHT = 0.6;
 // names, so the plan's own `mintSeed({ parentStream: stream, name:
 // "settlements" })` (plan :5113) cannot even be written. The caller reads
 // derived.json; settlements.test.mjs joins this argument to it.
+// THE POSITIONAL JOIN, asserted instead of assumed. `grid.owner[i]` is an
+// INDEX into `regions`, while everything this pass emits names a region by ID.
+// P9 sets `grid.regionIds = byIndex.map(r => r.id)` for exactly this join.
+// Without the check, handing in a re-ordered `regions` array files all 45
+// settlements under the wrong region ids and reports nothing — reproduced by
+// review A with `part.regions.slice().reverse()`.
+export function assertRegionIndex({ grid, regions, who }) {
+  if (!Array.isArray(grid.regionIds) || grid.regionIds.length === 0) return;
+  if (grid.regionIds.length !== regions.length)
+    throw new Error(`${who}: regions[] has ${regions.length} entries and grid.regionIds has ` +
+      `${grid.regionIds.length} — grid.owner is an INDEX into regions[] and the two must agree`);
+  for (let k = 0; k < regions.length; k++)
+    if (regions[k].id !== grid.regionIds[k])
+      throw new Error(`${who}: regions[${k}] is ${regions[k].id} and grid.regionIds[${k}] is ` +
+        `${grid.regionIds[k]} — grid.owner indexes regions[], so a re-ordered array files every ` +
+        `record under the wrong region`);
+}
+
 function assertStream(stream, who) {
   if (typeof stream !== "string" || !/^[0-9a-f]{16}$/.test(stream))
     throw new TypeError(
@@ -61,26 +79,36 @@ function assertStream(stream, who) {
 // ── the water fields the coast term reads ─────────────────────────────────
 //
 // TWO MEASURES OF WATER, AND THEY ARE NOT THE SAME QUANTITY — read this
-// before changing either.
+// before changing either, and read the PLAN D HAZARD at the end.
 //
 // `grid.fetchKm` (set by classifySea, sea-level.mjs) is the LONGEST
-// unobstructed run of sea through a sea cell, max over the two axes. That is
-// wave exposure, and it is what Plan D's pinned harbour records declare
-// against (`water.shelterFetchKmMax: 15`).
+// unobstructed run of sea through a sea cell, max over the two axes: wave
+// exposure.
 //
 // What spec §6.5 needs for "adjacent water has fetch < 15 km (bay, fjord,
 // estuary)" is the opposite end of the same construction: the NARROWEST water
 // width through the cell, min over the two axes. A bay mouth has a long axis
 // running out to sea and a short one across it; taking the max calls it
-// exposed. Measured on the real 800 × 800 field: min-over-axes puts 2,126 of
-// the 9,529 settlement-eligible cells inside 6 km of the sea in the sheltered
-// band and 7,403 in the exposed band, on six continents; max-over-axes leaves
-// **4 cells, all on c05**, which starves the three-capital quota to one.
+// exposed. Measured on the real 800 x 800 field: min-over-axes puts 2,126 of
+// the 9,529 eligible cells inside 6 km of the sea in the sheltered band and
+// 7,403 in the exposed band, on six continents; max-over-axes leaves **4
+// cells, all on c05**, which starves the three-capital quota to one.
 //
-// So the two are computed from the SAME four run-length sweeps and the
-// invariant `narrowWaterKm <= grid.fetchKm` holds cell by cell — settlements
-// .test.mjs asserts it on the real field, which is what stops the two
-// definitions drifting into two different worlds.
+// Both are computed from the SAME four run-length sweeps, so
+// `narrowWaterKm <= grid.fetchKm` holds cell by cell — which is a tautology
+// (min <= max of two expressions) and therefore NOT what joins them.
+// settlements.test.mjs joins them by RECOMPUTING grid.fetchKm from these
+// sweeps and comparing: if classifySea's definition ever moves, that reds.
+//
+// THE PLAN D HAZARD, filed here because this is where the divergence is made.
+// Plan D's pinned harbour records declare `water.shelterFetchKmMax: 15` and
+// G-PIN-SAT measures `pinReceipts.measured.shelterFetchKm`. If that receipt is
+// read off `grid.fetchKm`, it is UNSATISFIABLE at 332 of the 520 port-eligible
+// cells this pass produces, and at all three generated capitals (their
+// adjacent water reads grid.fetchKm 240.5 / 56.5 / 48.5 km). Plan D must
+// either measure `narrowWaterKm` for that receipt or restate the pin's
+// threshold. This pass does not decide it; it exports narrowWaterKm so the
+// choice is one import rather than a third definition.
 export function narrowWaterKm({ grid }) {
   const { w, h, n } = grid;
   const sea = (i) => (grid.flags[i] & FLAG.SEA) !== 0;
@@ -191,6 +219,14 @@ export function scoreSettlement({ grid, i, v, water, regionSurvey, biomeName }) 
   if ((grid.flags[i] & FLAG.SEA) !== 0) return 0;
   if (regionSurvey !== "surveyed") return 0;
   if (v.slope > VETO.slopeMax) return 0;
+  // RECORDED, because "it fires" is not the same as "it decides": the treeline
+  // veto is the chosen rejection on 173 real cells and the {ice, lava} veto on
+  // 108, and EVERY ONE of those cells is on c10 Ashen Spar, which the
+  // fresh-water veto rejects entirely (615 of 640 surveyed cells; 0 cells clear
+  // every other veto). So deleting either leaves the 45 placements
+  // byte-identical on THIS world. Both are spec §6.5 vetoes, both are killed by
+  // direct fixtures in settlements.test.mjs, and neither is dead — they are
+  // waiting for a premise with wet ground above the treeline or on lava.
   if (grid.elev[i] > VETO.treeline) return 0;
   if (v.freshWater < VETO.freshWaterMin) return 0;
   const biome = biomeName(grid.biome[i]);
@@ -211,6 +247,17 @@ const distKm = (ax, ay, bx, by) => {
 export function placeSettlements({ grid, premises, regions, manifest, pinned = [], stream,
                                    BIOME_NAME = null }) {
   assertStream(stream, "settlements");
+  assertRegionIndex({ grid, regions, who: "settlements" });
+  // `premises` is in the binding signature Plan D quotes verbatim, and it was
+  // an unused parameter until review A said so. It is the continent vocabulary,
+  // so it is used as one: a region naming a continent no premise declares is a
+  // wiring bug that would otherwise surface as a fabric file with no premise.
+  const premiseIds = new Set((premises ?? []).map((p) => p.id));
+  if (premiseIds.size > 0)
+    for (const r of regions)
+      if (!premiseIds.has(r.continent))
+        throw new Error(`settlements: region ${r.id} names continent ${r.continent}, which is not ` +
+          `one of the ${premiseIds.size} premises`);
   // THE ICE/LAVA VETO CANNOT BE SILENTLY OFF. The plan defaults `BIOME_NAME` to
   // null and then writes `BIOME_NAME ? BIOME_NAME(...) : null`, so a caller that
   // forgets it gets a veto that never fires and no symptom — the exact shape of
@@ -226,9 +273,15 @@ export function placeSettlements({ grid, premises, regions, manifest, pinned = [
   const problems = [];
   const settlements = [];
   const quotas = manifest.quotas.settlements;
+  const regionIndexById = new Map(regions.map((r, k) => [r.id, k]));
 
   const narrow = narrowWaterKm({ grid });
   const { inlandKm, nearestSea } = seaProximity({ grid });
+  // RECORDED (review A): 50 of 7,247 shore cells have two D8 sea neighbours
+  // that disagree on sheltered/exposed, so for those the class comes from the
+  // BFS's fixed D8 order rather than from a rule. Deterministic — reversing the
+  // D8 order leaves the 45 placements byte-identical — but it is a tie the
+  // model does not adjudicate, and a future "which harbour" question must.
   const waterAt = (i) => {
     const near = nearestSea[i];
     return { inlandKm: inlandKm[i],
@@ -245,10 +298,19 @@ export function placeSettlements({ grid, premises, regions, manifest, pinned = [
   // it for G-PIN-SAT; this pass owns only the consequence — the tier quota one
   // of those pins consumes. Two functions resolving a pin means two ways for a
   // place to move, which is the failure the whole pinned tier exists to stop.
+  const pinnedIds = new Set();
   for (const p of pinned) {
     if (!Array.isArray(p.at) || !Array.isArray(p.cell))
       throw new TypeError(`settlements: pinned entry ${p.id} is not a placePinned() result — ` +
         `expected { id, at, cell, continent, region, rank }, got keys [${Object.keys(p).join(", ")}]`);
+    // A DUPLICATE PIN IS A LOUD ERROR, not two settlements sharing an id. The
+    // fabric, the handle ledger and Plan D's bindings are all keyed on the id.
+    if (pinnedIds.has(p.id))
+      throw new TypeError(`settlements: pinned id ${p.id} appears twice`);
+    pinnedIds.add(p.id);
+    if (!inBounds({ grid, cx: p.cell[0], cy: p.cell[1] }))
+      throw new TypeError(`settlements: pinned ${p.id} has cell [${p.cell}] outside the ` +
+        `${grid.w} x ${grid.h} grid`);
     // A pin with no rank consumes no quota and must not be silently filed under
     // one: `quotas[undefined]` is undefined and every later comparison against
     // it is false, which places the full generated quota ON TOP of the pin.
@@ -261,11 +323,49 @@ export function placeSettlements({ grid, premises, regions, manifest, pinned = [
       continue;
     }
     const i = idx({ grid, cx: p.cell[0], cy: p.cell[1] });
+    // A PIN IS NOT MOVED — the committed seed point is the authority — but every
+    // way it can contradict the fabric is REPORTED. Silence here is how a
+    // capital ends up in the sea with a green run (review A).
+    const centre = cellCentreKm({ grid, cx: p.cell[0], cy: p.cell[1] });
+    // No abs() in geometry (the house rule that keeps a negative shoelace a
+    // winding failure rather than a magnitude): the same `d > 0 ? d : -d` form
+    // every other distance term in the pipeline uses.
+    const dx0 = p.at[0] - centre[0], dy0 = p.at[1] - centre[1];
+    if ((dx0 > 0 ? dx0 : -dx0) > grid.cellKm || (dy0 > 0 ? dy0 : -dy0) > grid.cellKm)
+      problems.push(`settlements: pinned ${p.id} says at [${p.at}] and cell [${p.cell}], whose ` +
+        `centre is [${centre}] — the two disagree by more than one cell`);
+    if ((grid.flags[i] & FLAG.SEA) !== 0)
+      problems.push(`settlements: pinned ${p.id} is on a sea cell`);
+    const pinRegion = regionIndexById.get(p.region);
+    if (pinRegion === undefined)
+      problems.push(`settlements: pinned ${p.id} names region ${p.region}, which is not a region`);
+    else if (regions[pinRegion].survey !== "surveyed")
+      problems.push(`settlements: pinned ${p.id} is on ${p.region}, a reported region`);
     const w = waterAt(i);
     settlements.push({ id: p.id, title: p.title ?? null, continent: p.continent, rank: p.rank,
                        atKm: [q(p.at[0]), q(p.at[1])], cell: [...p.cell], region: p.region,
                        score: 1, portEligible: isPort(i, w), pinned: true });
   }
+  // OVER-FILL IS REPORTED, NOT ABSORBED. `problems` reported an under-filled
+  // tier from the first draft and said nothing about the other direction, so
+  // four pinned capitals against a quota of 1 produced four capitals and a
+  // clean run (review A). Pins are never dropped — the contradiction is the
+  // manifest's or the pin set's, and it is named.
+  for (const tier of Object.keys(SEPARATION_KM)) {
+    const n = settlements.filter((s) => s.rank === tier).length;
+    if (n > quotas[tier])
+      problems.push(`settlements: ${n} pinned ${tier}s against a quota of ${quotas[tier]}`);
+  }
+  // …and the separation invariant the generated tiers enforce stops holding the
+  // moment two pins sit closer than the village minimum. Reported, not moved.
+  for (let a = 0; a < settlements.length; a++)
+    for (let b = a + 1; b < settlements.length; b++) {
+      const d = distKm(settlements[a].atKm[0], settlements[a].atKm[1],
+                       settlements[b].atKm[0], settlements[b].atKm[1]);
+      if (d < SEPARATION_KM.village)
+        problems.push(`settlements: pinned ${settlements[a].id} and ${settlements[b].id} are ` +
+          `${d.toFixed(2)} km apart, inside the ${SEPARATION_KM.village} km village separation`);
+    }
 
   // Score every land cell once.
   const scored = [];
@@ -287,6 +387,14 @@ export function placeSettlements({ grid, premises, regions, manifest, pinned = [
   const tieStream = mintSeed({ parentStream: stream, name: "settlement-tiebreak" });
   for (const c of scored)
     c.tie = hashNoise2D({ x: c.v.cx * 0.53, y: c.v.cy * 0.53, stream: tieStream });
+  // RECORDED MUTATION SURVIVOR, explained at its call site: deleting the final
+  // `(a.i - b.i)` term leaves the suite green. `scored` is built by ascending
+  // cell index and Array.prototype.sort is stable, so equal keys already come
+  // out in cell order — the same "load-bearing together or not at all" shape
+  // seam 3 recorded for arcs.mjs's zero-padding and its sort. The term is what
+  // makes the order a property of the DATA rather than of V8's stability, and
+  // it is the term the plan's own determinism rule names. Deleting the
+  // `(b.tie - a.tie)` term IS killed, by the fixture golden.
   scored.sort((a, b) => (b.s - a.s) || (b.tie - a.tie) || (a.i - b.i));
 
   const taken = [...settlements];
@@ -297,10 +405,13 @@ export function placeSettlements({ grid, premises, regions, manifest, pinned = [
   // from a capital is fine"). Spec §6.5 says the opposite in the same
   // paragraph: "A 9 km separation admits at most 2 settlements per 160 km²
   // surveyed region, which is exactly the per-region cap" — a statement about
-  // ALL settlements, which same-tier separation cannot deliver, and which the
-  // plan's own test at :4931 asserts. Measured on the real field: same-tier
-  // separation puts 3 settlements in 4 regions and 4 in 1, so the per-region
-  // cap fails on 5 of 40.
+  // ALL settlements, which same-tier separation cannot deliver.
+  //
+  // Measured on the real field (review A, corrected from this comment's first
+  // draft, which quoted a per-region count only reachable with the explicit cap
+  // ALSO removed): under same-tier separation village c02/s09 lands 0.50 km —
+  // ONE CELL — from capital c02/s01. Under the rule as shipped the closest pair
+  // in the whole world is 9.01 km, so the 9 km bound is binding and live.
   //
   // So a candidate must clear its OWN tier's distance from every settlement
   // already placed, of any tier. Tiers are placed widest-first, so the binding
@@ -386,6 +497,50 @@ export function placeSettlements({ grid, premises, regions, manifest, pinned = [
     r.settlements.push(s.id);
   }
   return { settlements, problems };
+}
+
+// THE `f-town-<slug>` GRAMMAR — a HARD INTERFACE for Plan E, minted here
+// because the settlement is where a town's identity is.
+//
+// Task 10's `buildTrunk` emits one `kind: "point"` feature per settlement onto
+// its owning continent node, id `f-town-<slug>`, carrying the settlement's km
+// coordinates and `type: null`. `gSpineNet` (check_content.mjs:1986-1999)
+// resolves Plan E's 7 `leg` and 8 `road` edge endpoints against
+// `node.features`, so an empty `features[]` reds G-NET and G-CANON-LEG at the
+// redraw commit with no fix available inside Plan E.
+//
+// THE PLAN'S buildTrunk (:6778) WRITES `townFeatureId(slugOf(s.title))` — AND
+// EVERY TITLE THIS PASS EMITS IS `null`, because a name is meaning and Plan D
+// mints it. `slugOf(null)` is a TypeError, so Task 10 as written cannot emit a
+// single feature in Plan C. `townSlug` falls back to the settlement's own id,
+// which is unique by construction; once Plan D supplies a title the slug is
+// the title's, which is what makes `f-town-gildmark` the id Plan E's committed
+// canon legs point at.
+//
+// TASK 10's fabric.mjs MUST RE-EXPORT THESE TWO, never redefine them: two
+// spellings of one id grammar is how an edge endpoint stops resolving.
+export const townFeatureId = (slug) => `f-town-${slug}`;
+export const slugOf = (title) =>
+  String(title).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+export function townSlug({ settlement }) {
+  const slug = slugOf(settlement.title ? settlement.title : settlement.id);
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug))
+    throw new Error(`settlements: ${settlement.id} slugs to ${JSON.stringify(slug)}, which is not ` +
+      `a legal f-town-<slug> tail — G-NET resolves Plan E's leg endpoints against this id`);
+  return slug;
+}
+
+/** Every settlement's feature id, with collisions refused rather than merged. */
+export function townFeatureIds({ settlements }) {
+  const out = new Map();
+  for (const s of settlements) {
+    const id = townFeatureId(townSlug({ settlement: s }));
+    if (out.has(id))
+      throw new Error(`settlements: ${s.id} and ${out.get(id)} both slug to ${id} — ` +
+        `Plan E's edges resolve a feature id to exactly one point`);
+    out.set(id, s.id);
+  }
+  return out;
 }
 
 // LEVEL BANDS: 40 km rings from the SINGLE starter capital (Gildmark), never

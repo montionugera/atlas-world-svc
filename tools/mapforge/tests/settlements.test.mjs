@@ -17,6 +17,7 @@ import {
   SEPARATION_KM, VETO, SCORE_WEIGHTS, SHELTER_FETCH_KM_MAX,
   COAST_NEAR_KM, COAST_FAR_KM, COAST_EXPOSED,
   MAX_SETTLEMENTS_PER_REGION, MAX_CAPITALS_PER_CONTINENT,
+  townSlug, townFeatureId, townFeatureIds, slugOf,
 } from "../lib/passes/settlements.mjs";
 import { coastWorld, ownRegions, regions, REGIONS, PREMISES, M, paint,
          SETTLEMENT_STREAM, DERIVED } from "./fixtures/coast-world.mjs";
@@ -131,7 +132,12 @@ test("every hard veto fires, and the cell it vetoes would otherwise score", () =
   const good = at(60, 30);
   assert.ok(score(good) > 0, "the control cell is already vetoed — the fixture proves nothing");
 
-  assert.equal(score(at(10, 30)), 0, "a sea cell must be vetoed");
+  // The sea cell is given MOISTURE first: without it the fresh-water veto
+  // rejects it anyway and the water veto is untested.
+  const wet = at(10, 30);
+  grid.moist[wet] = 0.9;
+  assert.ok(view({ grid, i: wet }).freshWater >= VETO.freshWaterMin, "the fixture sea cell is dry");
+  assert.equal(score(wet), 0, "a sea cell must be vetoed");
   assert.equal(score(good, "reported"), 0, "a reported region must be vetoed");
 
   const steep = at(61, 30);
@@ -195,6 +201,24 @@ test("placeSettlements meets the quota exactly, by tier", () => {
   assert.equal(r.settlements.filter((s) => s.rank === "capital").length, 1);
   assert.equal(r.settlements.filter((s) => s.rank === "hub").length, 2);
   assert.equal(r.settlements.filter((s) => s.rank === "village").length, 3);
+});
+
+test("the fixture's six settlements are pinned records, not just six counts", () => {
+  // THE TIEBREAKS ARE ONLY VISIBLE HERE. The fixture has 445 distinct scores
+  // over 5,454 eligible cells, so ties are everywhere (largest group 67) and
+  // the two best cells tie exactly — which of them is the CAPITAL is decided
+  // by the `settlements` stream and then by cell index, and no count assertion
+  // can see it. (On the real 800 x 800 field there are 18,895 eligible cells
+  // and ZERO exact ties, so this fixture is the only venue.)
+  const r = place();
+  assert.deepEqual(r.settlements.map((x) => [x.id, x.rank, ...x.atKm, x.score, x.region]), [
+    ["c01/s01", "capital", 60.5, 108.5, 0.93, "c01/r02"],
+    ["c01/s02", "hub", 60.5, 11.5, 0.93, "c01/r01"],
+    ["c01/s03", "hub", 60.5, 47.5, 0.68, "c01/r04"],
+    ["c01/s04", "village", 60.5, 38.5, 0.68, "c01/r03"],
+    ["c01/s05", "village", 60.5, 99.5, 0.68, "c01/r01"],
+    ["c01/s06", "village", 60.5, 29.5, 0.68, "c01/r02"],
+  ]);
 });
 
 test("no settlement lands on a sea cell, an ice/lava biome, or a reported region", () => {
@@ -267,6 +291,22 @@ test("placeSettlements is deterministic", () => {
 
 // ── the pinned path ───────────────────────────────────────────────────────
 
+test("a re-ordered regions[] is a loud error — grid.owner is an INDEX into it", () => {
+  const grid = coastWorld(); ownRegions(grid);
+  assert.throws(() => placeSettlements({ grid, premises: PREMISES, regions: regions().reverse(),
+    manifest: M, stream: SETTLEMENT_STREAM }), /grid\.owner indexes regions\[\]/);
+  assert.throws(() => placeSettlements({ grid, premises: PREMISES, regions: regions().slice(0, 4),
+    manifest: M, stream: SETTLEMENT_STREAM }), /grid\.regionIds has/);
+});
+
+test("a region naming a continent no premise declares is a loud error", () => {
+  const grid = coastWorld(); ownRegions(grid);
+  const regs = regions();
+  regs[3].continent = "c99";
+  assert.throws(() => placeSettlements({ grid, premises: PREMISES, regions: regs,
+    manifest: M, stream: SETTLEMENT_STREAM }), /names continent c99/);
+});
+
 test("a raw pinned record is a loud TypeError, never a silent mis-placement", () => {
   assert.throws(() => place({
     pinned: [{ id: "gildmark", pin: { at: [60, 60] }, settlementRank: "capital" }],
@@ -301,6 +341,48 @@ test("pinned records are placed BEFORE scoring and consume their tier's quota", 
   assert.equal(new Set(r.settlements.map((s) => s.id)).size, r.settlements.length);
 });
 
+test("a duplicate pinned id and an out-of-bounds pinned cell are loud TypeErrors", () => {
+  const pin = { id: "c01/s01", at: [60, 30], cell: [60, 30], continent: "c01",
+                region: "c01/r03", rank: "hub" };
+  assert.throws(() => place({ pinned: [pin, { ...pin }] }), /pinned id c01\/s01 appears twice/);
+  assert.throws(() => place({ pinned: [{ ...pin, cell: [600, 30] }] }),
+    /outside the 120 x 120 grid/);
+});
+
+test("every way a pin can contradict the fabric is REPORTED, and the pin is never moved", () => {
+  const mk = (over) => ({ id: "c01/s01", at: [60, 30], cell: [60, 30], continent: "c01",
+                          region: "c01/r03", rank: "hub", ...over });
+  const at = (over) => place({ pinned: [mk(over)] }).problems;
+  assert.ok(at({ cell: [10, 30], at: [10, 30], region: "c01/r03" })
+    .some((p) => /is on a sea cell/.test(p)));
+  assert.ok(at({ region: "c01/r06" }).some((p) => /a reported region/.test(p)));
+  assert.ok(at({ region: "c01/r99" }).some((p) => /which is not a region/.test(p)));
+  assert.ok(at({ at: [12, 90] }).some((p) => /the two disagree by more than one cell/.test(p)));
+  // and in every case the pin is still placed at its committed point
+  const r = place({ pinned: [mk({ region: "c01/r06" })] });
+  assert.deepEqual(r.settlements.find((s) => s.id === "c01/s01").atKm, [60, 30]);
+});
+
+test("an over-filled tier is REPORTED — problems reported under-fill only", () => {
+  const pins = [1, 2, 3].map((n) => ({ id: `c01/p0${n}`, at: [20 + n * 20, 20 + n * 20],
+    cell: [20 + n * 20, 20 + n * 20], continent: "c01", region: "c01/r03", rank: "capital" }));
+  const r = place({ pinned: pins });
+  assert.ok(r.problems.some((p) => /3 pinned capitals against a quota of 1/.test(p)),
+    JSON.stringify(r.problems));
+  assert.equal(r.settlements.filter((s) => s.rank === "capital").length, 3, "a pin was dropped");
+});
+
+test("two pins closer than the village separation are REPORTED, not moved apart", () => {
+  const pins = [
+    { id: "c01/p01", at: [60, 30], cell: [60, 30], continent: "c01", region: "c01/r03", rank: "hub" },
+    { id: "c01/p02", at: [61, 30], cell: [61, 30], continent: "c01", region: "c01/r03", rank: "hub" },
+  ];
+  const r = place({ pinned: pins });
+  assert.ok(r.problems.some((p) => /c01\/p01 and c01\/p02 are 1.00 km apart/.test(p)),
+    JSON.stringify(r.problems));
+  assert.deepEqual(r.settlements.find((s) => s.id === "c01/p02").atKm, [61, 30]);
+});
+
 test("a pinned record off owned land is a reported problem, not a placed settlement", () => {
   const r = place({ pinned: [{ id: "c01/s01", at: [5, 5], cell: [5, 5],
                                continent: "c01", region: null, rank: "hub" }] });
@@ -326,6 +408,15 @@ test("assignLevelBands rings by distance from the origin capital and reports the
     assert.deepEqual(r.levelBand, bands[Math.min(bands.length - 1, Math.floor(d / ringKm))],
       `${r.id} at ${d.toFixed(1)} km is banded ${JSON.stringify(r.levelBand)}`);
   }
+  // THE OUTERMOST CLAMP. `bands` covers 0-360 km; the frame's diagonal is
+  // 566 km, so a region past the last ring must land IN the last ring rather
+  // than read `bands[undefined]`.
+  regs[0].centroidKm = [origin.atKm[0] + 500, origin.atKm[1]];
+  assignLevelBands({ regions: regs, settlements, manifest: M, problems });
+  assert.deepEqual(regs[0].levelBand, bands[bands.length - 1],
+    "a region beyond the outermost ring is not clamped into it");
+  regs[0].centroidKm = [30, 20];
+  assignLevelBands({ regions: regs, settlements, manifest: M, problems });
   // non-decreasing in distance, which is the property spec 11 buys
   const sorted = regs.map((r) => ({
     d: Math.sqrt((r.centroidKm[0] - origin.atKm[0]) ** 2 + (r.centroidKm[1] - origin.atKm[1]) ** 2),
@@ -406,18 +497,37 @@ function realWorld() {
   return REAL;
 }
 
-test("REAL WORLD — the two water measures are ONE construction, joined cell by cell", () => {
-  // grid.fetchKm is max-over-axes (wave exposure, what Plan D's pinned harbour
-  // records declare against); narrowWaterKm is min-over-axes (enclosure, what
-  // spec 6.5's bay test needs). Same four sweeps, so narrow <= fetch always.
+test("REAL WORLD — narrowWaterKm and grid.fetchKm are ONE construction, joined by re-deriving it", () => {
+  // `narrow <= fetch` is a TAUTOLOGY (min <= max of the same two expressions)
+  // and review A was right that it joins nothing. What joins them is
+  // RE-DERIVING classifySea's own quantity from narrowWaterKm's sweeps and
+  // comparing cell by cell: if either definition moves, this reds.
   const { grid } = realWorld();
   const narrow = narrowWaterKm({ grid });
+  // the max-over-axes twin, built by swapping min for max in the same sweep
+  const { w, h, n } = grid;
+  const isSea = (i) => (grid.flags[i] & FLAG.SEA) !== 0;
+  const runL = new Int32Array(n), runR = new Int32Array(n), runU = new Int32Array(n), runD = new Int32Array(n);
+  for (let y = 0; y < h; y++) {
+    let r = 0;
+    for (let x = 0; x < w; x++) { const i = y * w + x; r = isSea(i) ? r + 1 : 0; runL[i] = r; }
+    r = 0;
+    for (let x = w - 1; x >= 0; x--) { const i = y * w + x; r = isSea(i) ? r + 1 : 0; runR[i] = r; }
+  }
+  for (let x = 0; x < w; x++) {
+    let r = 0;
+    for (let y = 0; y < h; y++) { const i = y * w + x; r = isSea(i) ? r + 1 : 0; runU[i] = r; }
+    r = 0;
+    for (let y = h - 1; y >= 0; y--) { const i = y * w + x; r = isSea(i) ? r + 1 : 0; runD[i] = r; }
+  }
   let sea = 0, strictlyLess = 0;
-  for (let i = 0; i < grid.n; i++) {
-    if ((grid.flags[i] & FLAG.SEA) === 0) { assert.equal(narrow[i], -1); continue; }
+  for (let i = 0; i < n; i++) {
+    if (!isSea(i)) { assert.equal(narrow[i], -1); assert.equal(grid.fetchKm[i], -1); continue; }
     sea++;
-    assert.ok(narrow[i] <= grid.fetchKm[i] + 1e-6,
-      `cell ${i}: narrow ${narrow[i]} > fetch ${grid.fetchKm[i]}`);
+    const across = runL[i] + runR[i] - 1, down = runU[i] + runD[i] - 1;
+    assert.equal(grid.fetchKm[i], Math.max(across, down) * grid.cellKm,
+      `cell ${i}: classifySea's fetchKm is no longer max-over-axes of these sweeps`);
+    assert.equal(narrow[i], Math.min(across, down) * grid.cellKm);
     if (narrow[i] < grid.fetchKm[i]) strictlyLess++;
   }
   assert.equal(sea, 377600);
@@ -602,7 +712,13 @@ test("REAL WORLD — all 9 level-band rings are populated from the Wealdmarch ca
 
 test("REAL WORLD — every settlement is on its continent's road network", () => {
   const { part, p11, p12 } = realWorld();
-  assert.deepEqual(p12.problems, []);
+  // The only two problems on this world are the two single-cell "rivers" the
+  // trunk-river rule declines to draw — no settlement is unreachable overland.
+  assert.deepEqual(p12.problems, [
+    "roads: c08's highest-accumulation river is a single cell at [226.25,322.25] — no trunk river emitted",
+    "roads: c11's highest-accumulation river is a single cell at [332.75,82.25] — no trunk river emitted",
+  ]);
+  assert.equal(p12.problems.filter((x) => /not reachable overland/.test(x)).length, 0);
   const byCont = new Map();
   for (const s of p11.settlements) {
     if (!byCont.has(s.continent)) byCont.set(s.continent, []);
@@ -666,14 +782,24 @@ test("REAL WORLD — one trunk river per continent that has a river at all", () 
     if (o >= 0) withRivers.add(part.regions[o].continent);
   }
   const traced = Object.keys(p12.trunkRivers).sort();
-  assert.deepEqual(traced, ["c02", "c03", "c04", "c05", "c06", "c07", "c08", "c11", "c12"]);
+  // c08 and c11 each hold ONE river cell that drains to sea with no inflow —
+  // a single point, not a polyline. They are named in `problems` and omitted.
+  assert.deepEqual(traced, ["c02", "c03", "c04", "c05", "c06", "c07", "c12"]);
+  assert.deepEqual([...withRivers].sort(),
+    ["c02", "c03", "c04", "c05", "c06", "c07", "c08", "c11", "c12"]);
   for (const c of traced) assert.ok(withRivers.has(c), `${c} has a trunk river and no RIVER cell`);
   for (const [c, r] of Object.entries(p12.trunkRivers)) {
     assert.equal(r.name, null, `${c}'s trunk river is named — Plan D mints names`);
-    assert.ok(r.points.length >= 1);
+    assert.ok(r.points.length >= 2, `${c}'s trunk river has ${r.points.length} point(s)`);
+    // and every point is on its own landmass
+    for (const [x, y] of r.points) {
+      const i = idx({ grid, cx: Math.floor(x / grid.cellKm), cy: Math.floor(y / grid.cellKm) });
+      assert.equal(part.regions[grid.owner[i]].continent, c,
+        `${c}'s trunk river has a point on ${part.regions[grid.owner[i]].continent}`);
+    }
   }
   assert.deepEqual(Object.fromEntries(traced.map((c) => [c, p12.trunkRivers[c].points.length])),
-    { c02: 74, c03: 47, c04: 7, c05: 87, c06: 17, c07: 29, c08: 1, c11: 1, c12: 8 });
+    { c02: 74, c03: 47, c04: 7, c05: 87, c06: 17, c07: 29, c12: 8 });
 });
 
 test("REAL WORLD — routeRoads is independent of the heap tiebreak and of input order", () => {
@@ -702,7 +828,14 @@ test("REAL WORLD — 60 complexes anchored against the manifest quota, no proble
   // manifest declares `floors: 190` beside `complexes: 60`; P13 anchors the
   // DOOR. The count is pinned so the omission is a stated fact rather than a
   // number someone later assumes was generated.
-  assert.equal(MANIFEST.quotas.dungeons.floors, 190);
+  assert.deepEqual(MANIFEST.quotas.dungeons,
+    { complexes: 60, floors: 190, families: 3, familySize: 8, bespoke: 36 });
+  // P13 produces `complexes` and NOTHING ELSE: no floor, no family, no bespoke
+  // marker. Pinned so the omission is a stated fact rather than a number a
+  // later reader assumes was generated.
+  for (const a of realWorld().p13.anchors)
+    assert.deepEqual(Object.keys(a).sort(),
+      ["continent", "entranceType", "handle", "hopsToSettlement", "region"]);
 });
 
 test("REAL WORLD — every anchor is dungeonCapable, in range, and its hops are serialised", () => {
@@ -740,7 +873,6 @@ test("REAL WORLD — the per-region cap does not bind, and the supply says why",
   for (const a of p13.anchors) per.set(a.region, (per.get(a.region) ?? 0) + 1);
   assert.equal(Math.max(...per.values()), 1, "round 1 no longer fills the quota");
   assert.equal(per.size, 60);
-  assert.ok(MAX_PER_REGION >= 1);
 });
 
 test("REAL WORLD — anchors are spread across the settled continents", () => {
@@ -758,4 +890,31 @@ test("REAL WORLD — anchorDungeons does not move when instances[] is re-ordered
   const again = anchorDungeons({ instances: [...lf.instances].reverse(), regions: part.regions,
     settlements: p11.settlements, lexicon: LEXICON, manifest: MANIFEST, stream: settleStream });
   assert.deepEqual(again.anchors, p13.anchors);
+});
+
+// ── the f-town-<slug> hard interface for Plan E ───────────────────────────
+
+test("townSlug falls back to the id, because every Plan C title is null", () => {
+  assert.equal(townFeatureId("gildmark"), "f-town-gildmark");
+  assert.equal(townSlug({ settlement: { id: "c02/s01", title: null } }), "c02-s01");
+  assert.equal(townSlug({ settlement: { id: "c02/s01", title: "Gildmark" } }), "gildmark");
+  assert.equal(townSlug({ settlement: { id: "c02/s01", title: "Netstead Bight" } }), "netstead-bight");
+  assert.equal(townSlug({ settlement: { id: "c02/s01", title: "  Tallow'quay  " } }), "tallow-quay");
+  // The plan's buildTrunk writes slugOf(s.title) directly; on a Plan C
+  // settlement that is slugOf(null), which slugs to the string "null" — a
+  // legal-looking id pointing at the wrong town, 45 times over.
+  assert.equal(slugOf(null), "null");
+  assert.throws(() => townSlug({ settlement: { id: "c02/s01", title: "???" } }),
+    /is not a legal f-town-<slug> tail/);
+});
+
+test("REAL WORLD — 45 f-town ids, all conforming, none colliding", () => {
+  const { p11 } = realWorld();
+  const ids = townFeatureIds({ settlements: p11.settlements });
+  assert.equal(ids.size, 45);
+  for (const id of ids.keys()) assert.match(id, /^f-town-[a-z0-9-]+$/);
+  assert.ok(ids.has("f-town-c02-s01"));
+  assert.throws(() => townFeatureIds({
+    settlements: [{ id: "a/b", title: "Gildmark" }, { id: "c/d", title: "GILDMARK" }] }),
+    /both slug to f-town-gildmark/);
 });
