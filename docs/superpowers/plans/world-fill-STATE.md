@@ -6,8 +6,15 @@ It exists so a new session does not need the previous session's conversation. If
 is wrong, fix the file — do not work around it in a prompt.
 
 Last updated: 2026-08-22, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`),
-**Plan C was claimed** as F-048, and **Plan C seams 1-5 (Tasks 1-9) were built and adjudicated**
-— see §9, §10, §11, §12, §13 and **§14**, and **ninety** confirmed plan errors in §5.
+**Plan C was claimed** as F-048, **Plan C seams 1-5 (Tasks 1-9) were built and adjudicated**, and
+**seam 6 (Task 10) was built** — see §9-§15 and **§16**, and **a hundred and seventeen** confirmed
+plan errors in §5.
+
+**If you read one thing in §16, read "THE WATER TRUNK".** An ocean grown over the sea cells the way
+the plan describes ENCLOSES Wealdmarch and Reedstrand, and a spine placement has no holes — the
+emitted polygon would have contained 18,300 km² it does not own, against a G-OVERLAP limit of 60.6.
+§16 also records that the plan asks for the draft root to be gate-green AND for all 20 authored
+edges to survive, which cannot both be true.
 
 **If you read one thing in §13, read "THE NAMING STREAM".** The seam-3 wrong-stream defect happened
 a THIRD time, in seam 4, under the name `names`; it is now impossible to spell rather than merely
@@ -27,7 +34,7 @@ world it pinned was not the world seam 2 fitted the thirteen continents to.
 | --- | --- | --- |
 | A — Unblock and Afford | F-046 | **SHIPPED** to release/1.8, 2026-08-19. All 15 acceptance criteria verified. |
 | B — Vocabulary and Render | F-047 | **SHIPPED** to release/1.8, 2026-08-22. All 12 tasks; Gate 1 13/13. |
-| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. Tasks 1-9 built and seams 1-5 adjudicated (§14); Task 10 next. |
+| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. Tasks 1-10 built; seams 1-5 adjudicated (§14, §15), **seam 6 (Task 10) built and not yet reviewed (§16)**. Task 11 next. |
 | D — Pinned, Bound, Relations | — | not started |
 | E — Redraw and Prose | — | not started |
 
@@ -148,7 +155,7 @@ Notes carried forward:
 
 ## 5. Where the plan documents are WRONG
 
-**Ninety-eight confirmed** — the table below, counted 2026-08-22 (the running prose count had drifted: it read "seventy" at 94 rows). Each was found by running code, not by reading. **Verify a brief against the
+**A hundred and seventeen confirmed** — the table below, counted 2026-08-22 (seam 6 added nineteen) (the running prose count had drifted: it read "seventy" at 94 rows). Each was found by running code, not by reading. **Verify a brief against the
 tree before trusting it** — this is the single most reliable source of defects in the programme.
 
 | Where | The plan says | Actually |
@@ -253,6 +260,25 @@ tree before trusting it** — this is the single most reliable source of defects
 | **C, Task 9a** (:5169) and **C, Task 10** (:6614) | `assignLevelBands({ regions, settlements, manifest })` | the function's whole stated purpose is that a moved difficulty-gradient origin "says so in `problems` rather than in nobody's log" — and `problems = []` defaulted it into nobody's log. **Task 10's own call site passes no `problems` and reads no return value**, so as the plan is written the origin record and the unbanded-region report are both discarded. `problems` is now REQUIRED and throws without one. |
 | **spec §6.4 rule 2** ("no interior detail inside a reported region — no settlement dot, **no road**, no terrain fill") | roads must not cross a reported region | **unsatisfiable as written, and not previously recorded.** 120 of 160 regions are reported, so a continent-spanning MST cannot avoid them: measured **20 of 38 roads, 956 of 1,666 points**, run through reported ground. No gate reds — Task 11's `gWorldPoi` deliberately does not count roads ("roads are inter-region; counted at their endpoints' settlements") — so this is a SPEC error, not a generator defect. **Plan E must decide whether to draw road ink over hatched ground**; the alternative readings are "no road ENDPOINT" or "no road INK, route freely". |
 | **C, Global Constraints** and `manifest.quotas.dungeons` | `{ complexes: 60, floors: 190, families: 3, familySize: 8, bespoke: 36 }` | **P13 produces `complexes` and nothing else.** `floors` occurs exactly twice in the whole Plan C document, both times as a declaration; no pass generates a floor, a family or a bespoke marker. Pinned in `settlements.test.mjs` so the omission is a stated fact. |
+| **C, Task 10** `MAX_TRUNK_RING_POINTS = 800` (:6186) | a world-tier child may carry 800 ring vertices | **the EFFECTIVE cap is 160.** `check_content.mjs:2592` takes `min(load-budget.maxRingPoints, VERTEX_CAP[tier])` and the committed `maxRingPoints` is 160, so the global term binds on every tier — the gate's own comment says so. A trunk ring built to the plan's 800 reds G-VERTEX-BUDGET on the draft root. `trunkRingCap({loadBudget})` reads the committed file instead of restating a number. Measured worst trunk ring: **159 of 160**. |
+| **C, Task 10** `buildWaterTrunk` (:6805) | grow the three oceans over the sea cells by quota and emit `ringsFromOwner`'s ring | **an ocean that surrounds a landmass ENCLOSES it, and a spine placement has no holes.** Measured with the plan's own construction: Galereach came back with two holes worth **15,103 and 3,197 km²** — Wealdmarch and Reedstrand — and Keelbreak with one of **998**. `rings[0]` would have contained them whole against a G-OVERLAP limit of 0.005 × min(41800, 12127) = **60.6 km²**. Topological, not a resolution artefact: any region covering ~96% of the water around an island surrounds it. Closed by CORRIDORS of reserved sea cells, cut only where a flood fill measures an enclosure — 5 of them (c02, c06, c07, c10, c13), 255 km². Cutting one per landmass up front was tried and is WRONG: 13 corridors sever the sea into basins and the quotas came back 131,753 / 121,600 / 23,518 of 167,200 / 121,600 / 76,000. |
+| **C, Task 10** `seaSeedCell` (:6317) | seed sea `k` at every `1+k`-th interior cell of its ocean | put `n-drowned-pavement` in a **750-cell pocket of a 14,400-cell quota**. The eroded interior of an ocean is fragmented; seeding the DEEPEST unclaimed interior cell fills all nine exactly. The function is deleted rather than kept beside a rule that does not work. |
+| **C, Task 10** `buildTrunk` / `waterNode` node shape (:6759, :6866) | the node object as written | **omits `interior`, and `canonicalNode` reads `doc.interior.units` unconditionally** (`check_spine_emit.mjs:57`) — a TypeError before a single file is written. Every generated node carries `{units: "km", perParentUnit: 1}` and the writer derives `size`/`originInParent`. |
+| **C, Task 10** `buildTrunk` features (:6781) | `attrs: { rank: s.rank, region: s.region }` | `spine-node.schema.json`'s feature `attrs` is `additionalProperties: false` over a CLOSED key set (`name note role town reaches labelAt tidalLimit ford hardEdgeAtY detached inert hazard`). `rank` and `region` are not in it. Emitted as `{name, role, town}`. |
+| **C, Task 10** (:6778) `slugOf(s.title)` | the f-town feature id | **every generated settlement's title is `null` in Plan C**, so all 45 features would be `f-town-null` — a single id, 45 times over, on nodes G-CONTAIN and G-NET both walk. `townSlug` (seam 5) is the re-export, and it also refuses a titleless PIN. |
+| **C, Task 10** `runPasses` streams (:6578, :6603, :6612) | `mintSeed({ parentStream: seed, name: "terrain" / "vegetation" / "settlements" })` | all three THROW (§13's guard) and a source scan over `tools/mapforge` reds on the written call site. And P9 must take the **TERRAIN** stream, not `vegetation`: every committed golden — `partition.test.mjs`, `landforms.test.mjs`, `settlements.test.mjs`, `roads.test.mjs`, `dungeons.test.mjs` — drives `partitionRegions` off terrain. Measured on `vegetation`: **no capital on c02**, the level bands anchored on c03 instead, and `roads: no sea route from c05/s01 to c08/s01`. Re-seeding the partition is a whole-world re-baseline. `vegetation` remains committed in `derived.json` and claimed by no pass. |
+| **C, Task 10** `writeRun` preserved anchors (:6980-6984) | find the host by `pointInRing(doc.placement.anchor)` and carry the node's geometry VERBATIM | **no host exists for any of the three.** They sit in the retired 30 × 38 km cluster-1 frame — n-thornveil's anchor is `[24.4, 26]`, n-millcross's `[17.2, 23.6]` — and every one of those points is open sea in the generated world (the nearest landmass, c07 Driftholt, runs x 16-76 / y 62-122). The plan's own code then pushes a problem and DROPS the node, and G-ALIAS reds on two `representsNodeId` targets. They are TRANSLATED by their LINEAGE continent's anchor delta instead (all three descend from n-cluster1, whose node id survives), which is the same translation Plan D derives `PIN_OFFSET` from. Verbatim geometry is Plan E's redraw to restore. |
+| **C, Task 10 Step 1** (:5873) owner-histogram test | `owned + unowned + seaCells === 640000` | **6,400 cells short on a correct world.** Regions tile NET land and lakes sit BESIDE it (§5, §12), so the identity needs FOUR terms: `Σ ownerHistogram + unowned + lake + sea`. The generator had the mirror-image bug — counting a lake cell as `unowned` as well — which reads 646,400. |
+| **C, Task 10 Step 1** | "the REAL spine gate is green on the draft root … `0 failures`" AND "every authored edge survives into the draft" | **CONTRADICTORY, and the plan states both.** Measured: ALL 20 committed edges point at cluster-1 chart nodes and features the 36-file census deletes, so an `edges.json` filtered to what resolves is EMPTY — the exact outcome the plan spends a paragraph forbidding. The edges are carried WHOLE, every consequence is a named work order, and the test asserts the gate's failures are EXACTLY that set and nothing else: **91 failures, all G-NET or G-CANON-LEG, 60 work orders** (gSpineNet reports a relay edge's `via` chain twice, so the counts differ by construction and the SETS do not). |
+| **C, Task 10 Step 1** (:6110) "the draft folder holds the DRAWINGS" | `sheets/fabric.svg` and `sheets/overlay.svg` exist after a run | `render-sheet.mjs`'s `SHEETS` registry holds `cluster1`, `atlas`, `synthetic` — **`fabric` and `overlay` are TASK 13's files** (`tools/mapforge/lib/{overlay,fabric}-sheet.mjs`, per the plan's own Task→file map). The CLI's plumbing is written and exercised through an injected stub; the test pins the ABSENCE of the two registry entries so Task 13 going green forces the assertion to be upgraded. |
+| **C, Task 10 Step 1** (:5839) | `assert.ok(m.timings.total < 8000)` | a WALL CLOCK inside a parallel `node --test`. Measured: the same generation is **~6.5 s alone and 19.6 s** while the rest of the mapforge suite runs (and `render-sheet.test.mjs` spawns the whole suite again). As written it is a coin flip — the same defect as `G-RASTER-BUDGET`. The CLI still exits 1 over `failMs`; the TEST accepts that exit, reports the number, and asserts a ceiling of `failMs × 4`. |
+| **C, Task 10 Step 4b** | "the exception is additive and no committed node is a `continent>town` edge today" | **two committed tests pin `continent>town` as ILLEGAL**: `scripts/tests/spine.test.mjs:27` asserts `depthLegal(continent,town) === false` and "the exception is exactly one pair", and `scripts/tests/spine-gates.test.mjs:145` drives a whole fixture root (`g-depth-town-under-continent`) that must go RED. Both updated with the reason; the fixture skips a depth with `site` instead so G-DEPTH keeps a red case. |
+| **C, Task 10** `worldComposition` (:7079) | n-atlas gets `{ocean: pct, rock: half the rest, ice: half the rest}` | the 13 generated continents carry MEASURED biome compositions, so an invented three-key triple reds G-COMP-ROLLUP (±3 pp per key, L1 ≤ 8) and G-ATLAS-ROLLUP (±2 pp) together. n-atlas's composition is computed as the area-weighted rollup of its own children plus the interstitial. Likewise the plan's `compositionFor` even split across the palette is a claim the fabric contradicts on its own numbers. |
+| **C, Task 10** `buildTrunk` (:6769) | every continent gets `interstitial: null` | a continent that ADOPTS a preserved chart anchor has children, so its unclaimed share is > 0.5% and G-COMP-ROLLUP demands one. Measured: `n-cluster1: unclaimed 98.5% but no interstitial` plus four per-key deltas and `L1 100.8 pp > 8.0`. |
+| **C, Task 10** `writeRun` collision guard (:6998) | walks `[atlas, ...generated]` | `generated` in the plan is `run.trunk` only; the CARRIED anchors share the same id space and the guard cannot see them. |
+| **C, Task 10** `canonStringify` for the fabric (:7041) | the spine's canonical serialiser | it puts every coordinate PAIR on its own line, which takes `continent-02.json` from 241,698 to **399,381 bytes** against the COMMITTED 262,144 B per-file cap — over on 4 of the 13. `fabricStringify` keeps the top level readable and puts one RECORD per line: worst file **214,037 B, 81.6% of budget**, and a fabric file is still a line diff between two seeds. |
+| **C, Global Constraints line 46** fractal coast detail | 3 levels, ≤ 0.25 km amplitude, on the coast arcs | applied to the fabric contour it costs **224 ms** of a 4,000 ms budget and takes the 13 outer rings from 2,364 to **17,981 vertices** — 33.8 KB of one fabric file — and what it buys is detail BELOW the data's own resolution (0.5 km cells, 0.25 km amplitude). OFF in P14 (`FRACTAL_COAST = false`, reachable by argument); the right venue is Plan E's redraw ink, where the amplitude can be chosen against the sheet scale. **`fractalise` therefore still has no production caller.** |
+| **`tools/mapforge/tests/_source-scan.mjs`** `stripComments` | one stripper, one policy | **the fourth hole in the determinism ban's COVERAGE.** It ran the block-comment regex FIRST, so a `/*` inside a LINE comment — `// 2. content/world/premises/*.json`, an ordinary header line — opened a block comment and blanked the file down to the next `*/`. Reproduced: that comment plus `Math.cos(1) + Date.now()` prepended to `lib/fabric.mjs` left BOTH determinism scans at **30 pass / 0 fail**. Fixed to a single pass; the two `**` entries the old form reported turn out to have been artefacts of the same overrun. |
 
 The plan text already self-corrects two more: spec §8.6's "checkSpine is already parameterised
 with an injected collector" (it is not — it closes over module-level bindings) and §8.2's
@@ -1752,3 +1778,129 @@ capital there, and the corrected `placePinned` result shape including `title`. A
 pinned in `settlements.test.mjs`'s real-world block. **That insert added 20 lines at Plan D `:1827`;
 every Plan D line citation BELOW 1827 in an external note shifts by +20.** No STATE citation into
 Plan D is by line number, so nothing here rotted.
+
+---
+
+## 16. Plan C seam 6 (Task 10) — settled, do not re-raise
+
+Appended 2026-08-22 by the seam-6 implementation. Commits `446a768` (P14 ring building, the
+water partition, the fabric writer), `e14c8ac` (the comment-stripper hole), `dd771cc` (the CLI
+and the draft root). **Nineteen more plan errors are in §5 above.** No review has run on this
+seam yet.
+
+### What the seam guarantees
+
+- **`node tools/mapforge/generate-world.mjs --seed 7c9e4a2f8b1d6e03 --out build/mapforge/<runId>
+  --no-png --stage-report` writes a COMPLETE content root** — 36 trunk node files, a `derived.json`
+  sidecar, `edges.json`, 14 fabric files, 13 handle ledgers, the copied authored inputs, the
+  `baseline/` snapshot, `manifest.json` and `report.md`: **72 files**. Two runs are byte-identical
+  across every file (the run manifest's per-file sha256 map is what is compared; `timings` is
+  deliberately not).
+- **The trunk census is exactly the plan's**: `world 1, continent 13, ocean 3, sea 9, region 2,
+  town 1, playroot 1, playspace 1, site 3, fixture 2` = 36. Every continent, ocean and sea id comes
+  from `manifest.landmasses[].nodeId` / `oceans[].nodeId` / `seas[].nodeId`; **c02 Wealdmarch is
+  still `n-cluster1`** and no `n-wealdmarch` exists. `n-westsea` is emitted at `tier: "sea"`.
+- **The seven runtime nodes are copied byte for byte**, found by root membership from `roots.json`.
+- **The sixteen world-tier polygons are provably disjoint.** Continents and oceans are traced from
+  ONE shared arc topology, so a coast arc is simplified once and both owners get identical
+  vertices: measured pairwise `exactIntersectionArea` over all 120 pairs is **0.000**. Land
+  polygons total 65,580 km² against a 65,600 budget, oceans 91,237 against 91,200, and the frame
+  residual is **3,183 km² against a committed interstitial of 3,200** (−0.53%).
+- **Every ring is inside G-VERTEX-BUDGET's EFFECTIVE cap of 160** — worst 159. The cap is met on
+  ARCS (`capArc`, a pure function of one arc's raw points at ONE epsilon), never on rings; see §5
+  and `fabric.mjs`'s header for why the plan's `fitVertexCap` tears a shared boundary.
+- **Region records carry `rings` AND `holes`.** 18 of the 160 have more than one ring and 3 enclose
+  holes. Under the plan's single-`ring` shape the world drops **384.88 km² of second lobes while
+  silently ADDING 358.88 km² of enclosed holes** — a 29.00 km² world-wide net that hides c04/r13
+  losing **162.50 of its declared 470.50 (34.5%)**. The aggregate is exactly the "two errors cancel"
+  trap §11's hole-vs-lobe ruling names.
+- **The draft root is a real content root and the REAL gate runs on it**: `36 nodes`,
+  `world-budget: fabric 14 files, 1,065,943 bytes`, `spine-load: 36 nodes, 124,189 bytes, max
+  children 16/24, max ring 159/160`, `1,740 instances / 170 types`. Every failure is G-NET or
+  G-CANON-LEG on the carried canon and every one has a matching work order — see §5.
+- **45 `f-town-<slug>` point features**, one per settlement, on their continent nodes, ids unique
+  and none of them `f-town-null`.
+
+### THE WATER TRUNK — the part of Task 10 that is not what the plan describes
+
+Read §5's `buildWaterTrunk` row first. In short: a spine `placement` is one ring with no hole
+support, and an ocean covering ~96% of the water around an island contains the island. The
+generator cuts CORRIDORS of reserved sea cells — from a landmass to the nearest frame edge — but
+only where a flood fill over the complement of an ocean measures an enclosure. On this world that
+is **5 corridors (c02, c06, c07, c10, c13), 1,020 cells, 255 km², settled in 2 passes**, and the
+water left over after the three quotas is **12,800 cells = 3,200.00 km², the committed interstitial
+to the cell**.
+
+The nine seas are a SECOND topology, carved inside their ocean at a 16-cell (8 km) margin, because
+the ocean's territory must INCLUDE its seas (a parent's placement contains its children's) and the
+two boundaries are therefore simplified independently. Measured containment: **100.000% on all
+nine**, seeded at the deepest unclaimed interior cell.
+
+### Decisions taken deliberately
+
+- **P9 takes the terrain stream.** See §5. Re-seeding the partition on `vegetation` is a
+  whole-world re-baseline and is not Task 10's to take; `vegetation` stays committed and unclaimed.
+- **The three preserved chart anchors are TRANSLATED, not carried verbatim.** See §5. Plan E's
+  redraw is what re-pins them properly; Plan D's `PIN_OFFSET` is the same construction.
+- **`DEPTH_EXCEPTIONS` gains `continent>town`**, which is the plan's Step 4b instruction and a real
+  architectural consequence: Plan C's regions are `content/world/fabric/` records, not spine nodes,
+  so the depth-2 tier a town used to hang under does not exist in the trunk. Two committed tests
+  pinned the pair as illegal and are updated with the reason; the G-DEPTH fixture skips a depth
+  with `site` instead so the rule keeps a red case.
+- **`assignByQuota` is a LEVEL BFS, not a binary heap.** Every edge costs 1, so a heap keyed
+  (cost, cellIndex) pops each cost band in ascending cell index — which is "collect the next level,
+  sort by cell index, walk it". Measured **171 ms against 2,111 ms** for a three-source ocean
+  growth, and the owner field is **byte-identical** to the plan's array-of-triples heap on the real
+  world (same digest, same three quotas, same 12,800 unclaimed cells). A typed three-array heap was
+  tried first and is WORSE than either (six element writes per sift swap instead of one pointer).
+- **`fabricStringify`, not `canonStringify`, for the fabric and the ledgers.** See §5: the spine
+  serialiser puts a coordinate pair per line and takes the largest fabric file over its committed
+  byte cap.
+- **The CLI is the ONE file allowed a wall clock**, declared in
+  `determinism-inventory.test.mjs` with the reason beside the ban rather than in the file that
+  wants it. What enforces the property is the reproducibility test, which compares the sha256 of
+  every file written under `content/` across two runs.
+
+### THE BUDGET — reported, not decided
+
+Warm, three runs, on this box (Node v26.5.0), with the whole world built from the committed
+terrain stream:
+
+```
+P1 mask 707   P2 elevation 571   P2b substrate 18   P3 sealevel 67   P5 winds 619
+P6 hydrology 464   P7 water 393   P8 biomes 66   P9 regions 985   P10 landforms 671
+P11 settlements 153   P11b bands 0   P12 roads 763   P13 dungeons 3
+P14 rings+fabric ~355   P14w water-trunk ~825
+TOTAL 6,533-6,602 ms       (budget 4,000, fail 8,000)
+```
+
+**This box is running ~16% slower than the one §15 measured on**: P1-P13 read 5,480 ms here against
+§15's 4,704 ms for the same passes on the same world. Scaled to that box, P14 + P14w cost
+**~1,020 ms** and the end-to-end total is **~5,700 ms** — inside the plan's acceptance criterion
+(which is the FAIL threshold, 8,000, not the 4,000 target) and above the soft budget.
+
+**`failMs 8000` is at risk under contention and this is now measured, not projected.** Running the
+CLI inside `node --test` alongside the rest of the mapforge suite took **19,601 ms** — the suite
+runs files in parallel and `render-sheet.test.mjs` spawns the whole suite again. `budgets.json` was
+**NOT edited**. The CLI still exits 1 over `failMs`, which is right for a CLI; the TEST accepts that
+exit, reports the number and asserts a ceiling of `failMs × 4`. The largest single terms are
+unchanged from §15 — P9 985, P12 763, P14w 825, P1 707 — and the only new lever is P14w, which is
+already 12× cheaper than the plan's heap.
+
+### Open, recorded rather than chased
+
+- **`fractalise` still has no production caller.** See §5's fractal-coast row: 224 ms and 33.8 KB
+  of one fabric file for detail below the grid's own resolution. Plan E's redraw ink is the venue.
+- **`scripts/tests/places.test.mjs`'s two mirror-allowlist tests fail inside a Node 18 container**
+  — `codeFilesNamingTheMirror()` shells out to git and the worktree's `.git` pointer does not
+  resolve inside the container (`fatal: not a git repository`). PRE-EXISTING: they fail with this
+  seam's changes stashed, and they pass on the host. Not a Node 18 defect and not this seam's.
+- **`content/world/premises/` and `content/world/handles/` are still under no byte budget**
+  (§10 filed the first; the handle ledgers total 335,033 bytes over 13 files and
+  `G-WORLD-BUDGET` reports only the `fabric` family). Task 11's.
+- **The trunk's worst ring is 159 of 160.** There is one vertex of headroom, and Plan E's redraw
+  will re-cut these rings. `trunkRingCap` reads the committed budget, so raising `maxRingPoints`
+  is the single lever if the redraw needs one.
+- **`interiorPointKm` is the node anchor, not a centroid**, because an ocean that runs around a
+  landmass is concave and its vertex mean lands on the land (G-ANCHOR). Fixtured.
+
