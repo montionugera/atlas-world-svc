@@ -38,14 +38,16 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { stripComments, codeOfFile, sourceFilesUnder, isSourceFile, LEGACY_IMPRECISE_FILES } from "./_source-scan.mjs";
+import { stripComments, regexStartsAt, codeOfFile, sourceFilesUnder, isSourceFile, LEGACY_IMPRECISE_FILES } from "./_source-scan.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const LIB = resolve(HERE, "../lib");
 const MAPFORGE = resolve(HERE, "..");
+const ROOT_DIR = resolve(HERE, "../../..");
 
 // `Date`, `performance.now` and `Math.random` are a different class: they are
 // not merely imprecise, they are not FUNCTIONS of the input at all. Those stay
@@ -248,30 +250,58 @@ test("nothing on the committed-byte path reads a clock or a random number", () =
 // because holes 3 and 5 both lived in files the ban excludes and were therefore
 // invisible until someone went looking. Coverage of the checker must be wider
 // than coverage of the check.
-test("the stripper never eats live code: every scanned file still PARSES after stripping", async () => {
-  const vm = await import("node:vm");
-  if (typeof vm.SourceTextModule !== "function") {
-    // --experimental-vm-modules is not on. Say so rather than pass silently:
-    // a check that quietly does nothing is the defect this test exists for.
-    assert.ok(true, "SourceTextModule unavailable — see the fallback assertion below");
-  }
-  const broken = [];
+test("the stripper never eats live code: every scanned file still PARSES after stripping", () => {
+  // Parsing an ES MODULE needs `vm.SourceTextModule`, which needs
+  // --experimental-vm-modules. Importing `node:vm` inline and skipping when the
+  // constructor is missing was the FIRST shape of this test, and it was wrong
+  // for exactly the reason the test exists: without the flag — which is how the
+  // suite runs locally AND in CI — it silently checked nothing. So the check
+  // runs in ONE child process that supplies its own flag. One spawn, ~200 ms,
+  // and it cannot quietly become a no-op: the child prints a file count this
+  // test asserts against the count the parent walked.
+  const files = sourceFilesUnder(MAPFORGE);
+  const script = `
+    import { readFileSync } from "node:fs";
+    import { join } from "node:path";
+    import vm from "node:vm";
+    const { sourceFilesUnder, stripComments } = await import(${JSON.stringify(
+      pathToFileURL(join(HERE, "_source-scan.mjs")).href)});
+    const dir = ${JSON.stringify(MAPFORGE)};
+    const broken = [];
+    let checked = 0;
+    for (const f of sourceFilesUnder(dir)) {
+      const src = readFileSync(join(dir, f), "utf8");
+      // Only judge files the ORIGINAL parses as an ES module — a .cts or a
+      // deliberately-broken fixture is not this test's business.
+      try { new vm.SourceTextModule(src, { identifier: f }); } catch { continue; }
+      checked++;
+      try { new vm.SourceTextModule(stripComments(src), { identifier: f }); }
+      catch (e) { broken.push(f + ": " + e.message); }
+    }
+    console.log(JSON.stringify({ checked, broken }));
+  `;
+  const out = execFileSync(process.execPath,
+    ["--experimental-vm-modules", "--input-type=module", "-e", script],
+    { encoding: "utf8", cwd: ROOT_DIR, stdio: ["ignore", "pipe", "ignore"] });
+  const { checked, broken } = JSON.parse(out.trim().split("\n").pop());
+  assert.deepEqual(broken, [],
+    `stripComments produced source that no longer parses — it blanked live code:\n${broken.join("\n")}`);
+  // THE CHECK CANNOT BE A NO-OP. If the child ever stops parsing anything —
+  // a bad flag, a changed API, an empty walk — this is what says so.
+  assert.ok(checked >= files.length - 4,
+    `the parse check only judged ${checked} of ${files.length} files; it has stopped covering the tree`);
+  assert.ok(checked > 50, `only ${checked} files parsed as ES modules — the walk found nothing`);
+});
+
+test("stripping preserves length and line numbering on every scanned file", () => {
+  // file:line reporting in the ban above depends on both.
   for (const f of sourceFilesUnder(MAPFORGE)) {
-    const path = join(MAPFORGE, f);
-    const src = readFileSync(path, "utf8");
+    const src = readFileSync(join(MAPFORGE, f), "utf8");
     const stripped = stripComments(src);
     assert.equal(stripped.length, src.length, `${f}: stripping changed the file length`);
     assert.equal(stripped.split("\n").length, src.split("\n").length,
       `${f}: stripping changed the line count, so file:line reporting is wrong`);
-    if (typeof vm.SourceTextModule !== "function") continue;
-    // Only judge files the ORIGINAL parses as an ES module — a .cts or a
-    // deliberately-broken fixture is not this test's business.
-    try { new vm.SourceTextModule(src, { identifier: f }); } catch { continue; }
-    try { new vm.SourceTextModule(stripped, { identifier: f }); }
-    catch (e) { broken.push(`${f}: ${e.message}`); }
   }
-  assert.deepEqual(broken, [],
-    `stripComments produced source that no longer parses — it blanked live code:\n${broken.join("\n")}`);
 });
 
 test("stripComments: an ESCAPED SLASH in a regex does not open a comment (hole 5)", () => {
@@ -297,9 +327,17 @@ test("stripComments: an ESCAPED SLASH in a regex does not open a comment (hole 5
   assert.ok(div.includes("const half = (a + b) / 2;"));
   assert.ok(!div.includes("a comment"));
   assert.ok(div.includes("export const Y = 1;"));
-  // …and a regex after `return` (an identifier char) is still a regex.
-  const kw = stripComments("const f = () => { return /a\\/b/; };\nexport const Z = 1;");
-  assert.ok(kw.includes("export const Z = 1;"));
+  // …and a regex after a KEYWORD is still a regex, even though the character
+  // before the slash is an identifier character. The body carries `\\/*`, so
+  // reading the slash as division opens a block comment that eats the file.
+  const kw = stripComments("const f = () => { return /a\\/*b/.test(s); };\nexport const Z = 1;");
+  assert.ok(kw.includes("export const Z = 1;"),
+    "a regex after `return` was read as division and its `/*` opened a comment");
+  assert.ok(regexStartsAt("return /x/", 7), "`return /` starts a regex");
+  assert.ok(regexStartsAt("x = /y/", 4), "`= /` starts a regex");
+  assert.ok(!regexStartsAt("(a + b) / 2", 8), "`) /` is division");
+  assert.ok(!regexStartsAt("total / 2", 6), "`identifier /` is division");
+  assert.ok(!regexStartsAt("arr[0] / 2", 7), "`] /` is division");
 });
 
 // THE OLDER STRIPPER TESTS, kept because each names a hole by its measurement.
