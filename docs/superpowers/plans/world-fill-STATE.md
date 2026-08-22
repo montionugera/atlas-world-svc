@@ -1785,8 +1785,17 @@ Plan D is by line number, so nothing here rotted.
 
 Appended 2026-08-22 by the seam-6 implementation. Commits `446a768` (P14 ring building, the
 water partition, the fabric writer), `e14c8ac` (the comment-stripper hole), `dd771cc` (the CLI
-and the draft root). **Nineteen more plan errors are in §5 above.** No review has run on this
-seam yet.
+and the draft root), `d071ab0` (this section), `29258ce` (the refactor pass).
+**Nineteen more plan errors are in §5 above.** No review has run on this seam yet.
+
+**Mutations: 24 distinct, 23 killed, 1 survivor.** The survivor is `capArc`'s one-shot form —
+re-simplifying from the previous rung instead of from the raw points leaves the suite green, and
+that is an EQUIVALENCE rather than a hole: measured over 2,660 comparisons on the real world's 532
+region arcs at five caps and over 2,000 random ragged polylines, one-shot and iterative agree on
+every case, on the x1.125 ladder and on a doubling one. Explained at the call site in
+`fabric.mjs`. A RING is where the two diverge, and `the PLAN's ring-level fitVertexCap tears the
+same seam` in `fabric.test.mjs` reproduces that. The fractal-coast constant was a survivor too
+until the emitted coast vertex count (2,413) was pinned; it is killed now.
 
 ### What the seam guarantees
 
@@ -1867,11 +1876,12 @@ Warm, three runs, on this box (Node v26.5.0), with the whole world built from th
 terrain stream:
 
 ```
-P1 mask 707   P2 elevation 571   P2b substrate 18   P3 sealevel 67   P5 winds 619
-P6 hydrology 464   P7 water 393   P8 biomes 66   P9 regions 985   P10 landforms 671
-P11 settlements 153   P11b bands 0   P12 roads 763   P13 dungeons 3
-P14 rings+fabric ~355   P14w water-trunk ~825
-TOTAL 6,533-6,602 ms       (budget 4,000, fail 8,000)
+P1 mask 773   P2 elevation 597   P2b substrate 33   P3 sealevel 82   P5 winds 624
+P6 hydrology 494   P7 water 398   P8 biomes 67   P9 regions 1008  P10 landforms 637
+P11 settlements 164   P11b bands 1   P12 roads 813   P13 dungeons 3
+P14 rings+fabric 148   P14w water-trunk 1036
+TOTAL 6,878 ms        run totals: 6,287 / 6,326 / 6,878 / 7,019 / 7,047
+                      (budget 4,000, fail 8,000)
 ```
 
 **This box is running ~16% slower than the one §15 measured on**: P1-P13 read 5,480 ms here against
