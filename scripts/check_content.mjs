@@ -44,7 +44,11 @@ import { inkStats } from "../tools/mapforge/lib/png-ink.mjs";
 // of "the shape this fill is clipped to" cannot drift from the emitter's.
 import { pathBounds } from "../tools/mapforge/lib/draft.mjs";
 // Plan C: the content/world/ layer. Same lib/ discipline as spine.mjs — all
-// pure logic lives there; this file is not importable (bare main() + exit).
+// pure logic lives there, so it can be unit-tested without the CLI's argv and
+// process.exit. (An earlier version of this line said "this file is not
+// importable"; it is — it exports patternFilledShapes, summaryLines and Plan A
+// Task 13's runSpineGateInProcess, and world-gates.test.mjs imports the last
+// of those. The conclusion stands, the reason did not.)
 import { loadFabric, gWorldBudget } from "./lib/world.mjs";
 import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
@@ -1758,7 +1762,10 @@ function checkSpineExternalAliases({ opts, report }) {
 // content/world/ — the generated fabric layer. SOFT-SKIPS a content root
 // with no world/ directory, before touching any schema: ~45 pre-existing
 // spine fixtures have no world/ and a hard-fail here reds every one.
-// Returns the fabric-file count.
+// Returns nothing: an earlier draft returned the fabric-file count "for the
+// finish() line", but finish() prints no fabric count and the call site is a
+// bare statement. The count IS reported — by G-WORLD-BUDGET's own
+// `world-budget: fabric N files` note, which is the line under test.
 //
 // CALLED FROM THE TOP OF checkSpine, not from after gSpineBudgets as the plan
 // text says — DEVIATION, with evidence. checkSpine returns 0 at its own first
@@ -1772,7 +1779,7 @@ function checkSpineExternalAliases({ opts, report }) {
 // behind the spine's own soft-skip.
 function checkWorld(opts) {
   const world = loadFabric({ contentRoot: opts.contentRoot });
-  if (!world.present) return 0;
+  if (!world.present) return;
   for (const e of world.errors) fail(`world: ${e}`);
 
   const schemaPath = join(opts.contentRoot, "schemas/world-manifest.schema.json");
@@ -1792,7 +1799,6 @@ function checkWorld(opts) {
     report: fail,
     note: (m) => console.log(m),
   });
-  return world.fabric.length;
 }
 
 function checkSpine(opts, mobTypes) {

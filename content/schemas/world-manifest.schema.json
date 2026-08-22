@@ -130,7 +130,7 @@
       }
     },
     "landmasses": {
-      "type": "array", "minItems": 1,
+      "type": "array", "minItems": 13, "maxItems": 13,
       "items": {
         "type": "object", "additionalProperties": false,
         "required": ["id", "title", "nodeId", "class", "netKm2", "interiorWaterKm2", "surveyed", "reported"],

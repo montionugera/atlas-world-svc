@@ -62,15 +62,22 @@ function readRecord(path, label, errors) {
 export function loadFabric({ contentRoot }) {
   const errors = [];
   const dir = join(contentRoot, "world");
-  const empty = { present: false, manifest: null, budgets: null, fabric: [], world: null, handles: [], errors };
+  const empty = { present: false, manifest: undefined, budgets: undefined, fabric: [], world: null, handles: [], errors };
   if (!existsSync(dir)) return empty;
 
+  // ABSENT and MALFORMED are different facts and the caller acts on each
+  // differently, so they get different values: `undefined` means the file is
+  // not there, `null` means it is there and did not parse to a JSON object
+  // (readRecord has already recorded that in-band). Collapsing them is how
+  // G-WORLD-BUDGET came to report `budgets.json is missing` about a file that
+  // was right there, beside loadFabric's correct message — two failures for one
+  // defect, one of them sending the reader after the wrong thing.
   const manifest = existsSync(join(dir, "manifest.json"))
     ? readRecord(join(dir, "manifest.json"), "world/manifest.json", errors)
-    : null;
+    : undefined;
   const budgets = existsSync(join(dir, "budgets.json"))
     ? readRecord(join(dir, "budgets.json"), "world/budgets.json", errors)
-    : null;
+    : undefined;
 
   const fabricDir = join(dir, "fabric");
   const fabric = [];
@@ -124,11 +131,29 @@ function walkJson(dir, rel, report) {
 // `fabric` / `civil` families, the `cellKm` pin and the `loop` table. Plan B's
 // gSpineWorld deliberately returns quietly when the file is gone so exactly
 // one gate speaks.
-export function gWorldBudget({ contentRoot, budgets, manifest = null, report, note }) {
-  if (!budgets || typeof budgets !== "object" || Array.isArray(budgets)) {
+export function gWorldBudget({ contentRoot, budgets, manifest = undefined, report, note }) {
+  if (budgets === undefined) {
     report(`G-WORLD-BUDGET: world/budgets.json is missing`);
     return;
   }
+  // A file that EXISTS and parses to an array or a scalar is not "missing", and
+  // saying so beside loadFabric's correct `is not a JSON object` sent a reader
+  // looking for a file that is right there (review finding: `budgets.json = []`
+  // produced two failures, one of them false).
+  if (budgets === null || typeof budgets !== "object" || Array.isArray(budgets)) {
+    report(`G-WORLD-BUDGET: world/budgets.json is not a JSON object, so no budget in it can be read`);
+    return;
+  }
+  // The manifest is where every quota this gate reports against lives. Without
+  // it the town-plan line below simply does not print — a measurement silently
+  // absent rather than a measurement failing, which is the failure mode the
+  // print discipline exists to prevent. A world root that carries budgets.json
+  // is an authored world root, and an authored world root has a manifest.
+  // Reproduced: deleting content/world/manifest.json left `--only=spine` at
+  // exit 0, and only the scripts suite (Gate 2 / CI — precheck.sh has no
+  // scripts-suite lane) noticed.
+  if (manifest === undefined)
+    report(`G-WORLD-BUDGET: world/budgets.json is present but world/manifest.json is missing — every manifest-derived quota, including the town-plan line, goes dark rather than red`);
   const section = (name) => {
     const s = budgets[name];
     return s && typeof s === "object" && !Array.isArray(s) ? s : null;
@@ -163,7 +188,18 @@ export function gWorldBudget({ contentRoot, budgets, manifest = null, report, no
       total += bytes;
       if (bytes > fam.maxPer) report(`G-WORLD-BUDGET: ${f.rel} is ${bytes} bytes > per-file budget ${fam.maxPer}`);
     }
-    note(`world-budget: ${fam.name} ${files.length} files, ${total} bytes (budget ${fam.maxFiles}, ${fam.maxTotal ?? fam.maxPer})`);
+    // THE UNITS ARE PART OF THE LINE. It used to read
+    // `(budget ${maxFiles}, ${maxTotal ?? maxPer})`, so for `civil` — which has
+    // no aggregate byte cap at all, deliberately — the per-FILE cap 8192 was
+    // printed in the slot the reader had just been taught holds the aggregate,
+    // beside a measured aggregate. Reproduced with 3 civil files of ~5 KB:
+    // `civil 3 files, 15030 bytes (budget 600, 8192)` reads as a 1.8x violation
+    // and exits 0. The line advertised a bound that does not exist, and it is
+    // this gate's ONLY output for the family. Every term a family actually has
+    // is now named and no term it lacks is implied.
+    const terms = [`${fam.maxFiles} files`, `${fam.maxPer} B/file`];
+    if (fam.maxTotal !== null) terms.push(`${fam.maxTotal} B total`);
+    note(`world-budget: ${fam.name} ${files.length} files, ${total} bytes (budget ${terms.join(", ")})`);
     if (files.length > fam.maxFiles) report(`G-WORLD-BUDGET: ${fam.rel} has ${files.length} files > budget ${fam.maxFiles}`);
     if (fam.maxTotal !== null && total > fam.maxTotal)
       report(`G-WORLD-BUDGET: ${fam.rel} totals ${total} bytes > budget ${fam.maxTotal}`);

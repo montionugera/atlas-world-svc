@@ -11,6 +11,7 @@ import { fileURLToPath } from "node:url";
 // Plan A Task 13's in-process entry: the 30-root sweep below costs ~8 s as
 // spawns and ~0.3 s in process, for the same checkSpine() over the same opts.
 import { runSpineGateInProcess } from "../check_content.mjs";
+import { BIOMES } from "../lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_content.mjs");
@@ -44,8 +45,33 @@ test("a content root with no world/ soft-skips: no world gate output, exit 0", (
 test("G-WORLD-BUDGET prints its measurements on every run", () => {
   const r = runWorldGate(worldFixture());
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /world-budget: fabric 0 files, 0 bytes \(budget 20, 4194304\)/);
-  assert.match(r.out, /world-budget: civil 0 files, 0 bytes \(budget 600, 8192\)/);
+  // EVERY BUDGET TERM CARRIES ITS UNIT, and a family prints only the terms it
+  // has. The plan's grammar was `(budget <maxFiles>, <maxTotal ?? maxPer>)`,
+  // which for `civil` — deliberately without an aggregate byte cap — printed
+  // the PER-FILE cap 8192 in the slot the fabric line had just taught the
+  // reader holds the aggregate, next to a measured aggregate. Reproduced by the
+  // review at 3 civil files of ~5 KB: `civil 3 files, 15030 bytes (budget 600,
+  // 8192)` reads as a 1.8x violation and exits 0. The line advertised a bound
+  // that does not exist, and it is this gate's only output for the family.
+  assert.match(r.out, /world-budget: fabric 0 files, 0 bytes \(budget 20 files, 262144 B\/file, 4194304 B total\)/);
+  assert.match(r.out, /world-budget: civil 0 files, 0 bytes \(budget 600 files, 8192 B\/file\)/);
+  // The civil line must never imply an aggregate cap it does not have.
+  assert.doesNotMatch(r.out, /world-budget: civil .*B total/);
+});
+
+test("a civil family inside every budget it HAS prints no bound it does not have", () => {
+  // The exact reproduction from the review: three ~5 KB civil records. Each is
+  // inside 8192 B/file, three is far inside 600 files, and there is no
+  // aggregate term to be over — so the run is green and the line says so.
+  const dir = worldFixture({ mutate: (d) => {
+    mkdirSync(join(d, "world/civil"), { recursive: true });
+    for (let i = 0; i < 3; i++)
+      writeFileSync(join(d, `world/civil/place-${i}.json`), JSON.stringify({ id: `p${i}`, pad: "x".repeat(4900) }));
+  } });
+  const r = runWorldGate(dir);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /world-budget: civil 3 files, \d+ bytes \(budget 600 files, 8192 B\/file\)/);
+  assert.doesNotMatch(r.out, /G-WORLD-BUDGET: world\/civil/, "nothing about this root is over any budget it has");
 });
 
 test("G-WORLD-BUDGET fails when a fabric file exceeds its per-file byte cap", () => {
@@ -434,4 +460,114 @@ test("the manifest schema still requires the keys those objects are made of", ()
     assert.equal(r.code, 1, `${label} was accepted: ${r.out}`);
     assert.match(r.out, /world\/manifest\.json: schema .*required/, label);
   }
+});
+
+// ── seam-1 fix pass, 2026-08-22 ─────────────────────────────────────────────
+
+test("a world root that carries budgets.json must carry a manifest — the quotas go DARK without one", () => {
+  // Reproduced by the review: `content/world/` with budgets.json and no
+  // manifest.json exited 0 with 0 failures, and deleting the REAL
+  // content/world/manifest.json also left `--only=spine` (Gate 1's content
+  // lane) green — only the scripts suite noticed, which runs in Gate 2 and CI
+  // and NOT in precheck.sh, which has no scripts-suite lane at all.
+  //
+  // The failure mode is the one the print discipline exists to prevent: without
+  // a manifest the town-plan quota line simply does not print. A measurement
+  // that vanishes is worse than one that fails.
+  const dir = worldFixture({ mutate: (d) => rmSync(join(d, "world/manifest.json")) });
+  const r = runWorldGate(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-WORLD-BUDGET: world\/budgets\.json is present but world\/manifest\.json is missing/);
+  // …and the rest of the gate still runs: one missing file must not silence it.
+  assert.match(r.out, /world-budget: fabric 0 files/);
+  assert.doesNotMatch(r.out, /world-budget: town-plans/, "the quota line is exactly what goes dark");
+});
+
+test("a budgets.json that exists but is the wrong SHAPE is not reported as missing", () => {
+  // Two failures, one of them false: the file is right there. `is missing` and
+  // `is not a JSON object` were one branch, so a reader chased a file that
+  // existed. loadFabric already says the shape correctly; this gate now agrees.
+  const dir = worldFixture({ mutate: (d) => writeFileSync(join(d, "world/budgets.json"), "[]") });
+  const r = runWorldGate(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /world: world\/budgets\.json: is not a JSON object/);
+  assert.match(r.out, /G-WORLD-BUDGET: world\/budgets\.json is not a JSON object/);
+  assert.doesNotMatch(r.out, /G-WORLD-BUDGET: world\/budgets\.json is missing/,
+    "the file exists — calling it missing sends a reader looking for the wrong thing");
+});
+
+test("the manifest schema pins the landmass CARDINALITY, as it already did for oceans and seas", () => {
+  // oceans and seas were minItems/maxItems 3 and 9; landmasses was minItems 1
+  // with no ceiling, so a 14-row manifest was schema-legal and only the
+  // committed-file test below pinned 13. Numeric CLOSURE is Task 11's; array
+  // cardinality is shape, and shape is the schema's job.
+  for (const [label, mutateDoc] of [
+    ["a 14th landmass", (m) => { m.landmasses.push({ ...m.landmasses[12], id: "c14", nodeId: "n-invented" }); }],
+    ["only 12 landmasses", (m) => { m.landmasses.pop(); }],
+  ]) {
+    const dir = worldFixture({ mutate: (d) => {
+      const path = join(d, "world/manifest.json");
+      const m = JSON.parse(readFileSync(path, "utf8"));
+      mutateDoc(m);
+      writeFileSync(path, JSON.stringify(m, null, 2));
+    } });
+    const r = runWorldGate(dir);
+    assert.equal(r.code, 1, `${label} was accepted: ${r.out}`);
+    assert.match(r.out, /world\/manifest\.json: schema \/landmasses/, label);
+  }
+});
+
+test("the manifest's seed, frame and grid ARE n-atlas.json's, not a second copy of them", () => {
+  // Two independently-maintained records of one set of numbers is how this
+  // programme has been bitten five times (STATE §5, and the citation-rot
+  // pattern). `manifest.seed`, `manifest.frame` and `manifest.grid` restate
+  // values that the FROZEN content/spine/nodes/n-atlas.json pins. They agreed
+  // when both were written and nothing kept them agreeing. This is the join,
+  // and it costs six assertions.
+  const doc = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
+  const atlas = JSON.parse(readFileSync(join(ROOT, "content/spine/nodes/n-atlas.json"), "utf8"));
+  assert.equal(atlas.frozen, true, "n-atlas is the authority precisely because it is frozen");
+  assert.equal(doc.seed, atlas.seed.value,
+    `manifest.seed ${doc.seed} has drifted from n-atlas's ${atlas.seed.value} — every named stream in Plans C-E derives from it`);
+  assert.deepEqual([doc.frame.w, doc.frame.h], [atlas.placement.rect.w, atlas.placement.rect.h]);
+  assert.deepEqual([doc.frame.w, doc.frame.h], atlas.interior.size);
+  assert.equal(doc.frame.areaKm2, doc.frame.w * doc.frame.h);
+  assert.equal(doc.frame.units, atlas.interior.units);
+  // The grid is a tiling OF that frame, so it is derived, not independent.
+  assert.equal(doc.grid.w * doc.grid.cellKm, doc.frame.w);
+  assert.equal(doc.grid.h * doc.grid.cellKm, doc.frame.h);
+  assert.equal(doc.grid.cells, doc.grid.w * doc.grid.h);
+  // …and the pinned cell size lives in budgets.json, which is the file the gate
+  // reads. Two numbers, one authority.
+  const budgets = JSON.parse(readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"));
+  assert.equal(doc.grid.cellKm, budgets.cellKm);
+  // The interstitial composition is n-atlas's own declared interstitial.
+  assert.deepEqual(doc.budget.interstitialComposition, atlas.interstitial);
+});
+
+test("interstitialComposition names real BIOMES — the one object the schema leaves open", () => {
+  // `additionalProperties: {"type":"number"}` is the single unlocked object in
+  // an otherwise fully locked schema (verified by the review's 43-path probe:
+  // 42 locked, this one open). Closing it with an enum in the schema would put
+  // a SECOND copy of the biome vocabulary in the repo, which is the defect the
+  // test above exists to prevent. So it is joined to the one vocabulary instead.
+  const doc = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
+  const keys = Object.keys(doc.budget.interstitialComposition);
+  assert.ok(keys.length > 0, "an empty composition would pass this test vacuously");
+  for (const k of keys) assert.ok(BIOMES.includes(k), `interstitialComposition names "${k}", which is not one of the ${BIOMES.length} BIOMES`);
+  const total = Object.values(doc.budget.interstitialComposition).reduce((a, b) => a + b, 0);
+  assert.equal(total, 100, "an interstitial composition that does not sum to 100 is not a composition");
+});
+
+test("the base fixture's manifest IS the committed one, so a red case fails on its mutation", () => {
+  // worldFixture() copies the REAL schema over the fixture's manifest. The day
+  // a task adds a required key to both schema and real manifest, every red-case
+  // test above starts failing on the fixture's missing key instead of on the
+  // mutation under test — green-looking noise that hides what is actually
+  // broken. One assertion removes the whole class.
+  const real = readFileSync(join(ROOT, "content/world/manifest.json"), "utf8");
+  const fixture = readFileSync(join(FIX, "base/world/manifest.json"), "utf8");
+  assert.deepEqual(JSON.parse(fixture), JSON.parse(real),
+    "scripts/tests/fixtures/world/base/world/manifest.json has drifted from content/world/manifest.json — " +
+      "copy the real one across rather than editing the fixture");
 });
