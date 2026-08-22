@@ -7,7 +7,7 @@ is wrong, fix the file — do not work around it in a prompt.
 
 Last updated: 2026-08-22, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`),
 **Plan C was claimed** as F-048, **Plan C seams 1-5 (Tasks 1-9) were built and adjudicated**, and
-**seam 6 (Task 10) was built** — see §9-§15 and **§16**, and **a hundred and seventeen** confirmed
+**seam 6 (Task 10) was built, reviewed and ADJUDICATED** — see §9-§15, **§16** and **§17**, and **a hundred and twenty-eight** confirmed
 plan errors in §5.
 
 **If you read one thing in §16, read "THE WATER TRUNK".** An ocean grown over the sea cells the way
@@ -34,7 +34,7 @@ world it pinned was not the world seam 2 fitted the thirteen continents to.
 | --- | --- | --- |
 | A — Unblock and Afford | F-046 | **SHIPPED** to release/1.8, 2026-08-19. All 15 acceptance criteria verified. |
 | B — Vocabulary and Render | F-047 | **SHIPPED** to release/1.8, 2026-08-22. All 12 tasks; Gate 1 13/13. |
-| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. Tasks 1-10 built; seams 1-5 adjudicated (§14, §15), **seam 6 (Task 10) built and not yet reviewed (§16)**. Task 11 next. |
+| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. Tasks 1-10 built; seams 1-6 all reviewed and adjudicated (§14, §15, **§17**). Task 11 next. |
 | D — Pinned, Bound, Relations | — | not started |
 | E — Redraw and Prose | — | not started |
 
@@ -155,7 +155,7 @@ Notes carried forward:
 
 ## 5. Where the plan documents are WRONG
 
-**A hundred and seventeen confirmed** — the table below, counted 2026-08-22 (seam 6 added nineteen) (the running prose count had drifted: it read "seventy" at 94 rows). Each was found by running code, not by reading. **Verify a brief against the
+**A hundred and twenty-eight confirmed** — the table below, counted 2026-08-22 (seam 6 added nineteen, and its adjudicating fix pass eleven more) (the running prose count had drifted: it read "seventy" at 94 rows). Each was found by running code, not by reading. **Verify a brief against the
 tree before trusting it** — this is the single most reliable source of defects in the programme.
 
 | Where | The plan says | Actually |
@@ -279,6 +279,17 @@ tree before trusting it** — this is the single most reliable source of defects
 | **C, Task 10** `canonStringify` for the fabric (:7041) | the spine's canonical serialiser | it puts every coordinate PAIR on its own line, which takes `continent-02.json` from 241,698 to **399,381 bytes** against the COMMITTED 262,144 B per-file cap — over on 4 of the 13. `fabricStringify` keeps the top level readable and puts one RECORD per line: worst file **214,037 B, 81.6% of budget**, and a fabric file is still a line diff between two seeds. |
 | **C, Global Constraints line 46** fractal coast detail | 3 levels, ≤ 0.25 km amplitude, on the coast arcs | a CALIBRATION, and the numbers are both measured on the real world under the shipped serialiser: fractal ON takes the 13 emitted outer rings from **2,413 to 18,030 vertices** (7.5x), costs **+211 ms** of a 4,000 ms budget and **+237,691 bytes**, and moves the largest fabric file from **81.6% to 93.1%** of its committed 262,144 B cap — which is the headroom Plan D's `pinReceipts` have to fit in. It is NOT over the cap (an earlier note here said it was; that was true of `canonStringify`, not of `fabricStringify`). What it buys is detail BELOW the data's own resolution — 0.5 km cells, 0.25 km amplitude. OFF in P14 (`FRACTAL_COAST = false`, reachable by argument and pinned by the emitted vertex COUNT, not by reading the flag back); the venue is Plan E's redraw ink, where the amplitude can be chosen against the sheet scale. **`fractalise` therefore still has no production caller.** |
 | **`tools/mapforge/tests/_source-scan.mjs`** `stripComments` | one stripper, one policy | **the fourth hole in the determinism ban's COVERAGE.** It ran the block-comment regex FIRST, so a `/*` inside a LINE comment — `// 2. content/world/premises/*.json`, an ordinary header line — opened a block comment and blanked the file down to the next `*/`. Reproduced: that comment plus `Math.cos(1) + Date.now()` prepended to `lib/fabric.mjs` left BOTH determinism scans at **30 pass / 0 fail**. Fixed to a single pass; the two `**` entries the old form reported turn out to have been artefacts of the same overrun. |
+| **C, whole-plan acceptance criterion 2** (:8957) | `check_content --only=spine --content-root <draft>` reports **0 failures** | **UNSATISFIABLE AS WRITTEN, and the only way to satisfy it is worse than failing it.** Measured by the seam-6 review: `echo '[]' > edges.json` on the draft root gives *"36 nodes, 0 failures, 24 warnings", exit 0* — so criterion 2 IS reachable, but only by deleting all 20 authored edges, which is exactly what the handoff (:8993) spends a paragraph forbidding and which silently empties Plan E Task 6 Step 6's task list. No third option exists inside Plan C: every generated settlement has `title: null` because naming is Plan D's (:8985), so there is no `f-town-<slug>` to re-point at, and `check_content.mjs:2421` refuses a frozen node under an unfrozen parent, so the 3 `G-CANON-LEG` failures cannot be cleared either. **The criterion now reads: the draft root reports zero failures OUTSIDE `G-NET`/`G-CANON-LEG` on the carried canon, and every such failure has a matching named work order** — which is what `generate-world.test.mjs`'s *"THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHING ELSE"* already asserts. **91 and 63 are now pinned as golden COUNTS beside the set equality**, because set equality is symmetric: a change that makes the gate report a new failure *and* `edgeWorkOrder` report its matching order keeps the sets equal and the test green. |
+| **C, Task 10** `edgeWorkOrder` remedy text | one remedy: *"re-point it at the owning continent's `f-town-<slug>` feature"*, appended to every order | **right for 25 of the 63 orders and wrong for 38.** The plan sanctions re-pointing for *"its 7 `leg` edges and 8 `road` edges"* and nothing else. 28 orders are `f-tower-NN` relay features — a sight-line station has no `f-town-<slug>` equivalent; 6 are sea-lane endpoints (`f-port-tallowquay`, `f-port-netstead`, `f-trade-wind-far`) — a lane ends at a port, not a town centre; and 3 are `G-CANON-LEG` *"not frozen"*, where re-pointing **EVADES** the rule rather than satisfying it (`gCanonLeg` inspects `ref.node` only, so a feature endpoint makes the check stop looking). The DIAGNOSIS half of every line was always correct. `remedyFor({ kind, ref })` now answers per kind, and says **DIAGNOSIS ONLY** where Plan C has no sanctioned fix. |
+| **C, Task 10** `writeRun` (:6960) *"a COMPLETE content root from scratch"* | `write()` is `mkdirSync` + `writeFileSync` | **the out dir is never CLEARED, so a stale file rides the promotion invisibly.** Measured: a planted `content/spine/nodes/n-ZOMBIE.json` survived a full run, the CLI printed `OK`, the run manifest listed 72 files and named none of them `n-ZOMBIE` — and `promote-world.mjs` step 1 verifies the sha256 only of the files the manifest lists, which Task 12 builds promotion on. (That root read 99 gate failures instead of 91, and nothing said why.) `clearRun` removes the six top-level entries a mapforge run writes and **REFUSES** a directory holding anything else, so it is bounded rather than an `rm -rf` of a user-supplied path. |
+| **C, Task 10** CLI `parseArgs` (:7115) | `--seed <hex16>`, `--out <dir>` | **no validation of either.** `--seed NOT_A_SEED` exited 0 and wrote `"seed": "NOT_A_SEED"` into `content/world/fabric/world.json`, where the fabric layer has no `G-SEED` to reject it, and minted the run id `NOT_A_SE-3.0.0`; that root then failed **93**, not 91 — so *"gate-clean apart from the carried canon"* was a property of ONE seed and nothing stated it. `--seed` with no value silently ate the next flag (`--seed --out x` lost both and ran into the DEFAULT out dir); `--out` with no value threw an uncaught `ERR_INVALID_ARG_TYPE` out of `resolve(undefined)`. All three refuse with exit 2 now. |
+| **C, Task 10** CLI `--no-png` | a flag the plan's own acceptance criterion 1 passes | **inert: `opts.png` was assigned at `:840` and never read anywhere.** Inverting it left the whole suite green. It is now honoured at the one place a raster could be produced (a refusal — Plan C has no rasteriser, and Task 13 owns the sheet registry) and recorded in the run manifest as `options.rasterise`, so the flag has an observable effect even on a run with no sheets registered. |
+| **C, Task 5 Step 8 / Task 10a** `assembleRings` (second finding) | a closed arc chain is one ring | **a chain that visits a lattice corner twice is NOT one ring, and the shoelace hides it.** `growRegions` is a D8 Dijkstra, so a region can pinch at a corner in two shapes: two disjoint LOBES (which the seam-3 ruling handles) and a one-cell NOTCH that touches the outer boundary. The notch shape was emitted as a single non-simple ring whose shoelace was already CORRECT (it adds the lobe and subtracts the notch), so no area gate could see it. What could see it is `scripts/lib/geometry.mjs`'s `triangulateOrNull`, which refuses a non-simple ring and makes `exactIntersectionArea` return **0 — the same number it returns for "genuinely disjoint"**, with no `problems` entry unless a collector is passed. Measured: 4 of 182 emitted region rings pinched (c01/r10, c02/r13, c02/r22, c05/r19), and `exactIntersectionArea(c02/r13, n-cluster1)` returned **0.00 km² for a 470.25 km² region lying wholly inside n-cluster1**. `splitPinches` splits every chain into its simple loops before the hole/lobe classification; `areaKm2` is unchanged on all 160 by construction, and c02/r13 now measures **471.00**. Goldens moved with the reason at each assertion: multi-ring **18 → 19**, withHoles **3 → 6**, outsideRing0 **384.50 → 385.00**, and the diagonal-touch test's 2-vs-1 asymmetry is now symmetric. |
+| **C, Task 10** `fitArcTopology`'s own characterisation | *"the 160-region topology converges in 5 rounds with ONE arc of 532 tightened"* | **that is the REGION topology, quoted as though it described the function.** On the TRUNK topology — the case the module exists for — it is **89 rounds and 22 of 70 arcs**, and severe: `arc-000002` (the Galereach/Wealdmarch coast) goes 820 raw / 259 one-shot → **16**, one arc reaches the ladder floor of **4**, and **c06 Reedstrand's entire placement is 16 vertices** where its one-shot coast is 154. Nothing went red because every trunk gate is an AREA gate and the worst drift is 1.30% against ±3%. **ADJUDICATED as acceptable output, not a defect to bound**: an ocean's one-shot ring is 1,112 points against an effective cap of 160, so ~85% has to go by arithmetic, and a per-arc floor only moves the failure to a red `G-VERTEX-BUDGET` on the draft root. The one lever is `load-budget.json`'s `maxRingPoints`, which acceptance criterion 9 forbids Plan C from touching. **The consequence Plan E must act on: the trunk ring is NOT the coastline.** The detail lives in each `content/world/fabric/continent-NN.json`'s `outerRing` (2,413 points over the thirteen, **144 of them c06's**), and Plan E must ink THAT, not `placement.points`. Measured cost of not doing so: c06 leaves **53.04 km² of its own regions (1.66%) outside its placement ring**, and no gate sees it. Pinned from the harmful side in `fabric.test.mjs`. |
+| **C, Task 10** `buildTrunk` `lore.reported` | (the plan does not mention it) | **it is a GATE INPUT, not prose, and it was the only unpinned one.** `checkSpineComplete` (`scripts/lib/spine.mjs:941`) steps a CHILDLESS trunk node down from a hard FAIL to a WARN when `lore.reported === true`, and mutating the emitter's derivation to `undefined` left the whole suite green while taking the draft root from 94 to 99 failures under `--require-complete`. **The derivation is CORRECT and carrying the committed value would be wrong**: six committed continents carry `reported: true` (*"no log claims what stands behind it"*) and this world SURVEYS five of them — Coldreach 6 surveyed regions, Stonemoor 7, Reedstrand and Driftholt 3 each, Brightfall 1 — so carrying the flag would re-assert hearsay about ground the fabric walks, and Plan E's `surveyOf()` reads `lore.reported` as its fallback, so the false claim would propagate into the survey model instead of stopping here. Now pinned against the EMITTED fabric (`reported === true` **iff** the continent's fabric declares zero surveyed regions), not against the manifest column the emitter happens to read. |
+| **`scripts/lib/places.mjs`** `:265`, `:273` | `{ ...C.lore.relay, … }` / `{ ...C.lore.distances, … }` | **`{ ...undefined }` is `{}` — it does not throw.** Plan C regenerates n-cluster1's node body, so both objects retire with it (they are where its two `amendedPending` markers live, which the plan's handoff says must NOT survive the promotion). Without a guard the loss arrives as a BLANK: `paceKmPerHour`, `spacingKm`, `owner`, the relay `note`/`derivation`/`withheld` prose and `drawnRoadsAreCentrelines` all vanish with no error, and `basin-sheet.mjs:732` renders the footnote *"a travel-hour is about **undefined** km of road"* under a full walking table. **Carrying the two objects forward was considered and REJECTED**: their prose describes the retired cluster-1 world — a 190 km ridge-line, 27 towers, and the Gildmark → Embervale → Millcross → Rooktide spine, three of whose four towns the redraw deletes — so re-asserting it on the generated node is a fresh canon contradiction as well as a smuggled marker. The loss is correct; only its silence was not. Both are named problems now, on the same rule as the `lore.order` refusal three lines above them. |
+| **`tools/mapforge/tests/_source-scan.mjs`** `stripComments` (second finding) | one stripper, one policy | **the FIFTH hole in the determinism ban's coverage**, same shape as the other four: the scan read something other than the code. A regex body containing an escaped slash — `\/` before `*` or `/` — was read as an ordinary backslash and a live `/`, so a pattern as common as `.replace(/\/\*[\s\S]*?\*\//g, " ")` opened a block comment at the `/*` INSIDE it and blanked forward to the next `*/`. Measured: **5 of the 63 files under `tools/mapforge/` no longer PARSED after stripping** (`arcs`, `glyphs`, `labels`, `raster`, `texture-bake` `.test.mjs`); all five are under `tests/`, which the ban excludes, so it was latent — as the previous four were, right up until they were not. Regex literals are skipped now, and — the actual point — **the heuristic is VERIFIED rather than trusted**: *"the stripper never eats live code"* parses every scanned file's stripped output with `vm.SourceTextModule`, in ONE child process that supplies its own `--experimental-vm-modules`, and asserts the file COUNT the child judged so the check cannot become a no-op. That converts this hole class from *"found by a reviewer, once per seam"* to *"cannot recur"*. Also: `CLOCK_EXEMPT` was per-FILE, exempting the CLI from all three `NEVER` patterns — a `Math.random()` in the one file that writes the draft root was invisible. It is per-PATTERN now, mutation-proven. |
+| **`.gitignore`** (Task 10) | `content/spine/candidates/` removed with the retirement of `gen-world.mjs` | **the producer outlives the rule.** `tools/mapforge/gen-world.mjs` and `lib/world-gen.mjs` are still in the tree — deleting them is Task 11's acceptance criterion 13 — and `gen-world.mjs:15` still defaults its `--out` to `content/spine/candidates/`. Between the two commits, anyone running the old CLI dirties `git status` under `content/`, which is the migration invariant of §3 and acceptance criteria 6 and 9. Rule RESTORED; delete it in the same commit as its producer. (The added `build/mapforge/` rule is redundant — `.gitignore:12`'s `build/` already covers it — and is now labelled as documentation.) |
 
 The plan text already self-corrects two more: spec §8.6's "checkSpine is already parameterised
 with an injected collector" (it is not — it closes over module-level bindings) and §8.2's
@@ -1802,9 +1813,13 @@ until the emitted coast vertex count (2,413) was pinned; it is killed now.
 - **`node tools/mapforge/generate-world.mjs --seed 7c9e4a2f8b1d6e03 --out build/mapforge/<runId>
   --no-png --stage-report` writes a COMPLETE content root** — 36 trunk node files, a `derived.json`
   sidecar, `edges.json`, 14 fabric files, 13 handle ledgers, the copied authored inputs, the
-  `baseline/` snapshot, `manifest.json` and `report.md`: **72 files**. Two runs are byte-identical
-  across every file (the run manifest's per-file sha256 map is what is compared; `timings` is
-  deliberately not).
+  `baseline/` snapshot, `manifest.json` and `report.md`: **72 files**.
+
+  **CORRECTED by the fix pass (§17): "byte-identical across every file" is FALSE.** Two of the 72
+  differ on every re-run — `manifest.json` and `report.md`, both because they carry `timings`.
+  Neither is hashed and neither is promoted. The true statement is: **everything under `content/`
+  is byte-identical, and the run manifest's 72-entry sha256 map is identical**; the two files that
+  differ are the two that record how long the run took.
 - **The trunk census is exactly the plan's**: `world 1, continent 13, ocean 3, sea 9, region 2,
   town 1, playroot 1, playspace 1, site 3, fixture 2` = 36. Every continent, ocean and sea id comes
   from `manifest.landmasses[].nodeId` / `oceans[].nodeId` / `seas[].nodeId`; **c02 Wealdmarch is
@@ -1824,7 +1839,9 @@ until the emitted coast vertex count (2,413) was pinned; it is killed now.
   losing **162.50 of its declared 470.50 (34.5%)**. The aggregate is exactly the "two errors cancel"
   trap §11's hole-vs-lobe ruling names.
 - **The draft root is a real content root and the REAL gate runs on it**: `36 nodes`,
-  `world-budget: fabric 14 files, 1,065,943 bytes`, `spine-load: 36 nodes, 124,189 bytes, max
+  `world-budget: fabric 14 files, 1,065,941 bytes` (§16 recorded 1,065,943, measured before the
+  `29258ce` refactor moved 11 bytes and before the fix pass's pinch split added 9; re-measure, do
+  not quote), `spine-load: 36 nodes, 124,189 bytes, max
   children 16/24, max ring 159/160`, `1,740 instances / 170 types`. Every failure is G-NET or
   G-CANON-LEG on the carried canon and every one has a matching work order — see §5.
 - **45 `f-town-<slug>` point features**, one per settlement, on their continent nodes, ids unique
@@ -1884,25 +1901,41 @@ TOTAL 6,878 ms        run totals: 6,287 / 6,326 / 6,878 / 7,019 / 7,047
                       (budget 4,000, fail 8,000)
 ```
 
-**This box is running ~16% slower than the one §15 measured on**: P1-P13 read 5,480 ms here against
-§15's 4,704 ms for the same passes on the same world. Scaled to that box, P14 + P14w cost
-**~1,020 ms** and the end-to-end total is **~5,700 ms** — inside the plan's acceptance criterion
-(which is the FAIL threshold, 8,000, not the 4,000 target) and above the soft budget.
+**THE NUMBER TO QUOTE IS 6,437 ms** — median of five quiet runs at the fix-pass HEAD
+(6,357 / 6,398 / 6,437 / 6,513 / 6,514). The **≈5,700 ms** figure above is a SCALING PROJECTION off
+a "this box is 16% slower" adjustment, not a measurement, and it should not be presented as the
+budget number. Against acceptance criterion 1's 8,000 ms fail threshold that is ~20% of headroom;
+against the 4,000 ms soft budget it is a standing 1.6x miss that no gate will ever report, and the
+soft budget — not the ceiling — is the decision this needs from an owner.
 
-**`failMs 8000` is at risk under contention and this is now measured, not projected.** Running the
-CLI inside `node --test` alongside the rest of the mapforge suite took **19,601 ms** — the suite
-runs files in parallel and `render-sheet.test.mjs` spawns the whole suite again. `budgets.json` was
-**NOT edited**. The CLI still exits 1 over `failMs`, which is right for a CLI; the TEST accepts that
-exit, reports the number and asserts a ceiling of `failMs × 4`. The largest single terms are
+**`failMs 8000` is not a CI risk, and the earlier note here was wrong about that.** Running the CLI
+inside `node --test` alongside the rest of the mapforge suite took **19,601 ms** — the suite runs
+files in parallel and `render-sheet.test.mjs` spawns the whole suite again — but **CI never invokes
+the CLI**: `grep -rn 'generate-world' .github/workflows/ scripts/precheck.sh scripts/integration.sh
+scripts/package.json` returns nothing. CI reaches the generator only through
+`node --test tools/mapforge/tests/*.test.mjs`, and that test deliberately ACCEPTS a `LOOP BUDGET`
+exit, reports the number and asserts a ceiling of `failMs x 4` = 32,000 ms. So a slow runner prints
+the figure instead of reddening. `budgets.json` was **NOT edited**, and must not be: nothing in CI
+enforces `failMs`, and the quiet-box number is inside it. What IS thin is that ceiling — measured
+1.44x at a 1:1 worker:CPU ratio — so Task 11 should take the CLI out of the parallel pool for the
+timing assertion rather than trust a wall clock, which is the same lesson `G-RASTER-BUDGET` teaches
+one run in three. The largest single terms are
 unchanged from §15 — P9 985, P12 763, P14w 825, P1 707 — and the only new lever is P14w, which is
 already 12× cheaper than the plan's heap.
 
 ### Open, recorded rather than chased
 
-- **`fractalise` still has no production caller.** See §5's fractal-coast row: +211 ms, +237,691
-  bytes and the largest fabric file at 93.1% of its cap instead of 81.6%, for detail below the
-  grid's own resolution. It is a CALIBRATION, not a constraint — an owner who wants a ragged coast
-  in the fabric can have it inside budget. Plan E's redraw ink is the better venue.
+- **`fractalise` still has no production caller, and that is a DELIBERATE DEVIATION from the
+  plan's global constraint (line 46), not an omission.** The plan asks for 3 levels of <= 0.25 km
+  fractal coast detail; `FRACTAL_COAST = false`. The measurement behind the deviation, and it is
+  now a §5 row so the plan text and the code no longer disagree in silence: fractal ON takes the 13
+  emitted outer rings from **2,413 to 18,030 vertices**, costs **+211 ms** of a 4,000 ms budget and
+  **+237,691 bytes**, and moves the largest fabric file from **81.6% to 93.1%** of its committed
+  262,144 B cap — which is the headroom Plan D's `pinReceipts` have to fit in. What it buys is
+  decoration BELOW the data's own resolution: the grid is 0.5 km and the amplitude 0.25 km. It is a
+  CALIBRATION, not a constraint — an owner who wants a ragged coast in the fabric can have it
+  inside budget. Plan E's redraw ink is the better venue, where the amplitude can be chosen against
+  the sheet scale.
 - **`scripts/tests/places.test.mjs`'s two mirror-allowlist tests fail inside a Node 18 container**
   — `codeFilesNamingTheMirror()` shells out to git and the worktree's `.git` pointer does not
   resolve inside the container (`fatal: not a git repository`). PRE-EXISTING: they fail with this
@@ -1916,3 +1949,120 @@ already 12× cheaper than the plan's heap.
 - **`interiorPointKm` is the node anchor, not a centroid**, because an ocean that runs around a
   landmass is concave and its vertex mean lands on the land (G-ANCHOR). Fixtured.
 
+---
+
+## 17. Plan C seam 6 — the ADJUDICATING FIX PASS (Task 10) — settled, do not re-raise
+
+Appended 2026-08-22. Two independent adversarial reviews (K: emission/geometry, 4 major / 4 minor;
+L: CLI/determinism/budget, 5 major / 7 minor) both returned ACCEPT-WITH-FIXES. This pass ADJUDICATED
+each finding rather than obeying it: **two of the three "silent data losses" had the right diagnosis
+and the wrong remedy**, and applying the remedy would have shipped a worse world than the defect.
+**Eleven more plan errors are in §5 above.**
+
+Commits: `4fe6058` (the pinch split), `eb6afce` (what the trunk cap costs), `4af07c4` (the CLI flag
+layer + three silences), `f4896b6` (the stripper hole class), `4906eec` (the tie-break pin).
+
+### The three findings whose REMEDY was refuted
+
+- **`lore.reported` is re-derived, not carried — and that is CORRECT.** K measured the drop truly:
+  five committed continents lose the flag and three committed WARNs become hard FAILs, taking the
+  draft root from 91 to 99 under `--require-complete`. The proposed fix was to carry the committed
+  value. **Refuted on the world's own numbers**: this world SURVEYS five of the six committed
+  `reported: true` continents (Coldreach 6 regions, Stonemoor 7, Reedstrand 3, Driftholt 3,
+  Brightfall 1), so carrying the flag re-asserts hearsay about ground the fabric walks — and Plan E's
+  `surveyOf()` reads `lore.reported` as its fallback, so the false claim would propagate rather than
+  stop here. **The forward risk was refuted too**: Plan E's own E-C3 passes `fabricRegionCounts` into
+  `checkSpineComplete`, so a continent with >= 1 fabric region is complete *regardless* of the flag,
+  and none of these failures reaches promote. What was REAL is that nothing pinned it (the mutation
+  survived) and that the seam never stated its `--require-complete` set. Both fixed.
+- **`n-cluster1`'s `lore.relay` + `lore.distances` are dropped — and that is CORRECT.** K measured
+  2,031 bytes lost and `places.mjs` spreading `undefined` into `{}`. The proposed fix was to carry
+  them forward. **Refuted, and K's own report contains the refutation**: those two objects are
+  exactly where n-cluster1's two `amendedPending` markers live, and K separately verified that their
+  removal is *"correctly gone, as Plan E Task 15 needs"*. Carrying them would smuggle both markers
+  back AND re-assert prose about a 190 km ridge-line, 27 towers and the Gildmark -> Embervale ->
+  Millcross -> Rooktide spine — three of whose four towns the redraw deletes. That is the
+  "adding specificity contradicts canon" trap in a new costume. **The loss is right; the silence was
+  not**, so `places.mjs` now names it, on the same rule as its own `lore.order` refusal.
+- **The trunk vertex cap tightens 22 of 70 arcs over 89 rounds — and that is ACCEPTABLE OUTPUT.**
+  See §5. An ocean's one-shot ring is 1,112 points against an effective cap of 160; ~85% has to go
+  by arithmetic, and a per-arc floor only relocates the failure to a red `G-VERTEX-BUDGET`. The one
+  lever, `load-budget.json`'s `maxRingPoints`, is forbidden by acceptance criterion 9. **What Plan E
+  must carry forward: the trunk ring is NOT the coastline** — ink `fabric.outerRing` (2,413 points,
+  144 of them c06's) and never `placement.points` (c06: 16).
+
+### The finding whose remedy was ACCEPTED, with a root cause the reviews did not reach
+
+**Four emitted region rings were not strictly simple, and the repo's own overlap primitive refused
+them silently.** K found the symptom. The cause is sharper than "a pinch": three of the four are a
+one-cell **NOTCH** — a hole that touches the outer boundary at a lattice corner — and their pinched
+shoelace was **already correct** (it adds the lobe and subtracts the notch), which is precisely why
+no area gate in the pipeline could ever have seen them. `splitPinches` splits every closed chain
+into its simple loops before the hole/lobe classification, so a notch lands in `holes[]` and a lobe
+in `rings[]`. `exactIntersectionArea(c02/r13, n-cluster1)` went **0.00 -> 471.00**; every one of the
+160 declared areas is unchanged; the blast radius was three continent fabric files and nothing else
+— all 25 trunk placements and all 13 coast rings byte-identical.
+
+**A prior ruling was overturned to do it.** `arcs.test.mjs`'s diagonal-touch golden pinned owner 0 at
+two rings and owner 1 at one, and argued the asymmetry was *"the better world"* because a symmetric
+split would put half a diagonal-isthmus continent outside `rings[0]`. Both halves are wrong: the
+same field already answers TWO for owner 0, so a diagonal isthmus already truncated `rings[0]` half
+the time by coin flip (the old comment admits the arc id decides it), and `buildTrunkRings` already
+pushes a named problem for `rings.length > 1` — so the split makes the truncation loud every time
+instead of half the time. The reasoning is written at the assertion.
+
+### What the accounted set actually is
+
+| | failures | breakdown | warnings |
+| --- | ---: | --- | ---: |
+| `--only=spine` on the draft root | **91** | 88 `G-NET` + 3 `G-CANON-LEG` | 24 |
+| `--only=spine --require-complete` | **99** | the same 91 + **8 `G-SPINE-COMPLETE`** | 16 |
+
+**63 work orders** (14 leg, 15 road, 28 relay, 6 sealane), plus 2 non-edge `roads:` problems.
+**63 and 91 are now golden COUNTS** beside the set-equality join, because set equality is symmetric
+and a change that grows both sides together stays green.
+
+**The 8 extra failures under `--require-complete` are NOT edge work orders and have no work order**,
+by design: regions are fabric records rather than spine nodes, so every generated continent is
+childless, and the 5 that escape are the 4 with `lore.reported` plus n-cluster1 (which adopted the
+three carried chart anchors). **This is Plan E's E-C3, already written**: `fabricRegionCounts` makes
+a continent with >= 1 fabric region complete, which clears all 8. The seam's "91, all accounted for"
+claim is a statement about the PLAIN gate and should never be quoted as covering
+`--require-complete`.
+
+### Mutations run by this pass
+
+**16 applied, 16 killed** after two were sharpened. Named survivors and what closed them:
+
+- `splitPinches` returning `[ring]` — KILLED (3 fails).
+- `splitPinches`' loop order reversed — **SURVIVED at first.** `assembleRings` sorts by area
+  afterwards and `Array.sort` is stable, so on loops of different area the outer sort dominates and
+  the tie-break is a recorded equivalence. c01/r10 is not that case: it pinches TWICE and both lobes
+  are one cell, 0.25 km2 each. Pinned on the lowest vertex from two mirrored traversals — KILLED.
+- Dropping the stripper's `REGEX_KEYWORDS` lookback — **SURVIVED at first**, because no scanned file
+  spells `return /re\/*.../`. The fixture was sharpened to that exact shape — KILLED.
+- Ignore `--seed`; accept any seed; drop the flag-value check; `clearRun` no-op; `clearRun` ignores
+  foreign files; `lore.reported` always `undefined` (K's M6); blanket remedy; `rasterise` not
+  recorded; `loopBudget` `>=` for `>`; both `places.mjs` guards; the road-end key without its tip
+  coordinate; disable the regex skip; `regexStartsAt` always false; `Math.random()` in the CLI —
+  all KILLED.
+
+**One residual gap, stated rather than papered over:** `main`'s own `process.exitCode = 1` on a
+loop-budget breach is asserted from the SOURCE, not driven — driving it needs a machine slow enough
+to be a flake. The decision itself is now a pure exported function (`loopBudget`) and is driven at
+the breach and at the `>` boundary.
+
+### Verified at the fix-pass HEAD
+
+```
+node --test 'tools/mapforge/tests/*.test.mjs'   668 tests, 667 pass, 1 fail
+                                                (G-RASTER-BUDGET wall clock, declared noise)
+node --test 'scripts/tests/*.test.mjs'          892 pass / 0 fail
+node scripts/check_content.mjs --only=spine     44 nodes, 0 failures, 19 warnings (committed root)
+node scripts/check_spine_emit.mjs --check       clean, 47 files
+( cd colyseus-server && npx jest mapDimensions ) 5 passed
+git diff plan-c-base -- content/spine content/maps game-client/assets/art/maps/ colyseus-server/
+                                                EMPTY on every commit
+docker run node:18 …  content/ BYTE-IDENTICAL to Node 26; suite 668 tests, 662 pass, 0 fail
+budget, median of 5 quiet runs                  6,437 ms (6357 6398 6437 6513 6514)
+```
