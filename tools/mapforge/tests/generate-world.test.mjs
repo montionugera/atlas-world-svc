@@ -8,15 +8,16 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, readdirSync, existsSync, rmSync, statSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, readdirSync, existsSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { shoelaceArea, TIER_DEPTH, DEPTH_EXCEPTIONS } from "../../../scripts/lib/spine.mjs";
 import { exactIntersectionArea } from "../../../scripts/lib/geometry.mjs";
 import { codeOfFile } from "./_source-scan.mjs";
-import { runIdOf, edgeWorkOrder, normaliseComposition, translatePlacement,
-         placementInside, liveContinentAncestor } from "../generate-world.mjs";
+import { runIdOf, edgeWorkOrder, remedyFor, normaliseComposition, translatePlacement,
+         placementInside, liveContinentAncestor, parseArgs, clearRun,
+         SEED_GRAMMAR, RUN_ENTRIES, loopBudget } from "../generate-world.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const CLI = join(ROOT, "tools/mapforge/generate-world.mjs");
@@ -118,7 +119,12 @@ test("THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHI
     .replace(/^FAIL {2}spine: G-(NET|CANON-LEG) /, "")
     .replace(/^([a-z0-9-]+): endpoint (node|feature|edge) "([^"]+)".*/, "$1|$2 $3")
     .replace(/^([a-z0-9-]+): endpoint ([a-z0-9-]+) is not frozen$/, "$1|node $2")
-    .replace(/^([a-z0-9-]+): road end .*/, "$1|road-end")));
+    // KEY ON THE TIP COORDINATE, not on "road-end" alone. Collapsing both ends
+    // of one road to the same key made a failure MOVING from one endpoint to
+    // the other, or a second road-end failure on the same edge, invisible to
+    // set equality. The gate line does not name the node, but it does print the
+    // tip, and so does the work order.
+    .replace(/^([a-z0-9-]+): road end (\[[^\]]*\]).*/, "$1|road-end $2")));
   const orderPairs = new Set(manifest.problems
     .filter((p) => p.startsWith("edge "))
     .map((p) => {
@@ -126,13 +132,201 @@ test("THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHI
       if (m) return `${m[1]}|${m[2]} ${m[3]}`;
       m = /^edge ([a-z0-9-]+) \([a-z]+\): canon-leg endpoint ([a-z0-9-]+) is not frozen/.exec(p);
       if (m) return `${m[1]}|node ${m[2]}`;
-      m = /^edge ([a-z0-9-]+) \([a-z]+\): road end /.exec(p);
-      if (m) return `${m[1]}|road-end`;
+      m = /^edge ([a-z0-9-]+) \([a-z]+\): road end (\[[^\]]*\])/.exec(p);
+      if (m) return `${m[1]}|road-end ${m[2]}`;
       throw new Error(`unrecognised work order line: ${p}`);
     }));
   assert.deepEqual([...gatePairs].sort(), [...orderPairs].sort(),
     "every gate failure must have a work order and every work order a gate failure");
+
+  // THE COUNTS, AS GOLDENS, BECAUSE SET EQUALITY IS SYMMETRIC. The assertion
+  // above passes just as happily if a future change makes the gate report a
+  // NEW failure and `edgeWorkOrder` report its matching order — which is the
+  // likely shape of a regression, since both derive from the same "does this
+  // resolve" predicate. A count is the cheapest independent oracle there is.
+  //
+  //   91 = 88 G-NET + 3 G-CANON-LEG.
+  //   63 = 60 endpoint orders + 3 road-end orders.
+  //   The 28-line gap is `gSpineNet` reporting a RELAY edge's endpoints twice
+  //   — once in the generic [from, to, ...via] walk (check_content.mjs:2471)
+  //   and again in the relay-chain walk (:2502). 28 relay endpoints x 2 = 56
+  //   f-tower FAIL lines against 28 work orders. That double-report is a
+  //   pre-existing check_content defect, not this diff's.
+  //
+  // Moving either number is a WORLD CHANGE and needs a reason written beside
+  // it, exactly like the ring goldens.
+  assert.equal(fails.length, 91, "the draft root's carried-canon failure count moved");
+  assert.equal(manifest.problems.filter((p) => p.startsWith("edge ")).length, 63,
+    "the work-order count moved");
 });
+
+test("lore.reported tracks the world this run BUILT, not the node it replaces", () => {
+  // `lore.reported` is the only key in a generated continent's lore that
+  // changes a GATE VERDICT: checkSpineComplete (scripts/lib/spine.mjs:941)
+  // steps a childless trunk node down from a hard FAIL to a WARN when it is
+  // true. Nothing pinned it, and mutating it to `undefined` on every continent
+  // left the whole suite green while taking the draft root from 94 to 99
+  // failures under --require-complete.
+  //
+  // ADJUDICATED (seam-6 fix pass): the value is DERIVED, and carrying the
+  // committed one would be wrong. Six committed continents carry
+  // `reported: true` — "no log claims what stands behind it" — and this world
+  // SURVEYS five of them: Coldreach gets 6 surveyed regions, Stonemoor 7,
+  // Reedstrand and Driftholt 3 each, Brightfall 1. Carrying the flag would
+  // re-assert hearsay about ground the fabric file walks, and Plan E's
+  // `surveyOf()` reads lore.reported as its fallback, so the false claim would
+  // propagate into the survey model instead of stopping here.
+  //
+  // THE PIN IS AGAINST THE EMITTED FABRIC, not against the manifest column the
+  // emitter happens to read. The two agree today; keying the test on the
+  // fabric is what stops them drifting apart silently.
+  const { nodes, out } = run();
+  const continents = nodes.filter((n) => n.tier === "continent");
+  assert.equal(continents.length, 13);
+  let reported = 0;
+  for (const n of continents) {
+    const f = rj(join(out, `content/world/fabric/continent-${n.provenance.generator.fabric.slice(-7, -5)}.json`));
+    const surveyed = f.regions.filter((r) => r.survey === "surveyed").length;
+    if (surveyed === 0) {
+      reported++;
+      assert.equal(n.lore.reported, true,
+        `${n.id} has no surveyed region in its fabric and must be a reported-world node — ` +
+        `without the flag G-SPINE-COMPLETE gives it a hard FAIL under --require-complete`);
+    } else {
+      assert.equal(n.lore.reported, undefined,
+        `${n.id} has ${surveyed} surveyed regions in its fabric, so it is not a mariners' ` +
+        `chart entry — carrying the committed flag here would re-assert hearsay about ` +
+        `ground this world walks, and Plan E's surveyOf() would inherit the false claim`);
+    }
+  }
+  assert.equal(reported, 4, "c01, c11, c12 and c13 are the wholly-unsurveyed landmasses");
+  // Water nodes never carry it: an ocean has no surveyed interior at all, and
+  // Plan E's E-C2 gives them their own WATER_TIERS skip instead.
+  for (const n of nodes.filter((x) => x.tier === "ocean" || x.tier === "sea"))
+    assert.equal(n.lore.reported, undefined);
+});
+
+// ── THE CLI FLAG LAYER ─────────────────────────────────────────────────────
+// Three mutations survived the whole suite before this block existed, and they
+// are one finding: nothing drove the CLI's argument handling.
+//   M1  ignore `--seed` entirely            — the suite's SEED is byte-identical
+//                                             to manifest.seed, so no assertion
+//                                             could ever tell.
+//   M2  make `--no-png` set png = true      — the flag was assigned and never read.
+//   M3  delete `process.exitCode = 1`       — no test ever drove the loop budget.
+
+test("--seed is HONOURED, not merely accepted", { timeout: 240000 }, () => {
+  // The one assertion that can distinguish "reads the flag" from "ignores it":
+  // a seed that is NOT content/world/manifest.json's.
+  const committed = rj(join(ROOT, "content/world/manifest.json")).seed;
+  const other = "0123456789abcdef";
+  assert.notEqual(other, committed, "pick a seed the manifest does not already carry");
+  const out = mkdtempSync(join(tmpdir(), "genw-seed-"));
+  try {
+    execFileSync(process.execPath, [CLI, "--seed", other, "--out", out, "--no-png"],
+      { encoding: "utf8", cwd: ROOT, maxBuffer: 64 * 1024 * 1024 });
+  } catch (e) {
+    if (!/LOOP BUDGET/.test(e.stderr ?? "")) throw e;
+  }
+  assert.equal(rj(join(out, "content/world/fabric/world.json")).seed, other);
+  assert.equal(rj(join(out, "manifest.json")).seed, other);
+  rmSync(out, { recursive: true, force: true });
+});
+
+test("--seed refuses anything that is not sixteen lowercase hex", () => {
+  // A garbage seed used to exit 0 and write `"seed": "NOT_A_SEED"` into
+  // content/world/fabric/world.json, where the fabric layer has no G-SEED to
+  // reject it — and the draft root then read 93 failures instead of 91, so
+  // "gate-clean apart from the carried canon" was a property of ONE seed that
+  // nothing stated.
+  const fails = [];
+  const fail = (m) => fails.push(m);
+  for (const bad of ["NOT_A_SEED", "7C9E4A2F8B1D6E03", "7c9e4a2f8b1d6e0", "7c9e4a2f8b1d6e034", ""])
+    parseArgs(["node", "cli", "--seed", bad], { fail });
+  assert.equal(fails.length, 5, `expected five refusals, got ${fails.length}: ${fails.join(" | ")}`);
+  assert.ok(SEED_GRAMMAR.test("7c9e4a2f8b1d6e03"));
+  // …and a good one is taken.
+  assert.equal(parseArgs(["node", "cli", "--seed", "7c9e4a2f8b1d6e03"], { fail }).seed,
+    "7c9e4a2f8b1d6e03");
+});
+
+test("a flag with no value is a refusal, not a silent theft of the next flag", () => {
+  // `--seed --out x` used to take "--out" as the seed, fall back to the
+  // manifest seed and run 6.5 s into the DEFAULT out dir — losing both flags.
+  // `--out` with no value at all threw ERR_INVALID_ARG_TYPE out of
+  // resolve(undefined) and printed a stack trace.
+  const fails = [];
+  const fail = (m) => fails.push(m);
+  parseArgs(["node", "cli", "--seed", "--out", "x"], { fail });
+  parseArgs(["node", "cli", "--out"], { fail });
+  parseArgs(["node", "cli", "--seed"], { fail });
+  assert.equal(fails.length, 3, fails.join(" | "));
+  for (const m of fails) assert.match(m, /needs a value/);
+});
+
+test("--no-png is READ: it reaches the run manifest and refuses a raster it cannot make", () => {
+  assert.equal(parseArgs(["node", "cli", "--no-png"]).png, false);
+  assert.equal(parseArgs(["node", "cli"]).png, true);
+  // The observable half — `writeRun` records the flag, so a run tells you how
+  // it was produced and a mutation of the flag cannot hide in a no-op.
+  const { manifest } = run();
+  assert.equal(manifest.options.rasterise, false,
+    "the suite drives the CLI with --no-png; the manifest must say so");
+});
+
+test("--out is CLEARED, and a directory holding anything else is refused", () => {
+  // writeRun only ever created and overwrote, so a file a previous run wrote
+  // and this one does not SURVIVED — and it was invisible to promote step 1,
+  // which verifies the sha256 of the files the run manifest lists. Measured: a
+  // planted content/spine/nodes/n-ZOMBIE.json survived a full run, the CLI
+  // printed OK, and the gate on that root read 99 failures instead of 91.
+  const out = mkdtempSync(join(tmpdir(), "genw-clear-"));
+  mkdirSync(join(out, "content/spine/nodes"), { recursive: true });
+  writeFileSync(join(out, "content/spine/nodes/n-ZOMBIE.json"), "{}");
+  writeFileSync(join(out, "report.md"), "stale");
+  const cleared = clearRun({ outDir: out });
+  assert.deepEqual(cleared.foreign, []);
+  assert.deepEqual(cleared.removed.sort(), ["content", "report.md"]);
+  assert.equal(existsSync(join(out, "content")), false, "the whole draft content root must go");
+
+  // BOUNDED, not an rm -rf of a user-supplied path: a directory holding
+  // anything a mapforge run did not write is a refusal.
+  writeFileSync(join(out, "MY-NOTES.txt"), "not yours");
+  const refused = clearRun({ outDir: out });
+  assert.deepEqual(refused.foreign, ["MY-NOTES.txt"]);
+  assert.deepEqual(refused.removed, []);
+  assert.equal(existsSync(join(out, "MY-NOTES.txt")), true, "a refusal must not delete anything");
+  // An absent directory is a no-op, which is the first-run case.
+  assert.deepEqual(clearRun({ outDir: join(out, "nope") }), { removed: [], foreign: [] });
+  assert.ok(RUN_ENTRIES.includes("manifest.json") && RUN_ENTRIES.includes("baseline"));
+  rmSync(out, { recursive: true, force: true });
+});
+
+test("the loop budget is a DECISION, drivable at a breach rather than at this box's speed", () => {
+  // `main` used to inline this, which left "delete process.exitCode = 1" as a
+  // surviving mutation — no test could drive the CLI over failMs without a
+  // machine slow enough to be a flake. RESIDUAL GAP, stated rather than
+  // papered over: the one line this does not cover is `main`'s assignment of
+  // the exit code itself, asserted from the source below.
+  const budgets = rj(join(ROOT, "content/world/budgets.json"));
+  const gen = budgets.loop.find((r) => r.stage === "generate");
+  const fast = loopBudget({ timings: { total: gen.failMs - 1, sheets: 0 }, budgets });
+  assert.deepEqual(fast.over, []);
+  assert.equal(fast.lines.length, 2, "one line per budgeted stage, always printed");
+  const slow = loopBudget({ timings: { total: gen.failMs + 1, sheets: 0 }, budgets });
+  assert.equal(slow.over.length, 1);
+  assert.match(slow.over[0], /^generate \d+ ms > fail \d+ ms$/);
+  // The boundary is `>`, not `>=`: exactly failMs is inside the budget.
+  assert.deepEqual(loopBudget({ timings: { total: gen.failMs, sheets: 0 }, budgets }).over, []);
+  const sheetRow = budgets.loop.find((r) => r.stage === "sheets");
+  assert.equal(loopBudget({ timings: { total: 0, sheets: sheetRow.failMs + 1 }, budgets })
+    .over.length, 1, "the sheets row is budgeted separately — an aggregate hides which stage moved");
+  // …and the exit code the breach must produce.
+  const src = readFileSync(CLI, "utf8");
+  assert.match(src, /if \(over\.length\) \{[\s\S]{0,220}process\.exitCode = 1;/,
+    "a loop-budget breach must leave a non-zero exit code");
+});
+
 
 test("the run manifest carries the seed, sea level, ratio and a hash per file", { timeout: 240000 }, () => {
   const { manifest } = run();
@@ -288,11 +482,38 @@ test("edgeWorkOrder names all three endpoint shapes and the frozen rule", () => 
     { id: "e-leg", kind: "leg", from: { node: "n-a" }, to: { node: "n-b" } },
   ];
   const w = edgeWorkOrder({ edges, nodes });
+  // `canon-leg n-b`, not `node n-b`: the two are different breaks with
+  // different fixes, and keying them the same is what let one blanket remedy
+  // be appended to both. The gate's own line still reads "…is not frozen", so
+  // the join in the gate test is unaffected.
   assert.deepEqual(w.map((x) => `${x.edge}:${x.ref}`),
     ["e-node:node n-gone", "e-feat:feature f-gone", "e-feat:feature f-also-gone",
-     "e-edge:edge e-gone", "e-leg:node n-b"]);
+     "e-edge:edge e-gone", "e-leg:canon-leg n-b"]);
   assert.equal(edgeWorkOrder({ edges: [edges[0]], nodes }).length, 0,
     "an edge whose endpoints all resolve must produce no work order");
+
+  // THE REMEDY IS PER-KIND. One hardcoded "re-point it at the owning
+  // continent's f-town-<slug> feature" used to be appended to all 63 orders on
+  // the real run — right for 25 of them and wrong for 38: a relay sight-line
+  // tower is not a town, a sea lane ends at a port, and re-pointing a
+  // canon-leg EVADES G-CANON-LEG (which inspects ref.node only) instead of
+  // satisfying it. Plan E reads these lines as a task list.
+  const byRef = new Map(w.map((x) => [x.ref, x.remedy]));
+  assert.match(byRef.get("node n-gone"), /f-town-<slug>/);
+  assert.match(byRef.get("feature f-gone"), /port\/landfall/);
+  assert.match(byRef.get("edge e-gone"), /via-chain|retire/);
+  assert.match(byRef.get("canon-leg n-b"), /EVADES/);
+  assert.ok(!/re-point it at/.test(byRef.get("canon-leg n-b")),
+    "a canon-leg order must not be told to re-point — that evades the rule it breaks");
+  // A relay tower feature gets the relay remedy, not the port one.
+  const relay = edgeWorkOrder({
+    edges: [{ id: "e-r", kind: "relay", from: { feature: "f-tower-09" }, to: { feature: "f-1" } }],
+    nodes });
+  assert.match(relay[0].remedy, /sight-line station/);
+  assert.ok(!/re-point it at/.test(relay[0].remedy),
+    "a relay tower has no f-town-<slug> to be re-pointed at");
+  // And a road END is a MOVED endpoint, not a vanished one.
+  assert.match(remedyFor({ kind: "road", ref: "road-end n-millcross" }), /re-route the road/);
 });
 
 test("the three preserved chart anchors survive generation, re-parented and translated",
@@ -457,8 +678,14 @@ test("regions carry rings AND holes, and every region's levelBand is banded", { 
       if (r.holes.length > 0) holed++;
     }
   assert.equal(regions, 160);
-  assert.equal(multi, 18, "18 regions have a boundary of more than one ring");
-  assert.equal(holed, 3);
+  // 18 -> 19 with the seam-6 pinch split: c01/r10 pinched twice through one
+  // lattice corner and was emitted as ONE non-simple ring. See
+  // tools/mapforge/tests/partition.test.mjs for the full reason.
+  assert.equal(multi, 19, "19 regions have a boundary of more than one ring");
+  // 3 -> 6, same event as multi 18 -> 19: c02/r13, c02/r22 and c05/r19 each
+  // carried a one-cell notch folded into their outer ring, which the split now
+  // declares as the hole it is.
+  assert.equal(holed, 6);
 });
 
 test("--stage-report prints per-stage budgets from budgets.json, not a constant", { timeout: 240000 }, () => {

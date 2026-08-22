@@ -39,16 +39,77 @@ import { join } from "node:path";
 // something other than the code.
 //
 // The scanner also skips STRING and TEMPLATE literals, so a path in a string
-// cannot open a comment either. REGEX literals are still not detected — the
-// two-regex form did not detect them either — and a `/*` inside one would
-// still open a block comment; the census tests below are what would catch the
-// consequence.
+// cannot open a comment either.
+//
+// REGEX LITERALS ARE NOW SKIPPED TOO — the FIFTH hole in this ban, found by the
+// seam-6 review and the same shape as the other four (the scan reads something
+// other than the code). A regex body containing an escaped slash, `\/`, was
+// read as an ordinary backslash followed by a live `/`, so
+//
+//     .replace(/\/\*[\s\S]*?\*\//g, " ")
+//
+// opened a block comment at the `/*` inside the pattern and blanked forward to
+// the next `*/` in the file. MEASURED before the fix: 5 of the 63 files under
+// tools/mapforge/ no longer PARSED after stripping — arcs, glyphs, labels,
+// raster and texture-bake .test.mjs. All five are under tests/, which the ban
+// excludes, so it was latent rather than live; the previous four holes were
+// latent right up until they were not.
+//
+// Telling a regex `/` from a division `/` is the classic JS lexing ambiguity
+// and the heuristic below is a heuristic. THAT IS ACCEPTABLE HERE ONLY BECAUSE
+// IT IS VERIFIED: `determinism-inventory.test.mjs`'s "the stripper never eats
+// live code" parses every scanned file's stripped output with
+// `vm.SourceTextModule`. A file the heuristic gets wrong reds that test with
+// the file named, instead of quietly going dark — which converts this whole
+// class of hole from "found by a reviewer, once per seam" into "cannot recur".
+// A `/` after one of these starts a REGEX, not a division. The trailing-word
+// list is what makes `return /re/` and `typeof /re/` lex correctly; without it
+// the last significant character is a letter and the `/` reads as division.
+const REGEX_KEYWORDS = new Set(["return", "typeof", "instanceof", "in", "of", "new", "delete",
+                                "void", "case", "do", "else", "yield", "await"]);
+
+/** Does a `/` at `pos` open a regex literal, given the source before it? */
+export function regexStartsAt(src, pos) {
+  let j = pos - 1;
+  while (j >= 0 && /\s/.test(src[j])) j--;
+  if (j < 0) return true;                       // a file may not begin with division
+  const prev = src[j];
+  if (!/[A-Za-z0-9_$)\]]/.test(prev)) return true;   // ( , = : [ { ; ! & | ? + - * etc.
+  if (/[A-Za-z0-9_$]/.test(prev)) {             // an identifier — keyword or value?
+    let k = j;
+    while (k >= 0 && /[A-Za-z0-9_$]/.test(src[k])) k--;
+    return REGEX_KEYWORDS.has(src.slice(k + 1, j + 1));
+  }
+  return false;                                  // `)` or `]`: an expression, so division
+}
+
 export function stripComments(src) {
   const out = new Array(src.length);
   let i = 0;
   const blank = (n) => { for (let k = 0; k < n; k++) out[i + k] = src[i + k] === "\n" ? "\n" : " "; i += n; };
   while (i < src.length) {
     const c = src[i], d = src[i + 1];
+    // A REGEX LITERAL, copied through whole. It must be recognised BEFORE the
+    // comment rules, because its body can contain `//` and `/*` (escaped, or
+    // inside a character class) and either would open a comment that swallows
+    // live code down to the next `*/` or newline.
+    if (c === "/" && d !== "/" && d !== "*" && regexStartsAt(src, i)) {
+      let j = i + 1, inClass = false, closed = false;
+      for (; j < src.length && src[j] !== "\n"; j++) {
+        if (src[j] === "\\") { j++; continue; }        // an escape covers the next char
+        if (src[j] === "[") inClass = true;
+        else if (src[j] === "]") inClass = false;
+        else if (src[j] === "/" && !inClass) { closed = true; break; }
+      }
+      if (closed) {
+        while (j + 1 < src.length && /[dgimsuvy]/.test(src[j + 1])) j++;   // flags
+        for (let k = i; k <= j; k++) out[k] = src[k];
+        i = j + 1;
+        continue;
+      }
+      // Unterminated on this line: it was a division after all (or broken
+      // source). Fall through and treat the `/` as an ordinary character.
+    }
     if (c === "/" && d === "/") {
       let j = i;
       while (j < src.length && src[j] !== "\n") j++;

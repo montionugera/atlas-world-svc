@@ -20,7 +20,7 @@
 // Usage:
 //   node tools/mapforge/generate-world.mjs --seed <hex16> --out build/mapforge/<runId>
 //                                          [--no-png] [--stage-report]
-import { readFileSync, writeFileSync, readdirSync, mkdirSync, existsSync, cpSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, mkdirSync, existsSync, cpSync, rmSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { makeGrid, FLAG } from "./lib/grid.mjs";
@@ -252,6 +252,11 @@ export function runPasses({ manifest, premises,
                           corridors: waterTrunk.water.corridors,
                           interstitialKm2: q(waterTrunk.water.unclaimedSeaCells * CELL_AREA_KM2),
                           plateArea: Array.from(plateArea) },
+           // ECHOED, NOT CONSUMED. `relations` is accepted so that Plan D's
+           // quoted signature `runPasses({ manifest, premises, pinned,
+           // relations })` runs unchanged, and it reaches no pass: Plan C has
+           // no relation layer. Plan D must not read the parameter's presence
+           // as a wired join — it is an empty seat, held open on purpose.
            relations, timings };
 }
 
@@ -329,6 +334,25 @@ export function buildTrunk({ manifest, premises, grid, rings, generator, settlem
         type: null,
       })),
       bands: [], runtime: null, representsNodeId: null,
+      // `lore.reported` IS A GATE INPUT, not prose, and it is the only key in
+      // this object that changes a verdict: `checkSpineComplete`
+      // (scripts/lib/spine.mjs) steps a CHILDLESS trunk node down from a hard
+      // FAIL to a WARN when it is true. So it is DERIVED from the world this
+      // run actually built, never carried from the committed node.
+      //
+      // The committed value would be wrong here. Six committed continents
+      // carry `reported: true` — a mariners'-chart entry, "no log claims what
+      // stands behind it" — and the generated world surveys five of them:
+      // Coldreach gets 6 surveyed regions, Stonemoor 7, Reedstrand and
+      // Driftholt 3 each, Brightfall 1. Carrying the flag would re-assert
+      // hearsay about ground the fabric file walks, and Plan E's `surveyOf()`
+      // reads `lore.reported` as its fallback, so the false claim would
+      // propagate into the survey model rather than stopping here.
+      //
+      // `lm.surveyed` is the manifest's count of SURVEYED regions for this
+      // landmass and it is the same number the partition produces — pinned in
+      // generate-world.test.mjs against the emitted fabric, not against this
+      // column, so the two cannot drift apart silently.
       lore: { summary: p.structuralIdea, reported: lm.surveyed === 0 ? true : undefined },
       tags: [], levelBand: [...p.levelBand],
     });
@@ -522,7 +546,7 @@ export function placementInside({ placement, ring }) {
   return samples.every((p) => insideRing(p, ring));
 }
 
-export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [] }) {
+export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [], rasterise = false }) {
   const files = [];
   const write = (rel, bytes) => {
     const p = join(outDir, rel);
@@ -670,8 +694,7 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [] }
   const allEdges = [...liveEdges, ...run.edges];
   run.edgeWorkOrder = edgeWorkOrder({ edges: allEdges, nodes: allNodes });
   for (const w of run.edgeWorkOrder)
-    run.problems.push(`edge ${w.edge} (${w.kind}): ${w.why} — ` +
-      `re-point it at the owning continent's f-town-<slug> feature`);
+    run.problems.push(`edge ${w.edge} (${w.kind}): ${w.why} — ${w.remedy}`);
   write("content/spine/edges.json", canonStringify([...liveEdges, ...run.edges]) + "\n");
 
   // 6. the fabric, the world file and the handle ledgers
@@ -708,7 +731,11 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [] }
   //    covers the drawings and the join, not only the data.
   const hashes = {};
   for (const rel of files.slice().sort()) hashes[rel] = hashOf(readFileSync(join(outDir, rel)));
-  const manifest = { ...run.runManifest, hashes, timings: run.timings,
+  // `options` records how the root was produced. `rasterise` is what --no-png
+  // sets, and it is here so the flag has an OBSERVABLE effect even on a run
+  // with no sheets registered — otherwise no test can tell the flag from a
+  // no-op, which is how it stayed inert through a whole seam.
+  const manifest = { ...run.runManifest, options: { rasterise }, hashes, timings: run.timings,
                      problems: run.problems, substitutions: run.substitutions, coverage: run.coverage };
   writeFileSync(join(outDir, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
   writeFileSync(join(outDir, "report.md"), renderReport({ run }));
@@ -733,24 +760,73 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [] }
  * reports them. `generate-world.test.mjs` holds the two together: the draft
  * root's gate failures must be EXACTLY this list and nothing else.
  */
+/**
+ * THE REMEDY IS A FUNCTION OF THE ORDER'S KIND, NOT A BLANKET.
+ *
+ * Every order used to carry one hardcoded line — "re-point it at the owning
+ * continent's f-town-<slug> feature". Counted on the real run, that is right
+ * for 25 of the 63 and wrong for 38:
+ *
+ *   * 28 are `f-tower-NN` relay features. A sight-line tower is not a town;
+ *     there is no f-town-<slug> to point a relay chain at.
+ *   * 6 are sea-lane endpoints (`f-port-tallowquay`, `f-port-netstead`,
+ *     `f-trade-wind-far`, and the `n-gildmark` ports). A lane ends at a port
+ *     or a landfall, not at a town centre.
+ *   * 3 are G-CANON-LEG "not frozen". Re-pointing there does not SATISFY the
+ *     rule, it EVADES it: `gCanonLeg` only inspects `ref.node`, so pointing
+ *     the leg at a feature makes the check stop looking rather than pass.
+ *
+ * The plan sanctions re-pointing for "its 7 `leg` edges and 8 `road` edges"
+ * and nothing else, so the other kinds get the remedy the plan actually
+ * describes — or say plainly that Plan C has diagnosed the problem and does
+ * not know the fix. A wrong instruction is worse than an absent one: Plan E
+ * reads these as a task list.
+ */
+export function remedyFor({ kind, ref }) {
+  if (ref.startsWith("road-end "))
+    return "the endpoint MOVED, it did not vanish — re-route the road's own points onto the " +
+           "redrawn anchor; re-pointing the endpoint would leave the drawn road where it is";
+  if (ref.startsWith("canon-leg "))
+    return "re-pointing EVADES this rule rather than satisfying it (gCanonLeg inspects ref.node " +
+           "only, so a feature endpoint makes it stop looking) — the fix is to freeze the " +
+           "endpoint, which G-FROZEN allows only under a frozen ancestor";
+  if (ref.startsWith("edge "))
+    return "the referenced EDGE is gone, so there is no atIndex to re-point at — Plan E must " +
+           "re-author this edge's via-chain or retire it with the edge it followed";
+  if (ref.startsWith("feature f-tower-"))
+    return "a relay tower is a sight-line station, not a town — there is no f-town-<slug> " +
+           "equivalent; Plan E must re-site the whole chain on the redrawn continent or retire " +
+           "the relay edge with the tower features that carried it";
+  if (ref.startsWith("feature "))
+    return "a port/landfall feature, not a town — Plan E must re-site it on the generated coast " +
+           "or retire the lane; f-town-<slug> is the wrong grammar for a sea-lane endpoint";
+  if (kind === "leg" || kind === "road")
+    return "re-point it at the owning continent's f-town-<slug> feature (plan handoff: the 7 leg " +
+           "and 8 road edges are exactly the case this grammar exists for)";
+  return "DIAGNOSIS ONLY — Plan C names the break and has no sanctioned remedy for a " +
+         `${kind} edge losing a node endpoint; Plan E Task 6 Step 6 owns the decision`;
+}
+
 export function edgeWorkOrder({ edges, nodes }) {
   const nodeById = new Map(nodes.map((n) => [n.id, n]));
   const featOwner = new Map();
   for (const n of nodes) for (const f of n.features ?? []) featOwner.set(f.id, n);
   const edgeIds = new Set(edges.map((e) => e.id));
-  const out = [];
+  const raw = [];
+  const out = raw;
+  const push = (o) => raw.push({ ...o, remedy: remedyFor({ kind: o.kind, ref: o.ref }) });
   for (const e of edges) {
     for (const ref of [e.from, e.to, ...(e.via ?? [])]) {
       if (!ref) continue;
       if (ref.node !== undefined && !nodeById.has(ref.node))
-        out.push({ edge: e.id, kind: e.kind, ref: `node ${ref.node}`,
-                   why: `endpoint node "${ref.node}" does not survive the redraw` });
+        push({ edge: e.id, kind: e.kind, ref: `node ${ref.node}`,
+                why: `endpoint node "${ref.node}" does not survive the redraw` });
       else if (ref.feature !== undefined && !featOwner.has(ref.feature))
-        out.push({ edge: e.id, kind: e.kind, ref: `feature ${ref.feature}`,
-                   why: `endpoint feature "${ref.feature}" does not survive the redraw` });
+        push({ edge: e.id, kind: e.kind, ref: `feature ${ref.feature}`,
+                why: `endpoint feature "${ref.feature}" does not survive the redraw` });
       else if (ref.edge !== undefined && !edgeIds.has(ref.edge))
-        out.push({ edge: e.id, kind: e.kind, ref: `edge ${ref.edge}`,
-                   why: `endpoint edge "${ref.edge}" does not survive the redraw` });
+        push({ edge: e.id, kind: e.kind, ref: `edge ${ref.edge}`,
+                why: `endpoint edge "${ref.edge}" does not survive the redraw` });
     }
     // G-NET's road-end proximity rule: a road's first and last point must sit
     // within 1 root unit of its endpoint's composed anchor. It fires on the
@@ -776,9 +852,9 @@ export function edgeWorkOrder({ edges, nodes }) {
         const dx = tips[i][0] - n.placement.anchor[0], dy = tips[i][1] - n.placement.anchor[1];
         const d = Math.sqrt(dx * dx + dy * dy);
         if (d > 1)
-          out.push({ edge: e.id, kind: e.kind, ref: `road-end ${n.id}`,
-                     why: `road end [${tips[i].join(", ")}] is ${d.toFixed(2)} from endpoint ${n.id}, ` +
-                          `which the redraw moved` });
+          push({ edge: e.id, kind: e.kind, ref: `road-end ${n.id}`,
+                  why: `road end [${tips[i].join(", ")}] is ${d.toFixed(2)} from endpoint ${n.id}, ` +
+                       `which the redraw moved` });
       });
     }
     // G-CANON-LEG: a leg endpoint that DOES resolve must be frozen, and every
@@ -789,8 +865,8 @@ export function edgeWorkOrder({ edges, nodes }) {
       for (const ref of [e.from, e.to]) {
         const n = ref?.node && nodeById.get(ref.node);
         if (n && !n.frozen)
-          out.push({ edge: e.id, kind: e.kind, ref: `node ${n.id}`,
-                     why: `canon-leg endpoint ${n.id} is not frozen in the draft` });
+          push({ edge: e.id, kind: e.kind, ref: `canon-leg ${n.id}`,
+                  why: `canon-leg endpoint ${n.id} is not frozen in the draft` });
       }
   }
   return out;
@@ -831,17 +907,119 @@ function renderReport({ run }) {
 }
 
 // ── CLI ────────────────────────────────────────────────────────────────────
-function parseArgs(argv) {
+//
+// THE FLAG LAYER IS AS LOAD-BEARING AS THE PASSES, and it used to be the one
+// part of this file no test drove. Three mutations survived the whole suite:
+// ignoring `--seed` entirely, inverting `--no-png`, and deleting the
+// non-zero exit over `failMs`. `generate-world.test.mjs`'s "THE CLI FLAG
+// LAYER" block kills all three; every rule below has an assertion against it.
+
+/** A world seed is sixteen lowercase hex. `mintSeed`/`streamInt` already throw
+ *  on anything else, but only once a pass reaches them — by which point the
+ *  run has written `"seed": "NOT_A_SEED"` into content/world/fabric/world.json,
+ *  where nothing downstream checks it (the fabric layer has no G-SEED), and
+ *  minted the run id `NOT_A_SE-3.0.0`. Measured: a garbage seed exits 0, writes
+ *  a full content root and takes the draft from 91 gate failures to 93. */
+export const SEED_GRAMMAR = /^[0-9a-f]{16}$/;
+
+export function parseArgs(argv, { fail = (m) => { console.error(m); process.exit(2); } } = {}) {
   const opts = { seed: null, outDir: null, png: true, stageReport: false };
+  // A flag whose value is missing used to eat the NEXT FLAG: `--seed --out x`
+  // silently took "--out" as the seed, fell back to the manifest seed, and ran
+  // 6.5 s into the DEFAULT out dir — losing both flags with no diagnostic.
+  // `--out` with no value at all threw an uncaught ERR_INVALID_ARG_TYPE out of
+  // `resolve(undefined)` and printed a stack trace.
+  const value = (i, flag) => {
+    const v = argv[i];
+    if (v === undefined || v.startsWith("--")) {
+      fail(`generate-world: ${flag} needs a value` +
+           (v === undefined ? "" : ` — got the next flag ${v}`));
+      return null;
+    }
+    return v;
+  };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
-    if (a === "--seed") opts.seed = argv[++i];
-    else if (a === "--out") opts.outDir = resolve(argv[++i]);
-    else if (a === "--no-png") opts.png = false;
+    if (a === "--seed") {
+      const v = value(++i, "--seed");
+      if (v === null) return opts;
+      if (!SEED_GRAMMAR.test(v)) {
+        fail(`generate-world: --seed ${JSON.stringify(v)} is not sixteen lowercase hex — ` +
+             `the seed reaches content/world/fabric/world.json, where no gate checks it`);
+        return opts;
+      }
+      opts.seed = v;
+    } else if (a === "--out") {
+      const v = value(++i, "--out");
+      if (v === null) return opts;
+      opts.outDir = resolve(v);
+    } else if (a === "--no-png") opts.png = false;
     else if (a === "--stage-report") opts.stageReport = true;
-    else { console.error(`generate-world: unknown arg ${a}`); process.exit(2); }
+    else { fail(`generate-world: unknown arg ${a}`); return opts; }
   }
   return opts;
+}
+
+// Everything this CLI writes lives under one of these six names. Anything else
+// in the out dir was not written by a mapforge run.
+export const RUN_ENTRIES = Object.freeze(
+  ["content", "baseline", "sheets", "manifest.json", "report.md", "civil-resolved.json"]);
+
+/**
+ * Clear a previous draft root so `--out` means what the file header says: "a
+ * COMPLETE content root from scratch".
+ *
+ * `writeRun` only ever created and overwrote, so a file the previous run wrote
+ * and this one does not SURVIVES — and it is invisible downstream, because
+ * `promote-world.mjs` step 1 verifies the sha256 of the files the run manifest
+ * lists and a stale file is not in that map. Measured: a planted
+ * `content/spine/nodes/n-ZOMBIE.json` survived a full run, the CLI printed OK,
+ * the manifest listed 72 files and named none of them n-ZOMBIE — while the
+ * gate on that root read 99 failures instead of 91.
+ *
+ * The removal is BOUNDED rather than an `rm -rf` of a user-supplied path: only
+ * the six names above are removed, and an out dir holding anything else is a
+ * refusal, not a bulldoze. A first run into a fresh or absent directory is a
+ * no-op.
+ */
+export function clearRun({ outDir, rm = rmSync, dir = readdirSync }) {
+  if (!existsSync(outDir)) return { removed: [], foreign: [] };
+  const entries = dir(outDir);
+  const foreign = entries.filter((e) => !RUN_ENTRIES.includes(e));
+  if (foreign.length) return { removed: [], foreign };
+  for (const e of entries) rm(join(outDir, e), { recursive: true, force: true });
+  return { removed: entries, foreign: [] };
+}
+
+/**
+ * The loop-budget decision, as a pure function of the timings and the committed
+ * table, so it can be driven at a breach rather than only at whatever this box
+ * happened to measure. `main` used to inline it, which left "delete
+ * `process.exitCode = 1`" as a surviving mutation: no test ever drove the CLI
+ * over `failMs`, because doing so needs a machine slow enough to be a flake.
+ *
+ * Goal G4's measure is explicitly NOT one aggregate number — an aggregate hides
+ * which stage regressed and the loop silently drifts to minutes. The `generate`
+ * row covers every pass; the `sheets` row covers the draft drawings.
+ *
+ * `timings.total` is ~94% of the run, not the run: `runPasses` computes it
+ * before `writeRun`, so the ~400 ms of writing 72 files (~1.2 MB) and the
+ * `sheets` figure both sit outside it. That is deliberate — the budget is on
+ * the GENERATION loop — but it means the CLI's wall clock always reads higher
+ * than the number checked here.
+ */
+export function loopBudget({ timings, budgets }) {
+  const row = (stage) => budgets.loop.find((r) => r.stage === stage);
+  const gen = row("generate"), sheetRow = row("sheets");
+  const sheetMs = timings.sheets ?? 0;
+  const lines = [
+    `stage: generate TOTAL ${timings.total} ms (budget ${gen.budgetMs}, fail ${gen.failMs})`,
+    `stage: sheets ${sheetMs} ms (budget ${sheetRow.budgetMs}, fail ${sheetRow.failMs})`,
+  ];
+  const over = [];
+  if (timings.total > gen.failMs) over.push(`generate ${timings.total} ms > fail ${gen.failMs} ms`);
+  if (sheetMs > sheetRow.failMs) over.push(`sheets ${sheetMs} ms > fail ${sheetRow.failMs} ms`);
+  return { lines, over };
 }
 
 // async because the draft sheets are imported lazily: render-sheet.mjs imports
@@ -863,7 +1041,14 @@ async function main() {
   // The loop budget is a committed table, not a constant here — one authority
   // for the generator, the sheet build and the join (content/world/budgets.json).
   const budgets = readJson(join(REPO_ROOT, "content/world/budgets.json"));
-  const loopRow = (stage) => budgets.loop.find((r) => r.stage === stage);
+
+  // The out dir is CLEARED before the run, not written over. See `clearRun`.
+  const cleared = clearRun({ outDir });
+  if (cleared.foreign.length) {
+    console.error(`generate-world: --out ${outDir} holds ${cleared.foreign.join(", ")}, which no ` +
+      `mapforge run wrote — refusing to write a "complete content root" over someone else's files`);
+    process.exit(2);
+  }
 
   const run = runPasses({ manifest, premises, lexicon, loadBudget,
     onStage: opts.stageReport ? (name, label, ms) => console.log(`stage: ${name} ${label} ${ms} ms`) : undefined });
@@ -871,23 +1056,37 @@ async function main() {
   const { SHEETS } = await import(pathToFileURL(join(REPO_ROOT, "tools/mapforge/render-sheet.mjs")).href);
   const draftSheets = ["fabric", "overlay"].filter((id) => SHEETS[id])
     .map((id) => ({ id, build: SHEETS[id].build }));
-  const { files } = writeRun({ run, outDir, repoRoot: REPO_ROOT, sheets: draftSheets });
+  // `--no-png` is honoured HERE, at the only place a raster could be produced.
+  // Plan C has no rasteriser — the draft sheets are SVG only, because a raster
+  // in the review loop is 18 s and 8 MB per sheet — so asking for one is a
+  // refusal rather than a flag that quietly does nothing. It used to be exactly
+  // that: `opts.png` was assigned and never read, and inverting it left the
+  // whole suite green.
+  if (opts.png && draftSheets.length) {
+    console.error(`generate-world: raster output is not implemented (Task 13 owns the sheet ` +
+      `registry); re-run with --no-png`);
+    process.exit(2);
+  }
+  const { files } = writeRun({ run, outDir, repoRoot: REPO_ROOT, sheets: draftSheets,
+                               rasterise: opts.png });
 
   // Per-stage budgets with fail thresholds — goal G4's measure is explicitly
   // NOT one aggregate number, because an aggregate hides which stage regressed
   // and the loop silently drifts to minutes. The `generate` row covers every
   // pass; the `sheets` row covers the draft drawings written just above.
-  const gen = loopRow("generate"), sheetRow = loopRow("sheets");
-  const sheetMs = run.timings.sheets ?? 0;
-  console.log(`stage: generate TOTAL ${run.timings.total} ms (budget ${gen.budgetMs}, fail ${gen.failMs})`);
-  console.log(`stage: sheets ${sheetMs} ms (budget ${sheetRow.budgetMs}, fail ${sheetRow.failMs})`);
-  const over = [];
-  if (run.timings.total > gen.failMs) over.push(`generate ${run.timings.total} ms > fail ${gen.failMs} ms`);
-  if (sheetMs > sheetRow.failMs) over.push(`sheets ${sheetMs} ms > fail ${sheetRow.failMs} ms`);
+  const { lines, over } = loopBudget({ timings: run.timings, budgets });
+  for (const l of lines) console.log(l);
 
   console.log(`generate-world: wrote ${files.length} files to ${outDir}`);
   console.log(`generate-world: ratio ${run.runManifest.seaToLandRatio} (land ${run.runManifest.landKm2} km2)`);
   for (const p of run.problems) console.log(`generate-world: PROBLEM ${p}`);
+  // EXIT 0 WITH WORK ORDERS IS DELIBERATE — they are Plan E's task list, not
+  // this run's failures — but "OK" on its own reads as "the gate passes", and
+  // it does not. Say which, once, so a reader does not have to know the seam.
+  const orders = run.edgeWorkOrder?.length ?? 0;
+  if (orders)
+    console.log(`generate-world: ${orders} work orders for Plan E — this draft root is NOT ` +
+      `G-NET/G-CANON-LEG clean BY DESIGN; every other gate is green on it`);
   if (over.length) {
     for (const o of over) console.error(`generate-world: LOOP BUDGET ${o}`);
     process.exitCode = 1;

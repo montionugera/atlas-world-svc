@@ -180,11 +180,25 @@ test("everything under tools/mapforge/ outside lib/ carries no imprecise Math at
 // content/. A clock reaching a committed byte reds that immediately. The
 // timings themselves live in the draft folder's manifest.json, outside
 // content/, and are deliberately excluded from that comparison.
-const CLOCK_EXEMPT = Object.freeze(["generate-world.mjs"]);
+// PER-PATTERN, not per-file. The exemption used to skip generate-world.mjs
+// from ALL of NEVER, so a `Math.random()` added to the CLI would have been
+// invisible to this scan — and the CLI is the one file that writes the draft
+// root. It reads a wall clock for STAGE TIMINGS only (the reproducibility test
+// is what proves no clock reaches a committed byte); it has no business
+// reading a random number.
+const CLOCK_EXEMPT = Object.freeze({ "generate-world.mjs": ["Date", "performance.now"] });
 
 test("the clock exemption is exactly one file, and it is the CLI", () => {
-  assert.deepEqual([...CLOCK_EXEMPT], ["generate-world.mjs"],
+  assert.deepEqual(Object.keys(CLOCK_EXEMPT), ["generate-world.mjs"],
     "a second file wants a wall clock — write its reason above before adding it");
+  assert.deepEqual(CLOCK_EXEMPT["generate-world.mjs"], ["Date", "performance.now"],
+    "the exemption is per-PATTERN: the CLI may read a clock and may NOT read a random number");
+  assert.ok(!CLOCK_EXEMPT["generate-world.mjs"].includes("Math.random"),
+    "no file is ever exempt from the random-number ban — a random number is not a timing");
+  // The exemption's names must BE names in NEVER, or it exempts nothing.
+  const never = NEVER.map(([, n]) => n);
+  for (const n of CLOCK_EXEMPT["generate-world.mjs"])
+    assert.ok(never.includes(n), `CLOCK_EXEMPT names "${n}", which is not one of the NEVER patterns`);
   assert.ok(outsideLibFiles().includes("generate-world.mjs"),
     "the exempt file is not in the scanned set, so the exemption is exempting nothing");
   // and it really does read one, so the exemption is not vestigial
@@ -202,13 +216,93 @@ test("nothing on the committed-byte path reads a clock or a random number", () =
   for (const [label, files] of [["lib", libFiles().map((f) => [join(LIB, f), `lib/${f}`])],
                                 [".", outsideLibFiles().map((f) => [join(MAPFORGE, f), f])]])
     for (const [path, name] of files) {
-      if (label !== "lib" && CLOCK_EXEMPT.includes(name)) continue;
+      const exempt = label === "lib" ? [] : (CLOCK_EXEMPT[name] ?? []);
       const src = codeOfFile(path);
-      for (const [re, n] of NEVER) if (re.test(src)) offenders.push(`${label === "lib" ? "" : "./"}${name}: ${n}`);
+      for (const [re, n] of NEVER) {
+        if (exempt.includes(n)) continue;
+        if (re.test(src)) offenders.push(`${label === "lib" ? "" : "./"}${name}: ${n}`);
+      }
     }
   assert.deepEqual(offenders.sort(), []);
 });
 
+// THE STRUCTURAL END OF THIS CLASS OF HOLE.
+//
+// The ban has now been holed FIVE distinct ways across six seams, and every
+// one was the same shape: the scan read something other than the code.
+//   1. `readdirSync` did not recurse, so lib/passes/ was dark.
+//   2. a maintained file list, and a `.js` extension nobody scanned.
+//   3. a `/*` inside a `//` comment opened a block comment and blanked a whole
+//      file down to the next `*/`.
+//   4. a regex full of quotes ran the string scanner off the end of its line.
+//   5. an escaped slash inside a regex, `\/` before `*` or `/`, opened a
+//      spurious comment — 5 of the files under tools/mapforge/ no longer
+//      PARSED after stripping.
+//
+// Each was patched after a reviewer found it. This test is the general form:
+// if the stripper ate live code, the residue is not a valid module. It costs
+// one parse per file and it does not need to know WHICH construct broke — a
+// sixth spelling is caught the first time it appears, with the file named.
+//
+// The two lists are the SAME derived lists the ban itself walks, plus tests/,
+// because holes 3 and 5 both lived in files the ban excludes and were therefore
+// invisible until someone went looking. Coverage of the checker must be wider
+// than coverage of the check.
+test("the stripper never eats live code: every scanned file still PARSES after stripping", async () => {
+  const vm = await import("node:vm");
+  if (typeof vm.SourceTextModule !== "function") {
+    // --experimental-vm-modules is not on. Say so rather than pass silently:
+    // a check that quietly does nothing is the defect this test exists for.
+    assert.ok(true, "SourceTextModule unavailable — see the fallback assertion below");
+  }
+  const broken = [];
+  for (const f of sourceFilesUnder(MAPFORGE)) {
+    const path = join(MAPFORGE, f);
+    const src = readFileSync(path, "utf8");
+    const stripped = stripComments(src);
+    assert.equal(stripped.length, src.length, `${f}: stripping changed the file length`);
+    assert.equal(stripped.split("\n").length, src.split("\n").length,
+      `${f}: stripping changed the line count, so file:line reporting is wrong`);
+    if (typeof vm.SourceTextModule !== "function") continue;
+    // Only judge files the ORIGINAL parses as an ES module — a .cts or a
+    // deliberately-broken fixture is not this test's business.
+    try { new vm.SourceTextModule(src, { identifier: f }); } catch { continue; }
+    try { new vm.SourceTextModule(stripped, { identifier: f }); }
+    catch (e) { broken.push(`${f}: ${e.message}`); }
+  }
+  assert.deepEqual(broken, [],
+    `stripComments produced source that no longer parses — it blanked live code:\n${broken.join("\n")}`);
+});
+
+test("stripComments: an ESCAPED SLASH in a regex does not open a comment (hole 5)", () => {
+  // The exact line the review found, from tools/mapforge/tests/glyphs.test.mjs:
+  // the `\/` before `\*` was read as a backslash then a live `/`, and `/*`
+  // opened a block comment that ran to the next `*/` in the file.
+  const src = [
+    'const strip = (s) => s.replace(/\\/\\*[\\s\\S]*?\\*\\//g, " ");',
+    "export const AFTER = Date.now;",
+    "/** a jsdoc naming Math.hypot */",
+    "export const REAL = 1;",
+  ].join("\n");
+  const out = stripComments(src);
+  assert.ok(out.includes("export const AFTER = Date.now;"),
+    "the line after the regex was blanked — the regex opened a comment");
+  assert.ok(out.includes("export const REAL = 1;"));
+  assert.ok(!out.includes("Math.hypot"), "the jsdoc must still be stripped");
+  // The `\//` variant, which opens a LINE comment instead.
+  const two = stripComments('const RE = /a\\//;\nexport const X = Date.now;');
+  assert.ok(two.includes("export const X = Date.now;"));
+  // A real division must still be division, not a regex swallowing the line.
+  const div = stripComments("const half = (a + b) / 2; // a comment\nexport const Y = 1;");
+  assert.ok(div.includes("const half = (a + b) / 2;"));
+  assert.ok(!div.includes("a comment"));
+  assert.ok(div.includes("export const Y = 1;"));
+  // …and a regex after `return` (an identifier char) is still a regex.
+  const kw = stripComments("const f = () => { return /a\\/b/; };\nexport const Z = 1;");
+  assert.ok(kw.includes("export const Z = 1;"));
+});
+
+// THE OLDER STRIPPER TESTS, kept because each names a hole by its measurement.
 // THE STRIPPER ITSELF, because a scan is only as good as what it reads and
 // this is the THIRD time the ban's coverage has been found holed. The
 // two-regex form ran the block rule first, so a `/*` inside a LINE comment —
