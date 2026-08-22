@@ -6,8 +6,8 @@ It exists so a new session does not need the previous session's conversation. If
 is wrong, fix the file — do not work around it in a prompt.
 
 Last updated: 2026-08-22, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`),
-**Plan C was claimed** as F-048, and **Plan C seams 1 and 2 (Tasks 1-4) were reviewed and fixed** —
-see §9 and §10, and thirteen more confirmed plan errors in §5.
+**Plan C was claimed** as F-048, and **Plan C seams 1, 2 and 3 (Tasks 1-6) were built and
+reviewed** — see §9, §10 and §11, and nine more confirmed plan errors in §5.
 
 ---
 
@@ -138,7 +138,7 @@ Notes carried forward:
 
 ## 5. Where the plan documents are WRONG
 
-Nine confirmed. Each was found by running code, not by reading. **Verify a brief against the
+Thirty-four confirmed. Each was found by running code, not by reading. **Verify a brief against the
 tree before trusting it** — this is the single most reliable source of defects in the programme.
 
 | Where | The plan says | Actually |
@@ -171,6 +171,15 @@ tree before trusting it** — this is the single most reliable source of defects
 | **C, Task 4 Step 1** test | `ramp(64000)` with `targetLandCells: 26240` | **throws.** `LAND_CELL_BAND` is an ABSOLUTE count for the pinned 640,000-cell grid, not a fraction — 26,240 is 8.7× under the floor. The band is the manifest's own `grid.landCellBand`, so the fixture moved, not the contract. Consequence: `selectSeaLevelByRank` is usable on the 800 × 800 grid and nothing coarser. |
 | **STATE §9** (this file, seam 1) | the inventory "reads the whole of `lib/` by directory (so it covers new files, e.g. Task 3's passes)" | it did **not** — `readdirSync` is not recursive, so `lib/passes/` was scanned by **neither** determinism scan. Proven at `plan-c-base`: a planted `Math.cos` **and** `Date.now()` in `lib/passes/mask.mjs` left `determinism-inventory.test.mjs` at **4 pass / 0 fail**. The walk is recursive now, and a test asserts at least one scanned file lives in a subdirectory. |
 | **C, Global Constraints** and `grid.mjs`'s header | "19 desert types (rock: clastic) and 15 volcanic types… 35 of the 170 lexicon rows" | measured against the committed lexicon: **carbonate 10, clastic 19, volcanic 16 = 45** rows carry a `requires.rock`, not 34/35. The direction of the claim is right and the remedy is unchanged; the count is not. |
+| **C, Task 5 Step 3** `unitEdges` frame loops | `left: -1, right: o` (top) and `left: o, right: -1` (left) | **both INVERTED** against the convention the main sweep establishes, so an owner touching the top or left frame cannot chain a closed ring. Reproduced on a 5x5 two-owner field: 5 rings totalling 3.5 km² against a 3.25 km² census. The plan's own `twoBlocks` fixture sits clear of every frame edge and cannot see it. An arc takes `left`/`right` from its FIRST edge only, so a mis-oriented edge mid-arc is invisible — the fixture had to be swept for. |
+| **C, Task 5 Step 3** `fractalise` | judges the arc with `selfIntersects` from `scripts/lib/spine.mjs` | that function walks `points[(i+1) % n]` — it CLOSES the list. On an open arc it tests against a chord the arc does not have. **Measured TRUE on the plan's own fixture** `[[0,0],[8,0],[16,4],[24,4]]`, so the plan's fractalise halves four times, gives up, and fails the plan's own `out.length > 4` assertion — every coast in the world would have got no detail, silently. An open-polyline crossing test now lives in `arcs.mjs`. |
+| **C, Task 5 Step 3** arc ids / node sort | `arc-${n}`, `[...nodeSet].sort()` | both are STRING sorts of numeric things: `arc-10` precedes `arc-2`, so `assembleRings`' "lowest arc id" start is not the arc it names on any owner with ten or more arcs; and `"10:4"` precedes `"9:4"`, so arc ids depend on how many digits a coordinate has. Ids are zero-padded to 6 and nodes sort numerically. |
+| **C, Task 6b Step 14** `carveWater` lakes | rank a premise's cells by `filled - elev`, deepest first, to the share | **carves 68 km² of the 1,600 km² budget.** Measured on the real field: the WHOLE WORLD holds **603** land cells with any depression (c02 267, c04 6, c06 0) against the 6,400 budgeted, so the net ratio never leaves 1.439 and Task 6b's stated purpose fails. Two simpler repairs measured and rejected — ranking by ELEVATION rings the coast (the mask taper makes the rim the lowest ground everywhere; c02's inland-sea lobe is at 0.13-0.21 while its shore is at 0.044), and centre-seeded growth without a disc bound leaks to that rim. Replaced by: premise disc says WHERE, manifest column says HOW MUCH, relief decides the shape. |
+| **C, Task 6b Step 11** both `carveWater` fixtures | `manifest: { budget: { interiorWaterKm2: 400 } }` | the per-premise share is `manifest.landmasses[].interiorWaterKm2`, which the plan's own `interiorWaterFor` reads. With the plan's fixture that is 0, the premise is skipped, and the fixture's own `assert.ok(carvedKm2 > 0)` fails. Neither fixture fills `grid.flowAcc` either, which `carveWater` reads for every river, delta and fresh-water distance. |
+| **C, Task 6b Step 11** rain-shadow test | `moist(x=28) > moist(x=32)` around a wall | presumes a PREVAILING wind. Neither the plan's twelve sweeps nor the sixteen here weight one bearing over another, so "lee" is not a direction the pass knows: measured windward 0.00854 against lee 0.01169, an artefact of which side the sea is on. Re-framed causally — the same ground with and without the ridge. |
+| **C, Task 6b Step 13** `applyWinds` sweep starts | `x = startX + (|dx| < |dy| ? k : 0)`, one boundary line per bearing | leaves STRIPES on every diagonal bearing — a family of parallel diagonals and a large untouched triangle. Both upwind edges are enumerated now, with a coverage counter over all sixteen bearings as a test. The plan's Step 19 predicted exactly this. |
+| **C, Task 6b Step 13** `SWEEPS = 12` | "one per wind direction band" | `UNIT_VECTORS[(s * 16 / 12) | 0]` selects indices 0,1,2,4,5,6,8,9,10,12,13,14 — an UNEVENLY spaced dozen (22.5°, 22.5°, 45° per quadrant), which biases the rain shadow by quadrant. Twelve evenly spaced bearings cannot be drawn from a 16-row table; the whole table is swept instead. |
+| **C, Task 6b** `applyWinds({grid, premises, stream})` and `carveWater({…, filled, …})` | both parameters in the signature | **neither is read.** `premises` is never mentioned in the plan's own `applyWinds` body; and growing the lake on `filled` is actively WRONG — a 3x3 pit at 0.1 inside a 0.5 plain comes back from priorityFlood at 0.5000051, ABOVE the plain, because erasing depressions is the fill's whole job. Both dropped (seam 2's P2b precedent). `priorityFlood` stays load-bearing via P6's flow routing. |
 
 The plan text already self-corrects two more: spec §8.6's "checkSpine is already parameterised
 with an injected collector" (it is not — it closes over module-level bindings) and §8.2's
@@ -529,3 +538,89 @@ a commit message cannot be amended, and two of the seam's overstated what they h
   fixture must supply its own threshold rather than calling it — it will get a throw naming the
   frame if it does not.
 
+
+
+---
+
+## 11. Plan C seam 3 (Tasks 5-6) — settled, do not re-raise
+
+Appended 2026-08-22 by the seam-3 implementation. Nine more plan errors are in §5 above; all nine
+were reproduced against the tree before anything was changed. Three commits: `64822b3` (arcs),
+`4651d9c` (hydrology), `4339a81` (winds + water).
+
+### What the seam guarantees
+
+- **The coastline is sliver-free ON THE REAL WORLD, not on a fixture.** `extractArcs` over the
+  land/sea owner field traces **37 arcs at 22 nodes, 7,386 vertices**, simplified ONCE per arc at
+  the pinned 0.35 km epsilon to **2,273**. `assembleRings` returns **exactly one ring per
+  continent**, each ring's signed shoelace area **exactly** its cell census, the thirteen summing
+  to 65,600 km² — the same number P3 selected. A tracer that split one shared vertex, dropped one
+  arc or wound one ring backwards cannot satisfy that. 40 ms trace + 12 ms simplify.
+- **Interior water closes the ratio.** 6,400 lake cells = **1,600 km²**, split **c02 1,100 / c04
+  300 / c06 200** against the manifest's own per-landmass column, so 65,600 gross − 1,600 =
+  **64,000 net** and the net sea-to-land ratio is **1.500** exactly. Also 3,755 river cells
+  (938.75 km²), 22 delta cells, 52,239 glacier cells (13,059.75 km², a fifth of the land — that is
+  the plan's `GLACIER_TEMP_MAX 0.12` and it has never been reviewed as a content number).
+- **`land ⊆ mask` is untouched.** Nothing in this seam writes `elev`, `plate` or `FLAG.SEA`: lakes,
+  rivers, deltas and glaciers are FLAGS on cells that are already land, and `carveWater` refuses a
+  cell that carries `FLAG.SEA`. The real-field golden re-asserts SEA/LAKE exclusivity cell by cell.
+- **Golden VECTORS, not properties, on every field this seam produces** — arc/node/vertex censuses,
+  per-continent ring areas, the fractalised coastline's 25 exact vertices, the bowl's filled
+  surface / flow directions / accumulation, moisture and temperature digests, the lake CELL SET
+  digest and three per-continent lake bounding boxes, the freshKm digest and its 103.5 km maximum.
+- **Timings.** P4 arcs 52 ms, P5 winds 440 ms, P6 hydrology 467 ms, P7 water 367 ms. With
+  P1+P2+P2b+P3 at 1,244 ms that is **2,518 ms of the 4,000 ms generate budget** with seven passes
+  still to write. `applyWinds` is the next place to look: 16 bearings × (w+h) rays.
+
+### Decisions taken deliberately
+
+- **The trunk polygon is `rings[0]`, the OUTER ring, and interior water is carved from the fabric
+  CENSUS.** `assembleRings` normalises every ring to a positive shoelace (G-POLY rejects a negative
+  ring and has no hole concept) and returns them LARGEST FIRST, so a host with an enclosed owner
+  hands the caller its outer boundary first and the hole second. On today's field no continent has
+  a hole — the golden pins `rings.length === 1` thirteen times, so a future split is caught rather
+  than silent. **Callers must SUM the rings for area and must not assume one ring.**
+- **c02's inland-sea deferral is CLOSED, and the STATE note that raised it was right.** The lobe is
+  a mask subtraction whose disc is 2,255 km² against an 1,100 km² budget, and measured, none of it
+  was below sea level — c02 traced ONE ring, no hole, so the lobe was dry land. P7 now carves
+  **1,100 km² inside that disc**: a connected 47 × 53 km body at elevation 0.125-0.205 with **zero**
+  D8 adjacencies to open sea. Budget, not disc, exactly as §10 instructed.
+- **A lake grows on TERRAIN elevation, never on the priority-flooded surface.** Erasing depressions
+  is the fill's entire job, so a 3 × 3 pit at 0.1 inside a 0.5 plain comes back at 0.5000051 —
+  above the plain. Grown on `filled` the water lands on the flat rim and the pit stays dry.
+- **A lake is not a bay.** `LAKE_SHORE_MARGIN` is stated twice, in km (1.5) and in cells (2), and
+  the larger wins: the km figure is the world-model statement, the cell figure the topological one.
+  At `cellKm 2` a 1.5 km margin admits the ring D8-adjacent to open sea.
+- **`SWEEPS` is the whole 16-vector table**, and `applyWinds` enumerates BOTH upwind edges. See §5.
+
+### Recorded mutation SURVIVORS — all four un-killable, each explained at its call site
+
+**Do not re-file these.** 96 mutations across the seam, 92 killed.
+
+- `arcs.mjs` — the node rule's `pairs.size !== 1` term, the walk's owner-pair filter, and the walk's
+  ascending candidate sort. All three follow from one fact with a four-line case analysis in the
+  file: **on a square lattice a degree-2 corner always carries exactly one owner pair**, so the walk
+  never has more than one candidate.
+- `arcs.mjs` — `polylineSelfIntersects` starting `j` at `i + 2`. Consecutive segments share a
+  vertex, so one of properCross's orientations is exactly 0 and it rejects them anyway.
+- `hydrology.mjs` — the min-heap's index tiebreak. **It is reached and it cannot change the
+  output**: two frontier cells tie only at the same value, and whichever pops first assigns the same
+  `value + EPS`. Measured identical over the real 800 × 800 field and 300 tie-heavy random fields
+  with the tiebreak deleted AND reversed. The identical comparison in `passes/water.mjs` IS
+  observable (that heap flags what it pops) and both mutations die there.
+- `passes/water.mjs` — the `FLAG.SEA` test in lake admission, subsumed by the shore margin (a sea
+  cell is its own BFS source, so `inlandKm` is 0 there).
+
+### Open, recorded rather than chased
+
+- **A pinched owner comes back as one ring or two depending on arc id order.** At a diagonal touch,
+  owner 0 traces two rings and owner 1 one ring through the pinch — both area-exact, neither with a
+  PROPER self-intersection. Routing by turn angle would make it symmetric, but the symmetric answer
+  is TWO rings, which on a one-cell diagonal isthmus would put half a landmass outside the trunk
+  polygon. The pinch-through ring is the better world. 22 pinch nodes exist on the real coastline.
+- **`fractalise` is O(n²) in its self-intersection test and nothing calls it yet.** It is for
+  SIMPLIFIED arcs (tens of points). Task 10's P14 must not hand it a raw traced arc.
+- **The glacier share is 20% of all land** at the plan's `GLACIER_TEMP_MAX 0.12`. Nobody has
+  reviewed that as a content number, and P8's biome table is the first thing that will read it.
+- **`filled` can exceed the 1.0 elevation clamp** — by exactly one epsilon, 1.0000009536743164.
+  Nothing reads it as a [0, 1] elevation today; the golden pins it so that stops being luck.
