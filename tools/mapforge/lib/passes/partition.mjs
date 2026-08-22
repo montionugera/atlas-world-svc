@@ -27,7 +27,7 @@
 // than inside it. Owning lakes would inflate every region by 2.5% and make the
 // region-area tolerance a statement about a different quantity.
 import { FLAG, D8, idx, neighbourIdx, cellAreaKm2 } from "../grid.mjs";
-import { hashNoise2D } from "../noise.mjs";
+import { hashNoise2D, q } from "../noise.mjs";
 import { mintSeed } from "../seed.mjs";
 import { TERRAIN_FOR_BIOMES } from "./biome.mjs";
 
@@ -345,6 +345,11 @@ export function partitionRegions({ grid, premises, manifest, stream, less = null
   // Census, biome shares, terrainKind, adjacency.
   const census = { land: 0, lake: 0, sea: 0, unowned: 0, offMask: 0 };
   const shares = byIndex.map(() => new Map());
+  // Centroid accumulators. `centroidKm` is what P11's assignLevelBands reads to
+  // ring a region by distance from the starter capital; without it every region
+  // is skipped and all 160 come out unbanded, silently. Accumulated HERE rather
+  // than in a second sweep because this loop already visits every owned cell.
+  const sumX = new Float64Array(byIndex.length), sumY = new Float64Array(byIndex.length);
   for (let i = 0; i < grid.n; i++) {
     const f = grid.flags[i];
     if ((f & FLAG.SEA) !== 0) { census.sea++; continue; }
@@ -354,12 +359,19 @@ export function partitionRegions({ grid, premises, manifest, stream, less = null
     const o = grid.owner[i];
     if (o < 0) { census.unowned++; continue; }
     byIndex[o].cells++;
+    sumX[o] += (i % grid.w) + 0.5;
+    sumY[o] += ((i / grid.w) | 0) + 0.5;
     const m = shares[o];
     m.set(grid.biome[i], (m.get(grid.biome[i]) ?? 0) + 1);
   }
   for (let n = 0; n < byIndex.length; n++) {
     const rec = byIndex[n];
     rec.areaKm2 = rec.cells * cellArea;
+    // Quantised through q() like every other committed number: the fabric
+    // record carries it and G-* reads it back.
+    rec.centroidKm = rec.cells > 0
+      ? [q((sumX[n] / rec.cells) * grid.cellKm), q((sumY[n] / rec.cells) * grid.cellKm)]
+      : null;
     ownerHistogram[rec.id] = rec.cells;
     const total = rec.cells || 1;
     const sorted = [...shares[n].entries()].sort((a, b) => (b[1] - a[1]) || (a[0] - b[0]));
