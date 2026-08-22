@@ -15,8 +15,8 @@ import { makeGrid, FLAG, idx } from "../lib/grid.mjs";
 import { BIOMES, shoelaceArea } from "../../../scripts/lib/spine.mjs";
 import {
   instanceLandforms, matchesRequires, compileRequires, cellView, REQUIRES_KEYS, PRODUCIBLE_ROCK,
-  mintHandle, orderHandles, orderDigestOf, resolveHandleCollisions, footprintOf,
-  GROUP_TARGETS, REPORTED_INSTANCES_PER_REGION,
+  mintHandle, orderHandles, orderDigestOf, assertHandlesUnique, footprintOf,
+  GROUP_TARGETS, REPORTED_INSTANCES_PER_REGION, HANDLE_HEX,
 } from "../lib/passes/landforms.mjs";
 import { classifyBiomes } from "../lib/passes/biome.mjs";
 import { partitionRegions } from "../lib/passes/partition.mjs";
@@ -26,7 +26,7 @@ import { buildElevation, assignSubstrate } from "../lib/passes/elevation.mjs";
 import { selectSeaLevelByRank, classifySea, CELL_AREA_KM2 } from "../lib/passes/sea-level.mjs";
 import { applyWinds } from "../lib/passes/winds.mjs";
 import { carveWater } from "../lib/passes/water.mjs";
-import { terrainStream } from "../lib/seed.mjs";
+import { terrainStream, mintSeed, namedStream } from "../lib/seed.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../../..");
@@ -35,7 +35,11 @@ const REAL_LEXICON = join(ROOT, "content/world/lexicon/landforms.json");
 const INSTANCE_SCHEMA = JSON.parse(
   readFileSync(join(ROOT, "content/schemas/landform-instance.schema.json"), "utf8"));
 const WORLD_MANIFEST = JSON.parse(readFileSync(join(ROOT, "content/world/manifest.json"), "utf8"));
+const DERIVED = JSON.parse(readFileSync(join(ROOT, "content/spine/derived.json"), "utf8"));
 const STREAM = "d9a0051d32afab59";
+// The COMMITTED names stream, injected — never minted inside the pass. See the
+// "the naming stream is the committed one" test below.
+const NAME_STREAM = DERIVED["n-atlas"].resolvedSeedStreams.names;
 
 // ── the predicate language ────────────────────────────────────────────────
 
@@ -127,10 +131,14 @@ test("PRODUCIBLE_ROCK is exactly what cellView can return", () => {
 
 // ── handles ───────────────────────────────────────────────────────────────
 
-test("mintHandle follows the pinned grammar cNN/group/h-XXXX", () => {
+test("mintHandle follows the committed grammar cNN/group/h-XXXXXX", () => {
+  // SIX hex, not the plan preamble's four. `landform-instance.schema.json`
+  // allows `h-[0-9a-f]{4,6}` — Plan B widened it deliberately — and the length
+  // is what makes a handle independent of its bucket. See mintHandle.
   const h = mintHandle({ continent: "c03", group: "karst", contentHash: "sha256:0f42abcd" });
-  assert.equal(h, "c03/karst/h-0f42");
-  assert.match(h, /^c[0-9]{2}\/[a-z-]+\/h-[0-9a-f]{4}$/);
+  assert.equal(h, "c03/karst/h-0f42ab");
+  assert.match(h, /^c[0-9]{2}\/[a-z-]+\/h-[0-9a-f]{6}$/);
+  assert.match(h, new RegExp(INSTANCE_SCHEMA.properties.handle.pattern));
 });
 
 test("orderHandles is a TOTAL order on (-sizeKm, contentHash) — never insertion order", () => {
@@ -154,36 +162,52 @@ test("orderDigestOf is stable and changes when any handle changes", () => {
   assert.notEqual(d1, d2);
 });
 
-test("a THREE-way 4-hex collision resolves, and the plan's single-pass form does not", () => {
-  // 4 hex is 65,536 values. The plan extends only the later member and keys the
-  // check on a `seen` map holding the FIRST occupant, so a three-way collision
-  // writes the same 6-hex tail twice and the second write is silent.
-  const handles = [
-    { handle: "c01/karst/h-abcd", contentHash: "sha256:abcd1111" + "0".repeat(56 - 8) },
-    { handle: "c01/karst/h-abcd", contentHash: "sha256:abcd2222" + "0".repeat(56 - 8) },
-    { handle: "c01/karst/h-abcd", contentHash: "sha256:abcd3333" + "0".repeat(56 - 8) },
-  ].map((h, rank) => ({ ...h, rank }));
-  const { collisions } = resolveHandleCollisions({ handles });
-  assert.equal(collisions, 2);
-  assert.equal(new Set(handles.map((h) => h.handle)).size, 3, "a handle was written twice");
-  const re = new RegExp(INSTANCE_SCHEMA.properties.handle.pattern);
-  for (const h of handles) assert.match(h.handle, re, `${h.handle} left the committed grammar`);
-  assert.deepEqual(handles.map((h) => h.handle),
-    ["c01/karst/h-abcd", "c01/karst/h-abcd2", "c01/karst/h-abcd3"]);
+test("a handle is a PURE FUNCTION of its own content — a later arrival cannot renumber one", () => {
+  // THE PROPERTY PLAN D NEEDS. `bind.handle` is an authored string; if a handle
+  // can move when some OTHER instance appears, an authored record silently
+  // detaches. The shipped 4-hex form could move one: the walk ran in rank order,
+  // rank is dominated by `sizeKm`, so a larger colliding newcomer took `h-abcd`
+  // and pushed the incumbent to `h-abcd0`. Re-keying that walk on `contentHash`
+  // does not help — a newcomer whose hash sorts first displaces the incumbent
+  // just the same. The fix is that the length no longer depends on the bucket.
+  const incumbent = { continent: "c01", group: "karst",
+    contentHash: "sha256:abcd0000" + "0".repeat(56) };
+  const before = mintHandle(incumbent);
+  assert.equal(before, "c01/karst/h-abcd00");
+  // Every kind of later arrival, including one that collides at four hex and is
+  // larger, and one whose hash sorts first.
+  for (const hash of ["abcd99", "abcd01", "0000ff", "abcd0f"].map((h) => h + "9".repeat(2))) {
+    const newcomer = { continent: "c01", group: "karst", contentHash: "sha256:" + hash + "0".repeat(56) };
+    assert.notEqual(mintHandle(newcomer), before, "two distinct hashes collided in the fixture");
+    assert.equal(mintHandle(incumbent), before, "an existing handle moved when a neighbour arrived");
+  }
+  assert.equal(HANDLE_HEX, 6, "the grammar's last legal length; see mintHandle");
 });
 
-test("a collision the 4-6 hex grammar cannot resolve THROWS", () => {
-  // FOUR handles sharing a six-hex prefix exhausts every legal length: the
-  // first takes h-abcd, the second h-abcde, the third h-abcdef, and the fourth
-  // has nowhere left inside `h-[0-9a-f]{4,6}`.
-  const handles = [0, 1, 2, 3].map((rank) =>
-    ({ handle: "c01/karst/h-abcd", contentHash: "sha256:" + "abcdef".padEnd(64, "0"), rank }));
-  assert.throws(() => resolveHandleCollisions({ handles }), /collides at 4, 5 and 6 hex/);
-  const three = [0, 1, 2].map((rank) =>
-    ({ handle: "c01/karst/h-abcd", contentHash: "sha256:" + "abcdef".padEnd(64, "0"), rank }));
-  assert.equal(resolveHandleCollisions({ handles: three }).collisions, 2);
-  assert.deepEqual(three.map((h) => h.handle),
-    ["c01/karst/h-abcd", "c01/karst/h-abcde", "c01/karst/h-abcdef"]);
+test("assertHandlesUnique THROWS on a real six-hex collision rather than lengthening", () => {
+  // Six is the last length `h-[0-9a-f]{4,6}` allows, so there is nothing to
+  // resolve: a duplicate here needs a wider grammar, and it must be loud.
+  const dup = [0, 1].map((rank) =>
+    ({ handle: "c01/karst/h-abcdef", contentHash: "sha256:abcdef" + String(rank).repeat(58), rank }));
+  assert.throws(() => assertHandlesUnique({ handles: dup }), /is claimed twice/);
+  const ok = [
+    { handle: "c01/karst/h-abcdef", contentHash: "sha256:a", rank: 0 },
+    { handle: "c01/karst/h-abcde0", contentHash: "sha256:b", rank: 1 },
+  ];
+  assert.doesNotThrow(() => assertHandlesUnique({ handles: ok }));
+});
+
+test("every handle the real world mints matches the committed grammar at six hex", () => {
+  const { r } = realRun();
+  const re = new RegExp(INSTANCE_SCHEMA.properties.handle.pattern);
+  const lengths = {};
+  for (const inst of r.instances) {
+    assert.match(inst.handle, re, `${inst.handle} left the committed grammar`);
+    const n = inst.handle.split("-").pop().length;
+    lengths[n] = (lengths[n] ?? 0) + 1;
+  }
+  assert.deepEqual(lengths, { 6: 1740 }, "handles are uniform length by construction");
+  assert.equal(new Set(r.instances.map((i) => i.handle)).size, 1740);
 });
 
 // ── geometry ──────────────────────────────────────────────────────────────
@@ -272,7 +296,8 @@ function runMini({ kit = KIT, lexicon = MINI } = {}) {
   const grid = karstWorld();
   assignOwners(grid);
   return { grid, r: instanceLandforms({
-    grid, premises: premisesFor(kit), regions: REGIONS, lexicon, manifest: MANIFEST, stream: STREAM }) };
+    grid, premises: premisesFor(kit), regions: REGIONS, lexicon, manifest: MANIFEST,
+    stream: STREAM, nameStream: NAME_STREAM }) };
 }
 
 test("every instance satisfies its type's requires predicate", () => {
@@ -403,7 +428,8 @@ test("coverage is REPORTED, not enforced — the pass never throws on a shortfal
 test("the pass REFUSES to run before P9", () => {
   const grid = karstWorld();
   assert.throws(() => instanceLandforms({
-    grid, premises: premisesFor(), regions: [], lexicon: MINI, manifest: MANIFEST, stream: STREAM }),
+    grid, premises: premisesFor(), regions: [], lexicon: MINI, manifest: MANIFEST,
+    stream: STREAM, nameStream: NAME_STREAM }),
     /partitionRegions must run before P10/);
 });
 
@@ -461,7 +487,8 @@ function realRun() {
   const part = partitionRegions({ grid, premises, manifest: WORLD_MANIFEST, stream });
   const lexicon = JSON.parse(readFileSync(REAL_LEXICON, "utf8"));
   const r = instanceLandforms({
-    grid, premises, regions: part.regions, lexicon, manifest: WORLD_MANIFEST, stream });
+    grid, premises, regions: part.regions, lexicon, manifest: WORLD_MANIFEST, stream,
+    nameStream: NAME_STREAM });
   REAL = { grid, premises, part, lexicon, r, stream };
   return REAL;
 }
@@ -524,14 +551,23 @@ test("REAL WORLD — per-type coverage is PROVEN, and the five gaps have zero ca
   // lost a draw.
   const { grid, r, lexicon, premises } = realRun();
   assert.equal(r.coverage.total, 170);
-  assert.equal(r.coverage.placed, 165);
+  assert.equal(r.coverage.placed, 168);
   const budgets = JSON.parse(readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"));
   assert.ok(r.coverage.placed >= budgets.landforms.typeCoverageFloor,
     `types placed ${r.coverage.placed} is below the committed floor ${budgets.landforms.typeCoverageFloor}`);
   const placed = new Set(r.instances.map((i) => i.type));
   const unplaced = lexicon.filter((t) => !placed.has(t.id)).map((t) => t.id);
-  assert.deepEqual(unplaced,
-    ["sinking-river", "sub-lacustrine-vent", "fringing-reef", "barrier-reef", "reef-shelf-bank"]);
+  // TWO, not the five the seam shipped. The three reef types were the third:
+  // `oceanic` is in exactly ONE premise kit — c11 Quillreef's, the atoll — and
+  // their committed `requires` carried `tempDecileMin: 7` on top of that, which
+  // c11's climate (warmest land cell 0.183) can never reach. A kit that names a
+  // group has already decided which continent a type may land on; a second
+  // GLOBAL climate gate inside the predicate only lets the premise and the
+  // lexicon disagree, and it was silently overruling the one continent whose
+  // title, coastClass and structuralIdea are all "atoll". The term was dropped
+  // from `fringing-reef`, `barrier-reef` and `reef-shelf-bank` — see
+  // STATE section 12. The two that remain are kit gaps, not climate gaps.
+  assert.deepEqual(unplaced, ["sinking-river", "sub-lacustrine-vent"]);
   // Each of the five, counted over every cell of every continent whose kit
   // admits it. Zero means unplaceable BY CONSTRUCTION, not unlucky.
   const kits = premises.map((p) => new Set(p.landformKit));
@@ -548,8 +584,7 @@ test("REAL WORLD — per-type coverage is PROVEN, and the five gaps have zero ca
       if (matchesRequires({ requires: row.requires, cell: view })) counts[id]++;
     }
   }
-  assert.deepEqual(counts, { "sinking-river": 0, "sub-lacustrine-vent": 0,
-    "fringing-reef": 0, "barrier-reef": 0, "reef-shelf-bank": 0 });
+  assert.deepEqual(counts, { "sinking-river": 0, "sub-lacustrine-vent": 0 });
 });
 
 test("REAL WORLD — every instance record matches the committed schema's grammar", () => {
@@ -593,16 +628,14 @@ test("REAL WORLD — handles, ledgers and the order digest are pinned", () => {
     ["c01:96", "c02:360", "c03:280", "c04:305", "c05:301", "c06:97", "c07:97", "c08:86",
      "c09:35", "c10:35", "c11:16", "c12:16", "c13:16"]);
   assert.equal(r.ledgers.reduce((a, l) => a + l.handles.length, 0), 1740);
-  // ONE 4-hex collision on this seed, resolved at five hex. The birthday bound
-  // over ~50 (continent, group) buckets says a collision is likely rather than
-  // rare, so this is a measurement, not a reassurance.
-  assert.equal(r.ledgers.reduce((a, l) => a + l.collisions, 0), 1);
-  assert.deepEqual(r.instances.filter((i) => i.handle.split("-").pop().length > 4).map((i) => i.handle),
-    ["c04/karst/h-a661d"]);
+  // The ledger row is EXACTLY the plan's shape. The seam carried a `collisions`
+  // counter here; with six-hex handles it is constant zero, and Task 11's
+  // handle-ledger.schema.json is additionalProperties:false, so it is gone.
+  for (const l of r.ledgers) assert.deepEqual(Object.keys(l), ["continent", "orderDigest", "handles"]);
   assert.deepEqual(r.ledgers.map((l) => l.orderDigest.slice(7, 19)),
-    ["1e250c16add5", "04cbff863252", "66551cbcee47", "36d8ae189da7", "85abf180e704",
-     "450b5c8a1531", "3462722a4b60", "4b701e3ac8dc", "25c1fb1e611d", "0a60e02a7b70",
-     "d31c30eb08ad", "d26c32dd1e73", "eb7aa5657e57"]);
+    ["95a28f9ebc1d", "6136da1f706e", "17ed8830a7a1", "45a9b3738e36", "11499ab51d89",
+     "b69f92eed647", "fe6a05b049ea", "1e14fc13cb47", "76c5b9817c69", "3a2213cf9b7f",
+     "ff05321fb23b", "fe81541a3c69", "250d99141aa9"]);
   for (const l of r.ledgers) {
     const reordered = orderHandles({ handles: [...l.handles].reverse() });
     assert.equal(orderDigestOf({ handles: reordered }), l.orderDigest,
@@ -613,23 +646,23 @@ test("REAL WORLD — handles, ledgers and the order digest are pinned", () => {
 test("REAL WORLD — the instance set and grid.landform are pinned by digest", () => {
   const { grid, r } = realRun();
   assert.equal(createHash("sha256").update(JSON.stringify(r.instances)).digest("hex").slice(0, 16),
-    "a71e08bb41b6f8d6", "the landform instancing moved");
+    "3a4add619666e08b", "the landform instancing moved");
   assert.equal(createHash("sha256")
     .update(Buffer.from(grid.landform.buffer, grid.landform.byteOffset, grid.landform.byteLength))
-    .digest("hex").slice(0, 16), "80e897e234ccbe19", "grid.landform moved");
+    .digest("hex").slice(0, 16), "cf18ada96d78372c", "grid.landform moved");
   // Distributions, so a digest of a degenerate field cannot pass as a stable
   // one. Every group in every kit is represented; the three geometries all
   // occur; 307 instances are dungeonCapable, which is what P13 will draw from.
   const byId = new Map(r.instances.map((i) => [i.type, i]));
-  assert.ok(byId.size >= 165);
+  assert.ok(byId.size >= 168);
   const groups = {};
   const lex = new Map(realRun().lexicon.map((t) => [t.id, t]));
   for (const i of r.instances) { const g = lex.get(i.type).group; groups[g] = (groups[g] ?? 0) + 1; }
-  assert.deepEqual(groups, { coastal: 564, glacial: 51, mountain: 131, fluvial: 486, erosional: 23,
-    wetland: 103, lakes: 28, karst: 168, desert: 142, island: 17, volcanic: 21, oceanic: 6 });
+  assert.deepEqual(groups, { coastal: 562, glacial: 51, mountain: 131, fluvial: 484, erosional: 23,
+    wetland: 103, lakes: 28, karst: 168, desert: 142, island: 17, volcanic: 21, oceanic: 10 });
   const shapes = {};
   for (const i of r.instances) shapes[i.geometry.shape] = (shapes[i.geometry.shape] ?? 0) + 1;
-  assert.deepEqual(shapes, { area: 858, line: 390, point: 492 });
+  assert.deepEqual(shapes, { area: 856, line: 392, point: 492 });
   assert.equal(r.instances.filter((i) => i.dungeonCapable).length, 307);
 });
 
@@ -644,14 +677,150 @@ test("REAL WORLD — no instance sits on water, off-mask ground or an unowned ce
   }
 });
 
+test("REAL WORLD — the naming stream is the COMMITTED one, not a grandchild under the same name", () => {
+  // THE SEAM-3 TRAP, THIRD OCCURRENCE. `assignNames` used to mint
+  // mintSeed(terrainStream, "names") = a39da863a8093b67 while
+  // content/spine/derived.json commits n-atlas.resolvedSeedStreams.names =
+  // 6033b1b1f52e861c. Two streams, one name, nothing joining them — and Plan D
+  // mints the 336 titles from the COMMITTED one. The pass no longer derives it
+  // at all; it is injected, and lib/seed.mjs makes minting it impossible.
+  const worldSeed = WORLD_MANIFEST.seed;
+  assert.equal(NAME_STREAM, namedStream({ worldSeed, name: "names" }),
+    "the injected names stream is not the child of the world seed derived.json commits");
+  assert.notEqual(NAME_STREAM, mintSeed({ parentStream: STREAM, name: "landform-names" }));
+  // The name is built rather than spelled: noise-determinism.test.mjs scans
+  // every source file under tools/mapforge for a `mintSeed({ name: "<reserved>" })`
+  // call site and reds on one, and it should not have to special-case the test
+  // that proves the throw.
+  const reserved = ["na", "mes"].join("");
+  assert.throws(() => mintSeed({ parentStream: STREAM, name: reserved }),
+    /is one of the four stream names/);
+  // …and the pass refuses to run without it, rather than quietly minting one.
+  const { grid, premises, part, lexicon } = realRun();
+  assert.throws(() => instanceLandforms({ grid, premises, regions: part.regions, lexicon,
+    manifest: WORLD_MANIFEST, stream: STREAM }), /nameStream must be the 16-hex/);
+});
+
+test("REAL WORLD — `named` is keyed on CONTENT: a permutation of the same instances names the same set", () => {
+  // `named` used to be drawn on `mix32(nameSalt, n)` with `n` the index into
+  // the global instances array — which contradicts this file's own
+  // `orderHandles` rule ("NEVER insertion order") and means one extra instance
+  // anywhere reshuffles all 336 names world-wide. Reversing the array with
+  // IDENTICAL objects named a different set (3 of 12 in common on the mini
+  // world). The draw is keyed on the handle now, so it is invariant.
+  const { r, part, lexicon, grid, premises } = realRun();
+  const baseline = new Set(r.instances.filter((i) => i.named).map((i) => i.handle));
+  assert.equal(baseline.size, WORLD_MANIFEST.landformCatalogue.named.total);
+
+  // assignNames is internal; exercise it through the pass on a permuted MINI
+  // world, where the whole instance list is small enough to shuffle wholesale.
+  const mini = runMini();
+  const named = (rr) => new Set(rr.instances.filter((i) => i.named).map((i) => i.handle));
+  const forward = named(mini.r);
+  assert.ok(forward.size > 0, "the mini world named nothing — the test would be vacuous");
+  // A second run with the lexicon rows reversed produces the same instance SET
+  // in a different array order (the ledger's total order is content-keyed), so
+  // the named set must be identical.
+  const reversed = runMini({ lexicon: [...MINI].reverse() });
+  assert.deepEqual([...named(reversed.r)].sort(), [...forward].sort(),
+    "the named set moved when only the array order changed");
+});
+
+test("REAL WORLD — `Decile` is a VALUE BUCKET, and the histograms say by how much", () => {
+  // landforms.mjs's header used to claim these keys are rank-based and
+  // therefore 1-ULP-immune. They are `min(9, floor(v * 10))`. 84 committed
+  // lexicon rows read them and Plan D writes predicates against them, so the
+  // real selectivity is pinned rather than described: a true decile would put
+  // 25,600 of the 256,000 owned land cells in every bin.
+  const { grid } = realRun();
+  const temp = new Array(10).fill(0), precip = new Array(10).fill(0);
+  let owned = 0;
+  for (let i = 0; i < grid.n; i++) {
+    if (grid.owner[i] < 0) continue;
+    owned++;
+    temp[Math.min(9, Math.floor(grid.temp[i] * 10))]++;
+    precip[Math.min(9, Math.floor(grid.moist[i] * 10))]++;
+  }
+  assert.equal(owned, 256000);
+  assert.deepEqual(temp, [50506, 24053, 38238, 26656, 25199, 40821, 26402, 17574, 6551, 0]);
+  assert.deepEqual(precip, [32000, 38819, 40725, 40374, 40489, 34589, 19082, 6737, 513, 2672]);
+  const atLeast7 = temp[7] + temp[8] + temp[9];
+  assert.equal(atLeast7, 24125);
+  assert.ok(atLeast7 / owned < 0.10 && atLeast7 / owned > 0.09,
+    `tempDecileMin: 7 selects ${((100 * atLeast7) / owned).toFixed(1)}% of land, not the 30% "decile" promises`);
+});
+
+test("REAL WORLD — the spec's group census CANNOT be met, and the ceiling is the reason", () => {
+  // Reviewer H: "the group census is missed by up to 88% and nothing gates it."
+  // The miss is real and the cause is arithmetic, not placement. A group can
+  // only receive instances from continents whose KIT names it, and each
+  // continent's instance budget is fixed by region count — so every group has a
+  // hard CEILING, and two of the twelve targets are above their own.
+  const { r, lexicon, premises } = realRun();
+  const lex = new Map(lexicon.map((t) => [t.id, t]));
+  const budgetOf = new Map();
+  for (const i of r.instances) {
+    const c = i.region.split("/")[0];
+    budgetOf.set(c, (budgetOf.get(c) ?? 0) + 1);
+  }
+  const placed = {};
+  for (const i of r.instances) { const g = lex.get(i.type).group; placed[g] = (placed[g] ?? 0) + 1; }
+  const ceiling = {};
+  for (const g of Object.keys(GROUP_TARGETS)) {
+    let c = 0;
+    for (const p of premises) if (p.landformKit.includes(g)) c += budgetOf.get(p.id) ?? 0;
+    ceiling[g] = c;
+  }
+  assert.deepEqual(ceiling, { coastal: 1404, fluvial: 1170, mountain: 809, glacial: 392, karst: 305,
+    erosional: 1087, desert: 301, volcanic: 35, wetland: 570, lakes: 762, island: 169, oceanic: 16 });
+  const impossible = Object.keys(GROUP_TARGETS).filter((g) => ceiling[g] < GROUP_TARGETS[g]);
+  assert.deepEqual(impossible, ["volcanic", "oceanic"],
+    "a group whose target exceeds the total budget of every continent that may carry it");
+  // volcanic wants 110 from a continent that holds 35 instances in total;
+  // oceanic wants 35 from one that holds 16. 145 targeted instances against a
+  // 51 ceiling — 94 that MUST land in another group whatever the draw does.
+  assert.equal(GROUP_TARGETS.volcanic + GROUP_TARGETS.oceanic, 145);
+  assert.equal(ceiling.volcanic + ceiling.oceanic, 51);
+  for (const g of Object.keys(GROUP_TARGETS))
+    assert.ok(placed[g] <= ceiling[g], `${g} placed ${placed[g]} above its ceiling ${ceiling[g]}`);
+});
+
+test("REAL WORLD — Task 9 has the dungeon supply the spec asserts, by a different route", () => {
+  // The spec derives "the 270 karst + volcanic instances comfortably supply all
+  // 60 dungeon doors" from the group census. Both halves of the premise are
+  // wrong: the world holds 189 karst + volcanic, and only 120 of those are
+  // dungeonCapable. The CONCLUSION survives with a wide margin because
+  // `dungeonCapable` is not a karst/volcanic property — it is spread over
+  // twelve groups. Measured here so Task 9 does not have to trust the spec.
+  const { r, lexicon } = realRun();
+  const lex = new Map(lexicon.map((t) => [t.id, t]));
+  const kv = r.instances.filter((i) => ["karst", "volcanic"].includes(lex.get(i.type).group));
+  assert.equal(kv.length, 189, "the spec's 270 karst + volcanic is not this world");
+  const capable = new Set(lexicon.filter((t) => t.dungeonCapable).map((t) => t.id));
+  assert.equal(kv.filter((i) => capable.has(i.type)).length, 120);
+  const dc = r.instances.filter((i) => capable.has(i.type));
+  assert.equal(dc.length, 307);
+  const perRegion = new Map();
+  for (const i of dc) perRegion.set(i.region, (perRegion.get(i.region) ?? 0) + 1);
+  assert.equal(perRegion.size, 117, "dungeonCapable instances are spread over this many regions");
+  // P13 takes at most `round` per region over three rounds, so the supply the
+  // quota can actually reach is Σ min(count, 3) — before Task 9's own
+  // 2-region-hop reachability filter, which is Task 9's to measure.
+  const reachable = [...perRegion.values()].reduce((a, c) => a + Math.min(c, 3), 0);
+  assert.equal(reachable, 235);
+  const want = WORLD_MANIFEST.quotas.dungeons.complexes;
+  assert.equal(want, 60);
+  assert.ok(reachable >= want * 3, `dungeon supply ${reachable} is not a comfortable margin over ${want}`);
+});
+
 test("REAL WORLD — the substitution ledger names a used type wherever one exists", () => {
   const { r } = realRun();
-  assert.equal(r.substitutions.length, 109);
-  assert.equal(r.substitutions.filter((s) => s.used !== null).length, 46);
+  assert.equal(r.substitutions.length, 106);
+  assert.equal(r.substitutions.filter((s) => s.used !== null).length, 43);
   // The five world-wide gaps are all recorded, and sub-lacustrine-vent — the
   // one STATE §5 filed as unplaceable before the seam started — is among them.
   const wanted = new Set(r.substitutions.map((s) => s.wanted));
-  for (const id of ["sub-lacustrine-vent", "sinking-river", "fringing-reef"])
+  for (const id of ["sub-lacustrine-vent", "sinking-river"])
     assert.ok(wanted.has(id), `${id} is unplaced and unrecorded`);
   for (const s of r.substitutions) {
     assert.notEqual(s.wanted, s.used);

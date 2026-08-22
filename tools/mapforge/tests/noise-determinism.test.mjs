@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { hashNoise2D, fbm, falloff, smoothstep, UNIT_VECTORS, q } from "../lib/noise.mjs";
-import { mintSeed } from "../lib/seed.mjs";
+import { mintSeed, namedStream, RESERVED_STREAM_NAMES } from "../lib/seed.mjs";
 import { codeOfFile, lineOf, stripComments, sourceFilesUnder, LEGACY_IMPRECISE_FILES } from "./_source-scan.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -233,6 +233,79 @@ test("mintSeed is the pinned sha256 construction", () => {
   assert.notEqual(s, mintSeed({ parentStream: "d9a0051d32afab59", name: "landforms" }));
 });
 
+// ── THE RESERVED STREAM NAMES ─────────────────────────────────────────────
+//
+// THE SEAM-3 TRAP, AND THE GUARD THAT MAKES THE CLASS IMPOSSIBLE RATHER THAN
+// THE INSTANCE FIXED. Three times a pass has minted a CHILD stream under one of
+// the four names content/spine/derived.json already commits per node, got a
+// different value, and used it — deterministically, self-consistently, with
+// every golden stable and every review green. Seam 3 lost a whole seam to it on
+// `terrain`; seam 4 repeated it on `names` in landforms.mjs's `assignNames`
+// while a test three lines away joined `terrain` to the committed record.
+//
+// So the fix is not another join for `names`. It is: the four names cannot be
+// minted as children at all, the list cannot rot away from the committed
+// record, and no source file may spell one at a mintSeed call site.
+
+test("RESERVED_STREAM_NAMES is exactly the key set derived.json commits", () => {
+  const derived = JSON.parse(readFileSync(join(REPO, "content/spine/derived.json"), "utf8"));
+  const keySets = new Set();
+  let nodes = 0;
+  for (const rec of Object.values(derived)) {
+    if (!rec?.resolvedSeedStreams) continue;
+    nodes++;
+    keySets.add(Object.keys(rec.resolvedSeedStreams).sort().join(","));
+  }
+  assert.ok(nodes >= 44, `only ${nodes} committed nodes carry resolvedSeedStreams`);
+  assert.equal(keySets.size, 1, "committed nodes disagree about which streams they name");
+  assert.equal([...keySets][0], [...RESERVED_STREAM_NAMES].sort().join(","),
+    "mapforge's reserved list has drifted from what derived.json actually commits");
+});
+
+test("a reserved stream name is UNMINTABLE as a child, and namedStream is the only way in", () => {
+  for (const name of RESERVED_STREAM_NAMES) {
+    assert.throws(() => mintSeed({ parentStream: "d9a0051d32afab59", name }),
+      /is one of the four stream names/, `mintSeed happily minted a child called "${name}"`);
+    assert.match(namedStream({ worldSeed: "7c9e4a2f8b1d6e03", name }), /^[0-9a-f]{16}$/);
+  }
+  // …and the door only opens one way: namedStream refuses anything else, so it
+  // cannot become a general-purpose minter that quietly re-admits the defect.
+  assert.throws(() => namedStream({ worldSeed: "7c9e4a2f8b1d6e03", name: "provenance" }),
+    /is not one of the committed stream names/);
+  // The value is the committed one, joined here as well as in seed.mjs's own
+  // test, so the two constructions cannot fork.
+  const derived = JSON.parse(readFileSync(join(REPO, "content/spine/derived.json"), "utf8"));
+  const worldSeed = JSON.parse(readFileSync(join(REPO, "content/spine/nodes/n-atlas.json"), "utf8")).seed.value;
+  for (const [name, value] of Object.entries(derived["n-atlas"].resolvedSeedStreams))
+    assert.equal(namedStream({ worldSeed, name }), value);
+});
+
+test("NO source file under tools/mapforge mints a reserved stream name", () => {
+  // The runtime throw catches a call that RUNS. This catches one that is
+  // written — including in a branch no fixture reaches — and it walks the tree
+  // rather than a maintained list, so a pass added by Task 9 or Task 10 is
+  // covered by default.
+  const root = resolve(HERE, "..");
+  const offenders = [];
+  let scanned = 0, callSites = 0;
+  for (const rel of sourceFilesUnder(root)) {
+    const src = codeOfFile(join(root, rel));
+    scanned++;
+    // `mintSeed({ ... name: "<literal>" ... })` — the only spelling the tree
+    // uses, and a template literal cannot be a bare reserved name.
+    const re = /mintSeed\s*\(\s*\{[^}]*?name\s*:\s*"([^"]*)"/g;
+    for (let m; (m = re.exec(src)) !== null; ) {
+      callSites++;
+      if (RESERVED_STREAM_NAMES.includes(m[1]))
+        offenders.push(`${rel}:${lineOf(src, m.index)} mints the reserved stream "${m[1]}"`);
+    }
+  }
+  assert.ok(scanned > 30, `only ${scanned} files scanned — the walk has gone dark`);
+  assert.ok(callSites > 0, "no mintSeed call site found at all — this scan has stopped testing");
+  assert.deepEqual(offenders, [],
+    `a pass is deriving its own value for a stream derived.json already commits:\n${offenders.join("\n")}`);
+});
+
 // ── THE FIELD ITSELF, not just its shape ──────────────────────────────────
 // Every test above this line proves f(a) === f(a), a range, or a continuity
 // property. None of them names a VALUE, and six mutations that each produce a
@@ -266,7 +339,7 @@ test("mintSeed reproduces every seed stream already committed in derived.json", 
   // The golden literal first, so this test still pins a value if derived.json
   // is ever regenerated: n-ashvale-front's seed is fea688ddeefe8c42 and its
   // committed `terrain` stream is c49af60a9fb6ecaf.
-  assert.equal(mintSeed({ parentStream: "fea688ddeefe8c42", name: "terrain" }), "c49af60a9fb6ecaf");
+  assert.equal(namedStream({ worldSeed: "fea688ddeefe8c42", name: "terrain" }), "c49af60a9fb6ecaf");
   let joined = 0;
   for (const [id, rec] of Object.entries(derived)) {
     const streams = rec?.resolvedSeedStreams;
@@ -276,8 +349,8 @@ test("mintSeed reproduces every seed stream already committed in derived.json", 
     const parentStream = JSON.parse(readFileSync(nodePath, "utf8"))?.seed?.value;
     if (typeof parentStream !== "string") continue;
     for (const [name, value] of Object.entries(streams)) {
-      assert.equal(mintSeed({ parentStream, name }), value,
-        `${id}/${name}: mapforge's mintSeed has forked from the construction that minted the committed stream`);
+      assert.equal(namedStream({ worldSeed: parentStream, name }), value,
+        `${id}/${name}: mapforge's namedStream has forked from the construction that minted the committed stream`);
       joined++;
     }
   }

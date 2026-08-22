@@ -71,9 +71,24 @@ const FLAG_NAMES = Object.keys(FLAG);
 //     committed rows use it — SEA 40, GLACIER 22, ARC 15, RIVER 14, LAKE 13,
 //     DELTA 1. It tests the 9-cell neighbourhood, not the cell itself — "near
 //     the sea", not "is sea".
-//   - `tempDecileMin/Max` (0-9 deciles), NOT `tempMin/Max` (raw values).
-//     Deciles are rank-based and therefore immune to the 1-ULP problem that
-//     forced rank selection on sea level in the first place.
+//   - `tempDecileMin/Max` (0-9), NOT `tempMin/Max` (raw values).
+//     THE NAME IS WRONG AND THE READING THAT MATTERS IS THIS ONE: these are
+//     FIXED-WIDTH VALUE BUCKETS, `min(9, floor(v * 10))`, not rank deciles. An
+//     earlier draft of this comment claimed they were "rank-based and therefore
+//     immune to the 1-ULP problem that forced rank selection on sea level" —
+//     they are not, and a 1-ULP move across 0.7 flips the bucket exactly as it
+//     would for a raw threshold. Measured over the 256,000 owned land cells,
+//     where a true decile is 25,600 per bin:
+//       tempDecile   50506 24053 38238 26656 25199 40821 26402 17574 6551 0
+//       precipDecile 32000 38819 40725 40374 40489 34589 19082  6737  513 2672
+//     so `tempDecileMin: 7` selects 9.4% of land, not 30%, and
+//     `precipDecileMax: 1` selects 27.7%, not 20%. 84 committed lexicon rows
+//     read these keys and Plan D writes predicates against them, so the
+//     histograms are pinned in tests/landforms.test.mjs rather than described
+//     here. The keys were NOT renamed: the name lives in the committed
+//     `landform-type.schema.json` and in 84 authored rows, and re-spelling
+//     Plan B's authority is a larger content change than the correction is
+//     worth. What is fixed is the claim.
 // `coastal` is NOT a key: it is spelled `{ "nearFlag": "SEA" }`.
 export const REQUIRES_KEYS = Object.freeze([
   "rock", "precipDecileMin", "precipDecileMax", "tempDecileMin", "tempDecileMax",
@@ -183,8 +198,32 @@ export function compileRequires({ requires, id = "?" }) {
   return c;
 }
 
+// HANDLE_HEX = 6, and the length is the whole point: it makes a handle a PURE
+// FUNCTION of the record's own content.
+//
+// The plan mints 4 hex and lengthens the loser of a collision. That is
+// deterministic but NOT stable, and Plan D binds `bind.handle` (plan line 328,
+// `dungeonAnchors[].handle`) to these strings. Measured on the shipped 4-hex
+// form: give an existing `c01/karst/h-abcd` (size 1.0, hash abcd0000) a LARGER
+// colliding neighbour (size 5.0, hash abcd9999) and the newcomer takes `h-abcd`
+// while the existing record is RENUMBERED to `h-abcd0` — because the walk ran
+// in rank order and rank is dominated by `sizeKm`, the least stable field in
+// the row. Re-keying the walk on `contentHash` does not fix it either: a
+// newcomer whose hash sorts first displaces the incumbent just the same. Any
+// scheme where the length depends on WHO ELSE IS IN THE BUCKET can renumber an
+// existing handle, so the length must not depend on the bucket at all.
+//
+// At six hex the bucket is invisible: `mintHandle` reads nothing but its own
+// arguments, so an authored `bind.handle` can only move if the instance it
+// names moves. Measured on the real world: 43 (continent, group) buckets, the
+// largest 181 instances, ZERO duplicates at six hex (one at four, none at
+// five). The residual birthday risk over 16.7 M values is ~0.4% per world and
+// it is LOUD — `assertHandlesUnique` throws rather than shipping a duplicate or
+// silently moving somebody.
+export const HANDLE_HEX = 6;
+
 export function mintHandle({ continent, group, contentHash }) {
-  return `${continent}/${group}/h-${contentHash.replace(/^sha256:/, "").slice(0, 4)}`;
+  return `${continent}/${group}/h-${contentHash.replace(/^sha256:/, "").slice(0, HANDLE_HEX)}`;
 }
 
 // THE total ordering key: (-sizeKm, contentHash). NEVER insertion order, NEVER
@@ -218,44 +257,37 @@ export function orderDigestOf({ handles }) {
 }
 
 /**
- * Resolve 4-hex handle collisions deterministically, in RANK order.
+ * Assert every handle in one continent's ledger is unique, and say exactly what
+ * collided if not.
  *
- * 4 hex is 65,536 values. Handles are namespaced `<cNN>/<group>/h-XXXX`, so a
- * collision only bites inside one (continent, group) bucket — about 30
- * instances per bucket across roughly 50 buckets, which by the birthday bound
- * is a ~30% chance of at least one collision somewhere in the world per seed.
- * That is not a hazard to hope away: Plan D binds `bind.handle` to these
- * strings.
+ * This REPLACES a resolver, and deleting the resolver is the fix. The plan
+ * extends the later-ranked member of a 4-hex collision to 6 hex in a single
+ * pass keyed on a `seen` map that only ever holds the FIRST occupant, so a
+ * three-way collision writes the same 6-hex tail twice and the second write is
+ * silent. The shipped seam replaced that with a 4 -> 5 -> 6 walk taking the
+ * first free length, which is correct for n-way and throws rather than
+ * duplicating — but it makes a handle depend on the rest of its bucket, and a
+ * later arrival can therefore RENUMBER an existing record (see mintHandle).
  *
- * The plan extends the LATER-ranked member to 6 hex in a single pass keyed on a
- * `seen` map that only ever holds the FIRST occupant — so a three-way collision
- * gives two members the same 6-hex tail and the second write is silent. This
- * walks the prefix out one nibble at a time, 4 -> 5 -> 6, and takes the first
- * length free in that bucket. `landform-instance.schema.json` allows
- * `h-[0-9a-f]{4,6}`, so 6 is the last legal length and a bucket that cannot be
- * resolved inside it THROWS rather than shipping a duplicate.
+ * With `HANDLE_HEX` fixed at six there is nothing left to resolve: a duplicate
+ * is a genuine six-hex hash collision inside one (continent, group) bucket, it
+ * cannot be fixed by lengthening (six is the last length
+ * `landform-instance.schema.json`'s `h-[0-9a-f]{4,6}` allows), and it must be
+ * loud. Zero occur on this seed.
  */
-export function resolveHandleCollisions({ handles }) {
-  const taken = new Set();
-  let collisions = 0;
+export function assertHandlesUnique({ handles }) {
+  const taken = new Map();
   for (const h of handles) {
-    const stem = h.handle.slice(0, h.handle.lastIndexOf("-") + 1);
-    const hex = h.contentHash.replace(/^sha256:/, "");
-    let resolved = null;
-    for (let len = 4; len <= 6; len++) {
-      const candidate = stem + hex.slice(0, len);
-      if (taken.has(candidate)) continue;
-      resolved = candidate;
-      if (len > 4) collisions++;
-      break;
-    }
-    if (resolved === null)
-      throw new Error(`landforms: handle ${h.handle} collides at 4, 5 and 6 hex — ` +
-        `the grammar has no longer legal form`);
-    h.handle = resolved;
-    taken.add(resolved);
+    const prev = taken.get(h.handle);
+    if (prev !== undefined)
+      throw new Error(
+        `landforms: handle ${h.handle} is claimed twice — by ${prev} and by ` +
+        `${h.contentHash}. Six hex is the last length the committed ` +
+        `h-[0-9a-f]{4,6} grammar allows, so this is a real hash collision inside ` +
+        `one (continent, group) bucket and needs a wider handle grammar, not a ` +
+        `longer prefix.`);
+    taken.set(h.handle, h.contentHash);
   }
-  return { collisions };
 }
 
 // ── the ranking key ───────────────────────────────────────────────────────
@@ -277,6 +309,19 @@ const mix32 = (h, salt) => {
 };
 // A 16-hex stream to a 32-bit salt, by the same rule noise.mjs's streamInt uses.
 const saltOf = (s) => Number.parseInt(s.slice(0, 8), 16) >>> 0;
+
+// FNV-1a over a string, so a CONTENT key (a handle, a region id) can be mixed
+// the same way a cell hash is. Integer-only and exact on every engine, like the
+// rest of this pass's ranking arithmetic — the determinism inventory bans the
+// transcendentals, not `Math.imul`.
+function hash32(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h >>> 0;
+}
 
 /**
  * Everything a predicate can read, for ONE cell. The reference reader — the
@@ -392,9 +437,20 @@ export function footprintOf({ shape, atKm, sizeKm, salt }) {
  *
  * `regions` are P9's records; `grid.owner` indexes into them.
  */
-export function instanceLandforms({ grid, premises, regions, lexicon, manifest, stream }) {
+export function instanceLandforms({ grid, premises, regions, lexicon, manifest, stream, nameStream }) {
   if (!Array.isArray(regions) || regions.length === 0)
     throw new Error("landforms: P9 partitionRegions must run before P10");
+  // THE NAMING STREAM IS INJECTED, NEVER MINTED. `names` is one of the four
+  // streams content/spine/derived.json commits per node, and this pass has no
+  // business deriving a second value under that name — see lib/seed.mjs's
+  // RESERVED_STREAM_NAMES, which now makes minting one impossible rather than
+  // merely wrong. The caller reads it off the committed record.
+  if (typeof nameStream !== "string" || !/^[0-9a-f]{16}$/.test(nameStream))
+    throw new Error(
+      `landforms: nameStream must be the 16-hex \`names\` stream this world commits in ` +
+      `content/spine/derived.json (n-atlas.resolvedSeedStreams.names), not ${nameStream}. ` +
+      `The pass used to mint mintSeed(terrainStream, "names") — a different value under the ` +
+      `same name from the one Plan D mints the titles from.`);
   const instances = [];
   const ledgers = [];
   const substitutions = [];
@@ -560,8 +616,8 @@ export function instanceLandforms({ grid, premises, regions, lexicon, manifest, 
         type: c.type, sizeKm: c.sizeKm, region: c.region, contentHash: c.contentHash,
       })),
     });
-    const { collisions } = resolveHandleCollisions({ handles });
-    ledgers.push({ continent: premise.id, orderDigest: orderDigestOf({ handles }), handles, collisions });
+    assertHandlesUnique({ handles });
+    ledgers.push({ continent: premise.id, orderDigest: orderDigestOf({ handles }), handles });
 
     const handleByHash = new Map(handles.map((h) => [h.contentHash, h.handle]));
     contInstances.forEach((c, n) => {
@@ -573,13 +629,16 @@ export function instanceLandforms({ grid, premises, regions, lexicon, manifest, 
         handle: handleByHash.get(c.contentHash), region: c.region,
         named: false, glyph: c.glyph, dungeonCapable: c.dungeonCapable,
         provenance: { authored: "generated",
-                      generator: { pass: "landforms", seedStream: "landform", epoch: 0 },
+                      // The stream that actually produced this record, not the
+                      // literal "landform" — which named neither a committed
+                      // stream nor any child this pass mints.
+                      generator: { pass: "landforms", seedStream: `landform:${premise.id}`, epoch: 0 },
                       fabric: `fabric/${premise.id}` },
       });
     });
   }
 
-  assignNames({ instances, regions, manifest, stream });
+  assignNames({ instances, regions, manifest, nameStream });
 
   // grid.landform: the dominant lexicon type index under each cell an instance
   // occupies. Plan D's G-PIN-SAT reads it — a pinned harbour declaring
@@ -770,23 +829,33 @@ function recordSubstitutions({ premise, kitTypes, grid, cellsOfRegion, mine, sub
  * per-region budget above makes reachable — 780 surveyed instances for 276
  * names rather than the ~174 an area-proportional budget would leave.
  */
-function assignNames({ instances, regions, manifest, stream }) {
+function assignNames({ instances, regions, manifest, nameStream }) {
   const target = manifest.landformCatalogue.named.total;
-  const nameStream = mintSeed({ parentStream: stream, name: "names" });
   const nameSalt = saltOf(nameStream);
   const surveyOf = new Map(regions.map((r) => [r.id, r.survey]));
 
   // Tier 1 — reported regions: exactly half of them carry exactly ONE.
+  //
+  // THE COIN IS KEYED ON THE HANDLE, NOT ON ARRAY POSITION. `mix32(nameSalt, n)`
+  // with `n` the index into the global `instances` array contradicts this file's
+  // own rule at `orderHandles` ("NEVER insertion order"), and it is not a
+  // theoretical objection: handing `assignNames` the SAME OBJECTS in reversed
+  // array order named a different set — 3 of 12 in common on the mini world.
+  // One extra instance anywhere shifts every later index and reshuffles all 336
+  // names across continents nothing changed on, while the handles Plan D binds
+  // to are content-addressed and do not move. Same for the region draw: it is
+  // keyed on the region ID, not on that id's position in a list whose length
+  // depends on which regions happened to receive an instance.
   const byReported = new Map();
   instances.forEach((inst, n) => {
     if (surveyOf.get(inst.region) !== "reported") return;
     if (!byReported.has(inst.region)) byReported.set(inst.region, []);
-    byReported.get(inst.region).push([mix32(nameSalt, n), n]);
+    byReported.get(inst.region).push([mix32(nameSalt, hash32(inst.handle)), n, inst.handle]);
   });
   const reportedIds = [...byReported.keys()].sort();
   const reportedRanked = reportedIds
-    .map((id, k) => [mix32(nameSalt ^ 0x9e3779b9, k), k])
-    .sort((a, b) => (b[0] - a[0]) || (a[1] - b[1]));
+    .map((id, k) => [mix32(nameSalt ^ 0x9e3779b9, hash32(id)), k, id])
+    .sort((a, b) => (b[0] - a[0]) || (a[2] < b[2] ? -1 : a[2] > b[2] ? 1 : 0));
   // Half of ALL reported regions, not half of the ones that happen to hold an
   // instance: four of the 120 have no ground any kit type accepts, and
   // `reportedIds.length` there silently turns the census's 60 into 58.
@@ -794,16 +863,17 @@ function assignNames({ instances, regions, manifest, stream }) {
   const namedReported = Math.min(Math.round(allReported / 2), reportedIds.length);
   for (let k = 0; k < namedReported && k < reportedRanked.length; k++) {
     const region = reportedIds[reportedRanked[k][1]];
-    const best = byReported.get(region).slice().sort((a, b) => (b[0] - a[0]) || (a[1] - b[1]))[0];
+    const best = byReported.get(region).slice()
+      .sort((a, b) => (b[0] - a[0]) || (a[2] < b[2] ? -1 : a[2] > b[2] ? 1 : 0))[0];
     if (best) instances[best[1]].named = true;              // exactly ONE
   }
 
   // Tier 2 — surveyed regions, filling the remainder to the target.
   const remaining = target - instances.filter((i) => i.named).length;
   const eligible = instances
-    .map((inst, n) => [mix32(nameSalt ^ 0x85ebca6b, n), n])
+    .map((inst, n) => [mix32(nameSalt ^ 0x85ebca6b, hash32(inst.handle)), n, inst.handle])
     .filter(([, n]) => surveyOf.get(instances[n].region) !== "reported")
-    .sort((a, b) => (b[0] - a[0]) || (a[1] - b[1]));
+    .sort((a, b) => (b[0] - a[0]) || (a[2] < b[2] ? -1 : a[2] > b[2] ? 1 : 0));
   for (let k = 0; k < remaining && k < eligible.length; k++)
     instances[eligible[k][1]].named = true;
   return { target, named: instances.filter((i) => i.named).length };
