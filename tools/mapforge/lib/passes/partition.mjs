@@ -495,6 +495,16 @@ function drain({ grid, plate, base, heap, claimed, quota, frontier }) {
     claimed[n]++;
     took++;
     for (let d = 0; d < 8; d++) {
+      // RECORDED MUTATION SURVIVOR: replacing `neighbourIdx` with unguarded
+      // index arithmetic leaves the suite green. `idx` wraps the east edge onto
+      // the west edge one row up, so the guard only bites where land TOUCHES a
+      // frame column or row — and measured on the real field there are ZERO
+      // net-land cells on any of the four frame edges (zero MASKED cells, even:
+      // every one of the thirteen footprints sits clear of the frame). The wrap
+      // therefore always lands on sea, which `ownable` rejects on the next line.
+      // Unreachable by the world's geometry, not dead: a premise fitted to the
+      // frame edge, or a re-tiled grid, makes it live again, and seam 1 made
+      // `neighbourIdx` the named accessor for exactly this reason.
       const ni = neighbourIdx({ grid, i: cell, d });
       if (ni < 0) continue;
       if (grid.owner[ni] >= 0) continue;
@@ -746,6 +756,14 @@ export function assignTerrainKinds({ regions, biomeNames }) {
     if (r.survey === "reported") { r.terrainKind = null; continue; }
     const name = r.dominantBiomeIndex >= 0 ? biomeNames[r.dominantBiomeIndex] : "meadow";
     const kind = TERRAIN_FOR_BIOMES[name];
+    // RECORDED MUTATION SURVIVOR: replacing this throw with `?? "headland"`
+    // leaves the suite green, because partition.test.mjs asserts
+    // TERRAIN_FOR_BIOMES is TOTAL over BIOMES — so a dominant biome with no
+    // mapping cannot exist, and any fixture that would reach here reds the
+    // totality test FIRST. The throw is the second line of defence, and it is
+    // the one that matters if the totality test is ever weakened: a silent
+    // "headland" is a wrong terrainKind on a committed region, which G-BIOME-INK
+    // and Plan E's legend would then both believe.
     if (kind === undefined)
       throw new Error(`partition: no terrainKind for dominant biome "${name}" on ${r.id}`);
     r.terrainKind = kind;

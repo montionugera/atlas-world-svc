@@ -6,8 +6,7 @@ It exists so a new session does not need the previous session's conversation. If
 is wrong, fix the file — do not work around it in a prompt.
 
 Last updated: 2026-08-22, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`),
-**Plan C was claimed** as F-048, and **Plan C seams 1, 2 and 3 (Tasks 1-6) were built, reviewed
-and adjudicated** — see §9, §10 and §11, and **forty-one** confirmed plan errors in §5.
+**Plan C was claimed** as F-048, and **Plan C seams 1, 2, 3 and 4 (Tasks 1-8) were built** — see §9, §10, §11 and §12, and **sixty-five** confirmed plan errors in §5.
 
 **If you read one thing in §11, read "THE FOUR THINGS THE FIX PASS CHANGED".** Seam 3 shipped a
 moisture field whose median was exactly zero, ice on three landmasses whose own palettes forbid it,
@@ -22,7 +21,7 @@ world it pinned was not the world seam 2 fitted the thirteen continents to.
 | --- | --- | --- |
 | A — Unblock and Afford | F-046 | **SHIPPED** to release/1.8, 2026-08-19. All 15 acceptance criteria verified. |
 | B — Vocabulary and Render | F-047 | **SHIPPED** to release/1.8, 2026-08-22. All 12 tasks; Gate 1 13/13. |
-| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. |
+| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. Tasks 1-8 built; Task 9 next. |
 | D — Pinned, Bound, Relations | — | not started |
 | E — Redraw and Prose | — | not started |
 
@@ -143,7 +142,7 @@ Notes carried forward:
 
 ## 5. Where the plan documents are WRONG
 
-Forty-one confirmed. Each was found by running code, not by reading. **Verify a brief against the
+Sixty-five confirmed. Each was found by running code, not by reading. **Verify a brief against the
 tree before trusting it** — this is the single most reliable source of defects in the programme.
 
 | Where | The plan says | Actually |
@@ -192,6 +191,30 @@ tree before trusting it** — this is the single most reliable source of defects
 | **C, Task 5 Step 3** `assembleRings` closure | `if (nextI === -1) break;` | an UNCLOSED chain is emitted as a polygon: it survives `pts.length >= 3`, it is not negative so the winding step leaves it, and it comes back with area 0. That is exactly what the plan's inverted frame edges produced. Both the unclosed chain and the zero-area ring now THROW. |
 | **C, Task 10 Step ?** `fitVertexCap` (:6193-6201) | re-simplify a RING with a doubling epsilon until it fits the vertex cap | **reintroduces the sliver the one-shot rule exists to prevent, and it is a LANDMINE waiting for Task 10.** `simplifyArc` is idempotent at a fixed epsilon (600 → 67 → 67) but not across a doubling (67 → 44), so two neighbours whose rings hit the cap at different iteration counts diverge on their SHARED boundary. Measured on a two-owner ragged field: shared vertices 10 → 6 → 3 as the cap tightens, and one owner's area moves (145.0 → 144.5 → 144.125) while the other's does not. **The cap must be applied to ARCS before assembly, never to rings after it.** |
 | **C, Task 6b / Task 5** the terrain STREAM | `applyPremiseMasks({ …, stream: manifest.seed })` in the seam's own real-world tests | **`manifest.seed` is the WORLD seed, the parent of four named streams.** The terrain field is built from the child `mintSeed(seed, "terrain") = d9a0051d32afab59`, which is committed in `content/spine/derived.json` as `n-atlas.resolvedSeedStreams.terrain` and is what `fit-premises.mjs`, `mask.test.mjs` and `rank-select.test.mjs` all use. Seam 3 pinned a **different world** from the one the thirteen footprints were fitted to. |
+| **C, Task 7 Step 3** biome `lava` rule | `c.flags & FLAG.CLIFF && c.elev > 0.85` | **`FLAG.CLIFF` is set by NO pass in the pipeline** — grep all of `tools/mapforge/lib/` and its only occurrence is its own declaration in `grid.mjs`. The rule fired on 0 of 640,000 cells, and `lava` reached the map only through the palette[0] fallback (2,265 c10 cells with no rule ever saying so). Fixed to `FLAG.ARC`, which `assignSubstrate` mints for volcanic ground and nowhere else; the 0.85 threshold is unchanged and selects c10's top 560 cells. |
+| **C, Task 7 Step 3** biome `ash` rule | `(c.flags & FLAG.SAND) !== 0 && c.moist < 0.4` | **inverted with respect to its only consumer.** `SAND` is the CLASTIC default on 213,210 of 262,400 land cells; `ash` is in exactly ONE palette, c10's, and c10 is the one continent whose kit is volcanic and therefore never carries SAND. Measured: the rule fired 26,439 times and was legal on none of them, so `ash` — the only biome `TERRAIN_IMPLIES["volcanic-arc"]` names — could not occur anywhere. Fixed to `FLAG.VOLCANIC`: 49.8% of c10. |
+| **C, Task 7 Step 4** `partitionRegions` | uses `mintSeed` for the provenance stream | never imports it. `ReferenceError` on the first reported region of the first continent. |
+| **C, Task 7 Step 4** `isLand` | `grid.plate[i] >= 0 && (grid.flags[grid.n ? i : i] & FLAG.SEA) === 0` | dead in two ways: `grid.n ? i : i` is `i`, and nothing calls the helper. Deleted. |
+| **C, Task 7 Step 4** `biomeShares` | `{ "karst": 62, "forest": 38 }` in the fabric shape | the code keys the map by the **Uint8Array biome INDEX**, so a committed fabric file would have read `{"15": 62}`. `grid.biomeNames` exists for exactly this join and P9 now uses it — and REFUSES to run before P8 rather than keying on an unset vocabulary. |
+| **C, Task 7 Step 4** what regions tile | every land cell of the plate (`plate >= 0 && !SEA`) | that is GROSS land, 65,600 km². The manifest's own arithmetic is `40 x 160 + 120 x 480 = 64,000 = budget.netLandKm2`, and the fabric record's `cellCensus` is `{ land, lake, unowned }` — three terms, lake BESIDE land. Owning lakes inflates every region by 2.5%. Regions tile NET land, and the integer proof of non-overlap therefore needs a LAKE term the plan's three-way form does not have: `Σ ownerHistogram + unowned + lake + sea = 640,000`. |
+| **C, Task 7 Step 4** the region quota | every region takes the manifest NOMINAL (640 / 1,920 cells) and the leftover goes to the residual pass | **33 of the 120 reported regions land outside their own [384, 576] km² tolerance**, spread 63.5 to 744.5 km². `40 x 160 + 120 x 480` is a WORLD identity and no continent's net land is a multiple of its own nominal share, so "wherever the frontier happened to be" decides the whole residue. Surveyed take the nominal; reported share their own continent's remaining net land equally. |
+| **C, Task 7 Step 4** `growRegions`' `pending[]` | the first owner to touch a cell claims it | once that owner fills its quota the cell is skipped FOR EVER and falls to the residual rule's "lowest id", even when a neighbour has budget and is closer. The owner is carried IN the heap entry instead — which makes the plan's `(cost, cellIndex)` key non-total, so the key is `(cost, cellIndex, ownerIndex)`. |
+| **C, Task 7 Step 4** hard caps + residual | quotas sum to the land, so the books balance | they do not: a boxed-in site stops short (measured, one c04 reported region at 96 cells of 1,881) and the cells it did not get are walled behind FULL regions, so no capped round can reach them. Closed by a transfer along a PATH through the region-adjacency graph, breadth-first to the nearest surplus. |
+| **C, Task 7 Step 1** fixtures | call `partitionRegions` directly | every fixture but one skips `classifyBiomes`, so `grid.biomeNames` is empty. Nine of the plan's ten Task-7 tests exercise a partition whose biome shares are meaningless. |
+| **C, Task 7 Step 4** `poissonSites` | relax the radius by 20% and retry ONCE, recursively | no depth bound and no floor. On a chain continent smaller than one 19 km disc it returns fewer sites than the manifest demands — a shortfall no test in the plan's suite can see, because they all run on a square. Bounded ladder down to one cell edge, then the top `count` outright. |
+| **C, Task 7 Step 4** `recentre` | scans all 640,000 cells per site per pass | 160 x 4 x 640,000 = 410 M steps. The plan's own review brief predicts it. Replaced by one CSR cells-of-region index per pass. |
+| **C, Task 7 Step 3** `TERRAIN_FOR_BIOMES` | a partial map with a `?? "headland"` tail | a biome added to `BIOMES` becomes a silent headland instead of a red test. Total over all 20 members, and a miss throws. `fjordland` is the one `TERRAIN_KINDS` member no biome implies — pinned, so wiring it up has to be deliberate. |
+| **C, Task 8 Step 4** instance geometry | `geometry: { shape: c.type.geometry, at: c.at }` for all three shapes | `landform-instance.schema.json` is a `oneOf` with `additionalProperties: false` per branch: `point` takes `at`, `line` takes `points` (2-40), `area` takes `ring` (3-40). **126 of the 170 lexicon rows are line or area**, so three quarters of the world fails validation the moment Task 11 puts an ajv venue on the fabric. |
+| **C, Task 8 Step 4** the instance budget | per continent, proportional to land cells | surveyed regions hold 25,600 of 256,000 net-land cells, so that puts ~174 instances in them — while the plan's own naming census demands **276** there. It cannot close. The plan states the missing number itself at line 350 ("a reported region … still carries 8 texture instances"): 120 x 8 + 40 x 19.5 = 1,740 exactly. |
+| **C, Task 8 Step 4** per-type target | `Math.max(1, Math.round((budget * share) / typesInGroup))` | the `max(1, …)` floor makes the continent total at least the number of kit types — 73 on c02 against a share-of-1,740 budget of ~134 — so the counts cannot be targeted at all. |
+| **C, Task 8 Step 4** `substitutions` | "degrade to the nearest legal type in the SAME group and record the substitution" | the code writes `used: null` unconditionally, so the field it declares for the fallback never carries one. 46 of the 109 substitutions on the real world do have a group-mate to name. |
+| **C, Task 8 Step 4** handle collisions | extend the LATER-ranked member to 6 hex, keyed on a `seen` map | `seen` only ever holds the FIRST occupant, so a three-way collision writes the same 6-hex tail twice and the second write is silent. Walk the prefix out 4 -> 5 -> 6 and take the first free length; a bucket that cannot resolve inside the committed `h-[0-9a-f]{4,6}` grammar THROWS. One real collision on this seed, resolved at five hex. |
+| **C, Task 8 Step 4** `orderDigestOf` | its own test asserts the digest changes when a handle's `sizeKm` changes | the body is `rank:handle:contentHash` — `sizeKm` reaches it only through `contentHash`, which a hand-edited ledger would not have recomputed. **The plan's test cannot pass against the plan's code.** The body now covers every field the ledger row states. |
+| **C, Task 8 Step 4** `kitTypes` | `lexicon.filter((t) => kit.has(t.group))` | ignores `alsoGroups`, which is what the manifest's 178 group memberships against 170 types MEANS. Eight dual-listed types become unplaceable by an accident of which column they were filed under. |
+| **C, Task 8 Step 4** `cellView` | called inside the per-type loop | one 8-neighbour walk per (cell, type) pair — 16.1 M of them on the real world. Built once per cell into parallel typed arrays, with `matchesRequires` kept as the reference and a 680,000-comparison equivalence sweep against the compiled form. |
+| **C, Task 8 Step 1** test | `const { readdirSync } = require("node:fs")` inside the last test | `require` is not defined in an ESM `.mjs` test file. |
+| **C, Task 8 Step 4** `orderHandles` | sorts on `sizeKm * sizeKm` and calls the key "area" | squaring is monotone on positive numbers, so it is the same order under a name that is wrong for two of the three geometries: a `point`'s sizeKm is a diameter and a `line`'s is a length. |
+| **STATE §11** (this file) the world biome histogram | meadow 21.9, tundra 20.8, forest 18.2, desert 10.3, ice 10.0 | measured WITHOUT P2b. `water.test.mjs`'s `realWorld` never calls `assignSubstrate`, so the `karst` and `ash` rules could not fire and their cells fell through to forest and meadow. With P2b in the pipeline the same rule table reads meadow 34.2, karst 16.5, desert 13.0, tundra 11.5, ice 10.0. |
 
 The plan text already self-corrects two more: spec §8.6's "checkSpine is already parameterised
 with an injected collector" (it is not — it closes over module-level bindings) and §8.2's
@@ -846,3 +869,190 @@ smallest case where `round` and `floor` of `0.75(n−1)` disagree).
   reviewed that as a content number, and P8's biome table is the first thing that will read it.
 - **`filled` can exceed the 1.0 elevation clamp** — by exactly one epsilon, 1.0000009536743164.
   Nothing reads it as a [0, 1] elevation today; the golden pins it so that stops being luck.
+
+---
+
+## 12. Plan C seam 4 (Tasks 7-8) — settled, do not re-raise
+
+Appended 2026-08-22 by the seam-4 implementation. Commits `e95ef87` (P8 biomes + P9 regions),
+`292afc9` (P10 instancing + handles). **Twenty-four more plan errors are in §5 above.**
+**43 mutations: 39 killed, 4 survived, and each survivor is explained AT ITS CALL SITE** — see the
+end of this section. No review has run on this seam yet.
+
+### What the seam guarantees
+
+- **Every one of P8's eighteen biome rules is the CHOSEN rule on at least one cell of the real
+  world, and the golden asserts the eighteen counts.** Two of the plan's rules could never win and
+  neither was visible as a missing biome: `lava` tested `FLAG.CLIFF`, which **no pass in the
+  pipeline sets** (0 of 640,000 cells), and `ash` tested `FLAG.SAND`, the CLASTIC default on 213,210
+  land cells, while `ash` is in exactly one palette — c10's, the one continent that is VOLCANIC and
+  therefore never SAND. Both are §5 rows. **19 of the 20 `BIOMES` now occur**; `built` is the
+  exception by design and `landform-type.schema.json` says so independently.
+- **The palette fallback is MEASURED, not silent.** 8.80% of land matches no rule its palette allows
+  and takes `palette[0]`; c05 Thirstwold is 19,540 cells of that on its own. Pinned per plate, so a
+  change that grows the fallback is a change in what the world is made of and shows up as one.
+- **Regions tile NET land and the integer proof closes on 640,000** — `256,000 owned + 0 unowned +
+  6,400 lake + 377,600 sea`, asserted in aggregate AND cell by cell (no owned cell is water or
+  off-mask; `grid.regionId(i)` answers the record's own id).
+- **All 160 regions are inside their own manifest tolerance.** 40 surveyed at exactly 160.00 km²;
+  120 reported spanning **419.75-504.00 km²** against [384, 576]. Under the plan's per-region
+  nominal quota 33 of the 120 are outside it, spread 63.5 to 744.5 — see §5.
+- **The Dijkstra is order-independent, proven the way seam 3 proved flow routing**: three comparator
+  variants x three site insertion orders on a real continent (c08, 11,988 net-land cells, 8
+  regions), nine runs, one digest. The key is `(cost, cellIndex, ownerIndex)` and the third term is
+  **not optional** — see §5.
+- **P10 places the manifest's numbers exactly: 1,740 instances, 336 named, 165 of 170 types**
+  against a committed `typeCoverageFloor` of 100. Every ring is positively wound, every record
+  carries exactly the keys `landform-instance.schema.json` requires, all 1,740 ids and handles are
+  unique, and the widest footprint is 8 vertices against G-VERTEX-BUDGET's 40.
+- **One 4-hex handle collision occurred and was resolved at five hex** (`c04/karst/h-a661d`). The
+  birthday bound over ~50 (continent, group) buckets makes a collision LIKELY rather than rare, so
+  this is a measurement, not a reassurance. A bucket that cannot resolve inside the committed
+  `h-[0-9a-f]{4,6}` grammar throws.
+
+### THE FIVE TYPES THAT CANNOT BE PLACED, AND WHY — including the one STATE filed
+
+`sub-lacustrine-vent` was filed in §5 before this seam started, as Task 8's to resolve. **It cannot
+be resolved in P10, and it is not alone.** Each of the five was counted over every cell of every
+continent whose kit admits it; all five return **zero** candidates, so they are unplaceable by
+construction rather than unlucky, and `landforms.test.mjs` re-derives the count so the claim cannot
+rot:
+
+| type | requires | why zero |
+| --- | --- | --- |
+| `sub-lacustrine-vent` | `{nearFlag: LAKE, rock: volcanic}` | volcanic ground exists only on c10, whose kit is `volcanic/erosional/island` — no `lakes` — and whose `interiorWaterKm2` is 0. Adding `lakes` to the kit does not help: c10 has no LAKE cell to be near. |
+| `sinking-river` | `{nearFlag: RIVER, rock: carbonate}` | **the same defect, unfiled.** Its group is `fluvial` with no `alsoGroups`; carbonate ground exists only on c04, whose kit is `karst/lakes/erosional/coastal` — no `fluvial`. c04 has rivers and carbonate everywhere; the type simply is not in its kit. |
+| `fringing-reef`, `barrier-reef`, `reef-shelf-bank` | `{nearFlag: SEA, elevMax: 0.4, tempDecileMin: 7}` | `oceanic` is in exactly one kit, c11 Quillreef's. c11's footprint centre is at y = 66 km of 400 and `applyWinds` derives temperature from latitude, so its land runs **temp p99 = 0.176**, decile 1. A tropical predicate on a polar-latitude atoll. |
+
+**Three ways out, none of them P10's.** (a) Give the row an `absentBecause` string — the mechanism
+the committed schema already has, scored by G-LANDFORM in Task 11, and the honest one for
+`sub-lacustrine-vent` and `sinking-river`. (b) Widen a premise `landformKit` — one word each for
+`sinking-river` (add `fluvial` to c04) and nothing for `sub-lacustrine-vent`. (c) Move c11's
+footprint south, which is a seam-2 refit. **This seam did none of them**: the lexicon is Plan B's
+committed authority and the premises are seam 2's fitted geometry, and 165 of 170 is 65 clear of the
+committed floor. `budgets.json`'s own `landformsWhy` already rules that unplaced-with-null is a
+WARNING, never a failure.
+
+### The same shape, in the CONTENT rather than the code — filed, not chased
+
+- **c11 Quillreef is a coral atoll that can carry no reef.** Its palette is `["reef","meadow","ocean"]`
+  and the P8 `reef` rule is `elev < 0.06 && temp > 0.7`; c11's temp p99 is 0.176, so the rule can
+  never fire there and the atoll comes out **100.0% meadow**. This is the seam-3 ice defect in
+  mirror image — committed premise against generated climate — but the cause is the premise's
+  LATITUDE, not the rule, and the rule is live elsewhere (c08 11.0%, c13 11.1%). Same family as the
+  c10 treeline item §11 left for Task 9.
+- **c06 Reedstrand is a wetland continent with no marsh.** The `marsh` rule needs `moist > 0.8` (or a
+  DELTA cell); c06's moisture p99 is 0.722. It comes out **92.7% meadow**. The rule IS live — 770
+  cells world-wide, c13 5.9% — so this is calibration between a premise and a threshold, not a dead
+  rule.
+- **Four pairs of landmasses PHYSICALLY TOUCH on the refitted mask**, so region adjacency crosses
+  continent boundaries: c01-c12 (247 cell adjacencies), c02-c07 (335), c03-c11 (126), c05-c08 (95).
+  A per-continent fabric file will therefore carry an `adjacent` id belonging to another file.
+  **Task 10a and Task 11 must expect that**; it is pinned in `partition.test.mjs` so it cannot
+  surprise them.
+- **`FLAG.CLIFF` is set by no pass and read by no lexicon row** (the committed `nearFlag` census is
+  SEA 40, GLACIER 22, ARC 15, RIVER 14, LAKE 13, DELTA 1 — no CLIFF). It is a declared bit with no
+  producer. Task 9's cliff work is the natural place to either mint it or delete it.
+
+### Decisions taken deliberately
+
+- **`SMOOTHING_PASSES = 2`, and 2 is the BEST of the sweep rather than the cheapest adequate one.**
+  Measured on the real field, regions outside their own tolerance: passes 0 -> 7, 1 -> 1, 2 -> **0**,
+  3 -> 3. A third pass moves sites far enough that new regions get boxed in. Compactness barely
+  moves across the whole sweep (mean isoperimetric 0.379 / 0.391 / 0.391 / 0.399), so it is not the
+  quantity to tune on. `partition.test.mjs` re-runs the sweep rather than trusting the comment.
+- **The instance budget is per REGION: 8 for a reported region, the rest spread over the surveyed
+  ones.** 120 x 8 + 40 x 19.5 = 1,740 exactly. The number 8 is the plan's own (line 350) and the
+  ratio is §6.4 rule 2's 7x detail gradient. Unspendable budget — measured, 22 regions cannot spend
+  all of theirs and five can spend none — moves to the other regions of the SAME continent, never
+  across one, because the premise kit is what decides which landforms may exist.
+- **Coverage outranks the weighted draw.** A type the world has not used yet is drawn before one it
+  has, and only then does the §6.6 group weight decide. Measured: **152 types placed without it,
+  165 with**, and the thirteen it recovers are every glacial, volcanic and oceanic type that has
+  ground and simply never came up.
+- **The ranking key inside P10 is integer, not `hashNoise2D`.** One noise value per cell per
+  continent is mixed with a per-type salt by `Math.imul` and xor-shift. Millions of `hashNoise2D`
+  calls would each re-validate the stream with a regex; the mix is exact on every engine (the
+  determinism inventory bans the transcendentals, not `Math.imul`) and **no committed number derives
+  from it** — only which of many satisfying cells is chosen.
+- **`matchesRequires` stays as the reference and `compileRequires` is the fast path.** Two
+  enumerations of one predicate language is exactly how a landform ends up where its substrate does
+  not exist, so the two are joined by a 680,000-comparison sweep: every committed lexicon row
+  against 4,000 real cells, with a guard that the sweep is not vacuous.
+
+### THE BUDGET — the pass reviewer F named, measured
+
+`content/world/budgets.json` does not carry the generate budget; the 4,000 ms figure is the plan's.
+Measured on a quiet box, cold, from the committed terrain stream:
+
+| pass | ms |
+| --- | --- |
+| P1+P2 mask | 693 |
+| P2 elevation | 539 |
+| P2b substrate | 17 |
+| P3 sea level | 87 |
+| P6 hydrology | 479 |
+| P5 winds | 581 |
+| P7 water | 420 |
+| **P8 biomes** | **150** |
+| **P9 regions** | **873 warm / 1,200 cold** |
+| **P10 landforms** | **657** |
+| total | **~4,500-4,800** |
+
+**Review F's warning was right and P9 is the pass.** Its breakdown: siting 101, three grow passes
+431, Lloyd 22, residual 20, rebalance 183, adjacency 8, census ~108. It was 1,082 ms before three
+output-neutral optimisations (a lazy decrease-key keyed on (cell, distinct owner), hoisting the
+Poisson scoring and sort out of the two calls that shared it, and a CSR cells-of-region index in
+`recentre`); the remaining cost is the Dijkstra itself and the correctness work — the quota
+rebalance and the region census — not waste.
+
+**The 4,000 ms generate budget is exceeded and this seam did not change it.** P8+P9+P10 alone are
+1,680-2,000 ms against the ~1,160 ms §11 left for six passes, and P11 settlements, P12 roads, P13
+dungeons and P14 fabric are still unwritten. The number is a plan value, not a committed one, so
+**Task 10b is where the decision belongs**: raise it with the measurement in front of the owner, or
+buy the time back (the largest remaining single terms are `applyPremiseMasks` 693 ms and
+`buildElevation` 539 ms, both from seam 2, and P9's three grow passes). **Do not quietly widen
+`budgets.json` to make a green run.**
+
+### Recorded mutation SURVIVORS — each explained at its call site
+
+**Do not re-file these.** 43 mutations across `biome.mjs`, `partition.mjs` and `landforms.mjs`; the
+39 killed include every rule this seam added or corrected. The four that stand:
+
+- `partition.mjs` — `poissonSites`' relaxation FLOOR. Deleting it is green because the ladder does
+  not diverge without it: it keeps halving until `radius` denormalises to 0, at which point every
+  separation test is false and `tryRadius` accepts the first `count` cells — the SAME answer, about
+  a thousand iterations later. The branch is an early exit. The MULTIPLIER is live: `radius * 0.8`
+  → `radius` makes the loop non-terminating and the suite kills it (by timeout).
+- `partition.mjs` — `neighbourIdx` in `growRegions`, against unguarded index arithmetic. Measured:
+  **zero net-land cells and zero MASKED cells sit on any of the four frame edges**, so the east/west
+  wrap always lands on sea and `ownable` rejects it on the next line. Unreachable by this world's
+  geometry, not dead — a premise fitted to the frame edge or a re-tiled grid makes it live.
+- `partition.mjs` — `assignTerrainKinds`' throw, against `?? "headland"`. `partition.test.mjs`
+  asserts `TERRAIN_FOR_BIOMES` is TOTAL over `BIOMES`, so a dominant biome with no mapping cannot
+  exist and any fixture reaching the throw reds the totality test first.
+- `landforms.mjs` — the rarity ordering of the `grid.landform` write. Measured: **zero of the 1,740
+  instances share a cell** (the per-region separation makes a tie impossible), so no fixture can
+  separate the two orderings. Live the day a second instance lands on an occupied cell.
+
+### Open, recorded rather than chased
+
+- **Two regions cannot reach their quota** — `c02/r25` (1,766 of 1,880) and `c05/r27` (1,776 of
+  1,881) — because no surplus is reachable across the region-adjacency graph at all. Both are well
+  inside tolerance (441.5 and 444.0 km² against [384, 576]) and both are REPORTED in
+  `partitionRegions`' return rather than absorbed.
+- **The mapforge suite went 11.1 s -> 24.3 s.** Two new files each build the real 800 x 800 world
+  once (~2.8 s) and then run several full partitions on it. Task 9 and Task 10 will each want the
+  same field; **a shared fixture module that builds it once per process is the obvious saving**, and
+  `tests/fixtures/coast-world.mjs` (Task 9a's) is where the plan already puts one.
+- **`dominantBiomeIndex`, `siteCell` and `cells` are on the region record and are NOT in the fabric
+  shape.** Task 10a projects the committed record; `fabric-file.schema.json` will be
+  `additionalProperties: false`.
+- **`TERRAIN_IMPLIES` is not enforced on fabric regions and cannot be.** A surveyed region whose
+  dominant biome is `meadow` gets `terrainKind: "headland"`, which implies rock AND meadow at >= 15%
+  — a claim its `biomeShares` may not support. `G-TERRAINKIND` walks spine nodes and regions are
+  deliberately not spine nodes, so nothing checks it today. Plan E's redraw is where it would bite.
+- **`REPORTED_INSTANCES_PER_REGION` and the naming census interact.** After the top-up the reported
+  tier spans 1-17 instances per region and the surveyed tier 8-22, against nominal 8 and 19.5. The
+  NAMED cap of one per reported region is untouched and asserted; the texture count is not a gated
+  number today.

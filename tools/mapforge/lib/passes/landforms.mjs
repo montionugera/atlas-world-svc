@@ -586,8 +586,16 @@ export function instanceLandforms({ grid, premises, regions, lexicon, manifest, 
   // `requires.landform: "coastal-drowned-valley"` has nothing to check against
   // otherwise. RARER TYPES ARE WRITTEN LAST so the more specific classification
   // survives a tie; the plan says the pass places them last, which it does not
-  // (placement order is the weighted draw), so the ordering is applied here
-  // where it is actually observable.
+  // (placement order is the weighted draw), so the ordering is applied here.
+  //
+  // RECORDED MUTATION SURVIVOR: dropping the rarity term leaves the suite
+  // green, and no fixture can separate the two today. Measured on the real
+  // world, ZERO of the 1,740 instances share a cell — the per-region minimum
+  // separation of two cells makes a tie impossible — so there is nothing for a
+  // tiebreak to break. It is kept because the separation is a per-REGION rule
+  // and instances of different regions meet at a region boundary; the day P13
+  // or Plan D writes a second instance onto an occupied cell, this is the line
+  // that decides which type G-PIN-SAT reads.
   const typeIndex = new Map(lexicon.map((t, n) => [t.id, n]));
   const rarityRank = { common: 0, uncommon: 1, rare: 2 };
   const rarityOf = new Map(lexicon.map((t) => [t.id, rarityRank[t.rarity] ?? 0]));
