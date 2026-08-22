@@ -251,14 +251,17 @@ export function traceTrunkRivers({ grid, regions, problems = [] }) {
         // Clean on today's real field, which is exactly why it needs a rule.
         if (ni >= 0 && contOf(ni) !== cont) continue;
         // RECORDED MUTATION SURVIVOR, explained here so it is not re-filed:
-        // deleting `seen` leaves the suite green and CANNOT be killed by any
-        // fixture. `flowDir` is a function — one outflow per cell — so the
+        // deleting `seen` leaves the suite green, and NO GENERATED FIELD can
+        // change that. `flowDir` is a function — one outflow per cell — so the
         // inflow relation followed here is its inverse, a tree; a flowDir
         // cycle is a component with no outlet and therefore has no mouth to
-        // start a walk from. The guard states the invariant and bounds a
-        // hand-built field (a test may set flowDir arbitrarily); the plan's
-        // `guard < grid.n` bound instead converts a cycle into a
-        // 640,000-point chain, which is why it is not what is here.
+        // start a walk from. It is NOT unkillable in the absolute — the first
+        // draft of this comment said "cannot be killed by any fixture" and then
+        // conceded two lines later that a test may set flowDir arbitrarily,
+        // which is a contradiction (review J). A hand-built mouth whose own
+        // inflow is itself WOULD kill it. That is precisely the case the guard
+        // is here to bound, and the plan's `guard < grid.n` bound instead turns
+        // it into a 640,000-point chain, which is why it is not what is here.
         if (ni < 0 || seen.has(ni)) continue;
         if ((grid.flags[ni] & FLAG.RIVER) === 0) continue;
         const nd = grid.flowDir[ni];

@@ -36,7 +36,12 @@ test("anchorDungeons only picks dungeonCapable landforms within 2 region hops of
   const regions = [
     { id: "c01/r01", continent: "c01", survey: "surveyed", adjacent: ["c01/r02"] },
     { id: "c01/r02", continent: "c01", survey: "surveyed", adjacent: ["c01/r01"] },
-    { id: "c01/r08", continent: "c01", survey: "reported", adjacent: [] },
+    // SURVEYED, deliberately: this fixture isolates the REACHABILITY rule, so
+    // r08 must fail on the missing path and on nothing else. It read
+    // `reported` in the first draft, which made the survey filter and the hop
+    // filter both reject it and the assertion blind to either — the confounded
+    // shape the treeline fixture was caught in (STATE §15).
+    { id: "c01/r08", continent: "c01", survey: "surveyed", adjacent: [] },
   ];
   const settlements = [{ id: "c01/s01", region: "c01/r02", rank: "hub" }];
   const r = anchorDungeons({ instances, regions, settlements, lexicon: MINI,
@@ -48,6 +53,31 @@ test("anchorDungeons only picks dungeonCapable landforms within 2 region hops of
   // h-000002 is not dungeonCapable; h-000003 is on an ISLAND region with no
   // path to any settled region at all — excluded, never given a hop count.
   assert.ok(r.problems.some((p) => /only 1 of 5 complexes/.test(p)), JSON.stringify(r.problems));
+});
+
+test("a REPORTED region takes no anchor, however reachable it is", () => {
+  // THE ISOLATING FIXTURE for the honest-frontier filter, and it isolates:
+  // r02 is ONE hop from the settled r01, holds a dungeonCapable instance, and
+  // is rejected on `survey` alone. Swap its survey to "surveyed" and the same
+  // instance is anchored — which is the second half of the assertion, so the
+  // fixture cannot pass with the filter deleted.
+  const instances = [inst(1, "c01/r02")];
+  const settlements = [{ id: "c01/s01", region: "c01/r01", rank: "hub" }];
+  const run = (survey) => anchorDungeons({
+    instances,
+    regions: [
+      { id: "c01/r01", continent: "c01", survey: "surveyed", adjacent: ["c01/r02"] },
+      { id: "c01/r02", continent: "c01", survey, adjacent: ["c01/r01"] },
+    ],
+    settlements, lexicon: MINI,
+    manifest: { quotas: { dungeons: { complexes: 1 } } }, stream: S });
+  const reported = run("reported");
+  assert.deepEqual(reported.anchors, [], "an anchor in a reported region reds Task 11's G-POI");
+  assert.ok(reported.problems.some((p) => /only 0 of 1 complexes/.test(p)),
+    JSON.stringify(reported.problems));
+  const surveyed = run("surveyed");
+  assert.equal(surveyed.anchors.length, 1, "the SAME instance is anchored when its region is surveyed");
+  assert.equal(surveyed.anchors[0].hopsToSettlement, 1);
 });
 
 test("hopsToSettlement is SERIALISED, so G-DUNGEON-REACH reads it instead of re-walking the graph", () => {

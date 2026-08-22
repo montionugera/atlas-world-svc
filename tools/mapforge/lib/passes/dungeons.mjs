@@ -53,11 +53,17 @@ export function hopsToSettlement({ regions, settlements, problems = [] }) {
   const queue = [];
   const settled = new Set(settlements.map((s) => s.region).filter((id) => id != null));
   // RECORDED MUTATION SURVIVOR: dropping this `.sort()` leaves the suite green
-  // and CANNOT change the answer — every settled region is a BFS source at
+  // and cannot change any DISTANCE — every settled region is a BFS source at
   // distance 0, so the frontier is the same set whatever order they enter the
   // queue, and the `hops.has(a)` test makes the first arrival the only one. It
   // is here so the QUEUE is a function of the data, which is what the
   // neighbour sort two lines down needs to mean anything.
+  // WITH A CAVEAT THAT BECOMES LOAD-BEARING (review J): the returned Map's
+  // INSERTION order is not order-independent without this sort. Nothing reads
+  // it today — every consumer does `hops.get(...)` — so the survivor stands.
+  // The moment a later task emits a per-region hop table by WALKING this Map
+  // rather than indexing it, the sort stops being a formality and the mutation
+  // starts being killable. Do not delete it on the strength of the green suite.
   for (const rid of [...settled].sort()) {
     if (!byId.has(rid)) { problems.push(`dungeons: a settlement names region ${rid}, which is not a region`); continue; }
     hops.set(rid, 0);
@@ -79,7 +85,7 @@ export function anchorDungeons({ instances, regions, settlements, lexicon, manif
   const problems = [];
   const capable = new Set(lexicon.filter((t) => t.dungeonCapable).map((t) => t.id));
   const known = new Set(lexicon.map((t) => t.id));
-  const regionIds = new Set(regions.map((r) => r.id));
+  const regionById = new Map(regions.map((r) => [r.id, r]));
   const hops = hopsToSettlement({ regions, settlements, problems });
   const want = manifest.quotas.dungeons.complexes;
 
@@ -96,10 +102,23 @@ export function anchorDungeons({ instances, regions, settlements, lexicon, manif
     // An instance on a region that is not in `regions` is a wiring bug, not an
     // unreachable dungeon: `hops.get` answers undefined for both, and only one
     // of them should be silent (review B).
-    if (!regionIds.has(inst.region)) {
+    const region = regionById.get(inst.region);
+    if (region === undefined) {
       problems.push(`dungeons: ${inst.handle} is on region ${inst.region}, which is not a region`);
       continue;
     }
+    // THE HONEST FRONTIER, and it is a GATE, not a preference. Spec §6.4 rule 2
+    // ("no interior detail inside a reported region") is enforced by Task 11's
+    // `gWorldPoi` (plan :7502), which counts every `dungeonAnchors` row into its
+    // region's POI total UNCONDITIONALLY — unlike instances, which it counts
+    // only for surveyed regions — and then requires a reported region's total to
+    // be exactly 0. Without this line 36 of the 60 anchors land in reported
+    // regions and Task 11 opens with 36 gate failures this pass caused two seams
+    // earlier (measured: 43 gWorldPoi failures with the anchors, 7 without).
+    // Silent like the hop filter, for the same reason: it is a supply
+    // restriction, and starving the quota is what the under-fill report below
+    // is for.
+    if (region.survey !== "surveyed") continue;
     const h = hops.get(inst.region);
     if (h === undefined || h > MAX_HOPS) continue;
     eligible.push({ inst, hops: h });

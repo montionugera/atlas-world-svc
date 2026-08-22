@@ -220,13 +220,24 @@ export function scoreSettlement({ grid, i, v, water, regionSurvey, biomeName }) 
   if (regionSurvey !== "surveyed") return 0;
   if (v.slope > VETO.slopeMax) return 0;
   // RECORDED, because "it fires" is not the same as "it decides": the treeline
-  // veto is the chosen rejection on 173 real cells and the {ice, lava} veto on
-  // 108, and EVERY ONE of those cells is on c10 Ashen Spar, which the
-  // fresh-water veto rejects entirely (615 of 640 surveyed cells; 0 cells clear
-  // every other veto). So deleting either leaves the 45 placements
-  // byte-identical on THIS world. Both are spec §6.5 vetoes, both are killed by
-  // direct fixtures in settlements.test.mjs, and neither is dead — they are
-  // waiting for a premise with wet ground above the treeline or on lava.
+  // veto is the chosen rejection on 173 cells of the scored pool and the {ice,
+  // lava} veto on 108, and EVERY ONE of those cells is on c10 Ashen Spar, which
+  // the fresh-water veto rejects entirely (615 of 640 surveyed cells; 0 cells
+  // clear every other veto). So deleting either leaves the 45 placements
+  // byte-identical on THIS world.
+  //
+  // WHAT MASKS THEM IS THE SURVEY DRAW, NOT THE PREMISE SET — the first draft of
+  // this comment blamed the premises and was wrong (review I). The world already
+  // carries the ground: over ALL owned land there are 1,841 above-treeline cells
+  // on c01, 309 on c03 and 1,145 on c10, and 23,244 ice/lava cells on c01, 2,997
+  // on c12 and 834 on c10. They never reach these two lines because only cells
+  // in a SURVEYED region are scored — 25,600 of 256,000 owned cells, 10% — and
+  // the four continents holding the alpine and icy ground have ZERO surveyed
+  // regions (c01 0/12, c11 0/2, c12 0/2, c13 0/2). Lift that one filter and the
+  // treeline is the SOLE rejection on 128 cells and {ice, lava} on 13,496.
+  // Both bind the moment the survey draw moves by one region, and both are
+  // killed by an ISOLATING fixture in settlements.test.mjs — one whose cell
+  // trips that veto and no other, which the treeline's first fixture did not do.
   if (grid.elev[i] > VETO.treeline) return 0;
   if (v.freshWater < VETO.freshWaterMin) return 0;
   const biome = biomeName(grid.biome[i]);
@@ -299,10 +310,22 @@ export function placeSettlements({ grid, premises, regions, manifest, pinned = [
   // of those pins consumes. Two functions resolving a pin means two ways for a
   // place to move, which is the failure the whole pinned tier exists to stop.
   const pinnedIds = new Set();
+  // A COORDINATE PAIR, not merely an array. `Array.isArray` alone accepted
+  // `at: []` and `at: [60.5]` and `at: ["60.5", "38.5"]`: the first two make
+  // `atKm` `[null, null]`, which reports NOTHING (the at/cell disagreement test
+  // is `NaN > cellKm`, false), exerts NO separation (`distKm(x, y, NaN, NaN) <
+  // min` is false, so a village lands 4 km from a pin that should force 9), and
+  // then throws inside `assignLevelBands` as `bands[ring] is not iterable` if
+  // that pin is the origin (review I). `Number.isFinite` also refuses the
+  // string form, which was being coerced silently.
+  const isPointPair = (a) =>
+    Array.isArray(a) && a.length === 2 && Number.isFinite(a[0]) && Number.isFinite(a[1]);
   for (const p of pinned) {
-    if (!Array.isArray(p.at) || !Array.isArray(p.cell))
+    if (!isPointPair(p.at) || !isPointPair(p.cell))
       throw new TypeError(`settlements: pinned entry ${p.id} is not a placePinned() result — ` +
-        `expected { id, at, cell, continent, region, rank }, got keys [${Object.keys(p).join(", ")}]`);
+        `expected { id, title, at: [xKm, yKm], cell: [cx, cy], continent, region, rank } with ` +
+        `two finite numbers in each pair, got at=${JSON.stringify(p.at)} ` +
+        `cell=${JSON.stringify(p.cell)}, keys [${Object.keys(p).join(", ")}]`);
     // A DUPLICATE PIN IS A LOUD ERROR, not two settlements sharing an id. The
     // fabric, the handle ledger and Plan D's bindings are all keyed on the id.
     if (pinnedIds.has(p.id))
@@ -318,6 +341,19 @@ export function placeSettlements({ grid, premises, regions, manifest, pinned = [
       throw new TypeError(`settlements: pinned entry ${p.id} has rank ${JSON.stringify(p.rank)} — ` +
         `expected one of ${Object.keys(SEPARATION_KM).join(", ")}; a rankless pin consumes no ` +
         `quota and would be placed on top of a generated settlement`);
+    // A PIN MUST CARRY ITS TITLE, and this is the loud half of `townSlug`'s
+    // refusal to fall back for one. A pinned `c-town-gildmark` with `title:
+    // null` slugs to `f-town-c-town-gildmark` — a LEGAL id that passes the
+    // grammar, passes the collision check, passes every test in this repo, and
+    // reds G-NET and G-CANON-LEG at Plan E's redraw with no fix available
+    // inside Plan E, because Plan E's committed edges point at
+    // `f-town-gildmark` (review J). The failure had to be moved to the pin's
+    // arrival because that is the only place the mistake is still cheap.
+    if (typeof p.title !== "string" || p.title.trim() === "")
+      throw new TypeError(`settlements: pinned entry ${p.id} has title ` +
+        `${JSON.stringify(p.title)} — a pin is a NAMED place and its name is the ` +
+        `f-town-<slug> Plan E's leg and road edges resolve against; without it the id ` +
+        `would silently become ${townFeatureId(slugOf(p.id))} instead of the canon one`);
     if (p.region == null) {
       problems.push(`settlements: pinned ${p.id} at [${p.at}] is not on owned land`);
       continue;
@@ -341,6 +377,20 @@ export function placeSettlements({ grid, premises, regions, manifest, pinned = [
       problems.push(`settlements: pinned ${p.id} names region ${p.region}, which is not a region`);
     else if (regions[pinRegion].survey !== "surveyed")
       problems.push(`settlements: pinned ${p.id} is on ${p.region}, a reported region`);
+    // THE DECLARED CONTINENT IS JOINED TO THE FABRIC, never trusted beside it —
+    // the same rule the lexicon join in P13 follows, for the same reason.
+    // `capitalsPerContinent` is keyed on the pin's DECLARED continent and the
+    // generated tier on `region.continent`, so a pin declaring "cZZ" put two
+    // capitals on one landmass with `problems: []`, and filed the settlement
+    // under a continent no premise declares — the exact wiring bug the
+    // `regions[]` premise check above exists to catch (review I).
+    if (pinRegion !== undefined && p.continent !== regions[pinRegion].continent)
+      problems.push(`settlements: pinned ${p.id} declares continent ${p.continent} and its ` +
+        `region ${p.region} is on ${regions[pinRegion].continent} — the one-capital-per-landmass ` +
+        `rule and the fabric file this settlement lands in are both keyed on the declared one`);
+    else if (pinRegion === undefined && premiseIds.size > 0 && !premiseIds.has(p.continent))
+      problems.push(`settlements: pinned ${p.id} declares continent ${p.continent}, which is not ` +
+        `one of the ${premiseIds.size} premises`);
     const w = waterAt(i);
     settlements.push({ id: p.id, title: p.title ?? null, continent: p.continent, rank: p.rank,
                        atKm: [q(p.at[0]), q(p.at[1])], cell: [...p.cell], region: p.region,
@@ -373,7 +423,14 @@ export function placeSettlements({ grid, premises, regions, manifest, pinned = [
     if (grid.plate[i] < 0 || grid.owner[i] < 0) continue;
     const region = regions[grid.owner[i]];
     if (!region) continue;
-    if (region.survey !== "surveyed") continue;      // the cheap veto, first
+    // The cheap veto, first. EXACTLY equivalent to scoreSettlement's own
+    // `regionSurvey !== "surveyed"` line — deleting it changes no output, which
+    // is why the mutation survives — and kept because it skips the D8 walk on
+    // 230,400 cells. The equivalence claim is about OUTPUT and stays true; what
+    // it does NOT mean is that the filter is inconsequential. It is the reason
+    // the treeline and {ice, lava} vetoes look dead (see scoreSettlement), and
+    // that is recorded there rather than hidden behind the word "equivalent".
+    if (region.survey !== "surveyed") continue;
     const v = view({ grid, i });
     const water = waterAt(i);
     const s = scoreSettlement({ grid, i, v, water, regionSurvey: region.survey, biomeName });
@@ -523,6 +580,19 @@ export const townFeatureId = (slug) => `f-town-${slug}`;
 export const slugOf = (title) =>
   String(title).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 export function townSlug({ settlement }) {
+  // THE FALLBACK IS FOR GENERATED SETTLEMENTS ONLY. Their ids are `c02/s01`, so
+  // `f-town-c02-s01` is a legible placeholder Plan D replaces when it mints the
+  // title. A PIN's id is already `c-town-gildmark`, so the same fallback yields
+  // `f-town-c-town-gildmark` — legal, collision-free, silent, and wrong at the
+  // one endpoint Plan E's committed canon legs resolve. `placeSettlements`
+  // refuses a titleless pin on arrival; this refuses one that reached the mint
+  // by some other road, because `townFeatureIds` is exported and Task 10's
+  // fabric.mjs re-exports it.
+  if (settlement.pinned && !settlement.title)
+    throw new Error(`settlements: pinned ${settlement.id} has no title — a pinned town's ` +
+      `f-town id comes from its NAME (f-town-gildmark), never from its id ` +
+      `(${townFeatureId(slugOf(settlement.id))}), which is what Plan E's edges would fail ` +
+      `to resolve`);
   const slug = slugOf(settlement.title ? settlement.title : settlement.id);
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug))
     throw new Error(`settlements: ${settlement.id} slugs to ${JSON.stringify(slug)}, which is not ` +
@@ -552,12 +622,33 @@ export function townFeatureIds({ settlements }) {
 // there is no `c-town-gildmark` (Plan D mints it), so the origin is c02's
 // capital — and if c02 got no capital it is any capital at all. That is a
 // different world, and it says so in `problems` rather than in nobody's log.
-export function assignLevelBands({ regions, settlements, manifest, problems = [] }) {
+export function assignLevelBands({ regions, settlements, manifest, problems }) {
+  // `problems` IS REQUIRED, and it used to default to `[]`. The default made the
+  // paragraph above a lie: every report this function exists to make went into a
+  // throwaway array, and the plan's own Task-10 call site (:6614) passes no
+  // `problems` and reads no return value — so as the plan is written the origin
+  // record and the unbanded-region report are both discarded (review I). A
+  // function whose stated purpose is "it says so in problems rather than in
+  // nobody's log" must not be callable without a log.
+  if (!Array.isArray(problems))
+    throw new TypeError("settlements: assignLevelBands needs a problems array — the fallback " +
+      "chain can move the whole difficulty gradient to another landmass and it reports which " +
+      "origin it used; a default [] discards that into nobody's log");
   const { originPinnedId, originFallbackContinent, ringKm, bands } = manifest.levelBands;
+  // THE CHAIN IS ORDERED, and the order is the rule: the PIN wins. Plan D mints
+  // `c-town-gildmark`; from that point the rings must run from the canon
+  // starter town even if c02's generated capital sits elsewhere on the same
+  // landmass. Swapping the first two terms was a mutation SURVIVOR until the
+  // fixture below was written, because in Plan C `byPin` never matches.
   const byPin = settlements.find((s) => s.id === originPinnedId);
   const byContinent = settlements.find((s) => s.continent === originFallbackContinent && s.rank === "capital");
   const anyCapital = settlements.find((s) => s.rank === "capital");
   const origin = byPin ?? byContinent ?? anyCapital ?? settlements[0] ?? null;
+  // Spec §6.5 runs the rings from the starter CAPITAL. A Gildmark pin ranked
+  // `hub` would anchor them silently, so it is named instead (review I).
+  if (byPin && byPin.rank !== "capital")
+    problems.push(`levelBands: the origin pin ${originPinnedId} is ranked ${byPin.rank}, not ` +
+      `capital — spec §6.5 runs the rings from the starter capital`);
   if (!origin) { problems.push("levelBands: no settlement to anchor the rings on"); return null; }
   if (!byPin && !byContinent)
     problems.push(`levelBands: no capital on ${originFallbackContinent} and no ${originPinnedId} — ` +

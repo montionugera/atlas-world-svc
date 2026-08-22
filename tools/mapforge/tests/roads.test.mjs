@@ -43,6 +43,21 @@ test("stepCost charges slope, diagonals and river crossings, and nothing else", 
   assert.equal(stepCost({ grid, from: a, to: b, diagonal: false }), 2 + RIVER_CROSSING);
 });
 
+test("routeRoads asserts the grid.owner -> regions[] join, exactly as placeSettlements does", () => {
+  // AN UNDECLARED MUTATION SURVIVOR until this fixture existed: deleting
+  // `assertRegionIndex` from routeRoads left all five suites green, while the
+  // record credited the guard as "used by P11 and P12" (review J). P11's copy
+  // was covered and P12's was not — the shape of a guard that is credited and
+  // unenforced. The road raster is masked by `grid.owner`, so a regions[] whose
+  // order does not match the index would confine a continent's roads to another
+  // continent's cells with problems: [].
+  const { grid, regs, settlements } = settled();
+  assert.throws(() => routeRoads({ grid, settlements, regions: [...regs].reverse() }),
+    /^Error: roads: .*grid\.owner indexes regions\[\]/s);
+  assert.throws(() => routeRoads({ grid, settlements, regions: regs.slice(0, 4) }),
+    /^Error: roads: .*grid\.regionIds has/s);
+});
+
 test("routeRoads connects every settlement into one component", () => {
   const { grid, regs, settlements } = settled();
   const r = routeRoads({ grid, settlements, regions: regs });
