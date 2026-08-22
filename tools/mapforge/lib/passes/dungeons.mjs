@@ -132,8 +132,12 @@ export function anchorDungeons({ instances, regions, settlements, lexicon, manif
   const scored = eligible.map((e) => ({ ...e, key: mix32(hash32(e.inst.handle), salt) }));
   // RECORDED MUTATION SURVIVOR: deleting the handle tail of this comparator
   // leaves the suite green and no fixture can change that. `key` is a 32-bit
-  // mix of a 32-bit hash of a handle that is itself unique, and there are 307
-  // eligible instances on the real world — measured, zero key collisions. The
+  // mix of a 32-bit hash of a handle that is itself unique. Measured, ZERO key
+  // collisions across every scale of the set: 126 in `eligible` here, 135 on
+  // surveyed ground, and all 307 `dungeonCapable` instances on the real world.
+  // (The first draft called 307 the eligible count — it is the SUPPLY before
+  // the survey and hop filters, review J; the collision argument is unaffected
+  // and the number is now the one it names.) The
   // tail is what makes the order total rather than merely improbable; finding a
   // colliding pair to fixture would be a 2^32 search for a property that is
   // supposed to hold without one.
