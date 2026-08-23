@@ -7,9 +7,14 @@ is wrong, fix the file — do not work around it in a prompt.
 
 Last updated: 2026-08-23, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`),
 **Plan C was claimed** as F-048, **Plan C seams 1-6 (Tasks 1-10) were built and adjudicated**, and
-**seam 7 (Task 11 — the world gates) was built and ADJUDICATED**, and **seam 8 (Tasks 12-13 — promotion, the committed fabric and the two review sheets) was built** — see §9-§19 and **§20**,
+**seam 7 (Task 11 — the world gates) was built and ADJUDICATED**, and **seam 8 (Tasks 12-13 — promotion, the committed fabric and the two review sheets) was built AND ADJUDICATED** — see §9-§20 and **§21**,
 and **a hundred and sixty-one** confirmed
 plan errors in §5.
+
+**If you read one thing in §21, read "PROMOTION COULD DELETE THE WORLD AND REPORT OK".** A draft
+whose `content/spine/nodes/` was empty and whose manifest agreed promoted with `errors: []`, printed
+`promote-world: OK` and exited 0, taking the tree from 44 node files to 7. There was no census floor
+anywhere. There is one now, plus two more guards, and all three are DECLARED in `budgets.json`.
 
 **If you read one thing in §20, read "COMMITTING THE FABRIC RED THE COMMITTED ROOT".** The five
 thin surveyed regions §18 adjudicated were recorded in a TEST, which is a claim about the draft
@@ -50,7 +55,7 @@ world it pinned was not the world seam 2 fitted the thirteen continents to.
 | --- | --- | --- |
 | A — Unblock and Afford | F-046 | **SHIPPED** to release/1.8, 2026-08-19. All 15 acceptance criteria verified. |
 | B — Vocabulary and Render | F-047 | **SHIPPED** to release/1.8, 2026-08-22. All 12 tasks; Gate 1 13/13. |
-| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. **All 13 tasks built**; seams 1-7 reviewed and adjudicated (§14, §15, §17, §19); seam 8 (Tasks 12-13, **§20**) built and awaiting review. |
+| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. **All 13 tasks built, reviewed and adjudicated** — seams 1-7 in §14, §15, §17, §19; seam 8 (Tasks 12-13) built in §20 and adjudicated in **§21**. Ready for Gate 1. |
 | D — Pinned, Bound, Relations | — | not started |
 | E — Redraw and Prose | — | not started |
 
@@ -334,7 +339,7 @@ tree before trusting it** — this is the single most reliable source of defects
 | **C, Task 13 Step 5** `buildOverlaySheet` | baseline defaults to `join(repoRoot, "content/spine/nodes")` | inside a DRAFT root that is already the GENERATED trunk, so the overlay would draw the new world under the new world and show nothing — and `writeRun` builds this sheet with `repoRoot: outDir`. The draft folder's own `baseline/spine/nodes` is preferred when present, which is what `writeRun` copies it for. |
 | **C, Task 13 Step 5** the area-delta table | one row per continent carrying the GENERATED area only | a list of thirteen numbers under a heading that promises a comparison. A continent's baseline polygon is reachable through `content/world/manifest.json`'s `landmasses[].nodeId` — the same column `buildTrunk` takes every node id from — so the table carries both sides and marks the six landmasses the committed chart has no polygon for as NEW. Measured: `c02 1040.7 -> 12102.8 km² x11.63`, `TOTAL 6243.5 -> 65600.0 km² x10.51`. The plan also scores NET land; the trunk polygon is a coast contour and encloses interior water, so both sides are GROSS (§5's `gWorldTrunkArea` row). |
 | **C, Task 13 Step 8** the render lock's extra paths | `readdirSync` inline in `check_render_lock.mjs` | a second list beside the one `scripts/tests/render-lock.test.mjs` recomputes the lock from, and the test went red on 27 "missing" rows. `lockExtraPaths({repoRoot})` is exported from `scripts/lib/render-lock.mjs` and both call it. 3 -> **32** artifacts (2 sheets + 27 fabric/handle files), no pre-existing hash moved. |
-| **C, whole-plan acceptance criterion 13** | `SYNTHETIC_LOAD_BUDGET`, `PRE_WORLD_ATLAS_CHILDREN` and `PRE_WORLD_SEALANE_ID` *"appear nowhere in the repo"* | **unsatisfiable as a string scan, and satisfying it would make the tree worse.** All three are named in `generate-world.mjs`'s header, which explains what they were and why they are gone — and `generate-world.test.mjs` asserts that explanation survives — as well as in the plan document, this file and the backlog spec. The satisfiable reading is CODE: comments stripped, over every production file under `tools/` and `scripts/` (`tests/` excluded on both sides, the same split the determinism ban uses). |
+| **C, whole-plan acceptance criterion 13** | `SYNTHETIC_LOAD_BUDGET`, `PRE_WORLD_ATLAS_CHILDREN` and `PRE_WORLD_SEALANE_ID` *"appear nowhere in the repo"* | **unsatisfiable as a string scan, and satisfying it would make the tree worse.** **TWO** of the three — `PRE_WORLD_ATLAS_CHILDREN` and `PRE_WORLD_SEALANE_ID` — are named in `generate-world.mjs`'s header, which explains what they were and why they are gone, and `generate-world.test.mjs` asserts that explanation survives. **`SYNTHETIC_LOAD_BUDGET` is NOT** (`grep -c SYNTHETIC_LOAD_BUDGET tools/mapforge/generate-world.mjs` → **0**, measured 2026-08-23 by the seam-8 fix pass): the header says *"no synthetic budget"* in prose and never spells the symbol. The assertion at `generate-world.test.mjs:765` only ever checked `PRE_WORLD_ATLAS_CHILDREN`, so the test was sound and only this sentence and the comment above it were wrong; both are corrected. All three do appear in the plan document, this file and the backlog spec. The satisfiable reading is CODE: comments stripped, over every production file under `tools/` and `scripts/` (`tests/` excluded on both sides, the same split the determinism ban uses). |
 | **`tools/mapforge/tests/determinism-inventory.test.mjs`** | `world-gen.mjs`'s `Math.PI` x2 / `Math.cos` / `Math.sin` / `**` x2 is *"the LARGEST exposure on this path … its output is the canary sheet, which is committed and locked"* | **FALSE.** `lib/synthetic-sheet.mjs` reads the committed fixture `tests/fixtures/synthetic-world/world.json` and imports nothing from `world-gen.mjs`, whose ONLY importer in the tree was `tools/mapforge/gen-world.mjs`. The canary sheet is unaffected by the deletion and `check_render_lock` proves it on every run. `LEGACY_IMPRECISE_FILES` is three files now, not four. |
 | **`scripts/tests/world-budget.test.mjs`** (pre-existing, armed by Task 13) | `tmpRoot()` copies the real `content/`, then a test `mkdir`s `world/fabric` and writes its own stub | once `content/world/fabric/` is committed the stub is the FIFTEENTH document, not the only one. Measured: *"degrade: an EMPTY content/world/fabric/ directory arms nothing"* read `types placed: 168 / 170` off the real fabric, and eleven tests in that file were making claims about the committed world under their own names. `emptyWorldLayer()` clears both families first. The same shape hit `scripts/tests/edges-schema.test.mjs`, whose four `44 nodes, 0 failures, 19 warnings` goldens are now 25 — the six new warnings being the five declared POI shortfalls and the one `G-LANDFORM` line naming `sinking-river` and `sub-lacustrine-vent`. |
 | **C, whole-plan acceptance criterion 9** | `git diff --stat main...HEAD -- content/spine content/maps …` is **empty** | **`main` is the wrong baseline in this worktree and the criterion reads as a violation on correct work.** `psrw claim` branches from `main`, so `merge-base main HEAD` is `7bc4140` (*release 1.7 finalised*) and the three-dot range therefore contains all of Plan A and Plan B — 56 files, the whole 1.8 spine emit among them. STATE §3's baseline is the one that means anything: against the `plan-c-base` tag the same path set is EMPTY, on every commit. |
@@ -2559,3 +2564,200 @@ accounting is untouched.
   own footer says so. Plan E should decide whether to freeze a pre-redraw copy.
 
 ---
+
+## 21. Plan C seam 8 — the ADJUDICATING FIX PASS (Tasks 12-13) — settled, do not re-raise
+
+Appended 2026-08-23. Two independent adversarial reviews — lane O (promotion, `G-REPRO`, the Node
+pin, harness wiring): **REJECT, 1 blocker / 3 major / 9 minor**; lane P (the committed fabric, the
+review surfaces, retirement, the criteria walk): ACCEPT-WITH-FIXES, 2 major / 5 minor. Commits
+`445ba73`, `96ce80e`, `ac495a1`, `b92a317`, `10970eb`, `6c8c425`, plus this one.
+
+### THE ONE THING TO READ: PROMOTION COULD DELETE THE WORLD AND REPORT OK
+
+`promoteWorld` had **no census floor anywhere**. Every guard it carried was about PRESENCE — a file
+the manifest does not name, a file whose bytes do not match. The harmful direction is **ABSENCE**,
+because absence is what causes **deletion**, and nothing looked at it. Reproduced end to end:
+
+```
+draft: content/spine/nodes/ emptied, and its 36 manifest rows deleted so the manifest AGREES
+  -> promote-world: 28 written, 29 deleted
+  -> promote-world: gate exit 1 — content-gate: … 7 nodes, 127 failures, 6 warnings
+  -> promote-world: OK          exit 0        content/spine/nodes 44 -> 7
+```
+
+Only the runtime subtree survived. Step 1 had nothing to verify, the stale-rider check had nothing
+to copy, `classifyLiveNodes` found no problem, the edges check passed. **This is the mechanism
+Plan E uses to redraw the committed map.**
+
+**Three guards close it, and none of them is a number in code.** All three are DECLARED in
+`content/world/budgets.json`'s new `promotion` block, read by `readPromotionDeclaration`, and a
+declaration that is missing, malformed, or carries a reasonless row is an **error**, never a
+skipped check — the `poi.supplyLimitedSurveyedRegions` discipline, for the same reason:
+
+1. **`promotion.minTrunkNodes: 36`** — the census `1 world + 13 continent + 3 ocean + 9 sea + 2
+   alias-anchor region + 1 town + 7 runtime`. A FLOOR, not an equality, so a redraw that adds nodes
+   passes and only a shortfall reds. It is the number Plan E must move deliberately.
+2. **Nothing still POINTED AT may be deleted.** A surviving node's `representsNodeId` (G-ALIAS) and
+   a committed town plan's `spineId` (T1) are both read off the tree — never a hardcoded id list —
+   and compared against the id set **as it will be**. This closes O's asymmetry: a dropped authored
+   EDGE was hard-refused while a dropped `n-millcross.json` was listed under DELETE with
+   `errors: []`. All three anchors are now refused, one file at a time.
+3. **`promotion.gateRulesThatMustBeGreen`** — step 5's baseline. See the refutation below.
+
+### REFUTED — with the evidence, so nobody re-raises them
+
+- **O MAJOR 1's REMEDY: "record the expected gate failure count and error on a rise." REFUTED.
+  The count is a property of the ROOT, not of the promotion.** The same faithful promotion of the
+  same draft at the same HEAD measured **113** failures in O's full checkout and **112** in the test
+  fixture's scratch repo — and 3 of my 112 are that root's own missing files (`cannot read/parse` on
+  the art manifest and the spawn areas), so a full checkout is 109 comparable. A gate keyed on a
+  number three trees disagree about reds on the environment, not on the defect. **The FINDING is
+  accepted in full** — step 5 detected nothing, and that is fixed — but with the baseline that is
+  invariant: the **KIND**. Measured, good vs truncated:
+
+  | | faithful promotion | truncated promotion |
+  | --- | ---: | ---: |
+  | `spine: G-NET` | 88 | 91 |
+  | `spine: G-CANON-LEG` | 3 | 0 |
+  | `spine-alias` (region/town rows) | 12 | 27 |
+  | `geography` | 5 | 1 |
+  | **`G-ALIAS` / `G-PARENT` / `G-TOWN-FRAME`** | **0 / 0 / 0** | **2 / 1 / 1** |
+
+  A faithful Plan C promotion leaves exactly the carried-canon debt Plan E clears and leaves the
+  rules that describe **the spine's own integrity** green, because it wrote that spine. Those three
+  are the declared set, each with a stated reason. It is a POSITIVE list and `budgets.json` says so:
+  a rule is added when a promotion defect is shown to red it, with the measurement, never as a
+  guess — and `promote-world` prints `gate integrity rules clean|RED — <ids> over <n> failure
+  line(s)` on every run, so a set that has stopped covering anything is visible rather than silent.
+
+- **P MAJOR 2's FIRST OPTION: "raise `fabric.maxBytesPerFile` to 524288." NOT TAKEN.** The finding
+  is real and re-measured independently: `continent-02.json` is 214,036 B carrying 360 of the
+  world's 1,740 instances (20.7 %, tracking its 18.4 % share of gross land), instances serialise to
+  155,729 B at 432.6 B each, so at the sanctioned `landforms.maxInstances = 2400` and the same share
+  it reaches **~273,300 B against a 262,144 B cap — 4.3 % over**; under `premisesHandlesWhy`'s own
+  whole-file method, 214,036 × 1.38 = 295,370, 12.7 % over. **RULING: the byte cap binds first, by
+  design, at about 2,277 world instances (94.9 % of the ceiling), and both numbers stay.** Raising
+  the cap to the next power of two would slacken a live guard from **81.65 % occupancy to 40.8 %** —
+  buying 5 % more instances by discarding a bound four probes proved fires, for growth nobody has
+  asked for. What was NOT acceptable was leaving it unwritten:
+  `budgets.json`'s **`fabricPerFileVsInstanceCeilingWhy`** now carries the arithmetic, the verdict,
+  and the exact remedy for whoever needs the last 5 % — and `world-gates.test.mjs` **recomputes the
+  arithmetic from the committed fabric on every run**, so raising the cap without rewriting the
+  ruling, or the fabric shrinking until the cap stops binding first, both red.
+
+- **O's "the digest omits `mapDimensions.ts` and the two mirrors" — recorded, not closed.** True,
+  and deliberate for now: `WORLD_DIGEST_INPUTS` is defined as *what promotion writes under
+  `content/`*, and it is now derived from `REPLACED_FAMILIES` plus the three spine paths and pinned
+  at length 6 in both directions. Widening it to the emitter's out-of-tree outputs is a different
+  claim (the emitter's own fixpoint), already covered by `check_spine_emit --check` on the promoted
+  root, which `promote.test.mjs` asserts. Filed rather than smuggled in.
+
+### THE FOUR THINGS THAT WERE MEASURED AND FIXED BESIDE THE BLOCKER
+
+- **`G-REPRO`'s fourth property was a survivor, structurally.** It perturbs each MEMBER of the input
+  list, so it can only ever catch an entry that has gone DEAD — never one that has been REMOVED,
+  because a removed entry is not iterated. Deleting `"content/world/resolved"` from the list left
+  the file at **5/5 PASS**, at exactly the entry its own comment calls the most dangerous and the
+  only one with zero files, which is also the only one G-REPRO 3's exact `counted >= 65` floor
+  cannot see either. The list is now spread from `promote-world`'s `REPLACED_FAMILIES`; deleting the
+  entry from that source of truth reds **5 pass / 1 fail**.
+- **The gate report class, SECOND OCCURRENCE.** §19 retired `process.exit()`-after-a-report in
+  `check_content.mjs`; `check_render_lock.mjs` kept it, on the path this release made **ten times
+  larger** (`lockExtraPaths` took the lock 3 → 32 artifacts, so one fabric file now redraws a sheet
+  and prints a six-figure diff). Measured in `node:18` with one fabric file removed: **104,257 bytes
+  to a FILE, 8,413–16,605 bytes over six runs to a PIPE** — 84–92 % gone, a different amount each
+  run, exit code honest throughout. Swept as a **class**: all five CLIs the gates run
+  (`check_content` already clean; `check_render_lock`, `check_spine_emit`, `check_asset_manifest`,
+  `gen_story_graph` converted). `render-lock.test.mjs` pins *no `process.exit()` inside `main()`*
+  across all five by SOURCE assertion — the loss cannot be reproduced on darwin, so a behavioural
+  test would be green for the wrong reason — and separately asserts the exit codes are unchanged
+  (clean 0, drift 1, misuse 2). **Argument-parser exits are deliberately left**: they print one line
+  and cannot return a usable value to their caller.
+- **The POI declaration's one hole: a REPORTED region.** The staleness check lived inside the
+  `surveyed` arm and `seenRegion` already held the id, so clause 3b's vanished-region sweep skipped
+  it too — adding a reported region to the block measured **0 failures**. That is the one flip
+  Plan E's redraw performs, and clause 3's promise is that a row cannot outlive its cause. It is
+  **rot, not amnesty** (a reported region carrying points of interest reds on its own line whatever
+  is declared), and the fixture asserts both halves.
+- **Citation rot, FIFTH occurrence.** `maps-index.json` and `art-manifest.json` both published
+  `24.68 : 1` while `G-SEALAND` on the same tree printed `trunk 24.63 : 1`, and `scripts/lib/world.mjs`
+  carried both figures eleven lines apart. The land area 6,243.5 was pinned by a test; the ratio
+  derived from it was joined to nothing. It is **derived** now, by the gate's own identity
+  `(frame − land) / land`, and every ratio either surface quotes must equal it — a surface that
+  stops quoting one reds rather than going dark.
+
+### Minors closed, and the ones recorded instead
+
+Closed: O's two deliberate smuggles — a manifest key that resolves **outside the run dir** and a
+**symlink** in the draft, both of which `readFileSync` followed self-consistently on the hashing and
+the copying side, so "verify the draft against its own manifest" was satisfiable by files the draft
+does not own; the promotion fixture's **cache key**, which omitted the Node major (an input the same
+file calls load-bearing — a Node 26 run was silently reused by a Node 18 process, which is the
+subset-key class the file itself warns about); **CI's sheet self-check**, which rendered three of the
+five registry sheets and is now asserted to BE `Object.keys(SHEETS)` in both directions; **ci.yml's
+comment restating the Node major as a literal 18** inside the step that made it dynamic; and the
+`promote-world` header's superseded **96-failure** accounted set.
+
+Recorded, not chased:
+
+- **The Node pin is joined to `ci.yml` only.** `contracts.yml:38` and `nakama.yml:56` still read
+  `node-version: 18` literally. Neither runs mapforge, so determinism is safe; *".release.json is the
+  single authority"* overstates what is true, and this is the line that says so.
+- **A non-`.json` file under the live `content/spine/nodes/` is never reconciled.** The world
+  families delete any file; the nodes family filters `.json`. A `RIDER.txt` there survives promotion
+  forever. Invisible asymmetry, no committed-content consequence today.
+- **`npm test --prefix scripts` measures 48–59 s against a 45 s budget and a 60 s gate line**, and
+  the generator's stage report reads `generate TOTAL ~6,600 ms (budget 4000, fail 8000)`. Both are
+  inside their gates and outside their budgets; both are P's MINOR-5 and both are §8's business, not
+  a Plan C defect. The next person to add a `scripts/` test discovers the first one.
+- **The `build/mapforge/` line in `.gitignore` is self-declared redundant.** Cosmetic; the comment
+  alone would carry the same information.
+
+### THE MUTATION LEDGER — 24 applied, 22 killed, 2 survivors, both controls
+
+Every mutation was applied to the committed source, the named suite run, and the file restored
+before the next. Two are deliberate no-op comment edits and are the only survivors.
+
+| # | mutation | suite | result |
+| --- | --- | --- | --- |
+| M1 | the census floor block deleted | promote | KILLED (2) |
+| M2 | the floor compared against `0` | promote | KILLED (2) |
+| M3 | an unreadable declaration accepted | promote | KILLED (1) |
+| M4 | the `representsNodeId` guard switched off | promote | KILLED (1) |
+| M5 | the town `spineId` guard switched off | promote | KILLED (1) |
+| M6 | step 5 stops calling the integrity baseline | promote | KILLED (2) |
+| M7 | the baseline scans every line, not `FAIL` lines | promote | KILLED (8) |
+| M8 | the baseline matches a rule id as a PREFIX | promote | KILLED (1) |
+| M9 | a declaration row no longer needs a stated reason | promote | KILLED (1) |
+| M10 | run-dir containment on manifest keys switched off | promote | KILLED (1) |
+| M11 | the symlink refusal switched off | promote | KILLED (1) |
+| M12 | `REPLACED_FAMILIES` loses `content/world/resolved` | repro | KILLED (1) |
+| M13 | `budgets.json` loses `promotion.minTrunkNodes` | promote | KILLED (25) |
+| M14 | `budgets.json` floor lowered 36 → 1 | promote | KILLED (3) |
+| M15 | `budgets.json` loses one integrity rule | promote | KILLED (4) |
+| M16 | the POI reported-region clause deleted | world-gates | KILLED (1) |
+| M17 | `fabric.maxBytesPerFile` raised without rewriting the ruling | world-gates | KILLED (3) |
+| M18 | the caps ruling loses its verdict wording | world-gates | KILLED (2) |
+| M19 | `check_render_lock` exits after its report again | render-lock | KILLED (1) |
+| M20 | `check_spine_emit` exits after its report again | render-lock | KILLED (1) |
+| M21 | `ci.yml` drops a sheet from the self-check | render-sheet | KILLED (1) |
+| M22 | `maps-index.json` publishes the stale ratio again | fabric-sheet | KILLED (1) |
+| M23 | **CONTROL** — a no-op comment edit in `promote-world.mjs` | promote | SURVIVED |
+| M24 | **CONTROL** — a no-op comment edit in `scripts/lib/world.mjs` | world-gates | SURVIVED |
+
+**§20's LEDGER IS CORRECTED, and the correction is about COVERAGE, not arithmetic.** §20 reports
+*"43 applied, 41 killed, 2 survivors — and BOTH survivors are the deliberate no-op controls"*, and
+that is true of the 43 it ran. What is not true is the claim beside it — *"G-REPRO's three
+properties, plus a fourth that guards the third … each of its six inputs is perturbed and must move
+the hash"* — because **none of the 43 mutated the input LIST itself**, which is the one thing the
+fourth property structurally cannot see. Review O ran that mutation and it **SURVIVED at 5/5 PASS**.
+So the honest reading of §20 is **43 applied, 41 killed, 2 no-op survivors, and one untested rule
+that would have been a third survivor**; it is M12 above, and it is killed now.
+
+**A PROCEDURAL LESSON, recorded because it nearly cost a session.** This pass's first mutation run
+was executed under a two-minute tool timeout, was killed mid-mutation, and **left the mutation
+applied** — `if (decl.errors.length)` was `if (false)` for the next forty minutes of work, and every
+result taken in that window was measured against a tree with the blocker's own guard disabled. The
+suite caught it (a later fixture red on exactly that clause), but only by luck of ordering. **Run a
+mutation harness detached, with restore registered on both normal exit and SIGTERM, and never inside
+a timeout that can kill it between the write and the restore.**
