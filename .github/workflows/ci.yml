@@ -27,11 +27,29 @@ jobs:
         with:
           version: 10
 
-      # Node 18 matches colyseus-server/Dockerfile so CI runs the deployment runtime.
+      # The Node major is a DETERMINISM PIN (world-fill Plan C, R5), not a
+      # preference: it is the Node the map tooling and every byte comparison
+      # run on. .release.json is the single authority and
+      # scripts/tests/node-pin.test.mjs asserts this file reads it.
+      #
+      # It is NOT the deployment runtime, and the line this replaces claimed it
+      # was: colyseus-server/Dockerfile has been node:22-alpine since release
+      # 1.2. That number is recorded in .release.json as runtimeNodeMajor and
+      # joined to the Dockerfile by the same test, so the two can diverge on
+      # purpose but never by accident.
+      #
+      # Read with grep, not `node -p`: there is no Node yet at this point.
+      - name: Read the pinned Node major from .release.json
+        id: nodepin
+        run: |
+          MAJOR="$(grep -o '"nodeMajor"[[:space:]]*:[[:space:]]*[0-9]*' .release.json | grep -o '[0-9]*$')"
+          test -n "$MAJOR" || { echo "::error::.release.json has no nodeMajor pin"; exit 1; }
+          echo "major=$MAJOR" >> "$GITHUB_OUTPUT"
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: ${{ steps.nodepin.outputs.major }}
           cache: pnpm
 
       # Workspace install at the repo root (pnpm-workspace.yaml lives here).
