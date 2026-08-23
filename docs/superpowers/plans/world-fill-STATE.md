@@ -55,7 +55,7 @@ world it pinned was not the world seam 2 fitted the thirteen continents to.
 | --- | --- | --- |
 | A — Unblock and Afford | F-046 | **SHIPPED** to release/1.8, 2026-08-19. All 15 acceptance criteria verified. |
 | B — Vocabulary and Render | F-047 | **SHIPPED** to release/1.8, 2026-08-22. All 12 tasks; Gate 1 13/13. |
-| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. **All 13 tasks built, reviewed and adjudicated** — seams 1-7 in §14, §15, §17, §19; seam 8 (Tasks 12-13) built in §20 and adjudicated in **§21**. Ready for Gate 1. |
+| C — The Fabric Layer | F-048 | **SHIPPED** to release/1.8, 2026-08-23 (Gate 1 12/12 twice, 77 commits, zero spine bytes). All 13 tasks reviewed and adjudicated — seams 1-7 in §14, §15, §17, §19; seam 8 in §20 and **§21**. |
 | D — Pinned, Bound, Relations | — | not started |
 | E — Redraw and Prose | — | not started |
 
