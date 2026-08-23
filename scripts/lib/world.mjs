@@ -474,7 +474,7 @@ export function gWorldSeaLand({ world, manifest, fabric = [], report, note }) {
 // THE TRUNK DIVERGENCE, PRINTED ON EVERY RUN THAT HAS BOTH LAYERS.
 //
 // Plan C's whole architecture is two layers describing two different worlds
-// until Plan E's redraw: the committed trunk still says 24.68 : 1 while the
+// until Plan E's redraw: the committed trunk still says 24.63 : 1 while the
 // fabric says 1.50 : 1, and that is INTENDED. A green G-SEALAND must never be
 // read as "the chart is redrawn", so the gate says the two numbers out loud
 // side by side whenever a trunk is present to compare against.
@@ -732,6 +732,20 @@ export function gWorldPoi({ fabric, budgets, report, note, warn = () => {} }) {
           report(`G-POI: region ${r.id} is declared supply-limited in budgets.json but carries ${n} points of interest — the declaration is stale, delete the row`);
       } else {
         reported++;
+        // CLAUSE (3), THE HALF THAT LIVED IN THE SURVEYED BRANCH ONLY.
+        // The floor is a SURVEYED rule, so a declaration on a REPORTED region
+        // excuses nothing — and until 2026-08-23 it also reported nothing:
+        // the staleness check sat inside the `surveyed` arm and `seenRegion`
+        // already held the id, so the vanished-region sweep below skipped it
+        // too. Adding `"c01/r01": "…"` — a reported region — measured 0
+        // failures. That is exactly the flip Plan E's redraw performs on a
+        // region's survey status, and clause (3)'s promise is that a row
+        // cannot outlive its cause. It could, in the one direction the redraw
+        // takes. It cannot turn a real failure green (a reported region with
+        // POIs > 0 reds on the next line whatever is declared), so this is rot,
+        // not amnesty — and rot is what the third clause exists to stop.
+        if (why !== undefined)
+          report(`G-POI: region ${r.id} is declared supply-limited in budgets.json but is REPORTED, not surveyed — the 12-POI floor is a surveyed rule and does not apply to it, so the declaration is stale, delete the row`);
         if (n !== 0)
           report(`G-POI: region ${r.id} (reported) has ${n} points of interest — must be 0`);
         const named = namedInReported.get(r.id) ?? 0;

@@ -191,6 +191,40 @@ test("the water columns close: 3 oceans summing to the polygon budget, 9 nested 
   assert.ok(!doc.oceans.some((o) => o.nodeId === "n-westsea"));
 });
 
+test("the fabric byte cap and the instance ceiling are ADJUDICATED, not merely coexisting", () => {
+  // TWO COMMITTED NUMBERS THAT CANNOT BOTH BE REACHED. premisesHandlesWhy
+  // DERIVES the handles cap from landforms.maxInstances; fabricWhy CHOSE the
+  // fabric cap. Under the same derivation the fabric cap does not clear, and
+  // the ruling — the byte cap binds first, deliberately — lives in
+  // fabricPerFileVsInstanceCeilingWhy. This recomputes the arithmetic from the
+  // committed fabric so the ruling cannot rot: if the cap is raised, or the
+  // fabric shrinks until the cap stops binding first, this reds.
+  const b = JSON.parse(readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"));
+  const dir = join(ROOT, "content/world/fabric");
+  let worldInstances = 0, biggest = { bytes: 0 };
+  for (const f of readdirSync(dir).filter((x) => /^continent-\d+\.json$/.test(x))) {
+    const bytes = statSync(join(dir, f)).size;
+    const doc = JSON.parse(readFileSync(join(dir, f), "utf8"));
+    const n = doc.instances.length;
+    worldInstances += n;
+    if (bytes > biggest.bytes) biggest = { f, bytes, n, instanceBytes: JSON.stringify(doc.instances).length };
+  }
+  assert.ok(biggest.n > 0 && worldInstances > 0, "the committed fabric carries no instances to derive from");
+  const fixed = biggest.bytes - biggest.instanceBytes;          // everything that is not an instance
+  const perInstance = biggest.instanceBytes / biggest.n;
+  const atCeiling = fixed + perInstance * b.landforms.maxInstances * (biggest.n / worldInstances);
+  assert.ok(atCeiling > b.fabric.maxBytesPerFile,
+    `the per-file byte cap no longer binds before landforms.maxInstances (${Math.round(atCeiling)} B vs ${b.fabric.maxBytesPerFile}) — ` +
+    "budgets.json's fabricPerFileVsInstanceCeilingWhy is now a stale ruling, rewrite it");
+  // …and the ruling is WRITTEN DOWN, with the two numbers it is about.
+  assert.match(b.fabricPerFileVsInstanceCeilingWhy, /BINDS FIRST/);
+  assert.match(b.fabricPerFileVsInstanceCeilingWhy, /524288/,
+    "the ruling does not name the remedy it tells the next author to take");
+  assert.ok(b.fabricPerFileVsInstanceCeilingWhy.includes(String(b.fabric.maxBytesPerFile)) &&
+            b.fabricPerFileVsInstanceCeilingWhy.includes(String(b.landforms.maxInstances)),
+    "the ruling does not quote the two committed numbers it adjudicates");
+});
+
 test("the committed budgets file pins cellKm at 0.5 and the six loop stages", () => {
   const b = JSON.parse(readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"));
   assert.equal(b.cellKm, 0.5);
@@ -857,7 +891,7 @@ test("G-SEALAND names the terms it cannot read, and does not throw on any of the
 
 test("G-SEALAND prints the TRUNK DIVERGENCE whenever there is a trunk to diverge from", () => {
   // The two layers describe different worlds until Plan E's redraw and that is
-  // INTENDED — the committed trunk still says 24.68 : 1 while the fabric says
+  // INTENDED — the committed trunk still says 24.63 : 1 while the fabric says
   // 1.50 : 1. A green ratio must never be read as "the chart is redrawn", so
   // the gate says both numbers out loud side by side.
   const r = runWorld(withFabric({ spine: () => {} }));
@@ -1783,6 +1817,29 @@ test("G-POI clause 3b: a declaration naming a region a LOADED continent does not
   const r = runWorld(withPoiDeclared({ "c01/r99": "a region that does not exist" }, clone(FABRIC_OK)));
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, /G-POI: budgets\.json declares region c01\/r99 supply-limited, but c01's fabric has no such region/);
+});
+
+test("G-POI clause 3c: a declaration on a REPORTED region is a failure — the flip Plan E performs", () => {
+  // THE ONE HOLE IN THE DECLARATION, found by the seam-8 review and measured:
+  // adding a reported region to the block was 0 failures. The staleness check
+  // lived inside the `surveyed` arm, and `seenRegion` already held the id so
+  // clause 3b's vanished-region sweep skipped it as well. A row therefore
+  // survived untouched the moment its region flipped surveyed -> reported —
+  // which is exactly what the redraw does to survey status. c01/r02 is
+  // FABRIC_OK's reported region.
+  const r = runWorld(withPoiDeclared({ "c01/r02": "was thin when it was surveyed" }, clone(FABRIC_OK)));
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-POI: region c01\/r02 is declared supply-limited in budgets\.json but is REPORTED, not surveyed — the 12-POI floor is a surveyed rule and does not apply to it, so the declaration is stale, delete the row/);
+  // It is ROT, not amnesty: it never turned a real failure green. A reported
+  // region carrying points of interest reds on its own line regardless.
+  const withPoi = clone(FABRIC_OK);
+  // A settlement, not an instance: a reported region's landform instances are
+  // exempt from the count by design (spec §6.4's one allowed mark), so the
+  // count only rises through settlements and dungeon anchors.
+  withPoi.settlements.push({ ...clone(FABRIC_OK.settlements[0]), id: "c01/s02", region: "c01/r02" });
+  const r2 = runWorld(withPoiDeclared({ "c01/r02": "was thin when it was surveyed" }, withPoi));
+  assert.equal(r2.code, 1, r2.out);
+  assert.match(r2.out, /G-POI: region c01\/r02 \(reported\) has \d+ points of interest — must be 0/);
 });
 
 test("G-POI clause 3b says nothing about a continent whose fabric is not loaded", () => {
