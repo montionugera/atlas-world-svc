@@ -92,10 +92,11 @@ test("footprint.centreKm is THE authority Plan D re-derives its pins from, and i
 });
 
 // ── the premise files joined to their own schema and to the two vocabularies ──
-// premise.schema.json has NO ajv venue yet (Task 11 wires checkWorld's schemas;
-// the premise schema is not in its file list). Until it does, these three tests
-// ARE the join: they read the schema file rather than restating it, so a key
-// added to one side and not the other reds here.
+// premise.schema.json NOW HAS an ajv venue — Task 11 wired it into checkWorld,
+// so a draft or fixture root carrying a fourteenth premise or a mistyped
+// `register` earns a failure. These three tests remain the join in the OTHER
+// direction, which no gate can make: they read the schema file rather than
+// restating it, so a key added to one side and not the other reds here.
 
 test("every premise carries exactly the schema's key set — no missing key, no stray key", () => {
   const allowed = new Set(Object.keys(SCHEMA.properties));
@@ -115,8 +116,9 @@ test("the schema's four closed enums are the ones this feature agreed, verbatim"
   // The join below runs FILES -> SCHEMA, so the schema can be silently WIDENED
   // and nothing notices: adding "extra" to the `register` enum was a surviving
   // mutation. STATE 10 claimed the join meant "the two cannot drift"; it meant
-  // one direction only. These are the other direction, until Task 11 gives
-  // premise.schema.json an ajv venue in checkWorld.
+  // one direction only. These are the other direction, and they stay needed
+  // after Task 11's ajv venue: a gate validates documents AGAINST the schema and
+  // can never notice the schema itself widening.
   assert.deepEqual(SCHEMA.properties.register.enum,
     ["basin-anglic", "north-log", "moorstone", "sandtongue", "reedspeech"]);
   assert.deepEqual(SCHEMA.properties.class.enum, ["cap", "major", "minor", "chain"]);

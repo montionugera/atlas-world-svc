@@ -600,7 +600,7 @@ test("GOLDEN: the real 800 x 800 world carves 1,600 km2 of interior water", () =
   // subtracted from land. RIVER and DELTA are CHANNEL flags on cells that stay
   // land: at 0.5 km a river occupies a fraction of its cell, and the cell's
   // biome, its region membership and its settlement score all still treat it as
-  // ground. Counting them as water instead gives 1.5382, which is also inside
+  // ground. Counting them as water instead gives 1.5381, which is also inside
   // the manifest's [1.2, 1.8] band — the number is pinned here rather than
   // hidden, because a later reader who does count them must find it already
   // measured and not think the budget failed to close.

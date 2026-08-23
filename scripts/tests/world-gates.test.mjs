@@ -679,10 +679,10 @@ const ledgerOf = (rows) => {
 //
 // It is BUILT here rather than copied from scripts/tests/fixtures/spine/base,
 // which is stale: that fixture's nodes carry `interior: {units, perParentUnit}`
-// with no `originInParent`/`size`, and gSpineFrames THROWS on the missing
-// array (`check_content.mjs:2388`, "Cannot read properties of undefined
-// (reading 'join')"). It is never run alone today — every spine-gates case is
-// a full overlay — so the throw is latent. Recorded as a pre-existing finding;
+// with no `originInParent`/`size`. gSpineFrames used to THROW on the missing
+// array ("Cannot read properties of undefined (reading 'join')"); the fix pass
+// of 2026-08-23 guarded the message and pinned it with its own test below, so
+// the fixture is now merely stale rather than latently fatal.
 // `check_spine_emit.mjs --write` is what fills those two fields in, and running
 // it here is also what writes the spine/derived.json that G-DERIVED-DRIFT needs.
 const spineNode = (o) => ({
