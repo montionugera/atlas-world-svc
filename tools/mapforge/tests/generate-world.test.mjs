@@ -186,7 +186,16 @@ test("THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHI
   // it, exactly like the ring goldens.
   assert.equal(fails.length, 96,
     "the draft root's failure count moved — 91 carried canon + 5 recorded G-POI floor shortfalls");
-  assert.equal(fails.length - poi.length, 91, "the draft root's carried-canon failure count moved");
+  // NOT `fails.length - poi.length`. That subtraction LOOKS like it guards the
+  // carried-canon count and does not: a SIXTH thin surveyed region adds one to
+  // both terms and the difference is still 91. Measured — 15 instances stripped
+  // from c05/r15 gave fails 97, poi 6, difference 91, green. Two other oracles
+  // caught it (`fails.length === 96` and the deepEqual on the exact five), so
+  // nothing slipped past; but a green assertion a reader believes is guarding
+  // something is the same decoration this seam exists to remove. Assert the
+  // filtered set directly, which is what the line was always trying to say.
+  assert.equal(fails.filter((l) => /G-NET|G-CANON-LEG/.test(l)).length, 91,
+    "the draft root's carried-canon failure count moved");
   assert.equal(manifest.problems.filter((p) => p.startsWith("edge ")).length, 63,
     "the work-order count moved");
 });
