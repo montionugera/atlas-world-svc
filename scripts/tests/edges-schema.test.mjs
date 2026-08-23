@@ -331,6 +331,14 @@ function realRoot(t) {
   cpSync(join(ROOT, "content"), dir, { recursive: true });
   return dir;
 }
+// The committed root's warning count moved 19 -> 25 when Plan C Task 13
+// committed content/world/fabric/ into it. The six are the world layer
+// describing itself, not drift: FIVE declared supply-limited surveyed regions
+// (G-POI, budgets.json poi.supplyLimitedSurveyedRegions) and ONE G-LANDFORM
+// line naming the two lexicon types no premise kit can place
+// (sinking-river, sub-lacustrine-vent). The count is asserted rather than
+// ignored for the reason the header already gives: a gate that stopped
+// checking also exits 0.
 function runGate(dir) {
   try {
     return { code: 0, out: execFileSync(process.execPath,
@@ -349,7 +357,7 @@ test("the real content root is green under the wired-in validation", (t) => {
   assert.equal(r.code, 0, r.out);
   // Trap 3: assert the printed record counts, never just exit 0 — a gate that
   // stopped checking also exits 0.
-  assert.match(r.out, /44 nodes, 0 failures, 19 warnings/, r.out);
+  assert.match(r.out, /44 nodes, 0 failures, 25 warnings/, r.out);
   assert.doesNotMatch(r.out, /G-EDGE-SCHEMA/);
 });
 
@@ -391,7 +399,7 @@ test("a `to`-less edge is one clean failure, not a crash", (t) => {
   assert.match(r.out, /G-EDGE-SCHEMA: spine\/edges\.json\[0\] \(e-trade-road-trunk\): \/ must have required property 'to'/, r.out);
   assert.doesNotMatch(r.out, /TypeError/, "the gate must not throw");
   // finish() ran: the record counts printed, which is what a crash suppresses.
-  assert.match(r.out, /44 nodes, 1 failures, 19 warnings/, r.out);
+  assert.match(r.out, /44 nodes, 1 failures, 25 warnings/, r.out);
 });
 
 test("a content root with no edges.json is still green (soft-skip)", (t) => {
@@ -413,7 +421,7 @@ test("a content root with edges but no edge schema soft-skips (plan Step 4 corre
   rmSync(join(dir, "schemas/spine-edge.schema.json"));
   const r = runGate(dir);
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /44 nodes, 0 failures, 19 warnings/, r.out);
+  assert.match(r.out, /44 nodes, 0 failures, 25 warnings/, r.out);
   assert.doesNotMatch(r.out, /spine-edge schema/, r.out);
 });
 
@@ -426,7 +434,7 @@ test("an unparsable edge schema fails in-band and still reaches finish()", (t) =
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, /spine-edge schema: cannot read\/parse/, r.out);
   assert.doesNotMatch(r.out, /SyntaxError|TypeError/, r.out);
-  assert.match(r.out, /44 nodes, 1 failures, 19 warnings/, r.out);
+  assert.match(r.out, /44 nodes, 1 failures, 25 warnings/, r.out);
 });
 
 // The soft-skip on an absent schema means a DELETED content/schemas/

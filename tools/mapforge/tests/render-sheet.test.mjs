@@ -83,6 +83,8 @@ test("SHEETS entries declare title, outSvg, outPng and maxLabelRank", () => {
   assert.deepEqual(Object.keys(SHEETS).sort(), [
     "atlas",
     "cluster1",
+    "fabric",
+    "overlay",
     "synthetic",
   ]);
   for (const [id, sheet] of Object.entries(SHEETS)) {
@@ -254,4 +256,21 @@ test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at raster
     return;
   }
   assert.deepEqual(slow, [], `G-RASTER-BUDGET: over ${cap} s at ${width} px: ${slow.join(", ")}`);
+});
+
+test("CI's sheet self-check covers EVERY id in the registry, not a subset", () => {
+  // `fabric` and `overlay` landed covered only by G-RENDER-LOCK, which compares
+  // a hash to a hash. `--check` compares the DRAWING to the committed file, and
+  // they are different claims: the lock can be re-baselined green over a stale
+  // committed SVG that `--check` would red. The step listed three of five.
+  //
+  // The registry is the authority in both directions, so a sheet added without
+  // a workflow line — or a workflow line naming a sheet nobody builds — reds
+  // here instead of going quietly uncovered.
+  const yml = readFileSync(join(ROOT, ".github/workflows/ci.yml"), "utf8");
+  const step = yml.slice(yml.indexOf("- name: Sheet self-check"));
+  const checked = [...step.slice(0, step.indexOf("\n\n")).matchAll(/--sheet (\w+) --no-png --check/g)].map((m) => m[1]);
+  assert.ok(checked.length > 0, "the self-check step no longer matches — this scan has gone dark");
+  assert.deepEqual(checked.slice().sort(), Object.keys(SHEETS).sort(),
+    "ci.yml's sheet self-check is not the SHEETS registry");
 });

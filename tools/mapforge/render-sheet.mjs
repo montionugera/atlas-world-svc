@@ -30,6 +30,8 @@ import { C } from "./lib/draft.mjs";
 import { drawBasinSheet } from "./lib/basin-sheet.mjs";
 import { buildAtlasSheet, ATLAS_MAX_LABEL_RANK } from "./lib/atlas-sheet.mjs";
 import { buildSyntheticSheet } from "./lib/synthetic-sheet.mjs";
+import { buildFabricSheet } from "./lib/fabric-sheet.mjs";
+import { buildOverlaySheet } from "./lib/overlay-sheet.mjs";
 import { rasterize } from "./lib/raster.mjs";
 import { loadSpine, buildTree } from "../../scripts/lib/spine.mjs";
 // Plan A Task 6: the sheet reads the world document from the join authority
@@ -110,6 +112,35 @@ export const SHEETS = {
     outPng: "game-client/assets/art/maps/synthetic-density.png",
     maxLabelRank: 10,
     build: buildSyntheticSheet,
+  },
+  // Plan C Task 13 — the two REVIEW sheets for the fabric layer. Registering
+  // them here is not cosmetic: tools/asset-storybook/tests/maps-index.test.mjs
+  // asserts in BOTH directions that every SHEETS id has an index row with
+  // byte-matching svg/png paths that exist on disk, and that suite runs in
+  // Gate 1 AND CI. That is the owner's every-artifact-observable rule made
+  // mechanical, and it is why these entries and the storybook rows land in
+  // the same commit as the fabric they draw.
+  //
+  // `maxLabelRank` on BOTH rows is INERT, and saying so is the point (the same
+  // disclosure the cluster1 row above carries): neither builder calls
+  // placeLabels — the fabric sheet draws thirteen continent ids directly and
+  // the overlay sheet draws a fixed table — so nothing reads these numbers.
+  // They stay because the roster is a contract every sheet answers the same
+  // shape for, and render-sheet.test.mjs's "which sheets actually RUN a label
+  // declutter" test pins the fact from the source so this cannot rot.
+  fabric: {
+    title: "The Generated World — Fabric Survey",
+    outSvg: "game-client/assets/art/maps/world-fabric.svg",
+    outPng: "game-client/assets/art/maps/world-fabric.png",
+    maxLabelRank: 3,
+    build: buildFabricSheet,
+  },
+  overlay: {
+    title: "Coastline Overlay — Baseline vs Generated",
+    outSvg: "game-client/assets/art/maps/world-overlay.svg",
+    outPng: "game-client/assets/art/maps/world-overlay.png",
+    maxLabelRank: 2,
+    build: buildOverlaySheet,
   },
 };
 

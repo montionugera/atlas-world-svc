@@ -102,11 +102,17 @@ art_forge_tests() { (cd "$REPO_ROOT" && node --test tools/art-forge/tests/*.test
 # unified diff printed on mismatch.
 render_lock() { node "$REPO_ROOT/scripts/check_render_lock.mjs" --check; }
 
-# F-042: mapforge's own unit test suite (basin-sheet, atlas-sheet, raster,
-# render-sheet, gen-world, world-gen). The byte-parity member of this suite is
-# gone — Plan A Task 12 deleted parity.test.mjs and moved that comparison to
-# the render_lock section above. Glob form, not a directory arg — `node --test
-# <directory>` fails on newer Node (ledger ruling, Task 1).
+# F-042 + world-fill Plan C: mapforge's own unit + parity suite (basin-sheet,
+# atlas-sheet, raster, render-sheet) AND G-REPRO's three idempotence properties
+# (tools/mapforge/tests/repro.test.mjs) plus the promotion suite
+# (tests/promote.test.mjs). No separate section: this glob already matches both
+# files, and a duplicate section would pay G-REPRO's generations twice for a
+# cosmetic row. The world gates (G-SEALAND, G-TRUNK-AREA, G-POI, G-ORDER,
+# G-WORLD-BUDGET) land inside checkSpine(), which the content_gate section
+# above already runs. The byte-parity member of this suite is gone — Plan A
+# Task 12 deleted parity.test.mjs and moved that comparison to the render_lock
+# section above. Glob form, not a directory arg — `node --test <directory>`
+# fails on newer Node (ledger ruling, Task 1).
 mapforge_tests() { node --test "$REPO_ROOT"/tools/mapforge/tests/*.test.mjs; }
 
 # --- Execute -----------------------------------------------------------------
@@ -118,7 +124,7 @@ run_section "content: gate (--require-complete)" content_gate
 run_section "content: story-graph drift"   graph_drift
 run_section "content: spine emit drift (G-EMIT-DRIFT)" spine_emit_drift
 run_section "content: render lock (G-RENDER-LOCK)" render_lock
-run_section "content: mapforge test suite" mapforge_tests
+run_section "content: mapforge test suite (incl. G-REPRO)" mapforge_tests
 run_section "content: gate test suite"     content_tests
 run_section "content: story-explorer smoke" explorer_smoke
 run_section "art-forge: intake tests" art_forge_tests

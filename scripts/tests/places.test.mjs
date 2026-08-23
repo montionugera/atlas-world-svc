@@ -186,6 +186,43 @@ test("loadPlaces on an empty root returns doc null and one problem, never throws
   }
 });
 
+test("resolveWorld REPORTS a zoneRoot whose lore.relay / lore.distances retired", () => {
+  // THE SILENT LOSS THIS GUARD EXISTS FOR. `doc.relay` and `doc.distances`
+  // spread `C.lore.relay` and `C.lore.distances`, and `{ ...undefined }` is
+  // `{}` — no throw, no key, no signal. Plan C regenerates n-cluster1's node
+  // body, so both objects retire with it (they are where its two
+  // AMENDED-PENDING markers live, which the plan's handoff says must NOT
+  // survive the promotion). Measured before this guard: the sheet still
+  // rendered, and its walking-table footnote read "a travel-hour is about
+  // undefined km of road" while the relay panel lost its note, spacing, owner,
+  // derivation and withheld prose.
+  //
+  // Carrying the two objects forward was considered and REJECTED: their prose
+  // describes the retired cluster-1 world (a 190 km ridge-line, 27 towers, and
+  // the Gildmark -> Embervale -> Millcross -> Rooktide spine, three of whose
+  // four towns the redraw deletes), so re-asserting it on the generated node
+  // would be a fresh canon contradiction as well as a smuggled marker. The
+  // loss is correct; only its silence was not.
+  const dir = mkdtempSync(join(tmpdir(), "places-lore-"));
+  try {
+    cpSync(join(CONTENT, "spine"), join(dir, "spine"), { recursive: true });
+    cpSync(join(CONTENT, "towns"), join(dir, "towns"), { recursive: true });
+    const f = join(dir, "spine/nodes/n-cluster1.json");
+    const node = JSON.parse(readFileSync(f, "utf8"));
+    // exactly the shape buildTrunk writes: a summary and nothing else
+    node.lore = { summary: "a generated structural idea" };
+    writeFileSync(f, JSON.stringify(node, null, 2) + "\n");
+    const { doc, problems } = loadPlaces({ contentRoot: dir });
+    assert.equal(doc, null, "a doc must never be returned alongside problems");
+    assert.equal(problems.length, 2, problems.join("\n"));
+    assert.match(problems[0], /no lore\.relay/);
+    assert.match(problems[1], /no lore\.distances/);
+    for (const p of problems) assert.match(p, /SILENTLY/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("loadPlaces prefers the SPINE over a stale mirror on a root that has both", () => {
   const dir = mkdtempSync(join(tmpdir(), "places-both-"));
   try {

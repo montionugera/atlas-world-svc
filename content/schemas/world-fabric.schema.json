@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "world-fabric.schema.json",
+  "title": "content/world/fabric/world.json — the world-level fabric summary. SHAPE ONLY. Every NUMERIC identity over these fields is G-SEALAND's business and is asserted against the CELL CENSUS, never duplicated here: the census closing in cells, the frame closing in km², the ratio sitting in the manifest's band, and areaKm2/seaToLandRatio agreeing with the census. What the schema owns is what G-SEALAND cannot see — continents[] and seaLanes[], which carry no number the census can check and which G-TRUNK-AREA JOINS ON (continents[].fabric is its pointer to the per-continent census). Before this venue existed, `continents: \"not-an-array\"`, a seaLanes row of pure nonsense, and a continent row stripped of `fabric` and `landCells` were each ZERO failures.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["seed", "epoch", "generator", "cellKm", "grid", "seaLevel", "rank",
+               "census", "areaKm2", "seaToLandRatio", "continents", "seaLanes"],
+  "properties": {
+    "seed": { "type": "string", "pattern": "^[0-9a-f]{16}$" },
+    "epoch": { "type": "integer", "minimum": 0 },
+    "generator": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": { "name": { "type": "string" }, "version": { "type": "string" } }
+    },
+    "cellKm": { "type": "number", "exclusiveMinimum": 0 },
+    "grid": {
+      "type": "object", "additionalProperties": false,
+      "required": ["w", "h", "cells"],
+      "properties": {
+        "w": { "type": "integer", "minimum": 1 },
+        "h": { "type": "integer", "minimum": 1 },
+        "cells": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "seaLevel": { "type": "number" },
+    "rank": { "type": "integer", "minimum": 0 },
+    "census": {
+      "type": "object", "additionalProperties": false,
+      "required": ["grossLandCells", "lakeCells", "seaCells", "unownedLandCells"],
+      "properties": {
+        "grossLandCells": { "type": "integer", "minimum": 0 },
+        "lakeCells": { "type": "integer", "minimum": 0 },
+        "seaCells": { "type": "integer", "minimum": 0 },
+        "unownedLandCells": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "areaKm2": {
+      "type": "object", "additionalProperties": false,
+      "required": ["netLand", "water", "total"],
+      "properties": {
+        "netLand": { "type": "number", "minimum": 0 },
+        "water": { "type": "number", "minimum": 0 },
+        "total": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "seaToLandRatio": { "type": "number", "exclusiveMinimum": 0 },
+    "continents": {
+      "type": "array",
+      "minItems": 1,
+      "description": "NOT pinned to the manifest's thirteen landmasses here — a schema cannot see the manifest, and world-gates' fixtures carry one continent on purpose. The cardinality join lives in G-SEALAND, where both documents are in scope.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "landCells", "grossLandKm2", "fabric"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^c[0-9]{2}$" },
+          "landCells": { "type": "integer", "minimum": 0 },
+          "grossLandKm2": { "type": "number", "minimum": 0 },
+          "fabric": {
+            "type": "string",
+            "pattern": "^content/world/fabric/[a-z0-9-]+\\.json$",
+            "description": "G-TRUNK-AREA's join key: a repo-relative path to the per-continent fabric file whose GROSS cellCensus the trunk polygon is scored against."
+          }
+        }
+      }
+    },
+    "seaLanes": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "from", "to", "km", "points"],
+        "properties": {
+          "id": { "type": "string" },
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "km": { "type": "number", "minimum": 0 },
+          "points": {
+            "type": "array", "minItems": 2,
+            "items": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } }
+          }
+        }
+      }
+    }
+  }
+}

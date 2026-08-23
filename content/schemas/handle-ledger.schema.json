@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "handle-ledger.schema.json",
+  "title": "Handle ledger — SHAPE ONLY. The ORDERING rule ((-sizeKm, contentHash), total, dense) is G-ORDER's business and is asserted by the gate against a recomputed digest, never duplicated here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["continent", "orderDigest", "handles"],
+  "properties": {
+    "continent": { "type": "string", "pattern": "^c[0-9]{2}$" },
+    "orderDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "handles": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["handle", "type", "sizeKm", "region", "contentHash", "rank"],
+        "properties": {
+          "handle": {
+            "type": "string",
+            "pattern": "^c[0-9]{2}/[a-z-]+/h-[0-9a-f]{4,6}$",
+            "description": "THE handle grammar, and it is identical in content/schemas/landform-instance.schema.json. 4-6 hex, not exactly 6: the grammar is Plan B's committed one and a stricter {6} here would hard-reject a handle another venue considers valid. mintHandle emits a uniform SIX hex (HANDLE_HEX = 6) because any scheme whose length depends on the bucket can renumber an existing handle when a later instance arrives — STATE §13 — but that is the WRITER's rule, not the grammar's."
+          },
+          "type": { "type": "string" },
+          "sizeKm": { "type": "number", "exclusiveMinimum": 0 },
+          "region": { "type": "string", "pattern": "^c[0-9]{2}/r[0-9]{2}$" },
+          "contentHash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+          "rank": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

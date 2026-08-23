@@ -19,13 +19,24 @@ test("TIER_DEPTH is the pinned depth table", () => {
   });
 });
 
-test("G-DEPTH: playspace -> site is the one legal exception pair (runtime tree has no depth-2 tier)", () => {
+test("G-DEPTH: exactly TWO legal exception pairs, and each has its own reason", () => {
+  // playspace > site: the runtime tree has no depth-2 tier at all.
   assert.equal(depthLegal({ parentTier: "playspace", childTier: "site" }), true);
   assert.equal(DEPTH_EXCEPTIONS.has("playspace>site"), true);
+  // continent > town: Plan C Task 10. Regions become content/world/fabric/
+  // records rather than spine nodes, so the depth-2 tier a town used to hang
+  // under no longer exists in the trunk — n-millcross, the only town-tier node
+  // with a content/towns/*.json plan joined on spineId, is re-parented straight
+  // onto its generated continent and buildTree would otherwise throw before
+  // generate-world writes a single file.
+  assert.equal(depthLegal({ parentTier: "continent", childTier: "town" }), true);
+  assert.equal(DEPTH_EXCEPTIONS.has("continent>town"), true);
+  assert.equal(DEPTH_EXCEPTIONS.size, 2, "a third exception needs its own reason written down here");
   // the normal rule still holds everywhere else
   assert.equal(depthLegal({ parentTier: "continent", childTier: "region" }), true);
-  assert.equal(depthLegal({ parentTier: "continent", childTier: "town" }), false); // depth skip stays illegal
-  assert.equal(depthLegal({ parentTier: "playspace", childTier: "town" }), false); // exception is exactly one pair
+  assert.equal(depthLegal({ parentTier: "continent", childTier: "site" }), false); // depth skip stays illegal
+  assert.equal(depthLegal({ parentTier: "playspace", childTier: "town" }), false); // not an exception pair
+  assert.equal(depthLegal({ parentTier: "world", childTier: "region" }), false);
 });
 
 test("LEAF_TIERS, BIOMES, TERRAIN_KINDS, TERRAIN_IMPLIES are the pinned enums", () => {

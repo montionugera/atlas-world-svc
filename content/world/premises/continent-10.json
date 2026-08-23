@@ -1,0 +1,25 @@
+{
+  "id": "c10",
+  "title": "Ashen Spar",
+  "class": "chain",
+  "footprint": {
+    "centreKm": [122,356],
+    "radiiKm": [27.49,11.63],
+    "warpKm": 3
+  },
+  "areaBandKm2": [900,1100],
+  "coastClass": "volcanic-arc",
+  "palette": ["lava","ash","rock","scree"],
+  "landformKit": ["volcanic","erosional","island"],
+  "structuralIdea": "the volcanic arc — a strung line of cones, calderas, lava tubes",
+  "structures": [
+    {
+      "kind": "volcanic-spine",
+      "fromKm": [96.63,351.77],
+      "toKm": [149.49,362.34],
+      "amplitude": 0.72
+    }
+  ],
+  "register": "sandtongue",
+  "levelBand": [55,80]
+}

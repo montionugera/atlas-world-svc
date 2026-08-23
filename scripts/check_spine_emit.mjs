@@ -173,12 +173,12 @@ function main() {
     if (argv[i] === "--check") mode = "check";
     else if (argv[i] === "--write") mode = "write";
     else if (argv[i] === "--content-root") contentRoot = resolve(argv[++i]);
-    else { console.error(`spine-emit: unknown arg ${argv[i]}`); process.exit(2); }
+    else { console.error(`spine-emit: unknown arg ${argv[i]}`); process.exitCode = 2; return; }
   }
-  if (!mode) { console.error("spine-emit: pass --check or --write"); process.exit(2); }
+  if (!mode) { console.error("spine-emit: pass --check or --write"); process.exitCode = 2; return; }
   const r = collectOutputs({ contentRoot });
-  if (r.skip) { console.error("spine-emit: no spine/ directory"); process.exit(2); }
-  if (r.errors) { for (const e of r.errors) console.error(`spine-emit: ${e}`); process.exit(1); }
+  if (r.skip) { console.error("spine-emit: no spine/ directory"); process.exitCode = 2; return; }
+  if (r.errors) { for (const e of r.errors) console.error(`spine-emit: ${e}`); process.exitCode = 1; return; }
   let drift = 0;
   for (const { path, bytes } of r.outputs) {
     let committed = null;
@@ -187,7 +187,7 @@ function main() {
     if (mode === "write") { mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, bytes); console.log(`spine-emit: wrote ${path}`); }
     else { console.error(`spine-emit: DRIFT ${path}`); drift++; }
   }
-  if (mode === "check" && drift) process.exit(1);
+  if (mode === "check" && drift) { process.exitCode = 1; return; }
   console.log(`spine-emit: ${mode} clean, ${r.outputs.length} files`);
 }
 

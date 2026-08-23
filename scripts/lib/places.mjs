@@ -200,6 +200,30 @@ function resolveWorldFromSpine({ spine, tree, descriptor = null, fabric = null, 
   const endName = (e, side) => e.attrs[side === "from" ? "geoFrom" : "geoTo"]
     ?? strip(tree.byId.get(e[side].node));
 
+  // `{ ...undefined }` IS `{}` — IT DOES NOT THROW, AND THAT IS THE DEFECT.
+  // `doc.relay` and `doc.distances` below spread `C.lore.relay` and
+  // `C.lore.distances`. Plan C regenerates the continent node, so both retire
+  // with the node body (they are where n-cluster1's two AMENDED-PENDING markers
+  // live, and the plan's handoff states they do not survive the promotion).
+  // What must not happen is the loss arriving as a BLANK: without these two
+  // checks `paceKmPerHour`, `spacingKm`, `owner`, the relay
+  // note/derivation/withheld prose and `drawnRoadsAreCentrelines` all vanish
+  // with no error, and tools/mapforge/lib/basin-sheet.mjs renders the footnote
+  // "a travel-hour is about undefined km of road" under a full walking table.
+  //
+  // Same rule and same reason as the `lore.order` refusal above: a sheet that
+  // silently describes a stale or empty world with every gate green is the
+  // failure this file exists to prevent.
+  if (!C.lore?.relay)
+    problems.push(`sheet: subject "${C.id}" has no lore.relay — the relay note, tower spacing ` +
+      `and owner would be dropped SILENTLY ({...undefined} is {}), leaving the sheet's tower ` +
+      `panel with no provenance`);
+  if (!C.lore?.distances)
+    problems.push(`sheet: subject "${C.id}" has no lore.distances — paceKmPerHour and ` +
+      `drawnRoadsAreCentrelines would be dropped SILENTLY, and the walking table's footnote ` +
+      `would render "a travel-hour is about undefined km of road"`);
+  if (problems.length) return { doc: null, problems };
+
   const doc = {
     ...GEO_HEADER,
     // Review finding (Task 7): the five document ids used to be typed here as
@@ -262,7 +286,7 @@ function resolveWorldFromSpine({ spine, tree, descriptor = null, fabric = null, 
       // visible wherever the note itself is.
       ...(e.attrs.amendedPending ? { amendedPending: e.attrs.amendedPending } : {}),
       points: e.points })),
-    relay: { ...C.lore.relay,
+    relay: { ...C.lore?.relay,
       chains: spine.edges.filter((e) => e.kind === "relay").map((e) => ({
         id: e.id.slice(2), note: e.attrs.note,
         towerIds: [e.from, ...(e.via ?? []), e.to].map((r) => r.feature.slice(2)) })),
@@ -270,7 +294,7 @@ function resolveWorldFromSpine({ spine, tree, descriptor = null, fabric = null, 
         id: f.id.slice(2), at: f.at, ...(f.attrs.town ? { town: f.attrs.town } : {}) })),
       detachedTowers: C.features.filter((f) => f.attrs?.detached).map((f) => ({
         id: f.id.slice(2), at: f.at, town: f.attrs.town, note: f.attrs.note })) },
-    distances: { ...C.lore.distances,
+    distances: { ...C.lore?.distances,
       legs: spine.edges.filter((e) => e.kind === "leg").map((e) => ({
         from: endName(e, "from"), to: endName(e, "to"), canonHours: e.attrs.canonHours,
         roadKm: e.attrs.roadKm, straightKm: e.attrs.straightKm })) },

@@ -1,0 +1,31 @@
+{
+  "id": "c02",
+  "title": "Wealdmarch",
+  "class": "major",
+  "footprint": {
+    "centreKm": [96,148],
+    "radiiKm": [81.78,62.04],
+    "warpKm": 17
+  },
+  "areaBandKm2": [9900,12100],
+  "coastClass": "drowned-valley",
+  "palette": ["meadow","forest","bramble","marsh","river","lake","rock","upland","built"],
+  "landformKit": ["fluvial","wetland","lakes","coastal","erosional"],
+  "structuralIdea": "An inland sea fed by the Meltwash with no ocean outlet — hosts the redrawn basin.",
+  "structures": [
+    {
+      "kind": "inland-sea",
+      "atKm": [107.28,159.28],
+      "radiusKm": 26.79,
+      "amplitude": 0.55
+    },
+    {
+      "kind": "spine-ridge",
+      "fromKm": [25.5,105.7],
+      "toKm": [59.34,201.58],
+      "amplitude": 0.32
+    }
+  ],
+  "register": "basin-anglic",
+  "levelBand": [1,40]
+}

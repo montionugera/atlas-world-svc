@@ -3791,8 +3791,7 @@
     "rarity": "common",
     "requires": {
       "nearFlag": "SEA",
-      "elevMax": 0.4,
-      "tempDecileMin": 7
+      "elevMax": 0.4
     },
     "gloss": "Living rock built right against the shore, breaking every swell before it lands.",
     "absentBecause": null
@@ -3815,8 +3814,7 @@
     "rarity": "uncommon",
     "requires": {
       "nearFlag": "SEA",
-      "elevMax": 0.4,
-      "tempDecileMin": 7
+      "elevMax": 0.4
     },
     "gloss": "A wall of living rock standing offshore with a channel of quiet water behind it.",
     "absentBecause": null
@@ -3839,8 +3837,7 @@
     "rarity": "common",
     "requires": {
       "nearFlag": "SEA",
-      "elevMax": 0.4,
-      "tempDecileMin": 7
+      "elevMax": 0.4
     },
     "gloss": "A broad shallow platform of coral where the water goes suddenly pale.",
     "absentBecause": null

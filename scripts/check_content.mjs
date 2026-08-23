@@ -43,6 +43,23 @@ import { inkStats } from "../tools/mapforge/lib/png-ink.mjs";
 // The same superset-bounds reader the sheet builders use, so the gate's idea
 // of "the shape this fill is clipped to" cannot drift from the emitter's.
 import { pathBounds } from "../tools/mapforge/lib/draft.mjs";
+// Plan C: the content/world/ layer. Same lib/ discipline as spine.mjs — all
+// pure logic lives there, so it can be unit-tested without the CLI's argv and
+// process.exit. (An earlier version of this line said "this file is not
+// importable"; it is — it exports patternFilledShapes, summaryLines and Plan A
+// Task 13's runSpineGateInProcess, and world-gates.test.mjs imports the last
+// of those. The conclusion stands, the reason did not.)
+import { loadFabric, gWorldBudget, gWorldSeaLand, gWorldSeaLandTrunk, gWorldTrunkArea,
+         gWorldPoi, gWorldOrder, gWorldInstanceGeometry } from "./lib/world.mjs";
+// The handle ordering rule lives with the GENERATOR that mints it, so the gate
+// and the writer can never drift apart — two enumerations of one ordering is
+// exactly how a ledger comes to disagree with its own digest. tools/mapforge is
+// dependency-free ESM (no package.json by design) and scripts/ already imports
+// across that boundary in the other direction (tools/mapforge/lib/world-gen.mjs
+// imports scripts/lib/spine.mjs). Relative ESM specifiers resolve from the
+// importing module's own path, so this works under `npm test --prefix scripts`,
+// which runs with a different cwd, and in CI.
+import { orderHandles, orderDigestOf } from "../tools/mapforge/lib/passes/landforms.mjs";
 import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -1751,7 +1768,132 @@ function checkSpineExternalAliases({ opts, report }) {
 // G-TREE, G-DEPTH, G-POLY, G-SEED, G-COMP-SUM. Geometry/derivation gates
 // (G-CONTAIN, G-FRAME, …) land in Phase 1. Returns the valid-node count
 // (finish() starts printing it in Phase 6).
+// ═══════════════════════ WORLD (Plan C, spec phase 4) ═══════════════════
+// content/world/ — the generated fabric layer. SOFT-SKIPS a content root
+// with no world/ directory, before touching any schema: ~45 pre-existing
+// spine fixtures have no world/ and a hard-fail here reds every one.
+// Returns nothing: an earlier draft returned the fabric-file count "for the
+// finish() line", but finish() prints no fabric count and the call site is a
+// bare statement. The count IS reported — by G-WORLD-BUDGET's own
+// `world-budget: fabric N files` note, which is the line under test.
+//
+// CALLED FROM THE TOP OF checkSpine, not from after gSpineBudgets as the plan
+// text says — DEVIATION, with evidence. checkSpine returns 0 at its own first
+// statement on a content root with no spine/ directory, so a call placed after
+// gSpineBudgets is unreachable for exactly the roots Task 1 Step 8 describes
+// ("the fixture root has no spine/ directory, so checkSpine soft-skips and
+// only checkWorld runs"). Measured: with the call after gSpineBudgets the base
+// world fixture printed no `world-budget:` line at all and the "prints its
+// measurements on every run" test failed. The world layer still rides the
+// spine harness — `--only=spine` covers it either way — it just cannot ride
+// behind the spine's own soft-skip.
+function checkWorld(opts) {
+  const world = loadFabric({ contentRoot: opts.contentRoot });
+  if (!world.present) return null;
+  for (const e of world.errors) fail(`world: ${e}`);
+
+  const note = (m) => console.log(m);
+
+  // FOUR AJV VENUES, one per committed world family. Each is compiled ONLY
+  // when there is a document to validate — same ordering discipline as
+  // checkSpine's — so a world root carrying only budgets.json (the shape Plan
+  // D's civil fixtures will use) earns no "schema unreadable" FAIL, and a
+  // fixture root that ships one schema and not the other four earns none
+  // either.
+  //
+  // `premise.schema.json` is the venue STATE §10 filed and Task 11 owed: until
+  // now it was compiled by NOTHING. mask.test.mjs holds the join in both
+  // directions, which is a test of the committed thirteen and not a gate on a
+  // content root — a draft root could carry a fourteenth premise or a mistyped
+  // `register` and no gate would say so.
+  // `world-fabric.schema.json` is the FIFTH venue and the one Task 11 shipped
+  // without: `world.json` was validated by nothing outside G-SEALAND's numeric
+  // core, so `continents: "not-an-array"`, a nonsense seaLanes row, and a
+  // continent row stripped of `fabric` + `landCells` were each ZERO failures —
+  // on the one committed world family Task 12 promotes next, and on the very
+  // key (`continents[].fabric`) G-TRUNK-AREA joins through. Wired 2026-08-23.
+  for (const [schemaFile, docs, label, refs] of [
+    ["schemas/world-manifest.schema.json", world.manifest ? [world.manifest] : [], "world/manifest.json", []],
+    ["schemas/world-fabric.schema.json", world.world ? [world.world] : [], "world/fabric", []],
+    ["schemas/premise.schema.json", world.premises, "world/premises", []],
+    ["schemas/fabric-file.schema.json", world.fabric, "world/fabric",
+     ["schemas/landform-instance.schema.json"]],
+    ["schemas/handle-ledger.schema.json", world.handles, "world/handles", []],
+  ]) {
+    if (docs.length === 0) continue;
+    const schemaPath = join(opts.contentRoot, schemaFile);
+    if (!existsSync(schemaPath)) continue;
+    let validate = null;
+    try {
+      validate = compileSchema(schemaPath, `${label} schema`, fail,
+                               refs.map((r) => join(opts.contentRoot, r)));
+    } catch (e) {
+      // ajv throws on a structurally invalid schema and on an unresolvable
+      // $ref. NEVER THROWS is the gate contract: an uncaught throw here skips
+      // finish() and silently drops every failure recorded before it.
+      fail(`${label} schema: cannot compile ${schemaPath}: ${e.message}`);
+    }
+    if (!validate) continue;
+    for (const doc of docs) {
+      // `file` is loadFabric's own bookkeeping key, not part of the record, so
+      // it is stripped before validation — an additionalProperties:false schema
+      // would otherwise reject every document for a key the loader added.
+      const { file, ...body } = doc;
+      let ok = false;
+      try { ok = validate(body); }
+      catch (e) { fail(`${label}${file ? `/${file}` : ""}: validator error: ${e.message}`); continue; }
+      if (!ok)
+        for (const err of validate.errors)
+          fail(`${label}${file ? `/${file}` : ""}: schema ${err.instancePath || "/"} ${err.message}`);
+    }
+  }
+
+  // Plan C Task 11 — the world gates. All four of these are tree-INDEPENDENT
+  // and therefore run here, at the top of checkSpine, where a content root with
+  // a world/ and no spine/ can still reach them. G-TRUNK-AREA and G-SEALAND's
+  // trunk-divergence line need the node tree and run from checkWorldTrunk below.
+  gWorldSeaLand({ world: world.world, manifest: world.manifest, fabric: world.fabric,
+                  report: fail, note });
+  gWorldPoi({ fabric: world.fabric, budgets: world.budgets, report: fail, note, warn });
+  gWorldOrder({ handles: world.handles, orderHandlesFn: orderHandles, orderDigestFn: orderDigestOf,
+                report: fail, note });
+  gWorldInstanceGeometry({ fabric: world.fabric, shoelaceArea, selfIntersects, report: fail, note });
+
+  gWorldBudget({
+    contentRoot: opts.contentRoot,
+    budgets: world.budgets,
+    manifest: world.manifest,
+    report: fail,
+    note,
+  });
+  return world;
+}
+
+// The two world rules that need the SPINE, called once the node tree exists.
+// Splitting them out is what lets checkWorld run at the top of checkSpine (see
+// its header): a root with a world/ and no spine/ gets every fabric rule, and
+// gets these two skipped because there is no trunk to compare against — which
+// is the honest answer, not a silent one.
+function checkWorldTrunk({ world, nodes, tree }) {
+  if (!world) return;
+  const note = (m) => console.log(m);
+  // No `tree ? … : null` ternary: buildTree always returns an object, so the
+  // null arm was dead and it kept gWorldSeaLandTrunk's isFinite guard looking
+  // dead with it. The guard is live — placementArea overflows to Infinity on a
+  // schema-valid rect — and now has a fixture.
+  const trunkLandKm2 = [...tree.byId.values()].filter((n) => n.tier === "continent")
+    .reduce((s, n) => s + placementArea({ placement: n.placement }), 0);
+  gWorldSeaLandTrunk({ world: world.world, manifest: world.manifest, trunkLandKm2, note });
+  gWorldTrunkArea({ nodes, fabric: world.fabric, world: world.world, manifest: world.manifest,
+                    placementArea, report: fail, note });
+}
+
 function checkSpine(opts, mobTypes) {
+  // Plan C: the world layer rides the same harness as the spine gates, so
+  // `--only=spine` (Gate 1) covers it automatically. It runs BEFORE the
+  // spine soft-skip below — see checkWorld's header for why.
+  const world = checkWorld(opts);
+
   // Soft-skip BEFORE compiling the schema: a content root with no spine/ is
   // valid (mirrors the maps/ soft-skip) and must not record a spurious
   // "schema unreadable" failure — every pre-existing gate fixture depends on
@@ -1996,7 +2138,9 @@ function checkSpine(opts, mobTypes) {
   // F-041 Phase 1: G-FRAME, G-SCALE, G-DERIVED-DRIFT, G-PROVENANCE. Same
   // validNodes discipline as gSpineGeometry above. P3: `plans` activates
   // G-FRAME's reversed town arrow and G-DERIVED-DRIFT's rollupVerdict.
-  gSpineFrames({ nodes: validNodes, tree, plans: townPlans, fail });
+  // `fabricPresent` arms G-PROVENANCE's Plan C fabric pin — see the rule.
+  gSpineFrames({ nodes: validNodes, tree, plans: townPlans, fail,
+                 fabricPresent: (world?.fabric?.length ?? 0) > 0 });
 
   // Plan B Task 4: G-DERIVED-DRIFT, hoisted out of gSpineFrames' per-node
   // loop into one whole-file comparison against content/spine/derived.json.
@@ -2016,7 +2160,14 @@ function checkSpine(opts, mobTypes) {
 
   // Plan B Task 5: G-LANDFORM + G-SHEET-BUDGET, reading content/world/. Placed
   // immediately after gSpineBudgets so the four budget lines print together.
-  gSpineWorld({ tree, contentRoot: opts.contentRoot, fail, warn, requireComplete: opts.requireComplete });
+  gSpineWorld({ tree, contentRoot: opts.contentRoot, fabric: world?.fabric ?? [],
+               fail, warn, requireComplete: opts.requireComplete });
+
+  // Plan C Task 11 — the two world rules that need the node tree: G-TRUNK-AREA
+  // (per-node, activated by provenance.generator.fabric) and G-SEALAND's trunk
+  // divergence line. Everything else in the world family already ran at the top
+  // of this function, where a root with no spine/ can still reach it.
+  checkWorldTrunk({ world, nodes: validNodes, tree });
 
   // F-041 Phase 1 Task 1.11 reported this as WARN until the two authoring
   // debts (8 measured overlap pairs, the n-cluster1 union identity) were
@@ -2227,8 +2378,31 @@ function gSpineGeometry({ nodes, tree, fail }) {
 //     only nodes BFS-reached from a root (i.e. acyclic) are safe to
 //     recompute — mirrors check_spine_emit.mjs's own bail-before-derive on
 //     tree.errors.
-function gSpineFrames({ nodes, tree, plans, fail }) {
+// The tiers G-TRUNK-AREA can score, and therefore the tiers G-PROVENANCE pins
+// a `generator.fabric` citation on: `continent` is scored against its fabric
+// file's GROSS cellCensus, `ocean` and `sea` against the manifest's declared
+// polygonKm2 for that node (scripts/lib/world.mjs, gWorldTrunkArea). Keep the
+// two lists together — a tier scored there and unpinned here is a half of the
+// gate that can be switched off by deleting a field.
+//
+// It cannot red the RETIRED tools/mapforge/gen-world.mjs that Task 13 deletes:
+// that tool assembles its candidates in a temp root carrying spine/ and
+// schemas/ and no world/ at all, so `fabricPresent` is false there and the pin
+// is dormant whatever the tier.
+const FABRIC_PINNED_TIERS = new Set(["continent", "ocean", "sea"]);
+
+function gSpineFrames({ nodes, tree, plans, fail, fabricPresent = false }) {
   const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  // The RULE below already fires on a malformed interior — eq(undefined, [0,0])
+  // is false — but rendering the message with a bare `.join(", ")` THREW on it,
+  // skipping finish() and silently dropping every failure recorded before it.
+  // `interior` is `{ type: "object" }` in spine-node.schema.json with no
+  // required keys, so the schema is not a venue for this and the guard has to
+  // be here. A non-array renders as its JSON so the reader sees what was
+  // authored instead of a stack trace. Reproduced 2026-08-23 on
+  // scripts/tests/fixtures/spine/base, whose three nodes carry an `interior`
+  // with neither `originInParent` nor `size`.
+  const show = (v) => (Array.isArray(v) ? v.join(", ") : JSON.stringify(v) ?? String(v));
   // The reversed town arrow divides and subtracts authored decimals, so a
   // CORRECT 220 comes back as 220.00000000000003 — JSON.stringify equality is
   // the wrong comparator for it. Only the town arrow gets the tolerance; the
@@ -2247,9 +2421,9 @@ function gSpineFrames({ nodes, tree, plans, fail }) {
       const d = deriveInterior({ node, plan: planForNode({ plans, id: node.id }) });
       const same = d.from === "plan" ? near : eq;
       if (!same(node.interior.originInParent, d.originInParent))
-        fail(`spine: G-FRAME ${node.id}: interior.originInParent [${node.interior.originInParent.join(", ")}] != derived [${d.originInParent.join(", ")}]`);
+        fail(`spine: G-FRAME ${node.id}: interior.originInParent [${show(node.interior.originInParent)}] != derived [${show(d.originInParent)}]`);
       if (!same(node.interior.size, d.size))
-        fail(`spine: G-FRAME ${node.id}: interior.size [${node.interior.size.join(", ")}] != derived [${d.size.join(", ")}] (${d.from === "plan" ? "the town plan's extent is the authority — research §3.2" : "bbox(placement) × perParentUnit"})`);
+        fail(`spine: G-FRAME ${node.id}: interior.size [${show(node.interior.size)}] != derived [${show(d.size)}] (${d.from === "plan" ? "the town plan's extent is the authority — research §3.2" : "bbox(placement) × perParentUnit"})`);
       // G-SCALE: units differ from parent ⇒ perParentUnit ≠ 1, drawn from the
       // pinned constant. NO area identity — HC-3.
       if (node.parentId) {
@@ -2266,11 +2440,43 @@ function gSpineFrames({ nodes, tree, plans, fail }) {
     // comparisons against an inline `derived` block. The block now lives in
     // content/spine/derived.json and the rule is gSpineDerived() below —
     // ONE whole-file byte comparison.
-    // G-PROVENANCE: generated ⇒ pinned generator. (Reproduce-check activates
-    // with the first real generator; none exists in 1.8.)
+    // G-PROVENANCE: generated ⇒ pinned generator. Plan C adds the FABRIC pin:
+    // without it the trunk polygon and the fabric it was simplified from can
+    // silently disagree, and G-TRUNK-AREA — which ACTIVATES on this very key —
+    // has nothing to join on and stays dormant on the node it should be
+    // scoring.
+    //
+    // THE PIN COVERS EVERY TIER G-TRUNK-AREA CAN SCORE, not `continent` alone.
+    // Scoped to continents it left the WATER half of G-TRUNK-AREA — the half
+    // this seam added by teaching it to resolve `world.json` — switchable off
+    // by deleting one key: stripping `provenance.generator.fabric` from the
+    // twelve generated ocean and sea nodes dropped the gate from 25 scored to
+    // 13 with ZERO failures, while doing the same to the thirteen continents
+    // earned thirteen. A gate you can silently disable by deleting a field is
+    // not a gate. `generate-world.test.mjs` asserts the generator writes the
+    // citation, so a GENERATED root was already safe; a hand-edited or drifted
+    // spine was not, and that is the case a content gate exists for.
+    //
+    // THE PIN IS ARMED BY THE FABRIC LAYER, not by the tier alone, and that is
+    // the whole of its condition: the citation exists so G-TRUNK-AREA has
+    // something to join TO, so a content root with no content/world/fabric/ has
+    // nothing to demand a citation of. Two roots depend on it. The committed
+    // 44-node root carries no `generated` node at all (measured), so the rule
+    // is doubly dormant there. The RETIRED tools/mapforge/gen-world.mjs — which
+    // Task 13 deletes, two tasks after this one — writes six `generated`
+    // continent candidates from `{name: "gen-world", version: "1"}` into a
+    // gitignored dir with no world/ beside it; arming the pin on tier alone
+    // reds its own acceptance criterion ("candidates pass the spine gate
+    // standalone") for the two commits between here and its deletion. On the
+    // draft root, where all fourteen fabric files sit, the pin is live on all
+    // thirteen landmasses.
     const p = node.provenance;
-    if (p && p.authored === "generated" && (!p.generator || typeof p.generator.name !== "string" || typeof p.generator.version !== "string"))
-      fail(`spine: G-PROVENANCE ${node.id}: authored "generated" requires generator {name, version}`);
+    if (p && p.authored === "generated") {
+      if (!p.generator || typeof p.generator.name !== "string" || typeof p.generator.version !== "string")
+        fail(`spine: G-PROVENANCE ${node.id}: authored "generated" requires generator {name, version}`);
+      else if (fabricPresent && FABRIC_PINNED_TIERS.has(node.tier) && typeof p.generator.fabric !== "string")
+        fail(`G-PROVENANCE: ${node.id}: generator.fabric is missing — polygon and fabric can disagree`);
+    }
   }
 }
 
@@ -2604,7 +2810,7 @@ function gSpineBudgets({ spine, tree, plans, contentRoot, fail }) {
 // plan's transcription destructured all three unguarded; an uncaught throw
 // here skips finish() and silently drops every failure recorded before it, so
 // each one reports in-band instead.
-function gSpineWorld({ tree, contentRoot, fail, warn, requireComplete }) {
+function gSpineWorld({ tree, contentRoot, fabric, fail, warn, requireComplete }) {
   const worldDir = join(contentRoot, "world");
   if (!existsSync(worldDir)) return;
 
@@ -2626,11 +2832,11 @@ function gSpineWorld({ tree, contentRoot, fail, warn, requireComplete }) {
     return;
   }
 
-  gWorldLandforms({ tree, worldDir, lex, budgets, fail, warn, requireComplete });
+  gWorldLandforms({ tree, worldDir, lex, budgets, fabric, fail, warn, requireComplete });
   gWorldSheets({ contentRoot, budgets, fail, warn });
 }
 
-function gWorldLandforms({ tree, worldDir, lex, budgets, fail, warn, requireComplete }) {
+function gWorldLandforms({ tree, worldDir, lex, budgets, fabric, fail, warn, requireComplete }) {
   // Array.isArray too: typeof [] === "object", so a landforms section saved as
   // a list passed the old guard, destructured to six `undefined`s, and turned
   // the catalogue-band rule into a silent no-op inside a still-failing run —
@@ -2680,23 +2886,34 @@ function gWorldLandforms({ tree, worldDir, lex, budgets, fail, warn, requireComp
     }
 
   // Instance census over content/world/fabric/, dormant until Plan C.
-  const fabricDir = join(worldDir, "fabric");
+  //
+  // THE DOCUMENTS COME FROM loadFabric, NOT FROM A SECOND readdirSync. This
+  // function used to walk content/world/fabric/ itself, with a bare
+  // readdirSync that existsSync cannot guard: a FILE at that path (ENOTDIR) or
+  // a directory with its permission bit off (EACCES) threw out of the gate,
+  // skipping finish() and silently dropping every failure recorded before it —
+  // the exact defect this file's headers warn about at length. loadFabric's
+  // listJson already guards that directory and reports `world/fabric cannot be
+  // listed: <msg>` in-band, so the second, unguarded reader is deleted rather
+  // than guarded twice. Reproduced both ways 2026-08-23 and pinned by
+  // world-budget.test.mjs' two hostile-directory tests.
+  //
+  // `fabric` excludes world.json (loadFabric returns that separately) — which
+  // is what the census wants anyway: world.json carries no `instances`, so it
+  // contributed 0 to both counters under the old walk.
   const placed = new Set();
   let instances = 0, named = 0;
-  if (existsSync(fabricDir))
-    for (const f of readdirSync(fabricDir).filter((x) => x.endsWith(".json")).sort()) {
-      const doc = readJson(join(fabricDir, f), `world/fabric/${f}`, fail);
-      if (!doc) continue;
-      if (doc.instances !== undefined && !Array.isArray(doc.instances)) {
-        fail(`G-LANDFORM: world/fabric/${f}: instances is not an array`);
-        continue;
-      }
-      for (const inst of doc.instances ?? []) {
-        instances++;
-        if (inst?.named) named++;
-        placed.add(inst?.type);
-      }
+  for (const doc of fabric) {
+    if (doc.instances !== undefined && !Array.isArray(doc.instances)) {
+      fail(`G-LANDFORM: world/fabric/${doc.file}: instances is not an array`);
+      continue;
     }
+    for (const inst of doc.instances ?? []) {
+      instances++;
+      if (inst?.named) named++;
+      placed.add(inst?.type);
+    }
+  }
 
   console.log(`world-budget: landforms ${lex.length} types, ${instances} instances (budget ${minTypes}-${maxTypes} types, ${maxInstances} instances)`);
   console.log(`G-LANDFORM: types placed: ${placed.size} / ${lex.length}`);
@@ -3255,10 +3472,40 @@ export function summaryLines({ sheetCount = 0, mapCount = 0, storyCount = 0, pla
   return lines;
 }
 
+// `process.exitCode`, NEVER `process.exit()` — THE GATE WAS TRUNCATING ITS OWN
+// REPORT.
+//
+// On POSIX, console.log to a PIPE is asynchronous, and process.exit() discards
+// whatever libuv has not yet flushed. This function printed the whole report in
+// one synchronous burst and exited on the next line, so a spawned run whose
+// stdout was a pipe could lose its TAIL — FAIL lines and the `content-gate:`
+// summary simply absent, while the exit code stayed correct. Measured
+// 2026-08-23 with a minimal reproduction (N identical lines, then
+// process.exit), 100 spawns each:
+//
+//   linux (node:18 container)   400 lines / 30 KB → 12/100 truncated, shortest 22.7 KB
+//                              1000 lines / 76 KB → 81/100 truncated, shortest 22.8 KB
+//   darwin (node v26.5.0)       the same three sizes → 0/100, always byte-identical
+//
+// That platform split is the whole story behind STATE §18's "one Node 18
+// container run read `# fail 1` … did not reproduce": it is not a Node-18 bug
+// and not a flaky test — it is this line, invisible on the macOS box the suite
+// is developed on and live on the ubuntu runner CI uses. The blast radius is
+// bigger than the suite: precheck.sh, integration.sh and ci.yml all run this
+// gate with stdout on a pipe, so a long red run could drop failures from the CI
+// LOG. Same family as the two uncaught throws this file warns about — a gate
+// that discards its own output — and the same remedy: let finish() finish.
+//
+// Setting `exitCode` is safe here precisely because both call sites are
+// `return finish(...)` in tail position of main(), and main() is this module's
+// last statement: nothing runs after, nothing holds the event loop open, and
+// Node drains stdout before exiting with the code set here. finish() is not on
+// the in-process path at all — runSpineGateInProcess builds its own summary
+// from summaryLines() and returns a code.
 function finish(sheetCount = 0, mapCount = 0, storyCount = 0, placementCount = 0, zoneCount = 0, townCount = 0, nodeCount = 0) {
   for (const line of summaryLines({ sheetCount, mapCount, storyCount, placementCount, zoneCount, townCount, nodeCount }))
     console.log(line);
-  process.exit(failures.length ? 1 : 0);
+  process.exitCode = failures.length ? 1 : 0;
 }
 
 // Plan A Task 13 — the in-process entry, for the gate's own test suite.

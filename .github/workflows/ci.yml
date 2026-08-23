@@ -27,11 +27,29 @@ jobs:
         with:
           version: 10
 
-      # Node 18 matches colyseus-server/Dockerfile so CI runs the deployment runtime.
+      # The Node major is a DETERMINISM PIN (world-fill Plan C, R5), not a
+      # preference: it is the Node the map tooling and every byte comparison
+      # run on. .release.json is the single authority and
+      # scripts/tests/node-pin.test.mjs asserts this file reads it.
+      #
+      # It is NOT the deployment runtime, and the line this replaces claimed it
+      # was: colyseus-server/Dockerfile has been node:22-alpine since release
+      # 1.2. That number is recorded in .release.json as runtimeNodeMajor and
+      # joined to the Dockerfile by the same test, so the two can diverge on
+      # purpose but never by accident.
+      #
+      # Read with grep, not `node -p`: there is no Node yet at this point.
+      - name: Read the pinned Node major from .release.json
+        id: nodepin
+        run: |
+          MAJOR="$(grep -o '"nodeMajor"[[:space:]]*:[[:space:]]*[0-9]*' .release.json | grep -o '[0-9]*$')"
+          test -n "$MAJOR" || { echo "::error::.release.json has no nodeMajor pin"; exit 1; }
+          echo "major=$MAJOR" >> "$GITHUB_OUTPUT"
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: ${{ steps.nodepin.outputs.major }}
           cache: pnpm
 
       # Workspace install at the repo root (pnpm-workspace.yaml lives here).
@@ -124,8 +142,12 @@ jobs:
       # development.
       #
       # SHELL-EXPANDED FILE LIST, UNQUOTED — this is NOT the quoted form used in
-      # the local verify commands. The `node-version` pinned above is 18, and
-      # Node's own `--test <glob-pattern>` support only arrived in v22. Quoting
+      # the local verify commands. The `node-version` pinned above comes from
+      # .release.json's nodeMajor and is below 22 today; Node's own
+      # `--test <glob-pattern>` support only arrived in v22. (Restating the pin
+      # here as a literal is the staleness class the line this replaced was
+      # caught by — scripts/tests/node-pin.test.mjs is where the number lives
+      # and is joined to its consumer.) Quoting
       # here would hand Node 18 the literal string
       # "tools/mapforge/tests/*.test.mjs" as a path: the step would either error
       # on a nonexistent file or, worse, run zero tests and go green while
@@ -134,10 +156,18 @@ jobs:
       - name: Mapforge test suite
         run: node --test tools/mapforge/tests/*.test.mjs
 
+      # EVERY id in the SHEETS registry, not a subset. `fabric` and `overlay`
+      # were covered only through G-RENDER-LOCK when they landed; the lock
+      # compares hashes and this compares the drawing to the committed file,
+      # which are different claims. tools/mapforge/tests/render-sheet.test.mjs
+      # asserts this list IS the registry, so a sheet added without a line here
+      # reds rather than going quietly uncovered.
       - name: Sheet self-check (render-sheet --check)
         run: |
-          node tools/mapforge/render-sheet.mjs --sheet cluster1 --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet atlas --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet cluster1 --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet fabric --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet overlay --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet synthetic --no-png --check
 
       # Story explorer (F-012 Task 6): graph.mjs is the pure buildGraph()

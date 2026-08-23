@@ -638,6 +638,20 @@
       "h": 256,
       "srcHash": "bababe0470145470"
     },
+    "maps/world-fabric.png": {
+      "thumb": "89639182ed9da91f.webp",
+      "bytes": 93835,
+      "w": 256,
+      "h": 256,
+      "srcHash": "51794d5a754aec71"
+    },
+    "maps/world-overlay.png": {
+      "thumb": "193f9af1782c5c13.webp",
+      "bytes": 93586,
+      "w": 256,
+      "h": 256,
+      "srcHash": "928efd52ddae21a1"
+    },
     "res://assets/characters/4gtn_forgotten.glb": {
       "thumb": "94672f24b8fad226.webp",
       "bytes": 2892348,

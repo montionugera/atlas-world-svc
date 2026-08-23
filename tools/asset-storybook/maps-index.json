@@ -22,6 +22,20 @@
       "svg": "game-client/assets/art/maps/synthetic-density.svg",
       "png": "game-client/assets/art/maps/synthetic-density.png",
       "note": "NOT GEOGRAPHY \u2014 a synthetic sheet at the agreed target density (13 landmasses, 160 regions, 1,740 landform instances, 340 labels) on the atlas sheet's own 400 km frame. It exists so a render regression at scale is visible before the real world exists."
+    },
+    {
+      "id": "fabric",
+      "title": "The Generated World \u2014 Fabric Survey",
+      "svg": "game-client/assets/art/maps/world-fabric.svg",
+      "png": "game-client/assets/art/maps/world-fabric.png",
+      "note": "13 landmasses, 160 regions, 45 settlements, 38 roads and 2 sea lanes drawn straight from content/world/fabric/ \u2014 the generated layer, before any authored meaning is joined on. The 40 surveyed regions are inked; the 120 reported ones are bare parchment, which is spec \u00a76.4's honest-frontier gradient drawn rather than described. No names: naming is Plan D's."
+    },
+    {
+      "id": "overlay",
+      "title": "Coastline Overlay \u2014 Baseline vs Generated",
+      "svg": "game-client/assets/art/maps/world-overlay.svg",
+      "png": "game-client/assets/art/maps/world-overlay.png",
+      "note": "Today's committed coastline ghosted under the generated one, with a per-continent area-delta table joined through the manifest's landmasses[].nodeId. Gross land 6,243.5 \u2192 65,600.0 km\u00b2 (x10.51); sea:land 24.63 : 1 \u2192 1.50 : 1. Read from the draft folder's baseline/, never from git."
     }
   ]
 }

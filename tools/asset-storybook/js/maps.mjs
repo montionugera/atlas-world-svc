@@ -7,6 +7,7 @@ import {
 import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
 import { buildSidebarItem } from "./sidebar.mjs";
 import { mountVocabulary } from "./maps-vocabulary.mjs";
+import { mountFabricCensus } from "./maps-fabric.mjs";
 
 /**
  * The Maps tab (F-044): every mapforge sheet (tools/mapforge/render-sheet.mjs
@@ -372,6 +373,12 @@ export async function mountMaps(main) {
   // never rejects: a missing lexicon or an unreachable tools/mapforge/lib/
   // removes the PANEL, not the tab.
   await mountVocabulary(section);
+
+  // Plan C Task 13 — the fabric census, below the vocabulary. Same contract:
+  // awaited so the section is complete before it is appended, and it never
+  // rejects — a root with no content/world/fabric/, or a document served from
+  // the wrong root, removes the PANEL, not the tab.
+  await mountFabricCensus(section);
 
   main.appendChild(section);
 }
