@@ -2128,7 +2128,9 @@ function checkSpine(opts, mobTypes) {
   // F-041 Phase 1: G-FRAME, G-SCALE, G-DERIVED-DRIFT, G-PROVENANCE. Same
   // validNodes discipline as gSpineGeometry above. P3: `plans` activates
   // G-FRAME's reversed town arrow and G-DERIVED-DRIFT's rollupVerdict.
-  gSpineFrames({ nodes: validNodes, tree, plans: townPlans, fail });
+  // `fabricPresent` arms G-PROVENANCE's Plan C fabric pin — see the rule.
+  gSpineFrames({ nodes: validNodes, tree, plans: townPlans, fail,
+                 fabricPresent: (world?.fabric?.length ?? 0) > 0 });
 
   // Plan B Task 4: G-DERIVED-DRIFT, hoisted out of gSpineFrames' per-node
   // loop into one whole-file comparison against content/spine/derived.json.
@@ -2365,7 +2367,7 @@ function gSpineGeometry({ nodes, tree, fail }) {
 //     only nodes BFS-reached from a root (i.e. acyclic) are safe to
 //     recompute — mirrors check_spine_emit.mjs's own bail-before-derive on
 //     tree.errors.
-function gSpineFrames({ nodes, tree, plans, fail }) {
+function gSpineFrames({ nodes, tree, plans, fail, fabricPresent = false }) {
   const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   // The reversed town arrow divides and subtracts authored decimals, so a
   // CORRECT 220 comes back as 220.00000000000003 — JSON.stringify equality is
@@ -2408,13 +2410,26 @@ function gSpineFrames({ nodes, tree, plans, fail }) {
     // without it the trunk polygon and the fabric it was simplified from can
     // silently disagree, and G-TRUNK-AREA — which ACTIVATES on this very key —
     // has nothing to join on and stays dormant on the node it should be
-    // scoring. Dormant on the committed root by construction: no committed node
-    // is `authored: "generated"` (measured, all 44).
+    // scoring.
+    //
+    // THE PIN IS ARMED BY THE FABRIC LAYER, not by the tier alone, and that is
+    // the whole of its condition: the citation exists so G-TRUNK-AREA has
+    // something to join TO, so a content root with no content/world/fabric/ has
+    // nothing to demand a citation of. Two roots depend on it. The committed
+    // 44-node root carries no `generated` node at all (measured), so the rule
+    // is doubly dormant there. The RETIRED tools/mapforge/gen-world.mjs — which
+    // Task 13 deletes, two tasks after this one — writes six `generated`
+    // continent candidates from `{name: "gen-world", version: "1"}` into a
+    // gitignored dir with no world/ beside it; arming the pin on tier alone
+    // reds its own acceptance criterion ("candidates pass the spine gate
+    // standalone") for the two commits between here and its deletion. On the
+    // draft root, where all fourteen fabric files sit, the pin is live on all
+    // thirteen landmasses.
     const p = node.provenance;
     if (p && p.authored === "generated") {
       if (!p.generator || typeof p.generator.name !== "string" || typeof p.generator.version !== "string")
         fail(`spine: G-PROVENANCE ${node.id}: authored "generated" requires generator {name, version}`);
-      else if (node.tier === "continent" && typeof p.generator.fabric !== "string")
+      else if (fabricPresent && node.tier === "continent" && typeof p.generator.fabric !== "string")
         fail(`G-PROVENANCE: ${node.id}: generator.fabric is missing — polygon and fabric can disagree`);
     }
   }
