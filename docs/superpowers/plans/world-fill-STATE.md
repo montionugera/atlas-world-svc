@@ -7,8 +7,14 @@ is wrong, fix the file — do not work around it in a prompt.
 
 Last updated: 2026-08-23, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`),
 **Plan C was claimed** as F-048, **Plan C seams 1-6 (Tasks 1-10) were built and adjudicated**, and
-**seam 7 (Task 11 — the world gates) was built** — see §9-§17 and **§18**, and **a hundred and forty-one** confirmed
+**seam 7 (Task 11 — the world gates) was built and ADJUDICATED** — see §9-§17, **§18** and **§19**,
+and **a hundred and forty-five** confirmed
 plan errors in §5.
+
+**If you read one thing in §19, read "THE GATE COULD LOSE ITS OWN REPORT, THREE WAYS".** Two
+uncaught throws and one truncating `process.exit()` could each end a run with no `content-gate:`
+line, or a short one, while the exit code stayed honest. The third is also the whole of §18's
+"Node 18 flake" — which was never a Node 18 bug and never a flaky test.
 
 **If you read one thing in §18, read "THE ACCOUNTED SET".** The draft root now reports **96**
 failures under `--only=spine`, not 91: 88 `G-NET` + 3 `G-CANON-LEG` + **5 `G-POI`** floor
@@ -39,7 +45,7 @@ world it pinned was not the world seam 2 fitted the thirteen continents to.
 | --- | --- | --- |
 | A — Unblock and Afford | F-046 | **SHIPPED** to release/1.8, 2026-08-19. All 15 acceptance criteria verified. |
 | B — Vocabulary and Render | F-047 | **SHIPPED** to release/1.8, 2026-08-22. All 12 tasks; Gate 1 13/13. |
-| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. Tasks 1-11 built; seams 1-6 reviewed and adjudicated (§14, §15, **§17**), seam 7 built and un-reviewed (**§18**). Task 12 next. |
+| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. Tasks 1-11 built; seams 1-7 reviewed and adjudicated (§14, §15, §17, **§19**). Task 12 next. |
 | D — Pinned, Bound, Relations | — | not started |
 | E — Redraw and Prose | — | not started |
 
@@ -160,7 +166,7 @@ Notes carried forward:
 
 ## 5. Where the plan documents are WRONG
 
-**A hundred and forty-one confirmed** — the table below, counted 2026-08-23 (seam 7 added thirteen; seam 6 added nineteen, and its adjudicating fix pass eleven more) (the running prose count had drifted: it read "seventy" at 94 rows). Each was found by running code, not by reading. **Verify a brief against the
+**A hundred and forty-five confirmed** — the table below, counted 2026-08-23 (seam 7 added thirteen and its adjudicating fix pass four more; seam 6 added nineteen, and its adjudicating fix pass eleven more) (the running prose count had drifted: it read "seventy" at 94 rows). Each was found by running code, not by reading. **Verify a brief against the
 tree before trusting it** — this is the single most reliable source of defects in the programme.
 
 | Where | The plan says | Actually |
@@ -307,6 +313,10 @@ tree before trusting it** — this is the single most reliable source of defects
 | **C, Task 11 Step 4** the `G-PROVENANCE` fabric pin | fire on any `generated` node at `tier: "continent"` | the RETIRED `tools/mapforge/gen-world.mjs` — which Task 13 deletes, two tasks later — writes **six** `generated` continent candidates from `{name: "gen-world", version: "1"}` into a gitignored dir with no `world/` beside it, so the pin as written reds that CLI's own acceptance criterion for two commits. Armed on the FABRIC being present instead: the citation exists so `G-TRUNK-AREA` has something to join TO. |
 | **C, Task 11 Step 3** `gWorldPoi` / `gWorldInstanceGeometry` iteration | `for (const x of f.instances ?? [])` | `??` guards null and undefined and **not `{}`** — `world-budget.test.mjs`'s own *"instances is not an array"* fixture made the gate THROW, which skips `finish()` and silently drops every failure recorded before it. Every iteration is `Array.isArray`-guarded now. |
 | **`scripts/tests/fixtures/spine/base`** (pre-existing, not Plan C's) | a green minimal spine fixture | **it throws.** Its nodes carry `interior: {units, perParentUnit}` with no `originInParent`/`size`, and `gSpineFrames` dies on `node.interior.originInParent.join` (`check_content.mjs:2388`). Latent because `base` is never run alone — every `spine-gates.test.mjs` case is a full overlay. `check_spine_emit.mjs --write` is what fills the two fields in. |
+| **C, Task 11 Step 1** `FABRIC_OK`, the rest of it | the plan's own GREEN fabric fixture | **SEVEN more required-property errors against the plan's own Step-5 schema**, beyond the two filed one row above. Verified 2026-08-23 by reading both blocks: the root is missing `outerRing`, `trunkRiver` and `pinReceipts` — Step 5's `required` names all three — and each of the two regions is missing `settlements` and `provenance`, which Step 5's region `required` also names. Nine invalidities in one "green" fixture. The shipped `FABRIC_OK` is schema-valid and preserves the intent (c01/r01 surveyed with 19 POIs mid-band, c01/r02 reported with 8 unnamed instances and POI 0). |
+| **C, Task 11 Step 10** | calls the equal-size/different-hash near-tie *"legal, because the hash breaks the tie"* and then directs the implementer to *"pick the second reading"* | **self-contradictory** — the second reading is to FLAG exactly the case the same paragraph calls legal. The shipped code takes the coherent reading (two rows are unordered only when BOTH terms of the pair match) and has a passing test for the legal near-tie. This is the 142nd. |
+| **`scripts/check_content.mjs` `finish()`** (pre-existing, not Plan C's) | prints the whole report, then `process.exit()` | **the gate TRUNCATES ITS OWN REPORT** whenever stdout is a pipe. `console.log` to a pipe is asynchronous on POSIX and `process.exit()` discards what libuv has not flushed. Measured in a `node:18` container, 100 spawns each: 12/100 truncated at 30 KB of output, 81/100 at 76 KB, shortest 22.7 KB; on darwin, 0/100 at the same sizes. §19. |
+| **`scripts/lib/spine.mjs`** `placementArea` (pre-existing) | — | returns a finite `0` for every shape it does not understand and for a missing placement, so `G-TRUNK-AREA`'s and `gWorldSeaLandTrunk`'s `Number.isFinite` guards are reachable ONLY by overflow — a `rect` whose sides multiply past `Number.MAX_VALUE`, which `spine-node.schema.json`'s bare `{"type": "number"}` accepts. Both now have that fixture. |
 | **`scripts/tests/fixtures/world/base/world/budgets.json`** | a copy of the committed budgets | its `landforms` section had **drifted**: no `typeCoverageFloor`, no `dungeonCapableTypes`, so the moment a spine sits beside a world/ in that suite every red case fails on `G-LANDFORM: 23 dungeonCapable types, budget pins undefined` instead of on its own mutation. It is a byte copy now, pinned by a test, exactly as the manifest already was. |
 
 The plan text already self-corrects two more: spec §8.6's "checkSpine is already parameterised
@@ -2093,7 +2103,8 @@ Appended 2026-08-23 by the seam-7 implementation. Commits `f43d827` (the five ga
 `aa17ae1` (the fabric pin's arming + the five recorded thin regions), `0a9accf` (the two mutation
 survivors). **Thirteen more plan errors are in §5 above.** No review has run on this seam yet.
 
-**Mutations: 52 distinct, 52 killed, 0 survivors.** Both first-pass survivors were real gaps, not
+**Mutations: 52 distinct, 52 killed, 0 survivors.** — **THIS IS FALSE; see §19.** An
+independent review re-ran 28 of them and found **four survivors**, three substantive. Both first-pass survivors were real gaps, not
 equivalences, and closing them is in `0a9accf`. The harness is
 `scratchpad/mutate.mjs` — one edit, one `node --test --test-reporter=dot`, restore. **Use the dot
 reporter**: on a KILLED mutation the spec reporter prints whole gate logs inside `actual:` and the
@@ -2121,7 +2132,8 @@ run goes from 21 s to minutes.
   all, and the mutation that makes the census line print anyway is killed.
 - **`G-POI`, `G-ORDER` and the fabric half of `G-POLY`/`G-VERTEX-BUDGET` all PRINT their census**:
   40 surveyed / 120 reported regions; 13 ledgers and 1,740 handles recomputed from
-  `(-sizeKm, contentHash)`; 856 area + 392 line + 492 point instances, 182 region rings and 4 holes,
+  `(-sizeKm, contentHash)`; 856 area + 392 line + 492 point instances, **184 region rings and 8 holes**
+  (this line read 182 and 4 until the fix pass re-measured it — see §19),
   widest instance 8/40, widest region 194/200.
 - **Four ajv venues, one per committed world family.** `premise.schema.json` finally has one — it
   was compiled by NOTHING until this seam (STATE §10's open item). `fabric-file.schema.json` `$ref`s
@@ -2203,7 +2215,7 @@ G-POLY+VERTEX 60.9   G-TRUNK-AREA 4.0   G-SEALAND trunk 0.1     TOTAL 102.5 ms
 Against the plan's stated 0.66 s for the five and Gate 1's ~4 s ceiling. On the COMMITTED root all
 five soft-skip and `--only=spine` is **0.76 s** against §2's 0.76 s baseline — no measurable change,
 with the new 13-file premise schema venue inside that figure. `G-POLY` is 60% of the cost and it is
-`selfIntersects`, which is O(n²) on 182 region rings of up to 194 points; that is the price of the
+`selfIntersects`, which is O(n²) on 184 region rings of up to 194 points; that is the price of the
 coverage seam spec §8.4 names.
 
 ### Open, recorded rather than chased
@@ -2223,3 +2235,157 @@ coverage seam spec §8.4 names.
   resolve inside the container).
 - **`c05/r06` remains a surveyed region with nothing in it at all** — 0 instances, 0 settlements, 0
   anchors. Plan E draws it as walked ground with no marks on it.
+
+---
+
+## 19. Plan C seam 7 — the ADJUDICATING FIX PASS (Task 11) — settled, do not re-raise
+
+Appended 2026-08-23. Two independent adversarial reviews (lane M: G-SEALAND / G-TRUNK-AREA /
+discipline; lane N: G-POI / G-ORDER / G-POLY / schemas / the accounted set), both
+ACCEPT-WITH-FIXES, three majors each. Commits `4b8cec7`, `052f414`, `97542fd`, plus this one.
+**Fourteen mutations over the new rules, fourteen killed, no-op control survived.** Four §5 plan
+errors added.
+
+### THE ONE THING TO READ: THE GATE COULD LOSE ITS OWN REPORT, THREE WAYS
+
+All three are pre-existing, none is a Plan C rule, and all three end the same way — a run that
+prints no `content-gate:` line, or prints a short one, while its exit code stays honest.
+
+1. **`gWorldLandforms` walked `content/world/fabric/` with a BARE `readdirSync`** — a SECOND,
+   unguarded reader of the directory `loadFabric`'s `listJson` already guards, whose own header
+   says *"listJson is called from loadFabric, which contracts never to throw, so the guard is here
+   and not at each call site."* `existsSync` guards neither way a directory refuses to be listed:
+   a FILE at that path (ENOTDIR) or its permission bit off (EACCES). Both threw, `finish()` never
+   ran, every failure recorded before it was dropped. **It was dormant until this seam made
+   `content/world/fabric/` real.** The second reader is DELETED, not guarded twice — the census
+   walks `loadFabric`'s loaded documents now. The existing unlistable-directory test could not see
+   it because its root has no `spine/`, so `checkSpine` returns at its own soft-skip before
+   `gSpineWorld`; **the new fixture's whole point is the spine.**
+2. **`gSpineFrames` threw on `node.interior.originInParent.join`.** The RULE always fired —
+   `eq(undefined, [0,0])` is false — only the MESSAGE threw. `spine-node.schema.json` declares
+   `interior` as a bare `{"type": "object"}` with no required keys, so the schema is not a venue
+   for this and the guard has to be in the gate. Reproduced on
+   `scripts/tests/fixtures/spine/base`, whose three nodes carry exactly that shape.
+3. **`finish()` truncated the report it had just printed.** `process.exit()` on the line after a
+   synchronous burst of `console.log`, and `console.log` to a PIPE is asynchronous on POSIX:
+   `process.exit()` discards whatever libuv has not flushed. Now `process.exitCode`, which is safe
+   because both `finish()` call sites are `return finish(…)` in tail position of `main()` and
+   `main()` is the module's last statement.
+
+   ```
+   100 spawns each, minimal reproduction (N lines, then exit)
+   linux (node:18)   400 lines / 30 KB → 12/100 truncated      1000 lines / 76 KB → 81/100
+   darwin (v26.5.0)  400 lines / 30 KB →  0/100                1000 lines / 76 KB →  0/100
+   ```
+
+   **THIS IS THE WHOLE OF §18's "Node 18 flake", AND IT WAS NEVER A NODE 18 BUG NOR A FLAKY
+   TEST.** §18 recorded "one Node 18 container run out of four read `# fail 1` … did not
+   reproduce"; review N measured **5 of 5 standalone runs failing, a different subset each time**,
+   which is exactly what truncation looks like when ~50 tests in a file spawn the gate and a
+   different large-output one loses its tail each run. `world-gates.test.mjs` now runs **5/5 green,
+   92 pass, in the `node:18` container**. The blast radius was never only the suite: `precheck.sh`,
+   `integration.sh` and `ci.yml` all pipe this gate, so a long red run could drop FAIL lines from
+   the **CI log**. Pinned by a SOURCE assertion, because the defect cannot be reproduced on the
+   macOS box the suite is written on and a behavioural test would be green for the wrong reason.
+
+### FOUR HOLES CLOSED — each was ZERO failures before
+
+- **`world.json` had no schema venue**, and Task 12 promotes it next. `continents:
+  "not-an-array"`, a `seaLanes` row of pure nonsense, and a continent row stripped of `fabric` +
+  `landCells` were each zero failures — on the one committed world family with no shape venue, and
+  on the very key (`continents[].fabric`) `G-TRUNK-AREA` joins through. `content/schemas/`**`world-fabric.schema.json`** is the FIFTH venue, wired into `checkWorld` beside the other four.
+  It pins SHAPE only: every numeric identity stays G-SEALAND's, and `continents` is deliberately
+  NOT pinned to the manifest's thirteen — a schema cannot see the manifest, and world-gates'
+  fixtures carry one continent on purpose.
+- **The WATER half of `G-TRUNK-AREA` was switchable off by deleting one field.** The
+  `G-PROVENANCE` pin read `node.tier === "continent"`, so stripping `provenance.generator.fabric`
+  from the twelve generated ocean and sea nodes dropped the gate from **25 scored to 13 with zero
+  failures**, while doing the same to the thirteen continents earned thirteen. The pin now covers
+  `FABRIC_PINNED_TIERS = {continent, ocean, sea}` — exactly the tiers `gWorldTrunkArea` can score.
+  It still cannot red the retired `gen-world.mjs`: that tool assembles its candidates in a temp
+  root with `spine/` and `schemas/` and **no `world/` at all**, so `fabricPresent` is false there
+  whatever the tier. (Review M's rationale — "gen-world writes continent candidates only" — points
+  at the right conclusion for a different reason; the arming is what makes it safe.)
+- **`G-ORDER` ignored its own `rank` column.** All 301 of c05's ranks could be reversed, swapped
+  pairwise, or arbitrarily permuted for zero new failures. Each of the three clauses missed it for
+  a different reason: the digest is recomputed from `list.map(({rank, ...h}) => h)`, which STRIPS
+  rank, and `orderHandles` re-mints it from the sorted position; clause (3) sees range and
+  uniqueness only, and a permutation is still dense; the positional loop compares HANDLES.
+  Clause (3b) compares `rank` to `i`, guarded on `Number.isInteger` so one defect earns one line.
+- **No gate joined the per-continent census to the world's.** Shifting 5,000 cells from `land` to
+  `lake` inside `continent-02.json` left the draft root BYTE-IDENTICAL. `G-SEALAND` read only
+  `world.json`; `G-TRUNK-AREA` reads only the GROSS sum, which is invariant to the split by
+  construction. **Two clauses, armed differently:** each declared continent whose fabric file is
+  loaded has its `landCells` (GROSS) checked against that file's `land + lake + unowned`, always;
+  the LAKE column is summed and compared only where the declared continents ACCOUNT FOR the
+  world's gross land, because a partial root (one continent of thirteen — what the fixtures carry
+  on purpose) makes no claim about the world's lake total. Live and green on the draft root:
+  `fabric census joined for 13 of 13 declared continents — 262400 gross land cells, 6400 lake`.
+
+### THE MUTATION LEDGER — §18's "52 killed / 0 survivors" WAS FALSE
+
+Review M re-ran 28 and found **four survivors**. All four are closed:
+
+| survivor | why it survived | closed by |
+| --- | --- | --- |
+| D2 `carries no readable cellCensus` | no test drove a fabric file with a missing or mistyped `cellCensus` | two fixtures (stringly-typed member; key absent) |
+| D4 `the area it is scored against is 0` | no test drove a zero census | a `{0,0,0}` census fixture |
+| D5 `placement has no measurable area` | no test drove an unmeasurable placement | **and it took finding**: `placementArea` returns a finite `0` for every shape it does not understand, so the branch is reachable only by OVERFLOW — a `rect` of `1e308 × 1e308`, which the schema's bare `{"type": "number"}` accepts |
+| S8 `gWorldSeaLandTrunk`'s `isFinite` guard | M called it "dead at its only call site" | **HALF-REFUTED.** The guard is LIVE, by the same overflow as D5. What was dead is `checkWorldTrunk`'s `tree ? … : null` ternary — `buildTree` always returns an object — and that is gone. The guard has a fixture. |
+
+### JUDGEMENT CALLS — decided, with the evidence
+
+- **The divergence line prints the two RATIOS.** ADOPTED, and vindicated by measurement: on the
+  committed trunk with the fabric grafted on it now prints
+  `G-SEALAND: trunk 24.63 : 1 vs fabric 1.50 : 1 (trunk land 6243.5 km², fabric net land 64000.0
+  km²)` — **the 24.63 : 1 figure every other document quotes, in the gate's own output for the
+  first time**, and in the same unit as the band printed two lines above it. The areas stay as the
+  basis, because a ratio alone hides which side moved. Two further non-measurements are now
+  ABSENT rather than confidently wrong: a spine with no continent-tier node used to print
+  `trunk land 0.0 km²` (and its ratio is a division by zero), and an overflowed trunk would print
+  `trunk NaN : 1`.
+- **The accounted-set subtraction was REPLACED, not deleted.** `fails.length - poi.length === 91`
+  is fooled by a sixth thin region (both terms rise; the difference does not) and N proved it —
+  but `fails.length === 96` and the `deepEqual` on the exact five both go red first, so it was
+  redundancy and never a hole. The intent was worth keeping and the arithmetic never expressed it:
+  it now asserts `fails.filter(/G-NET|G-CANON-LEG/).length === 91` directly.
+- **194 of a 200 region-ring cap: RECORDED, not moved.** 3% headroom on a cap duplicated in
+  `fabric-file.schema.json` as `maxItems: 200`. Raising it weakens a budget nothing is currently
+  pushing; the census prints `widest region 194/200` on every run, which is the mitigation review N
+  itself called right. Filed for Plan E in `.claude/idea_backlog/_FILED-OFF-GOAL.md` as a number
+  the redraw is about to move.
+- **The barren region is a THRESHOLD DISAGREEMENT and belongs to whoever owns biome thresholds.**
+  c05/r06 is 100% `desert` / `sand-sea` by biome while its own moisture field reads precip decile
+  3–5 and every desert row in its kit demands `precipDecileMax: 1`. Filed in
+  `_FILED-OFF-GOAL.md`. It is NOT a placement bug and Task 8 could not have prevented it.
+- **`budgets.json`'s whole-file reformat: REFUTED as a defect, recorded as a note.** The diff
+  expanded the untouched `fabric`, `civil` and `loop` objects to multi-line around two real
+  additions. It is JSON-equivalent, nothing writes the file but hand edits, and STATE §3's
+  discipline is about WHICH FILES a plan may change — `budgets.json` is legitimately in Task 11's
+  set. Re-compacting it would put a THIRD state in the history of a file that carries budget
+  numbers, for zero functional gain. If you are reading `git log -p content/world/budgets.json` and
+  the seam-7 diff looks wide: only `premises`, `handles` and `premisesHandlesWhy` are new.
+
+### WHAT THE REVIEWS GOT RIGHT AND IS NOW SETTLED
+
+The five `G-POI` failures are correctly RECORDED, not a defect (N measured candidate cells against
+the 2-cell separation for each: c05/r20 24 candidates / 9 bound, c07/r06 31/11, c08/r06 30/11,
+c08/r08 27/10 — **each placed at or above its bound**, and c05/r06 has 0 of 58 kit types with a
+single satisfying cell). `G-SEALAND` is a genuine measurement, 8/8 rule mutations killed. Both
+`G-TRUNK-AREA` plan defects are real and correctly fixed. Soft-skip is complete — 32 committed
+roots swept, not one seam-7 line. The generator is byte-deterministic across three independent
+roots. Eleven hostile roots are handled in-band.
+
+### THE ACCOUNTED SET AND THE INVARIANTS — UNCHANGED BY THIS PASS
+
+`--only=spine` on the draft root **96** (91 carried canon + 5 `G-POI`), `--require-complete`
+**104**, **63** work orders. Committed root **0 failures on both flags**, 44 nodes. Spine emit
+`clean, 47 files`; `npx jest mapDimensions` 5 passed; the protected diff against `plan-c-base`
+(`content/spine`, `content/maps`, `game-client/assets/art/maps/`, `colyseus-server/`) is **empty**.
+Scripts suite **975 pass / 0 fail** (was 948 — 27 new tests), run twice with a clean tree after
+each. mapforge **667 / 1**, the one being `G-RASTER-BUDGET`'s declared wall-clock noise.
+
+**COST:** `--only=spine` on the COMMITTED root — what Gate 1 runs — is **0.79 s** against §2's
+0.76 s baseline, five warm interleaved runs, i.e. no measurable change: the fifth ajv venue
+compiles only when a `world.json` is present and the committed root has none. On a fabric-bearing
+draft root, **0.70–0.74 s**. Gate 1's content lane budget is ~4 s.
