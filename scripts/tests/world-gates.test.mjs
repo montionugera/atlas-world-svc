@@ -1794,6 +1794,25 @@ test("G-POI clause 3b says nothing about a continent whose fabric is not loaded"
   assert.ok(!/c05\/r06/.test(r.out), r.out);
 });
 
+test("G-POI: a declaration with no stated reason is REFUSED, not silently ignored", () => {
+  // Ignoring it is safe in direction — the region reds as undeclared — and
+  // silent about a budgets.json that says something it does not mean.
+  // `true` is what a hand edit reaching for an exemption switch looks like.
+  for (const bad of [true, 1, null, "", "   "]) {
+    const r = runWorld(withPoiDeclared({ "c01/r01": bad }, thinFabric()));
+    assert.equal(r.code, 1, `${JSON.stringify(bad)} was accepted: ${r.out}`);
+    assert.match(r.out, /G-POI: budgets\.json declares region c01\/r01 supply-limited with no stated reason/);
+  }
+  // …and the whole block being the wrong SHAPE is one clean line, not a throw.
+  const r = runWorld(withFabric({
+    fabric: thinFabric(),
+    budgets: { ...committedBudgets(), poi: { supplyLimitedSurveyedRegions: ["c01/r01"] } },
+  }));
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-POI: budgets\.json poi\.supplyLimitedSurveyedRegions is not an object/);
+  assert.doesNotMatch(r.out, /TypeError|check-content: \w*Error/);
+});
+
 test("the committed budgets.json declares exactly the five surveyed regions STATE §18 measured", () => {
   const b = committedBudgets();
   assert.deepEqual(Object.keys(b.poi.supplyLimitedSurveyedRegions).sort(),

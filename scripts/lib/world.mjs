@@ -655,8 +655,20 @@ export function gWorldPoi({ fabric, budgets, report, note, warn = () => {} }) {
   // all is the same failure, for the same reason; a continent that is not
   // loaded says nothing about its regions, which is what keeps partial fixture
   // roots honest.
-  const declared = new Map(Object.entries(budgets?.poi?.supplyLimitedSurveyedRegions ?? {})
-    .filter(([, v]) => typeof v === "string"));
+  // A declaration IS its reason. A row whose value is not a non-empty string
+  // is refused out loud rather than ignored: ignoring it is safe in direction
+  // (the region reds as undeclared) but silent about a budgets.json that says
+  // something it does not mean, and `{"c01/r01": true}` is exactly what a
+  // hand edit reaching for an exemption switch looks like.
+  const declared = new Map();
+  const declaredRaw = budgets?.poi?.supplyLimitedSurveyedRegions;
+  if (declaredRaw !== undefined && (declaredRaw === null || typeof declaredRaw !== "object" || Array.isArray(declaredRaw)))
+    report("G-POI: budgets.json poi.supplyLimitedSurveyedRegions is not an object of region id -> reason");
+  else
+    for (const [id, why] of Object.entries(declaredRaw ?? {})) {
+      if (typeof why === "string" && why.trim().length > 0) declared.set(id, why);
+      else report(`G-POI: budgets.json declares region ${id} supply-limited with no stated reason — a declaration IS its reason`);
+    }
   const seenRegion = new Set();
   const loadedContinents = new Set();
   let surveyed = 0, reported = 0, thin = 0, fat = 0, declaredThin = 0;
