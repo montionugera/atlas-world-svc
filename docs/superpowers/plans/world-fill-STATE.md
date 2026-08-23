@@ -2761,3 +2761,35 @@ result taken in that window was measured against a tree with the blocker's own g
 suite caught it (a later fixture red on exactly that clause), but only by luck of ordering. **Run a
 mutation harness detached, with restore registered on both normal exit and SIGTERM, and never inside
 a timeout that can kill it between the write and the restore.**
+
+### VERIFIED AT THE FIX-PASS HEAD — the whole criteria walk
+
+| # | criterion | result |
+| --- | --- | --- |
+| 1 | generate under 8,000 ms, a stage line per pass, a complete root | **MET** — `stage: generate TOTAL 6319 ms (budget 4000, fail 8000)`, all 16 stage lines, 109 files, `generate-world: OK` |
+| 2 | draft root `--only=spine` reports 0 failures | **MET-as-corrected** (§16) — **91 failures, and all 91 are `G-NET`/`G-CANON-LEG`**, the accounted carried canon with 63 named work orders. `G-TRUNK-AREA: scored 25 nodes … worst drift -1.36% … tolerance ±3%` |
+| 3 | committed root 0 failures, ratio 1.50, divergence note, both `world-budget:` lines | **MET** — `44 nodes, 0 failures, 25 warnings`; `G-SEALAND: ratio 1.50 … band 1.20–1.80`; `trunk 24.63 : 1 vs fabric 1.50 : 1`; four `world-budget:` family lines |
+| 4 | `land + sea === 160,000` and the cell identity `=== 640,000` | **MET-as-corrected** — `netLand 64000 + water 96000 = 160000`; `grossLandCells 262400 + seaCells 377600 = 640000` with `unownedLandCells 0`. The owner identity is proven as a FOUR-term identity in `generate-world.test.mjs`, not the plan's three |
+| 5 | `repro.test.mjs` passes all three `G-REPRO` properties | **MET** — 6/6, and the fourth property now has the input-list join it advertised |
+| 6 | `promote --dry-run` lists writes and deletes, `git status` clean under `content/` | **MET** — `DRY RUN — 64 written, 22 deleted`, 86 listed lines, `git status --porcelain content/` empty |
+| 7 | `check_spine_emit --check` reports `clean, 47 files` | **MET** — and the protected diff is empty on **every one of the 76 commits**, not only at the tip |
+| 8 | `mapDimensions` green on every commit | **MET** — 5 passed; `colyseus-server/` diff empty on all 76 commits |
+| 9 | `git diff main...HEAD -- <protected>` is empty | **MET-as-corrected** (§5) — `main...HEAD` is **56 files** because `psrw claim` branches from `main` and the three-dot range contains Plans A and B. Against `plan-c-base` the same path set is **empty** |
+| 10 | storybook suite green with the `fabric` and `overlay` rows | **MET** — 60/60, rows `cluster1, atlas, synthetic, fabric, overlay` |
+| 11 | `npm test --prefix scripts` under 60 s | **MET at the gate, budget still blown** — **991 pass / 0 fail**, 47.1 s and 44.5 s on a box at load 13–18, tree clean after both. Over the 45 s budget, under the 60 s gate |
+| 12 | Gate 1 and Gate 2 green | **MET-as-corrected** — Gate 1 is a genuine **12/12 PASS** (the `client: react-client` red was the fresh-worktree deps gap and is gone once `node_modules` exists). Gate 2 is **10/11**, the single red being `G-RASTER-BUDGET`, which is **5/5 alone at load 32** and skips in CI for want of librsvg |
+| 13 | the four files gone, the three symbols nowhere in the repo | **MET-as-corrected** — all four files gone; the symbols survive in **6 tracked files** (two plan copies, this file, the design spec, `generate-world.mjs`'s header and the test asserting their absence), so the LITERAL criterion is not met. The satisfiable reading — CODE, comments stripped, every production file under `tools/` and `scripts/` — is gated by `fabric-sheet.test.mjs` with two anti-dark guards |
+| 14 | `.release.json` carries `nodeMajor`, `ci.yml` reads it, the Dockerfile agrees | **MET-as-corrected** (§5) — `nodeMajor: 18` + `runtimeNodeMajor: 22`, `ci.yml` greps the file and reds on an empty pin, `node-pin.test.mjs` joins each to its own consumer with a collapse tripwire. **The Dockerfile has said `node:22-alpine` since release 1.2**; agreeing is unsatisfiable inside Plan C and would discard every byte-determinism measurement taken on Node 18 |
+
+**On the pinned CI Node** (`docker run --rm node:18`, v18.20.8): `repro` + `promote` **46/46**;
+`render-lock` + `world-gates` + `fabric-sheet` + `render-sheet` **173 pass / 0 fail**; the whole
+mapforge suite **720 pass / 0 fail** (6 skipped — no librsvg). And the measurement that closes the
+report class, in its own venue: with one fabric file removed, `check_render_lock --check` writes
+**104,257 bytes to a FILE and 104,257 bytes to a PIPE on six runs out of six**, exit 1 through the
+pipe — against the 8,413–16,605 bytes review O measured before the fix.
+
+**The storybook browser check is carried forward from review P at `f3ef1af`** (5 map cards, both new
+PNG thumbs at 512×512, pan/zoom legible, console clean, the census table matching the fabric files
+exactly at 160/40/45/1740/60). This pass changed exactly one thing on that surface — the sea:land
+ratio string in the overlay card's note — and that string is now derived from the gate's own
+identity and asserted, so it cannot rot back.
