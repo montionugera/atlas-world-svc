@@ -109,7 +109,7 @@ test("THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHI
   assert.match(log, /world-budget: fabric 14 files/);
   const fails = log.split("\n").filter((l) => l.startsWith("FAIL  "));
   const other = fails.filter((l) => !/G-NET|G-CANON-LEG/.test(l));
-  // THE FIVE G-POI FLOOR FAILURES ARE A CONTENT SHORTFALL, RECORDED WITH ITS
+  // THE FIVE THIN SURVEYED REGIONS ARE A CONTENT SHORTFALL, DECLARED WITH ITS
   // NUMBERS RATHER THAN LOOSENED AWAY. STATE §15 filed them as "Task 11's" and
   // Task 11's gate is what makes them visible: spec §8.4's band is 12-30 points
   // of interest in a SURVEYED region, and five of the forty cannot reach twelve.
@@ -127,19 +127,30 @@ test("THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHI
   // c05/r06 at all, and re-baselines the instance digest, the ledgers, the
   // handles and the anchors for the other four. (2) Make the floor a WARNING —
   // the rule then cannot fail, and "a gate that cannot fail certifies" is the
-  // whole reason this seam exists. (3) RECORD IT: the floor stays a hard
-  // failure, the five are pinned here by region AND count, and the world total
-  // is stated. A sixth thin region reds this; a fix reds it too and gets a
-  // reason written beside it, exactly like the ring goldens.
-  const poi = other.filter((l) => l.includes("G-POI: region "));
-  assert.deepEqual(poi.map((l) => l.replace(/^FAIL {2}G-POI: region /, "").replace(/ points of interest.*/, "")),
+  // whole reason this seam exists. (3) RECORD IT.
+  //
+  // CHANGED BY TASK 13, and this is the part seam 7 did not reach: recording
+  // them HERE left the COMMITTED root at five failures the moment the fabric
+  // was committed into it, which reds Gate 1 and acceptance criterion 3. So the
+  // record moved into content/world/budgets.json's `poi.supplyLimitedSurveyedRegions`,
+  // where the gate reads it — and it is a DECLARATION, not disposition (2): an
+  // UNdeclared thin region is still a hard failure, and a DECLARED region that
+  // is no longer thin is a hard failure too, so a row cannot outlive its cause.
+  // The five are still pinned here by region AND count, off the WARN lines, so
+  // a sixth thin region still reds this test and so does a fix.
+  const warns = log.split("\n").filter((l) => l.startsWith("WARN  "));
+  const poi = warns.filter((l) => l.includes("G-POI: region "));
+  assert.deepEqual(poi.map((l) => l.replace(/^WARN {2}G-POI: region /, "").replace(/ points of interest.*/, "")),
     ["c05/r06 (surveyed) has 0", "c05/r20 (surveyed) has 10", "c07/r06 (surveyed) has 10",
      "c08/r06 (surveyed) has 9", "c08/r08 (surveyed) has 11"],
     "the set of surveyed regions under G-POI's 12-POI floor moved — that is a change in what the " +
     "world is made of, not a test to re-baseline quietly");
-  assert.deepEqual(other.filter((l) => !l.includes("G-POI: region ")), [],
-    `the draft root must be gate-clean apart from the carried canon and the five recorded ` +
-    `G-POI floor shortfalls:\n${other.join("\n")}`);
+  for (const l of poi)
+    assert.match(l, /DECLARED in budgets\.json poi\.supplyLimitedSurveyedRegions: \S/,
+      "a thin region is a warning without a stated reason — the declaration has stopped carrying one");
+  assert.match(log, /G-POI: 40 surveyed regions \(band 12–30: 5 thin of which 5 declared, 0 over\)/);
+  assert.deepEqual(other, [],
+    `the draft root must be gate-clean apart from the carried canon:\n${other.join("\n")}`);
   assert.ok(fails.length > 0, "if this ever reads zero the edges have stopped being carried");
   // SET equality against the work order, not a count: gSpineNet reports a relay
   // edge's via chain twice (once in the generic endpoint walk, once in the
@@ -184,16 +195,15 @@ test("THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHI
   //
   // Moving either number is a WORLD CHANGE and needs a reason written beside
   // it, exactly like the ring goldens.
-  assert.equal(fails.length, 96,
-    "the draft root's failure count moved — 91 carried canon + 5 recorded G-POI floor shortfalls");
-  // NOT `fails.length - poi.length`. That subtraction LOOKS like it guards the
-  // carried-canon count and does not: a SIXTH thin surveyed region adds one to
-  // both terms and the difference is still 91. Measured — 15 instances stripped
-  // from c05/r15 gave fails 97, poi 6, difference 91, green. Two other oracles
-  // caught it (`fails.length === 96` and the deepEqual on the exact five), so
-  // nothing slipped past; but a green assertion a reader believes is guarding
-  // something is the same decoration this seam exists to remove. Assert the
-  // filtered set directly, which is what the line was always trying to say.
+  assert.equal(fails.length, 91,
+    "the draft root's failure count moved — 91 carried canon, the five G-POI floor shortfalls " +
+    "having become DECLARED warnings in budgets.json (Task 13)");
+  // NOT `fails.length - poi.length`, which is what this line used to be. That
+  // subtraction LOOKED like it guarded the carried-canon count and did not: a
+  // SIXTH thin surveyed region added one to both terms and the difference was
+  // still 91. Measured — 15 instances stripped from c05/r15 gave fails 97,
+  // poi 6, difference 91, green. It is moot now that the five are warnings, and
+  // the filtered assertion below is what the line was always trying to say.
   assert.equal(fails.filter((l) => /G-NET|G-CANON-LEG/.test(l)).length, 91,
     "the draft root's carried-canon failure count moved");
   assert.equal(manifest.problems.filter((p) => p.startsWith("edge ")).length, 63,
@@ -779,16 +789,30 @@ test("the draft root obeys the committed byte and vertex budgets", { timeout: 24
 });
 
 test("the draft sheet plumbing writes and hashes whatever the registry gives it", { timeout: 240000 }, async () => {
-  // The `fabric` and `overlay` sheets are TASK 13's. Pinning their ABSENCE from
-  // the registry here is what makes the deferral visible: when Task 13 registers
-  // them this test goes red and the assertion has to be upgraded to the real
-  // files, rather than the CLI quietly writing nothing forever.
+  // This test used to pin the ABSENCE of the `fabric` and `overlay` entries so
+  // that Task 13 registering them would go red and force the assertion to be
+  // upgraded to the real files. Task 13 registered them; this is the upgrade.
+  // The draft folder now carries both DRAWINGS beside the data, which is what
+  // makes "two seeds sit side by side, diffable in place" true of a run rather
+  // than of a plan sentence.
   const { SHEETS } = await import("../render-sheet.mjs");
-  assert.equal(SHEETS.fabric, undefined, "Task 13 registered the fabric sheet — assert its SVG here now");
-  assert.equal(SHEETS.overlay, undefined, "Task 13 registered the overlay sheet — assert its SVG here now");
+  for (const id of ["fabric", "overlay"]) assert.ok(SHEETS[id], `SHEETS lost its "${id}" entry`);
   const { out, manifest } = run();
-  assert.ok(!existsSync(join(out, "sheets")), "no draft sheet is registered yet, so none should be written");
+  for (const id of ["fabric", "overlay"]) {
+    const p = join(out, `sheets/${id}.svg`);
+    const svg = readFileSync(p, "utf8");
+    assert.match(svg, /^<svg /, `sheets/${id}.svg is not an svg`);
+    assert.match(svg, /<\/svg>\s*$/);
+    assert.match(manifest.hashes[`sheets/${id}.svg`], /^sha256:[0-9a-f]{64}$/,
+      `sheets/${id}.svg is written but not hashed — promote-world step 1 cannot verify it`);
+  }
+  // The DRAFT's sheets are drawn from the DRAFT, not from the live tree: the
+  // overlay's baseline comes from the run's own baseline/ copy, so a draft
+  // sheet is a picture of that run and diffing two runs is meaningful.
+  assert.ok(readFileSync(join(out, "sheets/fabric.svg"), "utf8").includes("c13"),
+    "the draft fabric sheet does not draw the run's own thirteenth landmass");
   assert.equal(typeof manifest.timings.sheets, "number");
+  assert.ok(manifest.timings.sheets > 0, "the sheets stage took no time — nothing was built");
   // …and the plumbing itself is exercised directly, so it is not dead code.
   const { writeRun } = await import("../generate-world.mjs");
   const tmp = mkdtempSync(join(tmpdir(), "genw-sheet-"));

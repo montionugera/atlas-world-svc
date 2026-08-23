@@ -700,5 +700,43 @@
       "file": "concept/mob-veil-spearling.png",
       "note": "Z-Image Turbo img2img, local generation on mont-pc (F-031). Anchored on sil-spearman.png; denoise 0.82 / steps 24 / cfg 3 per the F-024 calibration; seed 12345. Binds to bestiary design mob-veil-spearling and server mob type veil_spearling. Approved on the first attempt — this design really is a humanoid raider, so the anchor helps rather than fights. Deviation from the bestiary visualBrief: one spear held in hand, the three-spear back harness is not visible."
     }
+    ,
+    "art:map-fabric": {
+      "group": "map",
+      "title": "The Generated World \u2014 Fabric Survey",
+      "file": "maps/world-fabric.png",
+      "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet fabric from content/world/fabric/ and from nothing else \u2014 deliberately NOT from the spine, because the whole value of this sheet is that a reviewer can see what the fabric says while the committed trunk still says something else. The SVG beside this PNG (maps/world-fabric.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+      "description": "The generated world as the fabric layer records it: 13 landmasses traced from their own coastlines (outerRing, 2,413 vertices over the thirteen \u2014 not the trunk placement rings, which the vertex cap tightens to as few as 16), 160 regions drawn as divisions of land with the 40 surveyed ones inked and firmly outlined against the 120 reported ones left as bare parchment under a faint line, 45 settlement dots sized by rank, 38 roads dashed, 7 trunk rivers, and the two sea lanes joining the three capitals in bell-bronze. No biome fills, no glyphs, no place names \u2014 naming is Plan D's and rich cartography is Plan B's, so the continent ids stand in as labels and the emptiness is honest.",
+      "tags": ["map", "world", "fabric", "generated-world", "authored-vector", "svg", "review-sheet"],
+      "source": "docs/superpowers/plans/2026-08-16-world-fill-c-fabric-layer.md",
+      "gen": {
+        "method": "authored-vector", "generated": false,
+        "tool": "tools/mapforge/render-sheet.mjs --sheet fabric",
+        "input": "content/world/fabric/*.json",
+        "vector": "maps/world-fabric.svg",
+        "raster": "rsvg-convert -w 512 (REVIEW THUMB \u2014 the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 \u00a77.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+        "deterministic": true, "width": 512,
+        "note": "No model, no sampler, no seed \u2014 this sheet is drawn from committed JSON, so there are no generation parameters to record. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash, and the 27 fabric and handle files it is drawn from are locked beside it."
+      }
+    }
+    ,
+    "art:map-overlay": {
+      "group": "map",
+      "title": "Coastline Overlay \u2014 Baseline vs Generated",
+      "file": "maps/world-overlay.png",
+      "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet overlay. The baseline is read from the draft folder's baseline/ copy when one is present and from content/spine/nodes otherwise \u2014 NEVER from git, so the sheet builds in a dirty worktree and in a container with no repository. The SVG beside this PNG is the artifact; the PNG is a 512px review thumb.",
+      "description": "The before/after of the world fill: the committed trunk's seven continent polygons ghosted at 20% opacity under the thirteen generated coastlines at full ink, with the 160 region divisions faint behind them, and a per-continent area-delta table joined through content/world/manifest.json's landmasses[].nodeId. Six of the thirteen are marked NEW because the committed chart has no polygon for them at all. The total reads 6,243.5 -> 65,600.0 km\u00b2 of gross land, x10.51 \u2014 the sea-to-land ratio going 24.68 : 1 to 1.50 : 1 \u2014 and the sheet says in its own footer that the trunk is redrawn in Plan E, not here.",
+      "tags": ["map", "world", "overlay", "before-after", "authored-vector", "svg", "review-sheet"],
+      "source": "docs/superpowers/plans/2026-08-16-world-fill-c-fabric-layer.md",
+      "gen": {
+        "method": "authored-vector", "generated": false,
+        "tool": "tools/mapforge/render-sheet.mjs --sheet overlay",
+        "input": "content/world/fabric/*.json + content/spine/nodes/ (or the draft folder's baseline/)",
+        "vector": "maps/world-overlay.svg",
+        "raster": "rsvg-convert -w 512 (REVIEW THUMB \u2014 the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 \u00a77.5, budget content/world/budgets.json sheets.thumbWidthPx)",
+        "deterministic": true, "width": 512,
+        "note": "No model, no sampler, no seed \u2014 this sheet is drawn from committed JSON, so there are no generation parameters to record. Re-run the tool to reproduce it byte-for-byte; content/world/render-lock.json holds the SVG's hash, and the 27 fabric and handle files it is drawn from are locked beside it."
+      }
+    }
   }
 }

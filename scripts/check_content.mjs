@@ -1854,7 +1854,7 @@ function checkWorld(opts) {
   // trunk-divergence line need the node tree and run from checkWorldTrunk below.
   gWorldSeaLand({ world: world.world, manifest: world.manifest, fabric: world.fabric,
                   report: fail, note });
-  gWorldPoi({ fabric: world.fabric, report: fail, note });
+  gWorldPoi({ fabric: world.fabric, budgets: world.budgets, report: fail, note, warn });
   gWorldOrder({ handles: world.handles, orderHandlesFn: orderHandles, orderDigestFn: orderDigestOf,
                 report: fail, note });
   gWorldInstanceGeometry({ fabric: world.fabric, shoelaceArea, selfIntersects, report: fail, note });

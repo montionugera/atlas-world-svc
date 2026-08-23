@@ -53,6 +53,21 @@ function tmpRoot() {
     drop: () => rmSync(base, { recursive: true, force: true }),
   };
 }
+// EMPTY the world layer this fixture root inherited.
+//
+// `tmpRoot()` copies the REAL content/, and since Plan C Task 13 that carries
+// 14 fabric files, 13 handle ledgers and 1,740 instances. Every test below
+// that writes its OWN fabric stub is making a claim about a root holding
+// exactly that stub — "0 instances", "120 instances", "types placed: 99 / 170"
+// — and inheriting the committed world makes each of those claims a claim
+// about the committed world instead. That is the same defect as a fixture that
+// tests nothing: measured, "an EMPTY content/world/fabric/ directory arms
+// nothing" read `types placed: 168 / 170` off the real fabric.
+function emptyWorldLayer(contentRoot) {
+  for (const fam of ["world/fabric", "world/handles"])
+    rmSync(join(contentRoot, fam), { recursive: true, force: true });
+  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+}
 function runGate(contentRoot, ...extra) {
   return runSpineGateInProcess({
     argv: ["--content-root", contentRoot, "--only=spine", ...extra],
@@ -452,7 +467,9 @@ test("G-SHEET-BUDGET: a DIRECTORY named *.svg reports, and does not eat the repo
   assert.equal(r.code, 1, r.out);
   assert.doesNotMatch(r.out, /check-content: \w*Error/, r.out);
   assert.match(r.out, /G-SHEET-BUDGET: sheet weird\.svg could not be read as a file/);
-  assert.match(r.out, /G-LANDFORM: 0 landform instances > budget -1/, "the earlier failure was dropped");
+  // 1,740 since Plan C Task 13 committed the fabric; the number is the real
+  // root's and the point of the line is that it SURVIVES the sheet census.
+  assert.match(r.out, /G-LANDFORM: \d+ landform instances > budget -1/, "the earlier failure was dropped");
   assert.match(r.out, /^content-gate: .*failures/m, "finish() was skipped");
   drop();
 });
@@ -621,15 +638,18 @@ test("budgets.json carries Plan C's sections beside Plan B's, and both are intac
 
 // ── the printed record — a gate that passes may have stopped checking ──────
 
+// On the REAL root, which since Plan C Task 13 carries the fabric — so this is
+// no longer the "0 instances" degenerate case (that one has its own test
+// below, on a root whose world layer is emptied first) but the live census.
 test("the gate PRINTS a world-budget line for landforms on every run", () => {
   const { contentRoot, drop } = tmpRoot();
   const r = runGate(contentRoot);
   assert.equal(r.code, 0, r.out);
   assert.match(
     r.out,
-    /^world-budget: landforms 170 types, 0 instances \(budget 100-200 types, 2400 instances\)$/m,
+    /^world-budget: landforms 170 types, 1740 instances \(budget 100-200 types, 2400 instances\)$/m,
   );
-  assert.match(r.out, /^G-LANDFORM: types placed: 0 \/ 170$/m);
+  assert.match(r.out, /^G-LANDFORM: types placed: 168 \/ 170$/m);
   drop();
 });
 
@@ -939,7 +959,7 @@ function writeFabric(contentRoot, rows) {
 // container is not content, so the census arms on INSTANCES.
 test("degrade: an EMPTY content/world/fabric/ directory arms nothing", () => {
   const { contentRoot, drop } = tmpRoot();
-  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  emptyWorldLayer(contentRoot);
   const r = runGate(contentRoot);
   assert.equal(r.code, 0, r.out);
   assert.match(r.out, /^G-LANDFORM: types placed: 0 \/ 170$/m);
@@ -954,7 +974,7 @@ test("degrade: an EMPTY content/world/fabric/ directory arms nothing", () => {
 // The same, one step later: fabric files exist but hold no instances yet.
 test("degrade: fabric files with empty instance arrays arm nothing", () => {
   const { contentRoot, drop } = tmpRoot();
-  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  emptyWorldLayer(contentRoot);
   writeFabric(contentRoot, []);
   const r = runGate(contentRoot, "--require-complete");
   assert.equal(r.code, 0, r.out);
@@ -965,7 +985,7 @@ test("degrade: fabric files with empty instance arrays arm nothing", () => {
 
 test("G-LANDFORM counts fabric instances and scores type coverage", () => {
   const { contentRoot, drop } = tmpRoot();
-  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  emptyWorldLayer(contentRoot);
   const ids = LEX.slice(0, 120).map((r) => r.id);
   writeFabric(contentRoot, ids.map((id, i) => ({ type: id, named: i < 3 })));
   const r = runGate(contentRoot, "--require-complete");
@@ -991,7 +1011,7 @@ test("G-LANDFORM counts fabric instances and scores type coverage", () => {
 // --require-complete, which is Gate 2 at promote.
 test("G-LANDFORM: type coverage below the floor WARNs by default", () => {
   const { contentRoot, drop } = tmpRoot();
-  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  emptyWorldLayer(contentRoot);
   writeFabric(contentRoot, LEX.slice(0, 99).map((r, i) => ({ id: `i-${i}`, type: r.id })));
   const r = runGate(contentRoot);
   assert.equal(r.code, 0, r.out);
@@ -1004,7 +1024,7 @@ test("G-LANDFORM: type coverage below the floor WARNs by default", () => {
 
 test("G-LANDFORM red: type coverage below the floor under --require-complete", () => {
   const { contentRoot, drop } = tmpRoot();
-  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  emptyWorldLayer(contentRoot);
   writeFabric(contentRoot, LEX.slice(0, 99).map((r, i) => ({ id: `i-${i}`, type: r.id })));
   const r = runGate(contentRoot, "--require-complete");
   assert.equal(r.code, 1, r.out);
@@ -1020,7 +1040,7 @@ test("G-LANDFORM red: type coverage below the floor under --require-complete", (
 // until an author writes a reason, so it can never deadlock.
 test("G-LANDFORM red: a type declares absentBecause and is placed anyway", () => {
   const { contentRoot, drop } = tmpRoot();
-  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  emptyWorldLayer(contentRoot);
   const lex = structuredClone(LEX);
   lex[0].absentBecause = "no terrain in Season 1 supports it";
   writeJson(join(contentRoot, "world/lexicon/landforms.json"), lex);
@@ -1039,7 +1059,7 @@ test("G-LANDFORM red: a type declares absentBecause and is placed anyway", () =>
 // …and a HONEST declaration excuses the row from the shortfall report.
 test("G-LANDFORM: a declared-absent type is excused from the shortfall report", () => {
   const { contentRoot, drop } = tmpRoot();
-  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  emptyWorldLayer(contentRoot);
   const lex = structuredClone(LEX);
   for (const row of lex.slice(120))
     row.absentBecause = "out of scope for Season 1";
@@ -1053,7 +1073,7 @@ test("G-LANDFORM: a declared-absent type is excused from the shortfall report", 
 
 test("G-LANDFORM red: more instances than the budget allows", () => {
   const { contentRoot, drop } = tmpRoot();
-  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  emptyWorldLayer(contentRoot);
   const instances = [];
   for (let i = 0; i < 2401; i++)
     instances.push({ id: `i-${i}`, type: LEX[i % LEX.length].id });
@@ -1066,7 +1086,7 @@ test("G-LANDFORM red: more instances than the budget allows", () => {
 
 test("G-LANDFORM red: more named landforms than the budget allows", () => {
   const { contentRoot, drop } = tmpRoot();
-  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  emptyWorldLayer(contentRoot);
   const instances = [];
   for (let i = 0; i < 501; i++)
     instances.push({ id: `i-${i}`, type: LEX[i % LEX.length].id, named: true });
@@ -1079,7 +1099,7 @@ test("G-LANDFORM red: more named landforms than the budget allows", () => {
 
 test("G-LANDFORM red, not a throw: a fabric file whose instances are not an array", () => {
   const { contentRoot, drop } = tmpRoot();
-  mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
+  emptyWorldLayer(contentRoot);
   writeFabric(contentRoot, { a: 1 });
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);

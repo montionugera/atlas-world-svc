@@ -725,8 +725,12 @@ function writeSpine(d, mutate) {
 }
 
 function withFabric({ fabric = FABRIC_OK, world = WORLD_OK, handles = ledgerOf(LEDGER_ROWS),
-                      spine = null, premise = null } = {}) {
+                      spine = null, premise = null, budgets = null } = {}) {
   return worldFixture({ mutate: (d) => {
+    // `budgets` REPLACES the base fixture's byte copy of the committed file.
+    // Null leaves it alone, which is what every test that has no opinion about
+    // a budget wants.
+    if (budgets) writeFileSync(join(d, "world/budgets.json"), JSON.stringify(budgets, null, 2) + "\n");
     mkdirSync(join(d, "world/fabric"), { recursive: true });
     mkdirSync(join(d, "world/handles"), { recursive: true });
     if (fabric) writeFileSync(join(d, "world/fabric/continent-01.json"), JSON.stringify(fabric, null, 2) + "\n");
@@ -971,7 +975,7 @@ test("G-PROVENANCE's fabric pin is CONTINENT-only and does not fire on a hand-au
 test("G-POI prints its census on every run", () => {
   const r = runWorld(withFabric());
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /G-POI: 1 surveyed regions \(band 12–30: 0 thin, 0 over\) and 1 reported regions \(must be 0\)/);
+  assert.match(r.out, /G-POI: 1 surveyed regions \(band 12–30: 0 thin of which 0 declared, 0 over\) and 1 reported regions \(must be 0\)/);
 });
 
 test("G-POI: a surveyed region below 12 points of interest fails", () => {
@@ -981,7 +985,7 @@ test("G-POI: a surveyed region below 12 points of interest fails", () => {
   const r = runWorld(withFabric({ fabric: thin }));
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, /G-POI: region c01\/r01 \(surveyed\) has 4 points of interest — band is 12–30/);
-  assert.match(r.out, /G-POI: 1 surveyed regions \(band 12–30: 1 thin, 0 over\)/);
+  assert.match(r.out, /G-POI: 1 surveyed regions \(band 12–30: 1 thin of which 0 declared, 0 over\)/);
   assert.match(r.out, /thin: c01\/r01 4/);
 });
 
@@ -1731,4 +1735,70 @@ test("the divergence line is ABSENT when the trunk area overflows to Infinity", 
   } }));
   assert.doesNotMatch(r.out, /G-SEALAND: trunk /, "`trunk Infinity : 1` is not a measurement");
   assert.match(r.out, /G-SEALAND: ratio/, "the measurable half still runs");
+});
+
+// ── THE DECLARED SHORTFALL (Task 13) ───────────────────────────────────────
+//
+// Five of the forty surveyed regions on the committed seed cannot reach the
+// floor, and STATE §18 settled that they are RECORDED, not loosened away.
+// Recording them in a test left the COMMITTED root at five failures the moment
+// Task 13 landed the fabric, so the record moved into budgets.json where the
+// gate reads it. These three tests are the three clauses that make it a
+// declaration rather than an exemption switch.
+const committedBudgets = () =>
+  JSON.parse(readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"));
+const withPoiDeclared = (decl, fabricDoc) => withFabric({
+  fabric: fabricDoc,
+  budgets: { ...committedBudgets(), poi: { supplyLimitedSurveyedRegions: decl } },
+});
+
+const thinFabric = () => {
+  const thin = clone(FABRIC_OK);
+  thin.instances = thin.instances.filter((x) => x.region !== "c01/r01")
+    .concat(thin.instances.filter((x) => x.region === "c01/r01").slice(0, 3));
+  return thin;
+};
+
+test("G-POI clause 1: a DECLARED thin region is a warning naming its count and reason", () => {
+  const r = runWorld(withPoiDeclared({ "c01/r01": "supply-limited: nothing else fits here" }, thinFabric()));
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /WARN {2}G-POI: region c01\/r01 \(surveyed\) has 4 points of interest against a floor of 12 — DECLARED in budgets\.json poi\.supplyLimitedSurveyedRegions: supply-limited: nothing else fits here/);
+  assert.match(r.out, /G-POI: 1 surveyed regions \(band 12–30: 1 thin of which 1 declared, 0 over\)/);
+  assert.ok(!/FAIL {2}G-POI: region c01\/r01/.test(r.out), r.out);
+});
+
+test("G-POI clause 2: an UNDECLARED thin region is still a hard failure", () => {
+  const r = runWorld(withPoiDeclared({ "c01/r99": "a region that is not the thin one" }, thinFabric()));
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-POI: region c01\/r01 \(surveyed\) has 4 points of interest — band is 12–30/);
+});
+
+test("G-POI clause 3: a declaration that is NOT short is a failure — it cannot outlive its cause", () => {
+  const r = runWorld(withPoiDeclared({ "c01/r01": "no longer true" }, clone(FABRIC_OK)));
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-POI: region c01\/r01 is declared supply-limited in budgets\.json but carries \d+ points of interest — the declaration is stale, delete the row/);
+});
+
+test("G-POI clause 3b: a declaration naming a region a LOADED continent does not have is a failure", () => {
+  const r = runWorld(withPoiDeclared({ "c01/r99": "a region that does not exist" }, clone(FABRIC_OK)));
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-POI: budgets\.json declares region c01\/r99 supply-limited, but c01's fabric has no such region/);
+});
+
+test("G-POI clause 3b says nothing about a continent whose fabric is not loaded", () => {
+  // A root carrying one continent of thirteen makes no claim about the other
+  // twelve. Without this the committed five (c05, c07, c08) would red every
+  // single-continent fixture in this file.
+  const r = runWorld(withPoiDeclared({ "c05/r06": "the committed declaration, on a c01-only root" }, clone(FABRIC_OK)));
+  assert.equal(r.code, 0, r.out);
+  assert.ok(!/c05\/r06/.test(r.out), r.out);
+});
+
+test("the committed budgets.json declares exactly the five surveyed regions STATE §18 measured", () => {
+  const b = committedBudgets();
+  assert.deepEqual(Object.keys(b.poi.supplyLimitedSurveyedRegions).sort(),
+    ["c05/r06", "c05/r20", "c07/r06", "c08/r06", "c08/r08"]);
+  for (const [id, why] of Object.entries(b.poi.supplyLimitedSurveyedRegions))
+    assert.ok(typeof why === "string" && why.length > 40, `${id} carries no stated reason`);
+  assert.ok(typeof b.poiWhy === "string" && b.poiWhy.length > 400);
 });

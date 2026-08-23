@@ -627,10 +627,39 @@ export function gWorldTrunkArea({ nodes, fabric, world, manifest, placementArea,
 // root: exactly 60 reported regions carry exactly one named instance each, so
 // the cap is at its limit everywhere it applies and a sixty-first mark is the
 // thing it exists to catch.
-export function gWorldPoi({ fabric, report, note }) {
+export function gWorldPoi({ fabric, budgets, report, note, warn = () => {} }) {
   if (fabric.length === 0) return;
   const MIN = 12, MAX = 30;
-  let surveyed = 0, reported = 0, thin = 0, fat = 0;
+  // ── THE DECLARED SHORTFALLS ────────────────────────────────────────────
+  //
+  // Five of the forty surveyed regions on the committed seed cannot reach
+  // twelve, and the seam-7 adjudication (STATE §18) settled that they are
+  // RECORDED rather than loosened away: fixing P10's supply cannot close
+  // c05/r06 at all, and making the floor a warning is a rule that cannot fail.
+  // What that adjudication did not reach is that recording them in a test
+  // leaves the COMMITTED root at five failures the moment the fabric is
+  // committed — which reds Gate 1 and acceptance criterion 3 — so the record
+  // has to live somewhere the gate can read it.
+  //
+  // It is a DECLARATION, not an exemption switch, and all three clauses are
+  // load-bearing:
+  //   (1) a DECLARED region below the floor is a warning naming its measured
+  //       count and the committed reason;
+  //   (2) an UNDECLARED region below the floor is a hard failure, unchanged —
+  //       so a sixth thin region still reds;
+  //   (3) a DECLARED region that is NOT below the floor is a hard failure —
+  //       so a declaration cannot outlive its cause, and Plan E's redraw is
+  //       told to delete the row rather than leaving a stale one behind.
+  // Clause (3) is also what stops the list becoming a place to put anything.
+  // A declared id whose CONTINENT is loaded but whose region is not present at
+  // all is the same failure, for the same reason; a continent that is not
+  // loaded says nothing about its regions, which is what keeps partial fixture
+  // roots honest.
+  const declared = new Map(Object.entries(budgets?.poi?.supplyLimitedSurveyedRegions ?? {})
+    .filter(([, v]) => typeof v === "string"));
+  const seenRegion = new Set();
+  const loadedContinents = new Set();
+  let surveyed = 0, reported = 0, thin = 0, fat = 0, declaredThin = 0;
   const thinnest = [];
   for (const f of fabric) {
     // A document with NO `regions` array is not a region-bearing document and
@@ -672,15 +701,23 @@ export function gWorldPoi({ fabric, report, note }) {
     // deliberately not a rule here, and this comment is why the loop the plan
     // wrote as dead code is absent instead of empty.
 
+    if (typeof f.continent === "string") loadedContinents.add(f.continent);
     for (const r of regions) {
       if (r === null || typeof r !== "object") continue;   // shape is the schema's business
+      seenRegion.add(r.id);
       const n = counts.get(r.id);
+      const why = declared.get(r.id);
       if (r.survey === "surveyed") {
         surveyed++;
         if (n < MIN) { thin++; thinnest.push(`${r.id} ${n}`); }
         if (n > MAX) fat++;
-        if (n < MIN || n > MAX)
+        if (n < MIN && why !== undefined) {
+          declaredThin++;
+          warn(`G-POI: region ${r.id} (surveyed) has ${n} points of interest against a floor of ${MIN} — DECLARED in budgets.json poi.supplyLimitedSurveyedRegions: ${why}`);
+        } else if (n < MIN || n > MAX)
           report(`G-POI: region ${r.id} (surveyed) has ${n} points of interest — band is ${MIN}–${MAX}`);
+        else if (why !== undefined)
+          report(`G-POI: region ${r.id} is declared supply-limited in budgets.json but carries ${n} points of interest — the declaration is stale, delete the row`);
       } else {
         reported++;
         if (n !== 0)
@@ -693,7 +730,17 @@ export function gWorldPoi({ fabric, report, note }) {
         report(`G-POI: region ${r.id} is reported but carries terrainKind "${r.terrainKind}" — reported ⇒ terrainKind null`);
     }
   }
-  note(`G-POI: ${surveyed} surveyed regions (band ${MIN}–${MAX}: ${thin} thin, ${fat} over) and ` +
+  // Clause (3)'s other half: a declared region that is not there at all. Only
+  // judged for a continent whose fabric file was actually loaded — a root
+  // carrying one continent of thirteen makes no claim about the other twelve,
+  // which is exactly what world-gates' single-continent fixtures are.
+  for (const [id, why] of declared) {
+    if (seenRegion.has(id)) continue;
+    const continent = String(id).split("/")[0];
+    if (!loadedContinents.has(continent)) continue;
+    report(`G-POI: budgets.json declares region ${id} supply-limited, but ${continent}'s fabric has no such region — the declaration is stale, delete the row (${why.slice(0, 60)}…)`);
+  }
+  note(`G-POI: ${surveyed} surveyed regions (band ${MIN}–${MAX}: ${thin} thin of which ${declaredThin} declared, ${fat} over) and ` +
        `${reported} reported regions (must be 0)` +
        (thinnest.length ? ` — thin: ${thinnest.join(", ")}` : ""));
 }

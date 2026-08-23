@@ -17,7 +17,7 @@
 // and hand back a quietly shrunken lock, the one outcome a drift gate must
 // never produce. Callers that must not throw (a check_content.mjs gate) build
 // the sheets themselves and pass `built`.
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 
@@ -50,6 +50,31 @@ const sha256 = (data) =>
 // that had to build every sheet anyway — check_render_lock.mjs builds them all
 // up front to collect problems — pass it so the renderer runs once per sheet
 // per invocation instead of twice. Omitting it keeps the original behaviour.
+/**
+ * The committed fabric layer, as extra locked artifacts.
+ *
+ * The lock exists so a committed DRAWING cannot drift from the tool that makes
+ * it. content/world/fabric/ and content/world/handles/ are the same kind of
+ * thing one layer down: 27 generated files, committed, that two sheets and
+ * five gates are drawn from and joined against, and whose only producer is
+ * `generate-world.mjs` on a pinned seed. Locking them means a hand edit to a
+ * region ring or a handle ledger is ONE changed line here instead of a silent
+ * change to what the world is.
+ *
+ * A directory that does not exist contributes nothing — `computeLock` already
+ * drops an unreadable extraPath — so a fixture root, or the tree before Task
+ * 13, locks the sheets alone.
+ */
+export function lockExtraPaths({ repoRoot }) {
+  const out = [];
+  for (const fam of ["content/world/fabric", "content/world/handles"]) {
+    const dir = join(repoRoot, fam);
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir).filter((x) => x.endsWith(".json")).sort()) out.push(`${fam}/${f}`);
+  }
+  return out;
+}
+
 export function computeLock({
   repoRoot,
   sheets,

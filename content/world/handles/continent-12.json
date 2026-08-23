@@ -1,0 +1,22 @@
+{
+  "continent": "c12",
+  "orderDigest": "sha256:fe81541a3c690d32b431007bd63e72fe791d42979fa690735687c3ece2fc3e80",
+  "handles": [
+    {"handle":"c12/glacial/h-173266","type":"outlet-glacier","sizeKm":28.43,"region":"c12/r01","contentHash":"sha256:173266701299a21853a51517ec915f599b77c7e2c27c5af84533420a052a228e","rank":0},
+    {"handle":"c12/glacial/h-de8cc0","type":"outwash-plain","sizeKm":19.3,"region":"c12/r02","contentHash":"sha256:de8cc09dc568e86af1f618040171ba99878289fc7ccf7eeeb2ab83760403e8a0","rank":1},
+    {"handle":"c12/glacial/h-3f7c55","type":"moraine-medial","sizeKm":5.56,"region":"c12/r01","contentHash":"sha256:3f7c55686b3a08fd4b35119cb7158a3f94116054ecb5091c7ed3d1b96a7cbe24","rank":2},
+    {"handle":"c12/coastal/h-4d400d","type":"barrier-island","sizeKm":3.12,"region":"c12/r01","contentHash":"sha256:4d400d2774e013f6cd9d67587fe354d28053315110a243395c3f64201438294c","rank":3},
+    {"handle":"c12/glacial/h-7d65d2","type":"cirque","sizeKm":2.86,"region":"c12/r01","contentHash":"sha256:7d65d2f6d404309c9fe9c2166fbb597915680a5cabee03e2bf518675127a2f60","rank":4},
+    {"handle":"c12/coastal/h-ea9cac","type":"tombolo","sizeKm":1.41,"region":"c12/r02","contentHash":"sha256:ea9cace5f8bec00b909b4eafad1af926103d3ac88adfaca8b4922ee8661e01e9","rank":5},
+    {"handle":"c12/glacial/h-b1061e","type":"horn-peak","sizeKm":0.96,"region":"c12/r02","contentHash":"sha256:b1061e5d59bb52db82d11fe69a8be24391df5c6870bf6a29730a0837e64a76e7","rank":6},
+    {"handle":"c12/glacial/h-7fea75","type":"nunatak","sizeKm":0.49,"region":"c12/r02","contentHash":"sha256:7fea75c283175e7915767491ceacdf14753346f2a22ba8aa8fbd26eeef166257","rank":7},
+    {"handle":"c12/coastal/h-b717dc","type":"geo","sizeKm":0.48,"region":"c12/r01","contentHash":"sha256:b717dc79f34e356627def3f1731bf880fe8ded1b6ae37209df4eca41fb1a62ab","rank":8},
+    {"handle":"c12/glacial/h-570f1b","type":"kettle-hole","sizeKm":0.37,"region":"c12/r02","contentHash":"sha256:570f1b5f59f70cd06e21fb2fe12610b48829ec5fce9468f8e848ac5d0445155e","rank":9},
+    {"handle":"c12/coastal/h-5e1cc7","type":"sea-cave","sizeKm":0.28,"region":"c12/r02","contentHash":"sha256:5e1cc7e7f438e0cf9e62163714e73e3b35d80862f6f30e8a5ee757ae9fe38e6d","rank":10},
+    {"handle":"c12/coastal/h-95ae43","type":"sea-arch","sizeKm":0.16,"region":"c12/r02","contentHash":"sha256:95ae431870ee9b772697c9a34fc9537cd3e5198f326c07d784beb6e72b6e8c46","rank":11},
+    {"handle":"c12/coastal/h-4cbc26","type":"sea-arch","sizeKm":0.12,"region":"c12/r01","contentHash":"sha256:4cbc26f1da01b9ddca52f16b58c1b737564d079d11eb2c6aa011f3d4f4216b57","rank":12},
+    {"handle":"c12/glacial/h-4055a1","type":"glacial-erratic","sizeKm":0.06,"region":"c12/r02","contentHash":"sha256:4055a13bb8600e7a67e7e31317db1515015db14c4411b59d031429f9d46995d2","rank":13},
+    {"handle":"c12/glacial/h-a2e721","type":"moulin","sizeKm":0.05,"region":"c12/r01","contentHash":"sha256:a2e721d0d8ae5dfdae1d863c7a32def316ff5305f8a80f423297c5961e924945","rank":14},
+    {"handle":"c12/coastal/h-12d07f","type":"sea-waterfall","sizeKm":0.03,"region":"c12/r01","contentHash":"sha256:12d07f6dc8f33f23ef67816bccf02e6bd517f3d57dadbb56aabe78900aafd7dd","rank":15}
+  ]
+}

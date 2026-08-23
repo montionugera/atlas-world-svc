@@ -108,6 +108,15 @@ export function cachedRun() {
     // several test processes race for this and rename is the only step that
     // must be atomic. A loser finds the directory already there and uses it.
     mkdirSync(BUILD, { recursive: true });
+    // Prune every cache dir keyed on a DIFFERENT input digest. They are stale
+    // by construction — the digest is the inputs — and each is ~1.6 MB over 72
+    // files, so without this a day of editing tools/mapforge/ leaves dozens
+    // behind under build/. A concurrent process on the same tree computes the
+    // same digest and is therefore never the one being deleted.
+    for (const e of readdirSync(BUILD, { withFileTypes: true }))
+      if (e.isDirectory() && (e.name.startsWith(".test-run-") || e.name.startsWith(".staging-")) &&
+          join(BUILD, e.name) !== dir)
+        rmSync(join(BUILD, e.name), { recursive: true, force: true });
     const staging = realpathSync(mkdtempSync(join(BUILD, ".staging-")));
     try {
       generateInto(staging);

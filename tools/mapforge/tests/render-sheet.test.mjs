@@ -83,6 +83,8 @@ test("SHEETS entries declare title, outSvg, outPng and maxLabelRank", () => {
   assert.deepEqual(Object.keys(SHEETS).sort(), [
     "atlas",
     "cluster1",
+    "fabric",
+    "overlay",
     "synthetic",
   ]);
   for (const [id, sheet] of Object.entries(SHEETS)) {

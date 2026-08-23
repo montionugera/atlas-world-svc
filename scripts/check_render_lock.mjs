@@ -25,7 +25,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { SHEETS } from "../tools/mapforge/render-sheet.mjs";
-import { computeLock, checkLock, unifiedDiff } from "./lib/render-lock.mjs";
+import { computeLock, checkLock, unifiedDiff, lockExtraPaths } from "./lib/render-lock.mjs";
 
 const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const LOCK_REL = "content/world/render-lock.json";
@@ -75,7 +75,7 @@ function main() {
     process.exit(1);
   }
 
-  const computed = computeLock({ repoRoot: root, sheets: SHEETS, built });
+  const computed = computeLock({ repoRoot: root, sheets: SHEETS, built, extraPaths: lockExtraPaths({ repoRoot: root }) });
 
   if (mode === "write") {
     mkdirSync(dirname(LOCK_PATH), { recursive: true });

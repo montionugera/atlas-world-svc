@@ -16,6 +16,7 @@ import {
   checkLock,
   unifiedDiff,
   GENERATOR_VERSION,
+  lockExtraPaths,
 } from "../lib/render-lock.mjs";
 import { SHEETS } from "../../tools/mapforge/render-sheet.mjs";
 import { makeTempRepo } from "./helpers/temp-repo.mjs";
@@ -93,7 +94,13 @@ test("computeLock uses caller-supplied built bytes instead of rendering twice", 
 
 test("the committed lock matches what the sheets build right now", () => {
   const committed = JSON.parse(readFileSync(LOCK_PATH, "utf8"));
-  const computed = computeLock({ repoRoot: ROOT, sheets: SHEETS });
+  // `lockExtraPaths` and not a second list: the CLI passes the same function,
+  // so the lock the gate checks and the lock this test recomputes cannot be
+  // computed over different artifact sets. Plan C Task 13 added the 27
+  // committed fabric and handle files to it.
+  const computed = computeLock({
+    repoRoot: ROOT, sheets: SHEETS, extraPaths: lockExtraPaths({ repoRoot: ROOT }),
+  });
   assert.deepEqual(
     checkLock({
       committed: committed.artifacts,
@@ -101,6 +108,17 @@ test("the committed lock matches what the sheets build right now", () => {
     }),
     { drift: [], missing: [], extra: [] },
   );
+});
+
+test("lockExtraPaths names every committed fabric and handle file, and nothing else", () => {
+  const paths = lockExtraPaths({ repoRoot: ROOT });
+  // A list that answered [] would make the clause above vacuous.
+  assert.equal(paths.length, 27, `lockExtraPaths returned ${paths.length} paths`);
+  for (const p of paths) assert.match(p, /^content\/world\/(fabric|handles)\/[a-z0-9-]+\.json$/);
+  assert.deepEqual(paths, [...paths].sort(), "the extra paths are not sorted — the lock's key order would depend on readdir");
+  // A root with neither family locks the sheets alone, which is what every
+  // fixture root and the tree before Task 13 look like.
+  assert.deepEqual(lockExtraPaths({ repoRoot: join(ROOT, "scripts") }), []);
 });
 
 test("checkLock separates drift, missing and extra — three different mistakes", () => {
