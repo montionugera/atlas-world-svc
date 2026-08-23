@@ -1372,14 +1372,36 @@ test("the base fixture's budgets file IS the committed one too, for the same rea
       "copy the real one across rather than editing the fixture");
 });
 
-test("a fabric file with no regions array is a SCHEMA failure — G-POI skips it, the schema does not", () => {
-  // The other half of gWorldPoi's skip. Plan B's G-LANDFORM fixtures write
-  // `world/fabric/c01.json` as a stub carrying only `instances`; attributing
-  // POIs there produced 120 orphan failures on four committed tests. The
-  // missing key is shape, and shape has a venue.
-  const stub = { instances: [] };
+test("a fabric file with no regions array is ONE schema failure, not one orphan line per instance", () => {
+  // The other half of gWorldPoi's skip, and it needs INSTANCES to have any
+  // teeth: with `regions` absent, byRegion is empty and every instance would
+  // otherwise be reported as naming a region the file does not hold. Plan B's
+  // G-LANDFORM fixtures used to be exactly this shape — a stub carrying only
+  // `instances` — and 120 orphan lines is noise on top of the one failure that
+  // says what is actually wrong. The missing key is SHAPE and shape has a venue.
+  const stub = { instances: [instance(0, "c01/r01"), instance(1, "c01/r01")] };
   const r = runWorld(withFabric({ fabric: stub }));
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, /world\/fabric\/continent-01\.json: schema \/ must have required property 'regions'/);
+  assert.doesNotMatch(r.out, /G-POI: instance/,
+    "a region-less document earns one shape failure, never one POI line per instance");
   assert.doesNotMatch(r.out, /G-POI: region/, "there are no regions to have an opinion about");
+});
+
+test("G-POLY's too-few-points rule is REACHABLE — the schema is not always there to catch it first", () => {
+  // `minItems: 3` on an area ring means the schema normally speaks first, and
+  // checkSpine CONTINUES past a schema-invalid document, so both venues run.
+  // A content root without the fabric schema is not hypothetical:
+  // tools/mapforge/gen-world.mjs copies only spine-node.schema.json into the
+  // root it writes, and checkWorld skips a schema file it cannot find. Remove
+  // it and the gate rule is the only thing left standing.
+  const bad = clone(FABRIC_OK);
+  bad.instances[1].geometry = { shape: "area", ring: [[0, 0], [1, 1]] };
+  const dir = withFabric({ fabric: bad });
+  rmSync(join(dir, "schemas/fabric-file.schema.json"));
+  const r = runWorld(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-POLY: instance lf-c01-r01-0001 ring has 2 points — a closed ring needs at least 3/);
+  assert.doesNotMatch(r.out, /world\/fabric\/continent-01\.json: schema/,
+    "the schema is deliberately absent here — that is what makes the gate rule the only rule");
 });
