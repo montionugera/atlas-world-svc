@@ -1533,19 +1533,15 @@ for (const [label, mutate, re] of [
   });
 }
 
-test("world-fabric.schema.json is GREEN on the committed world.json, not just on the fixture", () => {
-  // The fixture is a miniature; the shipped document is the thing Task 12
-  // promotes. Validating the real bytes here is what stops the schema from
-  // being written to fit the fixture.
-  const real = join(ROOT, "build/mapforge");
-  if (!existsSync(real)) return;             // no draft root on this box — nothing to check
-  const roots = readdirSync(real).map((d) => join(real, d, "content/world/fabric/world.json"))
-                                 .filter((f) => existsSync(f));
-  if (roots.length === 0) return;
-  const dir = withFabric({ world: JSON.parse(readFileSync(roots[0], "utf8")) });
-  const out = runWorld(dir).out;
-  assert.doesNotMatch(out, /world\/fabric\/world\.json: schema/, `a real generated world.json must validate:\n${out}`);
-});
+// NOT a test that the schema is green on a REAL generated world.json. The
+// obvious one — find a root under build/mapforge/ and validate it — returns
+// early when there is no draft root, which is every CI run: a test that cannot
+// fail where it matters is the decoration this seam exists to remove, and the
+// same standard that deleted the accounted-set subtraction applies here.
+// generate-world.test.mjs already owns that coverage on a FRESHLY generated
+// root: its accounted-set assertion collects every FAIL that is not carried
+// canon and deepEquals it to the five recorded G-POI lines, so a
+// `world/fabric/world.json: schema …` failure reds it there.
 
 // 5. THE WATER HALF OF G-TRUNK-AREA WAS SWITCHABLE OFF BY DELETING ONE KEY.
 //
