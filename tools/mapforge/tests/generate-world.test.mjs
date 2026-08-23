@@ -753,10 +753,16 @@ test("--stage-report prints one line per pass with a millisecond figure", { time
 });
 
 test("SYNTHETIC_LOAD_BUDGET, PRE_WORLD_ATLAS_CHILDREN and PRE_WORLD_SEALANE_ID are gone", () => {
-  // COMMENTS STRIPPED, by the repo's single stripper. The three names are
-  // discussed at length in generate-world.mjs's own header — a raw substring
-  // scan reds on the PROSE that explains why they are gone, which is the exact
-  // defect seam 1 fixed for the two determinism scans.
+  // COMMENTS STRIPPED, by the repo's single stripper. TWO of the three names —
+  // PRE_WORLD_ATLAS_CHILDREN and PRE_WORLD_SEALANE_ID — are discussed at length
+  // in generate-world.mjs's own header, so a raw substring scan reds on the
+  // PROSE that explains why they are gone, which is the exact defect seam 1
+  // fixed for the two determinism scans. SYNTHETIC_LOAD_BUDGET is NOT named
+  // there: the header says "no synthetic budget" in words and never spells the
+  // symbol. Measured 2026-08-23, `grep -c SYNTHETIC_LOAD_BUDGET
+  // tools/mapforge/generate-world.mjs` -> 0. The assertion below has always
+  // been right about the one it checks; only the sentence was wrong, and it is
+  // the sentence STATE §5 quoted.
   const src = codeOfFile(CLI);
   for (const bad of ["SYNTHETIC_LOAD_BUDGET", "PRE_WORLD_ATLAS_CHILDREN", "PRE_WORLD_SEALANE_ID"])
     assert.ok(!src.includes(bad), `${bad} survived into generate-world.mjs`);

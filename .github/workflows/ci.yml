@@ -142,8 +142,12 @@ jobs:
       # development.
       #
       # SHELL-EXPANDED FILE LIST, UNQUOTED — this is NOT the quoted form used in
-      # the local verify commands. The `node-version` pinned above is 18, and
-      # Node's own `--test <glob-pattern>` support only arrived in v22. Quoting
+      # the local verify commands. The `node-version` pinned above comes from
+      # .release.json's nodeMajor and is below 22 today; Node's own
+      # `--test <glob-pattern>` support only arrived in v22. (Restating the pin
+      # here as a literal is the staleness class the line this replaced was
+      # caught by — scripts/tests/node-pin.test.mjs is where the number lives
+      # and is joined to its consumer.) Quoting
       # here would hand Node 18 the literal string
       # "tools/mapforge/tests/*.test.mjs" as a path: the step would either error
       # on a nonexistent file or, worse, run zero tests and go green while
@@ -152,10 +156,18 @@ jobs:
       - name: Mapforge test suite
         run: node --test tools/mapforge/tests/*.test.mjs
 
+      # EVERY id in the SHEETS registry, not a subset. `fabric` and `overlay`
+      # were covered only through G-RENDER-LOCK when they landed; the lock
+      # compares hashes and this compares the drawing to the committed file,
+      # which are different claims. tools/mapforge/tests/render-sheet.test.mjs
+      # asserts this list IS the registry, so a sheet added without a line here
+      # reds rather than going quietly uncovered.
       - name: Sheet self-check (render-sheet --check)
         run: |
-          node tools/mapforge/render-sheet.mjs --sheet cluster1 --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet atlas --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet cluster1 --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet fabric --no-png --check
+          node tools/mapforge/render-sheet.mjs --sheet overlay --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet synthetic --no-png --check
 
       # Story explorer (F-012 Task 6): graph.mjs is the pure buildGraph()
