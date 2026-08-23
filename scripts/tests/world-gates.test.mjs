@@ -4,7 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync, mkdirSync } from "node:fs";
+import { chmodSync, cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -24,9 +24,9 @@ const FIX = join(ROOT, "scripts/tests/fixtures/world");
 // landform-instance is here because fabric-file.schema.json $refs it, and a
 // missing $ref target makes ajv throw at compile time rather than validate
 // loosely.
-const WORLD_SCHEMAS = ["world-manifest.schema.json", "premise.schema.json",
-                       "fabric-file.schema.json", "handle-ledger.schema.json",
-                       "landform-instance.schema.json"];
+const WORLD_SCHEMAS = ["world-manifest.schema.json", "world-fabric.schema.json",
+                       "premise.schema.json", "fabric-file.schema.json",
+                       "handle-ledger.schema.json", "landform-instance.schema.json"];
 
 export function worldFixture({ overlayDir = null, mutate = null } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "world-fix-"));
@@ -857,13 +857,16 @@ test("G-SEALAND prints the TRUNK DIVERGENCE whenever there is a trunk to diverge
   // 1.50 : 1. A green ratio must never be read as "the chart is redrawn", so
   // the gate says both numbers out loud side by side.
   const r = runWorld(withFabric({ spine: () => {} }));
-  assert.match(r.out, /G-SEALAND: trunk land 6400\.0 km² vs fabric net land 64000\.0 km² — the trunk is redrawn in Plan E, not here/);
+  // THE RATIOS FIRST, in the same unit as the band two lines above. n-c is an
+  // 80x80 km polygon on a 160,000 km² frame, so the trunk reads 24.00 : 1 —
+  // the shape of the committed chart's 24.63 : 1 — against the fabric's 1.50.
+  assert.match(r.out, /G-SEALAND: trunk 24\.00 : 1 vs fabric 1\.50 : 1 \(trunk land 6400\.0 km², fabric net land 64000\.0 km²\) — the trunk is redrawn in Plan E, not here/);
 });
 
 test("…and OMITS it, rather than printing null, on a root with a fabric and no spine", () => {
   const r = runWorld(withFabric());
   assert.match(r.out, /G-SEALAND: ratio/, "the measurable half still runs");
-  assert.doesNotMatch(r.out, /G-SEALAND: trunk land/,
+  assert.doesNotMatch(r.out, /G-SEALAND: trunk /,
     "there is no trunk on this root — the line must be absent, not `null km²`");
 });
 
@@ -1404,4 +1407,332 @@ test("G-POLY's too-few-points rule is REACHABLE — the schema is not always the
   assert.match(r.out, /G-POLY: instance lf-c01-r01-0001 ring has 2 points — a closed ring needs at least 3/);
   assert.doesNotMatch(r.out, /world\/fabric\/continent-01\.json: schema/,
     "the schema is deliberately absent here — that is what makes the gate rule the only rule");
+});
+
+// ── the ADJUDICATING FIX PASS, 2026-08-23 ──────────────────────────────────
+// Two independent adversarial reviews of this seam. Each finding below was
+// reproduced on a real root before the fix and is pinned here so it cannot
+// come back. The order is the reviews' own severity order.
+
+// 1. THE GATE COULD DISCARD ITS OWN OUTPUT.
+//
+// `world/fabric` had TWO readers: loadFabric's guarded listJson, and a second,
+// BARE readdirSync inside gWorldLandforms. existsSync cannot guard either of
+// the two ways a directory refuses to be listed — a FILE at that path
+// (ENOTDIR) or its permission bit off (EACCES) — so the second reader threw
+// out of the gate, finish() never ran, and every failure recorded before it
+// was silently dropped. The fix DELETES the second reader rather than guarding
+// it twice: the census now walks loadFabric's already-loaded documents.
+//
+// The existing unlistable-directory test above could not see this, and it is
+// worth saying why: its root has no `spine/`, so checkSpine returns at its own
+// soft-skip and gSpineWorld — where the second reader lived — was never
+// reached. THE SPINE IS THE POINT OF THIS FIXTURE.
+test("an unlistable world/fabric cannot throw out of G-LANDFORM either — the SECOND reader", () => {
+  const dir = worldFixture({ mutate: (d) => {
+    writeSpine(d, () => {});                 // gSpineWorld runs only once a spine exists
+    rmSync(join(d, "world/fabric"), { recursive: true, force: true });
+    writeFileSync(join(d, "world/fabric"), "not a directory");
+  } });
+  const r = runWorldGate(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /FAIL\s+world: world\/fabric cannot be listed: /);
+  assert.doesNotMatch(r.out, /check-content: \w*Error/, "a stack trace means the gate threw");
+  assert.match(r.out, /world-budget: landforms \d+ types, 0 instances/,
+    "the census must still print — an unreadable directory holds no instances, and saying so is the answer");
+  assert.match(r.out, /content-gate: .* failures,/, "finish() did not run");
+});
+
+test("…and neither can a world/fabric whose permission bit is off", () => {
+  // EACCES rather than ENOTDIR: a different errno down the same throw path.
+  // Skipped as root, where chmod 000 does not deny.
+  if (typeof process.getuid === "function" && process.getuid() === 0) return;
+  const dir = worldFixture({ mutate: (d) => {
+    writeSpine(d, () => {});
+    mkdirSync(join(d, "world/fabric"), { recursive: true });
+    chmodSync(join(d, "world/fabric"), 0o000);
+  } });
+  try {
+    const r = runWorldGate(dir);
+    assert.equal(r.code, 1, r.out);
+    assert.match(r.out, /FAIL\s+world: world\/fabric cannot be listed: /);
+    assert.doesNotMatch(r.out, /check-content: \w*Error/, "a stack trace means the gate threw");
+    assert.match(r.out, /content-gate: .* failures,/, "finish() did not run");
+  } finally { chmodSync(join(dir, "world/fabric"), 0o755); }
+});
+
+// 2. THE OTHER UNCAUGHT THROW, on the same run and for the same reason.
+//
+// `interior` is `{ "type": "object" }` in spine-node.schema.json with NO
+// required keys, so the schema is not a venue for a missing
+// `originInParent`/`size` and the guard has to be in the gate. The RULE always
+// fired — eq(undefined, [0,0]) is false — it was the MESSAGE that threw, on a
+// bare `.join(", ")`. Reproduced on scripts/tests/fixtures/spine/base, whose
+// three nodes carry exactly that shape.
+test("a node whose interior lost originInParent/size is a G-FRAME failure, not a throw", () => {
+  const dir = worldFixture({ mutate: (d) => {
+    writeSpine(d, () => {});
+    const p = join(d, "spine/nodes/n-c.json");
+    const node = JSON.parse(readFileSync(p, "utf8"));
+    delete node.interior.originInParent;
+    delete node.interior.size;
+    writeFileSync(p, JSON.stringify(node, null, 2) + "\n");
+  } });
+  const r = runWorldGate(dir);
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-FRAME n-c: interior\.originInParent \[undefined\] != derived \[10, 10\]/);
+  assert.match(r.out, /G-FRAME n-c: interior\.size \[undefined\] != derived \[80, 80\]/);
+  assert.doesNotMatch(r.out, /check-content: \w*Error/, "a stack trace means the gate threw");
+  assert.match(r.out, /content-gate: .* failures,/, "finish() did not run");
+});
+
+// 3. THE GATE'S REPORT COULD BE TRUNCATED BY ITS OWN EXIT.
+//
+// console.log to a PIPE is asynchronous on POSIX and process.exit() discards
+// what libuv has not flushed, so a spawned run could lose its TAIL — FAIL lines
+// and the `content-gate:` summary absent, exit code still correct. Measured in
+// a node:18 container: 12/100 spawns truncated at 30 KB of output, 81/100 at
+// 76 KB; on darwin, 0/100 at both. That platform split is why it read as a
+// Node-18 test flake. This is a SOURCE assertion because the defect cannot be
+// reproduced on macOS, where the suite is written — a behavioural test here
+// would be green for the wrong reason.
+test("finish() sets process.exitCode and never calls process.exit — the report must drain", () => {
+  const src = readFileSync(GATE, "utf8");
+  const body = src.slice(src.indexOf("\nfunction finish("));
+  const end = body.indexOf("\n}\n");
+  assert.ok(end > 0, "could not find finish()'s body");
+  const fn = body.slice(0, end);
+  assert.match(fn, /process\.exitCode = failures\.length \? 1 : 0;/);
+  assert.doesNotMatch(fn, /process\.exit\(/,
+    "process.exit() here discards unflushed stdout on a pipe — the gate truncates its own report");
+});
+
+// 4. world.json HAD NO SCHEMA VENUE, and Task 12 promotes it next.
+//
+// G-SEALAND validates the numeric core well, but `continents[]` and
+// `seaLanes[]` were checked by NOTHING — and `continents[].fabric` is the
+// pointer G-TRUNK-AREA joins through. Each of these three was ZERO failures.
+for (const [label, mutate, re] of [
+  ["continents is not an array", (w) => { w.continents = "not-an-array"; },
+   /world\/fabric\/world\.json: schema \/continents must be array/],
+  ["a seaLanes row of pure nonsense", (w) => { w.seaLanes = [{ nonsense: true }]; },
+   /world\/fabric\/world\.json: schema \/seaLanes\/0 must have required property 'id'/],
+  ["a continent row with no fabric pointer", (w) => { delete w.continents[0].fabric; },
+   /world\/fabric\/world\.json: schema \/continents\/0 must have required property 'fabric'/],
+  ["a continent row with no landCells", (w) => { delete w.continents[0].landCells; },
+   /world\/fabric\/world\.json: schema \/continents\/0 must have required property 'landCells'/],
+  ["a stray top-level key", (w) => { w.rogue = 1; },
+   /world\/fabric\/world\.json: schema \/ must NOT have additional properties/],
+]) {
+  test(`world-fabric.schema.json rejects ${label}`, () => {
+    const bad = clone(WORLD_OK);
+    mutate(bad);
+    const r = runWorld(withFabric({ world: bad }));
+    assert.equal(r.code, 1, r.out);
+    assert.match(r.out, re);
+  });
+}
+
+test("world-fabric.schema.json is GREEN on the committed world.json, not just on the fixture", () => {
+  // The fixture is a miniature; the shipped document is the thing Task 12
+  // promotes. Validating the real bytes here is what stops the schema from
+  // being written to fit the fixture.
+  const real = join(ROOT, "build/mapforge");
+  if (!existsSync(real)) return;             // no draft root on this box — nothing to check
+  const roots = readdirSync(real).map((d) => join(real, d, "content/world/fabric/world.json"))
+                                 .filter((f) => existsSync(f));
+  if (roots.length === 0) return;
+  const dir = withFabric({ world: JSON.parse(readFileSync(roots[0], "utf8")) });
+  const out = runWorld(dir).out;
+  assert.doesNotMatch(out, /world\/fabric\/world\.json: schema/, `a real generated world.json must validate:\n${out}`);
+});
+
+// 5. THE WATER HALF OF G-TRUNK-AREA WAS SWITCHABLE OFF BY DELETING ONE KEY.
+//
+// The G-PROVENANCE pin read `node.tier === "continent"`, so stripping
+// `provenance.generator.fabric` from the twelve generated ocean and sea nodes
+// of a draft root dropped the gate from 25 scored to 13 with ZERO failures,
+// while doing the same to the thirteen continents earned thirteen. The pin now
+// covers every tier G-TRUNK-AREA can score.
+test("G-PROVENANCE pins the fabric citation on an OCEAN node, not just a continent", () => {
+  const r = runWorld(withFabric({ spine: (node) => {
+    node.tier = "ocean";                     // depth 1, same as continent — legal under n-w
+    node.provenance = { authored: "generated", generator: { name: "mapforge", version: "3.0.0" },
+                        source: "content/world/premises/continent-01.json" };
+  } }));
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-PROVENANCE: n-c: generator\.fabric is missing — polygon and fabric can disagree/);
+});
+
+test("…and does NOT pin a tier G-TRUNK-AREA cannot score", () => {
+  // The pin's whole justification is that the citation gives G-TRUNK-AREA
+  // something to join TO. A tier it never scores must not be made to carry one.
+  const r = runWorld(withFabric({ spine: (node) => {
+    node.tier = "fixture";
+    node.provenance = { authored: "generated", generator: { name: "mapforge", version: "3.0.0" },
+                        source: "content/world/premises/continent-01.json" };
+  } }));
+  assert.doesNotMatch(r.out, /G-PROVENANCE: n-c: generator\.fabric is missing/);
+});
+
+// 6. G-ORDER IGNORED ITS OWN `rank` COLUMN.
+//
+// All 301 of a real ledger's ranks could be reversed, swapped pairwise, or
+// arbitrarily permuted for ZERO new failures: the digest is recomputed from a
+// list with `rank` STRIPPED, clause (3) sees only range and uniqueness (a
+// permutation is still dense), and the positional loop compares handles.
+for (const [label, mutate, re] of [
+  ["two adjacent ranks swapped", (rows) => { const a = rows[0].rank; rows[0].rank = rows[1].rank; rows[1].rank = a; },
+   /G-ORDER: c01 gives ".*" rank 1 at position 0 — rank is the row's own position/],
+  ["every rank reversed", (rows) => { const n = rows.length; rows.forEach((h, i) => { h.rank = n - 1 - i; }); },
+   /G-ORDER: c01 gives ".*" rank 2 at position 0 — rank is the row's own position/],
+  ["an arbitrary dense permutation", (rows) => { const n = rows.length; rows.forEach((h, i) => { h.rank = (i + 1) % n; }); },
+   /G-ORDER: c01 gives ".*" rank 1 at position 0 — rank is the row's own position/],
+]) {
+  test(`G-ORDER fails when ${label} — the digest cannot see rank at all`, () => {
+    const led = ledgerOf(LEDGER_ROWS);
+    mutate(led.handles);
+    const r = runWorld(withFabric({ handles: led }));
+    assert.equal(r.code, 1, r.out);
+    assert.match(r.out, re);
+    assert.doesNotMatch(r.out, /orderDigest .* != computed/,
+      "the digest is untouched — that is exactly why this rule has to exist");
+  });
+}
+
+test("G-ORDER reports a non-integer rank ONCE, not twice", () => {
+  // Clause (3) owns range and type; the positional rule is guarded on
+  // Number.isInteger so one defect does not send the reader after two lines.
+  const led = ledgerOf(LEDGER_ROWS);
+  led.handles[0].rank = "0";
+  const r = runWorld(withFabric({ handles: led }));
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-ORDER: c01 handle ".*" has rank 0, outside 0\.\.2/);
+  assert.doesNotMatch(r.out, /rank is the row's own position/);
+});
+
+// 7. NO GATE JOINED THE PER-CONTINENT LAKE CENSUS TO THE WORLD CENSUS.
+//
+// Moving 5,000 cells from `land` to `lake` inside continent-02.json — interior
+// water up 1,250 km², world `lakeCells` still 6,400 — left a real draft root
+// BYTE-IDENTICAL to baseline. G-SEALAND read only world.json; G-TRUNK-AREA
+// reads only the GROSS sum, which is invariant to the land/lake split by
+// construction. The only thing holding the join was a generator acceptance
+// test.
+//
+// `accounting()` is a world.json whose ONE declared continent accounts for the
+// whole census, which is what arms the LAKE clause.
+const accounting = (lake) => {
+  const w = clone(WORLD_OK);
+  w.census = { grossLandCells: 262400, lakeCells: lake, seaCells: 377600, unownedLandCells: 0 };
+  w.areaKm2 = { netLand: (262400 - lake) * 0.25, water: (377600 + lake) * 0.25, total: 160000 };
+  w.seaToLandRatio = Math.round(((377600 + lake) / (262400 - lake)) * 10000) / 10000;
+  w.continents = [{ id: "c01", landCells: 262400, grossLandKm2: 65600,
+                    fabric: "content/world/fabric/continent-01.json" }];
+  return w;
+};
+const accountingFabric = (lake) => {
+  const f = clone(FABRIC_OK);
+  f.cellCensus = { land: 262400 - lake, lake, unowned: 0 };
+  return f;
+};
+
+test("G-SEALAND joins the fabric's LAKE column to world.json's, and is green when they agree", () => {
+  const r = runWorld(withFabric({ world: accounting(6400), fabric: accountingFabric(6400) }));
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /G-SEALAND: fabric census joined for 1 of 1 declared continents — 262400 gross land cells, 6400 lake/);
+});
+
+test("G-SEALAND fails when the per-continent lakes do not add up to the world's", () => {
+  // The mutation in miniature: 5,000 cells move land -> lake inside the fabric,
+  // GROSS is unchanged, and world.json still declares the old lake total.
+  const r = runWorld(withFabric({ world: accounting(6400), fabric: accountingFabric(11400) }));
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-SEALAND: the 1 joined continents carry 11400 LAKE cells and world\.json declares 6400 — the per-continent fabric is the authority/);
+  assert.doesNotMatch(r.out, /G-TRUNK-AREA/, "GROSS is invariant to the split — that is why this needed its own rule");
+});
+
+test("G-SEALAND fails when a continent's declared landCells disagree with its own fabric census", () => {
+  const bad = clone(WORLD_OK);
+  bad.continents[0].landCells = 25000;       // the fabric says 25,600 gross
+  const r = runWorld(withFabric({ world: bad }));
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-SEALAND: world\.json declares 25000 land cells for c01 and continent-01\.json's own census measures 25600 gross \(land 25600 \+ lake 0 \+ unowned 0\) — the per-continent fabric is the authority/);
+});
+
+test("the LAKE clause is DORMANT on a partial root, and says so rather than failing it", () => {
+  // world-gates' standard fixture carries ONE continent of a thirteen-continent
+  // census on purpose. A partial fabric makes no claim about the world's lake
+  // total, and gating it there would fail a fixture for being a fixture.
+  const r = runWorld(withFabric());
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /G-SEALAND: fabric census joined for 1 of 1 declared continents — 25600 of 262400 gross land cells, so the LAKE column is not joined/);
+});
+
+test("the join is ABSENT, not `0 of 0`, on a root with world.json and no per-continent fabric", () => {
+  const r = runWorld(withFabric({ fabric: null }));
+  assert.doesNotMatch(r.out, /G-SEALAND: fabric census joined/);
+});
+
+// 8. THE THREE UNPINNED SILENT-SKIP BRANCHES INSIDE G-TRUNK-AREA.
+//
+// Suppressing each of these three `report(...)` calls left the whole suite
+// green — three of the four escape hatches in the gate designed to prevent
+// silent skipping had no fixture. Each branch WORKS; nothing drove it.
+for (const [label, census, re] of [
+  ["a cellCensus with a stringly-typed member", { land: "25600", lake: 0, unowned: 0 },
+   /G-TRUNK-AREA: n-c: content\/world\/fabric\/continent-01\.json carries no readable cellCensus \{land, lake, unowned\}/],
+  ["no cellCensus at all", null,
+   /G-TRUNK-AREA: n-c: content\/world\/fabric\/continent-01\.json carries no readable cellCensus \{land, lake, unowned\}/],
+  ["a cellCensus of three zeroes", { land: 0, lake: 0, unowned: 0 },
+   /G-TRUNK-AREA: n-c: the area it is scored against is 0/],
+]) {
+  test(`G-TRUNK-AREA REPORTS ${label} instead of skipping the node`, () => {
+    const bad = clone(FABRIC_OK);
+    if (census === null) delete bad.cellCensus; else bad.cellCensus = census;
+    const r = runWorld(withFabric({ fabric: bad, spine: pinFabric() }));
+    assert.equal(r.code, 1, r.out);
+    assert.match(r.out, re);
+    assert.doesNotMatch(r.out, /G-TRUNK-AREA: scored/,
+      "a node that cannot be scored must not be counted as scored");
+  });
+}
+
+test("G-TRUNK-AREA REPORTS a placement with no measurable area instead of skipping it", () => {
+  // THE ONLY WAY IN, and it took finding: placementArea returns a finite 0 for
+  // every shape it does not understand and for a missing placement, so the
+  // guard is reachable only by OVERFLOW — a rect whose sides multiply past
+  // Number.MAX_VALUE. `{"type": "number"}` in spine-node.schema.json accepts
+  // 1e308, so this is a schema-valid document and an authored decimal-point
+  // disaster is exactly what produces it.
+  const r = runWorld(withFabric({ spine: (node) => {
+    pinFabric()(node);
+    node.placement = { shape: "rect", rect: { x: 0, y: 0, w: 1e308, h: 1e308 }, anchor: [50, 50] };
+  } }));
+  assert.equal(r.code, 1, r.out);
+  assert.match(r.out, /G-TRUNK-AREA: n-c: placement has no measurable area/);
+  assert.doesNotMatch(r.out, /G-TRUNK-AREA: scored/,
+    "a node that cannot be scored must not be counted as scored");
+});
+
+// 9. THE DIVERGENCE LINE'S TWO NON-MEASUREMENTS.
+//
+// Both printed a confident number where there was nothing to measure. The
+// `isFinite` guard also survived a mutation for want of a fixture; it is not
+// dead code — placementArea OVERFLOWS to Infinity on a rect whose sides
+// multiply past Number.MAX_VALUE, which the schema's bare `{"type": "number"}`
+// accepts.
+test("the divergence line is ABSENT on a spine with no continent-tier node, not `trunk land 0.0`", () => {
+  const r = runWorld(withFabric({ spine: (node) => { node.tier = "fixture"; } }));
+  assert.doesNotMatch(r.out, /G-SEALAND: trunk /,
+    "zero trunk land is not a measurement, and its ratio is a division by zero");
+  assert.match(r.out, /G-SEALAND: ratio/, "the measurable half still runs");
+});
+
+test("the divergence line is ABSENT when the trunk area overflows to Infinity", () => {
+  const r = runWorld(withFabric({ spine: (node) => {
+    node.placement = { shape: "rect", rect: { x: 0, y: 0, w: 1e308, h: 1e308 }, anchor: [50, 50] };
+  } }));
+  assert.doesNotMatch(r.out, /G-SEALAND: trunk /, "`trunk Infinity : 1` is not a measurement");
+  assert.match(r.out, /G-SEALAND: ratio/, "the measurable half still runs");
 });

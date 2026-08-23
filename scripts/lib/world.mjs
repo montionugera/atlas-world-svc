@@ -334,7 +334,7 @@ const arr = (v) => (Array.isArray(v) ? v : []);
 // settlement score all still treat it as ground. world.json's census carries
 // only the standing-water counts, so this gate measures 1.5000 and says which
 // definition it used in the line it prints.
-export function gWorldSeaLand({ world, manifest, report, note }) {
+export function gWorldSeaLand({ world, manifest, fabric = [], report, note }) {
   if (!world) return;                       // no world.json — nothing to measure
   const census = world.census, grid = world.grid;
   // ONE shape guard, and it REPORTS rather than returning quietly: a world.json
@@ -417,6 +417,58 @@ export function gWorldSeaLand({ world, manifest, report, note }) {
   else if (Math.abs(dr - ratio) > 0.01)
     report(`G-SEALAND: world.json declares seaToLandRatio ${dr} and its own cell census measures ` +
            `${ratio.toFixed(4)} — the census is the authority`);
+
+  // (4) THE PER-CONTINENT CENSUS, JOINED TO THE WORLD'S.
+  //
+  // Without this, moving 5,000 cells from `land` to `lake` inside
+  // continent-02.json changed NOTHING: interior water up 1,250 km², world
+  // `lakeCells` still 6,400, and the run byte-identical to baseline. G-SEALAND
+  // read only world.json; G-TRUNK-AREA reads only the GROSS sum, which is
+  // invariant to the land/lake split BY CONSTRUCTION. The only thing holding
+  // the join was `assert.equal(lake, world.census.lakeCells)` in
+  // generate-world.test.mjs — a generator acceptance test, not a gate on a
+  // content root. Protected against the generator, not against the tree.
+  //
+  // TWO CLAUSES, ARMED DIFFERENTLY, because they are different claims:
+  //
+  //   per row — always, for a row whose fabric file is loaded. `landCells` is
+  //     GROSS (generate-world.test.mjs:410), so it must equal that file's own
+  //     land + lake + unowned.
+  //   the LAKE column — only where the declared continents ACCOUNT FOR the
+  //     world's gross land. A partial root (world-gates' fixtures carry one
+  //     continent of thirteen on purpose) makes no claim about the world's lake
+  //     total, and gating it there would fail a fixture for being a fixture.
+  //
+  // An unreadable cellCensus is skipped here and reported by
+  // fabric-file.schema.json, which `require`s the object and all three integer
+  // members — a second message for the same defect sends the reader twice.
+  const byFile = new Map(arr(fabric).map((d) => [d.file, d]));
+  const declaredContinents = arr(world.continents);
+  let joined = 0, sumGross = 0, sumLake = 0;
+  for (const row of declaredContinents) {
+    const doc = typeof row?.fabric === "string" ? byFile.get(row.fabric.split("/").pop()) : undefined;
+    const cc = doc?.cellCensus;
+    const terms = [cc?.land, cc?.lake, cc?.unowned];
+    if (!terms.every((v) => typeof v === "number" && Number.isFinite(v))) continue;
+    joined++;
+    const gross = terms[0] + terms[1] + terms[2];
+    sumGross += gross;
+    sumLake += terms[1];
+    if (typeof row.landCells === "number" && row.landCells !== gross)
+      report(`G-SEALAND: world.json declares ${row.landCells} land cells for ${row.id} and ` +
+             `${doc.file}'s own census measures ${gross} gross (land ${terms[0]} + lake ` +
+             `${terms[1]} + unowned ${terms[2]}) — the per-continent fabric is the authority`);
+  }
+  if (joined > 0) {
+    const covers = sumGross === census.grossLandCells;
+    if (covers && sumLake !== census.lakeCells)
+      report(`G-SEALAND: the ${joined} joined continents carry ${sumLake} LAKE cells and world.json ` +
+             `declares ${census.lakeCells} — the per-continent fabric is the authority`);
+    note(`G-SEALAND: fabric census joined for ${joined} of ${declaredContinents.length} declared ` +
+         (covers ? `continents — ${sumGross} gross land cells, ${sumLake} lake`
+                 : `continents — ${sumGross} of ${census.grossLandCells} gross land cells, so the ` +
+                   `LAKE column is not joined`));
+  }
 }
 
 // THE TRUNK DIVERGENCE, PRINTED ON EVERY RUN THAT HAS BOTH LAYERS.
@@ -431,14 +483,38 @@ export function gWorldSeaLand({ world, manifest, report, note }) {
 // checkSpine — before the node tree exists — for the roots that have a world/
 // and no spine/ (STATE §5). The trunk term is the one thing G-SEALAND cannot
 // know there, so it is printed later, from the same gate name.
-export function gWorldSeaLandTrunk({ world, trunkLandKm2, note }) {
+// IT PRINTS THE TWO RATIOS, not two land areas, and the areas after them as the
+// basis. Two areas make the reader do the division: 6,243.5 against 64,000.0 is
+// the 24.63 : 1 chart every other document quotes, and nothing on the line said
+// so. A ratio is also the SAME UNIT as the band printed two lines above
+// (1.20–1.80), so the divergence can be read against the thing it violates
+// instead of against nothing. Review suggestion, adopted 2026-08-23 — with the
+// areas kept, because a ratio alone hides which side moved.
+//
+// `Number.isFinite(trunkLandKm2)` is NOT dead code, though it survived a
+// mutation for want of a fixture: placementArea returns Infinity for a rect
+// whose sides overflow, which spine-node.schema.json's bare `{"type":
+// "number"}` accepts. What IS dead is checkWorldTrunk's `tree ? … : null`
+// ternary — buildTree always returns an object — and it is gone.
+//
+// A trunk of ZERO land is not a measurement either, and printing `trunk land
+// 0.0 km²` presented one: a spine with no continent-tier node has no trunk to
+// diverge FROM, and its ratio would be a division by zero. Absent, like the
+// no-spine case, rather than a confident nothing.
+export function gWorldSeaLandTrunk({ world, manifest, trunkLandKm2, note }) {
   if (!world || typeof trunkLandKm2 !== "number" || !Number.isFinite(trunkLandKm2)) return;
+  if (trunkLandKm2 <= 0) return;
   const census = world.census;
   if (typeof census?.grossLandCells !== "number" || typeof census?.lakeCells !== "number"
       || typeof world.cellKm !== "number") return;
   const netLandKm2 = (census.grossLandCells - census.lakeCells) * (world.cellKm * world.cellKm);
-  note(`G-SEALAND: trunk land ${trunkLandKm2.toFixed(1)} km² vs fabric net land ` +
-       `${netLandKm2.toFixed(1)} km² — the trunk is redrawn in Plan E, not here`);
+  if (netLandKm2 <= 0) return;
+  const frame = typeof manifest?.frame?.areaKm2 === "number" ? manifest.frame.areaKm2 : 160000;
+  const trunkRatio = (frame - trunkLandKm2) / trunkLandKm2;
+  const fabricRatio = (frame - netLandKm2) / netLandKm2;
+  note(`G-SEALAND: trunk ${trunkRatio.toFixed(2)} : 1 vs fabric ${fabricRatio.toFixed(2)} : 1 ` +
+       `(trunk land ${trunkLandKm2.toFixed(1)} km², fabric net land ${netLandKm2.toFixed(1)} km²) ` +
+       `— the trunk is redrawn in Plan E, not here`);
 }
 
 // ── G-TRUNK-AREA ───────────────────────────────────────────────────────────
@@ -672,6 +748,28 @@ export function gWorldOrder({ handles, orderHandlesFn, orderDigestFn, report, no
       if (list[i]?.handle !== recomputed[i].handle) {
         report(`G-ORDER: ${ledger.continent} lists "${list[i]?.handle}" at position ${i}, but the ` +
                `(-sizeKm, contentHash) order puts "${recomputed[i].handle}" there`);
+        break;                                 // one line per ledger, not n
+      }
+
+    // (3b) THE `rank` COLUMN, AGAINST THE POSITION IT RECORDS. All three
+    // clauses above miss it and every one of them misses it for a different
+    // reason: the digest is recomputed from `list.map(({rank, ...h}) => h)`,
+    // which STRIPS rank, and orderHandles re-mints it from the sorted position,
+    // so the COMMITTED values never enter the hash even though orderDigestOf's
+    // body string begins `${h.rank}:`; clause (3) sees range and uniqueness
+    // only, and an arbitrary permutation is still dense; and the positional
+    // loop compares HANDLES, never rank against i. Measured: swapping two
+    // adjacent ranks, reversing all 301 of c05's, and applying an arbitrary
+    // dense permutation each produced ZERO new failures.
+    //
+    // `rank` is a REQUIRED field of handle-ledger.schema.json and Plan D binds
+    // to these ledgers, so it is the published ordinal — it has to say where
+    // the row actually is. Guarded on Number.isInteger so a non-integer rank
+    // earns clause (3)'s message and not two for one defect.
+    for (let i = 0; i < list.length; i++)
+      if (Number.isInteger(list[i]?.rank) && list[i].rank !== i) {
+        report(`G-ORDER: ${ledger.continent} gives "${list[i].handle}" rank ${list[i].rank} at ` +
+               `position ${i} — rank is the row's own position in the committed order`);
         break;                                 // one line per ledger, not n
       }
 
