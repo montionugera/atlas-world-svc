@@ -943,6 +943,66 @@
         outline: 1px solid #b4762f;
       }
 
+      /* ── the fabric census (world-fill Plan C Task 13) ────────────────
+         A DATA artifact's review surface is its numbers. The two sheets above
+         show the world's shape; nobody can see from a drawing that c05 carries
+         a surveyed region with nothing in it, or that c10 has no settlement at
+         all. Monospace and right-aligned because every column but the first is
+         a quantity being compared down the column. */
+      .maps-fabric {
+        margin-top: 1.4rem;
+      }
+
+      .maps-fabric h3 {
+        margin: 0 0 0.4rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+
+      .maps-fabric-headline {
+        margin: 0 0 0.7rem;
+        font-size: 0.84rem;
+      }
+
+      .maps-fabric-table {
+        border-collapse: collapse;
+        font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+        font-size: 0.78rem;
+      }
+
+      .maps-fabric-table th,
+      .maps-fabric-table td {
+        padding: 0.16rem 0.9rem 0.16rem 0;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .maps-fabric-table th:first-child,
+      .maps-fabric-table td:first-child {
+        text-align: left;
+      }
+
+      .maps-fabric-table th {
+        border-bottom: 1px solid var(--line, #3a3a3a);
+        color: var(--text-dim);
+        font-weight: 600;
+      }
+
+      .maps-fabric-table .maps-fabric-total td {
+        border-top: 1px solid var(--line, #3a3a3a);
+        font-weight: 650;
+      }
+
+      .maps-fabric-note {
+        margin: 0.7rem 0 0;
+        font-size: 0.76rem;
+        color: var(--text-dim);
+        max-width: 62ch;
+      }
+
       /* The overlay reuses .story-overlay's chrome (header/backdrop/exit) —
          only the stage differs: an SVG under a CSS transform instead of an
          iframe. */
