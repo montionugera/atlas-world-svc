@@ -861,6 +861,76 @@ test("G-SHEET-BUDGET red, not a throw: the sheets section is an array", () => {
   drop();
 });
 
+
+// ── the fabric stubs, made SCHEMA-VALID by Plan C Task 11 ──────────────────
+//
+// These fixtures existed before content/schemas/fabric-file.schema.json did,
+// so they wrote `{ instances: [...] }` — the two keys G-LANDFORM reads and
+// nothing else — into a path that now has a shape and four gates over it.
+// Task 11 gave `world/fabric/*.json` an ajv venue, so a fifteen-key-short stub
+// is a schema failure that has nothing to do with the rule under test.
+//
+// `writeFabric` wraps whatever instance rows a test wants in a document that is
+// legal, and it chooses the regions so that no OTHER gate has an opinion:
+// every region is `reported`, which makes each one's G-POI count exactly 0
+// (instances are POIs only in a surveyed region), and the rows are dealt
+// round-robin so at most one NAMED instance lands in any region — spec §6.4
+// rule 2's "at most one named landform". Nothing about G-LANDFORM's census
+// changes: it counts rows across the file, never per region.
+const REGION_CAPACITY = 25;
+// Every region is SURVEYED once there are at least twelve rows, because
+// round-robin dealing then puts 12-25 instances in each — inside G-POI's 12-30
+// band by construction — and a surveyed region has no cap on NAMED landforms,
+// which two of these fixtures deliberately exceed. Below twelve rows the
+// regions are REPORTED, whose POI count must be exactly 0 and is.
+const fabricRegion = (n, survey) => ({
+  id: `c01/r${String(n).padStart(2, "0")}`, survey,
+  areaKm2: survey === "surveyed" ? 160 : 480,
+  terrainKind: null, biomeShares: { rock: 100 },
+  rings: [[[n, 0], [n + 1, 0], [n + 1, 1], [n, 1]]], holes: [],
+  levelBand: [1, 10], adjacent: [], centroidKm: [n + 0.5, 0.5],
+  settlements: [], provenance: survey === "reported" ? "hearsay" : null,
+});
+function writeFabric(contentRoot, rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const survey = list.length >= 12 ? "surveyed" : "reported";
+  const nRegions = Math.max(1, Math.ceil(list.length / REGION_CAPACITY));
+  const regions = Array.from({ length: nRegions }, (_, n) => fabricRegion(n + 1, survey));
+  const instances = list.map((row, i) => {
+    const region = regions[i % nRegions];
+    // The row's own fields win — that is what these fixtures are for — EXCEPT
+    // `id` and `region`, which have a grammar the schema enforces and which no
+    // G-LANDFORM assertion reads.
+    const { id: _ignoredId, region: _ignoredRegion, ...rest } = row;
+    return {
+      id: `lf-c01-${region.id.slice(-3)}-${String(i).padStart(4, "0")}`,
+      type: "sea-stack",
+      geometry: { shape: "point", at: [(i % 800) * 0.01, 0.5] }, sizeKm: 0.2, cell: [i % 800, 0],
+      handle: `c01/coastal/h-${String(i % 1000000).padStart(6, "0")}`,
+      named: false, glyph: "g-stack", dungeonCapable: false,
+      provenance: { authored: "generated", fabric: "fabric/c01",
+                    generator: { pass: "landforms", seedStream: "landform:c01", epoch: 0 } },
+      ...rest,
+      region: region.id,
+    };
+  });
+  writeJson(join(contentRoot, "world/fabric/c01.json"), {
+    continent: "c01", premise: "content/world/premises/continent-01.json",
+    generator: { name: "mapforge", version: "3.0.0", seed: "7c9e4a2f8b1d6e03", epoch: 0 },
+    seaLevel: 0.42, cellKm: 0.5,
+    cellCensus: { land: 100, lake: 0, unowned: 0 },
+    ownerHistogram: Object.fromEntries(regions.map((r) => [r.id, 1])),
+    outerRing: null, outerHoles: [], trunkRiver: null,
+    regions,
+    // A non-array `rows` is written through VERBATIM: the "instances is not an
+    // array" fixture needs a document that is legal everywhere else so the two
+    // venues that object — G-LANDFORM's message and the schema's — are the only
+    // things it hears.
+    instances: Array.isArray(rows) ? instances : rows,
+    settlements: [], roads: [], dungeonAnchors: [], pinReceipts: [],
+  });
+}
+
 // ── the instance census, dormant until Plan C writes content/world/fabric/ ──
 
 // R8 — degrade, never deadlock. `mkdir content/world/fabric` is Plan C's very
@@ -885,7 +955,7 @@ test("degrade: an EMPTY content/world/fabric/ directory arms nothing", () => {
 test("degrade: fabric files with empty instance arrays arm nothing", () => {
   const { contentRoot, drop } = tmpRoot();
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
-  writeJson(join(contentRoot, "world/fabric/c01.json"), { instances: [] });
+  writeFabric(contentRoot, []);
   const r = runGate(contentRoot, "--require-complete");
   assert.equal(r.code, 0, r.out);
   assert.match(r.out, /^G-LANDFORM: types placed: 0 \/ 170$/m);
@@ -897,9 +967,7 @@ test("G-LANDFORM counts fabric instances and scores type coverage", () => {
   const { contentRoot, drop } = tmpRoot();
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
   const ids = LEX.slice(0, 120).map((r) => r.id);
-  writeJson(join(contentRoot, "world/fabric/c01.json"), {
-    instances: ids.map((id, i) => ({ id: `i-${i}`, type: id, named: i < 3 })),
-  });
+  writeFabric(contentRoot, ids.map((id, i) => ({ type: id, named: i < 3 })));
   const r = runGate(contentRoot, "--require-complete");
   assert.match(
     r.out,
@@ -924,9 +992,7 @@ test("G-LANDFORM counts fabric instances and scores type coverage", () => {
 test("G-LANDFORM: type coverage below the floor WARNs by default", () => {
   const { contentRoot, drop } = tmpRoot();
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
-  writeJson(join(contentRoot, "world/fabric/c01.json"), {
-    instances: LEX.slice(0, 99).map((r, i) => ({ id: `i-${i}`, type: r.id })),
-  });
+  writeFabric(contentRoot, LEX.slice(0, 99).map((r, i) => ({ id: `i-${i}`, type: r.id })));
   const r = runGate(contentRoot);
   assert.equal(r.code, 0, r.out);
   assert.match(
@@ -939,9 +1005,7 @@ test("G-LANDFORM: type coverage below the floor WARNs by default", () => {
 test("G-LANDFORM red: type coverage below the floor under --require-complete", () => {
   const { contentRoot, drop } = tmpRoot();
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
-  writeJson(join(contentRoot, "world/fabric/c01.json"), {
-    instances: LEX.slice(0, 99).map((r, i) => ({ id: `i-${i}`, type: r.id })),
-  });
+  writeFabric(contentRoot, LEX.slice(0, 99).map((r, i) => ({ id: `i-${i}`, type: r.id })));
   const r = runGate(contentRoot, "--require-complete");
   assert.equal(r.code, 1, r.out);
   assert.match(
@@ -960,9 +1024,7 @@ test("G-LANDFORM red: a type declares absentBecause and is placed anyway", () =>
   const lex = structuredClone(LEX);
   lex[0].absentBecause = "no terrain in Season 1 supports it";
   writeJson(join(contentRoot, "world/lexicon/landforms.json"), lex);
-  writeJson(join(contentRoot, "world/fabric/c01.json"), {
-    instances: LEX.slice(0, 120).map((r, i) => ({ id: `i-${i}`, type: r.id })),
-  });
+  writeFabric(contentRoot, LEX.slice(0, 120).map((r, i) => ({ id: `i-${i}`, type: r.id })));
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
   assert.match(
@@ -982,9 +1044,7 @@ test("G-LANDFORM: a declared-absent type is excused from the shortfall report", 
   for (const row of lex.slice(120))
     row.absentBecause = "out of scope for Season 1";
   writeJson(join(contentRoot, "world/lexicon/landforms.json"), lex);
-  writeJson(join(contentRoot, "world/fabric/c01.json"), {
-    instances: LEX.slice(0, 120).map((r, i) => ({ id: `i-${i}`, type: r.id })),
-  });
+  writeFabric(contentRoot, LEX.slice(0, 120).map((r, i) => ({ id: `i-${i}`, type: r.id })));
   const r = runGate(contentRoot, "--require-complete");
   assert.equal(r.code, 0, r.out);
   assert.doesNotMatch(r.out, /no absentBecause/);
@@ -997,7 +1057,7 @@ test("G-LANDFORM red: more instances than the budget allows", () => {
   const instances = [];
   for (let i = 0; i < 2401; i++)
     instances.push({ id: `i-${i}`, type: LEX[i % LEX.length].id });
-  writeJson(join(contentRoot, "world/fabric/c01.json"), { instances });
+  writeFabric(contentRoot, instances);
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, /G-LANDFORM: 2401 landform instances > budget 2400/);
@@ -1010,7 +1070,7 @@ test("G-LANDFORM red: more named landforms than the budget allows", () => {
   const instances = [];
   for (let i = 0; i < 501; i++)
     instances.push({ id: `i-${i}`, type: LEX[i % LEX.length].id, named: true });
-  writeJson(join(contentRoot, "world/fabric/c01.json"), { instances });
+  writeFabric(contentRoot, instances);
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, /G-LANDFORM: 501 named landforms > budget 500/);
@@ -1020,9 +1080,7 @@ test("G-LANDFORM red: more named landforms than the budget allows", () => {
 test("G-LANDFORM red, not a throw: a fabric file whose instances are not an array", () => {
   const { contentRoot, drop } = tmpRoot();
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
-  writeJson(join(contentRoot, "world/fabric/c01.json"), {
-    instances: { a: 1 },
-  });
+  writeFabric(contentRoot, { a: 1 });
   const r = runGate(contentRoot);
   assert.equal(r.code, 1, r.out);
   assert.match(

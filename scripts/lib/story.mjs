@@ -48,10 +48,27 @@ export function readJson(path, label, fail) {
 }
 
 // Compile a schema file to an Ajv validator, or null if it can't be read.
-export function compileSchema(path, label, fail) {
+//
+// `refs` is an optional list of schema FILE PATHS to register with this Ajv
+// instance before compiling, so a cross-file `$ref` resolves by `$id`. Each
+// schema is compiled standalone (one fresh Ajv per call), which is why a
+// `$ref` cannot otherwise resolve at all: Plan C's
+// content/schemas/fabric-file.schema.json refers to
+// landform-instance.schema.json, and inlining a second copy of that record
+// shape is the "two enumerations of one language" defect this repo has been
+// bitten by five times. A ref that cannot be read is reported through the same
+// `fail` and the compile is abandoned, because a validator missing half its
+// vocabulary silently accepts what it cannot see.
+export function compileSchema(path, label, fail, refs = []) {
   const schema = readJson(path, label, fail);
   if (!schema) return null;
-  return new AjvClass({ allErrors: true }).compile(schema);
+  const ajv = new AjvClass({ allErrors: true });
+  for (const refPath of refs) {
+    const ref = readJson(refPath, `${label} $ref`, fail);
+    if (!ref) return null;
+    ajv.addSchema(ref);
+  }
+  return ajv.compile(schema);
 }
 
 // F-012: read all 7 per-kind story files under `${contentRoot}/story/` (each a

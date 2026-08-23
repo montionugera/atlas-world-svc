@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "fabric-file.schema.json",
+  "title": "Per-continent fabric file — SHAPE ONLY. Every numeric bound (area tolerances, POI bands, the sea/land ratio, the ±3% trunk tolerance) lives in checkWorld()'s G-* gates and never here: checkSpine continues past a schema-invalid document, so a bound duplicated into the schema turns its gate rule into dead code. The one exception is maxItems on rings, which mirrors G-VERTEX-BUDGET's landform and region tiers so a 4,000-point generated ring fails at the schema as well as at the gate. THE INSTANCE SHAPE IS $ref'd, not inlined: content/schemas/landform-instance.schema.json is registered with ajv by compileSchema's `refs` argument before this file is compiled, so there is exactly one copy of the record shape.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["continent", "premise", "generator", "seaLevel", "cellKm", "cellCensus",
+               "ownerHistogram", "outerRing", "outerHoles", "trunkRiver", "regions", "instances",
+               "settlements", "roads", "dungeonAnchors", "pinReceipts"],
+  "properties": {
+    "continent": { "type": "string", "pattern": "^c[0-9]{2}$" },
+    "premise": { "type": "string", "pattern": "^content/world/premises/continent-[0-9]{2}\\.json$" },
+    "generator": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "version", "seed", "epoch"],
+      "properties": {
+        "name": { "type": "string" }, "version": { "type": "string" },
+        "seed": { "type": "string", "pattern": "^[0-9a-f]{16}$" },
+        "epoch": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "seaLevel": { "type": "number" },
+    "cellKm": { "const": 0.5 },
+    "cellCensus": {
+      "type": "object", "additionalProperties": false,
+      "required": ["land", "lake", "unowned"],
+      "properties": {
+        "land": { "type": "integer", "minimum": 0 },
+        "lake": { "type": "integer", "minimum": 0 },
+        "unowned": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "ownerHistogram": {
+      "type": "object",
+      "propertyNames": { "pattern": "^c[0-9]{2}/r[0-9]{2}$" },
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "outerRing": {
+      "type": ["array", "null"], "minItems": 3,
+      "items": { "$ref": "#/definitions/point" }
+    },
+    "outerHoles": {
+      "type": "array",
+      "items": { "type": "array", "minItems": 3, "items": { "$ref": "#/definitions/point" } }
+    },
+    "trunkRiver": {
+      "type": ["object", "null"], "additionalProperties": false,
+      "required": ["points", "name"],
+      "properties": {
+        "points": { "type": "array", "minItems": 2, "items": { "$ref": "#/definitions/point" } },
+        "name": { "type": ["string", "null"] }
+      }
+    },
+    "regions": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "survey", "areaKm2", "terrainKind", "biomeShares", "rings", "holes",
+                     "levelBand", "adjacent", "centroidKm", "settlements", "provenance"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^c[0-9]{2}/r[0-9]{2}$" },
+          "survey": { "enum": ["surveyed", "reported"] },
+          "areaKm2": { "type": "number" },
+          "terrainKind": { "type": ["string", "null"] },
+          "biomeShares": { "type": "object", "additionalProperties": { "type": "number" } },
+          "rings": {
+            "type": "array", "minItems": 1,
+            "items": { "$ref": "#/definitions/regionRing" }
+          },
+          "holes": { "type": "array", "items": { "$ref": "#/definitions/regionRing" } },
+          "levelBand": {
+            "type": ["array", "null"], "minItems": 2, "maxItems": 2, "items": { "type": "integer" }
+          },
+          "adjacent": { "type": "array", "items": { "type": "string", "pattern": "^c[0-9]{2}/r[0-9]{2}$" } },
+          "centroidKm": { "$ref": "#/definitions/point" },
+          "settlements": { "type": "array", "items": { "type": "string", "pattern": "^c[0-9]{2}/s[0-9]{2}$" } },
+          "provenance": { "enum": ["sworn", "hearsay", "inferred", null] }
+        }
+      }
+    },
+    "instances": { "type": "array", "items": { "$ref": "landform-instance.schema.json" } },
+    "settlements": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "title", "rank", "atKm", "cell", "region", "continent", "score"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^c[0-9]{2}/s[0-9]{2}$" },
+          "title": { "type": ["string", "null"] },
+          "rank": { "enum": ["capital", "hub", "village"] },
+          "atKm": { "$ref": "#/definitions/point" },
+          "cell": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 0 } },
+          "region": { "type": "string", "pattern": "^c[0-9]{2}/r[0-9]{2}$" },
+          "continent": { "type": "string", "pattern": "^c[0-9]{2}$" },
+          "score": { "type": "number" }
+        }
+      }
+    },
+    "roads": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "continent", "from", "to", "km", "points"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^c[0-9]{2}/rd[0-9]{2}$" },
+          "continent": { "type": "string", "pattern": "^c[0-9]{2}$" },
+          "from": { "type": "string", "pattern": "^c[0-9]{2}/s[0-9]{2}$" },
+          "to": { "type": "string", "pattern": "^c[0-9]{2}/s[0-9]{2}$" },
+          "km": { "type": "number" },
+          "points": { "type": "array", "minItems": 2, "items": { "$ref": "#/definitions/point" } }
+        }
+      }
+    },
+    "dungeonAnchors": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["handle", "continent", "region", "entranceType", "hopsToSettlement"],
+        "properties": {
+          "handle": { "type": "string", "pattern": "^c[0-9]{2}/[a-z-]+/h-[0-9a-f]{4,6}$" },
+          "continent": { "type": "string", "pattern": "^c[0-9]{2}$" },
+          "region": { "type": "string", "pattern": "^c[0-9]{2}/r[0-9]{2}$" },
+          "entranceType": { "type": "string" },
+          "hopsToSettlement": { "type": ["integer", "null"], "minimum": 0 }
+        }
+      }
+    },
+    "pinReceipts": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "at", "cell", "continent", "region", "measured"],
+        "properties": {
+          "id": { "type": "string" },
+          "at": { "$ref": "#/definitions/point" },
+          "cell": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 0 } },
+          "continent": { "type": "string", "pattern": "^c[0-9]{2}$" },
+          "region": { "type": "string" },
+          "measured": { "type": "object" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "point": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+    "regionRing": {
+      "type": "array", "minItems": 3, "maxItems": 200,
+      "items": { "$ref": "#/definitions/point" }
+    }
+  }
+}

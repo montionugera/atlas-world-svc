@@ -62,7 +62,7 @@ function readRecord(path, label, errors) {
 export function loadFabric({ contentRoot }) {
   const errors = [];
   const dir = join(contentRoot, "world");
-  const empty = { present: false, manifest: undefined, budgets: undefined, fabric: [], world: null, handles: [], errors };
+  const empty = { present: false, manifest: undefined, budgets: undefined, fabric: [], world: null, handles: [], premises: [], errors };
   if (!existsSync(dir)) return empty;
 
   // ABSENT and MALFORMED are different facts and the caller acts on each
@@ -96,7 +96,20 @@ export function loadFabric({ contentRoot }) {
     if (doc !== null) handles.push({ file: f, ...doc });
   }
 
-  return { present: true, manifest, budgets, fabric, world, handles, errors };
+  // THE PREMISES ARE LOADED HERE SO THEY CAN HAVE AN AJV VENUE (STATE §10's
+  // open item, handed to Task 11). Until now content/schemas/premise.schema.json
+  // was compiled by nothing: mask.test.mjs held the join in both directions,
+  // which is a TEST of the committed thirteen and not a gate on a content root.
+  // A draft or fixture root could carry a fourteenth premise, or a premise with
+  // a mistyped `register`, and no gate would say so.
+  const premiseDir = join(dir, "premises");
+  const premises = [];
+  for (const f of listJson(premiseDir, "world/premises", errors)) {
+    const doc = readRecord(join(premiseDir, f), `world/premises/${f}`, errors);
+    if (doc !== null) premises.push({ file: f, ...doc });
+  }
+
+  return { present: true, manifest, budgets, fabric, world, handles, premises, errors };
 }
 
 // Walk a family directory for .json files. Returns [] for an absent directory
@@ -168,6 +181,22 @@ export function gWorldBudget({ contentRoot, budgets, manifest = undefined, repor
       name: "civil", dir: join(contentRoot, "world/civil"), rel: "world/civil",
       maxFiles: section("civil")?.maxFiles, maxPer: section("civil")?.maxBytesPerFile,
       maxTotal: null,
+    },
+    // TWO FAMILIES THAT WERE UNDER NO BYTE BUDGET AT ALL until Task 11 — filed
+    // in STATE §10 (premises) and §16 (handles) and handed here. `premises` is
+    // 13 authored files of ~600 B; `handles` is 13 machine-written ledgers
+    // totalling ~335 KB, which is a third of the fabric family's measured size
+    // and was invisible to G-WORLD-BUDGET's only two rows. Both caps are
+    // DERIVED, not chosen: see budgets.json's `premisesWhy` / `handlesWhy`.
+    {
+      name: "premises", dir: join(contentRoot, "world/premises"), rel: "world/premises",
+      maxFiles: section("premises")?.maxFiles, maxPer: section("premises")?.maxBytesPerFile,
+      maxTotal: section("premises")?.maxBytesTotal ?? null,
+    },
+    {
+      name: "handles", dir: join(contentRoot, "world/handles"), rel: "world/handles",
+      maxFiles: section("handles")?.maxFiles, maxPer: section("handles")?.maxBytesPerFile,
+      maxTotal: section("handles")?.maxBytesTotal ?? null,
     },
   ];
   for (const fam of families) {
@@ -248,4 +277,501 @@ export function gWorldBudget({ contentRoot, budgets, manifest = undefined, repor
       report(`G-WORLD-BUDGET: loop stage "${r.stage}" failMs ${r.failMs} must exceed budgetMs ${r.budgetMs}`);
     note(`world-budget: loop ${r.stage} budget ${r.budgetMs} ms, fail ${r.failMs} ms`);
   }
+}
+
+// ═══════════════════════ Plan C Task 11 — the world gates ═══════════════════
+//
+// Five rules over content/world/, all reached from checkWorld() and therefore
+// from `--only=spine` (Gate 1) as well as `--require-complete` (Gate 2).
+//
+// THE HOUSE RULES, restated because every one of them has been broken here
+// before and each break shipped a rule that measured nothing:
+//   - NEVER THROW. Everything lands in `report`, which is check_content's
+//     `fail`. An uncaught throw skips finish() and silently drops every
+//     failure recorded before it.
+//   - SOFT-SKIP an absent input. A content root with no world/fabric/ is the
+//     normal case today — the fabric is committed by Task 13 — so each gate
+//     returns on an empty list rather than complaining about it.
+//   - PRINT what was measured, on every run, through `note`. A gate that only
+//     speaks when it fails cannot be seen to have stopped measuring.
+//   - abs() appears nowhere in the geometry. A negative signed shoelace is a
+//     G-POLY winding failure, not a magnitude (scripts/lib/spine.mjs:103).
+//     Math.abs on a PERCENTAGE or a byte count is not geometry and is fine.
+
+// NOTHING IN THESE GATES ITERATES A FIELD IT HAS NOT CHECKED IS AN ARRAY.
+// `for (const x of doc.instances ?? [])` throws on `instances: {}` — the `??`
+// only guards null and undefined — and a throw out of a gate skips finish() and
+// silently drops every failure recorded before it. Reproduced by
+// world-budget.test.mjs's own `instances is not an array` fixture, which
+// G-LANDFORM already had a clean message for and these gates crashed on. SHAPE
+// is fabric-file.schema.json's business and it says so on the same run; this is
+// only about surviving the document long enough to let it.
+const arr = (v) => (Array.isArray(v) ? v : []);
+
+// ── G-SEALAND ──────────────────────────────────────────────────────────────
+//
+// MEASURED ON THE FLAG FIELD, NEVER RECOMPUTED FROM THE MANIFEST. This is the
+// ruling STATE §11 records and it is the whole reason the gate can fail: the
+// budget closes by construction (65,600 gross − 1,600 interior water = 64,000
+// net, and rank selection returns its target BY DEFINITION), so a gate that
+// derives the ratio from `budget.grossLandPolygonKm2` and
+// `budget.interiorWaterKm2` puts the manifest on both sides of its own test
+// and has zero degrees of freedom. What this gate reads instead is
+// world.json's CELL CENSUS — the counts P14 took over grid.flags, cell by
+// cell — and it re-derives every declared area from them.
+//
+// Three independent things can therefore go wrong and be seen:
+//   (1) the flag field does not close: land + sea != the grid's own cell count;
+//   (2) the ratio the census implies is outside the manifest's band;
+//   (3) world.json's DECLARED areaKm2 / seaToLandRatio disagree with its own
+//       census — which is what a hand-edited world.json looks like.
+//
+// THE TWO HONEST NUMBERS, both pinned in STATE §11 and neither re-fitted here:
+// standing water (SEA + LAKE) gives 1.5000; counting RIVER and DELTA as water
+// too gives 1.5381. `interiorWaterKm2` budgets STANDING water, and RIVER and
+// DELTA are channel flags on cells that stay land — at 0.5 km a river occupies
+// a fraction of its cell and that cell's biome, region membership and
+// settlement score all still treat it as ground. world.json's census carries
+// only the standing-water counts, so this gate measures 1.5000 and says which
+// definition it used in the line it prints.
+export function gWorldSeaLand({ world, manifest, report, note }) {
+  if (!world) return;                       // no world.json — nothing to measure
+  const census = world.census, grid = world.grid;
+  // ONE shape guard, and it REPORTS rather than returning quietly: a world.json
+  // whose census cannot be read is not "a root without a fabric", it is a
+  // broken fabric, and the difference is the whole value of the gate.
+  const terms = { "grid.cells": grid?.cells, "census.grossLandCells": census?.grossLandCells,
+                  "census.lakeCells": census?.lakeCells, "census.seaCells": census?.seaCells,
+                  "census.unownedLandCells": census?.unownedLandCells, cellKm: world.cellKm };
+  const missing = Object.entries(terms)
+    .filter(([, v]) => typeof v !== "number" || !Number.isFinite(v)).map(([k]) => k);
+  if (missing.length) {
+    report(`G-SEALAND: world/fabric/world.json cannot be measured — ${missing.join(", ")} ` +
+           `${missing.length === 1 ? "is" : "are"} not a finite number, and this gate measures ` +
+           `the CELL CENSUS, not the manifest budget`);
+    return;
+  }
+
+  const cellArea = world.cellKm * world.cellKm;
+  const frame = typeof manifest?.frame?.areaKm2 === "number" ? manifest.frame.areaKm2 : 160000;
+  const min = typeof manifest?.ratio?.min === "number" ? manifest.ratio.min : 1.2;
+  const max = typeof manifest?.ratio?.max === "number" ? manifest.ratio.max : 1.8;
+
+  // (1) THE FLAG FIELD MUST CLOSE, IN CELLS. Every cell is SEA or it is gross
+  // land; LAKE is a flag INSIDE gross land and is never a third bucket (STATE
+  // §5 — the generator's mirror-image bug counted a lake cell as unowned too
+  // and read 646,400).
+  const accounted = census.grossLandCells + census.seaCells;
+  if (accounted !== grid.cells)
+    report(`G-SEALAND: the flag field does not close — ${census.grossLandCells} land + ` +
+           `${census.seaCells} sea = ${accounted} cells against ${grid.cells} in the grid ` +
+           `(${accounted > grid.cells ? "a cell is counted twice" : "a cell is counted by neither"})`);
+  if (census.lakeCells > census.grossLandCells)
+    report(`G-SEALAND: ${census.lakeCells} LAKE cells against ${census.grossLandCells} gross land ` +
+           `cells — a lake is carved INSIDE gross land and cannot exceed it`);
+
+  const netLandKm2 = (census.grossLandCells - census.lakeCells) * cellArea;
+  const waterKm2 = (census.seaCells + census.lakeCells) * cellArea;
+  const ratio = netLandKm2 === 0 ? Infinity : waterKm2 / netLandKm2;
+
+  note(`G-SEALAND: ratio ${ratio.toFixed(2)} (net land ${netLandKm2.toFixed(1)} km², water ` +
+       `${waterKm2.toFixed(1)} km²) — band ${min.toFixed(2)}–${max.toFixed(2)}, measured on ` +
+       `${census.seaCells} SEA + ${census.lakeCells} LAKE cells of ${grid.cells}`);
+
+  // (1b) the same closure in km², which is a different claim: a grid that
+  // closes in cells still misses the frame if its cell size or cell count is
+  // not a tiling of it.
+  const total = netLandKm2 + waterKm2;
+  if (Math.abs(total - frame) > 1)
+    report(`G-SEALAND: land + sea = ${total} km² != ${frame} ± 1 — ` +
+           `${census.unownedLandCells} cells are unowned`);
+
+  // (2) THE BAND.
+  if (ratio < min || ratio > max) {
+    const landMin = frame / (1 + max), landMax = frame / (1 + min);
+    report(
+      `G-SEALAND: world sea/land is ${ratio.toFixed(2)} (land ${netLandKm2.toFixed(1)} km², sea ` +
+      `${waterKm2.toFixed(1)} km²) — band is ${min.toFixed(2)}–${max.toFixed(2)} ` +
+      `(land ${Math.round(landMin)}–${Math.round(landMax)} km²); ` +
+      `re-run the sea-level rank selection, do not reroll toward the target`,
+    );
+  }
+
+  // (3) THE DECLARED NUMBERS AGAINST THE CENSUS THEY CLAIM TO SUMMARISE. This
+  // is what makes a hand-edited world.json a failure rather than a new truth.
+  // The tolerance is 1 km² = 4 cells, the same slack the frame closure takes,
+  // because every committed number passes q() = round(v*100)/100 first.
+  const declared = world.areaKm2;
+  for (const [key, measured] of [["netLand", netLandKm2], ["water", waterKm2], ["total", total]]) {
+    const d = declared?.[key];
+    if (typeof d !== "number" || !Number.isFinite(d))
+      report(`G-SEALAND: world.json declares no numeric areaKm2.${key}`);
+    else if (Math.abs(d - measured) > 1)
+      report(`G-SEALAND: world.json declares areaKm2.${key} ${d} km² and its own cell census ` +
+             `measures ${measured.toFixed(1)} km² — the census is the authority, so the declared ` +
+             `number is what is wrong`);
+  }
+  const dr = world.seaToLandRatio;
+  if (typeof dr !== "number" || !Number.isFinite(dr))
+    report(`G-SEALAND: world.json declares no numeric seaToLandRatio`);
+  else if (Math.abs(dr - ratio) > 0.01)
+    report(`G-SEALAND: world.json declares seaToLandRatio ${dr} and its own cell census measures ` +
+           `${ratio.toFixed(4)} — the census is the authority`);
+}
+
+// THE TRUNK DIVERGENCE, PRINTED ON EVERY RUN THAT HAS BOTH LAYERS.
+//
+// Plan C's whole architecture is two layers describing two different worlds
+// until Plan E's redraw: the committed trunk still says 24.68 : 1 while the
+// fabric says 1.50 : 1, and that is INTENDED. A green G-SEALAND must never be
+// read as "the chart is redrawn", so the gate says the two numbers out loud
+// side by side whenever a trunk is present to compare against.
+//
+// It lives in its own function because checkWorld runs at the TOP of
+// checkSpine — before the node tree exists — for the roots that have a world/
+// and no spine/ (STATE §5). The trunk term is the one thing G-SEALAND cannot
+// know there, so it is printed later, from the same gate name.
+export function gWorldSeaLandTrunk({ world, trunkLandKm2, note }) {
+  if (!world || typeof trunkLandKm2 !== "number" || !Number.isFinite(trunkLandKm2)) return;
+  const census = world.census;
+  if (typeof census?.grossLandCells !== "number" || typeof census?.lakeCells !== "number"
+      || typeof world.cellKm !== "number") return;
+  const netLandKm2 = (census.grossLandCells - census.lakeCells) * (world.cellKm * world.cellKm);
+  note(`G-SEALAND: trunk land ${trunkLandKm2.toFixed(1)} km² vs fabric net land ` +
+       `${netLandKm2.toFixed(1)} km² — the trunk is redrawn in Plan E, not here`);
+}
+
+// ── G-TRUNK-AREA ───────────────────────────────────────────────────────────
+//
+// THE gate the two-layer architecture creates: without it G-SEALAND and
+// G-ATLAS-ROLLUP measure two different worlds and both can be green while the
+// chart is wrong. It ACTIVATES PER NODE via `provenance.generator.fabric`, so
+// it is dormant on today's 44 hand-authored nodes (none of which is
+// `authored: "generated"`) and live on all 25 generated world-tier nodes of a
+// draft root.
+//
+// TWO PLAN ERRORS ARE CORRECTED HERE, both reproduced against the draft root:
+//
+//  1. The plan scores the polygon against `f.cellCensus.land`, which is NET
+//     land — the cells the REGIONS tile. The trunk polygon is the coast
+//     contour and it encloses the continent's interior lakes, so the two
+//     differ by exactly `interiorWaterKm2`. Measured: c02 Wealdmarch reads
+//     +9.54% and c06 Reedstrand +5.22% against a ±3% tolerance — two failures
+//     on a correct world. Against GROSS land (land + lake + unowned) every one
+//     of the thirteen is inside tolerance, worst −1.36%.
+//  2. The plan resolves the cited path against the per-continent fabric files
+//     only. The twelve generated OCEAN and SEA nodes cite
+//     `content/world/fabric/world.json`, which loadFabric returns separately —
+//     so all twelve reported `does not resolve`. A water polygon has no land
+//     census to be scored against, and skipping it silently is exactly the
+//     dormant-gate failure this task exists to prevent; it is scored against
+//     the manifest's own declared `polygonKm2` for that node instead.
+//     Measured on the draft root: worst 0.30%.
+export function gWorldTrunkArea({ nodes, fabric, world, manifest, placementArea, report, note }) {
+  const byPath = new Map(fabric.map((f) => [`content/world/fabric/${f.file}`, f]));
+  const worldPath = world?.file ? `content/world/fabric/${world.file}` : null;
+  const declaredWater = new Map();
+  for (const w of [...arr(manifest?.oceans), ...arr(manifest?.seas)])
+    if (w && typeof w.nodeId === "string" && typeof w.polygonKm2 === "number")
+      declaredWater.set(w.nodeId, w.polygonKm2);
+
+  let scored = 0, land = 0, water = 0, worstPct = 0, worstId = null;
+  for (const node of arr(nodes)) {
+    const path = node?.provenance?.generator?.fabric;
+    if (typeof path !== "string") continue;      // the activation key, per node
+
+    let expected = null, what = null;
+    if (byPath.has(path)) {
+      const f = byPath.get(path);
+      const c = f.cellCensus;
+      const cellKm = typeof f.cellKm === "number" ? f.cellKm : 0.5;
+      if (typeof c?.land !== "number" || typeof c?.lake !== "number" || typeof c?.unowned !== "number") {
+        report(`G-TRUNK-AREA: ${node.id}: ${path} carries no readable cellCensus {land, lake, unowned}`);
+        continue;
+      }
+      // GROSS land: the coast contour encloses the lakes. See (1) above.
+      expected = (c.land + c.lake + c.unowned) * cellKm * cellKm;
+      what = `fabric gross census ${expected.toFixed(1)} km²`;
+      land++;
+    } else if (worldPath !== null && path === worldPath) {
+      if (!declaredWater.has(node.id)) {
+        report(`G-TRUNK-AREA: ${node.id}: cites ${path}, which carries no per-node land census, ` +
+               `and content/world/manifest.json declares no polygonKm2 for it either — nothing ` +
+               `can score this polygon`);
+        continue;
+      }
+      expected = declaredWater.get(node.id);
+      what = `manifest polygon ${expected.toFixed(1)} km²`;
+      water++;
+    } else {
+      report(`G-TRUNK-AREA: ${node.id}: provenance.generator.fabric "${path}" does not resolve`);
+      continue;
+    }
+
+    if (expected === 0) {
+      report(`G-TRUNK-AREA: ${node.id}: the area it is scored against is 0`);
+      continue;
+    }
+    const polyKm2 = placementArea({ placement: node.placement });
+    if (typeof polyKm2 !== "number" || !Number.isFinite(polyKm2)) {
+      report(`G-TRUNK-AREA: ${node.id}: placement has no measurable area`);
+      continue;
+    }
+    scored++;
+    const pct = ((polyKm2 - expected) / expected) * 100;
+    if (worstId === null || Math.abs(pct) > Math.abs(worstPct)) { worstPct = pct; worstId = node.id; }
+    if (Math.abs(pct) > 3)
+      report(
+        `G-TRUNK-AREA: ${node.id}: trunk polygon ${polyKm2.toFixed(1)} km² vs ${what} ` +
+        `(${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%, tolerance ±3%) — re-simplify the outline from ` +
+        `the fabric, do not hand-edit the ring`,
+      );
+  }
+  // DORMANT MEANS SILENT: with no node citing a fabric file the gate prints
+  // nothing at all, which is what keeps today's 44-node committed root's output
+  // byte-for-byte what it was. The moment it has anything to score it says how
+  // much it scored and how close the worst one came.
+  if (scored > 0)
+    note(`G-TRUNK-AREA: scored ${scored} nodes (${land} against a fabric census, ${water} against ` +
+         `the manifest), worst drift ${worstPct >= 0 ? "+" : ""}${worstPct.toFixed(2)}% on ` +
+         `${worstId} — tolerance ±3%`);
+}
+
+// ── G-POI ──────────────────────────────────────────────────────────────────
+//
+// POI is DERIVED, never stored: drawn(instance) = the region is surveyed OR the
+// instance is named. That is spec §6.4 rule 2 ("no interior detail inside a
+// reported region … at most one named landform") as one line, and it is why a
+// reported region's POI count is 0 while it still carries eight texture
+// instances.
+//
+// The "at most one" half is a rule too, and the plan's code does not carry it:
+// its exemption for a named landform in a reported region is UNBOUNDED, so a
+// reported region carrying five named landforms passed. Measured on the draft
+// root: exactly 60 reported regions carry exactly one named instance each, so
+// the cap is at its limit everywhere it applies and a sixty-first mark is the
+// thing it exists to catch.
+export function gWorldPoi({ fabric, report, note }) {
+  if (fabric.length === 0) return;
+  const MIN = 12, MAX = 30;
+  let surveyed = 0, reported = 0, thin = 0, fat = 0;
+  const thinnest = [];
+  for (const f of fabric) {
+    // A document with NO `regions` array is not a region-bearing document and
+    // this gate has nothing to attribute POIs to. It is SKIPPED rather than
+    // reported, and the reason is the soft-skip discipline one level down: Plan
+    // B's G-LANDFORM fixtures write `world/fabric/c01.json` as a stub carrying
+    // only `instances`, and reporting an orphan for each of its 120 rows reds
+    // four committed tests that have nothing to do with POI. The missing key is
+    // a SHAPE failure and fabric-file.schema.json says so on every root that
+    // carries the schema — which is every real one, since Task 13 commits the
+    // fabric beside it. Pinned by "a fabric file with no regions is a schema
+    // failure" below, so the rule is reachable, in the venue that owns it.
+    if (!Array.isArray(f.regions)) continue;
+    const regions = arr(f.regions);
+    const byRegion = new Map(regions.map((r) => [r?.id, r]));
+    const counts = new Map(regions.map((r) => [r?.id, 0]));
+    const namedInReported = new Map();
+    for (const inst of arr(f.instances)) {
+      const r = byRegion.get(inst?.region);
+      if (!r) { report(`G-POI: instance ${inst?.id} names region "${inst?.region}", which is not in ${f.file}`); continue; }
+      if (r.survey === "surveyed") counts.set(r.id, counts.get(r.id) + 1);
+      // A reported region's named landform is EXEMPT from the POI count — it is
+      // the one mark the honest-frontier policy allows — but it is COUNTED
+      // separately, because "at most one" is the other half of the same rule.
+      else if (inst.named === true) namedInReported.set(r.id, (namedInReported.get(r.id) ?? 0) + 1);
+    }
+    for (const s of arr(f.settlements))
+      if (counts.has(s?.region)) counts.set(s.region, counts.get(s.region) + 1);
+      else report(`G-POI: settlement ${s?.id} names region "${s?.region}", which is not in ${f.file}`);
+    for (const d of arr(f.dungeonAnchors))
+      if (counts.has(d?.region)) counts.set(d.region, counts.get(d.region) + 1);
+      else report(`G-POI: dungeon anchor ${d?.handle} names region "${d?.region}", which is not in ${f.file}`);
+    // Roads are inter-region and are counted at their endpoints' settlements.
+    // Spec §6.4 rule 2 also forbids a road INSIDE a reported region, which is
+    // unsatisfiable on this world — 20 of 38 roads and 956 of 1,666 points run
+    // through reported ground, because 120 of the 160 regions are reported and
+    // a continent-spanning MST cannot avoid them (STATE §5). That is a SPEC
+    // error, recorded there, and Plan E decides whether the ink is drawn; it is
+    // deliberately not a rule here, and this comment is why the loop the plan
+    // wrote as dead code is absent instead of empty.
+
+    for (const r of regions) {
+      if (r === null || typeof r !== "object") continue;   // shape is the schema's business
+      const n = counts.get(r.id);
+      if (r.survey === "surveyed") {
+        surveyed++;
+        if (n < MIN) { thin++; thinnest.push(`${r.id} ${n}`); }
+        if (n > MAX) fat++;
+        if (n < MIN || n > MAX)
+          report(`G-POI: region ${r.id} (surveyed) has ${n} points of interest — band is ${MIN}–${MAX}`);
+      } else {
+        reported++;
+        if (n !== 0)
+          report(`G-POI: region ${r.id} (reported) has ${n} points of interest — must be 0`);
+        const named = namedInReported.get(r.id) ?? 0;
+        if (named > 1)
+          report(`G-POI: region ${r.id} (reported) carries ${named} named landforms — spec §6.4 rule 2 allows at most one`);
+      }
+      if (r.survey === "reported" && r.terrainKind !== null && r.terrainKind !== undefined)
+        report(`G-POI: region ${r.id} is reported but carries terrainKind "${r.terrainKind}" — reported ⇒ terrainKind null`);
+    }
+  }
+  note(`G-POI: ${surveyed} surveyed regions (band ${MIN}–${MAX}: ${thin} thin, ${fat} over) and ` +
+       `${reported} reported regions (must be 0)` +
+       (thinnest.length ? ` — thin: ${thinnest.join(", ")}` : ""));
+}
+
+// ── G-ORDER ────────────────────────────────────────────────────────────────
+//
+// The ordering key is (-sizeKm, contentHash) — NEVER insertion order, NEVER
+// lore.order. R3's failure mode (a member silently disappearing or silently
+// reordering) applies identically to a handle ledger.
+//
+// R3's mitigation is THREE-part: (1) the sort key is content, never
+// lore.order; (2) the digest is committed and recomputed; (3) the resulting
+// order is a DENSE PERMUTATION of 0..n-1, which is the clause that catches a
+// member silently vanishing. THE PLAN'S CODE CARRIES TWO OF THE THREE and its
+// own comment claims all three — clause (3) is implemented here.
+//
+// This function carries all three FOR THE HANDLE LEDGERS, and only those.
+// Clause (3) applies to the REGION order too, but `order` is not a fabric
+// field: content/schemas/fabric-file.schema.json is additionalProperties:false
+// on regions[] and does not list it, so a fabric region carrying one would be
+// schema-invalid. The resolver mints `order` onto the RESOLVED zones from the
+// same rule, so the region half is asserted where those documents are already
+// loaded — Plan D's gZoneOrder.
+export function gWorldOrder({ handles, orderHandlesFn, orderDigestFn, report, note }) {
+  if (handles.length === 0) return;
+  let rows = 0;
+  for (const ledger of arr(handles)) {
+    const list = Array.isArray(ledger.handles) ? ledger.handles : null;
+    if (list === null) {
+      report(`G-ORDER: ${ledger.file ?? ledger.continent}: handles is not an array`);
+      continue;
+    }
+    rows += list.length;
+    const recomputed = orderHandlesFn({ handles: list.map(({ rank, ...h }) => h) });
+    const digest = orderDigestFn({ handles: recomputed });
+    if (ledger.orderDigest !== digest)
+      report(`G-ORDER: ${ledger.continent} orderDigest ${ledger.orderDigest} != computed ${digest}`);
+
+    // (3) DENSE PERMUTATION. A hand-edit that drops a row and leaves the
+    // remaining ranks alone is invisible to the digest ONLY if the digest is
+    // recomputed by the same hand — but a dropped row makes 0..n-1 have a hole,
+    // and that is arithmetic no edit can talk its way out of.
+    const seenRank = new Set();
+    for (const h of list) {
+      if (!Number.isInteger(h.rank) || h.rank < 0 || h.rank >= list.length)
+        report(`G-ORDER: ${ledger.continent} handle "${h.handle}" has rank ${h.rank}, outside 0..${list.length - 1}`);
+      else if (seenRank.has(h.rank))
+        report(`G-ORDER: ${ledger.continent} lists rank ${h.rank} twice — the order is not a dense permutation of 0..${list.length - 1}`);
+      else seenRank.add(h.rank);
+    }
+    for (let i = 0; i < recomputed.length; i++)
+      if (list[i]?.handle !== recomputed[i].handle) {
+        report(`G-ORDER: ${ledger.continent} lists "${list[i]?.handle}" at position ${i}, but the ` +
+               `(-sizeKm, contentHash) order puts "${recomputed[i].handle}" there`);
+        break;                                 // one line per ledger, not n
+      }
+
+    // THE TOTALITY CLAUSE, on the REAL key. The plan compares `sizeKm * sizeKm`
+    // and calls it area — squaring is monotone on positive numbers so it is the
+    // same order under a wrong name, and the message it prints ("differ by 0
+    // km²") reads as though the SIZE alone decides the order. It does not: the
+    // key is the PAIR, and two rows are unordered only when BOTH terms match.
+    // A near-tie in sizeKm with differing hashes is perfectly legal and is a
+    // passing case in the suite.
+    for (let i = 1; i < recomputed.length; i++) {
+      const a = recomputed[i - 1], b = recomputed[i];
+      if (a.sizeKm === b.sizeKm && a.contentHash === b.contentHash)
+        report(`G-ORDER: ${a.handle} and ${b.handle} share the whole ordering key ` +
+               `(sizeKm ${a.sizeKm}, contentHash ${a.contentHash}) — ordering is not total`);
+    }
+
+    const seen = new Set();
+    for (const h of list) {
+      if (seen.has(h.handle)) report(`G-ORDER: ${ledger.continent} lists handle "${h.handle}" twice`);
+      seen.add(h.handle);
+      if (!/^c[0-9]{2}\/[a-z-]+\/h-[0-9a-f]{4,6}$/.test(h.handle))
+        report(`G-ORDER: handle "${h.handle}" does not match the grammar cNN/<group>/h-<hex>`);
+    }
+  }
+  note(`G-ORDER: ${handles.length} handle ledgers, ${rows} handles, each order recomputed from ` +
+       `(-sizeKm, contentHash) and compared to its committed digest`);
+}
+
+// ── G-VERTEX-BUDGET (landform + region tiers) and G-POLY over the fabric ────
+//
+// The coverage regression spec §8.4 states rather than hides: with a 36-node
+// trunk, the 160 REGIONS and the 1,740 LANDFORM INSTANCES sit outside
+// tree.byId, so G-POLY and G-VERTEX-BUDGET — which walk tree.byId.values() —
+// cannot see either of them. The plan's Step 5c closes the instance half; the
+// region half is the same seam named in the same sentence and closes here too.
+// The schemas' maxItems catch the vertex cap earlier and more bluntly; this
+// exists so the failure NAMES THE REMEDY instead of surfacing as
+// `instances/412/geometry/ring must NOT have more than 40 items`.
+//
+// abs() appears NOWHERE here. A negative signed shoelace is a G-POLY failure,
+// not a magnitude — the same discipline scripts/lib/spine.mjs holds.
+export const MAX_INSTANCE_RING = 40;
+export const MAX_REGION_RING = 200;
+
+export function gWorldInstanceGeometry({ fabric, shoelaceArea, selfIntersects, report, note }) {
+  if (fabric.length === 0) return;
+  let areas = 0, lines = 0, points = 0, rings = 0, holes = 0, widestInstance = 0, widestRegion = 0;
+
+  const checkRing = (label, what, ring, cap) => {
+    if (ring.length > cap)
+      report(`G-VERTEX-BUDGET: ${label} has ${ring.length} vertices > ${cap} for tier ${what}`);
+    if (ring.length < 3) {
+      report(`G-POLY: ${label} has ${ring.length} points — a closed ring needs at least 3`);
+      return;
+    }
+    const a = shoelaceArea({ points: ring });
+    if (!(a > 0))
+      report(`G-POLY: ${label} winding is ${a.toFixed(6)} — a ring must be OPEN with a STRICTLY POSITIVE signed shoelace`);
+    if (selfIntersects({ points: ring }))
+      report(`G-POLY: ${label} self-intersects`);
+  };
+
+  for (const f of fabric) {
+    for (const inst of arr(f.instances)) {
+      const g = inst?.geometry;
+      if (!g || typeof g !== "object") continue;   // shape is the schema's business
+      if (g.shape === "point") { points++; continue; }
+      const ring = g.shape === "area" ? g.ring : g.shape === "line" ? g.points : null;
+      if (!Array.isArray(ring)) continue;
+      if (ring.length > widestInstance) widestInstance = ring.length;
+      if (g.shape !== "area") {
+        lines++;
+        // A LINE has no winding and no closure, so it takes the vertex cap and
+        // nothing else — closing it with the ring rules would reject every
+        // legitimate two-point levee.
+        if (ring.length > MAX_INSTANCE_RING)
+          report(`G-VERTEX-BUDGET: instance ${inst.id} ring has ${ring.length} vertices > ${MAX_INSTANCE_RING} for tier landform-instance`);
+        continue;
+      }
+      areas++;
+      checkRing(`instance ${inst.id} ring`, "landform-instance", ring, MAX_INSTANCE_RING);
+    }
+    for (const r of arr(f.regions)) {
+      for (const ring of arr(r?.rings)) {
+        rings++;
+        if (Array.isArray(ring) && ring.length > widestRegion) widestRegion = ring.length;
+        if (Array.isArray(ring)) checkRing(`region ${r?.id} ring`, "region", ring, MAX_REGION_RING);
+      }
+      // A HOLE is a boundary too: the same winding and simplicity rules apply,
+      // and assembleRings returns them positively wound for exactly that reason
+      // (the nesting, not the sign, is what makes it a hole).
+      for (const ring of arr(r?.holes)) {
+        holes++;
+        if (Array.isArray(ring) && ring.length > widestRegion) widestRegion = ring.length;
+        if (Array.isArray(ring)) checkRing(`region ${r?.id} hole`, "region", ring, MAX_REGION_RING);
+      }
+    }
+  }
+  note(`G-POLY: ${areas} area + ${lines} line + ${points} point instances, ${rings} region rings ` +
+       `and ${holes} holes checked — widest instance ${widestInstance}/${MAX_INSTANCE_RING}, ` +
+       `widest region ${widestRegion}/${MAX_REGION_RING}`);
 }

@@ -49,7 +49,17 @@ import { pathBounds } from "../tools/mapforge/lib/draft.mjs";
 // importable"; it is — it exports patternFilledShapes, summaryLines and Plan A
 // Task 13's runSpineGateInProcess, and world-gates.test.mjs imports the last
 // of those. The conclusion stands, the reason did not.)
-import { loadFabric, gWorldBudget } from "./lib/world.mjs";
+import { loadFabric, gWorldBudget, gWorldSeaLand, gWorldSeaLandTrunk, gWorldTrunkArea,
+         gWorldPoi, gWorldOrder, gWorldInstanceGeometry } from "./lib/world.mjs";
+// The handle ordering rule lives with the GENERATOR that mints it, so the gate
+// and the writer can never drift apart — two enumerations of one ordering is
+// exactly how a ledger comes to disagree with its own digest. tools/mapforge is
+// dependency-free ESM (no package.json by design) and scripts/ already imports
+// across that boundary in the other direction (tools/mapforge/lib/world-gen.mjs
+// imports scripts/lib/spine.mjs). Relative ESM specifiers resolve from the
+// importing module's own path, so this works under `npm test --prefix scripts`,
+// which runs with a different cwd, and in CI.
+import { orderHandles, orderDigestOf } from "../tools/mapforge/lib/passes/landforms.mjs";
 import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -1779,33 +1789,100 @@ function checkSpineExternalAliases({ opts, report }) {
 // behind the spine's own soft-skip.
 function checkWorld(opts) {
   const world = loadFabric({ contentRoot: opts.contentRoot });
-  if (!world.present) return;
+  if (!world.present) return null;
   for (const e of world.errors) fail(`world: ${e}`);
 
-  const schemaPath = join(opts.contentRoot, "schemas/world-manifest.schema.json");
-  // Same ordering discipline as checkSpine's: only compile when there is a
-  // document to validate, so a world root carrying only budgets.json (the
-  // shape Plan D's civil fixtures will use) earns no "schema unreadable" FAIL.
-  if (world.manifest) {
-    const validate = compileSchema(schemaPath, "world-manifest schema", fail);
-    if (validate && !validate(world.manifest))
-      for (const err of validate.errors) fail(`world/manifest.json: schema ${err.instancePath || "/"} ${err.message}`);
+  const note = (m) => console.log(m);
+
+  // FOUR AJV VENUES, one per committed world family. Each is compiled ONLY
+  // when there is a document to validate — same ordering discipline as
+  // checkSpine's — so a world root carrying only budgets.json (the shape Plan
+  // D's civil fixtures will use) earns no "schema unreadable" FAIL, and a
+  // fixture root that ships one schema and not the other four earns none
+  // either.
+  //
+  // `premise.schema.json` is the venue STATE §10 filed and Task 11 owed: until
+  // now it was compiled by NOTHING. mask.test.mjs holds the join in both
+  // directions, which is a test of the committed thirteen and not a gate on a
+  // content root — a draft root could carry a fourteenth premise or a mistyped
+  // `register` and no gate would say so.
+  for (const [schemaFile, docs, label, refs] of [
+    ["schemas/world-manifest.schema.json", world.manifest ? [world.manifest] : [], "world/manifest.json", []],
+    ["schemas/premise.schema.json", world.premises, "world/premises", []],
+    ["schemas/fabric-file.schema.json", world.fabric, "world/fabric",
+     ["schemas/landform-instance.schema.json"]],
+    ["schemas/handle-ledger.schema.json", world.handles, "world/handles", []],
+  ]) {
+    if (docs.length === 0) continue;
+    const schemaPath = join(opts.contentRoot, schemaFile);
+    if (!existsSync(schemaPath)) continue;
+    let validate = null;
+    try {
+      validate = compileSchema(schemaPath, `${label} schema`, fail,
+                               refs.map((r) => join(opts.contentRoot, r)));
+    } catch (e) {
+      // ajv throws on a structurally invalid schema and on an unresolvable
+      // $ref. NEVER THROWS is the gate contract: an uncaught throw here skips
+      // finish() and silently drops every failure recorded before it.
+      fail(`${label} schema: cannot compile ${schemaPath}: ${e.message}`);
+    }
+    if (!validate) continue;
+    for (const doc of docs) {
+      // `file` is loadFabric's own bookkeeping key, not part of the record, so
+      // it is stripped before validation — an additionalProperties:false schema
+      // would otherwise reject every document for a key the loader added.
+      const { file, ...body } = doc;
+      let ok = false;
+      try { ok = validate(body); }
+      catch (e) { fail(`${label}${file ? `/${file}` : ""}: validator error: ${e.message}`); continue; }
+      if (!ok)
+        for (const err of validate.errors)
+          fail(`${label}${file ? `/${file}` : ""}: schema ${err.instancePath || "/"} ${err.message}`);
+    }
   }
+
+  // Plan C Task 11 — the world gates. All four of these are tree-INDEPENDENT
+  // and therefore run here, at the top of checkSpine, where a content root with
+  // a world/ and no spine/ can still reach them. G-TRUNK-AREA and G-SEALAND's
+  // trunk-divergence line need the node tree and run from checkWorldTrunk below.
+  gWorldSeaLand({ world: world.world, manifest: world.manifest, report: fail, note });
+  gWorldPoi({ fabric: world.fabric, report: fail, note });
+  gWorldOrder({ handles: world.handles, orderHandlesFn: orderHandles, orderDigestFn: orderDigestOf,
+                report: fail, note });
+  gWorldInstanceGeometry({ fabric: world.fabric, shoelaceArea, selfIntersects, report: fail, note });
 
   gWorldBudget({
     contentRoot: opts.contentRoot,
     budgets: world.budgets,
     manifest: world.manifest,
     report: fail,
-    note: (m) => console.log(m),
+    note,
   });
+  return world;
+}
+
+// The two world rules that need the SPINE, called once the node tree exists.
+// Splitting them out is what lets checkWorld run at the top of checkSpine (see
+// its header): a root with a world/ and no spine/ gets every fabric rule, and
+// gets these two skipped because there is no trunk to compare against — which
+// is the honest answer, not a silent one.
+function checkWorldTrunk({ world, nodes, tree }) {
+  if (!world) return;
+  const note = (m) => console.log(m);
+  const trunkLandKm2 = tree
+    ? [...tree.byId.values()].filter((n) => n.tier === "continent")
+        .reduce((s, n) => s + placementArea({ placement: n.placement }), 0)
+    : null;
+  gWorldSeaLandTrunk({ world: world.world, trunkLandKm2, note });
+  gWorldTrunkArea({ nodes, fabric: world.fabric, world: world.world, manifest: world.manifest,
+                    placementArea, report: fail, note });
 }
 
 function checkSpine(opts, mobTypes) {
   // Plan C: the world layer rides the same harness as the spine gates, so
   // `--only=spine` (Gate 1) covers it automatically. It runs BEFORE the
   // spine soft-skip below — see checkWorld's header for why.
-  checkWorld(opts);
+  const world = checkWorld(opts);
 
   // Soft-skip BEFORE compiling the schema: a content root with no spine/ is
   // valid (mirrors the maps/ soft-skip) and must not record a spurious
@@ -2073,6 +2150,12 @@ function checkSpine(opts, mobTypes) {
   // immediately after gSpineBudgets so the four budget lines print together.
   gSpineWorld({ tree, contentRoot: opts.contentRoot, fail, warn, requireComplete: opts.requireComplete });
 
+  // Plan C Task 11 — the two world rules that need the node tree: G-TRUNK-AREA
+  // (per-node, activated by provenance.generator.fabric) and G-SEALAND's trunk
+  // divergence line. Everything else in the world family already ran at the top
+  // of this function, where a root with no spine/ can still reach it.
+  checkWorldTrunk({ world, nodes: validNodes, tree });
+
   // F-041 Phase 1 Task 1.11 reported this as WARN until the two authoring
   // debts (8 measured overlap pairs, the n-cluster1 union identity) were
   // paid off in Task 1.12. Task 1.13 flips `report` from `warn` to `fail` —
@@ -2321,11 +2404,19 @@ function gSpineFrames({ nodes, tree, plans, fail }) {
     // comparisons against an inline `derived` block. The block now lives in
     // content/spine/derived.json and the rule is gSpineDerived() below —
     // ONE whole-file byte comparison.
-    // G-PROVENANCE: generated ⇒ pinned generator. (Reproduce-check activates
-    // with the first real generator; none exists in 1.8.)
+    // G-PROVENANCE: generated ⇒ pinned generator. Plan C adds the FABRIC pin:
+    // without it the trunk polygon and the fabric it was simplified from can
+    // silently disagree, and G-TRUNK-AREA — which ACTIVATES on this very key —
+    // has nothing to join on and stays dormant on the node it should be
+    // scoring. Dormant on the committed root by construction: no committed node
+    // is `authored: "generated"` (measured, all 44).
     const p = node.provenance;
-    if (p && p.authored === "generated" && (!p.generator || typeof p.generator.name !== "string" || typeof p.generator.version !== "string"))
-      fail(`spine: G-PROVENANCE ${node.id}: authored "generated" requires generator {name, version}`);
+    if (p && p.authored === "generated") {
+      if (!p.generator || typeof p.generator.name !== "string" || typeof p.generator.version !== "string")
+        fail(`spine: G-PROVENANCE ${node.id}: authored "generated" requires generator {name, version}`);
+      else if (node.tier === "continent" && typeof p.generator.fabric !== "string")
+        fail(`G-PROVENANCE: ${node.id}: generator.fabric is missing — polygon and fabric can disagree`);
+    }
   }
 }
 
