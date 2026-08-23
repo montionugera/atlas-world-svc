@@ -21,6 +21,26 @@
 //          scripts/tests/helpers/temp-repo.mjs for the measurement).
 //
 // main() guarded by import.meta.url, same pattern as check_spine_emit.mjs:277.
+//
+// ── process.exitCode, NEVER process.exit() — THE GATE WAS LOSING ITS REPORT ──
+//
+// STATE §19 retired this class in check_content.mjs and it survived here, on
+// the one path this seam made TEN TIMES LARGER: lockExtraPaths() took the lock
+// from 3 artifacts to 32, so a single content/world/fabric/*.json change now
+// redraws the fabric sheet and prints a six-figure unified diff. On POSIX,
+// console.error to a PIPE is asynchronous and process.exit() discards whatever
+// libuv has not flushed. MEASURED in node:18 (the pinned CI Node) with one
+// fabric file removed: 104,257 bytes when stdout was a FILE (synchronous fd),
+// and 8,413–16,605 bytes over six runs when it was a PIPE — 84–92 % of the
+// report gone, a different amount each run. The exit code stayed honest
+// throughout, which is what makes it invisible. Every `run:` step in ci.yml and
+// every run_section capture in precheck.sh / integration.sh is a pipe.
+//
+// main() is the module's last statement and every branch below is in tail
+// position, so `process.exitCode = n; return;` is exactly equivalent for the
+// exit status and correct for the output. scripts/tests/render-lock.test.mjs
+// pins the absence of process.exit() by source assertion, because the loss
+// cannot be reproduced on the macOS box the suite is written on.
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -50,12 +70,14 @@ function main() {
       const dir = argv[++i];
       if (!dir) {
         console.error("check-render-lock: --repo-root needs a directory");
-        process.exit(2);
+        process.exitCode = 2;
+        return;
       }
       root = resolve(dir);
     } else {
       console.error(`check-render-lock: unknown arg ${arg}`);
-      process.exit(2);
+      process.exitCode = 2;
+      return;
     }
   }
   const LOCK_PATH = join(root, LOCK_REL);
@@ -72,7 +94,8 @@ function main() {
   }
   if (problems.length) {
     for (const p of problems) console.error(`check-render-lock: PROBLEM: ${p}`);
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const computed = computeLock({ repoRoot: root, sheets: SHEETS, built, extraPaths: lockExtraPaths({ repoRoot: root }) });
@@ -83,7 +106,7 @@ function main() {
     console.log(
       `check-render-lock: wrote ${Object.keys(computed.artifacts).length} artifact hashes to ${LOCK_REL}`,
     );
-    process.exit(0);
+    return;
   }
 
   const committed = readLock(LOCK_PATH);
@@ -91,7 +114,8 @@ function main() {
     console.error(
       "G-RENDER-LOCK: content/world/render-lock.json is missing — baseline it with `node scripts/check_render_lock.mjs --write`",
     );
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   let bad = 0;
@@ -169,7 +193,10 @@ function main() {
     bad++;
   }
 
-  if (bad) process.exit(1);
+  if (bad) {
+    process.exitCode = 1;
+    return;
+  }
   console.log(
     `check-render-lock: check clean, ${Object.keys(computed.artifacts).length} artifacts`,
   );

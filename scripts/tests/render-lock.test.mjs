@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -315,4 +315,72 @@ test("--write REFUSES to run when a sheet reports build problems", () => {
   } finally {
     repo.cleanup();
   }
+});
+
+// ── THE GATE MUST NOT LOSE ITS OWN REPORT (STATE §19, §21) ─────────────────
+//
+// SECOND OCCURRENCE, and that is why this is written as a SWEEP and not as one
+// assertion about check_render_lock.mjs. §19 retired the class in
+// check_content.mjs; check_render_lock.mjs kept it, on the path THIS release
+// made ten times larger — lockExtraPaths() took the lock from 3 artifacts to
+// 32, so one content/world/fabric/*.json change now redraws the fabric sheet
+// and prints a six-figure unified diff. MEASURED in node:18, one fabric file
+// removed: 104,257 bytes when stdout was a FILE, 8,413–16,605 bytes over six
+// runs when it was a PIPE — 84–92 % of the report gone, a different amount
+// each run, exit code honest throughout. Every `run:` step in ci.yml and every
+// run_section capture in precheck.sh / integration.sh is a pipe.
+//
+// The rule is scoped to main() on purpose. A `process.exit()` in an argument
+// parser prints one line and cannot return a usable value to its caller;
+// converting it would change control flow for no measurable gain. What must
+// never happen is a REPORT followed by an exit, and every report in these five
+// tools is printed from main().
+//
+// A behavioural test would be green for the wrong reason: the loss cannot be
+// reproduced on the macOS box this suite is written on (0/100 truncations at
+// 76 KB, against 81/100 on linux). So the pin is on the source.
+test("no gate CLI calls process.exit() from main() — reports on a pipe are lost", () => {
+  const GATE_CLIS = [
+    "scripts/check_content.mjs",
+    "scripts/check_render_lock.mjs",
+    "scripts/check_spine_emit.mjs",
+    "scripts/check_asset_manifest.mjs",
+    "scripts/gen_story_graph.mjs",
+  ];
+  const offenders = [];
+  for (const rel of GATE_CLIS) {
+    const src = readFileSync(join(ROOT, rel), "utf8");
+    const at = src.search(/^(?:async )?function main\(/m);
+    assert.ok(at >= 0, `${rel} has no main() — this sweep can no longer see it`);
+    const body = src.slice(at).replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "");
+    const n = (body.match(/process\.exit\(/g) ?? []).length;
+    if (n) offenders.push(`${rel} (${n})`);
+  }
+  assert.deepEqual(offenders, [],
+    `process.exit() after a report discards whatever libuv has not flushed to a pipe — use process.exitCode and return: ${offenders.join(", ")}`);
+});
+
+test("the five gate CLIs keep their exit codes after the exitCode conversion", () => {
+  // The conversion is only safe if the status is unchanged, so the status is
+  // what is asserted — clean 0, drift 1, misuse 2 — through a PIPE, which is
+  // the venue the class lives in.
+  const run = (args, opts = {}) => {
+    const r = spawnSync(process.execPath, args, { cwd: ROOT, encoding: "utf8", ...opts });
+    return { status: r.status, out: `${r.stdout ?? ""}${r.stderr ?? ""}` };
+  };
+  const emitClean = run([join(ROOT, "scripts/check_spine_emit.mjs"), "--check"]);
+  assert.equal(emitClean.status, 0, emitClean.out);
+  assert.match(emitClean.out, /spine-emit: check clean, \d+ files/);
+  assert.equal(run([join(ROOT, "scripts/check_spine_emit.mjs"), "--bogus"]).status, 2);
+  assert.equal(run([join(ROOT, "scripts/check_spine_emit.mjs"), "--check", "--content-root", join(tmpdir(), "definitely-not-a-content-root")]).status, 2);
+
+  const lock = run([join(ROOT, "scripts/check_render_lock.mjs"), "--check"]);
+  assert.equal(lock.status, 0, lock.out.slice(-2000));
+  assert.match(lock.out, /check-render-lock: check clean, \d+ artifacts/);
+  assert.equal(run([join(ROOT, "scripts/check_render_lock.mjs"), "--nope"]).status, 2);
+  assert.equal(run([join(ROOT, "scripts/check_render_lock.mjs"), "--repo-root"]).status, 2);
+
+  const graph = run([join(ROOT, "scripts/gen_story_graph.mjs"), "--check"]);
+  assert.equal(graph.status, 0, graph.out);
+  assert.match(graph.out, /is in sync \(\d+ nodes, \d+ edges\)/);
 });

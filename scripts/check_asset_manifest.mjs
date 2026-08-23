@@ -909,10 +909,10 @@ function report(failures, warnings, opts) {
 
   if (failures.length > 0) {
     console.log("❌ asset-manifest drift-gate FAILED");
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
   console.log("✅ asset-manifest drift-gate passed");
-  process.exit(0);
 }
 
 main();
