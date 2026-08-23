@@ -35,7 +35,7 @@
       "title": "Coastline Overlay \u2014 Baseline vs Generated",
       "svg": "game-client/assets/art/maps/world-overlay.svg",
       "png": "game-client/assets/art/maps/world-overlay.png",
-      "note": "Today's committed coastline ghosted under the generated one, with a per-continent area-delta table joined through the manifest's landmasses[].nodeId. Gross land 6,243.5 \u2192 65,600.0 km\u00b2 (x10.51); sea:land 24.68 : 1 \u2192 1.50 : 1. Read from the draft folder's baseline/, never from git."
+      "note": "Today's committed coastline ghosted under the generated one, with a per-continent area-delta table joined through the manifest's landmasses[].nodeId. Gross land 6,243.5 \u2192 65,600.0 km\u00b2 (x10.51); sea:land 24.63 : 1 \u2192 1.50 : 1. Read from the draft folder's baseline/, never from git."
     }
   ]
 }

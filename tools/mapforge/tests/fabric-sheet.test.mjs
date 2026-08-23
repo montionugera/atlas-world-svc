@@ -127,6 +127,36 @@ test("the overlay's baseline total is the 6,243.5 km² every other document quot
   assert.equal(Number(total.toFixed(1)), 6243.5);
 });
 
+test("the sea:land ratio the REVIEW SURFACES publish is the one the gate measures", () => {
+  // CITATION ROT, fifth occurrence in this repo. tools/asset-storybook/maps-index.json
+  // and game-client/assets/art/art-manifest.json both published a hand-typed
+  // "24.68 : 1" while `G-SEALAND` on the same tree printed "trunk 24.63 : 1" —
+  // and scripts/lib/world.mjs carried BOTH figures eleven lines apart. The
+  // land area 6,243.5 was pinned by the test above; the ratio derived from it
+  // was joined to nothing, which is precisely how the previous four started.
+  //
+  // So it is DERIVED here, by the gate's own identity
+  // (gWorldSeaLandTrunk: (frame - land) / land), from the committed trunk and
+  // the committed frame, and both surfaces must quote the result.
+  const dir = join(ROOT, "content/spine/nodes");
+  let land = 0;
+  for (const f of readdirSync(dir).filter((x) => x.endsWith(".json"))) {
+    const n = JSON.parse(readFileSync(join(dir, f), "utf8"));
+    if (n.tier === "continent" && n.placement?.shape === "polygon") land += shoelace(n.placement.points);
+  }
+  const frame = readJson("content/world/manifest.json").frame.areaKm2;
+  const ratio = ((frame - land) / land).toFixed(2);
+  assert.equal(ratio, "24.63", "the committed trunk's sea:land ratio moved — re-derive both review surfaces");
+  for (const rel of ["tools/asset-storybook/maps-index.json", "game-client/assets/art/art-manifest.json"]) {
+    const text = readFileSync(join(ROOT, rel), "utf8");
+    const quoted = [...text.matchAll(/sea[- ]to[- ]land ratio going (\d+\.\d+) : 1|sea:land (\d+\.\d+) : 1/g)]
+      .map((m) => m[1] ?? m[2]);
+    assert.ok(quoted.length > 0, `${rel} no longer quotes a sea:land ratio — the scan has gone dark`);
+    assert.deepEqual([...new Set(quoted)], [ratio],
+      `${rel} publishes a sea:land ratio the gate does not measure`);
+  }
+});
+
 test("both sheets are deterministic — the render lock hashes them", () => {
   for (const [id, build] of [["fabric", buildFabricSheet], ["overlay", buildOverlaySheet]]) {
     const a = build({ repoRoot: ROOT }).svg, b = build({ repoRoot: ROOT }).svg;
