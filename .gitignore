@@ -125,13 +125,3 @@ docs/research/**/*.html
 .claude/idea_backlog/**/*.html
 .claude/refined_backlog/**/*.html
 
-# F-043: gen-world CLI output — candidate spine nodes staged for panel review,
-# default out dir of tools/mapforge/gen-world.mjs. Never committed directly.
-#
-# RESTORED by the seam-6 fix pass. Task 10 removed this rule as part of
-# retiring gen-world.mjs, but the tool and lib/world-gen.mjs are still in the
-# tree — deleting them is Task 11's acceptance criterion 13. Until then,
-# anyone running the old CLI dirties `git status` under content/, which is the
-# migration invariant of STATE §3 and acceptance criteria 6 and 9. Delete this
-# rule in the SAME commit that deletes its producer, not before.
-content/spine/candidates/

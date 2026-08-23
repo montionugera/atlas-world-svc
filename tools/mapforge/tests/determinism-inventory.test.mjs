@@ -103,10 +103,16 @@ const INVENTORY = {
   // the sea-lane and relay geometry: distance to a segment, and a normal.
   "atlas-sheet.mjs": { "Math.hypot": 2, "Math.atan2": 2, "Math.PI": 2 },
   "basin-sheet.mjs": { "Math.hypot": 2, "Math.atan2": 2, "Math.PI": 2 },
-  // noiseRing walks a circle: the LARGEST exposure on this path and the one
-  // the prose ban never mentioned. Its output is the canary sheet, which is
-  // committed and locked.
-  "world-gen.mjs": { "Math.PI": 2, "Math.cos": 1, "Math.sin": 1, "**": 2 },
+  // world-gen.mjs USED to be the fourth row — `noiseRing` walked a circle with
+  // Math.cos/Math.sin/** and was the largest exposure on this path. It is
+  // deleted (Plan C Task 13) with gen-world.mjs, its only importer, so the
+  // exposure is gone rather than inventoried. The claim recorded beside it —
+  // "its output is the canary sheet, which is committed and locked" — was
+  // FALSE and is worth stating once: lib/synthetic-sheet.mjs reads the
+  // committed fixture tests/fixtures/synthetic-world/world.json and imports
+  // nothing from world-gen.mjs (measured: its only importer in the tree was
+  // tools/mapforge/gen-world.mjs). The canary sheet is unaffected by the
+  // deletion, and check_render_lock proves it on every run.
 };
 
 test("the committed-byte path's imprecise-Math inventory is exactly the frozen one", () => {

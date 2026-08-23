@@ -203,5 +203,8 @@ export const isSourceFile = (name) => SOURCE_EXT.test(name);
 // the exemption list and the inventory cannot drift apart: the inventory test
 // asserts its own keys are exactly this set.
 export const LEGACY_IMPRECISE_FILES = Object.freeze([
-  "atlas-sheet.mjs", "basin-sheet.mjs", "draft.mjs", "world-gen.mjs",
+  // world-gen.mjs was the fourth and is DELETED (Plan C Task 13, acceptance
+  // criterion 13) along with the CLI that was its only importer. Its removal
+  // takes `Math.cos`, `Math.sin` and two `**` off the lib/ layer entirely.
+  "atlas-sheet.mjs", "basin-sheet.mjs", "draft.mjs",
 ]);
