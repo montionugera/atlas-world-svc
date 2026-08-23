@@ -2422,12 +2422,20 @@ Appended 2026-08-23 by the seam-8 implementation. Commits `98a8b81`
 sheets), `729ff46` (retiring gen-world), `b488df7` (a mutation survivor closed).
 **Fifteen more plan errors are in §5 above.** No review has run on this seam yet.
 
-**Mutations: 38 applied, 36 killed, 2 survivors — and BOTH survivors are the
-deliberate no-op controls** (one per task). Two rules were survivors until they
-got fixtures and one test was green with its guard deleted; all three are
-listed below. Two attempted mutations were INVALID and are not counted: both
-edited a test's own assertion and then ran that same file, which tests the
-oracle with the oracle.
+**Mutations: 43 applied (23 on Task 12, 20 on Task 13), 41 killed, 2 survivors
+— and BOTH survivors are the deliberate no-op controls, one per task.** Two
+attempted mutations were INVALID and are not counted: both edited a test's own
+assertion and then ran that same file, which tests the oracle with the oracle.
+
+**FOUR real gaps were found by mutation and closed, and they are the reason the
+count is worth quoting.** Three rules were survivors until they had a fixture:
+`promote-world`'s "the derive-writer produced no summary line" and its gate
+twin (the error branch is unreachable in a healthy tree, and a tree that is not
+healthy is the whole point — both are driven by stub tools now), and `gWorldPoi`
+refusing a declaration with no stated reason. The fourth was a TEST that was
+green with its own guard deleted: the parent-cycle fixture built an `a <-> b`
+pair that was not reachable from `n-atlas` at all, so the walk terminated
+trivially and `classifyLiveNodes`' `seen` guard protected nothing.
 
 ### THE ONE THING TO READ: COMMITTING THE FABRIC RED THE COMMITTED ROOT
 
