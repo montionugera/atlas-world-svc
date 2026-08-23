@@ -2382,8 +2382,10 @@ roots. Eleven hostile roots are handled in-band.
 **104**, **63** work orders. Committed root **0 failures on both flags**, 44 nodes. Spine emit
 `clean, 47 files`; `npx jest mapDimensions` 5 passed; the protected diff against `plan-c-base`
 (`content/spine`, `content/maps`, `game-client/assets/art/maps/`, `colyseus-server/`) is **empty**.
-Scripts suite **975 pass / 0 fail** (was 948 — 27 new tests), run twice with a clean tree after
-each. mapforge **667 / 1**, the one being `G-RASTER-BUDGET`'s declared wall-clock noise.
+Scripts suite **974 pass / 0 fail** (was 948 — 26 new tests), run twice with a clean tree after
+each. On Node 18 in a container: **973 pass / 2 fail**, the two being the PRE-EXISTING
+`places.test.mjs` mirror-allowlist pair §16 already records (they shell out to git and the
+worktree's `.git` pointer does not resolve inside a container). mapforge **667 / 1**, the one being `G-RASTER-BUDGET`'s declared wall-clock noise.
 
 **COST:** `--only=spine` on the COMMITTED root — what Gate 1 runs — is **0.79 s** against §2's
 0.76 s baseline, five warm interleaved runs, i.e. no measurable change: the fifth ajv venue
