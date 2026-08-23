@@ -12,7 +12,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync, existsSync, statSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, realpathSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
-import { promoteWorld } from "../promote-world.mjs";
+import { promoteWorld, REPLACED_FAMILIES } from "../promote-world.mjs";
 import { ROOT, sharedRun, generateInto, scratchRepo, cleanup } from "./helpers/promote-fixture.mjs";
 import { tmpdir } from "node:os";
 
@@ -30,9 +30,29 @@ export const WORLD_DIGEST_INPUTS = Object.freeze([
   "content/spine/nodes",
   "content/spine/edges.json",
   "content/spine/derived.json",
-  "content/world/fabric",
-  "content/world/handles",
-  "content/world/resolved",
+  ...REPLACED_FAMILIES,
+]);
+
+// THE LIST IS DERIVED, NOT TRANSCRIBED — and the fourth property below cannot
+// make it so.
+//
+// That property perturbs each MEMBER of this list, so it can only ever catch an
+// entry that has gone DEAD. It can never catch an entry that has been REMOVED,
+// because a removed entry is not iterated. MEASURED 2026-08-23: deleting
+// `"content/world/resolved",` from the hand-written list left this file at
+// 5/5 PASS — at exactly the entry whose own comment calls it the most dangerous
+// one, because it is the only entry with ZERO files today and therefore the
+// only one G-REPRO 3's exact `counted` floor cannot see either.
+//
+// So the three families promotion REPLACES are spread in from promote-world's
+// own `REPLACED_FAMILIES` rather than retyped, and the three spine paths — the
+// other half of promote's `toCopy`, plus the sidecar step 3 writes — are pinned
+// by name and by length below. Adding a family to promotion now widens the
+// fixpoint claim automatically; removing one from either side reds.
+export const PROMOTION_SPINE_WRITES = Object.freeze([
+  "content/spine/nodes",
+  "content/spine/edges.json",
+  "content/spine/derived.json",
 ]);
 
 function walkFiles(dir, rel = "") {
@@ -124,6 +144,25 @@ test("G-REPRO 3: promotion is a fixpoint", T, () => {
   const h2 = treeHash(repo);
   assert.equal(h1.digest, h2.digest, `G-REPRO: promotion is not a fixpoint — tree hash ${h1.digest} != ${h2.digest}`);
   assert.equal(h1.counted, h2.counted);
+});
+
+test("the digest's input list IS what promotion writes — it cannot silently shrink", () => {
+  // The join the fourth property structurally cannot make. Both directions:
+  // a family promotion replaces that the digest does not hash is a fixpoint
+  // claim narrower than the artifact, and a digest entry naming nothing
+  // promotion writes is a claim about someone else's files.
+  for (const fam of REPLACED_FAMILIES)
+    assert.ok(WORLD_DIGEST_INPUTS.includes(fam),
+      `promote-world REPLACES ${fam} wholesale but the fixpoint digest does not hash it`);
+  assert.deepEqual([...WORLD_DIGEST_INPUTS],
+    [...PROMOTION_SPINE_WRITES, ...REPLACED_FAMILIES],
+    "the digest's inputs are no longer exactly what promotion writes under content/");
+  assert.equal(WORLD_DIGEST_INPUTS.length, 6,
+    "the digest input list changed length — widen or narrow it deliberately, with a reason, not by editing an array");
+  // The three spine paths are promote's `toCopy` minus the replaced families,
+  // plus the sidecar step 3 writes. Asserted by NAME so a rename is visible.
+  assert.deepEqual([...PROMOTION_SPINE_WRITES],
+    ["content/spine/nodes", "content/spine/edges.json", "content/spine/derived.json"]);
 });
 
 test("the fixpoint digest would SEE a change in each of its inputs", T, () => {
