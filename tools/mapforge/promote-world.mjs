@@ -38,22 +38,56 @@
 // unhappy about the world that was promoted". Those are different claims and
 // only the first is this command's business:
 //
-//   * The gate on a promoted Plan C world reports 96 failures under
-//     --only=spine (88 G-NET + 3 G-CANON-LEG on the carried canon, each with a
-//     named work order, + 5 G-POI thin surveyed regions) — a MEASURED,
-//     accounted fact of Plan C recorded in STATE §18, which Plan E's redraw
-//     clears. A promoter that called that an error could never return clean
-//     until Plan E, and the plan's own tests require it to.
+//   * The gate on a promoted Plan C world is RED, and the red is Plan C's
+//     accounted carried-canon debt, which Plan E's redraw clears: 88 G-NET + 3
+//     G-CANON-LEG on the DRAFT root, plus the region aliases that name towns
+//     the redraw deletes once the promoted root's authored content is in
+//     scope. The five G-POI thin surveyed regions are WARNINGS since Task 13
+//     declared them in budgets.json (STATE §20 supersedes §18's 96/104), and
+//     the total is a property of the ROOT rather than of the promotion — 112
+//     in the test fixture's scratch repo, 113 in a full checkout, measured
+//     2026-08-23. That is why step 5's baseline below is a set of RULE IDS and
+//     not a number. A promoter that called any of this an error could never
+//     return clean until Plan E, and the plan's own tests require it to.
 //   * The two committed chart sheets are drawn for a trunk this promotion
 //     replaces. Re-inking them is Plan E's redraw commit, not this command's.
 //
 // So both steps run, both record what they saw in `notes`, and neither is
 // swallowed. What step 5 DOES fail on is the gate losing its own report —
 // STATE §19 measured three separate ways that can happen while the exit code
-// stays honest — so a run with no `content-gate:` line is an error here.
-import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync, existsSync } from "node:fs";
+// stays honest — so a run with no `content-gate:` line is an error here — and,
+// since the seam-8 fix pass, a failure on a rule that describes THE SPINE'S OWN
+// INTEGRITY. See `gateRulesThatMustBeGreen` below.
+//
+// ── THE CENSUS FLOOR, and why the guard above it was one-directional ────────
+//
+// The rider guard closes PRESENT-but-unhashed. The harmful direction is
+// ABSENT-and-unhashed, because absence is what causes DELETION: a draft whose
+// content/spine/nodes/ is empty AND whose manifest agrees passes every guard
+// above — step 1 has nothing to verify, the rider check has nothing to copy,
+// classifyLiveNodes finds no problem, the edges check passes — and step 2 then
+// deletes every n-atlas descendant. MEASURED 2026-08-23 on a scratch repo:
+// 44 node files in, 7 out, `errors: []`, `promote-world: OK`, exit 0. Only the
+// runtime subtree survived. This is exactly the "partial copy, rebase, hand
+// edit" the header above names as the threat model, and the promoter did not
+// notice it.
+//
+// Three guards close it, and all three are DECLARED in
+// content/world/budgets.json's `promotion` block rather than written here,
+// because a number in code is a number nobody can find:
+//
+//   * `promotion.minTrunkNodes` — a floor on the draft's node census. A draft
+//     below it is refused before anything is deleted.
+//   * nothing that is still POINTED AT may be deleted — a surviving node's
+//     `representsNodeId` and a committed town plan's `spineId` are both hard
+//     joins (G-ALIAS, T1), and both are derived from the tree, never listed.
+//   * `promotion.gateRulesThatMustBeGreen` — step 5's baseline.
+//
+// A missing or malformed declaration is an ERROR, never a skipped check: a
+// floor that can be deleted with the suite green is not a floor.
+import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync, existsSync, lstatSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import { SHEETS } from "./render-sheet.mjs";
@@ -130,6 +164,44 @@ export function classifyLiveNodes({ live, roots }) {
   return { atlasIds, runtimeIds, problems };
 }
 
+/**
+ * The promotion's safety declaration, read from the tree being WRITTEN TO.
+ *
+ * It lives beside the world budgets because that is the file this programme
+ * puts committed numbers with stated reasons in, and because the numbers are
+ * claims about the committed world, not about the tool. Every clause is
+ * refused OUT LOUD rather than skipped — the `poi.supplyLimitedSurveyedRegions`
+ * discipline, and for the same reason: a declaration whose absence turns a
+ * guard off is a guard that can be deleted with the suite green.
+ */
+export function readPromotionDeclaration({ repoRoot }) {
+  const rel = "content/world/budgets.json";
+  let doc;
+  try { doc = readJson(join(repoRoot, rel)); }
+  catch (e) {
+    return { errors: [`promote: ${rel} is not readable JSON (${e.message}) — the promotion floor is declared there, and a promotion with no floor is the failure this refuses`] };
+  }
+  const d = doc.promotion;
+  if (d === null || typeof d !== "object" || Array.isArray(d))
+    return { errors: [`promote: ${rel} has no "promotion" object — the census floor and the integrity rules are declared there, and a promotion cannot run without them`] };
+  const errors = [];
+  const min = d.minTrunkNodes;
+  if (!Number.isInteger(min) || min < 1)
+    errors.push(`promote: ${rel} promotion.minTrunkNodes is ${JSON.stringify(min)}, not a positive integer — the census floor cannot be read, so nothing is promoted`);
+  const rules = d.gateRulesThatMustBeGreen;
+  if (rules === null || typeof rules !== "object" || Array.isArray(rules)) {
+    errors.push(`promote: ${rel} promotion.gateRulesThatMustBeGreen is not an object — step 5's baseline cannot be read, so nothing is promoted`);
+  } else if (Object.keys(rules).length === 0) {
+    errors.push(`promote: ${rel} promotion.gateRulesThatMustBeGreen is empty — an empty baseline detects nothing, which is the defect it was added to close`);
+  } else {
+    for (const [id, why] of Object.entries(rules))
+      if (typeof why !== "string" || why.trim() === "")
+        errors.push(`promote: ${rel} promotion.gateRulesThatMustBeGreen["${id}"] carries no stated reason — a declaration IS its reason`);
+  }
+  if (errors.length) return { errors };
+  return { errors: [], minTrunkNodes: min, gateRules: rules };
+}
+
 /** Run a repo tool, answering in-band. Never throws, never inherits stdio. */
 function runTool({ repoRoot, script, args = [] }) {
   const r = spawnSync(process.execPath, [join(repoRoot, script), ...args],
@@ -138,8 +210,50 @@ function runTool({ repoRoot, script, args = [] }) {
   return { status: r.error ? null : r.status, out, error: r.error ? String(r.error.message) : null };
 }
 
+/**
+ * STEP 5's BASELINE — and it is deliberately NOT a failure COUNT.
+ *
+ * The count was the obvious remedy and it is not reproducible: it is a property
+ * of the ROOT, not of the promotion. Measured 2026-08-23 at this HEAD, one
+ * faithful promotion of the same draft — 113 failures in a reviewer's full
+ * checkout, 112 in the test fixture's scratch repo, of which 3 are that root's own
+ * missing files (`cannot read/parse` on the art manifest and the spawn areas),
+ * so a full checkout is 109. A gate keyed on a number three trees disagree
+ * about is a gate that reds on the environment.
+ *
+ * What IS invariant is the KIND. A faithful Plan C promotion leaves exactly the
+ * carried-canon debt Plan E clears — 88 `G-NET` + 3 `G-CANON-LEG` plus the
+ * region aliases that name towns the redraw deletes — and it leaves the rules
+ * that describe THE SPINE'S OWN INTEGRITY green, because it wrote that spine.
+ * Measured on the truncated draft above: `G-ALIAS` x2, `G-PARENT` and
+ * `G-TOWN-FRAME` appear only there. Those three are the declared set.
+ *
+ * It is a POSITIVE list, not an exhaustive taxonomy, and budgets.json says so:
+ * a rule is added when a promotion defect is shown to red it, with the
+ * measurement. The measurement is printed on every run either way, so a set
+ * that stops covering anything is visible rather than silent.
+ */
+export function gateIntegrityErrors({ out, rules, notes }) {
+  const ids = Object.keys(rules).sort();
+  const errors = [];
+  const fails = out.split("\n").filter((l) => /^\s*FAIL\b/.test(l));
+  for (const id of ids) {
+    const esc = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(`(^|[^A-Z0-9-])${esc}(?![A-Z0-9-])`);
+    const hits = fails.filter((l) => re.test(l));
+    if (!hits.length) continue;
+    errors.push(`promote: the gate reports ${hits.length} ${id} failure(s) — a rule a faithful promotion leaves GREEN (budgets.json promotion.gateRulesThatMustBeGreen: ${rules[id]}). This is the promotion breaking the spine it wrote, not carried-canon debt Plan E clears:\n${hits.slice(0, 5).map((h) => `    ${h.trim()}`).join("\n")}`);
+  }
+  notes?.push(`promote: gate integrity rules ${errors.length ? "RED" : "clean"} — ${ids.join(", ")} over ${fails.length} failure line(s)`);
+  return errors;
+}
+
 export function promoteWorld({ repoRoot = DEFAULT_REPO_ROOT, runDir, dryRun = false }) {
   const written = [], deleted = [], errors = [], notes = [];
+
+  // ── 0. the declaration, before anything is read or written ───────────────
+  const decl = readPromotionDeclaration({ repoRoot });
+  if (decl.errors.length) return { written, deleted, errors: decl.errors, notes };
 
   // ── 1. verify the draft against its own manifest ─────────────────────────
   if (!runDir) return { written, deleted, errors: ["promote: no runDir given"], notes };
@@ -151,9 +265,28 @@ export function promoteWorld({ repoRoot = DEFAULT_REPO_ROOT, runDir, dryRun = fa
   const hashes = man.hashes ?? {};
   if (Object.keys(hashes).length === 0)
     errors.push("promote: the run manifest lists no file hashes — nothing can be verified");
+  // A manifest key is a RELATIVE PATH INSIDE THE RUN DIR, and until the seam-8
+  // fix pass nothing said so. Both halves of "verify the draft against its own
+  // manifest" were satisfiable by files that are not the draft:
+  //   * `hashes["../../../../etc/hosts"] = <the correct sha>` verified clean;
+  //   * a SYMLINK named n-EVIL.json pointing outside the run dir was hashed
+  //     AND copied, because readFileSync follows links on both sides, so the
+  //     guard was self-consistently fooled and promoted the target's bytes.
+  // Neither is the accident this command exists for — both need a cooperating
+  // manifest — but a check that can be satisfied by the wrong file is not the
+  // check its own header claims. Refusing costs two lines.
+  const runRoot = resolve(runDir) + sep;
   for (const [rel, want] of Object.entries(hashes)) {
     const p = join(runDir, rel);
+    if (!resolve(p).startsWith(runRoot)) {
+      errors.push(`promote: the run manifest names "${rel}", which resolves OUTSIDE the run dir — a manifest key is a path inside the draft, and a draft cannot be verified against someone else's files`);
+      continue;
+    }
     if (!existsSync(p)) { errors.push(`promote: draft file ${rel} is missing`); continue; }
+    if (!lstatSync(p).isFile()) {
+      errors.push(`promote: draft file ${rel} is not a regular file — a symlink is hashed and copied through its TARGET, so the manifest would verify bytes the draft does not own`);
+      continue;
+    }
     const got = sha(readFileSync(p));
     if (got !== want) errors.push(`promote: draft file ${rel} hash ${got} != manifest ${want}`);
   }
@@ -173,6 +306,12 @@ export function promoteWorld({ repoRoot = DEFAULT_REPO_ROOT, runDir, dryRun = fa
   for (const rel of toCopy)
     if (!Object.prototype.hasOwnProperty.call(hashes, rel))
       errors.push(`promote: draft file ${rel} is NOT in the run manifest's hash map — an unhashed file cannot be verified and will not be promoted`);
+  if (errors.length) return { written, deleted, errors, notes };
+
+  // THE CENSUS FLOOR. Absence is what causes deletion, and every guard above
+  // this line is about presence. See the header.
+  if (draftFiles.size < decl.minTrunkNodes)
+    errors.push(`promote: the draft carries ${draftFiles.size} spine node file(s), below the declared floor of ${decl.minTrunkNodes} (content/world/budgets.json promotion.minTrunkNodes) — a truncated draft DELETES the trunk it cannot replace, so this refuses rather than reconciles`);
   if (errors.length) return { written, deleted, errors, notes };
 
   // ── 2. reconcile ─────────────────────────────────────────────────────────
@@ -211,15 +350,49 @@ export function promoteWorld({ repoRoot = DEFAULT_REPO_ROOT, runDir, dryRun = fa
 
   // Deletions are computed BEFORE any write, so a draft that turns out to be
   // unusable half way through cannot leave a half-reconciled tree.
+  const deletedNodeFiles = new Set();
   for (const { f, doc } of live) {
     if (!atlasIds.has(doc.id)) continue;                 // runtime: untouched
     if (draftFiles.has(f)) continue;                     // present in the draft: rewritten below
+    deletedNodeFiles.add(f);
     deleted.push(`content/spine/nodes/${f}`);
   }
   for (const fam of REPLACED_FAMILIES) {
     const src = new Set(listFiles(join(runDir, fam)));
     for (const f of listFiles(join(repoRoot, fam))) if (!src.has(f)) deleted.push(`${fam}/${f}`);
   }
+  // NOTHING THAT IS STILL POINTED AT MAY BE DELETED.
+  //
+  // The census floor catches a wholesale truncation; this catches the same
+  // thing ONE FILE AT A TIME. Dropping `n-millcross.json` from a draft and its
+  // manifest row used to list it under DELETE with `errors: []`, while dropping
+  // an authored EDGE was hard-refused — an arbitrary asymmetry, since both
+  // deletions are the promoter overwriting a committed join it cannot see.
+  // Neither join is a hardcoded id list: `representsNodeId` is read off the
+  // surviving live nodes (scripts/lib/spine.mjs hard-fails G-ALIAS on a
+  // dangling one) and `spineId` off the committed town plans (T1's join,
+  // check_content.mjs). The id set compared against is the tree AS IT WILL BE.
+  const finalIds = new Set();
+  for (const { f, doc } of live) if (!deletedNodeFiles.has(f)) finalIds.add(doc.id);
+  for (const f of [...draftFiles].sort()) {
+    try { finalIds.add(readJson(join(draftNodes, f)).id); }
+    catch (e) { errors.push(`promote: the draft's content/spine/nodes/${f} is not readable JSON: ${e.message}`); }
+  }
+  for (const { f, doc } of live) {
+    if (deletedNodeFiles.has(f)) continue;
+    const r = doc.representsNodeId;
+    if (typeof r === "string" && r !== "" && !finalIds.has(r))
+      errors.push(`promote: content/spine/nodes/${f} has representsNodeId "${r}", which this promotion would delete — G-ALIAS hard-fails on a dangling alias, so this refuses rather than reconciles`);
+  }
+  const townsDir = join(repoRoot, "content/towns");
+  for (const t of listFiles(townsDir).filter((x) => x.endsWith(".json"))) {
+    let spineId;
+    try { spineId = readJson(join(townsDir, t)).spineId; }
+    catch (e) { errors.push(`promote: content/towns/${t} is not readable JSON: ${e.message}`); continue; }
+    if (typeof spineId === "string" && spineId !== "" && !finalIds.has(spineId))
+      errors.push(`promote: content/towns/${t} has spineId "${spineId}", which this promotion would delete — T1's town-to-spine join hard-fails, so this refuses rather than reconciles`);
+  }
+  if (errors.length) return { written, deleted: [], errors, notes };
   written.push(...toCopy);
 
   if (dryRun) return { written, deleted, errors, notes, ratio: man.seaToLandRatio, landKm2: man.landKm2 };
@@ -271,6 +444,7 @@ export function promoteWorld({ repoRoot = DEFAULT_REPO_ROOT, runDir, dryRun = fa
     // honest. A promotion whose gate lost its report has measured nothing.
     if (!line) errors.push(`promote: the content gate produced no "content-gate:" summary line (exit ${gate.status}) — it lost its own report:\n${gate.out.trim().slice(-2000)}`);
     else notes.push(`promote: gate exit ${gate.status} — ${line.trim()}`);
+    if (line) errors.push(...gateIntegrityErrors({ out: gate.out, rules: decl.gateRules, notes }));
   }
 
   return { written, deleted, errors, notes, ratio: man.seaToLandRatio, landKm2: man.landKm2 };

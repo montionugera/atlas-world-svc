@@ -92,6 +92,16 @@ function inputDigest() {
   };
   walk(join(ROOT, "content"), "content/", null);
   walk(join(ROOT, "tools/mapforge"), "tools/mapforge/", (n) => n === "tests");
+  // THE NODE MAJOR IS AN INPUT. Without it a run built on Node 26 is silently
+  // reused by a Node 18 process, and G-REPRO 2 and 3 then measure a fixpoint
+  // over a foreign-version artifact on any box that switches Node — which is
+  // the same "cache key that is a subset of the inputs" this comment warns
+  // about, in the one variable the whole file calls load-bearing. Byte
+  // identity here is a VERSION-PINNED contract; a cache that crosses versions
+  // is asserting the portability claim repro.test.mjs deliberately does not
+  // make. CI has a fresh build/ either way, so the cost is one 6.5 s run on a
+  // dev box that changes Node.
+  h.update(`node-major:${process.versions.node.split(".")[0]}\n`);
   return h.digest("hex").slice(0, 16);
 }
 

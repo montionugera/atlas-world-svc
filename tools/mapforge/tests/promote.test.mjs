@@ -5,11 +5,12 @@
 // for a promotion to lose something.
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync, rmSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync, rmSync, statSync, symlinkSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { promoteWorld, classifyLiveNodes, parseArgs, listFiles, reportLines, REPLACED_FAMILIES } from "../promote-world.mjs";
+import { promoteWorld, classifyLiveNodes, parseArgs, listFiles, reportLines, REPLACED_FAMILIES,
+         readPromotionDeclaration, gateIntegrityErrors } from "../promote-world.mjs";
 import { ROOT, sharedRun, copyRun, scratchRepo, cleanup, scriptsAreLinked } from "./helpers/promote-fixture.mjs";
 
 after(cleanup);
@@ -402,4 +403,226 @@ test("a content gate that loses its report is an ERROR, not a green promotion", 
   const r2 = promoteWorld({ repoRoot: repo2, runDir: run });
   assert.equal(r2.errors.length, 0, r2.errors.join("\n"));
   assert.ok(r2.notes.some((n) => /gate exit 1 — content-gate: 36 nodes, 96 failures/.test(n)), r2.notes.join("\n"));
+});
+
+
+// ── THE CENSUS FLOOR (STATE §21) ───────────────────────────────────────────
+//
+// Every guard above this block is about PRESENCE — a file the manifest does
+// not name, a file whose bytes do not match. The harmful direction is ABSENCE,
+// because absence is what causes DELETION, and it had no guard at all: a draft
+// with an empty content/spine/nodes/ and a manifest that agreed promoted with
+// `errors: []`, printed `promote-world: OK`, exited 0, and took the tree from
+// 44 node files to 7. These tests are written from that measurement.
+
+/** Drop node files from a draft AND the manifest rows that name them. */
+function dropDraftNodes(run, names) {
+  const mp = join(run, "manifest.json");
+  const man = JSON.parse(readFileSync(mp, "utf8"));
+  for (const n of names) {
+    rmSync(join(run, "content/spine/nodes", n));
+    delete man.hashes[`content/spine/nodes/${n}`];
+  }
+  writeFileSync(mp, JSON.stringify(man, null, 2));
+  return man;
+}
+
+/** Edit the declaration in a scratch repo. */
+function setDeclaration(repo, patch) {
+  const p = join(repo, "content/world/budgets.json");
+  const b = JSON.parse(readFileSync(p, "utf8"));
+  b.promotion = patch === null ? undefined : { ...b.promotion, ...patch };
+  if (patch === null) delete b.promotion;
+  writeFileSync(p, JSON.stringify(b, null, 2) + "\n");
+}
+
+test("a TRUNCATED draft is refused, not promoted — nothing is written and nothing is deleted", T, () => {
+  const repo = scratchRepo(), run = copyRun();
+  const before = nodesOf(repo);
+  dropDraftNodes(run, readdirSync(join(run, "content/spine/nodes")));
+  assert.equal(readdirSync(join(run, "content/spine/nodes")).length, 0, "the draft was not truncated");
+  for (const dry of [true, false]) {
+    const r = promoteWorld({ repoRoot: repo, runDir: run, dryRun: dry });
+    assert.ok(r.errors.some((e) => /below the declared floor of 36/.test(e)),
+      `a draft with no nodes was accepted (dryRun=${dry}): ${JSON.stringify(r.errors)}`);
+    assert.deepEqual(r.written, [], "a refused promotion still reported writes");
+    assert.deepEqual(r.deleted, [], "a refused promotion still reported deletions");
+  }
+  assert.deepEqual(nodesOf(repo), before, "THE TRUNK WAS AMPUTATED BY A REFUSED PROMOTION");
+});
+
+test("the floor is a FLOOR, not a coincidence: one node short is still refused", T, () => {
+  const repo = scratchRepo(), run = copyRun();
+  // 36 is the whole census, so removing any one file puts the draft under it.
+  dropDraftNodes(run, ["n-galereach.json"]);
+  const r = promoteWorld({ repoRoot: repo, runDir: run, dryRun: true });
+  assert.ok(r.errors.some((e) => /carries 35 spine node file\(s\), below the declared floor of 36/.test(e)),
+    JSON.stringify(r.errors));
+  // …and the unmodified draft clears it, so the floor is not simply always red.
+  assert.equal(promoteWorld({ repoRoot: repo, runDir: sharedRun(), dryRun: true }).errors.length, 0);
+});
+
+test("the floor is DECLARED, and a declaration that cannot be read refuses the promotion", T, () => {
+  const run = sharedRun();
+  const cases = [
+    [null, /has no "promotion" object/],
+    [{ minTrunkNodes: undefined }, /minTrunkNodes is undefined, not a positive integer/],
+    [{ minTrunkNodes: "36" }, /minTrunkNodes is "36", not a positive integer/],
+    [{ minTrunkNodes: 0 }, /minTrunkNodes is 0, not a positive integer/],
+    [{ gateRulesThatMustBeGreen: [] }, /gateRulesThatMustBeGreen is not an object/],
+    [{ gateRulesThatMustBeGreen: {} }, /gateRulesThatMustBeGreen is empty/],
+    [{ gateRulesThatMustBeGreen: { "G-ALIAS": "   " } }, /carries no stated reason/],
+  ];
+  for (const [patch, re] of cases) {
+    const repo = scratchRepo();
+    setDeclaration(repo, patch);
+    const r = promoteWorld({ repoRoot: repo, runDir: run, dryRun: true });
+    assert.ok(r.errors.some((e) => re.test(e)), `${JSON.stringify(patch)} was accepted: ${JSON.stringify(r.errors)}`);
+    assert.deepEqual(r.written, []);
+  }
+  // A budgets.json that is not JSON at all refuses too, rather than throwing.
+  const repo = scratchRepo();
+  writeFileSync(join(repo, "content/world/budgets.json"), "{oops");
+  assert.match(promoteWorld({ repoRoot: repo, runDir: run, dryRun: true }).errors[0], /is not readable JSON/);
+});
+
+test("the COMMITTED declaration names the 36-file census and at least one integrity rule", () => {
+  const d = readPromotionDeclaration({ repoRoot: ROOT });
+  assert.deepEqual(d.errors, []);
+  assert.equal(d.minTrunkNodes, 36,
+    "the committed floor is not the 36-file trunk census Plan E's trunk-census.json restates");
+  assert.deepEqual(Object.keys(d.gateRules).sort(), ["G-ALIAS", "G-PARENT", "G-TOWN-FRAME"]);
+  for (const [id, why] of Object.entries(d.gateRules))
+    assert.ok(why.length > 40, `${id}'s reason is a label, not a reason`);
+});
+
+// ── NOTHING STILL POINTED AT MAY BE DELETED ────────────────────────────────
+//
+// The floor catches a wholesale truncation; this catches the same thing ONE
+// FILE AT A TIME. Dropping n-millcross.json used to list it under DELETE with
+// `errors: []`, while dropping an authored EDGE was hard-refused — an
+// arbitrary asymmetry. The fixtures LOWER the floor on purpose, so that the
+// guard under test is the one that fires and not the census one.
+test("a node a surviving representsNodeId points at is REFUSED, not deleted", T, () => {
+  for (const [file, alias] of [["n-thornveil.json", "n-site-thornveil"],
+                               ["n-northern-icefield.json", "n-site-icefield"]]) {
+    const repo = scratchRepo(), run = copyRun();
+    setDeclaration(repo, { minTrunkNodes: 10 });
+    dropDraftNodes(run, [file]);
+    const r = promoteWorld({ repoRoot: repo, runDir: run, dryRun: true });
+    assert.ok(r.errors.some((e) => new RegExp(`${alias}\\.json has representsNodeId`).test(e)),
+      `dropping ${file} was accepted: ${JSON.stringify(r.errors)}`);
+    assert.deepEqual(r.written, []);
+    assert.deepEqual(r.deleted, []);
+  }
+});
+
+test("the spine host of a committed town plan is REFUSED, not deleted", T, () => {
+  const repo = scratchRepo(), run = copyRun();
+  setDeclaration(repo, { minTrunkNodes: 10 });
+  dropDraftNodes(run, ["n-millcross.json"]);
+  const r = promoteWorld({ repoRoot: repo, runDir: run, dryRun: true });
+  assert.ok(r.errors.some((e) => /town-millcross\.json has spineId "n-millcross"/.test(e)),
+    JSON.stringify(r.errors));
+  assert.deepEqual(r.written, []);
+});
+
+// ── STEP 5's BASELINE ──────────────────────────────────────────────────────
+//
+// The lines below are the REAL ones, captured 2026-08-23 from
+// `check_content.mjs --only=spine` on the amputated tree the truncated
+// promotion left behind. They are quoted rather than invented because a
+// baseline tested against a shape nobody measured is a baseline for nothing.
+const AMPUTATED_GATE_FAILS = [
+  'FAIL  G-PARENT: roots.json lists n-atlas but no such node exists',
+  'FAIL  G-TOWN-FRAME: towns/town-millcross.json: spineId "n-millcross" resolves to no spine node',
+  'FAIL  G-ALIAS: "n-site-icefield" representsNodeId "n-northern-icefield" resolves to no spine node',
+  'FAIL  G-ALIAS: "n-site-thornveil" representsNodeId "n-thornveil" resolves to no spine node',
+];
+// …and these are the REAL ones a FAITHFUL promotion leaves behind. Both halves
+// matter: a rule that fires on everything detects as little as one that fires
+// on nothing.
+const FAITHFUL_GATE_FAILS = [
+  'FAIL  spine: G-NET e-trunk-chain: endpoint feature "f-town-gildmark" is not on node "n-c02"',
+  'FAIL  spine: G-CANON-LEG e-leg-millcross-gildmark: no such node',
+  'FAIL  spine-alias: story/regions.json#region-gildmark: no such node',
+];
+
+test("step 5 ERRORS on a gate failure that names an integrity rule, and is silent on carried canon", () => {
+  const rules = readPromotionDeclaration({ repoRoot: ROOT }).gateRules;
+  const clean = [];
+  assert.deepEqual(gateIntegrityErrors({ out: FAITHFUL_GATE_FAILS.join("\n"), rules, notes: clean }), [],
+    "the carried-canon debt Plan E clears was read as a promotion defect");
+  assert.match(clean[0], /gate integrity rules clean — G-ALIAS, G-PARENT, G-TOWN-FRAME over 3 failure line\(s\)/);
+
+  const red = [];
+  const errs = gateIntegrityErrors({ out: [...FAITHFUL_GATE_FAILS, ...AMPUTATED_GATE_FAILS].join("\n"), rules, notes: red });
+  assert.deepEqual(errs.map((e) => e.match(/reports (\d+) (G-[A-Z-]+)/).slice(1, 3)),
+    [["2", "G-ALIAS"], ["1", "G-PARENT"], ["1", "G-TOWN-FRAME"]]);
+  assert.match(red[0], /gate integrity rules RED/);
+
+  // The rule id is matched as a WHOLE token: a longer id that merely starts
+  // with a declared one is a different rule and must not be claimed.
+  assert.deepEqual(gateIntegrityErrors({ out: "FAIL  G-ALIAS-2: something else", rules, notes: [] }), []);
+  // …and a NOTE mentioning the rule is not a failure.
+  assert.deepEqual(gateIntegrityErrors({ out: "NOTE  G-ALIAS: 2 aliases resolved", rules, notes: [] }), []);
+});
+
+test("step 5's baseline fires END TO END, through the real gate path", T, () => {
+  const repo = scratchRepo(), run = sharedRun();
+  // The summary line is present and honest — this is NOT the lost-report case
+  // §19 already covers. What is new is that the report NAMES an integrity rule.
+  stub(repo, "scripts/check_content.mjs",
+    `console.log(${JSON.stringify(AMPUTATED_GATE_FAILS.join("\n"))});\n` +
+    "console.log('content-gate: 7 nodes, 127 failures, 6 warnings');\nprocess.exitCode = 1;\n");
+  const r = promoteWorld({ repoRoot: repo, runDir: run });
+  assert.equal(r.errors.length, 3, r.errors.join("\n"));
+  assert.ok(r.errors.every((e) => /a rule a faithful promotion leaves GREEN/.test(e)));
+  assert.ok(r.notes.some((n) => /gate integrity rules RED/.test(n)));
+});
+
+test("a FAITHFUL promotion of the committed draft leaves every integrity rule green", T, () => {
+  const repo = scratchRepo(), run = sharedRun();
+  const r = promoteWorld({ repoRoot: repo, runDir: run });
+  assert.deepEqual(r.errors, [], "a faithful promotion reported an error");
+  assert.ok(r.notes.some((n) => /gate integrity rules clean — G-ALIAS, G-PARENT, G-TOWN-FRAME over \d+ failure line\(s\)/.test(n)),
+    r.notes.join("\n"));
+});
+
+
+// ── THE MANIFEST NAMES THE DRAFT, AND ONLY THE DRAFT ───────────────────────
+//
+// Both of these need a COOPERATING manifest, so neither is the accident this
+// command is built for. They are here because "verify the draft against its
+// own manifest" was satisfiable by files that are not the draft, and a check
+// that can be satisfied by the wrong file is not the check the header claims.
+test("a manifest key that escapes the run dir is REFUSED, not verified elsewhere", T, () => {
+  const repo = scratchRepo(), run = copyRun();
+  const outside = join(run, "..", "outside-the-draft.json");
+  writeFileSync(outside, "{}\n");
+  const mp = join(run, "manifest.json");
+  const man = JSON.parse(readFileSync(mp, "utf8"));
+  man.hashes["../outside-the-draft.json"] = "sha256:" + shaOf(outside);
+  writeFileSync(mp, JSON.stringify(man, null, 2));
+  const r = promoteWorld({ repoRoot: repo, runDir: run, dryRun: true });
+  assert.ok(r.errors.some((e) => /resolves OUTSIDE the run dir/.test(e)),
+    `a file outside the draft was accepted as verification: ${JSON.stringify(r.errors)}`);
+  rmSync(outside);
+});
+
+test("a SYMLINK in the draft is REFUSED — readFileSync follows it on both sides", T, () => {
+  const repo = scratchRepo(), run = copyRun();
+  const target = join(run, "report.md");           // any real file inside the run
+  const link = join(run, "content/spine/nodes/n-EVIL.json");
+  symlinkSync(target, link);
+  const mp = join(run, "manifest.json");
+  const man = JSON.parse(readFileSync(mp, "utf8"));
+  // The manifest AGREES with what readFileSync sees, which is the whole point:
+  // hashing and copying were fooled self-consistently.
+  man.hashes["content/spine/nodes/n-EVIL.json"] = "sha256:" + shaOf(link);
+  writeFileSync(mp, JSON.stringify(man, null, 2));
+  const r = promoteWorld({ repoRoot: repo, runDir: run, dryRun: true });
+  assert.ok(r.errors.some((e) => /n-EVIL\.json is not a regular file/.test(e)),
+    `a symlink promoted its target's bytes: ${JSON.stringify(r.errors)}`);
+  assert.deepEqual(r.written, []);
 });
