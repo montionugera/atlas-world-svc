@@ -8,7 +8,7 @@ is wrong, fix the file — do not work around it in a prompt.
 Last updated: 2026-08-23, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`),
 **Plan C was claimed** as F-048, **Plan C seams 1-6 (Tasks 1-10) were built and adjudicated**, and
 **seam 7 (Task 11 — the world gates) was built and ADJUDICATED**, and **seam 8 (Tasks 12-13 — promotion, the committed fabric and the two review sheets) was built** — see §9-§19 and **§20**,
-and **a hundred and sixty** confirmed
+and **a hundred and sixty-one** confirmed
 plan errors in §5.
 
 **If you read one thing in §20, read "COMMITTING THE FABRIC RED THE COMMITTED ROOT".** The five
@@ -171,7 +171,7 @@ Notes carried forward:
 
 ## 5. Where the plan documents are WRONG
 
-**A hundred and sixty confirmed** — the table below, counted 2026-08-23 (seam 8 added fifteen) (seam 7 added thirteen and its adjudicating fix pass four more; seam 6 added nineteen, and its adjudicating fix pass eleven more) (the running prose count had drifted: it read "seventy" at 94 rows). Each was found by running code, not by reading. **Verify a brief against the
+**A hundred and sixty-one confirmed** — the table below, counted 2026-08-23 (seam 8 added sixteen) (seam 7 added thirteen and its adjudicating fix pass four more; seam 6 added nineteen, and its adjudicating fix pass eleven more) (the running prose count had drifted: it read "seventy" at 94 rows). Each was found by running code, not by reading. **Verify a brief against the
 tree before trusting it** — this is the single most reliable source of defects in the programme.
 
 | Where | The plan says | Actually |
@@ -337,6 +337,7 @@ tree before trusting it** — this is the single most reliable source of defects
 | **C, whole-plan acceptance criterion 13** | `SYNTHETIC_LOAD_BUDGET`, `PRE_WORLD_ATLAS_CHILDREN` and `PRE_WORLD_SEALANE_ID` *"appear nowhere in the repo"* | **unsatisfiable as a string scan, and satisfying it would make the tree worse.** All three are named in `generate-world.mjs`'s header, which explains what they were and why they are gone — and `generate-world.test.mjs` asserts that explanation survives — as well as in the plan document, this file and the backlog spec. The satisfiable reading is CODE: comments stripped, over every production file under `tools/` and `scripts/` (`tests/` excluded on both sides, the same split the determinism ban uses). |
 | **`tools/mapforge/tests/determinism-inventory.test.mjs`** | `world-gen.mjs`'s `Math.PI` x2 / `Math.cos` / `Math.sin` / `**` x2 is *"the LARGEST exposure on this path … its output is the canary sheet, which is committed and locked"* | **FALSE.** `lib/synthetic-sheet.mjs` reads the committed fixture `tests/fixtures/synthetic-world/world.json` and imports nothing from `world-gen.mjs`, whose ONLY importer in the tree was `tools/mapforge/gen-world.mjs`. The canary sheet is unaffected by the deletion and `check_render_lock` proves it on every run. `LEGACY_IMPRECISE_FILES` is three files now, not four. |
 | **`scripts/tests/world-budget.test.mjs`** (pre-existing, armed by Task 13) | `tmpRoot()` copies the real `content/`, then a test `mkdir`s `world/fabric` and writes its own stub | once `content/world/fabric/` is committed the stub is the FIFTEENTH document, not the only one. Measured: *"degrade: an EMPTY content/world/fabric/ directory arms nothing"* read `types placed: 168 / 170` off the real fabric, and eleven tests in that file were making claims about the committed world under their own names. `emptyWorldLayer()` clears both families first. The same shape hit `scripts/tests/edges-schema.test.mjs`, whose four `44 nodes, 0 failures, 19 warnings` goldens are now 25 — the six new warnings being the five declared POI shortfalls and the one `G-LANDFORM` line naming `sinking-river` and `sub-lacustrine-vent`. |
+| **C, whole-plan acceptance criterion 9** | `git diff --stat main...HEAD -- content/spine content/maps …` is **empty** | **`main` is the wrong baseline in this worktree and the criterion reads as a violation on correct work.** `psrw claim` branches from `main`, so `merge-base main HEAD` is `7bc4140` (*release 1.7 finalised*) and the three-dot range therefore contains all of Plan A and Plan B — 56 files, the whole 1.8 spine emit among them. STATE §3's baseline is the one that means anything: against the `plan-c-base` tag the same path set is EMPTY, on every commit. |
 | **`scripts/tests/fixtures/world/base/world/budgets.json`** | a copy of the committed budgets | its `landforms` section had **drifted**: no `typeCoverageFloor`, no `dungeonCapableTypes`, so the moment a spine sits beside a world/ in that suite every red case fails on `G-LANDFORM: 23 dungeonCapable types, budget pins undefined` instead of on its own mutation. It is a byte copy now, pinned by a test, exactly as the manifest already was. |
 
 The plan text already self-corrects two more: spec §8.6's "checkSpine is already parameterised
