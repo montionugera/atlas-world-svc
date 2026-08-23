@@ -7,9 +7,14 @@ is wrong, fix the file — do not work around it in a prompt.
 
 Last updated: 2026-08-23, after **Plan B shipped** (F-047 → release/1.8, merge `65006fe`),
 **Plan C was claimed** as F-048, **Plan C seams 1-6 (Tasks 1-10) were built and adjudicated**, and
-**seam 7 (Task 11 — the world gates) was built and ADJUDICATED** — see §9-§17, **§18** and **§19**,
-and **a hundred and forty-five** confirmed
+**seam 7 (Task 11 — the world gates) was built and ADJUDICATED**, and **seam 8 (Tasks 12-13 — promotion, the committed fabric and the two review sheets) was built** — see §9-§19 and **§20**,
+and **a hundred and sixty** confirmed
 plan errors in §5.
+
+**If you read one thing in §20, read "COMMITTING THE FABRIC RED THE COMMITTED ROOT".** The five
+thin surveyed regions §18 adjudicated were recorded in a TEST, which is a claim about the draft
+root; committing the fabric took the COMMITTED root to 5 failures and would have red Gate 1. They
+are a DECLARATION in `budgets.json` now, and **the accounted set is 91 / 99 / 63, not 96 / 104 / 63**.
 
 **If you read one thing in §19, read "THE GATE COULD LOSE ITS OWN REPORT, THREE WAYS".** Two
 uncaught throws and one truncating `process.exit()` could each end a run with no `content-gate:`
@@ -45,7 +50,7 @@ world it pinned was not the world seam 2 fitted the thirteen continents to.
 | --- | --- | --- |
 | A — Unblock and Afford | F-046 | **SHIPPED** to release/1.8, 2026-08-19. All 15 acceptance criteria verified. |
 | B — Vocabulary and Render | F-047 | **SHIPPED** to release/1.8, 2026-08-22. All 12 tasks; Gate 1 13/13. |
-| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. Tasks 1-11 built; seams 1-7 reviewed and adjudicated (§14, §15, §17, **§19**). Task 12 next. |
+| C — The Fabric Layer | F-048 | **IN FLIGHT** — claimed 2026-08-22, worktree `.claude/worktrees/F-048-…`, base tag `plan-c-base`. **All 13 tasks built**; seams 1-7 reviewed and adjudicated (§14, §15, §17, §19); seam 8 (Tasks 12-13, **§20**) built and awaiting review. |
 | D — Pinned, Bound, Relations | — | not started |
 | E — Redraw and Prose | — | not started |
 
@@ -166,7 +171,7 @@ Notes carried forward:
 
 ## 5. Where the plan documents are WRONG
 
-**A hundred and forty-five confirmed** — the table below, counted 2026-08-23 (seam 7 added thirteen and its adjudicating fix pass four more; seam 6 added nineteen, and its adjudicating fix pass eleven more) (the running prose count had drifted: it read "seventy" at 94 rows). Each was found by running code, not by reading. **Verify a brief against the
+**A hundred and sixty confirmed** — the table below, counted 2026-08-23 (seam 8 added fifteen) (seam 7 added thirteen and its adjudicating fix pass four more; seam 6 added nineteen, and its adjudicating fix pass eleven more) (the running prose count had drifted: it read "seventy" at 94 rows). Each was found by running code, not by reading. **Verify a brief against the
 tree before trusting it** — this is the single most reliable source of defects in the programme.
 
 | Where | The plan says | Actually |
@@ -317,6 +322,21 @@ tree before trusting it** — this is the single most reliable source of defects
 | **C, Task 11 Step 10** | calls the equal-size/different-hash near-tie *"legal, because the hash breaks the tie"* and then directs the implementer to *"pick the second reading"* | **self-contradictory** — the second reading is to FLAG exactly the case the same paragraph calls legal. The shipped code takes the coherent reading (two rows are unordered only when BOTH terms of the pair match) and has a passing test for the legal near-tie. This is the 142nd. |
 | **`scripts/check_content.mjs` `finish()`** (pre-existing, not Plan C's) | prints the whole report, then `process.exit()` | **the gate TRUNCATES ITS OWN REPORT** whenever stdout is a pipe. `console.log` to a pipe is asynchronous on POSIX and `process.exit()` discards what libuv has not flushed. Measured in a `node:18` container, 100 spawns each: 12/100 truncated at 30 KB of output, 81/100 at 76 KB, shortest 22.7 KB; on darwin, 0/100 at the same sizes. §19. |
 | **`scripts/lib/spine.mjs`** `placementArea` (pre-existing) | — | returns a finite `0` for every shape it does not understand and for a missing placement, so `G-TRUNK-AREA`'s and `gWorldSeaLandTrunk`'s `Number.isFinite` guards are reachable ONLY by overflow — a `rect` whose sides multiply past `Number.MAX_VALUE`, which `spine-node.schema.json`'s bare `{"type": "number"}` accepts. Both now have that fixture. |
+| **C, Task 12 Step 4** and **whole-plan acceptance criterion 14** | `"nodeMajor": 18` because *"ci.yml:33 already pins node-version: 18 to match `colyseus-server/Dockerfile`"*, and the criterion asks for the Dockerfile to AGREE | **the Dockerfile has said `FROM node:22-alpine` since release 1.2** (commit `3cf96e7`, both stages), and ci.yml's comment claiming a match was stale. The two cannot be made to agree inside Plan C: the migration invariant requires `git diff plan-c-base -- colyseus-server/` to be EMPTY on every commit, and moving CI to 22 discards every byte-determinism measurement this programme has taken on Node 18. They are also different jobs — `nodeMajor` is the Node the map tooling and the byte gates run on, `runtimeNodeMajor` is the deployment image, which never runs mapforge. **Both are recorded in `.release.json` with the reason, and `scripts/tests/node-pin.test.mjs` joins each to its own consumer** (and drives ci.yml's grep against the file, because `"nodeMajorWhy"` and `"runtimeNodeMajor"` sit beside the pin and a looser pattern matches two of them). |
+| **C, Task 12 Step 1** promote test | `assert.ok(!after.has("n-galereach.json"), "a stale n-atlas descendant survived promotion")` | **`n-galereach` is a GENERATED ocean node** — it exists only in the DRAFT, so asserting the promoted root lacks it is vacuously true and proves no reconciliation at all. The 22 live n-atlas descendants the census deletes are `n-gildmark`, `n-embervale`, `n-rooktide`, `n-saltmire`, … ; `n-gildmark.json` is the one the test now names. |
+| **C, Task 12 Step 1** promote test | *"promote runs the derive-writer, so every node lands with a `derived` block"* — `doc.derived.digest` on every node file | **that shape is GONE.** Plan B Task 4 hoisted every node's `derived` block into the single sidecar `content/spine/derived.json`, which is why the emit census is 47 files and not 46. The plan's assertion reds on correct content; the sidecar is the same claim about the same emitter. |
+| **C, Task 12 Step 3** `promoteWorld` steps 4-6 | render four named sheets and run the spine gate, pushing every non-zero exit into `errors` | **as written the function can never return clean, and the plan's own tests require `errors.length === 0` in three places.** Two of the four sheet names (`fabric`, `overlay`) do not exist until Task 13, so the render exits 2; and the gate on a promoted Plan C world reports the accounted 91 failures, so the gate exits 1. Neither is a promotion defect: the gate is saying what the DRAFT already says, and the two chart sheets are drawn for the trunk the promotion replaces. Split: `errors` means "the promotion could not be performed faithfully", `notes` records what steps 4-5 saw. What IS an error is either tool **losing its summary line** — §19's three ways, and it caught a real one (a CLI spawned through a path whose realpath differs never runs `main()` at all: no output, exit 0, a silently skipped derive-writer). |
+| **C, Task 12 Step 1** promote test scaffolding | `execFileSync(generate-world)` once per test, eight times in one file | `budgets.json`'s `generate` row fails at 8,000 ms and the CLI exits 1 there, so under the parallel suite (measured 19-28 s per generation) `execFileSync` THROWS and the promotion suite reds on a wall clock. `generate-world.test.mjs` already owns the timing claim and accepts the budget exit; the fixture does the same, and caches ONE generation per input-tree digest under `build/mapforge/`. |
+| **C, Task 12 Step 3** `promoteWorld` step 1 | verify every file the run manifest LISTS | the other half is the seam-6 hazard from the CONSUMING end: a draft can be assembled by something other than a clean CLI run, and a file the manifest cannot see is a file the hash check cannot see. **Every file the promotion copies must be named in the hash map, or it refuses.** Reproduced with a planted `n-ZOMBIE.json`: every listed hash still matches, so the plan's one-directional check is green on that root. |
+| **C, Task 13 Step 3** | *"`G-POI` and `G-ORDER` green"* on the committed root once the fabric lands | **committing the fabric takes the committed root from 0 failures to 5**, which reds Gate 1 and acceptance criterion 3. The five are §18's thin surveyed regions, and §18 recorded them in a TEST — correct for a draft root, insufficient the moment the fabric is committed into the live one. Neither other disposition is available (fixing P10's supply cannot close c05/r06 at all; a warning-only floor is a rule that cannot fail). The record moved into `content/world/budgets.json`'s `poi.supplyLimitedSurveyedRegions`, where the gate reads it, as a DECLARATION with three clauses: a declared thin region WARNs with its measured count and committed reason; an UNdeclared one still hard-fails; a declared one that is no longer thin, or that names a region its loaded continent does not have, hard-fails so the row cannot outlive its cause. A value that is not a non-empty string is refused too. **Committed root 0 failures / 25 warnings; draft root 96 -> 91 and 104 -> 99.** |
+| **C, Task 13 Step 4** `buildFabricSheet` | `r.ring`, `r.centroidKm`, and land drawn only as region polygons | the emitted region shape is `rings` + `holes` (§5, §13), so the plan's builder drops the 384.88 km² of second lobes 18 of the 160 regions carry; and with no landmass fill the regions read as free-floating polygons on open sea. The sheet draws each continent's `outerRing` (2,413 vertices over the thirteen) under them, with `outerHoles` knocked out. |
+| **C, Task 13 Step 4** the survey gradient | `fill = surveyed ? C.land : C.landPale ?? C.land` at 1.0 / 0.55 opacity | `C.land` and `C.landPale` do not exist in `draft.mjs` (the palette is `parchment`, `parchmentDeep`, `sea`, `ink`, `ink2`, `inkMid`, `inkSoft`, `accent`, `accentSoft`), so the `?? C.land` tail resolves to `undefined` twice and both branches emit `fill="undefined"`. And the nearest real pair — `parchmentDeep` against `parchment` — is FOUR levels of one channel, which reads as nothing at 512 px: the comment claiming spec §6.4's honest-frontier gradient is drawn would have been false. The STROKE carries it (0.7 `inkMid` surveyed / 0.3 `inkSoft` reported), and the counts 40 / 120 are asserted. |
+| **C, Task 13 Step 5** `buildOverlaySheet` | baseline defaults to `join(repoRoot, "content/spine/nodes")` | inside a DRAFT root that is already the GENERATED trunk, so the overlay would draw the new world under the new world and show nothing — and `writeRun` builds this sheet with `repoRoot: outDir`. The draft folder's own `baseline/spine/nodes` is preferred when present, which is what `writeRun` copies it for. |
+| **C, Task 13 Step 5** the area-delta table | one row per continent carrying the GENERATED area only | a list of thirteen numbers under a heading that promises a comparison. A continent's baseline polygon is reachable through `content/world/manifest.json`'s `landmasses[].nodeId` — the same column `buildTrunk` takes every node id from — so the table carries both sides and marks the six landmasses the committed chart has no polygon for as NEW. Measured: `c02 1040.7 -> 12102.8 km² x11.63`, `TOTAL 6243.5 -> 65600.0 km² x10.51`. The plan also scores NET land; the trunk polygon is a coast contour and encloses interior water, so both sides are GROSS (§5's `gWorldTrunkArea` row). |
+| **C, Task 13 Step 8** the render lock's extra paths | `readdirSync` inline in `check_render_lock.mjs` | a second list beside the one `scripts/tests/render-lock.test.mjs` recomputes the lock from, and the test went red on 27 "missing" rows. `lockExtraPaths({repoRoot})` is exported from `scripts/lib/render-lock.mjs` and both call it. 3 -> **32** artifacts (2 sheets + 27 fabric/handle files), no pre-existing hash moved. |
+| **C, whole-plan acceptance criterion 13** | `SYNTHETIC_LOAD_BUDGET`, `PRE_WORLD_ATLAS_CHILDREN` and `PRE_WORLD_SEALANE_ID` *"appear nowhere in the repo"* | **unsatisfiable as a string scan, and satisfying it would make the tree worse.** All three are named in `generate-world.mjs`'s header, which explains what they were and why they are gone — and `generate-world.test.mjs` asserts that explanation survives — as well as in the plan document, this file and the backlog spec. The satisfiable reading is CODE: comments stripped, over every production file under `tools/` and `scripts/` (`tests/` excluded on both sides, the same split the determinism ban uses). |
+| **`tools/mapforge/tests/determinism-inventory.test.mjs`** | `world-gen.mjs`'s `Math.PI` x2 / `Math.cos` / `Math.sin` / `**` x2 is *"the LARGEST exposure on this path … its output is the canary sheet, which is committed and locked"* | **FALSE.** `lib/synthetic-sheet.mjs` reads the committed fixture `tests/fixtures/synthetic-world/world.json` and imports nothing from `world-gen.mjs`, whose ONLY importer in the tree was `tools/mapforge/gen-world.mjs`. The canary sheet is unaffected by the deletion and `check_render_lock` proves it on every run. `LEGACY_IMPRECISE_FILES` is three files now, not four. |
+| **`scripts/tests/world-budget.test.mjs`** (pre-existing, armed by Task 13) | `tmpRoot()` copies the real `content/`, then a test `mkdir`s `world/fabric` and writes its own stub | once `content/world/fabric/` is committed the stub is the FIFTEENTH document, not the only one. Measured: *"degrade: an EMPTY content/world/fabric/ directory arms nothing"* read `types placed: 168 / 170` off the real fabric, and eleven tests in that file were making claims about the committed world under their own names. `emptyWorldLayer()` clears both families first. The same shape hit `scripts/tests/edges-schema.test.mjs`, whose four `44 nodes, 0 failures, 19 warnings` goldens are now 25 — the six new warnings being the five declared POI shortfalls and the one `G-LANDFORM` line naming `sinking-river` and `sub-lacustrine-vent`. |
 | **`scripts/tests/fixtures/world/base/world/budgets.json`** | a copy of the committed budgets | its `landforms` section had **drifted**: no `typeCoverageFloor`, no `dungeonCapableTypes`, so the moment a spine sits beside a world/ in that suite every red case fails on `G-LANDFORM: 23 dungeonCapable types, budget pins undefined` instead of on its own mutation. It is a byte copy now, pinned by a test, exactly as the manifest already was. |
 
 The plan text already self-corrects two more: spec §8.6's "checkSpine is already parameterised
@@ -2391,3 +2411,142 @@ worktree's `.git` pointer does not resolve inside a container). mapforge **667 /
 0.76 s baseline, five warm interleaved runs, i.e. no measurable change: the fifth ajv venue
 compiles only when a `world.json` is present and the committed root has none. On a fabric-bearing
 draft root, **0.70–0.74 s**. Gate 1's content lane budget is ~4 s.
+
+---
+
+## 20. Plan C seam 8 (Tasks 12-13) — the last seam — settled, do not re-raise
+
+Appended 2026-08-23 by the seam-8 implementation. Commits `98a8b81`
+(promote-world + G-REPRO + the Node pin), `dea01cc` (the fabric and the two
+sheets), `729ff46` (retiring gen-world), `b488df7` (a mutation survivor closed).
+**Fifteen more plan errors are in §5 above.** No review has run on this seam yet.
+
+**Mutations: 38 applied, 36 killed, 2 survivors — and BOTH survivors are the
+deliberate no-op controls** (one per task). Two rules were survivors until they
+got fixtures and one test was green with its guard deleted; all three are
+listed below. Two attempted mutations were INVALID and are not counted: both
+edited a test's own assertion and then ran that same file, which tests the
+oracle with the oracle.
+
+### THE ONE THING TO READ: COMMITTING THE FABRIC RED THE COMMITTED ROOT
+
+`--only=spine` on the committed root went **0 failures → 5** the moment
+`content/world/fabric/` landed in it: the five surveyed regions that cannot
+reach `G-POI`'s 12-POI floor. That reds **Gate 1** and acceptance criterion 3,
+so Plan C could not have shipped.
+
+§18 adjudicated the five correctly and recorded them in the wrong PLACE. Its
+three dispositions still hold — fixing P10's supply cannot close `c05/r06` at
+all, and a warning-only floor is a rule that cannot fail — but "RECORD IT" was
+implemented as a golden in `generate-world.test.mjs`, which is a claim about
+the DRAFT root and says nothing to a gate running on the committed one.
+
+The record now lives in **`content/world/budgets.json`'s
+`poi.supplyLimitedSurveyedRegions`**, one row per region with its measured
+reason, and `gWorldPoi` reads it. It is a DECLARATION, not disposition (2), and
+every clause is mutation-killed:
+
+1. a **declared** region below the floor is a WARNING naming its measured count
+   and the committed reason;
+2. an **undeclared** region below the floor is a hard failure, unchanged — a
+   sixth thin region still reds;
+3. a **declared** region that is no longer thin is a hard failure, and so is a
+   declaration naming a region its LOADED continent does not have — a row
+   cannot outlive its cause. (Only for a loaded continent: a root carrying one
+   continent of thirteen makes no claim about the other twelve, which is what
+   every `world-gates.test.mjs` fixture is.)
+4. a value that is not a non-empty string is refused out loud, and so is the
+   whole block being the wrong shape. That one was a mutation SURVIVOR: the
+   original `typeof v === "string"` filter silently DROPPED a malformed row,
+   which is safe in direction and silent about a `budgets.json` that says
+   something it does not mean.
+
+**THE NUMBERS MOVED. Quote these:**
+
+| | failures | breakdown | warnings |
+| --- | ---: | --- | ---: |
+| committed root, `--only=spine` | **0** | — | **25** (19 `G-SPINE-COMPLETE` + 5 declared `G-POI` + 1 `G-LANDFORM`) |
+| committed root, `--require-complete` | **0** | — | 38 |
+| draft root, `--only=spine` | **91** | 88 `G-NET` + 3 `G-CANON-LEG` | 29 |
+| draft root, `--require-complete` | **99** | the same 91 + 8 `G-SPINE-COMPLETE` | 21 |
+
+**63 work orders**, unchanged. §18's "96 / 104" are the pre-declaration figures
+and are superseded — the five `G-POI` lines are warnings now, in both roots,
+because the draft root carries the same `budgets.json`. The 88/3/63 carried-canon
+accounting is untouched.
+
+### What the seam guarantees
+
+- **`promote-world.mjs` is idempotent and cannot be fooled by an unexpected
+  file.** `--dry-run` lists 64 writes and 22 deletes and leaves `git status
+  --porcelain` empty under `content/`; a second promotion deletes nothing and
+  leaves the tree byte-identical; and **every file it copies must be named in
+  the run manifest's hash map or it refuses** (the seam-6 stale-rider hazard,
+  closed at the consuming end — `clearRun` closed the producing end).
+- **The reconciliation refuses a tree it cannot reason about** rather than
+  deleting from it: a node reachable from BOTH `n-atlas` and a runtime root, a
+  node whose `parentId` names nothing, a `roots.json` that does not list
+  `n-atlas`, and an authored edge the draft has dropped are each one clean
+  error and zero writes. Deletions are computed before any write. A parent
+  cycle reachable from `n-atlas` does not hang the walk — and the first
+  fixture for that did not reach the guard at all, which is why it is now two
+  files claiming one id.
+- **G-REPRO's three properties, plus a fourth that guards the third.** The
+  fixpoint digest is only as good as its input list, so each of its six inputs
+  is perturbed and must move the hash. Property 1 compares `content/`,
+  `baseline/` AND `sheets/` — not the plan's three easy directories.
+- **The generator is byte-identical on the CI Node.** Verified in a `node:18`
+  container: the committed `content/world/fabric/` and `content/world/handles/`
+  are byte-identical to a fresh Node 18 run, and both DRAFT sheets are
+  byte-identical across Node 18 and Node 26.
+- **Both review sheets are in the storybook and in the render lock.** The lock
+  went 3 → **32** artifacts (2 sheets + the 27 committed fabric and handle
+  files, through one exported `lockExtraPaths`), and no pre-existing hash moved.
+  The Maps tab gains a fabric census panel whose roster comes from
+  `world.json`'s own `continents[].fabric` column — the same key `G-TRUNK-AREA`
+  joins through.
+
+### Decisions taken deliberately
+
+- **The Node pin is TWO numbers.** See §5. `nodeMajor: 18` is the determinism
+  pin CI reads; `runtimeNodeMajor: 22` is `colyseus-server/Dockerfile`, which
+  never runs mapforge. Making them one number is impossible inside Plan C and
+  would be wrong outside it.
+- **`promoteWorld` prints nothing** — three test files call it in a loop, and
+  step 6's report is the CLI's (`reportLines`). A dry run's report is the LIST,
+  not two counts: acceptance criterion 6 says "lists writes and deletes", and a
+  reviewer cannot tell a reconciliation that deletes the right eleven files
+  from one that deletes the runtime by reading a number.
+- **`promote-world.mjs` renders every id in the SHEETS registry**, never a
+  hardcoded list. The plan's list already named two sheets that did not exist.
+- **The promotion suite CACHES one generation per input-tree digest** under
+  `build/mapforge/.test-run-<seed8>-<digest>`. The digest is a sha256 over the
+  whole of `content/` and the whole of `tools/mapforge/` outside `tests/` — a
+  deliberate SUPERSET of the real input set, because a cache key that is a
+  subset is a stale cache waiting to happen and this programme has paid for
+  that class five times in the determinism scan alone.
+
+### Open, recorded rather than chased
+
+- **`G-RASTER-BUDGET` now rasterises FIVE sheets, not three**, and it is still
+  the declared wall-clock noise. Measured alone: 3/3 green, ~10 s, and the two
+  NEW sheets are the two CHEAPEST at 2000 px (`fabric` 0.37 s, `overlay` 0.46 s
+  against `cluster1` 1.07 s and a 2 s cap). Under the full parallel suite
+  `cluster1` reads 2.97-4.26 s and the test reds, which is §8's recorded
+  behaviour, not a new one. It skips in CI (no librsvg) and runs in Gate 2 only.
+- **The mapforge suite is 712 tests / ~75-90 s** (was 668 / ~35 s at seam 7).
+  `promote.test.mjs` and `repro.test.mjs` are ~35 s of it even with the shared
+  cache, because G-REPRO property 1 genuinely needs a second independent
+  generation and property 2 a third. `raster.test.mjs`'s nested full-suite
+  spawn re-runs all of it a second time.
+- **Two `scripts/tests/places.test.mjs` failures on Node 18 remain PRE-EXISTING**
+  (`fatal: not a git repository` inside a container) — 985 pass / 2 fail. On the
+  host the scripts suite is **986 / 0**.
+- **`content/world/fabric/world.json` still has no `world-fabric.schema.json`
+  ENUM over continent ids** (§18 filed the venue; the venue exists and pins
+  shape only). Deliberate: a schema cannot see the manifest.
+- **The overlay sheet's baseline is the trunk as it stands.** After Plan E's
+  redraw it becomes a picture of the new world against itself, and the sheet's
+  own footer says so. Plan E should decide whether to freeze a pre-redraw copy.
+
+---
