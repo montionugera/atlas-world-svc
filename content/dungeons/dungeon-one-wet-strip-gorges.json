@@ -1,0 +1,32 @@
+{
+  "id": "dungeon-one-wet-strip-gorges",
+  "title": "One Wet Strip Gorges",
+  "family": null,
+  "bind": {
+    "handle": "c02/fluvial/h-6000f2"
+  },
+  "entranceType": "knickpoint-gorge",
+  "floors": 2,
+  "levelBand": [
+    32,
+    50
+  ],
+  "hazards": [
+    "flash-flood",
+    "collapse"
+  ],
+  "roomCountCurve": [
+    8,
+    10
+  ],
+  "lore": {
+    "note": "One river, one strip of green, and gorges that give it back in noise.",
+    "source": "content/world/premises/continent-05.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

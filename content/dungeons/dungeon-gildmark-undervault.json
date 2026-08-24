@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-gildmark-undervault",
+  "title": "Gildmark Undervault",
+  "family": null,
+  "bind": {
+    "handle": "c02/coastal/h-fc9b55"
+  },
+  "entranceType": "sea-cave",
+  "floors": 3,
+  "levelBand": [
+    1,
+    10
+  ],
+  "hazards": [
+    "cold",
+    "bad-air"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Vaults cut below the Gildmark sea cliff; the tide floods the lowest gallery twice a day.",
+    "source": "content/world/premises/continent-02.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

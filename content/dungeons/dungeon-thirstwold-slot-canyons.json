@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-thirstwold-slot-canyons",
+  "title": "Thirstwold Slot Canyons",
+  "family": null,
+  "bind": {
+    "handle": "c05/fluvial/h-392e9e"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 3,
+  "levelBand": [
+    40,
+    58
+  ],
+  "hazards": [
+    "flash-flood",
+    "loose-floor"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Slots so narrow the sun reaches the floor for minutes a day.",
+    "source": "content/world/premises/continent-05.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

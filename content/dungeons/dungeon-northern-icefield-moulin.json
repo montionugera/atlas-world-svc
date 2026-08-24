@@ -1,0 +1,32 @@
+{
+  "id": "dungeon-northern-icefield-moulin",
+  "title": "Northern Icefield Moulin",
+  "family": null,
+  "bind": {
+    "handle": "c02/coastal/h-6a74b6"
+  },
+  "entranceType": "blowhole",
+  "floors": 2,
+  "levelBand": [
+    32,
+    50
+  ],
+  "hazards": [
+    "cold",
+    "silence"
+  ],
+  "roomCountCurve": [
+    8,
+    10
+  ],
+  "lore": {
+    "note": "A vertical throat that drops into still, black water; ropes vanish before they slacken.",
+    "source": "content/world/premises/continent-02.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

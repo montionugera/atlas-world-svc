@@ -174,6 +174,155 @@ export function scaffoldBound({ repoRoot, dryRun = false }) {
   return out;
 }
 
+export function scaffoldDungeons({ repoRoot, dryRun = false }) {
+  const contentRoot = join(repoRoot, "content");
+  const out = { written: [], deleted: [], kept: [], problems: [] };
+  const lexPath = join(contentRoot, "world/lexicon/landforms.json");
+  if (!existsSync(lexPath)) { out.problems.push("scaffold: content/world/lexicon/landforms.json is missing"); return out; }
+  const lexicon = new Map();
+  for (const row of readJson(lexPath)) lexicon.set(row.id, row);
+
+  // ERRATUM (plan §Task 6): the plan's draft matched family.entranceTypes
+  // against every capable LEDGER handle. Plan C's committed anchor pass emits
+  // a dungeonAnchors row for exactly the quota it could anchor — and Plan D's
+  // G-DUNGEON-REACH fails any dungeon whose handle has no row. So the
+  // candidate pool here is anchored-capable handles only, further filtered by
+  // hopsToSettlement <= 2 and a member-band / host-region-band overlap, which
+  // is what makes G-BAND hold by construction rather than by luck.
+  const anchors = new Map();
+  const regionBand = new Map();
+  for (const f of listJson(join(contentRoot, "world/fabric"))) {
+    const doc = readJson(join(contentRoot, "world/fabric", f));
+    for (const a of doc.dungeonAnchors ?? []) anchors.set(a.handle, a);
+    for (const r of doc.regions ?? []) regionBand.set(r.id, r.levelBand ?? null);
+  }
+
+  const claimedByBound = new Set();
+  for (const f of listJson(join(contentRoot, "world/civil/bound")))
+    claimedByBound.add(readJson(join(contentRoot, "world/civil/bound", f))?.bind?.handle);
+
+  const overlaps = ([lo, hi], [rlo, rhi]) => lo <= rhi && rlo <= hi;
+
+  // Handles already carried by committed dungeon files are TAKEN, not
+  // re-selectable: without this, a re-run after bespoke records land would
+  // hand a family member a handle a bespoke dungeon already binds. Family
+  // MEMBER files are exempt here — their slots re-claim their own handles
+  // during matching (see pinning below), and an unclaimed member handle must
+  // stay available to its family rather than block every candidate.
+  const dungDir = join(contentRoot, "dungeons");
+  const famDir = join(dungDir, "families");
+  const taken = new Set();
+  for (const f of listJson(dungDir)) {
+    const d = readJson(join(dungDir, f));
+    if (d?.family === null && d?.bind?.handle) taken.add(d.bind.handle);
+  }
+
+  const eligible = [];
+  for (const f of listJson(join(contentRoot, "world/handles")))
+    for (const h of readJson(join(contentRoot, "world/handles", f)).handles ?? []) {
+      const anchor = anchors.get(h.handle);
+      if (!lexicon.get(h.type)?.dungeonCapable) continue;
+      if (!anchor || anchor.hopsToSettlement === null || anchor.hopsToSettlement > 2) continue;
+      const band = regionBand.get(h.region);
+      if (!band) continue;
+      eligible.push({ ...h, regionBand: band, boundClaimed: claimedByBound.has(h.handle) });
+    }
+  // Unclaimed handles first: an entrance sharing a handle with a named
+  // landmark is legal but wasteful, so sharing happens only under supply
+  // pressure (18 of the 60 anchors are claimed by bound records).
+  eligible.sort((a, b) => (a.boundClaimed - b.boundClaimed) ||
+    (b.sizeKm - a.sizeKm) || (a.contentHash < b.contentHash ? -1 : 1));
+
+  const findEligible = ({ types, levelBand }) =>
+    eligible.filter((c) => !taken.has(c.handle) && types.includes(c.type) &&
+      (!levelBand || overlaps(levelBand, c.regionBand)));
+
+  if (process.argv.includes("--list-free") && import.meta.url === `file://${process.argv[1]}`) {
+    const groups = new Map();
+    for (const c of eligible)
+      if (!taken.has(c.handle))
+        groups.set(`${c.handle.slice(0, 3)} ${c.type}`, [...(groups.get(`${c.handle.slice(0, 3)} ${c.type}`) ?? []), c]);
+    for (const [g, cs] of [...groups.entries()].sort())
+      console.log(`${g}: ${cs.map((c) => `${c.handle}(${c.boundClaimed ? "bound-claimed" : "free"})`).join(" ")}`);
+    return { ...out, problems: [] };
+  }
+
+  // Members are MATCHED, not picked greedily: the band ladder narrows onto
+  // fewer handles as the index rises, and a first-free walk can strand a late
+  // member on a handle an early one should have left. Augmenting-path
+  // matching over (member index x eligible handle), both iterated in
+  // deterministic order, places all eight whenever ANY assignment exists.
+  // A PRIOR member file pins its slot: if dungeon-<family>-<index>.json
+  // already binds an eligible handle it keeps it, which is what makes a
+  // second run report 24 unchanged instead of reshuffling the corpus.
+  function matchMembers({ family }) {
+    const slots = [];
+    for (let index = 0; index < 8; index++) {
+      const band = [family.levelBand.base + family.levelBand.step * index,
+                    family.levelBand.base + family.levelBand.step * index + family.levelBand.span];
+      slots.push({ index, band, cands: findEligible({ types: family.entranceTypes, levelBand: band }) });
+    }
+    const owner = new Map();   // slot index -> handle
+    const heldBy = new Map();  // handle -> slot index
+    for (const slot of slots) {
+      const priorFile = join(dungDir, `dungeon-${family.id.replace(/^family-/, "")}-${slot.index}.json`);
+      if (!existsSync(priorFile)) continue;
+      const ph = readJson(priorFile)?.bind?.handle;
+      if (!ph || taken.has(ph)) continue;
+      const still = slot.cands.find((c) => c.handle === ph);
+      if (!still) continue;
+      taken.add(ph);
+      owner.set(slot.index, ph);
+      heldBy.set(ph, slot.index);
+    }
+    const pinned = new Set(owner.keys());
+    const trySlot = (slot, seenHandles) => {
+      for (const h of slot.cands) {
+        if (seenHandles.has(h.handle)) continue;
+        seenHandles.add(h.handle);
+        const prev = heldBy.get(h.handle);
+        if (prev === undefined || (!pinned.has(prev) && trySlot(slots.find((s) => s.index === prev), seenHandles))) {
+          const prior = owner.get(slot.index);
+          if (prior !== undefined) heldBy.delete(prior);
+          owner.set(slot.index, h.handle);
+          heldBy.set(h.handle, slot.index);
+          return true;
+        }
+      }
+      return false;
+    };
+    for (const slot of slots) {
+      if (owner.has(slot.index)) continue; // pinned prior: nothing to match
+      if (!trySlot(slot, new Set()))
+        out.problems.push(`scaffold: ${family.id} member ${slot.index} has no free dungeonCapable anchored handle within hops 2`);
+    }
+    return slots.map((s) => ({ ...s, handle: owner.get(s.index) })).filter((s) => s.handle !== undefined);
+  }
+
+  for (const ff of listJson(famDir)) {
+    const family = readJson(join(famDir, ff));
+    for (const { index, band, handle } of matchMembers({ family })) {
+      taken.add(handle);
+      const h = eligible.find((c) => c.handle === handle);
+      const file = `dungeon-${family.id.replace(/^family-/, "")}-${index}.json`;
+      const prior = existsSync(join(dungDir, file)) ? readJson(join(dungDir, file)) : null;
+      const doc = {
+        id: file.replace(/\.json$/, ""),
+        title: prior?.title ?? `${family.title} ${index + 1}`,
+        family: family.id, familyIndex: index,
+        bind: { handle }, entranceType: h.type,
+        floors: family.floors, levelBand: band,
+        hazards: family.hazards, spineId: null,
+      };
+      const bytes = JSON.stringify(doc, null, 2) + "\n";
+      if (prior && JSON.stringify(prior, null, 2) + "\n" === bytes) { out.kept.push(file); continue; }
+      out.written.push(file);
+      if (!dryRun) { mkdirSync(dungDir, { recursive: true }); writeFileSync(join(dungDir, file), bytes); }
+    }
+  }
+  return out;
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dryRun = process.argv.includes("--dry-run");
   const repoRoot = new URL("../..", import.meta.url).pathname;
@@ -183,6 +332,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(`scaffold-bound: ${r.written.length} written, ${r.kept.length} unchanged, ${r.deleted.length} deleted${dryRun ? " (dry run)" : ""}`);
     process.exit(r.problems.length ? 1 : 0);
   }
-  console.error("usage: scaffold-civil.mjs --bound | --dungeons [--dry-run]");
+  if (process.argv.includes("--dungeons") || process.argv.includes("--list-free")) {
+    const r = scaffoldDungeons({ repoRoot, dryRun });
+    for (const p of r.problems) console.log(`PROBLEM ${p}`);
+    console.log(`scaffold-dungeons: ${r.written.length} written, ${r.kept.length} unchanged${dryRun ? " (dry run)" : ""}`);
+    process.exit(r.problems.length ? 1 : 0);
+  }
+  console.error("usage: scaffold-civil.mjs --bound | --dungeons [--dry-run] | --dungeons --list-free");
   process.exit(2);
 }

@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-driftholt-fog-caverns",
+  "title": "Driftholt Fog Caverns",
+  "family": null,
+  "bind": {
+    "handle": "c02/erosional/h-a70ffb"
+  },
+  "entranceType": "yardang",
+  "floors": 3,
+  "levelBand": [
+    10,
+    36
+  ],
+  "hazards": [
+    "cold",
+    "silence"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Caverns that exhale fog at dusk; the fishermen navigate by them.",
+    "source": "content/world/premises/continent-07.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-catacomb-7",
+  "title": "Catacomb 8",
+  "family": "family-catacomb",
+  "familyIndex": 7,
+  "bind": {
+    "handle": "c04/karst/h-e75576"
+  },
+  "entranceType": "cave-system",
+  "floors": 3,
+  "levelBand": [
+    63,
+    69
+  ],
+  "hazards": [
+    "bad-air",
+    "collapse",
+    "grave-damp"
+  ],
+  "spineId": null
+}

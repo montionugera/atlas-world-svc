@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-meltwash-ice-caves",
+  "title": "Meltwash Ice Caves",
+  "family": null,
+  "bind": {
+    "handle": "c05/fluvial/h-414ad4"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 3,
+  "levelBand": [
+    24,
+    40
+  ],
+  "hazards": [
+    "cold",
+    "collapse"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Blue chambers refrozen every winter; the meltwater finds a new door each spring.",
+    "source": "content/world/premises/continent-02.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

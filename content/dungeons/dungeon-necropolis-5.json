@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-necropolis-5",
+  "title": "Necropolis 6",
+  "family": "family-necropolis",
+  "familyIndex": 5,
+  "bind": {
+    "handle": "c04/karst/h-6b3847"
+  },
+  "entranceType": "foiba",
+  "floors": 3,
+  "levelBand": [
+    58,
+    64
+  ],
+  "hazards": [
+    "grave-damp",
+    "cold",
+    "silence"
+  ],
+  "spineId": null
+}
