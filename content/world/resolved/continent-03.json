@@ -12629,7 +12629,9 @@
         128
       ],
       "zone": "c03/r21",
-      "properties": [],
+      "properties": [
+        "lane-terminus"
+      ],
       "coasts": [
         "coldreach-north"
       ],

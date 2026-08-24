@@ -14,6 +14,7 @@ import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { phonemeDistance, prosody, syllableCount, registerOf, titleStem } from "../../tools/mapforge/lib/name-gen.mjs";
 import { loadDungeons, gDungeonReach, dungeonDensityLines } from "./dungeons.mjs";
+import { deriveRelation } from "./relations.mjs";
 
 // The four keys a bound record may never carry, at any depth. A bound record
 // that knows where it is has stopped being bound.
@@ -297,6 +298,34 @@ export function checkWorldCivil({ opts, fail, warn }) {
   const classifiers = existsSync(join(namesDir, "classifiers.json"))
     ? readJsonSafe(join(namesDir, "classifiers.json"), world.errors) : { byGroup: {}, overrides: {} };
   for (const p of gNames({ world, registers, classifiers })) fail(p);
+  // The resolved map is built HERE (Task 8), because this is the first point
+  // where every input the join needs — fabric, ledgers, civil, dungeons — has
+  // already been loaded and gate-checked above.
+  // SOFT-ARM, same discipline as gPinSat: the join and the gates that read it
+  // run only when the world carries a real generator world — at least one
+  // fabric file AND at least one handle ledger. Minimal stub worlds (Plan B/C
+  // fixtures write fabric-shaped files with no ledgers) never promised Plan D
+  // inputs; resolving them would fail on absent ground rather than degrade.
+  if (Object.keys(world.fabric).length > 0 && world.handles.size > 0) {
+    const resolvedByContinent = {};
+    for (const [cont, fabric] of Object.entries(world.fabric)) {
+      const { resolved, problems } = resolveCivil({
+        fabric, handles: world.ledgers[cont],
+        civil: { pinned: world.pinned, bound: world.bound },
+        dungeons: dungeonSet.dungeons.filter((d) => (d.bind?.handle ?? "").startsWith(cont + "/")),
+      });
+      for (const p of problems) fail(p);
+      resolvedByContinent[cont] = resolved;
+    }
+    // G-ORDER's region half (Task 7's gZoneOrder) is wired HERE and not in
+    // Task 7, because this loop is the first place in checkWorldCivil where
+    // the resolved documents exist. It runs before gMeaning so a vanished
+    // zone is reported as a broken ordering rather than as a pile of
+    // unresolvable relation subjects.
+    for (const p of gZoneOrder({ resolvedByContinent })) fail(p);
+    // G-MEANING last — every claim re-derived against the fully joined world.
+    for (const p of gMeaning({ world, resolvedByContinent })) fail(p);
+  }
   console.log(
     `world-civil: ${world.pinned.length} pinned, ${world.bound.length} bound, ` +
     `${world.relations.length} relations, ${world.handles.size} handles`,
@@ -343,8 +372,15 @@ export function resolveCivil({ fabric, handles, civil, dungeons = [] }) {
 
   if (!fabric) { problems.push("resolve: no fabric file for this continent"); return { resolved: out, problems }; }
 
+  // Iterable-safe reads: checkWorldCivil now feeds resolveCivil EVERY fabric
+  // it loads, including minimal fixtures from other plans' suites whose
+  // instances/regions may be any malformed shape. A throw here would skip
+  // finish() and drop every FAIL already recorded — the schema gates own
+  // reporting the malformation, so the join just refuses to iterate it.
+  const instancesOf = Array.isArray(fabric.instances) ? fabric.instances : [];
+  const regionsOf = Array.isArray(fabric.regions) ? fabric.regions : [];
   const byHandle = new Map();
-  for (const inst of fabric.instances ?? []) if (inst.handle) byHandle.set(inst.handle, inst);
+  for (const inst of instancesOf) if (inst.handle) byHandle.set(inst.handle, inst);
   const ledger = new Map((handles?.handles ?? []).map((h) => [h.handle, h]));
 
   // ── the five GEOGRAPHIC keys, derived from the fabric ────────────────────
@@ -371,7 +407,7 @@ export function resolveCivil({ fabric, handles, civil, dungeons = [] }) {
   // and it is deterministic because instance order is the handle total order.
   const largestArea = (types) => {
     let best = null;
-    for (const i of fabric.instances ?? []) {
+    for (const i of instancesOf) {
       if (!types.includes(i.type) || i.geometry.shape !== "area") continue;
       if (!best || i.sizeKm > best.sizeKm || (i.sizeKm === best.sizeKm && i.id < best.id)) best = i;
     }
@@ -402,14 +438,14 @@ export function resolveCivil({ fabric, handles, civil, dungeons = [] }) {
   // terrainPatches: the region rings whose terrainKind reads as a drawn patch
   // rather than a background fill. Reported regions never contribute — they
   // carry terrainKind === null by construction (spec §6.4 extension 3).
-  out.terrainPatches = (fabric.regions ?? [])
+  out.terrainPatches = regionsOf
     .filter((r) => r.terrainKind && PATCH_TERRAIN_KINDS.includes(r.terrainKind))
     .map((r) => ({
       id: `tp-${r.id.replace("/", "-")}`, terrainKind: r.terrainKind,
       ...ringParts(r),
     }));
 
-  out.zones = (fabric.regions ?? []).map((r) => ({
+  out.zones = regionsOf.map((r) => ({
     id: r.id, name: r.title ?? r.id, order: null, levelBand: r.levelBand,
     terrainKind: r.terrainKind, town: (r.settlements ?? [])[0] ?? null,
     labelAt: r.labelAt ?? centroidOf(outerOf(r)),
@@ -461,7 +497,7 @@ export function resolveCivil({ fabric, handles, civil, dungeons = [] }) {
   }
 
   // Texture: glyph and hit-test only, never a label and never prose.
-  out.instances = (fabric.instances ?? []).filter((i) => !i.named)
+  out.instances = instancesOf.filter((i) => !i.named)
     .map((i) => ({ id: i.id, type: i.type, at: i.geometry.at ?? null, glyph: i.glyph, sizeKm: i.sizeKm }));
 
   const cmp = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
@@ -506,6 +542,57 @@ export function gZoneOrder({ resolvedByContinent }) {
   return problems;
 }
 
+// G-MEANING — the gate the whole three-tier design exists to make possible.
+//
+// After every join, re-derive each authored claim from the NEW ground and FAIL
+// on mismatch, naming the relation, the citation and the drifted value. The 33
+// AMENDED-PENDING markers in the corpus exist precisely because no such gate
+// ran during F-045, a strictly easier transform. A re-seed is accepted only
+// when this reports zero drifts; otherwise the flagged records queue for human
+// re-voicing BEFORE promote (decision D3).
+export function gMeaning({ world, resolvedByContinent }) {
+  if (!world.present) return [];
+  const problems = [];
+  const byCont = new Map();
+  for (const r of world.relations) {
+    const cont = (r.file.match(/relations\/(c\d\d)\.json$/) ?? [])[1] ?? null;
+    if (!cont) continue;
+    if (!byCont.has(cont)) byCont.set(cont, []);
+    byCont.get(cont).push(r);
+  }
+  for (const [cont, relations] of [...byCont.entries()].sort()) {
+    const resolved = resolvedByContinent[cont];
+    if (!resolved) {
+      for (const r of relations)
+        problems.push(`G-MEANING: ${cont} has ${relations.length} relations but no resolved world — cited at ${r.cite}`);
+      continue;
+    }
+    // REVIEW FIX (Step 8, attack a): the plan routed drifts through
+    // checkRelations and re-found the offending row by (cite, rel) — but the
+    // committed c02.json has FIVE bearing rows sharing one citation, so two
+    // simultaneous bearing drifts would both be described as whichever row
+    // sorts first. Derive per relation instead: the message is built from the
+    // exact row that failed, no re-matching, no ambiguity.
+    for (const R of relations) {
+      const r = deriveRelation({ relation: R, resolved, fabric: world.fabric });
+      if (r.ok) continue;
+      problems.push(`G-MEANING: relation ${describeRel(R)} ${r.message} — cited at ${R.cite}; re-voice the prose or re-pin the place`);
+    }
+  }
+  return problems;
+}
+
+// One line of identity per relation kind — built from the row itself.
+function describeRel(R) {
+  if (R.rel === "bearing") return `bearing(${R.from} → ${R.to})`;
+  if (R.rel === "distance") return `distance(${R.a} ↔ ${R.b})`;
+  if (R.rel === "adjacency") return `adjacency(${R.a} ↔ ${R.b})`;
+  if (R.rel === "betweenness") return `betweenness(${R.hub})`;
+  if (R.rel === "colocated_with") return `colocated_with(${R.subject} @ ${R.host})`;
+  if (R.rel === "unique_in_scope") return `unique_in_scope(${R.subject} "${R.property}")`;
+  return `${R.rel}(${R.a} ↔ ${R.b})`;
+}
+
 // The content hash a zone is ordered by: its id, area and ring, canonicalised.
 // NOT lore.order — that field silently drops a region that lacks it and
 // silently reorders duplicates (spec R3, and the live defect I-096 names).
@@ -535,7 +622,7 @@ function pointInRing(ring, at) {
 }
 
 function regionAt({ fabric, at }) {
-  for (const r of fabric.regions ?? []) {
+  for (const r of (Array.isArray(fabric?.regions) ? fabric.regions : [])) {
     const outers = Array.isArray(r.rings) ? r.rings : [];
     if (!outers.some((ring) => pointInRing(ring, at))) continue;
     if ((r.holes ?? []).some((hole) => pointInRing(hole, at))) continue;

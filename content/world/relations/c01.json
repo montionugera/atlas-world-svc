@@ -1,0 +1,4 @@
+[
+  { "rel": "bearing", "from": "c-lm-the-ice-divide", "to": "c-lm-rimewall-margin", "dir": "S", "toleranceDeg": 30, "cite": "canon.md §4 \"The Rimewall Cap shuts the north\"", "note": "Every charted thing, including the margin sea, lies south of the wall the cap's ice edge forms. Resolved bearing 180 deg." },
+  { "rel": "unique_in_scope", "subject": "c-lm-the-ice-divide", "property": "reported-ice-edge", "scope": "continent:c01", "cite": "docs/worldbuilding/A2-wider-world.md §4 \"The chains, the seas, the cap\"", "note": "\"A reported ice edge, never a coastline\" — the cap has exactly one." }
+]

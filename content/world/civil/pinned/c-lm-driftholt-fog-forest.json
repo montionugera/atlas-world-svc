@@ -15,7 +15,9 @@
     "continent": "c07",
     "landform": "swamp-forest"
   },
-  "properties": [],
+  "properties": [
+    "charted-isle"
+  ],
   "coasts": [],
   "prose": "authored",
   "provenance": {

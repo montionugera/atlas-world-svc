@@ -14014,7 +14014,9 @@
         131.4
       ],
       "zone": "c02/r11",
-      "properties": [],
+      "properties": [
+        "fallen-city"
+      ],
       "coasts": [],
       "settlementRank": "hub",
       "source": "world/civil/pinned/c-town-cindervast.json"
@@ -15723,7 +15725,9 @@
         155
       ],
       "zone": "c02/r18",
-      "properties": [],
+      "properties": [
+        "cart-crossing"
+      ],
       "coasts": [],
       "source": "world/civil/pinned/c-lm-millcross-ford.json",
       "region": "c02/r18",

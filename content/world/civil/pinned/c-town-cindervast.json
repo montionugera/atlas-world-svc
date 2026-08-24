@@ -21,7 +21,9 @@
     "slopeMax": 0.07,
     "freshWaterWithinKm": 5
   },
-  "properties": [],
+  "properties": [
+    "fallen-city"
+  ],
   "coasts": [],
   "prose": "authored",
   "provenance": {

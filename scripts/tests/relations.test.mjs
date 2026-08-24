@@ -209,3 +209,61 @@ test("no derived relation value is ever serialised into a resolved world", () =>
   checkRelations({ relations: [{ rel: "betweenness", hub: "c-town-millcross", minDegree: 3, cite: "x" }], resolved: W, fabric: F });
   assert.equal(JSON.stringify(W), before);
 });
+
+// ---------------------------------------------------------------------------
+// Task 8 — G-MEANING: every authored claim re-derived from the new ground.
+
+import { readFileSync, readdirSync } from "node:fs";
+import { dirname, join, resolve as pathResolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { gMeaning, loadCivil, resolveCivil } from "../lib/resolve.mjs";
+import { worldFixture, runWorldGate } from "./resolve.test.mjs";
+
+const REPO = pathResolve(dirname(fileURLToPath(import.meta.url)), "../..");
+
+test("every committed relation carries a SECTION citation, never a line number", () => {
+  const dir = join(REPO, "content/world/relations");
+  let n = 0;
+  for (const f of readdirSync(dir).filter((x) => x.endsWith(".json"))) {
+    for (const r of JSON.parse(readFileSync(join(dir, f), "utf8"))) {
+      n++;
+      assert.doesNotMatch(r.cite, /canon\.md:\d/, `${f}: ${r.cite} is a line citation`);
+      assert.ok(r.cite.length > 5, `${f}: empty citation`);
+    }
+  }
+  // ERRATUM vs plan (>= 40): the plan's census assumed road-network,
+  // betweenness and adjacency claims are authorable, but the committed
+  // resolver emits `roads: []` (no spine input) and generated regions carry
+  // anonymous ids (c02/r01..r30) no prose sentence names — authoring those
+  // classes today would fail G-MEANING on ground nobody can fix this task.
+  // 31 is the honest set; raise the floor back as roads/region names land.
+  assert.ok(n >= 30, `expected >= 30 authored relations, found ${n}`);
+});
+
+test("G-MEANING is silent when the resolved world agrees with every claim", () => {
+  const dir = worldFixture();
+  const world = loadCivil({ contentRoot: dir });
+  const byCont = { c02: resolveCivil({ fabric: world.fabric.c02, handles: world.ledgers.c02, civil: { pinned: world.pinned, bound: world.bound } }).resolved };
+  assert.deepEqual(gMeaning({ world, resolvedByContinent: byCont }), []);
+});
+
+test("G-MEANING red: names the relation, the citation and the drifted value", () => {
+  const dir = worldFixture({ overlayDir: "g-meaning-bearing" });
+  const world = loadCivil({ contentRoot: dir });
+  const byCont = { c02: resolveCivil({ fabric: world.fabric.c02, handles: world.ledgers.c02, civil: { pinned: world.pinned, bound: world.bound } }).resolved };
+  const p = gMeaning({ world, resolvedByContinent: byCont });
+  assert.equal(p.length, 1);
+  // Bearing pinned on first run: atan2(28.8, 10.4) = 70.14 deg -> ENE.
+  // ERRATUM vs plan: the plan authored the red case as E +/-30 and guessed a
+  // resolved 74 deg — but 74 (like the real 70) is INSIDE the E +/-30 band,
+  // so its own fixture could never drift. The overlay tightens the band to
+  // +/-15 so the case is genuinely out of tolerance, and the assertion pins
+  // the engine's real output rather than the plan's guess.
+  assert.match(p[0], /^G-MEANING: relation bearing\(c-town-gildmark → c-lm-the-drowned-stair\) declared E \+\/-15 deg, resolved ENE \(70 deg\) — cited at canon\.md §4 "Geography & trade logic"; re-voice the prose or re-pin the place$/);
+});
+
+test("G-MEANING blocks the gate, so a re-seed cannot promote with unresolved drift", () => {
+  const r = runWorldGate(worldFixture({ overlayDir: "g-meaning-bearing" }));
+  assert.equal(r.code, 1);
+  assert.match(r.out, /FAIL {2}G-MEANING: relation bearing/);
+});

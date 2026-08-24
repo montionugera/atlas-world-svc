@@ -18,7 +18,9 @@
       "kind": "river"
     }
   },
-  "properties": [],
+  "properties": [
+    "cart-crossing"
+  ],
   "coasts": [],
   "prose": "authored",
   "provenance": {

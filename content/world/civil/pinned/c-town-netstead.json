@@ -23,7 +23,9 @@
     "slopeMax": 0.06,
     "freshWaterWithinKm": 4
   },
-  "properties": [],
+  "properties": [
+    "reported-port"
+  ],
   "coasts": [
     "stonemoor-north"
   ],

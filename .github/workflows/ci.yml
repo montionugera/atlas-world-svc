@@ -137,6 +137,14 @@ jobs:
       - name: Resolved join drift-gate (G-SLOT-STABLE)
         run: node scripts/check_resolved.mjs --check
 
+      # Plan D relation-coverage report: how much of the prose's n-ary claim
+      # surface the authored relation layer models. Informational only —
+      # report_relation_coverage.mjs always exits 0, so this step can never
+      # redden the build; a miss against content/world/manifest.json's
+      # `relations.coverageFloorPct` prints LOW so the debt stays visible.
+      - name: Relation coverage (report)
+        run: node scripts/report_relation_coverage.mjs
+
       # Render lock (Plan A G-RENDER-LOCK): every sheet in
       # tools/mapforge/render-sheet.mjs's SHEETS registry is rebuilt from the
       # live spine, hashed, and compared against content/world/render-lock.json

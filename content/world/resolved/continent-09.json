@@ -1305,7 +1305,9 @@
         196
       ],
       "zone": "c09/r03",
-      "properties": [],
+      "properties": [
+        "charted-isle"
+      ],
       "coasts": [],
       "source": "world/civil/pinned/c-lm-brightfall-leap.json",
       "region": "c09/r03",

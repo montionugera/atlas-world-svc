@@ -4275,7 +4275,9 @@
         92
       ],
       "zone": "c07/r05",
-      "properties": [],
+      "properties": [
+        "charted-isle"
+      ],
       "coasts": [],
       "source": "world/civil/pinned/c-lm-driftholt-fog-forest.json",
       "region": "c07/r05",

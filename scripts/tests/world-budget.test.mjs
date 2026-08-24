@@ -71,7 +71,11 @@ function emptyWorldLayer(contentRoot) {
   // layer goes with the ledgers it binds to.
   // Plan D Task 6 added content/dungeons/ the same way: 60 complexes that
   // join by bind.handle and G-DUNGEON-REACH against the fabric anchors.
-  for (const fam of ["world/fabric", "world/handles", "world/civil/bound", "dungeons"])
+  // Plan D Task 8 added content/world/relations/ the same way again: 31
+  // authored claims re-derived against the RESOLVED world — a root stripped
+  // of fabric but still carrying them is 13 continents of "no resolved
+  // world" failures, not a stub.
+  for (const fam of ["world/fabric", "world/handles", "world/civil/bound", "dungeons", "world/relations"])
     rmSync(join(contentRoot, fam), { recursive: true, force: true });
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
 }

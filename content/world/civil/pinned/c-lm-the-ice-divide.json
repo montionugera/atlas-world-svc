@@ -15,7 +15,9 @@
     "continent": "c01",
     "landform": "ice-divide"
   },
-  "properties": [],
+  "properties": [
+    "reported-ice-edge"
+  ],
   "coasts": [],
   "prose": "authored",
   "provenance": {

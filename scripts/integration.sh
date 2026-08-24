@@ -95,6 +95,12 @@ spine_emit_drift() { node "$REPO_ROOT/scripts/check_spine_emit.mjs" --check; }
 # with no reviewable diff anywhere else.
 resolved_drift() { node "$REPO_ROOT/scripts/check_resolved.mjs" --check; }
 
+# Plan D: how much of the prose's n-ary claim surface the relation layer
+# models. ALWAYS exits 0 — a floor that fails the build would be gamed by
+# writing thin relations; the manifest's coverageFloorPct miss prints LOW so
+# the debt is visible on every run instead.
+relation_coverage() { node "$REPO_ROOT/scripts/report_relation_coverage.mjs"; }
+
 content_tests() { (cd "$REPO_ROOT/scripts" && npm test); }
 
 explorer_smoke() { (cd "$REPO_ROOT" && node --test tools/story-explorer/tests/*.test.mjs); }
@@ -129,6 +135,7 @@ run_section "content: gate (--require-complete)" content_gate
 run_section "content: story-graph drift"   graph_drift
 run_section "content: spine emit drift (G-EMIT-DRIFT)" spine_emit_drift
 run_section "content: resolved join (G-SLOT-STABLE)" resolved_drift
+run_section "content: relation coverage (report)" relation_coverage
 run_section "content: render lock (G-RENDER-LOCK)" render_lock
 run_section "content: mapforge test suite (incl. G-REPRO)" mapforge_tests
 run_section "content: gate test suite"     content_tests

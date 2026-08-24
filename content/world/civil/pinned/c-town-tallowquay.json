@@ -23,7 +23,9 @@
     "slopeMax": 0.06,
     "freshWaterWithinKm": 4
   },
-  "properties": [],
+  "properties": [
+    "lane-terminus"
+  ],
   "coasts": [
     "coldreach-north"
   ],

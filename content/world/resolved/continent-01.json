@@ -5272,7 +5272,9 @@
         34
       ],
       "zone": "c01/r08",
-      "properties": [],
+      "properties": [
+        "reported-ice-edge"
+      ],
       "coasts": [],
       "source": "world/civil/pinned/c-lm-the-ice-divide.json",
       "region": "c01/r08",

@@ -13684,7 +13684,9 @@
         262
       ],
       "zone": "c04/r21",
-      "properties": [],
+      "properties": [
+        "reported-port"
+      ],
       "coasts": [
         "stonemoor-north"
       ],

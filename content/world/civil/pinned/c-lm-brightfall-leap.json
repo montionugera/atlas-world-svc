@@ -18,7 +18,9 @@
       "kind": "sea"
     }
   },
-  "properties": [],
+  "properties": [
+    "charted-isle"
+  ],
   "coasts": [],
   "prose": "authored",
   "provenance": {
