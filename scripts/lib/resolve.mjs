@@ -12,6 +12,7 @@
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { phonemeDistance, prosody, syllableCount, registerOf, titleStem } from "../../tools/mapforge/lib/name-gen.mjs";
+import { loadDungeons, gDungeonReach, dungeonDensityLines } from "./dungeons.mjs";
 
 // The four keys a bound record may never carry, at any depth. A bound record
 // that knows where it is has stopped being bound.
@@ -285,6 +286,10 @@ export function checkWorldCivil({ opts, fail, warn }) {
   for (const p of gBind({ world })) fail(p);
   for (const p of gPinSat({ world })) fail(p);
   for (const p of gHandleBand({ world })) fail(p);
+  const dungeonSet = loadDungeons({ contentRoot: opts.contentRoot });
+  for (const e of dungeonSet.errors) fail(e);
+  for (const p of gDungeonReach({ world, dungeons: dungeonSet.dungeons, lexicon: world.lexicon })) fail(p);
+  for (const line of dungeonDensityLines({ world, dungeons: dungeonSet.dungeons })) console.log(line);
   const namesDir = join(opts.contentRoot, "world/names");
   const registers = existsSync(join(namesDir, "registers.json"))
     ? readJsonSafe(join(namesDir, "registers.json"), world.errors) : null;

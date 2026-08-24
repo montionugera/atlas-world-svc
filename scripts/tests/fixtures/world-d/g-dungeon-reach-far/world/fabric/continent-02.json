@@ -809,7 +809,7 @@
       "continent": "c02",
       "region": "c02/r02",
       "entranceType": "karst-cenote",
-      "hopsToSettlement": 1
+      "hopsToSettlement": 4
     }
   ],
   "pinReceipts": [

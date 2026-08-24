@@ -69,7 +69,9 @@ function emptyWorldLayer(contentRoot) {
   // world/handles but still carrying the bound layer is not "an empty world
   // with one stub", it is 336 dangling-handle G-BIND failures — so the bound
   // layer goes with the ledgers it binds to.
-  for (const fam of ["world/fabric", "world/handles", "world/civil/bound"])
+  // Plan D Task 6 added content/dungeons/ the same way: 60 complexes that
+  // join by bind.handle and G-DUNGEON-REACH against the fabric anchors.
+  for (const fam of ["world/fabric", "world/handles", "world/civil/bound", "dungeons"])
     rmSync(join(contentRoot, fam), { recursive: true, force: true });
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
 }
