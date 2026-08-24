@@ -2927,3 +2927,41 @@ only) and stays byte-stable.
 - Relation `note` strings bake in derived numbers ("Resolved bearing 118 deg"); no gate reads
   notes, so they rot silently on a re-seed. Consider stripping derived numbers from authored
   notes at the next content pass.
+
+## 24. Plan D Task 9 (G-BAND) — what shipped vs the plan's literals
+
+Shipped: `STARTER_CAPITAL`/`RING_KM`/`LEVEL_RINGS`/`ringOfDistance`/`gBand` in
+`scripts/lib/resolve.mjs`, wired into `checkWorldCivil` after `gMeaning`; four tests in
+`resolve.test.mjs`; overlay fixture `fixtures/world-d/g-band-inversion/`. The real world is
+GREEN — 0 G-BAND failures over 160 regions with the gate armed (origin [83.2, 160.4]).
+
+### THE PLAN'S RED-CASE LITERAL CANNOT ARISE FROM ITS OWN FIXTURE — plan :4318 vs :4378
+
+- Step 1 expected `levelBand[0] 2 < 46 at ring 5`; the base fixture's c10/r01 centroid is
+  [340, 215], which is **205.40 km** from Gildmark's pin [137.2, 182.4] — ring 5, whose
+  one-band-of-slack floor is the PREVIOUS ring's lower bound, `LEVEL_RINGS[4][0] = 32`.
+  No reading of the committed nine-ring list yields 46 from this geometry. The Step 3 code
+  snippet (previous-ring floor) is the stated intent — reviewer attack (b) frames exactly
+  this choice — so the CODE stands and the test literal shipped as `2 < 32 at ring 5`.
+
+### THE BASE FIXTURE'S OWN DUNGEON CONTRADICTED THE NEW RULE
+
+- `dungeon-fumewater-tube` carried `levelBand [55, 80]` while bound to `c02/karst/h-77aa`
+  in region c02/r02 `[15, 28]` — a pre-existing inconsistency invisible until Task 9 because
+  the plan's green unit test passed `dungeons: []`. The end-to-end wiring test (real
+  `loadDungeons`) went red, correctly. The fixture moved to `[16, 30]`; no test pinned the
+  old band.
+
+### FIXTURE PATH FOLLOWS REPO CONVENTION
+
+- Overlay lives at `scripts/tests/fixtures/world-d/g-band-inversion/world/fabric/
+  continent-10.json`, not the plan's `fixtures/world/g-band-inversion/**` (same erratum as
+  Task 8's `g-meaning-bearing`; Plan B/C own `fixtures/world/`).
+
+### MUTATION RESULTS (3 applied, 3 killed)
+
+1. `gBand` neutered to return `[]` → 2 red (both G-BAND cases). Killed by unit tests.
+2. Dungeon-overlap clause inverted → survived the unit pattern (green test passes
+   `dungeons: []`), killed by the END-TO-END wiring test (`--only=spine` on the green world).
+3. Floor switched from previous-ring to next-ring bound → 3 red (green fixture + inversion
+   + ring-shape test). Killed.
