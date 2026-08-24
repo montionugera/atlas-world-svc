@@ -1,0 +1,26 @@
+{
+  "id": "c-lm-thirstwold-erg",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Thirstwold Erg",
+  "pin": {
+    "at": [
+      192,
+      306
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §4: the rain-shadow erg behind the coastal range"
+  },
+  "requires": {
+    "continent": "c05",
+    "landform": "erg-dune-sea"
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

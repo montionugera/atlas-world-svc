@@ -181,6 +181,13 @@ export function gWorldBudget({ contentRoot, budgets, manifest = undefined, repor
       name: "civil", dir: join(contentRoot, "world/civil"), rel: "world/civil",
       maxFiles: section("civil")?.maxFiles, maxPer: section("civil")?.maxBytesPerFile,
       maxTotal: null,
+      // pinned-roster.json is the 41-row authoring TABLE, not a record; the
+      // 8192 B record cap keeps individual records reviewable, which a table
+      // legitimately exceeds. It gets its own bound from budgets.json's
+      // `roster` section — and if that section is missing the override is
+      // undefined and the record cap applies, so deleting the section reds
+      // rather than exempting silently.
+      perFileOverrides: { "world/civil/pinned-roster.json": section("roster")?.maxBytesPerFile },
     },
     // TWO FAMILIES THAT WERE UNDER NO BYTE BUDGET AT ALL until Task 11 — filed
     // in STATE §10 (premises) and §16 (handles) and handed here. `premises` is
@@ -215,7 +222,8 @@ export function gWorldBudget({ contentRoot, budgets, manifest = undefined, repor
         continue;
       }
       total += bytes;
-      if (bytes > fam.maxPer) report(`G-WORLD-BUDGET: ${f.rel} is ${bytes} bytes > per-file budget ${fam.maxPer}`);
+      const cap = fam.perFileOverrides?.[f.rel] ?? fam.maxPer;
+      if (bytes > cap) report(`G-WORLD-BUDGET: ${f.rel} is ${bytes} bytes > per-file budget ${cap}`);
     }
     // THE UNITS ARE PART OF THE LINE. It used to read
     // `(budget ${maxFiles}, ${maxTotal ?? maxPer})`, so for `civil` — which has

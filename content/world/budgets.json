@@ -13,6 +13,10 @@
     "maxFiles": 600,
     "maxBytesPerFile": 8192
   },
+  "roster": {
+    "maxBytesPerFile": 16384
+  },
+  "rosterWhy": "content/world/civil/pinned-roster.json is the 41-row authoring TABLE for the pinned records, not a record — the civil per-file cap exists to keep individual records reviewable, which a table legitimately exceeds at 13,230 B measured (Plan D Task 4). Its own cap is the next power of two above that, so the table cannot silently absorb generated geometry either. Deleting this section makes the roster fall back under the 8192 B record cap and red, rather than exempting it silently.",
   "premises": {
     "maxFiles": 13,
     "maxBytesPerFile": 4096

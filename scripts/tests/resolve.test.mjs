@@ -13,11 +13,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, cpSync } from "node:fs";
+import { mkdtempSync, cpSync, readFileSync, writeFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadCivil, gBind, BANNED_COORDINATE_KEYS } from "../lib/resolve.mjs";
+import { loadCivil, gBind, gPinSat, BANNED_COORDINATE_KEYS } from "../lib/resolve.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const FIX = join(ROOT, "scripts/tests/fixtures/world-d");
@@ -107,4 +107,194 @@ test("the gate goes red, with the exact message, on the coordinate overlay", () 
 test("a content root with no world\\/ dir stays green and prints no world-civil line", () => {
   const r = runWorldGate(join(ROOT, "scripts/tests/fixtures/spine/base"));
   assert.doesNotMatch(r.out, /world-civil:/);
+});
+
+// ---------------------------------------------------------------------------
+// Task 4 — the 41 pinned places: premise/roster divergence guards + G-PIN-SAT.
+
+const PREMISE_DIR = join(ROOT, "content/world/premises");
+const ROSTER = join(ROOT, "content/world/civil/pinned-roster.json");
+
+function premises() {
+  return Object.fromEntries(readdirSync(PREMISE_DIR).filter((f) => f.endsWith(".json")).sort()
+    .map((f) => { const d = JSON.parse(readFileSync(join(PREMISE_DIR, f), "utf8")); return [d.id, d]; }));
+}
+
+// Basin-local means n-cluster1 is an ANCESTOR, not necessarily the parent.
+// Repo reality (erratum vs the plan's `parentId === "n-cluster1"`): the six
+// towns hang under their landmark nodes (n-millcross under n-millcross-ford,
+// ...) and n-expedition-camp under n-meltwash-terrace. The invariant that
+// matters is unchanged — every translated anchor lives inside the basin's
+// subtree, so translating it by PIN_OFFSET keeps it on c02.
+function basinLocal(nodeId) {
+  let cur = JSON.parse(readFileSync(join(ROOT, `content/spine/nodes/${nodeId}.json`), "utf8"));
+  for (let i = 0; i < 50 && cur; i++) {
+    if (cur.id === "n-cluster1") return true;
+    if (!cur.parentId) return false;
+    cur = JSON.parse(readFileSync(join(ROOT, `content/spine/nodes/${cur.parentId}.json`), "utf8"));
+  }
+  return false;
+}
+
+test("PIN_OFFSET is DERIVED from the committed premise, never retyped", () => {
+  const c02 = premises().c02;
+  const basin = JSON.parse(readFileSync(join(ROOT, "content/spine/nodes/n-cluster1.json"), "utf8"));
+  const want = [c02.footprint.centreKm[0] - basin.placement.anchor[0],
+                c02.footprint.centreKm[1] - basin.placement.anchor[1]];
+  const roster = JSON.parse(readFileSync(ROSTER, "utf8"));
+  assert.deepEqual(roster.pinOffset, want,
+    `pinOffset ${JSON.stringify(roster.pinOffset)} does not equal c02.centreKm - n-cluster1.anchor ${JSON.stringify(want)}`);
+});
+
+test("every pinned row lands INSIDE its declared continent's footprint ellipse", () => {
+  // The failure this catches, concretely: a roster authored against a centre
+  // table that was never in any premise file puts Gildmark 55 km out to sea,
+  // G-PIN-SAT goes red forty times at once, and the cause looks like a
+  // generator bug rather than two documents disagreeing.
+  const prem = premises();
+  const roster = JSON.parse(readFileSync(ROSTER, "utf8"));
+  const outside = [];
+  for (const row of roster.rows) {
+    if (!Array.isArray(row.at)) continue;
+    const p = prem[row.continent];
+    assert.ok(p, `${row.id} names continent ${row.continent}, which has no premise file`);
+    const [cx, cy] = p.footprint.centreKm, [rx, ry] = p.footprint.radiiKm;
+    const t = ((row.at[0] - cx) / rx) ** 2 + ((row.at[1] - cy) / ry) ** 2;
+    if (t > 1) outside.push(`${row.id} at ${JSON.stringify(row.at)} is t=${t.toFixed(3)} outside ${row.continent} (${cx},${cy} r ${rx},${ry})`);
+  }
+  assert.deepEqual(outside, []);
+});
+
+test("every re-fitted basin row IS its spine node's anchor plus pinOffset", () => {
+  // The other half of the divergence guard. The ellipse test above catches a
+  // pin that left its continent; this one catches a pin that was hand-typed
+  // instead of translated, and it catches the sharper error Step 1 warns about
+  // — translating a node whose anchor is not basin-local. Both `at` values
+  // below MUST come from a node in n-cluster1's subtree.
+  const BASIN = {
+    "c-town-millcross": "n-millcross", "c-town-gildmark": "n-gildmark",
+    "c-town-rooktide": "n-rooktide", "c-town-cindervast": "n-cindervast-town",
+    "c-town-embervale": "n-embervale", "c-town-norhollow": "n-norhollow",
+    "c-lm-thornveil": "n-thornveil", "c-lm-northern-icefield": "n-northern-icefield",
+    "c-lm-ashvale-front": "n-ashvale-front", "c-lm-emberdown": "n-emberdown",
+    "c-lm-hollowmarch": "n-hollowmarch", "c-lm-meltwash-terrace": "n-meltwash-terrace",
+    "c-lm-millcross-ford": "n-millcross-ford", "c-lm-gildmark-head": "n-gildmark-head",
+    "c-lm-rooktide-reach": "n-rooktide-reach", "c-lm-the-saltmire": "n-saltmire",
+    "c-lm-eastern-hills": "n-eastern-hills", "c-lm-expedition-camp": "n-expedition-camp",
+  };
+  const roster = JSON.parse(readFileSync(ROSTER, "utf8"));
+  const rows = new Map(roster.rows.map((r) => [r.id, r]));
+  const [ox, oy] = roster.pinOffset;
+  const wrong = [];
+  for (const [rowId, nodeId] of Object.entries(BASIN)) {
+    assert.ok(basinLocal(nodeId),
+      `${nodeId} is not inside n-cluster1's subtree; its anchor is not basin-local and must not be translated`);
+    const node = JSON.parse(readFileSync(join(ROOT, `content/spine/nodes/${nodeId}.json`), "utf8"));
+    const a = node.absoluteAnchor ?? node.lore?.labelAt ?? node.placement.anchor;
+    const want = [Math.round((a[0] + ox) * 10) / 10, Math.round((a[1] + oy) * 10) / 10];
+    const got = rows.get(rowId)?.at;
+    if (JSON.stringify(got) !== JSON.stringify(want))
+      wrong.push(`${rowId}: roster ${JSON.stringify(got)} != ${nodeId} + pinOffset ${JSON.stringify(want)}`);
+  }
+  assert.deepEqual(wrong, []);
+});
+
+test("the roster is 41 rows and expands to 41 records", () => {
+  // The spec says "~40". 41 is that made exact, and it is asserted so the
+  // count cannot drift silently under a later edit: 8 towns + 13 c02
+  // landmarks + 20 landmarks on the other twelve landmasses.
+  const roster = JSON.parse(readFileSync(ROSTER, "utf8"));
+  assert.equal(roster.rows.length, 41);
+  assert.equal(new Set(roster.rows.map((r) => r.id)).size, 41, "ids are unique");
+  assert.equal(roster.rows.filter((r) => r.kind === "town").length, 8);
+  assert.equal(roster.rows.filter((r) => r.continent === "c02").length, 19);
+  assert.equal(roster.rows.filter((r) => r.continent === "c03").length, 4);
+});
+
+test("every requires.landform is an id in the committed lexicon", () => {
+  // `requires.landform` is a TYPE ID. terrainKinds (karst-plateau, sand-sea,
+  // cloud-forest, fjordland) and coastClasses are NOT legal here: G-PIN-SAT
+  // compares against grid.landform, so a value the lexicon has no row for can
+  // never be satisfied by any world, on any seed.
+  const lexPath = join(ROOT, "content/world/lexicon/landforms.json");
+  if (!existsSync(lexPath)) return; // Plan B not merged: skip
+  const ids = new Set(JSON.parse(readFileSync(lexPath, "utf8")).map((r) => r.id));
+  const roster = JSON.parse(readFileSync(ROSTER, "utf8"));
+  const bad = roster.rows
+    .map((r) => r.requires?.landform)
+    .filter((t) => t && !ids.has(t));
+  assert.deepEqual([...new Set(bad)].sort(), []);
+});
+
+test("a `plan` path, when present, names a file that will exist", () => {
+  // EXACTLY ONE row may carry a `plan`, and it is Millcross — the only town
+  // plan committed today. A `plan` pointing at a file nobody writes is worse
+  // than an honest null: check_content.mjs:1192 (T1) joins on it.
+  //
+  // E-C9 is why the three capitals carry null. A town plan joins the world by
+  // `spineId`, so each plan needs a tier:"town" spine node — and the trunk
+  // census Plan C owns budgets exactly ONE (n-millcross, the alias of the one
+  // committed plan). No plan in this programme authors a file under
+  // content/towns/; the quota stays 8 as a target.
+  const roster = JSON.parse(readFileSync(ROSTER, "utf8"));
+  const withPlan = roster.rows.filter((r) => r.plan).map((r) => r.id).sort();
+  assert.deepEqual(withPlan, ["c-town-millcross"]);
+  assert.equal(roster.rows.find((r) => r.id === "c-town-millcross").plan,
+    "content/towns/town-millcross.json");
+  assert.ok(existsSync(join(ROOT, "content/towns/town-millcross.json")),
+    "the only declared plan path must name a committed file");
+});
+
+test("G-PIN-SAT is silent when the fabric receipt satisfies every requirement", () => {
+  assert.deepEqual(gPinSat({ world: loadCivil({ contentRoot: worldFixture() }) }), []);
+});
+
+test("G-PIN-SAT is silent while NO receipt exists anywhere (generator not yet wired)", () => {
+  // The real fabric carries pinReceipts: [] until Task 10 wires placePinned.
+  // An empty-receipt world is INPUTS ABSENT, not 41 failures — Gate 1 must
+  // stay green per-commit. The gate ARMS as soon as one receipt exists, which
+  // the next test pins.
+  const dir = worldFixture();
+  const p = join(dir, "world/fabric/continent-02.json");
+  const doc = JSON.parse(readFileSync(p, "utf8"));
+  doc.pinReceipts = [];
+  writeFileSync(p, JSON.stringify(doc, null, 2) + "\n");
+  assert.deepEqual(gPinSat({ world: loadCivil({ contentRoot: dir }) }), []);
+});
+
+test("G-PIN-SAT red: a numeric requirement the ground does not meet", () => {
+  const p = gPinSat({ world: loadCivil({ contentRoot: worldFixture({ overlayDir: "g-pin-sat-slope" }) }) });
+  assert.equal(p.length, 1);
+  assert.match(p[0], /^G-PIN-SAT: c-town-gildmark at \[137\.2, 182\.4\]: requires\.slopeMax = 0\.06 but fabric has 0\.19$/);
+});
+
+test("G-PIN-SAT red: the generator moved the place beyond its tolerance", () => {
+  const p = gPinSat({ world: loadCivil({ contentRoot: worldFixture({ overlayDir: "g-pin-sat-moved" }) }) });
+  assert.equal(p.length, 1);
+  assert.match(p[0], /^G-PIN-SAT: c-town-gildmark at \[137\.2, 182\.4\]: requires\.pin = within 1\.5 km but fabric has 5 km away$/);
+});
+
+test("G-PIN-SAT red: a pinned record with no receipt at all", () => {
+  const dir = worldFixture();
+  const p = join(dir, "world/fabric/continent-02.json");
+  const doc = JSON.parse(readFileSync(p, "utf8"));
+  doc.pinReceipts = doc.pinReceipts.filter((r) => r.id !== "c-town-gildmark");
+  writeFileSync(p, JSON.stringify(doc, null, 2) + "\n");
+  const problems = gPinSat({ world: loadCivil({ contentRoot: dir }) });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /requires\.receipt = present but fabric has none/);
+});
+
+test("the roster table carries its own byte cap, and the cap is LIVE", () => {
+  // The civil per-file cap is 8192 B for RECORDS; the roster is the authoring
+  // TABLE and exceeds it by design. budgets.json's `roster` section gives it
+  // its own bound (scripts/lib/world.mjs reads it), so this test pins both
+  // halves of that ruling: the table really does overflow the record cap
+  // (otherwise the override is dead weight), and it stays inside its own.
+  const budgets = JSON.parse(readFileSync(join(ROOT, "content/world/budgets.json"), "utf8"));
+  const bytes = statSync(ROSTER).size;
+  assert.ok(bytes > budgets.civil.maxBytesPerFile,
+    `roster at ${bytes} B no longer overflows the ${budgets.civil.maxBytesPerFile} B record cap — the override is dead`);
+  assert.ok(bytes <= budgets.roster.maxBytesPerFile,
+    `roster grew to ${bytes} B > its own ${budgets.roster.maxBytesPerFile} B cap`);
 });

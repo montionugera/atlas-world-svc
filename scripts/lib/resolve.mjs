@@ -158,7 +158,14 @@ export function gNames({ world, registers, classifiers }) {
       }
     }
 
-    const names = docs.filter((d) => typeof d.title === "string" && d.title).map((d) => d.title);
+    // All three name gates judge GENERATOR output. Hand-authored canon names
+    // predate the registers (exempt above) and must also stay out of the
+    // sound and prosody pools: c02's 19 pinned canon titles hold zero "X of Y"
+    // forms by construction, so measuring the of-form floor over them fails a
+    // gate whose subject never wrote a word of what it measured.
+    const names = docs
+      .filter((d) => d.provenance?.authored !== "hand" && typeof d.title === "string" && d.title)
+      .map((d) => d.title);
     for (let i = 0; i < names.length; i++)
       for (let j = i + 1; j < names.length; j++) {
         if (phonemeDistance({ a: names[i], b: names[j] }) >= 3) continue;
@@ -179,6 +186,63 @@ export function gNames({ world, registers, classifiers }) {
   return problems;
 }
 
+// G-PIN-SAT — every pinned record's `requires` block is satisfied by the
+// fabric AT ITS SEED POINT. The comparison is against a committed
+// `pinReceipts[]` entry rather than a 640,000-cell re-run: the generator
+// measured the ground when it placed the record, and the receipt is what
+// makes this a gate over committed bytes at 0.05 s instead of a re-generation.
+//
+// SOFT-ARM: while NO fabric file carries any receipt the generator has not
+// been wired (Task 10) and the inputs are absent — an early silent return,
+// not 41 failures. The first receipt that exists anywhere arms the gate for
+// every pinned record, at which point a missing receipt is a failure.
+export function gPinSat({ world }) {
+  if (!world.present) return [];
+  const problems = [];
+  const receipts = new Map();
+  let anyReceipts = false;
+  for (const f of Object.values(world.fabric))
+    for (const r of f.pinReceipts ?? []) { receipts.set(r.id, r); anyReceipts = true; }
+  if (!anyReceipts) return [];
+
+  const say = (doc, key, want, got) =>
+    problems.push(`G-PIN-SAT: ${doc.id} at [${doc.pin.at[0]}, ${doc.pin.at[1]}]: requires.${key} = ${want} but fabric has ${got}`);
+
+  for (const { doc } of world.pinned) {
+    if (!Array.isArray(doc.pin?.at)) continue; // malformed pins are schema failures, not ours
+    const rec = receipts.get(doc.id);
+    if (!rec) { say(doc, "receipt", "present", "none"); continue; }
+
+    const dx = rec.at[0] - doc.pin.at[0], dy = rec.at[1] - doc.pin.at[1];
+    const moved = Math.round(Math.sqrt(dx * dx + dy * dy) * 100) / 100;
+    if (moved > doc.pin.toleranceKm)
+      say(doc, "pin", `within ${doc.pin.toleranceKm} km`, `${moved} km away`);
+
+    const req = doc.requires ?? {}, m = rec.measured ?? {};
+    if (req.continent && rec.continent !== req.continent) say(doc, "continent", req.continent, rec.continent);
+    if (req.landform && m.landform !== req.landform) say(doc, "landform", req.landform, m.landform ?? "none");
+    // A MISSING measurement is a failure, never a silent pass: `undefined <= n`
+    // is false, so every numeric guard below must test the undefined case out.
+    if (req.slopeMax !== undefined && !(typeof m.slope === "number" && m.slope <= req.slopeMax))
+      say(doc, "slopeMax", req.slopeMax, m.slope ?? "none");
+    if (req.freshWaterWithinKm !== undefined && !(typeof m.freshWaterWithinKm === "number" && m.freshWaterWithinKm <= req.freshWaterWithinKm))
+      say(doc, "freshWaterWithinKm", req.freshWaterWithinKm, m.freshWaterWithinKm ?? "none");
+    if (req.elevationMaxM !== undefined && !(typeof m.elevationM === "number" && m.elevationM <= req.elevationMaxM))
+      say(doc, "elevationMaxM", req.elevationMaxM, m.elevationM ?? "none");
+    if (Array.isArray(req.biomeNot) && req.biomeNot.includes(m.biome))
+      say(doc, "biomeNot", req.biomeNot.join("/"), m.biome);
+    if (req.water) {
+      if (req.water.kind && m.waterKind !== req.water.kind)
+        say(doc, "water.kind", req.water.kind, m.waterKind ?? "none");
+      if (req.water.shelterFetchKmMax !== undefined && !(typeof m.shelterFetchKm === "number" && m.shelterFetchKm <= req.water.shelterFetchKmMax))
+        say(doc, "water.shelterFetchKmMax", req.water.shelterFetchKmMax, m.shelterFetchKm ?? "none");
+      if (req.water.minDepthM !== undefined && !(typeof m.depthM === "number" && m.depthM >= req.water.minDepthM))
+        say(doc, "water.minDepthM", req.water.minDepthM, m.depthM ?? "none");
+    }
+  }
+  return problems;
+}
+
 // The ONE entry point check_content.mjs calls. Every gate this plan adds is
 // wired here, so `--only=spine` covers all of them and Gate 1's ~4 s budget
 // binds the whole set.
@@ -187,6 +251,7 @@ export function checkWorldCivil({ opts, fail, warn }) {
   if (!world.present) return;
   for (const e of world.errors) fail(e);
   for (const p of gBind({ world })) fail(p);
+  for (const p of gPinSat({ world })) fail(p);
   const namesDir = join(opts.contentRoot, "world/names");
   const registers = existsSync(join(namesDir, "registers.json"))
     ? readJsonSafe(join(namesDir, "registers.json"), world.errors) : null;
