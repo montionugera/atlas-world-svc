@@ -1,7 +1,8 @@
 ---
-title: "World fill Plan D: pinned places, bound records and relations — ~40 pinned places the generator must honour (G-PIN-SAT), 336 bound landmark records with stable handles and no coordinates (G-BIND + G-HANDLE-BAND), 60 dungeon complexes / 190 floors (G-DUNGEON-REACH), a machine-checkable relation layer, and the names — 626 distinct names against the 120-combination pool"
-id: I-101
-status: captured
+title: "World fill Plan D: pinned places, bound records and relations"
+id: F-049
+status: refined
+from_idea: I-101
 ---
 
 # World fill Plan D: pinned places, bound records and relations
