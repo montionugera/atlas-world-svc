@@ -325,6 +325,9 @@ export function checkWorldCivil({ opts, fail, warn }) {
     for (const p of gZoneOrder({ resolvedByContinent })) fail(p);
     // G-MEANING last — every claim re-derived against the fully joined world.
     for (const p of gMeaning({ world, resolvedByContinent })) fail(p);
+    // G-BAND after G-MEANING: it measures distance from the pinned starter
+    // capital, so it needs the resolved labelAt centres the join minted.
+    for (const p of gBand({ world, resolvedByContinent, dungeons: dungeonSet.dungeons })) fail(p);
   }
   console.log(
     `world-civil: ${world.pinned.length} pinned, ${world.bound.length} bound, ` +
@@ -579,6 +582,57 @@ export function gMeaning({ world, resolvedByContinent }) {
       problems.push(`G-MEANING: relation ${describeRel(R)} ${r.message} — cited at ${R.cite}; re-voice the prose or re-pin the place`);
     }
   }
+  return problems;
+}
+
+// G-BAND — difficulty rises with distance from the SINGLE starter capital.
+// Nearest-capital would permit a high-band region sitting between two
+// low-band ones; distance-from-Gildmark cannot. 40 km rings, nine of them,
+// covering 0-360 km; adjacent rings overlap by 2 levels so no ring is a wall.
+export const STARTER_CAPITAL = "c-town-gildmark";
+export const RING_KM = 40;
+export const LEVEL_RINGS = Object.freeze([
+  [1, 10], [8, 20], [16, 30], [24, 40], [32, 50], [40, 58], [46, 64], [52, 70], [58, 80],
+]);
+
+export function ringOfDistance({ km }) {
+  return Math.min(LEVEL_RINGS.length - 1, Math.floor(km / RING_KM));
+}
+
+export function gBand({ world, resolvedByContinent, dungeons = [] }) {
+  if (!world.present) return [];
+  const problems = [];
+
+  let origin = null;
+  for (const { doc } of world.pinned) if (doc.id === STARTER_CAPITAL) origin = doc.pin.at;
+  if (!origin) return problems; // no starter capital pinned yet — nothing to measure from
+
+  const regions = new Map();
+  for (const f of Object.values(world.fabric)) for (const r of f.regions ?? []) regions.set(r.id, r);
+
+  const centres = new Map();
+  for (const resolved of Object.values(resolvedByContinent))
+    for (const z of resolved.zones ?? []) if (z.labelAt) centres.set(z.id, z.labelAt);
+
+  for (const [id, region] of [...regions.entries()].sort()) {
+    const at = centres.get(id);
+    if (!at || !Array.isArray(region.levelBand)) continue;
+    const dx = at[0] - origin[0], dy = at[1] - origin[1];
+    const ring = ringOfDistance({ km: Math.sqrt(dx * dx + dy * dy) });
+    const floor = ring === 0 ? LEVEL_RINGS[0][0] : LEVEL_RINGS[ring - 1][0];
+    if (region.levelBand[0] < floor)
+      problems.push(`G-BAND: region ${id} levelBand[0] ${region.levelBand[0]} < ${floor} at ring ${ring} — bands must be non-decreasing in distance from Gildmark`);
+  }
+
+  for (const d of dungeons) {
+    const h = world.handles.get(d.bind?.handle);
+    const host = h ? regions.get(h.region) : null;
+    if (!host || !Array.isArray(host.levelBand) || !Array.isArray(d.levelBand)) continue;
+    const overlaps = d.levelBand[0] <= host.levelBand[1] && host.levelBand[0] <= d.levelBand[1];
+    if (!overlaps)
+      problems.push(`G-BAND: ${d.id} band [${d.levelBand[0]}, ${d.levelBand[1]}] does not overlap host region ${h.region} band [${host.levelBand[0]}, ${host.levelBand[1]}]`);
+  }
+
   return problems;
 }
 

@@ -20,6 +20,7 @@ import { fileURLToPath } from "node:url";
 import {
   loadCivil, gBind, gPinSat, gHandleBand, BANNED_COORDINATE_KEYS,
   resolveCivil, RESOLVED_KEYS, gZoneOrder,
+  gBand, LEVEL_RINGS, ringOfDistance, STARTER_CAPITAL,
 } from "../lib/resolve.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -495,4 +496,57 @@ test("G-SLOT-STABLE: --write then --check is green, and a hand edit reds it", ()
   const red = run(["--check"]);
   assert.equal(red.code, 1);
   assert.match(red.out, /G-SLOT-STABLE: .*continent-02\.json differs from the recomputed join/);
+});
+
+// ---------------------------------------------------------------------------
+// Task 9 — G-BAND: difficulty rises with distance from the starter capital.
+
+test("nine rings, 40 km apart, both bounds strictly increasing, ceiling 80", () => {
+  assert.equal(LEVEL_RINGS.length, 9);
+  assert.deepEqual(LEVEL_RINGS[0], [1, 10]);
+  assert.deepEqual(LEVEL_RINGS[8], [58, 80]);
+  for (let i = 1; i < LEVEL_RINGS.length; i++) {
+    assert.ok(LEVEL_RINGS[i][0] > LEVEL_RINGS[i - 1][0], `ring ${i} lower bound`);
+    assert.ok(LEVEL_RINGS[i][1] > LEVEL_RINGS[i - 1][1], `ring ${i} upper bound`);
+    assert.ok(LEVEL_RINGS[i][0] < LEVEL_RINGS[i - 1][1], `ring ${i} must overlap ring ${i - 1} so no ring is a wall`);
+  }
+  assert.equal(STARTER_CAPITAL, "c-town-gildmark");
+  assert.equal(ringOfDistance({ km: 0 }), 0);
+  assert.equal(ringOfDistance({ km: 39.9 }), 0);
+  assert.equal(ringOfDistance({ km: 40 }), 1);
+  assert.equal(ringOfDistance({ km: 9999 }), 8);
+});
+
+test("G-BAND is silent on the green fixture", () => {
+  const dir = worldFixture();
+  const world = loadCivil({ contentRoot: dir });
+  const byCont = { c02: resolveCivil({ fabric: world.fabric.c02, handles: world.ledgers.c02, civil: { pinned: world.pinned, bound: world.bound } }).resolved,
+                   c10: resolveCivil({ fabric: world.fabric.c10, handles: world.ledgers.c10, civil: { pinned: world.pinned, bound: world.bound } }).resolved };
+  assert.deepEqual(gBand({ world, resolvedByContinent: byCont, dungeons: [] }), []);
+});
+
+test("G-BAND red: a far region banded below a nearer one", () => {
+  const dir = worldFixture({ overlayDir: "g-band-inversion" });
+  const world = loadCivil({ contentRoot: dir });
+  const byCont = { c02: resolveCivil({ fabric: world.fabric.c02, handles: world.ledgers.c02, civil: { pinned: world.pinned, bound: world.bound } }).resolved,
+                   c10: resolveCivil({ fabric: world.fabric.c10, handles: world.ledgers.c10, civil: { pinned: world.pinned, bound: world.bound } }).resolved };
+  const p = gBand({ world, resolvedByContinent: byCont, dungeons: [] });
+  assert.equal(p.length, 1);
+  // ERRATUM vs plan Step 1 (plan line ~4318): the literal said "2 < 46 at
+  // ring 5". The base fixture's c10/r01 centroid is [340, 215], which sits
+  // 205.40 km from Gildmark's pin [137.2, 182.4] — ring 5, whose one-band-of-
+  // slack floor is the PREVIOUS ring's lower bound, LEVEL_RINGS[4][0] = 32.
+  // No reading of the committed ring list yields 46 from this geometry; the
+  // code snippet in plan Step 3 is the stated intent (reviewer attack b).
+  assert.match(p[0], /^G-BAND: region c10\/r01 levelBand\[0\] 2 < 32 at ring 5 — bands must be non-decreasing in distance from Gildmark$/);
+});
+
+test("G-BAND red: a dungeon band that does not overlap its host region's", () => {
+  const dir = worldFixture();
+  const world = loadCivil({ contentRoot: dir });
+  const byCont = { c02: resolveCivil({ fabric: world.fabric.c02, handles: world.ledgers.c02, civil: { pinned: world.pinned, bound: world.bound } }).resolved };
+  const p = gBand({ world, resolvedByContinent: byCont,
+    dungeons: [{ id: "dungeon-strays", bind: { handle: "c02/karst/h-0f42" }, levelBand: [70, 80] }] });
+  assert.equal(p.length, 1);
+  assert.match(p[0], /^G-BAND: dungeon-strays band \[70, 80\] does not overlap host region c02\/r02 band \[15, 28\]$/);
 });

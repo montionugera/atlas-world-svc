@@ -2,17 +2,32 @@
   "id": "dungeon-fumewater-tube",
   "title": "Fumewater Tube",
   "family": null,
-  "bind": { "handle": "c02/karst/h-77aa" },
+  "bind": {
+    "handle": "c02/karst/h-77aa"
+  },
   "entranceType": "karst-cenote",
   "floors": 3,
-  "levelBand": [55, 80],
-  "hazards": ["heat", "fume"],
-  "roomCountCurve": [8, 10, 12],
+  "levelBand": [
+    16,
+    30
+  ],
+  "hazards": [
+    "heat",
+    "fume"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
   "lore": {
     "note": "A tube that still breathes warm vapor through its skylights.",
     "source": "scripts/tests/fixtures/world-d base fixture"
   },
   "prose": "authored",
   "spineId": null,
-  "provenance": { "authored": "hand", "generator": null }
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
 }
