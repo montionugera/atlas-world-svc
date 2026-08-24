@@ -35,36 +35,39 @@
     {
       "id": "c10/r01",
       "survey": "reported",
-      "areaKm2": 480.0,
+      "areaKm2": 480,
       "terrainKind": null,
       "biomeShares": {
         "lava": 100
       },
-      "ring": [
-        [
-          330,
-          205
-        ],
-        [
-          350,
-          205
-        ],
-        [
-          350,
-          225
-        ],
-        [
-          330,
-          225
-        ]
-      ],
       "levelBand": [
         55,
         80
       ],
       "adjacent": [],
       "settlements": [],
-      "poi": 0
+      "poi": 0,
+      "rings": [
+        [
+          [
+            330,
+            205
+          ],
+          [
+            350,
+            205
+          ],
+          [
+            350,
+            225
+          ],
+          [
+            330,
+            225
+          ]
+        ]
+      ],
+      "holes": []
     }
   ],
   "instances": [
@@ -74,8 +77,8 @@
       "geometry": {
         "shape": "point",
         "at": [
-          340.0,
-          215.0
+          340,
+          215
         ]
       },
       "sizeKm": 1.2,

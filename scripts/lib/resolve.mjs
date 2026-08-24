@@ -382,19 +382,40 @@ export function resolveCivil({ fabric, handles, civil, dungeons = [] }) {
   const ice = largestArea(ICE_EDGE_TYPES);
   out.iceEdge = ice ? { id: ice.id, points: ice.geometry.ring } : null;
 
+  // ERRATUM vs plan Task 7 (plan lines ~3521-3531): the plan reads the
+  // singular `r.ring`, a key the fabric-file schema FORBIDS — regions carry
+  // `rings` (one or more OUTER rings; STATE §13: 18 of 160 are multi-ring)
+  // plus `holes`. Reading `r.ring` nulled every resolved polygon, labelAt and
+  // pin zone binding, all byte-locked by G-SLOT-STABLE. Implemented against
+  // the REAL dialect below: outer = rings[0]; additional outer rings ride as
+  // `extraPolys` and holes as `holes`, so no geometry is silently dropped.
+  const outerOf = (r) => (Array.isArray(r.rings) ? r.rings[0] ?? null : null);
+  const ringParts = (r) => {
+    const outers = Array.isArray(r.rings) ? r.rings : [];
+    return {
+      polygon: outers[0] ?? null,
+      ...(outers.length > 1 ? { extraPolys: outers.slice(1) } : {}),
+      ...(r.holes?.length ? { holes: r.holes } : {}),
+    };
+  };
+
   // terrainPatches: the region rings whose terrainKind reads as a drawn patch
   // rather than a background fill. Reported regions never contribute — they
   // carry terrainKind === null by construction (spec §6.4 extension 3).
   out.terrainPatches = (fabric.regions ?? [])
     .filter((r) => r.terrainKind && PATCH_TERRAIN_KINDS.includes(r.terrainKind))
-    .map((r) => ({ id: `tp-${r.id.replace("/", "-")}`, terrainKind: r.terrainKind, polygon: r.ring }));
+    .map((r) => ({
+      id: `tp-${r.id.replace("/", "-")}`, terrainKind: r.terrainKind,
+      ...ringParts(r),
+    }));
 
   out.zones = (fabric.regions ?? []).map((r) => ({
     id: r.id, name: r.title ?? r.id, order: null, levelBand: r.levelBand,
     terrainKind: r.terrainKind, town: (r.settlements ?? [])[0] ?? null,
-    labelAt: r.labelAt ?? centroidOf(r.ring), polygon: r.ring,
+    labelAt: r.labelAt ?? centroidOf(outerOf(r)),
     survey: r.survey, areaKm2: r.areaKm2, adjacent: r.adjacent ?? [],
     provenance: r.provenance ?? null,
+    ...ringParts(r),
   }));
 
   for (const { file, doc } of civil.pinned ?? []) {
@@ -500,17 +521,25 @@ function centroidOf(ring) {
   return [Math.round((x / ring.length) * 100) / 100, Math.round((y / ring.length) * 100) / 100];
 }
 
-// Which region owns a point. Ray casting over the region ring; the fabric's
-// cell partition guarantees exactly one owner, so the first hit is the answer.
+// Which region owns a point. Ray casting over the region's OUTER rings (a
+// multi-ring region owns through any of them); a point inside one of the
+// region's holes is NOT in the region. The fabric's cell partition guarantees
+// exactly one owner, so the first hit is the answer.
+function pointInRing(ring, at) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if ((yi > at[1]) !== (yj > at[1]) && at[0] < ((xj - xi) * (at[1] - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
 function regionAt({ fabric, at }) {
   for (const r of fabric.regions ?? []) {
-    const ring = r.ring ?? [];
-    let inside = false;
-    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-      const [xi, yi] = ring[i], [xj, yj] = ring[j];
-      if ((yi > at[1]) !== (yj > at[1]) && at[0] < ((xj - xi) * (at[1] - yi)) / (yj - yi) + xi) inside = !inside;
-    }
-    if (inside) return r.id;
+    const outers = Array.isArray(r.rings) ? r.rings : [];
+    if (!outers.some((ring) => pointInRing(ring, at))) continue;
+    if ((r.holes ?? []).some((hole) => pointInRing(hole, at))) continue;
+    return r.id;
   }
   return null;
 }

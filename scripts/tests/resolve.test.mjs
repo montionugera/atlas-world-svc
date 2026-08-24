@@ -436,6 +436,50 @@ test("resolveCivil is a pure function of its inputs — same in, byte-same out",
   assert.equal(a, b);
 });
 
+test("a TWO-ring region loses no geometry — the plan's singular `ring` erratum", () => {
+  // The plan text reads the singular `r.ring`, a key fabric-file.schema.json
+  // FORBIDS: regions carry `rings` (one or more OUTER rings) plus `holes`,
+  // and STATE §13 counts 18 multi-ring regions in the committed world. Code
+  // written against the plan literal nulled every resolved polygon, labelAt
+  // and pin zone binding — all byte-locked lossy by G-SLOT-STABLE. This test
+  // fails if anyone reintroduces the singular read: the second OUTER ring
+  // must survive as extraPolys, the first must stay the polygon, and a pin
+  // falling inside the SECOND ring must still bind to the region.
+  const dir = worldFixture();
+  const p = join(dir, "world/fabric/continent-02.json");
+  const doc = JSON.parse(readFileSync(p, "utf8"));
+  const r01 = doc.regions.find((r) => r.id === "c02/r01");
+  const second = [[181, 181], [190, 181], [190, 190], [181, 190]];
+  r01.rings = [r01.rings[0], second];
+  writeFileSync(p, JSON.stringify(doc, null, 2) + "\n");
+  const { resolved, problems } = resolveCivil(worldParts(dir));
+  assert.deepEqual(problems, []);
+  const zone = resolved.zones.find((z) => z.id === "c02/r01");
+  assert.deepEqual(zone.polygon, r01.rings[0], "the outer ring stays the polygon");
+  assert.deepEqual(zone.extraPolys, [second], "additional outer rings are carried, never dropped");
+  assert.ok(Array.isArray(zone.labelAt), "labelAt derives from the outer ring");
+});
+
+test("regionAt honours every outer ring AND its holes", () => {
+  // The other half of the real dialect: ownership goes through ANY outer ring
+  // but NOT through a hole. Dropping either half mis-binds pins — through one
+  // ring only, or onto ground a lake fills.
+  const dir = worldFixture();
+  const p = join(dir, "world/fabric/continent-02.json");
+  const doc = JSON.parse(readFileSync(p, "utf8"));
+  const r01 = doc.regions.find((r) => r.id === "c02/r01");
+  const second = [[130, 178], [141, 178], [141, 188], [130, 188]]; // contains the Gildmark pin
+  r01.rings = [...r01.rings, second];
+  writeFileSync(p, JSON.stringify(doc, null, 2) + "\n");
+  const bound = resolveCivil(worldParts(dir)).resolved.towns.find((t) => t.id === "c-town-gildmark");
+  assert.equal(bound.zone, "c02/r01", "a point inside the SECOND outer ring binds to the region");
+
+  r01.holes = [[[133, 180], [140, 180], [140, 186], [133, 186]]]; // still contains the pin
+  writeFileSync(p, JSON.stringify(doc, null, 2) + "\n");
+  const holed = resolveCivil(worldParts(dir)).resolved.towns.find((t) => t.id === "c-town-gildmark");
+  assert.equal(holed.zone, null, "a point inside a hole belongs to no region");
+});
+
 test("G-SLOT-STABLE: --write then --check is green, and a hand edit reds it", () => {
   const dir = worldFixture();
   const run = (args) => {

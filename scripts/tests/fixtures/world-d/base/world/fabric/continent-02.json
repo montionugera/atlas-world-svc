@@ -56,29 +56,11 @@
     {
       "id": "c02/r01",
       "survey": "surveyed",
-      "areaKm2": 160.0,
+      "areaKm2": 160,
       "terrainKind": "river-country",
       "biomeShares": {
         "meadow": 100
       },
-      "ring": [
-        [
-          140,
-          160
-        ],
-        [
-          160,
-          160
-        ],
-        [
-          160,
-          180
-        ],
-        [
-          140,
-          180
-        ]
-      ],
       "levelBand": [
         1,
         10
@@ -89,34 +71,37 @@
       "settlements": [
         "c-town-millcross"
       ],
-      "poi": 14
+      "poi": 14,
+      "rings": [
+        [
+          [
+            140,
+            160
+          ],
+          [
+            160,
+            160
+          ],
+          [
+            160,
+            180
+          ],
+          [
+            140,
+            180
+          ]
+        ]
+      ],
+      "holes": []
     },
     {
       "id": "c02/r02",
       "survey": "surveyed",
-      "areaKm2": 160.0,
+      "areaKm2": 160,
       "terrainKind": "bramble",
       "biomeShares": {
         "bramble": 100
       },
-      "ring": [
-        [
-          160,
-          160
-        ],
-        [
-          180,
-          160
-        ],
-        [
-          180,
-          180
-        ],
-        [
-          160,
-          180
-        ]
-      ],
       "levelBand": [
         15,
         28
@@ -125,7 +110,28 @@
         "c02/r01"
       ],
       "settlements": [],
-      "poi": 12
+      "poi": 12,
+      "rings": [
+        [
+          [
+            160,
+            160
+          ],
+          [
+            180,
+            160
+          ],
+          [
+            180,
+            180
+          ],
+          [
+            160,
+            180
+          ]
+        ]
+      ],
+      "holes": []
     }
   ],
   "instances": [
@@ -165,8 +171,8 @@
       "geometry": {
         "shape": "point",
         "at": [
-          166.0,
-          172.0
+          166,
+          172
         ]
       },
       "sizeKm": 0.31,
@@ -195,8 +201,8 @@
       "geometry": {
         "shape": "point",
         "at": [
-          170.0,
-          175.0
+          170,
+          175
         ]
       },
       "sizeKm": 0.12,
@@ -243,7 +249,7 @@
           ]
         ]
       },
-      "sizeKm": 6.0,
+      "sizeKm": 6,
       "cell": [
         288,
         362
@@ -299,8 +305,8 @@
       "geometry": {
         "shape": "point",
         "at": [
-          147.0,
-          168.0
+          147,
+          168
         ]
       },
       "sizeKm": 0.7,
@@ -359,8 +365,8 @@
       "geometry": {
         "shape": "point",
         "at": [
-          154.0,
-          166.0
+          154,
+          166
         ]
       },
       "sizeKm": 0.8,
@@ -419,8 +425,8 @@
       "geometry": {
         "shape": "point",
         "at": [
-          159.0,
-          173.0
+          159,
+          173
         ]
       },
       "sizeKm": 0.5,
@@ -449,8 +455,8 @@
       "geometry": {
         "shape": "point",
         "at": [
-          143.0,
-          171.0
+          143,
+          171
         ]
       },
       "sizeKm": 0.55,
@@ -539,8 +545,8 @@
       "geometry": {
         "shape": "point",
         "at": [
-          164.0,
-          166.0
+          164,
+          166
         ]
       },
       "sizeKm": 0.18,
@@ -599,8 +605,8 @@
       "geometry": {
         "shape": "point",
         "at": [
-          171.0,
-          164.0
+          171,
+          164
         ]
       },
       "sizeKm": 0.14,
@@ -659,8 +665,8 @@
       "geometry": {
         "shape": "point",
         "at": [
-          177.0,
-          171.0
+          177,
+          171
         ]
       },
       "sizeKm": 0.2,
@@ -690,7 +696,7 @@
         "shape": "point",
         "at": [
           161.5,
-          175.0
+          175
         ]
       },
       "sizeKm": 0.16,
@@ -719,7 +725,7 @@
       "geometry": {
         "shape": "point",
         "at": [
-          165.0,
+          165,
           177.5
         ]
       },
@@ -750,7 +756,7 @@
         "shape": "point",
         "at": [
           172.5,
-          179.0
+          179
         ]
       },
       "sizeKm": 0.28,
