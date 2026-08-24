@@ -2915,3 +2915,15 @@ only) and stays byte-stable.
   plan's `fixtures/world/`; `world-budget.test.mjs`'s `emptyWorldLayer` strips
   `world/relations` too, per that helper's own documented pattern.
 - The >= 40 assertion became >= 30 (31 shipped) for the census reasons above.
+
+### FOLLOW-UP FILED FROM THE TASK 8 REVIEW (2026-08-25)
+
+- **Millcross betweenness is unguarded.** `resolved.roads` is `[]` and region ids are
+  anonymous (`c02/r01..r30`), so the plan's network/betweenness/adjacency relation classes
+  are unauthorable today — the canon claim "every road passes through Millcross" has zero
+  protection, and `not_connected_by_road` would pass vacuously. Becomes authorable only when
+  roads carry real committed identities (Plan E's redraw owns the road ink). Plan E must
+  either author these relations or record why not.
+- Relation `note` strings bake in derived numbers ("Resolved bearing 118 deg"); no gate reads
+  notes, so they rot silently on a re-seed. Consider stripping derived numbers from authored
+  notes at the next content pass.
