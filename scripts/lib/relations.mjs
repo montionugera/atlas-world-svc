@@ -44,7 +44,10 @@ export function compassOf({ deg }) {
 }
 
 export function angDiff({ a, b }) {
-  return ((a - b + 540) % 360) - 180;
+  const d = ((a - b + 540) % 360) - 180;
+  // Contract: signed result in (-180, 180] — exactly-opposite bearings
+  // resolve to +180, never -180.
+  return d === -180 ? 180 : d;
 }
 
 // Math.hypot is BANNED repo-wide (determinism); sqrt of the sum is not.
@@ -122,7 +125,10 @@ export function deriveRelation({ relation, resolved, fabric }) {
 
   const need = (id) => {
     const p = pointOf({ resolved, id });
-    return p ? { p } : { err: `"${id}" does not resolve in the resolved world` };
+    if (p) return { p };
+    if (recordOf({ resolved, id }))
+      return { err: `"${id}" has no position in the resolved world` };
+    return { err: `"${id}" does not resolve in the resolved world` };
   };
 
   if (R.rel === "bearing") {
@@ -197,7 +203,9 @@ export function deriveRelation({ relation, resolved, fabric }) {
   const subject = recordOf({ resolved, id: R.subject });
   if (!subject) return miss(null, `"${R.subject}" does not resolve in the resolved world`);
   const holders = [];
-  for (const key of ["towns", "landmarks", "dungeons"])
+  // Same record set subject resolution uses (recordOf): a camp or zone
+  // holding the property is as much a rival as a town.
+  for (const key of ["towns", "landmarks", "dungeons", "camps", "zones"])
     for (const rec of resolved[key] ?? [])
       if ((rec.properties ?? []).includes(R.property) && inScope({ record: rec, scope: R.scope, resolved }))
         holders.push(rec.id);

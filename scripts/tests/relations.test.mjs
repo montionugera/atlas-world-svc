@@ -69,6 +69,9 @@ test("bearing is north-up on a y-increases-south sheet", () => {
   assert.equal(compassOf({ deg: 338 }), "NNW");
   assert.equal(compassOf({ deg: 45 }), "NE");
   assert.equal(angDiff({ a: 10, b: 350 }), 20);
+  // Contract: the result is signed in (-180, 180] — exactly-opposite
+  // bearings must read +180, never -180.
+  assert.equal(angDiff({ a: 0, b: 180 }), 180);
 });
 
 test("bearing green: Thornveil is east of Millcross within 30 degrees", () => {
@@ -148,6 +151,35 @@ test("unique_in_scope is a GLOBAL NEGATIVE — a second holder fails", () => {
   });
   assert.equal(bad.ok, false);
   assert.match(bad.message, /also held by c-town-embervale/);
+});
+
+test("unique_in_scope scans the same record set subject resolution does — a camp rival breaks it, a camp subject resolves", () => {
+  const withCamp = structuredClone(W);
+  withCamp.camps = [
+    { id: "c-camp-gildwharf", name: "Gildmark wharf camp", at: [137.0, 182.6], region: "c02/r02", properties: ["deepwater-port"], coasts: ["wealdmarch-west"] },
+  ];
+  // RED: a camp holding the property in scope is a rival.
+  const bad = deriveRelation({
+    relation: { rel: "unique_in_scope", subject: "c-town-gildmark", property: "deepwater-port", scope: "coast:wealdmarch-west", cite: "x" },
+    resolved: withCamp, fabric: F,
+  });
+  assert.equal(bad.ok, false);
+  assert.match(bad.message, /also held by c-camp-gildwharf/);
+  // GREEN: a camp subject resolves and holds the property uniquely.
+  delete withCamp.towns.find((t) => t.id === "c-town-gildmark").properties;
+  const ok = deriveRelation({
+    relation: { rel: "unique_in_scope", subject: "c-camp-gildwharf", property: "deepwater-port", scope: "coast:wealdmarch-west", cite: "x" },
+    resolved: withCamp, fabric: F,
+  });
+  assert.equal(ok.ok, true, ok.message);
+});
+
+test("a record that exists but has no position fails as 'has no position', not 'does not resolve'", () => {
+  const labelless = structuredClone(W);
+  delete labelless.zones.find((z) => z.id === "thornveil").labelAt;
+  const r = deriveRelation({ relation: { rel: "bearing", from: "c-town-millcross", to: "thornveil", dir: "E", toleranceDeg: 30, cite: "x" }, resolved: labelless, fabric: F });
+  assert.equal(r.ok, false);
+  assert.match(r.message, /"thornveil" has no position/);
 });
 
 test("an unresolvable subject is a drift, never a throw", () => {
