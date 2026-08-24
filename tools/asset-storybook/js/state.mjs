@@ -92,6 +92,10 @@ export const STORY_CLASS = "story";
 // click between "the mapforge SVG sheets" and "concept art of maps".
 export const MAPS_CLASS = "map-sheets";
 export const MAPS_INDEX_URL = "./maps-index.json";
+// Plan D — the Places & Meaning panel's roster (one row per committed
+// content/world/resolved/continent-NN.json), kept in parity by
+// tests/world-index.test.mjs.
+export const WORLD_INDEX_URL = "./world-index.json";
 // maps-index.json's svg/png fields are REPO-relative (they mirror
 // SHEETS[id].outSvg/outPng byte-for-byte, e.g.
 // "game-client/assets/art/maps/atlas-world.svg") — unlike ASSET_ROOT above,

@@ -17,7 +17,10 @@ import { mkdtempSync, cpSync, readFileSync, writeFileSync, readdirSync, existsSy
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadCivil, gBind, gPinSat, gHandleBand, BANNED_COORDINATE_KEYS } from "../lib/resolve.mjs";
+import {
+  loadCivil, gBind, gPinSat, gHandleBand, BANNED_COORDINATE_KEYS,
+  resolveCivil, RESOLVED_KEYS, gZoneOrder,
+} from "../lib/resolve.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const FIX = join(ROOT, "scripts/tests/fixtures/world-d");
@@ -330,4 +333,122 @@ test("G-HANDLE-BAND red: the resolved type is not the type the record expects", 
   const problems = gHandleBand({ world: loadCivil({ contentRoot: dir }) });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /expects type "karst-cenote" but the handle resolves to "salt-pan-crust"/);
+});
+
+// ---------------------------------------------------------------------------
+// Task 7 — the join (resolveCivil), the region half of G-ORDER and G-SLOT-STABLE.
+
+function worldParts(dir) {
+  const w = loadCivil({ contentRoot: dir });
+  return { fabric: w.fabric.c02, handles: w.ledgers.c02, civil: { pinned: w.pinned, bound: w.bound } };
+}
+
+test("resolveCivil emits every family in a fixed key order", () => {
+  const { resolved, problems } = resolveCivil(worldParts(worldFixture()));
+  assert.deepEqual(problems, []);
+  // The order is asserted against RESOLVED_KEYS, not against a re-typed list:
+  // one statement of a load-bearing order, and the literal below exists so a
+  // reviewer can see what that order IS without opening the module.
+  assert.deepEqual([...RESOLVED_KEYS], [
+    "continent", "coastline", "river", "saltmire", "iceEdge", "terrainPatches",
+    "zones", "towns", "camps", "roads", "landmarks",
+    "dungeons", "instances", "relay", "distances", "seaLane", "sheet",
+  ]);
+  assert.deepEqual(Object.keys(resolved), [...RESOLVED_KEYS]);
+});
+
+test("the five geographic keys are DERIVED, so basin-sheet.mjs cannot throw", () => {
+  // The failure this catches, concretely: emitting coastline/saltmire as null
+  // reintroduces the `TypeError: Cannot read properties of undefined` that
+  // Plan A Task 5 removed, and it surfaces two commits later as
+  // `render-sheet --sheet cluster1` dying and G-RENDER-LOCK going red.
+  const { resolved } = resolveCivil(worldParts(worldFixture()));
+  assert.ok(Array.isArray(resolved.coastline?.points), "coastline.points must be an array");
+  assert.ok(Array.isArray(resolved.saltmire?.polygon), "saltmire.polygon must be an array");
+  assert.ok(Array.isArray(resolved.terrainPatches), "terrainPatches must be an array");
+  for (const p of resolved.terrainPatches) assert.ok(Array.isArray(p.polygon));
+});
+
+test("a pinned town resolves to its pin, a bound landmark to its instance", () => {
+  const { resolved } = resolveCivil(worldParts(worldFixture()));
+  const town = resolved.towns.find((t) => t.id === "c-town-gildmark");
+  assert.deepEqual(town.at, [137.2, 182.4]);
+  assert.deepEqual(town.properties, ["deepwater-port"]);
+  assert.deepEqual(town.coasts, ["wealdmarch-west"]);
+  const lm = resolved.landmarks.find((l) => l.id === "c-lm-the-drowned-stair");
+  assert.deepEqual(lm.at, [166.0, 172.0], "position comes from the FABRIC INSTANCE, never from the record");
+  assert.equal(lm.region, "c02/r02");
+  assert.equal(lm.sizeKm, 0.31);
+});
+
+test("the resolved world carries no key the record was forbidden to carry", () => {
+  const { resolved } = resolveCivil(worldParts(worldFixture()));
+  // Coordinates are legal HERE — the ban is on the AUTHORED record, not on
+  // the join output. What must not appear is a derived relation value.
+  const flat = JSON.stringify(resolved);
+  for (const k of ["bearingDeg", "compass", "drift", "declared"])
+    assert.equal(flat.includes(`"${k}"`), false, `${k} must not be serialised`);
+});
+
+test("a bound record whose handle has no instance is a problem, never a throw", () => {
+  const dir = worldFixture({ overlayDir: "g-bind-dangling-handle" });
+  const { resolved, problems } = resolveCivil(worldParts(dir));
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /c-lm-the-drowned-stair: handle "c02\/karst\/h-dead" has no instance in fabric continent-02/);
+  assert.equal(resolved.landmarks.length, 0);
+});
+
+test("gZoneOrder is green on a real resolveCivil output", () => {
+  const { resolved } = resolveCivil(worldParts(worldFixture()));
+  assert.deepEqual(gZoneOrder({ resolvedByContinent: { c02: resolved } }), []);
+});
+
+test("gZoneOrder reds on a gapped rank — the silent-disappearance failure R3 names", () => {
+  // Built by hand, not via a fixture overlay, and deliberately so: resolveCivil
+  // mints `order` as 0..n-1 by construction, so no input it accepts can produce
+  // a gap. The failure being guarded against is a LATER hand edit or a partial
+  // regeneration of a committed content/world/resolved/*.json — a surveyed zone
+  // vanishing while every other gate stays green.
+  const zones = [
+    { id: "c02/r01", survey: "surveyed", order: 0 },
+    { id: "c02/r02", survey: "surveyed", order: 1 },
+    { id: "c02/r03", survey: "surveyed", order: 3 },
+    { id: "c02/r04", survey: "reported", order: undefined },
+  ];
+  const problems = gZoneOrder({ resolvedByContinent: { c02: { continent: "c02", zones } } });
+  assert.equal(problems.length, 1);
+  assert.equal(problems[0],
+    "G-ORDER: c02 zone order is not a dense permutation of 0..2 — got [0, 1, 3]");
+});
+
+test("gZoneOrder ignores reported zones, which carry no order at all", () => {
+  const zones = [
+    { id: "c02/r01", survey: "surveyed", order: 0 },
+    { id: "c02/r02", survey: "reported" },
+    { id: "c02/r03", survey: "reported" },
+  ];
+  assert.deepEqual(gZoneOrder({ resolvedByContinent: { c02: { continent: "c02", zones } } }), []);
+});
+
+test("resolveCivil is a pure function of its inputs — same in, byte-same out", () => {
+  const a = JSON.stringify(resolveCivil(worldParts(worldFixture())).resolved);
+  const b = JSON.stringify(resolveCivil(worldParts(worldFixture())).resolved);
+  assert.equal(a, b);
+});
+
+test("G-SLOT-STABLE: --write then --check is green, and a hand edit reds it", () => {
+  const dir = worldFixture();
+  const run = (args) => {
+    try { return { code: 0, out: execFileSync(process.execPath, [join(ROOT, "scripts/check_resolved.mjs"), ...args, "--content-root", dir], { encoding: "utf8" }) }; }
+    catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
+  };
+  assert.equal(run(["--write"]).code, 0);
+  assert.equal(run(["--check"]).code, 0);
+  const p = join(dir, "world/resolved/continent-02.json");
+  const doc = JSON.parse(readFileSync(p, "utf8"));
+  doc.towns[0].at = [1, 1];
+  writeFileSync(p, JSON.stringify(doc, null, 2) + "\n");
+  const red = run(["--check"]);
+  assert.equal(red.code, 1);
+  assert.match(red.out, /G-SLOT-STABLE: .*continent-02\.json differs from the recomputed join/);
 });

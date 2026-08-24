@@ -11,6 +11,7 @@
 // every FAIL recorded before it.
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
 import { phonemeDistance, prosody, syllableCount, registerOf, titleStem } from "../../tools/mapforge/lib/name-gen.mjs";
 import { loadDungeons, gDungeonReach, dungeonDensityLines } from "./dungeons.mjs";
 
@@ -300,4 +301,216 @@ export function checkWorldCivil({ opts, fail, warn }) {
     `world-civil: ${world.pinned.length} pinned, ${world.bound.length} bound, ` +
     `${world.relations.length} relations, ${world.handles.size} handles`,
   );
+}
+
+// The join. Fabric supplies POSITION AND SIZE; civil supplies MEANING. That
+// split is the whole architecture: a record never states where it is, so a
+// re-seed cannot leave it stating a position that stopped being true.
+//
+// Key order is load-bearing. check_spine_emit.mjs's canonStringify serialises
+// Object.keys() in insertion order, so a reordered build changes bytes for no
+// semantic reason and reds G-SLOT-STABLE on a no-op commit.
+//
+// The five GEOGRAPHIC keys are not decoration. `tools/mapforge/lib/basin-sheet.mjs`
+// dereferences `geo.coastline.points` and `geo.saltmire.polygon` UNCONDITIONALLY
+// and iterates `geo.terrainPatches`. Emitting them as null/[] reintroduces
+// exactly the `TypeError: Cannot read properties of undefined` that Plan A Task 5
+// removed, and it surfaces as `render-sheet --sheet cluster1` dying, which reds
+// G-RENDER-LOCK and Plan E's "render every sheet" step. So the resolver DERIVES
+// them from the fabric.
+export const RESOLVED_KEYS = Object.freeze([
+  "continent", "coastline", "river", "saltmire", "iceEdge", "terrainPatches",
+  "zones", "towns", "camps", "roads", "landmarks",
+  "dungeons", "instances", "relay", "distances", "seaLane", "sheet",
+]);
+
+// Which lexicon types stand in for the two named single-feature keys, and
+// which terrainKinds read as a drawn patch rather than a region fill. Both
+// are data, not conditionals, so adding a kind is a one-line edit.
+const SALTMIRE_TYPES = Object.freeze(["tidal-mire", "salt-marsh", "saltmire-pan"]);
+const ICE_EDGE_TYPES = Object.freeze(["ice-divide", "outlet-glacier", "moraine-terminal"]);
+const PATCH_TERRAIN_KINDS = Object.freeze([
+  "upland", "rim", "bramble", "headland", "alkali-flat", "tidal-mire",
+  "badlands", "karst-plateau", "lava-field", "scree",
+]);
+
+export function resolveCivil({ fabric, handles, civil, dungeons = [] }) {
+  const problems = [];
+  const out = {};
+  for (const k of RESOLVED_KEYS) out[k] = k === "continent" ? (fabric?.continent ?? null) : [];
+  out.relay = null; out.distances = null; out.seaLane = null; out.sheet = null;
+  out.coastline = null; out.river = null; out.saltmire = null; out.iceEdge = null;
+
+  if (!fabric) { problems.push("resolve: no fabric file for this continent"); return { resolved: out, problems }; }
+
+  const byHandle = new Map();
+  for (const inst of fabric.instances ?? []) if (inst.handle) byHandle.set(inst.handle, inst);
+  const ledger = new Map((handles?.handles ?? []).map((h) => [h.handle, h]));
+
+  // ── the five GEOGRAPHIC keys, derived from the fabric ────────────────────
+
+  // coastline: the continent's own outer ring. The trunk polygon is simplified
+  // from exactly this contour (G-TRUNK-AREA's +/-3% is what pins the two
+  // together), so drawing the fabric ring here draws the same coast the chart
+  // shows, at fabric resolution.
+  out.coastline = fabric.outerRing
+    ? { id: `f-coast-${fabric.continent}`, points: fabric.outerRing }
+    : null;
+  if (!out.coastline) problems.push(`resolve: fabric ${fabric.continent} has no outerRing — the sheet builders dereference coastline.points`);
+
+  // river: the single largest flow-accumulation trace the fabric recorded.
+  // One river per continent is a DRAWING decision, not a hydrology claim —
+  // the rest are instances, and a sheet with thirteen equal rivers reads as
+  // noise. `fabric.trunkRiver` is emitted by P6 as the highest-flowAcc chain.
+  out.river = fabric.trunkRiver
+    ? { id: `f-river-${fabric.continent}`, points: fabric.trunkRiver.points, name: fabric.trunkRiver.name ?? null }
+    : null;
+
+  // saltmire / iceEdge: the largest AREA instance of each named type set.
+  // Both are single-feature keys in the doc shape, so "largest" is the rule
+  // and it is deterministic because instance order is the handle total order.
+  const largestArea = (types) => {
+    let best = null;
+    for (const i of fabric.instances ?? []) {
+      if (!types.includes(i.type) || i.geometry.shape !== "area") continue;
+      if (!best || i.sizeKm > best.sizeKm || (i.sizeKm === best.sizeKm && i.id < best.id)) best = i;
+    }
+    return best;
+  };
+  const mire = largestArea(SALTMIRE_TYPES);
+  out.saltmire = mire ? { id: mire.id, name: null, polygon: mire.geometry.ring } : null;
+  const ice = largestArea(ICE_EDGE_TYPES);
+  out.iceEdge = ice ? { id: ice.id, points: ice.geometry.ring } : null;
+
+  // terrainPatches: the region rings whose terrainKind reads as a drawn patch
+  // rather than a background fill. Reported regions never contribute — they
+  // carry terrainKind === null by construction (spec §6.4 extension 3).
+  out.terrainPatches = (fabric.regions ?? [])
+    .filter((r) => r.terrainKind && PATCH_TERRAIN_KINDS.includes(r.terrainKind))
+    .map((r) => ({ id: `tp-${r.id.replace("/", "-")}`, terrainKind: r.terrainKind, polygon: r.ring }));
+
+  out.zones = (fabric.regions ?? []).map((r) => ({
+    id: r.id, name: r.title ?? r.id, order: null, levelBand: r.levelBand,
+    terrainKind: r.terrainKind, town: (r.settlements ?? [])[0] ?? null,
+    labelAt: r.labelAt ?? centroidOf(r.ring), polygon: r.ring,
+    survey: r.survey, areaKm2: r.areaKm2, adjacent: r.adjacent ?? [],
+    provenance: r.provenance ?? null,
+  }));
+
+  for (const { file, doc } of civil.pinned ?? []) {
+    if ((doc.requires?.continent ?? fabric.continent) !== fabric.continent) continue;
+    const row = {
+      id: doc.id, name: doc.title, at: doc.pin.at,
+      zone: regionAt({ fabric, at: doc.pin.at }),
+      properties: doc.properties ?? [], coasts: doc.coasts ?? [],
+      ...(doc.settlementRank ? { settlementRank: doc.settlementRank } : {}),
+      ...(doc.plan ? { plan: doc.plan } : {}),
+      source: file,
+    };
+    if (doc.kind === "town") out.towns.push(row);
+    else if (doc.kind === "camp") out.camps.push(row);
+    else out.landmarks.push({ ...row, region: row.zone, sizeKm: null, type: doc.requires?.landform ?? null });
+  }
+
+  for (const { doc } of civil.bound ?? []) {
+    const handle = doc.bind?.handle;
+    if (!handle || !handle.startsWith(fabric.continent + "/")) continue;
+    const inst = byHandle.get(handle);
+    if (!inst) {
+      problems.push(`resolve: ${doc.id}: handle "${handle}" has no instance in fabric ${fabric.continent === null ? "?" : "continent-" + fabric.continent.slice(1)}`);
+      continue;
+    }
+    out.landmarks.push({
+      id: doc.id, name: doc.title, at: inst.geometry.at ?? inst.geometry.points?.[0] ?? null,
+      region: inst.region, type: inst.type, sizeKm: ledger.get(handle)?.sizeKm ?? inst.sizeKm,
+      handle, glyph: inst.glyph, properties: doc.properties ?? [],
+      note: doc.lore?.note ?? null, labelAnchor: doc.lore?.labelAnchor ?? "north",
+      prose: doc.prose,
+    });
+  }
+
+  for (const d of dungeons) {
+    const inst = byHandle.get(d.bind?.handle);
+    if (!inst) continue;
+    out.dungeons.push({
+      id: d.id, name: d.title, at: inst.geometry.at ?? null, region: inst.region,
+      family: d.family, entranceType: d.entranceType, floors: d.floors,
+      levelBand: d.levelBand, handle: d.bind.handle, properties: [],
+    });
+  }
+
+  // Texture: glyph and hit-test only, never a label and never prose.
+  out.instances = (fabric.instances ?? []).filter((i) => !i.named)
+    .map((i) => ({ id: i.id, type: i.type, at: i.geometry.at ?? null, glyph: i.glyph, sizeKm: i.sizeKm }));
+
+  const cmp = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  for (const k of ["zones", "towns", "camps", "landmarks", "dungeons", "instances", "terrainPatches"]) out[k].sort(cmp);
+
+  // R3's third clause, applied to REGIONS. Plan A kept lore.order as the sort
+  // key for its byte-identity invariant and Plan C's G-ORDER covers the handle
+  // ledgers, which left the region ordering with no total order at all after
+  // the redraw. The rule is the SAME one the ledgers use — (-area, contentHash)
+  // — so the programme has one ordering discipline, not two, and the result is
+  // a DENSE permutation of 0..n-1 that gZoneOrder (below) re-checks.
+  const surveyed = out.zones.filter((z) => z.survey === "surveyed");
+  surveyed
+    .map((z) => ({ z, key: [-z.areaKm2, hashOfZone(z)] }))
+    .sort((a, b) => (a.key[0] - b.key[0]) || (a.key[1] < b.key[1] ? -1 : a.key[1] > b.key[1] ? 1 : 0))
+    .forEach(({ z }, n) => { z.order = n; });
+
+  return { resolved: out, problems };
+}
+
+// ── G-ORDER, region half ───────────────────────────────────────────────────
+// R3's third clause — the resulting order is a DENSE PERMUTATION of 0..n-1 —
+// applied to the REGION order. Plan C's gWorldOrder carries clauses (1)-(3)
+// for the handle ledgers and stops there on purpose: `order` is minted inside
+// resolveCivil, onto the RESOLVED zones, and
+// content/schemas/fabric-file.schema.json is `additionalProperties: false` on
+// regions[] without an `order` key, so a fabric region can never legally carry
+// one. A gap here means a surveyed zone ceased to exist with every other gate
+// green — the live defect R3 names — so it is a FAIL, not a warn.
+//
+// Reported zones are skipped: they are unsurveyed ground with no area to rank.
+export function gZoneOrder({ resolvedByContinent }) {
+  const problems = [];
+  for (const [cont, doc] of Object.entries(resolvedByContinent ?? {}).sort()) {
+    const surveyed = (doc?.zones ?? []).filter((z) => z.survey === "surveyed");
+    if (surveyed.length === 0) continue;
+    const ranks = surveyed.map((z) => z.order).sort((a, b) => a - b);
+    if (!ranks.every((v, i) => v === i))
+      problems.push(`G-ORDER: ${cont} zone order is not a dense permutation of ` +
+                    `0..${surveyed.length - 1} — got [${ranks.join(", ")}]`);
+  }
+  return problems;
+}
+
+// The content hash a zone is ordered by: its id, area and ring, canonicalised.
+// NOT lore.order — that field silently drops a region that lacks it and
+// silently reorders duplicates (spec R3, and the live defect I-096 names).
+function hashOfZone(z) {
+  return "sha256:" + createHash("sha256")
+    .update(JSON.stringify([z.id, z.areaKm2, z.polygon])).digest("hex");
+}
+
+function centroidOf(ring) {
+  if (!Array.isArray(ring) || !ring.length) return null;
+  let x = 0, y = 0;
+  for (const [px, py] of ring) { x += px; y += py; }
+  return [Math.round((x / ring.length) * 100) / 100, Math.round((y / ring.length) * 100) / 100];
+}
+
+// Which region owns a point. Ray casting over the region ring; the fabric's
+// cell partition guarantees exactly one owner, so the first hit is the answer.
+function regionAt({ fabric, at }) {
+  for (const r of fabric.regions ?? []) {
+    const ring = r.ring ?? [];
+    let inside = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i], [xj, yj] = ring[j];
+      if ((yi > at[1]) !== (yj > at[1]) && at[0] < ((xj - xi) * (at[1] - yi)) / (yj - yi) + xi) inside = !inside;
+    }
+    if (inside) return r.id;
+  }
+  return null;
 }

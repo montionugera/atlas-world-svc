@@ -1,0 +1,825 @@
+{
+  "continent": "c09",
+  "coastline": {
+    "id": "f-coast-c09",
+    "points": [
+      [
+        348,
+        164.5
+      ],
+      [
+        354.5,
+        164.5
+      ],
+      [
+        354.5,
+        165
+      ],
+      [
+        356,
+        165
+      ],
+      [
+        356,
+        165.5
+      ],
+      [
+        357,
+        165.5
+      ],
+      [
+        357.5,
+        166.5
+      ],
+      [
+        358.5,
+        166.5
+      ],
+      [
+        359.5,
+        168
+      ],
+      [
+        360.5,
+        168
+      ],
+      [
+        360.5,
+        168.5
+      ],
+      [
+        361.5,
+        169
+      ],
+      [
+        361.5,
+        170
+      ],
+      [
+        363.5,
+        171.5
+      ],
+      [
+        363.5,
+        172.5
+      ],
+      [
+        364,
+        172.5
+      ],
+      [
+        364,
+        173.5
+      ],
+      [
+        364.5,
+        173.5
+      ],
+      [
+        364.5,
+        174.5
+      ],
+      [
+        365,
+        174.5
+      ],
+      [
+        365,
+        175.5
+      ],
+      [
+        365.5,
+        175.5
+      ],
+      [
+        365.5,
+        176.5
+      ],
+      [
+        366,
+        176.5
+      ],
+      [
+        366.5,
+        180
+      ],
+      [
+        367,
+        180
+      ],
+      [
+        367,
+        182.5
+      ],
+      [
+        367.5,
+        182.5
+      ],
+      [
+        367.5,
+        190.5
+      ],
+      [
+        367,
+        190.5
+      ],
+      [
+        367,
+        193.5
+      ],
+      [
+        366.5,
+        193.5
+      ],
+      [
+        366,
+        197
+      ],
+      [
+        365.5,
+        197
+      ],
+      [
+        365.5,
+        198
+      ],
+      [
+        365,
+        198
+      ],
+      [
+        364,
+        201
+      ],
+      [
+        363,
+        201.5
+      ],
+      [
+        363,
+        202.5
+      ],
+      [
+        362.5,
+        202.5
+      ],
+      [
+        360,
+        205.5
+      ],
+      [
+        358.5,
+        205.5
+      ],
+      [
+        358.5,
+        206
+      ],
+      [
+        357,
+        206
+      ],
+      [
+        357,
+        206.5
+      ],
+      [
+        352,
+        206.5
+      ],
+      [
+        352,
+        206
+      ],
+      [
+        349,
+        205.5
+      ],
+      [
+        349,
+        205
+      ],
+      [
+        348,
+        205
+      ],
+      [
+        347.5,
+        204
+      ],
+      [
+        346.5,
+        204
+      ],
+      [
+        346.5,
+        203.5
+      ],
+      [
+        342.5,
+        200
+      ],
+      [
+        342.5,
+        199
+      ],
+      [
+        341.5,
+        198.5
+      ],
+      [
+        341.5,
+        197.5
+      ],
+      [
+        341,
+        197.5
+      ],
+      [
+        341,
+        196.5
+      ],
+      [
+        340.5,
+        196.5
+      ],
+      [
+        340.5,
+        195.5
+      ],
+      [
+        340,
+        195.5
+      ],
+      [
+        340,
+        194.5
+      ],
+      [
+        339.5,
+        194.5
+      ],
+      [
+        338.5,
+        190
+      ],
+      [
+        338,
+        190
+      ],
+      [
+        337.5,
+        184
+      ],
+      [
+        337,
+        184
+      ],
+      [
+        337,
+        179.5
+      ],
+      [
+        337.5,
+        179.5
+      ],
+      [
+        338,
+        175.5
+      ],
+      [
+        338.5,
+        175.5
+      ],
+      [
+        338.5,
+        174.5
+      ],
+      [
+        339,
+        174.5
+      ],
+      [
+        339.5,
+        172
+      ],
+      [
+        340,
+        172
+      ],
+      [
+        340.5,
+        170.5
+      ],
+      [
+        341.5,
+        170
+      ],
+      [
+        341.5,
+        169
+      ],
+      [
+        342,
+        169
+      ],
+      [
+        343.5,
+        167
+      ],
+      [
+        344.5,
+        167
+      ],
+      [
+        345,
+        166
+      ],
+      [
+        346,
+        166
+      ],
+      [
+        346,
+        165.5
+      ],
+      [
+        347,
+        165.5
+      ],
+      [
+        347,
+        165
+      ],
+      [
+        348,
+        165
+      ]
+    ]
+  },
+  "river": null,
+  "saltmire": null,
+  "iceEdge": null,
+  "terrainPatches": [],
+  "zones": [
+    {
+      "id": "c09/r01",
+      "name": "c09/r01",
+      "order": null,
+      "levelBand": [
+        58,
+        80
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 419.75,
+      "adjacent": [
+        "c09/r02"
+      ],
+      "provenance": "hearsay"
+    },
+    {
+      "id": "c09/r02",
+      "name": "c09/r02",
+      "order": null,
+      "levelBand": [
+        58,
+        80
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 419.75,
+      "adjacent": [
+        "c09/r01",
+        "c09/r03"
+      ],
+      "provenance": "hearsay"
+    },
+    {
+      "id": "c09/r03",
+      "name": "c09/r03",
+      "order": 0,
+      "levelBand": [
+        58,
+        80
+      ],
+      "terrainKind": "cloud-forest",
+      "town": "c09/s01",
+      "labelAt": null,
+      "survey": "surveyed",
+      "areaKm2": 160,
+      "adjacent": [
+        "c09/r02"
+      ],
+      "provenance": null
+    }
+  ],
+  "towns": [],
+  "camps": [],
+  "roads": [],
+  "landmarks": [
+    {
+      "id": "c-lm-brightfall-leap",
+      "name": "Brightfall Leap",
+      "at": [
+        352,
+        196
+      ],
+      "zone": null,
+      "properties": [],
+      "coasts": [],
+      "source": "world/civil/pinned/c-lm-brightfall-leap.json",
+      "region": null,
+      "sizeKm": null,
+      "type": "sea-waterfall"
+    },
+    {
+      "id": "c-lm-c09-coastal-32f8",
+      "name": "Head among Quillmere",
+      "at": null,
+      "region": "c09/r03",
+      "type": "coastal-lagoon",
+      "sizeKm": 1.67,
+      "handle": "c09/coastal/h-6432f8",
+      "glyph": "g-lagoon",
+      "properties": [],
+      "note": "Shallow brackish water penned behind a bar, calm when the sea outside is not.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c09-coastal-4ee8",
+      "name": "Head of the Brightshallow",
+      "at": [
+        348.66,
+        204.13
+      ],
+      "region": "c09/r03",
+      "type": "baymouth-bar",
+      "sizeKm": 1.98,
+      "handle": "c09/coastal/h-494ee8",
+      "glyph": "g-spit",
+      "properties": [],
+      "note": "A bank of sand grown right across a bay mouth, shutting the water in behind it.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c09-coastal-6cb3",
+      "name": "Lagoonreef Stack",
+      "at": [
+        345.25,
+        201.75
+      ],
+      "region": "c09/r03",
+      "type": "blowhole",
+      "sizeKm": 0.03,
+      "handle": "c09/coastal/h-8d6cb3",
+      "glyph": "g-cliff",
+      "properties": [],
+      "note": "A hole in the cliff top that spits spray and thunder whenever a big swell comes in.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c09-coastal-bdf7",
+      "name": "Quilllow Stack",
+      "at": [
+        341.75,
+        198.3
+      ],
+      "region": "c09/r03",
+      "type": "tombolo",
+      "sizeKm": 1.09,
+      "handle": "c09/coastal/h-d0bdf7",
+      "glyph": "g-spit",
+      "properties": [],
+      "note": "A neck of sand and shingle joining an island to the shore; it drowns on the big tides.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c09-coastal-ee4e",
+      "name": "Loamrun Geo",
+      "at": null,
+      "region": "c09/r03",
+      "type": "estuary",
+      "sizeKm": 4.62,
+      "handle": "c09/coastal/h-c4ee4e",
+      "glyph": "g-lagoon",
+      "properties": [],
+      "note": "Where the river's water and the sea's argue twice a day over the same mudflats.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c09-coastal-ff07",
+      "name": "Willowlobe Stack",
+      "at": [
+        337.75,
+        184.62
+      ],
+      "region": "c09/r02",
+      "type": "spit",
+      "sizeKm": 3.26,
+      "handle": "c09/coastal/h-81ff07",
+      "glyph": "g-spit",
+      "properties": [],
+      "note": "A finger of shingle the drift keeps building out across open water, growing every year.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c09-mountain-40ce",
+      "name": "Bitternlobe Horn",
+      "at": [
+        337.85,
+        192.96
+      ],
+      "region": "c09/r03",
+      "type": "spur-ridge",
+      "sizeKm": 4.12,
+      "handle": "c09/mountain/h-6840ce",
+      "glyph": "g-ridge",
+      "properties": [],
+      "note": "A shoulder running down off the main ridge, easy walking until it steepens.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c09-mountain-b0cf",
+      "name": "Mereeyot Rake",
+      "at": null,
+      "region": "c09/r03",
+      "type": "foothill-belt",
+      "sizeKm": 8.9,
+      "handle": "c09/mountain/h-88b0cf",
+      "glyph": "g-ridge",
+      "properties": [],
+      "note": "The wooded rise between the plain and the real mountains, cut by short steep valleys.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    }
+  ],
+  "dungeons": [
+    {
+      "id": "dungeon-ashen-spar-lava-tubes",
+      "name": "Ashen Spar Lava Tubes",
+      "at": [
+        343.25,
+        199.75
+      ],
+      "region": "c09/r03",
+      "family": null,
+      "entranceType": "tectonic-cave",
+      "floors": 3,
+      "levelBand": [
+        55,
+        80
+      ],
+      "handle": "c09/mountain/h-48f000",
+      "properties": []
+    },
+    {
+      "id": "dungeon-drowned-pavement-cenotes",
+      "name": "Drowned Pavement Cenotes",
+      "at": [
+        338.25,
+        188.75
+      ],
+      "region": "c09/r03",
+      "family": null,
+      "entranceType": "sea-cave",
+      "floors": 3,
+      "levelBand": [
+        40,
+        58
+      ],
+      "handle": "c09/coastal/h-027ed9",
+      "properties": []
+    }
+  ],
+  "instances": [
+    {
+      "id": "lf-c09-r01-0000",
+      "type": "machair",
+      "at": null,
+      "glyph": "g-lagoon",
+      "sizeKm": 1.12
+    },
+    {
+      "id": "lf-c09-r01-0001",
+      "type": "coastal-lagoon",
+      "at": null,
+      "glyph": "g-lagoon",
+      "sizeKm": 5.37
+    },
+    {
+      "id": "lf-c09-r01-0002",
+      "type": "cuspate-foreland",
+      "at": null,
+      "glyph": "g-spit",
+      "sizeKm": 3.99
+    },
+    {
+      "id": "lf-c09-r01-0003",
+      "type": "foothill-belt",
+      "at": null,
+      "glyph": "g-ridge",
+      "sizeKm": 12.05
+    },
+    {
+      "id": "lf-c09-r01-0004",
+      "type": "sea-cave",
+      "at": [
+        367.25,
+        187.25
+      ],
+      "glyph": "g-cliff",
+      "sizeKm": 0.24
+    },
+    {
+      "id": "lf-c09-r01-0005",
+      "type": "summit-pyramid",
+      "at": [
+        367.25,
+        184.25
+      ],
+      "glyph": "g-peak",
+      "sizeKm": 1.4
+    },
+    {
+      "id": "lf-c09-r01-0006",
+      "type": "tombolo",
+      "at": null,
+      "glyph": "g-spit",
+      "sizeKm": 1.18
+    },
+    {
+      "id": "lf-c09-r01-0007",
+      "type": "ridge-spine",
+      "at": null,
+      "glyph": "g-ridge",
+      "sizeKm": 18.11
+    },
+    {
+      "id": "lf-c09-r01-0033",
+      "type": "marine-terrace",
+      "at": null,
+      "glyph": "g-cliff",
+      "sizeKm": 3.54
+    },
+    {
+      "id": "lf-c09-r02-0008",
+      "type": "sea-stack",
+      "at": [
+        352.75,
+        206.25
+      ],
+      "glyph": "g-cliff",
+      "sizeKm": 0.04
+    },
+    {
+      "id": "lf-c09-r02-0009",
+      "type": "headland",
+      "at": null,
+      "glyph": "g-cliff",
+      "sizeKm": 3.02
+    },
+    {
+      "id": "lf-c09-r02-0010",
+      "type": "sea-cave",
+      "at": [
+        360.75,
+        204.25
+      ],
+      "glyph": "g-cliff",
+      "sizeKm": 0.11
+    },
+    {
+      "id": "lf-c09-r02-0011",
+      "type": "ridge-spine",
+      "at": null,
+      "glyph": "g-ridge",
+      "sizeKm": 28.42
+    },
+    {
+      "id": "lf-c09-r02-0012",
+      "type": "barrier-island",
+      "at": null,
+      "glyph": "g-spit",
+      "sizeKm": 4.15
+    },
+    {
+      "id": "lf-c09-r02-0013",
+      "type": "sea-arch",
+      "at": [
+        348.75,
+        204.75
+      ],
+      "glyph": "g-arch",
+      "sizeKm": 0.18
+    },
+    {
+      "id": "lf-c09-r02-0014",
+      "type": "foothill-belt",
+      "at": null,
+      "glyph": "g-ridge",
+      "sizeKm": 9.62
+    },
+    {
+      "id": "lf-c09-r02-0015",
+      "type": "coastal-lagoon",
+      "at": null,
+      "glyph": "g-lagoon",
+      "sizeKm": 0.74
+    },
+    {
+      "id": "lf-c09-r02-0032",
+      "type": "wave-cut-platform",
+      "at": null,
+      "glyph": "g-cliff",
+      "sizeKm": 1.49
+    },
+    {
+      "id": "lf-c09-r03-0016",
+      "type": "headland",
+      "at": null,
+      "glyph": "g-cliff",
+      "sizeKm": 3.63
+    },
+    {
+      "id": "lf-c09-r03-0020",
+      "type": "talus-cone",
+      "at": null,
+      "glyph": "g-scree",
+      "sizeKm": 0.24
+    },
+    {
+      "id": "lf-c09-r03-0021",
+      "type": "coastal-drowned-valley",
+      "at": null,
+      "glyph": "g-lagoon",
+      "sizeKm": 2.26
+    },
+    {
+      "id": "lf-c09-r03-0022",
+      "type": "mesa",
+      "at": null,
+      "glyph": "g-mesa",
+      "sizeKm": 3.36
+    },
+    {
+      "id": "lf-c09-r03-0023",
+      "type": "geo",
+      "at": null,
+      "glyph": "g-cliff",
+      "sizeKm": 0.45
+    },
+    {
+      "id": "lf-c09-r03-0025",
+      "type": "tectonic-cave",
+      "at": [
+        343.25,
+        199.75
+      ],
+      "glyph": "g-peak",
+      "sizeKm": 0.27
+    },
+    {
+      "id": "lf-c09-r03-0027",
+      "type": "sea-stack",
+      "at": [
+        339.25,
+        192.75
+      ],
+      "glyph": "g-cliff",
+      "sizeKm": 0.11
+    },
+    {
+      "id": "lf-c09-r03-0028",
+      "type": "massif-dome",
+      "at": null,
+      "glyph": "g-peak",
+      "sizeKm": 21.8
+    },
+    {
+      "id": "lf-c09-r03-0030",
+      "type": "sea-cave",
+      "at": [
+        338.25,
+        188.75
+      ],
+      "glyph": "g-cliff",
+      "sizeKm": 0.21
+    }
+  ],
+  "relay": null,
+  "distances": null,
+  "seaLane": null,
+  "sheet": null
+}

@@ -129,6 +129,14 @@ jobs:
       - name: Spine emit drift-gate (G-EMIT-DRIFT)
         run: node scripts/check_spine_emit.mjs --check
 
+      # Resolved join drift-gate (Plan D G-SLOT-STABLE): content/world/resolved/
+      # *.json is the committed join of fabric + civil and the ONLY file
+      # renderers read. Fails the build if a record silently rebound to a
+      # different handle, or a resolved file was hand-edited. scripts/ deps are
+      # already installed by the Content gate step above.
+      - name: Resolved join drift-gate (G-SLOT-STABLE)
+        run: node scripts/check_resolved.mjs --check
+
       # Render lock (Plan A G-RENDER-LOCK): every sheet in
       # tools/mapforge/render-sheet.mjs's SHEETS registry is rebuilt from the
       # live spine, hashed, and compared against content/world/render-lock.json

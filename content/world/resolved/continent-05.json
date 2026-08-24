@@ -1,0 +1,5265 @@
+{
+  "continent": "c05",
+  "coastline": {
+    "id": "f-coast-c05",
+    "points": [
+      [
+        214,
+        332
+      ],
+      [
+        213.5,
+        332
+      ],
+      [
+        213.5,
+        332.5
+      ],
+      [
+        213,
+        332.5
+      ],
+      [
+        211,
+        335
+      ],
+      [
+        210,
+        335
+      ],
+      [
+        210,
+        335.5
+      ],
+      [
+        209,
+        335.5
+      ],
+      [
+        209,
+        336
+      ],
+      [
+        208,
+        336
+      ],
+      [
+        208,
+        336.5
+      ],
+      [
+        207,
+        336.5
+      ],
+      [
+        207,
+        337
+      ],
+      [
+        206,
+        337
+      ],
+      [
+        206,
+        337.5
+      ],
+      [
+        205,
+        337.5
+      ],
+      [
+        205,
+        338
+      ],
+      [
+        204,
+        338
+      ],
+      [
+        204,
+        338.5
+      ],
+      [
+        203,
+        338.5
+      ],
+      [
+        203,
+        339
+      ],
+      [
+        201.5,
+        339
+      ],
+      [
+        201.5,
+        339.5
+      ],
+      [
+        200.5,
+        339.5
+      ],
+      [
+        200.5,
+        340
+      ],
+      [
+        199.5,
+        340
+      ],
+      [
+        199.5,
+        340.5
+      ],
+      [
+        198.5,
+        340.5
+      ],
+      [
+        198.5,
+        341
+      ],
+      [
+        197.5,
+        341
+      ],
+      [
+        197.5,
+        341.5
+      ],
+      [
+        196.5,
+        341.5
+      ],
+      [
+        196.5,
+        342
+      ],
+      [
+        195.5,
+        342
+      ],
+      [
+        195.5,
+        342.5
+      ],
+      [
+        194.5,
+        342.5
+      ],
+      [
+        194.5,
+        343
+      ],
+      [
+        193.5,
+        343
+      ],
+      [
+        193.5,
+        343.5
+      ],
+      [
+        192.5,
+        343.5
+      ],
+      [
+        192.5,
+        344
+      ],
+      [
+        191.5,
+        344
+      ],
+      [
+        191.5,
+        344.5
+      ],
+      [
+        190.5,
+        344.5
+      ],
+      [
+        190.5,
+        345
+      ],
+      [
+        189.5,
+        345
+      ],
+      [
+        189.5,
+        345.5
+      ],
+      [
+        186.5,
+        346.5
+      ],
+      [
+        186,
+        347.5
+      ],
+      [
+        185,
+        347.5
+      ],
+      [
+        185,
+        348
+      ],
+      [
+        184,
+        348
+      ],
+      [
+        184,
+        348.5
+      ],
+      [
+        183,
+        348.5
+      ],
+      [
+        183,
+        349
+      ],
+      [
+        182,
+        349
+      ],
+      [
+        182,
+        349.5
+      ],
+      [
+        179.5,
+        350
+      ],
+      [
+        179,
+        351
+      ],
+      [
+        178,
+        351
+      ],
+      [
+        178,
+        351.5
+      ],
+      [
+        177,
+        351.5
+      ],
+      [
+        176.5,
+        352.5
+      ],
+      [
+        175.5,
+        352.5
+      ],
+      [
+        175,
+        354
+      ],
+      [
+        173,
+        354
+      ],
+      [
+        173,
+        354.5
+      ],
+      [
+        161.5,
+        354
+      ],
+      [
+        161.5,
+        353.5
+      ],
+      [
+        159,
+        353.5
+      ],
+      [
+        159,
+        353
+      ],
+      [
+        155,
+        352.5
+      ],
+      [
+        155,
+        352
+      ],
+      [
+        152,
+        351.5
+      ],
+      [
+        152,
+        351
+      ],
+      [
+        151,
+        351
+      ],
+      [
+        151,
+        350.5
+      ],
+      [
+        149.5,
+        350.5
+      ],
+      [
+        149.5,
+        350
+      ],
+      [
+        148.5,
+        350
+      ],
+      [
+        148.5,
+        349.5
+      ],
+      [
+        147.5,
+        349.5
+      ],
+      [
+        147.5,
+        349
+      ],
+      [
+        146.5,
+        349
+      ],
+      [
+        146.5,
+        348.5
+      ],
+      [
+        145.5,
+        348.5
+      ],
+      [
+        145.5,
+        348
+      ],
+      [
+        142.5,
+        347
+      ],
+      [
+        142,
+        346
+      ],
+      [
+        140,
+        345.5
+      ],
+      [
+        140,
+        345
+      ],
+      [
+        138.5,
+        344.5
+      ],
+      [
+        138,
+        343.5
+      ],
+      [
+        136,
+        343
+      ],
+      [
+        135,
+        341.5
+      ],
+      [
+        134,
+        341.5
+      ],
+      [
+        134,
+        341
+      ],
+      [
+        132.5,
+        340.5
+      ],
+      [
+        131.5,
+        339
+      ],
+      [
+        130.5,
+        339
+      ],
+      [
+        129.5,
+        337.5
+      ],
+      [
+        128.5,
+        337.5
+      ],
+      [
+        126.5,
+        335
+      ],
+      [
+        125.5,
+        335
+      ],
+      [
+        125.5,
+        334.5
+      ],
+      [
+        119,
+        328.5
+      ],
+      [
+        119,
+        327.5
+      ],
+      [
+        117,
+        326
+      ],
+      [
+        117,
+        325
+      ],
+      [
+        115.5,
+        324
+      ],
+      [
+        115,
+        322
+      ],
+      [
+        114,
+        321.5
+      ],
+      [
+        114,
+        320.5
+      ],
+      [
+        113.5,
+        320.5
+      ],
+      [
+        113.5,
+        319.5
+      ],
+      [
+        113,
+        319.5
+      ],
+      [
+        113,
+        318.5
+      ],
+      [
+        112.5,
+        318.5
+      ],
+      [
+        112.5,
+        317.5
+      ],
+      [
+        112,
+        317.5
+      ],
+      [
+        112,
+        316.5
+      ],
+      [
+        111.5,
+        316.5
+      ],
+      [
+        111.5,
+        315.5
+      ],
+      [
+        111,
+        315.5
+      ],
+      [
+        111,
+        314
+      ],
+      [
+        110.5,
+        314
+      ],
+      [
+        110.5,
+        312.5
+      ],
+      [
+        110,
+        312.5
+      ],
+      [
+        110,
+        311
+      ],
+      [
+        109.5,
+        311
+      ],
+      [
+        109.5,
+        309.5
+      ],
+      [
+        109,
+        309.5
+      ],
+      [
+        109,
+        307
+      ],
+      [
+        108.5,
+        307
+      ],
+      [
+        108.5,
+        304.5
+      ],
+      [
+        108,
+        304.5
+      ],
+      [
+        108,
+        299.5
+      ],
+      [
+        107.5,
+        299.5
+      ],
+      [
+        108,
+        289
+      ],
+      [
+        108.5,
+        289
+      ],
+      [
+        108.5,
+        286.5
+      ],
+      [
+        109,
+        286.5
+      ],
+      [
+        109,
+        284
+      ],
+      [
+        109.5,
+        284
+      ],
+      [
+        110,
+        280.5
+      ],
+      [
+        110.5,
+        280.5
+      ],
+      [
+        110.5,
+        279.5
+      ],
+      [
+        111,
+        279.5
+      ],
+      [
+        111,
+        278.5
+      ],
+      [
+        111.5,
+        278.5
+      ],
+      [
+        111.5,
+        277.5
+      ],
+      [
+        112,
+        277.5
+      ],
+      [
+        112,
+        276.5
+      ],
+      [
+        112.5,
+        276.5
+      ],
+      [
+        112.5,
+        275.5
+      ],
+      [
+        113,
+        275.5
+      ],
+      [
+        113,
+        274
+      ],
+      [
+        113.5,
+        274
+      ],
+      [
+        113.5,
+        273
+      ],
+      [
+        114,
+        273
+      ],
+      [
+        114,
+        271.5
+      ],
+      [
+        114.5,
+        271.5
+      ],
+      [
+        114.5,
+        270
+      ],
+      [
+        115,
+        270
+      ],
+      [
+        115,
+        268.5
+      ],
+      [
+        115.5,
+        268.5
+      ],
+      [
+        115.5,
+        266.5
+      ],
+      [
+        116,
+        266.5
+      ],
+      [
+        116,
+        265
+      ],
+      [
+        116.5,
+        265
+      ],
+      [
+        117.5,
+        262
+      ],
+      [
+        118.5,
+        261.5
+      ],
+      [
+        119,
+        259.5
+      ],
+      [
+        119.5,
+        259.5
+      ],
+      [
+        120,
+        258
+      ],
+      [
+        121.5,
+        257
+      ],
+      [
+        121.5,
+        256
+      ],
+      [
+        124,
+        254
+      ],
+      [
+        124,
+        253
+      ],
+      [
+        124.5,
+        253
+      ],
+      [
+        125,
+        252
+      ],
+      [
+        126,
+        252
+      ],
+      [
+        126,
+        251.5
+      ],
+      [
+        126.5,
+        251.5
+      ],
+      [
+        128,
+        249.5
+      ],
+      [
+        129,
+        249.5
+      ],
+      [
+        130,
+        248
+      ],
+      [
+        132,
+        247.5
+      ],
+      [
+        132.5,
+        246.5
+      ],
+      [
+        133.5,
+        246.5
+      ],
+      [
+        133.5,
+        246
+      ],
+      [
+        134.5,
+        246
+      ],
+      [
+        134.5,
+        245.5
+      ],
+      [
+        135.5,
+        245.5
+      ],
+      [
+        135.5,
+        245
+      ],
+      [
+        136.5,
+        245
+      ],
+      [
+        136.5,
+        244.5
+      ],
+      [
+        137.5,
+        244.5
+      ],
+      [
+        137.5,
+        244
+      ],
+      [
+        138.5,
+        244
+      ],
+      [
+        138.5,
+        243.5
+      ],
+      [
+        140,
+        243.5
+      ],
+      [
+        140,
+        243
+      ],
+      [
+        141,
+        243
+      ],
+      [
+        141,
+        242.5
+      ],
+      [
+        142.5,
+        242.5
+      ],
+      [
+        142.5,
+        242
+      ],
+      [
+        144,
+        242
+      ],
+      [
+        144,
+        241.5
+      ],
+      [
+        145.5,
+        241.5
+      ],
+      [
+        145.5,
+        241
+      ],
+      [
+        147,
+        241
+      ],
+      [
+        147,
+        240.5
+      ],
+      [
+        149,
+        240.5
+      ],
+      [
+        149,
+        240
+      ],
+      [
+        151,
+        240
+      ],
+      [
+        151,
+        239.5
+      ],
+      [
+        153,
+        239.5
+      ],
+      [
+        153,
+        239
+      ],
+      [
+        155,
+        239
+      ],
+      [
+        155,
+        238.5
+      ],
+      [
+        158.5,
+        238
+      ],
+      [
+        158.5,
+        239
+      ],
+      [
+        159.5,
+        239
+      ],
+      [
+        160,
+        240
+      ],
+      [
+        161,
+        240
+      ],
+      [
+        161,
+        240.5
+      ],
+      [
+        162,
+        240.5
+      ],
+      [
+        162,
+        241
+      ],
+      [
+        163,
+        241
+      ],
+      [
+        163,
+        241.5
+      ],
+      [
+        164.5,
+        241.5
+      ],
+      [
+        164.5,
+        242
+      ],
+      [
+        169,
+        242.5
+      ],
+      [
+        169,
+        243
+      ],
+      [
+        172,
+        243
+      ],
+      [
+        172,
+        243.5
+      ],
+      [
+        175,
+        243.5
+      ],
+      [
+        175,
+        244
+      ],
+      [
+        178,
+        244
+      ],
+      [
+        178,
+        244.5
+      ],
+      [
+        180.5,
+        244.5
+      ],
+      [
+        180.5,
+        245
+      ],
+      [
+        185,
+        246
+      ],
+      [
+        185,
+        246.5
+      ],
+      [
+        186,
+        246.5
+      ],
+      [
+        186,
+        247
+      ],
+      [
+        187.5,
+        247
+      ],
+      [
+        187.5,
+        247.5
+      ],
+      [
+        188.5,
+        247.5
+      ],
+      [
+        188.5,
+        248
+      ],
+      [
+        190,
+        248
+      ],
+      [
+        190,
+        248.5
+      ],
+      [
+        194.5,
+        249.5
+      ],
+      [
+        194.5,
+        250
+      ],
+      [
+        195.5,
+        250
+      ],
+      [
+        195.5,
+        250.5
+      ],
+      [
+        196.5,
+        250.5
+      ],
+      [
+        196.5,
+        251
+      ],
+      [
+        197.5,
+        251
+      ],
+      [
+        197.5,
+        251.5
+      ],
+      [
+        198.5,
+        251.5
+      ],
+      [
+        198.5,
+        252
+      ],
+      [
+        199.5,
+        252
+      ],
+      [
+        199.5,
+        252.5
+      ],
+      [
+        200.5,
+        252.5
+      ],
+      [
+        200.5,
+        253
+      ],
+      [
+        201.5,
+        253
+      ],
+      [
+        201.5,
+        253.5
+      ],
+      [
+        202.5,
+        253.5
+      ],
+      [
+        202.5,
+        254
+      ],
+      [
+        203.5,
+        254
+      ],
+      [
+        203.5,
+        254.5
+      ],
+      [
+        205,
+        254.5
+      ],
+      [
+        205,
+        255
+      ],
+      [
+        207,
+        255.5
+      ],
+      [
+        207.5,
+        256.5
+      ],
+      [
+        208.5,
+        256.5
+      ],
+      [
+        209,
+        257.5
+      ],
+      [
+        211,
+        258
+      ],
+      [
+        211.5,
+        259
+      ],
+      [
+        212.5,
+        259
+      ],
+      [
+        212.5,
+        259.5
+      ],
+      [
+        214,
+        260
+      ],
+      [
+        214.5,
+        261
+      ],
+      [
+        217.5,
+        262
+      ],
+      [
+        217.5,
+        262.5
+      ],
+      [
+        219,
+        263
+      ],
+      [
+        220,
+        264.5
+      ],
+      [
+        221,
+        264.5
+      ],
+      [
+        222.5,
+        266.5
+      ],
+      [
+        223.5,
+        266.5
+      ],
+      [
+        223.5,
+        267
+      ],
+      [
+        227,
+        270
+      ],
+      [
+        227,
+        271
+      ],
+      [
+        230.5,
+        274
+      ],
+      [
+        230.5,
+        275
+      ],
+      [
+        231.5,
+        275.5
+      ],
+      [
+        231.5,
+        276.5
+      ],
+      [
+        232.5,
+        277
+      ],
+      [
+        232.5,
+        278
+      ],
+      [
+        233,
+        278
+      ],
+      [
+        233.5,
+        279.5
+      ],
+      [
+        234,
+        279.5
+      ],
+      [
+        234,
+        281
+      ],
+      [
+        234.5,
+        281
+      ],
+      [
+        234.5,
+        282
+      ],
+      [
+        235,
+        282
+      ],
+      [
+        235,
+        283
+      ],
+      [
+        235.5,
+        283
+      ],
+      [
+        235.5,
+        284
+      ],
+      [
+        236,
+        284
+      ],
+      [
+        236,
+        286
+      ],
+      [
+        236.5,
+        286
+      ],
+      [
+        236.5,
+        288
+      ],
+      [
+        237,
+        288
+      ],
+      [
+        237.5,
+        294.5
+      ],
+      [
+        238,
+        294.5
+      ],
+      [
+        237.5,
+        302.5
+      ],
+      [
+        237,
+        302.5
+      ],
+      [
+        237,
+        304
+      ],
+      [
+        236.5,
+        304
+      ],
+      [
+        236.5,
+        306
+      ],
+      [
+        236,
+        306
+      ],
+      [
+        235.5,
+        309
+      ],
+      [
+        235,
+        309
+      ],
+      [
+        235,
+        310
+      ],
+      [
+        234.5,
+        310
+      ],
+      [
+        234.5,
+        311
+      ],
+      [
+        234,
+        311
+      ],
+      [
+        234,
+        312
+      ],
+      [
+        233.5,
+        312
+      ],
+      [
+        233.5,
+        313
+      ],
+      [
+        233,
+        313
+      ],
+      [
+        232,
+        316
+      ],
+      [
+        231,
+        316.5
+      ],
+      [
+        231,
+        317.5
+      ],
+      [
+        230,
+        318
+      ],
+      [
+        230,
+        319
+      ],
+      [
+        229.5,
+        319
+      ],
+      [
+        228,
+        321
+      ],
+      [
+        227,
+        321
+      ],
+      [
+        227,
+        321.5
+      ],
+      [
+        226.5,
+        321.5
+      ],
+      [
+        226.5,
+        322
+      ],
+      [
+        226,
+        322
+      ],
+      [
+        225.5,
+        322
+      ],
+      [
+        225.5,
+        322.5
+      ],
+      [
+        224,
+        323
+      ],
+      [
+        223.5,
+        324
+      ],
+      [
+        222.5,
+        324
+      ],
+      [
+        221.5,
+        325.5
+      ],
+      [
+        220.5,
+        325.5
+      ],
+      [
+        219,
+        327.5
+      ],
+      [
+        218,
+        327.5
+      ]
+    ]
+  },
+  "river": {
+    "id": "f-river-c05",
+    "points": [
+      [
+        130.75,
+        282.75
+      ],
+      [
+        130.75,
+        282.25
+      ],
+      [
+        130.75,
+        281.75
+      ],
+      [
+        130.75,
+        281.25
+      ],
+      [
+        130.75,
+        280.75
+      ],
+      [
+        131.25,
+        280.25
+      ],
+      [
+        131.25,
+        279.75
+      ],
+      [
+        131.25,
+        279.25
+      ],
+      [
+        131.25,
+        278.75
+      ],
+      [
+        131.75,
+        278.25
+      ],
+      [
+        131.75,
+        277.75
+      ],
+      [
+        132.25,
+        277.25
+      ],
+      [
+        132.25,
+        276.75
+      ],
+      [
+        132.25,
+        276.25
+      ],
+      [
+        132.75,
+        275.75
+      ],
+      [
+        132.75,
+        275.25
+      ],
+      [
+        132.75,
+        274.75
+      ],
+      [
+        132.75,
+        274.25
+      ],
+      [
+        133.25,
+        273.75
+      ],
+      [
+        133.25,
+        273.25
+      ],
+      [
+        133.25,
+        272.75
+      ],
+      [
+        133.75,
+        272.25
+      ],
+      [
+        133.75,
+        271.75
+      ],
+      [
+        133.75,
+        271.25
+      ],
+      [
+        134.25,
+        270.75
+      ],
+      [
+        134.25,
+        270.25
+      ],
+      [
+        134.75,
+        269.75
+      ],
+      [
+        135.25,
+        269.25
+      ],
+      [
+        135.25,
+        268.75
+      ],
+      [
+        135.75,
+        268.25
+      ],
+      [
+        135.75,
+        267.75
+      ],
+      [
+        136.25,
+        267.25
+      ],
+      [
+        136.25,
+        266.75
+      ],
+      [
+        136.75,
+        266.25
+      ],
+      [
+        136.75,
+        265.75
+      ],
+      [
+        137.25,
+        265.25
+      ],
+      [
+        137.25,
+        264.75
+      ],
+      [
+        137.25,
+        264.25
+      ],
+      [
+        137.25,
+        263.75
+      ],
+      [
+        137.25,
+        263.25
+      ],
+      [
+        137.75,
+        262.75
+      ],
+      [
+        137.75,
+        262.25
+      ],
+      [
+        137.75,
+        261.75
+      ],
+      [
+        138.25,
+        261.25
+      ],
+      [
+        138.75,
+        260.75
+      ],
+      [
+        139.25,
+        260.25
+      ],
+      [
+        139.75,
+        259.75
+      ],
+      [
+        139.75,
+        259.25
+      ],
+      [
+        139.75,
+        258.75
+      ],
+      [
+        139.75,
+        258.25
+      ],
+      [
+        139.75,
+        257.75
+      ],
+      [
+        139.75,
+        257.25
+      ],
+      [
+        140.25,
+        256.75
+      ],
+      [
+        140.25,
+        256.25
+      ],
+      [
+        140.25,
+        255.75
+      ],
+      [
+        140.75,
+        255.25
+      ],
+      [
+        140.75,
+        254.75
+      ],
+      [
+        141.25,
+        254.25
+      ],
+      [
+        141.25,
+        253.75
+      ],
+      [
+        141.25,
+        253.25
+      ],
+      [
+        141.75,
+        252.75
+      ],
+      [
+        141.75,
+        252.25
+      ],
+      [
+        142.25,
+        251.75
+      ],
+      [
+        142.75,
+        251.25
+      ],
+      [
+        142.75,
+        250.75
+      ],
+      [
+        143.25,
+        250.25
+      ],
+      [
+        143.25,
+        249.75
+      ],
+      [
+        143.75,
+        249.25
+      ],
+      [
+        143.75,
+        248.75
+      ],
+      [
+        144.25,
+        248.25
+      ],
+      [
+        144.75,
+        247.75
+      ],
+      [
+        145.25,
+        247.25
+      ],
+      [
+        145.75,
+        246.75
+      ],
+      [
+        146.25,
+        246.25
+      ],
+      [
+        146.75,
+        245.75
+      ],
+      [
+        147.25,
+        245.25
+      ],
+      [
+        147.75,
+        244.75
+      ],
+      [
+        148.25,
+        244.25
+      ],
+      [
+        148.75,
+        243.75
+      ],
+      [
+        149.25,
+        243.25
+      ],
+      [
+        149.75,
+        242.75
+      ],
+      [
+        150.25,
+        242.25
+      ],
+      [
+        150.75,
+        241.75
+      ],
+      [
+        151.25,
+        241.25
+      ],
+      [
+        151.75,
+        240.75
+      ],
+      [
+        152.25,
+        240.25
+      ],
+      [
+        152.75,
+        239.75
+      ]
+    ],
+    "name": null
+  },
+  "saltmire": null,
+  "iceEdge": null,
+  "terrainPatches": [],
+  "zones": [
+    {
+      "id": "c05/r01",
+      "name": "c05/r01",
+      "order": null,
+      "levelBand": [
+        32,
+        50
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r02",
+        "c05/r03",
+        "c05/r04",
+        "c05/r05"
+      ],
+      "provenance": "hearsay"
+    },
+    {
+      "id": "c05/r02",
+      "name": "c05/r02",
+      "order": null,
+      "levelBand": [
+        40,
+        58
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r01",
+        "c05/r05",
+        "c05/r07",
+        "c05/r09"
+      ],
+      "provenance": "inferred"
+    },
+    {
+      "id": "c05/r03",
+      "name": "c05/r03",
+      "order": null,
+      "levelBand": [
+        24,
+        40
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r01",
+        "c05/r04",
+        "c05/r10",
+        "c05/r11"
+      ],
+      "provenance": "hearsay"
+    },
+    {
+      "id": "c05/r04",
+      "name": "c05/r04",
+      "order": null,
+      "levelBand": [
+        32,
+        50
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r01",
+        "c05/r03",
+        "c05/r05",
+        "c05/r08",
+        "c05/r10"
+      ],
+      "provenance": "sworn"
+    },
+    {
+      "id": "c05/r05",
+      "name": "c05/r05",
+      "order": null,
+      "levelBand": [
+        32,
+        50
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r01",
+        "c05/r02",
+        "c05/r04",
+        "c05/r08",
+        "c05/r09"
+      ],
+      "provenance": "hearsay"
+    },
+    {
+      "id": "c05/r06",
+      "name": "c05/r06",
+      "order": 0,
+      "levelBand": [
+        46,
+        64
+      ],
+      "terrainKind": "sand-sea",
+      "town": null,
+      "labelAt": null,
+      "survey": "surveyed",
+      "areaKm2": 160,
+      "adjacent": [
+        "c05/r07",
+        "c05/r12"
+      ],
+      "provenance": null
+    },
+    {
+      "id": "c05/r07",
+      "name": "c05/r07",
+      "order": null,
+      "levelBand": [
+        40,
+        58
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 496.75,
+      "adjacent": [
+        "c05/r02",
+        "c05/r06",
+        "c05/r09",
+        "c05/r12",
+        "c05/r14"
+      ],
+      "provenance": "inferred"
+    },
+    {
+      "id": "c05/r08",
+      "name": "c05/r08",
+      "order": null,
+      "levelBand": [
+        32,
+        50
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r04",
+        "c05/r05",
+        "c05/r09",
+        "c05/r10",
+        "c05/r16",
+        "c05/r19"
+      ],
+      "provenance": "hearsay"
+    },
+    {
+      "id": "c05/r09",
+      "name": "c05/r09",
+      "order": null,
+      "levelBand": [
+        40,
+        58
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r02",
+        "c05/r05",
+        "c05/r07",
+        "c05/r08",
+        "c05/r13",
+        "c05/r14",
+        "c05/r16"
+      ],
+      "provenance": "hearsay"
+    },
+    {
+      "id": "c05/r10",
+      "name": "c05/r10",
+      "order": null,
+      "levelBand": [
+        32,
+        50
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r03",
+        "c05/r04",
+        "c05/r08",
+        "c05/r11",
+        "c05/r19"
+      ],
+      "provenance": "inferred"
+    },
+    {
+      "id": "c05/r11",
+      "name": "c05/r11",
+      "order": null,
+      "levelBand": [
+        32,
+        50
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r03",
+        "c05/r10",
+        "c05/r19",
+        "c05/r21"
+      ],
+      "provenance": "hearsay"
+    },
+    {
+      "id": "c05/r12",
+      "name": "c05/r12",
+      "order": null,
+      "levelBand": [
+        46,
+        64
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r06",
+        "c05/r07",
+        "c05/r14",
+        "c05/r18"
+      ],
+      "provenance": "inferred"
+    },
+    {
+      "id": "c05/r13",
+      "name": "c05/r13",
+      "order": null,
+      "levelBand": [
+        40,
+        58
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r09",
+        "c05/r14",
+        "c05/r16",
+        "c05/r22"
+      ],
+      "provenance": "inferred"
+    },
+    {
+      "id": "c05/r14",
+      "name": "c05/r14",
+      "order": null,
+      "levelBand": [
+        46,
+        64
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r07",
+        "c05/r09",
+        "c05/r12",
+        "c05/r13",
+        "c05/r18",
+        "c05/r20",
+        "c05/r22",
+        "c05/r26"
+      ],
+      "provenance": "sworn"
+    },
+    {
+      "id": "c05/r15",
+      "name": "c05/r15",
+      "order": 3,
+      "levelBand": [
+        32,
+        50
+      ],
+      "terrainKind": "sand-sea",
+      "town": "c05/s05",
+      "labelAt": null,
+      "survey": "surveyed",
+      "areaKm2": 160,
+      "adjacent": [
+        "c05/r16",
+        "c05/r19",
+        "c05/r24"
+      ],
+      "provenance": null
+    },
+    {
+      "id": "c05/r16",
+      "name": "c05/r16",
+      "order": null,
+      "levelBand": [
+        40,
+        58
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.5,
+      "adjacent": [
+        "c05/r08",
+        "c05/r09",
+        "c05/r13",
+        "c05/r15",
+        "c05/r17",
+        "c05/r19",
+        "c05/r22",
+        "c05/r24",
+        "c05/r25"
+      ],
+      "provenance": "sworn"
+    },
+    {
+      "id": "c05/r17",
+      "name": "c05/r17",
+      "order": 1,
+      "levelBand": [
+        40,
+        58
+      ],
+      "terrainKind": "sand-sea",
+      "town": "c05/s04",
+      "labelAt": null,
+      "survey": "surveyed",
+      "areaKm2": 160,
+      "adjacent": [
+        "c05/r16",
+        "c05/r22",
+        "c05/r25"
+      ],
+      "provenance": null
+    },
+    {
+      "id": "c05/r18",
+      "name": "c05/r18",
+      "order": null,
+      "levelBand": [
+        46,
+        64
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.25,
+      "adjacent": [
+        "c05/r12",
+        "c05/r14",
+        "c05/r20",
+        "c08/r02"
+      ],
+      "provenance": "inferred"
+    },
+    {
+      "id": "c05/r19",
+      "name": "c05/r19",
+      "order": null,
+      "levelBand": [
+        32,
+        50
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.25,
+      "adjacent": [
+        "c05/r08",
+        "c05/r10",
+        "c05/r11",
+        "c05/r15",
+        "c05/r16",
+        "c05/r21",
+        "c05/r23",
+        "c05/r24"
+      ],
+      "provenance": "hearsay"
+    },
+    {
+      "id": "c05/r20",
+      "name": "c05/r20",
+      "order": 2,
+      "levelBand": [
+        46,
+        64
+      ],
+      "terrainKind": "sand-sea",
+      "town": "c05/s02",
+      "labelAt": null,
+      "survey": "surveyed",
+      "areaKm2": 160,
+      "adjacent": [
+        "c05/r14",
+        "c05/r18",
+        "c05/r26",
+        "c08/r02"
+      ],
+      "provenance": null
+    },
+    {
+      "id": "c05/r21",
+      "name": "c05/r21",
+      "order": 5,
+      "levelBand": [
+        32,
+        50
+      ],
+      "terrainKind": "sand-sea",
+      "town": null,
+      "labelAt": null,
+      "survey": "surveyed",
+      "areaKm2": 160,
+      "adjacent": [
+        "c05/r11",
+        "c05/r19"
+      ],
+      "provenance": null
+    },
+    {
+      "id": "c05/r22",
+      "name": "c05/r22",
+      "order": null,
+      "levelBand": [
+        40,
+        58
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.25,
+      "adjacent": [
+        "c05/r13",
+        "c05/r14",
+        "c05/r16",
+        "c05/r17",
+        "c05/r25",
+        "c05/r26",
+        "c05/r27"
+      ],
+      "provenance": "hearsay"
+    },
+    {
+      "id": "c05/r23",
+      "name": "c05/r23",
+      "order": 4,
+      "levelBand": [
+        40,
+        58
+      ],
+      "terrainKind": "sand-sea",
+      "town": "c05/s07",
+      "labelAt": null,
+      "survey": "surveyed",
+      "areaKm2": 160,
+      "adjacent": [
+        "c05/r19",
+        "c05/r24"
+      ],
+      "provenance": null
+    },
+    {
+      "id": "c05/r24",
+      "name": "c05/r24",
+      "order": null,
+      "levelBand": [
+        40,
+        58
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.25,
+      "adjacent": [
+        "c05/r15",
+        "c05/r16",
+        "c05/r19",
+        "c05/r23",
+        "c05/r25",
+        "c05/r28"
+      ],
+      "provenance": "hearsay"
+    },
+    {
+      "id": "c05/r25",
+      "name": "c05/r25",
+      "order": null,
+      "levelBand": [
+        40,
+        58
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.25,
+      "adjacent": [
+        "c05/r16",
+        "c05/r17",
+        "c05/r22",
+        "c05/r24",
+        "c05/r27",
+        "c05/r28"
+      ],
+      "provenance": "sworn"
+    },
+    {
+      "id": "c05/r26",
+      "name": "c05/r26",
+      "order": null,
+      "levelBand": [
+        46,
+        64
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 470.25,
+      "adjacent": [
+        "c05/r14",
+        "c05/r20",
+        "c05/r22",
+        "c05/r27",
+        "c08/r02"
+      ],
+      "provenance": "inferred"
+    },
+    {
+      "id": "c05/r27",
+      "name": "c05/r27",
+      "order": null,
+      "levelBand": [
+        46,
+        64
+      ],
+      "terrainKind": null,
+      "town": null,
+      "labelAt": null,
+      "survey": "reported",
+      "areaKm2": 444,
+      "adjacent": [
+        "c05/r22",
+        "c05/r25",
+        "c05/r26",
+        "c05/r28"
+      ],
+      "provenance": "inferred"
+    },
+    {
+      "id": "c05/r28",
+      "name": "c05/r28",
+      "order": 6,
+      "levelBand": [
+        40,
+        58
+      ],
+      "terrainKind": "sand-sea",
+      "town": "c05/s01",
+      "labelAt": null,
+      "survey": "surveyed",
+      "areaKm2": 160,
+      "adjacent": [
+        "c05/r24",
+        "c05/r25",
+        "c05/r27"
+      ],
+      "provenance": null
+    }
+  ],
+  "towns": [],
+  "camps": [],
+  "roads": [],
+  "landmarks": [
+    {
+      "id": "c-lm-c05-desert-013e",
+      "name": "Fumeburn Barchan",
+      "at": null,
+      "region": "c05/r23",
+      "type": "sand-sheet",
+      "sizeKm": 26.27,
+      "handle": "c05/desert/h-73013e",
+      "glyph": "g-dune",
+      "properties": [],
+      "note": "Flat wind-laid sand with no dunes at all: easy going, and the same in every direction.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-0a09",
+      "name": "Siroccspar Waste",
+      "at": null,
+      "region": "c05/r17",
+      "type": "ventifact-field",
+      "sizeKm": 2.27,
+      "handle": "c05/desert/h-6a0a09",
+      "glyph": "g-playa",
+      "properties": [],
+      "note": "Ground littered with stones the blown sand has cut into facets and hard edges.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-0b9f",
+      "name": "Glasswind Yardang",
+      "at": [
+        137.75,
+        310.75
+      ],
+      "region": "c05/r15",
+      "type": "oasis-spring",
+      "sizeKm": 0.42,
+      "handle": "c05/desert/h-200b9f",
+      "glyph": "g-oasis",
+      "properties": [],
+      "note": "Water reaching the surface where nothing else does, and everything alive for miles at it.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-1560",
+      "name": "Pan within Ergreach",
+      "at": null,
+      "region": "c05/r21",
+      "type": "playa",
+      "sizeKm": 4.36,
+      "handle": "c05/desert/h-441560",
+      "glyph": "g-playa",
+      "properties": [],
+      "note": "A dry lake bed cracked to a tile pattern, sheet water for one week in a year.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-172a",
+      "name": "Dunewaste Barchan",
+      "at": null,
+      "region": "c05/r05",
+      "type": "transverse-dune-field",
+      "sizeKm": 8.73,
+      "handle": "c05/desert/h-73172a",
+      "glyph": "g-dune",
+      "properties": [],
+      "note": "Rank after rank of sand ridges set square across the wind, like a frozen swell.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-1ec4",
+      "name": "Pan under Fumepan",
+      "at": null,
+      "region": "c05/r17",
+      "type": "gypsum-dune",
+      "sizeKm": 4.39,
+      "handle": "c05/desert/h-421ec4",
+      "glyph": "g-dune",
+      "properties": [],
+      "note": "Dunes of pale crystal sand, cool to the hand where ordinary sand would burn.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-2b23",
+      "name": "Ashwater Yardang",
+      "at": null,
+      "region": "c05/r23",
+      "type": "transverse-dune-field",
+      "sizeKm": 9.88,
+      "handle": "c05/desert/h-522b23",
+      "glyph": "g-dune",
+      "properties": [],
+      "note": "Rank after rank of sand ridges set square across the wind, like a frozen swell.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-3558",
+      "name": "Pan within Emberpan",
+      "at": null,
+      "region": "c05/r15",
+      "type": "desert-pavement-reg",
+      "sizeKm": 10.73,
+      "handle": "c05/desert/h-083558",
+      "glyph": "g-playa",
+      "properties": [],
+      "note": "A floor of close-packed stones polished flat, the fine stuff all blown out between.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-4014",
+      "name": "Pan of the Thirstwaste",
+      "at": [
+        131.69,
+        327.32
+      ],
+      "region": "c05/r23",
+      "type": "seif-dune",
+      "sizeKm": 2.31,
+      "handle": "c05/desert/h-6d4014",
+      "glyph": "g-dune",
+      "properties": [],
+      "note": "A long sharp-crested ridge of sand lying with the wind rather than across it.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-45ef",
+      "name": "Sabkhwaste Yardang",
+      "at": null,
+      "region": "c05/r23",
+      "type": "erg-dune-sea",
+      "sizeKm": 36.18,
+      "handle": "c05/desert/h-1945ef",
+      "glyph": "g-dune",
+      "properties": [],
+      "note": "Sand to the horizon in ranks, each crest moving a little every year.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-47db",
+      "name": "Charreach Yardang",
+      "at": null,
+      "region": "c05/r21",
+      "type": "salt-pan-crust",
+      "sizeKm": 5.36,
+      "handle": "c05/desert/h-4e47db",
+      "glyph": "g-playa",
+      "properties": [],
+      "note": "A white glaring plain that crunches underfoot and bleeds brine where it breaks.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-487b",
+      "name": "Barchanwind Yardang",
+      "at": [
+        116.6,
+        305.97
+      ],
+      "region": "c05/r21",
+      "type": "seif-dune",
+      "sizeKm": 6.02,
+      "handle": "c05/desert/h-a1487b",
+      "glyph": "g-dune",
+      "properties": [],
+      "note": "A long sharp-crested ridge of sand lying with the wind rather than across it.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-5522",
+      "name": "Charburn Barchan",
+      "at": null,
+      "region": "c05/r28",
+      "type": "ventifact-field",
+      "sizeKm": 1.53,
+      "handle": "c05/desert/h-d85522",
+      "glyph": "g-playa",
+      "properties": [],
+      "note": "Ground littered with stones the blown sand has cut into facets and hard edges.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-617f",
+      "name": "Barchanwaste Yardang",
+      "at": null,
+      "region": "c05/r20",
+      "type": "sand-sheet",
+      "sizeKm": 11.64,
+      "handle": "c05/desert/h-c1617f",
+      "glyph": "g-dune",
+      "properties": [],
+      "note": "Flat wind-laid sand with no dunes at all: easy going, and the same in every direction.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-6897",
+      "name": "Barchanvent Yardang",
+      "at": null,
+      "region": "c05/r25",
+      "type": "nebkha-field",
+      "sizeKm": 1.56,
+      "handle": "c05/desert/h-336897",
+      "glyph": "g-dune",
+      "properties": [],
+      "note": "Hummocks of sand each anchored by one stubborn bush, scoured bare in between.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-828f",
+      "name": "Searwold Yardang",
+      "at": [
+        164.25,
+        312.25
+      ],
+      "region": "c05/r17",
+      "type": "oasis-spring",
+      "sizeKm": 0.17,
+      "handle": "c05/desert/h-bb828f",
+      "glyph": "g-oasis",
+      "properties": [],
+      "note": "Water reaching the surface where nothing else does, and everything alive for miles at it.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-910b",
+      "name": "Ashwold Yardang",
+      "at": [
+        152.86,
+        241.08
+      ],
+      "region": "c05/r01",
+      "type": "seif-dune",
+      "sizeKm": 5.78,
+      "handle": "c05/desert/h-26910b",
+      "glyph": "g-dune",
+      "properties": [],
+      "note": "A long sharp-crested ridge of sand lying with the wind rather than across it.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-9fb2",
+      "name": "Sabkhwold Barchan",
+      "at": [
+        150.25,
+        341.75
+      ],
+      "region": "c05/r28",
+      "type": "oasis-spring",
+      "sizeKm": 0.37,
+      "handle": "c05/desert/h-2d9fb2",
+      "glyph": "g-oasis",
+      "properties": [],
+      "note": "Water reaching the surface where nothing else does, and everything alive for miles at it.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-ac0d",
+      "name": "Charcone Waste",
+      "at": null,
+      "region": "c05/r10",
+      "type": "sand-sheet",
+      "sizeKm": 25.7,
+      "handle": "c05/desert/h-23ac0d",
+      "glyph": "g-dune",
+      "properties": [],
+      "note": "Flat wind-laid sand with no dunes at all: easy going, and the same in every direction.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-d641",
+      "name": "Siroccwold Waste",
+      "at": null,
+      "region": "c05/r28",
+      "type": "erg-dune-sea",
+      "sizeKm": 46.52,
+      "handle": "c05/desert/h-5bd641",
+      "glyph": "g-dune",
+      "properties": [],
+      "note": "Sand to the horizon in ranks, each crest moving a little every year.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-e167",
+      "name": "Regwaste Yardang",
+      "at": null,
+      "region": "c05/r28",
+      "type": "alluvial-bajada",
+      "sizeKm": 7.14,
+      "handle": "c05/desert/h-e2e167",
+      "glyph": "g-wadi",
+      "properties": [],
+      "note": "A continuous slope of merged gravel fans running the whole foot of a range.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-e1e0",
+      "name": "Pan under Yardflat",
+      "at": null,
+      "region": "c05/r21",
+      "type": "playa",
+      "sizeKm": 7.03,
+      "handle": "c05/desert/h-90e1e0",
+      "glyph": "g-playa",
+      "properties": [],
+      "note": "A dry lake bed cracked to a tile pattern, sheet water for one week in a year.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-e26e",
+      "name": "Yardspar Barchan",
+      "at": [
+        161.25,
+        352.75
+      ],
+      "region": "c05/r27",
+      "type": "oasis-spring",
+      "sizeKm": 0.51,
+      "handle": "c05/desert/h-1fe26e",
+      "glyph": "g-oasis",
+      "properties": [],
+      "note": "Water reaching the surface where nothing else does, and everything alive for miles at it.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-desert-e29e",
+      "name": "Regcone Barchan",
+      "at": null,
+      "region": "c05/r17",
+      "type": "sabkha",
+      "sizeKm": 3.04,
+      "handle": "c05/desert/h-dbe29e",
+      "glyph": "g-playa",
+      "properties": [],
+      "note": "A salt-crusted coastal flat where the water table sits just under a treacherous crust.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-07e7",
+      "name": "Ergspar Confluence",
+      "at": [
+        156.75,
+        349.75
+      ],
+      "region": "c05/r28",
+      "type": "plunge-pool",
+      "sizeKm": 0.1,
+      "handle": "c05/fluvial/h-af07e7",
+      "glyph": "g-falls",
+      "properties": [],
+      "note": "A deep scoured basin under a fall, cold and loud, with an undercut behind the water.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-1d26",
+      "name": "Searwater Reach",
+      "at": [
+        158.25,
+        351.25
+      ],
+      "region": "c05/r28",
+      "type": "confluence-bench",
+      "sizeKm": 0.82,
+      "handle": "c05/fluvial/h-2f1d26",
+      "glyph": "g-meander",
+      "properties": [],
+      "note": "The dry tongue of ground between two rivers, just before they become one.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-2d88",
+      "name": "Ford beyond Dunecone",
+      "at": null,
+      "region": "c05/r26",
+      "type": "delta",
+      "sizeKm": 12.56,
+      "handle": "c05/fluvial/h-e72d88",
+      "glyph": "g-delta",
+      "properties": [],
+      "note": "The river gives up and splits, laying its load down in a fan of shifting channels.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-2e9e",
+      "name": "Pumicreach Reach",
+      "at": [
+        164.25,
+        307.75
+      ],
+      "region": "c05/r17",
+      "type": "plunge-pool",
+      "sizeKm": 0.13,
+      "handle": "c05/fluvial/h-392e9e",
+      "glyph": "g-falls",
+      "properties": [],
+      "note": "A deep scoured basin under a fall, cold and loud, with an undercut behind the water.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-47ba",
+      "name": "Cindervent Reach",
+      "at": [
+        157.66,
+        311.64
+      ],
+      "region": "c05/r17",
+      "type": "floodplain-levee",
+      "sizeKm": 11.02,
+      "handle": "c05/fluvial/h-8347ba",
+      "glyph": "g-meander",
+      "properties": [],
+      "note": "A low natural bank along the water, built from what the floods dropped first.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-53cf",
+      "name": "Dunewind Confluence",
+      "at": null,
+      "region": "c05/r18",
+      "type": "meander-scroll-plain",
+      "sizeKm": 10.17,
+      "handle": "c05/fluvial/h-f053cf",
+      "glyph": "g-meander",
+      "properties": [],
+      "note": "Flat ground ribbed with the ghosts of old bends the river has already abandoned.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-5988",
+      "name": "Ford beyond Sabkhcone",
+      "at": [
+        167.26,
+        307.26
+      ],
+      "region": "c05/r17",
+      "type": "braided-channel",
+      "sizeKm": 5.69,
+      "handle": "c05/fluvial/h-fe5988",
+      "glyph": "g-meander",
+      "properties": [],
+      "note": "A wide bed of gravel bars where the river runs in a dozen shallow threads at once.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-6d57",
+      "name": "Barchanspar Confluence",
+      "at": [
+        166.33,
+        314.18
+      ],
+      "region": "c05/r17",
+      "type": "knickpoint-gorge",
+      "sizeKm": 5.58,
+      "handle": "c05/fluvial/h-b76d57",
+      "glyph": "g-falls",
+      "properties": [],
+      "note": "A steep-walled reach where the river is still cutting its way down through hard rock.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-741c",
+      "name": "Ford beyond Thirstpan",
+      "at": null,
+      "region": "c05/r15",
+      "type": "oxbow-lake",
+      "sizeKm": 0.47,
+      "handle": "c05/fluvial/h-8f741c",
+      "glyph": "g-meander",
+      "properties": [],
+      "note": "A cut-off loop of river left standing on its own, going quietly green at the edges.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-7fd7",
+      "name": "Sirocccone Confluence",
+      "at": null,
+      "region": "c05/r17",
+      "type": "delta",
+      "sizeKm": 12.84,
+      "handle": "c05/fluvial/h-617fd7",
+      "glyph": "g-delta",
+      "properties": [],
+      "note": "The river gives up and splits, laying its load down in a fan of shifting channels.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-93cf",
+      "name": "Emberwaste Confluence",
+      "at": [
+        156.75,
+        347.25
+      ],
+      "region": "c05/r28",
+      "type": "ford",
+      "sizeKm": 0.18,
+      "handle": "c05/fluvial/h-e293cf",
+      "glyph": "g-meander",
+      "properties": [],
+      "note": "A gravel shallow where the river spreads wide enough to walk, in the right season.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-a23b",
+      "name": "Regwold Confluence",
+      "at": null,
+      "region": "c05/r16",
+      "type": "alluvial-fan",
+      "sizeKm": 3.2,
+      "handle": "c05/fluvial/h-7aa23b",
+      "glyph": "g-fan",
+      "properties": [],
+      "note": "A spread of stone and grit laid out where a steep stream hits the flat and slows.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-aed2",
+      "name": "Ashwaste Reach",
+      "at": null,
+      "region": "c05/r15",
+      "type": "alluvial-fan",
+      "sizeKm": 3.95,
+      "handle": "c05/fluvial/h-29aed2",
+      "glyph": "g-fan",
+      "properties": [],
+      "note": "A spread of stone and grit laid out where a steep stream hits the flat and slows.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-b497",
+      "name": "Thirstwold Confluence",
+      "at": null,
+      "region": "c05/r17",
+      "type": "meander-scroll-plain",
+      "sizeKm": 6.6,
+      "handle": "c05/fluvial/h-5bb497",
+      "glyph": "g-meander",
+      "properties": [],
+      "note": "Flat ground ribbed with the ghosts of old bends the river has already abandoned.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-d3f7",
+      "name": "Pumicpan Confluence",
+      "at": null,
+      "region": "c05/r20",
+      "type": "delta",
+      "sizeKm": 10.06,
+      "handle": "c05/fluvial/h-0dd3f7",
+      "glyph": "g-delta",
+      "properties": [],
+      "note": "The river gives up and splits, laying its load down in a fan of shifting channels.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-e993",
+      "name": "Duneflat Confluence",
+      "at": null,
+      "region": "c05/r15",
+      "type": "anabranch-island",
+      "sizeKm": 2.26,
+      "handle": "c05/fluvial/h-07e993",
+      "glyph": "g-meander",
+      "properties": [],
+      "note": "A wooded island the river has split around and not yet decided to take back.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-fluvial-fc94",
+      "name": "Ford under Dunesea",
+      "at": null,
+      "region": "c05/r28",
+      "type": "alluvial-fan",
+      "sizeKm": 4.6,
+      "handle": "c05/fluvial/h-93fc94",
+      "glyph": "g-fan",
+      "properties": [],
+      "note": "A spread of stone and grit laid out where a steep stream hits the flat and slows.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-mountain-2332",
+      "name": "Ashvent Horn",
+      "at": [
+        125.25,
+        333.75
+      ],
+      "region": "c05/r23",
+      "type": "butte",
+      "sizeKm": 0.63,
+      "handle": "c05/mountain/h-ce2332",
+      "glyph": "g-mesa",
+      "properties": [],
+      "note": "The last stump of a table left standing after the rest of it wore away.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-mountain-2a48",
+      "name": "Spar past Regvent",
+      "at": null,
+      "region": "c05/r24",
+      "type": "massif-dome",
+      "sizeKm": 11.09,
+      "handle": "c05/mountain/h-f92a48",
+      "glyph": "g-peak",
+      "properties": [],
+      "note": "A single great swell of rock with all its valleys running off it like spokes.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-mountain-34e8",
+      "name": "Spar across Ergburn",
+      "at": [
+        105.88,
+        325.5
+      ],
+      "region": "c05/r21",
+      "type": "ridge-spine",
+      "sizeKm": 25.43,
+      "handle": "c05/mountain/h-1a34e8",
+      "glyph": "g-ridge",
+      "properties": [],
+      "note": "One unbroken backbone of rock; the only ways over it are the notches.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-mountain-3514",
+      "name": "Spar beyond Dunevent",
+      "at": null,
+      "region": "c05/r23",
+      "type": "massif-dome",
+      "sizeKm": 13.65,
+      "handle": "c05/mountain/h-e93514",
+      "glyph": "g-peak",
+      "properties": [],
+      "note": "A single great swell of rock with all its valleys running off it like spokes.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-mountain-4517",
+      "name": "Ashpan Rake",
+      "at": [
+        119.53,
+        325.59
+      ],
+      "region": "c05/r23",
+      "type": "cuesta",
+      "sizeKm": 9.01,
+      "handle": "c05/mountain/h-974517",
+      "glyph": "g-mesa",
+      "properties": [],
+      "note": "A long hill with one gentle back and one abrupt face, like a wave about to break.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-mountain-4baf",
+      "name": "Regwater Rake",
+      "at": [
+        155.4,
+        356.45
+      ],
+      "region": "c05/r28",
+      "type": "hogback",
+      "sizeKm": 11.26,
+      "handle": "c05/mountain/h-b74baf",
+      "glyph": "g-mesa",
+      "properties": [],
+      "note": "A sharp ridge of tilted strata standing at the same steep angle on both sides.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-mountain-521e",
+      "name": "Pumicwind Horn",
+      "at": [
+        132.27,
+        239.14
+      ],
+      "region": "c05/r03",
+      "type": "ridge-spine",
+      "sizeKm": 26.21,
+      "handle": "c05/mountain/h-9e521e",
+      "glyph": "g-ridge",
+      "properties": [],
+      "note": "One unbroken backbone of rock; the only ways over it are the notches.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-mountain-5323",
+      "name": "Fumewater Rake",
+      "at": [
+        126.75,
+        335.25
+      ],
+      "region": "c05/r23",
+      "type": "col-pass",
+      "sizeKm": 0.83,
+      "handle": "c05/mountain/h-d75323",
+      "glyph": "g-ridge",
+      "properties": [],
+      "note": "The low saddle between two summits: the crossing everyone uses, and everyone watches.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-mountain-55f9",
+      "name": "Sabkhwater Saddle",
+      "at": [
+        120.4,
+        329.4
+      ],
+      "region": "c05/r23",
+      "type": "plateau-scarp",
+      "sizeKm": 15.12,
+      "handle": "c05/mountain/h-5755f9",
+      "glyph": "g-mesa",
+      "properties": [],
+      "note": "The cliffed edge where the high ground stops and the low country begins.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-mountain-a74a",
+      "name": "Siroccburn Horn",
+      "at": [
+        123.01,
+        334.37
+      ],
+      "region": "c05/r23",
+      "type": "hogback",
+      "sizeKm": 12.42,
+      "handle": "c05/mountain/h-47a74a",
+      "glyph": "g-mesa",
+      "properties": [],
+      "note": "A sharp ridge of tilted strata standing at the same steep angle on both sides.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-mountain-c637",
+      "name": "Ergwind Rake",
+      "at": [
+        127.75,
+        336.25
+      ],
+      "region": "c05/r23",
+      "type": "saddle-notch",
+      "sizeKm": 0.5,
+      "handle": "c05/mountain/h-9ac637",
+      "glyph": "g-ridge",
+      "properties": [],
+      "note": "A shallow dip in a ridge line, the only place to cross without using hands.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-c05-mountain-cbf8",
+      "name": "Spar within Fumereach",
+      "at": [
+        155.25,
+        352.25
+      ],
+      "region": "c05/r28",
+      "type": "tectonic-cave",
+      "sizeKm": 0.09,
+      "handle": "c05/mountain/h-5fcbf8",
+      "glyph": "g-peak",
+      "properties": [],
+      "note": "A cave that is a split rather than a dissolved passage, opened when the rock moved.",
+      "labelAnchor": "north",
+      "prose": "frontier"
+    },
+    {
+      "id": "c-lm-the-one-wet-strip",
+      "name": "The One Wet Strip",
+      "at": [
+        134,
+        292
+      ],
+      "zone": null,
+      "properties": [],
+      "coasts": [],
+      "source": "world/civil/pinned/c-lm-the-one-wet-strip.json",
+      "region": null,
+      "sizeKm": null,
+      "type": "cuesta"
+    },
+    {
+      "id": "c-lm-thirstwold-erg",
+      "name": "Thirstwold Erg",
+      "at": [
+        192,
+        306
+      ],
+      "zone": null,
+      "properties": [],
+      "coasts": [],
+      "source": "world/civil/pinned/c-lm-thirstwold-erg.json",
+      "region": null,
+      "sizeKm": null,
+      "type": "erg-dune-sea"
+    }
+  ],
+  "dungeons": [
+    {
+      "id": "dungeon-coldreach-arete-shelters",
+      "name": "Coldreach Arete Shelters",
+      "at": null,
+      "region": "c05/r17",
+      "family": null,
+      "entranceType": "knickpoint-gorge",
+      "floors": 2,
+      "levelBand": [
+        32,
+        50
+      ],
+      "handle": "c05/fluvial/h-b76d57",
+      "properties": []
+    },
+    {
+      "id": "dungeon-lavatube-5",
+      "name": "Lava tube 6",
+      "at": [
+        155.25,
+        352.25
+      ],
+      "region": "c05/r28",
+      "family": "family-lavatube",
+      "entranceType": "tectonic-cave",
+      "floors": 3,
+      "levelBand": [
+        34,
+        40
+      ],
+      "handle": "c05/mountain/h-5fcbf8",
+      "properties": []
+    },
+    {
+      "id": "dungeon-lavatube-6",
+      "name": "Lava tube 7",
+      "at": [
+        110.25,
+        310.75
+      ],
+      "region": "c05/r21",
+      "family": "family-lavatube",
+      "entranceType": "tectonic-cave",
+      "floors": 3,
+      "levelBand": [
+        37,
+        43
+      ],
+      "handle": "c05/mountain/h-dfe080",
+      "properties": []
+    },
+    {
+      "id": "dungeon-meltwash-ice-caves",
+      "name": "Meltwash Ice Caves",
+      "at": [
+        134.25,
+        310.75
+      ],
+      "region": "c05/r15",
+      "family": null,
+      "entranceType": "plunge-pool",
+      "floors": 3,
+      "levelBand": [
+        24,
+        40
+      ],
+      "handle": "c05/fluvial/h-414ad4",
+      "properties": []
+    },
+    {
+      "id": "dungeon-necropolis-2",
+      "name": "Necropolis 3",
+      "at": null,
+      "region": "c05/r15",
+      "family": "family-necropolis",
+      "entranceType": "knickpoint-gorge",
+      "floors": 3,
+      "levelBand": [
+        49,
+        55
+      ],
+      "handle": "c05/fluvial/h-347f2e",
+      "properties": []
+    },
+    {
+      "id": "dungeon-stonemoor-ponor-throat",
+      "name": "Stonemoor Ponor Throat",
+      "at": [
+        224.75,
+        322.75
+      ],
+      "region": "c05/r20",
+      "family": null,
+      "entranceType": "plunge-pool",
+      "floors": 3,
+      "levelBand": [
+        32,
+        50
+      ],
+      "handle": "c05/fluvial/h-ddc30d",
+      "properties": []
+    },
+    {
+      "id": "dungeon-thirstwold-slot-canyons",
+      "name": "Thirstwold Slot Canyons",
+      "at": [
+        164.25,
+        307.75
+      ],
+      "region": "c05/r17",
+      "family": null,
+      "entranceType": "plunge-pool",
+      "floors": 3,
+      "levelBand": [
+        40,
+        58
+      ],
+      "handle": "c05/fluvial/h-392e9e",
+      "properties": []
+    },
+    {
+      "id": "dungeon-thirstwold-yardang-hollows",
+      "name": "Thirstwold Yardang Hollows",
+      "at": [
+        156.75,
+        349.75
+      ],
+      "region": "c05/r28",
+      "family": null,
+      "entranceType": "plunge-pool",
+      "floors": 2,
+      "levelBand": [
+        40,
+        58
+      ],
+      "handle": "c05/fluvial/h-af07e7",
+      "properties": []
+    }
+  ],
+  "instances": [
+    {
+      "id": "lf-c05-r01-0000",
+      "type": "sabkha",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 7.05
+    },
+    {
+      "id": "lf-c05-r01-0001",
+      "type": "playa",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 6.28
+    },
+    {
+      "id": "lf-c05-r01-0002",
+      "type": "barchan-dune",
+      "at": [
+        150.75,
+        251.25
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 0.62
+    },
+    {
+      "id": "lf-c05-r01-0003",
+      "type": "desert-varnish-scarp",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 2.08
+    },
+    {
+      "id": "lf-c05-r01-0004",
+      "type": "desert-pavement-reg",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 4.33
+    },
+    {
+      "id": "lf-c05-r01-0005",
+      "type": "salt-pan-crust",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 6.13
+    },
+    {
+      "id": "lf-c05-r01-0006",
+      "type": "gypsum-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 4.25
+    },
+    {
+      "id": "lf-c05-r01-0261",
+      "type": "oxbow-lake",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 0.35
+    },
+    {
+      "id": "lf-c05-r01-0285",
+      "type": "oxbow-lake",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 0.57
+    },
+    {
+      "id": "lf-c05-r02-0008",
+      "type": "transverse-dune-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 7.18
+    },
+    {
+      "id": "lf-c05-r02-0009",
+      "type": "ventifact-field",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 1.5
+    },
+    {
+      "id": "lf-c05-r02-0010",
+      "type": "wadi",
+      "at": null,
+      "glyph": "g-wadi",
+      "sizeKm": 12.41
+    },
+    {
+      "id": "lf-c05-r02-0011",
+      "type": "nebkha-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 0.99
+    },
+    {
+      "id": "lf-c05-r02-0012",
+      "type": "oasis-spring",
+      "at": [
+        172.75,
+        244.25
+      ],
+      "glyph": "g-oasis",
+      "sizeKm": 0.41
+    },
+    {
+      "id": "lf-c05-r02-0013",
+      "type": "zeugen-ridge",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 2.31
+    },
+    {
+      "id": "lf-c05-r02-0014",
+      "type": "alluvial-bajada",
+      "at": null,
+      "glyph": "g-wadi",
+      "sizeKm": 9.62
+    },
+    {
+      "id": "lf-c05-r02-0015",
+      "type": "erg-dune-sea",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 45.75
+    },
+    {
+      "id": "lf-c05-r02-0262",
+      "type": "transverse-dune-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 11.42
+    },
+    {
+      "id": "lf-c05-r02-0286",
+      "type": "transverse-dune-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 7.74
+    },
+    {
+      "id": "lf-c05-r03-0016",
+      "type": "draa",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 21.28
+    },
+    {
+      "id": "lf-c05-r03-0017",
+      "type": "sand-sheet",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 22.31
+    },
+    {
+      "id": "lf-c05-r03-0018",
+      "type": "star-dune",
+      "at": [
+        143.25,
+        242.75
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 0.99
+    },
+    {
+      "id": "lf-c05-r03-0019",
+      "type": "avalanche-chute",
+      "at": null,
+      "glyph": "g-scree",
+      "sizeKm": 2.48
+    },
+    {
+      "id": "lf-c05-r03-0021",
+      "type": "plateau-scarp",
+      "at": null,
+      "glyph": "g-mesa",
+      "sizeKm": 5.1
+    },
+    {
+      "id": "lf-c05-r03-0022",
+      "type": "barchan-dune",
+      "at": [
+        131.75,
+        250.75
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 0.22
+    },
+    {
+      "id": "lf-c05-r03-0023",
+      "type": "gypsum-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 3.99
+    },
+    {
+      "id": "lf-c05-r03-0263",
+      "type": "draa",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 29.49
+    },
+    {
+      "id": "lf-c05-r03-0287",
+      "type": "draa",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 27.67
+    },
+    {
+      "id": "lf-c05-r04-0024",
+      "type": "desert-pavement-reg",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 13.66
+    },
+    {
+      "id": "lf-c05-r04-0025",
+      "type": "delta",
+      "at": null,
+      "glyph": "g-delta",
+      "sizeKm": 11.69
+    },
+    {
+      "id": "lf-c05-r04-0026",
+      "type": "nebkha-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 0.79
+    },
+    {
+      "id": "lf-c05-r04-0027",
+      "type": "sabkha",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 4.4
+    },
+    {
+      "id": "lf-c05-r04-0028",
+      "type": "meander-scroll-plain",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 6.09
+    },
+    {
+      "id": "lf-c05-r04-0029",
+      "type": "seif-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 6.34
+    },
+    {
+      "id": "lf-c05-r04-0030",
+      "type": "transverse-dune-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 13.32
+    },
+    {
+      "id": "lf-c05-r04-0031",
+      "type": "plunge-pool",
+      "at": [
+        139.25,
+        267.25
+      ],
+      "glyph": "g-falls",
+      "sizeKm": 0.12
+    },
+    {
+      "id": "lf-c05-r04-0264",
+      "type": "desert-pavement-reg",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 11.28
+    },
+    {
+      "id": "lf-c05-r04-0288",
+      "type": "desert-pavement-reg",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 17.35
+    },
+    {
+      "id": "lf-c05-r05-0032",
+      "type": "transverse-dune-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 10.71
+    },
+    {
+      "id": "lf-c05-r05-0033",
+      "type": "barchan-dune",
+      "at": [
+        173.75,
+        252.75
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 0.34
+    },
+    {
+      "id": "lf-c05-r05-0034",
+      "type": "braided-channel",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 7.1
+    },
+    {
+      "id": "lf-c05-r05-0035",
+      "type": "salt-pan-crust",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 3.59
+    },
+    {
+      "id": "lf-c05-r05-0036",
+      "type": "meander-scroll-plain",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 11.9
+    },
+    {
+      "id": "lf-c05-r05-0037",
+      "type": "floodplain-levee",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 8.49
+    },
+    {
+      "id": "lf-c05-r05-0038",
+      "type": "wadi",
+      "at": null,
+      "glyph": "g-wadi",
+      "sizeKm": 5.96
+    },
+    {
+      "id": "lf-c05-r05-0039",
+      "type": "anabranch-island",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 1.33
+    },
+    {
+      "id": "lf-c05-r05-0265",
+      "type": "transverse-dune-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 2.94
+    },
+    {
+      "id": "lf-c05-r07-0040",
+      "type": "delta",
+      "at": null,
+      "glyph": "g-delta",
+      "sizeKm": 11.34
+    },
+    {
+      "id": "lf-c05-r07-0041",
+      "type": "confluence-bench",
+      "at": [
+        202.75,
+        268.75
+      ],
+      "glyph": "g-meander",
+      "sizeKm": 0.93
+    },
+    {
+      "id": "lf-c05-r07-0042",
+      "type": "floodplain-levee",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 8.37
+    },
+    {
+      "id": "lf-c05-r07-0043",
+      "type": "plunge-pool",
+      "at": [
+        203.25,
+        267.75
+      ],
+      "glyph": "g-falls",
+      "sizeKm": 0.23
+    },
+    {
+      "id": "lf-c05-r07-0044",
+      "type": "river-terrace",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 2.26
+    },
+    {
+      "id": "lf-c05-r07-0045",
+      "type": "oxbow-lake",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 0.39
+    },
+    {
+      "id": "lf-c05-r07-0046",
+      "type": "anabranch-island",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 0.99
+    },
+    {
+      "id": "lf-c05-r07-0047",
+      "type": "braided-channel",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 3.22
+    },
+    {
+      "id": "lf-c05-r07-0266",
+      "type": "delta",
+      "at": null,
+      "glyph": "g-delta",
+      "sizeKm": 3.78
+    },
+    {
+      "id": "lf-c05-r07-0290",
+      "type": "delta",
+      "at": null,
+      "glyph": "g-delta",
+      "sizeKm": 18.68
+    },
+    {
+      "id": "lf-c05-r08-0048",
+      "type": "alluvial-fan",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 5.67
+    },
+    {
+      "id": "lf-c05-r08-0049",
+      "type": "river-terrace",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 4.34
+    },
+    {
+      "id": "lf-c05-r08-0050",
+      "type": "oxbow-lake",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 0.43
+    },
+    {
+      "id": "lf-c05-r08-0051",
+      "type": "confluence-bench",
+      "at": [
+        164.25,
+        276.25
+      ],
+      "glyph": "g-meander",
+      "sizeKm": 0.92
+    },
+    {
+      "id": "lf-c05-r08-0052",
+      "type": "floodplain-levee",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 3.72
+    },
+    {
+      "id": "lf-c05-r08-0053",
+      "type": "braided-channel",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 3.61
+    },
+    {
+      "id": "lf-c05-r08-0054",
+      "type": "knickpoint-gorge",
+      "at": null,
+      "glyph": "g-falls",
+      "sizeKm": 1.2
+    },
+    {
+      "id": "lf-c05-r08-0055",
+      "type": "delta",
+      "at": null,
+      "glyph": "g-delta",
+      "sizeKm": 12.96
+    },
+    {
+      "id": "lf-c05-r08-0267",
+      "type": "alluvial-fan",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 5.34
+    },
+    {
+      "id": "lf-c05-r08-0291",
+      "type": "alluvial-fan",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 5.4
+    },
+    {
+      "id": "lf-c05-r09-0056",
+      "type": "floodplain-levee",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 4.34
+    },
+    {
+      "id": "lf-c05-r09-0057",
+      "type": "alluvial-fan",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 4.32
+    },
+    {
+      "id": "lf-c05-r09-0058",
+      "type": "barchan-dune",
+      "at": [
+        181.25,
+        292.25
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 0.44
+    },
+    {
+      "id": "lf-c05-r09-0059",
+      "type": "sabkha",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 3.3
+    },
+    {
+      "id": "lf-c05-r09-0060",
+      "type": "anabranch-island",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 0.55
+    },
+    {
+      "id": "lf-c05-r09-0061",
+      "type": "braided-channel",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 9.7
+    },
+    {
+      "id": "lf-c05-r09-0062",
+      "type": "meander-scroll-plain",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 8.85
+    },
+    {
+      "id": "lf-c05-r09-0063",
+      "type": "delta",
+      "at": null,
+      "glyph": "g-delta",
+      "sizeKm": 3.23
+    },
+    {
+      "id": "lf-c05-r09-0268",
+      "type": "floodplain-levee",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 4.89
+    },
+    {
+      "id": "lf-c05-r09-0292",
+      "type": "floodplain-levee",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 4.87
+    },
+    {
+      "id": "lf-c05-r10-0064",
+      "type": "gypsum-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 6.61
+    },
+    {
+      "id": "lf-c05-r10-0066",
+      "type": "river-terrace",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 4.85
+    },
+    {
+      "id": "lf-c05-r10-0067",
+      "type": "alluvial-bajada",
+      "at": null,
+      "glyph": "g-wadi",
+      "sizeKm": 1.67
+    },
+    {
+      "id": "lf-c05-r10-0068",
+      "type": "erg-dune-sea",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 27.49
+    },
+    {
+      "id": "lf-c05-r10-0069",
+      "type": "oxbow-lake",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 0.55
+    },
+    {
+      "id": "lf-c05-r10-0070",
+      "type": "desert-varnish-scarp",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 2
+    },
+    {
+      "id": "lf-c05-r10-0071",
+      "type": "knickpoint-gorge",
+      "at": null,
+      "glyph": "g-falls",
+      "sizeKm": 4.58
+    },
+    {
+      "id": "lf-c05-r10-0269",
+      "type": "gypsum-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 3.78
+    },
+    {
+      "id": "lf-c05-r10-0293",
+      "type": "gypsum-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 6.83
+    },
+    {
+      "id": "lf-c05-r11-0072",
+      "type": "tectonic-cave",
+      "at": [
+        108.25,
+        299.25
+      ],
+      "glyph": "g-peak",
+      "sizeKm": 0.18
+    },
+    {
+      "id": "lf-c05-r11-0073",
+      "type": "erg-dune-sea",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 11.57
+    },
+    {
+      "id": "lf-c05-r11-0074",
+      "type": "ventifact-field",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 0.78
+    },
+    {
+      "id": "lf-c05-r11-0075",
+      "type": "playa",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 10.75
+    },
+    {
+      "id": "lf-c05-r11-0076",
+      "type": "butte",
+      "at": [
+        112.25,
+        277.25
+      ],
+      "glyph": "g-mesa",
+      "sizeKm": 0.7
+    },
+    {
+      "id": "lf-c05-r11-0077",
+      "type": "star-dune",
+      "at": [
+        111.75,
+        290.25
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 0.23
+    },
+    {
+      "id": "lf-c05-r11-0078",
+      "type": "gypsum-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 4.82
+    },
+    {
+      "id": "lf-c05-r11-0079",
+      "type": "plateau-scarp",
+      "at": null,
+      "glyph": "g-mesa",
+      "sizeKm": 14.66
+    },
+    {
+      "id": "lf-c05-r11-0270",
+      "type": "tectonic-cave",
+      "at": [
+        111.25,
+        278.75
+      ],
+      "glyph": "g-peak",
+      "sizeKm": 0.22
+    },
+    {
+      "id": "lf-c05-r11-0294",
+      "type": "tectonic-cave",
+      "at": [
+        108.25,
+        300.75
+      ],
+      "glyph": "g-peak",
+      "sizeKm": 0.28
+    },
+    {
+      "id": "lf-c05-r13-0080",
+      "type": "erg-dune-sea",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 46.06
+    },
+    {
+      "id": "lf-c05-r13-0081",
+      "type": "playa",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 5.17
+    },
+    {
+      "id": "lf-c05-r13-0082",
+      "type": "oasis-spring",
+      "at": [
+        177.25,
+        309.25
+      ],
+      "glyph": "g-oasis",
+      "sizeKm": 0.69
+    },
+    {
+      "id": "lf-c05-r13-0083",
+      "type": "sand-sheet",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 22.34
+    },
+    {
+      "id": "lf-c05-r13-0084",
+      "type": "nebkha-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 1.49
+    },
+    {
+      "id": "lf-c05-r13-0085",
+      "type": "zeugen-ridge",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 2.66
+    },
+    {
+      "id": "lf-c05-r13-0086",
+      "type": "seif-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 3.82
+    },
+    {
+      "id": "lf-c05-r13-0087",
+      "type": "star-dune",
+      "at": [
+        175.75,
+        300.25
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 1.8
+    },
+    {
+      "id": "lf-c05-r13-0271",
+      "type": "erg-dune-sea",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 21.55
+    },
+    {
+      "id": "lf-c05-r13-0295",
+      "type": "erg-dune-sea",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 29.65
+    },
+    {
+      "id": "lf-c05-r14-0088",
+      "type": "desert-varnish-scarp",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 2.17
+    },
+    {
+      "id": "lf-c05-r14-0089",
+      "type": "wadi",
+      "at": null,
+      "glyph": "g-wadi",
+      "sizeKm": 7.4
+    },
+    {
+      "id": "lf-c05-r14-0090",
+      "type": "playa",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 7.11
+    },
+    {
+      "id": "lf-c05-r14-0091",
+      "type": "transverse-dune-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 6.46
+    },
+    {
+      "id": "lf-c05-r14-0092",
+      "type": "ventifact-field",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 1.07
+    },
+    {
+      "id": "lf-c05-r14-0093",
+      "type": "zeugen-ridge",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 0.77
+    },
+    {
+      "id": "lf-c05-r14-0094",
+      "type": "seif-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 5.8
+    },
+    {
+      "id": "lf-c05-r14-0095",
+      "type": "sand-sheet",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 12.36
+    },
+    {
+      "id": "lf-c05-r14-0272",
+      "type": "desert-varnish-scarp",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 3.38
+    },
+    {
+      "id": "lf-c05-r14-0296",
+      "type": "desert-varnish-scarp",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 3.43
+    },
+    {
+      "id": "lf-c05-r15-0096",
+      "type": "ford",
+      "at": [
+        135.75,
+        312.25
+      ],
+      "glyph": "g-meander",
+      "sizeKm": 0.35
+    },
+    {
+      "id": "lf-c05-r15-0097",
+      "type": "nebkha-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 2.64
+    },
+    {
+      "id": "lf-c05-r15-0098",
+      "type": "sand-sheet",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 15.17
+    },
+    {
+      "id": "lf-c05-r15-0099",
+      "type": "erg-dune-sea",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 32.72
+    },
+    {
+      "id": "lf-c05-r15-0102",
+      "type": "delta",
+      "at": null,
+      "glyph": "g-delta",
+      "sizeKm": 9.03
+    },
+    {
+      "id": "lf-c05-r15-0104",
+      "type": "braided-channel",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 8.14
+    },
+    {
+      "id": "lf-c05-r15-0105",
+      "type": "confluence-bench",
+      "at": [
+        133.25,
+        308.75
+      ],
+      "glyph": "g-meander",
+      "sizeKm": 0.82
+    },
+    {
+      "id": "lf-c05-r15-0107",
+      "type": "river-terrace",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 6.66
+    },
+    {
+      "id": "lf-c05-r15-0108",
+      "type": "floodplain-levee",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 9.04
+    },
+    {
+      "id": "lf-c05-r15-0109",
+      "type": "zeugen-ridge",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 1.9
+    },
+    {
+      "id": "lf-c05-r15-0110",
+      "type": "plunge-pool",
+      "at": [
+        134.25,
+        310.75
+      ],
+      "glyph": "g-falls",
+      "sizeKm": 0.17
+    },
+    {
+      "id": "lf-c05-r15-0111",
+      "type": "transverse-dune-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 7.58
+    },
+    {
+      "id": "lf-c05-r15-0112",
+      "type": "knickpoint-gorge",
+      "at": null,
+      "glyph": "g-falls",
+      "sizeKm": 2.45
+    },
+    {
+      "id": "lf-c05-r15-0113",
+      "type": "meander-scroll-plain",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 9.59
+    },
+    {
+      "id": "lf-c05-r15-0256",
+      "type": "ford",
+      "at": [
+        133.75,
+        309.75
+      ],
+      "glyph": "g-meander",
+      "sizeKm": 0.24
+    },
+    {
+      "id": "lf-c05-r15-0280",
+      "type": "nebkha-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 0.79
+    },
+    {
+      "id": "lf-c05-r16-0115",
+      "type": "knickpoint-gorge",
+      "at": null,
+      "glyph": "g-falls",
+      "sizeKm": 2.5
+    },
+    {
+      "id": "lf-c05-r16-0116",
+      "type": "wadi",
+      "at": null,
+      "glyph": "g-wadi",
+      "sizeKm": 13.8
+    },
+    {
+      "id": "lf-c05-r16-0117",
+      "type": "meander-scroll-plain",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 7.22
+    },
+    {
+      "id": "lf-c05-r16-0118",
+      "type": "salt-pan-crust",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 4.44
+    },
+    {
+      "id": "lf-c05-r16-0119",
+      "type": "oxbow-lake",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 0.48
+    },
+    {
+      "id": "lf-c05-r16-0121",
+      "type": "oasis-spring",
+      "at": [
+        162.25,
+        299.75
+      ],
+      "glyph": "g-oasis",
+      "sizeKm": 0.62
+    },
+    {
+      "id": "lf-c05-r16-0122",
+      "type": "floodplain-levee",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 6.49
+    },
+    {
+      "id": "lf-c05-r16-0273",
+      "type": "knickpoint-gorge",
+      "at": null,
+      "glyph": "g-falls",
+      "sizeKm": 5.17
+    },
+    {
+      "id": "lf-c05-r16-0297",
+      "type": "knickpoint-gorge",
+      "at": null,
+      "glyph": "g-falls",
+      "sizeKm": 5.89
+    },
+    {
+      "id": "lf-c05-r17-0124",
+      "type": "star-dune",
+      "at": [
+        158.25,
+        312.75
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 1.09
+    },
+    {
+      "id": "lf-c05-r17-0126",
+      "type": "playa",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 5.97
+    },
+    {
+      "id": "lf-c05-r17-0130",
+      "type": "ford",
+      "at": [
+        163.25,
+        318.75
+      ],
+      "glyph": "g-meander",
+      "sizeKm": 0.18
+    },
+    {
+      "id": "lf-c05-r17-0133",
+      "type": "river-terrace",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 4.67
+    },
+    {
+      "id": "lf-c05-r17-0135",
+      "type": "alluvial-fan",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 3.98
+    },
+    {
+      "id": "lf-c05-r17-0136",
+      "type": "barchan-dune",
+      "at": [
+        167.75,
+        307.25
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 0.48
+    },
+    {
+      "id": "lf-c05-r17-0138",
+      "type": "oxbow-lake",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 0.31
+    },
+    {
+      "id": "lf-c05-r17-0139",
+      "type": "anabranch-island",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 1.23
+    },
+    {
+      "id": "lf-c05-r17-0141",
+      "type": "confluence-bench",
+      "at": [
+        163.25,
+        306.25
+      ],
+      "glyph": "g-meander",
+      "sizeKm": 0.73
+    },
+    {
+      "id": "lf-c05-r17-0257",
+      "type": "meander-scroll-plain",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 13.77
+    },
+    {
+      "id": "lf-c05-r17-0281",
+      "type": "star-dune",
+      "at": [
+        161.75,
+        307.75
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 1.23
+    },
+    {
+      "id": "lf-c05-r19-0143",
+      "type": "braided-channel",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 6.08
+    },
+    {
+      "id": "lf-c05-r19-0144",
+      "type": "sabkha",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 1.09
+    },
+    {
+      "id": "lf-c05-r19-0145",
+      "type": "oxbow-lake",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 0.32
+    },
+    {
+      "id": "lf-c05-r19-0146",
+      "type": "knickpoint-gorge",
+      "at": null,
+      "glyph": "g-falls",
+      "sizeKm": 2.16
+    },
+    {
+      "id": "lf-c05-r19-0147",
+      "type": "massif-dome",
+      "at": null,
+      "glyph": "g-peak",
+      "sizeKm": 21.96
+    },
+    {
+      "id": "lf-c05-r19-0148",
+      "type": "gypsum-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 4.05
+    },
+    {
+      "id": "lf-c05-r19-0149",
+      "type": "foothill-belt",
+      "at": null,
+      "glyph": "g-ridge",
+      "sizeKm": 8.73
+    },
+    {
+      "id": "lf-c05-r19-0150",
+      "type": "mesa",
+      "at": null,
+      "glyph": "g-mesa",
+      "sizeKm": 6.68
+    },
+    {
+      "id": "lf-c05-r19-0274",
+      "type": "sabkha",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 7.27
+    },
+    {
+      "id": "lf-c05-r19-0298",
+      "type": "sabkha",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 1.23
+    },
+    {
+      "id": "lf-c05-r20-0152",
+      "type": "floodplain-levee",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 3.93
+    },
+    {
+      "id": "lf-c05-r20-0154",
+      "type": "ford",
+      "at": [
+        225.75,
+        321.75
+      ],
+      "glyph": "g-meander",
+      "sizeKm": 0.13
+    },
+    {
+      "id": "lf-c05-r20-0155",
+      "type": "braided-channel",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 5.92
+    },
+    {
+      "id": "lf-c05-r20-0156",
+      "type": "river-terrace",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 3.46
+    },
+    {
+      "id": "lf-c05-r20-0157",
+      "type": "plunge-pool",
+      "at": [
+        224.75,
+        322.75
+      ],
+      "glyph": "g-falls",
+      "sizeKm": 0.17
+    },
+    {
+      "id": "lf-c05-r20-0158",
+      "type": "meander-scroll-plain",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 10.19
+    },
+    {
+      "id": "lf-c05-r21-0159",
+      "type": "hogback",
+      "at": null,
+      "glyph": "g-mesa",
+      "sizeKm": 9.51
+    },
+    {
+      "id": "lf-c05-r21-0160",
+      "type": "playa",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 3.34
+    },
+    {
+      "id": "lf-c05-r21-0162",
+      "type": "summit-pyramid",
+      "at": [
+        114.25,
+        321.25
+      ],
+      "glyph": "g-peak",
+      "sizeKm": 1.15
+    },
+    {
+      "id": "lf-c05-r21-0163",
+      "type": "cuesta",
+      "at": null,
+      "glyph": "g-mesa",
+      "sizeKm": 12.94
+    },
+    {
+      "id": "lf-c05-r21-0164",
+      "type": "gypsum-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 1.29
+    },
+    {
+      "id": "lf-c05-r21-0165",
+      "type": "col-pass",
+      "at": [
+        113.75,
+        319.75
+      ],
+      "glyph": "g-ridge",
+      "sizeKm": 0.36
+    },
+    {
+      "id": "lf-c05-r21-0166",
+      "type": "wadi",
+      "at": null,
+      "glyph": "g-wadi",
+      "sizeKm": 15.72
+    },
+    {
+      "id": "lf-c05-r21-0167",
+      "type": "plateau-scarp",
+      "at": null,
+      "glyph": "g-mesa",
+      "sizeKm": 21.51
+    },
+    {
+      "id": "lf-c05-r21-0168",
+      "type": "erg-dune-sea",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 23.89
+    },
+    {
+      "id": "lf-c05-r21-0169",
+      "type": "foothill-belt",
+      "at": null,
+      "glyph": "g-ridge",
+      "sizeKm": 16.89
+    },
+    {
+      "id": "lf-c05-r21-0170",
+      "type": "star-dune",
+      "at": [
+        114.75,
+        312.25
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 0.82
+    },
+    {
+      "id": "lf-c05-r21-0171",
+      "type": "barchan-dune",
+      "at": [
+        117.25,
+        312.25
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 0.21
+    },
+    {
+      "id": "lf-c05-r21-0173",
+      "type": "saddle-notch",
+      "at": [
+        110.25,
+        312.25
+      ],
+      "glyph": "g-ridge",
+      "sizeKm": 0.56
+    },
+    {
+      "id": "lf-c05-r21-0174",
+      "type": "tectonic-cave",
+      "at": [
+        110.25,
+        310.75
+      ],
+      "glyph": "g-peak",
+      "sizeKm": 0.25
+    },
+    {
+      "id": "lf-c05-r21-0176",
+      "type": "sand-sheet",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 9.87
+    },
+    {
+      "id": "lf-c05-r21-0177",
+      "type": "rockfall-apron",
+      "at": null,
+      "glyph": "g-scree",
+      "sizeKm": 0.89
+    },
+    {
+      "id": "lf-c05-r22-0178",
+      "type": "sand-sheet",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 16.38
+    },
+    {
+      "id": "lf-c05-r22-0179",
+      "type": "gypsum-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 3.36
+    },
+    {
+      "id": "lf-c05-r22-0180",
+      "type": "river-terrace",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 4.13
+    },
+    {
+      "id": "lf-c05-r22-0181",
+      "type": "desert-pavement-reg",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 12.22
+    },
+    {
+      "id": "lf-c05-r22-0182",
+      "type": "braided-channel",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 2.89
+    },
+    {
+      "id": "lf-c05-r22-0183",
+      "type": "star-dune",
+      "at": [
+        170.75,
+        318.25
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 1.38
+    },
+    {
+      "id": "lf-c05-r22-0184",
+      "type": "plunge-pool",
+      "at": [
+        179.75,
+        333.75
+      ],
+      "glyph": "g-falls",
+      "sizeKm": 0.05
+    },
+    {
+      "id": "lf-c05-r22-0185",
+      "type": "confluence-bench",
+      "at": [
+        175.25,
+        324.25
+      ],
+      "glyph": "g-meander",
+      "sizeKm": 0.94
+    },
+    {
+      "id": "lf-c05-r22-0275",
+      "type": "sand-sheet",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 25.07
+    },
+    {
+      "id": "lf-c05-r22-0299",
+      "type": "sand-sheet",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 14.12
+    },
+    {
+      "id": "lf-c05-r23-0186",
+      "type": "zeugen-ridge",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 1.89
+    },
+    {
+      "id": "lf-c05-r23-0188",
+      "type": "desert-pavement-reg",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 9.44
+    },
+    {
+      "id": "lf-c05-r23-0190",
+      "type": "wadi",
+      "at": null,
+      "glyph": "g-wadi",
+      "sizeKm": 11.56
+    },
+    {
+      "id": "lf-c05-r23-0192",
+      "type": "foothill-belt",
+      "at": null,
+      "glyph": "g-ridge",
+      "sizeKm": 16.92
+    },
+    {
+      "id": "lf-c05-r23-0194",
+      "type": "salt-pan-crust",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 5.52
+    },
+    {
+      "id": "lf-c05-r23-0195",
+      "type": "ridge-spine",
+      "at": null,
+      "glyph": "g-ridge",
+      "sizeKm": 34.18
+    },
+    {
+      "id": "lf-c05-r23-0197",
+      "type": "draa",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 19.89
+    },
+    {
+      "id": "lf-c05-r23-0200",
+      "type": "sabkha",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 3.83
+    },
+    {
+      "id": "lf-c05-r23-0259",
+      "type": "zeugen-ridge",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 2.42
+    },
+    {
+      "id": "lf-c05-r23-0283",
+      "type": "zeugen-ridge",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 2.36
+    },
+    {
+      "id": "lf-c05-r24-0205",
+      "type": "talus-cone",
+      "at": null,
+      "glyph": "g-scree",
+      "sizeKm": 0.27
+    },
+    {
+      "id": "lf-c05-r24-0206",
+      "type": "ridge-spine",
+      "at": null,
+      "glyph": "g-ridge",
+      "sizeKm": 25.98
+    },
+    {
+      "id": "lf-c05-r24-0207",
+      "type": "zeugen-ridge",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 1.16
+    },
+    {
+      "id": "lf-c05-r24-0208",
+      "type": "star-dune",
+      "at": [
+        135.75,
+        322.25
+      ],
+      "glyph": "g-dune",
+      "sizeKm": 0.58
+    },
+    {
+      "id": "lf-c05-r24-0209",
+      "type": "floodplain-levee",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 7.07
+    },
+    {
+      "id": "lf-c05-r24-0210",
+      "type": "wadi",
+      "at": null,
+      "glyph": "g-wadi",
+      "sizeKm": 9.26
+    },
+    {
+      "id": "lf-c05-r24-0211",
+      "type": "nebkha-field",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 2.21
+    },
+    {
+      "id": "lf-c05-r24-0276",
+      "type": "talus-cone",
+      "at": null,
+      "glyph": "g-scree",
+      "sizeKm": 0.82
+    },
+    {
+      "id": "lf-c05-r24-0300",
+      "type": "talus-cone",
+      "at": null,
+      "glyph": "g-scree",
+      "sizeKm": 0.63
+    },
+    {
+      "id": "lf-c05-r25-0213",
+      "type": "desert-pavement-reg",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 18.72
+    },
+    {
+      "id": "lf-c05-r25-0214",
+      "type": "gypsum-dune",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 4.42
+    },
+    {
+      "id": "lf-c05-r25-0215",
+      "type": "erg-dune-sea",
+      "at": null,
+      "glyph": "g-dune",
+      "sizeKm": 22.68
+    },
+    {
+      "id": "lf-c05-r25-0216",
+      "type": "knickpoint-gorge",
+      "at": null,
+      "glyph": "g-falls",
+      "sizeKm": 2.04
+    },
+    {
+      "id": "lf-c05-r25-0217",
+      "type": "meander-scroll-plain",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 3.88
+    },
+    {
+      "id": "lf-c05-r25-0219",
+      "type": "ford",
+      "at": [
+        163.75,
+        320.75
+      ],
+      "glyph": "g-meander",
+      "sizeKm": 0.08
+    },
+    {
+      "id": "lf-c05-r25-0220",
+      "type": "delta",
+      "at": null,
+      "glyph": "g-delta",
+      "sizeKm": 3.12
+    },
+    {
+      "id": "lf-c05-r25-0277",
+      "type": "desert-pavement-reg",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 8.15
+    },
+    {
+      "id": "lf-c05-r26-0222",
+      "type": "river-terrace",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 5.29
+    },
+    {
+      "id": "lf-c05-r26-0223",
+      "type": "plunge-pool",
+      "at": [
+        194.25,
+        330.75
+      ],
+      "glyph": "g-falls",
+      "sizeKm": 0.19
+    },
+    {
+      "id": "lf-c05-r26-0224",
+      "type": "knickpoint-gorge",
+      "at": null,
+      "glyph": "g-falls",
+      "sizeKm": 3.07
+    },
+    {
+      "id": "lf-c05-r26-0225",
+      "type": "floodplain-levee",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 11.96
+    },
+    {
+      "id": "lf-c05-r26-0226",
+      "type": "ford",
+      "at": [
+        202.25,
+        338.25
+      ],
+      "glyph": "g-meander",
+      "sizeKm": 0.19
+    },
+    {
+      "id": "lf-c05-r26-0227",
+      "type": "braided-channel",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 6.55
+    },
+    {
+      "id": "lf-c05-r26-0228",
+      "type": "anabranch-island",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 1
+    },
+    {
+      "id": "lf-c05-r26-0278",
+      "type": "delta",
+      "at": null,
+      "glyph": "g-delta",
+      "sizeKm": 12.13
+    },
+    {
+      "id": "lf-c05-r27-0229",
+      "type": "summit-pyramid",
+      "at": [
+        171.25,
+        354.25
+      ],
+      "glyph": "g-peak",
+      "sizeKm": 1.11
+    },
+    {
+      "id": "lf-c05-r27-0230",
+      "type": "salt-pan-crust",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 5.03
+    },
+    {
+      "id": "lf-c05-r27-0231",
+      "type": "butte",
+      "at": [
+        157.25,
+        352.75
+      ],
+      "glyph": "g-mesa",
+      "sizeKm": 1.1
+    },
+    {
+      "id": "lf-c05-r27-0232",
+      "type": "wadi",
+      "at": null,
+      "glyph": "g-wadi",
+      "sizeKm": 9.75
+    },
+    {
+      "id": "lf-c05-r27-0233",
+      "type": "avalanche-chute",
+      "at": null,
+      "glyph": "g-scree",
+      "sizeKm": 2.2
+    },
+    {
+      "id": "lf-c05-r27-0234",
+      "type": "braided-channel",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 5.83
+    },
+    {
+      "id": "lf-c05-r27-0236",
+      "type": "spur-ridge",
+      "at": null,
+      "glyph": "g-ridge",
+      "sizeKm": 7.68
+    },
+    {
+      "id": "lf-c05-r27-0279",
+      "type": "summit-pyramid",
+      "at": [
+        173.25,
+        353.75
+      ],
+      "glyph": "g-peak",
+      "sizeKm": 1.76
+    },
+    {
+      "id": "lf-c05-r28-0240",
+      "type": "canyon",
+      "at": null,
+      "glyph": "g-falls",
+      "sizeKm": 11.54
+    },
+    {
+      "id": "lf-c05-r28-0242",
+      "type": "plateau-scarp",
+      "at": null,
+      "glyph": "g-mesa",
+      "sizeKm": 6.61
+    },
+    {
+      "id": "lf-c05-r28-0244",
+      "type": "massif-dome",
+      "at": null,
+      "glyph": "g-peak",
+      "sizeKm": 23.87
+    },
+    {
+      "id": "lf-c05-r28-0245",
+      "type": "desert-varnish-scarp",
+      "at": null,
+      "glyph": "g-playa",
+      "sizeKm": 5.2
+    },
+    {
+      "id": "lf-c05-r28-0246",
+      "type": "mesa",
+      "at": null,
+      "glyph": "g-mesa",
+      "sizeKm": 9.77
+    },
+    {
+      "id": "lf-c05-r28-0248",
+      "type": "summit-pyramid",
+      "at": [
+        147.25,
+        348.75
+      ],
+      "glyph": "g-peak",
+      "sizeKm": 1.82
+    },
+    {
+      "id": "lf-c05-r28-0249",
+      "type": "cuesta",
+      "at": null,
+      "glyph": "g-mesa",
+      "sizeKm": 14.09
+    },
+    {
+      "id": "lf-c05-r28-0250",
+      "type": "meander-scroll-plain",
+      "at": null,
+      "glyph": "g-meander",
+      "sizeKm": 4.72
+    },
+    {
+      "id": "lf-c05-r28-0253",
+      "type": "ridge-spine",
+      "at": null,
+      "glyph": "g-ridge",
+      "sizeKm": 18.75
+    },
+    {
+      "id": "lf-c05-r28-0260",
+      "type": "alluvial-fan",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 3.79
+    },
+    {
+      "id": "lf-c05-r28-0284",
+      "type": "alluvial-fan",
+      "at": null,
+      "glyph": "g-fan",
+      "sizeKm": 2.83
+    }
+  ],
+  "relay": null,
+  "distances": null,
+  "seaLane": null,
+  "sheet": null
+}

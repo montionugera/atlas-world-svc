@@ -90,6 +90,11 @@ graph_drift()   { node "$REPO_ROOT/scripts/gen_story_graph.mjs" --check; }
 # an emitted file or changed the spine without re-emitting (F-041 G-EMIT-DRIFT).
 spine_emit_drift() { node "$REPO_ROOT/scripts/check_spine_emit.mjs" --check; }
 
+# Plan D: G-SLOT-STABLE. content/world/resolved/*.json is committed (D5) and
+# is the ONLY file renderers read; a silent rebinding changes what is drawn
+# with no reviewable diff anywhere else.
+resolved_drift() { node "$REPO_ROOT/scripts/check_resolved.mjs" --check; }
+
 content_tests() { (cd "$REPO_ROOT/scripts" && npm test); }
 
 explorer_smoke() { (cd "$REPO_ROOT" && node --test tools/story-explorer/tests/*.test.mjs); }
@@ -123,6 +128,7 @@ run_section "server: prettier format"      server_format
 run_section "content: gate (--require-complete)" content_gate
 run_section "content: story-graph drift"   graph_drift
 run_section "content: spine emit drift (G-EMIT-DRIFT)" spine_emit_drift
+run_section "content: resolved join (G-SLOT-STABLE)" resolved_drift
 run_section "content: render lock (G-RENDER-LOCK)" render_lock
 run_section "content: mapforge test suite (incl. G-REPRO)" mapforge_tests
 run_section "content: gate test suite"     content_tests
