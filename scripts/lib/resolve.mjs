@@ -11,6 +11,7 @@
 // every FAIL recorded before it.
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { phonemeDistance, prosody, syllableCount, registerOf } from "../../tools/mapforge/lib/name-gen.mjs";
 
 // The four keys a bound record may never carry, at any depth. A bound record
 // that knows where it is has stopped being bound.
@@ -122,6 +123,62 @@ export function gBind({ world }) {
   return problems;
 }
 
+// G-NAME-REGISTER / G-NAME-SOUND / G-NAME-PROSODY. The design's four naming
+// failures, one gate each; uniqueness is NOT among them because the old
+// generator was already 100% unique and still unusable.
+export function gNames({ world, registers, classifiers }) {
+  if (!world.present || !registers) return [];
+  const problems = [];
+  const byContinent = new Map();
+  for (const { doc } of [...world.pinned, ...world.bound]) {
+    const cont = doc.requires?.continent ?? doc.bind?.handle?.slice(0, 3) ?? null;
+    if (!cont) continue;
+    if (!byContinent.has(cont)) byContinent.set(cont, []);
+    byContinent.get(cont).push(doc);
+  }
+
+  for (const [cont, docs] of [...byContinent.entries()].sort()) {
+    const regId = registerOf({ continent: cont, registers });
+    const reg = registers.registers[regId];
+    if (!reg) { problems.push(`G-NAME-REGISTER: ${cont} has no register in registers.json`); continue; }
+
+    for (const doc of docs) {
+      if (doc.provenance?.authored === "hand") continue; // canon names predate the registers
+      if (typeof doc.title !== "string" || !doc.title) continue; // titleless records are named in a later task — never throw here
+      const stem = doc.title.split(" ")[0];
+      const onsetOk = reg.onsets.some((o) => stem.startsWith(o));
+      const rimeOk = reg.rimes.some((r) => stem.endsWith(r));
+      if (!onsetOk || !rimeOk)
+        problems.push(`G-NAME-REGISTER: ${doc.id} "${doc.title}" is not in register "${regId}" for ${cont}`);
+      if (doc.kind === "landmark" && doc.prose === "frontier") {
+        const group = doc.bind?.handle?.split("/")[1] ?? null;
+        const legal = [...(classifiers.byGroup[group] ?? []), ...(classifiers.overrides?.[regId]?.[group] ?? [])];
+        if (legal.length && !legal.some((c) => doc.title.includes(c)))
+          problems.push(`G-NAME-REGISTER: ${doc.id} "${doc.title}" carries no classifier from group "${group}" (${legal.join(", ")})`);
+      }
+    }
+
+    const names = docs.filter((d) => typeof d.title === "string" && d.title).map((d) => d.title);
+    for (let i = 0; i < names.length; i++)
+      for (let j = i + 1; j < names.length; j++) {
+        if (phonemeDistance({ a: names[i], b: names[j] }) >= 3) continue;
+        if (Math.abs(syllableCount({ name: names[i] }) - syllableCount({ name: names[j] })) > 1) continue;
+        problems.push(`G-NAME-SOUND: ${cont}: "${names[i]}" and "${names[j]}" are within 2 phonemes of each other`);
+      }
+
+    if (names.length >= 10) {
+      const p = prosody({ names });
+      if (p.syllableShare > 0.60)
+        problems.push(`G-NAME-PROSODY: ${cont}: ${(p.syllableShare * 100).toFixed(1)}% of names share one syllable count (ceiling 60%)`);
+      if (p.threePlusShare < 0.15)
+        problems.push(`G-NAME-PROSODY: ${cont}: ${(p.threePlusShare * 100).toFixed(1)}% of names are 3+ syllables (floor 15%)`);
+      if (p.ofFormShare < 0.10)
+        problems.push(`G-NAME-PROSODY: ${cont}: ${(p.ofFormShare * 100).toFixed(1)}% of names take the "X of Y" form (floor 10%)`);
+    }
+  }
+  return problems;
+}
+
 // The ONE entry point check_content.mjs calls. Every gate this plan adds is
 // wired here, so `--only=spine` covers all of them and Gate 1's ~4 s budget
 // binds the whole set.
@@ -130,6 +187,12 @@ export function checkWorldCivil({ opts, fail, warn }) {
   if (!world.present) return;
   for (const e of world.errors) fail(e);
   for (const p of gBind({ world })) fail(p);
+  const namesDir = join(opts.contentRoot, "world/names");
+  const registers = existsSync(join(namesDir, "registers.json"))
+    ? readJsonSafe(join(namesDir, "registers.json"), world.errors) : null;
+  const classifiers = existsSync(join(namesDir, "classifiers.json"))
+    ? readJsonSafe(join(namesDir, "classifiers.json"), world.errors) : { byGroup: {}, overrides: {} };
+  for (const p of gNames({ world, registers, classifiers })) fail(p);
   console.log(
     `world-civil: ${world.pinned.length} pinned, ${world.bound.length} bound, ` +
     `${world.relations.length} relations, ${world.handles.size} handles`,

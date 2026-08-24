@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "note": "The semantic hook, keyed by LEXICON GROUP rather than by register. A classifier tells a reader what the place IS ('the Drowned Stair' is a shaft, 'Slateflow Sink' is a swallow hole) — that is a property of the landform kind, not of the dialect. Registers may override a group's list where the dialect genuinely differs; overrides are additive and never remove a base word.",
+  "byGroup": {
+    "coastal": ["Head", "Roads", "Geo", "Stack"],
+    "fluvial": ["Ford", "Race", "Reach", "Confluence"],
+    "mountain": ["Spar", "Saddle", "Horn", "Rake"],
+    "glacial": ["Tongue", "Moraine", "Cwm", "Nunatak"],
+    "karst": ["Sink", "Fenster", "Stair", "Pot"],
+    "erosional": ["Scar", "Cleft", "Undercut", "Slot"],
+    "desert": ["Pan", "Waste", "Barchan", "Yardang"],
+    "volcanic": ["Cone", "Vent", "Tube", "Caldera"],
+    "wetland": ["Mire", "Carr", "Fen", "Quag"],
+    "lakes": ["Tarn", "Mere", "Deep", "Shallow"],
+    "island": ["Holm", "Eyot", "Skerry", "Stack"],
+    "oceanic": ["Shoal", "Bank", "Trench", "Rip"]
+  },
+  "overrides": {
+    "north-log": { "glacial": ["Tongue", "Moraine", "Cwm", "Nunatak", "Bergfall"] },
+    "sandtongue": { "volcanic": ["Cone", "Vent", "Tube", "Caldera", "Fumarole"] }
+  }
+}
