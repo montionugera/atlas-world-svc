@@ -99,6 +99,23 @@ test("syllable counting is vowel-group based", () => {
   assert.equal(syllableCount({ name: "The Drowned Stair" }), 3);
 });
 
+test("stop-words are excluded whole, not character-stripped", () => {
+  // "the"/"of"/"and" contribute 0 to the count — never a mangled fragment.
+  for (const w of ["The", "the", "of", "and"]) assert.equal(syllableCount({ name: w }), 0, `"${w}"`);
+  assert.equal(syllableCount({ name: "Stair of the Meltwash" }), 3); // stair=1 + meltwash=2
+  // The silent-e strip still applies unconditionally to content words:
+  // Rooktide -> rooktid = 2 groups (oo, i).
+  assert.equal(syllableCount({ name: "Rooktide" }), 2);
+  // A content word ending in a consonant keeps its trailing e as a group
+  // ("drowned": o + e), which is what keeps the plan's fixture at 3 without
+  // any stop-word fudge: 0 + 2 + 1.
+  assert.equal(syllableCount({ name: "Drowned" }), 2);
+  // Committed-name counts stay pinned alongside the stop-word change.
+  assert.equal(syllableCount({ name: "Millcross" }), 2);
+  assert.equal(syllableCount({ name: "Gildmark" }), 2);
+  assert.equal(syllableCount({ name: "Norhollow" }), 3);
+});
+
 test("G-NAME-PROSODY: a monotonous set is measurable", () => {
   const flat = prosody({ names: ["Millcross", "Gildmark", "Rooktide", "Norhollow"] });
   assert.ok(flat.syllableShare > 0.6, "four two-syllable trochees must exceed the 60% ceiling");

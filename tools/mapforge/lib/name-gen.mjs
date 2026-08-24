@@ -77,19 +77,36 @@ export function phonemeDistance({ a, b }) {
   return prev[y.length];
 }
 
+const STOP_WORDS = Object.freeze(new Set(["the", "of", "and"]));
+
 // ERRATUM vs the plan text: the drafted counter kept a word-final silent e,
 // so "Rooktide" read as 3 syllables and the plan's own G-NAME-PROSODY fixture
 // (four two-syllable trochees) measured syllableShare 0.50 / threePlusShare
 // 0.50 and could never pass. A silent trailing e is not a syllable — strip it
-// per word before counting vowel groups.
+// per content word before counting vowel groups.
+//
+// ERRATUM to the first erratum: an earlier revision used a `w.length > 2`
+// guard around that strip so short words kept their trailing e. That guard
+// was an undocumented fudge whose only effect was turning "the" into "th" —
+// character-stripping a stop-word deletes a whole word instead of counting
+// zero for it. Articles/conjunctions/prepositions carry no prosodic weight,
+// so stop-words are now excluded ENTIRELY, as whole words, before counting;
+// every remaining content word gets the shipped silent-e strip unconditionally.
+//
+// Plan-fixture reconciliation: the plan pins "The Drowned Stair" = 3 and this
+// still holds — "the" contributes 0, vowel-group counting reads "drowned" as
+// two groups (o, e; the final e is NOT silent because the word ends in "d")
+// plus "stair" as one → 0 + 2 + 1 = 3. No conflict with correct English
+// behaviour or the committed-name counts (Millcross=2, Gildmark=2,
+// Rooktide=2, Norhollow=3), none of which contains a stop-word.
 export function syllableCount({ name }) {
-  const stripped = name
+  const words = name
     .toLowerCase()
     .replace(/[^a-z ]/g, "")
     .split(" ")
-    .map((w) => (w.length > 2 ? w.replace(/e$/, "") : w))
-    .join(" ");
-  const m = stripped.match(/[aeiouy]+/g);
+    .filter((w) => w && !STOP_WORDS.has(w));
+  if (!words.length) return 0; // a title made only of stop-words carries no prosody
+  const m = words.map((w) => w.replace(/e$/, "")).join(" ").match(/[aeiouy]+/g);
   return m ? m.length : 1;
 }
 
