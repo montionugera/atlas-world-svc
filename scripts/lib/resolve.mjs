@@ -196,6 +196,17 @@ export function gNames({ world, registers, classifiers }) {
 // been wired (Task 10) and the inputs are absent — an early silent return,
 // not 41 failures. The first receipt that exists anywhere arms the gate for
 // every pinned record, at which point a missing receipt is a failure.
+//
+// TASK 10 OBLIGATION: when the receipt generator lands, EVERY continent with
+// pins must carry one receipt per pinned record naming it (count = number of
+// committed pinned records for that continent) and fabric-file.schema.json's
+// `pinReceipts` minItems must be raised accordingly — otherwise this gate
+// stays green forever while gating nothing.
+//
+// MEASUREMENT SOURCE: `measured.shelterFetchKm` MUST be read from
+// narrowWaterKm (min-over-axes enclosure), NEVER grid.fetchKm
+// (max-over-axes wave exposure) — the max reading is unsatisfiable at 332 of
+// 520 port cells and all three capitals.
 export function gPinSat({ world }) {
   if (!world.present) return [];
   const problems = [];

@@ -259,7 +259,16 @@ test("G-PIN-SAT is silent while NO receipt exists anywhere (generator not yet wi
   const doc = JSON.parse(readFileSync(p, "utf8"));
   doc.pinReceipts = [];
   writeFileSync(p, JSON.stringify(doc, null, 2) + "\n");
-  assert.deepEqual(gPinSat({ world: loadCivil({ contentRoot: dir }) }), []);
+  const world = loadCivil({ contentRoot: dir });
+  assert.deepEqual(gPinSat({ world }), []);
+  // TASK 10 MUST FLIP THIS: the silence above is only valid while receipts
+  // are unwired everywhere. The COMMITTED world carries these many pins,
+  // all currently UNGATED — when Task 10 lands, every continent with pins
+  // carries one receipt per pin (count below), fabric-file.schema.json's
+  // `pinReceipts` minItems rises accordingly, and an empty-receipt world
+  // can no longer pass this test.
+  const committed = loadCivil({ contentRoot: join(ROOT, "content") });
+  assert.equal(committed.pinned.length, 41);
 });
 
 test("G-PIN-SAT red: a numeric requirement the ground does not meet", () => {

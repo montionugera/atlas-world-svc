@@ -127,6 +127,7 @@
     },
     "pinReceipts": {
       "type": "array",
+      "description": "EMPTY until Plan D Task 10 wires the receipt generator. At that point EVERY continent whose civil records include pins must carry one receipt per pin (count = number of committed pinned records naming that continent) and minItems must be raised accordingly — until then G-PIN-SAT stays soft-armed and cannot fail.",
       "items": {
         "type": "object", "additionalProperties": false,
         "required": ["id", "at", "cell", "continent", "region", "measured"],
