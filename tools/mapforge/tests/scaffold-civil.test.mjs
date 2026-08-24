@@ -99,6 +99,34 @@ test("authored prose is NEVER overwritten, but the binding facts are refreshed",
   assert.notDeepEqual(after.bind.expect.sizeKm, [99, 100]);
 });
 
+test("two handles sharing a last-4 suffix collide and the scaffolder refuses the run", () => {
+  // The schema allows 4-6 hex handles but the file name keeps only the last
+  // 4, so a 6-hex handle whose tail matches a sibling's 4-hex handle in the
+  // same group would silently overwrite that sibling's record. The run must
+  // die loudly naming both handles, not mint two titles into one file.
+  const dir = repoFixture();
+  const fabPath = join(dir, "content/world/fabric/continent-02.json");
+  const fab = JSON.parse(readFileSync(fabPath, "utf8"));
+  // h-77aa is named:false today; give it a 5-hex handle ending "0f42" — the
+  // same last-4 as its karst sibling h-0f42 — and name it.
+  const twin = fab.instances.find((i) => i.handle === "c02/karst/h-77aa");
+  twin.handle = "c02/karst/h-70f42";
+  twin.named = true;
+  writeFileSync(fabPath, JSON.stringify(fab, null, 2) + "\n");
+  const ledPath = join(dir, "content/world/handles/continent-02.json");
+  const led = JSON.parse(readFileSync(ledPath, "utf8"));
+  led.handles.find((h) => h.handle === "c02/karst/h-77aa").handle = "c02/karst/h-70f42";
+  writeFileSync(ledPath, JSON.stringify(led, null, 2) + "\n");
+
+  assert.throws(
+    () => scaffoldBound({ repoRoot: dir, dryRun: false }),
+    (e) =>
+      /filename collision/.test(e.message) &&
+      e.message.includes("c02/karst/h-0f42") &&
+      e.message.includes("c02/karst/h-70f42"),
+  );
+});
+
 test("--dry-run writes nothing", () => {
   const dir = repoFixture();
   const before = listBound(dir);

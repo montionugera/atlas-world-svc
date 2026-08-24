@@ -98,6 +98,11 @@ export function scaffoldBound({ repoRoot, dryRun = false }) {
     usedStems.get(cont).add(titleStem(d.title));
   }
   const wanted = new Set();
+  // Handles may be 4-6 hex but the file name keeps only the LAST 4, so two
+  // distinct handles in one group can collapse onto one file and silently
+  // overwrite each other's record. Map every minted name back to its handle
+  // and refuse the run if a second handle lands on an already-owned name.
+  const fileOwner = new Map();
 
   for (const inst of named.sort((a, b) => (a.handle < b.handle ? -1 : a.handle > b.handle ? 1 : 0))) {
     const h = ledgerHandles.get(inst.handle);
@@ -115,6 +120,10 @@ export function scaffoldBound({ repoRoot, dryRun = false }) {
     // Deterministic file name from the HANDLE, so a re-seed that keeps a
     // handle keeps its file and its diff is one line, not a rename.
     const file = `c-lm-${continent}-${group}-${inst.handle.slice(-4)}.json`;
+    const owner = fileOwner.get(file);
+    if (owner && owner !== inst.handle)
+      throw new Error(`bound-record filename collision: handles "${owner}" and "${inst.handle}" share the last-4 hex "${inst.handle.slice(-4)}" and would both write ${file}; rename one handle (6-hex handles collide on a 4-hex suffix).`);
+    fileOwner.set(file, inst.handle);
     wanted.add(file);
     const prior = existing.get(file);
     const keepProse = prior?.prose === "authored";

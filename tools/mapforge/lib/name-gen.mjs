@@ -79,10 +79,11 @@ export function phonemeDistance({ a, b }) {
 
 const STOP_WORDS = Object.freeze(new Set(["the", "of", "and"]));
 
-// Same alternation prosody() counts of-forms by — registers differ in their
-// link words (basin-anglic says "of the", reedspeech says "below"/"among"),
-// so the detector must cover every register's vocabulary, not one dialect's.
-const OF_FORM = /\s(of|of the|under|among|between|below|within|off|past|across|through|at|by|over|out of|north of|beyond|beneath)\s/i;
+// The one of-form detector, shared by titleStem() and prosody(). Registers
+// differ in their link words (basin-anglic says "of the", reedspeech says
+// "below"/"among"), so it must cover every register's vocabulary, not one
+// dialect's — which is exactly why it lives here once: two copies drift.
+export const OF_FORM = /\s(of|of the|under|among|between|below|within|off|past|across|through|at|by|over|out of|north of|beyond|beneath)\s/i;
 
 // The register word a title is judged on. A stem-classifier title leads with
 // its stem ("Kelmor Reach"); an of-form title TRAILS with it ("Reach of the
@@ -134,7 +135,7 @@ export function prosody({ names }) {
     const s = syllableCount({ name: n });
     counts.set(s, (counts.get(s) ?? 0) + 1);
     if (s >= 3) threePlus++;
-    if (/\s(of|of the|under|beyond|among|between|below|within|off|past|across|through|at|by|over|out of|north of|beneath)\s/i.test(n)) ofForm++;
+    if (OF_FORM.test(n)) ofForm++;
   }
   return {
     syllableShare: Math.max(...counts.values()) / names.length,
