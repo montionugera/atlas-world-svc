@@ -61,6 +61,10 @@ import { loadFabric, gWorldBudget, gWorldSeaLand, gWorldSeaLandTrunk, gWorldTrun
 // which runs with a different cwd, and in CI.
 import { orderHandles, orderDigestOf } from "../tools/mapforge/lib/passes/landforms.mjs";
 import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
+// Plan D: the pinned/bound/relation gates. Pure logic in lib/resolve.mjs, per
+// this file's own rule — check_content.mjs ends in a bare main() and is not
+// importable, so gate tests spawn it against fixture content roots.
+import { checkWorldCivil } from "./lib/resolve.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1866,6 +1870,15 @@ function checkWorld(opts) {
     report: fail,
     note,
   });
+  // Plan D — the world-meaning gates (G-BIND, and from later tasks G-PIN-SAT,
+  // G-HANDLE-BAND, G-BAND, G-DUNGEON-REACH, G-MEANING, G-NAME-*). The plan's
+  // call-site line ("before checkSpineStoryAlias") sits BEHIND checkSpine's
+  // spine soft-skip, so a world-only root could never reach it and every
+  // world-only fixture would pass vacuously. checkWorld runs BEFORE that
+  // soft-skip (see its header) and is exactly the "spine + fabric + civil"
+  // scope the design's placement rule puts in `--only=spine`, so the gates
+  // live here, at its tail.
+  checkWorldCivil({ opts, fail, warn });
   return world;
 }
 

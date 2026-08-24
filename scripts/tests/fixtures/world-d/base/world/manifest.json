@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "seed": "7c9e4a2f8b1d6e03",
+  "frame": { "units": "km", "w": 400, "h": 400, "areaKm2": 160000 },
+  "ratio": {
+    "measure": "atlas.derived.computedComposition.ocean",
+    "target": 1.5, "min": 1.2, "max": 1.8,
+    "oceanPctTarget": 60.0, "oceanPctMin": 54.5455, "oceanPctMax": 64.2857
+  },
+  "budget": {
+    "netLandKm2": 64000, "waterKm2": 96000, "grossLandPolygonKm2": 65600,
+    "interiorWaterKm2": 1600, "oceanPolygonKm2": 91200,
+    "interstitialKm2": 3200, "interstitialComposition": { "ocean": 100 }
+  },
+  "grid": { "w": 800, "h": 800, "cellKm": 0.5, "cells": 640000, "landCellBand": [228572, 290908] },
+  "regions": {
+    "surveyed": { "count": 40, "nominalKm2": 160, "tolerancePct": 25, "acrossKm": 12.65, "walkHours": 1.15 },
+    "reported": { "count": 120, "nominalKm2": 480, "tolerancePct": 20 }
+  },
+  "landformCatalogue": {
+    "distinctTypes": 170, "groupMemberships": 178, "dualListed": 8,
+    "instances": { "total": 1740 }, "named": { "total": 336 }
+  },
+  "names": { "targetDistinct": 626, "reservedFile": "content/world/names/reserved.json" },
+  "relations": {
+    "coverageFloorPct": 10,
+    "why": "Plan D's relation layer models the prose's n-ary claims. The design counts 435 claim TOKENS across the 8 authored story files, not distinct machine-checkable claims — a paragraph naming a road four times is four tokens and one relation. scripts/report_relation_coverage.mjs prints modelled/found per class on every Gate 2 and CI run and says LOW below this floor. Raise it as the set grows; never lower it to make a run green."
+  },
+  "quotas": {
+    "settlements": { "capital": 3, "hub": 12, "village": 30, "total": 45 },
+    "townPlans": 8,
+    "dungeons": { "complexes": 60, "floors": 190, "families": 3, "familySize": 8, "bespoke": 36 }
+  },
+  "levelBands": {
+    "originPinnedId": "c-town-gildmark",
+    "originFallbackContinent": "c02",
+    "ringKm": 40,
+    "bands": [[1,10],[8,20],[16,30],[24,40],[32,50],[40,58],[46,64],[52,70],[58,80]]
+  },
+  "landmasses": [
+    { "id": "c01", "title": "Rimewall Cap",  "nodeId": "n-rimewall-cap", "class": "cap",   "netKm2": 6000,  "interiorWaterKm2": 0,    "surveyed": 0, "reported": 12 },
+    { "id": "c02", "title": "Wealdmarch",    "nodeId": "n-cluster1",     "class": "major", "netKm2": 11000, "interiorWaterKm2": 1100, "surveyed": 10, "reported": 20,
+      "why": "10, not the spec table's 8: content/zones/ already holds 10 committed zone records for the basin and 116 bestiary placement rows are sworn to those 10 region slugs. Eight surveyed regions here would destroy two hand-written zone records and re-home ~23 bestiary rows for no gain. The two seats come from Coldreach, which has no committed zone prose at all. Column still sums to 40.",
+      "nodeIdWhy": "n-cluster1, NOT n-wealdmarch. The live node for this landmass is content/spine/nodes/n-cluster1.json and twelve committed node files name it as their parentId. scripts/check_spine_emit.mjs:104 and tools/mapforge/lib/atlas-sheet.mjs:42 both resolve it by literal id and hard-fail without it, scripts/spine-coverage.mjs:14 walks its children, and Plan D derives PIN_OFFSET from its committed placement.anchor. Slugging the title would mint a NEW id, delete this one through reconciliation, and take all of that with it. Every other row's nodeId happens to equal n-<slug of title> because those nodes are new or already named that way — this column is the authority regardless, and buildTrunk reads it instead of slugging." },
+    { "id": "c03", "title": "Coldreach",     "nodeId": "n-coldreach",    "class": "major", "netKm2": 11000, "interiorWaterKm2": 0,    "surveyed": 6, "reported": 20,
+      "why": "6, not 8 — the two seats moved to Wealdmarch so the 10 committed basin zone records survive the redraw. See c02's why." },
+    { "id": "c04", "title": "Stonemoor",     "nodeId": "n-stonemoor",    "class": "major", "netKm2": 11000, "interiorWaterKm2": 300,  "surveyed": 7, "reported": 21 },
+    { "id": "c05", "title": "Thirstwold",    "nodeId": "n-thirstwold",   "class": "major", "netKm2": 11000, "interiorWaterKm2": 0,    "surveyed": 7, "reported": 21 },
+    { "id": "c06", "title": "Reedstrand",    "nodeId": "n-reedstrand",   "class": "minor", "netKm2": 3000,  "interiorWaterKm2": 200,  "surveyed": 3, "reported": 5 },
+    { "id": "c07", "title": "Driftholt",     "nodeId": "n-driftholt",    "class": "minor", "netKm2": 3000,  "interiorWaterKm2": 0,    "surveyed": 3, "reported": 5 },
+    { "id": "c08", "title": "Wracklow",      "nodeId": "n-wracklow",     "class": "minor", "netKm2": 3000,  "interiorWaterKm2": 0,    "surveyed": 2, "reported": 6 },
+    { "id": "c09", "title": "Brightfall",    "nodeId": "n-brightfall",   "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 1, "reported": 2 },
+    { "id": "c10", "title": "Ashen Spar",    "nodeId": "n-ashen-spar",   "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 1, "reported": 2 },
+    { "id": "c11", "title": "Quillreef",     "nodeId": "n-quillreef",    "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 0, "reported": 2 },
+    { "id": "c12", "title": "Skerryfast",    "nodeId": "n-skerryfast",   "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 0, "reported": 2 },
+    { "id": "c13", "title": "Loamspit",      "nodeId": "n-loamspit",     "class": "chain", "netKm2": 1000,  "interiorWaterKm2": 0,    "surveyed": 0, "reported": 2 }
+  ],
+  "oceans": [
+    { "id": "o01", "title": "Galereach", "nodeId": "n-galereach", "polygonKm2": 41800, "attributedWaterKm2": 44000 },
+    { "id": "o02", "title": "Keelbreak", "nodeId": "n-keelbreak", "polygonKm2": 30400, "attributedWaterKm2": 32000 },
+    { "id": "o03", "title": "Tarnmark",  "nodeId": "n-tarnmark",  "polygonKm2": 19000, "attributedWaterKm2": 20000 }
+  ],
+  "seas": [
+    { "id": "s01", "title": "West Sea",         "nodeId": "n-westsea",          "ocean": "o01", "polygonKm2": 3000 },
+    { "id": "s02", "title": "Gildmark Roads",   "nodeId": "n-gildmark-roads",   "ocean": "o01", "polygonKm2": 1200 },
+    { "id": "s03", "title": "Peatrun Shallows", "nodeId": "n-peatrun-shallows", "ocean": "o01", "polygonKm2": 2400 },
+    { "id": "s04", "title": "Wreckwater",       "nodeId": "n-wreckwater",       "ocean": "o02", "polygonKm2": 2800 },
+    { "id": "s05", "title": "Netstead Bight",   "nodeId": "n-netstead-bight",   "ocean": "o02", "polygonKm2": 1600 },
+    { "id": "s06", "title": "Drowned Pavement", "nodeId": "n-drowned-pavement", "ocean": "o02", "polygonKm2": 3600 },
+    { "id": "s07", "title": "Fumewater",        "nodeId": "n-fumewater",        "ocean": "o03", "polygonKm2": 2200 },
+    { "id": "s08", "title": "Reed Shallows",    "nodeId": "n-reed-shallows",    "ocean": "o03", "polygonKm2": 1800 },
+    { "id": "s09", "title": "Rimewall Margin",  "nodeId": "n-rimewall-margin",  "ocean": "o03", "polygonKm2": 2000 }
+  ]
+}

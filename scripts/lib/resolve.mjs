@@ -1,0 +1,137 @@
+// Plan D — the world loader, the binding gates and (from Task 7) the join.
+//
+// SOFT-SKIP DISCIPLINE IS LOAD-BEARING. `content/world/` is absent from ~45
+// existing structural fixtures. loadCivil returns { present: false } with NO
+// errors for a missing dir, exactly as loadSpine does. A gate that hard-fails
+// on a missing content/world/ reds dozens of tests that never claimed to
+// carry a world.
+//
+// NEVER THROWS. Every failure is a string pushed into a returned array — an
+// uncaught throw inside check_content.mjs skips finish() and silently drops
+// every FAIL recorded before it.
+import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { join } from "node:path";
+
+// The four keys a bound record may never carry, at any depth. A bound record
+// that knows where it is has stopped being bound.
+export const BANNED_COORDINATE_KEYS = Object.freeze(["at", "points", "rect", "anchor"]);
+
+const readJsonSafe = (path, errors) => {
+  try { return JSON.parse(readFileSync(path, "utf8")); }
+  catch (e) { errors.push(`world: ${path}: ${e.message}`); return null; }
+};
+
+// A family dir that EXISTS but cannot be listed (permission bit, not a
+// directory) must land as an in-band error like every other failure — an
+// uncaught readdirSync throw here skips finish() and drops every FAIL before
+// it. Same contract lib/world.mjs's walkJson already serves.
+const listJson = (dir, errors) => {
+  if (!existsSync(dir)) return [];
+  try { return readdirSync(dir).filter((f) => f.endsWith(".json")).sort(); }
+  catch (e) { errors.push(`world: ${dir} cannot be listed: ${e.message}`); return []; }
+};
+
+export function loadCivil({ contentRoot }) {
+  const root = join(contentRoot, "world");
+  const empty = {
+    present: false, fabric: {}, handles: new Map(), ledgers: {},
+    pinned: [], bound: [], relations: [], lexicon: new Map(), manifest: null, errors: [],
+  };
+  if (!existsSync(root)) return empty;
+
+  const errors = [];
+  const fabric = {};
+  for (const f of listJson(join(root, "fabric"), errors)) {
+    const doc = readJsonSafe(join(root, "fabric", f), errors);
+    if (doc?.continent) fabric[doc.continent] = doc;
+  }
+
+  const ledgers = {};
+  const handles = new Map();
+  for (const f of listJson(join(root, "handles"), errors)) {
+    const doc = readJsonSafe(join(root, "handles", f), errors);
+    if (!doc?.continent) continue;
+    ledgers[doc.continent] = doc;
+    for (const h of doc.handles ?? []) handles.set(h.handle, { ...h, continent: doc.continent });
+  }
+
+  const civilOf = (sub) =>
+    listJson(join(root, "civil", sub), errors).map((f) => {
+      const doc = readJsonSafe(join(root, "civil", sub, f), errors);
+      return doc ? { file: `world/civil/${sub}/${f}`, doc } : null;
+    }).filter(Boolean);
+
+  const pinned = civilOf("pinned");
+  const bound = civilOf("bound");
+
+  const relations = [];
+  for (const f of listJson(join(root, "relations"), errors)) {
+    const doc = readJsonSafe(join(root, "relations", f), errors);
+    if (Array.isArray(doc)) for (const r of doc) relations.push({ ...r, file: `world/relations/${f}` });
+  }
+
+  const lexicon = new Map();
+  const lexDoc = existsSync(join(root, "lexicon/landforms.json"))
+    ? readJsonSafe(join(root, "lexicon/landforms.json"), errors) : null;
+  for (const row of Array.isArray(lexDoc) ? lexDoc : []) lexicon.set(row.id, row);
+
+  const manifest = existsSync(join(root, "manifest.json"))
+    ? readJsonSafe(join(root, "manifest.json"), errors) : null;
+
+  return { present: true, fabric, handles, ledgers, pinned, bound, relations, lexicon, manifest, errors };
+}
+
+// Deep scan: a coordinate hidden three levels down is still a coordinate.
+function findBannedKey(value) {
+  if (Array.isArray(value)) {
+    for (const v of value) { const hit = findBannedKey(v); if (hit) return hit; }
+    return null;
+  }
+  if (value && typeof value === "object") {
+    for (const k of Object.keys(value)) {
+      if (BANNED_COORDINATE_KEYS.includes(k)) return k;
+      const hit = findBannedKey(value[k]);
+      if (hit) return hit;
+    }
+  }
+  return null;
+}
+
+export function gBind({ world }) {
+  if (!world.present) return [];
+  const problems = [];
+  const claims = new Map(); // handle -> [record ids]
+
+  for (const { file, doc } of world.bound) {
+    const banned = findBannedKey(doc);
+    if (banned)
+      problems.push(`G-BIND: ${file} carries key "${banned}" — bound records hold meaning, never coordinates`);
+
+    const handle = doc.bind?.handle;
+    if (typeof handle !== "string") continue;
+    if (!claims.has(handle)) claims.set(handle, []);
+    claims.get(handle).push(doc.id);
+    if (!world.handles.has(handle))
+      problems.push(`G-BIND: ${doc.id} handle "${handle}" does not resolve in any ledger`);
+  }
+
+  for (const [handle, ids] of [...claims.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))
+    if (ids.length > 1)
+      problems.push(`G-BIND: handle "${handle}" is claimed by ${ids.length} records: ${[...ids].sort().join(", ")}`);
+
+  return problems;
+}
+
+// The ONE entry point check_content.mjs calls. Every gate this plan adds is
+// wired here, so `--only=spine` covers all of them and Gate 1's ~4 s budget
+// binds the whole set.
+export function checkWorldCivil({ opts, fail, warn }) {
+  const world = loadCivil({ contentRoot: opts.contentRoot });
+  if (!world.present) return;
+  for (const e of world.errors) fail(e);
+  for (const p of gBind({ world })) fail(p);
+  console.log(
+    `world-civil: ${world.pinned.length} pinned, ${world.bound.length} bound, ` +
+    `${world.relations.length} relations, ${world.handles.size} handles`,
+  );
+}

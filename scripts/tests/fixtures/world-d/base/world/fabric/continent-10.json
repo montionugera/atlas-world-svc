@@ -1,0 +1,20 @@
+{
+  "continent": "c10",
+  "premise": "content/world/premises/continent-10.json",
+  "seaLevel": 0.42,
+  "cellKm": 0.5,
+  "cellCensus": { "land": 320, "sea": 0, "lake": 0, "unowned": 0 },
+  "ownerHistogram": { "c10/r01": 320 },
+  "outerRing": [[328, 203], [352, 203], [352, 227], [328, 227]],
+  "trunkRiver": null,
+  "regions": [
+    { "id": "c10/r01", "survey": "reported", "areaKm2": 480.0, "terrainKind": null, "biomeShares": { "lava": 100 }, "ring": [[330, 205], [350, 205], [350, 225], [330, 225]], "levelBand": [55, 80], "adjacent": [], "settlements": [], "poi": 0 }
+  ],
+  "instances": [
+    { "id": "lf-c10-r01-0001", "type": "lava-tube", "geometry": { "shape": "point", "at": [340.0, 215.0] }, "sizeKm": 1.2, "cell": [680, 430], "handle": "c10/volcanic/h-3c9d", "region": "c10/r01", "named": true, "glyph": "g-tube", "dungeonCapable": true, "provenance": { "authored": "generated", "generator": { "pass": "volcanic", "seedStream": "landform", "epoch": 0 }, "fabric": "fabric/continent-10" } }
+  ],
+  "settlements": [],
+  "roads": [],
+  "dungeonAnchors": [],
+  "pinReceipts": []
+}
