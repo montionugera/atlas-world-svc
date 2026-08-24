@@ -56,7 +56,7 @@ world it pinned was not the world seam 2 fitted the thirteen continents to.
 | A — Unblock and Afford | F-046 | **SHIPPED** to release/1.8, 2026-08-19. All 15 acceptance criteria verified. |
 | B — Vocabulary and Render | F-047 | **SHIPPED** to release/1.8, 2026-08-22. All 12 tasks; Gate 1 13/13. |
 | C — The Fabric Layer | F-048 | **SHIPPED** to release/1.8, 2026-08-23 (Gate 1 12/12 twice, 77 commits, zero spine bytes). All 13 tasks reviewed and adjudicated — seams 1-7 in §14, §15, §17, §19; seam 8 in §20 and **§21**. |
-| D — Pinned, Bound, Relations | — | not started |
+| D — Pinned, Bound, Relations | F-049 | **IN PROGRESS** on `feat/F-049` — Tasks 4-6 implemented (41 pinned places, 336 bound records, 60 dungeons; Task 6's divergences in §22). |
 | E — Redraw and Prose | — | not started |
 
 Design: `docs/superpowers/specs/2026-08-16-world-fill-generated-land-bound-places-design.md`
@@ -2793,3 +2793,61 @@ PNG thumbs at 512×512, pan/zoom legible, console clean, the census table matchi
 exactly at 160/40/45/1740/60). This pass changed exactly one thing on that surface — the sea:land
 ratio string in the overlay card's note — and that string is now derived from the gate's own
 identity and asserted, so it cannot rot back.
+
+---
+
+## 22. Plan D Task 6 (dungeons) — what shipped vs the plan's literals
+
+Commits `53eda44` (dungeon schemas, loader, `G-DUNGEON-REACH`) and `3dcee5e` (the 60-complex
+corpus and the `--dungeons` scaffolder) implement Task 6 ("Dungeons — a file family, never a
+tier"). They diverge from the plan document in five places. Each is deliberate; none is recorded
+in the plan itself, so it is recorded here.
+
+### THE BINDINGS ARE THE QUOTA POOL'S, NOT THE TABLE'S — plan :3104-3125 vs shipped
+
+The plan's bespoke table (:3104-3125) assigns each row a continent and an `entranceType` as
+literals. The shipped records instead bind to handles drawn from **Plan C P13's exactly-60
+committed dungeon anchors** (the quota pool), which confines every entrance to surveyed,
+gate-reachable ground — the same restriction §14 already imposed on the anchors themselves.
+Measured consequences:
+
+- **The c01 rows moved** — both `rimewall-*` bind to c03 fluvial handles with `plunge-pool`
+  entrances against the plan's c01 `nunatak`/`moulin`.
+- **The c08 rows moved** — `wracklow-geo-throats` binds to a c02 coastal handle (`sea-arch`),
+  `wracklow-blowhole-deeps` to a c06 coastal handle (`blowhole`).
+- **The c10 rows moved** — `ashen-spar-lava-tubes` binds to a c09 mountain handle with entrance
+  `tectonic-cave` against the plan's c10 `lava-tube`.
+- The **lavatube family's `entranceTypes` is extended** from the plan's four literals
+  (:2957) to six — adding `tectonic-cave` and `blowhole` — so its members can claim pool
+  handles whose types the plan never offered them.
+
+### FAMILY FLOOR BASES REBASED TO COMMITTED REGION BANDS — plan :2926/:2941/:2956 vs shipped
+
+The plan's family literals are catacomb base **18**, necropolis **30**, lavatube **45**. The
+shipped families carry **catacomb 42, necropolis 43, lavatube 19** — rebased onto the committed
+regions' own level bands so every family band overlaps its host region's band and `G-BAND` holds
+by construction rather than by the plan's arithmetic. The corpus identity is otherwise exactly
+the plan's: **60 verified complexes / 190 floors**, of which **36 bespoke carrying 118 floors**
+(the three mega-dungeons at 12 / 9 / 7 among them) and 24 family members at 3 floors each.
+
+### STEP 9'S "60 dungeon-density: LINES" IS A STALE EXPECTATION — plan :3243
+
+Plan Step 9 expects the gate to print one density line per complex, i.e. **60**. Reality is
+**33** — one per SURVEYED region that hosts complexes, because entrances confine to surveyed
+regions under STATE's own rule (:1511 and §14/§15). 33 < 33 surveyed regions only in appearance:
+several regions host multiple complexes and collapse into one line. The expectation in the plan
+predates the surveyed-region confinement and is stale; **the shipped behaviour is correct**, and
+`dungeons.test.mjs` asserts the line set, not a count of 60.
+
+### THE SCAFFOLDER MATCHES, IT DOES NOT DEAL — idempotency by construction
+
+The plan's sketch walks slots and takes "the first free handle". The scaffolder instead runs
+**bipartite matching over (member index × eligible handle)** and **pins each slot to its prior
+file's handle when one exists**, so a re-run cannot reshuffle the corpus. Measured on the
+committed tree: second run reports **0 written / 24 unchanged** (`scaffold-dungeons: 0 written,
+24 unchanged`). This is what makes hand-authored prose on member files survive a re-scaffold.
+
+### THE COMMITTED WORLD'S HOP HISTOGRAM
+
+Over all 60 committed complexes: **{0: 48, 1: 2, 2: 10}**. Every entry is within the
+`MAX_HOPS ≤ 2` ceiling that `G-DUNGEON-REACH` enforces; no anchor needed a relaxation.
