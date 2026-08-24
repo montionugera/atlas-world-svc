@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-e167",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Regwaste Yardang",
+  "bind": {
+    "handle": "c05/desert/h-e2e167",
+    "expect": {
+      "type": "alluvial-bajada",
+      "sizeKm": [
+        3.57,
+        14.28
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A continuous slope of merged gravel fans running the whole foot of a range.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#alluvial-bajada.gloss"
+  },
+  "resolution": null
+}

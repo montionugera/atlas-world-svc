@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-1cad",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Stormbreak Race",
+  "bind": {
+    "handle": "c03/fluvial/h-f01cad",
+    "expect": {
+      "type": "delta",
+      "sizeKm": [
+        7.64,
+        20
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The river gives up and splits, laying its load down in a fan of shifting channels.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#delta.gloss"
+  },
+  "resolution": null
+}

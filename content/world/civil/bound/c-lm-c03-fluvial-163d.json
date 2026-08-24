@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-163d",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Rimeholt Race",
+  "bind": {
+    "handle": "c03/fluvial/h-4d163d",
+    "expect": {
+      "type": "floodplain-levee",
+      "sizeKm": [
+        2.52,
+        10.06
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A low natural bank along the water, built from what the floods dropped first.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#floodplain-levee.gloss"
+  },
+  "resolution": null
+}

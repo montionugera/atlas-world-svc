@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-lakes-e34f",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Cinderbourne Shallow",
+  "bind": {
+    "handle": "c02/lakes/h-3fe34f",
+    "expect": {
+      "type": "landslide-dammed-lake",
+      "sizeKm": [
+        0.77,
+        3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A new lake behind a hillside that came down across the valley and stayed there.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#landslide-dammed-lake.gloss"
+  },
+  "resolution": null
+}

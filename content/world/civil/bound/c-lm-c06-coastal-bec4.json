@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-coastal-bec4",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head between Tidalfall",
+  "bind": {
+    "handle": "c06/coastal/h-5dbec4",
+    "expect": {
+      "type": "tombolo",
+      "sizeKm": [
+        0.38,
+        1.52
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A neck of sand and shingle joining an island to the shore; it drowns on the big tides.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tombolo.gloss"
+  },
+  "resolution": null
+}

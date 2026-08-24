@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-bb4e",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Dolinstone Stair",
+  "bind": {
+    "handle": "c04/karst/h-aabb4e",
+    "expect": {
+      "type": "foiba",
+      "sizeKm": [
+        0.07,
+        0.26
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A vertical shaft dropping straight into the dark, with no ledge to start from.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#foiba.gloss"
+  },
+  "resolution": null
+}

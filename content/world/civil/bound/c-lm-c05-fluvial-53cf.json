@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-fluvial-53cf",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Dunewind Confluence",
+  "bind": {
+    "handle": "c05/fluvial/h-f053cf",
+    "expect": {
+      "type": "meander-scroll-plain",
+      "sizeKm": [
+        5.09,
+        15
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Flat ground ribbed with the ghosts of old bends the river has already abandoned.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#meander-scroll-plain.gloss"
+  },
+  "resolution": null
+}

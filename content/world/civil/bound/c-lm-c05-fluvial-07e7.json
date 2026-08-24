@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-fluvial-07e7",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ergspar Confluence",
+  "bind": {
+    "handle": "c05/fluvial/h-af07e7",
+    "expect": {
+      "type": "plunge-pool",
+      "sizeKm": [
+        0.05,
+        0.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A deep scoured basin under a fall, cold and loud, with an undercut behind the water.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#plunge-pool.gloss"
+  },
+  "resolution": null
+}

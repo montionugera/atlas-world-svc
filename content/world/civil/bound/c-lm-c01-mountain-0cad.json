@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c01-mountain-0cad",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Skerrybreak Saddle",
+  "bind": {
+    "handle": "c01/mountain/h-b20cad",
+    "expect": {
+      "type": "avalanche-chute",
+      "sizeKm": [
+        1.13,
+        4
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A stripe of scoured, treeless ground where the snow comes down every winter.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#avalanche-chute.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c07-mountain-a928",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Spar below Loamfall",
+  "bind": {
+    "handle": "c07/mountain/h-44a928",
+    "expect": {
+      "type": "summit-pyramid",
+      "sizeKm": [
+        0.41,
+        1.64
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A peak with three clean faces meeting at a point, and nothing above it for a long way.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#summit-pyramid.gloss"
+  },
+  "resolution": null
+}

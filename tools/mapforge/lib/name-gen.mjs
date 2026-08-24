@@ -79,6 +79,22 @@ export function phonemeDistance({ a, b }) {
 
 const STOP_WORDS = Object.freeze(new Set(["the", "of", "and"]));
 
+// Same alternation prosody() counts of-forms by — registers differ in their
+// link words (basin-anglic says "of the", reedspeech says "below"/"among"),
+// so the detector must cover every register's vocabulary, not one dialect's.
+const OF_FORM = /\s(of|of the|under|among|between|below|within|off|past|across|through|at|by|over|out of|north of|beyond|beneath)\s/i;
+
+// The register word a title is judged on. A stem-classifier title leads with
+// its stem ("Kelmor Reach"); an of-form title TRAILS with it ("Reach of the
+// Kelmor"), and judging the leading classifier against register phonotactics
+// instead is how G-NAME-REGISTER fails a name the register never wrote.
+// Shared by the scaffolder (which must not mint two titles on one stem) and
+// gNames (which judges the stem), so the two can never disagree.
+export function titleStem(name) {
+  const words = name.split(" ");
+  return OF_FORM.test(name) ? words[words.length - 1] : words[0];
+}
+
 // ERRATUM vs the plan text: the drafted counter kept a word-final silent e,
 // so "Rooktide" read as 3 syllables and the plan's own G-NAME-PROSODY fixture
 // (four two-syllable trochees) measured syllableShare 0.50 / threePlusShare

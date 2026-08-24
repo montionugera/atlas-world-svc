@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c10-volcanic-e0d9",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Fumespar Vent",
+  "bind": {
+    "handle": "c10/volcanic/h-07e0d9",
+    "expect": {
+      "type": "lahar-fan",
+      "sizeKm": [
+        3.63,
+        14
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A spread of grey mud and boulders that came down a valley at once and set hard.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#lahar-fan.gloss"
+  },
+  "resolution": null
+}

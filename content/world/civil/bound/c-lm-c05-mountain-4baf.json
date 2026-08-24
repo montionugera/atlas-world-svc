@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-mountain-4baf",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Regwater Rake",
+  "bind": {
+    "handle": "c05/mountain/h-b74baf",
+    "expect": {
+      "type": "hogback",
+      "sizeKm": [
+        5.63,
+        14
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A sharp ridge of tilted strata standing at the same steep angle on both sides.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#hogback.gloss"
+  },
+  "resolution": null
+}

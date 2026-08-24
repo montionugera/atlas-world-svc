@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c08-island-3d8f",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Lagoonlow Stack",
+  "bind": {
+    "handle": "c08/island/h-683d8f",
+    "expect": {
+      "type": "cay",
+      "sizeKm": [
+        0.1,
+        0.4
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A heap of coral sand built up on the reef flat, moved by every serious storm.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#cay.gloss"
+  },
+  "resolution": null
+}

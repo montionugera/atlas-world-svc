@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-b705",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Rookstead Roads",
+  "bind": {
+    "handle": "c02/coastal/h-dcb705",
+    "expect": {
+      "type": "sea-stack",
+      "sizeKm": [
+        0.05,
+        0.15
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A pillar left offshore when the arch beside it fell; birds own the top of it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-stack.gloss"
+  },
+  "resolution": null
+}

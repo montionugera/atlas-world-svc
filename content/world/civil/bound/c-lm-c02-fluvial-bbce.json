@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-bbce",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Thornbourne Reach",
+  "bind": {
+    "handle": "c02/fluvial/h-d2bbce",
+    "expect": {
+      "type": "delta",
+      "sizeKm": [
+        9.15,
+        20
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The river gives up and splits, laying its load down in a fan of shifting channels.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#delta.gloss"
+  },
+  "resolution": null
+}

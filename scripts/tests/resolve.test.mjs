@@ -17,7 +17,7 @@ import { mkdtempSync, cpSync, readFileSync, writeFileSync, readdirSync, existsSy
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadCivil, gBind, gPinSat, BANNED_COORDINATE_KEYS } from "../lib/resolve.mjs";
+import { loadCivil, gBind, gPinSat, gHandleBand, BANNED_COORDINATE_KEYS } from "../lib/resolve.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const FIX = join(ROOT, "scripts/tests/fixtures/world-d");
@@ -306,4 +306,28 @@ test("the roster table carries its own byte cap, and the cap is LIVE", () => {
     `roster at ${bytes} B no longer overflows the ${budgets.civil.maxBytesPerFile} B record cap — the override is dead`);
   assert.ok(bytes <= budgets.roster.maxBytesPerFile,
     `roster grew to ${bytes} B > its own ${budgets.roster.maxBytesPerFile} B cap`);
+});
+
+// ---------------------------------------------------------------------------
+// Task 5 — G-HANDLE-BAND: the gate that catches what an ordinal rank hides.
+
+test("G-HANDLE-BAND is silent when the ledger size is inside the declared band", () => {
+  assert.deepEqual(gHandleBand({ world: loadCivil({ contentRoot: worldFixture() }) }), []);
+});
+
+test("G-HANDLE-BAND red: the 17.5x karst swing an ordinal rank resolves silently", () => {
+  const p = gHandleBand({ world: loadCivil({ contentRoot: worldFixture({ overlayDir: "g-handle-band-oversize" }) }) });
+  assert.equal(p.length, 1);
+  assert.match(p[0], /^G-HANDLE-BAND: c-lm-the-drowned-stair resolved to 5\.42 km2, declared band \[0\.1, 0\.8\]$/);
+});
+
+test("G-HANDLE-BAND red: the resolved type is not the type the record expects", () => {
+  const dir = worldFixture();
+  const p = join(dir, "world/handles/continent-02.json");
+  const led = JSON.parse(readFileSync(p, "utf8"));
+  led.handles.find((h) => h.handle === "c02/karst/h-0f42").type = "salt-pan-crust";
+  writeFileSync(p, JSON.stringify(led, null, 2) + "\n");
+  const problems = gHandleBand({ world: loadCivil({ contentRoot: dir }) });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /expects type "karst-cenote" but the handle resolves to "salt-pan-crust"/);
 });

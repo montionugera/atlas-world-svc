@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c09-mountain-40ce",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Bitternlobe Horn",
+  "bind": {
+    "handle": "c09/mountain/h-6840ce",
+    "expect": {
+      "type": "spur-ridge",
+      "sizeKm": [
+        2.06,
+        8.24
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A shoulder running down off the main ridge, easy walking until it steepens.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#spur-ridge.gloss"
+  },
+  "resolution": null
+}

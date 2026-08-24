@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-b30f",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Gildveil Confluence",
+  "bind": {
+    "handle": "c02/fluvial/h-adb30f",
+    "expect": {
+      "type": "oxbow-lake",
+      "sizeKm": [
+        0.21,
+        0.8
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A cut-off loop of river left standing on its own, going quietly green at the edges.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#oxbow-lake.gloss"
+  },
+  "resolution": null
+}

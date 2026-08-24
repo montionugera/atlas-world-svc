@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-coastal-893c",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Head under Grikeshaft",
+  "bind": {
+    "handle": "c04/coastal/h-26893c",
+    "expect": {
+      "type": "baymouth-bar",
+      "sizeKm": [
+        0.88,
+        3.5
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A bank of sand grown right across a bay mouth, shutting the water in behind it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#baymouth-bar.gloss"
+  },
+  "resolution": null
+}

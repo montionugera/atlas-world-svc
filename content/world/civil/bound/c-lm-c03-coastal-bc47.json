@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-coastal-bc47",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Skerryshore Stack",
+  "bind": {
+    "handle": "c03/coastal/h-dabc47",
+    "expect": {
+      "type": "barrier-island",
+      "sizeKm": [
+        2.66,
+        9
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A low ridge of sand lying offshore, taking the weather so the mainland does not.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#barrier-island.gloss"
+  },
+  "resolution": null
+}

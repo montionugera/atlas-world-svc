@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-22a7",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Thorncross Quag",
+  "bind": {
+    "handle": "c02/wetland/h-f722a7",
+    "expect": {
+      "type": "wet-meadow",
+      "sizeKm": [
+        1.14,
+        4.54
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Grass that stays green all summer because the water is never far under it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#wet-meadow.gloss"
+  },
+  "resolution": null
+}

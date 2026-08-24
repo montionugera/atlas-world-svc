@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-mountain-a74a",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Siroccburn Horn",
+  "bind": {
+    "handle": "c05/mountain/h-47a74a",
+    "expect": {
+      "type": "hogback",
+      "sizeKm": [
+        6.21,
+        14
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A sharp ridge of tilted strata standing at the same steep angle on both sides.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#hogback.gloss"
+  },
+  "resolution": null
+}

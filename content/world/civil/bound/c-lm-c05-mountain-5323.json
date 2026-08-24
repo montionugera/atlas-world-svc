@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-mountain-5323",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Fumewater Rake",
+  "bind": {
+    "handle": "c05/mountain/h-d75323",
+    "expect": {
+      "type": "col-pass",
+      "sizeKm": [
+        0.42,
+        1.5
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The low saddle between two summits: the crossing everyone uses, and everyone watches.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#col-pass.gloss"
+  },
+  "resolution": null
+}

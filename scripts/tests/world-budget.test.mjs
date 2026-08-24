@@ -64,7 +64,12 @@ function tmpRoot() {
 // tests nothing: measured, "an EMPTY content/world/fabric/ directory arms
 // nothing" read `types placed: 168 / 170` off the real fabric.
 function emptyWorldLayer(contentRoot) {
-  for (const fam of ["world/fabric", "world/handles"])
+  // Plan D Task 5 added content/world/civil/bound/ to the committed world:
+  // 336 records that BIND to handle-ledger entries. A root stripped of
+  // world/handles but still carrying the bound layer is not "an empty world
+  // with one stub", it is 336 dangling-handle G-BIND failures — so the bound
+  // layer goes with the ledgers it binds to.
+  for (const fam of ["world/fabric", "world/handles", "world/civil/bound"])
     rmSync(join(contentRoot, fam), { recursive: true, force: true });
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
 }

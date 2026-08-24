@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-5f75",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Harrowcross Race",
+  "bind": {
+    "handle": "c02/fluvial/h-b55f75",
+    "expect": {
+      "type": "confluence-bench",
+      "sizeKm": [
+        0.3,
+        1.18
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The dry tongue of ground between two rivers, just before they become one.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#confluence-bench.gloss"
+  },
+  "resolution": null
+}

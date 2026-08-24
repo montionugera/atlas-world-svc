@@ -11,7 +11,7 @@
 // every FAIL recorded before it.
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { phonemeDistance, prosody, syllableCount, registerOf } from "../../tools/mapforge/lib/name-gen.mjs";
+import { phonemeDistance, prosody, syllableCount, registerOf, titleStem } from "../../tools/mapforge/lib/name-gen.mjs";
 
 // The four keys a bound record may never carry, at any depth. A bound record
 // that knows where it is has stopped being bound.
@@ -145,7 +145,9 @@ export function gNames({ world, registers, classifiers }) {
     for (const doc of docs) {
       if (doc.provenance?.authored === "hand") continue; // canon names predate the registers
       if (typeof doc.title !== "string" || !doc.title) continue; // titleless records are named in a later task — never throw here
-      const stem = doc.title.split(" ")[0];
+      // The stem is the register word: trailing for an of-form title
+      // ("Reach of the Kelmor" is judged on "Kelmor"), leading otherwise.
+      const stem = titleStem(doc.title);
       const onsetOk = reg.onsets.some((o) => stem.startsWith(o));
       const rimeOk = reg.rimes.some((r) => stem.endsWith(r));
       if (!onsetOk || !rimeOk)
@@ -254,6 +256,25 @@ export function gPinSat({ world }) {
   return problems;
 }
 
+// G-HANDLE-BAND — the gate that catches what an ordinal rank hides. "The
+// largest karst group" resolves in every seed; measured across 20 pinned-mask
+// seeds it ranged 892 to 15,645 cells, a 17.5x swing. A declared band turns
+// that from a silent success into a named failure.
+export function gHandleBand({ world }) {
+  if (!world.present) return [];
+  const problems = [];
+  for (const { doc } of world.bound) {
+    const h = world.handles.get(doc.bind?.handle);
+    if (!h) continue; // already a G-BIND failure; one defect, one line
+    const [lo, hi] = doc.bind.expect.sizeKm;
+    if (h.type !== doc.bind.expect.type)
+      problems.push(`G-HANDLE-BAND: ${doc.id} expects type "${doc.bind.expect.type}" but the handle resolves to "${h.type}"`);
+    if (!(h.sizeKm >= lo && h.sizeKm <= hi))
+      problems.push(`G-HANDLE-BAND: ${doc.id} resolved to ${h.sizeKm} km2, declared band [${lo}, ${hi}]`);
+  }
+  return problems;
+}
+
 // The ONE entry point check_content.mjs calls. Every gate this plan adds is
 // wired here, so `--only=spine` covers all of them and Gate 1's ~4 s budget
 // binds the whole set.
@@ -263,6 +284,7 @@ export function checkWorldCivil({ opts, fail, warn }) {
   for (const e of world.errors) fail(e);
   for (const p of gBind({ world })) fail(p);
   for (const p of gPinSat({ world })) fail(p);
+  for (const p of gHandleBand({ world })) fail(p);
   const namesDir = join(opts.contentRoot, "world/names");
   const registers = existsSync(join(namesDir, "registers.json"))
     ? readJsonSafe(join(namesDir, "registers.json"), world.errors) : null;

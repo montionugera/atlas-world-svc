@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-03ed",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Millcross Roads",
+  "bind": {
+    "handle": "c02/coastal/h-a303ed",
+    "expect": {
+      "type": "marine-terrace",
+      "sizeKm": [
+        1.06,
+        4.24
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "An old shoreline stranded above the present one, level enough to build a road on.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#marine-terrace.gloss"
+  },
+  "resolution": null
+}

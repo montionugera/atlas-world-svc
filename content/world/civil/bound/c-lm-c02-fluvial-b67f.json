@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-b67f",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Emberwick Confluence",
+  "bind": {
+    "handle": "c02/fluvial/h-71b67f",
+    "expect": {
+      "type": "knickpoint-gorge",
+      "sizeKm": [
+        1.51,
+        6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A steep-walled reach where the river is still cutting its way down through hard rock.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#knickpoint-gorge.gloss"
+  },
+  "resolution": null
+}

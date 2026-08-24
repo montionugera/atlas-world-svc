@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-2bd7",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Rimefast Confluence",
+  "bind": {
+    "handle": "c03/fluvial/h-e32bd7",
+    "expect": {
+      "type": "plunge-pool",
+      "sizeKm": [
+        0.07,
+        0.28
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A deep scoured basin under a fall, cold and loud, with an undercut behind the water.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#plunge-pool.gloss"
+  },
+  "resolution": null
+}

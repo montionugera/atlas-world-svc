@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c08-coastal-cad1",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Wrackholm Roads",
+  "bind": {
+    "handle": "c08/coastal/h-53cad1",
+    "expect": {
+      "type": "marine-terrace",
+      "sizeKm": [
+        1.88,
+        6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "An old shoreline stranded above the present one, level enough to build a road on.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#marine-terrace.gloss"
+  },
+  "resolution": null
+}

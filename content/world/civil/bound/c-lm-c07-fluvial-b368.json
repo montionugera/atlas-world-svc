@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c07-fluvial-b368",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Ford between Lagoonfall",
+  "bind": {
+    "handle": "c07/fluvial/h-87b368",
+    "expect": {
+      "type": "canyon",
+      "sizeKm": [
+        3.56,
+        14.22
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A long cut with the sky in a strip overhead and no way out for miles either side.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#canyon.gloss"
+  },
+  "resolution": null
+}

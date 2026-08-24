@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  REGISTERS, NAME_FORMS, mintName, phonemeDistance, prosody, syllableCount, registerOf,
+  REGISTERS, NAME_FORMS, mintName, phonemeDistance, prosody, syllableCount, registerOf, titleStem,
 } from "../../tools/mapforge/lib/name-gen.mjs";
 import { gNames } from "../../scripts/lib/resolve.mjs";
 
@@ -172,4 +172,28 @@ test("gNames: a monotonous continent trips all three G-NAME-PROSODY clauses", ()
   };
   const problems = gNames({ world, registers, classifiers }).filter((p) => p.startsWith("G-NAME-PROSODY"));
   assert.equal(problems.length, 2, problems.join("\n")); // syllable ceiling + of-form floor
+});
+
+test("titleStem: an of-form title is judged on its trailing register stem", () => {
+  // "Xqxq" violates basin-anglic phonotactics; "Millwick" is onset+rime. If
+  // the gate read the LEADING word of an of-form title it would fail a name
+  // the register never wrote — the classifier, not the stem, leads.
+  assert.equal(titleStem("Millwick Fen"), "Millwick");
+  assert.equal(titleStem("Fen of the Millwick"), "Millwick");
+  assert.equal(titleStem("Fen below Millwick"), "Millwick"); // reedspeech's link word
+  const world = {
+    present: true,
+    pinned: [],
+    bound: [{
+      file: "world/civil/bound/x.json",
+      // Minted of-form shape: classifier + link + stem. Under the old
+      // leading-word rule this failed on "Stair" (no basin-anglic onset or
+      // rime matches); judged on its trailing stem it passes.
+      doc: { id: "b-of", kind: "landmark", title: "Stair below Millwick",
+             prose: "frontier", provenance: { authored: "generated" },
+             bind: { handle: "c02/karst/h-0001" }, requires: { continent: "c02" } },
+    }],
+  };
+  const problems = gNames({ world, registers, classifiers }).filter((p) => p.startsWith("G-NAME-REGISTER"));
+  assert.deepEqual(problems, []);
 });

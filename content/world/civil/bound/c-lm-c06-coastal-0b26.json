@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-coastal-0b26",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Withyspit Geo",
+  "bind": {
+    "handle": "c06/coastal/h-9e0b26",
+    "expect": {
+      "type": "sea-waterfall",
+      "sizeKm": [
+        0.09,
+        0.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A stream that runs off the cliff lip and never reaches a beach, because there is none.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-waterfall.gloss"
+  },
+  "resolution": null
+}

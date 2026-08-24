@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-fb56",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Cindervale Geo",
+  "bind": {
+    "handle": "c02/coastal/h-30fb56",
+    "expect": {
+      "type": "wave-cut-platform",
+      "sizeKm": [
+        0.92,
+        2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A flat shelf of scoured rock below the cliff, bare at low water and slick with weed.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#wave-cut-platform.gloss"
+  },
+  "resolution": null
+}

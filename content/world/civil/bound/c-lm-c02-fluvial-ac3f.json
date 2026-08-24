@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-ac3f",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Stockhollow Confluence",
+  "bind": {
+    "handle": "c02/fluvial/h-26ac3f",
+    "expect": {
+      "type": "meander-scroll-plain",
+      "sizeKm": [
+        1.28,
+        5.12
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Flat ground ribbed with the ghosts of old bends the river has already abandoned.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#meander-scroll-plain.gloss"
+  },
+  "resolution": null
+}
