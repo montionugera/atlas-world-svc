@@ -2961,7 +2961,8 @@ GREEN — 0 G-BAND failures over 160 regions with the gate armed (origin [83.2, 
 ### MUTATION RESULTS (3 applied, 3 killed)
 
 1. `gBand` neutered to return `[]` → 2 red (both G-BAND cases). Killed by unit tests.
-2. Dungeon-overlap clause inverted → survived the unit pattern (green test passes
-   `dungeons: []`), killed by the END-TO-END wiring test (`--only=spine` on the green world).
+2. Dungeon-overlap clause inverted → the red-dungeon unit test also kills it (3 pass / 1 fail);
+   independently confirmed killed by the END-TO-END wiring test (`--only=spine` on the green
+   world: 60 G-BAND failures, gate exit 1).
 3. Floor switched from previous-ring to next-ring bound → 3 red (green fixture + inversion
    + ring-shape test). Killed.
