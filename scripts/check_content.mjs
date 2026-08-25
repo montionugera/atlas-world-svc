@@ -65,6 +65,9 @@ import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, s
 // this file's own rule — check_content.mjs ends in a bare main() and is not
 // importable, so gate tests spawn it against fixture content roots.
 import { checkWorldCivil } from "./lib/resolve.mjs";
+// Plan E Task 1: G-CITE. Line citations to canon.md rot on insert; the section
+// form is checked for resolution. Full sweep only — never --only=spine.
+import { checkCitations } from "./lib/citations.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -359,6 +362,14 @@ function main() {
   const placementCount = checkBestiaryPlacement(opts);
   const zoneCount = checkZoneContent(opts);
   const townCount = checkTownPlan(opts);
+  // G-CITE (spec §9.6). Full sweep only — never --only=spine: this reads the
+  // prose corpus, not the spine, and Gate 1's ~4 s budget is a hard cap on the
+  // spine gate set. Soft-skips a content root without content/story/canon.md,
+  // the same discipline loadSpine() uses for a missing spine dir.
+  const canonPath = join(opts.contentRoot, "story/canon.md");
+  if (existsSync(canonPath))
+    for (const p of checkCitations({ repoRoot: ROOT, canonText: readFileSync(canonPath, "utf8") }))
+      fail(p);
   const nodeCount = checkSpine(opts, mobTypes);
   return finish(sheetCount, mapCount, story.count, placementCount, zoneCount, townCount, nodeCount);
 }

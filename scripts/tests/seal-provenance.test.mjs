@@ -23,6 +23,21 @@ const A0_PATH = join(WB_DIR, 'A0-current-world.md');
 const canon = () => readFileSync(CANON_PATH, 'utf8');
 const a0 = () => readFileSync(A0_PATH, 'utf8');
 
+/** The body under the first `##`/`###` heading whose title starts with `headingPrefix`,
+ *  up to the next heading of the same or higher level. */
+const sectionBody = (text, headingPrefix) => {
+  const rows = text.split('\n');
+  const start = rows.findIndex(
+    (l) => /^(##|###) /.test(l) && l.replace(/^#+ /, '').startsWith(headingPrefix),
+  );
+  if (start === -1) return '';
+  const level = rows[start].match(/^#+/)[0].length;
+  const end = rows.findIndex(
+    (l, i) => i > start && new RegExp(`^#{1,${level}} `).test(l),
+  );
+  return rows.slice(start, end === -1 ? rows.length : end).join('\n');
+};
+
 /** The 1-indexed line a `canon.md:N` citation points at, or undefined. */
 const canonLine = (n) => canon().split('\n')[n - 1];
 
@@ -73,60 +88,31 @@ test('canon says forging the seal is worthless rather than impossible', () => {
   );
 });
 
-test('no canon.md citation in a worldbuilding doc lands on a blank line', () => {
-  // A line-number citation that points at whitespace is always wrong, and it is
-  // the signature of a citation rotted by an insert above it. Checking only that
-  // the number is <= the file length would be theatre: the largest citation in
-  // A0 is ~405 against a 485-line canon, so a bounds check can never fire.
-  // Debt that predates F-035. All three sit ABOVE this feature's edit site, so
-  // they were already blank-anchored on release/1.7 and repairing them belongs to
-  // the deferred general citation sweep, not here. Listed rather than tolerated
-  // silently: the gate below still fails on any NEW rot.
-  const KNOWN_STALE = new Set(['canon.md:180-184', 'canon.md:233-244', 'canon.md:233-242']);
+// Superseded by G-CITE (Plan E Task 1): the blank-line citation test and its
+// KNOWN_STALE tolerance set are gone — G-CITE bans the line form outright, so
+// there is no rot left to tolerate.
 
-  const lines = canon().split('\n');
-  const docs = readdirSync(WB_DIR).filter((f) => f.endsWith('.md'));
-  const offenders = [];
-
-  for (const file of docs) {
-    const text = readFileSync(join(WB_DIR, file), 'utf8');
-    for (const m of text.matchAll(/`canon\.md:(\d+)(?:-(\d+))?`/g)) {
-      if (KNOWN_STALE.has(m[0].replaceAll('`', ''))) continue;
-      const start = Number(m[1]);
-      const end = Number(m[2] ?? m[1]);
-      if (end > lines.length) {
-        offenders.push(`${file} ${m[0]} — past end of canon.md (${lines.length} lines)`);
-        continue;
-      }
-      // A range may contain blank lines; its FIRST line may not be blank, or the
-      // citation is pointing into the gap left by an edit.
-      if (!(lines[start - 1] ?? '').trim()) {
-        offenders.push(`${file} ${m[0]} — canon.md:${start} is blank`);
-      }
-    }
-  }
-
-  assert.deepEqual(offenders, [], `rotted canon.md citations:\n${offenders.join('\n')}`);
-});
-
-test('the two citations F-035 owns point at the sentences they claim', () => {
+test('the two citations F-035 owns point at the sections they claim', () => {
   // The wax-seal property. A0 was the sole carrier of this claim until F-035
   // promoted the sentence into canon; both A0 sites must now resolve to it.
-  const waxCites = [...a0().matchAll(/`canon\.md:(\d+)`/g)]
-    .map((m) => Number(m[1]))
-    .filter((n) => /tampered with/.test(canonLine(n) ?? ''));
+  // Section-form since G-CITE: the cited SECTION BODY must carry the claim.
+  const cites = a0(); // the citations live in A0; the claims live in canon
+  const text = canon();
+  const news = /`canon\.md §4 "How news travels \(the Bellfaith, three layers, two speeds\)"`/.test(cites);
   assert.ok(
-    waxCites.length >= 1,
-    'A0 must cite the canon line carrying "tampered with" — V16 is the site that makes the claim',
+    news,
+    'A0 must cite the canon section carrying the wax rule — V16 is the site that makes the claim',
   );
+  const newsBody = sectionBody(text, 'How news travels');
+  assert.match(newsBody, /tampered with/, 'the cited section must carry the wax claim');
 
   // The utility-magic list, whose citation was stale before F-035.
-  const utilityCites = [...a0().matchAll(/`canon\.md:(\d+)`/g)]
-    .map((m) => Number(m[1]))
-    .filter((n) => /is utility: the Bellfaith's bells/.test(canonLine(n) ?? ''));
-  assert.ok(
-    utilityCites.length >= 1,
-    'A0 must cite the canon line carrying the utility-magic list',
+  const model = /`canon\.md §5 "The magic model"`/.test(cites);
+  assert.ok(model, 'A0 must cite the canon section carrying the utility-magic list');
+  assert.match(
+    sectionBody(text, 'The magic model'),
+    /is utility: the Bellfaith's bells/,
+    'the cited section must carry the utility-magic list',
   );
 });
 
@@ -141,5 +127,5 @@ test('the V16 row still carries the wax claim and its faith-or-magic ambiguity',
     /declines to say whether this is faith or magic/,
     'the ambiguity is the only posture compatible with "no god exists, only belief" — it may not be resolved',
   );
-  assert.match(v16, /`canon\.md:\d+`/, 'V16 must cite where the claim lives');
+  assert.match(v16, /`canon\.md §\d+ "/, 'V16 must cite where the claim lives');
 });
