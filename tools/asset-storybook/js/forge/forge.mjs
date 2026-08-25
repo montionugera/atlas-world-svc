@@ -22,6 +22,7 @@ import {
 } from "./staleness.mjs";
 import { buildPipelineRow } from "./pipeline.mjs";
 import { openInfoDetail } from "../view/DetailOverlay.mjs";
+import { getStore } from "../review/ui.mjs";
 import {
   addWorkOrder,
   parseQueue,
@@ -40,6 +41,9 @@ const sessionOrders = [];
 const attemptsByBrief = new Map();
 // Set by loadOrders(); re-run submits call it to repaint done/pending.
 let refreshOrdersFn = null;
+// Last document-level attempts-loaded handler this module registered, so a
+// remount replaces it instead of stacking duplicates (finding: listener leak).
+let attemptsLoadedHandler = null;
 
 function cellLabel(a) {
   return a.type === "render"
@@ -266,17 +270,35 @@ async function loadRows(rowsHost) {
     const attempts = Array.isArray(ledger.attempts) ? ledger.attempts : [];
     attemptsByBrief.set(briefId, attempts);
 
-    let staleFlags;
-    if (brief) {
-      const currentHash = await digestHex(canonicalBriefString(brief));
-      staleFlags = markStale(attempts, currentHash);
-    } else {
-      staleFlags = attempts.map(() => false);
-    }
+    try {
+      let staleFlags;
+      if (brief) {
+        const currentHash = await digestHex(canonicalBriefString(brief));
+        staleFlags = markStale(attempts, currentHash);
+      } else {
+        staleFlags = attempts.map(() => false);
+      }
 
-    const row = buildPipelineRow({ briefId, attempts, staleFlags });
-    wireRow(row, briefId, attempts);
-    rowsHost.appendChild(row);
+      const row = buildPipelineRow({ briefId, attempts, staleFlags });
+      wireRow(row, briefId, attempts);
+      rowsHost.appendChild(row);
+    } catch (err) {
+      // One bad brief must not abort the remaining rows.
+      console.error(
+        "[asset-storybook] could not render pipeline row for " + briefId + ":",
+        err,
+      );
+      const errRow = document.createElement("div");
+      errRow.className = "forge-row";
+      const errLabel = document.createElement("span");
+      errLabel.className = "forge-brief-id";
+      errLabel.textContent = briefId;
+      const errMsg = document.createElement("span");
+      errMsg.className = "forge-cell is-notrun";
+      errMsg.textContent = "render error — see console";
+      errRow.append(errLabel, errMsg);
+      rowsHost.appendChild(errRow);
+    }
   }
 }
 
@@ -340,9 +362,16 @@ function refreshOrders(listHost, countLabel) {
 function downloadQueue() {
   // Same byte-stable serializer + browser-download flow as the review export
   // (js/review/ui.mjs): Blob → object URL → anchor click → revoke.
+  //
+  // Verdicts come from the review store's EFFECTIVE view (committed + unsaved
+  // localStorage buffer), exactly like the Review tab's own export — a Forge
+  // export must never silently drop pending marks. Falls back to the parsed
+  // committed queue only if the review layer never initialized.
+  const store = getStore();
+  const verdicts = store ? store.effective() : committedQueue.verdicts;
   const json = serializeQueue({
     version: 1,
-    verdicts: committedQueue.verdicts,
+    verdicts,
     workOrders: allOrders(),
   });
   const blob = new Blob([json], { type: "application/json" });
@@ -395,9 +424,18 @@ async function loadOrders(sectionEl) {
   refreshOrders(listHost, countLabel);
   refreshOrdersFn = () => refreshOrders(listHost, countLabel);
   // Re-evaluate done/pending once ledgers have loaded (loadRows may finish
-  // after this point on a cold cache).
-  document.addEventListener("storybook:forge-attempts-loaded", () =>
-    refreshOrders(listHost, countLabel),
+  // after this point on a cold cache). Remove-before-add so remounting the
+  // tab never stacks duplicate handlers.
+  if (attemptsLoadedHandler) {
+    document.removeEventListener(
+      "storybook:forge-attempts-loaded",
+      attemptsLoadedHandler,
+    );
+  }
+  attemptsLoadedHandler = () => refreshOrders(listHost, countLabel);
+  document.addEventListener(
+    "storybook:forge-attempts-loaded",
+    attemptsLoadedHandler,
   );
 }
 

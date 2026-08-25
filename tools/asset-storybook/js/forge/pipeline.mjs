@@ -9,7 +9,6 @@
 export const CELL_STATUS = {
   done: "done",
   flag: "flag",
-  failed: "failed",
   stale: "stale",
   notrun: "notrun",
 };

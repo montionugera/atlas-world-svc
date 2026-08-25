@@ -137,6 +137,10 @@ export function createStore({ committed, local, persist }) {
   }
 
   return {
+    // Exposed so other tabs (Forge export) can read the merged view without
+    // re-implementing the buffer/CLEARED merge rules.
+    effective,
+
     get(key) {
       const rec = effective()[key];
       return rec || null;
