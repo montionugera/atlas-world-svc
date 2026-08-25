@@ -15,12 +15,87 @@
 
 export const VERDICTS = new Set(["reject", "rebuild"]);
 
+// F-050 — forge re-run work orders ride in the same committed queue file.
+// The UI only ever appends orders here and exports; it never executes them.
+export const WORK_ORDER_CELLS = new Set(["blockin", "render", "gate", "intake"]);
+
 const CLEARED = "__cleared__";
 
 function readVerdicts(doc) {
   const v = doc && doc.verdicts;
   if (!v || typeof v !== "object") return {};
   return v;
+}
+
+/**
+ * Parse a review-queue.json string. A legacy file without `workOrders`
+ * degrades to an empty array so the key always exists downstream.
+ * @param {string} json
+ */
+export function parseQueue(json) {
+  let doc;
+  try {
+    doc = JSON.parse(json);
+  } catch {
+    doc = null;
+  }
+  const verdicts = readVerdicts(doc);
+  const workOrders = Array.isArray(doc && doc.workOrders) ? doc.workOrders : [];
+  return { version: 1, verdicts, workOrders };
+}
+
+/**
+ * Byte-stable export: verdict keys sorted, work-order array order preserved
+ * (append-only semantics — order IS the queue). Same shape as the store's
+ * own export, so a re-export of unchanged data never churns the git diff.
+ * @param {{ version?: number, verdicts?: object, workOrders?: object[] }} queue
+ */
+export function serializeQueue(queue) {
+  const verdicts = {};
+  for (const key of Object.keys(readVerdicts(queue)).sort()) {
+    verdicts[key] = queue.verdicts[key];
+  }
+  const out = {
+    version: queue.version ?? 1,
+    verdicts,
+    workOrders: Array.isArray(queue.workOrders) ? queue.workOrders : [],
+  };
+  return JSON.stringify(out, null, 2) + "\n";
+}
+
+/**
+ * Append a forge work order. Pure — returns a NEW queue; the input is
+ * untouched. Injects the monotonic id + createdAt, validates everything else.
+ * @param {{ workOrders?: object[] }} queue
+ * @param {{ briefId: string, cell: string, reason: string, seed?: number }} order
+ */
+export function addWorkOrder(queue, order) {
+  if (!WORK_ORDER_CELLS.has(order.cell)) {
+    throw new Error(
+      `unknown cell "${order.cell}" — must be one of ${[...WORK_ORDER_CELLS].join(", ")}`,
+    );
+  }
+  const trimmed = typeof order.reason === "string" ? order.reason.trim() : "";
+  if (!trimmed) {
+    throw new Error(
+      "a work order needs a reason — it is what the human running the forge session will act on",
+    );
+  }
+  if (
+    order.seed !== undefined &&
+    (!Number.isInteger(order.seed) || order.seed < 0)
+  ) {
+    throw new Error("seed must be a non-negative integer");
+  }
+  const wo = {
+    id: `wo-${order.briefId}-${order.cell}-${Date.now()}`,
+    briefId: order.briefId,
+    cell: order.cell,
+    reason: trimmed,
+    createdAt: new Date().toISOString(),
+  };
+  if (order.seed !== undefined) wo.seed = order.seed;
+  return { ...queue, workOrders: [...(queue.workOrders || []), wo] };
 }
 
 /**
@@ -107,7 +182,14 @@ export function createStore({ committed, local, persist }) {
       const eff = effective();
       const verdicts = {};
       for (const key of Object.keys(eff).sort()) verdicts[key] = eff[key];
-      return JSON.stringify({ version: 1, verdicts }, null, 2) + "\n";
+      return serializeQueue({
+        version: 1,
+        verdicts,
+        workOrders:
+          committed && Array.isArray(committed.workOrders)
+            ? committed.workOrders
+            : [],
+      });
     },
   };
 }
