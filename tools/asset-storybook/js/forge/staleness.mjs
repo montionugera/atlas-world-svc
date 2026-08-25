@@ -41,17 +41,65 @@ export async function digestHex(canonical) {
 }
 
 /**
+ * Parse a run-ledger file's RAW TEXT into { header, attempts }.
+ *
+ * Ledgers are NDJSON (tools/art-forge/lib/run-ledger.mjs): one header JSON
+ * object on the first line, then one attempt object per line. `res.json()`
+ * throws on that multi-line format, so the Forge tab must fetch text and
+ * parse here instead.
+ *
+ * @param {string} text
+ * @returns {{ header: object, attempts: object[] } | null}
+ *   null for an empty/whitespace-only file (no runs recorded yet).
+ * @throws {Error} with a clear message on any malformed line.
+ */
+export function parseLedgerText(text) {
+  if (typeof text !== "string" || text.trim() === "") return null;
+
+  function parseLine(line, what) {
+    let value;
+    try {
+      value = JSON.parse(line);
+    } catch {
+      throw new Error(
+        `ledger ${what}: malformed JSON line: ${line.slice(0, 120)}`,
+      );
+    }
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      throw new Error(
+        `ledger ${what}: expected a JSON object on line "${line.slice(0, 120)}"`,
+      );
+    }
+    return value;
+  }
+
+  const lines = text.trim().split("\n");
+  const header = parseLine(lines[0], "header");
+  const attempts = lines
+    .slice(1)
+    .map((l, i) => parseLine(l, `attempt on line ${i + 2}`));
+  return { header, attempts };
+}
+
+/**
  * One staleness flag per attempt, in order.
  *
  * Renders are stale when their recorded briefHash differs from the current
  * one. Gate entries carry no hash of their own — they inherit the staleness
  * of the render that produced the PNG they inspected; an unreferenced PNG
- * defaults to not stale. Blockin and intake are never stale (blockin's hash
- * is informational; intake means the art already shipped).
+ * defaults to not stale. Blockin is never stale (its hash is informational);
+ * intake is only ever stale via the fork cascade below.
+ *
+ * UC5 fork-staleness (OR-ed on top of the hash logic): a re-run never
+ * cascades downstream. Any gate / gate-skipped / intake cell whose ts is
+ * OLDER than the newest render attempt's ts sits below an out-of-date
+ * render, so it is flagged stale (pending-recheck) regardless of briefHash.
  * @param {object[]} attempts  ledger entries
  * @param {string} currentHash  digestHex(canonicalBriefString(currentBrief))
  * @returns {boolean[]}
  */
+const FORK_CELLS = new Set(["gate", "gate-skipped", "intake"]);
+
 export function markStale(attempts, currentHash) {
   const staleByPng = new Map();
   for (const a of attempts) {
@@ -65,16 +113,31 @@ export function markStale(attempts, currentHash) {
       if (!staleByPng.has(a.out)) staleByPng.set(a.out, a.briefHash !== currentHash);
     }
   }
-  return attempts.map((a) =>
-    a.type === "render"
-      // A render with no recorded hash cannot be proven current — mark it
-      // stale (conservative: better a false "stale" flag than silently
-      // trusting an unattributable render).
-      ? a.briefHash !== currentHash
-      : a.type === "gate" || a.type === "gate-skipped"
-        ? a.png
-          ? (staleByPng.get(a.png) ?? false)
-          : false
-        : false,
-  );
+
+  // Newest successful render ts anchors the fork cascade; attempts with no
+  // parsable ts never count and never get flagged by it.
+  let newestRenderTs = -Infinity;
+  for (const a of attempts) {
+    if (a.type !== "render") continue;
+    const t = Date.parse(a.ts);
+    if (Number.isFinite(t) && t > newestRenderTs) newestRenderTs = t;
+  }
+
+  return attempts.map((a) => {
+    const hashStale =
+      a.type === "render"
+        ? // A render with no recorded hash cannot be proven current — mark it
+          // stale (conservative: better a false "stale" flag than silently
+          // trusting an unattributable render).
+          a.briefHash !== currentHash
+        : a.type === "gate" || a.type === "gate-skipped"
+          ? a.png
+            ? (staleByPng.get(a.png) ?? false)
+            : false
+          : false;
+    if (hashStale) return true;
+    if (!FORK_CELLS.has(a.type) || newestRenderTs === -Infinity) return false;
+    const ts = Date.parse(a.ts);
+    return Number.isFinite(ts) && ts < newestRenderTs;
+  });
 }

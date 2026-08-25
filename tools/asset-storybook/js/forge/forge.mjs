@@ -19,6 +19,7 @@ import {
   canonicalBriefString,
   digestHex,
   markStale,
+  parseLedgerText,
 } from "./staleness.mjs";
 import { buildPipelineRow } from "./pipeline.mjs";
 import { openInfoDetail } from "../view/DetailOverlay.mjs";
@@ -232,6 +233,18 @@ function openOrderForm(row, rerunBtn, order) {
   reason.focus();
 }
 
+/**
+ * Run ledgers are NDJSON (header line + one entry per line — see
+ * tools/art-forge/lib/run-ledger.mjs), so `res.json()` would throw on every
+ * real ledger. Fetch text and parse with parseLedgerText instead. _index.json
+ * and briefs are single JSON docs and keep using fetchJson.
+ */
+async function fetchLedger(briefId) {
+  const res = await fetch(RUNS_BASE_URL + briefId + ".json");
+  if (!res.ok) throw new Error("ledger " + briefId + ": HTTP " + res.status);
+  return parseLedgerText(await res.text());
+}
+
 async function loadRows(rowsHost) {
   let index;
   try {
@@ -257,7 +270,7 @@ async function loadRows(rowsHost) {
     let brief = null;
     try {
       [ledger, brief] = await Promise.all([
-        fetchJson(RUNS_BASE_URL + briefId + ".json", "ledger " + briefId),
+        fetchLedger(briefId),
         fetchJson(BRIEFS_BASE_URL + briefId + ".json", "brief " + briefId).catch(
           () => null,
         ),
@@ -267,7 +280,8 @@ async function loadRows(rowsHost) {
       continue;
     }
 
-    const attempts = Array.isArray(ledger.attempts) ? ledger.attempts : [];
+    // An empty ledger file parses to null — nothing recorded yet.
+    const attempts = ledger && Array.isArray(ledger.attempts) ? ledger.attempts : [];
     attemptsByBrief.set(briefId, attempts);
 
     try {
@@ -307,6 +321,12 @@ async function loadRows(rowsHost) {
 /**
  * An order is DONE when a matching newer attempt exists in that brief's
  * ledger: same briefId + cell (+ seed for render orders) with ts > createdAt.
+ *
+ * Known limitation: work orders do not carry a png reference today (the
+ * work-order schema is intentionally unchanged), so a `gate` order can be
+ * closed by ANY newer gate attempt in that brief's ledger — not only one
+ * that inspected the same PNG the order was issued for. Tightening this to
+ * png-matching requires adding a png field to the work-order schema first.
  */
 export function isOrderDone(order, attempts) {
   if (!Array.isArray(attempts)) return false;

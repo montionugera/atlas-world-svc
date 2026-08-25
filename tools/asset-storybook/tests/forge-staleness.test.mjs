@@ -9,7 +9,7 @@
 // same sha256 truncated to 16 hex. The parity test at the bottom enforces it.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { canonicalBriefString, digestHex, markStale } from "../js/forge/staleness.mjs";
+import { canonicalBriefString, digestHex, markStale, parseLedgerText } from "../js/forge/staleness.mjs";
 
 test("canonicalBriefString sorts keys and drops _note", () => {
   const s = canonicalBriefString({ b: 2, a: 1, _note: "x" });
@@ -78,6 +78,79 @@ test("markStale: non-visual stages are never stale", () => {
     { type: "intake", assetKey: "environment/a" },
   ];
   assert.deepEqual(markStale(attempts, "dddd0000dddd0000"), [false, false]);
+});
+
+// UC5 fork-staleness: a re-run never cascades downstream — gate/gate-skipped/
+// intake cells older than the newest render are stale (pending-recheck)
+// regardless of briefHash. Both staleness sources OR together.
+test("markStale fork cascade: downstream cells older than newest render are stale", () => {
+  const cur = "aaaa0000aaaa0000";
+  const attempts = [
+    { type: "render", out: "out/env/a.png", briefHash: cur, ts: "2026-01-01T00:00:00Z" },
+    { type: "gate", png: "out/env/a.png", ok: true, ts: "2026-01-01T00:01:00Z" },
+    { type: "intake", assetKey: "environment/a", ts: "2026-01-01T00:02:00Z" },
+    // Re-run: newer render — everything recorded BEFORE it goes stale.
+    { type: "render", out: "out/env/a.png", briefHash: cur, ts: "2026-02-01T00:00:00Z" },
+  ];
+  assert.deepEqual(markStale(attempts, cur), [false, true, true, false]);
+});
+
+test("markStale fork cascade ORs with briefHash drift (either source flags)", () => {
+  const cur = "aaaa0000aaaa0000";
+  const attempts = [
+    // Hash drift alone flags this render…
+    { type: "render", out: "out/env/a.png", briefHash: "bbbb0000bbbb0000", ts: "2026-03-01T00:00:00Z" },
+    // …and fork cascade alone flags this gate (hash logic says not stale:
+    // it follows the FIRST render of a.png, which is current).
+    { type: "gate", png: "out/env/a.png", ok: true, ts: "2026-01-01T00:00:00Z" },
+  ];
+  assert.deepEqual(markStale(attempts, cur), [true, true]);
+});
+
+test("markStale fork cascade: cells at/after the newest render stay clean; no render = no cascade", () => {
+  const cur = "aaaa0000aaaa0000";
+  const attempts = [
+    { type: "render", out: "out/env/a.png", briefHash: cur, ts: "2026-01-01T00:00:00Z" },
+    // Same-ts gate is NOT older → not flagged by the cascade.
+    { type: "gate", png: "out/env/a.png", ok: true, ts: "2026-01-01T00:00:00Z" },
+    { type: "blockin", out: "out/depth/a.png", ts: "2025-12-01T00:00:00Z" }, // never cascades
+  ];
+  assert.deepEqual(markStale(attempts, cur), [false, false, false]);
+
+  // No parsable render ts anywhere → cascade is inert.
+  const timeless = [
+    { type: "render", out: "out/env/a.png", briefHash: cur },
+    { type: "gate", png: "out/env/a.png", ok: true, ts: "2020-01-01T00:00:00Z" },
+  ];
+  assert.deepEqual(markStale(timeless, cur), [false, false]);
+});
+
+// parseLedgerText (finding: the Forge tab fetched NDJSON ledgers with
+// res.json(), which throws on multi-line JSON — every real ledger was
+// silently skipped).
+test("parseLedgerText parses a valid multi-line NDJSON ledger", () => {
+  const text =
+    '{"v":1,"briefId":"A1"}\n' +
+    '{"ts":"2026-01-01T00:00:00Z","type":"render","seed":7,"out":"out/env/a.png"}\n' +
+    '{"ts":"2026-01-01T00:01:00Z","type":"gate","ok":true}\n';
+  const parsed = parseLedgerText(text);
+  assert.equal(parsed.header.v, 1);
+  assert.equal(parsed.header.briefId, "A1");
+  assert.equal(parsed.attempts.length, 2);
+  assert.equal(parsed.attempts[0].type, "render");
+  assert.equal(parsed.attempts[1].type, "gate");
+});
+
+test("parseLedgerText returns null for an empty file and throws on malformed lines", () => {
+  assert.equal(parseLedgerText(""), null);
+  assert.equal(parseLedgerText("   \n"), null);
+
+  assert.throws(
+    () => parseLedgerText('{"v":1}\n{not json at all}\n'),
+    /malformed JSON line/,
+  );
+  // A non-object line (array or bare value) is also malformed.
+  assert.throws(() => parseLedgerText('{"v":1}\n[1,2]\n'), /expected a JSON object/);
 });
 
 // Cross-phase invariant: the browser canonicalization + crypto.subtle digest

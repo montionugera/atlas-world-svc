@@ -54,7 +54,11 @@ export function buildPipelineRow({ briefId, attempts, staleFlags }) {
   });
 
   // Trailing not-run placeholders so pipelines read left→right consistently.
-  const seen = new Set(attempts.map((a) => a.type));
+  // A gate-skipped entry means the gate stage WAS reached (it chose to skip),
+  // so it counts as "gate seen" — no duplicate trailing gate placeholder.
+  const seen = new Set(
+    attempts.map((a) => (a.type === "gate-skipped" ? "gate" : a.type)),
+  );
   for (const stage of ["blockin", "render", "gate", "intake"]) {
     if (!seen.has(stage)) {
       const ph = document.createElement("span");
