@@ -3084,6 +3084,14 @@ world changed (settlements/roads moved with the pinned layer). Re-rendering writ
 protected bytes — needs owner sign-off. (2) The 26 residual G-PIN-SAT above. Both keep
 scripts-suite tests that assert live-root greenness red (~30), all one root cause each.
 
+**Ruling 3 — re-render ratified (owner, 2026-08-25).** The owner ratified the
+re-render of BOTH `world-fabric.svg` AND `world-overlay.svg`: the overlay carries the
+derived area-delta table that moved -0.5 km² with the world (same derived-sheet class
+as the fabric sheet's "sea:land" label), so rendering only one would publish two
+sheets describing different worlds. Also noted: render-lock.mjs now hashes
+RE-SERIALIZED JSON for fabric files — format-insensitive for fabric only; every other
+artifact remains raw-byte hashed.
+
 #### ROOT-CAUSE FIX APPLIED (owner authorization, 2026-08-25) — generation is now pin-aware
 
 The 26 residual failures were closed at the root, ADDITIVELY (no instance moved, no
