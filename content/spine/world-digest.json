@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "inputs": {
+    "content/world/fabric": "sha256:e53eba2658a7e001f38b1c557887452e5ea6e52e466f0ee4ef4e3fce43fd4e1e",
+    "content/world/resolved": "sha256:6169570e0398fdacf65071d588667f5a9b7d24dd82d8424790241466e0348faf",
+    "content/spine/nodes": "sha256:695dc851fee5a01cbbcac3a8a1b33723e8bdf0b7428e212bf22ad449a88632a8"
+  },
+  "digest": "sha256:6fe106c87a4d16bbea88e45d18da425d00260a01e4e49d7e399c85bf2c07032b"
+}

@@ -126,6 +126,12 @@ jobs:
       - name: canon-leg pre-flight
         run: node scripts/check_canon_legs.mjs
 
+      # Plan E / spec §9.3: the whole-world digest — what replaces the freeze
+      # once coordinates are generated. Fails if any of fabric / resolved /
+      # trunk changed without a deliberate one-line re-baseline.
+      - name: world digest
+        run: node scripts/check_world_digest.mjs --check
+
       # Spine emit drift-gate (F-041 G-EMIT-DRIFT): every content/spine/nodes/
       # *.json `derived` block and the two surviving mirrors are emitted from
       # content/spine/nodes/* by scripts/check_spine_emit.mjs. Fails the build

@@ -95,6 +95,10 @@ spine_emit_drift() { node "$REPO_ROOT/scripts/check_spine_emit.mjs" --check; }
 # layer exists.
 canon_legs() { node "$REPO_ROOT/scripts/check_canon_legs.mjs"; }
 
+# Plan E / spec §9.3: the whole-world digest — what replaces the freeze once
+# coordinates are generated.
+world_digest() { node "$REPO_ROOT/scripts/check_world_digest.mjs" --check; }
+
 # Plan D: G-SLOT-STABLE. content/world/resolved/*.json is committed (D5) and
 # is the ONLY file renderers read; a silent rebinding changes what is drawn
 # with no reviewable diff anywhere else.
@@ -139,6 +143,7 @@ run_section "server: prettier format"      server_format
 run_section "content: gate (--require-complete)" content_gate
 run_section "content: story-graph drift"   graph_drift
 run_section "content: canon-leg pre-flight"  canon_legs
+run_section "content: world digest"          world_digest
 run_section "content: spine emit drift (G-EMIT-DRIFT)" spine_emit_drift
 run_section "content: resolved join (G-SLOT-STABLE)" resolved_drift
 run_section "content: relation coverage (report)" relation_coverage
