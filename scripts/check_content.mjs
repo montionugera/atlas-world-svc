@@ -2193,7 +2193,8 @@ function checkSpine(opts, mobTypes) {
           catch { fail(`canon-legs: cannot read/parse ${join(pinnedDir, f)}`); return null; }
         }).filter((id) => id != null)
     : []);
-  gSpineNet({ nodes: validNodes, edges: validEdges, tree, canonLegs, pinnedIds, fail });
+  gSpineNet({ nodes: validNodes, edges: validEdges, tree, canonLegs, pinnedIds,
+              isRealContentRoot: opts.contentRoot === join(ROOT, "content"), fail });
 
   // F-041 Phase 1 Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT. Both PRINT on
   // every run that reaches this point (spine/ present, schema compiles).
@@ -2640,7 +2641,19 @@ function gSpineFrozen({ nodes, tree, fail }) {
 // same discipline as validNodes. Before Plan B Task 3 there was no edge schema
 // and spine.edges was passed raw, which is why rootPoint below could be handed
 // an edge with no `to` and crash on `ref.node` instead of reporting.
-function gSpineNet({ nodes, edges, tree, canonLegs = null, pinnedIds = new Set(), fail }) {
+// Exported for canon-legs.test.mjs: the missing-ledger guard below keys on
+// `isRealContentRoot`, a condition a temp fixture root can never satisfy, so
+// the red case is unit-tested here rather than spawned.
+export function gSpineNet({ nodes, edges, tree, canonLegs = null, pinnedIds = new Set(), isRealContentRoot = false, fail }) {
+  // F-051 fix-pass finding 1 (MINOR): on the REAL content root (the same
+  // contentRoot === ROOT/content condition the art-manifest gate uses) a leg
+  // edge with no ledger is not a fixture to soft-skip — it is the committed
+  // canon-legs.json having been deleted, and the frozen-only fallback would
+  // stay green where the pre-flight and CI would both red. Fail once, naming
+  // the ledger and the remedy; skip the per-endpoint rules entirely, since
+  // neither fallback branch is meaningful without the input they read.
+  if (isRealContentRoot && canonLegs === null && edges.some((e) => e.kind === "leg"))
+    fail("spine: G-CANON-LEG: content/spine/canon-legs.json is missing from the live content root — re-run the Plan E canon-leg pre-flight (node scripts/check_canon_legs.mjs) or restore the committed ledger beside spine/edges.json");
   const featOwner = new Map(); // feature id -> owning node
   for (const n of nodes) for (const f of n.features ?? []) featOwner.set(f.id, n);
   const edgeById = new Map(edges.map((e) => [e.id, e]));
@@ -2689,10 +2702,14 @@ function gSpineNet({ nodes, edges, tree, canonLegs = null, pinnedIds = new Set()
         // (every minimal fixture). Fall back to the pre-plan-E rule so the
         // ~45 structural fixtures stay green. A REAL content root always has
         // content/spine/canon-legs.json — it is committed beside edges.json —
-        // so this branch cannot silently weaken the live gate.
-        for (const ref of [e.from, e.to]) {
-          const n = ref.node && tree.byId.get(ref.node);
-          if (n && !n.frozen) fail(`spine: G-CANON-LEG ${e.id}: endpoint ${n.id} is not frozen`);
+        // so this branch cannot silently weaken the live gate: on the real
+        // root a missing ledger failed above, before this line, and the
+        // fallback below is skipped (neither rule has its input).
+        if (!isRealContentRoot) {
+          for (const ref of [e.from, e.to]) {
+            const n = ref.node && tree.byId.get(ref.node);
+            if (n && !n.frozen) fail(`spine: G-CANON-LEG ${e.id}: endpoint ${n.id} is not frozen`);
+          }
         }
       } else {
         // Plan E (E-C7). "Both endpoints frozen" was the pre-generator fixity

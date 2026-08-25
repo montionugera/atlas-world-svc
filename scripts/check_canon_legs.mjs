@@ -78,10 +78,6 @@ export function checkCanonLegs({ contentRoot }) {
       problems.push(`G-CANON-LEG-PREFLIGHT: ${e.id}: malformed entry in content/spine/canon-legs.json — each side needs { pinned, feature }`);
       continue;
     }
-    if (!entry) {
-      problems.push(`G-CANON-LEG-PREFLIGHT: ${e.id}: no entry in content/spine/canon-legs.json — every leg endpoint must be named exactly once, and only there`);
-      continue;
-    }
     const a = pins.get(entry.from.pinned), b = pins.get(entry.to.pinned);
     for (const [side, id, got] of [["from", entry.from.pinned, a], ["to", entry.to.pinned, b]])
       if (!got)

@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkCanonLegs } from "../check_canon_legs.mjs";
+import { gSpineNet } from "../check_content.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const CLI = join(ROOT, "scripts/check_canon_legs.mjs");
@@ -84,4 +85,46 @@ test("the live repo's seven legs are all covered", () => {
   const ids = edges.filter((e) => e.kind === "leg").map((e) => e.id).sort();
   assert.equal(ids.length, 7);
   assert.deepEqual(Object.keys(legs.legs).sort(), ids);
+});
+
+// F-051 fix-pass finding 1 (MINOR): the gate's missing-ledger case keys on the
+// REAL content root — a condition no temp fixture root can satisfy — so it is
+// unit-tested against gSpineNet directly instead of spawned.
+test("a leg edge with no ledger FAILS on the real content root, naming the remedy", () => {
+  const problems = [];
+  gSpineNet({ nodes: [], edges: EDGES, tree: { byId: new Map(), depthOf: new Map() },
+              canonLegs: null, pinnedIds: new Set(), isRealContentRoot: true,
+              fail: (m) => problems.push(m) });
+  const ledger = problems.filter((p) =>
+    p.startsWith("spine: G-CANON-LEG: content/spine/canon-legs.json is missing"));
+  assert.equal(ledger.length, 1, `expected exactly one ledger failure, got ${JSON.stringify(problems)}`);
+  assert.match(ledger[0], /check_canon_legs\.mjs|restore the committed ledger/);
+});
+
+test("the same shape on a FIXTURE root keeps the frozen-only soft-skip fallback", () => {
+  // A FROZEN endpoint passes the fallback and no ledger is demanded — this is
+  // exactly the shape every minimal spine fixture ships, and it must stay
+  // silent rather than demand the ledger the fixture never claimed to carry.
+  const problems = [];
+  const mk = (id, at) => ({ id, parentId: null, frozen: true, placement: { anchor: at }, features: [] });
+  const a = mk("n-a", [0, 0]), b = mk("n-b", [3, 4]); // 3-4-5: exactly straightKm 5
+  gSpineNet({ nodes: [a, b],
+              edges: [{ id: "e-leg-a-b", kind: "leg",
+                        from: { node: "n-a" }, to: { node: "n-b" }, attrs: { straightKm: 5 } }],
+              tree: { byId: new Map([["n-a", a], ["n-b", b]]), depthOf: new Map([["n-a", 1], ["n-b", 1]]) },
+              canonLegs: null, pinnedIds: new Set(), isRealContentRoot: false,
+              fail: (m) => problems.push(m) });
+  assert.deepEqual(problems, []);
+});
+
+test("an UNFROZEN endpoint under the fixture-root soft-skip still reds (fallback intact)", () => {
+  const problems = [];
+  const node = { id: "n-a", parentId: null, placement: { anchor: [0, 0] }, features: [] };
+  gSpineNet({ nodes: [node],
+              edges: [{ id: "e-leg-a-b", kind: "leg",
+                        from: { node: "n-a" }, to: { node: "n-a" }, attrs: { straightKm: 5 } }],
+              tree: { byId: new Map([["n-a", node]]), depthOf: new Map([["n-a", 1]]) },
+              canonLegs: null, pinnedIds: new Set(), isRealContentRoot: false,
+              fail: (m) => problems.push(m) });
+  assert.ok(problems.some((p) => p === "spine: G-CANON-LEG e-leg-a-b: endpoint n-a is not frozen"));
 });

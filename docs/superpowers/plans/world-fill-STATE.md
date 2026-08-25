@@ -3221,3 +3221,7 @@ documented with its full accounting as §26 erratum 1. This is the designed
 loud failure, not debt silently carried.
 
 **Art re-render** (Task 10's generator integration) is owner-ratified in §25.
+
+## 28. Plan E errata
+
+- canon-legs.json's per-endpoint `feature` field has no code reader — a within-±8% feature swap passes both gates; geometry beyond 8% still reds. Filed as accepted residual.
