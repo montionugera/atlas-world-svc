@@ -3130,3 +3130,64 @@ re-baselined (--write); lock check exits 0.
 **Final:** check_content 0 failures / 25 warnings · scripts 1172/1172 · mapforge
 748/749 (raster-timing flake only) · repro ×2 byte-identical · jest mapDimensions 5/5 ·
 lock exit 0 · resolved 0 drifted.
+
+---
+
+## 26. Plan D Task 11 (the join cutover) — what shipped vs the plan's literals
+
+Appended 2026-08-25. `loadPlaces` now reads `content/world/resolved/` and
+nothing else; the spine/mirror fallback branch is deleted. Deviations, each
+with its reason:
+
+1. **THE COUNTING ASSERTION is red on the real root until Plan E movement 2,
+   by design of the programme's own ownership split.** The plan ran
+   `--require-complete` on the real root expecting exit 0 with all three
+   counts > 0. Unsatifiable: the committed zone/bestiary/town-plan records
+   still swear to the LEGACY basin slugs (`thornveil`, `millcross`), while the
+   resolved world's ids are the generated region ids — and data re-homing onto
+   new region ids is Plan E's, not Task 11's. Measured: **172 failures, every
+   one in the orphan family** (160 Z2 "geography zone has no record", 10 Z1,
+   1 T1, 1 placement G1), zero outside it; the gate fails LOUDLY with named
+   records, never silently zeroed. Pinned that way in story-seed / story-
+   migration / places.test; the counting half is proven on a matching-record
+   fixture and by the three migrated suites. **CONSEQUENCE: Gate 2
+   (integration.sh --require-complete) stays red between this commit and Plan
+   E movement 2. Gate 1 (--only=spine) is unaffected: it skips the sweeps and
+   the alias fallback never fires (0 failures / 25 warnings, unchanged).**
+2. **The RENDER ASSERTION draws from `resolveWorld`, not from loadPlaces'
+   merged doc.** The generated world retires `relay`/`sheet` as null and
+   `drawBasinSheet` dereferences `geo.relay.towers`/`geo.sheet.subtitle`
+   unguarded; the basin sheet's subject remains resolveWorld()'s document (fed
+   by render-sheet.mjs, unchanged — no drawn byte moved). The merged doc IS
+   asserted to carry real coastline/saltmire geometry.
+3. **No "no continent supplied saltmire" problem.** The plan pushed one;
+   minimal fixture worlds legitimately carry no mire, and basin-sheet does not
+   read the merged doc, so the guard reds ~60 green fixtures while protecting
+   a consumer that does not exist.
+4. **Towns floor is 8, not the plan's >= 45** — the committed resolved world
+   carries eight settlements (six basin pins + Tallowquay + Netstead).
+5. **The fallback-gone source scan matches `/maps\/cluster1-geography/`, not
+   bare `/cluster1-geography/`.** GEO_HEADER's document id "cluster1-geography"
+   is part of the basin bytes pinned by places.test.mjs's sha256 (and echoed
+   inside the committed SVG); only the mirror PATH reference had to die.
+6. **The three sheet-subject diagnoses moved home.** The gate no longer
+   resolves the spine for geography, so the missing-node / missing-descriptor /
+   lost-lore.order pins now run against resolveWorld() directly — their only
+   remaining consumers are the sheet builders.
+7. **Step 4b fans the join out at writeRun time, not promote-side staging.**
+   Promotion verifies every copied file against the run manifest's hash map;
+   files staged after writeRun would fail that guard by construction. The fan
+   out writes check_resolved.mjs's exact committed serialization
+   (JSON.stringify 2-space), so G-SLOT-STABLE is green over promoted bytes
+   without a re-write. The fixpoint test measures sha256s instead of
+   `git status`: raster.test.mjs's scanner reds any mapforge test that spawns
+   git.
+
+**Mutation evidence:** a root without `world/resolved/` returns
+`{doc: null}` plus exactly one problem naming the directory ("holds no
+continent files"), asserted at two levels (loadPlaces unit, Risk-A2 gate run).
+
+**Final:** scripts 1184/1184 · check_content --only=spine 0 failures /
+25 warnings · resolved 0 drifted · spine-emit clean 47 files · jest
+mapDimensions 5/5 · schemas grep zero hits · mapforge 751/752 (known
+raster-timing flake).
