@@ -2288,11 +2288,14 @@ function checkSpine(opts, mobTypes) {
   // so a continent's completeness is proved by its fabric pin, not by spine
   // children. An absent fabric dir yields an empty map and today's behaviour.
   const fabricIndex = loadFabricRegionIndex({ contentRoot: opts.contentRoot });
-  for (const p of fabricIndex.problems) fail(p);
   const complete = checkSpineComplete({
     tree,
     fabricRegionCounts: fabricRegionCountsFor({ nodes: validNodes, index: fabricIndex }),
   });
+  // After the counting: fabricRegionCountsFor appends stale-pin problems to
+  // the same array (review fix — a dead pin names itself, it does not hide
+  // inside "has no children").
+  for (const p of fabricIndex.problems) fail(p);
   for (const w of complete.warns) warn(w);
   if (opts.requireComplete) for (const e of complete.errors) fail(e);
   else for (const e of complete.errors) warn(e);

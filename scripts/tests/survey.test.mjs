@@ -84,6 +84,29 @@ test("loadFabricRegionIndex counts regions per fabric file and reads their surve
   assert.equal(counts.get("n-cluster1"), 2);
 });
 
+test("a stale fabric pin names its dead path in-band instead of reading as 0", () => {
+  const root = mkdtempSync(join(tmpdir(), "fab-stale-"));
+  mkdirSync(join(root, "world/fabric"), { recursive: true });
+  writeFileSync(join(root, "world/fabric/continent-02.json"), JSON.stringify({
+    continent: "c02",
+    regions: [{ id: "c02/r01", survey: "surveyed" }],
+  }));
+  const idx = loadFabricRegionIndex({ contentRoot: root });
+  const counts = fabricRegionCountsFor({
+    nodes: [{ id: "n-c",
+              provenance: { generator: { fabric: "content/world/fabric/continent-09.json" } } },
+            { id: "n-ok",
+              provenance: { generator: { fabric: "content/world/fabric/continent-02.json" } } }],
+    index: idx });
+  // The dead pin still counts 0 (G-SPINE-COMPLETE's verdict is unchanged),
+  // but a distinct problem now names the node AND the path.
+  assert.equal(counts.get("n-c"), 0);
+  assert.match(
+    idx.problems.find((p) => /n-c/.test(p)),
+    /fabric: spine node "n-c" pins "content\/world\/fabric\/continent-09\.json" but no such fabric file was counted/);
+  assert.deepEqual(idx.problems.filter((p) => /n-ok/.test(p)), []);
+});
+
 test("loadFabricRegionIndex soft-skips a content root with no fabric dir", () => {
   const root = mkdtempSync(join(tmpdir(), "fab-none-"));
   const idx = loadFabricRegionIndex({ contentRoot: root });

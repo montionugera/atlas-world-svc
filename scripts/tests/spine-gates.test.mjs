@@ -890,6 +890,22 @@ test("G-SPINE-COMPLETE: a childless continent needs a fabric pin (plan E, E-C3)"
     /G-SPINE-COMPLETE: "n-e-cont-bare" \(tier continent\) has no children/);
 });
 
+test("a stale fabric pin fails in-band naming the node and the dead path (plan E)", () => {
+  // The pin points at continent-99.json but the file is gone: before the
+  // fix this collapsed to count 0 and surfaced only as the generic
+  // "has no children" — indistinguishable from n-e-cont-bare's honest
+  // never-pinned failure. The gate must name the dead path.
+  const dir = spineFixture({
+    overlayDir: "e-continent-fabric",
+    mutate: (d) => rmSync(join(d, "world/fabric/continent-99.json")),
+  });
+  const { code, out } = runSpineGate(dir);
+  assert.equal(code, 1, out);
+  assert.match(out,
+    /fabric: spine node "n-e-cont-pinned" pins "content\/world\/fabric\/continent-99\.json" but no such fabric file was counted/);
+  assert.doesNotMatch(out, /check-content: \w*Error/, "a stack trace means the gate threw");
+});
+
 test("the fabric index fails in-band on an unreadable continent file (plan E)", () => {
   const dir = spineFixture({ mutate: (d) => {
     mkdirSync(join(d, "world/fabric"), { recursive: true });

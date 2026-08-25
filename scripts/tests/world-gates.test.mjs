@@ -408,8 +408,10 @@ test("checkWorld cannot change the exit code of a pre-existing spine fixture", (
   assert.ok(roots.length > 0, "no spine fixtures found — this test would pass vacuously");
   for (const e of roots) {
     // Plan E (E-C3) fabric overlays carry a world/ dir on purpose — the
-    // "no world/" premise below is exactly what they exist to break.
-    if (e.name.startsWith("e-")) continue;
+    // "no world/" premise below is exactly what they exist to break. Skip
+    // only roots that actually carry one: e-water-childless has none and
+    // must keep proving that a world-less root stays silent.
+    if (existsSync(join(spineFix, e.name, "world"))) continue;
     const r = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", join(spineFix, e.name)] });
     assert.ok(!/world-budget:|G-WORLD-BUDGET|FAIL\s+world:/.test(r.out),
       `${e.name}: world gates spoke on a root with no world/: ${r.out}`);
@@ -1394,8 +1396,10 @@ test("NOT ONE of the five new gates speaks on a content root with no world/", ()
   assert.ok(roots.length > 0, "no spine fixtures found — this test would pass vacuously");
   for (const e of roots) {
     // Plan E (E-C3) fabric overlays carry a world/ dir on purpose — the
-    // "no world/" premise below is exactly what they exist to break.
-    if (e.name.startsWith("e-")) continue;
+    // "no world/" premise below is exactly what they exist to break. Skip
+    // only roots that actually carry one: e-water-childless has none and
+    // must keep proving that a world-less root stays silent.
+    if (existsSync(join(spineFix, e.name, "world"))) continue;
     const r = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", join(spineFix, e.name)] });
     assert.ok(!/G-SEALAND|G-TRUNK-AREA|G-POI:|G-ORDER:|G-POLY: \d+ area/.test(r.out),
       `${e.name}: a world gate spoke on a root with no world/: ${r.out}`);

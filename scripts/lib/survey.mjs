@@ -62,10 +62,23 @@ export function loadFabricRegionIndex({ contentRoot }) {
 /** node id -> number of fabric regions it owns, via provenance.generator.fabric. */
 export function fabricRegionCountsFor({ nodes, index }) {
   const counts = new Map();
+  // Dead pins ride the same in-band channel as loadFabricRegionIndex's
+  // problems; check_content fails index.problems after this runs.
+  const problems = index.problems ?? (index.problems = []);
   for (const n of nodes ?? []) {
     const rel = n?.provenance?.generator?.fabric;
     if (!rel) continue;
-    counts.set(n.id, index.countByFabricPath.get(rel) ?? 0);
+    const count = index.countByFabricPath.get(rel);
+    if (count === undefined) {
+      // Collapsing a stale pin to 0 made it indistinguishable from never
+      // having pinned at all ("has no children"). Name the dead path
+      // instead; the count still reads 0, so G-SPINE-COMPLETE's own
+      // verdict for the node is unchanged. Never throws — gate contract.
+      problems.push(`fabric: spine node "${n.id}" pins "${rel}" but no such fabric file was counted — fix provenance.generator.fabric or restore the file`);
+      counts.set(n.id, 0);
+    } else {
+      counts.set(n.id, count);
+    }
   }
   return counts;
 }
