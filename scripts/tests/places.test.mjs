@@ -150,9 +150,12 @@ test("loadPlaces on the real content root reads the resolved world", () => {
   assert.ok(doc.zones.length >= 160, `expected >= 160 zones, got ${doc.zones.length}`);
   // ERRATUM vs plan Task 11 Step 1 ("expected >= 45 towns"): the committed
   // resolved world carries EIGHT towns — the 6 basin pins plus Tallowquay and
-  // Netstead; the roster's other pins are landmarks, not settlements. The
-  // floor below is the committed count, so it cannot drift silently.
-  assert.ok(doc.towns.length >= 8, `expected >= 8 towns, got ${doc.towns.length}`);
+  // Netstead; the roster's other pins are landmarks, not settlements. Pinned
+  // as an EXACT golden count (the repo convention, cf. tools/mapforge/tests/
+  // generate-world.test.mjs's pinned lengths) so even ONE lost settlement
+  // reds here — a >= floor would swallow it. Only Plan E's redraw may move
+  // this number, in the same commit that re-baselines it deliberately.
+  assert.equal(doc.towns.length, 8, `expected exactly 8 towns (the golden count), got ${doc.towns.length}`);
 });
 
 test("the merged doc takes each geographic feature from the first continent that has one", () => {

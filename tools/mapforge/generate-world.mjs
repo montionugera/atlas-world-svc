@@ -892,7 +892,7 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [], 
   //     Plan D Task 11 Step 4b: the per-continent files are fanned out HERE,
   //     at write time, in the SAME layout content/world/resolved/ uses — not
   //     staged by promote-world after the fact. writeRun hashes every file it
-  //    writes into the run manifest, and promotion's wholesale-replacement
+  //     writes into the run manifest, and promotion's wholesale-replacement
   //    family for content/world/resolved copies exactly what the manifest
   //    hashed, so a re-seed cannot leave the only file renderers read stale
   //    behind a second command — and a staged-but-unhashed file could never

@@ -3182,6 +3182,16 @@ with its reason:
    without a re-write. The fixpoint test measures sha256s instead of
    `git status`: raster.test.mjs's scanner reds any mapforge test that spawns
    git.
+8. **Plan E must RE-DERIVE the pre-proven alias fixture its sweep once had.**
+   The pre-cutover G-ALIAS red fixture modelled Plan E's rename-and-geoId
+   shape against a spine-DERIVED world document; Task 11 deleted that
+   derivation along with loadPlaces' spine branch. Its replacement
+   (spine-gates.test.mjs's `resolved-zone` / `resolved-town` cases) pins only
+   the resolved-id mechanism against generated ids — it does NOT prove a
+   renamed node with an explicit geoId resolves. When Plan E movement 2 lands
+   those records, the fixture must be rebuilt on the committed resolved shape
+   and re-proven before its sweep rules can be trusted again.
+
 
 **Mutation evidence:** a root without `world/resolved/` returns
 `{doc: null}` plus exactly one problem naming the directory ("holds no
@@ -3191,3 +3201,23 @@ continent files"), asserted at two levels (loadPlaces unit, Risk-A2 gate run).
 25 warnings · resolved 0 drifted · spine-emit clean 47 files · jest
 mapDimensions 5/5 · schemas grep zero hits · mapforge 751/752 (known
 raster-timing flake).
+
+## 27. PLAN D COMPLETE — all 11 tasks shipped on feat/F-049
+
+Appended 2026-08-25, fix pass. Every Plan D task (1–11) is merged on the
+`feat/F-049` branch of this worktree; no task was descoped.
+
+**Final baselines at the Plan D head:**
+
+- `npm test --prefix scripts` — **1184/1184 pass**
+- `check_content.mjs --only=spine` — **0 failures / 25 warnings**
+- `check_resolved.mjs --check` — **0 drifted**
+- `check_spine_emit.mjs --check` — **clean**
+- jest `mapDimensions` — **5/5**
+
+**Standing red window:** Gate 2 (`integration.sh --require-complete`) stays
+red between Task 11's cutover and Plan E movement 2's data re-homing —
+documented with its full accounting as §26 erratum 1. This is the designed
+loud failure, not debt silently carried.
+
+**Art re-render** (Task 10's generator integration) is owner-ratified in §25.
