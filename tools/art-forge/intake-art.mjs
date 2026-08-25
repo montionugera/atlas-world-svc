@@ -60,10 +60,8 @@ import {
 import { inspectImage } from "./artifact-gate.mjs";
 import { appendAttempt } from "./lib/run-ledger.mjs";
 
-const RUNS_DIR = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "runs",
-);
+const FORGE_DIR = path.dirname(fileURLToPath(import.meta.url));
+const RUNS_DIR = path.join(FORGE_DIR, "runs");
 
 /**
  * Default artifact-gate runner: screens the SOURCE image for hallucinated
@@ -333,7 +331,7 @@ export async function intakeArt(opts = {}) {
     if (briefId) {
       appendAttempt(RUNS_DIR, briefId, {
         type: "gate-skipped",
-        png: path.relative(repoRoot(), src),
+        png: path.relative(FORGE_DIR, src),
         reason: artifactGateRecord.reason,
       });
     }

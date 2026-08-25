@@ -1,7 +1,21 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+// Single-writer assumption: ledgers are appended by one human-driven forge
+// session at a time — there is no cross-process locking.
+
+const BRIEF_ID_RE = /^[A-Za-z0-9-]+$/;
+
+function assertValidBriefId(briefId) {
+  if (typeof briefId !== "string" || !BRIEF_ID_RE.test(briefId)) {
+    throw new Error(
+      `invalid briefId ${JSON.stringify(briefId)} — must match /^[A-Za-z0-9-]+$/`,
+    );
+  }
+}
+
 export function ledgerPath(runsDir, briefId) {
+  assertValidBriefId(briefId);
   return join(runsDir, `${briefId}.json`);
 }
 

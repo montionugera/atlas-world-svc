@@ -1,5 +1,6 @@
 import { readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 export function rebuildIndex(runsDir) {
   const briefs = readdirSync(runsDir)
@@ -11,7 +12,7 @@ export function rebuildIndex(runsDir) {
   return index;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  rebuildIndex(new URL("./runs/", import.meta.url).pathname);
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  rebuildIndex(fileURLToPath(new URL("./runs/", import.meta.url)));
   console.log("runs/_index.json rebuilt");
 }

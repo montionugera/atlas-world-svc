@@ -707,15 +707,21 @@ function main() {
   // Run-ledger entry (F-050): tee the verdict — both PASS and FLAG — into
   // the brief's ledger before exiting.
   if (ledgerBriefId) {
-    appendAttempt(RUNS_DIR, ledgerBriefId, {
-      type: "gate",
-      png: path.relative(FORGE_DIR, src),
-      ok: result.ok,
-      reasons: result.reasons,
-      cornerSheet: result.cornerSheet
-        ? path.relative(FORGE_DIR, result.cornerSheet)
-        : null,
-    });
+    // Ledger failure must NOT convert a legitimate FLAG exit (1) into an
+    // IO-error exit (2) — warn and keep the gate's verdict.
+    try {
+      appendAttempt(RUNS_DIR, ledgerBriefId, {
+        type: "gate",
+        png: path.relative(FORGE_DIR, src),
+        ok: result.ok,
+        reasons: result.reasons,
+        cornerSheet: result.cornerSheet
+          ? path.relative(FORGE_DIR, result.cornerSheet)
+          : null,
+      });
+    } catch (err) {
+      console.error(`artifact-gate.mjs: WARNING: ledger append failed: ${err.message}`);
+    }
   }
 
   if (json) {
