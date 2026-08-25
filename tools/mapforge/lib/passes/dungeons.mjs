@@ -174,3 +174,41 @@ export function anchorDungeons({ instances, regions, settlements, lexicon, manif
       `settlement, over ${new Set(eligible.map((e) => e.inst.region)).size} regions`);
   return { anchors, problems };
 }
+
+// ── Plan D Task 10 — P13's BOUND half ───────────────────────────────────────
+//
+// A door has to be a door: the lexicon's dungeonCapable flag is the only
+// authority, and a violation is reported here rather than left for the gate,
+// because the generator can still choose a different instance. The bound
+// dungeon records join to the ground by `bind.handle` — never by coordinate,
+// never by spineId — so this is the one place an authored binding can be
+// checked against the world BEFORE the fabric bytes are committed and
+// G-DUNGEON-REACH has to name the drift.
+export function anchorBoundEntrances({ instances, dungeons, lexicon }) {
+  // The lexicon arrives as an ARRAY from every production call site
+  // (generate-world.mjs reads landforms.json; anchorDungeons above filters it)
+  // and as a MAP from Task 10's own fixtures. Normalize once here so the join
+  // below has one shape — two enumerations of "what type is this" is exactly
+  // what this file's other comments forbid.
+  const rows = lexicon instanceof Map ? [...lexicon.values()] : lexicon;
+  const rowById = new Map(rows.map((t) => [t.id, t]));
+  const byHandle = new Map(instances.map((i) => [i.handle, i]));
+  const anchored = [], problems = [];
+  // Sorted by id so the output is a function of the DATA, not of the caller's
+  // directory order — the same ruling as hopsToSettlement's settled-region
+  // sort above.
+  for (const d of [...dungeons].sort((a, b) => (a.id < b.id ? -1 : 1))) {
+    const inst = byHandle.get(d.bind?.handle);
+    if (!inst) { problems.push(`anchorBoundEntrances: ${d.id} handle "${d.bind?.handle}" has no instance`); continue; }
+    // THE LEXICON IS THE AUTHORITY, joined through the instance's type — the
+    // same rule anchorDungeons applies to its own choices, for the same reason:
+    // two enumerations of "is this dungeonCapable" is how an entrance ends up
+    // on a pavement.
+    if (!rowById.get(inst.type)?.dungeonCapable) {
+      problems.push(`anchorBoundEntrances: ${d.id} handle "${d.bind.handle}" is a "${inst.type}", which is not dungeonCapable`);
+      continue;
+    }
+    anchored.push({ dungeon: d.id, handle: d.bind.handle, instanceId: inst.id });
+  }
+  return { anchored, problems };
+}

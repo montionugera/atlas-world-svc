@@ -28,15 +28,15 @@ test("the census reproduces the committed world's own totals", () => {
     ["c01", "c02", "c03", "c04", "c05", "c06", "c07", "c08", "c09", "c10", "c11", "c12", "c13"]);
   assert.equal(total.regions, 160);
   assert.equal(total.surveyed, 40);
-  assert.equal(total.settlements, 45);
-  assert.equal(total.instances, 1740);
+  assert.equal(total.settlements, 47);
+  assert.equal(total.instances, 1758);
   assert.equal(total.anchors, 60);
   // Gross land is the manifest's budget.grossLandPolygonKm2, reached from the
   // cell census rather than restated — if the panel and the budget ever
   // disagree, the panel is reading a different world.
   const manifest = readJson("content/world/manifest.json");
   assert.equal(Math.round(total.grossLandKm2), manifest.budget.grossLandPolygonKm2);
-  assert.match(headline, /^sea:land 1\.5 : 1 on 64000 km² of net land/);
+  assert.match(headline, /^sea:land 1\.5 : 1 on 63999\.5 km² of net land/);
 });
 
 test("the roster comes from world.json's own continents[].fabric column", async () => {

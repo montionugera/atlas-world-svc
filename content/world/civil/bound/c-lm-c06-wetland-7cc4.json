@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-wetland-7cc4",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Mire of the Osiershallow",
+  "bind": {
+    "handle": "c06/wetland/h-df7cc4",
+    "expect": {
+      "type": "tidal-mire",
+      "sizeKm": [
+        4.46,
+        12
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Grass and channel by turns, walkable at low water and not at high.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tidal-mire.gloss"
+  },
+  "resolution": null
+}

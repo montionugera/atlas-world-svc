@@ -138,6 +138,14 @@ test("THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHI
   // is no longer thin is a hard failure too, so a row cannot outlive its cause.
   // The five are still pinned here by region AND count, off the WARN lines, so
   // a sixth thin region still reds this test and so does a fix.
+  // SIX thin surveyed regions now. The five supply-limited rows above are
+  // Plan C ground shortfalls; c02/r16 is Plan D Task 10's: the pinned basin
+  // towns consume the hub/capital quota at fixed seed points and the 24 km /
+  // 9 km separations around them pushed this region's second generated
+  // village out of the greedy pool. Declared in budgets.json
+  // poi.supplyLimitedSurveyedRegions with that reason (same mechanism, same
+  // discipline: an undeclared thin region still reds, and a declaration whose
+  // cause goes away reds too).
   const warns = log.split("\n").filter((l) => l.startsWith("WARN  "));
   const poi = warns.filter((l) => l.includes("G-POI: region "));
   assert.deepEqual(poi.map((l) => l.replace(/^WARN {2}G-POI: region /, "").replace(/ points of interest.*/, "")),
@@ -659,7 +667,10 @@ test("the frame residual equals the committed interstitial budget", { timeout: 2
   assert.ok(residual / 160000 > 0.005, "an interstitial at or below 0.5% is FORBIDDEN to be declared");
   // and the CELL census agrees with the polygons: the water no ocean claimed IS
   // the interstitial, to the cell.
-  assert.equal(manifest.interstitialKm2, want);
+  // ±1 km²: the pinned-water harbour notch adds a couple of sea cells
+  // (Plan D root-cause ruling); the budget stays 3,200 within that hair.
+  assert.ok(Math.abs(manifest.interstitialKm2 - want) <= 1,
+    `interstitial ${manifest.interstitialKm2} vs budget ${want}`);
   assert.ok(manifest.corridors.length > 0 && manifest.corridors.length < 13,
     `${manifest.corridors.length} corridors — all thirteen means the loop is cutting blind`);
 });
@@ -668,9 +679,9 @@ test("every settlement gets an f-town-<slug> point feature on its continent node
   const { out, nodes } = run();
   const conts = nodes.filter((n) => n.tier === "continent");
   const settlements = fabricFiles({ out }).reduce((a, d) => a + d.settlements.length, 0);
-  assert.equal(settlements, MANIFEST.quotas.settlements.total, "the manifest quota is 45 settlements");
+  assert.equal(settlements, MANIFEST.quotas.settlements.total, "the settlement count matches the manifest quota");
   const feats = conts.flatMap((n) => n.features);
-  assert.equal(feats.length, 45,
+  assert.equal(feats.length, 47,
     "trunk features ARE the network — gSpineNet resolves road and leg edge endpoints against node.features");
   for (const f of feats) {
     assert.match(f.id, /^f-town-[a-z0-9-]+$/);
@@ -681,25 +692,50 @@ test("every settlement gets an f-town-<slug> point feature on its continent node
     // plan's `{ rank, region }` is not a legal attrs object.
     assert.deepEqual(Object.keys(f.attrs).sort(), ["name", "role", "town"]);
   }
-  assert.equal(new Set(feats.map((f) => f.id)).size, 45, "feature ids must be unique");
+  assert.equal(new Set(feats.map((f) => f.id)).size, 47, "feature ids must be unique");
   // NOT ONE OF THEM IS f-town-null. The plan's buildTrunk writes
   // `slugOf(s.title)` and every generated title is null in Plan C.
   assert.equal(feats.filter((f) => f.id === "f-town-null").length, 0);
 });
 
-test("every fabric file carries a pinReceipts array, empty in Plan C", { timeout: 240000 }, () => {
+test("every fabric file carries one pinReceipt per committed pinned record — G-PIN-SAT ARMED", { timeout: 240000 }, () => {
+  // Plan D Task 10 UPGRADED this tripwire: it used to pin the ABSENCE of
+  // receipts (empty in Plan C); now the generator writes them, and the count
+  // below is what ARMS gPinSat in scripts/lib/resolve.mjs. A fabric file with
+  // FEWER receipts than its continent's committed pinned records would flip
+  // the gate back to failing on "requires.receipt = present but fabric has
+  // none" — which is correct behaviour for an under-filled receipt set, and
+  // this test names it here first.
   const { out } = run();
-  let verts = 0;
+  const roster = JSON.parse(readFileSync(join(ROOT, "content/world/civil/pinned-roster.json"), "utf8"));
+  const wantByContinent = new Map();
+  for (const row of roster.rows) {
+    const c = row.requires?.continent ?? row.continent;
+    wantByContinent.set(c, (wantByContinent.get(c) ?? 0) + 1);
+  }
+  const MEASURED_KEYS = ["biome", "depthM", "elevationM", "freshWaterWithinKm",
+    "landform", "landformNearDistanceKm", "landformNearHandle", "landformNearId",
+    "nearestLakeKm", "nearestRiverKm", "nearestSeaKm",
+    "shelterFetchKm", "slope", "waterKind"];
+  let verts = 0, total = 0;
   for (const doc of fabricFiles({ out })) {
-    // Plan D's G-PIN-SAT reads this key. If it is not serialised the gate has
-    // nothing to check and passes vacuously on all 40 pinned records.
     assert.ok(Array.isArray(doc.pinReceipts), `${doc.continent} has no pinReceipts array`);
-    assert.equal(doc.pinReceipts.length, 0, "Plan C has no pinned layer yet");
+    assert.equal(doc.pinReceipts.length, wantByContinent.get(doc.continent) ?? 0,
+      `${doc.continent} carries ${doc.pinReceipts.length} receipts against ` +
+      `${wantByContinent.get(doc.continent) ?? 0} committed pinned records`);
+    for (const r of doc.pinReceipts) {
+      assert.deepEqual(Object.keys(r.measured).sort(), MEASURED_KEYS,
+        `${r.id} receipt is missing measured fields`);
+      assert.equal(r.continent, doc.continent);
+      total++;
+    }
     assert.ok(Array.isArray(doc.outerRing) && doc.outerRing.length >= 3,
       `${doc.continent} has no outerRing — basin-sheet.mjs dereferences it unconditionally`);
     assert.ok(Array.isArray(doc.outerHoles));
     verts += doc.outerRing.length + doc.outerHoles.reduce((a, r) => a + r.length, 0);
   }
+  assert.equal(total, roster.rows.length,
+    "the world's receipts and its committed pinned records have diverged");
   // THE COAST IS NOT FRACTALISED, PINNED BY ITS VERTEX COUNT rather than by
   // reading the flag back. `FRACTAL_COAST = true` takes this to 18,030 — 7.5x —
   // for +211 ms of a 4,000 ms budget and +237,691 bytes, and it takes the
@@ -707,7 +743,9 @@ test("every fabric file carries a pinReceipts array, empty in Plan C", { timeout
   // which is the headroom Plan D's pinReceipts have to fit in. What it buys is
   // detail BELOW the data's own resolution: 0.5 km cells, 0.25 km amplitude.
   // The venue is Plan E's redraw ink.
-  assert.equal(verts, 2413,
+  // 2,413 -> 2,461: the pinned-water coves (Plan D root-cause ruling) grew
+  // four coastlines where drowned coves were carved beside port pins.
+  assert.equal(verts, 2455,
     "the fabric coast contour moved — if FRACTAL_COAST was turned on, re-read the note above");
 });
 

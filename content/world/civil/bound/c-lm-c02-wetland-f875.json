@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-f875",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Bramhollow Carr",
+  "bind": {
+    "handle": "c02/wetland/h-a7f875",
+    "expect": {
+      "type": "spring-mire",
+      "sizeKm": [
+        0.19,
+        0.7
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A patch kept permanently wet by water rising from below, greener than all round it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#spring-mire.gloss"
+  },
+  "resolution": null
+}

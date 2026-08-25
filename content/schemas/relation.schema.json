@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas world relation set",
+  "description": "One file per landmass. Each element is ONE machine-checkable n-ary claim the authored prose depends on, cited back to the section that makes it. The vocabulary is closed at eight relations because that is exactly what the existing prose asserts and nothing more — see the design's claim census. G-MEANING re-derives every element from the resolved world after a join and FAILS on mismatch; the citation is what tells a human which sentence to re-voice. Line citations are banned (they rot on insert, fifth occurrence) — cite the section.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["rel", "cite"],
+    "additionalProperties": false,
+    "properties": {
+      "rel": {
+        "type": "string",
+        "enum": ["bearing", "betweenness", "distance", "adjacency", "connected_by_road", "not_connected_by_road", "colocated_with", "unique_in_scope"]
+      },
+      "cite": { "type": "string", "minLength": 1, "pattern": "^(?!.*canon\\.md:[0-9])" },
+      "note": { "type": "string" },
+      "from": { "type": "string" },
+      "to": { "type": "string" },
+      "dir": { "type": "string", "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] },
+      "toleranceDeg": { "type": "number", "minimum": 5, "maximum": 60 },
+      "a": { "type": "string" },
+      "b": { "type": "string" },
+      "km": { "type": "number", "exclusiveMinimum": 0 },
+      "tolerancePct": { "type": "number", "minimum": 1, "maximum": 25 },
+      "hub": { "type": "string" },
+      "minDegree": { "type": "integer", "minimum": 1 },
+      "subject": { "type": "string" },
+      "host": { "type": "string" },
+      "withinKm": { "type": "number", "exclusiveMinimum": 0 },
+      "property": { "type": "string", "minLength": 1 },
+      "scope": { "type": "string", "pattern": "^(world|continent:c[0-9]{2}|coast:[a-z0-9-]+|region:c[0-9]{2}/r[0-9]{2})$" }
+    },
+    "allOf": [
+      { "if": { "properties": { "rel": { "const": "bearing" } } }, "then": { "required": ["from", "to", "dir", "toleranceDeg"] } },
+      { "if": { "properties": { "rel": { "const": "distance" } } }, "then": { "required": ["a", "b", "km", "tolerancePct"] } },
+      { "if": { "properties": { "rel": { "const": "adjacency" } } }, "then": { "required": ["a", "b"] } },
+      { "if": { "properties": { "rel": { "const": "connected_by_road" } } }, "then": { "required": ["a", "b"] } },
+      { "if": { "properties": { "rel": { "const": "not_connected_by_road" } } }, "then": { "required": ["a", "b"] } },
+      { "if": { "properties": { "rel": { "const": "betweenness" } } }, "then": { "required": ["hub", "minDegree"] } },
+      { "if": { "properties": { "rel": { "const": "colocated_with" } } }, "then": { "required": ["subject", "host"] } },
+      { "if": { "properties": { "rel": { "const": "unique_in_scope" } } }, "then": { "required": ["subject", "property", "scope"] } }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-coastal-984a",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Lodehold Geo",
+  "bind": {
+    "handle": "c03/coastal/h-c0984a",
+    "expect": {
+      "type": "tombolo",
+      "sizeKm": [
+        0.71,
+        2.84
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A neck of sand and shingle joining an island to the shore; it drowns on the big tides.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tombolo.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-coastal-1095",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Dolinclint Roads",
+  "bind": {
+    "handle": "c04/coastal/h-ce1095",
+    "expect": {
+      "type": "coastal-lagoon",
+      "sizeKm": [
+        1.88,
+        7.5
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Shallow brackish water penned behind a bar, calm when the sea outside is not.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#coastal-lagoon.gloss"
+  },
+  "resolution": null
+}

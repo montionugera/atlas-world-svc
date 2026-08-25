@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-172a",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Dunewaste Barchan",
+  "bind": {
+    "handle": "c05/desert/h-73172a",
+    "expect": {
+      "type": "transverse-dune-field",
+      "sizeKm": [
+        4.37,
+        17.46
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Rank after rank of sand ridges set square across the wind, like a frozen swell.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#transverse-dune-field.gloss"
+  },
+  "resolution": null
+}

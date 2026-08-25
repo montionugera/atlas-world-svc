@@ -89,6 +89,15 @@ export function makeGrid({ w = 800, h = 800, cellKm = 0.5 } = {}) {
     // than re-deriving either from an index it would have to keep in sync.
     biomeNames: [],                           // BIOMES, set by P8
     regionIds: [],                            // region record ids by owner index, set by P9
+    // landformNames is ALLOCATED here, not minted by P10 — Plan D Task 10's
+    // measureCell reads it UNGUARDED (`grid.landformNames[grid.landform[i]]`)
+    // on the stated principle that a missing array must be a loud TypeError on
+    // the first pinned record rather than forty null landforms. An absent KEY
+    // would make even the toy-fixture grids throw before P10 runs; an empty
+    // array answers undefined -> null through the `?? null` tail, and the
+    // "CRASHES rather than guessing" test still deletes it to pin the loud
+    // path. P10 remains the WRITER (landforms.mjs overwrites it wholesale).
+    landformNames: [],                        // lexicon type ids by landform index, set by P10
     biomeName(i) { return this.biomeNames[this.biome[i]] ?? null; },
     // RECORDED MUTATION SURVIVOR, measured 2026-08-22, so the next reviewer
     // does not re-derive it: deleting the `< 0` guard leaves the suite green.

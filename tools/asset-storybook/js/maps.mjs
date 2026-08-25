@@ -3,6 +3,7 @@ import {
   MAPS_INDEX_URL,
   RENDER_LOCK_URL,
   REPO_ROOT_REL,
+  WORLD_INDEX_URL,
 } from "./state.mjs";
 import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
 import { buildSidebarItem } from "./sidebar.mjs";
@@ -53,6 +54,25 @@ async function loadLock() {
     );
     return {};
   }
+}
+
+// Same defensive shape as loadIndex(): a missing or unreadable document
+// returns null and the caller hides its panel, it never takes the Maps
+// section down.
+async function fetchJson(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return await res.json();
+  } catch (err) {
+    console.warn("[asset-storybook] " + url + " unavailable:", err);
+    return null;
+  }
+}
+
+async function loadWorldIndex() {
+  const doc = await fetchJson(WORLD_INDEX_URL);
+  return Array.isArray(doc?.continents) ? doc.continents : [];
 }
 
 // maps-index.json's svg/png fields are repo-relative (see state.mjs
@@ -379,6 +399,43 @@ export async function mountMaps(main) {
   // rejects — a root with no content/world/fabric/, or a document served from
   // the wrong root, removes the PANEL, not the tab.
   await mountFabricCensus(section);
+
+  // Plan D — Places & Meaning. The civil layer is an ARTIFACT: 41 pinned
+  // places, 336 bound records, 60 dungeons and a relation set that no sheet
+  // shows on its own. Owner rule (2026-08-15): if it is produced, it is
+  // reviewable here.
+  const world = await loadWorldIndex();
+  if (world.length) {
+    const h3 = document.createElement("h2");
+    h3.textContent = "Places & Meaning (" + world.length + " landmasses)";
+    section.appendChild(h3);
+    const table = document.createElement("table");
+    table.className = "grid world-table";
+    const head = document.createElement("tr");
+    for (const label of ["Landmass", "Register", "Regions", "Towns", "Landmarks", "Dungeons", "Authored prose"]) {
+      const th = document.createElement("th");
+      th.textContent = label;
+      head.appendChild(th);
+    }
+    table.appendChild(head);
+    for (const row of world) {
+      const doc = await fetchJson(repoPath(row.resolved));
+      if (!doc) continue;
+      const tr = document.createElement("tr");
+      const cells = [
+        row.title, row.register, String(doc.zones.length), String(doc.towns.length),
+        String(doc.landmarks.length), String(doc.dungeons.length),
+        String(doc.landmarks.filter((l) => l.prose === "authored").length),
+      ];
+      for (const c of cells) {
+        const td = document.createElement("td");
+        td.textContent = c;
+        tr.appendChild(td);
+      }
+      table.appendChild(tr);
+    }
+    section.appendChild(table);
+  }
 
   main.appendChild(section);
 }

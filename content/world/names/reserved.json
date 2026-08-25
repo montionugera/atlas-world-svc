@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "note": "A HARD exclusion set. Every hand-authored canon name lives here so a re-seed can never re-mint a canon name onto different ground — the failure mode where 'Gildmark' resolves cleanly to a village on another continent and the whole act-5 plot silently relocates. Add to this file whenever new canon prose names a place; never remove.",
+  "names": [
+    "Millcross", "Gildmark", "Rooktide", "Cindervast", "Embervale", "Norhollow",
+    "Thornveil", "Northern Icefield", "Ashvale Front", "Emberdown", "Hollowmarch",
+    "Meltwash Terrace", "Millcross Ford", "Gildmark Head", "Rooktide Reach",
+    "Peatrun Coast", "The Saltmire", "Eastern Hills", "The Meltwash", "Frontier Shelf",
+    "Coldreach", "Stonemoor", "Rimewall Cap", "Driftholt", "Reedstrand", "Brightfall",
+    "Wealdmarch", "Thirstwold", "Wracklow", "Ashen Spar", "Quillreef", "Skerryfast", "Loamspit",
+    "Galereach", "Keelbreak", "Tarnmark", "West Sea", "Gildmark Roads", "Peatrun Shallows",
+    "Wreckwater", "Netstead Bight", "Drowned Pavement", "Fumewater", "Reed Shallows",
+    "Rimewall Margin", "Tallowquay", "Netstead", "Slateflow", "Expedition Camp"
+  ]
+}

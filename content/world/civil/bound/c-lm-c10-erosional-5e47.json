@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c10-erosional-5e47",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Yardwold Slot",
+  "bind": {
+    "handle": "c10/erosional/h-475e47",
+    "expect": {
+      "type": "hoodoo",
+      "sizeKm": [
+        0.02,
+        0.08
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A standing column of soft rock left behind because a harder cap protected it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#hoodoo.gloss"
+  },
+  "resolution": null
+}

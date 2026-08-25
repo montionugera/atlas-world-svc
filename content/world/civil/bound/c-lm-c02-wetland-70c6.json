@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-70c6",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Harrowtide Fen",
+  "bind": {
+    "handle": "c02/wetland/h-dd70c6",
+    "expect": {
+      "type": "saltmire-pan",
+      "sizeKm": [
+        0.87,
+        3.48
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A bare salt patch inside the marsh where nothing grows and the crust holds water.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#saltmire-pan.gloss"
+  },
+  "resolution": null
+}

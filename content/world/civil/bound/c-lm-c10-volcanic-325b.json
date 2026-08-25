@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c10-volcanic-325b",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Cinderflat Vent",
+  "bind": {
+    "handle": "c10/volcanic/h-2b325b",
+    "expect": {
+      "type": "spatter-rampart",
+      "sizeKm": [
+        0.16,
+        0.62
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A wall of welded blobs built along a fissure where the fountain once played.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#spatter-rampart.gloss"
+  },
+  "resolution": null
+}

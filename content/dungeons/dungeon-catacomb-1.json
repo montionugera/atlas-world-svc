@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-catacomb-1",
+  "title": "Catacomb 2",
+  "family": "family-catacomb",
+  "familyIndex": 1,
+  "bind": {
+    "handle": "c04/karst/h-6b0126"
+  },
+  "entranceType": "sinkhole-doline",
+  "floors": 3,
+  "levelBand": [
+    45,
+    51
+  ],
+  "hazards": [
+    "bad-air",
+    "collapse",
+    "grave-damp"
+  ],
+  "spineId": null
+}

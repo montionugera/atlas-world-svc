@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-bd19",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Gildwick Race",
+  "bind": {
+    "handle": "c02/fluvial/h-f9bd19",
+    "expect": {
+      "type": "plunge-pool",
+      "sizeKm": [
+        0.13,
+        0.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A deep scoured basin under a fall, cold and loud, with an undercut behind the water.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#plunge-pool.gloss"
+  },
+  "resolution": null
+}

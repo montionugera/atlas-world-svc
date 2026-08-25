@@ -345,7 +345,9 @@ test("the CLI's dry-run report LISTS every write and delete, not just two counts
   const r = promoteWorld({ repoRoot: repo, runDir: run, dryRun: true });
   const lines = reportLines({ result: r, dryRun: true });
   assert.match(lines[0], /^promote-world: DRY RUN — \d+ written, \d+ deleted$/);
-  assert.match(lines[1], /^promote-world: ratio 1\.5 \(land 64000 km²\)$/);
+  // net land 63,999.5: the pinned-water notches converted two land cells to
+  // sea (Plan D root-cause ruling).
+  assert.match(lines[1], /^promote-world: ratio 1\.5 \(land 63999\.5 km²\)$/);
   for (const f of r.deleted) assert.ok(lines.includes(`  DELETE ${f}`), `${f} is deleted but unlisted`);
   for (const f of r.written) assert.ok(lines.includes(`  WRITE  ${f}`), `${f} is written but unlisted`);
   assert.equal(lines.length, 2 + r.deleted.length + r.written.length);
@@ -625,4 +627,43 @@ test("a SYMLINK in the draft is REFUSED — readFileSync follows it on both side
   assert.ok(r.errors.some((e) => /n-EVIL\.json is not a regular file/.test(e)),
     `a symlink promoted its target's bytes: ${JSON.stringify(r.errors)}`);
   assert.deepEqual(r.written, []);
+});
+
+// ─── Plan D Task 11 Step 4b: the draft carries the resolved world ──────────
+// writeRun fans the civil join out to content/world/resolved/continent-NN.json
+// (in check_resolved.mjs's exact committed serialization), so promotion's
+// wholesale-replacement family copies it like any other hashed file. The
+// fixpoint: a second promotion of the SAME run must not rewrite a byte —
+// a re-seed leaves the only file renderers read correct with no second
+// command, and no drift either.
+
+test("the shared run draft carries content/world/resolved, hashed and promotable", T, () => {
+  const run = sharedRun();
+  const files = listFiles(join(run, "content/world/resolved")).sort();
+  assert.equal(files.length, 13);
+  for (const f of files) assert.match(f, /^continent-\d\d\.json$/);
+  // Committed layout: byte-identical to what check_resolved.mjs --write emits,
+  // so G-SLOT-STABLE is green over promoted bytes without a re-write.
+  assert.equal(
+    readFileSync(join(run, "content/world/resolved/continent-02.json"), "utf8"),
+    JSON.stringify(JSON.parse(readFileSync(join(run, "content/world/resolved/continent-02.json"), "utf8")), null, 2) + "\n",
+  );
+});
+
+test("promoting twice leaves content/world/resolved clean", T, () => {
+  // NO GIT SUBPROCESS here — raster.test.mjs's source scan reds any mapforge
+  // test that spawns one (the `git checkout --` hazard), so the fixpoint is
+  // measured as a sha256 over the promoted files instead of `git status`.
+  const repo = scratchRepo(), run = sharedRun();
+  const first = promoteWorld({ repoRoot: repo, runDir: run });
+  assert.deepEqual(first.errors, [], first.errors.join("; "));
+  const digestOf = () => Object.fromEntries(
+    listFiles(join(repo, "content/world/resolved")).sort()
+      .map((f) => [f, createHash("sha256")
+        .update(readFileSync(join(repo, "content/world/resolved", f))).digest("hex")]));
+  const before = digestOf();
+  assert.equal(Object.keys(before).length, 13);
+  const second = promoteWorld({ repoRoot: repo, runDir: run });
+  assert.deepEqual(second.errors, [], second.errors.join("; "));
+  assert.deepEqual(digestOf(), before, "the second promotion rewrote the resolved world");
 });

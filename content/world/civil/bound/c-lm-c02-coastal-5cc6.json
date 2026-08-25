@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-5cc6",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Fordgate Geo",
+  "bind": {
+    "handle": "c02/coastal/h-4a5cc6",
+    "expect": {
+      "type": "coastal-lagoon",
+      "sizeKm": [
+        3.17,
+        8
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Shallow brackish water penned behind a bar, calm when the sea outside is not.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#coastal-lagoon.gloss"
+  },
+  "resolution": null
+}

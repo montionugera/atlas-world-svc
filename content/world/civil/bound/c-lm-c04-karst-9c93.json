@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-9c93",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Chalkstone Pot",
+  "bind": {
+    "handle": "c04/karst/h-339c93",
+    "expect": {
+      "type": "limestone-pavement",
+      "sizeKm": [
+        2.49,
+        9
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Bare rock split into blocks by deep grooves, with whole plants living down in the cracks.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#limestone-pavement.gloss"
+  },
+  "resolution": null
+}

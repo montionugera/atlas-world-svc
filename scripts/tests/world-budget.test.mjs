@@ -64,7 +64,18 @@ function tmpRoot() {
 // tests nothing: measured, "an EMPTY content/world/fabric/ directory arms
 // nothing" read `types placed: 168 / 170` off the real fabric.
 function emptyWorldLayer(contentRoot) {
-  for (const fam of ["world/fabric", "world/handles"])
+  // Plan D Task 5 added content/world/civil/bound/ to the committed world:
+  // 336 records that BIND to handle-ledger entries. A root stripped of
+  // world/handles but still carrying the bound layer is not "an empty world
+  // with one stub", it is 336 dangling-handle G-BIND failures — so the bound
+  // layer goes with the ledgers it binds to.
+  // Plan D Task 6 added content/dungeons/ the same way: 60 complexes that
+  // join by bind.handle and G-DUNGEON-REACH against the fabric anchors.
+  // Plan D Task 8 added content/world/relations/ the same way again: 31
+  // authored claims re-derived against the RESOLVED world — a root stripped
+  // of fabric but still carrying them is 13 continents of "no resolved
+  // world" failures, not a stub.
+  for (const fam of ["world/fabric", "world/handles", "world/civil/bound", "dungeons", "world/relations"])
     rmSync(join(contentRoot, fam), { recursive: true, force: true });
   mkdirSync(join(contentRoot, "world/fabric"), { recursive: true });
 }
@@ -647,9 +658,13 @@ test("the gate PRINTS a world-budget line for landforms on every run", () => {
   assert.equal(r.code, 0, r.out);
   assert.match(
     r.out,
-    /^world-budget: landforms 170 types, 1740 instances \(budget 100-200 types, 2400 instances\)$/m,
+    // 1,740 budgeted placements + 18 additive pin reservations (Plan D Task
+    // 10 root-cause ruling: one new instance per pinned place whose required
+    // type had none within 30 km). Errata: world-fill-STATE §25.
+    /^world-budget: landforms 170 types, 1758 instances \(budget 100-200 types, 2400 instances\)$/m,
   );
-  assert.match(r.out, /^G-LANDFORM: types placed: 168 \/ 170$/m);
+  // 169/170: the pin reservations lifted sinking-river (previously absent) onto c04.
+  assert.match(r.out, /^G-LANDFORM: types placed: 169 \/ 170$/m);
   drop();
 });
 

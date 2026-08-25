@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c13-coastal-f1eb",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Withylow Stack",
+  "bind": {
+    "handle": "c13/coastal/h-baf1eb",
+    "expect": {
+      "type": "raised-beach",
+      "sizeKm": [
+        1.08,
+        4.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A band of rounded cobbles well above the waterline, from a sea that has since dropped.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#raised-beach.gloss"
+  },
+  "resolution": null
+}

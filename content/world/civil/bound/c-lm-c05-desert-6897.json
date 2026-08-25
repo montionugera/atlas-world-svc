@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-6897",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Barchanvent Yardang",
+  "bind": {
+    "handle": "c05/desert/h-336897",
+    "expect": {
+      "type": "nebkha-field",
+      "sizeKm": [
+        0.78,
+        3.12
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Hummocks of sand each anchored by one stubborn bush, scoured bare in between.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#nebkha-field.gloss"
+  },
+  "resolution": null
+}

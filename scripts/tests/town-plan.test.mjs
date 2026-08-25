@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, cpSync } from "node:fs";
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, cpSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -481,16 +481,36 @@ function onePlan(mutate) {
 // `towns: null` = do not create content/towns at all (the first soft-skip
 // shape). `townSchema: false` = do not copy the schema either, which is what a
 // content root that never adopted town plans actually looks like.
+// Plan D Task 11: loadPlaces() lost its legacy-mirror fallback, so this
+// fixture root carries its geography in the RESOLVED shape — one
+// content/world/resolved/continent-02.json wrapping the same towns array.
+// Only the FILE and the wrapper keys changed; every downstream assertion is
+// untouched.
+function writeResolvedFixture(dir, { zones = [], towns = [] }) {
+  mkdirSync(join(dir, "content/world/resolved"), { recursive: true });
+  // The fixture root now HAS a content/world/, so G-WORLD-BUDGET arms; give it
+  // the committed budget table and manifest so it stays green here.
+  cpSync(join(ROOT, "content/world/budgets.json"), join(dir, "content/world/budgets.json"));
+  cpSync(join(ROOT, "content/world/manifest.json"), join(dir, "content/world/manifest.json"));
+  writeFileSync(join(dir, "content/world/resolved/continent-02.json"),
+    JSON.stringify({
+      continent: "c02",
+      coastline: { id: "f-coast-c02", points: [[0, 0], [10, 0], [10, 10]] },
+      river: null, saltmire: null, iceEdge: null, terrainPatches: [],
+      zones, towns, camps: [], roads: [], landmarks: [], dungeons: [],
+      instances: [], relay: null, distances: null, seaLane: null, sheet: null,
+    }));
+}
+
 function fixture({ towns = {}, geography = GEOGRAPHY, townSchema = true } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "town-gate-"));
   mkdirSync(join(dir, "content/characters"), { recursive: true });
   mkdirSync(join(dir, "content/schemas"), { recursive: true });
-  mkdirSync(join(dir, "content/maps"), { recursive: true });
+  writeResolvedFixture(dir, { zones: geography.zones ?? [], towns: geography.towns ?? [] });
   const schemas = ["character.schema.json", "map.schema.json"];
   if (townSchema) schemas.push("town-plan.schema.json");
   for (const s of schemas)
     cpSync(join(ROOT, "content/schemas", s), join(dir, "content/schemas", s));
-  writeFileSync(join(dir, "content/maps/cluster1-geography.json"), JSON.stringify(geography));
   if (towns !== null) {
     mkdirSync(join(dir, "content/towns"), { recursive: true });
     for (const [name, body] of Object.entries(towns))
@@ -569,10 +589,15 @@ test("an unparsable town file is one FAIL, not a crash", () => {
   assert.doesNotMatch(r.out, /at Object\.<anonymous>/);
 });
 
-test("a geography with no towns array is one shape-invalid FAIL, not a skip", () => {
+test("a geography with no towns at all orphans the plan loudly, not silently", () => {
+  // Plan D Task 11: the geography lives in resolved continent files now, and
+  // the merge NORMALISES every array key — a continent file without `towns`
+  // yields an empty towns map, never a shape-invalid document. The failure
+  // mode for a world that declares no towns is therefore T1's named orphan:
   const r = runGate(fixture({ towns: onePlan(), geography: { zones: [] } }));
   assert.equal(r.code, 1);
-  assert.match(r.out, /geography: .* is shape-invalid/);
+  assert.match(r.out, /towns\/town-millcross\.json: town "millcross" not in content\/world\/resolved#towns/);
+  assert.match(r.out, /, 0 towns, 0 nodes,/);
 });
 
 // ---------------------------------- T1 -------------------------------------
@@ -580,13 +605,13 @@ test("a geography with no towns array is one shape-invalid FAIL, not a skip", ()
 test("T1: a plan naming a town the geography declares passes", () => {
   const r = runGate(fixture({ towns: onePlan((p) => { p.town = "gildmark"; }) }));
   assert.equal(r.code, 0);
-  assert.doesNotMatch(r.out, /not in cluster1-geography/);
+  assert.doesNotMatch(r.out, /not in content\/world\/resolved/);
 });
 
 test("T1: a plan naming a town the geography does not declare FAILs and is not counted", () => {
   const r = runGate(fixture({ towns: onePlan((p) => { p.town = "nowhere-ford"; }) }));
   assert.equal(r.code, 1);
-  assert.match(r.out, /towns\/town-millcross\.json: town "nowhere-ford" not in cluster1-geography\.json#towns/);
+  assert.match(r.out, /towns\/town-millcross\.json: town "nowhere-ford" not in content\/world\/resolved#towns/);
   assert.match(r.out, /, 0 towns, 0 nodes,/);
 });
 

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-coastal-0435",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Alderlobe Roads",
+  "bind": {
+    "handle": "c06/coastal/h-b00435",
+    "expect": {
+      "type": "sea-cave",
+      "sizeKm": [
+        0.11,
+        0.3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A dark mouth in the cliff foot that the tide fills twice a day and empties again.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#sea-cave.gloss"
+  },
+  "resolution": null
+}

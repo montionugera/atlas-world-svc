@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-59ab",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Fordstead Confluence",
+  "bind": {
+    "handle": "c02/fluvial/h-8159ab",
+    "expect": {
+      "type": "alluvial-fan",
+      "sizeKm": [
+        3.7,
+        8
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A spread of stone and grit laid out where a steep stream hits the flat and slows.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#alluvial-fan.gloss"
+  },
+  "resolution": null
+}

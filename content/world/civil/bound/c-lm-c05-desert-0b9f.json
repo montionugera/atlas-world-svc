@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-0b9f",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Glasswind Yardang",
+  "bind": {
+    "handle": "c05/desert/h-200b9f",
+    "expect": {
+      "type": "oasis-spring",
+      "sizeKm": [
+        0.21,
+        0.84
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Water reaching the surface where nothing else does, and everything alive for miles at it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#oasis-spring.gloss"
+  },
+  "resolution": null
+}

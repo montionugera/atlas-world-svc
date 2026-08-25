@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadPlaces } from "../lib/places.mjs";
+import { resolveWorld } from "../lib/places.mjs";
+import { loadSpine, buildTree } from "../lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const budget = JSON.parse(readFileSync(join(ROOT, "content/season-1-budget.json"), "utf8"));
@@ -185,11 +186,18 @@ import { existsSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";
 // directly. That file is deleted by this task, and this file was NOT on the
 // plan's list of remaining readers (enumeration defect #4) — a module-level
 // read, so its absence would have reddened this whole suite on import rather
-// than one test. The world now comes from the same resolver every gate join
-// uses; the assertion it feeds is unchanged.
+// than one test.
+//
+// Plan D Task 11: loadPlaces() now reads the GENERATED world from
+// content/world/resolved/, whose zone ids are the new region ids. This file's
+// subject is still the live BASIN (the ten legacy zone slugs), so the world
+// comes from resolveWorld() — the basin document's own resolver, the same one
+// the sheet builders draw from.
 const REAL_WORLD = (() => {
-  const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
-  assert.deepEqual(problems, [], "the real content root must resolve a world");
+  const spine = loadSpine({ contentRoot: join(ROOT, "content") });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  const { doc, problems } = resolveWorld({ spine, tree });
+  assert.deepEqual(problems, [], "the real spine must resolve a world");
   return doc;
 })();
 const GEOGRAPHY_ZONE_IDS = REAL_WORLD.zones.map((z) => z.id);
@@ -311,13 +319,23 @@ test("the gate and the zones measure agree on which filenames are records", () =
       "content/schemas/map.schema.json",
     ]) writeFileSync(join(root, rel), readFileSync(join(ROOT, rel), "utf8"));
     // Plan A Task 12: the geography used to be COPIED from the repo's
-    // content/maps/cluster1-geography.json, which this task deletes. This
-    // fixture root deliberately has NO content/spine/, so the gate's
-    // loadPlaces() takes its legacy-mirror fallback branch — the branch the
-    // ~45 minimal fixture roots depend on. Serialising the real resolved
-    // world here keeps that branch exercised with the same data the copy
-    // supplied, and keeps this test about the FILENAME FILTER it is named for.
-    writeFileSync(join(root, "content/maps/cluster1-geography.json"), JSON.stringify(REAL_WORLD));
+    // content/maps/cluster1-geography.json, which that task deletes.
+    //
+    // Plan D Task 11: loadPlaces() lost its fallback branch, so the fixture
+    // root carries its geography in the RESOLVED shape instead — one
+    // content/world/resolved/continent-02.json wrapping the same zones/towns
+    // arrays. Only the FILE and the wrapper keys changed; this stays a test
+    // about the FILENAME FILTER it is named for.
+    mkdirSync(join(root, "content/world/resolved"), { recursive: true });
+    writeFileSync(join(root, "content/world/resolved/continent-02.json"), JSON.stringify({
+      continent: "c02",
+      coastline: { id: "f-coast-c02", points: [[0, 0], [10, 0], [10, 10]] },
+      river: null, saltmire: null, iceEdge: null,
+      terrainPatches: REAL_WORLD.terrainPatches ?? [],
+      zones: REAL_WORLD.zones, towns: REAL_WORLD.towns,
+      camps: [], roads: [], landmarks: [], dungeons: [],
+      instances: [], relay: null, distances: null, seaLane: null, sheet: null,
+    }));
 
     // Hermeticity, exactly as Task 4's fixture()/runGate() do it. parseArgs in
     // check_content.mjs defaults --keys, --manifest, --mob-types and

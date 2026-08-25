@@ -14,7 +14,8 @@ import Ajv from "ajv";
 // under ESM the constructor may arrive as the module namespace's `.default`.
 const AjvClass = Ajv.default ?? Ajv;
 
-import { loadPlaces } from "../lib/places.mjs";
+import { resolveWorld } from "../lib/places.mjs";
+import { loadSpine, buildTree } from "../lib/spine.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_content.mjs");
@@ -242,10 +243,18 @@ test("every committed zone record validates against the committed schema", () =>
   }
 });
 
-test("the committed records cover exactly the resolved world's zones", () => {
+test("the committed records cover exactly the resolved world's basin zones", () => {
   // Plan A Task 12: was a read of content/maps/cluster1-geography.json, which
-  // this task deleted. Same join, same assertion, resolved from the spine.
-  const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
+  // that task deleted.
+  //
+  // Plan D Task 11: loadPlaces() now returns the GENERATED world — 160 region
+  // zones with ids like c02/r11. The ten committed prose records are still
+  // sworn to the legacy BASIN slugs (re-homing is Plan E movement 2), so the
+  // exact-cover assertion now runs against resolveWorld()'s basin document,
+  // whose zone ids are exactly those slugs.
+  const spine = loadSpine({ contentRoot: join(ROOT, "content") });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  const { doc, problems } = resolveWorld({ spine, tree });
   assert.deepEqual(problems, []);
   assert.deepEqual([...doc.zones.map((z) => z.id)].sort(), [...ZONE_IDS].sort());
 });
@@ -347,16 +356,43 @@ function allZones(mutators = {}) {
 
 // `zones: null` = do not create content/zones at all (the soft-skip path).
 // `geography: null` = write a literal JSON `null` (the shape-invalid path).
+//
+// Plan D Task 11: loadPlaces() lost its legacy-mirror fallback, so this
+// fixture root carries its geography in the RESOLVED shape — one
+// content/world/resolved/continent-02.json wrapping the same zones array.
+// Only the FILE and the wrapper keys changed; every downstream assertion is
+// untouched.
+function writeResolvedFixture(dir, { zones = [], towns = [], body = null } = {}) {
+  mkdirSync(join(dir, "content/world/resolved"), { recursive: true });
+  // The fixture root now HAS a content/world/, so G-WORLD-BUDGET arms; give it
+  // the committed budget table and manifest so it stays green here.
+  cpSync(join(ROOT, "content/world/budgets.json"), join(dir, "content/world/budgets.json"));
+  cpSync(join(ROOT, "content/world/manifest.json"), join(dir, "content/world/manifest.json"));
+  const bytes = body !== null
+    ? body
+    : JSON.stringify({
+        continent: "c02",
+        coastline: { id: "f-coast-c02", points: [[0, 0], [10, 0], [10, 10]] },
+        river: null, saltmire: null, iceEdge: null, terrainPatches: [],
+        zones, towns, camps: [], roads: [], landmarks: [], dungeons: [],
+        instances: [], relay: null, distances: null, seaLane: null, sheet: null,
+      });
+  writeFileSync(join(dir, "content/world/resolved/continent-02.json"), bytes);
+}
+
 function fixture({ zones = {}, geography = GEOGRAPHY, zoneSchema = true } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "zone-gate-"));
   mkdirSync(join(dir, "content/characters"), { recursive: true });
   mkdirSync(join(dir, "content/schemas"), { recursive: true });
-  mkdirSync(join(dir, "content/maps"), { recursive: true });
+  writeResolvedFixture(dir, {
+    zones: geography === null ? [] : geography.zones ?? [],
+    towns: geography === null ? [] : geography.towns ?? [],
+    body: geography === null ? "null" : null,
+  });
   const schemas = ["character.schema.json", "map.schema.json"];
   if (zoneSchema) schemas.push("zone-content.schema.json");
   for (const s of schemas)
     cpSync(join(ROOT, "content/schemas", s), join(dir, "content/schemas", s));
-  writeFileSync(join(dir, "content/maps/cluster1-geography.json"), JSON.stringify(geography));
   if (zones !== null) {
     mkdirSync(join(dir, "content/zones"), { recursive: true });
     for (const [name, body] of Object.entries(zones))
@@ -484,7 +520,7 @@ test("Z1: a record naming a zone the geography does not have fails", () => {
   zones["zone-nowhere.json"] = orphan;
   const r = runGate(fixture({ zones }));
   assert.equal(r.code, 1);
-  assert.match(r.out, /zones\/zone-nowhere\.json: zone "nowhere" not in cluster1-geography\.json#zones/);
+  assert.match(r.out, /zones\/zone-nowhere\.json: zone "nowhere" not in content\/world\/resolved#zones/);
   // The orphan must be withheld from the summary count too, not just FAILed:
   // it is not pushed into `records`, so the ten real geography zones — not
   // eleven — are what the gate reports as covered.
@@ -494,7 +530,7 @@ test("Z1: a record naming a zone the geography does not have fails", () => {
 test("Z1: all ten geography zone ids are accepted", () => {
   const r = runGate(fixture({ zones: allZones() }));
   assert.equal(r.code, 0);
-  assert.doesNotMatch(r.out, /not in cluster1-geography/);
+  assert.doesNotMatch(r.out, /not in content\/world\/resolved/);
 });
 
 // --------------------------------- Z2 --------------------------------------
@@ -508,7 +544,7 @@ test("Z2: a geography zone with no record fails", () => {
   assert.equal(r.code, 1);
   assert.match(r.out, /zones: geography zone "thornveil" has no record in content\/zones\//);
   assert.match(r.out, /9 zones/);
-  assert.doesNotMatch(r.out, /not in cluster1-geography/);
+  assert.doesNotMatch(r.out, /not in content\/world\/resolved/);
 });
 
 test("Z2: two records claiming the same zone fail", () => {

@@ -1,0 +1,21 @@
+{
+  "id": "dungeon-catacomb-5",
+  "title": "Catacomb 6",
+  "family": "family-catacomb",
+  "familyIndex": 5,
+  "bind": {
+    "handle": "c04/karst/h-49e4de"
+  },
+  "entranceType": "karst-fenster",
+  "floors": 3,
+  "levelBand": [
+    57,
+    63
+  ],
+  "hazards": [
+    "bad-air",
+    "collapse",
+    "grave-damp"
+  ],
+  "spineId": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-coastal-2031",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Brightrun Roads",
+  "bind": {
+    "handle": "c06/coastal/h-072031",
+    "expect": {
+      "type": "spit",
+      "sizeKm": [
+        1.19,
+        4.74
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A finger of shingle the drift keeps building out across open water, growing every year.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#spit.gloss"
+  },
+  "resolution": null
+}

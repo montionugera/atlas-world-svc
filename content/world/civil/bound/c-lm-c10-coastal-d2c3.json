@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c10-coastal-d2c3",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Emberspar Stack",
+  "bind": {
+    "handle": "c10/coastal/h-21d2c3",
+    "expect": {
+      "type": "tombolo",
+      "sizeKm": [
+        0.94,
+        3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A neck of sand and shingle joining an island to the shore; it drowns on the big tides.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tombolo.gloss"
+  },
+  "resolution": null
+}

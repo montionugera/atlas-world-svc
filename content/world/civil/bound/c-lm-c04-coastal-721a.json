@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-coastal-721a",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Dolingill Geo",
+  "bind": {
+    "handle": "c04/coastal/h-7c721a",
+    "expect": {
+      "type": "geo",
+      "sizeKm": [
+        0.11,
+        0.42
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A narrow slot cut back into the cliff along a weak seam, loud with water at the far end.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#geo.gloss"
+  },
+  "resolution": null
+}

@@ -1,6 +1,6 @@
 {
   "continent": "c11",
-  "orderDigest": "sha256:ff05321fb23bdc5cb576594ed6a5504940aa0ead00efa213f7ab3471fd0d2012",
+  "orderDigest": "sha256:5b0a8ccfb208ee890287df0567d6237d39d0464079cdbf95b718c069841270de",
   "handles": [
     {"handle":"c11/oceanic/h-4f9917","type":"abyssal-plain","sizeKm":69.29,"region":"c11/r02","contentHash":"sha256:4f9917b85394fbd09ecfb3d4c2f7100bab68c9182c775bcf6391d6df9acc9548","rank":0},
     {"handle":"c11/oceanic/h-d61ba0","type":"mid-ocean-ridge","sizeKm":51.57,"region":"c11/r01","contentHash":"sha256:d61ba08bf1b3a3a485f6d4f31660e28241452d7a6716d4a14f50065bc01010ff","rank":1},
@@ -16,7 +16,8 @@
     {"handle":"c11/oceanic/h-10e258","type":"seamount","sizeKm":3.15,"region":"c11/r01","contentHash":"sha256:10e2582a4df3bd2f55dadaf77a663c605b5ef47ee6e574ad6db76b70f8f40a33","rank":11},
     {"handle":"c11/oceanic/h-15d167","type":"guyot","sizeKm":3.15,"region":"c11/r01","contentHash":"sha256:15d167b0afb014c3aca1163397fa9168911af29d0c7c002d871cc8f64a08d78b","rank":12},
     {"handle":"c11/coastal/h-6aa000","type":"cuspate-foreland","sizeKm":2.84,"region":"c11/r02","contentHash":"sha256:6aa0001f1283869721c11a0562e8daadaeb6ead56a66a96d6daa7f9194ff152d","rank":13},
-    {"handle":"c11/oceanic/h-e7d7f6","type":"fringing-reef","sizeKm":1.77,"region":"c11/r02","contentHash":"sha256:e7d7f623ffe5350abd436edb2dea92388680ee94ce19e0259a70cdb9ce297bdf","rank":14},
-    {"handle":"c11/coastal/h-5ebb14","type":"blowhole","sizeKm":0.03,"region":"c11/r02","contentHash":"sha256:5ebb1407942be5040a31998b83e693d526d8485e4063d640c35aa2a8aff250fe","rank":15}
+    {"handle":"c11/island/h-40d916","type":"atoll","sizeKm":2.68,"region":"c11/r01","contentHash":"sha256:40d9167a5590f744845ba47c841a27a658a5953cb4bf161d98245585feb2c774","rank":14},
+    {"handle":"c11/oceanic/h-e7d7f6","type":"fringing-reef","sizeKm":1.77,"region":"c11/r02","contentHash":"sha256:e7d7f623ffe5350abd436edb2dea92388680ee94ce19e0259a70cdb9ce297bdf","rank":15},
+    {"handle":"c11/coastal/h-5ebb14","type":"blowhole","sizeKm":0.03,"region":"c11/r02","contentHash":"sha256:5ebb1407942be5040a31998b83e693d526d8485e4063d640c35aa2a8aff250fe","rank":16}
   ]
 }

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-fluvial-a42b",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Rookfield Confluence",
+  "bind": {
+    "handle": "c02/fluvial/h-28a42b",
+    "expect": {
+      "type": "confluence-bench",
+      "sizeKm": [
+        0.33,
+        1.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "The dry tongue of ground between two rivers, just before they become one.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#confluence-bench.gloss"
+  },
+  "resolution": null
+}

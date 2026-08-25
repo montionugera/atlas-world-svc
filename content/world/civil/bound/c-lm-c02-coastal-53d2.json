@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-coastal-53d2",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Harrowmark Geo",
+  "bind": {
+    "handle": "c02/coastal/h-4653d2",
+    "expect": {
+      "type": "baymouth-bar",
+      "sizeKm": [
+        0.75,
+        3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A bank of sand grown right across a bay mouth, shutting the water in behind it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#baymouth-bar.gloss"
+  },
+  "resolution": null
+}

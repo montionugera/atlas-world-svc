@@ -61,6 +61,10 @@ import { loadFabric, gWorldBudget, gWorldSeaLand, gWorldSeaLandTrunk, gWorldTrun
 // which runs with a different cwd, and in CI.
 import { orderHandles, orderDigestOf } from "../tools/mapforge/lib/passes/landforms.mjs";
 import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
+// Plan D: the pinned/bound/relation gates. Pure logic in lib/resolve.mjs, per
+// this file's own rule — check_content.mjs ends in a bare main() and is not
+// importable, so gate tests spawn it against fixture content roots.
+import { checkWorldCivil } from "./lib/resolve.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -237,12 +241,11 @@ function placesDoc(contentRoot) {
 // across files, never retyped from prose.
 //
 // Plan A Task 6: the SOURCE moved from the legacy content/maps/
-// cluster1-geography.json mirror to scripts/lib/places.mjs, which resolves
-// the same document from content/spine/ and falls back to the mirror file for
-// content roots that ship one but no spine. `contentRoot` is now the content
-// ROOT, not a file path. The failure messages downstream still name
-// "cluster1-geography.json#zones" verbatim — ~10 fixture tests regex them and
-// the mirror is still the concept even after the file is gone.
+// cluster1-geography.json mirror to scripts/lib/places.mjs; `contentRoot` is
+// the content ROOT, not a file path. Plan D Task 11 then removed
+// places.mjs's spine/mirror fallback: the document is now read from
+// content/world/resolved/ and nowhere else, and the failure messages below
+// name that directory — ~10 fixture tests regex them verbatim.
 function loadGeographyZones(contentRoot) {
   const doc = placesDoc(contentRoot);
   if (!doc) return null;
@@ -991,7 +994,7 @@ function checkBestiaryPlacement(opts) {
     // G1 — the zone exists in the Cartographer's geography
     const zone = zones.get(doc.zone);
     if (!zone) {
-      fail(`${label}: zone "${doc.zone}" not in cluster1-geography.json#zones`);
+      fail(`${label}: zone "${doc.zone}" not in content/world/resolved#zones`);
       continue; // every remaining rule is relative to the zone
     }
 
@@ -1137,7 +1140,7 @@ function checkZoneContent(opts) {
     // hide real defects behind one typo. The orphan is FAILed and simply not
     // pushed into `records`, which withholds it from Z2, Z6 and the count.
     const known = zones.has(doc.zone);
-    if (!known) fail(`${label}: zone "${doc.zone}" not in cluster1-geography.json#zones`);
+    if (!known) fail(`${label}: zone "${doc.zone}" not in content/world/resolved#zones`);
 
     // Z3 — floors (design D4). Owned here, not by the schema: Ajv would emit
     // "/hazards must NOT have fewer than 2 items" and would reject the doc
@@ -1359,7 +1362,7 @@ function checkTownPlan(opts) {
     // hide real defects behind one typo. The orphan is FAILed and withheld
     // from `records`, and so from the count.
     const known = towns.has(doc.town);
-    if (!known) fail(`${label}: town "${doc.town}" not in cluster1-geography.json#towns`);
+    if (!known) fail(`${label}: town "${doc.town}" not in content/world/resolved#towns`);
 
     // T2 — extent within D1's 150–260 on BOTH axes. Inclusive: a town sitting
     // exactly on either endpoint is legal, which is what lets the fixture sit
@@ -1602,10 +1605,11 @@ function checkSpineExternalAliases({ opts, report }) {
   //       versus a resolve Gate 1 would pay on every run for a path that
   //       never fires.
   //   correctness — loadPlaces() REPORTS on a root it cannot resolve
-  //       ("has neither a resolvable spine nor maps/cluster1-geography.json"),
-  //       and placesDoc() turns every such problem into a FAIL. ~45 minimal
-  //       spine fixtures have a spine and no mirror and no subjects descriptor;
-  //       resolving eagerly would have handed every one of them a brand-new
+  //       ("world/resolved/ holds no continent files", since the Plan D
+  //       cutover),
+  //       and placesDoc() turns every such problem into a FAIL. The minimal
+  //       spine fixtures have no content/world/ at all; resolving eagerly
+  //       would have handed every one of them a brand-new
   //       geography FAIL for a document the fixture never claimed to carry.
   //       Lazily, they never reach it, because none of their slugs miss.
   // The memo is placesDoc's, so a full run shares ONE resolve with the three
@@ -1866,6 +1870,15 @@ function checkWorld(opts) {
     report: fail,
     note,
   });
+  // Plan D — the world-meaning gates (G-BIND, and from later tasks G-PIN-SAT,
+  // G-HANDLE-BAND, G-BAND, G-DUNGEON-REACH, G-MEANING, G-NAME-*). The plan's
+  // call-site line ("before checkSpineStoryAlias") sits BEHIND checkSpine's
+  // spine soft-skip, so a world-only root could never reach it and every
+  // world-only fixture would pass vacuously. checkWorld runs BEFORE that
+  // soft-skip (see its header) and is exactly the "spine + fabric + civil"
+  // scope the design's placement rule puts in `--only=spine`, so the gates
+  // live here, at its tail.
+  checkWorldCivil({ opts, fail, warn });
   return world;
 }
 
@@ -1977,7 +1990,7 @@ function checkSpine(opts, mobTypes) {
   // reads plan: null can never object to a drifted plan extent.
   //
   // JOIN CAVEAT — the two join keys are UNLINKED today. A plan carries
-  // `town` (joined to content/maps/cluster1-geography.json#towns by T1) and
+  // `town` (joined to content/world/resolved#towns by T1) and
   // `spineId` (joined to this node table by G-TOWN-FRAME). Nothing checks the
   // two name the SAME place: they agree only transitively, because
   // anchor.geographyAt is byte-identical to the geography town's `at` and to

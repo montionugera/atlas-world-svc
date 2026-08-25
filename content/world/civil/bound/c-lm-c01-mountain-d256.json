@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c01-mountain-d256",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Stormshore Horn",
+  "bind": {
+    "handle": "c01/mountain/h-1fd256",
+    "expect": {
+      "type": "summit-pyramid",
+      "sizeKm": [
+        0.48,
+        1.9
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A peak with three clean faces meeting at a point, and nothing above it for a long way.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#summit-pyramid.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c02-wetland-a4e2",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Weldvale Fen",
+  "bind": {
+    "handle": "c02/wetland/h-8fa4e2",
+    "expect": {
+      "type": "carr-thicket",
+      "sizeKm": [
+        0.88,
+        3
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Wet scrub of willow and alder, thorny, and slower to cross than open water.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#carr-thicket.gloss"
+  },
+  "resolution": null
+}

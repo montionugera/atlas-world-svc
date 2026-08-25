@@ -1,0 +1,26 @@
+{
+  "id": "c-lm-rimewall-margin",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Rimewall Margin",
+  "pin": {
+    "at": [
+      200,
+      56
+    ],
+    "toleranceKm": 1.5,
+    "why": "A2 §1: the margin the Tarnmark charts stop at"
+  },
+  "requires": {
+    "continent": "c01",
+    "landform": "moraine-terminal"
+  },
+  "properties": [],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

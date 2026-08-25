@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-1ec4",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Pan under Fumepan",
+  "bind": {
+    "handle": "c05/desert/h-421ec4",
+    "expect": {
+      "type": "gypsum-dune",
+      "sizeKm": [
+        2.19,
+        7
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "Dunes of pale crystal sand, cool to the hand where ordinary sand would burn.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#gypsum-dune.gloss"
+  },
+  "resolution": null
+}

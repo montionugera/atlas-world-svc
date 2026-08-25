@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c03-fluvial-729b",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Lodespar Confluence",
+  "bind": {
+    "handle": "c03/fluvial/h-a9729b",
+    "expect": {
+      "type": "floodplain-levee",
+      "sizeKm": [
+        5.35,
+        14
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A low natural bank along the water, built from what the floods dropped first.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#floodplain-levee.gloss"
+  },
+  "resolution": null
+}

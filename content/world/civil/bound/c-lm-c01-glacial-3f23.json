@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c01-glacial-3f23",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Frosthold Bergfall",
+  "bind": {
+    "handle": "c01/glacial/h-6c3f23",
+    "expect": {
+      "type": "fjord",
+      "sizeKm": [
+        3.22,
+        12.88
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A drowned ice-cut trough: deep water with a wall on either side and no beach at all.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#fjord.gloss"
+  },
+  "resolution": null
+}

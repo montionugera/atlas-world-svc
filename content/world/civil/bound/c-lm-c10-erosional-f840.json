@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c10-erosional-f840",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Scar of the Ashburn",
+  "bind": {
+    "handle": "c10/erosional/h-79f840",
+    "expect": {
+      "type": "inselberg",
+      "sizeKm": [
+        0.66,
+        2.5
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A lone dome of hard rock standing out of the plain, visible a day's walk away.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#inselberg.gloss"
+  },
+  "resolution": null
+}

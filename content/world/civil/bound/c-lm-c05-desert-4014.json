@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c05-desert-4014",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Pan of the Thirstwaste",
+  "bind": {
+    "handle": "c05/desert/h-6d4014",
+    "expect": {
+      "type": "seif-dune",
+      "sizeKm": [
+        1.16,
+        4.62
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A long sharp-crested ridge of sand lying with the wind rather than across it.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#seif-dune.gloss"
+  },
+  "resolution": null
+}

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c10-volcanic-6dbd",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Thirstburn Cone",
+  "bind": {
+    "handle": "c10/volcanic/h-566dbd",
+    "expect": {
+      "type": "fumarole-vent",
+      "sizeKm": [
+        0.05,
+        0.2
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A hole breathing sulphur steam, with yellow crystals grown round its lip.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#fumarole-vent.gloss"
+  },
+  "resolution": null
+}

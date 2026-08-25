@@ -1,5 +1,11 @@
-// Plan A Task 5 — the ONE join authority: spine (and, from Plan D, fabric +
-// civil) -> the world document that gates and renderers read.
+// Plan A Task 5 — the ONE join authority. Two documents, two sources, one
+// module:
+//   - resolveWorld(): the live BASIN document, resolved from content/spine/ —
+//     what the two sheet builders draw.
+//   - loadPlaces(): the GENERATED WORLD document, read from
+//     content/world/resolved/ (Plan D Task 11 cutover) — what the three gate
+//     joins in check_content.mjs read. It is the ONLY file family they read;
+//     there is no fallback branch.
 //
 // This body was MOVED verbatim out of scripts/check_spine_emit.mjs's
 // emitGeography(). Moving rather than reimplementing is what makes byte
@@ -13,9 +19,9 @@
 //     n-saltmire crashed both sheet builders instead of reporting;
 //   - key insertion order IS the byte format. canonStringify walks
 //     Object.keys() in insertion order and drops undefined-valued keys.
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { loadSpine, buildTree, resolveToRoot } from "./spine.mjs";
+import { resolveToRoot } from "./spine.mjs";
 
 // The emitted document's key order, pinned. Changing this array changes the
 // committed bytes of every consumer of the world document.
@@ -98,18 +104,13 @@ export function resolveWorld(args) {
   }
 }
 
-function resolveWorldFromSpine({ spine, tree, descriptor = null, fabric = null, civil = null }) {
+function resolveWorldFromSpine({ spine, tree, descriptor = null }) {
   const problems = [];
   const S = descriptor ?? spine?.sheet?.subjects ?? null;
   if (!S) {
     problems.push("sheet: content/spine/sheet.json has no `subjects` descriptor — the sheet's subject ids are DATA, not code");
     return { doc: null, problems };
   }
-  // Plan D supplies fabric/civil and makes spine/tree optional. Until then a
-  // caller passing either is asking for a join this build cannot do, and
-  // silently ignoring it would be the worst of the three options.
-  if (fabric !== null || civil !== null)
-    problems.push("resolveWorld: fabric/civil joins are Plan D — this build resolves from the spine only");
 
   // Input shape, checked BEFORE anything dereferences it. "NEVER throws" is
   // load-bearing rather than stylistic: from Task 6 three gate joins call this
@@ -311,65 +312,72 @@ function resolveWorldFromSpine({ spine, tree, descriptor = null, fabric = null, 
   return { doc, problems };
 }
 
-// The disk-facing entry point. Prefers the spine; falls back to the legacy
-// mirror FILE for content roots that carry one but no spine — which is every
-// fixture root in scripts/tests/{zone-content,town-plan,bestiary-placement}.test.mjs.
-// Plan D deletes the fallback and points this at content/world/resolved/.
+// Plan D Task 11 cutover: the resolved world is the source. Until this
+// commit, loadPlaces derived its document from the spine node table (with a
+// legacy-mirror fallback for spine-less fixture roots) because content/world/
+// did not exist. It exists now, and deriving from two places is how the mirror
+// problem started.
+//
+// CONSUMERS, after the cutover:
+//   - check_content.mjs's three geography joins and its lazy alias fallback;
+//   - nothing else. The two sheet builders keep calling resolveWorld()
+//     directly: their subject is the live basin, whose document still comes
+//     from the spine, and drawBasinSheet dereferences geo.relay/geo.sheet,
+//     which the generated world retires as null.
 export function loadPlaces({ contentRoot }) {
+  const dir = join(contentRoot, "world/resolved");
+  const files = existsSync(dir)
+    ? readdirSync(dir).filter((f) => /^continent-\d\d\.json$/.test(f)).sort()
+    : [];
+  if (!files.length)
+    return { doc: null,
+      problems: [`places: ${dir}/ holds no continent files — run node scripts/check_resolved.mjs --write`] };
+
   const problems = [];
-  if (existsSync(join(contentRoot, "spine"))) {
-    const spine = loadSpine({ contentRoot });
-    if (spine.present && spine.errors.length === 0) {
-      const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
-      // Task 7: the zoneRoot is the descriptor's, not a constant's. A content
-      // root whose spine carries no `subjects` descriptor has no zoneRoot to
-      // test, so it falls THROUGH to the mirror exactly as a root with no
-      // spine does — which is what the ~45 minimal fixture roots need (four of
-      // them ship a spine/sheet.json that is title/hand/withheld only, with no
-      // `subjects` block at all).
-      //
-      // Review finding (Task 7): "no descriptor" and "a descriptor that does
-      // not resolve" are NOT the same case and used to share one silent exit.
-      // A real content root whose descriptor names a zoneRoot the tree does not
-      // have is CORRUPTION, and falling through to a stale mirror let the full
-      // gate print unchanged counts and exit 0 — the going-dark failure this
-      // module exists to prevent. Absent descriptor: fall through. Present but
-      // unresolvable: report.
-      const subjects = spine.sheet?.subjects ?? null;
-      const zoneRoot = subjects?.zoneRoot;
-      if (tree.errors.length === 0 && subjects) {
-        if (typeof zoneRoot !== "string" || !tree.byId.has(zoneRoot)) {
-          problems.push(`geography: content/spine/sheet.json has a \`subjects\` descriptor whose zoneRoot ${JSON.stringify(zoneRoot ?? null)} does not resolve in the spine — refusing to fall back to maps/cluster1-geography.json, which would report a stale world with every gate green`);
-          return { doc: null, problems };
-        }
-        return resolveWorld({ spine, tree });
-      }
+  const merged = {};
+  // KEY ORDER IS LOAD-BEARING: canonStringify serialises Object.keys() in
+  // insertion order and drops undefined-valued keys, so the doc is built by
+  // walking WORLD_DOC_KEYS, never by spreading.
+  for (const k of WORLD_DOC_KEYS) merged[k] = null;
+  merged.id = "atlas-world";
+  merged.title = "The Atlas World";
+  merged.version = 3;
+  merged.source = "content/world/resolved/*.json";
+  merged.about = "GENERATED FILE VIEW — the committed join of content/world/fabric (position and size) and content/world/civil (meaning). Never edited by hand; regenerate with scripts/check_resolved.mjs --write.";
+  merged.coordinateSystem = { units: "km", convention: "x increases EAST, y increases SOUTH (north is smaller y)", extentKm: { width: 400, height: 400 } };
+  const ARRAY_KEYS = ["terrainPatches", "zones", "towns", "camps", "roads"];
+  for (const k of ["coastline", "river", "saltmire", "iceEdge", "terrainPatches", "zones", "towns", "camps", "roads", "relay", "distances", "seaLane", "sheet"])
+    merged[k] = ARRAY_KEYS.includes(k) ? [] : null;
+
+  for (const f of files) {
+    let doc;
+    try { doc = JSON.parse(readFileSync(join(dir, f), "utf8")); }
+    catch (e) { problems.push(`places: world/resolved/${f}: ${e.message}`); continue; }
+    // A file holding literal `null` (or an array, or a bare scalar) PARSES
+    // fine. Without this guard the merge below throws on `doc[k]`, the throw
+    // escapes into placesDoc() inside check_content.mjs, skips finish(), and
+    // silently drops every failure recorded before it — the going-dark failure
+    // this module exists to prevent.
+    if (doc === null || typeof doc !== "object" || Array.isArray(doc)) {
+      problems.push(`places: world/resolved/${f} is shape-invalid — expected a JSON object`);
+      continue;
     }
+    for (const k of ARRAY_KEYS) merged[k].push(...(doc[k] ?? []));
+    for (const k of ["relay", "distances", "seaLane", "sheet"]) if (doc[k] && !merged[k]) merged[k] = doc[k];
+    // The four SINGLE-feature geographic keys: "first continent that has one
+    // wins" is the merge rule; a world with none leaves the key null.
+    // ERRATUM vs plan Task 11 Step 3: the plan pushed a PROBLEM when no
+    // continent supplied coastline/saltmire ("basin-sheet.mjs dereferences it
+    // unconditionally and will throw"). Measured repo reality: basin-sheet
+    // consumes resolveWorld()'s BASIN document, never this merged doc — and
+    // the minimal fixture worlds legitimately carry no mire at all, so the
+    // guard reds ~60 green fixtures while guarding a consumer that does not
+    // exist. Nulls stay silent here on purpose.
+    for (const k of ["coastline", "river", "saltmire", "iceEdge"])
+      if (doc[k] && !merged[k]) merged[k] = doc[k];
   }
-  const mirror = join(contentRoot, "maps/cluster1-geography.json");
-  if (existsSync(mirror)) {
-    let parsed;
-    try {
-      parsed = JSON.parse(readFileSync(mirror, "utf8"));
-    } catch (e) {
-      problems.push(`geography: ${mirror}: ${e.message}`);
-      return { doc: null, problems };
-    }
-    // A mirror holding literal `null` (or an array, or a bare scalar) PARSES
-    // fine. Without this guard it returned { doc: null, problems: [] } — a null
-    // doc with zero diagnostics — and all three gate joins `return 0` on a null
-    // doc, so the gate goes silently dark instead of red. This guard is not new
-    // defensiveness: it is the one check_content.mjs's loadGeographyZones /
-    // loadGeographyTowns already carry ("is shape-invalid — expected { zones:
-    // [...] }"), whose own comment records that a file holding literal `null`
-    // bit this repo once. Task 6 re-points those loaders here, so the guard has
-    // to arrive with the source it protects.
-    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-      problems.push(`geography: ${mirror} is shape-invalid — expected a JSON object`);
-      return { doc: null, problems };
-    }
-    return { doc: parsed, problems };
-  }
-  problems.push(`geography: ${contentRoot} has neither a resolvable spine nor maps/cluster1-geography.json`);
-  return { doc: null, problems };
+
+  const out = {};
+  for (const k of WORLD_DOC_KEYS) if (merged[k] !== undefined) out[k] = merged[k];
+  return { doc: out, problems };
 }

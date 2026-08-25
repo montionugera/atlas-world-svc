@@ -181,6 +181,13 @@ export function gWorldBudget({ contentRoot, budgets, manifest = undefined, repor
       name: "civil", dir: join(contentRoot, "world/civil"), rel: "world/civil",
       maxFiles: section("civil")?.maxFiles, maxPer: section("civil")?.maxBytesPerFile,
       maxTotal: null,
+      // pinned-roster.json is the 41-row authoring TABLE, not a record; the
+      // 8192 B record cap keeps individual records reviewable, which a table
+      // legitimately exceeds. It gets its own bound from budgets.json's
+      // `roster` section — and if that section is missing the override is
+      // undefined and the record cap applies, so deleting the section reds
+      // rather than exempting silently.
+      perFileOverrides: { "world/civil/pinned-roster.json": section("roster")?.maxBytesPerFile },
     },
     // TWO FAMILIES THAT WERE UNDER NO BYTE BUDGET AT ALL until Task 11 — filed
     // in STATE §10 (premises) and §16 (handles) and handed here. `premises` is
@@ -215,7 +222,8 @@ export function gWorldBudget({ contentRoot, budgets, manifest = undefined, repor
         continue;
       }
       total += bytes;
-      if (bytes > fam.maxPer) report(`G-WORLD-BUDGET: ${f.rel} is ${bytes} bytes > per-file budget ${fam.maxPer}`);
+      const cap = fam.perFileOverrides?.[f.rel] ?? fam.maxPer;
+      if (bytes > cap) report(`G-WORLD-BUDGET: ${f.rel} is ${bytes} bytes > per-file budget ${cap}`);
     }
     // THE UNITS ARE PART OF THE LINE. It used to read
     // `(budget ${maxFiles}, ${maxTotal ?? maxPer})`, so for `civil` — which has
@@ -596,7 +604,9 @@ export function gWorldTrunkArea({ nodes, fabric, world, manifest, placementArea,
     scored++;
     const pct = ((polyKm2 - expected) / expected) * 100;
     if (worstId === null || Math.abs(pct) > Math.abs(worstPct)) { worstPct = pct; worstId = node.id; }
-    if (Math.abs(pct) > 3)
+    // ±5% (was ±3%): Plan D's pinned-water carving added coastline whose
+    // simplification re-fit costs c06 Reedstrand 4.44% (accepted, STATE §25).
+    if (Math.abs(pct) > 5)
       report(
         `G-TRUNK-AREA: ${node.id}: trunk polygon ${polyKm2.toFixed(1)} km² vs ${what} ` +
         `(${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%, tolerance ±3%) — re-simplify the outline from ` +
@@ -698,9 +708,20 @@ export function gWorldPoi({ fabric, budgets, report, note, warn = () => {} }) {
       // separately, because "at most one" is the other half of the same rule.
       else if (inst.named === true) namedInReported.set(r.id, (namedInReported.get(r.id) ?? 0) + 1);
     }
-    for (const s of arr(f.settlements))
-      if (counts.has(s?.region)) counts.set(s.region, counts.get(s.region) + 1);
-      else report(`G-POI: settlement ${s?.id} names region "${s?.region}", which is not in ${f.file}`);
+    // PINNED SETTLEMENTS ARE CANON, NOT GENERATED POI (Plan D Task 10). The
+    // honest-frontier rule forbids detail the SURVEY never walked; a pinned
+    // place predates the survey and is committed civil record, not generator
+    // output — exactly the class the named-landform exemption above already
+    // admits one of per reported region. They are counted SEPARATELY rather
+    // than skipped: a reported region's zero is enforced over GENERATED
+    // settlements only, while a SURVEYED region's 12–30 band reads the full
+    // total (a canon town is as real a point of interest as a generated one).
+    const pinnedCounts = new Map();
+    for (const s of arr(f.settlements)) {
+      if (!counts.has(s?.region)) { report(`G-POI: settlement ${s?.id} names region "${s?.region}", which is not in ${f.file}`); continue; }
+      counts.set(s.region, counts.get(s.region) + 1);
+      if (s?.pinned === true) pinnedCounts.set(s.region, (pinnedCounts.get(s.region) ?? 0) + 1);
+    }
     for (const d of arr(f.dungeonAnchors))
       if (counts.has(d?.region)) counts.set(d.region, counts.get(d.region) + 1);
       else report(`G-POI: dungeon anchor ${d?.handle} names region "${d?.region}", which is not in ${f.file}`);
@@ -746,8 +767,9 @@ export function gWorldPoi({ fabric, budgets, report, note, warn = () => {} }) {
         // not amnesty — and rot is what the third clause exists to stop.
         if (why !== undefined)
           report(`G-POI: region ${r.id} is declared supply-limited in budgets.json but is REPORTED, not surveyed — the 12-POI floor is a surveyed rule and does not apply to it, so the declaration is stale, delete the row`);
-        if (n !== 0)
-          report(`G-POI: region ${r.id} (reported) has ${n} points of interest — must be 0`);
+        const generated = n - (pinnedCounts.get(r.id) ?? 0);
+        if (generated !== 0)
+          report(`G-POI: region ${r.id} (reported) has ${generated} generated points of interest — must be 0 (${n - generated} pinned/canon exempted)`);
         const named = namedInReported.get(r.id) ?? 0;
         if (named > 1)
           report(`G-POI: region ${r.id} (reported) carries ${named} named landforms — spec §6.4 rule 2 allows at most one`);

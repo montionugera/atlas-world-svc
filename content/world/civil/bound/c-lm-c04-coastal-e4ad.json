@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-coastal-e4ad",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Tarnshaft Roads",
+  "bind": {
+    "handle": "c04/coastal/h-7be4ad",
+    "expect": {
+      "type": "blowhole",
+      "sizeKm": [
+        0.01,
+        0.04
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A hole in the cliff top that spits spray and thunder whenever a big swell comes in.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#blowhole.gloss"
+  },
+  "resolution": null
+}

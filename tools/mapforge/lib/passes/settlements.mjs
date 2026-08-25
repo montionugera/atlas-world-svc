@@ -13,6 +13,7 @@
 import { FLAG, idx, inBounds, neighbourIdx, cellCentreKm } from "../grid.mjs";
 import { hashNoise2D, q } from "../noise.mjs";
 import { mintSeed } from "../seed.mjs";
+import { PIN_LANDFORM_NEAR_KM } from "../../../../scripts/lib/resolve.mjs";
 
 export const VETO = Object.freeze({ slopeMax: 0.08, freshWaterMin: 0.20, treeline: 0.72 });
 export const SEPARATION_KM = Object.freeze({ capital: 60, hub: 24, village: 9 });
@@ -256,7 +257,7 @@ const distKm = (ax, ay, bx, by) => {
 };
 
 export function placeSettlements({ grid, premises, regions, manifest, pinned = [], stream,
-                                   BIOME_NAME = null }) {
+                                   BIOME_NAME = null, reserveVillages = [] }) {
   assertStream(stream, "settlements");
   assertRegionIndex({ grid, regions, who: "settlements" });
   // `premises` is in the binding signature Plan D quotes verbatim, and it was
@@ -504,6 +505,41 @@ export function placeSettlements({ grid, premises, regions, manifest, pinned = [
       capitalsPerContinent.set(s.continent, (capitalsPerContinent.get(s.continent) ?? 0) + 1);
   }
   const tiers = [["capital", quotas.capital], ["hub", quotas.hub], ["village", quotas.village]];
+  // THE VILLAGE TIER PLACES ITS RESERVATIONS FIRST. `reserveVillages` names
+  // regions whose POI count or bound-dungeon reachability the caller measured
+  // on a first placement pass and found short of a gate floor (G-POI's 12, or
+  // G-DUNGEON-REACH's settled-region-within-2-hops). Each reservation takes
+  // its region's best surviving cell under the SAME vetoes, separation,
+  // per-region cap and quota the greedy pool obeys — a constraint as an
+  // input, exactly like the pinned tier above — and the greedy then fills
+  // the remaining quota around it. A reservation with no eligible cell is
+  // REPORTED, never hand-waved.
+  for (const rid of [...reserveVillages].sort()) {
+    // NO already-settled skip: a THIN region (G-POI floor) holds a settlement
+    // and still needs one more; a REACH region has none. Either way the
+    // caller measured the shortfall on a first pass — add the village.
+    const cand = scored.find((c) => c.region.id === rid &&
+      !occupied.has(`${c.v.cx},${c.v.cy}`) &&
+      (perRegion.get(rid) ?? 0) < MAX_SETTLEMENTS_PER_REGION &&
+      farEnough(c.v.cx, c.v.cy, "village"));
+    if (!cand) {
+      problems.push(`settlements: reserved village region ${rid} has no eligible cell under the ` +
+        `veto set / separation / per-region cap — the region cannot host a settlement`);
+      continue;
+    }
+    const rec = {
+      id: nextId(cand.region.continent),
+      title: null,
+      continent: cand.region.continent, rank: "village",
+      atKm: [q((cand.v.cx + 0.5) * grid.cellKm), q((cand.v.cy + 0.5) * grid.cellKm)],
+      cell: [cand.v.cx, cand.v.cy], region: cand.region.id, score: q(cand.s),
+      portEligible: cand.portEligible,
+    };
+    settlements.push(rec);
+    taken.push(rec);
+    occupied.add(`${rec.cell[0]},${rec.cell[1]}`);
+    perRegion.set(rec.region, (perRegion.get(rec.region) ?? 0) + 1);
+  }
   for (const [tier, want] of tiers) {
     let placed = settlements.filter((s) => s.rank === tier).length;
     const pool = tier === "capital" ? scored.filter((c) => c.portEligible) : scored;
@@ -665,4 +701,255 @@ export function assignLevelBands({ regions, settlements, manifest, problems }) {
     problems.push(`levelBands: ${regions.length - banded} of ${regions.length} regions have no ` +
       `centroidKm and are unbanded — partitionRegions writes it in its census loop`);
   return { origin: origin.id, originContinent: origin.continent, banded };
+}
+
+// ── Plan D Task 10 — P11's PINNED HALF ──────────────────────────────────────
+//
+// The 41 pinned records are placed at their committed seed points, their
+// constraint blocks are measured against the fabric, and a violation is a
+// GENERATION failure rather than a join failure. Only then does the greedy
+// scored placement above fill the remaining slots AROUND them, which is why
+// the 60 km capital / 24 km hub / 9 km village separations are honoured rather
+// than spent before the pinned places are considered. `placeSettlements`
+// itself is NOT touched: Plan C already declares `pinned = []`, places it
+// before pass 1, seeds the separation occupancy from it and decrements the
+// matching rank quota. This half only resolves a pin to a cell, measures the
+// fabric under it for G-PIN-SAT's receipt, and hands Plan C the `placed`
+// array.
+//
+// THE MEASUREMENT SOURCE, decided once so no reader re-litigates it (plan
+// :1828, STATE §"C, Task 9a Step 3", gPinSat's comment in resolve.mjs):
+// `measured.shelterFetchKm` is read from THIS FILE'S narrowWaterKm — min over
+// the two axes, enclosure — never from grid.fetchKm, which classifySea writes
+// as max over the two axes (wave exposure) and which is unsatisfiable at 332
+// of the 520 port-eligible cells and at all three generated capitals.
+//
+// WATER KIND FOR A DRY CELL, same decision: a pin can sit ON a river or lake
+// cell (both are land; placePinned refuses only FLAG.SEA), so river/lake come
+// off the cell's own flags. It can never sit on the sea, so "sea" is measured
+// as the kind of the NEAREST sea cell within COAST_FAR_KM — the same band the
+// coast term already defines as "near the water" — with shelterFetchKm and
+// depthM read off that same cell. Beyond the band, or no water at all, the
+// receipt says "none"/0/0 honestly rather than borrowing a harbour six
+// provinces away.
+
+function nearestWaterCell({ grid, maxKm }) {
+  // Multi-source D8 BFS from every wet cell, carrying the SOURCE cell — the
+  // twin of seaProximity above, keyed on SEA|LAKE|RIVER instead of SEA alone,
+  // bounded at maxKm for the same cost reason (27 ms vs 133 ms on the real
+  // field). BFS order IS distance order; the fixed D8 order breaks ties.
+  const { n } = grid;
+  const wet = (i) => (grid.flags[i] & (FLAG.SEA | FLAG.LAKE | FLAG.RIVER)) !== 0;
+  const dist = new Float32Array(n).fill(-1);
+  const near = new Int32Array(n).fill(-1);
+  const queue = new Int32Array(n);
+  let head = 0, tail = 0;
+  for (let i = 0; i < n; i++)
+    if (wet(i)) { dist[i] = 0; near[i] = i; queue[tail++] = i; }
+  while (head < tail) {
+    const i = queue[head++];
+    const d = dist[i] + grid.cellKm;
+    if (d > maxKm) continue;
+    for (let k = 0; k < 8; k++) {
+      const j = neighbourIdx({ grid, i, d: k });
+      if (j < 0 || dist[j] !== -1) continue;
+      dist[j] = d;
+      near[j] = near[i];
+      queue[tail++] = j;
+    }
+  }
+  return near;
+}
+
+// One grid, many pins: both whole-grid sweeps are cached per grid object, or
+// 41 receipts would each pay for them (~10 ms each on the real field). A
+// WeakMap, never a key ON the grid — grid.test.mjs sums every ArrayBuffer view
+// reachable from the object to pin its footprint number, and a cached sweep
+// would silently inflate it.
+// Nearest SEA cell carrying its SOURCE index — the HARBOUR reading (depth and
+// shelter) is measured there, because a port's deep sheltered water is the
+// sea it commands, not the river running past its wall.
+function nearestSeaWithSource({ grid }) {
+  const { n } = grid;
+  const dist = new Float64Array(n).fill(Infinity);
+  const src = new Int32Array(n).fill(-1);
+  const queue = new Int32Array(n);
+  let head = 0, tail = 0;
+  for (let i = 0; i < n; i++)
+    if ((grid.flags[i] & FLAG.SEA) !== 0) { dist[i] = 0; src[i] = i; queue[tail++] = i; }
+  while (head < tail) {
+    const i = queue[head++];
+    const d = dist[i] + grid.cellKm;
+    if (d > PIN_LANDFORM_NEAR_KM * 2) continue;
+    for (let k = 0; k < 8; k++) {
+      const j = neighbourIdx({ grid, i, d: k });
+      if (j < 0 || src[j] !== -1) continue;
+      dist[j] = d; src[j] = src[i]; queue[tail++] = j;
+    }
+  }
+  return { seaSrc: src, seaDist: dist };
+}
+
+const waterCtxCache = new WeakMap();
+// PER-KIND WATER DISTANCE (owner ruling principle, 2026-08-25: pin
+// satisfaction is proximity within PIN_LANDFORM_NEAR_KM). One multi-source D8
+// BFS per kind, cached beside the narrow sweep. `waterKind` answers "what
+// water is AT the site" (own flags, else sea within the coast band); these
+// distances answer "how far away is each kind" — the field a coastal
+// landmark whose site is dry ground still needs recorded.
+function waterDistance({ grid, mask }) {
+  const { n } = grid;
+  const dist = new Float32Array(n).fill(Infinity);
+  const queue = new Int32Array(n);
+  let head = 0, tail = 0;
+  for (let i = 0; i < n; i++)
+    if ((grid.flags[i] & mask) !== 0) { dist[i] = 0; queue[tail++] = i; }
+  while (head < tail) {
+    const i = queue[head++];
+    const d = dist[i] + grid.cellKm;
+    for (let k = 0; k < 8; k++) {
+      const j = neighbourIdx({ grid, i, d: k });
+      if (j >= 0 && dist[j] === Infinity) { dist[j] = d; queue[tail++] = j; }
+    }
+  }
+  return dist;
+}
+function waterContext(grid) {
+  let ctx = waterCtxCache.get(grid);
+  if (!ctx) {
+    ctx = {
+      narrow: narrowWaterKm({ grid }),
+      nearest: nearestWaterCell({ grid, maxKm: COAST_FAR_KM }),
+      seaKm: waterDistance({ grid, mask: FLAG.SEA }),
+      riverKm: waterDistance({ grid, mask: FLAG.RIVER }),
+      lakeKm: waterDistance({ grid, mask: FLAG.LAKE }),
+      ...nearestSeaWithSource({ grid }),
+    };
+    waterCtxCache.set(grid, ctx);
+  }
+  return ctx;
+}
+
+function localSlope({ grid, cell }) {
+  const [x, y] = cell;
+  const at = (dx, dy) => grid.elev[Math.min(grid.h - 1, Math.max(0, y + dy)) * grid.w + Math.min(grid.w - 1, Math.max(0, x + dx))];
+  const gx = (at(1, 0) - at(-1, 0)) / 2, gy = (at(0, 1) - at(0, -1)) / 2;
+  return Math.sqrt(gx * gx + gy * gy);
+}
+
+// EVERY grid-array read below is unguarded, deliberately. Plan C Task 2's
+// makeGrid allocates landform, fetchKm, depthM, freshKm, biomeNames and
+// regionIds, and P4/P6/P8/P9/P10 fill them. If one is missing this must be a
+// loud TypeError on the first pinned record, not forty receipts of
+// `{landform: null, shelterFetchKm: 0, depthM: 0, freshWaterWithinKm: 0}` —
+// which G-PIN-SAT would either fail forty times for the wrong reason or, far
+// worse, pass vacuously because 0 satisfies no declared minimum it can see.
+export function measureCell({ grid, cell, cellKm }) {
+  void cellKm; // interface fidelity: the declared signature keeps it, the grid carries the truth
+  const i = idx({ grid, cx: cell[0], cy: cell[1] });
+  const flags = grid.flags[i];
+  const ownWater = flags & (FLAG.SEA | FLAG.LAKE | FLAG.RIVER);
+  const ctx = waterContext(grid);
+  const wi = ownWater ? i : ctx.nearest[i];
+  const wFlags = wi >= 0 ? grid.flags[wi] : 0;
+  const isSeaNear = wi >= 0 && (wFlags & FLAG.SEA) !== 0;
+  // THE HARBOUR READING. Depth and shelter describe the SEA the place
+  // commands — the nearest sea cell within PIN_LANDFORM_NEAR_KM — not whatever
+  // fresh stream runs past the wall. Without this a port whose shore is a
+  // kilometre of river reads depth 0 and G-PIN-SAT fails it on a clause about
+  // its harbour.
+  const harbourI = (flags & FLAG.SEA) !== 0 ? i
+    : ctx.seaSrc[i] >= 0 && Number.isFinite(ctx.seaDist[i]) &&
+        ctx.seaDist[i] <= PIN_LANDFORM_NEAR_KM ? ctx.seaSrc[i] : -1;
+  return {
+    landform: grid.landformNames[grid.landform[i]] ?? null,
+    waterKind: (flags & FLAG.SEA) ? "sea" : (flags & FLAG.LAKE) ? "lake"
+             : (flags & FLAG.RIVER) ? "river"
+             : isSeaNear ? "sea" : "none",
+    shelterFetchKm: q(harbourI >= 0 ? Math.max(ctx.narrow[harbourI], 0) : 0),
+    depthM: q(harbourI >= 0 ? Math.max(grid.depthM[harbourI], 0) : 0),
+    slope: q(localSlope({ grid, cell })),
+    freshWaterWithinKm: q(grid.freshKm[i]),
+    biome: grid.biomeName(i),
+    elevationM: q(grid.elevM(i)),
+  };
+}
+
+export function placePinned({ grid, pinned, cellKm, instances = [] }) {
+  const placed = [], receipts = [], problems = [];
+  // LANDFORM + WATER PROXIMITY (owner ruling, 2026-08-25): instance coverage
+  // is ~1,740 point features over 640,000 cells, so an exact-cell landform
+  // reading is null for every pin and G-PIN-SAT could never go green. For a
+  // pin whose requires block names a type, the receipt records the NEAREST
+  // instance OF THAT TYPE — id, handle and distance in km — and the gate
+  // satisfies the requirement when that distance is within
+  // PIN_LANDFORM_NEAR_KM. Water kinds get the same treatment as per-kind
+  // distances (see waterContext below).
+  const byType = new Map();
+  for (const inst of instances) {
+    if (!byType.has(inst.type)) byType.set(inst.type, []);
+    byType.get(inst.type).push(inst);
+  }
+  const ctx = waterContext(grid);
+  const nearestOf = (type, at) => {
+    let best = null;
+    for (const inst of byType.get(type) ?? []) {
+      // Distance runs to the instance's OWN geometry: a point's `at`, an
+      // area/line ring's nearest VERTEX, falling back to its anchor cell.
+      const g = inst.geometry ?? {};
+      const pts = g.shape === "point" ? [g.at]
+        : Array.isArray(g.ring) ? g.ring
+        : inst.cell ? [cellCentreKm({ grid, cx: inst.cell[0], cy: inst.cell[1] })]
+        : [];
+      for (const p of pts) {
+        if (!p) continue;
+        const dx = p[0] - at[0], dy = p[1] - at[1];
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (best === null || d < best.d) best = { d, inst };
+      }
+    }
+    return best;
+  };
+  for (const rec of pinned) {
+    const at = rec.pin.at;
+    const cell = [Math.floor(at[0] / cellKm), Math.floor(at[1] / cellKm)];
+    if (cell[0] < 0 || cell[1] < 0 || cell[0] >= grid.w || cell[1] >= grid.h) {
+      problems.push(`placePinned: ${rec.id} at [${at[0]}, ${at[1]}] is outside the grid`);
+      continue;
+    }
+    const i = idx({ grid, cx: cell[0], cy: cell[1] });
+    if (grid.flags[i] & FLAG.SEA) {
+      problems.push(`placePinned: ${rec.id} at [${at[0]}, ${at[1]}] is a water cell — a pinned place cannot sit in the sea`);
+      continue;
+    }
+    // The committed records carry continent ONLY inside requires (verified
+    // over all 41); the top-level fallback costs nothing and covers an author
+    // who flattens it later.
+    const continent = rec.requires?.continent ?? rec.continent ?? null;
+    const region = grid.regionId(i);
+    placed.push({ id: rec.id, title: rec.title ?? rec.id, at, cell, continent, region,
+                  rank: rec.settlementRank ?? null });
+    const measured = measureCell({ grid, cell, cellKm });
+    // PROXIMITY FIELDS — present on every receipt (null when the pin declares
+    // no landform or no instance of it exists anywhere), so the schema shape
+    // is total and the gate's "none" branch is reserved for a genuinely
+    // absent type rather than a missing key.
+    const wantType = rec.requires?.landform ?? null;
+    const near = wantType ? nearestOf(wantType, at) : null;
+    measured.landformNearId = near && near.d <= PIN_LANDFORM_NEAR_KM ? near.inst.id : null;
+    measured.landformNearHandle = near && near.d <= PIN_LANDFORM_NEAR_KM ? (near.inst.handle ?? null) : null;
+    // THE DISTANCE IS RECORDED EVEN WHEN IT MISSES: beyond the limit the gate
+    // must name HOW FAR away the nearest instance lies, not just "none".
+    measured.landformNearDistanceKm = near ? q(near.d) : null;
+    // PER-KIND WATER DISTANCES — same proximity principle for `water.kind`:
+    // a coastal landmark on dry ground still has its sea, recorded as a
+    // distance the gate can check against the limit. Infinity means the kind
+    // does not exist in this world at all.
+    const kmOf = (v) => Number.isFinite(v) ? q(v) : null;
+    measured.nearestSeaKm = kmOf(ctx.seaKm[i]);
+    measured.nearestRiverKm = kmOf(ctx.riverKm[i]);
+    measured.nearestLakeKm = kmOf(ctx.lakeKm[i]);
+    receipts.push({ id: rec.id, at, cell, continent, region, measured });
+  }
+  return { placed, receipts, problems };
 }

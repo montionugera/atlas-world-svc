@@ -1,0 +1,34 @@
+{
+  "id": "dungeon-ashvale-cinder-galleries",
+  "title": "Ashvale Cinder Galleries",
+  "family": null,
+  "bind": {
+    "handle": "c02/fluvial/h-f11cfc"
+  },
+  "entranceType": "plunge-pool",
+  "floors": 4,
+  "levelBand": [
+    8,
+    24
+  ],
+  "hazards": [
+    "heat",
+    "collapse"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12,
+    14
+  ],
+  "lore": {
+    "note": "Galleries punched into cinder by seekers after the Ashvale Front's buried forges.",
+    "source": "content/world/premises/continent-02.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

@@ -1,6 +1,6 @@
 {
   "continent": "c09",
-  "orderDigest": "sha256:76c5b9817c693c103ddf1adde940ad3c45b5492bb85ff7c6868889ebc8338e6e",
+  "orderDigest": "sha256:fce6fd7efc3e859d4a270a59e3cb4e621e755d3e61b06baf6dcc73f4ef8622bc",
   "handles": [
     {"handle":"c09/mountain/h-951ca4","type":"ridge-spine","sizeKm":28.42,"region":"c09/r02","contentHash":"sha256:951ca4504265bb7653f81e693eee6e4e1169c69f228b6dec498bce759cefc348","rank":0},
     {"handle":"c09/mountain/h-5d4900","type":"massif-dome","sizeKm":21.8,"region":"c09/r03","contentHash":"sha256:5d49007676f5cd17f50e42e55e28c862dd88af83eef29f2faec23550f85a26cd","rank":1},
@@ -33,9 +33,10 @@
     {"handle":"c09/mountain/h-dfd4d5","type":"talus-cone","sizeKm":0.24,"region":"c09/r03","contentHash":"sha256:dfd4d5f68ab5c15b993e247b377d01b54ed3a6cd265f30060176a81acca06b09","rank":28},
     {"handle":"c09/coastal/h-027ed9","type":"sea-cave","sizeKm":0.21,"region":"c09/r03","contentHash":"sha256:027ed91ceffc6018a20fea674c2b883812497d388af9359e344f9c6020abefda","rank":29},
     {"handle":"c09/coastal/h-928004","type":"sea-arch","sizeKm":0.18,"region":"c09/r02","contentHash":"sha256:9280045b896f49e1861e547b8748d53cc22e708350b8fc239b3994d92a67109f","rank":30},
-    {"handle":"c09/coastal/h-279f85","type":"sea-stack","sizeKm":0.11,"region":"c09/r03","contentHash":"sha256:279f85216d53c84aea2e8436ce7df4bb585fc68ba4e1e05c7030df0ffa338ae0","rank":31},
-    {"handle":"c09/coastal/h-49d2ff","type":"sea-cave","sizeKm":0.11,"region":"c09/r02","contentHash":"sha256:49d2ff23d18c156b7a31de32c9ff40413f046af40461fc31e7598290fe6c4c1e","rank":32},
-    {"handle":"c09/coastal/h-d6e492","type":"sea-stack","sizeKm":0.04,"region":"c09/r02","contentHash":"sha256:d6e49294a4fd71dbea5adc59600fa9cfc318c33fa240bfa2c541ad0563e3a095","rank":33},
-    {"handle":"c09/coastal/h-8d6cb3","type":"blowhole","sizeKm":0.03,"region":"c09/r03","contentHash":"sha256:8d6cb3901360d2d6f318f3016395aaedbdbc00b5e2f35190ea97633a5d61bc5b","rank":34}
+    {"handle":"c09/coastal/h-e9ee22","type":"sea-waterfall","sizeKm":0.16,"region":"c09/r03","contentHash":"sha256:e9ee22a8e79bd2e3fac043c96917c53a438c8eddc28b9969d64365c3421e48e9","rank":31},
+    {"handle":"c09/coastal/h-279f85","type":"sea-stack","sizeKm":0.11,"region":"c09/r03","contentHash":"sha256:279f85216d53c84aea2e8436ce7df4bb585fc68ba4e1e05c7030df0ffa338ae0","rank":32},
+    {"handle":"c09/coastal/h-49d2ff","type":"sea-cave","sizeKm":0.11,"region":"c09/r02","contentHash":"sha256:49d2ff23d18c156b7a31de32c9ff40413f046af40461fc31e7598290fe6c4c1e","rank":33},
+    {"handle":"c09/coastal/h-d6e492","type":"sea-stack","sizeKm":0.04,"region":"c09/r02","contentHash":"sha256:d6e49294a4fd71dbea5adc59600fa9cfc318c33fa240bfa2c541ad0563e3a095","rank":34},
+    {"handle":"c09/coastal/h-8d6cb3","type":"blowhole","sizeKm":0.03,"region":"c09/r03","contentHash":"sha256:8d6cb3901360d2d6f318f3016395aaedbdbc00b5e2f35190ea97633a5d61bc5b","rank":35}
   ]
 }

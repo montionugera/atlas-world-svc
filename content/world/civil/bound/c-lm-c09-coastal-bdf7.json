@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c09-coastal-bdf7",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Quilllow Stack",
+  "bind": {
+    "handle": "c09/coastal/h-d0bdf7",
+    "expect": {
+      "type": "tombolo",
+      "sizeKm": [
+        0.55,
+        2.18
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A neck of sand and shingle joining an island to the shore; it drowns on the big tides.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#tombolo.gloss"
+  },
+  "resolution": null
+}

@@ -53,10 +53,19 @@ function run(scriptRelPath, args = []) {
   }
 }
 
-test("content gate is green on the real tree (no --require-complete)", () => {
+test("content gate on the real tree: the ONLY failures are the pre-Plan-E geography orphans", () => {
+  // Plan D Task 11 cutover: content/world/resolved/ is the gate's only
+  // geography source, so the ten legacy zone records, the bestiary placement
+  // and the town plan orphan LOUDLY until Plan E movement 2 re-homes them.
+  // Every FAIL must belong to that family — any other failure is a regression
+  // this test still catches.
   const { status, output } = run("scripts/check_content.mjs");
-  assert.equal(status, 0, `expected exit 0, got ${status}:\n${output}`);
-  assert.match(output, /[1-9]\d* nodes, 0 failures/);
+  assert.equal(status, 1);
+  const fails = output.split("\n").filter((l) => l.startsWith("FAIL "));
+  assert.ok(fails.length > 0, "expected the named orphans");
+  for (const f of fails)
+    assert.match(f, /not in content\/world\/resolved#(zones|towns)|has no record in content\/zones\//);
+  assert.match(output, /[1-9]\d* nodes/);
 });
 
 // F-016 (Undertow) Task 2 deliberately reintroduces orphans: the plan's
@@ -108,11 +117,13 @@ test("content gate is green on the real tree (no --require-complete)", () => {
 // entirely from spine-completeness, a different gate. Pinned by exact FAIL
 // count and exact text so a real regression (a 5th failure, a changed id, or
 // a re-opened orphan) still fails this test loudly.
-test("content gate --require-complete: no story orphans remain, and F-043's 4 reported continents are WARNs not failures", () => {
+test("content gate --require-complete: the ONLY failures are geography orphans; F-043's 4 reported continents are WARNs not failures", () => {
+  // Plan D Task 11: same pre-Plan-E orphan window as above — pin that no
+  // UNRELATED failure (story, spine, budget) joins them.
   const { status, output } = run("scripts/check_content.mjs", ["--require-complete"]);
-  assert.equal(status, 0, `expected exit 0 (the 4 F-043 continents are reported-childless WARNs, not FAILs), got ${status}:\n${output}`);
-  assert.match(output, /44 nodes, 0 failures/);
-  assert.doesNotMatch(output, /^FAIL /m);
+  assert.equal(status, 1);
+  for (const line of output.split("\n").filter((l) => l.startsWith("FAIL ")))
+    assert.match(line, /not in content\/world\/resolved#(zones|towns)|has no record in content\/zones\//);
   assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-brightfall" \(tier continent\) is childless — reported, not surveyed; childless by design \(F-043\)/);
   assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-driftholt" \(tier continent\) is childless — reported, not surveyed; childless by design \(F-043\)/);
   assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-reedstrand" \(tier continent\) is childless — reported, not surveyed; childless by design \(F-043\)/);

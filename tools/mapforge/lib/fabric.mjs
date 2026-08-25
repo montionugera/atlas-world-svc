@@ -776,13 +776,18 @@ export function buildFabricFile({ premise, generator, seaLevel, cellKm, census, 
     outerRing, outerHoles, trunkRiver,
     regions, instances,
     // PROJECT, do not pass through. placeSettlements carries working keys the
-    // schema does not admit — `portEligible` (P11's port restriction) and
-    // `pinned` (whether Plan D placed it) — and fabric-file.schema.json is
-    // additionalProperties:false, so a spread would fail validation with an
-    // ajv message naming neither the key nor the pass that added it.
+    // schema does not admit — `portEligible` (P11's port restriction) — and
+    // fabric-file.schema.json is additionalProperties:false, so a spread would
+    // fail validation with an ajv message naming neither the key nor the pass
+    // that added it. `pinned` IS serialised (Task 10): the flag that lets
+    // gWorldPoi exempt a canon settlement from a REPORTED region's zero rule,
+    // and the only working key the schema admits.
     settlements: settlements.map((s) => ({
       id: s.id, title: s.title ?? null, rank: s.rank, atKm: s.atKm, cell: s.cell,
       region: s.region, continent: s.continent, score: s.score,
+      // Key present ONLY on a pin — generated rows stay byte-shape-identical
+      // to Plan C's, and fabricStringify drops undefined values in any case.
+      ...(s.pinned === true ? { pinned: true } : {}),
     })),
     roads, dungeonAnchors, pinReceipts,
   };

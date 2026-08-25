@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c01-glacial-a67c",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Nunatak past Stormreach",
+  "bind": {
+    "handle": "c01/glacial/h-1ba67c",
+    "expect": {
+      "type": "cirque",
+      "sizeKm": [
+        1.43,
+        4
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A bowl bitten out of a mountain head, usually with meltwater standing in the floor.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#cirque.gloss"
+  },
+  "resolution": null
+}

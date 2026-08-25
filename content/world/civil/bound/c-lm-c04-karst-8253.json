@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c04-karst-8253",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Slaterake Pot",
+  "bind": {
+    "handle": "c04/karst/h-fb8253",
+    "expect": {
+      "type": "karst-cenote",
+      "sizeKm": [
+        0.15,
+        0.6
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A collapsed limestone shaft flooded to the water table.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#karst-cenote.gloss"
+  },
+  "resolution": null
+}

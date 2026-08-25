@@ -1,0 +1,33 @@
+{
+  "id": "dungeon-drowned-pavement-cenotes",
+  "title": "Drowned Pavement Cenotes",
+  "family": null,
+  "bind": {
+    "handle": "c09/coastal/h-027ed9"
+  },
+  "entranceType": "sea-cave",
+  "floors": 3,
+  "levelBand": [
+    40,
+    58
+  ],
+  "hazards": [
+    "cold",
+    "bad-air"
+  ],
+  "roomCountCurve": [
+    8,
+    10,
+    12
+  ],
+  "lore": {
+    "note": "Cenotes opening through limestone pavement the cartographers keep drawing as solid ground.",
+    "source": "content/world/premises/continent-04.json"
+  },
+  "prose": "authored",
+  "spineId": null,
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  }
+}

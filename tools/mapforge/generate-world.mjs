@@ -31,18 +31,23 @@ import { buildElevation, assignSubstrate } from "./lib/passes/elevation.mjs";
 import { selectSeaLevelByRank, classifySea, CELL_AREA_KM2 } from "./lib/passes/sea-level.mjs";
 import { applyWinds } from "./lib/passes/winds.mjs";
 import { priorityFlood, d8FlowDir, flowAccumulate } from "./lib/hydrology.mjs";
-import { carveWater } from "./lib/passes/water.mjs";
+import { carveWater, honorPinnedWater } from "./lib/passes/water.mjs";
 import { classifyBiomes } from "./lib/passes/biome.mjs";
 import { partitionRegions } from "./lib/passes/partition.mjs";
 import { instanceLandforms } from "./lib/passes/landforms.mjs";
-import { placeSettlements, assignLevelBands } from "./lib/passes/settlements.mjs";
+import { placeSettlements, placePinned, assignLevelBands, MAX_SETTLEMENTS_PER_REGION } from "./lib/passes/settlements.mjs";
 import { routeRoads } from "./lib/passes/roads.mjs";
-import { anchorDungeons } from "./lib/passes/dungeons.mjs";
+import { anchorDungeons, anchorBoundEntrances, hopsToSettlement, MAX_HOPS } from "./lib/passes/dungeons.mjs";
 import { buildRegionRings, buildCoastRings, buildTrunkRings, buildFabricFile, hashOf,
          fabricStringify, trunkRingCap, townFeatureId, townSlug, townFeatureIds } from "./lib/fabric.mjs";
 import { GENERATOR_VERSION } from "./lib/version.mjs";
 import { BIOMES, buildTree, placementArea } from "../../scripts/lib/spine.mjs";
 import { canonicalNode, canonStringify, derivedSidecar } from "../../scripts/check_spine_emit.mjs";
+// Plan D Task 11 Step 4b: the draft carries the civil join, so a re-seed
+// promotes content/world/resolved/ in the SAME command — never behind a
+// second `check_resolved --write` nobody remembers.
+import { loadCivil, resolveCivil } from "../../scripts/lib/resolve.mjs";
+import { loadDungeons } from "../../scripts/lib/dungeons.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, "../..");
@@ -59,7 +64,8 @@ export function runIdOf({ seed, version }) { return `${seed.slice(0, 8)}-${versi
 export function runPasses({ manifest, premises,
                             lexicon = readJson(join(REPO_ROOT, "content/world/lexicon/landforms.json")),
                             loadBudget = readJson(join(REPO_ROOT, "content/spine/load-budget.json")),
-                            pinned = [], relations = [], onStage = () => {} }) {
+                            budgets = readJson(join(REPO_ROOT, "content/world/budgets.json")),
+                            pinned = [], relations = [], dungeons = [], onStage = () => {} }) {
   const timings = {};
   const problems = [];
   const time = (name, label, fn) => {
@@ -118,19 +124,161 @@ export function runPasses({ manifest, premises,
 
   const land = time("P10", "landforms", () =>
     instanceLandforms({ grid, premises, regions: part.regions, lexicon, manifest,
-      stream: terrain, nameStream }));
+      stream: terrain, nameStream, pinned }));
 
-  const settle = time("P11", "settlements", () =>
-    placeSettlements({ grid, premises, regions: part.regions, manifest, pinned,
-      stream: settlementStream }));
+  // P11p — the PINNED pass runs before ANY scoring (the "HARD ORDERING" rule).
+  // A constraint violation here is a GENERATION failure, not a join failure:
+  // committing a fabric whose own receipts contradict their pins would just
+  // move the failure to Gate 1's G-PIN-SAT with a day's delay in between.
+  time("P7b", "pinned-water", () =>
+    honorPinnedWater({ grid, pinned, problems }));
+  const pins = time("P11p", "pinned-places", () =>
+    placePinned({ grid, pinned, cellKm: grid.cellKm, instances: land.instances }));
+  if (pins.problems.length)
+    throw new Error(`placePinned: ${pins.problems.length} pinned record(s) cannot be placed on ` +
+      `this world — a constraint violation is a generation failure:\n  ${pins.problems.join("\n  ")}`);
+
+  // FRONTIER RESERVATIONS (owner ruling, 2026-08-25): pinned towns consume
+  // hub/capital quota at fixed seed points, and the separation cascade can
+  // push the greedy village pool off marginal regions — measured: c09 lost
+  // its only villages (two bound dungeon handles lost reachability) and
+  // c02/r16 fell to 11 POIs against G-POI's floor of 12. The fix is a SECOND
+  // placement pass with those regions RESERVED: each reservation takes its
+  // region's best surviving cell under the same vetoes/separation/cap/quota
+  // as the greedy — constraints as inputs, never hand-placed cells.
+  const dungOnce = (settleArg) => {
+    const d = anchorDungeons({ instances: land.instances, regions: part.regions,
+      settlements: settleArg.settlements, lexicon, manifest, stream: settlementStream });
+    // THE BOUND HALF. The authored dungeon records join by bind.handle; the
+    // scored pass above does not know they exist, so an authored handle the
+    // hash draw missed would ship with no dungeonAnchors row and red
+    // G-DUNGEON-REACH at Gate 1 ("re-run the generator, do not bind to a
+    // non-anchor"). Bound anchors are therefore an INPUT: each is checked
+    // against the lexicon here (anchorBoundEntrances names a non-capable or
+    // missing instance) and forced into the anchor set, evicting an
+    // auto-chosen row when the complex quota is already full — auto choices
+    // are interchangeable, authored ones are not.
+    d.problems.push(...anchorBoundEntrances({ instances: land.instances, dungeons, lexicon }).problems);
+    if (dungeons.length) {
+      const bound = anchorBoundEntrances({ instances: land.instances, dungeons, lexicon });
+      const hops = hopsToSettlement({ regions: part.regions, settlements: settle.settlements, problems: d.problems });
+      const instByHandle = new Map(land.instances.map((i) => [i.handle, i]));
+      const byHandle = new Set(d.anchors.map((a) => a.handle));
+      const want = manifest.quotas.dungeons.complexes;
+      const boundHandles = new Set(bound.anchored.map((b) => b.handle));
+      // THE EVICTION VICTIM IS CHOSEN, not just popped: the auto anchor to
+      // drop is the one whose region has the LARGEST POI count (instances +
+      // anchors), because gWorldPoi's 12–30 band is per region and a blind
+      // tail-pop can drop the row a thin region depends on.
+      const instByRegion = new Map();
+      for (const i of land.instances)
+        instByRegion.set(i.region, (instByRegion.get(i.region) ?? 0) + 1);
+      const poiOf = new Map(d.anchors.map((a) => [a.handle,
+        (instByRegion.get(a.region) ?? 0) + d.anchors.filter((x) => x.region === a.region).length]));
+      const evictable = d.anchors
+        .filter((a) => !boundHandles.has(a.handle))
+        .sort((a, b) => (poiOf.get(b.handle) - poiOf.get(a.handle)) || (a.handle < b.handle ? -1 : 1))
+        .map((a) => a.handle);
+      for (const row of bound.anchored) {
+        if (byHandle.has(row.handle)) continue;
+        const inst = instByHandle.get(row.handle);
+        const h = hops.get(inst.region);
+        if (d.anchors.length >= want && evictable.length > 0) {
+          const dropped = evictable.pop();
+          const di = d.anchors.findIndex((a) => a.handle === dropped);
+          if (di >= 0) { d.anchors.splice(di, 1); byHandle.delete(dropped); }
+        }
+        d.anchors.push({ handle: inst.handle, continent: inst.region.split("/")[0],
+                         region: inst.region, entranceType: inst.type,
+                         hopsToSettlement: h === undefined ? null : h });
+        byHandle.add(inst.handle);
+      }
+      d.anchors.sort((a, b) => (a.handle < b.handle ? -1 : a.handle > b.handle ? 1 : 0));
+    }
+    return d;
+  };
+  // P7b — PINNED WATER HONORING runs AFTER landforms on purpose: the cove
+  // and channel carves must NOT change the cell pools the instance pass just
+  // drew from, because a single moved instance changes its content hash and
+  // re-rolls committed handles the 336 bound records bind to (measured:
+  // carving inside P7 re-rolled 74 of them). Water shape is therefore laid
+  // over a finished instance layer — additive, never displacing.
+  const settleArgs = { grid, premises, regions: part.regions, manifest,
+    pinned: pins.placed.filter((p) => p.rank != null), stream: settlementStream };
+  let settle = time("P11", "settlements", () => placeSettlements(settleArgs));
+  time("P11b", "level-bands", () =>
+    assignLevelBands({ regions: part.regions, settlements: settle.settlements, manifest, problems }));
+  // FRONTIER RESERVATION LOOP. Each round places the placement pass, anchors
+  // it, and measures the two frontier gates: G-POI's 12-POI floor per
+  // surveyed region (regions budgets.json DECLARES supply-limited are
+  // adjudicated WARNINGS and are never reserved — reserving them would spend
+  // quota on ground P10 cannot fill) and bound-dungeon reachability within
+  // MAX_HOPS. Every measured DEFICIT becomes one reserved village in the
+  // NEXT pass — repeated because a reservation can displace the greedy slot
+  // it was meant to top up (measured: c02/r16 needed two rounds to reach
+  // 12 POIs). Bounded at three rounds; whatever is still short after that is
+  // a named problem, not a silent shortfall.
+  const deficitsOf = (settleArg, anchorsArg) => {
+    const hops = hopsToSettlement({ regions: part.regions, settlements: settleArg.settlements });
+    // The deficit is counted against INSTANCES + ANCHORS only, deliberately
+    // NOT against current settlements: the reservation ITSELF supplies the
+    // villages, so counting the ones already there double-books the slot and
+    // the region never gains net capacity (measured: c02/r16 sat at 11 POIs
+    // through two reservation rounds for exactly this reason).
+    const base = new Map(part.regions.filter((r) => r.survey === "surveyed").map((r) => [r.id, 0]));
+    for (const i of land.instances) if (base.has(i.region)) base.set(i.region, base.get(i.region) + 1);
+    for (const a of anchorsArg) if (base.has(a.region)) base.set(a.region, base.get(a.region) + 1);
+    const declared = new Set(Object.keys(budgets?.poi?.supplyLimitedSurveyedRegions ?? {}));
+    const out = [];
+    for (const [rid, n] of base) {
+      // DECLARED supply-limited regions are adjudicated WARNINGS (budgets
+      // poi.supplyLimitedSurveyedRegions): their shortfall is P10 supply,
+      // not placement, and reserving against it just burns quota.
+      if (declared.has(rid)) continue;
+      const need = Math.min(MAX_SETTLEMENTS_PER_REGION, Math.max(0, 12 - n));
+      for (let k = 0; k < need; k++) out.push(rid);
+    }
+    const settledRegions = new Set(settleArg.settlements.map((s) => s.region));
+    for (const a of anchorsArg) {
+      if (!dungeons.some((d) => d.bind?.handle === a.handle)) continue;
+      const h = hops.get(a.region);
+      if ((h === undefined || h > MAX_HOPS) && !out.includes(a.region) &&
+          !settledRegions.has(a.region)) out.push(a.region);
+    }
+    return out.sort();
+  };
+  // Reservations ACCUMULATE their per-region maximum, never shrink: a region
+  // a later round stops flagging (because an earlier reservation already
+  // satisfied it) must KEEP its reservation, or the greedy displacement
+  // oscillates the frontier back to red (measured: c09/r03 flipped in and
+  // out across rounds until the accumulation was added).
+  const acc = new Map();
+  let reserves = [];
+  for (let round = 0; round < 3; round++) {
+    const probe = dungOnce(settle);
+    const deficits = deficitsOf(settle, probe.anchors);
+    let changed = false;
+    for (const rid of deficits) {
+      const n = deficits.filter((x) => x === rid).length;
+      if ((acc.get(rid) ?? 0) < n) { acc.set(rid, n); changed = true; }
+    }
+    const expanded = [...acc.entries()].sort(([a], [b]) => (a < b ? -1 : 1))
+      .flatMap(([rid, n]) => Array.from({ length: n }, () => rid));
+    if (!changed && JSON.stringify(expanded) === JSON.stringify(reserves)) break;
+    reserves = expanded;
+    problems.push(`settlements: frontier reservations round ${round + 1} re-ran the placement pass ` +
+      `with ${reserves.length} reserved village(s): ${reserves.join(", ")}`);
+    settle = time("P11", "settlements", () =>
+      placeSettlements({ ...settleArgs, reserveVillages: reserves }));
+    time("P11b", "level-bands", () =>
+      assignLevelBands({ regions: part.regions, settlements: settle.settlements, manifest, problems }));
+  }
   time("P11b", "level-bands", () =>
     assignLevelBands({ regions: part.regions, settlements: settle.settlements, manifest, problems }));
 
   const net = time("P12", "roads-lanes", () =>
     routeRoads({ grid, settlements: settle.settlements, regions: part.regions }));
-  const dung = time("P13", "dungeon-anchors", () =>
-    anchorDungeons({ instances: land.instances, regions: part.regions,
-      settlements: settle.settlements, lexicon, manifest, stream: settlementStream }));
+  const dung = time("P13", "dungeon-anchors", () => dungOnce(settle));
 
   const ringCap = trunkRingCap({ loadBudget });
   const rings = time("P14", "arcs-polygons-fabric", () => ({
@@ -169,12 +317,20 @@ export function runPasses({ manifest, premises,
     const rs = part.regions.filter((r) => r.continent === p.id);
     const ids = new Set(rs.map((r) => r.id));
     const census = { land: 0, lake: 0, unowned: 0 };
+    // HISTOGRAM IS RECOUNTED, NOT COPIED from P9's r.cells: the pinned-water
+    // pass (P7b) flags carved coves as SEA after partition ran, so a copied
+    // count would double-book those cells as both owned and sea and break
+    // the census identity by exactly the carved cell count (measured +567).
     const hist = {};
-    for (const r of rs) { hist[r.id] = r.cells; census.land += r.cells; }
+    for (const r of rs) hist[r.id] = 0;
     for (let i = 0; i < grid.n; i++) {
       if (grid.plate[i] !== k || (grid.flags[i] & FLAG.SEA) !== 0) continue;
       if ((grid.flags[i] & FLAG.LAKE) !== 0) { census.lake++; continue; }
-      if (grid.owner[i] < 0) census.unowned++;
+      const o = grid.owner[i];
+      if (o < 0) { census.unowned++; continue; }
+      const rid = rs.length > 0 && part.regions[o] ? part.regions[o].id : null;
+      if (rid !== null && hist[rid] !== undefined) { hist[rid]++; census.land++; }
+      else census.unowned++;
     }
     const coast = rings.coast.get(p.id);
     fabric.push(buildFabricFile({
@@ -213,6 +369,11 @@ export function runPasses({ manifest, premises,
       settlements: settle.settlements.filter((x) => x.continent === p.id),
       roads: net.roads.filter((x) => x.continent === p.id),
       dungeonAnchors: dung.anchors.filter((x) => x.continent === p.id),
+      // Plan D's pin receipts: the measured fabric under each pinned record's
+      // seed point, keyed to the continent its requires block declares. This
+      // is the field G-PIN-SAT reads instead of re-running the world — an
+      // empty array here is what keeps that gate soft-armed.
+      pinReceipts: pins.receipts.filter((x) => x.continent === p.id),
     }));
     // GROSS, not net. P9's census.land is the NET land regions tile; the
     // world.json key is `grossLandCells` and the lake cells sit inside it
@@ -240,6 +401,9 @@ export function runPasses({ manifest, premises,
   problems.push(...settle.problems, ...net.problems, ...dung.problems);
   return { grid, fabric, world: worldFile, handles: land.ledgers,
            trunk: trunk.nodes, edges: trunk.edges, problems,
+           // Plan D's receipts, echoed for the writer/tests the way `handles`
+           // is — the fabric array above already embeds them per continent.
+           pinReceipts: pins.receipts,
            substitutions: land.substitutions, coverage: land.coverage,
            // The run manifest is COMMITTED (build/mapforge/<runId>/manifest.json
            // is hashed by promote step 1), so it carries the water trunk's
@@ -724,7 +888,22 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [], 
   // 7c. the civil join, when a civil layer was supplied. Plan C runs with an
   //     empty civil layer, so this is absent; Plan D's promote path supplies
   //     it and the file becomes the third diffable artifact.
-  if (resolved) write("civil-resolved.json", canonStringify(resolved) + "\n");
+  //
+  //     Plan D Task 11 Step 4b: the per-continent files are fanned out HERE,
+  //     at write time, in the SAME layout content/world/resolved/ uses — not
+  //     staged by promote-world after the fact. writeRun hashes every file it
+  //     writes into the run manifest, and promotion's wholesale-replacement
+  //    family for content/world/resolved copies exactly what the manifest
+  //    hashed, so a re-seed cannot leave the only file renderers read stale
+  //    behind a second command — and a staged-but-unhashed file could never
+  //    pass promote's hash-membership guard.
+  if (resolved) {
+    write("civil-resolved.json", canonStringify(resolved) + "\n");
+    // Committed layout: EXACTLY the bytes check_resolved.mjs --write emits, so
+    // G-SLOT-STABLE stays green after promotion without a re-write.
+    for (const [cid, doc] of Object.entries(resolved))
+      write(`content/world/resolved/continent-${cid.slice(1)}.json`, JSON.stringify(doc, null, 2) + "\n");
+  }
 
   // 8. the run manifest, with a sha256 per written file — INCLUDING the sheets
   //    and civil-resolved.json, so promote-world step 1's hash verification
@@ -1035,6 +1214,21 @@ async function main() {
     .map((f) => readJson(join(REPO_ROOT, "content/world/premises", f)));
   const lexicon = readJson(join(REPO_ROOT, "content/world/lexicon/landforms.json"));
   const loadBudget = readJson(join(REPO_ROOT, "content/spine/load-budget.json"));
+  // Plan D's generation inputs, read from the LIVE root: the pinned records
+  // are placed at their committed seed points and the bound dungeon records
+  // anchor at their committed handles. Absent dirs degrade to [] (a fixture
+  // root without a civil layer generates the Plan C world), never crash —
+  // the same soft-input rule runPasses' defaulted parameters follow.
+  const pinnedDir = join(REPO_ROOT, "content/world/civil/pinned");
+  const pinned = existsSync(pinnedDir)
+    ? readdirSync(pinnedDir).filter((f) => f.endsWith(".json")).sort()
+        .map((f) => readJson(join(pinnedDir, f)))
+    : [];
+  const dungeonsDir = join(REPO_ROOT, "content/dungeons");
+  const dungeons = existsSync(dungeonsDir)
+    ? readdirSync(dungeonsDir).filter((f) => /^dungeon-.*\.json$/.test(f)).sort()
+        .map((f) => readJson(join(dungeonsDir, f)))
+    : [];
   const outDir = opts.outDir ?? join(REPO_ROOT, "build/mapforge",
     runIdOf({ seed: manifest.seed, version: GENERATOR_VERSION }));
 
@@ -1050,9 +1244,30 @@ async function main() {
     process.exit(2);
   }
 
-  const run = runPasses({ manifest, premises, lexicon, loadBudget,
+  const run = runPasses({ manifest, premises, lexicon, loadBudget, pinned, dungeons,
     onStage: opts.stageReport ? (name, label, ms) => console.log(`stage: ${name} ${label} ${ms} ms`) : undefined });
 
+  // The join lands in the DRAFT, so `build/mapforge/<runIdA>` and
+  // `build/mapforge/<runIdB>` are diffable on MEANING as well as on ground.
+  // Same driver check_resolved.mjs --check uses, over the run's own fabric and
+  // ledgers. Empty civil layer -> null -> writeRun skips the file(s), which is
+  // Plan C's behaviour unchanged. Dungeons are filtered per continent exactly
+  // as check_resolved.mjs does (a dungeon binds to ONE handle on ONE
+  // continent).
+  const civil = loadCivil({ contentRoot: join(REPO_ROOT, "content") });
+  let resolved = null;
+  if (civil.present) {
+    const { dungeons } = loadDungeons({ contentRoot: join(REPO_ROOT, "content") });
+    resolved = Object.fromEntries(run.fabric.map((f) => {
+      const ledger = run.handles.find((h) => h.continent === f.continent) ?? null;
+      return [f.continent, resolveCivil({
+        fabric: f,
+        handles: ledger,
+        civil: { pinned: civil.pinned, bound: civil.bound },
+        dungeons: dungeons.filter((d) => (d.bind?.handle ?? "").startsWith(f.continent + "/")),
+      }).resolved];
+    }));
+  }
   const { SHEETS } = await import(pathToFileURL(join(REPO_ROOT, "tools/mapforge/render-sheet.mjs")).href);
   const draftSheets = ["fabric", "overlay"].filter((id) => SHEETS[id])
     .map((id) => ({ id, build: SHEETS[id].build }));
@@ -1068,7 +1283,7 @@ async function main() {
     process.exit(2);
   }
   const { files } = writeRun({ run, outDir, repoRoot: REPO_ROOT, sheets: draftSheets,
-                               rasterise: opts.png });
+                               rasterise: opts.png, resolved });
 
   // Per-stage budgets with fail thresholds — goal G4's measure is explicitly
   // NOT one aggregate number, because an aggregate hides which stage regressed

@@ -1,0 +1,31 @@
+{
+  "id": "c-lm-millcross-ford",
+  "kind": "landmark",
+  "tier": "pinned",
+  "title": "Millcross Ford",
+  "pin": {
+    "at": [
+      96.6,
+      155
+    ],
+    "toleranceKm": 1.5,
+    "why": "canon §4: the only cart-crossing of the river that splits the land. `ford` (D-B4), not `braided-channel`: the braided reach is a LINE of river,scree bars, and what canon names is the crossing POINT on it — `confluence-bench` is a bank, not a crossing, which is why no 164-row id fit"
+  },
+  "requires": {
+    "continent": "c02",
+    "landform": "ford",
+    "water": {
+      "kind": "river"
+    }
+  },
+  "properties": [
+    "cart-crossing"
+  ],
+  "coasts": [],
+  "prose": "authored",
+  "provenance": {
+    "authored": "hand",
+    "generator": null
+  },
+  "resolution": null
+}

@@ -46,5 +46,7 @@
   "settlements": [],
   "roads": [],
   "dungeonAnchors": [],
-  "pinReceipts": []
+  "pinReceipts": [
+    {"id":"c-lm-loamspit-bars","at":[40,344],"cell":[80,688],"continent":"c13","region":"c13/r01","measured":{"landform":null,"waterKind":"none","shelterFetchKm":44.5,"depthM":0.34,"slope":0,"freshWaterWithinKm":58.5,"biome":"meadow","elevationM":387.61,"landformNearId":"lf-c13-r01-0004","landformNearHandle":"c13/coastal/h-a9b1d0","landformNearDistanceKm":16.27,"nearestSeaKm":11.5,"nearestRiverKm":58.5,"nearestLakeKm":93.5}}
+  ]
 }

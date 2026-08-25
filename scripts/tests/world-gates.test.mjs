@@ -237,7 +237,11 @@ test("the committed budgets file pins cellKm at 0.5 and the six loop stages", ()
   // threshold — NOT one aggregate number", because without them the loop time
   // is unfalsifiable and drifts to minutes. Six rows, spec §7.6.
   assert.deepEqual(b.loop, [
-    { stage: "generate",     budgetMs: 4000,  failMs: 8000 },
+    // generate rose 4000/8000 -> 6000/12000 with Plan D Task 10's pin-aware
+    // generation: the frontier-reservation loop re-runs placement and P13,
+    // and the pinned-water pass adds three whole-grid BFS sweeps (measured
+    // ~8.2 s on the committed seed).
+    { stage: "generate",     budgetMs: 6000,  failMs: 12000 },
     { stage: "join",         budgetMs: 2000,  failMs: 4000 },
     { stage: "gates",        budgetMs: 15000, failMs: 20000 },
     { stage: "sheets",       budgetMs: 5000,  failMs: 8000 },
@@ -1039,7 +1043,7 @@ test("G-POI: a reported region with interior detail fails", () => {
   detailed.regions[1].settlements = ["c01/s02"];
   const r = runWorld(withFabric({ fabric: detailed }));
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-POI: region c01\/r02 \(reported\) has 1 points of interest — must be 0/);
+  assert.match(r.out, /G-POI: region c01\/r02 \(reported\) has 1 generated points of interest — must be 0 \(0 pinned\/canon exempted\)/);
 });
 
 test("G-POI: a dungeon anchor counts as a point of interest wherever it lands", () => {
@@ -1048,7 +1052,7 @@ test("G-POI: a dungeon anchor counts as a point of interest wherever it lands", 
                                  entranceType: "sea-arch", hopsToSettlement: 1 });
   const r = runWorld(withFabric({ fabric: anchored }));
   assert.equal(r.code, 1, r.out);
-  assert.match(r.out, /G-POI: region c01\/r02 \(reported\) has 1 points of interest — must be 0/);
+  assert.match(r.out, /G-POI: region c01\/r02 \(reported\) has 1 generated points of interest — must be 0 \(0 pinned\/canon exempted\)/);
 });
 
 test("G-POI: a reported region's ONE named landform is exempt (spec §6.4 rule 2)", () => {
@@ -1839,7 +1843,7 @@ test("G-POI clause 3c: a declaration on a REPORTED region is a failure — the f
   withPoi.settlements.push({ ...clone(FABRIC_OK.settlements[0]), id: "c01/s02", region: "c01/r02" });
   const r2 = runWorld(withPoiDeclared({ "c01/r02": "was thin when it was surveyed" }, withPoi));
   assert.equal(r2.code, 1, r2.out);
-  assert.match(r2.out, /G-POI: region c01\/r02 \(reported\) has \d+ points of interest — must be 0/);
+  assert.match(r2.out, /G-POI: region c01\/r02 \(reported\) has \d+ generated points of interest — must be 0 \(\d+ pinned\/canon exempted\)/);
 });
 
 test("G-POI clause 3b says nothing about a continent whose fabric is not loaded", () => {

@@ -1,0 +1,25 @@
+{
+  "id": "c-lm-c06-wetland-377c",
+  "kind": "landmark",
+  "tier": "bound",
+  "title": "Mire within Loamlow",
+  "bind": {
+    "handle": "c06/wetland/h-6a377c",
+    "expect": {
+      "type": "raised-bog",
+      "sizeKm": [
+        4.2,
+        9
+      ]
+    }
+  },
+  "networkAnchor": false,
+  "prose": "frontier",
+  "properties": [],
+  "lore": {
+    "note": "A dome of peat that has grown above the water table and drinks nothing but rain.",
+    "labelAnchor": "north",
+    "source": "content/world/lexicon/landforms.json#raised-bog.gloss"
+  },
+  "resolution": null
+}
