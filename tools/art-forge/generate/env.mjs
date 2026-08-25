@@ -89,6 +89,10 @@ import {
   runGraph,
 } from "./charsheet.mjs";
 import { renderDepthPng } from "./blockin.mjs";
+import { briefHash } from "../lib/brief-hash.mjs";
+import { appendAttempt } from "../lib/run-ledger.mjs";
+
+const RUNS_DIR = path.join(FORGE_DIR, "runs");
 
 /** Node ids follow docs/worldbuilding/ABP-controlnet-rescue.md's numbering. */
 export const ENV_NODE = Object.freeze({
@@ -538,6 +542,18 @@ export async function generateEnv(
     label: `env ${briefId} seed=${seed} strength=${formatStrength(strength)} depth=${depthImage}`,
   });
 
+  // Run-ledger entry (F-050): the base PNG is downloaded — record the render
+  // attempt. Dry-run downloads nothing, so it records nothing.
+  if (baseResult.dest) {
+    appendAttempt(RUNS_DIR, briefId, {
+      type: "render",
+      seed,
+      hires: false,
+      briefHash: briefHash(rawBrief),
+      out: path.relative(FORGE_DIR, baseResult.dest),
+    });
+  }
+
   if (!args.hires) {
     return baseResult;
   }
@@ -556,6 +572,16 @@ export async function generateEnv(
     name: `env/${hiresOutputId}`,
     label: `env hires ${briefId} seed=${seed} base=${baseImage}`,
   });
+
+  if (hiresResult.dest) {
+    appendAttempt(RUNS_DIR, briefId, {
+      type: "render",
+      seed,
+      hires: true,
+      briefHash: briefHash(rawBrief),
+      out: path.relative(FORGE_DIR, hiresResult.dest),
+    });
+  }
 
   return { base: baseResult, hires: hiresResult };
 }

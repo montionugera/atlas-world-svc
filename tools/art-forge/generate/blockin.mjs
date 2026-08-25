@@ -2,8 +2,15 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { briefHash } from "../lib/brief-hash.mjs";
+import { appendAttempt } from "../lib/run-ledger.mjs";
 
 const execFileAsync = promisify(execFile);
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const FORGE_DIR = path.resolve(HERE, "..");
+const RUNS_DIR = path.join(FORGE_DIR, "runs");
 
 /**
  * Block-in / depth control producer.
@@ -139,5 +146,12 @@ export async function renderDepthPng({ brief, width, height, outPath }) {
   } finally {
     await unlink(svgPath).catch(() => {});
   }
+  // Run-ledger entry (F-050): the depth PNG is confirmed on disk — record
+  // the block-in attempt against the brief's identity hash.
+  appendAttempt(RUNS_DIR, brief.id, {
+    type: "blockin",
+    briefHash: briefHash(brief),
+    out: path.relative(FORGE_DIR, outPath),
+  });
   return outPath;
 }
