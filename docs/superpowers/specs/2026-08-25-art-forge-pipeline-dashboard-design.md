@@ -1,7 +1,7 @@
 ---
 title: "Art-forge pipeline dashboard: pipeline view per brief with gate verdicts and per-cell re-run"
 id: I-102
-status: drafting
+status: approved
 ---
 
 # Art-forge pipeline dashboard: pipeline view per brief with gate verdicts and per-cell re-run
