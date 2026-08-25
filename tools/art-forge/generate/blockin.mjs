@@ -147,11 +147,17 @@ export async function renderDepthPng({ brief, width, height, outPath }) {
     await unlink(svgPath).catch(() => {});
   }
   // Run-ledger entry (F-050): the depth PNG is confirmed on disk — record
-  // the block-in attempt against the brief's identity hash.
-  appendAttempt(RUNS_DIR, brief.id, {
-    type: "blockin",
-    briefHash: briefHash(brief),
-    out: path.relative(FORGE_DIR, outPath),
-  });
+  // the block-in attempt against the brief's identity hash. Ledger failure
+  // must NOT fail the run after the PNG was produced — warn and continue
+  // (same policy as artifact-gate.mjs).
+  try {
+    appendAttempt(RUNS_DIR, brief.id, {
+      type: "blockin",
+      briefHash: briefHash(brief),
+      out: path.relative(FORGE_DIR, outPath),
+    });
+  } catch (err) {
+    console.error(`blockin.mjs: WARNING: ledger append failed: ${err.message}`);
+  }
   return outPath;
 }

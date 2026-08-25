@@ -545,13 +545,19 @@ export async function generateEnv(
   // Run-ledger entry (F-050): the base PNG is downloaded — record the render
   // attempt. Dry-run downloads nothing, so it records nothing.
   if (baseResult.dest) {
-    appendAttempt(RUNS_DIR, briefId, {
-      type: "render",
-      seed,
-      hires: false,
-      briefHash: briefHash(rawBrief),
-      out: path.relative(FORGE_DIR, baseResult.dest),
-    });
+    // Ledger failure must NOT fail the run after the PNG was produced —
+    // warn and continue (same policy as artifact-gate.mjs).
+    try {
+      appendAttempt(RUNS_DIR, briefId, {
+        type: "render",
+        seed,
+        hires: false,
+        briefHash: briefHash(rawBrief),
+        out: path.relative(FORGE_DIR, baseResult.dest),
+      });
+    } catch (err) {
+      console.error(`env.mjs: WARNING: ledger append failed: ${err.message}`);
+    }
   }
 
   if (!args.hires) {
@@ -574,13 +580,18 @@ export async function generateEnv(
   });
 
   if (hiresResult.dest) {
-    appendAttempt(RUNS_DIR, briefId, {
-      type: "render",
-      seed,
-      hires: true,
-      briefHash: briefHash(rawBrief),
-      out: path.relative(FORGE_DIR, hiresResult.dest),
-    });
+    // Same guard as the base render above: never throw after the PNG exists.
+    try {
+      appendAttempt(RUNS_DIR, briefId, {
+        type: "render",
+        seed,
+        hires: true,
+        briefHash: briefHash(rawBrief),
+        out: path.relative(FORGE_DIR, hiresResult.dest),
+      });
+    } catch (err) {
+      console.error(`env.mjs: WARNING: ledger append failed: ${err.message}`);
+    }
   }
 
   return { base: baseResult, hires: hiresResult };
