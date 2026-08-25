@@ -237,7 +237,11 @@ test("the committed budgets file pins cellKm at 0.5 and the six loop stages", ()
   // threshold — NOT one aggregate number", because without them the loop time
   // is unfalsifiable and drifts to minutes. Six rows, spec §7.6.
   assert.deepEqual(b.loop, [
-    { stage: "generate",     budgetMs: 4000,  failMs: 8000 },
+    // generate rose 4000/8000 -> 6000/12000 with Plan D Task 10's pin-aware
+    // generation: the frontier-reservation loop re-runs placement and P13,
+    // and the pinned-water pass adds three whole-grid BFS sweeps (measured
+    // ~8.2 s on the committed seed).
+    { stage: "generate",     budgetMs: 6000,  failMs: 12000 },
     { stage: "join",         budgetMs: 2000,  failMs: 4000 },
     { stage: "gates",        budgetMs: 15000, failMs: 20000 },
     { stage: "sheets",       budgetMs: 5000,  failMs: 8000 },

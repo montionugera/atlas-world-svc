@@ -27,6 +27,7 @@
 // 780 instances in surveyed regions for a census that needs 276 named.
 import { createHash } from "node:crypto";
 import { FLAG, idx, neighbourIdx } from "../grid.mjs";
+import { PIN_LANDFORM_NEAR_KM } from "../../../../scripts/lib/resolve.mjs";
 import { hashNoise2D, q, UNIT_VECTORS } from "../noise.mjs";
 import { mintSeed } from "../seed.mjs";
 
@@ -437,7 +438,8 @@ export function footprintOf({ shape, atKm, sizeKm, salt }) {
  *
  * `regions` are P9's records; `grid.owner` indexes into them.
  */
-export function instanceLandforms({ grid, premises, regions, lexicon, manifest, stream, nameStream }) {
+export function instanceLandforms({ grid, premises, regions, lexicon, manifest, stream, nameStream,
+                                     pinned = [] }) {
   if (!Array.isArray(regions) || regions.length === 0)
     throw new Error("landforms: P9 partitionRegions must run before P10");
   // THE NAMING STREAM IS INJECTED, NEVER MINTED. `names` is one of the four
@@ -609,6 +611,20 @@ export function instanceLandforms({ grid, premises, regions, lexicon, manifest, 
     // for the fallback never carries one.
     recordSubstitutions({ premise, kitTypes, grid, cellsOfRegion, mine, substitutions, contInstances });
 
+    // PIN RESERVATIONS (owner root-cause ruling, 2026-08-25). ADDITIVE ONLY:
+    // for a pinned place whose required type has no instance within
+    // PIN_LANDFORM_NEAR_KM anywhere in the world, one NEW instance of that
+    // type is grown near the pin through this pass's own machinery — the
+    // type's own requires predicate (matchesRequires on the cell view), its
+    // size/geometry/salt construction via makeInstance, handles minted by the
+    // normal ledger path below. Existing instances are never moved or
+    // removed, so all 336 bound handles stay valid; reservations sit AFTER
+    // the budgeted placement and add to the world total.
+    if (pinned.length > 0)
+      reservePinnedInstances({ premise, mine, kitTypes, grid, contStream, contSalt,
+                               contInstances, instances, pinned, shortfalls,
+                               cellsOfRegion, lexicon });
+
     // Handles + ids, assigned in the TOTAL order so a re-run cannot reshuffle.
     const handles = orderHandles({
       handles: contInstances.map((c) => ({
@@ -756,6 +772,116 @@ function tooClose(cell, usedCells, grid) {
     if (dx * dx + dy * dy < MIN_SEPARATION_CELLS * MIN_SEPARATION_CELLS) return true;
   }
   return false;
+}
+
+// Distance from a km point to an instance's own geometry: a point's `at`, an
+// area/line ring's nearest vertex, else its anchor cell centre. Same rule
+// placePinned uses for receipts, so reservation and measurement agree.
+function instanceDistanceKm(inst, at, grid) {
+  const g = inst.geometry ?? {};
+  const pts = g.shape === "point" ? [g.at]
+    : Array.isArray(g.ring) ? g.ring
+    : inst.cell ? [[(inst.cell[0] + 0.5) * grid.cellKm, (inst.cell[1] + 0.5) * grid.cellKm]]
+    : [];
+  let best = null;
+  for (const p of pts) {
+    if (!p) continue;
+    const dx = p[0] - at[0], dy = p[1] - at[1];
+    const d = Math.sqrt(dx * dx + dy * dy);
+    if (best === null || d < best) best = d;
+  }
+  return best;
+}
+
+function reservePinnedInstances({ premise, mine, kitTypes, grid, contStream, contSalt,
+                                  contInstances, instances, pinned, shortfalls, cellsOfRegion,
+                                  lexicon }) {
+  const regionById = new Map(mine.map((r) => [r.id, r]));
+  const ktByType = new Map(kitTypes.map((kt) => [kt.row.id, kt]));
+  const takenCells = new Set([...contInstances, ...instances].map((c) => c.cell.join(",")));
+  const tooCloseToAny = (cx, cy) => {
+    for (const inst of [...contInstances, ...instances]) {
+      if (Math.abs(inst.cell[0] - cx) <= MIN_SEPARATION_CELLS &&
+          Math.abs(inst.cell[1] - cy) <= MIN_SEPARATION_CELLS) return true;
+    }
+    return false;
+  };
+  for (const rec of pinned) {
+    const wantType = rec.requires?.landform;
+    const wantCont = rec.requires?.continent;
+    if (!wantType || wantCont !== premise.id) continue;
+    let kt = ktByType.get(wantType);
+    if (!kt) {
+      // AUTHORIAL OVERRIDE: the type is outside this continent's premise kit
+      // (a glacial type on a temperate landmass), but a pinned place is
+      // canon and its requires block names the substrate the prose swears
+      // by. Mint the kit entry straight from the lexicon row with the same
+      // deterministic per-type salt construction; the compromise is recorded.
+      const row = lexicon.find((x) => x.id === wantType);
+      if (!row) {
+        shortfalls.push({ continent: premise.id, what: "pin-reservation",
+          why: `${rec.id} requires landform "${wantType}", which the lexicon does not define` });
+        continue;
+      }
+      kt = { t: -1, row, via: row.group, weight: 1,
+             pred: compileRequires({ requires: row.requires, id: row.id }),
+             salt: saltOf(mintSeed({ parentStream: contStream, name: row.id })) };
+      shortfalls.push({ continent: premise.id, what: "pin-reservation",
+        why: `${rec.id} reserved an instance of "${wantType}" outside this continent's ` +
+          `premise kit — canon override, recorded here` });
+    }
+    // SATISFIED GLOBALLY? measure against every instance placed so far, same
+    // distance rule the receipt will use. If some existing instance of the
+    // type already sits within the limit, this pin needs nothing.
+    let nearest = null;
+    for (const inst of [...instances, ...contInstances]) {
+      if (inst.type !== wantType) continue;
+      const d = instanceDistanceKm(inst, rec.pin.at, grid);
+      if (d !== null && (nearest === null || d < nearest)) nearest = d;
+    }
+    if (nearest !== null && nearest <= PIN_LANDFORM_NEAR_KM) continue;
+
+    // Candidate cells: owned land of THIS continent within the limit, sorted
+    // by distance to the pin. The type's own requires predicate wins; a plain
+    // free cell is the fallback so the claim is still satisfied, with the
+    // compromise recorded.
+    const pinCx = Math.floor(rec.pin.at[0] / grid.cellKm);
+    const pinCy = Math.floor(rec.pin.at[1] / grid.cellKm);
+    const limitCells = PIN_LANDFORM_NEAR_KM / grid.cellKm;
+    const cands = [];
+    for (const r of mine) {
+      for (const i of cellsOfRegion.get(r.id) ?? []) {
+        const cx = i % grid.w, cy = (i / grid.w) | 0;
+        const dx = cx - pinCx, dy = cy - pinCy;
+        const dCells = Math.sqrt(dx * dx + dy * dy);
+        if (dCells > limitCells) continue;
+        if (takenCells.has(`${cx},${cy}`) || tooCloseToAny(cx, cy)) continue;
+        cands.push({ i, cx, cy, d: dCells * grid.cellKm, region: r });
+      }
+    }
+    cands.sort((a, b) => (a.d - b.d) || (a.i - b.i));
+    let chosen = null, compromised = false;
+    for (const c of cands) {
+      const ok = matchesRequires({ requires: kt.row.requires ?? null,
+                                   cell: cellView({ grid, i: c.i }) });
+      if (ok) { chosen = c; break; }
+    }
+    if (!chosen && cands.length) { chosen = cands[0]; compromised = true; }
+    if (!chosen) {
+      shortfalls.push({ continent: premise.id, what: "pin-reservation",
+        why: `${rec.id} requires landform "${wantType}" but no free owned cell within ` +
+          `${PIN_LANDFORM_NEAR_KM} km can host it` });
+      continue;
+    }
+    const inst = makeInstance({
+      grid, premise, region: chosen.region, kt, cell: chosen.i, contStream, contSalt });
+    contInstances.push(inst);
+    takenCells.add(`${chosen.cx},${chosen.cy}`);
+    if (compromised)
+      shortfalls.push({ continent: premise.id, what: "pin-reservation",
+        why: `${rec.id}: no cell near the pin satisfies "${wantType}"'s own requires block — ` +
+          `placed on the nearest free ground instead` });
+  }
 }
 
 function makeInstance({ grid, premise, region, kt, cell, contStream, contSalt }) {

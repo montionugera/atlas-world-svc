@@ -766,6 +766,30 @@ function nearestWaterCell({ grid, maxKm }) {
 // WeakMap, never a key ON the grid — grid.test.mjs sums every ArrayBuffer view
 // reachable from the object to pin its footprint number, and a cached sweep
 // would silently inflate it.
+// Nearest SEA cell carrying its SOURCE index — the HARBOUR reading (depth and
+// shelter) is measured there, because a port's deep sheltered water is the
+// sea it commands, not the river running past its wall.
+function nearestSeaWithSource({ grid }) {
+  const { n } = grid;
+  const dist = new Float64Array(n).fill(Infinity);
+  const src = new Int32Array(n).fill(-1);
+  const queue = new Int32Array(n);
+  let head = 0, tail = 0;
+  for (let i = 0; i < n; i++)
+    if ((grid.flags[i] & FLAG.SEA) !== 0) { dist[i] = 0; src[i] = i; queue[tail++] = i; }
+  while (head < tail) {
+    const i = queue[head++];
+    const d = dist[i] + grid.cellKm;
+    if (d > PIN_LANDFORM_NEAR_KM * 2) continue;
+    for (let k = 0; k < 8; k++) {
+      const j = neighbourIdx({ grid, i, d: k });
+      if (j < 0 || src[j] !== -1) continue;
+      dist[j] = d; src[j] = src[i]; queue[tail++] = j;
+    }
+  }
+  return { seaSrc: src, seaDist: dist };
+}
+
 const waterCtxCache = new WeakMap();
 // PER-KIND WATER DISTANCE (owner ruling principle, 2026-08-25: pin
 // satisfaction is proximity within PIN_LANDFORM_NEAR_KM). One multi-source D8
@@ -799,6 +823,7 @@ function waterContext(grid) {
       seaKm: waterDistance({ grid, mask: FLAG.SEA }),
       riverKm: waterDistance({ grid, mask: FLAG.RIVER }),
       lakeKm: waterDistance({ grid, mask: FLAG.LAKE }),
+      ...nearestSeaWithSource({ grid }),
     };
     waterCtxCache.set(grid, ctx);
   }
@@ -828,13 +853,21 @@ export function measureCell({ grid, cell, cellKm }) {
   const wi = ownWater ? i : ctx.nearest[i];
   const wFlags = wi >= 0 ? grid.flags[wi] : 0;
   const isSeaNear = wi >= 0 && (wFlags & FLAG.SEA) !== 0;
+  // THE HARBOUR READING. Depth and shelter describe the SEA the place
+  // commands — the nearest sea cell within PIN_LANDFORM_NEAR_KM — not whatever
+  // fresh stream runs past the wall. Without this a port whose shore is a
+  // kilometre of river reads depth 0 and G-PIN-SAT fails it on a clause about
+  // its harbour.
+  const harbourI = (flags & FLAG.SEA) !== 0 ? i
+    : ctx.seaSrc[i] >= 0 && Number.isFinite(ctx.seaDist[i]) &&
+        ctx.seaDist[i] <= PIN_LANDFORM_NEAR_KM ? ctx.seaSrc[i] : -1;
   return {
     landform: grid.landformNames[grid.landform[i]] ?? null,
     waterKind: (flags & FLAG.SEA) ? "sea" : (flags & FLAG.LAKE) ? "lake"
              : (flags & FLAG.RIVER) ? "river"
              : isSeaNear ? "sea" : "none",
-    shelterFetchKm: q(isSeaNear ? Math.max(ctx.narrow[wi], 0) : 0),
-    depthM: q(wi >= 0 ? Math.max(grid.depthM[wi], 0) : 0),
+    shelterFetchKm: q(harbourI >= 0 ? Math.max(ctx.narrow[harbourI], 0) : 0),
+    depthM: q(harbourI >= 0 ? Math.max(grid.depthM[harbourI], 0) : 0),
     slope: q(localSlope({ grid, cell })),
     freshWaterWithinKm: q(grid.freshKm[i]),
     biome: grid.biomeName(i),

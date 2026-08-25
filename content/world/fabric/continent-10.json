@@ -68,6 +68,6 @@
   "roads": [],
   "dungeonAnchors": [],
   "pinReceipts": [
-    {"id":"c-lm-fumewater-cone","at":[122,356],"cell":[244,712],"continent":"c10","region":"c10/r02","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0,"freshWaterWithinKm":22.5,"biome":"lava","elevationM":1000,"landformNearId":"lf-c10-r01-0012","landformNearHandle":"c10/volcanic/h-cc1563","landformNearDistanceKm":2.76,"nearestSeaKm":10.5,"nearestRiverKm":22.5,"nearestLakeKm":105.5}}
+    {"id":"c-lm-fumewater-cone","at":[122,356],"cell":[244,712],"continent":"c10","region":"c10/r02","measured":{"landform":null,"waterKind":"none","shelterFetchKm":34,"depthM":732.57,"slope":0,"freshWaterWithinKm":22.5,"biome":"lava","elevationM":1000,"landformNearId":"lf-c10-r01-0012","landformNearHandle":"c10/volcanic/h-cc1563","landformNearDistanceKm":2.76,"nearestSeaKm":10.5,"nearestRiverKm":22.5,"nearestLakeKm":105.5}}
   ]
 }

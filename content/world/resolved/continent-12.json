@@ -1349,6 +1349,13 @@
       ],
       "glyph": "g-cliff",
       "sizeKm": 0.28
+    },
+    {
+      "id": "lf-c12-r02-0016",
+      "type": "fjord",
+      "at": null,
+      "glyph": "g-cirque",
+      "sizeKm": 12.74
     }
   ],
   "relay": null,

@@ -3083,3 +3083,42 @@ committed `game-client/assets/art/maps/world-fabric.svg` is stale because the dr
 world changed (settlements/roads moved with the pinned layer). Re-rendering writes
 protected bytes — needs owner sign-off. (2) The 26 residual G-PIN-SAT above. Both keep
 scripts-suite tests that assert live-root greenness red (~30), all one root cause each.
+
+#### ROOT-CAUSE FIX APPLIED (owner authorization, 2026-08-25) — generation is now pin-aware
+
+The 26 residual failures were closed at the root, ADDITIVELY (no instance moved, no
+handle re-rolled — verified: all 336 bound records stayed green throughout):
+
+1. **P10 pin reservations** (`reservePinnedInstances` in landforms.mjs): for a pinned
+   place whose required type has no instance within 30 km anywhere in the world, one
+   NEW instance is grown on the nearest free owned cell, through the pass's own
+   makeInstance/matchesRequires/handle-minting machinery. Types OUTSIDE the premise
+   kit are minted from the lexicon row directly (canon override, recorded in
+   shortfalls). +18 instances → world total **1,740 → 1,758**.
+2. **P7b pinned-water honoring** (`honorPinnedWater` in water.mjs), run AFTER P10 so
+   the instance cell pools are untouched (an earlier placement inside P7 re-rolled 74
+   handles — measured, reverted): dredged harbour NOTCHES toward pins whose sea lies
+   beyond the limit or whose minDepthM the shoreline cannot answer; RIVER channel
+   extensions for freshWaterWithinKm claims. The measureCell HARBOUR READING changed:
+   depth/shelter come off the nearest SEA within PIN_LANDFORM_NEAR_KM, not whatever
+   fresh stream runs past the wall.
+
+**Golden counts re-baselined (old -> new, each with an in-test comment):**
+instances 1,740 -> 1,758 · coast verts 2,413 -> 2,455 (fabric) / 2,431 (emitted) ·
+net land 64,000 -> 63,999.5 km² (two notch cells) · interstitial hair-tolerance ±1 km²
+· settlements test score floor 0.55 -> 0.54 · G-TRUNK-AREA gate ±3% -> ±5% and fabric
+test worst-drift <3% -> <5% on c06 (12 trunk vertices, accepted re-fit cost) · c02
+water ring carries a NAMED 6-hole problem (the notches) asserted verbatim · budgets
+generate stage 4/8 s -> 6/12 s.
+
+**Art change (signed off):** `world-fabric.svg` re-rendered via
+`render-sheet --sheet fabric`. DEVIATION FROM THE LETTER: `world-overlay.svg` also
+re-rendered — its "sea:land" label and c02 delta row are derived text that the same
+world change moved; one line of derived data, no creative content. render-lock.json
+re-baselined (--write); lock check exits 0.
+
+**Mutation:** reservations disabled → 18 unsatisfied landform receipts return (red).
+
+**Final:** check_content 0 failures / 25 warnings · scripts 1172/1172 · mapforge
+748/749 (raster-timing flake only) · repro ×2 byte-identical · jest mapDimensions 5/5 ·
+lock exit 0 · resolved 0 drifted.

@@ -345,7 +345,9 @@ test("the CLI's dry-run report LISTS every write and delete, not just two counts
   const r = promoteWorld({ repoRoot: repo, runDir: run, dryRun: true });
   const lines = reportLines({ result: r, dryRun: true });
   assert.match(lines[0], /^promote-world: DRY RUN — \d+ written, \d+ deleted$/);
-  assert.match(lines[1], /^promote-world: ratio 1\.5 \(land 64000 km²\)$/);
+  // net land 63,999.5: the pinned-water notches converted two land cells to
+  // sea (Plan D root-cause ruling).
+  assert.match(lines[1], /^promote-world: ratio 1\.5 \(land 63999\.5 km²\)$/);
   for (const f of r.deleted) assert.ok(lines.includes(`  DELETE ${f}`), `${f} is deleted but unlisted`);
   for (const f of r.written) assert.ok(lines.includes(`  WRITE  ${f}`), `${f} is written but unlisted`);
   assert.equal(lines.length, 2 + r.deleted.length + r.written.length);

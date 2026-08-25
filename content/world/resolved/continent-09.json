@@ -1693,6 +1693,16 @@
       ],
       "glyph": "g-cliff",
       "sizeKm": 0.21
+    },
+    {
+      "id": "lf-c09-r03-0035",
+      "type": "sea-waterfall",
+      "at": [
+        352.25,
+        196.25
+      ],
+      "glyph": "g-cliff",
+      "sizeKm": 0.16
     }
   ],
   "relay": null,

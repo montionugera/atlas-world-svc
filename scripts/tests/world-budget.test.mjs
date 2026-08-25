@@ -658,9 +658,13 @@ test("the gate PRINTS a world-budget line for landforms on every run", () => {
   assert.equal(r.code, 0, r.out);
   assert.match(
     r.out,
-    /^world-budget: landforms 170 types, 1740 instances \(budget 100-200 types, 2400 instances\)$/m,
+    // 1,740 budgeted placements + 18 additive pin reservations (Plan D Task
+    // 10 root-cause ruling: one new instance per pinned place whose required
+    // type had none within 30 km). Errata: world-fill-STATE §25.
+    /^world-budget: landforms 170 types, 1758 instances \(budget 100-200 types, 2400 instances\)$/m,
   );
-  assert.match(r.out, /^G-LANDFORM: types placed: 168 \/ 170$/m);
+  // 169/170: the pin reservations lifted sinking-river (previously absent) onto c04.
+  assert.match(r.out, /^G-LANDFORM: types placed: 169 \/ 170$/m);
   drop();
 });
 

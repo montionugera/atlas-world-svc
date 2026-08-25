@@ -5044,6 +5044,13 @@
       "sizeKm": 4.07
     },
     {
+      "id": "lf-c06-r04-0097",
+      "type": "delta-lobe-marsh",
+      "at": null,
+      "glyph": "g-mangrove",
+      "sizeKm": 5.44
+    },
+    {
       "id": "lf-c06-r05-0032",
       "type": "tidal-flat",
       "at": null,

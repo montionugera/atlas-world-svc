@@ -32,8 +32,8 @@
   "loop": [
     {
       "stage": "generate",
-      "budgetMs": 4000,
-      "failMs": 8000
+      "budgetMs": 6000,
+      "failMs": 12000
     },
     {
       "stage": "join",

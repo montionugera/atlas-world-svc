@@ -10,6 +10,7 @@
 // On the committed-byte path and scanned by both determinism scans: no
 // transcendental, no `**`, no clock, no random.
 import { idx, FLAG, D8 } from "../grid.mjs";
+import { PIN_LANDFORM_NEAR_KM } from "../../../../scripts/lib/resolve.mjs";
 
 const RIVER_ACC_MIN = 220;      // cells drained before a channel reads as a river
 // ── ICE ────────────────────────────────────────────────────────────────────
@@ -151,7 +152,7 @@ class MinHeap {
 // Multi-source BFS over the D8 neighbourhood. Every edge costs one cell, so BFS
 // order IS distance order and no heap is needed. Used twice: once from the sea
 // (how far inland a cell is) and once from fresh water (freshKm).
-function bfsDistanceKm({ grid, isSource }) {
+export function bfsDistanceKm({ grid, isSource }) {
   const dist = new Float32Array(grid.n).fill(-1);
   const q = new Int32Array(grid.n);
   let head = 0, tail = 0;
@@ -370,7 +371,15 @@ export function carveWater({ grid, premises, manifest }) {
     }
   }
 
-  // freshKm: km to the nearest fresh water (RIVER, LAKE or DELTA cell). The
+  // PINNED WATER HONORING (owner root-cause ruling, 2026-08-25). ADDITIVE
+  // and deterministic: a pinned place whose requires block demands sea at its
+  // site gets a small ENCLOSED COVE carved beside it (a drowned cove is
+  // exactly what a "coastal-drowned-valley" port claim describes); a demand
+  // of deep water gets the cove floor deepened; a fresh-water proximity claim
+  // gets a RIVER channel extended from the nearest existing fresh source to
+  // within the claimed distance. Existing water is never removed. Runs BEFORE
+  // the freshKm sweep below so distances include the new channels.
+    // freshKm: km to the nearest fresh water (RIVER, LAKE or DELTA cell). The
   // settlement score's hard veto is freshWater(c) < 0.20 and Plan D's pinned
   // records declare `freshWaterWithinKm`; both read this field, and a
   // Millcross-shaped town whose plan is 4 of 7 roads river-derived cannot be
@@ -409,4 +418,163 @@ function lakeDisc({ premise }) {
 function interiorWaterFor({ manifest, id }) {
   const l = (manifest.landmasses ?? []).find((m) => m.id === id);
   return l ? l.interiorWaterKm2 : 0;
+}
+
+
+// ── pinned water honoring (Plan D Task 10 follow-up, owner ruling) ──────────
+//
+// Multi-source D8 BFS carrying the SOURCE cell, mirroring bfsDistanceKm above
+// plus the source bookkeeping the corridor walks need.
+// ── pinned water honoring (Plan D Task 10 follow-up, owner ruling) ──────────
+//
+// Multi-source D8 BFS carrying the SOURCE cell, mirroring bfsDistanceKm above
+// plus the source bookkeeping the notch walks need.
+function bfsWithSource({ grid, mask }) {
+  const dist = new Float32Array(grid.n).fill(-1);
+  const src = new Int32Array(grid.n).fill(-1);
+  const queue = new Int32Array(grid.n);
+  let head = 0, tail = 0;
+  for (let i = 0; i < grid.n; i++)
+    if ((grid.flags[i] & mask) !== 0) { dist[i] = 0; src[i] = i; queue[tail++] = i; }
+  while (head < tail) {
+    const i = queue[head++];
+    const d = dist[i] + grid.cellKm;
+    const x = i % grid.w, y = (i / grid.w) | 0;
+    for (const [dx, dy] of D8) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= grid.w || ny >= grid.h) continue;
+      const j = ny * grid.w + nx;
+      if (src[j] !== -1) continue;
+      dist[j] = d; src[j] = src[i]; queue[tail++] = j;
+    }
+  }
+  return { dist, src };
+}
+
+const cellOf = (at, grid) =>
+  [Math.min(grid.w - 1, Math.max(0, Math.floor(at[0] / grid.cellKm))),
+   Math.min(grid.h - 1, Math.max(0, Math.floor(at[1] / grid.cellKm)))];
+
+// THE DREDGED HARBOUR NOTCH. From the sea cell nearest the pin, cut a one-
+// cell-wide slot INTO the land, toward the pin, until the pin's sea distance
+// drops to `targetKm`. Open to the sea by construction, so it never becomes
+// an enclosed hole in the trunk ring (an isolated saltwater blob did exactly
+// that, measured: c02 grew two). Depth along the slot floor honours
+// `minDepthM`; the slot's one-cell width makes narrowWaterKm read sheltered.
+function dredgeNotch({ grid, fromCell, towardCell, targetKm, curDistKm, minDepthM }) {
+  let [cx, cy] = fromCell;
+  const [tx, ty] = towardCell;
+  let steps = Math.ceil(Math.max(0, curDistKm - targetKm) / grid.cellKm);
+  while (steps-- > 0) {
+    let bestD = null, best = null;
+    for (const [dx, dy] of D8) {
+      const nx = cx + dx, ny = cy + dy;
+      if (nx < 1 || ny < 1 || nx >= grid.w - 1 || ny >= grid.h - 1) continue;
+      if ((grid.flags[ny * grid.w + nx] & FLAG.SEA) !== 0) continue;
+      const dd = Math.sqrt((nx - tx) * (nx - tx) + (ny - ty) * (ny - ty));
+      if (bestD === null || dd < bestD) { bestD = dd; best = [nx, ny]; }
+    }
+    if (!best) return false;
+    [cx, cy] = best;
+    const j = cy * grid.w + cx;
+    grid.flags[j] &= ~(FLAG.LAKE | FLAG.RIVER | FLAG.DELTA | FLAG.GLACIER);
+    grid.flags[j] |= FLAG.SEA;
+    // OWNER IS KEPT: the cell stays part of its region/plate so the trunk
+    // land ring does not grow a hole around the notch (an owner-less sea
+    // pocket inside a landmass measured as six enclosed holes on c02).
+    grid.depthM[j] = Math.max(grid.depthM[j], (minDepthM ?? 0) + 4, 12);
+  }
+  return true;
+}
+
+function extendFreshChannel({ grid, fromCell, toCell, maxCells, flag = FLAG.RIVER }) {
+  let [cx, cy] = fromCell;
+  const [tx, ty] = toCell;
+  for (let n = 0; n < maxCells; n++) {
+    let bestD = null, best = null;
+    for (const [dx, dy] of D8) {
+      const nx = cx + dx, ny = cy + dy;
+      if (nx < 1 || ny < 1 || nx >= grid.w - 1 || ny >= grid.h - 1) continue;
+      const dd = Math.sqrt((nx - tx) * (nx - tx) + (ny - ty) * (ny - ty));
+      if (bestD === null || dd < bestD) { bestD = dd; best = [nx, ny]; }
+    }
+    if (!best) return false;
+    [cx, cy] = best;
+    const j = cy * grid.w + cx;
+    if (flag === FLAG.RIVER && (grid.flags[j] & (FLAG.RIVER | FLAG.LAKE | FLAG.DELTA)) !== 0) return true;
+    grid.flags[j] |= flag;
+    if (Math.abs(cx - tx) <= 1 && Math.abs(cy - ty) <= 1) return true;
+  }
+  return false;
+}
+
+export function honorPinnedWater({ grid, pinned, problems = [] }) {
+  const sea = bfsWithSource({ grid, mask: FLAG.SEA });
+  const fresh = bfsWithSource({ grid, mask: FLAG.RIVER | FLAG.LAKE | FLAG.DELTA });
+  for (const rec of pinned) {
+    const req = rec.requires ?? {};
+    const w = req.water ?? {};
+    const needsSea = w.kind === "sea" || w.minDepthM !== undefined ||
+                     w.shelterFetchKmMax !== undefined;
+    const [pinCx, pinCy] = cellOf(rec.pin.at, grid);
+    const pi = pinCy * grid.w + pinCx;
+
+    if (needsSea && Number.isFinite(sea.dist[pi])) {
+      const h = sea.src[pi];
+      const needDepth = w.minDepthM ?? 0;
+      const depthShort = needDepth > 0 && !(grid.depthM[h] >= needDepth);
+      const shelterShort = w.shelterFetchKmMax !== undefined;
+      // DISTANCE beyond the limit -> dredge a notch toward the pin.
+      if (sea.dist[pi] > PIN_LANDFORM_NEAR_KM - 1) {
+        const dredged = dredgeNotch({
+          grid,
+          fromCell: [h % grid.w, (h / grid.w) | 0],
+          towardCell: [pinCx, pinCy],
+          targetKm: PIN_LANDFORM_NEAR_KM - 1,
+          curDistKm: sea.dist[pi],
+          minDepthM: needDepth > 0 ? needDepth : undefined });
+        if (!dredged)
+          problems.push(`water: ${rec.id} harbour notch could not be dredged — named deviation`);
+      } else {
+        // DEPTH: deepen the harbour floor directly.
+        if (depthShort) grid.depthM[h] = Math.max(grid.depthM[h], needDepth + 4);
+        // SHELTER: narrowWaterKm reads min-over-axes runs THROUGH the
+        // harbour cell, so open water can never read sheltered. Two
+        // BREAKWATERS — sea neighbours reclaimed as moles — bound the runs
+        // on both sides, exactly what a real port builds. The reclaimed
+        // cells leave the sea census honestly: they become unowned land.
+        if (shelterShort) {
+          let built = 0;
+          for (const [dx, dy] of D8) {
+            const nx = (h % grid.w) + dx, ny = ((h / grid.w) | 0) + dy;
+            if (nx < 1 || ny < 1 || nx >= grid.w - 1 || ny >= grid.h - 1) continue;
+            const j = ny * grid.w + nx;
+            if ((grid.flags[j] & FLAG.SEA) === 0) continue;
+            grid.flags[j] &= ~FLAG.SEA;
+            if (grid.owner[j] < 0 && grid.owner[pi] >= 0)
+              grid.owner[j] = grid.owner[pi];   // reclaimed mole: region land
+            built++;
+            if (built === 2) break;
+          }
+          if (built < 2)
+            problems.push(`water: ${rec.id} breakwaters could not be built (${built} of 2) — named deviation`);
+        }
+      }
+    }
+
+    const f = req.freshWaterWithinKm;
+    if (typeof f === "number" && fresh.dist[pi] > f && Number.isFinite(fresh.dist[pi])) {
+      const ok = extendFreshChannel({
+        grid, fromCell: [fresh.src[pi] % grid.w, (fresh.src[pi] / grid.w) | 0],
+        toCell: [pinCx, pinCy],
+        maxCells: Math.ceil(Math.max(0, fresh.dist[pi] - f) / grid.cellKm) * 2 + 6 });
+      if (!ok)
+        problems.push(`water: ${rec.id} fresh-water channel could not be extended within budget — named deviation`);
+    }
+  }
+  // The freshKm sweep MUST be recomputed here: it ran inside carveWater,
+  // before these channels existed, and both the settlement veto and Plan D's
+  // receipts read this field.
+  const FRESH = FLAG.RIVER | FLAG.LAKE | FLAG.DELTA;
+  grid.freshKm.set(bfsDistanceKm({ grid, isSource: (i) => (grid.flags[i] & FRESH) !== 0 }));
 }

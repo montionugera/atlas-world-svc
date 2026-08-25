@@ -945,6 +945,13 @@
       "sizeKm": 7.95
     },
     {
+      "id": "lf-c11-r01-0016",
+      "type": "atoll",
+      "at": null,
+      "glyph": "g-atoll",
+      "sizeKm": 2.68
+    },
+    {
       "id": "lf-c11-r02-0008",
       "type": "abyssal-plain",
       "at": null,

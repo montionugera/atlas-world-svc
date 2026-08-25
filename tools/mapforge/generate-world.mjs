@@ -31,7 +31,7 @@ import { buildElevation, assignSubstrate } from "./lib/passes/elevation.mjs";
 import { selectSeaLevelByRank, classifySea, CELL_AREA_KM2 } from "./lib/passes/sea-level.mjs";
 import { applyWinds } from "./lib/passes/winds.mjs";
 import { priorityFlood, d8FlowDir, flowAccumulate } from "./lib/hydrology.mjs";
-import { carveWater } from "./lib/passes/water.mjs";
+import { carveWater, honorPinnedWater } from "./lib/passes/water.mjs";
 import { classifyBiomes } from "./lib/passes/biome.mjs";
 import { partitionRegions } from "./lib/passes/partition.mjs";
 import { instanceLandforms } from "./lib/passes/landforms.mjs";
@@ -119,12 +119,14 @@ export function runPasses({ manifest, premises,
 
   const land = time("P10", "landforms", () =>
     instanceLandforms({ grid, premises, regions: part.regions, lexicon, manifest,
-      stream: terrain, nameStream }));
+      stream: terrain, nameStream, pinned }));
 
   // P11p — the PINNED pass runs before ANY scoring (the "HARD ORDERING" rule).
   // A constraint violation here is a GENERATION failure, not a join failure:
   // committing a fabric whose own receipts contradict their pins would just
   // move the failure to Gate 1's G-PIN-SAT with a day's delay in between.
+  time("P7b", "pinned-water", () =>
+    honorPinnedWater({ grid, pinned, problems }));
   const pins = time("P11p", "pinned-places", () =>
     placePinned({ grid, pinned, cellKm: grid.cellKm, instances: land.instances }));
   if (pins.problems.length)
@@ -190,6 +192,12 @@ export function runPasses({ manifest, premises,
     }
     return d;
   };
+  // P7b — PINNED WATER HONORING runs AFTER landforms on purpose: the cove
+  // and channel carves must NOT change the cell pools the instance pass just
+  // drew from, because a single moved instance changes its content hash and
+  // re-rolls committed handles the 336 bound records bind to (measured:
+  // carving inside P7 re-rolled 74 of them). Water shape is therefore laid
+  // over a finished instance layer — additive, never displacing.
   const settleArgs = { grid, premises, regions: part.regions, manifest,
     pinned: pins.placed.filter((p) => p.rank != null), stream: settlementStream };
   let settle = time("P11", "settlements", () => placeSettlements(settleArgs));
@@ -304,12 +312,20 @@ export function runPasses({ manifest, premises,
     const rs = part.regions.filter((r) => r.continent === p.id);
     const ids = new Set(rs.map((r) => r.id));
     const census = { land: 0, lake: 0, unowned: 0 };
+    // HISTOGRAM IS RECOUNTED, NOT COPIED from P9's r.cells: the pinned-water
+    // pass (P7b) flags carved coves as SEA after partition ran, so a copied
+    // count would double-book those cells as both owned and sea and break
+    // the census identity by exactly the carved cell count (measured +567).
     const hist = {};
-    for (const r of rs) { hist[r.id] = r.cells; census.land += r.cells; }
+    for (const r of rs) hist[r.id] = 0;
     for (let i = 0; i < grid.n; i++) {
       if (grid.plate[i] !== k || (grid.flags[i] & FLAG.SEA) !== 0) continue;
       if ((grid.flags[i] & FLAG.LAKE) !== 0) { census.lake++; continue; }
-      if (grid.owner[i] < 0) census.unowned++;
+      const o = grid.owner[i];
+      if (o < 0) { census.unowned++; continue; }
+      const rid = rs.length > 0 && part.regions[o] ? part.regions[o].id : null;
+      if (rid !== null && hist[rid] !== undefined) { hist[rid]++; census.land++; }
+      else census.unowned++;
     }
     const coast = rings.coast.get(p.id);
     fabric.push(buildFabricFile({

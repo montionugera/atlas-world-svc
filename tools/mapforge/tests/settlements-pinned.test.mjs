@@ -174,13 +174,18 @@ test("no receipt field is null or zero for a land pin — the grid arrays ARE po
   assert.ok(m.elevationM > 0);
 });
 
-test("a dry pin with no water in the coast band measures none/0/0, not its neighbour's harbour", () => {
+test("a dry pin reads its SITE water as none but still records the commanded harbour", () => {
+  // HARBOUR READING (root-cause ruling): depth/shelter describe the sea the
+  // place commands — the toy grid's west coast is 15 km away, well inside
+  // PIN_LANDFORM_NEAR_KM, so shelter comes off that water even though the
+  // site itself is dry. Its one-cell-wide column reads fully sheltered.
   const g = toyGrid();
   g.landformNames = ["river-terrace"];
   g.landform[idx({ grid: g, cx: 30, cy: 30 })] = 0;
   const m = measureCell({ grid: g, cell: [30, 30], cellKm: 0.5 });
   assert.equal(m.waterKind, "none");
-  assert.equal(m.shelterFetchKm, 0);
+  assert.ok(m.shelterFetchKm <= 1 && m.shelterFetchKm > 0,
+    `shelter ${m.shelterFetchKm} should come off the commanded harbour`);
   assert.equal(m.depthM, 0);
 });
 

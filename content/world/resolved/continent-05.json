@@ -13185,6 +13185,13 @@
       "sizeKm": 0.28
     },
     {
+      "id": "lf-c05-r11-0301",
+      "type": "cuesta",
+      "at": null,
+      "glyph": "g-mesa",
+      "sizeKm": 12.44
+    },
+    {
       "id": "lf-c05-r13-0080",
       "type": "erg-dune-sea",
       "at": null,

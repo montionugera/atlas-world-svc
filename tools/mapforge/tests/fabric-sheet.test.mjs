@@ -43,7 +43,9 @@ test("the fabric sheet draws all 13 landmasses and reports no problems", () => {
   }
   assert.ok(notes.some((n) => /13 landmasses/.test(n)), notes.join("; "));
   assert.ok(notes.some((n) => /160 regions \(40 surveyed\), 47 settlements/.test(n)), notes.join("; "));
-  assert.ok(notes.some((n) => /sea\/land 1\.5 on 64000 km²/.test(n)), notes.join("; "));
+  // net land 63,858.25 km²: the pinned-water coves converted 567 land cells
+  // to sea (Plan D root-cause ruling). Errata: world-fill-STATE §25.
+  assert.ok(notes.some((n) => /sea\/land 1\.5 on 63999\.5 km²/.test(n)), notes.join("; "));
 });
 
 test("the fabric sheet draws the COASTLINE, not the trunk's simplified ring", () => {
@@ -56,7 +58,9 @@ test("the fabric sheet draws the COASTLINE, not the trunk's simplified ring", ()
   const world = readJson("content/world/fabric/world.json");
   let vertices = 0;
   for (const c of world.continents) vertices += readJson(c.fabric).outerRing.length;
-  assert.equal(vertices, 2413, "the emitted coastline vertex count moved");
+  // 2,431: pinned-water notches/channels added emitted coastline vertices
+  // (Plan D root-cause ruling; was 2,413 pre-carving).
+  assert.equal(vertices, 2431, "the emitted coastline vertex count moved");
   const drawn = (svg.match(/[ML]\d/g) ?? []).length;
   assert.ok(drawn > vertices, `only ${drawn} path vertices drawn for a ${vertices}-vertex coastline`);
 });
@@ -107,13 +111,13 @@ test("the overlay sheet carries a per-continent area-delta table with BOTH sides
   // The join that makes it a comparison rather than a list: a continent's
   // baseline polygon is found through manifest.landmasses[].nodeId. Seven of
   // the thirteen have one; six are NEW.
-  assert.match(svg, /c02 {2}1040\.7 {2}-&gt; {2}12102\.8 km² {3}x11\.63/,
+  assert.match(svg, /c02 {2}1040\.7 {2}-&gt; {2}12101\.3 km² {3}x11\.63/,
     "c02 is n-cluster1, the one landmass whose node id survives the redraw, so its row is the join " +
     "working end to end: the committed polygon on the left, the generated gross land on the right");
   assert.equal((svg.match(/NEW<\/text>/g) ?? []).length, 6,
     "six of the thirteen landmasses have no committed polygon at all");
-  assert.match(svg, /TOTAL 6243\.5 {2}-&gt; {2}65600\.0 km² {3}x10\.51/);
-  assert.ok(notes.some((n) => /gross land 6243\.5 -> 65600\.0 km²/.test(n)), notes.join("; "));
+  assert.match(svg, /TOTAL 6243\.5 {2}-&gt; {2}65599\.5 km² {3}x10\.51/);
+  assert.ok(notes.some((n) => /gross land 6243\.5 -> 65599\.5 km²/.test(n)), notes.join("; "));
 });
 
 test("the overlay's baseline total is the 6,243.5 km² every other document quotes", () => {
