@@ -43,6 +43,11 @@ import { buildRegionRings, buildCoastRings, buildTrunkRings, buildFabricFile, ha
 import { GENERATOR_VERSION } from "./lib/version.mjs";
 import { BIOMES, buildTree, placementArea } from "../../scripts/lib/spine.mjs";
 import { canonicalNode, canonStringify, derivedSidecar } from "../../scripts/check_spine_emit.mjs";
+// Plan D Task 11 Step 4b: the draft carries the civil join, so a re-seed
+// promotes content/world/resolved/ in the SAME command — never behind a
+// second `check_resolved --write` nobody remembers.
+import { loadCivil, resolveCivil } from "../../scripts/lib/resolve.mjs";
+import { loadDungeons } from "../../scripts/lib/dungeons.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, "../..");
@@ -883,7 +888,22 @@ export function writeRun({ run, outDir, repoRoot, resolved = null, sheets = [], 
   // 7c. the civil join, when a civil layer was supplied. Plan C runs with an
   //     empty civil layer, so this is absent; Plan D's promote path supplies
   //     it and the file becomes the third diffable artifact.
-  if (resolved) write("civil-resolved.json", canonStringify(resolved) + "\n");
+  //
+  //     Plan D Task 11 Step 4b: the per-continent files are fanned out HERE,
+  //     at write time, in the SAME layout content/world/resolved/ uses — not
+  //     staged by promote-world after the fact. writeRun hashes every file it
+  //    writes into the run manifest, and promotion's wholesale-replacement
+  //    family for content/world/resolved copies exactly what the manifest
+  //    hashed, so a re-seed cannot leave the only file renderers read stale
+  //    behind a second command — and a staged-but-unhashed file could never
+  //    pass promote's hash-membership guard.
+  if (resolved) {
+    write("civil-resolved.json", canonStringify(resolved) + "\n");
+    // Committed layout: EXACTLY the bytes check_resolved.mjs --write emits, so
+    // G-SLOT-STABLE stays green after promotion without a re-write.
+    for (const [cid, doc] of Object.entries(resolved))
+      write(`content/world/resolved/continent-${cid.slice(1)}.json`, JSON.stringify(doc, null, 2) + "\n");
+  }
 
   // 8. the run manifest, with a sha256 per written file — INCLUDING the sheets
   //    and civil-resolved.json, so promote-world step 1's hash verification
@@ -1227,6 +1247,27 @@ async function main() {
   const run = runPasses({ manifest, premises, lexicon, loadBudget, pinned, dungeons,
     onStage: opts.stageReport ? (name, label, ms) => console.log(`stage: ${name} ${label} ${ms} ms`) : undefined });
 
+  // The join lands in the DRAFT, so `build/mapforge/<runIdA>` and
+  // `build/mapforge/<runIdB>` are diffable on MEANING as well as on ground.
+  // Same driver check_resolved.mjs --check uses, over the run's own fabric and
+  // ledgers. Empty civil layer -> null -> writeRun skips the file(s), which is
+  // Plan C's behaviour unchanged. Dungeons are filtered per continent exactly
+  // as check_resolved.mjs does (a dungeon binds to ONE handle on ONE
+  // continent).
+  const civil = loadCivil({ contentRoot: join(REPO_ROOT, "content") });
+  let resolved = null;
+  if (civil.present) {
+    const { dungeons } = loadDungeons({ contentRoot: join(REPO_ROOT, "content") });
+    resolved = Object.fromEntries(run.fabric.map((f) => {
+      const ledger = run.handles.find((h) => h.continent === f.continent) ?? null;
+      return [f.continent, resolveCivil({
+        fabric: f,
+        handles: ledger,
+        civil: { pinned: civil.pinned, bound: civil.bound },
+        dungeons: dungeons.filter((d) => (d.bind?.handle ?? "").startsWith(f.continent + "/")),
+      }).resolved];
+    }));
+  }
   const { SHEETS } = await import(pathToFileURL(join(REPO_ROOT, "tools/mapforge/render-sheet.mjs")).href);
   const draftSheets = ["fabric", "overlay"].filter((id) => SHEETS[id])
     .map((id) => ({ id, build: SHEETS[id].build }));
@@ -1242,7 +1283,7 @@ async function main() {
     process.exit(2);
   }
   const { files } = writeRun({ run, outDir, repoRoot: REPO_ROOT, sheets: draftSheets,
-                               rasterise: opts.png });
+                               rasterise: opts.png, resolved });
 
   // Per-stage budgets with fail thresholds — goal G4's measure is explicitly
   // NOT one aggregate number, because an aggregate hides which stage regressed
