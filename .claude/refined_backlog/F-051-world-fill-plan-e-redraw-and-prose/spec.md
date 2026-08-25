@@ -1,7 +1,8 @@
 ---
-title: "World fill Plan E: redraw and prose — THE REDRAW commit (unfreeze deepest-first, one redraw commit with revert, refreeze root-first), the 13 continent sheets, G-CITE + the citation sweep, survey as a first-class field, the canon-leg pre-flight, world-digest, Z2 against the fabric, and the zone allocation table solved before writing a word"
-id: I-103
-status: captured
+title: "World fill Plan E: redraw and prose"
+id: F-051
+status: refined
+from_idea: I-103
 ---
 
 # World fill Plan E: redraw and prose
