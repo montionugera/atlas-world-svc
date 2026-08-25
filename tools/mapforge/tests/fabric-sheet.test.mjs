@@ -43,8 +43,8 @@ test("the fabric sheet draws all 13 landmasses and reports no problems", () => {
   }
   assert.ok(notes.some((n) => /13 landmasses/.test(n)), notes.join("; "));
   assert.ok(notes.some((n) => /160 regions \(40 surveyed\), 47 settlements/.test(n)), notes.join("; "));
-  // net land 63,858.25 km²: the pinned-water coves converted 567 land cells
-  // to sea (Plan D root-cause ruling). Errata: world-fill-STATE §25.
+  // net land 63,999.5 km²: the committed census ceded exactly 2 land cells to
+  // sea (64,000 -> 63,999.5; Plan D root-cause ruling). Errata: world-fill-STATE §25.
   assert.ok(notes.some((n) => /sea\/land 1\.5 on 63999\.5 km²/.test(n)), notes.join("; "));
 });
 

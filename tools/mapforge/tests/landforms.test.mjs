@@ -26,6 +26,8 @@ import { buildElevation, assignSubstrate } from "../lib/passes/elevation.mjs";
 import { selectSeaLevelByRank, classifySea, CELL_AREA_KM2 } from "../lib/passes/sea-level.mjs";
 import { applyWinds } from "../lib/passes/winds.mjs";
 import { carveWater } from "../lib/passes/water.mjs";
+import { placePinned } from "../lib/passes/settlements.mjs";
+import { gPinSat, PIN_LANDFORM_NEAR_KM } from "../../../scripts/lib/resolve.mjs";
 import { terrainStream, mintSeed, namedStream } from "../lib/seed.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -455,6 +457,54 @@ test("every real premise landformKit entry is a real lexicon group", () => {
     for (const g of p.landformKit)
       assert.ok(groups.has(g), `${p.id} landformKit names "${g}", which is not a lexicon group`);
   }
+});
+
+test("PIN RESERVATIONS — bypassed, G-PIN-SAT reds the receipt; enabled, it is satisfied", () => {
+  // STATE §25's recorded mutation ("reservations disabled → 18 unsatisfied
+  // landform receipts return (red)") had no automated regression. This is the
+  // unit-level form, on the cheap karst-world fixture rather than a second
+  // full generation: one pin whose required type cannot reach it — sea-stack
+  // hugs the coast (requires nearFlag SEA) and the pin sits at the exact
+  // centre of the 120 x 120 km land square, ~58 km from the nearest coast —
+  // run through instanceLandforms twice, measured by placePinned, judged by
+  // the real gPinSat gate.
+  const pin = { id: "c-town-probe", title: "Probe",
+                pin: { at: [100, 100], toleranceKm: 1.5 },
+                requires: { continent: "c01", landform: "sea-stack" } };
+  const worldOf = (receipts) => ({ present: true,
+    fabric: { c01: { continent: "c01", pinReceipts: receipts } },
+    pinned: [{ doc: { id: pin.id, pin: pin.pin, requires: pin.requires } }] });
+  const run = (pinned) => {
+    const grid = karstWorld();
+    assignOwners(grid);
+    grid.regionIds = REGIONS.map((r) => r.id);   // placePinned joins through it
+    const r = instanceLandforms({
+      grid, premises: premisesFor(), regions: REGIONS, lexicon: MINI, manifest: MANIFEST,
+      stream: STREAM, nameStream: NAME_STREAM, pinned });
+    return { grid, r };
+  };
+
+  // BYPASSED (reservations disabled): no instance of the type within the limit.
+  const bypassed = run([]);
+  const red = placePinned({ grid: bypassed.grid, cellKm: 2,
+                            instances: bypassed.r.instances, pinned: [pin] });
+  assert.equal(red.receipts.length, 1);
+  const miss = red.receipts[0].measured.landformNearDistanceKm;
+  assert.ok(miss === null || miss > PIN_LANDFORM_NEAR_KM,
+    `the bypassed world read ${miss} km — there is no miss for the gate to catch`);
+  assert.ok(gPinSat({ world: worldOf(red.receipts) }).some((p) => p.includes(pin.id)),
+    "G-PIN-SAT did not report the unsatisfied receipt");
+
+  // ENABLED: the same world grows ONE new sea-stack near the pin — additive
+  // only, every budgeted instance untouched by construction — and goes green.
+  const enabled = run([pin]);
+  assert.equal(enabled.r.instances.length, bypassed.r.instances.length + 1);
+  const green = placePinned({ grid: enabled.grid, cellKm: 2,
+                              instances: enabled.r.instances, pinned: [pin] });
+  const m = green.receipts[0].measured;
+  assert.ok(m.landformNearId && m.landformNearDistanceKm <= PIN_LANDFORM_NEAR_KM,
+    `the reserved instance reads ${m.landformNearId} at ${m.landformNearDistanceKm} km`);
+  assert.deepEqual(gPinSat({ world: worldOf(green.receipts) }), []);
 });
 
 // ── THE REAL WORLD ────────────────────────────────────────────────────────
