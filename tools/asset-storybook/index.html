@@ -1030,6 +1030,199 @@
         transform-origin: 0 0;
         user-select: none;
         pointer-events: none; /* the stage, not the img, owns wheel/pointer handling */
+      /* ---------- F-050: forge pipeline dashboard ---------- */
+
+      .forge-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .forge-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        padding: 0.4rem 0.55rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      .forge-brief-id {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-right: 0.5rem;
+        min-width: 9ch;
+      }
+
+      .forge-cell {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        padding: 0.22rem 0.6rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #16202e;
+        color: var(--text-dim);
+        cursor: pointer;
+      }
+
+      .forge-cell.is-done {
+        border-color: #2f6b46;
+        color: #8fe3b0;
+      }
+
+      .forge-cell.is-flag {
+        border-color: #8a6d1f;
+        background: #2b2410;
+        color: #ffd76a;
+      }
+
+      .forge-cell.is-stale {
+        border-color: #8a3535;
+        background: #2b1414;
+        color: #ff9d9d;
+      }
+
+      .forge-cell.is-notrun {
+        opacity: 0.38;
+        cursor: default;
+      }
+
+      .forge-detail-json {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        background: #0b0d12;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.6rem 0.75rem;
+        overflow-x: auto;
+      }
+
+      .forge-orders {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .forge-order {
+        font-size: 0.78rem;
+        color: var(--text-dim);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-left: 3px solid #b0842a;
+        border-radius: 6px;
+        padding: 0.35rem 0.6rem;
+      }
+
+      .forge-order.is-done {
+        border-left-color: #2f6b46;
+        opacity: 0.65;
+      }
+
+      .forge-order.is-done strong {
+        color: #8fe3b0;
+      }
+
+      .forge-order-meta {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-faint);
+        margin-top: 0.15rem;
+      }
+
+      .forge-export-btn {
+        font-family: var(--sans);
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #dce4ff;
+        background: var(--accent-dim);
+        border: 1px solid var(--accent);
+        border-radius: 999px;
+        padding: 0.4rem 0.95rem;
+        cursor: pointer;
+      }
+
+      /* F-050 Task 9 — per-cell re-run affordance + inline order form */
+      .forge-rerun {
+        font-size: 0.72rem;
+        line-height: 1;
+        padding: 0.18rem 0.42rem;
+        border-radius: 999px;
+        border: 1px dashed var(--border);
+        background: transparent;
+        color: var(--text-faint);
+        cursor: pointer;
+      }
+
+      .forge-rerun:hover {
+        border-color: var(--accent);
+        color: #dce4ff;
+      }
+
+      .forge-rerun:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .forge-order-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin: 0.1rem 0 0.45rem 2ch;
+        padding: 0.5rem 0.6rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-hover, var(--border));
+        border-radius: 8px;
+      }
+
+      .forge-order-reason,
+      .forge-order-seed {
+        font-family: var(--sans);
+        font-size: 0.78rem;
+        color: var(--text);
+        background: #0b0d12;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.35rem 0.5rem;
+      }
+
+      .forge-order-seed {
+        max-width: 14ch;
+        font-family: var(--mono);
+      }
+
+      .forge-order-error {
+        margin: 0;
+        font-size: 0.72rem;
+        color: #ff9d9d;
+      }
+
+      .forge-order-actions {
+        display: flex;
+        gap: 0.4rem;
+      }
+
+      .forge-order-submit,
+      .forge-order-cancel {
+        font-size: 0.74rem;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.28rem 0.8rem;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-dim);
+      }
+
+      .forge-order-submit {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: #dce4ff;
       }
 
       /* ---------- F-038: thumbnail cards + virtual grid ---------- */

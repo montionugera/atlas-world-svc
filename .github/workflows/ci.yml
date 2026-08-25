@@ -184,6 +184,12 @@ jobs:
       - name: Asset storybook data-layer tests
         run: node --test tools/asset-storybook/tests/*.test.mjs
 
+      # Art forge (F-050): run-ledger, brief-hash, graph and gate unit suites.
+      # Same Node 18 as above; the shell expands the glob (node:test accepts
+      # explicit file paths). Without this step these tests only ran locally.
+      - name: Art forge unit tests
+        run: node --test tools/art-forge/tests/*.test.mjs
+
       # Asset forge (F-003): structural + game-rule validation for every
       # manifest entry whose glb exists on disk. Bespoke-tier failures are
       # hard failures; seed-tier issues are warnings only (known scale bug,

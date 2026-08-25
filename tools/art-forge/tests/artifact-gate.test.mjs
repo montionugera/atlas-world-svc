@@ -191,6 +191,33 @@ test("a pasted checkerboard is FLAGGED tiling and reports where it is", () => {
   assert.ok(x >= 200 && x < 456 && y >= 150 && y < 406, `reported (${x},${y})`);
 });
 
+// A LOW-CONTRAST checkerboard (±25 grey levels around mid-grey, vs the ±128
+// of pattern:gray50) pasted into the same noise render. Real hires-pass
+// artifacts are faint, not full-contrast; 2026-08-25 measured on live renders
+// (docs/worldbuilding/ABP-artifact-gate.md appendix C) that the detector
+// catches ±25 embedded in real texture with the box on the patch.
+const CHECKER_FAINT = fixture("checker-faint.png", [
+  CLEAN,
+  "(",
+  "-size",
+  "64x64",
+  "pattern:gray50",
+  "-scale",
+  "800%",
+  "-evaluate",
+  "Multiply",
+  "0.196",
+  "-evaluate",
+  "Add",
+  "+103",
+  ")",
+  "-gravity",
+  "NorthWest",
+  "-geometry",
+  "+200+150",
+  "-composite",
+]);
+
 test("tiling analysis runs at native resolution — downscaling aliases fine artifacts away", () => {
   assert.equal(DEFAULT_CONFIG.tilingWorkingWidth, null);
   // Prove the claim rather than trusting it. A 2px-cell checkerboard is
@@ -232,6 +259,21 @@ test("tiling analysis runs at native resolution — downscaling aliases fine art
     DEFAULT_CONFIG,
   );
   assert.equal(downscaled.hit, false, `downscaled scored ${downscaled.score}`);
+});
+
+test("a FAINT (±25 grey) checkerboard pasted into a render is still FLAGGED, box on the patch", () => {
+  // Full-contrast pattern:gray50 is the easy case; real texture-atlas
+  // artifacts are low-amplitude against busy renders. 103/153 two-tone,
+  // 8px cells, embedded at +200+150 in the same noise control.
+  const res = inspectImage({ src: CHECKER_FAINT, only: ["tiling"] });
+  assert.equal(
+    res.ok,
+    false,
+    `faint checkerboard scored ${res.metrics.tiling.score}`,
+  );
+  const { x, y, lag } = res.metrics.tiling.box;
+  assert.ok(x >= 200 && x < 456 && y >= 150 && y < 406, `reported (${x},${y})`);
+  assert.equal(lag, 8, "must recover the true 8px period");
 });
 
 // ---------- corner sheet (the human-review artifact) ----------
@@ -423,6 +465,37 @@ test(
       const res = inspectImage({ src: join(CORPUS, rel), only: ["tiling"] });
       assert.equal(res.ok, true, `${rel}: ${res.reasons.join(" ")}`);
     }
+  },
+);
+
+test(
+  "corpus: the ORIGINAL Norhollow checkerboard patch is located but STILL MISSED (sentinel)",
+  { skip: skipCorpus() },
+  () => {
+    // The artifact that motivated the tiling detector, located 2026-08-25
+    // (docs/worldbuilding/ABP-artifact-gate.md appendix C): a faint ~8px
+    // checkerboard running down a palisade log at roughly +500+745 in
+    // ART-04-norhollow__F-hires.png. The detector does NOT catch it — the
+    // patch is low-contrast and follows the log's curve, so the axis-aligned
+    // 32px-block autocorrelation tops out below threshold. This sentinel
+    // pins the measured score band: if a detector improvement pushes the
+    // score past tilingAntiCorr (0.55) this test FAILS — that is the signal
+    // to recalibrate the threshold against the corpus, not to delete the
+    // assertion.
+    const res = inspectImage({
+      src: join(CORPUS, "flux/ART-04-norhollow__F-hires.png"),
+      only: ["tiling"],
+    });
+    assert.equal(
+      res.ok,
+      true,
+      "sentinel: detector now CATCHES the original patch — recalibrate tilingAntiCorr against the corpus before shipping the change",
+    );
+    const { score } = res.metrics.tiling;
+    assert.ok(
+      score >= 0.3 && score <= 0.5,
+      `original-patch score ${score} drifted outside the recorded 0.3–0.5 band`,
+    );
   },
 );
 

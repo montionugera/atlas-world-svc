@@ -122,3 +122,18 @@ re-reading the `gen` blocks and the ABP records.
 
 **Unchanged:** `note` provenance remains mandatory at intake. That was never a licence
 mechanism — it is authorship archaeology, and it is what makes the reversal above tractable.
+
+---
+
+## Appendix C — 2026-08-25: lineage independently re-verified
+
+A pipeline audit re-flagged the ControlNet licence as an open blocker without reading this
+record's appendices. The verification was run anyway, and it confirms appendix A still holds:
+the pinned file `flux-controlnet-union-pro-2.0.safetensors` is
+`Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro-2.0` on Hugging Face, tagged
+`base_model: black-forest-labs/FLUX.1-dev`, license `other` (the FLUX.1-dev non-commercial
+family). No permissively licensed Flux ControlNet has appeared since 2026-08-01.
+
+**Status unchanged:** dormant under the appendix B ruling; appendix A option 1–3 revive on any
+move toward monetization. Audit tooling should treat this record as closed-unless-reversed, not
+as an open item.

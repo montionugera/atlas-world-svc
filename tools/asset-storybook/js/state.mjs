@@ -27,6 +27,13 @@ export const TAXONOMY_URL = "../../content/asset-taxonomy.json";
 // F-038: baked thumbnail index. Fetched non-critically — a checkout that has
 // never run scripts/bake_thumbnails.mjs still renders, with LOUD cards.
 export const REVIEW_QUEUE_URL = "../../content/review-queue.json";
+// F-050: art-forge run ledgers + briefs. Same relative-to-tools/asset-storybook
+// style as REVIEW_QUEUE_URL above; fetched non-critically by js/forge/forge.mjs.
+export const RUNS_INDEX_URL = "../../tools/art-forge/runs/_index.json";
+export const RUNS_BASE_URL = "../../tools/art-forge/runs/";
+export const BRIEFS_BASE_URL = "../../tools/art-forge/briefs/";
+// F-050: root of the art-forge tree, for linking ledger `out` PNG paths.
+export const ART_FORGE_ROOT_URL = "../../tools/art-forge/";
 // Synthetic sidebar classes for the verdict filters (F-038 Phase 4). Not asset
 // kinds — they slice the SAME items by review state.
 export const REJECTED_CLASS = "verdict:reject";
@@ -114,6 +121,23 @@ export const STORY_VIEWS_FALLBACK = [
   },
 ];
 
+// F-050: synthetic class for the art-forge pipeline dashboard. Like
+// COMBAT_CLASS/STORY_CLASS it is not an asset — no manifest entry, no
+// renderer, no per-view health; its data is the committed run ledgers.
+export const FORGE_CLASS = "forge";
+
 // health[kind] = { total, ok, err } — updated as models/audio finish loading,
 // sidebar badges re-render on every update.
 export const health = {};
+
+/**
+ * Fetch a JSON URL, throwing on non-2xx with the caller's label for context.
+ * Shared helper — main.mjs and the forge tab both fetch through this.
+ * @param {string} url
+ * @param {string} label
+ */
+export async function fetchJson(url, label) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(label + ": HTTP " + res.status);
+  return res.json();
+}
