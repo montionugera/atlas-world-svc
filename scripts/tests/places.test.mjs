@@ -96,12 +96,13 @@ test("resolveWorld REPORTS a missing zoneRoot without a cascade of feature probl
   assert.ok(problems.some((p) => p.includes("n-cluster1")), JSON.stringify(problems));
 });
 
-test("resolveWorld REPORTS the Plan D fabric/civil joins it cannot do", () => {
-  const { spine, tree } = realTree();
-  const { doc, problems } = resolveWorld({ spine, tree, fabric: {} });
-  assert.equal(doc, null);
-  assert.ok(problems.some((p) => p.includes("Plan D")), JSON.stringify(problems));
-});
+// resolveWorld reads subjects from the descriptor and still reproduces the
+// mirror bytes — the basin document's own contract, unchanged by the Plan D
+// Task 11 cutover (which re-pointed loadPlaces only). The fabric/civil
+// rejection test was deleted with the parameters it exercised: the cutover
+// removed them from resolveWorldFromSpine's signature, because "this build
+// cannot do that join" stopped being true — scripts/lib/resolve.mjs owns the
+// fabric+civil join now.
 
 // Review finding (Task 12, MINOR): this message lost its only pin. It used to
 // be asserted by spine-gates' "sheet.json has NO subjects block" test, which ran
@@ -136,43 +137,31 @@ test("resolveWorld never returns a doc alongside problems (the seaLane late-push
   assert.ok(problems.some((p) => p.includes("sealane")), JSON.stringify(problems));
 });
 
-test("loadPlaces on the real content root resolves from the SPINE and matches the mirror", () => {
+// Plan D Task 11 cutover: loadPlaces reads content/world/resolved/ and
+// NOTHING else. The spine path moved back to being resolveWorld's alone (the
+// sheet builders' contract, unchanged), the mirror fallback is gone, and the
+// byte-identity pin above now guards resolveWorld rather than loadPlaces.
+test("loadPlaces on the real content root reads the resolved world", () => {
   const { doc, problems } = loadPlaces({ contentRoot: CONTENT });
   assert.deepEqual(problems, []);
-  assertResolvedBytes(doc, "loadPlaces");
+  assert.deepEqual(Object.keys(doc), WORLD_DOC_KEYS);
+  assert.equal(doc.source, "content/world/resolved/*.json");
+  assert.equal(doc.coordinateSystem.extentKm.width, 400);
+  assert.ok(doc.zones.length >= 160, `expected >= 160 zones, got ${doc.zones.length}`);
+  // ERRATUM vs plan Task 11 Step 1 ("expected >= 45 towns"): the committed
+  // resolved world carries EIGHT towns — the 6 basin pins plus Tallowquay and
+  // Netstead; the roster's other pins are landmarks, not settlements. The
+  // floor below is the committed count, so it cannot drift silently.
+  assert.ok(doc.towns.length >= 8, `expected >= 8 towns, got ${doc.towns.length}`);
 });
 
-test("loadPlaces FALLS BACK to the mirror file when the root has no spine (the fixture path)", () => {
-  // zone-content.test.mjs, town-plan.test.mjs and bestiary-placement.test.mjs
-  // all build exactly this shape: a maps/ dir, no spine/ dir. Without the
-  // fallback, ~60 gate tests go dark (all three joins `return 0` on a failed
-  // load, so the gate would silently stop counting rather than fail).
-  const dir = mkdtempSync(join(tmpdir(), "places-fallback-"));
-  try {
-    mkdirSync(join(dir, "maps"), { recursive: true });
-    const fixture = { id: "x", zones: [{ id: "z1" }], towns: [{ id: "t1" }], camps: [], roads: [] };
-    writeFileSync(join(dir, "maps/cluster1-geography.json"), JSON.stringify(fixture));
-    const { doc, problems } = loadPlaces({ contentRoot: dir });
-    assert.deepEqual(problems, []);
-    assert.deepEqual(doc.zones, [{ id: "z1" }]);
-    assert.deepEqual(doc.towns, [{ id: "t1" }]);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
-
-test("loadPlaces REPORTS an unparsable mirror, never throws", () => {
-  const dir = mkdtempSync(join(tmpdir(), "places-bad-"));
-  try {
-    mkdirSync(join(dir, "maps"), { recursive: true });
-    writeFileSync(join(dir, "maps/cluster1-geography.json"), "{ not json");
-    const { doc, problems } = loadPlaces({ contentRoot: dir });
-    assert.equal(doc, null);
-    assert.equal(problems.length, 1);
-    assert.ok(problems[0].startsWith("geography: "), problems[0]);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
+test("the merged doc takes each geographic feature from the first continent that has one", () => {
+  const { doc } = loadPlaces({ contentRoot: CONTENT });
+  assert.ok(doc.coastline, "no continent supplied a coastline");
+  assert.ok(doc.saltmire, "no continent supplied a saltmire");
+  assert.ok(doc.river, "no continent supplied a river");
+  assert.ok(Array.isArray(doc.coastline.points) && doc.coastline.points.length >= 3);
+  assert.ok(Array.isArray(doc.saltmire.polygon) && doc.saltmire.polygon.length >= 3);
 });
 
 test("loadPlaces on an empty root returns doc null and one problem, never throws", () => {
@@ -181,6 +170,10 @@ test("loadPlaces on an empty root returns doc null and one problem, never throws
     const { doc, problems } = loadPlaces({ contentRoot: dir });
     assert.equal(doc, null);
     assert.equal(problems.length, 1);
+    // The mutation test for the cutover itself: the problem must name the
+    // resolved dir — a clear diagnosis, NOT a silent fallback to some other
+    // source.
+    assert.match(problems[0], /world\/resolved\/ holds no continent files/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -203,109 +196,30 @@ test("resolveWorld REPORTS a zoneRoot whose lore.relay / lore.distances retired"
   // four towns the redraw deletes), so re-asserting it on the generated node
   // would be a fresh canon contradiction as well as a smuggled marker. The
   // loss is correct; only its silence was not.
-  const dir = mkdtempSync(join(tmpdir(), "places-lore-"));
-  try {
-    cpSync(join(CONTENT, "spine"), join(dir, "spine"), { recursive: true });
-    cpSync(join(CONTENT, "towns"), join(dir, "towns"), { recursive: true });
-    const f = join(dir, "spine/nodes/n-cluster1.json");
-    const node = JSON.parse(readFileSync(f, "utf8"));
-    // exactly the shape buildTrunk writes: a summary and nothing else
-    node.lore = { summary: "a generated structural idea" };
-    writeFileSync(f, JSON.stringify(node, null, 2) + "\n");
-    const { doc, problems } = loadPlaces({ contentRoot: dir });
-    assert.equal(doc, null, "a doc must never be returned alongside problems");
-    assert.equal(problems.length, 2, problems.join("\n"));
-    assert.match(problems[0], /no lore\.relay/);
-    assert.match(problems[1], /no lore\.distances/);
-    for (const p of problems) assert.match(p, /SILENTLY/);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
-
-test("loadPlaces prefers the SPINE over a stale mirror on a root that has both", () => {
-  const dir = mkdtempSync(join(tmpdir(), "places-both-"));
-  try {
-    cpSync(join(CONTENT, "spine"), join(dir, "spine"), { recursive: true });
-    cpSync(join(CONTENT, "towns"), join(dir, "towns"), { recursive: true });
-    mkdirSync(join(dir, "maps"), { recursive: true });
-    writeFileSync(join(dir, "maps/cluster1-geography.json"), JSON.stringify({ zones: [], towns: [] }));
-    const { doc, problems } = loadPlaces({ contentRoot: dir });
-    assert.deepEqual(problems, []);
-    assert.ok(doc.zones.length > 0, "fell back to the stale mirror instead of resolving the spine");
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
-
-test("loadPlaces falls back to the mirror when the spine is present but BROKEN", () => {
-  // A spine dir that loads with errors must not yield a half-built doc: the
-  // spine branch has to fall THROUGH to the mirror, not return early.
-  const dir = mkdtempSync(join(tmpdir(), "places-broken-spine-"));
-  try {
-    mkdirSync(join(dir, "spine/nodes"), { recursive: true });
-    writeFileSync(join(dir, "spine/roots.json"), "{ not json");
-    mkdirSync(join(dir, "maps"), { recursive: true });
-    writeFileSync(join(dir, "maps/cluster1-geography.json"), JSON.stringify({ zones: [{ id: "z1" }] }));
-    const { doc, problems } = loadPlaces({ contentRoot: dir });
-    assert.deepEqual(problems, []);
-    assert.deepEqual(doc.zones, [{ id: "z1" }]);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
+  //
+  // Plan D Task 11: exercised through resolveWorld directly now — loadPlaces
+  // no longer reads a spine, so a spine-copy fixture root cannot reach this
+  // path through it any more.
+  const { spine, tree } = realTree();
+  tree.byId.set("n-cluster1", { ...tree.byId.get("n-cluster1"),
+                                lore: { summary: "a generated structural idea" } });
+  const { doc, problems } = resolveWorld({ spine, tree });
+  assert.equal(doc, null, "a doc must never be returned alongside problems");
+  assert.equal(problems.length, 2, problems.join("\n"));
+  assert.match(problems[0], /no lore\.relay/);
+  assert.match(problems[1], /no lore\.distances/);
+  for (const p of problems) assert.match(p, /SILENTLY/);
 });
 
 // ── the three branches of the descriptor discriminator, pinned separately ──
 // Task 7 moved loadPlaces's spine/mirror discriminator from a hard-coded
 // zoneRoot onto `spine.sheet.subjects`. That turned ONE condition into three
 // cases with three different correct answers, and none of them had a test.
-
-test("loadPlaces falls back for a root whose spine carries NO `subjects` descriptor", () => {
-  // Plan Task 7 Step 9 item (d), pinned. This is DELIBERATE, not an oversight:
-  // four committed fixture roots ship a spine/sheet.json that is
-  // title/hand/withheld only, and ~45 minimal roots have no sheet at all.
-  // With no descriptor there is no zoneRoot to look for, so the root is
-  // indistinguishable from a root with no spine and must take the mirror.
-  const dir = mkdtempSync(join(tmpdir(), "places-no-subjects-"));
-  try {
-    cpSync(join(CONTENT, "spine"), join(dir, "spine"), { recursive: true });
-    const p = join(dir, "spine/sheet.json");
-    const sheet = JSON.parse(readFileSync(p, "utf8"));
-    delete sheet.subjects;
-    writeFileSync(p, JSON.stringify(sheet, null, 2) + "\n");
-    mkdirSync(join(dir, "maps"), { recursive: true });
-    writeFileSync(join(dir, "maps/cluster1-geography.json"), JSON.stringify({ zones: [{ id: "only-one" }], towns: [] }));
-    const { doc, problems } = loadPlaces({ contentRoot: dir });
-    assert.deepEqual(problems, []);
-    assert.deepEqual(doc.zones, [{ id: "only-one" }]);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
-
-test("loadPlaces REPORTS — never silently prefers a stale mirror — when the descriptor's zoneRoot does not resolve", () => {
-  // The other side of the same discriminator, and the reason the two cases
-  // must be told apart. A REAL content root whose descriptor has a typo'd
-  // zoneRoot is corruption. Before this split it fell through to the mirror
-  // and the full gate printed unchanged counts at exit 0 — a world silently
-  // served from a stale file with every gate green.
-  const dir = mkdtempSync(join(tmpdir(), "places-bad-zoneroot-"));
-  try {
-    cpSync(join(CONTENT, "spine"), join(dir, "spine"), { recursive: true });
-    const p = join(dir, "spine/sheet.json");
-    const sheet = JSON.parse(readFileSync(p, "utf8"));
-    sheet.subjects.zoneRoot = "n-does-not-exist";
-    writeFileSync(p, JSON.stringify(sheet, null, 2) + "\n");
-    mkdirSync(join(dir, "maps"), { recursive: true });
-    writeFileSync(join(dir, "maps/cluster1-geography.json"), JSON.stringify({ zones: [{ id: "stale" }], towns: [] }));
-    const { doc, problems } = loadPlaces({ contentRoot: dir });
-    assert.equal(doc, null);
-    assert.equal(problems.length, 1, JSON.stringify(problems));
-    assert.match(problems[0], /zoneRoot "n-does-not-exist" does not resolve/);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
+//
+// Plan D Task 11: the discriminator is GONE — loadPlaces no longer reads a
+// spine at all — so the two "falls back" branches below were deleted with it.
+// The unresolvable-zoneRoot REPORT (the corruption case) stays pinned from
+// resolveWorld's side further down this file.
 
 test("the emitted document's subject ids FOLLOW the descriptor — they are not literals", () => {
   // Acceptance criterion 12, the half the source-grep above cannot see. The
@@ -362,15 +276,19 @@ test("resolveWorld REPORTS an array descriptor by shape, not by array index", ()
 // null doc carrying ZERO problems is a gate that stopped checking while still
 // exiting 0.
 
-test("loadPlaces REPORTS a mirror that parses to a non-object, never returns a silent null", () => {
+test("loadPlaces REPORTS a resolved file that parses to a non-object — never silently", () => {
+  // Plan D Task 11: a file holding literal `null` (or an array, or a bare
+  // scalar) PARSES fine; without the shape guard it would be skipped without
+  // a word and its records would silently vanish from every join. The doc may
+  // still carry the OTHER continents' records (graceful degradation), but the
+  // problem is always reported — placesDoc() turns it into a FAIL.
   for (const body of ["null", "[]", "123", '"hi"', "true"]) {
     const dir = mkdtempSync(join(tmpdir(), "places-shape-"));
     try {
-      mkdirSync(join(dir, "maps"), { recursive: true });
-      writeFileSync(join(dir, "maps/cluster1-geography.json"), body);
-      const { doc, problems } = loadPlaces({ contentRoot: dir });
-      assert.equal(doc, null, `mirror body ${body} was accepted as a doc`);
-      assert.equal(problems.length, 1, `mirror body ${body}: ${JSON.stringify(problems)}`);
+      mkdirSync(join(dir, "world/resolved"), { recursive: true });
+      writeFileSync(join(dir, "world/resolved/continent-02.json"), body);
+      const { problems } = loadPlaces({ contentRoot: dir });
+      assert.equal(problems.length, 1, `resolved body ${body}: ${JSON.stringify(problems)}`);
       assert.match(problems[0], /shape-invalid/, problems[0]);
     } finally {
       rmSync(dir, { recursive: true, force: true });
@@ -434,12 +352,27 @@ function runFullGate(contentRoot) {
   } catch (e) { return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` }; }
 }
 
-test("gate joins: the real content root still counts 10 zones, 1 town and its placements", () => {
+// ERRATUM vs plan Task 11 Step 1 ("THE COUNTING ASSERTION", asserting exit 0
+// with placements/zones/towns all > 0 on the real root): UNSATISFIABLE until
+// Plan E movement 2 re-homes the committed records onto the new region ids.
+// The cutover makes content/world/resolved/ the only join source; its zone
+// ids are the generated region ids (c01/r01…), while the ten committed
+// content/zones records, the bestiary placement file and town-millcross.json
+// still swear to the LEGACY basin slugs — so every one of those records is
+// now a NAMED orphan FAIL, and Z2 names every geography zone without a
+// record. That is the gate failing LOUDLY, which is exactly what this task
+// exists to guarantee; what must never happen is the silent zeroing below.
+// The counting half of the plan's acceptance test lives in
+// scripts/tests/{zone-content,town-plan,bestiary-placement}.test.mjs, whose
+// fixture roots now carry their geography in the resolved shape and whose
+// gates still count.
+test("gate joins: the real content root FAILS LOUDLY on the not-yet-rehomed legacy records", () => {
   const r = runFullGate(CONTENT);
-  assert.equal(r.code, 0, r.out);
-  // The counts the gate printed BEFORE the re-home. If the join went dark,
-  // every one of these drops to 0 while the gate still exits 0.
-  assert.match(r.out, /content-gate: \d+ sheets, \d+ maps, \d+ story, [1-9]\d* placements, 10 zones, 1 towns, 44 nodes, 0 failures/);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /zone "thornveil" not in content\/world\/resolved#zones/);
+  assert.match(r.out, /town "millcross" not in content\/world\/resolved#towns/);
+  // finish() ran — the summary is printed, nothing went dark.
+  assert.match(r.out, /content-gate: .* failures/, r.out);
 });
 
 // ── the no-throw contract, at the shape level ──────────────────────────────
@@ -459,21 +392,22 @@ test("resolveWorld REPORTS a node missing an optional block, never throws", () =
   assert.match(problems[0], /^resolveWorld: threw while assembling the world document/, problems[0]);
 });
 
-test("the gate REPORTS a shape-broken spine node instead of dying without printing", () => {
+test("the gate REPORTS a corrupt resolved file instead of dying without printing", () => {
   // The whole point: a throw here is not just an ugly failure, it is a gate
   // that stops checking. Assert the two things a throw destroys — a FAIL line,
   // and the `content-gate:` summary that only finish() prints.
+  // Plan D Task 11: the geography source is content/world/resolved/, so the
+  // corruption injected here is a continent file that cannot PARSE (the
+  // spine-shape throw this test used to exercise died with loadPlaces' spine
+  // branch; resolveWorld's own never-throw wrapper stays pinned above).
   const dir = mkdtempSync(join(tmpdir(), "places-shape-"));
   try {
     cpSync(CONTENT, join(dir, "content"), { recursive: true });
-    const node = join(dir, "content/spine/nodes/n-saltmire.json");
-    const parsed = JSON.parse(readFileSync(node, "utf8"));
-    delete parsed.lore;
-    writeFileSync(node, JSON.stringify(parsed, null, 2));
+    writeFileSync(join(dir, "content/world/resolved/continent-02.json"), "{ not json");
 
     const r = runFullGate(join(dir, "content"));
     assert.equal(r.code, 1, r.out);
-    assert.match(r.out, /FAIL {2}geography: resolveWorld: threw while assembling/, r.out);
+    assert.match(r.out, /FAIL {2}geography: places: world\/resolved\/continent-02\.json:/, r.out);
     assert.match(r.out, /content-gate: .* failures, .* warnings/, r.out);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -484,19 +418,17 @@ test("the gate FAILS rather than zeroing its counts when the document is null (R
   // Plan Step 8(a): "confirm the gate FAILS rather than exiting 0 with zeroed
   // counts". A null document is the one input that zeroes every count — all
   // three joins `return 0` on it — so it must never be reachable without a
-  // FAIL. Exercised through the mirror-fallback branch, which is the only
-  // route to a null doc a fixture can actually build.
+  // FAIL. Exercised through a root with NO content/world/ at all: since the
+  // Plan D Task 11 cutover this is the only route to a null doc, and the
+  // problem must name the resolved dir — the cutover's own mutation test.
   const dir = mkdtempSync(join(tmpdir(), "places-null-"));
   try {
-    // Real content, minus the spine, plus a mirror holding literal `null`:
-    // enough of a root that the gate reaches the geography join at all.
     cpSync(CONTENT, join(dir, "content"), { recursive: true });
-    rmSync(join(dir, "content/spine"), { recursive: true, force: true });
-    writeFileSync(join(dir, "content/maps/cluster1-geography.json"), "null\n");
+    rmSync(join(dir, "content/world"), { recursive: true, force: true });
 
     const r = runFullGate(join(dir, "content"));
     assert.equal(r.code, 1, r.out);
-    assert.match(r.out, /FAIL {2}geography: .*(shape-invalid|reported no problem)/, r.out);
+    assert.match(r.out, /FAIL {2}geography: places: .*world\/resolved\/ holds no continent files/, r.out);
     // finish() still ran — the counts are zeroed, but loudly, not silently.
     assert.match(r.out, /content-gate: .* 0 zones, 0 towns, .* [1-9]\d* failures/, r.out);
   } finally {
@@ -644,11 +576,12 @@ const MIRROR_NAMERS = new Set([
   // The fallback branch, and its own tests.
   "scripts/lib/places.mjs",
   "scripts/tests/places.test.mjs",
-  // Fixture roots that WRITE their own mirror (no content/spine/ at all), so
-  // they exercise loadPlaces()'s fallback rather than reading the committed one.
+  // Fixture roots that WRITE their own geography fixture. Plan D Task 11
+  // migrated zone-content and bestiary-placement onto the resolved shape, so
+  // neither names the legacy mirror any more — the stale-entry test below
+  // removed their entries with the same commit. town-plan.test.mjs was
+  // migrated in the same commit.
   "scripts/tests/zone-content.test.mjs",
-  "scripts/tests/town-plan.test.mjs",
-  "scripts/tests/bestiary-placement.test.mjs",
   "scripts/tests/season1.test.mjs",
   // Comments and verbatim gate messages only — no path is opened.
   "scripts/check_content.mjs",             // "…not in cluster1-geography.json#zones"
@@ -661,6 +594,9 @@ const MIRROR_NAMERS = new Set([
   "tools/mapforge/tests/basin-sheet.test.mjs",
   "scripts/tests/spine-gates.test.mjs",
   "scripts/tests/town-millcross.test.mjs", // canon provenance in comments
+  // Plan D Task 11: the cutover's own test file — its comments and the
+  // fallback-gone source scan name the legacy mirror; nothing opens a path.
+  "scripts/tests/resolve.test.mjs",
 ]);
 
 const CODE_GLOBS = ["*.mjs", "*.js", "*.cjs", "*.ts", "*.sh", "*.yml", "*.yaml", "*.html"];

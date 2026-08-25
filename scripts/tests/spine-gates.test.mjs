@@ -6,6 +6,9 @@ import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadSpine, TIER_DEPTH, buildTree } from "../lib/spine.mjs";
+// Plan D Task 11: the sheet-subject diagnoses are pinned from resolveWorld —
+// the gate no longer resolves the spine for geography.
+import { resolveWorld } from "../lib/places.mjs";
 // Plan B Task 4: the ONE producer of content/spine/derived.json's bytes. The
 // P3 fixture builder below uses it so its roots match `--write` byte for byte.
 import { derivedSidecar } from "../check_spine_emit.mjs";
@@ -1009,10 +1012,14 @@ test("G-ALIAS story half: a dangling spineId is a hard FAIL", () => {
 });
 
 test("G-ALIAS story half: prints each record's resolved tier on the clean tree", () => {
-  const r = runAliasGate(aliasContentCopy());
-  assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /spine-alias: region-millcross → n-millcross \(town\)/);
-  assert.match(r.out, /spine-alias: region-icefield → n-northern-icefield \(region\)/);
+  // Plan D Task 11: run under --only=spine, which still runs this sweep but
+  // skips the zone/town sweeps whose legacy-id orphans the cutover FAILs on
+  // until Plan E movement 2 re-homes them.
+  const dir = aliasContentCopy();
+  const r = execFileSync(process.execPath,
+    [GATE, "--only=spine", "--content-root", join(dir, "content")], { encoding: "utf8" });
+  assert.match(r, /spine-alias: region-millcross → n-millcross \(town\)/);
+  assert.match(r, /spine-alias: region-icefield → n-northern-icefield \(region\)/);
 });
 
 test("G-ALIAS sweep: a dangling zone-content spineId is a hard FAIL", () => {
@@ -1096,32 +1103,20 @@ t11("alias sweep: today's output resolves entirely through the spine (no resolve
 
 t11("alias sweep: a slug with NO spine node resolves through the world document instead", () => {
   const dir = aliasContentCopy();
-  // DEVIATION FROM PLAN, load-bearing. The plan's fixture DELETES
-  // content/spine/nodes/n-thornveil.json and expects the resolved world to
-  // still answer. Measured: it does not. The world document is DERIVED from
-  // the spine (places.mjs resolveWorld), so deleting the node deletes the zone
-  // from the world as well — with n-thornveil.json removed, loadPlaces returns
-  // 9 zones and no "thornveil", and the fixture proves nothing. What Plan E
-  // actually does is move the slug OFF the `n-<slug>` id convention while the
-  // world keeps carrying it, so that is what this fixture models: the node is
-  // renamed to n-thornveil-zone and pinned to geoId "thornveil". The world
-  // document still lists zone "thornveil" (measured: 10 zones, unchanged); the
-  // spine lookup for `n-thornveil` now misses. Before this task that is an
-  // immediate FAIL; after it the resolved world answers.
-  const src = join(dir, "content/spine/nodes/n-thornveil.json");
-  const node = JSON.parse(readFileSync(src, "utf8"));
-  node.id = "n-thornveil-zone";
-  node.lore = { ...(node.lore ?? {}), geoId: "thornveil" };
-  writeFileSync(join(dir, "content/spine/nodes/n-thornveil-zone.json"), JSON.stringify(node, null, 2) + "\n");
-  rmSync(src);
+  // Plan D Task 11: the resolved world is READ, not derived — its ids are the
+  // GENERATED region/town ids (c02/rNN, c-town-*), so a slug that misses the
+  // spine and still resolves through the document is now exactly one of those.
+  // (The pre-cutover fixture modelled Plan E's rename-and-geoId shape against
+  // a spine-DERIVED world; that derivation no longer exists.) The committed
+  // bestiary keeps its legacy slugs until Plan E movement 2 re-homes them;
+  // this fixture re-points ONE row to show the mechanism.
+  const bestiary = join(dir, "content/bestiary/bestiary.json");
+  const rows = JSON.parse(readFileSync(bestiary, "utf8"));
+  rows[0].region = "c02/r01";
+  writeFileSync(bestiary, JSON.stringify(rows, null, 2) + "\n");
   const r = runAliasGate(dir);
-  // The tree loses the id `n-thornveil`, so OTHER gates go red (the zone-file
-  // and story-region spineId joins, the n-site-thornveil representsNodeId
-  // pointer). This test asserts ONLY that the alias sweep itself no longer
-  // contributes an unresolved-slug failure for thornveil, and that it says so
-  // through the new path rather than by falling silent.
-  assert11.doesNotMatch(r.out, /spine-alias: bestiary\.json region "thornveil": /);
-  assert11.match(r.out, /spine-alias: bestiary\.json region "thornveil" ×\d+ → thornveil \(resolved-zone\)/);
+  assert11.doesNotMatch(r.out, /spine-alias: bestiary\.json region "c02\/r01": /);
+  assert11.match(r.out, /spine-alias: bestiary\.json region "c02\/r01" ×\d+ → c02\/r01 \(resolved-zone\)/);
 });
 
 t11("alias sweep: a slug in NEITHER source names both attempts in one message", () => {
@@ -1157,23 +1152,16 @@ t11("alias sweep: a slug in NEITHER source names both attempts in one message", 
 // "rooktide" among its 6 towns).
 t11("alias sweep: a TOWN-tier slug with no spine node resolves through the world document too", () => {
   const dir = aliasContentCopy();
-  // Same Plan E shape as the thornveil fixture: the node keeps existing, it
-  // just stops answering to `n-<slug>`. edges.json is re-pointed with it
-  // because the roads/legs join dereferences the edge endpoints by node id —
-  // leave it and resolveWorld reports instead of resolving, and the fixture
-  // would prove nothing about the fallback.
-  const src = join(dir, "content/spine/nodes/n-rooktide.json");
-  const node = JSON.parse(readFileSync(src, "utf8"));
-  assert11.equal(node.tier, "town");
-  node.id = "n-rooktide-town";
-  node.lore = { ...(node.lore ?? {}), geoId: "rooktide" };
-  writeFileSync(join(dir, "content/spine/nodes/n-rooktide-town.json"), JSON.stringify(node, null, 2) + "\n");
-  rmSync(src);
-  const edgesPath = join(dir, "content/spine/edges.json");
-  writeFileSync(edgesPath, readFileSync(edgesPath, "utf8").replaceAll('"n-rooktide"', '"n-rooktide-town"'));
+  // Plan D Task 11: the town half answers with a GENERATED settlement id —
+  // the resolved towns array carries c-town-* pins, none of which answer to
+  // an `n-<slug>` spine node.
+  const bestiary = join(dir, "content/bestiary/bestiary.json");
+  const rows = JSON.parse(readFileSync(bestiary, "utf8"));
+  rows[0].region = "c-town-tallowquay";
+  writeFileSync(bestiary, JSON.stringify(rows, null, 2) + "\n");
   const r = runAliasGate(dir);
-  assert11.doesNotMatch(r.out, /spine-alias: bestiary\.json region "rooktide": /);
-  assert11.match(r.out, /spine-alias: bestiary\.json region "rooktide" ×\d+ → rooktide \(resolved-town\)/);
+  assert11.doesNotMatch(r.out, /spine-alias: bestiary\.json region "c-town-tallowquay": /);
+  assert11.match(r.out, /spine-alias: bestiary\.json region "c-town-tallowquay" ×\d+ → c-town-tallowquay \(resolved-town\)/);
 });
 
 // ── F-043 Task 4: G-ATLAS-ROLLUP — the world rollup is pinned to committed
@@ -1328,56 +1316,58 @@ function realContentCopy() {
     cp11(join11(ROOT11, "content", sub), join11(dir, sub), { recursive: true });
   return dir;
 }
+// ─── sheet-subject diagnoses ────────────────────────────────────────────────
+// Plan D Task 11: check_content's geography source is content/world/resolved/,
+// so these three descriptor faults are no longer reachable through a gate
+// spawn — the gate never resolves the spine for geography. The diagnoses
+// themselves moved home with their only consumers: resolveWorld(), called by
+// the sheet builders (render-sheet / basin-sheet), where each is still pinned
+// in-process.
 
-function runContentGate(dir) {
-  try {
-    return { code: 0, out: exec11(process.execPath, [GATE11, "--content-root", dir], { encoding: "utf8" }) };
-  } catch (e) {
-    return { code: e.status, out: `${e.stdout ?? ""}${e.stderr ?? ""}` };
-  }
-}
 t11("sheet subjects: a descriptor naming a missing node REPORTS, never a raw TypeError", () => {
   const dir = realContentCopy();
   cp11(join11(FIX, "g-sheet-subject-missing"), dir, { recursive: true });
-  const r = runContentGate(dir);
-  assert11.equal(r.code, 1, r.out);
-  assert11.doesNotMatch(r.out, /TypeError/);
-  // The exit code alone proves little — pin the exact message, prefixed
-  // "geography: " by placesDoc(), so a descriptor fault that stopped being
-  // diagnosed cannot hide behind an unrelated red.
-  assert11.match(r.out, /FAIL {2}geography: sheet: subject "mireIds\[0\]" -> "n-not-a-node" does not resolve/);
+  const spine = loadSpine({ contentRoot: dir });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  const { doc, problems } = resolveWorld({ spine, tree });
+  assert11.equal(doc, null);
+  assert11.ok(problems.some((p) => p.includes('subject "mireIds[0]" -> "n-not-a-node" does not resolve')),
+    JSON.stringify(problems));
 });
 
 t11("sheet subjects: a spine whose sheet.json has NO subjects block REPORTS", () => {
   // The other half of "the ids are data": deleting the descriptor must be a
-  // named diagnosis, not a crash and not a silently-skipped mirror.
+  // named diagnosis, not a crash. Plan A Task 12 routed this through
+  // loadPlaces; Plan D Task 11 removed that module's spine branch entirely,
+  // so it is pinned from resolveWorld directly.
   const dir = realContentCopy();
   const p = join11(dir, "spine/sheet.json");
   const doc = JSON.parse(read11(p, "utf8"));
   delete doc.subjects;
   write11(p, JSON.stringify(doc, null, 2) + "\n");
-  const r = runContentGate(dir);
-  assert11.equal(r.code, 1, r.out);
-  assert11.doesNotMatch(r.out, /TypeError/);
-  // No descriptor means loadPlaces falls through to the legacy mirror FILE,
-  // which Task 12 deleted — so the root resolves to nothing and says so by
-  // name. Before Task 12 this same fixture reported "has no `subjects`
-  // descriptor" from the emitter; the diagnosis moved with the consumer.
-  assert11.match(r.out, /FAIL {2}geography: .* has neither a resolvable spine nor maps\/cluster1-geography\.json/);
+  const spine = loadSpine({ contentRoot: dir });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  const { doc: d, problems } = resolveWorld({ spine, tree });
+  assert11.equal(d, null);
+  assert11.deepEqual(problems, [
+    "sheet: content/spine/sheet.json has no `subjects` descriptor — the sheet's subject ids are DATA, not code",
+  ]);
 });
 
 t11("sheet subjects: a zone region losing its lore.order REPORTS instead of vanishing", () => {
-  // R3 end-to-end, through the emitter the gate actually runs. Before Task 7
-  // this produced a mirror with NINE zones and exit 0.
+  // R3 end-to-end. Before Task 7 this produced a mirror with NINE zones and
+  // exit 0.
   const dir = realContentCopy();
   const p = join11(dir, "spine/nodes/n-thornveil.json");
   const doc = JSON.parse(read11(p, "utf8"));
   delete doc.lore.order;
   write11(p, JSON.stringify(doc, null, 2) + "\n");
-  const r = runContentGate(dir);
-  assert11.equal(r.code, 1, r.out);
-  assert11.doesNotMatch(r.out, /TypeError/);
-  assert11.match(r.out, /has no lore\.order/);
+  const spine = loadSpine({ contentRoot: dir });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  const { doc: d, problems } = resolveWorld({ spine, tree });
+  assert11.equal(d, null);
+  assert11.doesNotMatch(JSON.stringify(problems), /TypeError/);
+  assert11.ok(problems.some((x) => x.includes("has no lore.order")), JSON.stringify(problems));
 });
 
 // ─── Plan A Task 13: in-process gate runs ──────────────────────────────────
@@ -1460,6 +1450,8 @@ t11("in-process: placesByRoot does NOT leak — a geography problem FAILs on EVE
   // sends checkSpineExternalAliases down its resolvedWorld() second chance,
   // and (2) a content root loadPlaces cannot resolve, so there is a problem to
   // swallow. The rename in (1) is main()'s own documented reproduction.
+  // Plan D Task 11: loadPlaces reads content/world/resolved/ only, and the
+  // problem it reports for a root without one names the directory.
   const dir = realContentCopy();
   cp11(join11(ROOT11, "content/bestiary"), join11(dir, "bestiary"), { recursive: true });
   const from = join11(dir, "spine/nodes/n-rooktide.json");
@@ -1470,7 +1462,7 @@ t11("in-process: placesByRoot does NOT leak — a geography problem FAILs on EVE
   rmSync(join11(dir, "spine/sheet.json"), { force: true });
   const first = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", dir] });
   const second = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", dir] });
-  const geoOf = (r) => r.out.split("\n").filter((l) => /^FAIL {2}geography: .* has neither a resolvable spine nor/.test(l));
+  const geoOf = (r) => r.out.split("\n").filter((l) => /^FAIL {2}geography: .* holds no continent files/.test(l));
   assert11.equal(geoOf(first).length, 1, first.out);
   assert11.equal(geoOf(second).length, 1, second.out);
   assert11.equal(second.out, first.out);

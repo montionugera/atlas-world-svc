@@ -76,6 +76,28 @@ function placement(over = {}) {
   };
 }
 
+// Plan D Task 11: loadPlaces() lost its legacy-mirror fallback, so this
+// fixture root carries its geography in the RESOLVED shape — one
+// content/world/resolved/continent-02.json wrapping the same zones array.
+// `geography: null` still means "a geography document that parses to literal
+// null" (the shape-invalid path); only the FILE it lands in changed.
+function writeResolvedFixture(dir, { zones = [], body = null } = {}) {
+  mkdirSync(join(dir, "content/world/resolved"), { recursive: true });
+  // The fixture root now HAS a content/world/, so G-WORLD-BUDGET arms; give it
+  // the committed budget table and manifest so it stays green here.
+  cpSync(join(ROOT, "content/world/budgets.json"), join(dir, "content/world/budgets.json"));
+  cpSync(join(ROOT, "content/world/manifest.json"), join(dir, "content/world/manifest.json"));
+  writeFileSync(join(dir, "content/world/resolved/continent-02.json"), body !== null
+    ? body
+    : JSON.stringify({
+        continent: "c02",
+        coastline: { id: "f-coast-c02", points: [[0, 0], [10, 0], [10, 10]] },
+        river: null, saltmire: null, iceEdge: null, terrainPatches: [],
+        zones, towns: [], camps: [], roads: [], landmarks: [], dungeons: [],
+        instances: [], relay: null, distances: null, seaLane: null, sheet: null,
+      }));
+}
+
 function fixture({
   placements = {},
   bestiary = BESTIARY,
@@ -86,13 +108,15 @@ function fixture({
   mkdirSync(join(dir, "content/characters"), { recursive: true });
   mkdirSync(join(dir, "content/schemas"), { recursive: true });
   mkdirSync(join(dir, "content/bestiary"), { recursive: true });
-  mkdirSync(join(dir, "content/maps"), { recursive: true });
+  writeResolvedFixture(dir, {
+    zones: geography === null ? [] : geography.zones ?? [],
+    body: geography === null ? "null" : null,
+  });
   const schemas = ["character.schema.json", "map.schema.json"];
   if (placementSchema) schemas.push("bestiary-placement.schema.json");
   for (const s of schemas)
     cpSync(join(ROOT, "content/schemas", s), join(dir, "content/schemas", s));
   writeFileSync(join(dir, "content/bestiary/bestiary.json"), JSON.stringify(bestiary));
-  writeFileSync(join(dir, "content/maps/cluster1-geography.json"), JSON.stringify(geography));
   for (const [name, body] of Object.entries(placements))
     writeFileSync(join(dir, "content/bestiary", name), JSON.stringify(body));
   writeFileSync(join(dir, "keys.json"), JSON.stringify({ version: 1, keys: [] }));
@@ -170,7 +194,7 @@ test("G1: unknown zone fails", () => {
   const r = runGate(fixture({ placements: {
     "placement-thornveil.json": placement({ zone: "nowhere" }) } }));
   assert.equal(r.code, 1);
-  assert.match(r.out, /zone "nowhere" not in cluster1-geography/);
+  assert.match(r.out, /zone "nowhere" not in content\/world\/resolved/);
 });
 
 test("G2: bestiaryRegion matching no design fails", () => {

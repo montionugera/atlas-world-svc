@@ -67,7 +67,8 @@ import {
   floodFillRegions,
   cellIndexAt,
 } from "../lib/town-geometry.mjs";
-import { loadPlaces } from "../lib/places.mjs";
+import { resolveWorld } from "../lib/places.mjs";
+import { loadSpine, buildTree } from "../lib/spine.mjs";
 
 // Same ESM/CJS interop guard as scripts/lib/story.mjs:11 — `ajv` is CJS, so
 // under ESM the constructor may arrive as the module namespace's `.default`.
@@ -235,11 +236,16 @@ test("the extent is the ten-second crossing, 150-260 on both axes", () => {
 
 // Plan A Task 12: the town's `at` used to be read straight out of the deleted
 // content/maps/cluster1-geography.json. This file was NOT on the plan's list of
-// remaining readers (enumeration defect #4). It now resolves through the same
-// loadPlaces() every gate join uses, so the assertion binds to the live spine
-// rather than to a generated mirror that no longer exists.
+// remaining readers (enumeration defect #4).
+//
+// Plan D Task 11: loadPlaces() now reads the GENERATED world from
+// content/world/resolved/, whose town ids are the new c-town-* pins. This
+// plan's subject is the live BASIN Millcross, so the assertion binds to
+// resolveWorld()'s basin document — the same one the sheet builders draw.
 test("the anchor is Millcross's own `at` in the resolved world", () => {
-  const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
+  const spine = loadSpine({ contentRoot: join(ROOT, "content") });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  const { doc, problems } = resolveWorld({ spine, tree });
   assert.deepEqual(problems, []);
   const town = doc.towns.find((t) => t.id === PLAN.town);
   assert.ok(town, `${PLAN.town} is not a town in the resolved world`);

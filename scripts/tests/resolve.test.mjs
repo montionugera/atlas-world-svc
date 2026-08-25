@@ -13,7 +13,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, cpSync, readFileSync, writeFileSync, readdirSync, existsSync, statSync } from "node:fs";
+import { mkdtempSync, cpSync, readFileSync, writeFileSync, readdirSync, existsSync, statSync, rmSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -581,4 +581,138 @@ test("G-BAND red: a dungeon band that does not overlap its host region's", () =>
     dungeons: [{ id: "dungeon-strays", bind: { handle: "c02/karst/h-0f42" }, levelBand: [70, 80] }] });
   assert.equal(p.length, 1);
   assert.match(p[0], /^G-BAND: dungeon-strays band \[70, 80\] does not overlap host region c02\/r02 band \[15, 28\]$/);
+});
+
+// ---------------------------------------------------------------------------
+// Task 11 — the join cutover: places.mjs reads content/world/resolved/, the
+// ONLY file family the three gate joins read. Adaptations vs the plan's Step 1
+// literals are commented inline (plan-vs-repo errata, recorded in
+// docs/superpowers/plans/world-fill-STATE.md §26).
+import { loadPlaces, WORLD_DOC_KEYS, resolveWorld } from "../lib/places.mjs";
+import { drawBasinSheet } from "../../tools/mapforge/lib/basin-sheet.mjs";
+import { loadSpine, buildTree } from "../lib/spine.mjs";
+
+test("loadPlaces reads content/world/resolved and keeps the load-bearing key order", () => {
+  const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
+  assert.deepEqual(problems, []);
+  assert.deepEqual(Object.keys(doc), [...WORLD_DOC_KEYS]);
+});
+
+test("the merged doc carries every continent's zones and towns", () => {
+  const { doc } = loadPlaces({ contentRoot: join(ROOT, "content") });
+  assert.ok(doc.zones.length >= 160, `expected >= 160 zones, got ${doc.zones.length}`);
+  // ERRATUM: the plan asserted >= 45 towns. The committed resolved world has
+  // EIGHT — six basin pins plus Tallowquay and Netstead; every other roster
+  // row is a landmark, not a settlement.
+  assert.ok(doc.towns.length >= 8, `expected >= 8 towns, got ${doc.towns.length}`);
+});
+
+test("the spine-derived fallback branch is gone", () => {
+  const src = readFileSync(join(ROOT, "scripts/lib/places.mjs"), "utf8");
+  assert.doesNotMatch(src, /fabric = null/, "the fallback signature must not survive");
+  // ERRATUM: the plan matched /cluster1-geography/ over the whole file, but
+  // GEO_HEADER's document id "cluster1-geography" is part of the basin bytes
+  // pinned by places.test.mjs's sha256 (and echoed inside the committed SVG).
+  // The legacy mirror PATH is what must not be referenced:
+  assert.doesNotMatch(src, /maps\/cluster1-geography/, "the legacy mirror path must not be referenced");
+});
+
+test("a missing resolved dir is a PROBLEM, not a silent empty document", () => {
+  const dir = mkdtempSync(join(tmpdir(), "no-resolved-"));
+  try {
+    const { doc, problems } = loadPlaces({ contentRoot: dir });
+    assert.equal(doc, null);
+    assert.equal(problems.length, 1);
+    assert.match(problems[0], /world\/resolved\/ holds no continent files/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("THE RENDER ASSERTION: the sheet renderer's doc contract survives the cutover", () => {
+  // The failure this exists to stop: `loadPlaces` emitting coastline/river/
+  // saltmire/iceEdge as null because ResolvedWorld "has no equivalent".
+  //
+  // ERRATUM: the plan drew the BASIN SHEET from loadPlaces' merged doc. That
+  // cannot work — the generated world retires relay/sheet as null and
+  // drawBasinSheet dereferences geo.relay.towers and geo.sheet.subtitle with
+  // no guard, so its subject remains resolveWorld()'s basin document (fed by
+  // render-sheet.mjs, unchanged by this task). What IS asserted here, in the
+  // plan's spirit: the renderer still draws off its own source (clip-saltmire
+  // emitted from geo.saltmire.polygon, the sea path from geo.coastline.points),
+  // AND the merged generated-world doc carries real geometry for the two keys
+  // an unguarded consumer would trip over.
+  const spine = loadSpine({ contentRoot: join(ROOT, "content") });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
+  const basin = resolveWorld({ spine, tree });
+  assert.deepEqual(basin.problems, []);
+  const { svg, problems } = drawBasinSheet({ doc: basin.doc });
+  assert.deepEqual(problems, []);
+  assert.match(svg, /^<svg /);
+  assert.ok(svg.length > 4000, `the sheet is degenerate at ${svg.length} bytes`);
+  assert.match(svg, /<clipPath id="clip-saltmire"><path d="M/);
+
+  const { doc: merged } = loadPlaces({ contentRoot: join(ROOT, "content") });
+  assert.ok(merged.coastline.points.length >= 3, "the coastline has no course");
+  assert.ok(merged.saltmire.polygon.length >= 3, "the saltmire has no outline");
+});
+
+test("THE COUNTING ASSERTION: the joins still count on a root whose records match the resolved ids", () => {
+  // ERRATUM: the plan ran --require-complete on the REAL root and expected
+  // exit 0 with all three counts > 0. Unsatifiable until Plan E movement 2
+  // re-homes the committed records onto the new region ids (see places.test.mjs
+  // for the loud-orphan pin on the real root). Here the counting half is proven
+  // on the migrated fixture suites' home turf instead: a fixture root whose
+  // zone/town records match its resolved ids counts > 0 with zero failures.
+  const dir = mkdtempSync(join(tmpdir(), "counting-"));
+  try {
+    mkdirSync(join(dir, "content/schemas"), { recursive: true });
+    mkdirSync(join(dir, "content/world/resolved"), { recursive: true });
+    mkdirSync(join(dir, "content/zones"), { recursive: true });
+    mkdirSync(join(dir, "content/characters"), { recursive: true });
+    mkdirSync(join(dir, "content/maps"), { recursive: true });
+    for (const s of ["zone-content.schema.json", "character.schema.json", "map.schema.json"])
+      cpSync(join(ROOT, "content/schemas", s), join(dir, "content/schemas", s));
+    writeFileSync(join(dir, "content/world/resolved/continent-02.json"), JSON.stringify({
+      continent: "c02",
+      coastline: { id: "f-coast-c02", points: [[0, 0], [10, 0], [10, 10]] },
+      river: null, saltmire: null, iceEdge: null, terrainPatches: [],
+      zones: [{ id: "z-one", name: "Zone One", levelBand: [1, 10] }],
+      towns: [{ id: "t-one", name: "Town One", at: [5, 5], zone: "z-one" }],
+      camps: [], roads: [], landmarks: [], dungeons: [],
+      instances: [], relay: null, distances: null, seaLane: null, sheet: null,
+    }));
+    writeFileSync(join(dir, "content/zones/zone-z-one.json"), JSON.stringify({
+      zone: "z-one", reasonToGo: "because",
+      hazards: [{ id: "h-one", name: "H one", description: "d" },
+                { id: "h-two", name: "H two", description: "d" }],
+      resources: [{ id: "r-one", name: "R one", kind: "fuel", description: "d" },
+                  { id: "r-two", name: "R two", kind: "crop", description: "d" }],
+      landmarks: [{ id: "l-one", name: "L one", description: "d" },
+                  { id: "l-two", name: "L two", description: "d" }],
+    }));
+    cpSync(join(ROOT, "content/world/budgets.json"), join(dir, "content/world/budgets.json"));
+    cpSync(join(ROOT, "content/world/manifest.json"), join(dir, "content/world/manifest.json"));
+    writeFileSync(join(dir, "keys.json"), JSON.stringify({ version: 1, keys: [] }));
+    writeFileSync(join(dir, "manifest.json"), JSON.stringify({ version: 2, entries: {} }));
+    writeFileSync(join(dir, "mob-types.json"), JSON.stringify({ version: 1, mobTypes: [] }));
+    writeFileSync(join(dir, "spawn-areas.json"), JSON.stringify({ version: 1, areas: [] }));
+
+    let out;
+    try {
+      out = execFileSync(process.execPath,
+        [join(ROOT, "scripts/check_content.mjs"), "--require-complete",
+         "--content-root", join(dir, "content"),
+         "--keys", join(dir, "keys.json"), "--manifest", join(dir, "manifest.json"),
+         "--mob-types", join(dir, "mob-types.json"), "--spawn-areas", join(dir, "spawn-areas.json")],
+        { encoding: "utf8" });
+    } catch (e) {
+      assert.fail(`the matching-record fixture must pass:\n${e.stdout ?? ""}${e.stderr ?? ""}`);
+    }
+    const m = out.match(/content-gate: (\d+) sheets, (\d+) maps, (\d+) story, (\d+) placements, (\d+) zones, (\d+) towns, (\d+) nodes, (\d+) failures/);
+    assert.ok(m, "the summary line must be present");
+    assert.ok(Number(m[5]) > 0, "zone records must still JOIN, not silently return 0");
+    // The town join's counting half is pinned by the migrated town-plan suite,
+    // whose fixture carries real town plans; this root has none, so its towns
+    // count is legitimately 0 here.
+    assert.equal(Number(m[8]), 0, "no failures");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });
