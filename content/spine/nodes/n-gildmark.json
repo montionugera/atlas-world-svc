@@ -8,8 +8,7 @@
     "generator": null,
     "source": "content/maps/cluster1-geography.json"
   },
-  "frozen": true,
-  "absoluteAnchor": [2.2, 31.4],
+  "frozen": false,
   "seed": {
     "value": "905061f812c67b0b",
     "epoch": 0,
