@@ -816,6 +816,9 @@ function p4FixtureRoot(t, overlayDir) {
   cpSync(join(ROOT, "content/schemas/spine-node.schema.json"), join(tmp, "schemas/spine-node.schema.json"));
   cpSync(join(ROOT, "content/spine"), join(tmp, "spine"), { recursive: true });
   cpSync(join(ROOT, "content/maps"), join(tmp, "maps"), { recursive: true });
+  const edgesPath = join(tmp, "spine/edges.json");
+  const edges = JSON.parse(readFileSync(edgesPath, "utf8"));
+  writeFileSync(edgesPath, JSON.stringify(edges.filter((e) => e.kind !== "leg"), null, 2));
   if (overlayDir) cpSync(join(FIXTURES, overlayDir), tmp, { recursive: true });
   return tmp;
 }

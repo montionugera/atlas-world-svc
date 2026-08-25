@@ -1190,6 +1190,9 @@ test("G-SHEET-BUDGET counts .svg only", () => {
 test("soft-skip: a content root with no content/world/ is still green", () => {
   const { contentRoot, drop } = tmpRoot();
   rmSync(join(contentRoot, "world"), { recursive: true, force: true });
+  const edgesPath = join(contentRoot, "spine/edges.json");
+  const edges = JSON.parse(readFileSync(edgesPath, "utf8"));
+  writeFileSync(edgesPath, JSON.stringify(edges.filter((e) => e.kind !== "leg"), null, 2));
   const r = runGate(contentRoot);
   assert.equal(r.code, 0, r.out);
   assert.doesNotMatch(r.out, /G-LANDFORM|G-SHEET-BUDGET|world-budget/);
