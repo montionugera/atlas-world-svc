@@ -207,6 +207,19 @@ export function environmentNegativeWords(forge) {
 }
 
 /**
+ * Scale guard vocabulary, from `profiles.<profile>.styleGuard`:
+ * `scaleTokens` (extent words) + `boundMarkers` (phrases that bound an
+ * extent within a sentence). See generate/prompt-lint.mjs R3.
+ */
+export function promptScaleGuard(forge) {
+  const guard = forge.profile.styleGuard ?? {};
+  return {
+    scaleTokens: guard.scaleTokens ?? [],
+    boundMarkers: guard.boundMarkers ?? [],
+  };
+}
+
+/**
  * Compose the environment positive prompt, entirely out of assertions of
  * what IS present: the brief's own scene prose, the house style vocabulary
  * (`style-laws.json` `positive` + `renderAssertion`), the shared era block
@@ -225,7 +238,7 @@ export function environmentNegativeWords(forge) {
  * positive prompt (from config, from a brief, from anywhere) throws here
  * rather than ~218 s of GPU later.
  */
-export function buildEnvPositive(promptText, forge) {
+export function buildEnvPositive(promptText, forge, { requiredAssertions = [] } = {}) {
   const era = forge.profile.styleGuard?.era;
   return assertPositivePromptClean(
     [
@@ -235,7 +248,11 @@ export function buildEnvPositive(promptText, forge) {
       ...(era ? [era] : []),
       ...forge.styleLaws.styleClause,
     ].join(", "),
-    { forbiddenTokens: promptForbiddenTokens(forge) },
+    {
+      forbiddenTokens: promptForbiddenTokens(forge),
+      ...promptScaleGuard(forge),
+      requiredAssertions,
+    },
   );
 }
 
@@ -624,8 +641,12 @@ export async function generateEnv(
     positive: positiveOverride
       ? assertPositivePromptClean(positiveOverride, {
           forbiddenTokens: promptForbiddenTokens(forge),
+          ...promptScaleGuard(forge),
+          requiredAssertions: rawBrief.mustAssert ?? [],
         })
-      : buildEnvPositive(rawBrief.prompt, forge),
+      : buildEnvPositive(rawBrief.prompt, forge, {
+          requiredAssertions: rawBrief.mustAssert ?? [],
+        }),
     negative: buildEnvNegative(forge),
     id: control === "depth" ? rawBrief.id : `${rawBrief.id}-${control}`,
   };

@@ -39,6 +39,26 @@
 /** Rule ids — exported so callers and tests reference them symbolically. */
 export const RULE_NEGATION = "R1-negation";
 export const RULE_FORBIDDEN_TOKEN = "R2-forbidden-token";
+export const RULE_SCALE_UNBOUNDED = "R3-unbounded-scale";
+export const RULE_ASSERTION_MISSING = "R4-assertion-missing";
+
+/**
+ * WHY R3/R4 EXIST (2026-08-25, Millcross strength-ladder verdict)
+ * ---------------
+ * R1/R2 stop the prompt from naming what must not appear. They say nothing
+ * about EXTENT, and extent was the next measured failure: the Millcross
+ * brief asked for "a sprawling ... town" whose shelters were "sprawled at
+ * every angle" with no statement that the settlement ever ENDS, and every
+ * render tiled shanties to the horizon — while the ground truth
+ * (content/towns/town-millcross.json) is a few dozen placed footprints in a
+ * 220x160 extent. A diffusion model has no prior for "a small town"; an
+ * unbounded scale word is an instruction to keep going.
+ *
+ * R3 flags a scale-intensifier token whose SENTENCE carries no bound marker
+ * (a count, an edge, a terminus). R4 lets a brief require a specific
+ * assertion to be present at all (e.g. the town-edge sentence). Both are
+ * config-driven like R1/R2: this module owns no vocabulary.
+ */
 
 /**
  * The negation constructions R1 rejects.
@@ -72,19 +92,46 @@ function tokenRegExp(token) {
   return new RegExp(`(?<![\\w])${escapeRegExp(token)}(?![\\w])`, "gi");
 }
 
+/** Split prose into sentences, each with its [start, end) offset in `text`. */
+function sentenceRanges(text) {
+  const ranges = [];
+  let start = 0;
+  for (const m of text.matchAll(/(?<=[.!?])\s+/g)) {
+    ranges.push({ start, end: m.index + m[0].length });
+    start = m.index + m[0].length;
+  }
+  if (start < text.length) ranges.push({ start, end: text.length });
+  return ranges;
+}
+
 /**
  * Lint one composed POSITIVE prompt.
  *
  * @param {string} text  the fully composed positive prompt
- * @param {{ forbiddenTokens?: string[] }} [options]
+ * @param {{ forbiddenTokens?: string[],
+ *           scaleTokens?: string[],
+ *           boundMarkers?: string[],
+ *           requiredAssertions?: string[] }} [options]
  *        `forbiddenTokens` — subjects that must not be NAMED at all,
  *        regardless of any surrounding negation, because naming them biases
  *        the render toward them. Supplied by the caller from config; there
  *        is deliberately no built-in list.
+ *        `scaleTokens` — extent-intensifier words ("sprawling", "endless");
+ *        each is allowed only in a sentence that also carries a bound
+ *        marker. Regex sources, caller-supplied.
+ *        `boundMarkers` — phrases that bound an extent within a sentence
+ *        ("a few dozen", "beyond the", "ends"). Regex sources.
+ *        `requiredAssertions` — regex sources that MUST match somewhere in
+ *        the composed prompt (e.g. the brief's town-edge sentence); a
+ *        missing one is a violation, so deleting the assertion from a brief
+ *        fails the lint instead of silently unbounding the render.
  * @returns {Array<{ rule: string, match: string, index: number }>}
  *          violations ordered by position in `text`; empty when clean.
  */
-export function lintPositivePrompt(text, { forbiddenTokens = [] } = {}) {
+export function lintPositivePrompt(
+  text,
+  { forbiddenTokens = [], scaleTokens = [], boundMarkers = [], requiredAssertions = [] } = {},
+) {
   if (typeof text !== "string") {
     throw new TypeError(`lintPositivePrompt expects a string, got ${typeof text}`);
   }
@@ -98,6 +145,35 @@ export function lintPositivePrompt(text, { forbiddenTokens = [] } = {}) {
     if (typeof token !== "string" || token.trim() === "") continue;
     for (const m of text.matchAll(tokenRegExp(token))) {
       violations.push({ rule: RULE_FORBIDDEN_TOKEN, match: m[0], index: m.index });
+    }
+  }
+
+  const boundRes = boundMarkers
+    .filter((marker) => typeof marker === "string" && marker.trim() !== "")
+    .map((marker) => new RegExp(marker, "i"));
+
+  const ranges = scaleTokens.length > 0 ? sentenceRanges(text) : [];
+
+  for (const token of scaleTokens) {
+    if (typeof token !== "string" || token.trim() === "") continue;
+    for (const m of text.matchAll(tokenRegExp(token))) {
+      const range = ranges.find((r) => m.index >= r.start && m.index < r.end);
+      const sentence = range ? text.slice(range.start, range.end) : "";
+      const bounded = boundRes.some((re) => re.test(sentence));
+      if (!bounded) {
+        violations.push({ rule: RULE_SCALE_UNBOUNDED, match: m[0], index: m.index });
+      }
+    }
+  }
+
+  for (const assertion of requiredAssertions) {
+    if (typeof assertion !== "string" || assertion.trim() === "") continue;
+    if (!new RegExp(assertion, "i").test(text)) {
+      violations.push({
+        rule: RULE_ASSERTION_MISSING,
+        match: assertion,
+        index: -1,
+      });
     }
   }
 

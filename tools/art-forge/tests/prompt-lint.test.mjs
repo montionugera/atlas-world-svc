@@ -12,8 +12,10 @@ import {
 } from "../generate/charsheet.mjs";
 import { buildEnvNegative, buildEnvPositive } from "../generate/env.mjs";
 import {
+  RULE_ASSERTION_MISSING,
   RULE_FORBIDDEN_TOKEN,
   RULE_NEGATION,
+  RULE_SCALE_UNBOUNDED,
   assertPositivePromptClean,
   lintPositivePrompt,
 } from "../generate/prompt-lint.mjs";
@@ -260,5 +262,96 @@ test("a forbidden token re-inserted into a brief makes buildEnvPositive THROW, n
   assert.throws(
     () => buildEnvPositive("a crossing town with power lines along the road", forge),
     /R2-forbidden-token/,
+  );
+});
+
+/* ------------------------------------------------------------------ *
+ * R3 — unbounded scale words                                          *
+ * ------------------------------------------------------------------ */
+
+test("R3 flags a scale word whose sentence carries no bound marker", () => {
+  const found = lintPositivePrompt(
+    "A sprawling town on a grey river. A queue of carts waits at the ford.",
+    { scaleTokens: ["sprawling"], boundMarkers: ["a few dozen", "beyond (the|its)"] },
+  );
+  assert.equal(found.length, 1);
+  assert.equal(found[0].rule, RULE_SCALE_UNBOUNDED);
+  assert.equal(found[0].match, "sprawling");
+});
+
+test("R3 accepts a scale word whose sentence carries a bound marker", () => {
+  const found = lintPositivePrompt(
+    "A sprawling town of a few dozen structures on a grey river.",
+    { scaleTokens: ["sprawling"], boundMarkers: ["a few dozen"] },
+  );
+  assert.deepEqual(found, []);
+});
+
+test("R3 is sentence-scoped: a bound in the NEXT sentence does not rescue the previous one", () => {
+  const found = lintPositivePrompt(
+    "An endless shanty quarter. Beyond the town edge only farmland remains.",
+    { scaleTokens: ["endless"], boundMarkers: ["beyond (the|its)", "only"] },
+  );
+  assert.equal(found.length, 1);
+  assert.equal(found[0].rule, RULE_SCALE_UNBOUNDED);
+});
+
+test("R3 is inert without config vocabulary", () => {
+  assert.deepEqual(lintPositivePrompt("a sprawling endless town"), []);
+});
+
+/* ------------------------------------------------------------------ *
+ * R4 — required assertions                                            *
+ * ------------------------------------------------------------------ */
+
+test("R4 flags a missing required assertion", () => {
+  const found = lintPositivePrompt("a small town by a river", {
+    requiredAssertions: ["beyond the town edge"],
+  });
+  assert.equal(found.length, 1);
+  assert.equal(found[0].rule, RULE_ASSERTION_MISSING);
+});
+
+test("R4 accepts the prompt when the required assertion is present", () => {
+  const found = lintPositivePrompt(
+    "a small town by a river; beyond the town edge only farmland remains",
+    { requiredAssertions: ["beyond the town edge"] },
+  );
+  assert.deepEqual(found, []);
+});
+
+/* ------------------------------------------------------------------ *
+ * The real briefs — the Millcross extent failure, end to end          *
+ * ------------------------------------------------------------------ */
+
+test("the fixed Millcross brief passes the full environment lint", () => {
+  const forge = loadForge({ profile: "environment" });
+  const brief = JSON.parse(
+    fs.readFileSync(path.join(FORGE_DIR, "briefs", "A1-ART-02.json"), "utf8"),
+  );
+  const composed = buildEnvPositive(brief.prompt, forge, {
+    requiredAssertions: brief.mustAssert ?? [],
+  });
+  assert.equal(typeof composed, "string");
+});
+
+test("the OLD Millcross wording (unbounded sprawl, no edge) is rejected", () => {
+  const forge = loadForge({ profile: "environment" });
+  const old = "A sprawling, wall-less crossing town on both banks of a grey river.";
+  assert.throws(() => buildEnvPositive(old, forge), /R3-unbounded-scale/);
+});
+
+test("deleting the town-edge assertion from a brief fails the lint, not the render", () => {
+  const forge = loadForge({ profile: "environment" });
+  const brief = JSON.parse(
+    fs.readFileSync(path.join(FORGE_DIR, "briefs", "A1-ART-02.json"), "utf8"),
+  );
+  const edged = brief.prompt.replace(/The last shelter[^.]*\.\s*/, "");
+  assert.throws(
+    () =>
+      buildEnvPositive(edged, forge, {
+        requiredAssertions: brief.mustAssert ?? [],
+      }),
+    /R4-assertion-missing/,
   );
 });
