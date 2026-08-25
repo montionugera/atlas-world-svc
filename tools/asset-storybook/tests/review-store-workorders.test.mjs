@@ -14,7 +14,7 @@ test("addWorkOrder appends with id + createdAt, validates cell", () => {
   const q = addWorkOrder(base, { briefId: "A1-ART-03", cell: "render", seed: 44, reason: "flagged" });
   assert.equal(q.workOrders.length, 1);
   const wo = q.workOrders[0];
-  assert.match(wo.id, /^wo-A1-ART-03-render-\d+$/);
+  assert.match(wo.id, /^wo-A1-ART-03-render-\d+-\d+$/);
   assert.ok(wo.createdAt);
   assert.throws(() => addWorkOrder(base, { briefId: "X", cell: "explode", reason: "r" }));
   assert.throws(() => addWorkOrder(base, { briefId: "X", cell: "gate" })); // reason required

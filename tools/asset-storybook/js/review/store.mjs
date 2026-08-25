@@ -21,6 +21,15 @@ export const WORK_ORDER_CELLS = new Set(["blockin", "render", "gate", "intake"])
 
 const CLEARED = "__cleared__";
 
+// Same shape rule as the server-side ledger validation: brief ids are
+// alphanumeric with dashes only.
+const BRIEF_ID_RE = /^[A-Za-z0-9-]+$/;
+
+// Date.now() alone can collide when same-brief same-cell orders are appended
+// in one batch loop (same millisecond), so every id gets a module-level
+// sequence suffix — ids stay unique and monotonic across a session.
+let woSeq = 0;
+
 function readVerdicts(doc) {
   const v = doc && doc.verdicts;
   if (!v || typeof v !== "object") return {};
@@ -70,6 +79,15 @@ export function serializeQueue(queue) {
  * @param {{ briefId: string, cell: string, reason: string, seed?: number }} order
  */
 export function addWorkOrder(queue, order) {
+  if (
+    typeof order.briefId !== "string" ||
+    !order.briefId ||
+    !BRIEF_ID_RE.test(order.briefId)
+  ) {
+    throw new Error(
+      'briefId must be a non-empty string matching /^[A-Za-z0-9-]+$/ (same rule as the server-side ledger)',
+    );
+  }
   if (!WORK_ORDER_CELLS.has(order.cell)) {
     throw new Error(
       `unknown cell "${order.cell}" — must be one of ${[...WORK_ORDER_CELLS].join(", ")}`,
@@ -88,7 +106,7 @@ export function addWorkOrder(queue, order) {
     throw new Error("seed must be a non-negative integer");
   }
   const wo = {
-    id: `wo-${order.briefId}-${order.cell}-${Date.now()}`,
+    id: `wo-${order.briefId}-${order.cell}-${Date.now()}-${++woSeq}`,
     briefId: order.briefId,
     cell: order.cell,
     reason: trimmed,

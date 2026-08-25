@@ -54,6 +54,24 @@ test("markStale: gate entries inherit staleness from their referenced render", (
   assert.deepEqual(markStale(attempts, cur), [false, false, true, true]);
 });
 
+test("markStale: duplicate out paths keep the FIRST render's staleness", () => {
+  const cur = "aaaa0000aaaa0000";
+  const attempts = [
+    { type: "render", out: "out/env/a.png", briefHash: cur },
+    // Re-render of the same png under an older-era hash must not flip the
+    // gate verdict for the png the gate actually inspected.
+    { type: "render", out: "out/env/a.png", briefHash: "bbbb0000bbbb0000" },
+    { type: "gate", png: "out/env/a.png", ok: true },
+  ];
+  assert.deepEqual(markStale(attempts, cur), [false, true, false]);
+});
+
+test("markStale: a render with no briefHash is marked stale (conservative)", () => {
+  const cur = "aaaa0000aaaa0000";
+  const attempts = [{ type: "render", out: "out/env/a.png" }];
+  assert.deepEqual(markStale(attempts, cur), [true]);
+});
+
 test("markStale: non-visual stages are never stale", () => {
   const attempts = [
     { type: "blockin", out: "out/depth/A.png", briefHash: "cccc0000cccc0000" },

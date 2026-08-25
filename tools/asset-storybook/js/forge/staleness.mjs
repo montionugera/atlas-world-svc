@@ -58,11 +58,18 @@ export function markStale(attempts, currentHash) {
     // A render with no recorded out path cannot be referenced by anything,
     // so it must not claim the shared "no key" slot.
     if (a.type === "render" && a.out) {
-      staleByPng.set(a.out, a.briefHash !== currentHash);
+      // First occurrence wins: a re-render of the same out path under a new
+      // era's briefHash would otherwise flip the gate verdict for PNGs the
+      // gate actually inspected at first-render time. Gates follow the FIRST
+      // render that produced the png.
+      if (!staleByPng.has(a.out)) staleByPng.set(a.out, a.briefHash !== currentHash);
     }
   }
   return attempts.map((a) =>
     a.type === "render"
+      // A render with no recorded hash cannot be proven current — mark it
+      // stale (conservative: better a false "stale" flag than silently
+      // trusting an unattributable render).
       ? a.briefHash !== currentHash
       : a.type === "gate" || a.type === "gate-skipped"
         ? a.png
