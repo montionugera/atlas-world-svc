@@ -20,3 +20,23 @@
 
 - OQ1: ledger granularity — per-brief file vs single ledger.json (lean per-brief).
 - OQ2: define "stale" cell (brief edited after attempt) — lean brief-hash comparison.
+
+## Prior-art survey (GitHub/open-source, 2026-08-25)
+
+### Pipeline UX patterns
+- **Airflow**: clear/retry is explicit-scope (downstream cascade is opt-in checkboxes); per-attempt history kept keyed by try_number. Steal: attempt ledger + explicit re-run scope.
+- **Dagster**: re-execute subset forks from persisted step inputs; **staleness = version comparison** — upstream version changed ⇒ downstream shows stale/outdated *without executing*. Exactly our fork-rerun semantics; adopt input-hash staleness.
+- **Prefect**: rich status vocab incl. CACHED; every state transition is an append-only record.
+- **GitHub Actions**: chose cascade-with-consent (re-run includes downstream deps behind a confirm dialog) — we prefer Dagster-style non-cascade.
+- **ComfyUI**: `/history/{prompt_id}` persists full prompt + per-node outputs + status; supports partial node execution. Store prompt_id per render attempt for direct linkage.
+  Sources: airflow.apache.org/docs (dag-run), docs.dagster.io (re-execution, virtual-assets/staleness), docs.prefect.io/v3/concepts/tasks, docs.github.com (re-run workflows), docs.comfy.org (comms_routes).
+
+### Ledger format patterns
+- **MLflow run**: info(status, start/end, artifact_uri) + data(params immutable, metrics latest, tags) — our minimal schema mirrors this split without bloat.
+- **W&B**: config (declared inputs) vs metrics vs summary; child runs link via sweep id.
+- **DVC**: `dvc.lock` stores md5 of every dep/output; recompute + diff marks stage **and all downstream** outdated — mechanism for OQ2 (we display-only, don't auto-execute).
+- **Git-friendliness**: append-only **one-line-per-attempt** entries keep diffs tiny and merge-conflicts near zero; pretty-printed arrays rewrite indentation each append. Per-brief file with compact attempt lines; graduate to `.jsonl` past ~100 rows.
+  Sources: mlflow.org/docs, docs.wandb.ai (resuming), doc.dvc.org (dvc-files, pipelines).
+
+### Schema adopted per attempt
+`{ id, briefHash (sha256 of normalized brief), params {seed, model, stage}, verdict PASS|FLAG, artifacts [paths], comfyPromptId?, startedAt, finishedAt }`
