@@ -9,8 +9,8 @@
   "entranceType": "knickpoint-gorge",
   "floors": 3,
   "levelBand": [
-    52,
-    58
+    47,
+    53
   ],
   "hazards": [
     "grave-damp",

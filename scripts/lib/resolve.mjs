@@ -212,6 +212,16 @@ export function gNames({ world, registers, classifiers }) {
 // narrowWaterKm (min-over-axes enclosure), NEVER grid.fetchKm
 // (max-over-axes wave exposure) — the max reading is unsatisfiable at 332 of
 // 520 port cells and all three capitals.
+//
+// LANDFORM PROXIMITY (owner ruling, 2026-08-25): instance coverage is 1,740
+// point features on 640,000 cells, so NO committed pin sits on its required
+// type and exact-cell semantics were unsatisfiable by construction. The
+// receipt is SATISFIED when the nearest instance OF THE REQUIRED TYPE lies
+// within PIN_LANDFORM_NEAR_KM of the pin cell; the receipt records WHICH
+// instance (id + handle) and the distance. Beyond the limit, or type absent,
+// is a failure naming the pin and the measured distance.
+export const PIN_LANDFORM_NEAR_KM = 30;
+
 export function gPinSat({ world }) {
   if (!world.present) return [];
   const problems = [];
@@ -236,7 +246,14 @@ export function gPinSat({ world }) {
 
     const req = doc.requires ?? {}, m = rec.measured ?? {};
     if (req.continent && rec.continent !== req.continent) say(doc, "continent", req.continent, rec.continent);
-    if (req.landform && m.landform !== req.landform) say(doc, "landform", req.landform, m.landform ?? "none");
+    if (req.landform) {
+      // PROXIMITY, not exact-cell: satisfied iff the receipt names an instance
+      // of the required type within PIN_LANDFORM_NEAR_KM of the pin cell.
+      const d = m.landformNearDistanceKm;
+      if (!(m.landformNearId && typeof d === "number" && d <= PIN_LANDFORM_NEAR_KM))
+        say(doc, "landform", `${req.landform} within ${PIN_LANDFORM_NEAR_KM} km`,
+            typeof d === "number" ? `${d} km away` : "none found");
+    }
     // A MISSING measurement is a failure, never a silent pass: `undefined <= n`
     // is false, so every numeric guard below must test the undefined case out.
     if (req.slopeMax !== undefined && !(typeof m.slope === "number" && m.slope <= req.slopeMax))
@@ -248,8 +265,21 @@ export function gPinSat({ world }) {
     if (Array.isArray(req.biomeNot) && req.biomeNot.includes(m.biome))
       say(doc, "biomeNot", req.biomeNot.join("/"), m.biome);
     if (req.water) {
-      if (req.water.kind && m.waterKind !== req.water.kind)
-        say(doc, "water.kind", req.water.kind, m.waterKind ?? "none");
+      // SAME PROXIMITY PRINCIPLE as landform: a categorical water claim is
+      // satisfied by its kind within PIN_LANDFORM_NEAR_KM, per the receipt's
+      // recorded distances. `waterKind` alone answers "what is AT the site" —
+      // a coastal landmark on dry ground would read "none" — so the kind
+      // claim passes on the distance field. `kind: "none"` stays an AT-site
+      // claim: the cell itself must be dry.
+      if (req.water.kind === "none") {
+        if (m.waterKind !== "none")
+          say(doc, "water.kind", "none", m.waterKind ?? "none");
+      } else if (req.water.kind) {
+        const d = { sea: m.nearestSeaKm, lake: m.nearestLakeKm, river: m.nearestRiverKm }[req.water.kind];
+        if (!(typeof d === "number" && d <= PIN_LANDFORM_NEAR_KM))
+          say(doc, "water.kind", `${req.water.kind} within ${PIN_LANDFORM_NEAR_KM} km`,
+              typeof d === "number" ? `${d} km away` : "none found");
+      }
       if (req.water.shelterFetchKmMax !== undefined && !(typeof m.shelterFetchKm === "number" && m.shelterFetchKm <= req.water.shelterFetchKmMax))
         say(doc, "water.shelterFetchKmMax", req.water.shelterFetchKmMax, m.shelterFetchKm ?? "none");
       if (req.water.minDepthM !== undefined && !(typeof m.depthM === "number" && m.depthM >= req.water.minDepthM))

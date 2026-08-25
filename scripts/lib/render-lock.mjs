@@ -107,7 +107,26 @@ export function computeLock({
     } catch {
       /* missing = absent from the lock */
     }
-    if (bytes !== null) artifacts[p] = sha256(bytes);
+    if (bytes === null) continue;
+    // PIN RECEIPTS ARE EXEMPT FROM THE LOCK (owner ruling 2, 2026-08-25).
+    // `pinReceipts[]` is metadata Plan D's G-PIN-SAT re-derives and gates on
+    // its own — a receipts-only change (re-measured proximity distances, a
+    // new measured field) must not drift the sheet lock. EVERYTHING ELSE in
+    // the file is locked byte-for-byte as before: geometry, regions,
+    // settlements, roads, dungeon anchors all still red the lock when they
+    // move. Unparsable JSON falls through to the raw-bytes hash so a broken
+    // file is still caught, just by the schema gates instead.
+    let effective = bytes;
+    if (p.startsWith("content/world/fabric/")) {
+      try {
+        const doc = JSON.parse(bytes.toString("utf8"));
+        if (doc && typeof doc === "object" && "pinReceipts" in doc) {
+          delete doc.pinReceipts;
+          effective = Buffer.from(JSON.stringify(doc), "utf8");
+        }
+      } catch { /* keep raw bytes */ }
+    }
+    artifacts[p] = sha256(effective);
   }
   return {
     version: 2,

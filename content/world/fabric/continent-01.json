@@ -147,7 +147,7 @@
   "roads": [],
   "dungeonAnchors": [],
   "pinReceipts": [
-    {"id":"c-lm-rimewall-margin","at":[200,56],"cell":[400,112],"continent":"c01","region":"c01/r12","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0.01,"freshWaterWithinKm":32,"biome":"ice","elevationM":395.76}},
-    {"id":"c-lm-the-ice-divide","at":[200,34],"cell":[400,68],"continent":"c01","region":"c01/r08","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0,"freshWaterWithinKm":32,"biome":"ice","elevationM":800.19}}
+    {"id":"c-lm-rimewall-margin","at":[200,56],"cell":[400,112],"continent":"c01","region":"c01/r12","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0.01,"freshWaterWithinKm":32,"biome":"ice","elevationM":395.76,"landformNearId":"lf-c01-r08-0060","landformNearHandle":"c01/glacial/h-a36f2c","landformNearDistanceKm":27.28,"nearestSeaKm":6.5,"nearestRiverKm":32,"nearestLakeKm":96.5}},
+    {"id":"c-lm-the-ice-divide","at":[200,34],"cell":[400,68],"continent":"c01","region":"c01/r08","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0,"freshWaterWithinKm":32,"biome":"ice","elevationM":800.19,"landformNearId":"lf-c01-r08-0063","landformNearHandle":"c01/glacial/h-e648c9","landformNearDistanceKm":8.16,"nearestSeaKm":25.5,"nearestRiverKm":32,"nearestLakeKm":118.5}}
   ]
 }

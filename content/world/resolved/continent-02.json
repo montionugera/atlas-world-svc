@@ -3226,7 +3226,7 @@
         20
       ],
       "terrainKind": "headland",
-      "town": "c02/s06",
+      "town": "c02/s08",
       "labelAt": [
         66.3,
         117.61
@@ -3443,7 +3443,7 @@
         20
       ],
       "terrainKind": "headland",
-      "town": "c02/s03",
+      "town": "c02/s05",
       "labelAt": [
         81.01,
         109.3
@@ -5682,7 +5682,7 @@
         20
       ],
       "terrainKind": "headland",
-      "town": "c02/s02",
+      "town": "c02/s04",
       "labelAt": [
         142.54,
         127.31
@@ -8389,7 +8389,7 @@
         20
       ],
       "terrainKind": "headland",
-      "town": "c02/s08",
+      "town": "c02/s01",
       "labelAt": [
         14.86,
         154.87
@@ -10381,7 +10381,7 @@
         10
       ],
       "terrainKind": "headland",
-      "town": "c02/s09",
+      "town": "c02/s10",
       "labelAt": [
         64.62,
         177.04
@@ -13212,7 +13212,7 @@
         10
       ],
       "terrainKind": "headland",
-      "town": "c02/s01",
+      "town": "c02/s03",
       "labelAt": [
         79.54,
         197.64
@@ -15823,8 +15823,8 @@
       "entranceType": "plunge-pool",
       "floors": 4,
       "levelBand": [
-        24,
-        40
+        8,
+        24
       ],
       "handle": "c02/fluvial/h-f11cfc",
       "properties": []
@@ -15841,8 +15841,8 @@
       "entranceType": "sea-arch",
       "floors": 12,
       "levelBand": [
-        32,
-        50
+        16,
+        34
       ],
       "handle": "c02/coastal/h-5b0445",
       "properties": []
@@ -15889,8 +15889,8 @@
       "entranceType": "knickpoint-gorge",
       "floors": 3,
       "levelBand": [
-        16,
-        30
+        9,
+        23
       ],
       "handle": "c02/fluvial/h-bca81f",
       "properties": []
@@ -15940,8 +15940,8 @@
       "entranceType": "blowhole",
       "floors": 3,
       "levelBand": [
-        28,
-        34
+        17,
+        23
       ],
       "handle": "c02/coastal/h-7fe4d8",
       "properties": []
@@ -15958,8 +15958,8 @@
       "entranceType": "blowhole",
       "floors": 3,
       "levelBand": [
-        31,
-        37
+        20,
+        26
       ],
       "handle": "c02/coastal/h-27bc0e",
       "properties": []
@@ -15991,8 +15991,8 @@
       "entranceType": "blowhole",
       "floors": 2,
       "levelBand": [
-        32,
-        50
+        16,
+        34
       ],
       "handle": "c02/coastal/h-6a74b6",
       "properties": []
@@ -16006,8 +16006,8 @@
       "entranceType": "knickpoint-gorge",
       "floors": 2,
       "levelBand": [
-        32,
-        50
+        16,
+        34
       ],
       "handle": "c02/fluvial/h-6000f2",
       "properties": []
@@ -16039,8 +16039,8 @@
       "entranceType": "knickpoint-gorge",
       "floors": 2,
       "levelBand": [
-        16,
-        30
+        9,
+        23
       ],
       "handle": "c02/fluvial/h-71b67f",
       "properties": []

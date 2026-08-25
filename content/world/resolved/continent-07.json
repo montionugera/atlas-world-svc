@@ -4316,8 +4316,8 @@
       "entranceType": "tectonic-cave",
       "floors": 3,
       "levelBand": [
-        22,
-        28
+        11,
+        17
       ],
       "handle": "c07/mountain/h-1f8f73",
       "properties": []

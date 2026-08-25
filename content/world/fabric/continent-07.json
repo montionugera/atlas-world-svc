@@ -150,6 +150,6 @@
     {"handle":"c07/mountain/h-fc80d0","continent":"c07","region":"c07/r01","entranceType":"tectonic-cave","hopsToSettlement":2}
   ],
   "pinReceipts": [
-    {"id":"c-lm-driftholt-fog-forest","at":[46,92],"cell":[92,184],"continent":"c07","region":"c07/r05","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0.01,"freshWaterWithinKm":19,"biome":"upland","elevationM":637.6}}
+    {"id":"c-lm-driftholt-fog-forest","at":[46,92],"cell":[92,184],"continent":"c07","region":"c07/r05","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0.01,"freshWaterWithinKm":19,"biome":"upland","elevationM":637.6,"landformNearId":"lf-c07-r03-0036","landformNearHandle":"c07/wetland/h-f18294","landformNearDistanceKm":26.34,"nearestSeaKm":22,"nearestRiverKm":19,"nearestLakeKm":61.5}}
   ]
 }

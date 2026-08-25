@@ -253,6 +253,38 @@ test("G-PIN-SAT is silent when the fabric receipt satisfies every requirement", 
   assert.deepEqual(gPinSat({ world: loadCivil({ contentRoot: worldFixture() }) }), []);
 });
 
+test("G-PIN-SAT landform is PROXIMITY: nearest required instance within 30 km satisfies it", () => {
+  // OWNER RULING, 2026-08-25. Instance coverage on the real world is 1,740
+  // point features over 640,000 cells — exact-cell semantics were
+  // unsatisfiable by construction for all 41 pins. The receipt now records
+  // WHICH instance of the required type lies nearest (id + handle) and HOW
+  // FAR; satisfaction is that distance within PIN_LANDFORM_NEAR_KM.
+  assert.deepEqual(gPinSat({ world: loadCivil({ contentRoot: worldFixture() }) }), [],
+    "the green fixture's receipt names lf-c02-r01-0001 at distance 0");
+});
+
+test("G-PIN-SAT landform red: the nearest instance is beyond PIN_LANDFORM_NEAR_KM", () => {
+  const p = gPinSat({ world: loadCivil({ contentRoot: worldFixture({ overlayDir: "g-pin-sat-landform-far" }) }) });
+  assert.equal(p.length, 1);
+  assert.match(p[0], /^G-PIN-SAT: c-town-gildmark at \[137\.2, 182\.4\]: requires\.landform = coastal-drowned-valley within 30 km but fabric has 41\.7 km away$/);
+});
+
+test("G-PIN-SAT landform red: no instance of the type anywhere reads 'none', not zero", () => {
+  const dir = worldFixture();
+  const fp = join(dir, "world/fabric/continent-02.json");
+  const doc = JSON.parse(readFileSync(fp, "utf8"));
+  for (const r of doc.pinReceipts)
+    if (r.id === "c-town-gildmark") {
+      r.measured.landformNearId = null;
+      r.measured.landformNearHandle = null;
+      r.measured.landformNearDistanceKm = null;
+    }
+  writeFileSync(fp, JSON.stringify(doc));
+  const p = gPinSat({ world: loadCivil({ contentRoot: dir }) });
+  assert.equal(p.filter((x) => x.includes("requires.landform")).length, 1);
+  assert.match(p.find((x) => x.includes("requires.landform")), /but fabric has none found$/);
+});
+
 test("G-PIN-SAT is silent while NO receipt exists anywhere (generator not yet wired)", () => {
   // The real fabric carries pinReceipts: [] until Task 10 wires placePinned.
   // An empty-receipt world is INPUTS ABSENT, not 41 failures — Gate 1 must

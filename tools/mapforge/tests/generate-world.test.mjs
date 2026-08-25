@@ -676,9 +676,9 @@ test("every settlement gets an f-town-<slug> point feature on its continent node
   const { out, nodes } = run();
   const conts = nodes.filter((n) => n.tier === "continent");
   const settlements = fabricFiles({ out }).reduce((a, d) => a + d.settlements.length, 0);
-  assert.equal(settlements, MANIFEST.quotas.settlements.total, "the manifest quota is 45 settlements");
+  assert.equal(settlements, MANIFEST.quotas.settlements.total, "the settlement count matches the manifest quota");
   const feats = conts.flatMap((n) => n.features);
-  assert.equal(feats.length, 45,
+  assert.equal(feats.length, 47,
     "trunk features ARE the network — gSpineNet resolves road and leg edge endpoints against node.features");
   for (const f of feats) {
     assert.match(f.id, /^f-town-[a-z0-9-]+$/);
@@ -689,7 +689,7 @@ test("every settlement gets an f-town-<slug> point feature on its continent node
     // plan's `{ rank, region }` is not a legal attrs object.
     assert.deepEqual(Object.keys(f.attrs).sort(), ["name", "role", "town"]);
   }
-  assert.equal(new Set(feats.map((f) => f.id)).size, 45, "feature ids must be unique");
+  assert.equal(new Set(feats.map((f) => f.id)).size, 47, "feature ids must be unique");
   // NOT ONE OF THEM IS f-town-null. The plan's buildTrunk writes
   // `slugOf(s.title)` and every generated title is null in Plan C.
   assert.equal(feats.filter((f) => f.id === "f-town-null").length, 0);
@@ -711,7 +711,9 @@ test("every fabric file carries one pinReceipt per committed pinned record — G
     wantByContinent.set(c, (wantByContinent.get(c) ?? 0) + 1);
   }
   const MEASURED_KEYS = ["biome", "depthM", "elevationM", "freshWaterWithinKm",
-                         "landform", "shelterFetchKm", "slope", "waterKind"];
+    "landform", "landformNearDistanceKm", "landformNearHandle", "landformNearId",
+    "nearestLakeKm", "nearestRiverKm", "nearestSeaKm",
+    "shelterFetchKm", "slope", "waterKind"];
   let verts = 0, total = 0;
   for (const doc of fabricFiles({ out })) {
     assert.ok(Array.isArray(doc.pinReceipts), `${doc.continent} has no pinReceipts array`);

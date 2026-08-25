@@ -8,8 +8,8 @@
   "entranceType": "knickpoint-gorge",
   "floors": 3,
   "levelBand": [
-    16,
-    30
+    9,
+    23
   ],
   "hazards": [
     "collapse",

@@ -42,7 +42,7 @@ test("the fabric sheet draws all 13 landmasses and reports no problems", () => {
     assert.ok(svg.includes(`>${c}<`), `no label for ${c}`);
   }
   assert.ok(notes.some((n) => /13 landmasses/.test(n)), notes.join("; "));
-  assert.ok(notes.some((n) => /160 regions \(40 surveyed\), 45 settlements/.test(n)), notes.join("; "));
+  assert.ok(notes.some((n) => /160 regions \(40 surveyed\), 47 settlements/.test(n)), notes.join("; "));
   assert.ok(notes.some((n) => /sea\/land 1\.5 on 64000 km²/.test(n)), notes.join("; "));
 });
 

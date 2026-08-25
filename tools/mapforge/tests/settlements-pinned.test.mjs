@@ -31,12 +31,68 @@ test("a pinned record lands on its committed cell, not on the scorer's choice", 
   assert.deepEqual(r.receipts[0].at, [2.25, 5.25]);
 });
 
-test("every pinned record gets a receipt with all eight measured fields", () => {
+test("every pinned record gets a receipt with all fourteen measured fields", () => {
   const g = toyGrid();
   const r = placePinned({ grid: g, pinned: [{ id: "c-town-gildmark", pin: { at: [2.25, 5.25], toleranceKm: 1.5 }, requires: {} }], cellKm: 0.5 });
   assert.deepEqual(Object.keys(r.receipts[0].measured).sort(), [
-    "biome", "depthM", "elevationM", "freshWaterWithinKm", "landform", "shelterFetchKm", "slope", "waterKind",
+    "biome", "depthM", "elevationM", "freshWaterWithinKm", "landform", "landformNearDistanceKm",
+    "landformNearHandle", "landformNearId", "nearestLakeKm", "nearestRiverKm", "nearestSeaKm",
+    "shelterFetchKm", "slope", "waterKind",
   ]);
+});
+
+// LANDFORM PROXIMITY (owner ruling, 2026-08-25): the receipt records the
+// NEAREST instance of the pin's required type — id, handle and distance — and
+// G-PIN-SAT satisfies the requirement when that distance is within
+// PIN_LANDFORM_NEAR_KM (30 km). Instance coverage is ~1,740 point features on
+// a 640,000-cell world, so an exact-cell reading was unsatisfiable by
+// construction for every one of the 41 pins.
+const NEAR_INSTANCES = [
+  { id: "lf-c02-r01-0007", type: "river-terrace", handle: "c02/fluvial/h-0a11b2",
+    geometry: { shape: "point", at: [3.75, 6.25] }, cell: [7, 12] },
+  { id: "lf-c02-r09-0031", type: "river-terrace", handle: "c02/fluvial/h-0c33d4",
+    geometry: { shape: "point", at: [14.25, 15.75] }, cell: [28, 31] },
+];
+
+test("the receipt names the nearest instance of the required type, within the limit", () => {
+  const g = toyGrid();
+  const r = placePinned({ grid: g, cellKm: 0.5, instances: NEAR_INSTANCES,
+    pinned: [{ id: "c-town-gildmark", pin: { at: [2.25, 5.25], toleranceKm: 1.5 },
+              requires: { landform: "river-terrace" } }] });
+  const m = r.receipts[0].measured;
+  // nearest of the two is [3.75, 6.25] — sqrt(1.5² + 1²) ≈ 1.80 km
+  assert.equal(m.landformNearId, "lf-c02-r01-0007");
+  assert.equal(m.landformNearHandle, "c02/fluvial/h-0a11b2");
+  assert.ok(Math.abs(m.landformNearDistanceKm - Math.sqrt(1.5 * 1.5 + 1)) < 0.01);
+  assert.ok(m.landformNearDistanceKm <= 30);
+});
+
+test("an instance beyond PIN_LANDFORM_NEAR_KM keeps its DISTANCE but loses the id — that is the red case", () => {
+  // A 70 x 70 km bare grid — the 20 x 20 km toy cannot produce a >30 km miss.
+  const g = makeGrid({ w: 140, h: 140, cellKm: 0.5 });
+  const at = [1.25, 1.25];
+  const far = [{ id: "lf-x-9999", type: "river-terrace", handle: "c02/fluvial/h-ffff",
+                 geometry: { shape: "point", at: [58.25, 58.25] }, cell: [116, 116] }];
+  const r = placePinned({ grid: g, cellKm: 0.5, instances: far,
+    pinned: [{ id: "c-town-gildmark", pin: { at, toleranceKm: 1.5 },
+              requires: { landform: "river-terrace" } }] });
+  const m = r.receipts[0].measured;
+  assert.equal(m.landformNearId, null);
+  assert.equal(m.landformNearHandle, null);
+  assert.ok(Math.abs(m.landformNearDistanceKm - Math.sqrt(57 * 57 + 57 * 57)) < 0.01,
+    "the miss still records HOW FAR away the nearest instance lies");
+  assert.ok(m.landformNearDistanceKm > 30);
+});
+
+test("no instances supplied — proximity fields are null, never undefined", () => {
+  const g = toyGrid();
+  const r = placePinned({ grid: g, cellKm: 0.5,
+    pinned: [{ id: "c-town-gildmark", pin: { at: [2.25, 5.25], toleranceKm: 1.5 },
+              requires: { landform: "river-terrace" } }] });
+  const m = r.receipts[0].measured;
+  assert.equal(m.landformNearId, null);
+  assert.equal(m.landformNearHandle, null);
+  assert.equal(m.landformNearDistanceKm, null);
 });
 
 test("a pin on a water cell is a GENERATION failure, named", () => {

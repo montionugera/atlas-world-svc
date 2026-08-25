@@ -9,8 +9,8 @@
   "entranceType": "blowhole",
   "floors": 3,
   "levelBand": [
-    28,
-    34
+    17,
+    23
   ],
   "hazards": [
     "heat",

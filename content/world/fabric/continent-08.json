@@ -129,7 +129,7 @@
   "roads": [],
   "dungeonAnchors": [],
   "pinReceipts": [
-    {"id":"c-lm-the-blowhole-coast","at":[262,352],"cell":[524,704],"continent":"c08","region":"c08/r04","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0.01,"freshWaterWithinKm":36,"biome":"meadow","elevationM":344.81}},
-    {"id":"c-lm-wracklow-stacks","at":[236,344],"cell":[472,688],"continent":"c08","region":"c08/r07","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0.01,"freshWaterWithinKm":17.5,"biome":"meadow","elevationM":358.53}}
+    {"id":"c-lm-the-blowhole-coast","at":[262,352],"cell":[524,704],"continent":"c08","region":"c08/r04","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0.01,"freshWaterWithinKm":36,"biome":"meadow","elevationM":344.81,"landformNearId":"lf-c08-r08-0062","landformNearHandle":"c08/coastal/h-b95f5e","landformNearDistanceKm":15.19,"nearestSeaKm":12.5,"nearestRiverKm":36,"nearestLakeKm":80}},
+    {"id":"c-lm-wracklow-stacks","at":[236,344],"cell":[472,688],"continent":"c08","region":"c08/r07","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0.01,"freshWaterWithinKm":17.5,"biome":"meadow","elevationM":358.53,"landformNearId":"lf-c08-r06-0047","landformNearHandle":"c08/coastal/h-d1f944","landformNearDistanceKm":17.55,"nearestSeaKm":12.5,"nearestRiverKm":17.5,"nearestLakeKm":106}}
   ]
 }

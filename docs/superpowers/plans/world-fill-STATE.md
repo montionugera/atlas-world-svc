@@ -3040,3 +3040,46 @@ not re-derive this.
 check dropped → non-capable test red. 5. eviction reverted to blind pop → bound
 anchored 58/60 (probe). 6. gWorldPoi exemption removed → reported-region G-POI
 failures reappear (gate line count 0 → ≥1).
+
+### RULINGS APPLIED (owner review of Task 10, 2026-08-25)
+
+**Ruling 1 — pin satisfaction is proximity within 30 km.** `PIN_LANDFORM_NEAR_KM = 30`
+exported from scripts/lib/resolve.mjs (single authority; the generator imports it).
+`requires.landform` is satisfied iff the receipt names an instance of the required type
+(`landformNearId`/`landformNearHandle`) within the limit (`landformNearDistanceKm`);
+beyond it or absent, G-PIN-SAT fails naming the pin and the measured distance.
+`water.kind` got the identical treatment via per-kind distances
+(`nearestSeaKm/nearestRiverKm/nearestLakeKm`) — a coastal landmark on dry ground reads
+its sea as a distance. Schema `measured` is now a typed object over all 14 fields.
+Fixtures: world-d base/slope/moved overlays carry green proximity fields; new
+`g-pin-sat-landform-far` overlay reds at 41.7 km.
+
+**Knock-ons closed mechanically:** (a) 11 G-BAND failures re-derived by shifting each
+dungeon's band by its host region's level-ring delta between the pre-pinned world and
+the pinned one; family-lavatube's ladder intersection was provably empty across its 8
+hosts, resolved by scaffold-civil's own matching after the shift (necropolis members
+re-slotted onto their ladder; no hand-placed cells). (b)+(c) FRONTIER RESERVATIONS:
+placeSettlements gains `reserveVillages`; generate-world runs placement, probes both
+frontier gates, and re-runs with per-region deficit reservations (accumulated maxima
+over ≤3 rounds; declared supply-limited regions excluded). c09/r03 regained a village
+(G-DUNGEON-REACH 0) and c02/r16 reached 12 POIs (G-POI 0). Manifest village quota
+30→32 (total 45→47): reservations must ADD capacity, not displace it.
+
+**Still RED, reported rather than hand-edited (26 G-PIN-SAT):** 18 landform claims
+whose type lies 31–261 km away or does not exist on the continent (sinking-river has
+no instance anywhere); gildmark-head's nearest sea at exactly 31 km; the three capital
+ports require ≥12 m depth but their nearest seas are 0–1 m; 4 freshWaterWithinKm
+claims where the ground measures 4–8.5 km against declared 0.5–5. Closing these needs
+either premise/P10 supply changes that would re-baseline all 336 handles, or moving
+frozen basin pins — both above Task 10's authority.
+
+**Ruling 2 — lock ignores receipts.** render-lock hashes each fabric file WITHOUT its
+pinReceipts key (unparsable JSON still caught by raw bytes); geometry/settlements/
+roads/anchors remain locked. Proven by test: receipts-only mutation → same hash,
+one moved ring vertex → different hash. `render-lock.json` re-baselined via --write.
+
+**Stopped / blocked items:** (1) `check_render_lock --check` exits 1 on ONE rider: the
+committed `game-client/assets/art/maps/world-fabric.svg` is stale because the drawn
+world changed (settlements/roads moved with the pinned layer). Re-rendering writes
+protected bytes — needs owner sign-off. (2) The 26 residual G-PIN-SAT above. Both keep
+scripts-suite tests that assert live-root greenness red (~30), all one root cause each.

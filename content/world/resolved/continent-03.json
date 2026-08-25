@@ -13636,8 +13636,8 @@
       "entranceType": "knickpoint-gorge",
       "floors": 3,
       "levelBand": [
-        52,
-        58
+        47,
+        53
       ],
       "handle": "c03/fluvial/h-ea62e8",
       "properties": []
@@ -13651,8 +13651,8 @@
       "entranceType": "knickpoint-gorge",
       "floors": 3,
       "levelBand": [
-        55,
-        61
+        50,
+        56
       ],
       "handle": "c03/fluvial/h-bdc305",
       "properties": []

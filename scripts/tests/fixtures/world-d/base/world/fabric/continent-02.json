@@ -839,7 +839,13 @@
         "slope": 0.02,
         "freshWaterWithinKm": 0.1,
         "biome": "meadow",
-        "elevationM": 40
+        "elevationM": 40,
+        "landformNearId": null,
+        "landformNearHandle": null,
+        "landformNearDistanceKm": null,
+        "nearestSeaKm": null,
+        "nearestRiverKm": 0,
+        "nearestLakeKm": null
       }
     },
     {
@@ -862,7 +868,13 @@
         "slope": 0.03,
         "freshWaterWithinKm": 1.8,
         "biome": "meadow",
-        "elevationM": 6
+        "elevationM": 6,
+        "landformNearId": "lf-c02-r01-0001",
+        "landformNearHandle": "c02/coastal/h-a1b2",
+        "landformNearDistanceKm": 0,
+        "nearestSeaKm": 0,
+        "nearestRiverKm": 1.8,
+        "nearestLakeKm": null
       }
     }
   ]

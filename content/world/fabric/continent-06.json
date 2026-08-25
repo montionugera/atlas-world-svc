@@ -149,7 +149,7 @@
     {"handle":"c06/fluvial/h-a5b037","continent":"c06","region":"c06/r07","entranceType":"plunge-pool","hopsToSettlement":0}
   ],
   "pinReceipts": [
-    {"id":"c-lm-reed-shallows","at":[56,258],"cell":[112,516],"continent":"c06","region":"c06/r02","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0.01,"freshWaterWithinKm":12,"biome":"meadow","elevationM":191.56}},
-    {"id":"c-lm-reedstrand-lobes","at":[70,268],"cell":[140,536],"continent":"c06","region":"c06/r04","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0,"freshWaterWithinKm":17,"biome":"meadow","elevationM":274.71}}
+    {"id":"c-lm-reed-shallows","at":[56,258],"cell":[112,516],"continent":"c06","region":"c06/r02","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0.01,"freshWaterWithinKm":12,"biome":"meadow","elevationM":191.56,"landformNearId":"lf-c06-r06-0050","landformNearHandle":"c06/coastal/h-4e4e6d","landformNearDistanceKm":29.77,"nearestSeaKm":10,"nearestRiverKm":31,"nearestLakeKm":12}},
+    {"id":"c-lm-reedstrand-lobes","at":[70,268],"cell":[140,536],"continent":"c06","region":"c06/r04","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0,"freshWaterWithinKm":17,"biome":"meadow","elevationM":274.71,"landformNearId":null,"landformNearHandle":null,"landformNearDistanceKm":164.42,"nearestSeaKm":20.5,"nearestRiverKm":17,"nearestLakeKm":17.5}}
   ]
 }

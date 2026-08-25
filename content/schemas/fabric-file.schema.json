@@ -138,7 +138,27 @@
           "cell": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 0 } },
           "continent": { "type": "string", "pattern": "^c[0-9]{2}$" },
           "region": { "type": ["string", "null"] },
-          "measured": { "type": "object" }
+          "measured": {
+            "type": "object", "additionalProperties": false,
+            "required": ["biome", "depthM", "elevationM", "freshWaterWithinKm", "landform",
+                         "shelterFetchKm", "slope", "waterKind"],
+            "properties": {
+              "landform": { "type": ["string", "null"] },
+              "waterKind": { "enum": ["sea", "lake", "river", "none"] },
+              "shelterFetchKm": { "type": "number" },
+              "depthM": { "type": "number" },
+              "slope": { "type": "number" },
+              "freshWaterWithinKm": { "type": "number" },
+              "biome": { "type": ["string", "null"] },
+              "elevationM": { "type": "number" },
+              "landformNearId": { "type": ["string", "null"] },
+              "landformNearHandle": { "type": ["string", "null"] },
+              "landformNearDistanceKm": { "type": ["number", "null"] },
+              "nearestSeaKm": { "type": ["number", "null"] },
+              "nearestRiverKm": { "type": ["number", "null"] },
+              "nearestLakeKm": { "type": ["number", "null"] }
+            }
+          }
         }
       }
     }

@@ -809,6 +809,13 @@
       "handle": "c02/coastal/h-a1b2",
       "region": "c02/r01",
       "hopsToSettlement": 0
+    },
+    {
+      "handle": "c02/karst/h-77aa",
+      "continent": "c02",
+      "region": "c02/r02",
+      "entranceType": "karst-cenote",
+      "hopsToSettlement": 1
     }
   ],
   "pinReceipts": [
@@ -858,13 +865,13 @@
         "waterKind": "sea",
         "shelterFetchKm": 9,
         "depthM": 18,
-        "slope": 0.19,
+        "slope": 0.03,
         "freshWaterWithinKm": 1.8,
         "biome": "meadow",
         "elevationM": 6,
-        "landformNearId": "lf-c02-r01-0001",
-        "landformNearHandle": "c02/coastal/h-a1b2",
-        "landformNearDistanceKm": 0,
+        "landformNearId": null,
+        "landformNearHandle": null,
+        "landformNearDistanceKm": 41.7,
         "nearestSeaKm": 0,
         "nearestRiverKm": 1.8,
         "nearestLakeKm": null

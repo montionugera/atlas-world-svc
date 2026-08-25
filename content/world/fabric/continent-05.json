@@ -409,7 +409,7 @@
     {"handle":"c05/mountain/h-dfe080","continent":"c05","region":"c05/r21","entranceType":"tectonic-cave","hopsToSettlement":2}
   ],
   "pinReceipts": [
-    {"id":"c-lm-the-one-wet-strip","at":[134,292],"cell":[268,584],"continent":"c05","region":"c05/r10","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0,"freshWaterWithinKm":2.5,"biome":"desert","elevationM":282.47}},
-    {"id":"c-lm-thirstwold-erg","at":[192,306],"cell":[384,612],"continent":"c05","region":"c05/r13","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0.01,"freshWaterWithinKm":13,"biome":"badland","elevationM":357.06}}
+    {"id":"c-lm-the-one-wet-strip","at":[134,292],"cell":[268,584],"continent":"c05","region":"c05/r10","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0,"freshWaterWithinKm":2.5,"biome":"desert","elevationM":282.47,"landformNearId":null,"landformNearHandle":null,"landformNearDistanceKm":33.46,"nearestSeaKm":20.5,"nearestRiverKm":2.5,"nearestLakeKm":44}},
+    {"id":"c-lm-thirstwold-erg","at":[192,306],"cell":[384,612],"continent":"c05","region":"c05/r13","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0.01,"freshWaterWithinKm":13,"biome":"badland","elevationM":357.06,"landformNearId":"lf-c05-r13-0271","landformNearHandle":"c05/desert/h-0efc93","landformNearDistanceKm":1.98,"nearestSeaKm":26,"nearestRiverKm":13,"nearestLakeKm":100.5}}
   ]
 }

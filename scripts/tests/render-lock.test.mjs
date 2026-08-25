@@ -5,7 +5,7 @@
 // the two can never separate.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -54,6 +54,52 @@ test("computeLock hashes extraPaths from DISK (the growth point for Plan C's fab
       extraPaths: ["thing.json"],
     });
     assert.equal(lock.artifacts["thing.json"], sha("hello\n"));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("a receipts-only change does NOT drift the fabric hash; a geometry change DOES (ruling 2)", () => {
+  // OWNER RULING 2, 2026-08-25: pinReceipts[] is metadata G-PIN-SAT re-derives
+  // and gates on its own, so the lock hashes each fabric file WITHOUT it.
+  // Everything else in the file stays locked — proven by the second half,
+  // where moving one region-ring coordinate reds the hash.
+  const dir = mkdtempSync(join(tmpdir(), "lock-fabric-"));
+  mkdirSync(join(dir, "content/world/fabric"), { recursive: true });
+  try {
+    const fp = join(dir, "content/world/fabric/continent-02.json");
+    const base = {
+      continent: "c02",
+      regions: [{ id: "c02/r01", rings: [[[0, 0], [1, 0], [1, 1]]], holes: [] }],
+      settlements: [{ id: "c02/s01" }],
+      pinReceipts: [{ id: "c-town-gildmark", measured: { landformNearDistanceKm: 9 } }],
+    };
+    writeFileSync(fp, JSON.stringify(base));
+    const lockA = computeLock({
+      repoRoot: dir, sheets: {},
+      extraPaths: lockExtraPaths({ repoRoot: dir }),
+    });
+    // RECEIPTS-ONLY: change a measured distance and add a receipt -> SAME hash
+    base.pinReceipts[0].measured.landformNearDistanceKm = 12.5;
+    base.pinReceipts.push({ id: "c-town-millcross", measured: {} });
+    writeFileSync(fp, JSON.stringify(base));
+    const lockB = computeLock({
+      repoRoot: dir, sheets: {},
+      extraPaths: lockExtraPaths({ repoRoot: dir }),
+    });
+    assert.equal(lockB.artifacts["content/world/fabric/continent-02.json"],
+      lockA.artifacts["content/world/fabric/continent-02.json"],
+      "a receipts-only change drifted the lock — the exemption regressed");
+    // GEOMETRY: move one ring vertex -> DIFFERENT hash
+    base.regions[0].rings[0][1] = [2, 0];
+    writeFileSync(fp, JSON.stringify(base));
+    const lockC = computeLock({
+      repoRoot: dir, sheets: {},
+      extraPaths: lockExtraPaths({ repoRoot: dir }),
+    });
+    assert.notEqual(lockC.artifacts["content/world/fabric/continent-02.json"],
+      lockA.artifacts["content/world/fabric/continent-02.json"],
+      "a geometry change stopped red-ing the lock");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

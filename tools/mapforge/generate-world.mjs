@@ -35,9 +35,9 @@ import { carveWater } from "./lib/passes/water.mjs";
 import { classifyBiomes } from "./lib/passes/biome.mjs";
 import { partitionRegions } from "./lib/passes/partition.mjs";
 import { instanceLandforms } from "./lib/passes/landforms.mjs";
-import { placeSettlements, placePinned, assignLevelBands } from "./lib/passes/settlements.mjs";
+import { placeSettlements, placePinned, assignLevelBands, MAX_SETTLEMENTS_PER_REGION } from "./lib/passes/settlements.mjs";
 import { routeRoads } from "./lib/passes/roads.mjs";
-import { anchorDungeons, anchorBoundEntrances, hopsToSettlement } from "./lib/passes/dungeons.mjs";
+import { anchorDungeons, anchorBoundEntrances, hopsToSettlement, MAX_HOPS } from "./lib/passes/dungeons.mjs";
 import { buildRegionRings, buildCoastRings, buildTrunkRings, buildFabricFile, hashOf,
          fabricStringify, trunkRingCap, townFeatureId, townSlug, townFeatureIds } from "./lib/fabric.mjs";
 import { GENERATOR_VERSION } from "./lib/version.mjs";
@@ -59,6 +59,7 @@ export function runIdOf({ seed, version }) { return `${seed.slice(0, 8)}-${versi
 export function runPasses({ manifest, premises,
                             lexicon = readJson(join(REPO_ROOT, "content/world/lexicon/landforms.json")),
                             loadBudget = readJson(join(REPO_ROOT, "content/spine/load-budget.json")),
+                            budgets = readJson(join(REPO_ROOT, "content/world/budgets.json")),
                             pinned = [], relations = [], dungeons = [], onStage = () => {} }) {
   const timings = {};
   const problems = [];
@@ -125,25 +126,22 @@ export function runPasses({ manifest, premises,
   // committing a fabric whose own receipts contradict their pins would just
   // move the failure to Gate 1's G-PIN-SAT with a day's delay in between.
   const pins = time("P11p", "pinned-places", () =>
-    placePinned({ grid, pinned, cellKm: grid.cellKm }));
+    placePinned({ grid, pinned, cellKm: grid.cellKm, instances: land.instances }));
   if (pins.problems.length)
     throw new Error(`placePinned: ${pins.problems.length} pinned record(s) cannot be placed on ` +
       `this world — a constraint violation is a generation failure:\n  ${pins.problems.join("\n  ")}`);
-  const settle = time("P11", "settlements", () =>
-    placeSettlements({ grid, premises, regions: part.regions, manifest,
-      // Only SETTLEMENT pins enter Plan C's quota pass — a landmark pin has
-      // `rank: null` and placeSettlements refuses rankless pins outright. The
-      // receipt half above covers all 41 regardless.
-      pinned: pins.placed.filter((p) => p.rank != null),
-      stream: settlementStream }));
-  time("P11b", "level-bands", () =>
-    assignLevelBands({ regions: part.regions, settlements: settle.settlements, manifest, problems }));
 
-  const net = time("P12", "roads-lanes", () =>
-    routeRoads({ grid, settlements: settle.settlements, regions: part.regions }));
-  const dung = time("P13", "dungeon-anchors", () => {
+  // FRONTIER RESERVATIONS (owner ruling, 2026-08-25): pinned towns consume
+  // hub/capital quota at fixed seed points, and the separation cascade can
+  // push the greedy village pool off marginal regions — measured: c09 lost
+  // its only villages (two bound dungeon handles lost reachability) and
+  // c02/r16 fell to 11 POIs against G-POI's floor of 12. The fix is a SECOND
+  // placement pass with those regions RESERVED: each reservation takes its
+  // region's best surviving cell under the same vetoes/separation/cap/quota
+  // as the greedy — constraints as inputs, never hand-placed cells.
+  const dungOnce = (settleArg) => {
     const d = anchorDungeons({ instances: land.instances, regions: part.regions,
-      settlements: settle.settlements, lexicon, manifest, stream: settlementStream });
+      settlements: settleArg.settlements, lexicon, manifest, stream: settlementStream });
     // THE BOUND HALF. The authored dungeon records join by bind.handle; the
     // scored pass above does not know they exist, so an authored handle the
     // hash draw missed would ship with no dungeonAnchors row and red
@@ -191,7 +189,83 @@ export function runPasses({ manifest, premises,
       d.anchors.sort((a, b) => (a.handle < b.handle ? -1 : a.handle > b.handle ? 1 : 0));
     }
     return d;
-  });
+  };
+  const settleArgs = { grid, premises, regions: part.regions, manifest,
+    pinned: pins.placed.filter((p) => p.rank != null), stream: settlementStream };
+  let settle = time("P11", "settlements", () => placeSettlements(settleArgs));
+  time("P11b", "level-bands", () =>
+    assignLevelBands({ regions: part.regions, settlements: settle.settlements, manifest, problems }));
+  // FRONTIER RESERVATION LOOP. Each round places the placement pass, anchors
+  // it, and measures the two frontier gates: G-POI's 12-POI floor per
+  // surveyed region (regions budgets.json DECLARES supply-limited are
+  // adjudicated WARNINGS and are never reserved — reserving them would spend
+  // quota on ground P10 cannot fill) and bound-dungeon reachability within
+  // MAX_HOPS. Every measured DEFICIT becomes one reserved village in the
+  // NEXT pass — repeated because a reservation can displace the greedy slot
+  // it was meant to top up (measured: c02/r16 needed two rounds to reach
+  // 12 POIs). Bounded at three rounds; whatever is still short after that is
+  // a named problem, not a silent shortfall.
+  const deficitsOf = (settleArg, anchorsArg) => {
+    const hops = hopsToSettlement({ regions: part.regions, settlements: settleArg.settlements });
+    // The deficit is counted against INSTANCES + ANCHORS only, deliberately
+    // NOT against current settlements: the reservation ITSELF supplies the
+    // villages, so counting the ones already there double-books the slot and
+    // the region never gains net capacity (measured: c02/r16 sat at 11 POIs
+    // through two reservation rounds for exactly this reason).
+    const base = new Map(part.regions.filter((r) => r.survey === "surveyed").map((r) => [r.id, 0]));
+    for (const i of land.instances) if (base.has(i.region)) base.set(i.region, base.get(i.region) + 1);
+    for (const a of anchorsArg) if (base.has(a.region)) base.set(a.region, base.get(a.region) + 1);
+    const declared = new Set(Object.keys(budgets?.poi?.supplyLimitedSurveyedRegions ?? {}));
+    const out = [];
+    for (const [rid, n] of base) {
+      // DECLARED supply-limited regions are adjudicated WARNINGS (budgets
+      // poi.supplyLimitedSurveyedRegions): their shortfall is P10 supply,
+      // not placement, and reserving against it just burns quota.
+      if (declared.has(rid)) continue;
+      const need = Math.min(MAX_SETTLEMENTS_PER_REGION, Math.max(0, 12 - n));
+      for (let k = 0; k < need; k++) out.push(rid);
+    }
+    const settledRegions = new Set(settleArg.settlements.map((s) => s.region));
+    for (const a of anchorsArg) {
+      if (!dungeons.some((d) => d.bind?.handle === a.handle)) continue;
+      const h = hops.get(a.region);
+      if ((h === undefined || h > MAX_HOPS) && !out.includes(a.region) &&
+          !settledRegions.has(a.region)) out.push(a.region);
+    }
+    return out.sort();
+  };
+  // Reservations ACCUMULATE their per-region maximum, never shrink: a region
+  // a later round stops flagging (because an earlier reservation already
+  // satisfied it) must KEEP its reservation, or the greedy displacement
+  // oscillates the frontier back to red (measured: c09/r03 flipped in and
+  // out across rounds until the accumulation was added).
+  const acc = new Map();
+  let reserves = [];
+  for (let round = 0; round < 3; round++) {
+    const probe = dungOnce(settle);
+    const deficits = deficitsOf(settle, probe.anchors);
+    let changed = false;
+    for (const rid of deficits) {
+      const n = deficits.filter((x) => x === rid).length;
+      if ((acc.get(rid) ?? 0) < n) { acc.set(rid, n); changed = true; }
+    }
+    const expanded = [...acc.entries()].sort(([a], [b]) => (a < b ? -1 : 1))
+      .flatMap(([rid, n]) => Array.from({ length: n }, () => rid));
+    if (!changed && JSON.stringify(expanded) === JSON.stringify(reserves)) break;
+    reserves = expanded;
+    problems.push(`settlements: frontier reservations round ${round + 1} re-ran the placement pass ` +
+      `with ${reserves.length} reserved village(s): ${reserves.join(", ")}`);
+    settle = time("P11", "settlements", () =>
+      placeSettlements({ ...settleArgs, reserveVillages: reserves }));
+    time("P11b", "level-bands", () =>
+      assignLevelBands({ regions: part.regions, settlements: settle.settlements, manifest, problems }));
+  }
+  time("P11b", "level-bands", () =>
+    assignLevelBands({ regions: part.regions, settlements: settle.settlements, manifest, problems }));
+
+  const net = time("P12", "roads-lanes", () =>
+    routeRoads({ grid, settlements: settle.settlements, regions: part.regions }));
+  const dung = time("P13", "dungeon-anchors", () => dungOnce(settle));
 
   const ringCap = trunkRingCap({ loadBudget });
   const rings = time("P14", "arcs-polygons-fabric", () => ({

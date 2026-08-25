@@ -8,8 +8,8 @@
   "entranceType": "sea-arch",
   "floors": 12,
   "levelBand": [
-    32,
-    50
+    16,
+    34
   ],
   "hazards": [
     "collapse",

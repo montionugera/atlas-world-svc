@@ -47,6 +47,6 @@
   "roads": [],
   "dungeonAnchors": [],
   "pinReceipts": [
-    {"id":"c-lm-quillreef-ring","at":[338,66],"cell":[676,132],"continent":"c11","region":"c11/r01","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0,"freshWaterWithinKm":1.5,"biome":"meadow","elevationM":176.36}}
+    {"id":"c-lm-quillreef-ring","at":[338,66],"cell":[676,132],"continent":"c11","region":"c11/r01","measured":{"landform":null,"waterKind":"none","shelterFetchKm":0,"depthM":0,"slope":0,"freshWaterWithinKm":1.5,"biome":"meadow","elevationM":176.36,"landformNearId":null,"landformNearHandle":null,"landformNearDistanceKm":260.52,"nearestSeaKm":12,"nearestRiverKm":1.5,"nearestLakeKm":189.5}}
   ]
 }

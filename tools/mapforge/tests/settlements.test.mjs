@@ -856,14 +856,19 @@ test("REAL WORLD — the shelterFetchKm hazard Plan D must decide, pinned as num
   assert.equal(p11.settlements.filter((s) => s.continent === "c04" && s.portEligible).length, 0);
 });
 
-test("REAL WORLD — 45 settlements, 3 capital / 12 hub / 30 village, no problems", () => {
+test("REAL WORLD — 47 settlements, 3 capital / 12 hub / 32 village, no problems", () => {
+  // 32 villages, not 30: Plan D Task 10's frontier reservations (owner
+  // ruling 2026-08-25). Pinned towns consume hub/capital quota at fixed seed
+  // points and the separation cascade pushed marginal surveyed regions below
+  // G-POI's 12-POI floor and left c09's bound dungeon handles unreachable;
+  // two reserved villages restore them, so the manifest quota rises to match.
   const { p11 } = realWorld();
   assert.deepEqual(p11.problems, []);
-  assert.equal(p11.settlements.length, 45);
+  assert.equal(p11.settlements.length, 47);
   const byRank = {};
   for (const s of p11.settlements) byRank[s.rank] = (byRank[s.rank] ?? 0) + 1;
-  assert.deepEqual(byRank, { capital: 3, hub: 12, village: 30 });
-  assert.equal(new Set(p11.settlements.map((s) => s.id)).size, 45, "duplicate settlement id");
+  assert.deepEqual(byRank, { capital: 3, hub: 12, village: 32 });
+  assert.equal(new Set(p11.settlements.map((s) => s.id)).size, 47, "duplicate settlement id");
   for (const s of p11.settlements) {
     assert.match(s.id, /^c\d\d\/s\d\d$/);
     assert.equal(s.title, null, "a name is meaning; Plan D mints it");
@@ -900,16 +905,16 @@ test("REAL WORLD — the per-region cap and every pairwise separation hold", () 
   }
 });
 
-test("REAL WORLD — the score DISCRIMINATES: it is not one value wearing 45 hats", () => {
+test("REAL WORLD — the score DISCRIMINATES: it is not one value wearing 47 hats", () => {
   const { p11 } = realWorld();
   const scores = p11.settlements.map((s) => s.score).sort((a, b) => a - b);
   assert.ok(scores[0] > 0, "a placed settlement scored 0 — it was vetoed and placed anyway");
   assert.ok(scores[scores.length - 1] <= 1);
   assert.ok(new Set(scores).size >= 10,
-    `only ${new Set(scores).size} distinct scores among 45 settlements`);
+    `only ${new Set(scores).size} distinct scores among 47 settlements`);
   assert.ok(scores[scores.length - 1] - scores[0] > 0.2,
     `the placed range is ${scores[0]}..${scores[scores.length - 1]} — the score barely separates`);
-  assert.deepEqual([scores[0], scores[scores.length - 1]], [0.55, 0.95]);
+  assert.deepEqual([scores[0], scores[scores.length - 1]], [0.54, 0.95]);
 });
 
 test("REAL WORLD — c10 ASHEN SPAR carries no settlement, and the treeline is NOT why", () => {
@@ -987,9 +992,9 @@ test("REAL WORLD — every settlement is on its continent's road network", () =>
     while (queue.length) for (const n of adj.get(queue.pop())) if (!seen.has(n)) { seen.add(n); queue.push(n); }
     assert.equal(seen.size, list.length, `${cont}'s road network is disconnected`);
   }
-  assert.equal(p12.roads.length, 38);
-  assert.equal(legs, 38);
-  assert.equal(new Set(p12.roads.map((r) => r.id)).size, 38);
+  assert.equal(p12.roads.length, 40);
+  assert.equal(legs, 40);
+  assert.equal(new Set(p12.roads.map((r) => r.id)).size, 40);
   assert.deepEqual([...byCont.keys()].sort(), ["c02", "c03", "c04", "c05", "c06", "c07", "c09"]);
 });
 
@@ -1190,10 +1195,10 @@ test("townSlug falls back to the id, because every Plan C title is null", () => 
     /is not a legal f-town-<slug> tail/);
 });
 
-test("REAL WORLD — 45 f-town ids, all conforming, none colliding", () => {
+test("REAL WORLD — 47 f-town ids, all conforming, none colliding", () => {
   const { p11 } = realWorld();
   const ids = townFeatureIds({ settlements: p11.settlements });
-  assert.equal(ids.size, 45);
+  assert.equal(ids.size, 47);
   for (const id of ids.keys()) assert.match(id, /^f-town-[a-z0-9-]+$/);
   assert.ok(ids.has("f-town-c02-s01"));
   assert.throws(() => townFeatureIds({
