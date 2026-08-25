@@ -120,6 +120,12 @@ jobs:
       - name: Story graph drift-gate (docs/story/story-graph.md)
         run: node scripts/gen_story_graph.mjs --check
 
+      # Plan E / spec §9.4: the seven canon walking distances measured against
+      # the hand-placed Tier-1 pins, BEFORE the generator. Fails the build if
+      # any leg is outside ±8% of straightKm or an endpoint fails to resolve.
+      - name: canon-leg pre-flight
+        run: node scripts/check_canon_legs.mjs
+
       # Spine emit drift-gate (F-041 G-EMIT-DRIFT): every content/spine/nodes/
       # *.json `derived` block and the two surviving mirrors are emitted from
       # content/spine/nodes/* by scripts/check_spine_emit.mjs. Fails the build

@@ -2177,7 +2177,23 @@ function checkSpine(opts, mobTypes) {
   // validEdges is spine.edges filtered by G-EDGE-SCHEMA above (and, on a root
   // with no edge schema to compile, spine.edges itself).
   gSpineFrozen({ nodes: validNodes, tree, fail });
-  gSpineNet({ nodes: validNodes, edges: validEdges, tree, fail });
+  // Plan E Task 3 (E-C7): G-CANON-LEG's endpoint rule becomes frozen-OR-pinned,
+  // resolved through content/spine/canon-legs.json — the ONLY place a leg
+  // endpoint may be named. Both inputs are optional: with neither
+  // canon-legs.json nor a pinned dir present (every minimal fixture root),
+  // gSpineNet falls back to the pre-plan-E frozen-only rule.
+  const canonLegsPath = join(opts.contentRoot, "spine/canon-legs.json");
+  const canonLegs = existsSync(canonLegsPath)
+    ? readJson(canonLegsPath, "canon-legs", fail) : null;
+  const pinnedDir = join(opts.contentRoot, "world/civil/pinned");
+  const pinnedIds = new Set(existsSync(pinnedDir)
+    ? readdirSync(pinnedDir).filter((f) => f.endsWith(".json"))
+        .map((f) => {
+          try { return JSON.parse(readFileSync(join(pinnedDir, f), "utf8")).id; }
+          catch { fail(`canon-legs: cannot read/parse ${join(pinnedDir, f)}`); return null; }
+        }).filter((id) => id != null)
+    : []);
+  gSpineNet({ nodes: validNodes, edges: validEdges, tree, canonLegs, pinnedIds, fail });
 
   // F-041 Phase 1 Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT. Both PRINT on
   // every run that reaches this point (spine/ present, schema compiles).
@@ -2624,7 +2640,7 @@ function gSpineFrozen({ nodes, tree, fail }) {
 // same discipline as validNodes. Before Plan B Task 3 there was no edge schema
 // and spine.edges was passed raw, which is why rootPoint below could be handed
 // an edge with no `to` and crash on `ref.node` instead of reporting.
-function gSpineNet({ nodes, edges, tree, fail }) {
+function gSpineNet({ nodes, edges, tree, canonLegs = null, pinnedIds = new Set(), fail }) {
   const featOwner = new Map(); // feature id -> owning node
   for (const n of nodes) for (const f of n.features ?? []) featOwner.set(f.id, n);
   const edgeById = new Map(edges.map((e) => [e.id, e]));
@@ -2668,9 +2684,35 @@ function gSpineNet({ nodes, edges, tree, fail }) {
       });
     }
     if (e.kind === "leg") {
-      for (const ref of [e.from, e.to]) {
-        const n = ref.node && tree.byId.get(ref.node);
-        if (n && !n.frozen) fail(`spine: G-CANON-LEG ${e.id}: endpoint ${n.id} is not frozen`);
+      if (canonLegs === null) {
+        // Plan E (E-C7) soft-skip: no canon-legs.json in this content root
+        // (every minimal fixture). Fall back to the pre-plan-E rule so the
+        // ~45 structural fixtures stay green. A REAL content root always has
+        // content/spine/canon-legs.json — it is committed beside edges.json —
+        // so this branch cannot silently weaken the live gate.
+        for (const ref of [e.from, e.to]) {
+          const n = ref.node && tree.byId.get(ref.node);
+          if (n && !n.frozen) fail(`spine: G-CANON-LEG ${e.id}: endpoint ${n.id} is not frozen`);
+        }
+      } else {
+        // Plan E (E-C7). "Both endpoints frozen" was the pre-generator fixity
+        // proof. After the redraw six of the seven endpoint TOWN NODES cease to
+        // exist — settlements become civil records plus trunk point features —
+        // so fixity comes from the Tier-1 pin instead. content/spine/canon-legs.json
+        // is the ONLY place a leg endpoint may be named: two naming paths means
+        // two ways for a leg to move.
+        const legEntry = canonLegs?.legs?.[e.id];
+        if (!legEntry)
+          fail(`spine: G-CANON-LEG ${e.id}: no entry in content/spine/canon-legs.json`);
+        for (const [side, ref] of [["from", e.from], ["to", e.to]]) {
+          const n = ref.node && tree.byId.get(ref.node);
+          const pinnedId = legEntry?.[side]?.pinned;
+          const pinned = pinnedId != null && pinnedIds.has(pinnedId);
+          if (n && !n.frozen && !pinned)
+            fail(`spine: G-CANON-LEG ${e.id}: endpoint ${n.id} is neither frozen nor pinned (canon-legs.json ${side} -> ${pinnedId ?? "none"})`);
+          if (!n && !pinned)
+            fail(`spine: G-CANON-LEG ${e.id}: ${side} endpoint resolves to no frozen node and no pinned record`);
+        }
       }
       if (Array.isArray(ends[0]) && Array.isArray(ends[1])) {
         const d = Math.hypot(ends[0][0] - ends[1][0], ends[0][1] - ends[1][1]);
