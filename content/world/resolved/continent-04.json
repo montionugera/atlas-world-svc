@@ -2699,8 +2699,8 @@
       "name": "c04/r01",
       "order": 3,
       "levelBand": [
-        46,
-        64
+        40,
+        58
       ],
       "terrainKind": "karst-plateau",
       "town": "c04/s01",
@@ -2920,8 +2920,8 @@
       "name": "c04/r02",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -3298,8 +3298,8 @@
       "name": "c04/r03",
       "order": null,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -3720,8 +3720,8 @@
       "name": "c04/r04",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -4204,8 +4204,8 @@
       "name": "c04/r05",
       "order": null,
       "levelBand": [
-        52,
-        70
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -4704,8 +4704,8 @@
       "name": "c04/r06",
       "order": null,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -4986,8 +4986,8 @@
       "name": "c04/r07",
       "order": 0,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": "karst-plateau",
       "town": "c04/s03",
@@ -5207,8 +5207,8 @@
       "name": "c04/r08",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -5627,8 +5627,8 @@
       "name": "c04/r09",
       "order": null,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -6079,8 +6079,8 @@
       "name": "c04/r10",
       "order": null,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -6473,8 +6473,8 @@
       "name": "c04/r11",
       "order": null,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -6821,8 +6821,8 @@
       "name": "c04/r12",
       "order": 6,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": "karst-plateau",
       "town": "c04/s05",
@@ -7058,8 +7058,8 @@
       "name": "c04/r13",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -7679,8 +7679,8 @@
       "name": "c04/r14",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -8095,8 +8095,8 @@
       "name": "c04/r15",
       "order": 5,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": "karst-plateau",
       "town": null,
@@ -8334,8 +8334,8 @@
       "name": "c04/r16",
       "order": null,
       "levelBand": [
-        46,
-        64
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -8975,8 +8975,8 @@
       "name": "c04/r17",
       "order": null,
       "levelBand": [
-        52,
-        70
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -9251,8 +9251,8 @@
       "name": "c04/r18",
       "order": null,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -9734,11 +9734,11 @@
       "name": "c04/r19",
       "order": 2,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": "karst-plateau",
-      "town": "c04/s11",
+      "town": null,
       "labelAt": [
         337.21,
         257.33
@@ -9985,8 +9985,8 @@
       "name": "c04/r20",
       "order": null,
       "levelBand": [
-        58,
-        80
+        52,
+        70
       ],
       "terrainKind": null,
       "town": null,
@@ -10787,11 +10787,11 @@
       "name": "c04/r21",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
-      "town": null,
+      "town": "c-town-netstead",
       "labelAt": [
         269.83,
         269.66
@@ -11160,8 +11160,8 @@
       "name": "c04/r22",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -11585,8 +11585,8 @@
       "name": "c04/r23",
       "order": null,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -12005,8 +12005,8 @@
       "name": "c04/r24",
       "order": null,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -12408,8 +12408,8 @@
       "name": "c04/r25",
       "order": 1,
       "levelBand": [
-        58,
-        80
+        52,
+        70
       ],
       "terrainKind": "karst-plateau",
       "town": "c04/s04",
@@ -12716,8 +12716,8 @@
       "name": "c04/r26",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -13029,8 +13029,8 @@
       "name": "c04/r27",
       "order": null,
       "levelBand": [
-        52,
-        70
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -13471,8 +13471,8 @@
       "name": "c04/r28",
       "order": 4,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": "karst-plateau",
       "town": "c04/s02",

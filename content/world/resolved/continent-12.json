@@ -468,8 +468,8 @@
       "name": "c12/r01",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -828,8 +828,8 @@
       "name": "c12/r02",
       "order": null,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,

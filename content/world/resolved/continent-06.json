@@ -2246,8 +2246,8 @@
       "name": "c06/r03",
       "order": null,
       "levelBand": [
-        24,
-        40
+        16,
+        30
       ],
       "terrainKind": null,
       "town": null,
@@ -2614,8 +2614,8 @@
       "name": "c06/r04",
       "order": null,
       "levelBand": [
-        24,
-        40
+        16,
+        30
       ],
       "terrainKind": null,
       "town": null,

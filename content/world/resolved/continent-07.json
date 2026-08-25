@@ -2151,8 +2151,8 @@
       "name": "c07/r03",
       "order": 0,
       "levelBand": [
-        16,
-        30
+        8,
+        20
       ],
       "terrainKind": "headland",
       "town": "c07/s01",
@@ -2356,8 +2356,8 @@
       "name": "c07/r04",
       "order": null,
       "levelBand": [
-        8,
-        20
+        16,
+        30
       ],
       "terrainKind": null,
       "town": null,
@@ -3053,8 +3053,8 @@
       "name": "c07/r06",
       "order": 1,
       "levelBand": [
-        8,
-        20
+        16,
+        30
       ],
       "terrainKind": "headland",
       "town": null,

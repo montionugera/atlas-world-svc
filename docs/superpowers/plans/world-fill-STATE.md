@@ -2966,3 +2966,77 @@ GREEN — 0 G-BAND failures over 160 regions with the gate armed (origin [83.2, 
    world: 60 G-BAND failures, gate exit 1).
 3. Floor switched from previous-ring to next-ring bound → 3 red (green fixture + inversion
    + ring-shape test). Killed.
+
+## 25. Plan D Task 10 (generator integration) — what shipped vs the plan's literals
+
+Shipped as planned: `placePinned` + `measureCell` (P11), `anchorBoundEntrances` (P13),
+`runPasses({..., dungeons})`, P11p runs before ANY scoring, receipts per continent in
+every fabric file (41 total, byte-identical regeneration verified twice into separate
+scratch dirs), schema `pinReceipts` description flipped to ARMED, manifest Step 5 was
+already correct (confirm-only).
+
+### STRUCTURAL — requires.landform is UNSATISFIABLE under exact-cell semantics (owner decision needed)
+
+G-PIN-SAT is ARMED and RED on all 41 pins. Measured on the committed world: instance
+coverage is 1,740 point-cells of 640,000; NO pin's cell hosts its required type
+(nearest satisfying cells lie 2–263 km away; several types are absent from their
+declared continent entirely — e.g. `c-lm-quillreef-ring` wants an atoll, nearest is
+263 km). The plan's own remedy ("fix the roster's pin.at or the premise") covers only
+the 23 movable rows: 18 basin rows are FROZEN at `spine anchor + pinOffset` by a
+committed test (resolve.test.mjs), and moving instances re-baselines all 336 bound
+handles. Options for the owner: (a) receipt measures the nearest same-type INSTANCE
+within a bounded radius; (b) re-author the roster onto real instance cells where
+possible + relax/drop the landform clause for frozen basin pins; (c) repaint ground
+via premises (rejected: invalidates every handle). Filed here so the next session does
+not re-derive this.
+
+### KNOCK-ONS OF PINNED PLACEMENT (same owner pass)
+
+- **Level-band origin moved** to the Gildmark pin (assignLevelBands prefers
+  `originPinnedId`), shifting every region ring → 11 authored dungeon bands no longer
+  overlap their host region (G-BAND). Mechanical data fix, but it re-writes Task 6's
+  committed corpus.
+- **Village redistribution**: pinned hubs/capitals consume quota at fixed points; the
+  separation cascade pushed c09's only villages out (2 bound c09 dungeon handles now
+  have `hopsToSettlement` null → G-DUNGEON-REACH red ×2; scaffold-civil deliberately
+  never re-points taken bespoke binds) and left c02/r16 at 11 POIs (undeclared thin;
+  adding a budgets declaration poisons the fixture worlds that byte-copy budgets.json,
+  so it stays a hard FAIL).
+- **Full promote replaces content/spine with the draft trunk** (Plan C Task 12
+  behaviour) — Task 10 must NOT full-promote. Fabric/handles/resolved were taken from
+  the promote run; spine, derived.json, edges.json and game-client SVGs were restored
+  byte-for-byte. The `fabric` sheet render lock therefore drifts (it draws committed
+  fabric); its SVG+lock re-baseline needs owner sign-off against the "zero bytes in
+  game-client/assets/art/maps/" constraint.
+
+### PLAN LITERALS CORRECTED IN THE IMPLEMENTATION
+
+1. `measured.shelterFetchKm` reads **narrowWaterKm** (min-over-axes), not grid.fetchKm
+   — per the plan's own :1828 block and gPinSat's comment; the plan's measureCell code
+   (:4581) contradicted both.
+2. `waterKind` for a dry coastal pin reads the NEAREST SEA within COAST_FAR_KM
+   (shelter/depth off that same cell); river/lake come off the pin's own flags. The
+   plan's cell-flags-only version fails all 16 sea pins by construction (pins cannot
+   sit on FLAG.SEA cells). Fixture world-d receipts already encoded this semantics.
+3. Plan's Step 3b test literal (`g.fetchKm[idx]=8` → shelterFetchKm 8) replaced by an
+   enclosed-bay test asserting the narrowWaterKm value; crash test deletes
+   `landformNames` (makeGrid now allocates it empty — reviewer brief (c) asked for
+   exactly this allocation).
+4. Plan's test stream `"settle"` → the committed 16-hex settlements stream
+   (`assertStream` refuses anything else).
+5. Only RANKED pins enter placeSettlements (`rank != null`) — Plan C's own pass throws
+   TypeError on rankless pins, so landmark pins flow to receipts only.
+6. `anchorBoundEntrances` accepts array OR Map lexicon (production passes the array).
+7. Bound-anchor forcing evicts the auto-chosen row with the LARGEST region POI count;
+   a blind tail-pop drops just-appended bound rows (measured: 2 of 60 vanished).
+8. fabric settlement rows gain `pinned: true` (schema-admitted); gWorldPoi exempts
+   pinned settlements from a REPORTED region's zero rule (canon predates the survey),
+   while SURVEYED bands read the full total.
+
+### MUTATION RESULTS (6 applied, 6 killed)
+
+1. SEA rejection removed → water-cell test red. 2. rank nulled → 3 red (quota/throw).
+3. shelterFetchKm switched to grid.fetchKm → bay-receipt test red. 4. dungeonCapable
+check dropped → non-capable test red. 5. eviction reverted to blind pop → bound
+anchored 58/60 (probe). 6. gWorldPoi exemption removed → reported-region G-POI
+failures reappear (gate line count 0 → ≥1).

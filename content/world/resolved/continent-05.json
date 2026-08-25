@@ -1788,8 +1788,8 @@
       "name": "c05/r01",
       "order": null,
       "levelBand": [
-        32,
-        50
+        16,
+        30
       ],
       "terrainKind": null,
       "town": null,
@@ -2046,8 +2046,8 @@
       "name": "c05/r02",
       "order": null,
       "levelBand": [
-        40,
-        58
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,
@@ -2480,8 +2480,8 @@
       "name": "c05/r03",
       "order": null,
       "levelBand": [
-        24,
-        40
+        16,
+        30
       ],
       "terrainKind": null,
       "town": null,
@@ -2878,8 +2878,8 @@
       "name": "c05/r04",
       "order": null,
       "levelBand": [
-        32,
-        50
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,
@@ -3257,8 +3257,8 @@
       "name": "c05/r05",
       "order": null,
       "levelBand": [
-        32,
-        50
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,
@@ -3644,8 +3644,8 @@
       "name": "c05/r06",
       "order": 6,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": "sand-sea",
       "town": null,
@@ -3824,8 +3824,8 @@
       "name": "c05/r07",
       "order": null,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -4147,8 +4147,8 @@
       "name": "c05/r08",
       "order": null,
       "levelBand": [
-        32,
-        50
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,
@@ -4515,8 +4515,8 @@
       "name": "c05/r09",
       "order": null,
       "levelBand": [
-        40,
-        58
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,
@@ -5040,8 +5040,8 @@
       "name": "c05/r10",
       "order": null,
       "levelBand": [
-        32,
-        50
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,
@@ -5485,8 +5485,8 @@
       "name": "c05/r11",
       "order": null,
       "levelBand": [
-        32,
-        50
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,
@@ -5823,8 +5823,8 @@
       "name": "c05/r12",
       "order": null,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -6233,8 +6233,8 @@
       "name": "c05/r13",
       "order": null,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -6523,8 +6523,8 @@
       "name": "c05/r14",
       "order": null,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -6934,8 +6934,8 @@
       "name": "c05/r16",
       "order": null,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -7469,8 +7469,8 @@
       "name": "c05/r17",
       "order": 1,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": "sand-sea",
       "town": "c05/s04",
@@ -7686,8 +7686,8 @@
       "name": "c05/r18",
       "order": null,
       "levelBand": [
-        46,
-        64
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -8112,8 +8112,8 @@
       "name": "c05/r19",
       "order": null,
       "levelBand": [
-        32,
-        50
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,
@@ -8756,8 +8756,8 @@
       "name": "c05/r20",
       "order": 5,
       "levelBand": [
-        46,
-        64
+        40,
+        58
       ],
       "terrainKind": "sand-sea",
       "town": "c05/s02",
@@ -8970,8 +8970,8 @@
       "name": "c05/r21",
       "order": 0,
       "levelBand": [
-        32,
-        50
+        24,
+        40
       ],
       "terrainKind": "sand-sea",
       "town": null,
@@ -9190,8 +9190,8 @@
       "name": "c05/r22",
       "order": null,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -9579,11 +9579,11 @@
       "name": "c05/r23",
       "order": 2,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": "sand-sea",
-      "town": "c05/s07",
+      "town": null,
       "labelAt": [
         130.25,
         328.91
@@ -9755,8 +9755,8 @@
       "name": "c05/r24",
       "order": null,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -10151,8 +10151,8 @@
       "name": "c05/r25",
       "order": null,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -10535,8 +10535,8 @@
       "name": "c05/r26",
       "order": null,
       "levelBand": [
-        46,
-        64
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -10918,8 +10918,8 @@
       "name": "c05/r27",
       "order": null,
       "levelBand": [
-        46,
-        64
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -11288,8 +11288,8 @@
       "name": "c05/r28",
       "order": 3,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": "sand-sea",
       "town": "c05/s01",

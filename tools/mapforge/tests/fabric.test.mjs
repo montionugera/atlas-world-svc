@@ -282,11 +282,23 @@ test("buildFabricFile PROJECTS a settlement, it does not spread it", () => {
                     portEligible: true, pinned: false, tie: 7 }],
     roads: [], dungeonAnchors: [],
   });
-  // `portEligible`, `pinned` and `tie` are working keys of the pass;
-  // fabric-file.schema.json is additionalProperties:false, so a spread would
-  // fail validation with an ajv message naming neither the key nor the pass.
+  // `portEligible` and `tie` are working keys of the pass that never reach
+  // the fabric; `pinned` reaches it ONLY when true (Plan D Task 10: the flag
+  // gWorldPoi exempts from a reported region's zero rule). fabric-file.schema
+  // .json is additionalProperties:false, so a spread would fail validation
+  // with an ajv message naming neither the key nor the pass.
   assert.deepEqual(Object.keys(doc.settlements[0]).sort(),
     ["atKm", "cell", "continent", "id", "rank", "region", "score", "title"]);
+  const pinnedDoc = buildFabricFile({
+    premise: { id: "c02" }, generator: {}, seaLevel: 0.1, cellKm: 0.5,
+    census: { land: 0, lake: 0, unowned: 0 }, ownerHistogram: {}, regions: [], instances: [],
+    settlements: [{ id: "c-town-gildmark", title: "Gildmark", rank: "capital", atKm: [1, 2],
+                    cell: [2, 4], region: "c02/r01", continent: "c02", score: 1,
+                    portEligible: false, pinned: true }],
+    roads: [], dungeonAnchors: [],
+  });
+  assert.deepEqual(Object.keys(pinnedDoc.settlements[0]).sort().includes("pinned"), true);
+  assert.equal(pinnedDoc.settlements[0].pinned, true);
 });
 
 test("hashOf is a sha256 in the committed grammar", () => {

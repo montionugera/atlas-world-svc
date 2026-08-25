@@ -2529,8 +2529,8 @@
       "name": "c03/r01",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -2859,8 +2859,8 @@
       "name": "c03/r02",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -3213,8 +3213,8 @@
       "name": "c03/r03",
       "order": null,
       "levelBand": [
-        46,
-        64
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -3563,8 +3563,8 @@
       "name": "c03/r04",
       "order": null,
       "levelBand": [
-        52,
-        70
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -4267,8 +4267,8 @@
       "name": "c03/r05",
       "order": null,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -4677,8 +4677,8 @@
       "name": "c03/r06",
       "order": 3,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": "tundra-steppe",
       "town": "c03/s01",
@@ -4949,8 +4949,8 @@
       "name": "c03/r07",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -5257,8 +5257,8 @@
       "name": "c03/r08",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -5638,8 +5638,8 @@
       "name": "c03/r09",
       "order": null,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -6049,8 +6049,8 @@
       "name": "c03/r10",
       "order": 5,
       "levelBand": [
-        52,
-        70
+        46,
+        64
       ],
       "terrainKind": "tundra-steppe",
       "town": "c03/s08",
@@ -6129,8 +6129,8 @@
       "name": "c03/r11",
       "order": null,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -6559,8 +6559,8 @@
       "name": "c03/r12",
       "order": 1,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": "headland",
       "town": "c03/s03",
@@ -6795,8 +6795,8 @@
       "name": "c03/r13",
       "order": null,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -7321,8 +7321,8 @@
       "name": "c03/r14",
       "order": null,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -8075,11 +8075,11 @@
       "name": "c03/r15",
       "order": 0,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": "headland",
-      "town": "c03/s04",
+      "town": "c03/s06",
       "labelAt": [
         241.02,
         117.88
@@ -8300,8 +8300,8 @@
       "name": "c03/r16",
       "order": null,
       "levelBand": [
-        46,
-        64
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -8652,8 +8652,8 @@
       "name": "c03/r17",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -9025,8 +9025,8 @@
       "name": "c03/r18",
       "order": 4,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": "headland",
       "town": "c03/s09",
@@ -9234,8 +9234,8 @@
       "name": "c03/r19",
       "order": null,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -9793,8 +9793,8 @@
       "name": "c03/r20",
       "order": null,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -10240,11 +10240,11 @@
       "name": "c03/r21",
       "order": null,
       "levelBand": [
-        40,
-        58
+        24,
+        40
       ],
       "terrainKind": null,
-      "town": null,
+      "town": "c-town-tallowquay",
       "labelAt": [
         237.35,
         130.85
@@ -10799,8 +10799,8 @@
       "name": "c03/r22",
       "order": 2,
       "levelBand": [
-        40,
-        58
+        24,
+        40
       ],
       "terrainKind": "headland",
       "town": "c03/s02",
@@ -11067,8 +11067,8 @@
       "name": "c03/r23",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -11592,8 +11592,8 @@
       "name": "c03/r24",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -11874,8 +11874,8 @@
       "name": "c03/r25",
       "order": null,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -12235,8 +12235,8 @@
       "name": "c03/r26",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,

@@ -375,8 +375,8 @@
       "name": "c10/r01",
       "order": 0,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": "volcanic-arc",
       "town": null,
@@ -527,8 +527,8 @@
       "name": "c10/r02",
       "order": null,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,

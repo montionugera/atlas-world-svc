@@ -35,9 +35,9 @@ import { carveWater } from "./lib/passes/water.mjs";
 import { classifyBiomes } from "./lib/passes/biome.mjs";
 import { partitionRegions } from "./lib/passes/partition.mjs";
 import { instanceLandforms } from "./lib/passes/landforms.mjs";
-import { placeSettlements, assignLevelBands } from "./lib/passes/settlements.mjs";
+import { placeSettlements, placePinned, assignLevelBands } from "./lib/passes/settlements.mjs";
 import { routeRoads } from "./lib/passes/roads.mjs";
-import { anchorDungeons } from "./lib/passes/dungeons.mjs";
+import { anchorDungeons, anchorBoundEntrances, hopsToSettlement } from "./lib/passes/dungeons.mjs";
 import { buildRegionRings, buildCoastRings, buildTrunkRings, buildFabricFile, hashOf,
          fabricStringify, trunkRingCap, townFeatureId, townSlug, townFeatureIds } from "./lib/fabric.mjs";
 import { GENERATOR_VERSION } from "./lib/version.mjs";
@@ -59,7 +59,7 @@ export function runIdOf({ seed, version }) { return `${seed.slice(0, 8)}-${versi
 export function runPasses({ manifest, premises,
                             lexicon = readJson(join(REPO_ROOT, "content/world/lexicon/landforms.json")),
                             loadBudget = readJson(join(REPO_ROOT, "content/spine/load-budget.json")),
-                            pinned = [], relations = [], onStage = () => {} }) {
+                            pinned = [], relations = [], dungeons = [], onStage = () => {} }) {
   const timings = {};
   const problems = [];
   const time = (name, label, fn) => {
@@ -120,17 +120,78 @@ export function runPasses({ manifest, premises,
     instanceLandforms({ grid, premises, regions: part.regions, lexicon, manifest,
       stream: terrain, nameStream }));
 
+  // P11p — the PINNED pass runs before ANY scoring (the "HARD ORDERING" rule).
+  // A constraint violation here is a GENERATION failure, not a join failure:
+  // committing a fabric whose own receipts contradict their pins would just
+  // move the failure to Gate 1's G-PIN-SAT with a day's delay in between.
+  const pins = time("P11p", "pinned-places", () =>
+    placePinned({ grid, pinned, cellKm: grid.cellKm }));
+  if (pins.problems.length)
+    throw new Error(`placePinned: ${pins.problems.length} pinned record(s) cannot be placed on ` +
+      `this world — a constraint violation is a generation failure:\n  ${pins.problems.join("\n  ")}`);
   const settle = time("P11", "settlements", () =>
-    placeSettlements({ grid, premises, regions: part.regions, manifest, pinned,
+    placeSettlements({ grid, premises, regions: part.regions, manifest,
+      // Only SETTLEMENT pins enter Plan C's quota pass — a landmark pin has
+      // `rank: null` and placeSettlements refuses rankless pins outright. The
+      // receipt half above covers all 41 regardless.
+      pinned: pins.placed.filter((p) => p.rank != null),
       stream: settlementStream }));
   time("P11b", "level-bands", () =>
     assignLevelBands({ regions: part.regions, settlements: settle.settlements, manifest, problems }));
 
   const net = time("P12", "roads-lanes", () =>
     routeRoads({ grid, settlements: settle.settlements, regions: part.regions }));
-  const dung = time("P13", "dungeon-anchors", () =>
-    anchorDungeons({ instances: land.instances, regions: part.regions,
-      settlements: settle.settlements, lexicon, manifest, stream: settlementStream }));
+  const dung = time("P13", "dungeon-anchors", () => {
+    const d = anchorDungeons({ instances: land.instances, regions: part.regions,
+      settlements: settle.settlements, lexicon, manifest, stream: settlementStream });
+    // THE BOUND HALF. The authored dungeon records join by bind.handle; the
+    // scored pass above does not know they exist, so an authored handle the
+    // hash draw missed would ship with no dungeonAnchors row and red
+    // G-DUNGEON-REACH at Gate 1 ("re-run the generator, do not bind to a
+    // non-anchor"). Bound anchors are therefore an INPUT: each is checked
+    // against the lexicon here (anchorBoundEntrances names a non-capable or
+    // missing instance) and forced into the anchor set, evicting an
+    // auto-chosen row when the complex quota is already full — auto choices
+    // are interchangeable, authored ones are not.
+    d.problems.push(...anchorBoundEntrances({ instances: land.instances, dungeons, lexicon }).problems);
+    if (dungeons.length) {
+      const bound = anchorBoundEntrances({ instances: land.instances, dungeons, lexicon });
+      const hops = hopsToSettlement({ regions: part.regions, settlements: settle.settlements, problems: d.problems });
+      const instByHandle = new Map(land.instances.map((i) => [i.handle, i]));
+      const byHandle = new Set(d.anchors.map((a) => a.handle));
+      const want = manifest.quotas.dungeons.complexes;
+      const boundHandles = new Set(bound.anchored.map((b) => b.handle));
+      // THE EVICTION VICTIM IS CHOSEN, not just popped: the auto anchor to
+      // drop is the one whose region has the LARGEST POI count (instances +
+      // anchors), because gWorldPoi's 12–30 band is per region and a blind
+      // tail-pop can drop the row a thin region depends on.
+      const instByRegion = new Map();
+      for (const i of land.instances)
+        instByRegion.set(i.region, (instByRegion.get(i.region) ?? 0) + 1);
+      const poiOf = new Map(d.anchors.map((a) => [a.handle,
+        (instByRegion.get(a.region) ?? 0) + d.anchors.filter((x) => x.region === a.region).length]));
+      const evictable = d.anchors
+        .filter((a) => !boundHandles.has(a.handle))
+        .sort((a, b) => (poiOf.get(b.handle) - poiOf.get(a.handle)) || (a.handle < b.handle ? -1 : 1))
+        .map((a) => a.handle);
+      for (const row of bound.anchored) {
+        if (byHandle.has(row.handle)) continue;
+        const inst = instByHandle.get(row.handle);
+        const h = hops.get(inst.region);
+        if (d.anchors.length >= want && evictable.length > 0) {
+          const dropped = evictable.pop();
+          const di = d.anchors.findIndex((a) => a.handle === dropped);
+          if (di >= 0) { d.anchors.splice(di, 1); byHandle.delete(dropped); }
+        }
+        d.anchors.push({ handle: inst.handle, continent: inst.region.split("/")[0],
+                         region: inst.region, entranceType: inst.type,
+                         hopsToSettlement: h === undefined ? null : h });
+        byHandle.add(inst.handle);
+      }
+      d.anchors.sort((a, b) => (a.handle < b.handle ? -1 : a.handle > b.handle ? 1 : 0));
+    }
+    return d;
+  });
 
   const ringCap = trunkRingCap({ loadBudget });
   const rings = time("P14", "arcs-polygons-fabric", () => ({
@@ -213,6 +274,11 @@ export function runPasses({ manifest, premises,
       settlements: settle.settlements.filter((x) => x.continent === p.id),
       roads: net.roads.filter((x) => x.continent === p.id),
       dungeonAnchors: dung.anchors.filter((x) => x.continent === p.id),
+      // Plan D's pin receipts: the measured fabric under each pinned record's
+      // seed point, keyed to the continent its requires block declares. This
+      // is the field G-PIN-SAT reads instead of re-running the world — an
+      // empty array here is what keeps that gate soft-armed.
+      pinReceipts: pins.receipts.filter((x) => x.continent === p.id),
     }));
     // GROSS, not net. P9's census.land is the NET land regions tile; the
     // world.json key is `grossLandCells` and the lake cells sit inside it
@@ -240,6 +306,9 @@ export function runPasses({ manifest, premises,
   problems.push(...settle.problems, ...net.problems, ...dung.problems);
   return { grid, fabric, world: worldFile, handles: land.ledgers,
            trunk: trunk.nodes, edges: trunk.edges, problems,
+           // Plan D's receipts, echoed for the writer/tests the way `handles`
+           // is — the fabric array above already embeds them per continent.
+           pinReceipts: pins.receipts,
            substitutions: land.substitutions, coverage: land.coverage,
            // The run manifest is COMMITTED (build/mapforge/<runId>/manifest.json
            // is hashed by promote step 1), so it carries the water trunk's
@@ -1035,6 +1104,21 @@ async function main() {
     .map((f) => readJson(join(REPO_ROOT, "content/world/premises", f)));
   const lexicon = readJson(join(REPO_ROOT, "content/world/lexicon/landforms.json"));
   const loadBudget = readJson(join(REPO_ROOT, "content/spine/load-budget.json"));
+  // Plan D's generation inputs, read from the LIVE root: the pinned records
+  // are placed at their committed seed points and the bound dungeon records
+  // anchor at their committed handles. Absent dirs degrade to [] (a fixture
+  // root without a civil layer generates the Plan C world), never crash —
+  // the same soft-input rule runPasses' defaulted parameters follow.
+  const pinnedDir = join(REPO_ROOT, "content/world/civil/pinned");
+  const pinned = existsSync(pinnedDir)
+    ? readdirSync(pinnedDir).filter((f) => f.endsWith(".json")).sort()
+        .map((f) => readJson(join(pinnedDir, f)))
+    : [];
+  const dungeonsDir = join(REPO_ROOT, "content/dungeons");
+  const dungeons = existsSync(dungeonsDir)
+    ? readdirSync(dungeonsDir).filter((f) => /^dungeon-.*\.json$/.test(f)).sort()
+        .map((f) => readJson(join(dungeonsDir, f)))
+    : [];
   const outDir = opts.outDir ?? join(REPO_ROOT, "build/mapforge",
     runIdOf({ seed: manifest.seed, version: GENERATOR_VERSION }));
 
@@ -1050,7 +1134,7 @@ async function main() {
     process.exit(2);
   }
 
-  const run = runPasses({ manifest, premises, lexicon, loadBudget,
+  const run = runPasses({ manifest, premises, lexicon, loadBudget, pinned, dungeons,
     onStage: opts.stageReport ? (name, label, ms) => console.log(`stage: ${name} ${label} ${ms} ms`) : undefined });
 
   const { SHEETS } = await import(pathToFileURL(join(REPO_ROOT, "tools/mapforge/render-sheet.mjs")).href);

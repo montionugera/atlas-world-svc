@@ -367,8 +367,8 @@
       "name": "c09/r01",
       "order": null,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -678,8 +678,8 @@
       "name": "c09/r02",
       "order": null,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -1142,11 +1142,11 @@
       "name": "c09/r03",
       "order": 0,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": "cloud-forest",
-      "town": "c09/s01",
+      "town": null,
       "labelAt": [
         346.26,
         194.24

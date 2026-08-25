@@ -1044,8 +1044,8 @@
       "name": "c08/r01",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -1376,8 +1376,8 @@
       "name": "c08/r02",
       "order": null,
       "levelBand": [
-        46,
-        64
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -1734,8 +1734,8 @@
       "name": "c08/r03",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -2245,8 +2245,8 @@
       "name": "c08/r04",
       "order": null,
       "levelBand": [
-        52,
-        70
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -2740,8 +2740,8 @@
       "name": "c08/r05",
       "order": null,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -3164,8 +3164,8 @@
       "name": "c08/r06",
       "order": 0,
       "levelBand": [
-        52,
-        70
+        46,
+        64
       ],
       "terrainKind": "headland",
       "town": null,
@@ -3380,8 +3380,8 @@
       "name": "c08/r07",
       "order": null,
       "levelBand": [
-        52,
-        70
+        46,
+        64
       ],
       "terrainKind": null,
       "town": null,
@@ -3778,8 +3778,8 @@
       "name": "c08/r08",
       "order": 1,
       "levelBand": [
-        58,
-        80
+        46,
+        64
       ],
       "terrainKind": "bramble",
       "town": null,

@@ -706,9 +706,20 @@ export function gWorldPoi({ fabric, budgets, report, note, warn = () => {} }) {
       // separately, because "at most one" is the other half of the same rule.
       else if (inst.named === true) namedInReported.set(r.id, (namedInReported.get(r.id) ?? 0) + 1);
     }
-    for (const s of arr(f.settlements))
-      if (counts.has(s?.region)) counts.set(s.region, counts.get(s.region) + 1);
-      else report(`G-POI: settlement ${s?.id} names region "${s?.region}", which is not in ${f.file}`);
+    // PINNED SETTLEMENTS ARE CANON, NOT GENERATED POI (Plan D Task 10). The
+    // honest-frontier rule forbids detail the SURVEY never walked; a pinned
+    // place predates the survey and is committed civil record, not generator
+    // output — exactly the class the named-landform exemption above already
+    // admits one of per reported region. They are counted SEPARATELY rather
+    // than skipped: a reported region's zero is enforced over GENERATED
+    // settlements only, while a SURVEYED region's 12–30 band reads the full
+    // total (a canon town is as real a point of interest as a generated one).
+    const pinnedCounts = new Map();
+    for (const s of arr(f.settlements)) {
+      if (!counts.has(s?.region)) { report(`G-POI: settlement ${s?.id} names region "${s?.region}", which is not in ${f.file}`); continue; }
+      counts.set(s.region, counts.get(s.region) + 1);
+      if (s?.pinned === true) pinnedCounts.set(s.region, (pinnedCounts.get(s.region) ?? 0) + 1);
+    }
     for (const d of arr(f.dungeonAnchors))
       if (counts.has(d?.region)) counts.set(d.region, counts.get(d.region) + 1);
       else report(`G-POI: dungeon anchor ${d?.handle} names region "${d?.region}", which is not in ${f.file}`);
@@ -754,8 +765,9 @@ export function gWorldPoi({ fabric, budgets, report, note, warn = () => {} }) {
         // not amnesty — and rot is what the third clause exists to stop.
         if (why !== undefined)
           report(`G-POI: region ${r.id} is declared supply-limited in budgets.json but is REPORTED, not surveyed — the 12-POI floor is a surveyed rule and does not apply to it, so the declaration is stale, delete the row`);
-        if (n !== 0)
-          report(`G-POI: region ${r.id} (reported) has ${n} points of interest — must be 0`);
+        const generated = n - (pinnedCounts.get(r.id) ?? 0);
+        if (generated !== 0)
+          report(`G-POI: region ${r.id} (reported) has ${generated} generated points of interest — must be 0 (${n - generated} pinned/canon exempted)`);
         const named = namedInReported.get(r.id) ?? 0;
         if (named > 1)
           report(`G-POI: region ${r.id} (reported) carries ${named} named landforms — spec §6.4 rule 2 allows at most one`);

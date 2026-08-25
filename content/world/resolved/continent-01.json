@@ -887,8 +887,8 @@
       "name": "c01/r01",
       "order": null,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -1170,8 +1170,8 @@
       "name": "c01/r02",
       "order": null,
       "levelBand": [
-        46,
-        64
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -1439,8 +1439,8 @@
       "name": "c01/r03",
       "order": null,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -1742,8 +1742,8 @@
       "name": "c01/r04",
       "order": null,
       "levelBand": [
-        52,
-        70
+        40,
+        58
       ],
       "terrainKind": null,
       "town": null,
@@ -2216,8 +2216,8 @@
       "name": "c01/r05",
       "order": null,
       "levelBand": [
-        40,
-        58
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,
@@ -2546,8 +2546,8 @@
       "name": "c01/r06",
       "order": null,
       "levelBand": [
-        32,
-        50
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,
@@ -2944,8 +2944,8 @@
       "name": "c01/r07",
       "order": null,
       "levelBand": [
-        46,
-        64
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -3359,8 +3359,8 @@
       "name": "c01/r08",
       "order": null,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -3625,8 +3625,8 @@
       "name": "c01/r09",
       "order": null,
       "levelBand": [
-        32,
-        50
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,
@@ -3975,8 +3975,8 @@
       "name": "c01/r10",
       "order": null,
       "levelBand": [
-        32,
-        50
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,
@@ -4511,8 +4511,8 @@
       "name": "c01/r11",
       "order": null,
       "levelBand": [
-        40,
-        58
+        32,
+        50
       ],
       "terrainKind": null,
       "town": null,
@@ -4793,8 +4793,8 @@
       "name": "c01/r12",
       "order": null,
       "levelBand": [
-        40,
-        58
+        24,
+        40
       ],
       "terrainKind": null,
       "town": null,

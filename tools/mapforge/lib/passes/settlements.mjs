@@ -666,3 +666,139 @@ export function assignLevelBands({ regions, settlements, manifest, problems }) {
       `centroidKm and are unbanded — partitionRegions writes it in its census loop`);
   return { origin: origin.id, originContinent: origin.continent, banded };
 }
+
+// ── Plan D Task 10 — P11's PINNED HALF ──────────────────────────────────────
+//
+// The 41 pinned records are placed at their committed seed points, their
+// constraint blocks are measured against the fabric, and a violation is a
+// GENERATION failure rather than a join failure. Only then does the greedy
+// scored placement above fill the remaining slots AROUND them, which is why
+// the 60 km capital / 24 km hub / 9 km village separations are honoured rather
+// than spent before the pinned places are considered. `placeSettlements`
+// itself is NOT touched: Plan C already declares `pinned = []`, places it
+// before pass 1, seeds the separation occupancy from it and decrements the
+// matching rank quota. This half only resolves a pin to a cell, measures the
+// fabric under it for G-PIN-SAT's receipt, and hands Plan C the `placed`
+// array.
+//
+// THE MEASUREMENT SOURCE, decided once so no reader re-litigates it (plan
+// :1828, STATE §"C, Task 9a Step 3", gPinSat's comment in resolve.mjs):
+// `measured.shelterFetchKm` is read from THIS FILE'S narrowWaterKm — min over
+// the two axes, enclosure — never from grid.fetchKm, which classifySea writes
+// as max over the two axes (wave exposure) and which is unsatisfiable at 332
+// of the 520 port-eligible cells and at all three generated capitals.
+//
+// WATER KIND FOR A DRY CELL, same decision: a pin can sit ON a river or lake
+// cell (both are land; placePinned refuses only FLAG.SEA), so river/lake come
+// off the cell's own flags. It can never sit on the sea, so "sea" is measured
+// as the kind of the NEAREST sea cell within COAST_FAR_KM — the same band the
+// coast term already defines as "near the water" — with shelterFetchKm and
+// depthM read off that same cell. Beyond the band, or no water at all, the
+// receipt says "none"/0/0 honestly rather than borrowing a harbour six
+// provinces away.
+
+function nearestWaterCell({ grid, maxKm }) {
+  // Multi-source D8 BFS from every wet cell, carrying the SOURCE cell — the
+  // twin of seaProximity above, keyed on SEA|LAKE|RIVER instead of SEA alone,
+  // bounded at maxKm for the same cost reason (27 ms vs 133 ms on the real
+  // field). BFS order IS distance order; the fixed D8 order breaks ties.
+  const { n } = grid;
+  const wet = (i) => (grid.flags[i] & (FLAG.SEA | FLAG.LAKE | FLAG.RIVER)) !== 0;
+  const dist = new Float32Array(n).fill(-1);
+  const near = new Int32Array(n).fill(-1);
+  const queue = new Int32Array(n);
+  let head = 0, tail = 0;
+  for (let i = 0; i < n; i++)
+    if (wet(i)) { dist[i] = 0; near[i] = i; queue[tail++] = i; }
+  while (head < tail) {
+    const i = queue[head++];
+    const d = dist[i] + grid.cellKm;
+    if (d > maxKm) continue;
+    for (let k = 0; k < 8; k++) {
+      const j = neighbourIdx({ grid, i, d: k });
+      if (j < 0 || dist[j] !== -1) continue;
+      dist[j] = d;
+      near[j] = near[i];
+      queue[tail++] = j;
+    }
+  }
+  return near;
+}
+
+// One grid, many pins: both whole-grid sweeps are cached per grid object, or
+// 41 receipts would each pay for them (~10 ms each on the real field). A
+// WeakMap, never a key ON the grid — grid.test.mjs sums every ArrayBuffer view
+// reachable from the object to pin its footprint number, and a cached sweep
+// would silently inflate it.
+const waterCtxCache = new WeakMap();
+function waterContext(grid) {
+  let ctx = waterCtxCache.get(grid);
+  if (!ctx) {
+    ctx = { narrow: narrowWaterKm({ grid }), nearest: nearestWaterCell({ grid, maxKm: COAST_FAR_KM }) };
+    waterCtxCache.set(grid, ctx);
+  }
+  return ctx;
+}
+
+function localSlope({ grid, cell }) {
+  const [x, y] = cell;
+  const at = (dx, dy) => grid.elev[Math.min(grid.h - 1, Math.max(0, y + dy)) * grid.w + Math.min(grid.w - 1, Math.max(0, x + dx))];
+  const gx = (at(1, 0) - at(-1, 0)) / 2, gy = (at(0, 1) - at(0, -1)) / 2;
+  return Math.sqrt(gx * gx + gy * gy);
+}
+
+// EVERY grid-array read below is unguarded, deliberately. Plan C Task 2's
+// makeGrid allocates landform, fetchKm, depthM, freshKm, biomeNames and
+// regionIds, and P4/P6/P8/P9/P10 fill them. If one is missing this must be a
+// loud TypeError on the first pinned record, not forty receipts of
+// `{landform: null, shelterFetchKm: 0, depthM: 0, freshWaterWithinKm: 0}` —
+// which G-PIN-SAT would either fail forty times for the wrong reason or, far
+// worse, pass vacuously because 0 satisfies no declared minimum it can see.
+export function measureCell({ grid, cell, cellKm }) {
+  void cellKm; // interface fidelity: the declared signature keeps it, the grid carries the truth
+  const i = idx({ grid, cx: cell[0], cy: cell[1] });
+  const flags = grid.flags[i];
+  const ownWater = flags & (FLAG.SEA | FLAG.LAKE | FLAG.RIVER);
+  const ctx = waterContext(grid);
+  const wi = ownWater ? i : ctx.nearest[i];
+  const wFlags = wi >= 0 ? grid.flags[wi] : 0;
+  const isSeaNear = wi >= 0 && (wFlags & FLAG.SEA) !== 0;
+  return {
+    landform: grid.landformNames[grid.landform[i]] ?? null,
+    waterKind: (flags & FLAG.SEA) ? "sea" : (flags & FLAG.LAKE) ? "lake"
+             : (flags & FLAG.RIVER) ? "river"
+             : isSeaNear ? "sea" : "none",
+    shelterFetchKm: q(isSeaNear ? Math.max(ctx.narrow[wi], 0) : 0),
+    depthM: q(wi >= 0 ? Math.max(grid.depthM[wi], 0) : 0),
+    slope: q(localSlope({ grid, cell })),
+    freshWaterWithinKm: q(grid.freshKm[i]),
+    biome: grid.biomeName(i),
+    elevationM: q(grid.elevM(i)),
+  };
+}
+
+export function placePinned({ grid, pinned, cellKm }) {
+  const placed = [], receipts = [], problems = [];
+  for (const rec of pinned) {
+    const at = rec.pin.at;
+    const cell = [Math.floor(at[0] / cellKm), Math.floor(at[1] / cellKm)];
+    if (cell[0] < 0 || cell[1] < 0 || cell[0] >= grid.w || cell[1] >= grid.h) {
+      problems.push(`placePinned: ${rec.id} at [${at[0]}, ${at[1]}] is outside the grid`);
+      continue;
+    }
+    const i = idx({ grid, cx: cell[0], cy: cell[1] });
+    if (grid.flags[i] & FLAG.SEA) {
+      problems.push(`placePinned: ${rec.id} at [${at[0]}, ${at[1]}] is a water cell — a pinned place cannot sit in the sea`);
+      continue;
+    }
+    // The committed records carry continent ONLY inside requires (verified
+    // over all 41); the top-level fallback costs nothing and covers an author
+    // who flattens it later.
+    const continent = rec.requires?.continent ?? rec.continent ?? null;
+    const region = grid.regionId(i);
+    placed.push({ id: rec.id, title: rec.title ?? rec.id, at, cell, continent, region,
+                  rank: rec.settlementRank ?? null });
+    receipts.push({ id: rec.id, at, cell, continent, region, measured: measureCell({ grid, cell, cellKm }) });
+  }
+  return { placed, receipts, problems };
+}
