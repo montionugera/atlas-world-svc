@@ -22,7 +22,12 @@ import {
 } from "./staleness.mjs";
 import { buildPipelineRow } from "./pipeline.mjs";
 import { openInfoDetail } from "../view/DetailOverlay.mjs";
-import { parseQueue, serializeQueue } from "../review/store.mjs";
+import {
+  addWorkOrder,
+  parseQueue,
+  serializeQueue,
+  WORK_ORDER_CELLS,
+} from "../review/store.mjs";
 
 const EMPTY_RUNS_TEXT = "No forge runs recorded yet";
 
@@ -33,6 +38,8 @@ let committedQueue = parseQueue(JSON.stringify({ version: 1, verdicts: {} }));
 const sessionOrders = [];
 // briefId -> ledger attempts, for marking orders done/not-done.
 const attemptsByBrief = new Map();
+// Set by loadOrders(); re-run submits call it to repaint done/pending.
+let refreshOrdersFn = null;
 
 function cellLabel(a) {
   return a.type === "render"
@@ -103,7 +110,122 @@ function wireRow(row, briefId, attempts) {
         content: detailContentFor(entry),
       });
     });
+    attachRerunAffordance(row, cell, briefId, entry);
   });
+}
+
+// ---------- Task 9: per-cell re-run → work order (download-only) ----------
+
+/**
+ * The work-order "cell" must be one of the store's four canonical stages;
+ * a gate-skipped entry is re-ordered as a gate re-run (re-check that PNG).
+ */
+function workOrderCellFor(entry) {
+  const cell = entry.type === "gate-skipped" ? "gate" : entry.type;
+  if (!WORK_ORDER_CELLS.has(cell)) return null;
+  return cell;
+}
+
+function attachRerunAffordance(row, cell, briefId, entry) {
+  // Intake means the art already shipped — there is nothing to re-run.
+  // Notrun placeholders are spans without an entry index, so they never
+  // reach this function.
+  const woCell = workOrderCellFor(entry);
+  if (!woCell) return;
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "forge-rerun";
+  btn.textContent = "↻";
+  btn.title = "Issue a re-run work order for " + cellLabel(entry);
+  row.insertBefore(btn, cell.nextSibling);
+
+  btn.addEventListener("click", () => {
+    const existing = row.parentNode.querySelector(".forge-order-form");
+    if (existing) existing.remove();
+    openOrderForm(row, btn, { briefId, cell: woCell, seed: entry.seed });
+  });
+}
+
+function openOrderForm(row, rerunBtn, order) {
+  const form = document.createElement("div");
+  form.className = "forge-order-form";
+
+  const reason = document.createElement("textarea");
+  reason.className = "forge-order-reason";
+  reason.rows = 2;
+  reason.placeholder = "why re-run? (required — it is what the forge session acts on)";
+
+  let seedInput = null;
+  if (order.cell === "render") {
+    seedInput = document.createElement("input");
+    seedInput.type = "number";
+    seedInput.min = "0";
+    seedInput.step = "1";
+    seedInput.className = "forge-order-seed";
+    if (order.seed !== undefined) seedInput.value = String(order.seed);
+    else seedInput.placeholder = "seed (optional)";
+    form.appendChild(seedInput);
+  }
+
+  const err = document.createElement("p");
+  err.className = "forge-order-error";
+  err.hidden = true;
+
+  const submit = document.createElement("button");
+  submit.type = "button";
+  submit.className = "forge-order-submit";
+  submit.textContent = "issue work order";
+
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.className = "forge-order-cancel";
+  cancel.textContent = "cancel";
+
+  function close() {
+    form.remove();
+    rerunBtn.disabled = false;
+  }
+
+  submit.addEventListener("click", () => {
+    const payload = { briefId: order.briefId, cell: order.cell, reason: reason.value };
+    if (seedInput && seedInput.value !== "") payload.seed = Number(seedInput.value);
+    let appended;
+    try {
+      const next = addWorkOrder(committedQueue, payload);
+      appended = next.workOrders[next.workOrders.length - 1];
+      sessionOrders.push(appended);
+    } catch (e) {
+      err.textContent = String(e.message || e);
+      err.hidden = false;
+      reason.focus();
+      return;
+    }
+    close();
+    console.info(
+      "[asset-storybook] work order issued:",
+      appended.id,
+      "— export it from Pending work orders",
+    );
+    if (refreshOrdersFn) refreshOrdersFn();
+  });
+  cancel.addEventListener("click", close);
+  form.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+    e.stopPropagation(); // don't trigger page-level handlers while typing
+  });
+
+  form.appendChild(reason);
+  form.appendChild(err);
+  const actions = document.createElement("div");
+  actions.className = "forge-order-actions";
+  actions.appendChild(submit);
+  actions.appendChild(cancel);
+  form.appendChild(actions);
+
+  rerunBtn.disabled = true; // one open form per affordance at a time
+  row.after(form);
+  reason.focus();
 }
 
 async function loadRows(rowsHost) {
@@ -271,6 +393,7 @@ async function loadOrders(sectionEl) {
   sectionEl.appendChild(exportBtn);
 
   refreshOrders(listHost, countLabel);
+  refreshOrdersFn = () => refreshOrders(listHost, countLabel);
   // Re-evaluate done/pending once ledgers have loaded (loadRows may finish
   // after this point on a cold cache).
   document.addEventListener("storybook:forge-attempts-loaded", () =>

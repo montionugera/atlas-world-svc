@@ -950,6 +950,84 @@
         cursor: pointer;
       }
 
+      /* F-050 Task 9 — per-cell re-run affordance + inline order form */
+      .forge-rerun {
+        font-size: 0.72rem;
+        line-height: 1;
+        padding: 0.18rem 0.42rem;
+        border-radius: 999px;
+        border: 1px dashed var(--border);
+        background: transparent;
+        color: var(--text-faint);
+        cursor: pointer;
+      }
+
+      .forge-rerun:hover {
+        border-color: var(--accent);
+        color: #dce4ff;
+      }
+
+      .forge-rerun:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .forge-order-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin: 0.1rem 0 0.45rem 2ch;
+        padding: 0.5rem 0.6rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-hover, var(--border));
+        border-radius: 8px;
+      }
+
+      .forge-order-reason,
+      .forge-order-seed {
+        font-family: var(--sans);
+        font-size: 0.78rem;
+        color: var(--text);
+        background: #0b0d12;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.35rem 0.5rem;
+      }
+
+      .forge-order-seed {
+        max-width: 14ch;
+        font-family: var(--mono);
+      }
+
+      .forge-order-error {
+        margin: 0;
+        font-size: 0.72rem;
+        color: #ff9d9d;
+      }
+
+      .forge-order-actions {
+        display: flex;
+        gap: 0.4rem;
+      }
+
+      .forge-order-submit,
+      .forge-order-cancel {
+        font-size: 0.74rem;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.28rem 0.8rem;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-dim);
+      }
+
+      .forge-order-submit {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: #dce4ff;
+      }
+
       /* ---------- F-038: thumbnail cards + virtual grid ---------- */
 
       .vgrid {

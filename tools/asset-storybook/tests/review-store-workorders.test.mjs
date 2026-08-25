@@ -53,3 +53,24 @@ test("parseQueue accepts legacy file without workOrders key", () => {
   const q = parseQueue(JSON.stringify({ version: 1, verdicts: {} }));
   assert.deepEqual(q.workOrders, []);
 });
+
+// F-050 Task 9 — the exact round-trip the Forge tab performs: orders are
+// appended in-session via addWorkOrder, exported with serializeQueue, the
+// downloaded file is committed, and any later parseQueue of it must yield
+// the identical order objects.
+test("UI round-trip: addWorkOrder → serializeQueue → parseQueue is lossless", () => {
+  let q = parseQueue(JSON.stringify({ version: 1, verdicts: {} }));
+  q = addWorkOrder(q, {
+    briefId: "A1-ART-02",
+    cell: "render",
+    seed: 44,
+    reason: "flagged: low SW corner score",
+  });
+  q = addWorkOrder(q, { briefId: "A1-ART-02", cell: "gate", reason: "re-check after re-render" });
+  const back = parseQueue(serializeQueue(q));
+  assert.equal(back.workOrders.length, 2);
+  assert.deepEqual(back.workOrders, q.workOrders);
+  // And a re-export of the parsed-back queue is byte-identical — a human
+  // re-exporting an unchanged committed file must not churn the git diff.
+  assert.equal(serializeQueue(back), serializeQueue(q));
+});
