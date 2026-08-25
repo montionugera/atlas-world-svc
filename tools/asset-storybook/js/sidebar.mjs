@@ -5,6 +5,7 @@ import {
   COVERAGE_CLASS,
   COMBAT_CLASS,
   STORY_CLASS,
+  FORGE_CLASS,
   REJECTED_CLASS,
   REBUILD_CLASS,
   UNREVIEWED_CLASS,
@@ -37,6 +38,7 @@ export function classLabel(cls) {
   if (cls === COVERAGE_CLASS) return "Coverage";
   if (cls === COMBAT_CLASS) return "Combat";
   if (cls === STORY_CLASS) return "Story";
+  if (cls === FORGE_CLASS) return "Forge";
   if (cls === REJECTED_CLASS) return "Rejected";
   if (cls === REBUILD_CLASS) return "Needs rebuild";
   if (cls === UNREVIEWED_CLASS) return "Unreviewed";

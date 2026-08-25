@@ -20,6 +20,7 @@ import {
   REJECTED_CLASS,
   REBUILD_CLASS,
   UNREVIEWED_CLASS,
+  fetchJson,
 } from "./state.mjs";
 import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
 import { resolveRender } from "./renderers.mjs";
@@ -35,12 +36,7 @@ import { mountVerdictFilters } from "./review/filters.mjs";
 import { mountBespokeSections } from "./view/sections.mjs";
 import { mountCombatLab, mountCombatNav } from "./combat-lab.mjs";
 import { mountStory, mountStoryNav } from "./story.mjs";
-
-async function fetchJson(url, label) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(label + ": HTTP " + res.status);
-  return res.json();
-}
+import { mountForge, mountForgeNav } from "./forge/nav.mjs";
 
 async function init() {
   const main = document.getElementById("main");
@@ -83,6 +79,9 @@ async function init() {
     // Story doesn't either (I-082) — same reason, same treatment.
     mountStoryNav(sidebarNav);
     await mountStory(main);
+    // Nor does the forge dashboard (F-050) — its data is the run ledgers.
+    mountForgeNav(sidebarNav);
+    mountForge(main);
     return;
   }
 
@@ -215,6 +214,8 @@ async function init() {
   // below the fold on a short window.
   mountCombatNav(sidebarNav);
   mountStoryNav(sidebarNav);
+  // Forge (F-050) sits with the other non-asset sections near the top.
+  mountForgeNav(sidebarNav);
 
   for (const groupKey of groups.keys()) {
     initHealth(groupKey, groups.get(groupKey).length);
@@ -343,6 +344,7 @@ async function init() {
 
   mountCombatLab(main);
   await mountStory(main);
+  mountForge(main);
 
   mountBespokeSections({
     main,

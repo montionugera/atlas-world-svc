@@ -145,3 +145,31 @@ export function closeDetail() {
 export function isDetailOpen() {
   return state !== null;
 }
+
+/**
+ * F-050: open the SAME overlay for non-asset content (forge ledger entries).
+ * The caller supplies a ready-built DOM node instead of an asset entry, so
+ * renderEntry never runs and arrow-key stepping has nothing to step through
+ * (empty items list keeps Escape/backdrop closing via the existing handlers).
+ * @param {{ title: string, subtitle?: string, content: HTMLElement }} opts
+ */
+export function openInfoDetail({ title, subtitle, content }) {
+  const el = ensureOverlay();
+  // Truthy-but-empty state: Escape must keep working (the keydown handler
+  // bails on a falsy state) while ←/→ step over zero items — i.e. nowhere.
+  state = { items: [], index: 0, renderSpec: null };
+
+  const stage = el.querySelector(".detail-stage");
+  disposeViewport(stage);
+
+  el.querySelector(".detail-key").textContent = title;
+  el.querySelector(".detail-sub").textContent = subtitle || "";
+  el.querySelector(".detail-pos").textContent = "";
+
+  stage.appendChild(content);
+
+  el.querySelector(".detail-meta").innerHTML = "";
+  el.hidden = false;
+  document.body.style.overflow = "hidden";
+  el.querySelector(".detail-close").focus();
+}
