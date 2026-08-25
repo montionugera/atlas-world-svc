@@ -875,6 +875,33 @@ test("G-SPINE-COMPLETE goes red under --require-complete on a childless non-leaf
   assert.ok(!soft.out.match(/^FAIL .*G-SPINE-COMPLETE.*n-ghost-shelf/m), soft.out);
 });
 
+test("G-SPINE-COMPLETE: a childless ocean and sea are complete (plan E, E-C2)", () => {
+  const dir = spineFixture({ overlayDir: "e-water-childless" });
+  const { out } = runSpineGate(dir);
+  assert.doesNotMatch(out, /G-SPINE-COMPLETE: "n-e-ocean"/);
+  assert.doesNotMatch(out, /G-SPINE-COMPLETE: "n-e-sea"/);
+});
+
+test("G-SPINE-COMPLETE: a childless continent needs a fabric pin (plan E, E-C3)", () => {
+  const dir = spineFixture({ overlayDir: "e-continent-fabric" });
+  const { out } = runSpineGate(dir);
+  assert.doesNotMatch(out, /G-SPINE-COMPLETE: "n-e-cont-pinned"/);
+  assert.match(out,
+    /G-SPINE-COMPLETE: "n-e-cont-bare" \(tier continent\) has no children/);
+});
+
+test("the fabric index fails in-band on an unreadable continent file (plan E)", () => {
+  const dir = spineFixture({ mutate: (d) => {
+    mkdirSync(join(d, "world/fabric"), { recursive: true });
+    writeFileSync(join(d, "world/fabric/continent-00.json"), "{ not json");
+  } });
+  const { out } = runSpineGate(dir);
+  // The gate must REACH the failure line and print it — an uncaught throw
+  // here would skip finish() and drop every FAIL before it.
+  assert.match(out, /fabric: content\/world\/fabric\/continent-00\.json is unreadable/);
+  assert.doesNotMatch(out, /check-content: \w*Error/, "a stack trace means the gate threw");
+});
+
 // ── F-041 P4 phase-review fix wave: HC-2 red proofs ───────────────────────
 // Each of these reds a hole the Phase-4 review PROVED was silent. They use
 // the same p4FixtureRoot overlay harness as the Task 4.x gate tests above.

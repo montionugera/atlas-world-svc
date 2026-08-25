@@ -357,7 +357,10 @@ test("the real content root is green under the wired-in validation", (t) => {
   assert.equal(r.code, 0, r.out);
   // Trap 3: assert the printed record counts, never just exit 0 — a gate that
   // stopped checking also exits 0.
-  assert.match(r.out, /44 nodes, 0 failures, 25 warnings/, r.out);
+// Plan E (E-C2): the four childless oceans (n-westsea, n-galereach,
+  // n-keelbreak, n-tarnmark) no longer warn — water has no surveyed interior —
+  // so the real root prints 21 warnings, not 25. The exact count is the evidence.
+  assert.match(r.out, /44 nodes, 0 failures, 21 warnings/, r.out);
   assert.doesNotMatch(r.out, /G-EDGE-SCHEMA/);
 });
 
@@ -399,7 +402,7 @@ test("a `to`-less edge is one clean failure, not a crash", (t) => {
   assert.match(r.out, /G-EDGE-SCHEMA: spine\/edges\.json\[0\] \(e-trade-road-trunk\): \/ must have required property 'to'/, r.out);
   assert.doesNotMatch(r.out, /TypeError/, "the gate must not throw");
   // finish() ran: the record counts printed, which is what a crash suppresses.
-  assert.match(r.out, /44 nodes, 1 failures, 25 warnings/, r.out);
+  assert.match(r.out, /44 nodes, 1 failures, 21 warnings/, r.out);
 });
 
 test("a content root with no edges.json is still green (soft-skip)", (t) => {
@@ -421,7 +424,7 @@ test("a content root with edges but no edge schema soft-skips (plan Step 4 corre
   rmSync(join(dir, "schemas/spine-edge.schema.json"));
   const r = runGate(dir);
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /44 nodes, 0 failures, 25 warnings/, r.out);
+  assert.match(r.out, /44 nodes, 0 failures, 21 warnings/, r.out);
   assert.doesNotMatch(r.out, /spine-edge schema/, r.out);
 });
 
@@ -434,7 +437,7 @@ test("an unparsable edge schema fails in-band and still reaches finish()", (t) =
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, /spine-edge schema: cannot read\/parse/, r.out);
   assert.doesNotMatch(r.out, /SyntaxError|TypeError/, r.out);
-  assert.match(r.out, /44 nodes, 1 failures, 25 warnings/, r.out);
+  assert.match(r.out, /44 nodes, 1 failures, 21 warnings/, r.out);
 });
 
 // The soft-skip on an absent schema means a DELETED content/schemas/

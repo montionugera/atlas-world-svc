@@ -1,0 +1,16 @@
+{
+  "continent": "c99",
+  "cellKm": 0.5,
+  "cellCensus": {
+    "land": 8100,
+    "lake": 0,
+    "unowned": 0
+  },
+  "regions": [
+    {
+      "id": "c99/r01",
+      "survey": "surveyed",
+      "areaKm2": 160
+    }
+  ]
+}

@@ -21,6 +21,10 @@ import { roadPolygon, pointInPoly } from "./town-geometry.mjs";
 // list — see checkSpawnIdStable for the exact (weaker-but-safe) reading.
 // spawn-pairing.mjs imports nothing, so this cannot cycle.
 import { LEGACY_UNPAIRED } from "./spawn-pairing.mjs";
+// Plan E Task 2 — surveyOf is the single surveyed/reported decision; re-exported
+// so gate callers need one spine import. survey.mjs imports nothing from here.
+import { surveyOf } from "./survey.mjs";
+export { surveyOf };
 
 // ── constants — single source of truth ─────────────────────────────────────
 // tier is a DEPTH, not a label. Two labels may share a depth (ocean beside
@@ -926,19 +930,32 @@ export function checkPlayspaceAliases({ tree, regionIds, playspaceId = "n-fronti
 // no town/site, and authoring those children is explicitly out of scope
 // (spec §6). So: trunk tiers FAIL (an empty world stays red — the failure
 // this gate exists for), everything else non-leaf is WARN-counted.
-export const TRUNK_TIERS = new Set(["world", "playroot", "continent", "playspace"]);
+export const TRUNK_TIERS = new Set(["world", "playroot", "continent", "ocean", "sea", "playspace"]);
+// Plan E (E-C2): water has no surveyed interior. Regions tile CONTINENTS; an
+// ocean or sea is complete when childless, and adding them to TRUNK_TIERS
+// without this skip turns today's four harmless warnings into a hard FAIL on
+// n-westsea, which carries no lore.reported.
+export const WATER_TIERS = new Set(["ocean", "sea"]);
 
-export function checkSpineComplete({ tree }) {
+/**
+ * G-SPINE-COMPLETE. `fabricRegionCounts` (Plan E, E-C3) maps a trunk node id
+ * to the number of regions its fabric file declares: after the redraw the 160
+ * regions are fabric rows, not nodes, so all 13 continents are childless and
+ * would take 13 hard FAILs. A continent with >= 1 fabric region is complete.
+ */
+export function checkSpineComplete({ tree, fabricRegionCounts = new Map() }) {
   const errors = [];
   const warns = [];
   for (const [id, node] of tree.byId) {
     if (LEAF_TIERS.has(node.tier)) continue;
     if ((tree.childrenOf.get(id) ?? []).length > 0) continue;
+    if (WATER_TIERS.has(node.tier)) continue;
+    if ((fabricRegionCounts.get(id) ?? 0) > 0) continue;
     if (TRUNK_TIERS.has(node.tier)) {
-      // F-043: a reported-world node (mariners' chart entry, lore.reported ===
-      // true) is deliberately childless — unsurveyed, by spec — so it steps
-      // down to a WARN instead of the hard FAIL every other empty trunk gets.
-      if (node.lore?.reported === true)
+      // A reported node (mariners' chart entry) is deliberately childless —
+      // unsurveyed, by spec — so it steps down to a WARN. F-043 read this off
+      // lore.reported; surveyOf() keeps that fallback until the redraw.
+      if (surveyOf({ node }) === "reported")
         warns.push(`G-SPINE-COMPLETE: "${id}" (tier ${node.tier}) is childless — reported, not surveyed; childless by design (F-043)`);
       else
         errors.push(`G-SPINE-COMPLETE: "${id}" (tier ${node.tier}) has no children — a ${node.tier} may not be empty under --require-complete`);

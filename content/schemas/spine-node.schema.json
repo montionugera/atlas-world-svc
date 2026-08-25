@@ -56,6 +56,7 @@
     "compositionTolerance": { "type": ["number", "null"] },
     "toleranceWhy": { "type": ["string", "null"] },
     "terrainKind": { "type": ["string", "null"] },
+    "survey": { "enum": ["surveyed", "reported"] },
     "features": {
       "type": "array",
       "items": {

@@ -60,7 +60,8 @@ import { loadFabric, gWorldBudget, gWorldSeaLand, gWorldSeaLandTrunk, gWorldTrun
 // importing module's own path, so this works under `npm test --prefix scripts`,
 // which runs with a different cwd, and in CI.
 import { orderHandles, orderDigestOf } from "../tools/mapforge/lib/passes/landforms.mjs";
-import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
+import { loadSpine, buildTree, TIER_DEPTH, depthLegal, BIOMES, ID_RE, SEED_RE, shoelaceArea, selfIntersects, pointInPolygon, deriveInterior, deriveNode, resolveToRoot, rollupComposition, KM_TO_U, exactIntersectionArea, ringStructureProblem, ringVertexCount, placementArea, townFrameErrors, townCompErrors, terrainKindErrors, readTownPlans, planForNode, FRAME_EPS, checkRuntime, LIVE_MAP_IDS, checkSpawnFit, checkSpawnIdStable, checkPlayspaceAliases, checkSpineComplete, WATER_TIERS, flattenSpawnAreas, parseRuntimeSpawnRects, spawnGeometryReportLines } from "./lib/spine.mjs";
+import { loadFabricRegionIndex, fabricRegionCountsFor } from "./lib/survey.mjs";
 // Plan D: the pinned/bound/relation gates. Pure logic in lib/resolve.mjs, per
 // this file's own rule — check_content.mjs ends in a bare main() and is not
 // importable, so gate tests spawn it against fixture content roots.
@@ -2282,8 +2283,16 @@ function checkSpine(opts, mobTypes) {
     for (const l of alias.lines) console.log(l);
   }
 
-  // F-041 P4 — G-SPINE-COMPLETE (both trees; escalates only under the flag)
-  const complete = checkSpineComplete({ tree });
+  // F-041 P4 — G-SPINE-COMPLETE (both trees; escalates only under the flag).
+  // Plan E (E-C3): after the redraw the regions live in content/world/fabric/,
+  // so a continent's completeness is proved by its fabric pin, not by spine
+  // children. An absent fabric dir yields an empty map and today's behaviour.
+  const fabricIndex = loadFabricRegionIndex({ contentRoot: opts.contentRoot });
+  for (const p of fabricIndex.problems) fail(p);
+  const complete = checkSpineComplete({
+    tree,
+    fabricRegionCounts: fabricRegionCountsFor({ nodes: validNodes, index: fabricIndex }),
+  });
   for (const w of complete.warns) warn(w);
   if (opts.requireComplete) for (const e of complete.errors) fail(e);
   else for (const e of complete.errors) warn(e);

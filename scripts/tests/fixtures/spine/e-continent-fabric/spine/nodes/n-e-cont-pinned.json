@@ -1,0 +1,69 @@
+{
+  "provenance": {
+    "authored": "hand",
+    "generator": {
+      "fabric": "content/world/fabric/continent-99.json"
+    },
+    "source": "fixture"
+  },
+  "frozen": false,
+  "interior": {
+    "units": "km",
+    "perParentUnit": 1
+  },
+  "interstitial": null,
+  "interstitialUnsurveyed": false,
+  "compositionTolerance": null,
+  "toleranceWhy": null,
+  "features": [],
+  "bands": [],
+  "runtime": {
+    "mapIds": [],
+    "originU": null,
+    "spawnAreas": [],
+    "mobSettings": null,
+    "seedDemoNPCs": false,
+    "collision": "none"
+  },
+  "representsNodeId": null,
+  "lore": {},
+  "tags": [],
+  "levelBand": null,
+  "id": "n-e-cont-pinned",
+  "tier": "continent",
+  "parentId": "n-w",
+  "title": "E pinned",
+  "seed": {
+    "value": "e3c0ffee00000001",
+    "epoch": 0,
+    "why": null
+  },
+  "placement": {
+    "shape": "polygon",
+    "points": [
+      [
+        10,
+        10
+      ],
+      [
+        55,
+        10
+      ],
+      [
+        55,
+        55
+      ],
+      [
+        10,
+        55
+      ]
+    ],
+    "anchor": [
+      32,
+      32
+    ]
+  },
+  "composition": {
+    "meadow": 100
+  }
+}
