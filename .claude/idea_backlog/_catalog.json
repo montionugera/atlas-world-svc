@@ -610,5 +610,11 @@
     "title": "Art-forge pipeline dashboard: pipeline view per brief with gate verdicts and per-cell re-run",
     "created_at": "2026-08-25T04:32:40.373942+00:00",
     "promoted_to": "F-050"
+  },
+  {
+    "id": "I-103",
+    "title": "World fill Plan E: redraw and prose",
+    "created_at": "2026-08-25T16:28:35.781558+00:00",
+    "promoted_to": null
   }
 ]
