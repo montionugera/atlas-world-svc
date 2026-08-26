@@ -68,6 +68,17 @@ export function fabricRegionCountsFor({ nodes, index }) {
   for (const n of nodes ?? []) {
     const rel = n?.provenance?.generator?.fabric;
     if (!rel) continue;
+    // Water trunk nodes (tier "ocean"|"sea") pin content/world/fabric/world.json,
+    // the whole-frame polygon file Plan C Task 10 writes and generate-world.test.mjs
+    // pins. That file is not a region index, so loadFabricRegionIndex never counts
+    // it — a water node has no fabric region to band-check against, which is why
+    // its pin is legitimate. Exempting the TIER (not the path) keeps a water node
+    // that pins some continent's regions just as silent: there is still no region
+    // under it to check.
+    if (n?.tier === "ocean" || n?.tier === "sea") {
+      counts.set(n.id, 0);
+      continue;
+    }
     const count = index.countByFabricPath.get(rel);
     if (count === undefined) {
       // Collapsing a stale pin to 0 made it indistinguishable from never

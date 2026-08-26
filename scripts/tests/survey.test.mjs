@@ -107,6 +107,31 @@ test("a stale fabric pin names its dead path in-band instead of reading as 0", (
   assert.deepEqual(idx.problems.filter((p) => /n-ok/.test(p)), []);
 });
 
+test("water-tier pins at world.json are legitimate — no stale-pin FAIL for the promoted water trunk", () => {
+  // Plan C pins every ocean/sea trunk node's generator.fabric at
+  // content/world/fabric/world.json (generate-world.test.mjs:451), which is
+  // never counted as a region index. Without the tier exemption the promoted
+  // water trunk adds 12 false stale-pin FAILs (Plan E Task 6c).
+  const root = mkdtempSync(join(tmpdir(), "fab-water-"));
+  mkdirSync(join(root, "world/fabric"), { recursive: true });
+  writeFileSync(join(root, "world/fabric/continent-02.json"), JSON.stringify({
+    continent: "c02",
+    regions: [{ id: "c02/r01", survey: "surveyed" }],
+  }));
+  const idx = loadFabricRegionIndex({ contentRoot: root });
+  const counts = fabricRegionCountsFor({
+    nodes: [
+      { id: "n-galereach", tier: "ocean",
+        provenance: { generator: { fabric: "content/world/fabric/world.json" } } },
+      { id: "n-sea-tarn", tier: "sea",
+        provenance: { generator: { fabric: "content/world/fabric/world.json" } } },
+    ],
+    index: idx });
+  assert.equal(counts.get("n-galereach"), 0);
+  assert.equal(counts.get("n-sea-tarn"), 0);
+  assert.deepEqual(idx.problems, []);
+});
+
 test("loadFabricRegionIndex soft-skips a content root with no fabric dir", () => {
   const root = mkdtempSync(join(tmpdir(), "fab-none-"));
   const idx = loadFabricRegionIndex({ contentRoot: root });
