@@ -2049,6 +2049,12 @@ After applying all five, run Step 6's two gate commands again — Expected: zero
 
 The promoted `n-millcross` keeps its pre-redraw `placement.anchor`. Re-derive it so its COMPOSED world anchor equals `c-town-millcross.at` — invert the parent composition arithmetically, never by typing world coordinates into the node — then re-run `check_spine_emit.mjs --write`. Town-frame internals move with the rect wholesale.
 
+- [ ] **Step 6f: Rulings 7a/7b/8 — the alias vocabulary and the basin sheet (owner-approved, 2026-08-26)**
+
+1. **(7a)** `checkSpineAlias`'s resolved-world sets gain the bare slug beside every `c-town-*` civil id — a lookup-side normalisation restoring the fallback's pre-redraw contract (recorded in STATE §28 as the sanctioned exception to "never edit the resolver").
+2. **(7b)** `region.schema.json`: `spineId` OR the new `resolvedRef` (resolved world zones ∪ towns id), exactly one required; uniqueness on spineId only; `checkSpineStoryAlias` accepts both and prints which. The six orphaned story regions re-home onto `c-town-*` refs, ashvale-front onto `c02/r11`.
+3. **(8)** The cluster1 sheet retires from `SHEETS` with its whole tail — registry entry, storybook row (`maps-index.json`), art-manifest block, committed SVG/thumb bytes, render-lock rebaseline, and the tests swearing to its subjects — rebuilt resolved-backed in Task 8. Bestiary `ashvale-front` rows re-home onto `c02/r11`.
+
 
 - [ ] **Step 6c: Water-pin false positives in the stale-pin scan**
 
