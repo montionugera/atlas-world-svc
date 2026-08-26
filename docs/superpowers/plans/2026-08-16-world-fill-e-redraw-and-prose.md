@@ -2029,6 +2029,23 @@ node scripts/check_content.mjs --only=spine
 ```
 Expected: the seven-row table with every `verdict` reading `OK`, and zero `G-CANON-LEG` / `G-NET` failures.
 
+- [ ] **Step 6b: Apply the five owner-edge rulings (owner review, 2026-08-26)**
+
+Step 6's grammar clears only the 13 leg lines and part of the road class; the remaining **88 − 13 = 75** `G-NET` survivors fall into five classes, each measured during the halted 2026-08-26 attempt and each ruled here so the one-commit discipline survives. Every ruling below is recorded in `world-fill-STATE.md` §28 with the same wording.
+
+1. **RELAYS — RETIRE `e-trunk-chain` and `e-flat-chain`.** Both are tower-relay chains over `f-tower-*` features (21 + 3 `via` entries), and towers do not survive the redraw — there is no `f-town-<slug>` equivalent for a signal tower. Their canon content (which towns sit along the coastal spur) is carried by the roads themselves, which all survive re-pointed. Delete both edge records; do not substitute.
+2. **SEALANES — RE-SITE at the surviving ports' `f-town-*` features.** `e-lane-coldreach`: `{node: n-gildmark}` → `{feature: f-town-gildmark}`, `{feature: f-port-tallowquay}` → `{feature: f-town-tallowquay}`. `e-lane-stonemoor-foreign`: `f-port-tallowquay` → `f-town-tallowquay`, `f-port-netstead` → `f-town-netstead`. **`e-sea-lane` is RETIRED**, not re-sited: its own `note` says it is the same once-a-year voyage as `e-lane-coldreach` with the far end uncharted, and its far endpoint `f-trade-wind-far` is an off-map chart convention with no surviving substitute — re-pointing it at Tallowquay would make it byte-duplicate the coldreach lane minus `sailDays`. The landfall ground itself survives as pinned landmark `c-lm-the-trade-wind-landfall`.
+3. **ROAD-HEADS/APPROACHES — RE-SITE `e-cindervast-approach`; RETIRE nothing else here.** `{feature: f-ashvale-road-head}` → `{feature: f-town-norhollow}` (its outer farms border Cindervast's ruin district — canon §4), `{feature: f-cindervast-approach-end}` → `{feature: f-town-cindervast}`. The dashed/not-maintained attrs and the note are preserved verbatim.
+4. **EXPEDITION-CAMP — RETIRE `e-terrace-track` and `e-terrace-track-north`.** The camp was a chart site, never one of the 45 settlements, so no `f-town-*` feature exists for either endpoint grammar to resolve against; its ground survives as pinned landmark `c-lm-expedition-camp`, and the road north to the ice remains canon prose and drawn relief, not spine geometry.
+5. **MOVED-ROAD POINTS — TRANSLATE, never retypes.** Every retained road edge's `points[]` still sits in the pre-F-045 frame; the mechanical rule is `p' = p + PIN_OFFSET` where `PIN_OFFSET = [81, 129]` is DERIVED exactly as `pinned-roster.json` derives it (premise footprint centre minus `n-cluster1`'s anchor — read it from the committed value, do not retype). Proof the rule is right: `[17.2, 23.6] + [81, 129] = [98.2, 152.6]`, which is `c-town-millcross.at` to the decimal, and `e-terrace-track`'s last point lands exactly on `c-lm-expedition-camp.at`. Applies to `e-trade-road-trunk`, `e-river-road-south` and any other retained edge carrying stale-frame `points`.
+
+After applying all five, run Step 6's two gate commands again — Expected: zero `G-NET` / `G-CANON-LEG` failures on the promoted trunk, with the census counts unchanged (36 files).
+
+- [ ] **Step 6c: Water-pin false positives in the stale-pin scan**
+
+`loadFabricRegionIndex` counts only `continent-NN.json`, while Plan C pins every ocean/sea trunk node's `generator.fabric` at `content/world/fabric/world.json` (pinned by `generate-world.test.mjs:451`) — so the promoted water trunk adds 12 false stale-pin FAILs. Fix `survey.mjs` so the scan skips **water-tier** (`tier: "ocean" | "sea"`) pins rather than pretending `world.json` is a region index: a water node has no fabric region to band-check against, which is why the pin is legitimate. Add the regression case to `survey`'s real-world test block alongside the existing pin cases.
+
+
 - [ ] **Step 7: R12 step 2 — geography emit, verified alone**
 
 Run:
