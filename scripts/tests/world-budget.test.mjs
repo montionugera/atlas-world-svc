@@ -1190,6 +1190,32 @@ test("G-SHEET-BUDGET counts .svg only", () => {
 test("soft-skip: a content root with no content/world/ is still green", () => {
   const { contentRoot, drop } = tmpRoot();
   rmSync(join(contentRoot, "world"), { recursive: true, force: true });
+  // Ruling 7b (Plan E Task 6f): a region record carrying resolvedRef NAMES the
+  // world document, so a root without world/ can no longer be green while one
+  // exists — the story sweep would demand a doc that isn't there. This test's
+  // intent is that the STRUCTURAL gates stay quiet without world/, so the copy
+  // drops the resolved refs (spineId stays where a node still hosts it; on the
+  // post-redraw trunk these six records have no spineId to restore, which is
+  // exactly why they carry resolvedRef in the first place).
+  const regionsPath = join(contentRoot, "story/regions.json");
+  const regions = JSON.parse(readFileSync(regionsPath, "utf8"));
+  // The six movement-2 re-homes carry NO spineId (their hosts are retired by
+  // the redraw), so dropping their resolvedRef leaves them keyless — they are
+  // dropped here rather than faked back onto nodes that will not exist.
+  const keyless = new Set();
+  for (const r of regions) {
+    if (r.resolvedRef) { delete r.resolvedRef; if (!r.spineId) keyless.add(r.id); }
+  }
+  writeFileSync(regionsPath, JSON.stringify(regions.filter((r) => !keyless.has(r.id)), null, 2));
+  // Same for the bestiary half of ruling 7b's re-homes: rows citing a
+  // GENERATED region id (c02/r11) name the world document too. Re-point them
+  // at "thornveil", an alias anchor whose spine node exists both pre- and
+  // post-redraw, so the fixture cites nothing outside its own spine.
+  const bestiaryPath = join(contentRoot, "bestiary/bestiary.json");
+  const beasts = JSON.parse(readFileSync(bestiaryPath, "utf8"));
+  for (const b of beasts)
+    if (b && b.region === "c02/r11") b.region = "thornveil";
+  writeFileSync(bestiaryPath, JSON.stringify(beasts, null, 2));
   const edgesPath = join(contentRoot, "spine/edges.json");
   const edges = JSON.parse(readFileSync(edgesPath, "utf8"));
   writeFileSync(edgesPath, JSON.stringify(edges.filter((e) => e.kind !== "leg"), null, 2));

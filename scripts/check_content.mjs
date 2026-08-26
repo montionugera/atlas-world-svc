@@ -217,6 +217,34 @@ function loadBestiaryDesigns(path) {
 // cosmetic only: every fixture assertion is /geography: .* is shape-invalid/,
 // which both spellings satisfy.
 const placesByRoot = new Map();
+// Ruling 7a (owner, 2026-08-26; STATE §28): the resolved world's town ids are
+// the CIVIL ids (`c-town-rooktide`), but every consumer of these sets —
+// bestiary region slugs, `art:town-<slug>` keys, story refs — speaks BARE
+// slugs, which is what these ids WERE before Plan D's join cutover renamed the
+// id shape. Each civil id therefore resolves under BOTH forms. This is the
+// sanctioned exception to Step 12's "re-home the record — never the resolver":
+// normalising lookup restores the fallback's original contract instead of
+// weakening it. Shared by checkSpineStoryAlias and checkSpineExternalAliases.
+const resolvedWorldCache = new Map();
+function resolvedWorldSets(contentRoot) {
+  if (!resolvedWorldCache.has(contentRoot)) {
+    const doc = placesDoc(contentRoot);
+    const build = (rows) => {
+      const set = new Set();
+      for (const r of Array.isArray(rows) ? rows : []) {
+        if (typeof r?.id !== "string") continue;
+        set.add(r.id);
+        const m = /^c-town-(.+)$/.exec(r.id);
+        if (m) set.add(m[1]);
+      }
+      return set;
+    };
+    resolvedWorldCache.set(contentRoot,
+      { zones: build(doc?.zones), towns: build(doc?.towns) });
+  }
+  return resolvedWorldCache.get(contentRoot);
+}
+
 function placesDoc(contentRoot) {
   if (!placesByRoot.has(contentRoot)) {
     const { doc, problems } = loadPlaces({ contentRoot });
@@ -1542,21 +1570,34 @@ function checkSpineStoryAlias({ opts, report }) {
   const claimed = new Map(); // spineId -> region id (unique per node)
   for (const r of doc) {
     if (!r || typeof r.id !== "string") continue; // record shape is checkStory's business
-    if (typeof r.spineId !== "string") {
-      report(`spine-alias: story/regions.json#${r.id}: missing spineId`);
+    // Ruling 7b (owner, 2026-08-26; STATE §28): a region names its ground with
+    // exactly one of spineId (a spine node) or resolvedRef (resolved world
+    // zones ∪ towns). Uniqueness applies to spineId only — resolved ids are
+    // many-to-one by design and the world doc is the uniqueness authority.
+    if (typeof r.spineId !== "string" && typeof r.resolvedRef !== "string") {
+      report(`spine-alias: story/regions.json#${r.id}: missing spineId (or resolvedRef)`);
       continue;
     }
-    const node = byId.get(r.spineId);
-    if (!node) {
-      report(`spine-alias: story/regions.json#${r.id}: spineId "${r.spineId}" does not resolve to a spine node`);
+    if (typeof r.spineId === "string") {
+      const node = byId.get(r.spineId);
+      if (!node) {
+        report(`spine-alias: story/regions.json#${r.id}: spineId "${r.spineId}" does not resolve to a spine node`);
+        continue;
+      }
+      if (claimed.has(r.spineId)) {
+        report(`spine-alias: story/regions.json#${r.id}: spineId "${r.spineId}" already claimed by ${claimed.get(r.spineId)}`);
+        continue;
+      }
+      claimed.set(r.spineId, r.id);
+      console.log(`spine-alias: ${r.id} → ${r.spineId} (${node.tier})`);
       continue;
     }
-    if (claimed.has(r.spineId)) {
-      report(`spine-alias: story/regions.json#${r.id}: spineId "${r.spineId}" already claimed by ${claimed.get(r.spineId)}`);
+    const w = resolvedWorldSets(opts.contentRoot);
+    if (!w.zones.has(r.resolvedRef) && !w.towns.has(r.resolvedRef)) {
+      report(`spine-alias: story/regions.json#${r.id}: resolvedRef "${r.resolvedRef}" does not resolve in the resolved world (zones ∪ towns)`);
       continue;
     }
-    claimed.set(r.spineId, r.id);
-    console.log(`spine-alias: ${r.id} → ${r.spineId} (${node.tier})`);
+    console.log(`spine-alias: ${r.id} → ${r.resolvedRef} (resolved)`);
   }
 }
 
@@ -1638,15 +1679,12 @@ function checkSpineExternalAliases({ opts, report }) {
   // follow `report` would mean a `--only=spine` run alone could demote it. The
   // single call site passes fail (:1954), so nothing observes the difference
   // today either way.
-  let resolvedWorldSets = null;
+  let resolvedWorldSetsCache = null;
   const resolvedWorld = () => {
-    if (!resolvedWorldSets) {
-      const doc = placesDoc(opts.contentRoot);
-      const ids = (rows) =>
-        new Set((Array.isArray(rows) ? rows : []).map((r) => r?.id).filter((s) => typeof s === "string"));
-      resolvedWorldSets = { zones: ids(doc?.zones), towns: ids(doc?.towns) };
+    if (!resolvedWorldSetsCache) {
+      resolvedWorldSetsCache = resolvedWorldSets(opts.contentRoot);
     }
-    return resolvedWorldSets;
+    return resolvedWorldSetsCache;
   };
   const sayResolved = (label, slug, kind) => console.log(`spine-alias: ${label} → ${slug} (resolved-${kind})`);
 
@@ -3668,6 +3706,12 @@ export function runSpineGateInProcess({ argv }) {
   zoneHazardsUnmapped = 0;
   townPlansCache = null;
   placesByRoot.clear();
+  // Ruling 7a: resolvedWorldSets() builds from placesDoc(), whose problems are
+  // reported ONCE per run through fail() and then memoised. Keeping stale sets
+  // here would skip that placesDoc call entirely on a second in-process run
+  // and swallow its geography FAIL — exactly what the placesByRoot-leak test
+  // exists to catch.
+  resolvedWorldCache.clear();
   const captured = [];
   const realLog = console.log, realError = console.error;
   console.log = (...a) => captured.push(a.join(" "));

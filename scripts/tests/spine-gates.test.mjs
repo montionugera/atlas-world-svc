@@ -1132,19 +1132,29 @@ test("G-ALIAS sweep: an art:town-* key with no town-tier node is a hard FAIL", (
 
 // The RECORD COUNT, not just the exit code. Risk A2: a re-pointed join whose
 // resolution silently returns nothing still exits 0 while checking nothing.
-// 35 is the measured count of printed `spine-alias:` lines on the committed
-// content root at HEAD~1 (10 story regions + 1 town plan + 9 distinct bestiary
-// regions + 1 placement + 8 character links + 6 art:town keys). If the sweep
-// stops examining records this number drops and the test reds; the literal is
-// compared against gate OUTPUT, never against a second copy of itself.
-t11("alias sweep: today's output resolves entirely through the spine (no resolved-* lines)", () => {
+// Ruling 7b (Plan E Task 6f, owner-approved): six story regions and 26
+// bestiary rows now resolve through the resolved world — the sweep still
+// examines every record (35 alias lines: 10 story regions + 1 town plan +
+// 9 distinct bestiary regions + 1 placement + 8 character links + 6 art:town
+// keys), but four of those lines print `(resolved)`/`(resolved-zone)` instead
+// of a spine tier. If the sweep stops examining records this number drops and
+// the test reds; the literal is compared against gate OUTPUT, never against a
+// second copy of itself.
+t11("alias sweep: every record still resolves — spine primary, resolved world for the re-homed records", () => {
   const r = runGate(join(ROOT, "content"));
   assert11.equal(r.code, 0, r.stdout);
   const printed = r.stdout.split("\n").filter((l) => l.includes("spine-alias: "));
   assert11.equal(printed.length, 35, printed.join("\n"));
-  assert11.match(r.stdout, /spine-alias: bestiary\.json region "millcross" ×\d+ → n-millcross \(town\)/);
-  assert11.doesNotMatch(r.stdout, /\(resolved-zone\)/);
-  assert11.doesNotMatch(r.stdout, /\(resolved-town\)/);
+  // Spine-primary records are untouched by the rulings. Town slugs resolve
+  // through the SPINE while their nodes exist (pre-redraw) and through the
+  // resolved world's civil ids once the trunk shrinks (post-redraw) — the
+  // assertion accepts either path because BOTH are contract-green.
+  assert11.match(r.stdout, /spine-alias: bestiary\.json region "millcross" ×\d+ → (n-millcross \(town\)|millcross \(resolved-town\))/);
+  assert11.match(r.stdout, /spine-alias: bestiary\.json region "rooktide" ×\d+ → (n-rooktide \(town\)|rooktide \(resolved-town\))/);
+  assert11.match(r.stdout, /spine-alias: art-manifest art:town-rooktide → (n-rooktide \(town\)|rooktide \(resolved-town\))/);
+  // Ruling 7b: story regions re-homed onto resolved refs name their kind.
+  assert11.match(r.stdout, /spine-alias: region-rooktide → c-town-rooktide \(resolved\)/);
+  assert11.match(r.stdout, /spine-alias: region-ashvale-front → c02\/r11 \(resolved\)/);
 });
 
 t11("alias sweep: a slug with NO spine node resolves through the world document instead", () => {
