@@ -2041,6 +2041,15 @@ Step 6's grammar clears only the 13 leg lines and part of the road class; the re
 
 After applying all five, run Step 6's two gate commands again — Expected: zero `G-NET` / `G-CANON-LEG` failures on the promoted trunk, with the census counts unchanged (36 files).
 
+- [ ] **Step 6d: Class 6 — the Rooktide pin snap (owner ruling, 2026-08-26, APPROVED)**
+
+`c-town-rooktide.at` `[98, 163.5]` is not on owned land in the generated world (2.49 km gap between c02/r18 and r19; pin receipt `region: null`; every generate run prints the problem line). The settlements pass drops the town, so no `f-town-rooktide` feature exists for Step 6's grammar. Snap the pin to **`[95.0, 162.5]`** — derived as owned-region-cells ∩ millcross-leg ±8% annulus ∩ cindervast-leg ±8% annulus, minimum displacement — in BOTH `content/world/civil/pinned-roster.json` and `content/world/civil/pinned/c-town-rooktide.json`, with the ruling recorded in each file's `why`. Update the Plan D real-world test literals that pin the old coordinates (they exist precisely to make this a reviewed, visible change), regenerate the draft, and confirm the report no longer carries the `not on owned land` line before re-promoting.
+
+- [ ] **Step 6e: Re-place the preserved town host from its pin**
+
+The promoted `n-millcross` keeps its pre-redraw `placement.anchor`. Re-derive it so its COMPOSED world anchor equals `c-town-millcross.at` — invert the parent composition arithmetically, never by typing world coordinates into the node — then re-run `check_spine_emit.mjs --write`. Town-frame internals move with the rect wholesale.
+
+
 - [ ] **Step 6c: Water-pin false positives in the stale-pin scan**
 
 `loadFabricRegionIndex` counts only `continent-NN.json`, while Plan C pins every ocean/sea trunk node's `generator.fabric` at `content/world/fabric/world.json` (pinned by `generate-world.test.mjs:451`) — so the promoted water trunk adds 12 false stale-pin FAILs. Fix `survey.mjs` so the scan skips **water-tier** (`tier: "ocean" | "sea"`) pins rather than pretending `world.json` is a region index: a water node has no fabric region to band-check against, which is why the pin is legitimate. Add the regression case to `survey`'s real-world test block alongside the existing pin cases.
