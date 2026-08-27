@@ -1,11 +1,11 @@
 {
   "title": "THE ATLAS WORLD",
-  "subtitle": "Bellfaith survey where the towers see; mariners' report beyond",
-  "hand": "This is a compiled chart, not a single hand's survey. The basin ground is the Bellfaith's own work, walked, sounded, and towered. Every coast beyond it is set down from masters' logs sworn at Gildmark harbour, not from any keel of ours. A hatched coast is reported, never vouched.",
+  "subtitle": "Bellfaith survey where the ground is walked; mariners' report beyond",
+  "hand": "This is a compiled chart, not a single hand's survey. The surveyed ground is the Bellfaith's own work, but at this scale only its bound is set down — the coast and channel it was walked and sounded for are not drawn here. Every coast beyond it is set down from masters' logs sworn at Gildmark harbour, not from any keel of ours. A hatched coast is reported, never vouched.",
   "noScaleBar": true,
-  "scaleBarNote": "no scale bar; distances inside the surveyed ground are the basin sheet's business",
+  "scaleBarNote": "no scale bar; distances inside the surveyed ground are the continent sheets' business",
   "northMark": { "at": [368, 380], "label": "N" },
-  "surveyNote": "surveyed ground: see the basin sheet — CLUSTER 1 · THE MELTWASH BASIN",
+  "surveyNote": "surveyed ground · bound only at this scale",
   "withheld": [
     "the far interiors, past what any crew has walked",
     "whatever lies past the ice-cap's edge"
@@ -14,13 +14,16 @@
     "rootId": "n-atlas",
     "zoneRoot": "n-cluster1",
     "landIds": ["n-cluster1"],
-    "seaIds": ["n-westsea"],
-    "terrainPatchIds": ["n-eastern-hills"],
-    "mireIds": ["n-saltmire"],
-    "featureIds": {
-      "coast": "f-west-coast",
-      "river": "f-the-meltwash",
-      "iceEdge": "f-northern-ice-edge"
-    }
+    "seaIds": [
+      "n-drowned-pavement",
+      "n-fumewater",
+      "n-gildmark-roads",
+      "n-netstead-bight",
+      "n-peatrun-shallows",
+      "n-reed-shallows",
+      "n-rimewall-margin",
+      "n-westsea",
+      "n-wreckwater"
+    ]
   }
 }

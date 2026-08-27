@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { TRUNK_NODES, TRUNK_FEATURES, FEATURES_BY_KIND, FEATURE_ATTRS_KEYS } from "./helpers/census.mjs";
 import Ajv from "ajv";
 
 // Same ESM/CJS interop guard as scripts/lib/story.mjs:11 and the two sibling
@@ -299,29 +300,31 @@ test("an instance built from a real lexicon row validates, and agrees with the r
   assert.equal(n, 3, "all three geometries must be represented in the lexicon");
 });
 
-test("all 44 committed spine nodes still validate under the tightened node schema", () => {
+// COUNT AUTHORITY: content/spine/trunk-census.json (Plan E, E-C4).
+test("every committed spine node still validates under the tightened node schema", () => {
   const v = ajv().compile(NODE);
   const dir = join(ROOT, "content/spine/nodes");
   const files = readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
-  // EXACT, not `>= 36`: the title, the task's acceptance claim and the spine
-  // gate's own "44 nodes" line all say 44, and a `>=` eight below the real
-  // count let eight node deletions stay green while still calling itself
-  // "all 44". Trap 3 — assert the census, not just that something validated.
-  assert.equal(files.length, 44, "the committed node census");
+  // EXACT, never `>=`: a `>=` below the real count lets node deletions stay
+  // green. Trap 3 — assert the census, not just that something validated. The
+  // number is READ from content/spine/trunk-census.json rather than typed, so
+  // the next redraw updates one file instead of every fixture that knows it.
+  assert.equal(files.length, TRUNK_NODES, "the committed node census");
   for (const f of files) {
     const doc = JSON.parse(readFileSync(join(dir, f), "utf8"));
     assert.ok(v(doc), `${f}: ${JSON.stringify(v.errors)}`);
   }
 });
 
-test("all 58 committed features validate unchanged, and the census is unmoved", () => {
+// COUNT AUTHORITY: content/spine/trunk-census.json `features` (Plan E, E-C4).
+test("every committed feature validates unchanged, and the census is unmoved", () => {
   // The typed item is only safe because it was written FROM the corpus. If a
   // later commit adds a feature shape or an attrs key the schema does not
   // enumerate, this fails here rather than reddening a gate for a node nobody
-  // touched. Census measured 2026-08-20: 58 features — 48 point / 10 line /
-  // 0 area, of which exactly 1 point is offSheet — and 12 distinct attrs keys.
-  // (`offSheet` is a flag on a point, not a fourth kind; the prose used to say
-  // "47 point ... 1 offSheet", which invited a reader to "fix" the 48 below.)
+  // touched. The pre-redraw census (58 features, 48 point / 10 line / 0 area,
+  // 12 attrs keys) was hand-authored basin geometry; the redraw replaced it
+  // with generator-minted trunk points, so the numbers now live in
+  // content/spine/trunk-census.json and are read from there.
   const v = ajv().compile(NODE);
   const dir = join(ROOT, "content/spine/nodes");
   const files = readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
@@ -339,9 +342,9 @@ test("all 58 committed features validate unchanged, and the census is unmoved", 
       assert.ok(vItem(ft), `${f} / ${ft.id}: ${JSON.stringify(vItem.errors)}`);
     }
   }
-  assert.equal(total, 58, "the committed feature census");
-  assert.deepEqual(byKind, { point: 48, line: 10, area: 0 });
-  assert.equal(attrsKeys.size, 12, "12 distinct attrs keys");
+  assert.equal(total, TRUNK_FEATURES, "the committed feature census");
+  assert.deepEqual(byKind, FEATURES_BY_KIND);
+  assert.equal(attrsKeys.size, FEATURE_ATTRS_KEYS, "the attrs-key union size");
   for (const k of attrsKeys)
     assert.ok(k in NODE.properties.features.items.properties.attrs.properties, `attrs.${k} unenumerated`);
   assert.ok(v({ id: "x" }) === false); // sanity: the node validator is live
@@ -438,9 +441,15 @@ test("the node schema rejects a typo'd FEATURE-level key", () => {
     );
 });
 
-test("a feature may carry a nullable lexicon `type`", () => {
-  // null on all 58 today — Plan D is the first writer. The key exists now so
-  // that binding a feature to a landform id is a content edit, not a schema change.
+test("a feature may carry a nullable lexicon `type`, and none is bound yet", () => {
+  // WAS: `"type" in ft === false` on all 58 — "Plan D is the first writer".
+  // The redraw's generator now emits the key EXPLICITLY as `type: null` on the
+  // 47 features it mints, so key-presence stopped being the right question and
+  // the old form failed on n-brightfall / f-town-c09-s01 for carrying a null.
+  // The semantic being guarded is unchanged and is what is asserted now: no
+  // committed feature is BOUND to a landform id yet. This is strictly stronger
+  // than the old form on the 7 features that omit the key entirely, and it
+  // still reds the moment anything writes a real lexicon id into the trunk.
   const v = ajv().compile(NODE);
   const base = JSON.parse(readFileSync(join(ROOT, "content/spine/nodes/n-atlas.json"), "utf8"));
   const ok = {
@@ -455,6 +464,7 @@ test("a feature may carry a nullable lexicon `type`", () => {
   for (const f of readdirSync(dir).filter((x) => x.endsWith(".json"))) {
     const doc = JSON.parse(readFileSync(join(dir, f), "utf8"));
     for (const ft of doc.features ?? [])
-      assert.equal("type" in ft, false, `${f} / ${ft.id} already carries a type — Plan D is the first writer`);
+      assert.equal(ft.type ?? null, null,
+        `${f} / ${ft.id} is bound to landform "${ft.type}" — no committed trunk feature may be, yet`);
   }
 });

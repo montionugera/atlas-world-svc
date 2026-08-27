@@ -487,40 +487,13 @@
       "file": "concept/race-beastkin.png",
       "note": "Z-Image Turbo, local generation, race lineup — kemonomimi beastkin (replaces panthera)"
     },
-    "art:map-cluster1": {
-      "group": "map",
-      "title": "Cluster 1 — the Meltwash basin",
-      "file": "maps/cluster1-world.png",
-      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-sheet.mjs from content/spine/; the SVG beside this PNG (maps/cluster1-world.svg) is the artifact, the PNG beside it is a 512px review thumb of it for the storybook card. Replaces an earlier Z-Image Turbo attempt, which could not draw this world’s coastline, roads or place names.",
-      "description": "A single-sheet Bellfaith relay map of the Meltwash basin, drafted rather than painted: ink on cream parchment with one accent colour (bell-bronze) reserved for the 27 relay towers and their sight-lines. Real paths for the coastline, the Meltwash and the hatched Saltmire; roads carry their canon day-counts lettered along the legs, with waystations where each day ends; six towns, ten zones with level bands, the Ashvale Front drawn as a gradient whose northern deep is left as bare hatch, and a hard parchment edge along the top because the map does not pretend to know what lies past the ice.",
-      "tags": [
-        "cluster-1",
-        "map",
-        "bellfaith",
-        "relay-map",
-        "authored-vector",
-        "svg"
-      ],
-      "source": "docs/worldbuilding/A1-geography-cluster1.md#A1-ART-01",
-      "gen": {
-        "method": "authored-vector",
-        "generated": false,
-        "tool": "tools/mapforge/render-sheet.mjs",
-        "input": "content/spine/",
-        "vector": "maps/cluster1-world.svg",
-        "raster": "rsvg-convert -w 512 (REVIEW THUMB — the 2000px ship raster is produced on demand with `--png-width 2000` and is never committed; spec 2026-08-16 §7.5, budget content/world/budgets.json sheets.thumbWidthPx)",
-        "deterministic": true,
-        "width": 512,
-        "note": "No model, no sampler, no seed — this sheet is drawn from geometry, so there are no generation parameters to record. Re-run the tool to reproduce it byte-for-byte. Since F-042 the sheet renders from content/spine/ via render-sheet.mjs, and Plan A retired the content/maps/cluster1-geography.json mirror it used to read."
-      }
-    },
     "art:map-atlas": {
       "group": "map",
-      "title": "The Atlas World — surveyed ground",
+      "title": "The Atlas World — Mariners' Chart",
       "file": "maps/atlas-world.png",
-      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-sheet.mjs --sheet atlas from content/spine/ (nodes + sheet-atlas.json); the SVG beside this PNG (maps/atlas-world.svg) is the artifact, the PNG beside it is a 512px review thumb of it for the storybook card.",
-      "description": "The world sheet: the full 2000×2000 km frame of n-atlas with the Meltwash basin drawn as a surveyed miniature in its corner — coastline, river, continent outline and seven town marks — the western sea strip, the Gildmark sea-lane leaving the sheet with its season, and honest empty parchment everywhere the survey has never reached. No scale bar; the hand note says why.",
-      "tags": ["world", "map", "bellfaith", "authored-vector", "svg", "spine"],
+      "note": "AUTHORED VECTOR, NOT GENERATED. Drawn by tools/mapforge/render-sheet.mjs --sheet atlas from content/spine/ (the redrawn 36-node trunk + sheet-atlas.json); the SVG beside this PNG (maps/atlas-world.svg) is the artifact, the PNG beside it is a 512px review thumb of it for the storybook card. It does NOT draw the west coast line or the Meltwash river — STATE §28 ruling 8 retired both from this sheet; Task 8 re-draws that ground on its own continent sheet, which does not exist yet.",
+      "description": "The world sheet on the redrawn 400×400 km frame of n-atlas, drawn from one seed: thirteen landmasses, three ocean polygons with nine marginal seas nested inside them, 47 settlement marks — one per f-town-* feature, three of them harbours because a sea lane ends there — and the two sea lanes lettered at the ports they leave from. Only REPORTED ground is filled, which is four of the thirteen: two ice caps take the ice pattern and two take the frontier hatch, while the nine surveyed landmasses draw as outline with their regions and towns on them, and the two surveyed region bounds are the only ones lettered. Honest empty parchment everywhere the survey has never reached. Thirty-two names asked, thirty-two placed, none dropped, against a thirty-two-label budget the sheet now sits exactly on. No scale bar; the hand note says why.",
+      "tags": ["world", "map", "atlas", "bellfaith", "generated-world", "authored-vector", "svg", "spine"],
       "source": "docs/superpowers/specs/2026-08-12-world-map-render-design.md",
       "gen": {
         "method": "authored-vector", "generated": false,
@@ -705,8 +678,8 @@
       "group": "map",
       "title": "The Generated World \u2014 Fabric Survey",
       "file": "maps/world-fabric.png",
-      "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet fabric from content/world/fabric/ and from nothing else \u2014 deliberately NOT from the spine, because the whole value of this sheet is that a reviewer can see what the fabric says while the committed trunk still says something else. The SVG beside this PNG (maps/world-fabric.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
-      "description": "The generated world as the fabric layer records it: 13 landmasses traced from their own coastlines (outerRing, 2,413 vertices over the thirteen \u2014 not the trunk placement rings, which the vertex cap tightens to as few as 16), 160 regions drawn as divisions of land with the 40 surveyed ones inked and firmly outlined against the 120 reported ones left as bare parchment under a faint line, 45 settlement dots sized by rank, 38 roads dashed, 7 trunk rivers, and the two sea lanes joining the three capitals in bell-bronze. No biome fills, no glyphs, no place names \u2014 naming is Plan D's and rich cartography is Plan B's, so the continent ids stand in as labels and the emptiness is honest.",
+      "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet fabric from content/world/fabric/ and from nothing else \u2014 deliberately NOT from the spine, so a reviewer can see what the fabric says on its own. Before the redraw that mattered because the committed trunk said something else entirely; now the trunk is promoted from this same fabric, and the independence is what makes any disagreement between the two visible at all. The SVG beside this PNG (maps/world-fabric.svg) is the artifact; the PNG is a 512px review thumb of it for the storybook card.",
+      "description": "The generated world as the fabric layer records it: 13 landmasses traced from their own coastlines (outerRing, 2,431 vertices over the thirteen \u2014 not the trunk placement rings, which the vertex cap tightens to as few as 12), 160 regions drawn as divisions of land with the 40 surveyed ones inked and firmly outlined against the 120 reported ones left as bare parchment under a faint line, 47 settlement dots sized by rank (3 capitals, 12 hubs, 32 villages), 40 roads dashed, 7 trunk rivers, and the two sea lanes joining the three capitals in bell-bronze. No biome fills, no glyphs, no place names \u2014 naming is Plan D's and rich cartography is Plan B's, so the continent ids stand in as labels and the emptiness is honest.",
       "tags": ["map", "world", "fabric", "generated-world", "authored-vector", "svg", "review-sheet"],
       "source": "docs/superpowers/plans/2026-08-16-world-fill-c-fabric-layer.md",
       "gen": {
@@ -725,7 +698,7 @@
       "title": "Coastline Overlay \u2014 Baseline vs Generated",
       "file": "maps/world-overlay.png",
       "note": "AUTHORED VECTOR, NOT GENERATED ART. Drawn by tools/mapforge/render-sheet.mjs --sheet overlay. The baseline is read from the draft folder's baseline/ copy when one is present and from content/spine/nodes otherwise \u2014 NEVER from git, so the sheet builds in a dirty worktree and in a container with no repository. The SVG beside this PNG is the artifact; the PNG is a 512px review thumb.",
-      "description": "The before/after of the world fill: the committed trunk's seven continent polygons ghosted at 20% opacity under the thirteen generated coastlines at full ink, with the 160 region divisions faint behind them, and a per-continent area-delta table joined through content/world/manifest.json's landmasses[].nodeId. Six of the thirteen are marked NEW because the committed chart has no polygon for them at all. The total reads 6,243.5 -> 65,600.0 km\u00b2 of gross land, x10.51 \u2014 the sea-to-land ratio going 24.63 : 1 to 1.50 : 1 \u2014 and the sheet says in its own footer that the trunk is redrawn in Plan E, not here.",
+      "description": "The baseline trunk's continent polygons ghosted at 20% opacity under the generated coastlines at full ink, with the 160 region divisions faint behind them, and a per-continent area-delta table joined through content/world/manifest.json's landmasses[].nodeId. Since the redraw the committed trunk IS drawn from this fabric, so the sheet no longer shows a before/after: it reads 13 baseline polygons against 13 generated, nothing marked NEW, per-continent factors between x0.99 and x1.05, and a total of 65,498.4 -> 65,599.5 km\u00b2 of gross land at x1.00, with sea:land 1.44 : 1 on the committed trunk, the figure G-SEALAND measures; the sheet's own footer line quotes the fabric layer's generated figure instead, and the two are different measures of the same world. What it measures now is the trunk against the fabric it was drawn from \u2014 a drift check, not a comparison of two worlds.",
       "tags": ["map", "world", "overlay", "before-after", "authored-vector", "svg", "review-sheet"],
       "source": "docs/superpowers/plans/2026-08-16-world-fill-c-fabric-layer.md",
       "gen": {

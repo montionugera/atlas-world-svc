@@ -4,109 +4,224 @@
   "parentId": "n-atlas",
   "title": "Stonemoor",
   "provenance": {
-    "authored": "hand",
+    "authored": "generated",
     "generator": {
-      "name": "gen-world",
-      "version": "1"
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-04.json"
     },
-    "source": "tools/mapforge/gen-world.mjs"
+    "source": "content/world/premises/continent-04.json"
   },
   "frozen": false,
   "seed": {
-    "value": "81a2c12781813a06",
+    "value": "e32f8778d5a74f7f",
     "epoch": 0,
     "why": null
   },
   "placement": {
     "shape": "polygon",
     "points": [
-      [304.4, 255.6],
-      [308.4, 261.9],
-      [302, 264.4],
-      [300.6, 273.4],
-      [293.2, 274.6],
-      [288.6, 266.7],
-      [281.2, 267.6],
-      [277.1, 262.3],
-      [277.9, 255.6],
-      [277, 248.9],
-      [283.6, 246],
-      [287.8, 242.5],
-      [293.2, 236.8],
-      [299.5, 240.4],
-      [300.9, 247.9],
-      [306.5, 250.1]
+      [270, 190],
+      [271.5, 189.5],
+      [271.5, 189],
+      [273, 188.5],
+      [273, 188],
+      [274, 188],
+      [277, 186],
+      [278.5, 186],
+      [279.5, 185],
+      [283.5, 185],
+      [283.5, 184.5],
+      [297, 184],
+      [297, 184.5],
+      [309.5, 185],
+      [309.5, 185.5],
+      [312, 185.5],
+      [312, 186],
+      [316, 186.5],
+      [317.5, 187.5],
+      [319.5, 187.5],
+      [320.5, 188.5],
+      [324, 189.5],
+      [324.5, 190.5],
+      [328, 191.5],
+      [337, 199.5],
+      [351, 214],
+      [358.5, 227.5],
+      [362, 240.5],
+      [362, 255.5],
+      [359, 267],
+      [350.5, 287.5],
+      [346, 294],
+      [338.5, 301],
+      [331, 305.5],
+      [323.5, 308],
+      [308, 311],
+      [299.5, 311],
+      [291, 308],
+      [289.5, 306.5],
+      [280.5, 302.5],
+      [264.5, 288.5],
+      [259.5, 279],
+      [257.5, 278.5],
+      [258.5, 277.5],
+      [255, 272],
+      [251, 259],
+      [248.5, 244],
+      [248.5, 230],
+      [250, 221.5],
+      [251, 220.5],
+      [253, 211],
+      [256.5, 204],
+      [263, 195]
     ],
-    "anchor": [292.6, 255.9]
+    "anchor": [305.25, 241.25]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [31.399999999999977, 37.80000000000001],
-    "originInParent": [277, 236.8]
+    "size": [113.5, 127],
+    "originInParent": [248.5, 184]
   },
   "composition": {
-    "rock": 55,
-    "upland": 20,
-    "forest": 15,
-    "meadow": 10
+    "karst": 95.6,
+    "lake": 2.7,
+    "river": 1.7
   },
   "interstitial": null,
   "interstitialUnsurveyed": false,
   "compositionTolerance": null,
   "toleranceWhy": null,
+  "terrainKind": "karst-plateau",
   "features": [
     {
-      "id": "f-stonemoor-ridge",
-      "kind": "line",
-      "points": [
-        [304.4, 255.6],
-        [277.9, 255.6]
-      ],
-      "attrs": {
-        "note": "The moor-line ridge masters are told to fix the coast by, and nothing more.",
-        "name": "the Stonemoor Spine"
-      }
-    },
-    {
-      "id": "f-stonemoor-river-mouth",
-      "kind": "line",
-      "points": [
-        [293.2, 255.6],
-        [293.2, 274.6],
-        [288.6, 266.7]
-      ],
-      "attrs": {
-        "note": "A grey-running mouth reported by the one lane that passes it; its course inland is no one's claim.",
-        "name": "the Slateflow"
-      }
-    },
-    {
-      "id": "f-port-netstead",
+      "id": "f-town-netstead",
       "kind": "point",
-      "at": [277, 248.9],
+      "at": [274, 262],
       "attrs": {
-        "role": "port",
         "name": "Netstead",
-        "note": "A second port known only from Tallowquay wharf-talk; no Gildmark keel has entered it."
-      }
+        "role": "capital",
+        "town": "c-town-netstead"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c04-s01",
+      "kind": "point",
+      "at": [287.25, 185.25],
+      "attrs": {
+        "name": null,
+        "role": "hub",
+        "town": "c04/s01"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c04-s02",
+      "kind": "point",
+      "at": [312.25, 309.75],
+      "attrs": {
+        "name": null,
+        "role": "hub",
+        "town": "c04/s02"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c04-s03",
+      "kind": "point",
+      "at": [252.25, 219.75],
+      "attrs": {
+        "name": null,
+        "role": "hub",
+        "town": "c04/s03"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c04-s04",
+      "kind": "point",
+      "at": [339.75, 298.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c04/s04"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c04-s05",
+      "kind": "point",
+      "at": [249.25, 235.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c04/s05"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c04-s06",
+      "kind": "point",
+      "at": [319.75, 304.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c04/s06"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c04-s07",
+      "kind": "point",
+      "at": [287.25, 197.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c04/s07"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c04-s08",
+      "kind": "point",
+      "at": [258.25, 230.25],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c04/s08"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c04-s09",
+      "kind": "point",
+      "at": [261.75, 221.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c04/s09"
+      },
+      "type": null
+    },
+    {
+      "id": "f-town-c04-s10",
+      "kind": "point",
+      "at": [332.75, 290.75],
+      "attrs": {
+        "name": null,
+        "role": "village",
+        "town": "c04/s10"
+      },
+      "type": null
     }
   ],
   "bands": [],
-  "runtime": {
-    "mapIds": [],
-    "originU": null,
-    "spawnAreas": [],
-    "mobSettings": null,
-    "seedDemoNPCs": false,
-    "collision": "none"
-  },
+  "runtime": null,
   "representsNodeId": null,
   "lore": {
-    "reported": true,
-    "summary": "A second continent set down from wharf-talk at Tallowquay: a moor-backed coast four days along a foreign lane, nothing sworn beyond the shore.",
-    "amendedPending": "AMENDED-PENDING (I-095): distances now hour-scale on the 400 km world — prose re-voice deferred."
+    "summary": "a drowned karst plateau — sea level cuts through a pavement, so the coast is fenster, cenote and sinking river"
   },
   "tags": [],
-  "levelBand": null
+  "levelBand": [32, 70]
 }

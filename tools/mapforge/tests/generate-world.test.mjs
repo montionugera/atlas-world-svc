@@ -16,7 +16,7 @@ import { shoelaceArea, TIER_DEPTH, DEPTH_EXCEPTIONS } from "../../../scripts/lib
 import { exactIntersectionArea } from "../../../scripts/lib/geometry.mjs";
 import { codeOfFile } from "./_source-scan.mjs";
 import { runIdOf, edgeWorkOrder, remedyFor, normaliseComposition, translatePlacement,
-         placementInside, liveContinentAncestor, parseArgs, clearRun,
+         placementInside, liveContinentAncestor, pinForNodeId, parseArgs, clearRun,
          SEED_GRAMMAR, RUN_ENTRIES, loopBudget } from "../generate-world.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -193,28 +193,49 @@ test("THE REAL SPINE GATE on the draft root fails on the carried canon and NOTHI
   // likely shape of a regression, since both derive from the same "does this
   // resolve" predicate. A count is the cheapest independent oracle there is.
   //
-  //   91 = 88 G-NET + 3 G-CANON-LEG.
-  //   63 = 60 endpoint orders + 3 road-end orders.
-  //   The 28-line gap is `gSpineNet` reporting a RELAY edge's endpoints twice
-  //   — once in the generic [from, to, ...via] walk (check_content.mjs:2471)
-  //   and again in the relay-chain walk (:2502). 28 relay endpoints x 2 = 56
-  //   f-tower FAIL lines against 28 work orders. That double-report is a
-  //   pre-existing check_content defect, not this diff's.
+  //   WAS 91 = 88 G-NET + 3 G-CANON-LEG, measured while content/spine/edges.json
+  //   still carried all 20 pre-redraw edges through generation. Plan E Task 6
+  //   Steps 6/6b applied the owner rulings to the COMMITTED file: 5 edges
+  //   retired (both relays, e-sea-lane, both terrace tracks), the 7 legs and
+  //   the 2 sea lanes re-pointed at f-town-* features, e-cindervast-approach
+  //   re-sited, the road points translated. So the edges the generator now
+  //   carries into the draft are 15 that already resolve, and the 88 G-NET
+  //   lines are gone at their source rather than filtered away.
+  //
+  //   WHAT REMAINS IS 3, AND IT IS NOT A RESIDUE: all three are G-CANON-LEG
+  //   `endpoint n-millcross is not frozen`, on the three legs that start at
+  //   Millcross. The draft unfreezes the whole trunk by construction, and
+  //   G-FROZEN only permits refreezing under a frozen ancestor — which is Task
+  //   7's refreeze, root-first, AFTER this commit. The work order says so in
+  //   as many words, including that re-pointing the endpoint would EVADE the
+  //   rule rather than satisfy it. The set is pinned below so a fourth line,
+  //   or a different edge, cannot hide inside the count.
   //
   // Moving either number is a WORLD CHANGE and needs a reason written beside
   // it, exactly like the ring goldens.
-  assert.equal(fails.length, 91,
-    "the draft root's failure count moved — 91 carried canon, the five G-POI floor shortfalls " +
-    "having become DECLARED warnings in budgets.json (Task 13)");
+  assert.deepEqual(
+    fails.map((l) => l.replace(/^FAIL {2}spine: /, "")).sort(),
+    [
+      "G-CANON-LEG e-leg-millcross-embervale: endpoint n-millcross is not frozen",
+      "G-CANON-LEG e-leg-millcross-gildmark: endpoint n-millcross is not frozen",
+      "G-CANON-LEG e-leg-millcross-rooktide: endpoint n-millcross is not frozen",
+    ],
+    "the draft root's carried-canon failures moved — the only legal residue here is the three " +
+    "Millcross legs waiting on Task 7's root-first refreeze",
+  );
   // NOT `fails.length - poi.length`, which is what this line used to be. That
   // subtraction LOOKED like it guarded the carried-canon count and did not: a
   // SIXTH thin surveyed region added one to both terms and the difference was
   // still 91. Measured — 15 instances stripped from c05/r15 gave fails 97,
   // poi 6, difference 91, green. It is moot now that the five are warnings, and
   // the filtered assertion below is what the line was always trying to say.
-  assert.equal(fails.filter((l) => /G-NET|G-CANON-LEG/.test(l)).length, 91,
+  assert.equal(fails.filter((l) => /G-NET|G-CANON-LEG/.test(l)).length, 3,
     "the draft root's carried-canon failure count moved");
-  assert.equal(manifest.problems.filter((p) => p.startsWith("edge ")).length, 63,
+  // The 63 work orders were 60 endpoint + 3 road-end, and the 28-line gap
+  // against the gate's 91 was gSpineNet double-reporting each RELAY endpoint.
+  // Both relays are retired (ruling 1), so the gap is gone with them and the
+  // two sides now agree one-for-one: 3 orders for 3 failures.
+  assert.equal(manifest.problems.filter((p) => p.startsWith("edge ")).length, 3,
     "the work-order count moved");
 });
 
@@ -505,27 +526,50 @@ test("every continent node id comes from manifest.landmasses[].nodeId, and c02 s
 });
 
 test("every authored edge survives into the draft, endpoint shapes unmangled", { timeout: 240000 }, () => {
-  // Measured against the live file, ZERO of the 20 committed edges touches an
-  // n-playroot descendant: 7 canon legs, 8 roads, 2 relays and 3 sea lanes are
-  // all between chart nodes and features. A "keep the runtime edges" filter
-  // therefore promotes an EMPTY edges.json and G-NET, G-CANON-LEG and Plan E
-  // Task 6 Step 6's leg re-fit lose their subject at once. Two of the three
-  // endpoint SHAPES are not `{node}` at all — `{feature}` and
-  // `{edge, atIndex}` — so a node-only filter cannot even see them.
+  // Measured against the live file, ZERO committed edge touches an n-playroot
+  // descendant: the canon legs, roads and sea lanes are all between chart nodes
+  // and features. A "keep the runtime edges" filter therefore promotes an EMPTY
+  // edges.json and G-NET, G-CANON-LEG and Plan E Task 6 Step 6's leg re-fit
+  // lose their subject at once. Two of the three endpoint SHAPES are not
+  // `{node}` at all — `{feature}` and `{edge, atIndex}` — so a node-only filter
+  // cannot even see them.
+  //
+  // COUNT AUTHORITY: the edge roster is content/spine/trunk-census.json's
+  // `edges` block (Plan E, E-C4). This test used to name `e-trunk-chain` as its
+  // `{feature}` witness; ruling 1 retired both relays, so a surviving edge of
+  // each SHAPE is chosen from the live file rather than hard-coded — the
+  // property under test is that generation does not mangle a shape, and that
+  // property must keep holding whichever edges the census happens to carry.
   const { out, manifest } = run();
   const live = rj(join(ROOT, "content/spine/edges.json"));
   const draft = rj(join(out, "content/spine/edges.json"));
   const draftIds = new Set(draft.map((e) => e.id));
   for (const e of live) assert.ok(draftIds.has(e.id), `edge ${e.id} (${e.kind}) was dropped by generation`);
+  assert.equal(draft.length, live.length, "generation invented or dropped an edge");
   const byId = new Map(draft.map((e) => [e.id, e]));
-  assert.deepEqual(byId.get("e-trunk-chain").from, { feature: "f-tower-01" });
-  assert.deepEqual(byId.get("e-east-rim-track").to, { edge: "e-coastal-spur", atIndex: 2 });
-  // And the redraw's real consequence is REPORTED: the canon-leg town endpoints
-  // that do not survive are named in run problems, so Plan E Task 6 Step 6 has
-  // a work order instead of a silent hole.
+  const witness = (pred, what) => {
+    const e = live.find((x) => pred(x.from) || pred(x.to));
+    assert.ok(e, `no committed edge carries a ${what} endpoint — this shape has stopped being covered`);
+    return e;
+  };
+  for (const [pred, what] of [
+    [(r) => r && "node" in r, "{node}"],
+    [(r) => r && "feature" in r, "{feature}"],
+    [(r) => r && "edge" in r, "{edge, atIndex}"],
+  ]) {
+    const e = witness(pred, what);
+    assert.deepEqual(byId.get(e.id).from, e.from, `${e.id}.from was mangled`);
+    assert.deepEqual(byId.get(e.id).to, e.to, `${e.id}.to was mangled`);
+  }
+  // And the redraw's real consequence is REPORTED. The vanished-town-endpoint
+  // work orders are gone because Step 6 already re-pointed those legs at their
+  // f-town-* features in the committed file; what the generator still has to
+  // name is the ONE unresolved thing left — n-millcross unfrozen in the draft,
+  // which Task 7's root-first refreeze closes. A run that names nothing at all
+  // would mean the reporting path went dark, so it is asserted non-empty.
   assert.ok(manifest.problems.some((p) =>
-    /^edge e-leg-millcross-gildmark \(leg\): endpoint node "n-gildmark"/.test(p)),
-    `a vanished leg endpoint must be named. problems: ${JSON.stringify(manifest.problems)}`);
+    /^edge e-leg-millcross-gildmark \(leg\): canon-leg endpoint n-millcross is not frozen/.test(p)),
+    `the surviving work order must be named. problems: ${JSON.stringify(manifest.problems)}`);
 });
 
 test("edgeWorkOrder names all three endpoint shapes and the frozen rule", () => {
@@ -589,28 +633,54 @@ test("the three preserved chart anchors survive generation, re-parented and tran
     assert.equal(n.absoluteAnchor, undefined,
       "G-FROZEN is directional: an unfrozen node carrying absoluteAnchor fails too");
   }
-  // THE PLAN SAYS THEIR GEOMETRY SURVIVES VERBATIM (:6983) AND IT CANNOT: all
-  // three sit in the retired 30 x 38 km cluster-1 frame, and every one of those
-  // points is open sea in the generated world. They are TRANSLATED by their
-  // lineage continent's own anchor delta instead.
+  // THE PLAN SAID THEIR GEOMETRY SURVIVES VERBATIM (:6983) AND IT COULD NOT:
+  // all three sat in the retired 30 x 38 km cluster-1 frame, and every one of
+  // those points was open sea in the generated world.
+  //
+  // RE-PINNED 2026-08-28 (STATE §28 D1). The rule this used to assert — "each
+  // preserved node moves by its lineage continent's own anchor delta" — was
+  // measured wrong: it moved n-thornveil and n-northern-icefield by
+  // [60.75, 133.75] while Step 6e moved the town host by PIN_OFFSET
+  // [81, 129], leaving both regions 20.80 km from their own pins. And the
+  // assertion could not see it, because the live tree IS the promoted tree:
+  // `before` was the already-translated node, host anchor minus ancestor
+  // anchor was [0, 0], and the equality compared a placement with itself.
+  //
+  // The rule now, for every preserved node: its COMPOSED WORLD ANCHOR IS ITS
+  // PIN'S `at`, derived by inverting the parent composition. That is what is
+  // asserted here — the draft placement against content/world/civil/
+  // pinned-roster.json, two documents the generator does not reconcile
+  // anywhere else — plus the containment G-CONTAIN checks. The translation
+  // equality is kept for the shape claim (the placement moves rigidly, the
+  // authored geometry is not redrawn) and is honestly noted as unarmed while
+  // the run is idempotent: it can only speak on a tree whose preserved nodes
+  // are NOT already on their pins. G-PIN-ANCHOR (scripts/check_content.mjs)
+  // is the armed reader of this rule, proven red-then-green on the two
+  // nodes above.
   const live = readdirSync(join(ROOT, "content/spine/nodes")).map((f) => rj(join(ROOT, "content/spine/nodes", f)));
   const liveById = new Map(live.map((d) => [d.id, d]));
+  const roster = rj(join(ROOT, "content/world/civil/pinned-roster.json"));
   for (const id of ["n-thornveil", "n-northern-icefield", "n-millcross"]) {
     const before = liveById.get(id), afterNode = byId.get(id);
-    assert.notDeepEqual(before.placement.anchor, afterNode.placement.anchor,
-      `${id} was NOT translated — verbatim geometry puts it in open water`);
     const ancestor = liveContinentAncestor({ id, liveById });
     assert.equal(ancestor.id, "n-cluster1");
     const host = byId.get(afterNode.parentId);
-    const dx = host.placement.anchor[0] - ancestor.placement.anchor[0];
-    const dy = host.placement.anchor[1] - ancestor.placement.anchor[1];
+    const pin = pinForNodeId({ nodeId: id, rows: roster.rows });
+    assert.ok(pin, `${id} names no single civil pin — it cannot be re-placed`);
+    // The whole host chain is km-per-1, so the composed root anchor IS the
+    // placement anchor. Asserted, not assumed: a unit-changing frame here
+    // would make the comparison below compare two different frames.
+    assert.equal(host.interior.perParentUnit, 1);
+    assert.equal(host.parentId, "n-atlas");
+    assert.deepEqual(afterNode.placement.anchor, pin.at,
+      `${id}: the draft anchor is not ${pin.id}'s at — a preserved node is placed on its pin, not near it`);
+    const dx = pin.at[0] - before.placement.anchor[0];
+    const dy = pin.at[1] - before.placement.anchor[1];
     assert.deepEqual(afterNode.placement,
-      translatePlacement({ placement: before.placement, dx, dy }));
+      translatePlacement({ placement: before.placement, dx, dy }),
+      `${id}: the draft placement is not its committed placement moved rigidly onto ${pin.id}`);
     assert.ok(placementInside({ placement: afterNode.placement, ring: host.placement.points }),
-      `${id} is not inside ${host.id} after translation — G-CONTAIN would red it`);
-    // and the pre-translation position is NOT inside, which is the whole point
-    assert.ok(!placementInside({ placement: before.placement, ring: host.placement.points }),
-      `${id}'s live placement is already inside the generated ring — the translation is doing nothing`);
+      `${id} is not inside ${host.id} after re-placement — G-CONTAIN would red it`);
   }
 });
 

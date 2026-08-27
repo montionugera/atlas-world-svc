@@ -4,105 +4,133 @@
   "parentId": "n-atlas",
   "title": "Driftholt",
   "provenance": {
-    "authored": "hand",
+    "authored": "generated",
     "generator": {
-      "name": "gen-world",
-      "version": "1"
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-07.json"
     },
-    "source": "tools/mapforge/gen-world.mjs"
+    "source": "content/world/premises/continent-07.json"
   },
   "frozen": false,
   "seed": {
-    "value": "9d803b9d882b4085",
+    "value": "1d196d637aacc2fe",
     "epoch": 0,
     "why": null
   },
   "placement": {
     "shape": "polygon",
     "points": [
-      [207.9, 278.8],
-      [206.3, 282.3],
-      [203, 283.9],
-      [200.6, 285.9],
-      [197.4, 285.9],
-      [193.5, 285.7],
-      [193.9, 281.3],
-      [191.7, 278.8],
-      [192.6, 275.7],
-      [195.7, 274.7],
-      [197, 270.2],
-      [200.6, 272],
-      [204.5, 271.9],
-      [203.9, 276.5]
+      [15, 86.5],
+      [16, 82],
+      [19, 76],
+      [25.5, 69],
+      [30.5, 65.5],
+      [43, 61],
+      [54.5, 61],
+      [60, 62.5],
+      [67.5, 66.5],
+      [76, 75.5],
+      [80, 85],
+      [80.5, 90.5],
+      [75, 100.5],
+      [74.5, 100.5],
+      [74.5, 101.5],
+      [73.5, 102],
+      [73.5, 102.5],
+      [73, 102.5],
+      [73, 103.5],
+      [66, 110],
+      [66, 110.5],
+      [65, 110.5],
+      [63.5, 112.5],
+      [62.5, 112.5],
+      [62, 113.5],
+      [61, 113.5],
+      [60.5, 114.5],
+      [57.5, 115.5],
+      [57.5, 116],
+      [56.5, 116],
+      [56.5, 116.5],
+      [55.5, 116.5],
+      [55.5, 117],
+      [54.5, 117],
+      [54.5, 117.5],
+      [50, 118.5],
+      [50, 119],
+      [48, 119],
+      [48, 119.5],
+      [41, 120],
+      [41, 120.5],
+      [32.5, 120],
+      [32.5, 119.5],
+      [30, 119.5],
+      [30, 119],
+      [28.5, 119],
+      [28.5, 118.5],
+      [27, 118.5],
+      [26, 117],
+      [25, 117],
+      [22, 113.5],
+      [21.5, 113.5],
+      [21.5, 112.5],
+      [20, 111.5],
+      [19.5, 110],
+      [19, 110],
+      [18, 107],
+      [17.5, 107],
+      [17.5, 106],
+      [17, 106],
+      [17, 105],
+      [16.5, 105],
+      [16.5, 104],
+      [16, 104],
+      [15.5, 100.5],
+      [15, 100.5],
+      [15, 98],
+      [14.5, 98],
+      [14.5, 87.5],
+      [15, 87.5]
     ],
-    "anchor": [199.2, 278.8]
+    "anchor": [47.75, 89.75]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [16.200000000000017, 15.699999999999989],
-    "originInParent": [191.7, 270.2]
+    "size": [66, 59.5],
+    "originInParent": [14.5, 61]
   },
   "composition": {
-    "rock": 50,
-    "meadow": 30,
-    "forest": 20
+    "meadow": 82.2,
+    "upland": 13.7,
+    "marsh": 2.4,
+    "forest": 1.5,
+    "river": 0.2
   },
   "interstitial": null,
   "interstitialUnsurveyed": false,
   "compositionTolerance": null,
   "toleranceWhy": null,
+  "terrainKind": null,
   "features": [
     {
-      "id": "f-driftholt-reef",
-      "kind": "line",
-      "points": [
-        [197.4, 285.9],
-        [193.5, 285.7],
-        [193.9, 281.3],
-        [191.7, 278.8],
-        [192.6, 275.7],
-        [195.7, 274.7],
-        [197, 270.2]
-      ],
-      "attrs": {
-        "note": "A reef-line reported as a saw of stone along the chain's weather side.",
-        "name": "the Driftholt Saw"
-      }
-    },
-    {
-      "id": "f-driftholt-isle-1",
+      "id": "f-town-c07-s01",
       "kind": "point",
-      "at": [203.8, 281.1],
+      "at": [78.25, 92.75],
       "attrs": {
-        "role": "outlying-isle",
-        "name": null
-      }
-    },
-    {
-      "id": "f-driftholt-isle-2",
-      "kind": "point",
-      "at": [198, 283.4],
-      "attrs": {
-        "role": "outlying-isle",
-        "name": null
-      }
+        "name": null,
+        "role": "village",
+        "town": "c07/s01"
+      },
+      "type": null
     }
   ],
   "bands": [],
-  "runtime": {
-    "mapIds": [],
-    "originU": null,
-    "spawnAreas": [],
-    "mobSettings": null,
-    "seedDemoNPCs": false,
-    "collision": "none"
-  },
+  "runtime": null,
   "representsNodeId": null,
   "lore": {
-    "reported": true,
-    "summary": "A chain named for the wooded holt that drifts in and out of fog-sight; only the main isle is fixed on any chart."
+    "summary": "fog forest on a windward slope — the wettest ground in the world"
   },
-  "tags": ["archipelago"],
-  "levelBand": null
+  "tags": [],
+  "levelBand": [10, 36]
 }

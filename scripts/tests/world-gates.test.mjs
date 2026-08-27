@@ -1004,13 +1004,24 @@ test("G-PROVENANCE's fabric pin is CONTINENT-only and does not fire on a hand-au
     node.provenance = { authored: "hand", generator: null, source: "fixture" };
   } });
   assert.doesNotMatch(runWorld(dir).out, /G-PROVENANCE: n-c/);
-  // …and the committed 44-node root has no `generated` node at all, which is
-  // why this rule is dormant there. If that ever stops being true the assertion
-  // below is what says so.
+  // The second half USED to assert that the committed root held no `generated`
+  // node at all — i.e. that this rule was dormant on the real tree. Plan E's
+  // redraw generated the trunk from the seed, so that premise is dead: the rule
+  // is LIVE on the real root now. Swapping the 0 for a 25 would pin a number
+  // and prove nothing, so what is asserted instead is the property the rule
+  // exists to enforce — every committed generated node carries the fabric pin
+  // that is G-TRUNK-AREA's activation key. That is strictly stronger than the
+  // dormancy claim it replaces, and it reds the moment a generated node ships
+  // without a pin (which is the failure the test above stages by hand).
   const nodes = readdirSync(join(ROOT, "content/spine/nodes"))
     .map((f) => JSON.parse(readFileSync(join(ROOT, "content/spine/nodes", f), "utf8")));
-  assert.equal(nodes.filter((n) => n.provenance?.authored === "generated").length, 0,
-    "a committed generated node would make G-PROVENANCE's fabric pin live on the real root");
+  const generated = nodes.filter((n) => n.provenance?.authored === "generated");
+  assert.ok(generated.length > 0,
+    "the committed trunk is generated since Plan E — if it is not, this rule went dormant again");
+  assert.deepEqual(
+    generated.filter((n) => !n.provenance?.generator?.fabric).map((n) => n.id), [],
+    "a committed generated node with no generator.fabric leaves G-TRUNK-AREA dormant on it",
+  );
 });
 
 // ── G-POI ──────────────────────────────────────────────────────────────────

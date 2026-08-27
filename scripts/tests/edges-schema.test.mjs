@@ -21,6 +21,7 @@ import { tmpdir } from "node:os";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
+import { TRUNK_EDGES, EDGES_BY_KIND, TRUNK_NODES } from "./helpers/census.mjs";
 
 // Same ESM/CJS interop guard as scripts/lib/story.mjs:11 — `ajv` is CJS, so
 // under ESM the constructor may arrive as the module namespace's `.default`.
@@ -44,18 +45,47 @@ function compile() {
 // module-level EDGES array (node --test runs files in parallel but tests in a
 // file share this module instance).
 const clone = (v) => JSON.parse(JSON.stringify(v));
-const anyOfKind = (kind) => clone(EDGES.find((e) => e.kind === kind));
+const anyOfKind = (kind) => {
+  const found = EDGES.find((e) => e.kind === kind);
+  assert.ok(found, `no committed edge of kind "${kind}" — use a synthetic sample instead`);
+  return clone(found);
+};
 
-test("all 20 committed edges validate", () => {
+// Plan E Task 6 Step 6b ruling 1 RETIRED both relays (`e-trunk-chain`,
+// `e-flat-chain`): they chained `f-tower-*` features, and no tower survives the
+// redraw. `relay` is STILL a declared kind in spine-edge.schema.json (:49) with
+// its own `if/then` branch (:101), so its rules must stay armed — dropping the
+// relay tests along with the relay edges would leave that branch untested and
+// free to rot. The sample below is a minimal, schema-valid relay, kept here
+// rather than read from the corpus for exactly that reason.
+const SYNTHETIC_RELAY = Object.freeze({
+  id: "e-synthetic-relay",
+  kind: "relay",
+  from: { feature: "f-town-gildmark" },
+  to: { feature: "f-town-netstead" },
+  via: [{ feature: "f-town-tallowquay" }],
+  attrs: { note: "synthetic fixture — no relay survives the redraw (ruling 1)" },
+});
+const relaySample = () => clone(SYNTHETIC_RELAY);
+
+// COUNTS COME FROM content/spine/trunk-census.json (Plan E, E-C4) — that file is
+// the authority on the trunk's size and shape, so the next redraw updates ONE
+// file instead of a scatter of literals.
+test("every committed edge validates, and there are as many as the census says", () => {
   const v = compile();
-  assert.equal(EDGES.length, 20);
+  assert.equal(EDGES.length, TRUNK_EDGES,
+    `edges.json holds ${EDGES.length}, content/spine/trunk-census.json says ${TRUNK_EDGES}`);
   for (const e of EDGES) assert.ok(v(e), `${e.id}: ${JSON.stringify(v.errors)}`);
 });
 
 test("the four kinds are present in the expected counts", () => {
   const n = {};
   for (const e of EDGES) n[e.kind] = (n[e.kind] ?? 0) + 1;
-  assert.deepEqual(n, { road: 8, relay: 2, leg: 7, sealane: 3 });
+  // Census authority again: content/spine/trunk-census.json `edges.byKind`.
+  assert.deepEqual(n, EDGES_BY_KIND);
+  // The schema's ENUM is deliberately NOT census-derived: `relay` stays a legal
+  // kind with a live if/then branch even though ruling 1 retired both relay
+  // edges. A kind vanishing from this list is a schema change, not a redraw.
   assert.deepEqual([...SCHEMA.properties.kind.enum].sort(), [
     "leg",
     "relay",
@@ -107,7 +137,8 @@ test("a road with no points is rejected", () => {
 
 test("a relay with no via is rejected", () => {
   const v = compile();
-  const { via, ...noVia } = anyOfKind("relay");
+  const { via, ...noVia } = relaySample();
+  assert.ok(v(relaySample()), `the synthetic relay must itself be valid: ${JSON.stringify(v.errors)}`);
   assert.equal(v(noVia), false);
 });
 
@@ -165,8 +196,8 @@ test("every unconditionally-required top-level key is required", () => {
 test("dashed is road-only — the other three kinds reject it", () => {
   const v = compile();
   for (const e of EDGES) assert.equal("dashed" in e, e.kind === "road", e.id);
-  for (const kind of ["relay", "leg", "sealane"])
-    assert.equal(v({ ...anyOfKind(kind), dashed: true }), false, `${kind} must reject dashed`);
+  for (const sample of [relaySample(), anyOfKind("leg"), anyOfKind("sealane")])
+    assert.equal(v({ ...sample, dashed: true }), false, `${sample.kind} must reject dashed`);
   assert.ok(v(anyOfKind("road")), "a road still carries dashed legitimately");
 });
 
@@ -211,8 +242,8 @@ test("a non-object endpoint ref is rejected", () => {
 
 test("relay via is an array of endpoint refs, and an object via is rejected", () => {
   const v = compile();
-  const relay = anyOfKind("relay");
-  assert.ok(Array.isArray(relay.via), "the committed relay via is an array");
+  const relay = relaySample();
+  assert.ok(Array.isArray(relay.via), "a relay via is an array");
   assert.equal(v({ ...relay, via: { feature: "f-tower-02" } }), false);
   assert.equal(v({ ...relay, via: [] }), false);
   assert.equal(v({ ...relay, via: [{ town: "f-tower-02" }] }), false);
@@ -332,13 +363,25 @@ function realRoot(t) {
   return dir;
 }
 // The committed root's warning count moved 19 -> 25 when Plan C Task 13
-// committed content/world/fabric/ into it. The six are the world layer
-// describing itself, not drift: FIVE declared supply-limited surveyed regions
-// (G-POI, budgets.json poi.supplyLimitedSurveyedRegions) and ONE G-LANDFORM
-// line naming the two lexicon types no premise kit can place
-// (sinking-river, sub-lacustrine-vent). The count is asserted rather than
-// ignored for the reason the header already gives: a gate that stopped
-// checking also exits 0.
+// committed content/world/fabric/ into it, then 25 -> 21 when Plan E's
+// WATER_TIERS skip (E-C2) stopped the childless oceans warning, and now
+// 21 -> 8 on the redrawn trunk. The 8 are the world layer describing itself,
+// not drift: FIVE declared supply-limited surveyed regions (G-POI,
+// budgets.json poi.supplyLimitedSurveyedRegions), ONE G-LANDFORM line naming
+// the lexicon type no premise kit can place (sub-lacustrine-vent), and TWO
+// G-SPINE-COMPLETE lines for the surviving alias-anchor regions n-thornveil /
+// n-northern-icefield, which by E-C4 are the only two region NODES left and
+// are deliberately childless. The count is asserted rather than ignored for
+// the reason the header already gives: a gate that stopped checking also
+// exits 0.
+//
+// This one is NOT census-derived and is re-pinned in place on purpose: it is a
+// gate-BEHAVIOUR golden (which rules warn on this corpus), not a function of
+// how many nodes the trunk holds. The node count beside it IS census-derived
+// and is read from content/spine/trunk-census.json.
+const SPINE_WARNINGS = 8;
+const counts = (failures) =>
+  new RegExp(`${TRUNK_NODES} nodes, ${failures} failures, ${SPINE_WARNINGS} warnings`);
 function runGate(dir) {
   try {
     return { code: 0, out: execFileSync(process.execPath,
@@ -357,10 +400,7 @@ test("the real content root is green under the wired-in validation", (t) => {
   assert.equal(r.code, 0, r.out);
   // Trap 3: assert the printed record counts, never just exit 0 — a gate that
   // stopped checking also exits 0.
-// Plan E (E-C2): the four childless oceans (n-westsea, n-galereach,
-  // n-keelbreak, n-tarnmark) no longer warn — water has no surveyed interior —
-  // so the real root prints 21 warnings, not 25. The exact count is the evidence.
-  assert.match(r.out, /44 nodes, 0 failures, 21 warnings/, r.out);
+  assert.match(r.out, counts(0), r.out);
   assert.doesNotMatch(r.out, /G-EDGE-SCHEMA/);
 });
 
@@ -402,7 +442,7 @@ test("a `to`-less edge is one clean failure, not a crash", (t) => {
   assert.match(r.out, /G-EDGE-SCHEMA: spine\/edges\.json\[0\] \(e-trade-road-trunk\): \/ must have required property 'to'/, r.out);
   assert.doesNotMatch(r.out, /TypeError/, "the gate must not throw");
   // finish() ran: the record counts printed, which is what a crash suppresses.
-  assert.match(r.out, /44 nodes, 1 failures, 21 warnings/, r.out);
+  assert.match(r.out, counts(1), r.out);
 });
 
 test("a content root with no edges.json is still green (soft-skip)", (t) => {
@@ -424,7 +464,7 @@ test("a content root with edges but no edge schema soft-skips (plan Step 4 corre
   rmSync(join(dir, "schemas/spine-edge.schema.json"));
   const r = runGate(dir);
   assert.equal(r.code, 0, r.out);
-  assert.match(r.out, /44 nodes, 0 failures, 21 warnings/, r.out);
+  assert.match(r.out, counts(0), r.out);
   assert.doesNotMatch(r.out, /spine-edge schema/, r.out);
 });
 
@@ -437,7 +477,7 @@ test("an unparsable edge schema fails in-band and still reaches finish()", (t) =
   assert.equal(r.code, 1, r.out);
   assert.match(r.out, /spine-edge schema: cannot read\/parse/, r.out);
   assert.doesNotMatch(r.out, /SyntaxError|TypeError/, r.out);
-  assert.match(r.out, /44 nodes, 1 failures, 21 warnings/, r.out);
+  assert.match(r.out, counts(1), r.out);
 });
 
 // The soft-skip on an absent schema means a DELETED content/schemas/

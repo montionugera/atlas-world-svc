@@ -10,6 +10,8 @@ import { codeOfFile, lineOf, stripComments, sourceFilesUnder, LEGACY_IMPRECISE_F
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const LIB = resolve(HERE, "../lib");
+import { TRUNK_NODES } from "../../../scripts/tests/helpers/census.mjs";
+
 const REPO = resolve(HERE, "../../..");
 // DERIVED, not listed. This was `["noise.mjs", "seed.mjs", "grid.mjs"]` and
 // nobody extended it when lib/passes/ landed, so the three generator passes on
@@ -256,7 +258,11 @@ test("RESERVED_STREAM_NAMES is exactly the key set derived.json commits", () => 
     nodes++;
     keySets.add(Object.keys(rec.resolvedSeedStreams).sort().join(","));
   }
-  assert.ok(nodes >= 44, `only ${nodes} committed nodes carry resolvedSeedStreams`);
+  // COUNT AUTHORITY: content/spine/trunk-census.json (Plan E, E-C4). `>= 44`
+  // was the pre-redraw trunk; EXACT is what the join needs — a `>=` lets nodes
+  // silently stop carrying streams as long as enough others still do.
+  assert.equal(nodes, TRUNK_NODES,
+    `${nodes} committed nodes carry resolvedSeedStreams; content/spine/trunk-census.json says ${TRUNK_NODES}`);
   assert.equal(keySets.size, 1, "committed nodes disagree about which streams they name");
   assert.equal([...keySets][0], [...RESERVED_STREAM_NAMES].sort().join(","),
     "mapforge's reserved list has drifted from what derived.json actually commits");
@@ -337,8 +343,10 @@ test("the noise field is pinned to committed golden values, not merely to itself
 test("mintSeed reproduces every seed stream already committed in derived.json", () => {
   const derived = JSON.parse(readFileSync(join(REPO, "content/spine/derived.json"), "utf8"));
   // The golden literal first, so this test still pins a value if derived.json
-  // is ever regenerated: n-ashvale-front's seed is fea688ddeefe8c42 and its
-  // committed `terrain` stream is c49af60a9fb6ecaf.
+  // is ever regenerated. It is a pure function of (worldSeed, name) and owes
+  // nothing to the tree, which is why the redraw did not move it — the pair
+  // was READ from the pre-redraw n-ashvale-front, a node the redraw retired,
+  // and it stays here as an independent oracle on namedStream's construction.
   assert.equal(namedStream({ worldSeed: "fea688ddeefe8c42", name: "terrain" }), "c49af60a9fb6ecaf");
   let joined = 0;
   for (const [id, rec] of Object.entries(derived)) {
@@ -354,9 +362,12 @@ test("mintSeed reproduces every seed stream already committed in derived.json", 
       joined++;
     }
   }
-  // 44 committed nodes x 4 named streams. A join that stops joining is a test
-  // that stopped testing (STATE §6 trap 7), so the count is asserted.
-  assert.ok(joined >= 170, `only ${joined} committed streams joined — this test has gone dark`);
+  // Every committed node x its 4 named streams. A join that stops joining is a
+  // test that stopped testing (STATE §6 trap 7), so the count is asserted —
+  // EXACTLY, and derived from content/spine/trunk-census.json rather than typed,
+  // so the next redraw updates one file instead of this literal.
+  assert.equal(joined, TRUNK_NODES * RESERVED_STREAM_NAMES.length,
+    `${joined} committed streams joined; the census expects ${TRUNK_NODES} nodes x ${RESERVED_STREAM_NAMES.length} streams`);
 });
 
 // falloff was EXPORTED WITH NO TEST AT ALL: `grep -c falloff` over both test

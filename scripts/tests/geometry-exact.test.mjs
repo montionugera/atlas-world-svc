@@ -454,7 +454,8 @@ test("buildBBoxIndex: a duplicate id keeps EVERY bbox registered under it", () =
 // and that is the correct direction of change but it must be seen first.
 import { join, dirname, resolve as pathResolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { TRUNK_NODES } from "./helpers/census.mjs";
 import {
   loadSpine, buildTree, gridIntersectionArea, placementArea,
   SPINE_CELL_KM, SPINE_CELL_U,
@@ -519,8 +520,31 @@ function equivalenceScan() {
   return SCAN;
 }
 
-test("equivalence: exactly 133 sibling pairs exist on the committed spine", () => {
-  assert.equal(equivalenceScan().pairs.length, 133);
+// COUNT AUTHORITY: content/spine/trunk-census.json (Plan E, E-C4). The literal
+// `133` that stood here was the PRE-redraw pair count, and swapping it for the
+// post-redraw one would be the same defect with a newer number — the next
+// redraw would have to hunt it down again. What the assertion is actually for
+// is that the scan covers the WHOLE spine rather than silently going empty, so
+// it now recomputes the expected number from the committed node FILES (an
+// independent path from buildTree, which is the thing under test) and pins the
+// node total against the census.
+test("equivalence: the scan covers every non-point sibling pair on the committed spine", () => {
+  const dir = join(REPO, "content/spine/nodes");
+  const nodes = readdirSync(dir)
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => JSON.parse(readFileSync(join(dir, f), "utf8")));
+  assert.equal(nodes.length, TRUNK_NODES,
+    `content/spine/nodes holds ${nodes.length}; content/spine/trunk-census.json says ${TRUNK_NODES}`);
+  const kids = new Map();
+  for (const n of nodes) {
+    if (n.placement?.shape === "point" || !n.parentId) continue;
+    kids.set(n.parentId, (kids.get(n.parentId) ?? 0) + 1);
+  }
+  let want = 0;
+  for (const c of kids.values()) want += (c * (c - 1)) / 2;
+  assert.ok(want > 0, "the committed spine has no sibling pairs at all — the scan would prove nothing");
+  assert.equal(equivalenceScan().pairs.length, want,
+    "buildTree's sibling pairs disagree with the committed node files");
 });
 
 test("equivalence: exact clipping agrees with grid sampling on every PAIRWISE G-OVERLAP verdict", () => {

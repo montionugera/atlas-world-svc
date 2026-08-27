@@ -140,14 +140,59 @@ function basinLocal(nodeId) {
   return false;
 }
 
-test("PIN_OFFSET is DERIVED from the committed premise, never retyped", () => {
-  const c02 = premises().c02;
-  const basin = JSON.parse(readFileSync(join(ROOT, "content/spine/nodes/n-cluster1.json"), "utf8"));
-  const want = [c02.footprint.centreKm[0] - basin.placement.anchor[0],
-                c02.footprint.centreKm[1] - basin.placement.anchor[1]];
+// PIN_OFFSET's derivation, with the operand the redraw retired RECORDED.
+//
+// This check used to read `c02.footprint.centreKm - n-cluster1.placement.anchor`
+// straight off disk. Half of that subtraction stopped existing: Plan E redraws
+// n-cluster1 from the seed, its anchor moved [15, 19] -> [75.75, 152.75], and
+// the check went from proving the offset to proving nothing — it compared the
+// committed [81, 129] against a difference taken in a frame that had been
+// deleted. The VALUE is independently right (see the construction proof
+// below), so it is the derivation that went stale, not the number.
+//
+// The fix is not to retire the check — PIN_OFFSET is load-bearing (Task 6
+// ruling 5 translates every retained road's points by it) and must stay
+// derivable — and not to re-pin it to whatever the live subtraction now gives,
+// which would be a different offset with the same name. The operands are
+// recorded in the roster beside the offset, and this test verifies THEM:
+//
+//   1. the arithmetic, against the recorded pair;
+//   2. the LIVE operand (the premise centre) against the premise file, so a
+//      packing change that moves c02 still reds here;
+//   3. the construction proof, whose POST side is live — the pre-redraw
+//      Millcross anchor plus the offset IS `c-town-millcross.at` to the
+//      decimal, and that row is re-read on every run.
+//
+// What is NOT verifiable any more is the retired subtrahend itself. It is
+// recorded with `live: false` and this test asserts that flag, so nobody
+// "repairs" the record by pointing it back at a node whose anchor would
+// silently re-pin the offset.
+test("PIN_OFFSET is DERIVED, and its derivation names operands that still exist", () => {
   const roster = JSON.parse(readFileSync(ROSTER, "utf8"));
-  assert.deepEqual(roster.pinOffset, want,
-    `pinOffset ${JSON.stringify(roster.pinOffset)} does not equal c02.centreKm - n-cluster1.anchor ${JSON.stringify(want)}`);
+  const d = roster.pinOffsetDerivation;
+  assert.ok(d, "pinned-roster.json carries no pinOffsetDerivation — the offset would be a bare number again");
+
+  // 1. the arithmetic
+  assert.deepEqual(
+    roster.pinOffset,
+    [d.minuend.value[0] - d.subtrahend.value[0], d.minuend.value[1] - d.subtrahend.value[1]],
+    `pinOffset ${JSON.stringify(roster.pinOffset)} is not minuend - subtrahend`);
+
+  // 2. the operand that still exists
+  assert.equal(d.minuend.live, true);
+  assert.deepEqual(d.minuend.value, premises().c02.footprint.centreKm,
+    "the recorded minuend is not c02's committed footprint.centreKm any more — re-run Step 1");
+
+  // 3. the construction proof, live on its post side
+  assert.equal(d.subtrahend.live, false,
+    "the subtrahend is marked live: the pre-redraw n-cluster1 anchor no longer exists and must not be re-read");
+  const post = roster.rows.find((r) => r.id === d.provesWith.post);
+  assert.ok(post, `provesWith.post names ${d.provesWith.post}, which is not a roster row`);
+  assert.deepEqual(
+    [Math.round((d.provesWith.pre[0] + roster.pinOffset[0]) * 10) / 10,
+     Math.round((d.provesWith.pre[1] + roster.pinOffset[1]) * 10) / 10],
+    post.at,
+    `${JSON.stringify(d.provesWith.pre)} + pinOffset does not land on ${post.id} — the offset is wrong, not the record`);
 });
 
 test("every pinned row lands INSIDE its declared continent's footprint ellipse", () => {
@@ -169,36 +214,69 @@ test("every pinned row lands INSIDE its declared continent's footprint ellipse",
   assert.deepEqual(outside, []);
 });
 
-test("every re-fitted basin row IS its spine node's anchor plus pinOffset", () => {
+test("every surviving basin row IS its spine node's composed world anchor", () => {
   // The other half of the divergence guard. The ellipse test above catches a
   // pin that left its continent; this one catches a pin that was hand-typed
-  // instead of translated, and it catches the sharper error Step 1 warns about
-  // — translating a node whose anchor is not basin-local. Both `at` values
-  // below MUST come from a node in n-cluster1's subtree.
-  const BASIN = {
-    "c-town-millcross": "n-millcross", "c-town-gildmark": "n-gildmark",
-    "c-town-rooktide": "n-rooktide", "c-town-cindervast": "n-cindervast-town",
-    "c-town-embervale": "n-embervale", "c-town-norhollow": "n-norhollow",
-    "c-lm-thornveil": "n-thornveil", "c-lm-northern-icefield": "n-northern-icefield",
-    "c-lm-ashvale-front": "n-ashvale-front", "c-lm-emberdown": "n-emberdown",
-    "c-lm-hollowmarch": "n-hollowmarch", "c-lm-meltwash-terrace": "n-meltwash-terrace",
-    "c-lm-millcross-ford": "n-millcross-ford", "c-lm-gildmark-head": "n-gildmark-head",
-    "c-lm-rooktide-reach": "n-rooktide-reach", "c-lm-the-saltmire": "n-saltmire",
-    "c-lm-eastern-hills": "n-eastern-hills", "c-lm-expedition-camp": "n-expedition-camp",
-  };
+  // instead of derived from the node it names.
+  //
+  // PLAN E TASK 6 — WHAT MOVED, AND WHY IT IS NOT A RE-PIN. This test carried
+  // an 18-entry literal map from roster row id to spine node id. Fifteen of
+  // those nodes do not survive the redraw, and replacing the eighteen with a
+  // fresh three would be the same defect with a newer number — the next redraw
+  // would have to hunt them again. So nothing is typed here any more:
+  //
+  //   - the SET is enumerated from content/spine/nodes/ by the same
+  //     basin-locality walk the old map's guard used, so it is whatever the
+  //     trunk actually hosts under n-cluster1;
+  //   - its SIZE is checked against content/spine/trunk-census.json, whose
+  //     `why.region` ("n-thornveil and n-northern-icefield ONLY") and
+  //     `why.town` ("n-millcross ONLY") are precisely the basin survivors, so
+  //     the census is the authority on this count too;
+  //   - the ROW for each node is derived from its slug (`c-town-<slug>` for a
+  //     town tier, `c-lm-<slug>` for a landmark), and exactly one must exist.
+  //
+  // The ARITHMETIC moved for a measured reason, not a convenient one. Before
+  // the redraw a basin node's anchor was basin-local and the roster row was
+  // that anchor plus `pinOffset`. The redraw translated the basin's own
+  // geometry by that same offset (STATE §28 ruling 5), so a surviving node's
+  // `placement.anchor` is now already in world km and adding the offset again
+  // would double-count it. The invariant that replaces it is the one STATE §28
+  // D2 measured on the preserved town host: a node's COMPOSED world anchor —
+  // resolved through its parents, never read off one file — equals its pin's
+  // `at`. That is strictly harder to satisfy by hand-typing than the old form,
+  // because it has to survive the composition.
+  //
+  // `lore.labelAt` is deliberately NOT consulted any more: on the two surviving
+  // region nodes it still holds the PRE-translation basin-local point, so the
+  // old `absoluteAnchor ?? lore.labelAt ?? placement.anchor` chain would read a
+  // stale frame here (filed, see the phase report).
+  const spine = loadSpine({ contentRoot: join(ROOT, "content") });
+  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
   const roster = JSON.parse(readFileSync(ROSTER, "utf8"));
   const rows = new Map(roster.rows.map((r) => [r.id, r]));
-  const [ox, oy] = roster.pinOffset;
+
+  // n-cluster1 is the basin ROOT, not a place in it: basinLocal() is true of it
+  // by definition and it has no roster row.
+  const basin = spine.nodes
+    .filter((n) => n.id !== "n-cluster1" && basinLocal(n.id))
+    .sort((a, b) => a.id.localeCompare(b.id));
+  assert.equal(basin.length, CENSUS_BY_TIER.region + CENSUS_BY_TIER.town,
+    `content/spine/trunk-census.json budgets ${CENSUS_BY_TIER.region} region + ${CENSUS_BY_TIER.town} town nodes under n-cluster1, `
+    + `but the trunk hosts ${basin.length}: ${basin.map((n) => n.id).join(", ")}`);
+
   const wrong = [];
-  for (const [rowId, nodeId] of Object.entries(BASIN)) {
-    assert.ok(basinLocal(nodeId),
-      `${nodeId} is not inside n-cluster1's subtree; its anchor is not basin-local and must not be translated`);
-    const node = JSON.parse(readFileSync(join(ROOT, `content/spine/nodes/${nodeId}.json`), "utf8"));
-    const a = node.absoluteAnchor ?? node.lore?.labelAt ?? node.placement.anchor;
-    const want = [Math.round((a[0] + ox) * 10) / 10, Math.round((a[1] + oy) * 10) / 10];
-    const got = rows.get(rowId)?.at;
+  for (const node of basin) {
+    const slug = node.id.slice(2);
+    const candidates = [`c-town-${slug}`, `c-lm-${slug}`].filter((id) => rows.has(id));
+    assert.equal(candidates.length, 1,
+      `${node.id} maps to ${candidates.length} roster rows (${candidates.join(", ") || "none"}) — `
+      + "a basin node with no pin, or two, is a divergence the roster cannot express");
+    const want = node.parentId === null
+      ? node.placement.anchor
+      : resolveToRoot({ tree, id: node.parentId, point: node.placement.anchor });
+    const got = rows.get(candidates[0]).at;
     if (JSON.stringify(got) !== JSON.stringify(want))
-      wrong.push(`${rowId}: roster ${JSON.stringify(got)} != ${nodeId} + pinOffset ${JSON.stringify(want)}`);
+      wrong.push(`${candidates[0]}: roster ${JSON.stringify(got)} != ${node.id} composed ${JSON.stringify(want)}`);
   }
   assert.deepEqual(wrong, []);
 });
@@ -588,9 +666,9 @@ test("G-BAND red: a dungeon band that does not overlap its host region's", () =>
 // ONLY file family the three gate joins read. Adaptations vs the plan's Step 1
 // literals are commented inline (plan-vs-repo errata, recorded in
 // docs/superpowers/plans/world-fill-STATE.md §26).
-import { loadPlaces, WORLD_DOC_KEYS, resolveWorld } from "../lib/places.mjs";
-import { drawBasinSheet } from "../../tools/mapforge/lib/basin-sheet.mjs";
-import { loadSpine, buildTree } from "../lib/spine.mjs";
+import { loadPlaces, WORLD_DOC_KEYS } from "../lib/places.mjs";
+import { loadSpine, buildTree, resolveToRoot } from "../lib/spine.mjs";
+import { CENSUS_BY_TIER } from "./helpers/census.mjs";
 
 test("loadPlaces reads content/world/resolved and keeps the load-bearing key order", () => {
   const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
@@ -634,25 +712,37 @@ test("THE RENDER ASSERTION: the sheet renderer's doc contract survives the cutov
   // ERRATUM: the plan drew the BASIN SHEET from loadPlaces' merged doc. That
   // cannot work — the generated world retires relay/sheet as null and
   // drawBasinSheet dereferences geo.relay.towers and geo.sheet.subtitle with
-  // no guard, so its subject remains resolveWorld()'s basin document (fed by
-  // render-sheet.mjs, unchanged by this task). What IS asserted here, in the
-  // plan's spirit: the renderer still draws off its own source (clip-saltmire
-  // emitted from geo.saltmire.polygon, the sea path from geo.coastline.points),
-  // AND the merged generated-world doc carries real geometry for the two keys
-  // an unguarded consumer would trip over.
-  const spine = loadSpine({ contentRoot: join(ROOT, "content") });
-  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
-  const basin = resolveWorld({ spine, tree });
-  assert.deepEqual(basin.problems, []);
-  const { svg, problems } = drawBasinSheet({ doc: basin.doc });
+  // no guard.
+  //
+  // PLAN E RULING 8 (Task 6): the half that drew the sheet is gone with the
+  // sheet. `cluster1` is out of SHEETS, nothing in production reaches
+  // drawBasinSheet or resolveWorld (pinned in places.test.mjs), and the redrawn
+  // trunk hosts no basin for resolveWorld to assemble — so a drawBasinSheet
+  // call here would be a test of a dormant builder against a document that
+  // cannot be built. Task 8 rebuilds the sheet resolved-backed and brings its
+  // own render coverage.
+  //
+  // What survives is the half this test is NAMED for, and it is asserted more
+  // completely than before: the merged generated-world doc carries real
+  // geometry for every key the null-emitting failure would have blanked, not
+  // just the two an unguarded consumer happened to trip over first.
+  const { doc: merged, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
   assert.deepEqual(problems, []);
-  assert.match(svg, /^<svg /);
-  assert.ok(svg.length > 4000, `the sheet is degenerate at ${svg.length} bytes`);
-  assert.match(svg, /<clipPath id="clip-saltmire"><path d="M/);
-
-  const { doc: merged } = loadPlaces({ contentRoot: join(ROOT, "content") });
   assert.ok(merged.coastline.points.length >= 3, "the coastline has no course");
+  assert.ok(merged.river.points.length >= 2, "the river has no course");
   assert.ok(merged.saltmire.polygon.length >= 3, "the saltmire has no outline");
+  assert.ok(merged.terrainPatches.length >= 1, "the world carries no terrain patch");
+  assert.ok(merged.terrainPatches.every((p) => p.polygon.length >= 3),
+    "a terrain patch has no outline");
+  // `iceEdge` is the one key of the five that IS null, on every one of the
+  // thirteen continent files — the redrawn generator emits no ice-edge feature
+  // anywhere, not even on n-rimewall-cap, the ice cap. That is a generator gap,
+  // FILED (see the Task 6 phase report) and not repaired here, so it is pinned
+  // as the honest current state rather than skipped: the day an ice edge is
+  // emitted this goes red and asks for the same geometry assertion as its four
+  // siblings above.
+  assert.equal(merged.iceEdge, null,
+    "the resolved world now carries an iceEdge — give it the geometry assertion the other four keys have");
 });
 
 test("THE COUNTING ASSERTION: the joins still count on a root whose records match the resolved ids", () => {

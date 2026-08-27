@@ -2234,6 +2234,18 @@ function checkSpine(opts, mobTypes) {
   gSpineNet({ nodes: validNodes, edges: validEdges, tree, canonLegs, pinnedIds,
               isRealContentRoot: opts.contentRoot === join(ROOT, "content"), fail });
 
+  // Plan E Task 6 — G-PIN-ANCHOR. The preserved chart nodes are re-placed on
+  // their own civil pin by generate-world.mjs; this is the machine that reads
+  // that rule. Without it the rule was prose: n-millcross was moved by
+  // PIN_OFFSET and n-thornveil / n-northern-icefield by the generator's
+  // continent-anchor delta, leaving both 20.80 km from their own pins with
+  // every committed gate green.
+  const rosterPath = join(opts.contentRoot, "world/civil/pinned-roster.json");
+  gSpinePinAnchor({
+    nodes: validNodes, tree, fail,
+    roster: existsSync(rosterPath) ? readJson(rosterPath, "pinned-roster", fail) : null,
+  });
+
   // F-041 Phase 1 Task 1.10: G-LOAD-BUDGET + G-COMP-REPORT. Both PRINT on
   // every run that reaches this point (spine/ present, schema compiles).
   gSpineBudgets({ spine, tree, plans: townPlans, contentRoot: opts.contentRoot, fail });
@@ -2405,6 +2417,19 @@ function gSpineGeometry({ nodes, tree, fail }) {
         fail(`spine: G-ANCHOR ${node.id}: point anchor must equal at`);
     } else if (!insideWithTol(a, ring))
       fail(`spine: G-ANCHOR ${node.id}: anchor [${a.join(", ")}] outside placement`);
+    // G-LABEL-FRAME: `lore.labelAt` is in the SAME frame as `placement`, so it
+    // sits inside the node it letters. G-PIN-ANCHOR's companion, one field
+    // over: the redraw moved the preserved regions' placements onto their pins
+    // and left `lore.labelAt` behind in the retired basin-local frame
+    // (n-thornveil [24.4, 26] against a placement at [105.4, 155]), and every
+    // committed gate stayed green because nothing read the field. Containment,
+    // not equality — a label may legitimately sit off-centre inside its own
+    // footprint; a label in a different frame cannot land inside it at all.
+    // A `point` placement has no footprint to be inside — its ring is the one
+    // vertex — and a label legitimately sits OFF a pin. Out of scope by shape.
+    const labelAt = node.placement.shape === "point" ? null : node.lore?.labelAt;
+    if (Array.isArray(labelAt) && labelAt.length === 2 && ring && !insideWithTol(labelAt, ring))
+      fail(`spine: G-LABEL-FRAME ${node.id}: lore.labelAt [${labelAt.join(", ")}] is outside the node's own placement — labelAt is authored in the same frame as placement, so a label outside it is a stale frame, not a placement choice`);
     // G-CONTAIN: child vertices + edge midpoints inside parent placement.
     // Frame rule: a per=1 child placement continues the parent grid, so its
     // points compare against the parent ring directly — no rebasing.
@@ -2682,6 +2707,85 @@ function gSpineFrozen({ nodes, tree, fail }) {
 // Exported for canon-legs.test.mjs: the missing-ledger guard below keys on
 // `isRealContentRoot`, a condition a temp fixture root can never satisfy, so
 // the red case is unit-tested here rather than spawned.
+// ── G-PIN-ANCHOR ───────────────────────────────────────────────────────────
+//
+// A spine node that NAMES a pinned place STANDS WHERE THAT PLACE IS PINNED.
+//
+// The join is the slug: a trunk node `n-<slug>` and the civil rows
+// `c-town-<slug>` / `c-lm-<slug>` are the same place under two vocabularies —
+// the same join Task 6 Step 6g's road-tip rule uses to read an endpoint's
+// anchor out of `pinned-roster.json`. A node whose slug matches no row, or
+// more than one, is out of scope: this rule is about nodes and pins that
+// already agree they name one place, not about inventing the correspondence.
+//
+// WATER IS OUT OF SCOPE, by TIER. Every civil row is a `town` or a `landmark`
+// on a named `continent` — a point on a landmass. A trunk node at tier
+// `ocean` or `sea` is a body of water, so a slug shared with a civil row is a
+// coincidence of naming, not a claim about one place. Measured on the live
+// corpus: the generated marginal seas `n-reed-shallows` and
+// `n-rimewall-margin` share a slug with `c-lm-reed-shallows` and
+// `c-lm-rimewall-margin`, which are points on their SHORES. Asking a sea to
+// stand on a rock is not the rule.
+//
+// The exemption is the TIER, not `provenance.authored`. Scoping by authorship
+// looked right — the preserved set is exactly the hand-authored one — and was
+// wrong: scripts/tests/world-budget.test.mjs's stub root legitimately
+// hand-authors the WHOLE trunk (`handAuthorTrunk`) to model "a spine with no
+// world layer behind it", which pulled both seas straight back into scope. A
+// tier cannot be re-declared by a fixture that is modelling something else.
+//
+// WHY IT EXISTS. Three chart nodes survive the redraw (`n-millcross`,
+// `n-thornveil`, `n-northern-icefield`) and every one of them has a civil pin.
+// The redraw moved them by two DIFFERENT offsets — the town host by
+// PIN_OFFSET, the two regions by the generator's continent-anchor delta — and
+// the 20.80 km disagreement that produced was invisible to every committed
+// gate: G-CONTAIN only asks that a node sit inside its parent's ring, and the
+// only test that looked preferred a stale `lore.labelAt` over the live
+// placement. A constraint no machine reads is decoration.
+//
+// EXACT, not approximate. Both sides are committed decimals and the
+// composition that joins them is `origin + p * scale` — no trigonometry, no
+// accumulation over a long chain. A tolerance here would be a place for drift
+// to hide, so the only slack is one micrometre of float noise for the
+// unit-changing frames (a town's perParentUnit 100) the arithmetic divides by.
+const PIN_ANCHOR_EPS = 1e-6;
+const PIN_ANCHOR_WATER_TIERS = new Set(["ocean", "sea"]);
+
+export function gSpinePinAnchor({ nodes, tree, roster, fail }) {
+  const rows = Array.isArray(roster?.rows) ? roster.rows : null;
+  if (!rows) return; // no civil layer in this content root — nothing to join
+  const bySlug = new Map();
+  for (const r of rows) {
+    const m = /^c-(?:town|lm)-(.+)$/.exec(r?.id ?? "");
+    if (!m) continue;
+    // Two rows on one slug: record the ambiguity, resolve nothing.
+    bySlug.set(m[1], bySlug.has(m[1]) ? null : r);
+  }
+  for (const node of nodes) {
+    if (PIN_ANCHOR_WATER_TIERS.has(node.tier)) continue;
+    const slug = node.id.replace(/^n-/, "");
+    const row = bySlug.get(slug);
+    if (row === undefined) continue;      // node names no pinned place
+    if (row === null) {
+      fail(`spine: G-PIN-ANCHOR ${node.id}: pinned-roster.json holds two rows for slug "${slug}" — the node cannot be placed on an ambiguous pin`);
+      continue;
+    }
+    if (!Array.isArray(row.at) || !Number.isFinite(row.at[0]) || !Number.isFinite(row.at[1])) {
+      fail(`spine: G-PIN-ANCHOR ${node.id}: pinned row ${row.id} has no numeric \`at\``);
+      continue;
+    }
+    if (!tree.depthOf.has(node.id)) continue; // cyclic/orphan — a G-TREE failure already
+    const got = composedAnchor({ tree, node });
+    if (!Array.isArray(got)) {
+      fail(`spine: G-PIN-ANCHOR ${node.id}: does not compose to a root anchor`);
+      continue;
+    }
+    const d = Math.hypot(got[0] - row.at[0], got[1] - row.at[1]);
+    if (d > PIN_ANCHOR_EPS)
+      fail(`spine: G-PIN-ANCHOR ${node.id}: composed anchor [${got[0]}, ${got[1]}] is ${d.toFixed(3)} km from its pin ${row.id} [${row.at.join(", ")}] — a preserved node is placed by inverting its parent composition onto the pin, never by a translation that happens to land nearby`);
+  }
+}
+
 export function gSpineNet({ nodes, edges, tree, canonLegs = null, pinnedIds = new Set(), isRealContentRoot = false, fail }) {
   // F-051 fix-pass finding 1 (MINOR): on the REAL content root (the same
   // contentRoot === ROOT/content condition the art-manifest gate uses) a leg

@@ -49,13 +49,36 @@ export const ADVANCE_WIDTH = {
   s: 0.4, t: 0.34, u: 0.56, v: 0.49, w: 0.72, x: 0.48, y: 0.49, z: 0.43,
   "{": 0.36, "|": 0.3, "}": 0.36, "~": 0.55,
   // The non-ASCII marks the committed corpus ACTUALLY uses. Audited, not
-  // guessed: a sweep of every title/name/label/subtitle string in
-  // content/spine/nodes/*.json + sheet.json + sheet-atlas.json yields exactly
-  // "§ — – → ·" outside ASCII. The plan's draft table listed "’ · —" and so
-  // was missing three live characters and carrying one the corpus does not
+  // guessed: a sweep of every string in content/spine/nodes/*.json +
+  // sheet.json + sheet-atlas.json. The plan's draft table listed "’ · —" and
+  // so was missing three live characters and carrying one the corpus does not
   // use; "’" is kept because it is the correct apostrophe for a place name and
   // costs nothing, and DEFAULT_ADVANCE remains the fallback for anything else.
+  //
+  // PLAN E REDRAW — "é" and "²" joined the corpus, and the audit above was
+  // stale the moment it did. Neither is a place name: generate-world.mjs:520
+  // copies each premise's `structuralIdea` VERBATIM into its continent node's
+  // `lore.summary`, so authored prose in content/world/premises/*.json now
+  // reaches this table. "é" arrives from continent-12's "roche moutonnée" and
+  // "²" from continent-05's "9,000 km²". The pre-redraw 46-node basin trunk
+  // had no continent nodes carrying premise prose, which is why the sweep
+  // above never saw them. The generator is not at fault and neither is the
+  // premise text — this table simply had not been re-audited against the
+  // wider corpus, which is exactly the gap labels.test.mjs's corpus scan
+  // exists to catch. Fixing it in the generated node would have been a hand
+  // edit of a generated artifact (Task 6 rule 1); fixing it in the premise
+  // would edit world content to suit a font metric.
+  //
+  // Both widths are DERIVED from the serif stack this header names, not
+  // measured and not guessed:
+  //   "é" — an accented Latin letter carries its base letter's advance in
+  //         Georgia, Iowan Old Style and Times New Roman alike (the accent is
+  //         drawn inside the same advance box), so it is exactly ADVANCE_WIDTH.e.
+  //   "²" — twosuperior against a lining digit is 300/500 in Times New Roman
+  //         and 0.3564/0.5566 in Georgia (ratios 0.60 and 0.64); the mid ratio
+  //         0.62 against this table's digit width 0.52 gives 0.32.
   "§": 0.5, "—": 1.0, "–": 0.5, "→": 1.0, "·": 0.27, "’": 0.21,
+  "é": 0.46, "²": 0.32,
 };
 
 export function measureText({ text, size, tracking = 0 }) {

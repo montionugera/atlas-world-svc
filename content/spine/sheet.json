@@ -18,13 +18,6 @@
     "rootId": "n-atlas",
     "zoneRoot": "n-cluster1",
     "landIds": ["n-cluster1"],
-    "seaIds": ["n-westsea"],
-    "terrainPatchIds": ["n-eastern-hills"],
-    "mireIds": ["n-saltmire"],
-    "featureIds": {
-      "coast": "f-west-coast",
-      "river": "f-the-meltwash",
-      "iceEdge": "f-northern-ice-edge"
-    }
+    "seaIds": ["n-westsea"]
   }
 }

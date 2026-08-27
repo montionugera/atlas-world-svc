@@ -193,7 +193,6 @@ jobs:
       - name: Sheet self-check (render-sheet --check)
         run: |
           node tools/mapforge/render-sheet.mjs --sheet atlas --no-png --check
-          node tools/mapforge/render-sheet.mjs --sheet cluster1 --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet fabric --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet overlay --no-png --check
           node tools/mapforge/render-sheet.mjs --sheet synthetic --no-png --check

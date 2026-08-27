@@ -4,103 +4,100 @@
   "parentId": "n-atlas",
   "title": "Brightfall",
   "provenance": {
-    "authored": "hand",
+    "authored": "generated",
     "generator": {
-      "name": "gen-world",
-      "version": "1"
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-09.json"
     },
-    "source": "tools/mapforge/gen-world.mjs"
+    "source": "content/world/premises/continent-09.json"
   },
   "frozen": false,
   "seed": {
-    "value": "b23fa47324723cbd",
+    "value": "4be3ebe76ba4dfe2",
     "epoch": 0,
     "why": null
   },
   "placement": {
     "shape": "polygon",
     "points": [
-      [205.7, 59],
-      [205.1, 62.5],
-      [202.7, 65.4],
-      [199, 66.2],
-      [196, 64.3],
-      [193.8, 62],
-      [194, 59],
-      [192.6, 55.3],
-      [196.6, 54.9],
-      [199, 53.4],
-      [203.1, 51.9],
-      [203.2, 56.5]
+      [340.5, 196.5],
+      [338, 190],
+      [337, 184],
+      [337, 179.5],
+      [339, 173],
+      [341.5, 170],
+      [341.5, 169],
+      [345, 166],
+      [348, 164.5],
+      [354.5, 164.5],
+      [357, 165.5],
+      [361.5, 169],
+      [361.5, 170],
+      [363.5, 171.5],
+      [366.5, 178],
+      [367.5, 182.5],
+      [367.5, 190.5],
+      [366.5, 195.5],
+      [364.5, 200],
+      [364, 200],
+      [363.5, 201.5],
+      [363, 201.5],
+      [363, 202.5],
+      [360, 205],
+      [360, 205.5],
+      [357, 206],
+      [357, 206.5],
+      [352, 206.5],
+      [352, 206],
+      [349, 205.5],
+      [349, 205],
+      [347.5, 204.5],
+      [347.5, 204],
+      [346.5, 204],
+      [343, 200],
+      [342.5, 200],
+      [342.5, 199],
+      [341.5, 198.5],
+      [341, 196.5]
     ],
-    "anchor": [199.2, 59.2]
+    "anchor": [352.25, 182.75]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [13.099999999999994, 14.300000000000004],
-    "originInParent": [192.6, 51.9]
+    "size": [30.5, 42],
+    "originInParent": [337, 164.5]
   },
   "composition": {
-    "rock": 50,
-    "meadow": 30,
-    "forest": 20
+    "rock": 60.1,
+    "upland": 21.4,
+    "forest": 18.5
   },
   "interstitial": null,
   "interstitialUnsurveyed": false,
   "compositionTolerance": null,
   "toleranceWhy": null,
+  "terrainKind": "rim",
   "features": [
     {
-      "id": "f-brightfall-reef",
-      "kind": "line",
-      "points": [
-        [199, 66.2],
-        [196, 64.3],
-        [193.8, 62],
-        [194, 59],
-        [192.6, 55.3],
-        [196.6, 54.9],
-        [199, 53.4]
-      ],
-      "attrs": {
-        "note": "Teeth of rock logged at the fall's foot by crews that kept their distance.",
-        "name": "the Brightfall Teeth"
-      }
-    },
-    {
-      "id": "f-brightfall-isle-1",
+      "id": "f-town-c09-s01",
       "kind": "point",
-      "at": [203, 61.3],
+      "at": [338.75, 189.25],
       "attrs": {
-        "role": "outlying-isle",
-        "name": null
-      }
-    },
-    {
-      "id": "f-brightfall-isle-2",
-      "kind": "point",
-      "at": [197.1, 62.5],
-      "attrs": {
-        "role": "outlying-isle",
-        "name": null
-      }
+        "name": null,
+        "role": "village",
+        "town": "c09/s01"
+      },
+      "type": null
     }
   ],
   "bands": [],
-  "runtime": {
-    "mapIds": [],
-    "originU": null,
-    "spawnAreas": [],
-    "mobSettings": null,
-    "seedDemoNPCs": false,
-    "collision": "none"
-  },
+  "runtime": null,
   "representsNodeId": null,
   "lore": {
-    "reported": true,
-    "summary": "Named for white water reported falling off its seaward rocks; one isle charted, the rest claimed."
+    "summary": "cliff-hung waterfalls straight into the sea"
   },
-  "tags": ["archipelago"],
-  "levelBand": null
+  "tags": [],
+  "levelBand": [30, 56]
 }

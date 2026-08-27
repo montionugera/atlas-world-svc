@@ -1,9 +1,9 @@
 {
   "version": 1,
   "inputs": {
-    "content/world/fabric": "sha256:e53eba2658a7e001f38b1c557887452e5ea6e52e466f0ee4ef4e3fce43fd4e1e",
-    "content/world/resolved": "sha256:6169570e0398fdacf65071d588667f5a9b7d24dd82d8424790241466e0348faf",
-    "content/spine/nodes": "sha256:9ad1f364404551709850d4a8e0604d2a133cf2aebe506ae877c6a6ce31b4b32a"
+    "content/world/fabric": "sha256:8002647d4568ef646dac6b2290431ece8d180ba8e1500d7dd4dd9c503df31b49",
+    "content/world/resolved": "sha256:d664f42953036aba18c1e87ed9c90bed9eb2f3f8e6bfed15f72caade62d055b6",
+    "content/spine/nodes": "sha256:70b28b0688b92a20538906becc0629a95b5d2731bd2fac682e613f57097e6068"
   },
-  "digest": "sha256:d3ce04fe461a16da84e930fe1dc11febe6b19f1584307231334ed0643fa1ff12"
+  "digest": "sha256:1c1c68c47f7560741d9a2142b76968ba2a2c8c49ce54dcf1fab32f4ddd4bba5e"
 }

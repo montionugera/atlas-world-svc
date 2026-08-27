@@ -84,43 +84,50 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 //            childless non-leaf node before it earns real coverage.
 //            n-galereach, n-keelbreak, n-tarnmark (oceans) are leaf-shaped
 //            like n-westsea — 0.0% ASSERTED, no children.
-const EXPECTED = `n-atlas · world · km · coverage 87.8% CHECKED
+//   PLAN E (the redraw) replaced the 44-node trunk with the 36 nodes
+//            content/spine/trunk-census.json commits, so this snapshot is
+//            re-baselined WHOLESALE rather than edited. It is a legitimate
+//            byte golden, not a count: its subject is the exact rendering
+//            spine-tree.mjs produces — glyphs, ordering, indentation, the
+//            per-node coverage strings — none of which any census can express,
+//            and all of which must move together or not at all. What moved:
+//            the 18 basin regions and 7 basin towns are fabric rows and
+//            resolved pins now (E-C4), so the tree is two levels shallower
+//            under n-atlas; n-coldreach and n-stonemoor lost their 3 region
+//            children each and fall from 100.0% CHECKED to 0.0% ASSERTED;
+//            the 13 landmasses and 9 marginal seas the generator drew take
+//            their place; and n-atlas rolls up to 98.0% against them. The
+//            footer line is spine-tree's own node/root count and is the
+//            cheapest cross-check that this snapshot and the census agree.
+const EXPECTED = `n-atlas · world · km · coverage 98.0% CHECKED
+├── n-ashen-spar · continent · km · coverage 0.0% ASSERTED
 ├── n-brightfall · continent · km · coverage 0.0% ASSERTED
-├── n-cluster1 · continent · km · coverage 53.4% ASSERTED
-│   ├── n-ashvale-front · region · km · coverage 0.0% ASSERTED
-│   ├── n-cindervast · region · km · coverage 8.0% ASSERTED
-│   │   └── n-cindervast-town · town · u · coverage 0.0% ASSERTED
-│   ├── n-eastern-hills · region · km · coverage 0.0% ASSERTED
-│   ├── n-emberdown · region · km · coverage 10.8% ASSERTED
-│   │   └── n-embervale · town · u · coverage 0.0% ASSERTED
-│   ├── n-gildmark-head · region · km · coverage 11.6% ASSERTED
-│   │   └── n-gildmark · town · u · coverage 0.0% ASSERTED
-│   ├── n-hollowmarch · region · km · coverage 22.3% ASSERTED
-│   │   └── n-norhollow · town · u · coverage 0.0% ASSERTED
-│   ├── n-meltwash-terrace · region · km · coverage 12.8% ASSERTED
-│   │   └── n-expedition-camp · town · u · coverage 0.0% ASSERTED
-│   ├── n-millcross-ford · region · km · coverage 13.3% ASSERTED
-│   │   └── n-millcross · town · u · coverage 0.0% CHECKED
+├── n-cluster1 · continent · km · coverage 1.5% ASSERTED
+│   ├── n-millcross · town · u · coverage 0.0% CHECKED
 │   ├── n-northern-icefield · region · km · coverage 0.0% ASSERTED
-│   ├── n-rooktide-reach · region · km · coverage 0.5% ASSERTED
-│   │   └── n-rooktide · town · u · coverage 0.0% ASSERTED
-│   ├── n-saltmire · region · km · coverage 0.0% ASSERTED
 │   └── n-thornveil · region · km · coverage 0.0% ASSERTED
-├── n-coldreach · continent · km · coverage 100.0% CHECKED
-│   ├── n-coldreach-interior · region · km · coverage 0.0% ASSERTED
-│   ├── n-coldreach-shore · region · km · coverage 0.0% ASSERTED
-│   └── n-peatrun-coast · region · km · coverage 0.0% ASSERTED
+├── n-coldreach · continent · km · coverage 0.0% ASSERTED
 ├── n-driftholt · continent · km · coverage 0.0% ASSERTED
-├── n-galereach · ocean · km · coverage 0.0% ASSERTED
-├── n-keelbreak · ocean · km · coverage 0.0% ASSERTED
+├── n-galereach · ocean · km · coverage 15.7% ASSERTED
+│   ├── n-gildmark-roads · sea · km · coverage 0.0% ASSERTED
+│   ├── n-peatrun-shallows · sea · km · coverage 0.0% ASSERTED
+│   └── n-westsea · sea · km · coverage 0.0% ASSERTED
+├── n-keelbreak · ocean · km · coverage 26.4% ASSERTED
+│   ├── n-drowned-pavement · sea · km · coverage 0.0% ASSERTED
+│   ├── n-netstead-bight · sea · km · coverage 0.0% ASSERTED
+│   └── n-wreckwater · sea · km · coverage 0.0% ASSERTED
+├── n-loamspit · continent · km · coverage 0.0% ASSERTED
+├── n-quillreef · continent · km · coverage 0.0% ASSERTED
 ├── n-reedstrand · continent · km · coverage 0.0% ASSERTED
 ├── n-rimewall-cap · continent · km · coverage 0.0% ASSERTED
-├── n-stonemoor · continent · km · coverage 100.0% CHECKED
-│   ├── n-slateflow-coast · region · km · coverage 0.0% ASSERTED
-│   ├── n-stonemoor-interior · region · km · coverage 0.0% ASSERTED
-│   └── n-stonemoor-shore · region · km · coverage 0.0% ASSERTED
-├── n-tarnmark · ocean · km · coverage 0.0% ASSERTED
-└── n-westsea · ocean · km · coverage 0.0% ASSERTED
+├── n-skerryfast · continent · km · coverage 0.0% ASSERTED
+├── n-stonemoor · continent · km · coverage 0.0% ASSERTED
+├── n-tarnmark · ocean · km · coverage 31.6% ASSERTED
+│   ├── n-fumewater · sea · km · coverage 0.0% ASSERTED
+│   ├── n-reed-shallows · sea · km · coverage 0.0% ASSERTED
+│   └── n-rimewall-margin · sea · km · coverage 0.0% ASSERTED
+├── n-thirstwold · continent · km · coverage 0.0% ASSERTED
+└── n-wracklow · continent · km · coverage 0.0% ASSERTED
 n-playroot · playroot · u · coverage 50.2% ASSERTED
 ├── n-fixture-deflect · fixture · u · coverage 0.0% ASSERTED
 ├── n-fixture-projectile · fixture · u · coverage 0.0% ASSERTED
@@ -128,7 +135,7 @@ n-playroot · playroot · u · coverage 50.2% ASSERTED
     ├── n-site-icefield · site · u · coverage 0.0% ASSERTED
     ├── n-site-spawn-meadow · site · u · coverage 0.0% ASSERTED
     └── n-site-thornveil · site · u · coverage 0.0% ASSERTED
-44 nodes · 2 roots
+36 nodes · 2 roots
 `;
 
 test("spine-tree prints the committed table exactly (snapshot)", () => {

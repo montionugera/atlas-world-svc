@@ -117,17 +117,28 @@ test("content gate on the real tree: the ONLY failures are the pre-Plan-E geogra
 // entirely from spine-completeness, a different gate. Pinned by exact FAIL
 // count and exact text so a real regression (a 5th failure, a changed id, or
 // a re-opened orphan) still fails this test loudly.
-test("content gate --require-complete: the ONLY failures are geography orphans; F-043's 4 reported continents are WARNs not failures", () => {
+test("content gate --require-complete: the ONLY failures are geography orphans; no continent is incomplete", () => {
   // Plan D Task 11: same pre-Plan-E orphan window as above — pin that no
   // UNRELATED failure (story, spine, budget) joins them.
   const { status, output } = run("scripts/check_content.mjs", ["--require-complete"]);
   assert.equal(status, 1);
   for (const line of output.split("\n").filter((l) => l.startsWith("FAIL ")))
     assert.match(line, /not in content\/world\/resolved#(zones|towns)|has no record in content\/zones\//);
-  assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-brightfall" \(tier continent\) is childless — reported, not surveyed; childless by design \(F-043\)/);
-  assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-driftholt" \(tier continent\) is childless — reported, not surveyed; childless by design \(F-043\)/);
-  assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-reedstrand" \(tier continent\) is childless — reported, not surveyed; childless by design \(F-043\)/);
-  assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-rimewall-cap" \(tier continent\) is childless — reported, not surveyed; childless by design \(F-043\)/);
+  // PLAN E (E-C3): F-043's four "childless by design" WARNs are GONE, and that
+  // is the constraint working rather than a rule going quiet. Post-redraw all
+  // 13 continents are childless — their regions are fabric rows, not nodes —
+  // and checkSpineComplete now settles a continent through its
+  // provenance.generator.fabric pin instead. So the assertion is inverted with
+  // its reason attached: NO continent may appear in a completeness line at all.
+  // Because a `doesNotMatch` passes just as happily when the rule is deleted,
+  // the two surviving region WARNs are asserted positively beside it — they are
+  // the proof G-SPINE-COMPLETE still runs and still prints. Those two are
+  // n-thornveil and n-northern-icefield, the only region NODES E-C4 keeps.
+  const completeness = output.split("\n").filter((l) => l.includes("G-SPINE-COMPLETE"));
+  assert.deepEqual(completeness.filter((l) => l.includes("(tier continent)")), [],
+    `a continent lost its fabric-pin completeness:\n${completeness.join("\n")}`);
+  assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-thornveil" \(tier region\) has no children yet/);
+  assert.match(output, /WARN {2}G-SPINE-COMPLETE: "n-northern-icefield" \(tier region\) has no children yet/);
   assert.doesNotMatch(output, /character ".*" is referenced by no quest, faction, event, or dialogue \(orphan\)/);
   assert.doesNotMatch(output, /faction ".*" is referenced by no quest, character, or event \(orphan\)/);
 });

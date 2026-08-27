@@ -1,9 +1,11 @@
 // tools/mapforge/lib/atlas-sheet.mjs — the world (atlas) sheet as a function.
 //
-// F-042 Task 6. Draws the full 2000×2000 km frame of n-atlas with the
-// Meltwash basin as a surveyed miniature in its top-left corner, the western
-// sea strip, seven town dots, the Gildmark sea-lane leaving the sheet, and
-// honest empty parchment everywhere the survey has never reached.
+// F-042 Task 6, re-keyed onto the redrawn trunk in Plan E Task 6. Draws the
+// full 400x400 km frame of n-atlas: the reported landmasses under their
+// frontier hatch, the surveyed ground un-hatched, the three oceans, the
+// marginal seas the descriptor names, every settlement the trunk carries,
+// the charted sea-lanes, and honest empty parchment everywhere the survey
+// has never reached.
 //
 // Every drawn element traces to a spine node/feature/edge or a string in
 // content/spine/sheet-atlas.json — no invented geography. The ~99%
@@ -16,7 +18,6 @@ import {
   ZONE_TENSION,
   r2,
   esc,
-  pointInPolygon,
   wrap,
   LEGEND,
   createDraft,
@@ -29,7 +30,7 @@ import {
 import { frontierPattern, checkBiomeInk } from "./ink.mjs";
 import { symbolDefs, glyphUse, glyphForType, checkGlyphCoverage } from "./glyphs.mjs";
 import { placeLabels, checkLabels, RANKS } from "./labels.mjs";
-import { loadSpine, buildTree, resolveToRoot } from "../../../scripts/lib/spine.mjs";
+import { loadSpine, buildTree, resolveToRoot, surveyOf } from "../../../scripts/lib/spine.mjs";
 
 // F-045 Task 4: 0.7 -> 3.5 (÷5 up), the world frame's own 2000 -> 400 km
 // (÷5 down) — net canvas size unchanged, 5x denser per km.
@@ -38,13 +39,32 @@ import { loadSpine, buildTree, resolveToRoot } from "../../../scripts/lib/spine.
 // referencing a pattern <defs> never emitted — a self-inflicted G-BIOME-INK
 // "referenced but not emitted" at the first node that carries provenance.
 //
-// A reported region has NO terrainKind by construction, so it falls through to
-// the frontier hatch keyed on its provenance rather than to a flat default.
-// Byte-zero on today's corpus: n-rimewall-cap is the only world child with a
-// terrainKind (ice -> pIce), no committed node carries `provenance` at all,
-// and frontierPattern(undefined) is exactly "pReported". It stops being a
-// no-op the moment Plan C's fabric supplies either field.
-const patternFor = (n) => FILL_FOR[n.terrainKind] ?? frontierPattern(n.provenance);
+// THE CHART'S GRAMMAR, IN ONE EXPRESSION: only REPORTED ground is filled.
+//
+// A surveyed landmass draws as an outline with its regions and its towns on
+// it — the treatment the surveyed ground (landIds[0]) has always had, now
+// applied to every landmass the survey has walked instead of to one. A
+// reported landmass is filled: with its terrain kind when the fabric gives it
+// one (an ice cap reads as ice from a deck), otherwise with the frontier
+// hatch at the density its own reported regions agree on.
+//
+// This is STATE §28 defects (b) and (c) closed together. `patternFor` used to
+// hand `n.provenance` — an OBJECT since Plan C — to `frontierPattern`, which
+// keys a STRING, so the three densities were unreachable and every landmass
+// fell through to the one generic hatch: 12 of 13 landmasses hatched
+// "reported" while only 4 carried `lore.reported`, and that single live
+// pattern was 79% of the sheet's entire raster cost. The key is now
+// `lore.reportedAs`, the string generate-world derives from the fabric's own
+// `regions[].provenance`, and the survey verdict decides whether a landmass is
+// filled at all — so the hand's "a hatched coast is reported, never vouched"
+// is true of the drawing and not just of the note.
+//
+// `null` means NO fill (bare parchment). The draw loop and the <defs> builder
+// both handle it; a pattern id is never invented to fill the hole.
+const patternFor = (n) =>
+  surveyOf({ node: n }) === "reported"
+    ? FILL_FOR[n.terrainKind] ?? frontierPattern(n.lore?.reportedAs)
+    : null;
 
 // Plan B Task 12, adoption 3. The sheet's zoom tier lives HERE, and
 // render-sheet.mjs's registry row reads it — one number, one home. It is not a
@@ -62,16 +82,24 @@ const patternFor = (n) => FILL_FOR[n.terrainKind] ?? frontierPattern(n.provenanc
 // decision, not a rendering one.
 export const ATLAS_MAX_LABEL_RANK = 8;
 
-// G-LABEL's hard cap for this sheet. MEASURED, not transcribed: the chart
-// carries 26 map labels through the declutter — 6 continent titles, 3 ocean
-// names, 6 region titles, 7 line-feature names, 2 port names and 2 sea-lane
-// labels. The other 11 <text> elements on the sheet are chrome (title,
-// subtitle, hand paragraph, withheld list, north mark, survey note) and never
-// go through a placement pass. 32 is that count plus a quarter, so a name or
-// two added by an authoring change reports rather than reds; a rank assignment
-// that pushes past it is the gate saying the name belongs on a continent
-// sheet, not on the world sheet. The plan's 40 was a tier-1 number for a
-// four-rank sheet; this one draws eight ranks.
+// G-LABEL's hard cap for this sheet. The redraw took the chart TO this ceiling:
+// the declutter places 32 labels and the budget is 32, so the sheet now sits
+// exactly on its cap with NO headroom. The quarter of slack this block used to
+// narrate (against a pre-redraw count of 26) has been spent in full.
+//
+// What that means concretely: one more named thing on the world sheet — a
+// region title, a line feature's name, a harbour (any town a new sea-lane ends
+// at), another marginal sea — is 33 placed against budget 32, and G-LABEL goes
+// red on the very next render. That is the gate working, not a gate to route
+// around: a name that cannot fit here belongs on a continent sheet. Raising
+// the number is a content decision that needs its own evidence, so 32 stays
+// until a task argues for more.
+//
+// The count is deliberately NOT transcribed into this comment — a literal that
+// must be hand-updated at every redraw is precisely what went stale here.
+// tools/mapforge/tests/atlas-sheet.test.mjs measures the placed count from a
+// real build and asserts this budget covers THAT, so the two cannot drift
+// apart silently again.
 export const ATLAS_LABEL_BUDGET = 32;
 
 // Which LEGEND rows this sheet keys. Tier 2 is the surveyed fills plus the
@@ -126,12 +154,6 @@ export function drawAtlasSheet({
   for (const k of ["landIds", "seaIds"])
     if (!Array.isArray(S[k]) || S[k].length === 0)
       problems.push(`sheet-atlas.json: subjects.${k} is missing or empty`);
-  if (!S.featureIds || typeof S.featureIds !== "object")
-    problems.push("sheet-atlas.json: subjects.featureIds is missing or not an object");
-  else
-    for (const k of ["coast", "river"])
-      if (typeof S.featureIds[k] !== "string")
-        problems.push(`sheet-atlas.json: subjects.featureIds.${k} is missing or not a string`);
   if (problems.length) return { svg: "", notes, problems };
 
   const need = (key, id) => {
@@ -141,61 +163,25 @@ export function drawAtlasSheet({
   };
   const atlas = need("rootId", S.rootId);
   const cluster = need("landIds[0]", S.landIds[0]);
-  const westsea = need("seaIds[0]", S.seaIds[0]);
-  if (!atlas || !cluster || !westsea) return { svg: "", notes, problems };
+  const seaNodes = S.seaIds.map((id, i) => need(`seaIds[${i}]`, id));
+  if (!atlas || !cluster || seaNodes.some((n) => !n))
+    return { svg: "", notes, problems };
 
   const [EXT_W, EXT_H] = atlas.interior.size; // the root frame, in its own km
-  const feature = (id) => (cluster.features ?? []).find((f) => f.id === id);
-  const coast = feature(S.featureIds.coast);
-  const river = feature(S.featureIds.river);
-  if (!coast)
-    problems.push(`sheet: subject "coast" -> "${S.featureIds.coast}" does not resolve`);
-  if (!river)
-    problems.push(`sheet: subject "river" -> "${S.featureIds.river}" does not resolve`);
 
-  const seaLane = (spine.edges ?? []).find((e) => e.kind === "sealane");
-  let laneFrom = null;
-  let laneFar = null;
-  if (!seaLane) {
-    problems.push("edges.json: no sealane edge");
-  } else {
-    const fromNode = tree.byId.get(seaLane.from?.node);
-    laneFar = feature(seaLane.to?.feature);
-    if (!fromNode)
-      problems.push(`sealane: from node "${seaLane.from?.node}" not found`);
-    else
-      laneFrom = resolveToRoot({
-        tree,
-        id: fromNode.parentId,
-        point: fromNode.placement.anchor,
-      });
-    if (!laneFar)
-      problems.push(`sealane: far feature "${seaLane.to?.feature}" not found`);
-    else if (!laneFar.offSheet)
-      problems.push(`sealane: far point ${laneFar.id} is not declared offSheet`);
-  }
-
-  // one dot per town-tier node; anchor is in the PARENT's frame, so resolve
-  // through the parent (the spine's shared-grid rule makes these atlas-km).
-  const towns = [...tree.byId.values()]
-    .filter((n) => n.tier === "town")
-    .sort((a, b) => (a.id < b.id ? -1 : 1));
-  const townDots = [];
-  for (const t of towns) {
-    const at = resolveToRoot({ tree, id: t.parentId, point: t.placement.anchor });
-    if (at === null) {
-      problems.push(`town ${t.id}: anchor could not be resolved to the root frame`);
-      continue;
-    }
-    if (!pointInPolygon(at, cluster.placement.points))
-      problems.push(`town ${t.id} at [${at}] is outside the ${cluster.id} polygon`);
-    townDots.push({ id: t.id, at });
-  }
-  if (townDots.length !== towns.length)
-    problems.push(
-      `town-tier count ${towns.length} != dot count ${townDots.length}`,
-    );
-  notes.push(`towns ${towns.length} · dots ${townDots.length}`);
+  // Plan E Task 6: a HARBOUR is not a role the trunk can carry — the closed
+  // attrs schema spends `role` on settlement rank (capital / hub / village),
+  // written by generate-world's settlements pass. What makes a town a harbour
+  // on a mariners' chart is that a charted sea-lane ENDS there, so the
+  // predicate is DERIVED from the edge list rather than stamped into a
+  // feature. Same list the lane-drawing loop walks, read once here so the
+  // point-feature pass and the lane pass cannot disagree.
+  const harbourIds = new Set(
+    (spine.edges ?? [])
+      .filter((e) => e.kind === "sealane")
+      .flatMap((e) => [e.from?.feature, e.to?.feature])
+      .filter((id) => typeof id === "string"),
+  );
 
   // ---- self-check: nothing drawn may leave the frame except offSheet points
   const checkFrame = (label, pts) => {
@@ -206,13 +192,28 @@ export function drawAtlasSheet({
         );
   };
   checkFrame(`${cluster.id} polygon`, cluster.placement.points);
-  checkFrame(`${westsea.id} polygon`, westsea.placement.points);
-  if (coast) checkFrame(S.featureIds.coast, coast.points);
-  if (river) checkFrame(S.featureIds.river, river.points);
-  checkFrame("town dots", townDots.map((d) => d.at));
   checkFrame("north mark", [sheet.northMark.at]);
-  if (laneFrom) checkFrame("sea-lane tail", [laneFrom]);
-  // laneFar is declared offSheet — exempt by design (it leaves the sheet).
+
+  // ---- the marginal seas ----------------------------------------------------
+  // A marginal sea nests INSIDE its ocean (G-CONTAIN), so its placement points
+  // are in the OCEAN's frame, not the root's. They go through resolveToRoot
+  // exactly as a node anchor does; drawing `placement.points` raw was only
+  // ever right while the single strip happened to be a child of n-atlas.
+  const seaPolys = [];
+  for (const s of seaNodes) {
+    const pts = s.placement.points.map((p) =>
+      resolveToRoot({ tree, id: s.parentId, point: p }),
+    );
+    if (pts.some((p) => p === null)) {
+      problems.push(`sea ${s.id}: points could not be resolved to the root frame`);
+      continue;
+    }
+    checkFrame(`${s.id} polygon`, pts);
+    if (typeof s.title !== "string" || s.title.trim() === "")
+      problems.push(`${s.id}: missing title — nothing to letter on the sheet`);
+    seaPolys.push({ id: s.id, title: s.title, pts });
+  }
+  notes.push(`seas ${seaPolys.length} of ${S.seaIds.length}`);
 
   // ---- F-043: the wider world — tier-1 children of the root beyond the ------
   // basin pair (landIds/seaIds are already joined above). Sorted by id for
@@ -356,7 +357,9 @@ export function drawAtlasSheet({
   for (const n of [
     ...worldLand,
     ...worldOceans,
-    ...worldLand.flatMap((land) => (tree.childrenOf.get(land.id) ?? []).map((id) => tree.byId.get(id))),
+    ...[...worldLand, cluster].flatMap((land) =>
+      (tree.childrenOf.get(land.id) ?? []).map((id) => tree.byId.get(id)),
+    ),
   ])
     if (typeof n.title !== "string" || n.title.trim() === "")
       problems.push(`${n.id}: missing title — nothing to letter on the sheet`);
@@ -411,7 +414,9 @@ export function drawAtlasSheet({
   // than the whole legacy roster. It was emitting nine and referencing two.
   // G-BIOME-INK checks both directions, so an id that appears here and nowhere
   // else is now a reported problem instead of seven dead <pattern> blocks.
-  const wantedPatterns = [...new Set([...worldLand.map(patternFor), ...legendPatterns])].sort();
+  // `patternFor` returns null for a surveyed landmass — it takes no fill — so
+  // the nulls are dropped rather than becoming a pattern id nothing defines.
+  const wantedPatterns = [...new Set([...worldLand.map(patternFor).filter(Boolean), ...legendPatterns])].sort();
   // patternDefs DROPS an id with no PATTERNS entry rather than writing broken
   // markup, exactly as symbolDefs does, so the emitted set is scanned back out
   // of the markup it produced. Handing checkBiomeInk the REQUESTED list would
@@ -449,46 +454,17 @@ export function drawAtlasSheet({
   // the basin miniature lives inside the sheet border
   put(`<g clip-path="url(#clip-sheet)">`);
 
-  // ---- the western sea strip (n-westsea) + sea west of the coast ------------
-  put(`<path d="${poly(westsea.placement.points)} Z" fill="${C.sea}"/>`);
-  if (coast) {
-    const cp = coast.points;
-    const first = cp[0];
-    const last = cp[cp.length - 1];
-    // close the sea fill along the frame's west edge (x = 0)
-    put(
-      `<path d="${smooth(cp)} L${X(0)},${Y(last[1])} L${X(0)},${Y(first[1])} Z" fill="${C.sea}"/>`,
-    );
-    put(
-      `<path d="${smooth(cp)}" fill="none" stroke="${C.ink}" stroke-width="0.9"/>`,
-    );
-  }
+  // ---- the marginal seas, each a filled body -------------------------------
+  // Bare parchment is still the open ocean here; only a NAMED sea gets water.
+  for (const sp of seaPolys)
+    put(`<path d="${poly(sp.pts)} Z" fill="${C.sea}" class="marginal-sea"/>`);
 
-  // ---- the continent outline (n-cluster1 placement polygon) -----------------
+  // ---- the surveyed ground's outline (landIds[0]) ---------------------------
+  // Drawn un-hatched on purpose: this is the one landmass the survey has
+  // walked, so it carries no "reported" frontier pattern. Its regions,
+  // settlements and harbours draw with everyone else's, below.
   put(
     `<path d="${smooth(cluster.placement.points, true, ZONE_TENSION)}" fill="none" stroke="${C.ink}" stroke-width="1"/>`,
-  );
-
-  // ---- the Meltwash, one 1 px smoothed line ----------------------------------
-  if (river)
-    put(
-      `<path d="${smooth(river.points)}" fill="none" stroke="${C.ink}" stroke-width="1" stroke-linecap="round"/>`,
-    );
-
-  // ---- town dots — no per-town labels at this scale --------------------------
-  for (const d of townDots)
-    put(
-      `<circle class="town-dot" cx="${X(d.at[0])}" cy="${Y(d.at[1])}" r="1.6" fill="${C.ink}"/>`,
-    );
-
-  // ---- the basin label, right of the miniature -------------------------------
-  // placed just east of the polygon's extent, level with its anchor
-  const clusterMaxX = Math.max(...cluster.placement.points.map((p) => p[0]));
-  // F-045 Task 4: +15 -> +3 (÷5) — a km offset east of the basin polygon's
-  // own (already-rescaled) extent, placing the label just clear of it.
-  put(
-    `<text class="lbl" x="${X(clusterMaxX + 3)}" y="${Y(cluster.placement.anchor[1])}" font-size="12.5" font-style="italic" ` +
-      `letter-spacing="1.2" fill="${C.inkMid}">${esc(sheet.surveyNote)}</text>`,
   );
 
   // ---- F-043: the wider world — surveyed-vs-reported mariners'-chart -------
@@ -513,15 +489,54 @@ export function drawAtlasSheet({
   // three hand-tuning attempts to fix a single one inside one.
   const sheetLabels = [];
   const putLabel = (l) => sheetLabels.push(l);
+
+  // The survey note is a note about a PLACE — anchored just east of the
+  // surveyed ground's own extent — not part of the fixed chrome cartouche, so
+  // it goes through the same declutter as every other placed name. It used to
+  // be painted straight onto the sheet, which is why the redraw could sit it
+  // squarely on top of the trade-wind lane's label with every gate green: a
+  // label that skips the placement pass is a label no collision check sees.
+  // Lowest rank on the sheet, so when space is tight it is the one that moves.
+  // F-045 Task 4: +15 -> +3 (÷5) — a km offset east of the polygon's own
+  // (already-rescaled) extent, placing the note just clear of it.
+  const clusterMaxX = Math.max(...cluster.placement.points.map((p) => p[0]));
+  putLabel({
+    id: `${cluster.id}-survey-note`,
+    text: sheet.surveyNote,
+    at: [clusterMaxX + 3, cluster.placement.anchor[1]],
+    rank: RANKS.namedLandform,
+    italic: true,
+    fill: C.inkMid,
+  });
+
+  // sea names, at each sea's own polygon centroid — the same derivation the
+  // ocean names use below, on the body that is actually drawn.
+  for (const sp of seaPolys)
+    putLabel({
+      id: sp.id,
+      text: sp.title,
+      at: centroid(sp.pts),
+      rank: RANKS.sea,
+      italic: true,
+      fill: C.inkSoft,
+    });
+
   for (const land of worldLand) {
     checkFrame(`${land.id} polygon`, land.placement.points);
     // Plan B Task 12: the fill comes from the table, not from a boolean.
     const fill = patternFor(land);
-    const isIce = fill === "pIce";
+    // `class="coast-reported"` marks a REPORTED coast, which is what its name
+    // says. It used to be keyed on `fill !== "pIce"`, so it marked twelve
+    // surveyed-or-reported landmasses alike and skipped the one reported ice
+    // cap — the class was a fill test wearing an epistemic name. It is the
+    // survey verdict now, so the count of marked coasts equals the count of
+    // nodes carrying `lore.reported`.
+    const reported = surveyOf({ node: land }) === "reported";
     put(
       `<path d="${smooth(land.placement.points, true, ZONE_TENSION)}" ` +
-        `fill="url(#${fill})" stroke="${C.ink}" stroke-width="${isIce ? 0.7 : 0.55}"` +
-        `${isIce ? "" : ' class="coast-reported"'}/>`,
+        `fill="${fill ? `url(#${fill})` : "none"}" stroke="${C.ink}" ` +
+        `stroke-width="${fill === "pIce" ? 0.7 : 0.55}"` +
+        `${reported ? ' class="coast-reported"' : ""}/>`,
     );
     // ---- F-043 fix (controller visual pass): the majors (Coldreach,
     // Stonemoor) each carry a title + 2 regions + 2 line features + 1 port,
@@ -547,7 +562,14 @@ export function drawAtlasSheet({
       at: land.placement.anchor,
       rank: RANKS.continent,
     });
+  }
 
+  // Regions, settlements and harbours — over the reported continents AND the
+  // surveyed ground, whose un-hatched outline is drawn above. Before the
+  // redraw the surveyed ground was a hand-drawn miniature with its own dot
+  // loop; it is a continent node like any other now, and leaving it out of
+  // this pass is what had the chart drawing zero region boundaries.
+  for (const land of [...worldLand, cluster]) {
     // tier-2 regions of this continent, dashed administrative boundaries
     const regionIds = (tree.childrenOf.get(land.id) ?? []).filter(
       (id) => tree.byId.get(id)?.tier === "region",
@@ -599,7 +621,7 @@ export function drawAtlasSheet({
           }
         } else if (f.kind === "point") {
           checkFrame(`${f.id} point`, [f.at]);
-          const isPort = f.attrs?.role === "port";
+          const isHarbour = harbourIds.has(f.id);
           // Plan B Task 12, adoption 2: a port is a mark, not a bigger dot. A
           // feature carrying a lexicon `type` draws its family's glyph; an
           // untyped point keeps the plain dot, so nothing untyped changes
@@ -611,12 +633,15 @@ export function drawAtlasSheet({
             problems.push(`${f.id}: type "${f.type}" resolves to no glyph family`);
           if (gid) {
             usedGlyphs.add(gid);
-            put(glyphUse({ id: gid, x: X(f.at[0]), y: Y(f.at[1]), size: isPort ? 9 : 7 }));
+            put(glyphUse({ id: gid, x: X(f.at[0]), y: Y(f.at[1]), size: isHarbour ? 9 : 7 }));
           } else {
-            put(`<circle cx="${X(f.at[0])}" cy="${Y(f.at[1])}" r="${isPort ? 2 : 1.1}" fill="${C.ink}"/>`);
+            put(
+              `<circle class="settlement-mark" cx="${X(f.at[0])}" cy="${Y(f.at[1])}" ` +
+                `r="${isHarbour ? 2 : 1.1}" fill="${C.ink}"/>`,
+            );
           }
-          if (isPort) {
-            if (!f.attrs?.name) problems.push(`${f.id}: port feature has no attrs.name`);
+          if (isHarbour) {
+            if (!f.attrs?.name) problems.push(`${f.id}: harbour feature has no attrs.name`);
             else
               putLabel({
                 id: f.id,
@@ -716,12 +741,14 @@ export function drawAtlasSheet({
       continue;
     }
     if (!lane.attrs?.label) problems.push(`sealane ${lane.id}: attrs.label missing`);
-    // the "to" end must ALWAYS resolve to a named port feature (not just
-    // when one happens to be present) — a {node}-style "to" ref would
-    // otherwise skip this check entirely instead of failing it.
-    if (!toEnd.feature || toEnd.feature.attrs?.role !== "port" || !toEnd.feature.attrs?.name)
+    // the "to" end must ALWAYS resolve to a NAMED town feature (not just when
+    // one happens to be present) — a {node}-style "to" ref would otherwise
+    // skip this check entirely instead of failing it. "Named" is the whole
+    // test the trunk can bear: the redrawn edges run f-town-* -> f-town-*, and
+    // being a lane end is what MAKES the town a harbour (see harbourIds).
+    if (!toEnd.feature || !toEnd.feature.attrs?.name)
       problems.push(
-        `sealane ${lane.id}: "to" does not resolve to a named port feature` +
+        `sealane ${lane.id}: "to" does not resolve to a named town feature` +
           (toEnd.feature ? ` (got "${toEnd.feature.id}")` : ""),
       );
     checkFrame(`sealane ${lane.id} tail`, [fromEnd.at]);

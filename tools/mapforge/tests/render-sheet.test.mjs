@@ -6,33 +6,12 @@ import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildCluster1Sheet, SHEETS, parseArgs } from "../render-sheet.mjs";
+import { SHEETS, parseArgs } from "../render-sheet.mjs";
 import { inkStats } from "../lib/png-ink.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../../..");
 const LOCK = join(ROOT, "content/world/render-lock.json");
-const LOCKED_ARTIFACT = "game-client/assets/art/maps/cluster1-world.svg";
-
-// Plan A Task 12: was a byte comparison against fixtures/basin-baseline.svg,
-// a 47,020-byte duplicate of the committed sheet. The lock carries the same
-// guarantee in one hash, so the fixture and its three consumers are retired.
-test("the spine-driven cluster1 sheet matches the committed render lock", () => {
-  const { svg, problems } = buildCluster1Sheet({ repoRoot: ROOT });
-  assert.deepEqual(problems, []);
-  const expected = JSON.parse(readFileSync(LOCK, "utf8")).artifacts[
-    LOCKED_ARTIFACT
-  ];
-  assert.equal(
-    typeof expected,
-    "string",
-    `render-lock.json has no row for ${LOCKED_ARTIFACT} — the assertion below would compare against undefined`,
-  );
-  assert.equal(
-    "sha256:" + createHash("sha256").update(svg, "utf8").digest("hex"),
-    expected,
-  );
-});
 
 // Seam-4 review B, survivors 7 and 8: `atlas-sheet.mjs`'s drawn letter-spacing
 // could be replaced by a constant, and `patternFor` reduced to the old ice
@@ -66,10 +45,14 @@ test("EVERY sheet in the registry matches the committed render lock", () => {
   }
 });
 
+// Plan E ruling 8 retired the cluster1 sheet, which is the one this used to
+// build. Determinism is a property of the registry, not of that sheet, so it
+// re-points at the atlas — the sheet the redraw actually re-keyed, and the one
+// whose bytes the lock holds.
 test("building twice is deterministic", () => {
   assert.equal(
-    buildCluster1Sheet({ repoRoot: ROOT }).svg,
-    buildCluster1Sheet({ repoRoot: ROOT }).svg,
+    SHEETS.atlas.build({ repoRoot: ROOT }).svg,
+    SHEETS.atlas.build({ repoRoot: ROOT }).svg,
   );
 });
 
@@ -80,9 +63,10 @@ test("SHEETS entries declare title, outSvg, outPng and maxLabelRank", () => {
   // stop the registry going dark must not be able to go dark itself, so the
   // key set is asserted first. Plan B extends this roster; updating this line
   // is the deliberate acknowledgement that the roster changed.
+  // Plan E ruling 8: cluster1 retired here, 5 -> 4. Task 8's 13 continent
+  // sheets take the roster to 17, inside budgets.sheets.maxSheets = 18.
   assert.deepEqual(Object.keys(SHEETS).sort(), [
     "atlas",
-    "cluster1",
     "fabric",
     "overlay",
     "synthetic",
@@ -108,13 +92,15 @@ test("SHEETS entries declare title, outSvg, outPng and maxLabelRank", () => {
 // Seam-4 review A, finding 6, second half — VERIFIED, and recorded rather than
 // papered over. The test above asserts every sheet DECLARES a maxLabelRank; it
 // does not and cannot assert that anything reads one. basin-sheet.mjs never
-// calls placeLabels, so `SHEETS.cluster1.maxLabelRank: 10` is inert, and a
-// reader who saw only the assertion above would reasonably conclude otherwise.
+// calls placeLabels, so the maxLabelRank on its row was inert — and a reader
+// who saw only the assertion above would reasonably conclude otherwise. Plan E
+// ruling 8 has since retired that row entirely.
 //
 // This pins WHICH sheets run a declutter pass, from the source rather than
-// from a comment. Wiring the basin sheet into placeLabels would re-ink
-// cluster1-world.svg — a redraw, which belongs to Plan E and not to a fix
-// pass. When Plan E does it, this list changes, and the change is deliberate.
+// from a comment. basin-sheet.mjs is DORMANT since Plan E ruling 8 retired its
+// registry entry, so it draws nothing today — the assertion stays because
+// Task 8 rebuilds that builder resolved-backed, and a declutter arriving with
+// the rebuild should be a deliberate change to this list, not a silent one.
 test("which sheets actually RUN a label declutter — the registry field is not proof", () => {
   const consumes = (file) =>
     /placeLabels\(/.test(readFileSync(join(ROOT, "tools/mapforge/lib", file), "utf8"));
@@ -123,8 +109,8 @@ test("which sheets actually RUN a label declutter — the registry field is not 
   assert.equal(
     consumes("basin-sheet.mjs"),
     false,
-    "basin-sheet.mjs now calls placeLabels — SHEETS.cluster1.maxLabelRank is no longer " +
-      "inert, so update the note on that row and re-baseline the render lock deliberately",
+    "basin-sheet.mjs now calls placeLabels — if Task 8's resolved-backed rebuild did that, " +
+      "re-add its SHEETS row with a live maxLabelRank and re-baseline the render lock deliberately",
   );
 });
 
@@ -163,11 +149,11 @@ test("the default png width is the committed-thumb width, not the ship width", (
 });
 
 test("--no-png stays accepted as a no-op, so CI's three --no-png lines still run", () => {
-  const p = parseArgs(["--sheet", "cluster1", "--no-png", "--check"]);
+  const p = parseArgs(["--sheet", "fabric", "--no-png", "--check"]);
   assert.equal(p.error, undefined);
   assert.equal(p.wantPng, false);
   assert.equal(p.checkOnly, true);
-  assert.equal(p.sheetId, "cluster1");
+  assert.equal(p.sheetId, "fabric");
 });
 
 test("bad arguments answer in-band, never by throwing", () => {
@@ -197,8 +183,8 @@ test("bad arguments answer in-band, never by throwing", () => {
 // Takes the BEST of three runs. `node --test` runs files in parallel and this
 // suite shares a machine with a dozen others; a performance floor is a claim
 // about what the renderer can do, not about what a contended box happened to
-// do on one pass. The margin it is asserting is large (cluster1 1.08 s against
-// a 2 s cap), so this is not a way of squeezing under the number.
+// do on one pass. The margin it is asserting is large, so this is not a way of
+// squeezing under the number.
 const rsvg = (args) => spawnSync("rsvg-convert", args, { stdio: "pipe", maxBuffer: 1 << 26 });
 
 test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at rasterWidthPx", (t) => {
@@ -228,7 +214,7 @@ test("BUDGET: every committed sheet rasterises inside maxRasterSeconds at raster
     // This WAS `statSync(out).size > 10000`, and that could not do the job it
     // claimed: a BLANK 2000 px raster measures 14,079-18,074 B depending on the
     // librsvg build, comfortably over its own floor. Reviewer B proved it in
-    // situ — blanking the committed cluster1 sheet left this suite 8/0 green.
+    // situ — blanking a committed sheet left this suite 8/0 green.
     // Compressed size is a function of the width as much as of the content, so
     // no byte floor can separate a big blank page from a small drawn one. This
     // reads the PIXELS, against the same budget floors the committed thumbs

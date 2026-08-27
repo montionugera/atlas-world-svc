@@ -1,20 +1,13 @@
 {
   "version": 1,
-  "note": "One row per tools/mapforge/render-sheet.mjs SHEETS entry. svg/png are repo-relative, matching SHEETS[id].outSvg/outPng exactly — see tools/asset-storybook/tests/maps-index.test.mjs for the parity gate.",
+  "note": "One row per tools/mapforge/render-sheet.mjs SHEETS entry. svg/png are repo-relative, matching SHEETS[id].outSvg/outPng exactly — see tools/asset-storybook/tests/maps-index.test.mjs for the parity gate, which asserts the correspondence in BOTH directions. The `cluster1` row retired with its SHEETS entry under Plan E ruling 8 (STATE §28); Plan E Task 8 re-adds it resolved-backed alongside the 13 continent rows.",
   "sheets": [
-    {
-      "id": "cluster1",
-      "title": "Cluster 1 — Basin Survey",
-      "svg": "game-client/assets/art/maps/cluster1-world.svg",
-      "png": "game-client/assets/art/maps/cluster1-world.png",
-      "note": "The first settled basin, drawn at cluster scale — zones, roads, and hazard bands from content/spine/."
-    },
     {
       "id": "atlas",
       "title": "The Atlas World — Mariners' Chart",
       "svg": "game-client/assets/art/maps/atlas-world.svg",
       "png": "game-client/assets/art/maps/atlas-world.png",
-      "note": "The compiled world chart — every cluster, tier, and boundary in one sheet."
+      "note": "The compiled world chart on the redrawn 400 x 400 km frame: 13 landmasses generated from one seed, 3 oceans, 9 marginal seas nested inside them, 47 settlement marks — one per f-town-* feature — and honest empty parchment everywhere the survey has never reached. Four of the thirteen are filled, because only reported ground takes ink here: two ice caps in the ice pattern, two frontier hatches; the other nine draw as outline with their regions and towns on them. Thirty-two names asked, thirty-two placed, none dropped, against a thirty-two-label budget. The basin miniature, the drawn west coast and the Meltwash are NOT on this sheet — STATE §28 ruling 8 retired them from it; Task 8 re-draws that ground on its own continent sheet, which does not exist yet."
     },
     {
       "id": "synthetic",
@@ -28,14 +21,14 @@
       "title": "The Generated World \u2014 Fabric Survey",
       "svg": "game-client/assets/art/maps/world-fabric.svg",
       "png": "game-client/assets/art/maps/world-fabric.png",
-      "note": "13 landmasses, 160 regions, 45 settlements, 38 roads and 2 sea lanes drawn straight from content/world/fabric/ \u2014 the generated layer, before any authored meaning is joined on. The 40 surveyed regions are inked; the 120 reported ones are bare parchment, which is spec \u00a76.4's honest-frontier gradient drawn rather than described. No names: naming is Plan D's."
+      "note": "13 landmasses, 160 regions, 47 settlements, 40 roads and 2 sea lanes drawn straight from content/world/fabric/ \u2014 the generated layer, before any authored meaning is joined on. The 40 surveyed regions are inked; the 120 reported ones are bare parchment, which is spec \u00a76.4's honest-frontier gradient drawn rather than described. No names: naming is Plan D's."
     },
     {
       "id": "overlay",
       "title": "Coastline Overlay \u2014 Baseline vs Generated",
       "svg": "game-client/assets/art/maps/world-overlay.svg",
       "png": "game-client/assets/art/maps/world-overlay.png",
-      "note": "Today's committed coastline ghosted under the generated one, with a per-continent area-delta table joined through the manifest's landmasses[].nodeId. Gross land 6,243.5 \u2192 65,600.0 km\u00b2 (x10.51); sea:land 24.63 : 1 \u2192 1.50 : 1. Read from the draft folder's baseline/, never from git."
+      "note": "Baseline coastline ghosted under the generated one, with a per-continent area-delta table joined through the manifest's landmasses[].nodeId. Since the redraw the committed trunk IS drawn from this fabric, so the sheet reads as a near-identity rather than a before/after: 13 baseline polygons against 13 generated, gross land 65,498.4 \u2192 65,599.5 km\u00b2 (x1.00), every continent between x0.99 and x1.05, and sea:land 1.44 : 1 on the committed trunk, which is what G-SEALAND measures; the sheet's own footer line quotes the fabric layer's generated figure instead, and the two are different measures of the same world. Baseline read from the draft folder's baseline/ when one is present and from content/spine/nodes otherwise, never from git."
     }
   ]
 }

@@ -32,9 +32,24 @@
     "originInParent": [0, 0]
   },
   "composition": {
-    "ocean": 96.1,
-    "rock": 2,
-    "ice": 1.9
+    "ocean": 59.1,
+    "meadow": 13.6,
+    "karst": 6.8,
+    "desert": 5.3,
+    "tundra": 4.7,
+    "ice": 4.1,
+    "forest": 1,
+    "lake": 1,
+    "alkali": 0.8,
+    "rock": 0.7,
+    "reef": 0.6,
+    "river": 0.6,
+    "badland": 0.6,
+    "upland": 0.4,
+    "ash": 0.3,
+    "bramble": 0.2,
+    "lava": 0.1,
+    "marsh": 0.1
   },
   "interstitial": {
     "ocean": 100

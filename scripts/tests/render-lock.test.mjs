@@ -270,7 +270,12 @@ test("the CLI --check exits 1 on a tampered lock", () => {
 test("the CLI --check catches a STALE committed svg, not just a stale lock", () => {
   const repo = makeTempRepo({ sheets: SHEETS });
   try {
-    const svgPath = join(repo.root, SHEETS.cluster1.outSvg);
+    // Plan E ruling 8 retired SHEETS.cluster1, which this used to truncate.
+    // The canary is the deliberate replacement: it is the one sheet whose
+    // bytes are not geography, so it stays put across a redraw, and its lock
+    // row is current — which matters, because a sheet with a STALE lock row
+    // would make this test pass for the wrong reason.
+    const svgPath = join(repo.root, SHEETS.synthetic.outSvg);
     const original = readFileSync(svgPath, "utf8");
     writeFileSync(svgPath, original.slice(0, Math.floor(original.length / 2)));
     const { failed, out } = runCli(["--check", "--repo-root", repo.root]);
@@ -319,9 +324,21 @@ test("the CLI --check reports a lock whose generator/version no longer matches t
 // reports "no `subjects` descriptor" and buildCluster1Sheet returns problems.
 // The atlas sheet reads sheet-atlas.json and still builds — so exactly one of
 // two sheets is broken, which is precisely the shrunken-lock scenario.
+// Break a REGISTERED sheet's descriptor so its builder reports problems.
+//
+// This used to break content/spine/sheet.json, the basin descriptor — which
+// worked only because SHEETS.cluster1 read it. Plan E ruling 8 retired that
+// entry, and with it the last reader of sheet.json, so the same mutation
+// stopped breaking anything at all: the gate ran clean and both tests below
+// went red having lost their subject. That is the coverage hole a retirement
+// can quietly open, so it is re-pointed at the atlas descriptor rather than
+// deleted.
+//
+// Note it writes ONLY inside the temp sandbox — the tracked
+// content/spine/sheet-atlas.json is never touched.
 function brokenSheetRepo() {
   const repo = makeTempRepo({ sheets: SHEETS });
-  const sheetJson = join(repo.root, "content/spine/sheet.json");
+  const sheetJson = join(repo.root, "content/spine/sheet-atlas.json");
   const doc = JSON.parse(readFileSync(sheetJson, "utf8"));
   delete doc.subjects;
   writeFileSync(sheetJson, JSON.stringify(doc, null, 2) + "\n");
@@ -333,7 +350,7 @@ test("--check REFUSES to run when a sheet reports build problems", () => {
   try {
     const { failed, out } = runCli(["--check", "--repo-root", repo.root]);
     assert.ok(failed, "--check exited 0 with a broken renderer");
-    assert.match(out, /check-render-lock: PROBLEM: cluster1: /);
+    assert.match(out, /check-render-lock: PROBLEM: atlas: /);
     assert.doesNotMatch(
       out,
       /check clean/,
@@ -351,7 +368,7 @@ test("--write REFUSES to run when a sheet reports build problems", () => {
     const before = readFileSync(lockPath, "utf8");
     const { failed, out } = runCli(["--write", "--repo-root", repo.root]);
     assert.ok(failed, "--write exited 0 with a broken renderer");
-    assert.match(out, /check-render-lock: PROBLEM: cluster1: /);
+    assert.match(out, /check-render-lock: PROBLEM: atlas: /);
     assert.equal(
       readFileSync(lockPath, "utf8"),
       before,

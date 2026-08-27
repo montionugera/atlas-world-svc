@@ -67,8 +67,7 @@ import {
   floodFillRegions,
   cellIndexAt,
 } from "../lib/town-geometry.mjs";
-import { resolveWorld } from "../lib/places.mjs";
-import { loadSpine, buildTree } from "../lib/spine.mjs";
+import { loadPlaces } from "../lib/places.mjs";
 
 // Same ESM/CJS interop guard as scripts/lib/story.mjs:11 — `ajv` is CJS, so
 // under ESM the constructor may arrive as the module namespace's `.default`.
@@ -239,16 +238,29 @@ test("the extent is the ten-second crossing, 150-260 on both axes", () => {
 // remaining readers (enumeration defect #4).
 //
 // Plan D Task 11: loadPlaces() now reads the GENERATED world from
-// content/world/resolved/, whose town ids are the new c-town-* pins. This
-// plan's subject is the live BASIN Millcross, so the assertion binds to
-// resolveWorld()'s basin document — the same one the sheet builders draw.
+// content/world/resolved/, whose town ids are the new c-town-* pins.
+//
+// PLAN E RULING 8 (Task 6): this bound to resolveWorld()'s BASIN document,
+// because the plan's subject was the live basin Millcross. That document no
+// longer exists — the redrawn trunk hosts no basin and ruling 8's tail retired
+// the dead subject keys from content/spine/sheet.json — but Millcross itself
+// survives the redraw, as the pinned civil town `c-town-millcross` in the
+// resolved world. That is what the plan's anchor has to agree with now, and it
+// is a STRONGER claim than the one it replaces: the town plan's frame is now
+// tied to the pin the whole civil layer places, not to a hand-authored basin.
+//
+// The join is by the record's own `plan` back-pointer rather than by id: the
+// plan file still says `"town": "millcross"` (the legacy slug), whose re-homing
+// is Plan E Task 11's, and pinned as still-outstanding by places.test.mjs's
+// "FAILS LOUDLY on the not-yet-rehomed legacy records". Joining on the
+// back-pointer means this test asserts the geometry it is named for without
+// silently depending on that re-homing having happened.
 test("the anchor is Millcross's own `at` in the resolved world", () => {
-  const spine = loadSpine({ contentRoot: join(ROOT, "content") });
-  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
-  const { doc, problems } = resolveWorld({ spine, tree });
+  const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
   assert.deepEqual(problems, []);
-  const town = doc.towns.find((t) => t.id === PLAN.town);
-  assert.ok(town, `${PLAN.town} is not a town in the resolved world`);
+  const town = doc.towns.find((t) => t.plan === "content/towns/town-millcross.json");
+  assert.ok(town, "no town in the resolved world points back at this plan");
+  assert.equal(town.id, "c-town-millcross");
   assert.deepEqual(PLAN.anchor.geographyAt, town.at);
 });
 

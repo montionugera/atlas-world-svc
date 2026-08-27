@@ -4,110 +4,74 @@
   "parentId": "n-atlas",
   "title": "Reedstrand",
   "provenance": {
-    "authored": "hand",
+    "authored": "generated",
     "generator": {
-      "name": "gen-world",
-      "version": "1"
+      "name": "mapforge",
+      "version": "3.0.0",
+      "fabric": "content/world/fabric/continent-06.json"
     },
-    "source": "tools/mapforge/gen-world.mjs"
+    "source": "content/world/premises/continent-06.json"
   },
   "frozen": false,
   "seed": {
-    "value": "6c600c578cd5941f",
+    "value": "49e711184843876a",
     "epoch": 0,
     "why": null
   },
   "placement": {
     "shape": "polygon",
     "points": [
-      [298.2, 103],
-      [299.9, 106.9],
-      [296, 107.8],
-      [293.2, 109.4],
-      [290, 108.6],
-      [287.9, 106.1],
-      [285.1, 103],
-      [286.8, 99.3],
-      [290.2, 97.7],
-      [293.2, 95.5],
-      [297.2, 96.1],
-      [299.9, 99.1]
+      [32, 269],
+      [32.5, 266.5],
+      [35, 258],
+      [44, 249.5],
+      [74, 239],
+      [99, 246],
+      [109, 262.5],
+      [108, 271],
+      [98.5, 284],
+      [84.5, 290.5],
+      [65, 292.5],
+      [42, 287.5]
     ],
-    "anchor": [293.1, 102.7]
+    "anchor": [74.25, 265.25]
   },
   "interior": {
     "units": "km",
     "perParentUnit": 1,
-    "size": [14.799999999999955, 13.900000000000006],
-    "originInParent": [285.1, 95.5]
+    "size": [77, 53.5],
+    "originInParent": [32, 239]
   },
   "composition": {
-    "rock": 50,
-    "meadow": 30,
-    "forest": 20
+    "meadow": 80.8,
+    "reef": 12.8,
+    "lake": 6.3,
+    "river": 0.1
   },
   "interstitial": null,
   "interstitialUnsurveyed": false,
   "compositionTolerance": null,
   "toleranceWhy": null,
+  "terrainKind": null,
   "features": [
     {
-      "id": "f-reedstrand-reef",
-      "kind": "line",
-      "points": [
-        [290, 108.6],
-        [287.9, 106.1],
-        [285.1, 103],
-        [286.8, 99.3],
-        [290.2, 97.7]
-      ],
-      "attrs": {
-        "note": "A white line of breakers every report puts in a different place.",
-        "name": "the Reedstrand Breakers"
-      }
-    },
-    {
-      "id": "f-reedstrand-isle-1",
+      "id": "f-town-c06-s01",
       "kind": "point",
-      "at": [297.5, 105.4],
+      "at": [90.25, 281.25],
       "attrs": {
-        "role": "outlying-isle",
-        "name": null
-      }
-    },
-    {
-      "id": "f-reedstrand-isle-2",
-      "kind": "point",
-      "at": [291.1, 106.6],
-      "attrs": {
-        "role": "outlying-isle",
-        "name": null
-      }
-    },
-    {
-      "id": "f-reedstrand-isle-3",
-      "kind": "point",
-      "at": [289, 100.5],
-      "attrs": {
-        "role": "outlying-isle",
-        "name": null
-      }
+        "name": null,
+        "role": "village",
+        "town": "c06/s01"
+      },
+      "type": null
     }
   ],
   "bands": [],
-  "runtime": {
-    "mapIds": [],
-    "originU": null,
-    "spawnAreas": [],
-    "mobSettings": null,
-    "seedDemoNPCs": false,
-    "collision": "none"
-  },
+  "runtime": null,
   "representsNodeId": null,
   "lore": {
-    "reported": true,
-    "summary": "Mariners swear to a low strand walled in reed-beds; three of its isles are marks on a chart and no more."
+    "summary": "a bird's-foot delta with no bedrock — every region is a lobe"
   },
-  "tags": ["archipelago"],
-  "levelBand": null
+  "tags": [],
+  "levelBand": [16, 48]
 }

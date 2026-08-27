@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, cpSync, readFileSync, readdirSync, writeFileSync, rmSync } from "node:fs";
+import { TRUNK_NODES } from "./helpers/census.mjs";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,7 +18,7 @@ import { derivedSidecar } from "../check_spine_emit.mjs";
 // did, this import ran the whole gate and called process.exit(), and `node
 // --test` reported that as "tests 1 / pass 1 / fail 0", exit 0. A green run
 // of one test out of 87. The last test in this file pins the guard's source.
-import { runSpineGateInProcess } from "../check_content.mjs";
+import { runSpineGateInProcess, gSpinePinAnchor } from "../check_content.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_content.mjs");
@@ -80,23 +81,23 @@ test("spine-node schema is draft-07 with an $id", () => {
 // n-keelbreak, n-tarnmark) — growing the table from 29 to 44 nodes. Ids come
 // back sorted (loadSpine reads the directory sorted), so the 15 new n-* ids
 // interleave with the existing 29.
-test("the committed 44-node table loads clean: 2 roots, depths legal, no load errors", () => {
+// COUNT/ROSTER AUTHORITY: content/spine/trunk-census.json (Plan E, E-C4).
+// The 44 ids that used to be typed out here were re-typed on every promotion,
+// and re-typing 36 of them would just move the chore. What loadSpine is
+// actually on the hook for is reading EVERY node file and dropping none, so
+// that is what is asserted: its id list against the directory it reads, and
+// the directory against the census. trunk-census.test.mjs pins the per-tier
+// composition, which is the half a directory listing cannot see.
+test("the committed table loads clean: every node file, 2 roots, depths legal, no load errors", () => {
   const spine = loadSpine({ contentRoot: join(ROOT, "content") });
   assert.equal(spine.present, true);
   assert.deepEqual(spine.errors, []);
-  assert.deepEqual(spine.nodes.map((n) => n.id), [
-    "n-ashvale-front", "n-atlas", "n-brightfall", "n-cindervast-town", "n-cindervast",
-    "n-cluster1", "n-coldreach-interior", "n-coldreach-shore", "n-coldreach",
-    "n-driftholt", "n-eastern-hills", "n-emberdown", "n-embervale",
-    "n-expedition-camp", "n-fixture-deflect", "n-fixture-projectile",
-    "n-frontier-shelf", "n-galereach", "n-gildmark-head", "n-gildmark",
-    "n-hollowmarch", "n-keelbreak", "n-meltwash-terrace", "n-millcross-ford",
-    "n-millcross", "n-norhollow", "n-northern-icefield", "n-peatrun-coast",
-    "n-playroot", "n-reedstrand", "n-rimewall-cap", "n-rooktide-reach",
-    "n-rooktide", "n-saltmire", "n-site-icefield", "n-site-spawn-meadow",
-    "n-site-thornveil", "n-slateflow-coast", "n-stonemoor-interior",
-    "n-stonemoor-shore", "n-stonemoor", "n-tarnmark", "n-thornveil", "n-westsea",
-  ]);
+  const stems = readdirSync(join(ROOT, "content/spine/nodes"))
+    .filter((f) => f.endsWith(".json")).map((f) => f.replace(/\.json$/, "")).sort();
+  assert.equal(stems.length, TRUNK_NODES,
+    `content/spine/nodes holds ${stems.length}; content/spine/trunk-census.json says ${TRUNK_NODES}`);
+  assert.deepEqual(spine.nodes.map((n) => n.id).sort(), stems,
+    "loadSpine dropped or renamed a committed node");
   assert.deepEqual(spine.roots, ["n-atlas", "n-playroot"]);
   // Task 1.10: these were Phase-0 placeholders (48 / 4) until G-LOAD-BUDGET
   // and G-COMP-REPORT existed to enforce them. F-043 bumped the load budget
@@ -264,6 +265,121 @@ t11("G-ANCHOR red: anchor outside own placement", () => {
   const r = runSpineGate(spineFixture({ overlayDir: "g-anchor-outside" }));
   assert11.equal(r.code, 1);
   assert11.match(r.out, /G-ANCHOR.*n-r.*anchor \[5, 5\] outside placement/);
+});
+
+// ─── Plan E Task 6 · G-PIN-ANCHOR ──────────────────────────────────────────
+//
+// A node that names a pinned place stands where the pin is.
+// The rule exists because the redraw moved the three preserved chart nodes by
+// TWO different offsets — the town host by PIN_OFFSET, the two regions by the
+// generator's continent-anchor delta — and nothing read the disagreement:
+// G-CONTAIN only asks that a node sit inside its parent's ring, so both
+// regions sat 20.80 km from their own pins with every gate green.
+//
+// The fixture is hermetic: the base tree's `n-r` is hand-authored at [30, 30]
+// under a per-1 chain, so its composed anchor IS [30, 30] and the roster is
+// written here rather than read out of the corpus.
+const pinRoster = (dir, rows) => {
+  mkdirSync(join11(dir, "world/civil"), { recursive: true });
+  write11(join11(dir, "world/civil/pinned-roster.json"),
+    JSON.stringify({ version: 1, pinOffset: [0, 0], rows }, null, 2) + "\n");
+};
+
+t11("G-PIN-ANCHOR red: a node 1 km off its own pin", () => {
+  const r = runSpineGate(spineFixture({ mutate: (dir) =>
+    pinRoster(dir, [{ id: "c-lm-r", kind: "landmark", continent: "c00", at: [31, 30] }]) }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out,
+    /G-PIN-ANCHOR n-r: composed anchor \[30, 30\] is 1\.000 km from its pin c-lm-r \[31, 30\]/);
+  // and it is the PIN rule failing, not the ring rule: the node is still
+  // inside its parent, which is the whole reason nothing caught this.
+  assert11.doesNotMatch(r.out, /G-CONTAIN.*n-r/);
+});
+
+// GREEN is asserted as "no G-PIN-ANCHOR line", not as exit 0: writing
+// world/civil/ into this fixture arms the whole world-budget family, which
+// then wants world/budgets.json and world/lexicon/landforms.json the spine
+// fixture has never carried. Asserting the exit code here would be asserting
+// those two unrelated gates.
+t11("G-PIN-ANCHOR green: the same node ON its pin", () => {
+  const r = runSpineGate(spineFixture({ mutate: (dir) =>
+    pinRoster(dir, [{ id: "c-lm-r", kind: "landmark", continent: "c00", at: [30, 30] }]) }));
+  assert11.doesNotMatch(r.out, /G-PIN-ANCHOR/, r.out);
+});
+
+// The scope, armed, on gSpinePinAnchor directly — the water tiers cannot be
+// built inside the spine fixture (a sea's parent is an ocean, and G-TIER owns
+// that), and the rule under test is about the TIER, not the tree shape.
+//
+// Why the exemption exists: every civil row is a town or a landmark on a
+// continent, i.e. a point on a landmass, so a slug shared with a body of
+// water is a coincidence of naming. On the live corpus the marginal seas
+// n-reed-shallows and n-rimewall-margin share a slug with the landmarks
+// c-lm-reed-shallows and c-lm-rimewall-margin, which are points on their
+// SHORES. The land case beside them is what proves the exemption is a
+// water exemption and not a silence.
+t11("G-PIN-ANCHOR exempts water by TIER, and only water", () => {
+  const at = (id, tier) => ({ id, tier, parentId: null, placement: { anchor: [10, 10] },
+                              provenance: { authored: "generated", generator: {}, source: "x" } });
+  const nodes = [at("n-a", "ocean"), at("n-b", "sea"), at("n-c", "region")];
+  const tree = { byId: new Map(nodes.map((n) => [n.id, n])),
+                 depthOf: new Map(nodes.map((n) => [n.id, 0])) };
+  const fails = [];
+  gSpinePinAnchor({ nodes, tree, fail: (m) => fails.push(m), roster: { rows: [
+    { id: "c-lm-a", at: [90, 90] }, { id: "c-lm-b", at: [90, 90] }, { id: "c-lm-c", at: [90, 90] },
+  ] } });
+  assert11.equal(fails.length, 1, fails.join("\n"));
+  assert11.match(fails[0], /G-PIN-ANCHOR n-c: composed anchor \[10, 10\] is 113\.137 km from its pin c-lm-c/);
+});
+
+// ─── Plan E Task 6 · G-LABEL-FRAME ─────────────────────────────────────────
+//
+// G-PIN-ANCHOR's companion, one field over. `lore.labelAt` is authored in the
+// SAME frame as `placement` — on both preserved regions the committed value
+// was byte-equal to `placement.anchor` — so when the redraw moved the
+// placements onto their pins and carried `lore` forward verbatim, the two
+// nodes came out with world-km placements and basin-local labels
+// (n-thornveil [24.4, 26] against a placement at [105.4, 155]) and every
+// committed gate stayed green, because nothing read the field.
+//
+// Containment, not equality: a label may legitimately sit off-centre inside
+// its own footprint. What it cannot do is land outside it — that is a frame
+// disagreement, which is the only thing this rule is for.
+const withLabelAt = (labelAt) => (dir) => {
+  const p = join11(dir, "spine/nodes/n-r.json");
+  const doc = JSON.parse(read11(p, "utf8"));
+  doc.lore = { ...doc.lore, labelAt };
+  write11(p, JSON.stringify(doc, null, 2) + "\n");
+};
+
+t11("G-LABEL-FRAME red: labelAt in a different frame from its placement", () => {
+  // n-r's placement is the square [20,20]..[40,40]; [5, 5] is the shape the
+  // real defect took — a label left behind in a retired origin.
+  const r = runSpineGate(spineFixture({ mutate: withLabelAt([5, 5]) }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out,
+    /G-LABEL-FRAME n-r: lore\.labelAt \[5, 5\] is outside the node's own placement/);
+  // and it is the LABEL rule failing, not the anchor or the ring rules: the
+  // placement itself never moved, which is exactly why nothing caught this.
+  assert11.doesNotMatch(r.out, /G-ANCHOR.*n-r/);
+  assert11.doesNotMatch(r.out, /G-CONTAIN.*n-r/);
+});
+
+t11("G-LABEL-FRAME green: labelAt inside its own placement, on and off centre", () => {
+  for (const at of [[30, 30], [23.5, 37]]) {
+    const r = runSpineGate(spineFixture({ mutate: withLabelAt(at) }));
+    assert11.equal(r.code, 0, r.out);
+    assert11.doesNotMatch(r.out, /G-LABEL-FRAME/, r.out);
+  }
+});
+
+t11("G-PIN-ANCHOR red: two roster rows claim one slug", () => {
+  const r = runSpineGate(spineFixture({ mutate: (dir) => pinRoster(dir, [
+    { id: "c-lm-r", kind: "landmark", continent: "c00", at: [30, 30] },
+    { id: "c-town-r", kind: "town", continent: "c00", at: [30, 30] },
+  ]) }));
+  assert11.equal(r.code, 1, r.out);
+  assert11.match(r.out, /G-PIN-ANCHOR n-r: pinned-roster\.json holds two rows for slug "r"/);
 });
 
 // Review round 1, Important: gSpineGeometry must walk the SCHEMA-VALIDATED
@@ -598,8 +714,20 @@ t11("G-VERTEX-BUDGET green: every committed node is inside its tier cap", () => 
 
 t11("G-LOAD-BUDGET green: the committed table is inside all three terms", () => {
   const r = runGate(join(ROOT, "content"));
-  // 44 nodes / 96, n-cluster1's 12 children / 24, n-galereach's 27 points / 160.
-  assert11.match(r.stdout, /spine-load: 44 nodes, \d+ bytes, max children 12\/24, max ring 27\/160 \(budget 96 nodes, 786432 bytes\)/);
+  // The node count is READ from content/spine/trunk-census.json (Plan E, E-C4);
+  // the other two terms are MEASURED facts of the redrawn trunk, re-pinned here
+  // because the redraw legitimately moved them: n-atlas now has 16 children
+  // (13 continents + 3 oceans) where n-cluster1 used to top out at 12, and the
+  // widest ring is a generated continent outline at 156 points where the old
+  // hand-drawn n-galereach was 27.
+  //
+  // 156/160 IS THE FINDING THIS LINE NOW CARRIES: the redrawn trunk sits at
+  // 97.5% of maxRingPoints with four points of headroom. The budget was NOT
+  // raised to absorb it — a re-simplification that adds five points to any
+  // continent outline reds G-LOAD-BUDGET, which is the gate saying the ring
+  // needs simplifying, not that the budget needs raising.
+  assert11.match(r.stdout, new RegExp(
+    `spine-load: ${TRUNK_NODES} nodes, \\d+ bytes, max children 16/24, max ring 156/160 \\(budget 96 nodes, 786432 bytes\\)`));
 });
 
 // ── F-041 Phase 3: hermetic fixture roots for the town-frame gates ──────────
@@ -760,21 +888,26 @@ test("G-COMP-REPORT: the SAME town with its plan removed falls back to ASSERTED"
   assert.match(out, /spine-comp: n-t1 coverage=0\.0% verdict=ASSERTED/);
 });
 
-// F-043 hand-edited n-atlas's interstitialUnsurveyed to false (real
-// composition {ocean:100} replaces the coarse guess), which flips it to
-// CHECKED; the promotion also added 2 continents whose full composition is
-// now authored+rolled-up (n-coldreach, n-stonemoor — both 100% covered by
-// their 3 regions each), so the shipped table now reports FOUR CHECKED
-// nodes, not one. The other 13 promoted nodes (regions/oceans/archipelago
-// continents) stay ASSERTED — same as every other unsurveyed-so-far node.
-test("G-COMP-REPORT: the shipped table reports exactly four CHECKED nodes (n-atlas, n-coldreach, n-millcross, n-stonemoor)", () => {
+// A node is CHECKED when its composition is authored AND rolled up from real
+// children. Pre-redraw that was four nodes; the redraw retired the region
+// children of n-coldreach and n-stonemoor (their regions are fabric rows now,
+// per E-C3), so both fall back to ASSERTED and the shipped table reports TWO
+// CHECKED nodes: n-atlas (whose real {ocean:...} composition F-043 authored,
+// now 98.0% against the redrawn landmasses) and n-millcross (the one committed
+// town plan). This is a MEASURED move of the report, not a widened assertion —
+// every node is still accounted for, and the totals line below is what proves
+// the census did not quietly shrink.
+test("G-COMP-REPORT: the shipped table reports exactly two CHECKED nodes (n-atlas, n-millcross)", () => {
   const r = runGate(join(ROOT, "content"));
   assert.equal(r.code, 0, r.stdout);
-  assert.match(r.stdout, /spine-comp: n-atlas coverage=87\.8% verdict=CHECKED/);
-  assert.match(r.stdout, /spine-comp: n-coldreach coverage=100\.0% verdict=CHECKED/);
+  assert.match(r.stdout, /spine-comp: n-atlas coverage=98\.0% verdict=CHECKED/);
   assert.match(r.stdout, /spine-comp: n-millcross coverage=0\.0% verdict=CHECKED/);
-  assert.match(r.stdout, /spine-comp: n-stonemoor coverage=100\.0% verdict=CHECKED/);
-  assert.match(r.stdout, /spine-comp: totals CHECKED=4 ASSERTED=40 UNCHECKED=0/);
+  assert.doesNotMatch(r.stdout, /spine-comp: n-coldreach .*CHECKED/);
+  assert.doesNotMatch(r.stdout, /spine-comp: n-stonemoor .*CHECKED/);
+  // CHECKED + ASSERTED + UNCHECKED must still add up to the committed census.
+  const m = r.stdout.match(/spine-comp: totals CHECKED=(\d+) ASSERTED=(\d+) UNCHECKED=(\d+)/);
+  assert.ok(m, r.stdout);
+  assert.deepEqual(m.slice(1, 4).map(Number), [2, TRUNK_NODES - 2, 0]);
 });
 
 // Finding 4 (MEDIUM). terrainKindErrors ran over raw spine.nodes, so a node
@@ -819,8 +952,30 @@ function p4FixtureRoot(t, overlayDir) {
   const edgesPath = join(tmp, "spine/edges.json");
   const edges = JSON.parse(readFileSync(edgesPath, "utf8"));
   writeFileSync(edgesPath, JSON.stringify(edges.filter((e) => e.kind !== "leg"), null, 2));
+  stripFabricPins(tmp);
   if (overlayDir) cpSync(join(FIXTURES, overlayDir), tmp, { recursive: true });
   return tmp;
+}
+
+// PLAN E: the redrawn trunk PINS its fabric (E-C3 — `provenance.generator.fabric`
+// is how a childless continent proves completeness, and G-TRUNK-AREA's ±3%
+// activation key). This fixture root deliberately carries only spine/ + maps/,
+// so every one of those 25 pins points at a `content/world/fabric/` file the
+// root does not have: 13 dangling-pin FAILs plus their G-TRUNK-AREA twins, in
+// EVERY p4 fixture, drowning the one authored defect each fixture exists to
+// show. A pin to a file the root does not have is not "a spine-only root", it
+// is a dangling pointer — the same argument world-budget.test.mjs's
+// emptyWorldLayer already makes for the bound/handles/dungeons/relations
+// layers. Nulling the pin is what makes the root honestly spine-only.
+function stripFabricPins(root) {
+  const dir = join(root, "spine/nodes");
+  for (const f of readdirSync(dir).filter((x) => x.endsWith(".json"))) {
+    const p = join(dir, f);
+    const doc = JSON.parse(readFileSync(p, "utf8"));
+    if (doc.provenance?.generator?.fabric == null) continue;
+    doc.provenance.generator.fabric = null;
+    writeFileSync(p, JSON.stringify(doc, null, 2) + "\n");
+  }
 }
 
 // Unique name on purpose — never shadows Task 1.6's or Task 3.6's runners.
@@ -1410,20 +1565,96 @@ t11("sheet subjects: a spine whose sheet.json has NO subjects block REPORTS", ()
   ]);
 });
 
+// PLAN E RULING 8 (Task 6). R3 — "a region without a lore.order is REPORTED,
+// not silently dropped" — used to be exercised on the REAL content root, by
+// deleting `lore.order` from n-thornveil and running resolveWorld over the
+// committed basin. There is no committed basin any more: the redrawn 36-node
+// trunk hosts none of the five subjects the descriptor named, ruling 8's tail
+// retired those keys from content/spine/sheet.json, and resolveWorld now
+// returns three shape diagnoses before it ever reaches a region.
+//
+// Re-pointing the mutation at some surviving node would have left a test that
+// passes while proving nothing — the early return makes any region mutation a
+// no-op — which is precisely the failure this repo has a standing rule about
+// (see the twelve retired tests documented at the head of places.test.mjs).
+//
+// So the subject moves to a basin resolveWorld CAN resolve: a synthetic one,
+// built here in memory, the same clone-and-inject pattern the atlas sheet's
+// landformTree()/harbourTree() fixtures use. Two consequences worth stating:
+// the numbers below are the fixture's and not world density's, and the control
+// test — resolveWorld returning a document with ZERO problems — is what makes
+// the mutation test's red mean "the rule fired" rather than "the fixture is
+// broken". Nothing about R3 depends on the real world's shape, so nothing real
+// is lost; what is gained is that R3 stays armed while the basin is dormant.
+function syntheticBasin() {
+  const poly = (x, y) => [[x, y], [x + 4, y], [x + 4, y + 4], [x, y + 4]];
+  const region = (id, order) => ({
+    id, tier: "region", parentId: "n-basin", title: id.slice(2), tags: [],
+    terrainKind: "meadow", levelBand: [1, 10], bands: [],
+    placement: { shape: "polygon", points: poly(order * 5, 0), anchor: [order * 5 + 2, 2] },
+    lore: { order, labelAt: [order * 5 + 2, 2], note: `${id} note` },
+  });
+  const C = {
+    id: "n-basin", tier: "continent", parentId: null, title: "The Basin", tags: [],
+    placement: { shape: "polygon", points: poly(0, 0), anchor: [0, 0] },
+    features: [
+      { id: "f-coast", kind: "line", attrs: { note: "the drawn coast" }, points: [[0, 0], [0, 20]] },
+      { id: "f-river", kind: "line", points: [[2, 0], [2, 20]],
+        attrs: { name: "The River", note: "n", reaches: [], labelAt: [2, 10],
+                 tidalLimit: [2, 6], ford: [2, 12] } },
+      { id: "f-ice", kind: "line", attrs: { note: "the shelf lip", hardEdgeAtY: 0 }, points: [[0, 0], [20, 0]] },
+      { id: "f-far", kind: "point", at: [40, 40], attrs: {} },
+    ],
+    lore: {
+      relay: { owner: "the fixture", spacingKm: 10, note: "n", derivation: "d", withheld: [] },
+      distances: { paceKmPerHour: 4, drawnRoadsAreCentrelines: true },
+    },
+  };
+  const mire = { id: "n-mire", tier: "region", parentId: "n-basin", title: "The Mire", tags: [],
+    placement: { shape: "polygon", points: poly(0, 10), anchor: [2, 12] },
+    lore: { geoId: "the-mire", note: "brackish" } };
+  const hills = { id: "n-hills", tier: "region", parentId: "n-basin", title: "The Hills", tags: [],
+    terrainKind: "rock", placement: { shape: "polygon", points: poly(10, 10), anchor: [12, 12] },
+    lore: { labelAt: [12, 12], note: "stony" } };
+  const nodes = [C, mire, hills, region("n-zone-a", 1), region("n-zone-b", 2)];
+  const tree = {
+    byId: new Map(nodes.map((n) => [n.id, structuredClone(n)])),
+    childrenOf: new Map([["n-basin", ["n-mire", "n-hills", "n-zone-a", "n-zone-b"]],
+      ["n-mire", []], ["n-hills", []], ["n-zone-a", []], ["n-zone-b", []]]),
+  };
+  const spine = {
+    sheet: { title: "fixture", subjects: null },
+    edges: [{ id: "e-lane", kind: "sealane", from: { node: "n-basin" }, to: { feature: "f-far" },
+      attrs: { note: "out and back", label: "the lane" }, points: [[0, 0], [40, 40]] }],
+  };
+  const descriptor = {
+    rootId: "n-basin", zoneRoot: "n-basin", landIds: ["n-basin"], seaIds: [],
+    mireIds: ["n-mire"], terrainPatchIds: ["n-hills"],
+    featureIds: { coast: "f-coast", river: "f-river", iceEdge: "f-ice" },
+  };
+  return { spine, tree, descriptor };
+}
+
+t11("sheet subjects: the CONTROL — resolveWorld assembles a basin it can resolve with zero problems", () => {
+  const { spine, tree, descriptor } = syntheticBasin();
+  const { doc, problems } = resolveWorld({ spine, tree, descriptor });
+  assert11.deepEqual(problems, []);
+  assert11.ok(doc, "the synthetic basin did not assemble");
+  assert11.deepEqual(doc.zones.map((z) => z.id), ["zone-a", "zone-b"]);
+  assert11.equal(doc.saltmire.id, "the-mire");
+  assert11.equal(doc.terrainPatches[0].id, "hills");
+});
+
 t11("sheet subjects: a zone region losing its lore.order REPORTS instead of vanishing", () => {
   // R3 end-to-end. Before Task 7 this produced a mirror with NINE zones and
-  // exit 0.
-  const dir = realContentCopy();
-  const p = join11(dir, "spine/nodes/n-thornveil.json");
-  const doc = JSON.parse(read11(p, "utf8"));
-  delete doc.lore.order;
-  write11(p, JSON.stringify(doc, null, 2) + "\n");
-  const spine = loadSpine({ contentRoot: dir });
-  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
-  const { doc: d, problems } = resolveWorld({ spine, tree });
-  assert11.equal(d, null);
+  // exit 0 — the region did not fail, it ceased to exist.
+  const { spine, tree, descriptor } = syntheticBasin();
+  delete tree.byId.get("n-zone-b").lore.order;
+  const { doc: d, problems } = resolveWorld({ spine, tree, descriptor });
+  assert11.equal(d, null, "the region vanished silently instead of being reported");
   assert11.doesNotMatch(JSON.stringify(problems), /TypeError/);
   assert11.ok(problems.some((x) => x.includes("has no lore.order")), JSON.stringify(problems));
+  assert11.ok(problems.some((x) => x.includes("n-zone-b")), JSON.stringify(problems));
 });
 
 // ─── Plan A Task 13: in-process gate runs ──────────────────────────────────
@@ -1510,10 +1741,16 @@ t11("in-process: placesByRoot does NOT leak — a geography problem FAILs on EVE
   // problem it reports for a root without one names the directory.
   const dir = realContentCopy();
   cp11(join11(ROOT11, "content/bestiary"), join11(dir, "bestiary"), { recursive: true });
-  const from = join11(dir, "spine/nodes/n-rooktide.json");
+  // PLAN E: the rename used to be n-rooktide, which the redraw retired — every
+  // basin town but Millcross is a resolved-world pin now (E-C4). n-millcross is
+  // the surviving node that two live aliases still name (`region-millcross` and
+  // content/towns/town-millcross.json's spineId), so renaming IT is what still
+  // makes an alias MISS the spine and take the resolvedWorld() second chance
+  // this test is about. Half (1) of the test's own preamble, unchanged in kind.
+  const from = join11(dir, "spine/nodes/n-millcross.json");
   const doc = JSON.parse(read11(from, "utf8"));
-  doc.id = "n-rooktide-town";
-  write11(join11(dir, "spine/nodes/n-rooktide-town.json"), JSON.stringify(doc, null, 2) + "\n");
+  doc.id = "n-millcross-town";
+  write11(join11(dir, "spine/nodes/n-millcross-town.json"), JSON.stringify(doc, null, 2) + "\n");
   rmSync(from);
   rmSync(join11(dir, "spine/sheet.json"), { force: true });
   const first = runSpineGateInProcess({ argv: ["--only=spine", "--content-root", dir] });

@@ -14,8 +14,7 @@ import Ajv from "ajv";
 // under ESM the constructor may arrive as the module namespace's `.default`.
 const AjvClass = Ajv.default ?? Ajv;
 
-import { resolveWorld } from "../lib/places.mjs";
-import { loadSpine, buildTree } from "../lib/spine.mjs";
+import { loadPlaces } from "../lib/places.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const GATE = join(ROOT, "scripts/check_content.mjs");
@@ -243,20 +242,43 @@ test("every committed zone record validates against the committed schema", () =>
   }
 });
 
-test("the committed records cover exactly the resolved world's basin zones", () => {
-  // Plan A Task 12: was a read of content/maps/cluster1-geography.json, which
-  // that task deleted.
-  //
-  // Plan D Task 11: loadPlaces() now returns the GENERATED world — 160 region
-  // zones with ids like c02/r11. The ten committed prose records are still
-  // sworn to the legacy BASIN slugs (re-homing is Plan E movement 2), so the
-  // exact-cover assertion now runs against resolveWorld()'s basin document,
-  // whose zone ids are exactly those slugs.
-  const spine = loadSpine({ contentRoot: join(ROOT, "content") });
-  const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
-  const { doc, problems } = resolveWorld({ spine, tree });
+// PLAN E RULING 8 (Task 6). This test asserted EXACT COVER: the ten committed
+// records' zone ids equalled the world's zone ids, set for set. Both halves of
+// that equality have moved and only one of them has landed.
+//
+//   - The world half moved in Plan D Task 11 and again in the redraw: the
+//     resolved world declares 160 region zones keyed `cNN/rNN`.
+//   - The record half has NOT moved yet. Re-homing the ten records onto the new
+//     region ids is Plan E Task 11's step ("Modify: content/zones/
+//     zone-meltwash-terrace.json, …"), where each gains `region` + `survey`
+//     from Task 10's allocation table; Task 9 then closes Z2 in both directions.
+//
+// Until Task 11 there is no true exact-cover claim to make, and the honest
+// alternative is not to widen this into something that passes. So it asserts
+// the INTERIM STATE precisely: every one of the ten is an orphan of the
+// resolved world, and none of the ten slugs has quietly reappeared as a zone
+// id. That is the same pattern places.test.mjs's ruling-8 pin uses, and it has
+// the same property — it goes RED the day Task 11 re-homes even one record, so
+// exact cover cannot be restored without coming back through here.
+//
+// It is armed on the world side too: had the redraw left any legacy slug in the
+// resolved world, the first assertion below would name it.
+test("INTERIM (until Task 11): none of the ten records is a zone the resolved world declares", () => {
+  const { doc, problems } = loadPlaces({ contentRoot: join(ROOT, "content") });
   assert.deepEqual(problems, []);
-  assert.deepEqual([...doc.zones.map((z) => z.id)].sort(), [...ZONE_IDS].sort());
+  const worldZones = new Set(doc.zones.map((z) => z.id));
+  const stillDeclared = ZONE_IDS.filter((id) => worldZones.has(id));
+  assert.deepEqual(stillDeclared, [],
+    "a legacy basin slug is a zone id in the resolved world — the redraw was supposed to retire it");
+
+  const recorded = readdirSync(join(ROOT, "content/zones"))
+    .filter((f) => /^zone-.+\.json$/.test(f))
+    .map((f) => JSON.parse(readFileSync(join(ROOT, "content/zones", f), "utf8")).zone);
+  const rehomed = recorded.filter((z) => worldZones.has(z));
+  assert.deepEqual(rehomed, [],
+    "a zone record now joins the resolved world — Task 11 has landed, so restore the exact-cover assertion this replaced");
+  assert.deepEqual([...recorded].sort(), [...ZONE_IDS].sort(),
+    "the committed records are still sworn to exactly the ten legacy basin slugs");
 });
 
 // ENUMERATES the directory instead of addressing it by constructed name. Every

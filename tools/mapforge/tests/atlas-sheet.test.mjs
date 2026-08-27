@@ -20,10 +20,27 @@ test("atlas sheet renders with no problems and is deterministic", () => {
   assert.equal(a.svg, b.svg);
 });
 
-test("one town dot per town-tier node, no town labels", () => {
+// Re-keyed by the redraw: settlements are no longer town-TIER nodes with their
+// own dot loop (the trunk keeps exactly one, n-millcross) — every settlement is
+// a `f-town-*` point feature on its continent, and the sheet draws one mark
+// each. EXACT, never `>=`: a `>=` here would stay green while the sheet
+// silently stopped drawing half the world's towns, which is precisely the
+// silent-deletion class this suite exists to catch. The expected number is
+// derived from the trunk in the same test, so a settlement added or lost by a
+// regeneration re-baselines itself instead of needing a literal chased down.
+test("one settlement mark per f-town-* feature on a drawn landmass, no town labels", () => {
   const { svg } = buildAtlasSheet({ repoRoot: ROOT });
-  const dots = svg.match(/class="town-dot"/g) ?? [];
-  assert.equal(dots.length, 7); // millcross, rooktide, embervale, norhollow, gildmark, cindervast-town, expedition-camp
+  const { tree } = realTree();
+  const S = realSheet().subjects;
+  const drawn = [...tree.byId.values()].filter(
+    (n) => n.parentId === S.rootId && n.tier === "continent",
+  );
+  const townFeatures = drawn.flatMap((n) =>
+    (n.features ?? []).filter((f) => f.kind === "point" && f.id.startsWith("f-town-")),
+  );
+  assert.equal(townFeatures.length, 47, "the trunk's settlement count moved");
+  const marks = svg.match(/class="settlement-mark"/g) ?? [];
+  assert.equal(marks.length, townFeatures.length);
   assert.ok(!svg.includes(">Millcross<"));
 });
 
@@ -38,7 +55,12 @@ test("world sheet draws every reported tier-1 node with the reported grammar", (
   const spine = loadSpine({ contentRoot: join(ROOT, "content") });
   const tree = buildTree({ nodes: spine.nodes, rootIds: spine.roots });
   const reported = [...tree.byId.values()].filter((n) => n.parentId === "n-atlas" && n.lore?.reported);
-  assert.ok(reported.length >= 6);
+  // 4, not the pre-redraw 6: only n-loamspit, n-quillreef, n-rimewall-cap and
+  // n-skerryfast carry `lore.reported` on the generated trunk, while TWELVE
+  // continents draw the reported hatch. That gap is Plan C defect (c), filed in
+  // world-fill-STATE.md §28 rather than fixed here — this number tracks the
+  // trunk, and moves when the generator starts writing the flag it draws from.
+  assert.equal(reported.length, 4, reported.map((n) => n.id).join(", "));
   for (const n of reported) assert.ok(svg.includes(esc(n.title.toUpperCase())) || svg.includes(esc(n.title)), n.id);
   assert.ok(svg.includes('class="coast-reported"'));
   assert.ok(svg.includes("pReported"));
@@ -56,7 +78,10 @@ test("world sheet draws every reported tier-1 node with the reported grammar", (
 test("each ocean name appears exactly once (no doubled textPath + lineLabel)", () => {
   const { svg, problems } = buildAtlasSheet({ repoRoot: ROOT });
   assert.deepEqual(problems, []);
-  for (const name of ["The Keelbreak Sea", "The Galereach Sea", "The Tarnmark Sea"]) {
+  // The generated ocean nodes carry BARE titles ("Keelbreak", not "The
+  // Keelbreak Sea") — Plan C defect (d), filed in world-fill-STATE.md §28. The
+  // invariant under test is unchanged: each ocean name is lettered once.
+  for (const name of ["Keelbreak", "Galereach", "Tarnmark"]) {
     const count = svg.split(esc(name)).length - 1;
     assert.equal(count, 1, `${name}: expected exactly 1 occurrence, found ${count}`);
   }
@@ -83,7 +108,10 @@ test("world labels paint above the sheet chrome (document order)", () => {
   const lastChromeLine = sheet.withheld[sheet.withheld.length - 1];
   const chromeEndIdx = svg.indexOf(esc(lastChromeLine));
   assert.ok(chromeEndIdx > -1, "chrome withheld list not found in svg");
-  for (const needle of ["Keelbreak Sea", "Galereach Sea", "Tarnmark Sea", "Tallowquay", "the Coldreach Interior"]) {
+  // Re-keyed onto surviving names. NOT "Gildmark": the `hand` paragraph itself
+  // says "sworn at Gildmark harbour", so its first occurrence is INSIDE the
+  // chrome and the check would read as failing for the wrong reason.
+  for (const needle of ["Keelbreak", "Galereach", "Tarnmark", "Tallowquay", "Northern Icefield"]) {
     const idx = svg.indexOf(needle);
     assert.ok(idx > -1, `${needle}: not found in svg at all`);
     assert.ok(idx > chromeEndIdx, `${needle}: must paint after the chrome block (document order)`);
@@ -98,15 +126,31 @@ const realTree = () => {
   return { spine, tree: buildTree({ nodes: spine.nodes, rootIds: spine.roots }) };
 };
 
-test("sheet-atlas.json carries the subjects descriptor", () => {
+// Re-keyed by the redraw. The pre-redraw version of this test PASSED while
+// swearing to `f-west-coast`, `f-the-meltwash` and a one-element `seaIds` —
+// ids the redraw retired — so the descriptor's "the subject ids are DATA"
+// contract was pinned to a world that no longer exists. Every id below is
+// checked against the live tree, so a descriptor naming a dead node reds here
+// instead of only at render time.
+test("sheet-atlas.json carries the subjects descriptor, and every id in it resolves", () => {
   const sheet = realSheet();
+  const { tree } = realTree();
   assert.ok(sheet.subjects, "content/spine/sheet-atlas.json has no `subjects` block");
   assert.equal(sheet.subjects.rootId, "n-atlas");
   assert.deepEqual(sheet.subjects.landIds, ["n-cluster1"]);
-  assert.deepEqual(sheet.subjects.seaIds, ["n-westsea"]);
-  assert.deepEqual(sheet.subjects.featureIds, {
-    coast: "f-west-coast", river: "f-the-meltwash", iceEdge: "f-northern-ice-edge",
-  });
+  // All NINE marginal seas, drawn and named. The chart's storybook row promises
+  // "13 landmasses, 3 oceans, 9 marginal seas"; before the re-key it drew one.
+  assert.equal(sheet.subjects.seaIds.length, 9);
+  assert.deepEqual(
+    [...sheet.subjects.seaIds].sort(),
+    [...tree.byId.values()].filter((n) => n.tier === "sea").map((n) => n.id).sort(),
+  );
+  // The basin subjects retired with the trunk that carried them (owner ruling,
+  // world-fill-STATE.md §28): the drawn west coast and the Meltwash come back
+  // on the resolved-backed wealdmarch sheet in Task 8, not here.
+  assert.equal(sheet.subjects.featureIds, undefined);
+  for (const id of [sheet.subjects.rootId, ...sheet.subjects.landIds, ...sheet.subjects.seaIds])
+    assert.ok(tree.byId.get(id), `descriptor names ${id}, which is not in the trunk`);
 });
 
 test("the atlas adapter names no spine id in its source — every id comes from the descriptor", () => {
@@ -117,7 +161,12 @@ test("the atlas adapter names no spine id in its source — every id comes from 
   // perfectly good hard-coded id, and checking only "" and '' let
   // `n.parentId === \`n-atlas\`` through while this test stayed green.
   const code = src.split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
-  for (const id of ["n-atlas", "n-cluster1", "n-westsea", "f-west-coast", "f-the-meltwash"]) {
+  // Read from the descriptor rather than pinned as literals: the pre-redraw
+  // list named f-west-coast and f-the-meltwash, which the redraw retired, so
+  // two of its five checks had become assertions about nothing. Whatever the
+  // descriptor names today is exactly what the adapter must not hard-code.
+  const S = realSheet().subjects;
+  for (const id of [S.rootId, ...S.landIds, ...S.seaIds]) {
     for (const q of ['"', "'", "`"]) {
       assert.ok(
         !code.includes(`${q}${id}${q}`),
@@ -186,7 +235,13 @@ test("a described subject vanishing from the tree reports through the descriptor
 // green even against an adapter with no descriptor in it. Drive the SHIPPED
 // adapter instead: move a world child into landIds and it must stop being
 // drawn. Only a filter that really reads S can do that.
-test("the shipped worldChildren filter reads landIds/seaIds — 9 world children, and moving one into landIds drops it", () => {
+// 15, not the pre-redraw 9. The authority for this number is the trunk census
+// (E-C4, committed as content/spine/trunk-census.json by Task 6 Step 1): the
+// root n-atlas carries 13 continent children + 3 ocean children = 16, and
+// landIds absorbs one of them, leaving 15. The nine marginal seas are NOT in
+// this count — they nest inside their ocean (G-CONTAIN), so they were never
+// children of the root.
+test("the shipped worldChildren filter reads landIds/seaIds — 15 world children, and moving one into landIds drops it", () => {
   const { spine, tree } = realTree();
   const sheet = realSheet();
   const S = sheet.subjects;
@@ -194,12 +249,18 @@ test("the shipped worldChildren filter reads landIds/seaIds — 9 world children
     .filter((n) => n.parentId === S.rootId && !S.landIds.includes(n.id) && !S.seaIds.includes(n.id))
     .map((n) => n.id)
     .sort();
-  assert.equal(worldChildren.length, 9, JSON.stringify(worldChildren));
+  assert.equal(worldChildren.length, 15, JSON.stringify(worldChildren));
 
   const base = drawAtlasSheet({ spine, tree, sheet });
   assert.deepEqual(base.problems, []);
   const victim = tree.byId.get(worldChildren[0]);
-  assert.ok(base.svg.includes(esc(victim.title)), `${victim.id} is not drawn on the base sheet`);
+  // A continent's title is lettered UPPERCASE, an ocean's as written — and the
+  // id-sorted first world child is a continent now (it was an ocean before the
+  // redraw), so the probe has to accept both forms, exactly as the
+  // reported-grammar test above does.
+  const drawn = (svg) =>
+    svg.includes(esc(victim.title)) || svg.includes(esc(victim.title.toUpperCase()));
+  assert.ok(drawn(base.svg), `${victim.id} is not drawn on the base sheet`);
 
   const moved = {
     ...sheet,
@@ -207,7 +268,7 @@ test("the shipped worldChildren filter reads landIds/seaIds — 9 world children
   };
   const after = drawAtlasSheet({ spine, tree, sheet: moved });
   assert.ok(
-    !after.svg.includes(esc(victim.title)),
+    !drawn(after.svg),
     `${victim.id} is still drawn after landIds absorbed it — the filter is not reading the descriptor`,
   );
   assert.notEqual(after.svg, base.svg);
@@ -240,7 +301,11 @@ test("no two label boxes overlap on the built atlas sheet", () => {
       /<text class="lbl" x="([-\d.]+)" y="([-\d.]+)" font-size="([\d.]+)"[^>]*letter-spacing="([\d.]+)"[^>]*>([^<]*)<\/text>/g,
     ),
   ];
-  assert.ok(texts.length >= 25, `only ${texts.length} placed labels on the sheet`);
+  // Every `class="lbl"` text on this sheet now comes out of the ONE placement
+  // pass — the survey note used to be painted straight onto the page, which is
+  // how the redraw could sit it on top of the trade-wind lane's label with
+  // every gate green. EXACT, so a name lost from the chart reds here.
+  assert.equal(texts.length, 32, `${texts.length} placed labels on the sheet`);
   const boxes = texts.map((m) => {
     const size = Number(m[3]);
     const { w, h } = measureText({ text: m[5], size, tracking: Number(m[4]) });
@@ -286,15 +351,19 @@ test("the sheet's zoom tier keeps every name the chart draws, and the registry r
   const note = notes.find((n) => n.startsWith("labels "));
   const [, asked, placed] = /^labels (\d+) asked · (\d+) placed/.exec(note);
   assert.equal(asked, placed, `${asked} labels asked, ${placed} placed — the tier is eating names`);
-  for (const needle of ["the Coldreach Interior", "Tallowquay", "the Stonemoor Spine"])
-    assert.ok(svg.includes(needle), `${needle}: a rank-4+ name vanished`);
+  // Re-keyed: the redraw retired every authored line feature, so the old
+  // needles ("the Coldreach Interior", "the Stonemoor Spine") name nothing. One
+  // survivor per rank above the ocean/continent/sea floor — region (4), harbour
+  // (6) and the survey note (8) — so a tier that silently ate a band reds here.
+  for (const needle of ["Thornveil", "Tallowquay", realSheet().surveyNote])
+    assert.ok(svg.includes(esc(needle)), `${needle}: a rank-4+ name vanished`);
 });
 
 test("a tighter zoom tier really does drop the lower ranks (the tier is not decorative)", () => {
   const { spine, tree } = realTree();
   const tight = drawAtlasSheet({ spine, tree, sheet: realSheet(), maxLabelRank: 3 });
-  assert.ok(!tight.svg.includes("the Coldreach Interior"), "a rank-4 name survived tier 3");
-  assert.ok(tight.svg.includes("The Keelbreak Sea"), "a rank-1 name was dropped at tier 3");
+  assert.ok(!tight.svg.includes("Northern Icefield"), "a rank-4 name survived tier 3");
+  assert.ok(tight.svg.includes("Keelbreak"), "a rank-1 name was dropped at tier 3");
 });
 
 // THE SILENT-DELETION FINDING, as a positive control (review A finding 6 and
@@ -302,16 +371,41 @@ test("a tighter zoom tier really does drop the lower ranks (the tier is not deco
 // before the fix that loss appeared NOWHERE: not in problems, not in notes,
 // not in any count checkLabels was given. It is still not a FAILURE — a zoom
 // tier exists to drop names — but it is now on the record, by id.
-test("names lost to the zoom tier are COUNTED, not silently deleted", () => {
+// A SYNTHETIC subject, deliberately: the redraw left the live chart with only
+// five names above rank 3, so re-pinning this at the measured 5 would leave the
+// control measuring world density rather than the accounting rule. Same trick
+// as typedTree() below — hang the subject on a cloned tree so the number under
+// test is the fixture's, not the corpus's.
+const landformTree = ({ count }) => {
   const { spine, tree } = realTree();
+  const S = realSheet().subjects;
+  const land = [...tree.byId.values()].find(
+    (n) => n.parentId === S.rootId && n.tier === "continent" && !S.landIds.includes(n.id),
+  );
+  assert.ok(land, "no reported continent to hang probe landforms on");
+  const a = land.placement.anchor;
+  land.features = [
+    ...(land.features ?? []),
+    ...Array.from({ length: count }, (_, i) => ({
+      id: `f-probe-ridge-${i}`,
+      kind: "line",
+      points: [a, [a[0] + 1, a[1] + 1]],
+      attrs: { name: `Probe Ridge ${i}` },
+    })),
+  ];
+  return { spine, tree, count };
+};
+
+test("names lost to the zoom tier are COUNTED, not silently deleted", () => {
+  const { spine, tree, count } = landformTree({ count: 15 });
   const tight = drawAtlasSheet({ spine, tree, sheet: realSheet(), maxLabelRank: 3 });
   const note = tight.notes.find((n) => n.startsWith("labels "));
   const m = /^labels (\d+) asked · (\d+) placed · (\d+) dropped · (\d+) above rank 3/.exec(note);
   assert.ok(m, note);
   const [, asked, placed, dropped, above] = m.map(Number);
-  assert.ok(above >= 15, `only ${above} names counted as above-tier: ${note}`);
+  assert.ok(above >= count, `only ${above} names counted as above-tier: ${note}`);
   assert.equal(placed + dropped + above, asked, note);
-  assert.ok(note.includes("the Coldreach Interior") || /\(.*\)/.test(note), `the note names no ids: ${note}`);
+  assert.ok(/\(.*f-probe-ridge-0.*\)/.test(note), `the note names no ids: ${note}`);
   // and it is a REPORT, not a failure
   assert.deepEqual(tight.problems, [], tight.problems.join("\n"));
 });
@@ -341,7 +435,26 @@ test("G-LABEL's budget is armed on this sheet", () => {
     over.problems.some((p) => /G-LABEL: \d+ labels at zoom tier 8 > budget 3/.test(p)),
     JSON.stringify(over.problems),
   );
-  assert.ok(ATLAS_LABEL_BUDGET >= 26, "the committed budget is below the sheet's own label count");
+  // Re-key review finding 1. This line read `ATLAS_LABEL_BUDGET >= 26` — the
+  // PRE-redraw label count — so it passed with six to spare while the sheet had
+  // already climbed to 32 placed against a budget of 32: exactly the
+  // zero-headroom state its own failure message swore it was checking. Swapping
+  // 26 for 32 would be the same defect with a newer number, so nothing here is a
+  // literal. The budget's subject is `placed.length` (that is the number
+  // checkLabels compares against `budget`), so measure THAT from a real build
+  // and assert the ceiling covers it. A redraw that adds or loses a name
+  // re-measures itself instead of leaving a stale literal behind.
+  const census = /^labels (\d+) asked · (\d+) placed/.exec(
+    buildAtlasSheet({ repoRoot: ROOT }).notes.find((n) => n.startsWith("labels ")) ?? "",
+  );
+  assert.ok(census, "the build emitted no label census note to measure the budget against");
+  const placedNow = Number(census[2]);
+  assert.ok(placedNow > 0, `the sheet placed ${placedNow} labels — nothing to measure`);
+  assert.ok(
+    ATLAS_LABEL_BUDGET >= placedNow,
+    `ATLAS_LABEL_BUDGET is ${ATLAS_LABEL_BUDGET} but the sheet places ${placedNow} labels — ` +
+      "the committed budget is below the sheet's own label count",
+  );
 });
 
 // ── the two G-GLYPH checks, ARMED (seam-4 review B, survivors 5 and 6) ──────
@@ -408,8 +521,36 @@ test("G-GLYPH FIRES: checkGlyphCoverage catches two groups sharing one glyph", (
 // referencedPatterns }` — the same array twice — which the sibling canary's own
 // comment says "can never fire". The two sides come from two places now, and
 // `legendTier` is passed at all, which it was not.
-test("G-BIOME-INK FIRES on the atlas: a tier that hides a fill the chart draws", () => {
+// The two-fill fixture is SYNTHETIC. It used to lean on n-rimewall-cap being
+// the one world child with `terrainKind: "ice"`; that broke when the generator
+// started writing `terrainKind: null` on every continent (STATE §28 defect
+// (a)) and the canary quietly became a one-pattern test. Injecting the kind on
+// a clone measures the RULE — a tier that hides a drawn fill is reported —
+// instead of the corpus, so it keeps measuring it whichever way the generator
+// moves.
+//
+// The probe must be a REPORTED continent with no kind of its own: since the
+// defect-(b)/(c) fix only a reported landmass takes a fill at all, injecting a
+// kind onto surveyed ground would draw nothing and the canary would go silent
+// for the second time. `terrainKind === null` stays a precondition rather than
+// an overwrite, so a corpus where every reported landmass already has a kind
+// fails loudly here instead of testing something else.
+const terrainTree = ({ kind }) => {
   const { spine, tree } = realTree();
+  const S = realSheet().subjects;
+  const land = [...tree.byId.values()].find(
+    (n) => n.parentId === S.rootId && n.tier === "continent" && !S.landIds.includes(n.id) &&
+      n.lore?.reported === true && n.terrainKind === null,
+  );
+  assert.ok(land, "no reported continent without a terrainKind to hang one on");
+  land.terrainKind = kind;
+  return { spine, tree };
+};
+
+test("G-BIOME-INK FIRES on the atlas: a tier that hides a fill the chart draws", () => {
+  // pIce is a tier-1 legend row, pReported a tier-2 one: at tier 0 both are
+  // hidden, at tier 1 only pReported is.
+  const { spine, tree } = terrainTree({ kind: "ice" });
   for (const [tier, want] of [[0, 2], [1, 1]]) {
     const out = drawAtlasSheet({ spine, tree, sheet: realSheet(), legendTier: tier });
     const hidden = out.problems.filter((p) =>
@@ -423,4 +564,100 @@ test("the atlas's committed legend tier explains every fill it draws", () => {
   const { problems } = buildAtlasSheet({ repoRoot: ROOT });
   assert.deepEqual(problems.filter((p) => p.startsWith("G-BIOME-INK")), [], problems.join("\n"));
   assert.equal(ATLAS_LEGEND_TIER, 2);
+});
+
+
+// ── the harbour predicate, ISOLATED (re-key review finding 4) ───────────────
+//
+// A harbour is DERIVED, not stamped: the closed attrs schema spends `role` on
+// settlement rank, so what makes a town a harbour on this chart is that a
+// charted sea-lane ENDS there (see harbourIds in atlas-sheet.mjs). Nothing
+// tested that rule directly — the live chart's three harbours could have come
+// from any predicate that happened to pick those three ids.
+//
+// SYNTHETIC, same trick as landformTree/terrainTree above: the edge list is
+// replaced wholesale so the number under test is the fixture's, not the
+// corpus's. Two of the three probe towns are the ends of the one sealane; the
+// third is a COASTAL TOWN WITH NO LANE, which pins the semantics that matter —
+// touching water is not what makes a harbour on this chart, and an edge of
+// another kind between two towns does not make one either.
+const harbourTree = () => {
+  const { spine, tree } = realTree();
+  const S = realSheet().subjects;
+  const land = [...tree.byId.values()].find(
+    (n) => n.parentId === S.rootId && n.tier === "continent" && !S.landIds.includes(n.id),
+  );
+  assert.ok(land, "no reported continent to hang probe towns on");
+  const a = land.placement.anchor;
+  const towns = [
+    { id: "f-town-probe-lane-tail", name: "Probeport Tail", at: [a[0], a[1]] },
+    { id: "f-town-probe-lane-head", name: "Probeport Head", at: [a[0] + 2, a[1]] },
+    { id: "f-town-probe-no-lane", name: "Probeport Laneless", at: [a[0] + 4, a[1] + 2] },
+  ];
+  land.features = [
+    ...(land.features ?? []),
+    ...towns.map((t) => ({ id: t.id, kind: "point", at: t.at, attrs: { name: t.name, role: "hub" } })),
+  ];
+  // The WHOLE edge list, so no committed lane can contribute a harbour: what
+  // survives the predicate must have come from these two edges alone.
+  spine.edges = [
+    {
+      id: "e-probe-lane",
+      kind: "sealane",
+      from: { feature: towns[0].id },
+      to: { feature: towns[1].id },
+      attrs: { label: "the probe lane" },
+    },
+    // NOT a sealane. Its endpoints are towns and one of them is the laneless
+    // coastal town, so a predicate that forgot to filter on kind would promote
+    // it to a harbour and this fixture would catch it.
+    {
+      id: "e-probe-road",
+      kind: "road",
+      from: { feature: towns[2].id },
+      to: { feature: towns[0].id },
+      attrs: { label: "the probe road" },
+    },
+  ];
+  return { spine, tree, towns };
+};
+
+test("a harbour is exactly a sealane endpoint — a coastal town with no lane is not one", () => {
+  const { spine, tree, towns } = harbourTree();
+  const { svg } = drawAtlasSheet({ spine, tree, sheet: realSheet() });
+  // The harbour mark is the r=2 settlement circle; every other town on the
+  // sheet (all 47 committed ones included) draws at r=1.1. EXACTLY two, so the
+  // count is the fixture's two lane ends and cannot be world density.
+  const harbourMarks = svg.match(/class="settlement-mark"[^>]*r="2"/g) ?? [];
+  assert.equal(harbourMarks.length, 2, `${harbourMarks.length} harbour marks, expected the 2 lane ends`);
+  // and the two that got them are the lane's own endpoints, by name — being a
+  // harbour is also what earns a town its label on this sheet.
+  assert.ok(svg.includes(esc(towns[0].name)), `${towns[0].name}: the lane's tail drew no harbour label`);
+  assert.ok(svg.includes(esc(towns[1].name)), `${towns[1].name}: the lane's head drew no harbour label`);
+  // THE SEMANTIC PIN: a town on the coast with no lane ending at it is not a
+  // harbour here. It draws the plain settlement dot and no name at all.
+  assert.ok(
+    !svg.includes(esc(towns[2].name)),
+    `${towns[2].name}: a town with no sealane was labelled as a harbour`,
+  );
+});
+
+test("the harbour predicate follows the edge list — move the lane, move the harbours", () => {
+  // The other direction: same three towns, the lane re-pointed at the town that
+  // had none. A predicate keyed on anything else (coast proximity, role, id
+  // order) would keep the old pair.
+  const { spine, tree, towns } = harbourTree();
+  spine.edges = [
+    {
+      id: "e-probe-lane",
+      kind: "sealane",
+      from: { feature: towns[0].id },
+      to: { feature: towns[2].id },
+      attrs: { label: "the probe lane" },
+    },
+  ];
+  const { svg } = drawAtlasSheet({ spine, tree, sheet: realSheet() });
+  assert.equal((svg.match(/class="settlement-mark"[^>]*r="2"/g) ?? []).length, 2);
+  assert.ok(svg.includes(esc(towns[2].name)), "the new lane end did not become a harbour");
+  assert.ok(!svg.includes(esc(towns[1].name)), "the old lane end is still drawn as a harbour");
 });
